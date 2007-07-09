@@ -1,3 +1,11 @@
+2007-07-09  Jim Xochellis  <jimxoch@yahoo.gr>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (search(_ForwardIterator1,
+	_ForwardIterator1, _ForwardIterator2, _ForwardIterator2)): Tidy.
+	(search(_ForwardIterator1, _ForwardIterator1, _ForwardIterator2,
+	_ForwardIterator2, _BinaryPredicate)): Likewise.
+
 2007-07-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/lib/libstdc++.exp (v3-build_support): Use env(AR)

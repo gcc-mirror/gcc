@@ -624,19 +624,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_ForwardIterator2>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
+
       // Test for empty ranges
       if (__first1 == __last1 || __first2 == __last2)
 	return __first1;
 
       // Test for a pattern of length 1.
-      _ForwardIterator2 __tmp(__first2);
-      ++__tmp;
-      if (__tmp == __last2)
+      _ForwardIterator2 __p1(__first2);
+      if (++__p1 == __last2)
 	return std::find(__first1, __last1, *__first2);
 
       // General case.
-      _ForwardIterator2 __p1, __p;
-      __p1 = __first2; ++__p1;
+      _ForwardIterator2 __p;
       _ForwardIterator1 __current = __first1;
 
       for (;;)
@@ -703,9 +702,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return __first1;
 
       // Test for a pattern of length 1.
-      _ForwardIterator2 __tmp(__first2);
-      ++__tmp;
-      if (__tmp == __last2)
+      _ForwardIterator2 __p1(__first2);
+      if (++__p1 == __last2)
 	{
 	  while (__first1 != __last1
 		 && !bool(__predicate(*__first1, *__first2)))
@@ -714,8 +712,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       // General case.
-      _ForwardIterator2 __p1, __p;
-      __p1 = __first2; ++__p1;
+      _ForwardIterator2 __p;
       _ForwardIterator1 __current = __first1;
 
       for (;;)
