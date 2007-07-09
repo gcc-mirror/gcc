@@ -1,3 +1,9 @@
+2007-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32681
+	* tree-if-conv.c (find_phi_replacement_condition): Use the condition
+	saved in second_edge->aux when first_bb is a loop header.
+
 2007-07-07 Anatoly Sokolov <aesok@post.ru>
 
 	PR target/31331

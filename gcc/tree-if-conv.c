@@ -738,7 +738,7 @@ find_phi_replacement_condition (struct loop *loop,
 	 AND it with the incoming bb predicate.  */
       if (second_edge->aux)
 	*cond = build2 (TRUTH_AND_EXPR, boolean_type_node,
-			*cond, first_edge->aux);
+			*cond, second_edge->aux);
 
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
 	/* We can be smart here and choose inverted
