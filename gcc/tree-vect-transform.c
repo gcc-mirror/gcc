@@ -5341,7 +5341,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       tree evolution_part;
       tree init_expr;
       tree step_expr;
-      tree var, stmt, ni, ni_name;
+      tree var, ni, ni_name;
       block_stmt_iterator last_bsi;
 
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -5399,13 +5399,10 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       var = create_tmp_var (TREE_TYPE (init_expr), "tmp");
       add_referenced_var (var);
 
-      ni_name = force_gimple_operand (ni, &stmt, false, var);
-      
-      /* Insert stmt into exit_bb.  */
       last_bsi = bsi_last (exit_bb);
-      if (stmt)
-        bsi_insert_before (&last_bsi, stmt, BSI_SAME_STMT);   
-
+      ni_name = force_gimple_operand_bsi (&last_bsi, ni, false, var,
+					  true, BSI_SAME_STMT);
+      
       /* Fix phi expressions in the successor bb.  */
       SET_PHI_ARG_DEF (phi1, update_e->dest_idx, ni_name);
     }

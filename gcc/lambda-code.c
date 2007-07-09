@@ -2058,7 +2058,8 @@ replace_uses_equiv_to_x_with_y (struct loop *loop, tree stmt, tree x,
 	 which sets Y.  */
       var = create_tmp_var (TREE_TYPE (use), "perfecttmp");
       add_referenced_var (var);
-      val = force_gimple_operand_bsi (firstbsi, val, false, NULL);
+      val = force_gimple_operand_bsi (firstbsi, val, false, NULL,
+				      true, BSI_SAME_STMT);
       setstmt = build_gimple_modify_stmt (var, val);
       var = make_ssa_name (var, setstmt);
       GIMPLE_STMT_OPERAND (setstmt, 0) = var;

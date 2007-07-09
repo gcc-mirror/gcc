@@ -2851,7 +2851,8 @@ scev_const_prop (void)
 	  {
 	    block_stmt_iterator dest = bsi;
 	    bsi_insert_before (&dest, ass, BSI_NEW_STMT);
-	    def = force_gimple_operand_bsi (&dest, def, false, NULL_TREE);
+	    def = force_gimple_operand_bsi (&dest, def, false, NULL_TREE,
+					    true, BSI_SAME_STMT);
 	  }
 	  GIMPLE_STMT_OPERAND (ass, 1) = def;
 	  update_stmt (ass);

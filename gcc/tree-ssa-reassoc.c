@@ -1026,7 +1026,7 @@ negate_value (tree tonegate, block_stmt_iterator *bsi)
 
   tonegate = fold_build1 (NEGATE_EXPR, TREE_TYPE (tonegate), tonegate);
   resultofnegate = force_gimple_operand_bsi (bsi, tonegate, true,
-					     NULL_TREE);
+					     NULL_TREE, true, BSI_SAME_STMT);
   VEC_safe_push (tree, heap, broken_up_subtracts, resultofnegate);
   return resultofnegate;
 

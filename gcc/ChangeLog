@@ -1,5 +1,31 @@
 2007-07-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* tree-scalar-evolution.c (scev_const_prop): Add arguments to
+	force_gimple_operand_bsi.
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr,
+	rewrite_use_compare): Ditto.
+	* tree-ssa-address.c (gimplify_mem_ref_parts, create_mem_ref):
+	Ditto.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Ditto.
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Ditto.
+	* lambda-code.c (replace_uses_equiv_to_x_with_y): Ditto.
+	* tree-profile.c (prepare_instrumented_value,
+	tree_gen_interval_profiler, tree_gen_pow2_profiler,
+	tree_gen_one_value_profiler, tree_gen_ic_profiler,
+	tree_gen_ic_func_profiler, tree_gen_average_profiler,
+	tree_gen_ior_profiler): Ditto.
+	* tree-ssa-reassoc.c (negate_value): Ditto.
+	* matrix-reorg.c (transform_access_sites, transform_allocation_sites):
+	Use force_gimple_operand_bsi.
+	* tree-vect-transform.c (vect_update_ivs_after_vectorizer): Ditto.
+	* tree-if-conv.c (add_to_dst_predicate_list,
+	find_phi_replacement_condition): Ditto.
+	* gimplify.c (force_gimple_operand_bsi): Add before and m arguments.
+	Call mark_symbols_for_renaming for new statements.
+	* tree-flow.h (force_gimple_operand_bsi): Declaration changed.
+
+2007-07-10  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* cfghooks.c (remove_edge): New function.
 	(redirect_edge_and_branch, remove_branch, merge_blocks): Updated
 	loop exit rescans.

@@ -556,10 +556,12 @@ gimplify_mem_ref_parts (block_stmt_iterator *bsi, struct mem_address *parts)
 {
   if (parts->base)
     parts->base = force_gimple_operand_bsi (bsi, parts->base,
-					    true, NULL_TREE);
+					    true, NULL_TREE,
+					    true, BSI_SAME_STMT);
   if (parts->index)
     parts->index = force_gimple_operand_bsi (bsi, parts->index,
-					     true, NULL_TREE);
+					     true, NULL_TREE,
+					     true, BSI_SAME_STMT);
 }
 
 /* Creates and returns a TARGET_MEM_REF for address ADDR.  If necessary
@@ -588,7 +590,7 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
       parts.index = force_gimple_operand_bsi (bsi,
 				fold_build2 (MULT_EXPR, sizetype,
 					     parts.index, parts.step),
-				true, NULL_TREE);
+				true, NULL_TREE, true, BSI_SAME_STMT);
       parts.step = NULL_TREE;
   
       mem_ref = create_mem_ref_raw (type, &parts);
@@ -614,7 +616,7 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 			fold_build2 (PLUS_EXPR, atype,
 				     fold_convert (atype, parts.base),
 				     tmp),
-			true, NULL_TREE);
+			true, NULL_TREE, true, BSI_SAME_STMT);
 	    }
 	  else
 	    {
@@ -641,7 +643,7 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 			fold_build2 (PLUS_EXPR, atype,
 				     parts.base,
 			    	     fold_convert (atype, parts.index)),
-			true, NULL_TREE);
+			true, NULL_TREE, true, BSI_SAME_STMT);
 	}
       else
 	parts.base = parts.index;
@@ -662,7 +664,7 @@ create_mem_ref (block_stmt_iterator *bsi, tree type, aff_tree *addr)
 			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     parts.base,
 				     fold_convert (sizetype, parts.offset)),
-			true, NULL_TREE);
+			true, NULL_TREE, true, BSI_SAME_STMT);
 	}
       else
 	parts.base = parts.offset;

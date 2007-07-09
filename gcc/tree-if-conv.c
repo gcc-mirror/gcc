@@ -637,17 +637,12 @@ add_to_dst_predicate_list (struct loop * loop, edge e,
     {
       tree tmp;
       tree tmp_stmt = NULL_TREE;
-      tree tmp_stmts1 = NULL_TREE;
-      tree tmp_stmts2 = NULL_TREE;
-      prev_cond = force_gimple_operand (unshare_expr (prev_cond),
-					&tmp_stmts1, true, NULL);
-      if (tmp_stmts1)
-        bsi_insert_before (bsi, tmp_stmts1, BSI_SAME_STMT);
 
-      cond = force_gimple_operand (unshare_expr (cond),
-				   &tmp_stmts2, true, NULL);
-      if (tmp_stmts2)
-        bsi_insert_before (bsi, tmp_stmts2, BSI_SAME_STMT);
+      prev_cond = force_gimple_operand_bsi (bsi, unshare_expr (prev_cond),
+					    true, NULL, true, BSI_SAME_STMT);
+
+      cond = force_gimple_operand_bsi (bsi, unshare_expr (cond),
+				       true, NULL, true, BSI_SAME_STMT);
 
       /* Add the condition to aux field of the edge.  In case edge
 	 destination is a PHI node, this condition will be ANDed with
@@ -698,7 +693,7 @@ find_phi_replacement_condition (struct loop *loop,
                                 block_stmt_iterator *bsi)
 {
   edge first_edge, second_edge;
-  tree tmp_cond, new_stmts;
+  tree tmp_cond;
 
   gcc_assert (EDGE_COUNT (bb->preds) == 2);
   first_edge = EDGE_PRED (bb, 0);
@@ -777,9 +772,8 @@ find_phi_replacement_condition (struct loop *loop,
      value as condition. Various targets use different means to communicate
      condition in vector compare operation. Using gimple value allows compiler
      to emit vector compare and select RTL without exposing compare's result.  */
-  *cond = force_gimple_operand (*cond, &new_stmts, false, NULL_TREE);
-  if (new_stmts)
-    bsi_insert_before (bsi, new_stmts, BSI_SAME_STMT);
+  *cond = force_gimple_operand_bsi (bsi, *cond, false, NULL_TREE,
+				    true, BSI_SAME_STMT);
   if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
     {
       tree new_stmt;
