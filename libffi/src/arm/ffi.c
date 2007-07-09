@@ -168,3 +168,122 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
       break;
     }
 }
+
+/** private members **/
+
+static void ffi_prep_incoming_args_SYSV (char *stack, void **ret,
+					 void** args, ffi_cif* cif);
+
+void ffi_closure_SYSV (ffi_closure *);
+
+/* This function is jumped to by the trampoline */
+
+unsigned int
+ffi_closure_SYSV_inner (closure, respp, args)
+     ffi_closure *closure;
+     void **respp;
+     void *args;
+{
+  // our various things...
+  ffi_cif       *cif;
+  void         **arg_area;
+
+  cif         = closure->cif;
+  arg_area    = (void**) alloca (cif->nargs * sizeof (void*));  
+
+  /* this call will initialize ARG_AREA, such that each
+   * element in that array points to the corresponding 
+   * value on the stack; and if the function returns
+   * a structure, it will re-set RESP to point to the
+   * structure return address.  */
+
+  ffi_prep_incoming_args_SYSV(args, respp, arg_area, cif);
+
+  (closure->fun) (cif, *respp, arg_area, closure->user_data);
+
+  return cif->flags;
+}
+
+/*@-exportheader@*/
+static void 
+ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
+			    void **avalue, ffi_cif *cif)
+/*@=exportheader@*/
+{
+  register unsigned int i;
+  register void **p_argv;
+  register char *argp;
+  register ffi_type **p_arg;
+
+  argp = stack;
+
+  if ( cif->flags == FFI_TYPE_STRUCT ) {
+    *rvalue = *(void **) argp;
+    argp += 4;
+  }
+
+  p_argv = avalue;
+
+  for (i = cif->nargs, p_arg = cif->arg_types; (i != 0); i--, p_arg++)
+    {
+      size_t z;
+
+      /* Align if necessary */
+      if ((sizeof(int) - 1) & (unsigned) argp) {
+	argp = (char *) ALIGN(argp, sizeof(int));
+      }
+
+      z = (*p_arg)->size;
+
+      /* because we're little endian, this is what it turns into.   */
+
+      *p_argv = (void*) argp;
+
+      p_argv++;
+      argp += z;
+    }
+  
+  return;
+}
+
+/* How to make a trampoline.  */
+
+#define FFI_INIT_TRAMPOLINE(TRAMP,FUN,CTX) \
+({ unsigned char *__tramp = (unsigned char*)(TRAMP); \
+   unsigned int  __fun = (unsigned int)(FUN); \
+   unsigned int  __ctx = (unsigned int)(CTX); \
+   *(unsigned int*) &__tramp[0] = 0xe92d000f; /* stmfd sp!, {r0-r3} */	\
+   *(unsigned int*) &__tramp[4] = 0xe59f0000; /* ldr r0, [pc] */ \
+   *(unsigned int*) &__tramp[8] = 0xe59ff000; /* ldr pc, [pc] */ \
+   *(unsigned int*) &__tramp[12] = __ctx; \
+   *(unsigned int*) &__tramp[16] = __fun; \
+   register unsigned long _beg __asm ("a1") = (unsigned long) (&__tramp[0]);	\
+   register unsigned long _end __asm ("a2") = (unsigned long) (&__tramp[19]);	\
+   register unsigned long _flg __asm ("a3") = 0;			\
+   __asm __volatile ("swi 0x9f0002		@ sys_cacheflush"	\
+	   		    : "=r" (_beg)				\
+	   		    : "0" (_beg), "r" (_end), "r" (_flg));	\
+ })
+
+
+/* the cif must already be prep'ed */
+
+ffi_status
+ffi_prep_closure_loc (ffi_closure* closure,
+		      ffi_cif* cif,
+		      void (*fun)(ffi_cif*,void*,void**,void*),
+		      void *user_data,
+		      void *codeloc)
+{
+  FFI_ASSERT (cif->abi == FFI_SYSV);
+
+  FFI_INIT_TRAMPOLINE (&closure->tramp[0], \
+		       &ffi_closure_SYSV,  \
+		       codeloc);
+    
+  closure->cif  = cif;
+  closure->user_data = user_data;
+  closure->fun  = fun;
+
+  return FFI_OK;
+}
