@@ -3035,6 +3035,14 @@ generate_local_decl (gfc_symbol * sym)
       if (sym->attr.dummy && sym->backend_decl != NULL_TREE)
 	  TREE_NO_WARNING(sym->backend_decl) = 1;
     }
+  else if (sym->attr.flavor == FL_PARAMETER)
+    {
+      if (warn_unused_variable 
+           && !sym->attr.referenced
+           && !sym->attr.use_assoc)
+	gfc_warning ("unused parameter '%s' declared at %L", sym->name,
+		     &sym->declared_at);
+    }
 
   if (sym->attr.dummy == 1)
     {
