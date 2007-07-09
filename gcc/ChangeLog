@@ -1,3 +1,7 @@
+2007-07-09  Jan HUbicka  <jh@suse.cz>
+
+	* cse.c (cse_insn): Avoid invalid sharing on trial replacement.
+
 2007-07-09  Richard Guenther  <rguenther@suse.de>
 
 	* c-decl.c (start_function): Do not promote return type.
