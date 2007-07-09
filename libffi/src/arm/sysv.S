@@ -207,3 +207,51 @@ LSYM(Lepilogue):
 .ffi_call_SYSV_end:
         .size    CNAME(ffi_call_SYSV),.ffi_call_SYSV_end-CNAME(ffi_call_SYSV)
 
+/*
+	unsigned int FFI_HIDDEN
+	ffi_closure_SYSV_inner (closure, respp, args)
+	     ffi_closure *closure;
+	     void **respp;
+  	     void *args;
+*/
+
+ARM_FUNC_START ffi_closure_SYSV
+	add	ip, sp, #16
+	stmfd	sp!, {ip, lr}
+	add	r2, sp, #8
+	sub	sp, sp, #16
+	str	sp, [sp, #8]
+	add	r1, sp, #8
+	bl	ffi_closure_SYSV_inner
+	cmp	r0, #FFI_TYPE_INT
+	beq	.Lretint
+	cmp	r0, #FFI_TYPE_FLOAT
+	beq	.Lretfloat
+	cmp	r0, #FFI_TYPE_DOUBLE
+	beq	.Lretdouble
+	cmp	r0, #FFI_TYPE_LONGDOUBLE
+	beq	.Lretlongdouble
+	cmp	r0, #FFI_TYPE_SINT64
+	beq	.Lretlonglong
+.Lclosure_epilogue:
+	add	sp, sp, #16
+	ldmfd	sp, {sp, pc}
+.Lretint:
+	ldr	r0, [sp]
+	b	.Lclosure_epilogue
+.Lretlonglong:
+	ldr	r0, [sp]
+	ldr	r1, [sp, #4]
+	b	.Lclosure_epilogue
+.Lretfloat:
+	ldfs	f0, [sp]
+	b	.Lclosure_epilogue
+.Lretdouble:
+	ldfd	f0, [sp]
+	b	.Lclosure_epilogue
+.Lretlongdouble:
+	ldfd	f0, [sp]
+	b	.Lclosure_epilogue
+.ffi_closure_SYSV_end:
+        .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
+

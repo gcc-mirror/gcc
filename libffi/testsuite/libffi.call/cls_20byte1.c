@@ -5,7 +5,9 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+
+
+/* { dg-do run { xfail mips64*-*-* } } */
 #include "ffitest.h"
 
 typedef struct cls_struct_20byte {

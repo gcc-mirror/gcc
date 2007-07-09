@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	Jeff Sturm <jsturm@one-point.com>  */
 
-/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* } } */
 #include "ffitestcxx.h"
 
 void

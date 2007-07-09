@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	Andreas Tobler <andreast@gcc.gnu.org> 20061213  */
 
-/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* } } */
 #include "ffitestcxx.h"
 
 static int checking(int a __UNUSED__, short b __UNUSED__,

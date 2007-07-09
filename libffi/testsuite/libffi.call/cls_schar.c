@@ -4,7 +4,9 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20031108	 */
 
-/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+
+
+/* { dg-do run { xfail mips64*-*-* } } */
 #include "ffitest.h"
 
 static void cls_ret_schar_fn(ffi_cif* cif __UNUSED__, void* resp, void** args,

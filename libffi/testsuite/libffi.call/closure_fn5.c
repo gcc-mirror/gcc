@@ -6,7 +6,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20031026	 */
 
-/* { dg-do run { xfail mips64*-*-* arm*-*-* strongarm*-*-* xscale*-*-* } } */
+/* { dg-do run { xfail mips64*-*-* } } */
 #include "ffitest.h"
 
 static void
