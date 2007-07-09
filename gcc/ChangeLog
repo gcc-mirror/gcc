@@ -1,3 +1,11 @@
+2007-07-09  Alexandre Oliva  <aoliva@oliva.athome.lsd.ic.unicamp.br>
+
+	Revert:
+	2007-07-06  Alexandre Oliva  <aoliva@redhat.com>
+	PR debug/23551
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
+	Disregard DECL_FROM_INLINE.
+
 2007-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/27855
