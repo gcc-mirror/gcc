@@ -1,3 +1,14 @@
+2007-07-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32157
+	* gfortran.dg/overload_2.f90: New test.
+
+	PR fortran/32689
+	* gfortran.dg/transfer_simplify_5.f90
+
+	PR fortran/32634
+	* gfortran.dg/interface_15.f90: New test.
+
 2007-07-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32336

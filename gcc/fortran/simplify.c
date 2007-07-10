@@ -3924,7 +3924,7 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   
   /* Set the number of elements in the result, and determine its size.  */
   result_elt_size = gfc_target_expr_size (mold_element);
-  if (mold->expr_type == EXPR_ARRAY || size)
+  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
     {
       int result_length;
 
