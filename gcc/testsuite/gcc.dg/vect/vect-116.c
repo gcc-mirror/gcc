@@ -1,3 +1,4 @@
+/* { dg-require-effective-target vect_int } */
 /* Assuming we can vectorize char multiplication, here's an execute test.  */
 
 #include <stdarg.h>
