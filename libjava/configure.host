@@ -250,6 +250,11 @@ EOF
 	sysdeps_dir=x86-64
 	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
 	;;
+  mips-sgi-irix6* )
+	sysdeps_dir=mips
+	# disable interpreter, no closure support for N32 and N64 ABIs
+	libgcj_interpreter=no
+	;;
   mips*-*-linux* )
   	sysdeps_dir=mips
   	can_unwind_signal=yes

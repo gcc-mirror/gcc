@@ -1,3 +1,9 @@
+2007-07-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libgcj/32651
+	* configure.host (mips-sgi-irix6*): Set sysdeps_dir.
+	Disable interpreter.
+	
 2007-05-31  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_NewClassFromInitializer): Clear
