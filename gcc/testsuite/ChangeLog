@@ -1,5 +1,9 @@
 2007-07-10  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* gcc.dg/vect/vect-116.c: Add vect_int target requirement.
+
+2007-07-10  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcc.dg/ultrasp7.c: Add fpic target requirement.
 
 2007-07-10  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
