@@ -1,3 +1,9 @@
+2007-07-10  Manuel Lopez-Ibanez <manu@gcc.gnu.org>
+
+	PR testsuite/25241
+	* gcc.dg/pch/counter-2.c: Match every message with its appropriate
+	directive.
+	
 2007-07-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32157
