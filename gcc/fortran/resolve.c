@@ -1552,6 +1552,22 @@ set_type:
 }
 
 
+/* Return true, if the symbol is an external procedure.  */
+static bool
+is_external_proc (gfc_symbol *sym)
+{
+  if (!sym->attr.dummy && !sym->attr.contained
+	&& !(sym->attr.intrinsic
+	      || gfc_intrinsic_name (sym->name, sym->attr.subroutine))
+	&& sym->attr.proc != PROC_ST_FUNCTION
+	&& !sym->attr.use_assoc
+	&& sym->name)
+    return true;
+  else
+    return false;
+}
+
+
 /* Figure out if a function reference is pure or not.  Also set the name
    of the function for a potential error message.  Return nonzero if the
    function is PURE, zero if not.  */
@@ -1893,12 +1909,8 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
-  /* If the procedure is not internal, a statement function or a module
-     procedure,it must be external and should be checked for usage.  */
-  if (sym && !sym->attr.dummy && !sym->attr.contained
-      && sym->attr.proc != PROC_ST_FUNCTION
-      && !sym->attr.use_assoc
-      && sym->name  )
+  /* If the procedure is external, check for usage.  */
+  if (sym && is_external_proc (sym))
     resolve_global_procedure (sym, &expr->where, 0);
 
   /* Switch off assumed size checking and do this again for certain kinds
@@ -2490,12 +2502,8 @@ resolve_call (gfc_code *c)
       return FAILURE;
     }
 
-  /* If the procedure is not internal or module, it must be external and
-     should be checked for usage.  */
-  if (c->symtree && c->symtree->n.sym
-      && !c->symtree->n.sym->attr.dummy
-      && !c->symtree->n.sym->attr.contained
-      && !c->symtree->n.sym->attr.use_assoc)
+  /* If external, check for usage.  */
+  if (c->symtree && is_external_proc (c->symtree->n.sym))
     resolve_global_procedure (c->symtree->n.sym, &c->loc, 1);
 
   /* Subroutines without the RECURSIVE attribution are not allowed to
