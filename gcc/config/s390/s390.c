@@ -3383,7 +3383,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 void
 emit_symbolic_move (rtx *operands)
 {
-  rtx temp = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+  rtx temp = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
 
   if (GET_CODE (operands[0]) == MEM)
     operands[1] = force_reg (Pmode, operands[1]);

@@ -4434,7 +4434,7 @@
   /* Except for zero, we don't support loading a CONST_INT directly
      to a hard floating-point register since a scratch register is
      needed for the operation.  While the operation could be handled
-     before no_new_pseudos is true, the simplest solution is to fail.  */
+     before register allocation, the simplest solution is to fail.  */
   if (TARGET_64BIT
       && GET_CODE (operands[1]) == CONST_INT
       && operands[1] != CONST0_RTX (DImode)

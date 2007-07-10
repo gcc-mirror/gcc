@@ -1958,6 +1958,11 @@ extern int epilogue_completed;
 
 extern int reload_in_progress;
 
+/* This macro indicates whether you may create a new
+   pseudo-register.  */
+
+#define can_create_pseudo_p() (!reload_in_progress && !reload_completed)
+
 #ifdef STACK_REGS
 /* Nonzero after end of regstack pass.
    Set to 1 or 0 by reg-stack.c.  */

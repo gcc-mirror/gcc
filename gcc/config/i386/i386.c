@@ -9799,7 +9799,7 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 	    op1 = force_reg (Pmode, op1);
 	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, Pmode))
 	    {
-	      rtx reg = no_new_pseudos ? op0 : NULL_RTX;
+	      rtx reg = !can_create_pseudo_p () ? op0 : NULL_RTX;
 	      op1 = legitimize_pic_address (op1, reg);
 	      if (op0 == op1)
 		return;
@@ -9874,7 +9874,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
      are moved via xmm registers, and moving them to stack can result in
      unaligned memory access.  Use ix86_expand_vector_move_misalign()
      if memory operand is not aligned correctly.  */
-  if (!no_new_pseudos
+  if (can_create_pseudo_p ()
       && (mode == TImode) && !TARGET_64BIT
       && ((MEM_P (op0) && (MEM_ALIGN (op0) < align))
 	  || (MEM_P (op1) && (MEM_ALIGN (op1) < align))))
@@ -9898,7 +9898,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
     }
 
   /* Make operand1 a register if it isn't already.  */
-  if (!no_new_pseudos
+  if (can_create_pseudo_p ()
       && !register_operand (op0, mode)
       && !register_operand (op1, mode))
     {
@@ -11325,7 +11325,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   /* Try to rearrange the comparison to make it cheaper.  */
   if (ix86_fp_comparison_cost (code)
       > ix86_fp_comparison_cost (swap_condition (code))
-      && (REG_P (op1) || !no_new_pseudos))
+      && (REG_P (op1) || can_create_pseudo_p ()))
     {
       rtx tmp;
       tmp = op0, op0 = op1, op1 = tmp;
@@ -12055,7 +12055,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
   /* Swapping operands may cause constant to appear as first operand.  */
   if (!nonimmediate_operand (op0, VOIDmode))
     {
-      if (no_new_pseudos)
+      if (!can_create_pseudo_p ())
 	return false;
       op0 = force_reg (mode, op0);
     }

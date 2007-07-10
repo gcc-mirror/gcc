@@ -933,7 +933,7 @@ alpha_legitimize_address (rtx x, rtx scratch,
      part of the CONST_INT.  Then load FOO plus any high-order part of the
      CONST_INT into a register.  Our address is (plus reg low-part-const).
      This is done to reduce the number of GOT entries.  */
-  if (!no_new_pseudos
+  if (can_create_pseudo_p ()
       && GET_CODE (x) == CONST
       && GET_CODE (XEXP (x, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
@@ -946,7 +946,7 @@ alpha_legitimize_address (rtx x, rtx scratch,
   /* If we have a (plus reg const), emit the load as in (2), then add
      the two registers, and finally generate (plus reg low-part-const) as
      our address.  */
-  if (!no_new_pseudos
+  if (can_create_pseudo_p ()
       && GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST
@@ -1069,7 +1069,7 @@ alpha_legitimize_address (rtx x, rtx scratch,
 	    return x;
 	  else
 	    {
-	      if (!no_new_pseudos)
+	      if (can_create_pseudo_p ())
 	        scratch = gen_reg_rtx (Pmode);
 	      emit_insn (gen_rtx_SET (VOIDmode, scratch,
 				      gen_rtx_HIGH (Pmode, x)));
@@ -1091,11 +1091,11 @@ alpha_legitimize_address (rtx x, rtx scratch,
 
     if (addend)
       x = expand_simple_binop (Pmode, PLUS, x, GEN_INT (addend),
-			       (no_new_pseudos ? scratch : NULL_RTX),
+			       (!can_create_pseudo_p () ? scratch : NULL_RTX),
 			       1, OPTAB_LIB_WIDEN);
     if (high)
       x = expand_simple_binop (Pmode, PLUS, x, GEN_INT (high),
-			       (no_new_pseudos ? scratch : NULL_RTX),
+			       (!can_create_pseudo_p () ? scratch : NULL_RTX),
 			       1, OPTAB_LIB_WIDEN);
 
     return plus_constant (x, low);
@@ -1644,7 +1644,7 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
   int i, bits;
   /* Use a pseudo if highly optimizing and still generating RTL.  */
   rtx subtarget
-    = (flag_expensive_optimizations && !no_new_pseudos ? 0 : target);
+    = (flag_expensive_optimizations && can_create_pseudo_p () ? 0 : target);
   rtx temp, insn;
 
   /* If this is a sign-extended 32-bit constant, we can do this in at most
@@ -1688,7 +1688,7 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
 	{
 	  if (no_output)
 	    return pc_rtx;
-	  if (no_new_pseudos)
+	  if (!can_create_pseudo_p ())
 	    {
 	      emit_insn (gen_rtx_SET (VOIDmode, target, GEN_INT (high << 16)));
 	      temp = target;
@@ -1727,7 +1727,7 @@ alpha_emit_set_const_1 (rtx target, enum machine_mode mode,
      we can't make pseudos, we can't do anything since the expand_binop
      and expand_unop calls will widen and try to make pseudos.  */
 
-  if (n == 1 || (mode == SImode && no_new_pseudos))
+  if (n == 1 || (mode == SImode && !can_create_pseudo_p ()))
     return 0;
 
   /* Next, see if we can load a related constant and then shift and possibly
@@ -1895,7 +1895,7 @@ alpha_emit_set_const (rtx target, enum machine_mode mode,
 
   /* If we can't make any pseudos, TARGET is an SImode hard register, we
      can't load this constant in one insn, do this in DImode.  */
-  if (no_new_pseudos && mode == SImode
+  if (!can_create_pseudo_p () && mode == SImode
       && GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER)
     {
       result = alpha_emit_set_const_1 (target, mode, c, 1, no_output);
@@ -2700,7 +2700,7 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
      conditional move.  Make sure we emit only comparisons we have;
      swap or reverse as necessary.  */
 
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     return NULL_RTX;
 
   switch (code)
@@ -2777,7 +2777,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
   if (mode != DImode)
     {
       target = gen_lowpart (DImode, dest);
-      if (! no_new_pseudos)
+      if (can_create_pseudo_p ())
         subtarget = gen_reg_rtx (DImode);
       else
 	subtarget = target;

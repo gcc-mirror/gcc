@@ -4129,7 +4129,6 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   rtx this_slot, offset, addr, mem, insn;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
-  no_new_pseudos = 1;
   reload_completed = 1;
 
   /* The "this" pointer is stored at 4(%sp).  */
@@ -4203,7 +4202,6 @@ m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   /* Clean up the vars set above.  */
   reload_completed = 0;
-  no_new_pseudos = 0;
 
   /* Restore the original PIC register.  */
   if (flag_pic)

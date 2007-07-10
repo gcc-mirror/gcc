@@ -181,7 +181,6 @@ th_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   rtx this, temp1, temp2, insn, fnaddr;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
-  no_new_pseudos = 1;
   reload_completed = 1;
 
   /* We need two temporary registers in some cases.  */
@@ -240,7 +239,6 @@ th_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Clean up the vars set above.  Note that final_end_function resets
      the global pointer for us.  */
   reload_completed = 0;
-  no_new_pseudos = 0;
 }
 
 /* Implement TARGET_STRICT_ARGUMENT_NAMING.  */
@@ -812,7 +810,7 @@ score_address_p (enum machine_mode mode, rtx x, int strict)
 static rtx
 score_force_temporary (rtx dest, rtx value)
 {
-  if (!no_new_pseudos)
+  if (can_create_pseudo_p ())
     return force_reg (Pmode, value);
   else
     {

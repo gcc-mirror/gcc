@@ -1420,7 +1420,7 @@ spu_split_immediate (rtx * ops)
 	rtx to, hi, lo;
 	int i;
 	constant_to_array (mode, ops[1], arrhi);
-	to = no_new_pseudos ? ops[0] : gen_reg_rtx (mode);
+	to = !can_create_pseudo_p () ? ops[0] : gen_reg_rtx (mode);
 	for (i = 0; i < 16; i += 4)
 	  {
 	    arrlo[i + 2] = arrhi[i + 2];

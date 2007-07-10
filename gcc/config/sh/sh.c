@@ -1192,7 +1192,9 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	    /* It's ok.  */;
 	  else
 	    {
-	      temp = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+	      temp = (!can_create_pseudo_p ()
+		      ? operands[0]
+		      : gen_reg_rtx (Pmode));
 	      operands[1] = legitimize_pic_address (operands[1], mode, temp);
 	    }
 	}
@@ -1200,13 +1202,14 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	       && GET_CODE (XEXP (operands[1], 0)) == PLUS
 	       && SYMBOLIC_CONST_P (XEXP (XEXP (operands[1], 0), 0)))
 	{
-	  temp = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
+	  temp = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
 	  temp = legitimize_pic_address (XEXP (XEXP (operands[1], 0), 0),
 					 mode, temp);
 	  operands[1] = expand_binop (mode, add_optab, temp,
 				      XEXP (XEXP (operands[1], 0), 1),
-				      no_new_pseudos ? temp
-				      : gen_reg_rtx (Pmode),
+				      (!can_create_pseudo_p ()
+				       ? temp
+				       : gen_reg_rtx (Pmode)),
 				      0, OPTAB_LIB_WIDEN);
 	}
     }
@@ -1298,7 +1301,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 		  if (flag_schedule_insns)
 		    emit_insn (gen_blockage ());
 		}
-	      tga_op1 = no_new_pseudos ? op0 : gen_reg_rtx (Pmode);
+	      tga_op1 = !can_create_pseudo_p () ? op0 : gen_reg_rtx (Pmode);
 	      tmp = gen_sym2GOTTPOFF (op1);
 	      emit_insn (gen_tls_initial_exec (tga_op1, tmp));
 	      op1 = tga_op1;
@@ -1389,7 +1392,7 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 	}
     }
   op1 = operands[1];
-  if (!no_new_pseudos)
+  if (can_create_pseudo_p ())
     operands[1] = force_reg (mode, op1);
   /* When we are handling DImode comparisons, we want to keep constants so
      that we can optimize the component comparisons; however, memory loads
@@ -1412,7 +1415,7 @@ prepare_cbranch_operands (rtx *operands, enum machine_mode mode,
 	  emit_move_insn (scratch, operands[2]);
 	  operands[2] = scratch;
 	}
-      else if (!no_new_pseudos)
+      else if (can_create_pseudo_p ())
 	operands[2] = force_reg (mode, operands[2]);
     }
   return comparison;
@@ -8323,7 +8326,7 @@ emit_fpu_switch (rtx scratch, int index)
     }
 
   src = DECL_RTL (fpscr_values);
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     {
       emit_move_insn (scratch, XEXP (src, 0));
       if (index != 0)
@@ -8492,7 +8495,7 @@ fpscr_set_from_mem (int mode, HARD_REG_SET regs_live)
   enum attr_fp_mode norm_mode = ACTUAL_NORMAL_MODE (FP_MODE);
   rtx addr_reg;
 
-  addr_reg = no_new_pseudos ? get_free_reg (regs_live) : NULL_RTX;
+  addr_reg = !can_create_pseudo_p () ? get_free_reg (regs_live) : NULL_RTX;
   emit_fpu_switch (addr_reg, fp_mode == norm_mode);
 }
 
@@ -10130,7 +10133,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   reload_completed = 1;
   epilogue_completed = 1;
-  no_new_pseudos = 1;
   current_function_uses_only_leaf_regs = 1;
 
   emit_note (NOTE_INSN_PROLOGUE_END);
@@ -10355,7 +10357,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   reload_completed = 0;
   epilogue_completed = 0;
-  no_new_pseudos = 0;
 }
 
 rtx
@@ -10432,11 +10433,12 @@ sh_get_pr_initial_val (void)
 
   /* If we haven't finished rtl generation, there might be a nonlocal label
      that we haven't seen yet.
-     ??? get_hard_reg_initial_val fails if it is called while no_new_pseudos
-     is set, unless it has been called before for the same register.  And even
-     then, we end in trouble if we didn't use the register in the same
-     basic block before.  So call get_hard_reg_initial_val now and wrap it
-     in an unspec if we might need to replace it.  */
+     ??? get_hard_reg_initial_val fails if it is called after register
+     allocation has started, unless it has been called before for the
+     same register.  And even then, we end in trouble if we didn't use
+     the register in the same basic block before.  So call
+     get_hard_reg_initial_val now and wrap it in an unspec if we might
+     need to replace it.  */
   /* ??? We also must do this for TARGET_SH1 in general, because otherwise
      combine can put the pseudo returned by get_hard_reg_initial_val into
      instructions that need a general purpose registers, which will fail to

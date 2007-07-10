@@ -789,7 +789,7 @@
   if (MEM_P (operands[0])
       && ! REG_S_P (operands[1])
       && operands[1] != const0_rtx
-      && ! no_new_pseudos)
+      && may_create_pseudo__p ())
     operands[1] = force_reg (SImode, operands[1]);
 
   /* If we're generating PIC and have an incoming symbol, validize it to a
@@ -810,7 +810,7 @@
 	  {
 	    /* We must have a register as destination for what we're about to
 	       do, and for the patterns we generate.  */
-	    CRIS_ASSERT (!no_new_pseudos);
+	    CRIS_ASSERT (can_create_pseudo_p ());
 	    operands[1] = force_reg (SImode, operands[1]);
 	  }
 	else
@@ -829,7 +829,7 @@
 		  ? operands[1] : get_related_value (operands[1]);
 		HOST_WIDE_INT offs = get_integer_term (operands[1]);
 
-		gcc_assert (! no_new_pseudos);
+		gcc_assert (can_create_pseudo_p ());
 		tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, sym),
 				      CRIS_UNSPEC_GOTREL);
 		if (offs != 0)
@@ -848,7 +848,7 @@
 		   "add.d rPIC,rM,rO", "move.d [rO],rN" with
 		   the memory access marked as read-only.  */
 		rtx tem, mem, rm, ro, rn = operands[0];
-		gcc_assert (! no_new_pseudos);
+		gcc_assert (can_create_pseudo_p ());
 		tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, operands[1]),
 				      CRIS_UNSPEC_GOTREAD);
 		rm = gen_reg_rtx (Pmode);
@@ -879,7 +879,7 @@
 		rtx sym = get_related_value (operands[1]);
 		HOST_WIDE_INT offs = get_integer_term (operands[1]);
 
-		gcc_assert (! no_new_pseudos
+		gcc_assert (can_create_pseudo_p ()
 			    && t == cris_got_symbol_needing_fixup
 			    && sym != NULL_RTX && offs != 0);
 

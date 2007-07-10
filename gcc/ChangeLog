@@ -1,3 +1,87 @@
+2007-07-10  Ian Lance Taylor  <iant@google.com>
+
+	Replace no_new_pseudos in backends.
+	* rtl.h (can_create_pseudo_p): Define.
+	* config/darwin.c (machopic_indirect_data_reference): Use
+	can_create_pseudo_p () instead of no_new_pseudos.
+	(machopic_indirect_data_reference): Likewise.
+	(machopic_legitimize_pic_address): Likewise.
+	* config/alpha/alpha.c (alpha_legitimize_address): Likewise.
+	(alpha_emit_set_const_1): Likewise.
+	(alpha_emit_set_const): Likewise.
+	(alpha_emit_conditional_move): Likewise.
+	(alpha_split_conditional_move): Likewise.
+	* config/alpha/alpha.md (various splitters): Likewise.
+	(movti): Likewise.
+	* config/arm/arm.c (legitimize_pic_address): Likewise.
+	(arm_load_pic_register): Likewise.
+	* config/arm/arm.md (addsi3, subsi3, andsi3, iorsi3): Likewise.
+	(movdi, movsi, movhi, movqi, movsf, movdf): Likewise.
+	* config/bfin/bfin.c (legitimize_pic_address): Likewise.
+	* config/cris/cris.c (cris_expand_pic_call_address): Likewise.
+	* config/cris/cris.md (movsi): Likewise.
+	* config/frv/frv.md (symGOT2reg_hilo): Likewise.
+	(symGOTOFF2reg_hilo): Likewise.
+	(symGPREL2reg, symGPREL2reg_hilo): Likewise.
+	* config/h8300/h8300.md (insv, extzv): Likewise.
+	* config/i386/i386.c (ix86_expand_move): Likewise.
+	(ix86_expand_vector_move): Likewise.
+	(ix86_prepare_fp_compare_args): Likewise.
+	(ix86_expand_carry_flag_compare): Likewise.
+	* config/i386/i386.md (tls_dynamic_gnu2_32): Likewise.
+	(tls_dynamic_gnu2_combine_32): Likewise.
+	(tls_dynamic_gnu2_64, tls_dynamic_gnu2_combine_64): Likewise.
+	* config/ia64/ia64.c (ia64_expand_move): Likewise.
+	(ia64_expand_movxf_movrf): Likewise.
+	* config/m32c/m32c.c (m32c_prepare_move): Likewise.
+	(m32c_split_move): Likewise.
+	(m32c_expand_insv): Likewise.
+	* config/m68k/m68k.md (movsi): Likewise.
+	* config/mips/mips.c (mips_force_temporary): Likewise.
+	(mips_split_symbol): Likewise.
+	(mips_move_integer): Likewise.
+	(mips_legitimize_const_move): Likewise.
+	* config/mn10300/mn10300.md (movsi): Likewise.
+	* config/pa/pa.c (emit_move_sequence): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Likewise.
+	(rs6000_got_register): Likewise.
+	(create_TOC_reference): Likewise.
+	(rs6000_machopic_legitimize_pic_address): Likewise.
+	* config/rs6000/rs6000.md (add<mode>3): Likewise.
+	(various splitters): Likewise.
+	(iorsi3, xorsi3, iordi3, xordi3): Likewise.
+	(movsi_got): Likewise.
+	* config/s390/s390.c (emit_symbolic_move): Likewise.
+	* config/s390/s390.md (movhi, movqi): Likewise.
+	(load_multiple, store_multiple): Likewise.
+	* config/score/score.c (score_force_temporary): Likewise.
+	* config/sh/sh.c (prepare_move_operands): Likewise.
+	(prepare_cbranch_operands): Likewise.
+	(emit_fpu_switch): Likewise.
+	(fpscr_set_from_mem): Likewise.
+	* config/sh/sh.md (movdicc, movsicc, movsicc_umin): Likewise.
+	(adddi3, subsi3): Likewise.
+	(various splitters): Likewise.
+	(divsi_inv_fp_combine): Likewise.
+	(symGOT_load, symGOTOFF2reg, symDTPOFF2reg): Likewise.
+	(seq, slt, sle, sgt, sge, sgtu, sltu, sleu, sgeu): Likewise.
+	(sne): Likewise.
+	* config/sh/predicates.md (xor_operand): Likewise.
+	* config/sparc/sparc.c (legitimize_tls_address): Likewise.
+	* config/sparc/sparc.md (movsi_pic_label_ref): Likewise.
+	(movdi_pic_label_ref): Likewise.
+	* config/spu/spu.c (spu_split_immediate): Likewise.
+	* config/alpha/alpha.md (various splitters): Remove test
+	!no_new_pseudos || reload_completed.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): Don't set
+	no_new_pseudos.
+	* config/m68k/m68k.c (m68k_output_mi_thunk): Likewise.
+	* config/mips/mips.c (mips_output_mi_thunk): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Likewise.
+	* config/score/score.c (th_output_mi_thunk): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): Likewise.
+
 2007-07-10  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/32664

@@ -3155,7 +3155,7 @@ m32c_prepare_move (rtx * operands, enum machine_mode mode)
       emit_insn (gen_rtx_SET (Pmode, dest_reg, dest_mod));
       operands[0] = gen_rtx_MEM (mode, dest_reg);
     }
-  if (!no_new_pseudos && MEM_P (operands[0]) && MEM_P (operands[1]))
+  if (can_create_pseudo_p () && MEM_P (operands[0]) && MEM_P (operands[1]))
     operands[1] = copy_to_mode_reg (mode, operands[1]);
   return 0;
 }
@@ -3220,7 +3220,7 @@ m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
 
   /* Before splitting mem-mem moves, force one operand into a
      register.  */
-  if (!no_new_pseudos && MEM_P (operands[0]) && MEM_P (operands[1]))
+  if (can_create_pseudo_p () && MEM_P (operands[0]) && MEM_P (operands[1]))
     {
 #if DEBUG0
       fprintf (stderr, "force_reg...\n");
@@ -3235,7 +3235,8 @@ m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
   parts = 2;
 
 #if DEBUG_SPLIT
-  fprintf (stderr, "\nsplit_move %d all=%d\n", no_new_pseudos, split_all);
+  fprintf (stderr, "\nsplit_move %d all=%d\n", !can_create_pseudo_p (),
+	   split_all);
   debug_rtx (operands[0]);
   debug_rtx (operands[1]);
 #endif
@@ -3774,7 +3775,7 @@ m32c_expand_insv (rtx *operands)
 	op0 = sub;
     }
 
-  if (no_new_pseudos
+  if (!can_create_pseudo_p ()
       || (GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0)))
     src0 = op0;
   else

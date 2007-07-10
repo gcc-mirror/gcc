@@ -1377,8 +1377,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
      addresses from the destination operand.  */
   if (GET_CODE (operand0) == MEM && IS_INDEX_ADDR_P (XEXP (operand0, 0)))
     {
-      /* This is only safe up to the beginning of life analysis.  */
-      gcc_assert (!no_new_pseudos);
+      gcc_assert (can_create_pseudo_p ());
 
       tem = copy_to_mode_reg (Pmode, XEXP (operand0, 0));
       operand0 = replace_equiv_address (operand0, tem);

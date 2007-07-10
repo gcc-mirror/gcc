@@ -782,7 +782,7 @@
   if (GET_CODE (op) == CONST_INT)
     return (TARGET_SHMEDIA
 	    ? (satisfies_constraint_I06 (op)
-	       || (no_new_pseudos && INTVAL (op) == 0xff))
+	       || (!can_create_pseudo_p () && INTVAL (op) == 0xff))
 	    : satisfies_constraint_K08 (op));
   if (TARGET_SHMEDIA
       && mode != DImode && GET_CODE (op) == SUBREG
