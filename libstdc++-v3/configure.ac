@@ -113,7 +113,7 @@ GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 # No surprises, no surprises...
 GLIBCXX_ENABLE_THREADS
 GLIBCXX_ENABLE_ATOMIC_BUILTINS
-if test $atomicity_dir = cpu/generic/atomic_mutex ; then
+if test $atomicity_dir = cpu/generic/atomicity_mutex ; then
   AC_MSG_WARN([No native atomic operations are provided for this platform.])
   if test $target_thread_file = single; then
     AC_MSG_WARN([They cannot be faked when thread support is disabled.])
