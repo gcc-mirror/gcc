@@ -1,3 +1,13 @@
+2007-07-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32702
+	* io/unix.c (unix_stream): Restore buffer pointer and small_buffer.
+	(fd_alloc): If the number of bytes needed is greater than the default
+	BUFFER_SIZE, allocate a new buffer large enough.  Free the old buffer if
+	necessary. (fd_sfree): Restore use of buffer pointer.
+	(fd_close): Likewise. (fd_open): Likewise.
+	(init_error_stream): Likewise.
+	
 2007-07-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32336
