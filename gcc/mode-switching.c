@@ -246,21 +246,37 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 
 		if (INSN_P (return_copy))
 		  {
-		    if (GET_CODE (PATTERN (return_copy)) == USE
-			&& GET_CODE (XEXP (PATTERN (return_copy), 0)) == REG
-			&& (FUNCTION_VALUE_REGNO_P
-			    (REGNO (XEXP (PATTERN (return_copy), 0)))))
+		    return_copy_pat = PATTERN (return_copy);
+		    switch (GET_CODE (return_copy_pat))
 		      {
-			maybe_builtin_apply = 1;
+		      case USE:
+			/* Skip __builtin_apply pattern.  */
+			if (GET_CODE (XEXP (return_copy_pat, 0)) == REG
+			    && (FUNCTION_VALUE_REGNO_P
+				(REGNO (XEXP (return_copy_pat, 0)))))
+			  {
+			    maybe_builtin_apply = 1;
+			    last_insn = return_copy;
+			    continue;
+			  }
+			break;
+
+		      case ASM_OPERANDS:
+			/* Skip barrier insns.  */
+			if (!MEM_VOLATILE_P (return_copy_pat))
+			  break;
+
+			/* Fall through.  */
+
+		      case ASM_INPUT:
+		      case UNSPEC_VOLATILE:
 			last_insn = return_copy;
 			continue;
+
+		      default:
+			break;
 		      }
-		    if (GET_CODE (PATTERN (return_copy)) == ASM_INPUT
-			&& strcmp (XSTR (PATTERN (return_copy), 0), "") == 0)
-		      {
-			last_insn = return_copy;
-			continue;
-		      }
+
 		    /* If the return register is not (in its entirety)
 		       likely spilled, the return copy might be
 		       partially or completely optimized away.  */
