@@ -1,3 +1,10 @@
+2007-07-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libgcj/28190
+	* inclhack.def (irix_stdint_c99): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: New test.
+
 2007-05-13  Release Manager
 
 	* GCC 4.2.0 released.

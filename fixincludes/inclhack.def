@@ -2096,6 +2096,24 @@ fix = {
 };
 
 /*
+ *  IRIX 6.5 <stdint.h> only works with ISO C99 and errors out
+ *  otherwise.
+ */
+fix = {
+    hackname  = irix_stdint_c99;
+    files     = stdint.h;
+    select = "(#ifndef __c99\n)(#error This header file is to be used only for c99 mode compilations)";
+
+    mach      = "mips-sgi-irix6.5";
+    c_fix  = format;
+    c_fix_arg = "#if 0\n"
+	        "%2";
+    test_text =
+    "#ifndef __c99\n#error This header file is to be used only for c99 mode compilations\n#else";
+};
+
+
+/*
  *  IRIX 5.x's stdio.h and IRIX 6.5's internal/stdio_core.h declare
  *  some functions that take a va_list as
  *  taking char *.  However, GCC uses void * for va_list, so
