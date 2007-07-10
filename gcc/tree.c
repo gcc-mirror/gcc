@@ -3312,7 +3312,10 @@ build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
   if (code == VAR_DECL || code == PARM_DECL || code == RESULT_DECL)
     layout_decl (t, 0);
   else if (code == FUNCTION_DECL)
-    DECL_MODE (t) = FUNCTION_MODE;
+    {
+      DECL_MODE (t) = FUNCTION_MODE;
+      DECL_ALIGN (t) = FUNCTION_BOUNDARY;
+    }
 
   return t;
 }

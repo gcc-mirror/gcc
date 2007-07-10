@@ -1,3 +1,32 @@
+2007-07-09  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 32617
+	* c-common.c (c_alignof_expr): Look at DECL_ALIGN of
+	FUNCTION_DECLs.
+	(handle_aligned_attribute): Allow use on FUNCTION_DECLs.
+	* varasm.c (assemble_start_function): Honor DECL_ALIGN
+	for FUNCTION_DECLs.  Don't use align_functions_log if
+	DECL_USER_ALIGN.
+	* print-tree.c (print_node): Print DECL_ALIGN and DECL_USER_ALIGN
+	even for FUNCTION_DECLs.
+	* c-decl.c (merge_decls): Propagate DECL_ALIGN even for
+	FUNCTION_DECLs.
+	* tree.h (DECL_ALIGN): Update for new location of 'align'.
+	(DECL_FUNCTION_CODE): Update for new location and name of
+	'function_code'.
+	(DECL_OFFSET_ALIGN): Update for new location of 'off_align'.
+	(struct tree_decl_common): Move 'align' and 'off_align' out
+	of union, ensure they're still on a 32-bit boundary.  Remove
+	other fields in union 'u1'.
+	(struct tree_function_decl): Add field 'function_code' replacing
+	'u1.f' in tree_decl_common.
+	* tree.c (build_decl_stat): Set initial value of DECL_ALIGN.
+	* doc/extend.texi (Function Attributes): Add 'aligned' attribute.
+	(Variable Attributes): Cross-reference 'aligned' attribute
+	to Function Attributes.
+	* flags.h (force_align_functions_log): Delete.
+	* toplev.c (force_align_functions_log): Delete.
+
 2007-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32708

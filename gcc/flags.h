@@ -250,10 +250,6 @@ extern int align_labels_log;
 extern int align_labels_max_skip;
 extern int align_functions_log;
 
-/* Like align_functions_log above, but used by front-ends to force the
-   minimum function alignment.  Zero means no alignment is forced.  */
-extern int force_align_functions_log;
-
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;
 

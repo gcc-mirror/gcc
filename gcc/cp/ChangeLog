@@ -1,3 +1,12 @@
+2007-07-09  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 32617
+	* decl.c (cxx_init_decl_processing): Don't set
+	force_align_functions_log.
+	(grokfndecl): Honour ptrmemfunc_vbit_in_pfn.
+	* typeck.c (cxx_alignof_expr): When alignof is used on a plain
+	FUNCTION_DECL, return its alignment.
+
 2007-07-09  Richard Guenther  <rguenther@suse.de>
 
 	* decl.c (start_preparsed_function): Do not promote return type.

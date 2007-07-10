@@ -3182,12 +3182,6 @@ cxx_init_decl_processing (void)
   if (flag_visibility_ms_compat)
     default_visibility = VISIBILITY_HIDDEN;
 
-  /* Force minimum function alignment if using the least significant
-     bit of function pointers to store the virtual bit.  */
-  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
-      && force_align_functions_log < 1)
-    force_align_functions_log = 1;
-
   /* Initially, C.  */
   current_lang_name = lang_name_c;
 
@@ -6145,6 +6139,14 @@ grokfndecl (tree ctype,
     default:
       break;
     }
+
+  /* If pointers to member functions use the least significant bit to
+     indicate whether a function is virtual, ensure a pointer
+     to this function will have that bit clear.  */
+  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
+      && TREE_CODE (type) == METHOD_TYPE
+      && DECL_ALIGN (decl) < 2 * BITS_PER_UNIT)
+    DECL_ALIGN (decl) = 2 * BITS_PER_UNIT;
 
   if (friendp
       && TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)

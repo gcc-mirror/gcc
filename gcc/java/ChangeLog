@@ -1,3 +1,10 @@
+2007-07-09  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 32617
+	* lang.c (java_init): Remove setting of force_align_functions_log.
+	* class.c (add_method_1): Set DECL_ALIGN of non-static method
+	to cope with ptrmemfunc_vbit_in_pfn.
+
 2007-07-03  David Daney  <ddaney@avtrex.com>
 
 	* java/Make-lang.in (doc/gcj.info): Add $(gcc_docdir) to 

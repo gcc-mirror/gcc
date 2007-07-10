@@ -355,13 +355,6 @@ java_init (void)
   if (!flag_indirect_dispatch)
     flag_indirect_classes = false;
 
-  /* Force minimum function alignment if g++ uses the least significant
-     bit of function pointers to store the virtual bit. This is required
-     to keep vtables compatible.  */
-  if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
-      && force_align_functions_log < 1)
-    force_align_functions_log = 1;
-
   jcf_path_seal (v_flag);
 
   java_init_decl_processing ();
