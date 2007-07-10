@@ -1,3 +1,17 @@
+2007-07-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/utility (identity, move, forward): Add.
+	* testsuite/20_util/move/requirements/explicit_instantiation.cc: New.
+	* testsuite/20_util/move/1.cc: New.
+	* testsuite/20_util/identity/value.cc: New.
+	* testsuite/20_util/identity/requirements/typedefs.cc: New.
+	* testsuite/20_util/identity/requirements/explicit_instantiation.cc:
+	New.
+	* testsuite/20_util/forward/requirements/explicit_instantiation.cc:
+	New.
+	* testsuite/20_util/forward/1.cc: New.
+	* testsuite/20_util/forward/1_neg.cc: New.
+	
 2007-07-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/ios_base/failure/what-1.cc: Include <stdexcept>.
