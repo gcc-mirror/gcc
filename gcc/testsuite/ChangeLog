@@ -1,3 +1,8 @@
+2007-07-09  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 32617
+	* gcc.c-torture/execute/align-3.c: New.
+
 2007-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32708

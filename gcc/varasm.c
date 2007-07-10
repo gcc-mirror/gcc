@@ -1679,18 +1679,17 @@ assemble_start_function (tree decl, const char *fnname)
     ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
-  align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-  if (align < force_align_functions_log)
-    align = force_align_functions_log;
+  align = floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT);
   if (align > 0)
     {
       ASM_OUTPUT_ALIGN (asm_out_file, align);
     }
 
   /* Handle a user-specified function alignment.
-     Note that we still need to align to FUNCTION_BOUNDARY, as above,
+     Note that we still need to align to DECL_ALIGN, as above,
      because ASM_OUTPUT_MAX_SKIP_ALIGN might not do any alignment at all.  */
-  if (align_functions_log > align
+  if (! DECL_USER_ALIGN (decl)
+      && align_functions_log > align
       && cfun->function_frequency != FUNCTION_FREQUENCY_UNLIKELY_EXECUTED)
     {
 #ifdef ASM_OUTPUT_MAX_SKIP_ALIGN

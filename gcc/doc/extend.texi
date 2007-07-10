@@ -1605,18 +1605,19 @@ The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
 attributes are currently defined for functions on all targets:
-@code{alloc_size}, @code{noreturn}, @code{returns_twice}, @code{noinline},
-@code{always_inline}, @code{flatten}, @code{pure}, @code{const},
-@code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
+@code{aligned}, @code{alloc_size}, @code{noreturn},
+@code{returns_twice}, @code{noinline}, @code{always_inline},
+@code{flatten}, @code{pure}, @code{const}, @code{nothrow},
+@code{sentinel}, @code{format}, @code{format_arg},
 @code{no_instrument_function}, @code{section}, @code{constructor},
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
 @code{weak}, @code{malloc}, @code{alias}, @code{warn_unused_result},
 @code{nonnull}, @code{gnu_inline} and @code{externally_visible},
 @code{hot}, @code{cold}.
-Several other attributes are defined for functions on particular target
-systems.  Other attributes, including @code{section} are supported for
-variables declarations (@pxref{Variable Attributes}) and for types (@pxref{Type
-Attributes}).
+Several other attributes are defined for functions on particular
+target systems.  Other attributes, including @code{section} are
+supported for variables declarations (@pxref{Variable Attributes}) and
+for types (@pxref{Type Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -1644,6 +1645,27 @@ mangled name for the target must be used.  It is an error if @samp{__f}
 is not defined in the same translation unit.
 
 Not all target machines support this attribute.
+
+@item aligned (@var{alignment})
+@cindex @code{aligned} attribute
+This attribute specifies a minimum alignment for the function,
+measured in bytes.
+
+You cannot use this attribute to decrease the alignment of a function,
+only to increase it.  However, when you explicitly specify a function
+alignment this will override the effect of the
+@option{-falign-functions} (@pxref{Optimize Options}) option for this
+function.
+
+Note that the effectiveness of @code{aligned} attributes may be
+limited by inherent limitations in your linker.  On many systems, the
+linker is only able to arrange for functions to be aligned up to a
+certain maximum alignment.  (For some linkers, the maximum supported
+alignment may be very very small.)  See your linker documentation for
+further information.
+
+The @code{aligned} attribute can also be used for variables and fields
+(@pxref{Variable Attributes}.)
 
 @item alloc_size
 @cindex @code{alloc_size} attribute
@@ -3201,6 +3223,9 @@ be very very small.)  If your linker is only able to align variables
 up to a maximum of 8 byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} will still only provide you with 8 byte
 alignment.  See your linker documentation for further information.
+
+The @code{aligned} attribute can also be used for functions 
+(@pxref{Function Attributes}.)
 
 @item cleanup (@var{cleanup_function})
 @cindex @code{cleanup} attribute
