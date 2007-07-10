@@ -1,3 +1,8 @@
+2007-07-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR target/32538
+	* config/mips/iris6.h (LIBGCC_SPEC): Add libm.
+
 2007-07-10  Ian Lance Taylor  <iant@google.com>
 
 	Replace no_new_pseudos in backends.
