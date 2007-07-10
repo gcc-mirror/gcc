@@ -1,3 +1,9 @@
+2007-07-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32708
+	* config/i386/sse.md (vec_concatv2di): Disable for TARGET_64BIT.
+	(*vec_concatv2di_rex): New insn pattern.
+
 2007-07-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/32538
@@ -132,8 +138,8 @@
 	* optabs.h: Added declaration for signbit_optab.  
 	* optabs.c: (init_optabs): Added initialization for signbit_optab.
 	* genoptinit.c (optabs): Added entry for signbit insns.  
-	* builtins.c (expand_builtin_signbit): Added code to use a signbit insn,
-	if available.  
+	* builtins.c (expand_builtin_signbit): Added code to use a signbit
+	insn, if available.  
 	* config/s390/s390.h (S390_TDC_SIGNBIT_SET): New constant.  
 	* config/s390/s390.md (signbit<mode>2): New expander.  
 
