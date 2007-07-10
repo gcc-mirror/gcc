@@ -7874,7 +7874,7 @@
   ""
   "
 {
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     operands[6] = operands[5] = operands[0];
   else
     {
@@ -7902,7 +7902,7 @@
   ""
   "
 {
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     operands[6] = operands[5] = operands[0];
   else
     {
@@ -7950,7 +7950,7 @@
 {
   rtx insn;
 
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     operands[4] = operands[0];
   else
     operands[4] = gen_reg_rtx (SImode);
@@ -7976,7 +7976,7 @@
 {
   rtx insn;
 
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     {
       emit_insn (gen_symGOT2reg (operands[0], operands[1], operands[2],
 				 GEN_INT (R_FRV_GOT12)));

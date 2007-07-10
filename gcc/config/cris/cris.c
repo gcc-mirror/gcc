@@ -3181,7 +3181,7 @@ cris_expand_pic_call_address (rtx *opp)
     {
       enum cris_pic_symbol_type t = cris_pic_symbol_type_of (op);
 
-      CRIS_ASSERT (!no_new_pseudos);
+      CRIS_ASSERT (can_create_pseudo_p ());
 
       /* For local symbols (non-PLT), just get the plain symbol
 	 reference into a register.  For symbols that can be PLT, make
@@ -3196,7 +3196,7 @@ cris_expand_pic_call_address (rtx *opp)
 		 "move.d (const (unspec [sym] CRIS_UNSPEC_PLT)),rM"
 		 "add.d rPIC,rM,rO", "jsr rO".  */
 	      rtx tem, rm, ro;
-	      gcc_assert (! no_new_pseudos);
+	      gcc_assert (can_create_pseudo_p ());
 	      current_function_uses_pic_offset_table = 1;
 	      tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op), CRIS_UNSPEC_PLT);
 	      rm = gen_reg_rtx (Pmode);
@@ -3222,7 +3222,7 @@ cris_expand_pic_call_address (rtx *opp)
 		 access of the PLTGOT isn't constant).  */
 	      rtx tem, mem, rm, ro;
 
-	      gcc_assert (! no_new_pseudos);
+	      gcc_assert (can_create_pseudo_p ());
 	      current_function_uses_pic_offset_table = 1;
 	      tem = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op),
 				    CRIS_UNSPEC_PLTGOTREAD);

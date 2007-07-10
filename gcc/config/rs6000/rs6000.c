@@ -4060,7 +4060,7 @@ rs6000_emit_set_const (rtx dest, enum machine_mode mode,
       return dest;
 
     case SImode:
-      result = no_new_pseudos ? dest : gen_reg_rtx (SImode);
+      result = !can_create_pseudo_p () ? dest : gen_reg_rtx (SImode);
 
       emit_insn (gen_rtx_SET (VOIDmode, copy_rtx (result),
 			      GEN_INT (INTVAL (source)
@@ -4279,7 +4279,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       return;
     }
 
-  if (!no_new_pseudos && GET_CODE (operands[0]) == MEM
+  if (can_create_pseudo_p () && GET_CODE (operands[0]) == MEM
       && !gpc_reg_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
 
@@ -4302,7 +4302,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       if (FP_REGNO_P (regnum) || regnum >= FIRST_PSEUDO_REGISTER)
 	{
 	  rtx newreg;
-	  newreg = (no_new_pseudos ? copy_rtx (operands[1])
+	  newreg = (!can_create_pseudo_p () ? copy_rtx (operands[1])
 		    : gen_reg_rtx (mode));
 	  emit_insn (gen_aux_truncdfsf2 (newreg, operands[1]));
 	  operands[1] = newreg;
@@ -4429,7 +4429,9 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
 	  && GET_CODE (operands[1]) != HIGH
 	  && GET_CODE (operands[1]) != CONST_INT)
 	{
-	  rtx target = (no_new_pseudos ? operands[0] : gen_reg_rtx (mode));
+	  rtx target = (!can_create_pseudo_p ()
+			? operands[0]
+			: gen_reg_rtx (mode));
 
 	  /* If this is a function address on -mcall-aixdesc,
 	     convert it to the address of the descriptor.  */
@@ -10489,7 +10491,8 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
   /* The second flow pass currently (June 1999) can't update
      regs_ever_live without disturbing other parts of the compiler, so
      update it here to make the prolog/epilogue code happy.  */
-  if (no_new_pseudos && ! df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
+  if (!can_create_pseudo_p ()
+      && !df_regs_ever_live_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
     df_set_regs_ever_live (RS6000_PIC_OFFSET_TABLE_REGNUM, true);
 
   current_function_uses_pic_offset_table = 1;
@@ -14201,7 +14204,7 @@ uses_TOC (void)
 rtx
 create_TOC_reference (rtx symbol)
 {
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     df_set_regs_ever_live (TOC_REGISTER, true);
   return gen_rtx_PLUS (Pmode,
 	   gen_rtx_REG (Pmode, TOC_REGISTER),
@@ -16148,7 +16151,6 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   reload_completed = 1;
   epilogue_completed = 1;
-  no_new_pseudos = 1;
 
   /* Mark the end of the (empty) prologue.  */
   emit_note (NOTE_INSN_PROLOGUE_END);
@@ -16236,7 +16238,6 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   reload_completed = 0;
   epilogue_completed = 0;
-  no_new_pseudos = 0;
 }
 
 /* A quick summary of the various types of 'constant-pool tables'
@@ -19437,7 +19438,7 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
 
       /* Use a different reg for the intermediate value, as
 	 it will be marked UNCHANGING.  */
-      reg_temp = no_new_pseudos ? reg : gen_reg_rtx (Pmode);
+      reg_temp = !can_create_pseudo_p () ? reg : gen_reg_rtx (Pmode);
       base = rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 0),
 						     Pmode, reg_temp);
       offset =

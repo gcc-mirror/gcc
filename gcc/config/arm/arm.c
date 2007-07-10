@@ -3387,7 +3387,7 @@ require_pic_register (void)
      start the real expansion process.  */
   if (!current_function_uses_pic_offset_table)
     {
-      gcc_assert (!no_new_pseudos);
+      gcc_assert (can_create_pseudo_p ());
       if (arm_pic_register != INVALID_REGNUM)
 	{
 	  cfun->machine->pic_reg = gen_rtx_REG (Pmode, arm_pic_register);
@@ -3439,7 +3439,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
       if (reg == 0)
 	{
-	  gcc_assert (!no_new_pseudos);
+	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
 
 	  subregs = 1;
@@ -3503,7 +3503,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
       if (reg == 0)
 	{
-	  gcc_assert (!no_new_pseudos);
+	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
 	}
 
@@ -3519,7 +3519,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	     test the index for the appropriate mode.  */
 	  if (!arm_legitimate_index_p (mode, offset, SET, 0))
 	    {
-	      gcc_assert (!no_new_pseudos);
+	      gcc_assert (can_create_pseudo_p ());
 	      offset = force_reg (Pmode, offset);
 	    }
 
@@ -3673,7 +3673,7 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 	    }
 	  else
 	    {
-	      gcc_assert (!no_new_pseudos);
+	      gcc_assert (can_create_pseudo_p ());
 	      pic_tmp = gen_reg_rtx (Pmode);
 	    }
 

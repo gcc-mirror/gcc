@@ -181,7 +181,7 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 
       if (reg == 0)
 	{
-	  gcc_assert (!no_new_pseudos);
+	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
 	}
 
@@ -209,7 +209,7 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 
       if (reg == 0)
 	{
-	  gcc_assert (!no_new_pseudos);
+	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
 	}
 

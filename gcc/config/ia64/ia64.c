@@ -1028,7 +1028,7 @@ ia64_expand_move (rtx op0, rtx op1)
 
       if (addend)
 	{
-	  rtx subtarget = no_new_pseudos ? op0 : gen_reg_rtx (mode);
+	  rtx subtarget = !can_create_pseudo_p () ? op0 : gen_reg_rtx (mode);
 
 	  emit_insn (gen_rtx_SET (VOIDmode, subtarget, op1));
 
@@ -1342,7 +1342,7 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
 
       /* We're hoping to transform everything that deals with XFmode
 	 quantities and GR registers early in the compiler.  */
-      gcc_assert (!no_new_pseudos);
+      gcc_assert (can_create_pseudo_p ());
 
       /* Struct to register can just use TImode instead.  */
       if ((GET_CODE (operands[1]) == SUBREG
@@ -1392,7 +1392,7 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
     {
       /* We're hoping to transform everything that deals with XFmode
 	 quantities and GR registers early in the compiler.  */
-      gcc_assert (!no_new_pseudos);
+      gcc_assert (can_create_pseudo_p ());
 
       /* Op0 can't be a GR_REG here, as that case is handled above.
 	 If op0 is a register, then we spill op1, so that we now have a
@@ -9455,7 +9455,6 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   reload_completed = 1;
   epilogue_completed = 1;
-  no_new_pseudos = 1;
 
   /* Set things up as ia64_expand_prologue might.  */
   last_scratch_gr_reg = 15;
@@ -9580,7 +9579,6 @@ ia64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   reload_completed = 0;
   epilogue_completed = 0;
-  no_new_pseudos = 0;
 }
 
 /* Worker function for TARGET_STRUCT_VALUE_RTX.  */

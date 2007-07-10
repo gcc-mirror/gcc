@@ -516,7 +516,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	{
 #if defined (TARGET_TOC)
 	  /* Create a new register for CSE opportunities.  */
-	  rtx hi_reg = (no_new_pseudos ? reg : gen_reg_rtx (Pmode));
+	  rtx hi_reg = (!can_create_pseudo_p () ? reg : gen_reg_rtx (Pmode));
  	  emit_insn (gen_macho_high (hi_reg, orig));
  	  emit_insn (gen_macho_low (reg, hi_reg, orig));
 #else
@@ -533,7 +533,9 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 #endif
 
 #if defined (TARGET_TOC) /* i.e., PowerPC */
-	  rtx hi_sum_reg = (no_new_pseudos ? reg : gen_reg_rtx (Pmode));
+	  rtx hi_sum_reg = (!can_create_pseudo_p ()
+			    ? reg
+			    : gen_reg_rtx (Pmode));
 
 	  gcc_assert (reg);
 
@@ -705,7 +707,9 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		  || GET_CODE (XEXP (orig, 0)) == LABEL_REF))
 	    {
 #if defined (TARGET_TOC)	/* ppc  */
-	      rtx temp_reg = (no_new_pseudos) ? reg : gen_reg_rtx (Pmode);
+	      rtx temp_reg = (!can_create_pseudo_p ()
+			      ? reg :
+			      gen_reg_rtx (Pmode));
 	      rtx asym = XEXP (orig, 0);
 	      rtx mem;
 
@@ -728,7 +732,9 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 #if defined (TARGET_TOC) /* i.e., PowerPC */
 	      /* Generating a new reg may expose opportunities for
 		 common subexpression elimination.  */
-              rtx hi_sum_reg = no_new_pseudos ? reg : gen_reg_rtx (Pmode);
+              rtx hi_sum_reg = (!can_create_pseudo_p ()
+				? reg
+				: gen_reg_rtx (Pmode));
 	      rtx mem;
 	      rtx insn;
 	      rtx sum;

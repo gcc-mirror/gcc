@@ -2097,7 +2097,7 @@ mips_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 static rtx
 mips_force_temporary (rtx dest, rtx value)
 {
-  if (!no_new_pseudos)
+  if (can_create_pseudo_p ())
     return force_reg (Pmode, value);
   else
     {
@@ -2117,7 +2117,7 @@ mips_split_symbol (rtx temp, rtx addr)
 
   if (!TARGET_MIPS16)
     high = mips_force_temporary (temp, gen_rtx_HIGH (Pmode, copy_rtx (addr)));
-  else if (no_new_pseudos)
+  else if (!can_create_pseudo_p ())
     {
       emit_insn (gen_load_const_gp (copy_rtx (temp)));
       high = temp;
@@ -2468,7 +2468,7 @@ mips_move_integer (rtx dest, rtx temp, unsigned HOST_WIDE_INT value)
   x = GEN_INT (codes[0].value);
   for (i = 1; i < cost; i++)
     {
-      if (no_new_pseudos)
+      if (!can_create_pseudo_p ())
 	{
 	  emit_insn (gen_rtx_SET (VOIDmode, temp, x));
 	  x = temp;
@@ -2517,7 +2517,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
   split_const (src, &base, &offset);
   if (!TARGET_MIPS16
       && offset != const0_rtx
-      && (!no_new_pseudos || SMALL_INT (offset)))
+      && (can_create_pseudo_p () || SMALL_INT (offset)))
     {
       base = mips_force_temporary (dest, base);
       emit_move_insn (dest, mips_add_offset (0, base, INTVAL (offset)));
@@ -7957,7 +7957,6 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   rtx this, temp1, temp2, insn, fnaddr;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
-  no_new_pseudos = 1;
   reload_completed = 1;
 
   /* Mark the end of the (empty) prologue.  */
@@ -8067,7 +8066,6 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Clean up the vars set above.  Note that final_end_function resets
      the global pointer for us.  */
   reload_completed = 0;
-  no_new_pseudos = 0;
 }
 
 /* Returns nonzero if X contains a SYMBOL_REF.  */

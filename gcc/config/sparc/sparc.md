@@ -1845,7 +1845,7 @@
 {
   current_function_uses_pic_offset_table = 1;
   operands[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     {
       operands[3] = operands[0];
       operands[4] = operands[0];
@@ -1994,7 +1994,7 @@
 {
   current_function_uses_pic_offset_table = 1;
   operands[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
-  if (no_new_pseudos)
+  if (!can_create_pseudo_p ())
     {
       operands[3] = operands[0];
       operands[4] = operands[0];
