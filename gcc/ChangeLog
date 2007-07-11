@@ -1,3 +1,8 @@
+2007-07-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.c (struct tree_opt_pass pass_stack_regs): Nullify name
+	and letter field.
+
 2007-07-11  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* params.def (PARAM_VERIFY_CANONICAL_TYPES): Remove.
@@ -7,7 +12,7 @@
 	(USE_CANONICAL_TYPES): New.
 	* doc/invoke.texi (verify-canonical-types): Remove.
 	(use-canonical-types): Add.
-	
+
 2007-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_optimization_options): Remove setting of
@@ -16,10 +21,9 @@
 
 2007-07-11  Richard Sandiford  <richard@codesourcery.com>
 
-	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Handle -m4ksc and
-	-m4ksd.
-	* config/mips/mips.c (mips_cpu_info_table): Mention MIPS_ISA_LEVEL_SPEC
-	in the comment.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Handle -m4ksc and -m4ksd.
+	* config/mips/mips.c (mips_cpu_info_table): Mention
+	MIPS_ISA_LEVEL_SPEC in the comment.
 
 2007-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
