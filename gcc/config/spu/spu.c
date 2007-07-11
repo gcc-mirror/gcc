@@ -266,11 +266,6 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 void
 spu_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
-  /* Small loops will be unpeeled at -O3.  For SPU it is more important
-     to keep code small by default. */
-  if (!flag_unroll_loops && !flag_peel_loops)
-    PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES) = 1;
-
   /* Override some of the default param values.  With so many registers
      larger values are better for these params.  */
   MAX_PENDING_LIST_LENGTH = 128;
@@ -286,6 +281,12 @@ spu_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 void
 spu_override_options (void)
 {
+  /* Small loops will be unpeeled at -O3.  For SPU it is more important
+     to keep code small by default.  */
+  if (!flag_unroll_loops && !flag_peel_loops
+      && !PARAM_SET_P (PARAM_MAX_COMPLETELY_PEEL_TIMES))
+    PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES) = 1;
+
   flag_omit_frame_pointer = 1;
 
   if (align_functions < 8)
