@@ -1,3 +1,8 @@
+2007-07-11  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Revert previous
+	delta and use gen_int_mode in place of GET_INT instead.
+
 2007-07-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (struct tree_opt_pass pass_stack_regs): Nullify name
