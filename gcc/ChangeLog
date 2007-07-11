@@ -1,3 +1,8 @@
+2007-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/32713
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle REAL_CST.
+
 2007-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR middle-end/30482
