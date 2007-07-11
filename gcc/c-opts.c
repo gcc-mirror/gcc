@@ -232,6 +232,9 @@ c_common_init_options (unsigned int argc, const char **argv)
   warn_pointer_arith = c_dialect_cxx ();
   warn_write_strings = c_dialect_cxx();
 
+  /* By default, C99-like requirements for complex multiply and divide.  */
+  flag_complex_method = 2;
+
   deferred_opts = XNEWVEC (struct deferred_opt, argc);
 
   result = lang_flags[c_language];
@@ -1137,11 +1140,6 @@ c_common_post_options (const char **pfilename)
   /* -Wimplicit-function-declaration is enabled by default for C99.  */
   if (warn_implicit_function_declaration == -1) 
     warn_implicit_function_declaration = flag_isoc99;
-
-  /* C99 requires special handling of complex multiplication and division;
-     -ffast-math and -fcx-limited-range are handled in process_options.  */
-  if (flag_isoc99)
-    flag_complex_method = 2;
 
   /* If we're allowing C++0x constructs, don't warn about C++0x
      compatibility problems.  */
