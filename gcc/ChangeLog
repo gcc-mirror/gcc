@@ -1,3 +1,10 @@
+2007-07-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32661
+	* config/i386/sse.md (*sse2_storeq_rex64): Handle 64bit mem->reg moves.
+	(*vec_extractv2di_1_sse2): Disable for TARGET_64BIT.
+	(*vec_extractv2di_1_rex64): New insn pattern.
+
 2007-07-11  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/linux-unwind.h (mips_fallback_frame_state): Rewrite
