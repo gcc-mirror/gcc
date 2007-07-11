@@ -1,4 +1,4 @@
-@c Copyright (c) 2004, 2005 Free Software Foundation, Inc.
+@c Copyright (c) 2004, 2005, 2007 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -680,7 +680,7 @@ void f()
    bitfieldref  : BIT_FIELD_REF
                         op0 -> inner-compref
                         op1 -> CONST
-                        op2 -> var
+                        op2 -> val
 
    compref      : inner-compref
                 | TARGET_MEM_REF
@@ -718,6 +718,8 @@ void f()
                         op1 -> val
 
    val          : ID
+                | invariant ADDR_EXPR
+                        op0 -> addr-expr-arg
                 | CONST
 
    rhs          : lhs
