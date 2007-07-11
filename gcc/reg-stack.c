@@ -3203,7 +3203,7 @@ gate_handle_stack_regs (void)
 
 struct tree_opt_pass pass_stack_regs =
 {
-  "stack",                              /* name */
+  NULL,                                 /* name */
   gate_handle_stack_regs,               /* gate */
   NULL,					/* execute */
   NULL,                                 /* sub */
@@ -3215,7 +3215,7 @@ struct tree_opt_pass pass_stack_regs =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   0,                                    /* todo_flags_finish */
-  'k'                                   /* letter */
+  0                                     /* letter */
 };
 
 /* Convert register usage from flat register file usage to a stack
