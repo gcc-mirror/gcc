@@ -50,6 +50,10 @@
    (UNSPEC_TLS_GET_TP		28)
    (UNSPEC_MFHC1		31)
    (UNSPEC_MTHC1		32)
+   (UNSPEC_CLEAR_HAZARD		33)
+   (UNSPEC_RDHWR		34)
+   (UNSPEC_SYNCI		35)
+   (UNSPEC_SYNC			36)
 
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -4221,6 +4225,69 @@
 }
   [(set_attr "type" "store")
    (set_attr "length" "4,12")])
+
+;; Expand in-line code to clear the instruction cache between operand[0] and
+;; operand[1].
+(define_expand "clear_cache"
+  [(match_operand 0 "pmode_register_operand")
+   (match_operand 1 "pmode_register_operand")]
+  ""
+  "
+{
+  if (ISA_HAS_SYNCI)
+    {
+      mips_expand_synci_loop (operands[0], operands[1]);
+      emit_insn (gen_sync ());
+      emit_insn (gen_clear_hazard ());
+    }
+  else if (mips_cache_flush_func && mips_cache_flush_func[0])
+    {
+      rtx len = gen_reg_rtx (Pmode);
+      emit_insn (gen_sub3_insn (len, operands[1], operands[0]));
+      /* Flush both caches.  We need to flush the data cache in case
+         the system has a write-back cache.  */
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),
+                         0, VOIDmode, 3, operands[0], Pmode,
+                         len, TYPE_MODE (integer_type_node),
+                         GEN_INT (3), TYPE_MODE (integer_type_node));
+   }
+  DONE;
+}")
+
+(define_insn "sync"
+  [(unspec_volatile [(const_int 0)] UNSPEC_SYNC)]
+  "ISA_HAS_SYNCI"
+  "sync")
+
+(define_insn "synci"
+  [(unspec_volatile [(match_operand 0 "pmode_register_operand" "d")]
+		    UNSPEC_SYNCI)]
+  "ISA_HAS_SYNCI"
+  "synci\t0(%0)")
+
+(define_insn "rdhwr"
+  [(set (match_operand:SI 0 "general_operand" "=d")
+        (unspec_volatile [(match_operand:SI 1 "const_int_operand" "n")]
+        UNSPEC_RDHWR))]
+  "ISA_HAS_SYNCI"
+  "rdhwr\t%0,$%1")
+
+(define_insn "clear_hazard"
+  [(unspec_volatile [(const_int 0)] UNSPEC_CLEAR_HAZARD)
+   (clobber (reg:SI 31))]
+  "ISA_HAS_SYNCI"
+{
+  return ".set\tpush\n"
+         "\t.set\tnoreorder\n"
+         "\t.set\tnomacro\n"
+         "\tbal\t1f\n"
+         "\tnop\n"
+         "1:\taddiu\t$31,$31,12\n"
+         "\tjr.hb\t$31\n"
+         "\tnop\n"
+         "\t.set\tpop";
+}
+  [(set_attr "length" "20")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination

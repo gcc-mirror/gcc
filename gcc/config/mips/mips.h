@@ -804,6 +804,10 @@ extern const struct mips_rtx_cost_data *mips_cost;
 				 || ISA_MIPS32R2			\
 				 || ISA_MIPS64				\
 				 || TARGET_MIPS5500)
+
+/* ISA includes synci, jr.hb and jalr.hb.  */
+#define ISA_HAS_SYNCI ISA_MIPS32R2
+
 
 /* Add -G xx support.  */
 
@@ -2151,21 +2155,16 @@ typedef struct mips_args {
 
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
 {									    \
-  rtx func_addr, chain_addr;						    \
+  rtx func_addr, chain_addr, end_addr;                                      \
 									    \
   func_addr = plus_constant (ADDR, 32);					    \
   chain_addr = plus_constant (func_addr, GET_MODE_SIZE (ptr_mode));	    \
   emit_move_insn (gen_rtx_MEM (ptr_mode, func_addr), FUNC);		    \
   emit_move_insn (gen_rtx_MEM (ptr_mode, chain_addr), CHAIN);		    \
-									    \
-  /* Flush both caches.  We need to flush the data cache in case	    \
-     the system has a write-back cache.  */				    \
-  /* ??? Should check the return value for errors.  */			    \
-  if (mips_cache_flush_func && mips_cache_flush_func[0])		    \
-    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),   \
-		       0, VOIDmode, 3, ADDR, Pmode,			    \
-		       GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
-		       GEN_INT (3), TYPE_MODE (integer_type_node));	    \
+  end_addr = gen_reg_rtx (Pmode);					    \
+  emit_insn (gen_add3_insn (end_addr, copy_rtx (ADDR),			    \
+                            GEN_INT (TRAMPOLINE_SIZE)));		    \
+  emit_insn (gen_clear_cache (copy_rtx (ADDR), end_addr));		    \
 }
 
 /* Addressing modes, and classification of registers for them.  */
