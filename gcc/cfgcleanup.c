@@ -1587,7 +1587,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
      partition boundaries).  See the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition && no_new_pseudos)
+  if (flag_reorder_blocks_and_partition && reload_completed)
     return false;
 
   /* Search backward through forwarder blocks.  We don't need to worry

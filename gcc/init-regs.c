@@ -132,9 +132,7 @@ gate_initialize_regs (void)
 static unsigned int
 rest_of_handle_initialize_regs (void)
 {
-  no_new_pseudos = 0;
   initialize_uninitialized_regs ();
-  no_new_pseudos = 1;
   return 0;
 }
 

@@ -66,7 +66,7 @@ gen_lowpart_general (enum machine_mode mode, rtx x)
 	  && SCALAR_INT_MODE_P (GET_MODE (x))
 	  && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
 				    GET_MODE_BITSIZE (GET_MODE (x)))
-	  && ! no_new_pseudos)
+	  && !reload_completed)
 	return gen_lowpart_general (mode, force_reg (GET_MODE (x), x));
 
       if (WORDS_BIG_ENDIAN)

@@ -1,3 +1,29 @@
+2007-07-11  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* toplev.c (no_new_pseudos): Deleted.
+	* rtl.h (no_new_pseudos): Deleted.
+	* tree-pass.h (pass_no_new_pseudos): Deleted. 
+	* passes.c (pass_no_new_pseudos): Deleted.
+	* final.c (rest_of_clean_state): Removed no_new_pseudos.
+	(rest_of_no_new_pseudos, pass_no_new_pseudos): Deleted.
+	* struct-equiv.c (rtx_equiv_p): Replaced no_new_pseudos with 
+	reload_completed.
+	* cfgcleanup.c (try_crossjump_to_edge): Ditto. 
+	* rtlhooks.c (gen_lowpart_general): Ditto.
+	* optabs.c (prepare_operand): Ditto.
+	* mode-switching.c (rest_of_handle_mode_switching): Deleted set of
+	no_new_pseudos.
+	* modulo-sched.c (rest_of_handle_sms): Ditto.
+	* see.c (rest_of_handle_see): Ditto.
+	* ifcvt.c (if_convert): Ditto.
+	(gate_handle_if_after_combine): Replaced no_new_pseudos with 
+	reload_completed.
+	* init-regs.c (gate_initialize_regs): Deleted set of
+	no_new_pseudos.
+	* lower-subreg.c (decompose_multiword_subregs): Ditto. 
+	* bb-reorder.c (rest_of_handle_partition_blocks): Ditto.
+	* doc/md.texi: Changed no_new_pseudos to can_create_pseudo_p.
+	
 2007-07-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32661

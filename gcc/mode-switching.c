@@ -740,9 +740,7 @@ static unsigned int
 rest_of_handle_mode_switching (void)
 {
 #ifdef OPTIMIZE_MODE_SWITCHING
-  no_new_pseudos = 0;
   optimize_mode_switching ();
-  no_new_pseudos = 1;
 #endif /* OPTIMIZE_MODE_SWITCHING */
   return 0;
 }

@@ -1070,7 +1070,6 @@ decompose_multiword_subregs (void)
   bitmap_and_compl_into (decomposable_context, non_decomposable_context);
   if (!bitmap_empty_p (decomposable_context))
     {
-      int hold_no_new_pseudos = no_new_pseudos;
       sbitmap sub_blocks;
       unsigned int i;
       sbitmap_iterator sbi;
@@ -1079,7 +1078,6 @@ decompose_multiword_subregs (void)
 
       propagate_pseudo_copies ();
 
-      no_new_pseudos = 0;
       sub_blocks = sbitmap_alloc (last_basic_block);
       sbitmap_zero (sub_blocks);
 
@@ -1184,8 +1182,6 @@ decompose_multiword_subregs (void)
 		}
 	    }
 	}
-
-      no_new_pseudos = hold_no_new_pseudos;
 
       /* If we had insns to split that caused control flow insns in the middle
 	 of a basic block, split those blocks now.  Note that we only handle

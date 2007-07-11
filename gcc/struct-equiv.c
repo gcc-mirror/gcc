@@ -431,7 +431,7 @@ rtx_equiv_p (rtx *xp, rtx y, int rvalue, struct equiv_info *info)
 	  return false;
 	else if (x_common_live)
 	  {
-	    if (! rvalue || info->input_cost < 0 || no_new_pseudos)
+	    if (! rvalue || info->input_cost < 0 || reload_completed)
 	      return false;
 	    /* If info->live_update is not set, we are processing notes.
 	       We then allow a match with x_input / y_input found in a

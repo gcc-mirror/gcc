@@ -4091,7 +4091,6 @@ rest_of_clean_state (void)
 
   reload_completed = 0;
   epilogue_completed = 0;
-  no_new_pseudos = 0;
 #ifdef STACK_REGS
   regstack_completed = 0;
 #endif
@@ -4147,27 +4146,3 @@ struct tree_opt_pass pass_clean_state =
   0                                     /* letter */
 };
 
-/* Set no_new_pseudos.  */
-static unsigned int
-rest_of_no_new_pseudos (void)
-{
-  no_new_pseudos = 1;
-  return 0;
-}
-
-struct tree_opt_pass pass_no_new_pseudos =
-{
-  NULL,			                /* name */
-  NULL,                                 /* gate */
-  rest_of_no_new_pseudos,               /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  0,                                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  'p'                                   /* letter */
-};
