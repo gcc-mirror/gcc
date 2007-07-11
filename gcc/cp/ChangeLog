@@ -1,3 +1,10 @@
+2007-07-11  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* typeck.c (comptypes): When USE_CANONICAL_TYPES, use the
+	canonical types; otherwise, fall back to structural type
+	comparisons. If ENABLE_CHECKING and USE_CANONICAL_TYPES, give an
+	internal compiler error if the canonical types are wrong.
+	
 2007-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32560

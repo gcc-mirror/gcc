@@ -1,3 +1,13 @@
+2007-07-11  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* params.def (PARAM_VERIFY_CANONICAL_TYPES): Remove.
+	(PARAM_USE_CANONICAL_TYPES): New; decides whether to use canonical 
+	types or not.
+	* params.h (VERIFY_CANONICAL_TYPES): Remove.
+	(USE_CANONICAL_TYPES): New.
+	* doc/invoke.texi (verify-canonical-types): Remove.
+	(use-canonical-types): Add.
+	
 2007-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_optimization_options): Remove setting of
