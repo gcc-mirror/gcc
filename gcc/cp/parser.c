@@ -2702,6 +2702,9 @@ cp_parser_make_indirect_declarator (enum tree_code code, tree class_type,
 				    cp_cv_quals cv_qualifiers,
 				    cp_declarator *target)
 {
+  if (code == ERROR_MARK)
+    return cp_error_declarator;
+
   if (code == INDIRECT_REF)
     if (class_type == NULL_TREE)
       return make_pointer_declarator (cv_qualifiers, target);

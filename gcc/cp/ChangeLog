@@ -1,3 +1,9 @@
+2007-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32560
+	* parser.c (cp_parser_make_indirect_declarator): When the
+	the code argument is ERROR_MARK return cp_error_declarator.
+
 2007-07-09  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 32617
