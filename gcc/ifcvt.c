@@ -3968,10 +3968,6 @@ if_convert (bool recompute_dominance)
   num_updated_if_blocks = 0;
   num_true_changes = 0;
 
-  /* Some transformations in this pass can create new pseudos,
-     if the pass runs before reload.  Make sure we can do so.  */
-  gcc_assert (! no_new_pseudos || reload_completed);
-
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   mark_loop_exit_edges ();
   loop_optimizer_finalize ();
@@ -4105,9 +4101,7 @@ gate_handle_if_after_combine (void)
 static unsigned int
 rest_of_handle_if_after_combine (void)
 {
-  no_new_pseudos = 0;
   if_convert (true);
-  no_new_pseudos = 1;
   return 0;
 }
 

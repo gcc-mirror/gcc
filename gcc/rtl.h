@@ -1977,10 +1977,6 @@ extern int regstack_completed;
    the same indirect address eventually.  */
 extern int cse_not_expected;
 
-/* Set to nonzero before life analysis to indicate that it is unsafe to
-   generate any new pseudo registers.  */
-extern int no_new_pseudos;
-
 /* Translates rtx code to tree code, for those codes needed by
    REAL_ARITHMETIC.  The function returns an int because the caller may not
    know what `enum tree_code' means.  */

@@ -3435,8 +3435,8 @@ it can be allocated using @code{gen_reg_rtx} prior to life analysis.
 If there are cases which need scratch registers during or after reload,
 you must provide an appropriate secondary_reload target hook.
 
-@findex no_new_pseudos
-The global variable @code{no_new_pseudos} can be used to determine if it
+@findex can_create_pseudo_p
+The macro @code{can_create_pseudo_p} can be used to determine if it
 is unsafe to create new pseudo registers.  If this variable is nonzero, then
 it is unsafe to call @code{gen_reg_rtx} to allocate a new pseudo.
 

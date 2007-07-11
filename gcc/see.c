@@ -3814,12 +3814,7 @@ gate_handle_see (void)
 static unsigned int
 rest_of_handle_see (void)
 {
-  int no_new_pseudos_bcp = no_new_pseudos;
-
-  no_new_pseudos = 0;
   see_main ();
-  no_new_pseudos = no_new_pseudos_bcp;
-  
   run_fast_dce ();
   return 0;
 }

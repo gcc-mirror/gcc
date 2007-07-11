@@ -3953,7 +3953,7 @@ prepare_operand (int icode, rtx x, int opnum, enum machine_mode mode,
   if (!insn_data[icode].operand[opnum].predicate
       (x, insn_data[icode].operand[opnum].mode))
     {
-      if (no_new_pseudos)
+      if (reload_completed)
 	return NULL_RTX;
       x = copy_to_mode_reg (insn_data[icode].operand[opnum].mode, x);
     }

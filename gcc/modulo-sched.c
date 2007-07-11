@@ -2472,15 +2472,12 @@ rest_of_handle_sms (void)
 #ifdef INSN_SCHEDULING
   basic_block bb;
 
-  /* We want to be able to create new pseudos.  */
-  no_new_pseudos = 0;
   /* Collect loop information to be used in SMS.  */
   cfg_layout_initialize (0);
   sms_schedule ();
 
   /* Update the life information, because we add pseudos.  */
   max_regno = max_reg_num ();
-  no_new_pseudos = 1;
 
   /* Finalize layout changes.  */
   FOR_EACH_BB (bb)
