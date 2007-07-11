@@ -1,3 +1,13 @@
+2007-07-10  David Daney  <ddaney@avtrex.com>
+
+	* builtins.def (BUILT_IN_CLEAR_CACHE): New builtin.
+	* builtins.c (expand_builtin___clear_cache): New function.
+	(expand_builtin): Call expand_builtin___clear_cache for
+	BUILT_IN_CLEAR_CACHE case.
+	* doc/extend.texi (__builtin___clear_cache): Document new builtin.
+	* doc/md.texi (clear_cache): Document new instruction pattern.
+	* testsuite/gcc.dg/builtins-64.c: New test.
+
 2007-07-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md ("movsi"): Fix typo in last change.

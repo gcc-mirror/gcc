@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    builtins used in the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -609,6 +609,7 @@ DEF_GCC_BUILTIN        (BUILT_IN_APPLY_ARGS, "apply_args", BT_FN_PTR_VAR, ATTR_N
 DEF_GCC_BUILTIN        (BUILT_IN_ARGS_INFO, "args_info", BT_FN_INT_INT, ATTR_NULL)
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP32, "bswap32", BT_FN_UINT32_UINT32, ATTR_CONST_NOTHROW_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_BSWAP64, "bswap64", BT_FN_UINT64_UINT64, ATTR_CONST_NOTHROW_LIST)
+DEF_EXT_LIB_BUILTIN    (BUILT_IN_CLEAR_CACHE, "__clear_cache", BT_FN_VOID_PTR_PTR, ATTR_NOTHROW_LIST)
 DEF_LIB_BUILTIN        (BUILT_IN_CALLOC, "calloc", BT_FN_PTR_SIZE_SIZE, ATTR_MALLOC_NOTHROW_LIST)
 DEF_GCC_BUILTIN        (BUILT_IN_CLASSIFY_TYPE, "classify_type", BT_FN_INT_VAR, ATTR_NULL)
 DEF_GCC_BUILTIN        (BUILT_IN_CLZ, "clz", BT_FN_INT_UINT, ATTR_CONST_NOTHROW_LIST)

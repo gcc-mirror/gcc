@@ -5512,6 +5512,59 @@ expand_builtin_profile_func (bool exitp)
   return const0_rtx;
 }
 
+/* Expand a call to __builtin___clear_cache.  */
+
+static rtx
+expand_builtin___clear_cache (tree exp ATTRIBUTE_UNUSED)
+{
+#ifndef HAVE_clear_cache
+#ifdef CLEAR_INSN_CACHE
+  /* There is no "clear_cache" insn, and __clear_cache() in libgcc
+     does something.  Just do the default expansion to a call to
+     __clear_cache().  */
+  return NULL_RTX;
+#else
+  /* There is no "clear_cache" insn, and __clear_cache() in libgcc
+     does nothing.  There is no need to call it.  Do nothing.  */
+  return const0_rtx;
+#endif /* CLEAR_INSN_CACHE */
+#else
+  /* We have a "clear_cache" insn, and it will handle everything.  */
+  tree begin, end;
+  rtx begin_rtx, end_rtx;
+  enum insn_code icode;
+
+  /* We must not expand to a library call.  If we did, any
+     fallback library function in libgcc that might contain a call to
+     __builtin___clear_cache() would recurse infinitely.  */
+  if (!validate_arglist (exp, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    {
+      error ("both arguments to %<__builtin___clear_cache%> must be pointers");
+      return const0_rtx;
+    }
+
+  if (HAVE_clear_cache)
+    {
+      icode = CODE_FOR_clear_cache;
+
+      begin = CALL_EXPR_ARG (exp, 0);
+      begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
+      begin_rtx = convert_memory_address (Pmode, begin_rtx);
+      if (!insn_data[icode].operand[0].predicate (begin_rtx, Pmode))
+	begin_rtx = copy_to_mode_reg (Pmode, begin_rtx);
+
+      end = CALL_EXPR_ARG (exp, 1);
+      end_rtx = expand_expr (end, NULL_RTX, Pmode, EXPAND_NORMAL);
+      end_rtx = convert_memory_address (Pmode, end_rtx);
+      if (!insn_data[icode].operand[1].predicate (end_rtx, Pmode))
+	end_rtx = copy_to_mode_reg (Pmode, end_rtx);
+
+      emit_insn (gen_clear_cache (begin_rtx, end_rtx));
+    }
+  return const0_rtx;
+#endif /* HAVE_clear_cache */
+}
+
 /* Given a trampoline address, make sure it satisfies TRAMPOLINE_ALIGNMENT.  */
 
 static rtx
@@ -6197,6 +6250,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (fold_builtin_next_arg (exp, false))
 	return const0_rtx;
       return expand_builtin_next_arg ();
+
+    case BUILT_IN_CLEAR_CACHE:
+      target = expand_builtin___clear_cache (exp);
+      if (target)
+        return target;
+      break;
 
     case BUILT_IN_CLASSIFY_TYPE:
       return expand_builtin_classify_type (exp);
