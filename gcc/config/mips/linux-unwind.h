@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for MIPS Linux.
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -51,7 +51,6 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
 			   _Unwind_FrameState *fs)
 {
   u_int32_t *pc = (u_int32_t *) context->ra;
-  u_int32_t t;
   struct sigcontext *sc;
   _Unwind_Ptr new_cfa;
   int i;
@@ -106,11 +105,10 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   /* The PC points to the faulting instruction, but the unwind tables
      expect it point to the following instruction.  We compensate by
      reporting a return address at the next instruction. */
-  fs->regs.reg[SIGNAL_UNWIND_RETURN_COLUMN].how = REG_SAVED_VAL_OFFSET;
-  t = (*(u_int32_t *)(void *)&sc->sc_pc) + 4;
-  fs->regs.reg[SIGNAL_UNWIND_RETURN_COLUMN].loc.offset
-    = (_Unwind_Ptr)t - new_cfa;
-  fs->retaddr_column = SIGNAL_UNWIND_RETURN_COLUMN;
+  fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].how = REG_SAVED_VAL_OFFSET;
+  fs->regs.reg[DWARF_ALT_FRAME_RETURN_COLUMN].loc.offset
+    = (_Unwind_Ptr)(sc->sc_pc) + 4 - new_cfa;
+  fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
 
   return _URC_NO_REASON;
 }

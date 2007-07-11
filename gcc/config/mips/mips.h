@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007
+   Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -1007,14 +1008,11 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
-#define DWARF_FRAME_REGNUM(REG)	(REG)
+#define DWARF_FRAME_REGNUM(REG) \
+  ((REG) == DWARF_ALT_FRAME_RETURN_COLUMN ? INVALID_REGNUM : (REG))
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN (GP_REG_FIRST + 31)
-
-/* The DWARF 2 CFA column which tracks the return address from a
-   signal handler context.  */
-#define SIGNAL_UNWIND_RETURN_COLUMN (FP_REG_LAST + 1)
 
 /* Before the prologue, RA lives in r31.  */
 #define INCOMING_RETURN_ADDR_RTX  gen_rtx_REG (VOIDmode, GP_REG_FIRST + 31)
@@ -1358,6 +1356,12 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define MD_REG_LAST  65
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
 #define MD_DBX_FIRST (FP_DBX_FIRST + FP_REG_NUM)
+
+/* The DWARF 2 CFA column which tracks the return address from a
+   signal handler context.  This means that to maintain backwards
+   compatibility, no hard register can be assigned this column if it
+   would need to be handled by the DWARF unwinder.  */
+#define DWARF_ALT_FRAME_RETURN_COLUMN 66
 
 #define ST_REG_FIRST 67
 #define ST_REG_LAST  74
