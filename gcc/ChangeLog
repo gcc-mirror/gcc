@@ -1,3 +1,10 @@
+2007-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR middle-end/30482
+	* c-opts.c (c_common_post_options): Do not change flag_complex_method
+	conditional to flag_isoc99.
+	(c_common_init_options): Do it here, unconditionally.
+
 2007-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/32589
