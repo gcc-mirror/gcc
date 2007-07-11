@@ -1,3 +1,12 @@
+2007-07-11  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Rewrite
+	return address calculation.  Substitute DWARF_ALT_FRAME_RETURN_COLUMN
+	for SIGNAL_UNWIND_RETURN_COLUMN.
+	* config/mips/mips.h (SIGNAL_UNWIND_RETURN_COLUMN): Remove.
+	(DWARF_FRAME_REGNUM): Rewrite.
+	(DWARF_ALT_FRAME_RETURN_COLUMN) Define.
+
 2007-07-11  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Revert previous
