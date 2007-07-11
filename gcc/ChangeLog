@@ -1,3 +1,10 @@
+2007-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming.h (PREFERRED_DEBUGGING_TYPE): Define to
+	DWARF2_DEBUG on 32 bit target too.
+	(DWARF2_UNWIND_INFO): Reorganize 64-bit vs 32-bit definition. 
+
+
 2007-07-11  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Provide alternative

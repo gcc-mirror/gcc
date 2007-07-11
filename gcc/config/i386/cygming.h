@@ -21,19 +21,14 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#if TARGET_64BIT_DEFAULT
-#ifndef DWARF2_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO 1
-#endif
-#ifndef DWARF2_UNWIND_INFO
-#define DWARF2_UNWIND_INFO 1
-#endif
-#endif
-
 #define DBX_DEBUGGING_INFO 1
 #define SDB_DEBUGGING_INFO 1
+#if TARGET_64BIT_DEFAULT || defined (HAVE_GAS_PE_SECREL32_RELOC)
+#define DWARF2_DEBUGGING_INFO 1
+#endif
+
 #undef PREFERRED_DEBUGGING_TYPE
-#if TARGET_64BIT_DEFAULT
+#if (DWARF2_DEBUGGING_INFO)
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 #else
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -42,15 +37,11 @@ Boston, MA 02110-1301, USA.  */
 #undef TARGET_64BIT_MS_ABI
 #define TARGET_64BIT_MS_ABI TARGET_64BIT
 
-#ifdef HAVE_GAS_PE_SECREL32_RELOC
-#define DWARF2_DEBUGGING_INFO 1
-
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)				\
   (TARGET_64BIT ? dbx64_register_map[n]			\
    : (write_symbols == DWARF2_DEBUG			\
       ? svr4_dbx_register_map[n] : dbx_register_map[n]))
-
 
 /* Map gcc register number to DWARF 2 CFA column number. For 32 bit
    target, always use the svr4_dbx_register_map for DWARF .eh_frame
@@ -59,6 +50,7 @@ Boston, MA 02110-1301, USA.  */
 #define DWARF_FRAME_REGNUM(n) TARGET_64BIT \
 	? dbx64_register_map[(n)] : svr4_dbx_register_map[(n)] 
 
+#ifdef HAVE_GAS_PE_SECREL32_RELOC
 /* Use section relative relocations for debugging offsets.  Unlike
    other targets that fake this by putting the section VMA at 0, PE
    won't allow it.  */
@@ -288,9 +280,11 @@ do {							\
 #define ASM_COMMENT_START " #"
 
 #ifndef DWARF2_UNWIND_INFO
-/* If configured with --disable-sjlj-exceptions, use DWARF2, else
-   default to SJLJ  */
-#if defined (CONFIG_SJLJ_EXCEPTIONS) && !CONFIG_SJLJ_EXCEPTIONS
+/* 64-bit target uses DWARF2 unwind by default. If 32-bit target
+   configured with --disable-sjlj-exceptions, use DWARF2, else default
+   to SJLJ.  */
+#if TARGET_64BIT_DEFAULT \
+    || (defined (CONFIG_SJLJ_EXCEPTIONS) && !CONFIG_SJLJ_EXCEPTIONS)
 #define DWARF2_UNWIND_INFO 1
 #else
 #define DWARF2_UNWIND_INFO 0
