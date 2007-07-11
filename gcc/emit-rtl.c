@@ -780,9 +780,7 @@ gen_reg_rtx (enum machine_mode mode)
   struct function *f = cfun;
   rtx val;
 
-  /* Don't let anything called after initial flow analysis create new
-     registers.  */
-  gcc_assert (!no_new_pseudos);
+  gcc_assert (can_create_pseudo_p ());
 
   if (generating_concat_p
       && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
