@@ -1609,7 +1609,8 @@ gfc_trans_forall_loop (forall_info *forall_tmp, tree body,
 	}
 
       /* Decrement the loop counter.  */
-      tmp = build2 (MINUS_EXPR, TREE_TYPE (var), count, gfc_index_one_node);
+      tmp = build2 (MINUS_EXPR, TREE_TYPE (var), count,
+		    build_int_cst (TREE_TYPE (var), 1));
       gfc_add_modify_expr (&block, count, tmp);
 
       body = gfc_finish_block (&block);
@@ -3609,7 +3610,8 @@ gfc_trans_allocate (gfc_code * code)
 	    tmp = se.string_length;
 
 	  tmp = build_call_expr (gfor_fndecl_allocate, 2, tmp, pstat);
-	  tmp = build2 (MODIFY_EXPR, void_type_node, se.expr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, se.expr,
+			fold_convert (TREE_TYPE (se.expr), tmp));
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  if (code->expr)
