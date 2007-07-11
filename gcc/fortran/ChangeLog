@@ -1,3 +1,12 @@
+2007-07-11  Richard Guenther  <rguenther@suse.de>
+
+	* trans-array.c (gfc_conv_array_parameter): Use correct
+	types for comparison.
+	* trans-intrinsic.c (gfc_conv_intrinsic_repeat): Use
+	correct types for POINTER_PLUS_EXPR.
+	* trans-stmt.c (gfc_trans_forall_loop): Use correct type
+	for integer one constant.
+
 2007-07-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32157
