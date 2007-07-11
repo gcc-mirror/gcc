@@ -4587,12 +4587,17 @@
   "")
 
 (define_insn "*sse2_storeq_rex64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=mx,r")
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=mx,r,r")
 	(vec_select:DI
-	  (match_operand:V2DI 1 "register_operand" "x,Yi")
+	  (match_operand:V2DI 1 "nonimmediate_operand" "x,Yi,o")
 	  (parallel [(const_int 0)])))]
-  "TARGET_64BIT && TARGET_SSE"
-  "#")
+  "TARGET_64BIT && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
+   #
+   #
+   mov{q}\t{%1, %0|%0, %1}"
+  [(set_attr "type" "*,*,imov")
+   (set_attr "mode" "*,*,DI")])
 
 (define_insn "*sse2_storeq"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=mx")
@@ -4617,12 +4622,28 @@
   operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));
 })
 
+(define_insn "*vec_extractv2di_1_rex64"
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=m,x,x,r")
+	(vec_select:DI
+	  (match_operand:V2DI 1 "nonimmediate_operand" "x,0,o,o")
+	  (parallel [(const_int 1)])))]
+  "TARGET_64BIT && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
+   movhps\t{%1, %0|%0, %1}
+   psrldq\t{$8, %0|%0, 8}
+   movq\t{%H1, %0|%0, %H1}
+   mov{q}\t{%H1, %0|%0, %H1}"
+  [(set_attr "type" "ssemov,sseishft,ssemov,imov")
+   (set_attr "memory" "*,none,*,*")
+   (set_attr "mode" "V2SF,TI,TI,DI")])
+
 (define_insn "*vec_extractv2di_1_sse2"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=m,x,x")
 	(vec_select:DI
 	  (match_operand:V2DI 1 "nonimmediate_operand" "x,0,o")
 	  (parallel [(const_int 1)])))]
-  "TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "!TARGET_64BIT
+   && TARGET_SSE2 && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    movhps\t{%1, %0|%0, %1}
    psrldq\t{$8, %0|%0, 8}
