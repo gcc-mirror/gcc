@@ -43,6 +43,7 @@ Boston, MA 02110-1301, USA.  */
 #include "bitmap.h"
 #include "langhooks.h"
 #include "cfgloop.h"
+#include "tree-ssa-propagate.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -1397,42 +1398,16 @@ simplify_binary_expression (tree rhs)
       else if (SSA_VAL (op1) != VN_TOP && SSA_VAL (op1) != op1)
 	op1 = VN_INFO (op1)->valnum;
     }
+
   result = fold_binary (TREE_CODE (rhs), TREE_TYPE (rhs), op0, op1);
 
   /* Make sure result is not a complex expression consisting
      of operators of operators (IE (a + b) + (a + c))
      Otherwise, we will end up with unbounded expressions if
      fold does anything at all.  */
-  if (result)
-    {
-      if (is_gimple_min_invariant (result))
-	return result;
-      else if (SSA_VAR_P (result))
-	return result;
-      else if (EXPR_P (result))
-	{
-	  switch (TREE_CODE_CLASS (TREE_CODE (result)))
-	    {
-	    case tcc_unary:
-	      {
-		tree op0 = TREE_OPERAND (result, 0);
-		if (!EXPR_P (op0))
-		  return result;
-	      }
-	      break;
-	    case tcc_binary:
-	      {
-		tree op0 = TREE_OPERAND (result, 0);
-		tree op1 = TREE_OPERAND (result, 1);
-		if (!EXPR_P (op0) && !EXPR_P (op1))
-		  return result;
-	      }
-	      break;
-	    default:
-	      break;
-	    }
-	}
-    }
+  if (result && valid_gimple_expression_p (result))
+    return result;
+
   return NULL_TREE;
 }
 

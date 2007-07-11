@@ -1,9 +1,22 @@
+2007-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/32589
+	* doc/tree-ssa.texi (Rough GIMPLE Grammar): Add missing rule.
+	* tree-gimple.c (is_gimple_min_invariant): Clarify head comment.
+	* tree-ssa-propagate.c (valid_gimple_expression_p): New
+	predicate, extracted from...
+	(set_rhs): ...here.  Call it for the expression on entry.
+	* tree-ssa-propagate.h (valid_gimple_expression_p): Declare.
+	* tree-ssa-sccvn.c: Include tree-ssa-propagate.h.
+	(simplify_binary_expression): Use valid_gimple_expression_p
+	to validate the simplification.
+	* Makefile.in (tree-ssa-sccvn.o): Depends on tree-ssa-propagate.h.
+
 2007-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (PREFERRED_DEBUGGING_TYPE): Define to
 	DWARF2_DEBUG on 32 bit target too.
 	(DWARF2_UNWIND_INFO): Reorganize 64-bit vs 32-bit definition. 
-
 
 2007-07-11  Nick Clifton  <nickc@redhat.com>
 

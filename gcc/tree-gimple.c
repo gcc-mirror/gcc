@@ -166,7 +166,7 @@ is_gimple_addressable (tree t)
 	  || INDIRECT_REF_P (t));
 }
 
-/* Return true if T is function invariant.  Or rather a restricted
+/* Return true if T is a GIMPLE minimal invariant.  It's a restricted
    form of function invariant.  */
 
 bool

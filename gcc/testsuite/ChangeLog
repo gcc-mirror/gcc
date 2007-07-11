@@ -1,3 +1,7 @@
+2007-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/invariant_index.ad[sb]: New test.
+
 2007-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32560
