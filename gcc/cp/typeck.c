@@ -1108,8 +1108,6 @@ comptypes (tree t1, tree t2, int strict)
 {
   if (strict == COMPARE_STRICT)
     {
-      bool result;
-
       if (t1 == t2)
 	return true;
 
@@ -1121,37 +1119,34 @@ comptypes (tree t1, tree t2, int strict)
 	   perform a deep check. */
 	return structural_comptypes (t1, t2, strict);
 
-      if (VERIFY_CANONICAL_TYPES)
+#ifdef ENABLE_CHECKING
+      if (USE_CANONICAL_TYPES)
 	{
-	  result = structural_comptypes (t1, t2, strict);
-
+	  bool result = structural_comptypes (t1, t2, strict);
+	  
 	  if (result && TYPE_CANONICAL (t1) != TYPE_CANONICAL (t2))
-	    {
-	      /* The two types are structurally equivalent, but their
-		 canonical types were different. This is a failure of the
-		 canonical type propagation code.*/
-	      warning(0,
-		      "canonical types differ for identical types %T and %T", 
-		      t1, t2);
-	      debug_tree (t1);
-	      debug_tree (t2);
-	    }
+	    /* The two types are structurally equivalent, but their
+	       canonical types were different. This is a failure of the
+	       canonical type propagation code.*/
+	    internal_error 
+	      ("canonical types differ for identical types %T and %T", 
+	       t1, t2);
 	  else if (!result && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
-	    {
-	      /* Two types are structurally different, but the canonical
-		 types are the same. This means we were over-eager in
-		 assigning canonical types. */
-	      warning (0, 
-		       "same canonical type node for different types %T and %T",
-		       t1, t2);
-	      debug_tree (t1);
-	      debug_tree (t2);
-	    }
+	    /* Two types are structurally different, but the canonical
+	       types are the same. This means we were over-eager in
+	       assigning canonical types. */
+	    internal_error 
+	      ("same canonical type node for different types %T and %T",
+	       t1, t2);
 	  
 	  return result;
 	}
-      else
+#else
+      if (USE_CANONICAL_TYPES)
 	return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
+#endif
+      else
+	return structural_comptypes (t1, t2, strict);
     }
   else if (strict == COMPARE_STRUCTURAL)
     return structural_comptypes (t1, t2, COMPARE_STRICT);
