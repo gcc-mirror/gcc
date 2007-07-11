@@ -1,3 +1,7 @@
+2007-07-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("movsi"): Fix typo in last change.
+
 2007-07-09  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 32617

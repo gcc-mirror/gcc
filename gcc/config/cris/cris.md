@@ -789,7 +789,7 @@
   if (MEM_P (operands[0])
       && ! REG_S_P (operands[1])
       && operands[1] != const0_rtx
-      && may_create_pseudo__p ())
+      && can_create_pseudo_p ())
     operands[1] = force_reg (SImode, operands[1]);
 
   /* If we're generating PIC and have an incoming symbol, validize it to a
