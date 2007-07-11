@@ -1,4 +1,11 @@
-2007-07-20  Daniel Franke  <franke.daniel@gmail.com>
+2007-07-10  Brooks Moses  <brooks.moses@codesourcery.com>
+
+	Backport from trunk:
+	PR fortran/31823
+	* intrinsic.texi (CMPLX): Document result kind.
+	(COMPLEX): Add documentation.
+
+2007-06-20  Daniel Franke  <franke.daniel@gmail.com>
 
 	Backport from trunk:
 	PR fortran/32002
