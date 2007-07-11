@@ -723,7 +723,8 @@ const struct attribute_spec mips_attribute_table[] =
    taken as the canonical name for that ISA.
 
    To ease comparison, please keep this table in the same order as
-   gas's mips_cpu_info_table[].  */
+   gas's mips_cpu_info_table[].  Please also make sure that
+   MIPS_ISA_LEVEL_SPEC handles all -march options correctly.  */
 const struct mips_cpu_info mips_cpu_info_table[] = {
   /* Entries for generic ISAs */
   { "mips1", PROCESSOR_R3000, 1 },
