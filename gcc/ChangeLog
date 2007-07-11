@@ -1,3 +1,24 @@
+2007-07-10  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.h (ISA_HAS_SYNCI): New target capability
+	predicate.
+	(INITIALIZE_TRAMPOLINE): Emit clear_cache insn instead of  library
+	call.
+	* config/mips/mips.c (mips_expand_synci_loop): New function.
+	* config/mips/mips.md (UNSPEC_CLEAR_HAZARD): New constant.
+	(UNSPEC_RDHWR): Same.
+	(UNSPEC_SYNCI): Same.
+	(UNSPEC_SYNC): Same.
+	(clear_cache): New expand.
+	(sync): New insn.
+	(synci): Same.
+	(rdhwr): Same.
+	(clear_hazard): Same.
+	* config/mips/mips-protos.h (mips_expand_synci_loop): Declare
+	function.
+	* testsuite/gcc.target/mips/clear-cache-1.c: New test.
+	* testsuite/gcc.target/mips/clear-cache-2.c: New test.
+
 2007-07-10  Ian Lance Taylor  <iant@google.com>
 
 	* emit-rtl.c (gen_reg_rtx): Check can_create_pseudo_p rather than

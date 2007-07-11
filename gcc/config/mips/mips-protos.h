@@ -1,6 +1,6 @@
 /* Prototypes of target machine for GNU compiler.  MIPS version.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -187,6 +187,7 @@ extern void mips_expand_call (rtx, rtx, rtx, rtx, int);
 extern void mips_emit_fcc_reload (rtx, rtx, rtx);
 extern void mips_set_return_address (rtx, rtx);
 extern bool mips_expand_block_move (rtx, rtx, rtx);
+extern void mips_expand_synci_loop (rtx, rtx);
 
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
