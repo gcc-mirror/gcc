@@ -1,3 +1,10 @@
+2007-07-11  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC): Handle -m4ksc and
+	-m4ksd.
+	* config/mips/mips.c (mips_cpu_info_table): Mention MIPS_ISA_LEVEL_SPEC
+	in the comment.
+
 2007-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/32713

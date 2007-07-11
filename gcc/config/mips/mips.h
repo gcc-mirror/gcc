@@ -586,8 +586,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
      %{march=mips2|march=r6000:-mips2} \
      %{march=mips3|march=r4*|march=vr4*|march=orion:-mips3} \
      %{march=mips4|march=r8000|march=vr5*|march=rm7000|march=rm9000:-mips4} \
-     %{march=mips32|march=4kc|march=4km|march=4kp:-mips32} \
-     %{march=mips32r2|march=m4k|march=4ke*|march=24k* \
+     %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
+     %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
        |march=34k*|march=74k*: -mips32r2} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000: -mips64}}"
 
