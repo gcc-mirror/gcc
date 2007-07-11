@@ -136,7 +136,7 @@ BUILD_EXPORTS = \
 	LDFLAGS="$(LDFLAGS_FOR_BUILD)"; export LDFLAGS; \
 	NM="$(NM_FOR_BUILD)"; export NM; \
 	RANLIB="$(RANLIB_FOR_BUILD)"; export RANLIB; \
-	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES;
+	WINDRES="$(WINDRES_FOR_BUILD)"; export WINDRES; \
 	WINDMC="$(WINDMC_FOR_BUILD)"; export WINDMC;
 
 # This is the list of directories to built for the host system.
