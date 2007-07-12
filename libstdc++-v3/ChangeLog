@@ -1,20 +1,20 @@
 2007-07-12  Douglas Gregor  <doug.gregor@gmail.com>
 
-	* testsuite/tr1/3_function_objects/bind/all_bound.cc: Disambiguate uses of
-	TR1/C++0x facilities.
+	* testsuite/tr1/3_function_objects/bind/all_bound.cc: Disambiguate
+	uses of TR1/C++0x facilities.
 	* testsuite/tr1/3_function_objects/bind/nested.cc: Ditto.
 	* testsuite/tr1/3_function_objects/bind/placeholders.cc: Ditto.
-	* testsuite/tr1/6_containers/unordered_multimap/requirements/explicit_instantiation.cc: 
-	Ditto. 
+	* testsuite/tr1/6_containers/unordered_multimap/requirements/
+	explicit_instantiation.cc: Ditto. 
 	* testsuite/tr1/6_containers/unordered_multimap/swap/1.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_multimap/swap/2.cc: Ditto.
-	* testsuite/tr1/6_containers/unordered_set/requirements/explicit_instantiation.cc: 
-	Ditto.
+	* testsuite/tr1/6_containers/unordered_set/requirements/
+	explicit_instantiation.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_set/swap/1.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_set/swap/2.cc: Ditto.
 	* testsuite/tr1/6_containers/utility/pair.cc: Ditto.
-	* testsuite/tr1/6_containers/unordered_map/requirements/explicit_instantiation.cc: 
-	Ditto. 
+	* testsuite/tr1/6_containers/unordered_map/requirements/
+	explicit_instantiation.cc: Ditto. 
 	* testsuite/tr1/6_containers/unordered_map/24064.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_map/swap/1.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_map/swap/2.cc: Ditto.
@@ -23,14 +23,15 @@
 	* testsuite/tr1/6_containers/tuple/cons/assignment.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/tuple_element.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/tuple_size.cc: Ditto.
-	* testsuite/tr1/6_containers/tuple/comparison_operators/comparisons.cc:
-	Ditto. 
+	* testsuite/tr1/6_containers/tuple/comparison_operators/
+	comparisons.cc: Ditto. 
 	* testsuite/tr1/6_containers/tuple/element_access/get.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/creation_functions/23978.cc: Ditto.
 	* testsuite/tr1/6_containers/tuple/creation_functions/tie.cc: Ditto.
-	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc: Ditto.
-	* testsuite/tr1/6_containers/unordered_multiset/requirements/explicit_instantiation.cc: 
+	* testsuite/tr1/6_containers/tuple/creation_functions/make_tuple.cc:
 	Ditto.
+	* testsuite/tr1/6_containers/unordered_multiset/requirements/
+	explicit_instantiation.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_multiset/swap/1.cc: Ditto.
 	* testsuite/tr1/6_containers/unordered_multiset/swap/2.cc: Ditto.
 
