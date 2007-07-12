@@ -3290,7 +3290,6 @@ gen_cptr_param (gfc_formal_arglist **head,
 
   if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
     c_ptr_type = "_gfortran_iso_c_binding_c_funptr";
-
   else
     c_ptr_type = "_gfortran_iso_c_binding_c_ptr";
 
@@ -3321,7 +3320,7 @@ gen_cptr_param (gfc_formal_arglist **head,
   if (iso_c_sym_id == ISOCBINDING_F_PROCPOINTER)
     c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_FUNPTR);
   else
-  c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_PTR);
+    c_ptr_sym = get_iso_c_binding_dt (ISOCBINDING_PTR);
   if (c_ptr_sym == NULL)
     {
       /* This can happen if the user did not define c_ptr but they are
@@ -3330,7 +3329,7 @@ gen_cptr_param (gfc_formal_arglist **head,
 	generate_isocbinding_symbol (module_name, ISOCBINDING_FUNPTR,
 				     (char *)c_ptr_type);
       else
-      generate_isocbinding_symbol (module_name, ISOCBINDING_PTR,
+	generate_isocbinding_symbol (module_name, ISOCBINDING_PTR,
 				     (char *)c_ptr_type);
 
       gfc_get_ha_symbol (c_ptr_type, &(c_ptr_sym));

@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-std=gnu" }
 ! This test is pretty simple but is here just to make sure that the changes 
 ! done to c_ptr and c_funptr (translating them to void *) works in the case 
 ! where a component of a type is of type c_ptr or c_funptr.  

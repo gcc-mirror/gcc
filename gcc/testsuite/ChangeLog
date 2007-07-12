@@ -1,3 +1,14 @@
+2007-07-12  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32599
+	* gfortran.dg/32599.f03: New test case.
+
+	PR fortran/32601
+	* gfortran.dg/32601.f03: New test case.
+	* gfortran.dg/32601_1.f03: Ditto.
+	* gfortran.dg/c_ptr_tests_9.f03: Updated dg-options.
+	* gfortran.dg/c_ptr_tests_10.f03: Ditto.
+
 2007-07-12  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.c-torture/execute/align-3.c: Remove function addr check.

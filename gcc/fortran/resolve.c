@@ -1717,6 +1717,15 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
   try retval = SUCCESS;
   gfc_symbol *args_sym;
 
+  if (args->expr->expr_type == EXPR_CONSTANT
+      || args->expr->expr_type == EXPR_OP
+      || args->expr->expr_type == EXPR_NULL)
+    {
+      gfc_error ("Argument to '%s' at %L is not a variable",
+		 sym->name, &(args->expr->where));
+      return FAILURE;
+    }
+
   args_sym = args->expr->symtree->n.sym;
    
   if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
@@ -6798,6 +6807,7 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
   if (sym->attr.is_bind_c && sym->attr.is_c_interop != 1)
     {
       gfc_formal_arglist *curr_arg;
+      int has_non_interop_arg = 0;
 
       if (verify_bind_c_sym (sym, &(sym->ts), sym->attr.in_common,
                              sym->common_block) == FAILURE)
@@ -6819,18 +6829,25 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       while (curr_arg != NULL)
         {
           /* Skip implicitly typed dummy args here.  */
-          if (curr_arg->sym->attr.implicit_type == 0
-	      && verify_c_interop_param (curr_arg->sym) == FAILURE)
-            {
-              /* If something is found to fail, mark the symbol for the
-                 procedure as not being BIND(C) to try and prevent multiple
-                 errors being reported.  */
-              sym->attr.is_c_interop = 0;
-              sym->ts.is_c_interop = 0;
-              sym->attr.is_bind_c = 0;
-            }
+	  if (curr_arg->sym->attr.implicit_type == 0)
+	    if (verify_c_interop_param (curr_arg->sym) == FAILURE)
+	      /* If something is found to fail, record the fact so we
+		 can mark the symbol for the procedure as not being
+		 BIND(C) to try and prevent multiple errors being
+		 reported.  */
+	      has_non_interop_arg = 1;
+          
           curr_arg = curr_arg->next;
         }
+
+      /* See if any of the arguments were not interoperable and if so, clear
+	 the procedure symbol to prevent duplicate error messages.  */
+      if (has_non_interop_arg != 0)
+	{
+	  sym->attr.is_c_interop = 0;
+	  sym->ts.is_c_interop = 0;
+	  sym->attr.is_bind_c = 0;
+	}
     }
   
   return SUCCESS;
