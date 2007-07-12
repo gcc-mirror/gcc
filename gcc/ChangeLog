@@ -1,3 +1,28 @@
+2007-07-11  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/32663
+	
+	* tree.h (VALUE_HANDLE_VUSES): Remove.
+	(struct tree_value_handle): Remove vuses.
+
+	* tree-vn.c (create_value_handle_for_expr): Don't set
+	VALUE_HANDLE_VUSES. 
+
+	* tree-ssa-pre.c (expression_vuses): New.
+	(alloc_expression_id): Set up expression_vuses.
+	(get_expression_vuses): New.
+	(set_expression_vuses): Ditto.
+	(clear_expression_ids): Modify for expression_vuses.
+	(phi_translate_1): Ditto.
+	(phi_translate_set): Ditto.
+	(value_dies_in_block_x): Ditto
+	(valid_in_sets): Ditto.
+	(add_to_sets): Ditto.
+	(find_existing_value_expr): Ditto.
+	(create_value_handle_for_expr): Ditto.
+	(make_values_for_stmt): Ditto.
+	(vuse_equiv): Remove.
+
 2007-07-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (mostlyclean): Remove object files.

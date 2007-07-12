@@ -1431,6 +1431,14 @@ try_to_simplify (tree stmt, tree rhs)
 	  /* For references, see if we find a result for the lookup,
 	     and use it if we do.  */
 	case tcc_declaration:
+	  /* Pull out any truly constant values.  */
+	  if (TREE_READONLY (rhs)
+	      && TREE_STATIC (rhs)
+	      && DECL_INITIAL (rhs)
+	      && is_gimple_min_invariant (DECL_INITIAL (rhs)))
+	    return DECL_INITIAL (rhs);
+
+	    /* Fallthrough. */
 	case tcc_reference:
 	  {
 	    tree result = vn_reference_lookup (rhs,

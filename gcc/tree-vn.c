@@ -108,9 +108,6 @@ set_value_handle (tree e, tree v)
     gcc_assert (is_gimple_min_invariant (e));
 }
 
-
-
-
 /* A comparison function for use in qsort to compare vuses.  Simply
    subtracts version numbers.  */
 
@@ -329,7 +326,7 @@ vn_lookup_with_vuses (tree expr, VEC (tree, gc) *vuses)
 }
 
 static tree
-create_value_handle_for_expr (tree expr, VEC (tree, gc) *vuses)
+create_value_handle_for_expr (tree expr, VEC(tree, gc) *vuses)
 {
   tree v;
   
@@ -337,8 +334,6 @@ create_value_handle_for_expr (tree expr, VEC (tree, gc) *vuses)
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     print_creation_to_file (v, expr, vuses);
-  if (vuses)
-    VALUE_HANDLE_VUSES (v) = vuses;
   return v;
 }
 
