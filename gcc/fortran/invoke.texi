@@ -97,6 +97,7 @@ one is not the default.
 * Error and Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
+* Link Options ::       Influencing the linking step
 * Runtime Options::     Influencing runtime behavior
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
@@ -140,6 +141,10 @@ and Warnings}.
 @xref{Directory Options,,Options for Directory Search}.
 @gccoptlist{-I@var{dir}  -J@var{dir}  -M@var{dir}  -fintrinsic-modules-path @var{dir}}
 
+@item Link Options
+@xref{Link Options,,Options for influencing the linking step}.
+@gccoptlist{-static-libgfortran}
+
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
 @gccoptlist{-fconvert=@var{conversion}  -frecord-marker=@var{length} @gol
@@ -160,6 +165,7 @@ and Warnings}.
 * Error and Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Directory Options::   Where to find module files
+* Link Options ::       Influencing the linking step
 * Runtime Options::     Influencing runtime behavior
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
@@ -616,8 +622,27 @@ This option specifies the location of pre-compiled intrinsic modules, if
 they are not in the default location expected by the compiler.
 @end table
 
+@node Link Options
+@section Influencing the Linking Step
+@cindex options, linking
+@cindex linking, static
+
+These options come into play when the compiler links object files into an 
+executable output file. They are meaningless if the compiler is not doing 
+a link step.
+
+@table @gcctabopt
+@item -static-libgfortran
+@opindex @code{static-libgfortran}
+On systems that provide @file{libgfortran} as a shared and a static
+library, this option forces the use of the static version. If no
+shared version of @file{libgfortran} was built when the compiler was
+configured, this option has no effect.
+@end table
+
+
 @node Runtime Options
-@section Influencing runtime behavior
+@section Influencing Runtime Behavior
 @cindex options, runtime
 
 These options affect the runtime behavior of programs compiled with GNU Fortran.
