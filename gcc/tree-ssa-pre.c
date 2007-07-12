@@ -252,8 +252,8 @@ expression_for_id (unsigned int id)
 static inline vuse_vec
 get_expression_vuses (tree expr)
 {
-  return VEC_index (vuse_vec, expression_vuses,
-		    get_or_alloc_expression_id (expr));
+  unsigned int expr_id = get_or_alloc_expression_id (expr);
+  return VEC_index (vuse_vec, expression_vuses, expr_id);
 }
 
 /* Set the expression vuses for EXPR to VUSES.  */
@@ -261,8 +261,8 @@ get_expression_vuses (tree expr)
 static inline void
 set_expression_vuses (tree expr, vuse_vec vuses)
 {
-  VEC_replace (vuse_vec, expression_vuses,
-	       get_or_alloc_expression_id (expr), vuses);
+  unsigned int expr_id = get_or_alloc_expression_id (expr);
+  VEC_replace (vuse_vec, expression_vuses, expr_id, vuses);
 }
 
 
@@ -3795,6 +3795,7 @@ init_pre (bool do_fre)
   
   next_expression_id = 0;
   expressions = NULL;
+  expression_vuses = NULL;
   in_fre = do_fre;
 
   inserted_exprs = NULL;

@@ -1,3 +1,9 @@
+2007-07-12  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (get_expression_vuses): Move out side-effect.
+	(set_expression_vuses): Ditto.
+	(init_pre): Initialize expression_vuses.
+
 2007-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* config/i386/sse.md (storentdf, storentsf): New.
