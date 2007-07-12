@@ -11,6 +11,22 @@
 	FUNCTION_BOUNDARY.
 
 2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
+	    Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/25413
+	* targhooks.c (default_builtin_vector_alignment_reachable): New.
+	* targhooks.h (default_builtin_vector_alignment_reachable): New.
+	* tree.h (contains_packed_reference): New.
+	* expr.c (contains_packed_reference): New.
+	* tree-vect-analyze.c (vector_alignment_reachable_p): New.
+	(vect_enhance_data_refs_alignment): Call
+	vector_alignment_reachable_p.
+	* target.h (vector_alignment_reachable): New builtin.
+	* target-def.h (TARGET_VECTOR_ALIGNMENT_REACHABLE): New.
+	* config/rs6000/rs6000.c (rs6000_vector_alignment_reachable): New.
+	(TARGET_VECTOR_ALIGNMENT_REACHABLE): Define.
+
+2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* target.h (builtin_vectorization_cost): Add new target builtin.
 	* target-def.h (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): New.

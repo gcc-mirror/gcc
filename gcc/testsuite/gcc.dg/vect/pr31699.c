@@ -31,5 +31,6 @@ int main()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { target vect_intfloat_cvt } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

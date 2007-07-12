@@ -1,3 +1,13 @@
+2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
+	    Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/25413
+	* gcc.dg/vect/vect-align-1.c: New.
+	* gcc.dg/vect/vect-align-2.c: New.
+	* gcc.dg/vect/pr25413.c: New.
+	* gcc.dg/vect/pr25413a.c: New.
+	* gcc.dg/vect/pr31699.c: Fix dg-final check.
+
 2007-07-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lib/target-support.exp (check_ultrasparc_hw_available):

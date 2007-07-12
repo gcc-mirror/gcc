@@ -417,6 +417,10 @@ struct gcc_target
     /* Returns the cost to be added to the overheads involved with
        executing the vectorized version of a loop.  */
     int (*builtin_vectorization_cost) (bool);
+
+    /* Return true if vector alignment is reachable (by peeling N
+       interations) for the given type.  */
+    bool (* vector_alignment_reachable) (tree, bool);
   } vectorize;
 
   /* The initial value of target_flags.  */
