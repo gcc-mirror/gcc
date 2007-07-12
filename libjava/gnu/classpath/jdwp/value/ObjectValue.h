@@ -29,6 +29,7 @@ class gnu::classpath::jdwp::value::ObjectValue : public ::gnu::classpath::jdwp::
 
 public:
   ObjectValue(::java::lang::Object *);
+  ::java::lang::Object * getValue();
 public: // actually protected
   ::java::lang::Object * getObject();
   void write(::java::io::DataOutputStream *);
