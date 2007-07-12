@@ -1,6 +1,6 @@
 /* PR target/11965 */
 /* Originator: <jk@tools.de> */
-/* { dg-do run { target sparc*-*-* } } */
+/* { dg-do run { target { sparc*-*-* && ultrasparc_hw } } } */
 /* { dg-options "-O -mcpu=ultrasparc" } */
 
 /* This used to fail on 32-bit Ultrasparc because GCC emitted

@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target ultrasparc_hw } */
 /* { dg-options "-mcpu=ultrasparc -mvis -O1" } */
 
 typedef long long int64_t;
