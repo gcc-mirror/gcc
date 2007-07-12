@@ -1,5 +1,5 @@
 /* Check that we don't try to save the same register twice.  */
-/* { dg-mips-options "-mips32r2 -mgp32 -mips16 -O2" } */
+/* { dg-mips-options "-mips32r2 -mgp32 -mips16 -mno-abicalls -O2" } */
 /* { dg-do assemble } */
 
 int bar (int, int, int, int);
