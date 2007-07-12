@@ -1,3 +1,8 @@
+2007-07-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (symGOTOFF2reg): Add missing parenthesis.
+	(symDTPOFF2reg): Likewise.
+
 2007-07-11  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/32663

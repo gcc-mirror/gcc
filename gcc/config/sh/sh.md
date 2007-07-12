@@ -8792,7 +8792,7 @@ label:
   rtx gotoffsym, insn;
   rtx t = (!can_create_pseudo_p ()
 	   ? operands[0]
-	   : gen_reg_rtx (GET_MODE (operands[0]));
+	   : gen_reg_rtx (GET_MODE (operands[0])));
 
   gotoffsym = gen_sym2GOTOFF (operands[1]);
   PUT_MODE (gotoffsym, Pmode);
@@ -8914,7 +8914,7 @@ mov.l\\t1f,r4\\n\\
   rtx dtpoffsym, insn;
   rtx t = (!can_create_pseudo_p ()
 	   ? operands[0]
-	   : gen_reg_rtx (GET_MODE (operands[0]));
+	   : gen_reg_rtx (GET_MODE (operands[0])));
 
   dtpoffsym = gen_sym2DTPOFF (operands[1]);
   PUT_MODE (dtpoffsym, Pmode);
