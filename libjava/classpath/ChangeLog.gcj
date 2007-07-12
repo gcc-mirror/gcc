@@ -1,3 +1,7 @@
+2007-07-12  Matthias Klose  <doko@ubuntu.com>
+
+	* lib/jazzlib, tools/gnu/classpath/tools/rmi: Remove empty directories.
+
 2007-06-07  Matthias Klose  <doko@ubuntu.com>
 
 	PR libgcj/32227
