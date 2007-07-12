@@ -413,6 +413,10 @@ struct gcc_target
        element-by-element products for the odd elements.  */
     tree (* builtin_mul_widen_even) (tree);
     tree (* builtin_mul_widen_odd) (tree);
+
+    /* Returns the cost to be added to the overheads involved with
+       executing the vectorized version of a loop.  */
+    int (*builtin_vectorization_cost) (bool);
   } vectorize;
 
   /* The initial value of target_flags.  */

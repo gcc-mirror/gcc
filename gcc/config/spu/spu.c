@@ -133,6 +133,7 @@ static void spu_encode_section_info (tree, rtx, int);
 static tree spu_builtin_mul_widen_even (tree);
 static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
+static int spu_builtin_vectorization_cost (bool);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -260,6 +261,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD spu_builtin_mask_for_load
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5189,6 +5193,21 @@ spu_builtin_mask_for_load (void)
   struct spu_builtin_description *d = &spu_builtins[SPU_MASK_FOR_LOAD];
   gcc_assert (d);
   return d->fndecl;
+}
+
+/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+static int 
+spu_builtin_vectorization_cost (bool runtime_test)
+{
+  /* If the branch of the runtime test is taken - i.e. - the vectorized
+     version is skipped - this incurs a misprediction cost (because the
+     vectorized version is expected to be the fall-through).  So we subtract
+     the latency of a mispredicted branch from the costs that are incured
+     when the vectorized version is executed.  */
+  if (runtime_test)
+    return -19;
+  else
+    return 0;
 }
 
 void

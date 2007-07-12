@@ -1,3 +1,27 @@
+2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-reduc-1char.c: Loops now
+	get vectorized.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-reduc-1char.c: Loops
+	now get vectorized.
+	* gcc.dg/vect/costmodel/spu/spu-costmodel-vect.exp: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-fast-math-vect-pr29925.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-31a.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-31b.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-31c.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-31d.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-iv-9.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-33.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76a.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76b.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-76c.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-68a.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-68b.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-68c.c: New.
+	* gcc.dg/vect/costmodel/spu/costmodel-vect-68d.c: New.
+	* lib/target-supports.exp (check_effective_target_vect_int_mul):
+	Add spu.
+
 2007-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30854

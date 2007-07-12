@@ -326,6 +326,21 @@ typedef struct _stmt_vec_info {
 #define TARG_COND_BRANCH_COST        3
 #endif
 
+/* Cost of any scalar operation, excluding load and store.  */
+#ifndef TARG_SCALAR_STMT_COST
+#define TARG_SCALAR_STMT_COST           1
+#endif
+
+/* Cost of scalar load.  */
+#ifndef TARG_SCALAR_LOAD_COST
+#define TARG_SCALAR_LOAD_COST           1
+#endif
+
+/* Cost of scalar store.  */
+#ifndef TARG_SCALAR_STORE_COST
+#define TARG_SCALAR_STORE_COST           1
+#endif
+
 /* Cost of any vector operation, excluding load, store or vector to scalar
    operation.  */ 
 #ifndef TARG_VEC_STMT_COST
