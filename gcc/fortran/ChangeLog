@@ -1,3 +1,22 @@
+2007-07-12  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32599
+	* decl.c (verify_c_interop_param): Require character string dummy
+	args to BIND(C) procedures to have length 1.
+	* resolve.c (resolve_fl_procedure): Modify parameter checking for
+	BIND(C) procedures.
+
+	PR fortran/32601
+	* resolve.c (gfc_iso_c_func_interface): Verify that a valid
+	expression is given as an argument to C_LOC and C_ASSOCIATED.
+	* trans-io.c (transfer_expr): Add argument for code block.  Add
+	standards check to determine if an error message should be
+	reported for printing C_PTR or C_FUNPTR.
+	(transfer_array_component): Update arguments to transfer_expr.
+	(gfc_trans_transfer): Ditto.
+
+	* symbol.c (gen_cptr_param): Fix whitespace.
+
 2007-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/32550

@@ -838,7 +838,24 @@ verify_c_interop_param (gfc_symbol *sym)
 			     sym->name, &(sym->declared_at),
 			     sym->ns->proc_name->name);
 	    }
- 
+
+          /* Character strings are only C interoperable if they have a
+             length of 1.  */
+          if (sym->ts.type == BT_CHARACTER)
+	    {
+	      gfc_charlen *cl = sym->ts.cl;
+	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT
+                  || mpz_cmp_si (cl->length->value.integer, 1) != 0)
+		{
+		  gfc_error ("Character argument '%s' at %L "
+			     "must be length 1 because "
+                             "procedure '%s' is BIND(C)",
+			     sym->name, &sym->declared_at,
+                             sym->ns->proc_name->name);
+		  retval = FAILURE;
+		}
+	    }
+
 	  /* We have to make sure that any param to a bind(c) routine does
 	     not have the allocatable, pointer, or optional attributes,
 	     according to J3/04-007, section 5.1.  */
