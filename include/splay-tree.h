@@ -1,23 +1,23 @@
 /* A splay-tree datatype.  
-   Copyright 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2002, 2007 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
-This file is part of GCC.
+   This file is part of GCC.
    
-GCC is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-GCC is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING.  If not, write to
-the Free Software Foundation, 51 Franklin Street - Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to
+   the Free Software Foundation, 51 Franklin Street - Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 /* For an easily readable description of splay-trees, see:
 
@@ -36,6 +36,14 @@ extern "C" {
 
 #include "ansidecl.h"
 
+#ifndef _WIN64
+  typedef unsigned long int  libi_uhostptr_t;
+  typedef long int           libi_shostptr_t;
+#else
+  typedef unsigned long long libi_uhostptr_t;
+  typedef long long          libi_shostptr_t;
+#endif
+
 #ifndef GTY
 #define GTY(X)
 #endif
@@ -44,8 +52,8 @@ extern "C" {
    these types, if necessary.  These types should be sufficiently wide
    that any pointer or scalar can be cast to these types, and then
    cast back, without loss of precision.  */
-typedef unsigned long int splay_tree_key;
-typedef unsigned long int splay_tree_value;
+typedef libi_uhostptr_t splay_tree_key;
+typedef libi_uhostptr_t splay_tree_value;
 
 /* Forward declaration for a node in the tree.  */
 typedef struct splay_tree_node_s *splay_tree_node;
