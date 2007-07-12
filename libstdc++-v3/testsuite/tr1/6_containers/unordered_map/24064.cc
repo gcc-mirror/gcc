@@ -26,8 +26,10 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  using namespace std;
-  using namespace tr1;
+  using namespace std::tr1;
+  using std::allocator;
+  using std::pair;
+  using std::equal_to;
 
   __unordered_map<int, char, hash<int>, equal_to<int>,
     allocator<pair<const int, char> >, true> m;

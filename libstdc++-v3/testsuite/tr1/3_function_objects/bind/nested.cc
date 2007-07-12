@@ -30,13 +30,12 @@ bool test __attribute__((unused)) = true;
 // Operations on empty function<> objects
 void test01()
 {
-  using std::tr1::bind;
   using namespace std::tr1::placeholders;
 
   int five = 5;
   int seven = 7;
-  VERIFY( bind(std::multiplies<int>(), _1, bind(std::minus<int>(), 6, _2))(five, seven) == -5 );
-  VERIFY( bind(std::multiplies<int>(), _1, bind(std::minus<int>(), 6, _2))(seven, five) == 7 );
+  VERIFY( std::tr1::bind(std::multiplies<int>(), _1, std::tr1::bind(std::minus<int>(), 6, _2))(five, seven) == -5 );
+  VERIFY( std::tr1::bind(std::multiplies<int>(), _1, std::tr1::bind(std::minus<int>(), 6, _2))(seven, five) == 7 );
 }
 
 int main()

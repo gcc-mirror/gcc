@@ -30,8 +30,11 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  using namespace std;
-  using namespace tr1;
+  using namespace std::tr1;
+  using std::pair;
+  using std::equal_to;
+  using std::map;
+  using std::multimap;
 
   typedef pair<const char, int> my_pair;
   typedef __gnu_test::uneq_allocator<my_pair> my_alloc;

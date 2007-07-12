@@ -24,8 +24,8 @@
 #include <tr1/utility>
 #include <testsuite_hooks.h>
 
-using namespace std;
-using namespace tr1;
+using namespace std::tr1;
+using std::pair;
 
 // libstdc++/23978
 void test01()
