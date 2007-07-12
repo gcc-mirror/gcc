@@ -1,3 +1,9 @@
+2007-07-11  David Daney  <ddaney@avtrex.com>
+
+	* src/mips/ffi.c: Don't include sys/cachectl.h.
+	(ffi_prep_closure_loc): Use __builtin___clear_cache() instead of
+	cacheflush().
+
 2007-05-18  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* src/arm/ffi.c (ffi_prep_closure_loc): Renamed and ajusted
