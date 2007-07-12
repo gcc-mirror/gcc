@@ -37,11 +37,11 @@ extern "C" {
 #include "ansidecl.h"
 
 #ifndef _WIN64
-  typedef unsigned long int  libi_uhostptr_t;
-  typedef long int           libi_shostptr_t;
+typedef unsigned long int libi_uhostptr_t;
+typedef long int libi_shostptr_t;
 #else
-  typedef unsigned long long libi_uhostptr_t;
-  typedef long long          libi_shostptr_t;
+typedef unsigned long long libi_uhostptr_t;
+typedef long long libi_shostptr_t;
 #endif
 
 #ifndef GTY
