@@ -1,3 +1,15 @@
+2007-07-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* builtins.c (get_pointer_alignment): Honor DECL_ALIGN on a
+	FUNCTION_DECL.
+	* tree.c (build_decl_stat): Move code from here...
+	(make_node_stat): ... to here.  Don't uselessly clear DECL_USER_ALIGN.
+	(expr_align): Honor DECL_ALIGN on a FUNCTION_DECL.  Add comment
+	about using DECL_ALIGN of LABEL_DECL and CONST_DECL.
+	* tree.h (DECL_USER_ALIGN): Fix misplaced comment.
+	* varasm.c (assemble_start_function): Use DECL_ALIGN instead of
+	FUNCTION_BOUNDARY.
+
 2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* target.h (builtin_vectorization_cost): Add new target builtin.
