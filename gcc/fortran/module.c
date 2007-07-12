@@ -3947,9 +3947,6 @@ write_operator (gfc_user_op *uop)
 static void
 write_generic (gfc_symbol *sym)
 {
-  const char *p;
-  int nuse, j;
-
   if (sym->generic == NULL
       || !gfc_check_access (sym->attr.access, sym->ns->default_access))
     return;
@@ -3957,20 +3954,7 @@ write_generic (gfc_symbol *sym)
   if (sym->module == NULL)
     sym->module = gfc_get_string (module_name);
 
-  /* See how many use names there are.  If none, go through the loop
-     at least once.  */
-  nuse = number_use_names (sym->name);
-  if (nuse == 0)
-    nuse = 1;
-
-  for (j = 1; j <= nuse; j++)
-    {
-      /* Get the jth local name for this symbol.  */
-      p = find_use_name_n (sym->name, &j);
-
-      /* Make an interface with that name.  */
-      mio_symbol_interface (&p, &sym->module, &sym->generic);
-    }
+  mio_symbol_interface (&sym->name, &sym->module, &sym->generic);
 }
 
 
