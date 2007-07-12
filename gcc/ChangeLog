@@ -1,3 +1,8 @@
+2007-07-12  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (thumb1_compute_save_reg_mask): Make sure scratch
+	reg does not overlap return value.
+
 2007-07-12  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-pre.c (get_expression_vuses): Move out side-effect.

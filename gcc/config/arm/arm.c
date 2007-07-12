@@ -10182,6 +10182,10 @@ thumb1_compute_save_reg_mask (void)
 	 have to push it.  Use LAST_LO_REGNUM as our fallback
 	 choice for the register to select.  */
       reg = thumb_find_work_register (1 << LAST_LO_REGNUM);
+      /* Make sure the register returned by thumb_find_work_register is
+	 not part of the return value.  */
+      if (reg * UNITS_PER_WORD <= arm_size_return_regs ())
+	reg = LAST_LO_REGNUM;
 
       if (! call_used_regs[reg])
 	mask |= 1 << reg;
