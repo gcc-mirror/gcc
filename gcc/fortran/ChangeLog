@@ -1,3 +1,9 @@
+2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32634
+	PR fortran/32727
+	* module.c: Reverted Paul's patch from 2007-07-10.
+
 2007-07-11  Richard Guenther  <rguenther@suse.de>
 
 	* trans-array.c (gfc_conv_array_parameter): Use correct
