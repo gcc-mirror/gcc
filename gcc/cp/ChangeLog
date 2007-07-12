@@ -1,3 +1,9 @@
+2007-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30854
+	* error.c (dump_expr) <case AGGR_INIT_EXPR>: Pass true as last
+	argument to dump_aggr_init_expr_args instead of false.
+
 2007-07-11  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* typeck.c (comptypes): When USE_CANONICAL_TYPES, use the

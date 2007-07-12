@@ -1,3 +1,8 @@
+2007-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/30854
+	* g++.dg/parse/error30.C: New test.
+
 2007-07-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29804
