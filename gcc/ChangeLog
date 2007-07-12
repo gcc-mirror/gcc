@@ -1,3 +1,12 @@
+2007-07-12  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (gimplify_conversion): Make sure that the result
+	from maybe_fold_offset_to_reference is trivially convertible
+	to the desired type before doing the simplification.
+	(gimplify_expr): Likewise.
+	* fold-const.c (fold_binary): Use the correct types for
+	building the simplified expression.
+
 2007-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/32729
