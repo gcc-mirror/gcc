@@ -1,3 +1,7 @@
+2007-07-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (mostlyclean): Remove object files.
+
 2007-07-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* toplev.c (no_new_pseudos): Deleted.
