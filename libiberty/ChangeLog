@@ -1,3 +1,9 @@
+2007-07-11  Alexandre Oliva  <aoliva@redhat.com>
+
+	* maint-tool (deps): Output stamp-h instead of config.h.
+	* Makefile.in: Rebuild deps.
+	(maintainer-clean-subdir): Depend on stamp-h rather than config.h.
+
 2007-07-02  Simon Baldwin <simonb@google.com>
 
 	* argv.c (writeargv): Removed declaration of unused variable.
