@@ -1648,7 +1648,11 @@ gimplify_conversion (tree *expr_p)
       && (tem = maybe_fold_offset_to_reference
 		  (TREE_OPERAND (*expr_p, 0),
 		   integer_zero_node, TREE_TYPE (TREE_TYPE (*expr_p)))))
-    *expr_p = build_fold_addr_expr_with_type (tem, TREE_TYPE (*expr_p));
+    {
+      tree ptr_type = build_pointer_type (TREE_TYPE (tem));
+      if (useless_type_conversion_p (TREE_TYPE (*expr_p), ptr_type))
+        *expr_p = build_fold_addr_expr_with_type (tem, ptr_type);
+    }
 
   /* If we still have a conversion at the toplevel,
      then canonicalize some constructs.  */
@@ -5987,9 +5991,12 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 			 (TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
 		   	  TREE_TYPE (TREE_TYPE (*expr_p)))))
 	     {
-               *expr_p = build_fold_addr_expr_with_type (tmp,
-							 TREE_TYPE (*expr_p));
-	       break;
+	       tree ptr_type = build_pointer_type (TREE_TYPE (tmp));
+	       if (useless_type_conversion_p (TREE_TYPE (*expr_p), ptr_type))
+		 {
+                   *expr_p = build_fold_addr_expr_with_type (tmp, ptr_type);
+		   break;
+		 }
 	     }
 	  /* Convert (void *)&a + 4 into (void *)&a[1].  */
 	  if (TREE_CODE (TREE_OPERAND (*expr_p, 0)) == NOP_EXPR

@@ -10271,7 +10271,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (integer_zerop (arg1))
 	return non_lvalue (fold_convert (type, arg0));
       if (integer_all_onesp (arg1))
-	return fold_build1 (BIT_NOT_EXPR, type, arg0);
+	return fold_build1 (BIT_NOT_EXPR, type, op0);
       if (operand_equal_p (arg0, arg1, 0))
 	return omit_one_operand (type, integer_zero_node, arg0);
 
@@ -10865,7 +10865,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				    "when distributing negation across "
 				    "division"),
 				   WARN_STRICT_OVERFLOW_MISC);
-	  return fold_build2 (code, type, TREE_OPERAND (arg0, 0),
+	  return fold_build2 (code, type,
+			      fold_convert (type, TREE_OPERAND (arg0, 0)),
 			      negate_expr (arg1));
 	}
       if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
