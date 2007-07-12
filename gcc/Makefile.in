@@ -3747,6 +3747,7 @@ fsf-funding.pod: funding.texi
 
 mostlyclean: lang.mostlyclean
 	-rm -f $(MOSTLYCLEANFILES)
+	-rm -f *$(objext)
 	-rm -f *$(coverageexts)
 # Delete build programs
 	-rm -f build/*
