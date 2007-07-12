@@ -2334,17 +2334,6 @@ template_parameter_pack_p (tree parm)
 	  && TEMPLATE_TYPE_PARAMETER_PACK (parm));
 }
 
-/* Determine whether PARMS describes a variadic template parameter
-   list, i.e., one that is terminated by a template parameter pack.  */
-bool 
-template_parms_variadic_p (tree parms)
-{
-  int nparms = TREE_VEC_LENGTH (parms);
-  tree last_parm = TREE_VALUE (TREE_VEC_ELT (parms, nparms - 1));
-  
-  return template_parameter_pack_p (last_parm);
-}
-
 /* Determine whether ARGS describes a variadic template args list,
    i.e., one that is terminated by a template argument pack.  */
 static bool 

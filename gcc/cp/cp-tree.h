@@ -4416,7 +4416,6 @@ extern tree instantiate_decl			(tree, int, bool);
 extern int comp_template_parms			(tree, tree);
 extern bool uses_parameter_packs                (tree);
 extern bool template_parameter_pack_p           (tree);
-extern bool template_parms_variadic_p           (tree);
 extern tree make_pack_expansion                 (tree);
 extern bool check_for_bare_parameter_packs      (tree);
 extern int template_class_depth			(tree);

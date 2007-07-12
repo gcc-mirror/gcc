@@ -1,3 +1,8 @@
+2007-07-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* pt.c (template_parms_variadic_p): Remove.
+	* cp-tree.h: Remove the prototype for template_parms_variadic_p.
+
 2007-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/30854
