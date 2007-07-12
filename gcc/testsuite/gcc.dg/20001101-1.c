@@ -1,4 +1,4 @@
-/* { dg-do run { target sparc*-*-* } } */
+/* { dg-do run { target { sparc*-*-* && ultrasparc_hw } } } */
 /* { dg-options "-O2 -mcpu=ultrasparc -mvis" } */
 
 extern void abort (void);

@@ -1,3 +1,18 @@
+2007-07-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lib/target-support.exp (check_ultrasparc_hw_available):
+	New function.
+	(is-effective-target): Check $arg for ultrasparc_hw.
+	(is-effective-target-keyword): Likewise.
+	* gcc.dg/vect/vect.exp: Call check_effective_target_ultrasparc_hw
+	when determining what to do on sparc platforms.
+	* gcc.dg/20001013-1.c: Check for an ultrasparc_hw target.
+	* gcc.dg/20001101-1.c: Likewise.
+	* gcc.dg/20001101-2.c: Likewise.
+	* gcc.dg/ultrasp9.c: Likewise.
+	* gcc.dg/ultrasp10.c: Likewise.
+	* gcc.target/sparc/pdist-3.c: Likewise.
+
 2007-07-12  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.target/mips/save-restore-5.c: Add -mno-abicalls.

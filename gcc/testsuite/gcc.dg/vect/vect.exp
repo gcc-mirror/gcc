@@ -63,7 +63,11 @@ if [istarget "powerpc*-*-*"] {
     set dg-do-what-default run
 } elseif [istarget "sparc*-*-*"] {
     lappend DEFAULT_VECTCFLAGS "-mcpu=ultrasparc" "-mvis"
-    set dg-do-what-default run
+    if [check_effective_target_ultrasparc_hw] {
+	set dg-do-what-default run
+    } else {
+	set dg-do-what-default compile
+    }
 } elseif [istarget "alpha*-*-*"] {
     # Alpha's vectorization capabilities are extremely limited.
     # It's more effort than its worth disabling all of the tests

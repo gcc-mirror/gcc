@@ -1528,6 +1528,51 @@ proc check_effective_target_powerpc_altivec { } {
     }
 }
 
+# The VxWorks SPARC simulator accepts only EM_SPARC executables and
+# chokes on EM_SPARC32PLUS or EM_SPARCV9 executables.  Return 1 if the
+# test environment appears to run executables on such a simulator.
+
+proc check_effective_target_ultrasparc_hw { } {
+    global et_ultrasparc_hw_saved
+    global tool
+
+    if [info exists et_ultrasparc_hw_saved] {
+	verbose "check_ultrasparc_hw_available returning saved $et_ultrasparc_hw_saved" 2
+    } else {
+	set et_ultrasparc_hw_saved 0
+
+	# Set up, compile, and execute a simple test program.  The
+	# program will be compiled with -mcpu=ultrasparc to instruct the
+	# assembler to produce EM_SPARC32PLUS executables.
+	set src svect[pid].c
+	set exe svect[pid].x
+
+	set f [open $src "w"]
+	puts $f "int main() { return 0; }"
+	close $f
+
+	verbose "check_ultrasparc_hw_available compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $exe executable "additional_flags=-mcpu=ultrasparc"]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error message, compilation succeeded.
+	    set result [${tool}_load "./$exe" "" ""]
+	    set status [lindex $result 0]
+	    remote_file build delete $exe
+	    verbose "check_ultrasparc_hw_available testfile status is <$status>" 2
+
+	    if { $status == "pass" } then {
+		set et_ultrasparc_hw_saved 1
+	    }
+	} else {
+	    verbose "check_ultrasparc_hw_available testfile compilation failed" 2
+	}
+    }
+
+    return $et_ultrasparc_hw_saved
+}
+
 # Return 1 if the target supports hardware vector shift operation.
 
 proc check_effective_target_vect_shift { } {
