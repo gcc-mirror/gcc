@@ -1,3 +1,28 @@
+2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* target.h (builtin_vectorization_cost): Add new target builtin.
+	* target-def.h (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): New.
+	* tree-vectorizer.h (TARG_SCALAR_STMT_COST): New.
+	(TARG_SCALAR_LOAD_COST, TARG_SCALAR_STORE_COST): New.
+	* tree-vect-analyze.c (vect_analyze_slp_instance): Initisliaze
+	uninitialized variables.
+	* tree-vect-transform.c (cost_for_stmt): New function.
+	(vect_estimate_min_profitable_iters): Call cost_for_stmt instead of
+	using cost 1 for all scalar stmts. Be less conservative when
+	estimating the number of prologue/epulogue iterations. Call
+	targetm.vectorize.builtin_vectorization_cost. Return
+	min_profitable_iters-1.
+	(vect_model_reduction_cost): Use TARG_SCALAR_TO_VEC_COST for
+	initialization cost instead of TARG_VEC_STMT_COST. Use
+	TARG_VEC_TO_SCALAR_COST instead of TARG_VEC_STMT_COST for reduction
+	epilogue code. Fix epilogue cost computation.
+	* config/spu/spu.c (spu_builtin_vectorization_cost): New.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): Implement.
+	* config/spu/spu.h (TARG_COND_BRANCH_COST, TARG_SCALAR_STMT_COST):
+	(TARG_SCALAR_LOAD_COST, TARG_SCALAR_STORE_COST, TARG_VEC_STMT_COST):
+	(TARG_VEC_TO_SCALAR_COST, TARG_SCALAR_TO_VEC, TARG_VEC_LOAD_COST):
+	(TARG_VEC_UNALIGNED_LOAD_COST, TARG_VEC_STORE_COST): Define.
+
 2007-07-12  Richard Guenther  <rguenther@suse.de>
 
 	* gimplify.c (gimplify_conversion): Make sure that the result

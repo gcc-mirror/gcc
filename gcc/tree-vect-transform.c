@@ -74,6 +74,34 @@ static void vect_update_inits_of_drs (loop_vec_info, tree);
 static int vect_min_worthwhile_factor (enum tree_code);
 
 
+static int
+cost_for_stmt (tree stmt)
+{
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+  switch (STMT_VINFO_TYPE (stmt_info))
+  {
+  case load_vec_info_type:
+    return TARG_SCALAR_LOAD_COST;
+  case store_vec_info_type:
+    return TARG_SCALAR_STORE_COST;
+  case op_vec_info_type:
+  case condition_vec_info_type:
+  case assignment_vec_info_type:
+  case reduc_vec_info_type:
+  case induc_vec_info_type:
+  case type_promotion_vec_info_type:
+  case type_demotion_vec_info_type:
+  case type_conversion_vec_info_type:
+  case call_vec_info_type:
+    return TARG_SCALAR_STMT_COST;
+  case undef_vec_info_type:
+  default:
+    gcc_unreachable ();
+  }
+}
+
+
 /* Function vect_estimate_min_profitable_iters
 
    Return the number of iterations required for the vector version of the
@@ -138,7 +166,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
           if (!STMT_VINFO_RELEVANT_P (stmt_info)
               && !STMT_VINFO_LIVE_P (stmt_info))
             continue;
-          scalar_single_iter_cost++;
+          scalar_single_iter_cost += cost_for_stmt (stmt);
           vec_inside_cost += STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info);
           vec_outside_cost += STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info);
         }
@@ -148,7 +176,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      loop.
 
      FORNOW: If we dont know the value of peel_iters for prologue or epilogue
-     at compile-time - we assume the worst.  
+     at compile-time - we assume it's (vf-1)/2 (the worst would be vf-1).
 
      TODO: Build an expression that represents peel_iters for prologue and
      epilogue to be used in a run-time test.  */
@@ -157,17 +185,17 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   if (byte_misalign < 0)
     {
-      peel_iters_prologue = vf - 1;
+      peel_iters_prologue = (vf - 1)/2;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: "
-                 "prologue peel iters set conservatively.");
+                 "prologue peel iters set to (vf-1)/2.");
 
       /* If peeling for alignment is unknown, loop bound of main loop becomes
          unknown.  */
-      peel_iters_epilogue = vf - 1;
+      peel_iters_epilogue = (vf - 1)/2;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: "
-                 "epilogue peel iters set conservatively because "
+                 "epilogue peel iters set to (vf-1)/2 because "
                  "peeling for alignment is unknown .");
     }
   else 
@@ -186,10 +214,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
       if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
         {
-          peel_iters_epilogue = vf - 1;
+          peel_iters_epilogue = (vf - 1)/2;
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "cost model: "
-                     "epilogue peel iters set conservatively because "
+                     "epilogue peel iters set to (vf-1)/2 because "
                      "loop iterations are unknown .");
         }
       else      
@@ -228,6 +256,26 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   vec_outside_cost += (peel_iters_prologue * scalar_single_iter_cost)
                       + (peel_iters_epilogue * scalar_single_iter_cost);
+
+  /* Allow targets add additional (outside-of-loop) costs. FORNOW, the only
+     information we provide for the target is whether testing against the
+     threshold involves a runtime test.  */
+  if (targetm.vectorize.builtin_vectorization_cost)
+    {
+      bool runtime_test = false;
+
+      /* If the number of iterations is unknown, or the
+	 peeling-for-misalignment amount is unknown, we eill have to generate
+	 a runtime test to test the loop count agains the threshold.  */
+      if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	  || (byte_misalign < 0))
+	runtime_test = true;
+      vec_outside_cost +=
+	targetm.vectorize.builtin_vectorization_cost (runtime_test);
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "cost model : Adding target out-of-loop cost = %d",
+		  targetm.vectorize.builtin_vectorization_cost (runtime_test));
+    }
 
   /* Calculate number of iterations required to make the vector version 
      profitable, relative to the loop bodies only. The following condition
@@ -280,7 +328,14 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	       min_profitable_iters < vf ? vf : min_profitable_iters);
     }
 
-  return min_profitable_iters < vf ? vf : min_profitable_iters;
+  min_profitable_iters = 
+	min_profitable_iters < vf ? vf : min_profitable_iters;
+
+  /* Because the condition we create is:
+     if (niters <= min_profitable_iters)
+       then skip the vectorized loop.  */
+  min_profitable_iters--;
+  return min_profitable_iters;
 }
 
 
@@ -321,7 +376,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
   code = TREE_CODE (GIMPLE_STMT_OPERAND (orig_stmt, 1));
 
   /* Add in cost for initial definition.  */
-  outer_cost += TARG_VEC_STMT_COST;
+  outer_cost += TARG_SCALAR_TO_VEC_COST;
 
   /* Determine cost of epilogue code.
 
@@ -341,11 +396,13 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
       optab = optab_for_tree_code (code, vectype);
 
       /* We have a whole vector shift available.  */
-      if (!VECTOR_MODE_P (mode) 
-          || optab->handlers[mode].insn_code == CODE_FOR_nothing)
+      if (VECTOR_MODE_P (mode)
+	  && optab->handlers[mode].insn_code != CODE_FOR_nothing
+	  && vec_shr_optab->handlers[mode].insn_code != CODE_FOR_nothing)
         /* Final reduction via vector shifts and the reduction operator. Also
            requires scalar extract.  */
-	outer_cost += ((exact_log2(nelements) * 2 + 1) * TARG_VEC_STMT_COST); 
+	outer_cost += ((exact_log2(nelements) * 2) * TARG_VEC_STMT_COST
+			+ TARG_VEC_TO_SCALAR_COST); 
       else
 	/* Use extracts and reduction op for final reduction.  For N elements,
            we have N extracts and N-1 reduction ops.  */
