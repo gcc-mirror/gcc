@@ -19,6 +19,10 @@ extern "Java"
         {
             class MethodResult;
         }
+        namespace value
+        {
+            class Value;
+        }
       }
     }
   }
@@ -28,17 +32,12 @@ class gnu::classpath::jdwp::util::MethodResult : public ::java::lang::Object
 {
 
 public:
-  MethodResult();
-  virtual ::java::lang::Object * getReturnedValue();
-  virtual void setReturnedValue(::java::lang::Object *);
-  virtual ::java::lang::Exception * getThrownException();
-  virtual void setThrownException(::java::lang::Exception *);
-  virtual ::java::lang::Class * getResultType();
-  virtual void setResultType(::java::lang::Class *);
+  MethodResult(::gnu::classpath::jdwp::value::Value *, ::java::lang::Throwable *);
+  virtual ::gnu::classpath::jdwp::value::Value * getReturnedValue();
+  virtual ::java::lang::Throwable * getThrownException();
 private:
-  ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) returnedValue;
-  ::java::lang::Exception * thrownException;
-  ::java::lang::Class * resType;
+  ::gnu::classpath::jdwp::value::Value * __attribute__((aligned(__alignof__( ::java::lang::Object)))) returnedValue;
+  ::java::lang::Throwable * thrownException;
 public:
   static ::java::lang::Class class$;
 };
