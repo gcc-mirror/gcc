@@ -1,3 +1,9 @@
+2007-07-12  Kai Tietz   <kai.tietz@onevision.com>
+
+	* splay-tree.h (libi_uhostptr_t, libi_shostptr_t): New types,
+	needed for WIN64 when a long is not wide enough for a pointer.
+        (splay_tree_key, splay_tree_value): Use the new types.
+
 2007-05-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* libiberty.h (writeargv): Declare.
