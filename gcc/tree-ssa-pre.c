@@ -185,6 +185,12 @@ Boston, MA 02110-1301, USA.  */
 /* Next global expression id number.  */
 static unsigned int next_expression_id;
 
+typedef VEC(tree, gc) *vuse_vec;
+DEF_VEC_P (vuse_vec);
+DEF_VEC_ALLOC_P (vuse_vec, heap);
+
+static VEC(vuse_vec, heap) *expression_vuses;
+						 
 /* Mapping from expression to id number we can use in bitmap sets.  */
 static VEC(tree, heap) *expressions;
 
@@ -203,6 +209,7 @@ alloc_expression_id (tree expr)
   ann->aux = XNEW (unsigned int);
   * ((unsigned int *)ann->aux) = next_expression_id++;
   VEC_safe_push (tree, heap, expressions, expr);
+  VEC_safe_push (vuse_vec, heap, expression_vuses, NULL);
   return next_expression_id - 1;
 }
 
@@ -240,6 +247,25 @@ expression_for_id (unsigned int id)
   return VEC_index (tree, expressions, id);
 }
 
+/* Return the expression vuses for EXPR, if there are any.  */
+
+static inline vuse_vec
+get_expression_vuses (tree expr)
+{
+  return VEC_index (vuse_vec, expression_vuses,
+		    get_or_alloc_expression_id (expr));
+}
+
+/* Set the expression vuses for EXPR to VUSES.  */
+
+static inline void
+set_expression_vuses (tree expr, vuse_vec vuses)
+{
+  VEC_replace (vuse_vec, expression_vuses,
+	       get_or_alloc_expression_id (expr), vuses);
+}
+
+
 /* Free the expression id field in all of our expressions,
    and then destroy the expressions array.  */
 
@@ -255,6 +281,7 @@ clear_expression_ids (void)
       tree_common_ann (expr)->aux = NULL;
     }
   VEC_free (tree, heap, expressions);
+  VEC_free (vuse_vec, heap, expression_vuses);
 }
 
 static bool in_fre = false;
@@ -956,13 +983,7 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
   /* Phi translations of a given expression don't change.  */
   if (EXPR_P (expr) || GIMPLE_STMT_P (expr))
     {
-      tree vh;
-
-      vh = get_value_handle (expr);
-      if (vh && TREE_CODE (vh) == VALUE_HANDLE)
-	phitrans = phi_trans_lookup (expr, pred, VALUE_HANDLE_VUSES (vh));
-      else
-	phitrans = phi_trans_lookup (expr, pred, NULL);
+      phitrans = phi_trans_lookup (expr, pred, get_expression_vuses (expr));
     }
   else
     phitrans = phi_trans_lookup (expr, pred, NULL);
@@ -995,10 +1016,9 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	    tree oldsc = CALL_EXPR_STATIC_CHAIN (expr);
 	    tree newfn, newsc = NULL;
 	    tree newexpr = NULL_TREE;
-	    tree vh = get_value_handle (expr);
 	    bool invariantarg = false;
 	    int i, nargs;
-	    VEC (tree, gc) *vuses = VALUE_HANDLE_VUSES (vh);
+	    VEC (tree, gc) *vuses = get_expression_vuses (expr);
 	    VEC (tree, gc) *tvuses;
 
 	    newfn = phi_translate_1 (find_leader_in_sets (oldfn, set1, set2),
@@ -1084,6 +1104,7 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 		newexpr->base.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, tvuses);
 		expr = newexpr;
+		set_expression_vuses (newexpr, tvuses);
 	      }
 	    phi_trans_add (oldexpr, expr, pred, tvuses);
 	  }
@@ -1095,14 +1116,16 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	VEC (tree, gc) * oldvuses = NULL;
 	VEC (tree, gc) * newvuses = NULL;
 
-	oldvuses = VALUE_HANDLE_VUSES (get_value_handle (expr));
+	oldvuses = get_expression_vuses (expr);
 	if (oldvuses)
 	  newvuses = translate_vuses_through_block (oldvuses, phiblock,
 						    pred);
 
 	if (oldvuses != newvuses)
-	  vn_lookup_or_add_with_vuses (expr, newvuses);
-
+	  {
+	    vn_lookup_or_add_with_vuses (expr, newvuses);
+	    set_expression_vuses (expr, newvuses);
+	  }
 	phi_trans_add (oldexpr, expr, pred, newvuses);
       }
       return expr;
@@ -1160,7 +1183,7 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	      }
 	  }
 
-	oldvuses = VALUE_HANDLE_VUSES (get_value_handle (expr));
+	oldvuses = get_expression_vuses (expr);
 	if (oldvuses)
 	  newvuses = translate_vuses_through_block (oldvuses, phiblock,
 						    pred);
@@ -1195,6 +1218,7 @@ phi_translate_1 (tree expr, bitmap_set_t set1, bitmap_set_t set2,
 	      {
 		newexpr->base.ann = NULL;
 		vn_lookup_or_add_with_vuses (newexpr, newvuses);
+		set_expression_vuses (newexpr, newvuses);
 	      }
 	    expr = newexpr;
 	  }
@@ -1360,14 +1384,8 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
 	 we won't look them up that way, or use the result, anyway.  */
       if (translated && !is_gimple_min_invariant (translated))
 	{
-	  tree vh = get_value_handle (translated);
-	  VEC (tree, gc) *vuses;
-
-	  /* The value handle itself may also be an invariant, in
-	     which case, it has no vuses.  */
-	  vuses = !is_gimple_min_invariant (vh)
-	    ? VALUE_HANDLE_VUSES (vh) : NULL;
-	  phi_trans_add (expr, translated, pred, vuses);
+	  phi_trans_add (expr, translated, pred,
+			 get_expression_vuses (translated));
 	}
 
       if (translated != NULL)
@@ -1413,7 +1431,7 @@ bitmap_find_leader (bitmap_set_t set, tree val)
   return NULL;
 }
 
-/* Determine if VALUE, a memory operation, is ANTIC_IN at the top of
+/* Determine if EXPR, a memory expressionn, is ANTIC_IN at the top of
    BLOCK by seeing if it is not killed in the block.  Note that we are
    only determining whether there is a store that kills it.  Because
    of the order in which clean iterates over values, we are guaranteed
@@ -1421,11 +1439,11 @@ bitmap_find_leader (bitmap_set_t set, tree val)
    ANTIC_IN set already.  */
 
 static bool
-value_dies_in_block_x (tree vh, basic_block block)
+value_dies_in_block_x (tree expr, basic_block block)
 {
   int i;
   tree vuse;
-  VEC (tree, gc) *vuses = VALUE_HANDLE_VUSES (vh);
+  VEC (tree, gc) *vuses = get_expression_vuses (expr);
 
   /* Conservatively, a value dies if it's vuses are defined in this
      block, unless they come from phi nodes (which are merge operations,
@@ -1462,7 +1480,6 @@ static bool
 valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
 	       basic_block block)
 {
- tree vh = get_value_handle (expr);
  switch (TREE_CODE_CLASS (TREE_CODE (expr)))
     {
     case tcc_binary:
@@ -1504,7 +1521,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
 		if (!union_contains_value (set1, set2, arg))
 		  return false;
 	      }
-	    return !value_dies_in_block_x (vh, block);
+	    return !value_dies_in_block_x (expr, block);
 	  }
 	return false;
       }
@@ -1540,7 +1557,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
 		    && !union_contains_value (set1, set2, op3))
 		  return false;
 	    }
-	    return !value_dies_in_block_x (vh, block);
+	    return !value_dies_in_block_x (expr, block);
 	  }
       }
       return false;
@@ -1552,7 +1569,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, tree expr,
       }
 
     case tcc_declaration:
-      return !value_dies_in_block_x (vh, block);
+      return !value_dies_in_block_x (expr, block);
 
     default:
       /* No other cases should be encountered.  */
@@ -2905,11 +2922,11 @@ add_to_exp_gen (basic_block block, tree op)
    any).  */
 
 static inline void
-add_to_sets (tree var, tree expr, tree stmt, bitmap_set_t s1,
+add_to_sets (tree var, tree expr, VEC(tree, gc) *vuses, bitmap_set_t s1,
 	     bitmap_set_t s2)
 {
   tree val;
-  val = vn_lookup_or_add_with_stmt (expr, stmt);
+  val = vn_lookup_or_add_with_vuses (expr, vuses);
 
   /* VAR and EXPR may be the same when processing statements for which
      we are not computing value numbers (e.g., non-assignments, or
@@ -2928,7 +2945,7 @@ add_to_sets (tree var, tree expr, tree stmt, bitmap_set_t s1,
    and return it if it exists.  */
 
 static inline tree
-find_existing_value_expr (tree t, tree stmt)
+find_existing_value_expr (tree t, VEC (tree, gc) *vuses)
 {
   bitmap_iterator bi;
   unsigned int bii;
@@ -2936,7 +2953,7 @@ find_existing_value_expr (tree t, tree stmt)
   bitmap_set_t exprset;
 
   if (REFERENCE_CLASS_P (t) || TREE_CODE (t) == CALL_EXPR || DECL_P (t))
-    vh = vn_lookup_with_stmt (t, stmt);
+    vh = vn_lookup_with_vuses (t, vuses);
   else
     vh = vn_lookup (t);
   
@@ -2960,7 +2977,7 @@ find_existing_value_expr (tree t, tree stmt)
    any). Insert EXPR's operands into the EXP_GEN set for BLOCK. */
 
 static inline tree
-create_value_expr_from (tree expr, basic_block block, tree stmt)
+create_value_expr_from (tree expr, basic_block block, VEC (tree, gc) *vuses)
 {
   int i;
   enum tree_code code = TREE_CODE (expr);
@@ -3008,9 +3025,10 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
       /* Recursively value-numberize reference ops and tree lists.  */
       if (REFERENCE_CLASS_P (op))
 	{
-	  tree tempop = create_value_expr_from (op, block, stmt);
+	  tree tempop = create_value_expr_from (op, block, vuses);
 	  op = tempop ? tempop : op;
-	  val = vn_lookup_or_add_with_stmt (op, stmt);
+	  val = vn_lookup_or_add_with_vuses (op, vuses);
+	  set_expression_vuses (op, vuses);
 	}
       else
 	{
@@ -3024,7 +3042,7 @@ create_value_expr_from (tree expr, basic_block block, tree stmt)
 
       TREE_OPERAND (vexpr, i) = val;
     }
-  efi = find_existing_value_expr (vexpr, stmt);
+  efi = find_existing_value_expr (vexpr, vuses);
   if (efi)
     return efi;
   get_or_alloc_expression_id (vexpr);
@@ -3289,22 +3307,6 @@ make_values_for_phi (tree phi, basic_block block)
     }
 }
 
-/* Return true if both the statement and the value handles have no
-   vuses, or both the statement and the value handle do have vuses.  
-
-   Unlike SCCVN, PRE needs not only to know equivalence, but what the
-   actual vuses are so it can translate them through blocks.  Thus,
-   we have to make a new value handle if the existing one has no
-   vuses but needs them.  */
-
-static bool
-vuse_equiv (tree vh1, tree stmt)
-{
-  bool stmt_has_vuses = !ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_USES);
-  return (VALUE_HANDLE_VUSES (vh1) && stmt_has_vuses)
-    || (!VALUE_HANDLE_VUSES (vh1) && !stmt_has_vuses);
-}
-
 /* Create value handles for STMT in BLOCK.  Return true if we handled
    the statement.  */
 
@@ -3316,8 +3318,10 @@ make_values_for_stmt (tree stmt, basic_block block)
   tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
   tree valvh = NULL_TREE;
   tree lhsval;
+  VEC (tree, gc) *vuses = NULL;
   
   valvh = get_sccvn_value (lhs);
+
   if (valvh)
     {
       vn_add (lhs, valvh);
@@ -3340,7 +3344,7 @@ make_values_for_stmt (tree stmt, basic_block block)
     }
   
   lhsval = valvh ? valvh : get_value_handle (lhs);
-  
+  vuses = copy_vuses_from_stmt (stmt);
   STRIP_USELESS_TYPE_CONVERSION (rhs);
   if (can_value_number_operation (rhs)
       && (!lhsval || !is_gimple_min_invariant (lhsval)))
@@ -3348,12 +3352,13 @@ make_values_for_stmt (tree stmt, basic_block block)
       /* For value numberable operation, create a
 	 duplicate expression with the operands replaced
 	 with the value handles of the original RHS.  */
-      tree newt = create_value_expr_from (rhs, block, stmt);
+      tree newt = create_value_expr_from (rhs, block, vuses);
       if (newt)
 	{
+	  set_expression_vuses (newt, vuses);
 	  /* If we already have a value number for the LHS, reuse
 	     it rather than creating a new one.  */
-	  if (lhsval && vuse_equiv (lhsval, stmt))
+	  if (lhsval)
 	    {
 	      set_value_handle (newt, lhsval);
 	      if (!is_gimple_min_invariant (lhsval))
@@ -3361,7 +3366,7 @@ make_values_for_stmt (tree stmt, basic_block block)
 	    }
 	  else
 	    {
-	      tree val = vn_lookup_or_add_with_stmt (newt, stmt);
+	      tree val = vn_lookup_or_add_with_vuses (newt, vuses);
 	      vn_add (lhs, val);
 	    }
 	  
@@ -3382,6 +3387,7 @@ make_values_for_stmt (tree stmt, basic_block block)
       
       if (lhsval)
 	{
+	  set_expression_vuses (rhs, vuses);
 	  set_value_handle (rhs, lhsval);
 	  if (!is_gimple_min_invariant (lhsval))
 	    add_to_value (lhsval, rhs);
@@ -3393,7 +3399,8 @@ make_values_for_stmt (tree stmt, basic_block block)
 	  /* Compute a value number for the RHS of the statement
 	     and add its value to the AVAIL_OUT set for the block.
 	     Add the LHS to TMP_GEN.  */
-	  add_to_sets (lhs, rhs, stmt, TMP_GEN (block),
+	  set_expression_vuses (rhs, vuses);
+	  add_to_sets (lhs, rhs, vuses, TMP_GEN (block),
 		       AVAIL_OUT (block));
 	}
       /* None of the rest of these can be PRE'd.  */
