@@ -1520,7 +1520,7 @@ dump_expr (tree t, int flags)
 	else
 	  dump_expr (AGGR_INIT_EXPR_FN (t), 0);
       }
-      dump_aggr_init_expr_args (t, flags, false);
+      dump_aggr_init_expr_args (t, flags, true);
       break;
 
     case CALL_EXPR:
