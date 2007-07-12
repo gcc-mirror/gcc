@@ -1,3 +1,12 @@
+2007-07-12  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (expand_java_return): RETURN_EXPR has void type.
+	(build_jni_stub): Likewise.  Use a comparison against zero
+	for null-pointer test in COND_EXPR.
+	(build_field_ref): Build POINTER_PLUS_EXPR with correct
+	type.  Convert result instead.
+	(build_invokevirtual): Likewise.
+
 2007-07-09  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 32617
