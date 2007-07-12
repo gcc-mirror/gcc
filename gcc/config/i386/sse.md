@@ -343,6 +343,20 @@
   "TARGET_SSE2"
   "")
 
+(define_expand "storentdf"
+  [(set (match_operand:DF 0 "memory_operand" "")
+	(unspec:DF [(match_operand:DF 1 "register_operand" "")]
+		   UNSPEC_MOVNT))]
+  "TARGET_SSE4A"
+  "")
+
+(define_expand "storentsf"
+  [(set (match_operand:SF 0 "memory_operand" "")
+	(unspec:SF [(match_operand:SF 1 "register_operand" "")]
+		   UNSPEC_MOVNT))]
+  "TARGET_SSE4A"
+  "")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point arithmetic
