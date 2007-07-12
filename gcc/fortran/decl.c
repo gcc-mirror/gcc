@@ -3578,12 +3578,6 @@ gfc_match_suffix (gfc_symbol *sym, gfc_symbol **result)
       break;
     }
 
-  if (is_result == MATCH_ERROR || is_bind_c == MATCH_ERROR)
-    {
-      gfc_error ("Error in function suffix at %C");
-      return MATCH_ERROR;
-    }
-
   if (is_bind_c == MATCH_YES)
     if (gfc_add_is_bind_c (&(sym->attr), sym->name, &gfc_current_locus, 1)
         == FAILURE)

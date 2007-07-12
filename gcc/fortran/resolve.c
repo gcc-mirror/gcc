@@ -6547,7 +6547,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   }
 
   /* Reject illegal initializers.  */
-  if (sym->value && flag)
+  if (!sym->mark && sym->value && flag)
     {
       if (sym->attr.allocatable)
 	gfc_error ("Allocatable '%s' at %L cannot have an initializer",
@@ -6743,6 +6743,13 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		}
 	     }
 	}
+    }
+
+  if (sym->attr.function && sym->value && sym->attr.proc != PROC_ST_FUNCTION)
+    {
+      gfc_error ("Function '%s' at %L cannot have an initializer",
+		 sym->name, &sym->declared_at);
+      return FAILURE;
     }
 
   /* An external symbol may not have an initializer because it is taken to be

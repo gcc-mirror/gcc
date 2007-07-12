@@ -1,5 +1,14 @@
 2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/31639
+	* decl.c (gfc_match_suffix): Removed surplus general error that hides
+	a more specific message.
+	* resolve.c (resolve_fl_variable): Reject illegal initializiers only
+	if not already done.
+	(resolve_fl_procedure): Added check for initializers of functions.
+
+2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32704
 	* invoke.texi (-static-libgfortran): Document new option.
 
