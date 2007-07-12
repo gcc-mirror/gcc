@@ -355,9 +355,7 @@ get_pointer_alignment (tree exp, unsigned int max_align)
 	      else if (offset)
 		inner = MIN (inner, BITS_PER_UNIT);
 	    }
-	  if (TREE_CODE (exp) == FUNCTION_DECL)
-	    align = FUNCTION_BOUNDARY;
-	  else if (DECL_P (exp))
+	  if (DECL_P (exp))
 	    align = MIN (inner, DECL_ALIGN (exp));
 #ifdef CONSTANT_ALIGNMENT
 	  else if (CONSTANT_CLASS_P (exp))

@@ -588,9 +588,13 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	DECL_IN_SYSTEM_HEADER (t) = in_system_header;
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
 	{
-	  if (code != FUNCTION_DECL)
+	  if (code == FUNCTION_DECL)
+	    {
+	      DECL_ALIGN (t) = FUNCTION_BOUNDARY;
+	      DECL_MODE (t) = FUNCTION_MODE;
+	    }
+	  else
 	    DECL_ALIGN (t) = 1;
-	  DECL_USER_ALIGN (t) = 0;	  
 	  /* We have not yet computed the alias set for this declaration.  */
 	  DECL_POINTER_ALIAS_SET (t) = -1;
 	}
@@ -1914,14 +1918,13 @@ expr_align (tree t)
       align1 = expr_align (TREE_OPERAND (t, 2));
       return MIN (align0, align1);
 
+      /* FIXME: LABEL_DECL and CONST_DECL never have DECL_ALIGN set
+	 meaningfully, it's always 1.  */
     case LABEL_DECL:     case CONST_DECL:
     case VAR_DECL:       case PARM_DECL:   case RESULT_DECL:
-      if (DECL_ALIGN (t) != 0)
-	return DECL_ALIGN (t);
-      break;
-
     case FUNCTION_DECL:
-      return FUNCTION_BOUNDARY;
+      gcc_assert (DECL_ALIGN (t) != 0);
+      return DECL_ALIGN (t);
 
     default:
       break;
@@ -3311,11 +3314,6 @@ build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
 
   if (code == VAR_DECL || code == PARM_DECL || code == RESULT_DECL)
     layout_decl (t, 0);
-  else if (code == FUNCTION_DECL)
-    {
-      DECL_MODE (t) = FUNCTION_MODE;
-      DECL_ALIGN (t) = FUNCTION_BOUNDARY;
-    }
 
   return t;
 }
