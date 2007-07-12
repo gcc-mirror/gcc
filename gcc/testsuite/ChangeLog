@@ -1,3 +1,7 @@
+2007-07-12  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.c-torture/execute/align-3.c: Remove function addr check.
+
 2007-07-12  Dorit Nuzman  <dorit@il.ibm.com>
 	    Devang Patel  <dpatel@apple.com>
 
