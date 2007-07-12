@@ -10,8 +10,8 @@ void f(void);
 void
 g (void)
 {
-  sizeof (v); /* { dg-error "error: invalid application of 'sizeof' to a void type" } */
-  sizeof (void); /* { dg-error "error: invalid application of 'sizeof' to a void type" } */
-  sizeof (f); /* { dg-error "error: invalid application of 'sizeof' to a function type" } */
-  sizeof (void (void)); /* { dg-error "error: invalid application of 'sizeof' to a function type" } */
+  sizeof (v); /* { dg-error "invalid application of 'sizeof' to a void type" } */
+  sizeof (void); /* { dg-error "invalid application of 'sizeof' to a void type" } */
+  sizeof (f); /* { dg-error "invalid application of 'sizeof' to a function type" } */
+  sizeof (void (void)); /* { dg-error "invalid application of 'sizeof' to a function type" } */
 }

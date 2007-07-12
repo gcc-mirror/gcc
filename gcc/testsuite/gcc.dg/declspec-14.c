@@ -4,8 +4,8 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-typeof(struct foo); /* { dg-warning "warning: useless type name in empty declaration" } */
+typeof(struct foo); /* { dg-warning "useless type name in empty declaration" } */
 
 struct bar { int a; } x;
 
-typeof(x); /* { dg-warning "warning: useless type name in empty declaration" } */
+typeof(x); /* { dg-warning "useless type name in empty declaration" } */

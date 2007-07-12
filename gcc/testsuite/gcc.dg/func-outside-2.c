@@ -4,6 +4,6 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-const char *a = __func__; /* { dg-error "error: '__func__' is not defined outside of function scope" "undef" } */
+const char *a = __func__; /* { dg-error "'__func__' is not defined outside of function scope" "undef" } */
 const char *b = __FUNCTION__;
 const char *c = __PRETTY_FUNCTION__;

@@ -7,5 +7,5 @@
 int
 f (void)
 {
-  return ({ 1; }); /* { dg-error "error: ISO C forbids braced-groups within expressions" } */
+  return ({ 1; }); /* { dg-error "ISO C forbids braced-groups within expressions" } */
 }

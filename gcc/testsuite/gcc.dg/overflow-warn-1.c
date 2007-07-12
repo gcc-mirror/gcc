@@ -12,23 +12,23 @@ enum e {
   /* Overflow in an unevaluated part of an expression is OK (example
      in the standard).  */
   E2 = 2 || 1 / 0,
-  E3 = 1 / 0, /* { dg-warning "warning: division by zero" } */
-  /* { dg-error "error: enumerator value for 'E3' is not an integer constant" "enum error" { target *-*-* } 15 } */
+  E3 = 1 / 0, /* { dg-warning "division by zero" } */
+  /* { dg-error "enumerator value for 'E3' is not an integer constant" "enum error" { target *-*-* } 15 } */
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
-  E4 = 0 * (1 / 0), /* { dg-warning "warning: division by zero" } */
-  /* { dg-error "error: enumerator value for 'E4' is not an integer constant" "enum error" { xfail *-*-* } 19 } */
-  E5 = INT_MAX + 1, /* { dg-warning "warning: integer overflow in expression" } */
+  E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
+  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { xfail *-*-* } 19 } */
+  E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* Again, overflow in evaluated subexpression.  */
-  E6 = 0 * (INT_MAX + 1), /* { dg-warning "warning: integer overflow in expression" } */
+  E6 = 0 * (INT_MAX + 1), /* { dg-warning "integer overflow in expression" } */
   /* A cast does not constitute overflow in conversion.  */
   E7 = (char) INT_MAX
 };
 
 struct s {
   int a;
-  int : 0 * (1 / 0); /* { dg-warning "warning: division by zero" } */
-  int : 0 * (INT_MAX + 1); /* { dg-warning "warning: integer overflow in expression" } */
+  int : 0 * (1 / 0); /* { dg-warning "division by zero" } */
+  int : 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 };
 
 void
@@ -36,19 +36,19 @@ f (void)
 {
   /* This expression is not required to be a constant expression, so
      it should just involve undefined behavior at runtime.  */
-  int c = INT_MAX + 1; /* { dg-warning "warning: integer overflow in expression" } */
+  int c = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } */
 }
 
 /* But this expression does need to be constant.  */
-static int sc = INT_MAX + 1; /* { dg-warning "warning: integer overflow in expression" } */
+static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } */
 
 /* The first two of these involve overflow, so are not null pointer
    constants.  The third has the overflow in an unevaluated
    subexpression, so is a null pointer constant.  */
-void *p = 0 * (INT_MAX + 1); /* { dg-warning "warning: integer overflow in expression" } */
-/* { dg-warning "warning: initialization makes pointer from integer without a cast" "null" { target *-*-* } 48 } */
-void *q = 0 * (1 / 0); /* { dg-warning "warning: division by zero" } */
-/* { dg-warning "warning: initialization makes pointer from integer without a cast" "null" { xfail *-*-* } 50 } */
+void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
+/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 48 } */
+void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
+/* { dg-warning "initialization makes pointer from integer without a cast" "null" { xfail *-*-* } 50 } */
 void *r = (1 ? 0 : INT_MAX+1);
 
 void
@@ -56,9 +56,9 @@ g (int i)
 {
   switch (i)
     {
-    case 0 * (1/0): /* { dg-warning "warning: division by zero" } */
+    case 0 * (1/0): /* { dg-warning "division by zero" } */
       ;
-    case 1 + 0 * (INT_MAX + 1): /* { dg-warning "warning: integer overflow in expression" } */
+    case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
       ;
     }
 }
@@ -66,13 +66,13 @@ g (int i)
 int
 h (void)
 {
-  return INT_MAX + 1; /* { dg-warning "warning: integer overflow in expression" } */
+  return INT_MAX + 1; /* { dg-warning "integer overflow in expression" } */
 }
 
 int
 h1 (void)
 {
-  return INT_MAX + 1 - INT_MAX; /* { dg-warning "warning: integer overflow in expression" } */
+  return INT_MAX + 1 - INT_MAX; /* { dg-warning "integer overflow in expression" } */
 }
 
 void fuc (unsigned char);
@@ -82,14 +82,14 @@ void
 h2 (void)
 {
   fsc (SCHAR_MAX + 1);
-  fsc (SCHAR_MIN - 1); /* { dg-warning "warning: overflow in implicit constant conversion" } */
+  fsc (SCHAR_MIN - 1); /* { dg-warning "overflow in implicit constant conversion" } */
   fsc (UCHAR_MAX);
-  fsc (UCHAR_MAX + 1); /* { dg-warning "warning: overflow in implicit constant conversion" } */
+  fsc (UCHAR_MAX + 1); /* { dg-warning "overflow in implicit constant conversion" } */
   fuc (-1);
-  fuc (UCHAR_MAX + 1); /* { dg-warning "warning: large integer implicitly truncated to unsigned type" } */
+  fuc (UCHAR_MAX + 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
   fuc (SCHAR_MIN);
-  fuc (SCHAR_MIN - 1); /* { dg-warning "warning: large integer implicitly truncated to unsigned type" } */
-  fuc (-UCHAR_MAX); /* { dg-warning "warning: large integer implicitly truncated to unsigned type" } */
+  fuc (SCHAR_MIN - 1); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
+  fuc (-UCHAR_MAX); /* { dg-warning "large integer implicitly truncated to unsigned type" } */
 }
 
 void fui (unsigned int);

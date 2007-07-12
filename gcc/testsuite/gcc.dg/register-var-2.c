@@ -10,5 +10,5 @@ void g(int *);
 void f(void) 
 { 
   register int x;
-  g(&x);	/* { dg-error "error: address of register variable" } */
+  g(&x);	/* { dg-error "address of register variable" } */
 } 

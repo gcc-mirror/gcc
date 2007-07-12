@@ -8,7 +8,7 @@
 void
 f (void)
 {
-  float a = __builtin_inff (); /* { dg-error "error: target format does not support infinity" } */
-  double b = __builtin_inf (); /* { dg-error "error: target format does not support infinity" } */
-  long double c = __builtin_infl (); /* { dg-error "error: target format does not support infinity" } */
+  float a = __builtin_inff (); /* { dg-error "target format does not support infinity" } */
+  double b = __builtin_inf (); /* { dg-error "target format does not support infinity" } */
+  long double c = __builtin_infl (); /* { dg-error "target format does not support infinity" } */
 }

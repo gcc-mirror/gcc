@@ -3,4 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-const struct foo; /* { dg-warning "warning: useless type qualifier in empty declaration" } */
+const struct foo; /* { dg-warning "useless type qualifier in empty declaration" } */

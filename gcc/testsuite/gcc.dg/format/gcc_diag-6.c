@@ -7,4 +7,4 @@
 /* { dg-options "-Wformat" } */
 
 int location_t;
-void bar (const char *, ...) __attribute__ ((__format__ (__gcc_diag__, 1, 2))); /* { dg-error "error: 'location_t' is not defined as a type" } */
+void bar (const char *, ...) __attribute__ ((__format__ (__gcc_diag__, 1, 2))); /* { dg-error "'location_t' is not defined as a type" } */

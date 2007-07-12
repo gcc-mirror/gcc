@@ -39,26 +39,26 @@ _Complex float cf;
 void
 g (void)
 {
-  fsi(f); /* { dg-warning "warning: passing argument 1 of 'fsi' as integer rather than floating due to prototype" } */
-  x.fsi(f); /* { dg-warning "warning: passing argument 1 of 'x.fsi' as integer rather than floating due to prototype" } */
-  fsi(cf); /* { dg-warning "warning: passing argument 1 of 'fsi' as integer rather than complex due to prototype" } */
-  x.fsi(cf); /* { dg-warning "warning: passing argument 1 of 'x.fsi' as integer rather than complex due to prototype" } */
-  fcf(f); /* { dg-warning "warning: passing argument 1 of 'fcf' as complex rather than floating due to prototype" } */
-  x.fcf(f); /* { dg-warning "warning: passing argument 1 of 'x.fcf' as complex rather than floating due to prototype" } */
-  fcf(si); /* { dg-warning "warning: passing argument 1 of 'fcf' as complex rather than integer due to prototype" } */
-  x.fcf(si); /* { dg-warning "warning: passing argument 1 of 'x.fcf' as complex rather than integer due to prototype" } */
-  ff(sc); /* { dg-warning "warning: passing argument 1 of 'ff' as floating rather than integer due to prototype" } */
-  x.ff(sc); /* { dg-warning "warning: passing argument 1 of 'x.ff' as floating rather than integer due to prototype" } */
-  ff(cf); /* { dg-warning "warning: passing argument 1 of 'ff' as floating rather than complex due to prototype" } */
-  x.ff(cf); /* { dg-warning "warning: passing argument 1 of 'x.ff' as floating rather than complex due to prototype" } */
-  ff(1.0); /* { dg-warning "warning: passing argument 1 of 'ff' as 'float' rather than 'double' due to prototype" } */
-  x.ff(1.0); /* { dg-warning "warning: passing argument 1 of 'x.ff' as 'float' rather than 'double' due to prototype" } */
-  fsll(sc); /* { dg-warning "warning: passing argument 1 of 'fsll' with different width due to prototype" } */
-  x.fsll(sc); /* { dg-warning "warning: passing argument 1 of 'x.fsll' with different width due to prototype" } */
-  fsc(sll); /* { dg-warning "warning: passing argument 1 of 'fsc' with different width due to prototype" } */
-  x.fsc(sll); /* { dg-warning "warning: passing argument 1 of 'x.fsc' with different width due to prototype" } */
-  fsi(ui); /* { dg-warning "warning: passing argument 1 of 'fsi' as signed due to prototype" } */
-  x.fsi(ui); /* { dg-warning "warning: passing argument 1 of 'x.fsi' as signed due to prototype" } */
-  full(sll); /* { dg-warning "warning: passing argument 1 of 'full' as unsigned due to prototype" } */
-  x.full(sll); /* { dg-warning "warning: passing argument 1 of 'x.full' as unsigned due to prototype" } */
+  fsi(f); /* { dg-warning "passing argument 1 of 'fsi' as integer rather than floating due to prototype" } */
+  x.fsi(f); /* { dg-warning "passing argument 1 of 'x.fsi' as integer rather than floating due to prototype" } */
+  fsi(cf); /* { dg-warning "passing argument 1 of 'fsi' as integer rather than complex due to prototype" } */
+  x.fsi(cf); /* { dg-warning "passing argument 1 of 'x.fsi' as integer rather than complex due to prototype" } */
+  fcf(f); /* { dg-warning "passing argument 1 of 'fcf' as complex rather than floating due to prototype" } */
+  x.fcf(f); /* { dg-warning "passing argument 1 of 'x.fcf' as complex rather than floating due to prototype" } */
+  fcf(si); /* { dg-warning "passing argument 1 of 'fcf' as complex rather than integer due to prototype" } */
+  x.fcf(si); /* { dg-warning "passing argument 1 of 'x.fcf' as complex rather than integer due to prototype" } */
+  ff(sc); /* { dg-warning "passing argument 1 of 'ff' as floating rather than integer due to prototype" } */
+  x.ff(sc); /* { dg-warning "passing argument 1 of 'x.ff' as floating rather than integer due to prototype" } */
+  ff(cf); /* { dg-warning "passing argument 1 of 'ff' as floating rather than complex due to prototype" } */
+  x.ff(cf); /* { dg-warning "passing argument 1 of 'x.ff' as floating rather than complex due to prototype" } */
+  ff(1.0); /* { dg-warning "passing argument 1 of 'ff' as 'float' rather than 'double' due to prototype" } */
+  x.ff(1.0); /* { dg-warning "passing argument 1 of 'x.ff' as 'float' rather than 'double' due to prototype" } */
+  fsll(sc); /* { dg-warning "passing argument 1 of 'fsll' with different width due to prototype" } */
+  x.fsll(sc); /* { dg-warning "passing argument 1 of 'x.fsll' with different width due to prototype" } */
+  fsc(sll); /* { dg-warning "passing argument 1 of 'fsc' with different width due to prototype" } */
+  x.fsc(sll); /* { dg-warning "passing argument 1 of 'x.fsc' with different width due to prototype" } */
+  fsi(ui); /* { dg-warning "passing argument 1 of 'fsi' as signed due to prototype" } */
+  x.fsi(ui); /* { dg-warning "passing argument 1 of 'x.fsi' as signed due to prototype" } */
+  full(sll); /* { dg-warning "passing argument 1 of 'full' as unsigned due to prototype" } */
+  x.full(sll); /* { dg-warning "passing argument 1 of 'x.full' as unsigned due to prototype" } */
 }

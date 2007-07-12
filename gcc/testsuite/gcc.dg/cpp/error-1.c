@@ -2,4 +2,4 @@
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do preprocess } */
 
-/* { dg-error "error: unterminated comment" }
+/* { dg-error "unterminated comment" }

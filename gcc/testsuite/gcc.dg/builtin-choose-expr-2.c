@@ -8,5 +8,5 @@ int a, b, c, d;
 void
 f (void)
 {
-  a = __builtin_choose_expr (b, c, d); /* { dg-error "error: first argument to '__builtin_choose_expr' not a constant" } */
+  a = __builtin_choose_expr (b, c, d); /* { dg-error "first argument to '__builtin_choose_expr' not a constant" } */
 }

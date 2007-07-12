@@ -12,34 +12,34 @@ typedef int T;
 
 struct s0;
 union u0;
-enum e0; /* { dg-error "error: ISO C forbids forward references" } */
+enum e0; /* { dg-error "ISO C forbids forward references" } */
 enum { E0 };
 enum e1 { E1 };
 
 /* Not declaring anything (pedwarns).  */
-struct { int a; }; /* { dg-error "error: unnamed struct/union that defines no instances" } */
-int; /* { dg-error "error: useless type name in empty declaration" } */
-long; /* { dg-error "error: useless type name in empty declaration" } */
-T; /* { dg-error "error: useless type name in empty declaration" } */
-static const; /* { dg-warning "warning: useless storage class specifier in empty declaration" } */
-/* { dg-error "error: empty declaration" "static const" { target *-*-* } 24 } */
-union { long b; }; /* { dg-error "error: unnamed struct/union that defines no instances" } */
+struct { int a; }; /* { dg-error "unnamed struct/union that defines no instances" } */
+int; /* { dg-error "useless type name in empty declaration" } */
+long; /* { dg-error "useless type name in empty declaration" } */
+T; /* { dg-error "useless type name in empty declaration" } */
+static const; /* { dg-warning "useless storage class specifier in empty declaration" } */
+/* { dg-error "empty declaration" "static const" { target *-*-* } 24 } */
+union { long b; }; /* { dg-error "unnamed struct/union that defines no instances" } */
 
 /* Multiple type names (errors).  */
-struct s1 int; /* { dg-error "error: two or more data types in declaration specifiers" } */
-char union u1; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-error "error: useless type name in empty declaration" "char union" { target *-*-* } 30 } */
-double enum { E2 }; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-error "error: useless type name in empty declaration" "double enum" { target *-*-* } 32 } */
-T struct s2; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-error "error: useless type name in empty declaration" "T struct" { target *-*-* } 34 } */
-long union u2; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-error "error: useless type name in empty declaration" "empty" { target *-*-* } 36 } */
-struct s3 short; /* { dg-error "error: two or more data types in declaration specifiers" } */
-union u3 signed; /* { dg-error "error: two or more data types in declaration specifiers" } */
-unsigned struct s4; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-error "error: useless type name in empty declaration" "empty" { target *-*-* } 40 } */
-_Complex enum { E3 }; /* { dg-error "error: two or more data types in declaration specifiers" } */
-/* { dg-error "error: useless type name in empty declaration" "empty" { target *-*-* } 42 } */
-/* { dg-error "error: ISO C90 does not support complex types" "C90" { target *-*-* } 42 } */
-/* { dg-error "error: ISO C does not support plain 'complex' meaning 'double complex'" "ISO C" { target *-*-* } 42 } */
+struct s1 int; /* { dg-error "two or more data types in declaration specifiers" } */
+char union u1; /* { dg-error "two or more data types in declaration specifiers" } */
+/* { dg-error "useless type name in empty declaration" "char union" { target *-*-* } 30 } */
+double enum { E2 }; /* { dg-error "two or more data types in declaration specifiers" } */
+/* { dg-error "useless type name in empty declaration" "double enum" { target *-*-* } 32 } */
+T struct s2; /* { dg-error "two or more data types in declaration specifiers" } */
+/* { dg-error "useless type name in empty declaration" "T struct" { target *-*-* } 34 } */
+long union u2; /* { dg-error "two or more data types in declaration specifiers" } */
+/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } 36 } */
+struct s3 short; /* { dg-error "two or more data types in declaration specifiers" } */
+union u3 signed; /* { dg-error "two or more data types in declaration specifiers" } */
+unsigned struct s4; /* { dg-error "two or more data types in declaration specifiers" } */
+/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } 40 } */
+_Complex enum { E3 }; /* { dg-error "two or more data types in declaration specifiers" } */
+/* { dg-error "useless type name in empty declaration" "empty" { target *-*-* } 42 } */
+/* { dg-error "ISO C90 does not support complex types" "C90" { target *-*-* } 42 } */
+/* { dg-error "ISO C does not support plain 'complex' meaning 'double complex'" "ISO C" { target *-*-* } 42 } */

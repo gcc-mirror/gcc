@@ -6,6 +6,6 @@
 /* Origin: Carlos O'Donell <carlos@codesourcery.com> */
 
 /* { dg-options "-std=c99" } */
-struct s { int a; int b; struct t c; }; /* { dg-error "error: field 'c' has incomplete type" } */
+struct s { int a; int b; struct t c; }; /* { dg-error "field 'c' has incomplete type" } */
 struct s d = { .b = 0 };
 

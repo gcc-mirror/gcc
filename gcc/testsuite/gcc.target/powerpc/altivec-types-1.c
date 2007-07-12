@@ -68,21 +68,21 @@ __vector __complex unsigned long long v_cull; /* { dg-error "AltiVec types" "" }
 /* These should be rejected because the component types are invalid.  We
    don't care about the actual error messages here.  */
 
-__vector __bool unsigned char vbuc;	/* { dg-error "error" "" } */
-__vector __bool signed char vbsc;	/* { dg-error "error" "" } */
-__vector __bool unsigned short vbuh;	/* { dg-error "error" "" } */
-__vector __bool signed short vbsh;	/* { dg-error "error" "" } */
-__vector __bool unsigned int vbui;	/* { dg-error "error" "" } */
-__vector __bool signed int vbsi;	/* { dg-error "error" "" } */
-__vector __bool unsigned vbuj;		/* { dg-error "error" "" } */
-__vector __bool signed vbsj;		/* { dg-error "error" "" } */
-__vector signed float vsf;		/* { dg-error "error" "" } */
-__vector unsigned float vuf;		/* { dg-error "error" "" } */
-__vector short float vsf;		/* { dg-error "error" "" } */
-__vector signed double vsd;		/* { dg-error "error" "" } */
-__vector unsigned double vud;		/* { dg-error "error" "" } */
-__vector short double vsd;		/* { dg-error "error" "" } */
-__vector __bool float vbf;		/* { dg-error "error" "" } */
-__vector __bool double vbd;		/* { dg-error "error" "" } */
-__vector __bool short float blf;	/* { dg-error "error" "" } */
-__vector __bool short double vlbd;	/* { dg-error "error" "" } */
+__vector __bool unsigned char vbuc;	/* { dg-error "" "" } */
+__vector __bool signed char vbsc;	/* { dg-error "" "" } */
+__vector __bool unsigned short vbuh;	/* { dg-error "" "" } */
+__vector __bool signed short vbsh;	/* { dg-error "" "" } */
+__vector __bool unsigned int vbui;	/* { dg-error "" "" } */
+__vector __bool signed int vbsi;	/* { dg-error "" "" } */
+__vector __bool unsigned vbuj;		/* { dg-error "" "" } */
+__vector __bool signed vbsj;		/* { dg-error "" "" } */
+__vector signed float vsf;		/* { dg-error "" "" } */
+__vector unsigned float vuf;		/* { dg-error "" "" } */
+__vector short float vsf;		/* { dg-error "" "" } */
+__vector signed double vsd;		/* { dg-error "" "" } */
+__vector unsigned double vud;		/* { dg-error "" "" } */
+__vector short double vsd;		/* { dg-error "" "" } */
+__vector __bool float vbf;		/* { dg-error "" "" } */
+__vector __bool double vbd;		/* { dg-error "" "" } */
+__vector __bool short float blf;	/* { dg-error "" "" } */
+__vector __bool short double vlbd;	/* { dg-error "" "" } */

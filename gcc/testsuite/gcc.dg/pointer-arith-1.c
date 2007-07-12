@@ -30,10 +30,10 @@ g (void)
   f += 1;
   f -= 0;
   f -= 1;
-  p[0]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
-  0[p]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
-  f[0]; /* { dg-error "error: subscripted value is pointer to function" } */
-  0[f]; /* { dg-error "error: subscripted value is pointer to function" } */
+  p[0]; /* { dg-warning "dereferencing 'void \\*' pointer" } */
+  0[p]; /* { dg-warning "dereferencing 'void \\*' pointer" } */
+  f[0]; /* { dg-error "subscripted value is pointer to function" } */
+  0[f]; /* { dg-error "subscripted value is pointer to function" } */
   p - p;
   f - f;
 }

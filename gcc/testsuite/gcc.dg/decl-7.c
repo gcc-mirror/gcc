@@ -3,4 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-int a[]; /* { dg-warning "warning: array 'a' assumed to have one element" } */
+int a[]; /* { dg-warning "array 'a' assumed to have one element" } */

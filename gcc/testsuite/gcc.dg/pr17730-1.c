@@ -2,4 +2,4 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-char *p = &'C'; /* { dg-error "error: lvalue required as unary '&' operand" } */
+char *p = &'C'; /* { dg-error "lvalue required as unary '&' operand" } */

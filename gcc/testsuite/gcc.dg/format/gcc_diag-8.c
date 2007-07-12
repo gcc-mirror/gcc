@@ -7,4 +7,4 @@
 /* { dg-options "-Wformat" } */
 
 int __gcc_host_wide_int__;
-void bar (const char *, ...) __attribute__ ((__format__ (__gcc_diag__, 1, 2))); /* { dg-error "error: '__gcc_host_wide_int__' is not defined as a type" } */
+void bar (const char *, ...) __attribute__ ((__format__ (__gcc_diag__, 1, 2))); /* { dg-error "'__gcc_host_wide_int__' is not defined as a type" } */

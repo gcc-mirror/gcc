@@ -10,8 +10,8 @@ void f(void);
 void
 g (void)
 {
-  sizeof (v); /* { dg-warning "warning: invalid application of 'sizeof' to a void type" } */
-  sizeof (void); /* { dg-warning "warning: invalid application of 'sizeof' to a void type" } */
-  sizeof (f); /* { dg-warning "warning: invalid application of 'sizeof' to a function type" } */
-  sizeof (void (void)); /* { dg-warning "warning: invalid application of 'sizeof' to a function type" } */
+  sizeof (v); /* { dg-warning "invalid application of 'sizeof' to a void type" } */
+  sizeof (void); /* { dg-warning "invalid application of 'sizeof' to a void type" } */
+  sizeof (f); /* { dg-warning "invalid application of 'sizeof' to a function type" } */
+  sizeof (void (void)); /* { dg-warning "invalid application of 'sizeof' to a function type" } */
 }

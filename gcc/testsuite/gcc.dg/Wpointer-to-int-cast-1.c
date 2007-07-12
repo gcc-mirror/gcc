@@ -8,5 +8,5 @@ void *p;
 char
 f (void)
 {
-  return (char) p; /* { dg-warning "warning: cast from pointer to integer of different size" } */
+  return (char) p; /* { dg-warning "cast from pointer to integer of different size" } */
 }

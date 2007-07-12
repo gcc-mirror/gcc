@@ -70,8 +70,8 @@ void prime5(void)
 
 void test5(void)
 {
-  bar5(1);			/* { dg-warning "warning: implicit declaration of function" } */
-} /* { dg-error "error: incompatible implicit declaration" "" { target *-*-* } 73 } */
+  bar5(1);			/* { dg-warning "implicit declaration of function" } */
+} /* { dg-error "incompatible implicit declaration" "" { target *-*-* } 73 } */
 
 /* Extern then static, both at file scope.  */
 

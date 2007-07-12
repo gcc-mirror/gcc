@@ -559,6 +559,32 @@ if { [info procs saved-dg-test] == [list] } {
     }
 }
 
+if { [info procs saved-dg-warning] == [list] \
+     && [info exists gcc_warning_prefix] } {
+    rename dg-warning saved-dg-warning
+
+    proc dg-warning { args } {
+	# Make this variable available here and to the saved proc.
+	upvar dg-messages dg-messages
+	global gcc_warning_prefix
+
+ 	process-message saved-dg-warning "$gcc_warning_prefix" "$args"
+    }
+}
+
+if { [info procs saved-dg-error] == [list] \
+     && [info exists gcc_error_prefix] } {
+    rename dg-error saved-dg-error
+
+    proc dg-error { args } {
+	# Make this variable available here and to the saved proc.
+	upvar dg-messages dg-messages
+	global gcc_error_prefix
+
+	process-message saved-dg-error "$gcc_error_prefix" "$args"
+    }
+}
+
 # Modify the regular expression saved by a DejaGnu message directive to
 # include a prefix and to force the expression to match a single line.
 # MSGPROC is the procedure to call.
@@ -592,7 +618,7 @@ proc process-message { msgproc msgprefix dgargs } {
 
 proc dg-message { args } {
     upvar dg-messages dg-messages
-    process-message dg-warning "" $args
+    process-message saved-dg-warning "" $args
 }
 
 set additional_prunes ""

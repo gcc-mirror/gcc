@@ -3,4 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -fhosted -pedantic-errors" } */
 
-inline int main (void); /* { dg-error "error: cannot inline function 'main'" } */
+inline int main (void); /* { dg-error "cannot inline function 'main'" } */

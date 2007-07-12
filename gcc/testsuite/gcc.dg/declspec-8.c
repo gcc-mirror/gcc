@@ -12,21 +12,21 @@
    "register" and "auto" must not be used at file scope (C90 6.7, C99
    6.9#2).  */
 
-static static struct s; /* { dg-error "error: duplicate 'static'" } */
-/* { dg-warning "warning: useless storage class specifier in empty declaration" "static static" { target *-*-* } 15 } */
+static static struct s; /* { dg-error "duplicate 'static'" } */
+/* { dg-warning "useless storage class specifier in empty declaration" "static static" { target *-*-* } 15 } */
 
-static extern struct t; /* { dg-error "error: multiple storage classes in declaration specifiers" } */
-/* { dg-warning "warning: useless storage class specifier in empty declaration" "static extern" { target *-*-* } 18 } */
+static extern struct t; /* { dg-error "multiple storage classes in declaration specifiers" } */
+/* { dg-warning "useless storage class specifier in empty declaration" "static extern" { target *-*-* } 18 } */
 
-inline union u; /* { dg-error "error: 'inline' in empty declaration" } */
+inline union u; /* { dg-error "'inline' in empty declaration" } */
 
-auto struct v; /* { dg-error "error: 'auto' in file-scope empty declaration" } */
+auto struct v; /* { dg-error "'auto' in file-scope empty declaration" } */
 
-register struct w; /* { dg-error "error: 'register' in file-scope empty declaration" } */
+register struct w; /* { dg-error "'register' in file-scope empty declaration" } */
 
 void
 f (void)
 {
-  auto union p; /* { dg-warning "warning: useless storage class specifier in empty declaration" } */
-  register struct q; /* { dg-warning "warning: useless storage class specifier in empty declaration" } */
+  auto union p; /* { dg-warning "useless storage class specifier in empty declaration" } */
+  register struct q; /* { dg-warning "useless storage class specifier in empty declaration" } */
 }

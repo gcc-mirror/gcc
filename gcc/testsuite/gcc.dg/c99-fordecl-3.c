@@ -8,8 +8,8 @@
 void
 foo (void)
 {
-  for (struct s { int p; } *p = 0; ;) /* { dg-error "error: 'struct s' declared in 'for' loop initial declaration" } */
+  for (struct s { int p; } *p = 0; ;) /* { dg-error "'struct s' declared in 'for' loop initial declaration" } */
     ;
-  for (union u { int p; } *p = 0; ;) /* { dg-error "error: 'union u' declared in 'for' loop initial declaration" } */
+  for (union u { int p; } *p = 0; ;) /* { dg-error "'union u' declared in 'for' loop initial declaration" } */
     ;
 }

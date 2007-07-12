@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
 
-/* { dg-warning "warning: embedded .* in format" "ignored" { target *-*-* } 0 } */
+/* { dg-warning "embedded .* in format" "ignored" { target *-*-* } 0 } */
 
 #include "format.h"
 

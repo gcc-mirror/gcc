@@ -35,15 +35,15 @@ g (void)
   f().c[0];
   0[f().c];
   /* Various invalid cases.  */
-  c[c]; /* { dg-error "error: subscripted value is neither array nor pointer" } */
-  p[1.0]; /* { dg-error "error: array subscript is not an integer" } */
-  1.0[a]; /* { dg-error "error: array subscript is not an integer" } */
-  fp[0]; /* { dg-error "error: subscripted value is pointer to function" } */
-  0[fp]; /* { dg-error "error: subscripted value is pointer to function" } */
-  pv[0]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
-  0[pv]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
-  sip[0]; /* { dg-error "error: invalid use of undefined type 'struct si'" } */
-  /* { dg-error "error: dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 45 } */
-  0[sip]; /* { dg-error "error: invalid use of undefined type 'struct si'" } */
-  /* { dg-error "error: dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 47 } */
+  c[c]; /* { dg-error "subscripted value is neither array nor pointer" } */
+  p[1.0]; /* { dg-error "array subscript is not an integer" } */
+  1.0[a]; /* { dg-error "array subscript is not an integer" } */
+  fp[0]; /* { dg-error "subscripted value is pointer to function" } */
+  0[fp]; /* { dg-error "subscripted value is pointer to function" } */
+  pv[0]; /* { dg-warning "dereferencing 'void \\*' pointer" } */
+  0[pv]; /* { dg-warning "dereferencing 'void \\*' pointer" } */
+  sip[0]; /* { dg-error "invalid use of undefined type 'struct si'" } */
+  /* { dg-error "dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 45 } */
+  0[sip]; /* { dg-error "invalid use of undefined type 'struct si'" } */
+  /* { dg-error "dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 47 } */
 }

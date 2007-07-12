@@ -5,4 +5,4 @@
 
 struct { int a : 1; } x;
 
-int r = sizeof (x.a); /* { dg-error "error: 'sizeof' applied to a bit-field" } */
+int r = sizeof (x.a); /* { dg-error "'sizeof' applied to a bit-field" } */

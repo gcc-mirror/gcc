@@ -10,8 +10,8 @@ void
 f (void)
 {
   __label__ a, b, c, d;
-  __extension__ (void)&&d; /* { dg-error "error: label 'd' used but not defined" } */
-  goto c; /* { dg-error "error: label 'c' used but not defined" } */
+  __extension__ (void)&&d; /* { dg-error "label 'd' used but not defined" } */
+  goto c; /* { dg-error "label 'c' used but not defined" } */
  a: (void)0;
  b: (void)0;
 }

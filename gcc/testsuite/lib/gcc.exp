@@ -92,6 +92,8 @@ proc gcc_init { args } {
     global gcc_initialized
     global GCC_UNDER_TEST
     global TOOL_EXECUTABLE
+    global gcc_warning_prefix
+    global gcc_error_prefix
 
     if { $gcc_initialized == 1 } { return; }
 
@@ -106,6 +108,9 @@ proc gcc_init { args } {
     if ![info exists tmpdir] then {
 	set tmpdir /tmp
     }
+
+    set gcc_warning_prefix "warning:"
+    set gcc_error_prefix "error:"
 
     gcc_maybe_build_wrapper "${tmpdir}/gcc-testglue.o"
 }

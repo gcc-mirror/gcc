@@ -5,5 +5,5 @@
 
 void foo (char *format, ...)
 {
-  __builtin_stdarg_start (); /* { dg-error "error: too few arguments to function '__builtin_stdarg_start'" } */
+  __builtin_stdarg_start (); /* { dg-error "too few arguments to function '__builtin_stdarg_start'" } */
 }

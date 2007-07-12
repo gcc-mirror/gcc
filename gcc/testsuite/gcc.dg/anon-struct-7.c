@@ -6,5 +6,5 @@
 
 struct s {
   int a;
-  const; /* { dg-warning "warning: ISO C forbids member declarations with no members" } */
+  const; /* { dg-warning "ISO C forbids member declarations with no members" } */
 };

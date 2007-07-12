@@ -11,29 +11,29 @@
 inline inline void f0 (void),
   f1 (void);
 
-static static int a, /* { dg-error "error: duplicate 'static'" } */
+static static int a, /* { dg-error "duplicate 'static'" } */
   b;
 
-extern extern int c, /* { dg-error "error: duplicate 'extern'" } */
+extern extern int c, /* { dg-error "duplicate 'extern'" } */
   d;
 
-typedef typedef int e, /* { dg-error "error: duplicate 'typedef'" } */
+typedef typedef int e, /* { dg-error "duplicate 'typedef'" } */
   f;
 
 void
 h (void)
 {
-  auto auto int p, /* { dg-error "error: duplicate 'auto'" } */
+  auto auto int p, /* { dg-error "duplicate 'auto'" } */
     q;
 
-  register register int r, /* { dg-error "error: duplicate 'register'" } */
+  register register int r, /* { dg-error "duplicate 'register'" } */
     s;
 }
 
 /* Multiple specifiers.  */
 
-static extern int x, /* { dg-error "error: multiple storage classes in declaration specifiers" } */
+static extern int x, /* { dg-error "multiple storage classes in declaration specifiers" } */
   y;
 
-extern typedef long z, /* { dg-error "error: multiple storage classes in declaration specifiers" } */
+extern typedef long z, /* { dg-error "multiple storage classes in declaration specifiers" } */
   w;
