@@ -600,6 +600,8 @@ struct lang_decl		GTY(())
 #define GFC_DESCRIPTOR_TYPE_P(node) TYPE_LANG_FLAG_1(node)
 /* An array without a descriptor.  */
 #define GFC_ARRAY_TYPE_P(node) TYPE_LANG_FLAG_2(node)
+/* Fortran POINTER type.  */
+#define GFC_POINTER_TYPE_P(node) TYPE_LANG_FLAG_3(node)
 /* The GFC_TYPE_ARRAY_* members are present in both descriptor and
    descriptorless array types.  */
 #define GFC_TYPE_ARRAY_LBOUND(node, dim) \

@@ -50,9 +50,12 @@ gfc_omp_privatize_by_reference (tree decl)
 
   if (TREE_CODE (type) == POINTER_TYPE)
     {
-      /* POINTER/ALLOCATABLE have aggregate types, all user variables
-	 that have POINTER_TYPE type are supposed to be privatized
-	 by reference.  */
+      /* Array POINTER/ALLOCATABLE have aggregate types, all user variables
+	 that have POINTER_TYPE type and don't have GFC_POINTER_TYPE_P
+	 set are supposed to be privatized by reference.  */
+      if (GFC_POINTER_TYPE_P (type))
+	return false;
+
       if (!DECL_ARTIFICIAL (decl))
 	return true;
 

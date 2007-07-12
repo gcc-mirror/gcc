@@ -1538,6 +1538,8 @@ gfc_sym_type (gfc_symbol * sym)
     {
       if (sym->attr.allocatable || sym->attr.pointer)
 	type = gfc_build_pointer_type (sym, type);
+      if (sym->attr.pointer)
+	GFC_POINTER_TYPE_P (type) = 1;
     }
 
   /* We currently pass all parameters by reference.
