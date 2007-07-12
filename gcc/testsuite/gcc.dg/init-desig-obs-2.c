@@ -5,7 +5,7 @@
 /* { dg-options "-std=gnu99 -pedantic" } */
 struct s { int a; };
 struct s s0 = { .a = 1 };
-struct s s1 = { a: 1 }; /* { dg-warning "warning: obsolete use of designated initializer with ':'" } */
+struct s s1 = { a: 1 }; /* { dg-warning "obsolete use of designated initializer with ':'" } */
 
 int x0[] = { [0] = 1 };
-int x1[] = { [0] 1 }; /* { dg-warning "warning: obsolete use of designated initializer without '='" } */
+int x1[] = { [0] 1 }; /* { dg-warning "obsolete use of designated initializer without '='" } */

@@ -4,5 +4,5 @@
 /* { dg-do compile } */
 /* { dg-options "-Wall" } */
 int a, b, c, d;
-int e(void) { return (char)a, b; } /* { dg-warning "warning: left-hand operand of comma expression has no effect" } */
-int f(void) { return (a ? (void)b : (void)c), d; } /* { dg-warning "warning: left-hand operand of comma expression has no effect" } */
+int e(void) { return (char)a, b; } /* { dg-warning "left-hand operand of comma expression has no effect" } */
+int f(void) { return (a ? (void)b : (void)c), d; } /* { dg-warning "left-hand operand of comma expression has no effect" } */

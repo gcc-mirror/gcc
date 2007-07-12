@@ -3,4 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -fhosted" } */
 
-inline int main (void); /* { dg-warning "warning: cannot inline function 'main'" } */
+inline int main (void); /* { dg-warning "cannot inline function 'main'" } */

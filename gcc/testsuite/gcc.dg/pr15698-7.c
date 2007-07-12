@@ -6,5 +6,5 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
-char *strchr(const char *, int); /* { dg-error "error: prototype declaration" } */
-char *strchr(a) const char *a; { return 0; } /* { dg-error "error: number of arguments doesn't match prototype" } */
+char *strchr(const char *, int); /* { dg-error "prototype declaration" } */
+char *strchr(a) const char *a; { return 0; } /* { dg-error "number of arguments doesn't match prototype" } */

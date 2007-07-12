@@ -3,10 +3,10 @@
 /* { dg-do compile } */
 /* { dg-options "-Wmissing-declarations" } */
 
-extern __typeof (f) g; /* { dg-error "error: 'f' undeclared here \\(not in a function\\)" } */
+extern __typeof (f) g; /* { dg-error "'f' undeclared here \\(not in a function\\)" } */
 
 int
 f (x)
-     float x; /* { dg-warning "warning: no previous declaration for 'f'" } */
+     float x; /* { dg-warning "no previous declaration for 'f'" } */
 {
 }

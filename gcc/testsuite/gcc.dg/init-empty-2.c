@@ -4,6 +4,6 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -pedantic" } */
 
-struct s { int a; } x = { }; /* { dg-warning "warning: ISO C forbids empty initializer braces" } */
+struct s { int a; } x = { }; /* { dg-warning "ISO C forbids empty initializer braces" } */
 
-struct s *p = &(struct s){ }; /* { dg-warning "warning: ISO C forbids empty initializer braces" } */
+struct s *p = &(struct s){ }; /* { dg-warning "ISO C forbids empty initializer braces" } */

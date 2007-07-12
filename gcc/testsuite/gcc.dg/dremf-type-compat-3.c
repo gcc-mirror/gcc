@@ -7,12 +7,12 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-float dremf (float, float); /* { dg-error "error: prototype declaration" } */
+float dremf (float, float); /* { dg-error "prototype declaration" } */
 
 float
 dremf (x, y)
      float x;
      float y;
-{ /* { dg-error "error: promoted argument '.' doesn't match prototype" } */
+{ /* { dg-error "promoted argument '.' doesn't match prototype" } */
   return x + y;
 }

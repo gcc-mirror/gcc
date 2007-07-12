@@ -17,5 +17,5 @@ char c;
 void *
 g (void)
 {
-  return (void *) c; /* { dg-warning "warning: cast to pointer from integer of different size" } */
+  return (void *) c; /* { dg-warning "cast to pointer from integer of different size" } */
 }

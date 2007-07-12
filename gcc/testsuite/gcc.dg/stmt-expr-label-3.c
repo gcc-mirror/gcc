@@ -5,4 +5,4 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-void f(void) { 1 ? 1 : ({ a : 1; 1; }); goto a; } /* { dg-error "error: jump into statement expression" } */
+void f(void) { 1 ? 1 : ({ a : 1; 1; }); goto a; } /* { dg-error "jump into statement expression" } */

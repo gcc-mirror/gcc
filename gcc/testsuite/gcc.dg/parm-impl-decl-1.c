@@ -7,7 +7,7 @@
 /* Implicit function declaration in attribute in definition (testcase
    from bug).  */
 int
-foo (int __attribute__ ((__mode__ (vector_size(8)))) i) /* { dg-warning "warning: '__mode__' attribute ignored" } */
+foo (int __attribute__ ((__mode__ (vector_size(8)))) i) /* { dg-warning "'__mode__' attribute ignored" } */
 {
   return (long long) i;
 }

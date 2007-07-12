@@ -6,13 +6,13 @@
 
 #pragma GCC diagnostic warning "-Waddress"
 
-void __attribute__((dj)) bar() { }	/* { dg-error "error: .* attribute directive ignored" } */
+void __attribute__((dj)) bar() { }	/* { dg-error ".* attribute directive ignored" } */
 
 int i;
 
 void
 foo ()
 {
-  if (&i)	/* { dg-warning "warning: .* will always evaluate as 'true'" } */
+  if (&i)	/* { dg-warning ".* will always evaluate as 'true'" } */
     grill ();
 }

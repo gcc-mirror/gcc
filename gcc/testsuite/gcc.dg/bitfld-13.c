@@ -6,9 +6,9 @@ int
 main(void)
 {
   struct X {
-    int s[20] : 1; /* { dg-error "error: bit-field 's' has invalid type" } */
-    int *p : 2; /* { dg-error "error: bit-field 'p' has invalid type" } */
-    int (*f)(float) : 3; /* { dg-error "error: bit-field 'f' has invalid type" } */
+    int s[20] : 1; /* { dg-error "bit-field 's' has invalid type" } */
+    int *p : 2; /* { dg-error "bit-field 'p' has invalid type" } */
+    int (*f)(float) : 3; /* { dg-error "bit-field 'f' has invalid type" } */
   } x;
   return 0;
 }

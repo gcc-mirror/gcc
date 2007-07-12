@@ -9,5 +9,5 @@ char c;
 void
 f (void)
 {
-  c = (char)&i; /* { dg-warning "warning: cast from pointer to integer of different size" } */
+  c = (char)&i; /* { dg-warning "cast from pointer to integer of different size" } */
 }

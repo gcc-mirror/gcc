@@ -8,5 +8,5 @@ struct s {
   int a;
   const;
 };
-/* { dg-warning "warning: useless type qualifier in empty declaration" "empty" { target *-*-* } 9 } */
-/* { dg-warning "warning: empty declaration" "empty 2" { target *-*-* } 9 } */
+/* { dg-warning "useless type qualifier in empty declaration" "empty" { target *-*-* } 9 } */
+/* { dg-warning "empty declaration" "empty 2" { target *-*-* } 9 } */

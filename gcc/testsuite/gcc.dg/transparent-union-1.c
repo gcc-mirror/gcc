@@ -52,25 +52,25 @@ int
 main (void)
 {
   f0 (&i);
-  f0 (&l);	/* { dg-warning "warning: passing argument 1 of 'f0' from incompatible pointer type" } */
+  f0 (&l);	/* { dg-warning "passing argument 1 of 'f0' from incompatible pointer type" } */
   f1 (&i);
-  f1 (&l);	/* { dg-warning "warning: passing argument 1 of 'f1' from incompatible pointer type" } */
+  f1 (&l);	/* { dg-warning "passing argument 1 of 'f1' from incompatible pointer type" } */
   f2 (&i);
-  f2 (&l);	/* { dg-warning "warning: passing argument 1 of 'f2' from incompatible pointer type" } */
+  f2 (&l);	/* { dg-warning "passing argument 1 of 'f2' from incompatible pointer type" } */
   f3 (&i);
-  f3 (&l);	/* { dg-warning "warning: passing argument 1 of 'f3' from incompatible pointer type" } */
+  f3 (&l);	/* { dg-warning "passing argument 1 of 'f3' from incompatible pointer type" } */
   f4 (&i);
-  f4 (&l);	/* { dg-warning "warning: passing argument 1 of 'f4' from incompatible pointer type" } */
+  f4 (&l);	/* { dg-warning "passing argument 1 of 'f4' from incompatible pointer type" } */
   f5 (&i);
-  f5 (&l);	/* { dg-warning "warning: passing argument 1 of 'f5' from incompatible pointer type" } */
+  f5 (&l);	/* { dg-warning "passing argument 1 of 'f5' from incompatible pointer type" } */
   f6 (&i);
-  f6 (&l);	/* { dg-warning "warning: passing argument 1 of 'f6' from incompatible pointer type" } */
+  f6 (&l);	/* { dg-warning "passing argument 1 of 'f6' from incompatible pointer type" } */
   f7 (&i);
-  f7 (&l);	/* { dg-warning "warning: passing argument 1 of 'f7' from incompatible pointer type" } */
+  f7 (&l);	/* { dg-warning "passing argument 1 of 'f7' from incompatible pointer type" } */
   f8 (&i);
-  f8 (&l);	/* { dg-warning "warning: passing argument 1 of 'f8' from incompatible pointer type" } */
+  f8 (&l);	/* { dg-warning "passing argument 1 of 'f8' from incompatible pointer type" } */
   f9 (&i);
-  f9 (&l);	/* { dg-warning "warning: passing argument 1 of 'f9' from incompatible pointer type" } */
+  f9 (&l);	/* { dg-warning "passing argument 1 of 'f9' from incompatible pointer type" } */
   f10 (&i);
   f10 (&l);
   f11 (&i);

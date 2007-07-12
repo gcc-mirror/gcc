@@ -16,13 +16,13 @@ struct t { void (*p)(struct s); };
 struct s { int b; };
 void h (struct s x) { }
 
-void j(struct t2); /* { dg-warning "warning: 'struct t2' declared inside parameter list" } */
+void j(struct t2); /* { dg-warning "'struct t2' declared inside parameter list" } */
 /* { dg-warning "its scope is only" "explanation" { target *-*-* } 19 } */
 
 union u;
 
-void v(union u x) { } /* { dg-error "error: parameter 1 \\('x'\\) has incomplete type" } */
+void v(union u x) { } /* { dg-error "parameter 1 \\('x'\\) has incomplete type" } */
 
-void p(void x); /* { dg-warning "warning: parameter 1 \\('x'\\) has void type" } */
+void p(void x); /* { dg-warning "parameter 1 \\('x'\\) has void type" } */
 
-void q(const void x); /* { dg-warning "warning: parameter 1 \\('x'\\) has void type" } */
+void q(const void x); /* { dg-warning "parameter 1 \\('x'\\) has void type" } */

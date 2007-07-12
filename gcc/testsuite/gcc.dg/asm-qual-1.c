@@ -7,6 +7,6 @@ void
 f (void)
 {
   asm volatile ("");
-  asm const (""); /* { dg-warning "warning: const qualifier ignored on asm" } */
-  asm restrict (""); /* { dg-warning "warning: restrict qualifier ignored on asm" } */
+  asm const (""); /* { dg-warning "const qualifier ignored on asm" } */
+  asm restrict (""); /* { dg-warning "restrict qualifier ignored on asm" } */
 }

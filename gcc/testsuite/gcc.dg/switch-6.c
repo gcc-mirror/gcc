@@ -9,6 +9,6 @@ f (int a)
 {
   switch (a)
     {
-    case 0 ... 0: ; /* { dg-warning "warning: range expressions in switch statements are non-standard" } */
+    case 0 ... 0: ; /* { dg-warning "range expressions in switch statements are non-standard" } */
     }
 }

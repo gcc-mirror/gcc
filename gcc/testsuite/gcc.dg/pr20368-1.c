@@ -3,10 +3,10 @@
 /* { dg-do compile } */
 /* { dg-options "-Wstrict-prototypes" } */
 
-extern __typeof (f) g; /* { dg-error "error: 'f' undeclared here \\(not in a function\\)" } */
+extern __typeof (f) g; /* { dg-error "'f' undeclared here \\(not in a function\\)" } */
 
 int
 f (x)
-     float x; /* { dg-warning "warning: function declaration isn't a prototype" } */
+     float x; /* { dg-warning "function declaration isn't a prototype" } */
 {
 }

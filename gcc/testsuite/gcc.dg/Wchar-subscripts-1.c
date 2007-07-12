@@ -20,8 +20,8 @@ f (void)
   p[uc];
   sc[p];
   uc[p];
-  a[c]; /* { dg-warning "warning: array subscript has type 'char'" } */
-  p[c]; /* { dg-warning "warning: array subscript has type 'char'" } */
+  a[c]; /* { dg-warning "array subscript has type 'char'" } */
+  p[c]; /* { dg-warning "array subscript has type 'char'" } */
   /* -Wchar-subscripts does not warn if the char is not syntactically
       the subscript.  */
   c[a];

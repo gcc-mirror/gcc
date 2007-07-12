@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-int k (int [sizeof &&z]); /* { dg-error "error: label 'z' referenced outside of any function" } */
+int k (int [sizeof &&z]); /* { dg-error "label 'z' referenced outside of any function" } */

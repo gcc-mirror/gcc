@@ -7,6 +7,6 @@ int i;
 void
 f (void)
 {
-  ((unsigned int)i)(); /* { dg-error "error: called object '\\(unsigned int\\)i' is not a function" } */
-  ((char)i)(); /* { dg-error "error: called object '\\(char\\)i' is not a function" } */
+  ((unsigned int)i)(); /* { dg-error "called object '\\(unsigned int\\)i' is not a function" } */
+  ((char)i)(); /* { dg-error "called object '\\(char\\)i' is not a function" } */
 }

@@ -4,4 +4,4 @@
 /* { dg-options "" } */
 
 const int i = 1;
-void foo() { void *p = (char [][i]){ "" }; } /* { dg-error "error: compound literal has variable size" } */
+void foo() { void *p = (char [][i]){ "" }; } /* { dg-error "compound literal has variable size" } */

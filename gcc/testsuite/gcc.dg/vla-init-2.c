@@ -6,5 +6,5 @@
 /* { dg-options "" } */
 
 const int i = 1;
-void foo() { char a[][i] = {""}; } /* { dg-error "error: variable-sized object may not be initialized" } */
+void foo() { char a[][i] = {""}; } /* { dg-error "variable-sized object may not be initialized" } */
 /* { dg-error "array size missing in 'a'" "extra error" { target *-*-* } 9 } */

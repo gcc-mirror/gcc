@@ -7,5 +7,5 @@
 /* { dg-options "-std=gnu99" } */
 
 int f(int (*)[]);
-int g() { int f(int (*)[2]); } /* { dg-error "error: prototype declaration" } */
-int f(a) int (*a)[3]; { return 0; } /* { dg-error "error: argument 'a' doesn't match prototype" } */
+int g() { int f(int (*)[2]); } /* { dg-error "prototype declaration" } */
+int f(a) int (*a)[3]; { return 0; } /* { dg-error "argument 'a' doesn't match prototype" } */

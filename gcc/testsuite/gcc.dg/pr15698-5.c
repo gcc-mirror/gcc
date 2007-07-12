@@ -6,5 +6,5 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
-void f(void) { int isnan(void); } /* { dg-error "error: prototype declaration" } */
-int isnan(a) int a; {} /* { dg-error "error: number of arguments doesn't match prototype" } */
+void f(void) { int isnan(void); } /* { dg-error "prototype declaration" } */
+int isnan(a) int a; {} /* { dg-error "number of arguments doesn't match prototype" } */

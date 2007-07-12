@@ -7,7 +7,7 @@
 
 float
 dremf(x, y)
-     float x, y; /* { dg-warning "warning: conflicting types for built-in function 'dremf'" } */
+     float x, y; /* { dg-warning "conflicting types for built-in function 'dremf'" } */
 {
   return x + y;
 }

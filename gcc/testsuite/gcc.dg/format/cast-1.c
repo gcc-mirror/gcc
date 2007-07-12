@@ -12,5 +12,5 @@ f (int x)
 {
   printf("%s", x); /* { dg-warning "format" } */
   printf((char *)(size_t)"%s", x); /* { dg-warning "format" } */
-  printf((char *)(char)"%s", x); /* { dg-warning "warning: cast from pointer to integer of different size" } */
+  printf((char *)(char)"%s", x); /* { dg-warning "cast from pointer to integer of different size" } */
 }

@@ -6,7 +6,7 @@
 
 void
 f (a, b)
-     int; /* { dg-error "error: empty declaration" } */
-     register; /* { dg-error "error: empty declaration" } */
+     int; /* { dg-error "empty declaration" } */
+     register; /* { dg-error "empty declaration" } */
 {
 }

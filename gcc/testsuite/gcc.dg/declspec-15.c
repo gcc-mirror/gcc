@@ -6,7 +6,7 @@
 
 void
 f (a, b)
-     int; /* { dg-warning "warning: empty declaration" } */
-     register; /* { dg-warning "warning: empty declaration" } */
+     int; /* { dg-warning "empty declaration" } */
+     register; /* { dg-warning "empty declaration" } */
 {
 }

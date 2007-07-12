@@ -6,6 +6,6 @@
 /* { dg-options "-std=gnu99" } */
 
 void f();
-void f(int); /* { dg-error "error: prototype declaration" } */
+void f(int); /* { dg-error "prototype declaration" } */
 void f();
-void f(a) long a; {} /* { dg-error "error: argument 'a' doesn't match prototype" } */
+void f(a) long a; {} /* { dg-error "argument 'a' doesn't match prototype" } */

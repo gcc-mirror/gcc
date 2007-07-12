@@ -7,5 +7,5 @@ int
 write_format (char *format, ...)
 {
   __builtin_va_list p;
-  __builtin_stdarg_start (p); /* { dg-error "error: too few arguments to function 'va_start'" } */
+  __builtin_stdarg_start (p); /* { dg-error "too few arguments to function 'va_start'" } */
 }

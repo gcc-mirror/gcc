@@ -3,5 +3,5 @@
 
 void f(void) 
 { 
-  puts("Hello"); /* { dg-warning "warning: implicit declaration of function" } */
+  puts("Hello"); /* { dg-warning "implicit declaration of function" } */
 }

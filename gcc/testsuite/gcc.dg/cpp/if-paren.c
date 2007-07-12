@@ -15,17 +15,17 @@
 #endif
 
 #if (1) == 1
-#error		/* { dg-error "error" "simple parens no. 1" } */
+#error		/* { dg-error "" "simple parens no. 1" } */
 #endif
 
 #if (2)
-#error		/* { dg-error "error" "simple parens no. 2" } */
+#error		/* { dg-error "" "simple parens no. 2" } */
 #endif
 
 #if 3 == (3)
-#error		/* { dg-error "error" "simple parens no. 3" } */
+#error		/* { dg-error "" "simple parens no. 3" } */
 #endif
 
 #if (((-1) + 8)) == ((+2) * ((3)) - -1)
-#error		/* { dg-error "error" "nested parentheses" } */
+#error		/* { dg-error "" "nested parentheses" } */
 #endif

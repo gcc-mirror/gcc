@@ -5,5 +5,5 @@
 /* { dg-options "" } */
 
 extern int a[];
-void f(void) { extern int a[]; extern int a[10]; } /* { dg-error "error: previous declaration of 'a' was here" } */
-extern int a[5]; /* { dg-error "error: conflicting types for 'a'" } */
+void f(void) { extern int a[]; extern int a[10]; } /* { dg-error "previous declaration of 'a' was here" } */
+extern int a[5]; /* { dg-error "conflicting types for 'a'" } */

@@ -4,7 +4,7 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-struct s0 {}; /* { dg-error "error: struct has no members" } */
-union u0 {}; /* { dg-error "error: union has no members" } */
-struct s1 { int : 1; }; /* { dg-error "error: struct has no named members" } */
-union u1 { int : 1; }; /* { dg-error "error: union has no named members" } */
+struct s0 {}; /* { dg-error "struct has no members" } */
+union u0 {}; /* { dg-error "union has no members" } */
+struct s1 { int : 1; }; /* { dg-error "struct has no named members" } */
+union u1 { int : 1; }; /* { dg-error "union has no named members" } */

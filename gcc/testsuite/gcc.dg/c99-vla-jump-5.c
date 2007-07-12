@@ -16,8 +16,8 @@ f (int a, int b)
 {
   switch (a) {
     int v[b];
-  case 2: /* { dg-error "error: case label in scope of identifier with variably modified type not containing enclosing switch statement" } */
-  default: /* { dg-error "error: 'default' label in scope of identifier with variably modified type not containing enclosing switch statement" } */
+  case 2: /* { dg-error "case label in scope of identifier with variably modified type not containing enclosing switch statement" } */
+  default: /* { dg-error "'default' label in scope of identifier with variably modified type not containing enclosing switch statement" } */
   switch (a)
     {
     case 4:

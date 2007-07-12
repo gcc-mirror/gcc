@@ -6,4 +6,4 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
 
-void bar (const char *, ...) __attribute__ ((__format__ (__asm_fprintf__, 1, 2))); /* { dg-error "error: '__gcc_host_wide_int__' is not defined as a type" } */
+void bar (const char *, ...) __attribute__ ((__format__ (__asm_fprintf__, 1, 2))); /* { dg-error "'__gcc_host_wide_int__' is not defined as a type" } */

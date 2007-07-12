@@ -5,5 +5,5 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
-void f() { void g(void); } /* { dg-error "error: prototype declaration" } */
-void g(a) int a; {} /* { dg-error "error: number of arguments doesn't match prototype" } */
+void f() { void g(void); } /* { dg-error "prototype declaration" } */
+void g(a) int a; {} /* { dg-error "number of arguments doesn't match prototype" } */

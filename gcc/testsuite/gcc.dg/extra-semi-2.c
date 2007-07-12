@@ -4,4 +4,4 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic" } */
 
-; /* { dg-warning "warning: ISO C does not allow extra ';' outside of a function" } */
+; /* { dg-warning "ISO C does not allow extra ';' outside of a function" } */

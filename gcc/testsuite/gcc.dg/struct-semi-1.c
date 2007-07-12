@@ -13,7 +13,7 @@ struct s1 {
 struct s2 {
   ;
   int c
-}; /* { dg-warning "warning: no semicolon at end of struct or union" } */
+}; /* { dg-warning "no semicolon at end of struct or union" } */
 struct s3 {
   int d
-}; /* { dg-warning "warning: no semicolon at end of struct or union" } */
+}; /* { dg-warning "no semicolon at end of struct or union" } */

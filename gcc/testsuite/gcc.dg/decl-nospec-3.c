@@ -5,4 +5,4 @@
 /* { dg-do compile } */
 /* { dg-options "-pedantic-errors" } */
 
-foo(); /* { dg-error "error: data definition has no type or storage class" } */
+foo(); /* { dg-error "data definition has no type or storage class" } */

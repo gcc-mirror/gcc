@@ -5,4 +5,4 @@
 
 struct { int a : 1; } x;
 
-int r = __alignof (x.a); /* { dg-error "error: '__alignof' applied to a bit-field" } */
+int r = __alignof (x.a); /* { dg-error "'__alignof' applied to a bit-field" } */

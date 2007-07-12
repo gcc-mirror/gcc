@@ -5,13 +5,13 @@
 
 #pragma GCC diagnostic error "-Waddress"
 
-void __attribute__((dj)) bar() { }	/* { dg-warning "warning: .* attribute directive ignored" } */
+void __attribute__((dj)) bar() { }	/* { dg-warning ".* attribute directive ignored" } */
 
 int i;
 
 void
 foo ()
 {
-  if (&i)	/* { dg-error "error: .* will always evaluate as 'true'" } */
+  if (&i)	/* { dg-error ".* will always evaluate as 'true'" } */
     grill ();
 }
