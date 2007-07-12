@@ -717,6 +717,7 @@ static tree rs6000_builtin_mul_widen_odd (tree);
 static tree rs6000_builtin_conversion (enum tree_code, tree);
 
 static void def_builtin (int, const char *, tree, int);
+static bool rs6000_vector_alignment_reachable (tree, bool);
 static void rs6000_init_builtins (void);
 static rtx rs6000_expand_unop_builtin (enum insn_code, tree, rtx);
 static rtx rs6000_expand_binop_builtin (enum insn_code, tree, rtx);
@@ -983,6 +984,9 @@ static const char alt_reg_names[][8] =
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD rs6000_builtin_mul_widen_odd
 #undef TARGET_VECTORIZE_BUILTIN_CONVERSION
 #define TARGET_VECTORIZE_BUILTIN_CONVERSION rs6000_builtin_conversion
+
+#undef TARGET_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTOR_ALIGNMENT_REACHABLE rs6000_vector_alignment_reachable
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -1803,6 +1807,37 @@ rs6000_builtin_mul_widen_odd (tree type)
             rs6000_builtin_decls[ALTIVEC_BUILTIN_VMULOSB];
     default:
       return NULL_TREE;
+    }
+}
+
+
+/* Return true iff, data reference of TYPE can reach vector alignment (16)
+   after applying N number of iterations.  This routine does not determine
+   how may iterations are required to reach desired alignment.  */
+
+static bool
+rs6000_vector_alignment_reachable (tree type ATTRIBUTE_UNUSED, bool is_packed)
+{
+  if (is_packed)
+    return false;
+
+  if (TARGET_32BIT)
+    {
+      if (rs6000_alignment_flags == MASK_ALIGN_NATURAL)
+        return true;
+
+      if (rs6000_alignment_flags ==  MASK_ALIGN_POWER)
+        return true;
+
+      return false;
+    }
+  else
+    {
+      if (TARGET_MACHO)
+        return false;
+
+      /* Assuming that all other types are naturally aligned. CHECKME!  */
+      return true;
     }
 }
 

@@ -357,6 +357,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN 0
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD 0
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST 0
+#define TARGET_VECTOR_ALIGNMENT_REACHABLE \
+  default_builtin_vector_alignment_reachable
 
 #define TARGET_VECTORIZE                                                \
   {									\
@@ -365,7 +367,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
     TARGET_VECTORIZE_BUILTIN_CONVERSION,				\
     TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN,                            \
     TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD,				\
-    TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST				\
+    TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST,			\
+    TARGET_VECTOR_ALIGNMENT_REACHABLE					\
   }
 
 #define TARGET_DEFAULT_TARGET_FLAGS 0
