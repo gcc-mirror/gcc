@@ -25,8 +25,11 @@
 #include <string>
 #include <tr1/unordered_map>
 
-using namespace std;
 using namespace std::tr1;
+using std::string;
+using std::allocator;
+using std::pair;
+using std::equal_to;
 
 template class unordered_map<string, float>;
 template class unordered_map<string, int,

@@ -25,8 +25,11 @@
 #include <string>
 #include <tr1/unordered_map>
 
-using namespace std;
 using namespace std::tr1;
+using std::string;
+using std::equal_to;
+using std::allocator;
+using std::pair;
 
 template class unordered_multimap<string, float>;
 template class unordered_multimap<string, int,

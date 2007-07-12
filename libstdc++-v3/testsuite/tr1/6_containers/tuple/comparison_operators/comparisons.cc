@@ -23,8 +23,7 @@
 #include <tr1/tuple>
 #include <testsuite_hooks.h>
 
-using namespace std;
-using namespace tr1;
+using namespace std::tr1;
 
 #define TEST1(x) VERIFY( x == x && !(x != x) && x <= x && !(x < x) )
 

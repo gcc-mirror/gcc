@@ -30,8 +30,9 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  using namespace std;
-  using namespace tr1;
+  using namespace std::tr1;
+  using std::equal_to;
+  using std::set;
 
   typedef __gnu_test::uneq_allocator<char> my_alloc;
   typedef unordered_set<char, hash<char>, equal_to<char>, my_alloc> my_uset;

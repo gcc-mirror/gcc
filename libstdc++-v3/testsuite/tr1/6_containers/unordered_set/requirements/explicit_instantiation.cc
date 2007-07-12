@@ -24,8 +24,9 @@
 
 #include <tr1/unordered_set>
 
-using namespace std;
 using namespace std::tr1;
+using std::equal_to;
+using std::allocator;
 
 template class unordered_set<int>;
 template class unordered_set<float, hash<float>, equal_to<float>,
