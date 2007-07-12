@@ -1,3 +1,10 @@
+2007-07-12  Richard Guenther  <rguenther@suse.de>
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_repeat): Convert
+	arguments to gfc_charlen_type_node.
+	* trans-io.c (gfc_convert_array_to_string): Convert type
+	size to gfc_array_index_type.
+
 2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32634

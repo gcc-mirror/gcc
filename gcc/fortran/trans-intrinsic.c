@@ -3570,7 +3570,9 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 			   &se->pre, &expr->where);
 
   /* Compute the destination length.  */
-  dlen = fold_build2 (MULT_EXPR, gfc_charlen_type_node, slen, ncopies);
+  dlen = fold_build2 (MULT_EXPR, gfc_charlen_type_node,
+		      fold_convert (gfc_charlen_type_node, slen),
+		      fold_convert (gfc_charlen_type_node, ncopies));
   type = gfc_get_character_type (expr->ts.kind, expr->ts.cl);
   dest = gfc_conv_string_tmp (se, build_pointer_type (type), dlen);
 
@@ -3594,7 +3596,8 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   gfc_add_expr_to_block (&body, tmp);
 
   /* Call memmove (dest + (i*slen), src, slen).  */
-  tmp = fold_build2 (MULT_EXPR, gfc_charlen_type_node, slen,
+  tmp = fold_build2 (MULT_EXPR, gfc_charlen_type_node,
+		     fold_convert (gfc_charlen_type_node, slen),
 		     fold_convert (gfc_charlen_type_node, count));
   tmp = fold_build2 (POINTER_PLUS_EXPR, pchar_type_node,
 		     fold_convert (pchar_type_node, dest),

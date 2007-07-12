@@ -623,7 +623,8 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
     }
 
   tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-  size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
+  size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
+		      fold_convert (gfc_array_index_type, tmp));
 
   se->string_length = fold_convert (gfc_charlen_type_node, size);
 }
