@@ -1,3 +1,9 @@
+2007-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/32729
+	* cfghooks.c (can_duplicate_block_p): Do not forbid duplicating blocks
+	that fallthru to exit.
+
 2007-07-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (symGOTOFF2reg): Add missing parenthesis.
