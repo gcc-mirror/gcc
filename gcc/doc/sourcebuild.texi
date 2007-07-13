@@ -301,6 +301,9 @@ such as POSIX specify additional values to be defined in
 @file{gsyslimits.h} if it does not need fixing to work with GCC; if it
 needs fixing, @file{syslimits.h} is the fixed copy.
 
+GCC can also install @code{<tgmath.h>}.  It will do this when
+@file{config.gcc} sets @code{use_gcc_tgmath} to @code{yes}.
+
 @node Documentation
 @subsection Building Documentation
 

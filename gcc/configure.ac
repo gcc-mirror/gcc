@@ -1739,6 +1739,11 @@ for file in ${extra_headers} ; do
   extra_headers_list="${extra_headers_list} \$(srcdir)/config/${cpu_type}/${file}"
 done
 
+# If use_gcc_tgmath is set, append ginclude/tgmath.h.
+if test x"$use_gcc_tgmath" = xyes
+then extra_headers_list="${extra_headers_list} \$(srcdir)/ginclude/tgmath.h"
+fi
+
 # Define collect2 in Makefile.
 case $host_can_use_collect2 in
   no) collect2= ;;

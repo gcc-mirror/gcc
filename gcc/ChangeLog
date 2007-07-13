@@ -1,3 +1,11 @@
+2007-07-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* ginclude/tgmath.h: New.
+	* config.gcc: Use GCC's tgmath.h on non-glibc systems.
+	* doc/sourcebuild.texi (Headers): Document use_gcc_tgmath.
+	* configure.ac (STMP_FIXPROTO): Honor use_gcc_tgmath.
+	* configure: Regenerate.
+
 2007-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-unwind.h (sh_fallback_frame_state): Use

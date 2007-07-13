@@ -1,3 +1,10 @@
+2007-07-12  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/c99-tgmath-1.c: New.
+	* gcc.dg/c99-tgmath-2.c: New.
+	* gcc.dg/c99-tgmath-3.c: New.
+	* gcc.dg/c99-tgmath-4.c: New.
+
 2007-07-12  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	    Janis Johnson  <janis187@us.ibm.com>
 
