@@ -1,3 +1,7 @@
+2007-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (mark_use): Remove.
+
 2007-07-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (thumb1_compute_save_reg_mask): Make sure scratch
