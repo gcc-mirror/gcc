@@ -1,3 +1,8 @@
+2007-07-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/20011127-1.c: Use dg-message, not dg-error to match the
+	error message part that continues on a new line.
+
 2007-07-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/c99-tgmath-1.c: New.
