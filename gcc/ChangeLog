@@ -1,3 +1,102 @@
+2007-07-13  Caroline Tice  <ctice@apple.com>
+	
+	* toplev.c (process_options): Turn flag_var_tracking_uninit off when
+	flag_var_tracking is explicitly turned off (i.e. when variable
+	tracking is not feasible); otherwise, turn flag_var_tracking on when
+	flag_var_tracking_uninit is on.
+	* rtl.def (VAR_LOCATION): Add a new integer subfield to VAR_LOCATION
+	note definitions, to allow recording of initialization status in the
+	notes.
+	* dwarf2out.c (dwarf_stack_op_name): Add case for DW_OP_GNU_uninit.
+	(add_var_loc_to_decl): Add comparison of NOTE_VAR_LOCATION_STATUS to
+	determine if two note locations are equal.
+	(output_loc_list): Don't output list entries whose start & end labels
+	are the same.
+	(reg_loc_descriptor): Add parameter for initialization status; pass it
+	to other loc descriptor functions.
+	(one_reg_loc_descriptor): Add parameter for initialization status;
+	check its value and add DW_OP_GNU_uninit to returned loc descr if
+	appropriate.
+	(multiple_reg_loc_descriptor): Add parameter for initialization
+	status;
+	pass init status argument to other loc descriptor functions; check
+	value of intialization parameter and add DW_OP_GNU_uninit to returned
+	loc descr if appropriate.
+	(based_loc_descr): Add parameter for initialization status; add new
+	variable for return value; check value of initialization parameter and
+	add DW_OP_GNU_uninit to returned loc descr if appropriate.
+	(concatn_mem_loc_descriptor): Add parameter for initialization status;
+	pass init status argument to other loc descriptor functions; check
+	value of intialization parameter and add DW_OP_GNU_uninit to returned
+	loc descr if appropriate.
+	(mem_loc_descriptor): Likewise.
+	(concat_loc_descriptor): Likewise.
+	(concatn_loc_descriptor): Likewise.
+	(loc_descriptor): Add parameter for initialization status; pass it as
+	argument to other loc descriptor function calls.
+	(loc_descriptor_from_tree_1): Add appropriate initialization status
+	to loc descriptor function calls.
+	(add_location_or_const_value_attribute): Get initialization status
+	from VAR_LOCATION note; add initialization status to loc descriptor
+	function calls.
+	* dwarf2.h (enum dwarf_location_atom): New op, DW_OP_GNU_uninit.
+	* print-rtl.c (print_rtx): When printing a VAR_LOCATION note, if
+	status is uninitialized, add "[uninint]" to output.
+	* common.opt (fvar-tracking-uninit): New option, similar to
+	fvar-tracking, to turn on tracking of uninitialized variables; creates
+	a new global flag, flag_var_tracking_uninit.
+	* rtl.h (NOTE_VAR_LOCATION_STATUS): New macro for accessing new field.
+	(enum var_init_status): New type, for var initialization status field.
+	* var-tracking.c (struct location_chain_def): Two new fields, init,
+	for initialization status, and set_src for the assignment value expr.
+	(unshare_variable): New parameter for initialization status;
+	initialize new init and set_src fields.
+	(var_reg_set): New parameters for initialization status and value;
+	pass them to set_variable_part.
+	(var_mem_set): Likewise.
+	(get_init_value): New function.
+	(var_reg_delete_and_set): New initialization status & value
+	parameters; add call to get_init_value if status is unknown; pass new
+	parameters to clobber_variable_part and var_reg_set.
+	(var_mem_delete_and_set): Likewise.
+	(var_reg_delete): Pass null set_src value to clobber_variable_part.
+	(var_mem_delete): Likewise.
+	(variable_union): Pass status to unshare_variable; initialize new init
+	and set_src fields. If flag_var_tracking_uninit is not set, force
+	status to initialized.
+	(add_stores): Store insn, rather than NEXT_INSN(insn), so it can be
+	used later to get the set_src value.
+	(find_src_status): New function.
+	(find_src_set_src): New function.
+	(compute_bb_dataflow): Pass init status to calls to var_reg_set,
+	var_mem_set, var_reg_delete_and_set and var_mem_delete_and_set; for
+	MO_SET, get set_src value and pass it to var_reg_delete_and_set
+	and var_mem_delete_and_set.
+	(dump_variable): Print out "[uninit]" if appropriate.
+	(set_variable_part): Add new initialization and set_src parameters;
+	pass status to unshare_variable; set node->init and node- >set_src
+	fields and modify slot in hash table appropriately; save the init and
+	set_src values if appropriate and assign to the new node.
+	(clobber_variable_part): New set_src parameter; if two nodes have
+	same variable and same location but different set_src (assignment)
+	values, clobber old node.
+	(delete_variable_part): Pass init status to unshare_variable.
+	(emit_note_insn_var_location): Add initialized var; assign var's init
+	status to new 'initialized'; pass new init status field to calls to
+	gen_rtx_VAR_LOCATION. If flag_var_tracking_uninit is not set, force
+	status to initialized.
+	(emit_notes_in_bb): Pass initialization status to calls to
+	var_reg_set, var_mem_set, var_reg_delete_and_set and
+	var_mem_delete_and_set; for MO_SET, get set_src value and pass it to
+	var_reg_delete_and_set and var_mem_delete_and_set; call
+	emit_notes_for_changes on NEXT_INSN(insn) rather than on insn, to
+	make up for change in add_stores.
+	(vt_add_function_parameters): Add status to calls to
+	set_variable_part.
+	* config/darwin.c (darwin_override_options): Turn on uninitialized
+	tracking automatically, if var_tracking is on and the system is
+	10.5 or higher.
+	
 2007-07-13  Sa Liu  <saliu@de.ibm.com>
 
 	* config.gcc: Add options for arch and tune on SPU.

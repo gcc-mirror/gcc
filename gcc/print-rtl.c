@@ -325,6 +325,9 @@ print_rtx (rtx in_rtx)
 		print_mem_expr (outfile, NOTE_VAR_LOCATION_DECL (in_rtx));
 		fprintf (outfile, " ");
 		print_rtx (NOTE_VAR_LOCATION_LOC (in_rtx));
+		if (NOTE_VAR_LOCATION_STATUS (in_rtx) == 
+		                                 VAR_INIT_STATUS_UNINITIALIZED)
+		  fprintf (outfile, " [uninit]");
 		fprintf (outfile, ")");
 #endif
 		break;
