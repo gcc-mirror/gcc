@@ -31,7 +31,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 
   lappend options "additional_flags=${so_flag} -fPIC"
   # Find the generated header.
-  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir"
+  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir -fdollars-in-identifiers"
 
   # Ensure that the generated header has correct prototypes.
   set cfile [file rootname $file].c
@@ -219,7 +219,7 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
   lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir"
 
   # Find jni.h and jni_md.h.
-  lappend options "additional_flags=-I$srcdir/../include -I$srcdir/../classpath/include"
+  lappend options "additional_flags=-I$srcdir/../include -I$srcdir/../classpath/include -fdollars-in-identifiers"
 
   # Append C++ options
   lappend options "additional_flags=$options_cxx"

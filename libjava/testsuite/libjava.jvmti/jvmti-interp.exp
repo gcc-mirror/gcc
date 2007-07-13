@@ -47,7 +47,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 
   # Find jni.h and jni_md.h.
   lappend options "additional_flags=-I$srcdir/../include  \
-                   -I$srcdir/../classpath/include"
+                   -I$srcdir/../classpath/include -fdollars-in-identifiers"
 
   # Append C++ options
   lappend options "additional_flags=$options_cxx"

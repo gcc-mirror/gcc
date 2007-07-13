@@ -299,6 +299,15 @@ unbox (jobject o, jclass klass, void *rvalue, FFI_TYPE type)
     JvFail ("Bad ffi type in proxy");
 }
 
+// _Jv_getFieldInternal is declared as a friend of reflect.Field in
+// libjava/headers.txt.  This gives us a way to call the private
+// method Field.get (Class caller, Object obj).
+extern inline jobject
+_Jv_getFieldInternal (java::lang::reflect::Field *f, jclass c, jobject o)
+{
+  return f->get(c, o);
+}
+
 // run_proxy is the entry point for all proxy methods.  It boxes up
 // all the arguments and then invokes the invocation handler's invoke()
 // method.  Exceptions are caught and propagated.
@@ -340,7 +349,8 @@ run_proxy (ffi_cif *cif,
   // difference.  We'd still have to save the method array because
   // ncode structs are not scanned by the gc.
   Field *f = proxyClass->getDeclaredField (JvNewStringLatin1 ("m"));
-  JArray<Method*> *methods = (JArray<Method*>*)f->get (NULL);
+  JArray<Method*> *methods 
+    = (JArray<Method*>*)_Jv_getFieldInternal (f, proxyClass, NULL);
   Method *meth = elements(methods)[self->method_index];
 
   JArray<jclass> *parameter_types = meth->internalGetParameterTypes ();
