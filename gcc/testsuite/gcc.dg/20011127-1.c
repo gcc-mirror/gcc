@@ -1,11 +1,11 @@
-/* Copyright (C) 2001  Free Software Foundation.
+/* Copyright (C) 2001, 2007  Free Software Foundation.
    by Hans-Peter Nilsson  <hp@axis.com>
 
    Making sure that invalid asm operand modifiers don't cause an ICE.  */
 
 /* { dg-do compile { target cris-*-* } } */
 /* { dg-options "-O2" } */
-/* { dg-error "reg:SI|const_double:DF" "prune debug_rtx output" { target cris-*-* } 0 } */
+/* { dg-message "reg:SI|const_double:DF" "prune debug_rtx output" { target cris-*-* } 0 } */
 
 void
 foo (void)
