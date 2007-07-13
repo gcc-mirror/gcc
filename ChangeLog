@@ -1,3 +1,7 @@
+2007-07-13  Dan Hipschman  <dsh@google.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2007-07-11  Nick Clifton  <nickc@redhat.com>
 
 	* Makefile.tpl (BUILD_EXPORTS): Escape the newline at the end of the
