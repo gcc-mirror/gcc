@@ -847,6 +847,22 @@ extern const char * const reg_note_name[];
 #define NOTE_VAR_LOCATION_LOC(INSN)	(XCEXP (XCEXP (INSN, 4, NOTE),  \
 						1, VAR_LOCATION))
 
+/* Initialization status of the variable in the location.  Status
+   can be unknown, uninitialized or initialized.  See enumeration
+   type below.  */
+#define NOTE_VAR_LOCATION_STATUS(INSN)  (XCINT (XCEXP (INSN, 4, NOTE), \
+						2, VAR_LOCATION))
+
+/* Possible initialization status of a variable.   When requested
+   by the user, this information is tracked and recorded in the DWARF
+   debug information, along with the variable's location.  */
+enum var_init_status
+{
+  VAR_INIT_STATUS_UNKNOWN,
+  VAR_INIT_STATUS_UNINITIALIZED,
+  VAR_INIT_STATUS_INITIALIZED
+};
+
 /* Codes that appear in the NOTE_KIND field for kinds of notes
    that are not line numbers.  These codes are all negative.
    

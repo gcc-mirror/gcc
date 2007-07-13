@@ -1130,6 +1130,10 @@ fvar-tracking
 Common Report Var(flag_var_tracking) VarExists Optimization
 Perform variable tracking
 
+fvar-tracking-uninit
+Common Report Var(flag_var_tracking_uninit) Optimization
+Perform variable tracking and also tag variables that are uninitialized
+
 ftree-vectorize
 Common Report Var(flag_tree_vectorize) Optimization
 Enable loop vectorization on trees

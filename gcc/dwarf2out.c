@@ -3125,6 +3125,8 @@ dwarf_stack_op_name (unsigned int op)
       return "DW_OP_call_ref";
     case DW_OP_GNU_push_tls_address:
       return "DW_OP_GNU_push_tls_address";
+    case DW_OP_GNU_uninit:
+      return "DW_OP_GNU_uninit";
     default:
       return "OP_<unknown>";
     }
@@ -4193,15 +4195,20 @@ static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
 static int type_is_enum (tree);
 static unsigned int dbx_reg_number (rtx);
 static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
-static dw_loc_descr_ref reg_loc_descriptor (rtx);
-static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int);
-static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx);
+static dw_loc_descr_ref reg_loc_descriptor (rtx, enum var_init_status);
+static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int, 
+						enum var_init_status);
+static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx,
+						     enum var_init_status);
 static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
-static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT);
+static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT,
+					 enum var_init_status);
 static int is_based_loc (rtx);
-static dw_loc_descr_ref mem_loc_descriptor (rtx, enum machine_mode mode);
-static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx);
-static dw_loc_descr_ref loc_descriptor (rtx);
+static dw_loc_descr_ref mem_loc_descriptor (rtx, enum machine_mode mode,
+					    enum var_init_status);
+static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx,
+					       enum var_init_status);
+static dw_loc_descr_ref loc_descriptor (rtx, enum var_init_status);
 static dw_loc_descr_ref loc_descriptor_from_tree_1 (tree, int);
 static dw_loc_descr_ref loc_descriptor_from_tree (tree);
 static HOST_WIDE_INT ceiling (HOST_WIDE_INT, unsigned int);
@@ -5757,9 +5764,16 @@ add_var_loc_to_decl (tree decl, struct var_loc_node *loc)
   if (temp->last)
     {
       /* If the current location is the same as the end of the list,
+	 and either both or neither of the locations is uninitialized,
 	 we have nothing to do.  */
-      if (!rtx_equal_p (NOTE_VAR_LOCATION_LOC (temp->last->var_loc_note),
-			NOTE_VAR_LOCATION_LOC (loc->var_loc_note)))
+      if ((!rtx_equal_p (NOTE_VAR_LOCATION_LOC (temp->last->var_loc_note),
+			 NOTE_VAR_LOCATION_LOC (loc->var_loc_note)))
+	  || ((NOTE_VAR_LOCATION_STATUS (temp->last->var_loc_note)
+	       != NOTE_VAR_LOCATION_STATUS (loc->var_loc_note))
+	      && ((NOTE_VAR_LOCATION_STATUS (temp->last->var_loc_note)
+		   == VAR_INIT_STATUS_UNINITIALIZED)
+		  || (NOTE_VAR_LOCATION_STATUS (loc->var_loc_note)
+		      == VAR_INIT_STATUS_UNINITIALIZED))))
 	{
 	  /* Add LOC to the end of list and update LAST.  */
 	  temp->last->next = loc;
@@ -7069,6 +7083,9 @@ output_loc_list (dw_loc_list_ref list_head)
   for (curr = list_head; curr != NULL; curr = curr->dw_loc_next)
     {
       unsigned long size;
+      /* Don't output an entry that starts and ends at the same address.  */
+      if (strcmp (curr->begin, curr->end) == 0)
+	continue;
       if (!have_multiple_function_sections)
 	{
 	  dw2_asm_output_delta (DWARF2_ADDR_SIZE, curr->begin, curr->section,
@@ -8747,7 +8764,7 @@ add_loc_descr_op_piece (dw_loc_descr_ref *list_head, int size)
    zero if there is none.  */
 
 static dw_loc_descr_ref
-reg_loc_descriptor (rtx rtl)
+reg_loc_descriptor (rtx rtl, enum var_init_status initialized)
 {
   rtx regs;
 
@@ -8757,28 +8774,35 @@ reg_loc_descriptor (rtx rtl)
   regs = targetm.dwarf_register_span (rtl);
 
   if (hard_regno_nregs[REGNO (rtl)][GET_MODE (rtl)] > 1 || regs)
-    return multiple_reg_loc_descriptor (rtl, regs);
+    return multiple_reg_loc_descriptor (rtl, regs, initialized);
   else
-    return one_reg_loc_descriptor (dbx_reg_number (rtl));
+    return one_reg_loc_descriptor (dbx_reg_number (rtl), initialized);
 }
 
 /* Return a location descriptor that designates a machine register for
    a given hard register number.  */
 
 static dw_loc_descr_ref
-one_reg_loc_descriptor (unsigned int regno)
+one_reg_loc_descriptor (unsigned int regno, enum var_init_status initialized)
 {
+  dw_loc_descr_ref reg_loc_descr;
   if (regno <= 31)
-    return new_loc_descr (DW_OP_reg0 + regno, 0, 0);
+    reg_loc_descr = new_loc_descr (DW_OP_reg0 + regno, 0, 0);
   else
-    return new_loc_descr (DW_OP_regx, regno, 0);
+    reg_loc_descr = new_loc_descr (DW_OP_regx, regno, 0);
+
+  if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&reg_loc_descr, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
+
+  return reg_loc_descr;
 }
 
 /* Given an RTL of a register, return a location descriptor that
    designates a value that spans more than one register.  */
 
 static dw_loc_descr_ref
-multiple_reg_loc_descriptor (rtx rtl, rtx regs)
+multiple_reg_loc_descriptor (rtx rtl, rtx regs, 
+			     enum var_init_status initialized)
 {
   int nregs, size, i;
   unsigned reg;
@@ -8806,7 +8830,8 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
 	{
 	  dw_loc_descr_ref t;
 
-	  t = one_reg_loc_descriptor (DBX_REGISTER_NUMBER (reg));
+	  t = one_reg_loc_descriptor (DBX_REGISTER_NUMBER (reg),
+				      VAR_INIT_STATUS_INITIALIZED);
 	  add_loc_descr (&loc_result, t);
 	  add_loc_descr_op_piece (&loc_result, size);
 	  ++reg;
@@ -8825,11 +8850,15 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
     {
       dw_loc_descr_ref t;
 
-      t = one_reg_loc_descriptor (REGNO (XVECEXP (regs, 0, i)));
+      t = one_reg_loc_descriptor (REGNO (XVECEXP (regs, 0, i)),
+				  VAR_INIT_STATUS_INITIALIZED);
       add_loc_descr (&loc_result, t);
       size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
       add_loc_descr_op_piece (&loc_result, size);
     }
+
+  if (loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
   return loc_result;
 }
 
@@ -8875,9 +8904,11 @@ int_loc_descriptor (HOST_WIDE_INT i)
 /* Return a location descriptor that designates a base+offset location.  */
 
 static dw_loc_descr_ref
-based_loc_descr (rtx reg, HOST_WIDE_INT offset)
+based_loc_descr (rtx reg, HOST_WIDE_INT offset,
+		 enum var_init_status initialized)
 {
   unsigned int regno;
+  dw_loc_descr_ref result;
 
   /* We only use "frame base" when we're sure we're talking about the
      post-prologue local stack frame.  We do this by *not* running
@@ -8904,9 +8935,14 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset)
 
   regno = dbx_reg_number (reg);
   if (regno <= 31)
-    return new_loc_descr (DW_OP_breg0 + regno, offset, 0);
+    result = new_loc_descr (DW_OP_breg0 + regno, offset, 0);
   else
-    return new_loc_descr (DW_OP_bregx, regno, offset);
+    result = new_loc_descr (DW_OP_bregx, regno, offset);
+
+  if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
+
+  return result;
 }
 
 /* Return true if this RTL expression describes a base+offset calculation.  */
@@ -8924,7 +8960,8 @@ is_based_loc (rtx rtl)
    used to form the address of a memory location.  */
 
 static dw_loc_descr_ref
-concatn_mem_loc_descriptor (rtx concatn, enum machine_mode mode)
+concatn_mem_loc_descriptor (rtx concatn, enum machine_mode mode,
+			    enum var_init_status initialized)
 {
   unsigned int i;
   dw_loc_descr_ref cc_loc_result = NULL;
@@ -8935,13 +8972,16 @@ concatn_mem_loc_descriptor (rtx concatn, enum machine_mode mode)
       dw_loc_descr_ref ref;
       rtx x = XVECEXP (concatn, 0, i);
 
-      ref = mem_loc_descriptor (x, mode);
+      ref = mem_loc_descriptor (x, mode, VAR_INIT_STATUS_INITIALIZED);
       if (ref == NULL)
 	return NULL;
 
       add_loc_descr (&cc_loc_result, ref);
       add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x)));
     }
+
+  if (cc_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&cc_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
 
   return cc_loc_result;
 }
@@ -8965,7 +9005,8 @@ concatn_mem_loc_descriptor (rtx concatn, enum machine_mode mode)
    Return 0 if we can't represent the location.  */
 
 static dw_loc_descr_ref
-mem_loc_descriptor (rtx rtl, enum machine_mode mode)
+mem_loc_descriptor (rtx rtl, enum machine_mode mode,
+		    enum var_init_status initialized)
 {
   dw_loc_descr_ref mem_loc_result = NULL;
   enum dwarf_location_atom op;
@@ -9012,11 +9053,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
 	 memory) so DWARF consumers need to be aware of the subtle
 	 distinction between OP_REG and OP_BASEREG.  */
       if (REGNO (rtl) < FIRST_PSEUDO_REGISTER)
-	mem_loc_result = based_loc_descr (rtl, 0);
+	mem_loc_result = based_loc_descr (rtl, 0, VAR_INIT_STATUS_INITIALIZED);
       break;
 
     case MEM:
-      mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
+      mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl),
+					   VAR_INIT_STATUS_INITIALIZED);
       if (mem_loc_result != 0)
 	add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
@@ -9083,10 +9125,12 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
     plus:
       if (is_based_loc (rtl))
 	mem_loc_result = based_loc_descr (XEXP (rtl, 0),
-					  INTVAL (XEXP (rtl, 1)));
+					  INTVAL (XEXP (rtl, 1)),
+					  VAR_INIT_STATUS_INITIALIZED);
       else
 	{
-	  mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode);
+	  mem_loc_result = mem_loc_descriptor (XEXP (rtl, 0), mode,
+					       VAR_INIT_STATUS_INITIALIZED);
 	  if (mem_loc_result == 0)
 	    break;
 
@@ -9098,7 +9142,8 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
 	  else
 	    {
 	      add_loc_descr (&mem_loc_result,
-			     mem_loc_descriptor (XEXP (rtl, 1), mode));
+			     mem_loc_descriptor (XEXP (rtl, 1), mode,
+						 VAR_INIT_STATUS_INITIALIZED));
 	      add_loc_descr (&mem_loc_result,
 			     new_loc_descr (DW_OP_plus, 0, 0));
 	    }
@@ -9125,8 +9170,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
 
     do_binop:
       {
-	dw_loc_descr_ref op0 = mem_loc_descriptor (XEXP (rtl, 0), mode);
-	dw_loc_descr_ref op1 = mem_loc_descriptor (XEXP (rtl, 1), mode);
+	dw_loc_descr_ref op0 = mem_loc_descriptor (XEXP (rtl, 0), mode,
+						   VAR_INIT_STATUS_INITIALIZED);
+	dw_loc_descr_ref op1 = mem_loc_descriptor (XEXP (rtl, 1), mode,
+						   VAR_INIT_STATUS_INITIALIZED);
 
 	if (op0 == 0 || op1 == 0)
 	  break;
@@ -9142,12 +9189,16 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
       break;
 
     case CONCATN:
-      mem_loc_result = concatn_mem_loc_descriptor (rtl, mode);
+      mem_loc_result = concatn_mem_loc_descriptor (rtl, mode, 
+						   VAR_INIT_STATUS_INITIALIZED);
       break;
 
     default:
       gcc_unreachable ();
     }
+
+  if (mem_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
 
   return mem_loc_result;
 }
@@ -9156,11 +9207,11 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
    This is typically a complex variable.  */
 
 static dw_loc_descr_ref
-concat_loc_descriptor (rtx x0, rtx x1)
+concat_loc_descriptor (rtx x0, rtx x1, enum var_init_status initialized)
 {
   dw_loc_descr_ref cc_loc_result = NULL;
-  dw_loc_descr_ref x0_ref = loc_descriptor (x0);
-  dw_loc_descr_ref x1_ref = loc_descriptor (x1);
+  dw_loc_descr_ref x0_ref = loc_descriptor (x0, VAR_INIT_STATUS_INITIALIZED);
+  dw_loc_descr_ref x1_ref = loc_descriptor (x1, VAR_INIT_STATUS_INITIALIZED);
 
   if (x0_ref == 0 || x1_ref == 0)
     return 0;
@@ -9171,6 +9222,9 @@ concat_loc_descriptor (rtx x0, rtx x1)
   add_loc_descr (&cc_loc_result, x1_ref);
   add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x1)));
 
+  if (initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&cc_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
+
   return cc_loc_result;
 }
 
@@ -9178,7 +9232,7 @@ concat_loc_descriptor (rtx x0, rtx x1)
    locations.  */
 
 static dw_loc_descr_ref
-concatn_loc_descriptor (rtx concatn)
+concatn_loc_descriptor (rtx concatn, enum var_init_status initialized)
 {
   unsigned int i;
   dw_loc_descr_ref cc_loc_result = NULL;
@@ -9189,13 +9243,16 @@ concatn_loc_descriptor (rtx concatn)
       dw_loc_descr_ref ref;
       rtx x = XVECEXP (concatn, 0, i);
 
-      ref = loc_descriptor (x);
+      ref = loc_descriptor (x, VAR_INIT_STATUS_INITIALIZED);
       if (ref == NULL)
 	return NULL;
 
       add_loc_descr (&cc_loc_result, ref);
       add_loc_descr_op_piece (&cc_loc_result, GET_MODE_SIZE (GET_MODE (x)));
     }
+
+  if (cc_loc_result && initialized == VAR_INIT_STATUS_UNINITIALIZED)
+    add_loc_descr (&cc_loc_result, new_loc_descr (DW_OP_GNU_uninit, 0, 0));
 
   return cc_loc_result;
 }
@@ -9209,7 +9266,7 @@ concatn_loc_descriptor (rtx concatn)
    If we don't know how to describe it, return 0.  */
 
 static dw_loc_descr_ref
-loc_descriptor (rtx rtl)
+loc_descriptor (rtx rtl, enum var_init_status initialized)
 {
   dw_loc_descr_ref loc_result = NULL;
 
@@ -9226,26 +9283,28 @@ loc_descriptor (rtx rtl)
       /* ... fall through ...  */
 
     case REG:
-      loc_result = reg_loc_descriptor (rtl);
+      loc_result = reg_loc_descriptor (rtl, initialized);
       break;
 
     case MEM:
-      loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
+      loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl),
+				       initialized);
       break;
 
     case CONCAT:
-      loc_result = concat_loc_descriptor (XEXP (rtl, 0), XEXP (rtl, 1));
+      loc_result = concat_loc_descriptor (XEXP (rtl, 0), XEXP (rtl, 1),
+					  initialized);
       break;
 
     case CONCATN:
-      loc_result = concatn_loc_descriptor (rtl);
+      loc_result = concatn_loc_descriptor (rtl, initialized);
       break;
 
     case VAR_LOCATION:
       /* Single part.  */
       if (GET_CODE (XEXP (rtl, 1)) != PARALLEL)
 	{
-	  loc_result = loc_descriptor (XEXP (XEXP (rtl, 1), 0));
+	  loc_result = loc_descriptor (XEXP (XEXP (rtl, 1), 0), initialized);
 	  break;
 	}
 
@@ -9260,14 +9319,16 @@ loc_descriptor (rtx rtl)
 	int i;
 
 	/* Create the first one, so we have something to add to.  */
-	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0));
+	loc_result = loc_descriptor (XEXP (RTVEC_ELT (par_elems, 0), 0),
+				     initialized);
 	mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, 0), 0));
 	add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
 	for (i = 1; i < num_elem; i++)
 	  {
 	    dw_loc_descr_ref temp;
 
-	    temp = loc_descriptor (XEXP (RTVEC_ELT (par_elems, i), 0));
+	    temp = loc_descriptor (XEXP (RTVEC_ELT (par_elems, i), 0),
+				   initialized);
 	    add_loc_descr (&loc_result, temp);
 	    mode = GET_MODE (XEXP (RTVEC_ELT (par_elems, i), 0));
 	    add_loc_descr_op_piece (&loc_result, GET_MODE_SIZE (mode));
@@ -9399,7 +9460,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 
 	    /* Certain constructs can only be represented at top-level.  */
 	    if (want_address == 2)
-	      return loc_descriptor (rtl);
+	      return loc_descriptor (rtl, VAR_INIT_STATUS_INITIALIZED);
 
 	    mode = GET_MODE (rtl);
 	    if (MEM_P (rtl))
@@ -9407,7 +9468,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 		rtl = XEXP (rtl, 0);
 		have_address = 1;
 	      }
-	    ret = mem_loc_descriptor (rtl, mode);
+	    ret = mem_loc_descriptor (rtl, mode, VAR_INIT_STATUS_INITIALIZED);
 	  }
       }
       break;
@@ -9488,7 +9549,7 @@ loc_descriptor_from_tree_1 (tree loc, int want_address)
 	  return 0;
 	mode = GET_MODE (rtl);
 	rtl = XEXP (rtl, 0);
-	ret = mem_loc_descriptor (rtl, mode);
+	ret = mem_loc_descriptor (rtl, mode, VAR_INIT_STATUS_INITIALIZED);
 	have_address = 1;
 	break;
       }
@@ -10575,6 +10636,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       const char *endname, *secname;
       dw_loc_list_ref list;
       rtx varloc;
+      enum var_init_status initialized;
 
       /* Now that we know what section we are using for a base,
 	 actually construct the list of locations.
@@ -10591,7 +10653,12 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       varloc = NOTE_VAR_LOCATION (node->var_loc_note);
       secname = secname_for_decl (decl);
 
-      list = new_loc_list (loc_descriptor (varloc),
+      if (NOTE_VAR_LOCATION_LOC (node->var_loc_note))
+	initialized = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
+      else
+	initialized = VAR_INIT_STATUS_INITIALIZED;
+
+      list = new_loc_list (loc_descriptor (varloc, initialized),
 			   node->label, node->next->label, secname, 1);
       node = node->next;
 
@@ -10600,8 +10667,11 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	  {
 	    /* The variable has a location between NODE->LABEL and
 	       NODE->NEXT->LABEL.  */
+	    enum var_init_status initialized =
+	      NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
 	    varloc = NOTE_VAR_LOCATION (node->var_loc_note);
-	    add_loc_descr_to_loc_list (&list, loc_descriptor (varloc),
+	    add_loc_descr_to_loc_list (&list, 
+				       loc_descriptor (varloc, initialized),
 				       node->label, node->next->label, secname);
 	  }
 
@@ -10610,6 +10680,8 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       if (NOTE_VAR_LOCATION_LOC (node->var_loc_note) != NULL_RTX)
 	{
 	  char label_id[MAX_ARTIFICIAL_LABEL_BYTES];
+	  enum var_init_status initialized =
+	    NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
 
 	  varloc = NOTE_VAR_LOCATION (node->var_loc_note);
 	  if (!current_function_decl)
@@ -10620,7 +10692,8 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 					   current_function_funcdef_no);
 	      endname = ggc_strdup (label_id);
 	    }
-	  add_loc_descr_to_loc_list (&list, loc_descriptor (varloc),
+	  add_loc_descr_to_loc_list (&list, 
+				     loc_descriptor (varloc, initialized),
 				     node->label, endname, secname);
 	}
 
@@ -10644,8 +10717,10 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
      location list, try generating a location from that.  */
   if (loc_list && loc_list->first)
     {
+      enum var_init_status status;
       node = loc_list->first;
-      descr = loc_descriptor (NOTE_VAR_LOCATION (node->var_loc_note));
+      status = NOTE_VAR_LOCATION_STATUS (node->var_loc_note);
+      descr = loc_descriptor (NOTE_VAR_LOCATION (node->var_loc_note), status);
       if (descr)
 	{
 	  add_AT_location_description (die, attr, descr);

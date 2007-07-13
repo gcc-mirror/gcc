@@ -1728,6 +1728,9 @@ darwin_override_options (void)
       /* No -fnon-call-exceptions data in kexts.  */
       flag_non_call_exceptions = 0;
     }
+  if (flag_var_tracking
+      && strverscmp (darwin_macosx_version_min, "10.5") >= 0)
+    flag_var_tracking_uninit = 1;
 }
 
 #include "gt-darwin.h"
