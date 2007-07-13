@@ -1,5 +1,11 @@
 2007-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/linux-unwind.h (sh_fallback_frame_state): Use
+	correct index when setting register save state for xd
+	registers.
+
+2007-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh.c (mark_use): Remove.
 
 2007-07-12  Paul Brook  <paul@codesourcery.com>

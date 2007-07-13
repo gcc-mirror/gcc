@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SH Linux.
-   Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -230,8 +230,8 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
   r = SH_DWARF_FRAME_XD0;
   for (i = 0; i < 8; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i].loc.offset
+      fs->regs.reg[r+i].how = REG_SAVED_OFFSET;
+      fs->regs.reg[r+i].loc.offset
 	= (long)&(sc->sc_xfpregs[2*i]) - new_cfa;
     }
 
