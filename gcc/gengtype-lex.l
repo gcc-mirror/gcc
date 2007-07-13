@@ -65,36 +65,36 @@ EOID	[^[:alnum:]_]
 
   /* Things we look for in skipping mode: */
 <INITIAL>{
-^typedef/{EOID} {
+^{HWS}typedef/{EOID} {
   BEGIN(in_struct);
   return TYPEDEF;
 }
-^struct/{EOID} {
+^{HWS}struct/{EOID} {
   BEGIN(in_struct);
   return STRUCT;
 }
-^union/{EOID} {
+^{HWS}union/{EOID} {
   BEGIN(in_struct);
   return UNION;
 }
-^extern/{EOID} {
+^{HWS}extern/{EOID} {
   BEGIN(in_struct);
   return EXTERN;
 }
-^static/{EOID} {
+^{HWS}static/{EOID} {
   BEGIN(in_struct);
   return STATIC;
 }
 
-^DEF_VEC_[OP]/{EOID} {
+^{HWS}DEF_VEC_[OP]/{EOID} {
   BEGIN(in_struct);
   return DEFVEC_OP;
 }
-^DEF_VEC_I/{EOID} {
+^{HWS}DEF_VEC_I/{EOID} {
   BEGIN(in_struct);
   return DEFVEC_I;
 }
-^DEF_VEC_ALLOC_[IOP]/{EOID} {
+^{HWS}DEF_VEC_ALLOC_[IOP]/{EOID} {
   BEGIN(in_struct);
   return DEFVEC_ALLOC;
 }
@@ -186,7 +186,7 @@ EOID	[^[:alnum:]_]
 		 "unterminated comment or string; unexpected EOF");
 }
 
-^"#define"{WS}"GTY(" /* do nothing */
+^{HWS}"#"{HWS}"define"{WS}"GTY(" /* do nothing */
 {WS}"GTY"{WS}?"("	{
   error_at_line (&lexer_line, "stray GTY marker");
 }
