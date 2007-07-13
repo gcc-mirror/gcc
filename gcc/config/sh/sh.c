@@ -182,7 +182,6 @@ static rtx push (int);
 static void pop (int);
 static void push_regs (HARD_REG_SET *, int);
 static int calc_live_regs (HARD_REG_SET *);
-static void mark_use (rtx, rtx *);
 static HOST_WIDE_INT rounded_frame_size (int);
 static rtx mark_constant_pool_use (rtx);
 const struct attribute_spec sh_attribute_table[];
@@ -8376,86 +8375,6 @@ expand_df_binop (rtx (*fun) (rtx, rtx, rtx, rtx), rtx *operands)
 {
   emit_df_insn ((*fun) (operands[0], operands[1], operands[2],
 			get_fpscr_rtx ()));
-}
-
-/* ??? gcc does flow analysis strictly after common subexpression
-   elimination.  As a result, common subexpression elimination fails
-   when there are some intervening statements setting the same register.
-   If we did nothing about this, this would hurt the precision switching
-   for SH4 badly.  There is some cse after reload, but it is unable to
-   undo the extra register pressure from the unused instructions, and
-   it cannot remove auto-increment loads.
-
-   A C code example that shows this flow/cse weakness for (at least) SH
-   and sparc (as of gcc ss-970706) is this:
-
-double
-f(double a)
-{
-  double d;
-  d = 0.1;
-  a += d;
-  d = 1.1;
-  d = 0.1;
-  a *= d;
-  return a;
-}
-
-   So we add another pass before common subexpression elimination, to
-   remove assignments that are dead due to a following assignment in the
-   same basic block.  */
-
-static void
-mark_use (rtx x, rtx *reg_set_block)
-{
-  enum rtx_code code;
-
-  if (! x)
-    return;
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case REG:
-      {
-	int regno = REGNO (x);
-	int nregs = (regno < FIRST_PSEUDO_REGISTER
-		     ? HARD_REGNO_NREGS (regno, GET_MODE (x))
-		     : 1);
-	do
-	  {
-	    reg_set_block[regno + nregs - 1] = 0;
-	  }
-	while (--nregs);
-	break;
-      }
-    case SET:
-      {
-	rtx dest = SET_DEST (x);
-
-	if (GET_CODE (dest) == SUBREG)
-	  dest = SUBREG_REG (dest);
-	if (GET_CODE (dest) != REG)
-	  mark_use (dest, reg_set_block);
-	mark_use (SET_SRC (x), reg_set_block);
-	break;
-      }
-    case CLOBBER:
-      break;
-    default:
-      {
-	const char *fmt = GET_RTX_FORMAT (code);
-	int i, j;
-	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	  {
-	    if (fmt[i] == 'e')
-	      mark_use (XEXP (x, i), reg_set_block);
-	    else if (fmt[i] == 'E')
-	      for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-		mark_use (XVECEXP (x, i, j), reg_set_block);
-	  }
-	break;
-      }
-    }
 }
 
 static rtx get_free_reg (HARD_REG_SET);
