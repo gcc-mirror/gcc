@@ -1,3 +1,16 @@
+2007-07-13  Sa Liu  <saliu@de.ibm.com>
+
+	* gcc.dg/vect/fast-math-vect-reduc-7.c: Switch on test
+	for V2DFmode vector conditional expression.
+	* gcc.target/spu/dfcmeq.c: New.  Test combination of abs
+	and dfceq patterns.
+	* gcc.target/spu/dfcmgt.c: New.  Test combination of abs
+	and dfcgt patterns.
+	* gcc.target/spu/intrinsics-2.c: New.  Test intrinsics for
+	V2DFmode comparison and test special values.
+	* lib/target-supports.exp: Switch on test for V2DFmode 
+	vector conditional expression.
+
 2007-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32721

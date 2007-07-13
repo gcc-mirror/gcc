@@ -16,6 +16,15 @@
 ;; Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 ;; 02110-1301, USA.
 
+;; Return 1 if operand is constant zero of its mode
+(define_predicate "const_zero_operand"
+  (and (match_code "const_int,const,const_double,const_vector")
+       (match_test "op == CONST0_RTX (mode)")))
+
+(define_predicate "const_one_operand"
+  (and (match_code "const_int,const,const_double,const_vector")
+       (match_test "op == CONST1_RTX (mode)")))
+
 (define_predicate "spu_reg_operand"
   (and (match_operand 0 "register_operand")
        (ior (not (match_code "subreg"))
