@@ -1839,6 +1839,7 @@ static tree
 maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 {
   tree t;
+  bool volatile_p = TREE_THIS_VOLATILE (expr);
 
   /* We may well have constructed a double-nested PLUS_EXPR via multiple
      substitutions.  Fold that down to one.  Remove NON_LVALUE_EXPRs that
@@ -1882,7 +1883,10 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
       t = maybe_fold_offset_to_reference (base_addr, offset,
 					  TREE_TYPE (expr));
       if (t)
-	return t;
+	{
+	  TREE_THIS_VOLATILE (t) = volatile_p;
+	  return t;
+	}
     }
   else
     {

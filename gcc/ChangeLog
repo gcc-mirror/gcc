@@ -1,3 +1,11 @@
+2007-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32721
+	* tree-ssa-ccp.c (maybe_fold_stmt_indirect): Preserve
+	TREE_THIS_VOLATILE on the folded reference.
+	* tree-ssa-operands.c (get_expr_operands): Set has_volatile_ops
+	if the array reference has TREE_THIS_VOLATILE set.
+
 2007-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/32188
