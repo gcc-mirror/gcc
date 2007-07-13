@@ -314,7 +314,7 @@ which is suitable for debugging purposes.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL ABORT}
@@ -876,7 +876,7 @@ in the array along dimension @var{DIM}.
 F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
 @code{RESULT = ALL(MASK [, DIM])}
@@ -986,7 +986,7 @@ the use of the @ref{IAND} intrinsic defined by the Fortran standard.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = AND(I, J)}
@@ -1090,7 +1090,7 @@ end program test_anint
 F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
 @code{RESULT = ANY(MASK [, DIM])}
@@ -2221,7 +2221,7 @@ only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -2273,7 +2273,7 @@ only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -2310,7 +2310,7 @@ program chmod_test
   print *, 'Status: ', status
 end program chmod_test
 @end smallexample
-@code{CHMOD} as non-elemental function:
+@code{CHMOD} as function:
 @smallexample
 program chmod_test
   implicit none
@@ -2652,7 +2652,7 @@ range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{MASK}.
 F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
 @code{RESULT = COUNT(MASK [, DIM])}
@@ -2814,7 +2814,7 @@ only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -3172,7 +3172,7 @@ vectors are @code{LOGICAL}, the result is @code{ANY(X.AND.Y)}.
 F95 and later
 
 @item @emph{Class}:
-transformational function
+Transformational function
 
 @item @emph{Syntax}:
 @code{RESULT = DOT_PRODUCT(X, Y)}
@@ -3310,8 +3310,8 @@ sufficiently small limits that overflows (wrap around) are possible, such as
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
 
-If @code{DTIME} is invoked as a function, it can not be invoked as a
-subroutine, and vice versa.
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @var{TARRAY} and @var{RESULT} are @code{INTENT(OUT)} and provide the following:
 
@@ -3325,7 +3325,7 @@ subroutine, and vice versa.
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -3575,8 +3575,8 @@ sufficiently small limits that overflows (wrap around) are possible, such as
 become, negative, or numerically less than previous values, during a single
 run of the compiled program.
 
-If @code{ETIME} is invoked as a function, it can not be invoked as a
-subroutine, and vice versa.
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @var{TARRAY} and @var{RESULT} are @code{INTENT(OUT)} and provide the following:
 
@@ -3590,7 +3590,7 @@ subroutine, and vice versa.
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -3786,8 +3786,8 @@ end program test_exponent
 @code{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
 TIME())}.
 
-If @code{FDATE} is invoked as a function, it can not be invoked as a
-subroutine, and vice versa.
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @var{DATE} is an @code{INTENT(OUT)} @code{CHARACTER} variable.
 
@@ -3795,7 +3795,7 @@ subroutine, and vice versa.
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -3882,7 +3882,10 @@ Read a single character in stream mode from stdin by bypassing normal
 formatted output. Stream I/O should not be mixed with normal record-oriented 
 (formatted or unformatted) I/O on the same unit; the results are unpredictable.
 
-This intrinsic routine is provided for backwards compatibility with 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
+Note that the @code{FGET} intrinsic is provided for backwards compatibility with 
 @command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
@@ -3891,7 +3894,7 @@ for future portability. See also @ref{Fortran 2003 status}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL FGET(C [, STATUS])}
@@ -3940,8 +3943,11 @@ Read a single character in stream mode by bypassing normal formatted output.
 Stream I/O should not be mixed with normal record-oriented (formatted or 
 unformatted) I/O on the same unit; the results are unpredictable.
 
-This intrinsic routine is provided for backwards compatibility with 
-@command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
+Note that the @code{FGET} intrinsic is provided for backwards compatibility
+with @command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
@@ -3949,7 +3955,7 @@ for future portability. See also @ref{Fortran 2003 status}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL FGETC(UNIT, C [, STATUS])}
@@ -4045,7 +4051,7 @@ argument, all units are flushed, otherwise just the unit specified.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL FLUSH(UNIT)}
@@ -4077,7 +4083,7 @@ open Fortran I/O unit @code{UNIT}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = FNUM(UNIT)}
@@ -4117,7 +4123,10 @@ Write a single character in stream mode to stdout by bypassing normal
 formatted output. Stream I/O should not be mixed with normal record-oriented 
 (formatted or unformatted) I/O on the same unit; the results are unpredictable.
 
-This intrinsic routine is provided for backwards compatibility with 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
+Note that the @code{FGET} intrinsic is provided for backwards compatibility with 
 @command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
@@ -4126,7 +4135,7 @@ for future portability. See also @ref{Fortran 2003 status}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL FPUT(C [, STATUS])}
@@ -4168,7 +4177,10 @@ Write a single character in stream mode by bypassing normal formatted
 output. Stream I/O should not be mixed with normal record-oriented 
 (formatted or unformatted) I/O on the same unit; the results are unpredictable.
 
-This intrinsic routine is provided for backwards compatibility with 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
+Note that the @code{FGET} intrinsic is provided for backwards compatibility with 
 @command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
@@ -4177,7 +4189,7 @@ for future portability. See also @ref{Fortran 2003 status}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL FPUTC(UNIT, C [, STATUS])}
@@ -4386,11 +4398,14 @@ already opened file is obtained.
 
 The elements in @code{BUFF} are the same as described by @ref{STAT}.
 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL FSTAT(UNIT, BUFF [, STATUS])}
@@ -4671,11 +4686,14 @@ END PROGRAM
 @item @emph{Description}:
 Get current working directory.
 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine.
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL GETCWD(CWD [, STATUS])}
@@ -4805,7 +4823,7 @@ Returns the numerical group ID of the current process.
 GNU extension
 
 @item @emph{Class}:
-function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = GETGID()}
@@ -4883,7 +4901,7 @@ Returns the numerical process identifier of the current process.
 GNU extension
 
 @item @emph{Class}:
-function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = GETPID()}
@@ -4922,7 +4940,7 @@ Returns the numerical user ID of the current process.
 GNU extension
 
 @item @emph{Class}:
-function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = GETUID()}
@@ -5192,7 +5210,7 @@ standard.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental Function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = IARGC()}
@@ -5494,7 +5512,7 @@ function.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = IERRNO()}
@@ -5750,7 +5768,7 @@ it is used as a new seed with @code{SRAND}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = IRAND(FLAG)}
@@ -5791,7 +5809,7 @@ Determine whether a unit is connected to a terminal device.
 GNU extension.
 
 @item @emph{Class}:
-Non-elemental function.
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = ISATTY(UNIT)}
@@ -5960,8 +5978,11 @@ end program test_itime
 Sends the signal specified by @var{SIGNAL} to the process @var{PID}.
 See @code{kill(2)}.
 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
 @item @emph{Class}:
-Subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL KILL(PID, SIGNAL [, STATUS])}
@@ -6247,7 +6268,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -6668,11 +6689,14 @@ then the link itself is statted, not the file that it refers to.
 
 The elements in @code{BUFF} are the same as described by @ref{STAT}.
 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
+
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL LSTAT(FILE, BUFF [, STATUS])}
@@ -6765,7 +6789,7 @@ using Fortran 95 pointers, the memory allocation intrinsic is
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{PTR = MALLOC(SIZE)}
@@ -7088,7 +7112,7 @@ compiled program.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = MCLOCK()}
@@ -7128,7 +7152,7 @@ less than previous values during a single run of the compiled program.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = MCLOCK8()}
@@ -7825,7 +7849,7 @@ the use of the @ref{IOR} intrinsic defined by the Fortran standard.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = OR(X, Y)}
@@ -8155,7 +8179,7 @@ documentation.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{See also}:
 @ref{RAND}, @ref{RANDOM_NUMBER}
@@ -8180,7 +8204,7 @@ it is used as a new seed with @code{SRAND}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = RAND(FLAG)}
@@ -8443,7 +8467,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -8747,7 +8771,7 @@ use is discouraged.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = SECNDS (X)}
@@ -8798,7 +8822,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -9096,7 +9120,7 @@ is supplied, it is set to the value returned by @code{signal(2)}.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -9559,7 +9583,7 @@ generator is specified by the required argument @var{SEED}.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine
 
 @item @emph{Syntax}:
 @code{CALL SRAND(SEED)}
@@ -9622,12 +9646,14 @@ The elements that are obtained and stored in the array @code{BUFF}:
 Not all these elements are relevant on all systems. 
 If an element is not relevant, it is returned as 0.
 
+This intrinsic is provided in both subroutine and function forms; however,
+only one form can be used in any given program unit.
 
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Non-elemental subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL STAT(FILE,BUFF[,STATUS])}
@@ -9752,7 +9778,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -9794,7 +9820,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -9990,7 +10016,7 @@ compilers.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = TIME()}
@@ -10029,7 +10055,7 @@ less than previous values during a single run of the compiled program.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = TIME8()}
@@ -10232,7 +10258,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -10351,7 +10377,7 @@ however, only one form can be used in any given program unit.
 GNU extension
 
 @item @emph{Class}:
-Subroutine, non-elemental function
+Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
@@ -10492,7 +10518,7 @@ the use of the @ref{IEOR} intrinsic defined by the Fortran standard.
 GNU extension
 
 @item @emph{Class}:
-Non-elemental function
+Function
 
 @item @emph{Syntax}:
 @code{RESULT = XOR(X, Y)}
