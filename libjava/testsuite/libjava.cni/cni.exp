@@ -10,7 +10,7 @@ proc gcj_cni_compile_cxx_to_o {file {options {}}} {
   set oname ${name}.o
 
   # Find the generated header.
-  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir"
+  lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir -fdollars-in-identifiers"
   # Find libgcj headers.
   lappend options "additional_flags=-I$srcdir/.."
 

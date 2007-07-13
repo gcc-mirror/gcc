@@ -1,3 +1,25 @@
+2007-07-13  Andrew Haley  <aph@redhat.com>
+
+	* libgcj.ver: Add __gcj_personality_sj0.
+
+	* testsuite/libjava.jvmti/jvmti-interp.exp: Likewise.
+	* testsuite/libjava.jni/jni.exp: Use -fdollars-in-identifiers.
+	* testsuite/libjava.jni/cni.exp: Use -fdollars-in-identifiers.
+	* testsuite/libjava.jvmti/jvmti.exp (gcj_jvmti_compile_cxx_to_o): Likewise.
+
+	* gnu/classpath/natVMStackWalker.cc (getCallingClassLoader): Check
+	klass is non-null.
+	* java/lang/reflect/natField.cc (getAddr): Call
+	_Jv_StackTrace::GetCallingClass only if CALLER is non-null.
+	* java/lang/reflect/natVMProxy.cc (run_proxy): Use
+	_Jv_getFieldInternal to get field proxyClass.m.
+	(_Jv_getFieldInternal): New function.
+
+2007-07-11  Andrew Haley  <aph@redhat.com>
+
+	* configure.host (arm*-linux-gnu): New.
+	* sysdep/arm/locks.h: New.
+
 2007-07-13  Roger Sayle  <roger@eyesopen.com>
 
 	* java/lang/natPosixProcess.cc: Include <sys/time.h> before

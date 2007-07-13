@@ -80,15 +80,22 @@ gnu::classpath::VMStackWalker::getClassLoader(::java::lang::Class *c)
 gnu::classpath::VMStackWalker::getCallingClassLoader(void)
 {
   _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
-  return
-    _Jv_StackTrace::GetStackWalkerCallingClass ()->getClassLoaderInternal ();
+  jclass klass = _Jv_StackTrace::GetStackWalkerCallingClass ();
+  if (klass)
+    return klass->getClassLoaderInternal ();
+  else
+    return NULL;
 }
 
 ::java::lang::ClassLoader *
 gnu::classpath::VMStackWalker::getCallingClassLoader(::gnu::gcj::RawData *pc)
 {
   _Jv_InitClass (&::gnu::classpath::VMStackWalker::class$);
-  return GET_CALLING_CLASS(pc)->getClassLoaderInternal ();
+  jclass klass = GET_CALLING_CLASS(pc);
+  if (klass)
+    return klass->getClassLoaderInternal ();
+  else
+    return NULL;
 }
 
 ::java::lang::ClassLoader *
