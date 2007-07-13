@@ -37,11 +37,11 @@ extern "C" {
 #include "ansidecl.h"
 
 #ifndef _WIN64
-typedef unsigned long int libi_uhostptr_t;
-typedef long int libi_shostptr_t;
+  typedef unsigned long int libi_uhostptr_t;
+  typedef long int libi_shostptr_t;
 #else
-typedef unsigned long long libi_uhostptr_t;
-typedef long long libi_shostptr_t;
+  typedef unsigned long long libi_uhostptr_t;
+  typedef long long libi_shostptr_t;
 #endif
 
 #ifndef GTY
@@ -118,23 +118,23 @@ struct splay_tree_s GTY(())
   splay_tree_allocate_fn allocate;
   splay_tree_deallocate_fn deallocate;
   void * GTY((skip)) allocate_data;
-
 };
+
 typedef struct splay_tree_s *splay_tree;
 
-extern splay_tree splay_tree_new        (splay_tree_compare_fn,
-                                         splay_tree_delete_key_fn,
-                                         splay_tree_delete_value_fn);
+extern splay_tree splay_tree_new (splay_tree_compare_fn,
+				  splay_tree_delete_key_fn,
+				  splay_tree_delete_value_fn);
 extern splay_tree splay_tree_new_with_allocator (splay_tree_compare_fn,
-                                                 splay_tree_delete_key_fn,
-					        splay_tree_delete_value_fn,
-                                                 splay_tree_allocate_fn,
-                                                 splay_tree_deallocate_fn,
-                                                 void *);
-extern void splay_tree_delete           (splay_tree);
+						 splay_tree_delete_key_fn,
+						 splay_tree_delete_value_fn,
+						 splay_tree_allocate_fn,
+						 splay_tree_deallocate_fn,
+						 void *);
+extern void splay_tree_delete (splay_tree);
 extern splay_tree_node splay_tree_insert (splay_tree,
-                                          splay_tree_key,
-                                          splay_tree_value);
+					  splay_tree_key,
+					  splay_tree_value);
 extern void splay_tree_remove	(splay_tree, splay_tree_key);
 extern splay_tree_node splay_tree_lookup (splay_tree, splay_tree_key);
 extern splay_tree_node splay_tree_predecessor (splay_tree, splay_tree_key);
@@ -144,7 +144,7 @@ extern splay_tree_node splay_tree_min (splay_tree);
 extern int splay_tree_foreach (splay_tree, splay_tree_foreach_fn, void*);
 extern int splay_tree_compare_ints (splay_tree_key, splay_tree_key);
 extern int splay_tree_compare_pointers (splay_tree_key,	splay_tree_key);
-					       
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
