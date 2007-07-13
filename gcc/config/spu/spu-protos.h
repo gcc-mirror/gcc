@@ -32,6 +32,7 @@ extern void spu_expand_insv (rtx * ops);
 extern int spu_expand_block_move (rtx * ops);
 extern void spu_emit_branch_or_set (int is_set, enum rtx_code code,
 				    rtx * operands);
+extern int spu_emit_vector_cond_expr (rtx, rtx, rtx, rtx, rtx, rtx);
 extern HOST_WIDE_INT const_double_to_hwint (rtx x);
 extern rtx hwint_to_const_double (enum machine_mode mode, HOST_WIDE_INT v);
 extern void print_operand_address (FILE * file, register rtx addr);
@@ -43,6 +44,8 @@ extern void spu_expand_prologue (void);
 extern void spu_expand_epilogue (unsigned char sibcall_p);
 extern rtx spu_return_addr (int count, rtx frame);
 extern rtx spu_const (enum machine_mode mode, HOST_WIDE_INT val);
+extern rtx spu_const_from_ints (enum machine_mode mode, 
+			        int a, int b, int c, int d);
 extern struct rtx_def *spu_float_const (const char *string,
 					enum machine_mode mode);
 extern int immediate_load_p (rtx op, enum machine_mode mode);

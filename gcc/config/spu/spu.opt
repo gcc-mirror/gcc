@@ -55,3 +55,11 @@ Generate code for 32 bit addressing
 mfixed-range=
 Target RejectNegative Joined Var(spu_fixed_range_string)
 Specify range of registers to make fixed
+
+march=
+Target RejectNegative Joined Var(spu_arch_string)
+Generate code for given CPU
+
+mtune=
+Target RejectNegative Joined Var(spu_tune_string)
+Schedule code for given CPU

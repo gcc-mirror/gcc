@@ -32,6 +32,23 @@
 extern int target_flags;
 extern const char *spu_fixed_range_string;
 
+/* Which processor to generate code or schedule for.  */
+enum processor_type
+{
+  PROCESSOR_CELL,
+  PROCESSOR_CELLEDP
+};
+
+extern GTY(()) int spu_arch;
+extern GTY(()) int spu_tune;
+
+/* Support for a compile-time default architecture and tuning.  The rules are:
+   --with-arch is ignored if -march is specified.
+   --with-tune is ignored if -mtune is specified.  */
+#define OPTION_DEFAULT_SPECS \
+  {"arch", "%{!march=*:-march=%(VALUE)}" }, \
+  {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }
+
 /* Default target_flags if no switches specified.  */
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ERROR_RELOC | MASK_SAFE_DMA | MASK_BRANCH_HINTS)
@@ -605,7 +622,18 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define NO_IMPLICIT_EXTERN_C 1
 
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
-
+
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+#define CANONICALIZE_COMPARISON(CODE,OP0,OP1) \
+  do {                                                                    \
+    if (((CODE) == LE || (CODE) == LT || (CODE) == LEU || (CODE) == LTU)) \
+      {                                                                   \
+        rtx tem = (OP0);                                                  \
+        (OP0) = (OP1);                                                    \
+        (OP1) = tem;                                                      \
+        (CODE) = swap_condition (CODE);                                   \
+      }                                                                   \
+  } while (0)
 
 /* These are set by the cmp patterns and used while expanding
    conditional branches. */

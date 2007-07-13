@@ -50,6 +50,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_no_compare_double } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_no_compare_double } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

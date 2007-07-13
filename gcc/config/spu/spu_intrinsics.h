@@ -70,6 +70,16 @@
 #define MFC_WrListStallAck	26 
 #define MFC_RdAtomicStat	27 
 
+/* Bit flag mnemonics for test special value.
+ */
+#define SPU_SV_NEG_DENORM       0x01    /* negative denormalized number  */
+#define SPU_SV_POS_DENORM       0x02    /* positive denormalized number  */
+#define SPU_SV_NEG_ZERO         0x04    /* negative zero                 */
+#define SPU_SV_POS_ZERO         0x08    /* positive zero                 */
+#define SPU_SV_NEG_INFINITY     0x10    /* negative infinity             */
+#define SPU_SV_POS_INFINITY     0x20    /* positive infinity             */
+#define SPU_SV_NAN              0x40    /* not a number                  */
+
 #include <spu_internals.h>
 
 #endif /* _SPU_INTRINSICS_H */

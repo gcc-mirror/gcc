@@ -138,6 +138,8 @@ spu_cpu_cpp_builtins (struct cpp_reader *pfile)
   builtin_define_std ("__SPU__");
   cpp_assert (pfile, "cpu=spu");
   cpp_assert (pfile, "machine=spu");
+  if (spu_arch == PROCESSOR_CELLEDP)
+    builtin_define_std ("__SPU_EDP__");
   builtin_define_std ("__vector=__attribute__((__spu_vector__))");
 }
 

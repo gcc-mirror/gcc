@@ -3142,6 +3142,23 @@ case "${target}" in
 		esac
 		;;
 
+	spu-*-*)
+		supported_defaults="arch tune"
+
+		for which in arch tune; do
+			eval "val=\$with_$which"
+			case ${val} in
+			"" | cell | celledp)
+				# OK
+				;;
+			*)
+				echo "Unknown cpu used in --with-$which=$val." 1>&2
+				exit 1
+				;;
+			esac
+		done
+		;;
+
 	v850*-*-*)
 		supported_defaults=cpu
 		case ${with_cpu} in

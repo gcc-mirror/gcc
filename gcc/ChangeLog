@@ -1,3 +1,36 @@
+2007-07-13  Sa Liu  <saliu@de.ibm.com>
+
+	* config.gcc: Add options for arch and tune on SPU.
+	* config/spu/predicates.md: Add constant operands 0 and 1.
+	* config/spu/spu-builtins.def: Add builtins for double precision 
+	floating point comparison: si_dfceq, si_dfcmeq,	si_dfcgt, si_dfcmgt, 
+	si_dftsv, spu_cmpeq_13, spu_cmpabseq_1, spu_cmpgt_13, spu_cmpabsgt_1,
+	spu_testsv.
+	* config/spu/spu-c.c: Define __SPU_EDP__ when builtins invoked with 
+	a CELLEDP target.
+	* config/spu/spu-protos.h: Add new function prototypes. 
+	* config/spu/spu.c (spu_override_options): Check options -march and
+	-mtune.
+	(spu_comp_icode): Add comparison code for DFmode and vector mode.
+	(spu_emit_branch_or_set): Use the new code for DFmode and vector 
+	mode comparison.
+	(spu_const_from_int): New.  Create a vector constant from 4 ints.
+	(get_vec_cmp_insn): New.  Get insn index of vector compare instruction.
+	(spu_emit_vector_compare): New.  Emit vector compare.
+	(spu_emit_vector_cond_expr): New.  Emit vector conditional expression.
+	* config/spu/spu.h: Add options -march and -mtune.  Define processor
+	types PROCESSOR_CELL and PROCESSOR_CELLEDP.  Define macro
+	CANONICALIZE_COMPARISON.
+	* config/spu/spu.md: Add new insns for double precision compare
+	and double precision vector compare.  Add vcond and smax/smin patterns
+	to enable DFmode vector conditional expression.
+	* config/spu/spu.opt: Add options -march and -mtune.
+	* config/spu/spu_internals.h: Add builtins for CELLEDP target:
+	si_dfceq, si_dfcmeq, si_dfcgt, si_dfcmgt, si_dftsv.  Add builtin for
+	both CELL and CELLEDP targets: spu_testsv.
+	* config/spu/spu_intrinsics.h: Add flag mnemonics for test special 
+	values.
+
 2007-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32721
