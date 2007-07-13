@@ -2078,6 +2078,9 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
 	    if (!none)
 	      flags |= opf_no_vops;
+
+	    if (TREE_THIS_VOLATILE (expr))
+	      get_stmt_ann (stmt)->has_volatile_ops = true;
 	  }
 	else if (TREE_CODE (ref) == INDIRECT_REF)
 	  {

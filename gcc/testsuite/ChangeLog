@@ -1,3 +1,8 @@
+2007-07-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32721
+	* gcc.dg/pr32721.c: New testcase.
+
 2007-07-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/20011127-1.c: Use dg-message, not dg-error to match the
