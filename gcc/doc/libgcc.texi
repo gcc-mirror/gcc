@@ -500,37 +500,57 @@ The software decimal floating point library implements IEEE 754R
 decimal floating point arithmetic and is only activated on selected
 targets.
 
+The software decimal floating point library supports either DPD 
+(Densely Packed Decimal) or BID (Binary Integer Decimal) encoding 
+as selected at configure time.
+
+
 @subsection Arithmetic functions
 
-@deftypefn {Runtime Function} _Decimal32 __addsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} _Decimal64 __adddd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} _Decimal128 __addtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} _Decimal32 __dpd_addsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_addsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_adddd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_adddd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_addtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_addtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return the sum of @var{a} and @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __subsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} _Decimal64 __subdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} _Decimal128 __subtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} _Decimal32 __dpd_subsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_subsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_subdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_subdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_subtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_subtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return the difference between @var{b} and @var{a};
 that is, @w{@math{@var{a} - @var{b}}}.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __mulsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} _Decimal64 __muldd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} _Decimal128 __multd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} _Decimal32 __dpd_mulsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_mulsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_muldd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_muldd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_multd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_multd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return the product of @var{a} and @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __divsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} _Decimal64 __divdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} _Decimal128 __divtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} _Decimal32 __dpd_divsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal32 __bid_divsd3 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_divdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal64 __bid_divdd3 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_divtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} _Decimal128 __bid_divtd3 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return the quotient of @var{a} and @var{b}; that is,
 @w{@math{@var{a} / @var{b}}}.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __negsd2 (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __negdd2 (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} _Decimal128 __negtd2 (_Decimal128 @var{a})
+@deftypefn {Runtime Function} _Decimal32 __dpd_negsd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_negsd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_negdd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_negdd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_negtd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_negtd2 (_Decimal128 @var{a})
 These functions return the negation of @var{a}.  They simply flip the
 sign bit, so they can produce negative zero and negative NaN@.
 @end deftypefn
@@ -538,94 +558,145 @@ sign bit, so they can produce negative zero and negative NaN@.
 @subsection Conversion functions
 
 @c DFP/DFP conversions
-@deftypefn {Runtime Function} _Decimal64 __extendsddd2 (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} _Decimal128 __extendsdtd2 (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} _Decimal128 __extendddtd2 (_Decimal64 @var{a})
+@deftypefn {Runtime Function} _Decimal64 __dpd_extendsddd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extendsddd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendsdtd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendsdtd2 (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendddtd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendddtd2 (_Decimal64 @var{a})
 @c DFP/binary FP conversions
-@deftypefnx {Runtime Function} _Decimal32 __extendsfsd (float @var{a})
-@deftypefnx {Runtime Function} double __extendsddf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} {long double} __extendsdxf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __extendsfdd (float @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __extenddfdd (double @var{a})
-@deftypefnx {Runtime Function} {long double} __extendddxf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} _Decimal128 __extendsftd (float @var{a})
-@deftypefnx {Runtime Function} _Decimal128 __extenddftd (double @var{a})
-@deftypefnx {Runtime Function} _Decimal128 __extendxftd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} double __dpd_extendsddf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} double __bid_extendsddf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_extendsfdd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extendsfdd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendddxf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendddxf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendsftd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendsftd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extenddftd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extenddftd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_extendxftd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal128 __bid_extendxftd ({long double} @var{a})
 These functions extend @var{a} to the wider mode of their return type.
 @end deftypefn
 
 @c DFP/DFP conversions
-@deftypefn {Runtime Function} _Decimal32 __truncddsd2 (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __trunctdsd2 (_Decimal128 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __trunctddd2 (_Decimal128 @var{a})
+@deftypefn {Runtime Function} _Decimal32 __dpd_truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_trunctddd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_trunctddd2 (_Decimal128 @var{a})
 @c DFP/binary FP conversions
-@deftypefnx {Runtime Function} float __truncsdsf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __truncdfsd (double @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __truncxfsd ({long double} @var{a})
-@deftypefnx {Runtime Function} float __truncddsf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} double __truncdddf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __truncxfdd ({long double} @var{a})
-@deftypefnx {Runtime Function} float __trunctdsf (_Decimal128 @var{a})
-@deftypefnx {Runtime Function} double __trunctddf (_Decimal128 @var{a})
-@deftypefnx {Runtime Function} {long double} __trunctdxf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} float __dpd_truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} float __bid_truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_truncdfsd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncdfsd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_truncxfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncxfsd ({long double} @var{a})
+@deftypefnx {Runtime Function} float __dpd_truncddsf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} float __bid_truncddsf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} double __dpd_truncdddf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} double __bid_truncdddf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_truncxfdd ({long double} @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_truncxfdd ({long double} @var{a})
+@deftypefnx {Runtime Function} float __dpd_trunctdsf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} float __bid_trunctdsf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} double __dpd_trunctddf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} double __bid_trunctddf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_trunctdxf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_trunctdxf (_Decimal128 @var{a})
 These functions truncate @var{a} to the narrower mode of their return
 type.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __fixsdsi (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} int __fixddsi (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} int __fixtdsi (_Decimal128 @var{a})
+@deftypefn {Runtime Function} int __dpd_fixsdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} int __bid_fixsdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} int __dpd_fixddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} int __bid_fixddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} int __dpd_fixtdsi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} int __bid_fixtdsi (_Decimal128 @var{a})
 These functions convert @var{a} to a signed integer.
 @end deftypefn
 
-@deftypefn {Runtime Function} long __fixsddi (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} long __fixdddi (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} long __fixtddi (_Decimal128 @var{a})
+@deftypefn {Runtime Function} long __dpd_fixsddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} long __bid_fixsddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} long __dpd_fixdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} long __bid_fixdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} long __dpd_fixtddi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} long __bid_fixtddi (_Decimal128 @var{a})
 These functions convert @var{a} to a signed long.
 @end deftypefn
 
-@deftypefn {Runtime Function} {unsigned int} __fixunssdsi (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} {unsigned int} __fixunsddsi (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} {unsigned int} __fixunstdsi (_Decimal128 @var{a})
+@deftypefn {Runtime Function} {unsigned int} __dpd_fixunssdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __bid_fixunssdsi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __dpd_fixunsddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __bid_fixunsddsi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __dpd_fixunstdsi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __bid_fixunstdsi (_Decimal128 @var{a})
 These functions convert @var{a} to an unsigned integer.  Negative values all become zero.
 @end deftypefn
 
-@deftypefn {Runtime Function} {unsigned long} __fixunssddi (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} {unsigned long} __fixunsdddi (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} {unsigned long} __fixunstddi (_Decimal128 @var{a})
+@deftypefn {Runtime Function} {unsigned long} __dpd_fixunssddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __bid_fixunssddi (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __dpd_fixunsdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __bid_fixunsdddi (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __dpd_fixunstddi (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {unsigned long} __bid_fixunstddi (_Decimal128 @var{a})
 These functions convert @var{a} to an unsigned long.  Negative values
 all become zero.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __floatsisd (int @var{i})
-@deftypefnx {Runtime Function} _Decimal64 __floatsidd (int @var{i})
-@deftypefnx {Runtime Function} _Decimal128 __floatsitd (int @var{i})
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatsisd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatsisd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatsidd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatsidd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatsitd (int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatsitd (int @var{i})
 These functions convert @var{i}, a signed integer, to decimal floating point.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __floatdisd (long @var{i})
-@deftypefnx {Runtime Function} _Decimal64 __floatdidd (long @var{i})
-@deftypefnx {Runtime Function} _Decimal128 __floatditd (long @var{i})
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatdisd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatdisd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatdidd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatdidd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatditd (long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatditd (long @var{i})
 These functions convert @var{i}, a signed long, to decimal floating point.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __floatunssisd (unsigned int @var{i})
-@deftypefnx {Runtime Function} _Decimal64 __floatunssidd (unsigned int @var{i})
-@deftypefnx {Runtime Function} _Decimal128 __floatunssitd (unsigned int @var{i})
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatunssisd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatunssisd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatunssidd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatunssidd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatunssitd (unsigned int @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatunssitd (unsigned int @var{i})
 These functions convert @var{i}, an unsigned integer, to decimal floating point.
 @end deftypefn
 
-@deftypefn {Runtime Function} _Decimal32 __floatunsdisd (unsigned long @var{i})
-@deftypefnx {Runtime Function} _Decimal64 __floatunsdidd (unsigned long @var{i})
-@deftypefnx {Runtime Function} _Decimal128 __floatunsditd (unsigned long @var{i})
+@deftypefn {Runtime Function} _Decimal32 __dpd_floatunsdisd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal32 __bid_floatunsdisd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_floatunsdidd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal64 __bid_floatunsdidd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __dpd_floatunsditd (unsigned long @var{i})
+@deftypefnx {Runtime Function} _Decimal128 __bid_floatunsditd (unsigned long @var{i})
 These functions convert @var{i}, an unsigned long, to decimal floating point.
 @end deftypefn
 
 @subsection Comparison functions
 
-@deftypefn {Runtime Function} int __unordsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __unorddd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __unordtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_unordsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_unordsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_unorddd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_unorddd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_unordtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_unordtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return a nonzero value if either argument is NaN, otherwise 0.
 @end deftypefn
 
@@ -636,9 +707,9 @@ Pay careful attention to the return values defined for each set.
 Under the hood, all of these routines are implemented as
 
 @smallexample
-  if (__unord@var{X}d2 (a, b))
+  if (__bid_unord@var{X}d2 (a, b))
     return @var{E};
-  return __cmp@var{X}d2 (a, b);
+  return __bid_cmp@var{X}d2 (a, b);
 @end smallexample
 
 @noindent
@@ -647,45 +718,63 @@ NaN@.  Thus, the meaning of the return value is different for each set.
 Do not rely on this implementation; only the semantics documented
 below are guaranteed.
 
-@deftypefn {Runtime Function} int __eqsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __eqdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __eqtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_eqsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_eqsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_eqdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_eqdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_eqtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_eqtd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return zero if neither argument is NaN, and @var{a} and
 @var{b} are equal.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __nesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __nedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __netd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_nesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_nesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_nedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_nedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_netd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_netd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return a nonzero value if either argument is NaN, or
 if @var{a} and @var{b} are unequal.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __gesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __gedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __getd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_gesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_gesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_gedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_gedd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_getd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_getd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return a value greater than or equal to zero if
 neither argument is NaN, and @var{a} is greater than or equal to
 @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __ltsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __ltdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __lttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_ltsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_ltsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_ltdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_ltdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_lttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_lttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return a value less than zero if neither argument is
 NaN, and @var{a} is strictly less than @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __lesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __ledd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __letd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_lesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_lesd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_ledd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_ledd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_letd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_letd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return a value less than or equal to zero if neither
 argument is NaN, and @var{a} is less than or equal to @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __gtsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
-@deftypefnx {Runtime Function} int __gtdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
-@deftypefnx {Runtime Function} int __gttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefn {Runtime Function} int __dpd_gtsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __bid_gtsd2 (_Decimal32 @var{a}, _Decimal32 @var{b})
+@deftypefnx {Runtime Function} int __dpd_gtdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __bid_gtdd2 (_Decimal64 @var{a}, _Decimal64 @var{b})
+@deftypefnx {Runtime Function} int __dpd_gttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
+@deftypefnx {Runtime Function} int __bid_gttd2 (_Decimal128 @var{a}, _Decimal128 @var{b})
 These functions return a value greater than zero if neither argument
 is NaN, and @var{a} is strictly greater than @var{b}.
 @end deftypefn

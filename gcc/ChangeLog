@@ -1,3 +1,8 @@
+2007-07-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/32188
+	* doc/libgcc.texi: Update DFP intrinsics for DPD and BID.
+
 2007-07-13  Andreas Schwab  <schwab@suse.de>
 
 	* gengtype-lex.l: Allow declarations to be indented.
