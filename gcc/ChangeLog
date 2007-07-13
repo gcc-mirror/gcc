@@ -1,3 +1,7 @@
+2007-07-13  Andreas Schwab  <schwab@suse.de>
+
+	* gengtype-lex.l: Allow declarations to be indented.
+
 2007-07-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* ginclude/tgmath.h: New.
