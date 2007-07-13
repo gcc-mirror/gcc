@@ -1,3 +1,10 @@
+2007-07-13  Daniel Franke  <franke.daniel@gmail.com>
+
+	* invoke.texi: Unified upper- and lower-case in menus.
+	(-w, -W): Removed, documented by gcc.
+	* intrinsic.texi: Unified Class-section entries, added
+	subroutine/function warning where appropiate.
+
 2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31639
