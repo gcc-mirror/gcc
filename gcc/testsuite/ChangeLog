@@ -339,7 +339,7 @@
 
 2007-07-11  Daniel Berlin  <dberlin@dberlin.org>
 
-	* gfortran.fortran-torture/compile/pr32663.f90: New test.
+	* gfortran.fortran-torture/compile/pr32663.f: New test.
 
 2007-07-11  Paolo Carlini  <pcarlini@suse.de>
 
