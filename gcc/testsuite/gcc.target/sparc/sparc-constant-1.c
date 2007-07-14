@@ -1,5 +1,6 @@
 /* PR optimization/10876 */
-/* { dg-do compile { target sparc*-*-* } } */
+
+/* { dg-do compile } */
 
 /* Verify that adding the constant 4096 is turned
    into substracting the constant -4096. */

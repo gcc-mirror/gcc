@@ -1,3 +1,31 @@
+2007-07-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/20001013-1.c: Move to gcc.target/sparc.
+	* gcc.dg/20001101-1.c: Likewise.
+	* gcc.dg/20001102-1.c: Likewise.
+	* gcc.dg/20020116-2.c: Likewise.
+	* gcc.dg/20020416-1.c: Likewise.
+	* gcc.dg/sparc-constant-1.c: Likewise.
+	* gcc.dg/sparc-dwarf2.c: Likewise.
+	* gcc.dg/sparc-frame-1.c: Likewise.
+	* gcc.dg/sparc-getcontext-1.c: Likewise.
+	* gcc.dg/sparc-loop-1.c: Likewise.
+	* gcc.dg/sparc-reg-1.c: Likewise.
+	* gcc.dg/sparc-ret.c: Likewise.
+	* gcc.dg/sparc-trap-1.c: Likewise.
+	* gcc.dg/ultrasp10.c: Likewise.
+	* gcc.dg/ultrasp11.c: Likewise.
+	* gcc.dg/ultrasp1.c: Likewise.
+	* gcc.dg/ultrasp2.c: Likewise.
+	* gcc.dg/ultrasp3.c: Likewise.
+	* gcc.dg/ultrasp4.c: Likewise.
+	* gcc.dg/ultrasp5.c: Likewise.
+	* gcc.dg/ultrasp6.c: Likewise.
+	* gcc.dg/ultrasp7.c: Likewise.
+	* gcc.dg/ultrasp8.c: Likewise.
+	* gcc.dg/ultrasp9.c: Likewise.
+	* gcc.dg/splet-1.c: Delete.
+
 2007-07-14  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32724

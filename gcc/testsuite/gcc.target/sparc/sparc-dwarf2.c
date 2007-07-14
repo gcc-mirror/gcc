@@ -1,6 +1,7 @@
 /* PR target/10114 */
 /* Originator: James Troup <james@nocrew.org> */
-/* { dg-do compile { target sparc-*-linux* } } */
+
+/* { dg-do compile } */
 /* { dg-options "-g -O1" } */
 
 extern __inline double sqrt (double __x)

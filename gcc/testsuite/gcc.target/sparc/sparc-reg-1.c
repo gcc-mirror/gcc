@@ -1,6 +1,6 @@
 /* PR middle-end/20263 */
 
-/* { dg-do assemble { target sparc64-*-* } } */
+/* { dg-do assemble } */
 /* { dg-options "" } */
 
 register void *tp __asm__("%g7");

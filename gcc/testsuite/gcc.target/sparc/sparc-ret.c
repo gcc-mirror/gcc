@@ -1,11 +1,8 @@
-/* Copyright (C) 2001  Free Software Foundation.
-
-   Making sure that Ultrasparc return instructions do not read
-   below the stack.  */
-
-/* { dg-do compile { target sparc-*-* } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mcpu=ultrasparc -O" } */
 
+/* Make sure that Ultrasparc return insn do not read below the stack.  */
 
 int bar (int a, int b, int c, int d, int e, int f, int g, int h)
 {

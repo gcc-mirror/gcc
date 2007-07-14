@@ -1,6 +1,8 @@
 /* PR optimization/11018 */
 /* Originator: <partain@dcs.gla.ac.uk> */
-/* { dg-do run { target { sparc*-*-* && ultrasparc_hw } } } */
+
+/* { dg-do run } */
+/* { dg-require-effective-target ultrasparc_hw } */
 /* { dg-options "-O2 -mcpu=ultrasparc" } */
 
 /* This used to fail on 32-bit Ultrasparc because

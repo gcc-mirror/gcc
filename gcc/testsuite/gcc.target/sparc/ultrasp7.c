@@ -1,6 +1,7 @@
 /* PR c/8281 */
 /* Originator: TANIGUCHI Yasuaki <yasuaki@k8.dion.ne.jp> */
-/* { dg-do compile { target sparc-*-* } } */
+
+/* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -mcpu=ultrasparc -fPIC" } */
 
