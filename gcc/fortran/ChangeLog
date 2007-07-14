@@ -1,3 +1,9 @@
+2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32357
+	* iresolve.c (gfc_resolve_mvbits): Convert FROMPOS, LEN and TOPOS
+	to C int.
+
 2007-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32731

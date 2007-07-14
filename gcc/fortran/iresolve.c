@@ -2443,9 +2443,22 @@ void
 gfc_resolve_mvbits (gfc_code *c)
 {
   const char *name;
-  int kind;
-  kind = c->ext.actual->expr->ts.kind;
-  name = gfc_get_string (PREFIX ("mvbits_i%d"), kind);
+  gfc_typespec ts;
+
+  /* FROMPOS, LEN and TOPOS are restricted to small values.  As such,
+     they will be converted so that they fit into a C int.  */
+  ts.type = BT_INTEGER;
+  ts.kind = gfc_c_int_kind;
+  if (c->ext.actual->next->expr->ts.kind != gfc_c_int_kind)
+    gfc_convert_type (c->ext.actual->next->expr, &ts, 2);
+  if (c->ext.actual->next->next->expr->ts.kind != gfc_c_int_kind)
+    gfc_convert_type (c->ext.actual->next->next->expr, &ts, 2);
+  if (c->ext.actual->next->next->next->next->expr->ts.kind != gfc_c_int_kind)
+    gfc_convert_type (c->ext.actual->next->next->next->next->expr, &ts, 2);
+
+  /* TO and FROM are guaranteed to have the same kind parameter.  */
+  name = gfc_get_string (PREFIX ("mvbits_i%d"),
+			 c->ext.actual->expr->ts.kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
