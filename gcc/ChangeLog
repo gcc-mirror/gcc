@@ -1,3 +1,10 @@
+2007-07-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/mips.c (mips_classify_symbol): Don't return
+	SYMBOL_SMALL_DATA for constant pool addresses if
+	TARGET_EMBEDDED_DATA is true.
+
 2007-07-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (init_mmx_sse_builtins): Define all builtins

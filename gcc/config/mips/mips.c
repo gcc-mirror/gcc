@@ -1448,7 +1448,8 @@ mips_classify_symbol (rtx x)
       if (TARGET_MIPS16)
 	return SYMBOL_CONSTANT_POOL;
 
-      if (GET_MODE_SIZE (get_pool_mode (x)) <= mips_section_threshold)
+      if (!TARGET_EMBEDDED_DATA
+	  && GET_MODE_SIZE (get_pool_mode (x)) <= mips_section_threshold)
 	return SYMBOL_SMALL_DATA;
     }
 
