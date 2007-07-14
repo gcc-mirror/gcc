@@ -1017,11 +1017,13 @@ static inline bool
 set_ssa_val_to (tree from, tree to)
 {
   tree currval;
-  gcc_assert (to != NULL);
 
-  /* The only thing we allow as value numbers are ssa_names and
-     invariants.  So assert that here.  */
-  gcc_assert (TREE_CODE (to) == SSA_NAME || is_gimple_min_invariant (to));
+  /* The only thing we allow as value numbers are VN_TOP, ssa_names
+     and invariants.  So assert that here.  */
+  gcc_assert (to != NULL_TREE
+	      && (to == VN_TOP
+		  || TREE_CODE (to) == SSA_NAME
+		  || is_gimple_min_invariant (to)));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1389,7 +1391,7 @@ simplify_binary_expression (tree rhs)
       if (VN_INFO (op0)->has_constants)
 	op0 = valueize_expr (VN_INFO (op0)->expr);
       else if (SSA_VAL (op0) != VN_TOP && SSA_VAL (op0) != op0)
-	op0 = VN_INFO (op0)->valnum;      
+	op0 = SSA_VAL (op0);
     }
 
   if (TREE_CODE (op1) == SSA_NAME)
@@ -1397,7 +1399,7 @@ simplify_binary_expression (tree rhs)
       if (VN_INFO (op1)->has_constants)
 	op1 = valueize_expr (VN_INFO (op1)->expr);
       else if (SSA_VAL (op1) != VN_TOP && SSA_VAL (op1) != op1)
-	op1 = VN_INFO (op1)->valnum;
+	op1 = SSA_VAL (op1);
     }
 
   result = fold_binary (TREE_CODE (rhs), TREE_TYPE (rhs), op0, op1);
