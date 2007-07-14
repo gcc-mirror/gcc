@@ -1,3 +1,15 @@
+2007-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_aligned_arrays):
+	New procedure to check if arrays are naturally aligned to the vector
+	alignment boundary.
+	* gcc.dg/vect/pr25413a.c: Do not include stdarg.h.  Use __SIZE_TYPE__
+	in size_t typedef.  Adjust tree dump scan results according to
+	vect_aligned_arrays target check.
+	* gcc.dg/vect/pr25413.c: Adjust tree dump scan results according to
+	vect_aligned_arrays target check.
+	* gcc.dg/vect/pr31699.c: Ditto.
+
 2007-07-13  Sa Liu  <saliu@de.ibm.com>
 
 	* gcc.dg/vect/fast-math-vect-reduc-7.c: Switch on test

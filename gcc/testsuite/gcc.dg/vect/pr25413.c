@@ -31,7 +31,8 @@ int main (void)
   return 0;
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "not vectorized: unsupported unaligned store" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_aligned_arrays } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! vect_aligned_arrays } } } } */
+/* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" { target { ! vect_aligned_arrays } } } } */
+/* { dg-final { scan-tree-dump-times "not vectorized: unsupported unaligned store" 1 "vect" { target { ! vect_aligned_arrays } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

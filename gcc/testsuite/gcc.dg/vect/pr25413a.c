@@ -1,13 +1,13 @@
 /* { dg-require-effective-target vect_double } */
 
-#include <stdarg.h>
 #include "tree-vect.h"
 
 #define N 8
 
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 
-extern void *malloc (size_t __size) __attribute__ ((__nothrow__)) __attribute__ ((__malloc__));
+extern void *malloc (size_t __size) __attribute__ ((__nothrow__,
+						    __malloc__));
 
 typedef double num_t;
 static const num_t num__infty = ((num_t)1.0)/((num_t)0.0);
@@ -124,6 +124,6 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vector alignment may not be reachable" 1 "vect" { target { ! vect_aligned_arrays  } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { ! vect_aligned_arrays } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
