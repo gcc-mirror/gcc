@@ -38,13 +38,13 @@ Boston, MA 02110-1301, USA.  */
 /* MVBITS copies LEN bits starting at bit position FROMPOS from FROM
    into TO, starting at bit position TOPOS.  */
 
-extern void SUB_NAME (const TYPE *, const GFC_INTEGER_4 *,
-		      const GFC_INTEGER_4 *, TYPE *, const GFC_INTEGER_4 *);
+extern void SUB_NAME (const TYPE *, const int *, const int *, TYPE *,
+		      const int *);
 export_proto(SUB_NAME);
 
 void 
-SUB_NAME (const TYPE *from, const GFC_INTEGER_4 *frompos,
-          const GFC_INTEGER_4 *len, TYPE *to, const GFC_INTEGER_4 *topos)
+SUB_NAME (const TYPE *from, const int *frompos, const int *len, TYPE *to,
+	  const int *topos)
 {
   TYPE oldbits, newbits, lenmask;
 
