@@ -1,3 +1,8 @@
+2007-07-14  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (DO_GLOBAL_CTORS_BODY): Add void to prototype.
+	(DO_GLOBAL_DTORS_BODY): Likewise.
+
 2007-07-14  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 

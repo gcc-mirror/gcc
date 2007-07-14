@@ -2892,7 +2892,7 @@ struct sh_args {
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
 {						\
-  typedef (*pfunc)();				\
+  typedef void (*pfunc) (void);			\
   extern pfunc __ctors[];			\
   extern pfunc __ctors_end[];			\
   pfunc *p;					\
@@ -2905,7 +2905,7 @@ struct sh_args {
 #undef DO_GLOBAL_DTORS_BODY
 #define DO_GLOBAL_DTORS_BODY			\
 {						\
-  typedef (*pfunc)();				\
+  typedef void (*pfunc) (void);			\
   extern pfunc __dtors[];			\
   extern pfunc __dtors_end[];			\
   pfunc *p;					\
