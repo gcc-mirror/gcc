@@ -2278,6 +2278,9 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	  tree cond;
 	  char *msg;
 
+	  /* Evaluate the indexse.expr only once.  */
+	  indexse.expr = save_expr (indexse.expr);
+
 	  /* Lower bound.  */
 	  tmp = gfc_conv_array_lbound (se->expr, n);
 	  cond = fold_build2 (LT_EXPR, boolean_type_node, 
