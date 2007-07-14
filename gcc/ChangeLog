@@ -1,3 +1,21 @@
+2007-07-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/spe.md (SPE_ACC_REGNO): Delete definition.
+	(SPEFSCR_REGNO): Delete definition.
+	* config/rs6000/rs6000.c: LINK_REGISTER_REGNUM -> LR_REGNO.
+	COUNT_REGISTER_REGNUM -> CTR_REGNO.
+	* config/rs6000/rs6000.h: Do not define *_REGNO.
+	LINK_REGISTER_REGNUM -> LR_REGNO.
+	COUNT_REGISTER_REGNUM -> CTR_REGNO.
+	* config/rs6000/predicates.md: LINK_REGISTER_REGNUM -> 	LR_REGNO.
+	COUNT_REGISTER_REGNUM -> CTR_REGNO.
+	* config/rs6000/linux-unwind.h: Define R_LR, R_CR2, R_VR0,
+	R_VRSAVE, R_VSCR. Use them.
+	* config/rs6000/darwin-fallback.c: Define R_LR, R_CTR, R_CR2,
+	R_XER, R_VR0, R_VRSAVE, R_VSCR, R_SPEFSCR.  Use them.
+	* config/rs6000/rs6000.md: Define REGNO constants.  Use them.
+	* config/rs6000/aix.h: Define R_LR.  Use it.
+	
 2007-07-13  Caroline Tice  <ctice@apple.com>
 	
 	* toplev.c (process_options): Turn flag_var_tracking_uninit off when
