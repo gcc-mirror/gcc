@@ -1556,29 +1556,42 @@ void
 gfc_resolve_pack (gfc_expr *f, gfc_expr *array, gfc_expr *mask,
 		  gfc_expr *vector ATTRIBUTE_UNUSED)
 {
+  int newkind;
+
   f->ts = array->ts;
   f->rank = 1;
 
-  if (mask->rank != 0)
-    f->value.function.name = (array->ts.type == BT_CHARACTER
-			   ? PREFIX ("pack_char") : PREFIX ("pack"));
+  /* The mask can be kind 4 or 8 for the array case.  For the scalar
+     case, coerce it to kind=4 unconditionally (because this is the only
+     kind we have a library function for).  */
+
+  newkind = 0;
+  if (mask->rank == 0)
+    {
+      if (mask->ts.kind != 4)
+	newkind = 4;
+    }
   else
     {
-      /* We convert mask to default logical only in the scalar case.
-	 In the array case we can simply read the array as if it were
-	 of type default logical.  */
-      if (mask->ts.kind != gfc_default_logical_kind)
-	{
-	  gfc_typespec ts;
-
-	  ts.type = BT_LOGICAL;
-	  ts.kind = gfc_default_logical_kind;
-	  gfc_convert_type (mask, &ts, 2);
-	}
-
-      f->value.function.name = (array->ts.type == BT_CHARACTER
-			     ? PREFIX ("pack_s_char") : PREFIX ("pack_s"));
+      if (mask->ts.kind < 4)
+	newkind = gfc_default_logical_kind;
     }
+
+  if (newkind)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_default_logical_kind;
+      gfc_convert_type (mask, &ts, 2);
+    }
+
+  if (mask->rank != 0)
+    f->value.function.name = (array->ts.type == BT_CHARACTER
+			      ? PREFIX ("pack_char") : PREFIX ("pack"));
+  else
+    f->value.function.name = (array->ts.type == BT_CHARACTER
+			      ? PREFIX ("pack_s_char") : PREFIX ("pack_s"));
 }
 
 
@@ -2338,6 +2351,17 @@ gfc_resolve_unpack (gfc_expr *f, gfc_expr *vector, gfc_expr *mask,
 {
   f->ts = vector->ts;
   f->rank = mask->rank;
+
+  /* Coerce the mask to default logical kind if it has kind < 4.  */
+
+  if (mask->ts.kind < 4)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_LOGICAL;
+      ts.kind = gfc_default_logical_kind;
+      gfc_convert_type (mask, &ts, 2);
+    }
 
   f->value.function.name
     = gfc_get_string (PREFIX ("unpack%d%s"), field->rank > 0 ? 1 : 0,

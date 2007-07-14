@@ -1,3 +1,12 @@
+2007-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32731
+	* iresolve.c(gfc_resolve_pack):  A scalar mask has
+	to be kind=4, an array mask with kind<4 is converted
+	to gfc_default_logical_kind automatically.
+	(gfc_resolve_unpack):  Convert mask to gfc_default_lotical_kind
+	if it has a kind<4.
+
 2007-07-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32724
