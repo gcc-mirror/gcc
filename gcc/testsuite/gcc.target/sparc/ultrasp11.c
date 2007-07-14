@@ -1,7 +1,8 @@
 /* PR target/17245 */
 /* Origin: <aaronw@net.com> */
 /* Testcase by Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de> */
-/* { dg-do compile { target sparc*-*-* } } */
+
+/* { dg-do compile } */
 /* { dg-options "-O -mcpu=v9" } */
 
 /* This used to fail on 32-bit Ultrasparc because reload was emitting

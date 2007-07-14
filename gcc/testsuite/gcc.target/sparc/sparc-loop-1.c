@@ -1,6 +1,7 @@
 /* PR optimization/10157 */
 /* Originator: Peter van Hoof <p.van-hoof@qub.ac.uk> */
-/* { dg-do compile { target sparc*-*-* } } */
+
+/* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
 
 /* Verify that the loop optimizer doesn't

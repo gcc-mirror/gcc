@@ -1,4 +1,5 @@
-/* { dg-do run { target { sparc*-*-* && ultrasparc_hw } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target ultrasparc_hw } */
 /* { dg-options "-O2 -mcpu=ultrasparc -mvis" } */
 
 extern void abort (void);
@@ -22,14 +23,15 @@ l:
     {
       f++;
       h = c;
-    }
-  if (!h)
-    {
-      for (g = 0; g <= 10; g++)
-        for (h = 0; h <= 10; h++)
-          e += d [10 + g - h];
       goto l;
     }
+
+  asm volatile ("" : : :
+		"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",
+		"f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",
+		"f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",
+		"f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31");
+
   return f & 7;
 }
 

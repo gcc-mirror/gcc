@@ -1,5 +1,6 @@
 /* PR target/15693 */
-/* { dg-do compile { target sparc*-*-* } } */
+
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 /* This used to fail on SPARC at -O2 because the combiner

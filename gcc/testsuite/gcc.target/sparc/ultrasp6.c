@@ -1,6 +1,7 @@
 /* PR target/7784 */
 /* Originator: Peter van Hoof <p.van-hoof@qub.ac.uk> */
-/* { dg-do compile { target sparc-*-* } } */
+
+/* { dg-do compile } */
 /* { dg-options "-O2 -mcpu=ultrasparc" } */
 
 typedef struct

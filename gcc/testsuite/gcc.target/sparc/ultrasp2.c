@@ -3,8 +3,7 @@
    Simplified from libg++/src/Fix16.cc */
 
 /* { dg-do compile } */
-/* { dg-options "" } */
-/* { dg-options "-O0" { target sparc64-*-* sparcv9-*-* } } */
+/* { dg-options "-O0" } */
 
 short foo() {
   short i = (short)(1<<15);

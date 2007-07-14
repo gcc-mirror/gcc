@@ -1,5 +1,6 @@
-/* { dg-options "" } */
-/* { dg-options "-mcpu=ultrasparc -mv8plus" { target sparc-*-* } } */
+/* { dg-do run } */
+/* { dg-require-effective-target ilp32 && ultrasparc_hw } */
+/* { dg-options "-mcpu=ultrasparc -mv8plus" } */
 
 extern void abort (void);
 extern void exit (int);
@@ -24,7 +25,7 @@ unsigned long long baz (void)
   return c * a;
 }
 
-main ()
+int main (void)
 {
   if (foo (0x56789LL) != 0x26f32e5d26f32e5dLL)
     abort ();

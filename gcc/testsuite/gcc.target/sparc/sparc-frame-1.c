@@ -1,5 +1,6 @@
 /* PR target/24284 */
-/* { dg-do compile { target sparc*-*-* } } */
+
+/* { dg-do compile } */
 /* { dg-options "-O -g" } */
 
 void do_run(void *ip)
