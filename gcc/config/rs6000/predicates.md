@@ -29,7 +29,7 @@
 ;; Return 1 if op is COUNT register.
 (define_predicate "count_register_operand"
   (and (match_code "reg")
-       (match_test "REGNO (op) == COUNT_REGISTER_REGNUM
+       (match_test "REGNO (op) == CTR_REGNO
 		    || REGNO (op) > LAST_VIRTUAL_REGISTER")))
   
 ;; Return 1 if op is an Altivec register.
@@ -686,8 +686,8 @@
 ;; to CALL.  This is a SYMBOL_REF, a pseudo-register, LR or CTR.
 (define_predicate "call_operand"
   (if_then_else (match_code "reg")
-     (match_test "REGNO (op) == LINK_REGISTER_REGNUM
-		  || REGNO (op) == COUNT_REGISTER_REGNUM
+     (match_test "REGNO (op) == LR_REGNO
+		  || REGNO (op) == CTR_REGNO
 		  || REGNO (op) >= FIRST_PSEUDO_REGISTER")
      (match_code "symbol_ref")))
 

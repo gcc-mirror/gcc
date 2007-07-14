@@ -41,6 +41,15 @@
 #include <sys/types.h>
 #include <signal.h>
 
+#define R_LR		65
+#define R_CTR		66
+#define R_CR2		70
+#define R_XER		76
+#define R_VR0		77
+#define R_VRSAVE	109
+#define R_VSCR		110
+#define R_SPEFSCR	112
+
 typedef unsigned long reg_unit;
 
 /* Place in GPRS the parameters to the first 'sc' instruction that would
@@ -383,14 +392,14 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
 
       new_cfa = m64->gpr[1][1];
       
-      set_offset (CR2_REGNO, &m64->cr);
+      set_offset (R_CR2, &m64->cr);
       for (i = 0; i < 32; i++)
 	set_offset (i, m64->gpr[i] + 1);
-      set_offset (XER_REGNO, m64->xer + 1);
-      set_offset (LINK_REGISTER_REGNUM, m64->lr + 1);
-      set_offset (COUNT_REGISTER_REGNUM, m64->ctr + 1);
+      set_offset (R_XER, m64->xer + 1);
+      set_offset (R_LR, m64->lr + 1);
+      set_offset (R_CTR, m64->ctr + 1);
       if (is_vector)
-	set_offset (VRSAVE_REGNO, &m64->vrsave);
+	set_offset (R_VRSAVE, &m64->vrsave);
       
       /* Sometimes, srr0 points to the instruction that caused the exception,
 	 and sometimes to the next instruction to be executed; we want
@@ -411,15 +420,15 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
       
       new_cfa = m->gpr[1];
 
-      set_offset (CR2_REGNO, &m->cr);
+      set_offset (R_CR2, &m->cr);
       for (i = 0; i < 32; i++)
 	set_offset (i, m->gpr + i);
-      set_offset (XER_REGNO, &m->xer);
-      set_offset (LINK_REGISTER_REGNUM, &m->lr);
-      set_offset (COUNT_REGISTER_REGNUM, &m->ctr);
+      set_offset (R_XER, &m->xer);
+      set_offset (R_LR, &m->lr);
+      set_offset (R_CTR, &m->ctr);
 
       if (is_vector)
-	set_offset (VRSAVE_REGNO, &m->vrsave);
+	set_offset (R_VRSAVE, &m->vrsave);
 
       /* Sometimes, srr0 points to the instruction that caused the exception,
 	 and sometimes to the next instruction to be executed; we want
@@ -449,13 +458,13 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
 
   for (i = 0; i < 32; i++)
     set_offset (32 + i, float_vector_state->fpregs + i);
-  set_offset (SPEFSCR_REGNO, &float_vector_state->fpscr);
+  set_offset (R_SPEFSCR, &float_vector_state->fpscr);
   
   if (is_vector)
     {
       for (i = 0; i < 32; i++)
-	set_offset (FIRST_ALTIVEC_REGNO + i, float_vector_state->save_vr + i);
-      set_offset (VSCR_REGNO, float_vector_state->save_vscr);
+	set_offset (R_VR0 + i, float_vector_state->save_vr + i);
+      set_offset (R_VSCR, float_vector_state->save_vscr);
     }
 
   return true;

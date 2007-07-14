@@ -3493,7 +3493,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 
 		  first = emit_insn (gen_load_toc_v4_PIC_1b (gsym));
 		  emit_move_insn (tmp1,
-				  gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+				  gen_rtx_REG (Pmode, LR_REGNO));
 		  emit_move_insn (tmp2, mem);
 		  emit_insn (gen_addsi3 (tmp3, tmp1, tmp2));
 		  last = emit_move_insn (got, tmp3);
@@ -11067,10 +11067,10 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'T':
       /* Print the symbolic name of a branch target register.  */
-      if (GET_CODE (x) != REG || (REGNO (x) != LINK_REGISTER_REGNUM
-				  && REGNO (x) != COUNT_REGISTER_REGNUM))
+      if (GET_CODE (x) != REG || (REGNO (x) != LR_REGNO
+				  && REGNO (x) != CTR_REGNO))
 	output_operand_lossage ("invalid %%T value");
-      else if (REGNO (x) == LINK_REGISTER_REGNUM)
+      else if (REGNO (x) == LR_REGNO)
 	fputs (TARGET_NEW_MNEMONICS ? "lr" : "r", file);
       else
 	fputs ("ctr", file);
@@ -13532,7 +13532,7 @@ rs6000_stack_info (void)
       || rs6000_ra_ever_killed ())
     {
       info_ptr->lr_save_p = 1;
-      df_set_regs_ever_live (LINK_REGISTER_REGNUM, true);
+      df_set_regs_ever_live (LR_REGNO, true);
     }
 
   /* Determine if we need to save the condition code registers.  */
@@ -13956,7 +13956,7 @@ rs6000_return_addr (int count, rtx frame)
     }
 
   cfun->machine->ra_need_lr = 1;
-  return get_hard_reg_initial_val (Pmode, LINK_REGISTER_REGNUM);
+  return get_hard_reg_initial_val (Pmode, LR_REGNO);
 }
 
 /* Say whether a function is a candidate for sibcall handling or not.
@@ -14042,7 +14042,7 @@ rs6000_ra_ever_killed (void)
   push_topmost_sequence ();
   top = get_insns ();
   pop_topmost_sequence ();
-  reg = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
+  reg = gen_rtx_REG (Pmode, LR_REGNO);
 
   for (insn = NEXT_INSN (top); insn != NULL_RTX; insn = NEXT_INSN (insn))
     {
@@ -14053,7 +14053,7 @@ rs6000_ra_ever_killed (void)
 	      if (!SIBLING_CALL_P (insn))
 		return 1;
 	    }
-	  else if (find_regno_note (insn, REG_INC, LINK_REGISTER_REGNUM))
+	  else if (find_regno_note (insn, REG_INC, LR_REGNO))
 	    return 1;
 	  else if (set_of (reg, insn) != NULL_RTX
 		   && !prologue_epilogue_contains (insn))
@@ -14092,14 +14092,14 @@ rs6000_emit_load_toc_table (int fromprolog)
 	}
       emit_insn (gen_load_toc_v4_PIC_1 (lab));
       emit_move_insn (tmp1,
-			     gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+			     gen_rtx_REG (Pmode, LR_REGNO));
       emit_insn (gen_load_toc_v4_PIC_3b (tmp2, tmp1, got, lab));
       emit_insn (gen_load_toc_v4_PIC_3c (dest, tmp2, got, lab));
     }
   else if (TARGET_ELF && DEFAULT_ABI == ABI_V4 && flag_pic == 1)
     {
       emit_insn (gen_load_toc_v4_pic_si ());
-      emit_move_insn (dest, gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+      emit_move_insn (dest, gen_rtx_REG (Pmode, LR_REGNO));
     }
   else if (TARGET_ELF && DEFAULT_ABI != ABI_AIX && flag_pic == 2)
     {
@@ -14120,7 +14120,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 
 	  emit_insn (gen_load_toc_v4_PIC_1 (symF));
 	  emit_move_insn (dest,
-			  gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+			  gen_rtx_REG (Pmode, LR_REGNO));
 	  emit_insn (gen_load_toc_v4_PIC_2 (temp0, dest, symL, symF));
 	}
       else
@@ -14130,7 +14130,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 	  tocsym = gen_rtx_SYMBOL_REF (Pmode, toc_label_name);
 	  emit_insn (gen_load_toc_v4_PIC_1b (tocsym));
 	  emit_move_insn (dest,
-			  gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+			  gen_rtx_REG (Pmode, LR_REGNO));
 	  emit_move_insn (temp0, gen_rtx_MEM (Pmode, dest));
 	}
       emit_insn (gen_addsi3 (dest, temp0, dest));
@@ -14191,7 +14191,7 @@ rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
       emit_move_insn (tmp, operands[0]);
     }
   else
-    emit_move_insn (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM), operands[0]);
+    emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO), operands[0]);
 }
 
 static GTY(()) int set = -1;
@@ -14773,7 +14773,7 @@ rs6000_emit_prologue (void)
       if (info->lr_save_p)
 	{
 	  insn = emit_move_insn (reg0,
-				 gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+				 gen_rtx_REG (Pmode, LR_REGNO));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
@@ -14806,7 +14806,7 @@ rs6000_emit_prologue (void)
       j = 0;
       RTVEC_ELT (p, j++) = gen_rtx_CLOBBER (VOIDmode,
 					    gen_rtx_REG (SImode,
-							 LINK_REGISTER_REGNUM));
+							 LR_REGNO));
       RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode,
 					gen_rtx_SYMBOL_REF (Pmode,
 							    "*save_world"));
@@ -14881,7 +14881,7 @@ rs6000_emit_prologue (void)
       rtx addr, reg, mem;
 
       insn = emit_move_insn (gen_rtx_REG (Pmode, 0),
-			     gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM));
+			     gen_rtx_REG (Pmode, LR_REGNO));
       RTX_FRAME_RELATED_P (insn) = 1;
 
       addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
@@ -14940,7 +14940,7 @@ rs6000_emit_prologue (void)
 
       RTVEC_ELT (p, 0) = gen_rtx_CLOBBER (VOIDmode,
 					  gen_rtx_REG (Pmode,
-						       LINK_REGISTER_REGNUM));
+						       LR_REGNO));
       sprintf (rname, "%s%d%s", SAVE_FP_PREFIX,
 	       info->first_fp_reg_save - 32, SAVE_FP_SUFFIX);
       alloc_rname = ggc_strdup (rname);
@@ -15261,7 +15261,7 @@ rs6000_emit_prologue (void)
 				      && EDGE_COUNT (EXIT_BLOCK_PTR->preds) > 0);
       if (save_LR_around_toc_setup)
 	{
-	  rtx lr = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
+	  rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
 
 	  insn = emit_move_insn (frame_ptr_rtx, lr);
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -15279,7 +15279,7 @@ rs6000_emit_prologue (void)
   if (DEFAULT_ABI == ABI_DARWIN
       && flag_pic && current_function_uses_pic_offset_table)
     {
-      rtx lr = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
+      rtx lr = gen_rtx_REG (Pmode, LR_REGNO);
       rtx src = machopic_function_base_sym ();
 
       /* Save and restore LR locally around this call (in R0).  */
@@ -15435,7 +15435,7 @@ rs6000_emit_epilogue (int sibcall)
       RTVEC_ELT (p, j++) = gen_rtx_RETURN (VOIDmode);
       RTVEC_ELT (p, j++) = gen_rtx_USE (VOIDmode,
 					gen_rtx_REG (Pmode,
-						     LINK_REGISTER_REGNUM));
+						     LR_REGNO));
       RTVEC_ELT (p, j++)
 	= gen_rtx_USE (VOIDmode, gen_rtx_SYMBOL_REF (Pmode, alloc_rname));
       /* The instruction pattern requires a clobber here;
@@ -15592,7 +15592,7 @@ rs6000_emit_epilogue (int sibcall)
 
   /* Set LR here to try to overlap restores below.  */
   if (info->lr_save_p)
-    emit_move_insn (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM),
+    emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO),
 		    gen_rtx_REG (Pmode, 0));
 
   /* Load exception handler data registers, if needed.  */
@@ -15814,7 +15814,7 @@ rs6000_emit_epilogue (int sibcall)
       RTVEC_ELT (p, 0) = gen_rtx_RETURN (VOIDmode);
       RTVEC_ELT (p, 1) = gen_rtx_USE (VOIDmode,
 				      gen_rtx_REG (Pmode,
-						   LINK_REGISTER_REGNUM));
+						   LR_REGNO));
 
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
@@ -16255,7 +16255,7 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			gen_rtx_USE (VOIDmode, const0_rtx),
 			gen_rtx_USE (VOIDmode,
 				     gen_rtx_REG (SImode,
-						  LINK_REGISTER_REGNUM)),
+						  LR_REGNO)),
 			gen_rtx_RETURN (VOIDmode))));
   SIBLING_CALL_P (insn) = 1;
   emit_barrier ();
@@ -16904,7 +16904,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
   else if (DEFAULT_ABI == ABI_DARWIN)
     {
       const char *mcount_name = RS6000_MCOUNT;
-      int caller_addr_regno = LINK_REGISTER_REGNUM;
+      int caller_addr_regno = LR_REGNO;
 
       /* Be conservative and always set this, at least for now.  */
       current_function_uses_pic_offset_table = 1;
@@ -20903,9 +20903,9 @@ rs6000_dbx_register_number (unsigned int regno)
     return regno;
   if (regno == MQ_REGNO)
     return 100;
-  if (regno == LINK_REGISTER_REGNUM)
+  if (regno == LR_REGNO)
     return 108;
-  if (regno == COUNT_REGISTER_REGNUM)
+  if (regno == CTR_REGNO)
     return 109;
   if (CR_REGNO_P (regno))
     return regno - CR0_REGNO + 86;
