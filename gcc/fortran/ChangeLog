@@ -1,3 +1,9 @@
+2007-07-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32724
+	* parse.c (parse_spec): Emit error on unexpected statement
+	function.
+
 2007-07-13  Daniel Franke  <franke.daniel@gmail.com>
 
 	* invoke.texi: Unified upper- and lower-case in menus.
