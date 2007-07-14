@@ -1902,6 +1902,13 @@ loop:
 
 	  break;
 
+	case ST_STATEMENT_FUNCTION:
+	  if (gfc_current_state () == COMP_MODULE)
+	    {
+	      unexpected_statement (st);
+	      break;
+	    }
+
 	default:
 	  break;
 	}
