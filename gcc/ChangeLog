@@ -1,3 +1,9 @@
+2007-07-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/32705
+	* tree-ssa-sccvn.c (set_ssa_val_to): Accept VN_TOP as value number.
+	(simplify_binary_expression): Use SSA_VAL consistently.
+
 2007-07-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/spe.md (SPE_ACC_REGNO): Delete definition.
