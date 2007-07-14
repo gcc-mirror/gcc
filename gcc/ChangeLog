@@ -1,3 +1,20 @@
+2007-07-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (init_mmx_sse_builtins): Define all builtins
+	except __builtin_ia32_emms, __builtin_ia32_ldmxcsr,
+	__builtin_ia32_stmxcsr, __builtin_ia32_maskmovq, __builtin_ia32_loadups,
+	__builtin_ia32_storeups, __builtin_ia32_loadhps, __builtin_ia32_loadlps,
+	__builtin_ia32_storehps, __builtin_ia32_storelps,
+	__builtin_ia32_movntps, __builtin_ia32_movntq, __builtin_ia32_sfence,
+	__builtin_ia32_femms, __builtin_ia32_maskmovdqu, __builtin_ia32_loadupd,
+	__builtin_ia32_storeupd, __builtin_ia32_loadhpd, __builtin_ia32_loadlpd,
+	__builtin_ia32_movnti, __builtin_ia32_movntpd, __builtin_ia32_movntdq,
+	__builtin_ia32_clflush, __builtin_ia32_lfence, __builtin_ia32_mfence,
+	__builtin_ia32_loaddqu, __builtin_ia32_storedqu, __builtin_ia32_monitor,
+	__builtin_ia32_mwait, __builtin_ia32_lddqu, __builtin_ia32_movntdqa,
+	__builtin_ia32_movntsd and __builtin_ia32_movntss as const builtins
+	using def_builtin_const.
+
 2007-07-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/32705
