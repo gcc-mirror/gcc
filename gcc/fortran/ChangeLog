@@ -1,5 +1,10 @@
 2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/32036
+	* trans-array.c (gfc_conv_array_ref): Only evaluate index once.
+
+2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32357
 	* iresolve.c (gfc_resolve_mvbits): Convert FROMPOS, LEN and TOPOS
 	to C int.

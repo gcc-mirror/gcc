@@ -16,8 +16,8 @@ subroutine something
   i = 1
   n = 5
   line = 'PZ0R1'
-  if (internal (0)) call abort ()
-  if (m .ne. 5) call abort ()
+  if (internal (1)) call abort ()
+  if (m .ne. 4) call abort ()
 contains
   logical function internal (j)
     intent(in) j
@@ -25,7 +25,7 @@ contains
       k = index ('RE', lit (i))
       m = m + 1
       if (k == 0) cycle
-      if (i+1 == n) exit
+      if (i + 1 == n) exit
     enddo
     internal = (k == 0)
   end function

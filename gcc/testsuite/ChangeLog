@@ -1,5 +1,11 @@
 2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/32036
+	* gfortran.dg/bounds_check_8.f90: New test.
+	* gfortran.dg/do_iterator_2.f90: Make code legal Fortran.
+
+2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32357
 	* gfortran.dg/mvbits_2.f90: New test.
 
