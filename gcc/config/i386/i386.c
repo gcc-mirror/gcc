@@ -17776,7 +17776,7 @@ ix86_init_mmx_sse_builtins (void)
       /* TFmode support builtins.  */
       ftype = build_function_type (float128_type_node,
 				   void_list_node);
-      def_builtin_const (OPTION_MASK_ISA_64BIT, "__builtin_infq", ftype, IX86_BUILTIN_INFQ);
+      def_builtin (OPTION_MASK_ISA_64BIT, "__builtin_infq", ftype, IX86_BUILTIN_INFQ);
 
       ftype = build_function_type_list (float128_type_node,
 					float128_type_node,
