@@ -1,3 +1,10 @@
+2007-07-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/32748
+	* trans-decl.c (gfc_build_builtin_function_decls): Remove
+	DECL_IS_MALLOC attribute from internal_realloc, thus reverting
+	part of my 2007-07-03 patch.
+
 2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
