@@ -1,3 +1,8 @@
+2007-07-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin-fallback.c (interpret_libc): Change
+	CR2_REGNO to R_CR2.
+
 2007-07-15  Andrew Haley  <aph@redhat.com>
 
 	* unwind-sjlj.c (_Unwind_GetIPInfo): Check for context->fc != NULL
