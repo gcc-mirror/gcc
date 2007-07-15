@@ -1,3 +1,11 @@
+2007-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/32752
+	* io/unix.c (unix_stream): Move buffer pointer adjacent to small_buffer.
+	* io/transfer.c (formatted_transfer_scalar): If stream I/O, set
+	bytes_used to zero. Fix off by one error in calculation of pos and
+	skips. Eliminate duplicate pending_spaces check.
+
 2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32357
