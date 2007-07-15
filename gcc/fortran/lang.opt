@@ -249,6 +249,10 @@ fshort-enums
 Fortran
 Use the narrowest integer type possible for enumeration types
 
+fsign-zero
+Fortran
+Apply negative sign to zero values
+
 funderscoring
 Fortran
 Append underscores to externally visible names
