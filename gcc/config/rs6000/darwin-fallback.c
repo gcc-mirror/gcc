@@ -72,7 +72,7 @@ interpret_libc (reg_unit gprs[32], struct _Unwind_Context *context)
   gprs[1] = _Unwind_GetCFA (context);
   for (; i < 32; i++)
     gprs[i] = _Unwind_GetGR (context, i);
-  cr = _Unwind_GetGR (context, CR2_REGNO);
+  cr = _Unwind_GetGR (context, R_CR2);
 
   /* For each supported Libc, we have to track the code flow
      all the way back into the kernel.
