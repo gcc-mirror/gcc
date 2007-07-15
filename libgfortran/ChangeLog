@@ -1,3 +1,17 @@
+2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32611
+	* runtime/compile_options.c (set_std): Remove.
+	(set_options): New function.
+	(init_compile_options): Add initialization for -fsign-zero option.
+	* gfortran.map (GFORTRAN_1.0): Rename _gfortran_set_std into
+	_gfortran_set_options.
+	* libgfortran.h (compile_options_t): Add sign_zero field.
+	* io/write.c (output_float): Use the sign bit of the value to determine
+	if a negative sign should be emitted for zero values.  Do not emit the
+	negative sign for zero if -fno-sign-zero was set during compile.
+	
 2007-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/32752

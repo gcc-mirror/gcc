@@ -590,7 +590,7 @@ GFORTRAN_1.0 {
     _gfortran_set_fpe;
     _gfortran_set_max_subrecord_length;
     _gfortran_set_record_marker;
-    _gfortran_set_std;
+    _gfortran_set_options;
     _gfortran_shape_16;
     _gfortran_shape_4;
     _gfortran_shape_8;
