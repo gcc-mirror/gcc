@@ -671,7 +671,11 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
   }
 
   if (name)
-    new_vect_var = create_tmp_var (type, concat (prefix, name, NULL));
+    {
+      char* tmp = concat (prefix, name, NULL);
+      new_vect_var = create_tmp_var (type, tmp);
+      free (tmp);
+    }
   else
     new_vect_var = create_tmp_var (type, prefix);
 
@@ -4443,7 +4447,7 @@ vect_transform_strided_load (tree stmt, VEC(tree,heap) *dr_chain, int size,
      corresponds the order of data-refs in RESULT_CHAIN.  */
   next_stmt = first_stmt;
   gap_count = 1;
-  for (i = 0; VEC_iterate(tree, result_chain, i, tmp_data_ref); i++)
+  for (i = 0; VEC_iterate (tree, result_chain, i, tmp_data_ref); i++)
     {
       if (!next_stmt)
 	break;

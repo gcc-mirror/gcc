@@ -8639,6 +8639,7 @@ fixup_abnormal_edges (void)
       blocks = sbitmap_alloc (last_basic_block);
       sbitmap_ones (blocks);
       find_many_sub_basic_blocks (blocks);
+      sbitmap_free (blocks);
     }
 
   if (inserted)
