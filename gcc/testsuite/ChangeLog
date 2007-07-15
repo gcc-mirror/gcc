@@ -1,3 +1,12 @@
+2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/32611
+	* gfortran.dg/large_real_kind_1.f90: Update test.
+	* gfortran.dg/pr17706.f90: Update test.
+	* gfortran.dg/fmt_zero_digits.f90: Update test.
+	* gfortran.dg/fmt_zero_precision.f90: Update test.
+	* gfortran.dg/real_const_3.f90: Update test.
+
 2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32036
