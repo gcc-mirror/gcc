@@ -1861,6 +1861,7 @@ typedef struct
   int flag_cray_pointer;
   int flag_d_lines;
   int flag_openmp;
+  int flag_sign_zero;
 
   int fpe;
 

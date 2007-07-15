@@ -102,6 +102,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_cray_pointer = 0;
   gfc_option.flag_d_lines = -1;
   gfc_option.flag_openmp = 0;
+  gfc_option.flag_sign_zero = 1;
 
   gfc_option.fpe = 0;
 
@@ -617,6 +618,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_J:
     case OPT_M:
       gfc_handle_module_path_options (arg);
+      break;
+    
+    case OPT_fsign_zero:
+      gfc_option.flag_sign_zero = value;
       break;
     
     case OPT_ffpe_trap_:

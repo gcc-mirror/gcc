@@ -1,3 +1,18 @@
+2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32611
+	* gfortran.h (gfc_option_t): Add flag_sign_zero field.
+	* lang.opt (-fsign-zero): New option.
+	* trans.h: Rename gfor_fndecl_set_std into gfor_fndecl_set_options.
+	* trans-decl.c (gfc_build_builtin_function_decls): Build the function
+	declaration to pass an array containing the options to be used by the
+	runtime library. (gfc_generate_function_code): Build an array that
+	contains option values to be passed to the runtime library and the call
+	to the function. 
+	* options.c (gfc_init_options): Initialize the flag_sign_zero field.
+	(gfc_handle_option): Handle the -fsign-zero option.
+
 2007-07-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32036

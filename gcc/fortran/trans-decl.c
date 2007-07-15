@@ -88,7 +88,7 @@ tree gfor_fndecl_runtime_error_at;
 tree gfor_fndecl_os_error;
 tree gfor_fndecl_generate_error;
 tree gfor_fndecl_set_fpe;
-tree gfor_fndecl_set_std;
+tree gfor_fndecl_set_options;
 tree gfor_fndecl_set_convert;
 tree gfor_fndecl_set_record_marker;
 tree gfor_fndecl_set_max_subrecord_length;
@@ -2364,15 +2364,11 @@ gfc_build_builtin_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("set_fpe")),
 				    void_type_node, 1, gfc_c_int_type_node);
 
-  gfor_fndecl_set_std =
-    gfc_build_library_function_decl (get_identifier (PREFIX("set_std")),
-				    void_type_node,
-				    5,
-				    gfc_int4_type_node,
-				    gfc_int4_type_node,
-				    gfc_int4_type_node,
-				    gfc_int4_type_node,
-				    gfc_int4_type_node);
+  /* Keep the array dimension in sync with the call, later in this file.  */
+  gfor_fndecl_set_options =
+    gfc_build_library_function_decl (get_identifier (PREFIX("set_options")),
+				    void_type_node, 2, gfc_c_int_type_node,
+				    pvoid_type_node);
 
   gfor_fndecl_set_convert =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_convert")),
@@ -3152,23 +3148,56 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* Now generate the code for the body of this function.  */
   gfc_init_block (&body);
 
-  /* If this is the main program, add a call to set_std to set up the
+  /* If this is the main program, add a call to set_options to set up the
      runtime library Fortran language standard parameters.  */
-
   if (sym->attr.is_main_program)
     {
-      tree gfc_int4_type_node = gfc_get_int_type (4);
-      tmp = build_call_expr (gfor_fndecl_set_std, 5,
-			     build_int_cst (gfc_int4_type_node,
-					    gfc_option.warn_std),
-			     build_int_cst (gfc_int4_type_node,
-					    gfc_option.allow_std),
-			     build_int_cst (gfc_int4_type_node,
-					    pedantic),
-			     build_int_cst (gfc_int4_type_node,
-					    gfc_option.flag_dump_core),
-			     build_int_cst (gfc_int4_type_node,
-					    gfc_option.flag_backtrace));
+      tree gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
+      tree array_type, array, var;
+
+      /* Passing a new option to the library requires four modifications:
+	   + add it to the tree_cons list below
+	   + change the array size in the call to build_array_type
+	   + change the first argument to the library call
+	     gfor_fndecl_set_options
+	   + modify the library (runtime/compile_options.c)!  */
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node,
+					gfc_option.warn_std), NULL_TREE);
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node,
+					gfc_option.allow_std), array);
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node, pedantic), array);
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node,
+					gfc_option.flag_dump_core), array);
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node,
+					gfc_option.flag_backtrace), array);
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node,
+					gfc_option.flag_sign_zero), array);
+
+      array_type = build_array_type (gfc_c_int_type_node,
+				     build_index_type (build_int_cst (NULL_TREE,
+								      5)));
+      array = build_constructor_from_list (array_type, nreverse (array));
+      TREE_CONSTANT (array) = 1;
+      TREE_INVARIANT (array) = 1;
+      TREE_STATIC (array) = 1;
+
+      /* Create a static variable to hold the jump table.  */
+      var = gfc_create_var (array_type, "options");
+      TREE_CONSTANT (var) = 1;
+      TREE_INVARIANT (var) = 1;
+      TREE_STATIC (var) = 1;
+      TREE_READONLY (var) = 1;
+      DECL_INITIAL (var) = array;
+      var = gfc_build_addr_expr (pvoid_type_node, var);
+
+      tmp = build_call_expr (gfor_fndecl_set_options, 2,
+			     build_int_cst (gfc_c_int_type_node, 6), var);
       gfc_add_expr_to_block (&body, tmp);
     }
 

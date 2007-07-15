@@ -495,7 +495,7 @@ extern GTY(()) tree gfor_fndecl_runtime_error_at;
 extern GTY(()) tree gfor_fndecl_os_error;
 extern GTY(()) tree gfor_fndecl_generate_error;
 extern GTY(()) tree gfor_fndecl_set_fpe;
-extern GTY(()) tree gfor_fndecl_set_std;
+extern GTY(()) tree gfor_fndecl_set_options;
 extern GTY(()) tree gfor_fndecl_ttynam;
 extern GTY(()) tree gfor_fndecl_ctime;
 extern GTY(()) tree gfor_fndecl_fdate;
