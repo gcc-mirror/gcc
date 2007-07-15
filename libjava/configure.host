@@ -82,7 +82,7 @@ case "${host}" in
 	enable_getenv_properties_default=no
 	enable_main_args_default=no
 	;;
-  arm*-linux-gnu)
+  arm*-linux*)
 	libgcj_interpreter=yes
 	sysdeps_dir=arm
 	;;
