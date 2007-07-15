@@ -3,6 +3,13 @@
 	* configure.host: 
 	arm*-linux-gnu -> arm*-linux*.
 
+2007-07-14  Krister Walfridsson  <cato@df.lth.se>
+
+	* gnu/gcj/util/natGCInfo.cc: Use HAVE_STRERROR_R.
+	* configure.ac: Remove check for strerror, add check for strerror_r.
+	* configure: Regenerate.
+	* include/config.h.in: Regenerate.
+
 2007-07-13  Andrew Haley  <aph@redhat.com>
 
 	* libgcj.ver: Add __gcj_personality_sj0.
