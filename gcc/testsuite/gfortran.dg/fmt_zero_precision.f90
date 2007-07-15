@@ -53,7 +53,7 @@
 ! { dg-output "-1\\.<(\n|\r\n|\r)" }
 ! { dg-output "-1\\.<(\n|\r\n|\r)" }
 ! { dg-output "-1\\.<(\n|\r\n|\r)" }
-! { dg-output " 0\\.<(\n|\r\n|\r)" }
+! { dg-output "-0\\.<(\n|\r\n|\r)" }
 ! { dg-output "     38\\.<(\n|\r\n|\r)" }
 ! { dg-output "  10345\\.<(\n|\r\n|\r)" }
 ! { dg-output "    334\\.<(\n|\r\n|\r)" }

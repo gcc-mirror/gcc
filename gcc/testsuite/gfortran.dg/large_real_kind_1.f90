@@ -67,7 +67,7 @@ program test
 
   x = tiny(x)
   call outputstring (x,'(F20.15)','   0.000000000000000')
-  call outputstring (-x,'(F20.15)','   0.000000000000000')
+  call outputstring (-x,'(F20.15)','  -0.000000000000000')
 
   write (c1,'(G20.10E5)') x
   write (c2,'(G20.10E5)') -x

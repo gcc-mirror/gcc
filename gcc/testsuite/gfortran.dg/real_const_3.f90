@@ -38,4 +38,4 @@ end program main
 !{ dg-output " \\(           NaN,           NaN\\)(\n|\r\n|\r)" }
 !{ dg-output " \\(           NaN,           NaN\\)(\n|\r\n|\r)" }
 !{ dg-output " \\(     \\+Infinity,     -Infinity\\)(\n|\r\n|\r)" }
-!{ dg-output " \\(  0.000000    ,  0.000000    \\)(\n|\r\n|\r)" }
+!{ dg-output " \\(  0.000000    , -0.000000    \\)(\n|\r\n|\r)" }

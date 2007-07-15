@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fno-sign-zero" }
 ! PR17706
 ! this is a libgfortran test
 ! output value -0.00 is not standard compliant
