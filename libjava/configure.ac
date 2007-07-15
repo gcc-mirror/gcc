@@ -985,7 +985,6 @@ if test "x${with_newlib}" = "xyes"; then
    # we'll have.
    AC_DEFINE(HAVE_MEMMOVE, 1, [Define if you have memmove.])
    AC_DEFINE(HAVE_MEMCPY, 1, [Define if you have memcpy.])
-   AC_DEFINE(HAVE_STRERROR, 1, [Define if you have strerror.])
    AC_DEFINE(HAVE_TIME, 1, [Define if you have time.])
    AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have the 'gmtime_r' function])
    AC_DEFINE(HAVE_LOCALTIME_R, 1, [Define if you have the 'localtime_r' function.])
@@ -997,7 +996,7 @@ if test "x${with_newlib}" = "xyes"; then
    AC_DEFINE(NO_GETUID, 1, [Define if getuid() and friends are missing.])
    PLATFORMNET=NoNet
 else
-   AC_CHECK_FUNCS([strerror select fstat open fsync sleep opendir \
+   AC_CHECK_FUNCS([strerror_r select fstat open fsync sleep opendir \
                    localtime_r readdir_r getpwuid_r getcwd \
 		   access stat lstat mkdir rename rmdir unlink utime chmod readlink \
 		   nl_langinfo setlocale \

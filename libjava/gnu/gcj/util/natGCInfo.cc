@@ -245,8 +245,12 @@ GC_enumerator::print_address_map()
   fm = fopen("/proc/self/maps", "r");
   if (fm == NULL)
     {
+#ifdef HAVE_STRERROR_R
       if (0 == strerror_r (errno, buffer, sizeof buffer))
         fputs (buffer, fp);
+#else
+      fputs (strerror (errno), fp);
+#endif
     }
   else
     {
