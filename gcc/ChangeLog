@@ -1,3 +1,17 @@
+2007-07-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/32398
+	PR middle-end/32769
+	* pa-protos.h (pa_eh_return_handler_rtx): Declare.
+	* pa.c (pa_extra_live_on_entry, rp_saved): Declare.
+	(TARGET_EXTRA_LIVE_ON_ENTRY): Define.
+	(pa_output_function_prologue): Use rp_saved and current_function_is_leaf
+	to generate .CALLINFO statement.
+	(hppa_expand_prologue): Set rp_saved.
+	(hppa_expand_epilogue): Use rp_saved.
+	(pa_extra_live_on_entry, pa_eh_return_handler_rtx): New functions.
+	* pa.h (EH_RETURN_HANDLER_RTX): Use pa_eh_return_handler_rtx.
+
 2007-07-14  Dirk Mueller  <dmueller@suse.de>
 
 	* omega.c (coalesce): Fix memory leak on early exit.

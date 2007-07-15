@@ -23,6 +23,7 @@ Boston, MA 02110-1301, USA.  */
 /* Prototype function used in various macros.  */
 extern int symbolic_operand (rtx, enum machine_mode);
 extern int tls_symbolic_operand (rtx);
+extern rtx pa_eh_return_handler_rtx (void);
 
 /* Used in insn-*.c.  */
 extern int following_call (rtx);
