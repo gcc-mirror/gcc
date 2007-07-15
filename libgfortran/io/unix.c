@@ -97,7 +97,6 @@ typedef struct
   gfc_offset dirty_offset;	/* Start of modified bytes in buffer */
   gfc_offset file_length;	/* Length of the file, -1 if not seekable. */
 
-  char *buffer;
   int len;			/* Physical length of the current buffer */
   int active;			/* Length of valid bytes in the buffer */
 
@@ -108,6 +107,7 @@ typedef struct
 
   int unbuffered;               /* =1 if the stream is not buffered */
 
+  char *buffer;
   char small_buffer[BUFFER_SIZE];
 }
 unix_stream;
@@ -587,7 +587,7 @@ fd_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
         s->ndirty = where + *len - start;  
       else    
         s->ndirty = s->dirty_offset + s->ndirty - start;  
-        s->dirty_offset = start;
+      s->dirty_offset = start;
     }
 
   s->logical_offset = where + *len;
