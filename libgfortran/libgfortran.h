@@ -382,6 +382,7 @@ typedef struct
   int convert;
   int dump_core;
   int backtrace;
+  int sign_zero;
   size_t record_marker;
   int max_subrecord_length;
 }

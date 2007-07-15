@@ -465,6 +465,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
   int leadzero;
   int nblanks;
   int i;
+  int sign_bit;
   sign_t sign;
 
   ft = f->format;
@@ -482,6 +483,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
      For an N digit exponent, this gives us (MIN_FIELD_WIDTH-5)-N digits
      after the decimal point, plus another one before the decimal point.  */
   sign = calculate_sign (dtp, value < 0.0);
+  sign_bit = signbit (value);
   if (value < 0)
     value = -value;
 
@@ -547,9 +549,15 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
   /* Read the exponent back in.  */
   e = atoi (&buffer[ndigits + 3]) + 1;
 
-  /* Make sure zero comes out as 0.0e0.  */
+  /* Make sure zero comes out as 0.0e0.   */
   if (value == 0.0)
-    e = 0;
+    {
+      e = 0;
+      if (compile_options.sign_zero == 1)
+        sign = calculate_sign (dtp, sign_bit);
+      else
+	sign = calculate_sign (dtp, 0);
+    }
 
   /* Normalize the fractional component.  */
   buffer[2] = buffer[1];
@@ -751,7 +759,14 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
 	break;
     }
   if (i == ndigits)
-    sign = calculate_sign (dtp, 0);
+    {
+      /* The output is zero, so set the sign according to the sign bit unless
+	 -fno-sign-zero was specified.  */
+      if (compile_options.sign_zero == 1)
+        sign = calculate_sign (dtp, sign_bit);
+      else
+	sign = calculate_sign (dtp, 0);
+    }
 
   /* Work out how much padding is needed.  */
   nblanks = w - (nbefore + nzero + nafter + edigits + 1);
@@ -775,7 +790,6 @@ output_float (st_parameter_dt *dtp, const fnode *f, GFC_REAL_LARGEST value)
     leadzero = 0;
 
   /* Pad to full field width.  */
-
 
   if ( ( nblanks > 0 ) && !dtp->u.p.no_leading_blank)
     {

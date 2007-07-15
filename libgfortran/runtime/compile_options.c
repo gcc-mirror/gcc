@@ -1,5 +1,5 @@
 /* Handling of compile-time options that influence the library.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -35,23 +35,25 @@ Boston, MA 02110-1301, USA.  */
 /* Useful compile-time options will be stored in here.  */
 compile_options_t compile_options;
 
-
-/* Prototypes */
-extern void set_std (GFC_INTEGER_4, GFC_INTEGER_4, GFC_INTEGER_4,
-		     GFC_INTEGER_4, GFC_INTEGER_4);
-export_proto(set_std);
-
+/* Set the usual compile-time options.  */
+extern void set_options (int , int []);
+export_proto(set_options);
 
 void
-set_std (GFC_INTEGER_4 warn_std, GFC_INTEGER_4 allow_std,
-	 GFC_INTEGER_4 pedantic, GFC_INTEGER_4 dump_core,
-	 GFC_INTEGER_4 backtrace)
+set_options (int num, int options[])
 {
-  compile_options.pedantic = pedantic;
-  compile_options.warn_std = warn_std;
-  compile_options.allow_std = allow_std;
-  compile_options.dump_core = dump_core;
-  compile_options.backtrace = backtrace;
+  if (num >= 1)
+    compile_options.warn_std = options[0];
+  if (num >= 2)
+    compile_options.allow_std = options[1];
+  if (num >= 3)
+    compile_options.pedantic = options[2];
+  if (num >= 4)
+    compile_options.dump_core = options[3];
+  if (num >= 5)
+    compile_options.backtrace = options[4];
+  if (num >= 6)
+    compile_options.sign_zero = options[5];
 }
 
 
@@ -67,6 +69,7 @@ init_compile_options (void)
   compile_options.pedantic = 0;
   compile_options.dump_core = 0;
   compile_options.backtrace = 0;
+  compile_options.sign_zero = 1;
 }
 
 /* Function called by the front-end to tell us the
