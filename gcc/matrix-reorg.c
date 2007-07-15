@@ -1481,10 +1481,13 @@ check_allocation_function (void **slot, void *data ATTRIBUTE_UNUSED)
   block_stmt_iterator bsi;
   basic_block bb_level_0;
   struct matrix_info *mi = *slot;
-  sbitmap visited = sbitmap_alloc (num_ssa_names);
+  sbitmap visited;
 
   if (!mi->malloc_for_level)
     return 1;
+
+  visited = sbitmap_alloc (num_ssa_names);
+
   /* Do nothing if the current function is not the allocation
      function of MI.  */
   if (mi->allocation_function_decl != current_function_decl

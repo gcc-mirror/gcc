@@ -1,3 +1,15 @@
+2007-07-14  Dirk Mueller  <dmueller@suse.de>
+
+	* omega.c (coalesce): Fix memory leak on early exit.
+	* matrix-reorg.c (check_allocation_function): Likewise.
+	* tree-vect-transform.c (vect_get_new_vect_var): free result
+	of concat().
+	* bb-reorder.c (find_rarely_executed_basic_blocks_and_crossing_edges):
+	pass pointer to edge vector
+	(partition_hot_cold_basic_blocks): Fix memory leak.
+	* collect2.c (prefix_from_string): Free temporary storage.
+	* reload1.c (fixup_abnormal_edges): Free sbitmap.
+
 2007-07-14  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (DO_GLOBAL_CTORS_BODY): Add void to prototype.

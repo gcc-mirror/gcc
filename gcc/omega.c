@@ -2454,7 +2454,7 @@ coalesce (omega_pb pb)
 {
   int e, e2;
   int colors = 0;
-  bool *is_dead = XNEWVEC (bool, OMEGA_MAX_GEQS);
+  bool *is_dead;
   int found_something = 0;
 
   for (e = 0; e < pb->num_geqs; e++)
@@ -2463,6 +2463,8 @@ coalesce (omega_pb pb)
 
   if (colors < 2)
     return;
+
+  is_dead = XNEWVEC (bool, OMEGA_MAX_GEQS);
 
   for (e = 0; e < pb->num_geqs; e++)
     is_dead[e] = false;

@@ -180,7 +180,7 @@ static void connect_traces (int, struct trace *);
 static bool copy_bb_p (basic_block, int);
 static int get_uncond_jump_length (void);
 static bool push_to_next_round_p (basic_block, int, int, int, gcov_type);
-static void find_rarely_executed_basic_blocks_and_crossing_edges (edge *,
+static void find_rarely_executed_basic_blocks_and_crossing_edges (edge **,
 								  int *,
 								  int *);
 static void add_labels_and_missing_jumps (edge *, int);
@@ -1219,7 +1219,7 @@ get_uncond_jump_length (void)
    cache locality).  */
 
 static void
-find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
+find_rarely_executed_basic_blocks_and_crossing_edges (edge **crossing_edges,
 						      int *n_crossing_edges,
 						      int *max_idx)
 {
@@ -1256,10 +1256,10 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
 	  if (i == *max_idx)
 	    {
 	      *max_idx *= 2;
-	      crossing_edges = xrealloc (crossing_edges,
+	      *crossing_edges = xrealloc (*crossing_edges,
 					 (*max_idx) * sizeof (edge));
 	    }
-	  crossing_edges[i++] = e;
+	  (*crossing_edges)[i++] = e;
 	}
       else
 	e->flags &= ~EDGE_CROSSING;
@@ -2168,7 +2168,7 @@ partition_hot_cold_basic_blocks (void)
 	&& cur_bb->next_bb->index >= NUM_FIXED_BLOCKS)
       cur_bb->aux = cur_bb->next_bb;
 
-  find_rarely_executed_basic_blocks_and_crossing_edges (crossing_edges,
+  find_rarely_executed_basic_blocks_and_crossing_edges (&crossing_edges,
 							&n_crossing_edges,
 							&max_edges);
 

@@ -737,6 +737,7 @@ prefix_from_string (const char *p, struct path_prefix *pprefix)
       else
 	endp++;
     }
+  free (nstore);
 }
 
 /* Main program.  */
