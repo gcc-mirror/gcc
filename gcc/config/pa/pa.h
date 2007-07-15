@@ -410,10 +410,7 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 #define EH_RETURN_DATA_REGNO(N)	\
   ((N) < 3 ? (N) + 20 : (N) == 3 ? 31 : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 29)
-#define EH_RETURN_HANDLER_RTX \
-  gen_rtx_MEM (word_mode,						\
-	       gen_rtx_PLUS (word_mode, frame_pointer_rtx,		\
-			     TARGET_64BIT ? GEN_INT (-16) : GEN_INT (-20)))
+#define EH_RETURN_HANDLER_RTX pa_eh_return_handler_rtx ()
 
 /* Offset from the frame pointer register value to the top of stack.  */
 #define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
