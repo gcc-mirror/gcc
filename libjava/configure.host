@@ -81,6 +81,7 @@ case "${host}" in
 	enable_java_net_default=no
 	enable_getenv_properties_default=no
 	enable_main_args_default=no
+	sysdeps_dir=arm
 	;;
   arm*-linux*)
 	libgcj_interpreter=yes
