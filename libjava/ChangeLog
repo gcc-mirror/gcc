@@ -1,3 +1,10 @@
+2007-07-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/File.java: Implement Comparable<File>.
+	(compareTo): Removed.
+	* java/io/File.h: Rebuilt.
+	* classpath/lib/java/io/File.class: Rebuilt.
+
 2007-07-14  Tom Tromey  <tromey@redhat.com>
 
 	* Rebuilt .class files.

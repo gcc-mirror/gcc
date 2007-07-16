@@ -111,8 +111,7 @@ private:
 public:
   static JArray< ::java::io::File * > * listRoots();
   static ::java::io::File * createTempFile(::java::lang::String *, ::java::lang::String *);
-  virtual jint compareTo(::java::io::File *);
-  virtual jint compareTo(::java::lang::Object *);
+  virtual jint File$compareTo(::java::io::File *);
 private:
   jboolean performRenameTo(::java::io::File *);
 public:
@@ -130,6 +129,9 @@ public:
 private:
   void writeObject(::java::io::ObjectOutputStream *);
   void readObject(::java::io::ObjectInputStream *);
+public:
+  virtual jint compareTo(::java::lang::Object *);
+private:
   static const jlong serialVersionUID = 301077366599181567LL;
   static const jint READ = 0;
   static const jint WRITE = 1;

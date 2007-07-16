@@ -1262,7 +1262,11 @@ parse_x_arg (char* option_string)
     {
       // FIXME: fail if impossible to share class data
     }
-
+  else
+    {
+      // Unrecognized.
+      return -1;
+    }
   return 0;
 }
 
@@ -1571,21 +1575,20 @@ parse_init_args (JvVMInitArgs* vm_args)
 	  JVMTI::enabled = true;
           continue;
 	}
-      else if (vm_args->ignoreUnrecognized)
+      else
         {
+	  int r = -1;
           if (option_string[0] == '_')
-            parse_x_arg (option_string + 1);
-          else if (! strncmp (option_string, "-X", 2))
-            parse_x_arg (option_string + 2);
-          else
+	    r = parse_x_arg (option_string + 1);
+	  else if (! strncmp (option_string, "-X", 2))
+	    r = parse_x_arg (option_string + 2);
+
+	  if (r == -1 && ! vm_args->ignoreUnrecognized)
             {
-            unknown_option:
               fprintf (stderr, "libgcj: unknown option: %s\n", option_string);
               return -1;
             }
 	}
-      else
-        goto unknown_option;
     }
   return 0;
 }
