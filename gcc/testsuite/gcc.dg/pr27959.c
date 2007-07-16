@@ -1,5 +1,5 @@
 /* PR middle-end/27959 */
-/* { dg-do run } */
+/* { dg-do run { target { int32plus } } } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -mtune=z990" { target s390*-*-* } } */
 

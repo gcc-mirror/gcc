@@ -1,4 +1,4 @@
-/* { dg-do compile } */ 
+/* { dg-do compile { target { size32plus } } } */ 
 /* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all" } */
 
 int foo ()
