@@ -1,3 +1,9 @@
+2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR target/32462
+	PR libgcj/32465
+	* class.c (hide): Wrap in HAVE_GAS_HIDDEN.
+
 2007-07-12  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (expand_java_return): RETURN_EXPR has void type.
