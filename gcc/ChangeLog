@@ -1,3 +1,9 @@
+2007-07-16  Paul Brook  <paul@codesourcery.com>
+
+	PR target/32753
+	gcc/
+	* config/arm/cirrus.md (cirrus_arm_movsi_insn): Remove dead insn.
+
 2007-07-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin-fallback.c (interpret_libc): Change
