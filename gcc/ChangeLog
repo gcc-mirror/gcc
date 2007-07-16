@@ -3,6 +3,7 @@
 	PR target/32753
 	gcc/
 	* config/arm/cirrus.md (cirrus_arm_movsi_insn): Remove dead insn.
+	(cirrus_thumb2_movsi_insn): Ditto.
 
 2007-07-15  Geoffrey Keating  <geoffk@apple.com>
 
