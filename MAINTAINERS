@@ -77,6 +77,7 @@ rs6000 port		David Edelsohn		dje@watson.ibm.com
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com
 s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
+s390 port co-maintainer	Andreas Krebbel		Andreas.Krebbel@de.ibm.com
 sh port			Alexandre Oliva		aoliva@redhat.com
 sh port			Kaz Kojima		kkojima@gcc.gnu.org
 sparc port		Richard Henderson	rth@redhat.com
@@ -334,7 +335,6 @@ Jeff Knaggs					jknaggs@redhat.com
 Michael Koch					konqueror@gmx.de
 Dave Korn					dave.korn@artimi.com
 Matt Kraai					kraai@ftbfs.org
-Andreas Krebbel					krebbel1@de.ibm.com
 Maxim Kuvyrkov					mkuvyrkov@ispras.ru
 Scott Robert Ladd				scott.ladd@coyotegulch.com
 Razya Ladelsky					razya@gcc.gnu.org
