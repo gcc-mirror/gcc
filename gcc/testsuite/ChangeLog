@@ -1,5 +1,14 @@
 2007-07-16  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
+	* gcc.c-torture/execute/20061101-2.c: Variant of 20061101-1.c
+	  adapted to work on targets with 16-bit or wider int.
+	* gcc.c-torture/execute/pr29797-2.c: Likewise for pr29797-1.c.
+	* gcc.c-torture/execute/pr31448-2.c: Likewise for pr31448.c.
+	* gcc.dg/20061109-2.c: Likewise for 20061109-1.c.
+	* gcc.dg/pr27959-2.c: Likewise for pr27959.c.
+
+2007-07-16  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
 	* gcc.dg/tree-ssa/ltrans-5.c: Only run test on targets which
 	support large arrays.
 	* gcc.dg/pr27959.c: Only run test if an int is at least 32 bits wide.
