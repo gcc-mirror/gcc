@@ -640,6 +640,7 @@
 
 (include "4k.md")
 (include "5k.md")
+(include "20kc.md")
 (include "24k.md")
 (include "74k.md")
 (include "3000.md")
