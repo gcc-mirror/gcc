@@ -1,3 +1,38 @@
+2007-07-16  Lee Millward  <lee.millward@gmail.com>
+
+	PR fortran/32222
+	PR fortran/32238
+	PR fortran/32242	
+	* trans-intrinsic.c (gfc_conv_intrinsic_function_args): Adjust
+	to operate on a stack allocated array for the intrinsic arguments
+	instead of creating a TREE_LIST. Add two new parameters for the
+	array and the number of elements. Update all callers to allocate
+	an array of the correct length to pass in. Update comment.
+	(gfc_intrinsic_argument_list_length): New function.
+	(gfc_conv_intrinsic_conversion): Call it.
+	(gfc_conv_intrinsic_mnimax): Likewise.
+	(gfc_conv_intrinsic_merge): Likewise.
+	(gfc_conv_intrinsic_lib_function): Call it. Use new CALL_EXPR
+	constructors.
+	(gfc_conv_intrinsic_cmplx): Likewise.
+	(gfc_conv_intrinsic_ctime): Likewise.
+	(gfc_covn_intrinsic_fdate): Likewise.
+	(gfc_conv_intrinsic_ttynam): Likewise.
+	(gfc_conv_intrinsic_ishftc): Likewise.
+	(gfc_conv_intrinsic_index): Likewise.
+	(gfc_conv_intrinsic_scan): Likewise.
+	(gfc_conv_intrinsic_verify): Likewise.
+	(gfc_conv_intrinsic_trim): Likewise.
+	(gfc_conv_intrinsic_aint): Use new CALL_EXPR constructors.
+	(gfc_conv_intrinsic_exponent): Likewise.
+	(gfc_conv_intrinsic_bound): Likewise.
+	(gfc_conv_intrinsic_abs): Likewise.
+	(gfc_conv_intrinsic_mod): Likewise.
+	(gfc_conv_intrinsic_sign): Likewise.
+	(gfc_conv_intrinsic_len): Likewise.
+	(gfc_conv_intrinsic_adjust): Likewise.
+	(gfc_conv_intrinsic_si_kind): Likewise. 
+	
 2007-07-16  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/32748
