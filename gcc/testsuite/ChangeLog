@@ -1,3 +1,8 @@
+2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+        * gcc.target/mips/mips-sched-madd.c: New test case.
+
 2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/32611

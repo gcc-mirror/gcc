@@ -1228,7 +1228,7 @@
     return "#";
   return madd[which_alternative];
 }
-  [(set_attr "type"	"imadd,imadd,multi")
+  [(set_attr "type"	"imadd")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,4,8")])
 
@@ -1483,7 +1483,7 @@
    msub\t%2,%3
    #
    #"
-  [(set_attr "type"     "imadd,multi,multi")
+  [(set_attr "type"     "imadd")
    (set_attr "mode"     "SI")
    (set_attr "length"   "4,8,8")])
 

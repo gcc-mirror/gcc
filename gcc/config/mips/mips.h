@@ -250,6 +250,9 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define TUNE_MIPS9000               (mips_tune == PROCESSOR_R9000)
 #define TUNE_SB1                    (mips_tune == PROCESSOR_SB1		\
 				     || mips_tune == PROCESSOR_SB1A)
+#define TUNE_24K		    (mips_tune == PROCESSOR_24KC	\
+				     || mips_tune == PROCESSOR_24KF2_1	\
+				     || mips_tune == PROCESSOR_24KF1_1)
 #define TUNE_74K                    (mips_tune == PROCESSOR_74KC	\
 				     || mips_tune == PROCESSOR_74KF2_1	\
 				     || mips_tune == PROCESSOR_74KF1_1  \
@@ -289,7 +292,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
    than others, so this macro is defined on an opt-in basis.  */
 #define TUNE_MACC_CHAINS	    (TUNE_MIPS5500		\
 				     || TUNE_MIPS4120		\
-				     || TUNE_MIPS4130)
+				     || TUNE_MIPS4130		\
+				     || TUNE_24K)
 
 #define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
