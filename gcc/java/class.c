@@ -691,10 +691,12 @@ build_java_method_type (tree fntype, tree this_class, int access_flags)
 }
 
 static void
-hide (tree decl)
+hide (tree decl ATTRIBUTE_UNUSED)
 {
+#ifdef HAVE_GAS_HIDDEN
   DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
+#endif
 }
 
 tree
