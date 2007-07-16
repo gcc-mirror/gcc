@@ -1,6 +1,7 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2002, 2007
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,15 +37,155 @@
 // ISO C++ 14882: 22.1  Locales
 //
   
-// Information as gleaned from /mingw32/include/ctype.h.
-
-  // This should be in mingw's ctype.h but isn't in older versions
-  // Static classic C-locale table.  _ctype[0] is EOF
-  extern "C"  unsigned short  __declspec(dllimport) _ctype[];
+// The classic table used in libstdc++ is *not* the C _ctype table
+// used by mscvrt, but is based on the ctype masks defined for libstdc++
+// in ctype_base.h.
 
   const ctype_base::mask*
   ctype<char>::classic_table() throw()
-  { return _ctype + 1; }  
+  {
+    static const ctype_base::mask _S_classic_table[256] = 
+    {
+      cntrl /* null */,
+      cntrl /* ^A */,
+      cntrl /* ^B */,
+      cntrl /* ^C */,
+      cntrl /* ^D */,
+      cntrl /* ^E */,
+      cntrl /* ^F */,
+      cntrl /* ^G */,
+      cntrl /* ^H */,
+      ctype_base::mask(space | cntrl) /* tab */,
+      ctype_base::mask(space | cntrl) /* LF */,
+      ctype_base::mask(space | cntrl) /* ^K */,
+      ctype_base::mask(space | cntrl) /* FF */,
+      ctype_base::mask(space | cntrl) /* ^M */,
+      cntrl /* ^N */,
+      cntrl /* ^O */,
+      cntrl /* ^P */,
+      cntrl /* ^Q */,
+      cntrl /* ^R */,
+      cntrl /* ^S */,
+      cntrl /* ^T */,
+      cntrl /* ^U */,
+      cntrl /* ^V */,
+      cntrl /* ^W */,
+      cntrl /* ^X */,
+      cntrl /* ^Y */,
+      cntrl /* ^Z */,
+      cntrl /* esc */,
+      cntrl /* ^\ */,
+      cntrl /* ^] */,
+      cntrl /* ^^ */,
+      cntrl /* ^_ */,
+      ctype_base::mask(space | print) /*   */,
+      ctype_base::mask(punct | print) /* ! */,
+      ctype_base::mask(punct | print) /* " */,
+      ctype_base::mask(punct | print) /* # */,
+      ctype_base::mask(punct | print) /* $ */,
+      ctype_base::mask(punct | print) /* % */,
+      ctype_base::mask(punct | print) /* & */,
+      ctype_base::mask(punct | print) /* ' */,
+      ctype_base::mask(punct | print) /* ( */,
+      ctype_base::mask(punct | print) /* ) */,
+      ctype_base::mask(punct | print) /* * */,
+      ctype_base::mask(punct | print) /* + */,
+      ctype_base::mask(punct | print) /* , */,
+      ctype_base::mask(punct | print) /* - */,
+      ctype_base::mask(punct | print) /* . */,
+      ctype_base::mask(punct | print) /* / */,
+      ctype_base::mask(digit | xdigit | print) /* 0 */,
+      ctype_base::mask(digit | xdigit | print) /* 1 */,
+      ctype_base::mask(digit | xdigit | print) /* 2 */,
+      ctype_base::mask(digit | xdigit | print) /* 3 */,
+      ctype_base::mask(digit | xdigit | print) /* 4 */,
+      ctype_base::mask(digit | xdigit | print) /* 5 */,
+      ctype_base::mask(digit | xdigit | print) /* 6 */,
+      ctype_base::mask(digit | xdigit | print) /* 7 */,
+      ctype_base::mask(digit | xdigit | print) /* 8 */,
+      ctype_base::mask(digit | xdigit | print) /* 9 */,
+      ctype_base::mask(punct | print) /* : */,
+      ctype_base::mask(punct | print) /* ; */,
+      ctype_base::mask(punct | print) /* < */,
+      ctype_base::mask(punct | print) /* = */,
+      ctype_base::mask(punct | print) /* > */,
+      ctype_base::mask(punct | print) /* ? */,
+      ctype_base::mask(punct | print) /* ! */,
+      ctype_base::mask(alpha | upper | xdigit | print) /* A */,
+      ctype_base::mask(alpha | upper | xdigit | print) /* B */,
+      ctype_base::mask(alpha | upper | xdigit | print) /* C */,
+      ctype_base::mask(alpha | upper | xdigit | print) /* D */,
+      ctype_base::mask(alpha | upper | xdigit | print) /* E */,
+      ctype_base::mask(alpha | upper | xdigit | print) /* F */,
+      ctype_base::mask(alpha | upper | print) /* G */,
+      ctype_base::mask(alpha | upper | print) /* H */,
+      ctype_base::mask(alpha | upper | print) /* I */,
+      ctype_base::mask(alpha | upper | print) /* J */,
+      ctype_base::mask(alpha | upper | print) /* K */,
+      ctype_base::mask(alpha | upper | print) /* L */,
+      ctype_base::mask(alpha | upper | print) /* M */,
+      ctype_base::mask(alpha | upper | print) /* N */,
+      ctype_base::mask(alpha | upper | print) /* O */,
+      ctype_base::mask(alpha | upper | print) /* P */,
+      ctype_base::mask(alpha | upper | print) /* Q */,
+      ctype_base::mask(alpha | upper | print) /* R */,
+      ctype_base::mask(alpha | upper | print) /* S */,
+      ctype_base::mask(alpha | upper | print) /* T */,
+      ctype_base::mask(alpha | upper | print) /* U */,
+      ctype_base::mask(alpha | upper | print) /* V */,
+      ctype_base::mask(alpha | upper | print) /* W */,
+      ctype_base::mask(alpha | upper | print) /* X */,
+      ctype_base::mask(alpha | upper | print) /* Y */,
+      ctype_base::mask(alpha | upper | print) /* Z */,
+      ctype_base::mask(punct | print) /* [ */,
+      ctype_base::mask(punct | print) /* \ */,
+      ctype_base::mask(punct | print) /* ] */,
+      ctype_base::mask(punct | print) /* ^ */,
+      ctype_base::mask(punct | print) /* _ */,
+      ctype_base::mask(punct | print) /* ` */,
+      ctype_base::mask(alpha | lower | xdigit | print) /* a */,
+      ctype_base::mask(alpha | lower | xdigit | print) /* b */,
+      ctype_base::mask(alpha | lower | xdigit | print) /* c */,
+      ctype_base::mask(alpha | lower | xdigit | print) /* d */,
+      ctype_base::mask(alpha | lower | xdigit | print) /* e */,
+      ctype_base::mask(alpha | lower | xdigit | print) /* f */,
+      ctype_base::mask(alpha | lower | print) /* g */,
+      ctype_base::mask(alpha | lower | print) /* h */,
+      ctype_base::mask(alpha | lower | print) /* i */,
+      ctype_base::mask(alpha | lower | print) /* j */,
+      ctype_base::mask(alpha | lower | print) /* k */,
+      ctype_base::mask(alpha | lower | print) /* l */,
+      ctype_base::mask(alpha | lower | print) /* m */,
+      ctype_base::mask(alpha | lower | print) /* n */,
+      ctype_base::mask(alpha | lower | print) /* o */,
+      ctype_base::mask(alpha | lower | print) /* p */,
+      ctype_base::mask(alpha | lower | print) /* q */,
+      ctype_base::mask(alpha | lower | print) /* r */,
+      ctype_base::mask(alpha | lower | print) /* s */,
+      ctype_base::mask(alpha | lower | print) /* t */,
+      ctype_base::mask(alpha | lower | print) /* u */,
+      ctype_base::mask(alpha | lower | print) /* v */,
+      ctype_base::mask(alpha | lower | print) /* w */,
+      ctype_base::mask(alpha | lower | print) /* x */,
+      ctype_base::mask(alpha | lower | print) /* y */,
+      ctype_base::mask(alpha | lower | print) /* x */,
+      ctype_base::mask(punct | print) /* { */,
+      ctype_base::mask(punct | print) /* | */,
+      ctype_base::mask(punct | print) /* } */,
+      ctype_base::mask(punct | print) /* ~ */,
+      cntrl /* del (0x7f)*/,
+      /* The next 128 entries are all 0.   */
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+    return _S_classic_table;
+  }
 
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 

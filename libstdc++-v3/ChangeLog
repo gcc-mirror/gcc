@@ -1,3 +1,10 @@
+2007-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/os/mingw32/ctype_base.h: Use the generic libstdc++ masks
+	rather than MSVCRT defines.
+	* config/os/mingw32/ctype_noninline.h (classic_table): Construct
+	and return a static classic table based on generic libstdc++ masks.
+
 2007-07-12  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* testsuite/tr1/3_function_objects/bind/all_bound.cc: Disambiguate
