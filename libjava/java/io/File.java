@@ -1,5 +1,5 @@
 /* File.java -- Class representing a file on disk
-   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -59,7 +59,7 @@ import gnu.classpath.Configuration;
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
  */
-public class File implements Serializable, Comparable
+public class File implements Serializable, Comparable<File>
 {
   private static final long serialVersionUID = 301077366599181567L;
 	
@@ -103,7 +103,7 @@ public class File implements Serializable, Comparable
   
   /**
    * This is the string that is used to separate the host name from the
-   * path name in paths than include the host name.  It is the value of
+   * path name in paths that include the host name.  It is the value of
    * the <code>path.separator</code> system property.
    */
   public static final String pathSeparator
@@ -454,7 +454,8 @@ public class File implements Serializable, Comparable
    * This method initializes a new <code>File</code> object to represent
    * a file corresponding to the specified <code>file:</code> protocol URI.
    *
-   * @param uri The uri.
+   * @param uri The URI
+   * @throws IllegalArgumentException if the URI is not hierarchical
    */
   public File(URI uri)
   {
@@ -605,7 +606,8 @@ public class File implements Serializable, Comparable
   /**
    * This method returns a <code>String</code> the represents this file's
    * parent.  <code>null</code> is returned if the file has no parent.  The
-   * parent is determined via a simple operation which removes the
+   * parent is determined via a simple operation which removes the name
+   * after the last file separator character, as determined by the platform.
    *
    * @return The parent directory of this file
    */
@@ -1443,32 +1445,6 @@ public class File implements Serializable, Comparable
       return path.compareTo (other.path);
     else
       return path.compareToIgnoreCase (other.path);
-  }
-
-  /**
-   * This method compares the specified <code>Object</code> to this one
-   * to test for equality.  It does this by comparing the canonical path names
-   * of the files.  This method is identical to <code>compareTo(File)</code>
-   * except that if the <code>Object</code> passed to it is not a 
-   * <code>File</code>, it throws a <code>ClassCastException</code>
-   * <p>
-   * The canonical paths of the files are determined by calling the
-   * <code>getCanonicalPath</code> method on each object.
-   * <p>
-   * This method returns a 0 if the specified <code>Object</code> is equal
-   * to this one, a negative value if it is less than this one 
-   * a positive value if it is greater than this one.
-   *
-   * @return An integer as described above
-   *
-   * @exception ClassCastException If the passed <code>Object</code> is 
-   * not a <code>File</code>
-   *
-   * @since 1.2
-   */
-  public int compareTo(Object obj)
-  {
-    return compareTo((File) obj);
   }
 
   /*
