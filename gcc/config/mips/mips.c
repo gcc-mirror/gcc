@@ -911,7 +911,17 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
                        4            /* memory_latency */
     },
     { /* 20KC */
-      DEFAULT_COSTS
+      COSTS_N_INSNS (4),            /* fp_add */
+      COSTS_N_INSNS (4),            /* fp_mult_sf */
+      COSTS_N_INSNS (5),            /* fp_mult_df */
+      COSTS_N_INSNS (17),           /* fp_div_sf */
+      COSTS_N_INSNS (32),           /* fp_div_df */
+      COSTS_N_INSNS (4),            /* int_mult_si */
+      COSTS_N_INSNS (7),            /* int_mult_di */
+      COSTS_N_INSNS (42),           /* int_div_si */
+      COSTS_N_INSNS (72),           /* int_div_di */
+                       1,           /* branch_cost */
+                       4            /* memory_latency */
     },
     { /* 24KC */
       SOFT_FP_COSTS,
@@ -10866,12 +10876,16 @@ mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 }
 
 /* Implement TARGET_SCHED_ADJUST_COST.  We assume that anti and output
-   dependencies have no cost.  */
+   dependencies have no cost, except on the 20Kc where output-dependence
+   is treated like input-dependence.  */
 
 static int
 mips_adjust_cost (rtx insn ATTRIBUTE_UNUSED, rtx link,
 		  rtx dep ATTRIBUTE_UNUSED, int cost)
 {
+  if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
+      && TUNE_20KC)
+    return cost;
   if (REG_NOTE_KIND (link) != 0)
     return 0;
   return cost;
@@ -10894,6 +10908,7 @@ mips_issue_rate (void)
 	 floating point load/stores also require a slot in the AGEN pipe.  */
      return 4;
 
+    case PROCESSOR_20KC:
     case PROCESSOR_R4130:
     case PROCESSOR_R5400:
     case PROCESSOR_R5500:

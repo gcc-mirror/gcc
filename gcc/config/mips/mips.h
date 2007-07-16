@@ -254,6 +254,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 				     || mips_tune == PROCESSOR_74KF2_1	\
 				     || mips_tune == PROCESSOR_74KF1_1  \
 				     || mips_tune == PROCESSOR_74KF3_2)
+#define TUNE_20KC		    (mips_tune == PROCESSOR_20KC)
 
 /* True if the pre-reload scheduler should try to create chains of
    multiply-add or multiply-subtract instructions.  For example,

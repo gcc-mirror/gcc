@@ -1,3 +1,13 @@
+2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/mips.md:  Include 20kc.md.
+	* config/mips/20kc.md: New file.
+	* config/mips/mips.c (mips_rtx_cost_data): Fill in 20Kc costs.
+	(mips_adjust_cost): Tweak for 20Kc.
+	(mips_issue_rate): Likewise.
+	* config/mips/mips.h (TUNE_20KC): Define.
+
 2007-07-16  David Edelsohn  <edelsohn@gnu.og>
 
 	* config/rs6000/rs6000.c (struct processor_cost): Add
