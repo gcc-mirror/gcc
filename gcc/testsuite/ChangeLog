@@ -1,3 +1,16 @@
+2007-07-16  Lee Millward  <lee.millward@gmail.com>
+
+	* gfortran.dg/cmplx_intrinsic_1.f90: New test.
+
+	PR fortran/32238
+	* gfortran.dg/pr32238.f90: New test.
+
+	PR fortran/32222
+	* gfortran.dg/pr32222.f90: New test.
+
+	PR fortran/32242
+	* gfortran.dg/pr32242.f90: New test.
+	
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
