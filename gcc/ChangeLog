@@ -1,3 +1,11 @@
+2007-07-16  David Edelsohn  <edelsohn@gnu.og>
+
+	* config/rs6000/rs6000.c (struct processor_cost): Add
+	cache_line_size, l1_cache_lines, and simultaneous_prefetches
+	fields.
+	(*_cost): Add cache information.
+	(rs6000_override_options): Set cache parameters.
+
 2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR bootstrap/3456
