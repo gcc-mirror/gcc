@@ -1,3 +1,8 @@
+2007-07-16  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* MAINTAINERS (S/390 co-maintainer): Add myself.
+	(Write After Approval): Remove myself.
+
 2007-07-13  Dan Hipschman  <dsh@google.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
