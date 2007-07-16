@@ -2010,8 +2010,8 @@ proc check_effective_target_vect_no_align { } {
     return $et_vect_no_align_saved
 }
 
-# Return 1 if arrays are naturally aligned to the vector
-# alignment boundary, 0 otherwise.
+# Return 1 if arrays are aligned to the vector alignment
+# boundary, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
 
