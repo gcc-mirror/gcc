@@ -1,3 +1,8 @@
+2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.ac (i?86-*-solaris2.1[0-9]): Set TARGET to X86_64.
+	* configure: Regenerate.
+
 2007-07-11  David Daney  <ddaney@avtrex.com>
 
 	* src/mips/ffi.c: Don't include sys/cachectl.h.
