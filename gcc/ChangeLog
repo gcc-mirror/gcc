@@ -1,4 +1,18 @@
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+        * config/mips/mips.h (TUNE_24K): Define.
+	(TUNE_MACC_CHAINS): Add TUNE_24K.
+        * config/mips/mips.md: (*mul_acc_si, *mul_sub_si): Change type to
+        imadd.
+        * config/mips/74k.md (r74k_int_mult): Split madd/msub to ..
+        (r74k_int_madd): .. this new reservation.
+        (define_bypass): Fixed bypasses for r74k_int_madd to use
+	mips_linked_madd_p.
+        * config/mips/24k.md (define_bypass): Define new
+        r24k_int_mul3->r24k_int_madd bypass using mips_linked_madd_p.
+
+2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 
 	* config/mips/mips.md:  Include 20kc.md.
