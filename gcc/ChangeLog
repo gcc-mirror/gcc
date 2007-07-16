@@ -1,3 +1,9 @@
+2007-07-16  Richard Guenther  <rguenther@suse.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* tree-if-conv.c (find_phi_replacement_condition): Unshare "*cond"
+	before forcing it to gimple operand.
+
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
