@@ -1,3 +1,20 @@
+2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/3456
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Enable on
+	mips-sgi-irix6*.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/thread/18185.cc: Likewise.
+	* testsuite/thread/pthread1.cc: Likewise.
+	* testsuite/thread/pthread2.cc: Likewise.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread6.cc: Likewise.
+	* testsuite/thread/pthread7-rope.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+
 2007-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/os/mingw32/ctype_base.h: Use the generic libstdc++ masks

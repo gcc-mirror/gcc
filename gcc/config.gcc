@@ -1644,9 +1644,9 @@ mips-sgi-irix[56]*)
 	then
 		tm_defines="${tm_defines} IRIX_USING_GNU_LD"
 	fi
-#	if test x$enable_threads = xyes; then
-#		thread_file='irix'
-#	fi
+	case ${enable_threads}:${have_pthread_h} in
+	  "":yes | yes:yes ) thread_file=posix ;;
+	esac
 	use_fixproto=yes
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.

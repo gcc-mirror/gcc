@@ -1,3 +1,9 @@
+2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR bootstrap/3456
+	* config.gcc (mips-sgi-irix[56]*): Enable pthread support.
+	* doc/install.texi (mips-sgi-irix6): pthread support works now.
+
 2007-07-16  Paul Brook  <paul@codesourcery.com>
 
 	PR target/32753
