@@ -3693,8 +3693,7 @@ To enable debugging for the O32 ABI, you must use GNU @command{as} from
 GNU binutils 2.15 or later.  You may also use GNU @command{ld}, but
 this is not required and currently causes some problems with Ada.
 
-The @option{--enable-threads} option doesn't currently work, a patch is
-in preparation for a future release.  The @option{--enable-libgcj}
+The @option{--enable-libgcj}
 option is disabled by default: IRIX 6 uses a very low default limit
 (20480) for the command line length.  Although @command{libtool} contains a
 workaround for this problem, at least the N64 @samp{libgcj} is known not
