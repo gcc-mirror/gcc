@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { int32plus } } } */
 /* { dg-options "-O1" } */
 
 /* This assignment might be implemented with a mem copy from the
