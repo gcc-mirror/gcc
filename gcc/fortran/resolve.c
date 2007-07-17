@@ -6969,6 +6969,8 @@ resolve_fl_namelist (gfc_symbol *sym)
 	{
 	  if (!nl->sym->attr.use_assoc
 	      && !(sym->ns->parent == nl->sym->ns)
+	      && !(sym->ns->parent
+		   && sym->ns->parent->parent == nl->sym->ns)
 	      && !gfc_check_access(nl->sym->attr.access,
 				   nl->sym->ns->default_access))
 	    {
