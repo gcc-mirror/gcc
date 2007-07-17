@@ -1,3 +1,10 @@
+2007-07-16  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.target/spu/intrinsics-1.c: Use dg-message to
+	match flax-vector-conversions note.
+	* gcc.target/spu/fixed-range-bad.c: Use dg-warning
+	instead of dg-error for the warning.
+
 2007-07-16  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.c-torture/execute/20061101-2.c: Variant of 20061101-1.c
