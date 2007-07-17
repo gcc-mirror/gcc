@@ -549,7 +549,7 @@ if test -z "${setobjs}"; then
 
   *-*-msdosdjgpp)
     for f in atexit basename bcmp bcopy bsearch bzero calloc clock ffs \
-             getcwd getpagesize getrusage gettimeofday gettimeofday \
+             getcwd getpagesize getrusage gettimeofday \
              index insque memchr memcmp memcpy memmove memset psignal \
              putenv random rename rindex sbrk setenv stpcpy strcasecmp \
              strchr strdup strerror strncasecmp strrchr strstr strtod \

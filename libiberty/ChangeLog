@@ -1,3 +1,9 @@
+2007-07-17  DJ Delorie  <dj@redhat.com>
+
+	* configure.ac (target_header_dir, msdosdjgpp): Remove duplicate
+	gettimeofday entry.
+	* configure: Likewise.
+
 2007-07-11  Alexandre Oliva  <aoliva@redhat.com>
 
 	* maint-tool (deps): Output stamp-h instead of config.h.
