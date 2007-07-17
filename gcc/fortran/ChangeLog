@@ -1,3 +1,9 @@
+2007-07-17  Janus Weil  <jaydub66@gmail.com> 
+
+	PR fortran/32535
+	* resolve.c (resolve_fl_namelist): Check for namelist private 
+	components in contained subprograms.
+
 2007-07-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31320
