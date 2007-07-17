@@ -1,3 +1,9 @@
+2007-07-17  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/32773
+	* cfglayout.c (force_one_exit_fallthru): New function.
+	(cfg_layout_finalize): Use it.
+
 2007-07-16  Richard Guenther  <rguenther@suse.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
