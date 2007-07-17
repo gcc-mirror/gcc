@@ -1,3 +1,14 @@
+2007-07-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31320
+	PR fortran/32665
+	* trans-expr.c (gfc_trans_subcomponent_assign): Ensure that
+	renormalization unity base is done independently of existing
+	lbound value.
+	(gfc_trans_scalar_assign): If rhs is not a variable, put
+	lse->pre after rse->pre to ensure that de-allocation of lhs
+	occurs after evaluation of rhs.
+
 2007-07-16  Lee Millward  <lee.millward@gmail.com>
 
 	PR fortran/32222
