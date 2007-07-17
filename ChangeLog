@@ -1,3 +1,10 @@
+2007-07-17  Nick Clifton  <nickc@redhat.com>
+
+	* COPYING3: New file.  Contains version 3 of the GNU General
+	Public License.
+	* COPYING3.LIB: New file.  Contains version 3 of the GNU
+	Lesser General Public License.
+
 2007-07-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* MAINTAINERS (S/390 port maintainer): Remove my co-maintainer tag.
