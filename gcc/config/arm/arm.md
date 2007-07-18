@@ -4649,6 +4649,8 @@
         (match_operand:SI 1 "general_operand" ""))]
   "TARGET_EITHER"
   "
+  rtx base, offset, tmp;
+
   if (TARGET_32BIT)
     {
       /* Everything except mem = const or mem = mem can be done easily.  */
@@ -4672,6 +4674,19 @@
           if (GET_CODE (operands[0]) != REG)
 	    operands[1] = force_reg (SImode, operands[1]);
         }
+    }
+
+  if (ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+    {
+      split_const (operands[1], &base, &offset);
+      if (GET_CODE (base) == SYMBOL_REF
+	  && !offset_within_block_p (base, INTVAL (offset)))
+	{
+	  tmp = no_new_pseudos ? operands[0] : gen_reg_rtx (SImode);
+	  emit_move_insn (tmp, base);
+	  emit_insn (gen_addsi3 (operands[0], tmp, offset));
+	  DONE;
+	}
     }
 
   /* Recognize the case where operand[1] is a reference to thread-local

@@ -1,5 +1,18 @@
 2007-07-18  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/arm/arm-protos.h (arm_cannot_force_const_mem): Declare.
+	* config/arm/arm.c (TARGET_CANNOT_FORCE_CONST_MEM): Redefine to
+	arm_cannot_force_const_mem.
+	(arm_cannot_force_const_mem): New function.
+	* config/arm/arm.h (ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P): New macro.
+	(LEGITIMATE_CONSTANT_P): Test arm_cannot_force_const_mem instead
+	of arm_tls_referenced_p.
+	* config/arm/arm.md (movsi): Split out-of-section constants when
+	ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P.
+	* config/arm/vxworks.h (ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P): Define.
+
+2007-07-18  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.md (clear_cache): Treat the size argument as Pmode.
 
 2007-07-18  Richard Sandiford  <richard@codesourcery.com>
