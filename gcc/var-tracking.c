@@ -1806,27 +1806,33 @@ static enum var_init_status
 find_src_status (dataflow_set *in, rtx loc, rtx insn)
 {
   rtx src = NULL_RTX;
+  rtx pattern;
   tree decl = NULL_TREE;
   enum var_init_status status = VAR_INIT_STATUS_UNINITIALIZED;
 
   if (! flag_var_tracking_uninit)
     status = VAR_INIT_STATUS_INITIALIZED;
 
-  if (GET_CODE (PATTERN (insn)) == SET)
-    src = SET_SRC (PATTERN (insn));
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL
-	   || GET_CODE (PATTERN (insn)) == SEQUENCE)
+  pattern = PATTERN (insn);
+
+  if (GET_CODE (pattern) == COND_EXEC)
+    pattern = COND_EXEC_CODE (pattern);
+
+  if (GET_CODE (pattern) == SET)
+    src = SET_SRC (pattern);
+  else if (GET_CODE (pattern) == PARALLEL
+	   || GET_CODE (pattern) == SEQUENCE)
     {
       int i;
-      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET
-	    && SET_DEST (XVECEXP (PATTERN (insn), 0, i)) == loc)
-	  src = SET_SRC (XVECEXP (PATTERN (insn), 0, i));
+      for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
+	if (GET_CODE (XVECEXP (pattern, 0, i)) == SET
+	    && SET_DEST (XVECEXP (pattern, 0, i)) == loc)
+	  src = SET_SRC (XVECEXP (pattern, 0, i));
     }
 
-  if (REG_P (src))
+  if (src && REG_P (src))
     decl = var_debug_decl (REG_EXPR (src));
-  else if (MEM_P (src))
+  else if (src && MEM_P (src))
     decl = var_debug_decl (MEM_EXPR (src));
 
   if (src && decl)
@@ -1845,26 +1851,32 @@ find_src_set_src (dataflow_set *set, rtx loc, rtx insn)
   tree decl = NULL_TREE;   /* The variable being copied around.          */
   rtx src = NULL_RTX;      /* The location "decl" is being copied from.  */
   rtx set_src = NULL_RTX;  /* The value for "decl" stored in "src".      */
+  rtx pattern;
   void **slot;
   variable var;
   location_chain nextp;
   int i;
   bool found;
 
-  if (GET_CODE (PATTERN (insn)) == SET)
-    src = SET_SRC (PATTERN (insn));
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL
-	   || GET_CODE (PATTERN (insn)) == SEQUENCE)
+
+  pattern = PATTERN (insn);
+  if (GET_CODE (pattern) == COND_EXEC)
+    pattern = COND_EXEC_CODE (pattern);
+
+  if (GET_CODE (pattern) == SET)
+    src = SET_SRC (pattern);
+  else if (GET_CODE (pattern) == PARALLEL
+	   || GET_CODE (pattern) == SEQUENCE)
     {
-      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET
-	    && SET_DEST (XVECEXP (PATTERN (insn), 0, i)) == loc)
-	  src = SET_SRC (XVECEXP (PATTERN (insn), 0, i));
+      for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
+	if (GET_CODE (XVECEXP (pattern, 0, i)) == SET
+	    && SET_DEST (XVECEXP (pattern, 0, i)) == loc)
+	  src = SET_SRC (XVECEXP (pattern, 0, i));
     }
 
-  if (REG_P (src))
+  if (src && REG_P (src))
     decl = var_debug_decl (REG_EXPR (src));
-  else if (MEM_P (src))
+  else if (src && MEM_P (src))
     decl = var_debug_decl (MEM_EXPR (src));
 
   if (src && decl)
