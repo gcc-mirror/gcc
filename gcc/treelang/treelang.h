@@ -1,35 +1,30 @@
-/* 
-
-    TREELANG Compiler common definitions (treelang.h)
-
-    Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004
-    Free Software Foundation, Inc.
-
-    This program is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2, or (at your option) any
-    later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, 51 Franklin Street, Fifth Floor,
-    Boston, MA 02110-1301, USA.
-
-    In other words, you are welcome to use, share and improve this program.
-    You are forbidden to forbid anyone else to use, share and improve
-    what you give them.   Help stamp out software-hoarding!  
-
-    ---------------------------------------------------------------------------
-
-    Written by Tim Josling 1999, 2000, 2001, based in part on other
-    parts of the GCC compiler.
-
-*/
+/* TREELANG Compiler common definitions (treelang.h)
+   
+   Copyright (C) 1986, 87, 89, 92-96, 1997, 1999, 2000, 2001, 2002, 2003, 2004,
+   2007 Free Software Foundation, Inc.
+   
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with this program; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.
+   
+   In other words, you are welcome to use, share and improve this program.
+   You are forbidden to forbid anyone else to use, share and improve
+   what you give them.   Help stamp out software-hoarding!  
+   
+   ---------------------------------------------------------------------------
+   
+   Written by Tim Josling 1999, 2000, 2001, based in part on other
+   parts of the GCC compiler.  */
 
 #include "input.h"
 
