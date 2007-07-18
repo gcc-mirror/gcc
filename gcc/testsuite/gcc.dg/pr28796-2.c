@@ -4,19 +4,79 @@
 
 extern void abort (void);
 
-void foo(float f)
+void __attribute__ ((__noinline__))
+foo_1 (float f, double d, long double ld,
+       int res_unord, int res_isnan, int res_isinf, int res_isfin)
 {
-  if (__builtin_isunordered (f, f) != 1)
+  if (__builtin_isunordered (f, 0) != res_unord)
     abort ();
-  if (__builtin_isnan (f) != 1)
+  if (__builtin_isunordered (0, f) != res_unord)
     abort ();
-  if (__builtin_finite (f) != 0)
+  if (__builtin_isunordered (d, 0) != res_unord)
     abort ();
+  if (__builtin_isunordered (0, d) != res_unord)
+    abort ();
+  if (__builtin_isunordered (ld, 0) != res_unord)
+    abort ();
+  if (__builtin_isunordered (0, ld) != res_unord)
+    abort ();
+
+  if (__builtin_isnan (f) != res_isnan)
+    abort ();
+  if (__builtin_isnan (d) != res_isnan)
+    abort ();
+  if (__builtin_isnan (ld) != res_isnan)
+    abort ();
+  if (__builtin_isnanf (f) != res_isnan)
+    abort ();
+  if (__builtin_isnanl (ld) != res_isnan)
+    abort ();
+
+  if (__builtin_isinf (f) != res_isinf)
+    abort ();
+  if (__builtin_isinf (d) != res_isinf)
+    abort ();
+  if (__builtin_isinf (ld) != res_isinf)
+    abort ();
+  if (__builtin_isinff (f) != res_isinf)
+    abort ();
+  if (__builtin_isinfl (ld) != res_isinf)
+    abort ();
+
+  if (__builtin_finite (f) != res_isfin)
+    abort ();
+  if (__builtin_finite (d) != res_isfin)
+    abort ();
+}
+
+void __attribute__ ((__noinline__))
+foo (float f, double d, long double ld,
+     int res_unord, int res_isnan, int res_isinf, int res_isfin)
+{
+  foo_1 (f, d, ld, res_unord, res_isnan, res_isinf, res_isfin);
+  foo_1 (-f, -d, -ld, res_unord, res_isnan, res_isinf, res_isfin);
 }
 
 int main()
 {
-  float f = __builtin_nanf("");
-  foo(f);
+  float f;
+  double d;
+  long double ld;
+  
+  f = __builtin_nanf(""); d = __builtin_nan(""); ld = __builtin_nanl("");
+  foo(f, d, ld, /*unord=*/ 1, /*isnan=*/ 1, /*isinf=*/ 0, /*isfin=*/ 0);
+
+  f = __builtin_inff(); d = __builtin_inf(); ld = __builtin_infl();
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 1, /*isfin=*/ 0);
+
+  f = 0; d = 0; ld = 0;
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1);
+
+  f = __FLT_MIN__; d = __DBL_MIN__; ld = __LDBL_MIN__;
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1);
+
+  f = __FLT_MAX__; d = __DBL_MAX__; ld = __LDBL_MAX__;
+  foo(f, d, ld, /*unord=*/ 0, /*isnan=*/ 0, /*isinf=*/ 0, /*isfin=*/ 1);
+
   return 0;
 }
