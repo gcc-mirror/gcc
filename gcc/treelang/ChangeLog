@@ -1,3 +1,20 @@
+2007-07-17  Nick Clifton  <nickc@redhat.com>
+
+	* parse.y: Change copyright header to refer to version 3 of the
+	GNU General Public License and to point readers at the COPYING3
+	file.
+	* lex.l: Likewise.
+	* lang.opt: Likewise.
+	* lang-specs.h: Likewise.
+	* treelang.h: Likewise.
+	* config-lang.in: Likewise.
+	* tree-convert.c: Likewise.
+	* treetree.c: Likewise.
+	* tree1.c: Likewise.
+	* Make-lang.in: Likewise.
+	* treetree.h: Likewise.
+	* spec.c: Likewise.
+
 2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
 
 	* treetree.c (tree_lang_signed_type): Remove.
