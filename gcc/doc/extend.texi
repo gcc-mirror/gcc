@@ -5437,6 +5437,7 @@ should be called and the @var{flag} argument passed to it.
 @node Other Builtins
 @section Other built-in functions provided by GCC
 @cindex built-in functions
+@findex __builtin_isfinite
 @findex __builtin_isgreater
 @findex __builtin_isgreaterequal
 @findex __builtin_isless
@@ -5965,6 +5966,8 @@ the same names as the standard macros ( @code{isgreater},
 @code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
 prefixed.  We intend for a library implementor to be able to simply
 @code{#define} each standard macro to its built-in equivalent.
+In the same fashion, GCC provides an @code{isfinite} built-in used
+with @code{__builtin_} prefixed.
 
 @deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
 

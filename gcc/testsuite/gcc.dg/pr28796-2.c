@@ -43,9 +43,22 @@ foo_1 (float f, double d, long double ld,
   if (__builtin_isinfl (ld) != res_isinf)
     abort ();
 
+  if (__builtin_isfinite (f) != res_isfin)
+    abort ();
+  if (__builtin_isfinite (d) != res_isfin)
+    abort ();
+  if (__builtin_isfinite (ld) != res_isfin)
+    abort ();
+
+  if (__builtin_finitef (f) != res_isfin)
+    abort ();
   if (__builtin_finite (f) != res_isfin)
     abort ();
   if (__builtin_finite (d) != res_isfin)
+    abort ();
+  if (__builtin_finitel (d) != res_isfin)
+    abort ();
+  if (__builtin_finitel (ld) != res_isfin)
     abort ();
 }
 
