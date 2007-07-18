@@ -1,3 +1,8 @@
+2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/pr28796-1.c: Add more cases.
+	* gcc.dg/pr28796-2.c: Likewise.
+
 2007-07-17  Janus Weil  <jaydub66@gmail.com>
 
 	PR fortran/32535

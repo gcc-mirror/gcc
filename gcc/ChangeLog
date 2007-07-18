@@ -1,5 +1,17 @@
 2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	PR target/30652
+	PR middle-end/20558
+
+	* builtins.c (expand_builtin_interclass_mathfn): Provide a
+	generic fallback for isinf.
+	* c-cppbuiltin.c (builtin_define_float_constants): Move FP max
+	calculation code ...
+	* real.c (get_max_float): ... to here.
+	* real.h (get_max_float): New.
+
+2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	PR middle-end/32668
 
 	* builtin-attrs.def (ATTR_TYPEGENERIC,

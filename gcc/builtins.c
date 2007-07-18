@@ -2275,6 +2275,30 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
       return target;
     }
 
+  /* If there is no optab, try generic code.  */
+  switch (DECL_FUNCTION_CODE (fndecl))
+    {
+      tree result;
+
+    CASE_FLT_FN (BUILT_IN_ISINF):
+      {
+	/* isinf(x) -> isgreater(fabs(x),DBL_MAX).  */
+	tree const isgr_fn = built_in_decls[BUILT_IN_ISGREATER];
+	tree const type = TREE_TYPE (arg);
+	REAL_VALUE_TYPE r;
+	char buf[128];
+
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	real_from_string (&r, buf);
+	result = build_call_expr (isgr_fn, 2,
+				  fold_build1 (ABS_EXPR, type, arg),
+				  build_real (type, r));
+	return expand_expr (result, target, VOIDmode, EXPAND_NORMAL);
+      }
+    default:
+      break;
+    }
+
   target = expand_call (exp, target, target == const0_rtx);
 
   return target;
