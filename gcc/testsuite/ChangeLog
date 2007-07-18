@@ -1,3 +1,9 @@
+2007-07-18  Bob Wilson  <bob.wilson@acm.org>
+	
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Enable for xtensa.
+	(check_effective_target_sync_char_short): Likewise.
+	
 2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/pr28796-2.c: Add more cases.

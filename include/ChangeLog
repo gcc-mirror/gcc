@@ -1,3 +1,8 @@
+2007-07-18  Bob Wilson  <bob.wilson@acm.org>
+	
+	* xtensa-config.h (XCHAL_HAVE_THREADPTR): New.
+	(XCHAL_HAVE_RELEASE_SYNC, XCHAL_HAVE_S32C1I): New.
+	
 2007-07-17  Nick Clifton  <nickc@redhat.com>
 
 	* COPYING3: New file.  Contains version 3 of the GNU General

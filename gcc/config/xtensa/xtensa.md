@@ -30,8 +30,12 @@
   (UNSPEC_NOP		2)
   (UNSPEC_PLT		3)
   (UNSPEC_RET_ADDR	4)
+
   (UNSPECV_SET_FP	1)
   (UNSPECV_ENTRY	2)
+  (UNSPECV_MEMW		3)
+  (UNSPECV_S32RI	4)
+  (UNSPECV_S32C1I	5)
 ])
 
 ;; This code macro allows signed and unsigned widening multiplications
@@ -62,6 +66,15 @@
 
 ;; This code macro is for floating-point comparisons.
 (define_code_macro any_scc_sf [eq lt le])
+
+;; These macros allow to combine most atomic operations.
+(define_code_macro ATOMIC [and ior xor plus minus mult])
+(define_code_attr atomic [(and "and") (ior "ior") (xor "xor") 
+			  (plus "add") (minus "sub") (mult "nand")])
+
+;; These mode macros allow the HI and QI patterns to be defined from
+;; the same template.
+(define_mode_macro HQI [HI QI])
 
 
 ;; Attributes.
@@ -1687,3 +1700,113 @@ srli\t%3, %3, 30\;slli\t%0, %1, 2\;ssai\t2\;src\t%0, %3, %0"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
+
+
+;; Atomic operations
+
+(define_expand "memory_barrier"
+  [(set (mem:BLK (match_dup 0))
+	(unspec_volatile:BLK [(mem:BLK (match_dup 0))] UNSPECV_MEMW))]
+  ""
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (SImode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
+
+(define_insn "*memory_barrier"
+  [(set (match_operand:BLK 0 "" "")
+	(unspec_volatile:BLK [(match_operand:BLK 1 "" "")] UNSPECV_MEMW))]
+  ""
+  "memw"
+  [(set_attr "type"	"unknown")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"3")])
+
+;; sync_lock_release is only implemented for SImode.
+;; For other modes, just use the default of a store with a memory_barrier.
+(define_insn "sync_lock_releasesi"
+  [(set (match_operand:SI 0 "mem_operand" "=U")
+	(unspec_volatile:SI
+	  [(match_operand:SI 1 "register_operand" "r")]
+	  UNSPECV_S32RI))]
+  "TARGET_RELEASE_SYNC"
+  "s32ri\t%1, %0"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "sync_compare_and_swapsi"
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand" "=a")
+	  (match_operand:SI 1 "mem_operand" "+U"))
+     (set (match_dup 1)
+	  (unspec_volatile:SI
+	    [(match_dup 1)
+	     (match_operand:SI 2 "register_operand" "r")
+	     (match_operand:SI 3 "register_operand" "0")]
+	    UNSPECV_S32C1I))])]
+  "TARGET_S32C1I"
+  "wsr\t%2, SCOMPARE1\;s32c1i\t%3, %1"
+  [(set_attr "type"	"multi")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"6")])
+
+(define_expand "sync_compare_and_swap<mode>"
+  [(parallel
+    [(set (match_operand:HQI 0 "register_operand" "")
+	  (match_operand:HQI 1 "mem_operand" ""))
+     (set (match_dup 1)
+	  (unspec_volatile:HQI
+	    [(match_dup 1)
+	     (match_operand:HQI 2 "register_operand" "")
+	     (match_operand:HQI 3 "register_operand" "")]
+	    UNSPECV_S32C1I))])]
+  "TARGET_S32C1I"
+{
+  xtensa_expand_compare_and_swap (operands[0], operands[1],
+				  operands[2], operands[3]);
+  DONE;
+})
+
+(define_expand "sync_lock_test_and_set<mode>"
+  [(match_operand:HQI 0 "register_operand")
+   (match_operand:HQI 1 "memory_operand")
+   (match_operand:HQI 2 "register_operand")]
+  "TARGET_S32C1I"
+{
+  xtensa_expand_atomic (SET, operands[0], operands[1], operands[2], false);
+  DONE;
+})
+
+(define_expand "sync_<atomic><mode>"
+  [(set (match_operand:HQI 0 "memory_operand")
+	(ATOMIC:HQI (match_dup 0)
+		    (match_operand:HQI 1 "register_operand")))]
+  "TARGET_S32C1I"
+{
+  xtensa_expand_atomic (<CODE>, NULL_RTX, operands[0], operands[1], false);
+  DONE;
+})
+
+(define_expand "sync_old_<atomic><mode>"
+  [(set (match_operand:HQI 0 "register_operand")
+	(match_operand:HQI 1 "memory_operand"))
+   (set (match_dup 1)
+	(ATOMIC:HQI (match_dup 1)
+		    (match_operand:HQI 2 "register_operand")))]
+  "TARGET_S32C1I"
+{
+  xtensa_expand_atomic (<CODE>, operands[0], operands[1], operands[2], false);
+  DONE;
+})
+
+(define_expand "sync_new_<atomic><mode>"
+  [(set (match_operand:HQI 0 "register_operand")
+	(ATOMIC:HQI (match_operand:HQI 1 "memory_operand")
+		    (match_operand:HQI 2 "register_operand"))) 
+   (set (match_dup 1) (ATOMIC:HQI (match_dup 1) (match_dup 2)))]
+  "TARGET_S32C1I"
+{
+  xtensa_expand_atomic (<CODE>, operands[0], operands[1], operands[2], true);
+  DONE;
+})

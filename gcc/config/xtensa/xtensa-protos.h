@@ -47,6 +47,8 @@ extern void xtensa_split_operand_pair (rtx *, enum machine_mode);
 extern int xtensa_emit_move_sequence (rtx *, enum machine_mode);
 extern rtx xtensa_copy_incoming_a7 (rtx);
 extern void xtensa_expand_nonlocal_goto (rtx *);
+extern void xtensa_expand_compare_and_swap (rtx, rtx, rtx, rtx);
+extern void xtensa_expand_atomic (enum rtx_code, rtx, rtx, rtx, bool);
 extern void xtensa_emit_loop_end (rtx, rtx *);
 extern char *xtensa_emit_branch (bool, bool, rtx *);
 extern char *xtensa_emit_bit_branch (bool, bool, rtx *);
