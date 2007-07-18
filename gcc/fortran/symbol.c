@@ -3766,8 +3766,10 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
                        processing the file.  */
                     generate_isocbinding_symbol
                       (mod_name, s == ISOCBINDING_FUNLOC
-                       ? ISOCBINDING_FUNPTR : ISOCBINDING_FUNPTR,
+		       || s == ISOCBINDING_F_PROCPOINTER
+		       ? ISOCBINDING_FUNPTR : ISOCBINDING_PTR,
                        (char *)(s == ISOCBINDING_FUNLOC 
+				|| s == ISOCBINDING_F_PROCPOINTER 
                                 ? "_gfortran_iso_c_binding_c_funptr"
 				: "_gfortran_iso_c_binding_c_ptr"));
                     tmp_sym->ts.derived =
