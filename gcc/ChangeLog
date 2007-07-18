@@ -1,3 +1,10 @@
+2007-07-18  Caroline Tice  <ctice@apple.com>
+	
+	* var-tracking.c (find_src_status):  Check for  COND_EXEC insns
+	and handle them correctly; check that src is not NULL before
+	trying to use it.
+	(find_src_set_src): Likewise.
+	
 2007-07-18  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_expand_mask_and_shift): New.
