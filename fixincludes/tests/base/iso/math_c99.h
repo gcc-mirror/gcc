@@ -38,7 +38,7 @@
 #ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
 #undef	fpclassify
 #define	fpclassify(x) \
-  __extension__ ({ __typeof(x) __x_fp = (x); \
+  __extension__ ({ const __typeof(x) __x_fp = (x); \
 		   isnan(__x_fp) \
 		     ? FP_NAN \
 		     : isinf(__x_fp) \
@@ -55,8 +55,12 @@
 #ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
 #undef	isfinite
 #define	isfinite(x) \
-  __extension__ ({ __typeof (x) __x_f = (x); \
-		   __builtin_expect(!isnan(__x_f - __x_f), 1); })
+  __extension__ ({ const __typeof (x) __x_f = (x); \
+		    __builtin_expect(sizeof(__x_f) == sizeof(float) \
+			  ? islessequal(__builtin_fabsf(__x_f),__FLT_MAX__) \
+			  : sizeof(__x_f) == sizeof(long double) \
+			    ? islessequal(__builtin_fabsl(__x_f),__LDBL_MAX__) \
+			    : islessequal(__builtin_fabs(__x_f),__DBL_MAX__), 1); })
 #endif  /* SOLARIS_MATH_5_CHECK */
 
 
@@ -64,8 +68,12 @@
 #ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
 #undef	isinf
 #define	isinf(x) \
-  __extension__ ({ __typeof (x) __x_i = (x); \
-		   __builtin_expect(!isnan(__x_i) && !isfinite(__x_i), 0); })
+  __extension__ ({ const __typeof (x) __x_i = (x); \
+		    __builtin_expect(sizeof(__x_i) == sizeof(float) \
+			  ? isgreater(__builtin_fabsf(__x_i),__FLT_MAX__) \
+			  : sizeof(__x_i) == sizeof(long double) \
+			    ? isgreater(__builtin_fabsl(__x_i),__LDBL_MAX__) \
+			    : isgreater(__builtin_fabs(__x_i),__DBL_MAX__), 0); })
 #endif  /* SOLARIS_MATH_6_CHECK */
 
 
@@ -73,14 +81,13 @@
 #ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
 #undef	isnormal
 #define	isnormal(x) \
-  __extension__ ({ __typeof(x) __x_n = (x); \
-		   if (__x_n < 0.0) __x_n = -__x_n; \
+  __extension__ ({ const __typeof(x) __x_n = (x); \
 		   __builtin_expect(isfinite(__x_n) \
 				    && (sizeof(__x_n) == sizeof(float) \
-					  ? __x_n >= __FLT_MIN__ \
+					  ? isgreaterequal(__builtin_fabsf(__x_n),__FLT_MIN__) \
 					  : sizeof(__x_n) == sizeof(long double) \
-					    ? __x_n >= __LDBL_MIN__ \
-					    : __x_n >= __DBL_MIN__), 1); })
+					    ? isgreaterequal(__builtin_fabsl(__x_n),__LDBL_MIN__) \
+					    : isgreaterequal(__builtin_fabs(__x_n),__DBL_MIN__)), 1); })
 #endif  /* SOLARIS_MATH_7_CHECK */
 
 
