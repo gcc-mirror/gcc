@@ -1,3 +1,23 @@
+2007-07-18  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.c (xtensa_expand_mask_and_shift): New.
+	(struct alignment_context, init_alignment_context): New.
+	(xtensa_expand_compare_and_swap, xtensa_expand_atomic): New.
+	* config/xtensa/xtensa.h (XCHAL_HAVE_RELEASE_SYNC): Add default.
+	(XCHAL_HAVE_S32C1I): Likewise.
+	(TARGET_RELEASE_SYNC, TARGET_S32C1I): New.
+	* config/xtensa/xtensa.md (UNSPECV_MEMW): New constant.
+	(UNSPECV_S32RI, UNSPECV_S32C1I): Likewise.
+	(ATOMIC, HQI): New macros.
+	(memory_barrier, *memory_barrier): New.
+	(sync_lock_releasesi): New.
+	(sync_compare_and_swapsi, sync_compare_and_swap<mode>): New.
+	(sync_lock_test_and_set<mode>): New.
+	(sync_<atomic><mode>): New.
+	(sync_old_<atomic><mode>, sync_new_<atomic><mode>): New.
+	* config/xtensa/xtensa-protos.h (xtensa_expand_compare_and_swap): New.
+	(xtensa_expand_atomic): New.
+	
 2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR target/30652

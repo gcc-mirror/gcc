@@ -1,5 +1,5 @@
 /* Xtensa configuration settings.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -72,6 +72,15 @@
 
 #undef XCHAL_HAVE_LOOPS
 #define XCHAL_HAVE_LOOPS		1
+
+#undef XCHAL_HAVE_THREADPTR
+#define XCHAL_HAVE_THREADPTR		1
+
+#undef XCHAL_HAVE_RELEASE_SYNC
+#define XCHAL_HAVE_RELEASE_SYNC		0
+
+#undef XCHAL_HAVE_S32C1I
+#define XCHAL_HAVE_S32C1I		0
 
 #undef XCHAL_HAVE_BOOLEANS
 #define XCHAL_HAVE_BOOLEANS		0
