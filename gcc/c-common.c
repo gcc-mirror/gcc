@@ -555,6 +555,7 @@ static tree handle_cleanup_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
+static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alloc_size_attribute (tree *, tree, tree, int, bool *);
 
 static void check_function_nonnull (tree, int, tree *);
@@ -650,6 +651,10 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_warn_unused_result_attribute },
   { "sentinel",               0, 1, false, true, true,
 			      handle_sentinel_attribute },
+  /* For internal use (marking of builtins) only.  The name contains space
+     to prevent its usage in source code.  */
+  { "type generic",           0, 0, false, true, true,
+			      handle_type_generic_attribute },
   { "alloc_size",	      1, 2, false, true, true,
 			      handle_alloc_size_attribute },
   { "cold",                   0, 0, true,  false, false,
@@ -6163,6 +6168,19 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 	    }
 	}
     }
+
+  return NULL_TREE;
+}
+
+/* Handle a "type_generic" attribute.  */
+
+static tree
+handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
+			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			       bool * ARG_UNUSED (no_add_attrs))
+{
+  /* Ensure we have a function type, with no arguments.  */
+  gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE && ! TYPE_ARG_TYPES (*node));
 
   return NULL_TREE;
 }

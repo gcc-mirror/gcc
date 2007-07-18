@@ -1,3 +1,20 @@
+2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/32668
+
+	* builtin-attrs.def (ATTR_TYPEGENERIC,
+	ATTR_CONST_NOTHROW_TYPEGENERIC): New.
+
+	* builtins.def (BUILT_IN_ISINF, BUILT_IN_ISNAN,
+	BUILT_IN_ISGREATER, BUILT_IN_ISGREATEREQUAL, BUILT_IN_ISLESS,
+	BUILT_IN_ISLESSEQUAL, BUILT_IN_ISLESSGREATER,
+	BUILT_IN_ISUNORDERED): Use ATTR_CONST_NOTHROW_TYPEGENERIC.
+
+	* c-common.c (handle_type_generic_attribute): New.
+	(c_common_attribute_table): Add "type generic".
+
+	* c-typeck.c (convert_arguments): Handle "type generic" functions.
+
 2007-07-18  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-sccvn.c (try_to_simplify): Use valid_gimple_expression

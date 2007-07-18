@@ -2394,6 +2394,8 @@ convert_arguments (int nargs, tree *argarray,
 {
   tree typetail, valtail;
   int parmnum;
+  const bool type_generic = fundecl
+    && lookup_attribute ("type generic", TYPE_ATTRIBUTES(TREE_TYPE (fundecl)));
   tree selector;
 
   /* Change pointer to function to the function itself for
@@ -2585,8 +2587,13 @@ convert_arguments (int nargs, tree *argarray,
 	       && (TYPE_PRECISION (TREE_TYPE (val))
 		   < TYPE_PRECISION (double_type_node))
 	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (val))))
-	/* Convert `float' to `double'.  */
-	argarray[parmnum] = convert (double_type_node, val);
+        {
+	  if (type_generic)
+	    argarray[parmnum] = val;
+	  else
+	    /* Convert `float' to `double'.  */
+	    argarray[parmnum] = convert (double_type_node, val);
+	}
       else if ((invalid_func_diag =
 		targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))
 	{
