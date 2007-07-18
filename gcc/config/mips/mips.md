@@ -4249,8 +4249,7 @@
       /* Flush both caches.  We need to flush the data cache in case
          the system has a write-back cache.  */
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),
-                         0, VOIDmode, 3, operands[0], Pmode,
-                         len, TYPE_MODE (integer_type_node),
+                         0, VOIDmode, 3, operands[0], Pmode, len, Pmode,
                          GEN_INT (3), TYPE_MODE (integer_type_node));
    }
   DONE;
