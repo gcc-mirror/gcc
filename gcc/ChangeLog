@@ -1,5 +1,9 @@
 2007-07-18  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.md (clear_cache): Treat the size argument as Pmode.
+
+2007-07-18  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.md (*extendqihi2): Convert the destination
 	to SImode.
 
