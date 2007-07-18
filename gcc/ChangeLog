@@ -1,3 +1,11 @@
+2007-07-19  Christoph von Wittich  <Christoph_vW@reactos.org>
+	    Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR/other 30335
+	* config/i386/host-mingw32.c (mingw32_gt_pch_use_address): Put
+	file mapping object in local namespace if Windows version later
+	than NT4
+
 2007-07-18  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_cannot_force_const_mem): Declare.
