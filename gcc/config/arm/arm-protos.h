@@ -71,6 +71,7 @@ extern int vfp3_const_double_rtx (rtx);
 extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 						     bool);
 extern bool arm_tls_referenced_p (rtx);
+extern bool arm_cannot_force_const_mem (rtx);
 
 extern int cirrus_memory_offset (rtx);
 extern int arm_coproc_mem_operand (rtx, bool);

@@ -380,7 +380,7 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 #endif
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM arm_tls_referenced_p
+#define TARGET_CANNOT_FORCE_CONST_MEM arm_cannot_force_const_mem
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
@@ -4671,6 +4671,23 @@ arm_tls_referenced_p (rtx x)
     return false;
 
   return for_each_rtx (&x, arm_tls_operand_p_1, NULL);
+}
+
+/* Implement TARGET_CANNOT_FORCE_CONST_MEM.  */
+
+bool
+arm_cannot_force_const_mem (rtx x)
+{
+  rtx base, offset;
+
+  if (ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+    {
+      split_const (x, &base, &offset);
+      if (GET_CODE (base) == SYMBOL_REF
+	  && !offset_within_block_p (base, INTVAL (offset)))
+	return true;
+    }
+  return arm_tls_referenced_p (x);
 }
 
 #define REG_OR_SUBREG_REG(X)						\

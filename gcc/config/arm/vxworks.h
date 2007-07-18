@@ -106,3 +106,11 @@ Boston, MA 02110-1301, USA.  */
    the past before this macro was changed.  */
 #undef DEFAULT_STRUCTURE_SIZE_BOUNDARY
 #define DEFAULT_STRUCTURE_SIZE_BOUNDARY 8
+
+/* The kernel loader does not allow relocations to overflow, so we
+   cannot allow arbitrary relocation addends in kernel modules or RTP
+   executables.  Also, the dynamic loader uses the resolved relocation
+   value to distinguish references to the text and data segments, so we
+   cannot allow arbitrary offsets for shared libraries either.  */
+#undef ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P
+#define ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 1

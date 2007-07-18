@@ -1888,6 +1888,10 @@ typedef struct
 
 #endif /* AOF_ASSEMBLER */
 
+/* True if SYMBOL + OFFSET constants must refer to something within
+   SYMBOL's section.  */
+#define ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 0
+
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
 
@@ -1905,7 +1909,7 @@ typedef struct
   || flag_pic)
 
 #define LEGITIMATE_CONSTANT_P(X)			\
-  (!arm_tls_referenced_p (X)				\
+  (!arm_cannot_force_const_mem (X)			\
    && (TARGET_32BIT ? ARM_LEGITIMATE_CONSTANT_P (X)	\
 		    : THUMB_LEGITIMATE_CONSTANT_P (X)))
 
