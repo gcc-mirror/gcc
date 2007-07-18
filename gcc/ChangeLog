@@ -2,6 +2,16 @@
 
 	PR target/30652
 
+	* builtins.c (expand_builtin_interclass_mathfn): Provide a generic
+	transformation for builtin ISNORMAL.
+	(expand_builtin): Handle BUILT_IN_ISNORMAL.
+	* builtins.def (BUILT_IN_ISNORMAL): New.
+	* doc/extend.texi: Document isnormal.
+
+2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR target/30652
+
 	* builtins.c (expand_builtin_interclass_mathfn): Allow for missing
 	optabs infrastructure.  Provide generic implementation for
 	FINITE/ISFINITE.

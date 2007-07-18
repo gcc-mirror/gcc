@@ -2230,6 +2230,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
       errno_set = true; builtin_optab = ilogb_optab; break;
     CASE_FLT_FN (BUILT_IN_ISINF):
       builtin_optab = isinf_optab; break;
+    case BUILT_IN_ISNORMAL:
     case BUILT_IN_ISFINITE:
     CASE_FLT_FN (BUILT_IN_FINITE):
       /* These builtins have no optabs (yet).  */
@@ -2314,6 +2315,28 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
 	result = build_call_expr (isle_fn, 2,
 				  fold_build1 (ABS_EXPR, type, arg),
 				  build_real (type, r));
+	return expand_expr (result, target, VOIDmode, EXPAND_NORMAL);
+      }
+    case BUILT_IN_ISNORMAL:
+      {
+	/* isnormal(x) -> isgreaterequal(fabs(x),DBL_MIN) &
+	   islessequal(fabs(x),DBL_MAX).  */
+	tree const isle_fn = built_in_decls[BUILT_IN_ISLESSEQUAL];
+	tree const isge_fn = built_in_decls[BUILT_IN_ISGREATEREQUAL];
+	tree const type = TREE_TYPE (arg);
+	REAL_VALUE_TYPE rmax, rmin;
+	char buf[128];
+
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	real_from_string (&rmax, buf);
+	sprintf (buf, "0x1p%d", REAL_MODE_FORMAT (mode)->emin - 1);
+	real_from_string (&rmin, buf);
+	arg = builtin_save_expr (fold_build1 (ABS_EXPR, type, arg));
+	result = build_call_expr (isle_fn, 2, arg,
+				  build_real (type, rmax));
+	result = fold_build2 (BIT_AND_EXPR, integer_type_node, result,
+			      build_call_expr (isge_fn, 2, arg,
+					       build_real (type, rmin)));
 	return expand_expr (result, target, VOIDmode, EXPAND_NORMAL);
       }
     default:
@@ -6173,6 +6196,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_ISINF):
     CASE_FLT_FN (BUILT_IN_FINITE):
     case BUILT_IN_ISFINITE:
+    case BUILT_IN_ISNORMAL:
       target = expand_builtin_interclass_mathfn (exp, target, subtarget);
       if (target)
 	return target;
