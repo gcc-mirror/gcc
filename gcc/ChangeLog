@@ -1,3 +1,9 @@
+2007-07-18  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/32808
+	* config/cris/cris.c (cris_print_index): Don't use XEXP before
+	checking that the operand is an expression.
+
 2007-07-19  Christoph von Wittich  <Christoph_vW@reactos.org>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 
