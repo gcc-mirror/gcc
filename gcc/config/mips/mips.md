@@ -2618,6 +2618,7 @@
   [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (ashiftrt:SI (match_dup 0) (match_dup 2)))]
 {
+  operands[0] = gen_lowpart (SImode, operands[0]);
   operands[1] = gen_lowpart (SImode, operands[1]);
   operands[2] = GEN_INT (GET_MODE_BITSIZE (SImode)
 			 - GET_MODE_BITSIZE (QImode));
