@@ -606,10 +606,21 @@ valid_gimple_expression_p (tree expr)
       switch (code)
 	{
 	case ADDR_EXPR:
-          if (TREE_CODE (TREE_OPERAND (expr, 0)) == ARRAY_REF
-	      && !is_gimple_val (TREE_OPERAND (TREE_OPERAND (expr, 0), 1)))
-	    return false;
-	  break;
+         {
+           tree t = TREE_OPERAND (expr, 0);
+           while (handled_component_p (t))
+             {
+               /* ??? More checks needed, see the GIMPLE verifier.  */
+               if ((TREE_CODE (t) == ARRAY_REF
+                    || TREE_CODE (t) == ARRAY_RANGE_REF)
+                   && !is_gimple_val (TREE_OPERAND (t, 1)))
+                 return false;
+               t = TREE_OPERAND (t, 0);
+             }
+           if (!is_gimple_addressable (t))
+             return false;
+           break;
+         }
 
 	case TRUTH_NOT_EXPR:
 	  if (!is_gimple_val (TREE_OPERAND (expr, 0)))

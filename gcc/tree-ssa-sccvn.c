@@ -1437,7 +1437,7 @@ try_to_simplify (tree stmt, tree rhs)
 	  if (TREE_READONLY (rhs)
 	      && TREE_STATIC (rhs)
 	      && DECL_INITIAL (rhs)
-	      && is_gimple_min_invariant (DECL_INITIAL (rhs)))
+	      && valid_gimple_expression_p (DECL_INITIAL (rhs)))
 	    return DECL_INITIAL (rhs);
 
 	    /* Fallthrough. */
