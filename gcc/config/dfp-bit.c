@@ -37,6 +37,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* The intended way to use this file is to make two copies, add `#define '
    to one copy, then compile both copies and add them to libgcc.a.  */
 
+/* FIXME: This implementation doesn't support TFmode conversions.  */
+#if !(defined (L_sd_to_tf) || defined (L_dd_to_tf) \
+      || defined (L_td_to_tf) || defined (L_tf_to_sd) \
+      || defined (L_tf_to_dd) || defined (L_tf_to_td))
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -576,3 +581,7 @@ DFP_UNORD (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   return (decNumberIsNaN (&arg1) || decNumberIsNaN (&arg2));
 }
 #endif /* L_unord_sd || L_unord_dd || L_unord_td */
+
+/* !(L_sd_to_tf || L_dd_to_tf || L_td_to_tf \
+     || L_tf_to_sd || L_tf_to_dd || L_tf_to_td)  */
+#endif

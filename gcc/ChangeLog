@@ -1,3 +1,11 @@
+2007-07-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (D32PBIT_FUNCS): Add _sd_to_tf and _tf_to_sd.
+	(D64PBIT_FUNCS): Add _dd_to_tf and _tf_to_dd.
+	(D128PBIT_FUNCS): Add _td_to_tf and _tf_to_td.
+
+	* config/dfp-bit.c: Empty for TFmode conversions.
+
 2007-07-18  Caroline Tice  <ctice@apple.com>
 	
 	* var-tracking.c (find_src_status):  Check for  COND_EXEC insns
