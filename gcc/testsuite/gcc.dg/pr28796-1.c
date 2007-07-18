@@ -38,6 +38,20 @@ int main()
   if (__builtin_finitel (ld) != 1)
     link_error ();
 
+  if (__builtin_isinf (f) != 0)
+    link_error ();
+  if (__builtin_isinf (d) != 0)
+    link_error ();
+  if (__builtin_isinf (ld) != 0)
+    link_error ();
+
+  if (__builtin_isfinite (f) != 1)
+    link_error ();
+  if (__builtin_isfinite (d) != 1)
+    link_error ();
+  if (__builtin_isfinite (ld) != 1)
+    link_error ();
+
   if (f != f)
     link_error ();
   if (d != d)

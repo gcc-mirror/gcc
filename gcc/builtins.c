@@ -2211,8 +2211,8 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 static rtx
 expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
 {
-  optab builtin_optab;
-  enum insn_code icode;
+  optab builtin_optab = 0;
+  enum insn_code icode = CODE_FOR_nothing;
   rtx op0;
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
@@ -2230,6 +2230,10 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
       errno_set = true; builtin_optab = ilogb_optab; break;
     CASE_FLT_FN (BUILT_IN_ISINF):
       builtin_optab = isinf_optab; break;
+    case BUILT_IN_ISFINITE:
+    CASE_FLT_FN (BUILT_IN_FINITE):
+      /* These builtins have no optabs (yet).  */
+      break;
     default:
       gcc_unreachable ();
     }
@@ -2241,7 +2245,8 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
   /* Optab mode depends on the mode of the input argument.  */
   mode = TYPE_MODE (TREE_TYPE (arg));
 
-  icode = builtin_optab->handlers[(int) mode].insn_code;
+  if (builtin_optab)
+    icode = builtin_optab->handlers[(int) mode].insn_code;
  
   /* Before working hard, check whether the instruction is available.  */
   if (icode != CODE_FOR_nothing)
@@ -2291,6 +2296,22 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
 	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
 	real_from_string (&r, buf);
 	result = build_call_expr (isgr_fn, 2,
+				  fold_build1 (ABS_EXPR, type, arg),
+				  build_real (type, r));
+	return expand_expr (result, target, VOIDmode, EXPAND_NORMAL);
+      }
+    CASE_FLT_FN (BUILT_IN_FINITE):
+    case BUILT_IN_ISFINITE:
+      {
+	/* isfinite(x) -> islessequal(fabs(x),DBL_MAX).  */
+	tree const isle_fn = built_in_decls[BUILT_IN_ISLESSEQUAL];
+	tree const type = TREE_TYPE (arg);
+	REAL_VALUE_TYPE r;
+	char buf[128];
+
+	get_max_float (REAL_MODE_FORMAT (mode), buf, sizeof (buf));
+	real_from_string (&r, buf);
+	result = build_call_expr (isle_fn, 2,
 				  fold_build1 (ABS_EXPR, type, arg),
 				  build_real (type, r));
 	return expand_expr (result, target, VOIDmode, EXPAND_NORMAL);
@@ -6150,6 +6171,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       if (! flag_unsafe_math_optimizations)
 	break;
     CASE_FLT_FN (BUILT_IN_ISINF):
+    CASE_FLT_FN (BUILT_IN_FINITE):
+    case BUILT_IN_ISFINITE:
       target = expand_builtin_interclass_mathfn (exp, target, subtarget);
       if (target)
 	return target;
@@ -9569,7 +9592,7 @@ fold_builtin_classify (tree fndecl, tree arg, int builtin_index)
 
       return NULL_TREE;
 
-    case BUILT_IN_FINITE:
+    case BUILT_IN_ISFINITE:
       if (!HONOR_NANS (TYPE_MODE (TREE_TYPE (arg)))
 	  && !HONOR_INFINITIES (TYPE_MODE (TREE_TYPE (arg))))
 	return omit_one_operand (type, integer_one_node, arg);
@@ -9972,7 +9995,8 @@ fold_builtin_1 (tree fndecl, tree arg0, bool ignore)
     case BUILT_IN_FINITED32:
     case BUILT_IN_FINITED64:
     case BUILT_IN_FINITED128:
-      return fold_builtin_classify (fndecl, arg0, BUILT_IN_FINITE);
+    case BUILT_IN_ISFINITE:
+      return fold_builtin_classify (fndecl, arg0, BUILT_IN_ISFINITE);
 
     CASE_FLT_FN (BUILT_IN_ISINF):
     case BUILT_IN_ISINFD32:
