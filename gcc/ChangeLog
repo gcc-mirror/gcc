@@ -1,3 +1,9 @@
+2007-07-18  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-sccvn.c (try_to_simplify): Use valid_gimple_expression
+	* tree-ssa-propagate (valid_gimple_expression): Handle ADDR_EXPR
+	properly.
+
 2007-07-18  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/32808
