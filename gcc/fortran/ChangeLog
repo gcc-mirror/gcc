@@ -1,3 +1,8 @@
+2007-07-19  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32600
+	* trans-expr.c (gfc_conv_function_call): Inline C_LOC.
+
 2007-07-18  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32801

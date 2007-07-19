@@ -213,23 +213,6 @@ ISO_C_BINDING_PREFIX (c_associated_2) (void *c_ptr_in_1, void *c_ptr_in_2)
 }
 
 
-/* Return the C address of the given Fortran allocatable object.  */
-
-void *
-ISO_C_BINDING_PREFIX (c_loc) (void *f90_obj)
-{
-  if (f90_obj == NULL)
-    {
-      runtime_error ("C_LOC: Attempt to get C address for Fortran object"
-                     " that has not been allocated or associated");
-      abort ();
-    }
-   
-  /* The "C" address should be the address of the object in Fortran.  */
-  return f90_obj;
-}
-
-
 /*  Return the C address of the given Fortran procedure.  This
     routine is expected to return a derived type of type C_FUNPTR,
     which represents the C address of the given Fortran object.  */
