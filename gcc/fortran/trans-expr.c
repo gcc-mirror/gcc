@@ -2060,6 +2060,33 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   var = NULL_TREE;
   len = NULL_TREE;
 
+  if (sym->from_intmod == INTMOD_ISO_C_BINDING
+      && sym->intmod_sym_id == ISOCBINDING_LOC)
+    {
+      if (arg->expr->rank == 0)
+	{
+	  gfc_conv_expr_reference (se, arg->expr);
+	}
+      else
+	{
+	  int f;
+	  /* This is really the actual arg because no formal arglist is
+	     created for C_LOC.	 */
+	  fsym = arg->expr->symtree->n.sym;
+
+	  /* We should want it to do g77 calling convention.  */
+	  f = (fsym != NULL)
+	    && !(fsym->attr.pointer || fsym->attr.allocatable)
+	    && fsym->as->type != AS_ASSUMED_SHAPE;
+	  f = f || !sym->attr.always_explicit;
+	  
+	  argss = gfc_walk_expr (arg->expr);
+	  gfc_conv_array_parameter (se, arg->expr, argss, f);
+	}
+
+      return 0;
+    }
+  
   if (se->ss != NULL)
     {
       if (!sym->attr.elemental)

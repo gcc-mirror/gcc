@@ -1,3 +1,10 @@
+2007-07-19  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32600
+	* libgfortran/intrinsics/iso_c_binding.c: Remove C_LOC.
+	* libgfortran/intrinsics/iso_c_binding.h: Ditto.
+	* libgfortran/gfortran.map: Ditto.
+
 2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 

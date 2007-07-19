@@ -1019,7 +1019,6 @@ GFORTRAN_1.0 {
     __iso_c_binding_c_f_pointer_u0;
     __iso_c_binding_c_f_procpointer;
     __iso_c_binding_c_funloc;
-    __iso_c_binding_c_loc;
   local:
     *;
 };
