@@ -411,6 +411,8 @@ add_loop (struct loop *loop, struct loop *outer)
   basic_block *bbs;
   int i, n;
   struct loop *subloop;
+  edge e;
+  edge_iterator ei;
 
   /* Add it to loop structure.  */
   place_new_loop (loop);
@@ -438,6 +440,15 @@ add_loop (struct loop *loop, struct loop *outer)
 	{
 	  flow_loop_tree_node_remove (subloop);
 	  flow_loop_tree_node_add (loop, subloop);
+	}
+    }
+
+  /* Update the information about loop exit edges.  */
+  for (i = 0; i < n; i++)
+    {
+      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
+	{
+	  rescan_loop_exit (e, false, false);
 	}
     }
 
@@ -1282,10 +1293,6 @@ loop_version (struct loop *loop,
   int irred_flag;
   struct loop *nloop;
   basic_block cond_bb;
-
-  /* CHECKME: Loop versioning does not handle nested loop at this point.  */
-  if (loop->inner)
-    return NULL;
 
   /* Record entry and latch edges for the loop */
   entry = loop_preheader_edge (loop);
