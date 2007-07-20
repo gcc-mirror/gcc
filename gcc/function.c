@@ -5256,7 +5256,18 @@ thread_prologue_and_epilogue_insns (void)
 epilogue_done:
 
   if (inserted)
-    commit_edge_insertions ();
+    {
+      commit_edge_insertions ();
+
+      /* The epilogue insns we inserted may cause the exit edge to no longer
+	 be fallthru.  */
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+	{
+	  if (((e->flags & EDGE_FALLTHRU) != 0)
+	      && returnjump_p (BB_END (e->src)))
+	    e->flags &= ~EDGE_FALLTHRU;
+	}
+    }
 
 #ifdef HAVE_sibcall_epilogue
   /* Emit sibling epilogues before any sibling call sites.  */
