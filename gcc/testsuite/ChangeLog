@@ -1,3 +1,8 @@
+2007-07-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/19910
+	* gcc.dg/pr19910.c: New test.
+
 2007-07-19  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32738
