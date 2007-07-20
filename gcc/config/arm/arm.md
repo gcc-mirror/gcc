@@ -4682,7 +4682,7 @@
       if (GET_CODE (base) == SYMBOL_REF
 	  && !offset_within_block_p (base, INTVAL (offset)))
 	{
-	  tmp = no_new_pseudos ? operands[0] : gen_reg_rtx (SImode);
+	  tmp = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
 	  emit_move_insn (tmp, base);
 	  emit_insn (gen_addsi3 (operands[0], tmp, offset));
 	  DONE;

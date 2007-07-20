@@ -1,3 +1,8 @@
+2007-07-20  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/arm/arm.md (movsi): Use can_create_pseudo_p instead of
+	no_new_pseudos.
+
 2007-07-20  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* function.c (thread_prologue_and_epilogue_insns): Fix exit
