@@ -1,3 +1,8 @@
+2007-07-20  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/mips.exp (is_gp32_flag): Return true for -msmartmips.
+	* gcc.target/mips/save-restore-5.c: Fix positioning of dg-do directive.
+
 2007-07-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/19910
