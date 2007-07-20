@@ -940,23 +940,18 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
 	return false;
 
-      /* Preserve booleanness.  Some code assumes an invariant that boolean
-	 types stay boolean and do not become 1-bit bit-field types.  */
-      if ((TREE_CODE (inner_type) == BOOLEAN_TYPE)
-	  != (TREE_CODE (outer_type) == BOOLEAN_TYPE))
+      /* Conversions from a non-base to a base type are not useless.
+	 This way we preserve the invariant to do arithmetic in
+	 base types only.  */
+      if (TREE_TYPE (inner_type)
+	  && TREE_TYPE (inner_type) != inner_type
+	  && (TREE_TYPE (outer_type) == outer_type
+	      || TREE_TYPE (outer_type) == NULL_TREE))
 	return false;
 
-      /* Preserve changes in the types minimum or maximum value.
-	 ???  Due to the way we handle sizetype as signed we need
-	 to jump through hoops here to make sizetype and size_type_node
-	 compatible.  */
-      if (!tree_int_cst_equal (fold_convert (outer_type,
-					     TYPE_MIN_VALUE (inner_type)),
-			       TYPE_MIN_VALUE (outer_type))
-	  || !tree_int_cst_equal (fold_convert (outer_type,
-						TYPE_MAX_VALUE (inner_type)),
-				  TYPE_MAX_VALUE (outer_type)))
-	return false;
+      /* We don't need to preserve changes in the types minimum or
+	 maximum value in general as these do not generate code
+	 unless the types precisions are different.  */
 
       return true;
     }

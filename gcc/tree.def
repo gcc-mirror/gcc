@@ -485,7 +485,8 @@ DEFTREECODE (TARGET_EXPR, "target_expr", tcc_expression, 4)
    Operand 0 may be of any type.
    Operand 1 must have the same type as the entire expression, unless
    it unconditionally throws an exception, in which case it should
-   have VOID_TYPE.  The same constraints apply to operand 2.  */
+   have VOID_TYPE.  The same constraints apply to operand 2.  The
+   condition in operand 0 must be of integral type.  */
 DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
 
 /* Vector conditional expression. It is like COND_EXPR, but with

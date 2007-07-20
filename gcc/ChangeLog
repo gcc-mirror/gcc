@@ -1,3 +1,14 @@
+2007-07-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_expr): COND_EXPRs can have any
+	integral typed condition.
+	* tree-ssa.c (useless_type_conversion_p): Do not preserve
+	booleanness.  Only preserve conversions from a non-base
+	type to a base type, not in general between types with
+	different TYPE_MIN_VALUE or TYPE_MAX_VALUE.
+	* tree.def (COND_EXPR): Document that the condition
+	can be of any integral type.
+
 2007-07-20  Nigel Stephens  <nigel@mips.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
