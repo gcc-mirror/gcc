@@ -3201,9 +3201,9 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
     case COND_EXPR:
       x = COND_EXPR_COND (t);
-      if (TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE)
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (x)))
 	{
-	  error ("non-boolean used in condition");
+	  error ("non-integral used in condition");
 	  return x;
 	}
       if (!is_gimple_condexpr (x))
