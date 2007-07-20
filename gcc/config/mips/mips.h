@@ -126,7 +126,8 @@ extern int set_nomacro;			/* # of nested .set nomacro's  */
 extern int set_noat;			/* # of nested .set noat's  */
 extern int set_volatile;		/* # of nested .set volatile's  */
 extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
-extern int mips_dbx_regno[];		/* Map register # to debug register # */
+extern int mips_dbx_regno[];
+extern int mips_dwarf_regno[];
 extern bool mips_split_p[];
 extern GTY(()) rtx cmp_operands[2];
 extern enum processor_type mips_arch;   /* which cpu to codegen for */
@@ -1010,11 +1011,10 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define DBX_CONTIN_LENGTH 1500
 
 /* How to renumber registers for dbx and gdb.  */
-#define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[ (REGNO) ]
+#define DBX_REGISTER_NUMBER(REGNO) mips_dbx_regno[REGNO]
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
-#define DWARF_FRAME_REGNUM(REG) \
-  ((REG) == DWARF_ALT_FRAME_RETURN_COLUMN ? INVALID_REGNUM : (REG))
+#define DWARF_FRAME_REGNUM(REGNO) mips_dwarf_regno[REGNO]
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN (GP_REG_FIRST + 31)
@@ -1393,14 +1393,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define DSP_ACC_REG_NUM (DSP_ACC_REG_LAST - DSP_ACC_REG_FIRST + 1)
 
 #define AT_REGNUM	(GP_REG_FIRST + 1)
-#define HI_REGNUM	(MD_REG_FIRST + 0)
-#define LO_REGNUM	(MD_REG_FIRST + 1)
-#define AC1HI_REGNUM	(DSP_ACC_REG_FIRST + 0)
-#define AC1LO_REGNUM	(DSP_ACC_REG_FIRST + 1)
-#define AC2HI_REGNUM	(DSP_ACC_REG_FIRST + 2)
-#define AC2LO_REGNUM	(DSP_ACC_REG_FIRST + 3)
-#define AC3HI_REGNUM	(DSP_ACC_REG_FIRST + 4)
-#define AC3LO_REGNUM	(DSP_ACC_REG_FIRST + 5)
+#define HI_REGNUM	(TARGET_BIG_ENDIAN ? MD_REG_FIRST : MD_REG_FIRST + 1)
+#define LO_REGNUM	(TARGET_BIG_ENDIAN ? MD_REG_FIRST + 1 : MD_REG_FIRST)
 
 /* FPSW_REGNUM is the single condition code used if !ISA_HAS_8CC.
    If ISA_HAS_8CC, it should not be used, and an arbitrary ST_REG
@@ -1431,10 +1425,6 @@ extern const struct mips_rtx_cost_data *mips_cost;
 /* Test if REGNO is hi, lo, or one of the 6 new DSP accumulators.  */
 #define ACC_REG_P(REGNO) \
   (MD_REG_P (REGNO) || DSP_ACC_REG_P (REGNO))
-/* Test if REGNO is HI or the first register of 3 new DSP accumulator pairs.  */
-#define ACC_HI_REG_P(REGNO) \
-  ((REGNO) == HI_REGNUM || (REGNO) == AC1HI_REGNUM || (REGNO) == AC2HI_REGNUM \
-   || (REGNO) == AC3HI_REGNUM)
 
 #define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
 
@@ -1562,8 +1552,8 @@ enum reg_class
   LEA_REGS,			/* Every GPR except $25 */
   GR_REGS,			/* integer registers */
   FP_REGS,			/* floating point registers */
-  HI_REG,			/* hi register */
-  LO_REG,			/* lo register */
+  MD0_REG,			/* first multiply/divide register */
+  MD1_REG,			/* second multiply/divide register */
   MD_REGS,			/* multiply/divide registers (hi/lo) */
   COP0_REGS,			/* generic coprocessor classes */
   COP2_REGS,
@@ -1603,8 +1593,8 @@ enum reg_class
   "LEA_REGS",								\
   "GR_REGS",								\
   "FP_REGS",								\
-  "HI_REG",								\
-  "LO_REG",								\
+  "MD0_REG",								\
+  "MD1_REG",								\
   "MD_REGS",								\
   /* coprocessor registers */						\
   "COP0_REGS",								\

@@ -1,3 +1,27 @@
+2007-07-20  Nigel Stephens  <nigel@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.h (mips_dwarf_regno): Declare.
+	(DBX_REGISTER_NUMBER): Remove redundant brackets.
+	(HI_REGNUM, LO_REGNUM): Define in an endian-dependent way.
+	(AC1HI_REGNUM, AC1LO_REGNUM, AC2HI_REGNUM, AC2LO_REGNUM)
+	(AC3HI_REGNUM, AC3LO_REGNUM, ACC_HI_REG_P): Delete.
+	(reg_class): Rename HI_REG to MD0_REG and LO_REG to MD1_REG.
+	(REG_CLASS_NAMES): Update accordingly.
+	* config/mips/mips.c (mips_dwarf_regno): New array.
+	(mips_regno_to_class): Rename HI_REG to MD0_REG and LO_REG to MD1_REG.
+	(mips_subword): Remove special handling for accumulator registers.
+	(override_options): Initiailize mips_dwarf_regno.  Remove use
+	of ACC_HI_REG_P.
+	(mips_swap_registers): New function.
+	(mips_conditional_register_usage): Swap accumulator registers
+	around if TARGET_LITTLE_ENDIAN.
+	(mips_cannot_change_mode_class): Remove special treatment of ACC_REGS.
+	* config/mips/constraints.md (h, l): Use the endianness to choose
+	between MD0_REG and MD1_REG.
+	* config/mips/mips.md (*mfhilo_<mode>_macc): Use a fixed-string,
+	alternative-dependent template.
+
 2007-07-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/arm.md (movsi): Use can_create_pseudo_p instead of

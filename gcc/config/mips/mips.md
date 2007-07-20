@@ -4059,12 +4059,9 @@
 		     (match_operand:GPR 2 "register_operand" "l,h")]
 		    UNSPEC_MFHILO))]
   "ISA_HAS_MACCHI"
-{
-  if (REGNO (operands[1]) == HI_REGNUM)
-    return "<d>macchi\t%0,%.,%.";
-  else
-    return "<d>macc\t%0,%.,%.";
-}
+  "@
+   <d>macchi\t%0,%.,%.
+   <d>macc\t%0,%.,%."
   [(set_attr "type" "mfhilo")
    (set_attr "mode" "<MODE>")])
 
