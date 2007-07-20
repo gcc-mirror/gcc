@@ -918,8 +918,9 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 
       /* And then we can compute iv0->base - diff, and compare it with
 	 iv1->base.  */      
-      mbzl = fold_build2 (MINUS_EXPR, type1, iv0->base, diff);
-      mbzr = iv1->base;
+      mbzl = fold_build2 (MINUS_EXPR, type1, 
+			  fold_convert (type1, iv0->base), diff);
+      mbzr = fold_convert (type1, iv1->base);
     }
   else
     {
@@ -934,8 +935,9 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 				    iv1->base, bound);
 	}
 
-      mbzl = iv0->base;
-      mbzr = fold_build2 (MINUS_EXPR, type1, iv1->base, diff);
+      mbzl = fold_convert (type1, iv0->base);
+      mbzr = fold_build2 (MINUS_EXPR, type1,
+			  fold_convert (type1, iv1->base), diff);
     }
 
   if (!integer_nonzerop (assumption))

@@ -670,12 +670,16 @@ determine_exit_conditions (struct loop *loop, struct tree_niter_desc *desc,
   tree base = desc->control.base;
   tree step = desc->control.step;
   tree bound = desc->bound;
-  tree type = TREE_TYPE (base);
+  tree type = TREE_TYPE (step);
   tree bigstep, delta;
   tree min = lower_bound_in_type (type, type);
   tree max = upper_bound_in_type (type, type);
   enum tree_code cmp = desc->cmp;
   tree cond = boolean_true_node, assum;
+
+  /* For pointers, do the arithmetics in the type of step (sizetype).  */
+  base = fold_convert (type, base);
+  bound = fold_convert (type, bound);
 
   *enter_cond = boolean_false_node;
   *exit_base = NULL_TREE;
