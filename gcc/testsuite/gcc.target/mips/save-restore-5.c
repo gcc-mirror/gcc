@@ -1,6 +1,6 @@
 /* Check that we don't try to save the same register twice.  */
-/* { dg-mips-options "-mips32r2 -mgp32 -mips16 -mno-abicalls -O2" } */
 /* { dg-do assemble } */
+/* { dg-mips-options "-mips32r2 -mgp32 -mips16 -mno-abicalls -O2" } */
 
 int bar (int, int, int, int);
 void frob (void);

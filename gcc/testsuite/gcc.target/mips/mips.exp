@@ -86,6 +86,7 @@ proc setup_mips_tests {} {
 # Return true if command-line option FLAG forces 32-bit code.
 proc is_gp32_flag {flag} {
     switch -glob -- $flag {
+	-msmartmips -
 	-march=mips32* -
 	-mgp32 { return 1 }
 	default { return 0 }
