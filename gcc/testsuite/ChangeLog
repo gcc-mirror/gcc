@@ -1,3 +1,8 @@
+2007-07-21  Lee Millward  <lee.millward@gmail.com>
+
+	PR fortran/32823
+	* gfortran.dg/int_2.f90: New test.
+	
 2007-07-21  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.dg/inline-23.c: Use pointer sized type for cast from pointer.

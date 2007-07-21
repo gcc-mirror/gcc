@@ -479,32 +479,37 @@ static void
 gfc_conv_intrinsic_int (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
 {
   tree type;
-  tree arg;
+  tree *args;
+  int nargs;
 
-  /* Evaluate the argument.  */
+  nargs = gfc_intrinsic_argument_list_length (expr);
+  args = alloca (sizeof (tree) * nargs);
+
+  /* Evaluate the argument, we process all arguments even though we only 
+     use the first one for code generation purposes.  */
   type = gfc_typenode_for_spec (&expr->ts);
   gcc_assert (expr->value.function.actual->expr);
-  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  gfc_conv_intrinsic_function_args (se, expr, args, nargs);
 
-  if (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE)
+  if (TREE_CODE (TREE_TYPE (args[0])) == INTEGER_TYPE)
     {
       /* Conversion to a different integer kind.  */
-      se->expr = convert (type, arg);
+      se->expr = convert (type, args[0]);
     }
   else
     {
       /* Conversion from complex to non-complex involves taking the real
          component of the value.  */
-      if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE
+      if (TREE_CODE (TREE_TYPE (args[0])) == COMPLEX_TYPE
 	  && expr->ts.type != BT_COMPLEX)
 	{
 	  tree artype;
 
-	  artype = TREE_TYPE (TREE_TYPE (arg));
-	  arg = build1 (REALPART_EXPR, artype, arg);
+	  artype = TREE_TYPE (TREE_TYPE (args[0]));
+	  args[0] = build1 (REALPART_EXPR, artype, args[0]);
 	}
 
-      se->expr = build_fix_expr (&se->pre, arg, type, op);
+      se->expr = build_fix_expr (&se->pre, args[0], type, op);
     }
 }
 
