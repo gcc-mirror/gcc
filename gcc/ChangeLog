@@ -1,3 +1,9 @@
+2007-07-22  Ben Elliston  <bje@au.ibm.com>
+
+	* regclass.c (invalid_mode_change_p): Attach ATTRIBUTE_UNUSED to
+	`class' parameter.
+	* struct-equiv.c (note_local_live): Likewise for `y_regno'.
+
 2007-07-20  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_expr): COND_EXPRs can have any

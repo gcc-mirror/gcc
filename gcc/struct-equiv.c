@@ -328,7 +328,7 @@ note_local_live (struct equiv_info *info, rtx x, rtx y, int rvalue)
       if (reload_completed)
 	{
 	  unsigned x_regno ATTRIBUTE_UNUSED = REGNO (x);
-	  unsigned y_regno = REGNO (y);
+	  unsigned y_regno ATTRIBUTE_UNUSED = REGNO (y);
 	  enum machine_mode x_mode = GET_MODE (x);
 
 	  if (secondary_reload_class (0, REGNO_REG_CLASS (y_regno), x_mode, x)
