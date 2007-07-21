@@ -2444,7 +2444,8 @@ cannot_change_mode_set_regs (HARD_REG_SET *used, enum machine_mode from,
    mode.  */
 
 bool
-invalid_mode_change_p (unsigned int regno, enum reg_class class,
+invalid_mode_change_p (unsigned int regno,
+		       enum reg_class class ATTRIBUTE_UNUSED,
 		       enum machine_mode from)
 {
   struct subregs_of_mode_node dummy, *node;
