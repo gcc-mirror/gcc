@@ -1,3 +1,10 @@
+2007-07-21  Lee Millward  <lee.millward@gmail.com>
+
+	PR fortran/32823
+	* trans-intrinsic.c (gfc_conv_intrinsic_int): Evaluate all
+	arguments passed, not just the first one. Adjust code to 
+	refer to "args[0]" instead of "arg" as a result.
+	
 2007-07-19  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32600
