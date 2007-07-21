@@ -1806,19 +1806,53 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                         }
                     }
                   else
-                    {
+		    {
+		      /* A non-allocatable target variable with C
+			 interoperable type and type parameters must be
+			 interoperable.	 */
+		      if (args_sym && args_sym->attr.dimension)
+			{
+			  if (args_sym->as->type == AS_ASSUMED_SHAPE)
+			    {
+			      gfc_error ("Assumed-shape array '%s' at %L "
+					 "cannot be an argument to the "
+					 "procedure '%s' because "
+					 "it is not C interoperable",
+					 args_sym->name,
+					 &(args->expr->where), sym->name);
+			      retval = FAILURE;
+			    }
+			  else if (args_sym->as->type == AS_DEFERRED)
+			    {
+			      gfc_error ("Deferred-shape array '%s' at %L "
+					 "cannot be an argument to the "
+					 "procedure '%s' because "
+					 "it is not C interoperable",
+					 args_sym->name,
+					 &(args->expr->where), sym->name);
+			      retval = FAILURE;
+			    }
+			}
+                              
                       /* Make sure it's not a character string.  Arrays of
                          any type should be ok if the variable is of a C
                          interoperable type.  */
-                      if (args_sym->ts.type == BT_CHARACTER 
-                          && is_scalar_expr_ptr (args->expr) != SUCCESS)
-                        {
-                          gfc_error_now ("CHARACTER argument '%s' to '%s' at "
-                                         "%L must have a length of 1",
-                                         args_sym->name, sym->name,
-                                         &(args->expr->where));
-                          retval = FAILURE;
-                        }
+		      if (args_sym->ts.type == BT_CHARACTER)
+			if (args_sym->ts.cl != NULL
+			    && (args_sym->ts.cl->length == NULL
+				|| args_sym->ts.cl->length->expr_type
+				   != EXPR_CONSTANT
+				|| mpz_cmp_si
+				    (args_sym->ts.cl->length->value.integer, 1)
+				   != 0)
+			    && is_scalar_expr_ptr (args->expr) != SUCCESS)
+			  {
+			    gfc_error_now ("CHARACTER argument '%s' to '%s' "
+					   "at %L must have a length of 1",
+					   args_sym->name, sym->name,
+					   &(args->expr->where));
+			    retval = FAILURE;
+			  }
                     }
                 }
               else if (args_sym->attr.pointer == 1
@@ -1848,10 +1882,10 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                   retval = FAILURE;
                 }
               else if (args_sym->ts.type == BT_CHARACTER 
-                       && args_sym->ts.cl != NULL)
+                       && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
-                  gfc_error_now ("CHARACTER parameter '%s' to '%s' at %L "
-                                 "cannot have a length type parameter",
+                  gfc_error_now ("CHARACTER argument '%s' to '%s' at "
+                                 "%L must have a length of 1",
                                  args_sym->name, sym->name,
                                  &(args->expr->where));
                   retval = FAILURE;
