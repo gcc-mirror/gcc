@@ -1,3 +1,20 @@
+2007-07-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* optabs.h (enum optab_index): Add new OTI_signbit.
+	(signbit_optab): Define corresponding macro.
+	(enum insn_code signbit_optab[]): Remove array.
+	* optabs.c (init_optabs): Initialize signbit_optab using init_optab.
+	(expand_copysign_absneg): If back end provides signbit insn, use it
+	instead of bit operations on floating point argument.
+	* builtins.c (enum insn_code signbit_optab[]): Remove array.
+	(expand_builtin_signbit): Check signbit_optab->handlers[].insn_code for
+	availability of signbit insn.
+
+	* config/i386/i386.md (signbit<mode>2): New insn pattern to implement
+	signbitf, signbit and signbitl built-ins as inline x87 intrinsics when
+	SSE mode is not active.
+	(isinf<mode>2): Disable for mfpmath=sse,387.
+
 2007-07-22  Ben Elliston  <bje@au.ibm.com>
 
 	* regclass.c (invalid_mode_change_p): Attach ATTRIBUTE_UNUSED to
@@ -256,7 +273,6 @@
 2007-07-16  Paul Brook  <paul@codesourcery.com>
 
 	PR target/32753
-	gcc/
 	* config/arm/cirrus.md (cirrus_arm_movsi_insn): Remove dead insn.
 	(cirrus_thumb2_movsi_insn): Ditto.
 
@@ -2753,7 +2769,7 @@
 	offsets->locals_base to avoid negative stack size.
 	(thumb1_expand_prologue): Assert on negative stack size.
 
-2007-04-19  Sebastian Pop  <sebpop@gmail.com>
+2007-06-19  Sebastian Pop  <sebpop@gmail.com>
 
 	PR tree-optimization/32367
 	* tree-chrec.h (build_polynomial_chrec): Verify that the left hand side 
@@ -6068,7 +6084,7 @@
 	float constant.
 	(_m_to_float): Use C89 compatible assignment.
 
-2007-04-20  Martin Michlmayr  <tbm@cyrius.com>
+2007-05-20  Martin Michlmayr  <tbm@cyrius.com>
 
 	PR target/32007
 	* config/arm/lib1funcs.asm: Define __ARM_ARCH__ on v2/v3 machines.
@@ -7084,7 +7100,7 @@
 	size never inline functions increasing caller size.
 	(cgraph_early_inlining): Inline for size when optimizing for size.
 
-2007-04-18  Bernd Schmidt  <bernd.schmidt@analog.com>
+2007-05-04  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (<optab>di3): Now a define_expand which expands
 	logical operations piecewise.

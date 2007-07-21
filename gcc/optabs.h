@@ -219,7 +219,8 @@ enum optab_index
   OTI_atan,
   /* Copy sign */
   OTI_copysign,
-
+  /* Signbit */
+  OTI_signbit,
   /* Test for infinite value */
   OTI_isinf,
 
@@ -409,7 +410,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define tan_optab (optab_table[OTI_tan])
 #define atan_optab (optab_table[OTI_atan])
 #define copysign_optab (optab_table[OTI_copysign])
-
+#define signbit_optab (optab_table[OTI_signbit])
 #define isinf_optab (optab_table[OTI_isinf])
 
 #define cmp_optab (optab_table[OTI_cmp])
@@ -552,9 +553,6 @@ extern enum insn_code vcondu_gen_code[NUM_MACHINE_MODES];
 
 /* This array records the insn_code of insns to perform block moves.  */
 extern enum insn_code movmem_optab[NUM_MACHINE_MODES];
-
-/* This array records the insn_code of insns to implement the signbit function.  */
-extern enum insn_code signbit_optab[NUM_MACHINE_MODES];
 
 /* This array records the insn_code of insns to perform block sets.  */
 extern enum insn_code setmem_optab[NUM_MACHINE_MODES];

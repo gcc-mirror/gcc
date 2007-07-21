@@ -240,11 +240,6 @@ static tree do_mpfr_remquo (tree, tree, tree);
 static tree do_mpfr_lgamma_r (tree, tree, tree);
 #endif
 
-/* This array records the insn_code of insns to imlement the signbit
-   function.  */
-enum insn_code signbit_optab[NUM_MACHINE_MODES];
-
-
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
    its "internal" name, which normally contains the prefix "__builtin".  */
@@ -5725,7 +5720,7 @@ expand_builtin_signbit (tree exp, rtx target)
   HOST_WIDE_INT hi, lo;
   tree arg;
   int word, bitpos;
-  enum insn_code signbit_insn_code;
+  enum insn_code icode;
   rtx temp;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -5743,11 +5738,11 @@ expand_builtin_signbit (tree exp, rtx target)
 
   /* Check if the back end provides an insn that handles signbit for the
      argument's mode. */
-  signbit_insn_code = signbit_optab [(int) fmode];
-  if (signbit_insn_code != CODE_FOR_nothing)
+  icode = signbit_optab->handlers [(int) fmode].insn_code;
+  if (icode != CODE_FOR_nothing)
     {
       target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
-      emit_unop_insn (signbit_insn_code, target, temp, UNKNOWN);
+      emit_unop_insn (icode, target, temp, UNKNOWN);
       return target;
     }
 
