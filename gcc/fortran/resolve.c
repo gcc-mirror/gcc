@@ -2282,6 +2282,11 @@ set_name_and_label (gfc_code *c, gfc_symbol *sym,
           type = gfc_type_letter (arg->ts.type);
           kind = arg->ts.kind;
         }
+
+      if (arg->ts.type == BT_CHARACTER)
+	/* Kind info for character strings not needed.	*/
+	kind = 0;
+
       sprintf (name, "%s_%c%d", sym->name, type, kind);
       /* Set up the binding label as the given symbol's label plus
          the type and kind.  */
@@ -2355,6 +2360,13 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	{
 	  /* the 1 means to add the optional arg to formal list */
 	  new_sym = get_iso_c_sym (sym, name, binding_label, 1);
+	 
+	  /* Set the kind for the SHAPE array to that of the actual
+	     (if given).  */
+	  if (c->ext.actual != NULL && c->ext.actual->next != NULL
+	      && c->ext.actual->next->expr->rank != 0)
+	    new_sym->formal->next->next->sym->ts.kind =
+	      c->ext.actual->next->next->expr->ts.kind;
 	 
 	  /* for error reporting, say it's declared where the original was */
 	  new_sym->declared_at = sym->declared_at;

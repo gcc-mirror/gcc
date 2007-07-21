@@ -3421,6 +3421,9 @@ gen_shape_param (gfc_formal_arglist **head,
 
   /* Integer array, rank 1, describing the shape of the object.  */
   param_sym->ts.type = BT_INTEGER;
+  /* Initialize the kind to default integer.  However, it will be overriden
+     during resolution to match the kind of the SHAPE parameter given as
+     the actual argument (to allow for any valid integer kind).  */
   param_sym->ts.kind = gfc_default_integer_kind;   
   param_sym->as = gfc_get_array_spec ();
 

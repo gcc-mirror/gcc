@@ -1,5 +1,14 @@
 2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
 
+	PR fortran/32627
+	* resolve.c (set_name_and_label): Set kind number for character
+	version of c_f_pointer.
+	(gfc_iso_c_sub_interface): Set the kind of the SHAPE formal arg to
+	that of the actual SHAPE arg.
+	* symbol.c (gen_shape_param): Initialize kind for SHAPE arg.
+
+2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
+
 	PR fortran/32801
 	* symbol.c (generate_isocbinding_symbol): Remove unnecessary
 	conditional.

@@ -1,4 +1,20 @@
-2007-07-19  Christopher D. Rickett  <crickett@lanl.gov>
+2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32627
+	* gfortran.dg/pr32627_driver.c: Driver for pr32627.
+	* gfortran.dg/pr32627.f03: New test case.
+
+	* gfortran.dg/c_f_pointer_logical.f03: New test case.
+	* gfortran.dg/c_f_pointer_logical_driver.c: Driver for
+	c_f_pointer_logical.
+	* gfortran.dg/c_f_pointer_complex_driver.c: Driver for
+	c_f_pointer_complex.
+	* gfortran.dg/c_f_pointer_complex.f03: New test case.
+	* gfortran.dg/c_f_pointer_shape_tests_2_driver.c: Driver for
+	c_f_pointer_shape_tests_2.
+	* gfortran.dg/c_f_pointer_shape_tests_2.f03: New test case.
+
+2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32804
 	* gfortran.dg/c_loc_tests_9.f03: New test case.

@@ -1,3 +1,18 @@
+2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32627
+	* libgfortran/intrinsics/iso_c_generated_procs.c: Add c_f_pointer
+	for character/string arguments.
+	* libgfortran/intrinsic/iso_c_binding.c (c_f_pointer_u0): Allow
+	the optional SHAPE arg to be any valid integer kind.
+	* libgfortran/gfortran.map: Add c_f_pointer_s0.
+	* libgfortran/mk-kinds-h.sh: Save smallest integer kind as default
+	character kind.
+	* libgfortran/intrinsics/iso_c_generated_procs.c: Add versions of
+	c_f_pointer for complex and logical types.
+	* libgfortran/gfortran.map: Add c_f_pointer versions for logical
+	and complex types.
+
 2007-07-19  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32600

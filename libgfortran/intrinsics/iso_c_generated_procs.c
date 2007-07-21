@@ -75,9 +75,55 @@ void ISO_C_BINDING_PREFIX (c_f_pointer_r8) (void *, gfc_array_void *,
 void ISO_C_BINDING_PREFIX (c_f_pointer_r10) (void *, gfc_array_void *,
 					     const array_t *);
 #endif
+
 #ifdef HAVE_GFC_REAL_16
 void ISO_C_BINDING_PREFIX (c_f_pointer_r16) (void *, gfc_array_void *,
 					     const array_t *);
+#endif
+
+#ifdef HAVE_GFC_COMPLEX_4
+void ISO_C_BINDING_PREFIX (c_f_pointer_c4) (void *, gfc_array_void *,
+					    const array_t *);
+#endif
+
+#ifdef HAVE_GFC_COMPLEX_8
+void ISO_C_BINDING_PREFIX (c_f_pointer_c8) (void *, gfc_array_void *,
+					    const array_t *);
+#endif
+
+#ifdef HAVE_GFC_COMPLEX_10
+void ISO_C_BINDING_PREFIX (c_f_pointer_c10) (void *, gfc_array_void *,
+					     const array_t *);
+#endif
+
+#ifdef HAVE_GFC_COMPLEX_16
+void ISO_C_BINDING_PREFIX (c_f_pointer_c16) (void *, gfc_array_void *,
+					     const array_t *);
+#endif
+
+#ifdef GFC_DEFAULT_CHAR
+void ISO_C_BINDING_PREFIX (c_f_pointer_s0) (void *, gfc_array_void *,
+					    const array_t *);
+#endif
+
+#ifdef HAVE_GFC_LOGICAL_1
+void ISO_C_BINDING_PREFIX (c_f_pointer_l1) (void *, gfc_array_void *,
+					    const array_t *);
+#endif
+
+#ifdef HAVE_GFC_LOGICAL_2
+void ISO_C_BINDING_PREFIX (c_f_pointer_l2) (void *, gfc_array_void *,
+					    const array_t *);
+#endif
+
+#ifdef HAVE_GFC_LOGICAL_4
+void ISO_C_BINDING_PREFIX (c_f_pointer_l4) (void *, gfc_array_void *,
+					    const array_t *);
+#endif
+
+#ifdef HAVE_GFC_LOGICAL_8
+void ISO_C_BINDING_PREFIX (c_f_pointer_l8) (void *, gfc_array_void *,
+					    const array_t *);
 #endif
 
 
@@ -260,5 +306,166 @@ ISO_C_BINDING_PREFIX (c_f_pointer_r16) (void *c_ptr_in,
   ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
 				      (int) GFC_DTYPE_REAL,
 				      (int) sizeof (GFC_REAL_16));
+}
+#endif
+
+
+#ifdef HAVE_GFC_COMPLEX_4
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type complex and
+   kind=4.  The function c_f_pointer is used to set up the pointer
+   descriptor.  */
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_c4) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have an complex(kind=4).  */
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_COMPLEX,
+				      (int) sizeof (GFC_COMPLEX_4));
+}
+#endif
+
+
+#ifdef HAVE_GFC_COMPLEX_8
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type complex and
+   kind=8.  The function c_f_pointer is used to set up the pointer
+   descriptor.  */
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_c8) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have an complex(kind=8).  */
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_COMPLEX,
+				      (int) sizeof (GFC_COMPLEX_8));
+}
+#endif
+
+
+#ifdef HAVE_GFC_COMPLEX_10
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type complex and
+   kind=10.  The function c_f_pointer is used to set up the pointer
+   descriptor.  */
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_c10) (void *c_ptr_in,
+					gfc_array_void *f_ptr_out,
+					const array_t *shape)
+{
+  /* Here we have an complex(kind=10).  */
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_COMPLEX,
+				      (int) sizeof (GFC_COMPLEX_10));
+}
+#endif
+
+
+#ifdef HAVE_GFC_COMPLEX_16
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type complex and
+   kind=16.  The function c_f_pointer is used to set up the pointer
+   descriptor.  */
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_c16) (void *c_ptr_in,
+					gfc_array_void *f_ptr_out,
+					const array_t *shape)
+{
+  /* Here we have an complex(kind=16).  */
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_COMPLEX,
+				      (int) sizeof (GFC_COMPLEX_16));
+}
+#endif
+
+
+#ifdef GFC_DEFAULT_CHAR
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type character.  */
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_s0) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have a character string of len=1.  */
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_CHARACTER,
+				      (int) sizeof (char));
+}
+#endif
+
+
+#ifdef HAVE_GFC_LOGICAL_1
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type logical, kind=1.	*/
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_l1) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have a logical of kind=1.	*/
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_LOGICAL,
+				      (int) sizeof (GFC_LOGICAL_1));
+}
+#endif
+
+
+#ifdef HAVE_GFC_LOGICAL_2
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type logical, kind=2.	*/
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_l2) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have a logical of kind=2.	*/
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_LOGICAL,
+				      (int) sizeof (GFC_LOGICAL_2));
+}
+#endif
+
+
+#ifdef HAVE_GFC_LOGICAL_4
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type logical, kind=4.	*/
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_l4) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have a logical of kind=4.	*/
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_LOGICAL,
+				      (int) sizeof (GFC_LOGICAL_4));
+}
+#endif
+
+
+#ifdef HAVE_GFC_LOGICAL_8
+/* Set the given Fortran pointer, f_ptr_out, to point to the given C
+   address, c_ptr_in.  The Fortran pointer is of type logical, kind=8.	*/
+
+void
+ISO_C_BINDING_PREFIX (c_f_pointer_l8) (void *c_ptr_in,
+				       gfc_array_void *f_ptr_out,
+				       const array_t *shape)
+{
+  /* Here we have a logical of kind=8.	*/
+  ISO_C_BINDING_PREFIX (c_f_pointer) (c_ptr_in, f_ptr_out, shape,
+				      (int) GFC_DTYPE_LOGICAL,
+				      (int) sizeof (GFC_LOGICAL_8));
 }
 #endif
