@@ -1,3 +1,13 @@
+2007-07-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR target/32641
+
+	* inclhack.def (solaris_math_4, solaris_math_5, solaris_math_6,
+	solaris_math_7): Constify and make FP exception-safe.
+	* tests/base/iso/math_c99.h: Update.
+
+	* fixincl.x: Regenerate.
+
 2007-02-13  Release Manager
 
 	* GCC 4.1.2 released.

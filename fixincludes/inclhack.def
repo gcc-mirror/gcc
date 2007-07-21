@@ -2932,7 +2932,7 @@ fix = {
     files = iso/math_c99.h;
     c_fix = format;
     c_fix_arg = "#define\tfpclassify(x) \\\n"
-                "  __extension__ ({ __typeof(x) __x_fp = (x); \\\n"
+                "  __extension__ ({ const __typeof(x) __x_fp = (x); \\\n"
                 "\t\t   isnan(__x_fp) \\\n"
                 "\t\t     ? FP_NAN \\\n"
                 "\t\t     : isinf(__x_fp) \\\n"
@@ -2956,8 +2956,12 @@ fix = {
     files = iso/math_c99.h;
     c_fix = format;
     c_fix_arg = "#define\tisfinite(x) \\\n"
-                "  __extension__ ({ __typeof (x) __x_f = (x); \\\n"
-                "\t\t   __builtin_expect(!isnan(__x_f - __x_f), 1); })";
+                "  __extension__ ({ const __typeof (x) __x_f = (x); \\\n"
+                "\t\t    __builtin_expect(sizeof(__x_f) == sizeof(float) \\\n"
+                "\t\t\t  ? islessequal(__builtin_fabsf(__x_f),__FLT_MAX__) \\\n"
+                "\t\t\t  : sizeof(__x_f) == sizeof(long double) \\\n"
+                "\t\t\t    ? islessequal(__builtin_fabsl(__x_f),__LDBL_MAX__) \\\n"
+                "\t\t\t    : islessequal(__builtin_fabs(__x_f),__DBL_MAX__), 1); })";
     c_fix_arg = "^#define[ \t]+isfinite\\(x\\)[ \t]+__builtin_isfinite\\(x\\)";
     test_text =
     '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
@@ -2972,8 +2976,12 @@ fix = {
     files = iso/math_c99.h;
     c_fix = format;
     c_fix_arg = "#define\tisinf(x) \\\n"
-                "  __extension__ ({ __typeof (x) __x_i = (x); \\\n"
-                "\t\t   __builtin_expect(!isnan(__x_i) && !isfinite(__x_i), 0); })";
+                "  __extension__ ({ const __typeof (x) __x_i = (x); \\\n"
+                "\t\t    __builtin_expect(sizeof(__x_i) == sizeof(float) \\\n"
+                "\t\t\t  ? isgreater(__builtin_fabsf(__x_i),__FLT_MAX__) \\\n"
+                "\t\t\t  : sizeof(__x_i) == sizeof(long double) \\\n"
+                "\t\t\t    ? isgreater(__builtin_fabsl(__x_i),__LDBL_MAX__) \\\n"
+                "\t\t\t    : isgreater(__builtin_fabs(__x_i),__DBL_MAX__), 0); })";
     c_fix_arg = "^#define[ \t]+isinf\\(x\\)[ \t]+__builtin_isinf\\(x\\)";
     test_text =
     '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
@@ -2988,14 +2996,13 @@ fix = {
     files = iso/math_c99.h;
     c_fix = format;
     c_fix_arg = "#define\tisnormal(x) \\\n"
-                "  __extension__ ({ __typeof(x) __x_n = (x); \\\n"
-                "\t\t   if (__x_n < 0.0) __x_n = -__x_n; \\\n"
+                "  __extension__ ({ const __typeof(x) __x_n = (x); \\\n"
                 "\t\t   __builtin_expect(isfinite(__x_n) \\\n"
                 "\t\t\t\t    && (sizeof(__x_n) == sizeof(float) \\\n"
-                "\t\t\t\t\t  ? __x_n >= __FLT_MIN__ \\\n"
+                "\t\t\t\t\t  ? isgreaterequal(__builtin_fabsf(__x_n),__FLT_MIN__) \\\n"
                 "\t\t\t\t\t  : sizeof(__x_n) == sizeof(long double) \\\n"
-                "\t\t\t\t\t    ? __x_n >= __LDBL_MIN__ \\\n"
-                "\t\t\t\t\t    : __x_n >= __DBL_MIN__), 1); })";
+                "\t\t\t\t\t    ? isgreaterequal(__builtin_fabsl(__x_n),__LDBL_MIN__) \\\n"
+                "\t\t\t\t\t    : isgreaterequal(__builtin_fabs(__x_n),__DBL_MIN__)), 1); })";
     c_fix_arg = "^#define[ \t]+isnormal\\(x\\)[ \t]+__builtin_isnormal\\(x\\)";
     test_text =
     '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
