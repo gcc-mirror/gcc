@@ -1,3 +1,14 @@
+2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32801
+	* symbol.c (generate_isocbinding_symbol): Remove unnecessary
+	conditional.
+
+	PR fortran/32804
+	* resolve.c (gfc_iso_c_func_interface): Reject assumed-shape and
+	deferred-shape arrays as args to C_LOC.  Fix bug in testing
+	character args to C_LOC.
+
 2007-07-21  Lee Millward  <lee.millward@gmail.com>
 
 	PR fortran/32823

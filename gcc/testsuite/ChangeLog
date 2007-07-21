@@ -1,3 +1,9 @@
+2007-07-19  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32804
+	* gfortran.dg/c_loc_tests_9.f03: New test case.
+	* gfortran.dg/c_loc_tests_10.f03: Ditto.
+
 2007-07-21  Lee Millward  <lee.millward@gmail.com>
 
 	PR fortran/32823
