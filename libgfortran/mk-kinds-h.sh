@@ -8,6 +8,7 @@ possible_real_kinds="4 8 10 16"
 
 
 largest=""
+smallest=""
 for k in $possible_integer_kinds; do
   echo "  integer (kind=$k) :: i" > tmp$$.f90
   echo "  end" >> tmp$$.f90
@@ -21,6 +22,10 @@ for k in $possible_integer_kinds; do
       prefix=""
     fi
 
+    if [ "$smallest" = "" ]; then
+	smallest="$k"
+    fi
+
     echo "typedef ${prefix}int${s}_t GFC_INTEGER_${k};"
     echo "typedef ${prefix}uint${s}_t GFC_UINTEGER_${k};"
     echo "typedef GFC_INTEGER_${k} GFC_LOGICAL_${k};"
@@ -32,6 +37,7 @@ done
 
 echo "#define GFC_INTEGER_LARGEST GFC_INTEGER_${largest}"
 echo "#define GFC_UINTEGER_LARGEST GFC_UINTEGER_${largest}"
+echo "#define GFC_DEFAULT_CHAR ${smallest}"
 echo ""
 
 

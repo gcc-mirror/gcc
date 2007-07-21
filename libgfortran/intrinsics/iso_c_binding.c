@@ -109,7 +109,28 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
         {
           /* Lower bound is 1, as specified by the draft.  */
           f_ptr_out->dim[i].lbound = 1;
-          f_ptr_out->dim[i].ubound = ((int *) (shape->data))[i];
+          /* Have to allow for the SHAPE array to be any valid kind for
+             an INTEGER type.  */
+#ifdef HAVE_GFC_INTEGER_1
+	  if (GFC_DESCRIPTOR_SIZE (shape) == 1)
+	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_1 *) (shape->data))[i];
+#endif
+#ifdef HAVE_GFC_INTEGER_2
+	  if (GFC_DESCRIPTOR_SIZE (shape) == 2)
+	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_2 *) (shape->data))[i];
+#endif
+#ifdef HAVE_GFC_INTEGER_4
+	  if (GFC_DESCRIPTOR_SIZE (shape) == 4)
+	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_4 *) (shape->data))[i];
+#endif
+#ifdef HAVE_GFC_INTEGER_8
+	  if (GFC_DESCRIPTOR_SIZE (shape) == 8)
+	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_8 *) (shape->data))[i];
+#endif
+#ifdef HAVE_GFC_INTEGER_16
+	  if (GFC_DESCRIPTOR_SIZE (shape) == 16)
+	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_16 *) (shape->data))[i];
+#endif		
         }
 
       /* Set the offset and strides.
