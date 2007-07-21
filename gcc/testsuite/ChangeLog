@@ -1,3 +1,7 @@
+2007-07-21  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* gcc.dg/inline-23.c: Use pointer sized type for cast from pointer.
+
 2007-07-20  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/mips.exp (is_gp32_flag): Return true for -msmartmips.
