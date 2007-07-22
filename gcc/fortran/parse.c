@@ -2769,7 +2769,8 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
       if ((old_sym->attr.flavor == FL_PROCEDURE
 	   || old_sym->ts.type == BT_UNKNOWN)
 	  && old_sym->ns == ns
-	  && !old_sym->attr.contained)
+	  && !old_sym->attr.contained
+	  && old_sym->attr.flavor != FL_NAMELIST)
 	{
 	  /* Replace it with the symbol from the parent namespace.  */
 	  st->n.sym = sym;
