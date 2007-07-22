@@ -1,5 +1,9 @@
 2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/32839
+	* typeck.c (convert_arguments): Only use default args if we have
+	a function decl.
+
 	PR c++/30818
 	* typeck.c (structural_comptypes): No need to check
 	resolve_typename_type return value here.
