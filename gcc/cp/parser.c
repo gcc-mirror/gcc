@@ -3922,7 +3922,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	    {
 	      new_scope = resolve_typename_type (parser->scope,
 						 /*only_current_p=*/false);
-	      if (new_scope != error_mark_node)
+	      if (TREE_CODE (new_scope) != TYPENAME_TYPE)
 		parser->scope = new_scope;
 	    }
 	  success = true;
@@ -12464,7 +12464,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      type = resolve_typename_type (qualifying_scope,
 					    /*only_current_p=*/false);
 	      /* If that failed, the declarator is invalid.  */
-	      if (type == error_mark_node)
+	      if (TREE_CODE (type) == TYPENAME_TYPE)
 		error ("%<%T::%E%> is not a type",
 		       TYPE_CONTEXT (qualifying_scope),
 		       TYPE_IDENTIFIER (qualifying_scope));
@@ -14282,7 +14282,7 @@ cp_parser_class_head (cp_parser* parser,
 	{
 	  class_type = resolve_typename_type (TREE_TYPE (type),
 					      /*only_current_p=*/false);
-	  if (class_type != error_mark_node)
+	  if (TREE_CODE (class_type) != TYPENAME_TYPE)
 	    type = TYPE_NAME (class_type);
 	  else
 	    {
@@ -16291,7 +16291,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 		{
 		  type = resolve_typename_type (type,
 						/*only_current_p=*/false);
-		  if (type == error_mark_node)
+		  if (TREE_CODE (type) == TYPENAME_TYPE)
 		    {
 		      cp_parser_abort_tentative_parse (parser);
 		      return false;

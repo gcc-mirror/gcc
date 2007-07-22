@@ -1,3 +1,16 @@
+2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/30818
+	* typeck.c (structural_comptypes): No need to check
+	resolve_typename_type return value here.
+	* cp-tree.h (TYPENAME_IS_RESOLVING_P): New.
+	* pt.c (resolve_typename_type): Follow typename typedefs.  Return
+	original type rather than error_mark_node in case of failure.
+	* parser.c (cp_parser_nested_name_specifier_opt): Adjust
+	resolve_typename_type result check.
+	(cp_parser_direct_declarator, cp_parser_head,
+	cp_parser_constructor_declarator_p): Likewise.
+
 2007-07-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* pt.c (template_parms_variadic_p): Remove.

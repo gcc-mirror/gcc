@@ -1,3 +1,13 @@
+2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/30818
+	* g++.dg/template/crash47.C: Adjust errors.
+	* g++.dg/template/crash48.C: Adjust errors.
+	* g++.dg/template/typename12.C: New.
+	* g++.dg/template/typename13.C: New.
+	* g++.dg/template/typename14.C: New.
+	* g++.dg/template/typedef6.C: Adjust errors.
+
 2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32627
