@@ -27,8 +27,8 @@ contains
     integer :: l1 = len (ch1)     ! { dg-warning "assumed character length variable" }
 
 ! These are warnings because they are gfortran extensions.
-    integer :: m3 = size (x, 1)   ! { dg-warning "Evaluation of nonstandard initialization" }
-    integer :: m4(2) = shape (z)  ! { dg-warning "Evaluation of nonstandard initialization" }
+    integer :: m3 = size (x, 1)   ! { dg-error "assumed size array" }
+    integer :: m4(2) = shape (z)
 
 ! This does not depend on non-constant properties.
     real(8) :: big = huge (x)

@@ -1392,7 +1392,10 @@ typedef struct gfc_intrinsic_sym
   const char *name, *lib_name;
   gfc_intrinsic_arg *formal;
   gfc_typespec ts;
-  int elemental, pure, generic, specific, actual_ok, standard, noreturn;
+  unsigned elemental:1, inquiry:1, transformational:1, pure:1, 
+    generic:1, specific:1, actual_ok:1, noreturn:1, conversion:1;
+
+  int standard;
 
   gfc_simplify_f simplify;
   gfc_check_f check;

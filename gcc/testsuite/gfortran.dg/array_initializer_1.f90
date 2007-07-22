@@ -12,8 +12,7 @@
   real, parameter :: z(2) = x(2:3, 3) + 1
   real, parameter :: r(6) = (/(x(i:i +1, i), i = 1,3)/)
   real, parameter :: s(12) = (/((x(i, i:j-1:-1), i = 3,4), j = 2,3)/)
-  real, parameter :: t(8) = (/(z, &
-        real (i)**3, y(i), i = 2, 3)/) ! { dg-warning "nonstandard" }
+  real, parameter :: t(8) = (/(z, real (i)**3, y(i), i = 2, 3)/)
 
   integer, parameter :: ii = 4
 

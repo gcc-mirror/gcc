@@ -28,7 +28,7 @@ module vamp_rest
 end module vamp_rest
 
   use vamp_rest
-  real :: x(2, 2) = reshape ([1.,2.,3.,4.], [2,2]) ! { dg-warning "nonstandard" } 
+  real :: x(2, 2) = reshape ([1.,2.,3.,4.], [2,2])
   print *, s_last
   print *, diag (x)
 end
