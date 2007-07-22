@@ -15457,11 +15457,12 @@ dependent_template_id_p (tree tmpl, tree args)
 }
 
 /* TYPE is a TYPENAME_TYPE.  Returns the ordinary TYPE to which the
-   TYPENAME_TYPE corresponds.  Returns ERROR_MARK_NODE if no such TYPE
-   can be found.  Note that this function peers inside uninstantiated
-   templates and therefore should be used only in extremely limited
-   situations.  ONLY_CURRENT_P restricts this peering to the currently
-   open classes hierarchy (which is required when comparing types).  */
+   TYPENAME_TYPE corresponds.  Returns the original TYPENAME_TYPE if
+   no such TYPE can be found.  Note that this function peers inside
+   uninstantiated templates and therefore should be used only in
+   extremely limited situations.  ONLY_CURRENT_P restricts this
+   peering to the currently open classes hierarchy (which is required
+   when comparing types).  */
 
 tree
 resolve_typename_type (tree type, bool only_current_p)
@@ -15471,6 +15472,7 @@ resolve_typename_type (tree type, bool only_current_p)
   tree decl;
   int quals;
   tree pushed_scope;
+  tree result;
 
   gcc_assert (TREE_CODE (type) == TYPENAME_TYPE);
 
@@ -15483,8 +15485,8 @@ resolve_typename_type (tree type, bool only_current_p)
     scope = resolve_typename_type (scope, only_current_p);
   /* If we don't know what SCOPE refers to, then we cannot resolve the
      TYPENAME_TYPE.  */
-  if (scope == error_mark_node || TREE_CODE (scope) == TYPENAME_TYPE)
-    return error_mark_node;
+  if (TREE_CODE (scope) == TYPENAME_TYPE)
+    return type;
   /* If the SCOPE is a template type parameter, we have no way of
      resolving the name.  */
   if (TREE_CODE (scope) == TEMPLATE_TYPE_PARM)
@@ -15492,7 +15494,7 @@ resolve_typename_type (tree type, bool only_current_p)
   /* If the SCOPE is not the current instantiation, there's no reason
      to look inside it.  */
   if (only_current_p && !currently_open_class (scope))
-    return error_mark_node;
+    return type;
   /* If SCOPE is a partial instantiation, it will not have a valid
      TYPE_FIELDS list, so use the original template.  */
   scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
@@ -15502,15 +15504,20 @@ resolve_typename_type (tree type, bool only_current_p)
   pushed_scope = push_scope (scope);
   /* Look up the declaration.  */
   decl = lookup_member (scope, name, /*protect=*/0, /*want_type=*/true);
-  /* Obtain the set of qualifiers applied to the TYPE.  */
-  quals = cp_type_quals (type);
+
+  result = NULL_TREE;
+  
   /* For a TYPENAME_TYPE like "typename X::template Y<T>", we want to
      find a TEMPLATE_DECL.  Otherwise, we want to find a TYPE_DECL.  */
   if (!decl)
-    type = error_mark_node;
+    /*nop*/;
   else if (TREE_CODE (TYPENAME_TYPE_FULLNAME (type)) == IDENTIFIER_NODE
 	   && TREE_CODE (decl) == TYPE_DECL)
-    type = TREE_TYPE (decl);
+    {
+      result = TREE_TYPE (decl);
+      if (result == error_mark_node)
+	result = NULL_TREE;
+    }
   else if (TREE_CODE (TYPENAME_TYPE_FULLNAME (type)) == TEMPLATE_ID_EXPR
 	   && DECL_CLASS_TEMPLATE_P (decl))
     {
@@ -15520,19 +15527,37 @@ resolve_typename_type (tree type, bool only_current_p)
       tmpl = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 0);
       args = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 1);
       /* Instantiate the template.  */
-      type = lookup_template_class (tmpl, args, NULL_TREE, NULL_TREE,
-				    /*entering_scope=*/0, tf_error | tf_user);
+      result = lookup_template_class (tmpl, args, NULL_TREE, NULL_TREE,
+				      /*entering_scope=*/0,
+				      tf_error | tf_user);
+      if (result == error_mark_node)
+	result = NULL_TREE;
     }
-  else
-    type = error_mark_node;
-  /* Qualify the resulting type.  */
-  if (type != error_mark_node && quals)
-    type = cp_build_qualified_type (type, quals);
+  
   /* Leave the SCOPE.  */
   if (pushed_scope)
     pop_scope (pushed_scope);
 
-  return type;
+  /* If we failed to resolve it, return the original typename.  */
+  if (!result)
+    return type;
+  
+  /* If lookup found a typename type, resolve that too.  */
+  if (TREE_CODE (result) == TYPENAME_TYPE && !TYPENAME_IS_RESOLVING_P (result))
+    {
+      /* Ill-formed programs can cause infinite recursion here, so we
+	 must catch that.  */
+      TYPENAME_IS_RESOLVING_P (type) = 1;
+      result = resolve_typename_type (result, only_current_p);
+      TYPENAME_IS_RESOLVING_P (type) = 0;
+    }
+  
+  /* Qualify the resulting type.  */
+  quals = cp_type_quals (type);
+  if (quals)
+    result = cp_build_qualified_type (result, cp_type_quals (result) | quals);
+
+  return result;
 }
 
 /* EXPR is an expression which is not type-dependent.  Return a proxy
