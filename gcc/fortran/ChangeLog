@@ -1,5 +1,11 @@
 2007-07-22  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/32710
+	* parse.c (gfc_fixup_sibling_symbols): No replacement of symbols if
+	the current is a namelist.
+
+2007-07-22  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/29962
 	PR fortran/31253
 	PR fortran/31265
