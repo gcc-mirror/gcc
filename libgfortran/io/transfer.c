@@ -957,7 +957,10 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	}
 
       bytes_used = (int)(dtp->u.p.current_unit->recl
-			 - dtp->u.p.current_unit->bytes_left);
+		   - dtp->u.p.current_unit->bytes_left);
+
+      if (is_stream_io(dtp))
+	bytes_used = 0;
 
       switch (t)
 	{
@@ -1154,9 +1157,9 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	case FMT_TR:
 	  consume_data_flag = 0;
 
-	  pos = bytes_used + f->u.n + dtp->u.p.skips;
-	  dtp->u.p.skips = f->u.n + dtp->u.p.skips;
-	  dtp->u.p.pending_spaces = pos - dtp->u.p.max_pos;
+	  dtp->u.p.skips += f->u.n;
+	  pos = bytes_used + dtp->u.p.skips - 1;
+	  dtp->u.p.pending_spaces = pos - dtp->u.p.max_pos + 1;
 
 	  /* Writes occur just before the switch on f->format, above, so
 	     that trailing blanks are suppressed, unless we are doing a
@@ -1186,8 +1189,6 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	      if (bytes_used == 0)
 		{
 		  dtp->u.p.pending_spaces -= f->u.n;
-		  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces < 0 ? 0
-					    : dtp->u.p.pending_spaces;
 		  dtp->u.p.skips -= f->u.n;
 		  dtp->u.p.skips = dtp->u.p.skips < 0 ? 0 : dtp->u.p.skips;
 		}
@@ -1211,6 +1212,8 @@ formatted_transfer_scalar (st_parameter_dt *dtp, bt type, void *p, int len,
 	  dtp->u.p.skips = dtp->u.p.skips + pos - bytes_used;
 	  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces
 				    + pos - dtp->u.p.max_pos;
+	  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces < 0
+				    ? 0 : dtp->u.p.pending_spaces;
 
 	  if (dtp->u.p.skips == 0)
 	    break;
