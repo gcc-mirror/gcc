@@ -1,3 +1,16 @@
+2007-07-22  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/29962
+	* gfortran.dg/array_initializer_1.f90: Removed warning.
+	* gfortran.dg/initialization_1.f90: Adjusted messages.
+	* gfortran.dg/nested_modules_6.f90: Removed warning.
+
+	PR fortran/31253
+	* gfortran.dg/initialization_7.f90: New test.
+
+	PR fortran/31639
+	* gfortran.dg/initialization_8.f90: New test.
+
 2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/30818
@@ -495,8 +508,8 @@
 	
 2007-07-12  Daniel Franke  <franke.daniel@gmail.com>
 
-        PR fortran/31639
-       	* gfortran.dg/func_decl_4.f90: New test.
+	PR fortran/31639
+	* gfortran.dg/func_decl_4.f90: New test.
 
 2007-07-12  Paul Thomas  <pault@gcc.gnu.org>
 

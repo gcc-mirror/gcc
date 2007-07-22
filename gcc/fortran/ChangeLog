@@ -1,3 +1,34 @@
+2007-07-22  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/29962
+	PR fortran/31253
+	PR fortran/31265
+	PR fortran/31639
+	* gfortran.h (gfc_intrinsic_sym): Changed members elemental, pure,
+	generic, specific, actual_ok, noreturn into bits of a bitfield, 
+	added bits for inquiry, transformational, conversion.
+	* check.c (non_init_transformational): Removed, removed all callers.
+	* intrinsic.c (enum class): New.
+	(add_sym*): Replaced argument elemetal by enum class. Changed all
+	callers.
+	(add_functions): Assign appropriate classes to intrinsic functions.
+	(add_subroutines): Assign appropriate classes to intrinsic subroutines.
+	(add_conv): Set conversion attribute.
+	(gfc_init_expr_extensions): Removed, removed all callers.
+	(gfc_intrinsic_func_interface): Reimplemented check for non-standard
+	initializatione expressions.
+	* expr.c (check_specification_function): New.
+	(gfc_is_constant_expr): Added check for specification functions.
+	(check_init_expr_arguments): New.
+	(check_inquiry): Changed return value to MATCH, added checks for
+	inquiry functions defined by F2003.
+	(check_transformational): New.
+	(check_null): New.
+	(check_elemental): New.
+	(check_conversion): New.
+	(check_init_expr): Call new check functions, add more specific error
+	messages.
+
 2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32627
