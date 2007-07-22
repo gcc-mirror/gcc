@@ -9925,6 +9925,11 @@
 	* gcc.c-torture/compile/pr28776-1.c: New testcase.
 	* gcc.c-torture/compile/pr28776-2.c: Likewise.
 
+2006-08-22  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/28003
+	* g++.dg/tree-ssa/pr28003.C: New.
+
 2006-08-21  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* g++.dg/eh/arm-vfp-unwind.C: Correct order of DejaGNU directives.
