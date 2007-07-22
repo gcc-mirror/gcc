@@ -1,3 +1,9 @@
+2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/32839
+	* g++.dg/expr/call4.C: New.
+	* g++.dg/expr/call5.C: New.
+
 2007-07-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32710
