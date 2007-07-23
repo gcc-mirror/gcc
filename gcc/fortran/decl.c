@@ -2927,6 +2927,22 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
                    int is_in_common, gfc_common_head *com_block)
 {
   try retval = SUCCESS;
+
+  if (tmp_sym->attr.function && tmp_sym->result != NULL)
+    {
+      tmp_sym = tmp_sym->result;
+      /* Make sure it wasn't an implicitly typed result.  */
+      if (tmp_sym->attr.implicit_type)
+	{
+	  gfc_warning ("Implicitly declared BIND(C) function '%s' at "
+                       "%L may not be C interoperable", tmp_sym->name,
+                       &tmp_sym->declared_at);
+	  tmp_sym->ts.f90_type = tmp_sym->ts.type;
+	  /* Mark it as C interoperable to prevent duplicate warnings.	*/
+	  tmp_sym->ts.is_c_interop = 1;
+	  tmp_sym->attr.is_c_interop = 1;
+	}
+    }
   
   /* Here, we know we have the bind(c) attribute, so if we have
      enough type info, then verify that it's a C interop kind.

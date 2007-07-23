@@ -1,3 +1,11 @@
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32797
+	PR fortran/32800
+	* gfortran.dg/bind_c_usage_8.f03: New test case.
+	* gfortran.dg/c_f_pointer_tests_2.f03: Ditto.
+	* gfortran.dg/c_ptr_tests_5.f03: Updated expected error message. 
+
 2007-07-23  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/branch-cost-1.c: New test.

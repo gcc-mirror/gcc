@@ -1,5 +1,18 @@
 2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
 
+	PR fortran/32797
+	PR fortran/32800
+	* decl.c (verify_bind_c_sym): Use the result symbol for functions
+	with a result clause.  Warn if implicitly typed.  Verify the type
+	and rank of the SHAPE argument, if given.
+	* resolve.c (gfc_iso_c_sub_interface): Use gfc_procedure_use to
+	check the actual args against the formal, sorting them if
+	necessary.
+	* symbol.c (gen_shape_param): Initialize type of SHAPE param to
+	BT_VOID.
+
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+
 	PR fortran/32732
 	* trans-decl.c (generate_local_decl): Convert the TREE_TYPE for by
 	value character dummy args of BIND(C) procedures.

@@ -2323,7 +2323,15 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
   char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
   /* default to success; will override if find error */
   match m = MATCH_YES;
-  gfc_symbol *tmp_sym;
+
+  /* Make sure the actual arguments are in the necessary order (based on the 
+     formal args) before resolving.  */
+  gfc_procedure_use (sym, &c->ext.actual, &(c->loc));
+
+  /* Give the optional SHAPE formal arg a type now that we've done our
+     initial checking against the actual.  */
+  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER)
+    sym->formal->next->next->sym->ts.type = BT_INTEGER;
 
   if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER) ||
       (sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
@@ -2334,25 +2342,29 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	{
 	  if (c->ext.actual != NULL && c->ext.actual->next != NULL)
 	    {
-	      /* Make sure we got a third arg.	The type/rank of it will
-		 be checked later if it's there (gfc_procedure_use()).	*/
-	      if (c->ext.actual->next->expr->rank != 0 &&
-		  c->ext.actual->next->next == NULL)
+	      /* Make sure we got a third arg if the second arg has non-zero
+		 rank.	We must also check that the type and rank are
+		 correct since we short-circuit this check in
+		 gfc_procedure_use() (called above to sort actual args).  */
+	      if (c->ext.actual->next->expr->rank != 0)
 		{
-		  m = MATCH_ERROR;
-		  gfc_error ("Missing SHAPE parameter for call to %s "
-			     "at %L", sym->name, &(c->loc));
+		  if(c->ext.actual->next->next == NULL 
+		     || c->ext.actual->next->next->expr == NULL)
+		    {
+		      m = MATCH_ERROR;
+		      gfc_error ("Missing SHAPE parameter for call to %s "
+				 "at %L", sym->name, &(c->loc));
+		    }
+		  else if (c->ext.actual->next->next->expr->ts.type
+			   != BT_INTEGER
+			   || c->ext.actual->next->next->expr->rank != 1)
+		    {
+		      m = MATCH_ERROR;
+		      gfc_error ("SHAPE parameter for call to %s at %L must "
+				 "be a rank 1 INTEGER array", sym->name,
+				 &(c->loc));
+		    }
 		}
-              /* Make sure the param is a POINTER.  No need to make sure
-                 it does not have INTENT(IN) since it is a POINTER.  */
-              tmp_sym = c->ext.actual->next->expr->symtree->n.sym;
-              if (tmp_sym != NULL && tmp_sym->attr.pointer != 1)
-                {
-                  gfc_error ("Argument '%s' to '%s' at %L "
-                             "must have the POINTER attribute",
-                             tmp_sym->name, sym->name, &(c->loc));
-                  m = MATCH_ERROR;
-                }
 	    }
 	}
       
@@ -2405,10 +2417,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 
   /* set the resolved symbol */
   if (m != MATCH_ERROR)
-    {
-      gfc_procedure_use (new_sym, &c->ext.actual, &c->loc);
-      c->resolved_sym = new_sym;
-    }
+    c->resolved_sym = new_sym;
   else
     c->resolved_sym = sym;
   
