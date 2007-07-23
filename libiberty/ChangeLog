@@ -1,3 +1,8 @@
+2007-07-23  DJ Delorie  <dj@redhat.com>
+
+	* argv.c (writeargv): Fix typo in inline documentation.
+	* functions.texi: Regenerate.
+
 2007-07-17  DJ Delorie  <dj@redhat.com>
 
 	* configure.ac (target_header_dir, msdosdjgpp): Remove duplicate

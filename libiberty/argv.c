@@ -290,7 +290,7 @@ char **buildargv (const char *input)
 
 /*
 
-@deftypefn Extension int writeargv (const char **@var{argv}, FILE *@{file})
+@deftypefn Extension int writeargv (const char **@var{argv}, FILE *@var{file})
 
 Write each member of ARGV, handling all necessary quoting, to the file
 named by FILE, separated by whitespace.  Return 0 on success, non-zero
