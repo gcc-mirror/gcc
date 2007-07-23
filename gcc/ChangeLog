@@ -1,3 +1,12 @@
+2007-07-23  Jan Hubicka  <jH@suse.cz>
+
+	* i386.c (ix86_secondary_memory_needed): Break out to...
+	(inline_secondary_memory_needed): ... here.
+	(ix86_memory_move_cost): Break out to ...
+	(inline_memory_move_cost): ... here; add support for IN value of 2 for
+	maximum of input and output; fix handling of Q_REGS on 64bit.
+	(ix86_secondary_memory_needed): Microoptimize.
+
 2007-07-23  Sebastian Pop  <sebpop@gmail.com>
 
 	* tree-data-ref.c (find_vertex_for_stmt, create_rdg_edge_for_ddr,
