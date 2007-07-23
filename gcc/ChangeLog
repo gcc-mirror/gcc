@@ -1,5 +1,14 @@
 2007-07-23  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (override_options): Use mips_costs to derive
+	the default branch cost.
+	* config/mips/mips.h (BRANCH_COST): Use mips_branch_cost rather
+	than mips_costs.
+	* config/mips/mips.opt (mbranch-cost=): New option.
+	* doc/invoke.texi (-mbrach-cost): Document new MIPS option.
+
+2007-07-23  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.h (GR_REG_CLASS_P, COP_REG_CLASS_P): Delete.
 	(SECONDARY_MEMORY_NEEDED): Delete commented-out definition.
 	* config/mips/mips.c (mips_register_move_cost): Use reg_class_subset_p

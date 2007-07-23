@@ -35,6 +35,10 @@ march=
 Target RejectNegative Joined Var(mips_arch_string)
 -march=ISA	Generate code for the given ISA
 
+mbranch-cost=
+Target RejectNegative Joined UInteger Var(mips_branch_cost)
+-mbranch-cost=COST	Set the cost of branches to roughly COST instructions
+
 mbranch-likely
 Target Report Mask(BRANCHLIKELY)
 Use Branch Likely instructions, overriding the architecture default

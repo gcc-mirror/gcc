@@ -638,7 +638,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-vr4120  -mno-fix-vr4120  -mfix-vr4130  -mno-fix-vr4130 @gol
 -mfix-sb1  -mno-fix-sb1 @gol
 -mflush-func=@var{func}  -mno-flush-func @gol
--mbranch-likely  -mno-branch-likely @gol
+-mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely @gol
 -mfp-exceptions -mno-fp-exceptions @gol
 -mvr4130-align -mno-vr4130-align}
 
@@ -11914,6 +11914,13 @@ memory range for which the cache is being flushed, the size of the
 memory range, and the number 3 (to flush both caches).  The default
 depends on the target GCC was configured for, but commonly is either
 @samp{_flush_func} or @samp{__cpu_flush}.
+
+@item mbranch-cost=@var{num}
+@opindex mbranch-cost
+Set the cost of branches to roughly @var{num} ``simple'' instructions.
+This cost is only a heuristic and is not guaranteed to produce
+consistent results across releases.  A zero cost redundantly selects
+the default, which is based on the @option{-mtune} setting.
 
 @item -mbranch-likely
 @itemx -mno-branch-likely
