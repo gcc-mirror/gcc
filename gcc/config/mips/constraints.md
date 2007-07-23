@@ -83,6 +83,13 @@
 ;; but the DSPr2 version allows any accumulator target.
 (define_register_constraint "ka" "TARGET_DSPR2 ? ACC_REGS : MD_REGS")
 
+;; This is a normal rather than a register constraint because we can
+;; never use the stack pointer as a reload register.
+(define_constraint "ks"
+  "@internal"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == STACK_POINTER_REGNUM")))
+
 ;; Integer constraints
 
 (define_constraint "I"
