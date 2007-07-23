@@ -60,6 +60,7 @@ tree gfc_character1_type_node;
 tree pvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
+tree pfunc_type_node;
 
 tree gfc_charlen_type_node;
 
@@ -733,6 +734,8 @@ gfc_init_types (void)
   pvoid_type_node = build_pointer_type (void_type_node);
   ppvoid_type_node = build_pointer_type (pvoid_type_node);
   pchar_type_node = build_pointer_type (gfc_character1_type_node);
+  pfunc_type_node
+    = build_pointer_type (build_function_type (void_type_node, NULL_TREE));
 
   gfc_array_index_type = gfc_get_int_type (gfc_index_integer_kind);
   /* We cannot use gfc_index_zero_node in definition of gfc_array_range_type,
@@ -842,7 +845,13 @@ gfc_typenode_for_spec (gfc_typespec * spec)
          has been resolved.  This is done so we can convert C_PTR and
          C_FUNPTR to simple variables that get translated to (void *).  */
       if (spec->f90_type == BT_VOID)
-        basetype = ptr_type_node;
+	{
+	  if (spec->derived
+	      && spec->derived->intmod_sym_id == ISOCBINDING_PTR)
+	    basetype = ptr_type_node;
+	  else
+	    basetype = pfunc_type_node;
+	}
       else
         basetype = gfc_get_int_type (spec->kind);
       break;
@@ -878,9 +887,17 @@ gfc_typenode_for_spec (gfc_typespec * spec)
         }
       break;
     case BT_VOID:
-       /* This is for the second arg to c_f_pointer and c_f_procpointer
-          of the iso_c_binding module, to accept any ptr type.  */
-       basetype = ptr_type_node;
+      /* This is for the second arg to c_f_pointer and c_f_procpointer
+         of the iso_c_binding module, to accept any ptr type.  */
+      basetype = ptr_type_node;
+      if (spec->f90_type == BT_VOID)
+	{
+	  if (spec->derived
+	      && spec->derived->intmod_sym_id == ISOCBINDING_PTR)
+	    basetype = ptr_type_node;
+	  else
+	    basetype = pfunc_type_node;
+	}
        break;
     default:
       gcc_unreachable ();
@@ -1653,7 +1670,10 @@ gfc_get_derived_type (gfc_symbol * derived)
   /* See if it's one of the iso_c_binding derived types.  */
   if (derived->attr.is_iso_c == 1)
     {
-      derived->backend_decl = ptr_type_node;
+      if (derived->intmod_sym_id == ISOCBINDING_PTR)
+	derived->backend_decl = ptr_type_node;
+      else
+	derived->backend_decl = pfunc_type_node;
       derived->ts.kind = gfc_index_integer_kind;
       derived->ts.type = BT_INTEGER;
       /* Set the f90_type to BT_VOID as a way to recognize something of type

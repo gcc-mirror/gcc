@@ -1,3 +1,10 @@
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32600
+	* intrinsics/iso_c_binding.c (c_funloc): Remove.
+	* intrinsics/iso_c_binding.h: Remove c_funloc.
+	* gfortran.map: Ditto.
+
 2007-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/read.c (convert_real): Generate error only on EINVAL.

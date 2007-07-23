@@ -1,3 +1,13 @@
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32600
+	* trans-expr.c (gfc_conv_function_call): Handle c_funloc.
+	* trans-types.c: Add pfunc_type_node.
+	(gfc_init_types,gfc_typenode_for_spec): Use it.
+	* resolve.c (gfc_iso_c_func_interface): Fix whitespace and
+	improve error message.
+
 2007-07-22  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32710
