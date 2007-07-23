@@ -1966,9 +1966,8 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	    && ap->expr->symtree->n.sym->ts.type == BT_CHARACTER
 	    && ap->expr->symtree->n.sym->ts.cl->length == NULL)
 	  {
-	    if (gfc_notify_std (GFC_STD_GNU, "assumed character length "
-				"variable '%s' in constant expression at %L",
-				e->symtree->n.sym->name, &e->where) == FAILURE)
+	    gfc_error ("assumed character length variable '%s' in constant "
+		       "expression at %L", e->symtree->n.sym->name, &e->where);
 	      return MATCH_ERROR;
 	  }
 	else if (not_restricted && check_init_expr (ap->expr) == FAILURE)
@@ -2007,11 +2006,23 @@ check_transformational (gfc_expr *e)
     if (strcmp (trans_func_f95[i], name) == 0)
       break;
 
+  /* FIXME, F2003: implement translation of initialization
+     expressions before enabling this check. For F95, error
+     out if the transformational function is not in the list.  */
+#if 0
   if (trans_func_f95[i] == NULL
       && gfc_notify_std (GFC_STD_F2003, 
 			 "transformational intrinsic '%s' at %L is not permitted "
 			 "in an initialization expression", name, &e->where) == FAILURE)
     return MATCH_ERROR;
+#else
+  if (trans_func_f95[i] == NULL)
+    {
+      gfc_error("transformational intrinsic '%s' at %L is not permitted "
+		"in an initialization expression", name, &e->where);
+      return MATCH_ERROR;
+    }
+#endif
 
   return check_init_expr_arguments (e);
 }
@@ -2150,19 +2161,19 @@ check_init_expr (gfc_expr *e)
 		gfc_error ("assumed size array '%s' at %L is not permitted "
 			   "in an initialization expression",
 			   e->symtree->n.sym->name, &e->where);
-	      break;
+		break;
 
 	      case AS_ASSUMED_SHAPE:
 		gfc_error ("assumed shape array '%s' at %L is not permitted "
 			   "in an initialization expression",
 			   e->symtree->n.sym->name, &e->where);
-	      break;
+		break;
 
 	      case AS_DEFERRED:
 		gfc_error ("deferred array '%s' at %L is not permitted "
 			   "in an initialization expression",
 			   e->symtree->n.sym->name, &e->where);
-	      break;
+		break;
 
 	      default:
 		gcc_unreachable();

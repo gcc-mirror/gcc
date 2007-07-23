@@ -1,3 +1,13 @@
+2007-07-23  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/25104
+	PR fortran/31639
+	* expr.c (check_transformational): Reject valid transformational
+	intrinsics to avoid ICE.
+	(check_inquiry): Report error for assumed character lengths for
+	all supported standards.
+	(check_init_expr): Whitespace fix.
+
 2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32797
