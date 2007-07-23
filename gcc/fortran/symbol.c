@@ -3419,8 +3419,12 @@ gen_shape_param (gfc_formal_arglist **head,
   param_sym->attr.dummy = 1;
   param_sym->attr.use_assoc = 1;
 
-  /* Integer array, rank 1, describing the shape of the object.  */
-  param_sym->ts.type = BT_INTEGER;
+  /* Integer array, rank 1, describing the shape of the object.  Make it's
+     type BT_VOID initially so we can accept any type/kind combination of
+     integer.  During gfc_iso_c_sub_interface (resolve.c), we'll make it
+     of BT_INTEGER type.  */
+  param_sym->ts.type = BT_VOID;
+
   /* Initialize the kind to default integer.  However, it will be overriden
      during resolution to match the kind of the SHAPE parameter given as
      the actual argument (to allow for any valid integer kind).  */
