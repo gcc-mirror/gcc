@@ -25149,7 +25149,14 @@ fi
    # On Solaris, and maybe other architectures, the Boehm collector
    # requires -ldl.
    if test "$GC" = boehm; then
-      echo "$as_me:$LINENO: checking for main in -ldl" >&5
+      case "${host}" in
+          mips-sgi-irix6*)
+	    # IRIX 6 lacks a N64 libdl.so, but only the N32 (default multilib)
+	    # libgcj.spec is used, so override here
+	    SYSTEMSPEC="$SYSTEMSPEC %{!mabi=64:-ldl}"
+	  ;;
+	  *)
+            echo "$as_me:$LINENO: checking for main in -ldl" >&5
 echo $ECHO_N "checking for main in -ldl... $ECHO_C" >&6
 if test "${ac_cv_lib_dl_main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -25216,6 +25223,8 @@ if test $ac_cv_lib_dl_main = yes; then
   SYSTEMSPEC="$SYSTEMSPEC -ldl"
 fi
 
+	  ;;
+      esac
    fi
 fi
 
