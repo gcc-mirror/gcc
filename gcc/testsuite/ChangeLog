@@ -1,3 +1,8 @@
+2007-07-23  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/branch-cost-1.c: New test.
+	* gcc.target/mips/branch-cost-2.c: Likewise.
+
 2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32732

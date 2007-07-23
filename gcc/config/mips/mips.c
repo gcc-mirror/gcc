@@ -5047,6 +5047,11 @@ override_options (void)
   else
     mips_cost = &mips_rtx_cost_data[mips_tune];
 
+  /* If the user hasn't specified a branch cost, use the processor's
+     default.  */
+  if (mips_branch_cost == 0)
+    mips_branch_cost = mips_cost->branch_cost;
+
   if ((target_flags_explicit & MASK_64BIT) != 0)
     {
       /* The user specified the size of the integer registers.  Make sure

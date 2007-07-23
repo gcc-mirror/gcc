@@ -1,0 +1,8 @@
+/* { dg-mips-options "-mbranch-cost=10 -mips64 -O2" } */
+int
+foo (int x, int y, int z, int k)
+{
+  return x == k ? x + y : z - x;
+}
+/* { dg-final { scan-assembler "\t(movz|movn)\t" } } */
+/* { dg-final { scan-assembler-not "\t(bne|beq)\t" } } */
