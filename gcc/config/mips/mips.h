@@ -1688,17 +1688,6 @@ extern const enum reg_class mips_regno_to_class[];
 
 #define SMALL_REGISTER_CLASSES (TARGET_MIPS16)
 
-/* This macro is used later on in the file.  */
-#define GR_REG_CLASS_P(CLASS)						\
-  ((CLASS) == GR_REGS || (CLASS) == M16_REGS || (CLASS) == T_REG	\
-   || (CLASS) == M16_T_REGS || (CLASS) == M16_NA_REGS			\
-   || (CLASS) == V1_REG							\
-   || (CLASS) == PIC_FN_ADDR_REG || (CLASS) == LEA_REGS)
-
-/* This macro is also used later on in the file.  */
-#define COP_REG_CLASS_P(CLASS)						\
-  ((CLASS)  == COP0_REGS || (CLASS) == COP2_REGS || (CLASS) == COP3_REGS)
-
 /* REG_ALLOC_ORDER is to order in which to allocate registers.  This
    is the default value (allocate the registers in numeric order).  We
    define it just so that we can override it for the mips16 target in
@@ -1768,24 +1757,6 @@ extern const enum reg_class mips_regno_to_class[];
 #define PREFERRED_RELOAD_CLASS(X,CLASS)					\
   mips_preferred_reload_class (X, CLASS)
 
-/* Certain machines have the property that some registers cannot be
-   copied to some other registers without using memory.  Define this
-   macro on those machines to be a C expression that is nonzero if
-   objects of mode MODE in registers of CLASS1 can only be copied to
-   registers of class CLASS2 by storing a register of CLASS1 into
-   memory and loading that memory location into a register of CLASS2.
-
-   Do not define this macro if its value would always be zero.  */
-#if 0
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  ((!TARGET_DEBUG_H_MODE						\
-    && GET_MODE_CLASS (MODE) == MODE_INT				\
-    && ((CLASS1 == FP_REGS && GR_REG_CLASS_P (CLASS2))			\
-	|| (GR_REG_CLASS_P (CLASS1) && CLASS2 == FP_REGS)))		\
-   || (TARGET_FLOAT64 && !TARGET_64BIT && (MODE) == DFmode		\
-       && ((GR_REG_CLASS_P (CLASS1) && CLASS2 == FP_REGS)		\
-	   || (GR_REG_CLASS_P (CLASS2) && CLASS1 == FP_REGS))))
-#endif
 /* The HI and LO registers can only be reloaded via the general
    registers.  Condition code registers can only be loaded to the
    general registers, and from the floating point registers.  */

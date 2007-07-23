@@ -10164,17 +10164,17 @@ int
 mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 			 enum reg_class to, enum reg_class from)
 {
-  if (from == M16_REGS && GR_REG_CLASS_P (to))
+  if (from == M16_REGS && reg_class_subset_p (to, GENERAL_REGS))
     return 2;
-  else if (from == M16_NA_REGS && GR_REG_CLASS_P (to))
+  else if (from == M16_NA_REGS && reg_class_subset_p (to, GENERAL_REGS))
     return 2;
-  else if (GR_REG_CLASS_P (from))
+  else if (reg_class_subset_p (from, GENERAL_REGS))
     {
       if (to == M16_REGS)
 	return 2;
       else if (to == M16_NA_REGS)
 	return 2;
-      else if (GR_REG_CLASS_P (to))
+      else if (reg_class_subset_p (to, GENERAL_REGS))
 	{
 	  if (TARGET_MIPS16)
 	    return 4;
@@ -10190,14 +10190,14 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	  else
 	    return 6;
 	}
-      else if (COP_REG_CLASS_P (to))
+      else if (reg_class_subset_p (to, ALL_COP_REGS))
 	{
 	  return 5;
 	}
     }
   else if (from == FP_REGS)
     {
-      if (GR_REG_CLASS_P (to))
+      if (reg_class_subset_p (to, GENERAL_REGS))
 	return 4;
       else if (to == FP_REGS)
 	return 2;
@@ -10206,7 +10206,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
     }
   else if (reg_class_subset_p (from, ACC_REGS))
     {
-      if (GR_REG_CLASS_P (to))
+      if (reg_class_subset_p (to, GENERAL_REGS))
 	{
 	  if (TARGET_MIPS16)
 	    return 12;
@@ -10214,9 +10214,9 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	    return 6;
 	}
     }
-  else if (from == ST_REGS && GR_REG_CLASS_P (to))
+  else if (from == ST_REGS && reg_class_subset_p (to, GENERAL_REGS))
     return 4;
-  else if (COP_REG_CLASS_P (from))
+  else if (reg_class_subset_p (from, ALL_COP_REGS))
     {
       return 5;
     }

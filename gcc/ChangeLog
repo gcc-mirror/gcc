@@ -1,5 +1,12 @@
 2007-07-23  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.h (GR_REG_CLASS_P, COP_REG_CLASS_P): Delete.
+	(SECONDARY_MEMORY_NEEDED): Delete commented-out definition.
+	* config/mips/mips.c (mips_init_libfuncs): Use reg_class_subset_p
+	instead of GR_REG_CLASS_P and COP_REG_CLASS_P.
+
+2007-07-23  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/constraints.md (ks): New constraint.
 	* config/mips/mips.md (*add<mode>3_sp1, *add<mode>3_sp2): Fold into...
 	(*add<mode>3_mips16): ...here.
