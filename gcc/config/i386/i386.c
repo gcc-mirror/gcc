@@ -20156,6 +20156,8 @@ ix86_preferred_output_reload_class (rtx x, enum reg_class regclass)
 /* If we are copying between general and FP registers, we need a memory
    location. The same is true for SSE and MMX registers.
 
+   To optimize register_move_cost performance, allow inline variant.
+
    The macro can't work reliably when one of the CLASSES is class containing
    registers from multiple units (SSE, MMX, integer).  We avoid this by never
    combining those units in single alternative in the machine description.
@@ -20164,8 +20166,8 @@ ix86_preferred_output_reload_class (rtx x, enum reg_class regclass)
    When STRICT is false, we are being called from REGISTER_MOVE_COST, so do not
    enforce these sanity checks.  */
 
-int
-ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
+static inline int
+inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 			      enum machine_mode mode, int strict)
 {
   if (MAYBE_FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class1)
@@ -20207,6 +20209,13 @@ ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return false;
 }
 
+int
+ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
+			      enum machine_mode mode, int strict)
+{
+  return inline_secondary_memory_needed (class1, class2, mode, strict);
+}
+
 /* Return true if the registers in CLASS cannot represent the change from
    modes FROM to TO.  */
 
@@ -20242,6 +20251,137 @@ ix86_cannot_change_mode_class (enum machine_mode from, enum machine_mode to,
   return false;
 }
 
+/* Return the cost of moving data of mode M between a
+   register and memory.  A value of 2 is the default; this cost is
+   relative to those in `REGISTER_MOVE_COST'.
+
+   This function is used extensively by register_move_cost that is used to
+   build tables at startup.  Make it inline in this case.
+   When IN is 2, return maximum of in and out move cost.
+
+   If moving between registers and memory is more expensive than
+   between two registers, you should define this macro to express the
+   relative cost.
+
+   Model also increased moving costs of QImode registers in non
+   Q_REGS classes.
+ */
+static inline int
+inline_memory_move_cost (enum machine_mode mode, enum reg_class regclass,
+			 int in)
+{
+  int cost;
+  if (FLOAT_CLASS_P (regclass))
+    {
+      int index;
+      switch (mode)
+	{
+	  case SFmode:
+	    index = 0;
+	    break;
+	  case DFmode:
+	    index = 1;
+	    break;
+	  case XFmode:
+	    index = 2;
+	    break;
+	  default:
+	    return 100;
+	}
+      if (in == 2)
+        return MAX (ix86_cost->fp_load [index], ix86_cost->fp_store [index]);
+      return in ? ix86_cost->fp_load [index] : ix86_cost->fp_store [index];
+    }
+  if (SSE_CLASS_P (regclass))
+    {
+      int index;
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    index = 0;
+	    break;
+	  case 8:
+	    index = 1;
+	    break;
+	  case 16:
+	    index = 2;
+	    break;
+	  default:
+	    return 100;
+	}
+      if (in == 2)
+        return MAX (ix86_cost->sse_load [index], ix86_cost->sse_store [index]);
+      return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
+    }
+  if (MMX_CLASS_P (regclass))
+    {
+      int index;
+      switch (GET_MODE_SIZE (mode))
+	{
+	  case 4:
+	    index = 0;
+	    break;
+	  case 8:
+	    index = 1;
+	    break;
+	  default:
+	    return 100;
+	}
+      if (in)
+        return MAX (ix86_cost->mmx_load [index], ix86_cost->mmx_store [index]);
+      return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
+    }
+  switch (GET_MODE_SIZE (mode))
+    {
+      case 1:
+	if (Q_CLASS_P (regclass) || TARGET_64BIT)
+	  {
+	    if (!in)
+	      return ix86_cost->int_store[0];
+	    if (TARGET_PARTIAL_REG_DEPENDENCY && !optimize_size)
+	      cost = ix86_cost->movzbl_load;
+	    else
+	      cost = ix86_cost->int_load[0];
+	    if (in == 2)
+	      return MAX (cost, ix86_cost->int_store[0]);
+	    return cost;
+	  }
+	else
+	  {
+	   if (in == 2)
+	     return MAX (ix86_cost->movzbl_load, ix86_cost->int_store[0] + 4);
+	   if (in)
+	     return ix86_cost->movzbl_load;
+	   else
+	     return ix86_cost->int_store[0] + 4;
+	  }
+	break;
+      case 2:
+	if (in == 2)
+	  return MAX (ix86_cost->int_load[1], ix86_cost->int_store[1]);
+	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
+      default:
+	/* Compute number of 32bit moves needed.  TFmode is moved as XFmode.  */
+	if (mode == TFmode)
+	  mode = XFmode;
+	if (in == 2)
+	  cost = MAX (ix86_cost->int_load[2] , ix86_cost->int_store[2]);
+	else if (in)
+	  cost = ix86_cost->int_load[2];
+	else
+	  cost = ix86_cost->int_store[2];
+	return (cost * (((int) GET_MODE_SIZE (mode)
+		        + UNITS_PER_WORD - 1) / UNITS_PER_WORD));
+    }
+}
+
+int
+ix86_memory_move_cost (enum machine_mode mode, enum reg_class regclass, int in)
+{
+  return inline_memory_move_cost (mode, regclass, in);
+}
+
+
 /* Return the cost of moving data from a register in class CLASS1 to
    one in class CLASS2.
 
@@ -20257,14 +20397,18 @@ ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
      by load.  In order to avoid bad register allocation choices, we need
      for this to be *at least* as high as the symmetric MEMORY_MOVE_COST.  */
 
-  if (ix86_secondary_memory_needed (class1, class2, mode, 0))
+  if (inline_secondary_memory_needed (class1, class2, mode, 0))
     {
       int cost = 1;
 
-      cost += MAX (MEMORY_MOVE_COST (mode, class1, 0),
-		   MEMORY_MOVE_COST (mode, class1, 1));
-      cost += MAX (MEMORY_MOVE_COST (mode, class2, 0),
-		   MEMORY_MOVE_COST (mode, class2, 1));
+#if 0
+      cost += MAX (inline_memory_move_cost (mode, class1, 0),
+		   inline_memory_move_cost (mode, class1, 1));
+      cost += MAX (inline_memory_move_cost (mode, class2, 0),
+		   inline_memory_move_cost (mode, class2, 1));
+#endif
+      cost += inline_memory_move_cost (mode, class1, 2);
+      cost += inline_memory_move_cost (mode, class2, 2);
 
       /* In case of copying from general_purpose_register we may emit multiple
          stores followed by single load causing memory size mismatch stall.
@@ -20423,96 +20567,6 @@ ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
 	    && ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1));
 
   return false;
-}
-
-/* Return the cost of moving data of mode M between a
-   register and memory.  A value of 2 is the default; this cost is
-   relative to those in `REGISTER_MOVE_COST'.
-
-   If moving between registers and memory is more expensive than
-   between two registers, you should define this macro to express the
-   relative cost.
-
-   Model also increased moving costs of QImode registers in non
-   Q_REGS classes.
- */
-int
-ix86_memory_move_cost (enum machine_mode mode, enum reg_class regclass, int in)
-{
-  if (FLOAT_CLASS_P (regclass))
-    {
-      int index;
-      switch (mode)
-	{
-	  case SFmode:
-	    index = 0;
-	    break;
-	  case DFmode:
-	    index = 1;
-	    break;
-	  case XFmode:
-	    index = 2;
-	    break;
-	  default:
-	    return 100;
-	}
-      return in ? ix86_cost->fp_load [index] : ix86_cost->fp_store [index];
-    }
-  if (SSE_CLASS_P (regclass))
-    {
-      int index;
-      switch (GET_MODE_SIZE (mode))
-	{
-	  case 4:
-	    index = 0;
-	    break;
-	  case 8:
-	    index = 1;
-	    break;
-	  case 16:
-	    index = 2;
-	    break;
-	  default:
-	    return 100;
-	}
-      return in ? ix86_cost->sse_load [index] : ix86_cost->sse_store [index];
-    }
-  if (MMX_CLASS_P (regclass))
-    {
-      int index;
-      switch (GET_MODE_SIZE (mode))
-	{
-	  case 4:
-	    index = 0;
-	    break;
-	  case 8:
-	    index = 1;
-	    break;
-	  default:
-	    return 100;
-	}
-      return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
-    }
-  switch (GET_MODE_SIZE (mode))
-    {
-      case 1:
-	if (in)
-	  return (Q_CLASS_P (regclass) ? ix86_cost->int_load[0]
-		  : ix86_cost->movzbl_load);
-	else
-	  return (Q_CLASS_P (regclass) ? ix86_cost->int_store[0]
-		  : ix86_cost->int_store[0] + 4);
-	break;
-      case 2:
-	return in ? ix86_cost->int_load[1] : ix86_cost->int_store[1];
-      default:
-	/* Compute number of 32bit moves needed.  TFmode is moved as XFmode.  */
-	if (mode == TFmode)
-	  mode = XFmode;
-	return ((in ? ix86_cost->int_load[2] : ix86_cost->int_store[2])
-		* (((int) GET_MODE_SIZE (mode)
-		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD));
-    }
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
