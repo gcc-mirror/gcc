@@ -1,3 +1,7 @@
+2007-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/read.c (convert_real): Generate error only on EINVAL.
+
 2007-07-21  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/32627
@@ -108,12 +112,11 @@
 
 	Restore collateral damage from ISO C Binding merge.
 
-	2007-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2007-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/32456
 	* io/unit.c (filename_from_unit): Don't use find_unit, instead search
 	for unit directly.
-
 
 2007-07-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
