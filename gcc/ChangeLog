@@ -1,3 +1,8 @@
+2007-07-23  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* reload1.c (choose_reload_regs): Set reload_spill_index for regs
+	chosen during find_reloads.
+
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.
