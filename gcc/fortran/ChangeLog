@@ -1,4 +1,12 @@
 2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32732
+	* trans-decl.c (generate_local_decl): Convert the TREE_TYPE for by
+	value character dummy args of BIND(C) procedures.
+	* trans-expr.c (gfc_conv_variable): Do not build address
+	expression for BT_CHARACTER dummy args.
+
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32600

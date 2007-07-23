@@ -472,11 +472,6 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 		  || sym->attr.result))
 	    se->expr = build_fold_indirect_ref (se->expr);
 
-	  /* A character with VALUE attribute needs an address
-	     expression.  */
-	  if (sym->attr.value)
-	    se->expr = build_fold_addr_expr (se->expr);
-
 	}
       else if (!sym->attr.value)
 	{

@@ -1,5 +1,14 @@
 2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
 
+	PR fortran/32732
+	* gfortran.dg/c_char_tests.f03: New test case.
+	* gfortran.dg/c_char_driver.c: Driver for c_char_tests.f03.
+	* gfortran.dg/c_char_tests_2.f03: New test case.
+	* gfortran.dg/value_6.f03: Ditto.
+	* gfortran.dg/value_7.f03: Ditto.
+
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+
 	PR fortran/32600
 	* gfortran.dg/c_funloc_tests_5.f03: New.
 	* gfortran.dg/c_funloc_tests_5.f04: New.
