@@ -1904,14 +1904,14 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                              &(args->expr->where));
               retval = FAILURE;
             }
-          else if (args->expr->symtree->n.sym->attr.is_c_interop != 1)
-            {
-              gfc_error_now ("Parameter '%s' to '%s' at %L must be C "
-                             "interoperable",
-                             args->expr->symtree->n.sym->name, sym->name,
-                             &(args->expr->where));
-              retval = FAILURE;
-            }
+	  else if (args->expr->symtree->n.sym->attr.is_bind_c != 1)
+	    {
+	      gfc_error_now ("Parameter '%s' to '%s' at %L must be "
+			     "BIND(C)",
+			     args->expr->symtree->n.sym->name, sym->name,
+			     &(args->expr->where));
+	      retval = FAILURE;
+	    }
         }
       
       /* for c_loc/c_funloc, the new symbol is the same as the old one */

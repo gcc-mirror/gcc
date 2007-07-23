@@ -1,3 +1,10 @@
+2007-07-23  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32600
+	* gfortran.dg/c_funloc_tests_5.f03: New.
+	* gfortran.dg/c_funloc_tests_5.f04: New.
+	* gfortran.dg/c_funloc_tests_4_driver.c: New.
+
 2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/32839
