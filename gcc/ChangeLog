@@ -2,7 +2,7 @@
 
 	* config/mips/constraints.md (ks): New constraint.
 	* config/mips/mips.md (*add<mode>3_sp1, *add<mode>3_sp2): Fold into...
-	(*add<mode>3_mips16): ...here and fix their length calculations.
+	(*add<mode>3_mips16): ...here.
 
 2007-07-21  Uros Bizjak  <ubizjak@gmail.com>
 
