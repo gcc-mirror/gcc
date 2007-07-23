@@ -1,3 +1,13 @@
+2007-07-23  Sebastian Pop  <sebpop@gmail.com>
+
+	* tree-data-ref.c (find_vertex_for_stmt, create_rdg_edge_for_ddr,
+	create_rdg_edges_for_scalar, create_rdg_edges, create_rdg_vertices,
+	stmts_from_loop, known_dependences_p, build_rdg): New.
+	* tree-data-ref.h: Depends on graphds.h.
+	(rdg_vertex, RDGV_STMT, rdg_dep_type, rdg_edge, RDGE_TYPE): New.
+	(build_rdg): Declared.
+	* Makefile.in (TREE_DATA_REF_H): Depends on graphds.h.
+
 2007-07-23  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-propagate.c (valid_gimple_expression_p): Match up with

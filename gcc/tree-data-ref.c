@@ -4312,3 +4312,187 @@ free_data_refs (VEC (data_reference_p, heap) *datarefs)
   VEC_free (data_reference_p, heap, datarefs);
 }
 
+
+
+/* Returns the index of STMT in RDG.  */
+
+static int
+find_vertex_for_stmt (struct graph *rdg, tree stmt)
+{
+  int i;
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    if (RDGV_STMT (&(rdg->vertices[i])) == stmt)
+      return i;
+
+  gcc_unreachable ();
+  return 0;
+}
+
+/* Creates an edge in RDG for each distance vector from DDR.  */
+
+static void
+create_rdg_edge_for_ddr (struct graph *rdg, ddr_p ddr)
+{
+  int va, vb;
+  data_reference_p dra;
+  data_reference_p drb;
+  struct graph_edge *e;
+
+  if (DDR_REVERSED_P (ddr))
+    {
+      dra = DDR_B (ddr);
+      drb = DDR_A (ddr);
+    }
+  else
+    {
+      dra = DDR_A (ddr);
+      drb = DDR_B (ddr);
+    }
+
+  va = find_vertex_for_stmt (rdg, DR_STMT (dra));
+  vb = find_vertex_for_stmt (rdg, DR_STMT (drb));
+
+  e = add_edge (rdg, va, vb);
+  e->data = XNEW (struct rdg_edge);
+
+  /* Determines the type of the data dependence.  */
+  if (DR_IS_READ (dra) && DR_IS_READ (drb))
+    RDGE_TYPE (e) = input_dd;
+  else if (!DR_IS_READ (dra) && !DR_IS_READ (drb))
+    RDGE_TYPE (e) = output_dd;
+  else if (!DR_IS_READ (dra) && DR_IS_READ (drb))
+    RDGE_TYPE (e) = flow_dd;
+  else if (DR_IS_READ (dra) && !DR_IS_READ (drb))
+    RDGE_TYPE (e) = anti_dd;
+}
+
+/* Creates dependence edges in RDG for all the uses of DEF.  IDEF is
+   the index of DEF in RDG.  */
+
+static void
+create_rdg_edges_for_scalar (struct graph *rdg, tree def, int idef)
+{
+  use_operand_p imm_use_p;
+  imm_use_iterator iterator;
+           
+  FOR_EACH_IMM_USE_FAST (imm_use_p, iterator, def)
+    {
+      int use = find_vertex_for_stmt (rdg, USE_STMT (imm_use_p));
+      struct graph_edge *e = add_edge (rdg, idef, use);
+
+      e->data = XNEW (struct rdg_edge);
+      RDGE_TYPE (e) = flow_dd;
+    }
+}
+
+/* Creates the edges of the reduced dependence graph RDG.  */
+
+static void
+create_rdg_edges (struct graph *rdg, VEC (ddr_p, heap) *ddrs)
+{
+  int i;
+  struct data_dependence_relation *ddr;
+  def_operand_p def_p;
+  ssa_op_iter iter;
+
+  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+    if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
+      create_rdg_edge_for_ddr (rdg, ddr);
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    FOR_EACH_PHI_OR_STMT_DEF (def_p, RDGV_STMT (&(rdg->vertices[i])),
+			      iter, SSA_OP_ALL_DEFS)
+      create_rdg_edges_for_scalar (rdg, DEF_FROM_PTR (def_p), i);
+}
+
+/* Build the vertices of the reduced dependence graph RDG.  */
+
+static void
+create_rdg_vertices (struct graph *rdg, VEC (tree, heap) *stmts)
+{
+  int i;
+  tree s;
+
+  for (i = 0; VEC_iterate (tree, stmts, i, s); i++)
+    {
+      struct vertex *v = &(rdg->vertices[i]);
+
+      v->data = XNEW (struct rdg_vertex);
+      RDGV_STMT (v) = s;
+    }
+}
+
+/* Initialize STMTS with all the statements and PHI nodes of LOOP.  */
+
+static void
+stmts_from_loop (struct loop *loop, VEC (tree, heap) **stmts)
+{
+  unsigned int i;
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      tree phi;
+      basic_block bb = bbs[i];
+      block_stmt_iterator bsi;
+
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	VEC_safe_push (tree, heap, *stmts, phi);
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	VEC_safe_push (tree, heap, *stmts, bsi_stmt (bsi));
+    }
+
+  free (bbs);
+}
+
+/* Returns true when all the dependences are computable.  */
+
+static bool
+known_dependences_p (VEC (ddr_p, heap) *dependence_relations)
+{
+  ddr_p ddr;
+  unsigned int i;
+
+  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
+    if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+      return false;
+ 
+  return true;
+}
+
+/* Build a Reduced Dependence Graph with one vertex per statement of the
+   loop nest and one edge per data dependence or scalar dependence.  */
+
+struct graph *
+build_rdg (struct loop *loop)
+{
+  int nb_data_refs = 10;
+  struct graph *rdg = NULL;
+  VEC (ddr_p, heap) *dependence_relations;
+  VEC (data_reference_p, heap) *datarefs;
+  VEC (tree, heap) *stmts = VEC_alloc (tree, heap, 10);
+  
+  dependence_relations = VEC_alloc (ddr_p, heap, nb_data_refs * nb_data_refs) ;
+  datarefs = VEC_alloc (data_reference_p, heap, nb_data_refs);
+  compute_data_dependences_for_loop (loop, 
+                                     false,
+                                     &datarefs,
+                                     &dependence_relations);
+  
+  if (!known_dependences_p (dependence_relations))
+    goto end_rdg;
+
+  stmts_from_loop (loop, &stmts);
+  rdg = new_graph (VEC_length (tree, stmts));
+  create_rdg_vertices (rdg, stmts);
+  create_rdg_edges (rdg, dependence_relations);
+
+ end_rdg:
+  free_dependence_relations (dependence_relations);
+  free_data_refs (datarefs);
+  VEC_free (tree, heap, stmts);
+
+  return rdg;
+}
