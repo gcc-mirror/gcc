@@ -22,6 +22,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #ifndef GCC_TREE_DATA_REF_H
 #define GCC_TREE_DATA_REF_H
 
+#include "graphds.h"
 #include "lambda.h"
 #include "omega.h"
 
@@ -328,6 +329,46 @@ struct data_reference *create_data_ref (struct loop *, tree, tree, bool);
 bool find_loop_nest (struct loop *, VEC (loop_p, heap) **);
 void compute_all_dependences (VEC (data_reference_p, heap) *,
 			      VEC (ddr_p, heap) **, VEC (loop_p, heap) *, bool);
+
+
+
+/* A RDG vertex representing a statement.  */
+typedef struct rdg_vertex
+{
+  /* The statement represented by this vertex.  */
+  tree stmt;
+} *rdg_vertex_p;
+
+#define RDGV_STMT(V)       ((struct rdg_vertex *) ((V)->data))->stmt
+
+/* Data dependence type.  */
+
+enum rdg_dep_type 
+{
+  /* Read After Write (RAW).  */
+  flow_dd = 'f',
+  
+  /* Write After Read (WAR).  */
+  anti_dd = 'a',
+  
+  /* Write After Write (WAW).  */
+  output_dd = 'o', 
+  
+  /* Read After Read (RAR).  */
+  input_dd = 'i' 
+};
+
+/* Dependence information attached to an edge of the RDG.  */
+
+typedef struct rdg_edge 
+{
+  /* Type of the dependence.  */
+  enum rdg_dep_type type;
+} *rdg_edge_p;
+
+#define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
+
+struct graph *build_rdg (struct loop *);
 
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
 
