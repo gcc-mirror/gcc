@@ -1,3 +1,8 @@
+2007-07-23  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-propagate.c (valid_gimple_expression_p): Match up with
+	ccp_min_invariant.
+
 2007-07-23  Peter Bergner  <bergner@vnet.ibm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -617,7 +617,7 @@ valid_gimple_expression_p (tree expr)
                  return false;
                t = TREE_OPERAND (t, 0);
              }
-           if (!is_gimple_addressable (t))
+           if (!is_gimple_id (t))
              return false;
            break;
          }
