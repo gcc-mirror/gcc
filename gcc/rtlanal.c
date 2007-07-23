@@ -2877,9 +2877,9 @@ commutative_operand_precedence (rtx op)
   
   /* Constants always come the second operand.  Prefer "nice" constants.  */
   if (code == CONST_INT)
-    return -7;
+    return -8;
   if (code == CONST_DOUBLE)
-    return -6;
+    return -7;
   op = avoid_constant_pool_reference (op);
   code = GET_CODE (op);
 
@@ -2887,22 +2887,24 @@ commutative_operand_precedence (rtx op)
     {
     case RTX_CONST_OBJ:
       if (code == CONST_INT)
-        return -5;
+        return -6;
       if (code == CONST_DOUBLE)
-        return -4;
-      return -3;
+        return -5;
+      return -4;
 
     case RTX_EXTRA:
       /* SUBREGs of objects should come second.  */
       if (code == SUBREG && OBJECT_P (SUBREG_REG (op)))
-        return -2;
-
+        return -3;
       return 0;
 
     case RTX_OBJ:
       /* Complex expressions should be the first, so decrease priority
-         of objects.  */
-      return -1;
+         of objects.  Prefer pointer objects over non pointer objects.  */
+      if ((REG_P (op) && REG_POINTER (op))
+	  || (MEM_P (op) && MEM_POINTER (op)))
+	return -1;
+      return -2;
 
     case RTX_COMM_ARITH:
       /* Prefer operands that are themselves commutative to be first.
@@ -2929,7 +2931,7 @@ commutative_operand_precedence (rtx op)
 /* Return 1 iff it is necessary to swap operands of commutative operation
    in order to canonicalize expression.  */
 
-int
+bool
 swap_commutative_operands_p (rtx x, rtx y)
 {
   return (commutative_operand_precedence (x)

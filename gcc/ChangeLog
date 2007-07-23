@@ -1,3 +1,22 @@
+2007-07-23  Peter Bergner  <bergner@vnet.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/PR28690
+	* optabs.c (expand_binop): (emit_cmp_and_jump_insns): Allow EQ compares.
+	* rtlanal.c (commutative_operand_precedence): Prefer both REG_POINTER
+	and MEM_POINTER operands over REG and MEM operands.
+	(swap_commutative_operands_p): Change return value to bool.
+	* rtl.h: Update the corresponding prototype.
+	* tree-ssa-address.c (gen_addr_rtx): Use simplify_gen_binary
+	instead of gen_rtx_PLUS.
+	* simplify-rtx.c (simplify_plus_minus_op_data_cmp): Change return
+	value to bool.  Change function arguments to rtx's and update code
+	to match.
+	(simplify_plus_minus): Update the simplify_plus_minus_op_data_cmp
+	calls to match the new declaration.
+	* simplify-rtx.c (simplify_associative_operation): Don't
+	reorder simplify_binary_operation arguments.
+
 2007-07-23  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (override_options): Use mips_costs to derive
