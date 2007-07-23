@@ -177,10 +177,10 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
       internal_error (&dtp->common, "Unsupported real kind during IO");
     }
 
-  if (errno != 0 && errno != EINVAL)
+  if (errno == EINVAL)
     {
       generate_error (&dtp->common, ERROR_READ_VALUE,
-		      "Range error during floating point read");
+		      "Error during floating point read");
       return 1;
     }
 
