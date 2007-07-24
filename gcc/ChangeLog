@@ -1,3 +1,14 @@
+2007-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* caller-save.c: Include ggc.h, gt-caller-save.h
+	(reg_save_code, reg_restore_code): Rename to ...
+	(cached_reg_save_code, cached_reg_restore_code): ... those.
+	(savepat, restpat, test_reg, test_mem, saveinsn, restinsn): New.
+	(reg_save_code, reg_restore_code): New functions.
+	(init_caller_save): Do not intialize
+	reg_save_code/reg_restore_code tables.
+	* Makeifle.in: (gt-caller-save.h): New.
+
 2007-07-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* tree-ssa-ifcombine.c (ifcombine_ifandif): Use a ONE operand
