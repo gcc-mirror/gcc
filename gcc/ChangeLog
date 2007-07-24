@@ -48,7 +48,7 @@
 	* config/mips/mips.h (BRANCH_COST): Use mips_branch_cost rather
 	than mips_costs.
 	* config/mips/mips.opt (mbranch-cost=): New option.
-	* doc/invoke.texi (-mbrach-cost): Document new MIPS option.
+	* doc/invoke.texi (-mbranch-cost): Document new MIPS option.
 
 2007-07-23  Richard Sandiford  <richard@codesourcery.com>
 
