@@ -136,6 +136,7 @@ static tree spu_builtin_mul_widen_even (tree);
 static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (bool);
+static bool spu_vector_alignment_reachable (tree, bool);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -271,6 +272,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST spu_builtin_vectorization_cost
+
+#undef TARGET_VECTOR_ALIGNMENT_REACHABLE
+#define TARGET_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5475,6 +5479,20 @@ spu_builtin_vectorization_cost (bool runtime_test)
     return -19;
   else
     return 0;
+}
+
+/* Return true iff, data reference of TYPE can reach vector alignment (16)
+   after applying N number of iterations.  This routine does not determine
+   how may iterations are required to reach desired alignment.  */
+
+static bool
+spu_vector_alignment_reachable (tree type ATTRIBUTE_UNUSED, bool is_packed)
+{
+  if (is_packed)
+    return false;
+
+  /* All other types are naturally aligned.  */
+  return true;
 }
 
 void
