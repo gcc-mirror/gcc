@@ -2132,7 +2132,7 @@ check_init_expr (gfc_expr *e)
 	}
 
       if (m == MATCH_YES)
-	t = SUCCESS;
+	t = gfc_simplify_expr (e, 0);
 
       break;
 

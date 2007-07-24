@@ -1,5 +1,10 @@
 2007-07-24  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/32867
+	* fortran.dg/initialization_10.f90: New test.
+
+2007-07-24  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32778
 	* gfortran.dg/imag_2.f: Removed
 	* gfortran.dg/warn_std_1.f90: New test.
