@@ -1,3 +1,15 @@
+2007-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/29001
+	* typeck.c (check_return_expr): Do not pass a null argument
+	to null_ptr_cst_p.
+
+2007-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32561
+	* decl.c (redeclaration_error_message): Call DECL_ANON_UNION_VAR_P
+	only on VAR_DECL.
+
 2007-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/32839

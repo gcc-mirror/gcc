@@ -1,3 +1,13 @@
+2007-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/29001
+	* g++.dg/init/new22.C: New.
+
+2007-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32561
+	* g++.dg/template/crash67.C: New.
+
 2007-07-24  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* lib/target-support.exp (check_effective_target_natural_alignment): 
