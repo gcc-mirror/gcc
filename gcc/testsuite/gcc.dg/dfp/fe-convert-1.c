@@ -10,7 +10,7 @@ volatile _Decimal64 d64;
 volatile _Decimal128 d128;
 
 /* Conversions between decimal float types should raise an invalid
-   exception if the values doesn't fit, either because the value
+   exception if the value doesn't fit, either because the value
    is too large or the result can't hold the full precision.  */
 
 CONVERT (100, d64, d32, 9.999999e96DD, 0)

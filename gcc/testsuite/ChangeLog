@@ -1,3 +1,7 @@
+2007-07-25  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.dg/dfp/fe-convert-1.c: Fix typo in comments.
+
 2007-07-24  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* gcc.c-torture/execute/20070724-1.c: New.
