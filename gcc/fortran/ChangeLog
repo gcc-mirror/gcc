@@ -1,5 +1,10 @@
 2007-07-24  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/32867
+	* expr.c (check_init_expr): Simplify matched functions.
+
+2007-07-24  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32778
 	* intrinsic.c (add_sym): Do not exclude any symbols, even if not part
 	of the selected standard.
