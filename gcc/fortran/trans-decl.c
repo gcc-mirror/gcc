@@ -3191,9 +3191,13 @@ gfc_generate_function_code (gfc_namespace * ns)
 			 build_int_cst (gfc_c_int_type_node,
 					gfc_option.flag_sign_zero), array);
 
+      array = tree_cons (NULL_TREE,
+			 build_int_cst (gfc_c_int_type_node,
+					flag_bounds_check), array);
+
       array_type = build_array_type (gfc_c_int_type_node,
 				     build_index_type (build_int_cst (NULL_TREE,
-								      5)));
+								      6)));
       array = build_constructor_from_list (array_type, nreverse (array));
       TREE_CONSTANT (array) = 1;
       TREE_INVARIANT (array) = 1;
@@ -3209,7 +3213,7 @@ gfc_generate_function_code (gfc_namespace * ns)
       var = gfc_build_addr_expr (pvoid_type_node, var);
 
       tmp = build_call_expr (gfor_fndecl_set_options, 2,
-			     build_int_cst (gfc_c_int_type_node, 6), var);
+			     build_int_cst (gfc_c_int_type_node, 7), var);
       gfc_add_expr_to_block (&body, tmp);
     }
 

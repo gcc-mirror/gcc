@@ -54,6 +54,8 @@ set_options (int num, int options[])
     compile_options.backtrace = options[4];
   if (num >= 6)
     compile_options.sign_zero = options[5];
+  if (num >= 7)
+    compile_options.bounds_check = options[6];
 }
 
 

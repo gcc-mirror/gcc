@@ -97,6 +97,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   index_type n;
   index_type dim;
   index_type nelem;
+  index_type total;
 
   dim = GFC_DESCRIPTOR_RANK (array);
   zero_sized = 0;
@@ -127,10 +128,10 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       mptr = GFOR_POINTER_L8_TO_L4 (mptr);
     }
 
-  if (ret->data == NULL)
+  if (ret->data == NULL || compile_options.bounds_check)
     {
-      /* Allocate the memory for the result.  */
-      int total;
+      /* Count the elements, either for allocating memory or
+	 for bounds checking.  */
 
       if (vector != NULL)
 	{
@@ -196,20 +197,30 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 	    }
 	}
 
-      /* Setup the array descriptor.  */
-      ret->dim[0].lbound = 0;
-      ret->dim[0].ubound = total - 1;
-      ret->dim[0].stride = 1;
-
-      ret->offset = 0;
-      if (total == 0)
+      if (ret->data == NULL)
 	{
-	  /* In this case, nothing remains to be done.  */
-	  ret->data = internal_malloc_size (1);
-	  return;
+	  /* Setup the array descriptor.  */
+	  ret->dim[0].lbound = 0;
+	  ret->dim[0].ubound = total - 1;
+	  ret->dim[0].stride = 1;
+
+	  ret->offset = 0;
+	  if (total == 0)
+	    {
+	      /* In this case, nothing remains to be done.  */
+	      ret->data = internal_malloc_size (1);
+	      return;
+	    }
+	  else
+	    ret->data = internal_malloc_size (size * total);
 	}
-      else
-	ret->data = internal_malloc_size (size * total);
+      else 
+	{
+	  /* We come here because of range checking.  */
+	  if (total != ret->dim[0].ubound + 1 - ret->dim[0].lbound)
+	    runtime_error ("Incorrect extent in return value of"
+			   " PACK intrinsic");
+	}
     }
 
   rstride0 = ret->dim[0].stride * size;

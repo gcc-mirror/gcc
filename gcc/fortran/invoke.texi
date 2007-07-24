@@ -828,6 +828,9 @@ and against the declared minimum and maximum values.  It also
 checks array indices for assumed and deferred
 shape arrays against the actual allocated bounds.
 
+Some checks require that @option{-fbounds-check} is set for
+the compilation of the main probram.
+
 In the future this may also include other forms of checking, e.g., checking
 substring references.
 
