@@ -1,13 +1,10 @@
 2007-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/30814
-	* libgfortran.h:  Add bounds_check to compile_options_t.
-	* runtime/compile_options.c (set_options):  Add handling
-	of compile_options.bounds_check.
-	* intrinsics/pack_generic.c (pack_internal):  Also determine
-	the number of elements if compile_options.bounds_check is
-	true.  Raise runtime error if a different array shape is
-	detected.
+	* trans-decl.c (generate_function_code):  Add argument
+	for flag_bounds_check to the array for set_options.
+	* invoke.texi (-fbounds-check): Document new libarary run-time
+	behaviour.
 
 2007-07-23  Daniel Franke  <franke.daniel@gmail.com>
 
