@@ -1,3 +1,9 @@
+2007-07-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Use a ONE operand
+	with the mode of the original operand instead of
+	integer_one_node.
+
 2007-07-23  Jan Hubicka  <jH@suse.cz>
 
 	* i386.c (ix86_secondary_memory_needed): Break out to...
