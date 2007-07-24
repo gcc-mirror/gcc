@@ -1,3 +1,27 @@
+2007-07-24 Paul Thomas <pault@gcc.gnu.org>
+
+	PR fortran/31205
+	PR fortran/32842
+	* trans-expr.c (gfc_conv_function_call): Remove the default
+	initialization of intent(out) derived types.
+	* symbol.c (gfc_lval_expr_from_sym): New function.
+	* matchexp.c (gfc_get_parentheses): Return argument, if it is
+	character and posseses a ref.
+	* gfortran.h : Add prototype for gfc_lval_expr_from_sym.
+	* resolve.c (has_default_initializer): Move higher up in file.
+	(resolve_code): On detecting an interface assignment, check
+	if the rhs and the lhs are the same symbol.  If this is so,
+	enclose the rhs in parenetheses to generate a temporary and
+	prevent any possible aliasing.
+	(apply_default_init): Remove code making the lval and call
+	gfc_lval_expr_from_sym instead.
+	(resolve_operator): Give a parentheses expression a type-
+	spec if it has no type.
+	* trans-decl.c (gfc_trans_deferred_vars): Apply the a default
+	initializer, if any, to an intent(out) derived type, using
+	gfc_lval_expr_from_sym and gfc_trans_assignment.  Check if
+	the dummy is present.
+
 2007-07-24  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32867

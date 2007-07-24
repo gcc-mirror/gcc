@@ -2725,12 +2725,35 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
   gfc_init_block (&body);
 
   for (f = proc_sym->formal; f; f = f->next)
-    if (f->sym && f->sym->tlink == NULL && f->sym->ts.type == BT_CHARACTER)
-      {
-	gcc_assert (f->sym->ts.cl->backend_decl != NULL);
-	if (TREE_CODE (f->sym->ts.cl->backend_decl) == PARM_DECL)
-	  gfc_trans_vla_type_sizes (f->sym, &body);
-      }
+    {
+      if (f->sym && f->sym->tlink == NULL && f->sym->ts.type == BT_CHARACTER)
+	{
+	  gcc_assert (f->sym->ts.cl->backend_decl != NULL);
+	  if (TREE_CODE (f->sym->ts.cl->backend_decl) == PARM_DECL)
+	    gfc_trans_vla_type_sizes (f->sym, &body);
+	}
+
+      /* If an INTENT(OUT) dummy of derived type has a default
+	 initializer, it must be initialized here.  */
+      if (f->sym && f->sym->attr.referenced
+	    && f->sym->attr.intent == INTENT_OUT
+	    && f->sym->ts.type == BT_DERIVED
+	    && !f->sym->ts.derived->attr.alloc_comp
+	    && f->sym->value)
+	{
+	  gfc_expr *tmpe;
+	  tree tmp, present;
+	  gcc_assert (!f->sym->attr.allocatable);
+	  tmpe = gfc_lval_expr_from_sym (f->sym);
+	  tmp = gfc_trans_assignment (tmpe, f->sym->value, false);
+
+	  present = gfc_conv_expr_present (f->sym);
+	  tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
+			tmp, build_empty_stmt ());
+	  gfc_add_expr_to_block (&body, tmp);
+	  gfc_free_expr (tmpe);
+	}
+    }
 
   if (gfc_return_by_reference (proc_sym) && proc_sym->ts.type == BT_CHARACTER
       && current_fake_result_decl != NULL)
