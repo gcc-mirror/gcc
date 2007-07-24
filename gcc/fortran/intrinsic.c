@@ -228,12 +228,6 @@ add_sym (const char *name, gfc_isym_id id, enum class cl, int actual_ok, bt type
   int optional, first_flag;
   va_list argp;
 
-  /* First check that the intrinsic belongs to the selected standard.
-     If not, don't add it to the symbol list.  */
-  if (!(gfc_option.allow_std & standard)
-      && gfc_option.flag_all_intrinsics == 0)
-    return;
-
   switch (sizing)
     {
     case SZ_SUBS:
@@ -806,16 +800,17 @@ gfc_intrinsic_name (const char *name, int subroutine_flag)
    The first argument is the name of the generic function, which is
    also the name of a specific function.  The rest of the specifics
    currently in the table are placed into the list of specific
-   functions associated with that generic.  */
+   functions associated with that generic.
+
+   PR fortran/32778
+   FIXME: Remove the argument STANDARD if no regressions are
+          encountered. Change all callers (approx. 360).
+*/
 
 static void
-make_generic (const char *name, gfc_isym_id id, int standard)
+make_generic (const char *name, gfc_isym_id id, int standard ATTRIBUTE_UNUSED)
 {
   gfc_intrinsic_sym *g;
-
-  if (!(gfc_option.allow_std & standard)
-      && gfc_option.flag_all_intrinsics == 0)
-    return;
 
   if (sizing != SZ_NOTHING)
     return;
@@ -848,19 +843,14 @@ make_generic (const char *name, gfc_isym_id id, int standard)
 
 
 /* Create a duplicate intrinsic function entry for the current
-   function, the only difference being the alternate name.  Note that
-   we use argument lists more than once, but all argument lists are
-   freed as a single block.  */
+   function, the only differences being the alternate name and
+   a different standard if necessary. Note that we use argument
+   lists more than once, but all argument lists are freed as a
+   single block.  */
 
 static void
 make_alias (const char *name, int standard)
 {
-  /* First check that the intrinsic belongs to the selected standard.
-     If not, don't add it to the symbol list.  */
-  if (!(gfc_option.allow_std & standard)
-      && gfc_option.flag_all_intrinsics == 0)
-    return;
-
   switch (sizing)
     {
     case SZ_FUNCS:
@@ -874,6 +864,7 @@ make_alias (const char *name, int standard)
     case SZ_NOTHING:
       next_sym[0] = next_sym[-1];
       next_sym->name = gfc_get_string (name);
+      next_sym->standard = standard;
       next_sym++;
       break;
 
@@ -2340,8 +2331,7 @@ add_subroutines (void)
 
   add_sym_0s ("abort", GFC_ISYM_ABORT, GFC_STD_GNU, NULL);
 
-  if ((gfc_option.allow_std & GFC_STD_GNU) || gfc_option.flag_all_intrinsics)
-    make_noreturn();
+  make_noreturn();
 
   add_sym_1s ("cpu_time", GFC_ISYM_CPU_TIME, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
@@ -2476,8 +2466,7 @@ add_subroutines (void)
 	      gfc_check_exit, NULL, gfc_resolve_exit,
 	      st, BT_INTEGER, di, OPTIONAL);
 
-  if ((gfc_option.allow_std & GFC_STD_GNU) || gfc_option.flag_all_intrinsics)
-    make_noreturn();
+  make_noreturn();
 
   add_sym_3s ("fgetc", GFC_ISYM_FGETC, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetputc_sub, NULL, gfc_resolve_fgetc_sub,
@@ -3278,14 +3267,19 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
 /* Check whether an intrinsic belongs to whatever standard the user
    has chosen.  */
 
-static void
+static try
 check_intrinsic_standard (const char *name, int standard, locus *where)
 {
-  if (!gfc_option.warn_nonstd_intrinsics)
-    return;
+  /* Do not warn about GNU-extensions if -std=gnu.  */
+  if (!gfc_option.warn_nonstd_intrinsics
+      || (standard == GFC_STD_GNU && gfc_option.warn_std & GFC_STD_GNU))
+    return SUCCESS;
 
-  gfc_notify_std (standard, "Intrinsic '%s' at %L is not included "
-		  "in the selected standard", name, where);
+  if (gfc_notify_std (standard, "Intrinsic '%s' at %L is not included "
+		      "in the selected standard", name, where) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
 }
 
 
@@ -3330,6 +3324,9 @@ gfc_intrinsic_func_interface (gfc_expr *expr, int error_flag)
       gfc_suppress_error = 0;
       return MATCH_NO;
     }
+
+  if (check_intrinsic_standard (name, isym->standard, &expr->where) == FAILURE)
+    return MATCH_ERROR;
 
   gfc_current_intrinsic_where = &expr->where;
 
@@ -3398,8 +3395,6 @@ got_specific:
 			&expr->where) == FAILURE)
     return MATCH_ERROR;
 
-  check_intrinsic_standard (name, isym->standard, &expr->where);
-
   return MATCH_YES;
 }
 
@@ -3420,6 +3415,9 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   isym = gfc_find_subroutine (name);
   if (isym == NULL)
     return MATCH_NO;
+
+  if (check_intrinsic_standard (name, isym->standard, &c->loc) == FAILURE)
+    return MATCH_ERROR;
 
   gfc_suppress_error = !error_flag;
 
@@ -3456,7 +3454,6 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
     }
 
   c->resolved_sym->attr.noreturn = isym->noreturn;
-  check_intrinsic_standard (name, isym->standard, &c->loc);
 
   return MATCH_YES;
 

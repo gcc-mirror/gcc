@@ -1,3 +1,15 @@
+2007-07-24  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32778
+	* intrinsic.c (add_sym): Do not exclude any symbols, even if not part
+	of the selected standard.
+	(make generic): Likewise.
+	(make alias): Likewise, set standard the alias belongs to.
+	(add_subroutines): Call make_noreturn unconditionally.
+	(check_intrinsic_standard): Change return value to try.
+	(gfc_intrinsic_func_interface): Check return value of above function.
+	(gfc_intrinsic_sub_interface): Likewise.
+
 2007-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/30814
