@@ -2700,10 +2700,12 @@ postreload-gcse.o : postreload-gcse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(PARAMS_H) $(TIMEVAR_H) tree-pass.h $(REAL_H) $(DBGCNT_H)
 caller-save.o : caller-save.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) $(REGS_H) hard-reg-set.h insn-config.h $(BASIC_BLOCK_H) $(FUNCTION_H) \
-   addresses.h $(RECOG_H) reload.h $(EXPR_H) toplev.h $(TM_P_H) $(DF_H)
+   addresses.h $(RECOG_H) reload.h $(EXPR_H) toplev.h $(TM_P_H) $(DF_H) \
+   gt-caller-save.h
 bt-load.o : bt-load.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) except.h \
    $(RTL_H) hard-reg-set.h $(REGS_H) $(TM_P_H) $(FIBHEAP_H) output.h $(EXPR_H) \
-   $(TARGET_H) $(FLAGS_H) $(INSN_ATTR_H) $(FUNCTION_H) tree-pass.h toplev.h $(DF_H)
+   $(TARGET_H) $(FLAGS_H) $(INSN_ATTR_H) $(FUNCTION_H) tree-pass.h toplev.h \
+   $(DF_H) $(GGC_H)
 reorg.o : reorg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    conditions.h hard-reg-set.h $(BASIC_BLOCK_H) $(REGS_H) insn-config.h \
    $(INSN_ATTR_H) except.h $(RECOG_H) $(FUNCTION_H) $(FLAGS_H) output.h \
@@ -3039,7 +3041,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/real.h $(srcdir)/varray.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/ipa-reference.h $(srcdir)/output.h $(srcdir)/cfgloop.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/cgraph.h \
-  $(srcdir)/reload.h \
+  $(srcdir)/reload.h $(srcdir)/caller-save.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
   $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-inline.c $(srcdir)/matrix-reorg.c \
   $(srcdir)/dbxout.c $(srcdir)/dwarf2out.c $(srcdir)/dwarf2asm.c \
