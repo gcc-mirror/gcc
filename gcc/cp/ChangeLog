@@ -1,3 +1,8 @@
+2007-07-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* method.c (implicitly_declare_fn): Increase alignment if member
+	function pointer format requires it.
+
 2007-07-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/29001
