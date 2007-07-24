@@ -1,3 +1,8 @@
+2007-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/30535
+	* pt.c (unify): Never pass error_mark_node to template_decl_level.
+
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.
