@@ -131,6 +131,13 @@ gfc_get_parentheses (gfc_expr *e)
 {
   gfc_expr *e2;
 
+  /* This is a temporary fix, awaiting the patch for various
+     other character problems.  The resolution and translation
+     of substrings and concatenations are so kludged up that
+     putting parentheses around them breaks everything.  */
+  if (e->ts.type == BT_CHARACTER && e->ref)
+    return e;
+
   e2 = gfc_get_expr();
   e2->expr_type = EXPR_OP;
   e2->ts = e->ts;
@@ -181,13 +188,9 @@ match_primary (gfc_expr **result)
     gfc_error ("Expected a right parenthesis in expression at %C");
 
   /* Now we have the expression inside the parentheses, build the
-     expression pointing to it. By 7.1.7.2 the integrity of
-     parentheses is only conserved in numerical calculations, so we
-     don't bother to keep the parentheses otherwise.  */
-  if(!gfc_numeric_ts(&e->ts))
-    *result = e;
-  else
-    *result = gfc_get_parentheses (e);
+     expression pointing to it. By 7.1.7.2, any expression in
+     parentheses shall be treated as a data entity.  */
+  *result = gfc_get_parentheses (e);
 
   if (m != MATCH_YES)
     {

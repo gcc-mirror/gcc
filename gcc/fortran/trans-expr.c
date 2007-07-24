@@ -2245,17 +2245,6 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		    && fsym->attr.optional)
 		gfc_conv_missing_dummy (&parmse, e, fsym->ts);
 
-	      /* If an INTENT(OUT) dummy of derived type has a default
-		 initializer, it must be (re)initialized here.  */
-	      if (fsym->attr.intent == INTENT_OUT
-		    && fsym->ts.type == BT_DERIVED
-		    && fsym->value)
-		{
-		  gcc_assert (!fsym->attr.allocatable);
-		  tmp = gfc_trans_assignment (e, fsym->value, false);
-		  gfc_add_expr_to_block (&se->pre, tmp);
-		}
-
 	      /* Obtain the character length of an assumed character
 		 length procedure from the typespec.  */
 	      if (fsym->ts.type == BT_CHARACTER

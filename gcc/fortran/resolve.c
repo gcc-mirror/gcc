@@ -2937,16 +2937,24 @@ resolve_operator (gfc_expr *e)
 
       break;
 
+    case INTRINSIC_PARENTHESES:
+
+      /*  This is always correct and sometimes necessary!  */
+      if (e->ts.type == BT_UNKNOWN)
+	e->ts = op1->ts;
+
+      if (e->ts.type == BT_CHARACTER && !e->ts.cl)
+	e->ts.cl = op1->ts.cl;
+
     case INTRINSIC_NOT:
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
-    case INTRINSIC_PARENTHESES:
+      /* Simply copy arrayness attribute */
       e->rank = op1->rank;
 
       if (e->shape == NULL)
 	e->shape = gfc_copy_shape (op1->shape, op1->rank);
 
-      /* Simply copy arrayness attribute */
       break;
 
     default:
@@ -5710,6 +5718,21 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 }
 
 
+static gfc_component *
+has_default_initializer (gfc_symbol *der)
+{
+  gfc_component *c;
+  for (c = der->components; c; c = c->next)
+    if ((c->ts.type != BT_DERIVED && c->initializer)
+        || (c->ts.type == BT_DERIVED
+              && !c->pointer
+              && has_default_initializer (c->ts.derived)))
+      break;
+
+  return c;
+}
+
+
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
@@ -5829,6 +5852,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	  if (gfc_extend_assign (code, ns) == SUCCESS)
 	    {
+	      gfc_expr *lhs = code->ext.actual->expr;
+	      gfc_expr *rhs = code->ext.actual->next->expr;
+
 	      if (gfc_pure (NULL) && !gfc_pure (code->symtree->n.sym))
 		{
 		  gfc_error ("Subroutine '%s' called instead of assignment at "
@@ -5836,6 +5862,15 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 			     &code->loc);
 		  break;
 		}
+
+	      /* Make a temporary rhs when there is a default initializer
+		 and rhs is the same symbol as the lhs.  */
+	      if (rhs->expr_type == EXPR_VARIABLE
+		    && rhs->symtree->n.sym->ts.type == BT_DERIVED
+		    && has_default_initializer (rhs->symtree->n.sym->ts.derived)
+		    && (lhs->symtree->n.sym == rhs->symtree->n.sym))
+	        code->ext.actual->next->expr = gfc_get_parentheses (rhs);
+
 	      goto call;
 	    }
 
@@ -6413,23 +6448,7 @@ apply_default_init (gfc_symbol *sym)
     }
 
   /* Build an l-value expression for the result.  */
-  lval = gfc_get_expr ();
-  lval->expr_type = EXPR_VARIABLE;
-  lval->where = sym->declared_at;
-  lval->ts = sym->ts;
-  lval->symtree = gfc_find_symtree (sym->ns->sym_root, sym->name);
-
-  /* It will always be a full array.  */
-  lval->rank = sym->as ? sym->as->rank : 0;
-  if (lval->rank)
-    {
-      lval->ref = gfc_get_ref ();
-      lval->ref->type = REF_ARRAY;
-      lval->ref->u.ar.type = AR_FULL;
-      lval->ref->u.ar.dimen = lval->rank;
-      lval->ref->u.ar.where = sym->declared_at;
-      lval->ref->u.ar.as = sym->as;
-    }
+  lval = gfc_lval_expr_from_sym (sym);
 
   /* Add the code at scope entry.  */
   init_st = gfc_get_code ();
@@ -6482,21 +6501,6 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	 }
     }
   return SUCCESS;
-}
-
-
-static gfc_component *
-has_default_initializer (gfc_symbol *der)
-{
-  gfc_component *c;
-  for (c = der->components; c; c = c->next)
-    if ((c->ts.type != BT_DERIVED && c->initializer)
-        || (c->ts.type == BT_DERIVED
-              && !c->pointer
-              && has_default_initializer (c->ts.derived)))
-      break;
-
-  return c;
 }
 
 
