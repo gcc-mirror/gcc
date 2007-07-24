@@ -385,6 +385,7 @@ typedef struct
   int sign_zero;
   size_t record_marker;
   int max_subrecord_length;
+  int bounds_check;
 }
 compile_options_t;
 

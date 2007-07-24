@@ -1,3 +1,7 @@
+2007-07-24  Tobias Burnus  <burnus@net-b.de>
+
+	* libgfortran.h:  Add bounds_check to compile_options_t.
+
 2007-07-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/30814
