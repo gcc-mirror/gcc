@@ -313,9 +313,9 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       /* Do it.  */
       bsi = bsi_for_stmt (inner_cond);
       t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
-		       integer_one_node, bit1);
+		       build_int_cst (TREE_TYPE (name1), 1), bit1);
       t2 = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
-		        integer_one_node, bit2);
+		        build_int_cst (TREE_TYPE (name1), 1), bit2);
       t = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (name1), t, t2);
       t = force_gimple_operand_bsi (&bsi, t, true, NULL_TREE,
 				    true, BSI_SAME_STMT);
