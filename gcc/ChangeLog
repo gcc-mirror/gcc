@@ -1,3 +1,19 @@
+2007-07-24  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32723
+	Backport from mainline:
+	2007-03-09  Daniel Berlin  <dberlin@dberlin.org>
+
+        * tree-ssa-structalias.c (shared_bitmap_info_t): New structure.
+        (shared_bitmap_table): New variable.
+        (shared_bitmap_hash): New function.
+        (shared_bitmap_eq): Ditto
+        (shared_bitmap_lookup): Ditto.
+        (shared_bitmap_add): Ditto.
+        (find_what_p_points_to): Rewrite to use shared bitmap hashtable.
+        (init_alias_vars): Init shared bitmap hashtable.
+        (delete_points_to_sets): Delete shared bitmap hashtable.
+
 2007-07-23  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* reload1.c (choose_reload_regs): Set reload_spill_index for regs

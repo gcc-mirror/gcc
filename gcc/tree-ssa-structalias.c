@@ -4350,6 +4350,75 @@ intra_create_variable_infos (void)
   process_constraint (new_constraint (lhs, rhs));
 }
 
+/* Structure used to put solution bitmaps in a hashtable so they can
+   be shared among variables with the same points-to set.  */
+
+typedef struct shared_bitmap_info
+{
+  bitmap pt_vars;
+  hashval_t hashcode;
+} *shared_bitmap_info_t;
+
+static htab_t shared_bitmap_table;
+
+/* Hash function for a shared_bitmap_info_t */
+
+static hashval_t
+shared_bitmap_hash (const void *p)
+{
+  const shared_bitmap_info_t bi = (shared_bitmap_info_t) p;
+  return bi->hashcode;
+}
+
+/* Equality function for two shared_bitmap_info_t's. */
+
+static int
+shared_bitmap_eq (const void *p1, const void *p2)
+{
+  const shared_bitmap_info_t sbi1 = (shared_bitmap_info_t) p1;
+  const shared_bitmap_info_t sbi2 = (shared_bitmap_info_t) p2;
+  return bitmap_equal_p (sbi1->pt_vars, sbi2->pt_vars);
+}
+
+/* Lookup a bitmap in the shared bitmap hashtable, and return an already
+   existing instance if there is one, NULL otherwise.  */
+
+static bitmap
+shared_bitmap_lookup (bitmap pt_vars)
+{
+  void **slot;
+  struct shared_bitmap_info sbi;
+
+  sbi.pt_vars = pt_vars;
+  sbi.hashcode = bitmap_hash (pt_vars);
+  
+  slot = htab_find_slot_with_hash (shared_bitmap_table, &sbi,
+				   sbi.hashcode, NO_INSERT);
+  if (!slot)
+    return NULL;
+  else
+    return ((shared_bitmap_info_t) *slot)->pt_vars;
+}
+
+
+/* Add a bitmap to the shared bitmap hashtable.  */
+
+static void
+shared_bitmap_add (bitmap pt_vars)
+{
+  void **slot;
+  shared_bitmap_info_t sbi = XNEW (struct shared_bitmap_info);
+  
+  sbi->pt_vars = pt_vars;
+  sbi->hashcode = bitmap_hash (pt_vars);
+  
+  slot = htab_find_slot_with_hash (shared_bitmap_table, sbi,
+				   sbi->hashcode, INSERT);
+  gcc_assert (!*slot);
+  *slot = (void *) sbi;
+}
+
+
 /* Set bits in INTO corresponding to the variable uids in solution set
    FROM, which came from variable PTR.
    For variables that are actually dereferenced, we also use type
@@ -4460,7 +4529,9 @@ find_what_p_points_to (tree p)
 	  struct ptr_info_def *pi = get_ptr_info (p);
 	  unsigned int i;
 	  bitmap_iterator bi;
-
+	  bitmap finished_solution;
+	  bitmap result;
+	  
 	  /* This variable may have been collapsed, let's get the real
 	     variable.  */
 	  vi = get_varinfo (find (vi->id));
@@ -4492,10 +4563,20 @@ find_what_p_points_to (tree p)
 	  if (pi->pt_anything)
 	    return false;
 
-	  if (!pi->pt_vars)
-	    pi->pt_vars = BITMAP_GGC_ALLOC ();
+	  finished_solution = BITMAP_GGC_ALLOC ();
+	  set_uids_in_ptset (vi->decl, finished_solution, vi->solution);
+	  result = shared_bitmap_lookup (finished_solution);
 
-	  set_uids_in_ptset (vi->decl, pi->pt_vars, vi->solution);
+	  if (!result)
+	    {
+	      shared_bitmap_add (finished_solution);
+	      pi->pt_vars = finished_solution;
+	    }
+	  else
+	    {
+	      pi->pt_vars = result;
+	      bitmap_clear (finished_solution);
+	    }
 
 	  if (bitmap_empty_p (pi->pt_vars))
 	    pi->pt_vars = NULL;
@@ -4691,6 +4772,8 @@ init_alias_vars (void)
   vi_for_tree = pointer_map_create ();
 
   memset (&stats, 0, sizeof (stats));
+  shared_bitmap_table = htab_create (511, shared_bitmap_hash,
+				     shared_bitmap_eq, free);
   init_base_vars ();
 }
 
@@ -4923,6 +5006,7 @@ delete_points_to_sets (void)
   varinfo_t v;
   int i;
 
+  htab_delete (shared_bitmap_table);
   if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "Points to sets created:%d\n",
 	     stats.points_to_sets_created);
