@@ -743,7 +743,7 @@ find_phi_replacement_condition (struct loop *loop,
       if (TREE_CODE (*cond) == TRUTH_NOT_EXPR)
 	/* We can be smart here and choose inverted
 	   condition without switching bbs.  */
-	  *cond = invert_truthvalue (*cond);
+	*cond = invert_truthvalue (*cond);
       else
 	/* Select non loop header bb.  */
 	first_edge = second_edge;
@@ -762,9 +762,11 @@ find_phi_replacement_condition (struct loop *loop,
 
   /* Create temp. for the condition. Vectorizer prefers to have gimple
      value as condition. Various targets use different means to communicate
-     condition in vector compare operation. Using gimple value allows compiler
-     to emit vector compare and select RTL without exposing compare's result.  */
-  *cond = force_gimple_operand (*cond, &new_stmts, false, NULL_TREE);
+     condition in vector compare operation. Using gimple value allows
+     compiler to emit vector compare and select RTL without exposing
+     compare's result.  */
+  *cond = force_gimple_operand (unshare_expr (*cond), &new_stmts,
+				false, NULL_TREE);
   if (new_stmts)
     bsi_insert_before (bsi, new_stmts, BSI_SAME_STMT);
   if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
