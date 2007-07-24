@@ -1,3 +1,7 @@
+2007-07-24  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Use fold_convert.
+
 2007-07-24  Jan Hubicka  <jh@suse.cz>
 
 	* caller-save.c: Include ggc.h, gt-caller-save.h
