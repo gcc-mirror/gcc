@@ -1,3 +1,8 @@
+2007-07-25  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* cfgloop.c (init_loops_structure): New function.
+	(flow_loops_find): Create root of the loop tree unconditionally.
+
 2007-07-24  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* tree-ssa-ccp.c (fold_const_aggregate_ref): Use fold_convert.

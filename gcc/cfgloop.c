@@ -343,6 +343,29 @@ alloc_loop (void)
   return loop;
 }
 
+/* Initializes loops structure LOOPS, reserving place for NUM_LOOPS loops
+   (including the root of the loop tree).  */
+
+static void
+init_loops_structure (struct loops *loops, unsigned num_loops)
+{
+  struct loop *root;
+
+  memset (loops, 0, sizeof *loops);
+  loops->larray = VEC_alloc (loop_p, gc, num_loops);
+
+  /* Dummy loop containing whole function.  */
+  root = alloc_loop ();
+  root->num_nodes = n_basic_blocks;
+  root->latch = EXIT_BLOCK_PTR;
+  root->header = ENTRY_BLOCK_PTR;
+  ENTRY_BLOCK_PTR->loop_father = root;
+  EXIT_BLOCK_PTR->loop_father = root;
+
+  VEC_quick_push (loop_p, loops->larray, root);
+  loops->tree_root = root;
+}
+
 /* Find all the natural loops in the function and save in LOOPS structure and
    recalculate loop_depth information in basic block structures.
    Return the number of natural loops found.  */
@@ -358,20 +381,20 @@ flow_loops_find (struct loops *loops)
   int *rc_order;
   basic_block header;
   basic_block bb;
-  struct loop *root;
 
-  memset (loops, 0, sizeof *loops);
+  /* Ensure that the dominators are computed.  */
+  calculate_dominance_info (CDI_DOMINATORS);
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
   if (n_basic_blocks == NUM_FIXED_BLOCKS)
-    return 0;
+    {
+      init_loops_structure (loops, 1);
+      return 1;
+    }
 
   dfs_order = NULL;
   rc_order = NULL;
-
-  /* Ensure that the dominators are computed.  */
-  calculate_dominance_info (CDI_DOMINATORS);
 
   /* Count the number of loop headers.  This should be the
      same as the number of natural loops.  */
@@ -415,18 +438,7 @@ flow_loops_find (struct loops *loops)
     }
 
   /* Allocate loop structures.  */
-  loops->larray = VEC_alloc (loop_p, gc, num_loops + 1);
-
-  /* Dummy loop containing whole function.  */
-  root = alloc_loop ();
-  root->num_nodes = n_basic_blocks;
-  root->latch = EXIT_BLOCK_PTR;
-  root->header = ENTRY_BLOCK_PTR;
-  ENTRY_BLOCK_PTR->loop_father = root;
-  EXIT_BLOCK_PTR->loop_father = root;
-
-  VEC_quick_push (loop_p, loops->larray, root);
-  loops->tree_root = root;
+  init_loops_structure (loops, num_loops + 1);
 
   /* Find and record information about all the natural loops
      in the CFG.  */
