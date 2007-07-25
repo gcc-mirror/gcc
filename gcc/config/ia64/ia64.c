@@ -4496,6 +4496,7 @@ ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
    O	Append .acq for volatile load.
    P	Postincrement of a MEM.
    Q	Append .rel for volatile store.
+   R	Print .s .d or nothing for a single, double or no truncation.
    S	Shift amount for shladd instruction.
    T	Print an 8-bit sign extended number (K) as a 32-bit unsigned number
 	for Intel assembler.
@@ -4634,6 +4635,17 @@ ia64_print_operand (FILE * file, rtx x, int code)
     case 'Q':
       if (MEM_VOLATILE_P (x))
 	fputs(".rel", file);
+      return;
+
+    case 'R':
+      if (x == CONST0_RTX (GET_MODE (x)))
+	fputs(".s", file);
+      else if (x == CONST1_RTX (GET_MODE (x)))
+	fputs(".d", file);
+      else if (x == CONST2_RTX (GET_MODE (x)))
+	;
+      else
+	output_operand_lossage ("invalid %%R value");
       return;
 
     case 'S':
