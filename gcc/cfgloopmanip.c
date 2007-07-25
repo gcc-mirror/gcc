@@ -1468,6 +1468,9 @@ fix_loop_structure (bitmap changed_bbs)
   if (current_loops->state & LOOPS_HAVE_PREHEADERS)
     create_preheaders (CP_SIMPLE_PREHEADERS);
 
+  if (current_loops->state & LOOPS_HAVE_SIMPLE_LATCHES)
+    force_single_succ_latches ();
+
   if (current_loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
     mark_irreducible_loops ();
 
