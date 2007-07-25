@@ -2608,6 +2608,25 @@ fix = {
 };
 
 
+fix = {
+    hackname  = netbsd_c99_inline_2;
+    mach      = *-*-netbsd*;
+    files     = signal.h;
+    select    = "#define _SIGINLINE extern __inline";
+
+    c_fix     = format;
+    c_fix_arg = <<- _EOArg_
+	#ifdef __GNUC_STDC_INLINE__
+	#define _SIGINLINE extern __attribute__((__gnu_inline__)) __inline
+	#else
+	%0
+	#endif
+	_EOArg_;
+
+    test_text = "#define _SIGINLINE extern __inline";
+};
+
+
 /*
  * NetBSD has a semicolon after the ending '}' for some extern "C".
  */
