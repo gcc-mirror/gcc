@@ -1,3 +1,11 @@
+2007-07-25  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (CFILES): Remove ternary.c.
+	(REQUIRED_OFILES): Remove ./ternary.o.
+	(INSTALLED_HEADERS): Remove ternary.h.
+	(ternary.o): Remove.
+	* ternary.c: Remove.
+
 2007-07-23  DJ Delorie  <dj@redhat.com>
 
 	* argv.c (writeargv): Fix typo in inline documentation.

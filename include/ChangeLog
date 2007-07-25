@@ -1,3 +1,7 @@
+2007-07-25  Ben Elliston  <bje@au.ibm.com>
+
+	* ternary.h: Remove.
+
 2007-07-18  Bob Wilson  <bob.wilson@acm.org>
 	
 	* xtensa-config.h (XCHAL_HAVE_THREADPTR): New.
