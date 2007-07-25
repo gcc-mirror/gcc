@@ -4647,7 +4647,7 @@ extern tree gimplify_parameters (void);
 
 /* In print-rtl.c */
 #ifdef BUFSIZ
-extern void print_rtl (FILE *, rtx);
+extern void print_rtl (FILE *, const_rtx);
 #endif
 
 /* In print-tree.c */

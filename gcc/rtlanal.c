@@ -54,10 +54,10 @@ struct subreg_info
 
 /* Forward declarations */
 static void set_of_1 (rtx, rtx, void *);
-static bool covers_regno_p (rtx, unsigned int);
-static bool covers_regno_no_parallel_p (rtx, unsigned int);
+static bool covers_regno_p (const_rtx, unsigned int);
+static bool covers_regno_no_parallel_p (const_rtx, unsigned int);
 static int rtx_referenced_p_1 (rtx *, void *);
-static int computed_jump_p_1 (rtx);
+static int computed_jump_p_1 (const_rtx);
 static void parms_set (rtx, rtx, void *);
 static void subreg_get_info (unsigned int, enum machine_mode,
 			     unsigned int, enum machine_mode,
@@ -66,8 +66,8 @@ static void subreg_get_info (unsigned int, enum machine_mode,
 static unsigned HOST_WIDE_INT cached_nonzero_bits (rtx, enum machine_mode,
                                                    rtx, enum machine_mode,
                                                    unsigned HOST_WIDE_INT);
-static unsigned HOST_WIDE_INT nonzero_bits1 (rtx, enum machine_mode, rtx,
-                                             enum machine_mode,
+static unsigned HOST_WIDE_INT nonzero_bits1 (rtx, enum machine_mode,
+					     rtx, enum machine_mode,
                                              unsigned HOST_WIDE_INT);
 static unsigned int cached_num_sign_bit_copies (rtx, enum machine_mode, rtx,
                                                 enum machine_mode,
@@ -107,9 +107,9 @@ num_sign_bit_copies_in_rep[MAX_MODE_INT + 1][MAX_MODE_INT + 1];
    (within one function) and so is anything marked `unchanging'.  */
 
 int
-rtx_unstable_p (rtx x)
+rtx_unstable_p (const_rtx x)
 {
-  RTX_CODE code = GET_CODE (x);
+  const RTX_CODE code = GET_CODE (x);
   int i;
   const char *fmt;
 
@@ -262,7 +262,7 @@ rtx_varies_p (rtx x, int for_alias)
    alignment machines.  */
 
 static int
-rtx_addr_can_trap_p_1 (rtx x, enum machine_mode mode, bool unaligned_mems)
+rtx_addr_can_trap_p_1 (const_rtx x, enum machine_mode mode, bool unaligned_mems)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -348,7 +348,7 @@ rtx_addr_can_trap_p_1 (rtx x, enum machine_mode mode, bool unaligned_mems)
 /* Return nonzero if the use of X as an address in a MEM can cause a trap.  */
 
 int
-rtx_addr_can_trap_p (rtx x)
+rtx_addr_can_trap_p (const_rtx x)
 {
   return rtx_addr_can_trap_p_1 (x, VOIDmode, false);
 }
@@ -356,9 +356,9 @@ rtx_addr_can_trap_p (rtx x)
 /* Return true if X is an address that is known to not be zero.  */
 
 bool
-nonzero_address_p (rtx x)
+nonzero_address_p (const_rtx x)
 {
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -465,7 +465,7 @@ rtx_addr_varies_p (rtx x, int for_alias)
    This is used in cse.c with the `related_value' field.  */
 
 HOST_WIDE_INT
-get_integer_term (rtx x)
+get_integer_term (const_rtx x)
 {
   if (GET_CODE (x) == CONST)
     x = XEXP (x, 0);
@@ -484,7 +484,7 @@ get_integer_term (rtx x)
    Only obvious integer terms are detected.  */
 
 rtx
-get_related_value (rtx x)
+get_related_value (const_rtx x)
 {
   if (GET_CODE (x) != CONST)
     return 0;
@@ -502,7 +502,7 @@ get_related_value (rtx x)
    to somewhere in the same object or object_block as SYMBOL.  */
 
 bool
-offset_within_block_p (rtx symbol, HOST_WIDE_INT offset)
+offset_within_block_p (const_rtx symbol, HOST_WIDE_INT offset)
 {
   tree decl;
 
@@ -557,7 +557,7 @@ split_const (rtx x, rtx *base_out, rtx *offset_out)
    zero, we do not count occurrences inside the destination of a SET.  */
 
 int
-count_occurrences (rtx x, rtx find, int count_dest)
+count_occurrences (const_rtx x, const_rtx find, int count_dest)
 {
   int i, j;
   enum rtx_code code;
@@ -627,7 +627,7 @@ count_occurrences (rtx x, rtx find, int count_dest)
    for a subexpression of IN that is Lisp "equal" to REG.  */
 
 int
-reg_mentioned_p (rtx reg, rtx in)
+reg_mentioned_p (const_rtx reg, const_rtx in)
 {
   const char *fmt;
   int i;
@@ -692,7 +692,7 @@ reg_mentioned_p (rtx reg, rtx in)
    no CODE_LABEL insn.  */
 
 int
-no_labels_between_p (rtx beg, rtx end)
+no_labels_between_p (const_rtx beg, const_rtx end)
 {
   rtx p;
   if (beg == end)
@@ -707,7 +707,7 @@ no_labels_between_p (rtx beg, rtx end)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_used_between_p (rtx reg, rtx from_insn, rtx to_insn)
+reg_used_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
 {
   rtx insn;
 
@@ -727,7 +727,7 @@ reg_used_between_p (rtx reg, rtx from_insn, rtx to_insn)
    we do not consider it a reference.  */
 
 int
-reg_referenced_p (rtx x, rtx body)
+reg_referenced_p (const_rtx x, const_rtx body)
 {
   int i;
 
@@ -988,7 +988,7 @@ set_of (rtx pat, rtx insn)
    will not be used, which we ignore.  */
 
 rtx
-single_set_2 (rtx insn, rtx pat)
+single_set_2 (const_rtx insn, const_rtx pat)
 {
   rtx set = NULL;
   int set_verified = 1;
@@ -1041,7 +1041,7 @@ single_set_2 (rtx insn, rtx pat)
    zero.  */
 
 int
-multiple_sets (rtx insn)
+multiple_sets (const_rtx insn)
 {
   int found;
   int i;
@@ -1072,7 +1072,7 @@ multiple_sets (rtx insn)
    and there are no side effects.  */
 
 int
-set_noop_p (rtx set)
+set_noop_p (const_rtx set)
 {
   rtx src = SET_SRC (set);
   rtx dst = SET_DEST (set);
@@ -1203,7 +1203,7 @@ find_last_value (rtx x, rtx *pinsn, rtx valid_to, int allow_hwreg)
    LOC may be zero, meaning don't ignore anything.  */
 
 int
-refers_to_regno_p (unsigned int regno, unsigned int endregno, rtx x,
+refers_to_regno_p (unsigned int regno, unsigned int endregno, const_rtx x,
 		   rtx *loc)
 {
   int i;
@@ -1312,7 +1312,7 @@ refers_to_regno_p (unsigned int regno, unsigned int endregno, rtx x,
    conflict because we expect this to be a rare case.  */
 
 int
-reg_overlap_mentioned_p (rtx x, rtx in)
+reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 {
   unsigned int regno, endregno;
 
@@ -1550,7 +1550,7 @@ note_uses (rtx *pbody, void (*fun) (rtx *, void *), void *data)
    by INSN.  */
 
 int
-dead_or_set_p (rtx insn, rtx x)
+dead_or_set_p (const_rtx insn, const_rtx x)
 {
   unsigned int regno, end_regno;
   unsigned int i;
@@ -1575,7 +1575,7 @@ dead_or_set_p (rtx insn, rtx x)
    part of the register is TEST_REGNO.  */
 
 static bool
-covers_regno_no_parallel_p (rtx dest, unsigned int test_regno)
+covers_regno_no_parallel_p (const_rtx dest, unsigned int test_regno)
 {
   unsigned int regno, endregno;
 
@@ -1598,7 +1598,7 @@ covers_regno_no_parallel_p (rtx dest, unsigned int test_regno)
    any member matches the covers_regno_no_parallel_p criteria.  */
 
 static bool
-covers_regno_p (rtx dest, unsigned int test_regno)
+covers_regno_p (const_rtx dest, unsigned int test_regno)
 {
   if (GET_CODE (dest) == PARALLEL)
     {
@@ -1624,9 +1624,9 @@ covers_regno_p (rtx dest, unsigned int test_regno)
 /* Utility function for dead_or_set_p to check an individual register. */
 
 int
-dead_or_set_regno_p (rtx insn, unsigned int test_regno)
+dead_or_set_regno_p (const_rtx insn, unsigned int test_regno)
 {
-  rtx pattern;
+  const_rtx pattern;
 
   /* See if there is a death note for something that includes TEST_REGNO.  */
   if (find_regno_note (insn, REG_DEAD, test_regno))
@@ -1667,7 +1667,7 @@ dead_or_set_regno_p (rtx insn, unsigned int test_regno)
    If DATUM is nonzero, look for one whose datum is DATUM.  */
 
 rtx
-find_reg_note (rtx insn, enum reg_note kind, rtx datum)
+find_reg_note (const_rtx insn, enum reg_note kind, const_rtx datum)
 {
   rtx link;
 
@@ -1696,7 +1696,7 @@ find_reg_note (rtx insn, enum reg_note kind, rtx datum)
    it might be the case that the note overlaps REGNO.  */
 
 rtx
-find_regno_note (rtx insn, enum reg_note kind, unsigned int regno)
+find_regno_note (const_rtx insn, enum reg_note kind, unsigned int regno)
 {
   rtx link;
 
@@ -1719,7 +1719,7 @@ find_regno_note (rtx insn, enum reg_note kind, unsigned int regno)
    has such a note.  */
 
 rtx
-find_reg_equal_equiv_note (rtx insn)
+find_reg_equal_equiv_note (const_rtx insn)
 {
   rtx link;
 
@@ -1748,7 +1748,7 @@ find_reg_equal_equiv_note (rtx insn)
    return null.  */
 
 rtx
-find_constant_src (rtx insn)
+find_constant_src (const_rtx insn)
 {
   rtx note, set, x;
 
@@ -1771,7 +1771,7 @@ find_constant_src (rtx insn)
    in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
 
 int
-find_reg_fusage (rtx insn, enum rtx_code code, rtx datum)
+find_reg_fusage (const_rtx insn, enum rtx_code code, const_rtx datum)
 {
   /* If it's not a CALL_INSN, it can't possibly have a
      CALL_INSN_FUNCTION_USAGE field, so don't bother checking.  */
@@ -1816,7 +1816,7 @@ find_reg_fusage (rtx insn, enum rtx_code code, rtx datum)
    in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
 
 int
-find_regno_fusage (rtx insn, enum rtx_code code, unsigned int regno)
+find_regno_fusage (const_rtx insn, enum rtx_code code, unsigned int regno)
 {
   rtx link;
 
@@ -1844,9 +1844,9 @@ find_regno_fusage (rtx insn, enum rtx_code code, unsigned int regno)
 /* Return true if INSN is a call to a pure function.  */
 
 int
-pure_call_p (rtx insn)
+pure_call_p (const_rtx insn)
 {
-  rtx link;
+  const_rtx link;
 
   if (!CALL_P (insn) || ! CONST_OR_PURE_CALL_P (insn))
     return 0;
@@ -1868,7 +1868,7 @@ pure_call_p (rtx insn)
 /* Remove register note NOTE from the REG_NOTES of INSN.  */
 
 void
-remove_note (rtx insn, rtx note)
+remove_note (rtx insn, const_rtx note)
 {
   rtx link;
 
@@ -1919,9 +1919,9 @@ remove_reg_equal_equiv_notes (rtx insn)
    NODE matches.  */
 
 int
-in_expr_list_p (rtx listp, rtx node)
+in_expr_list_p (const_rtx listp, const_rtx node)
 {
-  rtx x;
+  const_rtx x;
 
   for (x = listp; x; x = XEXP (x, 1))
     if (node == XEXP (x, 0))
@@ -1936,7 +1936,7 @@ in_expr_list_p (rtx listp, rtx node)
    A simple equality test is used to determine if NODE matches.  */
 
 void
-remove_node_from_expr_list (rtx node, rtx *listp)
+remove_node_from_expr_list (const_rtx node, rtx *listp)
 {
   rtx temp = *listp;
   rtx prev = NULL_RTX;
@@ -1965,11 +1965,9 @@ remove_node_from_expr_list (rtx node, rtx *listp)
    only volatile asms and UNSPEC_VOLATILE instructions.  */
 
 int
-volatile_insn_p (rtx x)
+volatile_insn_p (const_rtx x)
 {
-  RTX_CODE code;
-
-  code = GET_CODE (x);
+  const RTX_CODE code = GET_CODE (x);
   switch (code)
     {
     case LABEL_REF:
@@ -2005,7 +2003,7 @@ volatile_insn_p (rtx x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    const char *fmt = GET_RTX_FORMAT (code);
+    const char *const fmt = GET_RTX_FORMAT (code);
     int i;
 
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -2031,11 +2029,9 @@ volatile_insn_p (rtx x)
    UNSPEC_VOLATILE operations or volatile ASM_OPERANDS expressions.  */
 
 int
-volatile_refs_p (rtx x)
+volatile_refs_p (const_rtx x)
 {
-  RTX_CODE code;
-
-  code = GET_CODE (x);
+  const RTX_CODE code = GET_CODE (x);
   switch (code)
     {
     case LABEL_REF:
@@ -2069,7 +2065,7 @@ volatile_refs_p (rtx x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    const char *fmt = GET_RTX_FORMAT (code);
+    const char *const fmt = GET_RTX_FORMAT (code);
     int i;
 
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -2095,11 +2091,9 @@ volatile_refs_p (rtx x)
    incrementing.  */
 
 int
-side_effects_p (rtx x)
+side_effects_p (const_rtx x)
 {
-  RTX_CODE code;
-
-  code = GET_CODE (x);
+  const RTX_CODE code = GET_CODE (x);
   switch (code)
     {
     case LABEL_REF:
@@ -2181,7 +2175,7 @@ enum may_trap_p_flags
    elsewhere.  */
 
 static int
-may_trap_p_1 (rtx x, unsigned flags)
+may_trap_p_1 (const_rtx x, unsigned flags)
 {
   int i;
   enum rtx_code code;
@@ -2317,7 +2311,7 @@ may_trap_p_1 (rtx x, unsigned flags)
 /* Return nonzero if evaluating rtx X might cause a trap.  */
 
 int
-may_trap_p (rtx x)
+may_trap_p (const_rtx x)
 {
   return may_trap_p_1 (x, 0);
 }
@@ -2326,7 +2320,7 @@ may_trap_p (rtx x)
    is moved from its current location by some optimization.  */
 
 int
-may_trap_after_code_motion_p (rtx x)
+may_trap_after_code_motion_p (const_rtx x)
 {
   return may_trap_p_1 (x, MTP_AFTER_MOVE);
 }
@@ -2372,7 +2366,7 @@ may_trap_after_code_motion_p (rtx x)
    on a strict alignment machine.  */
 
 int
-may_trap_or_fault_p (rtx x)
+may_trap_or_fault_p (const_rtx x)
 {
   return may_trap_p_1 (x, MTP_UNALIGNED_MEMS);
 }
@@ -2381,11 +2375,11 @@ may_trap_or_fault_p (rtx x)
    i.e., an inequality.  */
 
 int
-inequality_comparisons_p (rtx x)
+inequality_comparisons_p (const_rtx x)
 {
   const char *fmt;
   int len, i;
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -2604,7 +2598,7 @@ rtx_referenced_p (rtx x, rtx body)
    *LABELP and the jump table to *TABLEP.  LABELP and TABLEP may be NULL.  */
 
 bool
-tablejump_p (rtx insn, rtx *labelp, rtx *tablep)
+tablejump_p (const_rtx insn, rtx *labelp, rtx *tablep)
 {
   rtx label, table;
 
@@ -2629,9 +2623,9 @@ tablejump_p (rtx insn, rtx *labelp, rtx *tablep)
    of an IF_THEN_ELSE.  */
 
 static int
-computed_jump_p_1 (rtx x)
+computed_jump_p_1 (const_rtx x)
 {
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
   int i, j;
   const char *fmt;
 
@@ -2683,7 +2677,7 @@ computed_jump_p_1 (rtx x)
    we can recognize them by a (use (label_ref)).  */
 
 int
-computed_jump_p (rtx insn)
+computed_jump_p (const_rtx insn)
 {
   int i;
   if (JUMP_P (insn))
@@ -2941,7 +2935,7 @@ swap_commutative_operands_p (rtx x, rtx y)
 /* Return 1 if X is an autoincrement side effect and the register is
    not the stack pointer.  */
 int
-auto_inc_p (rtx x)
+auto_inc_p (const_rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -2962,7 +2956,7 @@ auto_inc_p (rtx x)
 
 /* Return nonzero if IN contains a piece of rtl that has the address LOC.  */
 int
-loc_mentioned_in_p (rtx *loc, rtx in)
+loc_mentioned_in_p (rtx *loc, const_rtx in)
 {
   enum rtx_code code;
   const char *fmt;
@@ -3036,7 +3030,7 @@ subreg_lsb_1 (enum machine_mode outer_mode,
    (counting from the least significant bit of the reg).  */
 
 unsigned int
-subreg_lsb (rtx x)
+subreg_lsb (const_rtx x)
 {
   return subreg_lsb_1 (GET_MODE (x), GET_MODE (SUBREG_REG (x)),
 		       SUBREG_BYTE (x));
@@ -3233,7 +3227,7 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 
 /* Return the final regno that a subreg expression refers to.  */
 unsigned int
-subreg_regno (rtx x)
+subreg_regno (const_rtx x)
 {
   unsigned int ret;
   rtx subreg = SUBREG_REG (x);
@@ -3250,7 +3244,7 @@ subreg_regno (rtx x)
 /* Return the number of registers that a subreg expression refers
    to.  */
 unsigned int
-subreg_nregs (rtx x)
+subreg_nregs (const_rtx x)
 {
   struct subreg_info info;
   rtx subreg = SUBREG_REG (x);
@@ -3389,7 +3383,7 @@ keep_with_call_p (rtx insn)
    not apply to the fallthru case of a conditional jump.  */
 
 bool
-label_is_jump_target_p (rtx label, rtx jump_insn)
+label_is_jump_target_p (const_rtx label, const_rtx jump_insn)
 {
   rtx tmp = JUMP_LABEL (jump_insn);
 
@@ -4541,7 +4535,7 @@ canonicalize_condition (rtx insn, rtx cond, int reverse, rtx *earliest,
 {
   enum rtx_code code;
   rtx prev = insn;
-  rtx set;
+  const_rtx set;
   rtx tem;
   rtx op0, op1;
   int reverse_code = 0;

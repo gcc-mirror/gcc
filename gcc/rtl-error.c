@@ -33,12 +33,12 @@ Boston, MA 02110-1301, USA.  */
 #include "intl.h"
 #include "diagnostic.h"
 
-static location_t location_for_asm (rtx);
-static void diagnostic_for_asm (rtx, const char *, va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
+static location_t location_for_asm (const_rtx);
+static void diagnostic_for_asm (const_rtx, const char *, va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
 
 /* Figure the location of the given INSN.  */
 static location_t
-location_for_asm (rtx insn)
+location_for_asm (const_rtx insn)
 {
   rtx body = PATTERN (insn);
   rtx asmop;
@@ -76,7 +76,7 @@ location_for_asm (rtx insn)
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 static void
-diagnostic_for_asm (rtx insn, const char *msg, va_list *args_ptr,
+diagnostic_for_asm (const_rtx insn, const char *msg, va_list *args_ptr,
 		    diagnostic_t kind)
 {
   diagnostic_info diagnostic;
@@ -87,7 +87,7 @@ diagnostic_for_asm (rtx insn, const char *msg, va_list *args_ptr,
 }
 
 void
-error_for_asm (rtx insn, const char *gmsgid, ...)
+error_for_asm (const_rtx insn, const char *gmsgid, ...)
 {
   va_list ap;
 
@@ -97,7 +97,7 @@ error_for_asm (rtx insn, const char *gmsgid, ...)
 }
 
 void
-warning_for_asm (rtx insn, const char *gmsgid, ...)
+warning_for_asm (const_rtx insn, const char *gmsgid, ...)
 {
   va_list ap;
 
@@ -107,7 +107,7 @@ warning_for_asm (rtx insn, const char *gmsgid, ...)
 }
 
 void
-_fatal_insn (const char *msgid, rtx insn, const char *file, int line,
+_fatal_insn (const char *msgid, const_rtx insn, const char *file, int line,
 	     const char *function)
 {
   error ("%s", _(msgid));
@@ -121,7 +121,7 @@ _fatal_insn (const char *msgid, rtx insn, const char *file, int line,
 }
 
 void
-_fatal_insn_not_found (rtx insn, const char *file, int line,
+_fatal_insn_not_found (const_rtx insn, const char *file, int line,
 		       const char *function)
 {
   if (INSN_CODE (insn) < 0)
