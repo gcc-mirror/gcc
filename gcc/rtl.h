@@ -454,7 +454,7 @@ struct rtvec_def GTY(()) {
 /* The bit with a star outside the statement expr and an & inside is
    so that N can be evaluated only once.  */
 #define RTL_CHECK1(RTX, N, C1) __extension__				\
-(*({ rtx const _rtx = (RTX); const int _n = (N);			\
+(*({ __typeof (RTX) const _rtx = (RTX); const int _n = (N);		\
      const enum rtx_code _code = GET_CODE (_rtx);			\
      if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
        rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
@@ -465,7 +465,7 @@ struct rtvec_def GTY(()) {
      &_rtx->u.fld[_n]; }))
 
 #define RTL_CHECK2(RTX, N, C1, C2) __extension__			\
-(*({ rtx const _rtx = (RTX); const int _n = (N);			\
+(*({ __typeof (RTX) const _rtx = (RTX); const int _n = (N);		\
      const enum rtx_code _code = GET_CODE (_rtx);			\
      if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
        rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
@@ -477,14 +477,14 @@ struct rtvec_def GTY(()) {
      &_rtx->u.fld[_n]; }))
 
 #define RTL_CHECKC1(RTX, N, C) __extension__				\
-(*({ rtx const _rtx = (RTX); const int _n = (N);			\
+(*({ __typeof (RTX) const _rtx = (RTX); const int _n = (N);		\
      if (GET_CODE (_rtx) != (C))					\
        rtl_check_failed_code1 (_rtx, (C), __FILE__, __LINE__,		\
 			       __FUNCTION__);				\
      &_rtx->u.fld[_n]; }))
 
 #define RTL_CHECKC2(RTX, N, C1, C2) __extension__			\
-(*({ rtx const _rtx = (RTX); const int _n = (N);			\
+(*({ __typeof (RTX) const _rtx = (RTX); const int _n = (N);		\
      const enum rtx_code _code = GET_CODE (_rtx);			\
      if (_code != (C1) && _code != (C2))				\
        rtl_check_failed_code2 (_rtx, (C1), (C2), __FILE__, __LINE__,	\
@@ -492,14 +492,14 @@ struct rtvec_def GTY(()) {
      &_rtx->u.fld[_n]; }))
 
 #define RTVEC_ELT(RTVEC, I) __extension__				\
-(*({ rtvec const _rtvec = (RTVEC); const int _i = (I);			\
+(*({ __typeof (RTVEC) const _rtvec = (RTVEC); const int _i = (I);	\
      if (_i < 0 || _i >= GET_NUM_ELEM (_rtvec))				\
        rtvec_check_failed_bounds (_rtvec, _i, __FILE__, __LINE__,	\
 				  __FUNCTION__);			\
      &_rtvec->elem[_i]; }))
 
 #define XWINT(RTX, N) __extension__					\
-(*({ rtx const _rtx = (RTX); const int _n = (N);			\
+(*({ __typeof (RTX) const _rtx = (RTX); const int _n = (N);		\
      const enum rtx_code _code = GET_CODE (_rtx);			\
      if (_n < 0 || _n >= GET_RTX_LENGTH (_code))			\
        rtl_check_failed_bounds (_rtx, _n, __FILE__, __LINE__,		\
@@ -510,29 +510,29 @@ struct rtvec_def GTY(()) {
      &_rtx->u.hwint[_n]; }))
 
 #define XCWINT(RTX, N, C) __extension__					\
-(*({ rtx const _rtx = (RTX);						\
+(*({ __typeof (RTX) const _rtx = (RTX);					\
      if (GET_CODE (_rtx) != (C))					\
        rtl_check_failed_code1 (_rtx, (C), __FILE__, __LINE__,		\
 			       __FUNCTION__);				\
      &_rtx->u.hwint[N]; }))
 
 #define XCMWINT(RTX, N, C, M) __extension__				\
-(*({ rtx const _rtx = (RTX);						\
+(*({ __typeof (RTX) const _rtx = (RTX);					\
      if (GET_CODE (_rtx) != (C) || GET_MODE (_rtx) != (M))		\
        rtl_check_failed_code_mode (_rtx, (C), (M), false, __FILE__,	\
 				   __LINE__, __FUNCTION__);		\
      &_rtx->u.hwint[N]; }))
 
 #define XCNMPRV(RTX, C, M) __extension__				\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE (_rtx) != (C) || GET_MODE (_rtx) == (M))		\
      rtl_check_failed_code_mode (_rtx, (C), (M), true, __FILE__,	\
 				 __LINE__, __FUNCTION__);		\
    &_rtx->u.rv; })
 
 #define BLOCK_SYMBOL_CHECK(RTX) __extension__				\
-({ rtx const _symbol = (RTX);						\
-   unsigned int flags = RTL_CHECKC1 (_symbol, 1, SYMBOL_REF).rt_int;	\
+({ __typeof (RTX) const _symbol = (RTX);				\
+   const unsigned int flags = RTL_CHECKC1 (_symbol, 1, SYMBOL_REF).rt_int; \
    if ((flags & SYMBOL_FLAG_HAS_BLOCK_INFO) == 0)			\
      rtl_check_failed_block_symbol (__FILE__, __LINE__,			\
 				    __FUNCTION__);			\
@@ -585,21 +585,21 @@ extern void rtvec_check_failed_bounds (rtvec, int, const char *, int,
 
 #if defined ENABLE_RTL_FLAG_CHECKING && (GCC_VERSION >= 2007)
 #define RTL_FLAG_CHECK1(NAME, RTX, C1) __extension__			\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1)						\
      rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
 			     __FUNCTION__);				\
    _rtx; })
 
 #define RTL_FLAG_CHECK2(NAME, RTX, C1, C2) __extension__		\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2)			\
      rtl_check_failed_flag  (NAME,_rtx, __FILE__, __LINE__,		\
 			      __FUNCTION__);				\
    _rtx; })
 
 #define RTL_FLAG_CHECK3(NAME, RTX, C1, C2, C3) __extension__		\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2			\
        && GET_CODE(_rtx) != C3)						\
      rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
@@ -607,7 +607,7 @@ extern void rtvec_check_failed_bounds (rtvec, int, const char *, int,
    _rtx; })
 
 #define RTL_FLAG_CHECK4(NAME, RTX, C1, C2, C3, C4) __extension__	\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2			\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4)			\
      rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
@@ -615,7 +615,7 @@ extern void rtvec_check_failed_bounds (rtvec, int, const char *, int,
    _rtx; })
 
 #define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5) __extension__	\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2			\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5)						\
@@ -625,7 +625,7 @@ extern void rtvec_check_failed_bounds (rtvec, int, const char *, int,
 
 #define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		\
   __extension__								\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2			\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6)			\
@@ -635,7 +635,7 @@ extern void rtvec_check_failed_bounds (rtvec, int, const char *, int,
 
 #define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		\
   __extension__								\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2			\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6			\
@@ -646,7 +646,7 @@ extern void rtvec_check_failed_bounds (rtvec, int, const char *, int,
 
 #define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	\
   __extension__								\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2			\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6			\
@@ -910,7 +910,7 @@ enum label_kind
 
 /* Retrieve the kind of LABEL.  */
 #define LABEL_KIND(LABEL) __extension__					\
-({ rtx const _label = (LABEL);						\
+({ __typeof (LABEL) const _label = (LABEL);					\
    if (GET_CODE (_label) != CODE_LABEL)					\
      rtl_check_failed_flag ("LABEL_KIND", _label, __FILE__, __LINE__,	\
 			    __FUNCTION__);				\
@@ -918,8 +918,8 @@ enum label_kind
 
 /* Set the kind of LABEL.  */
 #define SET_LABEL_KIND(LABEL, KIND) do {				\
-   rtx _label = (LABEL);						\
-   unsigned int _kind = (KIND);						\
+   rtx const _label = (LABEL);						\
+   const unsigned int _kind = (KIND);					\
    if (GET_CODE (_label) != CODE_LABEL)					\
      rtl_check_failed_flag ("SET_LABEL_KIND", _label, __FILE__, __LINE__, \
 			    __FUNCTION__);				\
@@ -935,8 +935,8 @@ enum label_kind
 
 /* Set the kind of LABEL.  */
 #define SET_LABEL_KIND(LABEL, KIND) do {				\
-   rtx _label = (LABEL);						\
-   unsigned int _kind = (KIND);						\
+   rtx const _label = (LABEL);						\
+   const unsigned int _kind = (KIND);					\
    _label->jump = ((_kind >> 1) & 1);					\
    _label->call = (_kind & 1);						\
 } while (0)

@@ -39,12 +39,16 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
+typedef const struct bitmap_head_def *const_bitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
+typedef const struct rtx_def *const_rtx;
 struct rtvec_def;
 typedef struct rtvec_def *rtvec;
+typedef const struct rtvec_def *const_rtvec;
 union tree_node;
 typedef union tree_node *tree;
+typedef const union tree_node *const_tree;
 union section;
 typedef union section section;
 
@@ -78,8 +82,11 @@ struct _dont_use_rtx_here_;
 struct _dont_use_rtvec_here_;
 union _dont_use_tree_here_;
 #define rtx struct _dont_use_rtx_here_ *
+#define const_rtx struct _dont_use_rtx_here_ *
 #define rtvec struct _dont_use_rtvec_here *
+#define const_rtvec struct _dont_use_rtvec_here *
 #define tree union _dont_use_tree_here_ *
+#define const_tree union _dont_use_tree_here_ *
 
 #endif
 
