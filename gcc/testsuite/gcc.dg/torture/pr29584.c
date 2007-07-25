@@ -1,5 +1,5 @@
 /* PR middle-end/29584 */
-/* { dg-do compile } */
+/* { dg-do compile { target { ilp32 || lp64 } } } */
 
 extern void *foo1 (void);
 extern void foo2 (void);

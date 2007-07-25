@@ -1,5 +1,11 @@
 2007-07-25  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
+	* gcc.dg/torture/pr29584.c: Only run test if pointers have the same
+	  size as "long int" and are 32 or 64 bits wide.
+	* gcc.dg/torture/pr28814.c: Likewise.
+
+2007-07-25  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
 	* gcc.dg/torture/pr30313.c (struct S): Make sure the bit-field is
 	  exactly as wide as an int.
 
