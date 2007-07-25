@@ -427,8 +427,8 @@ proc cleanup-dump { suffix } {
 
 # Remove files kept by --save-temps for the current test.
 #
-# Currently this is only .i files, but more can be added if there are
-# tests generating them.
+# Currently this is only .i, .ii and .s files, but more can be added
+# if there are tests generating them.
 proc cleanup-saved-temps { } {
     global additional_sources
 

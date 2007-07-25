@@ -153,3 +153,7 @@ Tune code for the given processor
 mwords-little-endian
 Target Report RejectNegative Mask(LITTLE_WORDS)
 Assume big endian bytes, little endian words
+
+mvectorize-with-neon-quad
+Target Report Mask(NEON_VECTORIZE_QUAD)
+Use Neon quad-word (rather than double-word) registers for vectorization

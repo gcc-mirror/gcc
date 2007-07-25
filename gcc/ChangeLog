@@ -1,3 +1,176 @@
+2007-07-25  Julian Brown  <julian@codesourcery.com>
+	    Paul Brook  <paul@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+
+	* Makefile.in (TEXI_GCC_FILES): Add arm-neon-intrinsics.texi.
+	* config.gcc (arm*-*-*): Add arm_neon.h to extra headers.
+	(with_fpu): Allow --with-fpu=neon.
+	* config/arm/aof.h (ADDITIONAL_REGISTER_NAMES): Add Q0-Q15.
+	* config/arm/aout.h (ADDITIONAL_REGISTER_NAMES): Add Q0-Q15.
+	* config/arm/arm-modes.def (EI, OI, CI, XI): New modes.
+	* config/arm/arm-protos.h (neon_immediate_valid_for_move)
+	(neon_immediate_valid_for_logic, neon_output_logic_immediate)
+	(neon_pairwise_reduce, neon_expand_vector_init, neon_reinterpret)
+	(neon_emit_pair_result_insn, neon_disambiguate_copy)
+	(neon_vector_mem_operand, neon_struct_mem_operand, output_move_quad)
+	(output_move_neon): Add prototypes.
+	* config/arm/arm.c (FL_NEON): New flag for NEON processor capability.
+	(all_fpus): Add FPUTYPE_NEON.
+	(fp_model_for_fpu): Add NEON field.
+	(arm_return_in_memory): Return vectors <= 16 bytes in ARM registers.
+	(arm_arg_partial_bytes): Allow NEON vectors to be passed partially
+	in registers.
+	(arm_legitimate_address_p): Don't support fancy addressing for NEON
+	structure moves.
+	(thumb2_legitimate_address_p): Likewise.
+	(neon_valid_immediate): Recognize and prepare constants suitable for
+	NEON instructions.
+	(neon_immediate_valid_for_move): New function. Recognize and prepare
+	immediates for NEON move instructions.
+	(neon_immediate_valid_for_logic): New function. Recognize and
+	prepare immediates for NEON logic instructions.
+	(neon_output_logic_immediate): New function. Create asm string
+	suitable for outputting immediate logic instructions.
+	(neon_pairwise_reduce): New function. Implement reduction using
+	pairwise operations.
+	(neon_expand_vector_init): New function. Expand a (possibly
+	non-constant) vector initialization.
+	(neon_vector_mem_operand): New function. Memory operands supported
+	for quad-word loads/stores to/from ARM or NEON registers. Don't
+	allow base+offset addressing for core regs.
+	(neon_struct_mem_operand): New function. Valid mems for NEON
+	structure moves.
+	(coproc_secondary_reload_class): Enable NEON registers to be loaded
+	from neon_vector_mem_operand addresses without a secondary register.
+	(add_minipool_forward_ref): Handle >8-byte minipool entries.
+	(add_minipool_backward_ref): Likewise.
+	(dump_minipool): Likewise.
+	(push_minipool_fix): Likewise.
+	(output_move_quad): New function. Output quad-word moves, loads and
+	stores using ARM registers.
+	(output_move_vfp): Add support for vectors in VFP (NEON) D
+	registers.
+	(output_move_neon): Output a NEON load/store to/from a quadword
+	register.
+	(arm_print_operand): Implement new codes:
+	- 'c' for unadorned integers (without a # sign).
+	- 'J', 'K' for reg+2/reg+3, reg+3/reg+2 in little/big-endian
+	mode.
+	- 'e', 'f' for the low and high D parts of a NEON Q register.
+	- 'q' outputs a NEON Q register.
+	- 'h' outputs ranges of D registers for VLDM/VSTM etc.
+	- 'T' prints NEON opcode features from a coded bitmask.
+	- 'F' is similar to T, but signed/unsigned codes both print as
+	'i'.
+	- 't' is similar to T, but 'u' is printed instead of 'p'.
+	- 'O' prints 'r' if NEON instruction should perform rounding (as
+	specified by bitmask), else prints nothing.
+	- '#' is a punctuation character to stop operand numbers from
+	running together with following digits in the assembler
+	strings for instructions (when using mode attributes).
+	(arm_assemble_integer): Handle extra NEON vector modes. Permute
+	constant vectors in big-endian mode, where necessary.
+	(arm_hard_regno_mode_ok): Allow vectors in VFP/NEON registers.
+	Handle EI, OI, CI, XI modes.
+	(ashlv4hi3, ashlv2si3, lshrv4hi3, lshrv2si3, ashrv4hi3)
+	(ashrv2si3): Rename IWMMXT2_BUILTINs to...
+	(ashlv4hi3_iwmmxt, ashlv2si3_iwmmxt, lshrv4hi3_iwmmxt)
+	(lshrv2si3_iwmmxt, ashrv4hi3_iwmmxt, ashrv2si3_iwmmxt): New names.
+	(neon_builtin_type_bits): Add enumeration, one bit for each vector
+	type.
+	(v8qi_UP, v4hi_UP, v2si_UP, v2sf_UP, di_UP, v16qi_UP, v8hi_UP)
+	(v4si_UP, v4sf_UP, v2di_UP, ti_UP, ei_UP, oi_UP, UP): Define macros
+	to turn v8qi, etc. into bits defined above.
+	(neon_itype): New enumeration. Classifications of NEON builtins.
+	(neon_builtin_datum): Define struct. Contains information about
+	a single builtin (with multiple modes).
+	(CF): Define helper macro for...
+	(VAR1...VAR10): Define builtins with a type, name and 1-10 different
+	modes.
+	(neon_builtin_data): New array. Define information about builtins
+	for use during initialization/expansion.
+	(arm_init_neon_builtins): New function.
+	(arm_init_builtins): Call arm_init_neon_builtins if TARGET_NEON is
+	true.
+	(neon_builtin_compare): New function.
+	(locate_neon_builtin_icode): New function. Find an insn code for a
+	builtin given a function code for that builtin. Also return type of
+	builtin (NEON_BINOP, NEON_UNOP etc.).
+	(builtin_arg): New enumeration. Types of arguments for builtins.
+	(arm_expand_neon_args): New function. Expand a generic NEON builtin.
+	Takes a variable argument list of builtin_arg types, terminated by
+	NEON_ARG_STOP.
+	(arm_expand_neon_builtin): New function. Expand a NEON builtin.
+	(neon_reinterpret): New function. Expand NEON reinterpret intrinsic.
+	(neon_emit_pair_result_insn): New function. Support returning pairs
+	of vectors via a pointer.
+	(neon_disambiguate_copy): New function. Set up operands for a
+	multi-word copy such that registers do not get clobbered.
+	(arm_expand_builtin): Call arm_expand_neon_builtin if fcode >=
+	ARM_BUILTIN_NEON_BASE.
+	(arm_file_start): Set float-abi attribute for NEON.
+	(arm_vector_mode_supported_p): Enable NEON vector modes.
+	(arm_mangle_map_entry): New.
+	(arm_mangle_map): New.
+	(arm_mangle_vector_type): New.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_NEON__
+	when appropriate.
+	(TARGET_NEON): New macro. Target supports NEON.
+	(fputype): Add FPUTYPE_NEON.
+	(UNITS_PER_SIMD_WORD): Define. Allow quad-word registers to be used
+	for vectorization based on command-line arg.
+	(NEON_REGNO_OK_FOR_NREGS): Define.
+	(VALID_NEON_DREG_MODE, VALID_NEON_QREG_MODE)
+	(VALID_NEON_STRUCT_MODE): Define.
+	(PRINT_OPERAND_PUNCT_VALID_P): '#' is valid punctuation.
+	(arm_builtins): Add ARM_BUILTIN_NEON_BASE.
+	* config/arm/arm.md (VUNSPEC_POOL_16): Insert constant for unspec.
+	(consttable_16): Add pattern for outputting 16-byte minipool
+	entries.
+	(movv2si, movv4hi, movv8qi): Remove blank expanders (redefined in
+	vec-common.md).
+	(vec-common.md, neon.md): Include md files.
+	* config/arm/arm.opt (mvectorize-with-neon-quad): Add option.
+	* config/arm/constraints.md (constraint "Dn", "Dl", "DL"): Define.
+	(memory_constraint "Ut", "Un", "Us"): Define.
+	* config/arm/iwmmxt.md (VMMX, VSHFT): New mode macros.
+	(MMX_char): New mode attribute.
+	(addv8qi3, addv4hi3, addv2si3): Remove. Replace with...
+	(*add<mode>3_iwmmxt): New insn pattern.
+	(subv8qi3, subv4hi3, subv2si3): Remove. Replace with...
+	(*sub<mode>3_iwmmxt): New insn pattern.
+	(mulv4hi3): Rename to...
+	(*mulv4hi3_iwmmxt): This.
+	(smaxv8qi3, smaxv4hi3, smaxv2si3, umaxv8qi3, umaxv4hi3)
+	(umaxv2si3, sminv8qi3, sminv4hi3, sminv2si3, uminv8qi3)
+	(uminv4hi3, uminv2si3): Remove. Replace with...
+	(*smax<mode>3_iwmmxt, *umax<mode>3_iwmmxt, *smin<mode>3_iwmmxt)
+	(*umin<mode>3_iwmmxt): These.
+	(ashrv4hi3, ashrv2si3, ashrdi3_iwmmxt): Replace with...
+	(ashr<mode>3_iwmmxt): This new pattern.
+	(lshrv4hi3, lshrv2si3, lshrdi3_iwmmxt): Replace with...
+	(lshr<mode>3_iwmmxt): This new pattern.
+	(ashlv4hi3, ashlv2si3, ashldi3_iwmmxt): Replace with...
+	(ashl<mode>3_iwmmxt): This new pattern.
+	* config/arm/neon-docgen.ml: New file. Generate documentation for
+	intrinsics.
+	* config/arm/neon-gen.ml: New file. Generate arm_neon.h header.
+	* config/arm/arm_neon.h: New (autogenerated).
+	* config/arm/neon-testgen.ml: New file. Generate NEON tests
+	automatically.
+	* config/arm/neon.md: New file. Define NEON instructions.
+	* config/arm/neon.ml: New file. Abstract description of NEON
+	instructions, used to generate arm_neon.h header, documentation and
+	tests.
+	* config/arm/t-arm (MD_INCLUDES): Add vec-common.md, neon.md.
+	* vec-common.md: New file. Shared parts for iWMMXt and NEON vector
+	support.
+	* doc/extend.texi (ARM Built-in Functions): Rename and remove
+	extraneous comma.
+	(ARM NEON Intrinsics): New subsection.
+	* doc/arm-neon-intrinsics.texi: New (autogenerated).
+
 2007-07-25  Danny Smith   <dannysmith@users.sourceforge.net>
 
 	* config/i386/i386-protos.h (i386_pe_asm_file_end): Remove

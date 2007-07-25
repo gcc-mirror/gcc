@@ -58,3 +58,11 @@ VECTOR_MODES (INT, 16);       /* V16QI V8HI V4SI V2DI */
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
 VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
 
+/* Opaque integer modes for 3, 4, 6 or 8 Neon double registers (2 is
+   TImode).  */
+INT_MODE (EI, 24);
+INT_MODE (OI, 32);
+INT_MODE (CI, 48);
+/* ??? This should actually have 512 bits but the precision only has 9
+   bits.  */
+FRACTIONAL_INT_MODE (XI, 511, 64);

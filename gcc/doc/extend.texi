@@ -6404,7 +6404,8 @@ instructions, but allow the compiler to schedule those calls.
 
 @menu
 * Alpha Built-in Functions::
-* ARM Built-in Functions::
+* ARM iWMMXt Built-in Functions::
+* ARM NEON Intrinsics::
 * Blackfin Built-in Functions::
 * FR-V Built-in Functions::
 * X86 Built-in Functions::
@@ -6497,11 +6498,11 @@ void *__builtin_thread_pointer (void)
 void __builtin_set_thread_pointer (void *)
 @end smallexample
 
-@node ARM Built-in Functions
-@subsection ARM Built-in Functions
+@node ARM iWMMXt Built-in Functions
+@subsection ARM iWMMXt Built-in Functions
 
 These built-in functions are available for the ARM family of
-processors, when the @option{-mcpu=iwmmxt} switch is used:
+processors when the @option{-mcpu=iwmmxt} switch is used:
 
 @smallexample
 typedef int v2si __attribute__ ((vector_size (8)));
@@ -6643,6 +6644,14 @@ v2si __builtin_arm_wunpckilw (v2si, v2si)
 long long __builtin_arm_wxor (long long, long long)
 long long __builtin_arm_wzero ()
 @end smallexample
+
+@node ARM NEON Intrinsics
+@subsection ARM NEON Intrinsics
+
+These built-in intrinsics for the ARM Advanced SIMD extension are available
+when the @option{-mfpu=neon} switch is used:
+
+@include arm-neon-intrinsics.texi
 
 @node Blackfin Built-in Functions
 @subsection Blackfin Built-in Functions
