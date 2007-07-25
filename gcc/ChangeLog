@@ -1,5 +1,9 @@
 2007-07-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* cfghooks.c (split_block): Fix the information about loop latch.
+
+2007-07-25  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* cfgloopmanip.c (fix_loop_structure): Call force_single_succ_latches.
 
 2007-07-25  Zdenek Dvorak  <dvorakz@suse.cz>
