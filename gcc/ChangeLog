@@ -1,3 +1,14 @@
+2007-07-24  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (move_table): New type.
+	(move_cost, may_move_in_cost, may_move_out_cost): Use it.
+	(init_move_cost): Break out from ...
+	(init_reg_sets_1): ... here; simplify computation of
+	have_regs-of_mode and contains_reg_of_mode.
+	(record_reg_classes): Unswitch internal loops.
+	(copy_cost): Trigger lazy initialization of move cost
+	(record_address_regs): Likewise.
+
 2007-07-24  Daniel Berlin  <dberlin@dberlin.org>
 
 	* config/darwin.c (darwin_override_options): Don't force on
