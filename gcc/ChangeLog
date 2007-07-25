@@ -1,3 +1,8 @@
+2007-07-25  Daniel Berlin  <dberlin@dberlin.org>
+
+	* config/darwin.c (darwin_override_options): Additional fix for
+	debug info formats that don't support var tracking.
+
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cselib.c (entry_and_rtx_equal_p): Constify.
