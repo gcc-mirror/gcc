@@ -382,6 +382,9 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM arm_cannot_force_const_mem
 
+#undef TARGET_MANGLE_TYPE
+#define TARGET_MANGLE_TYPE arm_mangle_type
+
 #ifdef HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL arm_output_dwarf_dtprel
@@ -14846,7 +14849,7 @@ arm_init_neon_builtins (void)
 
   /* Define typedefs which exactly correspond to the modes we are basing vector
      types on.  If you change these names you'll need to change
-     the table used by arm_mangle_vector_type too.  */
+     the table used by arm_mangle_type too.  */
   (*lang_hooks.types.register_builtin_type) (neon_intQI_type_node,
 					     "__builtin_neon_qi");
   (*lang_hooks.types.register_builtin_type) (neon_intHI_type_node,
@@ -18848,6 +18851,71 @@ thumb2_output_casesi (rtx *operands)
     default:
       gcc_unreachable ();
     }
+}
+
+/* A table and a function to perform ARM-specific name mangling for
+   NEON vector types in order to conform to the AAPCS (see "Procedure
+   Call Standard for the ARM Architecture", Appendix A).  To qualify
+   for emission with the mangled names defined in that document, a
+   vector type must not only be of the correct mode but also be
+   composed of NEON vector element types (e.g. __builtin_neon_qi).  */
+typedef struct
+{
+  enum machine_mode mode;
+  const char *element_type_name;
+  const char *aapcs_name;
+} arm_mangle_map_entry;
+
+static arm_mangle_map_entry arm_mangle_map[] = {
+  /* 64-bit containerized types.  */
+  { V8QImode,  "__builtin_neon_qi",     "15__simd64_int8_t" },
+  { V8QImode,  "__builtin_neon_uqi",    "16__simd64_uint8_t" },
+  { V4HImode,  "__builtin_neon_hi",     "16__simd64_int16_t" },
+  { V4HImode,  "__builtin_neon_uhi",    "17__simd64_uint16_t" },
+  { V2SImode,  "__builtin_neon_si",     "16__simd64_int32_t" },
+  { V2SImode,  "__builtin_neon_usi",    "17__simd64_uint32_t" },
+  { V2SFmode,  "__builtin_neon_sf",     "18__simd64_float32_t" },
+  { V8QImode,  "__builtin_neon_poly8",  "16__simd64_poly8_t" },
+  { V4HImode,  "__builtin_neon_poly16", "17__simd64_poly16_t" },
+  /* 128-bit containerized types.  */
+  { V16QImode, "__builtin_neon_qi",     "16__simd128_int8_t" },
+  { V16QImode, "__builtin_neon_uqi",    "17__simd128_uint8_t" },
+  { V8HImode,  "__builtin_neon_hi",     "17__simd128_int16_t" },
+  { V8HImode,  "__builtin_neon_uhi",    "18__simd128_uint16_t" },
+  { V4SImode,  "__builtin_neon_si",     "17__simd128_int32_t" },
+  { V4SImode,  "__builtin_neon_usi",    "18__simd128_uint32_t" },
+  { V4SFmode,  "__builtin_neon_sf",     "19__simd128_float32_t" },
+  { V16QImode, "__builtin_neon_poly8",  "17__simd128_poly8_t" },
+  { V8HImode,  "__builtin_neon_poly16", "18__simd128_poly16_t" },
+  { VOIDmode, NULL, NULL }
+};
+
+const char *
+arm_mangle_type (tree type)
+{
+  arm_mangle_map_entry *pos = arm_mangle_map;
+
+  if (TREE_CODE (type) != VECTOR_TYPE)
+    return NULL;
+
+  /* Check the mode of the vector type, and the name of the vector
+     element type, against the table.  */
+  while (pos->mode != VOIDmode)
+    {
+      tree elt_type = TREE_TYPE (type);
+
+      if (pos->mode == TYPE_MODE (type)
+	  && TREE_CODE (TYPE_NAME (elt_type)) == TYPE_DECL
+	  && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (elt_type))),
+		      pos->element_type_name))
+        return pos->aapcs_name;
+
+      pos++;
+    }
+
+  /* Use the default mangling for unrecognized (possibly user-defined)
+     vector types.  */
+  return NULL;
 }
 
 #include "gt-arm.h"

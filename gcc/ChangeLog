@@ -1,4 +1,50 @@
 2007-07-25  Julian Brown  <julian@codesourcery.com>
+	    Mark Shinwell  <shinwell@codesourcery.com>
+
+	* config/alpha/alpha.c (alpha_mangle_fundamental_type): Rename to...
+	(alpha_mangle_type): This.
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Don't define.
+	(TARGET_MANGLE_TYPE): Define this instead.
+	* config/arm/arm-protos.h (arm_mangle_type): Add prototype.
+	* config/arm/arm.c (TARGET_MANGLE_TYPE): Define target hook.
+	(arm_init_neon_builtins): Fix comment.
+	(arm_mangle_map_entry): New.
+	(arm_mangle_map): New.
+	(arm_mangle_type): New.
+	* config/i386/i386.c (ix86_mangle_fundamental_type): Rename to...
+	(ix86_mangle_type): This. Use TYPE_MAIN_VARIANT and restrict
+	mangled types to VOID_TYPE, BOOLEAN_TYPE, INTEGER_TYPE, REAL_TYPE.
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Don't define.
+	(TARGET_MANGLE_TYPE): Define this instead.
+	* config/ia64/ia64.c (ia64_mangle_fundamental_type): Rename to...
+	(ia64_mangle_type): This. Use TYPE_MAIN_VARIANT  and restrict
+	mangled types to VOID_TYPE, BOOLEAN_TYPE, INTEGER_TYPE, REAL_TYPE.
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Don't define.
+	(TARGET_MANGLE_TYPE): Define this instead.
+	* config/rs6000/rs6000.c (rs6000_mangle_fundamental_type): Rename
+	to...
+	(rs6000_mangle_type): This. Use TYPE_MAIN_VARIANT.
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Don't define.
+	(TARGET_MANGLE_TYPE): Define this instead.
+	* config/s390/s390.c (s390_mangle_fundamental_type): Rename to...
+	(s390_mangle_type): This.
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Don't define.
+	(TARGET_MANGLE_TYPE): Define this instead.
+	* config/sparc/sparc.c (sparc_mangle_fundamental_type): Rename to...
+	(sparc_mangle_type): This.
+	(TARGET_MANGLE_FUNDAMENTAL_TYPE): Don't define.
+	(TARGET_MANGLE_TYPE): Define this instead.
+	* cp/mangle.c (write_type): Call mangle_type target hook on all
+	types before mangling.  Use original type, not main variant, as
+	argument.
+	* target-def.h (TARGET_MANGLE_FUNDAMENTAL_TYPE): Rename hook to...
+	(TARGET_MANGLE_TYPE): This.
+	* target.h (gcc_target): Rename mangle_fundamental_type to
+	mangle_type.
+	* doc/tm.texi (TARGET_MANGLE_FUNDAMENTAL_TYPE): Rename section to...
+	(TARGET_MANGLE_TYPE): This. Note slightly different semantics.
+
+2007-07-25  Julian Brown  <julian@codesourcery.com>
 	    Paul Brook  <paul@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 	    Mark Shinwell  <shinwell@codesourcery.com>
