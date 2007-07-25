@@ -149,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       errno = 0;
 #endif
 
-#if defined(_GLIBCXX_HAVE_STRTOLD)
+#if defined(_GLIBCXX_HAVE_STRTOLD) && !defined(_GLIBCXX_HAVE_BROKEN_STRTOLD)
       char* __sanity;
       long double __ld = strtold(__s, &__sanity);
 

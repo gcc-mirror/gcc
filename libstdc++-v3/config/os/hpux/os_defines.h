@@ -97,4 +97,12 @@ typedef long int __padding_type;
    are weak; gthread relies on such unsatisfied references being resolved
    to null pointers when weak symbol support is on.  */
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
+
+// The strtold function is obsolete and not C99 conformant on PA HP-UX.
+// It returns plus or minus _LDBL_MAX instead of plus or minus HUGE_VALL
+// if the correct value would cause overflow.  It doesn't handle "inf",
+// "infinity" and "nan".  It is not thread safe. 
+#if defined (__hppa__)
+#define _GLIBCXX_HAVE_BROKEN_STRTOLD 1
+#endif
 #endif
