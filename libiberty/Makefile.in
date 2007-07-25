@@ -1,7 +1,9 @@
+# Makefile for the libiberty library.
+# Originally written by K. Richard Pixley <rich@cygnus.com>.
 #
-# Makefile
-#   Copyright (C) 1990, 91-99, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
-#   Free Software Foundation
+# Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+# 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software
+# Foundation
 #
 # This file is part of the libiberty library.
 # Libiberty is free software; you can redistribute it and/or
@@ -18,13 +20,6 @@
 # License along with libiberty; see the file COPYING.LIB.  If not,
 # write to the Free Software Foundation, Inc., 51 Franklin Street - Fifth Floor,
 # Boston, MA 02110-1301, USA.
-#
-
-# This file was written by K. Richard Pixley <rich@cygnus.com>.
-
-#
-# Makefile for libiberty directory
-#
 
 libiberty_topdir = @libiberty_topdir@
 srcdir = @srcdir@
@@ -152,7 +147,7 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	 splay-tree.c stpcpy.c stpncpy.c strcasecmp.c strchr.c strdup.c	\
 	 strerror.c strncasecmp.c strncmp.c strrchr.c strsignal.c	\
 	 strstr.c strtod.c strtol.c strtoul.c strndup.c	strverscmp.c	\
-	ternary.c tmpnam.c						\
+	tmpnam.c							\
 	unlink-if-ordinary.c						\
 	vasprintf.c vfork.c vfprintf.c vprintf.c vsnprintf.c vsprintf.c	\
 	waitpid.c							\
@@ -176,7 +171,6 @@ REQUIRED_OFILES = ./regex.o ./cplus-dem.o ./cp-demangle.o ./md5.o	\
 	./pex-common.o ./pex-one.o @pexecute@				\
 	./safe-ctype.o ./sort.o ./spaces.o ./splay-tree.o ./strerror.o	\
 	 ./strsignal.o							\
-	./ternary.o							\
 	./unlink-if-ordinary.o						\
 	./xatexit.o ./xexit.o ./xmalloc.o ./xmemdup.o ./xstrdup.o	\
 	 ./xstrerror.o ./xstrndup.o
@@ -219,8 +213,7 @@ INSTALLED_HEADERS =                                                     \
 	$(INCDIR)/partition.h                                           \
 	$(INCDIR)/safe-ctype.h                                          \
 	$(INCDIR)/sort.h                                                \
-	$(INCDIR)/splay-tree.h                                          \
-	$(INCDIR)/ternary.h
+	$(INCDIR)/splay-tree.h
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	-rm -f $(TARGETLIB) pic/$(TARGETLIB)
@@ -1082,13 +1075,6 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strverscmp.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strverscmp.c $(OUTPUT_OPTION)
-
-./ternary.o: $(srcdir)/ternary.c stamp-h $(INCDIR)/ansidecl.h \
-	$(INCDIR)/libiberty.h $(INCDIR)/ternary.h
-	if [ x"$(PICFLAG)" != x ]; then \
-	  $(COMPILE.c) $(PICFLAG) $(srcdir)/ternary.c -o pic/$@; \
-	else true; fi
-	$(COMPILE.c) $(srcdir)/ternary.c $(OUTPUT_OPTION)
 
 ./tmpnam.o: $(srcdir)/tmpnam.c
 	if [ x"$(PICFLAG)" != x ]; then \
