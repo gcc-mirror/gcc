@@ -107,7 +107,7 @@ gimple_alloc_histogram_value (struct function *fun ATTRIBUTE_UNUSED,
 static hashval_t
 histogram_hash (const void *x)
 {
-  return htab_hash_pointer (((histogram_value)x)->hvalue.stmt);
+  return htab_hash_pointer (((const_histogram_value)x)->hvalue.stmt);
 }
 
 /* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
@@ -115,7 +115,7 @@ histogram_hash (const void *x)
 static int
 histogram_eq (const void *x, const void *y)
 {
-  return ((histogram_value) x)->hvalue.stmt == (tree)y;
+  return ((const_histogram_value) x)->hvalue.stmt == (const_tree)y;
 }
 
 /* Set histogram for STMT.  */

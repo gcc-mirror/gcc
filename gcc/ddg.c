@@ -856,8 +856,8 @@ find_predecessors (sbitmap preds, ddg_ptr g, sbitmap ops)
 static int
 compare_sccs (const void *s1, const void *s2)
 {
-  int rec_l1 = (*(ddg_scc_ptr *)s1)->recurrence_length;
-  int rec_l2 = (*(ddg_scc_ptr *)s2)->recurrence_length; 
+  const int rec_l1 = (*(const ddg_scc_ptr *)s1)->recurrence_length;
+  const int rec_l2 = (*(const ddg_scc_ptr *)s2)->recurrence_length; 
   return ((rec_l2 > rec_l1) - (rec_l2 < rec_l1));
 	  
 }

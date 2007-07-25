@@ -1,3 +1,30 @@
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lex.c (c_lex_with_flags, lex_string): Constify.
+	* c-ppoutput.c (print_line, pp_dir_change): Likewise.
+	* c-typeck.c (free_all_tagged_tu_seen_up_to): Likewise.
+	* cfg.c (bb_copy_original_hash, bb_copy_original_eq): Likewise.
+	* cfgloop.c (loop_exit_hash, loop_exit_eq): Likewise.
+	* ddg.c (compare_sccs): Likewise.
+	* df-scan.c (df_ref_compare, df_mw_compare): Likewise.
+	* dfp.c (decimal_real_from_string, decimal_to_decnumber,
+	decimal_to_binary, decimal_do_compare, decimal_real_to_decimal,
+	decimal_do_fix_trunc, decimal_real_to_integer,
+	decimal_real_to_integer2, decimal_real_maxval): Likewise.
+	* dse.c (const_group_info_t): New.
+	(invariant_group_base_eq, invariant_group_base_hash): Constify.
+	* dwarf2out.c (const_dw_die_ref): New.
+	(decl_die_table_hash, decl_die_table_eq, file_info_cmp): Constify.
+	* tree-browser.c (TB_parent_eq): Likewise.
+	* unwind-dw2-fde.c (__register_frame_info_bases,
+	__deregister_frame_info_bases, fde_unencoded_compare, fde_split,
+	add_fdes, linear_search_fdes, binary_search_unencoded_fdes):
+	Likewise.
+	* unwind-dw2-fde.h (get_cie, next_fde): Likewise.
+	* unwind-dw2.c (uw_frame_state_for): Likewise.
+	* value-prof.c (histogram_hash, histogram_eq): Likewise.
+	* value-prof.h (const_histogram_value): New.
+
 2007-07-25  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (machine_function): Add

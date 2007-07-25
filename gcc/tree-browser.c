@@ -751,9 +751,8 @@ store_child_info (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 static int
 TB_parent_eq (const void *p1, const void *p2)
 {
-  tree node, parent;
-  node = (tree) p2;
-  parent = (tree) p1;
+  const_tree node = (const_tree)p2;
+  tree parent = (tree) p1;
 
   if (p1 == NULL || p2 == NULL)
     return 0;

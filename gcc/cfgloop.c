@@ -942,7 +942,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
 static hashval_t
 loop_exit_hash (const void *ex)
 {
-  struct loop_exit *exit = (struct loop_exit *) ex;
+  const struct loop_exit *const exit = (const struct loop_exit *) ex;
 
   return htab_hash_pointer (exit->e);
 }
@@ -952,7 +952,7 @@ loop_exit_hash (const void *ex)
 static int
 loop_exit_eq (const void *ex, const void *e)
 {
-  struct loop_exit *exit = (struct loop_exit *) ex;
+  const struct loop_exit *const exit = (const struct loop_exit *) ex;
 
   return exit->e == e;
 }
