@@ -18,3 +18,12 @@ __inline int
 sigaddset(sigset_t *set, int signo)
 {}
 #endif  /* NETBSD_C99_INLINE_1_CHECK */
+
+
+#if defined( NETBSD_C99_INLINE_2_CHECK )
+#ifdef __GNUC_STDC_INLINE__
+#define _SIGINLINE extern __attribute__((__gnu_inline__)) __inline
+#else
+#define _SIGINLINE extern __inline
+#endif
+#endif  /* NETBSD_C99_INLINE_2_CHECK */

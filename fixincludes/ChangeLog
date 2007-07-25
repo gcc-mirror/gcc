@@ -1,3 +1,10 @@
+2007-07-24  Krister Walfridsson  <cato@df.lth.se>
+
+	PR target/30058
+	* inclhack.def (netbsd_c99_inline_2): New.
+	* fixincl.x: Regenerate.
+	* tests/base/signal.h: Update.
+
 2007-07-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR target/32641
