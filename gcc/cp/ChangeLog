@@ -1,3 +1,13 @@
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (typename_hash, typename_compare): Constify.
+	* mangle.c (hash_type, compare_type): Likewise.
+	* pt.c (eq_local_specializations, hash_local_specialization):
+	Likewise.
+	* tree.c (cplus_array_hash, cplus_array_compare, list_hash_eq,
+	list_hash): Likewise.
+	* typeck2.c (pat_compare): Likewise.
+
 2007-07-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* method.c (implicitly_declare_fn): Increase alignment if member

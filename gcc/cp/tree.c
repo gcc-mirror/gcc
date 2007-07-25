@@ -489,7 +489,7 @@ static hashval_t
 cplus_array_hash (const void* k)
 {
   hashval_t hash;
-  tree t = (tree) k;
+  const_tree const t = (const_tree) k;
 
   hash = (htab_hash_pointer (TREE_TYPE (t))
 	  ^ htab_hash_pointer (TYPE_DOMAIN (t)));
@@ -508,8 +508,8 @@ typedef struct cplus_array_info {
 static int
 cplus_array_compare (const void * k1, const void * k2)
 {
-  tree t1 = (tree) k1;
-  const cplus_array_info *t2 = (const cplus_array_info*) k2;
+  const_tree const t1 = (const_tree) k1;
+  const cplus_array_info *const t2 = (const cplus_array_info*) k2;
 
   if (!comptypes (TREE_TYPE (t1), t2->type, COMPARE_STRUCTURAL))
     return 0;
@@ -967,8 +967,8 @@ struct list_proxy
 static int
 list_hash_eq (const void* entry, const void* data)
 {
-  tree t = (tree) entry;
-  struct list_proxy *proxy = (struct list_proxy *) data;
+  const_tree const t = (const_tree) entry;
+  const struct list_proxy *const proxy = (const struct list_proxy *) data;
 
   return (TREE_VALUE (t) == proxy->value
 	  && TREE_PURPOSE (t) == proxy->purpose
@@ -1003,7 +1003,7 @@ list_hash_pieces (tree purpose, tree value, tree chain)
 static hashval_t
 list_hash (const void* p)
 {
-  tree t = (tree) p;
+  const_tree const t = (const_tree) p;
   return list_hash_pieces (TREE_PURPOSE (t),
 			   TREE_VALUE (t),
 			   TREE_CHAIN (t));

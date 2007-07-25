@@ -140,14 +140,14 @@ static unsigned int look_for_casts (tree lhs ATTRIBUTE_UNUSED, tree);
 static bool is_cast_from_non_pointer (tree, tree, void *);
 
 /* Get the name of TYPE or return the string "<UNNAMED>".  */
-static char*
+static const char*
 get_name_of_type (tree type)
 {
   tree name = TYPE_NAME (type);
   
   if (!name)
     /* Unnamed type, do what you like here.  */
-    return (char*)"<UNNAMED>";
+    return "<UNNAMED>";
   
   /* It will be a TYPE_DECL in the case of a typedef, otherwise, an
      identifier_node */
@@ -157,20 +157,20 @@ get_name_of_type (tree type)
 	  IDENTIFIER_NODE.  (Some decls, most often labels, may have
 	  zero as the DECL_NAME).  */
       if (DECL_NAME (name))
-	return (char*)IDENTIFIER_POINTER (DECL_NAME (name));
+	return IDENTIFIER_POINTER (DECL_NAME (name));
       else
 	/* Unnamed type, do what you like here.  */
-	return (char*)"<UNNAMED>";
+	return "<UNNAMED>";
     }
   else if (TREE_CODE (name) == IDENTIFIER_NODE)
-    return (char*)IDENTIFIER_POINTER (name);
+    return IDENTIFIER_POINTER (name);
   else 
-    return (char*)"<UNNAMED>";
+    return "<UNNAMED>";
 }
 
 struct type_brand_s 
 {
-  char* name;
+  const char* name;
   int seq;
 };
 

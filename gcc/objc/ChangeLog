@@ -1,3 +1,8 @@
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc-act.c (volatilized_hash, volatilized_eq, string_hash,
+	string_eq): Constify.
+
 2007-04-04  Stuart Hastings  <stuart@apple.com>
 
 	PR 31281

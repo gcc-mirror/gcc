@@ -2078,8 +2078,8 @@ check_method_constant (int index, bool is_interface,
 				 method_name, method_signature);
 }
 
-static char *
-get_one_type (char *p, type *t)
+static const char *
+get_one_type (const char *p, type *t)
 {
   const char *start = p;
   vfy_jclass k;
@@ -2131,7 +2131,7 @@ static void
 compute_argument_types (vfy_string signature, type *types)
 {
   int i;
-  char *p = (char *) vfy_string_bytes (signature);
+  const char *p = vfy_string_bytes (signature);
 
   /* Skip `('.  */
   ++p;
@@ -2144,7 +2144,7 @@ compute_argument_types (vfy_string signature, type *types)
 static type
 compute_return_type (vfy_string signature)
 {
-  char *p = (char *) vfy_string_bytes (signature);
+  const char *p = vfy_string_bytes (signature);
   type t;
   while (*p != ')')
     ++p;

@@ -781,7 +781,7 @@ static int
 var_ann_eq (const void *va, const void *vb)
 {
   const struct static_var_ann_d *a = (const struct static_var_ann_d *) va;
-  tree b = (tree) vb;
+  const_tree const b = (const_tree) vb;
   return (a->uid == DECL_UID (b));
 }
 

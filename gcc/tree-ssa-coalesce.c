@@ -48,6 +48,7 @@ typedef struct coalesce_pair
   int second_element;
   int cost;
 } * coalesce_pair_p;
+typedef const struct coalesce_pair *const_coalesce_pair_p;
 
 typedef struct cost_one_pair_d
 {
@@ -174,8 +175,8 @@ pop_best_coalesce (coalesce_list_p cl, int *p1, int *p2)
 static unsigned int 
 coalesce_pair_map_hash (const void *pair)
 {
-  hashval_t a = (hashval_t)(((coalesce_pair_p)pair)->first_element);
-  hashval_t b = (hashval_t)(((coalesce_pair_p)pair)->second_element);
+  hashval_t a = (hashval_t)(((const_coalesce_pair_p)pair)->first_element);
+  hashval_t b = (hashval_t)(((const_coalesce_pair_p)pair)->second_element);
 
   return COALESCE_HASH_FN (a,b);
 }
@@ -187,8 +188,8 @@ coalesce_pair_map_hash (const void *pair)
 static int 
 coalesce_pair_map_eq (const void *pair1, const void *pair2)
 {
-  coalesce_pair_p p1 = (coalesce_pair_p) pair1;
-  coalesce_pair_p p2 = (coalesce_pair_p) pair2;
+  const_coalesce_pair_p const p1 = (const_coalesce_pair_p) pair1;
+  const_coalesce_pair_p const p2 = (const_coalesce_pair_p) pair2;
 
   return (p1->first_element == p2->first_element
 	  && p1->second_element == p2->second_element);
@@ -314,7 +315,8 @@ add_coalesce (coalesce_list_p cl, int p1, int p2,
 static int 
 compare_pairs (const void *p1, const void *p2)
 {
-  return (*(coalesce_pair_p *)p1)->cost - (*(coalesce_pair_p *)p2)->cost;
+  return (*(const_coalesce_pair_p const*)p1)->cost
+    - (*(const_coalesce_pair_p const*)p2)->cost;
 }
 
 

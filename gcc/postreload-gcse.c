@@ -297,7 +297,7 @@ hash_expr (rtx x, int *do_not_record_p)
 static hashval_t
 hash_expr_for_htab (const void *expp)
 {
-  struct expr *exp = (struct expr *) expp;
+  const struct expr *const exp = (const struct expr *) expp;
   return exp->hash;
 }
 
@@ -307,8 +307,8 @@ hash_expr_for_htab (const void *expp)
 static int
 expr_equiv_p (const void *exp1p, const void *exp2p)
 {
-  struct expr *exp1 = (struct expr *) exp1p;
-  struct expr *exp2 = (struct expr *) exp2p;
+  const struct expr *const exp1 = (const struct expr *) exp1p;
+  const struct expr *const exp2 = (const struct expr *) exp2p;
   int equiv_p = exp_equiv_p (exp1->expr, exp2->expr, 0, true);
   
   gcc_assert (!equiv_p || exp1->hash == exp2->hash);

@@ -223,15 +223,15 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
 static hashval_t
 redirection_data_hash (const void *p)
 {
-  edge e = ((struct redirection_data *)p)->outgoing_edge;
+  edge e = ((const struct redirection_data *)p)->outgoing_edge;
   return e->dest->index;
 }
 
 static int
 redirection_data_eq (const void *p1, const void *p2)
 {
-  edge e1 = ((struct redirection_data *)p1)->outgoing_edge;
-  edge e2 = ((struct redirection_data *)p2)->outgoing_edge;
+  edge e1 = ((const struct redirection_data *)p1)->outgoing_edge;
+  edge e2 = ((const struct redirection_data *)p2)->outgoing_edge;
 
   return e1 == e2;
 }

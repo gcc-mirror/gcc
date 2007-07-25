@@ -1335,8 +1335,8 @@ gimplify_loop_expr (tree *expr_p, tree *pre_p)
 static int
 compare_case_labels (const void *p1, const void *p2)
 {
-  tree case1 = *(tree *)p1;
-  tree case2 = *(tree *)p2;
+  const_tree const case1 = *(const_tree const*)p1;
+  const_tree const case2 = *(const_tree const*)p2;
 
   return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
 }

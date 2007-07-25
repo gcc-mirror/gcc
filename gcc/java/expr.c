@@ -419,8 +419,8 @@ pop_type (tree type)
 static int
 type_assertion_eq (const void * k1_p, const void * k2_p)
 {
-  type_assertion k1 = *(type_assertion *)k1_p;
-  type_assertion k2 = *(type_assertion *)k2_p;
+  const type_assertion k1 = *(const type_assertion *)k1_p;
+  const type_assertion k2 = *(const type_assertion *)k2_p;
   return (k1.assertion_code == k2.assertion_code
           && k1.op1 == k2.op1
 	  && k1.op2 == k2.op2);

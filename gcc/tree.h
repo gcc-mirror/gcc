@@ -856,22 +856,22 @@ enum tree_node_structure_enum {
       gcc_unreachable ();					\
     &__t->common.type; }))
 
-extern void tree_contains_struct_check_failed (const tree,
+extern void tree_contains_struct_check_failed (const_tree,
 					       const enum tree_node_structure_enum,
 					       const char *, int, const char *)
   ATTRIBUTE_NORETURN;
 
-extern void tree_check_failed (const tree, const char *, int, const char *,
+extern void tree_check_failed (const_tree, const char *, int, const char *,
 			       ...) ATTRIBUTE_NORETURN;
-extern void tree_not_check_failed (const tree, const char *, int, const char *,
+extern void tree_not_check_failed (const_tree, const char *, int, const char *,
 				   ...) ATTRIBUTE_NORETURN;
-extern void tree_class_check_failed (const tree, const enum tree_code_class,
+extern void tree_class_check_failed (const_tree, const enum tree_code_class,
 				     const char *, int, const char *)
     ATTRIBUTE_NORETURN;
-extern void tree_range_check_failed (const tree, const char *, int,
+extern void tree_range_check_failed (const_tree, const char *, int,
 				     const char *, enum tree_code,
 				     enum tree_code);
-extern void tree_not_class_check_failed (const tree,
+extern void tree_not_class_check_failed (const_tree,
 					 const enum tree_code_class,
 					 const char *, int, const char *)
     ATTRIBUTE_NORETURN;
@@ -881,16 +881,16 @@ extern void tree_vec_elt_check_failed (int, int, const char *,
 extern void phi_node_elt_check_failed (int, int, const char *,
 				       int, const char *)
     ATTRIBUTE_NORETURN;
-extern void tree_operand_check_failed (int, tree,
+extern void tree_operand_check_failed (int, const_tree,
 				       const char *, int, const char *)
     ATTRIBUTE_NORETURN;
-extern void omp_clause_check_failed (const tree, const char *, int,
+extern void omp_clause_check_failed (const_tree, const char *, int,
 				     const char *, enum omp_clause_code)
     ATTRIBUTE_NORETURN;
 extern void omp_clause_operand_check_failed (int, const_tree, const char *,
 				             int, const char *)
     ATTRIBUTE_NORETURN;
-extern void omp_clause_range_check_failed (const tree, const char *, int,
+extern void omp_clause_range_check_failed (const_tree, const char *, int,
 			       const char *, enum omp_clause_code,
 			       enum omp_clause_code)
     ATTRIBUTE_NORETURN;
@@ -4929,7 +4929,7 @@ void init_inline_once (void);
    tcc_vl_exp nodes like CALL_EXPRs, this is stored in the node itself,
    otherwise it is looked up from the node's code.  */
 static inline int
-tree_operand_length (tree node)
+tree_operand_length (const_tree node)
 {
   if (VL_EXP_CLASS_P (node))
     return VL_EXP_OPERAND_LENGTH (node);

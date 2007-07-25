@@ -1,3 +1,13 @@
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (java_treetreehash_hash, java_treetreehash_compare):
+	Constify. 
+	* expr.c (type_assertion_eq): Likewise.
+	* jcf-io.c (compare_path): Likewise.
+	* jcf-parse.c (cmpstringp): Likewise.
+	* verify-impl.c (get_one_type, compute_argument_types,
+	compute_return_type): Likewise. 
+
 2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR target/32462

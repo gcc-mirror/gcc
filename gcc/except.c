@@ -1129,8 +1129,8 @@ eh_region_outermost (struct function *ifun, int region_a, int region_b)
 static int
 t2r_eq (const void *pentry, const void *pdata)
 {
-  tree entry = (tree) pentry;
-  tree data = (tree) pdata;
+  const_tree const entry = (const_tree) pentry;
+  const_tree const data = (const_tree) pdata;
 
   return TREE_PURPOSE (entry) == data;
 }
@@ -1138,7 +1138,7 @@ t2r_eq (const void *pentry, const void *pdata)
 static hashval_t
 t2r_hash (const void *pentry)
 {
-  tree entry = (tree) pentry;
+  const_tree const entry = (const_tree) pentry;
   return TREE_HASH (TREE_PURPOSE (entry));
 }
 
@@ -1183,8 +1183,9 @@ struct ttypes_filter GTY(())
 static int
 ttypes_filter_eq (const void *pentry, const void *pdata)
 {
-  const struct ttypes_filter *entry = (const struct ttypes_filter *) pentry;
-  tree data = (tree) pdata;
+  const struct ttypes_filter *const entry
+    = (const struct ttypes_filter *) pentry;
+  const_tree const data = (const_tree) pdata;
 
   return entry->t == data;
 }
@@ -2131,7 +2132,8 @@ finish_eh_generation (void)
 static hashval_t
 ehl_hash (const void *pentry)
 {
-  struct ehl_map_entry *entry = (struct ehl_map_entry *) pentry;
+  const struct ehl_map_entry *const entry
+    = (const struct ehl_map_entry *) pentry;
 
   /* 2^32 * ((sqrt(5) - 1) / 2) */
   const hashval_t scaled_golden_ratio = 0x9e3779b9;
@@ -2141,8 +2143,10 @@ ehl_hash (const void *pentry)
 static int
 ehl_eq (const void *pentry, const void *pdata)
 {
-  struct ehl_map_entry *entry = (struct ehl_map_entry *) pentry;
-  struct ehl_map_entry *data = (struct ehl_map_entry *) pdata;
+  const struct ehl_map_entry *const entry
+    = (const struct ehl_map_entry *) pentry;
+  const struct ehl_map_entry *const data
+    = (const struct ehl_map_entry *) pdata;
 
   return entry->label == data->label;
 }

@@ -131,6 +131,7 @@ typedef struct vn_binary_op_s
   hashval_t hashcode;
   tree result;
 } *vn_binary_op_t;
+typedef const struct vn_binary_op_s *const_vn_binary_op_t;
 
 /* Unary operations in the hashtable consist of a single operand, an
    opcode, and a type.  Result is the value number of the operation,
@@ -144,6 +145,7 @@ typedef struct vn_unary_op_s
   hashval_t hashcode;
   tree result;
 } *vn_unary_op_t;
+typedef const struct vn_unary_op_s *const_vn_unary_op_t;
 
 /* Phi nodes in the hashtable consist of their non-VN_TOP phi
    arguments, and the basic block the phi is in. Result is the value
@@ -158,6 +160,7 @@ typedef struct vn_phi_s
   hashval_t hashcode;
   tree result;
 } *vn_phi_t;
+typedef const struct vn_phi_s *const_vn_phi_t;
 
 /* Reference operands only exist in reference operations structures.
    They consist of an opcode, type, and some number of operands.  For
@@ -174,6 +177,7 @@ typedef struct vn_reference_op_struct
   tree op2;
 } vn_reference_op_s;
 typedef vn_reference_op_s *vn_reference_op_t;
+typedef const vn_reference_op_s *const_vn_reference_op_t;
 
 DEF_VEC_O(vn_reference_op_s);
 DEF_VEC_ALLOC_O(vn_reference_op_s, heap);
@@ -193,6 +197,7 @@ typedef struct vn_reference_s
   hashval_t hashcode;
   tree result;
 } *vn_reference_t;
+typedef const struct vn_reference_s *const_vn_reference_t;
 
 /* Valid hashtables storing information we have proven to be
    correct.  */
@@ -281,8 +286,8 @@ VN_INFO_GET (tree name)
 static int
 vn_reference_op_eq (const void *p1, const void *p2)
 {
-  const vn_reference_op_t vro1 = (vn_reference_op_t) p1;
-  const vn_reference_op_t vro2 = (vn_reference_op_t) p2;
+  const_vn_reference_op_t const vro1 = (const_vn_reference_op_t) p1;
+  const_vn_reference_op_t const vro2 = (const_vn_reference_op_t) p2;
   return vro1->opcode == vro2->opcode
     && vro1->type == vro2->type
     && expressions_equal_p (vro1->op0, vro2->op0)
@@ -305,7 +310,7 @@ vn_reference_op_compute_hash (const vn_reference_op_t vro1)
 static hashval_t
 vn_reference_hash (const void *p1)
 {
-  const vn_reference_t vr1 = (vn_reference_t) p1;
+  const_vn_reference_t const vr1 = (const_vn_reference_t) p1;
   return vr1->hashcode;
 }
 
@@ -337,8 +342,8 @@ vn_reference_eq (const void *p1, const void *p2)
   int i;
   vn_reference_op_t vro;
 
-  const vn_reference_t vr1 = (vn_reference_t) p1;
-  const vn_reference_t vr2 = (vn_reference_t) p2;
+  const_vn_reference_t const vr1 = (const_vn_reference_t) p1;
+  const_vn_reference_t const vr2 = (const_vn_reference_t) p2;
 
   if (vr1->vuses == vr2->vuses
       && vr1->operands == vr2->operands)
@@ -694,7 +699,7 @@ vn_reference_insert (tree op, tree result, VEC (tree, gc) *vuses)
 static hashval_t
 vn_unary_op_hash (const void *p1)
 {
-  const vn_unary_op_t vuo1 = (vn_unary_op_t) p1;
+  const_vn_unary_op_t const vuo1 = (const_vn_unary_op_t) p1;
   return vuo1->hashcode;
 }
 
@@ -711,8 +716,8 @@ vn_unary_op_compute_hash (const vn_unary_op_t vuo1)
 static int
 vn_unary_op_eq (const void *p1, const void *p2)
 {
-  const vn_unary_op_t vuo1 = (vn_unary_op_t) p1;
-  const vn_unary_op_t vuo2 = (vn_unary_op_t) p2;
+  const_vn_unary_op_t const vuo1 = (const_vn_unary_op_t) p1;
+  const_vn_unary_op_t const vuo2 = (const_vn_unary_op_t) p2;
   return vuo1->opcode == vuo2->opcode
     && vuo1->type == vuo2->type
     && expressions_equal_p (vuo1->op0, vuo2->op0);
@@ -781,7 +786,7 @@ vn_binary_op_compute_hash (const vn_binary_op_t vbo1)
 static hashval_t
 vn_binary_op_hash (const void *p1)
 {
-  const vn_binary_op_t vbo1 = (vn_binary_op_t) p1;
+  const_vn_binary_op_t const vbo1 = (const_vn_binary_op_t) p1;
   return vbo1->hashcode;
 }
 
@@ -791,8 +796,8 @@ vn_binary_op_hash (const void *p1)
 static int
 vn_binary_op_eq (const void *p1, const void *p2)
 {
-  const vn_binary_op_t vbo1 = (vn_binary_op_t) p1;
-  const vn_binary_op_t vbo2 = (vn_binary_op_t) p2;
+  const_vn_binary_op_t const vbo1 = (const_vn_binary_op_t) p1;
+  const_vn_binary_op_t const vbo2 = (const_vn_binary_op_t) p2;
   return vbo1->opcode == vbo2->opcode
     && vbo1->type == vbo2->type
     && expressions_equal_p (vbo1->op0, vbo2->op0)
@@ -897,7 +902,7 @@ vn_phi_compute_hash (vn_phi_t vp1)
 static hashval_t
 vn_phi_hash (const void *p1)
 {
-  const vn_phi_t vp1 = (vn_phi_t) p1;
+  const_vn_phi_t const vp1 = (const_vn_phi_t) p1;
   return vp1->hashcode;
 }
 
@@ -906,8 +911,8 @@ vn_phi_hash (const void *p1)
 static int
 vn_phi_eq (const void *p1, const void *p2)
 {
-  const vn_phi_t vp1 = (vn_phi_t) p1;
-  const vn_phi_t vp2 = (vn_phi_t) p2;
+  const_vn_phi_t const vp1 = (const_vn_phi_t) p1;
+  const_vn_phi_t const vp2 = (const_vn_phi_t) p2;
 
   if (vp1->block == vp2->block)
     {

@@ -130,6 +130,7 @@ typedef unsigned HOST_WIDE_INT set_el_t;
 /* Reservations of function units are represented by value of the following
    type.  */
 typedef set_el_t *reserv_sets_t;
+typedef const set_el_t *const_reserv_sets_t;
 
 /* The following structure describes a ticker.  */
 struct ticker
@@ -182,17 +183,21 @@ struct state_ainsn_table;
 
 /* The following typedefs are for brevity.  */
 typedef struct unit_decl *unit_decl_t;
+typedef const struct unit_decl *const_unit_decl_t;
 typedef struct decl *decl_t;
+typedef const struct decl *const_decl_t;
 typedef struct regexp *regexp_t;
 typedef struct unit_set_el *unit_set_el_t;
 typedef struct pattern_set_el *pattern_set_el_t;
 typedef struct pattern_reserv *pattern_reserv_t;
 typedef struct alt_state *alt_state_t;
 typedef struct state *state_t;
+typedef const struct state *const_state_t;
 typedef struct arc *arc_t;
 typedef struct ainsn *ainsn_t;
 typedef struct automaton *automaton_t;
 typedef struct automata_list_el *automata_list_el_t;
+typedef const struct automata_list_el *const_automata_list_el_t;
 typedef struct state_ainsn_table *state_ainsn_table_t;
 
 /* Undefined position.  */
@@ -228,7 +233,7 @@ static int check_presence_pattern_sets (reserv_sets_t,
 					reserv_sets_t, int);
 static int check_absence_pattern_sets  (reserv_sets_t, reserv_sets_t,
 					int);
-static arc_t first_out_arc             (state_t);
+static arc_t first_out_arc             (const_state_t);
 static arc_t next_out_arc              (arc_t);
 
 
@@ -873,56 +878,56 @@ struct state_ainsn_table
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 
 #define DECL_UNIT(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_unit)					\
        decl_mode_check_failed (_decl->mode, "dm_unit",			\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.unit; }))
 
 #define DECL_BYPASS(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_bypass)					\
        decl_mode_check_failed (_decl->mode, "dm_bypass",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.bypass; }))
 
 #define DECL_AUTOMATON(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_automaton)					\
        decl_mode_check_failed (_decl->mode, "dm_automaton",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.automaton; }))
 
 #define DECL_EXCL(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_excl)					\
        decl_mode_check_failed (_decl->mode, "dm_excl",			\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.excl; }))
 
 #define DECL_PRESENCE(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_presence)					\
        decl_mode_check_failed (_decl->mode, "dm_presence",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.presence; }))
 
 #define DECL_ABSENCE(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_absence)					\
        decl_mode_check_failed (_decl->mode, "dm_absence",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.absence; }))
 
 #define DECL_RESERV(d) __extension__					\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_reserv)					\
        decl_mode_check_failed (_decl->mode, "dm_reserv",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
      &(_decl)->decl.reserv; }))
 
 #define DECL_INSN_RESERV(d) __extension__				\
-(({ struct decl *const _decl = (d);					\
+(({ __typeof (d) const _decl = (d);					\
      if (_decl->mode != dm_insn_reserv)					\
        decl_mode_check_failed (_decl->mode, "dm_insn_reserv",		\
 			       __FILE__, __LINE__, __FUNCTION__);	\
@@ -1737,7 +1742,7 @@ string_hash (const char *string)
 static hashval_t
 automaton_decl_hash (const void *automaton_decl)
 {
-  const decl_t decl = (decl_t) automaton_decl;
+  const_decl_t const decl = (const_decl_t) automaton_decl;
 
   gcc_assert (decl->mode != dm_automaton
 	      || DECL_AUTOMATON (decl)->name);
@@ -1752,8 +1757,8 @@ static int
 automaton_decl_eq_p (const void* automaton_decl_1,
 		     const void* automaton_decl_2)
 {
-  const decl_t decl1 = (decl_t) automaton_decl_1;
-  const decl_t decl2 = (decl_t) automaton_decl_2;
+  const_decl_t const decl1 = (const_decl_t) automaton_decl_1;
+  const_decl_t const decl2 = (const_decl_t) automaton_decl_2;
 
   gcc_assert (decl1->mode == dm_automaton
 	      && DECL_AUTOMATON (decl1)->name
@@ -1838,7 +1843,7 @@ finish_automaton_decl_table (void)
 static hashval_t
 insn_decl_hash (const void *insn_decl)
 {
-  const decl_t decl = (decl_t) insn_decl;
+  const_decl_t const decl = (const_decl_t) insn_decl;
 
   gcc_assert (decl->mode == dm_insn_reserv
 	      && DECL_INSN_RESERV (decl)->name);
@@ -1851,8 +1856,8 @@ insn_decl_hash (const void *insn_decl)
 static int
 insn_decl_eq_p (const void *insn_decl_1, const void *insn_decl_2)
 {
-  const decl_t decl1 = (decl_t) insn_decl_1;
-  const decl_t decl2 = (decl_t) insn_decl_2;
+  const_decl_t const decl1 = (const_decl_t) insn_decl_1;
+  const_decl_t const decl2 = (const_decl_t) insn_decl_2;
 
   gcc_assert (decl1->mode == dm_insn_reserv
 	      && DECL_INSN_RESERV (decl1)->name
@@ -1936,7 +1941,7 @@ finish_insn_decl_table (void)
 static hashval_t
 decl_hash (const void *decl)
 {
-  const decl_t d = (const decl_t) decl;
+  const_decl_t const d = (const_decl_t) decl;
 
   gcc_assert ((d->mode == dm_unit && DECL_UNIT (d)->name)
 	      || (d->mode == dm_reserv && DECL_RESERV (d)->name));
@@ -1950,8 +1955,8 @@ decl_hash (const void *decl)
 static int
 decl_eq_p (const void *decl_1, const void *decl_2)
 {
-  const decl_t d1 = (const decl_t) decl_1;
-  const decl_t d2 = (const decl_t) decl_2;
+  const_decl_t const d1 = (const_decl_t) decl_1;
+  const_decl_t const d2 = (const_decl_t) decl_2;
 
   gcc_assert ((d1->mode == dm_unit && DECL_UNIT (d1)->name)
 	      || (d1->mode == dm_reserv && DECL_RESERV (d1)->name));
@@ -3182,11 +3187,11 @@ free_alt_states (alt_state_t alt_states_list)
 static int
 alt_state_cmp (const void *alt_state_ptr_1, const void *alt_state_ptr_2)
 {
-  if ((*(alt_state_t *) alt_state_ptr_1)->state->unique_num
-      == (*(alt_state_t *) alt_state_ptr_2)->state->unique_num)
+  if ((*(const alt_state_t *) alt_state_ptr_1)->state->unique_num
+      == (*(const alt_state_t *) alt_state_ptr_2)->state->unique_num)
     return 0;
-  else if ((*(alt_state_t *) alt_state_ptr_1)->state->unique_num
-	   < (*(alt_state_t *) alt_state_ptr_2)->state->unique_num)
+  else if ((*(const alt_state_t *) alt_state_ptr_1)->state->unique_num
+	   < (*(const alt_state_t *) alt_state_ptr_2)->state->unique_num)
     return -1;
   else
     return 1;
@@ -3376,11 +3381,11 @@ reserv_sets_hash_value (reserv_sets_t reservs)
 
 /* Comparison of given reservation sets.  */
 static int
-reserv_sets_cmp (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
+reserv_sets_cmp (const_reserv_sets_t reservs_1, const_reserv_sets_t reservs_2)
 {
   int reservs_num;
-  set_el_t *reserv_ptr_1;
-  set_el_t *reserv_ptr_2;
+  const set_el_t *reserv_ptr_1;
+  const set_el_t *reserv_ptr_2;
 
   gcc_assert (reservs_1 && reservs_2);
   reservs_num = els_in_reservs;
@@ -3402,7 +3407,7 @@ reserv_sets_cmp (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
 
 /* The function checks equality of the reservation sets.  */
 static int
-reserv_sets_eq (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
+reserv_sets_eq (const_reserv_sets_t reservs_1, const_reserv_sets_t reservs_2)
 {
   return reserv_sets_cmp (reservs_1, reservs_2) == 0;
 }
@@ -3654,12 +3659,12 @@ state_hash (const void *state)
   unsigned int hash_value;
   alt_state_t alt_state;
 
-  if (((state_t) state)->component_states == NULL)
-    hash_value = reserv_sets_hash_value (((state_t) state)->reservs);
+  if (((const_state_t) state)->component_states == NULL)
+    hash_value = reserv_sets_hash_value (((const_state_t) state)->reservs);
   else
     {
       hash_value = 0;
-      for (alt_state = ((state_t) state)->component_states;
+      for (alt_state = ((const_state_t) state)->component_states;
            alt_state != NULL;
            alt_state = alt_state->next_sorted_alt_state)
         hash_value = (((hash_value >> (sizeof (unsigned) - 1) * CHAR_BIT)
@@ -3668,7 +3673,7 @@ state_hash (const void *state)
     }
   hash_value = (((hash_value >> (sizeof (unsigned) - 1) * CHAR_BIT)
                  | (hash_value << CHAR_BIT))
-                + ((state_t) state)->automaton->automaton_order_num);
+                + ((const_state_t) state)->automaton->automaton_order_num);
   return hash_value;
 }
 
@@ -3679,17 +3684,17 @@ state_eq_p (const void *state_1, const void *state_2)
   alt_state_t alt_state_1;
   alt_state_t alt_state_2;
 
-  if (((state_t) state_1)->automaton != ((state_t) state_2)->automaton)
+  if (((const_state_t) state_1)->automaton != ((const_state_t) state_2)->automaton)
     return 0;
-  else if (((state_t) state_1)->component_states == NULL
-           && ((state_t) state_2)->component_states == NULL)
-    return reserv_sets_eq (((state_t) state_1)->reservs,
-			   ((state_t) state_2)->reservs);
-  else if (((state_t) state_1)->component_states != NULL
-           && ((state_t) state_2)->component_states != NULL)
+  else if (((const_state_t) state_1)->component_states == NULL
+           && ((const_state_t) state_2)->component_states == NULL)
+    return reserv_sets_eq (((const_state_t) state_1)->reservs,
+			   ((const_state_t) state_2)->reservs);
+  else if (((const_state_t) state_1)->component_states != NULL
+           && ((const_state_t) state_2)->component_states != NULL)
     {
-      for (alt_state_1 = ((state_t) state_1)->component_states,
-           alt_state_2 = ((state_t) state_2)->component_states;
+      for (alt_state_1 = ((const_state_t) state_1)->component_states,
+           alt_state_2 = ((const_state_t) state_2)->component_states;
            alt_state_1 != NULL && alt_state_2 != NULL;
            alt_state_1 = alt_state_1->next_sorted_alt_state,
 	   alt_state_2 = alt_state_2->next_sorted_alt_state)
@@ -3908,7 +3913,7 @@ add_arc (state_t from_state, state_t to_state, ainsn_t ainsn)
 
 /* The function returns the first arc starting from STATE.  */
 static arc_t
-first_out_arc (state_t state)
+first_out_arc (const_state_t state)
 {
   return state->first_out_arc;
 }
@@ -3997,10 +4002,10 @@ static hashval_t
 automata_list_hash (const void *automata_list)
 {
   unsigned int hash_value;
-  automata_list_el_t curr_automata_list_el;
+  const_automata_list_el_t curr_automata_list_el;
 
   hash_value = 0;
-  for (curr_automata_list_el = (automata_list_el_t) automata_list;
+  for (curr_automata_list_el = (const_automata_list_el_t) automata_list;
        curr_automata_list_el != NULL;
        curr_automata_list_el = curr_automata_list_el->next_automata_list_el)
     hash_value = (((hash_value >> (sizeof (unsigned) - 1) * CHAR_BIT)
@@ -4013,11 +4018,11 @@ automata_list_hash (const void *automata_list)
 static int
 automata_list_eq_p (const void *automata_list_1, const void *automata_list_2)
 {
-  automata_list_el_t automata_list_el_1;
-  automata_list_el_t automata_list_el_2;
+  const_automata_list_el_t automata_list_el_1;
+  const_automata_list_el_t automata_list_el_2;
 
-  for (automata_list_el_1 = (automata_list_el_t) automata_list_1,
-	 automata_list_el_2 = (automata_list_el_t) automata_list_2;
+  for (automata_list_el_1 = (const_automata_list_el_t) automata_list_1,
+	 automata_list_el_2 = (const_automata_list_el_t) automata_list_2;
        automata_list_el_1 != NULL && automata_list_el_2 != NULL;
        automata_list_el_1 = automata_list_el_1->next_automata_list_el,
 	 automata_list_el_2 = automata_list_el_2->next_automata_list_el)
@@ -5717,8 +5722,8 @@ static int
 compare_states_for_equiv (const void *state_ptr_1,
 			  const void *state_ptr_2)
 {
-  state_t s1 = *(state_t *)state_ptr_1;
-  state_t s2 = *(state_t *)state_ptr_2;
+  const_state_t const s1 = *(const_state_t const*)state_ptr_1;
+  const_state_t const s2 = *(const_state_t const*)state_ptr_2;
   unsigned int sz, si;
   if (s1->num_out_arcs < s2->num_out_arcs)
     return -1;
@@ -6313,11 +6318,11 @@ static int
 compare_max_occ_cycle_nums (const void *unit_decl_1,
 			    const void *unit_decl_2)
 {
-  if ((DECL_UNIT (*(decl_t *) unit_decl_1)->max_occ_cycle_num)
-      < (DECL_UNIT (*(decl_t *) unit_decl_2)->max_occ_cycle_num))
+  if ((DECL_UNIT (*(const_decl_t const*) unit_decl_1)->max_occ_cycle_num)
+      < (DECL_UNIT (*(const_decl_t const*) unit_decl_2)->max_occ_cycle_num))
     return 1;
-  else if ((DECL_UNIT (*(decl_t *) unit_decl_1)->max_occ_cycle_num)
-	   == (DECL_UNIT (*(decl_t *) unit_decl_2)->max_occ_cycle_num))
+  else if ((DECL_UNIT (*(const_decl_t const*) unit_decl_1)->max_occ_cycle_num)
+	   == (DECL_UNIT (*(const_decl_t const*) unit_decl_2)->max_occ_cycle_num))
     return 0;
   else
     return -1;
@@ -7226,7 +7231,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vla_hwint_t vect)
 
 /* Return number of out arcs of STATE.  */
 static int
-out_state_arcs_num (state_t state)
+out_state_arcs_num (const_state_t state)
 {
   int result;
   arc_t arc;
@@ -7246,11 +7251,11 @@ static int
 compare_transition_els_num (const void *state_ptr_1,
 			    const void *state_ptr_2)
 {
-  int transition_els_num_1;
-  int transition_els_num_2;
+  const int transition_els_num_1
+    = out_state_arcs_num (*(const_state_t const*) state_ptr_1);
+  const int transition_els_num_2
+    = out_state_arcs_num (*(const_state_t const*) state_ptr_2);
 
-  transition_els_num_1 = out_state_arcs_num (*(state_t *) state_ptr_1);
-  transition_els_num_2 = out_state_arcs_num (*(state_t *) state_ptr_2);
   if (transition_els_num_1 < transition_els_num_2)
     return 1;
   else if (transition_els_num_1 == transition_els_num_2)
@@ -8238,8 +8243,8 @@ output_print_reservation_func (void)
 static int
 units_cmp (const void *unit1, const void *unit2)
 {
-  const unit_decl_t u1 = *(unit_decl_t *) unit1;
-  const unit_decl_t u2 = *(unit_decl_t *) unit2;
+  const_unit_decl_t const u1 = *(const_unit_decl_t const*) unit1;
+  const_unit_decl_t const u2 = *(const_unit_decl_t const*) unit2;
 
   return strcmp (u1->name, u2->name);
 }
@@ -8641,8 +8646,8 @@ output_state_arcs (state_t state)
 static int
 state_reservs_cmp (const void *reservs_ptr_1, const void *reservs_ptr_2)
 {
-  return reserv_sets_cmp (*(reserv_sets_t *) reservs_ptr_1,
-                          *(reserv_sets_t *) reservs_ptr_2);
+  return reserv_sets_cmp (*(const_reserv_sets_t const*) reservs_ptr_1,
+                          *(const_reserv_sets_t const*) reservs_ptr_2);
 }
 
 /* The following function is used for sorting possible cpu unit

@@ -3843,8 +3843,8 @@ find_conditional_asserts (basic_block bb, tree last)
 static int
 compare_case_labels (const void *p1, const void *p2)
 {
-  tree case1 = *(tree *)p1;
-  tree case2 = *(tree *)p2;
+  const_tree const case1 = *(const_tree const*)p1;
+  const_tree const case2 = *(const_tree const*)p2;
   unsigned int uid1 = DECL_UID (CASE_LABEL (case1));
   unsigned int uid2 = DECL_UID (CASE_LABEL (case2));
 

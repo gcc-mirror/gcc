@@ -316,15 +316,15 @@ static void uncprop_into_successor_phis (struct dom_walk_data *, basic_block);
 static hashval_t
 equiv_hash (const void *p)
 {
-  tree value = ((struct equiv_hash_elt *)p)->value;
+  tree const value = ((const struct equiv_hash_elt *)p)->value;
   return iterative_hash_expr (value, 0);
 }
 
 static int
 equiv_eq (const void *p1, const void *p2)
 {
-  tree value1 = ((struct equiv_hash_elt *)p1)->value;
-  tree value2 = ((struct equiv_hash_elt *)p2)->value;
+  tree value1 = ((const struct equiv_hash_elt *)p1)->value;
+  tree value2 = ((const struct equiv_hash_elt *)p2)->value;
 
   return operand_equal_p (value1, value2, 0);
 }

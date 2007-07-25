@@ -445,13 +445,14 @@ typedef struct expr_pred_trans_d
      speed reasons.  */
   hashval_t hashcode;
 } *expr_pred_trans_t;
+typedef const struct expr_pred_trans_d *const_expr_pred_trans_t;
 
 /* Return the hash value for a phi translation table entry.  */
 
 static hashval_t
 expr_pred_trans_hash (const void *p)
 {
-  const expr_pred_trans_t ve = (expr_pred_trans_t) p;
+  const_expr_pred_trans_t const ve = (const_expr_pred_trans_t) p;
   return ve->hashcode;
 }
 
@@ -461,8 +462,8 @@ expr_pred_trans_hash (const void *p)
 static int
 expr_pred_trans_eq (const void *p1, const void *p2)
 {
-  const expr_pred_trans_t ve1 = (expr_pred_trans_t) p1;
-  const expr_pred_trans_t ve2 = (expr_pred_trans_t) p2;
+  const_expr_pred_trans_t const ve1 = (const_expr_pred_trans_t) p1;
+  const_expr_pred_trans_t const ve2 = (const_expr_pred_trans_t) p2;
   basic_block b1 = ve1->pred;
   basic_block b2 = ve2->pred;
   int i;

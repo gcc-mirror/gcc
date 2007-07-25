@@ -740,8 +740,8 @@ create_modes (void)
 static int
 cmp_modes (const void *a, const void *b)
 {
-  struct mode_data *m = *(struct mode_data **)a;
-  struct mode_data *n = *(struct mode_data **)b;
+  const struct mode_data *const m = *(const struct mode_data *const*)a;
+  const struct mode_data *const n = *(const struct mode_data *const*)b;
 
   if (m->bytesize > n->bytesize)
     return 1;

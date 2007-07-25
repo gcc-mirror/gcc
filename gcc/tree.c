@@ -811,7 +811,7 @@ build_int_cst_wide_type (tree type,
 static hashval_t
 int_cst_hash_hash (const void *x)
 {
-  tree t = (tree) x;
+  const_tree const t = (const_tree) x;
 
   return (TREE_INT_CST_HIGH (t) ^ TREE_INT_CST_LOW (t)
 	  ^ htab_hash_pointer (TREE_TYPE (t)));
@@ -823,8 +823,8 @@ int_cst_hash_hash (const void *x)
 static int
 int_cst_hash_eq (const void *x, const void *y)
 {
-  tree xt = (tree) x;
-  tree yt = (tree) y;
+  const_tree const xt = (const_tree) x;
+  const_tree const yt = (const_tree) y;
 
   return (TREE_TYPE (xt) == TREE_TYPE (yt)
 	  && TREE_INT_CST_HIGH (xt) == TREE_INT_CST_HIGH (yt)
@@ -4263,7 +4263,7 @@ tree_map_base_hash (const void *item)
 int
 tree_map_base_marked_p (const void *p)
 {
-  return ggc_marked_p (((struct tree_map_base *) p)->from);
+  return ggc_marked_p (((const struct tree_map_base *) p)->from);
 }
 
 unsigned int
@@ -4686,7 +4686,7 @@ type_hash_canon (unsigned int hashcode, tree type)
 static int
 type_hash_marked_p (const void *p)
 {
-  tree type = ((struct type_hash *) p)->type;
+  const_tree const type = ((const struct type_hash *) p)->type;
 
   return ggc_marked_p (type) || TYPE_SYMTAB_POINTER (type);
 }
@@ -6707,11 +6707,11 @@ get_file_function_name (const char *type)
    are of the caller.  */
 
 void
-tree_check_failed (const tree node, const char *file,
+tree_check_failed (const_tree node, const char *file,
 		   int line, const char *function, ...)
 {
   va_list args;
-  char *buffer;
+  const char *buffer;
   unsigned length = 0;
   int code;
 
@@ -6721,23 +6721,24 @@ tree_check_failed (const tree node, const char *file,
   va_end (args);
   if (length)
     {
+      char *tmp;
       va_start (args, function);
       length += strlen ("expected ");
-      buffer = alloca (length);
+      buffer = tmp = alloca (length);
       length = 0;
       while ((code = va_arg (args, int)))
 	{
 	  const char *prefix = length ? " or " : "expected ";
 	  
-	  strcpy (buffer + length, prefix);
+	  strcpy (tmp + length, prefix);
 	  length += strlen (prefix);
-	  strcpy (buffer + length, tree_code_name[code]);
+	  strcpy (tmp + length, tree_code_name[code]);
 	  length += strlen (tree_code_name[code]);
 	}
       va_end (args);
     }
   else
-    buffer = (char *)"unexpected node";
+    buffer = "unexpected node";
 
   internal_error ("tree check: %s, have %s in %s, at %s:%d",
 		  buffer, tree_code_name[TREE_CODE (node)],
@@ -6749,7 +6750,7 @@ tree_check_failed (const tree node, const char *file,
    the caller.  */
 
 void
-tree_not_check_failed (const tree node, const char *file,
+tree_not_check_failed (const_tree node, const char *file,
 		       int line, const char *function, ...)
 {
   va_list args;
@@ -6785,7 +6786,7 @@ tree_not_check_failed (const tree node, const char *file,
    code, given in CL.  */
 
 void
-tree_class_check_failed (const tree node, const enum tree_code_class cl,
+tree_class_check_failed (const_tree node, const enum tree_code_class cl,
 			 const char *file, int line, const char *function)
 {
   internal_error
@@ -6799,7 +6800,7 @@ tree_class_check_failed (const tree node, const enum tree_code_class cl,
    dozen codes, use the knowledge that they're all sequential.  */
 
 void
-tree_range_check_failed (const tree node, const char *file, int line,
+tree_range_check_failed (const_tree node, const char *file, int line,
 			 const char *function, enum tree_code c1,
 			 enum tree_code c2)
 {
@@ -6834,7 +6835,7 @@ tree_range_check_failed (const tree node, const char *file, int line,
    not have the specified code, given in CL.  */
 
 void
-tree_not_class_check_failed (const tree node, const enum tree_code_class cl,
+tree_not_class_check_failed (const_tree node, const enum tree_code_class cl,
 			     const char *file, int line, const char *function)
 {
   internal_error
@@ -6848,7 +6849,7 @@ tree_not_class_check_failed (const tree node, const enum tree_code_class cl,
 /* Similar to tree_check_failed but applied to OMP_CLAUSE codes.  */
 
 void
-omp_clause_check_failed (const tree node, const char *file, int line,
+omp_clause_check_failed (const_tree node, const char *file, int line,
                          const char *function, enum omp_clause_code code)
 {
   internal_error ("tree check: expected omp_clause %s, have %s in %s, at %s:%d",
@@ -6860,7 +6861,7 @@ omp_clause_check_failed (const tree node, const char *file, int line,
 /* Similar to tree_range_check_failed but applied to OMP_CLAUSE codes.  */
 
 void
-omp_clause_range_check_failed (const tree node, const char *file, int line,
+omp_clause_range_check_failed (const_tree node, const char *file, int line,
 			       const char *function, enum omp_clause_code c1,
 			       enum omp_clause_code c2)
 {
@@ -6905,7 +6906,7 @@ static const char *ts_enum_names[] = {
    whether CODE contains the tree structure identified by EN.  */
 
 void
-tree_contains_struct_check_failed (const tree node, 
+tree_contains_struct_check_failed (const_tree node, 
 				   const enum tree_node_structure_enum en,
 				   const char *file, int line, 
 				   const char *function)
@@ -6945,7 +6946,7 @@ phi_node_elt_check_failed (int idx, int len, const char *file, int line,
    vector of an expression node EXP.  */
 
 void
-tree_operand_check_failed (int idx, tree exp, const char *file,
+tree_operand_check_failed (int idx, const_tree exp, const char *file,
 			   int line, const char *function)
 {
   int code = TREE_CODE (exp);

@@ -1997,8 +1997,8 @@ lookup_avail_expr (tree stmt, bool insert)
 static hashval_t
 avail_expr_hash (const void *p)
 {
-  tree stmt = ((struct expr_hash_elt *)p)->stmt;
-  tree rhs = ((struct expr_hash_elt *)p)->rhs;
+  tree stmt = ((const struct expr_hash_elt *)p)->stmt;
+  tree rhs = ((const struct expr_hash_elt *)p)->rhs;
   tree vuse;
   ssa_op_iter iter;
   hashval_t val = 0;
@@ -2033,10 +2033,10 @@ real_avail_expr_hash (const void *p)
 static int
 avail_expr_eq (const void *p1, const void *p2)
 {
-  tree stmt1 = ((struct expr_hash_elt *)p1)->stmt;
-  tree rhs1 = ((struct expr_hash_elt *)p1)->rhs;
-  tree stmt2 = ((struct expr_hash_elt *)p2)->stmt;
-  tree rhs2 = ((struct expr_hash_elt *)p2)->rhs;
+  tree stmt1 = ((const struct expr_hash_elt *)p1)->stmt;
+  tree rhs1 = ((const struct expr_hash_elt *)p1)->rhs;
+  tree stmt2 = ((const struct expr_hash_elt *)p2)->stmt;
+  tree rhs2 = ((const struct expr_hash_elt *)p2)->rhs;
 
   /* If they are the same physical expression, return true.  */
   if (rhs1 == rhs2 && stmt1 == stmt2)
@@ -2052,8 +2052,8 @@ avail_expr_eq (const void *p1, const void *p2)
       && operand_equal_p (rhs1, rhs2, OEP_PURE_SAME))
     {
       bool ret = compare_ssa_operands_equal (stmt1, stmt2, SSA_OP_VUSE);
-      gcc_assert (!ret || ((struct expr_hash_elt *)p1)->hash
-		  == ((struct expr_hash_elt *)p2)->hash);
+      gcc_assert (!ret || ((const struct expr_hash_elt *)p1)->hash
+		  == ((const struct expr_hash_elt *)p2)->hash);
       return ret;
     }
 

@@ -5694,7 +5694,7 @@ decl_die_table_hash (const void *x)
 static int
 decl_die_table_eq (const void *x, const void *y)
 {
-  return (((const_dw_die_ref) x)->decl_id == DECL_UID ((const tree) y));
+  return (((const_dw_die_ref) x)->decl_id == DECL_UID ((const_tree) y));
 }
 
 /* Return the DIE associated with a given declaration.  */
@@ -5719,7 +5719,7 @@ decl_loc_table_hash (const void *x)
 static int
 decl_loc_table_eq (const void *x, const void *y)
 {
-  return (((const var_loc_list *) x)->decl_id == DECL_UID ((const tree) y));
+  return (((const var_loc_list *) x)->decl_id == DECL_UID ((const_tree) y));
 }
 
 /* Return the var_loc list associated with a given declaration.  */

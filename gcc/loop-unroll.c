@@ -1484,7 +1484,7 @@ unroll_loop_stupid (struct loop *loop)
 static hashval_t
 si_info_hash (const void *ivts)
 {
-  return (hashval_t) INSN_UID (((struct iv_to_split *) ivts)->insn);
+  return (hashval_t) INSN_UID (((const struct iv_to_split *) ivts)->insn);
 }
 
 /* An equality functions for information about insns to split.  */
@@ -1503,7 +1503,7 @@ si_info_eq (const void *ivts1, const void *ivts2)
 static hashval_t
 ve_info_hash (const void *ves)
 {
-  return (hashval_t) INSN_UID (((struct var_to_expand *) ves)->insn);
+  return (hashval_t) INSN_UID (((const struct var_to_expand *) ves)->insn);
 }
 
 /* Return true if IVTS1 and IVTS2 (which are really both of type 

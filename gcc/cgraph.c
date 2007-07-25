@@ -246,7 +246,7 @@ cgraph_node_for_asm (tree asmname)
 static hashval_t
 edge_hash (const void *x)
 {
-  return htab_hash_pointer (((struct cgraph_edge *) x)->call_stmt);
+  return htab_hash_pointer (((const struct cgraph_edge *) x)->call_stmt);
 }
 
 /* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
@@ -254,7 +254,7 @@ edge_hash (const void *x)
 static int
 edge_eq (const void *x, const void *y)
 {
-  return ((struct cgraph_edge *) x)->call_stmt == y;
+  return ((const struct cgraph_edge *) x)->call_stmt == y;
 }
 
 /* Return callgraph edge representing CALL_EXPR statement.  */

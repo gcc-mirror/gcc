@@ -238,6 +238,7 @@ typedef struct hash_bucket_def
   /* List of sequence candidates.  */
   htab_t seq_candidates;
 } *p_hash_bucket;
+typedef const struct hash_bucket_def *const_p_hash_bucket;
 
 /* Contains the last insn of the sequence, and its index value.  */
 typedef struct hash_elem_def
@@ -251,6 +252,7 @@ typedef struct hash_elem_def
   /* The cached length of the insn.  */
   int length;
 } *p_hash_elem;
+typedef const struct hash_elem_def *const_p_hash_elem;
 
 /* The list of same sequence candidates.  */
 static htab_t hash_buckets;
@@ -1205,7 +1207,7 @@ dump_best_pattern_seq (int iter)
 static unsigned int
 htab_hash_bucket (const void *p)
 {
-  p_hash_bucket bucket = (p_hash_bucket) p;
+  const_p_hash_bucket bucket = (const_p_hash_bucket) p;
   return bucket->hash;
 }
 
@@ -1235,7 +1237,7 @@ htab_del_bucket (void *p)
 static unsigned int
 htab_hash_elem (const void *p)
 {
-  p_hash_elem elem = (p_hash_elem) p;
+  const_p_hash_elem elem = (const_p_hash_elem) p;
   return htab_hash_pointer (elem->insn);
 }
 

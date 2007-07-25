@@ -263,8 +263,8 @@ mem_attrs_htab_hash (const void *x)
 static int
 mem_attrs_htab_eq (const void *x, const void *y)
 {
-  mem_attrs *p = (mem_attrs *) x;
-  mem_attrs *q = (mem_attrs *) y;
+  const mem_attrs *const p = (const mem_attrs *) x;
+  const mem_attrs *const q = (const mem_attrs *) y;
 
   return (p->alias == q->alias && p->offset == q->offset
 	  && p->size == q->size && p->align == q->align
@@ -315,7 +315,7 @@ get_mem_attrs (HOST_WIDE_INT alias, tree expr, rtx offset, rtx size,
 static hashval_t
 reg_attrs_htab_hash (const void *x)
 {
-  reg_attrs *p = (reg_attrs *) x;
+  const reg_attrs *const p = (const reg_attrs *) x;
 
   return ((p->offset * 1000) ^ (long) p->decl);
 }
@@ -327,8 +327,8 @@ reg_attrs_htab_hash (const void *x)
 static int
 reg_attrs_htab_eq (const void *x, const void *y)
 {
-  reg_attrs *p = (reg_attrs *) x;
-  reg_attrs *q = (reg_attrs *) y;
+  const reg_attrs *const p = (const reg_attrs *) x;
+  const reg_attrs *const q = (const reg_attrs *) y;
 
   return (p->decl == q->decl && p->offset == q->offset);
 }

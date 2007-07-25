@@ -307,7 +307,7 @@ new_scev_info_str (tree var)
 static hashval_t
 hash_scev_info (const void *elt)
 {
-  return SSA_NAME_VERSION (((struct scev_info_str *) elt)->var);
+  return SSA_NAME_VERSION (((const struct scev_info_str *) elt)->var);
 }
 
 /* Compares database elements E1 and E2.  */

@@ -305,13 +305,13 @@ gt_pch_note_reorder (void *obj, void *note_ptr_cookie,
 static hashval_t
 saving_htab_hash (const void *p)
 {
-  return POINTER_HASH (((struct ptr_data *)p)->obj);
+  return POINTER_HASH (((const struct ptr_data *)p)->obj);
 }
 
 static int
 saving_htab_eq (const void *p1, const void *p2)
 {
-  return ((struct ptr_data *)p1)->obj == p2;
+  return ((const struct ptr_data *)p1)->obj == p2;
 }
 
 /* Handy state for the traversal functions.  */
