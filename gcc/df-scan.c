@@ -2148,8 +2148,8 @@ df_ref_equal_p (struct df_ref *ref1, struct df_ref *ref2)
 static int
 df_ref_compare (const void *r1, const void *r2)
 {
-  const struct df_ref *ref1 = *(struct df_ref **)r1;
-  const struct df_ref *ref2 = *(struct df_ref **)r2;
+  const struct df_ref *const ref1 = *(const struct df_ref *const*)r1;
+  const struct df_ref *const ref2 = *(const struct df_ref *const*)r2;
 
   if (ref1 == ref2)
     return 0;
@@ -2265,8 +2265,8 @@ df_mw_equal_p (struct df_mw_hardreg *mw1, struct df_mw_hardreg *mw2)
 static int
 df_mw_compare (const void *m1, const void *m2)
 {
-  const struct df_mw_hardreg *mw1 = *(struct df_mw_hardreg **)m1;
-  const struct df_mw_hardreg *mw2 = *(struct df_mw_hardreg **)m2;
+  const struct df_mw_hardreg *const mw1 = *(const struct df_mw_hardreg *const*)m1;
+  const struct df_mw_hardreg *const mw2 = *(const struct df_mw_hardreg *const*)m2;
 
   if (mw1 == mw2)
     return 0;

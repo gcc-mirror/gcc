@@ -1141,11 +1141,11 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     return _URC_FATAL_PHASE1_ERROR;
 
   /* First decode all the insns in the CIE.  */
-  end = (unsigned char *) next_fde ((struct dwarf_fde *) cie);
+  end = (const unsigned char *) next_fde ((const struct dwarf_fde *) cie);
   execute_cfa_program (insn, end, context, fs);
 
   /* Locate augmentation for the fde.  */
-  aug = (unsigned char *) fde + sizeof (*fde);
+  aug = (const unsigned char *) fde + sizeof (*fde);
   aug += 2 * size_of_encoded_value (fs->fde_encoding);
   insn = NULL;
   if (fs->saw_z)
@@ -1165,7 +1165,7 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   /* Then the insns in the FDE up to our target PC.  */
   if (insn == NULL)
     insn = aug;
-  end = (unsigned char *) next_fde (fde);
+  end = (const unsigned char *) next_fde (fde);
   execute_cfa_program (insn, end, context, fs);
 
   return _URC_NO_REASON;

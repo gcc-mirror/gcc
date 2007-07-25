@@ -64,6 +64,7 @@ struct histogram_value_t
 };
 
 typedef struct histogram_value_t *histogram_value;
+typedef const struct histogram_value_t *const_histogram_value;
 
 DEF_VEC_P(histogram_value);
 DEF_VEC_ALLOC_P(histogram_value,heap);

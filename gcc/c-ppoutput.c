@@ -255,7 +255,7 @@ print_line (source_location src_loc, const char *special_flags)
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */
       p = cpp_quote_string (to_file_quoted,
-			    (unsigned char *) map->to_file, to_file_len);
+			    (const unsigned char *) map->to_file, to_file_len);
       *p = '\0';
       fprintf (print.outf, "# %u \"%s\"%s",
 	       print.src_line == 0 ? 1 : print.src_line,
@@ -375,7 +375,7 @@ pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
   unsigned char *p;
 
   /* cpp_quote_string does not nul-terminate, so we have to do it ourselves.  */
-  p = cpp_quote_string (to_file_quoted, (unsigned char *) dir, to_file_len);
+  p = cpp_quote_string (to_file_quoted, (const unsigned char *) dir, to_file_len);
   *p = '\0';
   fprintf (print.outf, "# 1 \"%s//\"\n", to_file_quoted);
 }

@@ -1024,9 +1024,10 @@ free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *tu_til)
   const struct tagged_tu_seen_cache *tu = tagged_tu_seen_base;
   while (tu != tu_til)
     {
-      struct tagged_tu_seen_cache *tu1 = (struct tagged_tu_seen_cache*)tu;
+      const struct tagged_tu_seen_cache *tu1
+	= (const struct tagged_tu_seen_cache*)tu;
       tu = tu1->next;
-      free (tu1);
+      free ((void *)tu1);
     }
   tagged_tu_seen_base = tu_til;
 }

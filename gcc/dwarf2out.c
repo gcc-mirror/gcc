@@ -2700,6 +2700,7 @@ struct dwarf_file_data GTY(())
 
 typedef struct dw_val_struct *dw_val_ref;
 typedef struct die_struct *dw_die_ref;
+typedef const struct die_struct *const_dw_die_ref;
 typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
 typedef struct dw_loc_list_struct *dw_loc_list_ref;
 
@@ -5685,7 +5686,7 @@ equate_type_number_to_die (tree type, dw_die_ref type_die)
 static hashval_t
 decl_die_table_hash (const void *x)
 {
-  return (hashval_t) ((const dw_die_ref) x)->decl_id;
+  return (hashval_t) ((const_dw_die_ref) x)->decl_id;
 }
 
 /* Return nonzero if decl_id of die_struct X is the same as UID of decl *Y.  */
@@ -5693,7 +5694,7 @@ decl_die_table_hash (const void *x)
 static int
 decl_die_table_eq (const void *x, const void *y)
 {
-  return (((const dw_die_ref) x)->decl_id == DECL_UID ((const tree) y));
+  return (((const_dw_die_ref) x)->decl_id == DECL_UID ((const tree) y));
 }
 
 /* Return the DIE associated with a given declaration.  */
@@ -7778,8 +7779,8 @@ file_info_cmp (const void *p1, const void *p2)
 {
   const struct file_info *s1 = p1;
   const struct file_info *s2 = p2;
-  unsigned char *cp1;
-  unsigned char *cp2;
+  const unsigned char *cp1;
+  const unsigned char *cp2;
 
   /* Take care of file names without directories.  We need to make sure that
      we return consistent values to qsort since some will get confused if
@@ -7789,18 +7790,18 @@ file_info_cmp (const void *p1, const void *p2)
   if ((s1->path == s1->fname || s2->path == s2->fname))
     return (s2->path == s2->fname) - (s1->path == s1->fname);
 
-  cp1 = (unsigned char *) s1->path;
-  cp2 = (unsigned char *) s2->path;
+  cp1 = (const unsigned char *) s1->path;
+  cp2 = (const unsigned char *) s2->path;
 
   while (1)
     {
       ++cp1;
       ++cp2;
       /* Reached the end of the first path?  If so, handle like above.  */
-      if ((cp1 == (unsigned char *) s1->fname)
-	  || (cp2 == (unsigned char *) s2->fname))
-	return ((cp2 == (unsigned char *) s2->fname)
-		- (cp1 == (unsigned char *) s1->fname));
+      if ((cp1 == (const unsigned char *) s1->fname)
+	  || (cp2 == (const unsigned char *) s2->fname))
+	return ((cp2 == (const unsigned char *) s2->fname)
+		- (cp1 == (const unsigned char *) s1->fname));
 
       /* Character of current path component the same?  */
       else if (*cp1 != *cp2)

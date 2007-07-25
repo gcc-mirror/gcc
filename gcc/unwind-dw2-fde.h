@@ -160,13 +160,13 @@ typedef struct dwarf_fde fde;
 static inline const struct dwarf_cie *
 get_cie (const struct dwarf_fde *f)
 {
-  return (void *)&f->CIE_delta - f->CIE_delta;
+  return (const void *)&f->CIE_delta - f->CIE_delta;
 }
 
 static inline const fde *
 next_fde (const fde *f)
 {
-  return (const fde *) ((char *) f + f->length + sizeof (f->length));
+  return (const fde *) ((const char *) f + f->length + sizeof (f->length));
 }
 
 extern const fde * _Unwind_Find_FDE (void *, struct dwarf_eh_bases *);

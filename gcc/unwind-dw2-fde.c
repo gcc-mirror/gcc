@@ -79,7 +79,7 @@ __register_frame_info_bases (const void *begin, struct object *ob,
 			     void *tbase, void *dbase)
 {
   /* If .eh_frame is empty, don't register at all.  */
-  if ((uword *) begin == 0 || *(uword *) begin == 0)
+  if ((const uword *) begin == 0 || *(const uword *) begin == 0)
     return;
 
   ob->pc_begin = (void *)-1;
@@ -177,7 +177,7 @@ __deregister_frame_info_bases (const void *begin)
   struct object *ob = 0;
 
   /* If .eh_frame is empty, we haven't registered.  */
-  if ((uword *) begin == 0 || *(uword *) begin == 0)
+  if ((const uword *) begin == 0 || *(const uword *) begin == 0)
     return ob;
 
   init_object_mutex_once ();
@@ -323,8 +323,8 @@ static int
 fde_unencoded_compare (struct object *ob __attribute__((unused)),
 		       const fde *x, const fde *y)
 {
-  _Unwind_Ptr x_ptr = *(_Unwind_Ptr *) x->pc_begin;
-  _Unwind_Ptr y_ptr = *(_Unwind_Ptr *) y->pc_begin;
+  const _Unwind_Ptr x_ptr = *(const _Unwind_Ptr *) x->pc_begin;
+  const _Unwind_Ptr y_ptr = *(const _Unwind_Ptr *) y->pc_begin;
 
   if (x_ptr > y_ptr)
     return 1;
@@ -434,7 +434,7 @@ fde_split (struct object *ob, fde_compare_t fde_compare,
 {
   static const fde *marker;
   size_t count = linear->count;
-  const fde **chain_end = &marker;
+  const fde *const *chain_end = &marker;
   size_t i, j, k;
 
   /* This should optimize out, but it is wise to make sure this assumption
@@ -444,13 +444,13 @@ fde_split (struct object *ob, fde_compare_t fde_compare,
 
   for (i = 0; i < count; i++)
     {
-      const fde **probe;
+      const fde *const *probe;
 
       for (probe = chain_end;
 	   probe != &marker && fde_compare (ob, linear->array[i], *probe) < 0;
 	   probe = chain_end)
 	{
-	  chain_end = (const fde **) erratic->array[probe - linear->array];
+	  chain_end = (const fde *const*) erratic->array[probe - linear->array];
 	  erratic->array[probe - linear->array] = NULL;
 	}
       erratic->array[i] = (const fde *) chain_end;
@@ -679,7 +679,7 @@ add_fdes (struct object *ob, struct fde_accumulator *accu, const fde *this_fde)
 
       if (encoding == DW_EH_PE_absptr)
 	{
-	  if (*(_Unwind_Ptr *) this_fde->pc_begin == 0)
+	  if (*(const _Unwind_Ptr *) this_fde->pc_begin == 0)
 	    continue;
 	}
       else
@@ -797,8 +797,8 @@ linear_search_fdes (struct object *ob, const fde *this_fde, void *pc)
 
       if (encoding == DW_EH_PE_absptr)
 	{
-	  pc_begin = ((_Unwind_Ptr *) this_fde->pc_begin)[0];
-	  pc_range = ((_Unwind_Ptr *) this_fde->pc_begin)[1];
+	  pc_begin = ((const _Unwind_Ptr *) this_fde->pc_begin)[0];
+	  pc_range = ((const _Unwind_Ptr *) this_fde->pc_begin)[1];
 	  if (pc_begin == 0)
 	    continue;
 	}
@@ -844,12 +844,9 @@ binary_search_unencoded_fdes (struct object *ob, void *pc)
   for (lo = 0, hi = vec->count; lo < hi; )
     {
       size_t i = (lo + hi) / 2;
-      const fde *f = vec->array[i];
-      void *pc_begin;
-      uaddr pc_range;
-
-      pc_begin = ((void **) f->pc_begin)[0];
-      pc_range = ((uaddr *) f->pc_begin)[1];
+      const fde *const f = vec->array[i];
+      const void *pc_begin = ((const void *const*) f->pc_begin)[0];
+      const uaddr pc_range = ((const uaddr *) f->pc_begin)[1];
 
       if (pc < pc_begin)
 	hi = i;

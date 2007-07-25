@@ -1107,18 +1107,18 @@ struct htab_bb_copy_original_entry
 static hashval_t
 bb_copy_original_hash (const void *p)
 {
-  struct htab_bb_copy_original_entry *data
-    = ((struct htab_bb_copy_original_entry *)p);
+  const struct htab_bb_copy_original_entry *data
+    = ((const struct htab_bb_copy_original_entry *)p);
 
   return data->index1;
 }
 static int
 bb_copy_original_eq (const void *p, const void *q)
 {
-  struct htab_bb_copy_original_entry *data
-    = ((struct htab_bb_copy_original_entry *)p);
-  struct htab_bb_copy_original_entry *data2
-    = ((struct htab_bb_copy_original_entry *)q);
+  const struct htab_bb_copy_original_entry *data
+    = ((const struct htab_bb_copy_original_entry *)p);
+  const struct htab_bb_copy_original_entry *data2
+    = ((const struct htab_bb_copy_original_entry *)q);
 
   return data->index1 == data2->index1;
 }

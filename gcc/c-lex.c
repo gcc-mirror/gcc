@@ -460,7 +460,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 	  type = lex_string (tok, value, false);
 	  break;
 	}
-      *value = build_string (tok->val.str.len, (char *) tok->val.str.text);
+      *value = build_string (tok->val.str.len, (const char *) tok->val.str.text);
       break;
       
     case CPP_PRAGMA:
@@ -811,7 +811,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
        ? cpp_interpret_string : cpp_interpret_string_notranslate)
       (parse_in, strs, concats + 1, &istr, wide))
     {
-      value = build_string (istr.len, (char *) istr.text);
+      value = build_string (istr.len, (const char *) istr.text);
       free ((void *) istr.text);
 
       if (c_lex_string_translate == -1)
@@ -824,13 +824,13 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 	  gcc_assert (xlated);
 
 	  if (TREE_STRING_LENGTH (value) != (int) istr.len
-	      || 0 != strncmp (TREE_STRING_POINTER (value), (char *) istr.text,
-			       istr.len))
+	      || 0 != strncmp (TREE_STRING_POINTER (value),
+			       (const char *) istr.text, istr.len))
 	    {
 	      /* Arrange for us to return the untranslated string in
 		 *valp, but to set up the C type of the translated
 		 one.  */
-	      *valp = build_string (istr.len, (char *) istr.text);
+	      *valp = build_string (istr.len, (const char *) istr.text);
 	      valp = &TREE_CHAIN (*valp);
 	    }
 	  free ((void *) istr.text);

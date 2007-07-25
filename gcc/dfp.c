@@ -96,7 +96,7 @@ decimal_real_from_string (REAL_VALUE_TYPE *r, const char *s)
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
 
-  decNumberFromString (&dn, (char *) s, &set);
+  decNumberFromString (&dn, s, &set);
 
   /* It would be more efficient to store directly in decNumber format,
      but that is impractical from current data structure size.
@@ -119,17 +119,17 @@ decimal_to_decnumber (const REAL_VALUE_TYPE *r, decNumber *dn)
       decNumberZero (dn);
       break;
     case rvc_inf:
-      decNumberFromString (dn, (char *)"Infinity", &set);
+      decNumberFromString (dn, "Infinity", &set);
       break;
     case rvc_nan:
       if (r->signalling)
-        decNumberFromString (dn, (char *)"snan", &set);
+        decNumberFromString (dn, "snan", &set);
       else
-        decNumberFromString (dn, (char *)"nan", &set);
+        decNumberFromString (dn, "nan", &set);
       break;
     case rvc_normal:
       gcc_assert (r->decimal);
-      decimal128ToNumber ((decimal128 *) r->sig, dn);
+      decimal128ToNumber ((const decimal128 *) r->sig, dn);
       break;
     default:
       gcc_unreachable ();
@@ -312,8 +312,7 @@ decimal_to_binary (REAL_VALUE_TYPE *to, const REAL_VALUE_TYPE *from,
 		   enum machine_mode mode)
 {
   char string[256];
-  decimal128 *d128;
-  d128 = (decimal128 *) from->sig;
+  const decimal128 *const d128 = (const decimal128 *) from->sig;
 
   decimal128ToString (d128, string);
   real_from_string3 (to, string, mode);
@@ -360,8 +359,8 @@ decimal_do_compare (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b,
   /* Convert into decNumber form for comparison operation.  */
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;  
-  decimal128ToNumber ((decimal128 *) a->sig, &dn2);
-  decimal128ToNumber ((decimal128 *) b->sig, &dn3);
+  decimal128ToNumber ((const decimal128 *) a->sig, &dn2);
+  decimal128ToNumber ((const decimal128 *) b->sig, &dn3);
 
   /* Finally, do the comparison.  */
   decNumberCompare (&dn, &dn2, &dn3, &set);
@@ -451,7 +450,7 @@ decimal_real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig,
 			 size_t digits ATTRIBUTE_UNUSED,
 			 int crop_trailing_zeros ATTRIBUTE_UNUSED)
 {
-  decimal128 *d128 = (decimal128*) r_orig->sig;
+  const decimal128 *const d128 = (const decimal128*) r_orig->sig;
 
   /* decimal128ToString requires space for at least 24 characters;
      Require two more for suffix.  */
@@ -540,7 +539,7 @@ decimal_do_fix_trunc (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a)
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
   set.round = DEC_ROUND_DOWN;
-  decimal128ToNumber ((decimal128 *) a->sig, &dn2);
+  decimal128ToNumber ((const decimal128 *) a->sig, &dn2);
 
   decNumberToIntegralValue (&dn, &dn2, &set);
   decimal_from_decnumber (r, &dn, &set);
@@ -559,7 +558,7 @@ decimal_real_to_integer (const REAL_VALUE_TYPE *r)
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
   set.round = DEC_ROUND_DOWN;
-  decimal128ToNumber ((decimal128 *) r->sig, &dn);
+  decimal128ToNumber ((const decimal128 *) r->sig, &dn);
 
   decNumberToIntegralValue (&dn2, &dn, &set);
   decNumberZero (&dn3);
@@ -586,7 +585,7 @@ decimal_real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
   set.round = DEC_ROUND_DOWN;
-  decimal128ToNumber ((decimal128 *) r->sig, &dn);
+  decimal128ToNumber ((const decimal128 *) r->sig, &dn);
 
   decNumberToIntegralValue (&dn2, &dn, &set);
   decNumberZero (&dn3);
@@ -689,18 +688,18 @@ decimal_real_arithmetic (REAL_VALUE_TYPE *r, enum tree_code code,
 void
 decimal_real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
 { 
-  char *max;
+  const char *max;
 
   switch (mode)
     {
     case SDmode:
-      max = (char *) "9.999999E96";
+      max = "9.999999E96";
       break;
     case DDmode:
-      max = (char *) "9.999999999999999E384";
+      max = "9.999999999999999E384";
       break;
     case TDmode:
-      max = (char *) "9.999999999999999999999999999999999E6144";
+      max = "9.999999999999999999999999999999999E6144";
       break;
     default:
       gcc_unreachable ();
