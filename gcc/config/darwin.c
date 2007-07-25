@@ -1730,7 +1730,8 @@ darwin_override_options (void)
     }
   if (flag_var_tracking
       && strverscmp (darwin_macosx_version_min, "10.5") >= 0
-      && debug_info_level >= DINFO_LEVEL_NORMAL)
+      && debug_info_level >= DINFO_LEVEL_NORMAL
+      && debug_hooks->var_location != do_nothing_debug_hooks.var_location)
     flag_var_tracking_uninit = 1;
 }
 
