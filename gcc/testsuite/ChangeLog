@@ -1,5 +1,11 @@
 2007-07-25  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
+	* gcc.dg/tree-ssa/predcom-1.c (count_averages): Avoid overflow
+	  during addition if an int is only 16 bits wide.
+	* gcc.dg/tree-ssa/predcom-2.c (fib): Avoid overflow of 16-bit int.
+
+2007-07-25  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
 	* gcc.dg/torture/pr29584.c: Only run test if pointers have the same
 	  size as "long int" and are 32 or 64 bits wide.
 	* gcc.dg/torture/pr28814.c: Likewise.

@@ -23,7 +23,7 @@ void count_averages(int n)
   int i;
 
   for (i = 1; i < n; i++)
-    avg[i] = ((fib[i - 1] + fib[i] + fib[i + 1]) / 3) & 0xffff;
+    avg[i] = (((unsigned long) fib[i - 1] + fib[i] + fib[i + 1]) / 3) & 0xffff;
 }
 
 int main(void)

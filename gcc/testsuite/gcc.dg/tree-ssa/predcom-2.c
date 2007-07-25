@@ -4,7 +4,7 @@
 
 void abort (void);
 
-int fib[1000];
+long int fib[1000];
 
 void count_fib(void)
 {
