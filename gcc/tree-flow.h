@@ -519,11 +519,11 @@ typedef struct function_ann_d *function_ann_t;
 typedef struct stmt_ann_d *stmt_ann_t;
 typedef struct tree_ann_common_d *tree_ann_common_t;
 
-static inline tree_ann_common_t tree_common_ann (tree);
+static inline tree_ann_common_t tree_common_ann (const_tree);
 static inline tree_ann_common_t get_tree_common_ann (tree);
-static inline var_ann_t var_ann (tree);
+static inline var_ann_t var_ann (const_tree);
 static inline var_ann_t get_var_ann (tree);
-static inline function_ann_t function_ann (tree);
+static inline function_ann_t function_ann (const_tree);
 static inline function_ann_t get_function_ann (tree);
 static inline stmt_ann_t stmt_ann (tree);
 static inline bool has_stmt_ann (tree);
@@ -534,11 +534,11 @@ extern void set_bb_for_stmt (tree, basic_block);
 static inline bool noreturn_call_p (tree);
 static inline void update_stmt (tree);
 static inline bool stmt_modified_p (tree);
-static inline bitmap may_aliases (tree);
+static inline bitmap may_aliases (const_tree);
 static inline int get_lineno (tree);
 static inline const char *get_filename (tree);
-static inline bool is_exec_stmt (tree);
-static inline bool is_label_stmt (tree);
+static inline bool is_exec_stmt (const_tree);
+static inline bool is_label_stmt (const_tree);
 static inline bitmap addresses_taken (tree);
 
 /*---------------------------------------------------------------------------
@@ -840,14 +840,14 @@ extern void count_uses_and_derefs (tree, tree, unsigned *, unsigned *,
 				   unsigned *);
 static inline subvar_t get_subvars_for_var (tree);
 static inline tree get_subvar_at (tree, unsigned HOST_WIDE_INT);
-static inline bool ref_contains_array_ref (tree);
-static inline bool array_ref_contains_indirect_ref (tree);
+static inline bool ref_contains_array_ref (const_tree);
+static inline bool array_ref_contains_indirect_ref (const_tree);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
-static inline bool var_can_have_subvars (tree);
+static inline bool var_can_have_subvars (const_tree);
 static inline bool overlap_subvar (unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
-				   tree, bool *);
+				   const_tree, bool *);
 extern tree create_tag_raw (enum tree_code, tree, const char *);
 extern void delete_mem_ref_stats (struct function *);
 extern void dump_mem_ref_stats (FILE *);
@@ -1061,10 +1061,10 @@ enum escape_type
 };
 
 /* In tree-flow-inline.h  */
-static inline bool is_call_clobbered (tree);
+static inline bool is_call_clobbered (const_tree);
 static inline void mark_call_clobbered (tree, unsigned int);
 static inline void set_is_used (tree);
-static inline bool unmodifiable_var_p (tree);
+static inline bool unmodifiable_var_p (const_tree);
 
 /* In tree-eh.c  */
 extern void make_eh_edges (tree);

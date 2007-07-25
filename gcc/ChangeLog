@@ -1,5 +1,66 @@
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* expr.c (handled_component_p): Constify.
+	* fold-const.c (fit_double_type): Likewise.
+	* real.h (real_value_from_int_cst): Likewise.
+	* tree-flow-inline.h (gimple_in_ssa_p,
+	gimple_aliases_computed_p, gimple_addressable_vars,
+	gimple_call_clobbered_vars, gimple_referenced_vars,
+	gimple_global_var, gimple_nonlocal_all, gimple_var_anns,
+	end_htab_p, end_referenced_vars_p, var_ann, function_ann,
+	may_aliases, end_readonly_imm_use_p, has_zero_uses,
+	has_single_use, single_imm_use, num_imm_uses, is_exec_stmt,
+	is_label_stmt, is_global_var, phi_ssa_name_p,
+	factoring_name_p, is_call_clobbered, tree_common_ann,
+	op_iter_done, end_imm_use_stmt_p, end_imm_use_on_stmt_p,
+	unmodifiable_var_p, array_ref_contains_indirect_ref,
+	ref_contains_array_ref, lookup_subvars_for_var,
+	var_can_have_subvars, overlap_subvar, gimple_ssa_operands,
+	gimple_mem_ref_stats): Likewise.
+	* tree-flow.h (tree_common_ann, var_ann, function_ann,
+	may_aliases, is_exec_stmt, is_label_stmt,
+	ref_contains_array_ref, array_ref_contains_indirect_ref,
+	var_can_have_subvars, overlap_subvar, is_call_clobbered,
+	unmodifiable_var_p): Likewise.
+	* tree-gimple.c (is_gimple_min_invariant): Likewise.
+	* tree-gimple.h (is_gimple_min_invariant): Likewise. 
+	* tree.c (type_hash_list, attribute_hash_list, tree_size,
+	cst_and_fits_in_hwi, real_value_from_int_cst,
+	build_real_from_int_cst, integer_zerop, integer_onep,
+	integer_all_onesp, integer_pow2p, integer_nonzerop, tree_log2,
+	tree_floor_log2, real_zerop, real_onep, real_twop,
+	real_minus_onep, really_constant_p, purpose_member, chain_member,
+	list_length, fields_length, int_size_in_bytes, bit_position,
+	int_bit_position, byte_position, int_byte_position, expr_align,
+	array_type_nelts, tree_node_structure,
+	type_contains_placeholder_1, iterative_hash_pointer,
+	is_attribute_with_length_p, is_attribute_p, check_qualified_type,
+	tree_map_base_eq, type_hash_list, type_hash_eq,
+	attribute_hash_list, type_num_arguments, tree_int_cst_equal,
+	tree_int_cst_lt, tree_int_cst_compare, host_integerp,
+	tree_low_cst, tree_int_cst_msb, tree_int_cst_sgn,
+	simple_cst_list_equal, compare_tree_int, iterative_hash_expr,
+	int_fits_type_p, get_containing_scope, decl_function_context,
+	decl_type_context, omp_clause_operand_check_failed,
+	initializer_zerop, int_cst_value, num_ending_zeros): Likewise.
+	* tree.h (omp_clause_operand_check_failed, tree_size,
+	build_real_from_int_cst, array_type_nelts, purpose_member,
+	tree_int_cst_equal, tree_int_cst_lt, tree_int_cst_compare,
+	host_integerp, tree_low_cst, tree_int_cst_msb, tree_int_cst_sgn,
+	is_attribute_p, check_qualified_type, expr_align,
+	int_size_in_bytes, bit_position, int_bit_position, byte_position,
+	int_byte_position, list_length, fields_length, initializer_zerop,
+	integer_zerop, integer_onep, integer_all_onesp, integer_pow2p,
+	integer_nonzerop, cst_and_fits_in_hwi, num_ending_zeros,
+	tree_node_structure, handled_component_p, get_containing_scope,
+	decl_function_context, decl_type_context, real_zerop,
+	type_num_arguments, fit_double_type, really_constant_p,
+	int_fits_type_p, tree_log2, tree_floor_log2, iterative_hash_expr,
+	compare_tree_int, chain_member, simple_cst_list_equal, real_onep,
+	real_twop, real_minus_onep, int_cst_value): Likewise.
+
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* cfglayout.c (insn_scope, insn_line): Constify.
 	* emit-rtl.c (const_int_htab_hash, const_int_htab_eq,
 	const_double_htab_hash, const_double_htab_eq,

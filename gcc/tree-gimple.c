@@ -170,7 +170,7 @@ is_gimple_addressable (tree t)
    form of function invariant.  */
 
 bool
-is_gimple_min_invariant (tree t)
+is_gimple_min_invariant (const_tree t)
 {
   switch (TREE_CODE (t))
     {
