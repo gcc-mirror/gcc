@@ -477,6 +477,10 @@ struct machine_function GTY(()) {
 
   /* True if the function is known to have an instruction that needs $gp.  */
   bool has_gp_insn_p;
+
+  /* True if we have emitted an instruction to initialize
+     mips16_gp_pseudo_rtx.  */
+  bool initialized_mips16_gp_pseudo_p;
 };
 
 /* Information about a single argument.  */
@@ -8774,10 +8778,14 @@ static rtx
 mips16_gp_pseudo_reg (void)
 {
   if (cfun->machine->mips16_gp_pseudo_rtx == NULL_RTX)
+    cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
+
+  /* Don't initialize the pseudo register if we are being called from
+     the tree optimizers' cost-calculation routines.  */
+  if (!cfun->machine->initialized_mips16_gp_pseudo_p
+      && current_ir_type () != IR_GIMPLE)
     {
       rtx insn, scan;
-
-      cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
 
       /* We want to initialize this to a value which gcc will believe
          is constant.  */
@@ -8794,6 +8802,8 @@ mips16_gp_pseudo_reg (void)
 	scan = get_insns ();
       insn = emit_insn_after (insn, scan);
       pop_topmost_sequence ();
+
+      cfun->machine->initialized_mips16_gp_pseudo_p = true;
     }
 
   return cfun->machine->mips16_gp_pseudo_rtx;

@@ -1,3 +1,12 @@
+2007-07-25  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (machine_function): Add
+	initialized_mips16_gp_pseudo_p.
+	(mips16_gp_pseudo_reg): Do not emit the initialization of
+	mips16_gp_pseudo_rtx when being called from the gimple cost-
+	calculation routines; emit it on the first use outside those
+	routines.
+
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* coretypes.h (const_bitmap, const_rtx, const_rtvec, const_tree):
