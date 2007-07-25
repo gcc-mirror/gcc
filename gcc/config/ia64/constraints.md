@@ -90,6 +90,11 @@
   (and (match_code "const_double")
        (match_test "op == CONST0_RTX (mode) || op == CONST1_RTX (mode)")))
 
+(define_constraint "H"
+  "0.0"
+  (and (match_code "const_double")
+       (match_test "op == CONST0_RTX (mode)")))
+
 ;; Extra constraints
 
 ;; Note that while this accepts mem, it only accepts non-volatile mem,
