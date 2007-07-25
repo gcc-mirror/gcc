@@ -1,3 +1,24 @@
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bitmap.c (hash_descriptor, eq_descriptor, bitmap_element_zerop,
+	bitmap_copy, bitmap_clear_bit, popcount_table, bitmap_count_bits,
+	bitmap_first_set_bit, bitmap_and, bitmap_and_into,
+	bitmap_elt_copy, bitmap_and_compl, bitmap_and_compl_into,
+	bitmap_compl_and_into, bitmap_elt_ior, bitmap_ior,
+	bitmap_ior_into, bitmap_xor, bitmap_xor_into, bitmap_equal_p,
+	bitmap_intersect_p, bitmap_intersect_compl_p,
+	bitmap_ior_and_compl, bitmap_ior_and_compl_into,
+	debug_bitmap_file, debug_bitmap, bitmap_print, bitmap_hash):
+	Constify.
+	* bitmap.h (bitmap_copy, bitmap_equal_p, bitmap_intersect_p,
+	bitmap_intersect_compl_p, bitmap_count_bits, bitmap_and,
+	bitmap_and_into, bitmap_and_compl, bitmap_and_compl_into,
+	bitmap_compl_and_into, bitmap_ior, bitmap_ior_into, bitmap_xor,
+	bitmap_xor_into, bitmap_ior_and_compl, bitmap_ior_and_compl_into,
+	debug_bitmap, debug_bitmap_file, bitmap_print,
+	bitmap_first_set_bit, bitmap_hash, bmp_iter_set_init,
+	bmp_iter_and_init, bmp_iter_and_compl_init): Likewise.
+
 2007-07-25  Daniel Berlin  <dberlin@dberlin.org>
 
 	* config/darwin.c (darwin_override_options): Additional fix for

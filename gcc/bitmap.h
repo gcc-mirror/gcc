@@ -93,45 +93,45 @@ extern bitmap_obstack bitmap_default_obstack;   /* Default bitmap obstack */
 extern void bitmap_clear (bitmap);
 
 /* Copy a bitmap to another bitmap.  */
-extern void bitmap_copy (bitmap, bitmap);
+extern void bitmap_copy (bitmap, const_bitmap);
 
 /* True if two bitmaps are identical.  */
-extern bool bitmap_equal_p (bitmap, bitmap);
+extern bool bitmap_equal_p (const_bitmap, const_bitmap);
 
 /* True if the bitmaps intersect (their AND is non-empty).  */
-extern bool bitmap_intersect_p (bitmap, bitmap);
+extern bool bitmap_intersect_p (const_bitmap, const_bitmap);
 
 /* True if the complement of the second intersects the first (their
    AND_COMPL is non-empty).  */
-extern bool bitmap_intersect_compl_p (bitmap, bitmap);
+extern bool bitmap_intersect_compl_p (const_bitmap, const_bitmap);
 
 /* True if MAP is an empty bitmap.  */
 #define bitmap_empty_p(MAP) (!(MAP)->first)
 
 /* Count the number of bits set in the bitmap.  */
-extern unsigned long bitmap_count_bits (bitmap);
+extern unsigned long bitmap_count_bits (const_bitmap);
 
 /* Boolean operations on bitmaps.  The _into variants are two operand
    versions that modify the first source operand.  The other variants
    are three operand versions that to not destroy the source bitmaps.
    The operations supported are &, & ~, |, ^.  */
-extern void bitmap_and (bitmap, bitmap, bitmap);
-extern void bitmap_and_into (bitmap, bitmap);
-extern bool bitmap_and_compl (bitmap, bitmap, bitmap);
-extern bool bitmap_and_compl_into (bitmap, bitmap);
+extern void bitmap_and (bitmap, const_bitmap, const_bitmap);
+extern void bitmap_and_into (bitmap, const_bitmap);
+extern bool bitmap_and_compl (bitmap, const_bitmap, const_bitmap);
+extern bool bitmap_and_compl_into (bitmap, const_bitmap);
 #define bitmap_compl_and(DST, A, B) bitmap_and_compl (DST, B, A)
-extern void bitmap_compl_and_into (bitmap, bitmap);
+extern void bitmap_compl_and_into (bitmap, const_bitmap);
 extern void bitmap_clear_range (bitmap, unsigned int, unsigned int);
 extern void bitmap_set_range (bitmap, unsigned int, unsigned int);
-extern bool bitmap_ior (bitmap, bitmap, bitmap);
-extern bool bitmap_ior_into (bitmap, bitmap);
-extern void bitmap_xor (bitmap, bitmap, bitmap);
-extern void bitmap_xor_into (bitmap, bitmap);
+extern bool bitmap_ior (bitmap, const_bitmap, const_bitmap);
+extern bool bitmap_ior_into (bitmap, const_bitmap);
+extern void bitmap_xor (bitmap, const_bitmap, const_bitmap);
+extern void bitmap_xor_into (bitmap, const_bitmap);
 
 /* DST = A | (B & ~C).  Return true if DST changes.  */
-extern bool bitmap_ior_and_compl (bitmap DST, bitmap A, bitmap B, bitmap C);
+extern bool bitmap_ior_and_compl (bitmap DST, const_bitmap A, const_bitmap B, const_bitmap C);
 /* A |= (B & ~C).  Return true if A changes.  */
-extern bool bitmap_ior_and_compl_into (bitmap DST, bitmap B, bitmap C);
+extern bool bitmap_ior_and_compl_into (bitmap DST, const_bitmap B, const_bitmap C);
 
 /* Clear a single register in a register set.  */
 extern void bitmap_clear_bit (bitmap, int);
@@ -143,11 +143,11 @@ extern void bitmap_set_bit (bitmap, int);
 extern int bitmap_bit_p (bitmap, int);
 
 /* Debug functions to print a bitmap linked list.  */
-extern void debug_bitmap (bitmap);
-extern void debug_bitmap_file (FILE *, bitmap);
+extern void debug_bitmap (const_bitmap);
+extern void debug_bitmap_file (FILE *, const_bitmap);
 
 /* Print a bitmap.  */
-extern void bitmap_print (FILE *, bitmap, const char *, const char *);
+extern void bitmap_print (FILE *, const_bitmap, const char *, const char *);
 
 /* Initialize and release a bitmap obstack.  */
 extern void bitmap_obstack_initialize (bitmap_obstack *);
@@ -179,10 +179,10 @@ extern void bitmap_obstack_free (bitmap);
 /* A few compatibility/functions macros for compatibility with sbitmaps */
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
-extern unsigned bitmap_first_set_bit (bitmap);
+extern unsigned bitmap_first_set_bit (const_bitmap);
 
 /* Compute bitmap hash (for purposes of hashing etc.)  */
-extern hashval_t bitmap_hash(bitmap);
+extern hashval_t bitmap_hash(const_bitmap);
 
 /* Allocate a bitmap from a bit obstack.  */
 #define BITMAP_ALLOC(OBSTACK) bitmap_obstack_alloc (OBSTACK)
@@ -217,7 +217,7 @@ typedef struct
    iterate from.  */
 
 static inline void
-bmp_iter_set_init (bitmap_iterator *bi, bitmap map,
+bmp_iter_set_init (bitmap_iterator *bi, const_bitmap map,
 		   unsigned start_bit, unsigned *bit_no)
 {
   bi->elt1 = map->first;
@@ -259,7 +259,7 @@ bmp_iter_set_init (bitmap_iterator *bi, bitmap map,
    bitmaps.  START_BIT is the bit to commence from.  */
 
 static inline void
-bmp_iter_and_init (bitmap_iterator *bi, bitmap map1, bitmap map2,
+bmp_iter_and_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
 		   unsigned start_bit, unsigned *bit_no)
 {
   bi->elt1 = map1->first;
@@ -327,7 +327,7 @@ bmp_iter_and_init (bitmap_iterator *bi, bitmap map1, bitmap map2,
    */
 
 static inline void
-bmp_iter_and_compl_init (bitmap_iterator *bi, bitmap map1, bitmap map2,
+bmp_iter_and_compl_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
 			 unsigned start_bit, unsigned *bit_no)
 {
   bi->elt1 = map1->first;
