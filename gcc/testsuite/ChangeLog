@@ -1,3 +1,7 @@
+2007-07-25  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20070725-1.c: Testcase for revision 126876 added.
+
 2007-07-25  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.dg/tree-ssa/predcom-1.c (count_averages): Avoid overflow
