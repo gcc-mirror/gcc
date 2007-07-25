@@ -1,5 +1,30 @@
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* sbitmap.c (sbitmap_verify_popcount, sbitmap_alloc_with_popcount,
+	sbitmap_copy, sbitmap_copy_n, sbitmap_equal, sbitmap_empty_p,
+	sbitmap_union_of_diff_cg, sbitmap_union_of_diff, sbitmap_not,
+	sbitmap_difference, sbitmap_any_common_bits, sbitmap_a_and_b_cg,
+	sbitmap_a_and_b, sbitmap_a_xor_b_cg, sbitmap_a_xor_b,
+	sbitmap_a_or_b_cg, sbitmap_a_or_b, sbitmap_a_subset_b_p,
+	sbitmap_a_or_b_and_c_cg, sbitmap_a_or_b_and_c,
+	sbitmap_a_and_b_or_c_cg, sbitmap_a_and_b_or_c,
+	sbitmap_first_set_bit, sbitmap_last_set_bit, dump_sbitmap,
+	dump_sbitmap_file, debug_sbitmap, popcount_table,
+	sbitmap_popcount): Constify.
+	* sbitmap.h (const_sbitmap, const_sbitmap_ptr): New.
+	(sbitmap_iterator, sbitmap_iter_init, dump_sbitmap,
+	dump_sbitmap_file, sbitmap_copy, sbitmap_copy_n, sbitmap_equal,
+	sbitmap_empty_p, sbitmap_union_of_diff, sbitmap_union_of_diff_cg,
+	sbitmap_difference, sbitmap_not, sbitmap_a_or_b_and_c,
+	sbitmap_a_or_b_and_c_cg, sbitmap_a_and_b_or_c,
+	sbitmap_a_and_b_or_c_cg, sbitmap_any_common_bits, sbitmap_a_and_b,
+	sbitmap_a_and_b_cg, sbitmap_a_or_b, sbitmap_a_or_b_cg,
+	sbitmap_a_xor_b, sbitmap_a_xor_b_cg, sbitmap_a_subset_b_p,
+	sbitmap_first_set_bit, sbitmap_last_set_bit, debug_sbitmap,
+	sbitmap_popcount, sbitmap_verify_popcount): Constify.
+
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* bitmap.c (hash_descriptor, eq_descriptor, bitmap_element_zerop,
 	bitmap_copy, bitmap_clear_bit, popcount_table, bitmap_count_bits,
 	bitmap_first_set_bit, bitmap_and, bitmap_and_into,
