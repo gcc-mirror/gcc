@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ilp32 || lp64 } } } */
 
 struct w49
 {
