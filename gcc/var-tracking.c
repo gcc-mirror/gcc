@@ -258,6 +258,7 @@ typedef struct variable_def
   /* The variable parts.  */
   variable_part var_part[MAX_VAR_PARTS];
 } *variable;
+typedef const struct variable_def *const_variable;
 
 /* Hash function for DECL for VARIABLE_HTAB.  */
 #define VARIABLE_HASH_VAL(decl) (DECL_UID (decl))
@@ -601,7 +602,7 @@ adjust_stack_reference (rtx mem, HOST_WIDE_INT adjustment)
 static hashval_t
 variable_htab_hash (const void *x)
 {
-  const variable v = (const variable) x;
+  const_variable const v = (const_variable) x;
 
   return (VARIABLE_HASH_VAL (v->decl));
 }
@@ -611,8 +612,8 @@ variable_htab_hash (const void *x)
 static int
 variable_htab_eq (const void *x, const void *y)
 {
-  const variable v = (const variable) x;
-  const tree decl = (const tree) y;
+  const_variable const v = (const_variable) x;
+  const_tree const decl = (const_tree) y;
 
   return (VARIABLE_HASH_VAL (v->decl) == VARIABLE_HASH_VAL (decl));
 }

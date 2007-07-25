@@ -293,7 +293,7 @@ static int
 compare_path (const void *key, const void *entry)
 {
   return strcmp ((const char *) key, 
-		 (*((const struct dirent **) entry))->d_name);
+		 (*((const struct dirent *const*) entry))->d_name);
 }
 
 /* Returns nonzero if ENTRY names a .java or .class file.  */

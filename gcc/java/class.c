@@ -3048,15 +3048,17 @@ static int java_treetreehash_compare (const void *, const void *);
 static hashval_t
 java_treetreehash_hash (const void *k_p)
 {
-  struct treetreehash_entry *k = (struct treetreehash_entry *) k_p;
+  const struct treetreehash_entry *const k
+    = (const struct treetreehash_entry *) k_p;
   return JAVA_TREEHASHHASH_H (k->key);
 }
 
 static int
 java_treetreehash_compare (const void * k1_p, const void * k2_p)
 {
-  struct treetreehash_entry * k1 = (struct treetreehash_entry *) k1_p;
-  tree k2 = (tree) k2_p;
+  const struct treetreehash_entry *const k1
+    = (const struct treetreehash_entry *) k1_p;
+  const_tree const k2 = (const_tree) k2_p;
   return (k1->key == k2);
 }
 

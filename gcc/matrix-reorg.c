@@ -390,7 +390,7 @@ static htab_t matrices_to_reorg = NULL;
 static hashval_t
 mtt_info_hash (const void *mtt)
 {
-  return htab_hash_pointer (((struct matrix_info *) mtt)->decl);
+  return htab_hash_pointer (((const struct matrix_info *) mtt)->decl);
 }
 
 /* Return true if MTT1 and MTT2 (which are really both of type

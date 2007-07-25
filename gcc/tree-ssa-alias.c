@@ -309,8 +309,8 @@ mark_non_addressable (tree var)
 static int
 sort_tags_by_id (const void *pa, const void *pb)
 {
-  tree a = *(tree *)pa;
-  tree b = *(tree *)pb;
+  const_tree const a = *(const_tree const *)pa;
+  const_tree const b = *(const_tree const *)pb;
  
   return DECL_UID (a) - DECL_UID (b);
 }

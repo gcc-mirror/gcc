@@ -2137,7 +2137,7 @@ try verify_c_interop_param (gfc_symbol *);
 try verify_bind_c_sym (gfc_symbol *, gfc_typespec *, int, gfc_common_head *);
 try verify_bind_c_derived_type (gfc_symbol *);
 try verify_com_block_vars_c_interop (gfc_common_head *);
-void generate_isocbinding_symbol (const char *, iso_c_binding_symbol, char *);
+void generate_isocbinding_symbol (const char *, iso_c_binding_symbol, const char *);
 gfc_symbol *get_iso_c_sym (gfc_symbol *, char *, char *, int);
 int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);

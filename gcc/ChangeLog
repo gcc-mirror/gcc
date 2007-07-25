@@ -1,5 +1,71 @@
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-common.c (fname_as_string, c_type_hash): Constify.
+	* c-typeck.c (free_all_tagged_tu_seen_up_to): Likewise.
+	* cgraph.c (edge_hash, edge_eq): Likewise.
+	* dwarf2out.c (decl_die_table_eq, decl_loc_table_eq): Likewise.
+	* emit-rtl.c (mem_attrs_htab_eq, reg_attrs_htab_hash,
+	reg_attrs_htab_eq): Likewise.
+	* except.c (t2r_eq, t2r_hash, ttypes_filter_eq, ehl_hash, ehl_eq):
+	Likewise.
+	* genautomata.c (const_reserv_sets_t, const_unit_decl_t,
+	const_decl_t, const_state_t, const_automata_list_el_t): New.
+	(first_out_arc, DECL_UNIT, DECL_BYPASS, DECL_AUTOMATON, DECL_EXCL,
+	DECL_PRESENCE, DECL_ABSENCE, DECL_RESERV, DECL_INSN_RESERV,
+	automaton_decl_hash, automaton_decl_eq_p, insn_decl_hash,
+	insn_decl_eq_p, decl_hash, decl_eq_p, alt_state_cmp,
+	reserv_sets_cmp, reserv_sets_eq, state_hash, state_eq_p,
+	automata_list_hash, automata_list_eq_p, compare_states_for_equiv,
+	compare_max_occ_cycle_nums, out_state_arcs_num,
+	compare_transition_els_num, units_cmp, state_reservs_cmp):
+	Constify.
+	* genmodes.c (cmp_modes): Likewise.
+	* ggc-common.c (saving_htab_hash, saving_htab_eq): Likewise.
+	* gimplify.c (compare_case_labels): Likewise.
+	* ipa-type-escape.c (get_name_of_type, type_brand_s): Likewise.
+	* loop-unroll.c (si_info_hash, ve_info_hash): Likewise.
+	* matrix-reorg.c (mtt_info_hash): Likewise.
+	* postreload-gcse.c (hash_expr_for_htab, expr_equiv_p): Likewise.
+	* rtl-factoring.c (const_p_hash_bucket, const_p_hash_elem): New.
+	(htab_hash_bucket, htab_hash_elem): Constify.
+	* tree-browser.c (TB_parent_eq): Likewise.
+	* tree-scalar-evolution.c (hash_scev_info): Likewise.
+	* tree-ssa-alias.c (sort_tags_by_id): Likewise.
+	* tree-ssa-coalesce.c (const_coalesce_pair_p): New.
+	(coalesce_pair_map_hash, coalesce_pair_map_eq, compare_pairs):
+	Constify.
+	* tree-ssa-dom.c (avail_expr_hash, avail_expr_eq): Likewise.
+	* tree-ssa-pre.c (const_expr_pred_trans_t): New.
+	(expr_pred_trans_hash, expr_pred_trans_eq): Constify.
+	* tree-ssa-sccvn.c (const_vn_binary_op_t, const_vn_unary_op_t,
+	const_vn_phi_t, const_vn_reference_op_t, const_vn_reference_t):
+	New.
+	(vn_reference_op_eq, vn_reference_hash, vn_reference_eq,
+	vn_unary_op_hash, vn_unary_op_eq, vn_binary_op_hash,
+	vn_binary_op_eq, vn_phi_hash, vn_phi_eq): Constify.
+	* tree-ssa-threadupdate.c (redirection_data_hash,
+	redirection_data_eq): Likewise. 
+	* tree-ssa-uncprop.c (equiv_hash, equiv_eq): Likewise.
+	* tree-ssa.c (var_ann_eq): Likewise.
+	* tree-vrp.c (compare_case_labels): Likewise.
+	* tree.c (int_cst_hash_hash, int_cst_hash_eq,
+	tree_map_base_marked_p, type_hash_marked_p, tree_check_failed,
+	tree_not_check_failed, tree_class_check_failed,
+	tree_range_check_failed, tree_not_class_check_failed,
+	omp_clause_check_failed, omp_clause_range_check_failed,
+	tree_contains_struct_check_failed, tree_operand_check_failed):
+	Likewise. 
+	* tree.h (tree_contains_struct_check_failed, tree_check_failed,
+	tree_not_check_failed, tree_class_check_failed,
+	tree_range_check_failed, tree_not_class_check_failed,
+	tree_operand_check_failed, omp_clause_operand_check_failed,
+	tree_operand_length): Likewise. 
+	* var-tracking.c (const_variable): New.
+	(variable_htab_hash, variable_htab_eq): Constify.
+	* varasm.c (const_desc_hash): Likewise.
+
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* expr.c (handled_component_p): Constify.
 	* fold-const.c (fit_double_type): Likewise.
 	* real.h (real_value_from_int_cst): Likewise.

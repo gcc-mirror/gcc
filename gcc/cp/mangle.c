@@ -2836,7 +2836,7 @@ static GTY ((param_is (union tree_node))) htab_t conv_type_names;
 static hashval_t
 hash_type (const void *val)
 {
-  return (hashval_t) TYPE_UID (TREE_TYPE ((tree) val));
+  return (hashval_t) TYPE_UID (TREE_TYPE ((const_tree) val));
 }
 
 /* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
@@ -2844,7 +2844,7 @@ hash_type (const void *val)
 static int
 compare_type (const void *val1, const void *val2)
 {
-  return TREE_TYPE ((tree) val1) == (tree) val2;
+  return TREE_TYPE ((const_tree) val1) == (const_tree) val2;
 }
 
 /* Return an identifier for the mangled unqualified name for a

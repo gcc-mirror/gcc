@@ -166,7 +166,7 @@ cmpstringp (const void *p1, const void *p2)
      pointers to char", but strcmp() arguments are "pointers
      to char", hence the following cast plus dereference */
 
-  return strcmp(*(char **) p1, *(char **) p2);
+  return strcmp(*(const char *const*) p1, *(const char *const*) p2);
 }
 
 /* Create an array of strings, one for each source file that we've

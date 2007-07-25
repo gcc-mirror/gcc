@@ -1321,7 +1321,7 @@ objc_xref_basetypes (tree ref, tree basetype)
 static hashval_t
 volatilized_hash (const void *ptr)
 {
-  tree typ = ((struct volatilized_type *)ptr)->type;
+  const_tree const typ = ((const struct volatilized_type *)ptr)->type;
 
   return htab_hash_pointer(typ);
 }
@@ -1329,8 +1329,8 @@ volatilized_hash (const void *ptr)
 static int
 volatilized_eq (const void *ptr1, const void *ptr2)
 {
-  tree typ1 = ((struct volatilized_type *)ptr1)->type;
-  tree typ2 = ((struct volatilized_type *)ptr2)->type;
+  const_tree const typ1 = ((const struct volatilized_type *)ptr1)->type;
+  const_tree const typ2 = ((const struct volatilized_type *)ptr2)->type;
 
   return typ1 == typ2;
 }
@@ -1856,7 +1856,7 @@ my_build_string_pointer (int len, const char *str)
 static hashval_t
 string_hash (const void *ptr)
 {
-  tree str = ((struct string_descriptor *)ptr)->literal;
+  const_tree const str = ((const struct string_descriptor *)ptr)->literal;
   const unsigned char *p = (const unsigned char *) TREE_STRING_POINTER (str);
   int i, len = TREE_STRING_LENGTH (str);
   hashval_t h = len;
@@ -1870,8 +1870,8 @@ string_hash (const void *ptr)
 static int
 string_eq (const void *ptr1, const void *ptr2)
 {
-  tree str1 = ((struct string_descriptor *)ptr1)->literal;
-  tree str2 = ((struct string_descriptor *)ptr2)->literal;
+  const_tree const str1 = ((const struct string_descriptor *)ptr1)->literal;
+  const_tree const str2 = ((const struct string_descriptor *)ptr2)->literal;
   int len1 = TREE_STRING_LENGTH (str1);
 
   return (len1 == TREE_STRING_LENGTH (str2)

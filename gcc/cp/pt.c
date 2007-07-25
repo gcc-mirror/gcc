@@ -1302,7 +1302,7 @@ reregister_specialization (tree spec, tree tmpl, tree new_spec)
 static int
 eq_local_specializations (const void *p1, const void *p2)
 {
-  return TREE_VALUE ((tree) p1) == (tree) p2;
+  return TREE_VALUE ((const_tree) p1) == (const_tree) p2;
 }
 
 /* Hash P1, an entry in the local specializations table.  */
@@ -1310,7 +1310,7 @@ eq_local_specializations (const void *p1, const void *p2)
 static hashval_t
 hash_local_specialization (const void* p1)
 {
-  return htab_hash_pointer (TREE_VALUE ((tree) p1));
+  return htab_hash_pointer (TREE_VALUE ((const_tree) p1));
 }
 
 /* Like register_specialization, but for local declarations.  We are

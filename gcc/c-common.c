@@ -780,7 +780,7 @@ fname_as_string (int pretty_p)
       if (cpp_interpret_string (parse_in, &strname, 1, &cstr, false))
 	{
 	  XDELETEVEC (namep);
-	  return (char *) cstr.text;
+	  return (const char *) cstr.text;
 	}
     }
   else
@@ -3011,7 +3011,7 @@ c_type_hash (const void *p)
 {
   int i = 0;
   int shift, size;
-  tree t = (tree) p;
+  const_tree const t = (const_tree) p;
   tree t2;
   switch (TREE_CODE (t))
     {

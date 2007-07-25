@@ -2716,7 +2716,7 @@ static hashval_t
 typename_hash (const void* k)
 {
   hashval_t hash;
-  tree t = (tree) k;
+  const_tree const t = (const_tree) k;
 
   hash = (htab_hash_pointer (TYPE_CONTEXT (t))
 	  ^ htab_hash_pointer (DECL_NAME (TYPE_NAME (t))));
@@ -2738,11 +2738,8 @@ typedef struct typename_info {
 static int
 typename_compare (const void * k1, const void * k2)
 {
-  tree t1;
-  const typename_info *t2;
-
-  t1 = (tree) k1;
-  t2 = (const typename_info *) k2;
+  const_tree const t1 = (const_tree) k1;
+  const typename_info *const t2 = (const typename_info *) k2;
 
   return (DECL_NAME (TYPE_NAME (t1)) == t2->name
 	  && TYPE_CONTEXT (t1) == t2->scope
