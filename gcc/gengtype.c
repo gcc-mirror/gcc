@@ -1751,7 +1751,7 @@ struct write_types_data
 
 static void output_escaped_param (struct walk_type_data *d,
 				  const char *, const char *);
-static void output_mangled_typename (outf_p, type_p);
+static void output_mangled_typename (outf_p, const_type_p);
 static void walk_type (type_p t, struct walk_type_data *d);
 static void write_func_for_structure
      (type_p orig_s, type_p s, type_p * param,
@@ -1804,7 +1804,7 @@ struct walk_type_data
 /* Print a mangled name representing T to OF.  */
 
 static void
-output_mangled_typename (outf_p of, type_p t)
+output_mangled_typename (outf_p of, const_type_p t)
 {
   if (t == NULL)
     oprintf (of, "Z");
@@ -2580,7 +2580,7 @@ write_types (type_p structures, type_p param_structs,
 	for (opt = s->u.s.opt; opt; opt = opt->next)
 	  if (strcmp (opt->name, "ptr_alias") == 0)
 	    {
-	      type_p t = (type_p) opt->info;
+	      const_type_p const t = (const_type_p) opt->info;
 	      if (t->kind == TYPE_STRUCT
 		  || t->kind == TYPE_UNION
 		  || t->kind == TYPE_LANG_STRUCT)
@@ -2759,7 +2759,7 @@ write_local (type_p structures, type_p param_structs)
 	for (opt = s->u.s.opt; opt; opt = opt->next)
 	  if (strcmp (opt->name, "ptr_alias") == 0)
 	    {
-	      type_p t = (type_p) opt->info;
+	      const_type_p const t = (const_type_p) opt->info;
 	      if (t->kind == TYPE_STRUCT
 		  || t->kind == TYPE_UNION
 		  || t->kind == TYPE_LANG_STRUCT)

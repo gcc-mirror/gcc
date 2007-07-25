@@ -1,5 +1,10 @@
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* parser.c (cp_parser_string_literal, cp_parser_sizeof_operand):
+	Constify.
+
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* decl.c (typename_hash, typename_compare): Constify.
 	* mangle.c (hash_type, compare_type): Likewise.
 	* pt.c (eq_local_specializations, hash_local_specialization):

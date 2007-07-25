@@ -933,12 +933,12 @@ hash_del_properties (void *p)
 static int
 eq_descriptor_extension (const void *p1, const void *p2)
 {
-  const rtx insn = (rtx) p1;
-  const rtx element = (rtx) p2;
+  const_rtx const insn = (const_rtx) p1;
+  const_rtx const element = (const_rtx) p2;
   rtx set1 = single_set (insn);
   rtx dest_reg1;
   rtx set2 = NULL;
-  rtx dest_reg2 = NULL;
+  const_rtx dest_reg2 = NULL;
 
   gcc_assert (set1 && element && (REG_P (element) || INSN_P (element)));
 
@@ -962,7 +962,7 @@ eq_descriptor_extension (const void *p1, const void *p2)
 static hashval_t
 hash_descriptor_extension (const void *p)
 {
-  const rtx r = (rtx) p;
+  const_rtx const r = (const_rtx) p;
   rtx set, lhs;
 
   if (r && REG_P (r))

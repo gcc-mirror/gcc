@@ -1294,7 +1294,7 @@ memref_hash (const void *obj)
 static int
 memref_eq (const void *obj1, const void *obj2)
 {
-  const struct mem_ref *mem1 = (const struct mem_ref *) obj1;
+  const struct mem_ref *const mem1 = (const struct mem_ref *) obj1;
 
   return operand_equal_p (mem1->mem, (tree) obj2, 0);
 }

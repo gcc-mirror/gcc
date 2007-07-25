@@ -31,6 +31,7 @@ struct fileloc {
 /* Data types handed around within, but opaque to, the lexer and parser.  */
 typedef struct pair *pair_p;
 typedef struct type *type_p;
+typedef const struct type *const_type_p;
 typedef struct options *options_p;
 
 /* Variables used to communicate between the lexer and the parser.  */

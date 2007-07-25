@@ -2896,7 +2896,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok)
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  count++;
-	  str.text = (unsigned char *)TREE_STRING_POINTER (tok->u.value);
+	  str.text = (const unsigned char *)TREE_STRING_POINTER (tok->u.value);
 	  str.len = TREE_STRING_LENGTH (tok->u.value);
 	  if (tok->type == CPP_WSTRING)
 	    wide = true;
@@ -17111,6 +17111,7 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   static const char *format;
   tree expr = NULL_TREE;
   const char *saved_message;
+  char *tmp;
   bool saved_integral_constant_expression_p;
   bool saved_non_integral_constant_expression_p;
   bool pack_expansion_p = false;
@@ -17123,12 +17124,11 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
      old message.  */
   saved_message = parser->type_definition_forbidden_message;
   /* And create the new one.  */
-  parser->type_definition_forbidden_message
-    = XNEWVEC (const char, strlen (format)
+  parser->type_definition_forbidden_message = tmp
+    = XNEWVEC (char, strlen (format)
 	       + strlen (IDENTIFIER_POINTER (ridpointers[keyword]))
 	       + 1 /* `\0' */);
-  sprintf ((char *) parser->type_definition_forbidden_message,
-	   format, IDENTIFIER_POINTER (ridpointers[keyword]));
+  sprintf (tmp, format, IDENTIFIER_POINTER (ridpointers[keyword]));
 
   /* The restrictions on constant-expressions do not apply inside
      sizeof expressions.  */
@@ -17204,7 +17204,7 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
   --skip_evaluation;
 
   /* Free the message we created.  */
-  free ((char *) parser->type_definition_forbidden_message);
+  free (tmp);
   /* And restore the old one.  */
   parser->type_definition_forbidden_message = saved_message;
   parser->integral_constant_expression_p
