@@ -1,5 +1,18 @@
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cselib.c (entry_and_rtx_equal_p): Constify.
+	* gengtype.c (output_mangled_typename, write_types, write_local):
+	Likewise.
+	* gengtype.h (const_type_p): New.
+	* see.c (eq_descriptor_extension, hash_descriptor_extension):
+	Constify.
+	* tlink.c (scan_linker_output): De-constify.
+	* tree-ssa-loop-im.c (memref_eq): Constify.
+	* tree-ssa-structalias.c (const_shared_bitmap_info_t): New.
+	(shared_bitmap_hash, shared_bitmap_eq): Constify.
+
+2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* c-common.c (fname_as_string, c_type_hash): Constify.
 	* c-typeck.c (free_all_tagged_tu_seen_up_to): Likewise.
 	* cgraph.c (edge_hash, edge_eq): Likewise.

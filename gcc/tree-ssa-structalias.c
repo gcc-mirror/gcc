@@ -4266,6 +4266,7 @@ typedef struct shared_bitmap_info
   bitmap pt_vars;
   hashval_t hashcode;
 } *shared_bitmap_info_t;
+typedef const struct shared_bitmap_info *const_shared_bitmap_info_t;
 
 static htab_t shared_bitmap_table;
 
@@ -4274,7 +4275,7 @@ static htab_t shared_bitmap_table;
 static hashval_t
 shared_bitmap_hash (const void *p)
 {
-  const shared_bitmap_info_t bi = (shared_bitmap_info_t) p;
+  const_shared_bitmap_info_t const bi = (const_shared_bitmap_info_t) p;
   return bi->hashcode;
 }
 
@@ -4283,8 +4284,8 @@ shared_bitmap_hash (const void *p)
 static int
 shared_bitmap_eq (const void *p1, const void *p2)
 {
-  const shared_bitmap_info_t sbi1 = (shared_bitmap_info_t) p1;
-  const shared_bitmap_info_t sbi2 = (shared_bitmap_info_t) p2;
+  const_shared_bitmap_info_t const sbi1 = (const_shared_bitmap_info_t) p1;
+  const_shared_bitmap_info_t const sbi2 = (const_shared_bitmap_info_t) p2;
   return bitmap_equal_p (sbi1->pt_vars, sbi2->pt_vars);
 }
 

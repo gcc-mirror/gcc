@@ -234,7 +234,7 @@ static int
 entry_and_rtx_equal_p (const void *entry, const void *x_arg)
 {
   struct elt_loc_list *l;
-  const cselib_val *v = (const cselib_val *) entry;
+  const cselib_val *const v = (const cselib_val *) entry;
   rtx x = (rtx) x_arg;
   enum machine_mode mode = GET_MODE (x);
 
