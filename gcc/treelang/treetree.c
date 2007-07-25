@@ -575,13 +575,13 @@ tree_code_generate_return (tree type, tree exp)
                             fold_convert (type, exp));
       TREE_SIDE_EFFECTS (setret) = 1;
       TREE_USED (setret) = 1;
-      setret = build1 (RETURN_EXPR, type, setret);
+      setret = build1 (RETURN_EXPR, void_type_node, setret);
       /* Use EXPR_LOCUS so we don't lose any information about the file we
 	 are compiling.  */
       SET_EXPR_LOCUS (setret, EXPR_LOCUS (exp));
     }
    else
-     setret = build1 (RETURN_EXPR, type, NULL_TREE);
+     setret = build1 (RETURN_EXPR, void_type_node, NULL_TREE);
 
    append_to_statement_list_force (setret, getstmtlist ());
 }
