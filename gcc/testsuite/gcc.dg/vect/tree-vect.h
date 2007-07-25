@@ -21,6 +21,18 @@ void check_vect (void)
   asm volatile (".byte 0xf2,0x0f,0x10,0xc0");
 #elif defined(__sparc__)
   asm volatile (".word\t0x81b007c0");
+#elif defined(__arm__)
+  {
+    /* On some processors without NEON support, this instruction may
+       be a no-op, on others it may trap, so check that it executes
+       correctly.  */
+    long long a = 0, b = 1;
+    asm ("vorr %P0, %P1, %P2"
+	 : "=w" (a)
+	 : "0" (a), "w" (b));
+    if (a != 1)
+      exit (0);
+  }
 #endif
   signal (SIGILL, SIG_DFL);
 }

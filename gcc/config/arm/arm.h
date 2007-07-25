@@ -65,6 +65,9 @@ extern char arm_arch_name[];
 	if (TARGET_VFP)					\
 	  builtin_define ("__VFP_FP__");		\
 							\
+	if (TARGET_NEON)				\
+	  builtin_define ("__ARM_NEON__");		\
+							\
 	/* Add a define for interworking.		\
 	   Needed when building libgcc.a.  */		\
 	if (arm_cpp_interwork)				\
@@ -206,10 +209,23 @@ extern GTY(()) rtx aof_pic_label;
 /* 32-bit Thumb-2 code.  */
 #define TARGET_THUMB2			(TARGET_THUMB && arm_arch_thumb2)
 
+/* The following two macros concern the ability to execute coprocessor
+   instructions for VFPv3 or NEON.  TARGET_VFP3 is currently only ever
+   tested when we know we are generating for VFP hardware; we need to
+   be more careful with TARGET_NEON as noted below.  */
+
 /* FPU is VFPv3 (with twice the number of D registers).  Setting the FPU to
    Neon automatically enables VFPv3 too.  */
 #define TARGET_VFP3 (arm_fp_model == ARM_FP_MODEL_VFP \
-		     && (arm_fpu_arch == FPUTYPE_VFP3))
+		     && (arm_fpu_arch == FPUTYPE_VFP3 \
+			 || arm_fpu_arch == FPUTYPE_NEON))
+/* FPU supports Neon instructions.  The setting of this macro gets
+   revealed via __ARM_NEON__ so we add extra guards upon TARGET_32BIT
+   and TARGET_HARD_FLOAT to ensure that NEON instructions are
+   available.  */
+#define TARGET_NEON (TARGET_32BIT && TARGET_HARD_FLOAT \
+		     && arm_fp_model == ARM_FP_MODEL_VFP \
+		     && arm_fpu_arch == FPUTYPE_NEON)
 
 /* "DSP" multiply instructions, eg. SMULxy.  */
 #define TARGET_DSP_MULTIPLY \
@@ -282,7 +298,9 @@ enum fputype
   /* VFP.  */
   FPUTYPE_VFP,
   /* VFPv3.  */
-  FPUTYPE_VFP3
+  FPUTYPE_VFP3,
+  /* Neon.  */
+  FPUTYPE_NEON
 };
 
 /* Recast the floating point class to be the floating point attribute.  */
@@ -482,6 +500,12 @@ extern int arm_arch_hwdiv;
 #define FLOAT_WORDS_BIG_ENDIAN (arm_float_words_big_endian ())
 
 #define UNITS_PER_WORD	4
+
+/* Use the option -mvectorize-with-neon-quad to override the use of doubleword
+   registers when autovectorizing for Neon, at least until multiple vector
+   widths are supported properly by the middle-end.  */
+#define UNITS_PER_SIMD_WORD \
+  (TARGET_NEON ? (TARGET_NEON_VECTORIZE_QUAD ? 16 : 8) : UNITS_PER_WORD)
 
 /* True if natural alignment is used for doubleword types.  */
 #define ARM_DOUBLEWORD_ALIGN	TARGET_AAPCS_BASED
@@ -941,6 +965,18 @@ extern int arm_structure_size_boundary;
 #define VFP_REGNO_OK_FOR_DOUBLE(REGNUM) \
   ((((REGNUM) - FIRST_VFP_REGNUM) & 1) == 0)
 
+/* Neon Quad values must start at a multiple of four registers.  */
+#define NEON_REGNO_OK_FOR_QUAD(REGNUM) \
+  ((((REGNUM) - FIRST_VFP_REGNUM) & 3) == 0)
+
+/* Neon structures of vectors must be in even register pairs and there
+   must be enough registers available.  Because of various patterns
+   requiring quad registers, we require them to start at a multiple of
+   four.  */
+#define NEON_REGNO_OK_FOR_NREGS(REGNUM, N) \
+  ((((REGNUM) - FIRST_VFP_REGNUM) & 3) == 0 \
+   && (LAST_VFP_REGNUM - (REGNUM) >= 2 * (N) - 1))
+
 /* The number of hard registers is 16 ARM + 8 FPA + 1 CC + 1 SFP + 1 AFP.  */
 /* + 16 Cirrus registers take us up to 43.  */
 /* Intel Wireless MMX Technology registers add 16 + 4 more.  */
@@ -993,6 +1029,21 @@ extern int arm_structure_size_boundary;
 
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
+
+/* Modes valid for Neon D registers.  */
+#define VALID_NEON_DREG_MODE(MODE) \
+  ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
+   || (MODE) == V2SFmode || (MODE) == DImode)
+
+/* Modes valid for Neon Q registers.  */
+#define VALID_NEON_QREG_MODE(MODE) \
+  ((MODE) == V4SImode || (MODE) == V8HImode || (MODE) == V16QImode \
+   || (MODE) == V4SFmode || (MODE) == V2DImode)
+
+/* Structure modes valid for Neon registers.  */
+#define VALID_NEON_STRUCT_MODE(MODE) \
+  ((MODE) == TImode || (MODE) == EImode || (MODE) == OImode \
+   || (MODE) == CImode || (MODE) == XImode)
 
 /* The order in which register should be allocated.  It is good to use ip
    since no saving is required (though calls clobber it) and it never contains
@@ -2409,7 +2460,7 @@ extern int making_const_table;
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
   (CODE == '@' || CODE == '|' || CODE == '.'	\
-   || CODE == '(' || CODE == ')'		\
+   || CODE == '(' || CODE == ')' || CODE == '#'	\
    || (TARGET_32BIT && (CODE == '?'))		\
    || (TARGET_THUMB2 && (CODE == '!'))		\
    || (TARGET_THUMB && (CODE == '_')))
@@ -2581,6 +2632,9 @@ extern int making_const_table;
    : arm_gen_return_addr_mask ())
 
 
+/* Neon defines builtins from ARM_BUILTIN_MAX upwards, though they don't have
+   symbolic names defined here (which would require too much duplication).
+   FIXME?  */
 enum arm_builtins
 {
   ARM_BUILTIN_GETWCX,
@@ -2745,7 +2799,9 @@ enum arm_builtins
 
   ARM_BUILTIN_THREAD_POINTER,
 
-  ARM_BUILTIN_MAX
+  ARM_BUILTIN_NEON_BASE,
+
+  ARM_BUILTIN_MAX = ARM_BUILTIN_NEON_BASE  /* FIXME: Wrong!  */
 };
 
 /* Do not emit .note.GNU-stack by default.  */

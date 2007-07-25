@@ -259,7 +259,7 @@ strongarm*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
-	extra_headers="mmintrin.h"
+	extra_headers="mmintrin.h arm_neon.h"
 	;;
 bfin*-*)
 	cpu_type=bfin
@@ -2841,7 +2841,7 @@ case "${target}" in
 
 		case "$with_fpu" in
 		"" \
-		| fpa | fpe2 | fpe3 | maverick | vfp | vfp3 )
+		| fpa | fpe2 | fpe3 | maverick | vfp | vfp3 | neon )
 			# OK
 			;;
 		*)

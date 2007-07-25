@@ -51,6 +51,7 @@
 
 ;; UNSPEC Usage:
 ;; Note: sin and cos are no-longer used.
+;; Unspec constants for Neon are defined in neon.md.
 
 (define_constants
   [(UNSPEC_SIN       0)	; `sin' operation (MODE_FLOAT):
@@ -121,12 +122,14 @@
 			;   a 32-bit object.
    (VUNSPEC_POOL_8   7) ; `pool-entry(8)'.  An entry in the constant pool for
 			;   a 64-bit object.
-   (VUNSPEC_TMRC     8) ; Used by the iWMMXt TMRC instruction.
-   (VUNSPEC_TMCR     9) ; Used by the iWMMXt TMCR instruction.
-   (VUNSPEC_ALIGN8   10) ; 8-byte alignment version of VUNSPEC_ALIGN
-   (VUNSPEC_WCMP_EQ  11) ; Used by the iWMMXt WCMPEQ instructions
-   (VUNSPEC_WCMP_GTU 12) ; Used by the iWMMXt WCMPGTU instructions
-   (VUNSPEC_WCMP_GT  13) ; Used by the iwMMXT WCMPGT instructions
+   (VUNSPEC_POOL_16  8) ; `pool-entry(16)'.  An entry in the constant pool for
+			;   a 128-bit object.
+   (VUNSPEC_TMRC     9) ; Used by the iWMMXt TMRC instruction.
+   (VUNSPEC_TMCR     10) ; Used by the iWMMXt TMCR instruction.
+   (VUNSPEC_ALIGN8   11) ; 8-byte alignment version of VUNSPEC_ALIGN
+   (VUNSPEC_WCMP_EQ  12) ; Used by the iWMMXt WCMPEQ instructions
+   (VUNSPEC_WCMP_GTU 13) ; Used by the iWMMXt WCMPGTU instructions
+   (VUNSPEC_WCMP_GT  14) ; Used by the iwMMXT WCMPGT instructions
    (VUNSPEC_EH_RETURN 20); Use to override the return address for exception
 			 ; handling.
   ]
@@ -5768,27 +5771,6 @@
   "
 )
 
-;; Vector Moves
-(define_expand "movv2si"
-  [(set (match_operand:V2SI 0 "nonimmediate_operand" "")
-	(match_operand:V2SI 1 "general_operand" ""))]
-  "TARGET_REALLY_IWMMXT"
-{
-})
-
-(define_expand "movv4hi"
-  [(set (match_operand:V4HI 0 "nonimmediate_operand" "")
-	(match_operand:V4HI 1 "general_operand" ""))]
-  "TARGET_REALLY_IWMMXT"
-{
-})
-
-(define_expand "movv8qi"
-  [(set (match_operand:V8QI 0 "nonimmediate_operand" "")
-	(match_operand:V8QI 1 "general_operand" ""))]
-  "TARGET_REALLY_IWMMXT"
-{
-})
 
 
 ;; load- and store-multiple insns
@@ -10731,6 +10713,30 @@
   [(set_attr "length" "8")]
 )
 
+(define_insn "consttable_16"
+  [(unspec_volatile [(match_operand 0 "" "")] VUNSPEC_POOL_16)]
+  "TARGET_EITHER"
+  "*
+  {
+    making_const_table = TRUE;
+    switch (GET_MODE_CLASS (GET_MODE (operands[0])))
+      {
+       case MODE_FLOAT:
+        {
+          REAL_VALUE_TYPE r;
+          REAL_VALUE_FROM_CONST_DOUBLE (r, operands[0]);
+          assemble_real (r, GET_MODE (operands[0]), BITS_PER_WORD);
+          break;
+        }
+      default:
+        assemble_integer (operands[0], 16, BITS_PER_WORD, 1);
+        break;
+      }
+    return \"\";
+  }"
+  [(set_attr "length" "16")]
+)
+
 ;; Miscellaneous Thumb patterns
 
 (define_expand "tablejump"
@@ -10906,10 +10912,14 @@
 (include "fpa.md")
 ;; Load the Maverick co-processor patterns
 (include "cirrus.md")
+;; Vector bits common to IWMMXT and Neon
+(include "vec-common.md")
 ;; Load the Intel Wireless Multimedia Extension patterns
 (include "iwmmxt.md")
 ;; Load the VFP co-processor patterns
 (include "vfp.md")
 ;; Thumb-2 patterns
 (include "thumb2.md")
+;; Neon patterns
+(include "neon.md")
 

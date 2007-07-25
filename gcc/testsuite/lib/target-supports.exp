@@ -1462,6 +1462,74 @@ proc check_effective_target_arm_vfp_ok { } {
     }
 }
 
+# Return 1 if this is an ARM target supporting -mfpu=neon
+# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
+# options.
+
+proc check_effective_target_arm_neon_ok { } {
+    if { [check_effective_target_arm32] } {
+        return [check_no_compiler_messages arm_neon_ok object {
+            int dummy;
+        } "-mfpu=neon -mfloat-abi=softfp"]
+    } else {
+        return 0
+    }
+}
+
+# Return 1 if the target supports executing NEON instructions, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_arm_neon_hw { } {
+    global arm_neon_hw_available_saved
+    global tool
+
+    if [info exists arm_neon_hw_available_saved] {
+        verbose "check_arm_neon_hw_available  returning saved $arm_neon_hw_avail
+able_saved" 2
+    } else {
+        set arm_neon_hw_available_saved 0
+
+        # Set up, compile, and execute a test program containing NEON
+        # instructions.  Include the current process ID in the file
+        # names to prevent conflicts with invocations for multiple
+        # testsuites.
+        set src neon[pid].c
+        set exe neon[pid].x
+
+        set f [open $src "w"]
+        puts $f "int main() {"
+        puts $f "  long long a = 0, b = 1;"
+        puts $f "  asm (\"vorr %P0, %P1, %P2\""
+        puts $f "       : \"=w\" (a)"
+        puts $f "       : \"0\" (a), \"w\" (b));"
+        puts $f "  return (a != 1);"
+        puts $f "}"
+        close $f
+
+        set opts "additional_flags=-mfpu=neon additional_flags=-mfloat-abi=softfp"
+
+        verbose "check_arm_neon_hw_available  compiling testfile $src" 2
+        set lines [${tool}_target_compile $src $exe executable "$opts"]
+        file delete $src
+
+        if [string match "" $lines] then {
+            # No error message, compilation succeeded.
+            set result [${tool}_load "./$exe" "" ""]
+            set status [lindex $result 0]
+            remote_file build delete $exe
+            verbose "check_arm_neon_hw_available testfile status is <$status>" 2
+
+            if { $status == "pass" } then {
+                set arm_neon_hw_available_saved 1
+            }
+        } else {
+            verbose "check_arm_neon_hw_available testfile compilation failed" 2
+        }
+    }
+
+    return $arm_neon_hw_available_saved
+}
+
 # Return 1 if this is a PowerPC target with floating-point registers.
 
 proc check_effective_target_powerpc_fprs { } {
