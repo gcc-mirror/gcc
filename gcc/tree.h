@@ -601,21 +601,21 @@ enum tree_node_structure_enum {
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
 #define TREE_CHECK(T, CODE) __extension__				\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != (CODE))					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, 	\
 			 (CODE), 0);					\
     __t; })
 
 #define TREE_NOT_CHECK(T, CODE) __extension__				\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) == (CODE))					\
       tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
 			     (CODE), 0);				\
     __t; })
 
 #define TREE_CHECK2(T, CODE1, CODE2) __extension__			\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != (CODE1)					\
 	&& TREE_CODE (__t) != (CODE2))					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
@@ -623,7 +623,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define TREE_NOT_CHECK2(T, CODE1, CODE2) __extension__			\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) == (CODE1)					\
 	|| TREE_CODE (__t) == (CODE2))					\
       tree_not_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
@@ -631,7 +631,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define TREE_CHECK3(T, CODE1, CODE2, CODE3) __extension__		\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != (CODE1)					\
 	&& TREE_CODE (__t) != (CODE2)					\
 	&& TREE_CODE (__t) != (CODE3))					\
@@ -640,7 +640,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define TREE_NOT_CHECK3(T, CODE1, CODE2, CODE3) __extension__		\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) == (CODE1)					\
 	|| TREE_CODE (__t) == (CODE2)					\
 	|| TREE_CODE (__t) == (CODE3))					\
@@ -649,7 +649,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define TREE_CHECK4(T, CODE1, CODE2, CODE3, CODE4) __extension__	\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != (CODE1)					\
 	&& TREE_CODE (__t) != (CODE2)					\
 	&& TREE_CODE (__t) != (CODE3)					\
@@ -659,7 +659,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define NON_TREE_CHECK4(T, CODE1, CODE2, CODE3, CODE4) __extension__	\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) == (CODE1)					\
 	|| TREE_CODE (__t) == (CODE2)					\
 	|| TREE_CODE (__t) == (CODE3)					\
@@ -669,7 +669,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define TREE_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) __extension__	\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != (CODE1)					\
 	&& TREE_CODE (__t) != (CODE2)					\
 	&& TREE_CODE (__t) != (CODE3)					\
@@ -680,7 +680,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define TREE_NOT_CHECK5(T, CODE1, CODE2, CODE3, CODE4, CODE5) __extension__ \
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) == (CODE1)					\
 	|| TREE_CODE (__t) == (CODE2)					\
 	|| TREE_CODE (__t) == (CODE3)					\
@@ -691,28 +691,28 @@ enum tree_node_structure_enum {
     __t; })
 
 #define CONTAINS_STRUCT_CHECK(T, STRUCT) __extension__			\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
   if (tree_contains_struct[TREE_CODE(__t)][(STRUCT)] != 1)		\
       tree_contains_struct_check_failed (__t, (STRUCT), __FILE__, __LINE__,	\
 			       __FUNCTION__);				\
     __t; })
 
 #define TREE_CLASS_CHECK(T, CLASS) __extension__			\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE_CLASS (TREE_CODE(__t)) != (CLASS))			\
       tree_class_check_failed (__t, (CLASS), __FILE__, __LINE__,	\
 			       __FUNCTION__);				\
     __t; })
 
 #define TREE_RANGE_CHECK(T, CODE1, CODE2) __extension__			\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) < (CODE1) || TREE_CODE (__t) > (CODE2))		\
       tree_range_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,	\
 			       (CODE1), (CODE2));			\
     __t; })
 
 #define OMP_CLAUSE_SUBCODE_CHECK(T, CODE) __extension__			\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != OMP_CLAUSE)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
 			 OMP_CLAUSE, 0);				\
@@ -722,7 +722,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define OMP_CLAUSE_RANGE_CHECK(T, CODE1, CODE2) __extension__		\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TREE_CODE (__t) != OMP_CLAUSE)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
 			 OMP_CLAUSE, 0);				\
@@ -734,7 +734,7 @@ enum tree_node_structure_enum {
 
 /* These checks have to be special cased.  */
 #define EXPR_CHECK(T) __extension__					\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     char const __c = TREE_CODE_CLASS (TREE_CODE (__t));			\
     if (!IS_EXPR_CODE_CLASS (__c))					\
       tree_class_check_failed (__t, tcc_expression, __FILE__, __LINE__,	\
@@ -742,7 +742,7 @@ enum tree_node_structure_enum {
     __t; })
 
 #define GIMPLE_STMT_CHECK(T) __extension__				\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     char const __c = TREE_CODE_CLASS (TREE_CODE (__t));			\
     if (!IS_GIMPLE_STMT_CODE_CLASS (__c))				\
       tree_class_check_failed (__t, tcc_gimple_stmt, __FILE__, __LINE__,\
@@ -751,14 +751,14 @@ enum tree_node_structure_enum {
 
 /* These checks have to be special cased.  */
 #define NON_TYPE_CHECK(T) __extension__					\
-({  const tree __t = (T);						\
+({  __typeof (T) const __t = (T);					\
     if (TYPE_P (__t))							\
       tree_not_class_check_failed (__t, tcc_type, __FILE__, __LINE__,	\
 				   __FUNCTION__);			\
     __t; })
 
 #define TREE_VEC_ELT_CHECK(T, I) __extension__				\
-(*({const tree __t = (T);						\
+(*({__typeof (T) const __t = (T);					\
     const int __i = (I);						\
     if (TREE_CODE (__t) != TREE_VEC)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,		\
@@ -768,9 +768,9 @@ enum tree_node_structure_enum {
 				 __FILE__, __LINE__, __FUNCTION__);	\
     &__t->vec.a[__i]; }))
 
-#define PHI_NODE_ELT_CHECK(t, i) __extension__				\
-(*({const tree __t = t;							\
-    const int __i = (i);						\
+#define PHI_NODE_ELT_CHECK(T, I) __extension__				\
+(*({__typeof (T) const __t = (T);					\
+    const int __i = (I);						\
     if (TREE_CODE (__t) != PHI_NODE)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
 			 PHI_NODE, 0);					\
@@ -779,9 +779,9 @@ enum tree_node_structure_enum {
 				 __FILE__, __LINE__, __FUNCTION__);	\
     &__t->phi.a[__i]; }))
 
-#define OMP_CLAUSE_ELT_CHECK(t, i) __extension__			\
-(*({const tree __t = t;							\
-    const int __i = (i);						\
+#define OMP_CLAUSE_ELT_CHECK(T, I) __extension__			\
+(*({__typeof (T) const __t = (T);						\
+    const int __i = (I);						\
     if (TREE_CODE (__t) != OMP_CLAUSE)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__,  	\
 			 OMP_CLAUSE, 0);				\
@@ -792,7 +792,7 @@ enum tree_node_structure_enum {
 
 /* Special checks for TREE_OPERANDs.  */
 #define TREE_OPERAND_CHECK(T, I) __extension__				\
-(*({const tree __t = EXPR_CHECK (T);					\
+(*({__typeof (T) const __t = EXPR_CHECK (T);				\
     const int __i = (I);						\
     if (GIMPLE_TUPLE_P (__t))						\
       gcc_unreachable ();						\
@@ -802,7 +802,7 @@ enum tree_node_structure_enum {
     &__t->exp.operands[__i]; }))
 
 #define TREE_OPERAND_CHECK_CODE(T, CODE, I) __extension__		\
-(*({const tree __t = (T);						\
+(*({__typeof (T) const __t = (T);					\
     const int __i = (I);						\
     if (TREE_CODE (__t) != CODE)					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, (CODE), 0);\
@@ -813,7 +813,7 @@ enum tree_node_structure_enum {
 
 /* Special checks for GIMPLE_STMT_OPERANDs.  */
 #define GIMPLE_STMT_OPERAND_CHECK(T, I) __extension__			\
-(*({const tree __t = GIMPLE_STMT_CHECK (T);				\
+(*({__typeof (T) const __t = GIMPLE_STMT_CHECK (T);			\
     const int __i = (I);						\
     if (__i < 0 || __i >= TREE_OPERAND_LENGTH (__t))			\
       tree_operand_check_failed (__i, __t,				\
@@ -822,7 +822,7 @@ enum tree_node_structure_enum {
 
 #define TREE_RTL_OPERAND_CHECK(T, CODE, I) __extension__		\
 (*(rtx *)								\
- ({const tree __t = (T);						\
+ ({__typeof (T) const __t = (T);					\
     const int __i = (I);						\
     if (TREE_CODE (__t) != (CODE))					\
       tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, (CODE), 0); \
@@ -841,7 +841,7 @@ enum tree_node_structure_enum {
    are chained together.  */
 
 #define TREE_CHAIN(NODE) __extension__ \
-(*({const tree __t = (NODE);					\
+(*({__typeof (NODE) const __t = (NODE);				\
     if (GIMPLE_TUPLE_P (__t))					\
       gcc_unreachable ();					\
     &__t->common.chain; }))
@@ -851,7 +851,7 @@ enum tree_node_structure_enum {
    In ARRAY_TYPE nodes, this is the type of the elements.
    In VECTOR_TYPE nodes, this is the type of the elements.  */
 #define TREE_TYPE(NODE) __extension__ \
-(*({const tree __t = (NODE);					\
+(*({__typeof (NODE) const __t = (NODE);					\
     if (GIMPLE_TUPLE_P (__t))					\
       gcc_unreachable ();					\
     &__t->common.type; }))
