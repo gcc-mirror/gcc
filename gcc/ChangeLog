@@ -1,3 +1,7 @@
+2007-07-25  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* config/darwin.c: Include debug.h.
+
 2007-07-25  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/32218

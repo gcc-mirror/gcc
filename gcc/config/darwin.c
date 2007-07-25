@@ -46,6 +46,7 @@ Boston, MA 02110-1301, USA.  */
 #include "toplev.h"
 #include "hashtab.h"
 #include "df.h"
+#include "debug.h"
 
 /* Darwin supports a feature called fix-and-continue, which is used
    for rapid turn around debugging.  When code is compiled with the
