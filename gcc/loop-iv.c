@@ -244,7 +244,7 @@ biv_hash (const void *b)
 static int
 biv_eq (const void *b, const void *r)
 {
-  return ((const struct biv_entry *) b)->regno == REGNO ((rtx) r);
+  return ((const struct biv_entry *) b)->regno == REGNO ((const_rtx) r);
 }
 
 /* Prepare the data for an induction variable analysis of a LOOP.  */

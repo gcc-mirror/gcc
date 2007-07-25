@@ -31,9 +31,9 @@ extern int toplev_main (unsigned int, const char **);
 extern int read_integral_parameter (const char *, const char *, const int);
 extern void strip_off_ending (char *, int);
 extern const char *trim_filename (const char *);
-extern void _fatal_insn_not_found (rtx, const char *, int, const char *)
+extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)
      ATTRIBUTE_NORETURN;
-extern void _fatal_insn (const char *, rtx, const char *, int, const char *)
+extern void _fatal_insn (const char *, const_rtx, const char *, int, const char *)
      ATTRIBUTE_NORETURN;
 
 #define fatal_insn(msgid, insn) \
@@ -76,8 +76,8 @@ extern bool enable_rtl_dump_file (int);
 
 extern void announce_function (tree);
 
-extern void error_for_asm (rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void warning_for_asm (rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern void error_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern void warning_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void warn_deprecated_use (tree);
 
 #ifdef BUFSIZ

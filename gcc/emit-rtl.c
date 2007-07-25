@@ -195,7 +195,7 @@ int split_branch_probability = -1;
 static hashval_t
 const_int_htab_hash (const void *x)
 {
-  return (hashval_t) INTVAL ((rtx) x);
+  return (hashval_t) INTVAL ((const_rtx) x);
 }
 
 /* Returns nonzero if the value represented by X (which is really a
@@ -205,14 +205,14 @@ const_int_htab_hash (const void *x)
 static int
 const_int_htab_eq (const void *x, const void *y)
 {
-  return (INTVAL ((rtx) x) == *((const HOST_WIDE_INT *) y));
+  return (INTVAL ((const_rtx) x) == *((const HOST_WIDE_INT *) y));
 }
 
 /* Returns a hash code for X (which is really a CONST_DOUBLE).  */
 static hashval_t
 const_double_htab_hash (const void *x)
 {
-  rtx value = (rtx) x;
+  const_rtx const value = (const_rtx) x;
   hashval_t h;
 
   if (GET_MODE (value) == VOIDmode)
@@ -231,7 +231,7 @@ const_double_htab_hash (const void *x)
 static int
 const_double_htab_eq (const void *x, const void *y)
 {
-  rtx a = (rtx)x, b = (rtx)y;
+  const_rtx const a = (const_rtx)x, b = (const_rtx)y;
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
@@ -248,7 +248,7 @@ const_double_htab_eq (const void *x, const void *y)
 static hashval_t
 mem_attrs_htab_hash (const void *x)
 {
-  mem_attrs *p = (mem_attrs *) x;
+  const mem_attrs *const p = (const mem_attrs *) x;
 
   return (p->alias ^ (p->align * 1000)
 	  ^ ((p->offset ? INTVAL (p->offset) : 0) * 50000)
