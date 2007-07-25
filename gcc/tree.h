@@ -4112,6 +4112,12 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				 tree *, enum machine_mode *, int *, int *,
 				 bool);
 
+/* Given an expression EXP that may be a COMPONENT_REF or an ARRAY_REF,
+   look for whether EXP or any nested component-refs within EXP is marked
+   as PACKED.  */
+
+extern bool contains_packed_reference (tree exp);
+
 /* Return 1 if T is an expression that get_inner_reference handles.  */
 
 extern int handled_component_p (tree);

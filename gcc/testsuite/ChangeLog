@@ -1,3 +1,16 @@
+2007-07-25  Dorit Nuzman  <dorit@il.ibm.com>
+	    Devang Patel  <dpatel@apple.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/25413
+	* lib/target-supports.exp (check_effective_target_vect_aligned_arrays):
+	New procedure to check if arrays are naturally aligned to the vector
+	alignment boundary.
+	* gcc.dg/vect/vect-align-1.c: New.
+	* gcc.dg/vect/vect-align-2.c: New.
+	* gcc.dg/vect/pr25413.c: New.
+	* gcc.dg/vect/pr25413a.c: New.
+
 2007-07-24  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/30535

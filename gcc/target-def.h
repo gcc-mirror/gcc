@@ -337,9 +337,12 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
    TARGET_SCHED_SET_SCHED_FLAGS}
 
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD 0
+#define TARGET_VECTOR_ALIGNMENT_REACHABLE \
+  default_builtin_vector_alignment_reachable
 
 #define TARGET_VECTORIZE                                                \
-  {TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD}
+  {TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD,				\
+   TARGET_VECTOR_ALIGNMENT_REACHABLE}
 
 #define TARGET_DEFAULT_TARGET_FLAGS 0
 
