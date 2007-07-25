@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-xfail-if "PR 31500" { hppa*-*-* && { ! hppa*64*-*-* } } } */
 /* { dg-options "-O2 -Warray-bounds" } */
 
 int a[10];
@@ -88,5 +87,5 @@ int* f(void) {
        c.c[-1] = 0;
 
     return a;
-} /* { dg-excess-errors "PR 31500" { xfail { hppa*-*-* && { ! hppa*64*-*-* } } } } */
+}
 
