@@ -214,20 +214,22 @@ bool have_regs_of_mode [MAX_MACHINE_MODE];
 
 static char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
 
+typedef unsigned short move_table[N_REG_CLASSES];
+
 /* Maximum cost of moving from a register in one class to a register in
    another class.  Based on REGISTER_MOVE_COST.  */
 
-static int move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][N_REG_CLASSES];
+static move_table *move_cost[MAX_MACHINE_MODE];
 
 /* Similar, but here we don't have to move if the first index is a subset
    of the second so in that case the cost is zero.  */
 
-static int may_move_in_cost[MAX_MACHINE_MODE][N_REG_CLASSES][N_REG_CLASSES];
+static move_table *may_move_in_cost[MAX_MACHINE_MODE];
 
 /* Similar, but here we don't have to move if the first index is a superset
    of the second so in that case the cost is zero.  */
 
-static int may_move_out_cost[MAX_MACHINE_MODE][N_REG_CLASSES][N_REG_CLASSES];
+static move_table *may_move_out_cost[MAX_MACHINE_MODE];
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
@@ -310,6 +312,96 @@ init_reg_sets (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     inv_reg_alloc_order[reg_alloc_order[i]] = i;
 #endif
+}
+
+/* Initialize may_move_cost and friends for mode M.  */
+
+static void
+init_move_cost (enum machine_mode m)
+{
+  static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
+  static int last_mode = -1;
+  bool all_match = true;
+  unsigned int i, j;
+
+  gcc_assert (have_regs_of_mode[m]);
+  for (i = 0; i < N_REG_CLASSES; i++)
+    if (contains_reg_of_mode[i][m])
+      for (j = 0; j < N_REG_CLASSES; j++)
+	{
+	  int cost;
+	  if (!contains_reg_of_mode[j][m])
+	    cost = 65535;
+	  else
+	    {
+	      cost = REGISTER_MOVE_COST (m, i, j);
+	      gcc_assert (cost < 65535);
+	    }
+	  all_match &= (last_move_cost[i][j] == cost);
+	  last_move_cost[i][j] = cost;
+	}
+  if (all_match && last_mode != -1)
+    {
+      move_cost[m] = move_cost[last_mode];
+      may_move_in_cost[m] = may_move_in_cost[last_mode];
+      may_move_out_cost[m] = may_move_out_cost[last_mode];
+      return;
+    }
+  last_mode = m;
+  move_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+					* N_REG_CLASSES);
+  may_move_in_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+					       * N_REG_CLASSES);
+  may_move_out_cost[m] = (move_table *)xmalloc (sizeof (move_table)
+					        * N_REG_CLASSES);
+  for (i = 0; i < N_REG_CLASSES; i++)
+    if (contains_reg_of_mode[i][m])
+      for (j = 0; j < N_REG_CLASSES; j++)
+	{
+	  int cost;
+	  enum reg_class *p1, *p2;
+
+	  if (last_move_cost[i][j] == 65535)
+	    {
+	      move_cost[m][i][j] = 65535;
+	      may_move_in_cost[m][i][j] = 65535;
+	      may_move_out_cost[m][i][j] = 65535;
+	    }
+	  else
+	    {
+	      cost = last_move_cost[i][j];
+
+	      for (p2 = &reg_class_subclasses[j][0];
+		   *p2 != LIM_REG_CLASSES; p2++)
+		if (*p2 != i && contains_reg_of_mode[*p2][m])
+		  cost = MAX (cost, move_cost[m][i][*p2]);
+
+	      for (p1 = &reg_class_subclasses[i][0];
+		   *p1 != LIM_REG_CLASSES; p1++)
+		if (*p1 != j && contains_reg_of_mode[*p1][m])
+		  cost = MAX (cost, move_cost[m][*p1][j]);
+
+	      gcc_assert (cost <= 65535);
+	      move_cost[m][i][j] = cost;
+
+	      if (reg_class_subset_p (i, j))
+		may_move_in_cost[m][i][j] = 0;
+	      else
+		may_move_in_cost[m][i][j] = cost;
+
+	      if (reg_class_subset_p (j, i))
+		may_move_out_cost[m][i][j] = 0;
+	      else
+		may_move_out_cost[m][i][j] = cost;
+	    }
+	}
+    else
+      for (j = 0; j < N_REG_CLASSES; j++)
+	{
+	  move_cost[m][i][j] = 65535;
+	  may_move_in_cost[m][i][j] = 65535;
+	  may_move_out_cost[m][i][j] = 65535;
+	}
 }
 
 /* After switches have been processed, which perhaps alter
@@ -476,73 +568,21 @@ init_reg_sets_1 (void)
   memset (have_regs_of_mode, 0, sizeof (have_regs_of_mode));
   memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
   for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)
-    for (i = 0; i < N_REG_CLASSES; i++)
-      if ((unsigned) CLASS_MAX_NREGS (i, m) <= reg_class_size[i])
-	for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-	  if (!fixed_regs [j] && TEST_HARD_REG_BIT (reg_class_contents[i], j)
-	      && HARD_REGNO_MODE_OK (j, m))
-	     {
-	       contains_reg_of_mode [i][m] = 1;
-	       have_regs_of_mode [m] = 1;
-	       break;
-	     }
-
-  /* Initialize the move cost table.  Find every subset of each class
-     and take the maximum cost of moving any subset to any other.  */
-
-  for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)
-    if (have_regs_of_mode [m])
-      {
-	for (i = 0; i < N_REG_CLASSES; i++)
-	  if (contains_reg_of_mode [i][m])
-	    for (j = 0; j < N_REG_CLASSES; j++)
-	      {
-		int cost;
-		enum reg_class *p1, *p2;
-
-		if (!contains_reg_of_mode [j][m])
-		  {
-		    move_cost[m][i][j] = 65536;
-		    may_move_in_cost[m][i][j] = 65536;
-		    may_move_out_cost[m][i][j] = 65536;
-		  }
-		else
-		  {
-		    cost = REGISTER_MOVE_COST (m, i, j);
-
-		    for (p2 = &reg_class_subclasses[j][0];
-			 *p2 != LIM_REG_CLASSES;
-			 p2++)
-		      if (*p2 != i && contains_reg_of_mode [*p2][m])
-			cost = MAX (cost, move_cost [m][i][*p2]);
-
-		    for (p1 = &reg_class_subclasses[i][0];
-			 *p1 != LIM_REG_CLASSES;
-			 p1++)
-		      if (*p1 != j && contains_reg_of_mode [*p1][m])
-			cost = MAX (cost, move_cost [m][*p1][j]);
-
-		    move_cost[m][i][j] = cost;
-
-		    if (reg_class_subset_p (i, j))
-		      may_move_in_cost[m][i][j] = 0;
-		    else
-		      may_move_in_cost[m][i][j] = cost;
-
-		    if (reg_class_subset_p (j, i))
-		      may_move_out_cost[m][i][j] = 0;
-		    else
-		      may_move_out_cost[m][i][j] = cost;
-		  }
-	      }
-	  else
-	    for (j = 0; j < N_REG_CLASSES; j++)
-	      {
-		move_cost[m][i][j] = 65536;
-		may_move_in_cost[m][i][j] = 65536;
-		may_move_out_cost[m][i][j] = 65536;
-	      }
-      }
+    {
+      HARD_REG_SET ok_regs;
+      CLEAR_HARD_REG_SET (ok_regs);
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
+	if (!fixed_regs [j] && HARD_REGNO_MODE_OK (j, m))
+	  SET_HARD_REG_BIT (ok_regs, j);
+      
+      for (i = 0; i < N_REG_CLASSES; i++)
+	if ((unsigned) CLASS_MAX_NREGS (i, m) <= reg_class_size[i]
+	    && hard_reg_set_intersect_p (ok_regs, reg_class_contents[i]))
+	  {
+	     contains_reg_of_mode [i][m] = 1;
+	     have_regs_of_mode [m] = 1;
+	  }
+     }
 }
 
 /* Compute the table of register modes.
@@ -1465,15 +1505,33 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     copy, which is one instruction.  */
 
 		  struct costs *pp = &this_op_costs[i];
+		  move_table *intable = NULL;
+		  move_table *outtable = NULL;
+		  int op_class = (int) classes[i];
 
-		  for (class = 0; class < N_REG_CLASSES; class++)
-		    pp->cost[class]
-		      = ((recog_data.operand_type[i] != OP_OUT
-			  ? may_move_in_cost[mode][class][(int) classes[i]]
-			  : 0)
-			 + (recog_data.operand_type[i] != OP_IN
-			    ? may_move_out_cost[mode][(int) classes[i]][class]
-			    : 0));
+		  if (!move_cost[mode])
+		    init_move_cost (mode);
+		  intable = may_move_in_cost[mode];
+		  outtable = may_move_out_cost[mode];
+
+		  /* The loop is performance critical, so unswitch it manually.
+		   */
+		  switch (recog_data.operand_type[i])
+		    {
+		    case OP_INOUT:
+		      for (class = 0; class < N_REG_CLASSES; class++)
+			pp->cost[class] = (intable[class][op_class]
+					   + outtable[op_class][class]);
+		      break;
+		    case OP_IN:
+		      for (class = 0; class < N_REG_CLASSES; class++)
+			pp->cost[class] = intable[class][op_class];
+		      break;
+		    case OP_OUT:
+		      for (class = 0; class < N_REG_CLASSES; class++)
+			pp->cost[class] = outtable[op_class][class];
+		      break;
+		    }
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
@@ -1691,15 +1749,33 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	      else
 		{
 		  struct costs *pp = &this_op_costs[i];
+		  move_table *intable = NULL;
+		  move_table *outtable = NULL;
+		  int op_class = (int) classes[i];
 
-		  for (class = 0; class < N_REG_CLASSES; class++)
-		    pp->cost[class]
-		      = ((recog_data.operand_type[i] != OP_OUT
-			  ? may_move_in_cost[mode][class][(int) classes[i]]
-			  : 0)
-			 + (recog_data.operand_type[i] != OP_IN
-			    ? may_move_out_cost[mode][(int) classes[i]][class]
-			    : 0));
+		  if (!move_cost[mode])
+		    init_move_cost (mode);
+		  intable = may_move_in_cost[mode];
+		  outtable = may_move_out_cost[mode];
+
+		  /* The loop is performance critical, so unswitch it manually.
+		   */
+		  switch (recog_data.operand_type[i])
+		    {
+		    case OP_INOUT:
+		      for (class = 0; class < N_REG_CLASSES; class++)
+			pp->cost[class] = (intable[class][op_class]
+					   + outtable[op_class][class]);
+		      break;
+		    case OP_IN:
+		      for (class = 0; class < N_REG_CLASSES; class++)
+			pp->cost[class] = intable[class][op_class];
+		      break;
+		    case OP_OUT:
+		      for (class = 0; class < N_REG_CLASSES; class++)
+			pp->cost[class] = outtable[op_class][class];
+		      break;
+		    }
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
@@ -1855,6 +1931,9 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class class, int to_p,
   sri.prev_sri = prev_sri;
   sri.extra_cost = 0;
   secondary_class = targetm.secondary_reload (to_p, x, class, mode, &sri);
+
+  if (!move_cost[mode])
+    init_move_cost (mode);
 
   if (secondary_class != NO_REGS)
     return (move_cost[mode][(int) secondary_class][(int) class]
@@ -2056,6 +2135,8 @@ record_address_regs (enum machine_mode mode, rtx x, int context,
 
 	pp->mem_cost += (MEMORY_MOVE_COST (Pmode, class, 1) * scale) / 2;
 
+	if (!move_cost[Pmode])
+	  init_move_cost (Pmode);
 	for (i = 0; i < N_REG_CLASSES; i++)
 	  pp->cost[i] += (may_move_in_cost[Pmode][i][(int) class] * scale) / 2;
       }
