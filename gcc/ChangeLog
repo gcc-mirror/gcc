@@ -1,3 +1,8 @@
+2007-07-24  Daniel Berlin  <dberlin@dberlin.org>
+
+	* config/darwin.c (darwin_override_options): Don't force on
+	flag_var_tracking_uninit when no debug info is requested.
+
 2007-07-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cfgloop.c (init_loops_structure): New function.
