@@ -313,6 +313,7 @@ create_edge_and_update_destination_phis (struct redirection_data *rd)
   edge e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
   tree phi;
 
+  rescan_loop_exit (e, true, false);
   e->probability = REG_BR_PROB_BASE;
   e->count = rd->dup_block->count;
   e->aux = rd->outgoing_edge->aux;
