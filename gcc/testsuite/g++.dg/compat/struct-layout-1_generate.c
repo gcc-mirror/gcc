@@ -36,6 +36,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 # error Need 64-bit long long
 #endif
 
+#if defined __MSVCRT__ 
+#define COMPAT_PRLL "I64"
+#else 
+#define COMPAT_PRLL "ll"
+#endif
+
 typedef unsigned int hashval_t;
 
 enum TYPE
@@ -778,7 +784,7 @@ output_FNB (char mode, struct entry *e)
 	m &= e->len > 1 ? (1ULL << (e->len - 1)) - 1 : 1;
       l1 &= m;
       l2 &= m;
-      fprintf (outfile, "%s%llu%s,%s%llu%s",
+      fprintf (outfile, "%s%" COMPAT_PRLL "u%s,%s%" COMPAT_PRLL "u%s",
 	       (signs & 1) ? "-" : "", l1, l1 > 2147483647 ? "LL" : "",
 	       (signs & 2) ? "-" : "", l2, l2 > 2147483647 ? "LL" : "");
       break;
@@ -788,7 +794,8 @@ output_FNB (char mode, struct entry *e)
 	m &= (1ULL << e->len) - 1;
       l1 &= m;
       l2 &= m;
-      fprintf (outfile, "%lluU%s,%lluU%s", l1, l1 > 4294967295U ? "LL" : "",
+      fprintf (outfile,"%" COMPAT_PRLL "uU%s,%" COMPAT_PRLL "uU%s",
+	       l1, l1 > 4294967295U ? "LL" : "",
 	       l2, l2 > 4294967295U ? "LL" : "");
       break;
     case TYPE_FLOAT:
@@ -802,7 +809,8 @@ output_FNB (char mode, struct entry *e)
       if (e->type->maxval == 0)
 	fputs ("e0_0,e0_0", outfile);
       else if (e->type->maxval == 1)
-	fprintf (outfile, "e1_%lld,e1_%lld", l1 & 1, l2 & 1);
+	fprintf (outfile, "e1_%" COMPAT_PRLL "d,e1_%" COMPAT_PRLL "d",
+		 l1 & 1, l2 & 1);
       else
 	{
 	  p = strchr (e->type->name, '\0');
@@ -814,7 +822,8 @@ output_FNB (char mode, struct entry *e)
 	    l1 += e->type->maxval - 6;
 	  if (l2 > 3)
 	    l2 += e->type->maxval - 6;
-	  fprintf (outfile, "e%s_%lld,e%s_%lld", p, l1, p, l2);
+	  fprintf (outfile, "e%s_%" COMPAT_PRLL "d,e%s_%" COMPAT_PRLL "d",
+		   p, l1, p, l2);
 	}
       break;
     case TYPE_SENUM:
@@ -823,7 +832,7 @@ output_FNB (char mode, struct entry *e)
       p++;
       l1 %= 7;
       l2 %= 7;
-      fprintf (outfile, "e%s_%s%lld,e%s_%s%lld",
+      fprintf (outfile, "e%s_%s%" COMPAT_PRLL "d,e%s_%s%" COMPAT_PRLL "d",
 	       p, l1 < 3 ? "m" : "",
 	       l1 == 3 ? 0LL : e->type->maxval - (l1 & 3),
 	       p, l2 < 3 ? "m" : "",
@@ -832,13 +841,15 @@ output_FNB (char mode, struct entry *e)
     case TYPE_PTR:
       l1 %= 256;
       l2 %= 256;
-      fprintf (outfile, "(%s)&intarray[%lld],(%s)&intarray[%lld]",
+      fprintf (outfile,
+	      "(%s)&intarray[%" COMPAT_PRLL "d], (%s)&intarray[%" COMPAT_PRLL "d]",
 	       e->type->name, l1, e->type->name, l2);
       break;
     case TYPE_FNPTR:
       l1 %= 10;
       l2 %= 10;
-      fprintf (outfile, "fn%lld,fn%lld", l1, l2);
+      fprintf (outfile,
+	       "fn%" COMPAT_PRLL "d,fn%" COMPAT_PRLL "d", l1, l2);
       break;
     default:
       abort ();

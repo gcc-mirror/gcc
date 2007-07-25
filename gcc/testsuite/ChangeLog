@@ -1,3 +1,10 @@
+2007-07-25  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/compat/struct-layout-1_generate.c (COMPAT_PRLL):
+	Define and use throughout as long long printf format specifier.
+	* g++.dg/compat/struct-layout-1_generate.c (COMPAT_PRLL):
+	Likewise.
+
 2007-07-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	*  gcc.dg/dfp/fe-convert-2.c: Unconditionally enable testing
