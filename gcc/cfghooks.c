@@ -432,7 +432,11 @@ split_block (basic_block bb, void *i)
     }
 
   if (current_loops != NULL)
-    add_bb_to_loop (new_bb, bb->loop_father);
+    {
+      add_bb_to_loop (new_bb, bb->loop_father);
+      if (bb->loop_father->latch == bb)
+	bb->loop_father->latch = new_bb;
+    }
 
   return make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
 }
