@@ -1,9 +1,20 @@
+#include <limits.h>
+
 #if MASK & 1
+#define t11(x) x x x x x x x x x x x
 #define t16(x) x x x x x x x x x x x x x x x x
+#if INT_MAX < 2147483647
+#define M (sizeof (t11(t11(t16(t16(" "))))) - 1)
+#else
 #define M (sizeof (t16(t16(t16(t16(t16(" ")))))) - 1)
 #endif
+#endif
 #if MASK & 2
+#if INT_MAX < 2147483647
+#define M 30976
+#else
 #define M 1048576
+#endif
 #endif
 
 typedef struct s {
