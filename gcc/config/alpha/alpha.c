@@ -238,10 +238,10 @@ alpha_handle_option (size_t code, const char *arg, int value)
 }
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
-/* Implement TARGET_MANGLE_FUNDAMENTAL_TYPE.  */
+/* Implement TARGET_MANGLE_TYPE.  */
 
 static const char *
-alpha_mangle_fundamental_type (tree type)
+alpha_mangle_type (tree type)
 {
   if (TYPE_MAIN_VARIANT (type) == long_double_type_node
       && TARGET_LONG_DOUBLE_128)
@@ -10709,8 +10709,8 @@ alpha_init_libfuncs (void)
 #define TARGET_HANDLE_OPTION alpha_handle_option
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
-#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
-#define TARGET_MANGLE_FUNDAMENTAL_TYPE alpha_mangle_fundamental_type
+#undef TARGET_MANGLE_TYPE
+#define TARGET_MANGLE_TYPE alpha_mangle_type
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;

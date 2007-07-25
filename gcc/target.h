@@ -505,10 +505,10 @@ struct gcc_target
      reciprocal of the function, or NULL_TREE if not available.  */
   tree (* builtin_reciprocal) (unsigned, bool, bool);
 
-  /* For a vendor-specific fundamental TYPE, return a pointer to
-     a statically-allocated string containing the C++ mangling for
-     TYPE.  In all other cases, return NULL.  */
-  const char * (* mangle_fundamental_type) (tree type);
+  /* For a vendor-specific TYPE, return a pointer to a statically-allocated
+     string containing the C++ mangling for TYPE.  In all other cases, return
+     NULL.  */
+  const char * (* mangle_type) (tree type);
 
   /* Make any adjustments to libfunc names needed for this target.  */
   void (* init_libfuncs) (void);

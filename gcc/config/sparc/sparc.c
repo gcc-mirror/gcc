@@ -396,7 +396,7 @@ static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
 static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
-static const char *sparc_mangle_fundamental_type (tree);
+static const char *sparc_mangle_type (tree);
 #endif
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 const struct attribute_spec sparc_attribute_table[];
@@ -558,8 +558,8 @@ static bool fpu_option_set = false;
 #define TARGET_ASM_FILE_END sparc_file_end
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
-#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
-#define TARGET_MANGLE_FUNDAMENTAL_TYPE sparc_mangle_fundamental_type
+#undef TARGET_MANGLE_TYPE
+#define TARGET_MANGLE_TYPE sparc_mangle_type
 #endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -8888,10 +8888,10 @@ sparc_file_end (void)
 }
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
-/* Implement TARGET_MANGLE_FUNDAMENTAL_TYPE.  */
+/* Implement TARGET_MANGLE_TYPE.  */
 
 static const char *
-sparc_mangle_fundamental_type (tree type)
+sparc_mangle_type (tree type)
 {
   if (!TARGET_64BIT
       && TYPE_MAIN_VARIANT (type) == long_double_type_node

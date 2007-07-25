@@ -22761,8 +22761,14 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
 /* Return the mangling of TYPE if it is an extended fundamental type.  */
 
 static const char *
-ix86_mangle_fundamental_type (tree type)
+ix86_mangle_type (tree type)
 {
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (TREE_CODE (type) != VOID_TYPE && TREE_CODE (type) != BOOLEAN_TYPE
+      && TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
+    return NULL;
+
   switch (TYPE_MODE (type))
     {
     case TFmode:
@@ -23593,8 +23599,8 @@ static const struct attribute_spec ix86_attribute_table[] =
 #define TARGET_INSERT_ATTRIBUTES SUBTARGET_INSERT_ATTRIBUTES
 #endif
 
-#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
-#define TARGET_MANGLE_FUNDAMENTAL_TYPE ix86_mangle_fundamental_type
+#undef TARGET_MANGLE_TYPE
+#define TARGET_MANGLE_TYPE ix86_mangle_type
 
 #undef TARGET_STACK_PROTECT_FAIL
 #define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
