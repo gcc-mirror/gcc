@@ -30,14 +30,14 @@ Boston, MA 02110-1301, USA.  */
    infrastructure is initialized.  Check for presence of the datastructures
    at first place.  */
 static inline bool
-gimple_in_ssa_p (struct function *fun)
+gimple_in_ssa_p (const struct function *fun)
 {
   return fun && fun->gimple_df && fun->gimple_df->in_ssa_p;
 }
 
 /* 'true' after aliases have been computed (see compute_may_aliases).  */
 static inline bool
-gimple_aliases_computed_p (struct function *fun)
+gimple_aliases_computed_p (const struct function *fun)
 {
   gcc_assert (fun && fun->gimple_df);
   return fun->gimple_df->aliases_computed_p;
@@ -51,7 +51,7 @@ gimple_aliases_computed_p (struct function *fun)
    call-clobbered variables are addressable (e.g., a local static
    variable).  */
 static inline bitmap
-gimple_addressable_vars (struct function *fun)
+gimple_addressable_vars (const struct function *fun)
 {
   gcc_assert (fun && fun->gimple_df);
   return fun->gimple_df->addressable_vars;
@@ -60,7 +60,7 @@ gimple_addressable_vars (struct function *fun)
 /* Call clobbered variables in the function.  If bit I is set, then
    REFERENCED_VARS (I) is call-clobbered.  */
 static inline bitmap
-gimple_call_clobbered_vars (struct function *fun)
+gimple_call_clobbered_vars (const struct function *fun)
 {
   gcc_assert (fun && fun->gimple_df);
   return fun->gimple_df->call_clobbered_vars;
@@ -68,7 +68,7 @@ gimple_call_clobbered_vars (struct function *fun)
 
 /* Array of all variables referenced in the function.  */
 static inline htab_t
-gimple_referenced_vars (struct function *fun)
+gimple_referenced_vars (const struct function *fun)
 {
   if (!fun->gimple_df)
     return NULL;
@@ -77,7 +77,7 @@ gimple_referenced_vars (struct function *fun)
 
 /* Artificial variable used to model the effects of function calls.  */
 static inline tree
-gimple_global_var (struct function *fun)
+gimple_global_var (const struct function *fun)
 {
   gcc_assert (fun && fun->gimple_df);
   return fun->gimple_df->global_var;
@@ -86,7 +86,7 @@ gimple_global_var (struct function *fun)
 /* Artificial variable used to model the effects of nonlocal
    variables.  */
 static inline tree
-gimple_nonlocal_all (struct function *fun)
+gimple_nonlocal_all (const struct function *fun)
 {
   gcc_assert (fun && fun->gimple_df);
   return fun->gimple_df->nonlocal_all;
@@ -95,7 +95,7 @@ gimple_nonlocal_all (struct function *fun)
 /* Hashtable of variables annotations.  Used for static variables only;
    local variables have direct pointer in the tree node.  */
 static inline htab_t
-gimple_var_anns (struct function *fun)
+gimple_var_anns (const struct function *fun)
 {
   return fun->gimple_df->var_anns;
 }
@@ -124,7 +124,7 @@ first_htab_element (htab_iterator *hti, htab_t table)
    or NULL if we have  reached the end.  */
 
 static inline bool
-end_htab_p (htab_iterator *hti)
+end_htab_p (const htab_iterator *hti)
 {
   if (hti->slot >= hti->limit)
     return true;
@@ -165,7 +165,7 @@ first_referenced_var (referenced_var_iterator *iter)
    iterating through.  */
 
 static inline bool
-end_referenced_vars_p (referenced_var_iterator *iter)
+end_referenced_vars_p (const referenced_var_iterator *iter)
 {
   return end_htab_p (&iter->hti);
 }
@@ -198,7 +198,7 @@ fill_referenced_var_vec (VEC (tree, heap) **vec)
 /* Return the variable annotation for T, which must be a _DECL node.
    Return NULL if the variable annotation doesn't already exist.  */
 static inline var_ann_t
-var_ann (tree t)
+var_ann (const_tree t)
 {
   gcc_assert (t);
   gcc_assert (DECL_P (t));
@@ -231,7 +231,7 @@ get_var_ann (tree var)
 /* Return the function annotation for T, which must be a FUNCTION_DECL node.
    Return NULL if the function annotation doesn't already exist.  */
 static inline function_ann_t
-function_ann (tree t)
+function_ann (const_tree t)
 {
   gcc_assert (t);
   gcc_assert (TREE_CODE (t) == FUNCTION_DECL);
@@ -306,7 +306,7 @@ bb_for_stmt (tree t)
 /* Return the may_aliases bitmap for variable VAR, or NULL if it has
    no may aliases.  */
 static inline bitmap
-may_aliases (tree var)
+may_aliases (const_tree var)
 {
   return MTAG_ALIASES (var);
 }
@@ -497,7 +497,7 @@ relink_imm_use_stmt (ssa_use_operand_t *linknode, ssa_use_operand_t *old, tree s
 
 /* Return true is IMM has reached the end of the immediate use list.  */
 static inline bool
-end_readonly_imm_use_p (imm_use_iterator *imm)
+end_readonly_imm_use_p (const imm_use_iterator *imm)
 {
   return (imm->imm_use == imm->end_p);
 }
@@ -541,20 +541,18 @@ next_readonly_imm_use (imm_use_iterator *imm)
 
 /* Return true if VAR has no uses.  */
 static inline bool
-has_zero_uses (tree var)
+has_zero_uses (const_tree var)
 {
-  ssa_use_operand_t *ptr;
-  ptr = &(SSA_NAME_IMM_USE_NODE (var));
+  const ssa_use_operand_t *const ptr = &(SSA_NAME_IMM_USE_NODE (var));
   /* A single use means there is no items in the list.  */
   return (ptr == ptr->next);
 }
 
 /* Return true if VAR has a single use.  */
 static inline bool
-has_single_use (tree var)
+has_single_use (const_tree var)
 {
-  ssa_use_operand_t *ptr;
-  ptr = &(SSA_NAME_IMM_USE_NODE (var));
+  const ssa_use_operand_t *const ptr = &(SSA_NAME_IMM_USE_NODE (var));
   /* A single use means there is one item in the list.  */
   return (ptr != ptr->next && ptr == ptr->next->next);
 }
@@ -563,11 +561,9 @@ has_single_use (tree var)
 /* If VAR has only a single immediate use, return true, and set USE_P and STMT
    to the use pointer and stmt of occurrence.  */
 static inline bool
-single_imm_use (tree var, use_operand_p *use_p, tree *stmt)
+single_imm_use (const_tree var, use_operand_p *use_p, tree *stmt)
 {
-  ssa_use_operand_t *ptr;
-
-  ptr = &(SSA_NAME_IMM_USE_NODE (var));
+  const ssa_use_operand_t *const ptr = &(SSA_NAME_IMM_USE_NODE (var));
   if (ptr != ptr->next && ptr == ptr->next->next)
     {
       *use_p = ptr->next;
@@ -581,13 +577,12 @@ single_imm_use (tree var, use_operand_p *use_p, tree *stmt)
 
 /* Return the number of immediate uses of VAR.  */
 static inline unsigned int
-num_imm_uses (tree var)
+num_imm_uses (const_tree var)
 {
-  ssa_use_operand_t *ptr, *start;
-  unsigned int num;
+  const ssa_use_operand_t *const start = &(SSA_NAME_IMM_USE_NODE (var));
+  const ssa_use_operand_t *ptr;
+  unsigned int num = 0;
 
-  start = &(SSA_NAME_IMM_USE_NODE (var));
-  num = 0;
   for (ptr = start->next; ptr != start; ptr = ptr->next)
      num++;
 
@@ -707,7 +702,7 @@ set_is_used (tree var)
 
 /* Return true if T is an executable statement.  */
 static inline bool
-is_exec_stmt (tree t)
+is_exec_stmt (const_tree t)
 {
   return (t && !IS_EMPTY_STMT (t) && t != error_mark_node);
 }
@@ -716,7 +711,7 @@ is_exec_stmt (tree t)
 /* Return true if this stmt can be the target of a control transfer stmt such
    as a goto.  */
 static inline bool
-is_label_stmt (tree t)
+is_label_stmt (const_tree t)
 {
   if (t)
     switch (TREE_CODE (t))
@@ -734,7 +729,7 @@ is_label_stmt (tree t)
 /* Return true if T (assumed to be a DECL) is a global variable.  */
 
 static inline bool
-is_global_var (tree t)
+is_global_var (const_tree t)
 {
   if (MTAG_P (t))
     return (TREE_STATIC (t) || MTAG_GLOBAL (t));
@@ -747,7 +742,7 @@ is_global_var (tree t)
    slip in in the meantime.  */
 
 static inline bool
-phi_ssa_name_p (tree t)
+phi_ssa_name_p (const_tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
     return true;
@@ -905,14 +900,14 @@ memory_partition (tree sym)
    name for a memory partition.  */
 
 static inline bool
-factoring_name_p (tree name)
+factoring_name_p (const_tree name)
 {
   return TREE_CODE (SSA_NAME_VAR (name)) == MEMORY_PARTITION_TAG;
 }
 
 /* Return true if VAR is a clobbered by function calls.  */
 static inline bool
-is_call_clobbered (tree var)
+is_call_clobbered (const_tree var)
 {
   if (!MTAG_P (var))
     return var_ann (var)->call_clobbered;
@@ -946,7 +941,7 @@ clear_call_clobbered (tree var)
 /* Return the common annotation for T.  Return NULL if the annotation
    doesn't already exist.  */
 static inline tree_ann_common_t
-tree_common_ann (tree t)
+tree_common_ann (const_tree t)
 {
   /* Watch out static variables with unshared annotations.  */
   if (DECL_P (t) && TREE_CODE (t) == VAR_DECL)
@@ -970,7 +965,7 @@ get_tree_common_ann (tree t)
 
 /* Return true if PTR is finished iterating.  */
 static inline bool
-op_iter_done (ssa_op_iter *ptr)
+op_iter_done (const ssa_op_iter *ptr)
 {
   return ptr->done;
 }
@@ -1436,7 +1431,7 @@ op_iter_init_phidef (ssa_op_iter *ptr, tree phi, int flags)
 /* Return true is IMM has reached the end of the immediate use stmt list.  */
 
 static inline bool
-end_imm_use_stmt_p (imm_use_iterator *imm)
+end_imm_use_stmt_p (const imm_use_iterator *imm)
 {
   return (imm->imm_use == imm->end_p);
 }
@@ -1570,7 +1565,7 @@ first_imm_use_on_stmt (imm_use_iterator *imm)
 /*  Return TRUE if the last use on the stmt IMM refers to has been visited.  */
 
 static inline bool
-end_imm_use_on_stmt_p (imm_use_iterator *imm)
+end_imm_use_on_stmt_p (const imm_use_iterator *imm)
 {
   return (imm->imm_use == &(imm->iter_node));
 }
@@ -1593,7 +1588,7 @@ next_imm_use_on_stmt (imm_use_iterator *imm)
 /* Return true if VAR cannot be modified by the program.  */
 
 static inline bool
-unmodifiable_var_p (tree var)
+unmodifiable_var_p (const_tree var)
 {
   if (TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
@@ -1607,7 +1602,7 @@ unmodifiable_var_p (tree var)
 /* Return true if REF, an ARRAY_REF, has an INDIRECT_REF somewhere in it.  */
 
 static inline bool
-array_ref_contains_indirect_ref (tree ref)
+array_ref_contains_indirect_ref (const_tree ref)
 {
   gcc_assert (TREE_CODE (ref) == ARRAY_REF);
 
@@ -1622,7 +1617,7 @@ array_ref_contains_indirect_ref (tree ref)
    somewhere in it.  */
 
 static inline bool
-ref_contains_array_ref (tree ref)
+ref_contains_array_ref (const_tree ref)
 {
   gcc_assert (handled_component_p (ref));
 
@@ -1639,7 +1634,7 @@ ref_contains_array_ref (tree ref)
    subvariables for it.  */
 
 static inline subvar_t *
-lookup_subvars_for_var (tree var)
+lookup_subvars_for_var (const_tree var)
 {
   var_ann_t ann = var_ann (var);
   gcc_assert (ann);
@@ -1682,7 +1677,7 @@ get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
    types which are not gimple registers can have subvars.  */
 
 static inline bool
-var_can_have_subvars (tree v)
+var_can_have_subvars (const_tree v)
 {
   /* Volatile variables should never have subvars.  */
   if (TREE_THIS_VOLATILE (v))
@@ -1712,7 +1707,7 @@ var_can_have_subvars (tree v)
 
 static inline bool
 overlap_subvar (unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
-		tree sv,  bool *exact)
+		const_tree sv,  bool *exact)
 {
   /* There are three possible cases of overlap.
      1. We can have an exact overlap, like so:   
@@ -1811,14 +1806,14 @@ get_value_handle (tree expr)
 
 /* Accessor to tree-ssa-operands.c caches.  */
 static inline struct ssa_operands *
-gimple_ssa_operands (struct function *fun)
+gimple_ssa_operands (const struct function *fun)
 {
   return &fun->gimple_df->ssa_operands;
 }
 
 /* Map describing reference statistics for function FN.  */
 static inline struct mem_ref_stats_d *
-gimple_mem_ref_stats (struct function *fn)
+gimple_mem_ref_stats (const struct function *fn)
 {
   return &fn->gimple_df->mem_ref_stats;
 }

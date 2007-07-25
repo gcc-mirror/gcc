@@ -391,7 +391,7 @@ extern REAL_VALUE_TYPE dconste;
 
 /* Function to return a real value (not a tree node)
    from a given integer constant.  */
-REAL_VALUE_TYPE real_value_from_int_cst (tree, tree);
+REAL_VALUE_TYPE real_value_from_int_cst (const_tree, const_tree);
 
 /* Given a CONST_DOUBLE in FROM, store into TO the value it represents.  */
 #define REAL_VALUE_FROM_CONST_DOUBLE(to, from) \

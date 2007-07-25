@@ -887,7 +887,7 @@ extern void tree_operand_check_failed (int, tree,
 extern void omp_clause_check_failed (const tree, const char *, int,
 				     const char *, enum omp_clause_code)
     ATTRIBUTE_NORETURN;
-extern void omp_clause_operand_check_failed (int, tree, const char *,
+extern void omp_clause_operand_check_failed (int, const_tree, const char *,
 				             int, const char *)
     ATTRIBUTE_NORETURN;
 extern void omp_clause_range_check_failed (const tree, const char *, int,
@@ -3642,7 +3642,7 @@ extern bool decl_assembler_name_equal (tree decl, tree asmname);
 /* Compute the number of bytes occupied by 'node'.  This routine only
    looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */
 
-extern size_t tree_size (tree);
+extern size_t tree_size (const_tree);
 
 /* Compute the number of bytes occupied by a tree with code CODE.  This
    function cannot be used for TREE_VEC or PHI_NODE codes, which are of
@@ -3759,7 +3759,7 @@ extern tree build_vector_from_ctor (tree, VEC(constructor_elt,gc) *);
 extern tree build_constructor (tree, VEC(constructor_elt,gc) *);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
-extern tree build_real_from_int_cst (tree, tree);
+extern tree build_real_from_int_cst (tree, const_tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_one_cst (tree);
 extern tree build_string (int, const char *);
@@ -3811,22 +3811,22 @@ extern tree build_method_type (tree, tree);
 extern tree build_offset_type (tree, tree);
 extern tree build_complex_type (tree);
 extern tree build_resx (int);
-extern tree array_type_nelts (tree);
+extern tree array_type_nelts (const_tree);
 extern bool in_array_bounds_p (tree);
 extern bool range_in_array_bounds_p (tree);
 
 extern tree value_member (tree, tree);
-extern tree purpose_member (tree, tree);
+extern tree purpose_member (const_tree, tree);
 
 extern int attribute_list_equal (tree, tree);
 extern int attribute_list_contained (tree, tree);
-extern int tree_int_cst_equal (tree, tree);
-extern int tree_int_cst_lt (tree, tree);
-extern int tree_int_cst_compare (tree, tree);
-extern int host_integerp (tree, int);
-extern HOST_WIDE_INT tree_low_cst (tree, int);
-extern int tree_int_cst_msb (tree);
-extern int tree_int_cst_sgn (tree);
+extern int tree_int_cst_equal (const_tree, const_tree);
+extern int tree_int_cst_lt (const_tree, const_tree);
+extern int tree_int_cst_compare (const_tree, const_tree);
+extern int host_integerp (const_tree, int);
+extern HOST_WIDE_INT tree_low_cst (const_tree, int);
+extern int tree_int_cst_msb (const_tree);
+extern int tree_int_cst_sgn (const_tree);
 extern int tree_int_cst_sign_bit (tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
@@ -3926,7 +3926,7 @@ extern tree merge_type_attributes (tree, tree);
 /* Given a tree node and a string, return nonzero if the tree node is
    a valid attribute name for the string.  */
 
-extern int is_attribute_p (const char *, tree);
+extern int is_attribute_p (const char *, const_tree);
 
 /* Given an attribute name and a list of attributes, return the list element
    of the attribute or NULL_TREE if not found.  */
@@ -3954,7 +3954,7 @@ extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 /* Check whether CAND is suitable to be returned from get_qualified_type
    (BASE, TYPE_QUALS).  */
 
-extern bool check_qualified_type (tree, tree, int);
+extern bool check_qualified_type (const_tree, const_tree, int);
 
 /* Return a version of the TYPE, qualified as indicated by the
    TYPE_QUALS, if one exists.  If no qualified version exists yet,
@@ -4076,17 +4076,17 @@ extern enum machine_mode mode_for_size_tree (tree, enum mode_class, int);
 extern tree non_lvalue (tree);
 
 extern tree convert (tree, tree);
-extern unsigned int expr_align (tree);
+extern unsigned int expr_align (const_tree);
 extern tree expr_first (tree);
 extern tree expr_last (tree);
 extern tree expr_only (tree);
 extern tree size_in_bytes (tree);
-extern HOST_WIDE_INT int_size_in_bytes (tree);
+extern HOST_WIDE_INT int_size_in_bytes (const_tree);
 extern HOST_WIDE_INT max_int_size_in_bytes (tree);
-extern tree bit_position (tree);
-extern HOST_WIDE_INT int_bit_position (tree);
-extern tree byte_position (tree);
-extern HOST_WIDE_INT int_byte_position (tree);
+extern tree bit_position (const_tree);
+extern HOST_WIDE_INT int_bit_position (const_tree);
+extern tree byte_position (const_tree);
+extern HOST_WIDE_INT int_byte_position (const_tree);
 
 /* Define data structures, macros, and functions for handling sizes
    and the various types used to represent sizes.  */
@@ -4155,16 +4155,16 @@ extern tree nreverse (tree);
 /* Returns the length of a chain of nodes
    (number of chain pointers to follow before reaching a null pointer).  */
 
-extern int list_length (tree);
+extern int list_length (const_tree);
 
 /* Returns the number of FIELD_DECLs in a type.  */
 
-extern int fields_length (tree);
+extern int fields_length (const_tree);
 
 /* Given an initializer INIT, return TRUE if INIT is zero or some
    aggregate of zeros.  Otherwise return FALSE.  */
 
-extern bool initializer_zerop (tree);
+extern bool initializer_zerop (const_tree);
 
 /* Examine CTOR to discover:
    * how many scalar fields are set to nonzero values,
@@ -4184,29 +4184,29 @@ extern HOST_WIDE_INT count_type_elements (tree, bool);
 
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
-extern int integer_zerop (tree);
+extern int integer_zerop (const_tree);
 
 /* integer_onep (tree x) is nonzero if X is an integer constant of value 1.  */
 
-extern int integer_onep (tree);
+extern int integer_onep (const_tree);
 
 /* integer_all_onesp (tree x) is nonzero if X is an integer constant
    all of whose significant bits are 1.  */
 
-extern int integer_all_onesp (tree);
+extern int integer_all_onesp (const_tree);
 
 /* integer_pow2p (tree x) is nonzero is X is an integer constant with
    exactly one bit 1.  */
 
-extern int integer_pow2p (tree);
+extern int integer_pow2p (const_tree);
 
 /* integer_nonzerop (tree x) is nonzero if X is an integer constant
    with a nonzero value.  */
 
-extern int integer_nonzerop (tree);
+extern int integer_nonzerop (const_tree);
 
-extern bool cst_and_fits_in_hwi (tree);
-extern tree num_ending_zeros (tree);
+extern bool cst_and_fits_in_hwi (const_tree);
+extern tree num_ending_zeros (const_tree);
 
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  Returns the outermost data.  */
@@ -4226,7 +4226,7 @@ extern tree skip_simple_arithmetic (tree);
 
 /* Return which tree structure is used by T.  */
 
-enum tree_node_structure_enum tree_node_structure (tree);
+enum tree_node_structure_enum tree_node_structure (const_tree);
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
@@ -4323,7 +4323,7 @@ extern bool contains_packed_reference (tree exp);
 
 /* Return 1 if T is an expression that get_inner_reference handles.  */
 
-extern int handled_component_p (tree);
+extern int handled_component_p (const_tree);
 
 /* Return a tree of sizetype representing the size, in bytes, of the element
    of EXP, an ARRAY_REF.  */
@@ -4348,18 +4348,18 @@ extern tree component_ref_field_offset (tree);
 /* Given a DECL or TYPE, return the scope in which it was declared, or
    NUL_TREE if there is no containing scope.  */
 
-extern tree get_containing_scope (tree);
+extern tree get_containing_scope (const_tree);
 
 /* Return the FUNCTION_DECL which provides this _DECL with its context,
    or zero if none.  */
-extern tree decl_function_context (tree);
+extern tree decl_function_context (const_tree);
 
 /* Return the RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE which provides
    this _DECL with its context, or zero if none.  */
-extern tree decl_type_context (tree);
+extern tree decl_type_context (const_tree);
 
 /* Return 1 if EXPR is the real constant zero.  */
-extern int real_zerop (tree);
+extern int real_zerop (const_tree);
 
 /* Declare commonly used variables for tree structure.  */
 
@@ -4381,7 +4381,7 @@ extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
 extern tree get_callee_fndecl (tree);
 extern void change_decl_assembler_name (tree, tree);
-extern int type_num_arguments (tree);
+extern int type_num_arguments (const_tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
 extern tree upper_bound_in_type (tree, tree);
@@ -4454,7 +4454,7 @@ extern tree force_fit_type_double (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				   int, bool);
 
 extern int fit_double_type (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
-			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, tree);
+			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, const_tree);
 extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
 				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
@@ -4563,20 +4563,20 @@ extern int alias_sets_must_conflict_p (HOST_WIDE_INT, HOST_WIDE_INT);
 extern int objects_must_conflict_p (tree, tree);
 
 /* In tree.c */
-extern int really_constant_p (tree);
-extern int int_fits_type_p (tree, tree);
+extern int really_constant_p (const_tree);
+extern int int_fits_type_p (const_tree, const_tree);
 extern void get_type_static_bounds (tree, mpz_t, mpz_t);
 extern bool variably_modified_type_p (tree, tree);
-extern int tree_log2 (tree);
-extern int tree_floor_log2 (tree);
+extern int tree_log2 (const_tree);
+extern int tree_floor_log2 (const_tree);
 extern int simple_cst_equal (tree, tree);
-extern hashval_t iterative_hash_expr (tree, hashval_t);
-extern int compare_tree_int (tree, unsigned HOST_WIDE_INT);
+extern hashval_t iterative_hash_expr (const_tree, hashval_t);
+extern int compare_tree_int (const_tree, unsigned HOST_WIDE_INT);
 extern int type_list_equal (tree, tree);
-extern int chain_member (tree, tree);
+extern int chain_member (const_tree, const_tree);
 extern tree type_hash_lookup (unsigned int, tree);
 extern void type_hash_add (unsigned int, tree);
-extern int simple_cst_list_equal (tree, tree);
+extern int simple_cst_list_equal (const_tree, const_tree);
 extern void dump_tree_statistics (void);
 extern void expand_function_end (void);
 extern void expand_function_start (tree);
@@ -4586,16 +4586,16 @@ extern void recompute_tree_invariant_for_addr_expr (tree);
 extern bool needs_to_live_in_memory (tree);
 extern tree reconstruct_complex_type (tree, tree);
 
-extern int real_onep (tree);
-extern int real_twop (tree);
-extern int real_minus_onep (tree);
+extern int real_onep (const_tree);
+extern int real_twop (const_tree);
+extern int real_minus_onep (const_tree);
 extern void init_ttree (void);
 extern void build_common_tree_nodes (bool, bool);
 extern void build_common_tree_nodes_2 (int);
 extern void build_common_builtin_nodes (void);
 extern tree build_nonstandard_integer_type (unsigned HOST_WIDE_INT, int);
 extern tree build_range_type (tree, tree, tree);
-extern HOST_WIDE_INT int_cst_value (tree);
+extern HOST_WIDE_INT int_cst_value (const_tree);
 extern tree build_addr (tree, tree);
 
 extern bool fields_compatible_p (tree, tree);

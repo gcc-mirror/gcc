@@ -198,7 +198,7 @@ decode (HOST_WIDE_INT *words, unsigned HOST_WIDE_INT *low,
 
 int
 fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
-		 unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, tree type)
+		 unsigned HOST_WIDE_INT *lv, HOST_WIDE_INT *hv, const_tree type)
 {
   unsigned HOST_WIDE_INT low0 = l1;
   HOST_WIDE_INT high0 = h1;

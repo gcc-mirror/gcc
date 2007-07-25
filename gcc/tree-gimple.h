@@ -64,7 +64,7 @@ extern bool is_gimple_addressable (tree);
 extern bool is_gimple_lvalue (tree);
 
 /* Returns true iff T is a GIMPLE restricted function invariant.  */
-extern bool is_gimple_min_invariant (tree);
+extern bool is_gimple_min_invariant (const_tree);
 /* Returns true iff T is a GIMPLE rvalue.  */
 extern bool is_gimple_val (tree);
 /* Returns true iff T is a GIMPLE asm statement input.  */

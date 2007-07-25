@@ -6061,7 +6061,7 @@ component_ref_field_offset (tree exp)
 /* Return 1 if T is an expression that get_inner_reference handles.  */
 
 int
-handled_component_p (tree t)
+handled_component_p (const_tree t)
 {
   switch (TREE_CODE (t))
     {
