@@ -1,3 +1,8 @@
+2007-07-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/20070725-1.c: Split the spare field in two to avoid:
+	error: width of 'spare' exceeds its type.
+
 2007-07-25  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.dg/sibcall-3.c: Skip on PowerPC targets when -mlongcall.

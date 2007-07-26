@@ -34,7 +34,8 @@ struct tree_base
   unsigned lang_flag_6:1;
   unsigned visited:1;
 
-  unsigned spare:24;
+  unsigned spare1:16;
+  unsigned spare2:8;
   unsigned long  a;
 };
 
