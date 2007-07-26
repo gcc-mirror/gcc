@@ -1,3 +1,9 @@
+2007-07-26  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* fold-const.c (fold_read_from_constant_string): Use
+	build_int_cst_type.
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Likewise.
+
 2007-07-26  Nick Clifton  <nickc@redhat.com>
 
 	* tree-ssa-operands.h: Change copyright header to refer to version

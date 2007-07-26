@@ -1052,10 +1052,9 @@ fold_const_aggregate_ref (tree t)
 	          == MODE_INT)
 	      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
 	      && compare_tree_int (idx, TREE_STRING_LENGTH (ctor)) < 0)
-	    return fold_convert (TREE_TYPE (t),
-				 build_int_cst (NULL,
-						(TREE_STRING_POINTER (ctor)
-						 [TREE_INT_CST_LOW (idx)])));
+	    return build_int_cst_type (TREE_TYPE (t),
+				       (TREE_STRING_POINTER (ctor)
+					[TREE_INT_CST_LOW (idx)]));
 	  return NULL_TREE;
 	}
 
