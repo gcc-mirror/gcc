@@ -1198,12 +1198,10 @@ extern tree java_check_reference (tree, int);
 extern tree build_get_class (tree);
 extern tree build_instanceof (tree, tree);
 extern tree create_label_decl (tree);
-extern void push_labeled_block (tree);
 extern tree prepare_eh_table_type (tree);
 extern void java_expand_catch_classes (tree);
 extern tree build_exception_object_ref (tree);
 extern tree generate_name (void);
-extern void pop_labeled_block (void);
 extern const char *lang_printable_name (tree, int);
 extern tree maybe_add_interface (tree, tree);
 extern void set_super_info (int, tree, tree, int);
@@ -1665,16 +1663,6 @@ enum
 };
 
 #undef DEBUG_JAVA_BINDING_LEVELS
-
-/* In a LABELED_BLOCK_EXPR node.  */
-#define LABELED_BLOCK_LABEL(NODE) \
-  TREE_OPERAND_CHECK_CODE (NODE, LABELED_BLOCK_EXPR, 0)
-#define LABELED_BLOCK_BODY(NODE) \
-  TREE_OPERAND_CHECK_CODE (NODE, LABELED_BLOCK_EXPR, 1)
-
-/* In an EXIT_BLOCK_EXPR node.  */
-#define EXIT_BLOCK_LABELED_BLOCK(NODE) \
-  TREE_OPERAND_CHECK_CODE (NODE, EXIT_BLOCK_EXPR, 0)
 
 extern void java_genericize (tree);
 extern int java_gimplify_expr (tree *, tree *, tree *);

@@ -1126,41 +1126,6 @@ lookup_name_current_level (tree name)
   return t;
 }
 
-/* Use a binding level to record a labeled block declaration */
-
-void
-push_labeled_block (tree lb)
-{
-  tree name = DECL_NAME (LABELED_BLOCK_LABEL (lb));
-  struct binding_level *b = current_binding_level;
-  tree oldlocal = IDENTIFIER_LOCAL_VALUE (name);
-  if (oldlocal != 0)
-      b->shadowed = tree_cons (name, oldlocal, b->shadowed);
-  TREE_CHAIN (lb) = b->names;
-  b->names = lb;
-  IDENTIFIER_LOCAL_VALUE (name) = lb;
-}
-
-/* Pop the current binding level, reinstalling values for the previous
-   labeled block */
-
-void
-pop_labeled_block (void)
-{
-  struct binding_level *b = current_binding_level;
-  tree label =  b->names;
-  IDENTIFIER_LOCAL_VALUE (DECL_NAME (LABELED_BLOCK_LABEL (label))) = 
-    NULL_TREE;
-  if (b->shadowed)
-    IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (b->shadowed)) = 
-      TREE_VALUE (b->shadowed);
-
-  /* Pop the current level, and free the structure for reuse.  */
-  current_binding_level = current_binding_level->level_chain;
-  b->level_chain = free_binding_level;
-  free_binding_level = b;
-}
-
 /* Record a decl-node X as belonging to the current lexical scope.
    Check for errors (such as an incompatible declaration for the same
    name already seen in the same scope).

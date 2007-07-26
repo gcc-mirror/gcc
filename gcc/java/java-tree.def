@@ -32,19 +32,6 @@ DEFTREECODE (COMPARE_L_EXPR, "compare_l_expr", tcc_binary, 2)
 /* Same as COMPARE_EXPR, but if either value is NaN, the result is 1. */
 DEFTREECODE (COMPARE_G_EXPR, "compare_g_expr", tcc_binary, 2)
 
-/* A labeled block. Operand 0 is the label that will be generated to
-   mark the end of the block.  Operand 1 is the labeled block body.  */
-DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", tcc_expression, 2)
-
-/* Exit a labeled block, possibly returning a value.  Operand 0 is a
-   LABELED_BLOCK_EXPR to exit.  */
-DEFTREECODE (EXIT_BLOCK_EXPR, "exit_block_expr", tcc_statement, 1)
-
-/* Try expression
-   Operand 0 is the tried block,
-   Operand 1 contains chained catch nodes. */
-DEFTREECODE (TRY_EXPR, "try-catch", tcc_expression, 2)
-
 /*
 Local variables:
 mode:c
