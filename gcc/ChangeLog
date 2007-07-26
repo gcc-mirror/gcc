@@ -1,3 +1,12 @@
+2007-07-25  Ian Lance Taylor  <iant@google.com>
+
+	* combine.c (combine_max_regno): Remove.  Remove all uses.
+	(struct reg_stat_struct): Rename from struct reg_stat.
+	(reg_stat_type): Define, and declare VECs.
+	(reg_stat): Change from pointer to VEC.  Change all uses.
+	(combine_split_insns): New static function.
+	(try_combine, find_split_point): Call it instead of split_insns.
+
 2007-07-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* cfghooks.c (split_block): Fix the information about loop latch.
