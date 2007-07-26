@@ -1,3 +1,8 @@
+2007-07-25  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.dg/sibcall-3.c: Skip on PowerPC targets when -mlongcall.
+	* gcc.dg/sibcall-4.c: Likewise.
+
 2007-07-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR rtl-optimization/31500
