@@ -112,9 +112,6 @@ typedef struct gimple_temp_hash_elt
 
 /* Forward declarations.  */
 static enum gimplify_status gimplify_compound_expr (tree *, tree *, bool);
-#ifdef ENABLE_CHECKING
-static bool cpt_same_type (tree a, tree b);
-#endif
 
 /* Mark X addressable.  Unlike the langhook we expect X to be in gimple
    form and we don't do any syntax checking.  */
@@ -3985,19 +3982,7 @@ gimplify_addr_expr (tree *expr_p, tree *pre_p, tree *post_p)
 	tree t_op00 = TREE_TYPE (op00);
 
         if (!useless_type_conversion_p (t_expr, t_op00))
-	  {
-#ifdef ENABLE_CHECKING
-	    tree t_op0 = TREE_TYPE (op0);
-	    gcc_assert (POINTER_TYPE_P (t_expr)
-			&& (cpt_same_type (TREE_TYPE (t_expr), t_op0)
-			    || (TREE_CODE (t_op0) == ARRAY_TYPE
-				&& cpt_same_type (TREE_TYPE (t_expr),
-						  TREE_TYPE (t_op0))))
-			&& POINTER_TYPE_P (t_op00)
-			&& cpt_same_type (t_op0, TREE_TYPE (t_op00)));
-#endif
-	    op00 = fold_convert (TREE_TYPE (expr), op00);
-	  }
+	  op00 = fold_convert (TREE_TYPE (expr), op00);
         *expr_p = op00;
         ret = GS_OK;
       }
@@ -6393,84 +6378,6 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
     }
 }
 
-#ifdef ENABLE_CHECKING
-/* Compare types A and B for a "close enough" match.  */
-
-static bool
-cpt_same_type (tree a, tree b)
-{
-  if (useless_type_conversion_p (a, b))
-    return true;
-
-  /* ??? The C++ FE decomposes METHOD_TYPES to FUNCTION_TYPES and doesn't
-     link them together.  This routine is intended to catch type errors
-     that will affect the optimizers, and the optimizers don't add new
-     dereferences of function pointers, so ignore it.  */
-  if ((TREE_CODE (a) == FUNCTION_TYPE || TREE_CODE (a) == METHOD_TYPE)
-      && (TREE_CODE (b) == FUNCTION_TYPE || TREE_CODE (b) == METHOD_TYPE))
-    return true;
-
-  /* ??? The C FE pushes type qualifiers after the fact into the type of
-     the element from the type of the array.  See build_unary_op's handling
-     of ADDR_EXPR.  This seems wrong -- if we were going to do this, we
-     should have done it when creating the variable in the first place.
-     Alternately, why aren't the two array types made variants?  */
-  if (TREE_CODE (a) == ARRAY_TYPE && TREE_CODE (b) == ARRAY_TYPE)
-    return cpt_same_type (TREE_TYPE (a), TREE_TYPE (b));
-
-  /* And because of those, we have to recurse down through pointers.  */
-  if (POINTER_TYPE_P (a) && POINTER_TYPE_P (b))
-    return cpt_same_type (TREE_TYPE (a), TREE_TYPE (b));
-
-  return false;
-}
-
-/* Check for some cases of the front end missing cast expressions.
-   The type of a dereference should correspond to the pointer type;
-   similarly the type of an address should match its object.  */
-
-static tree
-check_pointer_types_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		       void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-  tree ptype, otype, dtype;
-
-  switch (TREE_CODE (t))
-    {
-    case INDIRECT_REF:
-    case ARRAY_REF:
-      otype = TREE_TYPE (t);
-      ptype = TREE_TYPE (TREE_OPERAND (t, 0));
-      dtype = TREE_TYPE (ptype);
-      gcc_assert (cpt_same_type (otype, dtype));
-      break;
-
-    case ADDR_EXPR:
-      ptype = TREE_TYPE (t);
-      otype = TREE_TYPE (TREE_OPERAND (t, 0));
-      dtype = TREE_TYPE (ptype);
-      if (!cpt_same_type (dtype, otype))
-	{
-	  /* &array is allowed to produce a pointer to the element, rather than
-	     a pointer to the array type.  We must allow this in order to
-	     properly represent assigning the address of an array in C into
-	     pointer to the element type.  */
-	  gcc_assert (TREE_CODE (otype) == ARRAY_TYPE
-		      && POINTER_TYPE_P (ptype)
-		      && cpt_same_type (dtype, TREE_TYPE (otype)));
-	  break;
-	}
-      break;
-
-    default:
-      return NULL_TREE;
-    }
-
-
-  return NULL_TREE;
-}
-#endif
 
 /* Gimplify the body of statements pointed to by BODY_P.  FNDECL is the
    function decl containing BODY.  */
@@ -6539,8 +6446,9 @@ gimplify_body (tree *body_p, tree fndecl, bool do_parms)
   pop_gimplify_context (body);
   gcc_assert (gimplify_ctxp == NULL);
 
-#ifdef ENABLE_CHECKING
-  walk_tree (body_p, check_pointer_types_r, NULL, NULL);
+#ifdef ENABLE_TYPES_CHECKING
+  if (!errorcount && !sorrycount)
+    verify_gimple_1 (BIND_EXPR_BODY (*body_p));
 #endif
 
   timevar_pop (TV_TREE_GIMPLIFY);
