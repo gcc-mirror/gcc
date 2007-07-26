@@ -59,7 +59,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    %{mrtp:-q %{h*}					\
           %{R*} %{!Wl,-T*: %{!T*: %(link_start) }}	\
           %(link_target) %(link_os)}}			\
- %{v:-V}						\
+ %{v:-v}						\
  %{shared:-shared}					\
  %{Bstatic:-Bstatic}					\
  %{Bdynamic:-Bdynamic}					\
@@ -131,3 +131,6 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
   while (0)
 
 #define VXWORKS_KIND VXWORKS_KIND_NORMAL
+
+/* The diab linker does not handle .gnu_attribute sections.  */
+#undef HAVE_AS_GNU_ATTRIBUTE
