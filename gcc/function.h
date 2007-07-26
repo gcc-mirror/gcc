@@ -534,6 +534,8 @@ extern int trampolines_created;
 #define nonlocal_goto_handler_labels (cfun->x_nonlocal_goto_handler_labels)
 #define rtl_df (cfun->df)
 #define current_loops (cfun->x_current_loops)
+#define dom_computed (cfun->cfg->x_dom_computed)
+#define n_bbs_in_dom_tree (cfun->cfg->x_n_bbs_in_dom_tree)
 #define VALUE_HISTOGRAMS(fun) (fun)->value_histograms
 
 /* Given a function decl for a containing function,

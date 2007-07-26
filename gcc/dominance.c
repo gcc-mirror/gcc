@@ -47,9 +47,6 @@
 #include "pointer-set.h"
 #include "graphds.h"
 
-/* Whether the dominators and the postdominators are available.  */
-static enum dom_state dom_computed[2];
-
 /* We name our nodes with integers, beginning with 1.  Zero is reserved for
    'undefined' or 'end of list'.  The name of each node is given by the dfs
    number of the corresponding basic block.  Please note, that we include the
@@ -124,9 +121,6 @@ static void link_roots (struct dom_info *, TBB, TBB);
 static void calc_idoms (struct dom_info *, bool);
 void debug_dominance_info (enum cdi_direction);
 void debug_dominance_tree (enum cdi_direction, basic_block);
-
-/* Keeps track of the*/
-static unsigned n_bbs_in_dom_tree[2];
 
 /* Helper macro for allocating and initializing an array,
    for aesthetic reasons.  */
