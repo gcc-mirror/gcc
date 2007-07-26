@@ -1,3 +1,17 @@
+2007-07-26  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (push_labeled_block, pop_labeled_block): Remove.
+	(LABELED_BLOCK_LABEL, LABELED_BLOCK_BODY,
+	EXIT_BLOCK_LABELED_BLOCK): Likewise.
+	* lang.c (java_tree_inlining_walk_subtrees): Update.
+	(java_dump_tree): Likewise.
+	* java-tree.def (LABELED_BLOCK_EXPR, EXIT_BLOCK_EXPR, TRY_EXPR):
+	Remove.
+	* decl.c (push_labeled_block, pop_labeled_block): Remove.
+	* java-gimplify.c (java_gimplify_labeled_block_expr,
+	java_gimplify_exit_block_expr, java_gimplify_try_expr): Remove.
+	(java_gimplify_expr): Update.
+
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (java_treetreehash_hash, java_treetreehash_compare):

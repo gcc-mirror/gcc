@@ -32,10 +32,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-gimple.h"
 #include "toplev.h"
 
-static tree java_gimplify_labeled_block_expr (tree);
-static tree java_gimplify_exit_block_expr (tree);
 static tree java_gimplify_block (tree);
-static tree java_gimplify_try_expr (tree);
 static enum gimplify_status java_gimplify_modify_expr (tree*, tree*, tree *);
 static enum gimplify_status java_gimplify_component_ref (tree*, tree*, tree *);
 static enum gimplify_status java_gimplify_self_mod_expr (tree*, tree*, tree *);
@@ -67,18 +64,6 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
     {
     case BLOCK:
       *expr_p = java_gimplify_block (*expr_p);
-      break;
-
-    case LABELED_BLOCK_EXPR:
-      *expr_p = java_gimplify_labeled_block_expr (*expr_p);
-      break;
-
-    case EXIT_BLOCK_EXPR:
-      *expr_p = java_gimplify_exit_block_expr (*expr_p);
-      break;
-
-    case TRY_EXPR:
-      *expr_p = java_gimplify_try_expr (*expr_p);
       break;
 
     case VAR_DECL:
@@ -143,41 +128,6 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
 
   return GS_OK;
 }
-
-/* Gimplify a LABELED_BLOCK_EXPR into a LABEL_EXPR following
-   a (possibly empty) body.  */
-
-static tree
-java_gimplify_labeled_block_expr (tree expr)
-{
-  tree body = LABELED_BLOCK_BODY (expr);
-  tree label = LABELED_BLOCK_LABEL (expr);
-  tree t;
-
-  DECL_CONTEXT (label) = current_function_decl;
-  t = build1 (LABEL_EXPR, void_type_node, label);
-  if (body != NULL_TREE)
-    t = build2 (COMPOUND_EXPR, void_type_node, body, t);
-  return t;
-}
-
-/* Gimplify a EXIT_BLOCK_EXPR into a GOTO_EXPR.  */
-
-static tree
-java_gimplify_exit_block_expr (tree expr)
-{
-  tree labeled_block = EXIT_BLOCK_LABELED_BLOCK (expr);
-  tree label;
-
-  /* First operand must be a LABELED_BLOCK_EXPR, which should
-     already be lowered (or partially lowered) when we get here.  */
-  gcc_assert (TREE_CODE (labeled_block) == LABELED_BLOCK_EXPR);
-
-  label = LABELED_BLOCK_LABEL (labeled_block);
-  return build1 (GOTO_EXPR, void_type_node, label);
-}
-
-
 
 static enum gimplify_status
 java_gimplify_component_ref (tree *expr_p, tree *pre_p, tree *post_p)
@@ -345,30 +295,6 @@ java_gimplify_block (tree java_block)
   BLOCK_EXPR_BODY (java_block) = NULL_TREE;
 
   return build3 (BIND_EXPR, TREE_TYPE (java_block), decls, body, block);
-}
-
-static tree
-java_gimplify_try_expr (tree try_expr)
-{
-  tree body = TREE_OPERAND (try_expr, 0);
-  tree handler = TREE_OPERAND (try_expr, 1);
-  tree catch = NULL_TREE;
-
-  /* Build a CATCH_EXPR for each handler.  */
-  while (handler)
-    {
-      tree java_catch = TREE_OPERAND (handler, 0);
-      tree catch_type = TREE_TYPE (TREE_TYPE (BLOCK_EXPR_DECLS (java_catch)));
-      tree expr = build2 (CATCH_EXPR, void_type_node,
-			  prepare_eh_table_type (catch_type),
-			  handler);
-      if (catch)
-	catch = build2 (COMPOUND_EXPR, void_type_node, catch, expr);
-      else
-	catch = expr;
-      handler = TREE_CHAIN (handler);
-    }
-  return build2 (TRY_CATCH_EXPR, void_type_node, body, catch);
 }
 
 /* Dump a tree of some kind.  This is a convenience wrapper for the
