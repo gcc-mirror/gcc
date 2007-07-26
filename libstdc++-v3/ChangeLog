@@ -1,3 +1,9 @@
+2007-07-25  Stephen M. Webb  <stephenw@xandros.com>
+
+  Fixed abi_check for missing symbol size changes.
+	* testsuite/util/testsuite_abi.cc: Changed local variable name to prevent
+	member variable hiding.
+
 2007-07-25  John Davind Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libstdc++/31836
