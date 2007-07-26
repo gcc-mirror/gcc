@@ -184,7 +184,7 @@
 ;; scheduling information.
 
 (define_attr "insn"
-        "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals,smlawy,smuad,smuadx,smlad,smladx,smusd,smusdx,smlsd,smlsdx,smmul,smmulr,other"
+        "mov,mvn,smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals,smlawy,smuad,smuadx,smlad,smladx,smusd,smusdx,smlsd,smlsdx,smmul,smmulr,smmla,umaal,smlald,smlsld,clz,mrs,msr,xtab,other"
         (const_string "other"))
 
 ; TYPE attribute is used to detect floating point instructions which, if
@@ -235,8 +235,9 @@
 ; mav_farith	Floating point arithmetic (4 cycle)
 ; mav_dmult	Double multiplies (7 cycle)
 ;
+
 (define_attr "type"
-	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,ffmul,farith,ffarith,f_flag,float_em,f_load,f_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,mav_farith,mav_dmult" 
+	"alu,alu_shift,alu_shift_reg,mult,block,float,fdivx,fdivd,fdivs,fmul,fmuls,fmuld,fmacs,fmacd,ffmul,farith,ffarith,f_flag,float_em,f_load,f_store,f_loads,f_loadd,f_stores,f_stored,f_mem_r,r_mem_f,f_2_r,r_2_f,f_cvt,branch,call,load_byte,load1,load2,load3,load4,store1,store2,store3,store4,mav_farith,mav_dmult"
 	(if_then_else 
 	 (eq_attr "insn" "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
 	 (const_string "mult")
@@ -332,14 +333,14 @@
 
 (define_attr "generic_sched" "yes,no"
   (const (if_then_else 
-          (eq_attr "tune" "arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs") 
+          (eq_attr "tune" "arm926ejs,arm1020e,arm1026ejs,arm1136js,arm1136jfs,cortexa8")
           (const_string "no")
           (const_string "yes"))))
 
 (define_attr "generic_vfp" "yes,no"
   (const (if_then_else
 	  (and (eq_attr "fpu" "vfp")
-	       (eq_attr "tune" "!arm1020e,arm1022e"))
+	       (eq_attr "tune" "!arm1020e,arm1022e,cortexa8"))
 	  (const_string "yes")
 	  (const_string "no"))))
 
@@ -348,6 +349,7 @@
 (include "arm1020e.md")
 (include "arm1026ejs.md")
 (include "arm1136jfs.md")
+(include "cortex-a8.md")
 
 
 ;;---------------------------------------------------------------------------
@@ -3869,6 +3871,7 @@
   "TARGET_INT_SIMD"
   "uxtab%?\\t%0, %2, %1"
   [(set_attr "predicable" "yes")
+   (set_attr "insn" "xtab")
    (set_attr "type" "alu_shift")]
 )
 
@@ -4242,6 +4245,7 @@
   "TARGET_INT_SIMD"
   "sxtab%?\\t%0, %2, %1"
   [(set_attr "type" "alu_shift")
+   (set_attr "insn" "xtab")
    (set_attr "predicable" "yes")]
 )
 
@@ -10772,7 +10776,8 @@
 	(clz:SI (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_32BIT && arm_arch5"
   "clz%?\\t%0, %1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "insn" "clz")])
 
 (define_expand "ffssi2"
   [(set (match_operand:SI 0 "s_register_operand" "")

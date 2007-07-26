@@ -1,3 +1,26 @@
+2007-07-26  Mark Shinwell  <shinwell@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_mac_accumulator_is_mul_result): New.
+	* config/arm/arm-protos.h (arm_mac_accumulator_is_mul_result): New.
+	* config/arm/cortex-a8.md: New.
+	* config/arm/cortex-a8-neon.md: New.
+	* config/arm/neon-schedgen.ml: New.
+	* config/arm/neon.md (vqh_mnem): New.
+	(neon_type): New.
+	(Is_float_mode): New.
+	(Scalar_mul_8_16): New.
+	(Is_d_reg): New.
+	(V_mode_nunits): New.
+	(All instruction patterns): Annotate with neon_type attribute
+	values.
+	* config/arm/arm.md: Include cortex-a8.md.
+	(insn): Add smmla, umaal, smlald, smlsld, clz, mrs, msr and xtab
+	values.
+	Annotate instruction patterns accordingly.
+	(generic_sched): Do not use generic scheduling for Cortex-A8.
+	(generic_vfp): Do not use generic VFP scheduling for Cortex-A8.
+
 2007-07-26  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* fold-const.c (fold_read_from_constant_string): Use
