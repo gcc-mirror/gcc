@@ -1,3 +1,9 @@
+2007-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/32843
+	* testsuite/libffi.call/return_sc.c (main): Verify call
+	result as signed char, not ffi_arg.
+
 2007-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac (i?86-*-solaris2.1[0-9]): Set TARGET to X86_64.
