@@ -2395,7 +2395,10 @@
                           (match_operand:SI 3 "immediate_operand" "i")]
                          UNSPEC_VGET_LANE))]
   "TARGET_NEON"
-  "vmov%?.%t3%#<V_sz_elem>\t%0, %P1[%c2]"
+{
+  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmov%?.%t3%#<V_sz_elem>\t%0, %P1[%c2]";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2411,7 +2414,10 @@
                    (match_operand:SI 3 "immediate_operand" "i")]
                   UNSPEC_VGET_LANE))]
   "TARGET_NEON"
-  "vmov%?\t%Q0, %R0, %P1  @ di"
+{
+  neon_lane_bounds (operands[2], 0, 1);
+  return "vmov%?\t%Q0, %R0, %P1  @ di";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2428,6 +2434,8 @@
   int regno = REGNO (operands[1]);
   unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
   unsigned int elt = INTVAL (operands[2]);
+
+  neon_lane_bounds (operands[2], 0, halfelts * 2);
 
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
@@ -2453,6 +2461,8 @@
   unsigned int regno = REGNO (operands[1]);
   unsigned int elt = INTVAL (operands[2]);
 
+  neon_lane_bounds (operands[2], 0, 2);
+
   ops[0] = operands[0];
   ops[1] = gen_rtx_REG (DImode, regno + 2 * elt);
   output_asm_insn ("vmov%?\t%Q0, %R0, %P1  @ v2di", ops);
@@ -2470,7 +2480,10 @@
                     (match_operand:SI 3 "immediate_operand" "i")]
                    UNSPEC_VSET_LANE))]
   "TARGET_NEON"
-  "vmov%?.<V_sz_elem>\t%P0[%c3], %1"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmov%?.<V_sz_elem>\t%P0[%c3], %1";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2484,7 +2497,10 @@
                     (match_operand:SI 3 "immediate_operand" "i")]
                    UNSPEC_VSET_LANE))]
   "TARGET_NEON"
-  "vmov%?\t%P0, %Q1, %R1  @ di"
+{
+  neon_lane_bounds (operands[3], 0, 1);
+  return "vmov%?\t%P0, %Q1, %R1  @ di";
+}
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2501,6 +2517,8 @@
   unsigned int regno = REGNO (operands[0]);
   unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
   unsigned int elt = INTVAL (operands[3]);
+
+  neon_lane_bounds (operands[3], 0, halfelts * 2);
 
   ops[0] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
   ops[1] = operands[1];
@@ -2524,6 +2542,8 @@
   rtx ops[2];
   unsigned int regno = REGNO (operands[0]);
   unsigned int elt = INTVAL (operands[3]);
+
+  neon_lane_bounds (operands[3], 0, 2);
 
   ops[0] = gen_rtx_REG (DImode, regno + 2 * elt);
   ops[1] = operands[1];
@@ -2583,7 +2603,10 @@
 		    (match_operand:SI 2 "immediate_operand" "i")]
                    UNSPEC_VDUP_LANE))]
   "TARGET_NEON"
-  "vdup.<V_sz_elem>\t%P0, %P1[%c2]"
+{
+  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vdup.<V_sz_elem>\t%P0, %P1[%c2]";
+}
   ;; Assume this schedules like vmov.
   [(set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2594,7 +2617,10 @@
 		    (match_operand:SI 2 "immediate_operand" "i")]
                    UNSPEC_VDUP_LANE))]
   "TARGET_NEON"
-  "vdup.<V_sz_elem>\t%q0, %P1[%c2]"
+{
+  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<V_HALF>mode));
+  return "vdup.<V_sz_elem>\t%q0, %P1[%c2]";
+}
   ;; Assume this schedules like vmov.
   [(set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2607,6 +2633,7 @@
                    UNSPEC_VDUP_LANE))]
   "TARGET_NEON"
 {
+  neon_lane_bounds (operands[2], 0, 1);
   emit_move_insn (operands[0], operands[1]);
   DONE;
 })
@@ -2618,7 +2645,10 @@
 		      (match_operand:SI 2 "immediate_operand" "i")]
                      UNSPEC_VDUP_LANE))]
   "TARGET_NEON"
-  "vmov\t%e0, %P1\;vmov\t%f0, %P1"
+{
+  neon_lane_bounds (operands[2], 0, 1);
+  return "vmov\t%e0, %P1\;vmov\t%f0, %P1";
+}
   [(set_attr "length" "8")
    (set_attr "neon_type" "neon_bp_simple")]
 )
@@ -2741,7 +2771,10 @@
                            (match_operand:SI 3 "immediate_operand" "i")]
 			  UNSPEC_VCVT_N))]
   "TARGET_NEON"
-  "vcvt.%T3%#32.f32\t%<V_reg>0, %<V_reg>1, %2"
+{
+  neon_const_bounds (operands[2], 1, 33);
+  return "vcvt.%T3%#32.f32\t%<V_reg>0, %<V_reg>1, %2";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
@@ -2755,7 +2788,10 @@
                            (match_operand:SI 3 "immediate_operand" "i")]
 			  UNSPEC_VCVT_N))]
   "TARGET_NEON"
-  "vcvt.f32.%T3%#32\t%<V_reg>0, %<V_reg>1, %2"
+{
+  neon_const_bounds (operands[2], 1, 33);
+  return "vcvt.f32.%T3%#32\t%<V_reg>0, %<V_reg>1, %2";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                    (const_string "neon_fp_vadd_ddd_vabs_dd")
@@ -2811,7 +2847,10 @@
                      (match_operand:SI 4 "immediate_operand" "i")]
                     UNSPEC_VMUL_LANE))]
   "TARGET_NEON"
-  "vmul.<V_if_elem>\t%P0, %P1, %P2[%c3]"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmul.<V_if_elem>\t%P0, %P1, %P2[%c3]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
                    (const_string "neon_fp_vmul_ddd")
@@ -2829,7 +2868,10 @@
                      (match_operand:SI 4 "immediate_operand" "i")]
                     UNSPEC_VMUL_LANE))]
   "TARGET_NEON"
-  "vmul.<V_if_elem>\t%q0, %q1, %P2[%c3]"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<V_HALF>mode));
+  return "vmul.<V_if_elem>\t%q0, %q1, %P2[%c3]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
                    (const_string "neon_fp_vmul_qqd")
@@ -2847,7 +2889,10 @@
                            (match_operand:SI 4 "immediate_operand" "i")]
                           UNSPEC_VMULL_LANE))]
   "TARGET_NEON"
-  "vmull.%T4%#<V_sz_elem>\t%q0, %P1, %P2[%c3]"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmull.%T4%#<V_sz_elem>\t%q0, %P1, %P2[%c3]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
@@ -2863,7 +2908,10 @@
                            (match_operand:SI 4 "immediate_operand" "i")]
                           UNSPEC_VQDMULL_LANE))]
   "TARGET_NEON"
-  "vqdmull.<V_s_elem>\t%q0, %P1, %P2[%c3]"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vqdmull.<V_s_elem>\t%q0, %P1, %P2[%c3]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
@@ -2879,7 +2927,10 @@
                       (match_operand:SI 4 "immediate_operand" "i")]
                       UNSPEC_VQDMULH_LANE))]
   "TARGET_NEON"
-  "vq%O4dmulh.%T4%#<V_sz_elem>\t%q0, %q1, %P2[%c3]"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vq%O4dmulh.%T4%#<V_sz_elem>\t%q0, %q1, %P2[%c3]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")
@@ -2895,7 +2946,10 @@
                       (match_operand:SI 4 "immediate_operand" "i")]
                       UNSPEC_VQDMULH_LANE))]
   "TARGET_NEON"
-  "vq%O4dmulh.%T4%#<V_sz_elem>\t%P0, %P1, %P2[%c3]"
+{
+  neon_lane_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vq%O4dmulh.%T4%#<V_sz_elem>\t%P0, %P1, %P2[%c3]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mul_ddd_16_scalar_32_16_long_scalar")
@@ -2912,7 +2966,10 @@
                      (match_operand:SI 5 "immediate_operand" "i")]
                      UNSPEC_VMLA_LANE))]
   "TARGET_NEON"
-  "vmla.<V_if_elem>\t%P0, %P2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmla.<V_if_elem>\t%P0, %P2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
                    (const_string "neon_fp_vmla_ddd_scalar")
@@ -2931,7 +2988,10 @@
                      (match_operand:SI 5 "immediate_operand" "i")]
                      UNSPEC_VMLA_LANE))]
   "TARGET_NEON"
-  "vmla.<V_if_elem>\t%q0, %q2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmla.<V_if_elem>\t%q0, %q2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
                    (const_string "neon_fp_vmla_qqq_scalar")
@@ -2950,7 +3010,10 @@
                            (match_operand:SI 5 "immediate_operand" "i")]
                           UNSPEC_VMLAL_LANE))]
   "TARGET_NEON"
-  "vmlal.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmlal.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
@@ -2967,7 +3030,10 @@
                            (match_operand:SI 5 "immediate_operand" "i")]
                           UNSPEC_VQDMLAL_LANE))]
   "TARGET_NEON"
-  "vqdmlal.<V_s_elem>\t%q0, %P2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vqdmlal.<V_s_elem>\t%q0, %P2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
@@ -2984,7 +3050,10 @@
                      (match_operand:SI 5 "immediate_operand" "i")]
                     UNSPEC_VMLS_LANE))]
   "TARGET_NEON"
-  "vmls.<V_if_elem>\t%P0, %P2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmls.<V_if_elem>\t%P0, %P2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
                    (const_string "neon_fp_vmla_ddd_scalar")
@@ -3003,7 +3072,10 @@
                      (match_operand:SI 5 "immediate_operand" "i")]
                     UNSPEC_VMLS_LANE))]
   "TARGET_NEON"
-  "vmls.<V_if_elem>\t%q0, %q2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmls.<V_if_elem>\t%q0, %q2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
                    (const_string "neon_fp_vmla_qqq_scalar")
@@ -3022,7 +3094,10 @@
                            (match_operand:SI 5 "immediate_operand" "i")]
                           UNSPEC_VMLSL_LANE))]
   "TARGET_NEON"
-  "vmlsl.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vmlsl.%T5%#<V_sz_elem>\t%q0, %P2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
@@ -3039,7 +3114,10 @@
                            (match_operand:SI 5 "immediate_operand" "i")]
                           UNSPEC_VQDMLSL_LANE))]
   "TARGET_NEON"
-  "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3[%c4]"
+{
+  neon_lane_bounds (operands[4], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vqdmlsl.<V_s_elem>\t%q0, %P2, %P3[%c4]";
+}
   [(set (attr "neon_type")
      (if_then_else (ne (symbol_ref "<Scalar_mul_8_16>") (const_int 0))
                    (const_string "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar")
@@ -3264,7 +3342,10 @@
                       (match_operand:SI 3 "immediate_operand" "i")]
                      UNSPEC_VEXT))]
   "TARGET_NEON"
-  "vext.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2, %3"
+{
+  neon_const_bounds (operands[3], 0, GET_MODE_NUNITS (<MODE>mode));
+  return "vext.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2, %3";
+}
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_bp_simple")
@@ -3370,7 +3451,10 @@
                        (match_operand:SI 3 "immediate_operand" "i")]
                       UNSPEC_VSHR_N))]
   "TARGET_NEON"
-  "v%O3shr.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2"
+{
+  neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) + 1);
+  return "v%O3shr.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2";
+}
   [(set_attr "neon_type" "neon_shift_1")]
 )
 
@@ -3381,7 +3465,10 @@
 			    (match_operand:SI 3 "immediate_operand" "i")]
                            UNSPEC_VSHRN_N))]
   "TARGET_NEON"
-  "v%O3shrn.<V_if_elem>\t%P0, %q1, %2"
+{
+  neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) / 2 + 1);
+  return "v%O3shrn.<V_if_elem>\t%P0, %q1, %2";
+}
   [(set_attr "neon_type" "neon_shift_1")]
 )
 
@@ -3392,7 +3479,10 @@
 			    (match_operand:SI 3 "immediate_operand" "i")]
                            UNSPEC_VQSHRN_N))]
   "TARGET_NEON"
-  "vq%O3shrn.%T3%#<V_sz_elem>\t%P0, %q1, %2"
+{
+  neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) / 2 + 1);
+  return "vq%O3shrn.%T3%#<V_sz_elem>\t%P0, %q1, %2";
+}
   [(set_attr "neon_type" "neon_shift_2")]
 )
 
@@ -3403,7 +3493,10 @@
 			    (match_operand:SI 3 "immediate_operand" "i")]
                            UNSPEC_VQSHRUN_N))]
   "TARGET_NEON"
-  "vq%O3shrun.%T3%#<V_sz_elem>\t%P0, %q1, %2"
+{
+  neon_const_bounds (operands[2], 1, neon_element_bits (<MODE>mode) / 2 + 1);
+  return "vq%O3shrun.%T3%#<V_sz_elem>\t%P0, %q1, %2";
+}
   [(set_attr "neon_type" "neon_shift_2")]
 )
 
@@ -3414,7 +3507,10 @@
                        (match_operand:SI 3 "immediate_operand" "i")]
                       UNSPEC_VSHL_N))]
   "TARGET_NEON"
-  "vshl.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %2"
+{
+  neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
+  return "vshl.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %2";
+}
   [(set_attr "neon_type" "neon_shift_1")]
 )
 
@@ -3425,7 +3521,10 @@
                        (match_operand:SI 3 "immediate_operand" "i")]
                       UNSPEC_VQSHL_N))]
   "TARGET_NEON"
-  "vqshl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2"
+{
+  neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
+  return "vqshl.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2";
+}
   [(set_attr "neon_type" "neon_shift_2")]
 )
 
@@ -3436,7 +3535,10 @@
                        (match_operand:SI 3 "immediate_operand" "i")]
                       UNSPEC_VQSHLU_N))]
   "TARGET_NEON"
-  "vqshlu.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2"
+{
+  neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
+  return "vqshlu.%T3%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %2";
+}
   [(set_attr "neon_type" "neon_shift_2")]
 )
 
@@ -3447,7 +3549,10 @@
 			   (match_operand:SI 3 "immediate_operand" "i")]
 			  UNSPEC_VSHLL_N))]
   "TARGET_NEON"
-  "vshll.%T3%#<V_sz_elem>\t%q0, %P1, %2"
+{
+  neon_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode));
+  return "vshll.%T3%#<V_sz_elem>\t%q0, %P1, %2";
+}
   [(set_attr "neon_type" "neon_shift_1")]
 )
 
@@ -3459,7 +3564,10 @@
                        (match_operand:SI 4 "immediate_operand" "i")]
                       UNSPEC_VSRA_N))]
   "TARGET_NEON"
-  "v%O4sra.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3"
+{
+  neon_const_bounds (operands[3], 1, neon_element_bits (<MODE>mode) + 1);
+  return "v%O4sra.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
+}
   [(set_attr "neon_type" "neon_vsra_vrsra")]
 )
 
@@ -3470,7 +3578,10 @@
                        (match_operand:SI 3 "immediate_operand" "i")]
                       UNSPEC_VSRI))]
   "TARGET_NEON"
-  "vsri.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3"
+{
+  neon_const_bounds (operands[3], 1, neon_element_bits (<MODE>mode) + 1);
+  return "vsri.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
+}
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_shift_1")
@@ -3484,7 +3595,10 @@
                        (match_operand:SI 3 "immediate_operand" "i")]
                       UNSPEC_VSLI))]
   "TARGET_NEON"
-  "vsli.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3"
+{
+  neon_const_bounds (operands[3], 0, neon_element_bits (<MODE>mode));
+  return "vsli.<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %3";
+}
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_d_reg>") (const_int 0))
                     (const_string "neon_shift_1")

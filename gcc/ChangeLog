@@ -1,3 +1,23 @@
+2007-07-26  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm-protos.h (neon_lane_bounds, neon_const_bounds)
+	(neon_element_bits): Add prototypes.
+	* config/arm/arm.c (bounds_check, neon_lane_bounds)
+	(neon_const_bounds, neon_element_bits): New functions.
+	* config/arm/neon.md (neon_vget_lane<mode>, neon_vget_lanedi)
+	(neon_vget_lanev2di, neon_vset_lane<mode>, neon_vset_lanedi)
+	(neon_vset_lanev2di, neon_vdup_lane<mode>, neon_vdup_lanedi)
+	(neon_vdup_lanev2di, neon_vcvt_n<mode>, neon_vmul_lane<mode>)
+	(neon_vmull_lane<mode>, neon_vqdmull_lane<mode>)
+	(neon_vqdmulh_lane<mode>, neon_vmla_lane<mode>)
+	(neon_vmlal_lane<mode>, neon_vqdmlal_lane<mode>)
+	(neon_vmls_lane<mode>, neon_vmlsl_lane<mode>)
+	(neon_vqdmlsl_lane<mode>, neon_vext<mode>, neon_vshr_n<mode>)
+	(neon_vshrn_n<mode>, neon_vqshrn_n<mode>, neon_vqshrun_n<mode>)
+	(neon_vshl_n<mode>, neon_vshl_n<mode>, neon_vqshl_n<mode>)
+	(neon_vqshlu_n<mode>, neon_vshll_n<mode>, neon_vsra_n<mode>)
+	(neon_vsri_n<mode>, neon_vsli_n<mode>): Add bounds checks.
+
 2007-07-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/vxworks.h (VXWORKS_LINK_SPEC): Fix typo.

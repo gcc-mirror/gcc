@@ -6234,6 +6234,49 @@ neon_expand_vector_init (rtx target, rtx vals)
   emit_move_insn (target, mem);
 }
 
+/* Ensure OPERAND lies between LOW (inclusive) and HIGH (exclusive).  Raise
+   ERR if it doesn't.  FIXME: NEON bounds checks occur late in compilation, so
+   reported source locations are bogus.  */
+
+static void
+bounds_check (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high,
+	      const char *err)
+{
+  HOST_WIDE_INT lane;
+
+  gcc_assert (GET_CODE (operand) == CONST_INT);
+
+  lane = INTVAL (operand);
+
+  if (lane < low || lane >= high)
+    error (err);
+}
+
+/* Bounds-check lanes.  */
+
+void
+neon_lane_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
+{
+  bounds_check (operand, low, high, "lane out of range");
+}
+
+/* Bounds-check constants.  */
+
+void
+neon_const_bounds (rtx operand, HOST_WIDE_INT low, HOST_WIDE_INT high)
+{
+  bounds_check (operand, low, high, "constant out of range");
+}
+
+HOST_WIDE_INT
+neon_element_bits (enum machine_mode mode)
+{
+  if (mode == DImode)
+    return GET_MODE_BITSIZE (mode);
+  else
+    return GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+}
+
 
 /* Predicates for `match_operand' and `match_operator'.  */
 
