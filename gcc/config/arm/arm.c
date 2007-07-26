@@ -18167,6 +18167,39 @@ arm_cxx_guard_type (void)
   return TARGET_AAPCS_BASED ? integer_type_node : long_long_integer_type_node;
 }
 
+/* Return non-zero if the consumer (a multiply-accumulate instruction)
+   has an accumulator dependency on the result of the producer (a
+   multiplication instruction) and no other dependency on that result.  */
+int
+arm_mac_accumulator_is_mul_result (rtx producer, rtx consumer)
+{
+  rtx mul = PATTERN (producer);
+  rtx mac = PATTERN (consumer);
+  rtx mul_result;
+  rtx mac_op0, mac_op1, mac_acc;
+
+  if (GET_CODE (mul) == COND_EXEC)
+    mul = COND_EXEC_CODE (mul);
+  if (GET_CODE (mac) == COND_EXEC)
+    mac = COND_EXEC_CODE (mac);
+
+  /* Check that mul is of the form (set (...) (mult ...))
+     and mla is of the form (set (...) (plus (mult ...) (...))).  */
+  if ((GET_CODE (mul) != SET || GET_CODE (XEXP (mul, 1)) != MULT)
+      || (GET_CODE (mac) != SET || GET_CODE (XEXP (mac, 1)) != PLUS
+          || GET_CODE (XEXP (XEXP (mac, 1), 0)) != MULT))
+    return 0;
+
+  mul_result = XEXP (mul, 0);
+  mac_op0 = XEXP (XEXP (XEXP (mac, 1), 0), 0);
+  mac_op1 = XEXP (XEXP (XEXP (mac, 1), 0), 1);
+  mac_acc = XEXP (XEXP (mac, 1), 1);
+
+  return (reg_overlap_mentioned_p (mul_result, mac_acc)
+          && !reg_overlap_mentioned_p (mul_result, mac_op0)
+          && !reg_overlap_mentioned_p (mul_result, mac_op1));
+}
+
 
 /* The EABI says test the least significant bit of a guard variable.  */
 

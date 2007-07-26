@@ -94,6 +94,7 @@ extern int arm_no_early_store_addr_dep (rtx, rtx);
 extern int arm_no_early_alu_shift_dep (rtx, rtx);
 extern int arm_no_early_alu_shift_value_dep (rtx, rtx);
 extern int arm_no_early_mul_dep (rtx, rtx);
+extern int arm_mac_accumulator_is_mul_result (rtx, rtx);
 
 extern int tls_mentioned_p (rtx);
 extern int symbol_mentioned_p (rtx);
