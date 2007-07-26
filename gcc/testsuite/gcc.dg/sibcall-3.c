@@ -6,6 +6,8 @@
    Contributed by Hans-Peter Nilsson  <hp@bitrange.com>  */
 
 /* { dg-do run { xfail arc-*-* avr-*-* c4x-*-* cris-*-* h8300-*-* hppa*64*-*-* m32r-*-* m68hc1?-*-* m681?-*-* m680*-*-* m68k-*-* mcore-*-* mn10300-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa-*-* } } */
+/* -mlongcall disables sibcall patterns.  */
+/* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
 
 /* The option -foptimize-sibling-calls is the default, but serves as
