@@ -2593,9 +2593,9 @@ AC_ARG_ENABLE(stage1-checking,
                           of the compiler],
 [stage1_checking=--enable-checking=${enable_stage1_checking}],
 [if test "x$enable_checking" = xno; then
-  stage1_checking=--enable-checking
+  stage1_checking=--enable-checking=yes,types
 else
-  stage1_checking=--enable-checking${enable_checking+=}$enable_checking
+  stage1_checking=--enable-checking=types${enable_checking+,}$enable_checking
 fi])
 AC_SUBST(stage1_checking)
 

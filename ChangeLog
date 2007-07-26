@@ -1,3 +1,8 @@
+2007-07-26  Richard Guenther  <rguenther@suse.de>
+
+	* configure.ac: Add types checking to stage1 checking flags.
+	* configure: Regenerate.
+
 2007-07-17  Nick Clifton  <nickc@redhat.com>
 
 	* COPYING3: New file.  Contains version 3 of the GNU General

@@ -346,7 +346,7 @@ AC_ARG_ENABLE(checking,
 			  enable only specific categories of checks.
 			  Categories are: yes,no,all,none,release.
 			  Flags are: assert,df,fold,gc,gcac,misc,
-			  rtlflag,rtl,runtime,tree,valgrind.],
+			  rtlflag,rtl,runtime,tree,valgrind,types.],
 [ac_checking_flags="${enableval}"],[
 # Determine the default checks.
 if test x$is_release = x ; then
@@ -363,22 +363,26 @@ do
 			ac_fold_checking= ; ac_gc_checking=1 ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
-			ac_tree_checking=1 ; ac_valgrind_checking= ;;
+			ac_tree_checking=1 ; ac_valgrind_checking= ;
+			ac_types_checking= ;;
 	no|none)	ac_assert_checking= ; ac_checking= ; ac_df_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_runtime_checking= ;
-			ac_tree_checking= ; ac_valgrind_checking= ;;
+			ac_tree_checking= ; ac_valgrind_checking= ;
+			ac_types_checking= ;;
 	all)		ac_assert_checking=1 ; ac_checking=1 ; ac_df_checking=1 ;
 			ac_fold_checking=1 ; ac_gc_checking=1 ;
 			ac_gc_always_collect=1 ; ac_rtl_checking=1 ;
 			ac_rtlflag_checking=1 ; ac_runtime_checking=1 ;
-			ac_tree_checking=1 ; ac_valgrind_checking= ;;
+			ac_tree_checking=1 ; ac_valgrind_checking= ;
+			ac_types_checking=1 ;;
 	release)	ac_assert_checking=1 ; ac_checking= ; ac_df_checking= ;
 			ac_fold_checking= ; ac_gc_checking= ;
 			ac_gc_always_collect= ; ac_rtl_checking= ;
 			ac_rtlflag_checking= ; ac_runtime_checking=1 ;
-			ac_tree_checking= ; ac_valgrind_checking= ;;
+			ac_tree_checking= ; ac_valgrind_checking= ;
+			ac_types_checking= ;;
 	# these enable particular checks
 	assert) 	ac_assert_checking=1 ;;
 	df)	 	ac_df_checking=1 ;;
@@ -390,6 +394,7 @@ do
 	rtlflag)	ac_rtlflag_checking=1 ;;
 	runtime)	ac_runtime_checking=1 ;;
 	tree)		ac_tree_checking=1 ;;
+	types)		ac_types_checking=1 ;;
 	valgrind)	ac_valgrind_checking=1 ;;
 	*)	AC_MSG_ERROR(unknown check category $check) ;;
 	esac
@@ -425,6 +430,12 @@ if test x$ac_tree_checking != x ; then
    routines will also be enabled by this option.
    ])
   TREEBROWSER=tree-browser.o
+fi
+if test x$ac_types_checking != x ; then
+  AC_DEFINE(ENABLE_TYPES_CHECKING, 1,
+[Define if you want all gimple types to be verified after gimplifiation.
+   This is cheap.
+   ])
 fi
 AC_SUBST(TREEBROWSER)
 if test x$ac_rtl_checking != x ; then
