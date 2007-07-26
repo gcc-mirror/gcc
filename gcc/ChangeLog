@@ -1,3 +1,10 @@
+2007-07-26  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* dominance.c (dom_computed, n_bbs_in_dom_tree): Removed.
+	* function.h (dom_computed, n_bbs_in_dom_tree): New macros.
+	* basic-block.h (struct control_flow_graph): Added x_dom_computed
+	and x_n_bbs_in_dom_tree fields.
+
 2007-07-26  Steve Ellcey  <sje@cup.hp.com>
 
 	PR tree-optimization/32087
