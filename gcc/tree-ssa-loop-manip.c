@@ -1035,8 +1035,9 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   new_nonexit->count = exit_bb->count - new_exit->count;
   if (new_nonexit->count < 0)
     new_nonexit->count = 0;
-  scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
-			     prob);
+  if (prob > 0)
+    scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
+			       prob);
 
   /* Finally create the new counter for number of iterations and add the new
      exit instruction.  */
