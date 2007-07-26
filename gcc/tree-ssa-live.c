@@ -30,6 +30,8 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
 #include "toplev.h"
+#include "debug.h"
+#include "flags.h"
 
 #ifdef ENABLE_CHECKING
 static void  verify_live_on_entry (tree_live_info_p);
@@ -405,9 +407,15 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
 		      void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
+  enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
+  tree b;
 
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
+  if ((IS_EXPR_CODE_CLASS (c)
+       || IS_GIMPLE_STMT_CODE_CLASS (c))
+      && (b = TREE_BLOCK (t)) != NULL)
+    TREE_USED (b) = true;
 
   /* Ignore TREE_ORIGINAL for TARGET_MEM_REFS, as well as other
      fields that do not contain vars.  */
@@ -431,6 +439,110 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
   return NULL;
 }
 
+/* Mark the scope block SCOPE and its subblocks unused when they can be
+   possibly eliminated if dead.  */
+
+static void
+mark_scope_block_unused (tree scope)
+{
+  tree t;
+  TREE_USED (scope) = false;
+  if (!(*debug_hooks->ignore_block) (scope))
+    TREE_USED (scope) = true;
+  for (t = BLOCK_SUBBLOCKS (scope); t ; t = BLOCK_CHAIN (t))
+    mark_scope_block_unused (t);
+}
+
+/* Look if the block is dead (by possibly eliminating its dead subblocks)
+   and return true if so.  
+   Block is declared dead if:
+     1) No statements are associated with it.
+     2) Declares no live variables
+     3) All subblocks are dead
+	or there is precisely one subblocks and the block
+	has same abstract origin as outer block and declares
+	no variables, so it is pure wrapper.
+   When we are not outputting full debug info, we also elliminate dead variables
+   out of scope blocks to let them to be recycled by GGC and to save copying work
+   done by the inliner.  */
+
+static bool
+remove_unused_scope_block_p (tree scope)
+{
+  tree *t, *next;
+  bool unused = !TREE_USED (scope);
+  var_ann_t ann;
+  int nsubblocks = 0;
+
+  for (t = &BLOCK_VARS (scope); *t; t = next)
+    {
+      next = &TREE_CHAIN (*t);
+
+      /* Debug info of nested function reffers to the block of the
+	 function.  */
+      if (TREE_CODE (*t) == FUNCTION_DECL)
+	unused = false;
+
+      /* When we are outputting debug info, we usually want to output
+	 info about optimized-out variables in the scope blocks.
+	 Exception are the scope blocks not containing any instructions
+	 at all so user can't get into the scopes at first place.  */
+      else if ((ann = var_ann (*t)) != NULL
+		&& ann->used)
+	unused = false;
+
+      /* When we are not doing full debug info, we however can keep around
+	 only the used variables for cfgexpand's memory packing saving quite
+	 a lot of memory.  */
+      else if (debug_info_level != DINFO_LEVEL_NORMAL
+	       && debug_info_level != DINFO_LEVEL_VERBOSE)
+	{
+	  *t = TREE_CHAIN (*t);
+	  next = t;
+	}
+    }
+
+  for (t = &BLOCK_SUBBLOCKS (scope); *t ;)
+    if (remove_unused_scope_block_p (*t))
+      {
+	if (BLOCK_SUBBLOCKS (*t))
+	  {
+	    tree next = BLOCK_CHAIN (*t);
+	    tree supercontext = BLOCK_SUPERCONTEXT (*t);
+	    *t = BLOCK_SUBBLOCKS (*t);
+	    gcc_assert (!BLOCK_CHAIN (*t));
+	    BLOCK_CHAIN (*t) = next;
+	    BLOCK_SUPERCONTEXT (*t) = supercontext;
+	    t = &BLOCK_CHAIN (*t);
+	    nsubblocks ++;
+	  }
+	else
+          *t = BLOCK_CHAIN (*t);
+      }
+    else
+      {
+        t = &BLOCK_CHAIN (*t);
+	nsubblocks ++;
+      }
+   /* Outer scope is always used.  */
+   if (!BLOCK_SUPERCONTEXT (scope)
+       || TREE_CODE (BLOCK_SUPERCONTEXT (scope)) == FUNCTION_DECL)
+     unused = false;
+   /* If there are more than one live subblocks, it is used.  */
+   else if (nsubblocks > 1)
+     unused = false;
+   /* When there is only one subblock, see if it is just wrapper we can
+      ignore.  Wrappers are not declaring any variables and not changing
+      abstract origin.  */
+   else if (nsubblocks == 1
+	    && (BLOCK_VARS (scope)
+		|| ((debug_info_level == DINFO_LEVEL_NORMAL
+		     || debug_info_level == DINFO_LEVEL_VERBOSE)
+		    && ((BLOCK_ABSTRACT_ORIGIN (scope)
+			!= BLOCK_ABSTRACT_ORIGIN (BLOCK_SUPERCONTEXT (scope)))))))
+     unused = false;
+   return unused;
+}
 
 /* Mark all VAR_DECLS under *EXPR_P as used, so that they won't be 
    eliminated during the tree->rtl conversion process.  */
@@ -452,6 +564,7 @@ remove_unused_locals (void)
   referenced_var_iterator rvi;
   var_ann_t ann;
 
+  mark_scope_block_unused (DECL_INITIAL (current_function_decl));
   /* Assume all locals are unused.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     var_ann (t)->used = false;
@@ -498,7 +611,6 @@ remove_unused_locals (void)
 	  *cell = TREE_CHAIN (*cell);
 	  continue;
 	}
-
       cell = &TREE_CHAIN (*cell);
     }
 
@@ -516,6 +628,7 @@ remove_unused_locals (void)
 	&& !ann->symbol_mem_tag
 	&& !TREE_ADDRESSABLE (t))
       remove_referenced_var (t);
+  remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
 }
 
 

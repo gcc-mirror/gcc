@@ -1,3 +1,10 @@
+2007-07-26  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-live.c: Include debug.h and flags.h.
+	(mark_scope_block_unused): New function.
+	(remove_unused_scope_block_p): New function.
+	(remove_unused_locals): Remove unused blocks too.
+
 2007-07-25  Ian Lance Taylor  <iant@google.com>
 
 	* combine.c (combine_max_regno): Remove.  Remove all uses.
