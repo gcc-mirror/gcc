@@ -1,12 +1,12 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-   Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+   2007  Free Software Foundation, Inc.
 
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU Library General Public License as published by
-the Free Software Foundation; either version 2 of the License, or (at
+the Free Software Foundation; either version 3 of the License, or (at
 your option) any later version.
 
 GCC is distributed in the hope that it will be useful,
@@ -15,9 +15,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Library General Public License for more details.
 
 You should have received a copy of the GNU Library General Public
-License along with GCC; see the file COPYING.  If not, write to the Free
-Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+License along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* This file contains routines to update a path, both to canonicalize
    the directory format and to handle any prefix translation.
