@@ -1,3 +1,9 @@
+2007-07-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR/19232
+	* gcc.dg/assign-warn-3.c (f0): Declare as inline.
+	(f1): Likewise.
+
 2007-07-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20070725-1.c: Split the spare field in two to avoid:
