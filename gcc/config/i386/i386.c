@@ -20401,12 +20401,6 @@ ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
     {
       int cost = 1;
 
-#if 0
-      cost += MAX (inline_memory_move_cost (mode, class1, 0),
-		   inline_memory_move_cost (mode, class1, 1));
-      cost += MAX (inline_memory_move_cost (mode, class2, 0),
-		   inline_memory_move_cost (mode, class2, 1));
-#endif
       cost += inline_memory_move_cost (mode, class1, 2);
       cost += inline_memory_move_cost (mode, class2, 2);
 
