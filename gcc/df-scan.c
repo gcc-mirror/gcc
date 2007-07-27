@@ -2625,7 +2625,6 @@ df_ref_record (struct df_collection_rec *collection_rec,
 	       enum df_ref_type ref_type, 
 	       enum df_ref_flags ref_flags) 
 {
-  rtx oldreg = reg;
   unsigned int regno;
 
   gcc_assert (REG_P (reg) || GET_CODE (reg) == SUBREG);
@@ -2656,7 +2655,7 @@ df_ref_record (struct df_collection_rec *collection_rec,
 	{
 	  /* Sets to a subreg of a multiword register are partial. 
 	     Sets to a non-subreg of a multiword register are not.  */
-	  if (GET_CODE (oldreg) == SUBREG)
+	  if (GET_CODE (reg) == SUBREG)
 	    ref_flags |= DF_REF_PARTIAL;
 	  ref_flags |= DF_REF_MW_HARDREG;
 
@@ -2664,7 +2663,6 @@ df_ref_record (struct df_collection_rec *collection_rec,
 	  hardreg->type = ref_type;
 	  hardreg->flags = ref_flags;
 	  hardreg->mw_reg = reg;
-	  hardreg->loc = loc;
 	  hardreg->start_regno = regno;
 	  hardreg->end_regno = endregno - 1;
 	  hardreg->mw_order = df->ref_order++;
