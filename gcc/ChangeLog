@@ -1,5 +1,8 @@
 2007-07-27  Jan Hubicka  <jh@suse.cz>
 
+	* config/i386/i386.c (register_move_cost): Remove accidentally comitted
+	#if 0 block.
+
 	* attribs.c: Include hashtab.h
 	(attribute_hash): New.
 	(substring): New structure.
