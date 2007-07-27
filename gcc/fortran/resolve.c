@@ -2830,8 +2830,9 @@ resolve_operator (gfc_expr *e)
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
 	sprintf (msg,
 		 _("Logicals at %%L must be compared with %s instead of %s"),
-		 e->value.op.operator == INTRINSIC_EQ ? ".eqv." : ".neqv.",
-		 gfc_op2string (e->value.op.operator));
+		 (e->value.op.operator == INTRINSIC_EQ 
+		  || e->value.op.operator == INTRINSIC_EQ_OS)
+		 ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.operator));
       else
 	sprintf (msg,
 		 _("Operands of comparison operator '%s' at %%L are %s/%s"),
