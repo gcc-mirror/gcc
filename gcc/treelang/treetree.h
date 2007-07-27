@@ -29,7 +29,7 @@
 
 tree tree_code_init_parameters (void);
 tree tree_code_add_parameter (tree list, tree proto_exp, tree exp);
-tree tree_code_get_integer_value (unsigned char *chars, unsigned int length);
+tree tree_code_get_integer_value (const unsigned char *chars, unsigned int length);
 void tree_code_generate_return (tree type, tree exp);
 void tree_ggc_storage_always_used  (void *m);
 tree tree_code_get_expression (unsigned int exp_type, tree type, tree op1,
@@ -38,13 +38,13 @@ tree tree_code_get_numeric_type (unsigned int size1, unsigned int sign1);
 void tree_code_create_function_initial (tree prev_saved,
 					location_t loc);
 void tree_code_create_function_wrapup (location_t loc);
-tree tree_code_create_function_prototype (unsigned char* chars,
+tree tree_code_create_function_prototype (const unsigned char *chars,
 					  unsigned int storage_class,
 					  unsigned int ret_type,
 					  struct prod_token_parm_item* parms,
                                           location_t loc);
 tree tree_code_create_variable (unsigned int storage_class,
-				unsigned char* chars,
+				const unsigned char *chars,
 				unsigned int length,
 				unsigned int expression_type,
 				tree init,

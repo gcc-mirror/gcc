@@ -269,7 +269,7 @@ update_yylval (int a)
   tok->tp.tok.length = yyleng;
   /* Have to copy yytext as it is just a ptr into the buffer at the
      moment.  */
-  tok->tp.tok.chars = (unsigned char*) get_string (yytext, yyleng);
+  tok->tp.tok.chars = (const unsigned char *) get_string (yytext, yyleng);
 }
 
 /* Trace the value LEXRET and the position and token details being

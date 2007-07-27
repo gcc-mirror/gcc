@@ -1,3 +1,15 @@
+2007-07-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.l (update_yylval): Constify.
+	* treelang.h (struct token_part, struct parameter_part):
+	Likewise.
+	* treetree.c (tree_code_create_function_prototype,
+	tree_code_create_variable, tree_code_get_integer_value):
+	Likewise.
+	* treetree.h (tree_code_get_integer_value,
+	tree_code_create_function_prototype, tree_code_create_variable):
+	Likewise.
+
 2007-07-25  Richard Guenther  <rguenther@suse.de>
 
 	* treetree.c (tree_code_generate_return): RETURN_EXPRs
