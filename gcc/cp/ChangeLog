@@ -1,3 +1,38 @@
+2007-07-27  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* typeck.c (structural_comptypes): Compare DECLTYPE_TYPE nodes.
+	* cp-tree.def (DECLTYPE_TYPE): New.
+	* error.c (dump_type): Dump DECLTYPE_TYPE nodes.
+	(dump_type_prefix): Ditto.
+	(dump_type_suffix): Ditto.
+	* tree.c (DECLTYPE_TYPE): Walk DECLTYPE_TYPE nodes.
+	* mangle.c (write_type): Handle DECLTYPE_TYPE.
+	* cp-tree.h (IS_AGGR_TYPE): DECLTYPE_TYPE nodes can be aggregate
+	types.
+	(DECLTYPE_TYPE_EXPR): New.
+	(DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P): New.
+	(finish_declared_type): Declare.
+	* cxx-pretty-print.c (pp_cxx_type_specifier_seq): Print
+	DECLTYPE_TYPE nodes.
+	(pp_cxx_type_id): Ditto.
+	* pt.c (for_each_template_parm_r): Walk DECLTYPE_TYPE children.
+	(tsubst): Substitute into a DECLTYPE_TYPE node.
+	(tsubst_copy): Ditto.
+	(unify): Cannot deduce anything from TYPEOF_TYPE or DECLTYPE_TYPE
+	nodes.
+	(dependent_type_p_r): DECLTYPE_TYPE types are always dependent.
+	* semantics.c (finish_typeof): TYPEOF_TYPE types need to use
+	structural equality (because we can't hash the expressions).
+	(finish_declared_type): New.
+	* lex.c (reswords): Add "decltype" keyword.
+	* parser.c cp_lexer_next_token_is_decl_specifier_keyword
+	(cp_parser_postfix_expression): Add member_access_only_p to
+	restrict postfix expression to member access expressions.
+	(cp_parser_unary_expression): Update call to
+	cp_parser_postfix_expression to reflect new parameter.
+	(cp_parser_declared_type): New.
+	(cp_parser_simple_type_specifier): Parse decltype types.
+
 2007-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/32346

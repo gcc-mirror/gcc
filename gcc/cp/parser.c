@@ -577,6 +577,8 @@ cp_lexer_next_token_is_decl_specifier_keyword (cp_lexer *lexer)
       /* GNU extensions.  */ 
     case RID_ATTRIBUTE:
     case RID_TYPEOF:
+      /* C++0x extensions.  */
+    case RID_DECLTYPE:
       return true;
 
     default:
@@ -1582,7 +1584,7 @@ static tree cp_parser_nested_name_specifier
 static tree cp_parser_class_or_namespace_name
   (cp_parser *, bool, bool, bool, bool, bool);
 static tree cp_parser_postfix_expression
-  (cp_parser *, bool, bool);
+  (cp_parser *, bool, bool, bool);
 static tree cp_parser_postfix_open_square_expression
   (cp_parser *, tree, bool);
 static tree cp_parser_postfix_dot_deref_expression
@@ -1707,6 +1709,8 @@ static void cp_parser_linkage_specification
   (cp_parser *);
 static void cp_parser_static_assert
   (cp_parser *, bool);
+static tree cp_parser_decltype
+  (cp_parser *);
 
 /* Declarators [gram.dcl.decl] */
 
@@ -4254,15 +4258,20 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
    `&' operator.  CAST_P is true if this expression is the target of a
    cast.
 
+   If MEMBER_ACCESS_ONLY_P, we only allow postfix expressions that are
+   class member access expressions [expr.ref].
+
    Returns a representation of the expression.  */
 
 static tree
-cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
+cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
+                              bool member_access_only_p)
 {
   cp_token *token;
   enum rid keyword;
   cp_id_kind idk = CP_ID_KIND_NONE;
   tree postfix_expression = NULL_TREE;
+  bool is_member_access = false;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -4513,6 +4522,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 							postfix_expression,
 							false);
 	  idk = CP_ID_KIND_NONE;
+          is_member_access = false;
 	  break;
 
 	case CPP_OPEN_PAREN:
@@ -4523,6 +4533,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    bool saved_integral_constant_expression_p = false;
 	    bool saved_non_integral_constant_expression_p = false;
 	    tree args;
+
+            is_member_access = false;
 
 	    is_builtin_constant_p
 	      = DECL_IS_BUILTIN_CONSTANT_P (postfix_expression);
@@ -4669,6 +4681,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	    = cp_parser_postfix_dot_deref_expression (parser, token->type,
 						      postfix_expression,
 						      false, &idk);
+
+          is_member_access = true;
 	  break;
 
 	case CPP_PLUS_PLUS:
@@ -4684,6 +4698,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 							  "an increment"))
 	    postfix_expression = error_mark_node;
 	  idk = CP_ID_KIND_NONE;
+          is_member_access = false;
 	  break;
 
 	case CPP_MINUS_MINUS:
@@ -4699,10 +4714,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 							  "a decrement"))
 	    postfix_expression = error_mark_node;
 	  idk = CP_ID_KIND_NONE;
+          is_member_access = false;
 	  break;
 
 	default:
-	  return postfix_expression;
+          if (member_access_only_p)
+            return is_member_access? postfix_expression : error_mark_node;
+          else
+            return postfix_expression;
 	}
     }
 
@@ -5341,7 +5360,8 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p)
       return expression;
     }
 
-  return cp_parser_postfix_expression (parser, address_p, cast_p);
+  return cp_parser_postfix_expression (parser, address_p, cast_p,
+                                       /*member_access_only_p=*/false);
 }
 
 /* Returns ERROR_MARK if TOKEN is not a unary-operator.  If TOKEN is a
@@ -8371,6 +8391,164 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
   finish_static_assert (condition, message, saved_loc, member_p);
 }
 
+/* Parse a `decltype' type. Returns the type. 
+
+   simple-type-specifier:
+     decltype ( expression )  */
+
+static tree
+cp_parser_decltype (cp_parser *parser)
+{
+  tree expr;
+  bool id_expression_or_member_access_p = false;
+  const char *saved_message;
+  bool saved_integral_constant_expression_p;
+  bool saved_non_integral_constant_expression_p;
+
+  /* Look for the `decltype' token.  */
+  if (!cp_parser_require_keyword (parser, RID_DECLTYPE, "`decltype'"))
+    return error_mark_node;
+
+  /* Types cannot be defined in a `decltype' expression.  Save away the
+     old message.  */
+  saved_message = parser->type_definition_forbidden_message;
+
+  /* And create the new one.  */
+  parser->type_definition_forbidden_message
+    = "types may not be defined in `decltype' expressions";
+
+  /* The restrictions on constant-expressions do not apply inside
+     decltype expressions.  */
+  saved_integral_constant_expression_p
+    = parser->integral_constant_expression_p;
+  saved_non_integral_constant_expression_p
+    = parser->non_integral_constant_expression_p;
+  parser->integral_constant_expression_p = false;
+
+  /* Do not actually evaluate the expression.  */
+  ++skip_evaluation;
+
+  /* Parse the opening `('.  */
+  cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
+  
+  /* First, try parsing an id-expression.  */
+  cp_parser_parse_tentatively (parser);
+  expr = cp_parser_id_expression (parser,
+                                  /*template_keyword_p=*/false,
+                                  /*check_dependency_p=*/true,
+                                  /*template_p=*/NULL,
+                                  /*declarator_p=*/false,
+                                  /*optional_p=*/false);
+
+  if (!cp_parser_error_occurred (parser) && expr != error_mark_node)
+    {
+      bool non_integral_constant_expression_p = false;
+      tree id_expression = expr;
+      cp_id_kind idk;
+      const char *error_msg;
+
+      /* Lookup the name we got back from the id-expression.  */
+      expr = cp_parser_lookup_name (parser, expr,
+                                    none_type,
+                                    /*is_template=*/false,
+                                    /*is_namespace=*/false,
+                                    /*check_dependency=*/true,
+                                    /*ambiguous_decls=*/NULL);
+      
+      if (expr 
+          && expr != error_mark_node
+          && TREE_CODE (expr) != TEMPLATE_ID_EXPR
+          && TREE_CODE (expr) != TYPE_DECL
+          && cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
+        {
+          /* Complete lookup of the id-expression.  */
+          expr = (finish_id_expression
+                  (id_expression, expr, parser->scope, &idk,
+                   /*integral_constant_expression_p=*/false,
+                   /*allow_non_integral_constant_expression_p=*/true,
+                   &non_integral_constant_expression_p,
+                   /*template_p=*/false,
+                   /*done=*/true,
+                   /*address_p=*/false,
+                   /*template_arg_p=*/false,
+                   &error_msg));
+
+          if (expr == error_mark_node)
+            /* We found an id-expression, but it was something that we
+               should not have found. This is an error, not something
+               we can recover from, so note that we found an
+               id-expression and we'll recover as gracefully as
+               possible.  */
+            id_expression_or_member_access_p = true;
+        }
+
+      if (expr 
+          && expr != error_mark_node
+          && cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
+        /* We have an id-expression.  */
+        id_expression_or_member_access_p = true;
+    }
+
+  if (!id_expression_or_member_access_p)
+    {
+      /* Abort the id-expression parse.  */
+      cp_parser_abort_tentative_parse (parser);
+
+      /* Parsing tentatively, again.  */
+      cp_parser_parse_tentatively (parser);
+
+      /* Parse a class member access.  */
+      expr = cp_parser_postfix_expression (parser, /*address_p=*/false,
+                                           /*cast_p=*/false,
+                                           /*member_access_only_p=*/true);
+
+      if (expr 
+          && expr != error_mark_node
+          && cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
+        /* We have an id-expression.  */
+        id_expression_or_member_access_p = true;
+    }
+
+  if (id_expression_or_member_access_p)
+    /* We have parsed the complete id-expression or member access.  */
+    cp_parser_parse_definitely (parser);
+  else
+    {
+      /* Abort our attempt to parse an id-expression or member access
+         expression.  */
+      cp_parser_abort_tentative_parse (parser);
+
+      /* Parse a full expression.  */
+      expr = cp_parser_expression (parser, /*cast_p=*/false);
+    }
+
+  /* Go back to evaluating expressions.  */
+  --skip_evaluation;
+
+  /* Restore the old message and the integral constant expression
+     flags.  */
+  parser->type_definition_forbidden_message = saved_message;
+  parser->integral_constant_expression_p
+    = saved_integral_constant_expression_p;
+  parser->non_integral_constant_expression_p
+    = saved_non_integral_constant_expression_p;
+
+  if (expr == error_mark_node)
+    {
+      /* Skip everything up to the closing `)'.  */
+      cp_parser_skip_to_closing_parenthesis (parser, true, false,
+                                             /*consume_paren=*/true);
+      return error_mark_node;
+    }
+  
+  /* Parse to the closing `)'.  */
+  if (!cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'"))
+    cp_parser_skip_to_closing_parenthesis (parser, true, false,
+					   /*consume_paren=*/true);
+
+  return finish_decltype_type (expr, id_expression_or_member_access_p);
+}
+
 /* Special member functions [gram.special] */
 
 /* Parse a conversion-function-id.
@@ -10438,6 +10616,11 @@ cp_parser_type_specifier (cp_parser* parser,
      double
      void
 
+   C++0x Extension:
+
+   simple-type-specifier:
+     decltype ( expression )   
+
    GNU Extension:
 
    simple-type-specifier:
@@ -10506,6 +10689,16 @@ cp_parser_simple_type_specifier (cp_parser* parser,
     case RID_VOID:
       type = void_type_node;
       break;
+
+    case RID_DECLTYPE:
+      /* Parse the `decltype' type.  */
+      type = cp_parser_decltype (parser);
+
+      if (decl_specs)
+	cp_parser_set_decl_spec_type (decl_specs, type,
+				      /*user_defined_p=*/true);
+
+      return type;
 
     case RID_TYPEOF:
       /* Consume the `typeof' token.  */

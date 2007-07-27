@@ -1198,6 +1198,13 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
       pp_cxx_nested_name_specifier (pp, TYPE_METHOD_BASETYPE (t));
       break;
 
+    case DECLTYPE_TYPE:
+      pp_cxx_identifier (pp, "decltype");
+      pp_cxx_left_paren (pp);
+      pp_cxx_expression (pp, DECLTYPE_TYPE_EXPR (t));
+      pp_cxx_right_paren (pp);
+      break;
+
     default:
       if (!(TREE_CODE (t) == FUNCTION_DECL && DECL_CONSTRUCTOR_P (t)))
 	pp_c_specifier_qualifier_list (pp_c_base (pp), t);
@@ -1581,6 +1588,7 @@ pp_cxx_type_id (cxx_pretty_printer *pp, tree t)
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_DECL:
     case TYPEOF_TYPE:
+    case DECLTYPE_TYPE:
     case TEMPLATE_ID_EXPR:
       pp_cxx_type_specifier_seq (pp, t);
       break;

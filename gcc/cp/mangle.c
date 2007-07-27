@@ -1544,6 +1544,9 @@ write_local_name (const tree function, const tree local_entity,
    C++0x extensions
 
      <type> ::= RR <type>   # rvalue reference-to
+     <type> ::= Dt <expression> # decltype of an id-expression or 
+                                # class member access
+     <type> ::= DT <expression> # decltype of an expression
 
    TYPE is a type node.  */
 
@@ -1672,6 +1675,16 @@ write_type (tree type)
             case TYPE_PACK_EXPANSION:
               write_string ("U10__variadic");
               write_type (PACK_EXPANSION_PATTERN (type));
+              break;
+
+            case DECLTYPE_TYPE:
+              write_char ('D');
+              if (DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type))
+                write_char ('t');
+              else
+                write_char ('T');
+              write_expression (DECLTYPE_TYPE_EXPR (type));
+              write_char ('E');
               break;
 
 	    default:

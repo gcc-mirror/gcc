@@ -427,6 +427,13 @@ DEFTREECODE (ARGUMENT_PACK_SELECT, "argument_pack_select", tcc_exceptional, 0)
 /* Represents a trait expression during template expansion.  */
 DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
 
+/* The declared type of an expression.  This is a C++0x extension.
+   DECLTYPE_TYPE_EXPR is the expression whose type we are computing.
+   DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P states whether the
+   expression was parsed as an id-expression or a member access
+   expression. When false, it was parsed as a full expression.  */
+DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
+
 /*
 Local variables:
 mode:c
