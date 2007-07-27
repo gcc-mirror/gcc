@@ -1319,13 +1319,13 @@ gfc_trans_logical_select (gfc_code * code)
 static tree
 gfc_trans_character_select (gfc_code *code)
 {
-  tree init, node, end_label, tmp, type, *labels;
-  tree case_label;
+  tree init, node, end_label, tmp, type, case_num, label;
+  tree gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
   stmtblock_t block, body;
   gfc_case *cp, *d;
   gfc_code *c;
   gfc_se se;
-  int i, n;
+  int n;
 
   static tree select_struct;
   static tree ss_string1, ss_string1_len;
@@ -1351,7 +1351,7 @@ gfc_trans_character_select (gfc_code *code)
       ADD_FIELD (string2, pchar_type_node);
       ADD_FIELD (string2_len, gfc_int4_type_node);
 
-      ADD_FIELD (target, pvoid_type_node);
+      ADD_FIELD (target, gfc_c_int_type_node);
 #undef ADD_FIELD
 
       gfc_finish_type (select_struct);
@@ -1365,20 +1365,6 @@ gfc_trans_character_select (gfc_code *code)
   for (d = cp; d; d = d->right)
     d->n = n++;
 
-  if (n != 0)
-    labels = gfc_getmem (n * sizeof (tree));
-  else
-    labels = NULL;
-
-  for(i = 0; i < n; i++)
-    {
-      labels[i] = gfc_build_label_decl (NULL_TREE);
-      TREE_USED (labels[i]) = 1;
-      /* TODO: The gimplifier should do this for us, but it has
-         inadequacies when dealing with static initializers.  */
-      FORCED_LABEL (labels[i]) = 1;
-    }
-
   end_label = gfc_build_label_decl (NULL_TREE);
 
   /* Generate the body */
@@ -1389,7 +1375,10 @@ gfc_trans_character_select (gfc_code *code)
     {
       for (d = c->ext.case_list; d; d = d->next)
         {
-          tmp = build1_v (LABEL_EXPR, labels[d->n]);
+	  label = gfc_build_label_decl (NULL_TREE);
+	  tmp = build3 (CASE_LABEL_EXPR, void_type_node,
+			build_int_cst (NULL_TREE, d->n),
+			build_int_cst (NULL_TREE, d->n), label);
           gfc_add_expr_to_block (&body, tmp);
         }
 
@@ -1402,9 +1391,8 @@ gfc_trans_character_select (gfc_code *code)
 
   /* Generate the structure describing the branches */
   init = NULL_TREE;
-  i = 0;
 
-  for(d = cp; d; d = d->right, i++)
+  for(d = cp; d; d = d->right)
     {
       node = NULL_TREE;
 
@@ -1437,8 +1425,8 @@ gfc_trans_character_select (gfc_code *code)
           node = tree_cons (ss_string2_len, se.string_length, node);
         }
 
-      tmp = gfc_build_addr_expr (pvoid_type_node, labels[i]);
-      node = tree_cons (ss_target, tmp, node);
+      node = tree_cons (ss_target, build_int_cst (gfc_c_int_type_node, d->n),
+			node);
 
       tmp = build_constructor_from_list (select_struct, nreverse (node));
       init = tree_cons (NULL_TREE, tmp, init);
@@ -1462,32 +1450,26 @@ gfc_trans_character_select (gfc_code *code)
 
   /* Build the library call */
   init = gfc_build_addr_expr (pvoid_type_node, init);
-  tmp = gfc_build_addr_expr (pvoid_type_node, end_label);
 
   gfc_init_se (&se, NULL);
   gfc_conv_expr_reference (&se, code->expr);
 
   gfc_add_block_to_block (&block, &se.pre);
 
-  tmp = build_call_expr (gfor_fndecl_select_string, 5,
-			 init, build_int_cst (NULL_TREE, n),
-			 tmp, se.expr, se.string_length);
-			 
-  case_label = gfc_create_var (TREE_TYPE (tmp), "case_label");
-  gfc_add_modify_expr (&block, case_label, tmp);
+  tmp = build_call_expr (gfor_fndecl_select_string, 4, init,
+			 build_int_cst (NULL_TREE, n), se.expr,
+			 se.string_length);
+  case_num = gfc_create_var (gfc_c_int_type_node, "case_num");
+  gfc_add_modify_expr (&block, case_num, tmp);
 
   gfc_add_block_to_block (&block, &se.post);
 
-  tmp = build1 (GOTO_EXPR, void_type_node, case_label);
+  tmp = gfc_finish_block (&body);
+  tmp = build3_v (SWITCH_EXPR, case_num, tmp, NULL_TREE);
   gfc_add_expr_to_block (&block, tmp);
 
-  tmp = gfc_finish_block (&body);
-  gfc_add_expr_to_block (&block, tmp);
   tmp = build1_v (LABEL_EXPR, end_label);
   gfc_add_expr_to_block (&block, tmp);
-
-  if (n != 0)
-    gfc_free (labels);
 
   return gfc_finish_block (&block);
 }

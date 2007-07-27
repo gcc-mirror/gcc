@@ -1,3 +1,11 @@
+2007-07-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32035
+	* trans-stmt.c (gfc_trans_character_select): Replace the
+	mechanism with labels by a SWITCH_EXPR.
+	* trans-decl.c (gfc_build_builtin_function_decls): Change
+	return type for select_string.
+
 2007-07-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32903

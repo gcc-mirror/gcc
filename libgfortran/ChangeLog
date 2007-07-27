@@ -1,3 +1,9 @@
+2007-07-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32035
+	* runtime/select.c (select_string): Adjust prototype and function
+	so that the return value is an integer, not a pointer.
+
 2007-07-24  Tobias Burnus  <burnus@net-b.de>
 
 	* libgfortran.h:  Add bounds_check to compile_options_t.
