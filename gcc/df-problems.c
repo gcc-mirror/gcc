@@ -3716,6 +3716,32 @@ df_set_note (enum reg_note note_type, rtx insn, rtx old, rtx reg)
   return old;
 }
 
+/* A subroutine of df_set_unused_notes_for_mw, with a selection of its
+   arguments.  Return true if the register value described by MWS's
+   mw_reg is known to be completely unused, and if mw_reg can therefore
+   be used in a REG_UNUSED note.  */
+
+static bool
+df_whole_mw_reg_unused_p (struct df_mw_hardreg *mws,
+			  bitmap live, bitmap artificial_uses)
+{
+  unsigned int r;
+
+  /* If MWS describes a partial reference, create REG_UNUSED notes for
+     individual hard registers.  */
+  if (mws->flags & DF_REF_PARTIAL)
+    return false;
+
+  /* Likewise if some part of the register is used.  */
+  for (r = mws->start_regno; r <= mws->end_regno; r++)
+    if (bitmap_bit_p (live, r)
+	|| bitmap_bit_p (artificial_uses, r))
+      return false;
+
+  gcc_assert (REG_P (mws->mw_reg));
+  return true;
+}
+
 /* Set the REG_UNUSED notes for the multiword hardreg defs in INSN
    based on the bits in LIVE.  Do not generate notes for registers in
    artificial uses.  DO_NOT_GEN is updated so that REG_DEAD notes are
@@ -3728,7 +3754,6 @@ df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 			    bitmap live, bitmap do_not_gen, 
 			    bitmap artificial_uses)
 {
-  bool all_dead = true;
   unsigned int r;
   
 #ifdef REG_DEAD_DEBUGGING
@@ -3736,18 +3761,11 @@ df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
     fprintf (dump_file, "mw_set_unused looking at mws[%d..%d]\n", 
 	     mws->start_regno, mws->end_regno);
 #endif
-  for (r=mws->start_regno; r <= mws->end_regno; r++)
-    if ((bitmap_bit_p (live, r))
-	|| bitmap_bit_p (artificial_uses, r))
-      {
-	all_dead = false;
-	break;
-      }
-  
-  if (all_dead)
+
+  if (df_whole_mw_reg_unused_p (mws, live, artificial_uses))
     {
       unsigned int regno = mws->start_regno;
-      old = df_set_note (REG_UNUSED, insn, old, *(mws->loc));
+      old = df_set_note (REG_UNUSED, insn, old, mws->mw_reg);
 
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
@@ -3772,6 +3790,34 @@ df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 }
 
 
+/* A subroutine of df_set_dead_notes_for_mw, with a selection of its
+   arguments.  Return true if the register value described by MWS's
+   mw_reg is known to be completely dead, and if mw_reg can therefore
+   be used in a REG_DEAD note.  */
+
+static bool
+df_whole_mw_reg_dead_p (struct df_mw_hardreg *mws,
+			bitmap live, bitmap artificial_uses,
+			bitmap do_not_gen)
+{
+  unsigned int r;
+
+  /* If MWS describes a partial reference, create REG_DEAD notes for
+     individual hard registers.  */
+  if (mws->flags & DF_REF_PARTIAL)
+    return false;
+
+  /* Likewise if some part of the register is not dead.  */
+  for (r = mws->start_regno; r <= mws->end_regno; r++)
+    if (bitmap_bit_p (live, r)
+	|| bitmap_bit_p (artificial_uses, r)
+	|| bitmap_bit_p (do_not_gen, r))
+      return false;
+
+  gcc_assert (REG_P (mws->mw_reg));
+  return true;
+}
+
 /* Set the REG_DEAD notes for the multiword hardreg use in INSN based
    on the bits in LIVE.  DO_NOT_GEN is used to keep REG_DEAD notes
    from being set if the instruction both reads and writes the
@@ -3782,7 +3828,6 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 			  bitmap live, bitmap do_not_gen,
 			  bitmap artificial_uses)
 {
-  bool all_dead = true;
   unsigned int r;
   
 #ifdef REG_DEAD_DEBUGGING
@@ -3798,25 +3843,13 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
     }
 #endif
 
-  for (r = mws->start_regno; r <= mws->end_regno; r++)
-    if ((bitmap_bit_p (live, r))
-	|| bitmap_bit_p (artificial_uses, r)
-	|| bitmap_bit_p (do_not_gen, r))
-      {
-	all_dead = false;
-	break;
-      }
-  
-  if (all_dead)
+  if (df_whole_mw_reg_dead_p (mws, live, artificial_uses, do_not_gen))
     {
-      if (!bitmap_bit_p (do_not_gen, mws->start_regno))
-	{
-	  /* Add a dead note for the entire multi word register.  */
-	  old = df_set_note (REG_DEAD, insn, old, *(mws->loc));
+      /* Add a dead note for the entire multi word register.  */
+      old = df_set_note (REG_DEAD, insn, old, mws->mw_reg);
 #ifdef REG_DEAD_DEBUGGING
-	  df_print_note ("adding 1: ", insn, REG_NOTES (insn));
+      df_print_note ("adding 1: ", insn, REG_NOTES (insn));
 #endif
-	}
     }
   else
     {

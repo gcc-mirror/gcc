@@ -311,7 +311,6 @@ struct dataflow
 struct df_mw_hardreg
 {
   rtx mw_reg;                   /* The multiword hardreg.  */ 
-  rtx *loc;			/* The location of the reg.  */
   enum df_ref_type type;        /* Used to see if the ref is read or write.  */
   enum df_ref_flags flags;	/* Various flags.  */
   unsigned int start_regno;     /* First word of the multi word subreg.  */

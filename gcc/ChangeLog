@@ -1,3 +1,18 @@
+2007-07-27  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* df.h (df_mw_hardreg): Remove "loc" field.
+	* df-scan.c (df_ref_record): Don't set it.  Remove redundant
+	local variable.
+	* df-problems.c (df_whole_mw_reg_unused_p): New function,
+	split out from df_set_unused_notes_for_mw.  Return false for
+	partial references.  Assert that mw_reg is a REG when returning true.
+	(df_set_unused_notes_for_mw): Use it.  Use mw_reg instead of *loc.
+	(df_whole_mw_reg_dead_p): New function, split out from
+	df_set_dead_notes_for_mw.  Return false for partial references.
+	Assert that mw_reg is a REG when returning true.
+	(df_set_dead_notes_for_mw): Use it.  Use mw_reg instead of *loc.
+	Remove redundant bitmap check.
+
 2007-07-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/ia64/t-ia64 ($(T)crtbegin.o): Removed.
