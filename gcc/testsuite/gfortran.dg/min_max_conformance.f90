@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-fmax-errors=0" }
 ! PR 31919:  Tests for different ranks in min/max were missing.
 program pr31919

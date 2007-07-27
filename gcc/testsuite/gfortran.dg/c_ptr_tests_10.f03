@@ -1,4 +1,4 @@
-! { dg-run }
+! { dg-do run }
 ! { dg-options "-std=gnu" }
 ! This test case exists because gfortran had an error in converting the 
 ! expressions for the derived types from iso_c_binding in some cases.
