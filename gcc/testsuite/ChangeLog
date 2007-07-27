@@ -1,3 +1,8 @@
+2007-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/32346
+	* g++.dg/expr/bitfield9.C: New test.
+
 2007-07-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/32899
@@ -22,7 +27,7 @@
 
 	* gcc.target/mips/ins-1.c: New test.
 
-2007-07-26  Nathan Froyd  <froydnj@codesourcery.com>
+'2007-07-26  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR/19232
 	* gcc.dg/assign-warn-3.c (f0): Declare as inline.
