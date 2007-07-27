@@ -3868,13 +3868,12 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 }
 
 
-/* Create a REG_UNUSED note if necessary for DEF in INSN updating LIVE
-   and DO_NOT_GEN.  Do not generate notes for registers in artificial
-   uses.  */
+/* Create a REG_UNUSED note if necessary for DEF in INSN updating
+   LIVE.  Do not generate notes for registers in ARTIFICIAL_USES.  */
 
 static rtx
 df_create_unused_note (rtx insn, rtx old, struct df_ref *def, 
-		       bitmap live, bitmap do_not_gen, bitmap artificial_uses)
+		       bitmap live, bitmap artificial_uses)
 {
   unsigned int dregno = DF_REF_REGNO (def);
   
@@ -3899,12 +3898,6 @@ df_create_unused_note (rtx insn, rtx old, struct df_ref *def,
 #endif
     }
   
-  if (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER + DF_REF_MAY_CLOBBER)))
-    bitmap_set_bit (do_not_gen, dregno);
-  
-  /* Kill this register if it is not a subreg store or conditional store.  */
-  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-    bitmap_clear_bit (live, dregno);
   return old;
 }
 
@@ -3915,7 +3908,7 @@ df_create_unused_note (rtx insn, rtx old, struct df_ref *def,
 
 static void
 df_note_bb_compute (unsigned int bb_index, 
-		  bitmap live, bitmap do_not_gen, bitmap artificial_uses)
+		    bitmap live, bitmap do_not_gen, bitmap artificial_uses)
 {
   basic_block bb = BASIC_BLOCK (bb_index);
   rtx insn;
@@ -4012,17 +4005,17 @@ df_note_bb_compute (unsigned int bb_index,
 	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	    {
 	      struct df_ref *def = *def_rec;
-	      if (!(DF_REF_FLAGS (def) & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER)))
-		old_unused_notes
-		  = df_create_unused_note (insn, old_unused_notes, 
-					   def, live, do_not_gen, 
-					   artificial_uses);
+	      unsigned int dregno = DF_REF_REGNO (def);
+	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))
+		{
+		  old_unused_notes
+		    = df_create_unused_note (insn, old_unused_notes, 
+					     def, live, artificial_uses);
+		  bitmap_set_bit (do_not_gen, dregno);
+		}
 
-	      /* However a may or must clobber still needs to kill the
-		 reg so that REG_DEAD notes are later placed
-		 appropriately.  */ 
-	      else 
-		bitmap_clear_bit (live, DF_REF_REGNO (def));
+	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL | DF_REF_CONDITIONAL))
+		bitmap_clear_bit (live, dregno);
 	    }
 	}
       else
@@ -4043,10 +4036,16 @@ df_note_bb_compute (unsigned int bb_index,
 	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	    {
 	      struct df_ref *def = *def_rec;
+	      unsigned int dregno = DF_REF_REGNO (def);
 	      old_unused_notes
 		= df_create_unused_note (insn, old_unused_notes, 
-					 def, live, do_not_gen, 
-					 artificial_uses);
+					 def, live, artificial_uses);
+
+	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))
+		bitmap_set_bit (do_not_gen, dregno);
+
+	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL | DF_REF_CONDITIONAL))
+		bitmap_clear_bit (live, dregno);
 	    }
 	}
       

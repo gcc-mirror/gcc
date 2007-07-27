@@ -1,3 +1,13 @@
+2007-07-26  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/32749
+	
+	* df-problems.c (df_create_unused_note): Removed do_not_gen parm
+	and the updating of the live and do_not_gen sets.
+	(df_note_bb_compute): Added updating of live and do_not_gen sets
+	for regular defs so that the case of clobber inside conditional
+	call is processed correctly.
+	
 2007-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Generate the
@@ -12517,7 +12527,7 @@
 
 	* c-common.c (warn_logical_operator): Fix condition.
 
-2007-03-10  Tobias Schl�ter  <tobi@gcc.gnu.org>
+2007-03-10  Tobias Schlï¿½ter  <tobi@gcc.gnu.org>
 
 	* config/i386/darwin.h (DARWIN_MINVERSION_SPEC): Add missing
 	quotation mark.
@@ -19659,7 +19669,7 @@
 	* langhooks.h (struct lang_hooks): Removed field
 	'can_use_bit_fields_p'.
 
-2007-01-10  Ralf Corsépius <ralf.corsepius@rtems.org>
+2007-01-10  Ralf CorsÃ©pius <ralf.corsepius@rtems.org>
 
 	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.
 
@@ -19888,7 +19898,7 @@
 	* config/frv/predicates.md (reg_or_0_operand): Accept
 	CONST_DOUBLEs.
 
-2007-01-08  Ralf Corsépius <ralf.corsepius@rtems.org>
+2007-01-08  Ralf CorsÃ©pius <ralf.corsepius@rtems.org>
 
 	* config/bfin/rtems.h, config/bfin/t-rtems: New.
 	* config.gcc: Add bfin*-rtems*.
