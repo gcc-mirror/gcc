@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the mudflap library.
 ##
-## Copyright (C) 2002, 2003, 2004
+## Copyright (C) 2002, 2003, 2004, 2007
 ## Free Software Foundation, Inc.
 ##
 
@@ -36,28 +36,15 @@ libmudflap_la_LIBADD =
 libmudflap_la_DEPENDENCIES = $(libmudflap_la_LIBADD)
 libmudflap_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
-clean-local:
-	rm -f pth/*.o pth/*.lo
 
-pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-runtime.c -o $@
-pth/mf-heuristics.lo: mf-heuristics.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-heuristics.c -o $@
-pth/mf-hooks1.lo: mf-hooks1.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks1.c -o $@
-pth/mf-hooks2.lo: mf-hooks2.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks2.c -o $@
-pth/mf-hooks3.lo: mf-hooks3.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks3.c -o $@
-
-
-libmudflapth_la_SOURCES =
-libmudflapth_la_LIBADD = \
-	pth/mf-runtime.lo \
-	pth/mf-heuristics.lo \
-	pth/mf-hooks1.lo \
-	pth/mf-hooks2.lo \
-	pth/mf-hooks3.lo
+libmudflapth_la_SOURCES = \
+	mf-runtime.c \
+	mf-heuristics.c \
+	mf-hooks1.c \
+	mf-hooks2.c \
+	mf-hooks3.c
+libmudflapth_la_CFLAGS = -DLIBMUDFLAPTH
+libmudflapth_la_LIBADD =
 libmudflapth_la_DEPENDENCIES = $(libmudflapth_la_LIBADD)
 libmudflapth_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
