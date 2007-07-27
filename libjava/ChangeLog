@@ -1,3 +1,7 @@
+2007-07-27  Tom Tromey  <tromey@redhat.com>
+
+	* Rebuild .class files with new ecj.
+
 2007-07-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.ac (mips-sgi-irix6*): Override SYSTEMSPEC.
