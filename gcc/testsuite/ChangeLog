@@ -1,3 +1,11 @@
+2007-07-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR testsuite/32471
+	* gcc.dg/torture/pr30364-1.c (f)(main): Use INT_MAX instead of
+	  assuming it is 0x7ffffffff.
+	* gcc.dg/torture/pr30364-2.c (f)(main): Likewise.
+	* gcc.dg/torture/pr30364-3.c (f)(main): Likewise.
+
 2007-07-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/operator_3.f90: Fix dg directive.
