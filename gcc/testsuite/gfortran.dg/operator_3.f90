@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! PR fortran/31580
 !
 ! Testcase contributed by Tobias Burnus <burnus AT gcc DOT gnu DOT org>

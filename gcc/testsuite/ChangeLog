@@ -1,3 +1,10 @@
+2007-07-27  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/operator_3.f90: Fix dg directive.
+	* gfortran.dg/min_max_conformance.f90: Fix dg directive.
+	* gfortran.dg/compliant_elemental_intrinsics_2.f90: Fix dg directive.
+	* gfortran.dg/c_ptr_tests_10.f03: Fix dg directive.
+
 2007-07-27  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* g++.dg/cpp0x/decltype1.C: New.

@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 !
 ! Testcases from PR32002.
 !
