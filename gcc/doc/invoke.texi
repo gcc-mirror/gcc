@@ -11658,14 +11658,19 @@ operations.  This is the default.
 @itemx -mno-dsp
 @opindex mdsp
 @opindex mno-dsp
-Use (do not use) the MIPS DSP ASE.  @xref{MIPS DSP Built-in Functions}.
+Use (do not use) revision 1 of the MIPS DSP ASE.
+@xref{MIPS DSP Built-in Functions}.  This option defines the
+preprocessor macro @samp{__mips_dsp}.  It also defines
+@samp{__mips_dsp_rev} to 1.
 
 @item -mdspr2
 @itemx -mno-dspr2
 @opindex mdspr2
 @opindex mno-dspr2
-Use (do not use) the MIPS DSP ASE REV 2.  @xref{MIPS DSP Built-in Functions}.
-The option @option{-mdspr2} implies @option{-mdsp}.
+Use (do not use) revision 2 of the MIPS DSP ASE.
+@xref{MIPS DSP Built-in Functions}.  This option defines the
+preprocessor macros @samp{__mips_dsp} and @samp{__mips_dspr2}.
+It also defines @samp{__mips_dsp_rev} to 2.
 
 @item -msmartmips
 @itemx -mno-smartmips

@@ -1,3 +1,9 @@
+2007-07-27  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/invoke.texi (mdsp, mdspr2): Document the __mips_dsp,
+	__mips_dspr2 and __mips_dsp_rev macros.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define __mips_dsp_rev.
+
 2007-07-27  Douglas Gregor  <doug.gregor@gmail.com>
 	
        * c-common.h (enum rid): Add RID_DECLTYPE, update RID_LAST_CXX0X.
