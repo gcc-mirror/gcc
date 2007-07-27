@@ -23,24 +23,6 @@ SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-ia64.ver
 # Effectively disable the crtbegin/end rules using crtstuff.c
 T = disable
 
-# Assemble startup files.
-$(T)crtbegin.o: $(srcdir)/config/ia64/crtbegin.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -I. -c -o $(T)crtbegin.o -x assembler-with-cpp \
-		$(srcdir)/config/ia64/crtbegin.asm
-$(T)crtend.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -I. -c -o $(T)crtend.o -x assembler-with-cpp \
-		$(srcdir)/config/ia64/crtend.asm
-$(T)crtbeginS.o: $(srcdir)/config/ia64/crtbegin.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -I. -DSHARED -c -o $(T)crtbeginS.o \
-		-x assembler-with-cpp \
-		$(srcdir)/config/ia64/crtbegin.asm
-$(T)crtendS.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
-	$(GCC_FOR_TARGET) -I. -DSHARED -c -o $(T)crtendS.o -x assembler-with-cpp \
-		$(srcdir)/config/ia64/crtend.asm
-$(T)crtfastmath.o: $(srcdir)/config/ia64/crtfastmath.c $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(T)crtfastmath.o \
-		$(srcdir)/config/ia64/crtfastmath.c
-
 LIB2ADDEH = $(srcdir)/config/ia64/unwind-ia64.c $(srcdir)/unwind-sjlj.c \
   $(srcdir)/unwind-c.c
 

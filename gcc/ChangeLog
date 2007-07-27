@@ -1,3 +1,11 @@
+2007-07-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/ia64/t-ia64 ($(T)crtbegin.o): Removed.
+	($(T)crtend.o): Likwise.
+	($(T)crtbeginS.o): Likwise.
+	($(T)crtendS.o): Likwise.
+	($(T)crtfastmath.o): Likwise.
+
 2007-07-26  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* dominance.c (dom_computed, n_bbs_in_dom_tree): Removed.
