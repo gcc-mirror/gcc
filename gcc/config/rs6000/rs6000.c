@@ -6465,7 +6465,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  regalign = 1;
 	  u = build2 (BIT_AND_EXPR, TREE_TYPE (reg), reg,
-		     size_int (n_reg - 1));
+		     build_int_cst (TREE_TYPE (reg), n_reg - 1));
 	  u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, u);
 	}
       /* _Decimal128 is passed in even/odd fpr pairs; the stored
@@ -6487,7 +6487,8 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       if (sav_ofs)
 	t = build2 (POINTER_PLUS_EXPR, ptr_type_node, sav, size_int (sav_ofs));
 
-      u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, size_int (n_reg));
+      u = build2 (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg,
+		  build_int_cst (TREE_TYPE (reg), n_reg));
       u = fold_convert (sizetype, u);
       u = build2 (MULT_EXPR, sizetype, u, size_int (sav_scale));
       t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t, u);
