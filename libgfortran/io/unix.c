@@ -1945,7 +1945,7 @@ stream_isatty (stream *s)
 }
 
 char *
-stream_ttyname (stream *s)
+stream_ttyname (stream *s __attribute__ ((unused)))
 {
 #ifdef HAVE_TTYNAME
   return ttyname (((unix_stream *) s)->fd);

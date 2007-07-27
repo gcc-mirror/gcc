@@ -1,5 +1,9 @@
 2007-07-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* io/unix.c (stream_ttyname): Mark argument as potentialy unused.
+
+2007-07-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32035
 	* runtime/select.c (select_string): Adjust prototype and function
 	so that the return value is an integer, not a pointer.
