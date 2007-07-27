@@ -1,8 +1,22 @@
+2007-07-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/32907
+	* include/bits/basic_string.h (operator==(const basic_string<_CharT>&,
+	const basic_string<_CharT>&)): Add.
+	(operator!=): Forward to operator==.
+	* include/ext/vstring.h(operator==(const __versa_string<_CharT,
+	std::char_traits<_CharT>, std::allocator<_CharT>, _Base>&,
+	const __versa_string<_CharT, std::char_traits<_CharT>,
+	std::allocator<_CharT>, _Base>&)): Add.
+	(operator!=): Forward to operator==.
+
+	* include/ext/sso_string_base.h (_M_compare): Remove.
+
 2007-07-25  Stephen M. Webb  <stephenw@xandros.com>
 
-  Fixed abi_check for missing symbol size changes.
-	* testsuite/util/testsuite_abi.cc: Changed local variable name to prevent
-	member variable hiding.
+	Fixed abi_check for missing symbol size changes.
+	* testsuite/util/testsuite_abi.cc: Changed local variable name to
+	prevent member variable hiding.
 
 2007-07-25  John Davind Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -26,8 +40,10 @@
 	* testsuite/thread/pthread5.cc: Likewise.
 	* testsuite/thread/pthread6.cc: Likewise.
 	* testsuite/thread/pthread7-rope.cc: Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/thread/default_weaktoshared.cc: Likewise.
-	* testsuite/tr1/2_general_utilities/shared_ptr/thread/mutex_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	default_weaktoshared.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/
+	mutex_weaktoshared.cc: Likewise.
 
 2007-07-16  Danny Smith  <dannysmith@users.sourceforge.net>
 

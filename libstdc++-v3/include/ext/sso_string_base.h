@@ -540,30 +540,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_set_length(_M_length() - __n);
     }
 
-  template<>
-    inline bool
-    __sso_string_base<char, std::char_traits<char>,
-		      std::allocator<char> >::
-    _M_compare(const __sso_string_base& __rcs) const
-    {
-      if (this == &__rcs)
-	return true;
-      return false;
-    }
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<>
-    inline bool
-    __sso_string_base<wchar_t, std::char_traits<wchar_t>,
-		      std::allocator<wchar_t> >::
-    _M_compare(const __sso_string_base& __rcs) const
-    {
-      if (this == &__rcs)
-	return true;
-      return false;
-    }
-#endif
-
 _GLIBCXX_END_NAMESPACE
 
 #endif /* _SSO_STRING_BASE_H */
