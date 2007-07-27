@@ -39,12 +39,12 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 DIST_COMMON = $(am__configure_deps) $(nobase_libsubinclude_HEADERS) \
-	$(srcdir)/../config.guess $(srcdir)/../config.sub \
-	$(srcdir)/../depcomp $(srcdir)/../install-sh \
-	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
-	$(srcdir)/../mkinstalldirs $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure ChangeLog
+	$(srcdir)/../compile $(srcdir)/../config.guess \
+	$(srcdir)/../config.sub $(srcdir)/../depcomp \
+	$(srcdir)/../install-sh $(srcdir)/../ltmain.sh \
+	$(srcdir)/../missing $(srcdir)/../mkinstalldirs \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/config.h.in $(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -54,8 +54,8 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -76,7 +76,9 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am_libmudflap_la_OBJECTS = mf-runtime.lo mf-heuristics.lo mf-hooks1.lo \
 	mf-hooks2.lo
 libmudflap_la_OBJECTS = $(am_libmudflap_la_OBJECTS)
-am_libmudflapth_la_OBJECTS =
+am_libmudflapth_la_OBJECTS = libmudflapth_la-mf-runtime.lo \
+	libmudflapth_la-mf-heuristics.lo libmudflapth_la-mf-hooks1.lo \
+	libmudflapth_la-mf-hooks2.lo libmudflapth_la-mf-hooks3.lo
 libmudflapth_la_OBJECTS = $(am_libmudflapth_la_OBJECTS)
 @LIBMUDFLAPTH_TRUE@am_libmudflapth_la_rpath = -rpath $(toolexeclibdir)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -254,14 +256,15 @@ libmudflap_la_SOURCES = \
 libmudflap_la_LIBADD = 
 libmudflap_la_DEPENDENCIES = $(libmudflap_la_LIBADD)
 libmudflap_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
-libmudflapth_la_SOURCES = 
-libmudflapth_la_LIBADD = \
-	pth/mf-runtime.lo \
-	pth/mf-heuristics.lo \
-	pth/mf-hooks1.lo \
-	pth/mf-hooks2.lo \
-	pth/mf-hooks3.lo
+libmudflapth_la_SOURCES = \
+	mf-runtime.c \
+	mf-heuristics.c \
+	mf-hooks1.c \
+	mf-hooks2.c \
+	mf-hooks3.c
 
+libmudflapth_la_CFLAGS = -DLIBMUDFLAPTH
+libmudflapth_la_LIBADD = 
 libmudflapth_la_DEPENDENCIES = $(libmudflapth_la_LIBADD)
 libmudflapth_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
@@ -402,6 +405,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmudflapth_la-mf-heuristics.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmudflapth_la-mf-hooks1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmudflapth_la-mf-hooks2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmudflapth_la-mf-hooks3.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmudflapth_la-mf-runtime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mf-heuristics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mf-hooks1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mf-hooks2.Plo@am__quote@
@@ -427,6 +435,41 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+libmudflapth_la-mf-runtime.lo: mf-runtime.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -MT libmudflapth_la-mf-runtime.lo -MD -MP -MF "$(DEPDIR)/libmudflapth_la-mf-runtime.Tpo" -c -o libmudflapth_la-mf-runtime.lo `test -f 'mf-runtime.c' || echo '$(srcdir)/'`mf-runtime.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmudflapth_la-mf-runtime.Tpo" "$(DEPDIR)/libmudflapth_la-mf-runtime.Plo"; else rm -f "$(DEPDIR)/libmudflapth_la-mf-runtime.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mf-runtime.c' object='libmudflapth_la-mf-runtime.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -c -o libmudflapth_la-mf-runtime.lo `test -f 'mf-runtime.c' || echo '$(srcdir)/'`mf-runtime.c
+
+libmudflapth_la-mf-heuristics.lo: mf-heuristics.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -MT libmudflapth_la-mf-heuristics.lo -MD -MP -MF "$(DEPDIR)/libmudflapth_la-mf-heuristics.Tpo" -c -o libmudflapth_la-mf-heuristics.lo `test -f 'mf-heuristics.c' || echo '$(srcdir)/'`mf-heuristics.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmudflapth_la-mf-heuristics.Tpo" "$(DEPDIR)/libmudflapth_la-mf-heuristics.Plo"; else rm -f "$(DEPDIR)/libmudflapth_la-mf-heuristics.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mf-heuristics.c' object='libmudflapth_la-mf-heuristics.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -c -o libmudflapth_la-mf-heuristics.lo `test -f 'mf-heuristics.c' || echo '$(srcdir)/'`mf-heuristics.c
+
+libmudflapth_la-mf-hooks1.lo: mf-hooks1.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -MT libmudflapth_la-mf-hooks1.lo -MD -MP -MF "$(DEPDIR)/libmudflapth_la-mf-hooks1.Tpo" -c -o libmudflapth_la-mf-hooks1.lo `test -f 'mf-hooks1.c' || echo '$(srcdir)/'`mf-hooks1.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmudflapth_la-mf-hooks1.Tpo" "$(DEPDIR)/libmudflapth_la-mf-hooks1.Plo"; else rm -f "$(DEPDIR)/libmudflapth_la-mf-hooks1.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mf-hooks1.c' object='libmudflapth_la-mf-hooks1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -c -o libmudflapth_la-mf-hooks1.lo `test -f 'mf-hooks1.c' || echo '$(srcdir)/'`mf-hooks1.c
+
+libmudflapth_la-mf-hooks2.lo: mf-hooks2.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -MT libmudflapth_la-mf-hooks2.lo -MD -MP -MF "$(DEPDIR)/libmudflapth_la-mf-hooks2.Tpo" -c -o libmudflapth_la-mf-hooks2.lo `test -f 'mf-hooks2.c' || echo '$(srcdir)/'`mf-hooks2.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmudflapth_la-mf-hooks2.Tpo" "$(DEPDIR)/libmudflapth_la-mf-hooks2.Plo"; else rm -f "$(DEPDIR)/libmudflapth_la-mf-hooks2.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mf-hooks2.c' object='libmudflapth_la-mf-hooks2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -c -o libmudflapth_la-mf-hooks2.lo `test -f 'mf-hooks2.c' || echo '$(srcdir)/'`mf-hooks2.c
+
+libmudflapth_la-mf-hooks3.lo: mf-hooks3.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -MT libmudflapth_la-mf-hooks3.lo -MD -MP -MF "$(DEPDIR)/libmudflapth_la-mf-hooks3.Tpo" -c -o libmudflapth_la-mf-hooks3.lo `test -f 'mf-hooks3.c' || echo '$(srcdir)/'`mf-hooks3.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libmudflapth_la-mf-hooks3.Tpo" "$(DEPDIR)/libmudflapth_la-mf-hooks3.Plo"; else rm -f "$(DEPDIR)/libmudflapth_la-mf-hooks3.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='mf-hooks3.c' object='libmudflapth_la-mf-hooks3.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libmudflapth_la_CFLAGS) $(CFLAGS) -c -o libmudflapth_la-mf-hooks3.lo `test -f 'mf-hooks3.c' || echo '$(srcdir)/'`mf-hooks3.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -782,8 +825,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-multi clean-recursive
 
-clean-am: clean-generic clean-libtool clean-local \
-	clean-toolexeclibLTLIBRARIES mostlyclean-am
+clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-multi distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -839,18 +882,18 @@ uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am all-multi \
 	am--refresh check check-am clean clean-generic clean-libtool \
-	clean-local clean-multi clean-recursive \
-	clean-toolexeclibLTLIBRARIES ctags ctags-recursive dist \
-	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-multi \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-multi install-nobase_libsubincludeHEADERS \
-	install-strip install-toolexeclibLTLIBRARIES installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
+	clean-multi clean-recursive clean-toolexeclibLTLIBRARIES ctags \
+	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
+	dist-tarZ dist-zip distcheck distclean distclean-compile \
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-multi distclean-recursive distclean-tags \
+	distcleancheck distdir distuninstallcheck dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-multi \
+	install-nobase_libsubincludeHEADERS install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic maintainer-clean-multi \
 	maintainer-clean-recursive mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool mostlyclean-multi \
@@ -859,20 +902,6 @@ uninstall-info: uninstall-info-recursive
 	uninstall-nobase_libsubincludeHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
-
-clean-local:
-	rm -f pth/*.o pth/*.lo
-
-pth/mf-runtime.lo: mf-runtime.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-runtime.c -o $@
-pth/mf-heuristics.lo: mf-heuristics.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-heuristics.c -o $@
-pth/mf-hooks1.lo: mf-hooks1.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks1.c -o $@
-pth/mf-hooks2.lo: mf-hooks2.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks2.c -o $@
-pth/mf-hooks3.lo: mf-hooks3.c mf-runtime.h mf-impl.h
-	$(LTCOMPILE) -DLIBMUDFLAPTH -c $(srcdir)/mf-hooks3.c -o $@
 
 # No install-html or install-pdf support in automake yet
 .PHONY: install-html install-pdf

@@ -1,3 +1,13 @@
+2007-07-26  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (clean-local): Removed.
+	(pth/mf-runtime.lo, pth/mf-heuristics.lo, pth/mf-hooks1.lo,
+	pth/mf-hooks2.lo, pth/mf-hooks3.lo): Likewise.
+	(libmudflapth_la_SOURCES): List sources.
+	(libmudflapth_la_LIBADD): Clear.
+	(libmudflapth_la_CFLAGS): New variable.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* aclocal.m4: Regenerated.
