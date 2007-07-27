@@ -1,5 +1,11 @@
 2007-07-27  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* df.h (df_mw_hardreg): Turn df_ref_type and df_ref_flags
+	into bitfields.
+	(df_ref): Likewise.  Put regno with other integer fields.
+
+2007-07-27  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* df.h (df_mw_hardreg): Remove "loc" field.
 	* df-scan.c (df_ref_record): Don't set it.  Remove redundant
 	local variable.
