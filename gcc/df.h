@@ -311,8 +311,12 @@ struct dataflow
 struct df_mw_hardreg
 {
   rtx mw_reg;                   /* The multiword hardreg.  */ 
-  enum df_ref_type type;        /* Used to see if the ref is read or write.  */
-  enum df_ref_flags flags;	/* Various flags.  */
+  /* These two bitfields are intentially oversized, in the hope that
+     accesses to 16-bit fields will usually be quicker.  */
+  ENUM_BITFIELD(df_ref_type) type : 16;
+				/* Used to see if the ref is read or write.  */
+  ENUM_BITFIELD(df_ref_flags) flags : 16;
+				/* Various flags.  */
   unsigned int start_regno;     /* First word of the multi word subreg.  */
   unsigned int end_regno;       /* Last word of the multi word subreg.  */
   unsigned int mw_order;        /* Same as df_ref.ref_order.  */
@@ -341,7 +345,6 @@ struct df_insn_info
 struct df_ref
 {
   rtx reg;			/* The register referenced.  */
-  unsigned int regno;           /* The register number referenced.  */
   basic_block bb;               /* Basic block containing the instruction. */
 
   /* Insn containing ref. This will be null if this is an artificial
@@ -356,8 +359,13 @@ struct df_ref
      used to totally order the refs in an insn.  */
   unsigned int ref_order;
 
-  enum df_ref_type type;	/* Type of ref.  */
-  enum df_ref_flags flags;	/* Various flags.  */
+  unsigned int regno;		/* The register number referenced.  */
+  /* These two bitfields are intentially oversized, in the hope that
+     accesses to 16-bit fields will usually be quicker.  */
+  ENUM_BITFIELD(df_ref_type) type : 16;
+				/* Type of ref.  */
+  ENUM_BITFIELD(df_ref_flags) flags : 16;
+				/* Various flags.  */
 
   /* For each regno, there are three chains of refs, one for the uses,
      the eq_uses and the defs.  These chains go thru the refs
