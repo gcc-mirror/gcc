@@ -97,7 +97,6 @@ vfy_constants *vfy_get_constants (vfy_jclass klass);
 int vfy_get_constants_size (vfy_jclass klass);
 vfy_string vfy_get_pool_string (vfy_constants *pool, int index);
 vfy_jclass vfy_get_pool_class (vfy_constants *pool, int index);
-vfy_string vfy_make_string (const char *s, int len);
 vfy_string vfy_get_class_name (vfy_jclass klass);
 bool vfy_is_assignable_from (vfy_jclass target, vfy_jclass source);
 char vfy_get_primitive_char (vfy_jclass klass);

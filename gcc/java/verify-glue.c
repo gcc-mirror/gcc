@@ -211,18 +211,6 @@ vfy_get_pool_class (vfy_constants *pool, int index)
 }
 
 vfy_string
-vfy_make_string (const char *s, int len)
-{
-  tree result;
-  char *s2 = (char *) s;
-  char save = s2[len];
-  s2[len] = '\0';
-  result = get_identifier (s2);
-  s2[len] = save;
-  return result;  
-}
-
-vfy_string
 vfy_get_class_name (vfy_jclass klass)
 {
   return DECL_NAME (TYPE_NAME (klass));
