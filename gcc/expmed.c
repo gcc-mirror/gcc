@@ -327,26 +327,33 @@ mode_for_extraction (enum extraction_pattern pattern, int opno)
   return data->operand[opno].mode;
 }
 
+/* Return true if X, of mode MODE, matches the predicate for operand
+   OPNO of instruction ICODE.  Allow volatile memories, regardless of
+   the ambient volatile_ok setting.  */
+
+static bool
+check_predicate_volatile_ok (enum insn_code icode, int opno,
+			     rtx x, enum machine_mode mode)
+{
+  bool save_volatile_ok, result;
+
+  save_volatile_ok = volatile_ok;
+  result = insn_data[(int) icode].operand[opno].predicate (x, mode);
+  volatile_ok = save_volatile_ok;
+  return result;
+}
 
-/* Generate code to store value from rtx VALUE
-   into a bit-field within structure STR_RTX
-   containing BITSIZE bits starting at bit BITNUM.
-   FIELDMODE is the machine-mode of the FIELD_DECL node for this field.
-   ALIGN is the alignment that STR_RTX is known to have.
-   TOTAL_SIZE is the size of the structure in bytes, or -1 if varying.  */
+/* A subroutine of store_bit_field, with the same arguments.  Return true
+   if the operation could be implemented.
 
-/* ??? Note that there are two different ideas here for how
-   to determine the size to count bits within, for a register.
-   One is BITS_PER_WORD, and the other is the size of operand 3
-   of the insv pattern.
+   If FALLBACK_P is true, fall back to store_fixed_bit_field if we have
+   no other way of implementing the operation.  If FALLBACK_P is false,
+   return false instead.  */
 
-   If operand 3 of the insv pattern is VOIDmode, then we will use BITS_PER_WORD
-   else, we use the mode of operand 3.  */
-
-rtx
-store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
-		 unsigned HOST_WIDE_INT bitnum, enum machine_mode fieldmode,
-		 rtx value)
+static bool
+store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
+		   unsigned HOST_WIDE_INT bitnum, enum machine_mode fieldmode,
+		   rtx value, bool fallback_p)
 {
   unsigned int unit
     = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
@@ -390,7 +397,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      lies completely outside that register.  This can occur if the source
      code contains an out-of-bounds access to a small array.  */
   if (REG_P (op0) && bitnum >= GET_MODE_BITSIZE (GET_MODE (op0)))
-    return value;
+    return true;
 
   /* Use vec_set patterns for inserting parts of vectors whenever
      available.  */
@@ -434,7 +441,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  emit_insn (seq);
 	  emit_insn (pat);
-	  return dest;
+	  return true;
 	}
     }
 
@@ -466,7 +473,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	op0 = simplify_gen_subreg (fieldmode, op0, GET_MODE (op0),
 				   byte_offset);
       emit_move_insn (op0, value);
-      return value;
+      return true;
     }
 
   /* Make sure we are playing with integral modes.  Pun with subregs
@@ -543,7 +550,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 				  + (offset * UNITS_PER_WORD)),
 				  value));
 
-      return value;
+      return true;
     }
 
   /* Handle fields bigger than a word.  */
@@ -559,6 +566,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       unsigned int backwards = WORDS_BIG_ENDIAN && fieldmode != BLKmode;
       unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       unsigned int i;
+      rtx last;
 
       /* This is the mode we must force value to, so that there will be enough
 	 subwords to extract.  Note that fieldmode will often (always?) be
@@ -569,6 +577,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       if (fieldmode == VOIDmode)
 	fieldmode = smallest_mode_for_size (nwords * BITS_PER_WORD, MODE_INT);
 
+      last = get_last_insn ();
       for (i = 0; i < nwords; i++)
 	{
 	  /* If I is 0, use the low-order word in both field and target;
@@ -579,13 +588,18 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 					    * BITS_PER_WORD,
 					    0)
 				     : (int) i * BITS_PER_WORD);
+	  rtx value_word = operand_subword_force (value, wordnum, fieldmode);
 
-	  store_bit_field (op0, MIN (BITS_PER_WORD,
-				     bitsize - i * BITS_PER_WORD),
-			   bitnum + bit_offset, word_mode,
-			   operand_subword_force (value, wordnum, fieldmode));
+	  if (!store_bit_field_1 (op0, MIN (BITS_PER_WORD,
+					    bitsize - i * BITS_PER_WORD),
+				  bitnum + bit_offset, word_mode,
+				  value_word, fallback_p))
+	    {
+	      delete_insns_since (last);
+	      return false;
+	    }
 	}
-      return value;
+      return true;
     }
 
   /* From here on we can assume that the field to be stored in is
@@ -639,74 +653,27 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
 	    && (bitsize + bitpos > GET_MODE_BITSIZE (op_mode)))
       && insn_data[CODE_FOR_insv].operand[1].predicate (GEN_INT (bitsize),
-							VOIDmode))
+							VOIDmode)
+      && check_predicate_volatile_ok (CODE_FOR_insv, 0, op0, VOIDmode))
     {
       int xbitpos = bitpos;
       rtx value1;
       rtx xop0 = op0;
       rtx last = get_last_insn ();
       rtx pat;
-      enum machine_mode maxmode = mode_for_extraction (EP_insv, 3);
-      int save_volatile_ok = volatile_ok;
-
-      volatile_ok = 1;
-
-      /* If this machine's insv can only insert into a register, copy OP0
-	 into a register and save it back later.  */
-      if (MEM_P (op0)
-	  && ! ((*insn_data[(int) CODE_FOR_insv].operand[0].predicate)
-		(op0, VOIDmode)))
-	{
-	  rtx tempreg;
-	  enum machine_mode bestmode;
-
-	  /* Get the mode to use for inserting into this field.  If OP0 is
-	     BLKmode, get the smallest mode consistent with the alignment. If
-	     OP0 is a non-BLKmode object that is no wider than MAXMODE, use its
-	     mode. Otherwise, use the smallest mode containing the field.  */
-
-	  if (GET_MODE (op0) == BLKmode
-	      || GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (maxmode))
-	    bestmode
-	      = get_best_mode (bitsize, bitnum, MEM_ALIGN (op0), maxmode,
-			       MEM_VOLATILE_P (op0));
-	  else
-	    bestmode = GET_MODE (op0);
-
-	  if (bestmode == VOIDmode
-	      || GET_MODE_SIZE (bestmode) < GET_MODE_SIZE (fieldmode)
-	      || (SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (op0))
-		  && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
-	    goto insv_loses;
-
-	  /* Adjust address to point to the containing unit of that mode.
-	     Compute offset as multiple of this unit, counting in bytes.  */
-	  unit = GET_MODE_BITSIZE (bestmode);
-	  offset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-	  bitpos = bitnum % unit;
-	  op0 = adjust_address (op0, bestmode,  offset);
-
-	  /* Fetch that unit, store the bitfield in it, then store
-	     the unit.  */
-	  tempreg = copy_to_reg (op0);
-	  store_bit_field (tempreg, bitsize, bitpos, fieldmode, orig_value);
-	  emit_move_insn (op0, tempreg);
-	  return value;
-	}
-      volatile_ok = save_volatile_ok;
 
       /* Add OFFSET into OP0's address.  */
       if (MEM_P (xop0))
 	xop0 = adjust_address (xop0, byte_mode, offset);
 
-      /* If xop0 is a register, we need it in MAXMODE
+      /* If xop0 is a register, we need it in OP_MODE
 	 to make it acceptable to the format of insv.  */
       if (GET_CODE (xop0) == SUBREG)
 	/* We can't just change the mode, because this might clobber op0,
 	   and we will need the original value of op0 if insv fails.  */
-	xop0 = gen_rtx_SUBREG (maxmode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
-      if (REG_P (xop0) && GET_MODE (xop0) != maxmode)
-	xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
+	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
+      if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
+	xop0 = gen_rtx_SUBREG (op_mode, xop0, 0);
 
       /* On big-endian machines, we count bits from the most significant.
 	 If the bit field insn does not, we must invert.  */
@@ -717,13 +684,13 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       /* We have been counting XBITPOS within UNIT.
 	 Count instead within the size of the register.  */
       if (BITS_BIG_ENDIAN && !MEM_P (xop0))
-	xbitpos += GET_MODE_BITSIZE (maxmode) - unit;
+	xbitpos += GET_MODE_BITSIZE (op_mode) - unit;
 
-      unit = GET_MODE_BITSIZE (maxmode);
+      unit = GET_MODE_BITSIZE (op_mode);
 
-      /* Convert VALUE to maxmode (which insv insn wants) in VALUE1.  */
+      /* Convert VALUE to op_mode (which insv insn wants) in VALUE1.  */
       value1 = value;
-      if (GET_MODE (value) != maxmode)
+      if (GET_MODE (value) != op_mode)
 	{
 	  if (GET_MODE_BITSIZE (GET_MODE (value)) >= bitsize)
 	    {
@@ -731,23 +698,23 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		 if it has all the bits we will actually use.  However,
 		 if we must narrow it, be sure we do it correctly.  */
 
-	      if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (maxmode))
+	      if (GET_MODE_SIZE (GET_MODE (value)) < GET_MODE_SIZE (op_mode))
 		{
 		  rtx tmp;
 
-		  tmp = simplify_subreg (maxmode, value1, GET_MODE (value), 0);
+		  tmp = simplify_subreg (op_mode, value1, GET_MODE (value), 0);
 		  if (! tmp)
-		    tmp = simplify_gen_subreg (maxmode,
+		    tmp = simplify_gen_subreg (op_mode,
 					       force_reg (GET_MODE (value),
 							  value1),
 					       GET_MODE (value), 0);
 		  value1 = tmp;
 		}
 	      else
-		value1 = gen_lowpart (maxmode, value1);
+		value1 = gen_lowpart (op_mode, value1);
 	    }
 	  else if (GET_CODE (value) == CONST_INT)
-	    value1 = gen_int_mode (INTVAL (value), maxmode);
+	    value1 = gen_int_mode (INTVAL (value), op_mode);
 	  else
 	    /* Parse phase is supposed to make VALUE's data type
 	       match that of the component reference, which is a type
@@ -759,23 +726,89 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       /* If this machine's insv insists on a register,
 	 get VALUE1 into a register.  */
       if (! ((*insn_data[(int) CODE_FOR_insv].operand[3].predicate)
-	     (value1, maxmode)))
-	value1 = force_reg (maxmode, value1);
+	     (value1, op_mode)))
+	value1 = force_reg (op_mode, value1);
 
       pat = gen_insv (xop0, GEN_INT (bitsize), GEN_INT (xbitpos), value1);
       if (pat)
-	emit_insn (pat);
-      else
 	{
+	  emit_insn (pat);
+	  return true;
+	}
+      delete_insns_since (last);
+    }
+
+  /* If OP0 is a memory, try copying it to a register and seeing if a
+     cheap register alternative is available.  */
+  if (HAVE_insv && MEM_P (op0))
+    {
+      enum machine_mode bestmode;
+
+      /* Get the mode to use for inserting into this field.  If OP0 is
+	 BLKmode, get the smallest mode consistent with the alignment. If
+	 OP0 is a non-BLKmode object that is no wider than OP_MODE, use its
+	 mode. Otherwise, use the smallest mode containing the field.  */
+
+      if (GET_MODE (op0) == BLKmode
+	  || (op_mode != MAX_MACHINE_MODE
+	      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (op_mode)))
+	bestmode = get_best_mode (bitsize, bitnum, MEM_ALIGN (op0),
+				  (op_mode == MAX_MACHINE_MODE
+				   ? VOIDmode : op_mode),
+				  MEM_VOLATILE_P (op0));
+      else
+	bestmode = GET_MODE (op0);
+
+      if (bestmode != VOIDmode
+	  && GET_MODE_SIZE (bestmode) >= GET_MODE_SIZE (fieldmode)
+	  && !(SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (op0))
+	       && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
+	{
+	  rtx last, tempreg, xop0;
+	  unsigned HOST_WIDE_INT xoffset, xbitpos;
+
+	  last = get_last_insn ();
+
+	  /* Adjust address to point to the containing unit of
+	     that mode.  Compute the offset as a multiple of this unit,
+	     counting in bytes.  */
+	  unit = GET_MODE_BITSIZE (bestmode);
+	  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
+	  xbitpos = bitnum % unit;
+	  xop0 = adjust_address (op0, bestmode, xoffset);
+
+	  /* Fetch that unit, store the bitfield in it, then store
+	     the unit.  */
+	  tempreg = copy_to_reg (xop0);
+	  if (store_bit_field_1 (tempreg, bitsize, xbitpos,
+				 fieldmode, orig_value, false))
+	    {
+	      emit_move_insn (xop0, tempreg);
+	      return true;
+	    }
 	  delete_insns_since (last);
-	  store_fixed_bit_field (op0, offset, bitsize, bitpos, value);
 	}
     }
-  else
-    insv_loses:
-    /* Insv is not available; store using shifts and boolean ops.  */
-    store_fixed_bit_field (op0, offset, bitsize, bitpos, value);
-  return value;
+
+  if (!fallback_p)
+    return false;
+
+  store_fixed_bit_field (op0, offset, bitsize, bitpos, value);
+  return true;
+}
+
+/* Generate code to store value from rtx VALUE
+   into a bit-field within structure STR_RTX
+   containing BITSIZE bits starting at bit BITNUM.
+   FIELDMODE is the machine-mode of the FIELD_DECL node for this field.  */
+
+void
+store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
+		 unsigned HOST_WIDE_INT bitnum, enum machine_mode fieldmode,
+		 rtx value)
+{
+  if (!store_bit_field_1 (str_rtx, bitsize, bitnum, fieldmode, value, true))
+    gcc_unreachable ();
 }
 
 /* Use shifts and boolean operations to store VALUE
@@ -1067,40 +1100,52 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
     }
 }
 
-/* Generate code to extract a byte-field from STR_RTX
-   containing BITSIZE bits, starting at BITNUM,
-   and put it in TARGET if possible (if TARGET is nonzero).
-   Regardless of TARGET, we return the rtx for where the value is placed.
+/* A subroutine of extract_bit_field_1 that converts return value X
+   to either MODE or TMODE.  MODE, TMODE and UNSIGNEDP are arguments
+   to extract_bit_field.  */
 
-   STR_RTX is the structure containing the byte (a REG or MEM).
-   UNSIGNEDP is nonzero if this is an unsigned bit field.
-   MODE is the natural mode of the field value once extracted.
-   TMODE is the mode the caller would like the value to have;
-   but the value may be returned with type MODE instead.
+static rtx
+convert_extracted_bit_field (rtx x, enum machine_mode mode,
+			     enum machine_mode tmode, bool unsignedp)
+{
+  if (GET_MODE (x) == tmode || GET_MODE (x) == mode)
+    return x;
 
-   TOTAL_SIZE is the size in bytes of the containing structure,
-   or -1 if varying.
+  /* If the x mode is not a scalar integral, first convert to the
+     integer mode of that size and then access it as a floating-point
+     value via a SUBREG.  */
+  if (!SCALAR_INT_MODE_P (tmode))
+    {
+      enum machine_mode smode;
 
-   If a TARGET is specified and we can store in it at no extra cost,
-   we do so, and return TARGET.
-   Otherwise, we return a REG of mode TMODE or MODE, with TMODE preferred
-   if they are equally easy.  */
+      smode = mode_for_size (GET_MODE_BITSIZE (tmode), MODE_INT, 0);
+      x = convert_to_mode (smode, x, unsignedp);
+      x = force_reg (smode, x);
+      return gen_lowpart (tmode, x);
+    }
 
-rtx
-extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
-		   unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
-		   enum machine_mode mode, enum machine_mode tmode)
+  return convert_to_mode (tmode, x, unsignedp);
+}
+
+/* A subroutine of extract_bit_field, with the same arguments.
+   If FALLBACK_P is true, fall back to extract_fixed_bit_field
+   if we can find no other means of implementing the operation.
+   if FALLBACK_P is false, return NULL instead.  */
+
+static rtx
+extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
+		     unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
+		     enum machine_mode mode, enum machine_mode tmode,
+		     bool fallback_p)
 {
   unsigned int unit
     = (MEM_P (str_rtx)) ? BITS_PER_UNIT : BITS_PER_WORD;
   unsigned HOST_WIDE_INT offset, bitpos;
   rtx op0 = str_rtx;
-  rtx spec_target = target;
-  rtx spec_target_subreg = 0;
   enum machine_mode int_mode;
-  enum machine_mode extv_mode = mode_for_extraction (EP_extv, 0);
-  enum machine_mode extzv_mode = mode_for_extraction (EP_extzv, 0);
+  enum machine_mode ext_mode;
   enum machine_mode mode1;
+  enum insn_code icode;
   int byte_offset;
 
   if (tmode == VOIDmode)
@@ -1409,299 +1454,172 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     }
 
   /* Now OFFSET is nonzero only for memory operands.  */
-
-  if (unsignedp)
+  ext_mode = mode_for_extraction (unsignedp ? EP_extzv : EP_extv, 0);
+  icode = unsignedp ? CODE_FOR_extzv : CODE_FOR_extv;
+  if (ext_mode != MAX_MACHINE_MODE
+      && bitsize > 0
+      && GET_MODE_BITSIZE (ext_mode) >= bitsize
+      /* If op0 is a register, we need it in EXT_MODE to make it
+	 acceptable to the format of ext(z)v.  */
+      && !(GET_CODE (op0) == SUBREG && GET_MODE (op0) != ext_mode)
+      && !((REG_P (op0) || GET_CODE (op0) == SUBREG)
+	   && (bitsize + bitpos > GET_MODE_BITSIZE (ext_mode)))
+      && check_predicate_volatile_ok (icode, 1, op0, GET_MODE (op0)))
     {
-      if (HAVE_extzv
-	  && bitsize > 0
-	  && GET_MODE_BITSIZE (extzv_mode) >= bitsize
-	  && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
-		&& (bitsize + bitpos > GET_MODE_BITSIZE (extzv_mode))))
+      unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
+      rtx bitsize_rtx, bitpos_rtx;
+      rtx last = get_last_insn ();
+      rtx xop0 = op0;
+      rtx xtarget = target;
+      rtx xspec_target = target;
+      rtx xspec_target_subreg = 0;
+      rtx pat;
+
+      /* If op0 is a register, we need it in EXT_MODE to make it
+	 acceptable to the format of ext(z)v.  */
+      if (REG_P (xop0) && GET_MODE (xop0) != ext_mode)
+	xop0 = gen_rtx_SUBREG (ext_mode, xop0, 0);
+      if (MEM_P (xop0))
+	/* Get ref to first byte containing part of the field.  */
+	xop0 = adjust_address (xop0, byte_mode, xoffset);
+
+      /* On big-endian machines, we count bits from the most significant.
+	 If the bit field insn does not, we must invert.  */
+      if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+	xbitpos = unit - bitsize - xbitpos;
+
+      /* Now convert from counting within UNIT to counting in EXT_MODE.  */
+      if (BITS_BIG_ENDIAN && !MEM_P (xop0))
+	xbitpos += GET_MODE_BITSIZE (ext_mode) - unit;
+
+      unit = GET_MODE_BITSIZE (ext_mode);
+
+      if (xtarget == 0)
+	xtarget = xspec_target = gen_reg_rtx (tmode);
+
+      if (GET_MODE (xtarget) != ext_mode)
 	{
-	  unsigned HOST_WIDE_INT xbitpos = bitpos, xoffset = offset;
-	  rtx bitsize_rtx, bitpos_rtx;
-	  rtx last = get_last_insn ();
-	  rtx xop0 = op0;
-	  rtx xtarget = target;
-	  rtx xspec_target = spec_target;
-	  rtx xspec_target_subreg = spec_target_subreg;
-	  rtx pat;
-	  enum machine_mode maxmode = mode_for_extraction (EP_extzv, 0);
-
-	  if (MEM_P (xop0))
+	  if (REG_P (xtarget))
 	    {
-	      int save_volatile_ok = volatile_ok;
-	      volatile_ok = 1;
-
-	      /* Is the memory operand acceptable?  */
-	      if (! ((*insn_data[(int) CODE_FOR_extzv].operand[1].predicate)
-		     (xop0, GET_MODE (xop0))))
-		{
-		  /* No, load into a reg and extract from there.  */
-		  enum machine_mode bestmode;
-
-		  /* Get the mode to use for inserting into this field.  If
-		     OP0 is BLKmode, get the smallest mode consistent with the
-		     alignment. If OP0 is a non-BLKmode object that is no
-		     wider than MAXMODE, use its mode. Otherwise, use the
-		     smallest mode containing the field.  */
-
-		  if (GET_MODE (xop0) == BLKmode
-		      || (GET_MODE_SIZE (GET_MODE (op0))
-			  > GET_MODE_SIZE (maxmode)))
-		    bestmode = get_best_mode (bitsize, bitnum,
-					      MEM_ALIGN (xop0), maxmode,
-					      MEM_VOLATILE_P (xop0));
-		  else
-		    bestmode = GET_MODE (xop0);
-
-		  if (bestmode == VOIDmode
-		      || (SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (xop0))
-			  && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (xop0)))
-		    goto extzv_loses;
-
-		  /* Compute offset as multiple of this unit,
-		     counting in bytes.  */
-		  unit = GET_MODE_BITSIZE (bestmode);
-		  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-		  xbitpos = bitnum % unit;
-		  xop0 = adjust_address (xop0, bestmode, xoffset);
-
-		  /* Make sure register is big enough for the whole field. */
-		  if (xoffset * BITS_PER_UNIT + unit 
-		      < offset * BITS_PER_UNIT + bitsize)
-		    goto extzv_loses;
-
-		  /* Fetch it to a register in that size.  */
-		  xop0 = force_reg (bestmode, xop0);
-
-		  /* XBITPOS counts within UNIT, which is what is expected.  */
-		}
-	      else
-		/* Get ref to first byte containing part of the field.  */
-		xop0 = adjust_address (xop0, byte_mode, xoffset);
-
-	      volatile_ok = save_volatile_ok;
-	    }
-
-	  /* If op0 is a register, we need it in MAXMODE (which is usually
-	     SImode). to make it acceptable to the format of extzv.  */
-	  if (GET_CODE (xop0) == SUBREG && GET_MODE (xop0) != maxmode)
-	    goto extzv_loses;
-	  if (REG_P (xop0) && GET_MODE (xop0) != maxmode)
-	    xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
-
-	  /* On big-endian machines, we count bits from the most significant.
-	     If the bit field insn does not, we must invert.  */
-	  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-	    xbitpos = unit - bitsize - xbitpos;
-
-	  /* Now convert from counting within UNIT to counting in MAXMODE.  */
-	  if (BITS_BIG_ENDIAN && !MEM_P (xop0))
-	    xbitpos += GET_MODE_BITSIZE (maxmode) - unit;
-
-	  unit = GET_MODE_BITSIZE (maxmode);
-
-	  if (xtarget == 0)
-	    xtarget = xspec_target = gen_reg_rtx (tmode);
-
-	  if (GET_MODE (xtarget) != maxmode)
-	    {
-	      if (REG_P (xtarget))
-		{
-		  int wider = (GET_MODE_SIZE (maxmode)
-			       > GET_MODE_SIZE (GET_MODE (xtarget)));
-		  xtarget = gen_lowpart (maxmode, xtarget);
-		  if (wider)
-		    xspec_target_subreg = xtarget;
-		}
-	      else
-		xtarget = gen_reg_rtx (maxmode);
-	    }
-
-	  /* If this machine's extzv insists on a register target,
-	     make sure we have one.  */
-	  if (! ((*insn_data[(int) CODE_FOR_extzv].operand[0].predicate)
-		 (xtarget, maxmode)))
-	    xtarget = gen_reg_rtx (maxmode);
-
-	  bitsize_rtx = GEN_INT (bitsize);
-	  bitpos_rtx = GEN_INT (xbitpos);
-
-	  pat = gen_extzv (xtarget, xop0, bitsize_rtx, bitpos_rtx);
-	  if (pat)
-	    {
-	      emit_insn (pat);
-	      target = xtarget;
-	      spec_target = xspec_target;
-	      spec_target_subreg = xspec_target_subreg;
+	      xtarget = gen_lowpart (ext_mode, xtarget);
+	      if (GET_MODE_SIZE (ext_mode)
+		  > GET_MODE_SIZE (GET_MODE (xspec_target)))
+		xspec_target_subreg = xtarget;
 	    }
 	  else
-	    {
-	      delete_insns_since (last);
-	      target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
-						bitpos, target, 1);
-	    }
+	    xtarget = gen_reg_rtx (ext_mode);
 	}
-      else
-      extzv_loses:
-	target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
-					  bitpos, target, 1);
-    }
-  else
-    {
-      if (HAVE_extv
-	  && bitsize > 0
-	  && GET_MODE_BITSIZE (extv_mode) >= bitsize
-	  && ! ((REG_P (op0) || GET_CODE (op0) == SUBREG)
-		&& (bitsize + bitpos > GET_MODE_BITSIZE (extv_mode))))
+
+      /* If this machine's ext(z)v insists on a register target,
+	 make sure we have one.  */
+      if (!insn_data[(int) icode].operand[0].predicate (xtarget, ext_mode))
+	xtarget = gen_reg_rtx (ext_mode);
+
+      bitsize_rtx = GEN_INT (bitsize);
+      bitpos_rtx = GEN_INT (xbitpos);
+
+      pat = (unsignedp
+	     ? gen_extzv (xtarget, xop0, bitsize_rtx, bitpos_rtx)
+	     : gen_extv (xtarget, xop0, bitsize_rtx, bitpos_rtx));
+      if (pat)
 	{
-	  int xbitpos = bitpos, xoffset = offset;
-	  rtx bitsize_rtx, bitpos_rtx;
-	  rtx last = get_last_insn ();
-	  rtx xop0 = op0, xtarget = target;
-	  rtx xspec_target = spec_target;
-	  rtx xspec_target_subreg = spec_target_subreg;
-	  rtx pat;
-	  enum machine_mode maxmode = mode_for_extraction (EP_extv, 0);
-
-	  if (MEM_P (xop0))
-	    {
-	      /* Is the memory operand acceptable?  */
-	      if (! ((*insn_data[(int) CODE_FOR_extv].operand[1].predicate)
-		     (xop0, GET_MODE (xop0))))
-		{
-		  /* No, load into a reg and extract from there.  */
-		  enum machine_mode bestmode;
-
-		  /* Get the mode to use for inserting into this field.  If
-		     OP0 is BLKmode, get the smallest mode consistent with the
-		     alignment. If OP0 is a non-BLKmode object that is no
-		     wider than MAXMODE, use its mode. Otherwise, use the
-		     smallest mode containing the field.  */
-
-		  if (GET_MODE (xop0) == BLKmode
-		      || (GET_MODE_SIZE (GET_MODE (op0))
-			  > GET_MODE_SIZE (maxmode)))
-		    bestmode = get_best_mode (bitsize, bitnum,
-					      MEM_ALIGN (xop0), maxmode,
-					      MEM_VOLATILE_P (xop0));
-		  else
-		    bestmode = GET_MODE (xop0);
-
-		  if (bestmode == VOIDmode
-		      || (SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (xop0))
-			  && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (xop0)))
-		    goto extv_loses;
-
-		  /* Compute offset as multiple of this unit,
-		     counting in bytes.  */
-		  unit = GET_MODE_BITSIZE (bestmode);
-		  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
-		  xbitpos = bitnum % unit;
-		  xop0 = adjust_address (xop0, bestmode, xoffset);
-
-		  /* Make sure register is big enough for the whole field. */
-		  if (xoffset * BITS_PER_UNIT + unit 
-		      < offset * BITS_PER_UNIT + bitsize)
-		    goto extv_loses;
-
-		  /* Fetch it to a register in that size.  */
-		  xop0 = force_reg (bestmode, xop0);
-
-		  /* XBITPOS counts within UNIT, which is what is expected.  */
-		}
-	      else
-		/* Get ref to first byte containing part of the field.  */
-		xop0 = adjust_address (xop0, byte_mode, xoffset);
-	    }
-
-	  /* If op0 is a register, we need it in MAXMODE (which is usually
-	     SImode) to make it acceptable to the format of extv.  */
-	  if (GET_CODE (xop0) == SUBREG && GET_MODE (xop0) != maxmode)
-	    goto extv_loses;
-	  if (REG_P (xop0) && GET_MODE (xop0) != maxmode)
-	    xop0 = gen_rtx_SUBREG (maxmode, xop0, 0);
-
-	  /* On big-endian machines, we count bits from the most significant.
-	     If the bit field insn does not, we must invert.  */
-	  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
-	    xbitpos = unit - bitsize - xbitpos;
-
-	  /* XBITPOS counts within a size of UNIT.
-	     Adjust to count within a size of MAXMODE.  */
-	  if (BITS_BIG_ENDIAN && !MEM_P (xop0))
-	    xbitpos += (GET_MODE_BITSIZE (maxmode) - unit);
-
-	  unit = GET_MODE_BITSIZE (maxmode);
-
-	  if (xtarget == 0)
-	    xtarget = xspec_target = gen_reg_rtx (tmode);
-
-	  if (GET_MODE (xtarget) != maxmode)
-	    {
-	      if (REG_P (xtarget))
-		{
-		  int wider = (GET_MODE_SIZE (maxmode)
-			       > GET_MODE_SIZE (GET_MODE (xtarget)));
-		  xtarget = gen_lowpart (maxmode, xtarget);
-		  if (wider)
-		    xspec_target_subreg = xtarget;
-		}
-	      else
-		xtarget = gen_reg_rtx (maxmode);
-	    }
-
-	  /* If this machine's extv insists on a register target,
-	     make sure we have one.  */
-	  if (! ((*insn_data[(int) CODE_FOR_extv].operand[0].predicate)
-		 (xtarget, maxmode)))
-	    xtarget = gen_reg_rtx (maxmode);
-
-	  bitsize_rtx = GEN_INT (bitsize);
-	  bitpos_rtx = GEN_INT (xbitpos);
-
-	  pat = gen_extv (xtarget, xop0, bitsize_rtx, bitpos_rtx);
-	  if (pat)
-	    {
-	      emit_insn (pat);
-	      target = xtarget;
-	      spec_target = xspec_target;
-	      spec_target_subreg = xspec_target_subreg;
-	    }
-	  else
-	    {
-	      delete_insns_since (last);
-	      target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
-						bitpos, target, 0);
-	    }
+	  emit_insn (pat);
+	  if (xtarget == xspec_target)
+	    return xtarget;
+	  if (xtarget == xspec_target_subreg)
+	    return xspec_target;
+	  return convert_extracted_bit_field (xtarget, mode, tmode, unsignedp);
 	}
-      else
-      extv_loses:
-	target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
-					  bitpos, target, 0);
+      delete_insns_since (last);
     }
-  if (target == spec_target)
-    return target;
-  if (target == spec_target_subreg)
-    return spec_target;
-  if (GET_MODE (target) != tmode && GET_MODE (target) != mode)
+
+  /* If OP0 is a memory, try copying it to a register and seeing if a
+     cheap register alternative is available.  */
+  if (ext_mode != MAX_MACHINE_MODE && MEM_P (op0))
     {
-      /* If the target mode is not a scalar integral, first convert to the
-	 integer mode of that size and then access it as a floating-point
-	 value via a SUBREG.  */
-      if (!SCALAR_INT_MODE_P (tmode))
-	{
-	  enum machine_mode smode
-	    = mode_for_size (GET_MODE_BITSIZE (tmode), MODE_INT, 0);
-	  target = convert_to_mode (smode, target, unsignedp);
-	  target = force_reg (smode, target);
-	  return gen_lowpart (tmode, target);
-	}
+      enum machine_mode bestmode;
 
-      return convert_to_mode (tmode, target, unsignedp);
+      /* Get the mode to use for inserting into this field.  If
+	 OP0 is BLKmode, get the smallest mode consistent with the
+	 alignment. If OP0 is a non-BLKmode object that is no
+	 wider than EXT_MODE, use its mode. Otherwise, use the
+	 smallest mode containing the field.  */
+
+      if (GET_MODE (op0) == BLKmode
+	  || (ext_mode != MAX_MACHINE_MODE
+	      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (ext_mode)))
+	bestmode = get_best_mode (bitsize, bitnum, MEM_ALIGN (op0),
+				  (ext_mode == MAX_MACHINE_MODE
+				   ? VOIDmode : ext_mode),
+				  MEM_VOLATILE_P (op0));
+      else
+	bestmode = GET_MODE (op0);
+
+      if (bestmode != VOIDmode
+	  && !(SLOW_UNALIGNED_ACCESS (bestmode, MEM_ALIGN (op0))
+	       && GET_MODE_BITSIZE (bestmode) > MEM_ALIGN (op0)))
+	{
+	  unsigned HOST_WIDE_INT xoffset, xbitpos;
+
+	  /* Compute the offset as a multiple of this unit,
+	     counting in bytes.  */
+	  unit = GET_MODE_BITSIZE (bestmode);
+	  xoffset = (bitnum / unit) * GET_MODE_SIZE (bestmode);
+	  xbitpos = bitnum % unit;
+
+	  /* Make sure the register is big enough for the whole field.  */
+	  if (xoffset * BITS_PER_UNIT + unit
+	      >= offset * BITS_PER_UNIT + bitsize)
+	    {
+	      rtx last, result, xop0;
+
+	      last = get_last_insn ();
+
+	      /* Fetch it to a register in that size.  */
+	      xop0 = adjust_address (op0, bestmode, xoffset);
+	      xop0 = force_reg (bestmode, xop0);
+	      result = extract_bit_field_1 (xop0, bitsize, xbitpos,
+					    unsignedp, target,
+					    mode, tmode, false);
+	      if (result)
+		return result;
+
+	      delete_insns_since (last);
+	    }
+	}
     }
-  return target;
+
+  if (!fallback_p)
+    return NULL;
+
+  target = extract_fixed_bit_field (int_mode, op0, offset, bitsize,
+				    bitpos, target, unsignedp);
+  return convert_extracted_bit_field (target, mode, tmode, unsignedp);
+}
+
+/* Generate code to extract a byte-field from STR_RTX
+   containing BITSIZE bits, starting at BITNUM,
+   and put it in TARGET if possible (if TARGET is nonzero).
+   Regardless of TARGET, we return the rtx for where the value is placed.
+
+   STR_RTX is the structure containing the byte (a REG or MEM).
+   UNSIGNEDP is nonzero if this is an unsigned bit field.
+   MODE is the natural mode of the field value once extracted.
+   TMODE is the mode the caller would like the value to have;
+   but the value may be returned with type MODE instead.
+
+   If a TARGET is specified and we can store in it at no extra cost,
+   we do so, and return TARGET.
+   Otherwise, we return a REG of mode TMODE or MODE, with TMODE preferred
+   if they are equally easy.  */
+
+rtx
+extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
+		   unsigned HOST_WIDE_INT bitnum, int unsignedp, rtx target,
+		   enum machine_mode mode, enum machine_mode tmode)
+{
+  return extract_bit_field_1 (str_rtx, bitsize, bitnum, unsignedp,
+			      target, mode, tmode, true);
 }
 
 /* Extract a bit field using shifts and boolean operations

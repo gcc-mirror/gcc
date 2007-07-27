@@ -1,3 +1,23 @@
+2007-07-27  Richard Sandiford  <richard@codesourcery.com>
+
+	* expr.h (store_bit_field): Don't return a value.
+	* expmed.c (check_predicate_volatile_ok): New function.
+	(store_bit_field_1): New function, extracted from store_bit_field.
+	Take a fallback_p argument and return true if the operation succeeded.
+	Only use store_fixed_bit_field if fallback_p.  Don't recompute
+	mode_for_extraction; use op_mode instead.  Try forcing memories
+	into registers if the insv expander fails.
+	(store_bit_field): Use store_bit_field_1 with fallback_p true.
+	Don't return a value.
+	(convert_extracted_bit_field): New function, extracted from
+	store_bit_field.
+	(extract_bit_field_1): Likewise.  Take a fallback_p argument
+	and return NULL if the operation succeeded.  Only use
+	extract_fixed_bit_field if fallback_p.  Only calculate one
+	extraction mode.  Combine code for extv and extzv.  Try forcing
+	memories into registers if the ext(z)v expander fails.
+	(extract_bit_field): Use extract_bit_field_1 with fallback_p true.
+
 2007-07-27  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* df.h (df_mw_hardreg): Turn df_ref_type and df_ref_flags

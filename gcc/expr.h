@@ -731,8 +731,8 @@ enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
 extern enum machine_mode
 mode_for_extraction (enum extraction_pattern, int);
 
-extern rtx store_bit_field (rtx, unsigned HOST_WIDE_INT,
-			    unsigned HOST_WIDE_INT, enum machine_mode, rtx);
+extern void store_bit_field (rtx, unsigned HOST_WIDE_INT,
+			     unsigned HOST_WIDE_INT, enum machine_mode, rtx);
 extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT, int, rtx,
 			      enum machine_mode, enum machine_mode);
