@@ -2935,6 +2935,7 @@ finish_typeof (tree expr)
     {
       type = make_aggr_type (TYPEOF_TYPE);
       TYPEOF_TYPE_EXPR (type) = expr;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
 
       return type;
     }
@@ -4035,6 +4036,169 @@ finish_static_assert (tree condition, tree message, location_t location,
         error ("non-constant condition for static assertion");
       input_location = saved_loc;
     }
+}
+
+/* Implements the C++0x decltype keyword. Returns the type of EXPR,
+   suitable for use as a type-specifier.
+
+   ID_EXPRESSION_OR_MEMBER_ACCESS_P is true when EXPR was parsed as an
+   id-expression or a class member access, FALSE when it was parsed as
+   a full expression.  */
+tree
+finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
+{
+  tree orig_expr = expr;
+  tree type;
+
+  if (type_dependent_expression_p (expr))
+    {
+      type = make_aggr_type (DECLTYPE_TYPE);
+      DECLTYPE_TYPE_EXPR (type) = expr;
+      DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P (type)
+        = id_expression_or_member_access_p;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
+
+      return type;
+    }
+
+  /* The type denoted by decltype(e) is defined as follows:  */
+
+  if (id_expression_or_member_access_p)
+    {
+      /* If e is an id-expression or a class member access (5.2.5
+         [expr.ref]), decltype(e) is defined as the type of the entity
+         named by e. If there is no such entity, or e names a set of
+         overloaded functions, the program is ill-formed.  */
+      if (TREE_CODE (expr) == IDENTIFIER_NODE)
+        expr = lookup_name (expr);
+
+      if (TREE_CODE (expr) == INDIRECT_REF)
+        /* This can happen when the expression is, e.g., "a.b". Just
+           look at the underlying operand.  */
+        expr = TREE_OPERAND (expr, 0);
+
+      if (TREE_CODE (expr) == OFFSET_REF
+          || TREE_CODE (expr) == MEMBER_REF)
+        /* We're only interested in the field itself. If it is a
+           BASELINK, we will need to see through it in the next
+           step.  */
+        expr = TREE_OPERAND (expr, 1);
+
+      if (TREE_CODE (expr) == BASELINK)
+        /* See through BASELINK nodes to the underlying functions.  */
+        expr = BASELINK_FUNCTIONS (expr);
+
+      if (TREE_CODE (expr) == OVERLOAD)
+        {
+          if (OVL_CHAIN (expr))
+            {
+              error ("%qE refers to a set of overloaded functions", orig_expr);
+              return error_mark_node;
+            }
+          else
+            /* An overload set containing only one function: just look
+               at that function.  */
+            expr = OVL_FUNCTION (expr);
+        }
+
+      switch (TREE_CODE (expr))
+        {
+        case FIELD_DECL:
+          if (DECL_C_BIT_FIELD (expr))
+            {
+              type = DECL_BIT_FIELD_TYPE (expr);
+              break;
+            }
+          /* Fall through for fields that aren't bitfields.  */
+
+        case FUNCTION_DECL:
+        case VAR_DECL:
+        case CONST_DECL:
+        case PARM_DECL:
+        case RESULT_DECL:
+          type = TREE_TYPE (expr);
+          break;
+
+        case ERROR_MARK:
+          type = error_mark_node;
+          break;
+
+        case COMPONENT_REF:
+          type = is_bitfield_expr_with_lowered_type (expr);
+          if (!type)
+            type = TREE_TYPE (TREE_OPERAND (expr, 1));
+          break;
+
+        case BIT_FIELD_REF:
+          gcc_unreachable ();
+
+        case INTEGER_CST:
+          /* We can get here when the id-expression refers to an
+             enumerator.  */
+          type = TREE_TYPE (expr);
+          break;
+
+        default:
+          gcc_assert (TYPE_P (expr) || DECL_P (expr));
+          error ("argument to decltype must be an expression");
+          return error_mark_node;
+        }
+    }
+  else
+    {
+      tree fndecl;
+
+      if (TREE_CODE (expr) == CALL_EXPR
+          && (fndecl = get_callee_fndecl (expr))
+          && (fndecl != error_mark_node))
+        /* If e is a function call (5.2.2 [expr.call]) or an
+           invocation of an overloaded operator (parentheses around e
+           are ignored), decltype(e) is defined as the return type of
+           that function.  */
+        type = TREE_TYPE (TREE_TYPE (fndecl));
+      else 
+        {
+          type = is_bitfield_expr_with_lowered_type (expr);
+          if (type)
+            {
+              /* Bitfields are special, because their type encodes the
+                 number of bits they store.  If the expression referenced a
+                 bitfield, TYPE now has the declared type of that
+                 bitfield.  */
+              type = cp_build_qualified_type (type, 
+                                              cp_type_quals (TREE_TYPE (expr)));
+              
+              if (real_lvalue_p (expr))
+                type = build_reference_type (type);
+            }
+          else
+            {
+              /* Otherwise, where T is the type of e, if e is an lvalue,
+                 decltype(e) is defined as T&, otherwise decltype(e) is
+                 defined as T.  */
+              type = TREE_TYPE (expr);
+              if (expr == current_class_ptr)
+                /* If the expression is just "this", we want the
+                   cv-unqualified pointer for the "this" type.  */
+                type = TYPE_MAIN_VARIANT (type);
+              else if (real_lvalue_p (expr))
+                {
+                  if (TREE_CODE (type) != REFERENCE_TYPE)
+                    type = build_reference_type (type);
+                }
+              else
+                type = non_reference (type);
+            }
+        }
+    }
+
+  if (!type || type == unknown_type_node)
+    {
+      error ("type of %qE is unknown", expr);
+      return error_mark_node;
+    }
+
+  return type;
 }
 
 /* Called from trait_expr_value to evaluate either __has_nothrow_assign or 

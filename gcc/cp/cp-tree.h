@@ -977,6 +977,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    || TREE_CODE (T) == TYPENAME_TYPE			\
    || TREE_CODE (T) == TYPEOF_TYPE			\
    || TREE_CODE (T) == BOUND_TEMPLATE_TEMPLATE_PARM	\
+   || TREE_CODE (T) == DECLTYPE_TYPE			\
    || TYPE_LANG_FLAG_5 (T))
 
 /* Set IS_AGGR_TYPE for T to VAL.  T must be a class, struct, or
@@ -2921,6 +2922,15 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* The expression in question for a TYPEOF_TYPE.  */
 #define TYPEOF_TYPE_EXPR(NODE) (TYPEOF_TYPE_CHECK (NODE))->type.values
 
+/* The expression in question for a DECLTYPE_TYPE.  */
+#define DECLTYPE_TYPE_EXPR(NODE) (DECLTYPE_TYPE_CHECK (NODE))->type.values
+
+/* Whether the DECLTYPE_TYPE_EXPR of NODE was originally parsed as an
+   id-expression or a member-access expression. When false, it was
+   parsed as a full expression.  */
+#define DECLTYPE_TYPE_ID_EXPR_OR_MEMBER_ACCESS_P(NODE) \
+  (DECLTYPE_TYPE_CHECK (NODE))->type.string_flag
+
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  This can also be set for an
    erroneously declared PARM_DECL.  */
@@ -4657,6 +4667,7 @@ extern bool cxx_omp_privatize_by_reference	(tree);
 extern tree baselink_for_fns                    (tree);
 extern void finish_static_assert                (tree, tree, location_t,
                                                  bool);
+extern tree finish_decltype_type                (tree, bool);
 extern tree finish_trait_expr			(enum cp_trait_kind, tree, tree);
 
 /* in tree.c */
