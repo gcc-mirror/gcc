@@ -2452,6 +2452,9 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
       break;
 
     case FL_UNKNOWN:
+      if (sym->attr.access == ACCESS_PUBLIC
+	  || sym->attr.access == ACCESS_PRIVATE)
+	break;
       if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
 			  sym->name, NULL) == FAILURE)
 	return MATCH_ERROR;
