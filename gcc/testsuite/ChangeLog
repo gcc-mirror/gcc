@@ -1,5 +1,10 @@
 2007-07-27  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
+	* gcc.dg/torture/pr27743.c (bar): Use an integer of exactly 32 bits
+	  because the test relies on bit 31 to be the sign bit.
+
+2007-07-27  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
 	* gcc.c-torture/execute/pr28651.c (main): Use INT_MAX instead of
 	  assuming it is 0x7fffffff.
 	* gcc.dg/tree-ssa/vrp29.c (decCompare)(main): Likewise.
