@@ -1,3 +1,14 @@
+2007-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* attribs.c: Include hashtab.h
+	(attribute_hash): New.
+	(substring): New structure.
+	(extract_attribute_substring, substring_hash, hash_attr, eq_attr):
+	New function.
+	(init_attributes): Initialize attribute hash.
+	(decl_attributes): Use attribute hash.
+	* Makefile.in (attribs.c): Depend on hashtab.h.
+
 2007-07-27  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/vect.md (vec_initv2si): Remove bad BIG_ENDIAN test.

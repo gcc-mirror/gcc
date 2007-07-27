@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "target.h"
 #include "langhooks.h"
+#include "hashtab.h"
 
 static void init_attributes (void);
 
@@ -39,13 +40,69 @@ static void init_attributes (void);
    searched.  */
 static const struct attribute_spec *attribute_tables[4];
 
+/* Hashtable mapping names (represented as substrings) to attribute specs. */
+static htab_t attribute_hash;
+
+/* Substring representation.  */
+
+struct substring
+{
+  const char *str;
+  int length;
+};
+
 static bool attributes_initialized = false;
 
 /* Default empty table of attributes.  */
+
 static const struct attribute_spec empty_attribute_table[] =
 {
   { NULL, 0, 0, false, false, false, NULL }
 };
+
+/* Return base name of the attribute.  Ie '__attr__' is turned into 'attr'.
+   To avoid need for copying, we simply return length of the string.  */
+
+static void
+extract_attribute_substring (struct substring *str)
+{
+  if (str->length > 4 && str->str[0] == '_' && str->str[1] == '_'
+      && str->str[str->length - 1] == '_' && str->str[str->length - 2] == '_')
+    {
+      str->length -= 4;
+      str->str += 2;
+    }
+}
+
+/* Simple hash function to avoid need to scan whole string.  */
+
+static inline hashval_t
+substring_hash (const char *str, int l)
+{
+  return str[0] + str[l - 1] * 256 + l * 65536;
+}
+
+/* Used for attribute_hash.  */
+
+static hashval_t
+hash_attr (const void *p)
+{
+  struct attribute_spec *spec = (struct attribute_spec *) p;
+  int l = strlen (spec->name);
+
+  return substring_hash (spec->name, l);
+}
+
+/* Used for attribute_hash.  */
+
+static int
+eq_attr (const void *p, const void *q)
+{
+  const struct attribute_spec *spec = (struct attribute_spec *) p;
+  const struct substring *str = (struct substring *) q;
+
+  return (!strncmp (spec->name, str->str, str->length) && !spec->name[str->length]);
+}
 
 /* Initialize attribute tables, and make some sanity checks
    if --enable-checking.  */
@@ -54,6 +111,7 @@ static void
 init_attributes (void)
 {
   size_t i;
+  int k;
 
   attribute_tables[0] = lang_hooks.common_attribute_table;
   attribute_tables[1] = lang_hooks.attribute_table;
@@ -120,6 +178,21 @@ init_attributes (void)
     }
 #endif
 
+  attribute_hash = htab_create (200, hash_attr, eq_attr, NULL);
+  for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
+    for (k = 0; attribute_tables[i][k].name != NULL; k++)
+      {
+	struct substring str;
+	void **slot;
+
+	str.str = attribute_tables[i][k].name;
+	str.length = strlen (attribute_tables[i][k].name);
+	slot = htab_find_slot_with_hash (attribute_hash, &str,
+					 substring_hash (str.str, str.length),
+					 INSERT);
+	gcc_assert (!*slot);
+	*slot = (void *)&attribute_tables[i][k];
+      }
   attributes_initialized = true;
 }
 
@@ -151,23 +224,13 @@ decl_attributes (tree *node, tree attributes, int flags)
       const struct attribute_spec *spec = NULL;
       bool no_add_attrs = 0;
       tree fn_ptr_tmp = NULL_TREE;
-      size_t i;
+      struct substring attr;
 
-      for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
-	{
-	  int j;
-
-	  for (j = 0; attribute_tables[i][j].name != NULL; j++)
-	    {
-	      if (is_attribute_p (attribute_tables[i][j].name, name))
-		{
-		  spec = &attribute_tables[i][j];
-		  break;
-		}
-	    }
-	  if (spec != NULL)
-	    break;
-	}
+      attr.str = IDENTIFIER_POINTER (name);
+      attr.length = IDENTIFIER_LENGTH (name);
+      extract_attribute_substring (&attr);
+      spec = htab_find_with_hash (attribute_hash, &attr,
+				  substring_hash (attr.str, attr.length));
 
       if (spec == NULL)
 	{
@@ -183,6 +246,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 		 IDENTIFIER_POINTER (name));
 	  continue;
 	}
+      gcc_assert (is_attribute_p (spec->name, name));
 
       if (spec->decl_required && !DECL_P (*anode))
 	{
