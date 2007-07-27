@@ -1,3 +1,7 @@
+2007-07-27  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/vect.md (vec_initv2si): Remove bad BIG_ENDIAN test.
+
 2007-07-27  Richard Sandiford  <richard@codesourcery.com>
 
 	* doc/invoke.texi (mdsp, mdspr2): Document the __mips_dsp,
