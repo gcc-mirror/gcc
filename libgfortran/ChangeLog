@@ -1,3 +1,8 @@
+2007-07-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/transfer.c (st_set_nml_var_dim): Use index_type instead of
+	GFC_INTEGER_4 for array descriptor triplets.
+
 2007-07-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* io/unix.c (stream_ttyname): Mark argument as potentialy unused.

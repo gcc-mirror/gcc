@@ -2906,14 +2906,14 @@ st_set_nml_var (st_parameter_dt *dtp, void * var_addr, char * var_name,
 
 /* Store the dimensional information for the namelist object.  */
 extern void st_set_nml_var_dim (st_parameter_dt *, GFC_INTEGER_4,
-				GFC_INTEGER_4, GFC_INTEGER_4,
-				GFC_INTEGER_4);
+				index_type, index_type,
+				index_type);
 export_proto(st_set_nml_var_dim);
 
 void
 st_set_nml_var_dim (st_parameter_dt *dtp, GFC_INTEGER_4 n_dim,
-		    GFC_INTEGER_4 stride, GFC_INTEGER_4 lbound,
-		    GFC_INTEGER_4 ubound)
+		    index_type stride, index_type lbound,
+		    index_type ubound)
 {
   namelist_info * nml;
   int n;
@@ -2922,9 +2922,9 @@ st_set_nml_var_dim (st_parameter_dt *dtp, GFC_INTEGER_4 n_dim,
 
   for (nml = dtp->u.p.ionml; nml->next; nml = nml->next);
 
-  nml->dim[n].stride = (ssize_t)stride;
-  nml->dim[n].lbound = (ssize_t)lbound;
-  nml->dim[n].ubound = (ssize_t)ubound;
+  nml->dim[n].stride = stride;
+  nml->dim[n].lbound = lbound;
+  nml->dim[n].ubound = ubound;
 }
 
 /* Reverse memcpy - used for byte swapping.  */
