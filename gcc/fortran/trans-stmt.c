@@ -1320,7 +1320,6 @@ static tree
 gfc_trans_character_select (gfc_code *code)
 {
   tree init, node, end_label, tmp, type, case_num, label;
-  tree gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
   stmtblock_t block, body;
   gfc_case *cp, *d;
   gfc_code *c;
@@ -1351,7 +1350,7 @@ gfc_trans_character_select (gfc_code *code)
       ADD_FIELD (string2, pchar_type_node);
       ADD_FIELD (string2_len, gfc_int4_type_node);
 
-      ADD_FIELD (target, gfc_c_int_type_node);
+      ADD_FIELD (target, integer_type_node);
 #undef ADD_FIELD
 
       gfc_finish_type (select_struct);
@@ -1425,7 +1424,7 @@ gfc_trans_character_select (gfc_code *code)
           node = tree_cons (ss_string2_len, se.string_length, node);
         }
 
-      node = tree_cons (ss_target, build_int_cst (gfc_c_int_type_node, d->n),
+      node = tree_cons (ss_target, build_int_cst (integer_type_node, d->n),
 			node);
 
       tmp = build_constructor_from_list (select_struct, nreverse (node));
@@ -1459,7 +1458,7 @@ gfc_trans_character_select (gfc_code *code)
   tmp = build_call_expr (gfor_fndecl_select_string, 4, init,
 			 build_int_cst (NULL_TREE, n), se.expr,
 			 se.string_length);
-  case_num = gfc_create_var (gfc_c_int_type_node, "case_num");
+  case_num = gfc_create_var (integer_type_node, "case_num");
   gfc_add_modify_expr (&block, case_num, tmp);
 
   gfc_add_block_to_block (&block, &se.post);

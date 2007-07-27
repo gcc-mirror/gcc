@@ -1,3 +1,13 @@
+2007-07-28  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/32909
+	* trans-stmt.c (gfc_trans_character_select): Replace occurrences
+	of gfc_c_int_type_node with integer_type_node.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Likewise.
+	(gfc_build_builtin_function_decls): Likewise.
+	(gfc_generate_function_code): Likewise.
+	* trans-io.c (gfc_build_io_library_fndecls): Likewise.
+
 2007-07-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans-decl.c (gfc_build_builtin_function_decls): Use existing
