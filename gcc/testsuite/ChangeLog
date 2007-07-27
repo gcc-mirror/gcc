@@ -1,3 +1,8 @@
+2007-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/32346
+	* g++.dg/expr/bitfield9.C: New test.
+
 2007-07-25  Dorit Nuzman  <dorit@il.ibm.com>
 	    Devang Patel  <dpatel@apple.com>
 	    Uros Bizjak  <ubizjak@gmail.com>

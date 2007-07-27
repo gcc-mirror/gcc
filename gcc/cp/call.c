@@ -4674,7 +4674,27 @@ type_passed_as (tree type)
 tree
 convert_for_arg_passing (tree type, tree val)
 {
-  val = convert_bitfield_to_declared_type (val);
+  tree bitfield_type;
+
+  /* If VAL is a bitfield, then -- since it has already been converted
+     to TYPE -- it cannot have a precision greater than TYPE.  
+
+     If it has a smaller precision, we must widen it here.  For
+     example, passing "int f:3;" to a function expecting an "int" will
+     not result in any conversion before this point.
+
+     If the precision is the same we must not risk widening.  For
+     example, the COMPONENT_REF for a 32-bit "long long" bitfield will
+     often have type "int", even though the C++ type for the field is
+     "long long".  If the value is being passed to a function
+     expecting an "int", then no conversions will be required.  But,
+     if we call convert_bitfield_to_declared_type, the bitfield will
+     be converted to "long long".  */
+  bitfield_type = is_bitfield_expr_with_lowered_type (val);
+  if (bitfield_type 
+      && TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type))
+    val = convert_to_integer (TYPE_MAIN_VARIANT (bitfield_type), val);
+
   if (val == error_mark_node)
     ;
   /* Pass classes with copy ctors by invisible reference.  */
