@@ -2283,24 +2283,23 @@ gfc_build_builtin_function_decls (void)
   tree gfc_int4_type_node = gfc_get_int_type (4);
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
-  tree gfc_index_int_type_node = gfc_get_int_type (gfc_index_integer_kind);
 
   gfor_fndecl_internal_realloc =
     gfc_build_library_function_decl (get_identifier
 				     (PREFIX("internal_realloc")),
 				     pvoid_type_node, 2, pvoid_type_node,
-				     gfc_index_int_type_node);
+				     gfc_array_index_type);
 
   gfor_fndecl_allocate =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate")),
 				     pvoid_type_node, 2,
-				     gfc_index_int_type_node, gfc_pint4_type_node);
+				     gfc_array_index_type, gfc_pint4_type_node);
   DECL_IS_MALLOC (gfor_fndecl_allocate) = 1;
 
   gfor_fndecl_allocate_array =
     gfc_build_library_function_decl (get_identifier (PREFIX("allocate_array")),
 				     pvoid_type_node, 3, pvoid_type_node,
-				     gfc_index_int_type_node, gfc_pint4_type_node);
+				     gfc_array_index_type, gfc_pint4_type_node);
   DECL_IS_MALLOC (gfor_fndecl_allocate_array) = 1;
 
   gfor_fndecl_deallocate =

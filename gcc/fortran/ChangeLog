@@ -1,5 +1,11 @@
 2007-07-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
+	* trans-decl.c (gfc_build_builtin_function_decls): Use existing
+	gfc_array_index_type rather than creating another typenode for
+	gfc_index_integer_kind.
+
+2007-07-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	* trans-io.c (gfc_build_io_library_fndecls): Change to use
 	gfc_array_index_type for array descriptor triplets instead of
 	gfc_int4_type_node.
