@@ -1,10 +1,17 @@
+2007-07-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32903
+	* trans-decl.c (gfc_trans_deferred_vars): Set intent(out)
+	derived types as referenced, if they have the the default
+	initializer set.
+
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortran.h (generate_isocbinding_symbol): Constify.
 	* symbol.c (gen_special_c_interop_ptr, gen_cptr_param,
 	generate_isocbinding_symbol): Likewise.
 
-2007-07-24 Paul Thomas <pault@gcc.gnu.org>
+2007-07-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31205
 	PR fortran/32842

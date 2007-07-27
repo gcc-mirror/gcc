@@ -2735,8 +2735,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 
       /* If an INTENT(OUT) dummy of derived type has a default
 	 initializer, it must be initialized here.  */
-      if (f->sym && f->sym->attr.referenced
-	    && f->sym->attr.intent == INTENT_OUT
+      if (f->sym && f->sym->attr.intent == INTENT_OUT
 	    && f->sym->ts.type == BT_DERIVED
 	    && !f->sym->ts.derived->attr.alloc_comp
 	    && f->sym->value)
@@ -2744,6 +2743,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  gfc_expr *tmpe;
 	  tree tmp, present;
 	  gcc_assert (!f->sym->attr.allocatable);
+	  gfc_set_sym_referenced (f->sym);
 	  tmpe = gfc_lval_expr_from_sym (f->sym);
 	  tmp = gfc_trans_assignment (tmpe, f->sym->value, false);
 
