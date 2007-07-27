@@ -35,28 +35,28 @@ typedef struct
   int low_len;
   char *high;
   int high_len;
-  void *address;
+  int address;
 }
 select_struct;
 
-extern void * select_string (select_struct *table, int table_len,
-			     void *default_jump, const char *selector,
-			     int selector_len);
+extern int select_string (select_struct *table, int table_len,
+			  const char *selector, int selector_len);
 export_proto(select_string);
 
 
 /* select_string()-- Given a selector string and a table of
  * select_struct structures, return the address to jump to. */
 
-void *
-select_string (select_struct *table, int table_len, void *default_jump,
-	       const char *selector, int selector_len)
+int
+select_string (select_struct *table, int table_len, const char *selector,
+	       int selector_len)
 {
   select_struct *t;
   int i, low, high, mid;
+  int default_jump;
 
   if (table_len == 0)
-    return default_jump;
+    return -1;
 
   /* Record the default address if present */
 

@@ -1,3 +1,8 @@
+2007-07-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32035
+	* gfortran.dg/select_char_1.f90: New test.
+
 2007-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32903

@@ -2333,7 +2333,7 @@ gfc_build_builtin_function_decls (void)
 
   gfor_fndecl_select_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("select_string")),
-                                     pvoid_type_node, 0);
+                                     gfc_c_int_type_node, 0);
 
   gfor_fndecl_runtime_error =
     gfc_build_library_function_decl (get_identifier (PREFIX("runtime_error")),
