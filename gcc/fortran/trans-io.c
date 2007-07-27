@@ -276,7 +276,6 @@ gfc_build_io_library_fndecls (void)
   tree types[IOPARM_type_num], pad_idx, gfc_int4_type_node;
   tree gfc_intio_type_node;
   tree parm_type, dt_parm_type;
-  tree gfc_c_int_type_node;
   HOST_WIDE_INT pad_size;
   enum ioparam_type ptype;
 
@@ -299,8 +298,6 @@ gfc_build_io_library_fndecls (void)
      what really goes into this space.  */
   TYPE_ALIGN (types[IOPARM_type_pad]) = MAX (TYPE_ALIGN (pchar_type_node),
 		     TYPE_ALIGN (gfc_get_int_type (gfc_max_integer_kind)));
-
-  gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
 
   for (ptype = IOPARM_ptype_common; ptype < IOPARM_ptype_num; ptype++)
     gfc_build_st_parameter (ptype, types);
@@ -342,7 +339,7 @@ gfc_build_io_library_fndecls (void)
     gfc_build_library_function_decl (get_identifier
 				     (PREFIX("transfer_array")),
 				     void_type_node, 4, dt_parm_type,
-				     pvoid_type_node, gfc_c_int_type_node,
+				     pvoid_type_node, integer_type_node,
 				     gfc_charlen_type_node);
 
   /* Library entry points */
