@@ -1,3 +1,9 @@
+2007-07-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Change to use
+	gfc_array_index_type for array descriptor triplets instead of
+	gfc_int4_type_node.
+
 2007-07-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/32899
