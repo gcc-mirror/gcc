@@ -1,3 +1,9 @@
+2007-07-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mangle.c (set_type_package_list): Constify.
+	* verify-glue.c (vfy_make_string): Delete.
+	* verify.h (vfy_make_string): Likewise.
+
 2007-07-26  Tom Tromey  <tromey@redhat.com>
 
 	* java-tree.h (push_labeled_block, pop_labeled_block): Remove.
