@@ -53,7 +53,7 @@ struct token_part GTY(())
   location_t location;
   unsigned int charno;
   unsigned int length; /* The value.  */
-  unsigned char* chars;
+  const unsigned char *chars;
 };
 
 /* Definitions for fields in production.  */
@@ -119,7 +119,7 @@ struct production_part GTY(())
 struct parameter_part GTY(())
 {
   struct prod_token_parm_item *next; /* Next entry.  */
-  unsigned char* variable_name; /* Name. */
+  const unsigned char *variable_name; /* Name. */
   tree * GTY ((skip)) where_to_put_var_tree; /* Where to save decl.  */
 };
 

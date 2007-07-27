@@ -299,7 +299,7 @@ tree_code_if_end (location_t loc ATTRIBUTE_UNUSED)
    is PARMS, returns decl for this function.  */
 
 tree
-tree_code_create_function_prototype (unsigned char* chars,
+tree_code_create_function_prototype (const unsigned char *chars,
 				     unsigned int storage_class,
 				     unsigned int ret_type,
 				     struct prod_token_parm_item* parms,
@@ -489,7 +489,7 @@ tree_code_create_function_wrapup (location_t loc)
 
 tree
 tree_code_create_variable (unsigned int storage_class,
-			   unsigned char* chars,
+			   const unsigned char *chars,
 			   unsigned int length,
 			   unsigned int expression_type,
 			   tree init,
@@ -604,7 +604,7 @@ tree_code_output_expression_statement (tree code, location_t loc)
    size checking is done.  */
 
 tree
-tree_code_get_integer_value (unsigned char* chars, unsigned int length)
+tree_code_get_integer_value (const unsigned char *chars, unsigned int length)
 {
   long long int val = 0;
   unsigned int ix;
