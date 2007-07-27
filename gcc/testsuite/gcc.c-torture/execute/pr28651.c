@@ -1,3 +1,5 @@
+#include <limits.h>
+
 extern void abort (void);
 int __attribute__((noinline))
 foo (unsigned int u)
@@ -8,7 +10,7 @@ foo (unsigned int u)
 int
 main (int argc, char *argv[])
 {
-  unsigned int u = 0x7fffffff;
+  unsigned int u = INT_MAX;
 
   if (foo (u) == 0)
     abort();

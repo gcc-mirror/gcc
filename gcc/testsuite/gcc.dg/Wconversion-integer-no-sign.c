@@ -60,8 +60,8 @@ void h (int x)
   uc = '\xa0'; /* Warned by -Wsign-conversion.  */
   fui ('\xa0'); /* Warned by -Wsign-conversion.  */
   ui = '\xa0';  /* Warned by -Wsign-conversion.  */
-  fsi (0x80000000); /* Warned by -Wsign-conversion.  */
-  si = 0x80000000;  /* Warned by -Wsign-conversion.  */
+  fsi ((unsigned) INT_MAX + 1U); /* Warned by -Wsign-conversion.  */
+  si = (unsigned) INT_MAX + 1U;  /* Warned by -Wsign-conversion.  */
 
 
   fsi (UINT_MAX - 1);  /* Warned by -Wsign-conversion.  */

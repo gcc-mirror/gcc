@@ -1,20 +1,21 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+#include <limits.h>
 
 extern void abort(void);
 
 void decCompareOp (int result)
 {
-  if (result != (int)0x80000000)
+  if (result != (int) (INT_MAX + 1U))
     {
       result = -result;
-      if (result != (int)0x80000001)
+      if (result != (int) (INT_MAX + 2U))
         abort ();
     }
 }
 
 int main()
 {
-  decCompareOp (0x7fffffff);
+  decCompareOp (INT_MAX);
   return 0;
 }
