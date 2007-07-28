@@ -96,7 +96,7 @@ static edge tree_try_redirect_by_replacing_jump (edge, basic_block);
 static unsigned int split_critical_edges (void);
 
 /* Various helpers.  */
-static inline bool stmt_starts_bb_p (tree, tree);
+static inline bool stmt_starts_bb_p (const_tree, const_tree);
 static int tree_verify_flow_info (void);
 static void tree_make_forwarder_block (edge);
 static void tree_cfg2vcg (FILE *);
@@ -2421,7 +2421,7 @@ tree_cfg2vcg (FILE *file)
 /* Return true if T represents a stmt that always transfers control.  */
 
 bool
-is_ctrl_stmt (tree t)
+is_ctrl_stmt (const_tree t)
 {
   return (TREE_CODE (t) == COND_EXPR
 	  || TREE_CODE (t) == SWITCH_EXPR
@@ -2465,7 +2465,7 @@ is_ctrl_altering_stmt (tree t)
 /* Return true if T is a computed goto.  */
 
 bool
-computed_goto_p (tree t)
+computed_goto_p (const_tree t)
 {
   return (TREE_CODE (t) == GOTO_EXPR
 	  && TREE_CODE (GOTO_DESTINATION (t)) != LABEL_DECL);
@@ -2475,7 +2475,7 @@ computed_goto_p (tree t)
 /* Return true if T is a simple local goto.  */
 
 bool
-simple_goto_p (tree t)
+simple_goto_p (const_tree t)
 {
   return (TREE_CODE (t) == GOTO_EXPR
 	  && TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL);
@@ -2486,7 +2486,7 @@ simple_goto_p (tree t)
    Transfers of control flow associated with EH are excluded.  */
 
 bool
-tree_can_make_abnormal_goto (tree t)
+tree_can_make_abnormal_goto (const_tree t)
 {
   if (computed_goto_p (t))
     return true;
@@ -2507,7 +2507,7 @@ tree_can_make_abnormal_goto (tree t)
    unnecessary basic blocks that only contain a single label.  */
 
 static inline bool
-stmt_starts_bb_p (tree t, tree prev_t)
+stmt_starts_bb_p (const_tree t, const_tree prev_t)
 {
   if (t == NULL_TREE)
     return false;
@@ -6242,7 +6242,7 @@ tree_purge_dead_eh_edges (basic_block bb)
 }
 
 bool
-tree_purge_all_dead_eh_edges (bitmap blocks)
+tree_purge_all_dead_eh_edges (const_bitmap blocks)
 {
   bool changed = false;
   unsigned i;
