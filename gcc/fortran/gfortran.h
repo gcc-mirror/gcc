@@ -157,7 +157,7 @@ typedef enum
 { FORM_FREE, FORM_FIXED, FORM_UNKNOWN }
 gfc_source_form;
 
-/* Basic types.  BT_VOID is used by ISO C BInding so funcs like c_f_pointer
+/* Basic types.  BT_VOID is used by ISO C Binding so funcs like c_f_pointer
    can take any arg with the pointer attribute as a param.  */
 typedef enum
 { BT_UNKNOWN = 1, BT_INTEGER, BT_REAL, BT_COMPLEX,

@@ -1400,7 +1400,7 @@ get_sym_storage_size (gfc_symbol *sym)
 
 /* Returns the storage size of an expression (actual argument) or
    zero if it cannot be determined. For an array element, it returns
-   the remaing size as the element sequence consists of all storage
+   the remaining size as the element sequence consists of all storage
    units of the actual argument up to the end of the array.  */
 
 static unsigned long

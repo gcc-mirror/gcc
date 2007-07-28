@@ -2394,7 +2394,7 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
     }
   else if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
     {
-      /* TODO: Figure out if this is even reacable; this part of the
+      /* TODO: Figure out if this is even reachable; this part of the
          conditional may not be necessary.  */
       int num_args = 0;
       if (c->ext.actual->next == NULL)
