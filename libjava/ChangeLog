@@ -1,3 +1,7 @@
+2007-07-28  Matthias Klose  <doko@ubuntu.com>
+
+	* classpath/jvmti.h: Remove.
+
 2007-07-27  Tom Tromey  <tromey@redhat.com>
 
 	* Rebuild .class files with new ecj.
