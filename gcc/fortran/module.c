@@ -1512,8 +1512,8 @@ typedef enum
   AB_IN_NAMELIST, AB_IN_COMMON, AB_FUNCTION, AB_SUBROUTINE, AB_SEQUENCE,
   AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
-  AB_VALUE, AB_VOLATILE, AB_PROTECTED, AB_IS_BIND_C, AB_IS_C_INTEROP,
-  AB_IS_ISO_C
+  AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
+  AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C
 }
 ab_attribute;
 
@@ -1548,6 +1548,8 @@ static const mstring attr_bits[] =
     minit ("IS_ISO_C", AB_IS_ISO_C),
     minit ("VALUE", AB_VALUE),
     minit ("ALLOC_COMP", AB_ALLOC_COMP),
+    minit ("POINTER_COMP", AB_POINTER_COMP),
+    minit ("PRIVATE_COMP", AB_PRIVATE_COMP),
     minit ("PROTECTED", AB_PROTECTED),
     minit (NULL, -1)
 };
@@ -1654,6 +1656,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME(ab_attribute) (AB_IS_ISO_C, attr_bits);
       if (attr->alloc_comp)
 	MIO_NAME (ab_attribute) (AB_ALLOC_COMP, attr_bits);
+      if (attr->pointer_comp)
+	MIO_NAME (ab_attribute) (AB_POINTER_COMP, attr_bits);
+      if (attr->private_comp)
+	MIO_NAME (ab_attribute) (AB_PRIVATE_COMP, attr_bits);
 
       mio_rparen ();
 
@@ -1759,6 +1765,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_ALLOC_COMP:
 	      attr->alloc_comp = 1;
+	      break;
+	    case AB_POINTER_COMP:
+	      attr->pointer_comp = 1;
+	      break;
+	    case AB_PRIVATE_COMP:
+	      attr->private_comp = 1;
 	      break;
 	    }
 	}

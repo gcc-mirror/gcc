@@ -1615,17 +1615,34 @@ parse_derived (void)
    */
   derived_sym = gfc_current_block();
 
-  /* Look for allocatable components.  */
   sym = gfc_current_block ();
   for (c = sym->components; c; c = c->next)
     {
+      /* Look for allocatable components.  */
       if (c->allocatable
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.alloc_comp))
 	{
 	  sym->attr.alloc_comp = 1;
 	  break;
 	}
-     }
+
+      /* Look for pointer components.  */
+      if (c->pointer
+	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.pointer_comp))
+	{
+	  sym->attr.pointer_comp = 1;
+	  break;
+	}
+
+      /* Look for private components.  */
+      if (sym->component_access == ACCESS_PRIVATE
+	  || c->access == ACCESS_PRIVATE
+	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.private_comp))
+	{
+	  sym->attr.private_comp = 1;
+	  break;
+	}
+    }
 
   pop_state ();
 }
