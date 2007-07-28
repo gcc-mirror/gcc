@@ -1,3 +1,14 @@
+2007-07-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	* timevar.def: Add TV_CALL_CLOBBER, TV_FLOW_SENSITIVE,
+	TV_FLOW_INSENSITIVE.
+
+	* tree-ssa-alias.c (compute_call_clobbered): Push/pop
+	TV_CALL_CLOBBER.
+	(compute_flow_sensitive_aliasing): Ditto for TV_FLOW_SENSITIVE.
+	(compute_flow_insensitive_aliasing): Ditto for
+	TV_FLOW_INSENSITIVE.	
+
 2007-07-27  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.c (register_move_cost): Remove accidentally comitted
