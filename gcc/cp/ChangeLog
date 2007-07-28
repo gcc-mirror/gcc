@@ -1,3 +1,7 @@
+2007-07-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* pt.c, tree.c, typeck2.c: Fix comment typos.
+
 2007-07-28  Simon Martin  <simartin@users.sourceforge.net>
 	    Mark Mitchell  <mark@codesourcery.com>
 

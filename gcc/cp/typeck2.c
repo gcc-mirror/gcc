@@ -764,8 +764,8 @@ picflag_from_initializer (tree init)
 }
 
 /* Subroutine of process_init_constructor, which will process an initializer
-   INIT for a array or vector of type TYPE. Returns the flags (PICFLAG_*) which
-   describe the initializers.  */
+   INIT for an array or vector of type TYPE. Returns the flags (PICFLAG_*)
+   which describe the initializers.  */
 
 static int
 process_init_constructor_array (tree type, tree init)
