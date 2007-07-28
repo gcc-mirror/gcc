@@ -1,3 +1,23 @@
+2007-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (special_function_p, setjmp_call_p, alloca_call_p,
+	flags_from_decl_or_type): Constify.
+	* gcc.c (do_spec_1): Likewise.
+	* print-tree.c (dump_addr, print_node_brief): Likewise.
+	* tree-cfg.c (stmt_starts_bb_p, is_ctrl_stmt, computed_goto_p,
+	simple_goto_p, tree_can_make_abnormal_goto, stmt_starts_bb_p,
+	tree_purge_all_dead_eh_edges): Likewise.
+	* tree-flow.h (is_ctrl_stmt, computed_goto_p, simple_goto_p,
+	tree_can_make_abnormal_goto, tree_purge_all_dead_eh_edges):
+	Likewise. 
+	* tree.c (expr_location, expr_has_location, expr_locus,
+	expr_filename, expr_lineno, get_inner_array_type,
+	fields_compatible_p): Likewise.
+	* tree.h (get_inner_array_type, fields_compatible_p,
+	expr_location, expr_has_location, expr_locus, expr_filename,
+	expr_lineno, dump_addr, print_node_brief, flags_from_decl_or_type,
+	setjmp_call_p, alloca_call_p): Likewise.
+
 2007-07-28  Daniel Berlin  <dberlin@dberlin.org>
 
 	* timevar.def: Add TV_CALL_CLOBBER, TV_FLOW_SENSITIVE,

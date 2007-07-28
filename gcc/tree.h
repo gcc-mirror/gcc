@@ -3830,7 +3830,7 @@ extern int tree_int_cst_sign_bit (tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (tree);
-extern tree get_inner_array_type (tree);
+extern tree get_inner_array_type (const_tree);
 
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't
    put the prototype here.  Rtl.h does declare the prototype if
@@ -4597,19 +4597,19 @@ extern tree build_range_type (tree, tree, tree);
 extern HOST_WIDE_INT int_cst_value (const_tree);
 extern tree build_addr (tree, tree);
 
-extern bool fields_compatible_p (tree, tree);
+extern bool fields_compatible_p (const_tree, const_tree);
 extern tree find_compatible_field (tree, tree);
 
-extern location_t expr_location (tree);
+extern location_t expr_location (const_tree);
 extern void set_expr_location (tree, location_t);
-extern bool expr_has_location (tree);
+extern bool expr_has_location (const_tree);
 extern
 #ifdef USE_MAPPED_LOCATION
 source_location *
 #else
 source_locus
 #endif
-expr_locus (tree);
+expr_locus (const_tree);
 extern void set_expr_locus (tree,
 #ifdef USE_MAPPED_LOCATION
                             source_location *loc
@@ -4617,8 +4617,8 @@ extern void set_expr_locus (tree,
 		            source_locus loc
 #endif
 			   );
-extern const char **expr_filename (tree);
-extern int *expr_lineno (tree);
+extern const char **expr_filename (const_tree);
+extern int *expr_lineno (const_tree);
 extern tree *tree_block (tree);
 extern tree *generic_tree_operand (tree, int);
 extern tree *generic_tree_type (tree);
@@ -4652,9 +4652,9 @@ extern void print_rtl (FILE *, const_rtx);
 /* In print-tree.c */
 extern void debug_tree (tree);
 #ifdef BUFSIZ
-extern void dump_addr (FILE*, const char *, void *);
+extern void dump_addr (FILE*, const char *, const void *);
 extern void print_node (FILE *, const char *, tree, int);
-extern void print_node_brief (FILE *, const char *, tree, int);
+extern void print_node_brief (FILE *, const char *, const_tree, int);
 extern void indent_to (FILE *, int);
 #endif
 
@@ -4695,11 +4695,11 @@ extern tree build_duplicate_type (tree);
    it does not necessarily fit ECF_CONST).  */
 #define ECF_NOVOPS		1024
 
-extern int flags_from_decl_or_type (tree);
+extern int flags_from_decl_or_type (const_tree);
 extern int call_expr_flags (tree);
 
-extern int setjmp_call_p (tree);
-extern bool alloca_call_p (tree);
+extern int setjmp_call_p (const_tree);
+extern bool alloca_call_p (const_tree);
 extern bool must_pass_in_stack_var_size (enum machine_mode, tree);
 extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, tree);
 

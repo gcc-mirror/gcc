@@ -4847,12 +4847,14 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
 		if (save_temps_flag)
 		  {
+		    char *tmp;
+		    
 		    temp_filename_length = basename_length + suffix_length;
-		    temp_filename = alloca (temp_filename_length + 1);
-		    strncpy ((char *) temp_filename, input_basename, basename_length);
-		    strncpy ((char *) temp_filename + basename_length, suffix,
-			     suffix_length);
-		    *((char *) temp_filename + temp_filename_length) = '\0';
+		    tmp = alloca (temp_filename_length + 1);
+		    strncpy (tmp, input_basename, basename_length);
+		    strncpy (tmp + basename_length, suffix, suffix_length);
+		    tmp[temp_filename_length] = '\0';
+		    temp_filename = tmp;
 		    if (strcmp (temp_filename, input_filename) != 0)
 		      {
 #ifndef HOST_LACKS_INODE_NUMBERS

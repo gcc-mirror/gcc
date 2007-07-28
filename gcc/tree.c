@@ -3429,7 +3429,7 @@ annotate_with_locus (tree node, location_t locus)
    decls and constants can be shared among multiple locations, so
    return nothing.  */
 location_t
-expr_location (tree node)
+expr_location (const_tree node)
 {
 #ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
@@ -3457,7 +3457,7 @@ set_expr_location (tree node, location_t locus)
 }
 
 bool
-expr_has_location (tree node)
+expr_has_location (const_tree node)
 {
 #ifdef USE_MAPPED_LOCATION
   return expr_location (node) != UNKNOWN_LOCATION;
@@ -3471,7 +3471,7 @@ source_location *
 #else
 source_locus
 #endif
-expr_locus (tree node)
+expr_locus (const_tree node)
 {
 #ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
@@ -3519,7 +3519,7 @@ set_expr_locus (tree node,
 }
 
 const char **
-expr_filename (tree node)
+expr_filename (const_tree node)
 {
 #ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
@@ -3533,7 +3533,7 @@ expr_filename (tree node)
 }
 
 int *
-expr_lineno (tree node)
+expr_lineno (const_tree node)
 {
 #ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
@@ -5637,7 +5637,7 @@ build_array_type (tree elt_type, tree index_type)
    the innermost dimension of ARRAY.  */
 
 tree
-get_inner_array_type (tree array)
+get_inner_array_type (const_tree array)
 {
   tree type = TREE_TYPE (array);
 
@@ -7803,7 +7803,7 @@ needs_to_live_in_memory (tree t)
    are compatible.  It is assumed that the parent records are compatible.  */
 
 bool
-fields_compatible_p (tree f1, tree f2)
+fields_compatible_p (const_tree f1, const_tree f2)
 {
   if (!operand_equal_p (DECL_FIELD_BIT_OFFSET (f1),
 			DECL_FIELD_BIT_OFFSET (f2), OEP_ONLY_CONST))

@@ -58,7 +58,7 @@ debug_tree (tree node)
 
 /* Print PREFIX and ADDR to FILE.  */
 void
-dump_addr (FILE *file, const char *prefix, void *addr)
+dump_addr (FILE *file, const char *prefix, const void *addr)
 {
   if (flag_dump_noaddr || flag_dump_unnumbered)
     fprintf (file, "%s#", prefix);
@@ -69,7 +69,7 @@ dump_addr (FILE *file, const char *prefix, void *addr)
 /* Print a node in brief fashion, with just the code, address and name.  */
 
 void
-print_node_brief (FILE *file, const char *prefix, tree node, int indent)
+print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
 {
   enum tree_code_class class;
 
