@@ -1,3 +1,20 @@
+2007-07-28  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/namelist_5.f90: Adjusted error message.
+	* gfortran.dg/assumed_shape_nml.f90: Renamed to ...
+	* gfortran.dg/namelist_31.f90: ... this. Removed dg-warning directive.
+	* gfortran.dg/assumed_size_nml.f90: Renamed to ...
+	* gfortran.dg/namelist_32.f90: ... this.
+
+	PR fortran/32876
+	* gfortran.dg/namelist_33.f90: New test.
+
+	PR fortran/32905
+	* gfortran.dg/namelist_34.f90: New test.
+
+	PR fortran/31818
+	* gfortran.dg/namelist_35.f90: New test.
+
 2007-07-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32880

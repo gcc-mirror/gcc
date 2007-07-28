@@ -6,7 +6,7 @@
 !
 SUBROUTINE S1(I)
  integer :: a,b(I)
- NAMELIST /NLIST/ a,b ! { dg-error "must have constant shape to be a NAMELIST object" }
+ NAMELIST /NLIST/ a,b ! { dg-error "must have constant shape" }
  a=1 ; b=2
  write(6,NML=NLIST)
 END SUBROUTINE S1

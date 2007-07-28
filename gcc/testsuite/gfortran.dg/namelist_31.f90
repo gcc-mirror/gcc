@@ -10,8 +10,8 @@ program assumed_shape_nml
   call foo (z)
 contains
   subroutine foo (y)
-    real, DIMENSION (1:) :: y
-    namelist /mynml/ y     ! { dg-warning "is an extension" }
+    real, DIMENSION (:) :: y
+    namelist /mynml/ y
     write (*, mynml)
   end subroutine foo
 end program assumed_shape_nml

@@ -2822,12 +2822,6 @@ gfc_match_namelist (void)
 	      gfc_error_check ();
 	    }
 
-	  if (sym->as && sym->as->type == AS_ASSUMED_SHAPE
-	      && gfc_notify_std (GFC_STD_GNU, "Assumed shape array '%s' in "
-				 "namelist '%s' at %C is an extension.",
-				 sym->name, group_name->name) == FAILURE)
-	    gfc_error_check ();
-
 	  nl = gfc_get_namelist ();
 	  nl->sym = sym;
 	  sym->refs++;

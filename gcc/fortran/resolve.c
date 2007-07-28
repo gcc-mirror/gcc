@@ -7027,44 +7027,74 @@ resolve_fl_namelist (gfc_symbol *sym)
     {
       for (nl = sym->namelist; nl; nl = nl->next)
 	{
-	  if (!nl->sym->attr.use_assoc
-	      && !(sym->ns->parent == nl->sym->ns)
-	      && !(sym->ns->parent
-		   && sym->ns->parent->parent == nl->sym->ns)
-	      && !gfc_check_access(nl->sym->attr.access,
-				   nl->sym->ns->default_access))
+	  if (nl->sym->attr.use_assoc
+	      || (sym->ns->parent == nl->sym->ns)
+	      || (sym->ns->parent
+		  && sym->ns->parent->parent == nl->sym->ns))
+	    continue;
+
+	  if (!gfc_check_access(nl->sym->attr.access,
+				nl->sym->ns->default_access))
 	    {
-	      gfc_error ("PRIVATE symbol '%s' cannot be member of "
-			 "PUBLIC namelist at %L", nl->sym->name,
-			 &sym->declared_at);
+	      gfc_error ("NAMELIST object '%s' was declared PRIVATE and "
+			 "cannot be member of PUBLIC namelist '%s' at %L",
+			 nl->sym->name, sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
+
+	  if (nl->sym->ts.type == BT_DERIVED
+	      && !gfc_check_access (nl->sym->ts.derived->attr.private_comp
+				    ? ACCESS_PRIVATE : ACCESS_UNKNOWN,
+				    nl->sym->ns->default_access))
+	    {
+	      gfc_error ("NAMELIST object '%s' has PRIVATE components and "
+			 "cannot be a member of PUBLIC namelist '%s' at %L",
+			 nl->sym->name, sym->name, &sym->declared_at);
 	      return FAILURE;
 	    }
 	}
     }
 
-  /* Reject namelist arrays that are not constant shape.  */
   for (nl = sym->namelist; nl; nl = nl->next)
     {
+      /* Reject namelist arrays of assumed shape.  */
+      if (nl->sym->as && nl->sym->as->type == AS_ASSUMED_SHAPE
+	  && gfc_notify_std (GFC_STD_F2003, "NAMELIST array object '%s' "
+			     "must not have assumed shape in namelist "
+			     "'%s' at %L", nl->sym->name, sym->name,
+			     &sym->declared_at) == FAILURE)
+	    return FAILURE;
+
+      /* Reject namelist arrays that are not constant shape.  */
       if (is_non_constant_shape_array (nl->sym))
 	{
-	  gfc_error ("The array '%s' must have constant shape to be "
-		     "a NAMELIST object at %L", nl->sym->name,
-		     &sym->declared_at);
+	  gfc_error ("NAMELIST array object '%s' must have constant "
+		     "shape in namelist '%s' at %L", nl->sym->name,
+		     sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
+      /* Namelist objects cannot have allocatable or pointer components.  */
+      if (nl->sym->ts.type != BT_DERIVED)
+	continue;
+
+      if (nl->sym->ts.derived->attr.alloc_comp)
+	{
+	  gfc_error ("NAMELIST object '%s' in namelist '%s' at %L cannot "
+		     "have ALLOCATABLE components",
+		     nl->sym->name, sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+
+      if (nl->sym->ts.derived->attr.pointer_comp)
+	{
+	  gfc_error ("NAMELIST object '%s' in namelist '%s' at %L cannot "
+		     "have POINTER components", 
+		     nl->sym->name, sym->name, &sym->declared_at);
 	  return FAILURE;
 	}
     }
 
-  /* Namelist objects cannot have allocatable components.  */
-  for (nl = sym->namelist; nl; nl = nl->next)
-    {
-      if (nl->sym->ts.type == BT_DERIVED
-	  && nl->sym->ts.derived->attr.alloc_comp)
-	{
-	  gfc_error ("NAMELIST object '%s' at %L cannot have ALLOCATABLE "
-		     "components", nl->sym->name, &sym->declared_at);
-	  return FAILURE;
-	}
-    }
 
   /* 14.1.2 A module or internal procedure represent local entities
      of the same type as a namelist member and so are not allowed.  */
