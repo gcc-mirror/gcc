@@ -83,7 +83,7 @@ lvalue_p_1 (tree ref,
 	  && TREE_CODE (ref) != COMPONENT_REF)
 	return clk_none;
 
-      /* lvalue references and named rvalue refences are lvalues */
+      /* lvalue references and named rvalue references are lvalues.  */
       return clk_ordinary;
     }
 

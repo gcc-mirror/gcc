@@ -2213,7 +2213,7 @@ check_explicit_specialization (tree declarator,
               tree tmpl_func = DECL_TEMPLATE_RESULT (gen_tmpl);
               gcc_assert (TREE_CODE (tmpl_func) == FUNCTION_DECL);
 
-              /* This specialization has the same linkage and visiblity as
+              /* This specialization has the same linkage and visibility as
                  the function template it specializes.  */
               TREE_PUBLIC (decl) = TREE_PUBLIC (tmpl_func);
               DECL_THIS_STATIC (decl) = DECL_THIS_STATIC (tmpl_func);
@@ -4637,7 +4637,7 @@ convert_template_argument (tree parm,
   requires_type = (TREE_CODE (parm) == TYPE_DECL
 		   || requires_tmpl_type);
 
-  /* When determining whether a argument pack expansion is a template,
+  /* When determining whether an argument pack expansion is a template,
      look at the pattern.  */
   if (TREE_CODE (check_arg) == TYPE_PACK_EXPANSION)
     check_arg = PACK_EXPANSION_PATTERN (check_arg);
