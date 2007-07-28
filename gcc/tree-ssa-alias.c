@@ -573,6 +573,7 @@ compute_call_clobbered (struct alias_info *ai)
   VEC (tree, heap) *worklist = NULL;
   VEC(int,heap) *worklist2 = NULL;
   
+  timevar_push (TV_CALL_CLOBBER);
   set_initial_properties (ai);
   init_transitive_clobber_worklist (&worklist, &worklist2);
   while (VEC_length (tree, worklist) != 0)
@@ -586,6 +587,7 @@ compute_call_clobbered (struct alias_info *ai)
   VEC_free (tree, heap, worklist);
   VEC_free (int, heap, worklist2);
   compute_tag_properties ();
+  timevar_pop (TV_CALL_CLOBBER);
 }
 
 
@@ -2206,6 +2208,7 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
   size_t i;
   tree ptr;
   
+  timevar_push (TV_FLOW_SENSITIVE);
   set_used_smts ();
   
   for (i = 0; VEC_iterate (tree, ai->processed_ptrs, i, ptr); i++)
@@ -2241,6 +2244,7 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	    }
 	}
     }
+  timevar_pop (TV_FLOW_SENSITIVE);
 }
 
 
@@ -2276,6 +2280,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
 
+  timevar_push (TV_FLOW_INSENSITIVE);
   /* For every pointer P, determine which addressable variables may alias
      with P's symbol memory tag.  */
   for (i = 0; i < ai->num_pointers; i++)
@@ -2384,6 +2389,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	}
 
     }
+  timevar_pop (TV_FLOW_INSENSITIVE);
 }
 
 
