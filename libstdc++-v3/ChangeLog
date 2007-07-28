@@ -18,7 +18,7 @@
 	* testsuite/util/testsuite_abi.cc: Changed local variable name to
 	prevent member variable hiding.
 
-2007-07-25  John Davind Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2007-07-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libstdc++/31836
 	* config/locale/generic/c_locale.cc (__convert_to_v): Don't use
