@@ -1407,11 +1407,11 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
 /* Get the minimum/maximum value of all the parameters.
     minmax (a1, a2, a3, ...)
     {
-      if (a2 .op. a1)
+      if (a2 .op. a1 || isnan(a1))
         mvar = a2;
       else
         mvar = a1;
-      if (a3 .op. mvar)
+      if (a3 .op. mvar || isnan(mvar))
         mvar = a3;
       ...
       return mvar
@@ -1487,7 +1487,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
   elsecase = build2_v (MODIFY_EXPR, mvar, limit);
   for (i = 1, argexpr = argexpr->next; i < nargs; i++)
     {
-      tree cond;
+      tree cond, isnan;
 
       val = args[i]; 
 
@@ -1509,6 +1509,15 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
       thencase = build2_v (MODIFY_EXPR, mvar, convert (type, val));
 
       tmp = build2 (op, boolean_type_node, convert (type, val), limit);
+
+      /* FIXME: When the IEEE_ARITHMETIC module is implemented, the call to
+	 __builtin_isnan might be made dependent on that module being loaded,
+	 to help performance of programs that don't rely on IEEE semantics.  */
+      if (FLOAT_TYPE_P (TREE_TYPE (limit)))
+	{
+	  isnan = build_call_expr (built_in_decls[BUILT_IN_ISNAN], 1, limit);
+	  tmp = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, tmp, isnan);
+	}
       tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
 
       if (cond != NULL_TREE)

@@ -1004,6 +1004,11 @@ gfc_init_builtin_functions (void)
 		      "malloc", false);
   DECL_IS_MALLOC (built_in_decls[BUILT_IN_MALLOC]) = 1;
 
+  tmp = tree_cons (NULL_TREE, void_type_node, void_list_node);
+  ftype = build_function_type (integer_type_node, tmp);
+  gfc_define_builtin ("__builtin_isnan", ftype, BUILT_IN_ISNAN,
+		      "__builtin_isnan", true);
+
 #define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
   builtin_types[(int) ENUM] = VALUE;
 #define DEF_FUNCTION_TYPE_0(ENUM, RETURN)		\
