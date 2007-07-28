@@ -987,12 +987,16 @@ sms_schedule (void)
       if ( !(count_reg = doloop_register_get (tail)))
 	continue;
 
-      /* Don't handle BBs with calls or barriers, or !single_set insns.  */
+      /* Don't handle BBs with calls or barriers, or !single_set insns,
+         or auto-increment insns (to avoid creating invalid reg-moves
+         for the auto-increment insns).  
+         ??? Should handle auto-increment insns.  */
       for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
 	if (CALL_P (insn)
 	    || BARRIER_P (insn)
 	    || (INSN_P (insn) && !JUMP_P (insn)
-		&& !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
+		&& !single_set (insn) && GET_CODE (PATTERN (insn)) != USE)
+            || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0))
 	  break;
 
       if (insn != NEXT_INSN (tail))
@@ -1003,6 +1007,8 @@ sms_schedule (void)
 		fprintf (dump_file, "SMS loop-with-call\n");
 	      else if (BARRIER_P (insn))
 		fprintf (dump_file, "SMS loop-with-barrier\n");
+              else if (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
+                fprintf (dump_file, "SMS reg inc\n");
 	      else
 		fprintf (dump_file, "SMS loop-with-not-single-set\n");
 	      print_rtl_single (dump_file, insn);
