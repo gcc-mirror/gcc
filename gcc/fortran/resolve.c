@@ -789,8 +789,16 @@ generic_sym (gfc_symbol *sym)
     return 0;
 
   gfc_find_symbol (sym->name, sym->ns->parent, 1, &s);
+  
+  if (s != NULL)
+    {
+      if (s == sym)
+	return 0;
+      else
+	return generic_sym (s);
+    }
 
-  return (s == NULL) ? 0 : generic_sym (s);
+  return 0;
 }
 
 
