@@ -4958,7 +4958,9 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold_build2 (MIN_EXPR,
-						   type, arg1, arg2));
+						   type,
+						   fold_convert (type, arg1),
+						   arg2));
 	break;
 
       case LE_EXPR:
@@ -4970,7 +4972,9 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold_build2 (MIN_EXPR,
-						   type, arg1, arg2));
+						   type,
+						   fold_convert (type, arg1),
+						   arg2));
 	break;
 
       case GT_EXPR:
@@ -4982,7 +4986,9 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold_build2 (MAX_EXPR,
-						   type, arg1, arg2));
+						   type,
+						   fold_convert (type, arg1),
+						   arg2));
 	break;
 
       case GE_EXPR:
@@ -4994,7 +5000,9 @@ fold_cond_expr_with_comparison (tree type, tree arg0, tree arg1, tree arg2)
 					     build_int_cst (type, 1), 0),
 				OEP_ONLY_CONST))
 	  return pedantic_non_lvalue (fold_build2 (MAX_EXPR,
-						   type, arg1, arg2));
+						   type,
+						   fold_convert (type, arg1),
+						   arg2));
 	break;
       case NE_EXPR:
 	break;

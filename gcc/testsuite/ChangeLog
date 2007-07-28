@@ -1,3 +1,7 @@
+2007-07-28  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/compile/pr32920.c: New testcase.
+
 2007-07-28  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30917
