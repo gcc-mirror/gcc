@@ -1,3 +1,9 @@
+2007-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/31609
+	* resolve.c (generic_sym): Check for a same symbol and if so, return to
+	avoid infinite recursion.
+
 2007-07-28  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/31818
