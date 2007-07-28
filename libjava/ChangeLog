@@ -1,5 +1,11 @@
 2007-07-28  Matthias Klose  <doko@ubuntu.com>
 
+	* configure.ac: Encode the libgcj soversion in dbexecdir,
+	pass --with-native-libdir to classpath configure.
+	* configure: Regenerate.
+
+2007-07-28  Matthias Klose  <doko@ubuntu.com>
+
 	* classpath/jvmti.h: Remove.
 
 2007-07-27  Tom Tromey  <tromey@redhat.com>

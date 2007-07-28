@@ -1367,24 +1367,26 @@ AC_SUBST(toolexecdir)
 AC_SUBST(toolexecmainlibdir)
 AC_SUBST(toolexeclibdir)
 
+# Determine gcj and libgcj version number.
+gcjversion=`$GCJ -v 2>&1 | sed -n 's/^.*version \([[^ ]]*\).*$/\1/p'`
+libgcj_soversion=`awk -F: '/^[[^#]].*:/ { print $1 }' $srcdir/libtool-version`
+GCJVERSION=$gcjversion
+AC_SUBST(GCJVERSION)
+AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
+
 # Determine where the standard .db file and GNU Classpath JNI
 # libraries are found.
 multi_os_directory=`$CC -print-multi-os-directory`
 case $multi_os_directory in
   .)
-   dbexecdir='$(libdir)/gcj-$(gcc_version)' # Avoid /.
+   dbexecdir='$(libdir)/gcj-$(gcc_version)'-$libgcj_soversion # Avoid /.
    ;;
   *)
-   dbexecdir='$(libdir)/'$multi_os_directory'/gcj-$(gcc_version)'
+   dbexecdir='$(libdir)/'$multi_os_directory'/gcj-$(gcc_version)'-$libgcj_soversion
    ;;
 esac
 AC_SUBST(dbexecdir)
-
-# Determine gcj version number.
-gcjversion=`$GCJ -v 2>&1 | sed -n 's/^.*version \([[^ ]]*\).*$/\1/p'`
-GCJVERSION=$gcjversion
-AC_SUBST(GCJVERSION)
-AC_DEFINE_UNQUOTED(GCJVERSION, "$GCJVERSION", [Short GCJ version ID])
+ac_configure_args="$ac_configure_args --with-native-libdir=\$\(toolexeclibdir\)/gcj-$gcjversion-$libgcj_soversion"
 
 AC_DEFINE(JV_VERSION, "1.5.0", [Compatibility version string])
 AC_DEFINE(JV_API_VERSION, "1.5", [API compatibility version string])
