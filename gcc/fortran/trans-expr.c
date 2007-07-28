@@ -3512,25 +3512,20 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 	}
 
       /* Deallocate the lhs allocated components as long as it is not
-	 the same as the rhs.  */
+	 the same as the rhs.  This must be done following the assignment
+	 to prevent deallocating data that could be used in the rhs
+	 expression.  */
       if (!l_is_temp)
 	{
-	  tmp = gfc_deallocate_alloc_comp (ts.derived, lse->expr, 0);
+	  tmp = gfc_evaluate_now (lse->expr, &lse->pre);
+	  tmp = gfc_deallocate_alloc_comp (ts.derived, tmp, 0);
 	  if (r_is_var)
 	    tmp = build3_v (COND_EXPR, cond, build_empty_stmt (), tmp);
-	  gfc_add_expr_to_block (&lse->pre, tmp);
+	  gfc_add_expr_to_block (&lse->post, tmp);
 	}
 
-      if (r_is_var)
-	{
-	  gfc_add_block_to_block (&block, &lse->pre);
-	  gfc_add_block_to_block (&block, &rse->pre);
-	}
-      else
-	{
-	  gfc_add_block_to_block (&block, &rse->pre);
-	  gfc_add_block_to_block (&block, &lse->pre);
-	}
+      gfc_add_block_to_block (&block, &rse->pre);
+      gfc_add_block_to_block (&block, &lse->pre);
 
       gfc_add_modify_expr (&block, lse->expr,
 			   fold_convert (TREE_TYPE (lse->expr), rse->expr));

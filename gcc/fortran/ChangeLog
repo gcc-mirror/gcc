@@ -1,3 +1,11 @@
+2007-07-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32880
+	* trans-expr.c (gfc_trans_scalar_assign): Revert to fixed order
+	for lse and rse pre expressions, for derived types with
+	allocatable components.  Instead, assign the lhs to a temporary
+	and deallocate after the assignment.
+
 2007-07-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/32909
