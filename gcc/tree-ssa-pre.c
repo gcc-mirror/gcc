@@ -1431,7 +1431,7 @@ bitmap_find_leader (bitmap_set_t set, tree val)
   return NULL;
 }
 
-/* Determine if EXPR, a memory expressionn, is ANTIC_IN at the top of
+/* Determine if EXPR, a memory expression, is ANTIC_IN at the top of
    BLOCK by seeing if it is not killed in the block.  Note that we are
    only determining whether there is a store that kills it.  Because
    of the order in which clean iterates over values, we are guaranteed

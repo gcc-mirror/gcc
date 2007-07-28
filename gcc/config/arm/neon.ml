@@ -177,7 +177,7 @@ type opcode =
   (* Set/extract lanes from a vector.  *)
   | Vget_lane
   | Vset_lane
-  (* Initialise vector from bit pattern.  *)
+  (* Initialize vector from bit pattern.  *)
   | Vcreate
   (* Set all lanes to same value.  *)
   | Vdup_n
@@ -227,7 +227,7 @@ type features =
        names.  *)
   | Instruction_name of string list
     (* Mark that the intrinsic yields no instructions, or expands to yield
-       behaviour that the test generator cannot test.  *)
+       behavior that the test generator cannot test.  *)
   | No_op
     (* Mark that the intrinsic has constant arguments that cannot be set
        to the defaults (zero for pointers and one otherwise) in the test

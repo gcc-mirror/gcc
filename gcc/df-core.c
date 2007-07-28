@@ -144,7 +144,7 @@ There are four ways of doing the incremental scanning:
    For most modern rtl passes, this is certainly the easiest way to
    manage rescanning the insns.  This technique also has the advantage
    that the scanning information is always correct and can be relied
-   apon even after changes have been made to the instructions.  This
+   upon even after changes have been made to the instructions.  This
    technique is contra indicated in several cases:
 
    a) If def-use chains OR use-def chains (but not both) are built,

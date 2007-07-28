@@ -195,7 +195,7 @@
    operands[2] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
 })
 
-;; Reciprical approximation
+;; Reciprocal approximation
 
 (define_insn "recip_approx_rf"
   [(set (match_operand:RF 0 "fr_register_operand" "=f")

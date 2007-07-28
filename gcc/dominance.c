@@ -1448,7 +1448,7 @@ debug_dominance_info (enum cdi_direction dir)
 }
 
 /* Prints to stderr representation of the dominance tree (for direction DIR)
-   rooted in ROOT, indented by INDENT tabelators.  If INDENT_FIRST is false,
+   rooted in ROOT, indented by INDENT tabulators.  If INDENT_FIRST is false,
    the first line of the output is not indented.  */
 
 static void

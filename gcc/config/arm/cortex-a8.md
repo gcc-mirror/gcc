@@ -129,7 +129,7 @@
                "arm_no_early_alu_shift_value_dep")
 
 ;; Multiplication instructions.  These are categorized according to their
-;; reservation behaviour and the need below to distinguish certain
+;; reservation behavior and the need below to distinguish certain
 ;; varieties for bypasses.  Results are available at the E5 stage
 ;; (but some of these are multi-cycle instructions which explains the
 ;; latencies below).
@@ -245,7 +245,7 @@
 ;; reads the value to be stored at the start of E3 and the ALU insn
 ;; writes it at the end of E2.  Move instructions actually produce the
 ;; result at the end of E1, but since we don't have delay slots, the
-;; scheduling behaviour will be the same.
+;; scheduling behavior will be the same.
 (define_bypass 0 "cortex_a8_alu,cortex_a8_alu_shift,\
                   cortex_a8_alu_shift_reg,cortex_a8_mov"
                "cortex_a8_store1_2,cortex_a8_store3_4"

@@ -265,7 +265,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
       /* If the number of iterations is unknown, or the
 	 peeling-for-misalignment amount is unknown, we eill have to generate
-	 a runtime test to test the loop count agains the threshold.  */
+	 a runtime test to test the loop count against the threshold.  */
       if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 	  || (byte_misalign < 0))
 	runtime_test = true;

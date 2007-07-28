@@ -1,3 +1,14 @@
+2007-07-28  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfglayout.c, config/arm/arm.c, config/arm/cortex-a8.md,
+	config/arm/neon-schedgen.ml, config/arm/neon.ml,
+	config/arm/vec-common.md, config/ia64/div.md, cselib.c,
+	df-core.c, df.h, dominance.c, optabs.c, opts.c, reg-stack.c,
+	regstat.c, target.h, tree-ssa-live.c, tree-ssa-pre.c,
+	tree-vect-transform.c, tree.def: Fix comment typos.  Follow
+	spelling conventions.
+	* doc/invoke.texi: Follow spelling conventions.
+
 2007-07-29  Vladimir Yanovsky  <yanov@il.ibm.com>
             Revital Eres  <eres@il.ibm.com>
 

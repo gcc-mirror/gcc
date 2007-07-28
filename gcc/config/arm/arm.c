@@ -6083,7 +6083,7 @@ neon_valid_immediate (rtx op, enum machine_mode mode, int inverse,
     {
       unsigned HOST_WIDE_INT imm = 0;
 
-      /* Un-invert bytes of recognized vector, if neccessary.  */
+      /* Un-invert bytes of recognized vector, if necessary.  */
       if (invmask != 0)
         for (i = 0; i < idx; i++)
           bytes[i] ^= invmask;
@@ -6212,7 +6212,7 @@ neon_pairwise_reduce (rtx op0, rtx op1, enum machine_mode mode,
     }
 }
 
-/* Initialise a vector with non-constant elements.  FIXME: We can do better
+/* Initialize a vector with non-constant elements.  FIXME: We can do better
    than the current implementation (building a vector on the stack and then
    loading it) in many cases.  See rs6000.c.  */
 
@@ -12664,7 +12664,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
       break;
 
     /* %# is a "break" sequence. It doesn't output anything, but is used to
-       seperate e.g. operand numbers from following text, if that text consists
+       separate e.g. operand numbers from following text, if that text consists
        of further digits which we don't want to be part of the operand
        number.  */
     case '#':

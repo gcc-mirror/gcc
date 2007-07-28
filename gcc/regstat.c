@@ -395,7 +395,7 @@ regstat_get_setjmp_crosses (void)
    Process REG_N_CALLS_CROSSED.  
 
    This is used by sched_deps.  A good implementation of sched-deps
-   would really process the blocks directly rather than going thur
+   would really process the blocks directly rather than going through
    lists of insns.  If it did this, it could use the exact regs that
    cross an individual call rather than using this info that merges
    the info for all calls.
