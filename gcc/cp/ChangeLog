@@ -1,3 +1,10 @@
+2007-07-28  Simon Martin  <simartin@users.sourceforge.net>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/30917
+	* name-lookup.c (lookup_name_real): Non namespace-scope bindings can be
+	hidden due to friend declarations in local classes.
+
 2007-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/32346

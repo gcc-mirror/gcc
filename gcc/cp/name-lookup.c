@@ -3996,8 +3996,49 @@ lookup_name_real (tree name, int prefer_type, int nonclass, bool block_p,
 
 	if (binding)
 	  {
-	    /* Only namespace-scope bindings can be hidden.  */
-	    gcc_assert (!hidden_name_p (binding));
+	    if (hidden_name_p (binding))
+	      {
+		/* A non namespace-scope binding can only be hidden if
+		   we are in a local class, due to friend declarations.
+		   In particular, consider:
+
+		   void f() {
+		     struct A {
+		       friend struct B;
+		       void g() { B* b; } // error: B is hidden
+		     }
+		     struct B {};
+		   }
+
+		   The standard says that "B" is a local class in "f"
+		   (but not nested within "A") -- but that name lookup
+		   for "B" does not find this declaration until it is
+		   declared directly with "f".
+
+		   In particular:
+
+		   [class.friend]
+
+		   If a friend declaration appears in a local class and
+		   the name specified is an unqualified name, a prior
+		   declaration is looked up without considering scopes
+		   that are outside the innermost enclosing non-class
+		   scope. For a friend class declaration, if there is no
+		   prior declaration, the class that is specified 
+		   belongs to the innermost enclosing non-class scope,
+		   but if it is subsequently referenced, its name is not
+		   found by name lookup until a matching declaration is
+		   provided in the innermost enclosing nonclass scope.
+		*/
+		gcc_assert (current_class_type &&
+			    LOCAL_CLASS_P (current_class_type));
+
+		/* This binding comes from a friend declaration in the local
+		   class. The standard (11.4.8) states that the lookup can
+		   only succeed if there is a non-hidden declaration in the
+		   current scope, which is not the case here.  */
+		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
+	      }
 	    val = binding;
 	    break;
 	  }
