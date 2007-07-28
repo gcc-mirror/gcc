@@ -1355,9 +1355,9 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	}
       /* Uninitialized USE might happen for functions returning uninitialized
          value.  We will properly initialize the USE on the edge to EXIT_BLOCK,
-	 so it is safe to ignore the use here. This is consistent with behaviour
+	 so it is safe to ignore the use here. This is consistent with behavior
 	 of dataflow analyzer that ignores USE too.  (This also imply that 
-	 forcingly initializing the register to NaN here would lead to ICE later,
+	 forcibly initializing the register to NaN here would lead to ICE later,
 	 since the REG_DEAD notes are not issued.)  */
       break;
 

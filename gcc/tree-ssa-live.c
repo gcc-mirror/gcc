@@ -461,7 +461,7 @@ mark_scope_block_unused (tree scope)
 	or there is precisely one subblocks and the block
 	has same abstract origin as outer block and declares
 	no variables, so it is pure wrapper.
-   When we are not outputting full debug info, we also elliminate dead variables
+   When we are not outputting full debug info, we also eliminate dead variables
    out of scope blocks to let them to be recycled by GGC and to save copying work
    done by the inliner.  */
 

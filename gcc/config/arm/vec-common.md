@@ -42,7 +42,7 @@
 })
 
 ;; Vector arithmetic. Expanders are blank, then unnamed insns implement
-;; patterns seperately for IWMMXT and Neon.
+;; patterns separately for IWMMXT and Neon.
 
 (define_expand "add<mode>3"
   [(set (match_operand:VALL 0 "s_register_operand" "")

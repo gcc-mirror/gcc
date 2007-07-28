@@ -953,7 +953,7 @@ cselib_expand_value_rtx (rtx orig, bitmap regs_active, int max_depth)
 		 STACK_POINTER_REGNUM, FRAME_POINTER or the
 		 HARD_FRAME_POINTER.
 
-		 Thses expansions confuses the code that notices that
+		 These expansions confuses the code that notices that
 		 stores into the frame go dead at the end of the
 		 function and that the frame is not effected by calls
 		 to subroutines.  If you allow the

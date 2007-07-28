@@ -63,7 +63,7 @@ type availability = Source of int
 
 type guard = Guard_none | Guard_only_m | Guard_only_n | Guard_only_d
 
-(* Reservation behaviours.  All but the last row here correspond to one
+(* Reservation behaviors.  All but the last row here correspond to one
    pipeline each.  Each constructor will correspond to one
    define_reservation.  *)
 type reservation =
@@ -78,7 +78,7 @@ type reservation =
 | Fmul_then_fadd | Fmul_then_fadd_2
 
 (* This table must be kept as short as possible by conflating
-   entries with the same availability behaviour.
+   entries with the same availability behavior.
 
    First components: instruction group names
    Second components: availability requirements, in the order in which

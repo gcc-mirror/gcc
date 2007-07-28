@@ -311,7 +311,7 @@ struct dataflow
 struct df_mw_hardreg
 {
   rtx mw_reg;                   /* The multiword hardreg.  */ 
-  /* These two bitfields are intentially oversized, in the hope that
+  /* These two bitfields are intentionally oversized, in the hope that
      accesses to 16-bit fields will usually be quicker.  */
   ENUM_BITFIELD(df_ref_type) type : 16;
 				/* Used to see if the ref is read or write.  */
@@ -360,7 +360,7 @@ struct df_ref
   unsigned int ref_order;
 
   unsigned int regno;		/* The register number referenced.  */
-  /* These two bitfields are intentially oversized, in the hope that
+  /* These two bitfields are intentionally oversized, in the hope that
      accesses to 16-bit fields will usually be quicker.  */
   ENUM_BITFIELD(df_ref_type) type : 16;
 				/* Type of ref.  */

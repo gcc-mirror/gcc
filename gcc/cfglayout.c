@@ -1001,7 +1001,7 @@ force_one_exit_fallthru (void)
 	redirect_edge_and_branch_force (e, forwarder);
     }
 
-  /* Fix up the chain of blocks -- make FORWARDER immediately preceed the
+  /* Fix up the chain of blocks -- make FORWARDER immediately precede the
      exit block.  */
   FOR_EACH_BB (bb)
     {

@@ -420,7 +420,7 @@ struct gcc_target
     int (*builtin_vectorization_cost) (bool);
 
     /* Return true if vector alignment is reachable (by peeling N
-       interations) for the given type.  */
+       iterations) for the given type.  */
     bool (* vector_alignment_reachable) (tree, bool);
   } vectorize;
 

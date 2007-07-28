@@ -91,7 +91,7 @@ enum debug_info_level debug_info_level = DINFO_LEVEL_NONE;
    generated in the object file of the corresponding source file.
    Both of these case are handled when the base name of the file of
    the struct definition matches the base name of the source file
-   of thet current compilation unit.  This matching emits minimal
+   of the current compilation unit.  This matching emits minimal
    struct debugging information.
 
    The base file name matching rule above will fail to emit debug
