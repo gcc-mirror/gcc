@@ -3454,7 +3454,7 @@ gen_shape_param (gfc_formal_arglist **head,
      of BT_INTEGER type.  */
   param_sym->ts.type = BT_VOID;
 
-  /* Initialize the kind to default integer.  However, it will be overriden
+  /* Initialize the kind to default integer.  However, it will be overridden
      during resolution to match the kind of the SHAPE parameter given as
      the actual argument (to allow for any valid integer kind).  */
   param_sym->ts.kind = gfc_default_integer_kind;   

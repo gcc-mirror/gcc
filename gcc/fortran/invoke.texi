@@ -450,7 +450,7 @@ check that the declared interfaces are consistent across program units.
 
 @item -Wnonstd-intrinsics
 @opindex @code{Wnonstd-intrinsics}
-@cindex warnings, non-stdandard intrinsics
+@cindex warnings, non-standard intrinsics
 Warn if the user tries to use an intrinsic that does not belong to the 
 standard the user has chosen via the @option{-std} option.
 

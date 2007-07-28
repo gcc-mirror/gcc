@@ -2082,7 +2082,7 @@ Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{x} @tab Associated scalar pointer or interoperatable scalar
+@item @var{x} @tab Associated scalar pointer or interoperable scalar
 		   or allocated allocatable variable with @code{TARGET}
 		   attribute.
 @end multitable
