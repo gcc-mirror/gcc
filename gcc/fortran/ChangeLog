@@ -3,17 +3,19 @@
 	PR fortran/31818
 	PR fortran/32876
 	PR fortran/32905
-	* gfortran.h (symbol_attribute): Added bits for pointer_comp, private_comp.
-	* parse.c (parse_derived): Set pointer_comp/private_comp bits if the derived
-	type ultimately contains pointer components or private components.
+	* gfortran.h (symbol_attribute): Added bits for pointer_comp, 
+	private_comp.
+	* parse.c (parse_derived): Set pointer_comp/private_comp bits if 
+	the derived type ultimately contains pointer components or private 
+	components.
 	* module.c (ab_attribute): New values AB_POINTER_COMP, AB_PRIVATE_COMP.
 	(attr_bits): Added names for new ab_attributes.
 	(mio_symbol_attribute): Save/restore new attribute bits in modules.
-	* match.c (gfc_match_namelist): Removed check for namelist objects of assumed
-	shape.
-	* resolve.c (resolve_fl_namelist): Added check for pointer or private
-	components in nested types. Added check for namelist objects of assumed
-	shape.
+	* match.c (gfc_match_namelist): Removed check for namelist objects
+	of assumed shape.
+	* resolve.c (resolve_fl_namelist): Added check for pointer or
+	private components in nested types. Added check for namelist objects
+	of assumed shape.
 
 2007-07-28  Paul Thomas  <pault@gcc.gnu.org>
 
