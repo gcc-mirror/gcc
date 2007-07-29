@@ -34,6 +34,15 @@ non-maintainer-mode build and use the newly installed gjavah.
 
 --
 
+To regenerate libjava/configure, use:
+
+    aclocal -I . -I .. -I ../config -I libltdl
+    autoconf
+
+See the GCC documentation which auto* versions to use.
+
+--
+
 libgcj uses GNU Classpath as an upstream provider.  Snapshots of
 Classpath are imported into the libgcj source tree.  Some classes are
 overridden by local versions; these files still appear in the libgcj

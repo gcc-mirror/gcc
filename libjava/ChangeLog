@@ -1,3 +1,7 @@
+2007-07-29  Matthias Klose  <doko@ubuntu.com>
+
+	* HACKING: Document regenerating configure.
+
 2007-07-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgcj/32929
