@@ -389,19 +389,19 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
       switch (errno)
 	{
 	case ENOENT: 
-	  st_sprintf (msg, "File '%s' does not exist", path);
+	  sprintf (msg, "File '%s' does not exist", path);
 	  break;
 
 	case EEXIST:
-	  st_sprintf (msg, "File '%s' already exists", path);
+	  sprintf (msg, "File '%s' already exists", path);
 	  break;
 
 	case EACCES:
-	  st_sprintf (msg, "Permission denied trying to open file '%s'", path);
+	  sprintf (msg, "Permission denied trying to open file '%s'", path);
 	  break;
 
 	case EISDIR:
-	  st_sprintf (msg, "'%s' is a directory", path);
+	  sprintf (msg, "'%s' is a directory", path);
 	  break;
 
 	default:

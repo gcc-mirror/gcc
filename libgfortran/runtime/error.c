@@ -185,63 +185,6 @@ xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
   return p;
 }
 
-
-/* st_sprintf()-- Simple sprintf() for formatting memory buffers. */
-
-void
-st_sprintf (char *buffer, const char *format, ...)
-{
-  va_list arg;
-  char c;
-  const char *p;
-  int count;
-  char itoa_buf[GFC_ITOA_BUF_SIZE];
-
-  va_start (arg, format);
-
-  for (;;)
-    {
-      c = *format++;
-      if (c != '%')
-	{
-	  *buffer++ = c;
-	  if (c == '\0')
-	    break;
-	  continue;
-	}
-
-      c = *format++;
-      switch (c)
-	{
-	case 'c':
-	  *buffer++ = (char) va_arg (arg, int);
-	  break;
-
-	case 'd':
-	  p = gfc_itoa (va_arg (arg, int), itoa_buf, sizeof (itoa_buf));
-	  count = strlen (p);
-
-	  memcpy (buffer, p, count);
-	  buffer += count;
-	  break;
-
-	case 's':
-	  p = va_arg (arg, char *);
-	  count = strlen (p);
-
-	  memcpy (buffer, p, count);
-	  buffer += count;
-	  break;
-
-	default:
-	  *buffer++ = c;
-	}
-    }
-
-  va_end (arg);
-}
-
-
 /* show_locus()-- Print a line number and filename describing where
  * something went wrong */
 
@@ -306,10 +249,16 @@ iexport(os_error);
  * invalid fortran program. */
 
 void
-runtime_error (const char *message)
+runtime_error (const char *message, ...)
 {
+  va_list ap;
+
   recursion_check ();
-  st_printf ("Fortran runtime error: %s\n", message);
+  st_printf ("Fortran runtime error: ");
+  va_start (ap, message);
+  st_vprintf (message, ap);
+  va_end (ap);
+  st_printf ("\n");
   sys_exit (2);
 }
 iexport(runtime_error);
