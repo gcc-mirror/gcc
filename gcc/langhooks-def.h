@@ -43,6 +43,7 @@ extern HOST_WIDE_INT lhd_get_alias_set (tree);
 extern tree lhd_return_tree (tree);
 extern tree lhd_return_null_tree_v (void);
 extern tree lhd_return_null_tree (tree);
+extern tree lhd_return_null_const_tree (const_tree);
 extern tree lhd_do_nothing_iii_return_null_tree (int, int, int);
 extern tree lhd_staticp (tree);
 extern void lhd_print_tree_nothing (FILE *, tree, int);
@@ -113,7 +114,7 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_PRINT_ERROR_FUNCTION lhd_print_error_function
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	lhd_decl_printable_name
 #define LANG_HOOKS_DWARF_NAME		lhd_dwarf_name
-#define LANG_HOOKS_GET_CALLEE_FNDECL	lhd_return_null_tree
+#define LANG_HOOKS_GET_CALLEE_FNDECL	lhd_return_null_const_tree
 #define LANG_HOOKS_EXPR_SIZE		lhd_expr_size
 #define LANG_HOOKS_TREE_SIZE		lhd_tree_size
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	lhd_types_compatible_p

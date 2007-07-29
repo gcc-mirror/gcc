@@ -938,7 +938,7 @@ determine_seq_blocks (void)
 /* Builds a symbol_ref for LABEL.  */
 
 static rtx
-gen_symbol_ref_rtx_for_label (rtx label)
+gen_symbol_ref_rtx_for_label (const_rtx label)
 {
   char name[20];
   rtx sym;

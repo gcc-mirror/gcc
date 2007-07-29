@@ -100,6 +100,14 @@ lhd_return_null_tree (tree ARG_UNUSED (t))
   return NULL_TREE;
 }
 
+/* Do nothing (return NULL_TREE).  */
+
+tree
+lhd_return_null_const_tree (const_tree ARG_UNUSED (t))
+{
+  return NULL_TREE;
+}
+
 /* The default post options hook.  */
 
 bool

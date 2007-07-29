@@ -9512,7 +9512,7 @@ objc_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
    version looks for the OBJ_TYPE_REF_EXPR which is used for objc_msgSend.  */
 
 tree
-objc_get_callee_fndecl (tree call_expr)
+objc_get_callee_fndecl (const_tree call_expr)
 {
   tree addr = CALL_EXPR_FN (call_expr);
   if (TREE_CODE (addr) != OBJ_TYPE_REF)

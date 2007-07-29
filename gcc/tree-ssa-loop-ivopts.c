@@ -2485,7 +2485,7 @@ var_at_stmt (struct loop *loop, struct iv_cand *cand, tree stmt)
    but the bit is determined from TYPE_PRECISION, not MODE_BITSIZE.  */
 
 int
-tree_int_cst_sign_bit (tree t)
+tree_int_cst_sign_bit (const_tree t)
 {
   unsigned bitno = TYPE_PRECISION (TREE_TYPE (t)) - 1;
   unsigned HOST_WIDE_INT w;

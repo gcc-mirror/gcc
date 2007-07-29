@@ -98,7 +98,7 @@ typedef struct cp_token *cp_token_position;
 DEF_VEC_P (cp_token_position);
 DEF_VEC_ALLOC_P (cp_token_position,heap);
 
-static const cp_token eof_token =
+static cp_token eof_token =
 {
   CPP_EOF, RID_MAX, 0, PRAGMA_NONE, 0, 0, false, 0, { NULL },
 #if USE_MAPPED_LOCATION
@@ -318,7 +318,7 @@ cp_lexer_new_main (void)
   lexer->buffer = buffer;
   lexer->buffer_length = alloc - space;
   lexer->last_token = pos;
-  lexer->next_token = lexer->buffer_length ? buffer : (cp_token *)&eof_token;
+  lexer->next_token = lexer->buffer_length ? buffer : &eof_token;
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
@@ -342,7 +342,7 @@ cp_lexer_new_from_tokens (cp_token_cache *cache)
   /* We do not own the buffer.  */
   lexer->buffer = NULL;
   lexer->buffer_length = 0;
-  lexer->next_token = first == last ? (cp_token *)&eof_token : first;
+  lexer->next_token = first == last ? &eof_token : first;
   lexer->last_token = last;
 
   lexer->saved_tokens = VEC_alloc (cp_token_position, heap,
@@ -612,7 +612,7 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
       ++token;
       if (token == lexer->last_token)
 	{
-	  token = (cp_token *)&eof_token;
+	  token = &eof_token;
 	  break;
 	}
 
@@ -645,7 +645,7 @@ cp_lexer_consume_token (cp_lexer* lexer)
       lexer->next_token++;
       if (lexer->next_token == lexer->last_token)
 	{
-	  lexer->next_token = (cp_token *)&eof_token;
+	  lexer->next_token = &eof_token;
 	  break;
 	}
 
@@ -685,7 +685,7 @@ cp_lexer_purge_token (cp_lexer *lexer)
       tok++;
       if (tok == lexer->last_token)
 	{
-	  tok = (cp_token *)&eof_token;
+	  tok = &eof_token;
 	  break;
 	}
     }

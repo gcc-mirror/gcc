@@ -144,7 +144,7 @@ static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
 			tree, tree, int, bool);
 
-static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (tree, tree);
+static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
 
 static int is_aligning_offset (tree, tree);
 static void expand_operands (tree, tree, rtx, rtx*, rtx*,
@@ -4656,7 +4656,7 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 /* Helper for categorize_ctor_elements.  Identical interface.  */
 
 static bool
-categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
+categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 			    HOST_WIDE_INT *p_elt_count,
 			    bool *p_must_clear)
 {
@@ -4802,7 +4802,7 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
    as "initializer_constant_valid_p (CTOR, TREE_TYPE (CTOR)) != 0".  */
 
 bool
-categorize_ctor_elements (tree ctor, HOST_WIDE_INT *p_nz_elts,
+categorize_ctor_elements (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 			  HOST_WIDE_INT *p_elt_count,
 			  bool *p_must_clear)
 {
@@ -4819,7 +4819,7 @@ categorize_ctor_elements (tree ctor, HOST_WIDE_INT *p_nz_elts,
    array member at the end of the structure.  */
 
 HOST_WIDE_INT
-count_type_elements (tree type, bool allow_flexarr)
+count_type_elements (const_tree type, bool allow_flexarr)
 {
   const HOST_WIDE_INT max = ~((HOST_WIDE_INT)1 << (HOST_BITS_PER_WIDE_INT-1));
   switch (TREE_CODE (type))
@@ -5928,7 +5928,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
    as PACKED.  */
 
 bool
-contains_packed_reference (tree exp)
+contains_packed_reference (const_tree exp)
 {
   bool packed_p = false;
 
@@ -6446,7 +6446,7 @@ safe_from_p (rtx x, tree exp, int top_p)
    This is used in updating alignment of MEMs in array references.  */
 
 unsigned HOST_WIDE_INT
-highest_pow2_factor (tree exp)
+highest_pow2_factor (const_tree exp)
 {
   unsigned HOST_WIDE_INT c0, c1;
 
@@ -6517,7 +6517,7 @@ highest_pow2_factor (tree exp)
    the structure gives the alignment.  */
 
 static unsigned HOST_WIDE_INT
-highest_pow2_factor_for_target (tree target, tree exp)
+highest_pow2_factor_for_target (const_tree target, const_tree exp)
 {
   unsigned HOST_WIDE_INT target_align, factor;
 

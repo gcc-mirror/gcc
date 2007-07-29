@@ -4004,7 +4004,7 @@ output_addressed_constants (tree exp)
    evaluate the property while walking a constructor for other purposes.  */
 
 bool
-constructor_static_from_elts_p (tree ctor)
+constructor_static_from_elts_p (const_tree ctor)
 {
   return (TREE_CONSTANT (ctor)
 	  && (TREE_CODE (TREE_TYPE (ctor)) == UNION_TYPE

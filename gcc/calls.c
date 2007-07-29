@@ -616,7 +616,7 @@ flags_from_decl_or_type (const_tree exp)
 /* Detect flags from a CALL_EXPR.  */
 
 int
-call_expr_flags (tree t)
+call_expr_flags (const_tree t)
 {
   int flags;
   tree decl = get_callee_fndecl (t);

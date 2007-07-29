@@ -1392,7 +1392,7 @@ expand_expr_stmt (tree exp)
    (potential) location of the expression.  */
 
 int
-warn_if_unused_value (tree exp, location_t locus)
+warn_if_unused_value (const_tree exp, location_t locus)
 {
  restart:
   if (TREE_USED (exp) || TREE_NO_WARNING (exp))
@@ -1747,7 +1747,7 @@ expand_return (tree retval)
    *that* node in turn will point to the relevant FUNCTION_DECL node.  */
 
 int
-is_body_block (tree stmt)
+is_body_block (const_tree stmt)
 {
   if (lang_hooks.no_body_blocks)
     return 0;

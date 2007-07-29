@@ -1824,7 +1824,7 @@ aggregate_value_p (tree exp, tree fntype)
    should live on the local stack.  */
 
 bool
-use_register_for_decl (tree decl)
+use_register_for_decl (const_tree decl)
 {
   /* Honor volatile.  */
   if (TREE_SIDE_EFFECTS (decl))

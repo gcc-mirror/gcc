@@ -364,7 +364,7 @@ struct lang_hooks
   int (*types_compatible_p) (tree x, tree y);
 
   /* Given a CALL_EXPR, return a function decl that is its target.  */
-  tree (*lang_get_callee_fndecl) (tree);
+  tree (*lang_get_callee_fndecl) (const_tree);
 
   /* Called by report_error_function to print out function name.  */
   void (*print_error_function) (struct diagnostic_context *, const char *);

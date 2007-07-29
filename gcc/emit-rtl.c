@@ -1283,7 +1283,7 @@ subreg_highpart_offset (enum machine_mode outermode, enum machine_mode innermode
    If X is not a SUBREG, always return 1 (it is its own low part!).  */
 
 int
-subreg_lowpart_p (rtx x)
+subreg_lowpart_p (const_rtx x)
 {
   if (GET_CODE (x) != SUBREG)
     return 1;
