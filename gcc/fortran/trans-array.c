@@ -1656,6 +1656,21 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
 
   /* See if the constructor determines the loop bounds.  */
   dynamic = false;
+
+  if (ss->expr->shape && loop->dimen > 1 && loop->to[0] == NULL_TREE)
+    {
+      /* We have a multidimensional parameter.  */
+      int n;
+      for (n = 0; n < ss->expr->rank; n++)
+      {
+	loop->from[n] = gfc_index_zero_node;
+	loop->to[n] = gfc_conv_mpz_to_tree (ss->expr->shape [n],
+					    gfc_index_integer_kind);
+	loop->to[n] = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+				   loop->to[n], gfc_index_one_node);
+      }
+    }
+
   if (loop->to[0] == NULL_TREE)
     {
       mpz_t size;
