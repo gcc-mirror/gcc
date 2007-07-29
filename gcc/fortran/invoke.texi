@@ -148,7 +148,7 @@ and warnings}.
 @item Runtime Options
 @xref{Runtime Options,,Options for influencing runtime behavior}.
 @gccoptlist{-fconvert=@var{conversion}  -frecord-marker=@var{length} @gol
--fmax-subrecord-length=@var{length}}
+-fmax-subrecord-length=@var{length}  -fsign-zero}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
@@ -660,6 +660,12 @@ with earlier versions of @command{gfortran}, use @option{-frecord-marker=8}.
 Specify the maximum length for a subrecord.  The maximum permitted
 value for length is 2147483639, which is also the default.  Only
 really useful for use by the gfortran testsuite.
+
+@item -fsign-zero
+@opindex @code{fsign-zero}
+When writing zero values, show the negative sign if the sign bit is set.
+@code{fno-sign-zero} does not print the negative sign of zero values for
+compatibility with F77.  Default behavior is to show the negative sign.
 @end table
 
 @node Code Gen Options
