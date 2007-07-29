@@ -128,7 +128,7 @@ by type.  Explanations are in the following sections.
 and warnings}.
 @gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wall  -Waliasing  -Wampersand  -Wcharacter-truncation  -Wconversion @gol
+-Wall  -Waliasing  -Wampersand  -Wcharacter-truncation  -Wconversion @gol
 -Wimplicit-interface  -Wline-truncation  -Wnonstd-intrinsics  -Wsurprising @gol
 -Wno-tabs  -Wunderflow}
 

@@ -1,5 +1,9 @@
 2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
 
+	* invoke.texi: Removed -w from option summary.
+
+2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32879
 	* intrinsic.texi (IRAND, RAND, RANDOM_NUMBER): Document algorithm
 	used for random number generator.
