@@ -5764,6 +5764,11 @@ in the current sequence is returned; if @var{FLAG} is 1, the generator
 is restarted by @code{CALL SRAND(0)}; if @var{FLAG} has any other value,
 it is used as a new seed with @code{SRAND}.
 
+This intrinsic routine is provided for backwards compatibility with
+GNU Fortran 77. It implements a simple modulo generator as provided 
+by @command{g77}. For new code, one should consider the use of 
+@ref{RANDOM_NUMBER} as it implements a superior algorithm.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -8200,6 +8205,11 @@ in the current sequence is returned; if @var{FLAG} is 1, the generator
 is restarted by @code{CALL SRAND(0)}; if @var{FLAG} has any other value,
 it is used as a new seed with @code{SRAND}.
 
+This intrinsic routine is provided for backwards compatibility with
+GNU Fortran 77. It implements a simple modulo generator as provided 
+by @command{g77}. For new code, one should consider the use of 
+@ref{RANDOM_NUMBER} as it implements a superior algorithm.
+
 @item @emph{Standard}:
 GNU extension
 
@@ -8245,6 +8255,24 @@ end program test_rand
 Returns a single pseudorandom number or an array of pseudorandom numbers
 from the uniform distribution over the range @math{ 0 \leq x < 1}.
 
+The runtime-library implements George Marsaglia's KISS (Keep It Simple 
+Stupid) random number generator (RNG). This RNG combines:
+@enumerate
+@item The congruential generator @math{x(n) = 69069 \cdot x(n-1) + 1327217885}
+with a period of @math{2^{32}},
+@item A 3-shift shift-register generator with a period of @math{2^{32} - 1},
+@item  Two 16-bit multiply-with-carry generators with a period of
+@math{597273182964842497 > 2^{59}}.
+@end enumerate
+The overall period exceeds @math{2^{123}}.
+
+Please note, this RNG is thread safe if used within OpenMP directives,
+i. e. its state will be consistent while called from multiple threads.
+However, the KISS generator does not create random numbers in parallel 
+from multiple sources, but in sequence from a single source. If an
+OpenMP-enabled application heavily relies on random numbers, one should 
+consider employing a dedicated parallel random number generator instead.
+
 @item @emph{Standard}:
 F95 and later
 
@@ -8267,15 +8295,6 @@ program test_random_number
   CALL RANDOM_NUMBER(r)
 end program
 @end smallexample
-
-@item @emph{Note}:
-The implemented random number generator is thread safe if used within
-OpenMP directives, i. e. its state will be consistent while called from
-multiple threads. Please note that the currently implemented KISS generator 
-does not create random numbers in parallel from multiple sources, but in
-sequence from a single source. If your OpenMP-enabled application heavily
-relies on random numbers, you should consider employing a dedicated parallel
-random number generator instead.
 
 @item @emph{See also}:
 @ref{RANDOM_SEED}
