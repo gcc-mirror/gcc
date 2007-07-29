@@ -1074,7 +1074,7 @@ negate_mathfn_p (enum built_in_function code)
    overflow.  */
 
 bool
-may_negate_without_overflow_p (tree t)
+may_negate_without_overflow_p (const_tree t)
 {
   unsigned HOST_WIDE_INT val;
   unsigned int prec;
@@ -1620,7 +1620,7 @@ int_binop_types_match_p (enum tree_code code, tree type1, tree type2)
    If NOTRUNC is nonzero, do not truncate the result to fit the data type.  */
 
 tree
-int_const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
+int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2, int notrunc)
 {
   unsigned HOST_WIDE_INT int1l, int2l;
   HOST_WIDE_INT int1h, int2h;
@@ -2213,7 +2213,7 @@ build_zero_vector (tree type)
 /* Returns true, if ARG is convertible to TYPE using a NOP_EXPR.  */
 
 bool
-fold_convertible_p (tree type, tree arg)
+fold_convertible_p (const_tree type, const_tree arg)
 {
   tree orig = TREE_TYPE (arg);
 
@@ -2744,7 +2744,7 @@ truth_value_p (enum tree_code code)
    to ensure that global memory is unchanged in between.  */
 
 int
-operand_equal_p (tree arg0, tree arg1, unsigned int flags)
+operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
   /* If either is ERROR_MARK, they aren't equal.  */
   if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK)
@@ -2997,13 +2997,13 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 
 	  /* Now see if all the arguments are the same.  */
 	  {
-	    call_expr_arg_iterator iter0, iter1;
-	    tree a0, a1;
-	    for (a0 = first_call_expr_arg (arg0, &iter0),
-		   a1 = first_call_expr_arg (arg1, &iter1);
+	    const_call_expr_arg_iterator iter0, iter1;
+	    const_tree a0, a1;
+	    for (a0 = first_const_call_expr_arg (arg0, &iter0),
+		   a1 = first_const_call_expr_arg (arg1, &iter1);
 		 a0 && a1;
-		 a0 = next_call_expr_arg (&iter0),
-		   a1 = next_call_expr_arg (&iter1))
+		 a0 = next_const_call_expr_arg (&iter0),
+		   a1 = next_const_call_expr_arg (&iter1))
 	      if (! operand_equal_p (a0, a1, flags))
 		return 0;
 
@@ -6722,7 +6722,7 @@ reorder_operands_p (tree arg0, tree arg1)
    evaluate the operands in reverse order.  */
 
 bool
-tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
+tree_swap_operands_p (const_tree arg0, const_tree arg1, bool reorder)
 {
   STRIP_SIGN_NOPS (arg0);
   STRIP_SIGN_NOPS (arg1);
@@ -7217,7 +7217,7 @@ fold_plusminus_mult_expr (enum tree_code code, tree type, tree arg0, tree arg1)
    upon failure.  */
 
 static int
-native_encode_int (tree expr, unsigned char *ptr, int len)
+native_encode_int (const_tree expr, unsigned char *ptr, int len)
 {
   tree type = TREE_TYPE (expr);
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
@@ -7262,7 +7262,7 @@ native_encode_int (tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_real (tree expr, unsigned char *ptr, int len)
+native_encode_real (const_tree expr, unsigned char *ptr, int len)
 {
   tree type = TREE_TYPE (expr);
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
@@ -7310,7 +7310,7 @@ native_encode_real (tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_complex (tree expr, unsigned char *ptr, int len)
+native_encode_complex (const_tree expr, unsigned char *ptr, int len)
 {
   int rsize, isize;
   tree part;
@@ -7333,7 +7333,7 @@ native_encode_complex (tree expr, unsigned char *ptr, int len)
    upon failure.  */
 
 static int
-native_encode_vector (tree expr, unsigned char *ptr, int len)
+native_encode_vector (const_tree expr, unsigned char *ptr, int len)
 {
   int i, size, offset, count;
   tree itype, elem, elements;
@@ -7376,7 +7376,7 @@ native_encode_vector (tree expr, unsigned char *ptr, int len)
    placed in the buffer, or zero upon failure.  */
 
 int
-native_encode_expr (tree expr, unsigned char *ptr, int len)
+native_encode_expr (const_tree expr, unsigned char *ptr, int len)
 {
   switch (TREE_CODE (expr))
     {
@@ -7403,7 +7403,7 @@ native_encode_expr (tree expr, unsigned char *ptr, int len)
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
 static tree
-native_interpret_int (tree type, unsigned char *ptr, int len)
+native_interpret_int (tree type, const unsigned char *ptr, int len)
 {
   int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   int byte, offset, word, words;
@@ -7451,7 +7451,7 @@ native_interpret_int (tree type, unsigned char *ptr, int len)
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
 static tree
-native_interpret_real (tree type, unsigned char *ptr, int len)
+native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
   enum machine_mode mode = TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
@@ -7501,7 +7501,7 @@ native_interpret_real (tree type, unsigned char *ptr, int len)
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
 static tree
-native_interpret_complex (tree type, unsigned char *ptr, int len)
+native_interpret_complex (tree type, const unsigned char *ptr, int len)
 {
   tree etype, rpart, ipart;
   int size;
@@ -7525,7 +7525,7 @@ native_interpret_complex (tree type, unsigned char *ptr, int len)
    If the buffer cannot be interpreted, return NULL_TREE.  */
 
 static tree
-native_interpret_vector (tree type, unsigned char *ptr, int len)
+native_interpret_vector (tree type, const unsigned char *ptr, int len)
 {
   tree etype, elem, elements;
   int i, size, count;
@@ -7555,7 +7555,7 @@ native_interpret_vector (tree type, unsigned char *ptr, int len)
    return NULL_TREE.  */
 
 tree
-native_interpret_expr (tree type, unsigned char *ptr, int len)
+native_interpret_expr (tree type, const unsigned char *ptr, int len)
 {
   switch (TREE_CODE (type))
     {

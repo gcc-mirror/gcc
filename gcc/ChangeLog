@@ -1,3 +1,65 @@
+2007-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* attribs.c (hash_attr, eq_attr, init_attributes): Constify.
+	* builtins.c (validate_arg, builtin_mathfn_code,
+	validate_arglist): Likewise.
+	* calls.c (call_expr_flags): Likewise.
+	* combine.c (reg_nonzero_bits_for_combine,
+	reg_num_sign_bit_copies_for_combine, get_last_value,
+	reg_truncated_to_mode): Likewise.
+	* emit-rtl.c (subreg_lowpart_p): Likewise.
+	* expr.c (highest_pow2_factor_for_target,
+	categorize_ctor_elements_1, categorize_ctor_elements,
+	count_type_elements, contains_packed_reference,
+	highest_pow2_factor, highest_pow2_factor_for_target): Likewise.
+	* fold-const.c (may_negate_without_overflow_p, int_const_binop,
+	fold_convertible_p, operand_equal_p, tree_swap_operands_p,
+	native_encode_int, native_encode_real, native_encode_complex,
+	native_encode_vector, native_encode_expr, native_interpret_int,
+	native_interpret_real, native_interpret_complex,
+	native_interpret_vector, native_interpret_expr): Likewise.
+	* function.c (use_register_for_decl): Likewise.
+	* gimplify.c (get_name): Likewise.
+	* langhooks-def.h (lhd_return_null_const_tree): New.
+	(LANG_HOOKS_GET_CALLEE_FNDECL): Use it.
+	* langhooks.c (lhd_return_null_const_tree): New.
+	* langhooks.h (lang_get_callee_fndecl): Constify.
+	* output.h (constructor_static_from_elts_p): Likewise.
+	* rtl-factoring.c (gen_symbol_ref_rtx_for_label): Likewise.
+	* rtl.h (nonzero_bits, num_sign_bit_copies, truncated_to_mode,
+	subreg_lowpart_p, noop_move_p, struct rtl_hooks): Likewise.
+	* rtlanal.c (cached_nonzero_bits, nonzero_bits1,
+	cached_num_sign_bit_copies, num_sign_bit_copies1, noop_move_p,
+	nonzero_bits, num_sign_bit_copies, truncated_to_mode): Likewise.
+	* rtlhooks-def.h (reg_nonzero_bits_general,
+	reg_num_sign_bit_copies_general, reg_truncated_to_mode_general):
+	Likewise. 
+	* rtlhooks.c (reg_num_sign_bit_copies_general,
+	reg_nonzero_bits_general, reg_truncated_to_mode_general):
+	Likewise. 
+	* stmt.c (warn_if_unused_value, is_body_block): Likewise.
+	* stor-layout.c (mode_for_size_tree): Likewise.
+	* tree-ssa-loop-im.c (memref_eq): Likewise.
+	* tree-ssa-loop-ivopts.c (tree_int_cst_sign_bit): Likewise.
+	* tree.c (contains_placeholder_p, type_list_equal,
+	simple_cst_equal, get_callee_fndecl, operand_equal_for_phi_arg_p):
+	Likewise. 
+	* tree.h (tree_int_cst_sign_bit, may_negate_without_overflow_p,
+	mode_for_size_tree, categorize_ctor_elements, count_type_elements,
+	contains_placeholder_p, contains_packed_reference,
+	get_callee_fndecl, operand_equal_for_phi_arg_p,
+	warn_if_unused_value, is_body_block, native_encode_expr,
+	native_interpret_expr, fold_convertible_p, operand_equal_p,
+	int_const_binop, tree_swap_operands_p, builtin_mathfn_code,
+	validate_arglist, simple_cst_equal, type_list_equal,
+	use_register_for_decl, call_expr_flags, get_name,
+	highest_pow2_factor): Likewise.
+	(const_call_expr_arg_iterator_d,
+	init_const_call_expr_arg_iterator, next_const_call_expr_arg,
+	first_const_call_expr_arg, more_const_call_expr_args_p,
+	FOR_EACH_CONST_CALL_EXPR_ARG): New.
+	* varasm.c (constructor_static_from_elts_p): Constify.
+
 2007-07-28  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfglayout.c, config/arm/arm.c, config/arm/cortex-a8.md,

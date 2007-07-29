@@ -505,9 +505,9 @@ create_tmp_var (tree type, const char *prefix)
     I.E. given  <temp> = &A, return A.  */
 
 const char *
-get_name (tree t)
+get_name (const_tree t)
 {
-  tree stripped_decl;
+  const_tree stripped_decl;
 
   stripped_decl = t;
   STRIP_NOPS (stripped_decl);

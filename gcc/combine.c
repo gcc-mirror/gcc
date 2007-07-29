@@ -368,11 +368,11 @@ static struct undobuf undobuf;
 
 static int n_occurrences;
 
-static rtx reg_nonzero_bits_for_combine (rtx, enum machine_mode, rtx,
+static rtx reg_nonzero_bits_for_combine (const_rtx, enum machine_mode, const_rtx,
 					 enum machine_mode,
 					 unsigned HOST_WIDE_INT,
 					 unsigned HOST_WIDE_INT *);
-static rtx reg_num_sign_bit_copies_for_combine (rtx, enum machine_mode, rtx,
+static rtx reg_num_sign_bit_copies_for_combine (const_rtx, enum machine_mode, const_rtx,
 						enum machine_mode,
 						unsigned int, unsigned int *);
 static void do_SUBST (rtx *, rtx);
@@ -428,7 +428,7 @@ static void check_conversions (rtx, rtx);
 static void record_dead_and_set_regs_1 (rtx, rtx, void *);
 static void record_dead_and_set_regs (rtx);
 static int get_last_value_validate (rtx *, rtx, int, int);
-static rtx get_last_value (rtx);
+static rtx get_last_value (const_rtx);
 static int use_crosses_set_p (rtx, int);
 static void reg_dead_at_p_1 (rtx, rtx, void *);
 static int reg_dead_at_p (rtx, rtx);
@@ -441,7 +441,7 @@ static void record_promoted_value (rtx, rtx);
 static int unmentioned_reg_p_1 (rtx *, void *);
 static bool unmentioned_reg_p (rtx, rtx);
 static void record_truncated_value (rtx);
-static bool reg_truncated_to_mode (enum machine_mode, rtx);
+static bool reg_truncated_to_mode (enum machine_mode, const_rtx);
 static rtx gen_lowpart_or_truncate (enum machine_mode, rtx);
 
 
@@ -8622,8 +8622,8 @@ simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
    a shift, AND, or zero_extract, we can do better.  */
 
 static rtx
-reg_nonzero_bits_for_combine (rtx x, enum machine_mode mode,
-			      rtx known_x ATTRIBUTE_UNUSED,
+reg_nonzero_bits_for_combine (const_rtx x, enum machine_mode mode,
+			      const_rtx known_x ATTRIBUTE_UNUSED,
 			      enum machine_mode known_mode ATTRIBUTE_UNUSED,
 			      unsigned HOST_WIDE_INT known_ret ATTRIBUTE_UNUSED,
 			      unsigned HOST_WIDE_INT *nonzero)
@@ -8699,8 +8699,8 @@ reg_nonzero_bits_for_combine (rtx x, enum machine_mode mode,
    be between 1 and the number of bits in MODE.  */
 
 static rtx
-reg_num_sign_bit_copies_for_combine (rtx x, enum machine_mode mode,
-				     rtx known_x ATTRIBUTE_UNUSED,
+reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
+				     const_rtx known_x ATTRIBUTE_UNUSED,
 				     enum machine_mode known_mode
 				     ATTRIBUTE_UNUSED,
 				     unsigned int known_ret ATTRIBUTE_UNUSED,
@@ -11518,7 +11518,7 @@ record_promoted_value (rtx insn, rtx subreg)
    an explicit truncation.  */
 
 static bool
-reg_truncated_to_mode (enum machine_mode mode, rtx x)
+reg_truncated_to_mode (enum machine_mode mode, const_rtx x)
 {
   reg_stat_type *rsp = VEC_index (reg_stat_type, reg_stat, REGNO (x));
   enum machine_mode truncated = rsp->truncated_to_mode;
@@ -11720,7 +11720,7 @@ get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
    is known longer known reliably.  */
 
 static rtx
-get_last_value (rtx x)
+get_last_value (const_rtx x)
 {
   unsigned int regno;
   rtx value;

@@ -283,7 +283,7 @@ extern void output_object_blocks (void);
    and has been exposed to let other functions like categorize_ctor_elements
    evaluate the property while walking a constructor for other purposes.  */
 
-extern bool constructor_static_from_elts_p (tree);
+extern bool constructor_static_from_elts_p (const_tree);
 
 /* Return nonzero if VALUE is a valid constant-valued expression
    for use in initializing a static variable; one that can be an

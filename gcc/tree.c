@@ -2213,7 +2213,7 @@ tree_node_structure (const_tree t)
    or offset that depends on a field within a record.  */
 
 bool
-contains_placeholder_p (tree exp)
+contains_placeholder_p (const_tree exp)
 {
   enum tree_code code;
 
@@ -2274,9 +2274,9 @@ contains_placeholder_p (tree exp)
 	{
 	case CALL_EXPR:
 	  {
-	    tree arg;
-	    call_expr_arg_iterator iter;
-	    FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
+	    const_tree arg;
+	    const_call_expr_arg_iterator iter;
+	    FOR_EACH_CONST_CALL_EXPR_ARG (arg, iter, exp)
 	      if (CONTAINS_PLACEHOLDER_P (arg))
 		return 1;
 	    return 0;
@@ -4787,9 +4787,9 @@ attribute_list_contained (tree l1, tree l2)
    Also, the TREE_PURPOSEs must match.  */
 
 int
-type_list_equal (tree l1, tree l2)
+type_list_equal (const_tree l1, const_tree l2)
 {
-  tree t1, t2;
+  const_tree t1, t2;
 
   for (t1 = l1, t2 = l2; t1 && t2; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
     if (TREE_VALUE (t1) != TREE_VALUE (t2)
@@ -4972,7 +4972,7 @@ simple_cst_list_equal (const_tree l1, const_tree l2)
    this function.  */
 
 int
-simple_cst_equal (tree t1, tree t2)
+simple_cst_equal (const_tree t1, const_tree t2)
 {
   enum tree_code code1, code2;
   int cmp;
@@ -5043,13 +5043,13 @@ simple_cst_equal (tree t1, tree t2)
       if (call_expr_nargs (t1) != call_expr_nargs (t2))
 	return 0;
       {
-	tree arg1, arg2;
-	call_expr_arg_iterator iter1, iter2;
-	for (arg1 = first_call_expr_arg (t1, &iter1),
-	       arg2 = first_call_expr_arg (t2, &iter2);
+	const_tree arg1, arg2;
+	const_call_expr_arg_iterator iter1, iter2;
+	for (arg1 = first_const_call_expr_arg (t1, &iter1),
+	       arg2 = first_const_call_expr_arg (t2, &iter2);
 	     arg1 && arg2;
-	     arg1 = next_call_expr_arg (&iter1),
-	       arg2 = next_call_expr_arg (&iter2))
+	     arg1 = next_const_call_expr_arg (&iter1),
+	       arg2 = next_const_call_expr_arg (&iter2))
 	  {
 	    cmp = simple_cst_equal (arg1, arg2);
 	    if (cmp <= 0)
@@ -6509,12 +6509,12 @@ decl_type_context (const_tree decl)
    determined.  */
 
 tree
-get_callee_fndecl (tree call)
+get_callee_fndecl (const_tree call)
 {
   tree addr;
 
   if (call == error_mark_node)
-    return call;
+    return error_mark_node;
 
   /* It's invalid to call this function with anything but a
      CALL_EXPR.  */
@@ -8010,7 +8010,7 @@ lower_bound_in_type (tree outer, tree inner)
    and get the same result, only slower.  */
 
 int
-operand_equal_for_phi_arg_p (tree arg0, tree arg1)
+operand_equal_for_phi_arg_p (const_tree arg0, const_tree arg1)
 {
   if (arg0 == arg1)
     return 1;

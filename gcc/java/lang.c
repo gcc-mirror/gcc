@@ -63,7 +63,7 @@ static int inline_init_test_initialization (void * *, void *);
 static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 static bool java_decl_ok_for_sibcall (tree);
-static tree java_get_callee_fndecl (tree);
+static tree java_get_callee_fndecl (const_tree);
 static void java_clear_binding_stack (void);
 
 #ifndef TARGET_OBJECT_SUFFIX
@@ -951,7 +951,7 @@ java_decl_ok_for_sibcall (tree decl)
    will replace the indirection with a direct call, which undoes the
    purpose of the atable indirection.  */
 static tree
-java_get_callee_fndecl (tree call_expr)
+java_get_callee_fndecl (const_tree call_expr)
 {
   tree method, table, element, atable_methods;
 

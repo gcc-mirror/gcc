@@ -187,7 +187,7 @@ mode_for_size (unsigned int size, enum mode_class class, int limit)
 /* Similar, except passed a tree node.  */
 
 enum machine_mode
-mode_for_size_tree (tree size, enum mode_class class, int limit)
+mode_for_size_tree (const_tree size, enum mode_class class, int limit)
 {
   unsigned HOST_WIDE_INT uhwi;
   unsigned int ui;

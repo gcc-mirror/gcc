@@ -62,16 +62,16 @@ static void subreg_get_info (unsigned int, enum machine_mode,
 			     unsigned int, enum machine_mode,
 			     struct subreg_info *);
 
-static unsigned HOST_WIDE_INT cached_nonzero_bits (rtx, enum machine_mode,
-                                                   rtx, enum machine_mode,
+static unsigned HOST_WIDE_INT cached_nonzero_bits (const_rtx, enum machine_mode,
+                                                   const_rtx, enum machine_mode,
                                                    unsigned HOST_WIDE_INT);
-static unsigned HOST_WIDE_INT nonzero_bits1 (rtx, enum machine_mode,
-					     rtx, enum machine_mode,
+static unsigned HOST_WIDE_INT nonzero_bits1 (const_rtx, enum machine_mode,
+					     const_rtx, enum machine_mode,
                                              unsigned HOST_WIDE_INT);
-static unsigned int cached_num_sign_bit_copies (rtx, enum machine_mode, rtx,
+static unsigned int cached_num_sign_bit_copies (const_rtx, enum machine_mode, const_rtx,
                                                 enum machine_mode,
                                                 unsigned int);
-static unsigned int num_sign_bit_copies1 (rtx, enum machine_mode, rtx,
+static unsigned int num_sign_bit_copies1 (const_rtx, enum machine_mode, const_rtx,
                                           enum machine_mode, unsigned int);
 
 /* Offset of the first 'e', 'E' or 'V' operand for each rtx code, or
@@ -1106,7 +1106,7 @@ set_noop_p (const_rtx set)
    value to itself.  */
 
 int
-noop_move_p (rtx insn)
+noop_move_p (const_rtx insn)
 {
   rtx pat = PATTERN (insn);
 
@@ -3503,13 +3503,13 @@ default_address_cost (rtx x)
 
 
 unsigned HOST_WIDE_INT
-nonzero_bits (rtx x, enum machine_mode mode)
+nonzero_bits (const_rtx x, enum machine_mode mode)
 {
   return cached_nonzero_bits (x, mode, NULL_RTX, VOIDmode, 0);
 }
 
 unsigned int
-num_sign_bit_copies (rtx x, enum machine_mode mode)
+num_sign_bit_copies (const_rtx x, enum machine_mode mode)
 {
   return cached_num_sign_bit_copies (x, mode, NULL_RTX, VOIDmode, 0);
 }
@@ -3519,7 +3519,7 @@ num_sign_bit_copies (rtx x, enum machine_mode mode)
    identical subexpressions on the first or the second level.  */
 
 static unsigned HOST_WIDE_INT
-cached_nonzero_bits (rtx x, enum machine_mode mode, rtx known_x,
+cached_nonzero_bits (const_rtx x, enum machine_mode mode, const_rtx known_x,
 		     enum machine_mode known_mode,
 		     unsigned HOST_WIDE_INT known_ret)
 {
@@ -3572,7 +3572,7 @@ cached_nonzero_bits (rtx x, enum machine_mode mode, rtx known_x,
    an arithmetic operation, we can do better.  */
 
 static unsigned HOST_WIDE_INT
-nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
+nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	       enum machine_mode known_mode,
 	       unsigned HOST_WIDE_INT known_ret)
 {
@@ -4028,7 +4028,7 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
    first or the second level.  */
 
 static unsigned int
-cached_num_sign_bit_copies (rtx x, enum machine_mode mode, rtx known_x,
+cached_num_sign_bit_copies (const_rtx x, enum machine_mode mode, const_rtx known_x,
 			    enum machine_mode known_mode,
 			    unsigned int known_ret)
 {
@@ -4079,7 +4079,7 @@ cached_num_sign_bit_copies (rtx x, enum machine_mode mode, rtx known_x,
    be between 1 and the number of bits in MODE.  */
 
 static unsigned int
-num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
+num_sign_bit_copies1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 		      enum machine_mode known_mode,
 		      unsigned int known_ret)
 {
@@ -4866,7 +4866,7 @@ init_num_sign_bit_copies_in_rep (void)
    assume it already contains a truncated value of MODE.  */
 
 bool
-truncated_to_mode (enum machine_mode mode, rtx x)
+truncated_to_mode (enum machine_mode mode, const_rtx x)
 {
   /* This register has already been used in MODE without explicit
      truncation.  */

@@ -1,3 +1,8 @@
+2007-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc-act.c (objc_get_callee_fndecl): Constify.
+	* objc-act.h (objc_get_callee_fndecl): Likewise.
+
 2007-07-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc-act.c (volatilized_hash, volatilized_eq, string_hash,

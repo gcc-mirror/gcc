@@ -1295,7 +1295,7 @@ memref_eq (const void *obj1, const void *obj2)
 {
   const struct mem_ref *const mem1 = (const struct mem_ref *) obj1;
 
-  return operand_equal_p (mem1->mem, (tree) obj2, 0);
+  return operand_equal_p (mem1->mem, (const_tree) obj2, 0);
 }
 
 /* Gathers memory references in statement STMT in LOOP, storing the

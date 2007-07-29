@@ -3826,10 +3826,10 @@ extern int host_integerp (const_tree, int);
 extern HOST_WIDE_INT tree_low_cst (const_tree, int);
 extern int tree_int_cst_msb (const_tree);
 extern int tree_int_cst_sgn (const_tree);
-extern int tree_int_cst_sign_bit (tree);
+extern int tree_int_cst_sign_bit (const_tree);
 extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
-extern bool may_negate_without_overflow_p (tree);
+extern bool may_negate_without_overflow_p (const_tree);
 extern tree get_inner_array_type (const_tree);
 
 /* From expmed.c.  Since rtl.h is included after tree.h, we can't
@@ -4068,7 +4068,7 @@ extern void relayout_decl (tree);
    The value is BLKmode if no other mode is found.  This is like
    mode_for_size, but is passed a tree.  */
 
-extern enum machine_mode mode_for_size_tree (tree, enum mode_class, int);
+extern enum machine_mode mode_for_size_tree (const_tree, enum mode_class, int);
 
 /* Return an expr equal to X but certainly not valid as an lvalue.  */
 
@@ -4176,10 +4176,10 @@ extern bool initializer_zerop (const_tree);
    Return whether or not CTOR is a valid static constant initializer, the same
    as "initializer_constant_valid_p (CTOR, TREE_TYPE (CTOR)) != 0".  */
 
-extern bool categorize_ctor_elements (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
+extern bool categorize_ctor_elements (const_tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				      bool *);
 
-extern HOST_WIDE_INT count_type_elements (tree, bool);
+extern HOST_WIDE_INT count_type_elements (const_tree, bool);
 
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
@@ -4233,7 +4233,7 @@ enum tree_node_structure_enum tree_node_structure (const_tree);
    Note that we only allow such expressions within simple arithmetic
    or a COND_EXPR.  */
 
-extern bool contains_placeholder_p (tree);
+extern bool contains_placeholder_p (const_tree);
 
 /* This macro calls the above function but short-circuits the common
    case of a constant to save time.  Also check for null.  */
@@ -4318,7 +4318,7 @@ extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
    look for whether EXP or any nested component-refs within EXP is marked
    as PACKED.  */
 
-extern bool contains_packed_reference (tree exp);
+extern bool contains_packed_reference (const_tree exp);
 
 /* Return 1 if T is an expression that get_inner_reference handles.  */
 
@@ -4378,14 +4378,14 @@ extern GTY(()) const char * current_function_func_begin_label;
 extern unsigned crc32_string (unsigned, const char *);
 extern void clean_symbol_name (char *);
 extern tree get_file_function_name (const char *);
-extern tree get_callee_fndecl (tree);
+extern tree get_callee_fndecl (const_tree);
 extern void change_decl_assembler_name (tree, tree);
 extern int type_num_arguments (const_tree);
 extern bool associative_tree_code (enum tree_code);
 extern bool commutative_tree_code (enum tree_code);
 extern tree upper_bound_in_type (tree, tree);
 extern tree lower_bound_in_type (tree, tree);
-extern int operand_equal_for_phi_arg_p (tree, tree);
+extern int operand_equal_for_phi_arg_p (const_tree, const_tree);
 extern bool empty_body_p (tree);
 extern tree call_expr_arg (tree, int);
 extern tree *call_expr_argp (tree, int);
@@ -4394,14 +4394,14 @@ extern tree call_expr_arglist (tree);
 /* In stmt.c */
 
 extern void expand_expr_stmt (tree);
-extern int warn_if_unused_value (tree, location_t);
+extern int warn_if_unused_value (const_tree, location_t);
 extern void expand_label (tree);
 extern void expand_goto (tree);
 
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
 extern void expand_return (tree);
-extern int is_body_block (tree);
+extern int is_body_block (const_tree);
 
 /* In tree-eh.c */
 extern void using_eh_for_cleanups (void);
@@ -4413,8 +4413,8 @@ extern void using_eh_for_cleanups (void);
 extern int folding_initializer;
 
 /* Convert between trees and native memory representation.  */
-extern int native_encode_expr (tree, unsigned char *, int);
-extern tree native_interpret_expr (tree, unsigned char *, int);
+extern int native_encode_expr (const_tree, unsigned char *, int);
+extern tree native_interpret_expr (tree, const unsigned char *, int);
 
 /* Fold constants as much as possible in an expression.
    Returns the simplified expression.
@@ -4437,7 +4437,7 @@ extern tree fold_build2_initializer (enum tree_code, tree, tree, tree);
 extern tree fold_build3_initializer (enum tree_code, tree, tree, tree, tree);
 extern tree fold_build_call_array (tree, tree, int, tree *);
 extern tree fold_build_call_array_initializer (tree, tree, int, tree *);
-extern bool fold_convertible_p (tree, tree);
+extern bool fold_convertible_p (const_tree, const_tree);
 extern tree fold_convert (tree, tree);
 extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
 extern tree fold_ignored_result (tree);
@@ -4493,7 +4493,7 @@ enum operand_equal_flag
   OEP_PURE_SAME = 2
 };
 
-extern int operand_equal_p (tree, tree, unsigned int);
+extern int operand_equal_p (const_tree, const_tree, unsigned int);
 extern int multiple_of_p (tree, tree, tree);
 extern tree omit_one_operand (tree, tree, tree);
 extern tree omit_two_operands (tree, tree, tree, tree);
@@ -4502,7 +4502,7 @@ extern tree fold_truth_not_expr (tree);
 extern tree fold_unary_to_constant (enum tree_code, tree, tree);
 extern tree fold_binary_to_constant (enum tree_code, tree, tree, tree);
 extern tree fold_read_from_constant_string (tree);
-extern tree int_const_binop (enum tree_code, tree, tree, int);
+extern tree int_const_binop (enum tree_code, const_tree, const_tree, int);
 extern tree build_fold_addr_expr (tree);
 extern tree fold_build_cleanup_point_expr (tree type, tree expr);
 extern tree fold_strip_sign_ops (tree);
@@ -4512,7 +4512,7 @@ extern tree fold_indirect_ref (tree);
 extern tree constant_boolean_node (int, tree);
 extern tree build_low_bits_mask (tree, unsigned);
 
-extern bool tree_swap_operands_p (tree, tree, bool);
+extern bool tree_swap_operands_p (const_tree, const_tree, bool);
 extern void swap_tree_operands (tree, tree *, tree *);
 extern enum tree_code swap_tree_comparison (enum tree_code);
 
@@ -4535,7 +4535,7 @@ extern tree fold_builtin_stxcpy_chk (tree, tree, tree, tree, tree, bool,
 extern tree fold_builtin_strncpy_chk (tree, tree, tree, tree, tree);
 extern tree fold_builtin_snprintf_chk (tree, tree, enum built_in_function);
 extern bool fold_builtin_next_arg (tree, bool);
-extern enum built_in_function builtin_mathfn_code (tree);
+extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree build_function_call_expr (tree, tree);
 extern tree fold_build_call_expr (tree, tree, tree, tree);
 extern tree fold_builtin_call_array (tree, tree, int, tree *);
@@ -4547,7 +4547,7 @@ extern tree c_strlen (tree, int);
 extern tree std_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 extern tree build_va_arg_indirect_ref (tree);
 extern tree build_string_literal (int, const char *);
-extern bool validate_arglist (tree, ...);
+extern bool validate_arglist (const_tree, ...);
 extern rtx builtin_memset_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 extern int get_pointer_alignment (tree, unsigned int);
 
@@ -4568,10 +4568,10 @@ extern void get_type_static_bounds (tree, mpz_t, mpz_t);
 extern bool variably_modified_type_p (tree, tree);
 extern int tree_log2 (const_tree);
 extern int tree_floor_log2 (const_tree);
-extern int simple_cst_equal (tree, tree);
+extern int simple_cst_equal (const_tree, const_tree);
 extern hashval_t iterative_hash_expr (const_tree, hashval_t);
 extern int compare_tree_int (const_tree, unsigned HOST_WIDE_INT);
-extern int type_list_equal (tree, tree);
+extern int type_list_equal (const_tree, const_tree);
 extern int chain_member (const_tree, const_tree);
 extern tree type_hash_lookup (unsigned int, tree);
 extern void type_hash_add (unsigned int, tree);
@@ -4630,7 +4630,7 @@ extern void expand_dummy_function_end (void);
 extern unsigned int init_function_for_compilation (void);
 extern void allocate_struct_function (tree);
 extern void init_function_start (tree);
-extern bool use_register_for_decl (tree);
+extern bool use_register_for_decl (const_tree);
 extern void generate_setjmp_warnings (void);
 extern void init_temp_slots (void);
 extern void free_temp_slots (void);
@@ -4696,7 +4696,7 @@ extern tree build_duplicate_type (tree);
 #define ECF_NOVOPS		1024
 
 extern int flags_from_decl_or_type (const_tree);
-extern int call_expr_flags (tree);
+extern int call_expr_flags (const_tree);
 
 extern int setjmp_call_p (const_tree);
 extern bool alloca_call_p (const_tree);
@@ -4758,7 +4758,7 @@ extern tree tree_overlaps_hard_reg_set (tree, HARD_REG_SET *);
 /* In gimplify.c.  */
 extern tree create_artificial_label (void);
 extern void gimplify_function_tree (tree);
-extern const char *get_name (tree);
+extern const char *get_name (const_tree);
 extern tree unshare_expr (tree);
 extern void sort_case_labels (tree);
 
@@ -4918,7 +4918,7 @@ extern void fini_object_sizes (void);
 extern unsigned HOST_WIDE_INT compute_builtin_object_size (tree, int);
 
 /* In expr.c.  */
-extern unsigned HOST_WIDE_INT highest_pow2_factor (tree);
+extern unsigned HOST_WIDE_INT highest_pow2_factor (const_tree);
 
 /* In tree-inline.c.  */
 
@@ -4948,10 +4948,25 @@ typedef struct call_expr_arg_iterator_d GTY (())
   int i;	/* next argument index */
 } call_expr_arg_iterator;
 
+typedef struct const_call_expr_arg_iterator_d GTY (())
+{
+  const_tree t;	/* the call_expr */
+  int n;	/* argument count */
+  int i;	/* next argument index */
+} const_call_expr_arg_iterator;
+
 /* Initialize the abstract argument list iterator object ITER with the
    arguments from CALL_EXPR node EXP.  */
 static inline void
 init_call_expr_arg_iterator (tree exp, call_expr_arg_iterator *iter)
+{
+  iter->t = exp;
+  iter->n = call_expr_nargs (exp);
+  iter->i = 0;
+}
+
+static inline void
+init_const_call_expr_arg_iterator (const_tree exp, const_call_expr_arg_iterator *iter)
 {
   iter->t = exp;
   iter->n = call_expr_nargs (exp);
@@ -4971,6 +4986,17 @@ next_call_expr_arg (call_expr_arg_iterator *iter)
   return result;
 }
 
+static inline const_tree
+next_const_call_expr_arg (const_call_expr_arg_iterator *iter)
+{
+  const_tree result;
+  if (iter->i >= iter->n)
+    return NULL_TREE;
+  result = CALL_EXPR_ARG (iter->t, iter->i);
+  iter->i++;
+  return result;
+}
+
 /* Initialize the abstract argument list iterator object ITER, then advance
    past and return the first argument.  Useful in for expressions, e.g.
      for (arg = first_call_expr_arg (exp, &iter); arg;
@@ -4982,6 +5008,13 @@ first_call_expr_arg (tree exp, call_expr_arg_iterator *iter)
   return next_call_expr_arg (iter);
 }
 
+static inline const_tree
+first_const_call_expr_arg (const_tree exp, const_call_expr_arg_iterator *iter)
+{
+  init_const_call_expr_arg_iterator (exp, iter);
+  return next_const_call_expr_arg (iter);
+}
+
 /* Test whether there are more arguments in abstract argument list iterator
    ITER, without changing its state.  */
 static inline bool
@@ -4990,11 +5023,20 @@ more_call_expr_args_p (const call_expr_arg_iterator *iter)
   return (iter->i < iter->n);
 }
 
+static inline bool
+more_const_call_expr_args_p (const const_call_expr_arg_iterator *iter)
+{
+  return (iter->i < iter->n);
+}
 
 /* Iterate through each argument ARG of CALL_EXPR CALL, using variable ITER
    (of type call_expr_arg_iterator) to hold the iteration state.  */
 #define FOR_EACH_CALL_EXPR_ARG(arg, iter, call)			\
   for ((arg) = first_call_expr_arg ((call), &(iter)); (arg);	\
        (arg) = next_call_expr_arg (&(iter)))
+
+#define FOR_EACH_CONST_CALL_EXPR_ARG(arg, iter, call)			\
+  for ((arg) = first_const_call_expr_arg ((call), &(iter)); (arg);	\
+       (arg) = next_const_call_expr_arg (&(iter)))
 
 #endif  /* GCC_TREE_H  */

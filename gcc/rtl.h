@@ -1044,10 +1044,10 @@ extern bool subreg_offset_representable_p (unsigned int, enum machine_mode,
 					   unsigned int, enum machine_mode);
 extern unsigned int subreg_regno (const_rtx);
 extern unsigned int subreg_nregs (const_rtx);
-extern unsigned HOST_WIDE_INT nonzero_bits (rtx, enum machine_mode);
-extern unsigned int num_sign_bit_copies (rtx, enum machine_mode);
+extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, enum machine_mode);
+extern unsigned int num_sign_bit_copies (const_rtx, enum machine_mode);
 extern bool constant_pool_constant_p (rtx);
-extern bool truncated_to_mode (enum machine_mode, rtx);
+extern bool truncated_to_mode (enum machine_mode, const_rtx);
 
 
 /* 1 if RTX is a subreg containing a reg that is already known to be
@@ -1496,7 +1496,7 @@ extern rtx operand_subword (rtx, unsigned int, int, enum machine_mode);
 
 /* In emit-rtl.c */
 extern rtx operand_subword_force (rtx, unsigned int, enum machine_mode);
-extern int subreg_lowpart_p (rtx);
+extern int subreg_lowpart_p (const_rtx);
 extern unsigned int subreg_lowpart_offset (enum machine_mode,
 					   enum machine_mode);
 extern unsigned int subreg_highpart_offset (enum machine_mode,
@@ -1697,7 +1697,7 @@ extern int reg_set_p (rtx, rtx);
 extern rtx single_set_2 (const_rtx, const_rtx);
 extern int multiple_sets (const_rtx);
 extern int set_noop_p (const_rtx);
-extern int noop_move_p (rtx);
+extern int noop_move_p (const_rtx);
 extern rtx find_last_value (rtx, rtx *, rtx, int);
 extern int refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);
 extern int reg_overlap_mentioned_p (const_rtx, const_rtx);
@@ -2268,11 +2268,11 @@ struct rtl_hooks
 {
   rtx (*gen_lowpart) (enum machine_mode, rtx);
   rtx (*gen_lowpart_no_emit) (enum machine_mode, rtx);
-  rtx (*reg_nonzero_bits) (rtx, enum machine_mode, rtx, enum machine_mode,
+  rtx (*reg_nonzero_bits) (const_rtx, enum machine_mode, const_rtx, enum machine_mode,
 			   unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT *);
-  rtx (*reg_num_sign_bit_copies) (rtx, enum machine_mode, rtx, enum machine_mode,
+  rtx (*reg_num_sign_bit_copies) (const_rtx, enum machine_mode, const_rtx, enum machine_mode,
 				  unsigned int, unsigned int *);
-  bool (*reg_truncated_to_mode) (enum machine_mode, rtx);
+  bool (*reg_truncated_to_mode) (enum machine_mode, const_rtx);
 
   /* Whenever you add entries here, make sure you adjust rtlhooks-def.h.  */
 };

@@ -39,13 +39,13 @@ along with GCC; see the file COPYING3.  If not see
 
 extern rtx gen_lowpart_general (enum machine_mode, rtx);
 extern rtx gen_lowpart_no_emit_general (enum machine_mode, rtx);
-extern rtx reg_nonzero_bits_general (rtx, enum machine_mode, rtx,
+extern rtx reg_nonzero_bits_general (const_rtx, enum machine_mode, const_rtx,
 				     enum machine_mode,
 				     unsigned HOST_WIDE_INT,
 				     unsigned HOST_WIDE_INT *);
-extern rtx reg_num_sign_bit_copies_general (rtx, enum machine_mode, rtx,
+extern rtx reg_num_sign_bit_copies_general (const_rtx, enum machine_mode, const_rtx,
 					    enum machine_mode,
 					    unsigned int, unsigned int *);
-extern bool reg_truncated_to_mode_general (enum machine_mode, rtx);
+extern bool reg_truncated_to_mode_general (enum machine_mode, const_rtx);
 
 #endif /* GCC_RTL_HOOKS_DEF_H */
