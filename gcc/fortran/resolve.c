@@ -7137,10 +7137,12 @@ static try
 resolve_fl_parameter (gfc_symbol *sym)
 {
   /* A parameter array's shape needs to be constant.  */
-  if (sym->as != NULL && !gfc_is_compile_time_shape (sym->as))
+  if (sym->as != NULL 
+      && (sym->as->type == AS_DEFERRED
+          || is_non_constant_shape_array (sym)))
     {
       gfc_error ("Parameter array '%s' at %L cannot be automatic "
-		 "or assumed shape", sym->name, &sym->declared_at);
+		 "or of deferred shape", sym->name, &sym->declared_at);
       return FAILURE;
     }
 
