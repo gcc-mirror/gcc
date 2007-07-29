@@ -1,3 +1,14 @@
+2007-07-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31211
+	* trans-expr.c (gfc_conv_expr_reference): Add block for case of
+	scalar pointer functions so that NULL result is correctly
+	handled.
+
+	PR fortran/32682
+	*trans-array.c (gfc_trans_array_constructor): On detecting a
+	multi-dimensional parameter array, set the loop limits.
+
 2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/32906

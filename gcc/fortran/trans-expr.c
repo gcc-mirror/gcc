@@ -3342,6 +3342,19 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       return;
     }
 
+  if (expr->expr_type == EXPR_FUNCTION
+	&& expr->symtree->n.sym->attr.pointer
+	&& !expr->symtree->n.sym->attr.dimension)
+    {
+      se->want_pointer = 1;
+      gfc_conv_expr (se, expr);
+      var = gfc_create_var (TREE_TYPE (se->expr), NULL);
+      gfc_add_modify_expr (&se->pre, var, se->expr);
+      se->expr = var;
+      return;
+    }
+
+
   gfc_conv_expr (se, expr);
 
   /* Create a temporary var to hold the value.  */
