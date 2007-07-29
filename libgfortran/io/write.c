@@ -1719,7 +1719,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	{
 	  if (rep_ctr > 1)
 	    {
-	      st_sprintf(rep_buff, " %d*", rep_ctr);
+	      sprintf(rep_buff, " %d*", rep_ctr);
 	      write_character (dtp, rep_buff, strlen (rep_buff));
 	      dtp->u.p.no_leading_blank = 1;
 	    }
@@ -1792,7 +1792,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		      ext_name[tot_len] = '(';
 		      tot_len++;
 		    }
-		  st_sprintf (ext_name + tot_len, "%d", (int) obj->ls[dim_i].idx);
+		  sprintf (ext_name + tot_len, "%d", (int) obj->ls[dim_i].idx);
 		  tot_len += strlen (ext_name + tot_len);
 		  ext_name[tot_len] = (dim_i == obj->var_rank - 1) ? ')' : ',';
 		  tot_len++;

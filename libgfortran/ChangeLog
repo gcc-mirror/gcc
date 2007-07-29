@@ -1,3 +1,39 @@
+2007-07-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32858
+	PR libfortran/30814
+	* configure.ac:  Added checks for presence of stdio.h and
+	stdarg.h.  Test presence of vsnprintf().
+	* configure: Regenerated.
+	* config.h.in:  Regenerated.
+	* libgfortran.h:  Include <stdio.h>.  Add printf attribute to
+	prototype of runtime_error.  Remove prototype for st_sprintf.
+	Add prototype for st_vprintf.
+	* runtime/main.c (store_exec_path):  Replace st_sprintf by sprintf.
+	* runtime/error.c (st_sprintf):  Remove.
+	(runtime_error):  Rewrite as a variadic function.  Call
+	st_vprintf().
+	* intrinsics/pack_generic.c:  Output extents of LHS and RHS for
+	bounds error.
+	* io/open.c (new_unit):  Replace st_sprintf by sprintf.
+	* io/list_read.c (convert_integer):  Likewise.
+	(parse_repeat):  Likewise.
+	(read_logical):  Likewise.
+	(read_character):  Likewise.
+	(parse_real):  Likewise.
+	(read_real):  Likewise.
+	(check_type):  Likewise.
+	(nml_parse_qualifyer):  Likewise.
+	(nml_read_obj):  Likewise.
+	(nml_get_ojb_data):  Likewise.
+	* io/unix.c (init_error_stream):  Remove.
+	(tempfile):  Replace st_sprintf by sprintf.
+	(st_vprintf):  New function.
+	(st_printf):  Rewrite to call st_vprintf.
+	* io/transfer.c (require_type):  Replace st_sprintf by sprintf.
+	* io/format.c (format_error):  Likewise.
+	* io/write.c (nml_write_obj):  Likewise.
+
 2007-07-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/transfer.c (st_set_nml_var_dim): Use index_type instead of

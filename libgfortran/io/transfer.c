@@ -852,8 +852,8 @@ require_type (st_parameter_dt *dtp, bt expected, bt actual, const fnode *f)
   if (actual == expected)
     return 0;
 
-  st_sprintf (buffer, "Expected %s for item %d in formatted transfer, got %s",
-	      type_name (expected), dtp->u.p.item_count, type_name (actual));
+  sprintf (buffer, "Expected %s for item %d in formatted transfer, got %s",
+	   type_name (expected), dtp->u.p.item_count, type_name (actual));
 
   format_error (dtp, f, buffer);
   return 1;

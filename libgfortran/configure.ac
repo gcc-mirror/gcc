@@ -176,7 +176,7 @@ AC_TYPE_OFF_T
 # check header files
 AC_STDC_HEADERS
 AC_HEADER_TIME
-AC_HAVE_HEADERS(stdlib.h string.h unistd.h signal.h)
+AC_HAVE_HEADERS(stdio.h stdlib.h string.h unistd.h signal.h stdarg.h)
 AC_CHECK_HEADERS(time.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h)
 AC_CHECK_HEADERS(fenv.h fptrap.h float.h execinfo.h pwd.h)
@@ -192,7 +192,7 @@ AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time ttyname signal alarm ctime clock access fork execl)
 AC_CHECK_FUNCS(wait setmode execvp pipe dup2 close fdopen strcasestr getrlimit)
-AC_CHECK_FUNCS(gettimeofday stat fstat lstat getpwuid)
+AC_CHECK_FUNCS(gettimeofday stat fstat lstat getpwuid vsnprintf)
 
 # Check for glibc backtrace functions
 AC_CHECK_FUNCS(backtrace backtrace_symbols)

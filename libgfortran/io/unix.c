@@ -142,10 +142,6 @@ typedef struct
 }
 int_stream;
 
-extern stream *init_error_stream (unix_stream *);
-internal_proto(init_error_stream);
-
-
 /* This implementation of stream I/O is based on the paper:
  *
  *  "Exploiting the advantages of mapped files for stream I/O",
@@ -1155,7 +1151,7 @@ tempfile (st_parameter_open *opp)
 
   template = get_mem (strlen (tempdir) + 20);
 
-  st_sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
+  sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
 
 #ifdef HAVE_MKSTEMP
 
@@ -1385,122 +1381,44 @@ error_stream (void)
   return fd_to_stream (STDERR_FILENO, PROT_WRITE);
 }
 
-/* init_error_stream()-- Return a pointer to the error stream.  This
- * subroutine is called when the stream is needed, rather than at
- * initialization.  We want to work even if memory has been seriously
- * corrupted. */
 
-stream *
-init_error_stream (unix_stream *error)
+/* st_vprintf()-- vprintf function for error output.  To avoid buffer
+   overruns, we limit the length of the buffer to ST_VPRINTF_SIZE.  2k
+   is big enough to completely fill a 80x25 terminal, so it shuld be
+   OK.  We use a direct write() because it is simpler and least likely
+   to be clobbered by memory corruption.  */
+
+#define ST_VPRINTF_SIZE 2048
+
+int
+st_vprintf (const char *format, va_list ap)
 {
-  memset (error, '\0', sizeof (*error));
+  static char buffer[ST_VPRINTF_SIZE];
+  int written;
+  int fd;
 
-  error->fd = options.use_stderr ? STDERR_FILENO : STDOUT_FILENO;
-
-  error->st.alloc_w_at = (void *) fd_alloc_w_at;
-  error->st.sfree = (void *) fd_sfree;
-
-  error->unbuffered = 1;
-  error->buffer = error->small_buffer;
-
-  return (stream *) error;
+  fd = options.use_stderr ? STDERR_FILENO : STDOUT_FILENO;
+#ifdef HAVE_VSNPRINTF
+  written = vsnprintf(buffer, ST_VPRINTF_SIZE, format, ap);
+#else
+  written = __builtin_vsnprintf(buffer, ST_VPRINTF_SIZE, format, ap);
+#endif
+  written = write (fd, buffer, written);
+  return written;
 }
 
-/* st_printf()-- simple printf() function for streams that handles the
- * formats %d, %s and %c.  This function handles printing of error
- * messages that originate within the library itself, not from a user
- * program. */
+/* st_printf()-- printf() function for error output.  This just calls
+   st_vprintf() to do the actual work.  */
 
 int
 st_printf (const char *format, ...)
 {
-  int count, total;
-  va_list arg;
-  char *p;
-  const char *q;
-  stream *s;
-  char itoa_buf[GFC_ITOA_BUF_SIZE];
-  unix_stream err_stream;
-
-  total = 0;
-  s = init_error_stream (&err_stream);
-  va_start (arg, format);
-
-  for (;;)
-    {
-      count = 0;
-
-      while (format[count] != '%' && format[count] != '\0')
-	count++;
-
-      if (count != 0)
-	{
-	  p = salloc_w (s, &count);
-	  memmove (p, format, count);
-	  sfree (s);
-	}
-
-      total += count;
-      format += count;
-      if (*format++ == '\0')
-	break;
-
-      switch (*format)
-	{
-	case 'c':
-	  count = 1;
-
-	  p = salloc_w (s, &count);
-	  *p = (char) va_arg (arg, int);
-
-	  sfree (s);
-	  break;
-
-	case 'd':
-	  q = gfc_itoa (va_arg (arg, int), itoa_buf, sizeof (itoa_buf));
-	  count = strlen (q);
-
-	  p = salloc_w (s, &count);
-	  memmove (p, q, count);
-	  sfree (s);
-	  break;
-
-	case 'x':
-	  q = xtoa (va_arg (arg, unsigned), itoa_buf, sizeof (itoa_buf));
-	  count = strlen (q);
-
-	  p = salloc_w (s, &count);
-	  memmove (p, q, count);
-	  sfree (s);
-	  break;
-
-	case 's':
-	  q = va_arg (arg, char *);
-	  count = strlen (q);
-
-	  p = salloc_w (s, &count);
-	  memmove (p, q, count);
-	  sfree (s);
-	  break;
-
-	case '\0':
-	  return total;
-
-	default:
-	  count = 2;
-	  p = salloc_w (s, &count);
-	  p[0] = format[-1];
-	  p[1] = format[0];
-	  sfree (s);
-	  break;
-	}
-
-      total += count;
-      format++;
-    }
-
-  va_end (arg);
-  return total;
+  int written;
+  va_list ap;
+  va_start (ap, format);
+  written = st_vprintf(format, ap);
+  va_end (ap);
+  return written;
 }
 
 

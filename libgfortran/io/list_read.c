@@ -464,8 +464,8 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
 
       if (dtp->u.p.repeat_count == 0)
 	{
-	  st_sprintf (message, "Zero repeat count in item %d of list input",
-		      dtp->u.p.item_count);
+	  sprintf (message, "Zero repeat count in item %d of list input",
+		   dtp->u.p.item_count);
 
 	  generate_error (&dtp->common, ERROR_READ_VALUE, message);
 	  m = 1;
@@ -477,11 +477,11 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
 
  overflow:
   if (length == -1)
-    st_sprintf (message, "Repeat count overflow in item %d of list input",
-		dtp->u.p.item_count);
+    sprintf (message, "Repeat count overflow in item %d of list input",
+	     dtp->u.p.item_count);
   else
-    st_sprintf (message, "Integer overflow while reading item %d",
-		dtp->u.p.item_count);
+    sprintf (message, "Integer overflow while reading item %d",
+	     dtp->u.p.item_count);
 
   free_saved (dtp);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
@@ -527,9 +527,9 @@ parse_repeat (st_parameter_dt *dtp)
 
 	  if (repeat > MAX_REPEAT)
 	    {
-	      st_sprintf (message,
-			  "Repeat count overflow in item %d of list input",
-			  dtp->u.p.item_count);
+	      sprintf (message,
+		       "Repeat count overflow in item %d of list input",
+		       dtp->u.p.item_count);
 
 	      generate_error (&dtp->common, ERROR_READ_VALUE, message);
 	      return 1;
@@ -540,9 +540,9 @@ parse_repeat (st_parameter_dt *dtp)
 	case '*':
 	  if (repeat == 0)
 	    {
-	      st_sprintf (message,
-			  "Zero repeat count in item %d of list input",
-			  dtp->u.p.item_count);
+	      sprintf (message,
+		       "Zero repeat count in item %d of list input",
+		       dtp->u.p.item_count);
 
 	      generate_error (&dtp->common, ERROR_READ_VALUE, message);
 	      return 1;
@@ -563,8 +563,8 @@ parse_repeat (st_parameter_dt *dtp)
 
   eat_line (dtp);
   free_saved (dtp);
-  st_sprintf (message, "Bad repeat count in item %d of list input",
-	      dtp->u.p.item_count);
+  sprintf (message, "Bad repeat count in item %d of list input",
+	   dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
   return 1;
 }
@@ -708,7 +708,7 @@ read_logical (st_parameter_dt *dtp, int length)
 
   eat_line (dtp);
   free_saved (dtp);
-  st_sprintf (message, "Bad logical value while reading item %d",
+  sprintf (message, "Bad logical value while reading item %d",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
   return;
@@ -840,7 +840,7 @@ read_integer (st_parameter_dt *dtp, int length)
   
   eat_line (dtp);
   free_saved (dtp);
-  st_sprintf (message, "Bad integer for item %d in list input",
+  sprintf (message, "Bad integer for item %d in list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
 
@@ -1004,7 +1004,7 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
   else
     {
       free_saved (dtp);
-      st_sprintf (message, "Invalid string input in item %d",
+      sprintf (message, "Invalid string input in item %d",
 		  dtp->u.p.item_count);
       generate_error (&dtp->common, ERROR_READ_VALUE, message);
     }
@@ -1123,7 +1123,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 
   eat_line (dtp);
   free_saved (dtp);
-  st_sprintf (message, "Bad floating point number for item %d",
+  sprintf (message, "Bad floating point number for item %d",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
 
@@ -1206,7 +1206,7 @@ eol_2:
 
   eat_line (dtp);
   free_saved (dtp);
-  st_sprintf (message, "Bad complex value in item %d of list input",
+  sprintf (message, "Bad complex value in item %d of list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
 }
@@ -1421,7 +1421,7 @@ read_real (st_parameter_dt *dtp, int length)
 
   eat_line (dtp);
   free_saved (dtp);
-  st_sprintf (message, "Bad real number in item %d of list input",
+  sprintf (message, "Bad real number in item %d of list input",
 	      dtp->u.p.item_count);
   generate_error (&dtp->common, ERROR_READ_VALUE, message);
 }
@@ -1437,7 +1437,7 @@ check_type (st_parameter_dt *dtp, bt type, int len)
 
   if (dtp->u.p.saved_type != BT_NULL && dtp->u.p.saved_type != type)
     {
-      st_sprintf (message, "Read type %s where %s was expected for item %d",
+      sprintf (message, "Read type %s where %s was expected for item %d",
 		  type_name (dtp->u.p.saved_type), type_name (type),
 		  dtp->u.p.item_count);
 
@@ -1450,7 +1450,7 @@ check_type (st_parameter_dt *dtp, bt type, int len)
 
   if (dtp->u.p.saved_length != len)
     {
-      st_sprintf (message,
+      sprintf (message,
 		  "Read kind %d %s where kind %d is required for item %d",
 		  dtp->u.p.saved_length, type_name (dtp->u.p.saved_type), len,
 		  dtp->u.p.item_count);
@@ -1723,8 +1723,8 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  if ((c==',' && dim == rank -1)
 		      || (c==')' && dim < rank -1))
 		    {
-		      st_sprintf (parse_err_msg,
-				  "Bad number of index fields");
+		      sprintf (parse_err_msg,
+			       "Bad number of index fields");
 		      goto err_ret;
 		    }
 		  break;
@@ -1739,21 +1739,21 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  break;
 
 		default:
-		  st_sprintf (parse_err_msg, "Bad character in index");
+		  sprintf (parse_err_msg, "Bad character in index");
 		  goto err_ret;
 		}
 
 	      if ((c == ',' || c == ')') && indx == 0
 		  && dtp->u.p.saved_string == 0)
 		{
-		  st_sprintf (parse_err_msg, "Null index field");
+		  sprintf (parse_err_msg, "Null index field");
 		  goto err_ret;
 		}
 
 	      if ((c == ':' && indx == 1 && dtp->u.p.saved_string == 0)
 		  || (indx == 2 && dtp->u.p.saved_string == 0))
 		{
-		  st_sprintf(parse_err_msg, "Bad index triplet");
+		  sprintf(parse_err_msg, "Bad index triplet");
 		  goto err_ret;
 		}
 
@@ -1769,7 +1769,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	      /* Now read the index.  */
 	      if (convert_integer (dtp, sizeof(ssize_t), neg))
 		{
-		  st_sprintf (parse_err_msg, "Bad integer in index");
+		  sprintf (parse_err_msg, "Bad integer in index");
 		  goto err_ret;
 		}
 	      break;
@@ -1811,13 +1811,13 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	  || (ls[dim].end > (ssize_t)ad[dim].ubound)
 	  || (ls[dim].end < (ssize_t)ad[dim].lbound))
 	{
-	  st_sprintf (parse_err_msg, "Index %d out of range", dim + 1);
+	  sprintf (parse_err_msg, "Index %d out of range", dim + 1);
 	  goto err_ret;
 	}
       if (((ls[dim].end - ls[dim].start ) * ls[dim].step < 0)
 	  || (ls[dim].step == 0))
 	{
-	  st_sprintf (parse_err_msg, "Bad range in index %d", dim + 1);
+	  sprintf (parse_err_msg, "Bad range in index %d", dim + 1);
 	  goto err_ret;
 	}
 
@@ -2171,7 +2171,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	    goto incr_idx;
 
           default:
-	    st_sprintf (nml_err_msg, "Bad type for namelist object %s",
+	    sprintf (nml_err_msg, "Bad type for namelist object %s",
 			nl->var_name);
 	    internal_error (&dtp->common, nml_err_msg);
 	    goto nml_err_ret;
@@ -2260,7 +2260,7 @@ incr_idx:
 
   if (dtp->u.p.repeat_count > 1)
     {
-       st_sprintf (nml_err_msg, "Repeat count too large for namelist object %s" ,
+       sprintf (nml_err_msg, "Repeat count too large for namelist object %s" ,
 		   nl->var_name );
        goto nml_err_ret;
     }
@@ -2310,7 +2310,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
       c = next_char (dtp);
       if (c != '?')
 	{
-	  st_sprintf (nml_err_msg, "namelist read: misplaced = sign");
+	  sprintf (nml_err_msg, "namelist read: misplaced = sign");
 	  goto nml_err_ret;
 	}
       nml_query (dtp, '=');
@@ -2325,7 +2325,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
       nml_match_name (dtp, "end", 3);
       if (dtp->u.p.nml_read_error)
 	{
-	  st_sprintf (nml_err_msg, "namelist not terminated with / or &end");
+	  sprintf (nml_err_msg, "namelist not terminated with / or &end");
 	  goto nml_err_ret;
 	}
     case '/':
@@ -2384,11 +2384,11 @@ get_name:
   if (nl == NULL)
     {
       if (dtp->u.p.nml_read_error && *pprev_nl)
-	st_sprintf (nml_err_msg, "Bad data for namelist object %s",
+	sprintf (nml_err_msg, "Bad data for namelist object %s",
 		    (*pprev_nl)->var_name);
 
       else
-	st_sprintf (nml_err_msg, "Cannot match namelist object name %s",
+	sprintf (nml_err_msg, "Cannot match namelist object name %s",
 		    dtp->u.p.saved_string);
 
       goto nml_err_ret;
@@ -2412,7 +2412,7 @@ get_name:
       if (nml_parse_qualifier (dtp, nl->dim, nl->ls, nl->var_rank,
 			       parse_err_msg) == FAILURE)
 	{
-	  st_sprintf (nml_err_msg, "%s for namelist variable %s",
+	  sprintf (nml_err_msg, "%s for namelist variable %s",
 		      parse_err_msg, nl->var_name);
 	  goto nml_err_ret;
 	}
@@ -2429,7 +2429,7 @@ get_name:
 
       if (nl->type != GFC_DTYPE_DERIVED)
 	{
-	  st_sprintf (nml_err_msg, "Attempt to get derived component for %s",
+	  sprintf (nml_err_msg, "Attempt to get derived component for %s",
 		      nl->var_name);
 	  goto nml_err_ret;
 	}
@@ -2457,7 +2457,7 @@ get_name:
 
       if (nml_parse_qualifier (dtp, chd, ind, 1, parse_err_msg) == FAILURE)
 	{
-	  st_sprintf (nml_err_msg, "%s for namelist variable %s",
+	  sprintf (nml_err_msg, "%s for namelist variable %s",
 		      parse_err_msg, nl->var_name);
 	  goto nml_err_ret;
 	}
@@ -2467,7 +2467,7 @@ get_name:
 
       if (ind[0].step != 1)
 	{
-	  st_sprintf (nml_err_msg,
+	  sprintf (nml_err_msg,
 		      "Bad step in substring for namelist object %s",
 		      nl->var_name);
 	  goto nml_err_ret;
@@ -2490,7 +2490,7 @@ get_name:
 
   if (c == '(')
     {
-      st_sprintf (nml_err_msg, "Qualifier for a scalar or non-character"
+      sprintf (nml_err_msg, "Qualifier for a scalar or non-character"
 		  " namelist object %s", nl->var_name);
       goto nml_err_ret;
     }
@@ -2514,7 +2514,7 @@ get_name:
 
   if (c != '=')
     {
-      st_sprintf (nml_err_msg, "Equal sign must follow namelist object name %s",
+      sprintf (nml_err_msg, "Equal sign must follow namelist object name %s",
 		  nl->var_name);
       goto nml_err_ret;
     }

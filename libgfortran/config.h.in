@@ -270,6 +270,9 @@
 /* Define to 1 if you have the `ctime' function. */
 #undef HAVE_CTIME
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define to 1 if you have the `dup2' function. */
 #undef HAVE_DUP2
 
@@ -594,8 +597,14 @@
 /* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
 
+/* Define to 1 if you have the <stdarg.h> header file. */
+#undef HAVE_STDARG_H
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#undef HAVE_STDIO_H
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -696,6 +705,9 @@
 /* Define if target can unlink open files. */
 #undef HAVE_UNLINK_OPEN_FILE
 
+/* Define to 1 if you have the `vsnprintf' function. */
+#undef HAVE_VSNPRINTF
+
 /* Define to 1 if you have the `wait' function. */
 #undef HAVE_WAIT
 
@@ -728,6 +740,10 @@
 
 /* libm includes ynl */
 #undef HAVE_YNL
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

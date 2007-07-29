@@ -217,9 +217,13 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       else 
 	{
 	  /* We come here because of range checking.  */
-	  if (total != ret->dim[0].ubound + 1 - ret->dim[0].lbound)
-	    runtime_error ("Incorrect extent in return value of"
-			   " PACK intrinsic");
+	  index_type ret_extent;
+
+	  ret_extent = ret->dim[0].ubound + 1 - ret->dim[0].lbound;
+	  if (total != ret_extent)
+	    runtime_error ("Incorrect extent in return value of PACK intrinsic;"
+			   " is %ld, should be %ld", (long int) total,
+			   (long int) ret_extent);
 	}
     }
 

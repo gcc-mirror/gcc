@@ -1,3 +1,9 @@
+2007-07-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32858
+	PR libfortran/30814
+	* gfortran.dg/pack_bounds_1.f90:  Adjust to new error message.
+
 2007-07-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31211
