@@ -1,3 +1,9 @@
+2007-07-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcj/32929
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
 2007-07-28  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Encode the libgcj soversion in dbexecdir,
