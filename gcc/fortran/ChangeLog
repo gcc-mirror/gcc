@@ -1,5 +1,11 @@
 2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/32906
+	* resolve.c (resolve_fl_parameter): Check for constant shape arrays,
+	adjusted error message.
+
+2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
+
 	* invoke.texi: Removed -w from option summary.
 
 2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
