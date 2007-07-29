@@ -1,3 +1,7 @@
+2007-07-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* invoke.texi: Document -fsign-zero flag.
+
 2007-07-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31211
