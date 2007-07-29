@@ -2809,10 +2809,14 @@ add_multivariate_self_dist (struct data_dependence_relation *ddr, tree c_2)
   lambda_vector dist_v;
   int v1, v2, cd;
 
-  /* Polynomials with more than 2 variables are not handled yet.  */
-  if (TREE_CODE (c_0) != INTEGER_CST)
+  /* Polynomials with more than 2 variables are not handled yet.  When
+     the evolution steps are parameters, it is not possible to
+     represent the dependence using classical distance vectors.  */
+  if (TREE_CODE (c_0) != INTEGER_CST
+      || TREE_CODE (CHREC_RIGHT (c_1)) != INTEGER_CST
+      || TREE_CODE (CHREC_RIGHT (c_2)) != INTEGER_CST)
     {
-      DDR_ARE_DEPENDENT (ddr) = chrec_dont_know;
+      DDR_AFFINE_P (ddr) = false;
       return;
     }
 
