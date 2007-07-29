@@ -100,11 +100,11 @@ one is not the default.
 * Runtime Options::     Influencing runtime behavior
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
-* Environment Variables:: Env vars that affect @command{gfortran}.
+* Environment Variables:: Environment variables that affect @command{gfortran}.
 @end menu
 
 @node Option Summary
-@section Option Summary
+@section Option summary
 
 @c man begin OPTIONS
 
@@ -113,7 +113,7 @@ by type.  Explanations are in the following sections.
 
 @table @emph
 @item Fortran Language Options
-@xref{Fortran Dialect Options,,Options Controlling Fortran Dialect}.
+@xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
 @gccoptlist{-fall-intrinsics  -ffree-form  -fno-fixed-form @gol
 -fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
 -std=@var{std} -fd-lines-as-code  -fd-lines-as-comments @gol
@@ -123,20 +123,20 @@ by type.  Explanations are in the following sections.
 -fcray-pointer  -fopenmp  -frange-check -fno-backslash }
 
 @item Error and Warning Options
-@xref{Error and Warning Options,,Options to Request or Suppress Errors
-and Warnings}.
+@xref{Error and Warning Options,,Options to request or suppress errors
+and warnings}.
 @gccoptlist{-fmax-errors=@var{n} @gol
 -fsyntax-only  -pedantic  -pedantic-errors @gol
--w  -Wall  -Waliasing  -Wampersand  -Wcharacter-truncation  -Wconversion @gol
+-Wall  -Waliasing  -Wampersand  -Wcharacter-truncation  -Wconversion @gol
 -Wimplicit-interface  -Wline-truncation  -Wnonstd-intrinsics  -Wsurprising @gol
--Wno-tabs  -Wunderflow  -W}
+-Wno-tabs  -Wunderflow}
 
 @item Debugging Options
-@xref{Debugging Options,,Options for Debugging Your Program or GCC}.
+@xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
 @gccoptlist{-fdump-parse-tree  -ffpe-trap=@var{list}}
 
 @item Directory Options
-@xref{Directory Options,,Options for Directory Search}.
+@xref{Directory Options,,Options for directory search}.
 @gccoptlist{-I@var{dir}  -J@var{dir}  -M@var{dir}}
 
 @item Runtime Options
@@ -145,7 +145,7 @@ and Warnings}.
 -fmax-subrecord-length=@var{length}}
 
 @item Code Generation Options
-@xref{Code Gen Options,,Options for Code Generation Conventions}.
+@xref{Code Gen Options,,Options for code generation conventions}.
 @gccoptlist{-fno-automatic  -ff2c  -fno-underscoring
 -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
@@ -164,7 +164,7 @@ and Warnings}.
 @end menu
 
 @node Fortran Dialect Options
-@section Options Controlling Fortran Dialect
+@section Options controlling Fortran dialect
 @cindex dialect options
 @cindex language, dialect options
 @cindex options, dialect
@@ -312,7 +312,7 @@ standards.
 @end table
 
 @node Error and Warning Options
-@section Options to Request or Suppress Errors and Warnings
+@section Options to request or suppress errors and warnings
 @cindex options, warnings
 @cindex options, errors
 @cindex warnings, suppressing
@@ -379,11 +379,6 @@ This should be used in conjunction with @option{-std=f95} or
 @opindex @code{pedantic-errors}
 Like @option{-pedantic}, except that errors are produced rather than
 warnings.
-
-@item -w
-@opindex @code{w}
-@cindex warnings, none
-Inhibit all warning messages.
 
 @item -Wall
 @opindex @code{Wall}
@@ -489,14 +484,6 @@ encountered, which yield an UNDERFLOW during compilation.
 @opindex @code{Werror}
 @cindex warnings, to errors
 Turns all warnings into errors.
-
-@item -W
-@opindex @code{W}
-@cindex warnings, extra
-@cindex extra warnings
-Turns on ``extra warnings'' and, if optimization is specified
-via @option{-O}, the @option{-Wuninitialized} option.
-(This might change in future versions of GNU Fortran.)
 @end table
 
 @xref{Error and Warning Options,,Options to Request or Suppress Errors and
@@ -507,7 +494,7 @@ and other GNU compilers.
 Some of these have no effect when compiling programs written in Fortran.
 
 @node Debugging Options
-@section Options for Debugging Your Program or GNU Fortran
+@section Options for debugging your program or GNU Fortran
 @cindex options, debugging
 @cindex debugging information options
 
@@ -539,7 +526,7 @@ gcc,Using the GNU Compiler Collection (GCC)}, for more information on
 debugging options.
 
 @node Directory Options
-@section Options for Directory Search
+@section Options for directory search
 @cindex directory, options
 @cindex options, directory search
 @cindex search path
@@ -614,10 +601,10 @@ variable override the default specified by @option{-fconvert}.}
 @opindex @code{frecord-marker=}@var{length}
 Specify the length of record markers for unformatted files.
 Valid values for @var{length} are 4 and 8.  Default is 4.
-@emph{This is different from previous versions of gfortran},
+@emph{This is different from previous versions of @command{gfortran}},
 which specified a default record marker length of 8 on most
 systems.  If you want to read or write files compatible
-with earlier versions of gfortran, use @option{-frecord-marker=8}.
+with earlier versions of @command{gfortran}, use @option{-frecord-marker=8}.
 
 @item -fmax-subrecord-length=@var{length}
 @opindex @code{fmax-subrecord-length=}@var{length}
@@ -627,7 +614,7 @@ really useful for use by the gfortran testsuite.
 @end table
 
 @node Code Gen Options
-@section Options for Code Generation Conventions
+@section Options for code generation conventions
 @cindex code generation, conventions
 @cindex options, code generation
 @cindex options, run-time
@@ -843,7 +830,7 @@ shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 @c man end
 
 @node Environment Variables
-@section Environment Variables Affecting @command{gfortran}
+@section Environment variables affecting @command{gfortran}
 @cindex environment variable
 
 @c man begin ENVIRONMENT

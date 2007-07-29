@@ -1,3 +1,25 @@
+2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
+
+	Backport from trunk:
+	2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
+	* invoke.texi: Removed -w from option summary.
+
+	2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
+	PR fortran/32879
+	* intrinsic.texi (IRAND, RAND, RANDOM_NUMBER): Document
+	algorithm used for random number generator.
+
+	2007-07-13  Daniel Franke  <franke.daniel@gmail.com>
+	* invoke.texi: Unified upper- and lower-case in menus.
+	(-w, -W): Removed, documented by gcc.
+	* intrinsic.texi: Unified Class-section entries, added
+	subroutine/function warning where appropiate.
+
+	2007-05-01  Daniel Franke  <franke.daniel@gmail.com>
+	* intrinsic.texi (MVBITS): Changed class to elemental subroutine.
+	(RANDOM_NUMBER): Changed class to subroutine.
+	(HUGE, TINY): Changed class to inquiry function.
+
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.
