@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "vecprim.h"
 #include "pointer-set.h"
+#include "alloc-pool.h"
 
 /* Broad overview of how aliasing works:
    
@@ -212,7 +213,7 @@ static void set_pt_anything (tree);
 
 void debug_mp_info (VEC(mem_sym_stats_t,heap) *);
 
-
+static alloc_pool mem_sym_stats_pool;
 
 /* Return memory reference stats for symbol VAR.  Create a new slot in
    cfun->gimple_df->mem_sym_stats if needed.  */
@@ -229,7 +230,8 @@ get_mem_sym_stats_for (tree var)
   slot = pointer_map_insert (map, var);
   if (*slot == NULL)
     {
-      stats = XCNEW (struct mem_sym_stats_d);
+      stats = pool_alloc (mem_sym_stats_pool);
+      memset (stats, 0, sizeof (*stats));
       stats->var = var;
       *slot = (void *) stats;
     }
@@ -1876,20 +1878,6 @@ count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
   gcc_assert (*num_uses_p >= *num_loads_p + *num_stores_p);
 }
 
-
-/* Helper for delete_mem_ref_stats.  Free all the slots in the
-   mem_sym_stats map.  */
-
-static bool
-delete_mem_sym_stats (void *key ATTRIBUTE_UNUSED, void **value,
-		       void *data ATTRIBUTE_UNUSED)
-{
-  XDELETE (*value);
-  *value = NULL;
-  return false;
-}
-
-
 /* Remove memory references stats for function FN.  */
 
 void
@@ -1897,11 +1885,9 @@ delete_mem_ref_stats (struct function *fn)
 {
   if (gimple_mem_ref_stats (fn)->mem_sym_stats)
     {
-      pointer_map_traverse (gimple_mem_ref_stats (fn)->mem_sym_stats,
-			    delete_mem_sym_stats, NULL);
+      free_alloc_pool (mem_sym_stats_pool);
       pointer_map_destroy (gimple_mem_ref_stats (fn)->mem_sym_stats);
     }
-
   gimple_mem_ref_stats (fn)->mem_sym_stats = NULL;
 }
 
@@ -1913,9 +1899,9 @@ init_mem_ref_stats (void)
 {
   struct mem_ref_stats_d *mem_ref_stats = gimple_mem_ref_stats (cfun);
 
-  if (mem_ref_stats->mem_sym_stats)
-    delete_mem_ref_stats (cfun);
-
+  mem_sym_stats_pool = create_alloc_pool ("Mem sym stats",
+					  sizeof (struct mem_sym_stats_d),
+					  100);
   memset (mem_ref_stats, 0, sizeof (struct mem_ref_stats_d));
   mem_ref_stats->mem_sym_stats = pointer_map_create ();
 }
@@ -1945,8 +1931,6 @@ init_alias_info (void)
   if (gimple_aliases_computed_p (cfun))
     {
       unsigned i;
-      
-      bitmap_obstack_release (&alias_bitmap_obstack);
       
       /* Similarly, clear the set of addressable variables.  In this
 	 case, we can just clear the set because addressability is
@@ -2021,6 +2005,8 @@ init_alias_info (void)
 
   /* Next time, we will need to reset alias information.  */
   cfun->gimple_df->aliases_computed_p = true;
+  if (alias_bitmap_obstack.elements != NULL)
+    bitmap_obstack_release (&alias_bitmap_obstack);    
   bitmap_obstack_initialize (&alias_bitmap_obstack);
 
   return ai;
@@ -2051,6 +2037,7 @@ delete_alias_info (struct alias_info *ai)
   pointer_set_destroy (ai->dereferenced_ptrs_load);
   free (ai);
 
+  delete_mem_ref_stats (cfun);
   delete_points_to_sets ();
 }
 

@@ -1,3 +1,14 @@
+2007-07-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (tree-ssa-alias.o): Add alloc-pool.h
+
+	* tree-ssa-alias.c: Add alloc-pool.h.
+	(init_alias_info): Free alias_bitmap_obstack.
+	(delete_alias_info): Call delete_mem_ref_stats.
+	(get_mem_sym_stats_for): Use alloc_pool.
+	(init_mem_ref_stats): Do not delete mem_ref_stats here.
+	(delete_mem_sym_stats): Removed.
+	
 2007-07-29  Sebastian Pop  <sebpop@gmail.com>
 
 	* tree-data-ref.c (add_multivariate_self_dist): Parametric access
