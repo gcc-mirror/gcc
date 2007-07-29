@@ -1,3 +1,8 @@
+2007-07-29  Sebastian Pop  <sebpop@gmail.com>
+
+	* tree-data-ref.c (add_multivariate_self_dist): Parametric access
+	functions cannot be represented as classical distance vectors.
+
 2007-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* attribs.c (hash_attr, eq_attr, init_attributes): Constify.
@@ -1010,7 +1015,7 @@
 	(reg_save_code, reg_restore_code): New functions.
 	(init_caller_save): Do not intialize
 	reg_save_code/reg_restore_code tables.
-	* Makeifle.in: (gt-caller-save.h): New.
+	* Makefile.in: (gt-caller-save.h): New.
 
 2007-07-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
