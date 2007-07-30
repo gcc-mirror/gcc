@@ -1,3 +1,37 @@
+2007-07-29  Mark Mitchell  <mark@codesourcery.com>
+
+	gcc/
+	* config/m68k/lb1sf68.asm (FUNC): New macro.
+	(__mulsi3): Use it.
+	(__udivsi3): Likewise.
+	(__divsi3): Likewise.
+	(__umodsi3): Likewise.
+	(__modsi3): Likewise.
+	(__subdf3): Likewise.
+	(__adddf3): Likewise.
+	(__muldf3): Likewise.
+	(__divdf3): Likewise.
+	(__negdf2): Likewise.
+	(__cmpdf2): Likewise.
+	(__subsf3): Likewise.
+	(__addsf3): Likewise.
+	(__mulsf3): Likewise.
+	(__divsf3): Likewise.
+	(__negsf2): Likewise.
+	(__cmpsf2): Likewise.
+	(__eqdf2): Likewise.
+	(__nedf2): Likewise.
+	(__gtdf2): Likewise.
+	(__gedf2): Likewise.
+	(__ltdf2): Likewise.
+	(__ledf2): Likewise.
+	(__eqsf2): Likewise.
+	(__nesf2): Likewise.
+	(__gtsf2): Likewise.
+	(__gesf2): Likewise.
+	(__ltsf2): Likewise.
+	(__lesf2): Likewise.
+
 2007-07-30  Ollie Wild  <aaw@google.com>
 
 	* c-ppoutput.c (print_lines_directives_only): New function.
