@@ -1,3 +1,7 @@
+2007-07-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libgfortran.h: Include <stdarg.h>.
+
 2007-07-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32858
