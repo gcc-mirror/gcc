@@ -1,3 +1,13 @@
+2007-07-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/32527
+	* tree-affine.h (aff_tree): The type of rest is sizetype for types
+	of pointers.
+	* tree-affine.c (aff_combination_scale): If type is a pointer type,
+	use sizetype for rest.
+	(aff_combination_add_elt): Likewise. Don't specialize pointer types.
+	(aff_combination_convert): Don't convert rest for pointer types.
+
 2007-07-28  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (tree-ssa-alias.o): Add alloc-pool.h

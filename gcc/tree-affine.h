@@ -53,7 +53,8 @@ typedef struct affine_tree_combination
   struct aff_comb_elt elts[MAX_AFF_ELTS];
 
   /* Remainder of the expression.  Usually NULL, used only if there are more
-     than MAX_AFF_ELTS elements.  Type of REST must be TYPE.  */
+     than MAX_AFF_ELTS elements.  Type of REST will be either sizetype for 
+     TYPE of POINTER_TYPEs or TYPE.  */
   tree rest;
 } aff_tree;
 
