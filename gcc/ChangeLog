@@ -1,3 +1,17 @@
+2007-07-30  Ollie Wild  <aaw@google.com>
+
+	* c-ppoutput.c (print_lines_directives_only): New function.
+	(scan_translation_unit_directives_only): New function.
+	(preprocess_file): Add call to scan_translation_unit_directives_only.
+	* c-opts.c (c_common_handle_option): Add OPT_fdirectives_only.
+	(sanitize_cpp_opts): Add default flag_dump_macros setting for
+	-fdirectives-only.  Add errors for -fdirectives-only conflict with
+	-Wunused-macros and -traditional.
+	(finish_options): Add builtin macro initialization for
+	-fdirectives-only + -fpreprocessed.
+	* c.opt (fdirectives-only): New.
+	* doc/cppopts.texi (fdirectives-only): New.
+
 2007-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (record_set, memory_modified_1): Constify.

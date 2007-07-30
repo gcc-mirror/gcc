@@ -791,7 +791,8 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 
   /* Stack the buffer.  */
   buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
-			    CPP_OPTION (pfile, preprocessed));
+			    CPP_OPTION (pfile, preprocessed)
+			    && !CPP_OPTION (pfile, directives_only));
   buffer->file = file;
   buffer->sysp = sysp;
 
