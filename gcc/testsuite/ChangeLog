@@ -1,3 +1,8 @@
+2007-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32108
+	* g++.dg/ext/label6.C: New.
+
 2007-07-28  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/30917

@@ -1,3 +1,9 @@
+2007-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32108
+	* semantics.c (finish_label_stmt): Reject the __label__
+	extension outside function scopes.
+
 2007-07-28  Simon Martin  <simartin@users.sourceforge.net>
 	    Mark Mitchell  <mark@codesourcery.com>
 
