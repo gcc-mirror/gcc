@@ -523,7 +523,7 @@ static void free_gcse_mem (void);
 static void alloc_reg_set_mem (int);
 static void free_reg_set_mem (void);
 static void record_one_set (int, rtx);
-static void record_set_info (rtx, rtx, void *);
+static void record_set_info (rtx, const_rtx, void *);
 static void compute_sets (void);
 static void hash_scan_insn (rtx, struct hash_table *, int);
 static void hash_scan_set (rtx, rtx, struct hash_table *);
@@ -543,7 +543,7 @@ static unsigned int hash_set (int, int);
 static int expr_equiv_p (rtx, rtx);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
-static void record_last_set_info (rtx, rtx, void *);
+static void record_last_set_info (rtx, const_rtx, void *);
 static void compute_hash_table (struct hash_table *);
 static void alloc_hash_table (int, struct hash_table *, int);
 static void free_hash_table (struct hash_table *);
@@ -568,9 +568,9 @@ static void find_used_regs (rtx *, void *);
 static int try_replace_reg (rtx, rtx, rtx);
 static struct expr *find_avail_set (int, rtx);
 static int cprop_jump (basic_block, rtx, rtx, rtx, rtx);
-static void mems_conflict_for_gcse_p (rtx, rtx, void *);
+static void mems_conflict_for_gcse_p (rtx, const_rtx, void *);
 static int load_killed_in_block_p (basic_block, int, rtx, int);
-static void canon_list_insert (rtx, rtx, void *);
+static void canon_list_insert (rtx, const_rtx, void *);
 static int cprop_insn (rtx, int);
 static int cprop (int);
 static void find_implicit_sets (void);
@@ -616,8 +616,8 @@ static void invalidate_any_buried_refs (rtx);
 static void compute_ld_motion_mems (void);
 static void trim_ld_motion_mems (void);
 static void update_ld_motion_stores (struct expr *);
-static void reg_set_info (rtx, rtx, void *);
-static void reg_clear_last_set (rtx, rtx, void *);
+static void reg_set_info (rtx, const_rtx, void *);
+static void reg_clear_last_set (rtx, const_rtx, void *);
 static bool store_ops_ok (rtx, int *);
 static rtx extract_mentioned_regs (rtx);
 static rtx extract_mentioned_regs_helper (rtx, rtx);
@@ -1129,7 +1129,7 @@ record_one_set (int regno, rtx insn)
    occurring.  */
 
 static void
-record_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED, void *data)
+record_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   rtx record_set_insn = (rtx) data;
 
@@ -1332,7 +1332,7 @@ static rtx gcse_mem_operand;
    gcse_mems_conflict_p to a nonzero value.  */
 
 static void
-mems_conflict_for_gcse_p (rtx dest, rtx setter ATTRIBUTE_UNUSED,
+mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 			  void *data ATTRIBUTE_UNUSED)
 {
   while (GET_CODE (dest) == SUBREG
@@ -1940,7 +1940,7 @@ record_last_reg_set_info (rtx insn, int regno)
    taken off pairwise.  */
 
 static void
-canon_list_insert (rtx dest ATTRIBUTE_UNUSED, rtx unused1 ATTRIBUTE_UNUSED,
+canon_list_insert (rtx dest ATTRIBUTE_UNUSED, const_rtx unused1 ATTRIBUTE_UNUSED,
 		   void * v_insn)
 {
   rtx dest_addr, insn;
@@ -2001,7 +2001,7 @@ record_last_mem_set_info (rtx insn)
    the SET is taking place.  */
 
 static void
-record_last_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED, void *data)
+record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   rtx last_set_insn = (rtx) data;
 
@@ -5471,7 +5471,7 @@ static int num_stores;
    note_stores.  */
 
 static void
-reg_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED,
+reg_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 	      void *data)
 {
   sbitmap bb_reg = data;
@@ -5491,7 +5491,7 @@ reg_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED,
    note_stores.  */
 
 static void
-reg_clear_last_set (rtx dest, rtx setter ATTRIBUTE_UNUSED,
+reg_clear_last_set (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 	      void *data)
 {
   int *dead_vec = data;

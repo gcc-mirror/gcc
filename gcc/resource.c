@@ -78,7 +78,7 @@ static HARD_REG_SET current_live_regs;
 
 static HARD_REG_SET pending_dead_regs;
 
-static void update_live_status (rtx, rtx, void *);
+static void update_live_status (rtx, const_rtx, void *);
 static int find_basic_block (rtx, int);
 static rtx next_insn_no_annul (rtx);
 static rtx find_dead_or_set_registers (rtx, struct resources*,
@@ -89,7 +89,7 @@ static rtx find_dead_or_set_registers (rtx, struct resources*,
    It deadens any CLOBBERed registers and livens any SET registers.  */
 
 static void
-update_live_status (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
+update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 {
   int first_regno, last_regno;
   int i;

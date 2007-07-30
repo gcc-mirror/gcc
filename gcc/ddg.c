@@ -87,7 +87,7 @@ mem_read_insn_p (rtx insn)
 }
 
 static void
-mark_mem_store (rtx loc, rtx setter ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
+mark_mem_store (rtx loc, const_rtx setter ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
 {
   if (MEM_P (loc))
     mem_ref_p = true;

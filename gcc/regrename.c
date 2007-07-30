@@ -88,7 +88,7 @@ static void scan_rtx (rtx, rtx *, enum reg_class, enum scan_actions,
 		      enum op_type, int);
 static struct du_chain *build_def_use (basic_block);
 static void dump_def_use_chain (struct du_chain *);
-static void note_sets (rtx, rtx, void *);
+static void note_sets (rtx, const_rtx, void *);
 static void clear_dead_regs (HARD_REG_SET *, enum machine_mode, rtx);
 static void merge_overlapping_regs (basic_block, HARD_REG_SET *,
 				    struct du_chain *);
@@ -97,7 +97,7 @@ static void merge_overlapping_regs (basic_block, HARD_REG_SET *,
    record them in *DATA (which is actually a HARD_REG_SET *).  */
 
 static void
-note_sets (rtx x, rtx set ATTRIBUTE_UNUSED, void *data)
+note_sets (rtx x, const_rtx set ATTRIBUTE_UNUSED, void *data)
 {
   HARD_REG_SET *pset = (HARD_REG_SET *) data;
 
@@ -1029,8 +1029,8 @@ static void kill_value_regno (unsigned, unsigned, struct value_data *);
 static void kill_value (rtx, struct value_data *);
 static void set_value_regno (unsigned, enum machine_mode, struct value_data *);
 static void init_value_data (struct value_data *);
-static void kill_clobbered_value (rtx, rtx, void *);
-static void kill_set_value (rtx, rtx, void *);
+static void kill_clobbered_value (rtx, const_rtx, void *);
+static void kill_set_value (rtx, const_rtx, void *);
 static int kill_autoinc_value (rtx *, void *);
 static void copy_value (rtx, rtx, struct value_data *);
 static bool mode_change_ok (enum machine_mode, enum machine_mode,
@@ -1170,7 +1170,7 @@ init_value_data (struct value_data *vd)
 /* Called through note_stores.  If X is clobbered, kill its value.  */
 
 static void
-kill_clobbered_value (rtx x, rtx set, void *data)
+kill_clobbered_value (rtx x, const_rtx set, void *data)
 {
   struct value_data *vd = data;
   if (GET_CODE (set) == CLOBBER)
@@ -1181,7 +1181,7 @@ kill_clobbered_value (rtx x, rtx set, void *data)
    current value and install it as the root of its own value list.  */
 
 static void
-kill_set_value (rtx x, rtx set, void *data)
+kill_set_value (rtx x, const_rtx set, void *data)
 {
   struct value_data *vd = data;
   if (GET_CODE (set) != CLOBBER)

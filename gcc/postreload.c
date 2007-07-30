@@ -57,10 +57,10 @@ static int reload_cse_simplify_operands (rtx, rtx);
 
 static void reload_combine (void);
 static void reload_combine_note_use (rtx *, rtx);
-static void reload_combine_note_store (rtx, rtx, void *);
+static void reload_combine_note_store (rtx, const_rtx, void *);
 
 static void reload_cse_move2add (rtx);
-static void move2add_note_store (rtx, rtx, void *);
+static void move2add_note_store (rtx, const_rtx, void *);
 
 /* Call cse / combine like post-reload optimization phases.
    FIRST is the first instruction.  */
@@ -980,7 +980,7 @@ reload_combine (void)
    accordingly.  Called via note_stores from reload_combine.  */
 
 static void
-reload_combine_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
+reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 {
   int regno = 0;
   int i;
@@ -1419,7 +1419,7 @@ reload_cse_move2add (rtx first)
    Called from reload_cse_move2add via note_stores.  */
 
 static void
-move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
+move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int regno = 0;
   unsigned int nregs = 0;

@@ -379,7 +379,7 @@ static void do_SUBST (rtx *, rtx);
 static void do_SUBST_INT (int *, int);
 static void init_reg_last (void);
 static void setup_incoming_promotions (rtx);
-static void set_nonzero_bits_and_sign_copies (rtx, rtx, void *);
+static void set_nonzero_bits_and_sign_copies (rtx, const_rtx, void *);
 static int cant_combine_insn_p (rtx);
 static int can_combine_p (rtx, rtx, rtx, rtx, rtx *, rtx *);
 static int combinable_i3pat (rtx, rtx *, rtx, rtx, int, rtx *);
@@ -394,7 +394,7 @@ static rtx simplify_if_then_else (rtx);
 static rtx simplify_set (rtx);
 static rtx simplify_logical (rtx);
 static rtx expand_compound_operation (rtx);
-static rtx expand_field_assignment (rtx);
+static const_rtx expand_field_assignment (const_rtx);
 static rtx make_extraction (enum machine_mode, rtx, HOST_WIDE_INT,
 			    rtx, unsigned HOST_WIDE_INT, int, int, int);
 static rtx extract_left_shift (rtx, int);
@@ -425,12 +425,12 @@ static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
 static void update_table_tick (rtx);
 static void record_value_for_reg (rtx, rtx, rtx);
 static void check_conversions (rtx, rtx);
-static void record_dead_and_set_regs_1 (rtx, rtx, void *);
+static void record_dead_and_set_regs_1 (rtx, const_rtx, void *);
 static void record_dead_and_set_regs (rtx);
 static int get_last_value_validate (rtx *, rtx, int, int);
 static rtx get_last_value (const_rtx);
-static int use_crosses_set_p (rtx, int);
-static void reg_dead_at_p_1 (rtx, rtx, void *);
+static int use_crosses_set_p (const_rtx, int);
+static void reg_dead_at_p_1 (rtx, const_rtx, void *);
 static int reg_dead_at_p (rtx, rtx);
 static void move_deaths (rtx, rtx, int, rtx, rtx *);
 static int reg_bitfield_target_p (rtx, rtx);
@@ -1361,7 +1361,7 @@ setup_incoming_promotions (rtx first)
    by any set of X.  */
 
 static void
-set_nonzero_bits_and_sign_copies (rtx x, rtx set, void *data)
+set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 {
   rtx insn = (rtx) data;
   unsigned int num;
@@ -1483,7 +1483,8 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	       rtx *pdest, rtx *psrc)
 {
   int i;
-  rtx set = 0, src, dest;
+  const_rtx set = 0;
+  rtx src, dest;
   rtx p;
 #ifdef AUTO_INC_DEC
   rtx link;
@@ -1992,7 +1993,7 @@ struct likely_spilled_retval_info
 /* Called via note_stores by likely_spilled_retval_p.  Remove from info->mask
    hard registers that are known to be written to / clobbered in full.  */
 static void
-likely_spilled_retval_1 (rtx x, rtx set, void *data)
+likely_spilled_retval_1 (rtx x, const_rtx set, void *data)
 {
   struct likely_spilled_retval_info *info = data;
   unsigned regno, nregs;
@@ -6169,8 +6170,8 @@ expand_compound_operation (rtx x)
    We half-heartedly support variable positions, but do not at all
    support variable lengths.  */
 
-static rtx
-expand_field_assignment (rtx x)
+static const_rtx
+expand_field_assignment (const_rtx x)
 {
   rtx inner;
   rtx pos;			/* Always counts from low bit.  */
@@ -11357,7 +11358,7 @@ record_value_for_reg (rtx reg, rtx insn, rtx value)
    set is occurring.  */
 
 static void
-record_dead_and_set_regs_1 (rtx dest, rtx setter, void *data)
+record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 {
   rtx record_dead_insn = (rtx) data;
 
@@ -11787,7 +11788,7 @@ get_last_value (const_rtx x)
    that is set in an instruction more recent than FROM_LUID.  */
 
 static int
-use_crosses_set_p (rtx x, int from_luid)
+use_crosses_set_p (const_rtx x, int from_luid)
 {
   const char *fmt;
   int i;
@@ -11848,7 +11849,7 @@ static int reg_dead_flag;
    reg_dead_flag to 1 if X is a CLOBBER and to -1 it is a SET.  */
 
 static void
-reg_dead_at_p_1 (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
+reg_dead_at_p_1 (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int regno, endregno;
 

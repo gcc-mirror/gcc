@@ -4700,7 +4700,7 @@ struct epi_info
 };
 
 static void handle_epilogue_set (rtx, struct epi_info *);
-static void update_epilogue_consts (rtx, rtx, void *);
+static void update_epilogue_consts (rtx, const_rtx, void *);
 static void emit_equiv_load (struct epi_info *);
 
 /* Modify INSN, a list of one or more insns that is part of the epilogue, to
@@ -4976,7 +4976,7 @@ handle_epilogue_set (rtx set, struct epi_info *p)
 /* Update the tracking information for registers set to constants.  */
 
 static void
-update_epilogue_consts (rtx dest, rtx x, void *data)
+update_epilogue_consts (rtx dest, const_rtx x, void *data)
 {
   struct epi_info *p = (struct epi_info *) data;
   rtx new;

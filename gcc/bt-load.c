@@ -141,7 +141,7 @@ static void move_btr_def (basic_block, int, btr_def, bitmap, HARD_REG_SET *);
 static int migrate_btr_def (btr_def, int);
 static void migrate_btr_defs (enum reg_class, int);
 static int can_move_up (basic_block, rtx, int);
-static void note_btr_set (rtx, rtx, void *);
+static void note_btr_set (rtx, const_rtx, void *);
 
 /* The following code performs code motion of target load instructions
    (instructions that set branch target registers), to move them
@@ -423,7 +423,7 @@ typedef struct {
    straightforward definitions.  DATA points to information about the
    current basic block that needs updating.  */
 static void
-note_btr_set (rtx dest, rtx set ATTRIBUTE_UNUSED, void *data)
+note_btr_set (rtx dest, const_rtx set ATTRIBUTE_UNUSED, void *data)
 {
   defs_uses_info *info = data;
   int regno, end_regno;

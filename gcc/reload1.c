@@ -395,7 +395,7 @@ static void check_eliminable_occurrences (rtx);
 static void elimination_effects (rtx, enum machine_mode);
 static int eliminate_regs_in_insn (rtx, int);
 static void update_eliminable_offsets (void);
-static void mark_not_eliminable (rtx, rtx, void *);
+static void mark_not_eliminable (rtx, const_rtx, void *);
 static void set_initial_elim_offsets (void);
 static bool verify_initial_elim_offsets (void);
 static void set_initial_label_offsets (void);
@@ -408,7 +408,7 @@ static void scan_paradoxical_subregs (rtx);
 static void count_pseudo (int);
 static void order_regs_for_reload (struct insn_chain *);
 static void reload_as_needed (int);
-static void forget_old_reloads_1 (rtx, rtx, void *);
+static void forget_old_reloads_1 (rtx, const_rtx, void *);
 static void forget_marked_reloads (regset);
 static int reload_reg_class_lower (const void *, const void *);
 static void mark_reload_reg_in_use (unsigned int, int, enum reload_type,
@@ -3477,7 +3477,7 @@ update_eliminable_offsets (void)
    the insns of the function.  */
 
 static void
-mark_not_eliminable (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
+mark_not_eliminable (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int i;
 
@@ -4327,7 +4327,7 @@ reload_as_needed (int live_known)
    to be forgotten later.  */
 
 static void
-forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
+forget_old_reloads_1 (rtx x, const_rtx ignored ATTRIBUTE_UNUSED,
 		      void *data)
 {
   unsigned int regno;

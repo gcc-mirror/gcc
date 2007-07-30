@@ -177,10 +177,10 @@ static void free_mem (void);
 static bool oprs_unchanged_p (rtx, rtx, bool);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
-static void record_last_set_info (rtx, rtx, void *);
+static void record_last_set_info (rtx, const_rtx, void *);
 static void record_opr_changes (rtx);
 
-static void find_mem_conflicts (rtx, rtx, void *);
+static void find_mem_conflicts (rtx, const_rtx, void *);
 static int load_killed_in_block_p (int, rtx, bool);
 static void reset_opr_set_tables (void);
 
@@ -571,7 +571,7 @@ static int mems_conflict_p;
    to a nonzero value.  */
 
 static void
-find_mem_conflicts (rtx dest, rtx setter ATTRIBUTE_UNUSED,
+find_mem_conflicts (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 		    void *data)
 {
   rtx mem_op = (rtx) data;
@@ -671,7 +671,7 @@ record_last_mem_set_info (rtx insn)
    the SET is taking place.  */
 
 static void
-record_last_set_info (rtx dest, rtx setter ATTRIBUTE_UNUSED, void *data)
+record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   rtx last_set_insn = (rtx) data;
 

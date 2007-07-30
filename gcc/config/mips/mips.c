@@ -371,7 +371,7 @@ static void mips_sim_wait_regs_1 (rtx *, void *);
 static void mips_sim_wait_regs (struct mips_sim *, rtx);
 static void mips_sim_wait_units (struct mips_sim *, rtx);
 static void mips_sim_wait_insn (struct mips_sim *, rtx);
-static void mips_sim_record_set (rtx, rtx, void *);
+static void mips_sim_record_set (rtx, const_rtx, void *);
 static void mips_sim_issue_insn (struct mips_sim *, rtx);
 static void mips_sim_issue_nop (struct mips_sim *);
 static void mips_sim_finish_insn (struct mips_sim *, rtx);
@@ -388,7 +388,7 @@ static bool mips_return_in_memory (tree, tree);
 static bool mips_strict_argument_naming (CUMULATIVE_ARGS *);
 static void mips_macc_chains_record (rtx);
 static void mips_macc_chains_reorder (rtx *, int);
-static void vr4130_true_reg_dependence_p_1 (rtx, rtx, void *);
+static void vr4130_true_reg_dependence_p_1 (rtx, const_rtx, void *);
 static bool vr4130_true_reg_dependence_p (rtx);
 static bool vr4130_swap_insns_p (rtx, rtx);
 static void vr4130_reorder (rtx *, int);
@@ -9705,7 +9705,7 @@ mips_sim_wait_insn (struct mips_sim *state, rtx insn)
    in simulation state DATA.  */
 
 static void
-mips_sim_record_set (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+mips_sim_record_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   struct mips_sim *state;
   unsigned int i;
@@ -10772,7 +10772,7 @@ static rtx vr4130_last_insn;
    if the instruction uses the value of register X.  */
 
 static void
-vr4130_true_reg_dependence_p_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+vr4130_true_reg_dependence_p_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   rtx *insn_ptr = data;
   if (REG_P (x)

@@ -343,13 +343,13 @@ static void prune_preferences (void);
 static void find_reg (int, HARD_REG_SET, int, int, int);
 static void record_one_conflict (int);
 static void record_conflicts (int *, int);
-static void mark_reg_store (rtx, rtx, void *);
-static void mark_reg_clobber (rtx, rtx, void *);
+static void mark_reg_store (rtx, const_rtx, void *);
+static void mark_reg_clobber (rtx, const_rtx, void *);
 static void mark_reg_conflicts (rtx);
 static void mark_reg_death (rtx);
 static void set_preference (rtx, rtx);
 static void dump_conflicts (FILE *);
-static void reg_becomes_live (rtx, rtx, void *);
+static void reg_becomes_live (rtx, const_rtx, void *);
 static void reg_dies (int, enum machine_mode, struct insn_chain *);
 
 
@@ -1542,7 +1542,7 @@ mirror_conflicts (void)
    a REG_INC note was found for it).  */
 
 static void
-mark_reg_store (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
+mark_reg_store (rtx reg, const_rtx setter, void *data ATTRIBUTE_UNUSED)
 {
   int regno;
 
@@ -1589,7 +1589,7 @@ mark_reg_store (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
 /* Like mark_reg_store except notice just CLOBBERs; ignore SETs.  */
 
 static void
-mark_reg_clobber (rtx reg, rtx setter, void *data)
+mark_reg_clobber (rtx reg, const_rtx setter, void *data)
 {
   if (GET_CODE (setter) == CLOBBER)
     mark_reg_store (reg, setter, data);
@@ -1798,7 +1798,7 @@ static regset live_relevant_regs;
 /* Record in live_relevant_regs and REGS_SET that register REG became live.
    This is called via note_stores.  */
 static void
-reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *regs_set)
+reg_becomes_live (rtx reg, const_rtx setter ATTRIBUTE_UNUSED, void *regs_set)
 {
   int regno;
 

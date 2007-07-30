@@ -62,7 +62,7 @@ struct match {
 
 static rtx discover_flags_reg (void);
 static void mark_flags_life_zones (rtx);
-static void flags_set_1 (rtx, rtx, void *);
+static void flags_set_1 (rtx, const_rtx, void *);
 
 static int try_auto_increment (rtx, rtx, rtx, rtx, HOST_WIDE_INT, int);
 static int find_matches (rtx, struct match *);
@@ -371,7 +371,7 @@ mark_flags_life_zones (rtx flags)
 /* A subroutine of mark_flags_life_zones, called through note_stores.  */
 
 static void
-flags_set_1 (rtx x, rtx pat, void *data ATTRIBUTE_UNUSED)
+flags_set_1 (rtx x, const_rtx pat, void *data ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (pat) == SET
       && reg_overlap_mentioned_p (x, flags_set_1_rtx))

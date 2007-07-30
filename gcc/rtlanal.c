@@ -52,12 +52,12 @@ struct subreg_info
 };
 
 /* Forward declarations */
-static void set_of_1 (rtx, rtx, void *);
+static void set_of_1 (rtx, const_rtx, void *);
 static bool covers_regno_p (const_rtx, unsigned int);
 static bool covers_regno_no_parallel_p (const_rtx, unsigned int);
 static int rtx_referenced_p_1 (rtx *, void *);
 static int computed_jump_p_1 (const_rtx);
-static void parms_set (rtx, rtx, void *);
+static void parms_set (rtx, const_rtx, void *);
 static void subreg_get_info (unsigned int, enum machine_mode,
 			     unsigned int, enum machine_mode,
 			     struct subreg_info *);
@@ -957,23 +957,23 @@ modified_in_p (rtx x, rtx insn)
 /* Helper function for set_of.  */
 struct set_of_data
   {
-    rtx found;
-    rtx pat;
+    const_rtx found;
+    const_rtx pat;
   };
 
 static void
-set_of_1 (rtx x, rtx pat, void *data1)
+set_of_1 (rtx x, const_rtx pat, void *data1)
 {
-   struct set_of_data *data = (struct set_of_data *) (data1);
-   if (rtx_equal_p (x, data->pat)
-       || (!MEM_P (x) && reg_overlap_mentioned_p (data->pat, x)))
-     data->found = pat;
+  struct set_of_data *const data = (struct set_of_data *) (data1);
+  if (rtx_equal_p (x, data->pat)
+      || (!MEM_P (x) && reg_overlap_mentioned_p (data->pat, x)))
+    data->found = pat;
 }
 
 /* Give an INSN, return a SET or CLOBBER expression that does modify PAT
    (either directly or via STRICT_LOW_PART and similar modifiers).  */
-rtx
-set_of (rtx pat, rtx insn)
+const_rtx
+set_of (const_rtx pat, const_rtx insn)
 {
   struct set_of_data data;
   data.found = NULL_RTX;
@@ -1407,7 +1407,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
   the SUBREG will be passed.  */
 
 void
-note_stores (rtx x, void (*fun) (rtx, rtx, void *), void *data)
+note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
 {
   int i;
 
@@ -3262,7 +3262,7 @@ struct parms_set_data
 
 /* Helper function for noticing stores to parameter registers.  */
 static void
-parms_set (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+parms_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   struct parms_set_data *d = data;
   if (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER

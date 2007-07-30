@@ -3395,7 +3395,7 @@ struct no_conflict_data
    in the list of insns that constitute the actual no_conflict block /
    libcall block.  */
 static void
-no_conflict_move_test (rtx dest, rtx set, void *p0)
+no_conflict_move_test (rtx dest, const_rtx set, void *p0)
 {
   struct no_conflict_data *p= p0;
 

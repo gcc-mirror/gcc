@@ -331,7 +331,7 @@ static int frv_cond_flags 			(rtx);
 static bool frv_regstate_conflict_p 		(regstate_t, regstate_t);
 static int frv_registers_conflict_p_1 		(rtx *, void *);
 static bool frv_registers_conflict_p 		(rtx);
-static void frv_registers_update_1 		(rtx, rtx, void *);
+static void frv_registers_update_1 		(rtx, const_rtx, void *);
 static void frv_registers_update 		(rtx);
 static void frv_start_packet 			(void);
 static void frv_start_packet_block 		(void);
@@ -7215,7 +7215,7 @@ frv_registers_conflict_p (rtx x)
    under which X is modified.  Update FRV_PACKET accordingly.  */
 
 static void
-frv_registers_update_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+frv_registers_update_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   unsigned int regno;
 
@@ -7753,7 +7753,7 @@ frv_extract_membar (struct frv_io *io, rtx insn)
    if X is a register and *DATA depends on X.  */
 
 static void
-frv_io_check_address (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+frv_io_check_address (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   rtx *other = data;
 
@@ -7765,7 +7765,7 @@ frv_io_check_address (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
    Remove every modified register from the set.  */
 
 static void
-frv_io_handle_set (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+frv_io_handle_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   HARD_REG_SET *set = data;
   unsigned int regno;

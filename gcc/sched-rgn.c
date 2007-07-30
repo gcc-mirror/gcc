@@ -275,7 +275,7 @@ static int is_prisky (rtx, int, int);
 static int is_exception_free (rtx, int, int);
 
 static bool sets_likely_spilled (rtx);
-static void sets_likely_spilled_1 (rtx, rtx, void *);
+static void sets_likely_spilled_1 (rtx, const_rtx, void *);
 static void add_branch_dependences (rtx, rtx);
 static void compute_block_backward_dependences (int);
 
@@ -2208,7 +2208,7 @@ sets_likely_spilled (rtx pat)
 }
 
 static void
-sets_likely_spilled_1 (rtx x, rtx pat, void *data)
+sets_likely_spilled_1 (rtx x, const_rtx pat, void *data)
 {
   bool *ret = (bool *) data;
 
