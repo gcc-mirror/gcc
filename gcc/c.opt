@@ -523,6 +523,10 @@ fdefault-inline
 C++ ObjC++
 Inline member functions by default
 
+fdirectives-only
+C ObjC C++ ObjC++
+Preprocess directives only.
+
 fdollars-in-identifiers
 C ObjC C++ ObjC++
 Permit '$' as an identifier character

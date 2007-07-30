@@ -265,6 +265,9 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node)
       break;
 
     case BT_COUNTER:
+      if (CPP_OPTION (pfile, directives_only) && pfile->state.in_directive)
+	cpp_error (pfile, CPP_DL_ERROR,
+	    "__COUNTER__ expanded inside directive with -fdirectives-only");
       number = pfile->counter++;
       break;
     }

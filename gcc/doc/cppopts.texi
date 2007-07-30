@@ -518,6 +518,28 @@ Search @var{dir} only for header files requested with
 If @var{dir} begins with @code{=}, then the @code{=} will be replaced
 by the sysroot prefix; see @option{--sysroot} and @option{-isysroot}.
 
+@item -fdirectives-only
+@opindex fdirectives-only
+When preprocessing, handle directives, but do not expand macros.
+
+The option's behavior depends on the @option{-E} and @option{-fpreprocessed}
+options.
+
+With @option{-E}, preprocessing is limited to the handling of directives
+such as @code{#define}, @code{#ifdef}, and @code{#error}.  Other
+preprocessor operations, such as macro expansion and trigraph
+conversion are not performed.  In addition, the @option{-dD} option is
+implicitly enabled.
+
+With @option{-fpreprocessed}, predefinition of command line and most
+builtin macros is disabled.  Macros such as @code{__LINE__}, which are
+contextually dependent, are handled normally.  This enables compilation of
+files previously preprocessed with @code{-E -fdirectives-only}.
+
+With both @option{-E} and @option{-fpreprocessed}, the rules for
+@option{-fpreprocessed} take precedence.  This enables full preprocessing of
+files previously preprocessed with @code{-E -fdirectives-only}.
+
 @item -fdollars-in-identifiers
 @opindex fdollars-in-identifiers
 @anchor{fdollars-in-identifiers}

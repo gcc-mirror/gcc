@@ -440,6 +440,9 @@ struct cpp_options
 
   /* True means error callback should be used for diagnostics.  */
   bool client_diagnostic;
+
+  /* True disables tokenization outside of preprocessing directives. */
+  bool directives_only;
 };
 
 /* Callback for header lookup for HEADER, which is the name of a
@@ -643,6 +646,10 @@ extern struct deps *cpp_get_deps (cpp_reader *);
    least one file change callback, and possibly a line change callback
    too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *);
+
+/* Set up built-ins with special behavior.  Use cpp_init_builtins()
+   instead unless your know what you are doing.  */
+extern void cpp_init_special_builtins (cpp_reader *);
 
 /* Set up built-ins like __FILE__.  */
 extern void cpp_init_builtins (cpp_reader *, int);

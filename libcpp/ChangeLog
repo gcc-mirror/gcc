@@ -1,3 +1,23 @@
+2007-07-30  Ollie Wild  <aaw@google.com>
+
+	* directives-only.c: New file.
+	* internal.h (struct _cpp_dir_only_callbacks): New.
+	(_cpp_preprocess_dir_only): New function.
+	* directives.c (_cpp_handle_directive): Check directives_only before
+	disabling execution of indented directives.
+	* files.c (_cpp_stack_file): Add directives_only check.
+	* include/cpplib.h (struct cpp_options): Add directives_only.
+	(cpp_init_special_builtins): New function.
+	* init.c (cpp_init_special_builtins): New function.
+	(cpp_init_builtins): Move builtin_array initialization to
+	cpp_init_special_builtins.
+	(post_options): Check directives_only before setting
+	pfile->state.prevent_expansion = 1.
+	* macro.c (_cpp_builtin_macro_text): Print an error if __COUNTER__
+	is expanded inside a directive while -fdirectives-only is enabled.
+	* Makefile.in (libcpp_a_OBJS): Add directives-only.o.
+	(libcpp_a_SOURCES): Add directives-only.c.
+
 2007-07-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* traditional.c (_cpp_scan_out_logical_line): Initialize

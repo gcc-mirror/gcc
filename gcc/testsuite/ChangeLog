@@ -1,3 +1,17 @@
+2007-07-30  Ollie Wild  <aaw@google.com>
+
+	* gcc.dg/cpp/counter-2.c: New test.
+	* gcc.dg/cpp/counter-3.c: New test.
+	* gcc.dg/cpp/dir-only-1.c: New test.
+	* gcc.dg/cpp/dir-only-1.h: New file.
+	* gcc.dg/cpp/dir-only-2.c: New test.
+	* gcc.dg/cpp/dir-only-3.c: New test.
+	* gcc.dg/cpp/dir-only-3a.h: New file.
+	* gcc.dg/cpp/dir-only-3b.h: New file.
+	* gcc.dg/cpp/dir-only-4.c: New test.
+	* gcc.dg/cpp/dir-only-5.c: New test.
+	* gcc.dg/cpp/dir-only-6.c: New test.
+
 2007-07-30  Julian Brown  <julian@codesourcery.com>
 
 	* gcc.target/arm/neon/v*.c: Regenerate.

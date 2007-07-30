@@ -41,6 +41,8 @@ static struct
 
 /* General output routines.  */
 static void scan_translation_unit (cpp_reader *);
+static void print_lines_directives_only (int, const void *, size_t);
+static void scan_translation_unit_directives_only (cpp_reader *);
 static void scan_translation_unit_trad (cpp_reader *);
 static void account_for_newlines (const unsigned char *, size_t);
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
@@ -75,6 +77,9 @@ preprocess_file (cpp_reader *pfile)
     }
   else if (cpp_get_options (pfile)->traditional)
     scan_translation_unit_trad (pfile);
+  else if (cpp_get_options (pfile)->directives_only
+	   && !cpp_get_options (pfile)->preprocessed)
+    scan_translation_unit_directives_only (pfile);
   else
     scan_translation_unit (pfile);
 
@@ -177,6 +182,26 @@ scan_translation_unit (cpp_reader *pfile)
       if (token->type == CPP_COMMENT)
 	account_for_newlines (token->val.str.text, token->val.str.len);
     }
+}
+
+static void
+print_lines_directives_only (int lines, const void *buf, size_t size)
+{
+  print.src_line += lines;
+  fwrite (buf, 1, size, print.outf);
+}
+
+/* Writes out the preprocessed file, handling spacing and paste
+   avoidance issues.  */
+static void
+scan_translation_unit_directives_only (cpp_reader *pfile)
+{
+  struct _cpp_dir_only_callbacks cb;
+
+  cb.print_lines = print_lines_directives_only;
+  cb.maybe_print_line = maybe_print_line;
+
+  _cpp_preprocess_dir_only (pfile, &cb);
 }
 
 /* Adjust print.src_line for newlines embedded in output.  */

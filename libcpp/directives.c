@@ -424,8 +424,13 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 	 does not cause '#define foo bar' to get executed when
 	 compiled with -save-temps, we recognize directives in
 	 -fpreprocessed mode only if the # is in column 1.  macro.c
-	 puts a space in front of any '#' at the start of a macro.  */
+	 puts a space in front of any '#' at the start of a macro.
+	 
+	 We exclude the -fdirectives-only case because macro expansion
+	 has not been performed yet, and block comments can cause spaces
+	 to preceed the directive.  */
       if (CPP_OPTION (pfile, preprocessed)
+	  && !CPP_OPTION (pfile, directives_only)
 	  && (indented || !(dir->flags & IN_I)))
 	{
 	  skip = 0;
