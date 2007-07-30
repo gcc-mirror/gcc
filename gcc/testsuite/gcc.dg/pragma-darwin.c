@@ -1,6 +1,6 @@
 /* Darwin (Mac OS X) pragma exercises.  */
 
-/* { dg-do run { target powerpc-*-darwin* } } */
+/* { dg-do run { target *-*-darwin* } } */
 /* { dg-options "-O -Wunused" } */
 
 /* The mark pragma is to help decorate IDEs.  */
@@ -12,11 +12,11 @@ extern void abort(void);
 /* The options pragma used to do a lot, now it's only for emulating
    m68k alignment rules in structs.  */
 
-#pragma options 23  /* { dg-error "malformed '#pragma options'" } */
-#pragma options align  /* { dg-error "malformed '#pragma options'" } */
-#pragma options align natural /* { dg-error "malformed '#pragma options'" } */
-#pragma options align=45 /* { dg-error "malformed '#pragma options'" } */
-#pragma options align=foo /* { dg-error "malformed '#pragma options align" } */
+#pragma options 23  /* { dg-warning "malformed '#pragma options'" } */
+#pragma options align  /* { dg-warning "malformed '#pragma options'" } */
+#pragma options align natural /* { dg-warning "malformed '#pragma options'" } */
+#pragma options align=45 /* { dg-warning "malformed '#pragma options'" } */
+#pragma options align=foo /* { dg-warning "malformed '#pragma options align" } */
 
 #ifndef __LP64__
 #pragma options align=mac68k
@@ -64,7 +64,7 @@ unused_err_test ()
 {
   int a, b;
   /* Trying to match on '(' or ')' gives regexp headaches, use . instead.  */
-#pragma unused  /* { dg-error "missing '.' after '#pragma unused" } */
-#pragma unused (a  /* { dg-error "missing '.' after '#pragma unused" } */
+#pragma unused  /* { dg-warning "missing '.' after '#pragma unused" } */
+#pragma unused (a  /* { dg-warning "missing '.' after '#pragma unused" } */
 #pragma unused (b) foo /* { dg-warning "junk at end of '#pragma unused'" } */
 }
