@@ -1,3 +1,10 @@
+2007-07-30  Seongbae Park <seongbae.park@gmail.com>
+
+	* df-scan.c (df_scan_verify): Remove artificial limit on
+	the number of blocks for verification.
+	* df-problems.c (df_lr_bb_local_compute, df_simulate_find_defs,
+	df_simulate_defs): Avoid unnecessary insn checking for defs.
+
 2007-07-29  Mark Mitchell  <mark@codesourcery.com>
 
 	gcc/

@@ -4265,12 +4265,6 @@ df_scan_verify (void)
   if (!df)
     return;
 
-  /* This is a hack, but a necessary one.  If you do not do this,
-     insn_attrtab can never be compiled in a bootstrap.  This
-     verification is just too expensive.  */
-  if (n_basic_blocks > 250)
-    return;
-
   /* Verification is a 4 step process. */
 
   /* (1) All of the refs are marked by going thru the reg chains.  */
