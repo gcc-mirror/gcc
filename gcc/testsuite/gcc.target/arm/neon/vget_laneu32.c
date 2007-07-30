@@ -15,5 +15,5 @@ void test_vget_laneu32 (void)
   out_uint32_t = vget_lane_u32 (arg0_uint32x2_t, 1);
 }
 
-/* { dg-final { scan-assembler "vmov\.u32\[ 	\]+\[rR\]\[0-9\]+, \[dD\]\[0-9\]+\\\[\[0-9\]+\\\]!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
+/* { dg-final { scan-assembler "vmov\.32\[ 	\]+\[rR\]\[0-9\]+, \[dD\]\[0-9\]+\\\[\[0-9\]+\\\]!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

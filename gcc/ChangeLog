@@ -1,3 +1,14 @@
+2007-07-30  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (V_ext): New mode attribute.
+	(neon_vget_lane<mode>): Replace with define_expand.
+	(neon_vget_lane<mode>_sext_internal)
+	(neon_vget_lane<mode>_zext_internal): New define_insns for double
+	and quad precision vectors.
+	(neon_vget_lanedi): Add bounds check. Remove dead comment.
+	* config/arm/neon.ml (get_lane): Make 32-bit get-lane intrinsics
+	have typeless 32-bit result.
+
 2007-07-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR tree-opt/32527

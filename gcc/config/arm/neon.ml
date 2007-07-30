@@ -611,7 +611,7 @@ let shift_insert shape elt =
 let get_lane shape elt =
   let vtype = type_for_elt shape elt in
   Arity2 (vtype 0, vtype 1, vtype 2),
-    (match elt with P8 -> U8 | P16 -> U16 | x -> x)
+    (match elt with P8 -> U8 | P16 -> U16 | S32 | U32 | F32 -> B32 | x -> x)
 
 let set_lane shape elt =
   let vtype = type_for_elt shape elt in
