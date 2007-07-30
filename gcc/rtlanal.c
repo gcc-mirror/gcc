@@ -175,8 +175,8 @@ rtx_unstable_p (const_rtx x)
    zero, we are slightly more conservative.
    The frame pointer and the arg pointer are considered constant.  */
 
-int
-rtx_varies_p (rtx x, int for_alias)
+bool
+rtx_varies_p (const_rtx x, bool for_alias)
 {
   RTX_CODE code;
   int i;
@@ -427,8 +427,8 @@ nonzero_address_p (const_rtx x)
    FOR_ALIAS is nonzero if we are called from alias analysis; if it is
    zero, we are slightly more conservative.  */
 
-int
-rtx_addr_varies_p (rtx x, int for_alias)
+bool
+rtx_addr_varies_p (const_rtx x, bool for_alias)
 {
   enum rtx_code code;
   int i;

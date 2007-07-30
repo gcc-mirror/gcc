@@ -1,3 +1,36 @@
+2007-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (mems_in_disjoint_alias_sets_p,
+	fixed_scalar_and_varying_struct_p, aliases_everything_p,
+	nonoverlapping_component_refs_p, nonoverlapping_memrefs_p,
+	write_dependence_p, mems_in_disjoint_alias_sets_p,
+	read_dependence, true_dependence, canon_true_dependence,
+	anti_dependence, output_dependence): Constify.
+	* combine.c (extended_count): Likewise.
+	* cse.c (cse_rtx_varies_p, hash_rtx, exp_equiv_p): Likewise.
+	* cselib.c (get_value_hash, references_value_p,
+	cselib_reg_set_mode, cselib_rtx_varies_p): Likewise.
+	* cselib.h (cselib_reg_set_mode, references_value_p): Likewise.
+	* emit-rtl.c (mem_expr_equal_p, active_insn_p): Likewise.
+	* function.c (contains, prologue_epilogue_contains,
+	sibcall_epilogue_contains): Likewise. 
+	* jump.c (simplejump_p, condjump_p, condjump_in_parallel_p,
+	pc_set, any_uncondjump_p, any_condjump_p, onlyjump_p,
+	only_sets_cc0_p, sets_cc0_p, rtx_renumbered_equal_p, true_regnum,
+	reg_or_subregno): Likewise.
+	* recog.c (asm_noperands): Likewise.
+	* reload1.c (function_invariant_p): Likewise.
+	* rtl.h (mem_expr_equal_p, active_insn_p, rtx_varies_p,
+	rtx_addr_varies_p, asm_noperands, exp_equiv_p, hash_rtx,
+	condjump_p, any_condjump_p, any_uncondjump_p, pc_set,
+	simplejump_p, onlyjump_p, only_sets_cc0_p, sets_cc0_p,
+	true_regnum, reg_or_subregno, condjump_in_parallel_p,
+	extended_count, prologue_epilogue_contains,
+	sibcall_epilogue_contains, function_invariant_p, true_dependence,
+	canon_true_dependence, read_dependence, anti_dependence,
+	output_dependence): Likewise.
+	* rtlanal.c (rtx_varies_p, rtx_addr_varies_p): Likewise.
+
 2007-07-30  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/neon.md (V_ext): New mode attribute.

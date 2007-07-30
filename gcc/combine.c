@@ -8748,7 +8748,7 @@ reg_num_sign_bit_copies_for_combine (const_rtx x, enum machine_mode mode,
    implies that it must be called from a define_split.  */
 
 unsigned int
-extended_count (rtx x, enum machine_mode mode, int unsignedp)
+extended_count (const_rtx x, enum machine_mode mode, int unsignedp)
 {
   if (nonzero_sign_valid == 0)
     return 0;

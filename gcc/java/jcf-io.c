@@ -541,14 +541,17 @@ find_class (const char *classname, int classname_length, JCF *jcf)
 
   /* Remember that this class could not be found so that we do not
      have to look again.  */
-  *htab_find_slot_with_hash (memoized_class_lookups, classname, hash, INSERT) 
-    = (void *) classname;
+  *(const void **)htab_find_slot_with_hash (memoized_class_lookups,
+					    classname, hash, INSERT)
+    = classname;
 
   return NULL;
  found:
-  buffer = (char *) open_class (buffer, jcf, fd, dep_file);
-  jcf->classname = xstrdup (classname);
-  return buffer;
+  {
+    const char *const tmp = open_class (buffer, jcf, fd, dep_file);
+    jcf->classname = xstrdup (classname);
+    return tmp;
+  }
 }
 
 void

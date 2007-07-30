@@ -202,7 +202,7 @@ extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
 static void record_insns (rtx, VEC(int,heap) **) ATTRIBUTE_UNUSED;
-static int contains (rtx, VEC(int,heap) **);
+static int contains (const_rtx, VEC(int,heap) **);
 #ifdef HAVE_return
 static void emit_return_into_block (basic_block);
 #endif
@@ -4601,7 +4601,7 @@ set_insn_locators (rtx insn, int loc)
    be running after reorg, SEQUENCE rtl is possible.  */
 
 static int
-contains (rtx insn, VEC(int,heap) **vec)
+contains (const_rtx insn, VEC(int,heap) **vec)
 {
   int i, j;
 
@@ -4626,7 +4626,7 @@ contains (rtx insn, VEC(int,heap) **vec)
 }
 
 int
-prologue_epilogue_contains (rtx insn)
+prologue_epilogue_contains (const_rtx insn)
 {
   if (contains (insn, &prologue))
     return 1;
@@ -4636,7 +4636,7 @@ prologue_epilogue_contains (rtx insn)
 }
 
 int
-sibcall_epilogue_contains (rtx insn)
+sibcall_epilogue_contains (const_rtx insn)
 {
   if (sibcall_epilogue)
     return contains (insn, &sibcall_epilogue);

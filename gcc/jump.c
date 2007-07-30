@@ -654,7 +654,7 @@ comparison_dominates_p (enum rtx_code code1, enum rtx_code code2)
 /* Return 1 if INSN is an unconditional jump and nothing else.  */
 
 int
-simplejump_p (rtx insn)
+simplejump_p (const_rtx insn)
 {
   return (JUMP_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SET
@@ -669,9 +669,9 @@ simplejump_p (rtx insn)
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int
-condjump_p (rtx insn)
+condjump_p (const_rtx insn)
 {
-  rtx x = PATTERN (insn);
+  const_rtx x = PATTERN (insn);
 
   if (GET_CODE (x) != SET
       || GET_CODE (SET_DEST (x)) != PC)
@@ -697,9 +697,9 @@ condjump_p (rtx insn)
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int
-condjump_in_parallel_p (rtx insn)
+condjump_in_parallel_p (const_rtx insn)
 {
-  rtx x = PATTERN (insn);
+  const_rtx x = PATTERN (insn);
 
   if (GET_CODE (x) != PARALLEL)
     return 0;
@@ -728,7 +728,7 @@ condjump_in_parallel_p (rtx insn)
 /* Return set of PC, otherwise NULL.  */
 
 rtx
-pc_set (rtx insn)
+pc_set (const_rtx insn)
 {
   rtx pat;
   if (!JUMP_P (insn))
@@ -749,9 +749,9 @@ pc_set (rtx insn)
    possibly bundled inside a PARALLEL.  */
 
 int
-any_uncondjump_p (rtx insn)
+any_uncondjump_p (const_rtx insn)
 {
-  rtx x = pc_set (insn);
+  const_rtx x = pc_set (insn);
   if (!x)
     return 0;
   if (GET_CODE (SET_SRC (x)) != LABEL_REF)
@@ -769,9 +769,9 @@ any_uncondjump_p (rtx insn)
    Note that unlike condjump_p it returns false for unconditional jumps.  */
 
 int
-any_condjump_p (rtx insn)
+any_condjump_p (const_rtx insn)
 {
-  rtx x = pc_set (insn);
+  const_rtx x = pc_set (insn);
   enum rtx_code a, b;
 
   if (!x)
@@ -830,7 +830,7 @@ returnjump_p (rtx insn)
    nothing more.  */
 
 int
-onlyjump_p (rtx insn)
+onlyjump_p (const_rtx insn)
 {
   rtx set;
 
@@ -854,7 +854,7 @@ onlyjump_p (rtx insn)
    and has no side effects.  */
 
 int
-only_sets_cc0_p (rtx x)
+only_sets_cc0_p (const_rtx x)
 {
   if (! x)
     return 0;
@@ -871,7 +871,7 @@ only_sets_cc0_p (rtx x)
    but also does other things.  */
 
 int
-sets_cc0_p (rtx x)
+sets_cc0_p (const_rtx x)
 {
   if (! x)
     return 0;
@@ -1422,7 +1422,7 @@ int
 rtx_renumbered_equal_p (rtx x, rtx y)
 {
   int i;
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
   const char *fmt;
 
   if (x == y)
@@ -1604,7 +1604,7 @@ rtx_renumbered_equal_p (rtx x, rtx y)
    return -1.  Any rtx is valid for X.  */
 
 int
-true_regnum (rtx x)
+true_regnum (const_rtx x)
 {
   if (REG_P (x))
     {
@@ -1629,7 +1629,7 @@ true_regnum (rtx x)
 
 /* Return regno of the register REG and handle subregs too.  */
 unsigned int
-reg_or_subregno (rtx reg)
+reg_or_subregno (const_rtx reg)
 {
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);

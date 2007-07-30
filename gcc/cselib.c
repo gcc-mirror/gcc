@@ -265,7 +265,7 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
 static hashval_t
 get_value_hash (const void *entry)
 {
-  const cselib_val *v = (const cselib_val *) entry;
+  const cselib_val *const v = (const cselib_val *) entry;
   return v->value;
 }
 
@@ -275,9 +275,9 @@ get_value_hash (const void *entry)
    removed.  */
 
 int
-references_value_p (rtx x, int only_useless)
+references_value_p (const_rtx x, int only_useless)
 {
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
   const char *fmt = GET_RTX_FORMAT (code);
   int i, j;
 
@@ -384,7 +384,7 @@ remove_useless_values (void)
    VOIDmode.  */
 
 enum machine_mode
-cselib_reg_set_mode (rtx x)
+cselib_reg_set_mode (const_rtx x)
 {
   if (!REG_P (x))
     return GET_MODE (x);
@@ -1354,8 +1354,8 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
    executions of the program.  0 means X can be compared reliably
    against certain constants or near-constants.  */
 
-static int
-cselib_rtx_varies_p (rtx x ATTRIBUTE_UNUSED, int from_alias ATTRIBUTE_UNUSED)
+static bool
+cselib_rtx_varies_p (const_rtx x ATTRIBUTE_UNUSED, bool from_alias ATTRIBUTE_UNUSED)
 {
   /* We actually don't need to verify very hard.  This is because
      if X has actually changed, we invalidate the memory anyway,
