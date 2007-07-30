@@ -1,3 +1,11 @@
+2007-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/32908
+	* include/bits/stl_algobase.h (struct __lc_rai): New.
+	(lexicographical_compare(_II1, _II1, _II2, _II2),
+	lexicographical_compare(_II1, _II1, _II2, _II2, _Compare)): Use it.
+	* testsuite/performance/25_algorithms/lexicographical_compare.cc: New.
+
 2007-07-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/32907
