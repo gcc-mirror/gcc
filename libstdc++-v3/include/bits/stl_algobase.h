@@ -778,6 +778,43 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return true;
     }
 
+
+  template<typename, typename>
+    struct __lc_rai
+    {
+      template<typename _II1, typename _II2>
+        static _II1
+        __newlast1(_II1, _II1 __last1, _II2, _II2)
+        { return __last1; }
+
+      template<typename _II>
+        static bool
+        __cnd2(_II __first, _II __last)
+        { return __first != __last; }
+    };
+
+  template<>
+    struct __lc_rai<random_access_iterator_tag,
+		    random_access_iterator_tag>
+    {
+      template<typename _RAI1, typename _RAI2>
+        static _RAI1
+        __newlast1(_RAI1 __first1, _RAI1 __last1,
+		   _RAI2 __first2, _RAI2 __last2)
+        {
+	  const typename iterator_traits<_RAI1>::difference_type
+	    __diff1 = __last1 - __first1;
+	  const typename iterator_traits<_RAI2>::difference_type
+	    __diff2 = __last2 - __first2;
+	  return __diff2 < __diff1 ? __first1 + __diff2 : __last1;
+	}
+
+      template<typename _RAI>
+        static bool
+        __cnd2(_RAI, _RAI)
+        { return true; }
+    };
+
   /**
    *  @brief Performs "dictionary" comparison on ranges.
    *  @param  first1  An input iterator.
@@ -792,24 +829,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  (Quoted from [25.3.8]/1.)  If the iterators are all character pointers,
    *  then this is an inline call to @c memcmp.
   */
-  template<typename _InputIterator1, typename _InputIterator2>
+  template<typename _II1, typename _II2>
     bool
-    lexicographical_compare(_InputIterator1 __first1, _InputIterator1 __last1,
-			    _InputIterator2 __first2, _InputIterator2 __last2)
+    lexicographical_compare(_II1 __first1, _II1 __last1,
+			    _II2 __first2, _II2 __last2)
     {
+      typedef typename iterator_traits<_II1>::iterator_category _Category1;
+      typedef typename iterator_traits<_II2>::iterator_category _Category2;
+
       // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_function_requires(_LessThanOpConcept<
-	    typename iterator_traits<_InputIterator1>::value_type,
-	    typename iterator_traits<_InputIterator2>::value_type>)
-      __glibcxx_function_requires(_LessThanOpConcept<
-	    typename iterator_traits<_InputIterator2>::value_type,
-	    typename iterator_traits<_InputIterator1>::value_type>)
+      typedef typename iterator_traits<_II1>::value_type _ValueType1;
+      typedef typename iterator_traits<_II2>::value_type _ValueType2;
+      __glibcxx_function_requires(_InputIteratorConcept<_II1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_II2>)
+      __glibcxx_function_requires(_LessThanOpConcept<_ValueType1, _ValueType2>)
+      __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      for (; __first1 != __last1 && __first2 != __last2;
+      __last1 = __lc_rai<_Category1, _Category2>::__newlast1(__first1,
+							     __last1,
+							     __first2,
+							     __last2);
+      for (; __first1 != __last1
+	     && __lc_rai<_Category1, _Category2>::__cnd2(__first2, __last2);
 	   ++__first1, ++__first2)
 	{
 	  if (*__first1 < *__first2)
@@ -829,23 +872,29 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  comp  A @link s20_3_3_comparisons comparison functor@endlink.
    *  @return   A boolean true or false.
    *
-   *  The same as the four-parameter @c lexigraphical_compare, but uses the
+   *  The same as the four-parameter @c lexicographical_compare, but uses the
    *  comp parameter instead of @c <.
   */
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _Compare>
+  template<typename _II1, typename _II2, typename _Compare>
     bool
-    lexicographical_compare(_InputIterator1 __first1, _InputIterator1 __last1,
-			    _InputIterator2 __first2, _InputIterator2 __last2,
-			    _Compare __comp)
+    lexicographical_compare(_II1 __first1, _II1 __last1,
+			    _II2 __first2, _II2 __last2, _Compare __comp)
     {
+      typedef typename iterator_traits<_II1>::iterator_category _Category1;
+      typedef typename iterator_traits<_II2>::iterator_category _Category2;
+
       // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_InputIteratorConcept<_II1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_II2>)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      for (; __first1 != __last1 && __first2 != __last2;
+      __last1 = __lc_rai<_Category1, _Category2>::__newlast1(__first1,
+							     __last1,
+							     __first2,
+							     __last2);
+      for (; __first1 != __last1
+	     && __lc_rai<_Category1, _Category2>::__cnd2(__first2, __last2);
 	   ++__first1, ++__first2)
 	{
 	  if (__comp(*__first1, *__first2))
