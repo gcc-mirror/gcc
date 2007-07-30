@@ -5,7 +5,7 @@ program main
   integer (kind = 4) :: l4, step4
   integer (kind = 8), parameter :: big = 10000000000_8
 
-  l4 = huge (1)
+  l4 = huge (l4)
   u8 = l4 + 10_8
   step4 = 2
   call test ((/ (i, i = l4, u8, step4) /), l4 + 0_8, u8, step4 + 0_8)
