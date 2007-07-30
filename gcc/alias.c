@@ -154,18 +154,18 @@ static void record_set (rtx, rtx, void *);
 static int base_alias_check (rtx, rtx, enum machine_mode,
 			     enum machine_mode);
 static rtx find_base_value (rtx);
-static int mems_in_disjoint_alias_sets_p (rtx, rtx);
+static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
 static tree find_base_decl (tree);
 static alias_set_entry get_alias_set_entry (HOST_WIDE_INT);
-static rtx fixed_scalar_and_varying_struct_p (rtx, rtx, rtx, rtx,
-					      int (*) (rtx, int));
-static int aliases_everything_p (rtx);
-static bool nonoverlapping_component_refs_p (tree, tree);
+static const_rtx fixed_scalar_and_varying_struct_p (const_rtx, const_rtx, rtx, rtx,
+						    bool (*) (const_rtx, bool));
+static int aliases_everything_p (const_rtx);
+static bool nonoverlapping_component_refs_p (const_tree, const_tree);
 static tree decl_for_component_ref (tree);
 static rtx adjust_offset_for_component_ref (tree, rtx);
-static int nonoverlapping_memrefs_p (rtx, rtx);
-static int write_dependence_p (rtx, rtx, int);
+static int nonoverlapping_memrefs_p (const_rtx, const_rtx);
+static int write_dependence_p (const_rtx, const_rtx, int);
 
 static void memory_modified_1 (rtx, rtx, void *);
 static void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
@@ -266,7 +266,7 @@ get_alias_set_entry (HOST_WIDE_INT alias_set)
    the two MEMs cannot alias each other.  */
 
 static inline int
-mems_in_disjoint_alias_sets_p (rtx mem1, rtx mem2)
+mems_in_disjoint_alias_sets_p (const_rtx mem1, const_rtx mem2)
 {
 /* Perform a basic sanity check.  Namely, that there are no alias sets
    if we're not using strict aliasing.  This helps to catch bugs
@@ -1803,7 +1803,7 @@ memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
    only be a dependence here if both reads are volatile.  */
 
 int
-read_dependence (rtx mem, rtx x)
+read_dependence (const_rtx mem, const_rtx x)
 {
   return MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem);
 }
@@ -1816,10 +1816,10 @@ read_dependence (rtx mem, rtx x)
    nonzero whenever variation is possible.
    MEM1_ADDR and MEM2_ADDR are the addresses of MEM1 and MEM2.  */
 
-static rtx
-fixed_scalar_and_varying_struct_p (rtx mem1, rtx mem2, rtx mem1_addr,
+static const_rtx
+fixed_scalar_and_varying_struct_p (const_rtx mem1, const_rtx mem2, rtx mem1_addr,
 				   rtx mem2_addr,
-				   int (*varies_p) (rtx, int))
+				   bool (*varies_p) (const_rtx, bool))
 {
   if (! flag_strict_aliasing)
     return NULL_RTX;
@@ -1845,7 +1845,7 @@ fixed_scalar_and_varying_struct_p (rtx mem1, rtx mem2, rtx mem1_addr,
    indicates that it might well alias *anything*.  */
 
 static int
-aliases_everything_p (rtx mem)
+aliases_everything_p (const_rtx mem)
 {
   if (GET_CODE (XEXP (mem, 0)) == AND)
     /* If the address is an AND, it's very hard to know at what it is
@@ -1859,9 +1859,9 @@ aliases_everything_p (rtx mem)
    overlap for any pair of objects.  */
 
 static bool
-nonoverlapping_component_refs_p (tree x, tree y)
+nonoverlapping_component_refs_p (const_tree x, const_tree y)
 {
-  tree fieldx, fieldy, typex, typey, orig_y;
+  const_tree fieldx, fieldy, typex, typey, orig_y;
 
   do
     {
@@ -1959,7 +1959,7 @@ adjust_offset_for_component_ref (tree x, rtx offset)
    X and Y and they do not overlap.  */
 
 static int
-nonoverlapping_memrefs_p (rtx x, rtx y)
+nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
 {
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
   rtx rtlx, rtly;
@@ -2108,8 +2108,8 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
 /* True dependence: X is read after store in MEM takes place.  */
 
 int
-true_dependence (rtx mem, enum machine_mode mem_mode, rtx x,
-		 int (*varies) (rtx, int))
+true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
+		 bool (*varies) (const_rtx, bool))
 {
   rtx x_addr, mem_addr;
   rtx base;
@@ -2185,8 +2185,8 @@ true_dependence (rtx mem, enum machine_mode mem_mode, rtx x,
    this value prior to canonicalizing.  */
 
 int
-canon_true_dependence (rtx mem, enum machine_mode mem_mode, rtx mem_addr,
-		       rtx x, int (*varies) (rtx, int))
+canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
+		       const_rtx x, bool (*varies) (const_rtx, bool))
 {
   rtx x_addr;
 
@@ -2246,10 +2246,10 @@ canon_true_dependence (rtx mem, enum machine_mode mem_mode, rtx mem_addr,
    (or, if WRITEP is nonzero, a write to) MEM.  */
 
 static int
-write_dependence_p (rtx mem, rtx x, int writep)
+write_dependence_p (const_rtx mem, const_rtx x, int writep)
 {
   rtx x_addr, mem_addr;
-  rtx fixed_scalar;
+  const_rtx fixed_scalar;
   rtx base;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
@@ -2309,7 +2309,7 @@ write_dependence_p (rtx mem, rtx x, int writep)
 /* Anti dependence: X is written after read in MEM takes place.  */
 
 int
-anti_dependence (rtx mem, rtx x)
+anti_dependence (const_rtx mem, const_rtx x)
 {
   return write_dependence_p (mem, x, /*writep=*/0);
 }
@@ -2317,7 +2317,7 @@ anti_dependence (rtx mem, rtx x)
 /* Output dependence: X is written after store in MEM takes place.  */
 
 int
-output_dependence (rtx mem, rtx x)
+output_dependence (const_rtx mem, const_rtx x)
 {
   return write_dependence_p (mem, x, /*writep=*/1);
 }

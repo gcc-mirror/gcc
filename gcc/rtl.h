@@ -1458,7 +1458,7 @@ extern rtx emit_copy_of_insn_after (rtx, rtx);
 extern void set_reg_attrs_from_mem (rtx, rtx);
 extern void set_mem_attrs_from_reg (rtx, rtx);
 extern void set_reg_attrs_for_parm (rtx, rtx);
-extern int mem_expr_equal_p (tree, tree);
+extern int mem_expr_equal_p (const_tree, const_tree);
 
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
@@ -1582,7 +1582,7 @@ extern rtx prev_real_insn (rtx);
 extern rtx next_real_insn (rtx);
 extern rtx prev_active_insn (rtx);
 extern rtx next_active_insn (rtx);
-extern int active_insn_p (rtx);
+extern int active_insn_p (const_rtx);
 extern rtx prev_label (rtx);
 extern rtx next_label (rtx);
 extern rtx skip_consecutive_labels (rtx);
@@ -1677,8 +1677,8 @@ typedef struct replace_label_data
 extern int rtx_addr_can_trap_p (const_rtx);
 extern bool nonzero_address_p (const_rtx);
 extern int rtx_unstable_p (const_rtx);
-extern int rtx_varies_p (rtx, int);
-extern int rtx_addr_varies_p (rtx, int);
+extern bool rtx_varies_p (const_rtx, bool);
+extern bool rtx_addr_varies_p (const_rtx, bool);
 extern HOST_WIDE_INT get_integer_term (const_rtx);
 extern rtx get_related_value (const_rtx);
 extern bool offset_within_block_p (const_rtx, HOST_WIDE_INT);
@@ -1764,7 +1764,7 @@ rtx remove_list_elem (rtx, rtx *);
 extern void free_reg_info (void);
 
 /* recog.c */
-extern int asm_noperands (rtx);
+extern int asm_noperands (const_rtx);
 extern const char *decode_asm_operands (rtx, rtx *, rtx **, const char **,
 					enum machine_mode *, location_t *);
 
@@ -2001,26 +2001,26 @@ extern int rtx_to_tree_code (enum rtx_code);
 /* In cse.c */
 extern int delete_trivially_dead_insns (rtx, int);
 extern int cse_main (rtx, int);
-extern int exp_equiv_p (rtx, rtx, int, bool);
-extern unsigned hash_rtx (rtx x, enum machine_mode, int *, int *, bool);
+extern int exp_equiv_p (const_rtx, const_rtx, int, bool);
+extern unsigned hash_rtx (const_rtx x, enum machine_mode, int *, int *, bool);
 
 /* In jump.c */
 extern int comparison_dominates_p (enum rtx_code, enum rtx_code);
-extern int condjump_p (rtx);
-extern int any_condjump_p (rtx);
-extern int any_uncondjump_p (rtx);
-extern rtx pc_set (rtx);
+extern int condjump_p (const_rtx);
+extern int any_condjump_p (const_rtx);
+extern int any_uncondjump_p (const_rtx);
+extern rtx pc_set (const_rtx);
 extern rtx condjump_label (rtx);
-extern int simplejump_p (rtx);
+extern int simplejump_p (const_rtx);
 extern int returnjump_p (rtx);
-extern int onlyjump_p (rtx);
-extern int only_sets_cc0_p (rtx);
-extern int sets_cc0_p (rtx);
+extern int onlyjump_p (const_rtx);
+extern int only_sets_cc0_p (const_rtx);
+extern int sets_cc0_p (const_rtx);
 extern int invert_jump_1 (rtx, rtx);
 extern int invert_jump (rtx, rtx, int);
 extern int rtx_renumbered_equal_p (rtx, rtx);
-extern int true_regnum (rtx);
-extern unsigned int reg_or_subregno (rtx);
+extern int true_regnum (const_rtx);
+extern unsigned int reg_or_subregno (const_rtx);
 extern int redirect_jump_1 (rtx, rtx);
 extern void redirect_jump_2 (rtx, rtx, rtx, int, int);
 extern int redirect_jump (rtx, rtx, int);
@@ -2030,7 +2030,7 @@ extern enum rtx_code reversed_comparison_code (rtx, rtx);
 extern enum rtx_code reversed_comparison_code_parts (enum rtx_code, rtx,
 						     rtx, rtx);
 extern void delete_for_peephole (rtx, rtx);
-extern int condjump_in_parallel_p (rtx);
+extern int condjump_in_parallel_p (const_rtx);
 
 /* In emit-rtl.c.  */
 extern int max_reg_num (void);
@@ -2078,7 +2078,7 @@ extern bool validate_subreg (enum machine_mode, enum machine_mode,
 			     rtx, unsigned int);
 
 /* In combine.c  */
-extern unsigned int extended_count (rtx, enum machine_mode, int);
+extern unsigned int extended_count (const_rtx, enum machine_mode, int);
 extern rtx remove_death (unsigned int, rtx);
 extern void dump_combine_stats (FILE *);
 extern void dump_combine_total_stats (FILE *);
@@ -2114,8 +2114,8 @@ extern void print_inline_rtx (FILE *, const_rtx, int);
 
 /* In function.c */
 extern void reposition_prologue_and_epilogue_notes (void);
-extern int prologue_epilogue_contains (rtx);
-extern int sibcall_epilogue_contains (rtx);
+extern int prologue_epilogue_contains (const_rtx);
+extern int sibcall_epilogue_contains (const_rtx);
 extern void mark_temp_addr_taken (rtx);
 extern void update_temp_slot_address (rtx, rtx);
 
@@ -2178,7 +2178,7 @@ extern void dbr_schedule (rtx);
 extern void dump_local_alloc (FILE *);
 
 /* In reload1.c */
-extern int function_invariant_p (rtx);
+extern int function_invariant_p (const_rtx);
 
 /* In calls.c */
 enum libcall_type
@@ -2218,13 +2218,13 @@ extern int read_rtx_lineno;
 
 /* In alias.c */
 extern rtx canon_rtx (rtx);
-extern int true_dependence (rtx, enum machine_mode, rtx, int (*)(rtx, int));
+extern int true_dependence (const_rtx, enum machine_mode, const_rtx, bool (*)(const_rtx, bool));
 extern rtx get_addr (rtx);
-extern int canon_true_dependence (rtx, enum machine_mode, rtx, rtx,
-				  int (*)(rtx, int));
-extern int read_dependence (rtx, rtx);
-extern int anti_dependence (rtx, rtx);
-extern int output_dependence (rtx, rtx);
+extern int canon_true_dependence (const_rtx, enum machine_mode, rtx, const_rtx,
+				  bool (*)(const_rtx, bool));
+extern int read_dependence (const_rtx, const_rtx);
+extern int anti_dependence (const_rtx, const_rtx);
+extern int output_dependence (const_rtx, const_rtx);
 extern void init_alias_once (void);
 extern void init_alias_analysis (void);
 extern void end_alias_analysis (void);

@@ -1279,7 +1279,7 @@ comparison_operator (rtx op, enum machine_mode mode)
    Otherwise return -1.  */
 
 int
-asm_noperands (rtx body)
+asm_noperands (const_rtx body)
 {
   switch (GET_CODE (body))
     {

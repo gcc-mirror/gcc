@@ -1,3 +1,7 @@
+2007-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-io.c (find_class): Fix -Wcast-qual warnings.
+
 2007-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lang.c (java_get_callee_fndecl): Constify.

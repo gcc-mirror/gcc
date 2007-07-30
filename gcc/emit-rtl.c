@@ -1425,7 +1425,7 @@ component_ref_for_mem_expr (tree ref)
    and 0 otherwise.  */
 
 int
-mem_expr_equal_p (tree expr1, tree expr2)
+mem_expr_equal_p (const_tree expr1, const_tree expr2)
 {
   if (expr1 == expr2)
     return 1;
@@ -2904,7 +2904,7 @@ last_call_insn (void)
    same as next_real_insn.  */
 
 int
-active_insn_p (rtx insn)
+active_insn_p (const_rtx insn)
 {
   return (CALL_P (insn) || JUMP_P (insn)
 	  || (NONJUMP_INSN_P (insn)

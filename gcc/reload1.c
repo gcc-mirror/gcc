@@ -5323,7 +5323,7 @@ free_for_value_p (int regno, enum machine_mode mode, int opnum,
    memory.  */
 
 int
-function_invariant_p (rtx x)
+function_invariant_p (const_rtx x)
 {
   if (CONSTANT_P (x))
     return 1;
