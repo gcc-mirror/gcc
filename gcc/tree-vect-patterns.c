@@ -499,8 +499,9 @@ vect_pattern_recog_1 (
           || (icode = optab->handlers[(int) vec_mode].insn_code) ==
               CODE_FOR_nothing
           || (type_out
-              && (insn_data[icode].operand[0].mode !=
-                  TYPE_MODE (get_vectype_for_scalar_type (type_out)))))
+              && (!get_vectype_for_scalar_type (type_out)
+                  || (insn_data[icode].operand[0].mode !=
+                      TYPE_MODE (get_vectype_for_scalar_type (type_out))))))
 	return;
     }
 

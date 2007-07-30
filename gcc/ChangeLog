@@ -1,3 +1,8 @@
+2007-07-25  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/32218
+	* tree-vect-patterns.c (vect_pattern_recog_1): Check for valid type.
+
 2007-07-25  Dorit Nuzman  <dorit@il.ibm.com>
 	    Devang Patel  <dpatel@apple.com>
 
