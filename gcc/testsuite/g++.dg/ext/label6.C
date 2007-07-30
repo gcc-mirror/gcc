@@ -1,0 +1,3 @@
+// PR c++/32108
+
+__label__ L; // { dg-error "function scopes" }
