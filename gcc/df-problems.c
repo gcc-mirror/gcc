@@ -1389,53 +1389,16 @@ df_lr_bb_local_compute (unsigned int bb_index)
       if (!INSN_P (insn))
 	continue;	
 
-      if (CALL_P (insn))
+      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	{
-	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+	  struct df_ref *def = *def_rec;
+	  /* If the def is to only part of the reg, it does
+	     not kill the other defs that reach here.  */
+	  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
 	    {
-	      struct df_ref *def = *def_rec;
 	      unsigned int dregno = DF_REF_REGNO (def);
-	      
-	      if (DF_REF_FLAGS (def) & DF_REF_MUST_CLOBBER)
-		{
-		  if (dregno >= FIRST_PSEUDO_REGISTER
-		      || !(SIBLING_CALL_P (insn)
-			   && bitmap_bit_p (df->exit_block_uses, dregno)
-			   && !refers_to_regno_p (dregno, dregno+1,
-						  current_function_return_rtx,
-						  (rtx *)0)))
-		    {
-		      /* If the def is to only part of the reg, it does
-			 not kill the other defs that reach here.  */
-		      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-			{
-			  bitmap_set_bit (bb_info->def, dregno);
-			  bitmap_clear_bit (bb_info->use, dregno);
-			}
-		    }
-		}
-	      else
-		/* This is the return value.  */
-		if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-		  {
-		    bitmap_set_bit (bb_info->def, dregno);
-		    bitmap_clear_bit (bb_info->use, dregno);
-		  }
-	    }
-	}
-      else
-	{
-	  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	    {
-	      struct df_ref *def = *def_rec;
-	      /* If the def is to only part of the reg, it does
-		     not kill the other defs that reach here.  */
-	      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-		{
-		  unsigned int dregno = DF_REF_REGNO (def);
-		  bitmap_set_bit (bb_info->def, dregno);
-		  bitmap_clear_bit (bb_info->use, dregno);
-		}
+	      bitmap_set_bit (bb_info->def, dregno);
+	      bitmap_clear_bit (bb_info->use, dregno);
 	    }
 	}
 
@@ -4218,44 +4181,13 @@ df_simulate_find_defs (rtx insn, bitmap defs)
   struct df_ref **def_rec;
   unsigned int uid = INSN_UID (insn);
 
-  if (CALL_P (insn))
+  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
     {
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  struct df_ref *def = *def_rec;
-	  unsigned int dregno = DF_REF_REGNO (def);
-	  
-	  if (DF_REF_FLAGS (def) & DF_REF_MUST_CLOBBER)
-	    {
-	      if (dregno >= FIRST_PSEUDO_REGISTER
-		  || !(SIBLING_CALL_P (insn)
-		       && bitmap_bit_p (df->exit_block_uses, dregno)
-		       && !refers_to_regno_p (dregno, dregno+1,
-					      current_function_return_rtx,
-					      (rtx *)0)))
-		{
-		  /* If the def is to only part of the reg, it does
-		     not kill the other defs that reach here.  */
-		  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-		    bitmap_set_bit (defs, dregno);
-		}
-	    }
-	  else
-	    /* This is the return value.  */
-	    if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-	      bitmap_set_bit (defs, dregno);
-	}
-    }
-  else
-    {
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  struct df_ref *def = *def_rec;
-	  /* If the def is to only part of the reg, it does
-	     not kill the other defs that reach here.  */
-	  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-	    bitmap_set_bit (defs, DF_REF_REGNO (def));
-	}
+      struct df_ref *def = *def_rec;
+      /* If the def is to only part of the reg, it does
+	 not kill the other defs that reach here.  */
+      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+	bitmap_set_bit (defs, DF_REF_REGNO (def));
     }
 }
 
@@ -4268,46 +4200,15 @@ df_simulate_defs (rtx insn, bitmap live)
   struct df_ref **def_rec;
   unsigned int uid = INSN_UID (insn);
 
-  if (CALL_P (insn))
+  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
     {
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  struct df_ref *def = *def_rec;
-	  unsigned int dregno = DF_REF_REGNO (def);
-	  
-	  if (DF_REF_FLAGS (def) & DF_REF_MUST_CLOBBER)
-	    {
-	      if (dregno >= FIRST_PSEUDO_REGISTER
-		  || !(SIBLING_CALL_P (insn)
-		       && bitmap_bit_p (df->exit_block_uses, dregno)
-		       && !refers_to_regno_p (dregno, dregno+1,
-					      current_function_return_rtx,
-					      (rtx *)0)))
-		{
-		  /* If the def is to only part of the reg, it does
-		     not kill the other defs that reach here.  */
-		  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-		    bitmap_clear_bit (live, dregno);
-		}
-	    }
-	  else
-	    /* This is the return value.  */
-	    if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-	      bitmap_clear_bit (live, dregno);
-	}
-    }
-  else
-    {
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  struct df_ref *def = *def_rec;
-	  unsigned int dregno = DF_REF_REGNO (def);
-  
-	  /* If the def is to only part of the reg, it does
-	     not kill the other defs that reach here.  */
-	  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-	    bitmap_clear_bit (live, dregno);
-	}
+      struct df_ref *def = *def_rec;
+      unsigned int dregno = DF_REF_REGNO (def);
+
+      /* If the def is to only part of the reg, it does
+	 not kill the other defs that reach here.  */
+      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+	bitmap_clear_bit (live, dregno);
     }
 }  
 
