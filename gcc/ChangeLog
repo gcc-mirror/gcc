@@ -1,3 +1,8 @@
+2007-07-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* BASE-VER: Bump.
+	* DEV-PHASE: Mark as prerelease.
+
 2007-07-25  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/32218
