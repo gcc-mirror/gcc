@@ -93,7 +93,7 @@ static sbitmap *comp;
 static struct seginfo * new_seginfo (int, rtx, int, HARD_REG_SET);
 static void add_seginfo (struct bb_info *, struct seginfo *);
 static void reg_dies (rtx, HARD_REG_SET *);
-static void reg_becomes_live (rtx, rtx, void *);
+static void reg_becomes_live (rtx, const_rtx, void *);
 static void make_preds_opaque (basic_block, int);
 
 
@@ -176,7 +176,7 @@ reg_dies (rtx reg, HARD_REG_SET *live)
    This is called via note_stores.  */
 
 static void
-reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *live)
+reg_becomes_live (rtx reg, const_rtx setter ATTRIBUTE_UNUSED, void *live)
 {
   int regno;
 

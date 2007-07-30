@@ -2594,7 +2594,7 @@ df_urec_alloc (bitmap all_blocks)
    SETTER.  DATA is used to pass the current basic block info.  */
 
 static void
-df_urec_mark_reg_change (rtx reg, rtx setter, void *data)
+df_urec_mark_reg_change (rtx reg, const_rtx setter, void *data)
 {
   int regno;
   int endregno;

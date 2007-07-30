@@ -333,10 +333,10 @@ static bool track_expr_p (tree);
 static bool same_variable_part_p (rtx, tree, HOST_WIDE_INT);
 static int count_uses (rtx *, void *);
 static void count_uses_1 (rtx *, void *);
-static void count_stores (rtx, rtx, void *);
+static void count_stores (rtx, const_rtx, void *);
 static int add_uses (rtx *, void *);
 static void add_uses_1 (rtx *, void *);
-static void add_stores (rtx, rtx, void *);
+static void add_stores (rtx, const_rtx, void *);
 static bool compute_bb_dataflow (basic_block);
 static void vt_find_locations (void);
 
@@ -1708,7 +1708,7 @@ count_uses_1 (rtx *x, void *insn)
    INSN is instruction which the LOC is part of.  */
 
 static void
-count_stores (rtx loc, rtx expr ATTRIBUTE_UNUSED, void *insn)
+count_stores (rtx loc, const_rtx expr ATTRIBUTE_UNUSED, void *insn)
 {
   count_uses (&loc, insn);
 }
@@ -1757,7 +1757,7 @@ add_uses_1 (rtx *x, void *insn)
    INSN is instruction which the LOC is part of.  */
 
 static void
-add_stores (rtx loc, rtx expr, void *insn)
+add_stores (rtx loc, const_rtx expr, void *insn)
 {
   if (REG_P (loc))
     {

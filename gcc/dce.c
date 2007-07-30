@@ -168,7 +168,7 @@ mark_insn (rtx insn, bool fast)
    instruction containing DEST.  */
 
 static void
-mark_nonreg_stores_1 (rtx dest, rtx pattern, void *data)
+mark_nonreg_stores_1 (rtx dest, const_rtx pattern, void *data)
 {
   if (GET_CODE (pattern) != CLOBBER && !REG_P (dest))
     mark_insn ((rtx) data, true);
@@ -179,7 +179,7 @@ mark_nonreg_stores_1 (rtx dest, rtx pattern, void *data)
    instruction containing DEST.  */
 
 static void
-mark_nonreg_stores_2 (rtx dest, rtx pattern, void *data)
+mark_nonreg_stores_2 (rtx dest, const_rtx pattern, void *data)
 {
   if (GET_CODE (pattern) != CLOBBER && !REG_P (dest))
     mark_insn ((rtx) data, false);

@@ -1308,7 +1308,7 @@ altered_reg_used (rtx *reg, void *alt)
 /* Marks registers altered by EXPR in set ALT.  */
 
 static void
-mark_altered (rtx expr, rtx by ATTRIBUTE_UNUSED, void *alt)
+mark_altered (rtx expr, const_rtx by ATTRIBUTE_UNUSED, void *alt)
 {
   if (GET_CODE (expr) == SUBREG)
     expr = SUBREG_REG (expr);

@@ -1,5 +1,55 @@
 2007-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alias.c (record_set, memory_modified_1): Constify.
+	* bt-load.c (note_btr_set): Likewise.
+	* caller-save.c (mark_set_regs, add_stored_regs): Likewise.
+	* combine.c (set_nonzero_bits_and_sign_copies,
+	expand_field_assignment, record_dead_and_set_regs_1,
+	use_crosses_set_p, reg_dead_at_p_1, can_combine_p,
+	likely_spilled_retval_1): Likewise.
+	* config/frv/frv.c (frv_registers_update_1, frv_io_check_address,
+	frv_io_handle_set): Likewise.
+	* config/mips/mips.c (mips_sim_record_set,
+	vr4130_true_reg_dependence_p_1): Likewise.
+	* config/mt/mt.c (insn_dependent_p_1): Likewise.
+	* config/s390/s390.c (s390_reg_clobbered_rtx): Likewise.
+	* config/sh/sh.c (flow_dependent_p_1): Likewise.
+	* cselib.c (cselib_invalidate_rtx_note_stores): Likewise.
+	* dce.c (mark_nonreg_stores_1, mark_nonreg_stores_2): Likewise.
+	* ddg.c (mark_mem_store): Likewise.
+	* df-problems.c (df_urec_mark_reg_change): Likewise.
+	* function.c (update_epilogue_consts): Likewise.
+	* gcse.c (record_set_info, record_last_set_info,
+	mems_conflict_for_gcse_p, canon_list_insert, reg_set_info,
+	reg_clear_last_set): Likewise.
+	* global.c (mark_reg_store, mark_reg_clobber, reg_becomes_live):
+	Likewise.
+	* jump.c (reversed_comparison_code_parts): Likewise.
+	* local-alloc.c (validate_equiv_mem_from_store, no_equiv,
+	reg_is_set): Likewise.
+	* loop-iv.c (mark_altered): Likewise.
+	* mode-switching.c (reg_becomes_live): Likewise.
+	* optabs.c (no_conflict_move_test): Likewise.
+	* postreload-gcse.c (record_last_set_info, find_mem_conflicts):
+	Likewise.
+	* postreload.c (reload_combine_note_store, move2add_note_store):
+	Likewise.
+	* regmove.c (flags_set_1): Likewise.
+	* regrename.c (note_sets, kill_clobbered_value, kill_set_value):
+	Likewise.
+	* reload1.c (mark_not_eliminable, forget_old_reloads_1):
+	Likewise. 
+	* resource.c (update_live_status): Likewise.
+	* rtl.h (set_of, note_stores): Likewise.
+	* rtlanal.c (set_of_1, parms_set, struct set_of_data, set_of,
+	note_stores, parms_set): Likewise.
+	* sched-rgn.c (sets_likely_spilled_1): Likewise.
+	* stack-ptr-mod.c (notice_stack_pointer_modification_1):
+	Likewise. 
+	* var-tracking.c (count_stores, add_stores): Likewise.
+
+2007-07-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* alias.c (mems_in_disjoint_alias_sets_p,
 	fixed_scalar_and_varying_struct_p, aliases_everything_p,
 	nonoverlapping_component_refs_p, nonoverlapping_memrefs_p,

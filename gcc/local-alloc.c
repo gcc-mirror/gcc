@@ -287,7 +287,7 @@ static struct equivalence *reg_equiv;
 static int recorded_label_ref;
 
 static void alloc_qty (int, enum machine_mode, int, int);
-static void validate_equiv_mem_from_store (rtx, rtx, void *);
+static void validate_equiv_mem_from_store (rtx, const_rtx, void *);
 static int validate_equiv_mem (rtx, rtx, rtx);
 static int equiv_init_varies_p (rtx);
 static int equiv_init_movable_p (rtx, int);
@@ -295,7 +295,7 @@ static int contains_replace_regs (rtx);
 static int memref_referenced_p (rtx, rtx);
 static int memref_used_between_p (rtx, rtx, rtx);
 static void update_equiv_regs (void);
-static void no_equiv (rtx, rtx, void *);
+static void no_equiv (rtx, const_rtx, void *);
 static void block_alloc (int);
 static int qty_sugg_compare (int, int);
 static int qty_sugg_compare_1 (const void *, const void *);
@@ -304,7 +304,7 @@ static int qty_compare_1 (const void *, const void *);
 static int combine_regs (rtx, rtx, int, int, rtx, int);
 static int reg_meets_class_p (int, enum reg_class);
 static void update_qty_class (int, int);
-static void reg_is_set (rtx, rtx, void *);
+static void reg_is_set (rtx, const_rtx, void *);
 static void reg_is_born (rtx, int);
 static void wipe_dead_reg (rtx, int);
 static int find_free_reg (enum reg_class, enum machine_mode, int, int, int,
@@ -460,7 +460,7 @@ static int equiv_mem_modified;
    Called via note_stores.  */
 
 static void
-validate_equiv_mem_from_store (rtx dest, rtx set ATTRIBUTE_UNUSED,
+validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
 			       void *data ATTRIBUTE_UNUSED)
 {
   if ((REG_P (dest)
@@ -1235,7 +1235,7 @@ update_equiv_regs (void)
    assignment - a SET, CLOBBER or REG_INC note.  It is currently not used,
    but needs to be there because this function is called from note_stores.  */
 static void
-no_equiv (rtx reg, rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
+no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
 {
   int regno;
   rtx list;
@@ -2071,7 +2071,7 @@ update_qty_class (int qtyno, int reg)
    carry info from `block_alloc'.  */
 
 static void
-reg_is_set (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
+reg_is_set (rtx reg, const_rtx setter, void *data ATTRIBUTE_UNUSED)
 {
   /* Note that note_stores will only pass us a SUBREG if it is a SUBREG of
      a hard register.  These may actually not exist any more.  */

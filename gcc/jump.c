@@ -302,7 +302,7 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
 	   prev != 0 && !LABEL_P (prev);
 	   prev = prev_nonnote_insn (prev))
 	{
-	  rtx set = set_of (arg0, prev);
+	  const_rtx set = set_of (arg0, prev);
 	  if (set && GET_CODE (set) == SET
 	      && rtx_equal_p (SET_DEST (set), arg0))
 	    {

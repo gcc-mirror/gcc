@@ -156,7 +156,7 @@ mt_get_attr_type (rtx complete_insn)
 /* A helper routine for insn_dependent_p called through note_stores.  */
 
 static void
-insn_dependent_p_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+insn_dependent_p_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   rtx * pinsn = (rtx *) data;
 

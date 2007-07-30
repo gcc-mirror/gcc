@@ -86,7 +86,7 @@ static int n_regs_saved;
 static HARD_REG_SET referenced_regs;
 
 
-static void mark_set_regs (rtx, rtx, void *);
+static void mark_set_regs (rtx, const_rtx, void *);
 static void mark_referenced_regs (rtx);
 static int insert_save (struct insn_chain *, int, int, HARD_REG_SET *,
 			enum machine_mode *);
@@ -94,7 +94,7 @@ static int insert_restore (struct insn_chain *, int, int, int,
 			   enum machine_mode *);
 static struct insn_chain *insert_one_insn (struct insn_chain *, int, int,
 					   rtx);
-static void add_stored_regs (rtx, rtx, void *);
+static void add_stored_regs (rtx, const_rtx, void *);
 
 static GTY(()) rtx savepat;
 static GTY(()) rtx restpat;
@@ -511,7 +511,7 @@ save_call_clobbered_regs (void)
    been assigned hard regs have had their register number changed already,
    so we can ignore pseudos.  */
 static void
-mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
+mark_set_regs (rtx reg, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 {
   int regno, endregno, i;
   HARD_REG_SET *this_insn_sets = data;
@@ -542,7 +542,7 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
    been assigned hard regs have had their register number changed already,
    so we can ignore pseudos.  */
 static void
-add_stored_regs (rtx reg, rtx setter, void *data)
+add_stored_regs (rtx reg, const_rtx setter, void *data)
 {
   int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);

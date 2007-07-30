@@ -150,7 +150,7 @@ typedef struct alias_set_entry *alias_set_entry;
 
 static int rtx_equal_for_memref_p (rtx, rtx);
 static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
-static void record_set (rtx, rtx, void *);
+static void record_set (rtx, const_rtx, void *);
 static int base_alias_check (rtx, rtx, enum machine_mode,
 			     enum machine_mode);
 static rtx find_base_value (rtx);
@@ -167,7 +167,7 @@ static rtx adjust_offset_for_component_ref (tree, rtx);
 static int nonoverlapping_memrefs_p (const_rtx, const_rtx);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
-static void memory_modified_1 (rtx, rtx, void *);
+static void memory_modified_1 (rtx, const_rtx, void *);
 static void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
 
 /* Set up all info needed to perform alias analysis on memory references.  */
@@ -978,7 +978,7 @@ static char *reg_seen;
 static int unique_id;
 
 static void
-record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
+record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 {
   unsigned regno;
   rtx src;
@@ -2353,7 +2353,7 @@ init_alias_once (void)
    to be memory reference.  */
 static bool memory_modified;
 static void
-memory_modified_1 (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+memory_modified_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 {
   if (MEM_P (x))
     {
