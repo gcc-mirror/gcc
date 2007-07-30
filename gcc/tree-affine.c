@@ -110,6 +110,9 @@ aff_combination_scale (aff_tree *comb, double_int scale)
 
   if (comb->rest)
     {
+      tree type = comb->type;
+      if (POINTER_TYPE_P (type))
+	type = sizetype;
       if (comb->n < MAX_AFF_ELTS)
 	{
 	  comb->elts[comb->n].coef = scale;
@@ -118,8 +121,8 @@ aff_combination_scale (aff_tree *comb, double_int scale)
 	  comb->n++;
 	}
       else
-	comb->rest = fold_build2 (MULT_EXPR, comb->type, comb->rest, 
-				  double_int_to_tree (comb->type, scale));
+	comb->rest = fold_build2 (MULT_EXPR, type, comb->rest, 
+				  double_int_to_tree (type, scale));
     }
 }
 
@@ -181,14 +184,8 @@ aff_combination_add_elt (aff_tree *comb, tree elt, double_int scale)
 		       double_int_to_tree (type, scale)); 
 
   if (comb->rest)
-    {
-      if (POINTER_TYPE_P (comb->type))
-	comb->rest = fold_build2 (POINTER_PLUS_EXPR, comb->type,
-				  comb->rest, elt);
-      else
-	comb->rest = fold_build2 (PLUS_EXPR, comb->type, comb->rest,
-				  elt);
-    }
+    comb->rest = fold_build2 (PLUS_EXPR, type, comb->rest,
+			      elt);
   else
     comb->rest = elt;
 }
@@ -231,7 +228,7 @@ aff_combination_convert (aff_tree *comb, tree type)
     }
 
   comb->type = type;
-  if (comb->rest)
+  if (comb->rest && !POINTER_TYPE_P (type))
     comb->rest = fold_convert (type, comb->rest);
 
   if (TYPE_PRECISION (type) == TYPE_PRECISION (comb_type))
