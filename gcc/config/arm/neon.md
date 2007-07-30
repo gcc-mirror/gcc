@@ -266,6 +266,14 @@
                           (V2SF "SF") (V4SF "SF")
                           (DI "DI")   (V2DI "DI")])
 
+;; Element modes for vector extraction, padded up to register size.
+
+(define_mode_attr V_ext [(V8QI "SI") (V16QI "SI")
+			 (V4HI "SI") (V8HI "SI")
+			 (V2SI "SI") (V4SI "SI")
+			 (V2SF "SF") (V4SF "SF")
+			 (DI "DI") (V2DI "DI")])
+
 ;; Mode of pair of elements for each vector mode, to define transfer
 ;; size for structure lane/dup loads and stores.
 (define_mode_attr V_two_elem [(V8QI "HI") (V16QI "HI")
@@ -2385,27 +2393,107 @@
   DONE;
 })
 
-;; FIXME: 32-bit element sizes are a bit funky (should be output as .32 not
-;; .u32), but the assembler should cope with that.
+(define_insn "neon_vget_lane<mode>_sext_internal"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(sign_extend:SI
+	  (vec_select:<V_elem>
+	    (match_operand:VD 1 "s_register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "TARGET_NEON"
+  "vmov%?.s<V_sz_elem>\t%0, %P1[%c2]"
+  [(set_attr "predicable" "yes")
+   (set_attr "neon_type" "neon_bp_simple")]
+)
 
-(define_insn "neon_vget_lane<mode>"
-  [(set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-	(unspec:<V_elem> [(match_operand:VD 1 "s_register_operand" "w")
-			  (match_operand:SI 2 "immediate_operand" "i")
-                          (match_operand:SI 3 "immediate_operand" "i")]
-                         UNSPEC_VGET_LANE))]
+(define_insn "neon_vget_lane<mode>_zext_internal"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(zero_extend:SI
+	  (vec_select:<V_elem>
+	    (match_operand:VD 1 "s_register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "TARGET_NEON"
+  "vmov%?.u<V_sz_elem>\t%0, %P1[%c2]"
+  [(set_attr "predicable" "yes")
+   (set_attr "neon_type" "neon_bp_simple")]
+)
+
+(define_insn "neon_vget_lane<mode>_sext_internal"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(sign_extend:SI
+	  (vec_select:<V_elem>
+	    (match_operand:VQ 1 "s_register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_NEON"
 {
-  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
-  return "vmov%?.%t3%#<V_sz_elem>\t%0, %P1[%c2]";
+  rtx ops[3];
+  int regno = REGNO (operands[1]);
+  unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
+  unsigned int elt = INTVAL (operands[2]);
+
+  ops[0] = operands[0];
+  ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
+  ops[2] = GEN_INT (elt % halfelts);
+  output_asm_insn ("vmov%?.s<V_sz_elem>\t%0, %P1[%c2]", ops);
+
+  return "";
 }
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
 )
 
-; Operand 2 (lane number) is ignored because we can only extract the zeroth lane
-; with this insn. Operand 3 (info word) is ignored because it does nothing
-; useful with 64-bit elements.
+(define_insn "neon_vget_lane<mode>_zext_internal"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(zero_extend:SI
+	  (vec_select:<V_elem>
+	    (match_operand:VQ 1 "s_register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "TARGET_NEON"
+{
+  rtx ops[3];
+  int regno = REGNO (operands[1]);
+  unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
+  unsigned int elt = INTVAL (operands[2]);
+
+  ops[0] = operands[0];
+  ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
+  ops[2] = GEN_INT (elt % halfelts);
+  output_asm_insn ("vmov%?.u<V_sz_elem>\t%0, %P1[%c2]", ops);
+
+  return "";
+}
+  [(set_attr "predicable" "yes")
+   (set_attr "neon_type" "neon_bp_simple")]
+)
+
+(define_expand "neon_vget_lane<mode>"
+  [(match_operand:<V_ext> 0 "s_register_operand" "")
+   (match_operand:VDQW 1 "s_register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")
+   (match_operand:SI 3 "immediate_operand" "")]
+  "TARGET_NEON"
+{
+  HOST_WIDE_INT magic = INTVAL (operands[3]);
+  rtx insn;
+
+  neon_lane_bounds (operands[2], 0, GET_MODE_NUNITS (<MODE>mode));
+
+  if ((magic & 3) == 3 || GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode)) == 32)
+    insn = gen_vec_extract<mode> (operands[0], operands[1], operands[2]);
+  else
+    {
+      if ((magic & 1) != 0)
+	insn = gen_neon_vget_lane<mode>_sext_internal (operands[0], operands[1],
+						       operands[2]);
+      else
+	insn = gen_neon_vget_lane<mode>_zext_internal (operands[0], operands[1],
+						       operands[2]);
+    }
+  emit_insn (insn);
+  DONE;
+})
+
+; Operand 3 (info word) is ignored because it does nothing useful with 64-bit
+; elements.
 
 (define_insn "neon_vget_lanedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -2417,33 +2505,6 @@
 {
   neon_lane_bounds (operands[2], 0, 1);
   return "vmov%?\t%Q0, %R0, %P1  @ di";
-}
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_bp_simple")]
-)
-
-(define_insn "neon_vget_lane<mode>"
-  [(set (match_operand:<V_elem> 0 "s_register_operand" "=r")
-       (unspec:<V_elem> [(match_operand:VQ 1 "s_register_operand" "w")
-                         (match_operand:SI 2 "immediate_operand" "i")
-                         (match_operand:SI 3 "immediate_operand" "i")]
-                        UNSPEC_VGET_LANE))]
-  "TARGET_NEON"
-{
-  rtx ops[4];
-  int regno = REGNO (operands[1]);
-  unsigned int halfelts = GET_MODE_NUNITS (<MODE>mode) / 2;
-  unsigned int elt = INTVAL (operands[2]);
-
-  neon_lane_bounds (operands[2], 0, halfelts * 2);
-
-  ops[0] = operands[0];
-  ops[1] = gen_rtx_REG (<V_HALF>mode, regno + 2 * (elt / halfelts));
-  ops[2] = GEN_INT (elt % halfelts);
-  ops[3] = operands[3];
-  output_asm_insn ("vmov%?.%t3%#<V_sz_elem>\t%0, %P1[%c2]", ops);
-
-  return "";
 }
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_bp_simple")]
