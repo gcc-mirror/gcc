@@ -711,21 +711,32 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree data_ref_base = unshare_expr (DR_BASE_ADDRESS (dr));
-  tree base_name = build_fold_indirect_ref (data_ref_base);
+  tree data_ref_base_expr = unshare_expr (DR_BASE_ADDRESS (dr));
+  tree base_name = build_fold_indirect_ref (data_ref_base_expr);
+  tree data_ref_base_var;
+  tree data_ref_base;
+  tree new_base_stmt;
   tree vec_stmt;
   tree addr_base, addr_expr;
   tree dest, new_stmt;
   tree base_offset = unshare_expr (DR_OFFSET (dr));
   tree init = unshare_expr (DR_INIT (dr));
   tree vect_ptr_type, addr_expr2;
+  
+  
+  /* Create data_ref_base */
+  data_ref_base_var = create_tmp_var (TREE_TYPE (data_ref_base_expr), "batmp");
+  add_referenced_var (data_ref_base_var);
+  data_ref_base = force_gimple_operand (data_ref_base_expr, &new_base_stmt,
+					true, data_ref_base_var);
+  append_to_statement_list_force(new_base_stmt, new_stmt_list);
 
   /* Create base_offset */
   base_offset = size_binop (PLUS_EXPR, base_offset, init);
   base_offset = fold_convert (sizetype, base_offset);
   dest = create_tmp_var (TREE_TYPE (base_offset), "base_off");
   add_referenced_var (dest);
-  base_offset = force_gimple_operand (base_offset, &new_stmt, false, dest);  
+  base_offset = force_gimple_operand (base_offset, &new_stmt, true, dest); 
   append_to_statement_list_force (new_stmt, new_stmt_list);
 
   if (offset)

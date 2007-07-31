@@ -565,6 +565,27 @@ split_constant_offset (tree exp, tree *var, tree *off)
 	return;
       }
 
+    case SSA_NAME:
+      {
+	tree def_stmt = SSA_NAME_DEF_STMT (exp);
+	if (TREE_CODE (def_stmt) == GIMPLE_MODIFY_STMT)
+	  {
+	    tree def_stmt_rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
+
+	    if (!TREE_SIDE_EFFECTS (def_stmt_rhs) 
+		&& EXPR_P (def_stmt_rhs)
+		&& !REFERENCE_CLASS_P (def_stmt_rhs))
+	      {
+		split_constant_offset (def_stmt_rhs, &var0, &off0);
+		var0 = fold_convert (type, var0);
+		*var = var0;
+		*off = off0;
+		return;
+	      }
+	  }
+	break;
+      }
+
     default:
       break;
     }

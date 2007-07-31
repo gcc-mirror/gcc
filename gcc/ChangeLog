@@ -1,3 +1,12 @@
+2007-07-30  Jan Sjodin  <jan.sjodin@amd.com>
+
+	* tree-data-ref.c
+	(split_constant_offset): Enable split_constant_offset to extract
+	constants from other statements.
+	* tree-vect-transform.c
+	(vect_create_addr_base_for_vector_ref): Generate data_ref_base
+	to a temp var. Force base_offset to be simple.
+
 2007-07-30  Seongbae Park <seongbae.park@gmail.com>
 
 	* df-scan.c (df_scan_verify): Remove artificial limit on
