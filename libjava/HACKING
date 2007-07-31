@@ -34,10 +34,17 @@ non-maintainer-mode build and use the newly installed gjavah.
 
 --
 
-To regenerate libjava/configure, use:
+To regenerate libjava/configure, first run aclocal passing the flags
+found near the top of Makefile.am, then autoconf.  H. J. Lu writes that
+this can be done using these commands:
 
-    aclocal -I . -I .. -I ../config -I libltdl
-    autoconf
+   cd libjava &&
+   rm -f aclocal.m4 &&
+   ACFLAGS=$(grep "^ACLOCAL_AMFLAGS" Makefile.in | sed -e "s/ACLOCAL_AMFLAGS[ \t ]*=//") && 
+   aclocal-1.9 $ACFLAGS &&
+   rm -f configure &&
+   autoconf-2.59 &&
+   rm -fr autom4te.cache
 
 See the GCC documentation which auto* versions to use.
 
