@@ -727,33 +727,35 @@
   neon_disambiguate_copy (operands, dest, src, 4);
 })
 
-(define_insn "vec_set<mode>"
-  [(set (match_operand:VD 0 "s_register_operand" "+w")
+(define_insn "vec_set<mode>_internal"
+  [(set (match_operand:VD 0 "s_register_operand" "=w")
         (vec_merge:VD
-          (match_operand:VD 3 "s_register_operand" "0")
           (vec_duplicate:VD
             (match_operand:<V_elem> 1 "s_register_operand" "r"))
-          (ashift:SI (const_int 1)
-                     (match_operand:SI 2 "immediate_operand" "i"))))]
-  "TARGET_NEON"
-  "vmov%?.<V_uf_sclr>\t%P0[%c2], %1"
-  [(set_attr "predicable" "yes")
-   (set_attr "neon_type" "neon_mcr")]
-)
-
-(define_insn "vec_set<mode>"
-  [(set (match_operand:VQ 0 "s_register_operand" "+w")
-        (vec_merge:VQ
-          (match_operand:VQ 3 "s_register_operand" "0")
-          (vec_duplicate:VQ
-            (match_operand:<V_elem> 1 "s_register_operand" "r"))
-          (ashift:SI (const_int 1)
-		     (match_operand:SI 2 "immediate_operand" "i"))))]
+          (match_operand:VD 3 "s_register_operand" "0")
+          (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_NEON"
 {
+  operands[2] = GEN_INT (ffs ((int) INTVAL (operands[2]) - 1));
+  
+  return "vmov%?.<V_uf_sclr>\t%P0[%c2], %1";
+}
+  [(set_attr "predicable" "yes")
+   (set_attr "neon_type" "neon_mcr")])
+
+(define_insn "vec_set<mode>_internal"
+  [(set (match_operand:VQ 0 "s_register_operand" "=w")
+        (vec_merge:VQ
+          (vec_duplicate:VQ
+            (match_operand:<V_elem> 1 "s_register_operand" "r"))
+          (match_operand:VQ 3 "s_register_operand" "0")
+          (match_operand:SI 2 "immediate_operand" "i")))]
+  "TARGET_NEON"
+{
+  HOST_WIDE_INT elem = ffs (operands[2]) - 1;
   int half_elts = GET_MODE_NUNITS (<MODE>mode) / 2;
-  int elt = INTVAL (operands[2]) % half_elts;
-  int hi = (INTVAL (operands[2]) / half_elts) * 2;
+  int elt = elem % half_elts;
+  int hi = (elem / half_elts) * 2;
   int regno = REGNO (operands[0]);
 
   operands[0] = gen_rtx_REG (<V_HALF>mode, regno + hi);
@@ -765,17 +767,17 @@
    (set_attr "neon_type" "neon_mcr")]
 )
 
-(define_insn "vec_setv2di"
-  [(set (match_operand:V2DI 0 "s_register_operand" "+w")
+(define_insn "vec_setv2di_internal"
+  [(set (match_operand:V2DI 0 "s_register_operand" "=w")
         (vec_merge:V2DI
-          (match_operand:V2DI 3 "s_register_operand" "0")
           (vec_duplicate:V2DI
             (match_operand:DI 1 "s_register_operand" "r"))
-          (ashift:SI (const_int 1)
-		     (match_operand:SI 2 "immediate_operand" "i"))))]
+          (match_operand:V2DI 3 "s_register_operand" "0")
+          (match_operand:SI 2 "immediate_operand" "i")))]
   "TARGET_NEON"
 {
-  int regno = REGNO (operands[0]) + INTVAL (operands[2]);
+  HOST_WIDE_INT elem = ffs (operands[2]) - 1;
+  int regno = REGNO (operands[0]) + 2 * elem;
 
   operands[0] = gen_rtx_REG (DImode, regno);
 
@@ -784,6 +786,18 @@
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_mcr_2_mcrr")]
 )
+
+(define_expand "vec_set<mode>"
+  [(match_operand:VDQ 0 "s_register_operand" "")
+   (match_operand:<V_elem> 1 "s_register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  "TARGET_NEON"
+{
+  HOST_WIDE_INT elem = (HOST_WIDE_INT) 1 << INTVAL (operands[2]);
+  emit_insn (gen_vec_set<mode>_internal (operands[0], operands[1],
+					 GEN_INT (elem), operands[0]));
+  DONE;
+})
 
 (define_insn "vec_extract<mode>"
   [(set (match_operand:<V_elem> 0 "s_register_operand" "=r")

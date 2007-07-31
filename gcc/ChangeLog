@@ -1,6 +1,12 @@
+2007-07-31  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (vec_set<mode>_internal, vec_setv2di_internal):
+	New define_insns. Use correct RTL.
+	(vec_set<mode>): Write as expander.
+
 2007-07-31  Razya Ladelsky  <razya@il.ibm.com>
 
-        * matrix-reorg.c (analyze_matrix_allocation_site): Avoid referring 
+	* matrix-reorg.c (analyze_matrix_allocation_site): Avoid referring 
 	to an unallocated space.
 
 2007-07-30  Jan Sjodin  <jan.sjodin@amd.com>
