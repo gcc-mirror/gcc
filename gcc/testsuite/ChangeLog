@@ -1,3 +1,8 @@
+2007-07-31  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/32942
+	* gfortran.dg/exponent_2.f90: New test.
+
 2007-07-30  Jan Sjodin  <jan.sjodin@amd.com>
 
 	* gcc.dg/vect/vect-117.c: New test.
