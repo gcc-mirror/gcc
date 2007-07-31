@@ -1,3 +1,9 @@
+2007-07-30  Jan Sjodin  <jan.sjodin@amd.com>
+
+	* gcc.dg/vect/vect-117.c: New test.
+	* gcc.dg/vect/vect-74.c: Enabled test
+	* gcc.dg/vect/vect-81.c: Enabled test
+
 2007-07-30  Andrew Pinski  <pinskia@gmail.com>
 
 	* gcc.dg/pragma-darwin.c: Run on all *-*-darwin* targets.
