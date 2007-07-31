@@ -30,7 +30,7 @@ int main (void)
        sc < (signed char) 127; sc++)
     {
       ffi_call(&cif, FFI_FN(return_sc), &rint, values);
-      CHECK((signed char) rint == sc);
+      CHECK(rint == (ffi_arg) sc);
     }
   exit(0);
 }

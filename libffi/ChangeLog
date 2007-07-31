@@ -1,3 +1,14 @@
+2007-07-30  Andrew Haley  <aph@redhat.com>
+
+	PR testsuite/32843
+	* src/x86/ffi.c (ffi_prep_cif_machdep): in x86 case, add code for
+	signed/unsigned int8/16.
+	* src/x86/sysv.S (ffi_call_SYSV): Rewrite to:
+	Use a jump table.
+	Remove code to pop args from the stack after call.
+	Special-case signed/unsigned int8/16.
+	* testsuite/libffi.call/return_sc.c (main): Revert.
+
 2007-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/32843
