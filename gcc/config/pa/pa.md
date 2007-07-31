@@ -7626,27 +7626,11 @@
   if (TARGET_BIG_SWITCH)
     {
       if (TARGET_64BIT)
-	{
-          rtx tmp1 = gen_reg_rtx (DImode);
-          rtx tmp2 = gen_reg_rtx (DImode);
-
-          emit_jump_insn (gen_casesi64p (operands[0], operands[3],
-                                         tmp1, tmp2));
-	}
+	emit_jump_insn (gen_casesi64p (operands[0], operands[3]));
+      else if (flag_pic)
+	emit_jump_insn (gen_casesi32p (operands[0], operands[3]));
       else
-	{
-	  rtx tmp1 = gen_reg_rtx (SImode);
-
-	  if (flag_pic)
-	    {
-	      rtx tmp2 = gen_reg_rtx (SImode);
-
-	      emit_jump_insn (gen_casesi32p (operands[0], operands[3],
-					     tmp1, tmp2));
-	    }
-	  else
-	    emit_jump_insn (gen_casesi32 (operands[0], operands[3], tmp1));
-	}
+	emit_jump_insn (gen_casesi32 (operands[0], operands[3]));
     }
   else
     emit_jump_insn (gen_casesi0 (operands[0], operands[3]));
@@ -7673,8 +7657,8 @@
 		       (mult:SI (match_operand:SI 0 "register_operand" "r")
 				(const_int 4))
 		       (label_ref (match_operand 1 "" "")))))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
-  "!TARGET_64BIT && TARGET_BIG_SWITCH"
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "!flag_pic"
   "ldil L'%l1,%2\;ldo R'%l1(%2),%2\;{ldwx|ldw},s %0(%2),%2\;bv,n %%r0(%2)"
   [(set_attr "type" "multi")
    (set_attr "length" "16")])
@@ -7685,9 +7669,9 @@
 		       (mult:SI (match_operand:SI 0 "register_operand" "r")
 				(const_int 4))
 		       (label_ref (match_operand 1 "" "")))))
-   (clobber (match_operand:SI 2 "register_operand" "=&a"))
-   (clobber (match_operand:SI 3 "register_operand" "=&r"))]
-  "!TARGET_64BIT && TARGET_BIG_SWITCH"
+   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "flag_pic"
   "{bl .+8,%2\;depi 0,31,2,%2|mfia %2}\;ldo {16|20}(%2),%2\;\
 {ldwx|ldw},s %0(%2),%3\;{addl|add,l} %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
@@ -7703,9 +7687,9 @@
 				  (match_operand:SI 0 "register_operand" "r"))
 				(const_int 8))
 		       (label_ref (match_operand 1 "" "")))))
-   (clobber (match_operand:DI 2 "register_operand" "=&r"))
-   (clobber (match_operand:DI 3 "register_operand" "=&r"))]
-  "TARGET_64BIT && TARGET_BIG_SWITCH"
+   (clobber (match_scratch:DI 2 "=&r"))
+   (clobber (match_scratch:DI 3 "=&r"))]
+  ""
   "mfia %2\;ldo 24(%2),%2\;ldw,s %0(%2),%3\;extrd,s %3,63,32,%3\;\
 add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set_attr "type" "multi")
