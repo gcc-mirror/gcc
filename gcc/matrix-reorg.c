@@ -818,11 +818,15 @@ analyze_matrix_allocation_site (struct matrix_info *mi, tree stmt,
 		  return;
 		}
 	    }
-	  /* This is a call to malloc.  Check to see if this is the first
-	     call in this indirection level; if so, mark it; if not, mark
-	     as escaping.  */
+	  /* This is a call to malloc of level 'level'.  
+	     mi->max_malloced_level-1 == level  means that we've 
+	     seen a malloc statement of level 'level' before.  
+	     If the statement is not the same one that we've 
+	     seen before, then there's another malloc statement 
+	     for the same level, which means that we need to mark 
+	     it escaping.  */
 	  if (mi->malloc_for_level
-	      && mi->malloc_for_level[level]
+	      && mi->max_malloced_level-1 == level
 	      && mi->malloc_for_level[level] != stmt)
 	    {
 	      mark_min_matrix_escape_level (mi, level, stmt);
