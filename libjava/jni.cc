@@ -22,9 +22,10 @@ details.  */
 #ifdef ENABLE_JVMPI
 #include <jvmpi.h>
 #endif
+#ifdef INTERPRETER
 #include <jvmti.h>
 #include "jvmti-int.h"
-
+#endif
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Throwable.h>
@@ -452,7 +453,8 @@ _Jv_JNI_PopSystemFrame (JNIEnv *env)
     _Jv_JNI_PopLocalFrame (env, NULL, MARK_SYSTEM);
   else
     env->locals = NULL;
-  
+
+#ifdef INTERPRETER
   if (__builtin_expect (env->ex != NULL, false))
     {
       jthrowable t = env->ex;
@@ -461,6 +463,7 @@ _Jv_JNI_PopSystemFrame (JNIEnv *env)
 	_Jv_ReportJVMTIExceptionThrow (t);
       throw t;
     }
+#endif
 }
 
 template<typename T> T extract_from_jvalue(jvalue const & t);
@@ -2535,12 +2538,14 @@ _Jv_JNI_GetEnv (JavaVM *, void **penv, jint version)
     }
 #endif
 
+#ifdef INTERPRETER
   // Handle JVMTI requests
   if (version == JVMTI_VERSION_1_0)
     {
       *penv = (void *) _Jv_GetJVMTIEnv ();
       return 0;
     }
+#endif
 
   // FIXME: do we really want to support 1.1?
   if (version != JNI_VERSION_1_4 && version != JNI_VERSION_1_2

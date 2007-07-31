@@ -42,6 +42,7 @@ details.  */
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/Integer.h>
 #include <java/lang/StringBuffer.h>
+#include <java/lang/UnsupportedOperationException.h>
 #include <java/lang/VMClassLoader.h>
 #include <java/lang/VMCompiler.h>
 #include <java/lang/reflect/InvocationHandler.h>
@@ -65,6 +66,15 @@ details.  */
 using namespace java::lang::reflect;
 using namespace java::lang;
 
+#ifndef INTERPRETER
+jclass
+java::lang::reflect::VMProxy::generateProxyClass
+  (ClassLoader *, Proxy$ProxyData *)
+{
+  throw new UnsupportedOperationException (
+    JvNewStringLatin1 ("Interpreter not available"));
+}
+#else
 typedef void (*closure_fun) (ffi_cif*, void*, void**, void*);
 static void *ncode (int method_index, jclass klass, _Jv_Method *self, closure_fun fun);
 static void run_proxy (ffi_cif*, void*, void**, void*);
@@ -444,3 +454,5 @@ ncode (int method_index, jclass klass, _Jv_Method *self, closure_fun fun)
   self->ncode = code;
   return self->ncode;
 }
+
+#endif // INTERPRETER

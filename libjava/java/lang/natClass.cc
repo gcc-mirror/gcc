@@ -671,6 +671,7 @@ java::lang::Class::finalize (void)
   engine->unregister(this);
 }
 
+#ifdef INTERPRETER
 void
 _Jv_ClosureList::releaseClosures (_Jv_ClosureList **closures)
 {
@@ -692,6 +693,7 @@ _Jv_ClosureList::registerClosure (jclass klass, void *ptr)
   this->next = *closures;
   *closures = this;
 }
+#endif
 
 // This implements the initialization process for a class.  From Spec
 // section 12.4.2.
@@ -2065,6 +2067,7 @@ _Jv_GetClassState (jclass klass)
   return klass->state;
 }
 
+#ifdef INTERPRETER
 jstring
 _Jv_GetInterpClassSourceFile (jclass klass)
 {
@@ -2077,3 +2080,4 @@ _Jv_GetInterpClassSourceFile (jclass klass)
 
   return NULL;
 }
+#endif

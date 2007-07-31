@@ -15,6 +15,13 @@ details.  */
 #include <java-cpool.h>
 #include <gnu/gcj/runtime/NameFinder.h>
 
+enum _Jv_FrameType
+{
+  frame_native,
+  frame_interpreter,
+  frame_proxy
+};
+
 #ifdef INTERPRETER
 
 #pragma interface
@@ -371,13 +378,6 @@ public:
   {
     function = f;
   }
-};
-
-enum _Jv_FrameType
-{
-  frame_native,
-  frame_interpreter,
-  frame_proxy
 };
 
 //  The composite call stack as represented by a linked list of frames

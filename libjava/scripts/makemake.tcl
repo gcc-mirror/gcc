@@ -36,6 +36,11 @@ proc verbose {text} {
 #         objects in this package are not used.  Note however that
 #         most ignored files are actually handled by listing them in
 #         'standard.omit'
+# * interpreter
+#         objects in this package (and possibly sub-packages,
+#         if they do not appear in the map) are only compiled if
+#         the interpreter is enabled.  They are compiled as with the
+#         'package' specifier.
 #
 # If a package does not appear in the map, the default is 'package'.
 global package_map
@@ -93,6 +98,19 @@ set package_map(gnu/javax/swing/text/html/parser/support) package
 set package_map(gnu/gcj/xlib) package
 set package_map(gnu/awt/xlib) package
 
+# These packages should only be included if the interpreter is
+# enabled.
+set package_map(gnu/classpath/jdwp) interpreter
+set package_map(gnu/classpath/jdwp/event) interpreter
+set package_map(gnu/classpath/jdwp/event/filters) interpreter
+set package_map(gnu/classpath/jdwp/exception) interpreter
+set package_map(gnu/classpath/jdwp/id) interpreter
+set package_map(gnu/classpath/jdwp/processor) interpreter
+set package_map(gnu/classpath/jdwp/transport) interpreter
+set package_map(gnu/classpath/jdwp/util) interpreter
+set package_map(gnu/classpath/jdwp/value) interpreter
+set package_map(gnu/gcj/jvmti) interpreter
+
 # Some BC ABI packages have classes which must not be compiled BC.
 # This maps such packages to a grep expression for excluding such
 # classes.
@@ -138,8 +156,15 @@ set properties_files {}
 # List of all '@' files that we are going to compile.
 set package_files {}
 
+# List of all '@' files that we are going to compile if the
+# interpreter is enabled.
+set interpreter_package_files {}
+
 # List of all header file variables.
 set header_vars {}
+
+# List of all header file variables for interpreter packages.
+set interpreter_header_vars {}
 
 # List of all BC object files.
 set bc_objects {}
@@ -300,8 +325,8 @@ proc emit_bc_rule {package} {
 }
 
 # Emit a rule for a 'package' package.
-proc emit_package_rule {package} {
-  global package_map exclusion_map package_files
+proc emit_package_rule_to_list {package package_files_list} {
+  global package_map exclusion_map $package_files_list
 
   if {$package == "."} {
     set pkgname ordinary
@@ -333,8 +358,18 @@ proc emit_package_rule {package} {
 
   if {$pkgname != "gnu/gcj/xlib" && $pkgname != "gnu/awt/xlib"
       && $pkgname != "gnu/gcj/tools/gcj_dbtool"} {
-    lappend package_files $lname
+    lappend  $package_files_list $lname
   }
+}
+
+proc emit_package_rule {package} {
+  global package_files
+  emit_package_rule_to_list $package package_files
+}
+
+proc emit_interpreter_rule {package} {
+  global interpreter_package_files
+  emit_package_rule_to_list $package interpreter_package_files
 }
 
 # Emit a rule to build a package full of 'ordinary' files, that is,
@@ -382,7 +417,7 @@ proc emit_process_package_rule {platform} {
 # Emit a source file variable for a package, and corresponding header
 # file variable, if needed.
 proc emit_source_var {package} {
-  global package_map name_map dir_map header_vars
+  global package_map name_map dir_map header_vars interpreter_header_vars
 
   if {$package == "."} {
     set pkgname ordinary
@@ -428,7 +463,11 @@ proc emit_source_var {package} {
     puts "${uname}_header_files = $result"
     puts ""
     if {$pkgname != "gnu/gcj/xlib" && $pkgname != "gnu/awt/xlib"} {
-      lappend header_vars "${uname}_header_files"
+	if {$package_map($package) == "interpreter"} {
+          lappend interpreter_header_vars "${uname}_header_files"
+	} else {
+          lappend header_vars "${uname}_header_files"
+	}
     }
   }
 }
@@ -490,6 +529,8 @@ foreach package [lsort [array names package_map]] {
     emit_ordinary_rule $package
   } elseif {$package_map($package) == "package"} {
     emit_package_rule $package
+  } elseif {$package_map($package) == "interpreter"} {
+    emit_interpreter_rule $package
   } else {
     error "unrecognized type: $package_map($package)"
   }
@@ -498,6 +539,21 @@ foreach package [lsort [array names package_map]] {
 emit_process_package_rule Ecos
 emit_process_package_rule Win32
 emit_process_package_rule Posix
+
+puts "if INTERPRETER"
+pp_var interpreter_packages_source_files $interpreter_package_files
+pp_var interpreter_header_files $interpreter_header_vars "\$(" ")"
+puts ""
+puts "else"
+puts ""
+puts "interpreter_packages_source_files="
+puts ""
+puts "interpreter_header_files="
+puts ""
+puts "endif"
+
+lappend package_files {$(interpreter_packages_source_files)}
+lappend header_vars interpreter_header_files
 
 pp_var all_packages_source_files $package_files
 pp_var ordinary_header_files $header_vars "\$(" ")"

@@ -8537,12 +8537,9 @@ java/process-Posix.list: java/lang/PosixProcess.java
 -include java/process-Posix.deps
 
 
+if INTERPRETER
 
-all_packages_source_files = \
-  gnu/awt.list \
-  gnu/awt/j2d.list \
-  gnu/classpath.list \
-  gnu/classpath/debug.list \
+interpreter_packages_source_files = \
   gnu/classpath/jdwp.list \
   gnu/classpath/jdwp/event.list \
   gnu/classpath/jdwp/event/filters.list \
@@ -8552,10 +8549,36 @@ all_packages_source_files = \
   gnu/classpath/jdwp/transport.list \
   gnu/classpath/jdwp/util.list \
   gnu/classpath/jdwp/value.list \
+  gnu/gcj/jvmti.list
+
+interpreter_header_files = \
+  $(gnu_classpath_jdwp_header_files) \
+  $(gnu_classpath_jdwp_event_header_files) \
+  $(gnu_classpath_jdwp_event_filters_header_files) \
+  $(gnu_classpath_jdwp_exception_header_files) \
+  $(gnu_classpath_jdwp_id_header_files) \
+  $(gnu_classpath_jdwp_processor_header_files) \
+  $(gnu_classpath_jdwp_transport_header_files) \
+  $(gnu_classpath_jdwp_util_header_files) \
+  $(gnu_classpath_jdwp_value_header_files) \
+  $(gnu_gcj_jvmti_header_files)
+
+else
+
+interpreter_packages_source_files=
+
+interpreter_header_files=
+
+endif
+
+all_packages_source_files = \
+  gnu/awt.list \
+  gnu/awt/j2d.list \
+  gnu/classpath.list \
+  gnu/classpath/debug.list \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
-  gnu/gcj/jvmti.list \
   gnu/gcj/runtime.list \
   gnu/gcj/util.list \
   gnu/java/awt.list \
@@ -8789,26 +8812,17 @@ all_packages_source_files = \
   sun/misc.list \
   sun/reflect.list \
   sun/reflect/annotation.list \
-  sun/reflect/misc.list
+  sun/reflect/misc.list \
+  $(interpreter_packages_source_files)
 
 ordinary_header_files = \
   $(gnu_awt_header_files) \
   $(gnu_awt_j2d_header_files) \
   $(gnu_classpath_header_files) \
   $(gnu_classpath_debug_header_files) \
-  $(gnu_classpath_jdwp_header_files) \
-  $(gnu_classpath_jdwp_event_header_files) \
-  $(gnu_classpath_jdwp_event_filters_header_files) \
-  $(gnu_classpath_jdwp_exception_header_files) \
-  $(gnu_classpath_jdwp_id_header_files) \
-  $(gnu_classpath_jdwp_processor_header_files) \
-  $(gnu_classpath_jdwp_transport_header_files) \
-  $(gnu_classpath_jdwp_util_header_files) \
-  $(gnu_classpath_jdwp_value_header_files) \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
-  $(gnu_gcj_jvmti_header_files) \
   $(gnu_gcj_runtime_header_files) \
   $(gnu_gcj_tools_gcj_dbtool_header_files) \
   $(gnu_gcj_util_header_files) \
@@ -9039,7 +9053,8 @@ ordinary_header_files = \
   $(sun_misc_header_files) \
   $(sun_reflect_header_files) \
   $(sun_reflect_annotation_header_files) \
-  $(sun_reflect_misc_header_files)
+  $(sun_reflect_misc_header_files) \
+  $(interpreter_header_files)
 
 bc_objects = \
   gnu-CORBA.lo \

@@ -1,3 +1,82 @@
+2007-07-31  David Daney  <ddaney@avtrex.com>
+
+	* configure.ac (INTERPRETER): New AM_CONDITIONAL.
+	* scripts/makemake.tcl (package_map): Mark jdwp and jvmti packages
+	as being for interpreter only.  Place interpreter related files in
+	'if INTERPRETER' block.
+	(interpreter_package_files): New list.
+	(interpreter_header_vars): Ditto.
+	(emit_package_rule_to_list): Renamed from emit_package_rule with
+	new target list parameter.
+	(emit_package_rule): Rewritten to call emit_package_rule_to_list.
+	(emit_interpreter_rule): New function.
+	(emit_source_var): Place interpreter related files in
+	interpreter_header_vars.
+	* Makefile.am (ACLOCAL_AMFLAGS): Add -I libltdl.
+	(libgcj_interpret_source_files): New variable.
+	(libgcj_la_SOURCES): Move jvmti.cc and  interpret.cc to
+	libgcj_interpret_source_files and include
+	libgcj_interpret_source_files.
+	(nat_jdwp_source_files): New variable.
+	(nat_jvmti_source_files): Ditto.
+	(nat_source_files): Move jdwp and jvmti related files to
+	nat_jdwp_source_files and nat_jvmti_source_files and include
+	nat_jdwp_source_files and nat_jvmti_source_files.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Ditto.
+	* testsuite/Makefile.in: Ditto.
+	* gcj/Makefile.in: Ditto.
+	* sources.am: Ditto.
+	* configure: Ditto.
+	* include/config.h.in: Ditto.
+	* interpret.cc: Remove #ifdef INTERPRETER block.
+	* stacktrace.cc (UnwindTraceFn): Do not handle proxy frames if
+	interpreter disabled.
+	* include/java-interp.h (_Jv_FrameType): Move outside of
+	#ifdef INTERPRETER block.
+	* include/execution.h (_Jv_IndirectCompiledEngine::do_get_closure_list,
+	_Jv_InterpreterEngine, _Jv_soleInterpreterEngine): Place in
+	#ifdef INTERPRETER block.
+	* jni.cc (jvmti.h, jvmti-int.h):  Only include if INTERPRETER is
+	defined.
+	(_Jv_JNI_PopSystemFrame, _Jv_JNI_GetEnv): Only do jvmti processing
+	if INTERPRETER is defined.
+	* prims.cc (jvmti.h, jvmti-int.h, Jdwp.h, VMVirtualMachine.h):  Only
+	include if INTERPRETER is defined.
+	(defaultJdwpOptions, jdwpOptions, jvmti_agent_onload_func,
+	jvmti_agent_onunload_func, jvmti_agentonload, jvmti_agentonunload,
+	jvmti_agent_opts, load_jvmti_agent): Only define if INTERPRETER is
+	defined.
+	(parse_x_arg): Only process 'runjdwp:' if INTERPRETER is defined.
+	(parse_init_args): Only process jvmti related options if
+	INTERPRETER is defined.
+	(_Jv_CreateJavaVM): Only call _Jv_JVMTI_Init if INTERPRETER is
+	defined.
+	(_Jv_RunMain): Only do jvmti and jdwp processing if INTERPRETER is
+	defined.
+	* link.cc (jvmti.h, jvmti-int.h):  Only include if INTERPRETER is
+	defined.
+	(_Jv_ThrowNoClassDefFoundError, _Jv_Linker::create_error_method):
+	Define if if INTERPRETER is not defined.
+	(_Jv_Linker::wait_for_state): Only do jvmti proccessing if
+	INTERPRETER is defined.
+	* boehm.cc (closure_list_pointer, finalize_closure_list,
+	_Jv_ClosureListFinalizer): Only define if INTERPRETER is
+	defined.
+	* java/lang/natThread.cc (jvmti.h, jvmti-int.h):  Only include if
+	INTERPRETER is defined.
+	(finish_, _Jv_NotifyThreadStart): Only do jvmti proccessing if
+	INTERPRETER is defined.
+	* java/lang/Class.h (_Jv_InterpreterEngine): Move declaration
+	and friend declaration inside #ifdef INTERPRETER block.
+	* java/lang/natClass.cc (_Jv_ClosureList::releaseClosures,
+	_Jv_ClosureList::registerClosure, _Jv_GetInterpClassSourceFile):
+	Only define if INTERPRETER is defined.
+	* java/lang/reflect/natVMProxy.cc (UnsupportedOperationException.h):
+	Include.
+	(generateProxyClass): Throw UnsupportedOperationException unless
+	INTERPRETER is defined.
+
 2007-07-29  Matthias Klose  <doko@ubuntu.com>
 
 	* HACKING: Document regenerating configure.

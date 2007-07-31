@@ -43,8 +43,6 @@ details.  */
 #include <gnu/gcj/jvmti/Breakpoint.h>
 #include <gnu/gcj/jvmti/BreakpointManager.h>
 
-#ifdef INTERPRETER
-
 // Execution engine for interpreted code.
 _Jv_InterpreterEngine _Jv_soleInterpreterEngine;
 
@@ -1932,5 +1930,3 @@ _Jv_CompileMethod (_Jv_InterpMethod* method)
     }
 }
 #endif // DIRECT_THREADED
-
-#endif // INTERPRETER

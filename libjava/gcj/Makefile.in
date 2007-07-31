@@ -42,7 +42,9 @@ DIST_COMMON = $(gcj_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/libgcj-config.h.in \
 	$(toolgcj_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
+	$(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/confsubdir.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/gxx-include-dir.m4 \
@@ -57,10 +59,11 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/tls.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/mingwld.m4 $(top_srcdir)/pkg.m4 \
-	$(top_srcdir)/shlibpath.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltgcc.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/mingwld.m4 \
+	$(top_srcdir)/pkg.m4 $(top_srcdir)/shlibpath.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 CONFIG_HEADER = $(top_builddir)/include/config.h libgcj-config.h
@@ -150,6 +153,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTERPRETER = @INTERPRETER@
+INTERPRETER_FALSE = @INTERPRETER_FALSE@
+INTERPRETER_TRUE = @INTERPRETER_TRUE@
 JAR = @JAR@
 JAVA_HOME = @JAVA_HOME@
 JAVA_HOME_SET_FALSE = @JAVA_HOME_SET_FALSE@

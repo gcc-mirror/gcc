@@ -564,6 +564,7 @@ if test "$libgcj_interpreter" = yes; then
 fi
 INTERPRETER="$libgcj_interpreter"
 AC_SUBST(INTERPRETER)
+AM_CONDITIONAL(INTERPRETER, test "$libgcj_interpreter" = yes)
 
 AC_MSG_CHECKING([for exception model to use])
 AC_LANG_PUSH(C++)
