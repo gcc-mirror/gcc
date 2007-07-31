@@ -447,7 +447,8 @@ gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
 
       gfc_conv_expr (&se, code->expr);
 
-      tmp = build2 (MODIFY_EXPR, TREE_TYPE (result), result, se.expr);
+      tmp = build2 (MODIFY_EXPR, TREE_TYPE (result), result,
+		    fold_convert (TREE_TYPE (result), se.expr));
       gfc_add_expr_to_block (&se.pre, tmp);
 
       tmp = build1_v (GOTO_EXPR, gfc_get_return_label ());
