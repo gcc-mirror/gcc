@@ -431,6 +431,15 @@ resolve_entries (gfc_namespace *ns)
       && ns->parent && ns->parent->proc_name->attr.flavor == FL_MODULE)
     el->sym->ns = ns;
 
+  /* Do the same for entries where the master is not a module
+     procedure.  These are retained in the module namespace because
+     of the module procedure declaration.  */
+  for (el = el->next; el; el = el->next)
+    if (el->sym->ns->proc_name->attr.flavor == FL_MODULE
+	  && el->sym->attr.mod_proc)
+      el->sym->ns = ns;
+  el = ns->entries;
+
   /* Add an entry statement for it.  */
   c = gfc_get_code ();
   c->op = EXEC_ENTRY;
