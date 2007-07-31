@@ -1,3 +1,8 @@
+2007-07-31  Razya Ladelsky  <razya@il.ibm.com>
+
+        * matrix-reorg.c (analyze_matrix_allocation_site): Avoid referring 
+	to an unallocated space.
+
 2007-07-30  Jan Sjodin  <jan.sjodin@amd.com>
 
 	* tree-data-ref.c
