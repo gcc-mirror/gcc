@@ -718,9 +718,9 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
 /* Generate code for EXPONENT(X) intrinsic function.  */
 
 static void
-gfc_conv_intrinsic_exponent (gfc_se * se, gfc_expr * expr)
+gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 {
-  tree arg, fndecl;
+  tree arg, fndecl, type;
   gfc_expr *a1;
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
@@ -744,7 +744,9 @@ gfc_conv_intrinsic_exponent (gfc_se * se, gfc_expr * expr)
       gcc_unreachable ();
     }
 
-  se->expr = build_call_expr (fndecl, 1, arg);
+  /* Convert it to the required type.  */
+  type = gfc_typenode_for_spec (&expr->ts);
+  se->expr = fold_convert (type, build_call_expr (fndecl, 1, arg));
 }
 
 /* Evaluate a single upper or lower bound.  */
@@ -2527,7 +2529,9 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
 			  build_int_cst (type, 0), tmp);
 }
 
+
 /* Circular shift.  AKA rotate or barrel shift.  */
+
 static void
 gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 {

@@ -1,3 +1,9 @@
+2007-07-31  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/32942
+	*trans-intrinsic.c (gfc_conv_intrinsic_exponent): Convert to correct
+	type.
+
 2007-07-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* invoke.texi: Document -fsign-zero flag.
