@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.1.1\n"
+"Project-Id-Version: gcc 4.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-05-13 19:50-0700\n"
-"PO-Revision-Date: 2006-06-25 22:35+0200\n"
+"PO-Revision-Date: 2007-07-22 21:00+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -294,7 +294,6 @@ msgid "<built-in>"
 msgstr "<eingebaut>"
 
 #: c-opts.c:1396
-#, fuzzy
 msgid "<command-line>"
 msgstr "<Kommandozeile>"
 
@@ -419,9 +418,8 @@ msgid "initialized field with side-effects overwritten"
 msgstr "initialisiertes Feld mit Seiteneffekten überschrieben"
 
 #: c-typeck.c:5753 c-typeck.c:5776 c-typeck.c:6250
-#, fuzzy
 msgid "initialized field overwritten"
-msgstr "initialisiertes Feld mit Seiteneffekten überschrieben"
+msgstr "initialisiertes Feld überschrieben"
 
 #: c-typeck.c:6458
 msgid "excess elements in char array initializer"
@@ -966,7 +964,6 @@ msgid "  -std=<standard>          Assume that the input sources are for <standar
 msgstr "  -std=<Standard>          Annehmen, dass die Eingabequellen für <Standard> sind\n"
 
 #: gcc.c:3193
-#, fuzzy
 msgid ""
 "  --sysroot=<directory>    Use <directory> as the root directory for headers\n"
 "                           and libraries\n"
@@ -1463,9 +1460,9 @@ msgid "%s:corrupted\n"
 msgstr "%s: beschädigt\n"
 
 #: gcov.c:971
-#, fuzzy, c-format
+#, c-format
 msgid "%s:cannot open data file, assuming not executed\n"
-msgstr "%s: kann nicht geöffnet werden\n"
+msgstr "%s: kann nicht geöffnet werden, wird als nicht ausgeführt vermutet\n"
 
 #: gcov.c:978
 #, c-format
@@ -2216,9 +2213,8 @@ msgid "The maximum number of fields in a structure variable without direct struc
 msgstr "Die Höchstzahl der Felder in einer Strukturvariable ohne direkte Strukturzugriffe, die GCC versuchen wird, gesondert zu zählen"
 
 #: params.def:55
-#, fuzzy
 msgid "The maximum number of elements in an array for wich we track its elements separately"
-msgstr "Die Höchstzahl der Schälvorgänge einer einzelnen Schleife, die vollständig geschält wird"
+msgstr "Die Höchstzahl der Elemente in einem Feld, dessen Elemente wir gesondert verfolgen"
 
 #: params.def:64
 msgid "The maximum structure size (in bytes) for which GCC will use by-element copies"
@@ -2501,19 +2497,16 @@ msgid "The minimum probability of reaching a source block for interblock specula
 msgstr "Die Mindestwahrscheinlichkeit für das Erreichen eines Quellblockes für spekulatives Zwischen-Block-Scheduling"
 
 #: params.def:510
-#, fuzzy
 msgid "The maximum number of iterations through CFG to extend regions"
-msgstr "Höchstzahl der Iterationen für RPTS auf N setzen"
+msgstr "Höchstzahl der Iterationen durch CFG zur Regionserweiterung"
 
 #: params.def:515
-#, fuzzy
 msgid "The maximum conflict delay for an insn to be considered for speculative motion"
-msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region"
+msgstr "Höchste Verzögerung bei Konflikt, sodass Befehl für spekulative Bewegung in Betracht kommt"
 
 #: params.def:520
-#, fuzzy
 msgid "The minimal probability of speculation success (in percents), so that speculative insn will be scheduled."
-msgstr "Die Mindestwahrscheinlichkeit für das Erreichen eines Quellblockes für spekulatives Zwischen-Block-Scheduling"
+msgstr "Die Mindestwahrscheinlichkeit für spekulativen Erfolg (in Prozent), sodass spekulativer Befehl eingeplant wird"
 
 #: params.def:525
 msgid "The maximum number of RTL nodes that can be recorded as combiner's last value"
@@ -2544,9 +2537,8 @@ msgid "Maximum number of fields in a structure before pointer analysis treats th
 msgstr "Die Höchstzahl der Felder in einer Struktur, bevor Zeigeranalyse sie als einzelne Variable behandelt"
 
 #: params.def:594
-#, fuzzy
 msgid "The maximum number of instructions ready to be issued to be considered by the scheduler during the first scheduling pass"
-msgstr "Höchstzahl der für Zwischen-Block-Scheduling zu betrachtenden Anweisungen in einer Region"
+msgstr "Höchstzahl der vom Scheduler während der ersten Planphase fertig zur Ausführung zu betrachtenden Anweisungen"
 
 #: config/alpha/alpha.c:5121
 #, c-format
@@ -2671,9 +2663,9 @@ msgid "predicated instruction in conditional sequence"
 msgstr "angegebene Anweisung in bedingter Sequenz"
 
 #: config/arm/arm.c:11080
-#, fuzzy, c-format
+#, c-format
 msgid "invalid shift operand"
-msgstr "ungültiger %%s-Operand"
+msgstr "ungültiger Schiebeoperand"
 
 #: config/arm/arm.c:11127 config/arm/arm.c:11137 config/arm/arm.c:11147
 #: config/arm/arm.c:11173 config/arm/arm.c:11191 config/arm/arm.c:11226
@@ -2694,9 +2686,9 @@ msgid "missing operand"
 msgstr "fehlender Operand"
 
 #: config/avr/avr.c:1046
-#, fuzzy, c-format
+#, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
-msgstr "Schreib- und Lesebeschränkungen erlauben kein Register"
+msgstr "Adressoperand erfordert Beschränkung für X-, Y- oder Z-Register"
 
 #: config/avr/avr.c:1153
 msgid "bad address, not (reg+disp):"
@@ -3406,9 +3398,9 @@ msgid "UNKNOWN in print_operand !?"
 msgstr "UNKNOWN in print_operand !?"
 
 #: config/score/score.c:1212
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand for code: '%c'"
-msgstr "ungültiger Operand für Code »%c«"
+msgstr "ungültiger Operand für Code: »%c«"
 
 #: config/sh/sh.c:759
 #, c-format
@@ -3845,7 +3837,7 @@ msgid "'dim' argument of '%s' intrinsic at %L is not a valid dimension index"
 msgstr "Argument »dim« des intrinsischen »%s« bei %L ist kein gültiger Dimensionsindex"
 
 #: fortran/check.c:387
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "transformational intrinsic '%s' at %L is not permitted in an initialization expression"
 msgstr "Variable »%s« bei %L kann nicht in einem Initialisierungs-Ausdruck auftreten"
 
@@ -3871,9 +3863,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be a POINTER"
 msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein POINTER sein"
 
 #: fortran/check.c:571
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must be a pointer or target VARIABLE or FUNCTION"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss vom Typ REAL oder COMPLEX sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L muss ein Zeiger oder Ziel VARIABLE oder FUNCTION sein"
 
 #: fortran/check.c:579
 #, no-c-format
@@ -3951,14 +3943,14 @@ msgid "'%s' argument of '%s' intrinsic at %L must be of rank 1 or 2"
 msgstr "Argument »%s« des intrinsischen »%s« bei %L muss vom Rang 1 oder 2 sein"
 
 #: fortran/check.c:1866
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "the '%s' and '%s' arguments of '%s' intrinsic at %L must have the same rank %d/%d"
-msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen den selben Typ haben"
+msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen den selben Rang %d/%d haben"
 
 #: fortran/check.c:1875
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "the '%s' and '%s' arguments of '%s' intrinsic at %L must be of the same kind %d/%d"
-msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen den selben Typ haben"
+msgstr "Argumente »%s« und »%s« des intrinsischen »%s« bei %L müssen von der selben Art %d/%d sein"
 
 #: fortran/check.c:1971
 #, no-c-format
@@ -3976,9 +3968,9 @@ msgid "'%s' argument of '%s' intrinsic at %L must be of an OPTIONAL dummy variab
 msgstr "Argument »%s« des intrinsischen »%s« bei %L muss eine OPTIONALe Scheinvariable sein"
 
 #: fortran/check.c:2016
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' argument of '%s' intrinsic at %L must not be a sub-object of '%s'"
-msgstr "Argument »%s« des intrinsischen »%s« bei %L muss %s sein"
+msgstr "Argument »%s« des intrinsischen »%s« bei %L darf kein Unterobjekt von »%s« sein"
 
 #: fortran/check.c:2133
 #, no-c-format
@@ -4036,9 +4028,9 @@ msgid "failure to simplify substring reference in DATAstatement at %L"
 msgstr ""
 
 #: fortran/data.c:204
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "initialization string truncated to match variable at %L"
-msgstr "Initialisierungs-Bezeichner dürfen nicht geschachtelt werden"
+msgstr "Initialisierungszeichenkette abgeschnitten um an Variable bei %L anzupassen"
 
 #: fortran/data.c:355
 #, no-c-format
@@ -4131,9 +4123,9 @@ msgid "Array component of structure at %C must have explicit or deferred shape"
 msgstr "Feldkomponente der Struktur bei %C muss explizite oder aufgeschobene Form haben"
 
 #: fortran/decl.c:1004
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Allocatable component at %C must be an array"
-msgstr "Cray-Zeiger bei %C muss eine Ganzzahl sein."
+msgstr "Allozierbare Komponente bei %C muss ein Feld sein"
 
 #: fortran/decl.c:1015
 #, no-c-format
@@ -4141,9 +4133,9 @@ msgid "Pointer array component of structure at %C must have a deferred shape"
 msgstr "Zeigerfeld-Komponente der Struktur bei %C muss eine aufgeschobene Form haben"
 
 #: fortran/decl.c:1024
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Allocatable component of structure at %C must have a deferred shape"
-msgstr "Zeigerfeld-Komponente der Struktur bei %C muss eine aufgeschobene Form haben"
+msgstr "Allozierbare Komponente der Struktur bei %C muss eine aufgeschobene Form haben"
 
 #: fortran/decl.c:1034
 #, no-c-format
@@ -4161,9 +4153,9 @@ msgid "Duplicate array spec for Cray pointee at %C."
 msgstr "Doppelte Feldspezifikation für Cray-Zeigerende bei %C."
 
 #: fortran/decl.c:1233
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "the type of '%s' at %C has not been declared within the interface"
-msgstr "Entität »%s« bei %C ist bereits in der Schnittstelle vorhanden"
+msgstr "der Typ von »%s« bei %C wurde nicht innerhalt der Schnittstelle deklariert"
 
 #: fortran/decl.c:1248
 #, no-c-format
@@ -4206,9 +4198,9 @@ msgid "Initialization of variable at %C is not allowed in a PURE procedure"
 msgstr "Initialisierung einer Variablen bei %C ist in einer PURE-Prozedur nicht erlaubt"
 
 #: fortran/decl.c:1337
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Initialization of allocatable component at %C is not allowed"
-msgstr "Initialisierung einer Variablen bei %C ist in einer PURE-Prozedur nicht erlaubt"
+msgstr "Initialisierung einer allozierbaren Komponente bei %C ist nicht erlaubt"
 
 #: fortran/decl.c:1391 fortran/decl.c:1400
 #, no-c-format
@@ -4296,9 +4288,9 @@ msgid "Duplicate %s attribute at %L"
 msgstr "Doppeltes Attribut %s bei %L"
 
 #: fortran/decl.c:2163
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "In the selected standard, the ALLOCATABLE attribute at %C is not allowed in a TYPE definition"
-msgstr "Attribut bei %L ist in TYPE-Definition nicht erlaubt"
+msgstr "Nach dem gewählten Standard ist das Attribut ALLOCATABLE bei %C nicht in TYPE-Definition erlaubt"
 
 #: fortran/decl.c:2173
 #, no-c-format
@@ -4594,7 +4586,7 @@ msgid "Cray Pointee at %C cannot be assumed shape array"
 msgstr "Cray-Zeigerende bei %C kann nicht Feld mit impliziter Form sein"
 
 #: fortran/decl.c:4110
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "New in Fortran 2003: ENUM and ENUMERATOR at %C"
 msgstr "Neu in Fortran 2003: ENUM AND ENUMERATOR bei %C"
 
@@ -4730,9 +4722,9 @@ msgid "NULL()"
 msgstr "NULL()"
 
 #: fortran/dump-parse-tree.c:348
-#, fuzzy, c-format
+#, c-format
 msgid "%dH"
-msgstr "%d"
+msgstr "%dH"
 
 #: fortran/dump-parse-tree.c:362 fortran/dump-parse-tree.c:375
 #: fortran/dump-parse-tree.c:400 fortran/dump-parse-tree.c:406
@@ -4916,9 +4908,9 @@ msgid " SAVE"
 msgstr " SICHERN"
 
 #: fortran/dump-parse-tree.c:556
-#, fuzzy, c-format
+#, c-format
 msgid " THREADPRIVATE"
-msgstr " LESENSCHREIBEN="
+msgstr " THREADPRIVAT"
 
 #: fortran/dump-parse-tree.c:558
 #, c-format
@@ -5068,79 +5060,79 @@ msgid " from namespace %s"
 msgstr " aus Namensbereich %s"
 
 #: fortran/dump-parse-tree.c:800
-#, fuzzy, c-format
+#, c-format
 msgid "%s,"
-msgstr "%s"
+msgstr "%s,"
 
 #: fortran/dump-parse-tree.c:832
 #, c-format
 msgid "!$OMP %s"
-msgstr ""
+msgstr "!$OMP %s"
 
 #: fortran/dump-parse-tree.c:847 fortran/dump-parse-tree.c:990
-#, fuzzy, c-format
+#, c-format
 msgid " (%s)"
-msgstr " %s"
+msgstr " (%s)"
 
 #: fortran/dump-parse-tree.c:852
-#, fuzzy, c-format
+#, c-format
 msgid " ("
-msgstr ", ("
+msgstr " ("
 
 #: fortran/dump-parse-tree.c:868
 #, c-format
 msgid " IF("
-msgstr ""
+msgstr " WENN("
 
 #: fortran/dump-parse-tree.c:874
 #, c-format
 msgid " NUM_THREADS("
-msgstr ""
+msgstr " NUM_THREADS("
 
 #: fortran/dump-parse-tree.c:890
 #, c-format
 msgid " SCHEDULE (%s"
-msgstr ""
+msgstr " SCHEDULE (%s"
 
 #: fortran/dump-parse-tree.c:910
 #, c-format
 msgid " DEFAULT(%s)"
-msgstr ""
+msgstr " DEFAULT(%s)"
 
 #: fortran/dump-parse-tree.c:913
-#, fuzzy, c-format
+#, c-format
 msgid " ORDERED"
-msgstr " GEÖFFNET="
+msgstr " GEORDNET"
 
 #: fortran/dump-parse-tree.c:938
-#, fuzzy, c-format
+#, c-format
 msgid " REDUCTION(%s:"
-msgstr " FUNKTION"
+msgstr " REDUKTION(%s:"
 
 #: fortran/dump-parse-tree.c:952
-#, fuzzy, c-format
+#, c-format
 msgid " %s("
-msgstr " %s"
+msgstr " %s("
 
 #: fortran/dump-parse-tree.c:968
 #, c-format
 msgid "!$OMP SECTION\n"
-msgstr ""
+msgstr "!$OMP ABSCHNITT\n"
 
 #: fortran/dump-parse-tree.c:977
 #, c-format
 msgid "!$OMP END %s"
-msgstr ""
+msgstr "!$OMP ENDE %s"
 
 #: fortran/dump-parse-tree.c:982
 #, c-format
 msgid " COPYPRIVATE("
-msgstr ""
+msgstr " KOPIE-PRIVAT("
 
 #: fortran/dump-parse-tree.c:987
-#, fuzzy, c-format
+#, c-format
 msgid " NOWAIT"
-msgstr " EINHEIT="
+msgstr " NICHTWARTEN"
 
 #: fortran/dump-parse-tree.c:1013
 #, c-format
@@ -5193,9 +5185,9 @@ msgid "CALL %s "
 msgstr "AUFRUFEN: %s "
 
 #: fortran/dump-parse-tree.c:1074
-#, fuzzy, c-format
+#, c-format
 msgid "CALL ?? "
-msgstr "AUFRUFEN: %s "
+msgstr "AUFRUF ?? "
 
 #: fortran/dump-parse-tree.c:1080
 #, c-format
@@ -5606,9 +5598,9 @@ msgid "CONTAINS\n"
 msgstr "ENTHÄLT\n"
 
 #: fortran/error.c:206
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "    Included at %s:%d:"
-msgstr "    Eingefügt bei %s:%d\n"
+msgstr "    Eingefügt bei %s:%d:"
 
 #: fortran/error.c:317
 #, no-c-format
@@ -5618,7 +5610,7 @@ msgstr "<Während Initialisierung>\n"
 #: fortran/error.c:606
 #, no-c-format
 msgid "Error count reached limit of %d."
-msgstr ""
+msgstr "Fehlerzahl erreichte Grenze %d."
 
 #: fortran/error.c:625 fortran/error.c:677 fortran/error.c:712
 msgid "Warning:"
@@ -5653,9 +5645,9 @@ msgid "Integer value too large in expression at %C"
 msgstr "Ganzzahlwert zu groß in Ausdruck bei %C"
 
 #: fortran/expr.c:937 fortran/expr.c:1094 fortran/expr.c:1145
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "index in dimension %d is out of bounds at %L"
-msgstr "End-Index der Teilzeichenkette bei %L ist außerhalb der Grenzen"
+msgstr "Index in Dimension %d ist außerhalb der Grenzen bei %L"
 
 #: fortran/expr.c:1605
 #, no-c-format
@@ -5698,9 +5690,9 @@ msgid "Numeric operands are required in expression at %L"
 msgstr "In Ausdruck bei %L werden numerische Operanden benötigt"
 
 #: fortran/expr.c:1754
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "assumed character length variable '%s' in constant expression at %L"
-msgstr "Der F95 erlaubt nicht die Variable »%s« mit vermuteter Zeichenlänge im konstanten Ausdruck bei %L."
+msgstr "Variable »%s« mit vermuteter Zeichenlänge im konstanten Ausdruck bei %L."
 
 #: fortran/expr.c:1807
 #, no-c-format
@@ -5916,9 +5908,9 @@ msgid "Syntax error: Trailing garbage in INTERFACE statement at %C"
 msgstr "Syntaxfehler: Nachfolgender Überschuss in INTERFACE-Anweisung bei %C"
 
 #: fortran/interface.c:222
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy procedure '%s' at %C cannot have a generic interface"
-msgstr "Schein-»%s« bei %L kann keine Initialisierung haben"
+msgstr "Scheinprozedur »%s« bei %C kann keine allgemeine Schnittstelle haben"
 
 #: fortran/interface.c:269
 #, no-c-format
@@ -5951,9 +5943,9 @@ msgid "Expecting 'END INTERFACE %s' at %C"
 msgstr "»END INTERFACE %s« bei %C erwartet"
 
 #: fortran/interface.c:513
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Alternate return cannot appear in operator interface at %L"
-msgstr "Fehlende alternative Rückgabespezifikation in Unterprogrammaufruf bei %L"
+msgstr "Alternative Rückgabe kann nicht in Operatorschnittstelle bei %L auftreten"
 
 #: fortran/interface.c:540
 #, no-c-format
@@ -5961,14 +5953,14 @@ msgid "Assignment operator interface at %L must be a SUBROUTINE"
 msgstr "Schnittstelle für Zuweisungsoperator bei %L muss eine SUBROUTINE sein"
 
 #: fortran/interface.c:547
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assignment operator interface at %L must have two arguments"
-msgstr "Operatorschnittstelle bei %L darf höchstens zwei Argumente haben"
+msgstr "Schnittstelle des Zuweisungsoperators bei %L muss zwei Argumente haben"
 
 #: fortran/interface.c:558
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assignment operator interface at %L must not redefine an INTRINSIC type assignment"
-msgstr "Schnittstelle für Zuweisungsoperator bei %L muss eine SUBROUTINE sein"
+msgstr "Schnittstelle des Zuweisungsoperators bei %L darf keine INTRINSIC Typzuweisung redefinieren"
 
 #: fortran/interface.c:567
 #, no-c-format
@@ -6016,9 +6008,9 @@ msgid "Ambiguous interfaces '%s' and '%s' in %s at %L"
 msgstr "Mehrdeutige Schnittstellen »%s« und »%s« in %s bei %L"
 
 #: fortran/interface.c:1028
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "MODULE PROCEDURE '%s' at %L does not come from a module"
-msgstr "MODULE PROCEDURE bei %C muss in einer generischen Modulschnittstelle sein"
+msgstr "MODULE PROCEDURE »%s« bei %L kommt nicht aus einem Modul"
 
 #: fortran/interface.c:1274
 #, no-c-format
@@ -6051,14 +6043,14 @@ msgid "Type/rank mismatch in argument '%s' at %L"
 msgstr "Unpassender Typ/Rang in Argument »%s« bei %L"
 
 #: fortran/interface.c:1342
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected a procedure for argument '%s' at %L"
-msgstr "Fehlendes effektives Argument für Argument »%s« bei %L"
+msgstr "Prozedur für Argument »%s« bei %L erwartet"
 
 #: fortran/interface.c:1353
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected a PURE procedure for argument '%s' at %L"
-msgstr "Fehlendes effektives Argument für Argument »%s« bei %L"
+msgstr "PURE-Prozedur für Argument »%s« bei %L erwartet"
 
 #: fortran/interface.c:1368
 #, no-c-format
@@ -6071,9 +6063,9 @@ msgid "Actual argument for '%s' must be a pointer at %L"
 msgstr "Effektives Argument für »%s« muss ein Zeiger bei %L sein"
 
 #: fortran/interface.c:1386
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Actual argument for '%s' must be ALLOCATABLE at %L"
-msgstr "Effektives Argument für »%s« muss ein Zeiger bei %L sein"
+msgstr "Effektives Argument für »%s« muss ALLOCATABLE bei %L sein"
 
 #: fortran/interface.c:1397
 #, no-c-format
@@ -6126,9 +6118,9 @@ msgid "Too many arguments in call to '%s' at %L"
 msgstr "Zu viele Argumente in Aufruf von »%s« bei %L"
 
 #: fortran/intrinsic.c:2868
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Argument list function at %L is not allowed in this context"
-msgstr "Standardumwandlungen sind in diesem Kontext nicht erlaubt"
+msgstr "Argumentlistenfunktion bei %L ist in diesem Kontext nicht erlaubt"
 
 #: fortran/intrinsic.c:2871
 #, no-c-format
@@ -6191,9 +6183,9 @@ msgid "Can't convert %s to %s at %L"
 msgstr "%s kann nicht nach %s bei %L umgewandelt werden"
 
 #: fortran/io.c:180 fortran/primary.c:771
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Extension: backslash character at %C"
-msgstr "Erweiterung: $-Deskriptor bei %C"
+msgstr "Erweiterung: Zeichen Backslash bei %C"
 
 #: fortran/io.c:458
 msgid "Positive width required"
@@ -6236,9 +6228,9 @@ msgid "Extension: $ descriptor at %C"
 msgstr "Erweiterung: $-Deskriptor bei %C"
 
 #: fortran/io.c:554
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "$ should be the last specifier in format at %C"
-msgstr "$ muss das letzte Spezifikationssymbol sein"
+msgstr "$ sollte das letzte Spezifikationssymbol in Format bei %C sein"
 
 #: fortran/io.c:599
 msgid "Repeat count cannot follow P descriptor"
@@ -6250,9 +6242,9 @@ msgid "Extension: Missing positive width after L descriptor at %C"
 msgstr "Erweiterung: Positive Breite hinter L-Deskriptor bei %C fehlt"
 
 #: fortran/io.c:657 fortran/io.c:659 fortran/io.c:705 fortran/io.c:707
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Period required in format specifier at %C"
-msgstr "unerkannte Formatangabe"
+msgstr "Formatspezifikation bei %C erfordert Punkt"
 
 #: fortran/io.c:685
 msgid "Positive exponent width required"
@@ -6364,19 +6356,19 @@ msgid "Extension: CONVERT tag at %L"
 msgstr "Erweiterung: CONVERT-Marke bei %L"
 
 #: fortran/io.c:1333 fortran/io.c:1341
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: %s specifier in %s statement at %C has value '%s'"
-msgstr "Fortran 2003: FLUSH-Anweisung bei %C"
+msgstr "Fortran 2003: Spezifizierer %s in Anweisung %s bei %C hat Wert »%s«"
 
 #: fortran/io.c:1359 fortran/io.c:1367
 #, no-c-format
 msgid "Extension: %s specifier in %s statement at %C has value '%s'"
-msgstr ""
+msgstr "Erweiterung: Spezifizierer %s in Anweisung %s bei %C hat Wert »%s«"
 
 #: fortran/io.c:1379 fortran/io.c:1385
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s specifier in %s statement at %C has invalid value '%s'"
-msgstr "Name »%s« in %s-Anweisung bei %C ist kein Schleifenname"
+msgstr "Spezifizierer %s in Anweisung %s bei %C hat ungültigen Wert »%s«"
 
 #: fortran/io.c:1438
 #, no-c-format
@@ -6595,7 +6587,7 @@ msgid "Invalid form of PROGRAM statement at %C"
 msgstr "Ungültige Form der PROGRAM-Anweisung bei %C"
 
 #: fortran/match.c:935 fortran/match.c:1011
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Obsolescent: arithmetic IF statement at %C"
 msgstr "Veraltet: Arithmetische IF-Anweisung bei %C"
 
@@ -6615,9 +6607,9 @@ msgid "Block label is not appropriate IF statement at %C"
 msgstr "Blockmarke ist keine geeignete IF-Anweisung bei %C"
 
 #: fortran/match.c:1116 fortran/primary.c:2412
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Cannot assign to a named constant at %C"
-msgstr "An PARAMETER-Variable bei %C kann nicht zugewiesen werden"
+msgstr "An benannte Konstante bei %C kann nicht zugewiesen werden"
 
 #: fortran/match.c:1126
 #, no-c-format
@@ -6660,14 +6652,14 @@ msgid "%s statement at %C is not within loop '%s'"
 msgstr "Anweisung %s bei %C nicht innerhalb der Schleife »%s«"
 
 #: fortran/match.c:1403
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s statement at %C leaving OpenMP structured block"
-msgstr "Anweisung %s bei %C kann keine DO-Schleife ohne Block beenden"
+msgstr "Anweisung %s bei %C hinterlässt OpenMP-strukturierten Block"
 
 #: fortran/match.c:1416
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "EXIT statement at %C terminating !$OMP DO loop"
-msgstr "Anweisung %s bei %C kann keine DO-Schleife ohne Block beenden"
+msgstr "EXIT-Anweisung bei %C beendet !$OMP DO Schleife"
 
 #: fortran/match.c:1471
 #, no-c-format
@@ -8546,7 +8538,7 @@ msgstr ""
 #: fortran/resolve.c:5133
 #, no-c-format
 msgid "Cannot assign to variable '%s' in PURE procedure at %L"
-msgstr "In PURE-Prozedur bei %L kann nicht an Variable »%s« zugewiesen werden"
+msgstr "In PURE-Prozedur bei %2$L kann nicht an Variable »%1$s« zugewiesen werden"
 
 #: fortran/resolve.c:5142
 #, no-c-format
