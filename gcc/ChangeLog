@@ -1,3 +1,8 @@
+2007-07-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ddg.c (add_cross_iteration_register_deps): Declare bb_info
+	only if ENABLE_CHECKING is defined.
+
 2007-07-31  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* df.h (DF_RU, DF_RU_BB_INFO, df_ru_bb_info, df_ru,
