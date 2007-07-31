@@ -819,7 +819,7 @@ extern const struct mips_rtx_cost_data *mips_cost;
 				 || TARGET_MIPS5500)
 
 /* ISA includes synci, jr.hb and jalr.hb.  */
-#define ISA_HAS_SYNCI ISA_MIPS32R2
+#define ISA_HAS_SYNCI (ISA_MIPS32R2 && !TARGET_MIPS16)
 
 
 /* Add -G xx support.  */

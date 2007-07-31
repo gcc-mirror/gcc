@@ -1,3 +1,7 @@
+2007-07-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_SYNCI):  Add !TARGET_MIPS16 test.
+
 2007-07-31  Revital Eres  <eres@il.ibm.com>
 
 	* ddg.c (add_deps_for_def): Rename to...
