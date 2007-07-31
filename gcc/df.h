@@ -44,11 +44,10 @@ struct df_link;
 #define DF_LR    1      /* Live Registers backward. */
 #define DF_LIVE  2      /* Live Registers & Uninitialized Registers */
 
-#define DF_RU    3      /* Reaching Uses. */
-#define DF_RD    4      /* Reaching Defs. */
-#define DF_UREC  5      /* Uninitialized Registers with Early Clobber. */
-#define DF_CHAIN 6      /* Def-Use and/or Use-Def Chains. */
-#define DF_NOTE  7      /* REG_DEF and REG_UNUSED notes. */
+#define DF_RD    3      /* Reaching Defs. */
+#define DF_UREC  4      /* Uninitialized Registers with Early Clobber. */
+#define DF_CHAIN 5      /* Def-Use and/or Use-Def Chains. */
+#define DF_NOTE  6      /* REG_DEF and REG_UNUSED notes. */
 
 #define DF_LAST_PROBLEM_PLUS1 (DF_NOTE + 1)
 
@@ -541,7 +540,6 @@ struct df
 };
 
 #define DF_SCAN_BB_INFO(BB) (df_scan_get_bb_info((BB)->index))
-#define DF_RU_BB_INFO(BB) (df_ru_get_bb_info((BB)->index))
 #define DF_RD_BB_INFO(BB) (df_rd_get_bb_info((BB)->index))
 #define DF_LR_BB_INFO(BB) (df_lr_get_bb_info((BB)->index))
 #define DF_UREC_BB_INFO(BB) (df_urec_get_bb_info((BB)->index))
@@ -694,30 +692,6 @@ struct df_scan_bb_info
 };
 
 
-/* Reaching uses.  All bitmaps are indexed by the id field of the ref
-   except sparse_kill (see below).  */
-struct df_ru_bb_info 
-{
-  /* Local sets to describe the basic blocks.  */
-  /* The kill set is the set of uses that are killed in this block.
-     However, if the number of uses for this register is greater than
-     DF_SPARSE_THRESHOLD, the sparse_kill is used instead. In
-     sparse_kill, each register gets a slot and a 1 in this bitvector
-     means that all of the uses of that register are killed.  This is
-     a very useful efficiency hack in that it keeps from having push
-     around big groups of 1s.  This is implemented by the
-     bitmap_clear_range call.  */
-
-  bitmap kill;
-  bitmap sparse_kill;
-  bitmap gen;   /* The set of uses generated in this block.  */
-
-  /* The results of the dataflow problem.  */
-  bitmap in;    /* At the top of the block.  */
-  bitmap out;   /* At the bottom of the block.  */
-};
-
-
 /* Reaching definitions.  All bitmaps are indexed by the id field of
    the ref except sparse_kill (see above).  */
 struct df_rd_bb_info 
@@ -807,7 +781,6 @@ struct df_urec_bb_info
    should not be used by regular code.  */ 
 extern struct df *df;
 #define df_scan  (df->problems_by_index[DF_SCAN])
-#define df_ru    (df->problems_by_index[DF_RU])
 #define df_rd    (df->problems_by_index[DF_RD])
 #define df_lr    (df->problems_by_index[DF_LR])
 #define df_live  (df->problems_by_index[DF_LIVE])
@@ -889,7 +862,6 @@ extern bitmap df_get_live_top (basic_block);
 extern void df_grow_bb_info (struct dataflow *);
 extern void df_chain_dump (struct df_link *, FILE *);
 extern void df_print_bb_index (basic_block bb, FILE *file);
-extern void df_ru_add_problem (void);
 extern void df_rd_add_problem (void);
 extern void df_lr_add_problem (void);
 extern void df_lr_verify_transfer_functions (void);
@@ -950,15 +922,6 @@ df_scan_get_bb_info (unsigned int index)
 {
   if (index < df_scan->block_info_size)
     return (struct df_scan_bb_info *) df_scan->block_info[index];
-  else
-    return NULL;
-}
-
-static inline struct df_ru_bb_info *
-df_ru_get_bb_info (unsigned int index)
-{
-  if (index < df_ru->block_info_size)
-    return (struct df_ru_bb_info *) df_ru->block_info[index];
   else
     return NULL;
 }

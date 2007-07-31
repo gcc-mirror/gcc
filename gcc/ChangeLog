@@ -1,7 +1,21 @@
+2007-07-31  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df.h (DF_RU, DF_RU_BB_INFO, df_ru_bb_info, df_ru,
+	df_ru_add_problem, df_ru_get_bb_info): Removed.
+	(DF_RD, DF_UREC, DF_CHAIN, DF_NOTE): Renumbered.
+	* df-problems.c (df_ru_problem_data, df_ru_set_bb_info,
+	df_ru_free_bb_info, df_ru_alloc,
+	df_ru_bb_local_compute_process_def,
+	df_ru_bb_local_compute_process_use, df_ru_bb_local_compute,
+	df_ru_local_compute, df_ru_init_solution, df_ru_confluence_n,
+	df_ru_transfer_function, df_ru_free, df_ru_start_dump,
+	df_ru_top_dump, df_ru_bottom_dump, df_problem problem_RU,
+	df_ru_add_problem): Removed.
+
 2007-07-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/32847
-        * pa.md (casesi32): Use match_scratch.  Revise insn condition.
+	* pa.md (casesi32): Use match_scratch.  Revise insn condition.
 	(casesi32p, casesi64p): Likewise.
 	(casesi): Adjust for above.
 
