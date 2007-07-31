@@ -1,3 +1,8 @@
+2007-07-31  Diego Novillo  <dnovillo@google.com>
+
+	* MAINTAINERS (Reviewers): Rename from Non-Autopoiesis.
+	Adjust description.
+
 2007-07-26  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac: Add types checking to stage1 checking flags.
