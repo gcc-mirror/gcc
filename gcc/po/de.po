@@ -8546,7 +8546,7 @@ msgstr ""
 #: fortran/resolve.c:5133
 #, no-c-format
 msgid "Cannot assign to variable '%s' in PURE procedure at %L"
-msgstr "In PURE-Prozedur bei %L kann nicht an Variable »%s« zugewiesen werden"
+msgstr "In PURE-Prozedur bei %2$L kann nicht an Variable »%1$s« zugewiesen werden"
 
 #: fortran/resolve.c:5142
 #, no-c-format
