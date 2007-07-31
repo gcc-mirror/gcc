@@ -239,7 +239,9 @@ add_cross_iteration_register_deps (ddg_ptr g, struct df_ref *last_def)
   rtx def_insn = DF_REF_INSN (last_def);
   ddg_node_ptr last_def_node = get_node_of_insn (g, def_insn);
   ddg_node_ptr use_node;
+#ifdef ENABLE_CHECKING
   struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
+#endif
   struct df_ref *first_def = df_bb_regno_first_def_find (g->bb, regno);
 
   gcc_assert (last_def_node);
