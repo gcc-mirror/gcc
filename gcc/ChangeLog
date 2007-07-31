@@ -1,3 +1,10 @@
+2007-07-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/32847
+        * pa.md (casesi32): Use match_scratch.  Revise insn condition.
+	(casesi32p, casesi64p): Likewise.
+	(casesi): Adjust for above.
+
 2007-07-31  Richard Sandiford  <richard@codesourcery.com>
 
 	* mode-switching.c (create_pre_exit): Don't search past calls.
