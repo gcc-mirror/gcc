@@ -1,3 +1,16 @@
+2007-07-31  Revital Eres  <eres@il.ibm.com>
+
+	* ddg.c (add_deps_for_def): Rename to...
+	(add_cross_iteration_register_deps): This.  Change implementation
+	to use only reaching def and def-use chains to construct the
+	inter loop dependencies.
+	(add_deps_for_use): Remove function.
+	(build_inter_loop_deps): Call add_cross_iteration_register_deps
+	function to build the inter loop dependencies.
+	* modulo-sched.c (sms_schedule): Build only
+	reaching def and def-use chains for the propose of the ddg
+	construction.
+
 2007-07-31  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/neon.md (vec_set<mode>_internal, vec_setv2di_internal):
