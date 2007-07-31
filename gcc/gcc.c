@@ -4373,6 +4373,26 @@ static int input_from_pipe;
    arguments.  */
 static const char *suffix_subst;
 
+/* If there is an argument being accumulated, terminate it and store it.  */
+
+static void
+end_going_arg (void)
+{
+  if (arg_going)
+    {
+      const char *string;
+
+      obstack_1grow (&obstack, 0);
+      string = XOBFINISH (&obstack, const char *);
+      if (this_is_library_file)
+	string = find_file (string);
+      store_arg (string, delete_this_arg, this_is_output_file);
+      if (this_is_output_file)
+	outfiles[input_file_number] = string;
+      arg_going = 0;
+    }
+}
+
 /* Process the spec SPEC and run the commands specified therein.
    Returns 0 if the spec is successfully processed; -1 if failed.  */
 
@@ -4402,7 +4422,6 @@ do_spec (const char *spec)
 static int
 do_spec_2 (const char *spec)
 {
-  const char *string;
   int result;
 
   clear_args ();
@@ -4415,18 +4434,7 @@ do_spec_2 (const char *spec)
 
   result = do_spec_1 (spec, 0, NULL);
 
-  /* End any pending argument.  */
-  if (arg_going)
-    {
-      obstack_1grow (&obstack, 0);
-      string = XOBFINISH (&obstack, const char *);
-      if (this_is_library_file)
-	string = find_file (string);
-      store_arg (string, delete_this_arg, this_is_output_file);
-      if (this_is_output_file)
-	outfiles[input_file_number] = string;
-      arg_going = 0;
-    }
+  end_going_arg ();
 
   return result;
 }
@@ -4587,7 +4595,6 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
   const char *p = spec;
   int c;
   int i;
-  const char *string;
   int value;
 
   while ((c = *p++))
@@ -4596,19 +4603,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
     switch (inswitch ? 'a' : c)
       {
       case '\n':
-	/* End of line: finish any pending argument,
-	   then run the pending command if one has been started.  */
-	if (arg_going)
-	  {
-	    obstack_1grow (&obstack, 0);
-	    string = XOBFINISH (&obstack, const char *);
-	    if (this_is_library_file)
-	      string = find_file (string);
-	    store_arg (string, delete_this_arg, this_is_output_file);
-	    if (this_is_output_file)
-	      outfiles[input_file_number] = string;
-	  }
-	arg_going = 0;
+	end_going_arg ();
 
 	if (argbuf_index > 0 && !strcmp (argbuf[argbuf_index - 1], "|"))
 	  {
@@ -4642,17 +4637,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	break;
 
       case '|':
-	/* End any pending argument.  */
-	if (arg_going)
-	  {
-	    obstack_1grow (&obstack, 0);
-	    string = XOBFINISH (&obstack, const char *);
-	    if (this_is_library_file)
-	      string = find_file (string);
-	    store_arg (string, delete_this_arg, this_is_output_file);
-	    if (this_is_output_file)
-	      outfiles[input_file_number] = string;
-	  }
+	end_going_arg ();
 
 	/* Use pipe */
 	obstack_1grow (&obstack, c);
@@ -4661,19 +4646,9 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
       case '\t':
       case ' ':
-	/* Space or tab ends an argument if one is pending.  */
-	if (arg_going)
-	  {
-	    obstack_1grow (&obstack, 0);
-	    string = XOBFINISH (&obstack, const char *);
-	    if (this_is_library_file)
-	      string = find_file (string);
-	    store_arg (string, delete_this_arg, this_is_output_file);
-	    if (this_is_output_file)
-	      outfiles[input_file_number] = string;
-	  }
+	end_going_arg ();
+
 	/* Reinitialize for a new argument.  */
-	arg_going = 0;
 	delete_this_arg = 0;
 	this_is_output_file = 0;
 	this_is_library_file = 0;
@@ -5101,18 +5076,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      p = handle_braces (p + 1);
 	      if (p == 0)
 		return -1;
-	      /* End any pending argument.  */
-	      if (arg_going)
-		{
-		  obstack_1grow (&obstack, 0);
-		  string = XOBFINISH (&obstack, const char *);
-		  if (this_is_library_file)
-		    string = find_file (string);
-		  store_arg (string, delete_this_arg, this_is_output_file);
-		  if (this_is_output_file)
-		    outfiles[input_file_number] = string;
-		  arg_going = 0;
-		}
+	      end_going_arg ();
 	      /* If any args were output, mark the last one for deletion
 		 on failure.  */
 	      if (argbuf_index != cur_index)
@@ -5431,17 +5395,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 
   /* End of string.  If we are processing a spec function, we need to
      end any pending argument.  */
-  if (processing_spec_function && arg_going)
-    {
-      obstack_1grow (&obstack, 0);
-      string = XOBFINISH (&obstack, const char *);
-      if (this_is_library_file)
-        string = find_file (string);
-      store_arg (string, delete_this_arg, this_is_output_file);
-      if (this_is_output_file)
-        outfiles[input_file_number] = string;
-      arg_going = 0;
-    }
+  if (processing_spec_function)
+    end_going_arg ();
 
   return 0;
 }

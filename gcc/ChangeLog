@@ -1,3 +1,9 @@
+2007-07-31  Dan Hipschman  <dsh@google.com>
+
+	* gcc.c (end_going_arg): New function.
+	(do_spec_2): Use it.
+	(do_spec_1): Use it.
+
 2007-07-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ddg.c (add_cross_iteration_register_deps): Declare bb_info
