@@ -1,3 +1,8 @@
+2007-07-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32938
+	* trans-stmt.c (gfc_trans_return): Convert to correct type.
+
 2007-07-31  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/32942
