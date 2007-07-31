@@ -121,7 +121,12 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_VOID:
 #ifdef X86
     case FFI_TYPE_STRUCT:
+    case FFI_TYPE_UINT8:
+    case FFI_TYPE_UINT16:
+    case FFI_TYPE_SINT8:
+    case FFI_TYPE_SINT16:
 #endif
+
     case FFI_TYPE_SINT64:
     case FFI_TYPE_FLOAT:
     case FFI_TYPE_DOUBLE:
