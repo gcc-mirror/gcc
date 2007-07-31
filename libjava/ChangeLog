@@ -1,5 +1,9 @@
 2007-07-31  David Daney  <ddaney@avtrex.com>
 
+	* HACKING: Document regenerating configure and aclocal.m4.
+
+2007-07-31  David Daney  <ddaney@avtrex.com>
+
 	* configure.ac (INTERPRETER): New AM_CONDITIONAL.
 	* scripts/makemake.tcl (package_map): Mark jdwp and jvmti packages
 	as being for interpreter only.  Place interpreter related files in
