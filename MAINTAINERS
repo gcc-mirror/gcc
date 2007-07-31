@@ -231,7 +231,7 @@ Note that individuals who maintain parts of the compiler as non-algorithmic
 maintainers need approval to check in algorithmic changes or changes
 outside of the parts of the compiler they maintain.
 
-			Non-Autopoiesis Maintainers
+			Reviewers
 
 dataflow		Daniel Berlin		dberlin@dberlin.org
 dataflow		Paolo Bonzini		bonzini@gnu.org
@@ -251,10 +251,9 @@ Fortran			Tobias Schlüter		tobias.schlueter@physik.uni-muenchen.de
 Fortran			Paul Thomas		pault@gcc.gnu.org
 
 
-Note that individuals who maintain parts of the compiler as
-non-autopoiesis maintainers need approval changes outside of the parts
-of the compiler they maintain and also need approval for their own
-patches.
+Note that while reviewers can approve changes to parts of the compiler
+that they maintain, they still need approval for their own patches
+from other maintainers or reviewers.
 
 			Write After Approval	(last name alphabetical order)
 
