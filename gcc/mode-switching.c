@@ -245,6 +245,17 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 
 		if (INSN_P (return_copy))
 		  {
+		    /* When using SJLJ exceptions, the call to the
+		       unregister function is inserted between the
+		       clobber of the return value and the copy.
+		       We do not want to split the block before this
+		       or any other call; if we have not found the
+		       copy yet, the copy must have been deleted.  */
+		    if (CALL_P (return_copy))
+		      {
+			short_block = 1;
+			break;
+		      }
 		    return_copy_pat = PATTERN (return_copy);
 		    switch (GET_CODE (return_copy_pat))
 		      {
