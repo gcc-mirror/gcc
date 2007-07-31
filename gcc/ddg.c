@@ -223,130 +223,110 @@ create_ddg_dep_no_link (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to,
     add_edge_to_ddg (g, e);
 }
 
-
-/* Given a downwards exposed register def RD, add inter-loop true dependences
-   for all its uses in the next iteration, and an output dependence to the
-   first def of the next iteration.  */
+
+/* Given a downwards exposed register def LAST_DEF (which is the last
+   definition of that register in the bb), add inter-loop true dependences
+   to all its uses in the next iteration, an output dependence to the
+   first def of the same register (possibly itself) in the next iteration
+   and anti-dependences from its uses in the current iteration to the
+   first definition in the next iteration.  */
 static void
-add_deps_for_def (ddg_ptr g, struct df_ref *rd)
+add_cross_iteration_register_deps (ddg_ptr g, struct df_ref *last_def)
 {
-  int regno = DF_REF_REGNO (rd);
-  struct df_ru_bb_info *bb_info = DF_RU_BB_INFO (g->bb);
+  int regno = DF_REF_REGNO (last_def);
   struct df_link *r_use;
-  int use_before_def = false;
-  rtx def_insn = DF_REF_INSN (rd);
-  ddg_node_ptr src_node = get_node_of_insn (g, def_insn);
+  int has_use_in_bb_p = false;
+  rtx def_insn = DF_REF_INSN (last_def);
+  ddg_node_ptr last_def_node = get_node_of_insn (g, def_insn);
+  ddg_node_ptr use_node;
+  struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
+  struct df_ref *first_def = df_bb_regno_first_def_find (g->bb, regno);
 
-  /* Create and inter-loop true dependence between RD and each of its uses
-     that is upwards exposed in RD's block.  */
-  for (r_use = DF_REF_CHAIN (rd); r_use != NULL; r_use = r_use->next)
+  gcc_assert (last_def_node);
+  gcc_assert (first_def);
+
+  /* Create inter-loop true dependences and anti dependences.  */
+  for (r_use = DF_REF_CHAIN (last_def); r_use != NULL; r_use = r_use->next)
     {
-      if (bitmap_bit_p (bb_info->gen, r_use->ref->id))
+      rtx use_insn = DF_REF_INSN (r_use->ref);
+
+      if (BLOCK_FOR_INSN (use_insn) != g->bb)
+	continue;
+
+      /* ??? Do not handle uses with DF_REF_IN_NOTE notes.  */
+      use_node = get_node_of_insn (g, use_insn);
+      gcc_assert (use_node);
+      has_use_in_bb_p = true;
+      if (use_node->cuid <= last_def_node->cuid)
 	{
-	  rtx use_insn = DF_REF_INSN (r_use->ref);
-	  ddg_node_ptr dest_node = get_node_of_insn (g, use_insn);
-
-	  gcc_assert (src_node && dest_node);
-
-	  /* Any such upwards exposed use appears before the rd def.  */
-	  use_before_def = true;
-	  create_ddg_dep_no_link (g, src_node, dest_node, TRUE_DEP,
+	  /* Add true deps from last_def to it's uses in the next
+	     iteration.  Any such upwards exposed use appears before
+	     the last_def def.  */
+	  create_ddg_dep_no_link (g, last_def_node, use_node, TRUE_DEP,
 				  REG_DEP, 1);
 	}
-    }
+      else
+	{
+	  /* Add anti deps from last_def's uses in the current iteration
+	     to the first def in the next iteration.  We do not add ANTI
+	     dep when there is an intra-loop TRUE dep in the opposite
+	     direction, but use regmoves to fix such disregarded ANTI
+	     deps when broken.	If the first_def reaches the USE then
+	     there is such a dep.  */
+	  ddg_node_ptr first_def_node = get_node_of_insn (g,
+							  first_def->insn);
 
-  /* Create an inter-loop output dependence between RD (which is the
-     last def in its block, being downwards exposed) and the first def
-     in its block.  Avoid creating a self output dependence.  Avoid creating
-     an output dependence if there is a dependence path between the two defs
-     starting with a true dependence followed by an anti dependence (i.e. if
-     there is a use between the two defs.  */
-  if (! use_before_def)
+	  gcc_assert (first_def_node);
+
+          if (last_def->id != first_def->id)
+            {
+#ifdef ENABLE_CHECKING
+              gcc_assert (!bitmap_bit_p (bb_info->gen, first_def->id));
+#endif
+              create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
+                                      REG_DEP, 1);
+            }
+	}
+    }
+  /* Create an inter-loop output dependence between LAST_DEF (which is the
+     last def in its block, being downwards exposed) and the first def in
+     its block.  Avoid creating a self output dependence.  Avoid creating
+     an output dependence if there is a dependence path between the two
+     defs starting with a true dependence to a use which can be in the
+     next iteration; followed by an anti dependence of that use to the
+     first def (i.e. if there is a use between the two defs.)  */
+  if (!has_use_in_bb_p)
     {
-      struct df_ref *def = df_bb_regno_first_def_find (g->bb, regno);
-      int i;
       ddg_node_ptr dest_node;
 
-      if (!def || rd->id == def->id)
+      if (last_def->id == first_def->id)
 	return;
 
-      /* Check if there are uses after RD.  */
-      for (i = src_node->cuid + 1; i < g->num_nodes; i++)
-	 if (df_find_use (g->nodes[i].insn, DF_REF_REG (rd)))
-	   return;
-
-      dest_node = get_node_of_insn (g, def->insn);
-      create_ddg_dep_no_link (g, src_node, dest_node, OUTPUT_DEP, REG_DEP, 1);
+      dest_node = get_node_of_insn (g, first_def->insn);
+      gcc_assert (dest_node);
+      create_ddg_dep_no_link (g, last_def_node, dest_node,
+			      OUTPUT_DEP, REG_DEP, 1);
     }
 }
-
-/* Given a register USE, add an inter-loop anti dependence to the first
-   (nearest BLOCK_BEGIN) def of the next iteration, unless USE is followed
-   by a def in the block.  */
-static void
-add_deps_for_use (ddg_ptr g, struct df_ref *use)
-{
-  int i;
-  int regno = DF_REF_REGNO (use);
-  struct df_ref *first_def = df_bb_regno_first_def_find (g->bb, regno);
-  ddg_node_ptr use_node;
-  ddg_node_ptr def_node;
-  struct df_rd_bb_info *bb_info;
-
-  bb_info = DF_RD_BB_INFO (g->bb);
-
-  if (!first_def)
-    return;
-
-  use_node = get_node_of_insn (g, use->insn);
-  def_node = get_node_of_insn (g, first_def->insn);
-
-  gcc_assert (use_node && def_node);
-
-  /* Make sure there are no defs after USE.  */
-  for (i = use_node->cuid + 1; i < g->num_nodes; i++)
-     if (df_find_def (g->nodes[i].insn, DF_REF_REG (use)))
-       return;
-  /* We must not add ANTI dep when there is an intra-loop TRUE dep in
-     the opposite direction. If the first_def reaches the USE then there is
-     such a dep.  */
-  if (! bitmap_bit_p (bb_info->gen, first_def->id))
-    create_ddg_dep_no_link (g, use_node, def_node, ANTI_DEP, REG_DEP, 1);
-}
-
 /* Build inter-loop dependencies, by looking at DF analysis backwards.  */
 static void
 build_inter_loop_deps (ddg_ptr g)
 {
-  unsigned rd_num, u_num;
+  unsigned rd_num;
   struct df_rd_bb_info *rd_bb_info;
-  struct df_ru_bb_info *ru_bb_info;
   bitmap_iterator bi;
 
   rd_bb_info = DF_RD_BB_INFO (g->bb);
 
-  /* Find inter-loop output and true deps by connecting downward exposed defs
-     to the first def of the BB and to upwards exposed uses.  */
+  /* Find inter-loop register output, true and anti deps.  */
   EXECUTE_IF_SET_IN_BITMAP (rd_bb_info->gen, 0, rd_num, bi)
-    {
-      struct df_ref *rd = DF_DEFS_GET (rd_num);
+  {
+    struct df_ref *rd = DF_DEFS_GET (rd_num);
 
-      add_deps_for_def (g, rd);
-    }
-
-  ru_bb_info = DF_RU_BB_INFO (g->bb);
-
-  /* Find inter-loop anti deps.  We are interested in uses of the block that
-     appear below all defs; this implies that these uses are killed.  */
-  EXECUTE_IF_SET_IN_BITMAP (ru_bb_info->kill, 0, u_num, bi)
-    {
-      struct df_ref *use = DF_USES_GET (u_num);
-      if (!(DF_REF_FLAGS (use) & DF_REF_IN_NOTE))
-	/* We are interested in uses of this BB.  */
-	if (BLOCK_FOR_INSN (use->insn) == g->bb)
-	  add_deps_for_use (g, use);
-    }
+    add_cross_iteration_register_deps (g, rd);
+  }
 }
+
 
 /* Given two nodes, analyze their RTL insns and add inter-loop mem deps
    to ddg G.  */
