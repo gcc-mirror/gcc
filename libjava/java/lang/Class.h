@@ -97,9 +97,9 @@ class _Jv_Linker;
 class _Jv_ExecutionEngine;
 class _Jv_CompiledEngine;
 class _Jv_IndirectCompiledEngine;
-class _Jv_InterpreterEngine;
 
 #ifdef INTERPRETER
+class _Jv_InterpreterEngine;
 class _Jv_ClassReader;
 class _Jv_InterpClass;
 class _Jv_InterpMethod;
@@ -619,6 +619,7 @@ private:
   friend class ::_Jv_ClassReader;	
   friend class ::_Jv_InterpClass;
   friend class ::_Jv_InterpMethod;
+  friend class ::_Jv_InterpreterEngine;
 #endif
   friend class ::_Jv_StackTrace;
 
@@ -633,7 +634,6 @@ private:
   friend class ::_Jv_ExecutionEngine;
   friend class ::_Jv_CompiledEngine;
   friend class ::_Jv_IndirectCompiledEngine;
-  friend class ::_Jv_InterpreterEngine;
   friend class ::_Jv_ClosureList;
 
   friend void ::_Jv_sharedlib_register_hook (jclass klass);

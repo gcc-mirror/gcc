@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I . -I .. -I ../config -I libltdl
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -186,8 +186,14 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-libgcj_la_SOURCES = prims.cc jni.cc jvmti.cc exception.cc stacktrace.cc \
-	link.cc defineclass.cc interpret.cc verify.cc \
+if INTERPRETER
+libgcj_interpret_source_files = jvmti.cc interpret.cc
+else
+libgcj_interpret_source_files = 
+endif
+
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
+	link.cc defineclass.cc verify.cc $(libgcj_interpret_source_files) \
 	$(nat_source_files)
 
 ## We need to compile at least the interpreter this way.
@@ -830,12 +836,22 @@ grmiregistry_LDADD = -L$(here)/.libs libgcj-tools.la
 grmiregistry_DEPENDENCIES = libgcj-tools.la
 
 ## ################################################################
-
-## This lists all the C++ source files in subdirectories.
-nat_source_files = \
+if INTERPRETER
+nat_jdwp_source_files = \
 gnu/classpath/jdwp/natVMFrame.cc \
 gnu/classpath/jdwp/natVMMethod.cc \
-gnu/classpath/jdwp/natVMVirtualMachine.cc \
+gnu/classpath/jdwp/natVMVirtualMachine.cc
+
+nat_jvmti_source_files = \
+gnu/gcj/jvmti/natBreakpoint.cc \
+gnu/gcj/jvmti/natNormalBreakpoint.cc
+else
+nat_jdwp_source_files = 
+nat_jvmti_source_files =
+endif
+## This lists all the C++ source files in subdirectories.
+nat_source_files = \
+$(nat_jdwp_source_files) \
 gnu/classpath/natConfiguration.cc \
 gnu/classpath/natSystemProperties.cc \
 gnu/classpath/natVMStackWalker.cc \
@@ -850,8 +866,7 @@ gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
-gnu/gcj/jvmti/natBreakpoint.cc \
-gnu/gcj/jvmti/natNormalBreakpoint.cc \
+$(nat_jvmti_source_files) \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natSystemClassLoader.cc \

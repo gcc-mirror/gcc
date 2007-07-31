@@ -199,6 +199,7 @@ struct _Jv_IndirectCompiledEngine : public _Jv_CompiledEngine
     _Jv_Free (aux->field_initializers);
   }
 
+#ifdef INTERPRETER
   static _Jv_ClosureList **do_get_closure_list (jclass klass)
   {
     _Jv_IndirectCompiledClass *aux = get_aux_info (klass);
@@ -208,9 +209,10 @@ struct _Jv_IndirectCompiledEngine : public _Jv_CompiledEngine
 
     return aux->closures;
   }
+#endif
 };
 
-
+#ifdef INTERPRETER
 
 // This handles interpreted code.
 class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
@@ -266,8 +268,9 @@ class _Jv_InterpreterEngine : public _Jv_ExecutionEngine
   }
 };
 
-
 extern _Jv_InterpreterEngine _Jv_soleInterpreterEngine;
+#endif // INTERPRETER
+
 extern _Jv_CompiledEngine _Jv_soleCompiledEngine;
 extern _Jv_IndirectCompiledEngine _Jv_soleIndirectCompiledEngine;
 #endif // __JAVA_EXECUTION_H__

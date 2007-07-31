@@ -138,7 +138,6 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       state->interp_frame = state->interp_frame->next_interp;
     }
   else 
-#endif
   // We handle proxies in the same way as interpreted classes
   if (_Jv_is_proxy (func_addr))
     {
@@ -148,6 +147,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
       state->interp_frame = state->interp_frame->next_interp;
     }
   else 
+#endif
     {
 #ifdef HAVE_GETIPINFO
       _Unwind_Ptr ip;

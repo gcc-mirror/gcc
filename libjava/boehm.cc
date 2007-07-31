@@ -380,6 +380,7 @@ _Jv_AllocRawObj (jsize size)
   return (void *) GC_MALLOC (size ? size : 1);
 }
 
+#ifdef INTERPRETER
 typedef _Jv_ClosureList *closure_list_pointer;
 
 /* Release closures in a _Jv_ClosureList.  */
@@ -402,6 +403,7 @@ _Jv_ClosureListFinalizer ()
 				     NULL, NULL, NULL);
   return clpp;
 }
+#endif // INTERPRETER
 
 static void
 call_finalizer (GC_PTR obj, GC_PTR client_data)

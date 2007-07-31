@@ -79,7 +79,8 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 @XLIB_AWT_TRUE@am__append_17 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/confsubdir.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
@@ -155,18 +156,21 @@ lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 libgcj_tools_la_LIBADD =
 am_libgcj_tools_la_OBJECTS = classpath/tools/libgcj_tools_la-tools.lo
 libgcj_tools_la_OBJECTS = $(am_libgcj_tools_la_OBJECTS)
-am__DEPENDENCIES_1 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
-	gnu/classpath/debug.lo gnu/classpath/jdwp.lo \
-	gnu/classpath/jdwp/event.lo \
-	gnu/classpath/jdwp/event/filters.lo \
-	gnu/classpath/jdwp/exception.lo gnu/classpath/jdwp/id.lo \
-	gnu/classpath/jdwp/processor.lo \
-	gnu/classpath/jdwp/transport.lo gnu/classpath/jdwp/util.lo \
-	gnu/classpath/jdwp/value.lo gnu/gcj.lo gnu/gcj/convert.lo \
-	gnu/gcj/io.lo gnu/gcj/jvmti.lo gnu/gcj/runtime.lo \
-	gnu/gcj/util.lo gnu/java/awt.lo gnu/java/awt/color.lo \
-	gnu/java/awt/dnd.lo gnu/java/awt/font.lo \
-	gnu/java/awt/font/autofit.lo gnu/java/awt/font/opentype.lo \
+@INTERPRETER_TRUE@am__DEPENDENCIES_1 = gnu/classpath/jdwp.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/event.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/event/filters.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/exception.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/id.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/processor.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/transport.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/util.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/value.lo gnu/gcj/jvmti.lo
+am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
+	gnu/classpath/debug.lo gnu/gcj.lo gnu/gcj/convert.lo \
+	gnu/gcj/io.lo gnu/gcj/runtime.lo gnu/gcj/util.lo \
+	gnu/java/awt.lo gnu/java/awt/color.lo gnu/java/awt/dnd.lo \
+	gnu/java/awt/font.lo gnu/java/awt/font/autofit.lo \
+	gnu/java/awt/font/opentype.lo \
 	gnu/java/awt/font/opentype/truetype.lo gnu/java/awt/image.lo \
 	gnu/java/awt/java2d.lo gnu/java/awt/peer.lo \
 	gnu/java/awt/peer/headless.lo gnu/java/awt/print.lo \
@@ -275,8 +279,9 @@ am__DEPENDENCIES_1 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/text/rtf.lo javax/swing/tree.lo \
 	javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo sun/misc.lo \
-	sun/reflect.lo sun/reflect/annotation.lo sun/reflect/misc.lo
-am__DEPENDENCIES_2 = gnu-CORBA.lo gnu-java-awt-dnd-peer-gtk.lo \
+	sun/reflect.lo sun/reflect/annotation.lo sun/reflect/misc.lo \
+	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_3 = gnu-CORBA.lo gnu-java-awt-dnd-peer-gtk.lo \
 	gnu-java-awt-peer-gtk.lo gnu-java-awt-peer-swing.lo \
 	gnu-java-beans.lo gnu-java-lang-management.lo \
 	gnu-java-util-prefs-gconf.lo gnu-javax-management.lo \
@@ -286,12 +291,12 @@ am__DEPENDENCIES_2 = gnu-CORBA.lo gnu-java-awt-dnd-peer-gtk.lo \
 	gnu-xml-validation.lo gnu-xml-xpath.lo java-lang-management.lo \
 	javax-imageio.lo javax-rmi.lo javax-xml.lo org-omg.lo \
 	org-relaxng.lo org-w3c.lo org-xml.lo
-am__DEPENDENCIES_3 = $(patsubst classpath/resource/%,%,$(addsuffix \
+am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
-am__DEPENDENCIES_4 =
-am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
-	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
-	gnu/classpath/jdwp/natVMFrame.cc \
+am__DEPENDENCIES_5 =
+am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
+	stacktrace.cc link.cc defineclass.cc verify.cc jvmti.cc \
+	interpret.cc gnu/classpath/jdwp/natVMFrame.cc \
 	gnu/classpath/jdwp/natVMMethod.cc \
 	gnu/classpath/jdwp/natVMVirtualMachine.cc \
 	gnu/classpath/natConfiguration.cc \
@@ -355,10 +360,13 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc jvmti.cc exception.cc \
 	java/util/zip/natInflater.cc sun/misc/natUnsafe.cc boehm.cc \
 	nogc.cc posix.cc win32.cc darwin.cc posix-threads.cc \
 	win32-threads.cc no-threads.cc
-am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
-	gnu/classpath/jdwp/natVMMethod.lo \
-	gnu/classpath/jdwp/natVMVirtualMachine.lo \
-	gnu/classpath/natConfiguration.lo \
+@INTERPRETER_TRUE@am__objects_2 = jvmti.lo interpret.lo
+@INTERPRETER_TRUE@am__objects_3 = gnu/classpath/jdwp/natVMFrame.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/natVMMethod.lo \
+@INTERPRETER_TRUE@	gnu/classpath/jdwp/natVMVirtualMachine.lo
+@INTERPRETER_TRUE@am__objects_4 = gnu/gcj/jvmti/natBreakpoint.lo \
+@INTERPRETER_TRUE@	gnu/gcj/jvmti/natNormalBreakpoint.lo
+am__objects_5 = $(am__objects_3) gnu/classpath/natConfiguration.lo \
 	gnu/classpath/natSystemProperties.lo \
 	gnu/classpath/natVMStackWalker.lo gnu/gcj/natCore.lo \
 	gnu/gcj/convert/JIS0208_to_Unicode.lo \
@@ -369,9 +377,7 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	gnu/gcj/convert/natOutput_EUCJIS.lo \
 	gnu/gcj/convert/natOutput_SJIS.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
-	gnu/gcj/jvmti/natBreakpoint.lo \
-	gnu/gcj/jvmti/natNormalBreakpoint.lo \
-	gnu/gcj/runtime/natFinalizerThread.lo \
+	$(am__objects_4) gnu/gcj/runtime/natFinalizerThread.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
 	gnu/gcj/runtime/natSystemClassLoader.lo \
 	gnu/gcj/runtime/natStringBuffer.lo gnu/gcj/util/natDebug.lo \
@@ -417,19 +423,19 @@ am__objects_2 = gnu/classpath/jdwp/natVMFrame.lo \
 	java/util/concurrent/atomic/natAtomicLong.lo \
 	java/util/logging/natLogger.lo java/util/zip/natDeflater.lo \
 	java/util/zip/natInflater.lo sun/misc/natUnsafe.lo
-@USING_BOEHMGC_TRUE@am__objects_3 = boehm.lo
-@USING_NOGC_TRUE@am__objects_4 = nogc.lo
-@USING_POSIX_PLATFORM_TRUE@am__objects_5 = posix.lo
-@USING_WIN32_PLATFORM_TRUE@am__objects_6 = win32.lo
-@USING_DARWIN_CRT_TRUE@am__objects_7 = darwin.lo
-@USING_POSIX_THREADS_TRUE@am__objects_8 = posix-threads.lo
-@USING_WIN32_THREADS_TRUE@am__objects_9 = win32-threads.lo
-@USING_NO_THREADS_TRUE@am__objects_10 = no-threads.lo
-am_libgcj_la_OBJECTS = prims.lo jni.lo jvmti.lo exception.lo \
-	stacktrace.lo link.lo defineclass.lo interpret.lo verify.lo \
-	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
+@USING_BOEHMGC_TRUE@am__objects_6 = boehm.lo
+@USING_NOGC_TRUE@am__objects_7 = nogc.lo
+@USING_POSIX_PLATFORM_TRUE@am__objects_8 = posix.lo
+@USING_WIN32_PLATFORM_TRUE@am__objects_9 = win32.lo
+@USING_DARWIN_CRT_TRUE@am__objects_10 = darwin.lo
+@USING_POSIX_THREADS_TRUE@am__objects_11 = posix-threads.lo
+@USING_WIN32_THREADS_TRUE@am__objects_12 = win32-threads.lo
+@USING_NO_THREADS_TRUE@am__objects_13 = no-threads.lo
+am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
+	link.lo defineclass.lo verify.lo $(am__objects_2) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
-	$(am__objects_8) $(am__objects_9) $(am__objects_10)
+	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
+	$(am__objects_11) $(am__objects_12) $(am__objects_13)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 am_libgcj_bc_la_OBJECTS = libgcj_bc.lo
 libgcj_bc_la_OBJECTS = $(am_libgcj_bc_la_OBJECTS)
@@ -624,6 +630,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTERPRETER = @INTERPRETER@
+INTERPRETER_FALSE = @INTERPRETER_FALSE@
+INTERPRETER_TRUE = @INTERPRETER_TRUE@
 JAR = @JAR@
 JAVA_HOME = @JAVA_HOME@
 JAVA_HOME_SET_FALSE = @JAVA_HOME_SET_FALSE@
@@ -800,7 +808,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
+ACLOCAL_AMFLAGS = -I . -I .. -I ../config -I libltdl
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
@@ -890,8 +898,10 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-libgcj_la_SOURCES = prims.cc jni.cc jvmti.cc exception.cc \
-	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
+@INTERPRETER_FALSE@libgcj_interpret_source_files = 
+@INTERPRETER_TRUE@libgcj_interpret_source_files = jvmti.cc interpret.cc
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
+	defineclass.cc verify.cc $(libgcj_interpret_source_files) \
 	$(nat_source_files) $(am__append_7) $(am__append_8) \
 	$(am__append_9) $(am__append_10) $(am__append_11) \
 	$(am__append_12) $(am__append_13) $(am__append_14)
@@ -7307,24 +7317,40 @@ sun_reflect_misc_source_files = \
 sun/reflect/misc/ReflectUtil.java
 
 sun_reflect_misc_header_files = $(patsubst %.java,%.h,$(sun_reflect_misc_source_files))
+@INTERPRETER_FALSE@interpreter_packages_source_files = 
+@INTERPRETER_TRUE@interpreter_packages_source_files = \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/event.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/event/filters.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/exception.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/id.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/processor.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/transport.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/util.list \
+@INTERPRETER_TRUE@  gnu/classpath/jdwp/value.list \
+@INTERPRETER_TRUE@  gnu/gcj/jvmti.list
+
+@INTERPRETER_FALSE@interpreter_header_files = 
+@INTERPRETER_TRUE@interpreter_header_files = \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_event_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_event_filters_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_exception_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_id_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_processor_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_transport_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_util_header_files) \
+@INTERPRETER_TRUE@  $(gnu_classpath_jdwp_value_header_files) \
+@INTERPRETER_TRUE@  $(gnu_gcj_jvmti_header_files)
+
 all_packages_source_files = \
   gnu/awt.list \
   gnu/awt/j2d.list \
   gnu/classpath.list \
   gnu/classpath/debug.list \
-  gnu/classpath/jdwp.list \
-  gnu/classpath/jdwp/event.list \
-  gnu/classpath/jdwp/event/filters.list \
-  gnu/classpath/jdwp/exception.list \
-  gnu/classpath/jdwp/id.list \
-  gnu/classpath/jdwp/processor.list \
-  gnu/classpath/jdwp/transport.list \
-  gnu/classpath/jdwp/util.list \
-  gnu/classpath/jdwp/value.list \
   gnu/gcj.list \
   gnu/gcj/convert.list \
   gnu/gcj/io.list \
-  gnu/gcj/jvmti.list \
   gnu/gcj/runtime.list \
   gnu/gcj/util.list \
   gnu/java/awt.list \
@@ -7558,26 +7584,17 @@ all_packages_source_files = \
   sun/misc.list \
   sun/reflect.list \
   sun/reflect/annotation.list \
-  sun/reflect/misc.list
+  sun/reflect/misc.list \
+  $(interpreter_packages_source_files)
 
 ordinary_header_files = \
   $(gnu_awt_header_files) \
   $(gnu_awt_j2d_header_files) \
   $(gnu_classpath_header_files) \
   $(gnu_classpath_debug_header_files) \
-  $(gnu_classpath_jdwp_header_files) \
-  $(gnu_classpath_jdwp_event_header_files) \
-  $(gnu_classpath_jdwp_event_filters_header_files) \
-  $(gnu_classpath_jdwp_exception_header_files) \
-  $(gnu_classpath_jdwp_id_header_files) \
-  $(gnu_classpath_jdwp_processor_header_files) \
-  $(gnu_classpath_jdwp_transport_header_files) \
-  $(gnu_classpath_jdwp_util_header_files) \
-  $(gnu_classpath_jdwp_value_header_files) \
   $(gnu_gcj_header_files) \
   $(gnu_gcj_convert_header_files) \
   $(gnu_gcj_io_header_files) \
-  $(gnu_gcj_jvmti_header_files) \
   $(gnu_gcj_runtime_header_files) \
   $(gnu_gcj_tools_gcj_dbtool_header_files) \
   $(gnu_gcj_util_header_files) \
@@ -7808,7 +7825,8 @@ ordinary_header_files = \
   $(sun_misc_header_files) \
   $(sun_reflect_header_files) \
   $(sun_reflect_annotation_header_files) \
-  $(sun_reflect_misc_header_files)
+  $(sun_reflect_misc_header_files) \
+  $(interpreter_header_files)
 
 bc_objects = \
   gnu-CORBA.lo \
@@ -8046,10 +8064,19 @@ grmiregistry_LDFLAGS = --main=gnu.classpath.tools.rmiregistry.Main \
 grmiregistry_LINK = $(GCJLINK)
 grmiregistry_LDADD = -L$(here)/.libs libgcj-tools.la
 grmiregistry_DEPENDENCIES = libgcj-tools.la
+@INTERPRETER_FALSE@nat_jdwp_source_files = 
+@INTERPRETER_TRUE@nat_jdwp_source_files = \
+@INTERPRETER_TRUE@gnu/classpath/jdwp/natVMFrame.cc \
+@INTERPRETER_TRUE@gnu/classpath/jdwp/natVMMethod.cc \
+@INTERPRETER_TRUE@gnu/classpath/jdwp/natVMVirtualMachine.cc
+
+@INTERPRETER_FALSE@nat_jvmti_source_files = 
+@INTERPRETER_TRUE@nat_jvmti_source_files = \
+@INTERPRETER_TRUE@gnu/gcj/jvmti/natBreakpoint.cc \
+@INTERPRETER_TRUE@gnu/gcj/jvmti/natNormalBreakpoint.cc
+
 nat_source_files = \
-gnu/classpath/jdwp/natVMFrame.cc \
-gnu/classpath/jdwp/natVMMethod.cc \
-gnu/classpath/jdwp/natVMVirtualMachine.cc \
+$(nat_jdwp_source_files) \
 gnu/classpath/natConfiguration.cc \
 gnu/classpath/natSystemProperties.cc \
 gnu/classpath/natVMStackWalker.cc \
@@ -8064,8 +8091,7 @@ gnu/gcj/convert/natOutput_EUCJIS.cc \
 gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
-gnu/gcj/jvmti/natBreakpoint.cc \
-gnu/gcj/jvmti/natNormalBreakpoint.cc \
+$(nat_jvmti_source_files) \
 gnu/gcj/runtime/natFinalizerThread.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
 gnu/gcj/runtime/natSystemClassLoader.cc \
@@ -9726,7 +9752,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/scripts
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../config $(distdir)/libltdl $(distdir)/scripts
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \

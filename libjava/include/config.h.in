@@ -46,6 +46,9 @@
 /* Define to 1 if you have the <bstring.h> header file. */
 #undef HAVE_BSTRING_H
 
+/* Define to 1 if the target assembler supports thread-local storage. */
+#undef HAVE_CC_TLS
+
 /* Define to 1 if you have the `chmod' function. */
 #undef HAVE_CHMOD
 
@@ -378,6 +381,10 @@
 /* Define to the name of the environment variable that determines the dynamic
    library search path. */
 #undef LTDL_SHLIBPATH_VAR
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Define if MinGW libgcj uses the Windows UNICODE OS API. */
 #undef MINGW_LIBGCJ_UNICODE

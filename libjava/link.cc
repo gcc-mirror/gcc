@@ -33,8 +33,10 @@ details.  */
 #include <limits.h>
 #include <java-cpool.h>
 #include <execution.h>
+#ifdef INTERPRETER
 #include <jvmti.h>
 #include "jvmti-int.h"
+#endif
 #include <java/lang/Class.h>
 #include <java/lang/String.h>
 #include <java/lang/StringBuffer.h>
@@ -853,7 +855,7 @@ _Jv_ThrowNoSuchMethodError ()
   throw new java::lang::NoSuchMethodError;
 }
 
-#if defined USE_LIBFFI && FFI_CLOSURES
+#if defined USE_LIBFFI && FFI_CLOSURES && defined(INTERPRETER)
 // A function whose invocation is prepared using libffi. It gets called
 // whenever a static method of a missing class is invoked. The data argument
 // holds a reference to a String denoting the missing class.
@@ -1039,7 +1041,7 @@ _Jv_Linker::find_iindex (jclass *ifaces, jshort *offsets, jshort num)
   return i;
 }
 
-#if defined USE_LIBFFI && FFI_CLOSURES
+#if defined USE_LIBFFI && FFI_CLOSURES && defined(INTERPRETER)
 // We use a structure of this type to store the closure that
 // represents a missing method.
 struct method_closure
@@ -2069,6 +2071,7 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
       throw new java::lang::LinkageError;
   }
 
+#ifdef INTERPRETER
   if (__builtin_expect (klass->state == JV_STATE_LINKED, false)
       && state >= JV_STATE_LINKED
       && JVMTI_REQUESTED_EVENT (ClassPrepare))
@@ -2077,4 +2080,5 @@ _Jv_Linker::wait_for_state (jclass klass, int state)
       _Jv_JVMTI_PostEvent (JVMTI_EVENT_CLASS_PREPARE, self, jni_env,
 			   klass);
     }
+#endif
 }
