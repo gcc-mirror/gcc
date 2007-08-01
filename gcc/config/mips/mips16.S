@@ -286,6 +286,10 @@ CMPSF (__mips16_lesf2, c.le.s, 0, 1)
 #ifdef L_m16ltsf2
 CMPSF (__mips16_ltsf2, c.lt.s, -1, 0)
 #endif
+#ifdef L_m16unordsf2
+CMPSF(__mips16_unordsf2, c.un.s, 1, 0)
+#endif
+
 
 /* Single-precision conversions.  */
 
@@ -297,6 +301,21 @@ STARTFN (__mips16_floatsisf)
 	ENDFN (__mips16_floatsisf)
 #endif
 
+#ifdef L_m16fltunsisf
+STARTFN (__mips16_floatunsisf)
+	bltz	$4,1f
+	j	__mips16_floatsisf
+1:		
+	and	$2,$4,1
+	srl	$3,$4,1
+	or	$2,$2,$3
+	mtc1	$2,RET
+	cvt.s.w	RET,RET
+	add.s	RET,RET,RET
+	MOVE_SF_RET (f, $31)
+	ENDFN (__mips16_floatunsisf)
+#endif
+	
 #ifdef L_m16fix_truncsfsi
 STARTFN (__mips16_fix_truncsfsi)
 	MOVE_SF_BYTE0 (t)
@@ -420,6 +439,9 @@ CMPDF (__mips16_ledf2, c.le.d, 0, 1)
 #ifdef L_m16ltdf2
 CMPDF (__mips16_ltdf2, c.lt.d, -1, 0)
 #endif
+#ifdef L_m16unorddf2
+CMPDF(__mips16_unorddf2, c.un.d, 1, 0)
+#endif
 
 /* Double-precision conversions.  */
 
@@ -430,7 +452,18 @@ STARTFN (__mips16_floatsidf)
 	MOVE_DF_RET (f, $31)
 	ENDFN (__mips16_floatsidf)
 #endif
-
+	
+#ifdef L_m16fltunsidf
+STARTFN (__mips16_floatunsidf)
+	MOVE_SI_BYTE0 (t)
+	cvt.d.w RET,ARG1
+	bgez	$4,1f
+	li.d	ARG1, 4.294967296e+9
+	add.d	RET, RET, ARG1
+1:	MOVE_DF_RET (f, $31)
+	ENDFN (__mips16_floatunsidf)
+#endif
+	
 #ifdef L_m16fix_truncdfsi
 STARTFN (__mips16_fix_truncdfsi)
 	MOVE_DF_BYTE0 (t)
