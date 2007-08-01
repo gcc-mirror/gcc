@@ -1,3 +1,9 @@
+2007-07-27  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* s-osinte-kfreebsd-gnu.ads ((sigset_t_ptr): Removed, replaced by 
+	anonymous access type.
+	(pthread_sigmask): Now take an access sigset_t.
+
 2007-07-05  Joel Sherrill <joel.sherrill@oarcorp.com>
 
         * s-osinte-rtems.ads: Correct prototype of pthread_sigmask.
