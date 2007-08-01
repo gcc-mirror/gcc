@@ -1,3 +1,7 @@
+2007-08-01  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.target/i386/pr23098.c: XFAIL on vxworks targets.
+
 2007-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR tree-optimization/32919
