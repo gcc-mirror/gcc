@@ -1,3 +1,10 @@
+2007-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR tree-optimization/32919
+	* tree-ssa-sccvn.c (visit_phi): Do not visit abnormal PHIs.
+	* tree-ssa-coalesce.c (ssa_conflicts_dump): New.
+	(coalesce_ssa_name): Call it.
+
 2007-08-01  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
