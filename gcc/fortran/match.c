@@ -2000,6 +2000,8 @@ gfc_match_allocate (void)
 
   if (stat != NULL)
     {
+      bool is_variable;
+
       if (stat->symtree->n.sym->attr.intent == INTENT_IN)
 	{
 	  gfc_error ("STAT variable '%s' of ALLOCATE statement at %C cannot "
@@ -2014,7 +2016,38 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
-      if (stat->symtree->n.sym->attr.flavor != FL_VARIABLE)
+      is_variable = false;
+      if (stat->symtree->n.sym->attr.flavor == FL_VARIABLE)
+	is_variable = true;
+      else if (stat->symtree->n.sym->attr.function
+	  && stat->symtree->n.sym->result == stat->symtree->n.sym
+	  && (gfc_current_ns->proc_name == stat->symtree->n.sym
+	      || (gfc_current_ns->parent
+		  && gfc_current_ns->parent->proc_name
+		     == stat->symtree->n.sym)))
+	is_variable = true;
+      else if (gfc_current_ns->entries
+	       && stat->symtree->n.sym->result == stat->symtree->n.sym)
+	{
+	  gfc_entry_list *el;
+	  for (el = gfc_current_ns->entries; el; el = el->next)
+	    if (el->sym == stat->symtree->n.sym)
+	      {
+		is_variable = true;
+	      }
+	}
+      else if (gfc_current_ns->parent && gfc_current_ns->parent->entries
+	       && stat->symtree->n.sym->result == stat->symtree->n.sym)
+	{
+	  gfc_entry_list *el;
+	  for (el = gfc_current_ns->parent->entries; el; el = el->next)
+	    if (el->sym == stat->symtree->n.sym)
+	      {
+		is_variable = true;
+	      }
+	}
+
+      if (!is_variable)
 	{
 	  gfc_error ("STAT expression at %C must be a variable");
 	  goto cleanup;
