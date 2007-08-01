@@ -1259,6 +1259,11 @@ visit_phi (tree phi)
   bool allsame = true;
   int i;
 
+  /* TODO: We could check for this in init_sccvn, and replace this
+     with a gcc_assert.  */
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)))
+    return set_ssa_val_to (PHI_RESULT (phi), PHI_RESULT (phi));
+
   /* See if all non-TOP arguments have the same value.  TOP is
      equivalent to everything, so we can ignore it.  */
   for (i = 0; i < PHI_NUM_ARGS (phi); i++)

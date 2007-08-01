@@ -1,3 +1,8 @@
+2007-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR tree-optimization/32919
+	* gcc.c-torture/compile/pr32919.c: New.
+
 2007-08-01  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/execute.exp: Change copyright header to

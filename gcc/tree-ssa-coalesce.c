@@ -589,6 +589,24 @@ ssa_conflicts_merge (ssa_conflicts_p ptr, unsigned x, unsigned y)
 }
 
 
+/* Dump a conflicts graph.  */
+
+static void
+ssa_conflicts_dump (FILE *file, ssa_conflicts_p ptr)
+{
+  unsigned x;
+
+  fprintf (file, "\nConflict graph:\n");
+
+  for (x = 0; x < ptr->size; x++)
+    if (ptr->conflicts[x])
+      {
+	fprintf (dump_file, "%d: ", x);
+	dump_bitmap (file, ptr->conflicts[x]);
+      }
+}
+
+
 /* This structure is used to efficiently record the current status of live 
    SSA_NAMES when building a conflict graph.  
    LIVE_BASE_VAR has a bit set for each base variable which has at least one
@@ -1302,6 +1320,8 @@ coalesce_ssa_name (void)
   /* Build a conflict graph.  */
   graph = build_ssa_conflict_graph (liveinfo);
   delete_tree_live_info (liveinfo);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    ssa_conflicts_dump (dump_file, graph);
 
   sort_coalesce_list (cl);
 
