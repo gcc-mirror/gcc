@@ -891,12 +891,7 @@ execute_function_todo (void *data)
   /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
     {
-      bool cleanup;
-
-      if (current_loops)
-	cleanup = cleanup_tree_cfg_loop ();
-      else
-	cleanup = cleanup_tree_cfg ();
+      bool cleanup = cleanup_tree_cfg ();
 
       if (cleanup && (cfun->curr_properties & PROP_ssa))
 	flags |= TODO_remove_unused_locals;
