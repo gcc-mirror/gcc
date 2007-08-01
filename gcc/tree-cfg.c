@@ -1274,9 +1274,10 @@ tree_merge_blocks (basic_block a, basic_block b)
       tree copy;
       bool may_replace_uses = may_propagate_copy (def, use);
 
-      /* In case we have loops to care about, do not propagate arguments of
-	 loop closed ssa phi nodes.  */
+      /* In case we maintain loop closed ssa form, do not propagate arguments
+	 of loop exit phi nodes.  */
       if (current_loops
+	  && (current_loops->state & LOOP_CLOSED_SSA)
 	  && is_gimple_reg (def)
 	  && TREE_CODE (use) == SSA_NAME
 	  && a->loop_father != b->loop_father)

@@ -1,5 +1,10 @@
 2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
 
+	* tree-cfg.c (tree_merge_blocks): Preserve loop exit phi nodes only
+	in loop closed ssa.
+
+2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
+
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Record that
 	the loop structures may need fixing.
 	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop, repair_loop_structures):
