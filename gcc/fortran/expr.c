@@ -693,6 +693,10 @@ static match
 check_specification_function (gfc_expr *e)
 {
   gfc_symbol *sym;
+
+  if (!e->symtree)
+    return MATCH_NO;
+
   sym = e->symtree->n.sym;
 
   /* F95, 7.1.6.2; F2003, 7.1.7  */

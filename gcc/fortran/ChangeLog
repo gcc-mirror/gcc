@@ -1,3 +1,9 @@
+2007-08-01  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32945
+	* expr.c (check_specification_function): Skip check if no symtree 
+	is available.
+
 2007-08-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31609
