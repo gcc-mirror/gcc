@@ -56,14 +56,11 @@ describe_cache (unsigned l1_sizekb, unsigned l1_line,
 		unsigned l1_assoc ATTRIBUTE_UNUSED)
 {
   char size[1000], line[1000];
-  unsigned size_in_lines;
 
   /* At the moment, gcc middle-end does not use the information about the
      associativity of the cache.  */
 
-  size_in_lines = (l1_sizekb * 1024) / l1_line;
-
-  sprintf (size, "--param l1-cache-size=%u", size_in_lines);
+  sprintf (size, "--param l1-cache-size=%u", l1_sizekb);
   sprintf (line, "--param l1-cache-line-size=%u", l1_line);
 
   return concat (size, " ", line, " ", NULL);

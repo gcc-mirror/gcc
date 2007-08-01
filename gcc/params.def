@@ -656,12 +656,12 @@ DEFPARAM (PARAM_SIMULTANEOUS_PREFETCHES,
 	  "The number of prefetches that can run at the same time",
 	  3, 0, 0)
 
-/* The size of L1 cache in number of cache lines.  */
+/* The size of L1 cache in kB.  */
 
 DEFPARAM (PARAM_L1_CACHE_SIZE,
 	  "l1-cache-size",
 	  "The size of L1 cache",
-	  1024, 0, 0)
+	  64, 0, 0)
 
 /* The size of L1 cache line in bytes.  */
 
@@ -669,6 +669,13 @@ DEFPARAM (PARAM_L1_CACHE_LINE_SIZE,
 	  "l1-cache-line-size",
 	  "The size of L1 cache line",
 	  32, 0, 0)
+
+/* The size of L2 cache in kB.  */
+
+DEFPARAM (PARAM_L2_CACHE_SIZE,
+	  "l2-cache-size",
+	  "The size of L2 cache",
+	  512, 0, 0)
 
 /* Whether we should use canonical types rather than deep "structural"
    type checking.  Setting this value to 1 (the default) improves

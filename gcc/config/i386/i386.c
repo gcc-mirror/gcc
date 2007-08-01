@@ -113,6 +113,8 @@ struct processor_costs size_cost = {	/* costs for tuning for size */
   {3, 3, 3},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  0,					/* size of l1 cache  */
+  0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
   2,					/* Branch cost */
@@ -171,6 +173,8 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   {4, 8, 16},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  0,					/* size of l1 cache  */
+  0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
   1,					/* Branch cost */
@@ -228,6 +232,10 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   {4, 8, 16},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  4,					/* size of l1 cache.  486 has 8kB cache
+					   shared for code and data, so 4kB is
+					   not really precise.  */
+  4,					/* size of l2 cache  */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
   1,					/* Branch cost */
@@ -285,6 +293,8 @@ struct processor_costs pentium_cost = {
   {4, 8, 16},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  8,					/* size of l1 cache.  */
+  8,					/* size of l2 cache  */
   0,					/* size of prefetch block */
   0,					/* number of parallel prefetches */
   2,					/* Branch cost */
@@ -342,6 +352,8 @@ struct processor_costs pentiumpro_cost = {
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  8,					/* size of l1 cache.  */
+  256,					/* size of l2 cache  */
   32,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
   2,					/* Branch cost */
@@ -407,6 +419,8 @@ struct processor_costs geode_cost = {
   {1, 1, 1},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   1,					/* MMX or SSE register to integer */
+  64,					/* size of l1 cache.  */
+  128,					/* size of l2 cache.  */
   32,					/* size of prefetch block */
   1,					/* number of parallel prefetches */
   1,					/* Branch cost */
@@ -464,6 +478,11 @@ struct processor_costs k6_cost = {
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   6,					/* MMX or SSE register to integer */
+  32,					/* size of l1 cache.  */
+  32,					/* size of l2 cache.  Some models
+					   have integrated l2 cache, but
+					   optimizing for k6 is not important
+					   enough to worry about that.  */
   32,					/* size of prefetch block */
   1,					/* number of parallel prefetches */
   1,					/* Branch cost */
@@ -521,6 +540,8 @@ struct processor_costs athlon_cost = {
   {4, 4, 5},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   5,					/* MMX or SSE register to integer */
+  64,					/* size of l1 cache.  */
+  256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
   5,					/* Branch cost */
@@ -581,6 +602,8 @@ struct processor_costs k8_cost = {
   {4, 4, 5},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   5,					/* MMX or SSE register to integer */
+  64,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   /* New AMD processors never drop prefetches; if they cannot be performed
      immediately, they are queued.  We set number of simultaneous prefetches
@@ -654,6 +677,8 @@ struct processor_costs amdfam10_cost = {
                                                                 1/1  1/1
 					    MOVD reg32, xmmreg 	Double	FADD 3
                                                                 1/1  1/1 */
+  64,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   /* New AMD processors never drop prefetches; if they cannot be performed
      immediately, they are queued.  We set number of simultaneous prefetches
@@ -721,6 +746,8 @@ struct processor_costs pentium4_cost = {
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   10,					/* MMX or SSE register to integer */
+  8,					/* size of l1 cache.  */
+  256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
   2,					/* Branch cost */
@@ -779,6 +806,8 @@ struct processor_costs nocona_cost = {
   {12, 12, 12},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   8,					/* MMX or SSE register to integer */
+  8,					/* size of l1 cache.  */
+  1024,					/* size of l2 cache.  */
   128,					/* size of prefetch block */
   8,					/* number of parallel prefetches */
   1,					/* Branch cost */
@@ -838,6 +867,8 @@ struct processor_costs core2_cost = {
   {4, 4, 4},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   2,					/* MMX or SSE register to integer */
+  32,					/* size of l1 cache.  */
+  2048,					/* size of l2 cache.  */
   128,					/* size of prefetch block */
   8,					/* number of parallel prefetches */
   3,					/* Branch cost */
@@ -903,6 +934,8 @@ struct processor_costs generic64_cost = {
   {8, 8, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   5,					/* MMX or SSE register to integer */
+  32,					/* size of l1 cache.  */
+  512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
   /* Benchmarks shows large regressions on K8 sixtrack benchmark when this value
@@ -963,6 +996,8 @@ struct processor_costs generic32_cost = {
   {8, 8, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   5,					/* MMX or SSE register to integer */
+  32,					/* size of l1 cache.  */
+  256,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
   3,					/* Branch cost */
@@ -2419,6 +2454,10 @@ override_options (void)
 		     ix86_cost->simultaneous_prefetches);
   if (!PARAM_SET_P (PARAM_L1_CACHE_LINE_SIZE))
     set_param_value ("l1-cache-line-size", ix86_cost->prefetch_block);
+  if (!PARAM_SET_P (PARAM_L1_CACHE_SIZE))
+    set_param_value ("l1-cache-size", ix86_cost->l1_cache_size);
+  if (!PARAM_SET_P (PARAM_L2_CACHE_SIZE))
+    set_param_value ("l2-cache-size", ix86_cost->l2_cache_size);
 }
 
 /* Return true if this goes in large data/bss.  */

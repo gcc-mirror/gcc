@@ -1,3 +1,25 @@
+2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
+
+	* doc/invoke.texi (l1-cache-size): Update documentation.
+	(l2-cache-size): Document.
+	* params.h (L2_CACHE_SIZE): New macro.
+	* tree-ssa-loop-prefetch.c (L1_CACHE_SIZE_BYTES): Reflect
+	that L1_CACHE_SIZE is in kB now.
+	(L2_CACHE_SIZE_BYTES): New macro.
+	(tree_ssa_prefetch_arrays): Show size in kB.
+	* config/i386/i386.h (struct processor_costs): Add l1_cache_size
+	and l2_cache_size fields.
+	* config/i386/driver-i386.c (describe_cache): Detect cache size
+	in kB.
+	* config/i386/i386.c (size_cost, i386_cost, i486_cost,pentium_cost,
+	pentiumpro_cost, geode_cost, k6_cost, athlon_cost, k8_cost,
+	amdfam10_cost, pentium4_cost, nocona_cost, core2_cost,
+	generic64_cost, generic32_cost): Add l1_cache_size and l2_cache_size.
+	(override_options): Set l1-cache-size and l2-cache-size to default
+	values if not specified otherwise.
+	* params.def (PARAM_L1_CACHE_SIZE): Change to set in kB.
+	(PARAM_L2_CACHE_SIZE): New.
+
 2007-08-01  Nigel Stephens  <nigel@mips.com>
 	    David Ung  <davidu@mips.com>
 	    Thiemo Seufer  <ths@mips.com>
