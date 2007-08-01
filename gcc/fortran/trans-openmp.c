@@ -1205,7 +1205,7 @@ gfc_trans_omp_sections (gfc_code *code, gfc_omp_clauses *clauses)
     }
   stmt = gfc_finish_block (&body);
 
-  stmt = build2_v (OMP_SECTIONS, stmt, omp_clauses);
+  stmt = build3_v (OMP_SECTIONS, stmt, omp_clauses, NULL_TREE);
   gfc_add_expr_to_block (&block, stmt);
 
   return gfc_finish_block (&block);

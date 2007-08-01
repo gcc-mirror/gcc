@@ -2010,6 +2010,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case OMP_CLAUSE:
     case OMP_RETURN:
     case OMP_CONTINUE:
+    case OMP_SECTIONS_SWITCH:
       break;
 
     /* We don't account constants for now.  Assume that the cost is amortized
