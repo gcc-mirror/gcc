@@ -1,3 +1,8 @@
+2007-08-01  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* reload.c (find_reloads_address_part):  Pass correct MEMREFLOC
+	argument to find_reloads_address.
+
 2007-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR tree-optimization/32919
@@ -8,7 +13,6 @@
 2007-08-01  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
-	gcc/
 	* config/mips/mips16.S (__mips16_unordsf2, __mips16_floatunsisf): New.
 	(__mips16_unorddf2, __mips16_floatunsidf): New.
 	* config/mips/mips.c (mips_init_libfuncs): Add optab entries for
