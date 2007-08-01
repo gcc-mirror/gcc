@@ -488,9 +488,6 @@ gfc_check_allocated (gfc_expr *array)
   if (variable_check (array, 0) == FAILURE)
     return FAILURE;
 
-  if (array_check (array, 0) == FAILURE)
-    return FAILURE;
-
   attr = gfc_variable_attr (array, NULL);
   if (!attr.allocatable)
     {
@@ -499,6 +496,9 @@ gfc_check_allocated (gfc_expr *array)
 		 &array->where);
       return FAILURE;
     }
+
+  if (array_check (array, 0) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }

@@ -1,3 +1,12 @@
+2007-08-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32936
+	* match.c (gfc_match_allocate): Better check that STAT is
+	a variable.
+
+	* check.c (gfc_check_allocated): Reorder checks to improve
+	error message.
+
 2007-08-01  Nick Clifton  <nickc@redhat.com>
 
 	* arith.c: Change copyright header to refer to version 3 of the
