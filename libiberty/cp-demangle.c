@@ -2912,6 +2912,12 @@ d_print_comp (struct d_print_info *dpi,
 	    typed_name = d_left (typed_name);
 	  }
 
+	if (typed_name == NULL)
+	  {
+	    d_print_error (dpi);
+	    return;
+	  }
+
 	/* If typed_name is a template, then it applies to the
 	   function type as well.  */
 	if (typed_name->type == DEMANGLE_COMPONENT_TEMPLATE)
