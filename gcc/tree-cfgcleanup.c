@@ -596,8 +596,8 @@ cleanup_tree_cfg_1 (void)
 /* Remove unreachable blocks and other miscellaneous clean up work.
    Return true if the flowgraph was modified, false otherwise.  */
 
-bool
-cleanup_tree_cfg (void)
+static bool
+cleanup_tree_cfg_noloop (void)
 {
   bool changed;
 
@@ -632,34 +632,47 @@ cleanup_tree_cfg (void)
 
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
+  if (changed && current_loops)
+    current_loops->state |= LOOPS_NEED_FIXUP;
+
   return changed;
+}
+
+/* Repairs loop structures.  */
+
+static void
+repair_loop_structures (void)
+{
+  bitmap changed_bbs = BITMAP_ALLOC (NULL);
+  fix_loop_structure (changed_bbs);
+
+  /* This usually does nothing.  But sometimes parts of cfg that originally
+     were inside a loop get out of it due to edge removal (since they
+     become unreachable by back edges from latch).  */
+  if ((current_loops->state & LOOP_CLOSED_SSA) != 0)
+    rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
+
+  BITMAP_FREE (changed_bbs);
+
+#ifdef ENABLE_CHECKING
+  verify_loop_structure ();
+#endif
+  scev_reset ();
+
+  current_loops->state &= ~LOOPS_NEED_FIXUP;
 }
 
 /* Cleanup cfg and repair loop structures.  */
 
 bool
-cleanup_tree_cfg_loop (void)
+cleanup_tree_cfg (void)
 {
-  bool changed = cleanup_tree_cfg ();
+  bool changed = cleanup_tree_cfg_noloop ();
 
-  if (changed && current_loops != NULL)
-    {
-      bitmap changed_bbs = BITMAP_ALLOC (NULL);
-      fix_loop_structure (changed_bbs);
+  if (current_loops != NULL
+      && (current_loops->state & LOOPS_NEED_FIXUP))
+    repair_loop_structures ();
 
-      /* This usually does nothing.  But sometimes parts of cfg that originally
-	 were inside a loop get out of it due to edge removal (since they
-	 become unreachable by back edges from latch).  */
-      if ((current_loops->state & LOOP_CLOSED_SSA) != 0)
-	rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
-
-      BITMAP_FREE (changed_bbs);
-
-#ifdef ENABLE_CHECKING
-      verify_loop_structure ();
-#endif
-      scev_reset ();
-    }
   return changed;
 }
 

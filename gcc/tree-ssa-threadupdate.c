@@ -1076,6 +1076,9 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   VEC_free (edge, heap, threaded_edges);
   threaded_edges = NULL;
 
+  if (retval)
+    current_loops->state |= LOOPS_NEED_FIXUP;
+
   return retval;
 }
 

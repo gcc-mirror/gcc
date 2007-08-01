@@ -1,5 +1,20 @@
 2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
 
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Record that
+	the loop structures may need fixing.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop, repair_loop_structures):
+	New functions.
+	(cleanup_tree_cfg_loop): Removed.
+	(cleanup_tree_cfg): If loops need fixing, call repair_loop_structures.
+	* tree-predcom.c (tree_predictive_commoning): Return TODO_cleanup_cfg
+	instead of running cleanup_tree_cfg_loop.
+	* cfgloop.h (LOOPS_NEED_FIXUP): New constant.
+	* tree-flow.h (cleanup_tree_cfg_loop): Declaration removed.
+	(tree_predictive_commoning): Declaration changed.
+	* passes.c (execute_function_todo): Do not use cleanup_tree_cfg_loop.
+
+2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
+
 	* doc/invoke.texi (l1-cache-size): Update documentation.
 	(l2-cache-size): Document.
 	* params.h (L2_CACHE_SIZE): New macro.

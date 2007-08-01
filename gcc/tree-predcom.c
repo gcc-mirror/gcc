@@ -2582,12 +2582,13 @@ end: ;
 
 /* Runs predictive commoning.  */
 
-void
+unsigned
 tree_predictive_commoning (void)
 {
   bool unrolled = false;
   struct loop *loop;
   loop_iterator li;
+  unsigned ret = 0;
 
   initialize_original_copy_tables ();
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
@@ -2598,7 +2599,9 @@ tree_predictive_commoning (void)
   if (unrolled)
     {
       scev_reset ();
-      cleanup_tree_cfg_loop ();
+      ret = TODO_cleanup_cfg;
     }
   free_original_copy_tables ();
+
+  return ret;
 }
