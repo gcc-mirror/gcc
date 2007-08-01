@@ -1,3 +1,7 @@
+2007-07-31  Michael Snyder  <msnyder@access-company.com>
+
+	* cp-demangle.c (d_print_comp): Guard against null.
+
 2007-07-25  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (CFILES): Remove ternary.c.
