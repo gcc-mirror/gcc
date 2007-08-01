@@ -124,6 +124,8 @@ struct processor_costs {
 				   in SImode, DImode and TImode*/
   const int mmxsse_to_integer;	/* cost of moving mmxsse register to
 				   integer and vice versa.  */
+  const int l1_cache_size;	/* size of l1 cache, in kilobytes.  */
+  const int l2_cache_size;	/* size of l2 cache, in kilobytes.  */
   const int prefetch_block;	/* bytes moved to cache for prefetch.  */
   const int simultaneous_prefetches; /* number of parallel prefetch
 				   operations.  */

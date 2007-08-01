@@ -166,9 +166,8 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_prefetch 0
 #endif
 
-#define L1_CACHE_SIZE_BYTES ((unsigned) (L1_CACHE_SIZE * L1_CACHE_LINE_SIZE))
-/* TODO:  Add parameter to specify L2 cache size.  */
-#define L2_CACHE_SIZE_BYTES (8 * L1_CACHE_SIZE_BYTES)
+#define L1_CACHE_SIZE_BYTES ((unsigned) (L1_CACHE_SIZE * 1024))
+#define L2_CACHE_SIZE_BYTES ((unsigned) (L2_CACHE_SIZE * 1024))
 
 /* We consider a memory access nontemporal if it is not reused sooner than
    after L2_CACHE_SIZE_BYTES of memory are accessed.  However, we ignore
@@ -1549,10 +1548,10 @@ tree_ssa_prefetch_arrays (void)
 	       SIMULTANEOUS_PREFETCHES);
       fprintf (dump_file, "    prefetch latency: %d\n", PREFETCH_LATENCY);
       fprintf (dump_file, "    prefetch block size: %d\n", PREFETCH_BLOCK);
-      fprintf (dump_file, "    L1 cache size: %d lines, %d bytes\n",
-	       L1_CACHE_SIZE, L1_CACHE_SIZE_BYTES);
+      fprintf (dump_file, "    L1 cache size: %d lines, %d kB\n",
+	       L1_CACHE_SIZE_BYTES / L1_CACHE_LINE_SIZE, L1_CACHE_SIZE);
       fprintf (dump_file, "    L1 cache line size: %d\n", L1_CACHE_LINE_SIZE);
-      fprintf (dump_file, "    L2 cache size: %d bytes\n", L2_CACHE_SIZE_BYTES);
+      fprintf (dump_file, "    L2 cache size: %d kB\n", L2_CACHE_SIZE);
       fprintf (dump_file, "\n");
     }
 

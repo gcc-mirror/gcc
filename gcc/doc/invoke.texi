@@ -6958,7 +6958,10 @@ Maximum number of prefetches that can run at the same time.
 The size of cache line in L1 cache, in bytes.
 
 @item l1-cache-size
-The number of cache lines in L1 cache.
+The size of L1 cache, in kilobytes.
+
+@item l2-cache-size
+The size of L2 cache, in kilobytes.
 
 @item use-canonical-types
 Whether the compiler should use the ``canonical'' type system.  By
