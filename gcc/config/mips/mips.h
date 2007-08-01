@@ -328,163 +328,192 @@ extern const struct mips_rtx_cost_data *mips_cost;
   while (0)
 
 /* Target CPU builtins.  */
-#define TARGET_CPU_CPP_BUILTINS()				\
-  do								\
-    {								\
-      /* Everyone but IRIX defines this to mips.  */            \
-      if (!TARGET_IRIX)                                         \
-        builtin_assert ("machine=mips");                        \
-                                                                \
-      builtin_assert ("cpu=mips");				\
-      builtin_define ("__mips__");     				\
-      builtin_define ("_mips");					\
-								\
-      /* We do this here because __mips is defined below	\
-	 and so we can't use builtin_define_std.  */		\
-      if (!flag_iso)						\
-	builtin_define ("mips");				\
-								\
-      if (TARGET_64BIT)						\
-	builtin_define ("__mips64");				\
-								\
-      if (!TARGET_IRIX)						\
-	{							\
-	  /* Treat _R3000 and _R4000 like register-size		\
-	     defines, which is how they've historically		\
-	     been used.  */					\
-	  if (TARGET_64BIT)					\
-	    {							\
-	      builtin_define_std ("R4000");			\
-	      builtin_define ("_R4000");			\
-	    }							\
-	  else							\
-	    {							\
-	      builtin_define_std ("R3000");			\
-	      builtin_define ("_R3000");			\
-	    }							\
-	}							\
-      if (TARGET_FLOAT64)					\
-	builtin_define ("__mips_fpr=64");			\
-      else							\
-	builtin_define ("__mips_fpr=32");			\
-								\
-      if (TARGET_MIPS16)					\
-	builtin_define ("__mips16");				\
-								\
-      if (TARGET_MIPS3D)					\
-	builtin_define ("__mips3d");				\
-                                                                \
-      if (TARGET_SMARTMIPS)					\
-	builtin_define ("__mips_smartmips");			\
-								\
-      if (TARGET_DSP)						\
-	{							\
-	  builtin_define ("__mips_dsp");			\
-	  if (TARGET_DSPR2)					\
-	    {							\
-	      builtin_define ("__mips_dspr2");			\
-	      builtin_define ("__mips_dsp_rev=2");		\
-	    }							\
-	  else							\
-	    builtin_define ("__mips_dsp_rev=1");		\
-	}							\
-								\
-      MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);	\
-      MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);	\
-								\
-      if (ISA_MIPS1)						\
-	{							\
-	  builtin_define ("__mips=1");				\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS1");		\
-	}							\
-      else if (ISA_MIPS2)					\
-	{							\
-	  builtin_define ("__mips=2");				\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS2");		\
-	}							\
-      else if (ISA_MIPS3)					\
-	{							\
-	  builtin_define ("__mips=3");				\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS3");		\
-	}							\
-      else if (ISA_MIPS4)					\
-	{							\
-	  builtin_define ("__mips=4");				\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS4");		\
-	}							\
-      else if (ISA_MIPS32)					\
-	{							\
-	  builtin_define ("__mips=32");				\
-	  builtin_define ("__mips_isa_rev=1");			\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");	\
-	}							\
-      else if (ISA_MIPS32R2)					\
-	{							\
-	  builtin_define ("__mips=32");				\
-	  builtin_define ("__mips_isa_rev=2");			\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");	\
-	}							\
-      else if (ISA_MIPS64)					\
-	{							\
-	  builtin_define ("__mips=64");				\
-	  builtin_define ("__mips_isa_rev=1");			\
-	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");	\
-	}							\
-								\
-      /* These defines reflect the ABI in use, not whether the  \
-	 FPU is directly accessible.  */			\
-      if (TARGET_HARD_FLOAT_ABI)				\
-	builtin_define ("__mips_hard_float");			\
-      else							\
-	builtin_define ("__mips_soft_float");			\
-								\
-      if (TARGET_SINGLE_FLOAT)					\
-	builtin_define ("__mips_single_float");			\
-								\
-      if (TARGET_PAIRED_SINGLE_FLOAT)				\
-	builtin_define ("__mips_paired_single_float");		\
-								\
-      if (TARGET_BIG_ENDIAN)					\
-	{							\
-	  builtin_define_std ("MIPSEB");			\
-	  builtin_define ("_MIPSEB");				\
-	}							\
-      else							\
-	{							\
-	  builtin_define_std ("MIPSEL");			\
-	  builtin_define ("_MIPSEL");				\
-	}							\
-								\
-        /* Macros dependent on the C dialect.  */		\
-      if (preprocessing_asm_p ())				\
-	{							\
-          builtin_define_std ("LANGUAGE_ASSEMBLY");		\
-	  builtin_define ("_LANGUAGE_ASSEMBLY");		\
-	}							\
-      else if (c_dialect_cxx ())				\
-        {							\
-	  builtin_define ("_LANGUAGE_C_PLUS_PLUS");		\
-          builtin_define ("__LANGUAGE_C_PLUS_PLUS");		\
-          builtin_define ("__LANGUAGE_C_PLUS_PLUS__");		\
-        }							\
-      else							\
-	{							\
-          builtin_define_std ("LANGUAGE_C");			\
-	  builtin_define ("_LANGUAGE_C");			\
-	}							\
-      if (c_dialect_objc ())					\
-        {							\
-	  builtin_define ("_LANGUAGE_OBJECTIVE_C");		\
-          builtin_define ("__LANGUAGE_OBJECTIVE_C");		\
-	  /* Bizarre, but needed at least for Irix.  */		\
-	  builtin_define_std ("LANGUAGE_C");			\
-	  builtin_define ("_LANGUAGE_C");			\
-        }							\
-								\
-      if (mips_abi == ABI_EABI)					\
-	builtin_define ("__mips_eabi");				\
-								\
-} while (0)
+#define TARGET_CPU_CPP_BUILTINS()					\
+  do									\
+    {									\
+      /* Everyone but IRIX defines this to mips.  */            	\
+      if (!TARGET_IRIX)                                         	\
+	builtin_assert ("machine=mips");                        	\
+									\
+      builtin_assert ("cpu=mips");					\
+      builtin_define ("__mips__");     					\
+      builtin_define ("_mips");						\
+									\
+      /* We do this here because __mips is defined below		\
+	 and so we can't use builtin_define_std.  */			\
+      if (!flag_iso)							\
+	builtin_define ("mips");					\
+									\
+      if (TARGET_64BIT)							\
+	builtin_define ("__mips64");					\
+									\
+      if (!TARGET_IRIX)							\
+	{								\
+	  /* Treat _R3000 and _R4000 like register-size			\
+	     defines, which is how they've historically			\
+	     been used.  */						\
+	  if (TARGET_64BIT)						\
+	    {								\
+	      builtin_define_std ("R4000");				\
+	      builtin_define ("_R4000");				\
+	    }								\
+	  else								\
+	    {								\
+	      builtin_define_std ("R3000");				\
+	      builtin_define ("_R3000");				\
+	    }								\
+	}								\
+      if (TARGET_FLOAT64)						\
+	builtin_define ("__mips_fpr=64");				\
+      else								\
+	builtin_define ("__mips_fpr=32");				\
+									\
+      if (TARGET_MIPS16)						\
+	builtin_define ("__mips16");					\
+									\
+      if (TARGET_MIPS3D)						\
+	builtin_define ("__mips3d");					\
+									\
+      if (TARGET_SMARTMIPS)						\
+	builtin_define ("__mips_smartmips");				\
+									\
+      if (TARGET_DSP)							\
+	{								\
+	  builtin_define ("__mips_dsp");				\
+	  if (TARGET_DSPR2)						\
+	    {								\
+	      builtin_define ("__mips_dspr2");				\
+	      builtin_define ("__mips_dsp_rev=2");			\
+	    }								\
+	  else								\
+	    builtin_define ("__mips_dsp_rev=1");			\
+	}								\
+									\
+      MIPS_CPP_SET_PROCESSOR ("_MIPS_ARCH", mips_arch_info);		\
+      MIPS_CPP_SET_PROCESSOR ("_MIPS_TUNE", mips_tune_info);		\
+									\
+      if (ISA_MIPS1)							\
+	{								\
+	  builtin_define ("__mips=1");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS1");			\
+	}								\
+      else if (ISA_MIPS2)						\
+	{								\
+	  builtin_define ("__mips=2");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS2");			\
+	}								\
+      else if (ISA_MIPS3)						\
+	{								\
+	  builtin_define ("__mips=3");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS3");			\
+	}								\
+      else if (ISA_MIPS4)						\
+	{								\
+	  builtin_define ("__mips=4");					\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS4");			\
+	}								\
+      else if (ISA_MIPS32)						\
+	{								\
+	  builtin_define ("__mips=32");					\
+	  builtin_define ("__mips_isa_rev=1");				\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");		\
+	}								\
+      else if (ISA_MIPS32R2)						\
+	{								\
+	  builtin_define ("__mips=32");					\
+	  builtin_define ("__mips_isa_rev=2");				\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS32");		\
+	}								\
+      else if (ISA_MIPS64)						\
+	{								\
+	  builtin_define ("__mips=64");					\
+	  builtin_define ("__mips_isa_rev=1");				\
+	  builtin_define ("_MIPS_ISA=_MIPS_ISA_MIPS64");		\
+	}								\
+									\
+      switch (mips_abi)							\
+	{								\
+	case ABI_32:							\
+	  builtin_define ("_ABIO32=1");					\
+	  builtin_define ("_MIPS_SIM=_ABIO32");				\
+	  break;							\
+									\
+	case ABI_N32:							\
+	  builtin_define ("_ABIN32=2");					\
+	  builtin_define ("_MIPS_SIM=_ABIN32");				\
+	  break;							\
+									\
+	case ABI_64:							\
+	  builtin_define ("_ABI64=3");					\
+	  builtin_define ("_MIPS_SIM=_ABI64");				\
+	  break;							\
+									\
+	case ABI_O64:							\
+	  builtin_define ("_ABIO64=4");					\
+	  builtin_define ("_MIPS_SIM=_ABIO64");				\
+	  break;							\
+	}								\
+									\
+      builtin_define_with_int_value ("_MIPS_SZINT", INT_TYPE_SIZE);	\
+      builtin_define_with_int_value ("_MIPS_SZLONG", LONG_TYPE_SIZE);	\
+      builtin_define_with_int_value ("_MIPS_SZPTR", POINTER_SIZE);	\
+      builtin_define_with_int_value ("_MIPS_FPSET",			\
+				     32 / MAX_FPRS_PER_FMT);		\
+									\
+      /* These defines reflect the ABI in use, not whether the  	\
+	 FPU is directly accessible.  */				\
+      if (TARGET_HARD_FLOAT_ABI)					\
+	builtin_define ("__mips_hard_float");				\
+      else								\
+	builtin_define ("__mips_soft_float");				\
+									\
+      if (TARGET_SINGLE_FLOAT)						\
+	builtin_define ("__mips_single_float");				\
+									\
+      if (TARGET_PAIRED_SINGLE_FLOAT)					\
+	builtin_define ("__mips_paired_single_float");			\
+									\
+      if (TARGET_BIG_ENDIAN)						\
+	{								\
+	  builtin_define_std ("MIPSEB");				\
+	  builtin_define ("_MIPSEB");					\
+	}								\
+      else								\
+	{								\
+	  builtin_define_std ("MIPSEL");				\
+	  builtin_define ("_MIPSEL");					\
+	}								\
+									\
+      /* Macros dependent on the C dialect.  */				\
+      if (preprocessing_asm_p ())					\
+	{								\
+	  builtin_define_std ("LANGUAGE_ASSEMBLY");			\
+	  builtin_define ("_LANGUAGE_ASSEMBLY");			\
+	}								\
+      else if (c_dialect_cxx ())					\
+	{								\
+	  builtin_define ("_LANGUAGE_C_PLUS_PLUS");			\
+	  builtin_define ("__LANGUAGE_C_PLUS_PLUS");			\
+	  builtin_define ("__LANGUAGE_C_PLUS_PLUS__");			\
+	}								\
+      else								\
+	{								\
+	  builtin_define_std ("LANGUAGE_C");				\
+	  builtin_define ("_LANGUAGE_C");				\
+	}								\
+      if (c_dialect_objc ())						\
+	{								\
+	  builtin_define ("_LANGUAGE_OBJECTIVE_C");			\
+	  builtin_define ("__LANGUAGE_OBJECTIVE_C");			\
+	  /* Bizarre, but needed at least for Irix.  */			\
+	  builtin_define_std ("LANGUAGE_C");				\
+	  builtin_define ("_LANGUAGE_C");				\
+	}								\
+									\
+      if (mips_abi == ABI_EABI)						\
+	builtin_define ("__mips_eabi");					\
+    }									\
+  while (0)
 
 /* Default target_flags if no switches are specified  */
 
@@ -591,7 +620,8 @@ extern const struct mips_rtx_cost_data *mips_cost;
 #define MIPS_ARCH_OPTION_SPEC \
   MIPS_ISA_LEVEL_OPTION_SPEC "|march=*"
 
-/* A spec that infers a -mips argument from an -march argument.  */
+/* A spec that infers a -mips argument from an -march argument,
+   or injects the default if no architecture is specified.  */
 
 #define MIPS_ISA_LEVEL_SPEC \
   "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: \
@@ -602,7 +632,14 @@ extern const struct mips_rtx_cost_data *mips_cost;
      %{march=mips32|march=4kc|march=4km|march=4kp|march=4ksc:-mips32} \
      %{march=mips32r2|march=m4k|march=4ke*|march=4ksd|march=24k* \
        |march=34k*|march=74k*: -mips32r2} \
-     %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000: -mips64}}"
+     %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000: -mips64} \
+     %{!march=*: -" MULTILIB_ISA_DEFAULT "}}"
+
+/* A spec condition that matches 32-bit options.  It only works if
+   MIPS_ISA_LEVEL_SPEC has been applied.  */
+
+#define MIPS_32BIT_OPTION_SPEC \
+  "mips1|mips2|mips32*|mgp32"
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march is specified or a -mips is specified

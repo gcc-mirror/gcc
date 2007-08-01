@@ -1,3 +1,36 @@
+2007-08-01  Nigel Stephens  <nigel@mips.com>
+	    David Ung  <davidu@mips.com>
+	    Thiemo Seufer  <ths@mips.com>
+	    Chris Dearman  <chris@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (mips*-sde-elf*): New stanza.
+	(mipsisa32-*-elf*, mipsisa32el-*-elf*, mipsisa32r2-*-elf*)
+	(mipsisa32r2el-*-elf*, mipsisa64-*-elf*, mipsisa64el-*-elf*)
+	(mipsisa64sb1-*-elf*, mipsisa64sb1el-*-elf*, mips-*-elf*)
+	(mipsel-*-elf*, mips64-*-elf*, mips64el-*-elf*, mips64orion-*-elf*)
+	(mips64orionel-*-elf*, mips*-*-rtems*, mips-wrs-windiss)
+	(mipstx39-*-elf*, mipstx39el-*-elf*): Add mips/t-libgcc-mips16
+	to tmake_file.
+	* config/mips/sde.h: New file.
+	* config/mips/t-libgcc-mips16: Likewise.
+	* config/mips/t-sde: Likewise.
+	* config/mips/linux.h (TARGET_OS_CPP_BUILTINS): Remove settings
+	of _ABIN32, _ABI64, _ABIO32, _MIPS_SIM, _MIPS_SZLONG, _MIPS_SZPTR,
+	_MIPS_FPSET and _MIPS_SZINT.
+	* config/mips/iris.h (TARGET_OS_CPP_BUILTINS): Likewise.
+	* config/mips/elfoabi.h (DRIVER_SELF_SPECS): Remove separate
+	insertion of a default -mips option.  Use MIPS_32BIT_OPTION_SPEC.
+	* config/mips/t-isa3264 (LIB1ASMSRC, LIB1ASMFUNCS): Delete.
+	* config/mips/t-r3900 (LIB1ASMSRC, LIB1ASMFUNCS): Likewise.
+	* config/mips/t-elf (LIB1ASMSRC, LIB1ASMFUNCS): Likewise.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUITINS): Define _ABIO32,
+	_ABIN32, _ABI64, _ABIO64, _MIPS_SIM, _MIPS_SZINT, _MIPS_SZLONG,
+	_MIPS_SZPTR and _MIPS_FPSET.
+	(MIPS_ISA_LEVEL_SPEC): Inject the default -mips option if no
+	architecture is specified.
+	(MIPS_32BIT_OPTION_SPEC): New macro.
+
 2007-07-31  Dan Hipschman  <dsh@google.com>
 
 	* gcc.c (end_going_arg): New function.

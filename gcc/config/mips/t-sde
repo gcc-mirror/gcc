@@ -11,25 +11,27 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/mips/crtn.asm
 
 # We must build libgcc2.a with -G 0, in case the user wants to link
-# without the $gp register.
-TARGET_LIBGCC2_CFLAGS = -G 0
+# without the $gp register. Use -fno-optimize-sibling-calls in case
+# we have a mixed mips16/non-mips16 environment where a plain "jump"
+# instuction won't work across the divide (no jx instruction).
+TARGET_LIBGCC2_CFLAGS = -G 0 -fno-optimize-sibling-calls
 
-# Build the libraries for both hard and soft floating point
-
-ifneq ($(filter MIPS_ABI_DEFAULT=ABI_EABI,$(tm_defines)),)
-MULTILIB_OPTIONS = msoft-float EL/EB mips32/mips32r2/mips64
-MULTILIB_DIRNAMES = soft-float el eb mips32 mips32r2 mips64
-else
-MULTILIB_OPTIONS = msoft-float/mfp64 EL/EB mips32/mips32r2/mips64
-MULTILIB_DIRNAMES = soft-float fp64 el eb mips32 mips32r2 mips64
-ifneq ($(filter MIPS_ISA_DEFAULT=33,$(tm_defines)),)
-MULTILIB_EXCLUSIONS = mips32/mfp64 mips64/mfp64
-else
-MULTILIB_EXCLUSIONS = !mips32r2/mfp64
-endif
-endif
+MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64 mips16 msoft-float/mfp64
+MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips16 sof f64
 MULTILIB_MATCHES = EL=mel EB=meb
+
+# The -mfp64 option is only valid in conjunction with -mips32r2.
+ifneq ($(filter MIPS_ISA_DEFAULT=33,$(tm_defines)),)
+MULTILIB_EXCLUSIONS := mips32/mfp64 mips64/mfp64
+else
+MULTILIB_EXCLUSIONS := !mips32r2/mfp64
+endif
+
+# Don't build 64-bit MIPS16 multilibs.
+MULTILIB_EXCLUSIONS += mips16/mips64
+
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
+# Build the multilibs.
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

@@ -21,19 +21,14 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #define DRIVER_SELF_SPECS						\
-  /* Infer a -mips option from a -march option.  This makes		\
-     -march pick the right multilib, and also makes the later		\
-     specs easier to write.  */						\
+  /* Make sure a -mips option is present.  This helps us to pick	\
+     the right multilib, and also makes the later specs easier		\
+     to write.  */							\
   MIPS_ISA_LEVEL_SPEC,							\
-									\
-  /* If no architecture option is specified, force the default to	\
-     be listed explicitly.  This too makes later specs easier to	\
-     write.  */							       	\
-  "%{" MIPS_ISA_LEVEL_OPTION_SPEC ":;: -" MULTILIB_ISA_DEFAULT "}",	\
 									\
   /* If no ABI option is specified, infer one from the ISA level	\
      or -mgp setting.  */						\
-  "%{!mabi=*: %{mips1|mips2|mips32*|mgp32: -mabi=32;: -mabi=o64}}",	\
+  "%{!mabi=*: %{" MIPS_32BIT_OPTION_SPEC ": -mabi=32;: -mabi=o64}}"	\
 									\
   /* Remove a redundant -mfp64 for -mabi=o64; we want the !mfp64	\
      multilibs.  There's no need to check whether the architecture	\
