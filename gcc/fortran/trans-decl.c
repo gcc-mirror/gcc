@@ -2998,17 +2998,17 @@ generate_local_decl (gfc_symbol * sym)
       else if (warn_unused_variable
 	       && sym->attr.dummy
 	       && sym->attr.intent == INTENT_OUT)
-	gfc_warning ("dummy argument '%s' at %L was declared INTENT(OUT) but was not set",
+	gfc_warning ("Dummy argument '%s' at %L was declared INTENT(OUT) but was not set",
 		     sym->name, &sym->declared_at);
       /* Specific warning for unused dummy arguments. */
       else if (warn_unused_variable && sym->attr.dummy)
-	gfc_warning ("unused dummy argument '%s' at %L", sym->name,
+	gfc_warning ("Unused dummy argument '%s' at %L", sym->name,
 		     &sym->declared_at);
       /* Warn for unused variables, but not if they're inside a common
 	 block or are use-associated.  */
       else if (warn_unused_variable
 	       && !(sym->attr.in_common || sym->attr.use_assoc))
-	gfc_warning ("unused variable '%s' declared at %L", sym->name,
+	gfc_warning ("Unused variable '%s' declared at %L", sym->name,
 		     &sym->declared_at);
       /* For variable length CHARACTER parameters, the PARM_DECL already
 	 references the length variable, so force gfc_get_symbol_decl
@@ -3031,10 +3031,10 @@ generate_local_decl (gfc_symbol * sym)
     }
   else if (sym->attr.flavor == FL_PARAMETER)
     {
-      if (warn_unused_variable 
+      if (warn_unused_parameter
            && !sym->attr.referenced
            && !sym->attr.use_assoc)
-	gfc_warning ("unused parameter '%s' declared at %L", sym->name,
+	gfc_warning ("Unused parameter '%s' declared at %L", sym->name,
 		     &sym->declared_at);
     }
 

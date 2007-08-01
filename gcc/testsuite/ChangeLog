@@ -1,5 +1,10 @@
 2007-08-01  Daniel Franke  <franke.daniel@gmail.com>
 
+	* gfortran.dg/parameter_unused.f90: Adjusted dg-options and
+	error message text.
+
+2007-08-01  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32945
 	* gfortran.dg/initialization_12.f90: New test.
 

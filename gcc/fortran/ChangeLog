@@ -1,5 +1,13 @@
 2007-08-01  Daniel Franke  <franke.daniel@gmail.com>
 
+	* trans-decl.c (generate_local_decl): Emit warning on unused parameter
+	on "-Wall -Wextra" or "-Wunused-parameter" but not on "-Wall", changed
+	messages that start with lower case to upper case.
+	* invoke.texi (-Wparameter-unused): Document differences between gcc
+	and gfortran regarding this option.
+
+2007-08-01  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32945
 	* expr.c (check_specification_function): Skip check if no symtree 
 	is available.

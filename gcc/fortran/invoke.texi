@@ -130,7 +130,7 @@ and warnings}.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -Wall  -Waliasing  -Wampersand  -Wcharacter-truncation  -Wconversion @gol
 -Wimplicit-interface  -Wline-truncation  -Wnonstd-intrinsics  -Wsurprising @gol
--Wno-tabs  -Wunderflow}
+-Wno-tabs  -Wunderflow -Wunused-parameter}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
@@ -487,6 +487,16 @@ for @option{-pedantic}, @option{-std=f95}, @option{-std=f2003}, and
 @cindex underflow
 Produce a warning when numerical constant expressions are
 encountered, which yield an UNDERFLOW during compilation.
+
+@item -Wunused-parameter
+@opindex @code{Wunused-parameter}
+@cindex warnings, unused parameter
+@cindex unused parameter
+Contrary to @command{gcc}'s meaning of @option{-Wunused-parameter},
+@command{gfortran}'s implementation of this option does not warn
+about unused dummy arguments, but about unused @code{PARAMETER} values.
+@option{-Wunused-parameter} is not included in @option{-Wall} but is
+implied by @option{-Wall -Wextra}.
 
 @item -Werror
 @opindex @code{Werror}
