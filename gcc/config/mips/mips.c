@@ -10115,9 +10115,11 @@ mips_init_libfuncs (void)
       set_optab_libfunc (ge_optab, SFmode, "__mips16_gesf2");
       set_optab_libfunc (lt_optab, SFmode, "__mips16_ltsf2");
       set_optab_libfunc (le_optab, SFmode, "__mips16_lesf2");
+      set_optab_libfunc (unord_optab, SFmode, "__mips16_unordsf2");
 
       set_conv_libfunc (sfix_optab, SImode, SFmode, "__mips16_fix_truncsfsi");
       set_conv_libfunc (sfloat_optab, SFmode, SImode, "__mips16_floatsisf");
+      set_conv_libfunc (ufloat_optab, SFmode, SImode, "__mips16_floatunsisf");
 
       if (TARGET_DOUBLE_FLOAT)
 	{
@@ -10132,12 +10134,14 @@ mips_init_libfuncs (void)
 	  set_optab_libfunc (ge_optab, DFmode, "__mips16_gedf2");
 	  set_optab_libfunc (lt_optab, DFmode, "__mips16_ltdf2");
 	  set_optab_libfunc (le_optab, DFmode, "__mips16_ledf2");
+	  set_optab_libfunc (unord_optab, DFmode, "__mips16_unorddf2");
 
 	  set_conv_libfunc (sext_optab, DFmode, SFmode, "__mips16_extendsfdf2");
 	  set_conv_libfunc (trunc_optab, SFmode, DFmode, "__mips16_truncdfsf2");
 
 	  set_conv_libfunc (sfix_optab, SImode, DFmode, "__mips16_fix_truncdfsi");
 	  set_conv_libfunc (sfloat_optab, DFmode, SImode, "__mips16_floatsidf");
+	  set_conv_libfunc (ufloat_optab, DFmode, SImode, "__mips16_floatunsidf");
 	}
     }
   else

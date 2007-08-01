@@ -1,3 +1,13 @@
+2007-08-01  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+	gcc/
+	* config/mips/mips16.S (__mips16_unordsf2, __mips16_floatunsisf): New.
+	(__mips16_unorddf2, __mips16_floatunsidf): New.
+	* config/mips/mips.c (mips_init_libfuncs): Add optab entries for
+	above functions.
+	* config/mips/t-libgcc-mips16 (LIB1ASMFUNCS): Add new functions.
+
 2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
 
 	* tree-pretty-print.c (dump_generic_node): Dump OMP_SECTIONS_SWITCH.
