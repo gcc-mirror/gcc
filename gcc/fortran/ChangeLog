@@ -1,3 +1,16 @@
+2007-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32954
+	* intrinsic.c (resolve_mask_arg):  New function.
+	(gfc_resolve_maxloc):  Use resolve_mask_arg for mask resolution.
+	(gfc_resolve_maxval):  Likewise.
+	(gfc_resolve_minloc):  Likewise.
+	(gfc_resolve_minval):  Likewise.
+	(gfc_resolve_pack):  Likewise.
+	(gfc_resolve_product):  Likewise.
+	(gfc_resolve_sum):  Likewise.
+	(gfc_resolve_unpack):  Likewise.
+
 2007-08-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32936
