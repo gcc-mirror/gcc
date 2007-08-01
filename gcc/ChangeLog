@@ -1,5 +1,32 @@
 2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
 
+	* tree-pretty-print.c (dump_generic_node): Dump OMP_SECTIONS_SWITCH.
+	Display new operands of OMP_SECTIONS and OMP_CONTINUE.
+	* tree.h (OMP_SECTIONS_CONTROL): New macro.
+	(OMP_DIRECTIVE_P): Add OMP_SECTIONS_SWITCH.
+	* omp-low.c (get_ws_args_for, determine_parallel_type,
+	expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_for, expand_omp_sections):
+	Work with more precise CFG.
+	(build_omp_regions_1): Handle OMP_SECTIONS_SWITCH.
+	(lower_omp_sections): Emit OMP_SECTIONS_SWITCH.  Add arguments to
+	OMP_CONTINUE.
+	* tree-gimple.c (is_gimple_stmt): Handle OMP_SECTIONS_SWITCH.
+	* gimple-low.c (lower_stmt): Ditto.
+	* tree-inline.c (estimate_num_insns_1): Ditto.
+	* tree.def (OMP_SECTIONS, OMP_CONTINUE): Added new operands.
+	(OMP_SECTIONS_SWITCH): New.
+	* tree-cfgcleanup.c (cleanup_omp_return): New.
+	(cleanup_tree_cfg_bb): Call cleanup_omp_return.
+	* tree-cfg.c (make_edges): Create back edges for OMP_CONTINUE
+	and exit edge for OMP_FOR.  Handle OMP_SECTIONS_SWITCH.
+	(tree_redirect_edge_and_branch): Handle omp constructs.
+
+	* fortran/trans-openmp.c (gfc_trans_omp_sections): Build OMP_SECTIONS
+	with three arguments.
+
+2007-08-01  Zdenek Dvorak  <ook@ucw.cz>
+
 	* tree-cfg.c (tree_merge_blocks): Preserve loop exit phi nodes only
 	in loop closed ssa.
 

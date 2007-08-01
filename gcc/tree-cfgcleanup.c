@@ -507,6 +507,36 @@ split_bbs_on_noreturn_calls (void)
   return changed;
 }
 
+/* If OMP_RETURN in basic block BB is unreachable, remove it.  */
+
+static bool
+cleanup_omp_return (basic_block bb)
+{
+  tree stmt = last_stmt (bb);
+  basic_block control_bb;
+
+  if (stmt == NULL_TREE
+      || TREE_CODE (stmt) != OMP_RETURN
+      || !single_pred_p (bb))
+    return false;
+
+  control_bb = single_pred (bb);
+  stmt = last_stmt (control_bb);
+
+  if (TREE_CODE (stmt) != OMP_SECTIONS_SWITCH)
+    return false;
+
+  /* The block with the control statement normally has two entry edges -- one
+     from entry, one from continue.  If continue is removed, return is
+     unreachable, so we remove it here as well.  */
+  if (EDGE_COUNT (control_bb->preds) == 2)
+    return false;
+
+  gcc_assert (EDGE_COUNT (control_bb->preds) == 1);
+  remove_edge_and_dominated_blocks (single_pred_edge (bb));
+  return true;
+}
+
 /* Tries to cleanup cfg in basic block BB.  Returns true if anything
    changes.  */
 
@@ -515,8 +545,11 @@ cleanup_tree_cfg_bb (basic_block bb)
 {
   bool retval = false;
 
-  retval = cleanup_control_flow_bb (bb);
+  if (cleanup_omp_return (bb))
+    return true;
 
+  retval = cleanup_control_flow_bb (bb);
+  
   /* Forwarder blocks can carry line number information which is
      useful when debugging, so we only clean them up when
      optimizing.  */

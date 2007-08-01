@@ -1851,9 +1851,21 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OMP_SECTIONS:
       pp_string (buffer, "#pragma omp sections");
+      if (OMP_SECTIONS_CONTROL (node))
+	{
+	  pp_string (buffer, " <");
+	  dump_generic_node (buffer, OMP_SECTIONS_CONTROL (node), spc,
+			     flags, false);
+	  pp_string (buffer, ">");
+	}
       dump_omp_clauses (buffer, OMP_SECTIONS_CLAUSES (node), spc, flags);
       goto dump_omp_body;
 
+    case OMP_SECTIONS_SWITCH:
+      pp_string (buffer, "OMP_SECTIONS_SWITCH");
+      is_expr = false;
+      break;
+ 
     case OMP_SECTION:
       pp_string (buffer, "#pragma omp section");
       goto dump_omp_body;
@@ -1901,7 +1913,11 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case OMP_CONTINUE:
-      pp_string (buffer, "OMP_CONTINUE");
+      pp_string (buffer, "OMP_CONTINUE <");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, " <- ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, ">");
       is_expr = false;
       break;
 
