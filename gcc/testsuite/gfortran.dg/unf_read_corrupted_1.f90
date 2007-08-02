@@ -3,8 +3,8 @@
 ! corrupted.
 program main
   implicit none
-  integer :: i1, i2
-  integer :: ios
+  integer(kind=4) :: i1, i2
+  integer(kind=4) :: ios
   character(len=50) :: msg
 
   ! Write out a truncated unformatted sequential file by
@@ -12,7 +12,7 @@ program main
 
   open (10, form="unformatted", access="stream", file="foo.dat", &
   status="unknown")
-  write (10) 16, 1
+  write (10) 16_4, 1_4
   close (10, status="keep")
 
   ! Try to read
