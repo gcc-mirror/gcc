@@ -5,7 +5,9 @@
 
 #define N 16
  
-#if __LONG_MAX__ == 2147483647
+#if __INT_MAX__ == 32767
+typedef char half_word;
+#elif __LONG_MAX__ == 2147483647
 typedef short half_word;
 #else
 typedef int half_word;
