@@ -4816,6 +4816,8 @@ magic_varargs_p (tree fn)
 	return true;
 
       default:;
+	return lookup_attribute ("type generic",
+				 TYPE_ATTRIBUTES (TREE_TYPE (fn))) != 0;
       }
 
   return false;

@@ -1,3 +1,8 @@
+2007-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR middle-end/32668
+	* call.c (magic_varargs_p): Honor the "type generic" attribute.
+
 2007-07-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32108
