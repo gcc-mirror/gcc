@@ -1,3 +1,11 @@
+2007-07-30  Nick Clifton  <nickc@redhat.com>
+
+	* Make-lang.in: Change copyright header to refer to version 3 of
+	the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* lang-specs.h, objc-act.c, objc-tree.def, objc-act.h,
+	config-lang.in, objc-lang.c: Likewise.
+
 2007-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc-act.c (objc_get_callee_fndecl): Constify.
