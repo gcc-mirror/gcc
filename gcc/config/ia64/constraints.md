@@ -113,11 +113,9 @@
   "Symbol ref to small-address-area"
   (match_operand 0 "small_addr_symbolic_operand"))
 
-;; ??? Original definition didn't test for vector only.  
-;; Need to verify that only used in vector context.
 (define_constraint "U"
   "vector zero constant"
-  (and (match_code "const_int,const_double,const_vector")
+  (and (match_code "const_vector")
        (match_test "op == CONST0_RTX (mode)")))
 
 (define_constraint "W"

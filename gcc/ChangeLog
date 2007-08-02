@@ -1,3 +1,7 @@
+2007-08-02  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/constraints.md ("U"): Make constraint vector only.
+
 2007-08-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR middle-end/25446
