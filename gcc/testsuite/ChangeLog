@@ -1,3 +1,11 @@
+2007-08-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/32770
+	* gfortran.dg/unf_read_corrupted_1.f90:  Make all kinds
+	explicit so test passes with -fdefault-integer-8.
+	* gfortran.dg/unformatted_recl_1.f90:  Likewise.
+	* gfortran.dg/unformatted_subrecord_1.f90:  Likewise.
+
 2007-08-02  Lee Millward  <lee.millward@gmail.com>
 
 	PR c++/30849

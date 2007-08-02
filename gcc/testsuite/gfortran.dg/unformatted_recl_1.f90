@@ -1,7 +1,7 @@
 ! { dg-do run } 
 ! PR31099 Runtime error on legal code using RECL
 program test
-  integer :: a, b
+  integer(kind=4) :: a, b
   a=1
   b=2
   open(10, status="scratch", form="unformatted", recl=8)
