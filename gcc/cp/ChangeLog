@@ -1,3 +1,14 @@
+
+2007-08-02  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/30849
+	PR c++/30850
+	PR c++/30851
+	* parser.c (cp_parser_asm_definition): Detect and discard asm
+	statements with invalid inputs or outputs.
+        (cp_parser_asm_operand_list): Return error mark node if any
+        of the operands are invalid. Adjust documentation.
+	
 2007-08-02  Nick Clifton  <nickc@redhat.com>
 
 	* typeck.c: Change copyright header to refer to version 3 of the
