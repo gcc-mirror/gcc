@@ -281,6 +281,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
   /** @}  */
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 660. Missing Bitwise Operations.
+  template <class _Tp>
+    struct bit_and : public binary_function<_Tp, _Tp, _Tp>
+    {
+      _Tp
+      operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x & __y; }
+    };
+
+  template <class _Tp>
+    struct bit_or : public binary_function<_Tp, _Tp, _Tp>
+    {
+      _Tp
+      operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x | __y; }
+    };
+
+  template <class _Tp>
+    struct bit_xor : public binary_function<_Tp, _Tp, _Tp>
+    {
+      _Tp
+      operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x ^ __y; }
+    };
+
   // 20.3.5 negators
   /** @defgroup s20_3_5_negators Negators
    *  The functions @c not1 and @c not2 each take a predicate functor
