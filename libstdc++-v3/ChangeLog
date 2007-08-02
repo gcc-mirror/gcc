@@ -1,3 +1,13 @@
+2007-08-02  Paolo Carlini  <pcarlini@suse.de>
+
+	DR 660, [Ready] in Toronto.
+	* include/bits/stl_function.h (bit_and, bit_or, bit_xor): Add.
+	* testsuite/20_util/function_objects/dr660.cc: New.
+	* docs/html/ext/howto.html: Add an entry for DR 660, update.
+
+	* docs/html/ext/lwg-closed.html, docs/html/ext/lwg-active.html,
+	docs/html/ext/lwg-defects.html: Import Revision 49.
+
 2007-07-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/32908
