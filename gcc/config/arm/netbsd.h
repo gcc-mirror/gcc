@@ -1,5 +1,5 @@
 /* NetBSD/arm a.out version.
-   Copyright (C) 1993, 1994, 1997, 1998, 2003, 2004, 2005
+   Copyright (C) 1993, 1994, 1997, 1998, 2003, 2004, 2005, 2007
    Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 
@@ -7,7 +7,7 @@
 
    GCC is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 2, or (at your
+   by the Free Software Foundation; either version 3, or (at your
    option) any later version.
 
    GCC is distributed in the hope that it will be useful, but WITHOUT
@@ -16,9 +16,8 @@
    License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GCC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
 
 /* Run-time Target Specification.  */
 #undef  TARGET_VERSION
