@@ -1,3 +1,7 @@
+2007-08-02  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*xordi3_cconly"): Change xr to xg.
+
 2007-08-01  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md (TF in GPR splitter): Change operand_subword
