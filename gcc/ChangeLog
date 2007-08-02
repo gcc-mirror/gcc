@@ -1,3 +1,10 @@
+2007-08-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* emit-rtl.c (reset_used_decls): Rename to...
+	(set_used_decls): ...this.  Set the used flag rather than clearing it.
+	(unshare_all_rtl_again): Update accordingly.  Set flags on argument
+	DECL_RTLs rather than resetting them.
+
 2007-08-02  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*xordi3_cconly"): Change xr to xg.
