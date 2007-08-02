@@ -1,3 +1,9 @@
+2007-08-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* longlong.h [__mips__] (count_leading_zeros, COUNT_LEADING_ZEROS_0):
+	Define for MIPS32 and MIPS64.
+
 2007-08-02  Nick Clifton  <nickc@redhat.com>
 
 	* config/host-hpux.c: Change copyright header to refer to version
