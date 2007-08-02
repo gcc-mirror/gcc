@@ -1,5 +1,11 @@
 2007-08-02  Nathan Froyd  <froydnj@codesourcery.com>
 
+	PR middle-end/25446
+	* c-objc-common.c (c_cannot_inline_tree_fn): Check for an
+	always_inline attribute on the function decl.
+
+2007-08-02  Nathan Froyd  <froydnj@codesourcery.com>
+
 	PR middle-end/25445
 	* varasm.c (default_binds_local_p_1): Consult flag_whole_program
 	if we are compiling with -fPIC.
