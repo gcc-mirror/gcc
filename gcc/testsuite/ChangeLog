@@ -1,3 +1,14 @@
+2007-08-02  Lee Millward  <lee.millward@gmail.com>
+
+	PR c++/30849
+	* g++.dg/parse/asm1.C: New test.
+
+	PR c++/30850
+	* g++.dg/parse/asm2.C: Likewise.
+
+	PR c++/30851
+	* g++.dg/parse/asm3.C: Likewise.
+	
 2007-08-02  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.dg/tree-ssa/gen-vect-2.c: Use "char" for vector elements if
