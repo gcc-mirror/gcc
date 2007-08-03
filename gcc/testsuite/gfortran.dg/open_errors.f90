@@ -25,7 +25,7 @@ if (msg /= "'./' is a directory" .and. msg /= "Invalid argument") call abort()
 
 open(77,file=n,status="new")
 i = chmod(n, "-w")
-if (i == 0) then
+if (i == 0 .and. getuid() /= 0) then
  close(77, status="keep")
  open(77,file=n, iomsg=msg, iostat=i, action="write")
  if (i == 0) call abort()
