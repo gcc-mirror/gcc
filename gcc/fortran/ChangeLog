@@ -66,7 +66,7 @@
 2007-07-31  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/32942
-	*trans-intrinsic.c (gfc_conv_intrinsic_exponent): Convert to correct
+	* trans-intrinsic.c (gfc_conv_intrinsic_exponent): Convert to correct
 	type.
 
 2007-07-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
@@ -81,7 +81,7 @@
 	handled.
 
 	PR fortran/32682
-	*trans-array.c (gfc_trans_array_constructor): On detecting a
+	* trans-array.c (gfc_trans_array_constructor): On detecting a
 	multi-dimensional parameter array, set the loop limits.
 
 2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
@@ -916,14 +916,14 @@
 
 2007-07-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * trans.h: Remove decls for 64-bit allocation functions.
-        * trans-array.c (gfc_grow_array): Always pick the standard realloc
-        function decl.
-        (gfc_array_allocate): Likewise.
-        * trans-decl.c: Remove trees for 64-bit allocation functions.
-        (gfc_build_builtin_function_decls): Don't build fndecls for 64-bit
-        allocations functions, use index_int_type for normal allocation
-        functions.
+	* trans.h: Remove decls for 64-bit allocation functions.
+	* trans-array.c (gfc_grow_array): Always pick the standard realloc
+	function decl.
+	(gfc_array_allocate): Likewise.
+	* trans-decl.c: Remove trees for 64-bit allocation functions.
+	(gfc_build_builtin_function_decls): Don't build fndecls for 64-bit
+	allocations functions, use index_int_type for normal allocation
+	functions.
 
 2007-06-30  Daniel Franke  <franke.daniel@gmail.com>
 
