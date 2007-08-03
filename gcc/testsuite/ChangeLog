@@ -1,5 +1,10 @@
 2007-08-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/32955
+	* gfortran.dg/value_4.f90: Make integer constant of kind=4.
+
+2007-08-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31202
 	* gfortran.dg/nint_2.f90: New test.
 
