@@ -1,3 +1,9 @@
+2007-08-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/32770
+	* gfortran.dg/unf_read_corrupted_1.f90:  Integer variable in
+	iostat must be default kind.
+
 2007-08-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/opem_errors.f90: Revise test to pass when run under sudo.

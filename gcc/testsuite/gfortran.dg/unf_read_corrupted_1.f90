@@ -4,7 +4,7 @@
 program main
   implicit none
   integer(kind=4) :: i1, i2
-  integer(kind=4) :: ios
+  integer :: ios
   character(len=50) :: msg
 
   ! Write out a truncated unformatted sequential file by
