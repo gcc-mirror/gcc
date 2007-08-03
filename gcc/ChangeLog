@@ -1,3 +1,12 @@
+2007-08-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (struct processor_cost): Change
+	l1_cache_lines to l1_cache_size.  Add l2_cache_size.
+	(*_cost): Convert l1 cache information to kilobytes.  Add l2 cache
+	information.
+	(rios1_costs, rios2_cost): Correct cache line size.
+	(rs6000_override_options): Set l2-cache-size parameter.
+
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 	    Diego Novillo  <dnovillo@google.com>
 
@@ -20529,7 +20538,7 @@
 	* langhooks.h (struct lang_hooks): Removed field
 	'can_use_bit_fields_p'.
 
-2007-01-10  Ralf CorsÃ©pius <ralf.corsepius@rtems.org>
+2007-01-10  Ralf Cors�©pius <ralf.corsepius@rtems.org>
 
 	* config/bfin/t-bfin, config/bfin/t-bfin-elf: Remove GCC_CFLAGS.
 
@@ -20758,7 +20767,7 @@
 	* config/frv/predicates.md (reg_or_0_operand): Accept
 	CONST_DOUBLEs.
 
-2007-01-08  Ralf CorsÃ©pius <ralf.corsepius@rtems.org>
+2007-01-08  Ralf Cors�©pius <ralf.corsepius@rtems.org>
 
 	* config/bfin/rtems.h, config/bfin/t-rtems: New.
 	* config.gcc: Add bfin*-rtems*.
