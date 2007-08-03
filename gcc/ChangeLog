@@ -1,3 +1,9 @@
+2007-08-03  Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu.md (dftsv, dftsv_celledp): Attach the appropriate
+	mode to unspec expressions to silence a warning from the generator
+	programs.
+	
 2007-08-02  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/constraints.md ("U"): Make constraint vector only.
