@@ -3025,16 +3025,18 @@ selb\t%0,%4,%0,%3"
 ;; dftsv
 (define_insn "dftsv_celledp"
   [(set (match_operand:V2DI 0 "spu_reg_operand" "=r")
-        (unspec [(match_operand:V2DF 1 "spu_reg_operand"  "r")
-                 (match_operand:SI   2 "const_int_operand" "i")] UNSPEC_DFTSV))]
+        (unspec:V2DI [(match_operand:V2DF 1 "spu_reg_operand"  "r")
+		      (match_operand:SI   2 "const_int_operand" "i")]
+		      UNSPEC_DFTSV))]
   "spu_arch == PROCESSOR_CELLEDP"
   "dftsv\t%0,%1,%2"
   [(set_attr "type" "fpd")])
 
 (define_expand "dftsv"
   [(set (match_operand:V2DI 0 "spu_reg_operand" "=r")
-        (unspec [(match_operand:V2DF 1 "spu_reg_operand" "r")
-                 (match_operand:SI   2 "const_int_operand" "i")] UNSPEC_DFTSV))]
+        (unspec:V2DI [(match_operand:V2DF 1 "spu_reg_operand" "r")
+		      (match_operand:SI   2 "const_int_operand" "i")]
+		      UNSPEC_DFTSV))]
   ""
 {
   if(spu_arch == PROCESSOR_CELL)
