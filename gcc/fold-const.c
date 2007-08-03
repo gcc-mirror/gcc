@@ -1382,7 +1382,7 @@ fold_negate_expr (tree t)
 	{
 	  tem = strip_float_extensions (t);
 	  if (tem != t && negate_expr_p (tem))
-	    return negate_expr (tem);
+	    return fold_convert (type, negate_expr (tem));
 	}
       break;
 
