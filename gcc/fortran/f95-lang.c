@@ -852,7 +852,7 @@ gfc_init_builtin_functions (void)
   tree func_double_doublep_doublep;
   tree func_longdouble_longdoublep_longdoublep;
   tree ftype, ptype;
-  tree tmp;
+  tree tmp, type;
   tree builtin_types[(int) BT_LAST + 1];
 
   build_builtin_fntypes (mfunc_float, float_type_node);
@@ -941,6 +941,31 @@ gfc_init_builtin_functions (void)
 		      BUILT_IN_FMOD, "fmod", true);
   gfc_define_builtin ("__builtin_fmodf", mfunc_float[1], 
 		      BUILT_IN_FMODF, "fmodf", true);
+
+  /* lround{f,,l} and llround{f,,l} */
+  type = tree_cons (NULL_TREE, float_type_node, void_list_node);
+  tmp = build_function_type (long_integer_type_node, type); 
+  gfc_define_builtin ("__builtin_lroundf", tmp, BUILT_IN_LROUNDF,
+		      "lroundf", true);
+  tmp = build_function_type (long_long_integer_type_node, type); 
+  gfc_define_builtin ("__builtin_llroundf", tmp, BUILT_IN_LLROUNDF,
+		      "llroundf", true);
+
+  type = tree_cons (NULL_TREE, double_type_node, void_list_node);
+  tmp = build_function_type (long_integer_type_node, type); 
+  gfc_define_builtin ("__builtin_lround", tmp, BUILT_IN_LROUND,
+		      "lround", true);
+  tmp = build_function_type (long_long_integer_type_node, type); 
+  gfc_define_builtin ("__builtin_llround", tmp, BUILT_IN_LLROUND,
+		      "llround", true);
+
+  type = tree_cons (NULL_TREE, long_double_type_node, void_list_node);
+  tmp = build_function_type (long_integer_type_node, type); 
+  gfc_define_builtin ("__builtin_lroundl", tmp, BUILT_IN_LROUNDL,
+		      "lroundl", true);
+  tmp = build_function_type (long_long_integer_type_node, type); 
+  gfc_define_builtin ("__builtin_llroundl", tmp, BUILT_IN_LLROUNDL,
+		      "llroundl", true);
 
   /* These are used to implement the ** operator.  */
   gfc_define_builtin ("__builtin_powl", mfunc_longdouble[1], 

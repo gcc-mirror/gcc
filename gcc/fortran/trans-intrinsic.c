@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "tm.h"
 #include "tree.h"
 #include "ggc.h"
 #include "toplev.h"
@@ -308,34 +309,57 @@ build_fixbound_expr (stmtblock_t * pblock, tree arg, tree type, int up)
 }
 
 
-/* This is needed because the gcc backend only implements FIX_TRUNC_EXPR
-   NINT(x) = INT(x + ((x > 0) ? 0.5 : -0.5)).  */
+/* Round to nearest integer, away from zero.  */
 
 static tree
-build_round_expr (stmtblock_t * pblock, tree arg, tree type)
+build_round_expr (tree arg, tree restype)
 {
   tree tmp;
-  tree cond;
-  tree neg;
-  tree pos;
   tree argtype;
-  REAL_VALUE_TYPE r;
+  tree fn;
+  bool longlong, convert;
+  int argprec, resprec;
 
   argtype = TREE_TYPE (arg);
-  arg = gfc_evaluate_now (arg, pblock);
+  argprec = TYPE_PRECISION (argtype);
+  resprec = TYPE_PRECISION (restype);
 
-  real_from_string (&r, "0.5");
-  pos = build_real (argtype, r);
+  /* Depending on the type of the result, choose the long int intrinsic
+     (lround family) or long long intrinsic (llround).  We might also
+     need to convert the result afterwards.  */
+  if (resprec <= LONG_TYPE_SIZE)
+    {
+      longlong = false;
+      if (resprec != LONG_TYPE_SIZE)
+	convert = true;
+      else
+	convert = false;
+    }
+  else if (resprec <= LONG_LONG_TYPE_SIZE)
+    {
+      longlong = true;
+      if (resprec != LONG_LONG_TYPE_SIZE)
+	convert = true;
+      else
+	convert = false;
+    }
+  else
+    gcc_unreachable ();
 
-  real_from_string (&r, "-0.5");
-  neg = build_real (argtype, r);
+  /* Now, depending on the argument type, we choose between intrinsics.  */
+  if (argprec == TYPE_PRECISION (float_type_node))
+    fn = built_in_decls[longlong ? BUILT_IN_LLROUNDF : BUILT_IN_LROUNDF];
+  else if (argprec == TYPE_PRECISION (double_type_node))
+    fn = built_in_decls[longlong ? BUILT_IN_LLROUND : BUILT_IN_LROUND];
+  else if (argprec == TYPE_PRECISION (long_double_type_node))
+    fn = built_in_decls[longlong ? BUILT_IN_LLROUNDL : BUILT_IN_LROUNDL];
+  else
+    gcc_unreachable ();
 
-  tmp = gfc_build_const (argtype, integer_zero_node);
-  cond = fold_build2 (GT_EXPR, boolean_type_node, arg, tmp);
-
-  tmp = fold_build3 (COND_EXPR, argtype, cond, pos, neg);
-  tmp = fold_build2 (PLUS_EXPR, argtype, arg, tmp);
-  return fold_build1 (FIX_TRUNC_EXPR, type, tmp);
+  tmp = build_call_expr (fn, 1, arg);
+  if (convert)
+    tmp = fold_convert (restype, tmp);
+  return tmp;
 }
 
 
@@ -358,11 +382,15 @@ build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
       break;
 
     case RND_ROUND:
-      return build_round_expr (pblock, arg, type);
+      return build_round_expr (arg, type);
+      break;
+
+    case RND_TRUNC:
+      return build1 (FIX_TRUNC_EXPR, type, arg);
+      break;
 
     default:
-      gcc_assert (op == RND_TRUNC);
-      return build1 (FIX_TRUNC_EXPR, type, arg);
+      gcc_unreachable ();
     }
 }
 

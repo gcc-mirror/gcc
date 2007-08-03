@@ -200,6 +200,43 @@ extern double round(double);
 extern float roundf(float);
 #endif
 
+#if !defined(HAVE_ROUNDL) && defined(HAVE_CEILL)
+#define HAVE_ROUNDL 1
+extern long double roundl(long double);
+#endif
+
+
+
+#if !defined(HAVE_LROUNDF) && defined(HAVE_ROUNDF)
+#define HAVE_LROUNDF 1
+long int lroundf (float);
+#endif
+
+#if !defined(HAVE_LROUND) && defined(HAVE_ROUND)
+#define HAVE_LROUND 1
+long int lround (double);
+#endif
+
+#if !defined(HAVE_LROUNDL) && defined(HAVE_ROUNDL)
+#define HAVE_LROUNDL 1
+long int lroundl (long double);
+#endif
+
+#if !defined(HAVE_LLROUNDF) && defined(HAVE_ROUNDF)
+#define HAVE_LLROUNDF 1
+long long int llroundf (float);
+#endif
+
+#if !defined(HAVE_LLROUND) && defined(HAVE_ROUND)
+#define HAVE_LLROUND 1
+long long int llround (double);
+#endif
+
+#if !defined(HAVE_LLROUNDL) && defined(HAVE_ROUNDL)
+#define HAVE_LLROUNDL 1
+long long int llroundl (long double);
+#endif
+
 /* Wrappers for systems without the various C99 single precision Bessel
    functions.  */
 

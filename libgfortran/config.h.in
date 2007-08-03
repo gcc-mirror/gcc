@@ -480,6 +480,15 @@
 /* Define to 1 if you have the `link' function. */
 #undef HAVE_LINK
 
+/* libm includes llround */
+#undef HAVE_LLROUND
+
+/* libm includes llroundf */
+#undef HAVE_LLROUNDF
+
+/* libm includes llroundl */
+#undef HAVE_LLROUNDL
+
 /* libm includes log */
 #undef HAVE_LOG
 
@@ -497,6 +506,15 @@
 
 /* libm includes logl */
 #undef HAVE_LOGL
+
+/* libm includes lround */
+#undef HAVE_LROUND
+
+/* libm includes lroundf */
+#undef HAVE_LROUNDF
+
+/* libm includes lroundl */
+#undef HAVE_LROUNDL
 
 /* Define to 1 if you have the `lstat' function. */
 #undef HAVE_LSTAT
