@@ -1,5 +1,7 @@
 /* Test typeof with __asm redirection. */
 /* { dg-do compile } */
+/* -mlongcall will cause us to place &baz3 in the CTR register.  */
+/* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
 /* { dg-require-weak "" } */
 /* { dg-require-alias "" } */
 /* { dg-options "-O2" } */
