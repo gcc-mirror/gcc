@@ -16,7 +16,7 @@ int main (void)
   ffi_cif cif;
   ffi_type *args[MAX_ARGS];
   void *values[MAX_ARGS];
-  unsigned long res;
+  ffi_arg res;
   unsigned long ul1, ul2;
 
   args[0] = &ffi_type_ulong;
@@ -31,7 +31,7 @@ int main (void)
   ul2 = 1073741824L;
 
   ffi_call(&cif, FFI_FN(return_ul), &res, values);
-  printf("res: %ld, %ld\n", res, ul1 + ul2);
+  printf("res: %lu, %lu\n", (unsigned long)res, ul1 + ul2);
   /* { dg-output "res: 2147483647, 2147483647" } */
 
   exit(0);
