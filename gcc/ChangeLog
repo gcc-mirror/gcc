@@ -1,3 +1,9 @@
+2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/32935
+	* fold-convert.c (fold_negate_expr <NOP_EXPR>): Convert back to the
+	 correct type the negate expression.
+
 2007-08-03  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (setup_incoming_varargs_64): Tolerate 64bit preferred
