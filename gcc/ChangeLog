@@ -1,3 +1,10 @@
+2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+	    Diego Novillo  <dnovillo@google.com>
+
+	PR 31521
+	* tree-vrp.c (simplify_div_or_mod_using_ranges): Also simplify
+	if the range includes 0.
+
 2007-08-03  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.md (dftsv, dftsv_celledp): Attach the appropriate

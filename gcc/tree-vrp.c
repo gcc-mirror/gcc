@@ -5541,7 +5541,7 @@ simplify_div_or_mod_using_ranges (tree stmt, tree rhs, enum tree_code rhs_code)
     {
       bool sop = false;
 
-      val = compare_range_with_value (GT_EXPR, vr, integer_zero_node, &sop);
+      val = compare_range_with_value (GE_EXPR, vr, integer_zero_node, &sop);
 
       if (val
 	  && sop
