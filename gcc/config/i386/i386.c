@@ -4694,7 +4694,14 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 
   /* Indicate to allocate space on the stack for varargs save area.  */
   ix86_save_varrargs_registers = 1;
-  cfun->stack_alignment_needed = 128;
+  /* We need 16-byte stack alignment to save SSE registers.  If user
+     asked for lower preferred_stack_boundary, lets just hope that he knows
+     what he is doing and won't varargs SSE values.  
+
+     We also may end up assuming that only 64bit values are stored in SSE
+     register let some floating point program work.  */
+  if (ix86_preferred_stack_boundary >= 128)
+    cfun->stack_alignment_needed = 128;
 
   save_area = frame_pointer_rtx;
   set = get_varargs_alias_set ();

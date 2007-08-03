@@ -1,3 +1,8 @@
+2007-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (setup_incoming_varargs_64): Tolerate 64bit preferred
+	stack boundary.
+
 2007-08-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (struct processor_cost): Change
