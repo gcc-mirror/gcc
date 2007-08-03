@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* -mlongcall will cause us to place &foo in the CTR register.  */
+/* { dg-skip-if "" { powerpc*-*-* } { "-mlongcall" } { "" } } */
 /* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details -fdump-tree-cunroll-details -fdump-tree-optimized" } */
 
 /* On 31-bit S/390 the function address will be stored (once) in the literal pool,
@@ -43,5 +45,3 @@ void xxx(void)
 /* { dg-final { scan-assembler-times "jsr|blink\ttr?,r18"  5 { target sh*-*-* } } } */
 /* { dg-final { scan-assembler-times "Jsr \\\$r" 5 { target cris-*-* } } } */
 /* { dg-final { scan-assembler-times "\[jb\]sr" 5 { target fido-*-* m68k-*-* } } } */
-
-
