@@ -73,7 +73,7 @@ program value_4
   j = 0
   k = i
   j = i_to_i (i, k)
-  if (delta ((3 * i), j)) call abort ()
+  if (delta ((3_4 * i), j)) call abort ()
 
   u = (-1.0, 2.0)
   v = (1.0, -2.0)
