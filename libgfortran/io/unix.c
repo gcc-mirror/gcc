@@ -1386,7 +1386,8 @@ error_stream (void)
    overruns, we limit the length of the buffer to ST_VPRINTF_SIZE.  2k
    is big enough to completely fill a 80x25 terminal, so it shuld be
    OK.  We use a direct write() because it is simpler and least likely
-   to be clobbered by memory corruption.  */
+   to be clobbered by memory corruption.  Writing an error message
+   longer than that is an error.  */
 
 #define ST_VPRINTF_SIZE 2048
 
@@ -1401,8 +1402,22 @@ st_vprintf (const char *format, va_list ap)
 #ifdef HAVE_VSNPRINTF
   written = vsnprintf(buffer, ST_VPRINTF_SIZE, format, ap);
 #else
-  written = __builtin_vsnprintf(buffer, ST_VPRINTF_SIZE, format, ap);
+  written = vsprintf(buffer, format, ap);
+
+  if (written >= ST_VPRINTF_SIZE-1)
+    {
+      /* The error message was longer than our buffer.  Ouch.  Because
+	 we may have messed up things badly, report the error and
+	 quit.  */
+#define ERROR_MESSAGE "Internal error: buffer overrun in st_vprintf()\n"
+      write (fd, buffer, ST_VPRINTF_SIZE-1);
+      write (fd, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
+      sys_exit(2);
+#undef ERROR_MESSAGE
+
+    }
 #endif
+
   written = write (fd, buffer, written);
   return written;
 }

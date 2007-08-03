@@ -1,3 +1,9 @@
+2007-08-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/32977
+	* io/unix.c:  If there is no vsnprintf, use vsprintf and issue
+	a fatal error when a buffer overrun occurs.
+
 2007-08-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31202
