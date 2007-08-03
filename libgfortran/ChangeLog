@@ -1,3 +1,16 @@
+2007-08-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31202
+	* intrinsics/c99_functions.c (roundl,lroundf,lround,lroundl,
+	llroundf,llround,llroundl): New functions.
+	* c99_protos.h (roundl,lroundf,lround,lroundl,llroundf,llround,
+	llroundl): New prototypes.
+	* configure.ac: Check for lroundf, lround, lroundl, llroundf,
+	llround and llroundl.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+
 2007-07-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* libgfortran.h: Include <stdarg.h>.
