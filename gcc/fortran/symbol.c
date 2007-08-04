@@ -2129,6 +2129,20 @@ gfc_find_symtree (gfc_symtree *st, const char *name)
 }
 
 
+/* Return a symtree node with a name that is guaranteed to be unique
+   within the namespace and corresponds to an illegal fortran name.  */
+
+gfc_symtree *
+gfc_get_unique_symtree (gfc_namespace *ns)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  static int serial = 0;
+
+  sprintf (name, "@%d", serial++);
+  return gfc_new_symtree (&ns->sym_root, name);
+}
+
+
 /* Given a name find a user operator node, creating it if it doesn't
    exist.  These are much simpler than symbols because they can't be
    ambiguous with one another.  */

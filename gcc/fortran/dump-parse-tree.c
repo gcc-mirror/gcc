@@ -1084,6 +1084,7 @@ gfc_show_code_node (int level, gfc_code *c)
       break;
 
     case EXEC_CALL:
+    case EXEC_ASSIGN_CALL:
       if (c->resolved_sym)
 	gfc_status ("CALL %s ", c->resolved_sym->name);
       else if (c->symtree)

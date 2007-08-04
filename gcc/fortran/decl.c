@@ -681,8 +681,27 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
     {
       /* Present if entry is declared to be a module procedure.  */
       rc = gfc_find_symbol (name, gfc_current_ns->parent, 0, result);
+
       if (*result == NULL)
 	rc = gfc_get_symbol (name, NULL, result);
+      else if (gfc_get_symbol (name, NULL, &sym) == 0
+		 && sym
+		 && sym->ts.type != BT_UNKNOWN
+		 && (*result)->ts.type == BT_UNKNOWN
+		 && sym->attr.flavor == FL_UNKNOWN)
+	/* Pick up the typespec for the entry, if declared in the function
+	   body.  Note that this symbol is FL_UNKNOWN because it will
+	   only have appeared in a type declaration.  The local symtree
+	   is set to point to the module symbol and a unique symtree
+	   to the local version.  This latter ensures a correct clearing
+	   of the symbols.  */
+	  {
+	    (*result)->ts = sym->ts;
+	    gfc_find_sym_tree (name, gfc_current_ns, 0, &st);
+	    st->n.sym = *result;
+	    st = gfc_get_unique_symtree (gfc_current_ns);
+	    st->n.sym = sym;
+	  }
     }
   else
     rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
