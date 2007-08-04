@@ -1,4 +1,10 @@
-2008-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+2007-08-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/32770
+	* gfortran.dg/direct_io_2.f90:  Implicitly declare integer
+	variables as kind=4 so they don't overflow the record length.
+
+2007-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/32968
 	* gfortran.dg/selected_kind_1.f90: New test.
