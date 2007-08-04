@@ -267,6 +267,10 @@ has_proper_scope_for_analysis (tree t)
   if (DECL_EXTERNAL (t) || TREE_PUBLIC (t))
     return false;
 
+  /* We cannot touch decls where the type needs constructing.  */
+  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (t)))
+    return false;
+
   /* This is a variable we care about.  Check if we have seen it
      before, and if not add it the set of variables we care about.  */
   if (!bitmap_bit_p (all_module_statics, DECL_UID (t)))

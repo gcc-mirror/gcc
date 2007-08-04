@@ -1,5 +1,11 @@
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/32304
+	* ipa-reference.c (has_proper_scope_for_analysis): Return false when
+	the decl's type has TYPE_NEEDS_CONSTRUCTING set.
+
+2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/32935
 	* fold-convert.c (fold_negate_expr <NOP_EXPR>): Convert back to the
 	 correct type the negate expression.
