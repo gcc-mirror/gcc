@@ -1,6 +1,14 @@
 2007-08-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32770
+	* gfortran.dg/streamio_8.f90:  Adjust so test case passes
+	for -fdefault-integer-8 and -fdefault-real-8.
+	* gfortran.dg/streamio_10.f90:  Likewise.
+	* gfortran.dg/sizeof.f90:  Likewise.
+
+2007-08-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/32770
 	* gfortran.dg/direct_io_2.f90:  Implicitly declare integer
 	variables as kind=4 so they don't overflow the record length.
 

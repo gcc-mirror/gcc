@@ -8,7 +8,7 @@ PROGRAM stream_io_8
   real(kind=8) r
   mypos = 0
   mystring = "not yet"
-  r = 12.25
+  r = 12.25d0
   OPEN(UNIT=11, ACCESS="stream")
   inquire(unit=11, pos=mypos)
   if (mypos.ne.1) call abort()
@@ -18,14 +18,14 @@ PROGRAM stream_io_8
   WRITE(11) "second"
   inquire(unit=11, pos=mypos)
   if (mypos.ne.12) call abort()
-  WRITE(11) 1234567
+  WRITE(11) 1234567_4
   inquire(unit=11, pos=mypos)
   if (mypos.ne.16) call abort()
   write(11) r
   r = 0.0
   inquire (11, pos=mypos)
   read(11,pos=16)r
-  if (r.ne.12.25) call abort()
+  if (abs(r-12.25d0)>1e-10) call abort()
   inquire(unit=11, pos=mypos)
   inquire(unit=11, access=mystring)
   if (mypos.ne.24) call abort()

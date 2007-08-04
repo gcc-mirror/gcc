@@ -4,7 +4,7 @@
 ! Test case derived from that given in PR by Steve Kargl.
 program stream_io_10
   implicit none
-  integer :: a(4), b(4)
+  integer(kind=4) :: a(4), b(4)
   integer(kind=8) :: thepos
   a = (/ 1, 2, 3, 4 /)
   b = a

@@ -7,8 +7,13 @@ subroutine check_int (j)
   logical :: l(6)
   integer(8) :: jb(5,4)
 
-  if (sizeof (j) /= sizeof (i)) call abort
   if (sizeof (jb) /= 2*sizeof (ib)) call abort
+
+  if (sizeof(j) == 4) then
+     if (sizeof (j) /= sizeof (i)) call abort
+  else
+     if (sizeof (j) /= 2 * sizeof (i)) call abort
+  end if
 
   ipa=>ib(2:3,1)
 
@@ -16,6 +21,7 @@ subroutine check_int (j)
        sizeof(ip) == 4, sizeof(ipa) == 8, sizeof(ib(1:5:2,3)) == 12 /)
 
   if (any(.not.l)) call abort
+
   if (sizeof(l) /= 6*sizeof(l(1))) call abort
 end subroutine check_int
 
@@ -25,8 +31,8 @@ subroutine check_real (x, y)
   target :: r
   pointer :: rp
   double precision :: d(5,5)
-  complex :: c(5)
-  
+  complex(kind=4) :: c(5)
+
   if (sizeof (y) /= 5*sizeof (x)) call abort
 
   if (sizeof (r) /= 8000*4) call abort
