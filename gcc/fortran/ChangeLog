@@ -1,9 +1,14 @@
 2007-08-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31214
-	* gfortran.dg/entry_13.f90: New test.
+	* symbol.c (get_unique_symtree): Moved from module.c.
+	* module.c (get_unique_symtree): Moved to symbol.c.
+	* decl.c (get_proc_name): Transfer the typespec from the local
+	symbol to the module symbol, in the case that an entry is also
+	a module procedure.  Ensure the local symbol is cleaned up by
+	pointing to it with a unique symtree.
 
-	* gfortran.dg/entry_12.f90: Clean up .mod file.
+	* dump_parse_tree (gfc_show_code_node): Add EXEC_ASSIGN_CALL.
 
 2008-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
