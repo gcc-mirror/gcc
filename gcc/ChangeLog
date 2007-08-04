@@ -1,3 +1,9 @@
+2007-08-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/32780
+	* fold-const.c (fold_binary <case MINUS_EXPR>): Fix the type of operands
+	for the folding of "A - (A & B)" into "~B & A"; cast them to type.
+
 2007-08-03  Zdenek Dvorak  <ook@ucw.cz>
 
 	* tree-ssa-threadupdate.c (thread_through_all_blocks): Use loops' state

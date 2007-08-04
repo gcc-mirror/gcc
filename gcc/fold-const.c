@@ -9730,15 +9730,19 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && TREE_CODE (arg1) == BIT_AND_EXPR)
 	    {
 	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 1), 0))
-		return fold_build2 (BIT_AND_EXPR, type,
-				    fold_build1 (BIT_NOT_EXPR, type,
-						 TREE_OPERAND (arg1, 0)),
-				    arg0);
+		{
+		  tree arg10 = fold_convert (type, TREE_OPERAND (arg1, 0));
+		  return fold_build2 (BIT_AND_EXPR, type,
+				      fold_build1 (BIT_NOT_EXPR, type, arg10),
+				      fold_convert (type, arg0));
+		}
 	      if (operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
-		return fold_build2 (BIT_AND_EXPR, type,
-				    fold_build1 (BIT_NOT_EXPR, type,
-						 TREE_OPERAND (arg1, 1)),
-				    arg0);
+		{
+		  tree arg11 = fold_convert (type, TREE_OPERAND (arg1, 1));
+		  return fold_build2 (BIT_AND_EXPR, type,
+				      fold_build1 (BIT_NOT_EXPR, type, arg11),
+				      fold_convert (type, arg0));
+		}
 	    }
 
 	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, where B is
