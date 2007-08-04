@@ -1,3 +1,7 @@
+2007-08-04  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/arm/arm.md (movsi): Add braces.
+
 2007-08-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/32780
