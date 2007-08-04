@@ -1742,6 +1742,14 @@ gfc_resolve_rrspacing (gfc_expr *f, gfc_expr *x)
   prec = gfc_get_actual_arglist ();
   prec->name = "p";
   prec->expr = gfc_int_expr (gfc_real_kinds[k].digits);
+  /* The library routine expects INTEGER(4).  */
+  if (prec->expr->ts.kind != gfc_c_int_kind)
+    {
+      gfc_typespec ts;
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      gfc_convert_type (prec->expr, &ts, 2);
+    }
   f->value.function.actual->next = prec;
 }
 
@@ -1757,7 +1765,7 @@ gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i)
     {
       gfc_typespec ts;
       ts.type = BT_INTEGER;
-      ts.kind = gfc_default_integer_kind;
+      ts.kind = gfc_c_int_kind;
       gfc_convert_type_warn (i, &ts, 2, 0);
     }
 
@@ -1792,11 +1800,11 @@ gfc_resolve_set_exponent (gfc_expr *f, gfc_expr *x, gfc_expr *i)
   /* The library implementation uses GFC_INTEGER_4 unconditionally,
      convert type so we don't have to implement all possible
      permutations.  */
-  if (i->ts.kind != 4)
+  if (i->ts.kind != gfc_c_int_kind)
     {
       gfc_typespec ts;
       ts.type = BT_INTEGER;
-      ts.kind = gfc_default_integer_kind;
+      ts.kind = gfc_c_int_kind;
       gfc_convert_type_warn (i, &ts, 2, 0);
     }
 
@@ -1892,11 +1900,29 @@ gfc_resolve_spacing (gfc_expr *f, gfc_expr *x)
   emin_1 = gfc_get_actual_arglist ();
   emin_1->name = "emin";
   emin_1->expr = gfc_int_expr (gfc_real_kinds[k].min_exponent - 1);
+
+  /* The library routine expects INTEGER(4).  */
+  if (emin_1->expr->ts.kind != gfc_c_int_kind)
+    {
+      gfc_typespec ts;
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      gfc_convert_type (emin_1->expr, &ts, 2);
+    }
   emin_1->next = tiny;
 
   prec = gfc_get_actual_arglist ();
   prec->name = "prec";
   prec->expr = gfc_int_expr (gfc_real_kinds[k].digits);
+
+  /* The library routine expects INTEGER(4).  */
+  if (prec->expr->ts.kind != gfc_c_int_kind)
+    {
+      gfc_typespec ts;
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      gfc_convert_type (prec->expr, &ts, 2);
+    }
   prec->next = emin_1;
 
   f->value.function.actual->next = prec;
