@@ -42,17 +42,21 @@ import java.awt.FontMetrics;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
+import java.awt.font.TextAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import gnu.java.awt.font.FontDelegate;
 import gnu.java.awt.font.FontFactory;
@@ -62,11 +66,30 @@ public class XFontPeer2
   extends ClasspathFontPeer
 {
 
+  /**
+   * The font mapping as specified in the file fonts.properties.
+   */
+  private static Properties fontProperties;
+  static
+  {
+    fontProperties = new Properties();
+    InputStream in = XFontPeer2.class.getResourceAsStream("fonts.properties");
+    try
+      {
+        fontProperties.load(in);
+      }
+    catch (IOException e)
+      {
+        e.printStackTrace();
+      }
+  }
+
   private class XLineMetrics
     extends LineMetrics
   {
 
     private Font font;
+    private GlyphVector glyphVector;
 //    private CharacterIterator characterIterator;
 //    private int begin;
 //    private int limit;
@@ -79,6 +102,8 @@ public class XFontPeer2
 //      begin = b;
 //      limit = l;
       fontRenderContext = rc;
+      glyphVector = fontDelegate.createGlyphVector(font, fontRenderContext,
+                                                   ci);
     }
 
     public float getAscent()
@@ -86,7 +111,7 @@ public class XFontPeer2
       return fontDelegate.getAscent(font.getSize(), fontRenderContext.getTransform(),
                              fontRenderContext.isAntiAliased(),
                              fontRenderContext.usesFractionalMetrics(), true);
-      }
+    }
 
     public int getBaselineIndex()
     {
@@ -102,21 +127,18 @@ public class XFontPeer2
 
     public float getDescent()
     {
-      return (int) fontDelegate.getDescent(font.getSize(),
-                                           new AffineTransform(), false, false,
-                                           false);
+      return (int) fontDelegate.getDescent(font.getSize(), IDENDITY, false,
+                                           false, false);
     }
 
     public float getHeight()
     {
-      // FIXME: Implement this.
-      throw new UnsupportedOperationException("Not yet implemented");
+      return (float) glyphVector.getLogicalBounds().getHeight();
     }
 
     public float getLeading()
     {
-      // FIXME: Implement this.
-      throw new UnsupportedOperationException("Not yet implemented");
+      return getHeight() - getAscent() - getDescent();
     }
 
     public int getNumChars()
@@ -150,6 +172,11 @@ public class XFontPeer2
   private class XFontMetrics
     extends FontMetrics
   {
+    /**
+     * A cached point instance, to be used in #charWidth().
+     */
+    private Point2D cachedPoint = new Point2D.Double();
+
     XFontMetrics(Font f)
     {
       super(f);
@@ -157,22 +184,20 @@ public class XFontPeer2
 
     public int getAscent()
     {
-      return (int) fontDelegate.getAscent(getFont().getSize(),
-                                          new AffineTransform(), false, false,
-                                          false);
+      return (int) fontDelegate.getAscent(getFont().getSize(), IDENDITY,
+                                          false, false, false);
     }
 
     public int getDescent()
     {
-      return (int) fontDelegate.getDescent(getFont().getSize(),
-                                           new AffineTransform(), false, false,
-                                           false);
+      return (int) fontDelegate.getDescent(getFont().getSize(), IDENDITY,
+                                           false, false, false);
     }
     
     public int getHeight()
     {
       GlyphVector gv = fontDelegate.createGlyphVector(getFont(),
-                    new FontRenderContext(new AffineTransform(), false, false),
+                    new FontRenderContext(IDENDITY, false, false),
                     new StringCharacterIterator("m"));
       Rectangle2D b = gv.getVisualBounds();
       return (int) b.getHeight();
@@ -180,8 +205,9 @@ public class XFontPeer2
 
     public int charWidth(char c)
     {
-      Point2D advance = new Point2D.Double();
-      fontDelegate.getAdvance(c, getFont().getSize(), new AffineTransform(),
+      int code = fontDelegate.getGlyphIndex(c);
+      Point2D advance = cachedPoint;
+      fontDelegate.getAdvance(code, font.getSize2D(), IDENDITY,
                               false, false, true, advance);
       return (int) advance.getX();
     }
@@ -194,12 +220,17 @@ public class XFontPeer2
     public int stringWidth(String s)
     {
       GlyphVector gv = fontDelegate.createGlyphVector(getFont(),
-                    new FontRenderContext(new AffineTransform(), false, false),
+                    new FontRenderContext(IDENDITY, false, false),
                     new StringCharacterIterator(s));
       Rectangle2D b = gv.getVisualBounds();
       return (int) b.getWidth();
     }
   }
+
+  /**
+   * The indendity transform, to be used in several methods.
+   */
+  private static final AffineTransform IDENDITY = new AffineTransform();
 
   private FontDelegate fontDelegate;
 
@@ -208,7 +239,7 @@ public class XFontPeer2
     super(name, style, size);
     try
       {
-        File fontfile = new File("/usr/share/fonts/truetype/ttf-bitstream-vera/Vera.ttf");
+        File fontfile = new File("/usr/share/fonts/truetype/freefont/FreeSans.ttf");
         FileInputStream in = new FileInputStream(fontfile);
         FileChannel ch = in.getChannel();
         ByteBuffer buffer = ch.map(FileChannel.MapMode.READ_ONLY, 0,
@@ -239,7 +270,7 @@ public class XFontPeer2
       }
   }
 
-  public boolean canDisplay(Font font, char c)
+  public boolean canDisplay(Font font, int c)
   {
     // FIXME: Implement this.
     throw new UnsupportedOperationException("Not yet implemented");
@@ -326,4 +357,112 @@ public class XFontPeer2
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
+  /**
+   * Encodes a font name + style + size specification into a X logical font
+   * description (XLFD) as described here:
+   *
+   * http://www.meretrx.com/e93/docs/xlfd.html
+   *
+   * This is implemented to look up the font description in the
+   * fonts.properties of this package.
+   *
+   * @param name the font name
+   * @param atts the text attributes
+   *
+   * @return the encoded font description
+   */
+  static String encodeFont(String name, Map atts)
+  {
+    String family = name;
+    if (family == null || family.equals(""))
+      family = (String) atts.get(TextAttribute.FAMILY);
+    if (family == null)
+      family = "SansSerif";
+
+    int size = 12;
+    Float sizeFl = (Float) atts.get(TextAttribute.SIZE);
+    if (sizeFl != null)
+      size = sizeFl.intValue();
+
+    int style = 0;
+    // Detect italic attribute.
+    Float posture = (Float) atts.get(TextAttribute.POSTURE);
+    if (posture != null && !posture.equals(TextAttribute.POSTURE_REGULAR))
+      style |= Font.ITALIC;
+
+    // Detect bold attribute.
+    Float weight = (Float) atts.get(TextAttribute.WEIGHT);
+    if (weight != null && weight.compareTo(TextAttribute.WEIGHT_REGULAR) > 0)
+      style |= Font.BOLD;
+
+    return encodeFont(name, style, size);
+  }
+
+  /**
+   * Encodes a font name + style + size specification into a X logical font
+   * description (XLFD) as described here:
+   *
+   * http://www.meretrx.com/e93/docs/xlfd.html
+   *
+   * This is implemented to look up the font description in the
+   * fonts.properties of this package.
+   *
+   * @param name the font name
+   * @param style the font style
+   * @param size the font size
+   *
+   * @return the encoded font description
+   */
+  static String encodeFont(String name, int style, int size)
+  {
+    StringBuilder key = new StringBuilder();
+    key.append(validName(name));
+    key.append('.');
+    switch (style)
+    {
+      case Font.BOLD:
+        key.append("bold");
+        break;
+      case Font.ITALIC:
+        key.append("italic");
+        break;
+      case (Font.BOLD | Font.ITALIC):
+        key.append("bolditalic");
+        break;
+      case Font.PLAIN:
+      default:
+        key.append("plain");
+      
+    }
+
+    String protoType = fontProperties.getProperty(key.toString());
+    int s = size;
+    return protoType.replaceFirst("%d", String.valueOf(s * 10));
+  }
+
+  /**
+   * Checks the specified font name for a valid font name. If the font name
+   * is not known, then this returns 'sansserif' as fallback.
+   *
+   * @param name the font name to check
+   *
+   * @return a valid font name
+   */
+  static String validName(String name)
+  {
+    String retVal;
+    if (name.equalsIgnoreCase("sansserif")
+        || name.equalsIgnoreCase("serif")
+        || name.equalsIgnoreCase("monospaced")
+        || name.equalsIgnoreCase("dialog")
+        || name.equalsIgnoreCase("dialoginput"))
+      {
+        retVal = name.toLowerCase();
+      }
+    else
+      {
+        retVal = "sansserif";
+      }
+    return retVal;
+  }
 }

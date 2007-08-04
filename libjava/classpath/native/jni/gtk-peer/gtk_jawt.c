@@ -69,7 +69,7 @@ classpath_jawt_get_default_display (JNIEnv* env, jobject canvas)
 
   peer = (*env)->CallObjectMethod (env, canvas, method_id);
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
 
   widget = GTK_WIDGET (ptr);
 
@@ -105,7 +105,7 @@ classpath_jawt_get_visualID (JNIEnv* env, jobject canvas)
 
   peer = (*env)->CallObjectMethod (env, canvas, method_id);
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
 
   widget = GTK_WIDGET (ptr);
 
@@ -140,7 +140,7 @@ classpath_jawt_get_depth (JNIEnv* env, jobject canvas)
 
   peer = (*env)->CallObjectMethod (env, canvas, method_id);
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
 
   widget = GTK_WIDGET (ptr);
 
@@ -175,7 +175,7 @@ classpath_jawt_get_drawable (JNIEnv* env, jobject canvas)
 
   peer = (*env)->CallObjectMethod (env, canvas, method_id);
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
 
   widget = GTK_WIDGET (ptr);
 

@@ -548,7 +548,7 @@ extern void _Jv_CallAnyMethodA (jobject obj,
 				jboolean is_constructor,
 				jboolean is_virtual_call,
 				JArray<jclass> *parameter_types,
-				jvalue *args,
+				const jvalue *args,
 				jvalue *result,
 				jboolean is_jni_call = true,
 				jclass iface = NULL);

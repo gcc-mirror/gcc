@@ -55,7 +55,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_create
   gdk_threads_enter ();
   
   /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   sw = gtk_scrolled_window_new (NULL, NULL);
   gtk_widget_set_size_request (sw, width, height);
@@ -63,7 +63,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_create
   gtk_container_add (GTK_CONTAINER (eventbox), sw);
   gtk_widget_show (sw);
 
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -78,7 +78,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_setScrollPosition
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   sw = GTK_SCROLLED_WINDOW (scrollpane_get_widget (GTK_WIDGET (ptr)));
 
@@ -101,7 +101,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_gtkScrolledWindowSetHScrollIncremen
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   sw = GTK_SCROLLED_WINDOW (scrollpane_get_widget (GTK_WIDGET (ptr)));
 
@@ -121,7 +121,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_gtkScrolledWindowSetVScrollIncremen
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   sw = GTK_SCROLLED_WINDOW (scrollpane_get_widget (GTK_WIDGET (ptr)));
 
@@ -143,7 +143,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_getHScrollbarHeight
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   sw = GTK_SCROLLED_WINDOW (scrollpane_get_widget (GTK_WIDGET (ptr)));
 
@@ -168,7 +168,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_getVScrollbarWidth
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   sw = GTK_SCROLLED_WINDOW (scrollpane_get_widget (GTK_WIDGET (ptr)));
 
@@ -190,7 +190,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_setPolicy
   
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   switch (policy)
     {

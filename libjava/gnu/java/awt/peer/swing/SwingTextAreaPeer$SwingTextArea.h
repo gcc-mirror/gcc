@@ -6,7 +6,7 @@
 
 #pragma interface
 
-#include <javax/swing/JScrollPane.h>
+#include <javax/swing/JTextArea.h>
 extern "Java"
 {
   namespace gnu
@@ -30,45 +30,41 @@ extern "Java"
   {
     namespace awt
     {
-        class Component;
-        class Container;
-        class Graphics;
-        class Image;
-        class Point;
       namespace event
       {
+          class ComponentEvent;
+          class FocusEvent;
+          class HierarchyEvent;
+          class InputMethodEvent;
           class KeyEvent;
           class MouseEvent;
+          class MouseWheelEvent;
       }
-    }
-  }
-  namespace javax
-  {
-    namespace swing
-    {
-        class JComponent;
     }
   }
 }
 
-class gnu::java::awt::peer::swing::SwingTextAreaPeer$SwingTextArea : public ::javax::swing::JScrollPane
+class gnu::java::awt::peer::swing::SwingTextAreaPeer$SwingTextArea : public ::javax::swing::JTextArea
 {
 
-public: // actually package-private
-  SwingTextAreaPeer$SwingTextArea(::gnu::java::awt::peer::swing::SwingTextAreaPeer *, ::java::awt::Component *);
+  SwingTextAreaPeer$SwingTextArea(::gnu::java::awt::peer::swing::SwingTextAreaPeer *);
+public: // actually protected
+  virtual void processComponentKeyEvent(::java::awt::event::KeyEvent *);
+  virtual void processMouseMotionEvent(::java::awt::event::MouseEvent *);
+  virtual void processComponentEvent(::java::awt::event::ComponentEvent *);
+  virtual void processFocusEvent(::java::awt::event::FocusEvent *);
+  virtual void processHierarchyBoundsEvent(::java::awt::event::HierarchyEvent *);
+  virtual void processHierarchyEvent(::java::awt::event::HierarchyEvent *);
+  virtual void processInputMethodEvent(::java::awt::event::InputMethodEvent *);
+  virtual void processMouseEvent(::java::awt::event::MouseEvent *);
+  virtual void processMouseWheelEvent(::java::awt::event::MouseWheelEvent *);
+  virtual void processKeyEvent(::java::awt::event::KeyEvent *);
 public:
-  virtual ::javax::swing::JComponent * getJComponent();
-  virtual void handleMouseEvent(::java::awt::event::MouseEvent *);
-  virtual jboolean isLightweight();
-  virtual void handleMouseMotionEvent(::java::awt::event::MouseEvent *);
-  virtual void handleKeyEvent(::java::awt::event::KeyEvent *);
-  virtual ::java::awt::Point * getLocationOnScreen();
-  virtual jboolean isShowing();
-  virtual ::java::awt::Image * createImage(jint, jint);
-  virtual ::java::awt::Graphics * getGraphics();
-  virtual ::java::awt::Container * getParent();
+  virtual void requestFocus();
+  virtual jboolean requestFocus(jboolean);
 public: // actually package-private
-  ::gnu::java::awt::peer::swing::SwingTextAreaPeer * __attribute__((aligned(__alignof__( ::javax::swing::JScrollPane)))) this$0;
+  SwingTextAreaPeer$SwingTextArea(::gnu::java::awt::peer::swing::SwingTextAreaPeer *, ::gnu::java::awt::peer::swing::SwingTextAreaPeer$SwingTextArea *);
+  ::gnu::java::awt::peer::swing::SwingTextAreaPeer * __attribute__((aligned(__alignof__( ::javax::swing::JTextArea)))) this$0;
 public:
   static ::java::lang::Class class$;
 };

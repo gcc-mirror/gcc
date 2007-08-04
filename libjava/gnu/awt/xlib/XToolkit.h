@@ -53,6 +53,8 @@ extern "Java"
         class Choice;
         class Component;
         class Dialog;
+        class Dialog$ModalExclusionType;
+        class Dialog$ModalityType;
         class Dimension;
         class EventQueue;
         class FileDialog;
@@ -196,6 +198,9 @@ public:
   virtual jboolean nativeQueueEmpty();
   virtual void wakeNativeQueue();
   virtual void iterateNativeQueue(::java::awt::EventQueue *, jboolean);
+  virtual void setAlwaysOnTop(jboolean);
+  virtual jboolean isModalExclusionTypeSupported(::java::awt::Dialog$ModalExclusionType *);
+  virtual jboolean isModalityTypeSupported(::java::awt::Dialog$ModalityType *);
 public: // actually package-private
   static ::gnu::awt::xlib::XToolkit * INSTANCE;
   ::gnu::gcj::xlib::Display * __attribute__((aligned(__alignof__( ::gnu::java::awt::ClasspathToolkit)))) display;

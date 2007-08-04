@@ -36,7 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 #include "gtkpeer.h"
-#include "GtkDragSourceContextPeer.h"
+#include "gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer.h"
 
 #include <jni.h>
 #include <gtk/gtk.h>
@@ -78,7 +78,7 @@ static jmethodID dropCompleteID;
 
 GtkWidget *widget;
 GtkWidget *tgt;
-jobject *gref;
+jobject gref;
 jobject javaObj;
 
 JNIEXPORT void JNICALL 
@@ -88,10 +88,10 @@ Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_create
   gdk_threads_enter ();
  
   javaObj = obj;
-  NSA_SET_GLOBAL_REF (env, obj);  
-  NSA_SET_GLOBAL_REF (env, comp);
+  gtkpeer_set_global_ref (env, obj);  
+  gtkpeer_set_global_ref (env, comp);
   
-  gref = NSA_GET_PTR (env, comp);
+  gref = gtkpeer_get_widget (env, comp);
   widget = get_widget (GTK_WIDGET (gref));
 
   gdk_threads_leave ();
@@ -109,7 +109,7 @@ Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_nativeSetCursor
   gdk_threads_enter ();
 
   javaObj = obj;
-  ptr = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_global_ref (env, obj);
   
   switch (type)
     {
@@ -180,7 +180,7 @@ Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_connectSignals
   gdk_threads_enter ();
 
   javaObj = obj;
-  gref = NSA_GET_GLOBAL_REF (env, comp);
+  gref = gtkpeer_get_global_ref (env, comp);
   
   connect_signals_for_widget (widget);
 
@@ -245,7 +245,7 @@ Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_setTarget
   gdk_threads_enter ();
   
   javaObj = obj;
-  ptr = NSA_GET_PTR (env, target);
+  ptr = gtkpeer_get_widget (env, target);
   tgt = get_widget (GTK_WIDGET (ptr));
   connect_signals_for_widget (tgt);
 
@@ -268,7 +268,7 @@ Java_gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer_nativeStartDrag
   gdk_threads_enter ();
   
   javaObj = obj;
-  ptr = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_global_ref (env, obj);
 
   data = (*env)->GetStringUTFChars (env, target, NULL);
   tar[0].target = (gchar *) data;  

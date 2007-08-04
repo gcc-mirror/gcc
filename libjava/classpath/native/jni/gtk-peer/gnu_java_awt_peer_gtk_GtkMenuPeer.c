@@ -47,7 +47,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
 
   gdk_threads_enter ();
 
-  ptr1 = NSA_GET_PTR (env, obj);
+  ptr1 = gtkpeer_get_widget (env, obj);
 
   if (!parent)
     {
@@ -58,7 +58,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
     {
       GtkAccelGroup *parent_accel;
 
-      ptr2 = NSA_GET_PTR (env, parent);
+      ptr2 = gtkpeer_get_widget (env, parent);
       parent_accel = gtk_menu_get_accel_group (GTK_MENU (GTK_MENU_ITEM (ptr2)->submenu));
       
       gtk_menu_set_accel_group (GTK_MENU (GTK_MENU_ITEM (ptr1)->submenu),
@@ -78,7 +78,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
 
   gdk_threads_enter ();
   
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   str = (*env)->GetStringUTFChars (env, label, NULL);
 
@@ -101,7 +101,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create
 
   gtk_widget_show (menu_title);
 
-  NSA_SET_PTR (env, obj, menu_title);
+  gtkpeer_set_widget (env, obj, menu_title);
 
   (*env)->ReleaseStringUTFChars (env, label, str);
 
@@ -117,7 +117,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_addTearOff
 
   gdk_threads_enter ();
 
-  ptr1 = NSA_GET_PTR (env, obj);
+  ptr1 = gtkpeer_get_widget (env, obj);
 
   menu = gtk_menu_item_get_submenu (GTK_MENU_ITEM (ptr1));
   item = gtk_tearoff_menu_item_new ();
@@ -136,8 +136,8 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_addItem
 
   gdk_threads_enter ();
 
-  ptr1 = NSA_GET_PTR (env, obj);
-  ptr2 = NSA_GET_PTR (env, menuitempeer);
+  ptr1 = gtkpeer_get_widget (env, obj);
+  ptr2 = gtkpeer_get_widget (env, menuitempeer);
 
   menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(ptr1));
   gtk_menu_shell_append (GTK_MENU_SHELL(menu), GTK_WIDGET (ptr2));
@@ -164,7 +164,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuPeer_delItem
   
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   menu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(ptr));
 

@@ -29,6 +29,7 @@ public: // actually package-private
   XMLParser$Attribute(::gnu::xml::stream::XMLParser *, ::java::lang::String *, ::java::lang::String *, jboolean, ::java::lang::String *);
 public:
   virtual jboolean equals(::java::lang::Object *);
+  virtual ::java::lang::String * toString();
 public: // actually package-private
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   ::java::lang::String * type;

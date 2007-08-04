@@ -94,7 +94,7 @@ public class QtFontMetrics extends FontMetrics
 
   // ****************** Package private ***************************
   
-  native boolean canDisplay( char c );
+  native boolean canDisplay( int c );
 
   // ****************** Public methods ****************************
 

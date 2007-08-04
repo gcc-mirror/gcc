@@ -44,7 +44,6 @@ import java.awt.Canvas;
 import java.awt.Checkbox;
 import java.awt.CheckboxMenuItem;
 import java.awt.Choice;
-import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -69,6 +68,8 @@ import java.awt.TextArea;
 import java.awt.TextField;
 import java.awt.Transparency;
 import java.awt.Window;
+import java.awt.Dialog.ModalExclusionType;
+import java.awt.Dialog.ModalityType;
 import java.awt.datatransfer.Clipboard;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.peer.DragSourceContextPeer;
@@ -88,7 +89,6 @@ import java.awt.peer.FileDialogPeer;
 import java.awt.peer.FontPeer;
 import java.awt.peer.FramePeer;
 import java.awt.peer.LabelPeer;
-import java.awt.peer.LightweightPeer;
 import java.awt.peer.ListPeer;
 import java.awt.peer.MenuBarPeer;
 import java.awt.peer.MenuItemPeer;
@@ -179,16 +179,16 @@ public class XToolkit
    */
   public ClasspathFontPeer getClasspathFontPeer(String name, Map attrs)
   {
-    String canonical = XFontPeer.encodeFont(name, attrs);
+    String canonical = XFontPeer2.encodeFont(name, attrs);
     ClasspathFontPeer font;
     if (!fontCache.containsKey(canonical))
       {
         String graphics2d =
           SystemProperties.getProperty("gnu.xawt.graphics2d");
-        if (graphics2d != null && graphics2d.equals("gl"))
+        //if (graphics2d != null && graphics2d.equals("gl"))
           font = new XFontPeer2(name, attrs);
-        else
-          font = new XFontPeer(name, attrs);
+//        else
+//          font = new XFontPeer(name, attrs);
         fontCache.put(canonical, font);
       }
     else
@@ -601,8 +601,20 @@ public class XToolkit
     return (XGraphicsDevice) env.getDefaultScreenDevice();
   }
 
-  protected LightweightPeer createComponent(Component c)
+  @Override
+  public boolean isModalExclusionTypeSupported
+                 (Dialog.ModalExclusionType modalExclusionType)
   {
-    return new XLightweightPeer(c);
+    // TODO: Implement properly.
+    return false;
   }
+
+  @Override
+  public boolean isModalityTypeSupported(Dialog.ModalityType modalityType)
+  {
+    // TODO: Implement properly.
+    return false;
+  }
+
+
 }

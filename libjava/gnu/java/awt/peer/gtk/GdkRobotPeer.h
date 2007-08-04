@@ -60,6 +60,7 @@ public: // actually package-private
 public:
   virtual jint getRGBPixel(jint, jint);
   virtual JArray< jint > * getRGBPixels(::java::awt::Rectangle *);
+  virtual void dispose();
 public: // actually package-private
   static ::java::awt::image::ColorModel * cm;
 public:

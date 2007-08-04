@@ -59,7 +59,7 @@ private:
   void dispose();
 public: // actually package-private
   virtual ::java::awt::geom::Rectangle2D * getStringBounds(::java::lang::String *);
-  virtual jboolean canDisplay(jchar);
+  virtual jboolean canDisplay(jint);
 public:
   virtual jint getAscent();
   virtual jint getDescent();

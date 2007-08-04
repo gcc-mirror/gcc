@@ -771,6 +771,10 @@ Java_gnu_java_nio_VMChannel_receive (JNIEnv *env,
   if (JCL_init_buffer (env, &buf, dst) == -1)
     JCL_ThrowException (env, IO_EXCEPTION, "loading buffer failed");
 
+#ifndef HAVE_MSG_WAITALL
+#define MSG_WAITALL       0
+#endif
+
   ret = cpnio_recvfrom (fd, &(buf.ptr[buf.position + buf.offset]),
                         buf.limit - buf.position, MSG_WAITALL,
                         sockaddr, &slen);
@@ -1582,14 +1586,84 @@ Java_gnu_java_nio_VMChannel_available (JNIEnv *env,
                                        jclass c __attribute__((unused)),
                                        jint fd)
 {
+#if defined (FIONREAD)
+
   jint avail = 0;
+
+#if defined(ENOTTY) && defined(HAVE_FSTAT)
+  struct stat statBuffer;
+  off_t n;
+#endif
 
 /*   NIODBG("fd: %d", fd); */
   if (ioctl (fd, FIONREAD, &avail) == -1)
-    JCL_ThrowException (env, IO_EXCEPTION, strerror (errno));
+    {
+#if defined(ENOTTY) && defined(HAVE_FSTAT)
+      if (errno == ENOTTY)
+        {
+          if ((fstat (fd, &statBuffer) == 0) && S_ISREG (statBuffer.st_mode))
+            {
+              n = lseek (fd, 0, SEEK_CUR);
+              if (n != -1)
+                {
+                  avail = statBuffer.st_size - n;
+                  return avail;
+                }
+            }
+        }
+#endif
+      JCL_ThrowException (env, IO_EXCEPTION, strerror (errno));
+    }
 /*   NIODBG("avail: %d", avail); */
 
   return avail;
+
+#elif defined(HAVE_FSTAT)
+
+  jint avail = 0;
+
+  struct stat statBuffer;
+  off_t n;
+
+  if ((fstat (fd, &statBuffer) == 0) && S_ISREG (statBuffer.st_mode))
+    {
+      n = lseek (fd, 0, SEEK_CUR);
+      if (n != -1) 
+        { 
+	  avail = statBuffer.st_size - n;
+	  return avail;
+        } 
+    }
+  JCL_ThrowException (env, IO_EXCEPTION, strerror (errno));
+
+#elif defined(HAVE_SELECT)
+
+  jint avail = 0;
+  fd_set filedescriptset;
+  struct timeval tv;
+
+  FD_ZERO (&filedescriptset);
+  FD_SET (fd,&filedescriptset);
+  memset (&tv, 0, sizeof(tv));
+
+  switch (select (fd+1, &filedescriptset, NULL, NULL, &tv))
+    {
+      case -1:
+        break;
+      case  0:
+        avail = 0;
+	return avail;
+      default:
+        avail = 1;
+	return avail;
+    }
+  JCL_ThrowException (env, IO_EXCEPTION, strerror (errno));
+
+#else
+
+  JCL_ThrowException (env, IO_EXCEPTION, "No native method for available");
+
+#endif
 }
 
 
@@ -1627,7 +1701,7 @@ Java_gnu_java_nio_VMChannel_open (JNIEnv *env,
   nmode = (nmode
            | ((nmode == O_RDWR || nmode == O_WRONLY) ? O_CREAT : 0)
            | ((mode & CPNIO_APPEND) ? O_APPEND :
-              ((nmode == O_RDWR || nmode == O_WRONLY) ? O_TRUNC : 0))
+              ((nmode == O_WRONLY) ? O_TRUNC : 0))
            | ((mode & CPNIO_EXCL) ? O_EXCL : 0)
            | ((mode & CPNIO_SYNC) ? O_SYNC : 0));
 

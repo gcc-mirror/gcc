@@ -131,7 +131,7 @@ final class LongViewBufferImpl extends LongBuffer
   public LongBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new LongViewBufferImpl (bb, (position () >> 3) + offset,
+    return new LongViewBufferImpl (bb, (position () << 3) + offset,
 				   remaining(), remaining(), 0, -1,
 				   readOnly, endian);
   }

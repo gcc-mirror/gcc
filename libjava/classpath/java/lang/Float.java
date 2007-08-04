@@ -181,7 +181,7 @@ public final class Float extends Number implements Comparable<Float>
    */
   public static String toString(float f)
   {
-    return VMDouble.toString(f, true);
+    return VMFloat.toString(f);
   }
 
   /**
@@ -331,9 +331,9 @@ public final class Float extends Number implements Comparable<Float>
    *
    * @param str the <code>String</code> to convert
    * @return the <code>float</code> value of <code>s</code>
-   * @throws NumberFormatException if <code>s</code> cannot be parsed as a
+   * @throws NumberFormatException if <code>str</code> cannot be parsed as a
    *         <code>float</code>
-   * @throws NullPointerException if <code>s</code> is null
+   * @throws NullPointerException if <code>str</code> is null
    * @see #MIN_VALUE
    * @see #MAX_VALUE
    * @see #POSITIVE_INFINITY
@@ -342,9 +342,7 @@ public final class Float extends Number implements Comparable<Float>
    */
   public static float parseFloat(String str)
   {
-    // XXX Rounding parseDouble() causes some errors greater than 1 ulp from
-    // the infinitely precise decimal.
-    return (float) Double.parseDouble(str);
+    return VMFloat.parseFloat(str);
   }
 
   /**

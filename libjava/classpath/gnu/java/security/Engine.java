@@ -146,7 +146,7 @@ public final class Engine
       throw new IllegalArgumentException("Constructor's parameters MUST NOT be null");
 
     Enumeration enumer = provider.propertyNames();
-    String key;
+    String key = null;
     String alias;
     int count = 0;
     boolean algorithmFound = false;
@@ -193,7 +193,7 @@ public final class Engine
     Class clazz = null;
     ClassLoader loader = provider.getClass().getClassLoader();
     Constructor constructor = null;
-    String className = provider.getProperty(service + "." + algorithm);
+    String className = provider.getProperty(key);
     sb.append("Class [").append(className).append("] for algorithm [")
         .append(algorithm).append("] of type [").append(service)
         .append("] from provider [").append(provider).append("] ");

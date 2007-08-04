@@ -1,5 +1,5 @@
 /* SwingTextFieldPeer.java -- A Swing based peer for AWT textfields
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C)  2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TextField;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.im.InputMethodRequests;
@@ -72,13 +73,13 @@ public class SwingTextFieldPeer
     implements SwingComponent
   {
 
-      TextField textField;
-      
-      SwingTextField(TextField textField)
-      {
-         this.textField = textField; 
-      }
-      
+    TextField textField;
+
+    SwingTextField(TextField textField)
+    {
+      this.textField = textField; 
+    }
+
     /**
      * Overridden to provide normal behaviour even without a real peer
      * attached.
@@ -91,8 +92,8 @@ public class SwingTextFieldPeer
     }
 
     /**
-     * Overridden so that the isShowing method returns the correct value for the
-     * swing button, even if it has no peer on its own.
+     * Overridden so that the isShowing method returns the correct value
+     * for the swing button, even if it has no peer on its own.
      *
      * @return <code>true</code> if the button is currently showing,
      *         <code>false</code> otherwise
@@ -162,6 +163,18 @@ public class SwingTextFieldPeer
       processKeyEvent(ev);
     }
 
+    /**
+     * Handles focus events by forwarding it to
+     * <code>processFocusEvent()</code>.
+     *
+     * @param ev the Focus event
+     */
+    public void handleFocusEvent(FocusEvent ev)
+    {
+      processFocusEvent(ev);
+    }
+
+    
     public Container getParent()
     {
       Container par = null;
@@ -174,6 +187,16 @@ public class SwingTextFieldPeer
     {
       return SwingTextFieldPeer.this.getGraphics();
     }
+    
+    public void requestFocus() {
+        SwingTextFieldPeer.this.requestFocus(awtComponent, false, true, 0);
+    }
+
+    public boolean requestFocus(boolean temporary) {
+        return SwingTextFieldPeer.this.requestFocus(awtComponent, temporary,
+                                                    true, 0);
+    }
+
   }
 
   /**

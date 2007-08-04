@@ -193,6 +193,7 @@ clipboard_get_func (GtkClipboard *clipboard,
 				       gtk_clipboard_instance,
 				       provideContentID,
 				       target_string);
+      (*env)->DeleteLocalRef(env, target_string);
       if (bytes == NULL)
 	return;
       len = (*env)->GetArrayLength(env, bytes);
@@ -273,9 +274,13 @@ clipboard_get_func (GtkClipboard *clipboard,
 	    break;
 	  text = (*env)->GetStringUTFChars (env, uri, NULL);
 	  if (text == NULL)
-	    break;
+            {
+              (*env)->DeleteLocalRef(env, uri);
+              break;
+            }
 	  list[i] = strdup (text);
 	  (*env)->ReleaseStringUTFChars (env, uri, text);
+	  (*env)->DeleteLocalRef(env, uri);
 	}
 
       if (i == count)

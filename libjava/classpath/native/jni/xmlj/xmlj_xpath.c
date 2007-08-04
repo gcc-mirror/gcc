@@ -39,7 +39,6 @@ exception statement from your version. */
 #include "gnu_xml_libxmlj_dom_GnomeElement.h"
 #include "gnu_xml_libxmlj_dom_GnomeXPathExpression.h"
 #include "gnu_xml_libxmlj_dom_GnomeXPathNodeList.h"
-#include "gnu_xml_libxmlj_dom_GnomeXPathNSResolver.h"
 #include "gnu_xml_libxmlj_dom_GnomeXPathResult.h"
 #include "xmlj_node.h"
 #include "xmlj_util.h"

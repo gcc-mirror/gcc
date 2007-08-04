@@ -452,4 +452,19 @@ public class QtToolkit extends ClasspathToolkit
     //    return new QtEmbeddedWindowPeer( this, w );
     return null;
   }
+
+  @Override
+  public boolean isModalExclusionTypeSupported
+  (Dialog.ModalExclusionType modalExclusionType)
+  {
+    return false;
+  }
+
+  @Override
+  public boolean isModalityTypeSupported(Dialog.ModalityType modalityType)
+  {
+    return false;
+  }
+
+
 }

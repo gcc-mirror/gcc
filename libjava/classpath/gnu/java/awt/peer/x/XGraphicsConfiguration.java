@@ -39,11 +39,20 @@ package gnu.java.awt.peer.x;
 
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 import java.awt.image.VolatileImage;
+import java.awt.image.WritableRaster;
 
 public class XGraphicsConfiguration
     extends GraphicsConfiguration
@@ -63,26 +72,60 @@ public class XGraphicsConfiguration
 
   public BufferedImage createCompatibleImage(int w, int h)
   {
-    return new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+    return createCompatibleImage(w, h, Transparency.OPAQUE);
+  }
+
+  public BufferedImage createCompatibleImage(int w, int h, int transparency)
+  {
+    BufferedImage bi;
+    switch (transparency)
+      {
+        case Transparency.OPAQUE:
+          DataBuffer buffer = new ZPixmapDataBuffer(w, h);
+          SampleModel sm = new ComponentSampleModel(DataBuffer.TYPE_BYTE, w, h,
+                                                    4, w * 4,
+                                                    new int[]{0, 1, 2, 3 });
+          ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_LINEAR_RGB);
+          ColorModel cm = new ComponentColorModel(cs, true, false,
+                                                  Transparency.OPAQUE,
+                                                  DataBuffer.TYPE_BYTE);
+          WritableRaster raster = Raster.createWritableRaster(sm, buffer,
+                                                              new Point(0, 0));
+          bi = new BufferedImage(cm, raster, false, null);
+          break;
+        case Transparency.BITMASK:
+        case Transparency.TRANSLUCENT:
+          bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+          break;
+        default:
+          throw new IllegalArgumentException("Illegal transparency: "
+                                             + transparency);
+      }
+    return bi;
   }
 
   public VolatileImage createCompatibleVolatileImage(int w, int h)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    return createCompatibleVolatileImage(w, h, Transparency.OPAQUE);
   }
 
   public VolatileImage createCompatibleVolatileImage(int width, int height,
                                                      int transparency)
   {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
-  }
-
-  public BufferedImage createCompatibleImage(int w, int h, int transparency)
-  {
-    // TODO: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented.");
+    VolatileImage im;
+    switch (transparency)
+      {
+      case Transparency.OPAQUE:
+        im = new PixmapVolatileImage(width, height);
+        break;
+      case Transparency.BITMASK:
+      case Transparency.TRANSLUCENT:
+        throw new UnsupportedOperationException("Not yet implemented");
+      default:
+        throw new IllegalArgumentException("Unknown transparency type: "
+                                           + transparency);  
+      }
+    return im;
   }
 
   public ColorModel getColorModel()

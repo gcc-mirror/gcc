@@ -67,7 +67,7 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphicsCopy_getPixbuf
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
   g_assert (ptr != NULL);
 
   widget = GTK_WIDGET (ptr);
@@ -95,8 +95,8 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_ComponentGraphicsCopy_copyPixbuf
   (JNIEnv *env, jobject obj __attribute__((unused)),
    jobject peer, jobject image,
-   int x __attribute__((unused)), int y __attribute__((unused)),
-   int width __attribute__((unused)), int height __attribute__((unused)))
+   jint x __attribute__((unused)), jint y __attribute__((unused)),
+   jint width __attribute__((unused)), jint height __attribute__((unused)))
 {
   gint pwidth, pheight;
   GdkPixbuf *pixbuf;
@@ -107,7 +107,7 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphicsCopy_copyPixbuf
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
   g_assert (ptr != NULL);
 
   widget = GTK_WIDGET (ptr);

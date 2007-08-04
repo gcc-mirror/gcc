@@ -144,10 +144,39 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
 
   static native void gtkQuit();
 
+  /**
+   * Initializes field IDs that are used by native code.
+   */
+  private static native void initIDs();
+
+  /**
+   * True when the field IDs are already initialized, false otherwise.
+   */
+  private static boolean initializedGlobalIDs = false;
+
+  /**
+   * Initializes some global fieldIDs for use in the native code. This is
+   * called by a couple of classes in the GTK peers to ensure that
+   * some necessary stuff is loaded.
+   */
+  static synchronized void initializeGlobalIDs()
+  {
+    if (! initializedGlobalIDs)
+      {
+        initIDs();
+        initializedGlobalIDs = true;
+      }
+  }
+
   static
   {
     System.loadLibrary("gtkpeer");
-      
+
+    /**
+     * Gotta do that first.
+     */
+    initializeGlobalIDs();
+
     int portableNativeSync;     
     String portNatSyncProp = 
       System.getProperty("gnu.classpath.awt.gtk.portable.native.sync");
@@ -715,5 +744,18 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
   }
 
   public native int getMouseNumberOfButtons();
+
+  @Override
+  public boolean isModalExclusionTypeSupported
+  (Dialog.ModalExclusionType modalExclusionType)
+  {
+    return false;
+  }
+
+  @Override
+  public boolean isModalityTypeSupported(Dialog.ModalityType modalityType)
+  {
+    return false;
+  }
 
 } // class GtkToolkit

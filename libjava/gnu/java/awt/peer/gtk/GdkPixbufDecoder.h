@@ -13,6 +13,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace java
     {
       namespace awt
@@ -96,6 +100,9 @@ private:
   jboolean needsClose;
 public: // actually package-private
   ::java::util::Vector * curr;
+private:
+  ::gnu::classpath::Pointer * nativeDecoder;
+public: // actually package-private
   static ::java::awt::image::ColorModel * cm;
   static ::java::util::ArrayList * imageFormatSpecs;
 private:

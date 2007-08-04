@@ -40,6 +40,13 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkGenericPeer.h"
 
 JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkGenericPeer_initIDs
+(JNIEnv *env, jclass clz __attribute__((unused)))
+{
+  gtkpeer_init_widget_IDs(env);
+}
+
+JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
   (JNIEnv *env, jobject obj)
 {
@@ -47,15 +54,14 @@ Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   /* For now the native state for any object must be a widget.
      However, a subclass could override dispose() if required.  */
   gtk_widget_destroy (GTK_WIDGET (ptr));
 
-  /* Remove entries from state tables */
-  NSA_DEL_GLOBAL_REF (env, obj);
-  NSA_DEL_PTR (env, obj);
+  /* Delete global reference. */
+  gtkpeer_del_global_ref(env, obj);
 
   gdk_threads_leave ();
 }
@@ -70,7 +76,7 @@ Java_gnu_java_awt_peer_gtk_GtkGenericPeer_gtkWidgetModifyFont
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 

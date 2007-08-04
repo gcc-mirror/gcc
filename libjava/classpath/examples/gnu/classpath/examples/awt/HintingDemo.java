@@ -20,17 +20,28 @@ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 
 package gnu.classpath.examples.awt;
 
-import gnu.java.awt.font.*;
-import gnu.java.awt.font.opentype.*;
+import gnu.java.awt.font.FontDelegate;
+import gnu.java.awt.font.GNUGlyphVector;
+import gnu.java.awt.font.opentype.OpenTypeFontFactory;
 
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.font.*;
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.text.*;
+import java.awt.font.FontRenderContext;
+import java.io.File;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.text.StringCharacterIterator;
 
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
@@ -57,6 +68,9 @@ public class HintingDemo extends JFrame {
   char character;
   Options options;
   boolean antiAlias;
+  boolean showGrid;
+  boolean showOriginal;
+  boolean showHinted;
   int flags;
 
   class StringViewer extends JPanel
@@ -133,24 +147,35 @@ public class HintingDemo extends JFrame {
           Insets i = getInsets();
           g2d.clearRect(i.left, i.top, getWidth() - i.left - i.right,
                         getHeight() - i.top - i.bottom);
-          g2d.setColor(Color.GRAY);
-          for (int x = 20; x < getWidth(); x += 20)
+          if (showGrid)
             {
-              g2d.drawLine(x, i.top, x, getHeight() - i.top - i.bottom);
+              g2d.setColor(Color.GRAY);
+              for (int x = 20; x < getWidth(); x += 20)
+                {
+                  g2d.drawLine(x, i.top, x, getHeight() - i.top - i.bottom);
+                }
+              for (int y = 20; y < getHeight(); y += 20)
+                {
+                  g2d.drawLine(i.left, y, getWidth() - i.left - i.right, y);
+                }
             }
-          for (int y = 20; y < getHeight(); y += 20)
-            {
-              g2d.drawLine(i.left, y, getWidth() - i.left - i.right, y);
-            }
-          g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                               RenderingHints.VALUE_ANTIALIAS_OFF);
+//          g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+//                               RenderingHints.VALUE_ANTIALIAS_ON);
           g2d.translate(40, 300);
           g2d.scale(20., 20.);
-          g2d.setStroke(new BasicStroke((float) (1/20.)));
-          g2d.setColor(Color.RED);
-          g2d.draw(glyph.getOutline(0, 0, flags & ~FontDelegate.FLAG_FITTED));
-          g2d.setColor(Color.GREEN);
-          g2d.draw(glyph.getOutline(0, 0, flags | FontDelegate.FLAG_FITTED));
+          g2d.setStroke(new BasicStroke((float) (1/10.)));
+          if (showOriginal)
+            {
+              g2d.setColor(Color.RED);
+              g2d.draw(glyph.getOutline(0, 0,
+                                        flags & ~FontDelegate.FLAG_FITTED));
+            }
+          if (showHinted)
+            {
+              g2d.setColor(Color.RED);
+              g2d.draw(glyph.getOutline(0, 0,
+                                        flags | FontDelegate.FLAG_FITTED));
+            }
       }
     }
 
@@ -186,7 +211,7 @@ public class HintingDemo extends JFrame {
 
   HintingDemo()
   {
-    File file = new File("/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType/DejaVuSerif.ttf");
+    File file = new File("/usr/share/fonts/truetype/freefont/FreeSans.ttf");
     loadFont(file);
     setLayout(new BorderLayout());
     chooser = new Chooser();
@@ -244,6 +269,9 @@ public class HintingDemo extends JFrame {
     implements ActionListener
   {
     JCheckBox antiAliasOpt;
+    JCheckBox showGridOpt;
+    JCheckBox showOriginalOpt;
+    JCheckBox showHintedOpt;
     JCheckBox hintHorizontalOpt;
     JCheckBox hintVerticalOpt;
     JCheckBox hintEdgeOpt;
@@ -257,6 +285,18 @@ public class HintingDemo extends JFrame {
       antiAliasOpt.setSelected(true);
       antiAliasOpt.addActionListener(this);
       add(antiAliasOpt);
+      showGridOpt = new JCheckBox("Show grid");
+      showGridOpt.setSelected(true);
+      showGridOpt.addActionListener(this);
+      add(showGridOpt);
+      showOriginalOpt = new JCheckBox("Show original");
+      showOriginalOpt.setSelected(true);
+      showOriginalOpt.addActionListener(this);
+      add(showOriginalOpt);
+      showHintedOpt = new JCheckBox("Show hinted");
+      showHintedOpt.setSelected(true);
+      showHintedOpt.addActionListener(this);
+      add(showHintedOpt);
       hintHorizontalOpt = new JCheckBox("Hint horizontal");
       hintHorizontalOpt.setSelected(true);
       hintHorizontalOpt.addActionListener(this);
@@ -283,6 +323,9 @@ public class HintingDemo extends JFrame {
     void sync()
     {
       antiAlias = antiAliasOpt.isSelected();
+      showGrid = showGridOpt.isSelected();
+      showOriginal = showOriginalOpt.isSelected();
+      showHinted = showHintedOpt.isSelected();
       if (hintHorizontalOpt.isSelected())
         flags &= ~FontDelegate.FLAG_NO_HINT_HORIZONTAL;
       else

@@ -38,7 +38,7 @@ public class XFontPeer extends ClasspathFontPeer
    * useful if you are sharing peers between Font objects. Otherwise it may
    * be ignored.
    */
-  public boolean canDisplay (Font font, char c)
+  public boolean canDisplay (Font font, int c)
   {
     throw new UnsupportedOperationException ();
   }

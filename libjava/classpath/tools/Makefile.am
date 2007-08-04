@@ -110,6 +110,7 @@ TOOLS_JAVA_FILES = $(srcdir)/gnu/classpath/tools/*/*.java \
 	$(srcdir)/com/sun/javadoc/*.java \
 	$(srcdir)/com/sun/tools/doclets/*.java \
 	$(srcdir)/com/sun/tools/javac/*.java \
+	$(srcdir)/com/sun/tools/javah/*.java \
 	$(srcdir)/sun/rmi/rmic/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/*.java \
 	$(srcdir)/external/asm/org/objectweb/asm/attrs/*.java \
@@ -168,6 +169,7 @@ $(TOOLS_ZIP): $(TOOLS_JAVA_FILES)
 	     $(srcdir)/com/sun/javadoc \
 	     $(srcdir)/com/sun/tools/doclets \
 	     $(srcdir)/com/sun/tools/javac \
+	     $(srcdir)/com/sun/tools/javah \
 	     $(srcdir)/sun/rmi/rmic \
 	     -name '*.java' -print > classes.lst
 	if [ -f $(top_builddir)/../vm-tools-packages ]; then \

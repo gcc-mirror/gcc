@@ -109,6 +109,19 @@ public final class Fixed
   }
 
   /**
+   * Truncates the number so that only the digits after the point are left.
+   *
+   * @param n the number of digits
+   * @param a the fixed point value
+   *
+   * @return the truncated value
+   */
+  public static int trunc(int n, int a)
+  {
+    return a & (0xFFFFFFFF >>> 32 - n);
+  }
+
+  /**
    * Returns the round value of a fixed point value <code>a</code> with
    * the <code>n</code> digits.
    *

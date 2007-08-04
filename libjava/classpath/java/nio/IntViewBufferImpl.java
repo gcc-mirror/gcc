@@ -131,7 +131,7 @@ final class IntViewBufferImpl extends IntBuffer
   public IntBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new IntViewBufferImpl (bb, (position () >> 2) + offset,
+    return new IntViewBufferImpl (bb, (position () << 2) + offset,
 				  remaining(), remaining(), 0, -1,
 				  readOnly, endian);
   }

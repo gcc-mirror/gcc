@@ -39,6 +39,8 @@ extern "Java"
         class Cursor;
         class Desktop;
         class Dialog;
+        class Dialog$ModalExclusionType;
+        class Dialog$ModalityType;
         class Dimension;
         class EventQueue;
         class FileDialog;
@@ -229,6 +231,8 @@ public: // actually package-private
   virtual void globalDispatchEvent(::java::awt::AWTEvent *);
 public:
   virtual ::java::util::Map * mapInputMethodHighlight(::java::awt::im::InputMethodHighlight *) = 0;
+  virtual jboolean isModalExclusionTypeSupported(::java::awt::Dialog$ModalExclusionType *) = 0;
+  virtual jboolean isModalityTypeSupported(::java::awt::Dialog$ModalityType *) = 0;
 private:
   static void initAccessibility();
   static ::java::lang::String * default_toolkit_name;

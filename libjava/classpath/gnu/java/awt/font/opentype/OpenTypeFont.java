@@ -617,7 +617,17 @@ public final class OpenTypeFont
     return new GNUGlyphVector(this, font, frc, glyphs);
   }
 
-
+  /**
+   * Returns the glyph code for the specified character.
+   *
+   * @param c the character to map
+   *
+   * @return the glyph code
+   */
+  public int getGlyphIndex(int c)
+  {
+    return getCharGlyphMap().getGlyph(c);
+  }
 
   /**
    * Determines the advance width for a glyph.

@@ -66,6 +66,9 @@ public: // actually package-private
 public:
   static ::java::awt::Font * getFont(::java::lang::String *, ::java::awt::Font *);
   static ::java::awt::Font * getFont(::java::lang::String *);
+public: // actually protected
+  Font(::java::awt::Font *);
+public:
   Font(::java::lang::String *, jint, jint);
   Font(::java::util::Map *);
 public: // actually package-private
@@ -80,6 +83,7 @@ public:
   virtual ::java::lang::String * getFamily();
   virtual jint getStyle();
   virtual jboolean canDisplay(jchar);
+  virtual jboolean canDisplay(jint);
   virtual jint canDisplayUpTo(::java::lang::String *);
   virtual jint canDisplayUpTo(JArray< jchar > *, jint, jint);
   virtual jint canDisplayUpTo(::java::text::CharacterIterator *, jint, jint);
@@ -123,6 +127,7 @@ public:
   virtual jboolean equals(::java::lang::Object *);
   virtual ::java::lang::String * toString();
   virtual ::java::awt::font::LineMetrics * getLineMetrics(::java::lang::String *, ::java::awt::font::FontRenderContext *);
+  virtual jboolean hasLayoutAttributes();
 private:
   void readObject(::java::io::ObjectInputStream *);
 public:
@@ -138,6 +143,11 @@ public:
   static const jint LAYOUT_RIGHT_TO_LEFT = 1;
   static const jint LAYOUT_NO_START_CONTEXT = 2;
   static const jint LAYOUT_NO_LIMIT_CONTEXT = 4;
+  static ::java::lang::String * DIALOG;
+  static ::java::lang::String * DIALOG_INPUT;
+  static ::java::lang::String * MONOSPACED;
+  static ::java::lang::String * SANS_SERIF;
+  static ::java::lang::String * SERIF;
 public: // actually protected
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) name;
   jint size;

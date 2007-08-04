@@ -65,6 +65,13 @@ extern "Java"
       }
     }
   }
+  namespace sun
+  {
+    namespace awt
+    {
+        class CausedFocusEvent$Cause;
+    }
+  }
 }
 
 class gnu::awt::xlib::XCanvasPeer : public ::java::lang::Object
@@ -119,6 +126,7 @@ public:
   virtual void hide();
   virtual jboolean isFocusable();
   virtual jboolean requestFocus(::java::awt::Component *, jboolean, jboolean, jlong);
+  virtual jboolean requestFocus(::java::awt::Component *, jboolean, jboolean, jlong, ::sun::awt::CausedFocusEvent$Cause *);
   virtual jboolean isObscured();
   virtual jboolean canDetermineObscurity();
   virtual void coalescePaintEvent(::java::awt::event::PaintEvent *);

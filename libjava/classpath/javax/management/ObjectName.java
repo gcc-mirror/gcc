@@ -71,7 +71,7 @@ import java.io.ObjectOutputStream;
  * is separated by commas, and largely consists of unordered key-value
  * pairs, separated by an equals sign ('=').  At most one element may
  * be an asterisk ('*'), which turns the {@link ObjectName} instance
- * into a <emph>property pattern</emph>.  In this situation, the pattern
+ * into a <emph>property list pattern</emph>.  In this situation, the pattern
  * matches a name if the name contains at least those key-value pairs
  * given and has the same domain.
  * </p>
@@ -87,6 +87,13 @@ import java.io.ObjectOutputStream;
  * to include quotes ('\"'), backslashes ('\\'), newlines ('\n'), and
  * the pattern characters ('\?' and '\*').  The quotes and backslashes
  * (after expansion) are considered part of the value.
+ * </p>
+ * <p>
+ * Both quoted and unquoted values may contain the wildcard characters
+ * '?' and '*'.  A name with at least one value containing a wildcard
+ * character is known as a <emph>property value pattern</emph>.  A
+ * name is generally a <emph>property pattern</emph> if it is either
+ * a <emph>property list pattern</emph> or <emph>property value pattern</emph>.
  * </p>
  * <p>
  * Spaces are maintained within the different parts of the name.  Thus,
@@ -127,9 +134,14 @@ public class ObjectName
   private transient String propertyListString;
 
   /**
-   * True if this object name is a property pattern.
+   * True if this object name is a property list pattern.
    */
-  private transient boolean propertyPattern;
+  private transient boolean propertyListPattern;
+
+  /**
+   * True if this object name is a property value pattern.
+   */
+  private transient boolean propertyValuePattern;
 
   /**
    * The management server associated with this object name.
@@ -202,10 +214,10 @@ public class ObjectName
       {
 	if (pairs[a].equals("*"))
 	  {
-	    if (propertyPattern)
+	    if (propertyListPattern)
 	      throw new MalformedObjectNameException("Multiple wildcards " +
 						     "in properties.");
-	    propertyPattern = true;
+	    propertyListPattern = true;
 	    continue;
 	  }
 	int sep = pairs[a].indexOf('=');
@@ -291,16 +303,17 @@ public class ObjectName
     if (domain.indexOf('\n') != -1)
       throw new MalformedObjectNameException("The domain includes a newline " +
 					     "character.");
-    char[] chars = new char[] { '\n', ':', ',', '*', '?', '=' };
+    char[] keychars = new char[] { '\n', ':', ',', '*', '?', '=' };
+    char[] valchars = new char[] { '\n', ':', ',', '=' };
     Iterator i = properties.entrySet().iterator();
     while (i.hasNext())
       {
 	Map.Entry entry = (Map.Entry) i.next();
 	String key = (String) entry.getKey();
-	for (int a = 0; a < chars.length; ++a)
-	  if (key.indexOf(chars[a]) != -1)
+	for (int a = 0; a < keychars.length; ++a)
+	  if (key.indexOf(keychars[a]) != -1)
 	    throw new MalformedObjectNameException("A key contains a '" +
-						   chars[a] + "' " +
+						   keychars[a] + "' " +
 						   "character.");
 	String value = (String) entry.getValue();
 	int quote = value.indexOf('"');
@@ -322,12 +335,15 @@ public class ObjectName
 						 "a '\"' character.");
 	else
 	  {
-	    for (int a = 0; a < chars.length; ++a)
-	      if (value.indexOf(chars[a]) != -1)
+	    for (int a = 0; a < valchars.length; ++a)
+	      if (value.indexOf(valchars[a]) != -1)
 		throw new MalformedObjectNameException("A value contains " +
-						       "a '" + chars[a] + "' " +
+						       "a '" + valchars[a] + "' " +
 						       "character.");
+	    
 	  }
+	if (value.indexOf('*') != -1 || value.indexOf('?') != -1)
+	  propertyValuePattern = true;
       }
   }
 
@@ -690,14 +706,60 @@ public class ObjectName
   }
 
   /**
-   * Returns true if this object name is a property pattern.  This is
-   * the case if the list of properties contains an '*'.
+   * Returns true if this object name is a property list
+   * pattern, a property value pattern or both.
    *
-   * @return true if this is a property pattern.
+   * @return true if the properties of this name contain a pattern.
+   * @see #isPropertyListPattern
+   * @see #isPropertyValuePattern
    */
   public boolean isPropertyPattern()
   {
-    return propertyPattern;
+    return propertyListPattern || propertyValuePattern;
+  }
+
+  /**
+   * Returns true if this object name is a property list pattern.  This is
+   * the case if the list of properties contains an '*'.
+   *
+   * @return true if this is a property list pattern.
+   * @since 1.6
+   */
+  public boolean isPropertyListPattern()
+  {
+    return propertyListPattern;
+  }
+
+  /**
+   * Returns true if this object name is a property value pattern.  This is
+   * the case if one of the values contains a wildcard character,
+   * '?' or '*'.
+   *
+   * @return true if this is a property value pattern.
+   * @since 1.6
+   */
+  public boolean isPropertyValuePattern()
+  {
+    return propertyValuePattern;
+  }
+
+  /**
+   * Returns true if the value of the given key is a pattern.  This is
+   * the case if the value contains a wildcard character, '?' or '*'.
+   *
+   * @param key the key whose value should be checked.
+   * @return true if the value of the given key is a pattern.
+   * @since 1.6
+   * @throws NullPointerException if {@code key} is {@code null}.
+   * @throws IllegalArgumentException if {@code key} is not a valid
+   *                                  property.
+   */
+  public boolean isPropertyValuePattern(String key)
+  {
+    String value = getKeyProperty(key);
+    if (value == null)
+      throw new IllegalArgumentException(key + " is not a valid property.");
+    return value.indexOf('?') != -1 || value.indexOf('*') != -1;
   }
 
   /**

@@ -13,6 +13,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace java
     {
       namespace awt
@@ -93,7 +97,7 @@ public:
 private:
   ::java::lang::String * getName(jint, ::java::util::Locale *);
 public:
-  virtual jboolean canDisplay(::java::awt::Font *, jchar);
+  virtual jboolean canDisplay(::java::awt::Font *, jint);
   virtual jint canDisplayUpTo(::java::awt::Font *, ::java::text::CharacterIterator *, jint, jint);
   virtual ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, ::java::text::CharacterIterator *);
   virtual ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, JArray< jint > *);
@@ -135,6 +139,7 @@ public: // actually package-private
   ::gnu::java::awt::peer::gtk::GdkFontPeer$GdkFontMetrics * metrics;
 private:
   ::java::nio::ByteBuffer * nameTable;
+  ::gnu::classpath::Pointer * nativeFont;
 public:
   static ::java::lang::Class class$;
 };

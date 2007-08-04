@@ -42,6 +42,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 import java.security.CodeSource;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.jar.Manifest;
 
@@ -95,7 +96,7 @@ public abstract class URLLoader
     this.baseURL = baseURL;
     this.factory = factory;
     this.cache = cache;
-    this.noCertCodeSource = new CodeSource(overrideURL, null);
+    this.noCertCodeSource = new CodeSource(overrideURL, (Certificate[]) null);
   }
 
   /**

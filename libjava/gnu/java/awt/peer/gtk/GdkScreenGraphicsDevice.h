@@ -13,6 +13,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace java
     {
       namespace awt
@@ -46,7 +50,7 @@ class gnu::java::awt::peer::gtk::GdkScreenGraphicsDevice : public ::java::awt::G
 {
 
 public: // actually package-private
-  static void initStaticState();
+  static void initIDs();
   GdkScreenGraphicsDevice(::gnu::java::awt::peer::gtk::GdkGraphicsEnvironment *);
   virtual void init();
   virtual ::java::awt::DisplayMode * nativeGetFixedDisplayMode(::gnu::java::awt::peer::gtk::GdkGraphicsEnvironment *);
@@ -90,6 +94,8 @@ public: // actually package-private
   ::java::lang::String * idString;
   JArray< ::gnu::java::awt::peer::gtk::GdkScreenGraphicsDevice$X11DisplayMode * > * displayModes;
   ::java::awt::DisplayMode * fixedDisplayMode;
+private:
+  ::gnu::classpath::Pointer * screen;
 public:
   static ::java::lang::Class class$;
 };

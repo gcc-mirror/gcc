@@ -183,6 +183,9 @@
 /* Define this symbol if you have MSG_NOSIGNAL */
 #undef HAVE_MSG_NOSIGNAL
 
+/* Define this symbol if you have MSG_WAITALL */
+#undef HAVE_MSG_WAITALL
+
 /* Define to 1 if you have the `msync' function. */
 #undef HAVE_MSYNC
 

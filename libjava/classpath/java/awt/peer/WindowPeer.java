@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.awt.peer;
 
+import java.awt.Dialog;
+
 public interface WindowPeer extends ContainerPeer
 {
   void toBack();
@@ -57,5 +59,12 @@ public interface WindowPeer extends ContainerPeer
    * @since 1.5
    */
   boolean requestWindowFocus();
+
+  void setAlwaysOnTop(boolean alwaysOnTop);
+  void updateFocusableWindowState();
+  void setModalBlocked(Dialog blocker, boolean blocked);
+  void updateMinimumSize();
+  void updateIconImages();
+
 } // interface WindowPeer 
 

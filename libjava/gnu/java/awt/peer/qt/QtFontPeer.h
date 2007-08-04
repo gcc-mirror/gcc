@@ -64,7 +64,7 @@ private:
   void create(::java::lang::String *, jint, jint);
 public:
   virtual void dispose();
-  virtual jboolean canDisplay(::java::awt::Font *, jchar);
+  virtual jboolean canDisplay(::java::awt::Font *, jint);
   virtual jint canDisplayUpTo(::java::awt::Font *, ::java::text::CharacterIterator *, jint, jint);
   virtual ::java::lang::String * getSubFamilyName(::java::awt::Font *, ::java::util::Locale *);
   virtual ::java::lang::String * getPostScriptName(::java::awt::Font *);

@@ -170,6 +170,31 @@ public class Font implements Serializable
   public static final int LAYOUT_NO_LIMIT_CONTEXT = 4;
 
   /**
+   * @since 1.6
+   */
+  public static final String DIALOG = "Dialog";
+
+  /**
+   * @since 1.6
+   */
+  public static final String DIALOG_INPUT = "DialogInput";
+
+  /**
+   * @since 1.6
+   */
+  public static final String MONOSPACED = "Monospaced";
+
+  /**
+   * @since 1.6
+   */
+  public static final String SANS_SERIF = "SansSerif";
+
+  /**
+   * @since 1.6
+   */
+  public static final String SERIF = "Serif";
+
+  /**
    * The logical name of this font.
    *
    * @since 1.0
@@ -328,6 +353,11 @@ public class Font implements Serializable
   public static Font getFont(String propname)
   {
     return getFont(propname, (Font) null);
+  }
+
+  protected Font(Font font)
+  {
+    this(font.getName(), font.getAttributes());
   }
 
   /**
@@ -491,7 +521,12 @@ public class Font implements Serializable
    */
   public boolean canDisplay(char c)
   {
-    return peer.canDisplay(this, c);    
+    return canDisplay((int) c);
+  }
+
+  public boolean canDisplay(int codePoint)
+  {
+    return peer.canDisplay(this, codePoint);
   }
 
   /**
@@ -1371,6 +1406,12 @@ public class Font implements Serializable
   public LineMetrics getLineMetrics(String str, FontRenderContext frc)
   {
     return getLineMetrics(str, 0, str.length() - 1, frc);
+  }
+
+  public boolean hasLayoutAttributes()
+  {
+    // TODO: Implement properly.
+    return false;
   }
 
   /**

@@ -65,7 +65,7 @@ Java_gnu_java_awt_peer_gtk_GtkVolatileImage_init (JNIEnv *env,
 
   if( peer != NULL )
     {
-      ptr = NSA_GET_PTR (env, peer);
+      ptr = gtkpeer_get_widget (env, peer);
       g_assert (ptr != NULL);
       
       widget = GTK_WIDGET (ptr);

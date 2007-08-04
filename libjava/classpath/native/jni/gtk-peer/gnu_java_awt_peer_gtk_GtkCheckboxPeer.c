@@ -69,18 +69,18 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jobject *gref;
+  jobject gref;
   GtkWidget *bin;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
   bin = checkbox_get_widget (GTK_WIDGET (ptr));
 
   /* Checkbox signals */
   g_signal_connect (G_OBJECT (bin), "toggled",
-                    G_CALLBACK (item_toggled_cb), *gref);
+                    G_CALLBACK (item_toggled_cb), gref);
 
   /* Component signals */
   cp_gtk_component_connect_signals (G_OBJECT (bin), gref);
@@ -97,7 +97,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkToggleButtonSetActive
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   bin = checkbox_get_widget (GTK_WIDGET (ptr));
   
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (bin), is_active);
@@ -117,7 +117,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkWidgetModifyFont
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   button = checkbox_get_widget (GTK_WIDGET (ptr));
   label = gtk_bin_get_child (GTK_BIN(button));
@@ -156,7 +156,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkButtonSetLabel
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   c_label = (*env)->GetStringUTFChars (env, label, NULL);
 
@@ -182,14 +182,14 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_createCheckButton
 
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
   eventbox = gtk_event_box_new ();
 
   button = gtk_check_button_new_with_label ("");
   gtk_container_add (GTK_CONTAINER (eventbox), button);
   gtk_widget_show (button); 
 
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -210,7 +210,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_createRadioButton
   
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
   eventbox = gtk_event_box_new ();
 
   if (groupPointer != 0)
@@ -231,7 +231,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_createRadioButton
   gtk_container_add (GTK_CONTAINER (eventbox), button);
   gtk_widget_show (button);
   
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
   
   (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), obj,
                                 addToGroupMapID,
@@ -258,7 +258,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_addToGroup
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   container = GTK_WIDGET (ptr);
   check_button = checkbox_get_widget (container);
   label = gtk_label_get_text (GTK_LABEL (gtk_bin_get_child 
@@ -312,7 +312,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_removeFromGroup
     
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   container = GTK_WIDGET (ptr);
   radio_button = checkbox_get_widget (container);
   label = gtk_label_get_text (GTK_LABEL (gtk_bin_get_child 
@@ -357,7 +357,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_switchToGroup
   
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   radio_button = checkbox_get_widget (GTK_WIDGET (ptr));
   
   native_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radio_button));

@@ -42,18 +42,13 @@
 #include "gdkdisplay.h"
 #include "gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h"
 
-struct state_table *cp_gtk_native_display_state_table;
-
 jclass gdkGraphicsEnvironment_class;
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_initStaticState
+Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_initIDs
 (JNIEnv *env, jclass klazz __attribute__((unused)))
 {
-    gdkGraphicsEnvironment_class = (*env)->NewGlobalRef
-    (env, klazz);
-
-	NSA_DISPLAY_INIT(env, gdkGraphicsEnvironment_class);
+  gtkpeer_init_display_IDs(env);
 }
 
 JNIEXPORT void JNICALL
@@ -70,7 +65,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeInitState
     gdk_threads_leave();
     
     /* Store display pointer in GdkGraphicsEnvironment instance. */
-    NSA_SET_DISPLAY_PTR(env, obj, (void *) defaultDisplay);
+    gtkpeer_set_display(env, obj, (void *) defaultDisplay);
 }
 
 static gint
@@ -157,7 +152,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeGetScreenDevices
 	gdkScreenGraphicsDevice_init = (*env)->GetMethodID 
     (env, gdkScreenGraphicsDevice_class, "init", "()V");
 
-	display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, obj);
+	display = (GdkDisplay *) gtkpeer_get_display(env, obj);
 	
 	gdk_threads_enter();
 	
@@ -181,9 +176,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeGetScreenDevices
                                       gdkScreenGraphicsDevice_ctor,
                                       obj);
 									  
-        NSA_SET_SCREEN_PTR(env,
-                           instance,
-                           gdk_display_get_screen(display, i));
+        gtkpeer_set_screen(env, instance, gdk_display_get_screen(display, i));
 						   
         gdk_threads_leave();
         (*env)->CallVoidMethod(env,
@@ -214,15 +207,12 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeGetDefaultScreenDevice
     gdkScreenGraphicsDevice_ctor = (*env)->GetMethodID 
     (env, gdkScreenGraphicsDevice_class, "<init>",
      "(Lgnu/java/awt/peer/gtk/GdkGraphicsEnvironment;)V");
-    
     gdkScreenGraphicsDevice_init = (*env)->GetMethodID 
     (env, gdkScreenGraphicsDevice_class, "init", "()V");
     
     /* Create the GdkScreenGraphicsDevice instance. */
-    defaultDevice = (*env)->NewObject (env, 
-									   gdkScreenGraphicsDevice_class,
-									   gdkScreenGraphicsDevice_ctor,
-									   obj);
+    defaultDevice = (*env)->NewObject(env, gdkScreenGraphicsDevice_class,
+                                      gdkScreenGraphicsDevice_ctor, obj);
 									   
     gdk_threads_enter();
 	
@@ -233,7 +223,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_nativeGetDefaultScreenDevice
 	/* Class initialization will have set up the native_state storage
 	 * mechanism for GdkScreenGraphicsDevice.
 	 */
-    NSA_SET_SCREEN_PTR(env, defaultDevice, defaultScreen);
+    gtkpeer_set_screen(env, defaultDevice, defaultScreen);
 
     (*env)->CallVoidMethod(env,
                            defaultDevice,
@@ -252,7 +242,7 @@ Java_gnu_java_awt_peer_gtk_GdkGraphicsEnvironment_getMouseCoordinates
   gint x, y, screenIndex;
   GdkScreen *screen;
 
-  display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, obj);
+  display = (GdkDisplay *) gtkpeer_get_display(env, obj);
   g_assert (display != NULL);
   
   gdk_threads_enter ();

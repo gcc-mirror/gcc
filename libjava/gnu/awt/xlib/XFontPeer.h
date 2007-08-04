@@ -51,7 +51,7 @@ class gnu::awt::xlib::XFontPeer : public ::gnu::java::awt::peer::ClasspathFontPe
 public:
   XFontPeer(::java::lang::String *, jint);
   XFontPeer(::java::lang::String *, jint, jfloat);
-  virtual jboolean canDisplay(::java::awt::Font *, jchar);
+  virtual jboolean canDisplay(::java::awt::Font *, jint);
   virtual jint canDisplayUpTo(::java::awt::Font *, ::java::text::CharacterIterator *, jint, jint);
   virtual ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, ::java::text::CharacterIterator *);
   virtual ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, JArray< jint > *);

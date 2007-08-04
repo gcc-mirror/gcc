@@ -38,15 +38,12 @@ exception statement from your version. */
 package gnu.java.awt.peer.x;
 
 import gnu.classpath.SystemProperties;
-import gnu.java.net.local.LocalSocket;
-import gnu.java.net.local.LocalSocketAddress;
-import gnu.x11.Connection;
 import gnu.x11.Display;
 
-import java.awt.AWTError;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
-import java.net.SocketException;
+import java.lang.reflect.Constructor;
+import java.net.Socket;
 
 /**
  * This class represents an X Display. The actual connection is established
@@ -127,33 +124,21 @@ public class XGraphicsDevice
              || displayName.hostname.equals(""))
           && SystemProperties.getProperty("gnu.xawt.no_local_sockets") == null)
           {
-            // TODO: Is this 100% ok?
-            String sockPath = "/tmp/.X11-unix/X" + displayName.display_no;
-            LocalSocketAddress addr = new LocalSocketAddress(sockPath);
-            try
+            Socket socket = createLocalSocket();
+            if (socket != null)
               {
-                if (XToolkit.DEBUG)
-                  System.err.println("connecting to local socket: "
-                                     + sockPath);
-                LocalSocket socket = new LocalSocket(addr);
                 display = new Display(socket, "localhost",
                                       displayName.display_no,
                                       displayName.screen_no);
-                display.connection.send_mode = Connection.ASYNCHRONOUS;
-                if (XToolkit.DEBUG)
-                  System.err.println("connected to local socket");
-              }
-            catch (SocketException ex)
-              {
-                AWTError err = new AWTError("could not connect to X server");
-                err.initCause(ex);
-                throw err;
               }
           }
-        else
-          {
-            display = new Display(displayName);
-          }
+
+        // The following happens when we are configured to use plain sockets,
+        // when the connection is probably remote or when we couldn't load
+        // the LocalSocket class stuff.
+        if (display == null)
+          display = new Display(displayName);
+
         eventPump = new XEventPump(display);
       }
     return display;
@@ -162,5 +147,37 @@ public class XGraphicsDevice
   XEventPump getEventPump()
   {
     return eventPump;
+  }
+
+  /**
+   * Tries to load the LocalSocket class and initiate a connection to the 
+   * local X server.
+   */
+  private Socket createLocalSocket()
+  {
+    Socket socket = null;
+    try
+      {
+        // TODO: Is this 100% ok?
+        String sockPath = "/tmp/.X11-unix/X" + displayName.display_no;
+        Class localSocketAddressClass =
+          Class.forName("gnu.java.net.local.LocalSocketAddress");
+        Constructor localSocketAddressConstr =
+          localSocketAddressClass.getConstructor(new Class[]{ String.class });
+        Object addr =
+          localSocketAddressConstr.newInstance(new Object[]{ sockPath });
+        Class localSocketClass =
+          Class.forName("gnu.java.net.local.LocalSocket");
+        Constructor localSocketConstructor =
+          localSocketClass.getConstructor(new Class[]{localSocketAddressClass});
+        Object localSocket =
+          localSocketConstructor.newInstance(new Object[]{ addr });
+        socket = (Socket) localSocket;
+      }
+    catch (Exception ex)
+      {
+        // Whatever goes wrong here, we return null.
+      }
+    return socket;
   }
 }

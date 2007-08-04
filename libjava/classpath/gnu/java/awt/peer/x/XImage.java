@@ -86,7 +86,7 @@ public class XImage
    */
   public Graphics getGraphics()
   {
-    XGraphics g = new XGraphics(pixmap);
+    XGraphics2D g = new XGraphics2D(pixmap);
     return g;
   }
 

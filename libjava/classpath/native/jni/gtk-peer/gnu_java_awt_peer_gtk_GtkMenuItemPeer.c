@@ -68,7 +68,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_create
 
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   str = (*env)->GetStringUTFChars (env, label, NULL);
 
@@ -82,7 +82,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_create
 
   (*env)->ReleaseStringUTFChars (env, label, str);
 
-  NSA_SET_PTR (env, obj, widget);
+  gtkpeer_set_widget (env, obj, widget);
 
   gdk_threads_leave ();
 }
@@ -92,15 +92,15 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jobject *gref;
+  jobject gref;
   
   gdk_threads_enter ();
   
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
 
   g_signal_connect (G_OBJECT (ptr), "activate",
-                    G_CALLBACK (item_activate_cb), *gref);
+                    G_CALLBACK (item_activate_cb), gref);
 
   gdk_threads_leave ();
 }
@@ -116,7 +116,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_gtkWidgetModifyFont
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
@@ -152,7 +152,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setEnabled
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_widget_set_sensitive (GTK_WIDGET (ptr), enabled);
 
@@ -169,7 +169,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_setLabel
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   str = (*env)->GetStringUTFChars (env, label, NULL);
 

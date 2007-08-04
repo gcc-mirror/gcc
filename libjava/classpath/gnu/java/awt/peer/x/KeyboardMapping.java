@@ -405,8 +405,12 @@ final class KeyboardMapping
 
     if ((xMods & Input.SHIFT_MASK) != 0)
       mods |= KeyEvent.SHIFT_MASK | KeyEvent.SHIFT_DOWN_MASK;
+    if ((xMods & Input.META_MASK) != 0)
+      mods |= KeyEvent.META_MASK | KeyEvent.META_DOWN_MASK;
     if ((xMods & Input.ALT_MASK) != 0)
       mods |= KeyEvent.ALT_MASK | KeyEvent.ALT_DOWN_MASK;
+    if ((xMods & Input.MOD5_MASK) != 0)
+      mods |= KeyEvent.ALT_GRAPH_MASK | KeyEvent.ALT_GRAPH_DOWN_MASK;
     if ((xMods & Input.CONTROL_MASK) != 0)
       mods |= KeyEvent.CTRL_MASK | KeyEvent.CTRL_DOWN_MASK;
 

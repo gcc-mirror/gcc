@@ -1,6 +1,6 @@
 /* ArrayReferenceCommandSet.java -- class to implement the Array
    Reference Command Set
-   Copyright (C) 2005, 2007 Free Software Foundation
+   Copyright (C) 2005 Free Software Foundation
 
 This file is part of GNU Classpath.
 

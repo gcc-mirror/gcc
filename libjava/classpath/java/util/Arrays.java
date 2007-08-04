@@ -3941,7 +3941,8 @@ public class Arrays
     if (from > to)
       throw new IllegalArgumentException("The initial index is after " +
 					 "the final index.");
-    T[] newArray = (T[]) new Object[to - from];
+    Class elemType = original.getClass().getComponentType();
+    T[] newArray = (T[]) Array.newInstance(elemType, to - from);
     if (to > original.length)
       {
 	System.arraycopy(original, from, newArray, 0,

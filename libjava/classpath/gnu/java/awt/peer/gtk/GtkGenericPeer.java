@@ -43,6 +43,8 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
+import gnu.classpath.Pointer;
+
 public class GtkGenericPeer
 {
   // Used by Native State Association (NSA) functions to map
@@ -54,6 +56,40 @@ public class GtkGenericPeer
 
   // The widget or other java-side object we wrap.
   protected final Object awtWidget;
+
+  /**
+   * The pointer to the native GTK widget.
+   *
+   * This field is manipulated by native code. Don't change or remove
+   * without adjusting the native code.
+   */
+  private Pointer widget;
+
+  /**
+   * The pointer to the global reference to this object. The native
+   * code creates a JNI global reference of the peer object to be able
+   * to pass it to the event callbacks. It gets stored here, so that
+   * we can later delete it in the dispose() method.
+   *
+   * This field is manipulated by native code. Don't change or remove
+   * without adjusting the native code.
+   */
+  private Pointer globalRef;
+
+  /**
+   * We initialize the field IDs that are used by native code here because
+   * these remain valid until a class gets unloaded.
+   */
+  static
+  {
+    GtkToolkit.initializeGlobalIDs();
+    initIDs();
+  }
+
+  /**
+   * Initializes the field IDs that are used by the native code.
+   */
+  private static native void initIDs();
 
   /**
    * Dispose of our native state.  Calls gtk_widget_destroy on the

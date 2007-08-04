@@ -262,10 +262,9 @@ public class URLClassLoader extends SecureClassLoader
     super(parent);
     this.securityContext = null;
     this.factory = factory;
-    addURLs(urls);
-
-    // If this factory is still not in factoryCache, add it.
+    // If this factory is not yet in factoryCache, add it.
     factoryCache.add(factory);
+    addURLs(urls);
   }
 
   // Methods
@@ -624,10 +623,7 @@ public class URLClassLoader extends SecureClassLoader
       }
     catch (IOException ioe)
       {
-	ClassNotFoundException cnfe;
-	cnfe = new ClassNotFoundException(className + " not found in " + this);
-	cnfe.initCause(ioe);
-	throw cnfe;
+	throw new ClassNotFoundException(className + " not found in " + this, ioe);
       }
   }
   

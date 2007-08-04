@@ -37,6 +37,7 @@ extern "Java"
         class Point;
       namespace event
       {
+          class FocusEvent;
           class KeyEvent;
           class MouseEvent;
       }
@@ -66,6 +67,9 @@ public:
   virtual void handleMouseMotionEvent(::java::awt::event::MouseEvent *);
   virtual void handleKeyEvent(::java::awt::event::KeyEvent *);
   virtual ::java::awt::Container * getParent();
+  virtual void handleFocusEvent(::java::awt::event::FocusEvent *);
+  virtual void requestFocus();
+  virtual jboolean requestFocus(jboolean);
 public: // actually package-private
   ::java::awt::Button * __attribute__((aligned(__alignof__( ::javax::swing::JButton)))) button;
   ::gnu::java::awt::peer::swing::SwingButtonPeer * this$0;

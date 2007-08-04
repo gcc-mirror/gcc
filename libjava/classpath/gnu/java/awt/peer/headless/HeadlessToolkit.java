@@ -368,4 +368,18 @@ public class HeadlessToolkit
     return graphicsEnv;
   }
 
+  @Override
+  public boolean isModalExclusionTypeSupported
+  (Dialog.ModalExclusionType modalExclusionType)
+  {
+    return false;
+  }
+
+  @Override
+  public boolean isModalityTypeSupported(Dialog.ModalityType modalityType)
+  {
+    return false;
+  }
+
+
 }

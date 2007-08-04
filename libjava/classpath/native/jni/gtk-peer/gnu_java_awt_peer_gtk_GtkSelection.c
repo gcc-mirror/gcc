@@ -105,6 +105,8 @@ clipboard_targets_received (GtkClipboard *clipboard
 	  stringClass = (*env)->FindClass (env, "java/lang/String");
 	  strings = (*env)->NewObjectArray (env, strings_len, stringClass,
 					    NULL);
+	  (*env)->DeleteLocalRef(env, stringClass);
+
 	  if (strings != NULL)
 	    {
 	      if (include_text)
@@ -133,6 +135,8 @@ clipboard_targets_received (GtkClipboard *clipboard
 		      (*env)->DeleteLocalRef (env, string);
 		    }
 		}
+
+	      (*env)->DeleteLocalRef(env, strings);
 	    }
 
 	  for (i = 0; i < targets_len; i++)
@@ -341,6 +345,8 @@ clipboard_uris_received (GtkClipboard *clipboard
 	len++;
 
       strings = (*env)->NewObjectArray (env, len, stringClass, NULL);
+      (*env)->DeleteLocalRef(env, stringClass);
+
       if (strings != NULL)
 	{
 	  for (i = 0; i < len; i++)
@@ -351,6 +357,8 @@ clipboard_uris_received (GtkClipboard *clipboard
 	      (*env)->SetObjectArrayElement (env, strings, i, string);
 	      (*env)->DeleteLocalRef (env, string);
 	    }
+
+	  (*env)->DeleteLocalRef(env, strings);
 	}
       g_strfreev (uris);
     }

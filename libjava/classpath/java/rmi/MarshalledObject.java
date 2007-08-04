@@ -58,7 +58,7 @@ import java.io.Serializable;
  *
  * @author unknown
  */
-public final class MarshalledObject
+public final class MarshalledObject<T>
   implements Serializable
 {
   // The following fields are from Java API Documentation "Serialized form"
@@ -74,7 +74,7 @@ public final class MarshalledObject
    * @param obj the object to marshal
    * @throws IOException if an I/O error during serialization occurs.
    */
-  public MarshalledObject(Object obj) throws IOException
+  public MarshalledObject(T obj) throws IOException
   {
     ByteArrayOutputStream objStream = new ByteArrayOutputStream();
     RMIMarshalledObjectOutputStream stream = 
@@ -136,14 +136,14 @@ public final class MarshalledObject
    * @throws ClassNotFoundException if the class of the deserialized object 
    * cannot be found.
    */
-  public Object get() throws IOException, ClassNotFoundException
+  public T get() throws IOException, ClassNotFoundException
   {
     if (objBytes == null)
       return null;
     
     RMIMarshalledObjectInputStream stream = 
       new RMIMarshalledObjectInputStream(objBytes, locBytes);
-    return stream.readObject();
+    return (T) stream.readObject();
   }
 
   public int hashCode()

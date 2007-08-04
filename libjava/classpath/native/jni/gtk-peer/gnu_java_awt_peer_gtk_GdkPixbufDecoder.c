@@ -42,25 +42,10 @@
 
 #include <jni.h>
 #include <jcl.h>
-#include "native_state.h"
 #include "gnu_java_awt_peer_gtk_GdkPixbufDecoder.h"
 
 #include <string.h>
 #include <stdlib.h>
-
-static struct state_table *native_pixbufdecoder_state_table;
-
-#define NSA_PB_INIT(env, clazz) \
-  native_pixbufdecoder_state_table = cp_gtk_init_state_table (env, clazz)
-
-#define NSA_GET_PB_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, native_pixbufdecoder_state_table)
-
-#define NSA_SET_PB_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, native_pixbufdecoder_state_table, (void *)ptr)
-
-#define NSA_DEL_PB_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, native_pixbufdecoder_state_table)
 
 /* Union used for type punning. */
 union env_union
@@ -201,7 +186,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initState
   g_signal_connect (loader, "area-updated", G_CALLBACK (area_updated_cb), decoder);
   g_signal_connect (loader, "closed", G_CALLBACK (closed_cb), decoder);
 
-  NSA_SET_PB_PTR (env, obj, loader);
+  gtkpeer_set_pixbuf_loader (env, obj, loader);
 }
 
 static void
@@ -310,7 +295,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_initStaticState
 
   query_formats (env, clazz);
   
-  NSA_PB_INIT (env, clazz);
+  gtkpeer_init_pixbuf_IDs (env);
 }
 
 
@@ -320,7 +305,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_finish
 {
   GdkPixbufLoader *loader = NULL;
 
-  loader = (GdkPixbufLoader *)NSA_DEL_PB_PTR (env, obj);
+  loader = (GdkPixbufLoader *) gtkpeer_get_pixbuf_loader(env, obj);
   if (loader == NULL)
     return;
 
@@ -336,7 +321,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpDone
   GError *err = NULL;
   GdkPixbufLoader *loader = NULL;
 
-  loader = (GdkPixbufLoader *)NSA_GET_PB_PTR (env, obj);
+  loader = (GdkPixbufLoader *) gtkpeer_get_pixbuf_loader (env, obj);
   g_assert (loader != NULL);
 
   gdk_pixbuf_loader_close (loader, &err);
@@ -470,7 +455,7 @@ Java_gnu_java_awt_peer_gtk_GdkPixbufDecoder_pumpBytes
 
   bytes = (*env)->GetByteArrayElements (env, jarr, NULL);
   g_assert (bytes != NULL);
-  loader = (GdkPixbufLoader *)NSA_GET_PB_PTR (env, obj);
+  loader = (GdkPixbufLoader *) gtkpeer_get_pixbuf_loader (env, obj);
   g_assert (loader != NULL);
 
   gdk_pixbuf_loader_write (loader, (const guchar *) bytes, len, &err);

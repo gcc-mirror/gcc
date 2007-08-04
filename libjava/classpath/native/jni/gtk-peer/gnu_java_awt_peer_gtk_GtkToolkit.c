@@ -79,9 +79,6 @@ exception statement from your version. */
 #define VK_CAPS_LOCK 20
 #define VK_META 157
 
-struct state_table *cp_gtk_native_state_table;
-struct state_table *cp_gtk_native_global_ref_table;
-
 static jclass gtkgenericpeer;
 static jclass gtktoolkit;
 static JavaVM *java_vm;
@@ -129,6 +126,13 @@ static void glog_func (const gchar *log_domain,
 		       gpointer user_data);
 #endif
 
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkToolkit_initIDs
+(JNIEnv *env, jclass cls __attribute__((unused)))
+{
+  gtkpeer_init_pointer_IDs(env);
+}
+
 /*
  * Call gtk_init.  It is very important that this happen before any other
  * gtk calls.
@@ -158,8 +162,6 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   printCurrentThreadID = (*env)->GetStaticMethodID (env, gtkgenericpeer,
                                                     "printCurrentThread", "()V");
  
-  NSA_INIT (env, gtkgenericpeer);
-
   g_assert((*env)->GetJavaVM(env, &java_vm) == 0);
 
   /* GTK requires a program's argc and argv variables, and requires that they
@@ -203,7 +205,7 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env,
   old_glog_func = g_log_set_default_handler (&glog_func, NULL);
 #endif
 
-  cp_gtk_button_init_jni ();
+  cp_gtk_button_init_jni (env);
   cp_gtk_checkbox_init_jni ();
   cp_gtk_choice_init_jni ();
   cp_gtk_component_init_jni ();

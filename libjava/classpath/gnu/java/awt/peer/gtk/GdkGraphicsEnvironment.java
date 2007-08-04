@@ -52,6 +52,8 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.Locale;
 
+import gnu.classpath.Pointer;
+
 public class GdkGraphicsEnvironment extends ClasspathGraphicsEnvironment
 {
   private final int native_state = GtkGenericPeer.getUniqueInteger ();
@@ -59,15 +61,24 @@ public class GdkGraphicsEnvironment extends ClasspathGraphicsEnvironment
   private GdkScreenGraphicsDevice defaultDevice;
   
   private GdkScreenGraphicsDevice[] devices;
-  
+
+  /**
+   * The pointer to the native display resource.
+   *
+   * This field is manipulated by native code. Don't change or remove
+   * without adjusting the native code.
+   */
+  private Pointer display;
+
   static
   {
     System.loadLibrary("gtkpeer");
 
-    initStaticState ();
+    GtkToolkit.initializeGlobalIDs();
+    initIDs();
   }
   
-  static native void initStaticState();
+  private static native void initIDs();
   
   public GdkGraphicsEnvironment ()
   {

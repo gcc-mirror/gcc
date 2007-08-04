@@ -19,6 +19,7 @@ extern "Java"
         class Color;
         class Component;
         class Cursor;
+        class Dialog;
         class Dimension;
         class Font;
         class FontMetrics;
@@ -47,6 +48,13 @@ extern "Java"
       }
     }
   }
+  namespace sun
+  {
+    namespace awt
+    {
+        class CausedFocusEvent$Cause;
+    }
+  }
 }
 
 class java::awt::peer::WindowPeer : public ::java::lang::Object
@@ -57,6 +65,11 @@ public:
   virtual void toFront() = 0;
   virtual void updateAlwaysOnTop() = 0;
   virtual jboolean requestWindowFocus() = 0;
+  virtual void setAlwaysOnTop(jboolean) = 0;
+  virtual void updateFocusableWindowState() = 0;
+  virtual void setModalBlocked(::java::awt::Dialog *, jboolean) = 0;
+  virtual void updateMinimumSize() = 0;
+  virtual void updateIconImages() = 0;
   virtual ::java::awt::Insets * insets() = 0;
   virtual ::java::awt::Insets * getInsets() = 0;
   virtual void beginValidate() = 0;
@@ -118,6 +131,7 @@ public:
   virtual void setBounds(jint, jint, jint, jint, jint) = 0;
   virtual jboolean isReparentSupported() = 0;
   virtual void layout() = 0;
+  virtual jboolean requestFocus(::java::awt::Component *, jboolean, jboolean, jlong, ::sun::awt::CausedFocusEvent$Cause *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

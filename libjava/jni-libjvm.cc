@@ -17,7 +17,7 @@ details.  */
 using namespace gcj;
 
 // Forward declarations.
-extern struct JNIInvokeInterface _Jv_JNI_InvokeFunctions;
+extern struct JNIInvokeInterface_ _Jv_JNI_InvokeFunctions;
 extern jint JNICALL _Jv_JNI_AttachCurrentThread (JavaVM *vm,
                                                  void **penv, void *args);
 extern JavaVM *_Jv_the_vm;

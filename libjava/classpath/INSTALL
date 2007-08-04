@@ -1,225 +1,236 @@
-Installing GNU Classpath - Last updated: June 19, 2006
+Installation Instructions
+*************************
 
-First, this is a development release only! Unless you are interested in
-active development and debugging, or just like running random alpha code,
-this release is probably not for you. Please see the README file for a
-list of VMs that work with GNU Classpath.
+Copyright (C) 1994, 1995, 1996, 1999, 2000, 2001, 2002, 2004, 2005 Free
+Software Foundation, Inc.
 
-Note that if you are building from a non-released (CVS) version of GNU
-classpath, installation instructions are found in the doc/hacking.texi
-file. Or at http://www.gnu.org/software/classpath/docs/hacking.html
+This file is free documentation; the Free Software Foundation gives
+unlimited permission to copy, distribute and modify it.
 
-------------------------------------------------------------------
-Suggested Software
-------------------------------------------------------------------
-	GNU make ("gmake") is required for building Classpath.
+Basic Installation
+==================
 
-	For any build environment involving native libraries, these 
-	new versions of autoconf, automake, and libtool are required
-        if changes are made that require rebuilding configure, Makefile.in,
-        aclocal.m4, or config.h.in.
+These are generic installation instructions.
 
-        - GNU autoconf 2.59+
-        - GNU automake 1.9+
-        - GNU libtool 1.5+
+   The `configure' shell script attempts to guess correct values for
+various system-dependent variables used during compilation.  It uses
+those values to create a `Makefile' in each directory of the package.
+It may also create one or more `.h' files containing system-dependent
+definitions.  Finally, it creates a shell script `config.status' that
+you can run in the future to recreate the current configuration, and a
+file `config.log' containing compiler output (useful mainly for
+debugging `configure').
 
-	When working from CVS you can run the above tools by executing
-	./autogen.sh in the source directory.
+   It can also use an optional file (typically called `config.cache'
+and enabled with `--cache-file=config.cache' or simply `-C') that saves
+the results of its tests to speed up reconfiguring.  (Caching is
+disabled by default to prevent problems with accidental use of stale
+cache files.)
 
-	For building the Java bytecode (.class files), one of these
-	compilers are required.  You can select which compiler using
-	--with-jikes, --with-gcj, --with-ecj or --with-kjc as argument to
-	configure; the present default is gcj.
+   If you need to do unusual things to compile the package, please try
+to figure out how `configure' could check whether to do them, and mail
+diffs or instructions to the address given in the `README' so they can
+be considered for the next release.  If you are using the cache, and at
+some point `config.cache' contains results you don't want to keep, you
+may remove or edit it.
 
-        - GCJ 4.0+ (part of the GNU GCC package).
-        - IBM jikes 1.19+.  
-        - Eclipse Compiler for Java 3.1+
-        - The kjc compiler is supported with configure but we have
-          been unable to successfully compile with it.
+   The file `configure.ac' (or `configure.in') is used to create
+`configure' by a program called `autoconf'.  You only need
+`configure.ac' if you want to change it or regenerate `configure' using
+a newer version of `autoconf'.
 
-	IMPORTANT: Versions of GCJ which are earlier than 4.0 contain
-	bugs which make it impossible to compile the class library and
-	are *not* supported any more. If you are stuck on a system where
-	GCC 3.x is the system compiler we recommend using Jikes.
+The simplest way to compile this package is:
 
-	For building the gtk+ AWT peer JNI native libraries, the following
-	are required unless --disable-gtk-peer is used as an argument to
-	configure.
+  1. `cd' to the directory containing the package's source code and type
+     `./configure' to configure the package for your system.  If you're
+     using `csh' on an old version of System V, you might need to type
+     `sh ./configure' instead to prevent `csh' from trying to execute
+     `configure' itself.
 
-        - GTK+ 2.8.x (or higher)
-        - gdk-pixbuf
+     Running `configure' takes awhile.  While running, it prints some
+     messages telling which features it is checking for.
 
-	- XTest Extension (libXtst) for GdkRobot support in java.awt.
-	
-	- There is a bug in earlier versions of at-spi, atk, and gail, which are
-	used for GNOME accessibility.  Prior to version 1.18.0 of these packages,
-	gtk graphical applications should be run without accessibility (clear the
-	GTK_MODULES environment variable).
+  2. Type `make' to compile the package.
 
-	For building gcjwebplugin you'll need the Mozilla plugin
-	support headers and libraries.
+  3. Optionally, type `make check' to run any self-tests that come with
+     the package.
 
-	The GConf-based backend for java.util.prefs needs the following
-	library headers:
+  4. Type `make install' to install the programs and any data files and
+     documentation.
 
-	- gconf 2.11.2 (or higher)
+  5. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  To also remove the
+     files that `configure' created (so you can compile the package for
+     a different kind of computer), type `make distclean'.  There is
+     also a `make maintainer-clean' target, but that is intended mainly
+     for the package's developers.  If you use it, you may have to get
+     all sorts of other programs in order to regenerate files that came
+     with the distribution.
 
-	For building the Qt AWT peer JNI native libraries you have to
-	specify --enable-qt-peer and need the following library:
+Compilers and Options
+=====================
 
-        - Qt 4.0.1
+Some systems require unusual options for compilation or linking that the
+`configure' script does not know about.  Run `./configure --help' for
+details on some of the pertinent environment variables.
 
-	For building the X AWT peers see information below
-	(Building and running with the X AWT peers). You will need
-	the Escher 0.2.3 library:
-	http://escher.sourceforge.net
+   You can give `configure' initial values for configuration parameters
+by setting variables in the command line or in the environment.  Here
+is an example:
 
-	Please note that at the moment most operating systems do not
-	ship Qt4 by default. We recommend using GNU Classpath' Qt4
-	support only for its developers and bug reporters. See
-	http://developer.classpath.org/mediation/ClasspathShowcase
-	for details on how to get it to work.
+     ./configure CC=c89 CFLAGS=-O2 LIBS=-lposix
 
-	For building the xmlj JAXP implementation (disabled by default, use
-	configure --enable-xmlj) you need the following installed:
-	- The XML C library for Gnome (libxml2)
-	  http://www.xmlsoft.org/
-	  Minimum version of libxml2 required: 2.6.8
+   *Note Defining Variables::, for more details.
 
-	- The XSLT C library for Gnome (libxslt)
-	  http://www.xmlsoft.org/XSLT/
-	  Minimum version of libxslt required: 1.1.11
+Compiling For Multiple Architectures
+====================================
 
-	For building the documentation you will need
+You can compile the package for more than one kind of computer at the
+same time, by placing the object files for each architecture in their
+own directory.  To do this, you must use a version of `make' that
+supports the `VPATH' variable, such as GNU `make'.  `cd' to the
+directory where you want the object files and executables to go and run
+the `configure' script.  `configure' automatically checks for the
+source code in the directory that `configure' is in and in `..'.
 
-	- texinfo 4.2 or higher.
+   If you have to use a `make' that does not support the `VPATH'
+variable, you have to compile the package for one architecture at a
+time in the source code directory.  After you have installed the
+package for one architecture, use `make distclean' before reconfiguring
+for another architecture.
 
-	For building the ALSA midi provider code you will need
-	ALSA.  http://www.alsa-project.org. 
+Installation Names
+==================
 
-	For building the DSSI midi synthesizer provider code you will
-	need DSSI from http://dssi.sourceforge.net.  This, in turn, 
-	introduces many dependencies, including:
+By default, `make install' installs the package's commands under
+`/usr/local/bin', include files under `/usr/local/include', etc.  You
+can specify an installation prefix other than `/usr/local' by giving
+`configure' the option `--prefix=PREFIX'.
 
-	  - liblo: the Lightweight OSC implementation
-	    http://plugin.org.uk/liblo/
+   You can specify separate installation prefixes for
+architecture-specific files and architecture-independent files.  If you
+pass the option `--exec-prefix=PREFIX' to `configure', the package uses
+PREFIX as the prefix for installing programs and libraries.
+Documentation and other data files still use the regular prefix.
 
-	  - LADSPA: Linux Audio Developer's Simple Plugin API
-	    http://www.ladspa.org
+   In addition, if you use an unusual directory layout you can give
+options like `--bindir=DIR' to specify different values for particular
+kinds of files.  Run `configure --help' for a list of the directories
+you can set and what kinds of files go in them.
 
-	  - the JACK Audio Connection Kit: A low latency audio server
-	    http://jackit.sourceforge.net
+   If the package supports it, you can cause programs to be installed
+with an extra prefix or suffix on their names by giving `configure' the
+option `--program-prefix=PREFIX' or `--program-suffix=SUFFIX'.
 
-	  - libsndfile: an audio file I/O library
-	    http://www.mega-nerd.com/libsndfile/
+Optional Features
+=================
 
-	  - fluidsynth: a real-time SoundFont 2 based soft-synth
-	    http://www.fluidsynth.org/
+Some packages pay attention to `--enable-FEATURE' options to
+`configure', where FEATURE indicates an optional part of the package.
+They may also pay attention to `--with-PACKAGE' options, where PACKAGE
+is something like `gnu-as' or `x' (for the X Window System).  The
+`README' should mention any `--enable-' and `--with-' options that the
+package recognizes.
 
-	For enabling the com.sun.tools.javac support in tools.zip you
-	will a need jar file containing the Eclipse Java Compiler.
-	Otherwise com.sun.tools.javac will not be included in tools.zip.
+   For packages that use the X Window System, `configure' can usually
+find the X include and library files automatically, but if it doesn't,
+you can use the `configure' options `--x-includes=DIR' and
+`--x-libraries=DIR' to specify their locations.
 
-This package was designed to use the GNU standard for configuration
-and makefiles.  To build and install do the following:
+Specifying the System Type
+==========================
 
-1).  Run the "configure" script to configure the package.  There are
-various options you might want to pass to configure to control how the
-package is built.  Consider the following options, "configure --help"
-gives a complete list.  
+There may be some features `configure' cannot figure out automatically,
+but needs to determine by the type of machine the package will run on.
+Usually, assuming the package is built to be run on the _same_
+architectures, `configure' can figure that out, but if it prints a
+message saying it cannot guess the machine type, give it the
+`--build=TYPE' option.  TYPE can either be a short name for the system
+type, such as `sun4', or a canonical name which has the form:
 
-  --enable-java           compile Java source default=yes
-  --enable-jni            compile JNI source default=yes
-  --enable-gtk-peer       compile GTK native peers default=yes
-  --enable-qt-peer        compile Qt4 native peers default=no
-  --enable-default-toolkit
-                          fully qualified class name of default AWT toolkit
-                          default=no
-  --enable-xmlj           compile native libxml/xslt library default=no
-  --enable-load-library   enable to use JNI native methods default=yes
-  --enable-local-sockets  enable build of local Unix sockets
-  --with-jikes            to compile the class library using jikes
-                          the default is to use gcj
-  --with-glibj            define what to install (zip|flat|both|none)
-                          default=zip
-  --with-escher=/path/to/escher
-                          enable build of the X/Escher peers, with
-                          the escher library at /path/to/escher, either
-                          in the form of a JAR file, or a directory
-                          containing the .class files of Escher.
-  --enable-Werror         whether to compile C code with -Werror which turns
-                          any compiler warning into a compilation failure
-                          default=no
-  --with-gjdoc            generate documentation using gjdoc default=no
-  --with-jay              Regenerate the parsers with jay must be given the
-                          path to the jay executable
-  --with-glibj-zip=ABS.PATH
-                          use prebuilt glibj.zip class library
-  --with-ecj-jar=ABS.PATH specify jar file containing the Eclipse Java
-                          Compiler
+     CPU-COMPANY-SYSTEM
 
-For more flags run configure --help.
+where SYSTEM can have one of these forms:
 
-2).  Type "gmake" to build the package.  There is no longer a
-dependency problem and we aim to keep it that way.
+     OS KERNEL-OS
 
-3).  Type "gmake install" to install everything.  This may require
-being the superuser. The default install path is /usr/local/classpath
-you may change it by giving configure the --prefix=<path> option.
+   See the file `config.sub' for the possible values of each field.  If
+`config.sub' isn't included in this package, then this package doesn't
+need to know the machine type.
 
-Report bugs to classpath@gnu.org or much better via Savannah at this
-URL: http://savannah.gnu.org/support/?func=addsupport&group=classpath
+   If you are _building_ compiler tools for cross-compiling, you should
+use the option `--target=TYPE' to select the type of system they will
+produce code for.
 
-Happy Hacking!
+   If you want to _use_ a cross compiler, that generates code for a
+platform different from the build platform, you should specify the
+"host" platform (i.e., that on which the generated programs will
+eventually be run) with `--host=TYPE'.
 
-Once installed, GNU Classpath is ready to be used by any VM that supports
-using the official version of GNU Classpath.  Simply ensure that
-/usr/local/classpath/share/classpath is in your $CLASSPATH environment
-variable.  You'll also have to set your LD_LIBRARY_PATH
-variable (or similar system configuration) to include the Classpath
-native libraries in /usr/local/classpath/lib/classpath.  
+Sharing Defaults
+================
 
-*NOTE* All example paths assume the default prefix is used with configure.
-If you don't know what this means then the examples are correct.
+If you want to set default values for `configure' scripts to share, you
+can create a site shell script called `config.site' that gives default
+values for variables like `CC', `cache_file', and `prefix'.
+`configure' looks for `PREFIX/share/config.site' if it exists, then
+`PREFIX/etc/config.site' if it exists.  Or, you can set the
+`CONFIG_SITE' environment variable to the location of the site script.
+A warning: not all `configure' scripts look for a site script.
 
-LD_LIBRARY_PATH=/usr/local/classpath/lib/classpath
-CLASSPATH=/usr/local/classpath/share/classpath/glibj.zip:.
-export LD_LIBRARY_PATH CLASSPATH
+Defining Variables
+==================
 
-More information about the VMs that use GNU Classpath can be found in the
-README file.
+Variables not defined in a site shell script can be set in the
+environment passed to `configure'.  However, some packages may run
+configure again during the build, and the customized values of these
+variables may be lost.  In order to avoid this problem, you should set
+them in the `configure' command line, using `VAR=value'.  For example:
 
-------------------------------------------------------------------
-Building and running with the X AWT peers
-------------------------------------------------------------------
+     ./configure CC=/usr/local2/bin/gcc
 
-In order build the X peers you need the Escher library version 0.2.3
-from http://escher.sourceforge.net . Unpack (and optionally build) the
-Escher library following the instructions in the downloaded
-package. Enable the build of the X peers by passing
---with-escher=/path/to/escher to ./configure where /path/to/escher
-either points to a directory structure or JAR file containing the
-Escher classes. For Unix systems it is preferable to also build local
-socket support by passing --enable-local-sockets, which accelerates
-the network communication to the X server significantly.
+causes the specified `gcc' to be used as the C compiler (unless it is
+overridden in the site shell script).  Here is a another example:
 
-In this release you have to enable the X peers at runtime by
-setting the system property awt.toolkit=gnu.java.awt.peer.x.XToolkit
-by passing -Dawt.toolkit=gnu.java.awt.peer.x.XToolkit to the java
-command when running an application.
+     /bin/bash ./configure CONFIG_SHELL=/bin/bash
 
-------------------------------------------------------------------
-Misc. Notes
-------------------------------------------------------------------
-Compilation is accomplished using a compiler's @file syntax.  For our
-part, we avoid placing make style dependencies as rules upon the
-compilation of a particular class file and leave this up to the Java
-compiler instead.
+Here the `CONFIG_SHELL=/bin/bash' operand causes subsequent
+configuration-related scripts to be executed by `/bin/bash'.
 
-The --enable-maintainer-mode option to configure currently does very 
-little and shouldn't be used by ordinary developers or users anyway.
+`configure' Invocation
+======================
 
-On Windows machines, the native libraries do not currently build, but
-the Java bytecode library will.  Gcj trunk is beginning to work under
-Cygwin.  The mingw32 version of jikes cannot follow symbolic links, you 
-must use a cygwin build of jikes to access this limited functionality.
+`configure' recognizes the following options to control how it operates.
+
+`--help'
+`-h'
+     Print a summary of the options to `configure', and exit.
+
+`--version'
+`-V'
+     Print the version of Autoconf used to generate the `configure'
+     script, and exit.
+
+`--cache-file=FILE'
+     Enable the cache: use and save the results of the tests in FILE,
+     traditionally `config.cache'.  FILE defaults to `/dev/null' to
+     disable caching.
+
+`--config-cache'
+`-C'
+     Alias for `--cache-file=config.cache'.
+
+`--quiet'
+`--silent'
+`-q'
+     Do not print messages saying which checks are being made.  To
+     suppress all normal output, redirect it to `/dev/null' (any error
+     messages will still be shown).
+
+`--srcdir=DIR'
+     Look for the package's source code in directory DIR.  Usually
+     `configure' can determine that directory automatically.
+
+`configure' also accepts some other, not widely useful, options.  Run
+`configure --help' for more details.
+

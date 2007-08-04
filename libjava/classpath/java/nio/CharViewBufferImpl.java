@@ -133,7 +133,7 @@ class CharViewBufferImpl extends CharBuffer
   public CharBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new CharViewBufferImpl (bb, (position () >> 1) + offset,
+    return new CharViewBufferImpl (bb, (position () << 1) + offset,
 				   remaining (), remaining (), 0, -1,
 				   isReadOnly (), endian);
   }

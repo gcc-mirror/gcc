@@ -68,6 +68,7 @@ public:
   virtual void setBuilding(jboolean);
   virtual void setCheckWellformedness(jboolean);
   virtual void setCheckingCharacters(jboolean);
+  virtual void setDefaultAttributes(jboolean);
   virtual ::java::lang::String * getNodeName();
   virtual ::org::w3c::dom::Element * getDocumentElement();
   virtual ::org::w3c::dom::DocumentType * getDoctype();
@@ -89,7 +90,7 @@ public:
   virtual ::org::w3c::dom::Element * createElement(::java::lang::String *);
   virtual ::org::w3c::dom::Element * createElementNS(::java::lang::String *, ::java::lang::String *);
 private:
-  void defaultAttributes(::org::w3c::dom::Element *, ::java::lang::String *);
+  void setDefaultAttributes(::org::w3c::dom::Element *, ::java::lang::String *);
 public:
   virtual ::org::w3c::dom::DocumentFragment * createDocumentFragment();
   virtual ::org::w3c::dom::Text * createTextNode(::java::lang::String *);
@@ -140,6 +141,9 @@ private:
   jboolean checkingCharacters;
 public: // actually package-private
   jboolean checkingWellformedness;
+private:
+  jboolean defaultAttributes;
+public: // actually package-private
   jboolean building;
   ::gnu::xml::dom::DomDocumentConfiguration * config;
   ::java::lang::String * inputEncoding;

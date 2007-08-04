@@ -127,11 +127,11 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_qt_QtFontMetrics_dispose
  * Returns JNI_TRUE if a character is displayable.
  */
 JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_qt_QtFontMetrics_canDisplay
-(JNIEnv *env, jobject obj, jchar c)
+(JNIEnv *env, jobject obj, jint c)
 {
   QFontMetrics *fm = getFontMetrics( env, obj );
   assert( fm );
-  bool result = fm->inFont( QChar( (unsigned short)c ) );
+  bool result = fm->inFont( QChar( (unsigned int) c ) );
   return (result ? JNI_TRUE : JNI_FALSE);
 }
 

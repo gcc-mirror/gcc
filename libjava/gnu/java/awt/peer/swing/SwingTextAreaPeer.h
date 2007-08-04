@@ -20,6 +20,7 @@ extern "Java"
           namespace swing
           {
               class SwingTextAreaPeer;
+              class SwingTextAreaPeer$SwingTextArea;
           }
         }
       }
@@ -38,13 +39,6 @@ extern "Java"
       }
     }
   }
-  namespace javax
-  {
-    namespace swing
-    {
-        class JTextArea;
-    }
-  }
 }
 
 class gnu::java::awt::peer::swing::SwingTextAreaPeer : public ::gnu::java::awt::peer::swing::SwingComponentPeer
@@ -56,6 +50,8 @@ public:
   virtual ::java::awt::Dimension * getPreferredSize(jint, jint);
   virtual void insert(::java::lang::String *, jint);
   virtual void insertText(::java::lang::String *, jint);
+  virtual ::java::awt::Dimension * minimumSize();
+  virtual ::java::awt::Dimension * preferredSize();
   virtual ::java::awt::Dimension * minimumSize(jint, jint);
   virtual ::java::awt::Dimension * preferredSize(jint, jint);
   virtual void replaceRange(::java::lang::String *, jint, jint);
@@ -72,8 +68,9 @@ public:
   virtual void setCaretPosition(jint);
   virtual void setEditable(jboolean);
   virtual void setText(::java::lang::String *);
+  virtual void reshape(jint, jint, jint, jint);
 private:
-  ::javax::swing::JTextArea * __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::swing::SwingComponentPeer)))) jTextArea;
+  ::gnu::java::awt::peer::swing::SwingTextAreaPeer$SwingTextArea * __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::swing::SwingComponentPeer)))) jTextArea;
 public:
   static ::java::lang::Class class$;
 };

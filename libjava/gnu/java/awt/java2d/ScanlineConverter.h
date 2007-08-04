@@ -19,11 +19,12 @@ extern "Java"
       {
         namespace java2d
         {
-            class AbstractGraphics2D;
             class ActiveEdges;
+            class Pixelizer;
             class PolyEdge;
             class Scanline;
             class ScanlineConverter;
+            class ScanlineCoverage;
         }
       }
     }
@@ -32,6 +33,7 @@ extern "Java"
   {
     namespace awt
     {
+        class RenderingHints;
         class Shape;
       namespace geom
       {
@@ -47,10 +49,11 @@ class gnu::java::awt::java2d::ScanlineConverter : public ::java::lang::Object
 
 public: // actually package-private
   ScanlineConverter();
-  void renderShape(::gnu::java::awt::java2d::AbstractGraphics2D *, ::java::awt::Shape *, ::java::awt::Shape *, ::java::awt::geom::AffineTransform *, jint);
+public:
+  void renderShape(::gnu::java::awt::java2d::Pixelizer *, ::java::awt::Shape *, ::java::awt::Shape *, ::java::awt::geom::AffineTransform *, jint, ::java::awt::RenderingHints *);
 private:
   void clear();
-  void doScanline(::gnu::java::awt::java2d::AbstractGraphics2D *, jint, jboolean, jboolean);
+  void doScanline(::gnu::java::awt::java2d::Pixelizer *, jint, jboolean, jboolean);
   void setResolution(jint);
   void setUpperBounds(jint);
   void addShape(::java::awt::geom::PathIterator *, jboolean);
@@ -60,6 +63,7 @@ private:
   void edgePoolAdd(jint, jint, jint, jint, jboolean);
   static jint FIXED_DIGITS;
   static jint ONE;
+  static jint Y_RESOLUTION;
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) numScanlines;
   JArray< ::gnu::java::awt::java2d::Scanline * > * scanlines;
   jint upperBounds;
@@ -71,6 +75,9 @@ private:
   ::gnu::java::awt::java2d::PolyEdge * edgePoolLast;
   jint minY;
   jint maxY;
+  jint minX;
+  jint maxX;
+  ::gnu::java::awt::java2d::ScanlineCoverage * scanlineCoverage;
 public: // actually package-private
   static jboolean $assertionsDisabled;
 public:

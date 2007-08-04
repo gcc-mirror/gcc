@@ -449,4 +449,13 @@ public class GLightweightPeer
   {
     // Nothing to do here for lightweights.
   }
+
+  public boolean requestFocus(Component lightweightChild, boolean temporary,
+                              boolean focusedWindowChangeAllowed,
+                              long time, sun.awt.CausedFocusEvent.Cause cause)
+  {
+    // Always grant focus request.
+    return true;
+  }
+
 }

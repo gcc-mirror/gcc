@@ -44,6 +44,8 @@ extern "Java"
         class Component;
         class Cursor;
         class Dialog;
+        class Dialog$ModalExclusionType;
+        class Dialog$ModalityType;
         class Dimension;
         class EventQueue;
         class FileDialog;
@@ -144,6 +146,10 @@ public: // actually package-private
   static void gtkInit(jint, ::java::lang::Object *);
   static void gtkMain();
   static void gtkQuit();
+private:
+  static void initIDs();
+public: // actually package-private
+  static void initializeGlobalIDs();
 public:
   GtkToolkit();
   virtual void beep();
@@ -228,10 +234,13 @@ private:
   void checkHeadless();
 public:
   virtual jint getMouseNumberOfButtons();
+  virtual jboolean isModalExclusionTypeSupported(::java::awt::Dialog$ModalExclusionType *);
+  virtual jboolean isModalityTypeSupported(::java::awt::Dialog$ModalityType *);
 public: // actually package-private
   static ::java::lang::Object * GTK_LOCK;
 private:
   static ::java::awt::EventQueue * q;
+  static jboolean initializedGlobalIDs;
   ::gnu::java::awt::peer::gtk::GtkToolkit$LRUCache * __attribute__((aligned(__alignof__( ::gnu::java::awt::ClasspathToolkit)))) fontCache;
   ::gnu::java::awt::peer::gtk::GtkToolkit$LRUCache * imageCache;
 public:

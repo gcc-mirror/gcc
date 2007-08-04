@@ -42,16 +42,15 @@ exception statement from your version. */
 static jmethodID postActionEventID;
 
 void
-cp_gtk_button_init_jni (void)
+cp_gtk_button_init_jni (JNIEnv* env)
 {
   jclass gtkbuttonpeer;
 
-  gtkbuttonpeer = (*cp_gtk_gdk_env())->FindClass (cp_gtk_gdk_env(),
-                                           "gnu/java/awt/peer/gtk/GtkButtonPeer");
+  gtkbuttonpeer = (*env)->FindClass (env,
+                                     "gnu/java/awt/peer/gtk/GtkButtonPeer");
 
-  postActionEventID = (*cp_gtk_gdk_env())->GetMethodID (cp_gtk_gdk_env(),
-							gtkbuttonpeer,
-                                                  "postActionEvent", "(I)V");
+  postActionEventID = (*env)->GetMethodID (cp_gtk_gdk_env(), gtkbuttonpeer,
+                                           "postActionEvent", "(I)V");
 }
 
 static void clicked_cb (GtkButton *button,
@@ -67,7 +66,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
 
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   c_label = (*env)->GetStringUTFChars (env, label, NULL);
 
@@ -77,7 +76,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
   gtk_widget_show (button);
 
   (*env)->ReleaseStringUTFChars (env, label, c_label);
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -96,7 +95,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetGetPreferredDimensions
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   button = gtk_bin_get_child (GTK_BIN (ptr));
   label = gtk_bin_get_child (GTK_BIN (button));
@@ -136,20 +135,20 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkButtonPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
-  void *ptr;
-  jobject *gref;
+  GtkWidget *widget;
+  jobject gref;
   GtkWidget *button;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  widget = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
 
-  button = gtk_bin_get_child (GTK_BIN (ptr));
+  button = gtk_bin_get_child (GTK_BIN (widget));
 
   /* Button signals */
   g_signal_connect (G_OBJECT (button), "clicked",
-		    G_CALLBACK (clicked_cb), *gref);
+		    G_CALLBACK (clicked_cb), gref);
 
   /* Component signals */
   cp_gtk_component_connect_signals (G_OBJECT (button), gref);
@@ -168,7 +167,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetLabel
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   text = (*env)->GetStringUTFChars (env, jtext, NULL);
 
@@ -193,7 +192,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetModifyFont
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
@@ -234,7 +233,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetSetBackground
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   normal_color.red = (red / 255.0) * 65535;
   normal_color.green = (green / 255.0) * 65535;
@@ -275,7 +274,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetSetForeground
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   color.red = (red / 255.0) * 65535;
   color.green = (green / 255.0) * 65535;
@@ -300,7 +299,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkActivate
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   button = gtk_bin_get_child (GTK_BIN (ptr));
   gtk_widget_activate (GTK_WIDGET (button));
@@ -317,7 +316,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetRequestFocus
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   button = gtk_bin_get_child (GTK_BIN (ptr));
   gtk_widget_grab_focus (button);
@@ -334,7 +333,7 @@ Java_gnu_java_awt_peer_gtk_GtkButtonPeer_setNativeBounds
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   widget = GTK_WIDGET (ptr);
 

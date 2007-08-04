@@ -1,5 +1,5 @@
 /* SwingButtonPeer.java -- A Swing based peer for AWT buttons
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C)  2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,6 +44,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.peer.ButtonPeer;
@@ -70,12 +71,12 @@ public class SwingButtonPeer
     extends JButton
     implements SwingComponent
   {
-     Button button;
+    Button button;
 
-     SwingButton(Button button)
-     {
-       this.button = button;
-     }
+    SwingButton(Button button)
+    {
+      this.button = button;
+    }
 
     /**
      * Overridden so that this method returns the correct value even without a
@@ -183,6 +184,26 @@ public class SwingButtonPeer
       if (button != null)
         par = button.getParent();
       return par;
+    }
+    
+    /**
+     * Handles focus events by forwarding it to
+     * <code>processFocusEvent()</code>.
+     *
+     * @param ev the Focus event
+     */
+    public void handleFocusEvent(FocusEvent ev)
+    {
+      processFocusEvent(ev);
+    }
+
+    public void requestFocus() {
+        SwingButtonPeer.this.requestFocus(awtComponent, false, true, 0);
+    }
+
+    public boolean requestFocus(boolean temporary) {
+        return SwingButtonPeer.this.requestFocus(awtComponent, temporary,
+                                                 true, 0);
     }
   }
 

@@ -97,8 +97,9 @@ public class XEventPump
     display = d;
     windows = new HashMap();
     drag = -1;
-    Thread t = new Thread(this);
-    t.start();
+    Thread thread = new Thread(this, "X Event Pump");
+    thread.setDaemon(true);
+    thread.start();
   }
 
   /**
@@ -148,8 +149,9 @@ public class XEventPump
 
   private void handleEvent(Event xEvent)
   {
-    Integer key = new Integer(xEvent.window_id());;
-    Window awtWindow = (Window) windows.get(key);
+
+    Integer key = null;
+    Window awtWindow = null;
 
     if (XToolkit.DEBUG)
       System.err.println("fetched event: " + xEvent);
@@ -157,26 +159,45 @@ public class XEventPump
     {
     case ButtonPress.CODE:
       ButtonPress bp = (ButtonPress) xEvent;
+      key= new Integer(bp.event_window_id);
+      awtWindow = (Window) windows.get(key);
       // Create and post the mouse event.
       int button = bp.detail();
+
+      // AWT cannot handle more than 3 buttons and expects 0 instead.
+      if (button >= gnu.x11.Input.BUTTON3)
+        button = 0;
       drag = button;
+
       MouseEvent mp = new MouseEvent(awtWindow, MouseEvent.MOUSE_PRESSED,
-                                     System.currentTimeMillis(), 0,
+                                     System.currentTimeMillis(),
+                                     KeyboardMapping.mapModifiers(bp.state()) | buttonToModifier(button),
                                      bp.event_x(), bp.event_y(),
                                      1, false, button);
       Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(mp);
       break;
     case ButtonRelease.CODE:
       ButtonRelease br = (ButtonRelease) xEvent;
+      key= new Integer(br.event_window_id);
+      awtWindow = (Window) windows.get(key);
+
+      button = br.detail();
+      // AWT cannot handle more than 3 buttons and expects 0 instead.
+      if (button >= gnu.x11.Input.BUTTON3)
+        button = 0;
       drag = -1;
       MouseEvent mr = new MouseEvent(awtWindow, MouseEvent.MOUSE_RELEASED,
-                                     System.currentTimeMillis(), 0,
+                                     System.currentTimeMillis(),
+                                     KeyboardMapping.mapModifiers(br.state()) | buttonToModifier(button),
                                      br.event_x(), br.event_y(),
-                                     1, false, br.detail());
+                                     1, false, button);
       Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(mr);
       break;
     case MotionNotify.CODE:
       MotionNotify mn = (MotionNotify) xEvent;
+      key= new Integer(mn.event_window_id);
+      awtWindow = (Window) windows.get(key);
+
       MouseEvent mm;
       if (drag == -1)
         {
@@ -195,6 +216,8 @@ public class XEventPump
       Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(mm);
       break;
     case ConfigureNotify.CODE:
+      key= new Integer(((ConfigureNotify) xEvent).event_window_id);
+      awtWindow = (Window) windows.get(key);
       ConfigureNotify c = (ConfigureNotify) xEvent;
       if (XToolkit.DEBUG)
         System.err.println("resize request for window id: " + key);
@@ -213,6 +236,8 @@ public class XEventPump
         }
       break;
     case Expose.CODE:
+      key= new Integer(((Expose) xEvent).window_id);
+      awtWindow = (Window) windows.get(key);
       Expose exp = (Expose) xEvent;
       if (XToolkit.DEBUG)
         System.err.println("expose request for window id: " + key);
@@ -228,6 +253,8 @@ public class XEventPump
       break;
     case KeyPress.CODE:
     case KeyRelease.CODE:
+      key = new Integer(((Input) xEvent).event_window_id);
+      awtWindow = (Window) windows.get(key);
       handleKeyEvent(xEvent, awtWindow);
       break;
     default:
@@ -282,6 +309,23 @@ public class XEventPump
 
   }
 
+  /** Translates an X button identifier to the AWT's MouseEvent modifier
+   *  mask. As the AWT cannot handle more than 3 buttons those return
+   *  <code>0</code>.
+   */
+  static int buttonToModifier(int button)
+  {
+    switch (button)
+    {
+      case gnu.x11.Input.BUTTON1:
+        return MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON1_MASK;
+      case gnu.x11.Input.BUTTON2:
+        return MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON2_MASK;
+      case gnu.x11.Input.BUTTON3:
+        return MouseEvent.BUTTON3_DOWN_MASK | MouseEvent.BUTTON3_MASK;
+    }
+
+    return 0;        
+  }
 
 }
-

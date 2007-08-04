@@ -46,6 +46,13 @@ extern "Java"
       }
     }
   }
+  namespace sun
+  {
+    namespace awt
+    {
+        class CausedFocusEvent$Cause;
+    }
+  }
 }
 
 class java::awt::peer::ContainerPeer : public ::java::lang::Object
@@ -113,6 +120,7 @@ public:
   virtual void setBounds(jint, jint, jint, jint, jint) = 0;
   virtual jboolean isReparentSupported() = 0;
   virtual void layout() = 0;
+  virtual jboolean requestFocus(::java::awt::Component *, jboolean, jboolean, jlong, ::sun::awt::CausedFocusEvent$Cause *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

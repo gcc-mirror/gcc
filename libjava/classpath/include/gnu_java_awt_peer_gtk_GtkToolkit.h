@@ -13,6 +13,7 @@ extern "C"
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkInit (JNIEnv *env, jclass, jint, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkMain (JNIEnv *env, jclass);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_gtkQuit (JNIEnv *env, jclass);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_initIDs (JNIEnv *env, jclass);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_beep (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenSizeDimensions (JNIEnv *env, jobject, jintArray);
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenResolution (JNIEnv *env, jobject);

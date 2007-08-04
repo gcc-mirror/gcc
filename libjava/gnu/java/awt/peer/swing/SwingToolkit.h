@@ -31,6 +31,8 @@ extern "Java"
     {
         class Button;
         class Canvas;
+        class Dialog$ModalExclusionType;
+        class Dialog$ModalityType;
         class Label;
         class Menu;
         class MenuBar;
@@ -67,6 +69,8 @@ public: // actually protected
   virtual ::java::awt::peer::PanelPeer * createPanel(::java::awt::Panel *);
   virtual ::java::awt::peer::TextFieldPeer * createTextField(::java::awt::TextField *);
 public:
+  virtual jboolean isModalExclusionTypeSupported(::java::awt::Dialog$ModalExclusionType *);
+  virtual jboolean isModalityTypeSupported(::java::awt::Dialog$ModalityType *);
   static ::java::lang::Class class$;
 };
 

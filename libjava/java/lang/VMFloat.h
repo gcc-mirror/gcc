@@ -16,6 +16,8 @@ public: // actually package-private
   static jint floatToIntBits(jfloat);
   static jint floatToRawIntBits(jfloat);
   static jfloat intBitsToFloat(jint);
+  static ::java::lang::String * toString(jfloat);
+  static jfloat parseFloat(::java::lang::String *);
 public:
   static ::java::lang::Class class$;
 };

@@ -21,6 +21,7 @@ extern "Java"
         {
             class AbstractGraphics2D;
             class ScanlineConverter;
+            class ScanlineCoverage;
             class ShapeCache;
         }
       }
@@ -176,10 +177,8 @@ public: // actually protected
   virtual void rawCopyArea(jint, jint, jint, jint, jint, jint);
 private:
   void copyAreaImpl(jint, jint, jint, jint, jint, jint);
-public: // actually protected
-  virtual void fillScanline(jint, jint, jint);
-private:
-  void fillScanlineAA(JArray< jint > *, jint, jint, jint, ::java::awt::PaintContext *, jint);
+public:
+  virtual void renderScanline(jint, ::gnu::java::awt::java2d::ScanlineCoverage *);
 public: // actually protected
   virtual void init();
   virtual ::java::awt::image::WritableRaster * getDestinationRaster();
@@ -191,7 +190,6 @@ private:
   ::gnu::java::awt::java2d::ShapeCache * getShapeCache();
   ::gnu::java::awt::java2d::ScanlineConverter * getScanlineConverter();
   static ::java::awt::Font * FONT;
-  static const jint AA_SAMPLING = 8;
   static ::java::lang::ThreadLocal * shapeCache;
   static ::java::lang::ThreadLocal * scanlineConverters;
 public: // actually protected
@@ -206,8 +204,6 @@ private:
   ::java::awt::Shape * clip__;
   ::java::awt::RenderingHints * renderingHints;
   ::java::awt::image::WritableRaster * destinationRaster;
-  JArray< jint > * alpha;
-  JArray< ::java::util::ArrayList * > * edgeTable;
   jboolean isOptimized;
   static ::java::awt::BasicStroke * STANDARD_STROKE;
   static ::java::util::HashMap * STANDARD_HINTS;

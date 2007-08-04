@@ -799,6 +799,14 @@ outer:
       result = cache.longValue(); 
     else
       {
+	// Note that we can't use Class.isEnum() here, because that returns
+	// false for java.lang.Enum and enum value sub classes.
+	if (Enum.class.isAssignableFrom(cl) || Proxy.isProxyClass(cl))
+	  {
+	    // Spec says that enums and dynamic proxies have
+	    // a serialVersionUID of 0L.
+	    return 0L;
+	  }
         try
           {
             result = getClassUIDFromField(cl);

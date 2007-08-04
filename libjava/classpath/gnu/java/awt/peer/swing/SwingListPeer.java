@@ -1,5 +1,5 @@
 /* SwingListPeer.java -- A Swing based peer for AWT lists
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C)  2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,6 +46,7 @@ import java.awt.Image;
 import java.awt.List;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.peer.ListPeer;
@@ -128,6 +129,17 @@ public class SwingListPeer
       processKeyEvent(ev);
     }
 
+    /**
+     * Handles focus events by forwarding it to <code>processFocusEvent()</code>.
+     *
+     * @param ev the Focus event
+     */
+    public void handleFocusEvent(FocusEvent ev)
+    {
+      processFocusEvent(ev);
+    }
+
+    
     /**
      * Overridden so that this method returns the correct value even without a
      * peer.

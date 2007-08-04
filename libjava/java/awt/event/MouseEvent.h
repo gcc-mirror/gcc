@@ -29,8 +29,12 @@ class java::awt::event::MouseEvent : public ::java::awt::event::InputEvent
 public:
   MouseEvent(::java::awt::Component *, jint, jlong, jint, jint, jint, jint, jboolean, jint);
   MouseEvent(::java::awt::Component *, jint, jlong, jint, jint, jint, jint, jboolean);
+  MouseEvent(::java::awt::Component *, jint, jlong, jint, jint, jint, jint, jint, jint, jboolean, jint);
   virtual jint getX();
   virtual jint getY();
+  virtual ::java::awt::Point * getLocationOnScreen();
+  virtual jint getXOnScreen();
+  virtual jint getYOnScreen();
   virtual ::java::awt::Point * getPoint();
   virtual void translatePoint(jint, jint);
   virtual jint getClickCount();
@@ -59,6 +63,8 @@ public:
 private:
   jint __attribute__((aligned(__alignof__( ::java::awt::event::InputEvent)))) x;
   jint y;
+  jint absX;
+  jint absY;
   jint clickCount;
   jint button;
   jboolean popupTrigger;

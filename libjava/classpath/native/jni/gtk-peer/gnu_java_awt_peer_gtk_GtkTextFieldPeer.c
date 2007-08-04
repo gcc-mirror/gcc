@@ -73,13 +73,13 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
   gdk_threads_enter ();
 
   /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   entry = gtk_entry_new ();
   gtk_widget_set_size_request (entry,
 			       text_width + 2 * get_border_width (entry), -1);
 
-  NSA_SET_PTR (env, obj, entry);
+  gtkpeer_set_widget (env, obj, entry);
 
   gdk_threads_leave ();
 }
@@ -89,12 +89,12 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jobject *gref;
+  jobject gref;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
 
   /* TextComponent signals */
   cp_gtk_textcomponent_connect_signals (G_OBJECT (ptr), gref);
@@ -114,7 +114,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkWidgetSetBackground
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   color.red = (red / 255.0) * 65535;
   color.green = (green / 255.0) * 65535;
@@ -134,7 +134,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkWidgetSetForeground
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   color.red = (red / 255.0) * 65535;
   color.green = (green / 255.0) * 65535;
@@ -162,7 +162,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetBorderWidth
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   border_width = get_border_width (GTK_WIDGET (ptr));
 
@@ -207,7 +207,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setEchoChar
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   entry = GTK_ENTRY (ptr);
 
@@ -233,7 +233,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_getCaretPosition
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   pos = gtk_editable_get_position (GTK_EDITABLE (ptr));
 
@@ -250,7 +250,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setCaretPosition
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_editable_set_position (GTK_EDITABLE (ptr), pos);
 
@@ -267,7 +267,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_getSelectionStart
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   if (gtk_editable_get_selection_bounds (GTK_EDITABLE (ptr), &starti, &endi))
     pos = starti;
@@ -289,7 +289,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_getSelectionEnd
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   if (gtk_editable_get_selection_bounds (GTK_EDITABLE (ptr), &starti, &endi))
     pos = endi;
@@ -309,7 +309,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_select
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_editable_select_region (GTK_EDITABLE (ptr), start, end);
 
@@ -324,7 +324,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setEditable
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_editable_set_editable (GTK_EDITABLE (ptr), state);
 
@@ -341,7 +341,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_getText
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   
   contents = gtk_editable_get_chars (GTK_EDITABLE (ptr), 0, -1);
 
@@ -363,7 +363,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setText
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   str = (*env)->GetStringUTFChars (env, contents, NULL);
   
   gtk_entry_set_text (GTK_ENTRY (ptr), str);
@@ -374,10 +374,10 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setText
 }
 
 void
-cp_gtk_textcomponent_connect_signals (GObject *ptr, jobject *gref)
+cp_gtk_textcomponent_connect_signals (GObject *ptr, jobject gref)
 {
   g_signal_connect (G_OBJECT(ptr), "changed",
-                    G_CALLBACK (textcomponent_changed_cb), *gref);
+                    G_CALLBACK (textcomponent_changed_cb), gref);
 }
 
 static void

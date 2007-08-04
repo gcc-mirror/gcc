@@ -49,7 +49,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
 
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   str = (*env)->GetStringUTFChars (env, text, 0);
 
@@ -61,7 +61,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
 
   (*env)->ReleaseStringUTFChars (env, text, str);
 
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -78,7 +78,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetGetPreferredDimensions
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   label = gtk_bin_get_child (GTK_BIN (ptr));
 
@@ -115,7 +115,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetModifyFont
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   font_name = (*env)->GetStringUTFChars (env, name, NULL);
 
@@ -156,7 +156,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeText
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   str = (*env)->GetStringUTFChars (env, text, 0);
 
@@ -178,7 +178,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_nativeSetAlignment
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   label = gtk_bin_get_child (GTK_BIN(ptr));
 
@@ -196,7 +196,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setNativeBounds
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   widget = GTK_WIDGET (ptr);
 

@@ -1108,25 +1108,46 @@ public abstract class DomNode
    */
   public Node cloneNode(boolean deep)
   {
-    DomNode node = (DomNode) clone();
-    
     if (deep)
       {
-        DomDocument doc = (nodeType == DOCUMENT_NODE) ?
-          (DomDocument) node : node.owner;
-        boolean building = doc.building;
+        return cloneNodeDeepInternal(true, null);
+      }
+
+    DomNode node = (DomNode) clone();
+    if (nodeType == ENTITY_REFERENCE_NODE)
+      {
+        node.makeReadonly();
+      }
+    notifyUserDataHandlers(UserDataHandler.NODE_CLONED, this, node);
+    return node;
+  }
+
+  /**
+   * Returns a deep clone of this node.
+   */
+  private DomNode cloneNodeDeepInternal(boolean root, DomDocument doc)
+  {
+    DomNode node = (DomNode) clone();
+    boolean building = false; // Never used unless root is true
+    if (root)
+      {
+        doc = (nodeType == DOCUMENT_NODE) ? (DomDocument) node : node.owner;
+        building = doc.building;
         doc.building = true; // Permit certain structural rules
-        for (DomNode ctx = first; ctx != null; ctx = ctx.next)
-          {
-            DomNode newChild = (DomNode) ctx.cloneNode(deep);
-            newChild.setOwner(doc);
-            node.appendChild(newChild);
-          }
-        doc.building = building;
+      }
+    node.owner = doc;
+    for (DomNode ctx = first; ctx != null; ctx = ctx.next)
+      {
+        DomNode newChild = ctx.cloneNodeDeepInternal(false, doc);
+        node.appendChild(newChild);
       }
     if (nodeType == ENTITY_REFERENCE_NODE)
       {
         node.makeReadonly();
+      }
+    if (root)
+      {
+        doc.building = building;
       }
     notifyUserDataHandlers(UserDataHandler.NODE_CLONED, this, node);
     return node;

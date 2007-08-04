@@ -40,6 +40,7 @@ package gnu.java.awt.peer.swing;
 
 import java.awt.Button;
 import java.awt.Canvas;
+import java.awt.Dialog;
 import java.awt.Label;
 import java.awt.Menu;
 import java.awt.MenuBar;
@@ -162,4 +163,19 @@ public abstract class SwingToolkit extends ClasspathToolkit
   {
     return new SwingTextFieldPeer(textField);
   }
+
+  @Override
+  public boolean isModalExclusionTypeSupported
+  (Dialog.ModalExclusionType modalExclusionType)
+  {
+    return false;
+  }
+
+  @Override
+  public boolean isModalityTypeSupported(Dialog.ModalityType modalityType)
+  {
+    return false;
+  }
+
+
 }

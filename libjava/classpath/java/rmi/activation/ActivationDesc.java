@@ -80,7 +80,7 @@ public final class ActivationDesc
   /**
    * The object specific intitalization data.
    */
-  private MarshalledObject data;
+  private MarshalledObject<?> data;
 
   /**
    * The start mode.
@@ -95,7 +95,7 @@ public final class ActivationDesc
    * @param location the code base URL
    * @param data the object initialization data, contained in a marshalled form
    */
-  public ActivationDesc(String className, String location, MarshalledObject data)
+  public ActivationDesc(String className, String location, MarshalledObject<?> data)
       throws ActivationException
   {
     this(ActivationGroup.currentGroupID(), className, location, data, false);
@@ -115,7 +115,7 @@ public final class ActivationDesc
    *          object is normally activated on demand).
    */
   public ActivationDesc(String className, String location,
-                        MarshalledObject data, boolean restart)
+                        MarshalledObject<?> data, boolean restart)
       throws ActivationException
   {
     this(ActivationGroup.currentGroupID(), className, location, data, restart);
@@ -131,7 +131,7 @@ public final class ActivationDesc
    * @param data the object initialization data, contained in a marshalled form
    */
   public ActivationDesc(ActivationGroupID groupID, String className,
-                        String location, MarshalledObject data)
+                        String location, MarshalledObject<?> data)
   {
     this(groupID, className, location, data, false);
   }
@@ -150,7 +150,7 @@ public final class ActivationDesc
    *          object is normally activated on demand).
    */
   public ActivationDesc(ActivationGroupID groupID, String className,
-                        String location, MarshalledObject data, boolean restart)
+                        String location, MarshalledObject<?> data, boolean restart)
   {
     this.groupid = groupID;
     this.classname = className;
@@ -184,7 +184,7 @@ public final class ActivationDesc
     return location;
   }
 
-  public MarshalledObject getData()
+  public MarshalledObject<?> getData()
   {
     return data;
   }

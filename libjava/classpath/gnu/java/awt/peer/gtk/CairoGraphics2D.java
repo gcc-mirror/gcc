@@ -1726,7 +1726,8 @@ public abstract class CairoGraphics2D extends Graphics2D
                        .equals(RenderingHints.VALUE_TEXT_ANTIALIAS_OFF));
     ignoreAA = true;
     
-    if (gv instanceof FreetypeGlyphVector && alpha == 1.0)
+    if (gv instanceof FreetypeGlyphVector && alpha == 1.0
+        && !((FreetypeGlyphVector)gv).hasTransforms())
       {
         int n = gv.getNumGlyphs ();
         int[] codes = gv.getGlyphCodes (0, n, null);

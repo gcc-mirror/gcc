@@ -4,8 +4,7 @@ EXTRA_DIST = classpath_jawt.h
 noinst_LTLIBRARIES = libclasspath.la
 
 libclasspath_la_SOURCES = jcl.c jcl.h \
-			  jnilink.c jnilink.h \
-			  native_state.c native_state.h
+			  jnilink.c jnilink.h
 
 AM_LDFLAGS = @CLASSPATH_CONVENIENCE@
 AM_CPPFLAGS = @CLASSPATH_INCLUDES@

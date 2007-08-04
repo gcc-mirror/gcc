@@ -36,6 +36,7 @@ public:
   virtual void keyRelease(jint) = 0;
   virtual jint getRGBPixel(jint, jint) = 0;
   virtual JArray< jint > * getRGBPixels(::java::awt::Rectangle *) = 0;
+  virtual void dispose() = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

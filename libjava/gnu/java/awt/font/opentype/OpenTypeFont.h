@@ -88,6 +88,7 @@ private:
 public:
   jint getGlyph(jint);
   ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, ::java::text::CharacterIterator *);
+  jint getGlyphIndex(jint);
   void getAdvance(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean, ::java::awt::geom::Point2D *);
   ::java::awt::geom::GeneralPath * getGlyphOutline(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jint);
   ::gnu::java::awt::font::opentype::truetype::Zone * getRawGlyphOutline(jint, ::java::awt::geom::AffineTransform *);

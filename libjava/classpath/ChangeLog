@@ -1,16 +1,411 @@
-2007-07-20  Keith Seitz  <keiths@redhat.com>
+2007-07-28  Matthias Klose  <doko@ubuntu.com>
 
-	* gnu/classpath/jdwp/value/StringValue.java
+	* include/jvmti.h(jniNativeInterface): Rename type.
+
+2007-07-24  Tom Tromey  <tromey@redhat.com>
+
+	PR java/32862:
+	* java/util/EnumMap.java (get): Special case emptySlot.
+	(clone): Rewrote.
+
+2007-07-23  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* gnu/java/nio/charset/ISO_8859_1.java: Added ISO8859-1 to
+	aliases.
+
+2007-07-23  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* vm/reference/sun/misc/Unsafe.java (unpark): Changed signature to
+	be compatible with OpenJDK.
+
+2007-07-13  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/java2d/AbstractGraphics2D.java
+	(clip(Shape)): Call setClip when the clip changes.
+	(drawImage): Add translation.
+	(drawLine): Add translation.
+	* gnu/java/awt/peer/x/PixmapVolatileImage.java
+	(getPixmap): New method.
+	* gnu/java/awt/peer/x/XEventPump.java
+	(XEventPump): Name thread. Start as daemon thread.
+	* gnu/java/awt/peer/x/XGraphics2D.java
+	(rawDrawImage): Special handling for PixmapVolatileImage.
+	(rawDrawLine): Don't add translation here. This is done in
+	the superclass.
+	(rawFillRect): Don't add translation here. This is done in
+	the superclass.
+	(renderScanline): Added null check.
+
+2007-07-13  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/x/PixmapVolatileImage.java: New class.
+	* gnu/java/awt/peer/x/XGraphicsConfiguration.java
+	(createCompatibleImage(int,int)): Delegate to the 3-int overload.
+	(createCompatibleImage(int,int,int)): Implemented. Using
+	the ZPixmapDataBuffer for OPAQUE images.
+	(createCompatibleVolatileImage(int,int)): Delegate to the 3-int
+	overload.
+	(createCompatibleVolatileImage(int,int,int)): Implemented. Using
+	PixmapVolatileImage.
+	* gnu/java/awt/peer/x/XWindowPeer.java
+	(createImage): Return a PixmapVolatileImage (for now).
+	(createVolatileImage): Implemented, using PixmapVolatileImage.
+	* gnu/java/awt/peer/x/ZPixmapDataBuffer.java
+	New class.
+
+2007-07-10  Roman Kennke  <roman@kennke.org>
+
+	PR 32645
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphicsCopy.c
+	(copyPixbuf): Swap asserts.
+
+2007-07-09  Chris Burdess  <dog@gnu.org>
+
+	Fixes #32672
+	* gnu/xml/dom/DomElement.java,
+	* gnu/xml/dom/DomNamedNodeMap.java: don't check owner in
+	  setNamedNode when cloning.
+
+2007-07-08  Mario Torre  <neugens@limasoftware.net>
+
+	* gnu/javax/sound/sampled/gstreamer: new package hierarchy.
+	* gnu/javax/sound/sampled/gstreamer/io/GstAudioFileReader.java: new file.
+	* gnu/javax/sound/sampled/gstreamer/io/GstAudioFileReaderNativePeer.java:
+	likewise.
+	* gnu/javax/sound/sampled/gstreamer/lines/GstDataLine.java: likewise.
+	* gnu/javax/sound/sampled/gstreamer/GStreamerMixer.java: likewise.
+	* gnu/javax/sound/sampled/gstreamer/GStreamerMixerProvider.java: likewise.
+	* gnu/javax/sound/AudioSecurityManager.java: likewise. 
+	* gnu/javax/sound/sampled/gstreamer/lines/GstNativeDataLine.java: likewise.
+	* gnu/javax/sound/sampled/gstreamer/lines/GstSourceDataLine.java: likewise.
+	* gnu/javax/sound/sampled/gstreamer/lines/GstPipeline.java: likewise.
+	* gnu/javax/sound/sampled/gstreamer/io/GstAudioFileWriter.java: likewise. 
+	* resource/META-INF/services/javax.sound.sampled.spi.AudioFileReader.in:
+	likewise.
+	* resource/META-INF/services/javax.sound.sampled.spi.MixerProvider.in:
+	likewise.
+	* resource/META-INF/services/javax.sound.sampled.spi.MixerProvider:
+	likewise.
+	* native/jni/gstreamer-peer/gstclasspathsrc.c: likewise.
+	* native/jni/gstreamer-peer/gstclasspathsrc.h: likewise.
+	* native/jni/gstreamer-peer/gstinputstream.c: likewise.
+	* native/jni/gstreamer-peer/gstinputstream.h: likewise.
+	* native/jni/gstreamer-peer/GStreamerIOPeer.c: likewise.
+	* native/jni/gstreamer-peer/Makefile.am: likewise.
+	* native/jni/gstreamer-peer/.cvsignore: likewise.
+	* include/gnu_javax_sound_sampled_gstreamer_io_GstAudioFileReaderNativePeer.h:
+	likewise.
+	* include/Makefile.am: add gstreamer generated headers.
+	* configure.ac: add gstreamer sound backend configuration.
+	The backend is currently disabled by default.
+	* native/jni/Makefile.am: code to allow compilation of the gstreamer
+	sound backend.
+	* javax/sound/sampled/spi/MixerProvider.java (isMixerSupported):
+	indentation fixes.
+	* javax/sound/sampled/AudioFormat.java (toString): fix method to display
+	informations only when available.
+	* javax/sound/sampled/DataLine.java:
+	(Info.isFormatSupported):  indentation fixes.
+	(Info):  indentation fixes.
+	(Info.toString):  indentation fixes.
+	(Info.matches):  indentation fixes.
+
+2007-07-03  Tania Bento  <tbento@redhat.com>
+
+	* java/lang/Integer.java:
+	(parseInt(String,int,boolean)): Throw NumberFormatException if 
+	String is just "+".
+
+2007-07-01  Chris Burdess  <dog@gnu.org>
+
+	* gnu/xml/transform/WithParam.java: Handle case where content is
+	  empty.
+
+2007-06-28  Tom Tromey  <tromey@redhat.com>
+
+	* include/jni.h: Fixed local variables.
+
+2007-06-26  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* ChangeLog: Correction of a bug fix number.
+
+2007-06-25  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/ClasspathFontPeer.java
+	(canDisplay): Take character as integer codepoint.
+	* gnu/java/awt/peer/gtk/GdkFontPeer.java
+	(canDisplay): Take character as integer codepoint.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	(postMouseEvent): Use MouseEvent constructor with absolute coordinates
+	to avoid deadlock (over getLocationOnScreen()).
+	* gnu/java/awt/peer/gtk/VolatileImageGraphics.java
+	(getDeviceConfiguration): Fall back to the default configuration
+	if the component is not set.
+	* gnu/java/awt/peer/qt/QtFontMetrics.java
+	(canDisplay): Take character as integer codepoint.
+	* gnu/java/awt/peer/qt/QtFontPeer.java
+	(canDisplay): Take character as integer codepoint.
+	* gnu/java/awt/peer/x/XFontPeer2.java
+	(canDisplay): Take character as integer codepoint.
+	* include/gnu_java_awt_peer_qt_QtFontMetrics.h
+	(canDisplay): Take character as integer codepoint.
+	* java/awt/Font.java
+	(DIALOG): New constant.
+	(DIALOG_INPUT): New constant.
+	(MONOSPACED): New constant.
+	(SANS_SERIF): New constant.
+	(SERIF): New constant.
+	(Font(Font)): New constructor.
+	(canDisplay(char)): Use new canDisplay(int) method.
+	(canDisplay(int)): New method.
+	(hasLayoutAttributes): New method.
+	* java/awt/event/MouseEvent.java
+	(absX,absY): New fields.
+	(MouseEvent): New constructor with absolute coordinates.
+	(getLocationOnScreen): New method.
+	(getXOnScreen): New method.
+	(getYOnScreen): New method.
+	* native/jni/qt-peer/qtfontmetrics.cpp
+	(canDisplay): Take character as integer codepoint.
+
+2007-06-25  Mark Wielaard  <mark@klomp.org>
+
+	* native/jni/native-lib/cpnet.c
+	(cpnet_aton) Moved variable declaration of inet6_addr so it is
+	actually in the scope of its use.
+
+2007-06-25  Dalibor Topic  <robilad@kaffe.org>
+
+	* native/jni/java-net/gnu_java_net_VMPlainSocketImpl.c
+	(THROW_NO_IPV6): New macro.
+	(Java_gnu_java_net_VMPlainSocketImpl_bind6) Conditionally
+	build code if IPv6 facilities are available, otherwise
+	throw an error.
+	(Java_gnu_java_net_VMPlainSocketImpl_setMulticastInterface6, 
+	Java_gnu_java_net_VMPlainSocketImpl_join6,
+	Java_gnu_java_net_VMPlainSocketImpl_leave6,
+	Java_gnu_java_net_VMPlainSocketImpl_joinGroup6,
+	Java_gnu_java_net_VMPlainSocketImpl_leaveGroup6)
+	Use THROW_NO_IPV6.
+
+	* native/jni/java-net/java_net_VMInetAddress.c
+	(Java_java_net_VMInetAddress_getHostByAddr,
+	Java_java_net_VMInetAddress_getHostByName,
+	Java_java_net_VMInetAddress_aton) Build IPv6 dependant
+	code conditionally on IPv6 facilities being available.
+	Switched if-else blocks where necessary to allow that.
+
+	* native/jni/java-net/javanet.c
+	(_javanet_get_ip_netaddr) Build IPv6 dependant code conditionally 
+	on IPv6 facilities being available.
+
+	* native/jni/native-lib/cpnet.c
+	(cpnet_getHostByName, cpnet_getHostByAddr) Build IPv6 dependant 
+	code conditionally on IPv6 facilities being available.
+	(cpnet_aton) Moved variable declaration of inet6_addr to the scope
+	of its use. Build IPv6 dependant code conditionally 
+	on IPv6 facilities being available.
+
+	* native/jni/native-lib/cpnet.h (cpnet_newIPV6Address, 
+	cpnet_isIPV6Address, cpnet_IPV6AddressToBytes, 
+	cpnet_bytesToIPV6Address): Make IPv6 dependant utility functions 
+	available conditionally on IPv6 facilities being available.
+
+2007-06-25  Dalibor Topic  <robilad@kaffe.org>
+
+	* m4/acinclude.m4 (CLASSPATH_CHECK_JAVAC): If the user passes an
+	explicit argument to configure, just use it, and don't attempt to
+	run AC_CHECK_PROG. This makes --with-javac="javac -J-Xmx512M" work.
+
+2007-06-25  Dalibor Topic  <robilad@kaffe.org>
+
+	* configure.ac: Check for MSG_WAITALL, since it does not exist on
+	Cygwin.
+
+	* native/jni/java-nio/gnu_java_nio_VMChannel.c 
+	(Java_gnu_java_nio_VMChannel_receive): Define MSG_WAITALL as 0 if 
+	it does not exist.
+
+2007-06-24  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	Fixes bug #31927
+	* native/jni/java-nio/gnu_java_nio_VMChannel.c
+	(Java_gnu_java_nio_VMChannel_available): Retry using fstat if ioctl
+	fails with ENOTTY.
+
+2007-06-22  Tania Bento  <tbento@redhat.com>
+
+	* java/util/Currency.java:  
+	(getInstance (Locale)): Check that the country of the
+	locale given is valid.  If it is not, throw an
+	IllegalArgumentException.
+
+2007-06-22  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/GLightweightPeer.java
+	* gnu/java/awt/peer/gtk/GdkRobotPeer.java
+	* gnu/java/awt/peer/gtk/GtkCompoonentPeer.java
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java
+	* gnu/java/awt/peer/qt/QtComponentPeer.java
+	* gnu/java/awt/peer/qt/QtFramePeer.java
+	* gnu/java/awt/peer/qt/QtWindowPeer.java
+	* gnu/java/awt/peer/swing/SwingComponentPeer.java
+	* gnu/java/awt/peer/swing/SwingWindowPeer.java
+	* gnu/java/awt/peer/x/XFramePeer.java:
+	Removed @Override annotations from some interface implementation
+	methods to ensure 1.5 compatibility.
+
+2007-06-22  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* include/jni.h (JNINativeInterface): Renamed to
+	JNINativeInterface_, added const to arguments where necessary.
+	(JNIInvokeInterface): Renamed to JNIInvokeInterface_.
+
+2007-06-22  Roman Kennke  <roman@kennke.org>
+
+	* sun/awt/CausedFocusEvent.java: New class. Needed for compatibility
+	in java.awt.peer.
+	* java/awt/Dialog.java
+	(ModalExclusionType): New enum.
+	(ModalityType): New enum.
+	* java/awt/Toolkit.java
+	(isModalExclusionTypeSupported): New abstract method.
+	(isModalityTypeSupported): New abstract method.
+	* java/awt/peer/ComponentPeer.java
+	(requestFocus): New method.
+	* java/awt/peer/FramePeer.java
+	(getBoundsPrivate): New method.
+	* java/awt/peer/RobotPeer.java
+	(dispose): New method.
+	* java/awt/peer/WindowPeer.java
+	(setAlwaysOnTop): New method.
+	(updateFocusableWindowState): New method.
+	(setModalBlocked): New method.
+	(updateMinimumSize): New method.
+	(updateIconImages): New method.
+	* gnu/java/awt/peer/GLightweightPeer.java
+	(requestFocus): New method.
+	* gnu/java/awt/peer/gtk/GdkRobotPeer.java
+	(dispose): New method.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
+	(requestFocus): New method.
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java
+	(getBoundsPrivate): New method.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java
+	(isModalExclusionTypeSupported): New method.
+	(isModalityTypeSupported): New method.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java
+	(updateIconImages): New method.
+	(updateMinimumSize): New method.
+	(setModalBlocked): New method.
+	(updateFocusableWindowState): New method.
+	(setAlwaysOnTop): New method.
+	* gnu/java/awt/peer/headless/HeadlessToolkit.java
+	(isModalExclusionTypeSupported): New method.
+	(isModalityTypeSupported): New method.
+	* gnu/java/awt/peer/qt/QtComponentPeer.java
+	(requestFocus): New method.
+	* gnu/java/awt/peer/qt/QtFramePeer.java
+	(getBoundsPrivate): New method.
+	* gnu/java/awt/peer/qt/QtToolkit.java
+	(isModalExclusionTypeSupported): New method.
+	(isModalityTypeSupported): New method.
+	* gnu/java/awt/peer/qt/QtWindowPeer.java
+	(updateIconImages): New method.
+	(updateMinimumSize): New method.
+	(setModalBlocked): New method.
+	(updateFocusableWindowState): New method.
+	(setAlwaysOnTop): New method.
+	* gnu/java/awt/peer/swing/SwingComponentPeer.java
+	(requestFocus): New method.
+	* gnu/java/awt/peer/swing/SwingToolkit.java
+	(isModalExclusionTypeSupported): New method.
+	(isModalityTypeSupported): New method.
+	* gnu/java/awt/peer/swing/SwingWindowPeer.java
+	(updateIconImages): New method.
+	(updateMinimumSize): New method.
+	(setModalBlocked): New method.
+	(updateFocusableWindowState): New method.
+	(setAlwaysOnTop): New method.
+	* gnu/java/awt/peer/x/XFramePeer.java
+	(getBoundsPrivate): New method.
+	* gnu/java/awt/peer/x/XToolkit.java
+	(isModalExclusionTypeSupported): New method.
+	(isModalityTypeSupported): New method.
+
+2007-06-21  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* tools/Makefile.am:
+	Compile in com.sun.tools.javah
+	* tools/com/sun/tools/javah/Main.java:
+	Javah Sun-->Classpath wrapper.
+	
+2007-06-21  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* javax/swing/text/html/parser/AttributeList.java (getValues):
+	Check if values is null.
+
+2007-06-21  Roman Kennke  <roman@kennke.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphicsCopy.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c:
+	Fix some type signatures.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.c:
+	Fix intendation.
+
+2007-06-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/ObjectStreamClass.java (getClassUID): Return 0L for
+	enums and proxies.
+
+2007-06-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/URLClassLoader.java
+	(URLClassLoader(URL[],ClassLoader,URLStreamHandlerFactory):
+	Add factory to cache before calling addURLS.
+	(run): Don't call initCause() on ClassNotFoundException.
+
+2007-06-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	Fixes #32356
+	* java/lang/reflect/Array.java
+	(newInstance(Class,int[])): Call createMultiArray correctly.
+	(createMultiArray): Fixed dimensions processing order.
+
+2007-06-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* gnu/java/net/loader/URLLoader.java
+	(URLLoader(URLClassLoader,URLStreamHandlerCache,
+	URLStreamHandlerFactory,URL,URL)): Disabiguate CodeSource constructor
+	invocation.
+	* java/awt/AWTKeyStroke.java
+	(LinkedHashMap.removeEldestEntry): Use Map.Entry to fix compile
+	error when compiled against OpenJDK java.util package.
+	* java/awt/AlphaComposite.java
+	(LinkedHashMap.removeEldestEntry): Use Map.Entry to fix compile
+	error when compiled against OpenJDK java.util package.
+
+2007-06-21  Jeroen Frijters  <jeroen@frijters.net>
+
+	* gnu/java/security/Engine.java
+	(getInstance(String,String,Provider,Object[]): Use correctly cased
+	property name.
+
+2007-07-19  Keith Seitz  <keiths@redhat.com>
+
+	* classpath/gnu/classpath/jdwp/value/StringValue.java
 	(StringValue): Tag of StringValue is STRING not OBJECT.
 	(write): String values are written to the wire as tag byte
 	and object ID, not JdwpString.
 
-2007-07-20  Keith Seitz  <keiths@redhat.com>
+2007-07-19  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/processor/ClassTypeCommandSet.java
 	(executeInvokeMethod): No need to use ValueFactory any more;
 	MethodResult.getReturnedValue now returns a Value.
-	(executeNewInstance): Double-check that return result is
+	(executeNewInstance): Double-check that return result is 
 	an ObjectValue; throw JdwpInternalErrorException if it is not.
 	(invokeMethod): Method IDs come from VMMethod, not VMIdManager.
 	Arguments are Values not Objects.
@@ -36,21 +431,295 @@
 	(SetThrownException): Remove.
 	(getResultType): Remove.
 	(setResultType): Remove.
-	* gnu/classpath/jdwp/value/ObjectValue.java (getValue):
+	* gnu/classpath/jdwp/value/ObjectValue.java (getValue): 
 	New method.
 	* vm/reference/gnu/classpath/jdwp/VMVirtualMachine.java
 	(executeMethod): Replace "nonVirtual" parameter with more
 	generic "options" parameter.
 	Replace java.lang.reflect.Method parameter with VMMethod.
-	Replace Object[] parameter with Value[] parameter.
+	Replace Objet[] parameter with Value[] parameter.
+
+2007-07-10  Dalibor Topic  <robilad@kaffe.org>
+
+	* configure.ac (FOUND_CACAO): Removed.
+
+2007-06-01  Robin Garner  <robin.garner@anu.edu.au>
+
+	Fixes #32162
+	* gnu/xml/dom/DomNode.java: Correct concurrency problem when deep
+	  cloning nodes.
+
+2007-05-30  Mark Wielaard  <mark@klomp.org>
+
+	Fixes bug #32030 reported by Steve.Blackburn@anu.edu.au
+	* native/jni/java-nio/gnu_java_nio_VMChannel.c
+	(Java_gnu_java_nio_VMChannel_open): Only set O_TRUNC when
+	CPNIO_APPEND is not, but O_WRONLY is set.
+
+2007-05-25  Robert Schuster  <robertschuster@fsfe.org>
+
+	* gnu/java/awt/peer/x/XGraphics2D.java:
+	(rawDrawLine): Added addition of translation.
+	(rawFillRect): Dito.
+
+2007-05-25  Robert Schuster  <robertschuster@fsfe.org>
+
+	* gnu/java/awt/font/opentype/OpenTypeFont.java:
+	(getGlyphIndex): Call getGlyphCharMap() instead of
+	accessing cmap field directly.
+
+2007-05-24  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* native/jni/java-nio/gnu_java_nio_VMChannel.c
+	(Java_gnu_java_nio_VMChannel_available): Use fstat or select as an
+	alternative to ioctl.
+	* native/jni/native-lib/cpio.c(cpio_availableBytes): Corrected typo.
+
+2007-05-24  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/math/Fixed.java
+	(trunc): New method.
+
+2007-05-24  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/java2d/AbstractGraphics2D.java
+	(fillShape): Pass rendering hints to scanline converter.
+	* gnu/java/awt/java2d/ScanlineConverter.java
+	(ONE): New constant for the number 1 as fixed point number.
+	(Y_RESOLUTION): New constant for the Y resolution.
+	(doScanline): Handle the Y resolution.
+	(renderShape): Accept rendering hints.
+	(setResolution): Adjust maximum resolution with Y resolution.
+	* gnu/java/awt/java2d/ScanlineCoverage.java
+	(Iterator.handledPixelCoverage): New field.
+	(Iterator.next): Handle single pixel coverage.
+	(Iterator.hasNext): Handle single pixel coverage.
+	(Iterator.reset): Reset single pixel coverage.
+	(Range.toString): New method.
+	(Coverage.pixelCoverage): New field.
+	(add): Include Y (pixel) coverage.
+	(findOrInsert): Reset Y coverage in reused entries.
+
+2007-05-24  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/java2d/ScanlineCoverage.java
+	(Iterator): New class.
+	(Range): New class.
+	(Coverage.covDelta): Made field package private.
+	(Coverage.xPos): Made field package private.
+	(iterator): New field. Stores the iterator that is reused.
+	(ScanlineCoverage): Initialize iterator.
+	(assertion): Removed.
+	(isEmpty): Refined conditions.
+	(iterate): Return Iterator instance.
+	(next): Removed. This is done by the Iterator class now.
+	(test): Removed.
+	* gnu/java/awt/java2d/ScanlineConverter.java
+	(main): Removed.
+	* gnu/java/awt/peer/x/XGraphics2D.java
+	(renderScanline): Adjust to new coverage iterator stuff.
+	* gnu/java/awt/java2d/AbstractGraphics2D.java
+	(renderScanline): Adjust to new coverage iterator stuff.
+
+2007-05-23  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/util/Arrays.java
+	(copyOfRange(T,int,int)): Fixed to instantiate right array type.
+
+2007-05-22  Robert Schuster  <robertschuster@fsfe.org>
+
+        * gnu/java/awt/peer/x/XEventQueue.java:
+        (handleEvent): Calculate modifier value for mouse presse
+        and release events, clip button values.
+        (buttonToModifier): New method.
+        * gnu/java/awt/peer/x/KeyboardMapping.java:
+        (mapModifiers): Added cases for alt gr and the meta key.
+
+2007-05-22  Robert Schuster  <robertschuster@fsfe.org>
+
+        * gnu/java/awt/peer/x/XEventQueue.java:
+        (handleEvent): Use Input.event_window_id for 
+        key presses/releases.
+
+2007-05-22  Robert Schuster  <robertschuster@fsfe.org>
+
+        * gnu/java/awt/peer/x/XEventQueue.java:
+        (handleEvent): Use Input.event_window_id instead of
+        Input.child_window_id for mouse presses/releases &
+        movement.
+
+2007-05-22  Roman Kennke  <roman@kennke.org>
+
+        * gnu/java/awt/peer/x/XFontPeer2.java
+        (XFontMetrics.charWidth): Use cached Point2D instance.
+        * gnu/java/awt/peer/x/XGraphics2D.java
+        (renderScanline): New method. Renders a scanline according to
+        the coverage information.
+        (setPaint): Call super, so that the state is updated correctly.
 
 2007-05-19  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR libgcj/31659
 	* m4/ax_create_stdint_h.m4: Apply patch from PR31659.
-	* configure: Regenerate.
 
-2007-05-07 Keith Seitz  <keiths@redhat.com>
+2007-05-18  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* autogen.sh (have_libtool): Update comments for Darwin.
+
+2007-05-18  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/java2d/AbstractGraphics2D.java
+	(fillScanlineAA): Removed. Replaced by renderScanline().
+	(fillScanline): Dito.
+	(renderScanline): New method. Renders a scanline according to
+	the coverage information from the scanline converter.
+	* gnu/java/awt/java2d/Pixelizer.java: New interface. Describes
+	the targets of the rasterizer.
+	* gnu/java/awt/java2d/ScanlineConverter.java
+	(alphaRes): Removed.
+	(ONE): Removed.
+	(scanlineCoverage): New field. Manages the coverage information.
+	(scanlinesPerPixel): Removed.
+	(scanlineXCov): Removed.
+	(scanlineYCov): Removed.
+	(slPix0): Removed.
+	(ScanlineConverter): Initialize scanline coverage data structure.
+	(clear): Also clear the scanline coverage.
+	(doScanline): Work with Pixelizer objects.
+	Use the ScanlineCoverage datastructure.
+	(main): New method. Performs some tests.
+	(renderShape): Work with pixelizer objects rather than directly
+	on AbstractGraphic2D. Adjust to use ScanlineCoverage datastructure.
+	(setResolution): Set resolution on ScanlineCoverage data too.
+	* gnu/java/awt/java2d/ScanlineCoverage.java: New class. Stores
+	and manages scanline coverage information.
+
+2007-05-14  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/rmi/MarshelledObject.java,
+	* java/rmi/activation/Activatable.java,
+	* java/rmi/activation/ActivationDesc.java,
+	* java/rmi/activation/ActivationGroup.java,
+	* java/rmi/activation/ActivationGroupDesc.java,
+	* java/rmi/activation/ActivationInstantiator.java,
+	* java/rmi/activation/ActivationMonitor.java,
+	* java/rmi/activation/Activator.java:
+	Genericized.
+
+2007-05-13  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* configure.ac:
+	Check if nsl library is needed for inet_pton.
+	* tools/gappletviewer.in,
+	* tools/gjar.in,
+	* tools/gjarsigner.in,
+	* tools/gjavah.in,
+	* tools/gkeytool.in,
+	* tools/gnative2ascii.in,
+	* tools/gorbd.in,
+	* tools/grmic.in,
+	* tools/grmid.in,
+	* tools/grmiregistry.in,
+	* tools/gserialver.in,
+	* tools/gtnameserv.in:
+	Remove spaces around '=' in setting of datarootdir.
+	
+2007-05-11  Kyle Galloway  <kgallowa@redhat.com>
+
+	* gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java
+	(executeMethods): Remove cast to ClassReferenceTypeId.
+
+2007-05-11  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/Float.java
+	(toString(float)): Call VMFloat instead of VMDouble.
+	(parseFloat): Call VMFloat. Fixed comment.
+	* vm/reference/java/lang/VMFloat.java
+	(toString, parseFloat): New methods.
+	NEWS: added note about these changes.
+
+2007-05-08  Kyle Galloway  <kgallowa@redhat.com>
+
+	* vm/reference/VMFrame.java (<init>): Add a parameter for the "this"
+	pointer of the frame.
+
+2007-05-08  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/x/XFontPeer.java: Removed.
+	* gnu/java/awt/peer/x/XGraphics.java: Removed
+	* gnu/java/awt/peer/x/XFontPeer2.java
+	(XLineMetrics.getDescent): Use cached idendity transform.
+	(XFontMetrics.cachedPoint): New field. Caches a Point2D instance
+	for reuse.
+	(XFontMetrics.getAscent): Use cached idendity transform.
+	(XFontMetrics.getDescent): Use cached idendity transform.
+	(XFontMetrics.getHeight): Use cached idendity transform.
+	(XFontMetrics.charWidth): Map character to glyph index first.
+	(XFontMetrics.stringWidth): Use cached idendity transform.
+	(IDENDITY): New static field. A reused AffineTransform instance.
+
+2007-05-08  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/font/FontDelegate.java
+	(getGlyphIndex): New method. Maps characters to their
+	glyph index in the font.
+	M gnu/java/awt/font/opentype/OpenTypeFont.java
+	(getGlyphIndex): New method. Maps characters to their
+	glyph index in the font.
+
+2007-05-08  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/java2d/AbstractGraphics2D.java
+	(AA_SAMPLING): Removed.
+	(alpha): Removed field.
+	(edgeTable): Removed field.
+	(fillScanlineAA): Removed obsolete method.
+	(drawPolyline): Implemented by using a GeneralPath.
+	(drawPolygon): Reset the cached polygon.
+	(fillPolygon): Reset the cached polygon.
+	(fillShape): Default to antialias on for text.
+	(rawDrawLine): Use ShapeCache.
+	(rawDrawRect): Use ShapeCache.
+	(rawFillRect): Use ShapeCache.
+	(fillScanlineAA): New method for antialiased rendering.	
+	* gnu/java/awt/java2d/ScanlineConverter.java
+	(scanlinesPerPixel): New field.
+	(minX,maxX): New fields.
+	(scanlineYCov,scanlineXCov): New fields.
+	(slPix0): New field.
+	(alphaRes): New field.
+	(renderShape): Add antialiasing functionality.
+	(doScanline): Add antialiasing functionality.
+	(setResolution): Add antialiasing functionality.
+	(addShape): Determine span in X direction.
+	(fit): Fix thinko.
+	* gnu/java/awt/java2d/ShapeCache.java
+	(polyline): New field for caching polylines.
+
+2007-05-08  Roman Kennke  <roman@kennke.org>
+
+	* examples/gnu/classpath/examples/awt/HintingDemo.java
+	Add support for showing the original vs the hinted glyphs plus
+	a grid.
+
+2007-05-08  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* lib/Makefile.am: Print property files as well.
+
+2007-05-08  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* native/jni/gtk-peer/gtkpeer.c:
+	Added support for 64-bit architectures.
+	
+2007-05-04  Chris Burdess  <dog@gnu.org>
+
+	Fixes PR #31814
+	* gnu/xml/dom/DomDocument.java,
+	  gnu/xml/dom/ls/SAXEventSink.java: Don't default attribute when mode is
+	  #IMPLIED and value is not specified.
+	* gnu/xml/stream/XMLParser.java: Add debugging info.
+
+2007-05-03  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/Jdwp.java (notify): Rewrite to call
 	new array-based method.
@@ -68,6 +737,15 @@
 	Change parameters to use arrays for events and requests.
 	Add suspendPolicy parameter.
 
+2007-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=237304
+	* javax/swing/text/html/HTMLEditorKit.java
+	(getStyleSheet): Throw RuntimeException when style loading fails.
+	* lib/Makefile.am: Treat css files as a property files.
+	* javax/swing/text/html/default.css: Move to...
+	* resource/javax/swing/text/html/default.css: New file.
+
 2007-05-03  Andrew Haley  <aph@redhat.com>
 
 	* gnu/javax/management/Server.java (Server): Record the delegate.
@@ -75,9 +753,188 @@
 	(unregisterMBean): Likewise.
 	(notify): New method.
 
+2007-04-30  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/x/XLightweightPeer.java: Removed.
+	* gnu/java/awt/peer/x/XEventPump.java
+	(handleEvent): Improved handling of event ids to window mapping.
+	* gnu/java/awt/peer/x/XFontPeer2.java:
+	Load font.properties at startup.
+	(XLineMetrics.glyphVector): New field.
+	(XLineMetrics.XLineMetrics): Get glyphVector from font delegate.
+	(XLineMetrics.getHeight): Implemented using glyph vector.
+	(XLineMetrics.getLeading): Implemented.
+	(XFontPeer2): Change hardwired font to something more common.
+	(encodeFont): New methods, encodes a font to the font.properties
+	format.
+	(validName): New method. Checks and returns a valid font name.
+	* gnu/java/awt/peer/x/XGraphics2D.java
+	(foreground): New field.
+	(rawSetPixel): Removed.
+	(rawDrawLine): Draw a segment.
+	(rawSetForeground): Removed.
+	(fillScanline): New method.
+	(fillScanlineAA): New method.
+	(setPaint): Set the foreground color.
+	(fillShape): Synchronize super behaviour.
+	(rawDrawImage): Optimize XImage.
+	* gnu/java/awt/peer/x/XGraphicsDevice.java
+	(getDisplay): Improve creation of socket.
+	(createLocalSocket): New helper method to create a local socket.
+	* gnu/java/awt/peer/x/XImage.java
+	(getGraphics): Return an XGraphics2D.
+	* gnu/java/awt/peer/x/XToolkit.java
+	(getClasspathFontPeer): Use XFontPeer2.
+	(createComponent): Removed.
+	* gnu/java/awt/peer/x/XWindowPeer.java
+	(getGraphics): Return an XGraphics2D.
+	(show): Clear the window.
+	(getFontMetrics): Use XFontPeer2.
+
+2007-04-30  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/swing/SwingButtonPeer.java
+	(SwingButton.handleFocusEvent): New method. Handles focus events.
+	(SwingButton.requestFocus): Overridden to avoid loop into peer
+	and back.
+	(SwingButton.requestFocus(boolean)): Overridden to avoid loop
+	into peer and back.
+	* gnu/java/awt/peer/swing/SwingCheckboxPeer.java: New class.
+	Implements CheckboxPeer for Swing toolkit.
+	* gnu/java/awt/peer/swing/SwingComponent.java
+	(handleFocusEvent): New method. Handles focus events.
+	* gnu/java/awt/peer/swing/SwingComponentPeer.java
+	(getMinimumSize): Delegate to minimumSize().
+	(getPreferredSize): Delegate to preferredSize().
+	(handleEvent): Only paint when component is showing. Coalesce
+	paint event in any case. Reformat. Handle focus events.
+	(requestFocus): Post FOCUS_GAINED event.
+	(handleFocusEvent): New method. Delegate to SwingComponent
+	object.
+	* gnu/java/awt/peer/swing/SwingContainerPeer.java
+	(addHeavyweightDescendent): Make this protected.
+	(removeHeavyweightDescendent): Make this protected.
+	(getHeavyweightDescendents): New method. Returns all registered
+	heavyweights.
+	(handleKeyEvent): Delegate to peer's handleEvent() method.
+	* gnu/java/awt/peer/swing/SwingLabelPeer.java
+	(SwingLabel.handleFocusEvent): New method.
+	* gnu/java/awt/peer/swing/SwingListPeer.java
+	(SwingList.handleFocusEvent): New method.
+	* gnu/java/awt/peer/swing/SwingPanelPeer.java
+	Fix typo and import.
+	* gnu/java/awt/peer/swing/SwingTextAreaPeer.java
+	Wrap up text area in viewport.
+	* gnu/java/awt/peer/swing/SwingTextFieldPeer.java
+	(SwingTextField.handleFocusEvent): New method.
+	(SwingTextField.requestFocus): New method.
+	(SwingTextField.requestFocus(boolean)): New method.
+
+2007-04-27  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/event/EventManager.java
+	(getEventRequest): Rename to...
+	(getEventRequests): ...this.
+	Change return type to array of requests.
+	Construct a list of all matching events and return
+	them all.
+	* gnu/classpath/jdwp/Jdwp.java (notify): Use getEventRequests
+	and send event notifications for all matching requests.
+
+2007-04-27  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/event/filters/LocationOnlyFilter.java
+	(matches): Use Location.equals to determine equality.
+	* vm/reference/gnu/classpath/jdwp/VMMethod.java (equals): 
+	New method.
+	* gnu/classpath/jdwp/util/Location.java (equals):
+	New method.	
+
+2007-04-27  Roman Kennke  <roman@kennke.org>
+
+	* java/nio/CharViewBufferImpl.java
+	(slice): Fixed offset for slice buffer.
+	* java/nio/DoubleViewBufferImpl.java
+	(slice): Fixed offset for slice buffer.
+	* java/nio/FloatViewBufferImpl.java
+	(slice): Fixed offset for slice buffer.
+	* java/nio/IntViewBufferImpl.java
+	(slice): Fixed offset for slice buffer.
+	* java/nio/LongViewBufferImpl.java
+	(slice): Fixed offset for slice buffer.
+	* java/nio/ShortViewBufferImpl.java
+	(slice): Fixed offset for slice buffer.
+
+2007-04-25  Roman Kennke  <roman@kennke.org>
+
+	* gnu/java/awt/peer/gtk/GdkFontPeer.java,
+	* gnu/java/awt/peer/gtk/GdkGraphicsEnvironment.java,
+	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java,
+	* gnu/java/awt/peer/gtk/GdkScreenGraphicsDevice.java,
+	* gnu/java/awt/peer/gtk/GtkGenericPeer.java,
+	* gnu/java/awt/peer/gtk/GtkToolkit.java:
+	Added fields to hold the native state. Added class initialization
+	things to fetch the JNI field IDs.
+	* include/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.h,
+	* include/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.h,
+	* include/gnu_java_awt_peer_gtk_GtkGenericPeer.h,
+	* include/gnu_java_awt_peer_gtk_GtkToolkit.h:
+	Added / changed class init methods for field ID initialization.
+	* native/jni/classpath/Makefile.am: Removed native_state stuff.
+	* native/jni/classpath/native_state.c,
+	* native/jni/classpath/native_state.h: Removed.
+	* native/jni/gconf-peer/Makefile.am: Removed native_state stuff.
+	* native/jni/gtk-peer/Makefile.am: Removed native_state stuff.
+	* native/jni/gtk-peer/cairographics2d.h,
+	* native/jni/gtk-peer/gdkdisplay.h,
+	* native/jni/gtk-peer/gdkfont.h,
+	* native/jni/gtk-peer/GtkDragSourceContextPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_CairoGraphics2D.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphics.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphicsCopy.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphicsEnvironment.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkPixbufDecoder.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFramePeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkGenericPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollbarPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkVolatileImage.c,
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c,
+	* native/jni/gtk-peer/gtk_jawt.c:
+	Removed native state stuff and replaced that with an approach
+	to store the native state of an object directly in that object.
+	* native/jni/gtk-peer/gtkpeer.c: New file. Implements the new native
+	state management.
+	* native/jni/gtk-peer/gtkpeer.h: Remove NSA stuff and added
+	prototypes for new native state handling.
+
 2007-04-23  Mark Wielaard  <mark@klomp.org>
 
-	* configure.ac (VERSION): Set to 0.95.
+	* doc/www.gnu.org/newsitems.txt: Add 0.95.
+	* doc/www.gnu.org/downloads/downloads.wml: Likewise.
+	* doc/www.gnu.org/announce/20070423.wml: New file.
 
 2007-04-23  Mark Wielaard  <mark@klomp.org>
 
@@ -88,16 +945,142 @@
 	PR classpath/31646:
 	* java/util/Arrays.java (qsort): Corrected initial median calculation.
 
-2007-04-19  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+2007-04-22  Dalibor Topic  <robilad@kaffe.org>
 
-	* m4/acinclude.m4
-	(CLASSPATH_FIND_JAVAC): Allow detected JAVAC.
+	* Makefile.am (ACLOCAL_AMFLAGS): Add contents of env var 
+	LOCAL_AUTORECONF_AMFLAGS to allow for systems where the user
+	has a mix of system & hacked-up autotools.
+
+2007-04-22  Dalibor Topic  <robilad@kaffe.org>
+
+	* autogen.sh: Removed unnecessary -I m4 flag.
 
 2007-04-19  Casey Marshall  <csm@gnu.org>
 
 	PR classpath/31626:
 	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.java
 	(createSocket): New method.
+
+2007-04-19  Dalibor Topic  <robilad@kaffe.org>
+
+	* tools/gappletviewer.in,
+	tools/gjar.in,
+	tools/gjarsigner.in,
+	tools/gjavah.in,
+	tools/gkeytool.in,
+	tools/gnative2ascii.in,
+	tools/gorbd.in,
+	tools/grmic.in,
+	tools/grmid.in,
+	tools/grmiregistry.in,
+	tools/gserialver.in,
+	tools/gtnameserv.in: Set datarootdir to fix a warning from 
+	configure.
+
+2007-04-19  Dalibor Topic  <robilad@kaffe.org>
+
+	* INSTALL: Removed file generated by autogen.sh.
+
+	* .cvsignore: Added INSTALL.
+
+2007-04-19  Dalibor Topic  <robilad@kaffe.org>
+
+	* INSTALL: Replaced by generic install file.
+
+	* autogen.sh: Removed redundant and no longer necessary 
+	sections. Use autoreconf.
+
+2007-04-19  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* m4/acinclude.m4
+	(CLASSPATH_FIND_JAVAC): Allow detected JAVAC.
+
+2007-04-19  Dalibor Topic  <robilad@kaffe.org>
+
+	* lib/Makefile.am (propertyfiles, cssfiles, metafiles, 
+	iconfiles) Removed variables, inlined them into resource
+	target to avoid use of shell construct and fix portability
+	warning from automake 1.10.
+
+2007-04-18  Tom Tromey  <tromey@redhat.com>
+
+	* tools/gnu/classpath/tools/javah/MethodHelper.java (print):
+	Changed arguments.  Directly print method name.
+	* tools/gnu/classpath/tools/javah/ClassWrapper.java
+	(methodNameMap): New field.
+	(makeVtable): Initialize it.
+	(printMethods): Compute name for bridge targets.
+
+2007-04-18  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/rmi/server/UnicastConnectionManager.java
+	(UnicastConnectionManager(int port, RMIServerSocketFactory)):
+	Listen on "localhost", not localhost.
+
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* include/GtkDragSourceContextPeer.h: Removed, renamed to ..
+
+	* include/gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer.h:
+	New file.
+
+	* native/jni/gtk-peer/GtkDragSourceContextPeer.c: Include 
+	gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer.h.
+
+	* include/Makefile.am (GTKPEER_H_FILES): Renamed
+	GtkDragSourceContextPeer.h to 
+	gnu_java_awt_dnd_peer_gtk_GtkDragSourceContextPeer.h
+	per current convention. Use portable construct to create
+	gtk and libxmlj peer headers. Depend on the java source code, 
+	rather then the class files in order to avoid spurious 
+	regeneration.
+
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* include/Makefile.am: Use portable construct to create
+	qt peer headers. Depend on the java source code, 
+	rather then the class files in order to avoid spurious 
+	regeneration.
+
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* include/Makefile.am: Use portable construct to create
+	alsa and dssi peer headers. Depend on the java source code, 
+	rather then the class files in order to avoid spurious 
+	regeneration.
+	
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* include/Makefile.am: Use portable construct to create
+	gconf peer header. Depend on the java source code, rather
+	the class file to avoid spurious regeneration.
+
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* include/gnu_java_awt_peer_qt_QtGraphicsEnvironment.h:
+	Removed empty header file.
+
+	* include/Makefile.am (QTPEER_H_FILES):
+	Removed gnu_java_awt_peer_qt_QtGraphicsEnvironment.h.
+
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* native/jni/xmlj/xmlj_xpath.c: Don't include 
+	gnu_xml_libxmlj_dom_GnomeXPathNSResolver.h.
+
+	* include/gnu_xml_libxmlj_dom_GnomeXPathNSResolver.h:
+	Removed empty header file.
+
+	* include/Makefile.am (XMLJ_H_FILES): Removed
+	gnu_xml_libxmlj_dom_GnomeXPathNSResolver.h.
+
+2007-04-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* include/gnu_java_awt_peer_qt_QtContainerPeer.h: Removed
+	empty header file.
+
+	* include/Makefile.am (QTPEER_H_FILES): Removed 
+	gnu_java_awt_peer_qt_QtContainerPeer.h.
 
 2007-04-17  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
@@ -106,68 +1089,25 @@
 	* native/jni/java-nio/gnu_java_nio_VMChannel.c,
 	* native/jni/native-lib/cpnet.c:
 	Likewise.
+	
+2007-04-17  Dalibor Topic  <robilad@kaffe.org>
 
-2007-04-16  Dalibor Topic  <robilad@kaffe.org>
+	* m4/acinclude.m4 (CLASSPATH_CHECK_JAVAH):
+	Use AC_CHECK_PROGS and AC_MSG_ERROR. Check for
+	gjavah, gcjh-wrapper-4.1 and gcjh-4.1. Error out
+	when no javah implementation can be found.
 
-	* configure.ac (AM_PROG_CC_C_O): Added to fix automake 1.10
-	warning.
+2007-04-17  Dalibor Topic  <robilad@kaffe.org>
 
-2007-04-16  Dalibor Topic  <robilad@kaffe.org>
+	* configure.ac (CLASSPATH_WITH_JAVAH): Only check if
+	the JNI headers need to be regenerated.
 
-	* native/plugin/Makefile.am (libgcjwebplugin_la_LDFLAGS):
-	Added AM_LDFLAGS for automake 1.10.
+	* m4/acinclude.m4 (USER_SPECIFIED_JAVAH): Removed unused
+	conditional.
 
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+2007-04-17  Dalibor Topic  <robilad@kaffe.org>
 
-	* depcomp, install-sh, missing, mkinstalldirs,
-	doc/texinfo.tex: Removed files generated by autogen.sh.
-
-	* .cvsignore: Ignore generated files depcomp, install-sh,
-	missing, mkinstalldirs.
-
-	* doc/.cvsignore: Ignore generated file doc/texinfo.tex.
-
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
-
-	* native/jni/java-lang/Makefile.am (libjavalang_la_LIBADD):
-	Fix portability warnings from automake 1.10.
-
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
-
-	* Makefile.am (EXTRA_DIST): Add ChangeLog-2006.
-
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
-
-	* native/target/.cvsignore: Removed.
-
-2007-04-15  Roman Kennke  <roman@kennke.org>
-
-	* native/target/Linux/.cvsignore,
-	* native/target/generic/.cvsignore: Removed.
-
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
-
-	* doc/Makefile.am: Fix portability warnings from
-	automake 1.10.
-
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
-
-	* doc/cp-hacking.texinfo: Updated with information from
-	INSTALL file. Removed duplicate and outdated information.
-	Updated compiler information. Fixed versioning information
-	where entries diverged. Turned command, option, file and
-	URL strings into proper texinfo elements.
-
-2007-04-15  Dalibor Topic  <robilad@kaffe.org>
-
-	* configure.ac: Added support for Iceape libraries as
-	a substitute for Mozilla for Debian.
-
-2007-04-17  Tom Tromey  <tromey@redhat.com>
-
-	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=236614
-	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.java
-	(createSocket): Change order of delegation.
+	* lib/Makefile.am (JAVAH): Removed unused variable.
 
 2007-04-17  Casey Marshall  <csm@gnu.org>
 
@@ -185,19 +1125,149 @@
 	isInputShutdown, isOutputShutdown): Always use
 	'underlyingSocket'.
 
+2007-04-16  Dalibor Topic  <robilad@kaffe.org>
+
+	* configure.ac (AM_PROG_CC_C_O): Added to fix automake 1.10
+	warning.
+
+2007-04-16  Dalibor Topic  <robilad@kaffe.org>
+
+	* native/plugin/Makefile.am (libgcjwebplugin_la_LDFLAGS):
+	Added AM_LDFLAGS for automake 1.10.
+
+2007-04-16  Tom Tromey  <tromey@redhat.com>
+
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=236614
+	* gnu/javax/net/ssl/provider/SSLSocketFactoryImpl.java
+	(createSocket): Change order of delegation.
+
+2007-04-16  Andrew Haley  <aph@redhat.com>
+
+	* java/io/ObjectInputStream.java: (parseContent):  Call (String,
+	Object) version of dumpElementln.
+	(dumpElementln(String, Object)): New method.
+	* java/io/ObjectOutputStream.java (writeObject): Call (String,
+	Object) version of dumpElementln.
+	(dumpElementln(String, Object)): New method.
+
 2007-04-16  Mark Wielaard  <mark@klomp.org>
 
 	Fixes bug #31590
 	* java/net/URI.java (parseServerAuthority): Allow empty portStr.
 
+2007-04-16  Andrew Haley  <aph@redhat.com>
+
+	* org/omg/IOP/TaggedComponentHelper.java (read): Use
+	read_octet_array(), not read().
+	(write): Use write_octet_array(), not write().
+
+	* org/omg/PortableServer/Servant.java (_get_delegate): Throw if no
+	delegate has been set.
+
 2007-04-16  Chris Burdess  <dog@gnu.org>
 
-	* gnu/xml/stream/XMLParser.java: Work around a problem with  
-	incorrectly formatted file URLs.
+	* gnu/xml/stream/XMLParser.java: Work around a problem with incorrectly
+	  formatted file URLs.
 
-2007-04-11  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
 
-	* configure.ac: Added AC_C_INLINE.
+	* native/jni/java-lang/Makefile.am (libjavalang_la_LIBADD):
+	Fix portability warnings from automake 1.10.
+
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+
+	* Makefile.am (EXTRA_DIST): Add ChangeLog-2006.
+
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+
+	* native/target/.cvsignore: Removed.
+
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+
+	* doc/Makefile.am: Fix portability warnings from
+	automake 1.10.
+
+2007-04-15  Roman Kennke  <roman@kennke.org>
+
+	* native/target/Linux/.cvsignore,
+	* native/target/generic/.cvsignore: Removed.
+
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+
+	* depcomp, install-sh, missing, mkinstalldirs,
+	doc/texinfo.tex: Removed files generated by autogen.sh.
+
+	* .cvsignore: Ignore generated files depcomp, install-sh, 
+	missing, mkinstalldirs.
+
+	* doc/.cvsignore: Ignore generated file doc/texinfo.tex.
+
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+
+	* doc/cp-hacking.texinfo: Updated with information from
+	INSTALL file. Removed duplicate and outdated information.
+	Updated compiler information. Fixed versioning information
+	where entries diverged. Turned command, option, file and
+	URL strings into proper texinfo elements.
+
+2007-04-15  Dalibor Topic  <robilad@kaffe.org>
+
+	* configure.ac: Added support for Iceape libraries as 
+	a substitute for Mozilla for Debian.
+
+2007-04-12  Roman Kennke  <roman@kennke.org>
+
+	* java/nio/Buffer.java
+	(array): New abstract method.
+	(hasArray): New abstract method.
+	(arrayOffset): New abstract method.
+	(isDirect): New abstract method.
+
+2007-04-12  Roman Kennke  <roman@kennke.org>
+
+	* java/nio/CharBuffer.java
+	(wrap(CharSequence,int,int)): Reimplemented using specialized
+	subclass.
+	* java/nio/CharSequenceBuffer.java: New class. Implements char
+	buffers that wrap CharSequences.
+
+2007-04-12  Francis Kung  <fkung@redhat.com>
+
+	PR 23887
+	* gnu/java/awt/peer/gtk/CairoGraphics2D.java
+	(drawGlyphVector): Check for transforms before using optimized path.
+	* gnu/java/awt/peer/gtk/FreetypeGlyphVector.java
+	(FreetypeGlyphVector(FreetypeGlyphVector)): Initialize glyphTransforms array
+	to null and check for nulls in copied array.
+	(hasTransforms): New method.
+	(performDefaultLayout): Check for identity transform.
+	(setGlyphTransform): Check for equality before making changes.
+
+2007-04-12  Francis Kung  <fkung@redhat.com>
+
+	PR 23887
+	* gnu/java/awt/peer/gtk/FreetypeGlyphVector.java
+	(getGlyphLogicalBounds): Fix number of coordinates in transform call.
+	(performDefaultLayout): Respect transformation in font attributes.
+	* javax/swing/plaf/basic/BasicProgressBarUI.java
+	(getStringPlacement): Handle vertical orientations.
+	(paintString): Space vertical text properly.
+
+2007-04-12  Francis Kung  <fkung@redhat.com>
+
+	PR 31539
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c
+	(ft2_map): New static variable.
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_initStaticState): Set up ft2_map.
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont): Use cached ft2_map.
+
+2007-04-12  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c
+	(clipboard_get_func): Call DeleteLocalRef.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkSelection.c
+	(clipboard_targets_received): Likewise.
+	(clipboard_uris_received): Likewise.
 
 2007-04-12  Christian Thalinger  <twisti@complang.tuwien.ac.at>
 
@@ -206,26 +1276,6 @@
 	* m4/ax_func_which_gethostbyname_r.m4: New file.
 	* native/jni/native-lib/cpnet.c (cpnet_getHostByName): Check for
 	different number of arguments of gethostbyname_r.
-
-2007-04-11  Francis Kung  <fkung@redhat.com>
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
-	(Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs): Avoid
-	unneeded object reference.
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c
-	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics): Unlock font.
-	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont): Remove redundant
-	checks.
-
-2007-04-11  Christian Thalinger  <twisti@complang.tuwien.ac.at>
-
-	* native/jni/native-lib/cpproc.c (cpproc_forkAndExec): Fixed
-	warning on some compilers, e.g. MIPSpro.
-
-2007-04-11  Christian Thalinger  <twisti@complang.tuwien.ac.at>
-
-	* native/jni/java-nio/javanio.c: Include fcntl.h instead of
-	sys/fcntl.h.
 
 2007-04-12  Mark Wielaard  <mark@klomp.org>
 
@@ -239,6 +1289,35 @@
 
 	* configure.ac (COMPILE_GTK_PEER): Add check for cairo >= 1.1.8.
 
+2007-04-11  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* native/jni/java-nio/javanio.c: Include fcntl.h instead of
+	sys/fcntl.h.
+
+2007-04-11  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* native/jni/native-lib/cpproc.c (cpproc_forkAndExec): Fixed
+	warning on some compilers, e.g. MIPSpro.
+
+2007-04-11  Francis Kung  <fkung@redhat.com>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_FreetypeGlyphVector.c
+	(Java_gnu_java_awt_peer_gtk_FreetypeGlyphVector_getGlyphs): Avoid unneeded
+	object reference.
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics): Unlock font.
+	(Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont): Remove redundant checks.
+
+2007-04-11  Christian Thalinger  <twisti@complang.tuwien.ac.at>
+
+	* configure.ac: Added AC_C_INLINE.
+
+2007-04-10  Mark Wielaard  <mark@klomp.org>
+
+	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphics.c
+	(Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile):
+	Destroy surface after it is used to create a cairo context.
+
 2007-04-09  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* javax/management/ObjectName.java:
@@ -250,12 +1329,6 @@
 	(quote(String)): Handle newlines and quotes
 	correctly.
 
-2007-04-10  Mark Wielaard  <mark@klomp.org>
-
-	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphics.c
-	(Java_gnu_java_awt_peer_gtk_ComponentGraphics_initFromVolatile):
-	Destroy surface after it is used to create a cairo context.
-
 2007-04-09  Francis Kung  <fkung@redhat.com>
 
 	PR 31311
@@ -265,16 +1338,26 @@
 	* gnu_java_awt_peer_gtk_ComponentGraphics.h: Regenerated.
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_ComponentGraphics.c
 	(Java_gnu_java_awt_peer_gtk_ComponentGraphics_disposeSurface): Removed.
-	(Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState): Destroy surfac
-e
+	(Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState): Destroy surface
 	after it is used to create a cairo context.
-
 
 2007-04-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* javax/management/ObjectName.java:
-	(parse(String)): Fix result of getKeyPropertyListString().
+	(propertyValuePattern): New cache variable.
+	(parse(String)): Record in propertyListPattern
+	not propertyPattern and set propertyValuePattern.
+	(isPropertyPattern()): Semantics altered to be the
+	OR of isPropertyListPattern() and isPropertyValuePattern().
+	(isPropertyListPattern()): Implemented.
+	(isPropertyValuePattern()): Implemented.
+	(isPropertyValuePattern(String)): Implemented.
+	
+2007-04-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
+	* javax/management/ObjectName.java:
+	(parse(String)): Fix result of getKeyPropertyListString().
+	
 2007-04-07  Mark Wielaard  <mark@klomp.org>
 
 	* resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactor,
@@ -286,13 +1369,19 @@ e
 
 2007-04-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
+	* javax/management/ObjectName.java:
+	(checkComponents()): Separate value and
+	key illegal characters to allow value wildcards.
+	
+2007-04-07  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
 	* javax/management/ObjectName.java
 	(parse(String)): Fix parsing where the wildcard
 	is juxtaposed between other pairs.
-
+	
 2007-04-06  Mark Wielaard  <mark@klomp.org>
 
-	* configure.ac (VERSION): Set to 0.95-rc.
+	* configure.ac (VERSION): Set to 0.96-pre.
 
 2007-04-06  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 

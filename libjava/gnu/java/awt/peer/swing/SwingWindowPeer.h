@@ -29,6 +29,7 @@ extern "Java"
   {
     namespace awt
     {
+        class Dialog;
         class Window;
     }
   }
@@ -39,6 +40,11 @@ class gnu::java::awt::peer::swing::SwingWindowPeer : public ::gnu::java::awt::pe
 
 public:
   SwingWindowPeer(::java::awt::Window *);
+  virtual void updateIconImages();
+  virtual void updateMinimumSize();
+  virtual void setModalBlocked(::java::awt::Dialog *, jboolean);
+  virtual void updateFocusableWindowState();
+  virtual void setAlwaysOnTop(jboolean);
   virtual void toBack() = 0;
   virtual void toFront() = 0;
   virtual void updateAlwaysOnTop() = 0;

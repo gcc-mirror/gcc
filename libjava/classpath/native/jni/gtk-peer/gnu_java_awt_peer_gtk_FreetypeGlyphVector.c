@@ -45,7 +45,6 @@ exception statement from your version. */
 #include <freetype/ftglyph.h>
 #include <freetype/ftoutln.h>
 #include "jcl.h"
-#include "native_state.h"
 #include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_FreetypeGlyphVector.h"
 #include "cairographics2d.h"
@@ -76,7 +75,7 @@ getFont(JNIEnv *env, jobject obj)
   data = (*env)->GetObjectField (env, obj, fid);
   g_assert (data != NULL);
 
-  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, data);
+  pfont = (struct peerfont *) gtkpeer_get_font(env, data);
   g_assert (pfont != NULL);
   g_assert (pfont->font != NULL);
 
@@ -99,7 +98,7 @@ getFontSet(JNIEnv *env, jobject obj)
   data = (*env)->GetObjectField (env, obj, fid);
   g_assert (data != NULL);
 
-  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, data);
+  pfont = (struct peerfont *) gtkpeer_get_font (env, data);
   g_assert (pfont != NULL);
   g_assert (pfont->font != NULL);
 

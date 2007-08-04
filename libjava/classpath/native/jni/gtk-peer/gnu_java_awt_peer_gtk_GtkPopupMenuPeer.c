@@ -67,7 +67,7 @@ Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_show
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   p = g_malloc (sizeof (struct pos));
   p->x = x;
@@ -90,8 +90,8 @@ Java_gnu_java_awt_peer_gtk_GtkPopupMenuPeer_setupAccelGroup
 
   gdk_threads_enter ();
 
-  ptr1 = NSA_GET_PTR (env, obj);
-  ptr2 = NSA_GET_PTR (env, parent);
+  ptr1 = gtkpeer_get_widget (env, obj);
+  ptr2 = gtkpeer_get_widget (env, parent);
 
   menu = GTK_MENU (GTK_MENU_ITEM (ptr1)->submenu);
   gtk_menu_set_accel_group (menu, gtk_accel_group_new ());

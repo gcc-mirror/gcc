@@ -1,5 +1,5 @@
-/* Magical NSA API -- Associate a C ptr with an instance of an object
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* Pixelizer.java -- Interface for the target of the rasterizer
+   Copyright (C) 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,37 +35,22 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-#ifndef JCL_NATIVE_STATE
-#define JCL_NATIVE_STATE
+package gnu.java.awt.java2d;
 
-#include <jni.h>
-
-struct state_table
+/**
+ * A pixelizer is responsible for actually manipulating the pixel of a drawing
+ * surface after the scanline conversion process. It receives coverage
+ * information for a scanline and adjusts the surface pixels accordingly.
+ */
+public interface Pixelizer
 {
-  jint size;			/* number of slots, should be prime */
-  jfieldID hash;		/* field containing System.identityHashCode(this) */
-  jclass clazz;			/* lock aquired for reading/writing nodes */
-  struct state_node **head;
-};
 
-struct state_node
-{
-  jint key;
-  void *c_state;
-  struct state_node *next;
-};
-
-struct state_table *cp_gtk_init_state_table_with_size (JNIEnv *, jclass, jint);
-struct state_table *cp_gtk_init_state_table (JNIEnv *, jclass);
-
-/* lowlevel api */
-void cp_gtk_set_state_oid (JNIEnv *, jobject, struct state_table *, jint, void *);
-void *cp_gtk_get_state_oid (JNIEnv *, jobject, struct state_table *, jint);
-void *cp_gtk_remove_state_oid (JNIEnv *, jobject, struct state_table *, jint);
-
-/* highlevel api */
-int cp_gtk_set_state (JNIEnv *, jobject, struct state_table *, void *);
-void *cp_gtk_get_state (JNIEnv *, jobject, struct state_table *);
-void *cp_gtk_remove_state_slot (JNIEnv *, jobject, struct state_table *);
-
-#endif
+  /**
+   * Renders the pixel for one scanline at the Y location <code>y</code>
+   * and using the coverage information in <code>sc</code>.
+   *
+   * @param y the scanline Y coordinate
+   * @param sc the coverage information
+   */
+  void renderScanline(int y, ScanlineCoverage sc);
+}

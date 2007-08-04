@@ -7,6 +7,8 @@
 #pragma interface
 
 #include <gnu/java/awt/peer/swing/SwingComponentPeer.h>
+#include <gcj/array.h>
+
 extern "Java"
 {
   namespace gnu
@@ -48,9 +50,10 @@ class gnu::java::awt::peer::swing::SwingContainerPeer : public ::gnu::java::awt:
 
 public:
   SwingContainerPeer(::java::awt::Container *);
-public: // actually package-private
+public: // actually protected
   virtual void addHeavyweightDescendent(::java::awt::Component *);
   virtual void removeHeavyweightDescendent(::java::awt::Component *);
+  virtual JArray< ::java::awt::Component * > * getHeavyweightDescendents();
 public:
   virtual ::java::awt::Insets * insets();
   virtual ::java::awt::Insets * getInsets();

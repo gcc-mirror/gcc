@@ -95,7 +95,7 @@ public:
   virtual jboolean isTransformed(::java::awt::Font *);
   virtual jfloat getItalicAngle(::java::awt::Font *);
   virtual jint getStyle(::java::awt::Font *);
-  virtual jboolean canDisplay(::java::awt::Font *, jchar) = 0;
+  virtual jboolean canDisplay(::java::awt::Font *, jint) = 0;
   virtual jint canDisplayUpTo(::java::awt::Font *, ::java::text::CharacterIterator *, jint, jint) = 0;
   virtual ::java::lang::String * getSubFamilyName(::java::awt::Font *, ::java::util::Locale *) = 0;
   virtual ::java::lang::String * getPostScriptName(::java::awt::Font *) = 0;

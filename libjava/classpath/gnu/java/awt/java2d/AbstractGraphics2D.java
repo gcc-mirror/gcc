@@ -51,6 +51,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.PaintContext;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -75,10 +76,10 @@ import java.awt.image.DataBuffer;
 import java.awt.image.ImageObserver;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.RenderableImage;
 import java.text.AttributedCharacterIterator;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -147,20 +148,13 @@ import java.util.Map;
  */
 public abstract class AbstractGraphics2D
   extends Graphics2D
-  implements Cloneable
+  implements Cloneable, Pixelizer
 {
 
   /**
    * The default font to use on the graphics object.
    */
   private static final Font FONT = new Font("SansSerif", Font.PLAIN, 12);
-
-  /**
-   * Accuracy of the sampling in the anti-aliasing shape filler.
-   * Lower values give more speed, while higher values give more quality.
-   * It is advisable to choose powers of two.
-   */
-  private static final int AA_SAMPLING = 8;
 
   /**
    * Caches certain shapes to avoid massive creation of such Shapes in
@@ -225,17 +219,6 @@ public abstract class AbstractGraphics2D
    * performed.
    */
   private WritableRaster destinationRaster;
-
-  /**
-   * Stores the alpha values for a scanline in the anti-aliasing shape
-   * renderer.
-   */
-  private transient int[] alpha;
-
-  /**
-   * The edge table for the scanline conversion algorithms.
-   */
-  private transient ArrayList[] edgeTable;
 
   /**
    * Indicates if certain graphics primitives can be rendered in an optimized
@@ -931,8 +914,8 @@ public abstract class AbstractGraphics2D
   {
     // Initialize clip if not already present.
     if (clip == null)
-      clip = s;
-    
+      setClip(s);
+
     // This is so common, let's optimize this. 
     else if (clip instanceof Rectangle && s instanceof Rectangle)
       {
@@ -1174,7 +1157,9 @@ public abstract class AbstractGraphics2D
   {
     if (isOptimized)
       {
-        rawDrawLine(x1, y1, x2, y2);
+        int tx = (int) transform.getTranslateX();
+        int ty = (int) transform.getTranslateY();
+        rawDrawLine(x1 + tx, y1 + ty, x2 + tx, y2 + ty);
       }
     else
       {
@@ -1214,7 +1199,8 @@ public abstract class AbstractGraphics2D
   {
     if (isOptimized)
       {
-        rawFillRect(x, y, width, height);
+        rawFillRect(x + (int) transform.getTranslateX(),
+                    y + (int) transform.getTranslateY(), width, height);
       }
     else
       {
@@ -1352,8 +1338,16 @@ public abstract class AbstractGraphics2D
 
   public void drawPolyline(int[] xPoints, int[] yPoints, int npoints)
   {
-    // FIXME: Implement this.
-    throw new UnsupportedOperationException("Not yet implemented");
+    ShapeCache sc = getShapeCache();
+    if (sc.polyline == null)
+      sc.polyline = new GeneralPath();
+    GeneralPath p = sc.polyline;
+    p.reset();
+    if (npoints > 0)
+      p.moveTo(xPoints[0], yPoints[0]);
+    for (int i = 1; i < npoints; i++)
+      p.lineTo(xPoints[i], yPoints[i]);
+    fill(p);
   }
 
   /**
@@ -1364,6 +1358,7 @@ public abstract class AbstractGraphics2D
     ShapeCache sc = getShapeCache();
     if (sc.polygon == null)
       sc.polygon = new Polygon();
+    sc.polygon.reset();
     sc.polygon.xpoints = xPoints;
     sc.polygon.ypoints = yPoints;
     sc.polygon.npoints = npoints;
@@ -1378,6 +1373,7 @@ public abstract class AbstractGraphics2D
     ShapeCache sc = getShapeCache();
     if (sc.polygon == null)
       sc.polygon = new Polygon();
+    sc.polygon.reset();
     sc.polygon.xpoints = xPoints;
     sc.polygon.ypoints = yPoints;
     sc.polygon.npoints = npoints;
@@ -1397,7 +1393,10 @@ public abstract class AbstractGraphics2D
   {
     boolean ret;
     if (isOptimized)
-      ret = rawDrawImage(image, x, y, observer);
+      {
+        ret = rawDrawImage(image, x + (int) transform.getTranslateX(),
+                           y + (int) transform.getTranslateY(), observer);
+      }
     else
       {
         AffineTransform t = new AffineTransform();
@@ -1559,17 +1558,15 @@ public abstract class AbstractGraphics2D
     if (isFont)
       {
         Object v = renderingHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
-        // We default to antialiasing on for text as long as we have no
-        // good hinting implemented.
-        antialias = (v == RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                     //|| v == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
+        // We default to antialiasing for text rendering.
+        antialias = (v == RenderingHints.VALUE_TEXT_ANTIALIAS_ON
+                     || v == RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT);
       }
     else
       {
         Object v = renderingHints.get(RenderingHints.KEY_ANTIALIASING);
         antialias = (v == RenderingHints.VALUE_ANTIALIAS_ON);
       }
-
     ScanlineConverter sc = getScanlineConverter();
     int resolution = 0;
     if (antialias)
@@ -1577,7 +1574,7 @@ public abstract class AbstractGraphics2D
         // Adjust resolution according to rendering hints.
         resolution = 2;
       }
-    sc.renderShape(this, s, clip, transform, resolution);
+    sc.renderShape(this, s, clip, transform, resolution, renderingHints);
   }
 
   /**
@@ -1609,12 +1606,20 @@ public abstract class AbstractGraphics2D
    */
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
   {
-    draw(new Line2D.Float(x0, y0, x1, y1));
+    ShapeCache sc = getShapeCache();
+    if (sc.line == null)
+      sc.line = new Line2D.Float();
+    sc.line.setLine(x0, y0, x1, y1);
+    draw(sc.line);
   }
 
   protected void rawDrawRect(int x, int y, int w, int h)
   {
-    draw(new Rectangle(x, y, w, h));
+    ShapeCache sc = getShapeCache();
+    if (sc.rect == null)
+      sc.rect = new Rectangle();
+    sc.rect.setBounds(x, y, w, h);
+    draw(sc.rect);
   }
 
   /**
@@ -1662,7 +1667,11 @@ public abstract class AbstractGraphics2D
    */
   protected void rawFillRect(int x, int y, int w, int h)
   {
-    fill(new Rectangle(x, y, w, h));
+    ShapeCache sc = getShapeCache();
+    if (sc.rect == null)
+      sc.rect = new Rectangle();
+    sc.rect.setBounds(x, y, w, h);
+    fill(sc.rect);
   }
 
   /**
@@ -1718,10 +1727,38 @@ public abstract class AbstractGraphics2D
    * @param x1 the right offset
    * @param y the scanline
    */
-  protected void fillScanline(int x0, int x1, int y)
+  public void renderScanline(int y, ScanlineCoverage c)
   {
     PaintContext pCtx = paintContext;
+    int x0 = c.getMinX();
+    int x1 = c.getMaxX();
     Raster paintRaster = pCtx.getRaster(x0, y, x1 - x0, 1);
+
+    // Do the anti aliasing thing.
+    float coverageAlpha = 0;
+    float maxCoverage = c.getMaxCoverage();
+    ColorModel cm = pCtx.getColorModel();
+    DataBuffer db = paintRaster.getDataBuffer();
+    Point loc = new Point(paintRaster.getMinX(), paintRaster.getMinY());
+    SampleModel sm = paintRaster.getSampleModel();
+    WritableRaster writeRaster = Raster.createWritableRaster(sm, db, loc);
+    WritableRaster alphaRaster = cm.getAlphaRaster(writeRaster);
+    int pixel;
+    ScanlineCoverage.Iterator iter = c.iterate();
+    while (iter.hasNext())
+      {
+        ScanlineCoverage.Range range = iter.next();
+        coverageAlpha = range.getCoverage() / maxCoverage;
+        if (coverageAlpha < 1.0)
+          {
+            for (int x = range.getXPos(); x < range.getXPosEnd(); x++)
+              {
+                pixel = alphaRaster.getSample(x, y, 0);
+                pixel = (int) (pixel * coverageAlpha);
+                alphaRaster.setSample(x, y, 0, pixel);
+              }
+          }
+      }
     ColorModel paintColorModel = pCtx.getColorModel();
     CompositeContext cCtx = composite.createContext(paintColorModel,
                                                     getColorModel(),
@@ -1732,66 +1769,6 @@ public abstract class AbstractGraphics2D
     cCtx.dispose();
   }
 
-
-  /**
-   * Fills a horizontal line between x0 and x1 for anti aliased rendering.
-   * the alpha array contains the deltas of the alpha values from one pixel
-   * to the next.
-   *
-   * @param alpha the alpha values in the scanline
-   * @param x0 the beginning of the scanline
-   * @param yy the y coordinate of the line
-   */
-  private void fillScanlineAA(int[] alpha, int x0, int yy, int numPixels,
-                              PaintContext pCtx, int offs)
-  {
-    CompositeContext cCtx = composite.createContext(pCtx.getColorModel(),
-                                                    getColorModel(),
-                                                    renderingHints);
-    Raster paintRaster = pCtx.getRaster(x0, yy, numPixels, 1);
-    //System.err.println("paintColorModel: " + pCtx.getColorModel());
-    WritableRaster aaRaster = paintRaster.createCompatibleWritableRaster();
-    ColorModel cm = pCtx.getColorModel();
-    double lastAlpha = 0.;
-    int lastAlphaInt = 0;
-
-    Object pixel = null;
-    int[] comps = null;
-    int x1 = x0 + numPixels;
-    for (int x = x0; x < x1; x++)
-      {
-        int i = x - offs;
-        if (alpha[i] != 0)
-          {
-            lastAlphaInt += alpha[i];
-            lastAlpha = (double) lastAlphaInt / (double) AA_SAMPLING;
-            alpha[i] = 0;
-          }
-        pixel = paintRaster.getDataElements(x - x0, 0, pixel);
-        comps = cm.getComponents(pixel, comps, 0);
-        if (cm.hasAlpha() && ! cm.isAlphaPremultiplied())
-          comps[comps.length - 1] *= lastAlpha;
-        else
-          {
-            int max;
-            if (cm.hasAlpha())
-              max = comps.length - 2;
-            else
-              max = comps.length - 1;
-            for (int j = 0; j < max; j++) 
-              comps[j] *= lastAlpha;
-          }
-        pixel = cm.getDataElements(comps, 0, pixel);
-        aaRaster.setDataElements(x - x0, 0, pixel);
-      }
-
-    WritableRaster targetChild =
-      destinationRaster.createWritableTranslatedChild(-x0, -yy);
-    cCtx.compose(aaRaster, targetChild, targetChild);
-    updateRaster(destinationRaster, x0, yy, numPixels, 1);
-
-    cCtx.dispose();
-  }
 
   /**
    * Initializes this graphics object. This must be called by subclasses in
@@ -1971,4 +1948,5 @@ public abstract class AbstractGraphics2D
       }
     return sc;
   }
+
 }

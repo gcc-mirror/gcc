@@ -13,6 +13,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace java
     {
       namespace awt
@@ -49,8 +53,7 @@ extern "Java"
 class gnu::java::awt::peer::gtk::GdkGraphicsEnvironment : public ::gnu::java::awt::ClasspathGraphicsEnvironment
 {
 
-public: // actually package-private
-  static void initStaticState();
+  static void initIDs();
 public:
   GdkGraphicsEnvironment();
 public: // actually package-private
@@ -80,6 +83,7 @@ private:
   jint __attribute__((aligned(__alignof__( ::gnu::java::awt::ClasspathGraphicsEnvironment)))) native_state;
   ::gnu::java::awt::peer::gtk::GdkScreenGraphicsDevice * defaultDevice;
   JArray< ::gnu::java::awt::peer::gtk::GdkScreenGraphicsDevice * > * devices;
+  ::gnu::classpath::Pointer * display;
 public:
   static ::java::lang::Class class$;
 };

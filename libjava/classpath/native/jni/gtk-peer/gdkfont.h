@@ -46,48 +46,6 @@
 #include <pango/pango-fontmap.h>
 #include <pango/pangoft2.h>
 
-extern struct state_table *cp_gtk_native_font_state_table;
-extern struct state_table *native_glyphvector_state_table;
-extern struct state_table *cp_gtk_native_text_layout_state_table;
-
-#define NSA_FONT_INIT(env, clazz) \
-  cp_gtk_native_font_state_table = cp_gtk_init_state_table (env, clazz)
-
-#define NSA_GET_FONT_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_font_state_table)
-
-#define NSA_SET_FONT_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_font_state_table, (void *)ptr)
-
-#define NSA_DEL_FONT_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, cp_gtk_native_font_state_table)
-
-
-#define NSA_GV_INIT(env, clazz) \
-  native_glyphvector_state_table = cp_gtk_init_state_table (env, clazz)
-
-#define NSA_GET_GV_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, native_glyphvector_state_table)
-
-#define NSA_SET_GV_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, native_glyphvector_state_table, (void *)ptr)
-
-#define NSA_DEL_GV_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, native_glyphvector_state_table)
-
-
-#define NSA_TEXT_LAYOUT_INIT(env, clazz) \
-  cp_gtk_native_text_layout_state_table = cp_gtk_init_state_table (env, clazz)
-
-#define NSA_GET_TEXT_LAYOUT_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_text_layout_state_table)
-
-#define NSA_SET_TEXT_LAYOUT_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_text_layout_state_table, (void *)ptr)
-
-#define NSA_DEL_TEXT_LAYOUT_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, cp_gtk_native_text_layout_state_table)
-
 #define FONT_METRICS_ASCENT      0
 #define FONT_METRICS_MAX_ASCENT  1
 #define FONT_METRICS_DESCENT     2

@@ -644,7 +644,7 @@ public abstract class ClasspathFontPeer
    * be ignored.
    */
 
-  public abstract boolean canDisplay (Font font, char c);
+  public abstract boolean canDisplay (Font font, int c);
 
   /** 
    * Implementation of {@link Font#canDisplay(String)},

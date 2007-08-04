@@ -37,6 +37,7 @@ extern "Java"
         class TextField;
       namespace event
       {
+          class FocusEvent;
           class KeyEvent;
           class MouseEvent;
       }
@@ -64,8 +65,11 @@ public:
   virtual void handleMouseEvent(::java::awt::event::MouseEvent *);
   virtual void handleMouseMotionEvent(::java::awt::event::MouseEvent *);
   virtual void handleKeyEvent(::java::awt::event::KeyEvent *);
+  virtual void handleFocusEvent(::java::awt::event::FocusEvent *);
   virtual ::java::awt::Container * getParent();
   virtual ::java::awt::Graphics * getGraphics();
+  virtual void requestFocus();
+  virtual jboolean requestFocus(jboolean);
 public: // actually package-private
   ::java::awt::TextField * __attribute__((aligned(__alignof__( ::javax::swing::JTextField)))) textField;
   ::gnu::java::awt::peer::swing::SwingTextFieldPeer * this$0;
