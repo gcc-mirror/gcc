@@ -1,3 +1,10 @@
+2007-08-04  Alfred M. Szmidt  <ams@gnu.org>
+
+	* java/io/natFilePosix.cc (init_native) [!MAXPATHLEN]: Define to 0.
+	* java/io/File.java (createTempFile): Don't truncate if the system
+	doesn't have a limit on the length of a file name.
+	* classpath/lib/java/io/File.class: Regenerate.
+
 2007-08-04  Matthias Klose  <doko@ubuntu.com>
 
 	Import GNU Classpath (libgcj-import-20070727).
