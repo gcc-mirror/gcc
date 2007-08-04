@@ -1,5 +1,10 @@
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/32304
+	* g++.dg/torture/pr32304.C: New testcase.
+
+2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/32935
 	* gfortran.fortran-torture/compile/complex_1.f90: New test.
 
