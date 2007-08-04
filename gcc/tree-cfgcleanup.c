@@ -666,7 +666,7 @@ cleanup_tree_cfg_noloop (void)
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
   if (changed && current_loops)
-    current_loops->state |= LOOPS_NEED_FIXUP;
+    loops_state_set (LOOPS_NEED_FIXUP);
 
   return changed;
 }
@@ -682,7 +682,7 @@ repair_loop_structures (void)
   /* This usually does nothing.  But sometimes parts of cfg that originally
      were inside a loop get out of it due to edge removal (since they
      become unreachable by back edges from latch).  */
-  if ((current_loops->state & LOOP_CLOSED_SSA) != 0)
+  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
     rewrite_into_loop_closed_ssa (changed_bbs, TODO_update_ssa);
 
   BITMAP_FREE (changed_bbs);
@@ -692,7 +692,7 @@ repair_loop_structures (void)
 #endif
   scev_reset ();
 
-  current_loops->state &= ~LOOPS_NEED_FIXUP;
+  loops_state_clear (LOOPS_NEED_FIXUP);
 }
 
 /* Cleanup cfg and repair loop structures.  */
@@ -703,7 +703,7 @@ cleanup_tree_cfg (void)
   bool changed = cleanup_tree_cfg_noloop ();
 
   if (current_loops != NULL
-      && (current_loops->state & LOOPS_NEED_FIXUP))
+      && loops_state_satisfies_p (LOOPS_NEED_FIXUP))
     repair_loop_structures ();
 
   return changed;

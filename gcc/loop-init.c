@@ -59,7 +59,7 @@ loop_optimizer_init (unsigned flags)
 	 passes may want.  */
       gcc_assert ((flags & ~(LOOPS_MAY_HAVE_MULTIPLE_LATCHES
 			     | LOOPS_HAVE_RECORDED_EXITS)) == 0);
-      current_loops->state = LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
+      loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
     }
   else
     disambiguate_loops_with_multiple_latches ();
@@ -105,7 +105,7 @@ loop_optimizer_finalize (void)
     }
 
   /* Clean up.  */
-  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     release_recorded_exits ();
   flow_loops_free (current_loops);
   ggc_free (current_loops);

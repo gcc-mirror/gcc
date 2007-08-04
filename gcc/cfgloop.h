@@ -451,6 +451,33 @@ number_of_loops (void)
   return VEC_length (loop_p, current_loops->larray);
 }
 
+/* Returns true if state of the loops satisfies all properties
+   described by FLAGS.  */
+
+static inline bool
+loops_state_satisfies_p (unsigned flags)
+{
+  return (current_loops->state & flags) == flags;
+}
+
+/* Sets FLAGS to the loops state.  */
+
+static inline void
+loops_state_set (unsigned flags)
+{
+  current_loops->state |= flags;
+}
+
+/* Clears FLAGS from the loops state.  */
+
+static inline void
+loops_state_clear (unsigned flags)
+{
+  if (!current_loops)
+    return;
+  current_loops->state &= ~flags;
+}
+
 /* Loop iterators.  */
 
 /* Flags for loop iteration.  */

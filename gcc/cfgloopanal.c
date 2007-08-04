@@ -156,7 +156,7 @@ mark_irreducible_loops (void)
 
   free_graph (g);
 
-  current_loops->state |= LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS;
+  loops_state_set (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
 }
 
 /* Counts number of insns inside LOOP.  */
