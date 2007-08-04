@@ -43,6 +43,8 @@ import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphJustificationInfo;
 import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextAttribute;
+import java.awt.font.TransformAttribute;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -86,7 +88,10 @@ public class FreetypeGlyphVector extends GlyphVector
   private long[] fontSet = null;
 
   /**
-   * Glyph transforms. (de facto only the translation is used)
+   * Glyph transforms.  Supports all transform operations.
+   * 
+   * The identity transform should not be stored in this array; use a null
+   * instead (will result in performance improvements).
    */
   private AffineTransform[] glyphTransforms;
 
@@ -185,9 +190,12 @@ public class FreetypeGlyphVector extends GlyphVector
     fontSet = new long[nGlyphs];
     glyphPositions = new float[(nGlyphs + 1) * 2];
     glyphTransforms = new AffineTransform[ nGlyphs ];
+    Arrays.fill(glyphTransforms, null);
+    
     for(int i = 0; i < nGlyphs; i++ )
       {
-        glyphTransforms[ i ] = new AffineTransform( gv.glyphTransforms[ i ] );
+        if (gv.glyphTransforms[i] != null)
+          glyphTransforms[ i ] = new AffineTransform(gv.glyphTransforms[i]);
         glyphCodes[i] = gv.glyphCodes[ i ];
       }
     System.arraycopy(gv.glyphPositions, 0, glyphPositions, 0,
@@ -313,6 +321,25 @@ public class FreetypeGlyphVector extends GlyphVector
       }
     glyphPositions[nGlyphs * 2] = x;
     glyphPositions[nGlyphs * 2 + 1] = y;
+    
+    // Apply any transform that may be in the font's attributes
+    TransformAttribute ta;
+    ta = (TransformAttribute)font.getAttributes().get(TextAttribute.TRANSFORM);
+    if (ta != null)
+      {
+        AffineTransform tx = ta.getTransform();
+        
+        // Transform glyph positions
+        tx.transform(glyphPositions, 0, glyphPositions, 0,
+                     glyphPositions.length / 2);
+        
+        // Also store per-glyph scale/shear/rotate (but not translation) 
+        double[] matrix = new double[4];
+        tx.getMatrix(matrix);
+        AffineTransform deltaTx = new AffineTransform(matrix);
+        if (!deltaTx.isIdentity())
+          Arrays.fill(glyphTransforms, deltaTx);
+      }
   }
 
   /**
@@ -375,7 +402,7 @@ public class FreetypeGlyphVector extends GlyphVector
                                     p.getY() + r.getY() + r.getHeight()};
     
     if (glyphTransforms[glyphIndex] != null)
-      glyphTransforms[glyphIndex].transform(bounds, 0, bounds, 0, 4);
+      glyphTransforms[glyphIndex].transform(bounds, 0, bounds, 0, 2);
     
     return new Rectangle2D.Double(bounds[0], bounds[1], bounds[2] - bounds[0],
                                   bounds[3] - bounds[1]);
@@ -473,7 +500,19 @@ public class FreetypeGlyphVector extends GlyphVector
   {
     return glyphTransforms[glyphIndex];
   }
-
+  
+  /**
+   * Checks whether any transform has been set on any glyphs.
+   */
+  protected boolean hasTransforms()
+  {
+    for (int i = 0; i < glyphTransforms.length; i++)
+      if (glyphTransforms[i] != null)
+        return true;
+    
+    return false;
+  }
+  
   /**
    * Returns the visual bounds of a glyph
    * May be off by a pixel or two due to hinting/rasterization.
@@ -570,6 +609,19 @@ public class FreetypeGlyphVector extends GlyphVector
    */
   public void setGlyphTransform(int glyphIndex, AffineTransform newTX)
   {
+    // The identity transform should never be in the glyphTransforms array;
+    // using and checking for nulls can be much faster.
+    if (newTX != null && newTX.isIdentity())
+      newTX = null;
+    
+    // If the old and new transforms are identical, bail
+    if (glyphTransforms[glyphIndex] == null && newTX == null)
+      return;
+    
+    if (newTX != null && newTX.equals(glyphTransforms[glyphIndex]))
+      return;
+    
+    // Invalidate bounds cache and set new transform
     logicalBounds = null;
     glyphTransforms[glyphIndex] = newTX;
   }

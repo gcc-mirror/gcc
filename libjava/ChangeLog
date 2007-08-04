@@ -1,3 +1,35 @@
+2007-08-04  Matthias Klose  <doko@ubuntu.com>
+
+	Import GNU Classpath (libgcj-import-20070727).
+
+	* Regenerate class and header files.
+	* Regenerate auto* files.
+
+	* include/jvm.h:
+	* jni-libjvm.cc (Jv_JNI_InvokeFunctions): Rename type.
+	* jni.cc (_Jv_JNIFunctions, _Jv_JNI_InvokeFunctions): Likewise.
+	* jni.cc (_Jv_JNI_CallAnyMethodA, _Jv_JNI_CallAnyVoidMethodA,
+	_Jv_JNI_CallMethodA, _Jv_JNI_CallVoidMethodA,
+	_Jv_JNI_CallStaticMethodA, _Jv_JNI_CallStaticVoidMethodA,
+	_Jv_JNI_NewObjectA, _Jv_JNI_SetPrimitiveArrayRegion): Constify
+	jvalue parameter.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Likewise.
+
+	* java/lang/VMFloat.java (toString, parseFloat): New.
+
+	* gnu/awt/xlib/XToolkit.java (setAlwaysOnTop, isModalityTypeSupported,
+	isModalExclusionTypeSupported): New (stub only).
+	* gnu/awt/xlib/XCanvasPeer.java (requestFocus): Likewise.
+	* gnu/awt/xlib/XFramePeer.java (updateMinimumSize, updateIconImages,
+	updateFocusableWindowState, setModalBlocked, getBoundsPrivate,
+	setAlwaysOnTop): Likewise.
+	* gnu/awt/xlib/XFontPeer.java (canDisplay): Update signature.
+
+	* scripts/makemake.tcl: Ignore gnu/javax/sound/sampled/gstreamer,
+	ignore javax.sound.sampled.spi.MixerProvider, ignore .in files.
+
+	* HACKING: Mention --enable-gstreamer-peer, removal of generated files.
+
 2007-07-31  David Daney  <ddaney@avtrex.com>
 
 	* HACKING: Document regenerating configure and aclocal.m4.

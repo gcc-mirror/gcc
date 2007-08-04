@@ -637,7 +637,7 @@ typedef void (JNICALL *jvmtiStartFunction)
 /*
  * JVM Tool Interface Base Types
  */
-typedef struct JNINativeInterface jniNativeInterface;
+typedef struct JNINativeInterface_ jniNativeInterface;
 
 struct _Jv_jvmtiEnv
 {

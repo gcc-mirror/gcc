@@ -48,7 +48,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create
 
   gdk_threads_enter ();
   
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   str = (*env)->GetStringUTFChars (env, label, NULL);
 
@@ -57,7 +57,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create
 
   (*env)->ReleaseStringUTFChars (env, label, str);
 
-  NSA_SET_PTR (env, obj, widget);
+  gtkpeer_set_widget (env, obj, widget);
 
   gdk_threads_leave ();
 }
@@ -70,7 +70,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_setState
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   
   gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (ptr), state);
 

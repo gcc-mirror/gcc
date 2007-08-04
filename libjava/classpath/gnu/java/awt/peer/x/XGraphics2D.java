@@ -37,16 +37,23 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.x;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
+import java.awt.Image;
+import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Toolkit;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ColorModel;
+import java.awt.image.ImageObserver;
 import java.awt.image.Raster;
+import java.util.HashMap;
 
 import gnu.java.awt.java2d.AbstractGraphics2D;
+import gnu.java.awt.java2d.ScanlineCoverage;
+import gnu.x11.Colormap;
 import gnu.x11.Drawable;
 import gnu.x11.GC;
 import gnu.x11.image.ZPixmap;
@@ -70,6 +77,11 @@ public class XGraphics2D
    */
   private boolean disposed;
 
+  /**
+   * The current foreground color, possibly null.
+   */
+  private Color foreground;
+
   XGraphics2D(Drawable d)
   {
     super();
@@ -80,47 +92,14 @@ public class XGraphics2D
     //setClip(new Rectangle(0, 0, xdrawable.width, xdrawable.height));
   }
 
-  /**
-   * Draws a pixel in the target coordinate space using the specified color.
-   * 
-   * @param x the x coordinate
-   * @param y the y coordinate
-   */
-  protected void rawSetPixel(int x, int y)
-  {
-    xdrawable.point(xgc, x, y);
-  }
-
-//  protected void rawFillPolygon(double[] xpoints, double[] ypoints, int npoints)
-//  {
-//    Point[] points = new Point[npoints];
-//    for (int n = 0; n < npoints; n++)
-//      {
-//        points[n] = new Point((int) xpoints[n], (int) ypoints[n]);
-//      }
-//    xdrawable.fill_poly(xgc, points, Drawable.COMPLEX, Drawable.ORIGIN);
-//    xdrawable.display.flush();
-//  }
-
   protected void rawDrawLine(int x0, int y0, int x1, int y1)
   {
-    xdrawable.line(xgc, x0, y0, x1, y1);
+    xdrawable.segment(xgc, x0, y0, x1, y1);
   }
 
   protected void rawFillRect(int x, int y, int w, int h)
   {
     xdrawable.rectangle(xgc, x, y, w, h, true);
-  }
-
-  protected void rawSetForeground(java.awt.Color c)
-  {
-    if (c != null)
-      xgc.set_foreground(c.getRGB());
-  }
-
-  protected void rawSetForeground(int r, int g, int b)
-  {
-    xgc.set_foreground( r << 16 | g << 8 | b );
   }
 
   /**
@@ -178,55 +157,6 @@ public class XGraphics2D
     return copy;
   }
 
-//  /**
-//   * Draws the specified image on the drawable at position (x,y).
-//   */
-//
-//  public boolean drawImage(Image image, int x, int y, ImageObserver observer)
-//  {
-//    AffineTransform transform = getTransform();
-//    int translateX = (int) transform.getTranslateX();
-//    int translateY = (int) transform.getTranslateY();
-//    if (image instanceof XImage)
-//      {
-//        XImage xim = (XImage) image;
-//        Pixmap pm = xim.pixmap;
-//        xdrawable.copy_area(pm, xgc, 0, 0, pm.width, pm.height,
-//                            x + translateX, y + translateY);
-//      }
-//    else if (image instanceof BufferedImage)
-//      {
-//        BufferedImage bufferedImage = (BufferedImage) image;
-//        Raster raster = bufferedImage.getData();
-//        int w = bufferedImage.getWidth();
-//        int h = bufferedImage.getHeight();
-//        // Push data to X server.
-//        ZPixmap zPixmap = new ZPixmap(xdrawable.display, w, h,
-//                                      xdrawable.display.default_pixmap_format);
-//        System.err.println("data buffer length: " + zPixmap.data.length);
-//        int[] pixel = new int[4];
-//        for (int tx = 0; tx < w; tx++)
-//          {
-//            for (int ty = 0; ty < h; ty++)
-//              {
-//                pixel = raster.getPixel(tx, ty, pixel);
-////                System.err.print("r: " + pixel[0]);
-////                System.err.print(", g: " + pixel[1]);
-////                System.err.println(", b: " + pixel[2]);
-//                zPixmap.set_red(tx, ty, pixel[0]);
-//                zPixmap.set_green(tx, ty, pixel[1]);
-//                zPixmap.set_blue(tx, ty, pixel[2]);
-//              }
-//          }
-//        xdrawable.put_image(xgc, zPixmap, x, y);
-//      }
-//    else
-//      {
-//        throw new UnsupportedOperationException("Not yet implemented.");
-//      }
-//    return true;
-//  }
-//
   public void setClip(Shape c)
   {
     super.setClip(c);
@@ -287,9 +217,115 @@ public class XGraphics2D
       }
   }
 
+  public void renderScanline(int y, ScanlineCoverage c)
+  {
+    ScanlineCoverage.Iterator iter = c.iterate();
+    float coverageAlpha = 0;
+    int maxCoverage = c.getMaxCoverage();
+    Color old = getColor();
+    Color col = getColor();
+    if (col == null)
+      col = Color.BLACK;
+    while (iter.hasNext())
+      {
+        ScanlineCoverage.Range range = iter.next();
+        // TODO: Dumb implementation for testing.
+        coverageAlpha = range.getCoverage();
+        if (coverageAlpha > 0)
+          {
+            int red = col.getRed();
+            int green = col.getGreen();
+            int blue = col.getBlue();
+            if (coverageAlpha < c.getMaxCoverage())
+              {
+                float alpha = coverageAlpha / maxCoverage;
+                red = 255 - (int) ((255 - red) * alpha);
+                green = 255 - (int) ((255 - green) * alpha);
+                blue = 255 - (int) ((255 - blue) * alpha);
+              }
+            xgc.set_foreground(red << 16 | green << 8 | blue);
+            int x0 = range.getXPos();
+            int l = range.getLength();
+            xdrawable.fill_rectangle(xgc, x0, y, l, 1);
+          }
+      }
+    if (old != null)
+      xgc.set_foreground(old.getRGB());
+  }
+
+  protected void fillScanline(int x0, int x1, int y)
+  {
+    xdrawable.segment(xgc, x0, y, x1, y);
+  }
+
+  protected void fillScanlineAA(int x0, int x1, int y, int alpha)
+  {
+    //System.err.println("fillScanlineAA: " + x0 + ", " + x1 + ", " + y + ", " + alpha);
+    // FIXME: This is for testing only.
+    Color c = getColor();
+    setColor(new Color(255-alpha, 255-alpha, 255-alpha));
+    xdrawable.segment(xgc, x0, y, x1, y);
+    setColor(c);
+  }
 
   protected void init()
   {
     super.init();
   }
+
+  public void setPaint(Paint p)
+  {
+    super.setPaint(p);
+    if (p instanceof Color)
+      {
+        Color c = (Color) p;
+        XToolkit tk = (XToolkit) Toolkit.getDefaultToolkit();
+        HashMap colorMap = tk.colorMap;
+        gnu.x11.Color col = (gnu.x11.Color) colorMap.get(c);
+        if (col == null)
+          {
+            Colormap map = xdrawable.display.default_colormap;
+            col = map.alloc_color (c.getRed() * 256,
+                                   c.getGreen() * 256,
+                                   c.getBlue() * 256);
+            colorMap.put(c, col);
+          }
+        xgc.set_foreground(col);
+        foreground = c;
+      }
+  }
+
+  protected void fillShape(Shape s, boolean isFont)
+  {
+    synchronized (xdrawable.display) {
+      super.fillShape(s, isFont);
+    }
+  }
+
+  protected boolean rawDrawImage(Image image, int x, int y, ImageObserver obs)
+  {
+    boolean ret;
+    if (image instanceof XImage)
+      {
+        XImage xImage = (XImage) image;
+        xdrawable.copy_area(xImage.pixmap, xgc, 0, 0, xImage.getWidth(obs),
+                            xImage.getHeight(obs), x, y);
+        ret = true;
+      }
+    else if (image instanceof PixmapVolatileImage)
+      {
+        PixmapVolatileImage pvi = (PixmapVolatileImage) image;
+        xdrawable.copy_area(pvi.getPixmap(), xgc, 0, 0, pvi.getWidth(obs),
+                            pvi.getHeight(obs), x, y);
+        ret = true;
+      }
+    else
+      {
+        ret = super.rawDrawImage(image, x, y, obs);
+      }
+    return ret;
+  }
+
+
 }
+

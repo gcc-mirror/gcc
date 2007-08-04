@@ -1,5 +1,5 @@
-/* XLightweightPeer.java -- A lightweight peer for X
-   Copyright (C) 2006 Free Software Foundation, Inc.
+/* GstNativeDataLine.java -- SourceDataLine implementation.
+ Copyright (C) 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,22 +35,14 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+package gnu.javax.sound.sampled.gstreamer.lines;
 
-package gnu.java.awt.peer.x;
-
-import java.awt.Component;
-import java.awt.peer.LightweightPeer;
-
-import gnu.java.awt.peer.swing.SwingContainerPeer;
-
-public class XLightweightPeer
-  extends SwingContainerPeer
-  implements LightweightPeer
+public class GstNativeDataLine
 {
-
-  XLightweightPeer(Component c)
+  
+  
+  static
   {
-    super(c);
-    init(c, null);
+    System.loadLibrary("gstreamerpeer"); //$NON-NLS-1$
   }
 }

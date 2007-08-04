@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_initStaticState (JNIEnv *env, jclass);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_initIDs (JNIEnv *env, jclass);
 JNIEXPORT jobject JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetFixedDisplayMode (JNIEnv *env, jobject, jobject);
 JNIEXPORT jstring JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetIDString (JNIEnv *env, jobject);
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetDisplayModeIndex (JNIEnv *env, jobject, jobject);

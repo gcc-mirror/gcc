@@ -124,7 +124,7 @@ public class DomElement
         node.attributes = new DomNamedNodeMap(node, Node.ATTRIBUTE_NODE);
         for (DomNode ctx = attributes.first; ctx != null; ctx = ctx.next)
           {
-            node.attributes.setNamedItemNS(ctx.cloneNode(true));
+            node.attributes.setNamedItem(ctx.cloneNode(true), true, true);
           }
       }
     return node;

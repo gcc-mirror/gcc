@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.95],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.96-pre],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
 dnl GCJ LOCAL
@@ -150,9 +150,27 @@ AC_ARG_ENABLE([gconf-peer],
 AM_CONDITIONAL(CREATE_GCONF_PEER_LIBRARIES, test "x${COMPILE_GCONF_PEER}" = xyes)
 
 dnl -----------------------------------------------------------
-dnl GTK native peer error checking
+dnl GConf native peer error checking
 dnl -----------------------------------------------------------
 AC_ARG_ENABLE([gconf-peers],,AC_MSG_ERROR([No --enable-gconf-peers (or --disable-gconf-peers) option; you want --enable-gconf-peer]))
+
+dnl ------------------------------------------------------------
+dnl GStreamer based sound provider backend (disabled by default)
+dnl ------------------------------------------------------------
+AC_ARG_ENABLE([gstreamer-peer],
+              [AS_HELP_STRING(--enable-gstreamer-peer,compile GStreamer native peers (disabled by --disable-jni) [default=no])],
+              [case "${enableval}" in
+                yes) COMPILE_GSTREAMER_PEER=yes ;;
+                no) COMPILE_GSTREAMER_PEER=no ;;
+                *) COMPILE_GSTREAMER_PEER=default ;;
+              esac],
+              [COMPILE_GSTREAMER_PEER=default])
+AM_CONDITIONAL(CREATE_GSTREAMER_PEER_LIBRARIES, test "x${COMPILE_GSTREAMER_PEER}" = xyes)
+
+dnl -----------------------------------------------------------
+dnl GStreamer native peer error checking
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([gstreamer-peers],,AC_MSG_ERROR([No --enable-gstreamer-peers (or --disable-gstreamer-peers) option; you want --enable-gstreamer-peer]))
 
 dnl ------------------------------------------------------------
 dnl Whether to compile with -Werror or not (disabled by default)
@@ -315,7 +333,6 @@ AC_ARG_WITH([vm],
 	    ])
 
 AC_SUBST(VM_BINARY)
-AM_CONDITIONAL(FOUND_CACAO, test "x`basename $VM_BINARY`" = xcacao)
 
 dnl -----------------------------------------------------------
 dnl Regenerate headers at build time (disabled by default)
@@ -416,6 +433,7 @@ if test "x${COMPILE_JNI}" = xyes; then
   AC_EGREP_HEADER(u_int32_t, sys/types.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1, [Define to 1 if you have BSD u_int32_t]))
   AC_EGREP_HEADER(u_int32_t, sys/config.h, AC_DEFINE(HAVE_BSD_INT32_DEFINED, 1, [Define to 1 if you have BSD u_int32_t]))
 
+  AC_SEARCH_LIBS([inet_pton],[nsl]) 
   AC_CHECK_FUNCS([ftruncate fsync select \
 		  gethostname socket strerror fork pipe execve open close \
 		  lseek fstat read readv write writev htonl memset htons connect \
@@ -566,6 +584,39 @@ if test "x${COMPILE_JNI}" = xyes; then
     fi
   fi
 
+  dnl gstreamer-peer
+  if  test "x${COMPILE_GSTREAMER_PEER}" = xyes; then
+    GST_MAJORMINOR=0.10
+    GST_REQUIRED=0.10.10
+
+    dnl gstreamer
+    PKG_CHECK_MODULES(GSTREAMER, gstreamer-$GST_MAJORMINOR >= $GST_REQUIRED)
+    AC_SUBST(GSTREAMER_CFLAGS)
+    AC_SUBST(GSTREAMER_LIBS)
+
+    dnl gstreamer-base
+    PKG_CHECK_MODULES(GSTREAMER_BASE,
+                      gstreamer-base-$GST_MAJORMINOR >= $GST_REQUIRED)
+    AC_SUBST(GSTREAMER_BASE_CFLAGS)
+    AC_SUBST(GSTREAMER_BASE_LIBS)
+
+    dnl gstreamer-plugin-base
+    PKG_CHECK_MODULES(GSTREAMER_PLUGINS_BASE,
+                      gstreamer-plugins-base-$GST_MAJORMINOR >= $GST_REQUIRED)
+    AC_SUBST(GSTREAMER_PLUGINS_BASE_CFLAGS)
+    AC_SUBST(GSTREAMER_PLUGINS_BASE_LIBS)
+
+	GST_PLUGIN_LDFLAGS='-module -avoid-version -Wno-unused-parameter -no-undefined'
+	AC_SUBST(GST_PLUGIN_LDFLAGS)
+	
+	dnl set the gstreamer based file reader, writer and mixer
+	GSTREAMER_FILE_READER=gnu.javax.sound.sampled.gstreamer.io.GstAudioFileReader
+	GSTREAMER_MIXER_PROVIDER=gnu.javax.sound.sampled.gstreamer.GStreamerMixerProvider
+  fi
+  dnl add the gstreamer resources 
+  AC_SUBST(GSTREAMER_FILE_READER)
+  AC_SUBST(GSTREAMER_MIXER_PROVIDER)
+
   dnl Check for AWT related Qt4
   if test "x${COMPILE_QT_PEER}" = xyes; then
     PKG_CHECK_MODULES(QT, QtCore QtGui >= 4.1.0, HAVE_QT4="yes", HAVE_QT4="no")
@@ -637,6 +688,17 @@ if test "x${COMPILE_JNI}" = xyes; then
     	      [Define this symbol if you have SO_NOSIGPIPE]) ],
   [ AC_MSG_RESULT(no)]
  )
+  dnl **********************************************************************
+  dnl Check for MSG_WAITALL
+  dnl **********************************************************************
+  AC_MSG_CHECKING(for MSG_WAITALL)
+  AC_TRY_COMPILE([#include <sys/socket.h>],
+   [ int f = MSG_WAITALL; ],
+   [ AC_MSG_RESULT(yes)
+     AC_DEFINE(HAVE_MSG_WAITALL, 1,
+     	       [Define this symbol if you have MSG_WAITALL]) ],
+   [ AC_MSG_RESULT(no)]
+  )
 
   dnl Check for plugin support headers and libraries.
   if test "x${COMPILE_PLUGIN}" = xyes; then
@@ -674,7 +736,9 @@ if test "x${COMPILE_JNI}" = xyes; then
   fi
 fi
 
-CLASSPATH_WITH_JAVAH
+if test "x${REGENERATE_JNI_HEADERS}" = xyes; then
+  CLASSPATH_WITH_JAVAH
+fi
 
 dnl ----------------------------------------------------------- 
 dnl Add the include files for the native abstraction layer.
@@ -944,6 +1008,7 @@ native/jni/java-nio/Makefile
 native/jni/java-util/Makefile
 native/jni/gtk-peer/Makefile
 native/jni/gconf-peer/Makefile
+native/jni/gstreamer-peer/Makefile
 native/jni/qt-peer/Makefile
 native/jni/xmlj/Makefile
 native/jni/midi-alsa/Makefile
@@ -952,6 +1017,8 @@ native/jni/native-lib/Makefile
 native/plugin/Makefile
 resource/Makefile
 resource/META-INF/services/java.util.prefs.PreferencesFactory
+resource/META-INF/services/javax.sound.sampled.spi.AudioFileReader
+resource/META-INF/services/javax.sound.sampled.spi.MixerProvider
 scripts/Makefile
 scripts/classpath.spec
 lib/Makefile

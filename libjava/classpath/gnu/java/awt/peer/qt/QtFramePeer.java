@@ -155,4 +155,10 @@ public class QtFramePeer extends QtWindowPeer implements FramePeer
     return false;
   }
 
+  public Rectangle getBoundsPrivate()
+  {
+    // TODO: Implement this properly.
+    throw new InternalError("Not yet implemented");
+  }
+
 }

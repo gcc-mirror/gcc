@@ -44,10 +44,10 @@ libgtkpeer_la_SOURCES = gnu_java_awt_peer_gtk_CairoSurface.c \
 			gdkdisplay.h \
 			gdkfont.h \
 			gtk_jawt.c \
+			gtkpeer.c \
 			gtkpeer.h
 
-libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/native_state.lo \
-		       $(top_builddir)/native/jni/classpath/jcl.lo
+libgtkpeer_la_LIBADD = $(top_builddir)/native/jni/classpath/jcl.lo
 libgtkpeer_la_LDFLAGS = $(AM_LDFLAGS) -avoid-version
 
 AM_LDFLAGS = @CLASSPATH_MODULE@ @GTK_LIBS@ @FREETYPE2_LIBS@ \

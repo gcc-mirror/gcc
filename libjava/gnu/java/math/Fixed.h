@@ -30,6 +30,7 @@ public:
   static jint mul(jint, jint, jint);
   static jint ceil(jint, jint);
   static jint floor(jint, jint);
+  static jint trunc(jint, jint);
   static jint round(jint, jint);
   static jfloat floatValue(jint, jint);
   static jdouble doubleValue(jint, jint);

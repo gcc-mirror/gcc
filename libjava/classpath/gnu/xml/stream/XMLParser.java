@@ -4598,6 +4598,28 @@ public class XMLParser
         }
       return false;
     }
+
+    public String toString()
+    {
+      StringBuffer buf = new StringBuffer(getClass().getName());
+      buf.append('[');
+      buf.append("name=");
+      buf.append(name);
+      if (value != null)
+        {
+          buf.append(",value=");
+          buf.append(value);
+        }
+      if (type != null)
+        {
+          buf.append(",type=");
+          buf.append(type);
+        }
+      if (specified)
+        buf.append(",specified");
+      buf.append(']');
+      return buf.toString();
+    }
     
   }
 

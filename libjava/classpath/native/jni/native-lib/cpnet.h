@@ -117,6 +117,7 @@ static inline void cpnet_setIPV4Any(cpnet_address *addr)
   netaddr->sin_addr.s_addr = INADDR_ANY;
 }
 
+#ifdef HAVE_INET6
 static inline cpnet_address *cpnet_newIPV6Address(JNIEnv * env)
 {
   cpnet_address * addr = (cpnet_address *)JCL_malloc(env, sizeof(cpnet_address) + sizeof(struct sockaddr_in6));
@@ -128,6 +129,7 @@ static inline cpnet_address *cpnet_newIPV6Address(JNIEnv * env)
 
   return addr;
 }
+#endif
 
 static inline void cpnet_freeAddress(JNIEnv * env, cpnet_address *addr)
 {
@@ -156,12 +158,14 @@ static inline jboolean cpnet_isAddressEqual(cpnet_address *addr1, cpnet_address 
   return memcmp(addr1->data, addr2->data, addr1->len) == 0;
 }
 
+#ifdef HAVE_INET6
 static inline jboolean cpnet_isIPV6Address(cpnet_address *addr)
 {
   struct sockaddr_in *ipaddr = (struct sockaddr_in *)&(addr->data[0]);
 
   return ipaddr->sin_family == AF_INET6;
 }
+#endif
 
 static inline jboolean cpnet_isIPV4Address(cpnet_address *addr)
 {
@@ -194,6 +198,7 @@ static inline void cpnet_bytesToIPV4Address(cpnet_address *netaddr, jbyte *octet
   ipaddr->sin_addr.s_addr = htonl(sysaddr);
 }
 
+#ifdef HAVE_INET6
 static inline void cpnet_IPV6AddressToBytes(cpnet_address *netaddr, jbyte *octets)
 {
   struct sockaddr_in6 *ipaddr = (struct sockaddr_in6 *)&(netaddr->data[0]);
@@ -207,5 +212,6 @@ static inline void cpnet_bytesToIPV6Address(cpnet_address *netaddr, jbyte *octet
 
   memcpy(&ipaddr->sin6_addr, octets, 16);
 }
+#endif
 
 #endif

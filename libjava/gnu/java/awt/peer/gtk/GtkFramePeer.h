@@ -80,6 +80,7 @@ public:
   virtual void setMaximizedBounds(::java::awt::Rectangle *);
   virtual void setBoundsPrivate(jint, jint, jint, jint);
   virtual jboolean requestWindowFocus();
+  virtual ::java::awt::Rectangle * getBoundsPrivate();
 private:
   jint __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::gtk::GtkWindowPeer)))) menuBarHeight;
   ::java::awt::peer::MenuBarPeer * menuBar;

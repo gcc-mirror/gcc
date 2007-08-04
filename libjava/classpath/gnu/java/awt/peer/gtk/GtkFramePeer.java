@@ -244,6 +244,13 @@ public class GtkFramePeer extends GtkWindowPeer
     // TODO Auto-generated method stub
     return false;
   }
+
+  public Rectangle getBoundsPrivate()
+  {
+    // TODO: Implement this properly.
+    throw new InternalError("Not yet implemented");
+  }
+
 }
 
 

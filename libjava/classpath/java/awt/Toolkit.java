@@ -1287,6 +1287,12 @@ public abstract class Toolkit
   public abstract Map<TextAttribute,?>
     mapInputMethodHighlight(InputMethodHighlight highlight);
 
+  public abstract boolean isModalExclusionTypeSupported
+                          (Dialog.ModalExclusionType modalExclusionType);
+
+  public abstract boolean isModalityTypeSupported
+                          (Dialog.ModalityType modalityType);
+
   /**
    * Initializes the accessibility framework. In particular, this loads the
    * properties javax.accessibility.screen_magnifier_present and

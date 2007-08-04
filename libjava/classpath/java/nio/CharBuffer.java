@@ -107,20 +107,7 @@ public abstract class CharBuffer extends Buffer
    */
   public static final CharBuffer wrap(CharSequence seq, int start, int end)
   {
-    // FIXME: implement better handling of java.lang.String.
-    // Probably share data with String via reflection.
-	     
-    int len = end - start;
-
-    if( len < 0 )
-      throw new IndexOutOfBoundsException();
-
-    char[] buffer = new char[len];
-    
-    for (int i = 0; i < len; i++)
-      buffer[i] = seq.charAt(i + start);
-    
-    return wrap(buffer, 0, len).asReadOnlyBuffer();
+    return new CharSequenceBuffer(seq, start, end);
   }
 
   /**

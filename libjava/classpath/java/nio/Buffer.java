@@ -358,4 +358,65 @@ public abstract class Buffer
         (arraylength < length + offset))
       throw new IndexOutOfBoundsException ();
   }
+
+  /**
+   * Returns the backing array of this buffer, if this buffer has one.
+   * Modification to the array are directly visible in this buffer and vice
+   * versa.
+   *
+   * <p>
+   * If this is a read-only buffer, then a {@link ReadOnlyBufferException} is
+   * thrown because exposing the array would allow to circumvent the read-only
+   * property. If this buffer doesn't have an array, then an
+   * {@link UnsupportedOperationException} is thrown. Applications should check
+   * if this buffer supports a backing array by calling {@link #hasArray}
+   * first.</p>
+   *
+   * @return the backing array of this buffer
+   *
+   * @throws ReadOnlyBufferException when this buffer is read only
+   * @throws UnsupportedOperationException when this buffer does not provide
+   *         a backing array
+   *
+   * @since 1.6
+   */
+  public abstract Object array();
+
+  /**
+   * Returns <code>true</code> if this buffer can provide a backing array,
+   * <code>false</code> otherwise. When <code>true</code>, application code
+   * can call {@link #array()} to access this backing array.
+   *
+   * @return <code>true</code> if this buffer can provide a backing array,
+   *         <code>false</code> otherwise
+   *
+   * @since 1.6
+   */
+  public abstract boolean hasArray();
+
+  /**
+   * For buffers that are backed by a Java array, this returns the offset
+   * into that array at which the buffer content starts.
+   *
+   * @return the offset into the backing array at which the buffer content
+   *         starts
+   * @throws ReadOnlyBufferException when this buffer is read only
+   * @throws UnsupportedOperationException when this buffer does not provide
+   *         a backing array
+   *
+   * @since 1.6
+   */
+  public abstract int arrayOffset();
+
+  /**
+   * Returns <code>true</code> when this buffer is direct, <code>false</code>
+   * otherwise. A direct buffer is usually backed by a raw memory area instead
+   * of a Java array.
+   *
+   * @return <code>true</code> when this buffer is direct, <code>false</code>
+   *         otherwise
+   *
+   * @since 1.6
+   */
+  public abstract boolean isDirect();
 }

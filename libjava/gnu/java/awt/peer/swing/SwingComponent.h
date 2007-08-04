@@ -31,6 +31,7 @@ extern "Java"
     {
       namespace event
       {
+          class FocusEvent;
           class KeyEvent;
           class MouseEvent;
       }
@@ -53,6 +54,7 @@ public:
   virtual void handleMouseEvent(::java::awt::event::MouseEvent *) = 0;
   virtual void handleMouseMotionEvent(::java::awt::event::MouseEvent *) = 0;
   virtual void handleKeyEvent(::java::awt::event::KeyEvent *) = 0;
+  virtual void handleFocusEvent(::java::awt::event::FocusEvent *) = 0;
   static ::java::lang::Class class$;
 } __attribute__ ((java_interface));
 

@@ -71,5 +71,8 @@ public interface FramePeer extends WindowPeer
    * @since 1.5
    */
   void setBoundsPrivate(int x, int y, int width, int height);
+
+  Rectangle getBoundsPrivate();
+
 } // interface FramePeer
 

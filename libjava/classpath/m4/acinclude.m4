@@ -203,7 +203,6 @@ AC_DEFUN([CLASSPATH_WITH_JAVAH],
   [ 
     CLASSPATH_CHECK_JAVAH
   ])
-  AM_CONDITIONAL(USER_SPECIFIED_JAVAH, test "x${USER_JAVAH}" != x)
   AC_SUBST(USER_JAVAH)
 ])
 
@@ -219,18 +218,12 @@ AC_DEFUN([CLASSPATH_CHECK_JAVAH],
       AC_PATH_PROG(USER_JAVAH, "$1")
     fi
   else
-    for javah_name in gcjh javah; do
-      AC_PATH_PROG(USER_JAVAH, "$javah_name")
-      if test "x${USER_JAVAH}" != x; then
-        break
-      fi
-    done
+    AC_PATH_PROGS([USER_JAVAH],[gjavah gcjh-wrapper-4.1 gcjh-4.1 gcjh javah])
   fi
   
-#  if test "x${USER_JAVAH}" = x; then
-#    echo "configure: cannot find javah" 1>&2
-#    exit 1
-#  fi
+  if test "x${USER_JAVAH}" = x; then
+    AC_MSG_ERROR([can not find javah])
+  fi
 ])
 
 dnl -----------------------------------------------------------
@@ -467,11 +460,7 @@ dnl -----------------------------------------------------------
 AC_DEFUN([CLASSPATH_CHECK_JAVAC],
 [
   if test "x$1" != x; then
-    if test -f "$1"; then
-      JAVAC="$1"
-    else
-      AC_PATH_PROG(JAVAC, "$1")
-    fi
+    JAVAC="$1"
   else
     AC_PATH_PROG(JAVAC, "javac")
   fi

@@ -47,12 +47,12 @@ Java_gnu_java_awt_peer_gtk_GtkMenuBarPeer_create
 
   gdk_threads_enter ();
   
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   widget = gtk_menu_bar_new ();
   gtk_widget_show (widget);
 
-  NSA_SET_PTR (env, obj, widget);
+  gtkpeer_set_widget (env, obj, widget);
 
   gdk_threads_leave ();
 }
@@ -65,8 +65,8 @@ Java_gnu_java_awt_peer_gtk_GtkMenuBarPeer_addMenu
 
   gdk_threads_enter ();
 
-  mbar = NSA_GET_PTR (env, obj);
-  menu = NSA_GET_PTR (env, menupeer);
+  mbar = gtkpeer_get_widget (env, obj);
+  menu = gtkpeer_get_widget (env, menupeer);
 
   gtk_menu_shell_append (GTK_MENU_SHELL (mbar), GTK_WIDGET (menu));
 
@@ -82,7 +82,7 @@ Java_gnu_java_awt_peer_gtk_GtkMenuBarPeer_delMenu
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = gtk_container_get_children (GTK_CONTAINER (ptr));
   list = g_list_nth (list, index);

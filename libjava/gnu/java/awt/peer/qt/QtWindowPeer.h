@@ -31,6 +31,7 @@ extern "Java"
     namespace awt
     {
         class Component;
+        class Dialog;
     }
   }
 }
@@ -49,6 +50,11 @@ public:
   virtual void setTitle(::java::lang::String *);
   virtual void updateAlwaysOnTop();
   virtual jboolean requestWindowFocus();
+  virtual void updateIconImages();
+  virtual void updateMinimumSize();
+  virtual void setModalBlocked(::java::awt::Dialog *, jboolean);
+  virtual void updateFocusableWindowState();
+  virtual void setAlwaysOnTop(jboolean);
   static ::java::lang::Class class$;
 };
 

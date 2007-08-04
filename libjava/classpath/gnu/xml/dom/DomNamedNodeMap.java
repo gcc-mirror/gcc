@@ -148,7 +148,7 @@ public class DomNamedNodeMap
    */
   public Node setNamedItem(Node arg)
   {
-    return setNamedItem(arg, false);
+    return setNamedItem(arg, false, false);
   }
 
   /**
@@ -160,10 +160,10 @@ public class DomNamedNodeMap
    */
   public Node setNamedItemNS(Node arg)
   {
-    return setNamedItem(arg, true);
+    return setNamedItem(arg, true, false);
   }
 
-  Node setNamedItem(Node arg, boolean ns)
+  Node setNamedItem(Node arg, boolean ns, boolean cloning)
   {
     if (readonly)
       {
@@ -171,7 +171,7 @@ public class DomNamedNodeMap
       }
 
     DomNode node = (DomNode) arg;
-    if (node.owner != owner.owner)
+    if (!cloning && node.owner != owner.owner)
       {
         throw new DomDOMException(DOMException.WRONG_DOCUMENT_ERR);
       }

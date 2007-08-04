@@ -11,6 +11,10 @@ extern "Java"
 {
   namespace gnu
   {
+    namespace classpath
+    {
+        class Pointer;
+    }
     namespace java
     {
       namespace awt
@@ -38,6 +42,7 @@ extern "Java"
 class gnu::java::awt::peer::gtk::GtkGenericPeer : public ::java::lang::Object
 {
 
+  static void initIDs();
 public:
   virtual void dispose();
 public: // actually package-private
@@ -57,6 +62,9 @@ private:
   static jint next_native_state;
 public: // actually protected
   ::java::lang::Object * awtWidget;
+private:
+  ::gnu::classpath::Pointer * widget;
+  ::gnu::classpath::Pointer * globalRef;
 public:
   static ::java::lang::Class class$;
 };

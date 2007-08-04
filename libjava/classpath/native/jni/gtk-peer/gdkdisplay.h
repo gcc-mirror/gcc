@@ -40,28 +40,4 @@
 
 #include "gtkpeer.h"
 
-/* Allows storing GdkDisplay pointers in GdkGraphicsEnvironment instances. */
-extern struct state_table *cp_gtk_native_display_state_table;
-
-/* Allows storing GdkScreen pointers in GdkScreenGraphicsDevice instances. */
-extern struct state_table *cp_gtk_native_screen_state_table;
-
-#define NSA_DISPLAY_INIT(env, clazz) \
-  cp_gtk_native_display_state_table = cp_gtk_init_state_table (env, clazz)
-
-#define NSA_GET_DISPLAY_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_display_state_table)
-
-#define NSA_SET_DISPLAY_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_display_state_table, (void *)ptr)
-
-#define NSA_SCREEN_INIT(env, clazz) \
-  cp_gtk_native_screen_state_table = cp_gtk_init_state_table (env, clazz)
-
-#define NSA_GET_SCREEN_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_screen_state_table)
-
-#define NSA_SET_SCREEN_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_screen_state_table, (void *)ptr)
-
 #endif /* __GDKDISPLAY_H__ */

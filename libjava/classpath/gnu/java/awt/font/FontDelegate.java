@@ -115,8 +115,16 @@ public interface FontDelegate
    * Returns the number of glyphs in this font face.
    */
   public int getNumGlyphs();
-  
-  
+
+  /**
+   * Returns the glyph code for the specified character.
+   *
+   * @param c the character to map
+   *
+   * @return the glyph code
+   */
+  public int getGlyphIndex(int c);
+
   /**
    * Returns the index of the glyph which gets displayed if the font
    * cannot map a Unicode code point to a glyph. Many fonts show this

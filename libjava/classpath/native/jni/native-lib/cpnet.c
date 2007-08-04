@@ -693,6 +693,7 @@ jint cpnet_getHostByName (JNIEnv *env, const char *hostname, cpnet_address ***ad
 	  cpnet_bytesToIPV4Address(addr_arr[i], (jbyte *)hret.h_addr_list[i]);
 	}
       break;
+#ifdef HAVE_INET6
     case AF_INET6:
       for (i = 0; i < counter; i++)
 	{
@@ -700,6 +701,7 @@ jint cpnet_getHostByName (JNIEnv *env, const char *hostname, cpnet_address ***ad
 	  cpnet_bytesToIPV6Address(addr_arr[i], (jbyte *)hret.h_addr_list[i]);
 	}
       break;
+#endif
     default:
       *addresses_count = 0;
       JCL_free(env, addr_arr);
@@ -732,12 +734,14 @@ jint cpnet_getHostByAddr (JNIEnv *env UNUSED, cpnet_address *addr, char *hostnam
       addr_len = sizeof(haddr.addr_v4->sin_addr);
       addr_type = AF_INET;
     }
+#ifdef HAVE_INET6
   else if (haddr.addr_v6->sin6_family == AF_INET6)
     {
       raw_addr = &haddr.addr_v6->sin6_addr;
       addr_type = AF_INET6;
       addr_len = sizeof(haddr.addr_v6->sin6_addr);
     }
+#endif
   else
     return EINVAL;
 
@@ -762,7 +766,8 @@ jint cpnet_getHostByAddr (JNIEnv *env UNUSED, cpnet_address *addr, char *hostnam
 jint cpnet_aton (JNIEnv *env, const char *hostname, cpnet_address **addr)
 {
   jbyte *bytes = NULL;
-#ifdef HAVE_INET_PTON
+
+#if defined(HAVE_INET_PTON) && defined(HAVE_INET6)
   jbyte inet6_addr[16];
 #endif
 
@@ -789,7 +794,7 @@ jint cpnet_aton (JNIEnv *env, const char *hostname, cpnet_address **addr)
       return 0;
     }
 
-#ifdef HAVE_INET_PTON
+#if defined(HAVE_INET_PTON) && defined(HAVE_INET6)
   if (inet_pton (AF_INET6, hostname, inet6_addr) > 0)
     {
       *addr = cpnet_newIPV6Address(env);

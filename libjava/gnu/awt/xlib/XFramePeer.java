@@ -196,6 +196,14 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
    */
   public void setBoundsPrivate (int x, int y, int width, int height)
   {
+    // TODO: Implement this.
+    throw new UnsupportedOperationException("Not yet implemented.");
+  }
+
+  public Rectangle getBoundsPrivate()
+  {
+    // TODO: Implement this.
+    throw new UnsupportedOperationException("Not yet implemented.");
   }
 
   /**
@@ -211,5 +219,30 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
   public boolean requestWindowFocus ()
   {
     return false;
+  }
+
+  public void setAlwaysOnTop(boolean alwaysOnTop)
+  {
+    throw new UnsupportedOperationException("not implemented yet");	
+  }
+
+  public void updateFocusableWindowState()
+  {
+    throw new UnsupportedOperationException("not implemented yet");	
+  }
+
+  public void setModalBlocked(Dialog blocker, boolean blocked)
+  {
+    throw new UnsupportedOperationException("not implemented yet");	
+  }
+
+  public void updateMinimumSize()
+  {
+    throw new UnsupportedOperationException("not implemented yet");	
+  }
+
+  public void updateIconImages()
+  {
+    throw new UnsupportedOperationException("not implemented yet");	
   }
 }

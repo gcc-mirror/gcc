@@ -98,7 +98,7 @@ public class QtFontPeer extends ClasspathFontPeer
 
   // ****************** ClasspathFontPeer Methods.
 
-  public boolean canDisplay (Font font, char c)
+  public boolean canDisplay (Font font, int c)
   {
     return metrics.canDisplay( c );
   }

@@ -1,5 +1,5 @@
 /* ScanlineConverter.java -- Rasterizes Shapes
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package gnu.java.awt.java2d;
 
 import gnu.java.math.Fixed;
 
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
@@ -47,7 +48,7 @@ import java.awt.geom.PathIterator;
 /**
  * Rasterizes {@link Shape} objects on an AbstractGraphics2D.
  */
-final class ScanlineConverter
+public final class ScanlineConverter
 {
 
   /**
@@ -56,9 +57,14 @@ final class ScanlineConverter
   private static int FIXED_DIGITS = 6;
 
   /**
-   * The fixed value for the number 1.
+   * The fixed point constant for the number one.
    */
   private static int ONE = Fixed.fixedValue(FIXED_DIGITS, 1);
+
+  /**
+   * The number of significant bits for the Y resolution.
+   */
+  private static int Y_RESOLUTION = 4;
 
   /**
    * The actual number of scanlines.
@@ -109,6 +115,13 @@ final class ScanlineConverter
 
   private int minY;
   private int maxY;
+  private int minX;
+  private int maxX;
+
+  /**
+   * Holds and manages information about the pixel coverage.
+   */
+  private ScanlineCoverage scanlineCoverage;
 
   /**
    * Create a new ScanlineConverter.
@@ -120,18 +133,23 @@ final class ScanlineConverter
     activeEdges = new ActiveEdges();
     edgePool = new PolyEdge();
     edgePoolLast = edgePool;
+    scanlineCoverage = new ScanlineCoverage();
   }
 
   /**
    * Renders the specified shape using the specified clip and transform.
    *
+   * @param p the pixelizer that receives the coverage information
    * @param shape the shape to render
    * @param clip the clip
    * @param trans the transform
    */
-  void renderShape(AbstractGraphics2D g, Shape shape, Shape clip,
-                   AffineTransform trans, int res)
+  public void renderShape(Pixelizer p, Shape shape, Shape clip,
+                          AffineTransform trans, int res, RenderingHints hints)
   {
+    // TODO: Do something useful with the rendering hints. Like, adjusting
+    // the resolution.
+
     // Prepare resolution and upper bounds.
     clear();
     setResolution(res);
@@ -139,11 +157,12 @@ final class ScanlineConverter
     boolean haveClip = clip != null;
 
     // Add shapes.
-    PathIterator path = shape.getPathIterator(trans, resolution);
+    float flatness = Fixed.floatValue(FIXED_DIGITS, resolution / 2);
+    PathIterator path = shape.getPathIterator(trans, flatness);
     addShape(path, false);
     if (haveClip)
       {
-        path= clip.getPathIterator(trans, resolution);
+        path= clip.getPathIterator(trans, flatness);
         addShape(path, true);
       }
 
@@ -157,11 +176,11 @@ final class ScanlineConverter
       }
 
     int y = upperBounds;
-    int lastIndex = scanlineIndex(y - resolution);
     int index;
     activeEdges.clear();
     // The render loop...
     Scanline scanline = null;
+    int lastRealY = Fixed.intValue(FIXED_DIGITS, y);
     while (y <= maxY)
       {
         // First we put together our list of active edges.
@@ -184,15 +203,16 @@ final class ScanlineConverter
         activeEdges.intersectSortAndPack(FIXED_DIGITS, y + halfStep);
 
         // Ok, now we can perform the actual scanlining.
-        boolean push = lastIndex != index;
-        doScanline(g, y, push, haveClip);
+        int realY = Fixed.intValue(FIXED_DIGITS, y + resolution);
+        boolean push = lastRealY != realY;
+        doScanline(p, y, push, haveClip);
 
         // Remove obsolete active edges.
         //activeEdges.remove(y + halfStep);
-
         // Go on with the next line...
         y += resolution;
-        lastIndex = index;
+        lastRealY = realY;
+
       }
   }
 
@@ -212,17 +232,31 @@ final class ScanlineConverter
           sl.clear();
       }
 
+    // Reset scanline coverage.
+    scanlineCoverage.clear();
+
     // Reset bounds.
     minY = Integer.MAX_VALUE;
     maxY = Integer.MIN_VALUE;
+    minX = Integer.MAX_VALUE;
+    maxX = Integer.MIN_VALUE;
   }
 
   /**
    * Performs the scanlining on the current set of active edges.
+   *
+   * @param p the pixelizer to receive the pixel coverage data
+   * @param y the Y coordinate
+   * @param push true when the scanline is ready to be pushed to the
+   *        pixelizer
+   * @param haveClip true when there's a clip, false otherwise
    */
-  private void doScanline(AbstractGraphics2D g, int y, boolean push,
+  private void doScanline(Pixelizer p, int y, boolean push,
                           boolean haveClip)
   {
+    // First, rewind the scanline coverage.
+    scanlineCoverage.rewind();
+
     // We begin outside the clip and outside the shape. We only draw when
     // we are inside the clip AND inside the shape.
     boolean inClip = ! haveClip;
@@ -238,22 +272,16 @@ final class ScanlineConverter
             int x0 = lastEdge.xIntersection;
             int x1 = edge.xIntersection;
             assert x0 <= x1;
-            if (push)
-              {
-                if (resolution == ONE)
-                  {
-                    // Non-AA rendering.
-                    g.fillScanline(Fixed.intValue(FIXED_DIGITS, x0),
-                                   Fixed.intValue(FIXED_DIGITS, x1 - resolution),
-                                   Fixed.intValue(FIXED_DIGITS, y));
-                  }
-                else
-                  {
-                    // AA rendering.
-                    // FIXME: Implement.
-                    System.err.println("Implement AA rendering.");
-                  }
-              }
+
+            int pix0 = Fixed.intValue(FIXED_DIGITS, x0);
+            int pix1 = Fixed.intValue(FIXED_DIGITS, x1);
+            int frac0 = ONE - Fixed.trunc(FIXED_DIGITS, x0);
+            int frac1 = ONE - Fixed.trunc(FIXED_DIGITS, x1);
+            // Only keep the first 4 digits after the point.
+            frac0 = frac0 >> (FIXED_DIGITS - Y_RESOLUTION);
+            frac1 = frac1 >> (FIXED_DIGITS - Y_RESOLUTION);
+            scanlineCoverage.add(pix0, 1 * (1 << Y_RESOLUTION), frac0);
+            scanlineCoverage.add(pix1, -1 * (1 << Y_RESOLUTION), -frac1);
           }
         if (edge.isClip)
           inClip = ! inClip;
@@ -262,7 +290,15 @@ final class ScanlineConverter
 
         lastEdge = edge;
       }
-  }
+
+    // Push out the whole scanline to the pixelizer.
+    if (push && ! scanlineCoverage.isEmpty())
+      {
+        p.renderScanline(Fixed.intValue(FIXED_DIGITS, y), scanlineCoverage);
+        scanlineCoverage.clear();
+      }
+  } 
+
 
   /**
    * Sets the resolution. A value of 0 rasterizes the shape normally without
@@ -272,9 +308,12 @@ final class ScanlineConverter
    */
   private void setResolution(int res)
   {
+    int scanlinesPerPixel = 1 << res;
     int one = Fixed.fixedValue(FIXED_DIGITS, 1);
-    resolution = one / (1 << res);
+    resolution = one / (scanlinesPerPixel);
     halfStep = resolution / 2;
+
+    scanlineCoverage.setMaxCoverage(scanlinesPerPixel << Y_RESOLUTION);
   }
 
   /**
@@ -309,6 +348,8 @@ final class ScanlineConverter
               startY = lastY = Fixed.fixedValue(FIXED_DIGITS, coords[1]);
               minY = Math.min(startY, minY);
               maxY = Math.max(startY, maxY);
+              minX = Math.min(startX, minX);
+              maxX = Math.max(startX, maxX);
               break;
             case PathIterator.SEG_LINETO:
               int x = Fixed.fixedValue(FIXED_DIGITS, coords[0]);
@@ -318,6 +359,8 @@ final class ScanlineConverter
               lastY = y;
               minY = Math.min(lastY, minY);
               maxY = Math.max(lastY, maxY);
+              minX = Math.min(lastX, minX);
+              maxX = Math.max(lastX, maxX);
               break;
             case PathIterator.SEG_CLOSE:
               edgePoolAdd(lastX, lastY, startX, startY, clip);
@@ -371,7 +414,7 @@ final class ScanlineConverter
   {
     int val1 = Fixed.div(FIXED_DIGITS, y, resolution);
     int rounded = Fixed.round(FIXED_DIGITS, val1);
-    return Fixed.div(FIXED_DIGITS, rounded, resolution);
+    return Fixed.mul(FIXED_DIGITS, rounded, resolution);
   }
 
   /**

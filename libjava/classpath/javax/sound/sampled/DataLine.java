@@ -1,5 +1,5 @@
 /* 
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005-2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -34,7 +34,6 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
-
 
 package javax.sound.sampled;
 
@@ -138,10 +137,10 @@ public interface DataLine extends Line
     public boolean isFormatSupported(AudioFormat fmt)
     {
       for (int i = 0; i < formats.length; ++i)
-	{
-	  if (fmt.matches(formats[i]))
-	    return true;
-	}
+        {
+          if (fmt.matches(formats[i]))
+            return true;
+        }
       return false;
     }
 
@@ -151,25 +150,28 @@ public interface DataLine extends Line
     public boolean matches(Line.Info o)
     {
       if (! super.matches(o) || ! (o instanceof Info))
-	return false;
+        return false;
+
       Info other = (Info) o;
-      if (minBufferSize < other.minBufferSize
-	  || maxBufferSize > other.maxBufferSize)
-	return false;
+      if (minBufferSize < other.minBufferSize ||
+          maxBufferSize > other.maxBufferSize)
+        return false;
+      
       for (int i = 0; i < formats.length; ++i)
-	{
-	  boolean ok = false;
-	  for (int j = 0; j < other.formats.length; ++j)
-	    {
-	      if (formats[i].matches(other.formats[j]))
-		{
-		  ok = true;
-		  break;
-		}
-	    }
-	  if (! ok)
-	    return false;
-	}
+        {
+          boolean ok = false;
+          for (int j = 0; j < other.formats.length; ++j)
+            {
+              if (formats[i].matches(other.formats[j]))
+                {
+                  ok = true;
+                  break;
+                }
+            }
+          if (! ok)
+            return false;
+        }
+      
       return true;
     }
 
@@ -181,18 +183,20 @@ public interface DataLine extends Line
       StringBuffer result = new StringBuffer();
       result.append("formats: [");
       for (int i = 0; i < formats.length; ++i)
-	{
-	  if (i > 0)
-	    result.append(", ");
-	  result.append(formats[i].toString());
-	}
+        {
+          if (i > 0)
+            result.append(", ");
+          result.append(formats[i].toString());
+        }
+      
       result.append("]; minBufferSize: ");
       result.append(minBufferSize);
       result.append("; maxBufferSize: ");
       result.append(maxBufferSize);
       return result.toString();
     }
-  }
+    
+  } // end class: Info
 
   /**
    * Return the number of bytes currently available on this DataLine.

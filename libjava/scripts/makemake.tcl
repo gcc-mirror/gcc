@@ -73,6 +73,7 @@ set package_map(gnu/java/awt/peer/qt) bc
 set package_map(gnu/java/awt/peer/x) bc
 set package_map(gnu/java/util/prefs/gconf) bc
 set package_map(gnu/javax/sound/midi) bc
+set package_map(gnu/javax/sound/sampled/gstreamer) ignore
 set package_map(org/xml) bc
 set package_map(org/w3c) bc
 set package_map(org/relaxng) bc
@@ -149,6 +150,9 @@ set properties_map(META-INF/services/javax.xml.parsers.TransformerFactory) _
 set properties_map(META-INF/services/org.relaxng.datatype.DatatypeLibraryFactory) _
 set properties_map(META-INF/services/org.w3c.dom.DOMImplementationSourceList) _
 set properties_map(META-INF/services/org.xml.sax.driver) _
+set properties_map(META-INF/services/javax.sound.sampled.spi.AudioFileReader.in) ignore
+set properties_map(META-INF/services/javax.sound.sampled.spi.MixerProvider) ignore
+set properties_map(META-INF/services/javax.sound.sampled.spi.MixerProvider.in) ignore
 
 # List of all properties files.
 set properties_files {}

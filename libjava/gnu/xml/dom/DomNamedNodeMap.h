@@ -45,7 +45,7 @@ public:
   virtual ::org::w3c::dom::Node * setNamedItem(::org::w3c::dom::Node *);
   virtual ::org::w3c::dom::Node * setNamedItemNS(::org::w3c::dom::Node *);
 public: // actually package-private
-  virtual ::org::w3c::dom::Node * setNamedItem(::org::w3c::dom::Node *, jboolean);
+  virtual ::org::w3c::dom::Node * setNamedItem(::org::w3c::dom::Node *, jboolean, jboolean);
   virtual void reparent(::gnu::xml::dom::DomNode *, ::java::lang::String *, jint);
 public:
   virtual ::org::w3c::dom::Node * removeNamedItem(::java::lang::String *);

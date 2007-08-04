@@ -67,6 +67,6 @@ public interface Activator
    * @throws ActivationException if the activation has failed due other reason
    * @throws RemoteException if the remote call has failed.
    */
-  MarshalledObject activate (ActivationID id, boolean force)
+  MarshalledObject<? extends Remote> activate (ActivationID id, boolean force)
     throws ActivationException, UnknownObjectException, RemoteException;
 }

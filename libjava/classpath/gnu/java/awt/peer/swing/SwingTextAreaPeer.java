@@ -1,5 +1,5 @@
 /* SwingTextAreaPeer.java -- A Swing based peer for AWT textareas
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C)  2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,14 +45,20 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TextArea;
+import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.InputMethodEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.im.InputMethodRequests;
 import java.awt.peer.TextAreaPeer;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JViewport;
 import javax.swing.text.BadLocationException;
 
 public class SwingTextAreaPeer
@@ -65,15 +71,19 @@ public class SwingTextAreaPeer
    *
    * @author Roman Kennke (kennke@aicas.com)
    */
-  private class SwingTextArea
+  private class SwingScrollPane
     extends JScrollPane
     implements SwingComponent
   {
 
-    SwingTextArea(Component comp)
+    SwingTextArea textArea;
+
+    SwingScrollPane(SwingTextArea textArea)
     {
-      super(comp, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+      super(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
             JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+      this.textArea = textArea;
     }
 
     /**
@@ -94,8 +104,17 @@ public class SwingTextAreaPeer
      */
     public void handleMouseEvent(MouseEvent ev)
     {
-      ev.setSource(this);
-      dispatchEvent(ev);
+      JViewport viewPort = getViewport();
+      if(viewPort.contains(ev.getPoint()))
+        {
+          ev.setSource(textArea);
+          textArea.dispatchEvent(ev);
+        }
+      else
+        {
+          ev.setSource(this);
+          this.dispatchEvent(ev);        
+        }
     }
 
     /**
@@ -114,7 +133,7 @@ public class SwingTextAreaPeer
      */
     public void handleMouseMotionEvent(MouseEvent ev)
     {
-      processMouseMotionEvent(ev);
+      textArea.processMouseMotionEvent(ev);
     }
 
     /**
@@ -124,7 +143,18 @@ public class SwingTextAreaPeer
      */
     public void handleKeyEvent(KeyEvent ev)
     {
-      processKeyEvent(ev);
+      textArea.processKeyEvent(ev);
+    }
+
+    /**
+     * Handles focus events by forwarding it to
+     * <code>processFocusEvent()</code>.
+     *
+     * @param ev the Focus event
+     */
+    public void handleFocusEvent(FocusEvent ev)
+    {
+      textArea.processFocusEvent(ev);
     }
 
     /**
@@ -179,35 +209,160 @@ public class SwingTextAreaPeer
         par = SwingTextAreaPeer.this.awtComponent.getParent();
       return par;
     }
+    
+    public void requestFocus() {
+        SwingTextAreaPeer.this.requestFocus(awtComponent, false, true, 0);
+    }
+
+    public boolean requestFocus(boolean temporary) {
+        return SwingTextAreaPeer.this.requestFocus(awtComponent, temporary,
+                                                   true, 0);
+    }
+
   }
 
+  private class SwingTextArea extends JTextArea
+  {
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processComponentKeyEvent(KeyEvent e)
+    {
+      super.processComponentKeyEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processMouseMotionEvent(MouseEvent ev)
+    {
+      super.processMouseMotionEvent(ev);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processComponentEvent(ComponentEvent e)
+    {
+      super.processComponentEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processFocusEvent(FocusEvent e)
+    {
+      super.processFocusEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processHierarchyBoundsEvent(HierarchyEvent e)
+    {
+      super.processHierarchyBoundsEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processHierarchyEvent(HierarchyEvent e)
+    {
+      super.processHierarchyEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processInputMethodEvent(InputMethodEvent e)
+    {
+      super.processInputMethodEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processMouseEvent(MouseEvent e)
+    {
+      super.processMouseEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processMouseWheelEvent(MouseWheelEvent e)
+    {
+      super.processMouseWheelEvent(e);
+    }
+
+    /**
+     * Make this method accessible in this Package.
+     */
+    protected final void processKeyEvent(KeyEvent e)
+    {
+      super.processKeyEvent(e);
+    }
+
+    public void requestFocus() {
+      SwingTextAreaPeer.this.requestFocus(awtComponent, false, true, 0);
+    }
+
+    public boolean requestFocus(boolean temporary) {
+      return SwingTextAreaPeer.this.requestFocus(awtComponent, temporary,
+                                                 true, 0);
+    }
+  }
+  
   /**
    * The actual JTextArea.
    */
-  private JTextArea jTextArea;
+  private SwingTextArea jTextArea;
 
   public SwingTextAreaPeer(TextArea textArea)
   {
     super();
-    System.err.println("new SwingTextAreaPeer");
-    jTextArea = new JTextArea();
-    SwingTextArea swingArea = new SwingTextArea(jTextArea);
+    jTextArea = new SwingTextArea();
+    SwingScrollPane swingArea = new SwingScrollPane(jTextArea);
     init(textArea, swingArea);
 
+    JViewport viewport = new JViewport()
+      {
+        public Image createImage(int width, int height)
+        {
+          return awtComponent.createImage(width, height);
+        }
+      };
+
+    viewport.setView(jTextArea);
+    swingArea.setViewport(viewport);
     // Pull over the text from the text area.
     setText(textArea.getText());
+
+    // Pull over the number of rows and columns
+    // if non were set use default values
+    int columns = textArea.getColumns();
+    int rows = textArea.getRows();
+
+    if(columns == 0 && rows == 0)
+      {
+        columns = 25;
+        textArea.setColumns(columns);
+        rows = 5;
+        textArea.setRows(rows);
+      }
+    
+    jTextArea.setColumns(columns);
+    jTextArea.setRows(rows);
   }
 
   public Dimension getMinimumSize(int rows, int cols)
   {
-    // TODO Auto-generated method stub
-    return null;
+    return jTextArea.getMinimumSize();
   }
 
   public Dimension getPreferredSize(int rows, int cols)
   {
-    // TODO Auto-generated method stub
-    return null;
+    return jTextArea.getPreferredSize();
   }
 
   public void insert(String text, int pos)
@@ -220,16 +375,24 @@ public class SwingTextAreaPeer
     jTextArea.insert(text, pos);
   }
 
+  public Dimension minimumSize()
+  {
+    return jTextArea.getMinimumSize();
+  }
+
+  public Dimension preferredSize()
+  {
+    return jTextArea.getPreferredSize();
+  }
+
   public Dimension minimumSize(int rows, int cols)
   {
-    // TODO Auto-generated method stub
-    return null;
+      return jTextArea.getMinimumSize();
   }
 
   public Dimension preferredSize(int rows, int cols)
   {
-    // TODO Auto-generated method stub
-    return null;
+      return jTextArea.getPreferredSize();
   }
 
   public void replaceRange(String text, int start, int end)
@@ -310,8 +473,16 @@ public class SwingTextAreaPeer
 
   public void setText(String text)
   {
-    System.err.println("setText: " + text);
     jTextArea.setText(text);
+  }
+
+  public void reshape(int x, int y, int width, int height)
+  {
+    if (swingComponent != null)
+      {
+        swingComponent.getJComponent().setBounds(x, y, width, height);
+        swingComponent.getJComponent().validate();
+      }
   }
 
 }

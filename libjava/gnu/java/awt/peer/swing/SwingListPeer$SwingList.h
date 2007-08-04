@@ -37,6 +37,7 @@ extern "Java"
         class Point;
       namespace event
       {
+          class FocusEvent;
           class KeyEvent;
           class MouseEvent;
       }
@@ -62,6 +63,7 @@ public:
   virtual jboolean isLightweight();
   virtual void handleMouseMotionEvent(::java::awt::event::MouseEvent *);
   virtual void handleKeyEvent(::java::awt::event::KeyEvent *);
+  virtual void handleFocusEvent(::java::awt::event::FocusEvent *);
   virtual ::java::awt::Point * getLocationOnScreen();
   virtual jboolean isShowing();
   virtual ::java::awt::Image * createImage(jint, jint);

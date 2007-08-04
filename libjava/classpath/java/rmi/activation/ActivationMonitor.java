@@ -59,7 +59,7 @@ public interface ActivationMonitor extends Remote
    * @throws UnknownObjectException is such object is not known in this group
    * @throws RemoteException if remote call fails
    */
-  void activeObject (ActivationID id, MarshalledObject obj)
+  void activeObject (ActivationID id, MarshalledObject<? extends Remote> obj)
     throws UnknownObjectException, RemoteException;
 
   /**

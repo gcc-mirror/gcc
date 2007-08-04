@@ -1167,7 +1167,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
 
   gdk_threads_enter ();
   
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   window_widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   window = GTK_WINDOW (window_widget);
@@ -1175,7 +1175,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   /* Keep this window in front of its parent, if it has one. */
   if (parent)
     {
-      window_parent = NSA_GET_PTR (env, parent);
+      window_parent = gtkpeer_get_widget (env, parent);
       gtk_window_set_transient_for (window, GTK_WINDOW(window_parent));
     }
 
@@ -1191,7 +1191,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
 
   gtk_widget_show (fixed);
 
-  NSA_SET_PTR (env, obj, window_widget);
+  gtkpeer_set_widget (env, obj, window_widget);
 
   gdk_threads_leave ();
 }
@@ -1205,7 +1205,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetTitle
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   c_title = (*env)->GetStringUTFChars (env, title, NULL);
 
@@ -1224,7 +1224,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetResizable
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   gtk_window_set_resizable (GTK_WINDOW (ptr), resizable);
   g_object_set (G_OBJECT (ptr), "allow-shrink", resizable, NULL);
 
@@ -1239,7 +1239,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetModal
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_window_set_modal (GTK_WINDOW (ptr), modal);
 
@@ -1254,7 +1254,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowSetAlwaysOnTop
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_window_set_keep_above (GTK_WINDOW (ptr), alwaysOnTop);
 
@@ -1270,7 +1270,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_gtkWindowHasFocus
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   retval = gtk_window_has_toplevel_focus (GTK_WINDOW (ptr));
 
@@ -1298,7 +1298,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setVisibleNativeUnlocked
 {
   void *ptr;
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   if (visible)
     gtk_widget_show (GTK_WIDGET (ptr));
@@ -1311,48 +1311,48 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jobject *gref;
+  jobject gref;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = (jobject) gtkpeer_get_global_ref (env, obj);
 
   g_signal_connect (G_OBJECT (ptr), "delete-event",
-		    G_CALLBACK (window_delete_cb), *gref);
+		    G_CALLBACK (window_delete_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "destroy-event",
-		    G_CALLBACK (window_destroy_cb), *gref);
+		    G_CALLBACK (window_destroy_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "notify::has-toplevel-focus",
-  		    G_CALLBACK (window_focus_state_change_cb), *gref);
+  		    G_CALLBACK (window_focus_state_change_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "focus-in-event",
-                    G_CALLBACK (window_focus_in_cb), *gref);
+                    G_CALLBACK (window_focus_in_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "focus-out-event",
-                    G_CALLBACK (window_focus_out_cb), *gref);
+                    G_CALLBACK (window_focus_out_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "window-state-event",
-		    G_CALLBACK (window_window_state_cb), *gref);
+		    G_CALLBACK (window_window_state_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "property-notify-event",
-		    G_CALLBACK (window_property_changed_cb), *gref);
+		    G_CALLBACK (window_property_changed_cb), gref);
 
   g_signal_connect_after (G_OBJECT (ptr), "realize",
-                          G_CALLBACK (realize_cb), *gref);
+                          G_CALLBACK (realize_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "key-press-event",
-                    G_CALLBACK (key_press_cb), *gref);
+                    G_CALLBACK (key_press_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "key-release-event",
-                    G_CALLBACK (key_release_cb), *gref);
+                    G_CALLBACK (key_release_cb), gref);
 
   g_signal_connect_after (G_OBJECT (ptr), "window-state-event",
-                          G_CALLBACK (window_window_state_cb), *gref);
+                          G_CALLBACK (window_window_state_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "configure-event",
-                    G_CALLBACK (window_configure_cb), *gref);
+                    G_CALLBACK (window_configure_cb), gref);
 
   cp_gtk_component_connect_expose_signals (ptr, gref);
   cp_gtk_component_connect_mouse_signals (ptr, gref);
@@ -1372,7 +1372,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_realize (JNIEnv *env, jobject obj)
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_widget_realize (GTK_WIDGET (ptr));
 
@@ -1387,7 +1387,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_toBack (JNIEnv *env,
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
     
   gdk_window_lower (GTK_WIDGET (ptr)->window);
   gdk_flush ();
@@ -1403,7 +1403,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_toFront (JNIEnv *env,
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
     
   gdk_window_raise (GTK_WIDGET (ptr)->window);
   gdk_flush ();
@@ -1419,7 +1419,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_setSize
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   /* Avoid GTK runtime assertion failures. */
   width = (width < 1) ? 1 : width;
@@ -1448,7 +1448,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetLocationUnlocked
 {
   void *ptr;
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   gtk_window_move (GTK_WINDOW(ptr), x, y);
 
@@ -1476,7 +1476,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetBoundsUnlocked
   gint current_width;
   gint current_height;
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   /* Avoid GTK runtime assertion failures. */
   width = (width < 1) ? 1 : width;

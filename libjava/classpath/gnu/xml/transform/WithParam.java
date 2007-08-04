@@ -81,6 +81,10 @@ final class WithParam
       {
         return select.evaluate(context, pos, len);
       }
+    else if (content == null)
+      {
+        return "";
+      }
     else
       {
         Document doc = (context instanceof Document) ? (Document) context :

@@ -395,10 +395,12 @@ _javanet_get_ip_netaddr (JNIEnv * env, jobject addr)
       netaddr = cpnet_newIPV4Address(env);
       cpnet_bytesToIPV4Address(netaddr, octets);
       break;
+#ifdef HAVE_INET6
     case 16:
       netaddr = cpnet_newIPV6Address(env);
       cpnet_bytesToIPV6Address(netaddr, octets);
       break;
+#endif
     default:
       /* This should not happen as we have checked before.
        * But that way we shut the compiler warnings */

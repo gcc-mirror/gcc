@@ -54,13 +54,10 @@ struct state_table *cp_gtk_native_screen_state_table;
 jclass gdkScreenGraphicsDevice_class;
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_initStaticState
-(JNIEnv *env, jclass klazz)
+Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_initIDs
+(JNIEnv *env, jclass klazz __attribute__((unused)))
 {
-	gdkScreenGraphicsDevice_class = (*env)->NewGlobalRef
-    (env, klazz);
-
-	NSA_SCREEN_INIT(env, gdkScreenGraphicsDevice_class);
+  gtkpeer_init_screen_IDs(env);
 }
 
 JNIEXPORT jobject JNICALL
@@ -75,7 +72,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetFixedDisplayMode
 	int temp1, temp2;
 	GdkDisplay *display;
 
-    display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, gdkGraphicsEnv);
+    display = (GdkDisplay *) gtkpeer_get_display(env, gdkGraphicsEnv);
 
 	gdk_threads_enter();
 
@@ -87,7 +84,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetFixedDisplayMode
                                                "<init>",
                                                "(IIII)V");
 
-        screen = (GdkScreen *) NSA_GET_SCREEN_PTR(env, obj);
+        screen = (GdkScreen *) gtkpeer_get_screen(env, obj);
 	  	
 	  	fixedDisplayMode = (*env)->NewObject(env,
 	  	                                     displayMode_class,
@@ -108,7 +105,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetFixedDisplayMode
                                            "<init>",
                                            "(IIII)V");
 
-    screen = (GdkScreen *) NSA_GET_SCREEN_PTR(env, obj);
+    screen = (GdkScreen *) gtkpeer_get_screen(env, obj);
 	  	
     fixedDisplayMode = (*env)->NewObject(env,
 	                                     displayMode_class,
@@ -130,7 +127,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetIDString
 	gchar* displayName;
 	jstring string;
 
-    screen = (GdkScreen *) NSA_GET_SCREEN_PTR(env, obj);
+    screen = (GdkScreen *) gtkpeer_get_screen(env, obj);
 	
 	gdk_threads_enter();
 	
@@ -155,7 +152,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetDisplayModeRate
 	XRRScreenConfiguration *config;
 	int rate;
 	
-	display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, gdkGraphicsEnv);
+	display = (GdkDisplay *) gtkpeer_get_display(env, gdkGraphicsEnv);
 	
 	gdk_threads_enter();
 	
@@ -188,7 +185,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetDisplayModeIndex
 	SizeID index;
 	Rotation rotation;
 	
-	display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, gdkGraphicsEnv);
+	display = (GdkDisplay *) gtkpeer_get_display(env, gdkGraphicsEnv);
 	
 	gdk_threads_enter();
 	
@@ -229,7 +226,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetDisplayModes
 	short *rates;
 	jshortArray shortArray;
 	
-	display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, gdkGraphicsEnv);
+	display = (GdkDisplay *) gtkpeer_get_display(env, gdkGraphicsEnv);
 	
 	gdk_threads_enter();
 	
@@ -289,7 +286,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeSetDisplayMode
 	XRRScreenConfiguration *config;
 	Rotation rotation;
 	
-	display = (GdkDisplay *) NSA_GET_DISPLAY_PTR(env, gdkGraphicsEnv);
+	display = (GdkDisplay *) gtkpeer_get_display(env, gdkGraphicsEnv);
 	
 	gdk_threads_enter();
 	
@@ -335,7 +332,7 @@ Java_gnu_java_awt_peer_gtk_GdkScreenGraphicsDevice_nativeGetBounds
     rectangle_ctor = (*env)->GetMethodID 
     (env, rectangle_class, "<init>", "(IIII)V");
 
-    screen = (GdkScreen *) NSA_GET_SCREEN_PTR(env, obj);
+    screen = (GdkScreen *) gtkpeer_get_screen(env, obj);
 
 	gdk_threads_enter();
 	

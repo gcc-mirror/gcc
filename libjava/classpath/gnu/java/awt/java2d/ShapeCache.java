@@ -42,6 +42,7 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.RoundRectangle2D;
 
@@ -82,4 +83,8 @@ public class ShapeCache
    */
   public Polygon polygon;
 
+  /**
+   * A cached polyline.
+   */
+  public GeneralPath polyline;
 }

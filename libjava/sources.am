@@ -800,12 +800,14 @@ classpath/gnu/java/awt/java2d/AlphaCompositeContext.java \
 classpath/gnu/java/awt/java2d/CubicSegment.java \
 classpath/gnu/java/awt/java2d/ImagePaint.java \
 classpath/gnu/java/awt/java2d/LineSegment.java \
+classpath/gnu/java/awt/java2d/Pixelizer.java \
 classpath/gnu/java/awt/java2d/PolyEdge.java \
 classpath/gnu/java/awt/java2d/PolyEdgeComparator.java \
 classpath/gnu/java/awt/java2d/QuadSegment.java \
 classpath/gnu/java/awt/java2d/RasterGraphics.java \
 classpath/gnu/java/awt/java2d/Scanline.java \
 classpath/gnu/java/awt/java2d/ScanlineConverter.java \
+classpath/gnu/java/awt/java2d/ScanlineCoverage.java \
 classpath/gnu/java/awt/java2d/Segment.java \
 classpath/gnu/java/awt/java2d/ShapeCache.java \
 classpath/gnu/java/awt/java2d/TexturePaintContext.java
@@ -960,6 +962,7 @@ gnu-java-awt-peer-qt.lo: $(gnu_java_awt_peer_qt_source_files)
 gnu_java_awt_peer_swing_source_files = \
 classpath/gnu/java/awt/peer/swing/SwingButtonPeer.java \
 classpath/gnu/java/awt/peer/swing/SwingCanvasPeer.java \
+classpath/gnu/java/awt/peer/swing/SwingCheckboxPeer.java \
 classpath/gnu/java/awt/peer/swing/SwingComponent.java \
 classpath/gnu/java/awt/peer/swing/SwingComponentPeer.java \
 classpath/gnu/java/awt/peer/swing/SwingContainerPeer.java \
@@ -984,20 +987,19 @@ gnu_java_awt_peer_x_source_files = \
 classpath/gnu/java/awt/peer/x/GLGraphics.java \
 classpath/gnu/java/awt/peer/x/ImageConverter.java \
 classpath/gnu/java/awt/peer/x/KeyboardMapping.java \
+classpath/gnu/java/awt/peer/x/PixmapVolatileImage.java \
 classpath/gnu/java/awt/peer/x/XDialogPeer.java \
 classpath/gnu/java/awt/peer/x/XEventPump.java \
-classpath/gnu/java/awt/peer/x/XFontPeer.java \
 classpath/gnu/java/awt/peer/x/XFontPeer2.java \
 classpath/gnu/java/awt/peer/x/XFramePeer.java \
-classpath/gnu/java/awt/peer/x/XGraphics.java \
 classpath/gnu/java/awt/peer/x/XGraphics2D.java \
 classpath/gnu/java/awt/peer/x/XGraphicsConfiguration.java \
 classpath/gnu/java/awt/peer/x/XGraphicsDevice.java \
 classpath/gnu/java/awt/peer/x/XGraphicsEnvironment.java \
 classpath/gnu/java/awt/peer/x/XImage.java \
-classpath/gnu/java/awt/peer/x/XLightweightPeer.java \
 classpath/gnu/java/awt/peer/x/XToolkit.java \
-classpath/gnu/java/awt/peer/x/XWindowPeer.java
+classpath/gnu/java/awt/peer/x/XWindowPeer.java \
+classpath/gnu/java/awt/peer/x/ZPixmapDataBuffer.java
 
 gnu-java-awt-peer-x.lo: $(gnu_java_awt_peer_x_source_files)
 	@find $(srcdir)/classpath/lib/gnu/java/awt/peer/x -name '*.class' > gnu-java-awt-peer-x.list
@@ -3335,6 +3337,18 @@ gnu/javax/security/auth/login.list: $(gnu_javax_security_auth_login_source_files
 -include gnu/javax/security/auth/login.deps
 
 
+gnu_javax_sound_source_files = \
+classpath/gnu/javax/sound/AudioSecurityManager.java
+
+gnu_javax_sound_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_sound_source_files)))
+
+gnu/javax/sound.list: $(gnu_javax_sound_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/gnu/javax/sound/*.class > gnu/javax/sound.list
+
+-include gnu/javax/sound.deps
+
+
 gnu_javax_sound_midi_source_files = \
 classpath/gnu/javax/sound/midi/alsa/AlsaInputPortDevice.java \
 classpath/gnu/javax/sound/midi/alsa/AlsaMidiDeviceProvider.java \
@@ -5015,6 +5029,7 @@ classpath/java/nio/ByteBufferImpl.java \
 classpath/java/nio/ByteOrder.java \
 classpath/java/nio/CharBuffer.java \
 classpath/java/nio/CharBufferImpl.java \
+classpath/java/nio/CharSequenceBuffer.java \
 classpath/java/nio/CharViewBufferImpl.java \
 java/nio/DirectByteBufferImpl.java \
 classpath/java/nio/DoubleBuffer.java \
@@ -8462,6 +8477,18 @@ org-xml.lo: $(org_xml_source_files)
 	$(LTGCJCOMPILE) -fsource-filename=$(here)/classpath/lib/classes -fjni -findirect-dispatch -fno-indirect-classes -c -o org-xml.lo @org-xml.list
 	@rm -f org-xml.list
 
+sun_awt_source_files = \
+classpath/sun/awt/CausedFocusEvent.java
+
+sun_awt_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(sun_awt_source_files)))
+
+sun/awt.list: $(sun_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	echo $(srcdir)/classpath/lib/sun/awt/*.class > sun/awt.list
+
+-include sun/awt.deps
+
+
 sun_misc_source_files = \
 classpath/sun/misc/Service.java \
 classpath/sun/misc/ServiceConfigurationError.java \
@@ -8688,6 +8715,7 @@ all_packages_source_files = \
   gnu/javax/security/auth.list \
   gnu/javax/security/auth/callback.list \
   gnu/javax/security/auth/login.list \
+  gnu/javax/sound.list \
   gnu/javax/sound/sampled/AU.list \
   gnu/javax/sound/sampled/WAV.list \
   gnu/javax/swing/plaf/gnu.list \
@@ -8809,6 +8837,7 @@ all_packages_source_files = \
   javax/transaction.list \
   javax/transaction/xa.list \
   org/ietf/jgss.list \
+  sun/awt.list \
   sun/misc.list \
   sun/reflect.list \
   sun/reflect/annotation.list \
@@ -8934,6 +8963,7 @@ ordinary_header_files = \
   $(gnu_javax_security_auth_header_files) \
   $(gnu_javax_security_auth_callback_header_files) \
   $(gnu_javax_security_auth_login_header_files) \
+  $(gnu_javax_sound_header_files) \
   $(gnu_javax_sound_sampled_AU_header_files) \
   $(gnu_javax_sound_sampled_WAV_header_files) \
   $(gnu_javax_swing_plaf_gnu_header_files) \
@@ -9050,6 +9080,7 @@ ordinary_header_files = \
   $(javax_transaction_header_files) \
   $(javax_transaction_xa_header_files) \
   $(org_ietf_jgss_header_files) \
+  $(sun_awt_header_files) \
   $(sun_misc_header_files) \
   $(sun_reflect_header_files) \
   $(sun_reflect_annotation_header_files) \

@@ -46,6 +46,8 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.ArrayList;
 
+import gnu.classpath.Pointer;
+
 class GdkScreenGraphicsDevice extends GraphicsDevice
 {
   private final int native_state = GtkGenericPeer.getUniqueInteger ();
@@ -85,15 +87,23 @@ class GdkScreenGraphicsDevice extends GraphicsDevice
    * method must be called. 
    */
   DisplayMode fixedDisplayMode;
-  
+
+  /**
+   * The pointer to the native screen resource.
+   *
+   * This field is manipulated by native code. Don't change or remove
+   * without adjusting the native code.
+   */
+  private Pointer screen;
+
   static
   {
     System.loadLibrary("gtkpeer");
-
-    initStaticState ();
+    GtkToolkit.initializeGlobalIDs();
+    initIDs();
   }
   
-  static native void initStaticState();
+  static native void initIDs();
   
   GdkScreenGraphicsDevice (GdkGraphicsEnvironment e)
   {

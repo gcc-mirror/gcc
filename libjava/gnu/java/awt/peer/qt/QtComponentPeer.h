@@ -65,6 +65,13 @@ extern "Java"
       }
     }
   }
+  namespace sun
+  {
+    namespace awt
+    {
+        class CausedFocusEvent$Cause;
+    }
+  }
 }
 
 class gnu::java::awt::peer::qt::QtComponentPeer : public ::gnu::java::awt::peer::qt::NativeWrapper
@@ -168,6 +175,7 @@ public:
   virtual void setBounds(jint, jint, jint, jint, jint);
   virtual jboolean isReparentSupported();
   virtual void layout();
+  virtual jboolean requestFocus(::java::awt::Component *, jboolean, jboolean, jlong, ::sun::awt::CausedFocusEvent$Cause *);
 public: // actually protected
   static const jint POPUP_TRIGGER = 3;
   ::gnu::java::awt::peer::qt::QtToolkit * __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::qt::NativeWrapper)))) toolkit;

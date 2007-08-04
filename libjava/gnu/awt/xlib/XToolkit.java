@@ -480,5 +480,23 @@ public class XToolkit extends ClasspathToolkit
         // InterruptedException intentionally ignored
       }
     }
-  }; 
+  }
+
+  public void setAlwaysOnTop(boolean b)
+  {
+    // TODO: Implement properly.
+  }
+
+  public boolean isModalExclusionTypeSupported
+    (Dialog.ModalExclusionType modalExclusionType)
+  {
+    // TODO: Implement properly.
+    return false;
+  }
+
+  public boolean isModalityTypeSupported(Dialog.ModalityType modalityType)
+  {
+    // TODO: Implement properly.
+    return false;
+  }
 }

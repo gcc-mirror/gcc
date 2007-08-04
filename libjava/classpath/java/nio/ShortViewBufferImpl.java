@@ -131,7 +131,7 @@ final class ShortViewBufferImpl extends ShortBuffer
   public ShortBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new ShortViewBufferImpl (bb, (position () >> 1) + offset,
+    return new ShortViewBufferImpl (bb, (position () << 1) + offset,
 				    remaining(), remaining(), 0, -1,
 				    readOnly, endian);
   }

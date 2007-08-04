@@ -47,6 +47,7 @@ extern "Java"
         class Toolkit;
       namespace event
       {
+          class FocusEvent;
           class KeyEvent;
           class MouseEvent;
           class PaintEvent;
@@ -62,6 +63,13 @@ extern "Java"
       {
           class ContainerPeer;
       }
+    }
+  }
+  namespace sun
+  {
+    namespace awt
+    {
+        class CausedFocusEvent$Cause;
     }
   }
 }
@@ -130,8 +138,10 @@ public: // actually protected
   virtual void handleMouseEvent(::java::awt::event::MouseEvent *);
   virtual void handleMouseMotionEvent(::java::awt::event::MouseEvent *);
   virtual void handleKeyEvent(::java::awt::event::KeyEvent *);
+  virtual void handleFocusEvent(::java::awt::event::FocusEvent *);
 public:
   virtual ::java::awt::Component * getComponent();
+  virtual jboolean requestFocus(::java::awt::Component *, jboolean, jboolean, jlong, ::sun::awt::CausedFocusEvent$Cause *);
 public: // actually protected
   ::java::awt::Component * __attribute__((aligned(__alignof__( ::java::lang::Object)))) awtComponent;
   ::gnu::java::awt::peer::swing::SwingComponent * swingComponent;

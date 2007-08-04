@@ -253,7 +253,7 @@ public final class AttributeList
    */
   public Enumeration<?> getValues()
   {
-    return values.elements();
+    return (values != null) ? values.elements() : null;
   }
 
   /**

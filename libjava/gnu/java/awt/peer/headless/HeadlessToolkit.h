@@ -41,6 +41,8 @@ extern "Java"
         class CheckboxMenuItem;
         class Choice;
         class Dialog;
+        class Dialog$ModalExclusionType;
+        class Dialog$ModalityType;
         class Dimension;
         class EventQueue;
         class FileDialog;
@@ -179,6 +181,8 @@ public:
   virtual ::java::awt::peer::RobotPeer * createRobot(::java::awt::GraphicsDevice *);
   virtual ::gnu::java::awt::peer::ClasspathFontPeer * getClasspathFontPeer(::java::lang::String *, ::java::util::Map *);
   virtual ::java::awt::GraphicsEnvironment * getLocalGraphicsEnvironment();
+  virtual jboolean isModalExclusionTypeSupported(::java::awt::Dialog$ModalExclusionType *);
+  virtual jboolean isModalityTypeSupported(::java::awt::Dialog$ModalityType *);
 private:
   ::gnu::java::awt::peer::headless::HeadlessGraphicsEnvironment * __attribute__((aligned(__alignof__( ::gnu::java::awt::ClasspathToolkit)))) graphicsEnv;
 public:

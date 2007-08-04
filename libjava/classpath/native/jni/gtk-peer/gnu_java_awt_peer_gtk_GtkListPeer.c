@@ -84,7 +84,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
   gdk_threads_enter ();
 
   /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   list_store = gtk_list_store_new (N_COLUMNS, G_TYPE_STRING);
   /* Add the number of rows so that we can calculate the tree view's
@@ -127,7 +127,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
   gtk_widget_show (list);
   gtk_widget_show (sw);
 
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
 
   gdk_threads_leave ();
 }
@@ -137,20 +137,20 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jobject *gref;
+  jobject gref;
   GtkWidget *list;
   GtkTreeSelection *selection;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
 
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
   gtk_tree_selection_set_select_function (selection, item_highlighted_cb,
-                                          *gref, NULL);
+                                          gref, NULL);
 
   cp_gtk_component_connect_signals (G_OBJECT (list), gref);
 
@@ -168,7 +168,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_gtkWidgetModifyFont
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
 
@@ -202,7 +202,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_gtkWidgetRequestFocus
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   
   list = list_get_widget (GTK_WIDGET (ptr));
   gtk_widget_grab_focus (list);
@@ -223,7 +223,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_append
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   count = (*env)->GetArrayLength (env, items);
 
@@ -261,7 +261,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_add
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   str = (*env)->GetStringUTFChars (env, text, NULL);
 
   list = list_get_widget (GTK_WIDGET (ptr));
@@ -294,7 +294,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_delItems
     
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
   list_store = gtk_tree_view_get_model (GTK_TREE_VIEW (list));
@@ -327,7 +327,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_select
     
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
   path = gtk_tree_path_new_from_indices (index, -1);
@@ -347,7 +347,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_deselect
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
@@ -372,7 +372,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSize
   dims = (*env)->GetIntArrayElements (env, jdims, NULL);
   dims[0] = dims[1] = 0;
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   bin = list_get_widget (GTK_WIDGET (ptr));
   
   /* Save the widget's current size request. */
@@ -421,7 +421,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSelectedIndexes
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));
@@ -467,7 +467,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_makeVisible
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
   path = gtk_tree_path_new_from_indices (index, -1);
@@ -487,7 +487,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_setMultipleMode
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   list = list_get_widget (GTK_WIDGET (ptr));
   selection = gtk_tree_view_get_selection (GTK_TREE_VIEW (list));

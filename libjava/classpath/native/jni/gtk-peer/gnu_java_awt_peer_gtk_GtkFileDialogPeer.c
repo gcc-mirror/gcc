@@ -90,7 +90,7 @@ cp_gtk_filedialog_init_jni (void)
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_create 
-  (JNIEnv *env, jobject obj, jobject parent, int mode)
+  (JNIEnv *env, jobject obj, jobject parent, jint mode)
 {
   void *parentp;
   gpointer widget;
@@ -98,9 +98,9 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_create
   gdk_threads_enter ();
   
   /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
-  parentp = NSA_GET_PTR(env, parent);
+  parentp = gtkpeer_get_widget(env, parent);
 
   if (mode == AWT_FILEDIALOG_LOAD)
     widget = gtk_file_chooser_dialog_new
@@ -134,7 +134,7 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_create
   gtk_window_group_add_window (cp_gtk_global_window_group,
                                GTK_WINDOW (widget));
 
-  NSA_SET_PTR (env, obj, widget);
+  gtkpeer_set_widget (env, obj, widget);
 
   gdk_threads_leave ();
 }
@@ -144,16 +144,16 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr = NULL;
-  jobject *gref = NULL;
+  jobject gref;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
 
   /* FileDialog signals */
   g_signal_connect (G_OBJECT (ptr), "response",
-		    G_CALLBACK (handle_response_cb), *gref);
+		    G_CALLBACK (handle_response_cb), gref);
 
   /* Component signals */
   cp_gtk_component_connect_signals (G_OBJECT (ptr), gref);
@@ -170,7 +170,7 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeGetDirectory
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   str = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER(ptr));
 
@@ -208,7 +208,7 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFilenameFilter
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   filter = gtk_file_filter_new();
   gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_FILENAME,
@@ -228,7 +228,7 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetDirectory
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   str = (*env)->GetStringUTFChars (env, directory, 0);
 
@@ -248,7 +248,7 @@ Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFile
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
     
   str = (*env)->GetStringUTFChars (env, filename, 0);
      
@@ -275,7 +275,7 @@ handle_response_cb (GtkDialog *dialog __attribute__((unused)),
       && responseId != GTK_RESPONSE_CANCEL)
     return;
 
-  ptr = NSA_GET_PTR (cp_gtk_gdk_env(), peer_obj);
+  ptr = gtkpeer_get_widget (cp_gtk_gdk_env(), peer_obj);
 
   if (responseId == GTK_RESPONSE_DELETE_EVENT)
   {

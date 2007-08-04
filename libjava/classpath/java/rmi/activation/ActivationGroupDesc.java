@@ -199,7 +199,7 @@ public final class ActivationGroupDesc
   /**
    * The group initialization data.
    */
-  final MarshalledObject data;
+  final MarshalledObject<?> data;
   
   /**
    * The path to the group jre and the parameters of this jre, may be
@@ -252,7 +252,7 @@ public final class ActivationGroupDesc
    *          options.
    */
   public ActivationGroupDesc(String aClassName, String aLocation,
-                             MarshalledObject aData, Properties aProperties,
+                             MarshalledObject<?> aData, Properties aProperties,
                              ActivationGroupDesc.CommandEnvironment environment)
   {
     className = aClassName;
@@ -288,7 +288,7 @@ public final class ActivationGroupDesc
    * 
    * @return the group intialization data in the marshalled form.
    */
-  public MarshalledObject getData()
+  public MarshalledObject<?> getData()
   {
     return data;
   }

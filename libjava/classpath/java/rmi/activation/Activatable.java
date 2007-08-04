@@ -103,7 +103,7 @@ public abstract class Activatable
    * @throws ActivationException if the activation failed
    * @throws RemoteException if the remote call failed.
    */
-  protected Activatable(String codebase, MarshalledObject data,
+  protected Activatable(String codebase, MarshalledObject<?> data,
                         boolean restart, int port) throws ActivationException,
       RemoteException
   {
@@ -133,7 +133,7 @@ public abstract class Activatable
    * @throws ActivationException if the activation failed
    * @throws RemoteException if the remote call failed.
    */
-  protected Activatable(String codebase, MarshalledObject data,
+  protected Activatable(String codebase, MarshalledObject<?> data,
                         boolean restart, int port, RMIClientSocketFactory csf,
                         RMIServerSocketFactory ssf) throws ActivationException,
       RemoteException
@@ -314,7 +314,7 @@ public abstract class Activatable
    * @throws RemoteException if the registration or export fails
    */
   public static ActivationID exportObject(Remote obj, String location,
-                                          MarshalledObject data,
+                                          MarshalledObject<?> data,
                                           boolean restart, int port)
       throws ActivationException, RemoteException
   {

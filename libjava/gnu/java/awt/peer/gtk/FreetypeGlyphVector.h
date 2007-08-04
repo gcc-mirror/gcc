@@ -91,6 +91,9 @@ public:
   virtual ::java::awt::geom::Point2D * getGlyphPosition(jint);
   virtual JArray< jfloat > * getGlyphPositions(jint, jint, JArray< jfloat > *);
   virtual ::java::awt::geom::AffineTransform * getGlyphTransform(jint);
+public: // actually protected
+  virtual jboolean hasTransforms();
+public:
   virtual ::java::awt::Shape * getGlyphVisualBounds(jint);
   virtual ::java::awt::geom::Rectangle2D * getLogicalBounds();
   virtual jint getNumGlyphs();

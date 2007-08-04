@@ -32,6 +32,7 @@ extern "Java"
       {
           class Arc2D;
           class Ellipse2D;
+          class GeneralPath;
           class Line2D;
           class RoundRectangle2D;
       }
@@ -50,6 +51,7 @@ public:
   ::java::awt::geom::Ellipse2D * ellipse;
   ::java::awt::geom::Arc2D * arc;
   ::java::awt::Polygon * polygon;
+  ::java::awt::geom::GeneralPath * polyline;
   static ::java::lang::Class class$;
 };
 

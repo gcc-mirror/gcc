@@ -51,6 +51,9 @@ public:
   virtual jboolean isDomainPattern();
   virtual jboolean isPattern();
   virtual jboolean isPropertyPattern();
+  virtual jboolean isPropertyListPattern();
+  virtual jboolean isPropertyValuePattern();
+  virtual jboolean isPropertyValuePattern(::java::lang::String *);
   static ::java::lang::String * quote(::java::lang::String *);
   virtual void setMBeanServer(::javax::management::MBeanServer *);
   virtual ::java::lang::String * toString();
@@ -67,7 +70,8 @@ private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) domain;
   ::java::util::TreeMap * properties;
   ::java::lang::String * propertyListString;
-  jboolean propertyPattern;
+  jboolean propertyListPattern;
+  jboolean propertyValuePattern;
   ::javax::management::MBeanServer * server;
 public:
   static ::java::lang::Class class$;

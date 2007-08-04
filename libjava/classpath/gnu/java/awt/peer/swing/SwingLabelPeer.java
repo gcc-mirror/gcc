@@ -1,5 +1,5 @@
 /* SwingLabelPeer.java -- A Swing based peer for AWT labels
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C)  2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Label;
 import java.awt.Point;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.peer.LabelPeer;
@@ -117,6 +118,17 @@ public class SwingLabelPeer
     public void handleKeyEvent(KeyEvent ev)
     {
       processKeyEvent(ev);
+    }
+
+    /**
+     * Handles focus events by forwarding it to
+     * <code>processFocusEvent()</code>.
+     *
+     * @param ev the Focus event
+     */
+    public void handleFocusEvent(FocusEvent ev)
+    {
+      processFocusEvent(ev);
     }
 
     /**

@@ -94,6 +94,8 @@ public:
   virtual ::java::lang::String * getNamespaceURI();
   virtual ::java::lang::String * getLocalName();
   virtual ::org::w3c::dom::Node * cloneNode(jboolean);
+private:
+  ::gnu::xml::dom::DomNode * cloneNodeDeepInternal(jboolean, ::gnu::xml::dom::DomDocument *);
 public: // actually package-private
   virtual void notifyUserDataHandlers(jshort, ::org::w3c::dom::Node *, ::org::w3c::dom::Node *);
 public:

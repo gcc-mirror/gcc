@@ -1,3 +1,10 @@
+New in release 0.96
+
+Runtime interface changes:
+
+* Add VMFloat.toString(float) and VMFloat.parseFloat(String). Default
+  implementations are the same as previous behavior.
+
 New in release 0.95 (Apr 23, 2007)
 
 * Full merge of 1.5 generics work.

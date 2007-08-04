@@ -305,7 +305,7 @@ public class Unsafe
    *
    * @param thread the thread to unblock.
    */
-  public native void unpark(Thread thread);
+  public native void unpark(Object thread);
 
   /**
    * Blocks the thread until a matching 

@@ -130,7 +130,7 @@ final class DoubleViewBufferImpl extends DoubleBuffer
   
   public DoubleBuffer slice ()
   {
-    return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
+    return new DoubleViewBufferImpl (bb, (position () << 3) + offset,
 				     remaining(), remaining(), 0, -1,
                                      readOnly, endian);
   }

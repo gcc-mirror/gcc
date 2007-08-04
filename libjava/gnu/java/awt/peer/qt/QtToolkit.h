@@ -43,6 +43,8 @@ extern "Java"
         class CheckboxMenuItem;
         class Choice;
         class Dialog;
+        class Dialog$ModalExclusionType;
+        class Dialog$ModalityType;
         class Dimension;
         class EventQueue;
         class FileDialog;
@@ -193,6 +195,8 @@ public:
   virtual ::java::awt::Font * createFont(jint, ::java::io::InputStream *);
   virtual ::java::awt::peer::RobotPeer * createRobot(::java::awt::GraphicsDevice *);
   virtual ::gnu::java::awt::peer::EmbeddedWindowPeer * createEmbeddedWindow(::gnu::java::awt::EmbeddedWindow *);
+  virtual jboolean isModalExclusionTypeSupported(::java::awt::Dialog$ModalExclusionType *);
+  virtual jboolean isModalityTypeSupported(::java::awt::Dialog$ModalityType *);
   static ::java::awt::EventQueue * eventQueue;
   static ::gnu::java::awt::peer::qt::QtRepaintThread * repaintThread;
   static ::gnu::java::awt::peer::qt::MainQtThread * guiThread;

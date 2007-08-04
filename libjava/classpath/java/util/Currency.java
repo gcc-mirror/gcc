@@ -273,6 +273,11 @@ public final class Currency
 	throw new
 	  NullPointerException("The locale or its country is null.");
       }
+    
+    /* Check that country of locale given is valid. */
+    if (country.length() != 2)
+      throw new IllegalArgumentException();
+    
     /* Attempt to get the currency from the cache */
     String code = (String) countryMap.get(country);
     if (code == null)

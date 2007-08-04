@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Pointer;
+
 import gnu.java.awt.ClasspathToolkit;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.font.opentype.NameDecoder;
@@ -171,6 +173,14 @@ public class GdkFontPeer extends ClasspathFontPeer
   }
 
   private ByteBuffer nameTable = null;
+
+  /**
+   * The pointer to the native font data.
+   *
+   * This field is manipulated by native code. Don't change or remove
+   * without adjusting the native code.
+   */
+  private Pointer nativeFont;
 
   private native void initState ();
   private native void dispose ();
@@ -351,7 +361,7 @@ public class GdkFontPeer extends ClasspathFontPeer
     return NameDecoder.getName(nameTable, name, locale);
   }
 
-  public boolean canDisplay (Font font, char c)
+  public boolean canDisplay (Font font, int c)
   {
     // FIXME: inquire with pango
     return true;

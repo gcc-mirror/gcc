@@ -314,7 +314,8 @@ public abstract class ActivationGroup
    * @throws UnknownObjectException if such object is not registered
    * @throws RemoteException on remote call (to monitor) error
    */
-  protected void activeObject(ActivationID id, MarshalledObject mObject)
+  protected void activeObject(ActivationID id,
+			      MarshalledObject<? extends Remote> mObject)
       throws ActivationException, UnknownObjectException, RemoteException
   {
     if (monitor!=null)

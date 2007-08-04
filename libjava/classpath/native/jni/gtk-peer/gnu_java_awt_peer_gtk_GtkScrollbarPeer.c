@@ -84,7 +84,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
   GtkObject *adj;
 
   /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   gdk_threads_enter ();
 
@@ -119,16 +119,16 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
 
   gdk_threads_leave ();
 
-  NSA_SET_PTR (env, obj, eventbox);
+  gtkpeer_set_widget (env, obj, eventbox);
 }
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
-  void *ptr = NSA_GET_PTR (env, obj);
+  void *ptr = gtkpeer_get_widget (env, obj);
   GtkWidget *wid = scrollbar_get_widget (GTK_WIDGET (ptr));
-  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  jobject gref = gtkpeer_get_global_ref (env, obj);
   g_assert (gref);
 
   gdk_threads_enter ();
@@ -136,10 +136,10 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectSignals
   /* Scrollbar signals */
 #if GTK_MINOR_VERSION > 4
   g_signal_connect (G_OBJECT (wid), "change-value",
-                    G_CALLBACK (slider_moved_cb), *gref);
+                    G_CALLBACK (slider_moved_cb), gref);
 #else
   g_signal_connect (G_OBJECT (wid), "value-changed",
-                    G_CALLBACK (post_change_event_cb), *gref);
+                    G_CALLBACK (post_change_event_cb), gref);
 #endif
 
   /* Component signals */
@@ -156,7 +156,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setLineIncrement
   GtkAdjustment *adj;
   GtkWidget *wid;
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   wid = scrollbar_get_widget (GTK_WIDGET (ptr));
   
   gdk_threads_enter ();
@@ -176,7 +176,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setPageIncrement
   GtkAdjustment *adj;
   GtkWidget *wid;
   
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   wid = scrollbar_get_widget (GTK_WIDGET (ptr));
   
   gdk_threads_enter ();
@@ -196,7 +196,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setBarValues
   GtkAdjustment *adj;
   GtkWidget *wid;
   
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
   wid = scrollbar_get_widget (GTK_WIDGET (ptr));
   
   gdk_threads_enter ();

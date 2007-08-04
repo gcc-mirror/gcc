@@ -1,5 +1,5 @@
 /* SwingContainerPeer.java -- A Swing based peer for AWT containers
-   Copyright (C)  2006  Free Software Foundation, Inc.
+   Copyright (C)  2006, 2007  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -92,7 +92,7 @@ public class SwingContainerPeer
    * @see #peerPaintChildren(Graphics)
    * @see #removeHeavyweightDescendent(Component)
    */
-  synchronized void addHeavyweightDescendent(Component comp)
+  protected synchronized void addHeavyweightDescendent(Component comp)
   {
     heavyweightDescendents.add(comp);
     focusOwner = null;
@@ -106,10 +106,22 @@ public class SwingContainerPeer
    * @see #peerPaintChildren(Graphics)
    * @see #addHeavyweightDescendent(Component)
    */
-  synchronized void removeHeavyweightDescendent(Component comp)
+  protected synchronized void removeHeavyweightDescendent(Component comp)
   {
     heavyweightDescendents.remove(comp);
     focusOwner = null;
+  }
+
+  /**
+   * Returns an array of all registered heavyweight descendents.
+   *
+   * @return all registered heavyweight descendents
+   */
+  protected Component[] getHeavyweightDescendents()
+  {
+    Component[] heavyweights = new Component[heavyweightDescendents.size()];
+    heavyweights = (Component[]) heavyweightDescendents.toArray(heavyweights);
+    return heavyweights;
   }
 
   /**
@@ -339,7 +351,7 @@ public class SwingContainerPeer
   {
     Component owner = getFocusOwner();
     if(owner != null)
-      owner.dispatchEvent(e);
+      owner.getPeer().handleEvent(e);
     else 
       super.handleKeyEvent(e);
   }

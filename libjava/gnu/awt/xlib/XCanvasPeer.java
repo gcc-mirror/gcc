@@ -44,6 +44,8 @@ import gnu.gcj.xlib.XImage;
 
 import gnu.awt.j2d.*;
 
+import sun.awt.CausedFocusEvent;
+
 public class XCanvasPeer implements CanvasPeer
 {
   static final Dimension MIN_SIZE = new Dimension(1, 1);
@@ -465,6 +467,13 @@ public class XCanvasPeer implements CanvasPeer
 
   public boolean requestFocus (Component source, boolean b1, 
                                boolean b2, long x)
+  {
+    return false;
+  }
+
+  public boolean requestFocus (Component source, boolean b1, 
+                               boolean b2, long x,
+			       CausedFocusEvent.Cause cause)
   {
     return false;
   }

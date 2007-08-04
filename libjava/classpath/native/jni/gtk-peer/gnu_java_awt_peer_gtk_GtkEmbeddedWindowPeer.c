@@ -49,7 +49,7 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
 
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   window = gtk_plug_new ((GdkNativeWindow) socket_id);
 
@@ -60,7 +60,7 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create
 
   gtk_widget_show (fixed);
 
-  NSA_SET_PTR (env, obj, window);
+  gtkpeer_set_widget (env, obj, window);
 
   gdk_threads_leave ();
 }
@@ -73,7 +73,7 @@ Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_construct
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
 
   if (GTK_WIDGET_REALIZED (GTK_WIDGET (ptr)))
     g_printerr ("ERROR: GtkPlug is already realized\n");

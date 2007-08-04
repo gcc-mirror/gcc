@@ -1,5 +1,5 @@
 /* EnumMap.java - Map where keys are enum constants
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -140,7 +140,8 @@ public class EnumMap<K extends Enum<K>, V>
     Enum<K> e = (Enum<K>) key;
     if (e.getDeclaringClass() != enumClass)
       return null;
-    return store[e.ordinal()];
+    V o = store[e.ordinal()];
+    return o == emptySlot ? null : o;
   }
 
   public V put(K key, V value)
@@ -387,8 +388,18 @@ public class EnumMap<K extends Enum<K>, V>
 
   public EnumMap<K, V> clone()
   {
-    /* This constructor provides this functionality */
-    return new EnumMap(this);
+    EnumMap<K, V> result;
+    try
+      {
+	result = (EnumMap<K, V>) super.clone();
+      }
+    catch (CloneNotSupportedException ignore)
+      {
+	// Can't happen.
+	result = null;
+      }
+    result.store = (V[]) store.clone();
+    return result;
   }
 
 }

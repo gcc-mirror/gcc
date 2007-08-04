@@ -50,5 +50,7 @@ public interface RobotPeer
   void keyRelease (int keycode);
   int getRGBPixel (int x, int y);
   int[] getRGBPixels (Rectangle screen);
+  void dispose();
+
 } // interface RobotPeer
 

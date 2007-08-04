@@ -1,0 +1,3 @@
+@GSTREAMER_FILE_READER@
+gnu.javax.sound.sampled.WAV.WAVReader
+gnu.javax.sound.sampled.AU.AUReader

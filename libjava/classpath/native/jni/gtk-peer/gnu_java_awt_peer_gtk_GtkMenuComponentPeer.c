@@ -51,6 +51,5 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuComponentPeer_dispose
   /* However, references to the Java objects still exist in the
      state tables, so we still have to remove those. */
      
-  NSA_DEL_GLOBAL_REF (env, obj);
-  NSA_DEL_PTR (env, obj);  
+  gtkpeer_del_global_ref (env, obj);
 }

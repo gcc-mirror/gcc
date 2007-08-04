@@ -68,6 +68,6 @@ public interface ActivationInstantiator
    * @throws ActivationException if the activation fails
    * @throws RemoteException if the remote call fails
    */
-  MarshalledObject newInstance (ActivationID id, ActivationDesc desc)
+  MarshalledObject<? extends Remote> newInstance (ActivationID id, ActivationDesc desc)
     throws ActivationException, RemoteException;
 }

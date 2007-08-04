@@ -78,8 +78,8 @@ public abstract class MixerProvider
     Mixer.Info[] infos = getMixerInfo();
     for (int i = 0; i < infos.length; ++i)
       {
-	if (info.equals(infos[i]))
-	  return true;
+        if (info.equals(infos[i]))
+          return true;
       }
     return false;
   }

@@ -138,6 +138,7 @@ public class SAXEventSink
     doc = new DomDocument();
     doc.setStrictErrorChecking(false);
     doc.setBuilding(true);
+    doc.setDefaultAttributes(false);
     ctx = doc;
 
     final String FEATURES = "http://xml.org/sax/features/";
@@ -185,6 +186,7 @@ public class SAXEventSink
   {
     doc.setStrictErrorChecking(true);
     doc.setBuilding(false);
+    doc.setDefaultAttributes(true);
     DomDoctype doctype = (DomDoctype) doc.getDoctype();
     if (doctype != null)
       {

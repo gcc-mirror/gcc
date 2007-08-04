@@ -66,6 +66,7 @@ public:
   virtual void setBoundsPrivate(jint, jint, jint, jint);
   virtual void updateAlwaysOnTop();
   virtual jboolean requestWindowFocus();
+  virtual ::java::awt::Rectangle * getBoundsPrivate();
 private:
   jint __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::qt::QtWindowPeer)))) theState;
 public: // actually package-private

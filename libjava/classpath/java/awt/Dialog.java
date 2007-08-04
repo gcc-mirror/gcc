@@ -61,6 +61,21 @@ import javax.accessibility.AccessibleStateSet;
  */
 public class Dialog extends Window
 {
+  public enum ModalExclusionType
+  {
+    APPLICATION_EXCLUDE,
+    NO_EXCLUDE,
+    TOOLKIT_EXCLUDE
+  }
+
+  public enum ModalityType
+  {
+    APPLICATION_MODAL,
+    DOCUMENT_MODAL,
+    MODELESS,
+    TOOLKIT_MODAL
+  }
+
   // Serialization constant
   private static final long serialVersionUID = 5920926903803293709L;
 

@@ -158,14 +158,14 @@ JNIEXPORT int cpio_availableBytes (int fd, jlong *bytes_available)
   off_t n;
   int result;
 
-  *bytes_available = 0
+  *bytes_available = 0;
   if ((fstat (fd, &statBuffer) == 0) && S_ISREG (statBuffer.st_mode))
     {
       n = lseek (fd, 0, SEEK_CUR);
       if (n != -1) 
        { 
          *bytes_available = statBuffer.st_size - n; 
-         result = 0;
+         result = CPNATIVE_OK;
        } 
       else 
        { 
@@ -189,7 +189,7 @@ JNIEXPORT int cpio_availableBytes (int fd, jlong *bytes_available)
   FD_SET (fd,&filedescriptset);
   memset (&tv, 0, sizeof(tv));
 
-  switch (select (fd+1, &filedescriptset, NULL, NULL, &timeval)) \
+  switch (select (fd+1, &filedescriptset, NULL, NULL, &tv))
     {
     case -1: 
       result=errno; 

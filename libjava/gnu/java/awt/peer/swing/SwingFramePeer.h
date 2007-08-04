@@ -68,6 +68,7 @@ public:
   virtual void setState(jint) = 0;
   virtual void setMaximizedBounds(::java::awt::Rectangle *) = 0;
   virtual void setBoundsPrivate(jint, jint, jint, jint) = 0;
+  virtual ::java::awt::Rectangle * getBoundsPrivate() = 0;
 public: // actually package-private
   ::gnu::java::awt::peer::swing::SwingMenuBarPeer * __attribute__((aligned(__alignof__( ::gnu::java::awt::peer::swing::SwingWindowPeer)))) menuBar;
 public:

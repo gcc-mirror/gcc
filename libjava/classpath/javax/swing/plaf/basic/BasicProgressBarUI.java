@@ -600,8 +600,13 @@ public class BasicProgressBarUI extends ProgressBarUI
                                      int y, int width, int height)
   {
     Rectangle tr = new Rectangle();
-    Rectangle vr = new Rectangle(x, y, width, height);
+    Rectangle vr = new Rectangle();
     Rectangle ir = new Rectangle();
+    
+    if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
+      vr.setBounds(x, y, width, height);
+    else
+      vr.setBounds(y, x, height, width);
 
     Font f = g.getFont();
     FontMetrics fm = g.getFontMetrics(f);
@@ -611,7 +616,11 @@ public class BasicProgressBarUI extends ProgressBarUI
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER,
                                        SwingConstants.CENTER, vr, ir, tr, 0);
-    return new Point(tr.x, tr.y);
+    
+    if (progressBar.getOrientation() == JProgressBar.HORIZONTAL)
+      return new Point(tr.x, tr.y);
+    else
+      return new Point(tr.y, tr.x);
   }
 
   /**
@@ -741,14 +750,19 @@ public class BasicProgressBarUI extends ProgressBarUI
       {
         AffineTransform rotate = AffineTransform.getRotateInstance(Math.PI / 2);
         g.setFont(progressBar.getFont().deriveFont(rotate));
+        placement.x = width - placement.x - fm.getAscent();
+      }
+    else
+      {
+        placement.y += fm.getAscent();
       }
     
     g.setColor(getSelectionForeground());
     g.setClip(0, 0, full + b.left, height);
-    g.drawString(str, placement.x, placement.y + fm.getAscent());
+    g.drawString(str, placement.x, placement.y);
     g.setColor(getSelectionBackground());
     g.setClip(full + b.left, 0, width - full, height);
-    g.drawString(str, placement.x, placement.y + fm.getAscent());
+    g.drawString(str, placement.x, placement.y);
     g.setClip(savedClip);
     g.setColor(savedColor);
   }

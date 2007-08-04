@@ -1,3 +1,7 @@
+2007-08-04  Matthias Klose  <doko@ubuntu.com>
+
+	* java/util/EnumMap.java (clone): Add cast.
+
 2007-07-12  Matthias Klose  <doko@ubuntu.com>
 
 	* lib/jazzlib, tools/gnu/classpath/tools/rmi: Remove empty directories.

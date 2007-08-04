@@ -68,6 +68,8 @@ import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
+import gnu.classpath.Pointer;
+
 public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 {
   static 
@@ -93,6 +95,14 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
 
   // the current set of ImageConsumers for this decoder
   Vector curr;
+
+  /**
+   * The pointer to the native pixbuf loader.
+   *
+   * This field is manipulated by native code. Don't change or remove
+   * without adjusting the native code.
+   */
+  private Pointer nativeDecoder;
 
   // interface to GdkPixbuf
   // These native functions should be called with the pixbufLock held.

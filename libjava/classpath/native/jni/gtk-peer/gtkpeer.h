@@ -42,7 +42,6 @@ exception statement from your version. */
 #include <stdlib.h>
 #include <string.h>
 #include <config.h>
-#include "native_state.h"
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #include <jni.h>
@@ -54,49 +53,173 @@ exception statement from your version. */
 #define __attribute__(x) /* nothing */
 #endif
 
-extern struct state_table *cp_gtk_native_state_table;
-extern struct state_table *cp_gtk_native_global_ref_table;
-extern struct state_table *cp_gtk_native_graphics2d_state_table;
+/**
+ * Initializes the IDs of the Pointer* classes.
+ *
+ * @param env the JNI environment
+ */
+void gtkpeer_init_pointer_IDs(JNIEnv* env);
 
-#define NSA_INIT(env, clazz) \
-   do {cp_gtk_native_state_table = cp_gtk_init_state_table (env, clazz); \
-   cp_gtk_native_global_ref_table = cp_gtk_init_state_table (env, clazz);} while (0)
+/**
+ * Initializes the field IDs for the widget reference.
+ *
+ * @param env the JNI environment
+ */
+void gtkpeer_init_widget_IDs(JNIEnv *env);
 
-#define NSA_GET_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_state_table)
+/**
+ * Stores the GTK widget reference in the GtkComponentPeer object.
+ *
+ * @param env the JNI environment
+ * @param peer the actual peer object
+ * @param widget the widget reference to store
+ */
+void gtkpeer_set_widget(JNIEnv *env, jobject peer, void *widget);
 
-#define NSA_SET_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_state_table, (void *)ptr)
+/**
+ * Retrieves the GTK widget reference from a GtkComponentPeer object.
+ *
+ * @param env the JNI environment
+ * @param peer the actual peer object
+ *
+ * @return the widget reference
+ */
+void* gtkpeer_get_widget(JNIEnv *env, jobject peer);
 
-#define NSA_DEL_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, cp_gtk_native_state_table)
+/**
+ * Stores the global JNI reference of a peer inside the peer.
+ *
+ * @param env the JNI environment
+ * @param peer the peer object
+ */
+void gtkpeer_set_global_ref(JNIEnv *env, jobject peer);
 
-#define NSA_GET_GLOBAL_REF(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_global_ref_table)
+/**
+ * Retrieves the global reference from a peer.
+ *
+ * @param env the JNI environment
+ * @param peer the peer object
+ *
+ * @return the global reference
+ */
+void* gtkpeer_get_global_ref(JNIEnv *env, jobject peer);
 
-#define NSA_SET_GLOBAL_REF(env, obj) \
-  do {jobject *globRefPtr; \
-    globRefPtr = (jobject *) malloc (sizeof (jobject)); \
-    *globRefPtr = (*env)->NewGlobalRef (env, obj); \
-    cp_gtk_set_state (env, obj, cp_gtk_native_global_ref_table, (void *)globRefPtr);} while (0)
+/**
+ * Deletes the global reference of a peer. This is necessary in order to
+ * allow the peer to be garbage collected.
+ *
+ * @param env the JNI environment
+ * @param peer the peer object.
+ */
+void gtkpeer_del_global_ref(JNIEnv* env, jobject peer);
 
-#define NSA_DEL_GLOBAL_REF(env, obj) \
-  do {jobject *globRefPtr = cp_gtk_get_state (env, obj, cp_gtk_native_global_ref_table); \
-    cp_gtk_remove_state_slot (env, obj, cp_gtk_native_global_ref_table); \
-    (*env)->DeleteGlobalRef (env, *globRefPtr); \
-    free (globRefPtr);} while (0)
 
-#define NSA_G2D_INIT(env, clazz) \
-  cp_gtk_native_graphics2d_state_table = cp_gtk_init_state_table (env, clazz)
+/**
+ * Initializes the fieldIDs for the display and screen fields.
+ *
+ * @param env the JNI environment
+ */
+void gtkpeer_init_display_IDs(JNIEnv* env);
 
-#define NSA_GET_G2D_PTR(env, obj) \
-  cp_gtk_get_state (env, obj, cp_gtk_native_graphics2d_state_table)
+/**
+ * Sets the native display pointer in the GdkGraphicsEnvironment object.
+ *
+ * @param env the JNI environment
+ * @param graphicsenv the GdkGraphicsEnvironment object
+ * @param display the native display pointer
+ */
+void gtkpeer_set_display(JNIEnv* env, jobject graphicsenv, void* display);
 
-#define NSA_SET_G2D_PTR(env, obj, ptr) \
-  cp_gtk_set_state (env, obj, cp_gtk_native_graphics2d_state_table, (void *)ptr)
+/**
+ * Fetches the native display pointer from the GdkGraphicsEnvironment object.
+ *
+ * @param env the JNI environment
+ * @param graphicsenv the GdkGraphicsEnvironment object
+ *
+ * @return the native display pointer
+ */
+void* gtkpeer_get_display(JNIEnv* env, jobject graphicsenv);
 
-#define NSA_DEL_G2D_PTR(env, obj) \
-  cp_gtk_remove_state_slot (env, obj, cp_gtk_native_graphics2d_state_table)
+/**
+ * Initializes the fieldIDs for the screen field.
+ *
+ * @param env the JNI environment
+ */
+void gtkpeer_init_screen_IDs(JNIEnv* env);
+
+/**
+ * Sets the native screen in the GdkScreenGraphicsDevice object.
+ *
+ * @param env the JNI environment
+ * @param screen_graphics_device the GdkScreenGraphicsDevice object
+ * @param ptr the native screen pointer
+ */
+void gtkpeer_set_screen(JNIEnv* env, jobject screen_graphics_device,
+                        void* ptr);
+
+/**
+ * Fetches the native screen pointer from the GdkScreenGraphicsDevice object.
+ *
+ * @param env the JNI environment
+ * @param screen_graphics_device the GdkScreenGraphicsDevice object
+ *
+ * @return the native screen pointer
+ */
+void* gtkpeer_get_screen(JNIEnv* env, jobject screen_graphics_device);
+
+/**
+ * Initializes the field IDs for fonts.
+ *
+ * @param env the JNI environment
+ */
+void gtkpeer_init_font_IDs(JNIEnv* env);
+
+/**
+ * Sets the native font in the nativeFont field in GdkFontPeer.
+ *
+ * @param env the JNI environment
+ * @param font_peer the font peer object
+ * @param font the actual native font reference
+ */
+void gtkpeer_set_font(JNIEnv* env, jobject font_peer, void* font);
+
+/**
+ * Fetches the native font reference from the GdkFontPeer object.
+ *
+ * @param env the JNI environment
+ * @param font_peer the font peer object
+ *
+ * @return the native font structure
+ */
+void* gtkpeer_get_font(JNIEnv* env, jobject font_peer);
+
+/**
+ * Initializes the field IDs for pixbuf decoder.
+ *
+ * @param env the JNI environment
+ */
+void gtkpeer_init_pixbuf_IDs(JNIEnv* env);
+
+/**
+ * Sets the native font in the nativeFont field in GdkFontPeer.
+ *
+ * @param env the JNI environment
+ * @param pixbuf_dec the pixbuf decoder object
+ * @param pixbuf_loader the native pixbuf loader
+ */
+void gtkpeer_set_pixbuf_loader(JNIEnv* env, jobject pixbuf_dec,
+                               void* pixbuf_loader);
+
+/**
+ * Fetches the native pixbuf loader reference from the GdkPixbufDecoder object.
+ *
+ * @param env the JNI environment
+ * @param pixbuf_dec the pixbuf decoder object
+ *
+ * @return the native pixbuf loader
+ */
+void* gtkpeer_get_pixbuf_loader(JNIEnv* env, jobject pixbuf_dec);
+
 
 #define SWAPU32(w)							\
   (((w) << 24) | (((w) & 0xff00) << 8) | (((w) >> 8) & 0xff00) | ((w) >> 24))
@@ -188,7 +311,7 @@ void cp_gtk_grab_current_drawable(GtkWidget *widget, GdkDrawable **draw,
 				  GdkWindow **win);
 
 /* JNI initialization functions */
-void cp_gtk_button_init_jni (void);
+void cp_gtk_button_init_jni (JNIEnv*);
 void cp_gtk_checkbox_init_jni (void);
 void cp_gtk_choice_init_jni (void);
 void cp_gtk_component_init_jni (void);
@@ -200,11 +323,11 @@ void cp_gtk_textcomponent_init_jni (void);
 void cp_gtk_window_init_jni (void);
 
 /* Signal connection convience functions */
-void cp_gtk_component_connect_expose_signals (GObject *ptr, jobject *gref);
-void cp_gtk_component_connect_focus_signals (GObject *ptr, jobject *gref);
-void cp_gtk_component_connect_mouse_signals (GObject *ptr, jobject *gref);
-void cp_gtk_component_connect_signals (GObject *ptr, jobject *gref);
-void cp_gtk_textcomponent_connect_signals (GObject *ptr, jobject *gref);
+void cp_gtk_component_connect_expose_signals (GObject *ptr, jobject gref);
+void cp_gtk_component_connect_focus_signals (GObject *ptr, jobject gref);
+void cp_gtk_component_connect_mouse_signals (GObject *ptr, jobject gref);
+void cp_gtk_component_connect_signals (GObject *ptr, jobject gref);
+void cp_gtk_textcomponent_connect_signals (GObject *ptr, jobject gref);
 
 /* Debugging */
 void cp_gtk_print_current_thread (void);

@@ -86,7 +86,17 @@ public class VolatileImageGraphics extends ComponentGraphics
 
   public GraphicsConfiguration getDeviceConfiguration()
   {
-    return owner.component.getGraphicsConfiguration();
+    GraphicsConfiguration conf;
+    if (owner.component != null)
+      {
+        conf = owner.component.getGraphicsConfiguration();
+      }
+    else
+      {
+        return java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+          .getDefaultScreenDevice().getDefaultConfiguration();
+      }
+    return conf;
   }
 
   public Graphics create()

@@ -70,8 +70,8 @@ enum invocation_type
 };
 
 // Forward declarations.
-extern struct JNINativeInterface _Jv_JNIFunctions;
-extern struct JNIInvokeInterface _Jv_JNI_InvokeFunctions;
+extern struct JNINativeInterface_ _Jv_JNIFunctions;
+extern struct JNIInvokeInterface_ _Jv_JNI_InvokeFunctions;
 
 // Number of slots in the default frame.  The VM must allow at least
 // 16.
@@ -873,7 +873,7 @@ _Jv_JNI_CallAnyMethod (JNIEnv *env, jobject obj, jclass klass,
 template<typename T, invocation_type style>
 static T JNICALL
 _Jv_JNI_CallAnyMethodA (JNIEnv *env, jobject obj, jclass klass,
-			jmethodID id, jvalue *args)
+			jmethodID id, const jvalue *args)
 {
   obj = unwrap (obj);
   klass = unwrap (klass);
@@ -970,7 +970,7 @@ _Jv_JNI_CallAnyVoidMethod (JNIEnv *env, jobject obj, jclass klass,
 template<invocation_type style>
 static void JNICALL
 _Jv_JNI_CallAnyVoidMethodA (JNIEnv *env, jobject obj, jclass klass,
-			    jmethodID id, jvalue *args)
+			    jmethodID id, const jvalue *args)
 {
   jclass decl_class = klass ? klass : obj->getClass ();
   JvAssert (decl_class != NULL);
@@ -1035,7 +1035,7 @@ _Jv_JNI_CallMethod (JNIEnv *env, jobject obj, jmethodID id, ...)
 template<typename T>
 static T JNICALL
 _Jv_JNI_CallMethodA (JNIEnv *env, jobject obj, 
-		     jmethodID id, jvalue *args)
+		     jmethodID id, const jvalue *args)
 {
   return _Jv_JNI_CallAnyMethodA<T, normal> (env, obj, NULL, id, args);
 }
@@ -1059,7 +1059,7 @@ _Jv_JNI_CallVoidMethod (JNIEnv *env, jobject obj, jmethodID id, ...)
 
 static void JNICALL
 _Jv_JNI_CallVoidMethodA (JNIEnv *env, jobject obj, 
-			 jmethodID id, jvalue *args)
+			 jmethodID id, const jvalue *args)
 {
   _Jv_JNI_CallAnyVoidMethodA<normal> (env, obj, NULL, id, args);
 }
@@ -1103,7 +1103,7 @@ _Jv_JNI_CallStaticMethod (JNIEnv *env, jclass klass,
 template<typename T>
 static T JNICALL
 _Jv_JNI_CallStaticMethodA (JNIEnv *env, jclass klass, jmethodID id,
-			   jvalue *args)
+			   const jvalue *args)
 {
   JvAssert (((id->accflags) & java::lang::reflect::Modifier::STATIC));
   JvAssert (java::lang::Class::class$.isInstance (unwrap (klass)));
@@ -1131,7 +1131,7 @@ _Jv_JNI_CallStaticVoidMethod (JNIEnv *env, jclass klass,
 
 static void JNICALL
 _Jv_JNI_CallStaticVoidMethodA (JNIEnv *env, jclass klass, 
-			       jmethodID id, jvalue *args)
+			       jmethodID id, const jvalue *args)
 {
   _Jv_JNI_CallAnyVoidMethodA<static_type> (env, NULL, klass, id, args);
 }
@@ -1174,7 +1174,7 @@ _Jv_JNI_NewObject (JNIEnv *env, jclass klass, jmethodID id, ...)
 
 static jobject JNICALL
 _Jv_JNI_NewObjectA (JNIEnv *env, jclass klass, jmethodID id,
-		    jvalue *args)
+		    const jvalue *args)
 {
   JvAssert (klass && ! klass->isArray ());
   JvAssert (! strcmp (id->name->chars(), "<init>")
@@ -1577,7 +1577,7 @@ _Jv_JNI_GetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
 template<typename T, jclass K>
 static void JNICALL
 _Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
-				 jsize start, jsize len, T *buf)
+				 jsize start, jsize len, const T *buf)
 {
   array = unwrap (array);
   if (! _Jv_JNI_check_types (env, array, K))
@@ -2593,7 +2593,7 @@ _Jv_JNI_GetJavaVM (JNIEnv *, JavaVM **vm)
 
 #define RESERVED NULL
 
-struct JNINativeInterface _Jv_JNIFunctions =
+struct JNINativeInterface_ _Jv_JNIFunctions =
 {
   RESERVED,
   RESERVED,
@@ -2876,7 +2876,7 @@ struct JNINativeInterface _Jv_JNIFunctions =
   _Jv_JNI_GetDirectBufferCapacity	    // GetDirectBufferCapacity
 };
 
-struct JNIInvokeInterface _Jv_JNI_InvokeFunctions =
+struct JNIInvokeInterface_ _Jv_JNI_InvokeFunctions =
 {
   RESERVED,
   RESERVED,

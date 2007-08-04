@@ -108,4 +108,26 @@ final class VMFloat
    */
   static native float intBitsToFloat(int bits);
 
+  /**
+   * @param f the <code>float</code> to convert
+   * @return the <code>String</code> representing the <code>float</code>
+   */
+  static String toString(float f)
+  {
+    return VMDouble.toString(f, true);
+  }
+
+  /**
+   * @param str the <code>String</code> to convert
+   * @return the <code>float</code> value of <code>s</code>
+   * @throws NumberFormatException if <code>str</code> cannot be parsed as a
+   *         <code>float</code>
+   * @throws NullPointerException if <code>str</code> is null
+   */
+  static float parseFloat(String str)
+  {
+    // XXX Rounding parseDouble() causes some errors greater than 1 ulp from
+    // the infinitely precise decimal.
+    return (float) Double.parseDouble(str);
+  }
 } // class VMFloat

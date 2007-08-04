@@ -125,13 +125,13 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_initState
   cairo_surface_t *surface;
   GdkWindow *win;
   GtkWidget *widget = NULL;
-  void *ptr = NULL;
   int width, height;
   cairo_t *cr;
+  void *ptr;
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
   g_assert (ptr != NULL);
 
   widget = GTK_WIDGET (ptr);
@@ -232,7 +232,7 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_copyAreaNative
 
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
   g_assert (ptr != NULL);
 
   widget = GTK_WIDGET (ptr);
@@ -260,10 +260,10 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_nativeGrab
   gint w,h;
   GtkWidget *widget = NULL;
   void *ptr = NULL;
-  
+
   gdk_threads_enter();
 
-  ptr = NSA_GET_PTR (env, peer);
+  ptr = gtkpeer_get_widget (env, peer);
   g_assert (ptr != NULL);
 
   widget = GTK_WIDGET (ptr);
@@ -293,12 +293,13 @@ Java_gnu_java_awt_peer_gtk_ComponentGraphics_drawVolatile
 {
   GdkPixmap *pixmap;
   GtkWidget *widget = NULL;
-  void *ptr = NULL;
   GdkGC *gc;
   GdkRectangle clip;
+  void *ptr;
 
   gdk_threads_enter();
-  ptr = NSA_GET_PTR (env, peer);
+
+  ptr = gtkpeer_get_widget (env, peer);
   g_assert (ptr != NULL);
 
   widget = GTK_WIDGET (ptr);

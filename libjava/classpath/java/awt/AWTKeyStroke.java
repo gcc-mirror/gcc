@@ -93,7 +93,7 @@ public class AWTKeyStroke implements Serializable
     private static final int MAX_CACHE_SIZE = 2048;
 
     /** Prune stale entries. */
-    protected boolean removeEldestEntry(Entry<AWTKeyStroke,AWTKeyStroke>
+    protected boolean removeEldestEntry(Map.Entry<AWTKeyStroke,AWTKeyStroke>
 					eldest)
     {
       return size() > MAX_CACHE_SIZE;

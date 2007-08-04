@@ -1,5 +1,5 @@
 /* SwingPanelPeer.java -- A PanelPeer based on Swing
-   Copyright (C) 2006 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import java.awt.peer.PanelPeer;
  * @author Roman Kennke (kennke@aicas.com)
  */
 // TODO: Maybe base implementation on JPanel. However, this doesn't seem
-// necessary, but might be good for more consistend Look.
+// necessary, but might be good for more consistent Look.
 public class SwingPanelPeer
   extends SwingContainerPeer
   implements PanelPeer

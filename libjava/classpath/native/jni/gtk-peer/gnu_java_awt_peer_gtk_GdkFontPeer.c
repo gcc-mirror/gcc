@@ -44,9 +44,8 @@
 #include <freetype/fttypes.h>
 #include <freetype/tttables.h>
 #include "gdkfont.h"
+#include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GdkFontPeer.h"
-
-struct state_table *cp_gtk_native_font_state_table;
 
 enum java_awt_font_style {
   java_awt_font_PLAIN = 0,
@@ -60,11 +59,14 @@ enum java_awt_font_baseline {
   java_awt_font_HANGING_BASELINE = 2
 };
 
+static PangoFT2FontMap *ft2_map = NULL;
+
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GdkFontPeer_initStaticState 
-  (JNIEnv *env, jclass clazz)
+  (JNIEnv *env, jclass clazz __attribute__((unused)))
 {
-  NSA_FONT_INIT (env, clazz);
+  gtkpeer_init_font_IDs(env);
+  ft2_map = PANGO_FT2_FONT_MAP(pango_ft2_font_map_new());
 }
 
 JNIEXPORT void JNICALL
@@ -78,7 +80,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_initState
   g_assert (self != NULL);
   pfont = (struct peerfont *) g_malloc0 (sizeof (struct peerfont));
   g_assert (pfont != NULL);
-  NSA_SET_FONT_PTR (env, self, pfont);
+  gtkpeer_set_font (env, self, pfont);
 
   gdk_threads_leave ();
 }
@@ -92,7 +94,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_dispose
 
   gdk_threads_enter ();
 
-  pfont = (struct peerfont *)NSA_DEL_FONT_PTR (env, self);
+  pfont = (struct peerfont *) gtkpeer_get_font (env, self);
   g_assert (pfont != NULL);
   if (pfont->layout != NULL)
     g_object_unref (pfont->layout);
@@ -118,7 +120,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_releasePeerGraphicsResource
 
   gdk_threads_enter();
 
-  pfont = (struct peerfont *) NSA_GET_FONT_PTR (env, java_font);
+  pfont = (struct peerfont *) gtkpeer_get_font (env, java_font);
   g_assert (pfont != NULL);
   if (pfont->graphics_resource != NULL)
     {
@@ -145,7 +147,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getFontMetrics
 
   gdk_threads_enter();
 
-  pfont = (struct peerfont *) NSA_GET_FONT_PTR (env, java_font);
+  pfont = (struct peerfont *) gtkpeer_get_font (env, java_font);
   g_assert (pfont != NULL);
   face = pango_fc_font_lock_face ((PangoFcFont *)pfont->font);
 
@@ -194,7 +196,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTextMetrics
 
   gdk_threads_enter();
 
-  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, java_font);
+  pfont = (struct peerfont *) gtkpeer_get_font(env, java_font);
   g_assert (pfont != NULL);
 
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
@@ -248,14 +250,13 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont
   struct peerfont *pfont = NULL;
   char const *family_name = NULL;
   enum java_awt_font_style style;
-  PangoFT2FontMap *ft2_map = NULL;
 
   gdk_threads_enter ();
 
   style = (enum java_awt_font_style) style_int;
 
   g_assert (self != NULL);
-  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, self);
+  pfont = (struct peerfont *) gtkpeer_get_font(env, self);
   g_assert (pfont != NULL);
 
   /* Clear old font information */
@@ -286,9 +287,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_setFont
   pango_font_description_set_size (pfont->desc, size * PANGO_SCALE);
   
   /* Create new context */
-  ft2_map = PANGO_FT2_FONT_MAP(pango_ft2_font_map_new());
   pfont->ctx = pango_ft2_font_map_create_context (ft2_map);
-  g_object_unref(ft2_map);
   g_assert (pfont->ctx != NULL);
   
   pango_context_set_font_description (pfont->ctx, pfont->desc);
@@ -321,7 +320,7 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getTrueTypeTable
   jbyteArray result_array;
   jbyte *rbuf;
 
-  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, self);
+  pfont = (struct peerfont *) gtkpeer_get_font(env, self);
   if(pfont == NULL)
     return NULL;
 

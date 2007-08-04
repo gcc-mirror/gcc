@@ -28,50 +28,9 @@ if $have_libtool ; then : ; else
 	echo "You must have libtool 1.5 installed to compile $PROJECT."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/libtool/"
-	echo "For Darwin you need the latest stable (1.5.18) to support"
-	echo "Frameworks linking. Also, you have to point ACLOCAL_FLAGS"
-	echo "to this libtool/share/aclocal."
-	DIE=1
-fi
-
-have_autoconf=false
-if autoconf --version < /dev/null > /dev/null 2>&1 ; then
-	autoconf_version=`autoconf --version | sed 's/^[^0-9]*\([0-9.][0-9.]*\).*/\1/'`
-	case $autoconf_version in
-	    2.59* | 2.6[0-9]* )
-		have_autoconf=true
-		;;
-	esac
-fi
-if $have_autoconf ; then : ; else
-	echo
-	echo "You must have autoconf 2.59 or later installed for $PROJECT."
-	echo "Install the appropriate package for your distribution,"
-	echo "or get the source tarball at http://ftp.gnu.org/gnu/autoconf/"
-	DIE=1
-fi
-
-have_automake=false
-# We know each 1.9.x version works
-if automake-1.9 --version < /dev/null > /dev/null 2>&1 ; then
-	AUTOMAKE=automake-1.9
-	ACLOCAL=aclocal-1.9
-	have_automake=true
-elif automake --version < /dev/null > /dev/null 2>&1 ; then
-	AUTOMAKE=automake
-	ACLOCAL=aclocal
-	automake_version=`automake --version | sed 's/^[^0-9]*\([0-9.][0-9.]*\).*/\1/'`
-	case $automake_version in
-	    1.9* | 1.10*)
-		have_automake=true
-		;;
-	esac
-fi
-if $have_automake ; then : ; else
-	echo
-	echo "You must have automake 1.9 or 1.10 installed to compile $PROJECT."
-	echo "Install the appropriate package for your distribution,"
-	echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
+	echo "For Darwin you need the latest stable (1.5.22) to support"
+	echo "Frameworks linking. Also, you have to point"
+	echo "LOCAL_AUTORECONF_FLAGS to this libtool/share/aclocal."
 	DIE=1
 fi
 
@@ -91,34 +50,8 @@ if test "x$AUTOGEN_SUBDIR_MODE" = "xyes"; then
         fi
 fi
 
-if test -z "$ACLOCAL_FLAGS"; then
+autoreconf --force --install --warnings=no-portability || exit $?
 
-	acdir=`$ACLOCAL --print-ac-dir`
-        m4list="glib-2.0.m4 glib-gettext.m4"
-
-	for file in $m4list
-	do
-		if [ ! -f "$acdir/$file" ]; then
-			echo "WARNING: aclocal's directory is $acdir, but..."
-			echo "         no file $acdir/$file"
-			echo "         You may see fatal macro warnings below."
-			echo "         If these files are installed in /some/dir, set the ACLOCAL_FLAGS "
-			echo "         environment variable to \"-I /some/dir\", or install"
-			echo "         $acdir/$file."
-			echo ""
-		fi
-	done
-fi
-
-# Use the "-I m4 flag in order to include pkg.m4 and other .m4 files.
-$ACLOCAL -I m4 $ACLOCAL_FLAGS || exit $?
-
-${LIBTOOLIZE} --force || exit $?
-
-autoheader || exit $?
-
-$AUTOMAKE --add-missing || exit $?
-autoconf || exit $?
 cd $ORIGDIR || exit $?
 
 if test "x$AUTOGEN_SUBDIR_MODE" = "xyes"; then

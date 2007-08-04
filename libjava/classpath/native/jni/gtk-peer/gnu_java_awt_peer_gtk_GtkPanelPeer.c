@@ -55,7 +55,7 @@ Java_gnu_java_awt_peer_gtk_GtkPanelPeer_create
 
   gdk_threads_enter ();
 
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   widget = gtk_fixed_new ();
 
@@ -63,7 +63,7 @@ Java_gnu_java_awt_peer_gtk_GtkPanelPeer_create
 
   GTK_WIDGET_SET_FLAGS (widget, GTK_CAN_FOCUS);
 
-  NSA_SET_PTR (env, obj, widget);
+  gtkpeer_set_widget (env, obj, widget);
 
   gdk_threads_leave ();
 }
@@ -73,20 +73,20 @@ Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jobject *gref;
+  jobject gref;
 
   gdk_threads_enter ();
 
-  ptr = NSA_GET_PTR (env, obj);
-  gref = NSA_GET_GLOBAL_REF (env, obj);
+  ptr = gtkpeer_get_widget (env, obj);
+  gref = gtkpeer_get_global_ref (env, obj);
 
   /* Panel signals.  These callbacks prevent expose events being
      delivered to the panel when it is focused. */
   g_signal_connect (G_OBJECT (ptr), "focus-in-event",
-                    G_CALLBACK (panel_focus_in_cb), *gref);
+                    G_CALLBACK (panel_focus_in_cb), gref);
 
   g_signal_connect (G_OBJECT (ptr), "focus-out-event",
-                    G_CALLBACK (panel_focus_out_cb), *gref);
+                    G_CALLBACK (panel_focus_out_cb), gref);
 
   /* Component signals.  Exclude focus signals. */
   cp_gtk_component_connect_expose_signals (ptr, gref);

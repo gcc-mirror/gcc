@@ -59,6 +59,8 @@ import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.image.VolatileImage;
 
+import sun.awt.CausedFocusEvent;
+
 /**
  * Defines the methods that a component peer is required to implement.
  */
@@ -264,7 +266,7 @@ public interface ComponentPeer
   /**
    * Requests that this component receives the focus. This is called from
    * {@link Component#requestFocus()}.
-   * 
+   *
    * @specnote Part of the earlier 1.1 API, apparently replaced by argument 
    *           form of the same method.
    */
@@ -518,4 +520,13 @@ public interface ComponentPeer
    * @since 1.5
    */
   void layout();
+
+
+  /**
+   * Requests the focus on the component.
+   */
+  boolean requestFocus(Component lightweightChild, boolean temporary,
+                       boolean focusedWindowChangeAllowed, long time,
+                       CausedFocusEvent.Cause cause);
+
 }

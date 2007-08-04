@@ -55,6 +55,7 @@ public:
   virtual ::java::lang::String * getSubFamilyName(::java::util::Locale *) = 0;
   virtual ::java::lang::String * getPostScriptName() = 0;
   virtual jint getNumGlyphs() = 0;
+  virtual jint getGlyphIndex(jint) = 0;
   virtual jint getMissingGlyphCode() = 0;
   virtual ::java::awt::font::GlyphVector * createGlyphVector(::java::awt::Font *, ::java::awt::font::FontRenderContext *, ::java::text::CharacterIterator *) = 0;
   virtual void getAdvance(jint, jfloat, ::java::awt::geom::AffineTransform *, jboolean, jboolean, jboolean, ::java::awt::geom::Point2D *) = 0;

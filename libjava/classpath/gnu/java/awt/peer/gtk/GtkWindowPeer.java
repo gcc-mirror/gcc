@@ -398,4 +398,29 @@ public class GtkWindowPeer extends GtkContainerPeer
   {
     return new Rectangle(x, y, width, height);
   }
+
+  public void updateIconImages()
+  {
+    // TODO: Implement properly.
+  }
+
+  public void updateMinimumSize()
+  {
+    // TODO: Implement properly.
+  }
+
+  public void setModalBlocked(java.awt.Dialog d, boolean b)
+  {
+    // TODO: Implement properly.
+  }
+
+  public void updateFocusableWindowState()
+  {
+    // TODO: Implement properly.
+  }
+
+  public void setAlwaysOnTop(boolean b)
+  {
+    // TODO: Implement properly.
+  }
 }

@@ -71,8 +71,12 @@ final class ISO_8859_1 extends Charset
         /* These names are provided by
          * http://oss.software.ibm.com/cgi-bin/icu/convexp?s=ALL
          */
-        "ISO8859_1", "ISO_8859_1", "ibm-819", "ISO_8859-1:1987",
-        "819"
+        "ISO8859_1",
+        "ISO_8859_1",
+        "ibm-819",
+        "ISO_8859-1:1987",
+        "819",
+        "ISO8859-1"
         });
 
   }

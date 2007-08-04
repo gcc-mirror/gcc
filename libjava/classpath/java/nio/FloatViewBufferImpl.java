@@ -131,7 +131,7 @@ final class FloatViewBufferImpl extends FloatBuffer
   public FloatBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
-    return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
+    return new FloatViewBufferImpl (bb, (position () << 2) + offset,
 				    remaining(), remaining(), 0, -1,
 				    readOnly, endian);
   }

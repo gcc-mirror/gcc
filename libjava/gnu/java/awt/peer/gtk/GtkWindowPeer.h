@@ -30,6 +30,7 @@ extern "Java"
     namespace awt
     {
         class Component;
+        class Dialog;
         class Graphics;
         class Rectangle;
         class Window;
@@ -101,6 +102,11 @@ public: // actually protected
   virtual void postMouseEvent(jint, jlong, jint, jint, jint, jint, jboolean);
 public:
   virtual ::java::awt::Rectangle * getBounds();
+  virtual void updateIconImages();
+  virtual void updateMinimumSize();
+  virtual void setModalBlocked(::java::awt::Dialog *, jboolean);
+  virtual void updateFocusableWindowState();
+  virtual void setAlwaysOnTop(jboolean);
 public: // actually protected
   static const jint GDK_WINDOW_TYPE_HINT_NORMAL = 0;
   static const jint GDK_WINDOW_TYPE_HINT_DIALOG = 1;

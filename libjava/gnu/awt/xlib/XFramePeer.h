@@ -31,6 +31,7 @@ extern "Java"
   {
     namespace awt
     {
+        class Dialog;
         class Frame;
         class Image;
         class Insets;
@@ -69,8 +70,14 @@ public:
   virtual void endLayout();
   virtual jboolean isPaintPending();
   virtual void setBoundsPrivate(jint, jint, jint, jint);
+  virtual ::java::awt::Rectangle * getBoundsPrivate();
   virtual void updateAlwaysOnTop();
   virtual jboolean requestWindowFocus();
+  virtual void setAlwaysOnTop(jboolean);
+  virtual void updateFocusableWindowState();
+  virtual void setModalBlocked(::java::awt::Dialog *, jboolean);
+  virtual void updateMinimumSize();
+  virtual void updateIconImages();
 private:
   jboolean __attribute__((aligned(__alignof__( ::gnu::awt::xlib::XCanvasPeer)))) processingConfigureNotify;
 public: // actually package-private

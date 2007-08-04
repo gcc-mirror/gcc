@@ -48,11 +48,11 @@ Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create
   gdk_threads_enter ();
 
   /* Create global reference and save it for future use */
-  NSA_SET_GLOBAL_REF (env, obj);
+  gtkpeer_set_global_ref (env, obj);
 
   widget = gtk_drawing_area_new ();
 
-  NSA_SET_PTR (env, obj, widget);
+  gtkpeer_set_widget (env, obj, widget);
 
   gdk_threads_leave ();
 }
