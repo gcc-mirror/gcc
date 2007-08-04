@@ -1822,20 +1822,6 @@ mio_charlen (gfc_charlen **clp)
 }
 
 
-/* Return a symtree node with a name that is guaranteed to be unique
-   within the namespace and corresponds to an illegal fortran name.  */
-
-static gfc_symtree *
-get_unique_symtree (gfc_namespace *ns)
-{
-  char name[GFC_MAX_SYMBOL_LEN + 1];
-  static int serial = 0;
-
-  sprintf (name, "@%d", serial++);
-  return gfc_new_symtree (&ns->sym_root, name);
-}
-
-
 /* See if a name is a generated name.  */
 
 static int
@@ -2287,7 +2273,7 @@ mio_symtree_ref (gfc_symtree **stp)
       if (in_load_equiv && p->u.rsym.symtree == NULL)
 	{
 	  /* Since this is not used, it must have a unique name.  */
-	  p->u.rsym.symtree = get_unique_symtree (gfc_current_ns);
+	  p->u.rsym.symtree = gfc_get_unique_symtree (gfc_current_ns);
 
 	  /* Make the symbol.  */
 	  if (p->u.rsym.sym == NULL)
@@ -3418,7 +3404,7 @@ read_cleanup (pointer_info *p)
     {
       /* Add hidden symbols to the symtree.  */
       q = get_integer (p->u.rsym.ns);
-      st = get_unique_symtree ((gfc_namespace *) q->u.pointer);
+      st = gfc_get_unique_symtree ((gfc_namespace *) q->u.pointer);
 
       st->n.sym = p->u.rsym.sym;
       st->n.sym->refs++;
@@ -3598,7 +3584,7 @@ read_module (void)
 	      /* Create a symtree node in the current namespace for this
 		 symbol.  */
 	      st = check_unique_name (p)
-		   ? get_unique_symtree (gfc_current_ns)
+		   ? gfc_get_unique_symtree (gfc_current_ns)
 		   : gfc_new_symtree (&gfc_current_ns->sym_root, p);
 
 	      st->ambiguous = ambiguous;

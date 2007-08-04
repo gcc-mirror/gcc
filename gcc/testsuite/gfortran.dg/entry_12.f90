@@ -28,3 +28,4 @@ END MODULE ksbin1_aux_mod
     if (any ((/foo (), bar (99), foobar (), foobar (99), j (), k (99)/) .ne. &
              (/1, 2, 1, 2, 1, 2/))) Call abort ()
 end
+! { dg-final { cleanup-modules "ksbin1_aux_mod" } }
