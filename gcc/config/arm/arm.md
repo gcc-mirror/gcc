@@ -4655,6 +4655,7 @@
         (match_operand:SI 1 "general_operand" ""))]
   "TARGET_EITHER"
   "
+  {
   rtx base, offset, tmp;
 
   if (TARGET_32BIT)
@@ -4728,6 +4729,7 @@
 					    (!can_create_pseudo_p ()
 					     ? operands[0]
 					     : 0));
+  }
   "
 )
 
