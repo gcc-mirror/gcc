@@ -1,3 +1,24 @@
+2007-08-03  Zdenek Dvorak  <ook@ucw.cz>
+
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Use loops' state
+	accessor functions.
+	* cfgloopmanip.c (remove_path, create_preheaders,
+	force_single_succ_latches, fix_loop_structure): Ditto.
+	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa,
+	tree_duplicate_loop_to_header_edge): Ditto.
+	* cfgloopanal.c (mark_irreducible_loops): Ditto.
+	* loop-init.c (loop_optimizer_init, loop_optimizer_finalize):
+	Ditto.
+	* tree-cfgcleanup.c (cleanup_tree_cfg_noloop, repair_loop_structures,
+	cleanup_tree_cfg): Ditto.
+	* tree-cfg.c (tree_merge_blocks): Ditto.
+	* cfgloop.c (rescan_loop_exit, record_loop_exits,
+	release_recorded_exits, get_loop_exit_edges, verify_loop_structure,
+	loop_preheader_edge, single_exit): Ditto.
+	(flow_loops_find): Do not clear loops->state.
+	* cfgloop.h (loops_state_satisfies_p, loops_state_set,
+	loops_state_clear): New functions.
+
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/32399

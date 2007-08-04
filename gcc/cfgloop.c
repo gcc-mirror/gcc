@@ -502,7 +502,6 @@ flow_loops_find (struct loops *loops)
   sbitmap_free (headers);
 
   loops->exits = NULL;
-  loops->state = 0;
   return VEC_length (loop_p, loops->larray);
 }
 
@@ -996,7 +995,7 @@ rescan_loop_exit (edge e, bool new_edge, bool removed)
   struct loop_exit *exits = NULL, *exit;
   struct loop *aloop, *cloop;
 
-  if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
+  if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     return;
 
   if (!removed
@@ -1054,9 +1053,9 @@ record_loop_exits (void)
   if (!current_loops)
     return;
 
-  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     return;
-  current_loops->state |= LOOPS_HAVE_RECORDED_EXITS;
+  loops_state_set (LOOPS_HAVE_RECORDED_EXITS);
 
   gcc_assert (current_loops->exits == NULL);
   current_loops->exits = htab_create_alloc (2 * number_of_loops (),
@@ -1109,10 +1108,10 @@ dump_recorded_exits (FILE *file)
 void
 release_recorded_exits (void)
 {
-  gcc_assert (current_loops->state & LOOPS_HAVE_RECORDED_EXITS);
+  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS));
   htab_delete (current_loops->exits);
   current_loops->exits = NULL;
-  current_loops->state &= ~LOOPS_HAVE_RECORDED_EXITS;
+  loops_state_clear (LOOPS_HAVE_RECORDED_EXITS);
 }
 
 /* Returns the list of the exit edges of a LOOP.  */
@@ -1131,7 +1130,7 @@ get_loop_exit_edges (const struct loop *loop)
 
   /* If we maintain the lists of exits, use them.  Otherwise we must
      scan the body of the loop.  */
-  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     {
       for (exit = loop->exits->next; exit->e; exit = exit->next)
 	VEC_safe_push (edge, heap, edges, exit->e);
@@ -1352,13 +1351,13 @@ verify_loop_structure (void)
     {
       i = loop->num;
 
-      if ((current_loops->state & LOOPS_HAVE_PREHEADERS)
+      if (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS)
 	  && EDGE_COUNT (loop->header->preds) != 2)
 	{
 	  error ("loop %d's header does not have exactly 2 entries", i);
 	  err = 1;
 	}
-      if (current_loops->state & LOOPS_HAVE_SIMPLE_LATCHES)
+      if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
 	{
 	  if (!single_succ_p (loop->latch))
 	    {
@@ -1381,7 +1380,7 @@ verify_loop_structure (void)
 	  error ("loop %d's header does not belong directly to it", i);
 	  err = 1;
 	}
-      if ((current_loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+      if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
 	  && (loop_latch_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP))
 	{
 	  error ("loop %d's latch is marked as part of irreducible region", i);
@@ -1390,7 +1389,7 @@ verify_loop_structure (void)
     }
 
   /* Check irreducible loops.  */
-  if (current_loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+  if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     {
       /* Record old info.  */
       irreds = sbitmap_alloc (last_basic_block);
@@ -1476,7 +1475,7 @@ verify_loop_structure (void)
 	    }
 	}
 
-      if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
+      if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
 	{
 	  if (loop->exits->next != loop->exits)
 	    {
@@ -1487,7 +1486,7 @@ verify_loop_structure (void)
 	}
     }
 
-  if (current_loops->state & LOOPS_HAVE_RECORDED_EXITS)
+  if (loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     {
       unsigned n_exits = 0, eloops;
 
@@ -1570,7 +1569,7 @@ loop_preheader_edge (const struct loop *loop)
   edge e;
   edge_iterator ei;
 
-  gcc_assert ((current_loops->state & LOOPS_HAVE_PREHEADERS) != 0);
+  gcc_assert (loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS));
 
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     if (e->src != loop->latch)
@@ -1597,7 +1596,7 @@ single_exit (const struct loop *loop)
 {
   struct loop_exit *exit = loop->exits->next;
 
-  if ((current_loops->state & LOOPS_HAVE_RECORDED_EXITS) == 0)
+  if (!loops_state_satisfies_p (LOOPS_HAVE_RECORDED_EXITS))
     return NULL;
 
   if (exit->e && exit->next == loop->exits)

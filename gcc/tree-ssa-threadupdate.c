@@ -1077,7 +1077,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   threaded_edges = NULL;
 
   if (retval)
-    current_loops->state |= LOOPS_NEED_FIXUP;
+    loops_state_set (LOOPS_NEED_FIXUP);
 
   return retval;
 }
