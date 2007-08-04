@@ -1,5 +1,11 @@
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR middle-end/32399
+	* tree-ssa-address.c (add_to_parts): Use POINTER_PLUS_EXPR
+	when adding to the base and convert ELT to sizetype instead of type.
+
+2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/32304
 	* ipa-reference.c (has_proper_scope_for_analysis): Return false when
 	the decl's type has TYPE_NEEDS_CONSTRUCTING set.

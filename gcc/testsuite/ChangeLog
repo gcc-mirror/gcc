@@ -1,5 +1,10 @@
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	RP middle-end/32399
+	* gcc.c-torture/compile/pr32399.c: New testcase.
+
+2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR middle-end/32304
 	* g++.dg/torture/pr32304.C: New testcase.
 
