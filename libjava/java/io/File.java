@@ -117,6 +117,7 @@ public class File implements Serializable, Comparable<File>
   public static final char pathSeparatorChar = pathSeparator.charAt(0);
 
   static final String tmpdir = System.getProperty("java.io.tmpdir");
+  /* If 0, then the system doesn't have a file name length limit.  */
   static int maxPathLen;
   static boolean caseSensitive;
   
@@ -1130,7 +1131,9 @@ public class File implements Serializable, Comparable<File>
 
     // Truncation rules.
     // `6' is the number of characters we generate.
-    if (prefix.length() + 6 + suffix.length() > maxPathLen)
+    // If maxPathLen equals zero, then the system doesn't have a limit
+    // on the file name, so there is nothing to truncate.
+    if (maxPathLen > 0 && prefix.length() + 6 + suffix.length() > maxPathLen)
       {
 	int suf_len = 0;
 	if (suffix.charAt(0) == '.')

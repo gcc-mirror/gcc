@@ -504,6 +504,12 @@ java::io::File::performDelete (void)
 void
 java::io::File::init_native ()
 {
+#ifdef MAXPATHLEN
   maxPathLen = MAXPATHLEN;
+#else
+  /* Some systems do not have a limit on the length of a file name,
+     the GNU system is one such example.  */
+  maxPathLen = 0;
+#endif
   caseSensitive = true;
 }
