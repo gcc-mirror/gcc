@@ -1,3 +1,8 @@
+2007-08-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/32780
+	* gcc.c-torture/compile/pr32780.c: New test.
+
 2007-08-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	RP middle-end/32399
