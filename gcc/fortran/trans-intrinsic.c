@@ -3493,22 +3493,30 @@ gfc_conv_intrinsic_verify (gfc_se * se, gfc_expr * expr)
 /* Generate code for SELECTED_INT_KIND (R) intrinsic function.  */
 
 static void
-gfc_conv_intrinsic_si_kind (gfc_se * se, gfc_expr * expr)
+gfc_conv_intrinsic_si_kind (gfc_se *se, gfc_expr *expr)
 {
-  tree arg;
+  tree arg, type;
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
-  arg = build_fold_addr_expr (arg);
+
+  /* The argument to SELECTED_INT_KIND is INTEGER(4).  */
+  type = gfc_get_int_type (4); 
+  arg = build_fold_addr_expr (fold_convert (type, arg));
+
+  /* Convert it to the required type.  */
+  type = gfc_typenode_for_spec (&expr->ts);
   se->expr = build_call_expr (gfor_fndecl_si_kind, 1, arg);
+  se->expr = fold_convert (type, se->expr);
 }
+
 
 /* Generate code for SELECTED_REAL_KIND (P, R) intrinsic function.  */
 
 static void
-gfc_conv_intrinsic_sr_kind (gfc_se * se, gfc_expr * expr)
+gfc_conv_intrinsic_sr_kind (gfc_se *se, gfc_expr *expr)
 {
   gfc_actual_arglist *actual;
-  tree args;
+  tree args, type;
   gfc_se argse;
 
   args = NULL_TREE;
@@ -3520,13 +3528,27 @@ gfc_conv_intrinsic_sr_kind (gfc_se * se, gfc_expr * expr)
       if (actual->expr == NULL)
         argse.expr = null_pointer_node;
       else
-        gfc_conv_expr_reference (&argse, actual->expr);
+	{
+	  gfc_typespec ts;
+	  if (actual->expr->ts.kind != gfc_c_int_kind)
+	    {
+  	      /* The arguments to SELECTED_REAL_KIND are INTEGER(4).  */
+	      ts.type = BT_INTEGER;
+	      ts.kind = gfc_c_int_kind;
+	      gfc_convert_type (actual->expr, &ts, 2);
+	    }
+	  gfc_conv_expr_reference (&argse, actual->expr);
+	} 
 
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
       args = gfc_chainon_list (args, argse.expr);
     }
+
+  /* Convert it to the required type.  */
+  type = gfc_typenode_for_spec (&expr->ts);
   se->expr = build_function_call_expr (gfor_fndecl_sr_kind, args);
+  se->expr = fold_convert (type, se->expr);
 }
 
 

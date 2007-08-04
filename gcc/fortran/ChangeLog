@@ -1,3 +1,17 @@
+2008-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/32969
+	* iresolve.c (gfc_resolve_rrspacing): Convert argument(s) to
+	expected KIND.
+	(gfc_resolve_scale): Ditto.
+	(gfc_resolve_set_exponent): Ditto.
+	(gfc_resolve_spacing): Ditto.
+ 
+	PR fortran/32968
+	* trans-intrinsic.c (gfc_conv_intrinsic_si_kind,
+	gfc_conv_intrinsic_sr_kind): Convert the argument(s) to the
+	expected KIND, and fold the result to the expected KIND.
+
 2007-08-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31202
