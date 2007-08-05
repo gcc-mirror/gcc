@@ -1,3 +1,8 @@
+2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31612
+	* invoke.texi: Adjust documentation for option -fsyntax-only.
+
 2007-08-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@gcc.gnu.org>
 
