@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-functions  -finline-functions-called-once @gol
 -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
--fmodulo-sched -fno-branch-count-reg @gol
+-fmodulo-sched -fmodulo-sched-allow-regmoves -fno-branch-count-reg @gol
 -fno-default-inline  -fno-defer-pop -fmove-loop-invariants @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
@@ -5264,6 +5264,13 @@ behavior.
 Perform swing modulo scheduling immediately before the first scheduling
 pass.  This pass looks at innermost loops and reorders their
 instructions by overlapping different iterations.
+
+@item -fmodulo-sched-allow-regmoves
+@opindex fmodulo-sched-allow-regmoves
+Perform more aggressive SMS based modulo scheduling with register moves
+allowed.  By setting this flag certain anti-dependences edges will be
+deleted which will trigger the generation of reg-moves based on the
+life-range analysis.
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg

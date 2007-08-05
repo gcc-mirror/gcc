@@ -51,7 +51,8 @@ enum edge_flag {NOT_IN_SCC = 0, IN_SCC};
 static void add_backarc_to_ddg (ddg_ptr, ddg_edge_ptr);
 static void add_backarc_to_scc (ddg_scc_ptr, ddg_edge_ptr);
 static void add_scc_to_ddg (ddg_all_sccs_ptr, ddg_scc_ptr);
-static void create_ddg_dependence (ddg_ptr, ddg_node_ptr, ddg_node_ptr, dep_t);
+static void create_ddg_dep_from_intra_loop_link (ddg_ptr, ddg_node_ptr,
+                                                 ddg_node_ptr, dep_t);
 static void create_ddg_dep_no_link (ddg_ptr, ddg_node_ptr, ddg_node_ptr,
  				    dep_type, dep_data_type, int);
 static ddg_edge_ptr create_ddg_edge (ddg_node_ptr, ddg_node_ptr, dep_type,
@@ -145,22 +146,16 @@ mem_access_insn_p (rtx insn)
 /* Computes the dependence parameters (latency, distance etc.), creates
    a ddg_edge and adds it to the given DDG.  */
 static void
-create_ddg_dependence (ddg_ptr g, ddg_node_ptr src_node,
-		       ddg_node_ptr dest_node, dep_t link)
+create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
+                                     ddg_node_ptr dest_node, dep_t link)
 {
   ddg_edge_ptr e;
   int latency, distance = 0;
-  int interloop = (src_node->cuid >= dest_node->cuid);
   dep_type t = TRUE_DEP;
   dep_data_type dt = (mem_access_insn_p (src_node->insn)
 		      && mem_access_insn_p (dest_node->insn) ? MEM_DEP
 							     : REG_DEP);
-
-  /* For now we don't have an exact calculation of the distance,
-     so assume 1 conservatively.  */
-  if (interloop)
-     distance = 1;
-
+  gcc_assert (src_node->cuid < dest_node->cuid);
   gcc_assert (link);
 
   /* Note: REG_DEP_ANTI applies to MEM ANTI_DEP as well!!  */
@@ -168,27 +163,34 @@ create_ddg_dependence (ddg_ptr g, ddg_node_ptr src_node,
     t = ANTI_DEP;
   else if (DEP_KIND (link) == REG_DEP_OUTPUT)
     t = OUTPUT_DEP;
-  latency = dep_cost (link);
 
-  e = create_ddg_edge (src_node, dest_node, t, dt, latency, distance);
-
-  if (interloop)
+  /* We currently choose not to create certain anti-deps edges and
+     compensate for that by generating reg-moves based on the life-range
+     analysis.  The anti-deps that will be deleted are the ones which
+     have true-deps edges in the opposite direction (in other words
+     the kernel has only one def of the relevant register).  TODO:
+     support the removal of all anti-deps edges, i.e. including those
+     whose register has multiple defs in the loop.  */
+  if (flag_modulo_sched_allow_regmoves && (t == ANTI_DEP && dt == REG_DEP))
     {
-      /* Some interloop dependencies are relaxed:
-	 1. Every insn is output dependent on itself; ignore such deps.
-	 2. Every true/flow dependence is an anti dependence in the
-	 opposite direction with distance 1; such register deps
-	 will be removed by renaming if broken --- ignore them.  */
-      if (!(t == OUTPUT_DEP && src_node == dest_node)
-	  && !(t == ANTI_DEP && dt == REG_DEP))
-	add_backarc_to_ddg (g, e);
-      else
-	free (e);
+      rtx set;
+
+      set = single_set (dest_node->insn);
+      if (set)
+        {
+          int regno = REGNO (SET_DEST (set));
+          struct df_ref *first_def =
+            df_bb_regno_first_def_find (g->bb, regno);
+          struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
+
+          if (bitmap_bit_p (bb_info->gen, first_def->id))
+            return;
+        }
     }
-  else if (t == ANTI_DEP && dt == REG_DEP)
-    free (e);  /* We can fix broken anti register deps using reg-moves.  */
-  else
-    add_edge_to_ddg (g, e);
+
+   latency = dep_cost (link);
+   e = create_ddg_edge (src_node, dest_node, t, dt, latency, distance);
+   add_edge_to_ddg (g, e);
 }
 
 /* The same as the above function, but it doesn't require a link parameter.  */
@@ -247,6 +249,11 @@ add_cross_iteration_register_deps (ddg_ptr g, struct df_ref *last_def)
   gcc_assert (last_def_node);
   gcc_assert (first_def);
 
+#ifdef ENABLE_CHECKING
+  if (last_def->id != first_def->id)
+    gcc_assert (!bitmap_bit_p (bb_info->gen, first_def->id));
+#endif
+
   /* Create inter-loop true dependences and anti dependences.  */
   for (r_use = DF_REF_CHAIN (last_def); r_use != NULL; r_use = r_use->next)
     {
@@ -280,14 +287,11 @@ add_cross_iteration_register_deps (ddg_ptr g, struct df_ref *last_def)
 
 	  gcc_assert (first_def_node);
 
-          if (last_def->id != first_def->id)
-            {
-#ifdef ENABLE_CHECKING
-              gcc_assert (!bitmap_bit_p (bb_info->gen, first_def->id));
-#endif
-              create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
-                                      REG_DEP, 1);
-            }
+          if (last_def->id != first_def->id
+              || !flag_modulo_sched_allow_regmoves)
+            create_ddg_dep_no_link (g, use_node, first_def_node, ANTI_DEP,
+                                    REG_DEP, 1);
+
 	}
     }
   /* Create an inter-loop output dependence between LAST_DEF (which is the
@@ -392,7 +396,7 @@ build_intra_loop_deps (ddg_ptr g)
 	    continue;
 
       	  add_forw_dep (link);
-	  create_ddg_dependence (g, src_node, dest_node, dep);
+	  create_ddg_dep_from_intra_loop_link (g, src_node, dest_node, dep);
 	}
 
       /* If this insn modifies memory, add an edge to all insns that access
