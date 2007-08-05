@@ -1,3 +1,8 @@
+2007-08-05  Vladimir Yanovsky  <yanov@il.ibm.com>
+            Revital Eres <eres@il.ibm.com>
+
+	* gcc.dg/sms-antideps.c: New test.
+
 2007-08-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31214

@@ -651,6 +651,10 @@ fmodulo-sched
 Common Report Var(flag_modulo_sched) Optimization
 Perform SMS based modulo scheduling before the first scheduling pass
 
+fmodulo-sched-allow-regmoves
+Common Report Var(flag_modulo_sched_allow_regmoves)
+Perform SMS based modulo scheduling with register moves allowed
+
 fmove-loop-invariants
 Common Report Var(flag_move_loop_invariants) Init(1) Optimization
 Move loop invariant computations out of loops

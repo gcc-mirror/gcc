@@ -1,3 +1,18 @@
+2007-08-05  Vladimir Yanovsky  <yanov@il.ibm.com>
+            Revital Eres <eres@il.ibm.com>
+
+	* doc/invoke.texi (-fmodulo-sched-allow-regmoves): Document new
+	flag.
+	* ddg.c (create_ddg_dependence): Rename to...
+	(create_ddg_dep_from_intra_loop_link): This.  Do not check
+	for interloop edges.  Do not create anti dependence edge when
+	a true dependence edge exists in the opposite direction and
+	-fmodulo-sched-allow-regmoves is set.
+	(build_intra_loop_deps): Call create_ddg_dep_from_intra_loop_link.
+	(add_cross_iteration_register_deps): Create anti dependence edge
+	when -fno-modulo-sched-allow-regmoves is set.
+	* common.opt (-fmodulo-sched-allow-regmoves): New flag.
+
 2007-08-04  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/arm.md (movsi): Add braces.
