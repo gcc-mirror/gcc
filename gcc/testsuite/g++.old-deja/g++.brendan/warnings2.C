@@ -1,5 +1,4 @@
-// { dg-do compile  }
-// { dg-options "-Wall -Wextra" }
+// { dg-do assemble  }
 // GROUPS passed warnings
 class K {
 public:

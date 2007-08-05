@@ -1,3 +1,12 @@
+2007-08-05  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	* g++.dg/warn/pedantic2.C: Fix error marker.  Add more tests.
+
+	Revert:
+	2007-03-22  Dirk Mueller  <dmueller@suse.de>
+
+	* g++.old-deja/g++.brendan/warnings2.C: Don't use -pedantic.
+
 2007-08-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32979
