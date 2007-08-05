@@ -1617,6 +1617,12 @@ add_functions (void)
 
   make_generic ("isatty", GFC_ISYM_ISATTY, GFC_STD_GNU);
 
+  add_sym_1 ("isnan", GFC_ISYM_ISNAN, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL,
+	     dl, GFC_STD_GNU, gfc_check_isnan, NULL, NULL,
+	     x, BT_REAL, 0, REQUIRED);
+
+  make_generic ("isnan", GFC_ISYM_ISNAN, GFC_STD_GNU);
+
   add_sym_2 ("rshift", GFC_ISYM_RSHIFT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_GNU,
 	     gfc_check_ishft, NULL, gfc_resolve_rshift,
 	     i, BT_INTEGER, di, REQUIRED, sh, BT_INTEGER, di, REQUIRED);

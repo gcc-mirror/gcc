@@ -2765,6 +2765,18 @@ gfc_conv_intrinsic_ichar (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Intrinsic ISNAN calls __builtin_isnan.  */
+
+static void
+gfc_conv_intrinsic_isnan (gfc_se * se, gfc_expr * expr)
+{
+  tree arg;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  se->expr = build_call_expr (built_in_decls[BUILT_IN_ISNAN], 1, arg);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
 /* MERGE (tsource, fsource, mask) = mask ? tsource : fsource.  */
 
 static void
@@ -3985,6 +3997,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_IOR:
       gfc_conv_intrinsic_bitop (se, expr, BIT_IOR_EXPR);
+      break;
+
+    case GFC_ISYM_ISNAN:
+      gfc_conv_intrinsic_isnan (se, expr);
       break;
 
     case GFC_ISYM_LSHIFT:
