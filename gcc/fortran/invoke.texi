@@ -360,7 +360,9 @@ messages produced.
 @item -fsyntax-only
 @opindex @code{fsyntax-only}
 @cindex syntax checking
-Check the code for syntax errors, but don't do anything beyond that.
+Check the code for syntax errors, but don't actually compile it.  This
+will generate module files for each module present in the code, but no
+other output file.
 
 @item -pedantic
 @opindex @code{pedantic}
