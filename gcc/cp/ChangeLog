@@ -1,3 +1,10 @@
+2007-08-05  Volker Reichelt  <v.reichelt@netcologne.de>
+
+	Revert:
+	2007-03-26  Dirk Mueller  <dmueller@suse.de>
+
+	* parser.c (cp_parser_member_declaration): Pedwarn
+	about stray semicolons after member declarations.
 
 2007-08-02  Lee Millward  <lee.millward@gmail.com>
 
