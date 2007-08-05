@@ -2515,6 +2515,9 @@ rest_of_handle_local_alloc (void)
      we are doing optimization.  */
   if (optimize)
     df_urec_add_problem ();
+#ifdef ENABLE_CHECKING
+  df->changeable_flags |= DF_VERIFY_SCHEDULED;
+#endif
   df_analyze ();
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();

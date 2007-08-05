@@ -407,7 +407,9 @@ enum df_changeable_flags
   /* Cause df_insn_rescan df_notes_rescan and df_insn_delete, to
   return after marking the insn for later processing.  This allows all
   rescans to be batched.  */
-  DF_DEFER_INSN_RESCAN    = 32
+  DF_DEFER_INSN_RESCAN    = 32,
+
+  DF_VERIFY_SCHEDULED     = 64
 };
 
 /* Two of these structures are inline in df, one for the uses and one
@@ -807,7 +809,7 @@ extern enum df_changeable_flags df_set_flags (enum df_changeable_flags);
 extern enum df_changeable_flags df_clear_flags (enum df_changeable_flags);
 extern void df_set_blocks (bitmap);
 extern void df_remove_problem (struct dataflow *);
-extern void df_finish_pass (void);
+extern void df_finish_pass (bool);
 extern void df_analyze_problem (struct dataflow *, bitmap, int *, int);
 extern void df_analyze (void);
 extern int df_get_n_blocks (enum df_flow_dir);

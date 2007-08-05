@@ -8625,7 +8625,7 @@ ia64_reorg (void)
       variable_tracking_main ();
       timevar_pop (TV_VAR_TRACKING);
     }
-  df_finish_pass ();
+  df_finish_pass (false);
 }
 
 /* Return true if REGNO is used by the epilogue.  */

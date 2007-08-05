@@ -1266,7 +1266,7 @@ iv_analysis_done (void)
     {
       clear_iv_info ();
       clean_slate = true;
-      df_finish_pass ();
+      df_finish_pass (true);
       htab_delete (bivs);
       free (iv_ref_table);
       iv_ref_table = NULL;

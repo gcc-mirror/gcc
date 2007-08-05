@@ -1013,7 +1013,7 @@ execute_todo (unsigned int flags)
   /* Now that the dumping has been done, we can get rid of the optional 
      df problems.  */
   if (flags & TODO_df_finish)
-    df_finish_pass ();
+    df_finish_pass ((flags & TODO_df_verify) != 0);
 }
 
 /* Verify invariants that should hold between passes.  This is a place
