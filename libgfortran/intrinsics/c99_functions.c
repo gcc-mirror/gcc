@@ -500,8 +500,9 @@ powf(float x, float y)
 
 /* Algorithm by Steven G. Kargl.  */
 
-#if !defined(HAVE_ROUNDL) && defined(HAVE_CEILL)
+#if !defined(HAVE_ROUNDL)
 #define HAVE_ROUNDL 1
+#if defined(HAVE_CEILL)
 /* Round to nearest integral value.  If the argument is halfway between two
    integral values then round away from zero.  */
 
@@ -527,6 +528,27 @@ roundl(long double x)
       return (-t);
     }
 }
+#else
+
+/* Poor version of roundl for system that don't have ceill.  */
+long double
+roundl(long double x)
+{
+  if (x > DBL_MAX || x < -DBL_MAX)
+    {
+#ifdef HAVE_NEXTAFTERL
+      static long double prechalf = nexafterl (0.5L, LDBL_MAX);
+#else
+      static long double prechalf = 0.5L;
+#endif
+      return (GFC_INTEGER_LARGEST) (x + (x > 0 ? prechalf : -prechalf));
+    }
+  else
+    /* Use round().  */
+    return round((double) x);
+}
+
+#endif
 #endif
 
 #ifndef HAVE_ROUND

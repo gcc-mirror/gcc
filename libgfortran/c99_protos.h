@@ -200,7 +200,7 @@ extern double round(double);
 extern float roundf(float);
 #endif
 
-#if !defined(HAVE_ROUNDL) && defined(HAVE_CEILL)
+#if !defined(HAVE_ROUNDL)
 #define HAVE_ROUNDL 1
 extern long double roundl(long double);
 #endif

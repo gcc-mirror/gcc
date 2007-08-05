@@ -1,3 +1,10 @@
+2007-08-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31202
+	* intrinsics/c99_functions.c (roundl): Provide fallback
+	implementation for systems without ceill.
+	* c99_protos.h (roundl): Define prototype in all cases.
+
 2007-08-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/32977
