@@ -3304,6 +3304,16 @@ gfc_check_isatty (gfc_expr *unit)
 
 
 try
+gfc_check_isnan (gfc_expr *x)
+{
+  if (type_check (x, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_perror (gfc_expr *string)
 {
   if (type_check (string, 0, BT_CHARACTER) == FAILURE)

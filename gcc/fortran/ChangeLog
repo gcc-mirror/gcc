@@ -1,3 +1,16 @@
+2007-08-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/32979
+	* intrinsic.h (gfc_check_isnan): Add prototype.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_ISNAN.
+	* intrinsic.c (add_functions): Add ISNAN intrinsic.
+	* check.c (gfc_check_isnan): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_isnan): New function.
+	(gfc_conv_intrinsic_function): Call gfc_conv_intrinsic_isnan
+	to translate ISNAN.
+	* intrinsic.texi: Document ISNAN.
+
 2007-08-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31214

@@ -78,6 +78,7 @@ try gfc_check_intconv (gfc_expr *);
 try gfc_check_ior (gfc_expr *, gfc_expr *);
 try gfc_check_irand (gfc_expr *);
 try gfc_check_isatty (gfc_expr *);
+try gfc_check_isnan (gfc_expr *);
 try gfc_check_ishft (gfc_expr *, gfc_expr *);
 try gfc_check_ishftc (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_kill (gfc_expr *, gfc_expr *);
