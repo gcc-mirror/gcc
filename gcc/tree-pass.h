@@ -222,8 +222,11 @@ struct dump_file_info
    the instance before it is destroyed.  */
 #define TODO_df_finish                  (1 << 16)
 
+/* Call df_verify at the end of the pass if checking is enabled.  */
+#define TODO_df_verify                  (1 << 17)
+
 /* Internally used for the first instance of a pass.  */
-#define TODO_mark_first_instance	(1 << 17)
+#define TODO_mark_first_instance	(1 << 18)
 
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\

@@ -10257,22 +10257,6 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   final (insns, file, 1);
   final_end_function ();
 
-#if 0
-  if (optimize > 0)
-    {
-      /* Release all memory allocated by df.  */
-      if (rtl_df)
-	{
-	  df_finish (rtl_df);
-	  rtl_df = NULL;
-	}
-
-      /* Release the bitmap obstacks.  */
-      bitmap_obstack_release (&reg_obstack);
-      bitmap_obstack_release (NULL);
-    }
-#endif
-
   reload_completed = 0;
   epilogue_completed = 0;
 }

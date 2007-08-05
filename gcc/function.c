@@ -5514,6 +5514,7 @@ struct tree_opt_pass pass_thread_prologue_and_epilogue =
   0,                                    /* properties_destroyed */
   TODO_verify_flow,                     /* todo_flags_start */
   TODO_dump_func |
+  TODO_df_verify |
   TODO_df_finish |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'w'                                   /* letter */

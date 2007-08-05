@@ -79,7 +79,7 @@ Here is an example of using the dataflow routines.
 
       df_dump (stderr);
 
-      df_finish_pass ();
+      df_finish_pass (false);
 
 DF_[ru,rd,urec,ri,chain]_ADD_PROBLEM adds a problem, defined by an
 instance to struct df_problem, to the set of problems solved in this
@@ -633,7 +633,7 @@ df_remove_problem (struct dataflow *dflow)
    of the changeable_flags.  */
 
 void
-df_finish_pass (void)
+df_finish_pass (bool verify ATTRIBUTE_UNUSED)
 {
   int i;
   int removed = 0;
@@ -693,6 +693,11 @@ df_finish_pass (void)
 #ifdef DF_DEBUG_CFG
   df_set_clean_cfg ();
 #endif
+#endif
+
+#ifdef ENABLE_CHECKING
+  if (verify)
+    df->changeable_flags |= DF_VERIFY_SCHEDULED;
 #endif
 }
 
@@ -1100,9 +1105,10 @@ df_analyze (void)
   if (dump_file)
     fprintf (dump_file, "df_analyze called\n");
 
-#ifdef ENABLE_DF_CHECKING
-  df_verify ();
-#endif 
+#ifndef ENABLE_DF_CHECKING
+  if (df->changeable_flags & DF_VERIFY_SCHEDULED)
+#endif
+    df_verify ();
 
   for (i = 0; i < df->n_blocks; i++)
     bitmap_set_bit (current_all_blocks, df->postorder[i]);
@@ -1509,9 +1515,11 @@ void
 df_verify (void)
 {
   df_scan_verify ();
+#ifdef ENABLE_DF_CHECKING
   df_lr_verify_transfer_functions ();
   if (df_live)
     df_live_verify_transfer_functions ();
+#endif
 }
 
 #ifdef DF_DEBUG_CFG

@@ -4534,7 +4534,7 @@ bfin_reorg (void)
       reorder_var_tracking_notes ();
       timevar_pop (TV_VAR_TRACKING);
     }
-  df_finish_pass ();
+  df_finish_pass (false);
 }
 
 /* Handle interrupt_handler, exception_handler and nmi_handler function
