@@ -4132,28 +4132,6 @@ resolve_forall_iterators (gfc_forall_iterator *iter)
 }
 
 
-/* Given a pointer to a symbol that is a derived type, see if any components
-   have the POINTER attribute.  The search is recursive if necessary.
-   Returns zero if no pointer components are found, nonzero otherwise.  */
-
-static int
-derived_pointer (gfc_symbol *sym)
-{
-  gfc_component *c;
-
-  for (c = sym->components; c; c = c->next)
-    {
-      if (c->pointer)
-	return 1;
-
-      if (c->ts.type == BT_DERIVED && derived_pointer (c->ts.derived))
-	return 1;
-    }
-
-  return 0;
-}
-
-
 /* Given a pointer to a symbol that is a derived type, see if it's
    inaccessible, i.e. if it's defined in another module and the components are
    PRIVATE.  The search is recursive if necessary.  Returns zero if no
@@ -4164,7 +4142,7 @@ derived_inaccessible (gfc_symbol *sym)
 {
   gfc_component *c;
 
-  if (sym->attr.use_assoc && sym->component_access == ACCESS_PRIVATE)
+  if (sym->attr.use_assoc && sym->attr.private_comp)
     return 1;
 
   for (c = sym->components; c; c = c->next)
@@ -5080,7 +5058,7 @@ resolve_transfer (gfc_code *code)
     {
       /* Check that transferred derived type doesn't contain POINTER
 	 components.  */
-      if (derived_pointer (ts->derived))
+      if (ts->derived->attr.pointer_comp)
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
 		     "POINTER components", &code->loc);
@@ -5929,7 +5907,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	      if (code->expr->ts.type == BT_DERIVED
 		    && code->expr->expr_type == EXPR_VARIABLE
-		    && derived_pointer (code->expr->ts.derived)
+		    && code->expr->ts.derived->attr.pointer_comp
 		    && gfc_impure_variable (code->expr2->symtree->n.sym))
 		{
 		  gfc_error ("The impure variable at %L is assigned to "
@@ -7043,13 +7021,11 @@ resolve_fl_namelist (gfc_symbol *sym)
     {
       for (nl = sym->namelist; nl; nl = nl->next)
 	{
-	  if (nl->sym->attr.use_assoc
-	      || (sym->ns->parent == nl->sym->ns)
-	      || (sym->ns->parent
-		  && sym->ns->parent->parent == nl->sym->ns))
-	    continue;
-
-	  if (!gfc_check_access(nl->sym->attr.access,
+	  if (!nl->sym->attr.use_assoc
+	      && !(sym->ns->parent == nl->sym->ns)
+	      && !(sym->ns->parent
+		   && sym->ns->parent->parent == nl->sym->ns)
+	      && !gfc_check_access(nl->sym->attr.access,
 				nl->sym->ns->default_access))
 	    {
 	      gfc_error ("NAMELIST object '%s' was declared PRIVATE and "
@@ -7058,10 +7034,22 @@ resolve_fl_namelist (gfc_symbol *sym)
 	      return FAILURE;
 	    }
 
+	  /* Types with private components that came here by USE-association.  */
 	  if (nl->sym->ts.type == BT_DERIVED
+	      && derived_inaccessible (nl->sym->ts.derived))
+	    {
+	      gfc_error ("NAMELIST object '%s' has use-associated PRIVATE "
+			 "components and cannot be member of namelist '%s' at %L",
+			 nl->sym->name, sym->name, &sym->declared_at);
+	      return FAILURE;
+	    }
+
+	  /* Types with private components that are defined in the same module.  */
+	  if (nl->sym->ts.type == BT_DERIVED
+	      && !(sym->ns->parent == nl->sym->ts.derived->ns)
 	      && !gfc_check_access (nl->sym->ts.derived->attr.private_comp
-				    ? ACCESS_PRIVATE : ACCESS_UNKNOWN,
-				    nl->sym->ns->default_access))
+					? ACCESS_PRIVATE : ACCESS_UNKNOWN,
+					nl->sym->ns->default_access))
 	    {
 	      gfc_error ("NAMELIST object '%s' has PRIVATE components and "
 			 "cannot be a member of PUBLIC namelist '%s' at %L",
