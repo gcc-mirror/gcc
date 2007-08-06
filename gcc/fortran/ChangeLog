@@ -1,3 +1,9 @@
+2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/30933
+	* iresolve.c (gfc_resolve_exit): Convert argument to default
+	integer kind.
+
 2007-08-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	* resolve.c (derived_pointer): Removed, replaced callers by access 
