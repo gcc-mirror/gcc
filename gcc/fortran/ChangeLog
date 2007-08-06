@@ -1,5 +1,11 @@
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30947
+	* iresolve.c (gfc_resolve_alarm_sub): Suffix the subroutine name
+	with the kind of the STATUS argument.
+
+2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/30948
 	* intrinsic.c (add_functions): Fix name of argument to CHDIR.
 

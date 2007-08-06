@@ -1,5 +1,15 @@
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30947
+	* intrinsics/signal.c: Create specific versions of alarm_sub and
+	alarm_sub_int according to the integer kind of the last argument.
+	* gfortran.map (GFORTRAN_1.0): Remove _gfortran_alarm_sub and
+	_gfortran_alarm_sub_int, add _gfortran_alarm_sub_i4,
+	_gfortran_alarm_sub_i8, _gfortran_alarm_sub_int_i4 and
+	_gfortran_alarm_sub_int_i8.
+
+2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/29828
 	* intrinsics/string_intrinsics.c (string_minmax): New function
 	and prototype.

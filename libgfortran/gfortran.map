@@ -4,8 +4,10 @@ GFORTRAN_1.0 {
     _gfortran_access_func;
     _gfortran_adjustl;
     _gfortran_adjustr;
-    _gfortran_alarm_sub;
-    _gfortran_alarm_sub_int;
+    _gfortran_alarm_sub_i4;
+    _gfortran_alarm_sub_i8;
+    _gfortran_alarm_sub_int_i4;
+    _gfortran_alarm_sub_int_i8;
     _gfortran_all_l16;
     _gfortran_all_l4;
     _gfortran_all_l8;
