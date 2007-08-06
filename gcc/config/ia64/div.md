@@ -140,10 +140,10 @@
         (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (minus:RF
-            (match_operand:RF 2 "fr_reg_or_fp01_operand" "fg,fG")
+            (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
             (mult:RF
-              (match_operand:RF 3 "fr_reg_or_fp01_operand" "fg,fG")
-              (match_operand:RF 4 "fr_reg_or_fp01_operand" "fg,fG")))
+              (match_operand:RF 3 "fr_reg_or_fp01_operand" "fG,fG")
+              (match_operand:RF 4 "fr_reg_or_fp01_operand" "fG,fG")))
           (match_operand:RF 5 "fr_reg_or_0_operand" "0,H")))
    (use (match_operand:SI 6 "const_int_operand" ""))
    (use (match_operand:SI 7 "const_int_operand" ""))]

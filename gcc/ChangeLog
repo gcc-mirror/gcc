@@ -1,5 +1,9 @@
 2007-08-06  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/ia64/div.md (m2subrf4_cond): Change 'g' to 'G'.
+
+2007-08-06  Steve Ellcey  <sje@cup.hp.com>
+
 	* config/ia64/ia64.h (MODES_TIEABLE_P): Fix typo.
 
 2007-08-06  H.J. Lu  <hongjiu.lu@intel.com>
