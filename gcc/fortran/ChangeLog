@@ -1,6 +1,6 @@
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
-	PR fortran/30933
+	PR fortran/30948
 	* intrinsic.c (add_functions): Fix name of argument to CHDIR.
 
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
