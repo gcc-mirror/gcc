@@ -1,3 +1,10 @@
+2007-08-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	* resolve.c (derived_pointer): Removed, replaced callers by access 
+	to appropiate attribute bit.
+	(derived_inaccessable): Shortcut recursion depth.
+	(resolve_fl_namelist): Fixed checks for private components in namelists.
+
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29828
