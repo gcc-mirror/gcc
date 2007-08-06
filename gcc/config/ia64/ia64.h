@@ -678,7 +678,7 @@ while (0)
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
   (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)	\
    && ((((MODE1) == XFmode) || ((MODE1) == XCmode) || ((MODE1) == RFmode))	\
-       == (((MODE2) == XFmode) || ((MODE2) == XCmode) || ((MODE1) == RFmode)))	\
+       == (((MODE2) == XFmode) || ((MODE2) == XCmode) || ((MODE2) == RFmode)))	\
    && (((MODE1) == BImode) == ((MODE2) == BImode)))
 
 /* Specify the modes required to caller save a given hard regno.
