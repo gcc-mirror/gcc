@@ -1,3 +1,7 @@
+2007-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/sms-antideps.c: Add a "return 0" to the end of main.
+
 2007-08-05  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	* g++.dg/warn/pedantic2.C: Fix error marker.  Add more tests.
