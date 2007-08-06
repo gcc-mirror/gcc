@@ -1,3 +1,9 @@
+2007-08-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/19532
+	* pt.c (template_class_depth): Fix comment; change return type
+	to bool.
+
 2007-08-05  Volker Reichelt  <v.reichelt@netcologne.de>
 
 	Revert:

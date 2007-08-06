@@ -126,7 +126,7 @@ static int for_each_template_parm (tree, tree_fn_t, void*,
 				   struct pointer_set_t*);
 static tree expand_template_argument_pack (tree);
 static tree build_template_parm_index (int, int, int, tree, tree);
-static int inline_needs_template_parms (tree);
+static bool inline_needs_template_parms (tree);
 static void push_inline_template_parms_recursive (tree, int);
 static tree retrieve_local_specialization (tree);
 static void register_local_specialization (tree, tree);
@@ -308,14 +308,14 @@ template_class_depth (tree type)
   return depth;
 }
 
-/* Returns 1 if processing DECL as part of do_pending_inlines
-   needs us to push template parms.  */
+/* Subroutine of maybe_begin_member_template_processing.
+   Returns true if processing DECL needs us to push template parms.  */
 
-static int
+static bool
 inline_needs_template_parms (tree decl)
 {
   if (! DECL_TEMPLATE_INFO (decl))
-    return 0;
+    return false;
 
   return (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (most_general_template (decl)))
 	  > (processing_template_decl + DECL_TEMPLATE_SPECIALIZATION (decl)));
