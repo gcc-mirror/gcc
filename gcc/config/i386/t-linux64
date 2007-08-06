@@ -17,9 +17,3 @@ EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o \
 
 softfp_wrap_start := '\#ifdef __x86_64__'
 softfp_wrap_end := '\#endif'
-
-# The pushl in CTOR initialization interferes with frame pointer elimination.
-# crtend*.o cannot be compiled without -fno-asynchronous-unwind-tables,
-# because then __FRAME_END__ might not be the last thing in .eh_frame
-# section.
-CRTSTUFF_T_CFLAGS = -fno-omit-frame-pointer -fno-asynchronous-unwind-tables

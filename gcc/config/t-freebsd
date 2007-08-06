@@ -1,5 +1,5 @@
 # Compile crtbeginS.o and crtendS.o with pic.
-CRTSTUFF_T_CFLAGS_S = -fPIC
+CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -fPIC
 
 # Compile libgcc.a with pic.
 TARGET_LIBGCC2_CFLAGS += -fPIC
