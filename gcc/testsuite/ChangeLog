@@ -1,3 +1,8 @@
+2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/nan_1.f90: Rename module into aux2 to avoid cygwin
+	hanging on the testcase.
+
 2007-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/32988
