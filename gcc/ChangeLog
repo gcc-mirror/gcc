@@ -1,3 +1,26 @@
+2007-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR target/31868
+	* config.gcc (x86_64-*-freebsd*): Add i386/t-crtstuff to
+	tmake_file.
+	(x86_64-*-netbsd*): Likewise.
+	(x86_64-*-linux*): Likewise.
+	(x86_64-*-kfreebsd*-gnu): Likewise.
+	(x86_64-*-knetbsd*-gnu): Likewise.
+	(i[34567]86-*-solaris2.1[0-9]*): Likewise.
+
+	* config/i386/t-linux64 (CRTSTUFF_T_CFLAGS): Removed.
+
+	* config/i386/t-crtstuff (CRTSTUFF_T_CFLAGS): Update comments.
+	Add -fno-asynchronous-unwind-tables.
+
+	* config/t-freebsd (CRTSTUFF_T_CFLAGS_S): Add $(CRTSTUFF_T_CFLAGS).
+	* config/t-libc-ok (CRTSTUFF_T_CFLAGS_S): Likewise.
+	* config/t-lynx (CRTSTUFF_T_CFLAGS_S): Likewise.
+	* config/t-netbsd (CRTSTUFF_T_CFLAGS_S): Likewise.
+	* config/t-svr4 (CRTSTUFF_T_CFLAGS_S): Likewise.
+
 2007-08-06  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_c_mode_for_suffix): New.
