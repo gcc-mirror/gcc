@@ -1,3 +1,14 @@
+2007-08-06  Chao-ying Fu  <fu@mips.com>
+
+	* fixed-value.h: New file.
+	* fixed-value.c: New file.
+	* Makefile.in (OBJS-common): Add fixed-value.o.
+	(fixed-value.o): New rule.
+	(GTFILES): Add fixed-value.h.
+	* double-int.c (double_int_scmp): We should use unsigned HOST_WIDE_INT
+	to compare a.low and b.low.
+	* gengtype.c (main): Handle FIXED_VALUE_TYPE type as scalar typedef.
+
 2007-08-06  H.J. Lu  <hongjiu.lu@intel.com>
 	    Daniel Jacobowitz  <dan@codesourcery.com>
 
