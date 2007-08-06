@@ -1,3 +1,8 @@
+2007-08-06  Dan Hipschman  <dsh@google.com>
+
+	* method.c (use_thunk): Use DECL_NAME instead of DECL_RTL to
+	access function name.
+
 2007-08-04  Alfred Minarik  <a.minarik@aon.at>
 
 	PR pch/13676
