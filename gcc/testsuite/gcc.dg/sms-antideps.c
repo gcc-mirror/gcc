@@ -31,6 +31,7 @@ main ()
   unsigned long long res;
 
   res = foo (3, 4);
+  return 0;
 }
 
 
