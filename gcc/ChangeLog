@@ -1,3 +1,9 @@
+2008-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/32988
+	* tree.c (build2_stat): Instead of checking for INTEGER_TYPE, check
+	for INTEGRAL_TYPE_P.
+
 2008-08-05  Paolo Bonzini  <bonzini@gnu.org>
 
         * configure.ac: Remove --enable-checking=df from default settings.
