@@ -282,6 +282,7 @@ static const char *ia64_mangle_type (tree);
 static const char *ia64_invalid_conversion (tree, tree);
 static const char *ia64_invalid_unary_op (int, tree);
 static const char *ia64_invalid_binary_op (int, tree, tree);
+static enum machine_mode ia64_c_mode_for_suffix (char);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -484,6 +485,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_INVALID_UNARY_OP ia64_invalid_unary_op
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP ia64_invalid_binary_op
+
+#undef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX ia64_c_mode_for_suffix
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9847,6 +9851,19 @@ ia64_handle_version_id_attribute (tree *node ATTRIBUTE_UNUSED,
       return NULL_TREE;
     }
   return NULL_TREE;
+}
+
+/* Target hook for c_mode_for_suffix.  */
+
+static enum machine_mode
+ia64_c_mode_for_suffix (char suffix)
+{
+  if (suffix == 'q')
+    return TFmode;
+  if (suffix == 'w')
+    return XFmode;
+
+  return VOIDmode;
 }
 
 #include "gt-ia64.h"

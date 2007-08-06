@@ -1,5 +1,10 @@
 2007-08-06  Steve Ellcey  <sje@cup.hp.com>
 
+	* config/ia64/ia64.c (ia64_c_mode_for_suffix): New.
+	(TARGET_C_MODE_FOR_SUFFIX): New.
+
+2007-08-06  Steve Ellcey  <sje@cup.hp.com>
+
 	* config/ia64/div.md (m2subrf4_cond): Change 'g' to 'G'.
 
 2007-08-06  Steve Ellcey  <sje@cup.hp.com>
