@@ -1,3 +1,11 @@
+2007-08-06  Andrew Pinski  <pinskia@gmail.com>
+
+	PR libobjc/30731
+	* exception.c (parse_lsda_header): Use _uleb128_t/_sleb128_t instead
+	of _Unwind_Word for variables which are used in
+	read_uleb128/read_sleb128.
+	(PERSONALITY_FUNCTION): Likewise.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* aclocal.m4: Regenerated.
