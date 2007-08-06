@@ -3533,6 +3533,7 @@ main (int argc, char **argv)
   pos.line = __LINE__ + 1;
   do_scalar_typedef ("CUMULATIVE_ARGS", &pos); pos.line++;
   do_scalar_typedef ("REAL_VALUE_TYPE", &pos); pos.line++;
+  do_scalar_typedef ("FIXED_VALUE_TYPE", &pos); pos.line++;
   do_scalar_typedef ("double_int", &pos); pos.line++;
   do_scalar_typedef ("uint8", &pos); pos.line++;
   do_scalar_typedef ("jword", &pos); pos.line++;
