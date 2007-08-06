@@ -1,3 +1,8 @@
+2007-08-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.c-torture/20070522-1.c: Move to ...
+	* gcc.c-torture/compile/20070522-1.c: Here.
+
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29828
