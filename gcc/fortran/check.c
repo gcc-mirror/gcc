@@ -1512,10 +1512,17 @@ gfc_check_min_max (gfc_actual_arglist *arg)
 
   x = arg->expr;
 
-  if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL)
+  if (x->ts.type == BT_CHARACTER)
     {
-      gfc_error ("'a1' argument of '%s' intrinsic at %L must be INTEGER "
-		 "or REAL", gfc_current_intrinsic, &x->where);
+      if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: '%s' intrinsic "
+			  "with CHARACTER argument at %L",
+			  gfc_current_intrinsic, &x->where) == FAILURE)
+	return FAILURE;
+    }
+  else if (x->ts.type != BT_INTEGER && x->ts.type != BT_REAL)
+    {
+      gfc_error ("'a1' argument of '%s' intrinsic at %L must be INTEGER, "
+		 "REAL or CHARACTER", gfc_current_intrinsic, &x->where);
       return FAILURE;
     }
 

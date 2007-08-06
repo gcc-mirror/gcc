@@ -1,5 +1,18 @@
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/29828
+	* trans.h (gfor_fndecl_string_minmax): New prototype.
+	* trans-decl.c (gfor_fndecl_string_minmax): New variable.
+	(gfc_build_intrinsic_function_decls): Create gfor_fndecl_string_minmax.
+	* check.c (gfc_check_min_max): Allow for character arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax_char): New function.
+	(gfc_conv_intrinsic_function): Add special case for MIN and MAX
+	intrinsics with character arguments.
+	* simplify.c (simplify_min_max): Add simplification for character
+	arguments.
+
+2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31612
 	* invoke.texi: Adjust documentation for option -fsyntax-only.
 
