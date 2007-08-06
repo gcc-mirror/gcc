@@ -2739,14 +2739,18 @@ void
 gfc_resolve_exit (gfc_code *c)
 {
   const char *name;
-  int kind;
+  gfc_typespec ts;
+  gfc_expr *n;
 
-  if (c->ext.actual->expr != NULL)
-    kind = c->ext.actual->expr->ts.kind;
-  else
-    kind = gfc_default_integer_kind;
+  /* The STATUS argument has to be of default kind.  If it is not,
+     we convert it.  */
+  ts.type = BT_INTEGER;
+  ts.kind = gfc_default_integer_kind;
+  n = c->ext.actual->expr;
+  if (n != NULL && n->ts.kind != ts.kind)
+    gfc_convert_type (n, &ts, 2);
 
-  name = gfc_get_string (PREFIX ("exit_i%d"), kind);
+  name = gfc_get_string (PREFIX ("exit_i%d"), ts.kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
