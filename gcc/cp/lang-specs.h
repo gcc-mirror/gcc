@@ -33,6 +33,12 @@ along with GCC; see the file COPYING3.  If not see
   {".C",   "@c++", 0, 0, 0},
   {".CPP", "@c++", 0, 0, 0},
   {".H",   "@c++-header", 0, 0, 0},
+  {".hpp", "@c++-header", 0, 0, 0},
+  {".hp",  "@c++-header", 0, 0, 0},
+  {".hxx", "@c++-header", 0, 0, 0},
+  {".h++", "@c++-header", 0, 0, 0},
+  {".HPP", "@c++-header", 0, 0, 0},
+  {".tcc", "@c++-header", 0, 0, 0},
   {".hh",  "@c++-header", 0, 0, 0},
   {"@c++-header",
     "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
