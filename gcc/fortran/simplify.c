@@ -2361,7 +2361,6 @@ simplify_min_max (gfc_expr *expr, int sign)
 	  if (mpz_cmp (arg->expr->value.integer,
 		       extremum->expr->value.integer) * sign > 0)
 	    mpz_set (extremum->expr->value.integer, arg->expr->value.integer);
-
 	  break;
 
 	case BT_REAL:
@@ -2369,11 +2368,40 @@ simplify_min_max (gfc_expr *expr, int sign)
 	      * sign > 0)
 	    mpfr_set (extremum->expr->value.real, arg->expr->value.real,
 		      GFC_RND_MODE);
-
 	  break;
 
+	case BT_CHARACTER:
+#define LENGTH(x) ((x)->expr->value.character.length)
+#define STRING(x) ((x)->expr->value.character.string)
+	  if (LENGTH(extremum) < LENGTH(arg))
+	    {
+	      char * tmp = STRING(extremum);
+
+	      STRING(extremum) = gfc_getmem (LENGTH(arg) + 1);
+	      memcpy (STRING(extremum), tmp, LENGTH(extremum));
+	      memset (&STRING(extremum)[LENGTH(extremum)], ' ',
+		      LENGTH(arg) - LENGTH(extremum));
+	      STRING(extremum)[LENGTH(arg)] = '\0';  /* For debugger  */
+	      LENGTH(extremum) = LENGTH(arg);
+	      gfc_free (tmp);
+	    }
+
+	  if (gfc_compare_string (arg->expr, extremum->expr) * sign > 0)
+	    {
+	      gfc_free (STRING(extremum));
+	      STRING(extremum) = gfc_getmem (LENGTH(extremum) + 1);
+	      memcpy (STRING(extremum), STRING(arg), LENGTH(arg));
+	      memset (&STRING(extremum)[LENGTH(arg)], ' ',
+		      LENGTH(extremum) - LENGTH(arg));
+	      STRING(extremum)[LENGTH(extremum)] = '\0';  /* For debugger  */
+	    }
+#undef LENGTH
+#undef STRING
+	  break;
+	      
+
 	default:
-	  gfc_internal_error ("gfc_simplify_max(): Bad type in arglist");
+	  gfc_internal_error ("simplify_min_max(): Bad type in arglist");
 	}
 
       /* Delete the extra constant argument.  */

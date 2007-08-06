@@ -1561,6 +1561,45 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 }
 
 
+/* Generate library calls for MIN and MAX intrinsics for character
+   variables.  */
+static void
+gfc_conv_intrinsic_minmax_char (gfc_se * se, gfc_expr * expr, int op)
+{
+  tree *args;
+  tree var, len, fndecl, tmp, cond;
+  unsigned int nargs;
+
+  nargs = gfc_intrinsic_argument_list_length (expr);
+  args = alloca (sizeof (tree) * (nargs + 4));
+  gfc_conv_intrinsic_function_args (se, expr, &args[4], nargs);
+
+  /* Create the result variables.  */
+  len = gfc_create_var (gfc_charlen_type_node, "len");
+  args[0] = build_fold_addr_expr (len);
+  var = gfc_create_var (build_pointer_type (gfc_character1_type_node), "pstr");
+  args[1] = gfc_build_addr_expr (ppvoid_type_node, var);
+  args[2] = build_int_cst (NULL_TREE, op);
+  args[3] = build_int_cst (NULL_TREE, nargs / 2);
+
+  /* Make the function call.  */
+  fndecl = build_addr (gfor_fndecl_string_minmax, current_function_decl);
+  tmp = build_call_array (TREE_TYPE (TREE_TYPE (gfor_fndecl_string_minmax)),
+			  fndecl, nargs + 4, args);
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  /* Free the temporary afterwards, if necessary.  */
+  cond = build2 (GT_EXPR, boolean_type_node, len,
+		 build_int_cst (TREE_TYPE (len), 0));
+  tmp = gfc_call_free (var);
+  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+  gfc_add_expr_to_block (&se->post, tmp);
+
+  se->expr = var;
+  se->string_length = len;
+}
+
+
 /* Create a symbol node for this intrinsic.  The symbol from the frontend
    has the generic name.  */
 
@@ -4058,7 +4097,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_MAX:
-      gfc_conv_intrinsic_minmax (se, expr, GT_EXPR);
+      if (expr->ts.type == BT_CHARACTER)
+	gfc_conv_intrinsic_minmax_char (se, expr, 1);
+      else
+	gfc_conv_intrinsic_minmax (se, expr, GT_EXPR);
       break;
 
     case GFC_ISYM_MAXLOC:
@@ -4074,7 +4116,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_MIN:
-      gfc_conv_intrinsic_minmax (se, expr, LT_EXPR);
+      if (expr->ts.type == BT_CHARACTER)
+	gfc_conv_intrinsic_minmax_char (se, expr, -1);
+      else
+	gfc_conv_intrinsic_minmax (se, expr, LT_EXPR);
       break;
 
     case GFC_ISYM_MINLOC:

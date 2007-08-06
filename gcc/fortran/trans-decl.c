@@ -125,6 +125,7 @@ tree gfor_fndecl_string_index;
 tree gfor_fndecl_string_scan;
 tree gfor_fndecl_string_verify;
 tree gfor_fndecl_string_trim;
+tree gfor_fndecl_string_minmax;
 tree gfor_fndecl_adjustl;
 tree gfor_fndecl_adjustr;
 
@@ -2046,6 +2047,13 @@ gfc_build_intrinsic_function_decls (void)
                                      ppvoid_type_node,
                                      gfc_charlen_type_node,
                                      pchar_type_node);
+
+  gfor_fndecl_string_minmax = 
+    gfc_build_library_function_decl (get_identifier (PREFIX("string_minmax")),
+                                     void_type_node, -4,
+                                     build_pointer_type (gfc_charlen_type_node),
+                                     ppvoid_type_node, integer_type_node,
+                                     integer_type_node);
 
   gfor_fndecl_ttynam =
     gfc_build_library_function_decl (get_identifier (PREFIX("ttynam")),

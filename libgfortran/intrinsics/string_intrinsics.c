@@ -1,5 +1,5 @@
 /* String intrinsics helper functions.
-   Copyright 2002, 2005 Free Software Foundation, Inc.
+   Copyright 2002, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -38,6 +38,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "libgfortran.h"
 
@@ -72,6 +73,9 @@ export_proto(string_verify);
 
 extern void string_trim (GFC_INTEGER_4 *, void **, GFC_INTEGER_4, const char *);
 export_proto(string_trim);
+
+extern void string_minmax (GFC_INTEGER_4 *, void **, int, int, ...);
+export_proto(string_minmax);
 
 /* Strings of unequal length are extended with pad characters.  */
 
@@ -351,3 +355,62 @@ string_verify (GFC_INTEGER_4 slen, const char * str, GFC_INTEGER_4 setlen,
 
   return 0;
 }
+
+
+/* MIN and MAX intrinsics for strings.  The front-end makes sure that
+   nargs is at least 2.  */
+
+void
+string_minmax (GFC_INTEGER_4 *rlen, void **dest, int op, int nargs, ...)
+{
+  va_list ap;
+  int i;
+  char * next, * res;
+  GFC_INTEGER_4 nextlen, reslen;
+
+  va_start (ap, nargs);
+  reslen = va_arg (ap, GFC_INTEGER_4);
+  res = va_arg (ap, char *);
+  *rlen = reslen;
+
+  if (res == NULL)
+    runtime_error ("First argument of '%s' intrinsic should be present",
+		   op > 0 ? "MAX" : "MIN");
+
+  for (i = 1; i < nargs; i++)
+    {
+      nextlen = va_arg (ap, GFC_INTEGER_4);
+      next = va_arg (ap, char *);
+
+
+      if (next == NULL)
+	{
+	  if (i == 1)
+	    runtime_error ("Second argument of '%s' intrinsic should be "
+			   "present", op > 0 ? "MAX" : "MIN");
+	  else
+	    continue;
+	}
+
+      if (nextlen > *rlen)
+	*rlen = nextlen;
+
+      if (op * compare_string (reslen, res, nextlen, next) < 0)
+	{
+	  reslen = nextlen;
+	  res = next;
+	}
+    }
+  va_end (ap);
+
+  if (*rlen > 0)
+    {
+      char * tmp = internal_malloc_size (*rlen);
+      memcpy (tmp, res, reslen);
+      memset (&tmp[reslen], ' ', *rlen - reslen);
+      *dest = tmp;
+    }
+  else
+    *dest = NULL;
+}
+
