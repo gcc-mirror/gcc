@@ -2385,15 +2385,19 @@ gfc_resolve_alarm_sub (gfc_code *c)
   ts.type = BT_INTEGER;
   ts.kind = gfc_c_int_kind;
 
-  /* handler can be either BT_INTEGER or BT_PROCEDURE  */
+  /* handler can be either BT_INTEGER or BT_PROCEDURE.
+     In all cases, the status argument is of default integer kind
+     (enforced in check.c) so that the function suffix is fixed.  */
   if (handler->ts.type == BT_INTEGER)
     {
       if (handler->ts.kind != gfc_c_int_kind)
 	gfc_convert_type (handler, &ts, 2);
-      name = gfc_get_string (PREFIX ("alarm_sub_int"));
+      name = gfc_get_string (PREFIX ("alarm_sub_int_i%d"),
+			     gfc_default_integer_kind);
     }
   else
-    name = gfc_get_string (PREFIX ("alarm_sub"));
+    name = gfc_get_string (PREFIX ("alarm_sub_i%d"),
+			   gfc_default_integer_kind);
 
   if (seconds->ts.kind != gfc_c_int_kind)
     gfc_convert_type (seconds, &ts, 2);

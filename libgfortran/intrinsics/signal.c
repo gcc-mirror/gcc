@@ -132,11 +132,11 @@ iexport(signal_func_int);
 
 
 /* ALARM intrinsic with PROCEDURE as handler  */
-extern void alarm_sub (int *, void (*)(int), int *);
-iexport_proto(alarm_sub);
+extern void alarm_sub_i4 (int *, void (*)(int), GFC_INTEGER_4 *);
+iexport_proto(alarm_sub_i4);
 
 void
-alarm_sub (int *seconds, void (*handler)(int), int *status)
+alarm_sub_i4 (int *seconds, void (*handler)(int), GFC_INTEGER_4 *status)
 {
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
@@ -157,15 +157,43 @@ alarm_sub (int *seconds, void (*handler)(int), int *status)
     *status = -1;
 #endif
 }
-iexport(alarm_sub);
+iexport(alarm_sub_i4);
+
+
+extern void alarm_sub_i8 (int *, void (*)(int), GFC_INTEGER_8 *);
+iexport_proto(alarm_sub_i8);
+
+void
+alarm_sub_i8 (int *seconds, void (*handler)(int), GFC_INTEGER_8 *status)
+{
+#if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
+  if (status != NULL)
+    {
+      if (signal (SIGALRM, handler) == SIG_ERR)
+	*status = -1;
+      else
+	*status = alarm (*seconds);
+    }
+  else
+    {
+      signal (SIGALRM, handler);
+      alarm (*seconds);
+    }
+#else
+  errno = ENOSYS;
+  if (status != NULL)
+    *status = -1;
+#endif
+}
+iexport(alarm_sub_i8);
 
 
 /* ALARM intrinsic with INTEGER as handler  */
-extern void alarm_sub_int (int *, int *, int *);
-iexport_proto(alarm_sub_int);
+extern void alarm_sub_int_i4 (int *, int *, GFC_INTEGER_4 *);
+iexport_proto(alarm_sub_int_i4);
 
 void
-alarm_sub_int (int *seconds, int *handler, int *status)
+alarm_sub_int_i4 (int *seconds, int *handler, GFC_INTEGER_4 *status)
 {
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
@@ -186,5 +214,33 @@ alarm_sub_int (int *seconds, int *handler, int *status)
     *status = -1;
 #endif
 }
-iexport(alarm_sub_int);
+iexport(alarm_sub_int_i4);
+
+
+extern void alarm_sub_int_i8 (int *, int *, GFC_INTEGER_8 *);
+iexport_proto(alarm_sub_int_i8);
+
+void
+alarm_sub_int_i8 (int *seconds, int *handler, GFC_INTEGER_8 *status)
+{
+#if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
+  if (status != NULL)
+    {
+      if (signal (SIGALRM, (void (*)(int)) *handler) == SIG_ERR)
+	*status = -1;
+      else
+	*status = alarm (*seconds);
+    }
+  else
+    {
+      signal (SIGALRM, (void (*)(int)) *handler);
+      alarm (*seconds);
+    }
+#else
+  errno = ENOSYS;
+  if (status != NULL)
+    *status = -1;
+#endif
+}
+iexport(alarm_sub_int_i8);
 
