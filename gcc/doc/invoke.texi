@@ -913,6 +913,12 @@ Objective-C++ source code which should not be preprocessed.
 
 @item @var{file}.hh
 @itemx @var{file}.H
+@itemx @var{file}.hp
+@itemx @var{file}.hxx
+@itemx @var{file}.hpp
+@itemx @var{file}.HPP
+@itemx @var{file}.h++
+@itemx @var{file}.tcc
 C++ header file to be turned into a precompiled header.
 
 @item @var{file}.f
@@ -1240,7 +1246,8 @@ Display the version number and copyrights of the invoked GCC@.
 @cindex C++ source file suffixes
 C++ source files conventionally use one of the suffixes @samp{.C},
 @samp{.cc}, @samp{.cpp}, @samp{.CPP}, @samp{.c++}, @samp{.cp}, or
-@samp{.cxx}; C++ header files often use @samp{.hh} or @samp{.H}; and
+@samp{.cxx}; C++ header files often use @samp{.hh}, @samp{.hpp},
+@samp{.H}, or (for shared template code) @samp{.tcc}; and
 preprocessed C++ files use the suffix @samp{.ii}.  GCC recognizes
 files with these names and compiles them as C++ programs even if you
 call the compiler the same way as for compiling C programs (usually

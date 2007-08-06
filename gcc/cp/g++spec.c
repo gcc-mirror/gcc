@@ -235,6 +235,12 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	    {
 	      if ((len <= 2 || strcmp (argv[i] + (len - 2), ".H") != 0)
 		  && (len <= 2 || strcmp (argv[i] + (len - 2), ".h") != 0)
+		  && (len <= 4 || strcmp (argv[i] + (len - 4), ".hpp") != 0)
+		  && (len <= 3 || strcmp (argv[i] + (len - 3), ".hp") != 0)
+		  && (len <= 4 || strcmp (argv[i] + (len - 4), ".hxx") != 0)
+		  && (len <= 4 || strcmp (argv[i] + (len - 4), ".h++") != 0)
+		  && (len <= 4 || strcmp (argv[i] + (len - 4), ".HPP") != 0)
+		  && (len <= 4 || strcmp (argv[i] + (len - 4), ".tcc") != 0)
 		  && (len <= 3 || strcmp (argv[i] + (len - 3), ".hh") != 0))
 		library = 1;
 	    }
