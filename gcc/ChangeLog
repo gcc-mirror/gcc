@@ -1,3 +1,8 @@
+2007-08-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md: Check TARGET_ macros and optimize_size
+	before checking function returns in conditional expressions.
+
 2007-08-06  Alfred Minarik  <a.minarik@aon.at>
 
 	PR pch/13676
@@ -11,33 +16,33 @@
 
 2008-08-05  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure.ac: Remove --enable-checking=df from default settings.
-        * tree-pass.h (TODO_df_verify): New.  Shift TODO_mark_first_instance.
-        * df-core.c (df_finish_pass) [ENABLE_CHECKING]: Schedule verification
-        if the parameter is true.
-        (df_analyze) [!ENABLE_DF_CHECKING]: Also do verification if the
-        DF_VERIFY_SCHEDULED flag is true.
-        * df.h (enum df_changeable_flags): Add DF_VERIFY_SCHEDULED.
-        (df_finish_pass): Adjust prototype.
-        * passes.c (execute_todo): Schedule verification if TODO_df_verify is
-        true.
+	* configure.ac: Remove --enable-checking=df from default settings.
+	* tree-pass.h (TODO_df_verify): New.  Shift TODO_mark_first_instance.
+	* df-core.c (df_finish_pass) [ENABLE_CHECKING]: Schedule verification
+	if the parameter is true.
+	(df_analyze) [!ENABLE_DF_CHECKING]: Also do verification if the
+	DF_VERIFY_SCHEDULED flag is true.
+	* df.h (enum df_changeable_flags): Add DF_VERIFY_SCHEDULED.
+	(df_finish_pass): Adjust prototype.
+	* passes.c (execute_todo): Schedule verification if TODO_df_verify is
+	true.
 
-        * see.c (pass_see): Add TODO_df_verify.
-        * loop-init.c (pass_rtl_move_loop_invariants): Add TODO_df_verify.
-        * global.c (rest_of_handle_global_alloc): Schedule verification
-        after the pass.
-        * local-alloc.c (rest_of_handle_local_alloc): Schedule verification
-        before the pass.
-        * function.c (pass_thread_prologue_and_epilogue): Add TODO_df_verify.
-        * gcse.c (rest_of_handle_gcse): Adjust call to df_finish_pass.
-        * loop-iv.c (iv_analysis_done): Schedule verification after the pass.
+	* see.c (pass_see): Add TODO_df_verify.
+	* loop-init.c (pass_rtl_move_loop_invariants): Add TODO_df_verify.
+	* global.c (rest_of_handle_global_alloc): Schedule verification
+	after the pass.
+	* local-alloc.c (rest_of_handle_local_alloc): Schedule verification
+	before the pass.
+	* function.c (pass_thread_prologue_and_epilogue): Add TODO_df_verify.
+	* gcse.c (rest_of_handle_gcse): Adjust call to df_finish_pass.
+	* loop-iv.c (iv_analysis_done): Schedule verification after the pass.
 
-        * config/sh/sh.c (sh_output_mi_thunk): Remove dead code.
-        * config/ia64/ia64.c (ia64_reorg): Adjust call to df_finish_pass.
-        * config/bfin/bfin.c (bfin_reorg): Adjust call to df_finish_pass.
+	* config/sh/sh.c (sh_output_mi_thunk): Remove dead code.
+	* config/ia64/ia64.c (ia64_reorg): Adjust call to df_finish_pass.
+	* config/bfin/bfin.c (bfin_reorg): Adjust call to df_finish_pass.
 
 2007-08-05  Vladimir Yanovsky  <yanov@il.ibm.com>
-            Revital Eres <eres@il.ibm.com>
+	    Revital Eres <eres@il.ibm.com>
 
 	* doc/invoke.texi (-fmodulo-sched-allow-regmoves): Document new
 	flag.
@@ -904,7 +909,7 @@
 	* doc/invoke.texi: Follow spelling conventions.
 
 2007-07-29  Vladimir Yanovsky  <yanov@il.ibm.com>
-            Revital Eres  <eres@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
 	* modulo-sched.c (sms_schedule): Avoid loops which includes
 	auto-increment instructions.
@@ -2152,16 +2157,16 @@
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
-        * config/mips/mips.h (TUNE_24K): Define.
+	* config/mips/mips.h (TUNE_24K): Define.
 	(TUNE_MACC_CHAINS): Add TUNE_24K.
-        * config/mips/mips.md: (*mul_acc_si, *mul_sub_si): Change type to
-        imadd.
-        * config/mips/74k.md (r74k_int_mult): Split madd/msub to ..
-        (r74k_int_madd): .. this new reservation.
-        (define_bypass): Fixed bypasses for r74k_int_madd to use
+	* config/mips/mips.md: (*mul_acc_si, *mul_sub_si): Change type to
+	imadd.
+	* config/mips/74k.md (r74k_int_mult): Split madd/msub to ..
+	(r74k_int_madd): .. this new reservation.
+	(define_bypass): Fixed bypasses for r74k_int_madd to use
 	mips_linked_madd_p.
-        * config/mips/24k.md (define_bypass): Define new
-        r24k_int_mul3->r24k_int_madd bypass using mips_linked_madd_p.
+	* config/mips/24k.md (define_bypass): Define new
+	r24k_int_mul3->r24k_int_madd bypass using mips_linked_madd_p.
 
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
@@ -3030,7 +3035,7 @@
 	* doc/tm.texi (DOLLARS_IN_IDENTIFIERS): Update.
 
 2007-07-06  Ian Lance Taylor  <iant@google.com>
-            Zack Weinberg  <zackw@panix.com>
+	    Zack Weinberg  <zackw@panix.com>
 
 	PR middle-end/32441
 	* builtins.c (std_expand_builtin_va_start): Don't use make_tree.
@@ -3307,7 +3312,7 @@
 	after \.
 
 2007-07-04  David Ung  <davidu@mips.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.md (type): Add logical, signext and move.
 	(one_cmpl<mode>2, *and<mode>3, *and<mode>3_mips16, *ior<mode>3,
@@ -4276,7 +4281,7 @@
 
 2007-06-26  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-        * tree.def (VEC_WIDEN_MULT_LO_EXPR): Corrected string name.
+	* tree.def (VEC_WIDEN_MULT_LO_EXPR): Corrected string name.
 	
 2007-06-26  Steve Ellcey  <sje@cup.hp.com>
 
@@ -4496,7 +4501,7 @@
 
 2007-06-21  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-        * df-problems.c (df_note_bb_compute): Made computation of live
+	* df-problems.c (df_note_bb_compute): Made computation of live
 	info consistent with df_lr.
 
 2007-06-21  Richard Guenther  <rguenther@suse.de>
@@ -4571,7 +4576,7 @@
 	(epilogue_reit): Rename to epilogue_reit_24.
 
 2007-06-20  Seongbae Park  <seongbae.park@gmail.com>
-            Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
+	    Maxim Kuvyrkov  <mkuvyrkov@ispras.ru>
 
 	* dbgcnt.def (global_alloc_at_func, global_alloc_at_reg):
 	New counters.
@@ -4919,9 +4924,9 @@
 	(Intel 386 and AMD x86_64 Options): Document -mrecip.
 
 2007-06-15  Andrew Pinski <andrew_pinski@playstation.sony.com>
-            Zdenek Dvorak <dvorakz@suse.cz>
-            Richard Guenther  <rguenther@suse.de>
-            Kaz Kojima  <kkojima@gcc.gnu.org>
+	    Zdenek Dvorak <dvorakz@suse.cz>
+	    Richard Guenther  <rguenther@suse.de>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* tree-vrp.c (compare_values_warnv): Convert val2 to
 	the type of val1.
@@ -5788,7 +5793,7 @@
 	(vect_estimate_min_profitable_iterations): New function to estimate
 	mimimimum iterartions required for vector version of loop to be
 	profitable over scalar version.
-        (vect_model_reduction_cost): New function.
+	(vect_model_reduction_cost): New function.
 	(vect_model_induction_cost): New function.
 	(vect_model_simple_cost): New function.
 	(vect_cost_strided_group_size): New function.
