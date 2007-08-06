@@ -1176,9 +1176,9 @@ add_functions (void)
 
   make_generic ("char", GFC_ISYM_CHAR, GFC_STD_F77);
 
-  add_sym_1 ("chdir", GFC_ISYM_CHDIR, NO_CLASS, ACTUAL_NO, BT_INTEGER, di, GFC_STD_GNU,
-	     gfc_check_chdir, NULL, gfc_resolve_chdir,
-	     a, BT_CHARACTER, dc, REQUIRED);
+  add_sym_1 ("chdir", GFC_ISYM_CHDIR, NO_CLASS, ACTUAL_NO, BT_INTEGER, di,
+	     GFC_STD_GNU, gfc_check_chdir, NULL, gfc_resolve_chdir,
+	     nm, BT_CHARACTER, dc, REQUIRED);
 
   make_generic ("chdir", GFC_ISYM_CHDIR, GFC_STD_GNU);
 
