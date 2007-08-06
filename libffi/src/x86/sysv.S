@@ -266,6 +266,14 @@ ffi_closure_raw_SYSV:
 	movl	CIF_FLAGS_OFFSET(%esi), %eax		 /* rtype */
 	cmpl	$FFI_TYPE_INT, %eax
 	je	.Lrcls_retint
+
+	/* Handle FFI_TYPE_UINT8, FFI_TYPE_SINT8, FFI_TYPE_UINT16,
+	   FFI_TYPE_SINT16, FFI_TYPE_UINT32, FFI_TYPE_SINT32.  */
+	cmpl	$FFI_TYPE_UINT64, %eax
+	jge	0f
+	cmpl	$FFI_TYPE_UINT8, %eax
+	jge	.Lcls_retint
+0:
 	cmpl	$FFI_TYPE_FLOAT, %eax
 	je	.Lrcls_retfloat
 	cmpl	$FFI_TYPE_DOUBLE, %eax

@@ -1,3 +1,10 @@
+2007-08-06  Andrew Haley  <aph@redhat.com>
+
+	PR testsuite/32843
+	* src/x86/sysv.S (ffi_closure_raw_SYSV): Handle FFI_TYPE_UINT8,
+	FFI_TYPE_SINT8, FFI_TYPE_UINT16, FFI_TYPE_SINT16, FFI_TYPE_UINT32,
+	FFI_TYPE_SINT32.
+
 2007-08-02  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libffi.call/return_ul.c (main): Define return type as
