@@ -906,6 +906,15 @@ resolve_clobber (rtx pat, rtx insn)
   if (!resolve_reg_p (reg) && !resolve_subreg_p (reg))
     return false;
 
+  /* If this clobber has a REG_LIBCALL note, then it is the initial
+     clobber added by emit_no_conflict_block.  We were able to
+     decompose the register, so we no longer need the clobber.  */
+  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX) != NULL_RTX)
+    {
+      delete_insn (insn);
+      return true;
+    }
+
   orig_mode = GET_MODE (reg);
   words = GET_MODE_SIZE (orig_mode);
   words = (words + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
