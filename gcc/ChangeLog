@@ -1,3 +1,11 @@
+2007-08-07  Carlos O'Donell  <carlos@codesourcery.com>
+
+	* configure.ac: Define HAVE_GNU_AS if $gas_flag is yes.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* gcc.c [HAVE_GNU_AS]: Add "%{v} %{w:-W} %{I*} " to asm_options
+	spec string.
+
 2007-08-07  Ian Lance Taylor  <iant@google.com>
 
 	* lower-subreg.c (resolve_clobber): If the clobber has a LIBCALL

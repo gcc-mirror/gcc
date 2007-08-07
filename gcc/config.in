@@ -121,7 +121,8 @@
 #endif
 
 
-/* Define if you want all gimple types to be verified after gimplifiation. */
+/* Define if you want all gimple types to be verified after gimplifiation.
+   This is cheap. */
 #ifndef USED_FOR_TARGET
 #undef ENABLE_TYPES_CHECKING
 #endif
@@ -891,6 +892,12 @@
 /* Define to 1 if you have the `gettimeofday' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETTIMEOFDAY
+#endif
+
+
+/* Define if using GNU as. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GNU_AS
 #endif
 
 

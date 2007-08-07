@@ -1834,6 +1834,13 @@ _ACEOF
 
 fi
 
+gnu_as=`if test x"$gas_flag" = x"yes"; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GNU_AS $gnu_as
+_ACEOF
+
+
 echo "$as_me:$LINENO: checking whether a default assembler was specified" >&5
 echo $ECHO_N "checking whether a default assembler was specified... $ECHO_C" >&6
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
