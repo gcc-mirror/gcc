@@ -272,7 +272,7 @@ ffi_closure_raw_SYSV:
 	cmpl	$FFI_TYPE_UINT64, %eax
 	jge	0f
 	cmpl	$FFI_TYPE_UINT8, %eax
-	jge	.Lcls_retint
+	jge	.Lrcls_retint
 0:
 	cmpl	$FFI_TYPE_FLOAT, %eax
 	je	.Lrcls_retfloat
