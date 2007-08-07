@@ -723,6 +723,7 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 @ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 @ENABLE_SYMVERS_TRUE@		$(port_specific_symbol_files)
 @ENABLE_SYMVERS_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
+@ENABLE_SYMVERS_TRUE@	chmod +w ./libstdc++-symbols.ver
 @ENABLE_SYMVERS_TRUE@	if test "x$(port_specific_symbol_files)" != x; then \
 @ENABLE_SYMVERS_TRUE@	  if grep '^# Appended to version file.' \
 @ENABLE_SYMVERS_TRUE@	       $(port_specific_symbol_files) /dev/null > /dev/null 2>&1; then \
