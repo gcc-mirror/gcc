@@ -246,6 +246,9 @@ if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
 	[Define to enable the use of a default assembler.])
 fi
 
+gnu_as=`if test x"$gas_flag" = x"yes"; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(HAVE_GNU_AS, $gnu_as, [Define if using GNU as.])
+
 AC_MSG_CHECKING([whether a default assembler was specified])
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
   if test x"$gas_flag" = x"no"; then
