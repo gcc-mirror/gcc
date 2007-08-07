@@ -3055,7 +3055,7 @@ generate_local_decl (gfc_symbol * sym)
       if (sym->attr.value == 1 && sym->backend_decl != NULL
 	  && sym->ts.type == BT_CHARACTER && sym->ts.is_c_interop
 	  && sym->ns->proc_name != NULL && sym->ns->proc_name->attr.is_bind_c)
-	TREE_TYPE (sym->backend_decl) = unsigned_char_type_node;
+	gfc_conv_scalar_char_value (sym, NULL, NULL);
     }
 
   /* Make sure we convert the types of the derived types from iso_c_binding
