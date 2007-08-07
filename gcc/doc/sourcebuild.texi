@@ -944,9 +944,9 @@ it is executed.  It is one of:
 @table @code
 @item preprocess
 Compile with @option{-E} to run only the preprocessor.
-@item assemble
-Compile with @option{-S} to produce an assembly code file.
 @item compile
+Compile with @option{-S} to produce an assembly code file.
+@item assemble
 Compile with @option{-c} to produce a relocatable object file.
 @item link
 Compile, assemble, and link to produce an executable file.
