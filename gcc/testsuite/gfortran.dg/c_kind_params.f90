@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-require-effective-target stdint_types }
 ! { dg-additional-sources c_kinds.c }
 ! { dg-options "-w -std=c99" }
 ! the -w option is needed to make f951 not report a warning for 
