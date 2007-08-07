@@ -1,3 +1,9 @@
+2007-08-07  Jim Blandy  <jimb@codesourcery.com>
+
+	* src/Makefile.am (libstdc++-symbol.ver): Make
+	sure the build tree copy of libstdc++-symbol.ver is writeable.
+	* src/Makefile.in: Regenerated.
+
 2007-08-02  Paolo Carlini  <pcarlini@suse.de>
 
 	DR 660, [Ready] in Toronto.

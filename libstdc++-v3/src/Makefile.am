@@ -32,6 +32,7 @@ if ENABLE_SYMVERS
 libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 		$(port_specific_symbol_files)
 	cp ${glibcxx_srcdir}/$(SYMVER_FILE) ./libstdc++-symbols.ver
+	chmod +w ./libstdc++-symbols.ver
 	if test "x$(port_specific_symbol_files)" != x; then \
 	  if grep '^# Appended to version file.' \
 	       $(port_specific_symbol_files) /dev/null > /dev/null 2>&1; then \
