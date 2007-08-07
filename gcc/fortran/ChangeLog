@@ -1,3 +1,15 @@
+2007-08-06  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/32732
+	* trans-expr.c (gfc_conv_scalar_char_value): Convert the tree and
+	actual arg expressions for scalar characters passed by-value to
+	bind(c) routines.
+	(gfc_conv_function_call): Call gfc_conv_scalar_char_value.
+	* trans.h: Add prototype for gfc_conv_scalar_char_value.
+	* trans-decl.c (generate_local_decl): Convert by-value character
+	dummy args of bind(c) procedures using
+	gfc_conv_scalar_char_value.
+
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30947

@@ -1209,6 +1209,64 @@ gfc_to_single_character (tree len, tree str)
   return NULL_TREE;
 }
 
+
+void
+gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
+{
+
+  if (sym->backend_decl)
+    {
+      /* This becomes the nominal_type in
+	 function.c:assign_parm_find_data_types.  */
+      TREE_TYPE (sym->backend_decl) = unsigned_char_type_node;
+      /* This becomes the passed_type in
+	 function.c:assign_parm_find_data_types.  C promotes char to
+	 integer for argument passing.  */
+      DECL_ARG_TYPE (sym->backend_decl) = unsigned_type_node;
+
+      DECL_BY_REFERENCE (sym->backend_decl) = 0;
+    }
+
+  if (expr != NULL)
+    {
+      /* If we have a constant character expression, make it into an
+	 integer.  */
+      if ((*expr)->expr_type == EXPR_CONSTANT)
+        {
+	  gfc_typespec ts;
+
+	  *expr = gfc_int_expr ((int)(*expr)->value.character.string[0]);
+	  if ((*expr)->ts.kind != gfc_c_int_kind)
+	    {
+  	      /* The expr needs to be compatible with a C int.  If the 
+		 conversion fails, then the 2 causes an ICE.  */
+	      ts.type = BT_INTEGER;
+	      ts.kind = gfc_c_int_kind;
+	      gfc_convert_type (*expr, &ts, 2);
+	    }
+	}
+      else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
+        {
+	  if ((*expr)->ref == NULL)
+	    {
+	      se->expr = gfc_to_single_character
+		(build_int_cst (integer_type_node, 1),
+		 gfc_build_addr_expr (pchar_type_node,
+				      gfc_get_symbol_decl
+				      ((*expr)->symtree->n.sym)));
+	    }
+	  else
+	    {
+	      gfc_conv_variable (se, *expr);
+	      se->expr = gfc_to_single_character
+		(build_int_cst (integer_type_node, 1),
+		 gfc_build_addr_expr (pchar_type_node, se->expr));
+	    }
+	}
+    }
+}
+
+
 /* Compare two strings. If they are all single characters, the result is the
    subtraction of them. Otherwise, we build a library call.  */
 
@@ -2166,7 +2224,18 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
             {
 	      if (fsym && fsym->attr.value)
 		{
-		  gfc_conv_expr (&parmse, e);
+		  if (fsym->ts.type == BT_CHARACTER
+		      && fsym->ts.is_c_interop
+		      && fsym->ns->proc_name != NULL
+		      && fsym->ns->proc_name->attr.is_bind_c)
+		    {
+		      parmse.expr = NULL;
+		      gfc_conv_scalar_char_value (fsym, &parmse, &e);
+		      if (parmse.expr == NULL)
+			gfc_conv_expr (&parmse, e);
+		    }
+		  else
+		    gfc_conv_expr (&parmse, e);
 		}
 	      else if (arg->name && arg->name[0] == '%')
 		/* Argument list functions %VAL, %LOC and %REF are signalled

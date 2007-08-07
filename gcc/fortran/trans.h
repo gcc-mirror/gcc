@@ -295,6 +295,9 @@ void gfc_conv_expr_lhs (gfc_se * se, gfc_expr * expr);
 void gfc_conv_expr_reference (gfc_se * se, gfc_expr *);
 void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
+/* trans-expr.c */
+void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
+
 /* Find the decl containing the auxiliary variables for assigned variables.  */
 void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
