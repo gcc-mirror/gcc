@@ -1,3 +1,9 @@
+2007-08-07  Andreas Schwab  <schwab@suse.de>
+
+	PR bootstrap/32973
+	* gengtype-lex.l: Ignore backslash/newline pair while scanning a
+	struct definition.
+
 2007-08-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* lower-subreg.c (resolve_subreg_use): Remove assertion.

@@ -104,6 +104,7 @@ EOID	[^[:alnum:]_]
 "/*"				{ BEGIN(in_struct_comment); }
 
 {WS}				{ update_lineno (yytext, yyleng); }
+\\\n				{ lexer_line.line++; }
 
 "const"/{EOID}			/* don't care */
 "GTY"/{EOID}			{ return GTY_TOKEN; }
