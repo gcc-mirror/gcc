@@ -2,6 +2,7 @@
    without any fast-math flags.  */
 
 /* { dg-do run } */
+/* { dg-options "-mieee" { target sh*-*-* } } */
 
 #include "../../gcc.dg/tg-tests.h"
 

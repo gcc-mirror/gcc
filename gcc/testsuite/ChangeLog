@@ -1,3 +1,8 @@
+2007-08-07  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* g++.dg/torture/type-generic-1.C: Add -mieee for sh.
+	* gcc.dg/torture/type-generic-1.c: Likewise.
+
 2007-08-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* gcc.c-torture/20070522-1.c: Move to ...
