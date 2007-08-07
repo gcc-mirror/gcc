@@ -1,3 +1,8 @@
+2007-08-07  Ian Lance Taylor  <iant@google.com>
+
+	* lower-subreg.c (resolve_clobber): If the clobber has a LIBCALL
+	note, just delete the insn.
+
 2007-08-07  Andreas Schwab  <schwab@suse.de>
 
 	PR bootstrap/32973
