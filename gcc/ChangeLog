@@ -1,3 +1,10 @@
+2007-08-07  Ian Lance Taylor  <iant@google.com>
+
+	PR rtl-optimization/32776
+	* lower-subreg.c (resolve_clobber): Call resolve_reg_notes.
+	(resolve_use): Likewise.
+	(decompose_multiword_subregs): Remove "changed" local variable.
+
 2007-08-07  Carlos O'Donell  <carlos@codesourcery.com>
 
 	* configure.ac: Define HAVE_GNU_AS if $gas_flag is yes.
