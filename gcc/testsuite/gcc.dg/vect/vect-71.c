@@ -5,7 +5,7 @@
 
 #define N 16
 
-/* unaligned load.  */
+/* indirect access.  */
 
 int main1 ()
 {
