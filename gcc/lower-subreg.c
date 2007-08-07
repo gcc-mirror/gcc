@@ -936,6 +936,8 @@ resolve_clobber (rtx pat, rtx insn)
       emit_insn_after (x, insn);
     }
 
+  resolve_reg_notes (insn);
+
   return true;
 }
 
@@ -950,6 +952,9 @@ resolve_use (rtx pat, rtx insn)
       delete_insn (insn);
       return true;
     }
+
+  resolve_reg_notes (insn);
+
   return false;
 }
 
@@ -1251,25 +1256,17 @@ decompose_multiword_subregs (void)
 	  FOR_BB_INSNS (bb, insn)
 	    {
 	      rtx next, pat;
-	      bool changed;
 
 	      if (!INSN_P (insn))
 		continue;
 
 	      next = NEXT_INSN (insn);
-	      changed = false;
 
 	      pat = PATTERN (insn);
 	      if (GET_CODE (pat) == CLOBBER)
-		{
-		  if (resolve_clobber (pat, insn))
-		    changed = true;
-		}
+		resolve_clobber (pat, insn);
 	      else if (GET_CODE (pat) == USE)
-		{
-		  if (resolve_use (pat, insn))
-		    changed = true;
-		}
+		resolve_use (pat, insn);
 	      else
 		{
 		  rtx set;
@@ -1302,8 +1299,6 @@ decompose_multiword_subregs (void)
 		      insn = resolve_simple_move (set, insn);
 		      if (insn != orig_insn)
 			{
-			  changed = true;
-
 			  remove_retval_note (insn);
 
 			  recog_memoized (insn);
@@ -1320,7 +1315,6 @@ decompose_multiword_subregs (void)
 		      decomposed_shift = resolve_shift_zext (insn);
 		      if (decomposed_shift != NULL_RTX)
 			{
-			  changed = true;
 			  insn = decomposed_shift;
 			  recog_memoized (insn);
 			  extract_insn (insn);
@@ -1349,8 +1343,6 @@ decompose_multiword_subregs (void)
 		      gcc_assert (i);
 
 		      remove_retval_note (insn);
-
-		      changed = true;
 		    }
 		}
 	    }
