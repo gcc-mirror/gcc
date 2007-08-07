@@ -1,3 +1,9 @@
+2007-08-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	* gfortran.dg/namelist_33.f90: Improved tests, adjusted error
+	messages.
+	* gfortran.dg/namelist_36.f90: New test.
+
 2007-08-07  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.c-torture/execute/simd-4.c (__ev_convert_s64)(main): Use
