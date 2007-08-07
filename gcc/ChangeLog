@@ -1,3 +1,10 @@
+2007-08-07  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* lower-subreg.c (resolve_subreg_use): Remove assertion.
+	(find_decomposable_shift_zext, resolve_shift_zext): New functions.
+	(decompose_multiword_subregs): Use the functions above to decompose
+	multiword shifts and zero-extends.
+
 2007-08-07  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* doc/sourcebuild.texi (Test Directives): Fix "compile" and

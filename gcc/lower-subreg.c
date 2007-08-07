@@ -525,8 +525,8 @@ resolve_subreg_use (rtx *px, void *data)
     {
       /* Return 1 to the caller to indicate that we found a direct
 	 reference to a register which is being decomposed.  This can
-	 happen inside notes.  */
-      gcc_assert (!insn);
+	 happen inside notes, multiword shift or zero-extend
+	 instructions.  */
       return 1;
     }
 
@@ -944,6 +944,155 @@ resolve_use (rtx pat, rtx insn)
   return false;
 }
 
+/* Checks if INSN is a decomposable multiword-shift or zero-extend and
+   sets the decomposable_context bitmap accordingly.  A non-zero value
+   is returned if a decomposable insn has been found.  */
+
+static int
+find_decomposable_shift_zext (rtx insn)
+{
+  rtx set;
+  rtx op;
+  rtx op_operand;
+
+  set = single_set (insn);
+  if (!set)
+    return 0;
+
+  op = SET_SRC (set);
+  if (GET_CODE (op) != ASHIFT
+      && GET_CODE (op) != LSHIFTRT
+      && GET_CODE (op) != ZERO_EXTEND)
+    return 0;
+
+  op_operand = XEXP (op, 0);
+  if (!REG_P (SET_DEST (set)) || !REG_P (op_operand)
+      || HARD_REGISTER_NUM_P (REGNO (SET_DEST (set)))
+      || HARD_REGISTER_NUM_P (REGNO (op_operand))
+      || !SCALAR_INT_MODE_P (GET_MODE (op)))
+    return 0;
+
+  if (GET_CODE (op) == ZERO_EXTEND)
+    {
+      if (GET_MODE (op_operand) != word_mode
+	  || GET_MODE_BITSIZE (GET_MODE (op)) != 2 * BITS_PER_WORD)
+	return 0;
+    }
+  else /* left or right shift */
+    {
+      if (GET_CODE (XEXP (op, 1)) != CONST_INT
+	  || INTVAL (XEXP (op, 1)) < BITS_PER_WORD
+	  || GET_MODE_BITSIZE (GET_MODE (op_operand)) != 2 * BITS_PER_WORD)
+	return 0;
+    }
+
+  bitmap_set_bit (decomposable_context, REGNO (SET_DEST (set)));
+
+  if (GET_CODE (op) != ZERO_EXTEND)
+    bitmap_set_bit (decomposable_context, REGNO (op_operand));
+
+  return 1;
+}
+
+/* Decompose a more than word wide shift (in INSN) of a multiword
+   pseudo or a multiword zero-extend of a wordmode pseudo into a move
+   and 'set to zero' insn.  Return a pointer to the new insn when a
+   replacement was done.  */
+
+static rtx
+resolve_shift_zext (rtx insn)
+{
+  rtx set;
+  rtx op;
+  rtx op_operand;
+  rtx insns;
+  rtx src_reg, dest_reg, dest_zero;
+  int src_reg_num, dest_reg_num, offset1, offset2, src_offset;
+
+  set = single_set (insn);
+  if (!set)
+    return NULL_RTX;
+
+  op = SET_SRC (set);
+  if (GET_CODE (op) != ASHIFT
+      && GET_CODE (op) != LSHIFTRT
+      && GET_CODE (op) != ZERO_EXTEND)
+    return NULL_RTX;
+
+  op_operand = XEXP (op, 0);
+
+  if (!resolve_reg_p (SET_DEST (set)) && !resolve_reg_p (op_operand))
+    return NULL_RTX;
+
+  /* src_reg_num is the number of the word mode register which we
+     are operating on.  For a left shift and a zero_extend on little
+     endian machines this is register 0.  */
+  src_reg_num = GET_CODE (op) == LSHIFTRT ? 1 : 0;
+
+  if (WORDS_BIG_ENDIAN)
+    src_reg_num = 1 - src_reg_num;
+
+  if (GET_CODE (op) == ZERO_EXTEND)
+    dest_reg_num = src_reg_num;
+  else
+    dest_reg_num = 1 - src_reg_num;
+
+  offset1 = UNITS_PER_WORD * dest_reg_num;
+  offset2 = UNITS_PER_WORD * (1 - dest_reg_num);
+  src_offset = UNITS_PER_WORD * src_reg_num;
+
+  if (WORDS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+    {
+      offset1 += UNITS_PER_WORD - 1;
+      offset2 += UNITS_PER_WORD - 1;
+      src_offset += UNITS_PER_WORD - 1;
+    }
+
+  start_sequence ();
+
+  dest_reg = simplify_gen_subreg_concatn (word_mode, SET_DEST (set),
+                                          GET_MODE (SET_DEST (set)),
+                                          offset1);
+  dest_zero = simplify_gen_subreg_concatn (word_mode, SET_DEST (set),
+                                           GET_MODE (SET_DEST (set)),
+                                           offset2);
+  src_reg = simplify_gen_subreg_concatn (word_mode, op_operand,
+                                         GET_MODE (op_operand),
+                                         src_offset);
+  if (GET_CODE (op) != ZERO_EXTEND)
+    {
+      int shift_count = INTVAL (XEXP (op, 1));
+      if (shift_count > BITS_PER_WORD)
+	src_reg = expand_shift (GET_CODE (op) == ASHIFT ?
+				LSHIFT_EXPR : RSHIFT_EXPR,
+				word_mode, src_reg,
+				build_int_cst (NULL_TREE,
+					       shift_count - BITS_PER_WORD),
+				dest_reg, 1);
+    }
+
+  if (dest_reg != src_reg)
+    emit_move_insn (dest_reg, src_reg);
+  emit_move_insn (dest_zero, CONST0_RTX (word_mode));
+  insns = get_insns ();
+
+  end_sequence ();
+
+  emit_insn_before (insns, insn);
+
+  if (dump_file)
+    {
+      rtx in;
+      fprintf (dump_file, "; Replacing insn: %d with insns: ", INSN_UID (insn));
+      for (in = insns; in != insn; in = NEXT_INSN (in))
+	fprintf (dump_file, "%d ", INSN_UID (in));
+      fprintf (dump_file, "\n");
+    }
+
+  delete_insn (insn);
+  return insns;
+}
+
 /* Look for registers which are always accessed via word-sized SUBREGs
    or via copies.  Decompose these registers into several word-sized
    pseudo-registers.  */
@@ -1001,6 +1150,9 @@ decompose_multiword_subregs (void)
 	  if (!INSN_P (insn)
 	      || GET_CODE (PATTERN (insn)) == CLOBBER
 	      || GET_CODE (PATTERN (insn)) == USE)
+	    continue;
+
+	  if (find_decomposable_shift_zext (insn))
 	    continue;
 
 	  recog_memoized (insn);
@@ -1150,6 +1302,19 @@ decompose_multiword_subregs (void)
 
 			  if (cfi)
 			    SET_BIT (sub_blocks, bb->index);
+			}
+		    }
+		  else
+		    {
+		      rtx decomposed_shift;
+
+		      decomposed_shift = resolve_shift_zext (insn);
+		      if (decomposed_shift != NULL_RTX)
+			{
+			  changed = true;
+			  insn = decomposed_shift;
+			  recog_memoized (insn);
+			  extract_insn (insn);
 			}
 		    }
 
