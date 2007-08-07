@@ -37,7 +37,7 @@ int main1 ()
 {  
   int i,j;
 
-  /* 1. unaligned */
+  /* 1. unaligned (known misalignment) */
   for (i = 0; i < N; i++)
     {
       tmp1[2].a.n[1][2][i] = 5;
@@ -82,7 +82,7 @@ int main1 ()
 	}
     }
 
-  /* 4. unaligned */
+  /* 4. unaligned (unknown misalignment) */
   for (i = 0; i < N-4; i++)
     {
       for (j = 0; j < N-4; j++)
@@ -113,5 +113,7 @@ int main (void)
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail {! vector_alignment_reachable} } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target {! vector_alignment_reachable} } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { target {! vector_alignment_reachable} } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
