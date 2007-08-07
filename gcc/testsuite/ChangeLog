@@ -1,3 +1,7 @@
+2007-08-07  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcc.dg/multiword-1.c: New testcase.
+
 2007-08-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	* gfortran.dg/namelist_33.f90: Improved tests, adjusted error
