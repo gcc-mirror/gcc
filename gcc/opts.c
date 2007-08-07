@@ -353,6 +353,15 @@ static bool flag_unroll_loops_set, flag_tracer_set;
 static bool flag_value_profile_transformations_set;
 static bool flag_peel_loops_set, flag_branch_probabilities_set;
 
+/* Functions excluded from profiling.  */
+
+typedef char *char_p; /* For DEF_VEC_P.  */
+DEF_VEC_P(char_p);
+DEF_VEC_ALLOC_P(char_p,heap);
+
+static VEC(char_p,heap) *flag_instrument_functions_exclude_functions;
+static VEC(char_p,heap) *flag_instrument_functions_exclude_files;
+
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
@@ -600,6 +609,87 @@ add_input_filename (const char *filename)
   num_in_fnames++;
   in_fnames = xrealloc (in_fnames, num_in_fnames * sizeof (in_fnames[0]));
   in_fnames[num_in_fnames - 1] = filename;
+}
+
+/* Add functions or file names to a vector of names to exclude from
+   instrumentation.  */
+
+static void
+add_instrument_functions_exclude_list (VEC(char_p,heap) **pvec,
+				       const char* arg)
+{
+  char *tmp;
+  char *r;
+  char *w;
+  char *token_start;
+
+  /* We never free this string.  */
+  tmp = xstrdup (arg);
+
+  r = tmp;
+  w = tmp;
+  token_start = tmp;
+
+  while (*r != '\0')
+    {
+      if (*r == ',')
+	{
+	  *w++ = '\0';
+	  ++r;
+	  VEC_safe_push (char_p, heap, *pvec, token_start);
+	  token_start = w;
+	}
+      if (*r == '\\' && r[1] == ',')
+	{
+	  *w++ = ',';
+	  r += 2;
+	}
+      else
+	*w++ = *r++;
+    }
+  if (*token_start != '\0')
+    VEC_safe_push (char_p, heap, *pvec, token_start);
+}
+
+/* Return whether we should exclude FNDECL from instrumentation.  */
+
+bool
+flag_instrument_functions_exclude_p (tree fndecl)
+{
+  if (VEC_length (char_p, flag_instrument_functions_exclude_functions) > 0)
+    {
+      const char *name;
+      int i;
+      char *s;
+
+      name = lang_hooks.decl_printable_name (fndecl, 0);
+      for (i = 0;
+	   VEC_iterate (char_p, flag_instrument_functions_exclude_functions,
+			i, s);
+	   ++i)
+	{
+	  if (strstr (name, s) != NULL)
+	    return true;
+	}
+    }
+
+  if (VEC_length (char_p, flag_instrument_functions_exclude_files) > 0)
+    {
+      const char *name;
+      int i;
+      char *s;
+
+      name = DECL_SOURCE_FILE (fndecl);
+      for (i = 0;
+	   VEC_iterate (char_p, flag_instrument_functions_exclude_files, i, s);
+	   ++i)
+	{
+	  if (strstr (name, s) != NULL)
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 /* Decode and handle the vector of command line options.  LANG_MASK
@@ -1472,6 +1562,16 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_finline_limit_eq:
       set_param_value ("max-inline-insns-single", value / 2);
       set_param_value ("max-inline-insns-auto", value / 2);
+      break;
+
+    case OPT_finstrument_functions_exclude_function_list_:
+      add_instrument_functions_exclude_list
+	(&flag_instrument_functions_exclude_functions, arg);
+      break;
+
+    case OPT_finstrument_functions_exclude_file_list_:
+      add_instrument_functions_exclude_list
+	(&flag_instrument_functions_exclude_files, arg);
       break;
 
     case OPT_fmessage_length_:

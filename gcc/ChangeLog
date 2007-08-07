@@ -1,3 +1,22 @@
+2007-08-07  Yaz Saito  <saito@google.com>
+	    Ian Lance Taylor  <iant@google.com>
+
+	* common.opt (finstrument-functions-exclude-function-list): New
+	option.
+	(finstrument-functions-exclude-file-list): New option.
+	* opts.c (char_p): Define and DEF_VEC.
+	(flag_instrument_functions_exclude_functions): New static
+	variable.
+	(flag_instrument_functions_exclude_files): New static variable.
+	(add_instrument_functions_exclude_list): New static function.
+	(flag_instrument_functions_exclude_p): New function.
+	(common_handle_option): Handle new options.
+	* flags.h (flag_instrument_functions_exclude_p): Declare.
+	* gimplify.c (gimplify_function_tree): Call
+	flag_instrument_functions_exclude_p.
+	* doc/invoke.texi (Option Summary): Mention new options.
+	(Code Gen Options): Document new options.
+
 2007-08-07  Ian Lance Taylor  <iant@google.com>
 
 	PR rtl-optimization/32776
