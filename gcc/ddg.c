@@ -568,6 +568,7 @@ print_ddg (FILE *file, ddg_ptr g)
     {
       ddg_edge_ptr e;
 
+      fprintf (file, "Node num: %d\n", g->nodes[i].cuid);
       print_rtl_single (file, g->nodes[i].insn);
       fprintf (file, "OUT ARCS: ");
       for (e = g->nodes[i].out; e; e = e->next_out)
