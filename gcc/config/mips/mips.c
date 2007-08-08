@@ -2096,6 +2096,19 @@ mips_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
   return mips_classify_address (&addr, x, mode, strict);
 }
 
+/* Emit a move from SRC to DEST.  Assume that the move expanders can
+   handle all moves if !can_create_pseudo_p ().  The distinction is
+   important because, unlike emit_move_insn, the move expanders know
+   how to force Pmode objects into the constant pool even when the
+   constant pool address is not itself legitimate.  */
+
+rtx
+mips_emit_move (rtx dest, rtx src)
+{
+  return (can_create_pseudo_p ()
+	  ? emit_move_insn (dest, src)
+	  : emit_move_insn_1 (dest, src));
+}
 
 /* Copy VALUE to a register and return that register.  If new psuedos
    are allowed, copy it into a new register, otherwise use DEST.  */
@@ -2107,7 +2120,7 @@ mips_force_temporary (rtx dest, rtx value)
     return force_reg (Pmode, value);
   else
     {
-      emit_move_insn (copy_rtx (dest), value);
+      mips_emit_move (copy_rtx (dest), value);
       return dest;
     }
 }
@@ -2532,7 +2545,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
 
   if (mips_tls_operand_p (src))
     {
-      emit_move_insn (dest, mips_legitimize_tls_address (src));
+      mips_emit_move (dest, mips_legitimize_tls_address (src));
       return;
     }
 
@@ -2545,7 +2558,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
       && (can_create_pseudo_p () || SMALL_INT (offset)))
     {
       base = mips_force_temporary (dest, base);
-      emit_move_insn (dest, mips_add_offset (0, base, INTVAL (offset)));
+      mips_emit_move (dest, mips_add_offset (0, base, INTVAL (offset)));
       return;
     }
 
@@ -2554,7 +2567,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
   /* When using explicit relocs, constant pool references are sometimes
      not legitimate addresses.  */
   mips_split_symbol (dest, XEXP (src, 0), mode, &XEXP (src, 0));
-  emit_move_insn (dest, src);
+  mips_emit_move (dest, src);
 }
 
 
@@ -2566,7 +2579,7 @@ mips_legitimize_move (enum machine_mode mode, rtx dest, rtx src)
 {
   if (!register_operand (dest, mode) && !reg_or_0_operand (src, mode))
     {
-      emit_move_insn (dest, force_reg (mode, src));
+      mips_emit_move (dest, force_reg (mode, src));
       return true;
     }
 
@@ -3080,12 +3093,12 @@ mips_split_64bit_move (rtx dest, rtx src)
       if (ISA_HAS_MXHC1)
 	{
 	  src = gen_lowpart (DFmode, src);
-	  emit_move_insn (mips_subword (dest, 0), mips_subword (src, 0));
+	  mips_emit_move (mips_subword (dest, 0), mips_subword (src, 0));
 	  emit_insn (gen_mfhc1 (mips_subword (dest, 1), src));
 	}
       else
 	{
-	  emit_move_insn (mips_subword (dest, 0), mips_subword (src, 0));
+	  mips_emit_move (mips_subword (dest, 0), mips_subword (src, 0));
 	  emit_insn (gen_store_df_high (mips_subword (dest, 1), src));
 	}
     }
@@ -3099,13 +3112,13 @@ mips_split_64bit_move (rtx dest, rtx src)
       if (REG_P (low_dest)
 	  && reg_overlap_mentioned_p (low_dest, src))
 	{
-	  emit_move_insn (mips_subword (dest, 1), mips_subword (src, 1));
-	  emit_move_insn (low_dest, mips_subword (src, 0));
+	  mips_emit_move (mips_subword (dest, 1), mips_subword (src, 1));
+	  mips_emit_move (low_dest, mips_subword (src, 0));
 	}
       else
 	{
-	  emit_move_insn (low_dest, mips_subword (src, 0));
-	  emit_move_insn (mips_subword (dest, 1), mips_subword (src, 1));
+	  mips_emit_move (low_dest, mips_subword (src, 0));
+	  mips_emit_move (mips_subword (dest, 1), mips_subword (src, 1));
 	}
     }
 }
@@ -3266,7 +3279,7 @@ mips_restore_gp (void)
 			     current_function_outgoing_args_size);
   slot = gen_rtx_MEM (Pmode, address);
 
-  emit_move_insn (pic_offset_table_rtx, slot);
+  mips_emit_move (pic_offset_table_rtx, slot);
   if (!TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
 }
@@ -3655,7 +3668,7 @@ mips_load_call_address (rtx dest, rtx addr, int sibcall_p)
 	emit_insn (gen_load_calldi (dest, high, lo_sum_symbol));
     }
   else
-    emit_move_insn (dest, addr);
+    mips_emit_move (dest, addr);
 }
 
 
@@ -3745,8 +3758,8 @@ mips_emit_fcc_reload (rtx dest, rtx src, rtx scratch)
   fp1 = gen_rtx_REG (SFmode, REGNO (scratch));
   fp2 = gen_rtx_REG (SFmode, REGNO (scratch) + MAX_FPRS_PER_FMT);
 
-  emit_move_insn (copy_rtx (fp1), src);
-  emit_move_insn (copy_rtx (fp2), CONST0_RTX (SFmode));
+  mips_emit_move (copy_rtx (fp1), src);
+  mips_emit_move (copy_rtx (fp2), CONST0_RTX (SFmode));
   emit_insn (gen_slt_sf (dest, fp2, fp1));
 }
 
@@ -3764,7 +3777,7 @@ mips_set_return_address (rtx address, rtx scratch)
   slot_address = mips_add_offset (scratch, stack_pointer_rtx,
 				  cfun->machine->frame.gp_sp_offset);
 
-  emit_move_insn (gen_rtx_MEM (GET_MODE (address), slot_address), address);
+  mips_emit_move (gen_rtx_MEM (GET_MODE (address), slot_address), address);
 }
 
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST.
@@ -3802,7 +3815,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
     {
       regs[i] = gen_reg_rtx (mode);
       if (MEM_ALIGN (src) >= bits)
-	emit_move_insn (regs[i], adjust_address (src, mode, offset));
+	mips_emit_move (regs[i], adjust_address (src, mode, offset));
       else
 	{
 	  rtx part = adjust_address (src, BLKmode, offset);
@@ -3814,7 +3827,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
   /* Copy the chunks to the destination.  */
   for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
     if (MEM_ALIGN (dest) >= bits)
-      emit_move_insn (adjust_address (dest, mode, offset), regs[i]);
+      mips_emit_move (adjust_address (dest, mode, offset), regs[i]);
     else
       {
 	rtx part = adjust_address (dest, BLKmode, offset);
@@ -3887,8 +3900,8 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
   mips_block_move_straight (dest, src, MAX_MOVE_BYTES);
 
   /* Move on to the next block.  */
-  emit_move_insn (src_reg, plus_constant (src_reg, MAX_MOVE_BYTES));
-  emit_move_insn (dest_reg, plus_constant (dest_reg, MAX_MOVE_BYTES));
+  mips_emit_move (src_reg, plus_constant (src_reg, MAX_MOVE_BYTES));
+  mips_emit_move (dest_reg, plus_constant (dest_reg, MAX_MOVE_BYTES));
 
   /* Emit the loop condition.  */
   if (Pmode == DImode)
@@ -4411,7 +4424,7 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      ptr = plus_constant (virtual_incoming_args_rtx, off);
 	      mem = gen_rtx_MEM (mode, ptr);
 	      set_mem_alias_set (mem, get_varargs_alias_set ());
-	      emit_move_insn (mem, gen_rtx_REG (mode, FP_ARG_FIRST + i));
+	      mips_emit_move (mem, gen_rtx_REG (mode, FP_ARG_FIRST + i));
 	      off += UNITS_PER_HWFPVALUE;
 	    }
 	}
@@ -7259,7 +7272,7 @@ mips_save_reg (rtx reg, rtx mem)
       if (mips_split_64bit_move_p (mem, reg))
 	mips_split_64bit_move (mem, reg);
       else
-	emit_move_insn (mem, reg);
+	mips_emit_move (mem, reg);
 
       x1 = mips_frame_set (mips_subword (mem, 0), mips_subword (reg, 0));
       x2 = mips_frame_set (mips_subword (mem, 1), mips_subword (reg, 1));
@@ -7274,11 +7287,11 @@ mips_save_reg (rtx reg, rtx mem)
 	  /* Save a non-mips16 register by moving it through a temporary.
 	     We don't need to do this for $31 since there's a special
 	     instruction for it.  */
-	  emit_move_insn (MIPS_PROLOGUE_TEMP (GET_MODE (reg)), reg);
-	  emit_move_insn (mem, MIPS_PROLOGUE_TEMP (GET_MODE (reg)));
+	  mips_emit_move (MIPS_PROLOGUE_TEMP (GET_MODE (reg)), reg);
+	  mips_emit_move (mem, MIPS_PROLOGUE_TEMP (GET_MODE (reg)));
 	}
       else
-	emit_move_insn (mem, reg);
+	mips_emit_move (mem, reg);
 
       mips_set_frame_expr (mips_frame_set (mem, reg));
     }
@@ -7748,7 +7761,7 @@ mips_expand_prologue (void)
 						       GEN_INT (-size)))) = 1;
       else
 	{
-	  emit_move_insn (MIPS_PROLOGUE_TEMP (Pmode), GEN_INT (size));
+	  mips_emit_move (MIPS_PROLOGUE_TEMP (Pmode), GEN_INT (size));
 	  if (TARGET_MIPS16)
 	    {
 	      /* There are no instructions to add or subtract registers
@@ -7756,11 +7769,11 @@ mips_expand_prologue (void)
 		 temporary.  We should always be using a frame pointer
 		 in this case anyway.  */
 	      gcc_assert (frame_pointer_needed);
-	      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	      mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
 	      emit_insn (gen_sub3_insn (hard_frame_pointer_rtx,
 					hard_frame_pointer_rtx,
 					MIPS_PROLOGUE_TEMP (Pmode)));
-	      emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
+	      mips_emit_move (stack_pointer_rtx, hard_frame_pointer_rtx);
 	    }
 	  else
 	    emit_insn (gen_sub3_insn (stack_pointer_rtx,
@@ -7790,8 +7803,8 @@ mips_expand_prologue (void)
 					 offset))) = 1;
 	  else
 	    {
-	      emit_move_insn (MIPS_PROLOGUE_TEMP (Pmode), offset);
-	      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	      mips_emit_move (MIPS_PROLOGUE_TEMP (Pmode), offset);
+	      mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
 	      emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
 					hard_frame_pointer_rtx,
 					MIPS_PROLOGUE_TEMP (Pmode)));
@@ -7802,7 +7815,7 @@ mips_expand_prologue (void)
 	    }
 	}
       else
-	RTX_FRAME_RELATED_P (emit_move_insn (hard_frame_pointer_rtx,
+	RTX_FRAME_RELATED_P (mips_emit_move (hard_frame_pointer_rtx,
 					     stack_pointer_rtx)) = 1;
     }
 
@@ -7867,11 +7880,11 @@ mips_restore_reg (rtx reg, rtx mem)
   if (TARGET_MIPS16 && !M16_REG_P (REGNO (reg)))
     {
       /* Can't restore directly; move through a temporary.  */
-      emit_move_insn (MIPS_EPILOGUE_TEMP (GET_MODE (reg)), mem);
-      emit_move_insn (reg, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
+      mips_emit_move (MIPS_EPILOGUE_TEMP (GET_MODE (reg)), mem);
+      mips_emit_move (reg, MIPS_EPILOGUE_TEMP (GET_MODE (reg)));
     }
   else
-    emit_move_insn (reg, mem);
+    mips_emit_move (reg, mem);
 }
 
 
@@ -7955,7 +7968,7 @@ mips_expand_epilogue (int sibcall_p)
       adjust = GEN_INT (step1);
       if (!SMALL_OPERAND (step1))
 	{
-	  emit_move_insn (MIPS_EPILOGUE_TEMP (Pmode), adjust);
+	  mips_emit_move (MIPS_EPILOGUE_TEMP (Pmode), adjust);
 	  adjust = MIPS_EPILOGUE_TEMP (Pmode);
 	}
 
@@ -7968,7 +7981,7 @@ mips_expand_epilogue (int sibcall_p)
 
   /* Copy TARGET into the stack pointer.  */
   if (target != stack_pointer_rtx)
-    emit_move_insn (stack_pointer_rtx, target);
+    mips_emit_move (stack_pointer_rtx, target);
 
   /* If we're using addressing macros, $gp is implicitly used by all
      SYMBOL_REFs.  We must emit a blockage insn before restoring $gp
@@ -8017,11 +8030,11 @@ mips_expand_epilogue (int sibcall_p)
     {
       if (TARGET_MIPS16)
 	{
-	  emit_move_insn (MIPS_EPILOGUE_TEMP (Pmode), stack_pointer_rtx);
+	  mips_emit_move (MIPS_EPILOGUE_TEMP (Pmode), stack_pointer_rtx);
 	  emit_insn (gen_add3_insn (MIPS_EPILOGUE_TEMP (Pmode),
 				    MIPS_EPILOGUE_TEMP (Pmode),
 				    EH_RETURN_STACKADJ_RTX));
-	  emit_move_insn (stack_pointer_rtx, MIPS_EPILOGUE_TEMP (Pmode));
+	  mips_emit_move (stack_pointer_rtx, MIPS_EPILOGUE_TEMP (Pmode));
 	}
       else
 	emit_insn (gen_add3_insn (stack_pointer_rtx,
@@ -8119,7 +8132,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       rtx offset = GEN_INT (delta);
       if (!SMALL_OPERAND (delta))
 	{
-	  emit_move_insn (temp1, offset);
+	  mips_emit_move (temp1, offset);
 	  offset = temp1;
 	}
       emit_insn (gen_add3_insn (this, this, offset));
@@ -8131,13 +8144,13 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       rtx addr;
 
       /* Set TEMP1 to *THIS.  */
-      emit_move_insn (temp1, gen_rtx_MEM (Pmode, this));
+      mips_emit_move (temp1, gen_rtx_MEM (Pmode, this));
 
       /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
       addr = mips_add_offset (temp2, temp1, vcall_offset);
 
       /* Load the offset and add it to THIS.  */
-      emit_move_insn (temp1, gen_rtx_MEM (Pmode, addr));
+      mips_emit_move (temp1, gen_rtx_MEM (Pmode, addr));
       emit_insn (gen_add3_insn (this, this, temp1));
     }
 
@@ -8165,7 +8178,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
       if (TARGET_USE_PIC_FN_ADDR_REG
 	  && REGNO (temp1) != PIC_FUNCTION_ADDR_REGNUM)
-	emit_move_insn (gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM), temp1);
+	mips_emit_move (gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM), temp1);
       emit_jump_insn (gen_indirect_jump (temp1));
     }
   else
@@ -9126,7 +9139,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
       id = get_identifier (buf);
       stub_fn = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
 
-      emit_move_insn (gen_rtx_REG (Pmode, 2), fn);
+      mips_emit_move (gen_rtx_REG (Pmode, 2), fn);
 
       if (retval == NULL_RTX)
 	insn = gen_call_internal (stub_fn, arg_size);
@@ -11853,7 +11866,7 @@ mips_builtin_branch_and_move (rtx condition, rtx target,
   done_label = gen_label_rtx ();
 
   /* First assume that CONDITION is false.  */
-  emit_move_insn (target, value_if_false);
+  mips_emit_move (target, value_if_false);
 
   /* Branch to TRUE_LABEL if CONDITION is true and DONE_LABEL otherwise.  */
   emit_jump_insn (gen_condjump (condition, true_label));
@@ -11862,7 +11875,7 @@ mips_builtin_branch_and_move (rtx condition, rtx target,
 
   /* Fix TARGET if CONDITION is true.  */
   emit_label (true_label);
-  emit_move_insn (target, value_if_true);
+  mips_emit_move (target, value_if_true);
 
   emit_label (done_label);
   return target;

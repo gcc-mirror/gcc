@@ -2791,7 +2791,7 @@
 
   if (reg1)			/* Turn off complaints about unreached code.  */
     {
-      emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
+      mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
       do_pending_stack_adjust ();
 
       emit_insn (gen_cmpdf (operands[1], reg1));
@@ -2803,8 +2803,8 @@
       emit_barrier ();
 
       emit_label (label1);
-      emit_move_insn (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (trunc_int_for_mode
+      mips_emit_move (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
+      mips_emit_move (reg3, GEN_INT (trunc_int_for_mode
 				     (BITMASK_HIGH, SImode)));
 
       emit_insn (gen_fix_truncdfsi2 (operands[0], reg2));
@@ -2834,7 +2834,7 @@
 
   real_2expN (&offset, 63);
 
-  emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
+  mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
   do_pending_stack_adjust ();
 
   emit_insn (gen_cmpdf (operands[1], reg1));
@@ -2846,8 +2846,8 @@
   emit_barrier ();
 
   emit_label (label1);
-  emit_move_insn (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
-  emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
+  mips_emit_move (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
+  mips_emit_move (reg3, GEN_INT (BITMASK_HIGH));
   emit_insn (gen_ashldi3 (reg3, reg3, GEN_INT (32)));
 
   emit_insn (gen_fix_truncdfdi2 (operands[0], reg2));
@@ -2876,7 +2876,7 @@
 
   real_2expN (&offset, 31);
 
-  emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
+  mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
   do_pending_stack_adjust ();
 
   emit_insn (gen_cmpsf (operands[1], reg1));
@@ -2888,8 +2888,8 @@
   emit_barrier ();
 
   emit_label (label1);
-  emit_move_insn (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
-  emit_move_insn (reg3, GEN_INT (trunc_int_for_mode
+  mips_emit_move (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
+  mips_emit_move (reg3, GEN_INT (trunc_int_for_mode
 				 (BITMASK_HIGH, SImode)));
 
   emit_insn (gen_fix_truncsfsi2 (operands[0], reg2));
@@ -2918,7 +2918,7 @@
 
   real_2expN (&offset, 63);
 
-  emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
+  mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
   do_pending_stack_adjust ();
 
   emit_insn (gen_cmpsf (operands[1], reg1));
@@ -2930,8 +2930,8 @@
   emit_barrier ();
 
   emit_label (label1);
-  emit_move_insn (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
-  emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
+  mips_emit_move (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
+  mips_emit_move (reg3, GEN_INT (BITMASK_HIGH));
   emit_insn (gen_ashldi3 (reg3, reg3, GEN_INT (32)));
 
   emit_insn (gen_fix_truncsfdi2 (operands[0], reg2));
@@ -4148,7 +4148,7 @@
   ""
   [(const_int 0)]
 {
-  emit_move_insn (pic_offset_table_rtx, operands[0]);
+  mips_emit_move (pic_offset_table_rtx, operands[0]);
   DONE;
 }
   [(set_attr "length" "8")])
@@ -5096,7 +5096,7 @@
   rtx addr;
 
   addr = plus_constant (operands[0], GET_MODE_SIZE (Pmode) * 3);
-  emit_move_insn (gen_rtx_MEM (Pmode, addr), pic_offset_table_rtx);
+  mips_emit_move (gen_rtx_MEM (Pmode, addr), pic_offset_table_rtx);
   DONE;
 })
 
@@ -5122,10 +5122,10 @@
 
   /* This bit is similar to expand_builtin_longjmp except that it
      restores $gp as well.  */
-  emit_move_insn (hard_frame_pointer_rtx, fp);
-  emit_move_insn (pv, lab);
+  mips_emit_move (hard_frame_pointer_rtx, fp);
+  mips_emit_move (pv, lab);
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
-  emit_move_insn (gp, gpv);
+  mips_emit_move (gp, gpv);
   emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
   emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
   emit_insn (gen_rtx_USE (VOIDmode, gp));
@@ -5516,7 +5516,7 @@
   for (i = 0; i < XVECLEN (operands[2], 0); i++)
     {
       rtx set = XVECEXP (operands[2], 0, i);
-      emit_move_insn (SET_DEST (set), SET_SRC (set));
+      mips_emit_move (SET_DEST (set), SET_SRC (set));
     }
 
   emit_insn (gen_blockage ());

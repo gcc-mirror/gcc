@@ -171,6 +171,7 @@ extern int mips_idiv_insns (void);
 extern int fp_register_operand (rtx, enum machine_mode);
 extern int lo_operand (rtx, enum machine_mode);
 extern bool mips_legitimate_address_p (enum machine_mode, rtx, int);
+extern rtx mips_emit_move (rtx, rtx);
 extern bool mips_split_symbol (rtx, rtx, enum machine_mode, rtx *);
 extern rtx mips_unspec_address (rtx, enum mips_symbol_type);
 extern bool mips_legitimize_address (rtx *, enum machine_mode);

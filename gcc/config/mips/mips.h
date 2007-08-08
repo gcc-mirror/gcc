@@ -2171,8 +2171,8 @@ typedef struct mips_args {
 									    \
   func_addr = plus_constant (ADDR, 32);					    \
   chain_addr = plus_constant (func_addr, GET_MODE_SIZE (ptr_mode));	    \
-  emit_move_insn (gen_rtx_MEM (ptr_mode, func_addr), FUNC);		    \
-  emit_move_insn (gen_rtx_MEM (ptr_mode, chain_addr), CHAIN);		    \
+  mips_emit_move (gen_rtx_MEM (ptr_mode, func_addr), FUNC);		    \
+  mips_emit_move (gen_rtx_MEM (ptr_mode, chain_addr), CHAIN);		    \
   end_addr = gen_reg_rtx (Pmode);					    \
   emit_insn (gen_add3_insn (end_addr, copy_rtx (ADDR),			    \
                             GEN_INT (TRAMPOLINE_SIZE)));		    \
