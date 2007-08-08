@@ -96,7 +96,7 @@
 {
   enum mips_symbol_type symbol_type;
 
-  if (!mips_symbolic_constant_p (op, &symbol_type))
+  if (!mips_symbolic_constant_p (op, SYMBOL_CONTEXT_CALL, &symbol_type))
     return false;
 
   switch (symbol_type)
@@ -160,7 +160,7 @@
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type symbol_type;
-  return (mips_symbolic_constant_p (op, &symbol_type)
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
 	  && mips_split_p[symbol_type]);
 })
 
@@ -211,7 +211,7 @@
     case LABEL_REF:
       if (CONST_GP_P (op))
 	return true;
-      return (mips_symbolic_constant_p (op, &symbol_type)
+      return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
 	      && !mips_split_p[symbol_type]);
 
     default:
@@ -226,28 +226,31 @@
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type);
+  return mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type);
 })
 
 (define_predicate "absolute_symbolic_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_ABSOLUTE;
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type)
+	  && type == SYMBOL_ABSOLUTE);
 })
 
 (define_predicate "got_disp_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_DISP;
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type)
+	  && type == SYMBOL_GOT_DISP);
 })
 
 (define_predicate "got_page_ofst_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GOT_PAGE_OFST;
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &type)
+	  && type == SYMBOL_GOT_PAGE_OFST);
 })
 
 (define_predicate "symbol_ref_operand"
