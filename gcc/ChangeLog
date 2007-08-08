@@ -1,5 +1,17 @@
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_symbolic_address_p): Delete.
+	(mips_symbol_insns_1): New function, split out from...
+	(mips_symbol_insns): ...here.  Take a mode argument.  Treat loads
+	and stores separately from load addresses.
+	(mips_classify_address): Replace uses of mips_symbolic_address_p
+	with uses of mips_symbol_insns.
+	(mips_address_insns): Update calls to mips_symbol_insns.
+	(mips_const_insns): Likewise.
+	(mips_legitimize_address): Likewise.
+
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips-protos.h (SYMBOL_FORCE_TO_MEM): New symbol type.
 	* config/mips/mips.c (mips_classify_symbol): Skip TARGET_ABICALLS
 	block for locally-binding symbols if TARGET_ABSOLUTE_ABICALLS.
