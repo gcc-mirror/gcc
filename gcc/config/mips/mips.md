@@ -3299,11 +3299,14 @@
 ;; Likewise, for symbolic operands.
 (define_split
   [(set (match_operand:P 0 "register_operand")
-	(match_operand:P 1 "splittable_symbolic_operand"))
+	(match_operand:P 1))
    (clobber (match_operand:P 2 "register_operand"))]
-  ""
-  [(set (match_dup 0) (match_dup 1))]
-  { operands[1] = mips_split_symbol (operands[2], operands[1]); })
+  "mips_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL)"
+  [(set (match_dup 0) (match_dup 3))]
+{
+  mips_split_symbol (operands[2], operands[1],
+		     MAX_MACHINE_MODE, &operands[3]);
+})
 
 ;; 64-bit integer moves
 

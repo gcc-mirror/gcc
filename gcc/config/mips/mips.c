@@ -2113,24 +2113,50 @@ mips_force_temporary (rtx dest, rtx value)
 }
 
 
-/* Return a LO_SUM expression for ADDR.  TEMP is as for mips_force_temporary
-   and is used to load the high part into a register.  */
+/* If MODE is MAX_MACHINE_MODE, ADDR appears as a move operand, otherwise
+   it appears in a MEM of that mode.  Return true if ADDR is a legitimate
+   constant in that context and can be split into a high part and a LO_SUM.
+   If so, and if LO_SUM_OUT is nonnull, emit the high part and return
+   the LO_SUM in *LO_SUM_OUT.  Leave *LO_SUM_OUT unchanged otherwise.
 
-rtx
-mips_split_symbol (rtx temp, rtx addr)
+   TEMP is as for mips_force_temporary and is used to load the high
+   part into a register.  */
+
+bool
+mips_split_symbol (rtx temp, rtx addr, enum machine_mode mode, rtx *lo_sum_out)
 {
+  enum mips_symbol_context context;
+  enum mips_symbol_type symbol_type;
   rtx high;
 
-  if (!TARGET_MIPS16)
-    high = mips_force_temporary (temp, gen_rtx_HIGH (Pmode, copy_rtx (addr)));
-  else if (!can_create_pseudo_p ())
+  context = (mode == MAX_MACHINE_MODE
+	     ? SYMBOL_CONTEXT_LEA
+	     : SYMBOL_CONTEXT_MEM);
+  if (!mips_symbolic_constant_p (addr, context, &symbol_type)
+      || mips_symbol_insns (symbol_type, mode) == 0
+      || !mips_split_p[symbol_type])
+    return false;
+
+  if (lo_sum_out)
     {
-      emit_insn (gen_load_const_gp (copy_rtx (temp)));
-      high = temp;
+      if (symbol_type == SYMBOL_GP_RELATIVE)
+	{
+	  if (!can_create_pseudo_p ())
+	    {
+	      emit_insn (gen_load_const_gp (copy_rtx (temp)));
+	      high = temp;
+	    }
+	  else
+	    high = mips16_gp_pseudo_reg ();
+	}
+      else
+	{
+	  high = gen_rtx_HIGH (Pmode, copy_rtx (addr));
+	  high = mips_force_temporary (temp, high);
+	}
+      *lo_sum_out = gen_rtx_LO_SUM (Pmode, high, addr);
     }
-  else
-    high = mips16_gp_pseudo_reg ();
-  return gen_rtx_LO_SUM (Pmode, high, addr);
+  return true;
 }
 
 
@@ -2321,8 +2347,6 @@ mips_legitimize_tls_address (rtx loc)
 bool
 mips_legitimize_address (rtx *xloc, enum machine_mode mode)
 {
-  enum mips_symbol_type symbol_type;
-
   if (mips_tls_operand_p (*xloc))
     {
       *xloc = mips_legitimize_tls_address (*xloc);
@@ -2330,13 +2354,8 @@ mips_legitimize_address (rtx *xloc, enum machine_mode mode)
     }
 
   /* See if the address can split into a high part and a LO_SUM.  */
-  if (mips_symbolic_constant_p (*xloc, SYMBOL_CONTEXT_MEM, &symbol_type)
-      && mips_symbol_insns (symbol_type, mode) > 0
-      && mips_split_p[symbol_type])
-    {
-      *xloc = mips_split_symbol (0, *xloc);
-      return true;
-    }
+  if (mips_split_symbol (NULL, *xloc, mode, xloc))
+    return true;
 
   if (GET_CODE (*xloc) == PLUS && GET_CODE (XEXP (*xloc, 1)) == CONST_INT)
     {
@@ -2505,9 +2524,9 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
     }
 
   /* Split moves of symbolic constants into high/low pairs.  */
-  if (splittable_symbolic_operand (src, mode))
+  if (mips_split_symbol (dest, src, MAX_MACHINE_MODE, &src))
     {
-      emit_insn (gen_rtx_SET (VOIDmode, dest, mips_split_symbol (dest, src)));
+      emit_insn (gen_rtx_SET (VOIDmode, dest, src));
       return;
     }
 
@@ -2534,8 +2553,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
 
   /* When using explicit relocs, constant pool references are sometimes
      not legitimate addresses.  */
-  if (!memory_operand (src, VOIDmode))
-    src = replace_equiv_address (src, mips_split_symbol (dest, XEXP (src, 0)));
+  mips_split_symbol (dest, XEXP (src, 0), mode, &XEXP (src, 0));
   emit_move_insn (dest, src);
 }
 
