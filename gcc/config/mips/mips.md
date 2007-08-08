@@ -3094,7 +3094,7 @@
   [(set_attr "type" "store")
    (set_attr "mode" "<MODE>")])
 
-;; An instruction to calculate the high part of a 64-bit SYMBOL_GENERAL.
+;; An instruction to calculate the high part of a 64-bit SYMBOL_ABSOLUTE.
 ;; The required value is:
 ;;
 ;;	(%highest(op1) << 48) + (%higher(op1) << 32) + (%hi(op1) << 16)
@@ -3111,7 +3111,7 @@
 ;; to take effect.
 (define_insn_and_split "*lea_high64"
   [(set (match_operand:DI 0 "register_operand" "=d")
-	(high:DI (match_operand:DI 1 "general_symbolic_operand" "")))]
+	(high:DI (match_operand:DI 1 "absolute_symbolic_operand" "")))]
   "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS"
   "#"
   "&& epilogue_completed"
@@ -3136,7 +3136,7 @@
 ;;	daddu	op1,op1,op0
 (define_peephole2
   [(set (match_operand:DI 1 "register_operand")
-	(high:DI (match_operand:DI 2 "general_symbolic_operand")))
+	(high:DI (match_operand:DI 2 "absolute_symbolic_operand")))
    (match_scratch:DI 0 "d")]
   "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS"
   [(set (match_dup 1) (high:DI (match_dup 3)))
@@ -3150,7 +3150,7 @@
 })
 
 ;; On most targets, the expansion of (lo_sum (high X) X) for a 64-bit
-;; SYMBOL_GENERAL X will take 6 cycles.  This next pattern allows combine
+;; SYMBOL_ABSOLUTE X will take 6 cycles.  This next pattern allows combine
 ;; to merge the HIGH and LO_SUM parts of a move if the HIGH part is only
 ;; used once.  We can then use the sequence:
 ;;
@@ -3164,7 +3164,7 @@
 ;; which takes 4 cycles on most superscalar targets.
 (define_insn_and_split "*lea64"
   [(set (match_operand:DI 0 "register_operand" "=d")
-	(match_operand:DI 1 "general_symbolic_operand" ""))
+	(match_operand:DI 1 "absolute_symbolic_operand" ""))
    (clobber (match_scratch:DI 2 "=&d"))]
   "TARGET_EXPLICIT_RELOCS && ABI_HAS_64BIT_SYMBOLS && cse_not_expected"
   "#"
@@ -4182,7 +4182,7 @@
 				 (match_dup 4)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_unspec_address (operands[0], SYMBOL_GENERAL);
+  operands[3] = mips_unspec_address (operands[0], SYMBOL_ABSOLUTE);
   operands[4] = mips_unspec_address (operands[1], SYMBOL_HALF);
 })
 

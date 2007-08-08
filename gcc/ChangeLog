@@ -1,3 +1,20 @@
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips-protos.h (SYMBOL_GENERAL): Rename to...
+	(SYMBOL_ABSOLUTE): ...this.
+	(SYMBOL_SMALL_DATA): Rename to...
+	(SYMBOL_GP_RELATIVE): ...this.
+	(SYMBOL_CONSTANT_POOL): Rename to...
+	(SYMBOL_PC_RELATIVE): ...this.
+	* config/mips/mips.c (mips_classify_symbol, mips_symbolic_constant_p)
+	(mips_symbolic_address_p, mips_symbol_insns, override_options)
+	(mips_rewrite_small_data_p, mips_use_anchors_for_symbol_p): Update
+	after above changes.
+	* config/mips/predicates.md (const_call_insn_operand): Likewise.
+	(general_symbolic_operand): Rename to...
+	(absolute_symbolic_operand): ...this.
+	* config/mips/mips.md: Update after above changes.
+
 2007-08-08  Vladimir Yanovsky  <yanov@il.ibm.com>
             Revital Eres  <eres@il.ibm.com>
 
