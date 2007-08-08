@@ -481,7 +481,8 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
          we store CONST_IPATYPE and its value as the jump function 
          of this argument.  */
       else if (TREE_CODE (arg) == INTEGER_CST
-	       || TREE_CODE (arg) == REAL_CST)
+	       || TREE_CODE (arg) == REAL_CST
+	       || TREE_CODE (arg) == FIXED_CST)
 	{
 	  ipa_callsite_param_set_type (cs, arg_num, CONST_IPATYPE);
 	  ipa_callsite_param_set_info_type (cs, arg_num, arg);
@@ -495,7 +496,8 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
 	{
 	  cst_decl = TREE_OPERAND (arg, 0);
 	  if (TREE_CODE (DECL_INITIAL (cst_decl)) == INTEGER_CST
-	      || TREE_CODE (DECL_INITIAL (cst_decl)) == REAL_CST)
+	      || TREE_CODE (DECL_INITIAL (cst_decl)) == REAL_CST
+	      || TREE_CODE (DECL_INITIAL (cst_decl)) == FIXED_CST)
 	    {
 	      ipa_callsite_param_set_type (cs, arg_num,
 					   CONST_IPATYPE_REF);

@@ -96,6 +96,8 @@ some_nonzerop (tree t)
 
   if (TREE_CODE (t) == REAL_CST)
     zerop = REAL_VALUES_IDENTICAL (TREE_REAL_CST (t), dconst0);
+  else if (TREE_CODE (t) == FIXED_CST)
+    zerop = fixed_zerop (t);
   else if (TREE_CODE (t) == INTEGER_CST)
     zerop = integer_zerop (t);
 

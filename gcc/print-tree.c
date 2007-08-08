@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "real.h"
+#include "fixed-value.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
@@ -146,6 +147,18 @@ print_node_brief (FILE *file, const char *prefix, const_tree node, int indent)
 	  real_to_decimal (string, &d, sizeof (string), 0, 1);
 	  fprintf (file, " %s", string);
 	}
+    }
+  if (TREE_CODE (node) == FIXED_CST)
+    {
+      FIXED_VALUE_TYPE f;
+      char string[60];
+
+      if (TREE_OVERFLOW (node))
+	fprintf (file, " overflow");
+
+      f = TREE_FIXED_CST (node);
+      fixed_to_decimal (string, &f, sizeof (string));
+      fprintf (file, " %s", string);
     }
 
   fprintf (file, ">");
@@ -610,7 +623,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       
       print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
 
-      if (INTEGRAL_TYPE_P (node) || TREE_CODE (node) == REAL_TYPE)
+      if (INTEGRAL_TYPE_P (node) || TREE_CODE (node) == REAL_TYPE
+	  || TREE_CODE (node) == FIXED_POINT_TYPE)
 	{
 	  fprintf (file, " precision %d", TYPE_PRECISION (node));
 	  print_node_brief (file, "min", TYPE_MIN_VALUE (node), indent + 4);
@@ -752,6 +766,20 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 		real_to_decimal (string, &d, sizeof (string), 0, 1);
 		fprintf (file, " %s", string);
 	      }
+	  }
+	  break;
+
+	case FIXED_CST:
+	  {
+	    FIXED_VALUE_TYPE f;
+	    char string[64];
+
+	    if (TREE_OVERFLOW (node))
+	      fprintf (file, " overflow");
+
+	    f = TREE_FIXED_CST (node);
+	    fixed_to_decimal (string, &f, sizeof (string));
+	    fprintf (file, " %s", string);
 	  }
 	  break;
 

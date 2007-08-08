@@ -1,3 +1,218 @@
+2007-08-08  Chao-ying Fu  <fu@mips.com>
+
+	* tree.def (FIXED_POINT_TYPE): New type.
+	(FIXED_CST): New constant.
+	(FIXED_CONVERT_EXPR): New expr.
+	* doc/c-tree.texi (Types): Document FIXED_POINT_TYPE.
+	(Expressions): Document FIXED_CST and FIXED_CONVERT_EXPR.
+	* tree.h (struct tree_base): Add saturating_flag.
+	Remove one bit of spare for saturating_flag.
+	(NUMERICAL_TYPE_CHECK): Support FIXED_POINT_TYPE.
+	(NON_SAT_FIXED_POINT_TYPE_P, SAT_FIXED_POINT_TYPE_P,
+	FIXED_POINT_TYPE_P): Define.
+	(TYPE_SATURATING): Define.
+	(TREE_FIXED_CST_PTR, TREE_FIXED_CST): Define.
+	(struct tree_fixed_cst): New.
+	(TYPE_IBIT, TYPE_FBIT): Define.
+	(tree_node): Add fixed_cst.
+	(enum tree_index): Add new enumeration values of
+	TI_SAT_SFRACT_TYPE, TI_SAT_FRACT_TYPE, TI_SAT_LFRACT_TYPE,
+	TI_SAT_LLFRACT_TYPE, TI_SAT_USFRACT_TYPE, TI_SAT_UFRACT_TYPE,
+	TI_SAT_ULFRACT_TYPE, TI_SAT_ULLFRACT_TYPE, TI_SFRACT_TYPE,
+	TI_FRACT_TYPE, TI_LFRACT_TYPE, TI_LLFRACT_TYPE, TI_USFRACT_TYPE,
+	TI_UFRACT_TYPE, TI_ULFRACT_TYPE, TI_ULLFRACT_TYPE,
+	TI_SAT_SACCUM_TYPE, TI_SAT_ACCUM_TYPE, TI_SAT_LACCUM_TYPE,
+	TI_SAT_LLACCUM_TYPE, TI_SAT_USACCUM_TYPE, TI_SAT_UACCUM_TYPE,
+	TI_SAT_ULACCUM_TYPE, TI_SAT_ULLACCUM_TYPE, TI_SACCUM_TYPE,
+	TI_ACCUM_TYPE, TI_LACCUM_TYPE, TI_LLACCUM_TYPE, TI_USACCUM_TYPE,
+	TI_UACCUM_TYPE, TI_ULACCUM_TYPE, TI_ULLACCUM_TYPE,
+	TI_QQ_TYPE, TI_HQ_TYPE,_TYPE, TI_SQ_TYPE, TI_DQ_TYPE, TI_TQ_TYPE,
+	TI_UQQ_TYPE, TI_UHQ_TYPE, TI_USQ_TYPE, TI_UDQ_TYPE, TI_UTQ_TYPE,
+	TI_SAT_QQ_TYPE, TI_SAT_HQ_TYPE, TI_SAT_SQ_TYPE, TI_SAT_DQ_TYPE,
+	TI_SAT_TQ_TYPE, TI_SAT_UQQ_TYPE, TI_SAT_UHQ_TYPE, TI_SAT_USQ_TYPE,
+	TI_SAT_UDQ_TYPE, TI_SAT_UTQ_TYPE, TI_HA_TYPE, TI_SA_TYPE, TI_DA_TYPE,
+	TI_TA_TYPE, TI_UHA_TYPE, TI_USA_TYPE, TI_UDA_TYPE, TI_UTA_TYPE,
+	TI_SAT_HA_TYPE, TI_SAT_SA_TYPE, TI_SAT_DA_TYPE, TI_SAT_TA_TYPE,
+	TI_SAT_UHA_TYPE, TI_SAT_USA_TYPE, TI_SAT_UDA_TYPE, TI_SAT_UTA_TYPE.
+	(sat_short_fract_type_node, sat_fract_type_node,
+	sat_long_fract_type_node, sat_long_long_fract_type_node,
+	sat_unsigned_short_fract_type_node, sat_unsigned_fract_type_node,
+	sat_unsigned_long_fract_type_node,
+	sat_unsigned_long_long_fract_type_node, short_fract_type_node,
+	fract_type_node, long_fract_type_node, long_long_fract_type_node,
+	unsigned_short_fract_type_node, unsigned_fract_type_node,
+	unsigned_long_fract_type_node, unsigned_long_long_fract_type_node,
+	sat_short_accum_type_node, sat_accum_type_node,
+	sat_long_accum_type_node, sat_long_long_accum_type_node,
+	sat_unsigned_short_accum_type_node, sat_unsigned_accum_type_node,
+	sat_unsigned_long_accum_type_node,
+	sat_unsigned_long_long_accum_type_node, short_accum_type_node,
+	accum_type_node, long_accum_type_node, long_long_accum_type_node,
+	unsigned_short_accum_type_node, unsigned_accum_type_node,
+	unsigned_long_accum_type_node, unsigned_long_long_accum_type_node,
+	qq_type_node, hq_type_node, sq_type_node, dq_type_node, tq_type_node,
+	uqq_type_node, uhq_type_node, usq_type_node, udq_type_node,
+	utq_type_node, sat_qq_type_node, sat_hq_type_node, sat_sq_type_node,
+	sat_dq_type_node, sat_tq_type_node, sat_uqq_type_node,
+	sat_uhq_type_node, sat_usq_type_node, sat_udq_type_node,
+	sat_utq_type_node, ha_type_node, sa_type_node, da_type_node,
+	ta_type_node, uha_type_node, usa_type_node, uda_type_node,
+	uta_type_node, sat_ha_type_node, sat_sa_type_node, sat_da_type_node,
+	sat_ta_type_node, sat_uha_type_node, sat_usa_type_node,
+	sat_uda_type_node, sat_uta_type_node): New macro.
+	(make_fract_type, make_accum_type): Declare.
+	(make_signed_fract_type, make_unsigned_fract_type,
+	make_sat_signed_fract_type, make_sat_unsigned_fract_type,
+	make_signed_accum_type, make_unsigned_accum_type,
+	make_sat_signed_accum_type, make_sat_unsigned_accum_type,
+	make_or_reuse_signed_fract_type, make_or_reuse_unsigned_fract_type,
+	make_or_reuse_sat_signed_fract_type,
+	make_or_reuse_sat_unsigned_fract_type, make_or_reuse_signed_accum_type,
+	make_or_reuse_unsigned_accum_type, make_or_reuse_sat_signed_accum_type,
+	make_or_reuse_sat_unsigned_accum_type): New macro.
+	(fixed_zerop): Declare.
+	* defaults.h (SHORT_FRACT_TYPE_SIZE, FRACT_TYPE_SIZE,
+	LONG_FRACT_TYPE_SIZE, LONG_LONG_FRACT_TYPE_SIZE,
+	SHORT_ACCUM_TYPE_SIZE, ACCUM_TYPE_SIZE, LONG_ACCUM_TYPE_SIZE,
+	LONG_LONG_ACCUM_TYPE_SIZE): Define.
+	* treestruct.def: Add TS_FIXED_CST.
+	* Makefile.in (c-pretty-print.o): Add dependence on fixed-value.h.
+	(tree.o): Likewise.
+	(tree-dump.o): Likewise.
+	(print-tree.o): Likewise.
+	(tree-pretty-print.o): Likewise.
+	(fold-const.o): Likewise.
+	* tree-complex.c (some_nonzerop): Handle FIXED_CST.
+	* tree-gimple.c (is_gimple_formal_tmp_rhs): Handle FIXED_CST.
+	(is_gimple_min_invariant): Handle FIXED_CST.
+	* stor-layout.c (int_mode_for_mode): Handle MODE_FRACT, MODE_UFRACT,
+	MODE_ACCUM, MODE_UACCUM, MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT,
+	MODE_VECTOR_ACCUM, MODE_VECTOR_UACCUM.
+	(layout_type): Handle FIXED_POINT_TYPE.
+	(make_fract_type, make_accum_type): New functions.
+	* tree-browser.c (browse_tree): Handle FIXED_POINT_TYPE.
+	* tree-dump.c (fixed-value.h): New include.
+	(dump_fixed): New function.
+	(dequeue_and_dump): Handle FIXED_POINT_TYPE and FIXED_CST.
+	* tree-inline.c (remap_type_1): Handle FIXED_POINT_TYPE.
+	(estimate_num_insns_1): Handle FIXED_CST and FIXED_CONVERT_EXPR.
+	* tree-pretty-print.c (fixed-value.h): New include.
+	(dump_generic_node): Handle FIXED_POINT_TYPE, FIXED_CST, and
+	FIXED_CONVERT_EXPR.
+	* tree-scalar-evolution.c (get_scalar_evolution): Handle FIXED_CST.
+	* tree-ssa-loop-im.c (for_each_index): Handle FIXED_CST.
+	* tree-ssa-pre.c (poolify_tree): Handle FIXED_CST.
+	* tree-ssa-reassoc.c (break_up_subtract_bb): We can do reassociation
+	for non-saturating fixed-point types.
+	(reassociate_bb): Likewise.
+	* emit-rtl.c (fixed-value.h): New include.
+	(fconst0, fconst1): New array.
+	(init_emit_once): Initialize fconst0 and fconst1 for fixed-point modes.
+	* tree-vect-generic.c expand_vector_operation): Support
+	MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM, and
+	MODE_VECTOR_UACCUM.
+	(type_for_widest_vector_mode): Add one parameter for the 
+	saturating flag.
+	Check scalar FRACT, UFRACT, ACCUM, and UACCUM mode to select their
+	vector mode.
+	Pass the satp parameter to type_for_mode for fixed-point types.
+	(expand_vector_operations_1): Pass the saturating flag to
+	type_for_widest_vector_mode.
+	Support MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM,
+	and MODE_VECTOR_UACCUM.
+	* tree-vect-transform.c (vect_is_simple_cond): Support FIXED_CST.
+	(vectorizable_condition): Likewise.
+	* tree.c (fixed-value.h): New include.
+	(tree_code_size): Support FIXED_CST.
+	(build_fixed): New function.
+	(build_one_cst): Support FIXED_POINT_TYPE for accum types.
+	(fixed_zerop): New function.
+	(tree_node_structure): Support FIXED_CST.
+	(type_contains_placeholder_1): Support FIXED_POINT_TYPE.
+	(build_type_attribute_qual_variant): Handle FIXED_POINT_TYPE.
+	(type_hash_eq): Handle FIXED_POINT_TYPE.
+	(simple_cst_equal): Support FIXED_CST.
+	(iterative_hash_expr): Handle FIXED_CST.
+	(get_unwidened): Make sure type is not FIXED_POINT_TYPE.
+	(get_narrower): Likewise.
+	(variably_modified_type_p): Handle FIXED_POINT_TYPE.
+	(make_or_reuse_fract_type, make_or_reuse_accum_type): New functions.
+	(build_common_tree_nodes_2): Use MAKE_FIXED_TYPE_NODE_FAMILY and
+	MAKE_FIXED_MODE_NODE macros to initialize fixed-point type
+	nodes.
+	(build_vector_type_for_mode): Handle MODE_VECTOR_FRACT,
+	MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM, MODE_VECTOR_UACCUM.
+	(initializer_zerop): Support FIXED_CST.
+	(walk_tree): Handle FIXED_CST and FIXED_POINT_TYPE.
+	* dwarf2out.c (base_type_die): Use DW_ATE_signed_fixed or
+	DW_ATE_unsigned_fixed to describe FIXED_POINT_TYPE.
+	(is_base_type): Handle FIXED_POINT_TYPE.
+	(add_type_attribute): Handle FIXED_POINT_TYPE.
+	(gen_type_die_with_usage): Handle FIXED_POINT_TYPE.
+	* print-tree.c (fixed-value.h): New include.
+	(print_node_brief): Support FIXED_CST.
+	(print_node): Support FIXED_POINT_TYPE and FIXED_CST.
+	* c-pretty-print.c (fixed-value.h): New include.
+	(pp_c_type_specifier): Handle FIXED_POINT_TYPE.  Need to pass
+	TYPE_SATURATING to c_common_type_for_mode for fixed-point modes.
+	(pp_c_direct_abstract_declarator): Handle FIXED_POINT_TYPE.
+	Support fixed-point types for inner items in VECTOR_TYPE.
+	(pp_c_direct_declarator): Likewise.
+	(pp_c_declarator): Likewise.
+	(pp_c_fixed_constant): New function.
+	(pp_c_constant): Handle FIXED_CST.
+	(pp_c_primary_expression): Likewise.
+	(pp_c_expression): Likewise.
+	* fold-const.c (fixed-value.h): New include.
+	(negate_expr_p): Return true for FIXED_CST.
+	(fold_negate_expr): Support FIXED_CST.
+	(split_tree): Support FIXED_CST.
+	(const_binop): Support FIXED_CST.
+	(fold_convert_const_int_from_fixed): New function to convert from
+	fixed to int.
+	(fold_convert_const_real_from_fixed): New function to convert from
+	fixed to real.
+	(fold_convert_const_fixed_from_fixed): New function to convert from
+	fixed to another fixed.
+	(fold_convert_const_fixed_from_int): New function to convert from
+	int to fixed.
+	(fold_convert_const_fixed_from_real): New function to convert from
+	real to fixed.
+	(fold_convert_const): Support conversions from fixed to int, from
+	fixed to real, from fixed to fixed, from int to fixed, and from real
+	to fixed.
+	(fold_convert): Support FIXED_CST and FIXED_POINT_TYPE.
+	(operand_equal_p): Support FIXED_CST.
+	(make_range): For fixed-point modes, we need to pass the
+	saturating flag as the 2nd parameter.
+	(tree_swap_operands_p): Handle FIXED_CST.
+	(fold_plusminus_mult_expr): For fract modes, we cannot generate
+	constant 1.
+	(fold_unary): Support FIXED_CONVERT_EXPR.
+	(fold_binary): Handle FIXED_CST.
+	Make sure the type is not saturating, before associating operations.
+	Ex: A + B + C, A * B * C, (A1 * C1) +/- (A2 * C2).
+	(tree_expr_nonnegative_warnv_p): Handle FIXED_CST.
+	(fold_negate_const): Support FIXED_CST.
+	(fold_relational_const): Support FIXED_CST.
+	* gimplify.c (omp_firstprivatize_type_sizes): Handle FIXED_POINT_TYPE.
+	(gimplify_expr): Handle FIXED_CST.
+	(gimplify_type_sizes): Handle FIXED_POINT_TYPE.
+	* ipa-prop.c (ipa_callsite_compute_param): Support FIXED_CST.
+	* ipa-type-escape.c (type_to_consider): Handle FIXED_POINT_TYPE.
+	* doc/tm.texi (Type Layout): Document SHORT_FRACT_TYPE_SIZE,
+	FRACT_TYPE_SIZE, LONG_FRACT_TYPE_SIZE, LONG_LONG_FRACT_TYPE_SIZE,
+	SHORT_ACCUM_TYPE_SIZE, ACCUM_TYPE_SIZE, LONG_ACCUM_TYPE_SIZE,
+	LONG_LONG_ACCUM_TYPE_SIZE.
+	* dbxout.c (dbxout_type): Handle FIXED_POINT_TYPE.
+	* c-aux-info.c (gen_type): Handle FIXED_POINT_TYPE.
+	* tree-sra.c (is_sra_scalar_type): Support FIXED_POINT_TYPE.
+	* expmed.c (extract_bit_field): Support MODE_FRACT, MODE_UFRACT,
+	MODE_ACCUM, and MODE_UACCUM.
+	* tree-vectorizer.c (vect_is_simple_reduction): Check for saturating
+	fixed-point types to disable reduction.
+	* explow.c (promote_mode): Support FIXED_POINT_TYPE.
+
 2007-08-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/x-rs6000: New file.

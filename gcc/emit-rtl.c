@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "real.h"
+#include "fixed-value.h"
 #include "bitmap.h"
 #include "basic-block.h"
 #include "ggc.h"
@@ -107,6 +108,10 @@ REAL_VALUE_TYPE dconsthalf;
 REAL_VALUE_TYPE dconstthird;
 REAL_VALUE_TYPE dconstsqrt2;
 REAL_VALUE_TYPE dconste;
+
+/* Record fixed-point constant 0 and 1.  */
+FIXED_VALUE_TYPE fconst0[MAX_FCONST0];
+FIXED_VALUE_TYPE fconst1[MAX_FCONST1];
 
 /* All references to the following fixed hard registers go through
    these unique rtl objects.  On machines where the frame-pointer and
@@ -5254,6 +5259,62 @@ init_emit_once (int line_numbers)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
       const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FRACT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      FCONST0(mode).data.high = 0;
+      FCONST0(mode).data.low = 0;
+      FCONST0(mode).mode = mode;
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_UFRACT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      FCONST0(mode).data.high = 0;
+      FCONST0(mode).data.low = 0;
+      FCONST0(mode).mode = mode;
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_ACCUM);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      FCONST0(mode).data.high = 0;
+      FCONST0(mode).data.low = 0;
+      FCONST0(mode).mode = mode;
+
+      /* We store the value 1.  */
+      FCONST1(mode).data.high = 0;
+      FCONST1(mode).data.low = 0;
+      FCONST1(mode).mode = mode;
+      lshift_double (1, 0, GET_MODE_FBIT (mode),
+                     2 * HOST_BITS_PER_WIDE_INT,
+                     &FCONST1(mode).data.low,
+		     &FCONST1(mode).data.high,
+                     SIGNED_FIXED_POINT_MODE_P (mode));
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_UACCUM);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      FCONST0(mode).data.high = 0;
+      FCONST0(mode).data.low = 0;
+      FCONST0(mode).mode = mode;
+
+      /* We store the value 1.  */
+      FCONST1(mode).data.high = 0;
+      FCONST1(mode).data.low = 0;
+      FCONST1(mode).mode = mode;
+      lshift_double (1, 0, GET_MODE_FBIT (mode),
+                     2 * HOST_BITS_PER_WIDE_INT,
+                     &FCONST1(mode).data.low,
+		     &FCONST1(mode).data.high,
+                     SIGNED_FIXED_POINT_MODE_P (mode));
     }
 
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)

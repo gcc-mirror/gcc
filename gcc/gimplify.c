@@ -4488,6 +4488,7 @@ omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *ctx, tree type)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
       omp_firstprivatize_variable (ctx, TYPE_MIN_VALUE (type));
       omp_firstprivatize_variable (ctx, TYPE_MAX_VALUE (type));
       break;
@@ -5728,6 +5729,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  /* Constants need not be gimplified.  */
 	case INTEGER_CST:
 	case REAL_CST:
+	case FIXED_CST:
 	case STRING_CST:
 	case COMPLEX_CST:
 	case VECTOR_CST:
@@ -6271,6 +6273,7 @@ gimplify_type_sizes (tree type, tree *list_p)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
       gimplify_one_sizepos (&TYPE_MIN_VALUE (type), list_p);
       gimplify_one_sizepos (&TYPE_MAX_VALUE (type), list_p);
 

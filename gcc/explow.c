@@ -793,7 +793,7 @@ promote_mode (tree type, enum machine_mode mode, int *punsignedp,
     {
 #ifdef PROMOTE_FUNCTION_MODE
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
-    case REAL_TYPE:      case OFFSET_TYPE:
+    case REAL_TYPE:      case OFFSET_TYPE:     case FIXED_POINT_TYPE:
 #ifdef PROMOTE_MODE
       if (for_call)
 	{

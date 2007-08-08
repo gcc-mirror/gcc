@@ -220,6 +220,7 @@ is_sra_scalar_type (tree type)
 {
   enum tree_code code = TREE_CODE (type);
   return (code == INTEGER_TYPE || code == REAL_TYPE || code == VECTOR_TYPE
+	  || code == FIXED_POINT_TYPE
 	  || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE
 	  || code == POINTER_TYPE || code == OFFSET_TYPE
 	  || code == REFERENCE_TYPE);

@@ -274,6 +274,7 @@ type_to_consider (tree type)
     case INTEGER_TYPE:
     case QUAL_UNION_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
     case VECTOR_TYPE:

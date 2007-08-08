@@ -1906,6 +1906,7 @@ dbxout_type (tree type, int full)
       break;
 
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
       /* This used to say `r1' and we used to take care
 	 to make sure that `int' was type number 1.  */
       stabstr_C ('r');

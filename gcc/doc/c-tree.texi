@@ -271,6 +271,7 @@ The elements are indexed from zero.
 @tindex TYPE_MIN_VALUE
 @tindex TYPE_MAX_VALUE
 @tindex REAL_TYPE
+@tindex FIXED_POINT_TYPE
 @tindex COMPLEX_TYPE
 @tindex ENUMERAL_TYPE
 @tindex BOOLEAN_TYPE
@@ -497,6 +498,19 @@ that may be represented by this type.
 Used to represent the @code{float}, @code{double}, and @code{long
 double} types.  The number of bits in the floating-point representation
 is given by @code{TYPE_PRECISION}, as in the @code{INTEGER_TYPE} case.
+
+@item FIXED_POINT_TYPE
+Used to represent the @code{short _Fract}, @code{_Fract}, @code{long
+_Fract}, @code{long long _Fract}, @code{short _Accum}, @code{_Accum},
+@code{long _Accum}, and @code{long long _Accum} types.  The number of bits
+in the fixed-point representation is given by @code{TYPE_PRECISION},
+as in the @code{INTEGER_TYPE} case.  There may be padding bits, fractional
+bits and integral bits.  The number of fractional bits is given by
+@code{TYPE_FBIT}, and the number of integral bits is given by @code{TYPE_IBIT}.
+The fixed-point type is unsigned if @code{TYPE_UNSIGNED} holds; otherwise,
+it is signed.
+The fixed-point type is saturating if @code{TYPE_SATURATING} holds; otherwise,
+it is not saturating.
 
 @item COMPLEX_TYPE
 Used to represent GCC built-in @code{__complex__} data types.  The
@@ -1879,6 +1893,7 @@ This macro returns the attributes on the type @var{type}.
 @findex tree_int_cst_lt
 @findex tree_int_cst_equal
 @tindex REAL_CST
+@tindex FIXED_CST
 @tindex COMPLEX_CST
 @tindex VECTOR_CST
 @tindex STRING_CST
@@ -1907,6 +1922,7 @@ This macro returns the attributes on the type @var{type}.
 @tindex NON_LVALUE_EXPR
 @tindex NOP_EXPR
 @tindex CONVERT_EXPR
+@tindex FIXED_CONVERT_EXPR
 @tindex THROW_EXPR
 @tindex LSHIFT_EXPR
 @tindex RSHIFT_EXPR
@@ -2080,6 +2096,15 @@ its bit-pattern.
 FIXME: Talk about how to obtain representations of this constant, do
 comparisons, and so forth.
 
+@item FIXED_CST
+
+These nodes represent fixed-point constants.  The type of these constants
+is obtained with @code{TREE_TYPE}.  @code{TREE_FIXED_CST_PTR} points to
+to struct fixed_value;  @code{TREE_FIXED_CST} returns the structure itself.
+Struct fixed_value contains @code{data} with the size of two
+HOST_BITS_PER_WIDE_INT and @code{mode} as the associated fixed-point
+machine mode for @code{data}.
+
 @item COMPLEX_CST
 These nodes are used to represent complex number constants, that is a
 @code{__complex__} whose parts are constant nodes.  The
@@ -2245,6 +2270,13 @@ an inheritance hierarchy.  Any adjustments that need to be made in such
 cases are always indicated explicitly.  Similarly, a user-defined
 conversion is never represented by a @code{CONVERT_EXPR}; instead, the
 function calls are made explicit.
+
+@item FIXED_CONVERT_EXPR
+These nodes are used to represent conversions that involve fixed-point
+values.  For example, from a fixed-point value to another fixed-point value,
+from an integer to a fixed-point value, from a fixed-point value to an
+integer, from a floating-point value to a fixed-point value, or from
+a fixed-point value to a floating-point value.
 
 @item THROW_EXPR
 These nodes represent @code{throw} expressions.  The single operand is

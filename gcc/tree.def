@@ -172,6 +172,11 @@ DEFTREECODE (REAL_TYPE, "real_type", tcc_type, 0)
    The TREE_TYPE points to the node for the type pointed to.  */
 DEFTREECODE (POINTER_TYPE, "pointer_type", tcc_type, 0)
 
+/* _Fract and _Accum types in Embedded-C.  Different fixed-point types
+   are distinguished by machine mode and by the TYPE_SIZE and the
+   TYPE_PRECISION.  */
+DEFTREECODE (FIXED_POINT_TYPE, "fixed_point_type", tcc_type, 0)
+
 /* A reference is like a pointer except that it is coerced
    automatically to the value it points to.  Used in C++.  */
 DEFTREECODE (REFERENCE_TYPE, "reference_type", tcc_type, 0)
@@ -271,6 +276,9 @@ DEFTREECODE (INTEGER_CST, "integer_cst", tcc_constant, 0)
 
 /* Contents are in TREE_REAL_CST field.  */
 DEFTREECODE (REAL_CST, "real_cst", tcc_constant, 0)
+
+/* Contents are in TREE_FIXED_CST field.  */
+DEFTREECODE (FIXED_CST, "fixed_cst", tcc_constant, 0)
 
 /* Contents are in TREE_REALPART and TREE_IMAGPART fields,
    whose contents are other constant nodes.  */
@@ -729,6 +737,11 @@ DEFTREECODE (RANGE_EXPR, "range_expr", tcc_binary, 2)
    All conversions, including implicit ones, must be
    represented by CONVERT_EXPR or NOP_EXPR nodes.  */
 DEFTREECODE (CONVERT_EXPR, "convert_expr", tcc_unary, 1)
+
+/* Conversion of a fixed-point value to an integer, a real, or a fixed-point
+   value.  Or conversion of a fixed-point value from an integer, a real, or
+   a fixed-point value.  */
+DEFTREECODE (FIXED_CONVERT_EXPR, "fixed_convert_expr", tcc_unary, 1)
 
 /* Represents a conversion expected to require no code to be generated.  */
 DEFTREECODE (NOP_EXPR, "nop_expr", tcc_unary, 1)

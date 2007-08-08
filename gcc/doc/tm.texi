@@ -1605,6 +1605,54 @@ the target machine.  If you don't define this, the default is two
 words.
 @end defmac
 
+@defmac SHORT_FRACT_TYPE_SIZE
+A C expression for the size in bits of the type @code{short _Fract} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT}.
+@end defmac
+
+@defmac FRACT_TYPE_SIZE
+A C expression for the size in bits of the type @code{_Fract} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 2}.
+@end defmac
+
+@defmac LONG_FRACT_TYPE_SIZE
+A C expression for the size in bits of the type @code{long _Fract} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 4}.
+@end defmac
+
+@defmac LONG_LONG_FRACT_TYPE_SIZE
+A C expression for the size in bits of the type @code{long long _Fract} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 8}.
+@end defmac
+
+@defmac SHORT_ACCUM_TYPE_SIZE
+A C expression for the size in bits of the type @code{short _Accum} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 2}.
+@end defmac
+
+@defmac ACCUM_TYPE_SIZE
+A C expression for the size in bits of the type @code{_Accum} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 4}.
+@end defmac
+
+@defmac LONG_ACCUM_TYPE_SIZE
+A C expression for the size in bits of the type @code{long _Accum} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 8}.
+@end defmac
+
+@defmac LONG_LONG_ACCUM_TYPE_SIZE
+A C expression for the size in bits of the type @code{long long _Accum} on
+the target machine.  If you don't define this, the default is
+@code{BITS_PER_UNIT * 16}.
+@end defmac
+
 @defmac LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 Define this macro if @code{LONG_DOUBLE_TYPE_SIZE} is not constant or
 if you want routines in @file{libgcc2.a} for a size other than

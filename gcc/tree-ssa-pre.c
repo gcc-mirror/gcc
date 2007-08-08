@@ -3081,6 +3081,7 @@ poolify_tree (tree node)
     case INTEGER_CST:
     case STRING_CST:
     case REAL_CST:
+    case FIXED_CST:
     case PARM_DECL:
     case VAR_DECL:
     case RESULT_DECL:
