@@ -1,3 +1,9 @@
+2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* java/net/natVMInetAddressPosix.cc
+	(java::net::VMInetAddress::getLocalHostname) [!MAXHOSTNAMELEN]:
+	Allocate buffer dynamically.
+
 2007-08-04  Alfred M. Szmidt  <ams@gnu.org>
 
 	* java/io/natFilePosix.cc (init_native) [!MAXPATHLEN]: Define to 0.
