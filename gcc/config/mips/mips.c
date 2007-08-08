@@ -288,12 +288,11 @@ struct mips_integer_op;
 struct mips_sim;
 
 static bool mips_valid_base_register_p (rtx, enum machine_mode, int);
-static bool mips_symbolic_address_p (enum mips_symbol_type, enum machine_mode);
 static bool mips_classify_address (struct mips_address_info *, rtx,
 				   enum machine_mode, int);
 static bool mips_cannot_force_const_mem (rtx);
 static bool mips_use_blocks_for_constant_p (enum machine_mode, rtx);
-static int mips_symbol_insns (enum mips_symbol_type);
+static int mips_symbol_insns (enum mips_symbol_type, enum machine_mode);
 static bool mips16_unextended_reference_p (enum machine_mode mode, rtx, rtx);
 static rtx mips_force_temporary (rtx, rtx);
 static rtx mips_unspec_offset_high (rtx, rtx, rtx, enum mips_symbol_type);
@@ -1673,52 +1672,6 @@ mips_valid_base_register_p (rtx x, enum machine_mode mode, int strict)
 }
 
 
-/* Return true if symbols of type SYMBOL_TYPE can directly address a value
-   with mode MODE.  This is used for both symbolic and LO_SUM addresses.  */
-
-static bool
-mips_symbolic_address_p (enum mips_symbol_type symbol_type,
-			 enum machine_mode mode)
-{
-  switch (symbol_type)
-    {
-    case SYMBOL_ABSOLUTE:
-    case SYMBOL_GP_RELATIVE:
-      return true;
-
-    case SYMBOL_PC_RELATIVE:
-      /* PC-relative addressing is only available for lw and ld.  */
-      return GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
-
-    case SYMBOL_GOT_PAGE_OFST:
-      return true;
-
-    case SYMBOL_FORCE_TO_MEM:
-    case SYMBOL_GOT_DISP:
-      /* The address will have to be loaded from the constant pool
-	 or GOT before it is used in an address.  */
-      return false;
-
-    case SYMBOL_GOTOFF_PAGE:
-    case SYMBOL_GOTOFF_DISP:
-    case SYMBOL_GOTOFF_CALL:
-    case SYMBOL_GOTOFF_LOADGP:
-    case SYMBOL_TLS:
-    case SYMBOL_TLSGD:
-    case SYMBOL_TLSLDM:
-    case SYMBOL_DTPREL:
-    case SYMBOL_GOTTPREL:
-    case SYMBOL_TPREL:
-    case SYMBOL_64_HIGH:
-    case SYMBOL_64_MID:
-    case SYMBOL_64_LOW:
-    case SYMBOL_HALF:
-      return true;
-    }
-  gcc_unreachable ();
-}
-
-
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT is true if we should only accept
    hard base registers.  */
@@ -1750,7 +1703,7 @@ mips_classify_address (struct mips_address_info *info, rtx x,
       return (mips_valid_base_register_p (info->reg, mode, strict)
 	      && mips_symbolic_constant_p (info->offset, SYMBOL_CONTEXT_MEM,
 					   &info->symbol_type)
-	      && mips_symbolic_address_p (info->symbol_type, mode)
+	      && mips_symbol_insns (info->symbol_type, mode) > 0
 	      && mips_lo_relocs[info->symbol_type] != 0);
 
     case CONST_INT:
@@ -1765,7 +1718,7 @@ mips_classify_address (struct mips_address_info *info, rtx x,
       info->type = ADDRESS_SYMBOLIC;
       return (mips_symbolic_constant_p (x, SYMBOL_CONTEXT_MEM,
 					&info->symbol_type)
-	      && mips_symbolic_address_p (info->symbol_type, mode)
+	      && mips_symbol_insns (info->symbol_type, mode) > 0
 	      && !mips_split_p[info->symbol_type]);
 
     default:
@@ -1831,13 +1784,13 @@ mips_use_blocks_for_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED,
   return !TARGET_MIPS16;
 }
 
-/* Return the number of instructions needed to load a symbol of the
-   given type into a register.  If valid in an address, the same number
-   of instructions are needed for loads and stores.  Treat extended
-   mips16 instructions as two instructions.  */
+/* Like mips_symbol_insns, but treat extended MIPS16 instructions as a
+   single instruction.  We rely on the fact that, in the worst case,
+   all instructions involved in a MIPS16 address calculation are usually
+   extended ones.  */
 
 static int
-mips_symbol_insns (enum mips_symbol_type type)
+mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
 {
   switch (type)
     {
@@ -1853,23 +1806,37 @@ mips_symbol_insns (enum mips_symbol_type type)
 
 	 The final address is then $at + %lo(symbol).  With 32-bit
 	 symbols we just need a preparatory lui.  */
-      return (ABI_HAS_64BIT_SYMBOLS ? 6 : 2);
+      return ABI_HAS_64BIT_SYMBOLS ? 6 : 2;
 
     case SYMBOL_GP_RELATIVE:
-    case SYMBOL_HALF:
+      /* Treat GP-relative accesses as taking a single instruction on
+	 MIPS16 too; the copy of $gp can often be shared.  */
       return 1;
 
     case SYMBOL_PC_RELATIVE:
-      /* This case is for mips16 only.  Assume we'll need an
-	 extended instruction.  */
-      return 2;
+      /* PC-relative constants can be only be used with addiupc,
+	 lwpc and ldpc.  */
+      if (mode == MAX_MACHINE_MODE
+	  || GET_MODE_SIZE (mode) == 4
+	  || GET_MODE_SIZE (mode) == 8)
+	return 1;
+
+      /* The constant must be loaded using addiupc first.  */
+      return 0;
 
     case SYMBOL_FORCE_TO_MEM:
       /* The constant must be loaded from the constant pool.  */
       return 0;
 
-    case SYMBOL_GOT_PAGE_OFST:
     case SYMBOL_GOT_DISP:
+      /* The constant will have to be loaded from the GOT before it
+	 is used in an address.  */
+      if (mode != MAX_MACHINE_MODE)
+	return 0;
+
+      /* Fall through.  */
+
+    case SYMBOL_GOT_PAGE_OFST:
       /* Unless -funit-at-a-time is in effect, we can't be sure whether
 	 the local/global classification is accurate.  See override_options
 	 for details.
@@ -1904,7 +1871,10 @@ mips_symbol_insns (enum mips_symbol_type type)
     case SYMBOL_DTPREL:
     case SYMBOL_GOTTPREL:
     case SYMBOL_TPREL:
-      /* Check whether the offset is a 16- or 32-bit value.  */
+    case SYMBOL_HALF:
+      /* A 16-bit constant formed by a single relocation, or a 32-bit
+	 constant formed from a high 16-bit relocation and a low 16-bit
+	 relocation.  Use mips_split_p to determine which.  */
       return mips_split_p[type] ? 2 : 1;
 
     case SYMBOL_TLS:
@@ -1912,6 +1882,22 @@ mips_symbol_insns (enum mips_symbol_type type)
       return 0;
     }
   gcc_unreachable ();
+}
+
+/* If MODE is MAX_MACHINE_MODE, return the number of instructions needed
+   to load symbols of type TYPE into a register.  Return 0 if the given
+   type of symbol cannot be used as an immediate operand.
+
+   Otherwise, return the number of instructions needed to load or store
+   values of mode MODE to or from addresses of type TYPE.  Return 0 if
+   the given type of symbol is not valid in addresses.
+
+   In both cases, treat extended MIPS16 instructions as two instructions.  */
+
+static int
+mips_symbol_insns (enum mips_symbol_type type, enum machine_mode mode)
+{
+  return mips_symbol_insns_1 (type, mode) * (TARGET_MIPS16 ? 2 : 1);
 }
 
 /* Return true if X is a legitimate $sp-based address for mode MDOE.  */
@@ -1985,7 +1971,7 @@ mips_address_insns (rtx x, enum machine_mode mode)
 	return factor;
 
       case ADDRESS_SYMBOLIC:
-	return factor * mips_symbol_insns (addr.symbol_type);
+	return factor * mips_symbol_insns (addr.symbol_type, mode);
       }
   return 0;
 }
@@ -2035,7 +2021,7 @@ mips_const_insns (rtx x)
 
       /* See if we can refer to X directly.  */
       if (mips_symbolic_constant_p (x, SYMBOL_CONTEXT_LEA, &symbol_type))
-	return mips_symbol_insns (symbol_type);
+	return mips_symbol_insns (symbol_type, MAX_MACHINE_MODE);
 
       /* Otherwise try splitting the constant into a base and offset.
 	 16-bit offsets can be added using an extra addiu.  Larger offsets
@@ -2056,7 +2042,8 @@ mips_const_insns (rtx x)
 
     case SYMBOL_REF:
     case LABEL_REF:
-      return mips_symbol_insns (mips_classify_symbol (x, SYMBOL_CONTEXT_LEA));
+      return mips_symbol_insns (mips_classify_symbol (x, SYMBOL_CONTEXT_LEA),
+				MAX_MACHINE_MODE);
 
     default:
       return 0;
@@ -2344,7 +2331,7 @@ mips_legitimize_address (rtx *xloc, enum machine_mode mode)
 
   /* See if the address can split into a high part and a LO_SUM.  */
   if (mips_symbolic_constant_p (*xloc, SYMBOL_CONTEXT_MEM, &symbol_type)
-      && mips_symbolic_address_p (symbol_type, mode)
+      && mips_symbol_insns (symbol_type, mode) > 0
       && mips_split_p[symbol_type])
     {
       *xloc = mips_split_symbol (0, *xloc);
