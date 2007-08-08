@@ -1438,7 +1438,7 @@ mips_symbol_binds_local_p (rtx x)
    LABEL_REF X in context CONTEXT.  */
 
 static enum mips_symbol_type
-mips_classify_symbol (rtx x, enum mips_symbol_context context ATTRIBUTE_UNUSED)
+mips_classify_symbol (rtx x, enum mips_symbol_context context)
 {
   if (TARGET_RTP_PIC)
     return SYMBOL_GOT_DISP;
@@ -1473,13 +1473,11 @@ mips_classify_symbol (rtx x, enum mips_symbol_context context ATTRIBUTE_UNUSED)
       && !SYMBOL_REF_WEAK (x))
     return SYMBOL_GP_RELATIVE;
 
-  if (TARGET_ABICALLS)
+  /* Don't use GOT accesses for locally-binding symbols when -mno-shared
+     is in effect.  */
+  if (TARGET_ABICALLS
+      && !(TARGET_ABSOLUTE_ABICALLS && mips_symbol_binds_local_p (x)))
     {
-      /* Don't use GOT accesses for locally-binding symbols; we can use
-	 %hi and %lo instead.  */
-      if (TARGET_ABSOLUTE_ABICALLS && mips_symbol_binds_local_p (x))
-	return SYMBOL_ABSOLUTE;
-
       /* There are three cases to consider:
 
 	    - o32 PIC (either with or without explicit relocs)
@@ -1505,6 +1503,8 @@ mips_classify_symbol (rtx x, enum mips_symbol_context context ATTRIBUTE_UNUSED)
       return SYMBOL_GOT_PAGE_OFST;
     }
 
+  if (TARGET_MIPS16 && context != SYMBOL_CONTEXT_CALL)
+    return SYMBOL_FORCE_TO_MEM;
   return SYMBOL_ABSOLUTE;
 }
 
@@ -1560,6 +1560,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_context context,
   switch (*symbol_type)
     {
     case SYMBOL_ABSOLUTE:
+    case SYMBOL_FORCE_TO_MEM:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
@@ -1682,8 +1683,6 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
   switch (symbol_type)
     {
     case SYMBOL_ABSOLUTE:
-      return !TARGET_MIPS16;
-
     case SYMBOL_GP_RELATIVE:
       return true;
 
@@ -1694,8 +1693,10 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
     case SYMBOL_GOT_PAGE_OFST:
       return true;
 
+    case SYMBOL_FORCE_TO_MEM:
     case SYMBOL_GOT_DISP:
-      /* The address will have to be loaded from the GOT first.  */
+      /* The address will have to be loaded from the constant pool
+	 or GOT before it is used in an address.  */
       return false;
 
     case SYMBOL_GOTOFF_PAGE:
@@ -1841,11 +1842,6 @@ mips_symbol_insns (enum mips_symbol_type type)
   switch (type)
     {
     case SYMBOL_ABSOLUTE:
-      /* In mips16 code, general symbols must be fetched from the
-	 constant pool.  */
-      if (TARGET_MIPS16)
-	return 0;
-
       /* When using 64-bit symbols, we need 5 preparatory instructions,
 	 such as:
 
@@ -1867,6 +1863,10 @@ mips_symbol_insns (enum mips_symbol_type type)
       /* This case is for mips16 only.  Assume we'll need an
 	 extended instruction.  */
       return 2;
+
+    case SYMBOL_FORCE_TO_MEM:
+      /* The constant must be loaded from the constant pool.  */
+      return 0;
 
     case SYMBOL_GOT_PAGE_OFST:
     case SYMBOL_GOT_DISP:
