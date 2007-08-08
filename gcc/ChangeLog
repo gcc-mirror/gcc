@@ -1,5 +1,12 @@
 2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
+	* gcc/config/i386/gnu.h (STARTFILE_SPEC): Use gcrt0.o in profile mode, add
+	-profile option, add pie support.
+	(ENDFILE_SPEC): New spec.
+	* gcc/config/gnu.h (LIB_SPEC): Add -profile option.
+
+2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
 	* gcc/config/i386/gnu.h (CPP_SPEC): Add -pthread option.
 	* gcc/config/gnu.h (LIB_SPEC): Likewise.
 
