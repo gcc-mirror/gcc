@@ -47,10 +47,25 @@ java::net::VMInetAddress::getLocalHostname ()
 {
   char *chars;
 #ifdef HAVE_GETHOSTNAME
+#ifdef MAXHOSTNAMELEN
   char buffer[MAXHOSTNAMELEN];
   if (gethostname (buffer, MAXHOSTNAMELEN))
     return NULL;
   chars = buffer;
+#else
+  size_t size = 256;
+  while (1) {
+    char buffer[size];
+    if (!gethostname (buffer, size-1))
+      {
+	buffer[size-1] = 0;
+	return JvNewStringUTF (buffer);
+      }
+    else if (errno != ENAMETOOLONG)
+      return NULL;
+    size *= 2;
+  }
+#endif
 #elif HAVE_UNAME
   struct utsname stuff;
   if (uname (&stuff) != 0)
