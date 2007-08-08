@@ -1,3 +1,16 @@
+2007-07-31  Dalibor Topic  <robilad@kaffe.org>
+
+	PR 32844
+	* java/util/EnumSet.java:
+	Made class abstract per API spec.
+	(size, iterator, add, addAll, clear, contains,
+	containsAll, remove, removeAll, retainAll) Moved 
+	into an anonymous inner class in of(T).
+	(allOf, noneOf, copyOf, of, range) Made more 
+	implementation independent.
+	(of(T)) return an instance of an anonymous class
+	implementing EmptySet.
+ 
 2007-07-28  Matthias Klose  <doko@ubuntu.com>
 
 	* include/jvmti.h(jniNativeInterface): Rename type.
