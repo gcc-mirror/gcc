@@ -93,6 +93,9 @@ enum mips_symbol_context {
        UNSPEC wrappers around SYMBOL_TLS, corresponding to the
        thread-local storage relocation operators.
 
+   SYMBOL_32_HIGH
+       For a 32-bit symbolic address X, this is the value of %hi(X).
+
    SYMBOL_64_HIGH
        For a 64-bit symbolic address X, this is the value of
        (%highest(X) << 16) + %higher(X).
@@ -125,6 +128,7 @@ enum mips_symbol_type {
   SYMBOL_DTPREL,
   SYMBOL_GOTTPREL,
   SYMBOL_TPREL,
+  SYMBOL_32_HIGH,
   SYMBOL_64_HIGH,
   SYMBOL_64_MID,
   SYMBOL_64_LOW,

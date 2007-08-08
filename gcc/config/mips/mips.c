@@ -616,6 +616,9 @@ int mips_abi = MIPS_ABI_DEFAULT;
 /* Cost information to use.  */
 const struct mips_rtx_cost_data *mips_cost;
 
+/* The -mtext-loads setting.  */
+enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
+
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
    -msoft-float was not specified by the user, which means that we
@@ -1444,7 +1447,10 @@ mips_classify_symbol (rtx x, enum mips_symbol_context context)
 
   if (GET_CODE (x) == LABEL_REF)
     {
-      if (TARGET_MIPS16)
+      /* LABEL_REFs are used for jump tables as well as text labels.
+	 Only return SYMBOL_PC_RELATIVE if we know the label is in
+	 the text section.  */
+      if (TARGET_MIPS16_SHORT_JUMP_TABLES)
 	return SYMBOL_PC_RELATIVE;
       if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
 	return SYMBOL_GOT_PAGE_OFST;
@@ -1458,7 +1464,10 @@ mips_classify_symbol (rtx x, enum mips_symbol_context context)
 
   if (CONSTANT_POOL_ADDRESS_P (x))
     {
-      if (TARGET_MIPS16)
+      if (TARGET_MIPS16_TEXT_LOADS)
+	return SYMBOL_PC_RELATIVE;
+
+      if (TARGET_MIPS16_PCREL_LOADS && context == SYMBOL_CONTEXT_MEM)
 	return SYMBOL_PC_RELATIVE;
 
       if (!TARGET_EMBEDDED_DATA
@@ -1502,7 +1511,7 @@ mips_classify_symbol (rtx x, enum mips_symbol_context context)
       return SYMBOL_GOT_PAGE_OFST;
     }
 
-  if (TARGET_MIPS16 && context != SYMBOL_CONTEXT_CALL)
+  if (TARGET_MIPS16_PCREL_LOADS && context != SYMBOL_CONTEXT_CALL)
     return SYMBOL_FORCE_TO_MEM;
   return SYMBOL_ABSOLUTE;
 }
@@ -1560,6 +1569,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_context context,
     {
     case SYMBOL_ABSOLUTE:
     case SYMBOL_FORCE_TO_MEM:
+    case SYMBOL_32_HIGH:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
@@ -1774,14 +1784,14 @@ mips_cannot_force_const_mem (rtx x)
   return false;
 }
 
-/* Implement TARGET_USE_BLOCKS_FOR_CONSTANT_P.  MIPS16 uses per-function
-   constant pools, but normal-mode code doesn't need to.  */
+/* Implement TARGET_USE_BLOCKS_FOR_CONSTANT_P.  We can't use blocks for
+   constants when we're using a per-function constant pool.  */
 
 static bool
 mips_use_blocks_for_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 				rtx x ATTRIBUTE_UNUSED)
 {
-  return !TARGET_MIPS16;
+  return !TARGET_MIPS16_PCREL_LOADS;
 }
 
 /* Like mips_symbol_insns, but treat extended MIPS16 instructions as a
@@ -1805,8 +1815,9 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
 	     dsll    $at,$at,16
 
 	 The final address is then $at + %lo(symbol).  With 32-bit
-	 symbols we just need a preparatory lui.  */
-      return ABI_HAS_64BIT_SYMBOLS ? 6 : 2;
+	 symbols we just need a preparatory lui for normal mode and
+	 a preparatory "li; sll" for MIPS16.  */
+      return ABI_HAS_64BIT_SYMBOLS ? 6 : TARGET_MIPS16 ? 3 : 2;
 
     case SYMBOL_GP_RELATIVE:
       /* Treat GP-relative accesses as taking a single instruction on
@@ -1863,6 +1874,7 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
     case SYMBOL_GOTOFF_DISP:
     case SYMBOL_GOTOFF_CALL:
     case SYMBOL_GOTOFF_LOADGP:
+    case SYMBOL_32_HIGH:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
@@ -1875,7 +1887,7 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
       /* A 16-bit constant formed by a single relocation, or a 32-bit
 	 constant formed from a high 16-bit relocation and a low 16-bit
 	 relocation.  Use mips_split_p to determine which.  */
-      return mips_split_p[type] ? 2 : 1;
+      return !mips_split_p[type] ? 1 : TARGET_MIPS16 ? 3 : 2;
 
     case SYMBOL_TLS:
       /* We don't treat a bare TLS symbol as a constant.  */
@@ -1989,13 +2001,14 @@ mips_const_insns (rtx x)
   switch (GET_CODE (x))
     {
     case HIGH:
-      if (TARGET_MIPS16
-	  || !mips_symbolic_constant_p (XEXP (x, 0), SYMBOL_CONTEXT_LEA,
-					&symbol_type)
+      if (!mips_symbolic_constant_p (XEXP (x, 0), SYMBOL_CONTEXT_LEA,
+				     &symbol_type)
 	  || !mips_split_p[symbol_type])
 	return 0;
 
-      return 1;
+      /* This is simply an lui for normal mode.  It is an extended
+	 "li" followed by an extended "sll" for MIPS16.  */
+      return TARGET_MIPS16 ? 4 : 1;
 
     case CONST_INT:
       if (TARGET_MIPS16)
@@ -2173,6 +2186,20 @@ mips_split_symbol (rtx temp, rtx addr, enum machine_mode mode, rtx *lo_sum_out)
 }
 
 
+/* Wrap symbol or label BASE in an unspec address of type SYMBOL_TYPE
+   and add CONST_INT OFFSET to the result.  */
+
+static rtx
+mips_unspec_address_offset (rtx base, rtx offset,
+			    enum mips_symbol_type symbol_type)
+{
+  base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
+			 UNSPEC_ADDRESS_FIRST + symbol_type);
+  if (offset != const0_rtx)
+    base = gen_rtx_PLUS (Pmode, base, offset);
+  return gen_rtx_CONST (Pmode, base);
+}
+
 /* Return an UNSPEC address with underlying address ADDRESS and symbol
    type SYMBOL_TYPE.  */
 
@@ -2182,11 +2209,7 @@ mips_unspec_address (rtx address, enum mips_symbol_type symbol_type)
   rtx base, offset;
 
   split_const (address, &base, &offset);
-  base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
-			 UNSPEC_ADDRESS_FIRST + symbol_type);
-  if (offset != const0_rtx)
-    base = gen_rtx_PLUS (Pmode, base, offset);
-  return gen_rtx_CONST (Pmode, base);
+  return mips_unspec_address_offset (base, offset, symbol_type);
 }
 
 
@@ -3130,6 +3153,7 @@ const char *
 mips_output_move (rtx dest, rtx src)
 {
   enum rtx_code dest_code, src_code;
+  enum mips_symbol_type symbol_type;
   bool dbl_p;
 
   dest_code = GET_CODE (dest);
@@ -3217,13 +3241,27 @@ mips_output_move (rtx dest, rtx src)
 	}
 
       if (src_code == HIGH)
-	return "lui\t%0,%h1";
+	return TARGET_MIPS16 ? "#" : "lui\t%0,%h1";
 
       if (CONST_GP_P (src))
 	return "move\t%0,%1";
 
+      if (mips_symbolic_constant_p (src, SYMBOL_CONTEXT_LEA, &symbol_type)
+	  && mips_lo_relocs[symbol_type] != 0)
+	{
+	  /* A signed 16-bit constant formed by applying a relocation
+	     operator to a symbolic address.  */
+	  gcc_assert (!mips_split_p[symbol_type]);
+	  return "li\t%0,%R1";
+	}
+
       if (symbolic_operand (src, VOIDmode))
-	return (dbl_p ? "dla\t%0,%1" : "la\t%0,%1");
+	{
+	  gcc_assert (TARGET_MIPS16
+		      ? TARGET_MIPS16_TEXT_LOADS
+		      : !TARGET_EXPLICIT_RELOCS);
+	  return (dbl_p ? "dla\t%0,%1" : "la\t%0,%1");
+	}
     }
   if (src_code == REG && FP_REG_P (REGNO (src)))
     {
@@ -5007,6 +5045,17 @@ mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
       mips_cache_flush_func = NULL;
       return true;
 
+    case OPT_mcode_readable_:
+      if (strcmp (arg, "yes") == 0)
+	mips_code_readable = CODE_READABLE_YES;
+      else if (strcmp (arg, "pcrel") == 0)
+	mips_code_readable = CODE_READABLE_PCREL;
+      else if (strcmp (arg, "no") == 0)
+	mips_code_readable = CODE_READABLE_NO;
+      else
+	return false;
+      return true;
+
     default:
       return true;
     }
@@ -5456,11 +5505,13 @@ override_options (void)
     }
   else
     {
-      if (TARGET_EXPLICIT_RELOCS || mips_split_addresses)
+      if (TARGET_EXPLICIT_RELOCS || mips_split_addresses || TARGET_MIPS16)
 	{
 	  mips_split_p[SYMBOL_ABSOLUTE] = true;
 	  mips_hi_relocs[SYMBOL_ABSOLUTE] = "%hi(";
 	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
+
+	  mips_lo_relocs[SYMBOL_32_HIGH] = "%hi(";
 	}
     }
 
@@ -5718,6 +5769,20 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
   return offset;
 }
 
+/* If OP is an UNSPEC address, return the address to which it refers,
+   otherwise return OP itself.  */
+
+static rtx
+mips_strip_unspec_address (rtx op)
+{
+  rtx base, offset;
+
+  split_const (op, &base, &offset);
+  if (UNSPEC_ADDRESS_P (base))
+    op = plus_constant (UNSPEC_ADDRESS (base), INTVAL (offset));
+  return op;
+}
+
 /* Implement the PRINT_OPERAND macro.  The MIPS-specific operand codes are:
 
    'X'  OP is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
@@ -6055,7 +6120,7 @@ print_operand (FILE *file, rtx op, int letter)
     fputs (reg_names[GLOBAL_POINTER_REGNUM], file);
 
   else
-    output_addr_const (file, op);
+    output_addr_const (file, mips_strip_unspec_address (op));
 }
 
 
@@ -6068,19 +6133,13 @@ print_operand_reloc (FILE *file, rtx op, enum mips_symbol_context context,
 {
   enum mips_symbol_type symbol_type;
   const char *p;
-  rtx base, offset;
 
   if (!mips_symbolic_constant_p (op, context, &symbol_type)
       || relocs[symbol_type] == 0)
     fatal_insn ("PRINT_OPERAND, invalid operand for relocation", op);
 
-  /* If OP uses an UNSPEC address, we want to print the inner symbol.  */
-  split_const (op, &base, &offset);
-  if (UNSPEC_ADDRESS_P (base))
-    op = plus_constant (UNSPEC_ADDRESS (base), INTVAL (offset));
-
   fputs (relocs[symbol_type], file);
-  output_addr_const (file, op);
+  output_addr_const (file, mips_strip_unspec_address (op));
   for (p = relocs[symbol_type]; *p != 0; p++)
     if (*p == '(')
       fputc (')', file);
@@ -6113,7 +6172,7 @@ print_operand_address (FILE *file, rtx x)
 	return;
 
       case ADDRESS_SYMBOLIC:
-	output_addr_const (file, x);
+	output_addr_const (file, mips_strip_unspec_address (x));
 	return;
       }
   gcc_unreachable ();
@@ -8192,8 +8251,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   insn = get_insns ();
   insn_locators_alloc ();
   split_all_insns_noflow ();
-  if (TARGET_MIPS16)
-    mips16_lay_out_constants ();
+  mips16_lay_out_constants ();
   shorten_branches (insn);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
@@ -8232,14 +8290,7 @@ static section *
 mips_select_rtx_section (enum machine_mode mode, rtx x,
 			 unsigned HOST_WIDE_INT align)
 {
-  if (TARGET_MIPS16)
-    {
-      /* In mips16 mode, the constant table always goes in the same section
-         as the function, so that constants can be loaded using PC relative
-         addressing.  */
-      return function_section (current_function_decl);
-    }
-  else if (TARGET_EMBEDDED_DATA)
+  if (TARGET_EMBEDDED_DATA)
     {
       /* For embedded applications, always put constants in read-only data,
 	 in order to reduce RAM usage.  */
@@ -8827,7 +8878,7 @@ mips16_gp_pseudo_reg (void)
   /* Don't initialize the pseudo register if we are being called from
      the tree optimizers' cost-calculation routines.  */
   if (!cfun->machine->initialized_mips16_gp_pseudo_p
-      && current_ir_type () != IR_GIMPLE)
+      && (current_ir_type () != IR_GIMPLE || currently_expanding_to_rtl))
     {
       rtx insn, scan;
 
@@ -9546,11 +9597,23 @@ static int
 mips16_rewrite_pool_refs (rtx *x, void *data)
 {
   struct mips16_constant_pool *pool = data;
-  if (GET_CODE (*x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (*x))
-    *x = gen_rtx_LABEL_REF (Pmode, add_constant (pool,
-						 get_pool_constant (*x),
-						 get_pool_mode (*x)));
-  return 0;
+  rtx base, offset, label;
+
+  if (MEM_P (*x))
+    x = &XEXP (*x, 0);
+  else if (!TARGET_MIPS16_TEXT_LOADS)
+    return 0;
+
+  split_const (*x, &base, &offset);
+  if (GET_CODE (base) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (base))
+    {
+      label = add_constant (pool, get_pool_constant (base),
+			    get_pool_mode (base));
+      base = gen_rtx_LABEL_REF (Pmode, label);
+      *x = mips_unspec_address_offset (base, offset, SYMBOL_PC_RELATIVE);
+      return -1;
+    }
+  return GET_CODE (*x) == CONST ? -1 : 0;
 }
 
 /* Build MIPS16 constant pools.  */
@@ -9560,6 +9623,9 @@ mips16_lay_out_constants (void)
 {
   struct mips16_constant_pool pool;
   rtx insn, barrier;
+
+  if (!TARGET_MIPS16_PCREL_LOADS)
+    return;
 
   barrier = 0;
   memset (&pool, 0, sizeof (pool));
@@ -10117,9 +10183,8 @@ mips_avoid_hazards (void)
 static void
 mips_reorg (void)
 {
-  if (TARGET_MIPS16)
-    mips16_lay_out_constants ();
-  else if (TARGET_EXPLICIT_RELOCS)
+  mips16_lay_out_constants ();
+  if (TARGET_EXPLICIT_RELOCS)
     {
       if (mips_flag_delayed_branch)
 	dbr_schedule (get_insns ());

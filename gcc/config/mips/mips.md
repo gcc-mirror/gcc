@@ -3181,6 +3181,22 @@
 }
   [(set_attr "length" "24")])
 
+;; Split HIGHs into:
+;;
+;;	li op0,%hi(sym)
+;;	sll op0,16
+;;
+;; on MIPS16 targets.
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(high:SI (match_operand:SI 1 "absolute_symbolic_operand" "")))]
+  "TARGET_MIPS16 && reload_completed"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 0) (ashift:SI (match_dup 0) (const_int 16)))]
+{
+  operands[2] = mips_unspec_address (operands[1], SYMBOL_32_HIGH);
+})
+
 ;; Insns to fetch a symbol from a big GOT.
 
 (define_insn_and_split "*xgot_hi<mode>"
@@ -5050,7 +5066,7 @@
    (use (label_ref (match_operand 1 "")))]
   ""
 {
-  if (TARGET_MIPS16)
+  if (TARGET_MIPS16_SHORT_JUMP_TABLES)
     operands[0] = expand_binop (Pmode, add_optab,
 				convert_to_mode (Pmode, operands[0], false),
 				gen_rtx_LABEL_REF (Pmode, operands[1]),

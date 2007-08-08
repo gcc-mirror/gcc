@@ -628,6 +628,7 @@ Objective-C and Objective-C++ Dialects}.
 -mlong64  -mlong32  -msym32  -mno-sym32 @gol
 -G@var{num}  -membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
+-mcode-readable=@var{setting} @gol
 -msplit-addresses  -mno-split-addresses @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mcheck-zero-division  -mno-check-zero-division @gol
@@ -11778,6 +11779,31 @@ when executing, and thus may be preferred for some embedded systems.
 @opindex mno-uninit-const-in-rodata
 Put uninitialized @code{const} variables in the read-only data section.
 This option is only meaningful in conjunction with @option{-membedded-data}.
+
+@item -mcode-readable=@var{setting}
+@opindex mcode-readable
+Specify whether GCC may generate code that reads from executable sections.
+There are three possible settings:
+
+@table @gcctabopt
+@item -mcode-readable=yes
+Instructions may freely access executable sections.  This is the
+default setting.
+
+@item -mcode-readable=pcrel
+MIPS16 PC-relative load instructions can access executable sections,
+but other instructions must not do so.  This option is useful on 4KSc
+and 4KSd processors when the code TLBs have the Read Inhibit bit set.
+It is also useful on processors that can be configured to have a dual
+instruction/data SRAM interface and that, like the M4K, automatically
+redirect PC-relative loads to the instruction RAM.
+
+@item -mcode-readable=no
+Instructions must not access executable sections.  This option can be
+useful on targets that are configured to have a dual instruction/data
+SRAM interface but that (unlike the M4K) do not automatically redirect
+PC-relative loads to the instruction RAM.
+@end table
 
 @item -msplit-addresses
 @itemx -mno-split-addresses

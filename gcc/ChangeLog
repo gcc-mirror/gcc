@@ -1,4 +1,55 @@
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chao-ying Fu  <fu@mips.com>
+	    Nigel Stephens  <nigel@mips.com>
+	    David Ung  <davidu@mips.com>
+
+	* doc/invoke.texi (-mcode-readable): Document.
+	* config/mips/mips.opt (mcode-readable): New option.
+	* config/mips/mips-protos.h (SYMBOL_32_HIGH): New symbol type.
+	* config/mips/mips.h (mips_code_readable_setting): New enum.
+	(mips_code_readable): Declare.
+	(TARGET_MIPS16_TEXT_LOADS, TARGET_MIPS16_PCREL_LOADS): New macros.
+	(TARGET_MIPS16_SHORT_JUMP_TABLES): New macro.
+	(JUMP_TABLES_IN_TEXT_SECTION): Use it.
+	(CASE_VECTOR_MODE, CASE_VECTOR_PC_RELATIVE): Likewise.  Remove
+	boiler-plate comments.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): Use TARGET_MIPS16_SHORT_JUMP_TABLES.
+	* config/mips/mips.c (mips_code_readable): New variable.
+	(mips_classify_symbol): Only return SYMBOL_PC_RELATIVE for
+	MIPS16 labels if TARGET_MIPS16_SHORT_JUMP_TABLES.  Use both the
+	context and -mcode-readable setting to restrict the use of
+	SYMBOL_PC_RELATIVE for MIPS16 constant pool references.
+	Only return TARGET_FORCE_TO_MEM if PC-relative loads are allowed.
+	(mips_symbolic_constant_p): Handle SYMBOL_32_HIGH.
+	(mips_blocks_for_constant_p): Only return false for
+	TARGET_MIPS16_PCREL_LOADS.
+	(mips_symbol_insns_1): Treat HIGHs as 2 extended instructions
+	for MIPS16.  Handle SYMBOL_32_HIGH.
+	(mips_const_insns): Allow HIGHs for MIPS16 too.
+	(mips_unspec_address_offset): New function, split out from...
+	(mips_unspec_address): ...here.
+	(mips_output_move): Handle MIPS16 HIGH moves.  Use "li" to load
+	16-bit symbolic constants.  Assert approropiate conditions for
+	using the "la" and "dla" macros.
+	(mips_handle_option): Handle -mcode-readable=.
+	(override_options): Use %hi/%lo relocations for TARGET_MIPS16 too.
+	Set up mips_lo_relocs[SYMBOL_32_HIGH].
+	(mips_strip_unspec_address): New function, split out from...
+	(print_operand_reloc): ...here.
+	(print_operand): Pass constants through mips_strip_unspec_address.
+	(print_operand_address): Likewise.
+	(mips_output_mi_thunk): Remove guard of mips16_lay_out_constants.
+	(mips_select_rtx_section): Remove MIPS16 handling.
+	(mips16_gp_pseudo_reg): Check currently_expanding_to_rtl.
+	(mips16_rewrite_pool_refs): Wrap the labels in an address UNSPEC.
+	(mips16_lay_out_constants): Do nothing unless
+	TARGET_MIPS16_PCREL_LOADS.
+	(mips_avoid_hazards): Remove guard of mips16_lay_out_constants.
+	* config/mips/mips.md: Split HIGHs for MIPS16.
+	(tablejump): Use TARGET_MIPS16_SHORT_JUMP_TABLES.
+
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips-protos.h (mips_emit_move): Declare.
 	* config/mips/mips.c (mips_emit_move): New function.
