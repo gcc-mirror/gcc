@@ -1,3 +1,17 @@
+2007-08-08  Vladimir Yanovsky  <yanov@il.ibm.com>
+            Revital Eres  <eres@il.ibm.com>
+
+	* ddg.c (print_ddg): Add dump information.
+	* modulo-sched.c (print_node_sched_params): Add parameter and
+	verbosity.
+	(calculate_maxii): Remove function.
+	(undo_generate_reg_moves): Likewise.
+	(undo_permute_partial_schedule): Likewise.
+	(kernel_number_of_cycles): Likewise.
+	(MAXII_FACTOR): New definition to calculate the upper bound of II.
+	(sms_schedule): Use it.  Remove profitability checks.
+	(sms_schedule_by_order): Fix order of nodes within the cycle.
+
 2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* gcc/config/i386/gnu.h (STARTFILE_SPEC): Use gcrt0.o in profile mode, add
