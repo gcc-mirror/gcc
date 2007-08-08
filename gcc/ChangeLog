@@ -1,5 +1,37 @@
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h (mips_emit_move): Declare.
+	* config/mips/mips.c (mips_emit_move): New function.
+	(mips_force_temporary): Use mips_emit_move instead of emit_move_insn.
+	(mips_legitimize_const_move): Likewise.
+	(mips_legitimize_move): Likewise.
+	(mips_split_64bit_move): Likewise.
+	(mips_restore_gp): Likewise.
+	(mips_load_call_address): Likewise.
+	(mips_emit_fcc_reload): Likewise.
+	(mips_set_return_address): Likewise.
+	(mips_block_move_straight): Likewise.
+	(mips_block_move_loop): Likewise.
+	(mips_setup_incoming_varargs): Likewise.
+	(mips_save_reg): Likewise.
+	(mips_expand_prologue): Likewise.
+	(mips_restore_reg): Likewise.
+	(mips_expand_epilogue): Likewise.
+	(mips_output_mi_thunk): Likewise.
+	(build_mips16_call_stub): Likewise.
+	(mips_builtin_branch_and_move): Likewise.
+	* config/mips/mips.h (INITIALIZE_TRAMPOLINE): Likewise.
+	* config/mips/mips.md (fixuns_truncdfsi2): Likewise.
+	(fixuns_truncdfdi2): Likewise.
+	(fixuns_truncsfsi2): Likewise.
+	(fixuns_truncsfdi2): Likewise.
+	(loadgp_absolute): Likewise.
+	(builtin_setjmp_setup): Likewise.
+	(builtin_longjmp): Likewise.
+	(untyped_call): Likewise.
+
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips-protos.h (mips_split_symbol): Add a mode and
 	an "rtx *" argument.  Return a bool.
 	* config/mips/mips.c (mips_split_symbol): Accept arbitrary source
