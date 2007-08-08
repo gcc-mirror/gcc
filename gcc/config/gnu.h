@@ -6,7 +6,7 @@
 
 /* Default C library spec.  Use -lbsd-compat for gcc -bsd.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{bsd:-lbsd-compat} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
+#define LIB_SPEC "%{pthread:-lpthread} %{bsd:-lbsd-compat} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
 /* Standard include directory.  In GNU, "/usr" is a four-letter word.  */
 #undef STANDARD_INCLUDE_DIR

@@ -1,3 +1,8 @@
+2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* gcc/config/i386/gnu.h (CPP_SPEC): Add -pthread option.
+	* gcc/config/gnu.h (LIB_SPEC): Likewise.
+
 2007-08-07  Yaz Saito  <saito@google.com>
 	    Ian Lance Taylor  <iant@google.com>
 
