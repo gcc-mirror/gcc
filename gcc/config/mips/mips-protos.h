@@ -25,6 +25,22 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_MIPS_PROTOS_H
 #define GCC_MIPS_PROTOS_H
 
+/* Describes how a symbol is used.
+
+   SYMBOL_CONTEXT_CALL
+       The symbol is used as the target of a call instruction.
+
+   SYMBOL_CONTEXT_LEA
+       The symbol is used in a load-address operation.
+
+   SYMBOL_CONTEXT_MEM
+       The symbol is used as the address in a MEM.  */
+enum mips_symbol_context {
+  SYMBOL_CONTEXT_CALL,
+  SYMBOL_CONTEXT_LEA,
+  SYMBOL_CONTEXT_MEM
+};
+
 /* Classifies a SYMBOL_REF, LABEL_REF or UNSPEC address.
 
    SYMBOL_ABSOLUTE
@@ -140,7 +156,8 @@ enum mips_loadgp_style {
 
 struct mips16e_save_restore_info;
 
-extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_type *);
+extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_context,
+				      enum mips_symbol_type *);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern bool mips_stack_address_p (rtx, enum machine_mode);
 extern int mips_address_insns (rtx, enum machine_mode);

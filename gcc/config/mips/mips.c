@@ -287,7 +287,6 @@ struct mips_address_info;
 struct mips_integer_op;
 struct mips_sim;
 
-static enum mips_symbol_type mips_classify_symbol (rtx);
 static bool mips_valid_base_register_p (rtx, enum machine_mode, int);
 static bool mips_symbolic_address_p (enum mips_symbol_type, enum machine_mode);
 static bool mips_classify_address (struct mips_address_info *, rtx,
@@ -321,9 +320,9 @@ static void mips_set_architecture (const struct mips_cpu_info *);
 static void mips_set_tune (const struct mips_cpu_info *);
 static bool mips_handle_option (size_t, const char *, int);
 static struct machine_function *mips_init_machine_status (void);
-static void print_operand_reloc (FILE *, rtx, const char **);
+static void print_operand_reloc (FILE *, rtx, enum mips_symbol_context,
+				 const char **);
 static void mips_file_start (void);
-static bool mips_rewrite_small_data_p (rtx);
 static int mips_small_data_pattern_1 (rtx *, void *);
 static int mips_rewrite_small_data_1 (rtx *, void *);
 static bool mips_function_has_gp_insn (void);
@@ -1435,10 +1434,11 @@ mips_symbol_binds_local_p (rtx x)
 	  : SYMBOL_REF_LOCAL_P (x));
 }
 
-/* Classify symbol X, which must be a SYMBOL_REF or a LABEL_REF.  */
+/* Return the method that should be used to access SYMBOL_REF or
+   LABEL_REF X in context CONTEXT.  */
 
 static enum mips_symbol_type
-mips_classify_symbol (rtx x)
+mips_classify_symbol (rtx x, enum mips_symbol_context context ATTRIBUTE_UNUSED)
 {
   if (TARGET_RTP_PIC)
     return SYMBOL_GOT_DISP;
@@ -1528,12 +1528,12 @@ mips_offset_within_alignment_p (rtx x, HOST_WIDE_INT offset)
   return offset >= 0 && offset < align;
 }
 
-/* Return true if X is a symbolic constant that can be calculated in
-   the same way as a bare symbol.  If it is, store the type of the
-   symbol in *SYMBOL_TYPE.  */
+/* Return true if X is a symbolic constant that can be used in context
+   CONTEXT.  If it is, store the type of the symbol in *SYMBOL_TYPE.  */
 
 bool
-mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
+mips_symbolic_constant_p (rtx x, enum mips_symbol_context context,
+			  enum mips_symbol_type *symbol_type)
 {
   rtx offset;
 
@@ -1545,7 +1545,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
     }
   else if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     {
-      *symbol_type = mips_classify_symbol (x);
+      *symbol_type = mips_classify_symbol (x, context);
       if (*symbol_type == SYMBOL_TLS)
 	return false;
     }
@@ -1747,7 +1747,8 @@ mips_classify_address (struct mips_address_info *info, rtx x,
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
       return (mips_valid_base_register_p (info->reg, mode, strict)
-	      && mips_symbolic_constant_p (info->offset, &info->symbol_type)
+	      && mips_symbolic_constant_p (info->offset, SYMBOL_CONTEXT_MEM,
+					   &info->symbol_type)
 	      && mips_symbolic_address_p (info->symbol_type, mode)
 	      && mips_lo_relocs[info->symbol_type] != 0);
 
@@ -1761,7 +1762,8 @@ mips_classify_address (struct mips_address_info *info, rtx x,
     case LABEL_REF:
     case SYMBOL_REF:
       info->type = ADDRESS_SYMBOLIC;
-      return (mips_symbolic_constant_p (x, &info->symbol_type)
+      return (mips_symbolic_constant_p (x, SYMBOL_CONTEXT_MEM,
+					&info->symbol_type)
 	      && mips_symbolic_address_p (info->symbol_type, mode)
 	      && !mips_split_p[info->symbol_type]);
 
@@ -2002,7 +2004,8 @@ mips_const_insns (rtx x)
     {
     case HIGH:
       if (TARGET_MIPS16
-	  || !mips_symbolic_constant_p (XEXP (x, 0), &symbol_type)
+	  || !mips_symbolic_constant_p (XEXP (x, 0), SYMBOL_CONTEXT_LEA,
+					&symbol_type)
 	  || !mips_split_p[symbol_type])
 	return 0;
 
@@ -2031,7 +2034,7 @@ mips_const_insns (rtx x)
 	return 1;
 
       /* See if we can refer to X directly.  */
-      if (mips_symbolic_constant_p (x, &symbol_type))
+      if (mips_symbolic_constant_p (x, SYMBOL_CONTEXT_LEA, &symbol_type))
 	return mips_symbol_insns (symbol_type);
 
       /* Otherwise try splitting the constant into a base and offset.
@@ -2053,7 +2056,7 @@ mips_const_insns (rtx x)
 
     case SYMBOL_REF:
     case LABEL_REF:
-      return mips_symbol_insns (mips_classify_symbol (x));
+      return mips_symbol_insns (mips_classify_symbol (x, SYMBOL_CONTEXT_LEA));
 
     default:
       return 0;
@@ -2340,7 +2343,7 @@ mips_legitimize_address (rtx *xloc, enum machine_mode mode)
     }
 
   /* See if the address can split into a high part and a LO_SUM.  */
-  if (mips_symbolic_constant_p (*xloc, &symbol_type)
+  if (mips_symbolic_constant_p (*xloc, SYMBOL_CONTEXT_MEM, &symbol_type)
       && mips_symbolic_address_p (symbol_type, mode)
       && mips_split_p[symbol_type])
     {
@@ -5943,11 +5946,11 @@ print_operand (FILE *file, rtx op, int letter)
       if (GET_CODE (op) == HIGH)
 	op = XEXP (op, 0);
 
-      print_operand_reloc (file, op, mips_hi_relocs);
+      print_operand_reloc (file, op, SYMBOL_CONTEXT_LEA, mips_hi_relocs);
     }
 
   else if (letter == 'R')
-    print_operand_reloc (file, op, mips_lo_relocs);
+    print_operand_reloc (file, op, SYMBOL_CONTEXT_LEA, mips_lo_relocs);
 
   else if (letter == 'Y')
     {
@@ -6038,17 +6041,19 @@ print_operand (FILE *file, rtx op, int letter)
 }
 
 
-/* Print symbolic operand OP, which is part of a HIGH or LO_SUM.
-   RELOCS is the array of relocations to use.  */
+/* Print symbolic operand OP, which is part of a HIGH or LO_SUM
+   in context CONTEXT.  RELOCS is the array of relocations to use.  */
 
 static void
-print_operand_reloc (FILE *file, rtx op, const char **relocs)
+print_operand_reloc (FILE *file, rtx op, enum mips_symbol_context context,
+		     const char **relocs)
 {
   enum mips_symbol_type symbol_type;
   const char *p;
   rtx base, offset;
 
-  if (!mips_symbolic_constant_p (op, &symbol_type) || relocs[symbol_type] == 0)
+  if (!mips_symbolic_constant_p (op, context, &symbol_type)
+      || relocs[symbol_type] == 0)
     fatal_insn ("PRINT_OPERAND, invalid operand for relocation", op);
 
   /* If OP uses an UNSPEC address, we want to print the inner symbol.  */
@@ -6079,7 +6084,8 @@ print_operand_address (FILE *file, rtx x)
 	return;
 
       case ADDRESS_LO_SUM:
-	print_operand (file, addr.offset, 'R');
+	print_operand_reloc (file, addr.offset, SYMBOL_CONTEXT_MEM,
+			     mips_lo_relocs);
 	fprintf (file, "(%s)", reg_names[REGNO (addr.reg)]);
 	return;
 
@@ -6429,29 +6435,40 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
 }
 #endif
 
-/* Return true if X is a small data address that can be rewritten
-   as a LO_SUM.  */
+/* Return true if X in context CONTEXT is a small data address that can
+   be rewritten as a LO_SUM.  */
 
 static bool
-mips_rewrite_small_data_p (rtx x)
+mips_rewrite_small_data_p (rtx x, enum mips_symbol_context context)
 {
   enum mips_symbol_type symbol_type;
 
   return (TARGET_EXPLICIT_RELOCS
-	  && mips_symbolic_constant_p (x, &symbol_type)
+	  && mips_symbolic_constant_p (x, context, &symbol_type)
 	  && symbol_type == SYMBOL_GP_RELATIVE);
 }
 
 
-/* A for_each_rtx callback for mips_small_data_pattern_p.  */
+/* A for_each_rtx callback for mips_small_data_pattern_p.  DATA is the
+   containing MEM, or null if none.  */
 
 static int
-mips_small_data_pattern_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
+mips_small_data_pattern_1 (rtx *loc, void *data)
 {
+  enum mips_symbol_context context;
+
   if (GET_CODE (*loc) == LO_SUM)
     return -1;
 
-  return mips_rewrite_small_data_p (*loc);
+  if (MEM_P (*loc))
+    {
+      if (for_each_rtx (&XEXP (*loc, 0), mips_small_data_pattern_1, *loc))
+	return 1;
+      return -1;
+    }
+
+  context = data ? SYMBOL_CONTEXT_MEM : SYMBOL_CONTEXT_LEA;
+  return mips_rewrite_small_data_p (*loc, context);
 }
 
 /* Return true if OP refers to small data symbols directly, not through
@@ -6463,12 +6480,22 @@ mips_small_data_pattern_p (rtx op)
   return for_each_rtx (&op, mips_small_data_pattern_1, 0);
 }
 
-/* A for_each_rtx callback, used by mips_rewrite_small_data.  */
+/* A for_each_rtx callback, used by mips_rewrite_small_data.
+   DATA is the containing MEM, or null if none.  */
 
 static int
-mips_rewrite_small_data_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
+mips_rewrite_small_data_1 (rtx *loc, void *data)
 {
-  if (mips_rewrite_small_data_p (*loc))
+  enum mips_symbol_context context;
+
+  if (MEM_P (*loc))
+    {
+      for_each_rtx (&XEXP (*loc, 0), mips_rewrite_small_data_1, *loc);
+      return -1;
+    }
+
+  context = data ? SYMBOL_CONTEXT_MEM : SYMBOL_CONTEXT_LEA;
+  if (mips_rewrite_small_data_p (*loc, context))
     *loc = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, *loc);
 
   if (GET_CODE (*loc) == LO_SUM)
@@ -8307,7 +8334,7 @@ mips_in_small_data_p (tree decl)
 static bool
 mips_use_anchors_for_symbol_p (rtx symbol)
 {
-  switch (mips_classify_symbol (symbol))
+  switch (mips_classify_symbol (symbol, SYMBOL_CONTEXT_MEM))
     {
     case SYMBOL_PC_RELATIVE:
     case SYMBOL_GP_RELATIVE:

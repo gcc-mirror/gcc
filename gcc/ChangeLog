@@ -1,5 +1,33 @@
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h (mips_symbol_context): New enumeration.
+	* config/mips/mips.c (mips_classify_symbol): Take a context argument.
+	(mips_symbolic_constant_p): Likewise.  Update the call to
+	mips_classify_symbol.
+	(mips_classify_address): Update the calls to mips_symbolic_constant_p.
+	(mips_const_insns): Likewise.  Update the call to mips_classify_symbol.
+	(mips_legitimize_address): Update the call to mips_symbolic_constant_p.
+	(print_operand_reloc): Add a context argument.  Update the call to
+	mips_symbolic_constant_p.
+	(print_operand): Update the calls to print_operand_reloc.
+	(print_operand_address): Use print_operand_reloc rather than
+	print_operand.
+	(mips_rewrite_small_data_p): Add a context argument.  Update the call
+	to mips_symbolic_constant_p.
+	(mips_small_data_pattern_1): Make DATA the containing mem.
+	Update the call to mips_rewrite_small_data_p.
+	(mips_rewrite_small_data_1): Likewise.
+	(mips_use_anchors_for_symbol_p): Update the call to
+	mips_symbolic_constant_p.
+	* config/mips/predicates.md (const_call_insn_operand): Likewise.
+	(splittable_symbolic_operand): Likewise.
+	(move_operand): Likewise.
+	(absolute_symbolic_operand): Likewise.
+	(got_disp_operand): Likewise.
+	(got_page_ofst_operand): Likewise.
+
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips-protos.h (SYMBOL_GENERAL): Rename to...
 	(SYMBOL_ABSOLUTE): ...this.
 	(SYMBOL_SMALL_DATA): Rename to...
