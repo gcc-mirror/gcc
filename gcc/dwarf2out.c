@@ -8396,6 +8396,13 @@ base_type_die (tree type)
 	encoding = DW_ATE_float;
       break;
 
+    case FIXED_POINT_TYPE:
+      if (TYPE_UNSIGNED (type))
+	encoding = DW_ATE_signed_fixed;
+      else
+	encoding = DW_ATE_unsigned_fixed;
+      break;
+
       /* Dwarf2 doesn't know anything about complex ints, so use
 	 a user defined type for it.  */
     case COMPLEX_TYPE:
@@ -8440,6 +8447,7 @@ is_base_type (tree type)
     case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
       return 1;
@@ -11401,11 +11409,11 @@ add_type_attribute (dw_die_ref object_die, tree type, int decl_const,
   enum tree_code code  = TREE_CODE (type);
   dw_die_ref type_die  = NULL;
 
-  /* ??? If this type is an unnamed subrange type of an integral or
-     floating-point type, use the inner type.  This is because we have no
+  /* ??? If this type is an unnamed subrange type of an integral, floating-point
+     or fixed-point type, use the inner type.  This is because we have no
      support for unnamed types in base_type_die.  This can happen if this is
      an Ada subrange type.  Correct solution is emit a subrange type die.  */
-  if ((code == INTEGER_TYPE || code == REAL_TYPE)
+  if ((code == INTEGER_TYPE || code == REAL_TYPE || code == FIXED_POINT_TYPE)
       && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0)
     type = TREE_TYPE (type), code = TREE_CODE (type);
 
@@ -13082,6 +13090,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
     case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
       /* No DIEs needed for fundamental types.  */

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "real.h"
+#include "fixed-value.h"
 
 static unsigned int queue (dump_info_p, tree, int);
 static void dump_index (dump_info_p, unsigned int);
@@ -186,6 +187,18 @@ dump_real (dump_info_p di, const char *field, const REAL_VALUE_TYPE *r)
 {
   char buf[32];
   real_to_decimal (buf, r, sizeof (buf), 0, true);
+  dump_maybe_newline (di);
+  fprintf (di->stream, "%-4s: %s ", field, buf);
+  di->column += strlen (buf) + 7;
+}
+
+/* Dump the fixed-point value F, using FIELD to identify it.  */
+
+static void
+dump_fixed (dump_info_p di, const char *field, const FIXED_VALUE_TYPE *f)
+{
+  char buf[32];
+  fixed_to_decimal (buf, f, sizeof (buf));
   dump_maybe_newline (di);
   fprintf (di->stream, "%-4s: %s ", field, buf);
   di->column += strlen (buf) + 7;
@@ -453,6 +466,13 @@ dequeue_and_dump (dump_info_p di)
       dump_int (di, "prec", TYPE_PRECISION (t));
       break;
 
+    case FIXED_POINT_TYPE:
+      dump_int (di, "prec", TYPE_PRECISION (t));
+      dump_string_field (di, "sign", TYPE_UNSIGNED (t) ? "unsigned": "signed");
+      dump_string_field (di, "saturating",
+			 TYPE_SATURATING (t) ? "saturating": "non-saturating");
+      break;
+
     case POINTER_TYPE:
       dump_child ("ptd", TREE_TYPE (t));
       break;
@@ -547,6 +567,10 @@ dequeue_and_dump (dump_info_p di)
 
     case REAL_CST:
       dump_real (di, "valu", TREE_REAL_CST_PTR (t));
+      break;
+
+    case FIXED_CST:
+      dump_fixed (di, "valu", TREE_FIXED_CST_PTR (t));
       break;
 
     case TRUTH_NOT_EXPR:

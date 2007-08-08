@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-chrec.h"
 #include "tree-pass.h"
+#include "fixed-value.h"
 #include "value-prof.h"
 
 /* Local functions, macros and variables.  */
@@ -527,6 +528,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
     case ENUMERAL_TYPE:
@@ -801,6 +803,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    output_formatted_integer (buffer, "%02x", *p++);
 	}
 #endif
+	break;
+      }
+
+    case FIXED_CST:
+      {
+	char string[100];
+	fixed_to_decimal (string, TREE_FIXED_CST_PTR (node), sizeof (string));
+	pp_string (buffer, string);
 	break;
       }
 
@@ -1378,6 +1388,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       NIY;
       break;
 
+    case FIXED_CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
     case CONVERT_EXPR:

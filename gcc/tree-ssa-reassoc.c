@@ -1245,12 +1245,15 @@ break_up_subtract_bb (basic_block bb)
 
 	  TREE_VISITED (stmt) = 0;
 	  /* If unsafe math optimizations we can do reassociation for
-	     non-integral types.  */
+	     non-integral types.  Or, we can do reassociation for
+	     non-saturating fixed-point types.  */
 	  if ((!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	       || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
 	      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs))
 		  || !SCALAR_FLOAT_TYPE_P (TREE_TYPE(lhs))
-		  || !flag_unsafe_math_optimizations))
+		  || !flag_unsafe_math_optimizations)
+	      && (!NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE (rhs))
+		  || !NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE(lhs))))
 	    continue;
 
 	  /* Check for a subtract used only in an addition.  If this
@@ -1292,12 +1295,15 @@ reassociate_bb (basic_block bb)
 	    continue;
 
 	  /* If unsafe math optimizations we can do reassociation for
-	     non-integral types.  */
+	     non-integral types.  Or, we can do reassociation for
+	     non-saturating fixed-point types.  */
 	  if ((!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	       || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
 	      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs))
 		  || !SCALAR_FLOAT_TYPE_P (TREE_TYPE(lhs))
-		  || !flag_unsafe_math_optimizations))
+		  || !flag_unsafe_math_optimizations)
+	      && (!NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE (rhs))
+		  || !NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE(lhs))))
 	    continue;
 
 	  if (associative_tree_code (TREE_CODE (rhs)))

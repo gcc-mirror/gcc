@@ -340,6 +340,7 @@ remap_type_1 (tree type, copy_body_data *id)
     {
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       t = TYPE_MIN_VALUE (new);
@@ -2020,6 +2021,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case IDENTIFIER_NODE:
     case INTEGER_CST:
     case REAL_CST:
+    case FIXED_CST:
     case COMPLEX_CST:
     case VECTOR_CST:
     case STRING_CST:
@@ -2085,6 +2087,7 @@ estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case MINUS_EXPR:
     case MULT_EXPR:
 
+    case FIXED_CONVERT_EXPR:
     case FIX_TRUNC_EXPR:
 
     case NEGATE_EXPR:

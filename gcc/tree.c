@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "params.h"
 #include "pointer-set.h"
+#include "fixed-value.h"
 
 /* Each tree code class has an associated string representation.
    These must correspond to the tree_code_class entries.  */
@@ -399,6 +400,7 @@ tree_code_size (enum tree_code code)
 	{
 	case INTEGER_CST:	return sizeof (struct tree_int_cst);
 	case REAL_CST:		return sizeof (struct tree_real_cst);
+	case FIXED_CST:		return sizeof (struct tree_fixed_cst);
 	case COMPLEX_CST:	return sizeof (struct tree_complex);
 	case VECTOR_CST:	return sizeof (struct tree_vector);
 	case STRING_CST:	gcc_unreachable ();
@@ -1095,6 +1097,22 @@ build_constructor_from_list (tree type, tree vals)
   return t;
 }
 
+/* Return a new FIXED_CST node whose type is TYPE and value is F.  */
+
+tree
+build_fixed (tree type, FIXED_VALUE_TYPE f)
+{
+  tree v;
+  FIXED_VALUE_TYPE *fp;
+
+  v = make_node (FIXED_CST);
+  fp = ggc_alloc (sizeof (FIXED_VALUE_TYPE));
+  memcpy (fp, &f, sizeof (FIXED_VALUE_TYPE));
+
+  TREE_TYPE (v) = type;
+  TREE_FIXED_CST_PTR (v) = fp;
+  return v;
+}
 
 /* Return a new REAL_CST node whose type is TYPE and value is D.  */
 
@@ -1214,6 +1232,11 @@ build_one_cst (tree type)
 
     case REAL_TYPE:
       return build_real (type, dconst1);
+
+    case FIXED_POINT_TYPE:
+      /* We can only generate 1 for accum types.  */
+      gcc_assert (ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)));
+      return build_fixed (type, FCONST1(TYPE_MODE (type)));
 
     case VECTOR_TYPE:
       {
@@ -1432,6 +1455,15 @@ integer_nonzerop (const_tree expr)
 	  || (TREE_CODE (expr) == COMPLEX_CST
 	      && (integer_nonzerop (TREE_REALPART (expr))
 		  || integer_nonzerop (TREE_IMAGPART (expr)))));
+}
+
+/* Return 1 if EXPR is the fixed-point constant zero.  */
+
+int
+fixed_zerop (tree expr)
+{
+  return (TREE_CODE (expr) == FIXED_CST
+	  && double_int_zero_p (TREE_FIXED_CST (expr).data));
 }
 
 /* Return the power of two represented by a tree node known to be a
@@ -2184,6 +2216,7 @@ tree_node_structure (const_tree t)
       /* tcc_constant cases.  */
     case INTEGER_CST:		return TS_INT_CST;
     case REAL_CST:		return TS_REAL_CST;
+    case FIXED_CST:		return TS_FIXED_CST;
     case COMPLEX_CST:		return TS_COMPLEX;
     case VECTOR_CST:		return TS_VECTOR;
     case STRING_CST:		return TS_STRING;
@@ -2324,6 +2357,7 @@ type_contains_placeholder_1 (const_tree type)
 
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
       /* Here we just check the bounds.  */
       return (CONTAINS_PLACEHOLDER_P (TYPE_MIN_VALUE (type))
 	      || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (type)));
@@ -3677,6 +3711,7 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 	    (TREE_INT_CST_HIGH (TYPE_MAX_VALUE (ntype)), hashcode);
 	  break;
 	case REAL_TYPE:
+	case FIXED_POINT_TYPE:
 	  {
 	    unsigned int precision = TYPE_PRECISION (ntype);
 	    hashcode = iterative_hash_object (precision, hashcode);
@@ -4551,6 +4586,9 @@ type_hash_eq (const void *va, const void *vb)
 		  || tree_int_cst_equal (TYPE_MIN_VALUE (a->type),
 					 TYPE_MIN_VALUE (b->type))));
 
+    case FIXED_POINT_TYPE:
+      return TYPE_SATURATING (a->type) == TYPE_SATURATING (b->type);
+
     case OFFSET_TYPE:
       return TYPE_OFFSET_BASETYPE (a->type) == TYPE_OFFSET_BASETYPE (b->type);
 
@@ -5011,6 +5049,9 @@ simple_cst_equal (const_tree t1, const_tree t2)
     case REAL_CST:
       return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
 
+    case FIXED_CST:
+      return FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1), TREE_FIXED_CST (t2));
+
     case STRING_CST:
       return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
 	      && ! memcmp (TREE_STRING_POINTER (t1), TREE_STRING_POINTER (t2),
@@ -5231,6 +5272,12 @@ iterative_hash_expr (const_tree t, hashval_t val)
     case REAL_CST:
       {
 	unsigned int val2 = real_hash (TREE_REAL_CST_PTR (t));
+
+	return iterative_hash_hashval_t (val2, val);
+      }
+    case FIXED_CST:
+      {
+	unsigned int val2 = fixed_hash (TREE_FIXED_CST_PTR (t));
 
 	return iterative_hash_hashval_t (val2, val);
       }
@@ -6064,6 +6111,7 @@ get_unwidened (tree op, tree for_type)
   if (TREE_CODE (op) == COMPONENT_REF
       /* Since type_for_size always gives an integer type.  */
       && TREE_CODE (type) != REAL_TYPE
+      && TREE_CODE (type) != FIXED_POINT_TYPE
       /* Don't crash if field not laid out yet.  */
       && DECL_SIZE (TREE_OPERAND (op, 1)) != 0
       && host_integerp (DECL_SIZE (TREE_OPERAND (op, 1)), 1))
@@ -6155,6 +6203,7 @@ get_narrower (tree op, int *unsignedp_ptr)
   if (TREE_CODE (op) == COMPONENT_REF
       /* Since type_for_size always gives an integer type.  */
       && TREE_CODE (TREE_TYPE (op)) != REAL_TYPE
+      && TREE_CODE (TREE_TYPE (op)) != FIXED_POINT_TYPE
       /* Ensure field is laid out already.  */
       && DECL_SIZE (TREE_OPERAND (op, 1)) != 0
       && host_integerp (DECL_SIZE (TREE_OPERAND (op, 1)), 1))
@@ -6378,6 +6427,7 @@ variably_modified_type_p (tree type, tree fn)
 
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       /* Scalar types are variably modified if their end points
@@ -7048,6 +7098,80 @@ make_or_reuse_type (unsigned size, int unsignedp)
     return make_signed_type (size);
 }
 
+/* Create or reuse a fract type by SIZE, UNSIGNEDP, and SATP.  */
+
+static tree
+make_or_reuse_fract_type (unsigned size, int unsignedp, int satp)
+{
+  if (satp)
+    {
+      if (size == SHORT_FRACT_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_short_fract_type_node
+			 : sat_short_fract_type_node;
+      if (size == FRACT_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_fract_type_node : sat_fract_type_node;
+      if (size == LONG_FRACT_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_long_fract_type_node
+			 : sat_long_fract_type_node;
+      if (size == LONG_LONG_FRACT_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_long_long_fract_type_node
+			 : sat_long_long_fract_type_node;
+    }
+  else
+    {
+      if (size == SHORT_FRACT_TYPE_SIZE)
+	return unsignedp ? unsigned_short_fract_type_node
+			 : short_fract_type_node;
+      if (size == FRACT_TYPE_SIZE)
+	return unsignedp ? unsigned_fract_type_node : fract_type_node;
+      if (size == LONG_FRACT_TYPE_SIZE)
+	return unsignedp ? unsigned_long_fract_type_node
+			 : long_fract_type_node;
+      if (size == LONG_LONG_FRACT_TYPE_SIZE)
+	return unsignedp ? unsigned_long_long_fract_type_node
+			 : long_long_fract_type_node;
+    }
+
+  return make_fract_type (size, unsignedp, satp);
+}
+
+/* Create or reuse an accum type by SIZE, UNSIGNEDP, and SATP.  */
+
+static tree
+make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
+{
+  if (satp)
+    {
+      if (size == SHORT_ACCUM_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_short_accum_type_node
+			 : sat_short_accum_type_node;
+      if (size == ACCUM_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_accum_type_node : sat_accum_type_node;
+      if (size == LONG_ACCUM_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_long_accum_type_node
+			 : sat_long_accum_type_node;
+      if (size == LONG_LONG_ACCUM_TYPE_SIZE)
+	return unsignedp ? sat_unsigned_long_long_accum_type_node
+			 : sat_long_long_accum_type_node;
+    }
+  else
+    {
+      if (size == SHORT_ACCUM_TYPE_SIZE)
+	return unsignedp ? unsigned_short_accum_type_node
+			 : short_accum_type_node;
+      if (size == ACCUM_TYPE_SIZE)
+	return unsignedp ? unsigned_accum_type_node : accum_type_node;
+      if (size == LONG_ACCUM_TYPE_SIZE)
+	return unsignedp ? unsigned_long_accum_type_node
+			 : long_accum_type_node;
+      if (size == LONG_LONG_ACCUM_TYPE_SIZE)
+	return unsignedp ? unsigned_long_long_accum_type_node
+			 : long_long_accum_type_node;
+    }
+
+  return make_accum_type (size, unsignedp, satp);
+}
+
 /* Create nodes for all integer types (and error_mark_node) using the sizes
    of C datatypes.  The caller should call set_sizetype soon after calling
    this function to select one of the types as sizetype.  */
@@ -7194,6 +7318,50 @@ build_common_tree_nodes_2 (int short_double)
   complex_float_type_node = build_complex_type (float_type_node);
   complex_double_type_node = build_complex_type (double_type_node);
   complex_long_double_type_node = build_complex_type (long_double_type_node);
+
+/* Make fixed-point nodes based on sat/non-sat and signed/unsigned.  */
+#define MAKE_FIXED_TYPE_NODE(KIND,WIDTH,SIZE) \
+  sat_ ## WIDTH ## KIND ## _type_node = \
+    make_sat_signed_ ## KIND ## _type (SIZE); \
+  sat_unsigned_ ## WIDTH ## KIND ## _type_node = \
+    make_sat_unsigned_ ## KIND ## _type (SIZE); \
+  WIDTH ## KIND ## _type_node = make_signed_ ## KIND ## _type (SIZE); \
+  unsigned_ ## WIDTH ## KIND ## _type_node = \
+    make_unsigned_ ## KIND ## _type (SIZE);
+
+/* Make fixed-point type nodes based on four different widths.  */
+#define MAKE_FIXED_TYPE_NODE_FAMILY(N1,N2) \
+  MAKE_FIXED_TYPE_NODE (N1, short_, SHORT_ ## N2 ## _TYPE_SIZE) \
+  MAKE_FIXED_TYPE_NODE (N1, , N2 ## _TYPE_SIZE) \
+  MAKE_FIXED_TYPE_NODE (N1, long_, LONG_ ## N2 ## _TYPE_SIZE) \
+  MAKE_FIXED_TYPE_NODE (N1, long_long_, LONG_LONG_ ## N2 ## _TYPE_SIZE)
+
+/* Make fixed-point mode nodes based on sat/non-sat and signed/unsigned.  */
+#define MAKE_FIXED_MODE_NODE(KIND,NAME,MODE) \
+  NAME ## _type_node = \
+    make_or_reuse_signed_ ## KIND ## _type (GET_MODE_BITSIZE (MODE ## mode)); \
+  u ## NAME ## _type_node = \
+    make_or_reuse_unsigned_ ## KIND ## _type \
+      (GET_MODE_BITSIZE (U ## MODE ## mode)); \
+  sat_ ## NAME ## _type_node = \
+    make_or_reuse_sat_signed_ ## KIND ## _type \
+      (GET_MODE_BITSIZE (MODE ## mode)); \
+  sat_u ## NAME ## _type_node = \
+    make_or_reuse_sat_unsigned_ ## KIND ## _type \
+      (GET_MODE_BITSIZE (U ## MODE ## mode));
+
+  /* Fixed-point type and mode nodes.  */
+  MAKE_FIXED_TYPE_NODE_FAMILY (fract, FRACT)
+  MAKE_FIXED_TYPE_NODE_FAMILY (accum, ACCUM)
+  MAKE_FIXED_MODE_NODE (fract, qq, QQ)
+  MAKE_FIXED_MODE_NODE (fract, hq, HQ)
+  MAKE_FIXED_MODE_NODE (fract, sq, SQ)
+  MAKE_FIXED_MODE_NODE (fract, dq, DQ)
+  MAKE_FIXED_MODE_NODE (fract, tq, TQ)
+  MAKE_FIXED_MODE_NODE (accum, ha, HA)
+  MAKE_FIXED_MODE_NODE (accum, sa, SA)
+  MAKE_FIXED_MODE_NODE (accum, da, DA)
+  MAKE_FIXED_MODE_NODE (accum, ta, TA)
 
   {
     tree t = targetm.build_builtin_va_list ();
@@ -7458,6 +7626,10 @@ build_vector_type_for_mode (tree innertype, enum machine_mode mode)
     {
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
+    case MODE_VECTOR_FRACT:
+    case MODE_VECTOR_UFRACT:
+    case MODE_VECTOR_ACCUM:
+    case MODE_VECTOR_UACCUM:
       nunits = GET_MODE_NUNITS (mode);
       break;
 
@@ -7517,6 +7689,9 @@ initializer_zerop (const_tree init)
 	 negative exponent.  */
       return real_zerop (init)
 	&& ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init));
+
+    case FIXED_CST:
+      return fixed_zerop (init);
 
     case COMPLEX_CST:
       return integer_zerop (init)
@@ -8211,6 +8386,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
     case IDENTIFIER_NODE:
     case INTEGER_CST:
     case REAL_CST:
+    case FIXED_CST:
     case VECTOR_CST:
     case STRING_CST:
     case BLOCK:
@@ -8389,6 +8565,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	  else if (TREE_CODE (*type_p) == BOOLEAN_TYPE
 		   || TREE_CODE (*type_p) == ENUMERAL_TYPE
 		   || TREE_CODE (*type_p) == INTEGER_TYPE
+		   || TREE_CODE (*type_p) == FIXED_POINT_TYPE
 		   || TREE_CODE (*type_p) == REAL_TYPE)
 	    {
 	      WALK_SUBTREE (TYPE_MIN_VALUE (*type_p));

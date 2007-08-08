@@ -162,7 +162,8 @@ browse_tree (tree begin)
 
 	case TB_MAX:
 	  if (head && (INTEGRAL_TYPE_P (head)
-		       || TREE_CODE (head) == REAL_TYPE))
+		       || TREE_CODE (head) == REAL_TYPE
+		       || TREE_CODE (head) == FIXED_POINT_TYPE))
 	    TB_SET_HEAD (TYPE_MAX_VALUE (head));
 	  else
 	    TB_WF;
@@ -170,7 +171,8 @@ browse_tree (tree begin)
 
 	case TB_MIN:
 	  if (head && (INTEGRAL_TYPE_P (head)
-		       || TREE_CODE (head) == REAL_TYPE))
+		       || TREE_CODE (head) == REAL_TYPE
+		       || TREE_CODE (head) == FIXED_POINT_TYPE))
 	    TB_SET_HEAD (TYPE_MIN_VALUE (head));
 	  else
 	    TB_WF;

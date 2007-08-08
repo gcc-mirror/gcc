@@ -2150,6 +2150,16 @@ vect_is_simple_reduction (struct loop *loop, tree phi)
         }
       return NULL_TREE;
     }
+  else if (SAT_FIXED_POINT_TYPE_P (type))
+    {
+      /* Changing the order of operations changes the semantics.  */
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "reduction: unsafe fixed-point math optimization: ");
+          print_generic_expr (vect_dump, operation, TDF_SLIM);
+        }
+      return NULL_TREE;
+    }
 
   /* reduction is safe. we're dealing with one of the following:
      1) integer arithmetic and no trapv

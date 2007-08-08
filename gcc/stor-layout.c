@@ -236,6 +236,14 @@ int_mode_for_mode (enum machine_mode mode)
     case MODE_DECIMAL_FLOAT:
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
+    case MODE_FRACT:
+    case MODE_ACCUM:
+    case MODE_UFRACT:
+    case MODE_UACCUM:
+    case MODE_VECTOR_FRACT:
+    case MODE_VECTOR_ACCUM:
+    case MODE_VECTOR_UFRACT:
+    case MODE_VECTOR_UACCUM:
       mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
       break;
 
@@ -1602,6 +1610,12 @@ layout_type (tree type)
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
+   case FIXED_POINT_TYPE:
+     /* TYPE_MODE (type) has been set already.  */
+     TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+     TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
+     break;
+
     case COMPLEX_TYPE:
       TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
       TYPE_MODE (type)
@@ -1629,6 +1643,14 @@ layout_type (tree type)
 	    /* First, look for a supported vector type.  */
 	    if (SCALAR_FLOAT_MODE_P (innermode))
 	      mode = MIN_MODE_VECTOR_FLOAT;
+	    else if (SCALAR_FRACT_MODE_P (innermode))
+	      mode = MIN_MODE_VECTOR_FRACT;
+	    else if (SCALAR_UFRACT_MODE_P (innermode))
+	      mode = MIN_MODE_VECTOR_UFRACT;
+	    else if (SCALAR_ACCUM_MODE_P (innermode))
+	      mode = MIN_MODE_VECTOR_ACCUM;
+	    else if (SCALAR_UACCUM_MODE_P (innermode))
+	      mode = MIN_MODE_VECTOR_UACCUM;
 	    else
 	      mode = MIN_MODE_VECTOR_INT;
 
@@ -1650,6 +1672,7 @@ layout_type (tree type)
 	      TYPE_MODE (type) = mode;
 	  }
 
+	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
 	TYPE_SIZE_UNIT (type) = int_const_binop (MULT_EXPR,
 					         TYPE_SIZE_UNIT (innertype),
@@ -1905,6 +1928,58 @@ make_unsigned_type (int precision)
   return type;
 }
 
+/* Create and return a type for fract of PRECISION bits, UNSIGNEDP,
+   and SATP.  */
+
+tree
+make_fract_type (int precision, int unsignedp, int satp)
+{
+  tree type = make_node (FIXED_POINT_TYPE);
+
+  TYPE_PRECISION (type) = precision;
+
+  if (satp)
+    TYPE_SATURATING (type) = 1;
+
+  /* Lay out the type: set its alignment, size, etc.  */
+  if (unsignedp)
+    {
+      TYPE_UNSIGNED (type) = 1;
+      TYPE_MODE (type) = mode_for_size (precision, MODE_UFRACT, 0);
+    }
+  else
+    TYPE_MODE (type) = mode_for_size (precision, MODE_FRACT, 0);
+  layout_type (type);
+
+  return type;
+}
+
+/* Create and return a type for accum of PRECISION bits, UNSIGNEDP,
+   and SATP.  */
+
+tree
+make_accum_type (int precision, int unsignedp, int satp)
+{
+  tree type = make_node (FIXED_POINT_TYPE);
+
+  TYPE_PRECISION (type) = precision;
+
+  if (satp)
+    TYPE_SATURATING (type) = 1;
+
+  /* Lay out the type: set its alignment, size, etc.  */
+  if (unsignedp)
+    {
+      TYPE_UNSIGNED (type) = 1;
+      TYPE_MODE (type) = mode_for_size (precision, MODE_UACCUM, 0);
+    }
+  else
+    TYPE_MODE (type) = mode_for_size (precision, MODE_ACCUM, 0);
+  layout_type (type);
+
+  return type;
+}
+
 /* Initialize sizetype and bitsizetype to a reasonable and temporary
    value to enable integer types to be created.  */
 

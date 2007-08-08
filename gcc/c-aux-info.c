@@ -426,6 +426,7 @@ gen_type (const char *ret_val, tree t, formals_style style)
 	  break;
 
 	case INTEGER_TYPE:
+	case FIXED_POINT_TYPE:
 	  data_type = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t)));
 	  /* Normally, `unsigned' is part of the deal.  Not so if it comes
 	     with a type qualifier.  */

@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "real.h"
+#include "fixed-value.h"
 #include "c-pretty-print.h"
 #include "c-tree.h"
 #include "tree-iterator.h"
@@ -312,6 +313,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
       if (TYPE_NAME (t))
 	{
 	  t = TYPE_NAME (t);
@@ -320,7 +322,10 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       else
 	{
 	  int prec = TYPE_PRECISION (t);
-	  t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
+	  if (ALL_FIXED_POINT_MODE_P (TYPE_MODE (t)))
+	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_SATURATING (t));
+	  else
+	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
 	  if (TYPE_NAME (t))
 	    {
 	      pp_c_type_specifier (pp, t);
@@ -341,6 +346,9 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 		  break;
 		case REAL_TYPE:
 		  pp_string (pp, "<unnamed-float:");
+		  break;
+		case FIXED_POINT_TYPE:
+		  pp_string (pp, "<unnamed-fixed:");
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -539,6 +547,7 @@ pp_c_direct_abstract_declarator (c_pretty_printer *pp, tree t)
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -656,6 +665,7 @@ pp_c_direct_declarator (c_pretty_printer *pp, tree t)
 
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case UNION_TYPE:
     case RECORD_TYPE:
@@ -678,6 +688,7 @@ pp_c_declarator (c_pretty_printer *pp, tree t)
     {
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case UNION_TYPE:
     case RECORD_TYPE:
@@ -925,6 +936,16 @@ pp_c_floating_constant (c_pretty_printer *pp, tree r)
     pp_string (pp, "df");
 }
 
+/* Print out a FIXED value as a decimal-floating-constant.  */
+
+static void
+pp_c_fixed_constant (c_pretty_printer *pp, tree r)
+{
+  fixed_to_decimal (pp_buffer (pp)->digit_buffer, &TREE_FIXED_CST (r),
+		   sizeof (pp_buffer (pp)->digit_buffer));
+  pp_string (pp, pp_buffer(pp)->digit_buffer);
+}
+
 /* Pretty-print a compound literal expression.  GNU extensions include
    vector constants.  */
 
@@ -953,6 +974,7 @@ pp_c_compound_literal (c_pretty_printer *pp, tree e)
 /* constant:
       integer-constant
       floating-constant
+      fixed-point-constant
       enumeration-constant
       character-constant   */
 
@@ -980,6 +1002,10 @@ pp_c_constant (c_pretty_printer *pp, tree e)
 
     case REAL_CST:
       pp_c_floating_constant (pp, e);
+      break;
+
+    case FIXED_CST:
+      pp_c_fixed_constant (pp, e);
       break;
 
     case STRING_CST:
@@ -1037,6 +1063,7 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
 
     case INTEGER_CST:
     case REAL_CST:
+    case FIXED_CST:
     case STRING_CST:
       pp_c_constant (pp, e);
       break;
@@ -1840,6 +1867,10 @@ pp_c_expression (c_pretty_printer *pp, tree e)
 
     case REAL_CST:
       pp_c_floating_constant (pp, e);
+      break;
+
+    case FIXED_CST:
+      pp_c_fixed_constant (pp, e);
       break;
 
     case STRING_CST:
