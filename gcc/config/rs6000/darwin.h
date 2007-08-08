@@ -90,6 +90,7 @@
    the kernel or some such.  */
 
 #define CC1_SPEC "\
+  %(cc1_cpu) \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
   %{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \

@@ -106,6 +106,19 @@ case ${host} in
     ;;
 esac
 
+case ${host} in
+  rs6000-*-* \
+  | powerpc*-*-* )
+    case ${target} in
+      rs6000-*-* \
+      | powerpc*-*-* )
+        host_extra_gcc_objs="driver-rs6000.o"
+        host_xmake_file="${host_xmake_file} rs6000/x-rs6000"
+        ;;
+    esac
+    ;;
+esac
+
 # Machine-specific settings.
 case ${host} in
   alpha*-dec-*vms*)

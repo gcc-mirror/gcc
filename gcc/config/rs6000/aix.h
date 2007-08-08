@@ -109,6 +109,8 @@
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
    %{ansi: -D_ANSI_C_SOURCE}"
 
+#define CC1_SPEC "%(cc1_cpu)"
+
 #undef ASM_DEFAULT_SPEC
 #define ASM_DEFAULT_SPEC ""
 

@@ -1,3 +1,17 @@
+2007-08-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/x-rs6000: New file.
+	* config/rs6000/darwin.h (CC1_SPEC): Add cc1_cpu.
+	* config/rs6000/rs6000.h (EXTRA_SPECS): Add cc1_cpu.
+	(EXTRA_SPEC_FUNCTIONS): Define.
+	(HAVE_LOCAL_CPU_DETECT): Define.
+	(CC1_CPU_SPEC): Define.
+	* config/rs6000/driver-rs6000.c: New file.
+	* config/rs6000/aix.h (CC1_SPEC): Define.
+	* config/rs6000/sysv4.h (CC1_SPEC): Add cc1_cpu.
+	* config.host: Add x-rs6000 to host_xmake_file if host and target
+	are rs6000 or powerpc.
+
 2007-08-08  Paolo Bonzini <paolo.bonzini@lu.unisi.ch>
 
 	* config/i386/t-crtstuff (CRTSTUFF_T_CFLAGS): Use +=.

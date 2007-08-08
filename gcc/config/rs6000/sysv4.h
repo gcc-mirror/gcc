@@ -607,7 +607,7 @@ extern int fixuplabelno;
 #endif
 
 /* Pass -G xxx to the compiler and set correct endian mode.  */
-#define	CC1_SPEC "%{G*} \
+#define	CC1_SPEC "%{G*} %(cc1_cpu) \
 %{mlittle|mlittle-endian: %(cc1_endian_little);           \
   mbig   |mbig-endian   : %(cc1_endian_big);              \
   mcall-aixdesc |					  \
