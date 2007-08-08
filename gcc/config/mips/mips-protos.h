@@ -27,14 +27,17 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Classifies a SYMBOL_REF, LABEL_REF or UNSPEC address.
 
-   SYMBOL_GENERAL
-       Used when none of the below apply.
+   SYMBOL_ABSOLUTE
+       The symbol's value will be calculated using absolute relocations,
+       such as %hi and %lo.
 
-   SYMBOL_SMALL_DATA
-       The symbol refers to something in a small data section.
+   SYMBOL_GP_RELATIVE
+       The symbol's value will be calculated by adding a 16-bit offset
+       from $gp.
 
-   SYMBOL_CONSTANT_POOL
-       The symbol refers to something in the mips16 constant pool.
+   SYMBOL_PC_RELATIVE
+       The symbol's value will be calculated using a MIPS16 PC-relative
+       calculation.
 
    SYMBOL_GOT_PAGE_OFST
        The symbol's value will be calculated by loading an address
@@ -87,9 +90,9 @@ along with GCC; see the file COPYING3.  If not see
        An UNSPEC wrapper around any kind of address.  It represents the
        low 16 bits of that address.  */
 enum mips_symbol_type {
-  SYMBOL_GENERAL,
-  SYMBOL_SMALL_DATA,
-  SYMBOL_CONSTANT_POOL,
+  SYMBOL_ABSOLUTE,
+  SYMBOL_GP_RELATIVE,
+  SYMBOL_PC_RELATIVE,
   SYMBOL_GOT_PAGE_OFST,
   SYMBOL_GOT_DISP,
   SYMBOL_GOTOFF_PAGE,

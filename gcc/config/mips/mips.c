@@ -1446,10 +1446,10 @@ mips_classify_symbol (rtx x)
   if (GET_CODE (x) == LABEL_REF)
     {
       if (TARGET_MIPS16)
-	return SYMBOL_CONSTANT_POOL;
+	return SYMBOL_PC_RELATIVE;
       if (TARGET_ABICALLS && !TARGET_ABSOLUTE_ABICALLS)
 	return SYMBOL_GOT_PAGE_OFST;
-      return SYMBOL_GENERAL;
+      return SYMBOL_ABSOLUTE;
     }
 
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
@@ -1460,25 +1460,25 @@ mips_classify_symbol (rtx x)
   if (CONSTANT_POOL_ADDRESS_P (x))
     {
       if (TARGET_MIPS16)
-	return SYMBOL_CONSTANT_POOL;
+	return SYMBOL_PC_RELATIVE;
 
       if (!TARGET_EMBEDDED_DATA
 	  && GET_MODE_SIZE (get_pool_mode (x)) <= mips_section_threshold)
-	return SYMBOL_SMALL_DATA;
+	return SYMBOL_GP_RELATIVE;
     }
 
   /* Do not use small-data accesses for weak symbols; they may end up
      being zero.  */
   if (SYMBOL_REF_SMALL_P (x)
       && !SYMBOL_REF_WEAK (x))
-    return SYMBOL_SMALL_DATA;
+    return SYMBOL_GP_RELATIVE;
 
   if (TARGET_ABICALLS)
     {
       /* Don't use GOT accesses for locally-binding symbols; we can use
 	 %hi and %lo instead.  */
       if (TARGET_ABSOLUTE_ABICALLS && mips_symbol_binds_local_p (x))
-	return SYMBOL_GENERAL;
+	return SYMBOL_ABSOLUTE;
 
       /* There are three cases to consider:
 
@@ -1505,7 +1505,7 @@ mips_classify_symbol (rtx x)
       return SYMBOL_GOT_PAGE_OFST;
     }
 
-  return SYMBOL_GENERAL;
+  return SYMBOL_ABSOLUTE;
 }
 
 /* Return true if OFFSET is within the range [0, ALIGN), where ALIGN
@@ -1559,7 +1559,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
      relocations.  */
   switch (*symbol_type)
     {
-    case SYMBOL_GENERAL:
+    case SYMBOL_ABSOLUTE:
     case SYMBOL_64_HIGH:
     case SYMBOL_64_MID:
     case SYMBOL_64_LOW:
@@ -1573,7 +1573,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
       /* In other cases the relocations can handle any offset.  */
       return true;
 
-    case SYMBOL_CONSTANT_POOL:
+    case SYMBOL_PC_RELATIVE:
       /* Allow constant pool references to be converted to LABEL+CONSTANT.
 	 In this case, we no longer have access to the underlying constant,
 	 but the original symbol-based access was known to be valid.  */
@@ -1582,7 +1582,7 @@ mips_symbolic_constant_p (rtx x, enum mips_symbol_type *symbol_type)
 
       /* Fall through.  */
 
-    case SYMBOL_SMALL_DATA:
+    case SYMBOL_GP_RELATIVE:
       /* Make sure that the offset refers to something within the
 	 same object block.  This should guarantee that the final
 	 PC- or GP-relative offset is within the 16-bit limit.  */
@@ -1681,13 +1681,13 @@ mips_symbolic_address_p (enum mips_symbol_type symbol_type,
 {
   switch (symbol_type)
     {
-    case SYMBOL_GENERAL:
+    case SYMBOL_ABSOLUTE:
       return !TARGET_MIPS16;
 
-    case SYMBOL_SMALL_DATA:
+    case SYMBOL_GP_RELATIVE:
       return true;
 
-    case SYMBOL_CONSTANT_POOL:
+    case SYMBOL_PC_RELATIVE:
       /* PC-relative addressing is only available for lw and ld.  */
       return GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;
 
@@ -1838,7 +1838,7 @@ mips_symbol_insns (enum mips_symbol_type type)
 {
   switch (type)
     {
-    case SYMBOL_GENERAL:
+    case SYMBOL_ABSOLUTE:
       /* In mips16 code, general symbols must be fetched from the
 	 constant pool.  */
       if (TARGET_MIPS16)
@@ -1857,11 +1857,11 @@ mips_symbol_insns (enum mips_symbol_type type)
 	 symbols we just need a preparatory lui.  */
       return (ABI_HAS_64BIT_SYMBOLS ? 6 : 2);
 
-    case SYMBOL_SMALL_DATA:
+    case SYMBOL_GP_RELATIVE:
     case SYMBOL_HALF:
       return 1;
 
-    case SYMBOL_CONSTANT_POOL:
+    case SYMBOL_PC_RELATIVE:
       /* This case is for mips16 only.  Assume we'll need an
 	 extended instruction.  */
       return 2;
@@ -5429,32 +5429,32 @@ override_options (void)
 	  mips_hi_relocs[SYMBOL_64_LOW] = "%hi(";
 	  mips_lo_relocs[SYMBOL_64_LOW] = "%lo(";
 
-	  mips_split_p[SYMBOL_GENERAL] = true;
-	  mips_lo_relocs[SYMBOL_GENERAL] = "%lo(";
+	  mips_split_p[SYMBOL_ABSOLUTE] = true;
+	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
 	}
     }
   else
     {
       if (TARGET_EXPLICIT_RELOCS || mips_split_addresses)
 	{
-	  mips_split_p[SYMBOL_GENERAL] = true;
-	  mips_hi_relocs[SYMBOL_GENERAL] = "%hi(";
-	  mips_lo_relocs[SYMBOL_GENERAL] = "%lo(";
+	  mips_split_p[SYMBOL_ABSOLUTE] = true;
+	  mips_hi_relocs[SYMBOL_ABSOLUTE] = "%hi(";
+	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
 	}
     }
 
   if (TARGET_MIPS16)
     {
       /* The high part is provided by a pseudo copy of $gp.  */
-      mips_split_p[SYMBOL_SMALL_DATA] = true;
-      mips_lo_relocs[SYMBOL_SMALL_DATA] = "%gprel(";
+      mips_split_p[SYMBOL_GP_RELATIVE] = true;
+      mips_lo_relocs[SYMBOL_GP_RELATIVE] = "%gprel(";
     }
 
   if (TARGET_EXPLICIT_RELOCS)
     {
       /* Small data constants are kept whole until after reload,
 	 then lowered by mips_rewrite_small_data.  */
-      mips_lo_relocs[SYMBOL_SMALL_DATA] = "%gp_rel(";
+      mips_lo_relocs[SYMBOL_GP_RELATIVE] = "%gp_rel(";
 
       mips_split_p[SYMBOL_GOT_PAGE_OFST] = true;
       if (TARGET_NEWABI)
@@ -6439,7 +6439,7 @@ mips_rewrite_small_data_p (rtx x)
 
   return (TARGET_EXPLICIT_RELOCS
 	  && mips_symbolic_constant_p (x, &symbol_type)
-	  && symbol_type == SYMBOL_SMALL_DATA);
+	  && symbol_type == SYMBOL_GP_RELATIVE);
 }
 
 
@@ -8309,8 +8309,8 @@ mips_use_anchors_for_symbol_p (rtx symbol)
 {
   switch (mips_classify_symbol (symbol))
     {
-    case SYMBOL_CONSTANT_POOL:
-    case SYMBOL_SMALL_DATA:
+    case SYMBOL_PC_RELATIVE:
+    case SYMBOL_GP_RELATIVE:
       return false;
 
     default:

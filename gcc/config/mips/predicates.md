@@ -101,7 +101,7 @@
 
   switch (symbol_type)
     {
-    case SYMBOL_GENERAL:
+    case SYMBOL_ABSOLUTE:
       /* We can only use direct calls for TARGET_ABSOLUTE_ABICALLS if we
 	 are sure that the target function does not need $25 to be live
 	 on entry.  This is true for any locally-defined function because
@@ -229,11 +229,11 @@
   return mips_symbolic_constant_p (op, &type);
 })
 
-(define_predicate "general_symbolic_operand"
+(define_predicate "absolute_symbolic_operand"
   (match_code "const,symbol_ref,label_ref")
 {
   enum mips_symbol_type type;
-  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_GENERAL;
+  return mips_symbolic_constant_p (op, &type) && type == SYMBOL_ABSOLUTE;
 })
 
 (define_predicate "got_disp_operand"
