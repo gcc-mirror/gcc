@@ -1,5 +1,17 @@
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h (SYMBOL_FORCE_TO_MEM): New symbol type.
+	* config/mips/mips.c (mips_classify_symbol): Skip TARGET_ABICALLS
+	block for locally-binding symbols if TARGET_ABSOLUTE_ABICALLS.
+	Return SYMBOL_FORCE_TO_MEM instead of SYMBOL_ABSOLUTE for
+	non-call contexts if TARGET_MIPS16.
+	(mips_symbolic_constant_p): Handle SYMBOL_FORCE_TO_MEM.
+	(mips_symbolic_address_p): Likewise.  Remove special TARGET_MIPS16
+	code for SYMBOL_ABSOLUTE.
+	(mips_symbol_insns): Likewise.
+
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips-protos.h (mips_symbol_context): New enumeration.
 	* config/mips/mips.c (mips_classify_symbol): Take a context argument.
 	(mips_symbolic_constant_p): Likewise.  Update the call to
