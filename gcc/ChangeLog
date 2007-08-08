@@ -1,3 +1,7 @@
+2007-08-08  Paolo Bonzini <paolo.bonzini@lu.unisi.ch>
+
+	* config/i386/t-crtstuff (CRTSTUFF_T_CFLAGS): Use +=.
+
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 	    Chao-ying Fu  <fu@mips.com>
