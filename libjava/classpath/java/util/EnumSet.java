@@ -43,16 +43,20 @@ import java.io.Serializable;
 /**
  * @author Tom Tromey (tromey@redhat.com)
  * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
+ * @author Dalibor Topic (robilad@kaffe.org)
  * @since 1.5 
  */
 
-// FIXME: serialization is special.
-public class EnumSet<T extends Enum<T>>
+// FIXME: serialization is special, uses SerializationProxy.
+// of(E e) is the 'bottom' method that creates a real EnumSet.
+public abstract class EnumSet<T extends Enum<T>>
   extends AbstractSet<T>
   implements Cloneable, Serializable
 {
   private static final long serialVersionUID = 4782406773684236311L;
 
+  // These fields could go into the anonymous inner class in of(E),
+  // complementOf would need to be refactored then, though.
   BitSet store;
   int cardinality;
   Class<T> enumClass;
@@ -78,276 +82,246 @@ public class EnumSet<T extends Enum<T>>
     return r;
   }
 
-  public int size()
-  {
-    return cardinality;
-  }
-
-  public Iterator<T> iterator()
-  {
-    return new Iterator<T>()
-    {
-      int next = -1;
-      int count = 0;
-
-      public boolean hasNext()
-      {
-	return count < cardinality;
-      }
-
-      public T next()
-      {
-	next = store.nextSetBit(next + 1);
-	++count;
-	return enumClass.getEnumConstants()[next];
-      }
-
-      public void remove()
-      {
-	if (! store.get(next))
-	  {
-	    store.clear(next);
-	    --cardinality;
-	  }
-      }
-    };
-  }
-
-  public boolean add(T val)
-  {
-    if (store.get(val.ordinal()))
-      return false;
-    store.set(val.ordinal());
-    ++cardinality;
-    return true;
-  }
-
-  public boolean addAll(Collection<? extends T> c)
-  {
-    boolean result = false;
-    if (c instanceof EnumSet)
-      {
-	EnumSet<T> other = (EnumSet<T>) c;
-	if (enumClass == other.enumClass)
-	  {
-	    store.or(other.store);
-	    int save = cardinality;
-	    cardinality = store.cardinality();
-	    result = save != cardinality;
-	  }
-      }
-    else
-      {
-	for (T val : c)
-	  {
-	    if (add (val))
-	      result = true;
-	  }
-      }
-    return result;
-  }
-
-  public void clear()
-  {
-    store.clear();
-    cardinality = 0;
-  }
-
-  public boolean contains(Object o)
-  {
-    if (! (o instanceof Enum))
-      return false;
-    Enum<T> e = (Enum<T>) o;
-    if (e.getDeclaringClass() != enumClass)
-      return false;
-    return store.get(e.ordinal());
-  }
-
-  public boolean containsAll(Collection<?> c)
-  {
-    if (c instanceof EnumSet)
-      {
-	EnumSet<T> other = (EnumSet<T>) c;
-	if (enumClass == other.enumClass)
-	  return store.containsAll(other.store);
-	return false;
-      }
-    return super.containsAll(c);
-  }
-
-  public boolean remove(Object o)
-  {
-    if (! (o instanceof Enum))
-      return false;
-    Enum<T> e = (Enum<T>) o;
-    if (e.getDeclaringClass() != enumClass)
-      return false;
-    store.clear(e.ordinal());
-    --cardinality;
-    return true;
-  }
-
-  public boolean removeAll(Collection<?> c)
-  {
-    if (c instanceof EnumSet)
-      {
-	EnumSet<T> other = (EnumSet<T>) c;
-	if (enumClass != other.enumClass)
-	  return false;
-	store.andNot(other.store);
-	int save = cardinality;
-	cardinality = store.cardinality();
-	return save != cardinality;
-      }
-    return super.removeAll(c);
-  }
-
-  public boolean retainAll(Collection<?> c)
-  {
-    if (c instanceof EnumSet)
-      {
-	EnumSet<T> other = (EnumSet<T>) c;
-	if (enumClass != other.enumClass)
-	  return false;
-	store.and(other.store);
-	int save = cardinality;
-	cardinality = store.cardinality();
-	return save != cardinality;
-      }
-    return super.retainAll(c);
-  }
-
   public static <T extends Enum<T>> EnumSet<T> allOf(Class<T> eltType)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.store = new BitSet(eltType.getEnumConstants().length);
-    r.store.set(0, r.store.size());
-    r.cardinality = r.store.size();
-    r.enumClass = eltType;
-    return r;
+    // create an EnumSet from the list of values of the type
+    return copyOf(Arrays.asList(eltType.getEnumConstants()));
   }
 
   public static <T extends Enum<T>> EnumSet<T> noneOf(Class<T> eltType)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.store = new BitSet(eltType.getEnumConstants().length);
-    r.enumClass = eltType;
-    return r;
+    return complementOf(allOf(eltType));
   }
 
   public static <T extends Enum<T>> EnumSet<T> copyOf(EnumSet<T> other)
   {
-    // We can't just use `other.clone' since we don't want to make a
-    // subclass.
-    EnumSet<T> r = new EnumSet<T>();
-    r.store = (BitSet) other.store.clone();
-    r.cardinality = other.cardinality;
-    r.enumClass = other.enumClass;
-    return r;
+    return other.clone();
   }
 
   public static <T extends Enum<T>> EnumSet<T> copyOf(Collection<T> other)
   {
     if (other instanceof EnumSet)
       return copyOf((EnumSet<T>) other);
-    EnumSet<T> r = new EnumSet<T>();
+    if (other.isEmpty())
+	throw new IllegalArgumentException("Collection is empty");
+
+    EnumSet<T> r = null;
+
     for (T val : other)
       {
-	if (r.store == null)
-	  {
-	    r.enumClass = val.getDeclaringClass();
-	    r.store = new BitSet(r.enumClass.getEnumConstants().length);
-	  }
-	r.store.set(val.ordinal());
+	if (r == null)
+	  r = of(val);
+	else
+	  r.add(val);
       }
-    // The collection must contain at least one element.
-    if (r.store == null)
-      throw new IllegalArgumentException();
-    r.cardinality = r.store.cardinality();
+
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> complementOf(EnumSet<T> other)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.store = (BitSet) other.store.clone();
+    EnumSet<T> r = other.clone();
     r.store.flip(0, r.store.size());
     r.cardinality = r.store.size() - other.cardinality;
-    r.enumClass = other.enumClass;
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> of(T first)
   {
-    EnumSet<T> r = new EnumSet<T>();
+    EnumSet<T> r = new EnumSet<T>()
+    {
+      public boolean add(T val)
+      {
+	if (store.get(val.ordinal()))
+	  return false;
+
+	store.set(val.ordinal());
+	++cardinality;
+	return true;
+      }
+
+      public boolean addAll(Collection<? extends T> c)
+      {
+	boolean result = false;
+	if (c instanceof EnumSet)
+	{
+	  EnumSet<T> other = (EnumSet<T>) c;
+	  if (enumClass == other.enumClass)
+	  {
+	    store.or(other.store);
+	    int save = cardinality;
+	    cardinality = store.cardinality();
+	    result = save != cardinality;
+	  }
+	}
+	else
+	{
+	  for (T val : c)
+	  {
+	    if (add (val))
+	    result = true;
+	  }
+	}
+	return result;
+      }
+
+      public void clear()
+      {
+	store.clear();
+	cardinality = 0;
+      }
+
+      public boolean contains(Object o)
+      {
+	if (! (o instanceof Enum))
+	  return false;
+
+	Enum<T> e = (Enum<T>) o;
+	if (e.getDeclaringClass() != enumClass)
+	  return false;
+
+	return store.get(e.ordinal());
+      }
+
+      public boolean containsAll(Collection<?> c)
+      {
+	if (c instanceof EnumSet)
+	{
+	  EnumSet<T> other = (EnumSet<T>) c;
+	  if (enumClass == other.enumClass)
+	    return store.containsAll(other.store);
+
+	  return false;
+	}
+	return super.containsAll(c);
+      }
+
+      public Iterator<T> iterator()
+      {
+	return new Iterator<T>()
+	{
+	  int next = -1;
+	  int count = 0;
+
+	  public boolean hasNext()
+	  {
+	    return count < cardinality;
+	  }
+
+	  public T next()
+	  {
+	    next = store.nextSetBit(next + 1);
+	    ++count;
+	    return enumClass.getEnumConstants()[next];
+	  }
+
+	  public void remove()
+	  {
+	    if (! store.get(next))
+	    {
+		store.clear(next);
+		--cardinality;
+	    }
+	  }
+	};
+      }
+
+      public boolean remove(Object o)
+      {
+	if (! (o instanceof Enum))
+	  return false;
+
+	Enum<T> e = (Enum<T>) o;
+	if (e.getDeclaringClass() != enumClass)
+	  return false;
+
+	store.clear(e.ordinal());
+	--cardinality;
+	return true;
+      }
+
+      public boolean removeAll(Collection<?> c)
+      {
+	if (c instanceof EnumSet)
+	{
+	  EnumSet<T> other = (EnumSet<T>) c;
+	  if (enumClass != other.enumClass)
+	    return false;
+
+	  store.andNot(other.store);
+	  int save = cardinality;
+	  cardinality = store.cardinality();
+	  return save != cardinality;
+	}
+	return super.removeAll(c);
+      }
+
+      public boolean retainAll(Collection<?> c)
+      {
+	if (c instanceof EnumSet)
+	{
+	  EnumSet<T> other = (EnumSet<T>) c;
+	  if (enumClass != other.enumClass)
+	    return false;
+
+	  store.and(other.store);
+	  int save = cardinality;
+	  cardinality = store.cardinality();
+	  return save != cardinality;
+	}
+	return super.retainAll(c);
+      }
+
+      public int size()
+      {
+	return cardinality;
+      }
+    };
+
+    // initialize the class
     r.enumClass = first.getDeclaringClass();
     r.store = new BitSet(r.enumClass.getEnumConstants().length);
-    r.store.set(first.ordinal());
-    r.cardinality = 1;
+
+    r.add(first);
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> of(T first, T second)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.enumClass = first.getDeclaringClass();
-    r.store = new BitSet(r.enumClass.getEnumConstants().length);
-    r.store.set(first.ordinal());
-    r.store.set(second.ordinal());
-    r.cardinality = r.store.cardinality();
+    EnumSet<T> r = of(first);
+    r.add(second);
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> of(T first, T second, T third)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.enumClass = first.getDeclaringClass();
-    r.store = new BitSet(r.enumClass.getEnumConstants().length);
-    r.store.set(first.ordinal());
-    r.store.set(second.ordinal());
-    r.store.set(third.ordinal());
-    r.cardinality = r.store.cardinality();
+    EnumSet<T> r = of(first, second);
+    r.add(third);
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> of(T first, T second, T third,
 						  T fourth)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.enumClass = first.getDeclaringClass();
-    r.store = new BitSet(r.enumClass.getEnumConstants().length);
-    r.store.set(first.ordinal());
-    r.store.set(second.ordinal());
-    r.store.set(third.ordinal());
-    r.store.set(fourth.ordinal());
-    r.cardinality = r.store.cardinality();
+    EnumSet<T> r = of(first, second, third);
+    r.add(fourth);
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> of(T first, T second, T third,
 						  T fourth, T fifth)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.enumClass = first.getDeclaringClass();
-    r.store = new BitSet(r.enumClass.getEnumConstants().length);
-    r.store.set(first.ordinal());
-    r.store.set(second.ordinal());
-    r.store.set(third.ordinal());
-    r.store.set(fourth.ordinal());
-    r.store.set(fifth.ordinal());
-    r.cardinality = r.store.cardinality();
+    EnumSet<T> r = of(first, second, third, fourth);
+    r.add(fifth);
     return r;
   }
 
   public static <T extends Enum<T>> EnumSet<T> of(T first, T... rest)
   {
-    EnumSet<T> r = new EnumSet<T>();
-    r.enumClass = first.getDeclaringClass();
-    r.store = new BitSet(r.enumClass.getEnumConstants().length);
-    r.store.set(first.ordinal());
+    EnumSet<T> r = noneOf(first.getDeclaringClass());
+    r.add(first);
     for (T val : rest)
-      r.store.set(val.ordinal());
-    r.cardinality = r.store.cardinality();
+      r.add(val);
     return r;
   }
 
@@ -355,11 +329,24 @@ public class EnumSet<T extends Enum<T>>
   {
     if (from.compareTo(to) > 0)
       throw new IllegalArgumentException();
-    EnumSet<T> r = new EnumSet<T>();
-    r.store = new BitSet(from.getDeclaringClass().getEnumConstants().length);
-    r.store.set(from.ordinal(), to.ordinal() + 1);
-    r.enumClass = from.getDeclaringClass();
-    r.cardinality = to.ordinal() - from.ordinal() + 1;
+    Class<T> type = from.getDeclaringClass();
+    EnumSet<T> r = noneOf(type);
+
+    T[] values = type.getEnumConstants();
+    // skip over values until start of range is found
+    int i = 0;
+    while (from != values[i])
+      i++;
+
+    // add values until end of range is found
+    while (to != values[i]) {
+      r.add(values[i]);
+      i++;
+    }
+
+    // add end of range
+    r.add(to);
+
     return r;
   }
 }

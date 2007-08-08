@@ -6,23 +6,25 @@
 
 #pragma interface
 
-#include <java/lang/Object.h>
+#include <java/util/EnumSet.h>
 
-class java::util::EnumSet$1 : public ::java::lang::Object
+class java::util::EnumSet$1 : public ::java::util::EnumSet
 {
 
 public: // actually package-private
-  EnumSet$1(::java::util::EnumSet *);
+  EnumSet$1();
 public:
-  jboolean hasNext();
-  ::java::lang::Enum * EnumSet$1$next();
-  void remove();
-  ::java::lang::Object * next();
-public: // actually package-private
-  jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) next__;
-  jint count;
-  ::java::util::EnumSet * this$0;
-public:
+  jboolean EnumSet$1$add(::java::lang::Enum *);
+  jboolean addAll(::java::util::Collection *);
+  void clear();
+  jboolean contains(::java::lang::Object *);
+  jboolean containsAll(::java::util::Collection *);
+  ::java::util::Iterator * iterator();
+  jboolean remove(::java::lang::Object *);
+  jboolean removeAll(::java::util::Collection *);
+  jboolean retainAll(::java::util::Collection *);
+  jint size();
+  jboolean add(::java::lang::Object *);
   static ::java::lang::Class class$;
 };
 

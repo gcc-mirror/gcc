@@ -17,16 +17,6 @@ public: // actually package-private
   EnumSet();
 public:
   virtual ::java::util::EnumSet * EnumSet$clone();
-  virtual jint size();
-  virtual ::java::util::Iterator * iterator();
-  virtual jboolean EnumSet$add(::java::lang::Enum *);
-  virtual jboolean addAll(::java::util::Collection *);
-  virtual void clear();
-  virtual jboolean contains(::java::lang::Object *);
-  virtual jboolean containsAll(::java::util::Collection *);
-  virtual jboolean remove(::java::lang::Object *);
-  virtual jboolean removeAll(::java::util::Collection *);
-  virtual jboolean retainAll(::java::util::Collection *);
   static ::java::util::EnumSet * allOf(::java::lang::Class *);
   static ::java::util::EnumSet * noneOf(::java::lang::Class *);
   static ::java::util::EnumSet * copyOf(::java::util::EnumSet *);
@@ -40,7 +30,6 @@ public:
   static ::java::util::EnumSet * of(::java::lang::Enum *, JArray< ::java::lang::Enum * > *);
   static ::java::util::EnumSet * range(::java::lang::Enum *, ::java::lang::Enum *);
   virtual ::java::lang::Object * clone();
-  virtual jboolean add(::java::lang::Object *);
 private:
   static const jlong serialVersionUID = 4782406773684236311LL;
 public: // actually package-private
