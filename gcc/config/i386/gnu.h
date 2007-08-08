@@ -12,7 +12,7 @@
   while (0)
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
+#define CPP_SPEC "%{pthread:-D_REENTRANT} %{posix:-D_POSIX_SOURCE} %{bsd:-D_BSD_SOURCE}"
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu)"
