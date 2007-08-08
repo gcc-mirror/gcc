@@ -135,7 +135,25 @@
   { "cpp_default",		CPP_DEFAULT_SPEC },			\
   { "asm_cpu",			ASM_CPU_SPEC },				\
   { "asm_default",		ASM_DEFAULT_SPEC },			\
+  { "cc1_cpu",			CC1_CPU_SPEC },				\
   SUBTARGET_EXTRA_SPECS
+
+/* -mcpu=native handling only makes sense with compiler running on
+   an PowerPC chip.  If changing this condition, also change
+   the condition in driver-rs6000.c.  */
+#if defined(__powerpc__) || defined(__POWERPC__) || defined(_AIX)
+/* In driver-rs6000.c.  */
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define EXTRA_SPEC_FUNCTIONS \
+  { "local_cpu_detect", host_detect_local_cpu },
+#define HAVE_LOCAL_CPU_DETECT
+#endif
+
+#if !defined (CC1_CPU_SPEC) && defined (HAVE_LOCAL_CPU_DETECT)
+#define CC1_CPU_SPEC \
+"%{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)} \
+ %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#endif
 
 /* Architecture type.  */
 
