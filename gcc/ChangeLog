@@ -1,5 +1,22 @@
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips-protos.h (mips_split_symbol): Add a mode and
+	an "rtx *" argument.  Return a bool.
+	* config/mips/mips.c (mips_split_symbol): Accept arbitrary source
+	values and return true if they can be split.  Take the same kind of
+	mode argument as mips_symbol_insns.  Add a "lo_sum_out" parameter
+	and store the lo_sum there if nonnull.  Use the symbol type to
+	determine whether a $gp or HIGH is needed.
+	(mips_legitimize_address): Update call to mips_split_symbol and
+	simplify accordingly.
+	(mips_legitimize_const_move): Likewise.
+	* config/mips/mips.md: In the combine define_split,
+	check mips_split_symbol instead of splittable_symbolic_operand.
+	Update use of mips_split_symbol in the generator code.
+	* config/mips/predicates.md (splittable_symbolic_operand): Delete.
+
+2007-08-08  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.c (mips_symbolic_address_p): Delete.
 	(mips_symbol_insns_1): New function, split out from...
 	(mips_symbol_insns): ...here.  Take a mode argument.  Treat loads

@@ -154,16 +154,6 @@
   return !LUI_INT (op) && !SMALL_INT (op) && !SMALL_INT_UNSIGNED (op);
 })
 
-;; A legitimate symbolic operand that takes more than one instruction
-;; to load.
-(define_predicate "splittable_symbolic_operand"
-  (match_code "const,symbol_ref,label_ref")
-{
-  enum mips_symbol_type symbol_type;
-  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
-	  && mips_split_p[symbol_type]);
-})
-
 (define_predicate "move_operand"
   (match_operand 0 "general_operand")
 {
