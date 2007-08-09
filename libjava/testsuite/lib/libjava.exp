@@ -572,6 +572,8 @@ proc libjava_invoke {errname testName optName executable inpfile resultfile
 	return 1
     }
 
+    send_log "invoke: $executable $args $inpfile\n"
+
     set result [libjava_load $executable $args "$inpfile"]
     set status [lindex $result 0]
     set output [lindex $result 1]

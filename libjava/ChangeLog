@@ -1,3 +1,7 @@
+2007-08-09  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/lib/libjava.exp (libjava_invoke): Log the invocation.
+
 2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* java/net/natVMInetAddressPosix.cc
