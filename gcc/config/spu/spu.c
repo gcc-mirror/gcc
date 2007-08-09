@@ -3460,7 +3460,7 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
 
       if (GET_MODE_SIZE (mode) < GET_MODE_SIZE (imode))
 	{
-	  enum insn_code icode = trunc_optab->handlers[mode][imode].insn_code;
+	  enum insn_code icode = convert_optab_handler (trunc_optab, mode, imode)->insn_code;
 	  emit_insn (GEN_FCN (icode) (ops[0], from));
 	}
       else
@@ -5030,7 +5030,7 @@ spu_emit_vector_compare (enum rtx_code rcode,
           {
             enum insn_code nor_code;
             rtx eq_rtx = spu_emit_vector_compare (EQ, op0, op1, dest_mode);
-            nor_code = one_cmpl_optab->handlers[(int)dest_mode].insn_code;
+            nor_code = optab_handler (one_cmpl_optab, (int)dest_mode)->insn_code;
             gcc_assert (nor_code != CODE_FOR_nothing);
             emit_insn (GEN_FCN (nor_code) (mask, eq_rtx));
             if (dmode != dest_mode)
@@ -5065,7 +5065,7 @@ spu_emit_vector_compare (enum rtx_code rcode,
             c_rtx = spu_emit_vector_compare (new_code, op0, op1, dest_mode);
             eq_rtx = spu_emit_vector_compare (EQ, op0, op1, dest_mode);
 
-            ior_code = ior_optab->handlers[(int)dest_mode].insn_code;
+            ior_code = optab_handler (ior_optab, (int)dest_mode)->insn_code;
             gcc_assert (ior_code != CODE_FOR_nothing);
             emit_insn (GEN_FCN (ior_code) (mask, c_rtx, eq_rtx));
             if (dmode != dest_mode)

@@ -275,7 +275,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
           && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
           && (type = lang_hooks.types.type_for_mode (mode, 1)) != 0
           && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
-          && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
+          && (optab_handler (cmp_optab, TYPE_MODE (type))->insn_code
               != CODE_FOR_nothing))
         {
           do_jump (fold_convert (type, exp), if_false_label, if_true_label);
@@ -334,7 +334,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
         if (! SLOW_BYTE_ACCESS
             && type != 0 && bitsize >= 0
             && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
-            && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
+            && (optab_handler (cmp_optab, TYPE_MODE (type))->insn_code
 		!= CODE_FOR_nothing))
           {
             do_jump (fold_convert (type, exp), if_false_label, if_true_label);

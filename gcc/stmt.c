@@ -2143,7 +2143,7 @@ add_case_node (struct case_node *head, tree type, tree low, tree high,
 
 /* By default, enable case bit tests on targets with ashlsi3.  */
 #ifndef CASE_USE_BIT_TESTS
-#define CASE_USE_BIT_TESTS  (ashl_optab->handlers[word_mode].insn_code \
+#define CASE_USE_BIT_TESTS  (optab_handler (ashl_optab, word_mode)->insn_code \
 			     != CODE_FOR_nothing)
 #endif
 

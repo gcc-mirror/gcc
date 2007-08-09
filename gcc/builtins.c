@@ -1879,7 +1879,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     errno_set = false;
 
   /* Before working hard, check whether the instruction is available.  */
-  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  if (optab_handler (builtin_optab, mode)->insn_code != CODE_FOR_nothing)
     {
       target = gen_reg_rtx (mode);
 
@@ -2030,7 +2030,7 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   mode = TYPE_MODE (TREE_TYPE (exp));
 
   /* Before working hard, check whether the instruction is available.  */
-  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (builtin_optab, mode)->insn_code == CODE_FOR_nothing)
     return NULL_RTX;
 
   target = gen_reg_rtx (mode);
@@ -2120,7 +2120,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 
   /* Check if sincos insn is available, otherwise fallback
      to sin or cos insn.  */
-  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (builtin_optab, mode)->insn_code == CODE_FOR_nothing)
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_FLT_FN (BUILT_IN_SIN):
@@ -2132,7 +2132,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
       }
 
   /* Before working hard, check whether the instruction is available.  */
-  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  if (optab_handler (builtin_optab, mode)->insn_code != CODE_FOR_nothing)
     {
       target = gen_reg_rtx (mode);
 
@@ -2241,7 +2241,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
   mode = TYPE_MODE (TREE_TYPE (arg));
 
   if (builtin_optab)
-    icode = builtin_optab->handlers[(int) mode].insn_code;
+    icode = optab_handler (builtin_optab, mode)->insn_code;
  
   /* Before working hard, check whether the instruction is available.  */
   if (icode != CODE_FOR_nothing)
@@ -2367,7 +2367,7 @@ expand_builtin_sincos (tree exp)
   mode = TYPE_MODE (TREE_TYPE (arg));
 
   /* Check if sincos insn is available, otherwise emit the call.  */
-  if (sincos_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (sincos_optab, mode)->insn_code == CODE_FOR_nothing)
     return NULL_RTX;
 
   target1 = gen_reg_rtx (mode);
@@ -2413,7 +2413,7 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
   /* Try expanding via a sincos optab, fall back to emitting a libcall
      to sincos or cexp.  We are sure we have sincos or cexp because cexpi
      is only generated from sincos, cexp or if we have either of them.  */
-  if (sincos_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  if (optab_handler (sincos_optab, mode)->insn_code != CODE_FOR_nothing)
     {
       op1 = gen_reg_rtx (mode);
       op2 = gen_reg_rtx (mode);
@@ -3100,7 +3100,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
   if (GET_MODE (op1) != mode2)
     op1 = convert_to_mode (mode2, op1, 0);
 
-  target = emit_library_call_value (powi_optab->handlers[(int) mode].libfunc,
+  target = emit_library_call_value (optab_handler (powi_optab, mode)->libfunc,
 				    target, LCT_CONST_MAKE_BLOCK, mode, 2,
 				    op0, mode, op1, mode2);
 
@@ -3153,7 +3153,7 @@ expand_builtin_strlen (tree exp, rtx target,
       /* Bail out if we can't compute strlen in the right mode.  */
       while (insn_mode != VOIDmode)
 	{
-	  icode = strlen_optab->handlers[(int) insn_mode].insn_code;
+	  icode = optab_handler (strlen_optab, insn_mode)->insn_code;
 	  if (icode != CODE_FOR_nothing)
 	    break;
 

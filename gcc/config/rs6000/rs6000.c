@@ -12277,7 +12277,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	    eq_rtx = rs6000_emit_vector_compare (rev_code, op0, op1,
 						 dest_mode);
 
-	    nor_code = one_cmpl_optab->handlers[(int)dest_mode].insn_code;
+	    nor_code = optab_handler (one_cmpl_optab, (int)dest_mode)->insn_code;
 	    gcc_assert (nor_code != CODE_FOR_nothing);
 	    emit_insn (GEN_FCN (nor_code) (mask, eq_rtx));
 
@@ -12327,7 +12327,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	    eq_rtx = rs6000_emit_vector_compare (EQ, op0, op1,
 						 dest_mode);
 
-	    ior_code = ior_optab->handlers[(int)dest_mode].insn_code;
+	    ior_code = optab_handler (ior_optab, (int)dest_mode)->insn_code;
 	    gcc_assert (ior_code != CODE_FOR_nothing);
 	    emit_insn (GEN_FCN (ior_code) (mask, c_rtx, eq_rtx));
 	    if (dmode != dest_mode)

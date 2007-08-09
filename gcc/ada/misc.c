@@ -480,7 +480,7 @@ gnat_compute_largest_alignment (void)
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    if (optab_handler (mov_optab, mode)->insn_code != CODE_FOR_nothing)
       largest_move_alignment = MIN (BIGGEST_ALIGNMENT,
 				    MAX (largest_move_alignment,
 					 GET_MODE_ALIGNMENT (mode)));
@@ -900,7 +900,7 @@ enumerate_modes (void (*f) (int, int, int, int, int, int, unsigned int))
 	 any wider mode), meaning it is not supported by the hardware.  If
 	 this a complex or vector mode, we care about the inner mode.  */
       for (j = inner_mode; j != VOIDmode; j = GET_MODE_WIDER_MODE (j))
-	if (add_optab->handlers[j].insn_code != CODE_FOR_nothing)
+	if (optab_handler (add_optab, j)->insn_code != CODE_FOR_nothing)
 	  break;
 
       if (float_p)

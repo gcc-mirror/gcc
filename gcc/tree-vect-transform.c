@@ -395,8 +395,8 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 
       /* We have a whole vector shift available.  */
       if (VECTOR_MODE_P (mode)
-	  && optab->handlers[mode].insn_code != CODE_FOR_nothing
-	  && vec_shr_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+	  && optab_handler (optab, mode)->insn_code != CODE_FOR_nothing
+	  && optab_handler (vec_shr_optab, mode)->insn_code != CODE_FOR_nothing)
         /* Final reduction via vector shifts and the reduction operator. Also
            requires scalar extract.  */
 	outer_cost += ((exact_log2(nelements) * 2) * TARG_VEC_STMT_COST
@@ -1819,7 +1819,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
       int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
       tree vec_temp;
 
-      if (vec_shr_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+      if (optab_handler (vec_shr_optab, mode)->insn_code != CODE_FOR_nothing)
 	shift_code = VEC_RSHIFT_EXPR;
       else
 	have_whole_vector_shift = false;
@@ -1835,7 +1835,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
       else
 	{
 	  optab optab = optab_for_tree_code (code, vectype);
-	  if (optab->handlers[mode].insn_code == CODE_FOR_nothing)
+	  if (optab_handler (optab, mode)->insn_code == CODE_FOR_nothing)
 	    have_whole_vector_shift = false;
 	}
 
@@ -2148,7 +2148,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
-  if (optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (optab, vec_mode)->insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "op not supported by target.");
@@ -2228,7 +2228,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
         fprintf (vect_dump, "no optab for reduction.");
       epilog_reduc_code = NUM_TREE_CODES;
     }
-  if (reduc_optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (reduc_optab, vec_mode)->insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "reduc op not supported by target.");
@@ -3185,7 +3185,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
-  icode = (int) optab->handlers[(int) vec_mode].insn_code;
+  icode = (int) optab_handler (optab, vec_mode)->insn_code;
   if (icode == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -3701,9 +3701,9 @@ vect_strided_store_supported (tree vectype)
       return false;
     }
 
-  if (interleave_high_optab->handlers[(int) mode].insn_code 
+  if (optab_handler (interleave_high_optab, mode)->insn_code 
       == CODE_FOR_nothing
-      || interleave_low_optab->handlers[(int) mode].insn_code 
+      || optab_handler (interleave_low_optab, mode)->insn_code 
       == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -3918,7 +3918,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   vec_mode = TYPE_MODE (vectype);
   /* FORNOW. In some cases can vectorize even if data-type not supported
      (e.g. - array initialization with 0).  */
-  if (mov_optab->handlers[(int)vec_mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (mov_optab, (int)vec_mode)->insn_code == CODE_FOR_nothing)
     return false;
 
   if (!STMT_VINFO_DATA_REF (stmt_info))
@@ -4234,7 +4234,7 @@ vect_strided_load_supported (tree vectype)
       return false;
     }
 
-  if (perm_even_optab->handlers[mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (perm_even_optab, mode)->insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "perm_even op not supported by target.");
@@ -4249,7 +4249,7 @@ vect_strided_load_supported (tree vectype)
       return false;
     }
 
-  if (perm_odd_optab->handlers[mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (perm_odd_optab, mode)->insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "perm_odd op not supported by target.");
@@ -4552,7 +4552,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /* FORNOW. In some cases can vectorize even if data-type not supported
     (e.g. - data copies).  */
-  if (mov_optab->handlers[mode].insn_code == CODE_FOR_nothing)
+  if (optab_handler (mov_optab, mode)->insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Aligned load, but unsupported type.");

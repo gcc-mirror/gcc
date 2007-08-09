@@ -403,7 +403,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
-      && (vec_set_optab->handlers[GET_MODE (op0)].insn_code
+      && (optab_handler (vec_set_optab, GET_MODE (op0))->insn_code
 	  != CODE_FOR_nothing)
       && fieldmode == GET_MODE_INNER (GET_MODE (op0))
       && bitsize == GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
@@ -411,7 +411,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     {
       enum machine_mode outermode = GET_MODE (op0);
       enum machine_mode innermode = GET_MODE_INNER (outermode);
-      int icode = (int) vec_set_optab->handlers[outermode].insn_code;
+      int icode = (int) optab_handler (vec_set_optab, outermode)->insn_code;
       int pos = bitnum / GET_MODE_BITSIZE (innermode);
       rtx rtxpos = GEN_INT (pos);
       rtx src = value;
@@ -517,10 +517,10 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   if (!MEM_P (op0)
       && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
       && bitsize == GET_MODE_BITSIZE (fieldmode)
-      && (movstrict_optab->handlers[fieldmode].insn_code
+      && (optab_handler (movstrict_optab, fieldmode)->insn_code
 	  != CODE_FOR_nothing))
     {
-      int icode = movstrict_optab->handlers[fieldmode].insn_code;
+      int icode = optab_handler (movstrict_optab, fieldmode)->insn_code;
 
       /* Get appropriate low part of the value being stored.  */
       if (GET_CODE (value) == CONST_INT || REG_P (value))
@@ -1206,14 +1206,14 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
-      && (vec_extract_optab->handlers[GET_MODE (op0)].insn_code
+      && (optab_handler (vec_extract_optab, GET_MODE (op0))->insn_code
 	  != CODE_FOR_nothing)
       && ((bitnum + bitsize - 1) / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))
 	  == bitnum / GET_MODE_BITSIZE (GET_MODE_INNER (GET_MODE (op0)))))
     {
       enum machine_mode outermode = GET_MODE (op0);
       enum machine_mode innermode = GET_MODE_INNER (outermode);
-      int icode = (int) vec_extract_optab->handlers[outermode].insn_code;
+      int icode = (int) optab_handler (vec_extract_optab, outermode)->insn_code;
       unsigned HOST_WIDE_INT pos = bitnum / GET_MODE_BITSIZE (innermode);
       rtx rtxpos = GEN_INT (pos);
       rtx src = op0;
@@ -3422,7 +3422,7 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
 
   /* Try widening multiplication.  */
   moptab = unsignedp ? umul_widen_optab : smul_widen_optab;
-  if (moptab->handlers[wider_mode].insn_code != CODE_FOR_nothing
+  if (optab_handler (moptab, wider_mode)->insn_code != CODE_FOR_nothing
       && mul_widen_cost[wider_mode] < max_cost)
     {
       tem = expand_binop (wider_mode, moptab, op0, narrow_op1, 0,
@@ -3432,7 +3432,7 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
     }
 
   /* Try widening the mode and perform a non-widening multiplication.  */
-  if (smul_optab->handlers[wider_mode].insn_code != CODE_FOR_nothing
+  if (optab_handler (smul_optab, wider_mode)->insn_code != CODE_FOR_nothing
       && size - 1 < BITS_PER_WORD
       && mul_cost[wider_mode] + shift_cost[mode][size-1] < max_cost)
     {
@@ -3459,7 +3459,7 @@ expand_mult_highpart_optab (enum machine_mode mode, rtx op0, rtx op1,
 
   /* Try widening multiplication of opposite signedness, and adjust.  */
   moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
-  if (moptab->handlers[wider_mode].insn_code != CODE_FOR_nothing
+  if (optab_handler (moptab, wider_mode)->insn_code != CODE_FOR_nothing
       && size - 1 < BITS_PER_WORD
       && (mul_widen_cost[wider_mode] + 2 * shift_cost[mode][size-1]
 	  + 4 * add_cost[mode] < max_cost))
@@ -3580,7 +3580,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 	     use a LSHIFTRT, 1 ADD, 1 SUB and an AND.  */
 
 	  temp = gen_rtx_LSHIFTRT (mode, result, shift);
-	  if (lshr_optab->handlers[mode].insn_code == CODE_FOR_nothing
+	  if (optab_handler (lshr_optab, mode)->insn_code == CODE_FOR_nothing
 	      || rtx_cost (temp, SET) > COSTS_N_INSNS (2))
 	    {
 	      temp = expand_binop (mode, xor_optab, op0, signmask,
@@ -3879,15 +3879,15 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 
   for (compute_mode = mode; compute_mode != VOIDmode;
        compute_mode = GET_MODE_WIDER_MODE (compute_mode))
-    if (optab1->handlers[compute_mode].insn_code != CODE_FOR_nothing
-	|| optab2->handlers[compute_mode].insn_code != CODE_FOR_nothing)
+    if (optab_handler (optab1, compute_mode)->insn_code != CODE_FOR_nothing
+	|| optab_handler (optab2, compute_mode)->insn_code != CODE_FOR_nothing)
       break;
 
   if (compute_mode == VOIDmode)
     for (compute_mode = mode; compute_mode != VOIDmode;
 	 compute_mode = GET_MODE_WIDER_MODE (compute_mode))
-      if (optab1->handlers[compute_mode].libfunc
-	  || optab2->handlers[compute_mode].libfunc)
+      if (optab_handler (optab1, compute_mode)->libfunc
+	  || optab_handler (optab2, compute_mode)->libfunc)
 	break;
 
   /* If we still couldn't find a mode, use MODE, but expand_binop will
@@ -4134,11 +4134,13 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 				      : sdiv_pow2_cheap[compute_mode])
 			 /* We assume that cheap metric is true if the
 			    optab has an expander for this mode.  */
-			 && (((rem_flag ? smod_optab : sdiv_optab)
-			      ->handlers[compute_mode].insn_code
+			 && ((optab_handler ((rem_flag ? smod_optab
+					      : sdiv_optab),
+					      compute_mode)->insn_code
 			      != CODE_FOR_nothing)
-			     || (sdivmod_optab->handlers[compute_mode]
-				 .insn_code != CODE_FOR_nothing)))
+			     || (optab_handler(sdivmod_optab,
+					       compute_mode)
+				 ->insn_code != CODE_FOR_nothing)))
 		  ;
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
 		  {
@@ -4150,9 +4152,9 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		      }
 
 		    if (sdiv_pow2_cheap[compute_mode]
-			&& ((sdiv_optab->handlers[compute_mode].insn_code
+			&& ((optab_handler (sdiv_optab, compute_mode)->insn_code
 			     != CODE_FOR_nothing)
-			    || (sdivmod_optab->handlers[compute_mode].insn_code
+			    || (optab_handler (sdivmod_optab, compute_mode)->insn_code
 				!= CODE_FOR_nothing)))
 		      quotient = expand_divmod (0, TRUNC_DIV_EXPR,
 						compute_mode, op0,
@@ -4800,7 +4802,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	    = sign_expand_binop (compute_mode, umod_optab, smod_optab,
 				 op0, op1, target,
 				 unsignedp,
-				 ((optab2->handlers[compute_mode].insn_code
+				 ((optab_handler (optab2, compute_mode)->insn_code
 				   != CODE_FOR_nothing)
 				  ? OPTAB_DIRECT : OPTAB_WIDEN));
 	  if (remainder == 0)
@@ -4828,7 +4830,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	= sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
 			     op0, op1, rem_flag ? NULL_RTX : target,
 			     unsignedp,
-			     ((optab2->handlers[compute_mode].insn_code
+			     ((optab_handler (optab2, compute_mode)->insn_code
 			       != CODE_FOR_nothing)
 			      ? OPTAB_DIRECT : OPTAB_WIDEN));
 
@@ -5348,7 +5350,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       for (compare_mode = mode; compare_mode != VOIDmode;
 	   compare_mode = GET_MODE_WIDER_MODE (compare_mode))
 	{
-	  icode = cstore_optab->handlers[(int) compare_mode].insn_code;
+	  icode = optab_handler (cstore_optab, compare_mode)->insn_code;
 	  if (icode != CODE_FOR_nothing)
 	    break;
 	}
@@ -5512,9 +5514,9 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	 that is compensated by the subsequent overflow when subtracting
 	 one / negating.  */
 
-      if (abs_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+      if (optab_handler (abs_optab, mode)->insn_code != CODE_FOR_nothing)
 	tem = expand_unop (mode, abs_optab, op0, subtarget, 1);
-      else if (ffs_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+      else if (optab_handler (ffs_optab, mode)->insn_code != CODE_FOR_nothing)
 	tem = expand_unop (mode, ffs_optab, op0, subtarget, 1);
       else if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{

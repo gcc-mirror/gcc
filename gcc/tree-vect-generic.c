@@ -369,7 +369,7 @@ type_for_widest_vector_mode (enum machine_mode inner_mode, optab op, int satp)
   for (; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
     if (GET_MODE_INNER (mode) == inner_mode
         && GET_MODE_NUNITS (mode) > best_nunits
-	&& op->handlers[mode].insn_code != CODE_FOR_nothing)
+	&& optab_handler (op, mode)->insn_code != CODE_FOR_nothing)
       best_mode = mode, best_nunits = GET_MODE_NUNITS (mode);
 
   if (best_mode == VOIDmode)
@@ -484,7 +484,7 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
 	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_ACCUM
 	   || GET_MODE_CLASS (compute_mode) == MODE_VECTOR_UACCUM)
           && op != NULL
-	  && op->handlers[compute_mode].insn_code != CODE_FOR_nothing)
+	  && optab_handler (op, compute_mode)->insn_code != CODE_FOR_nothing)
 	return;
       else
 	/* There is no operation in hardware, so fall back to scalars.  */
