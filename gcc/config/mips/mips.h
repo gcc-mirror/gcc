@@ -140,7 +140,6 @@ extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
 extern int mips_abi;			/* which ABI to use */
-extern int mips16_hard_float;		/* mips16 without -msoft-float */
 extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
@@ -316,11 +315,13 @@ extern enum mips_code_readable_setting mips_code_readable;
 #define TARGET_OLDABI		    (mips_abi == ABI_32 || mips_abi == ABI_O64)
 #define TARGET_NEWABI		    (mips_abi == ABI_N32 || mips_abi == ABI_64)
 
-/* Similar to TARGET_HARD_FLOAT and TARGET_SOFT_FLOAT, but reflect the ABI
-   in use rather than whether the FPU is directly accessible.  */
-#define TARGET_HARD_FLOAT_ABI (TARGET_HARD_FLOAT || mips16_hard_float)
-#define TARGET_SOFT_FLOAT_ABI (!TARGET_HARD_FLOAT_ABI)
-
+/* TARGET_HARD_FLOAT and TARGET_SOFT_FLOAT reflect whether the FPU is
+   directly accessible, while the command-line options select
+   TARGET_HARD_FLOAT_ABI and TARGET_SOFT_FLOAT_ABI to reflect the ABI
+   in use.  */
+#define TARGET_HARD_FLOAT (TARGET_HARD_FLOAT_ABI && !TARGET_MIPS16)
+#define TARGET_SOFT_FLOAT (TARGET_SOFT_FLOAT_ABI || TARGET_MIPS16)
+  
 /* IRIX specific stuff.  */
 #define TARGET_IRIX	   0
 #define TARGET_IRIX6	   0

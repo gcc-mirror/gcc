@@ -619,12 +619,6 @@ const struct mips_rtx_cost_data *mips_cost;
 /* The -mtext-loads setting.  */
 enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
 
-/* Whether we are generating mips16 hard float code.  In mips16 mode
-   we always set TARGET_SOFT_FLOAT; this variable is nonzero if
-   -msoft-float was not specified by the user, which means that we
-   should arrange to call mips32 hard floating point code.  */
-int mips16_hard_float;
-
 /* The architecture selected by -mipsN.  */
 static const struct mips_cpu_info *mips_isa_info;
 
@@ -1203,7 +1197,8 @@ static const unsigned char mips16e_save_restore_regs[] = {
   31, 30, 23, 22, 21, 20, 19, 18, 17, 16, 7, 6, 5, 4
 };
 
-/* Nonzero if -march should decide the default value of MASK_SOFT_FLOAT.  */
+/* Nonzero if -march should decide the default value of
+   MASK_SOFT_FLOAT_ABI.  */
 #ifndef MIPS_MARCH_CONTROLS_SOFT_FLOAT
 #define MIPS_MARCH_CONTROLS_SOFT_FLOAT 0
 #endif
@@ -3729,7 +3724,8 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
       mips_load_call_address (addr, orig_addr, sibcall_p);
     }
 
-  if (mips16_hard_float
+  if (TARGET_MIPS16
+      && TARGET_HARD_FLOAT_ABI
       && build_mips16_call_stub (result, addr, args_size,
 				 aux == 0 ? 0 : (int) GET_MODE (aux)))
     return;
@@ -5181,21 +5177,21 @@ override_options (void)
     }
 
   if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
-      && (target_flags_explicit & MASK_SOFT_FLOAT) == 0)
+      && (target_flags_explicit & MASK_SOFT_FLOAT_ABI) == 0)
     {
       /* For some configurations, it is useful to have -march control
-	 the default setting of MASK_SOFT_FLOAT.  */
+	 the default setting of MASK_SOFT_FLOAT_ABI.  */
       switch ((int) mips_arch)
 	{
 	case PROCESSOR_R4100:
 	case PROCESSOR_R4111:
 	case PROCESSOR_R4120:
 	case PROCESSOR_R4130:
-	  target_flags |= MASK_SOFT_FLOAT;
+	  target_flags |= MASK_SOFT_FLOAT_ABI;
 	  break;
 
 	default:
-	  target_flags &= ~MASK_SOFT_FLOAT;
+	  target_flags &= ~MASK_SOFT_FLOAT_ABI;
 	  break;
 	}
     }
@@ -5278,16 +5274,8 @@ override_options (void)
   if (optimize > 2 && (target_flags_explicit & MASK_VR4130_ALIGN) == 0)
     target_flags |= MASK_VR4130_ALIGN;
 
-  /* When compiling for the mips16, we cannot use floating point.  We
-     record the original hard float value in mips16_hard_float.  */
   if (TARGET_MIPS16)
     {
-      if (TARGET_SOFT_FLOAT)
-	mips16_hard_float = 0;
-      else
-	mips16_hard_float = 1;
-      target_flags |= MASK_SOFT_FLOAT;
-
       /* Don't run the scheduler before reload, since it tends to
          increase register pressure.  */
       flag_schedule_insns = 0;
@@ -6717,7 +6705,8 @@ static bool
 mips16_cfun_returns_in_fpr_p (void)
 {
   tree return_type = DECL_RESULT (current_function_decl);
-  return (mips16_hard_float
+  return (TARGET_MIPS16
+	  && TARGET_HARD_FLOAT_ABI
 	  && !aggregate_value_p (return_type, current_function_decl)
  	  && mips_return_mode_in_fpr_p (DECL_MODE (return_type)));
 }
@@ -7205,7 +7194,8 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      floating point arguments.  The linker will arrange for any 32-bit
      functions to call this stub, which will then jump to the 16-bit
      function proper.  */
-  if (mips16_hard_float
+  if (TARGET_MIPS16
+      && TARGET_HARD_FLOAT_ABI
       && current_function_args_info.fp_code != 0)
     build_mips16_function_stub (file);
 
@@ -9141,7 +9131,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 
   /* We don't need to do anything if we aren't in mips16 mode, or if
      we were invoked with the -msoft-float option.  */
-  if (!mips16_hard_float)
+  if (!TARGET_MIPS16 || TARGET_SOFT_FLOAT_ABI)
     return 0;
 
   /* Figure out whether the value might come back in a floating point
@@ -10211,7 +10201,7 @@ mips_init_libfuncs (void)
       set_optab_libfunc (smod_optab, SImode, "__vr4120_modsi3");
     }
 
-  if (mips16_hard_float)
+  if (TARGET_MIPS16 && TARGET_HARD_FLOAT_ABI)
     {
       set_optab_libfunc (add_optab, SFmode, "__mips16_addsf3");
       set_optab_libfunc (sub_optab, SFmode, "__mips16_subsf3");

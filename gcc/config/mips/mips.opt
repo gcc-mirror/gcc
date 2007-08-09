@@ -145,8 +145,8 @@ Target Report RejectNegative Mask(64BIT)
 Use 64-bit general registers
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
-Allow the use of hardware floating-point instructions
+Target Report RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
+Allow the use of hardware floating-point ABI and instructions
 
 mips
 Target RejectNegative Joined
@@ -217,7 +217,7 @@ Target Report RejectNegative Mask(SMARTMIPS)
 Use SmartMIPS instructions
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT)
+Target Report RejectNegative Mask(SOFT_FLOAT_ABI)
 Prevent the use of all hardware floating-point instructions
 
 msplit-addresses

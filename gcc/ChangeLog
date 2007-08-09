@@ -1,3 +1,19 @@
+2007-08-09  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips.opt (mhard-float, msoft-float):  Make these
+	control TARGET_HARD_FLOAT_ABI and TARGET_SOFT_FLOAT_ABI, rather
+	than TARGET_HARD_FLOAT and TARGET_SOFT_FLOAT.  
+	* config/mips/mips.h (mips16_hard_float): Delete.
+	(TARGET_HARD_FLOAT_ABI, TARGET_SOFT_FLOAT_ABI):  Delete these
+	definitions, and replace with....
+	(TARGET_HARD_FLOAT, TARGET_SOFT_FLOAT): Define.
+	* config/mips/mips.c (mips16_hard_float): Delete.  Replace
+	all references with (TARGET_MIPS16 && TARGET_HARD_FLOAT_ABI).
+	(MIPS_MARCH_CONTROLS_SOFT_FLOAT): Update comments.
+	(override_options):  Replace MASK_SOFT_FLOAT references with
+	MASK_SOFT_FLOAT_ABI.  Delete twiddling with MASK_SOFT_FLOAT
+	and mips16_hard_float when TARGET_MIPS16.
+	
 2007-08-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c/32796
