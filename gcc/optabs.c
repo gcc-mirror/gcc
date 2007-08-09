@@ -122,6 +122,8 @@ static void prepare_float_lib_cmp (rtx *, rtx *, enum rtx_code *,
 				   enum machine_mode *, int *);
 static rtx widen_clz (enum machine_mode, rtx, rtx);
 static rtx expand_parity (enum machine_mode, rtx, rtx);
+static rtx expand_ffs (enum machine_mode, rtx, rtx);
+static rtx expand_ctz (enum machine_mode, rtx, rtx);
 static enum rtx_code get_rtx_code (enum tree_code, bool);
 static rtx vector_compare_rtx (tree, bool, enum insn_code);
 
@@ -2561,6 +2563,68 @@ expand_parity (enum machine_mode mode, rtx op0, rtx target)
   return 0;
 }
 
+/* Try calculating ffs(x) using clz(x).  Since the ffs builtin promises
+   to return zero for a zero value and clz may have an undefined value
+   in that case, only do this if we know clz returns the right thing so
+   that we don't have to generate a test and branch.  */
+static rtx
+expand_ffs (enum machine_mode mode, rtx op0, rtx target)
+{
+  HOST_WIDE_INT val;
+  if (clz_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
+      && CLZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2
+      && val == GET_MODE_BITSIZE (mode))
+    {
+      rtx last = get_last_insn ();
+      rtx temp;
+
+      temp = expand_unop (mode, neg_optab, op0, NULL_RTX, true);
+      if (temp)
+	temp = expand_binop (mode, and_optab, op0, temp, NULL_RTX,
+			     true, OPTAB_DIRECT);
+      if (temp)
+	temp = expand_unop (mode, clz_optab, temp, NULL_RTX, true);
+      if (temp)
+	temp = expand_binop (mode, sub_optab,
+			     GEN_INT (GET_MODE_BITSIZE (mode)),
+			     temp,
+			     target, true, OPTAB_DIRECT);
+      if (temp == 0)
+	delete_insns_since (last);
+      return temp;
+    }
+  return 0;
+}
+
+/* We can compute ctz(x) using clz(x) with a similar recipe.  Here the ctz
+   builtin has an undefined result on zero, just like clz, so we don't have
+   to do that check.  */
+static rtx
+expand_ctz (enum machine_mode mode, rtx op0, rtx target)
+{
+  if (clz_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+    {
+      rtx last = get_last_insn ();
+      rtx temp;
+
+      temp = expand_unop (mode, neg_optab, op0, NULL_RTX, true);
+      if (temp)
+	temp = expand_binop (mode, and_optab, op0, temp, NULL_RTX,
+			     true, OPTAB_DIRECT);
+      if (temp)
+	temp = expand_unop (mode, clz_optab, temp, NULL_RTX, true);
+      if (temp)
+	temp = expand_binop (mode, xor_optab, temp,
+			     GEN_INT (GET_MODE_BITSIZE (mode) - 1),
+			     target,
+			     true, OPTAB_DIRECT);
+      if (temp == 0)
+	delete_insns_since (last);
+      return temp;
+    }
+  return 0;
+}
+
 /* Extract the OMODE lowpart from VAL, which has IMODE.  Under certain
    conditions, VAL may already be a SUBREG against which we cannot generate
    a further SUBREG.  In this case, we expect forcing the value into a
@@ -2882,6 +2946,22 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
   if (unoptab == parity_optab)
     {
       temp = expand_parity (mode, op0, target);
+      if (temp)
+	return temp;
+    }
+
+  /* Try implementing ffs (x) in terms of clz (x).  */
+  if (unoptab == ffs_optab)
+    {
+      temp = expand_ffs (mode, op0, target);
+      if (temp)
+	return temp;
+    }
+
+  /* Try implementing ctz (x) in terms of clz (x).  */
+  if (unoptab == ctz_optab)
+    {
+      temp = expand_ctz (mode, op0, target);
       if (temp)
 	return temp;
     }
