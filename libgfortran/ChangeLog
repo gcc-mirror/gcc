@@ -1,3 +1,8 @@
+2007-08-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32987
+	* io/format.c (next_char): Treat '\t' as ' ' in format specification.
+
 2007-08-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30947

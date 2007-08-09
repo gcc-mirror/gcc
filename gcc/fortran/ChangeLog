@@ -1,5 +1,14 @@
 2007-08-09  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/32987
+	* io.c (format_token): Add FMT_ERROR.
+	(next_char_not_space): Print error/warning when
+	'\t' are used in format specifications.
+	(format_lex): Propagate error.
+	(check_format): Ditto.
+
+2007-08-09  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/33001
 	* arith.c (arith_error): Point in the error message
 	to -fno-range-check.
