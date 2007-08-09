@@ -3537,6 +3537,11 @@ omit_one_operand (tree type, tree result, tree omitted)
 {
   tree t = fold_convert (type, result);
 
+  /* If the resulting operand is an empty statement, just return the ommited
+     statement casted to void. */
+  if (IS_EMPTY_STMT (t) && TREE_SIDE_EFFECTS (omitted))
+    return build1 (NOP_EXPR, void_type_node, fold_ignored_result (omitted));
+
   if (TREE_SIDE_EFFECTS (omitted))
     return build2 (COMPOUND_EXPR, type, fold_ignored_result (omitted), t);
 
@@ -3549,6 +3554,11 @@ static tree
 pedantic_omit_one_operand (tree type, tree result, tree omitted)
 {
   tree t = fold_convert (type, result);
+
+  /* If the resulting operand is an empty statement, just return the ommited
+     statement casted to void. */
+  if (IS_EMPTY_STMT (t) && TREE_SIDE_EFFECTS (omitted))
+    return build1 (NOP_EXPR, void_type_node, fold_ignored_result (omitted));
 
   if (TREE_SIDE_EFFECTS (omitted))
     return build2 (COMPOUND_EXPR, type, fold_ignored_result (omitted), t);
