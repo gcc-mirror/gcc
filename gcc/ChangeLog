@@ -1,3 +1,18 @@
+2007-08-09  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* doc/tm.texi (CLZ_DEFINED_VALUE_AT_ZERO, CTZ_DEFINED_VALUE_AT_ZERO):
+	Document change in interpretation of value from boolean to
+	tri-state integer.
+	* optabs.c (expand_ffs, expand_ctz): New functions to compute
+	ffs and ctz using clz.
+	(expand_unop):  Call them.
+	* config/rs6000/rs6000.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix its
+	result value.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Likewise.
+	* config/mips/mips.h (CLZ_DEFINED_VALUE_AT_ZERO): Likewise, to
+	enable the new ffs expansion on this target.
+
 2007-08-09  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (expand_widen_pattern_expr): Use optabs accestors.

@@ -1295,7 +1295,7 @@ extern enum mips_code_readable_setting mips_code_readable;
 /* The [d]clz instructions have the natural values at 0.  */
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
-  ((VALUE) = GET_MODE_BITSIZE (MODE), true)
+  ((VALUE) = GET_MODE_BITSIZE (MODE), 2)
 
 /* Standard register usage.  */
 

@@ -9638,14 +9638,23 @@ given mode.
 
 @defmac CLZ_DEFINED_VALUE_AT_ZERO (@var{mode}, @var{value})
 @defmacx CTZ_DEFINED_VALUE_AT_ZERO (@var{mode}, @var{value})
-A C expression that evaluates to true if the architecture defines a value
-for @code{clz} or @code{ctz} with a zero operand.  If so, @var{value}
-should be set to this value.  If this macro is not defined, the value of
-@code{clz} or @code{ctz} is assumed to be undefined.
+A C expression that indicates whether the architecture defines a value
+for @code{clz} or @code{ctz} with a zero operand.  
+A result of @code{0} indicates the value is undefined.
+If the value is defined for only the RTL expression, the macro should
+evaluate to @code{1}; if the value applies also to the corresponding optab
+entry (which is normally the case if it expands directly into
+the corresponding RTL), then the macro should evaluate to @code{2}.  
+In the cases where the value is defined, @var{value} should be set to
+this value.  
+
+If this macro is not defined, the value of @code{clz} or
+@code{ctz} at zero is assumed to be undefined.
 
 This macro must be defined if the target's expansion for @code{ffs}
 relies on a particular value to get correct results.  Otherwise it
-is not necessary, though it may be used to optimize some corner cases.
+is not necessary, though it may be used to optimize some corner cases, and
+to provide a default expansion for the @code{ffs} optab.
 
 Note that regardless of this macro the ``definedness'' of @code{clz}
 and @code{ctz} at zero do @emph{not} extend to the builtin functions
