@@ -1,3 +1,10 @@
+2007-08-09  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/32813
+	* fold-const.c (omit_one_operand): Return only the ommitted expression
+	if the result is an empty statement.
+	(pedantic_omit_one_operand): Likewise.
+
 2007-08-09  Daniel Berlin  <dberlin@dberlin.org>
 
 	* c-typeck.c (readonly_error): Improve error for assignment.
