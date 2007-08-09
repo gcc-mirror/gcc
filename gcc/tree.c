@@ -1460,7 +1460,7 @@ integer_nonzerop (const_tree expr)
 /* Return 1 if EXPR is the fixed-point constant zero.  */
 
 int
-fixed_zerop (tree expr)
+fixed_zerop (const_tree expr)
 {
   return (TREE_CODE (expr) == FIXED_CST
 	  && double_int_zero_p (TREE_FIXED_CST (expr).data));

@@ -4429,7 +4429,7 @@ extern tree num_ending_zeros (const_tree);
 /* fixed_zerop (tree x) is nonzero if X is a fixed-point constant of
    value 0.  */
 
-extern int fixed_zerop (tree);
+extern int fixed_zerop (const_tree);
 
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  Returns the outermost data.  */
