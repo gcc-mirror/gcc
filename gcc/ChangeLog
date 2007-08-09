@@ -1,3 +1,8 @@
+2007-08-09  Simon Baldwin  <simonb@google.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Removed erroneous
+	break that was preventing simplify_associative_operation() for xor.
+
 2007-08-09  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 

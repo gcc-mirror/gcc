@@ -2293,8 +2293,6 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && (reversed = reversed_comparison (op0, mode)))
 	return reversed;
 
-      break;
-      
       tem = simplify_associative_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
