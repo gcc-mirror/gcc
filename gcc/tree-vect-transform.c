@@ -58,7 +58,6 @@ static tree vect_init_vector (tree, tree, tree);
 static void vect_finish_stmt_generation 
   (tree stmt, tree vec_stmt, block_stmt_iterator *bsi);
 static bool vect_is_simple_cond (tree, loop_vec_info); 
-static void update_vuses_to_preheader (tree, struct loop*);
 static void vect_create_epilog_for_reduction (tree, tree, enum tree_code, tree);
 static tree get_initial_def_for_reduction (tree, tree, tree *);
 
@@ -3871,8 +3870,6 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   enum machine_mode vec_mode;
   tree dummy;
   enum dr_alignment_support alignment_support_cheme;
-  ssa_op_iter iter;
-  def_operand_p def_p;
   tree def, def_stmt;
   enum vect_def_type dt;
   stmt_vec_info prev_stmt_info = NULL;
@@ -4089,36 +4086,12 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  /* Arguments are ready. Create the new vector stmt.  */
 	  new_stmt = build_gimple_modify_stmt (data_ref, vec_oprnd);
 	  vect_finish_stmt_generation (stmt, new_stmt, bsi);
-
-	  /* Set the VDEFs for the vector pointer. If this virtual def
-	     has a use outside the loop and a loop peel is performed
-	     then the def may be renamed by the peel.  Mark it for
-	     renaming so the later use will also be renamed.  */
-	  copy_virtual_operands (new_stmt, next_stmt);
-	  if (j == 0)
-	    {
-	      /* The original store is deleted so the same SSA_NAMEs
-		 can be used.  */
-	      FOR_EACH_SSA_TREE_OPERAND (def, next_stmt, iter, SSA_OP_VDEF)
-		{
-		  SSA_NAME_DEF_STMT (def) = new_stmt;
-		  mark_sym_for_renaming (SSA_NAME_VAR (def));
-		}
-	      
-	      STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt =  new_stmt;
-	    }
+	  mark_symbols_for_renaming (new_stmt);
+	  
+          if (j == 0)
+            STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt =  new_stmt;
 	  else
-	    {
-	      /* Create new names for all the definitions created by COPY and
-		 add replacement mappings for each new name.  */
-	      FOR_EACH_SSA_DEF_OPERAND (def_p, new_stmt, iter, SSA_OP_VDEF)
-		{
-		  create_new_def_for (DEF_FROM_PTR (def_p), new_stmt, def_p);
-		  mark_sym_for_renaming (SSA_NAME_VAR (DEF_FROM_PTR (def_p)));
-		}
-	      
-	      STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	    }
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
 
 	  prev_stmt_info = vinfo_for_stmt (new_stmt);
 	  next_stmt = DR_GROUP_NEXT_DR (vinfo_for_stmt (next_stmt));
@@ -4204,8 +4177,6 @@ vect_setup_realignment (tree stmt, block_stmt_iterator *bsi,
   new_bb = bsi_insert_on_edge_immediate (pe, new_stmt);
   gcc_assert (!new_bb);
   msq_init = GIMPLE_STMT_OPERAND (new_stmt, 0);
-  copy_virtual_operands (new_stmt, stmt);
-  update_vuses_to_preheader (new_stmt, loop);
 
   /* 2. Create permutation mask, if required, in loop preheader.  */
   if (targetm.vectorize.builtin_mask_for_load)
@@ -4780,7 +4751,6 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	  new_temp = make_ssa_name (vec_dest, new_stmt);
 	  GIMPLE_STMT_OPERAND (new_stmt, 0) = new_temp;
 	  vect_finish_stmt_generation (stmt, new_stmt, bsi);
-	  copy_virtual_operands (new_stmt, stmt);
 	  mark_symbols_for_renaming (new_stmt);
 
 	  /* 3. Handle explicit realignment if necessary/supported.  */
@@ -5274,82 +5244,6 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   *ratio_name_ptr = ratio_name;
     
   return;  
-}
-
-
-/* Function update_vuses_to_preheader.
-
-   Input:
-   STMT - a statement with potential VUSEs.
-   LOOP - the loop whose preheader will contain STMT.
-
-   It's possible to vectorize a loop even though an SSA_NAME from a VUSE
-   appears to be defined in a VDEF in another statement in a loop.
-   One such case is when the VUSE is at the dereference of a __restricted__
-   pointer in a load and the VDEF is at the dereference of a different
-   __restricted__ pointer in a store.  Vectorization may result in
-   copy_virtual_uses being called to copy the problematic VUSE to a new
-   statement that is being inserted in the loop preheader.  This procedure
-   is called to change the SSA_NAME in the new statement's VUSE from the
-   SSA_NAME updated in the loop to the related SSA_NAME available on the
-   path entering the loop.
-
-   When this function is called, we have the following situation:
-
-        # vuse <name1>
-        S1: vload
-    do {
-        # name1 = phi < name0 , name2>
-
-        # vuse <name1>
-        S2: vload
-
-        # name2 = vdef <name1>
-        S3: vstore
-
-    }while...
-
-   Stmt S1 was created in the loop preheader block as part of misaligned-load
-   handling. This function fixes the name of the vuse of S1 from 'name1' to
-   'name0'.  */
-
-static void
-update_vuses_to_preheader (tree stmt, struct loop *loop)
-{
-  basic_block header_bb = loop->header;
-  edge preheader_e = loop_preheader_edge (loop);
-  ssa_op_iter iter;
-  use_operand_p use_p;
-
-  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_VUSE)
-    {
-      tree ssa_name = USE_FROM_PTR (use_p);
-      tree def_stmt = SSA_NAME_DEF_STMT (ssa_name);
-      tree name_var = SSA_NAME_VAR (ssa_name);
-      basic_block bb = bb_for_stmt (def_stmt);
-
-      /* For a use before any definitions, def_stmt is a NOP_EXPR.  */
-      if (!IS_EMPTY_STMT (def_stmt)
-	  && flow_bb_inside_loop_p (loop, bb))
-        {
-          /* If the block containing the statement defining the SSA_NAME
-             is in the loop then it's necessary to find the definition
-             outside the loop using the PHI nodes of the header.  */
-	  tree phi;
-	  bool updated = false;
-
-	  for (phi = phi_nodes (header_bb); phi; phi = PHI_CHAIN (phi))
-	    {
-	      if (SSA_NAME_VAR (PHI_RESULT (phi)) == name_var)
-		{
-		  SET_USE (use_p, PHI_ARG_DEF (phi, preheader_e->dest_idx));
-		  updated = true;
-		  break;
-		}
-	    }
-	  gcc_assert (updated);
-	}
-    }
 }
 
 

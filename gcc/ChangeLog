@@ -1,3 +1,13 @@
+2007-08-09  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-transform.c (vectorizable_store): Remove call to
+	copy_virtual_operands() and call mark_symbols_for_renaming() for
+	the created vector store.
+	(vect_setup_realignment): Don't call copy_virtual_operands() and
+	update_vuses_to_preheader(). 
+	(vectorizable_load): Don't call copy_virtual_operands(). 
+	(update_vuses_to_preheader): Remove.
+
 2007-08-08  Chao-ying Fu  <fu@mips.com>
 
 	* tree.def (FIXED_POINT_TYPE): New type.
