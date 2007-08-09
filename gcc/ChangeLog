@@ -1,3 +1,11 @@
+2007-08-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* c-typeck.c (readonly_error): Improve error for assignment.
+	
+	* c-pretty-print.c (pp_c_additive_expression): Handle pointer-plus
+	expression. 
+	(pp_c_expression): Ditto.
+
 2007-08-09  Simon Baldwin  <simonb@google.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Removed erroneous
