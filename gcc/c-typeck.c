@@ -8226,8 +8226,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		       < TYPE_PRECISION (result_type))
 		   && (type
 		       = c_common_signed_or_unsigned_type (unsigned1,
-							   TREE_TYPE (arg1)),
-		       int_fits_type_p (arg0, type)))
+							   TREE_TYPE (arg1)))
+		   && !POINTER_TYPE_P (type)
+		   && int_fits_type_p (arg0, type))
 	    result_type = type;
 	  else if (TREE_CODE (arg1) == INTEGER_CST
 		   && (unsigned0 || !uns)
@@ -8235,8 +8236,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		       < TYPE_PRECISION (result_type))
 		   && (type
 		       = c_common_signed_or_unsigned_type (unsigned0,
-							   TREE_TYPE (arg0)),
-		       int_fits_type_p (arg1, type)))
+							   TREE_TYPE (arg0)))
+		   && !POINTER_TYPE_P (type)
+		   && int_fits_type_p (arg1, type))
 	    result_type = type;
 	}
 
