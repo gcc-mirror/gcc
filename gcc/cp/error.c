@@ -1612,6 +1612,10 @@ dump_expr (tree t, int flags)
 	dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
       break;
 
+    case POINTER_PLUS_EXPR:
+      dump_binary_op ("+", t, flags);
+      break;
+
     case INIT_EXPR:
     case MODIFY_EXPR:
     case PLUS_EXPR:

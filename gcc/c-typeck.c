@@ -3152,10 +3152,11 @@ readonly_error (tree arg, enum lvalue_use use)
 			 G_("read-only variable %qD used as %<asm%> output")),
 	   arg);
   else
-    error (READONLY_MSG (G_("assignment of read-only location"),
-			 G_("increment of read-only location"),
-			 G_("decrement of read-only location"),
-			 G_("read-only location used as %<asm%> output")));
+    error (READONLY_MSG (G_("assignment of read-only location %qE"),
+			 G_("increment of read-only location %qE"),
+			 G_("decrement of read-only location %qE"),
+			 G_("read-only location %qE used as %<asm%> output")),
+	   arg);
 }
 
 

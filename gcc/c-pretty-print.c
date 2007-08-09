@@ -1597,11 +1597,12 @@ pp_c_additive_expression (c_pretty_printer *pp, tree e)
   enum tree_code code = TREE_CODE (e);
   switch (code)
     {
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       pp_c_additive_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      if (code == PLUS_EXPR)
+      if (code == PLUS_EXPR || code == POINTER_PLUS_EXPR)
 	pp_plus (pp);
       else
 	pp_minus (pp);
@@ -1979,6 +1980,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
       pp_conditional_expression (pp, e);
       break;
 
+    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       pp_c_additive_expression (pp, e);

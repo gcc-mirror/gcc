@@ -104,7 +104,7 @@ readonly_error (tree arg, const char* string)
   else if (TREE_CODE (arg) == FUNCTION_DECL)
     error ("%s of function %qD", string, arg);
   else
-    error ("%s of read-only location", string);
+    error ("%s of read-only location %qE", string, arg);
 }
 
 

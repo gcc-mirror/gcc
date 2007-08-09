@@ -1,3 +1,8 @@
+2007-08-09  Daniel Berlin  <dberlin@dberlin.org>
+
+	* typeck2.c (readonly_error): Handle general expressions.
+	* error.c (dump_expr): Handle POINTER_PLUS_EXPR
+
 2007-08-06  Dan Hipschman  <dsh@google.com>
 
 	* method.c (use_thunk): Use DECL_NAME instead of DECL_RTL to
