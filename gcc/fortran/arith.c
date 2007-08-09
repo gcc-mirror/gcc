@@ -1981,7 +1981,8 @@ arith_error (arith rc, gfc_typespec *from, gfc_typespec *to, locus *where)
 		 gfc_typename (from), gfc_typename (to), where);
       break;
     case ARITH_OVERFLOW:
-      gfc_error ("Arithmetic overflow converting %s to %s at %L",
+      gfc_error ("Arithmetic overflow converting %s to %s at %L. This check "
+		 "can be disabled with the option -fno-range-check",
 		 gfc_typename (from), gfc_typename (to), where);
       break;
     case ARITH_UNDERFLOW:
