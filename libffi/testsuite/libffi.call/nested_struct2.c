@@ -80,7 +80,7 @@ int main (void)
 
   struct B res_dbl;
 
-  cls_struct_fields[0] = &ffi_type_mylong;
+  cls_struct_fields[0] = &ffi_type_ulong;
   cls_struct_fields[1] = &ffi_type_uchar;
   cls_struct_fields[2] = NULL;
 

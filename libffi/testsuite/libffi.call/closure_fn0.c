@@ -63,21 +63,21 @@ int main (void)
 #endif
 
   cl_arg_types[0] = &ffi_type_uint64;
-  cl_arg_types[1] = &ffi_type_uint;
+  cl_arg_types[1] = &ffi_type_sint;
   cl_arg_types[2] = &ffi_type_uint64;
-  cl_arg_types[3] = &ffi_type_uint;
+  cl_arg_types[3] = &ffi_type_sint;
   cl_arg_types[4] = &ffi_type_sshort;
   cl_arg_types[5] = &ffi_type_uint64;
-  cl_arg_types[6] = &ffi_type_uint;
-  cl_arg_types[7] = &ffi_type_uint;
+  cl_arg_types[6] = &ffi_type_sint;
+  cl_arg_types[7] = &ffi_type_sint;
   cl_arg_types[8] = &ffi_type_double;
-  cl_arg_types[9] = &ffi_type_uint;
-  cl_arg_types[10] = &ffi_type_uint;
+  cl_arg_types[9] = &ffi_type_sint;
+  cl_arg_types[10] = &ffi_type_sint;
   cl_arg_types[11] = &ffi_type_float;
-  cl_arg_types[12] = &ffi_type_uint;
-  cl_arg_types[13] = &ffi_type_uint;
-  cl_arg_types[14] = &ffi_type_uint;
-  cl_arg_types[15] = &ffi_type_uint;
+  cl_arg_types[12] = &ffi_type_sint;
+  cl_arg_types[13] = &ffi_type_sint;
+  cl_arg_types[14] = &ffi_type_sint;
+  cl_arg_types[15] = &ffi_type_sint;
   cl_arg_types[16] = NULL;
 
   /* Initialize the cif */

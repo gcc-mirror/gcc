@@ -69,7 +69,7 @@ int main (void)
 
   cls_struct_fields[0] = &ffi_type_double;
   cls_struct_fields[1] = &ffi_type_double;
-  cls_struct_fields[2] = &ffi_type_uint32;
+  cls_struct_fields[2] = &ffi_type_sint;
   cls_struct_fields[3] = NULL;
 
   dbl_arg_types[0] = &cls_struct_type;

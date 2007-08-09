@@ -1,3 +1,40 @@
+2007-08-08  David Daney  <ddaney@avtrex.com>
+
+	* testsuite/libffi.call/ffitest.h (ffi_type_mylong): Remove definition.
+	* testsuite/libffi.call/cls_align_uint16.c (main): Use correct type
+	specifiers.
+	* testsuite/libffi.call/nested_struct1.c (main): Ditto.
+	* testsuite/libffi.call/cls_sint.c (main): Ditto.
+	* testsuite/libffi.call/nested_struct9.c (main): Ditto.
+	* testsuite/libffi.call/cls_20byte1.c (main): Ditto.
+	* testsuite/libffi.call/cls_9byte1.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn1.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn3.c (main): Ditto.
+	* testsuite/libffi.call/return_dbl2.c (main): Ditto.
+	* testsuite/libffi.call/cls_sshort.c (main): Ditto.
+	* testsuite/libffi.call/return_fl3.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn5.c (main): Ditto.
+	* testsuite/libffi.call/nested_struct.c (main): Ditto.
+	* testsuite/libffi.call/nested_struct10.c (main): Ditto.
+	* testsuite/libffi.call/return_ll1.c (main): Ditto.
+	* testsuite/libffi.call/cls_8byte.c (main): Ditto.
+	* testsuite/libffi.call/cls_align_uint32.c (main): Ditto.
+	* testsuite/libffi.call/cls_align_sint16.c (main): Ditto.
+	* testsuite/libffi.call/cls_20byte.c (main): Ditto.
+	* testsuite/libffi.call/nested_struct2.c (main): Ditto.
+	* testsuite/libffi.call/cls_24byte.c (main): Ditto.
+	* testsuite/libffi.call/nested_struct6.c (main): Ditto.
+	* testsuite/libffi.call/cls_uint.c (main): Ditto.
+	* testsuite/libffi.call/cls_12byte.c (main): Ditto.
+	* testsuite/libffi.call/cls_16byte.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn0.c (main): Ditto.
+	* testsuite/libffi.call/cls_9byte2.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn2.c (main): Ditto.
+	* testsuite/libffi.call/return_dbl1.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn4.c (main): Ditto.
+	* testsuite/libffi.call/closure_fn6.c (main): Ditto.
+	* testsuite/libffi.call/cls_align_sint32.c (main): Ditto.
+
 2007-08-07  Andrew Haley  <aph@redhat.com>
 
 	* src/x86/sysv.S (ffi_closure_raw_SYSV): Fix typo in previous

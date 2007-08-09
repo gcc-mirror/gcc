@@ -69,7 +69,7 @@ int main (void)
   struct cls_struct_20byte f_dbl = { 4, 5.0, 7.0 };
   struct cls_struct_20byte res_dbl;
 
-  cls_struct_fields[0] = &ffi_type_uint32;
+  cls_struct_fields[0] = &ffi_type_sint;
   cls_struct_fields[1] = &ffi_type_double;
   cls_struct_fields[2] = &ffi_type_double;
   cls_struct_fields[3] = NULL;

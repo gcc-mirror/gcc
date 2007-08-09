@@ -21,7 +21,7 @@ int main (void)
   unsigned int in3;
   args[0] = &ffi_type_double;
   args[1] = &ffi_type_float;
-  args[2] = &ffi_type_uint32;
+  args[2] = &ffi_type_uint;
   args[3] = &ffi_type_double;
   values[0] = &dbl1;
   values[1] = &fl2;

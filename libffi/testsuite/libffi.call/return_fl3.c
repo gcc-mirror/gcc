@@ -20,7 +20,7 @@ int main (void)
   unsigned int in3;
   args[0] = &ffi_type_float;
   args[1] = &ffi_type_float;
-  args[2] = &ffi_type_uint32;
+  args[2] = &ffi_type_uint;
   args[3] = &ffi_type_float;
   values[0] = &fl1;
   values[1] = &fl2;

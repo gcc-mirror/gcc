@@ -67,7 +67,7 @@ int main (void)
   struct cls_struct_9byte j_dbl = { 1, 9.0};
   struct cls_struct_9byte res_dbl;
 
-  cls_struct_fields[0] = &ffi_type_uint32;
+  cls_struct_fields[0] = &ffi_type_sint;
   cls_struct_fields[1] = &ffi_type_double;
   cls_struct_fields[2] = NULL;
 
