@@ -705,4 +705,8 @@ extern rtx expand_vec_cond_expr (tree, rtx);
 /* Generate code for VEC_LSHIFT_EXPR and VEC_RSHIFT_EXPR.  */
 extern rtx expand_vec_shift_expr (tree, rtx);
 
+#define optab_handler(optab,mode) (&(optab)->handlers[(int) (mode)])
+#define convert_optab_handler(optab,mode,mode2) \
+	(&(optab)->handlers[(int) (mode)][(int) (mode2)])
+
 #endif /* GCC_OPTABS_H */

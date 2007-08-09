@@ -1,3 +1,105 @@
+2007-08-09  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (expand_widen_pattern_expr): Use optabs accestors.
+	(expand_ternary_op): Likewise.
+	(expand_vec_shift_expr): Likewise.
+	(expand_binop_directly): Likewise.
+	(expand_binop): Likewise.
+	(sign_expand_binop): Likewise.
+	(expand_twoval_unop): Likewise.
+	(expand_twoval_binop): Likewise.
+	(expand_twoval_binop_libfunc): Likewise.
+	(widen_clz): Likewise.
+	(widen_bswap): Likewise.
+	(expand_parity): Likewise.
+	(expand_unop): Likewise.
+	(expand_abs_nojump): Likewise.
+	(expand_copysign): Likewise.
+	(emit_no_conflict_block): Likewise.
+	(emit_libcall_block): Likewise.
+	(can_compare_p): Likewise.
+	(prepare_cmp_insn): Likewise.
+	(emit_cmp_and_jump_insn_1): Likewise.
+	(prepare_float_lib_cmp): Likewise.
+	(emit_conditional_add): Likewise.
+	(gen_add2_insn): Likewise.
+	(have_add2_insn): Likewise.
+	(gen_sub2_insn): Likewise.
+	(have_sub2_insn): Likewise.
+	(can_extend_p): Likewise.
+	(can_fix_p): Likewise.
+	(can_float_p): Likewise.
+	(expand_float): Likewise.
+	(expand_fix): Likewise.
+	(expand_sfix_optab): Likewise.
+	(new_optab): Likewise.
+	(new_convert_optab): Likewise.
+	(init_libfuncs): Likewise.
+	(init_interclass_conv_libfuncs): Likewise.
+	(init_intraclass_conv_libfuncs): Likewise.
+	(set_conv_libfunc): Likewise.
+	(init_optabs): Likewise.
+	(debug_optab_libfuncs): Likewise.
+	(gen_cond_trap): Likewise.
+	* optabs.h (optab_handler, convert_optab_hanlder): New.
+	* genopinit.c: Update optabs generation table.
+	* reload.c (find_reloads_address_1): Use optabs accestors.
+	* builtins.c (expand_builtin_mathfn): Likewise.
+	(expand_builtin_mathfn_2): Likewise.
+	(expand_builtin_mathfn_3): Likewise.
+	(expand_builtin_interclass_mathfn): Likewise.
+	(expand_builtin_sincos): Likewise.
+	(expand_builtin_cexpi): Likewise.
+	(expand_builtin_powi): Likewise.
+	(expand_builtin_strlen): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* expr.c (convert_move): Likewise.
+	(move_by_pieces): Likewise.
+	(move_by_pieces_ninsns): Likewise.
+	(can_store_by_pieces): Likewise.
+	(store_by_pieces_1): Likewise.
+	(emit_move_via_integer): Likewise.
+	(emit_move_complex): Likewise.
+	(emit_move_ccmode): Likewise.
+	(emit_move_insn_1): Likewise.
+	(emit_single_push_insn): Likewise.
+	(store_constructor): Likewise.
+	(expand_expr_real_1): Likewise.
+	(do_store_flag): Likewise.
+	* ada/misc.c (gnat_compute_largest_alignment): Likewise.
+	(enumerate_modes): Likewise.
+	* tree-vectorizer.c (vect_supportable_dr_alignment): Likewise.
+	(supportable_widening_operation): Likewise.
+	(supportable_narrowing_operation): Likewise.
+	* expmed.c (store_bit_field_1): Likewise.
+	(extract_bit_field_1): Likewise.
+	(expand_mult_highpart_optab): Likewise.
+	(expand_smod_pow2): Likewise.
+	(expand_divmod): Likewise.
+	(emit_store_flag): Likewise.
+	* tree-vect-patterns.c
+	(vect_pattern_recog_1): Likewise.
+	* tree-ssa-loop-prefetch.c
+	(nontemporal_store_p): Likewise.
+	* tree-vect-transform.c (vect_model_reduction_cost): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_reduction): Likewise.
+	(vectorizable_operation): Likewise.
+	(vect_strided_store_supported): Likewise.
+	(vectorizable_store): Likewise.
+	(vect_strided_load_supported): Likewise.
+	(vectorizable_load): Likewise.
+	* combine.c (simplify_comparison): Likewise.
+	* tree-vect-generic.c
+	(type_for_widest_vector_mode): Likewise.
+	(expand_vector_operations_1): Likewise.
+	* config/spu/spu.c (spu_expand_mov): Likewise.
+	(spu_emit_vector_compare): Likewise.
+	* config/rs6000/rs6000.c
+	(rs6000_emit_vector_compare): Likewise.
+	* stmt.c (add_case_node): Likewise.
+	* reload1.c (gen_reload):
+
 2007-08-09  Michael Matz  <matz@suse.de>
 
 	* tree.h (fixed_zerop): Declare as taking a const_tree.
