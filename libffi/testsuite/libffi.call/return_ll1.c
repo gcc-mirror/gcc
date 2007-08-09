@@ -20,9 +20,9 @@ int main (void)
   long long ll1;
   unsigned ll0, ll2;
 
-  args[0] = &ffi_type_uint32;
+  args[0] = &ffi_type_sint;
   args[1] = &ffi_type_sint64;
-  args[2] = &ffi_type_uint32;
+  args[2] = &ffi_type_sint;
   values[0] = &ll0;
   values[1] = &ll1;
   values[2] = &ll2;

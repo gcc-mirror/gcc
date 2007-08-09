@@ -68,7 +68,7 @@ int main (void)
   struct cls_struct_align res_dbl;
 
   cls_struct_fields[0] = &ffi_type_uchar;
-  cls_struct_fields[1] = &ffi_type_sint32;
+  cls_struct_fields[1] = &ffi_type_sint;
   cls_struct_fields[2] = &ffi_type_uchar;
   cls_struct_fields[3] = NULL;
 

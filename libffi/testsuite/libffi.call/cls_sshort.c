@@ -32,12 +32,12 @@ int main (void)
   pcl = &cl;
 #endif
 
-  cl_arg_types[0] = &ffi_type_sint16;
+  cl_arg_types[0] = &ffi_type_sshort;
   cl_arg_types[1] = NULL;
 
   /* Initialize the cif */
   CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 1,
-		     &ffi_type_sint16, cl_arg_types) == FFI_OK);
+		     &ffi_type_sshort, cl_arg_types) == FFI_OK);
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_ret_sshort_fn, NULL)  == FFI_OK);
 
