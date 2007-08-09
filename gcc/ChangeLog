@@ -1,3 +1,8 @@
+2007-08-09  Michael Matz  <matz@suse.de>
+
+	* tree.h (fixed_zerop): Declare as taking a const_tree.
+	* tree.c (fixed_zerop): Take a const_tree.
+
 2007-08-09  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-transform.c (vectorizable_store): Remove call to
