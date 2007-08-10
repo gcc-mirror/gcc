@@ -1,3 +1,8 @@
+2007-08-10  Diego Novillo  <dnovillo@google.com>
+
+	* tree-ssa.doxy: Update for doxygen 1.5.
+	Include all the files in the middle and back ends.
+
 2007-06-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc_update (files_and_dependencies): Handle
