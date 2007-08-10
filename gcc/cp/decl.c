@@ -6993,10 +6993,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_conversion:
-      if (type && !same_type_p (type, optype))
-	error ("operator %qT declared to return %qT", optype, type);
-      else if (type)
-	pedwarn ("return type specified for %<operator %T%>",  optype);
+      if (type)
+	error ("return type specified for %<operator %T%>",  optype);
       type = optype;
       break;
 
