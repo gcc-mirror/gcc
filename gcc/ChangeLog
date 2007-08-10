@@ -1,3 +1,8 @@
+2007-08-10  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/predicates.md (const_call_insn_operand): Invoke
+	SYMBOL_REF_LONG_CALL_P only on SYMBOL_REFs.
+
 2007-08-10  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/33042

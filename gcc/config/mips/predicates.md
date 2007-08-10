@@ -115,7 +115,7 @@
       /* If -mlong-calls or if this function has an explicit long_call
 	 attribute, we must use register addressing.  The
 	 SYMBOL_FLAG_LONG_CALL bit is set by mips_encode_section_info.  */
-      return !SYMBOL_REF_LONG_CALL_P (op);
+      return !(GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_LONG_CALL_P (op));
 
     case SYMBOL_GOT_DISP:
       /* Without explicit relocs, there is no special syntax for
