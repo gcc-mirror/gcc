@@ -2190,12 +2190,20 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 	error ("%qD is already declared in this scope", name);
     }
 
-  *newtype = decls.type;
-  if (oldtype && *newtype && !same_type_p (oldtype, *newtype))
+  if (decls.type && TREE_CODE (decls.type) == TREE_LIST)
     {
-      error ("using declaration %qD introduced ambiguous type %qT",
-	     name, oldtype);
-      return;
+      error ("reference to %qD is ambiguous", name);
+      print_candidates (decls.type);
+    }
+  else
+    {
+      *newtype = decls.type;
+      if (oldtype && *newtype && !same_type_p (oldtype, *newtype))
+	{
+	  error ("using declaration %qD introduced ambiguous type %qT",
+		 name, oldtype);
+	  return;
+	}
     }
 }
 
@@ -3491,8 +3499,7 @@ merge_functions (tree s1, tree s2)
    XXX I don't want to repeat the entire duplicate_decls here */
 
 static void
-ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
-		int flags)
+ambiguous_decl (struct scope_binding *old, cxx_binding *new, int flags)
 {
   tree val, type;
   gcc_assert (old != NULL);
@@ -3564,12 +3571,9 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
     old->type = type;
   else if (type && old->type != type)
     {
-      if (flags & LOOKUP_COMPLAIN)
-	{
-	  error ("%qD denotes an ambiguous type",name);
-	  error ("%J  first type here", TYPE_MAIN_DECL (old->type));
-	  error ("%J  other type here", TYPE_MAIN_DECL (type));
-	}
+      old->type = tree_cons (NULL_TREE, old->type,
+			     build_tree_list (NULL_TREE, type));
+      TREE_TYPE (old->type) = error_mark_node;
     }
 }
 
@@ -3680,7 +3684,7 @@ unqualified_namespace_lookup (tree name, int flags)
 	 cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
 
       if (b)
-	ambiguous_decl (name, &binding, b, flags);
+	ambiguous_decl (&binding, b, flags);
 
       /* Add all _DECLs seen through local using-directives.  */
       for (level = current_binding_level;
@@ -3768,7 +3772,7 @@ lookup_using_namespace (tree name, struct scope_binding *val,
 	  cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (used), name);
 	/* Resolve ambiguities.  */
 	if (val1)
-	  ambiguous_decl (name, val, val1, flags);
+	  ambiguous_decl (val, val1, flags);
       }
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, val->value != error_mark_node);
 }
@@ -3797,7 +3801,7 @@ qualified_lookup_using_namespace (tree name, tree scope,
 	cxx_scope_find_binding_for_name (NAMESPACE_LEVEL (scope), name);
       seen = tree_cons (scope, NULL_TREE, seen);
       if (binding)
-	ambiguous_decl (name, result, binding, flags);
+	ambiguous_decl (result, binding, flags);
 
       /* Consider strong using directives always, and non-strong ones
 	 if we haven't found a binding yet.  ??? Shouldn't we consider

@@ -1,3 +1,7 @@
+2007-08-10  Ollie Wild  <aaw@google.com>
+
+	* g++.dg/lookup/using18.C: New test.
+
 2007-08-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/17763
