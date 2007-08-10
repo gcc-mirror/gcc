@@ -1,3 +1,9 @@
+2007-08-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/22256
+	* decl.c (check_special_function_return_type): Just error
+	on return type specified for conversion operator.
+
 2007-08-09  Daniel Berlin  <dberlin@dberlin.org>
 
 	* typeck2.c (readonly_error): Handle general expressions.
