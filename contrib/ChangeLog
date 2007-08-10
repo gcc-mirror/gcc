@@ -1,5 +1,9 @@
 2007-08-10  Diego Novillo  <dnovillo@google.com>
 
+	* gcc.doxy: Rename from tree-ssa.doxy.
+
+2007-08-10  Diego Novillo  <dnovillo@google.com>
+
 	* tree-ssa.doxy: Update for doxygen 1.5.
 	Include all the files in the middle and back ends.
 
