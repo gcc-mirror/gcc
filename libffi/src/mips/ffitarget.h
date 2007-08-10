@@ -104,19 +104,28 @@
 #define ra $31		
 
 #ifdef FFI_MIPS_O32
-#define REG_L	lw
-#define REG_S	sw
-#define SUBU	subu
-#define ADDU	addu
-#define SRL	srl
-#define LI	li
+# define REG_L	lw
+# define REG_S	sw
+# define SUBU	subu
+# define ADDU	addu
+# define SRL	srl
+# define LI	li
 #else /* !FFI_MIPS_O32 */
-#define REG_L	ld
-#define REG_S	sd
-#define SUBU	dsubu
-#define ADDU	daddu
-#define SRL	dsrl
-#define LI 	dli
+# define REG_L	ld
+# define REG_S	sd
+# define SUBU	dsubu
+# define ADDU	daddu
+# define SRL	dsrl
+# define LI 	dli
+# if (_MIPS_SIM==_ABI64)
+#  define LA dla
+#  define EH_FRAME_ALIGN 3
+#  define FDE_ADDR_BYTES .8byte
+# else
+#  define LA la
+#  define EH_FRAME_ALIGN 2
+#  define FDE_ADDR_BYTES .4byte
+# endif /* _MIPS_SIM==_ABI64 */
 #endif /* !FFI_MIPS_O32 */
 #else /* !LIBFFI_ASM */
 #ifdef FFI_MIPS_O32
@@ -143,7 +152,11 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_O32,
 #endif
 #else
+# if _MIPS_SIM==_ABI64
+  FFI_DEFAULT_ABI = FFI_N64,
+# else
   FFI_DEFAULT_ABI = FFI_N32,
+# endif
 #endif
 
   FFI_LAST_ABI = FFI_DEFAULT_ABI + 1
@@ -158,8 +171,13 @@ typedef enum ffi_abi {
 #define FFI_CLOSURES 1
 #define FFI_TRAMPOLINE_SIZE 20
 #else
-/* N32/N64 not implemented yet. */
-#define FFI_CLOSURES 0
+/* N32/N64. */
+# define FFI_CLOSURES 1
+#if _MIPS_SIM==_ABI64
+#define FFI_TRAMPOLINE_SIZE 52
+#else
+#define FFI_TRAMPOLINE_SIZE 20
+#endif
 #endif /* FFI_MIPS_O32 */
 #define FFI_NATIVE_RAW_API 0
 

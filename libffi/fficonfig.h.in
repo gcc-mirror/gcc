@@ -37,6 +37,9 @@
    */
 #undef HAVE_AS_SPARC_UA_PCREL
 
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#undef HAVE_DLFCN_H
+
 /* Define if __attribute__((visibility("hidden"))) is supported. */
 #undef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
 
@@ -90,6 +93,10 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O

@@ -38,7 +38,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @MIPS_IRIX_TRUE@am__append_1 = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
-@MIPS_LINUX_TRUE@am__append_2 = src/mips/ffi.c src/mips/o32.S
+@MIPS_LINUX_TRUE@am__append_2 = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 @X86_TRUE@am__append_3 = src/x86/ffi.c src/x86/sysv.S
 @X86_WIN32_TRUE@am__append_4 = src/x86/ffi.c src/x86/win32.S
 @X86_DARWIN_TRUE@am__append_5 = src/x86/ffi.c src/x86/darwin.S src/x86/ffi64.c src/x86/darwin64.S
@@ -97,7 +97,8 @@ am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
 	src/raw_api.lo src/java_raw_api.lo src/closures.lo
 @MIPS_IRIX_TRUE@am__objects_1 = src/mips/ffi.lo src/mips/o32.lo \
 @MIPS_IRIX_TRUE@	src/mips/n32.lo
-@MIPS_LINUX_TRUE@am__objects_2 = src/mips/ffi.lo src/mips/o32.lo
+@MIPS_LINUX_TRUE@am__objects_2 = src/mips/ffi.lo src/mips/o32.lo \
+@MIPS_LINUX_TRUE@	src/mips/n32.lo
 @X86_TRUE@am__objects_3 = src/x86/ffi.lo src/x86/sysv.lo
 @X86_WIN32_TRUE@am__objects_4 = src/x86/ffi.lo src/x86/win32.lo
 @X86_DARWIN_TRUE@am__objects_5 = src/x86/ffi.lo src/x86/darwin.lo \
