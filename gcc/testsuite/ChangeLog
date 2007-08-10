@@ -1,3 +1,8 @@
+2007-08-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33039
+	* gfortran.dg/namelist_37.f90: New test.
+
 2007-08-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/22256
