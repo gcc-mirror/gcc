@@ -1301,7 +1301,7 @@ read_class (tree name)
       if (path_name == 0)
 	return 0;
       else
-	free((char *) path_name);
+	free(CONST_CAST (path_name));
     }
 
   current_jcf = jcf;
@@ -1783,7 +1783,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       file_list = list;
     }
   else
-    list = (char *) main_input_filename;
+    list = (char *) CONST_CAST (main_input_filename);
 
   while (list)
     {

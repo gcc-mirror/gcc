@@ -3368,7 +3368,7 @@ cp_make_fname_decl (tree id, int type_dep)
   tree decl = build_decl (VAR_DECL, id, type);
 
   if (name)
-    free ((char *) name);
+    free (CONST_CAST (name));
 
   /* As we're using pushdecl_with_scope, we must set the context.  */
   DECL_CONTEXT (decl) = current_function_decl;

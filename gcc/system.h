@@ -766,4 +766,18 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 
 #endif /* GCC >= 3.0 */
 
+/* This macro allows casting away const-ness to pass -Wcast-qual
+   warnings.  DO NOT USE THIS UNLESS YOU REALLY HAVE TO!  It should
+   only be used in certain specific cases.  One valid case is where
+   the C standard definitions or prototypes force you to.  E.g. if you
+   need to free a const object, or if you pass a const string to
+   execv, et al.  Another valid use would be in an allocation function
+   that creates const objects that need to be initialized.  Most other
+   cases should be viewed with extreme caution.  */
+#ifdef __GNUC__
+#define CONST_CAST(X) ((__extension__(union {__typeof(X)_q; void *_v;})(X))._v)
+#else
+#define CONST_CAST(X) ((void*)(X))
+#endif
+
 #endif /* ! GCC_SYSTEM_H */

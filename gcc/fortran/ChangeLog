@@ -1,3 +1,10 @@
+2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortranspec.c (lang_specific_driver): Use CONST_CAST.
+	* options.c (gfc_post_options): Likewise.
+	* parse.c (parse_omp_structured_block): Likewise.
+	* st.c (gfc_free_statement): Likewise.
+
 2007-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32933

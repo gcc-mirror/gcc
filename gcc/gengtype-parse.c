@@ -197,9 +197,9 @@ string_seq (void)
 
       l1 = strlen (s1);
       l2 = strlen (s2);
-      buf = XRESIZEVEC (char, s1, l1 + l2 + 1);
+      buf = XRESIZEVEC (char, CONST_CAST(s1), l1 + l2 + 1);
       memcpy (buf + l1, s2, l2 + 1);
-      XDELETE (s2);
+      XDELETE (CONST_CAST (s2));
       s1 = buf;
     }
   return s1;
@@ -221,8 +221,8 @@ typedef_name (void)
       c2 = require (ID);
       require (')');
       r = concat ("VEC_", c1, "_", c2, (char *)0);
-      free ((void *)c1);
-      free ((void *)c2);
+      free (CONST_CAST (c1));
+      free (CONST_CAST (c2));
       return r;
     }
   else

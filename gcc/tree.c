@@ -1194,8 +1194,8 @@ build_string (int len, const char *str)
   TREE_CONSTANT (s) = 1;
   TREE_INVARIANT (s) = 1;
   TREE_STRING_LENGTH (s) = len;
-  memcpy ((char *) TREE_STRING_POINTER (s), str, len);
-  ((char *) TREE_STRING_POINTER (s))[len] = '\0';
+  memcpy (CONST_CAST (TREE_STRING_POINTER (s)), str, len);
+  ((char *) CONST_CAST (TREE_STRING_POINTER (s)))[len] = '\0';
 
   return s;
 }
