@@ -1,3 +1,7 @@
+2007-08-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-flow-inline.h (get_filename): Remove.
+
 2007-08-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips-protos.h (mips_address_insns): Add a boolean

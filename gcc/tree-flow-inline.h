@@ -327,24 +327,6 @@ get_lineno (tree expr)
   return EXPR_LINENO (expr);
 }
 
-/* Return the file name for EXPR, or return "???" if we have no
-   filename information.  */
-static inline const char *
-get_filename (tree expr)
-{
-  const char *filename;
-  if (expr == NULL_TREE)
-    return "???";
-
-  if (TREE_CODE (expr) == COMPOUND_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-
-  if (EXPR_HAS_LOCATION (expr) && (filename = EXPR_FILENAME (expr)))
-    return filename;
-  else
-    return "???";
-}
-
 /* Return true if T is a noreturn call.  */
 static inline bool
 noreturn_call_p (tree t)
