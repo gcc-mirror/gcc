@@ -1043,11 +1043,12 @@ resolve_shift_zext (rtx insn)
      endian machines this is register 0.  */
   src_reg_num = GET_CODE (op) == LSHIFTRT ? 1 : 0;
 
-  if (WORDS_BIG_ENDIAN)
+  if (WORDS_BIG_ENDIAN
+      && GET_MODE_SIZE (GET_MODE (op_operand)) > UNITS_PER_WORD)
     src_reg_num = 1 - src_reg_num;
 
   if (GET_CODE (op) == ZERO_EXTEND)
-    dest_reg_num = src_reg_num;
+    dest_reg_num = WORDS_BIG_ENDIAN ? 1 : 0;
   else
     dest_reg_num = 1 - src_reg_num;
 
