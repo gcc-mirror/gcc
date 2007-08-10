@@ -1,3 +1,36 @@
+2007-08-10  David Daney  <ddaney@avtrex.com>
+
+	PR libffi/28313
+	* configure.ac: Don't treat mips64 as a special case.
+	* Makefile.am (nodist_libffi_la_SOURCES): Add n32.S.
+	* configure: Regenerate
+	* Makefile.in: Ditto.
+	* fficonfig.h.in: Ditto.
+	* src/mips/ffitarget.h (REG_L, REG_S, SUBU, ADDU, SRL, LI): Indent.
+	(LA, EH_FRAME_ALIGN, FDE_ADDR_BYTES): New preprocessor macros.
+	(FFI_DEFAULT_ABI): Set for n64 case.
+	(FFI_CLOSURES, FFI_TRAMPOLINE_SIZE): Define for n32 and n64 cases.
+	* src/mips/n32.S (ffi_call_N32): Add debug macros and labels for FDE.
+	(ffi_closure_N32): New function.
+	(.eh_frame): New section
+	* src/mips/o32.S: Clean up comments.
+	(ffi_closure_O32): Pass ffi_closure parameter in $12.
+	* src/mips/ffi.c: Use FFI_MIPS_N32 instead of
+	_MIPS_SIM == _ABIN32 throughout.
+	(FFI_MIPS_STOP_HERE): New, use in place of
+	ffi_stop_here.
+	(ffi_prep_args): Use unsigned long to hold pointer values.  Rewrite
+	to support n32/n64 ABIs.
+	(calc_n32_struct_flags): Rewrite.
+	(calc_n32_return_struct_flags): Remove unused variable.  Reverse
+	position of flag bits.
+	(ffi_prep_cif_machdep): Rewrite n32 portion.
+	(ffi_call): Enable for n64.  Add special handling for small structure
+	return values.
+	(ffi_prep_closure_loc): Add n32 and n64 support.
+	(ffi_closure_mips_inner_O32): Add cast to silence warning.
+	(copy_struct_N32, ffi_closure_mips_inner_N32): New functions.
+
 2007-08-08  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libffi.call/ffitest.h (ffi_type_mylong): Remove definition.
