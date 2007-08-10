@@ -1,3 +1,8 @@
+2007-08-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/17763
+	* g++.dg/other/error16.C: New.
+
 2007-08-01  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20070801-1.c: New testcase.

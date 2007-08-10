@@ -1,3 +1,9 @@
+2007-08-10  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/17763
+	* error.c (dump_expr): Consistently use the *_cxx_*
+	variants of the pretty-print functions.
+
 2007-07-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32108
