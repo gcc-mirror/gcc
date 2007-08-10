@@ -7,7 +7,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030914	 */
 
-/* { dg-do run { xfail mips64*-*-* } } */
+/* { dg-do run } */
 #include "ffitest.h"
 
 typedef struct cls_struct_9byte {

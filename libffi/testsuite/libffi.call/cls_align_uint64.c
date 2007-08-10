@@ -5,7 +5,7 @@
    Originator:	<hos@tamanegi.org> 20031203	 */
 
 
-/* { dg-do run { xfail mips64*-*-* } } */
+/* { dg-do run } */
 #include "ffitest.h"
 
 typedef struct cls_struct_align {

@@ -4,7 +4,7 @@
    PR:		PR13221.
    Originator:	<hos@tamanegi.org> 20031129  */
 
-/* { dg-do run { xfail mips64*-*-* } } */
+/* { dg-do run } */
 #include "ffitest.h"
 
 signed char test_func_fn(signed char a1, signed char a2)

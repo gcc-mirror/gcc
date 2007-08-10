@@ -5,7 +5,7 @@
    PR:		PR23404
    Originator:	<andreast@gcc.gnu.org> 20050830	 */
 
-/* { dg-do run { xfail mips64*-*-* } } */
+/* { dg-do run } */
 #include "ffitest.h"
 
 static void
