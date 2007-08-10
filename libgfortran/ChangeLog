@@ -1,5 +1,12 @@
 2007-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/31270
+	* runtime/error.c (runtime_error_at): Add a variable number of
+	arguments.
+	* libgfortran.h (runtime_error_at): Update prototype.
+
+2007-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32933
 	* intrinsics/associated.c: Change return type of associated into
 	a C int.

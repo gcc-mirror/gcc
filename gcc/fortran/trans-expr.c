@@ -296,12 +296,14 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       fault = fold_build2 (TRUTH_ANDIF_EXPR, boolean_type_node,
 			   nonempty, fault);
       if (name)
-	asprintf (&msg, "Substring out of bounds: lower bound of '%s' "
+	asprintf (&msg, "Substring out of bounds: lower bound (%%ld) of '%s' "
 		  "is less than one", name);
       else
-	asprintf (&msg, "Substring out of bounds: lower bound "
+	asprintf (&msg, "Substring out of bounds: lower bound (%%ld)"
 		  "is less than one");
-      gfc_trans_runtime_check (fault, msg, &se->pre, where);
+      gfc_trans_runtime_check (fault, &se->pre, where, msg,
+			       fold_convert (long_integer_type_node,
+					     start.expr));
       gfc_free (msg);
 
       /* Check upper bound.  */
@@ -310,12 +312,15 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       fault = fold_build2 (TRUTH_ANDIF_EXPR, boolean_type_node,
 			   nonempty, fault);
       if (name)
-	asprintf (&msg, "Substring out of bounds: upper bound of '%s' "
-		  "exceeds string length", name);
+	asprintf (&msg, "Substring out of bounds: upper bound (%%ld) of '%s' "
+		  "exceeds string length (%%ld)", name);
       else
-	asprintf (&msg, "Substring out of bounds: upper bound "
-		  "exceeds string length");
-      gfc_trans_runtime_check (fault, msg, &se->pre, where);
+	asprintf (&msg, "Substring out of bounds: upper bound (%%ld) "
+		  "exceeds string length (%%ld)");
+      gfc_trans_runtime_check (fault, &se->pre, where, msg,
+			       fold_convert (long_integer_type_node, end.expr),
+			       fold_convert (long_integer_type_node,
+					     se->string_length));
       gfc_free (msg);
     }
 
@@ -2589,7 +2594,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 		  tmp = gfc_conv_descriptor_data_get (info->descriptor);
 		  tmp = fold_build2 (NE_EXPR, boolean_type_node,
 				     tmp, info->data);
-		  gfc_trans_runtime_check (tmp, gfc_msg_fault, &se->pre, NULL);
+		  gfc_trans_runtime_check (tmp, &se->pre, NULL, gfc_msg_fault);
 		}
 	      se->expr = info->descriptor;
 	      /* Bundle in the string length.  */

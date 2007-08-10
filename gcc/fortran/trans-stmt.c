@@ -153,8 +153,8 @@ gfc_trans_goto (gfc_code * code)
   tmp = GFC_DECL_STRING_LEN (se.expr);
   tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp,
 		     build_int_cst (TREE_TYPE (tmp), -1));
-  gfc_trans_runtime_check (tmp, "Assigned label is not a target label",
-			   &se.pre, &loc);
+  gfc_trans_runtime_check (tmp, &se.pre, &loc,
+			   "Assigned label is not a target label");
 
   assigned_goto = GFC_DECL_ASSIGN_ADDR (se.expr);
 
@@ -179,8 +179,8 @@ gfc_trans_goto (gfc_code * code)
       code = code->block;
     }
   while (code != NULL);
-  gfc_trans_runtime_check (boolean_true_node,
-			   "Assigned label is not in the list", &se.pre, &loc);
+  gfc_trans_runtime_check (boolean_true_node, &se.pre, &loc,
+			   "Assigned label is not in the list");
 
   return gfc_finish_block (&se.pre); 
 }
