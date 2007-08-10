@@ -6,7 +6,7 @@
    PR:		none.
    Originator:	<andreast@gcc.gnu.org> 20030828	 */
 
-/* { dg-do run { xfail mips64*-*-* } } */
+/* { dg-do run } */
 #include "ffitest.h"
 
 static void closure_test_fn2(ffi_cif* cif __UNUSED__, void* resp, void** args,
