@@ -1,3 +1,10 @@
+2007-08-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-flow-inline.h (is_exec_stmt): Remove.
+	(is_label_stmt): Remove.
+	* tree-flow.h: Remove prototypes for is_exec_stmt, get_filename, and
+	is_label_stmt.
+
 2007-08-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* lower-subreg.c (resolve_shift_zext): Don't adjust
