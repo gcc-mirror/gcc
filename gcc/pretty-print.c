@@ -633,7 +633,7 @@ pp_base_destroy_prefix (pretty_printer *pp)
 {
   if (pp->prefix != NULL)
     {
-      free ((char *) pp->prefix);
+      free (CONST_CAST (pp->prefix));
       pp->prefix = NULL;
     }
 }

@@ -1,3 +1,17 @@
+2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (CONST_CAST): New.
+	* c-decl.c (c_make_fname_decl): Use it.
+	* c-lex.c (cb_ident, lex_string): Likewise.
+	* c-typeck.c (free_all_tagged_tu_seen_up_to): Likewise.
+	* gcc.c (set_spec, read_specs, for_each_path, execute, do_spec_1,
+	give_switch, set_multilib_dir): Likewise.
+	* gengtype-parse.c (string_seq, typedef_name): Likewise.
+	* passes.c (execute_one_pass): Likewise.
+	* prefix.c (update_path): Likewise.
+	* pretty-print.c (pp_base_destroy_prefix): Likewise.
+	* tree.c (build_string): Likewise.
+
 2007-08-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-flow-inline.h (is_exec_stmt): Remove.

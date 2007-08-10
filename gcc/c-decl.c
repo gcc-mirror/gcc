@@ -2811,7 +2811,7 @@ c_make_fname_decl (tree id, int type_dep)
   DECL_ARTIFICIAL (decl) = 1;
 
   init = build_string (length + 1, name);
-  free ((char *) name);
+  free (CONST_CAST (name));
   TREE_TYPE (init) = type;
   DECL_INITIAL (decl) = init;
 

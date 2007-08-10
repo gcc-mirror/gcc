@@ -1,3 +1,9 @@
+2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (name_as_c_string): Use CONST_CAST.
+	* decl.c (build_decl): Likewise.
+	* parser.c (cp_parser_string_literal): Likewise.
+
 2007-08-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/17763

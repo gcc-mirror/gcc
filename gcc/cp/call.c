@@ -5388,7 +5388,7 @@ name_as_c_string (tree name, tree type, bool *free_p)
   if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     {
       pretty_name
-	= (char *) IDENTIFIER_POINTER (constructor_name (type));
+	= (char *) CONST_CAST (IDENTIFIER_POINTER (constructor_name (type)));
       /* For a destructor, add the '~'.  */
       if (name == complete_dtor_identifier
 	  || name == base_dtor_identifier
@@ -5409,7 +5409,7 @@ name_as_c_string (tree name, tree type, bool *free_p)
       *free_p = true;
     }
   else
-    pretty_name = (char *) IDENTIFIER_POINTER (name);
+    pretty_name = (char *) CONST_CAST (IDENTIFIER_POINTER (name));
 
   return pretty_name;
 }

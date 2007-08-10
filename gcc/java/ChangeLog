@@ -1,3 +1,8 @@
+2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-parse.c (read_class, java_parse_file): Use CONST_CAST.
+	* jcf.h (JCF_FINISH): Likewise.
+
 2007-07-31  Nick Clifton  <nickc@redhat.com>
 
 	* java-gimplify.c: Change copyright header to refer to version 3
