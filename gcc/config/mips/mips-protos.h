@@ -168,9 +168,9 @@ extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_context,
 				      enum mips_symbol_type *);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, int);
 extern bool mips_stack_address_p (rtx, enum machine_mode);
-extern int mips_address_insns (rtx, enum machine_mode);
+extern int mips_address_insns (rtx, enum machine_mode, bool);
 extern int mips_const_insns (rtx);
-extern int mips_fetch_insns (rtx);
+extern int mips_load_store_insns (rtx, rtx);
 extern int mips_idiv_insns (void);
 extern int fp_register_operand (rtx, enum machine_mode);
 extern int lo_operand (rtx, enum machine_mode);
