@@ -390,6 +390,7 @@ static bool vr4130_true_reg_dependence_p (rtx);
 static bool vr4130_swap_insns_p (rtx, rtx);
 static void vr4130_reorder (rtx *, int);
 static void mips_promote_ready (rtx *, int, int);
+static void mips_sched_init (FILE *, int, int);
 static int mips_sched_reorder (FILE *, int, rtx *, int *, int);
 static int mips_variable_issue (FILE *, int, rtx, int);
 static int mips_adjust_cost (rtx, rtx, rtx, int);
@@ -1220,8 +1221,12 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #undef TARGET_ASM_FUNCTION_RODATA_SECTION
 #define TARGET_ASM_FUNCTION_RODATA_SECTION mips_function_rodata_section
 
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT mips_sched_init
 #undef TARGET_SCHED_REORDER
 #define TARGET_SCHED_REORDER mips_sched_reorder
+#undef TARGET_SCHED_REORDER2
+#define TARGET_SCHED_REORDER2 mips_sched_reorder
 #undef TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE mips_variable_issue
 #undef TARGET_SCHED_ADJUST_COST
@@ -11000,26 +11005,125 @@ mips_promote_ready (rtx *ready, int lower, int higher)
   ready[i] = new_head;
 }
 
-/* Implement TARGET_SCHED_REORDER.  */
+/* If the priority of the instruction at POS2 in the ready queue READY 
+   is within LIMIT units of that of the instruction at POS1, swap the 
+   instructions if POS2 is not already less than POS1.  */
+
+static void
+mips_maybe_swap_ready (rtx *ready, int pos1, int pos2, int limit)
+{
+  if (pos1 < pos2
+      && INSN_PRIORITY (ready[pos1]) + limit >= INSN_PRIORITY (ready[pos2]))
+    {
+      rtx temp;
+      temp = ready[pos1];
+      ready[pos1] = ready[pos2];
+      ready[pos2] = temp;
+    }
+}
+
+/* Record whether last 74k AGEN instruction was a load or store.  */
+
+static enum attr_type mips_last_74k_agen_insn = TYPE_UNKNOWN;
+
+/* Initialize mips_last_74k_agen_insn from INSN.  A null argument
+   resets to TYPE_UNKNOWN state.  */
+
+static void
+mips_74k_agen_init (rtx insn)
+{
+  if (!insn || !NONJUMP_INSN_P (insn))
+    mips_last_74k_agen_insn = TYPE_UNKNOWN;
+  else if (USEFUL_INSN_P (insn))
+    {
+      enum attr_type type = get_attr_type (insn);
+      if (type == TYPE_LOAD || type == TYPE_STORE)
+	mips_last_74k_agen_insn = type;
+    }
+}
+
+/* A TUNE_74K helper function.  The 74K AGEN pipeline likes multiple
+   loads to be grouped together, and multiple stores to be grouped
+   together.  Swap things around in the ready queue to make this happen.  */
+
+static void
+mips_74k_agen_reorder (rtx *ready, int nready)
+{
+  int i;
+  int store_pos, load_pos;
+
+  store_pos = -1;
+  load_pos = -1;
+
+  for (i = nready - 1; i >= 0; i--)
+    {
+      rtx insn = ready[i];
+      if (USEFUL_INSN_P (insn))
+	switch (get_attr_type (insn))
+	  {
+	  case TYPE_STORE:
+	    if (store_pos == -1)
+	      store_pos = i;
+	    break;
+	    
+	  case TYPE_LOAD:
+	    if (load_pos == -1)
+	      load_pos = i;
+	    break;
+	    
+	  default:
+	    break;
+	  }
+    }
+  
+  if (load_pos == -1 || store_pos == -1)
+    return;
+  
+  switch (mips_last_74k_agen_insn)
+    {
+    case TYPE_UNKNOWN:
+      /* Prefer to schedule loads since they have a higher latency.  */
+    case TYPE_LOAD:
+      /* Swap loads to the front of the queue.  */
+      mips_maybe_swap_ready (ready, load_pos, store_pos, 4);
+      break;
+    case TYPE_STORE:
+      /* Swap stores to the front of the queue.  */
+      mips_maybe_swap_ready (ready, store_pos, load_pos, 4);
+      break;
+    default:
+      break;
+    }
+}
+
+/* Implement TARGET_SCHED_INIT.  */
+
+static void
+mips_sched_init (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
+		 int max_ready ATTRIBUTE_UNUSED)
+{
+  mips_macc_chains_last_hilo = 0;
+  vr4130_last_insn = 0;
+  mips_74k_agen_init (NULL_RTX);
+}
+
+/* Implement TARGET_SCHED_REORDER and TARG_SCHED_REORDER2.  */
 
 static int
 mips_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 		    rtx *ready, int *nreadyp, int cycle)
 {
-  if (!reload_completed && TUNE_MACC_CHAINS)
-    {
-      if (cycle == 0)
-	mips_macc_chains_last_hilo = 0;
-      if (*nreadyp > 0)
-	mips_macc_chains_reorder (ready, *nreadyp);
-    }
-  if (reload_completed && TUNE_MIPS4130 && !TARGET_VR4130_ALIGN)
-    {
-      if (cycle == 0)
-	vr4130_last_insn = 0;
-      if (*nreadyp > 1)
-	vr4130_reorder (ready, *nreadyp);
-    }
+  if (!reload_completed
+      && TUNE_MACC_CHAINS
+      && *nreadyp > 0)
+    mips_macc_chains_reorder (ready, *nreadyp);
+  if (reload_completed
+      && TUNE_MIPS4130
+      && !TARGET_VR4130_ALIGN
+      && *nreadyp > 1)
+    vr4130_reorder (ready, *nreadyp);
+  if (TUNE_74K)
+    mips_74k_agen_reorder (ready, *nreadyp);
   return mips_issue_rate ();
 }
 
@@ -11029,6 +11133,8 @@ static int
 mips_variable_issue (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
 		     rtx insn, int more)
 {
+  if (TUNE_74K)
+    mips_74k_agen_init (insn);
   switch (GET_CODE (PATTERN (insn)))
     {
     case USE:

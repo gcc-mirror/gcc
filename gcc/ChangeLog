@@ -1,3 +1,18 @@
+2007-08-10  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (TARGET_SCHED_INIT): Define.
+	(TARGET_SCHED_REORDER2): Define.
+	(mips_maybe_swap_ready): New.
+	(mips_last_74k_agen_insn): New.
+	(mips_74k_agen_init): New.
+	(mips_74k_agen_reorder): New function to group loads and stores
+	in the ready queue.
+	(mips_sched_init): New.  
+	(mips_sched_reorder): Don't do initialization here.  Call
+	mips_74k_agen_reorder.
+	(mips_variable_issue): Call mips_74k_agen_init.
+
 2007-08-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-flow-inline.h (get_filename): Remove.
