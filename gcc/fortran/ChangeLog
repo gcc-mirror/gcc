@@ -1,3 +1,29 @@
+2007-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31270
+	* trans.c (gfc_trans_runtime_check): Reorder arguments and
+	add extra variable arguments. Hand them to the library function.
+	* trans.h (gfc_trans_runtime_check): Update prototype.
+	* trans-array.c (gfc_trans_array_bound_check): Issue more
+	detailled error messages.
+	(gfc_conv_array_ref): Likewise.
+	(gfc_conv_ss_startstride): Likewise.
+	(gfc_trans_dummy_array_bias): Reorder arguments to
+	gfc_trans_runtime_check.
+	* trans-expr.c (gfc_conv_substring): Issue more detailled
+	error messages.
+	(gfc_conv_function_call): Reorder arguments to gfc_trans_runtime_check.
+	* trans-stmt.c (gfc_trans_goto): Likewise.
+	* trans-io.c (set_string): Reorder arguments to
+	gfc_trans_runtime_check and issue a more detailled error message.
+	* trans-decl.c (gfc_build_builtin_function_decls): Make
+	runtime_error and runtime_error_at handle a variable number of
+	arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Reorder arguments
+	to gfc_trans_runtime_check.
+	(gfc_conv_intrinsic_minmax): Likewise.
+	(gfc_conv_intrinsic_repeat): Issue more detailled error messages.
+
 2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gfortranspec.c (lang_specific_driver): Use CONST_CAST.

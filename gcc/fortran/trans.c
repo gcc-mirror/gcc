@@ -320,18 +320,31 @@ gfc_build_array_ref (tree base, tree offset)
 /* Generate a runtime error if COND is true.  */
 
 void
-gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
-			 locus * where)
+gfc_trans_runtime_check (tree cond, stmtblock_t * pblock, locus * where,
+			 const char * msgid, ...)
 {
+  va_list ap;
   stmtblock_t block;
   tree body;
   tree tmp;
   tree arg, arg2;
+  tree *argarray;
+  tree fntype;
   char *message;
-  int line;
+  const char *p;
+  int line, nargs, i;
 
   if (integer_zerop (cond))
     return;
+
+  /* Compute the number of extra arguments from the format string.  */
+  for (p = msgid, nargs = 0; *p; p++)
+    if (*p == '%')
+      {
+	p++;
+	if (*p != '%')
+	  nargs++;
+      }
 
   /* The code to generate the error.  */
   gfc_start_block (&block);
@@ -357,7 +370,23 @@ gfc_trans_runtime_check (tree cond, const char * msgid, stmtblock_t * pblock,
   arg2 = gfc_build_addr_expr (pchar_type_node, gfc_build_cstring_const(message));
   gfc_free(message);
 
-  tmp = build_call_expr (gfor_fndecl_runtime_error_at, 2, arg, arg2);
+  /* Build the argument array.  */
+  argarray = (tree *) alloca (sizeof (tree) * (nargs + 2));
+  argarray[0] = arg;
+  argarray[1] = arg2;
+  va_start (ap, msgid);
+  for (i = 0; i < nargs; i++)
+    argarray[2+i] = va_arg (ap, tree);
+  va_end (ap);
+  
+  /* Build the function call to runtime_error_at; because of the variable
+     number of arguments, we can't use build_call_expr directly.  */
+  fntype = TREE_TYPE (gfor_fndecl_runtime_error_at);
+  tmp = fold_builtin_call_array (TREE_TYPE (fntype),
+				 build1 (ADDR_EXPR,
+					 build_pointer_type (fntype),
+					 gfor_fndecl_runtime_error_at),
+				 nargs + 2, argarray);
   gfc_add_expr_to_block (&block, tmp);
 
   body = gfc_finish_block (&block);

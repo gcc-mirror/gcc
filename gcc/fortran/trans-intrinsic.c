@@ -855,7 +855,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
           tmp = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))];
           tmp = fold_build2 (GE_EXPR, boolean_type_node, bound, tmp);
           cond = fold_build2 (TRUTH_ORIF_EXPR, boolean_type_node, cond, tmp);
-          gfc_trans_runtime_check (cond, gfc_msg_fault, &se->pre, &expr->where);
+          gfc_trans_runtime_check (cond, &se->pre, &expr->where, gfc_msg_fault);
         }
     }
 
@@ -1485,7 +1485,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 		expr->symtree->n.sym->name);
       cond = build2 (EQ_EXPR, boolean_type_node, TREE_OPERAND (args[0], 0),
 		     build_int_cst (TREE_TYPE (TREE_OPERAND (args[0], 0)), 0));
-      gfc_trans_runtime_check (cond, msg, &se->pre, &expr->where);
+      gfc_trans_runtime_check (cond, &se->pre, &expr->where, msg);
       gfc_free (msg);
     }
 
@@ -1501,7 +1501,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 		expr->symtree->n.sym->name);
       cond = build2 (EQ_EXPR, boolean_type_node, TREE_OPERAND (args[1], 0),
 		     build_int_cst (TREE_TYPE (TREE_OPERAND (args[1], 0)), 0));
-      gfc_trans_runtime_check (cond, msg, &se->pre, &expr->where);
+      gfc_trans_runtime_check (cond, &se->pre, &expr->where, msg);
       gfc_free (msg);
     }
 
@@ -3665,9 +3665,10 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
   /* Check that NCOPIES is not negative.  */
   cond = fold_build2 (LT_EXPR, boolean_type_node, ncopies,
 		      build_int_cst (ncopies_type, 0));
-  gfc_trans_runtime_check (cond,
-			   "Argument NCOPIES of REPEAT intrinsic is negative",
-			   &se->pre, &expr->where);
+  gfc_trans_runtime_check (cond, &se->pre, &expr->where,
+			   "Argument NCOPIES of REPEAT intrinsic is negative "
+			   "(its value is %lld)",
+			   fold_convert (long_integer_type_node, ncopies));
 
   /* If the source length is zero, any non negative value of NCOPIES
      is valid, and nothing happens.  */
@@ -3696,9 +3697,9 @@ gfc_conv_intrinsic_repeat (gfc_se * se, gfc_expr * expr)
 		     build_int_cst (size_type_node, 0));
   cond = fold_build3 (COND_EXPR, boolean_type_node, tmp, boolean_false_node,
 		      cond);
-  gfc_trans_runtime_check (cond,
-			   "Argument NCOPIES of REPEAT intrinsic is too large",
-			   &se->pre, &expr->where);
+  gfc_trans_runtime_check (cond, &se->pre, &expr->where,
+			   "Argument NCOPIES of REPEAT intrinsic is too large");
+			   
 
   /* Compute the destination length.  */
   dlen = fold_build2 (MULT_EXPR, gfc_charlen_type_node,

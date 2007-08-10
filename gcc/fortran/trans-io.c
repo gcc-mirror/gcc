@@ -653,15 +653,17 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   if (e->ts.type == BT_INTEGER && e->symtree->n.sym->attr.assign == 1)
     {
       char * msg;
+      tree cond;
 
       gfc_conv_label_variable (&se, e);
       tmp = GFC_DECL_STRING_LEN (se.expr);
-      tmp = fold_build2 (LT_EXPR, boolean_type_node,
-			 tmp, build_int_cst (TREE_TYPE (tmp), 0));
+      cond = fold_build2 (LT_EXPR, boolean_type_node,
+			  tmp, build_int_cst (TREE_TYPE (tmp), 0));
 
-      asprintf(&msg, "Label assigned to variable '%s' is not a format label",
-	       e->symtree->name);
-      gfc_trans_runtime_check (tmp, msg, &se.pre, &e->where);
+      asprintf(&msg, "Label assigned to variable '%s' (%%ld) is not a format "
+	       "label", e->symtree->name);
+      gfc_trans_runtime_check (cond, &se.pre, &e->where, msg,
+			       fold_convert (long_integer_type_node, tmp));
       gfc_free (msg);
 
       gfc_add_modify_expr (&se.pre, io,

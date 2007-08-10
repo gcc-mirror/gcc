@@ -442,7 +442,7 @@ void gfc_generate_constructors (void);
 bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor *, tree *);
 
 /* Generate a runtime error check.  */
-void gfc_trans_runtime_check (tree, const char *, stmtblock_t *, locus *);
+void gfc_trans_runtime_check (tree, stmtblock_t *, locus *, const char *, ...);
 
 /* Generate a call to free() after checking that its arg is non-NULL.  */
 tree gfc_call_free (tree);
