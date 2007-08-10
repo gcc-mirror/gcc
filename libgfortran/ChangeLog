@@ -1,3 +1,9 @@
+2007-08-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33039
+	* io/list_read.c (find_nml_name): Check for a space after a namelist
+	name match.
+
 2007-08-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32987
