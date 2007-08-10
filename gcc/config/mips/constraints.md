@@ -151,7 +151,7 @@
 (define_memory_constraint "R"
   "An address that can be used in a non-macro load or store."
   (and (match_code "mem")
-       (match_test "mips_fetch_insns (op) == 1")))
+       (match_test "mips_address_insns (XEXP (op, 0), mode, false) == 1")))
 
 (define_constraint "S"
   "@internal

@@ -360,9 +360,9 @@
 	  (eq_attr "type" "const")
 	  (symbol_ref "mips_const_insns (operands[1]) * 4")
 	  (eq_attr "type" "load,fpload")
-	  (symbol_ref "mips_fetch_insns (operands[1]) * 4")
+	  (symbol_ref "mips_load_store_insns (operands[1], insn) * 4")
 	  (eq_attr "type" "store,fpstore")
-	  (symbol_ref "mips_fetch_insns (operands[0]) * 4")
+	  (symbol_ref "mips_load_store_insns (operands[0], insn) * 4")
 
 	  ;; In the worst case, a call macro will take 8 instructions:
 	  ;;

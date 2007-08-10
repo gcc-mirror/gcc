@@ -1,3 +1,20 @@
+2007-08-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips-protos.h (mips_address_insns): Add a boolean
+	argument.
+	(mips_fetch_insns): Delete in favor of...
+	(mips_load_store_insns): ...this new function.
+	* config/mips/mips.c (mips_address_insns): Add a boolean argument
+	to say whether multiword moves _might_ be split.
+	(mips_fetch_insns): Delete in favor of...
+	(mips_load_store_insns): ...this new function.
+	(mips_rtx_costs): Update the call to mips_address_insns.
+	(mips_address_cost): Likewise.
+	* config/mips/mips.md (length): Use mips_load_store_insns instead
+	of mips_fetch_insns.
+	* config/mips/constraints.md (R): Use mips_address_insns rather
+	than mips_fetch_insns.  Assume that the move never needs to be split.
+
 2007-08-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/mips/mips.opt (mhard-float, msoft-float):  Make these

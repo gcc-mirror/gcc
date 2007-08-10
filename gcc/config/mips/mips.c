@@ -1945,22 +1945,26 @@ mips16_unextended_reference_p (enum machine_mode mode, rtx base, rtx offset)
 
 
 /* Return the number of instructions needed to load or store a value
-   of mode MODE at X.  Return 0 if X isn't valid for MODE.
+   of mode MODE at X.  Return 0 if X isn't valid for MODE.  Assume that
+   multiword moves may need to be split into word moves if MIGHT_SPLIT_P,
+   otherwise assume that a single load or store is enough.
 
    For mips16 code, count extended instructions as two instructions.  */
 
 int
-mips_address_insns (rtx x, enum machine_mode mode)
+mips_address_insns (rtx x, enum machine_mode mode, bool might_split_p)
 {
   struct mips_address_info addr;
   int factor;
 
-  if (mode == BLKmode)
-    /* BLKmode is used for single unaligned loads and stores.  */
-    factor = 1;
-  else
-    /* Each word of a multi-word value will be accessed individually.  */
+  /* BLKmode is used for single unaligned loads and stores and should
+     not count as a multiword mode.  (GET_MODE_SIZE (BLKmode) is pretty
+     meaningless, so we have to single it out as a special case one way
+     or the other.)  */
+  if (mode != BLKmode && might_split_p)
     factor = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  else
+    factor = 1;
 
   if (mips_classify_address (&addr, x, mode, false))
     switch (addr.type)
@@ -2059,14 +2063,30 @@ mips_const_insns (rtx x)
 }
 
 
-/* Return the number of instructions needed for memory reference X.
-   Count extended mips16 instructions as two instructions.  */
+/* Return the number of instructions needed to implement INSN,
+   given that it loads from or stores to MEM.  Count extended
+   mips16 instructions as two instructions.  */
 
 int
-mips_fetch_insns (rtx x)
+mips_load_store_insns (rtx mem, rtx insn)
 {
-  gcc_assert (MEM_P (x));
-  return mips_address_insns (XEXP (x, 0), GET_MODE (x));
+  enum machine_mode mode;
+  bool might_split_p;
+  rtx set;
+
+  gcc_assert (MEM_P (mem));
+  mode = GET_MODE (mem);
+
+  /* Try to prove that INSN does not need to be split.  */
+  might_split_p = true;
+  if (GET_MODE_BITSIZE (mode) == 64)
+    {
+      set = single_set (insn);
+      if (set && !mips_split_64bit_move_p (SET_DEST (set), SET_SRC (set)))
+	might_split_p = false;
+    }
+
+  return mips_address_insns (XEXP (mem, 0), mode, might_split_p);
 }
 
 
@@ -2857,7 +2877,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 	/* If the address is legitimate, return the number of
 	   instructions it needs.  */
 	rtx addr = XEXP (x, 0);
-	int n = mips_address_insns (addr, GET_MODE (x));
+	int n = mips_address_insns (addr, GET_MODE (x), true);
 	if (n > 0)
 	  {
 	    *total = COSTS_N_INSNS (n + 1);
@@ -3012,7 +3032,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 static int
 mips_address_cost (rtx addr)
 {
-  return mips_address_insns (addr, SImode);
+  return mips_address_insns (addr, SImode, false);
 }
 
 /* Return one word of double-word value OP, taking into account the fixed
