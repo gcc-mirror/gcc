@@ -1,3 +1,9 @@
+2007-08-10  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/33042
+	* config/rs6000/driver-rs6000.c: Include link.h.
+	Use ElfW instead of wordsize-specif typedef.
+
 2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (CONST_CAST): New.

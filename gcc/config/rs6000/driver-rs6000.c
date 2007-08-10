@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #ifdef __linux__
-# include <elf.h>
+# include <link.h>
 #endif
 
 #ifdef __APPLE__
@@ -138,7 +138,7 @@ elf_platform (void)
   if (fd != -1)
     {
       char buf[1024];
-      Elf32_auxv_t *av;
+      ElfW(auxv_t) *av;
       ssize_t n;
 
       n = read (fd, buf, sizeof (buf));
@@ -146,7 +146,7 @@ elf_platform (void)
 
       if (n > 0)
 	{
-	  for (av = (Elf32_auxv_t *) buf; av->a_type != AT_NULL; ++av)
+	  for (av = (ElfW(auxv_t) *) buf; av->a_type != AT_NULL; ++av)
 	    switch (av->a_type)
 	      {
 	      case AT_PLATFORM:
@@ -172,7 +172,7 @@ elf_dcachebsize (void)
   if (fd != -1)
     {
       char buf[1024];
-      Elf32_auxv_t *av;
+      ElfW(auxv_t) *av;
       ssize_t n;
 
       n = read (fd, buf, sizeof (buf));
@@ -180,7 +180,7 @@ elf_dcachebsize (void)
 
       if (n > 0)
 	{
-	  for (av = (Elf32_auxv_t *) buf; av->a_type != AT_NULL; ++av)
+	  for (av = (ElfW(auxv_t) *) buf; av->a_type != AT_NULL; ++av)
 	    switch (av->a_type)
 	      {
 	      case AT_DCACHEBSIZE:
