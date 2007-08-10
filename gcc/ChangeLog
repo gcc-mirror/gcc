@@ -1,3 +1,8 @@
+2007-08-10  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* lower-subreg.c (resolve_shift_zext): Don't adjust
+	src_reg_num for wordmode operands.
+
 2007-08-10  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
