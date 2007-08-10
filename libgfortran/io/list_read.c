@@ -2593,6 +2593,14 @@ find_nml_name:
   if (dtp->u.p.nml_read_error)
     goto find_nml_name;
 
+  /* A trailing space is required, we give a little lattitude here, 10.9.1.  */ 
+  c = next_char (dtp);
+  if (!is_separator(c))
+    {
+      unget_char (dtp, c);
+      goto find_nml_name;
+    }
+
   /* Ready to read namelist objects.  If there is an error in input
      from stdin, output the error message and continue.  */
 
