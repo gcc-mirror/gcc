@@ -1545,7 +1545,8 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
       if (FLOAT_TYPE_P (TREE_TYPE (limit)))
 	{
 	  isnan = build_call_expr (built_in_decls[BUILT_IN_ISNAN], 1, limit);
-	  tmp = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, tmp, isnan);
+	  tmp = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, tmp,
+			     fold_convert (boolean_type_node, isnan));
 	}
       tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
 
@@ -3003,15 +3004,13 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 static void
 gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
 {
-  tree type;
   tree args[4];
 
   gfc_conv_intrinsic_function_args (se, expr, args, 4);
 
   se->expr = gfc_build_compare_string (args[0], args[1], args[2], args[3]);
-  type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = fold_build2 (op, type, se->expr,
-		     build_int_cst (TREE_TYPE (se->expr), 0));
+  se->expr = fold_build2 (op, gfc_typenode_for_spec (&expr->ts), se->expr,
+			  build_int_cst (TREE_TYPE (se->expr), 0));
 }
 
 /* Generate a call to the adjustl/adjustr library function.  */
@@ -3376,7 +3375,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   gfc_se arg2se;
   tree tmp2;
   tree tmp;
-  tree fndecl;
   tree nonzero_charlen;
   tree nonzero_arraylen;
   gfc_ss *ss1, *ss2;
@@ -3437,7 +3435,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
         }
       else
         {
-
 	  /* An array pointer of zero length is not associated if target is
 	     present.  */
 	  arg1se.descriptor_only = 1;
@@ -3456,11 +3453,11 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           gfc_conv_expr_descriptor (&arg2se, arg2->expr, ss2);
           gfc_add_block_to_block (&se->pre, &arg2se.pre);
           gfc_add_block_to_block (&se->post, &arg2se.post);
-          fndecl = gfor_fndecl_associated;
-          se->expr = build_call_expr (fndecl, 2, arg1se.expr, arg2se.expr);
+          se->expr = build_call_expr (gfor_fndecl_associated, 2,
+				      arg1se.expr, arg2se.expr);
+	  se->expr = convert (boolean_type_node, se->expr);
 	  se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
 			     se->expr, nonzero_arraylen);
-
         }
 
       /* If target is present zero character length pointers cannot

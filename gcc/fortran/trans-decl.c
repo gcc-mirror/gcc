@@ -2286,7 +2286,6 @@ void
 gfc_build_builtin_function_decls (void)
 {
   tree gfc_int4_type_node = gfc_get_int_type (4);
-  tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
 
   gfor_fndecl_internal_realloc =
@@ -2396,9 +2395,7 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_associated =
     gfc_build_library_function_decl (
                                      get_identifier (PREFIX("associated")),
-                                     gfc_logical4_type_node,
-                                     2,
-                                     ppvoid_type_node,
+                                     integer_type_node, 2, ppvoid_type_node,
                                      ppvoid_type_node);
 
   gfc_build_intrinsic_function_decls ();
