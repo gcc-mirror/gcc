@@ -1856,6 +1856,31 @@ shift_return_value (enum machine_mode mode, bool left_p, rtx value)
   return true;
 }
 
+/* If X is a likely-spilled register value, copy it to a pseudo
+   register and return that register.  Return X otherwise.  */
+
+static rtx
+avoid_likely_spilled_reg (rtx x)
+{
+  rtx new;
+
+  if (REG_P (x)
+      && HARD_REGISTER_P (x)
+      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (x))))
+    {
+      /* Make sure that we generate a REG rather than a CONCAT.
+	 Moves into CONCATs can need nontrivial instructions,
+	 and the whole point of this function is to avoid
+	 using the hard register directly in such a situation.  */
+      generating_concat_p = 0;
+      new = gen_reg_rtx (GET_MODE (x));
+      generating_concat_p = 1;
+      emit_move_insn (new, x);
+      return new;
+    }
+  return x;
+}
+
 /* Generate all the code for a CALL_EXPR exp
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -2953,11 +2978,8 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  /* We have to copy a return value in a CLASS_LIKELY_SPILLED hard
 	     reg to a plain register.  */
-	  if (REG_P (valreg)
-	      && HARD_REGISTER_P (valreg)
-	      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (valreg)))
-	      && !(REG_P (target) && !HARD_REGISTER_P (target)))
-	    valreg = copy_to_reg (valreg);
+	  if (!REG_P (target) || HARD_REGISTER_P (target))
+	    valreg = avoid_likely_spilled_reg (valreg);
 
 	  /* If TARGET is a MEM in the argument area, and we have
 	     saved part of the argument area, then we can't store
@@ -3002,7 +3024,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  sibcall_failure = 1;
 	}
       else
-	target = copy_to_reg (valreg);
+	target = copy_to_reg (avoid_likely_spilled_reg (valreg));
 
       if (targetm.calls.promote_function_return(funtype))
 	{
