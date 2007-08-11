@@ -20,6 +20,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* Assert that we are targetting VxWorks.  */
+#undef TARGET_VXWORKS
+#define TARGET_VXWORKS 1
+
 /* In kernel mode, VxWorks provides all the libraries itself, as well as
    the functionality of startup files, etc.  In RTP mode, it behaves more
    like a traditional Unix, with more external files.  Most of our specs

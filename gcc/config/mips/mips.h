@@ -357,9 +357,14 @@ extern enum mips_code_readable_setting mips_code_readable;
       builtin_define ("__mips__");     					\
       builtin_define ("_mips");						\
 									\
-      /* We do this here because __mips is defined below		\
-	 and so we can't use builtin_define_std.  */			\
-      if (!flag_iso)							\
+      /* We do this here because __mips is defined below and so we	\
+	 can't use builtin_define_std.  We don't ever want to define	\
+	 "mips" for VxWorks because some of the VxWorks headers		\
+	 construct include filenames from a root directory macro,	\
+	 an architecture macro and a filename, where the architecture	\
+	 macro expands to 'mips'.  If we define 'mips' to 1, the	\
+	 architecture macro expands to 1 as well.  */			\
+      if (!flag_iso && !TARGET_VXWORKS)					\
 	builtin_define ("mips");					\
 									\
       if (TARGET_64BIT)							\
