@@ -79,7 +79,7 @@ export_proto(string_minmax);
 
 /* Strings of unequal length are extended with pad characters.  */
 
-GFC_INTEGER_4
+int
 compare_string (GFC_INTEGER_4 len1, const char * s1,
 		GFC_INTEGER_4 len2, const char * s2)
 {

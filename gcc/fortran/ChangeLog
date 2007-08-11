@@ -1,3 +1,15 @@
+2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32937
+	* trans-array.c (gfc_conv_expr_descriptor): Use
+	gfc_conv_const_charlen to generate backend_decl of right type.
+	* trans-expr.c (gfc_conv_expr_op): Use correct return type.
+	(gfc_build_compare_string): Use int type instead of default
+	integer kind for single character comparison.
+	(gfc_conv_aliased_arg): Give backend_decl the right type.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Make
+	compare_string return an int.
+
 2007-08-11  Ian Lance Taylor  <iant@google.com>
 
 	* f95-lang.c (gfc_get_alias_set): Change return type to

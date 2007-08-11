@@ -4573,9 +4573,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  else if (expr->ts.cl->length
 		     && expr->ts.cl->length->expr_type == EXPR_CONSTANT)
 	    {
-	      expr->ts.cl->backend_decl
-		= gfc_conv_mpz_to_tree (expr->ts.cl->length->value.integer,
-					expr->ts.cl->length->ts.kind);
+	      gfc_conv_const_charlen (expr->ts.cl);
 	      loop.temp_ss->data.temp.type
 		= gfc_typenode_for_spec (&expr->ts);
 	      loop.temp_ss->string_length

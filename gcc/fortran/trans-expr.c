@@ -1036,8 +1036,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   enum tree_code code;
   gfc_se lse;
   gfc_se rse;
-  tree type;
-  tree tmp;
+  tree tmp, type;
   int lop;
   int checkstring;
 
@@ -1186,7 +1185,7 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   if (lop)
     {
       /* The result of logical ops is always boolean_type_node.  */
-      tmp = fold_build2 (code, type, lse.expr, rse.expr);
+      tmp = fold_build2 (code, boolean_type_node, lse.expr, rse.expr);
       se->expr = convert (type, tmp);
     }
   else
@@ -1280,13 +1279,10 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2)
 {
   tree sc1;
   tree sc2;
-  tree type;
   tree tmp;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str1)));
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str2)));
-
-  type = gfc_get_int_type (gfc_default_integer_kind);
 
   sc1 = gfc_to_single_character (len1, str1);
   sc2 = gfc_to_single_character (len2, str2);
@@ -1294,9 +1290,9 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2)
   /* Deal with single character specially.  */
   if (sc1 != NULL_TREE && sc2 != NULL_TREE)
     {
-      sc1 = fold_convert (type, sc1);
-      sc2 = fold_convert (type, sc2);
-      tmp = fold_build2 (MINUS_EXPR, type, sc1, sc2);
+      sc1 = fold_convert (integer_type_node, sc1);
+      sc2 = fold_convert (integer_type_node, sc2);
+      tmp = fold_build2 (MINUS_EXPR, integer_type_node, sc1, sc2);
     }
    else
      /* Build a call for the comparison.  */
@@ -1860,6 +1856,7 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
 				gfc_array_index_type);
 	    tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			       tmp, tmp_se.expr);
+	    tmp = fold_convert (gfc_charlen_type_node, tmp);
 	    expr->ts.cl->backend_decl = tmp;
 
 	    break;
