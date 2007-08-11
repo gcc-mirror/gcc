@@ -1043,9 +1043,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
         {
           /* warn_strict_aliasing >= 3.   This includes the default (3).  
              Only warn if the cast is dereferenced immediately.  */
-          HOST_WIDE_INT set1 =
+          alias_set_type set1 =
 	    get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0)));
-          HOST_WIDE_INT set2 = get_alias_set (TREE_TYPE (type));
+          alias_set_type set2 = get_alias_set (TREE_TYPE (type));
 
           if (!alias_sets_conflict_p (set1, set2))
 	    {
@@ -1069,9 +1069,9 @@ strict_aliasing_warning (tree otype, tree type, tree expr)
            not taken in the same statement.  This will likely produce many
            false positives, but could be useful to pinpoint problems that
            are not revealed at higher levels.  */
-        HOST_WIDE_INT set1 = get_alias_set (TREE_TYPE (otype));
-        HOST_WIDE_INT set2 = get_alias_set (TREE_TYPE (type));
-        if (!COMPLETE_TYPE_P(type)
+        alias_set_type set1 = get_alias_set (TREE_TYPE (otype));
+        alias_set_type set2 = get_alias_set (TREE_TYPE (type));
+        if (!COMPLETE_TYPE_P (type)
             || !alias_sets_must_conflict_p (set1, set2))
 	  {
             warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
@@ -3048,7 +3048,7 @@ static GTY((param_is (union tree_node))) htab_t type_hash_table;
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
 
-HOST_WIDE_INT
+alias_set_type
 c_common_get_alias_set (tree t)
 {
   tree u;

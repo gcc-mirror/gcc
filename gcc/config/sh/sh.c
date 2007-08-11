@@ -6853,7 +6853,7 @@ sh_builtin_saveregs (void)
   int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
   rtx regbuf, fpregs;
   int bufsize, regno;
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
 
   if (TARGET_SH5)
     {

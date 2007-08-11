@@ -1,3 +1,8 @@
+2007-08-11  Ian Lance Taylor  <iant@google.com>
+
+	* f95-lang.c (gfc_get_alias_set): Change return type to
+	alias_set_type.
+
 2007-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31270

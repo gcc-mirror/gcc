@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct df;
 
-extern void dse_record_singleton_alias_set (HOST_WIDE_INT, enum machine_mode);
-extern void dse_invalidate_singleton_alias_set (HOST_WIDE_INT);
+extern void dse_record_singleton_alias_set (alias_set_type, enum machine_mode);
+extern void dse_invalidate_singleton_alias_set (alias_set_type);
 
 #endif /* GCC_DSE_H */
 

@@ -251,10 +251,10 @@ static HOST_WIDE_INT actual_fsize;
 static int num_gfregs;
 
 /* The alias set for prologue/epilogue register save/restore.  */
-static GTY(()) int sparc_sr_alias_set;
+static GTY(()) alias_set_type sparc_sr_alias_set;
 
 /* The alias set for the structure return value.  */
-static GTY(()) int struct_value_alias_set;
+static GTY(()) alias_set_type struct_value_alias_set;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */

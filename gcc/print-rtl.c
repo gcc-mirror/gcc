@@ -536,7 +536,8 @@ print_rtx (const_rtx in_rtx)
     {
 #ifndef GENERATOR_FILE
     case MEM:
-      fprintf (outfile, " [" HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
+      fprintf (outfile, " [" HOST_WIDE_INT_PRINT_DEC,
+	       (HOST_WIDE_INT) MEM_ALIAS_SET (in_rtx));
 
       if (MEM_EXPR (in_rtx))
 	print_mem_expr (outfile, MEM_EXPR (in_rtx));

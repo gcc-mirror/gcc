@@ -181,7 +181,7 @@ static int const_double_htab_eq (const void *, const void *);
 static rtx lookup_const_double (rtx);
 static hashval_t mem_attrs_htab_hash (const void *);
 static int mem_attrs_htab_eq (const void *, const void *);
-static mem_attrs *get_mem_attrs (HOST_WIDE_INT, tree, rtx, rtx, unsigned int,
+static mem_attrs *get_mem_attrs (alias_set_type, tree, rtx, rtx, unsigned int,
 				 enum machine_mode);
 static hashval_t reg_attrs_htab_hash (const void *);
 static int reg_attrs_htab_eq (const void *, const void *);
@@ -282,7 +282,7 @@ mem_attrs_htab_eq (const void *x, const void *y)
    MEM of mode MODE.  */
 
 static mem_attrs *
-get_mem_attrs (HOST_WIDE_INT alias, tree expr, rtx offset, rtx size,
+get_mem_attrs (alias_set_type alias, tree expr, rtx offset, rtx size,
 	       unsigned int align, enum machine_mode mode)
 {
   mem_attrs attrs;
@@ -1469,7 +1469,7 @@ void
 set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 				 HOST_WIDE_INT bitpos)
 {
-  HOST_WIDE_INT alias = MEM_ALIAS_SET (ref);
+  alias_set_type alias = MEM_ALIAS_SET (ref);
   tree expr = MEM_EXPR (ref);
   rtx offset = MEM_OFFSET (ref);
   rtx size = MEM_SIZE (ref);
@@ -1748,7 +1748,7 @@ set_mem_attrs_from_reg (rtx mem, rtx reg)
 /* Set the alias set of MEM to SET.  */
 
 void
-set_mem_alias_set (rtx mem, HOST_WIDE_INT set)
+set_mem_alias_set (rtx mem, alias_set_type set)
 {
 #ifdef ENABLE_CHECKING
   /* If the new and old alias sets don't conflict, something is wrong.  */

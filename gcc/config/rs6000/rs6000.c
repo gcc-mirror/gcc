@@ -6092,7 +6092,8 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   CUMULATIVE_ARGS next_cum;
   int reg_size = TARGET_32BIT ? 4 : 8;
   rtx save_area = NULL_RTX, mem;
-  int first_reg_offset, set;
+  int first_reg_offset;
+  alias_set_type set;
 
   /* Skip the last named argument.  */
   next_cum = *cum;
@@ -14293,9 +14294,9 @@ rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO), operands[0]);
 }
 
-static GTY(()) int set = -1;
+static GTY(()) alias_set_type set = -1;
 
-int
+alias_set_type
 get_TOC_alias_set (void)
 {
   if (set == -1)

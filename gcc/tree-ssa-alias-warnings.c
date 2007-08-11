@@ -835,8 +835,8 @@ strict_aliasing_warn (tree alias_site,
 static bool
 nonstandard_alias_types_p (tree type1, tree type2)
 {
-  HOST_WIDE_INT set1;
-  HOST_WIDE_INT set2;
+  alias_set_type set1;
+  alias_set_type set2;
 
   if (VOID_TYPE_P (type1) || VOID_TYPE_P (type2))
     return false;

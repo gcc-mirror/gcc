@@ -473,7 +473,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	  
 	  if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
 	    fprintf (file, " alias set " HOST_WIDE_INT_PRINT_DEC,
-		     DECL_POINTER_ALIAS_SET (node));
+		     (HOST_WIDE_INT) DECL_POINTER_ALIAS_SET (node));
 	}
       if (TREE_CODE (node) == FIELD_DECL)
 	{
@@ -614,7 +614,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       fprintf (file, " align %d symtab %d alias set " HOST_WIDE_INT_PRINT_DEC,
 	       TYPE_ALIGN (node), TYPE_SYMTAB_ADDRESS (node),
-	       TYPE_ALIAS_SET (node));
+	       (HOST_WIDE_INT) TYPE_ALIAS_SET (node));
 
       if (TYPE_STRUCTURAL_EQUALITY_P (node))
 	fprintf (file, " structural equality");

@@ -139,10 +139,10 @@ static rtx compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static void store_constructor_field (rtx, unsigned HOST_WIDE_INT,
 				     HOST_WIDE_INT, enum machine_mode,
-				     tree, tree, int, int);
+				     tree, tree, int, alias_set_type);
 static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
-			tree, tree, int, bool);
+			tree, tree, alias_set_type, bool);
 
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
 
@@ -4960,7 +4960,8 @@ all_zeros_p (tree exp)
 static void
 store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 			 HOST_WIDE_INT bitpos, enum machine_mode mode,
-			 tree exp, tree type, int cleared, int alias_set)
+			 tree exp, tree type, int cleared,
+			 alias_set_type alias_set)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
       /* We can only call store_constructor recursively if the size and
@@ -5580,8 +5581,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 static rtx
 store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
-	     enum machine_mode mode, tree exp, tree type, int alias_set,
-	     bool nontemporal)
+	     enum machine_mode mode, tree exp, tree type,
+	     alias_set_type alias_set, bool nontemporal)
 {
   HOST_WIDE_INT width_mask = 0;
 

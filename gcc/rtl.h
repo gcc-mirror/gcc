@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "real.h"
 #include "vec.h"
+#include "alias.h"
 
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
 #undef FLOAT /* Likewise.  */
@@ -139,7 +140,7 @@ typedef struct
    stricter alignment; OFFSET is the offset of the MEM within that object.  */
 typedef struct mem_attrs GTY(())
 {
-  HOST_WIDE_INT alias;		/* Memory alias set.  */
+  alias_set_type alias;		/* Memory alias set.  */
   tree expr;			/* expr corresponding to MEM.  */
   rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
   rtx size;			/* Size in bytes, as a CONST_INT.  */

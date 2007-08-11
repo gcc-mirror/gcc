@@ -107,7 +107,7 @@ bool first_function_block_is_cold;
 /* We give all constants their own alias set.  Perhaps redundant with
    MEM_READONLY_P, but pre-dates it.  */
 
-static HOST_WIDE_INT const_alias_set;
+static alias_set_type const_alias_set;
 
 static const char *strip_reg_name (const char *);
 static int contains_pointers_p (tree);

@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "statistics.h"
 #include "vec.h"
 #include "double-int.h"
+#include "alias.h"
 
 /* Codes of tree nodes */
 
@@ -2322,7 +2323,7 @@ struct tree_type GTY(())
   tree binfo;
   tree context;
   tree canonical;
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_type *lang_specific;
 };
@@ -2562,7 +2563,7 @@ struct tree_struct_field_tag GTY(())
   unsigned HOST_WIDE_INT size;
 
   /* Alias set for a DECL_NONADDRESSABLE_P field.  Otherwise -1.  */
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
 };
 #define SFT_PARENT_VAR(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->sft.parent_var)
 #define SFT_OFFSET(NODE) (STRUCT_FIELD_TAG_CHECK (NODE)->sft.offset)
@@ -2785,7 +2786,7 @@ struct tree_decl_common GTY(())
   tree attributes;
   tree abstract_origin;
 
-  HOST_WIDE_INT pointer_alias_set;
+  alias_set_type pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */
   struct lang_decl *lang_specific;
 };
@@ -4780,9 +4781,9 @@ extern tree strip_float_extensions (tree);
 
 /* In alias.c */
 extern void record_component_aliases (tree);
-extern HOST_WIDE_INT get_alias_set (tree);
-extern int alias_sets_conflict_p (HOST_WIDE_INT, HOST_WIDE_INT);
-extern int alias_sets_must_conflict_p (HOST_WIDE_INT, HOST_WIDE_INT);
+extern alias_set_type get_alias_set (tree);
+extern int alias_sets_conflict_p (alias_set_type, alias_set_type);
+extern int alias_sets_must_conflict_p (alias_set_type, alias_set_type);
 extern int objects_must_conflict_p (tree, tree);
 
 /* In tree.c */

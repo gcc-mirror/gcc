@@ -99,7 +99,7 @@ void insert_block (tree);
 static void gfc_clear_binding_stack (void);
 static void gfc_be_parse_file (int);
 static void gfc_expand_function (tree);
-static HOST_WIDE_INT gfc_get_alias_set (tree);
+static alias_set_type gfc_get_alias_set (tree);
 
 #undef LANG_HOOKS_NAME
 #undef LANG_HOOKS_INIT
@@ -706,7 +706,7 @@ gfc_mark_addressable (tree exp)
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
 
-static HOST_WIDE_INT
+static alias_set_type
 gfc_get_alias_set (tree t)
 {
   tree u;

@@ -1,3 +1,8 @@
+2007-08-11  Ian Lance Taylor  <iant@google.com>
+
+	* misc.c (gnat_get_alias_set): Change return type to
+	alias_set_type.
+
 2007-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c, utils2.c: Fix whitespace in last change.

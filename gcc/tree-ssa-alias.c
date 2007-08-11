@@ -171,7 +171,7 @@ struct alias_map_d
 {
   /* Variable and its alias set.  */
   tree var;
-  HOST_WIDE_INT set;
+  alias_set_type set;
 };
 
 
@@ -198,7 +198,7 @@ static bitmap_obstack alias_bitmap_obstack;
 static void compute_flow_insensitive_aliasing (struct alias_info *);
 static void finalize_ref_all_pointers (struct alias_info *);
 static void dump_alias_stats (FILE *);
-static bool may_alias_p (tree, HOST_WIDE_INT, tree, HOST_WIDE_INT, bool);
+static bool may_alias_p (tree, alias_set_type, tree, alias_set_type, bool);
 static tree create_memory_tag (tree type, bool is_type_tag);
 static tree get_smt_for (tree, struct alias_info *);
 static tree get_nmt_for (tree);
@@ -2669,8 +2669,8 @@ maybe_create_global_var (void)
    VAR_ALIAS_SET is the alias set for VAR.  */
 
 static bool
-may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
-	     tree var, HOST_WIDE_INT var_alias_set,
+may_alias_p (tree ptr, alias_set_type mem_alias_set,
+	     tree var, alias_set_type var_alias_set,
 	     bool alias_set_only)
 {
   tree mem;
@@ -2998,7 +2998,7 @@ get_smt_for (tree ptr, struct alias_info *ai)
   size_t i;
   tree tag;
   tree tag_type = TREE_TYPE (TREE_TYPE (ptr));
-  HOST_WIDE_INT tag_set = get_alias_set (tag_type);
+  alias_set_type tag_set = get_alias_set (tag_type);
 
   /* We use a unique memory tag for all the ref-all pointers.  */
   if (PTR_IS_REF_ALL (ptr))
@@ -3644,7 +3644,7 @@ get_or_create_used_part_for (size_t uid)
 
 static tree
 create_sft (tree var, tree field, unsigned HOST_WIDE_INT offset,
-	    unsigned HOST_WIDE_INT size, HOST_WIDE_INT alias_set)
+	    unsigned HOST_WIDE_INT size, alias_set_type alias_set)
 {
   tree subvar = create_tag_raw (STRUCT_FIELD_TAG, field, "SFT");
 
