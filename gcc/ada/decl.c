@@ -5847,9 +5847,10 @@ is_variable_size (tree type)
 static int
 compare_field_bitpos (const PTR rt1, const PTR rt2)
 {
-  const_tree const field1 = * (const_tree const*) rt1;
-  const_tree const field2 = * (const_tree const*) rt2;
-  const int ret = tree_int_cst_compare (bit_position (field1), bit_position (field2));
+  const_tree const field1 = * (const_tree const *) rt1;
+  const_tree const field2 = * (const_tree const *) rt2;
+  const int ret
+    = tree_int_cst_compare (bit_position (field1), bit_position (field2));
 
   return ret ? ret : (int) (DECL_UID (field1) - DECL_UID (field2));
 }

@@ -1,5 +1,9 @@
 2007-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* decl.c, utils2.c: Fix whitespace in last change.
+
+2007-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* decl.c (compare_field_bitpos): Constify.
 	* utils2.c (compare_elmt_bitpos): Likewise.
 
