@@ -1,3 +1,8 @@
+2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32937
+	* gfortran.dg/char_length_6.f90: New test.
+
 2007-08-10  Ollie Wild  <aaw@google.com>
 
 	* g++.dg/lookup/using18.C: New test.

@@ -759,8 +759,8 @@ internal_proto(internal_unpack_c16);
 
 /* string_intrinsics.c */
 
-extern GFC_INTEGER_4 compare_string (GFC_INTEGER_4, const char *,
-				     GFC_INTEGER_4, const char *);
+extern int compare_string (GFC_INTEGER_4, const char *,
+			   GFC_INTEGER_4, const char *);
 iexport_proto(compare_string);
 
 /* random.c */

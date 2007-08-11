@@ -1999,8 +1999,7 @@ gfc_build_intrinsic_function_decls (void)
   /* String functions.  */
   gfor_fndecl_compare_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("compare_string")),
-				     gfc_int4_type_node,
-				     4,
+				     integer_type_node, 4,
 				     gfc_charlen_type_node, pchar_type_node,
 				     gfc_charlen_type_node, pchar_type_node);
 

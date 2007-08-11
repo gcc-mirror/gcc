@@ -1,3 +1,8 @@
+2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/string_intrinsics.c (compare_string): Return an int.
+	* libgfortran.h (compare_string): Likewise.
+
 2007-08-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31270
