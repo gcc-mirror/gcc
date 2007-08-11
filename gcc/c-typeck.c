@@ -3557,12 +3557,12 @@ build_c_cast (tree type, tree expr)
 		 && TREE_CODE (in_otype) == POINTER_TYPE);
 
 	  if (added)
-	    warning (0, "cast adds new qualifiers to function type");
+	    warning (OPT_Wcast_qual, "cast adds new qualifiers to function type");
 
 	  if (discarded)
 	    /* There are qualifiers present in IN_OTYPE that are not
 	       present in IN_TYPE.  */
-	    warning (0, "cast discards qualifiers from pointer target type");
+	    warning (OPT_Wcast_qual, "cast discards qualifiers from pointer target type");
 	}
 
       /* Warn about possible alignment problems.  */
