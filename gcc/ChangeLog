@@ -1,5 +1,12 @@
 2007-08-11  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/vxworks-dummy.h (TARGET_VXWORKS): Define.
+	* config/vxworks.h (TARGET_VXWORKS): Override.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Don't define
+	"mips" if TARGET_VXWORKS.
+
+2007-08-11  Richard Sandiford  <richard@codesourcery.com>
+
 	* calls.c (avoid_likely_spilled_reg): New function.
 	(expand_call): Use it.
 

@@ -17,6 +17,11 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* True if we're targetting VxWorks.  */
+#ifndef TARGET_VXWORKS
+#define TARGET_VXWORKS 0
+#endif
+
 /* True if generating code for a VxWorks RTP.  */
 #ifndef TARGET_VXWORKS_RTP
 #define TARGET_VXWORKS_RTP false
