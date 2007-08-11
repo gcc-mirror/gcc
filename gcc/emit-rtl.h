@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_EMIT_RTL_H
 
 /* Set the alias set of MEM to SET.  */
-extern void set_mem_alias_set (rtx, HOST_WIDE_INT);
+extern void set_mem_alias_set (rtx, alias_set_type);
 
 /* Set the alignment of MEM to ALIGN bits.  */
 extern void set_mem_align (rtx, unsigned int);

@@ -284,7 +284,7 @@ struct lang_hooks
 
   /* Called to obtain the alias set to be used for an expression or type.
      Returns -1 if the language does nothing special for it.  */
-  HOST_WIDE_INT (*get_alias_set) (tree);
+  alias_set_type (*get_alias_set) (tree);
 
   /* Called with an expression that is to be processed as a constant.
      Returns either the same expression or a language-independent

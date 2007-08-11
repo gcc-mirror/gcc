@@ -90,7 +90,7 @@ static void gnat_finish_incomplete_decl	(tree);
 static unsigned int gnat_init_options	(unsigned int, const char **);
 static int gnat_handle_option		(size_t, const char *, int);
 static bool gnat_post_options		(const char **);
-static HOST_WIDE_INT gnat_get_alias_set	(tree);
+static alias_set_type gnat_get_alias_set (tree);
 static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
 static const char *gnat_printable_name	(tree, int);
@@ -739,7 +739,7 @@ gnat_eh_type_covers (tree a, tree b)
 
 /* Get the alias set corresponding to a type or expression.  */
 
-static HOST_WIDE_INT
+static alias_set_type
 gnat_get_alias_set (tree type)
 {
   /* If this is a padding type, use the type of the first field.  */

@@ -2691,7 +2691,7 @@ struct gimplify_init_ctor_preeval_data
   tree lhs_base_decl;
 
   /* The alias set of the lhs object.  */
-  int lhs_alias_set;
+  alias_set_type lhs_alias_set;
 };
 
 static tree

@@ -4858,7 +4858,7 @@ extern bool cp_dump_tree			(void *, tree);
 
 /* In cp/cp-objcp-common.c.  */
 
-extern HOST_WIDE_INT cxx_get_alias_set		(tree);
+extern alias_set_type cxx_get_alias_set		(tree);
 extern bool cxx_warn_unused_global_decl		(tree);
 extern tree cp_expr_size			(tree);
 extern size_t cp_tree_size			(enum tree_code);

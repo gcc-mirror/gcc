@@ -4343,12 +4343,12 @@ set_uids_in_ptset (tree ptr, bitmap into, bitmap from, bool is_derefed,
   unsigned int i;
   bitmap_iterator bi;
   subvar_t sv;
-  HOST_WIDE_INT ptr_alias_set = get_alias_set (TREE_TYPE (ptr));
+  alias_set_type ptr_alias_set = get_alias_set (TREE_TYPE (ptr));
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
     {
       varinfo_t vi = get_varinfo (i);
-      unsigned HOST_WIDE_INT var_alias_set;
+      alias_set_type var_alias_set;
 
       /* The only artificial variables that are allowed in a may-alias
 	 set are heap variables.  */
@@ -4477,7 +4477,7 @@ merge_smts_into (tree p, bitmap solution)
   smt = var_ann (var)->symbol_mem_tag;
   if (smt)
     {
-      HOST_WIDE_INT smtset = get_alias_set (TREE_TYPE (smt));
+      alias_set_type smtset = get_alias_set (TREE_TYPE (smt));
 
       /* Need to set the SMT subsets first before this
 	 will work properly.  */

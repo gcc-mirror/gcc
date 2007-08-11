@@ -218,7 +218,7 @@ struct store_info
   rtx mem_addr;
 
   /* If this is non-zero, it is the alias set of a spill location.  */
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
 
   /* The offset of the first and byte before the last byte associated
      with the operation.  */
@@ -250,7 +250,7 @@ struct read_info
   int group_id;
 
   /* If this is non-zero, it is the alias set of a spill location.  */
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
 
   /* The offset of the first and byte after the last byte associated
      with the operation.  If begin == end == 0, the read did not have
@@ -497,7 +497,7 @@ static htab_t clear_alias_mode_table;
 /* Hash table element to look up the mode for an alias set.  */
 struct clear_alias_mode_holder
 {
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
   enum machine_mode mode;
 };
 
@@ -556,7 +556,7 @@ clear_alias_mode_hash (const void *p)
 /* Find the entry associated with ALIAS_SET.  */
 
 static struct clear_alias_mode_holder *
-clear_alias_set_lookup (HOST_WIDE_INT alias_set)
+clear_alias_set_lookup (alias_set_type alias_set)
 {
   struct clear_alias_mode_holder tmp_holder;
   void **slot;
@@ -845,7 +845,7 @@ delete_dead_store_insn (insn_info_t insn_info)
 	       INSN_UID (insn_info->insn));
       if (insn_info->store_rec->alias_set)
 	fprintf (dump_file, "alias set %d\n", 
-		 (int)insn_info->store_rec->alias_set);
+		 (int) insn_info->store_rec->alias_set);
       else
 	fprintf (dump_file, "\n");
     }
@@ -927,7 +927,7 @@ add_wild_read (bb_info_t bb_info)
   while (*ptr)
     {
       read_info_t next = (*ptr)->next;
-      if ( (*ptr)->alias_set == 0 )
+      if ((*ptr)->alias_set == 0)
         {
           pool_free (read_info_pool, *ptr);
           *ptr = next;
@@ -996,7 +996,7 @@ const_or_frame_p (rtx x)
 
 static bool
 canon_address (rtx mem,
-	       HOST_WIDE_INT *alias_set_out,
+	       alias_set_type *alias_set_out,
 	       int *group_id,
 	       HOST_WIDE_INT *offset, 
 	       cselib_val **base)
@@ -1009,9 +1009,9 @@ canon_address (rtx mem,
   if (clear_alias_sets)
     {
       /* If this is a spill, do not do any further processing.  */
-      HOST_WIDE_INT alias_set = MEM_ALIAS_SET (mem);
+      alias_set_type alias_set = MEM_ALIAS_SET (mem);
       if (dump_file)
-	fprintf (dump_file, "found alias set %d\n", (int)alias_set);
+	fprintf (dump_file, "found alias set %d\n", (int) alias_set);
       if (bitmap_bit_p (clear_alias_sets, alias_set))
 	{
 	  struct clear_alias_mode_holder *entry 
@@ -1023,7 +1023,7 @@ canon_address (rtx mem,
 	      if (dump_file)
 		fprintf (dump_file, 
 			 "disqualifying alias set %d, (%s) != (%s)\n", 
-			 (int)alias_set, GET_MODE_NAME (entry->mode), 
+			 (int) alias_set, GET_MODE_NAME (entry->mode), 
 			 GET_MODE_NAME (GET_MODE (mem)));
 	      
 	      bitmap_set_bit (disqualified_clear_alias_sets, alias_set);
@@ -1148,7 +1148,7 @@ record_store (rtx body, bb_info_t bb_info)
   rtx mem;
   HOST_WIDE_INT offset = 0;
   HOST_WIDE_INT width = 0;
-  HOST_WIDE_INT spill_alias_set;
+  alias_set_type spill_alias_set;
   insn_info_t insn_info = bb_info->last_insn;
   store_info_t store_info = NULL;
   int group_id;
@@ -1225,7 +1225,7 @@ record_store (rtx body, bb_info_t bb_info)
 
       if (dump_file)
 	fprintf (dump_file, " processing spill store %d(%s)\n",
-		 (int)spill_alias_set, GET_MODE_NAME (GET_MODE (mem)));
+		 (int) spill_alias_set, GET_MODE_NAME (GET_MODE (mem)));
     }
   else if (group_id >= 0)
     {
@@ -1289,7 +1289,7 @@ record_store (rtx body, bb_info_t bb_info)
 	    }
 	  if (dump_file)
 	    fprintf (dump_file, "    trying spill store in insn=%d alias_set=%d\n",
-		     INSN_UID (ptr->insn), (int)s_info->alias_set);
+		     INSN_UID (ptr->insn), (int) s_info->alias_set);
 	}
       else if ((s_info->group_id == group_id) 
 	       && (s_info->cse_base == base))
@@ -1488,7 +1488,7 @@ check_mem_read_rtx (rtx *loc, void *data)
   insn_info_t insn_info;
   HOST_WIDE_INT offset = 0;
   HOST_WIDE_INT width = 0;
-  HOST_WIDE_INT spill_alias_set = 0;
+  alias_set_type spill_alias_set = 0;
   cselib_val *base = NULL;  
   int group_id;
   read_info_t read_info;
@@ -1546,7 +1546,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 
       if (dump_file)
 	fprintf (dump_file, " processing spill load %d\n",
-		 (int)spill_alias_set);
+		 (int) spill_alias_set);
 
       while (i_ptr)
 	{
@@ -2187,7 +2187,7 @@ dse_step2_spill (void)
 
 
 void 
-dse_record_singleton_alias_set (HOST_WIDE_INT alias_set, 
+dse_record_singleton_alias_set (alias_set_type alias_set, 
 				enum machine_mode mode)
 {
   struct clear_alias_mode_holder tmp_holder;
@@ -2225,7 +2225,7 @@ dse_record_singleton_alias_set (HOST_WIDE_INT alias_set,
 /* Remove ALIAS_SET from the sets of stack slots being considered.  */
 
 void 
-dse_invalidate_singleton_alias_set (HOST_WIDE_INT alias_set)
+dse_invalidate_singleton_alias_set (alias_set_type alias_set)
 {
   if ((!gate_dse()) || !alias_set)
     return;

@@ -4686,7 +4686,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
   rtx label_ref;
   rtx tmp_reg;
   rtx nsse_reg;
-  int set;
+  alias_set_type set;
   int i;
 
   if (! cfun->va_list_gpr_size && ! cfun->va_list_fpr_size)
@@ -4769,7 +4769,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 static void
 setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
 {
-  int set = get_varargs_alias_set ();
+  alias_set_type set = get_varargs_alias_set ();
   int i;
 
   for (i = cum->regno; i < REGPARM_MAX; i++)
@@ -7180,10 +7180,10 @@ legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 /* Return a unique alias set for the GOT.  */
 
-static HOST_WIDE_INT
+static alias_set_type
 ix86_GOT_alias_set (void)
 {
-  static HOST_WIDE_INT set = -1;
+  static alias_set_type set = -1;
   if (set == -1)
     set = new_alias_set ();
   return set;

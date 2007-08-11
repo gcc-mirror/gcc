@@ -1,3 +1,9 @@
+2007-08-11  Ian Lance Taylor  <iant@google.com>
+
+	* cp-objcp-common.c (cxx_get_alias_set): Change return type to
+	alias_set_type.
+	* cp/cp-tree.h (cxx_get_alias_set): Update declaration.
+
 2007-08-10  Ollie Wild  <aaw@google.com>
 
 	* name-lookup.c (do_nonmember_using_decl): Print an error for ambiguous

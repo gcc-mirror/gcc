@@ -1,3 +1,72 @@
+2007-08-11  Ian Lance Taylor  <iant@google.com>
+
+	* alias.h (alias_set_type): Define new type.
+	(ALIAS_SET_MEMORY_BARRIER): Use it.
+	* rtl.h: Include alias.h.
+	(struct mem_attrs): Use alias_set_type.
+	* tree.h: Include alias.h
+	(struct tree_type): Use alias_set_type.
+	(struct tree_struct_field_tag): Likewise.
+	(struct tree_decl_common): Likewise.
+	* alias.c (struct alias_set_entry): Use alias_set_type.
+	(get_alias_set_entry, alias_set_subset_of): Likewise.
+	(alias_sets_conflict_p): Likewise.
+	(alias_sets_must_conflict_p): Likewise.
+	(objects_must_conflict_p): Likewise.
+	(get_alias_set, new_alias_set): Likewise.
+	(record_alias_subset, record_component_aliases): Likewise.
+	(varargs_set, frame_set): Change to alias_set_type.
+	(get_varargs_alias_set): Use alias_set_type.
+	(get_frame_alias_set): Likewise.
+	* builtins.c (setjmp_alias_set): Change to alias_set_type.
+	* dse.c (struct store_info): Use alias_set_type.
+	(struct read_info, struct clear_alias_mode_holder): Likewise.
+	(clear_alias_set_lookup, canon_address): Likewise.
+	(record_store, check_mem_read_rtx): Likewise.
+	(dse_record_singleton_alias_set): Likewise.
+	(dse_invalidate_singleton_alias_set): Likewise.
+	* emit-rtl.c (get_mem_attrs): Likewise.
+	(set_mem_attributes_minus_bitpos): Likewise.
+	(set_mem_alias_set): Likewise.
+	* expr.c (store_constructor_field, store_field): Likewise.
+	* gimplify.c (struct gimplify_init_ctor_preeval_data): Likewise.
+	* langhooks.c (lhd_get_alias_set): Likewise.
+	* langhooks-def.h (lhd_get_alias_set): Likewise.
+	* reload1.c (alter_reg): Likewise.
+	* tree-flow.h (struct fieldoff): Likewise.
+	* tree-ssa-alias.c (struct alias_map_d): Likewise.
+	(may_alias_p, get_smt_for, create_sft): Likewise.
+	* tree-ssa-alias-warnings.c (nonstandard_alias_types_p): Likewise.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Likewise.
+	(merge_smts_into): Likewise.
+	* varasm.c (const_alias_set): Likewise.
+	* c-common.c (strict_aliasing_warning): Likewise.
+	(c_common_get_alias_set): Likewise.
+	* dse.h (dse_record_singleton_alias_set): Update declaration.
+	(dse_invalidate_singleton_alias_set): Likewise.
+	* emit-rtl.h (set_mem_alias_set): Likewise.
+	* c-common.h (c_common_get_alias_set): Likewise.
+	* print-rtl.c (print_rtx): Cast MEM_ALIAS_SET when printing it.
+	* print-tree.c (print_node): Likewise.
+	* config/alpha/alpha.c (alpha_sr_alias_set): Change to
+	alias_set_type.
+	(alpha_setup_incoming_varargs): Use alias_set_type.
+	* config/i386/i386.c (setup_incoming_varargs_64): Use
+	alias_set_type.
+	(setup_incoming_varargs_ms_64): Likewise.
+	(ix86_GOT_alias_set): Likewise.
+	* config/mn10300/mn10300.c (mn10300_builtin_saveregs): Likewise.
+	* config/rs6000/rs6000.c (setup_incoming_varargs): Likewise.
+	(set): Change to alias_set_type.
+	(get_TOC_alias_set): Use alias_set_type.
+	* config/rs6000/rs6000-protos.h (get_TOC_alias_set): Update
+	declaration.
+	* config/sh/sh.c (sh_builtin_saveregs): Use alias_set_type.
+	* config/sparc/sparc.c (sparc_sr_alias_set): Change to
+	alias_set_type.
+	(struct_value_alias_set): Likewise.
+	* Makefile.in (GTFILES): Add $(srcdir)/alias.h.
+
 2007-08-11  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/vxworks-dummy.h (TARGET_VXWORKS): Define.

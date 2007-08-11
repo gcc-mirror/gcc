@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Special routine to get the alias set for C++.  */
 
-HOST_WIDE_INT
+alias_set_type
 cxx_get_alias_set (tree t)
 {
   if (IS_FAKE_BASE_TYPE (t))

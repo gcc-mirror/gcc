@@ -20,16 +20,19 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ALIAS_H
 #define GCC_ALIAS_H
 
-extern HOST_WIDE_INT new_alias_set (void);
-extern HOST_WIDE_INT get_varargs_alias_set (void);
-extern HOST_WIDE_INT get_frame_alias_set (void);
+/* The type of an alias set.  */
+typedef HOST_WIDE_INT alias_set_type;
+
+extern alias_set_type new_alias_set (void);
+extern alias_set_type get_varargs_alias_set (void);
+extern alias_set_type get_frame_alias_set (void);
 extern bool component_uses_parent_alias_set (tree);
-extern bool alias_set_subset_of (HOST_WIDE_INT, HOST_WIDE_INT);
+extern bool alias_set_subset_of (alias_set_type, alias_set_type);
 
 /* This alias set can be used to force a memory to conflict with all
    other memories, creating a barrier across which no memory reference
    can move.  Note that there are other legacy ways to create such
    memory barriers, including an address of SCRATCH.  */
-#define ALIAS_SET_MEMORY_BARRIER	((HOST_WIDE_INT) -1)
+#define ALIAS_SET_MEMORY_BARRIER	((alias_set_type) -1)
 
 #endif /* GCC_ALIAS_H */

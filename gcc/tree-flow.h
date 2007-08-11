@@ -1159,7 +1159,7 @@ struct fieldoff
   tree size;
   tree decl;
   HOST_WIDE_INT offset;  
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
 };
 typedef struct fieldoff fieldoff_s;
 

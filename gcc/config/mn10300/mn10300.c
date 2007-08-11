@@ -1450,7 +1450,7 @@ mn10300_builtin_saveregs (void)
                    && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
                        != void_type_node)))
                 ? UNITS_PER_WORD : 0);
-  int set = get_varargs_alias_set ();
+  alias_set_type set = get_varargs_alias_set ();
 
   if (argadj)
     offset = plus_constant (current_function_arg_offset_rtx, argadj);

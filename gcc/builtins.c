@@ -644,7 +644,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
 }
 
 /* Alias set used for setjmp buffer.  */
-static HOST_WIDE_INT setjmp_alias_set = -1;
+static alias_set_type setjmp_alias_set = -1;
 
 /* Construct the leading half of a __builtin_setjmp call.  Control will
    return to RECEIVER_LABEL.  This is also called directly by the SJLJ

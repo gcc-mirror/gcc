@@ -218,7 +218,7 @@ lhd_incomplete_type_error (tree ARG_UNUSED (value), tree type)
 /* Provide a default routine for alias sets that always returns -1.  This
    is used by languages that don't need to do anything special.  */
 
-HOST_WIDE_INT
+alias_set_type
 lhd_get_alias_set (tree ARG_UNUSED (t))
 {
   return -1;

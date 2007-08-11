@@ -100,7 +100,7 @@ static int alpha_function_needs_gp;
 
 /* The alias set for prologue/epilogue register save/restore.  */
 
-static GTY(()) int alpha_sr_alias_set;
+static GTY(()) alias_set_type alpha_sr_alias_set;
 
 /* The assembler name of the current function.  */
 
@@ -6022,7 +6022,8 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 
   if (!no_rtl)
     {
-      int count, set = get_varargs_alias_set ();
+      int count;
+      alias_set_type set = get_varargs_alias_set ();
       rtx tmp;
 
       count = cfun->va_list_gpr_size / UNITS_PER_WORD;

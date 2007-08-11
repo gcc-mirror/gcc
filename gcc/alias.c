@@ -131,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 struct alias_set_entry GTY(())
 {
   /* The alias set number, as stored in MEM_ALIAS_SET.  */
-  HOST_WIDE_INT alias_set;
+  alias_set_type alias_set;
 
   /* The children of the alias set.  These are not just the immediate
      children, but, in fact, all descendants.  So, if we have:
@@ -157,7 +157,7 @@ static rtx find_base_value (rtx);
 static int mems_in_disjoint_alias_sets_p (const_rtx, const_rtx);
 static int insert_subset_children (splay_tree_node, void*);
 static tree find_base_decl (tree);
-static alias_set_entry get_alias_set_entry (HOST_WIDE_INT);
+static alias_set_entry get_alias_set_entry (alias_set_type);
 static const_rtx fixed_scalar_and_varying_struct_p (const_rtx, const_rtx, rtx, rtx,
 						    bool (*) (const_rtx, bool));
 static int aliases_everything_p (const_rtx);
@@ -168,7 +168,7 @@ static int nonoverlapping_memrefs_p (const_rtx, const_rtx);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
-static void record_alias_subset (HOST_WIDE_INT, HOST_WIDE_INT);
+static void record_alias_subset (alias_set_type, alias_set_type);
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -257,7 +257,7 @@ static GTY (()) VEC(alias_set_entry,gc) *alias_sets;
    such an entry, or NULL otherwise.  */
 
 static inline alias_set_entry
-get_alias_set_entry (HOST_WIDE_INT alias_set)
+get_alias_set_entry (alias_set_type alias_set)
 {
   return VEC_index (alias_set_entry, alias_sets, alias_set);
 }
@@ -295,7 +295,7 @@ insert_subset_children (splay_tree_node node, void *data)
 /* Return true if the first alias set is a subset of the second.  */
 
 bool
-alias_set_subset_of (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
+alias_set_subset_of (alias_set_type set1, alias_set_type set2)
 {
   alias_set_entry ase;
 
@@ -315,7 +315,7 @@ alias_set_subset_of (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 /* Return 1 if the two specified alias sets may conflict.  */
 
 int
-alias_sets_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
+alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
 {
   alias_set_entry ase;
 
@@ -347,7 +347,7 @@ alias_sets_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 /* Return 1 if the two specified alias sets will always conflict.  */
 
 int
-alias_sets_must_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
+alias_sets_must_conflict_p (alias_set_type set1, alias_set_type set2)
 {
   if (set1 == 0 || set2 == 0 || set1 == set2)
     return 1;
@@ -363,7 +363,7 @@ alias_sets_must_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 int
 objects_must_conflict_p (tree t1, tree t2)
 {
-  HOST_WIDE_INT set1, set2;
+  alias_set_type set1, set2;
 
   /* If neither has a type specified, we don't know if they'll conflict
      because we may be using them to store objects of various types, for
@@ -485,10 +485,10 @@ component_uses_parent_alias_set (tree t)
 /* Return the alias set for T, which may be either a type or an
    expression.  Call language-specific routine for help, if needed.  */
 
-HOST_WIDE_INT
+alias_set_type
 get_alias_set (tree t)
 {
-  HOST_WIDE_INT set;
+  alias_set_type set;
 
   /* If we're not doing any alias analysis, just assume everything
      aliases everything else.  Also return 0 if this or its type is
@@ -541,7 +541,7 @@ get_alias_set (tree t)
 		     alias set for the restricted pointer a subset of the
 		     alias set for the type pointed to by the type of the
 		     decl.  */
-		  HOST_WIDE_INT pointed_to_alias_set
+		  alias_set_type pointed_to_alias_set
 		    = get_alias_set (pointed_to_type);
 
 		  if (pointed_to_alias_set == 0)
@@ -646,7 +646,7 @@ get_alias_set (tree t)
 
 /* Return a brand-new alias set.  */
 
-HOST_WIDE_INT
+alias_set_type
 new_alias_set (void)
 {
   if (flag_strict_aliasing)
@@ -674,7 +674,7 @@ new_alias_set (void)
    subset of alias set zero.  */
 
 static void
-record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
+record_alias_subset (alias_set_type superset, alias_set_type subset)
 {
   alias_set_entry superset_entry;
   alias_set_entry subset_entry;
@@ -730,7 +730,7 @@ record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
 void
 record_component_aliases (tree type)
 {
-  HOST_WIDE_INT superset = get_alias_set (type);
+  alias_set_type superset = get_alias_set (type);
   tree field;
 
   if (superset == 0)
@@ -774,9 +774,9 @@ record_component_aliases (tree type)
 /* Allocate an alias set for use in storing and reading from the varargs
    spill area.  */
 
-static GTY(()) HOST_WIDE_INT varargs_set = -1;
+static GTY(()) alias_set_type varargs_set = -1;
 
-HOST_WIDE_INT
+alias_set_type
 get_varargs_alias_set (void)
 {
 #if 1
@@ -796,9 +796,9 @@ get_varargs_alias_set (void)
 /* Likewise, but used for the fixed portions of the frame, e.g., register
    save areas.  */
 
-static GTY(()) HOST_WIDE_INT frame_set = -1;
+static GTY(()) alias_set_type frame_set = -1;
 
-HOST_WIDE_INT
+alias_set_type
 get_frame_alias_set (void)
 {
   if (frame_set == -1)
