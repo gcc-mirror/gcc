@@ -31,9 +31,60 @@ Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 
+#ifdef HAVE_SIGNAL_H
+#include <signal.h>
+#endif
+
 
 /* Useful compile-time options will be stored in here.  */
 compile_options_t compile_options;
+
+
+/* A signal handler to allow us to output a backtrace.  */
+void
+handler (int signum)
+{
+  const char * name = NULL, * desc = NULL;
+
+  switch (signum)
+    {
+#if defined(SIGSEGV)
+      case SIGSEGV:
+	name = "SIGSEGV";
+	desc = "Segmentation fault";
+	break;
+#endif
+
+#if defined(SIGBUS)
+      case SIGBUS:
+	name = "SIGBUS";
+	desc = "Bus error";
+	break;
+#endif
+
+#if defined(SIGILL)
+      case SIGILL:
+	name = "SIGILL";
+	desc = "Illegal instruction";
+	break;
+#endif
+
+#if defined(SIGFPE)
+      case SIGFPE:
+	name = "SIGFPE";
+	desc = "Floating-point exception";
+	break;
+#endif
+    }
+
+  if (name)
+    st_printf ("\nProgram received signal %d (%s): %s.\n", signum, name, desc);
+  else
+    st_printf ("\nProgram received signal %d.\n", signum);
+
+  sys_exit (5);
+}
+
 
 /* Set the usual compile-time options.  */
 extern void set_options (int , int []);
@@ -56,6 +107,31 @@ set_options (int num, int options[])
     compile_options.sign_zero = options[5];
   if (num >= 7)
     compile_options.bounds_check = options[6];
+
+  /* If backtrace is required, we set signal handlers on most common
+     signals.  */
+#if defined(HAVE_SIGNAL_H) && (defined(SIGSEGV) || defined(SIGBUS) \
+			       || defined(SIGILL) || defined(SIGFPE))
+  if (compile_options.backtrace)
+    {
+#if defined(SIGSEGV)
+      signal (SIGSEGV, handler);
+#endif
+
+#if defined(SIGBUS)
+      signal (SIGBUS, handler);
+#endif
+
+#if defined(SIGILL)
+      signal (SIGILL, handler);
+#endif
+
+#if defined(SIGFPE)
+      signal (SIGFPE, handler);
+#endif
+    }
+#endif
+
 }
 
 

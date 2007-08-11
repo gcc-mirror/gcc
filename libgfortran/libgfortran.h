@@ -373,6 +373,9 @@ options_t;
 extern options_t options;
 internal_proto(options);
 
+extern void handler (int);
+internal_proto(handler);
+
 
 /* Compile-time options that will influence the library.  */
 

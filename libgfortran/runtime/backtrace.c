@@ -223,7 +223,8 @@ show_backtrace (void)
 	    /* Try to recognize the internal libgfortran functions.  */
 	    if (strncasecmp (func, "*_gfortran", 10) == 0
 		|| strncasecmp (func, "_gfortran", 9) == 0
-		|| strcmp (func, "main") == 0 || strcmp (func, "_start") == 0)
+		|| strcmp (func, "main") == 0 || strcmp (func, "_start") == 0
+		|| strcmp (func, "_gfortrani_handler") == 0)
 	      continue;
 
 	    if (local_strcasestr (str[i], "libgfortran.so") != NULL
