@@ -1542,13 +1542,12 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 static int
 compare_elmt_bitpos (const PTR rt1, const PTR rt2)
 {
-  tree elmt1 = * (tree *) rt1;
-  tree elmt2 = * (tree *) rt2;
-  tree field1 = TREE_PURPOSE (elmt1);
-  tree field2 = TREE_PURPOSE (elmt2);
-  int ret;
+  const_tree const elmt1 = * (const_tree const*) rt1;
+  const_tree const elmt2 = * (const_tree const*) rt2;
+  const_tree const field1 = TREE_PURPOSE (elmt1);
+  const_tree const field2 = TREE_PURPOSE (elmt2);
+  const int ret = tree_int_cst_compare (bit_position (field1), bit_position (field2));
 
-  ret = tree_int_cst_compare (bit_position (field1), bit_position (field2));
   return ret ? ret : (int) (DECL_UID (field1) - DECL_UID (field2));
 }
 
