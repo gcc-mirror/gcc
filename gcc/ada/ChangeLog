@@ -1,3 +1,8 @@
+2007-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (compare_field_bitpos): Constify.
+	* utils2.c (compare_elmt_bitpos): Likewise.
+
 2007-07-27  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* s-osinte-kfreebsd-gnu.ads ((sigset_t_ptr): Removed, replaced by 
