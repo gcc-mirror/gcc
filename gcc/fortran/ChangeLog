@@ -1,5 +1,10 @@
 2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/31189
+	* invoke.texi (-fbacktrace): Document the new behaviour.
+
+2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32937
 	* trans-array.c (gfc_conv_expr_descriptor): Use
 	gfc_conv_const_charlen to generate backend_decl of right type.

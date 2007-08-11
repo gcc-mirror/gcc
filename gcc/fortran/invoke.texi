@@ -544,7 +544,9 @@ zero), @samp{overflow} (overflow in a floating point operation),
 @opindex @code{fbacktrace}
 @cindex backtrace
 @cindex trace
-Specify that, when a runtime error is encountered, the Fortran runtime
+Specify that, when a runtime error is encountered or a deadly signal is
+emitted (segmentation fault, illegal instruction, bus error or
+floating-point exception), the Fortran runtime
 library should output a backtrace of the error.  This option
 only has influence for compilation of the Fortran main program.
 

@@ -1,4 +1,15 @@
 2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/31189
+	* runtime/backtrace.c (show_backtrace): Skip _gfortrani_handler
+	when displaying backtrace.
+	* runtime/compile_options.c: Include <signal.h>.
+	(handler): New function.
+	(set_options): Set signal handlers for backtrace.
+	* libgfortran.h (handler): Add prototype.
+
+2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsics/string_intrinsics.c (compare_string): Return an int.
 	* libgfortran.h (compare_string): Likewise.
