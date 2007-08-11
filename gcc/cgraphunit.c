@@ -180,21 +180,26 @@ static GTY (()) tree static_dtors;
 static void
 record_cdtor_fn (tree fndecl)
 {
-  if (targetm.have_ctors_dtors)
+  struct cgraph_node *node;
+  if (targetm.have_ctors_dtors
+      || (!DECL_STATIC_CONSTRUCTOR (fndecl)
+	  && !DECL_STATIC_DESTRUCTOR (fndecl)))
     return;
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
       static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
       DECL_STATIC_CONSTRUCTOR (fndecl) = 0;
-      cgraph_mark_reachable_node (cgraph_node (fndecl));
     }
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     {
       static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
       DECL_STATIC_DESTRUCTOR (fndecl) = 0;
-      cgraph_mark_reachable_node (cgraph_node (fndecl));
     }
+  DECL_INLINE (fndecl) = 1;
+  node = cgraph_node (fndecl);
+  node->local.disregard_inline_limits = 1;
+  cgraph_mark_reachable_node (node);
 }
 
 /* Synthesize a function which calls all the global ctors or global
@@ -376,7 +381,7 @@ cgraph_process_new_functions (void)
 	  node->local.self_insns = estimate_num_insns (fndecl,
 						       &eni_inlining_weights);
 	  node->local.disregard_inline_limits
-	    = lang_hooks.tree_inlining.disregard_inline_limits (fndecl);
+	    |= lang_hooks.tree_inlining.disregard_inline_limits (fndecl);
 	  /* Inlining characteristics are maintained by the
 	     cgraph_mark_inline.  */
 	  node->global.insns = node->local.self_insns;

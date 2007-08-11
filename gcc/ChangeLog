@@ -1,3 +1,10 @@
+2007-08-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (record_cdtor_fn): Declare all cdtors always inlined.
+	(cgraph_process_new_functions): Honor previous value of
+	disregard_inline_limits.
+	* ipa-inline.c (compute_inline_parameters): Likewise.
+
 2007-08-11  Ian Lance Taylor  <iant@google.com>
 
 	* alias.h (alias_set_type): Define new type.
