@@ -1,3 +1,9 @@
+2007-08-11  David Edelsohn  <edelsohn@gnu.org>
+	    Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (CC1_CPU_SPEC): Define as empty string if
+	HAVE_LOCAL_CPU_DETECT not defined.
+
 2007-08-11  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (record_cdtor_fn): Declare all cdtors always inlined.
