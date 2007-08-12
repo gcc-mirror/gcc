@@ -3134,7 +3134,7 @@ try_split (rtx pat, rtx trial, int last)
   rtx before = PREV_INSN (trial);
   rtx after = NEXT_INSN (trial);
   int has_barrier = 0;
-  rtx tem;
+  rtx tem, note_retval;
   rtx note, seq;
   int probability;
   rtx insn_last, insn;
@@ -3269,6 +3269,18 @@ try_split (rtx pat, rtx trial, int last)
 	    }
 	  break;
 #endif
+
+	case REG_LIBCALL:
+	  /* Relink the insns with REG_LIBCALL note and with REG_RETVAL note 
+	     after split.  */
+	  REG_NOTES (insn_last) 
+	    = gen_rtx_EXPR_LIST (REG_LIBCALL,
+				 XEXP (note, 0),
+				 REG_NOTES (insn_last)); 
+
+	  note_retval = find_reg_note (XEXP (note, 0), REG_RETVAL, NULL);
+	  XEXP (note_retval, 0) = insn_last;
+	  break;
 
 	default:
 	  break;
