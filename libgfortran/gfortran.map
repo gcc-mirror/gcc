@@ -553,7 +553,8 @@ GFORTRAN_1.0 {
     _gfortran_random_r16;
     _gfortran_random_r4;
     _gfortran_random_r8;
-    _gfortran_random_seed;
+    _gfortran_random_seed_i4;
+    _gfortran_random_seed_i8;
     _gfortran_rename_i4;
     _gfortran_rename_i4_sub;
     _gfortran_rename_i8;

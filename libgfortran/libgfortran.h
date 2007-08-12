@@ -768,9 +768,12 @@ iexport_proto(compare_string);
 
 /* random.c */
 
-extern void random_seed (GFC_INTEGER_4 * size, gfc_array_i4 * put,
-			 gfc_array_i4 * get);
-iexport_proto(random_seed);
+extern void random_seed_i4 (GFC_INTEGER_4 * size, gfc_array_i4 * put,
+			    gfc_array_i4 * get);
+iexport_proto(random_seed_i4);
+extern void random_seed_i8 (GFC_INTEGER_8 * size, gfc_array_i8 * put,
+			    gfc_array_i8 * get);
+iexport_proto(random_seed_i8);
 
 /* size.c */
 

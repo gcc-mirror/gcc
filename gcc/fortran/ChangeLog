@@ -1,5 +1,18 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30964
+	PR fortran/33054
+	* trans-expr.c (gfc_conv_function_call): When no formal argument
+	list is available, we still substitute missing optional arguments.
+	* check.c (gfc_check_random_seed): Correct the check on the
+	number of arguments to RANDOM_SEED.
+	* intrinsic.c (add_subroutines): Add a resolution function to
+	RANDOM_SEED.
+	* iresolve.c (gfc_resolve_random_seed): New function.
+	* intrinsic.h (gfc_resolve_random_seed): New prototype.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32860
 	* error.c (error_uinteger): New function.
 	(error_integer): Call error_uinteger.

@@ -1,3 +1,15 @@
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/30964
+	PR fortran/33054
+	* intrinsics/random.c (random_seed): Rename into random_seed_i4.
+	(random_seed_i8): New function.
+	* gfortran.map (GFORTRAN_1.0): Remove _gfortran_random_seed,
+	add _gfortran_random_seed_i4 and _gfortran_random_seed_i8.
+	* libgfortran.h (iexport_proto): Replace random_seed by
+	random_seed_i4 and random_seed_i8.
+	* runtime/main.c (init): Call the new random_seed_i4.
+
 2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@gcc.gnu.org>
 

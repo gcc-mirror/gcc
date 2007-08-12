@@ -2303,35 +2303,37 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    } 
 	}
 
-      if (fsym)
+      /* The case with fsym->attr.optional is that of a user subroutine
+	 with an interface indicating an optional argument.  When we call
+	 an intrinsic subroutine, however, fsym is NULL, but we might still
+	 have an optional argument, so we proceed to the substitution
+	 just in case.  */
+      if (e && (fsym == NULL || fsym->attr.optional))
 	{
-	  if (e)
-	    {
-	      /* If an optional argument is itself an optional dummy
-		 argument, check its presence and substitute a null
-		 if absent.  */
-	      if (e->expr_type == EXPR_VARIABLE
-		    && e->symtree->n.sym->attr.optional
-		    && fsym->attr.optional)
-		gfc_conv_missing_dummy (&parmse, e, fsym->ts);
-
-	      /* Obtain the character length of an assumed character
-		 length procedure from the typespec.  */
-	      if (fsym->ts.type == BT_CHARACTER
-		    && parmse.string_length == NULL_TREE
-		    && e->ts.type == BT_PROCEDURE
-		    && e->symtree->n.sym->ts.type == BT_CHARACTER
-		    && e->symtree->n.sym->ts.cl->length != NULL)
-		{
-		  gfc_conv_const_charlen (e->symtree->n.sym->ts.cl);
-		  parmse.string_length
-			= e->symtree->n.sym->ts.cl->backend_decl;
-		}
-	    }
-
-	  if (need_interface_mapping)
-	    gfc_add_interface_mapping (&mapping, fsym, &parmse);
+	  /* If an optional argument is itself an optional dummy argument,
+	     check its presence and substitute a null if absent.  */
+	  if (e->expr_type == EXPR_VARIABLE
+	      && e->symtree->n.sym->attr.optional)
+	    gfc_conv_missing_dummy (&parmse, e, fsym ? fsym->ts : e->ts);
 	}
+
+      if (fsym && e)
+	{
+	  /* Obtain the character length of an assumed character length
+	     length procedure from the typespec.  */
+	  if (fsym->ts.type == BT_CHARACTER
+	      && parmse.string_length == NULL_TREE
+	      && e->ts.type == BT_PROCEDURE
+	      && e->symtree->n.sym->ts.type == BT_CHARACTER
+	      && e->symtree->n.sym->ts.cl->length != NULL)
+	    {
+	      gfc_conv_const_charlen (e->symtree->n.sym->ts.cl);
+	      parmse.string_length = e->symtree->n.sym->ts.cl->backend_decl;
+	    }
+	}
+
+      if (fsym && need_interface_mapping)
+	gfc_add_interface_mapping (&mapping, fsym, &parmse);
 
       gfc_add_block_to_block (&se->pre, &parmse.pre);
       gfc_add_block_to_block (&post, &parmse.post);

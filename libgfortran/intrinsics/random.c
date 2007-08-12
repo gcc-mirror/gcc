@@ -1,5 +1,5 @@
 /* Implementation of the RANDOM intrinsics
-   Copyright 2002, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright 2002, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>
    and Steve Kargl.
 
@@ -32,6 +32,7 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "libgfortran.h"
 #include <gthr.h>
+#include <string.h>
 
 extern void random_r4 (GFC_REAL_4 *);
 iexport_proto(random_r4);
@@ -644,21 +645,21 @@ arandom_r16 (gfc_array_r16 *x)
    must be called with no argument or exactly one argument.  */
 
 void
-random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
+random_seed_i4 (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 {
   int i;
 
   __gthread_mutex_lock (&random_lock);
 
+  /* Check that we only have one argument present.  */
+  if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
+    runtime_error ("RANDOM_SEED should have at most one argument present.");
+
+  /* From the standard: "If no argument is present, the processor assigns
+     a processor-dependent value to the seed."  */
   if (size == NULL && put == NULL && get == NULL)
-    {
-      /* From the standard: "If no argument is present, the processor assigns
-         a processor-dependent value to the seed."  */
-
-      for (i=0; i<kiss_size; i++)
+      for (i = 0; i < kiss_size; i++)
 	kiss_seed[i] = kiss_default_seed[i];
-
-    }
 
   if (size != NULL)
     *size = kiss_size;
@@ -675,7 +676,7 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
       /*  This code now should do correct strides.  */
       for (i = 0; i < kiss_size; i++)
-	kiss_seed[i] =(GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
+	kiss_seed[i] = (GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
     }
 
   /* Return the seed to GET data.  */
@@ -696,7 +697,65 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 *put, gfc_array_i4 *get)
 
   __gthread_mutex_unlock (&random_lock);
 }
-iexport(random_seed);
+iexport(random_seed_i4);
+
+
+void
+random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
+{
+  int i;
+
+  __gthread_mutex_lock (&random_lock);
+
+  /* Check that we only have one argument present.  */
+  if ((size ? 1 : 0) + (put ? 1 : 0) + (get ? 1 : 0) > 1)
+    runtime_error ("RANDOM_SEED should have at most one argument present.");
+
+  /* From the standard: "If no argument is present, the processor assigns
+     a processor-dependent value to the seed."  */
+  if (size == NULL && put == NULL && get == NULL)
+      for (i = 0; i < kiss_size; i++)
+	kiss_seed[i] = kiss_default_seed[i];
+
+  if (size != NULL)
+    *size = kiss_size / 2;
+
+  if (put != NULL)
+    {
+      /* If the rank of the array is not 1, abort.  */
+      if (GFC_DESCRIPTOR_RANK (put) != 1)
+        runtime_error ("Array rank of PUT is not 1.");
+
+      /* If the array is too small, abort.  */
+      if (((put->dim[0].ubound + 1 - put->dim[0].lbound)) < kiss_size / 2)
+        runtime_error ("Array size of PUT is too small.");
+
+      /*  This code now should do correct strides.  */
+      for (i = 0; i < kiss_size; i += 2)
+	memcpy (&kiss_seed[i], &(put->data[i * put->dim[0].stride]),
+		sizeof (GFC_UINTEGER_8));
+    }
+
+  /* Return the seed to GET data.  */
+  if (get != NULL)
+    {
+      /* If the rank of the array is not 1, abort.  */
+      if (GFC_DESCRIPTOR_RANK (get) != 1)
+	runtime_error ("Array rank of GET is not 1.");
+
+      /* If the array is too small, abort.  */
+      if (((get->dim[0].ubound + 1 - get->dim[0].lbound)) < kiss_size / 2)
+	runtime_error ("Array size of GET is too small.");
+
+      /*  This code now should do correct strides.  */
+      for (i = 0; i < kiss_size; i += 2)
+	memcpy (&(get->data[i * get->dim[0].stride]), &kiss_seed[i],
+		sizeof (GFC_UINTEGER_8));
+    }
+
+  __gthread_mutex_unlock (&random_lock);
+}
+iexport(random_seed_i8);
 
 
 #ifndef __GTHREAD_MUTEX_INIT

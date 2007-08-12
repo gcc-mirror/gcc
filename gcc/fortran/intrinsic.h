@@ -487,6 +487,7 @@ void gfc_resolve_ltime (gfc_code *);
 void gfc_resolve_mvbits (gfc_code *);
 void gfc_resolve_perror (gfc_code *);
 void gfc_resolve_random_number (gfc_code *);
+void gfc_resolve_random_seed (gfc_code *);
 void gfc_resolve_rename_sub (gfc_code *);
 void gfc_resolve_link_sub (gfc_code *);
 void gfc_resolve_symlnk_sub (gfc_code *);
