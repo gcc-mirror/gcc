@@ -93,6 +93,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_preprocessed = 0;
   gfc_option.flag_automatic = 1;
   gfc_option.flag_backslash = 1;
+  gfc_option.flag_module_private = 0;
   gfc_option.flag_backtrace = 0;
   gfc_option.flag_allow_leading_underscore = 0;
   gfc_option.flag_dump_core = 0;
@@ -575,6 +576,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.flag_max_stack_var_size = value;
       break;
 
+    case OPT_fmodule_private:
+      gfc_option.flag_module_private = value;
+      break;
+      
     case OPT_frange_check:
       gfc_option.flag_range_check = value;
       break;

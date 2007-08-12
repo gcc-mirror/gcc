@@ -1865,6 +1865,7 @@ typedef struct
   int flag_d_lines;
   int flag_openmp;
   int flag_sign_zero;
+  int flag_module_private;
 
   int fpe;
 
