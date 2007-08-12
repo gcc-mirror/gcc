@@ -1,3 +1,9 @@
+2003-08-12  Zdenek Dvorak  <ook@ucw.cz>
+
+	* MAINTAINERS (Various Maintainers): Add myself as
+	loop infrastructure maintainer.  Update my e-mail
+	address.
+
 2007-07-31  Diego Novillo  <dnovillo@google.com>
 
 	* MAINTAINERS (Reviewers): Rename from Non-Autopoiesis.

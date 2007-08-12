@@ -212,15 +212,16 @@ reload			Ulrich Weigand		uweigand@de.ibm.com
 dfp.c, related		Ben Elliston		bje@au.ibm.com
 RTL optimizers		Eric Botcazou		ebotcazou@libertysurf.fr
 auto-vectorizer		Richard Guenther	rguenther@suse.de
-auto-vectorizer		Zdenek Dvorak		dvorakz@suse.cz
+auto-vectorizer		Zdenek Dvorak		ook@ucw.cz
 auto-vectorizer		Dorit Nuzman		dorit@il.ibm.com
+loop infrastructure	Zdenek Dvorak		ook@ucw.cz
 
 Note that individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
 
 			Non-Algorithmic Maintainers
 
-loop optimizer		Zdenek Dvorak		dvorakz@suse.cz
+loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 middle-end		Richard Guenther	rguenther@suse.de
 libcpp			Tom Tromey		tromey@redhat.com
