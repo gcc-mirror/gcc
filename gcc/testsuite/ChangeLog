@@ -1,5 +1,14 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/30964
+	PR fortran/33054
+	* gfortran.dg/random_4.f90: New test.
+	* gfortran.dg/random_5.f90: New test.
+	* gfortran.dg/random_6.f90: New test.
+	* gfortran.dg/random_7.f90: New test.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32860
 	* gcc.dg/format/gcc_gfc-1.c: Updated with new formats.
 

@@ -2507,6 +2507,16 @@ gfc_resolve_random_number (gfc_code *c)
 
 
 void
+gfc_resolve_random_seed (gfc_code *c)
+{
+  const char *name;
+
+  name = gfc_get_string (PREFIX ("random_seed_i%d"), gfc_default_integer_kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
+void
 gfc_resolve_rename_sub (gfc_code *c)
 {
   const char *name;

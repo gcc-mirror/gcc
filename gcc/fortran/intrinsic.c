@@ -2467,8 +2467,9 @@ add_subroutines (void)
 	      gfc_check_random_number, NULL, gfc_resolve_random_number,
 	      h, BT_REAL, dr, REQUIRED);
 
-  add_sym_3s ("random_seed", GFC_ISYM_RANDOM_SEED, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_F95,
-	      gfc_check_random_seed, NULL, NULL,
+  add_sym_3s ("random_seed", GFC_ISYM_RANDOM_SEED, NO_CLASS,
+	      BT_UNKNOWN, 0, GFC_STD_F95,
+	      gfc_check_random_seed, NULL, gfc_resolve_random_seed,
 	      sz, BT_INTEGER, di, OPTIONAL, pt, BT_INTEGER, di, OPTIONAL,
 	      gt, BT_INTEGER, di, OPTIONAL);
 

@@ -2880,8 +2880,15 @@ gfc_check_random_number (gfc_expr *harvest)
 try
 gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 {
+  unsigned int nargs = 0;
+  locus *where = NULL;
+
   if (size != NULL)
     {
+      if (size->expr_type != EXPR_VARIABLE
+	  || !size->symtree->n.sym->attr.optional)
+	nargs++;
+
       if (scalar_check (size, 0) == FAILURE)
 	return FAILURE;
 
@@ -2897,10 +2904,12 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
   if (put != NULL)
     {
-
-      if (size != NULL)
-	gfc_error ("Too many arguments to %s at %L", gfc_current_intrinsic,
-		    &put->where);
+      if (put->expr_type != EXPR_VARIABLE
+	  || !put->symtree->n.sym->attr.optional)
+	{
+	  nargs++;
+	  where = &put->where;
+	}
 
       if (array_check (put, 1) == FAILURE)
 	return FAILURE;
@@ -2917,10 +2926,12 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
 
   if (get != NULL)
     {
-
-      if (size != NULL || put != NULL)
-	gfc_error ("Too many arguments to %s at %L", gfc_current_intrinsic,
-		   &get->where);
+      if (get->expr_type != EXPR_VARIABLE
+	  || !get->symtree->n.sym->attr.optional)
+	{
+	  nargs++;
+	  where = &get->where;
+	}
 
       if (array_check (get, 2) == FAILURE)
 	return FAILURE;
@@ -2937,6 +2948,10 @@ gfc_check_random_seed (gfc_expr *size, gfc_expr *put, gfc_expr *get)
       if (kind_value_check (get, 2, gfc_default_integer_kind) == FAILURE)
 	return FAILURE;
     }
+
+  /* RANDOM_SEED may not have more than one non-optional argument.  */
+  if (nargs > 1)
+    gfc_error ("Too many arguments to %s at %L", gfc_current_intrinsic, where);
 
   return SUCCESS;
 }

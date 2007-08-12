@@ -162,7 +162,7 @@ init (void)
   /* if (argc > 1 && strcmp(argv[1], "--resume") == 0) resume();  */
 #endif
 
-  random_seed(NULL,NULL,NULL);
+  random_seed_i4 (NULL, NULL, NULL);
 }
 
 
