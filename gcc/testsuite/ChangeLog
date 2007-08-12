@@ -1,5 +1,11 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/29600
+	* gfortran.dg/intrinsics_kind_argument_1.f90: Add test for ACHAR
+	intrinsic.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/30964
 	PR fortran/33054
 	* gfortran.dg/random_4.f90: New test.

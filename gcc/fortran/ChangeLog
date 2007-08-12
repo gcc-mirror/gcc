@@ -1,5 +1,15 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/29600
+	* intrinsic.c (add_functions): Add optional KIND argument to ACHAR.
+	* iresolve.c (gfc_resolve_achar): Handle the KIND argument.
+	* check.c (gfc_check_achar): Check for the optional KIND argument.
+	* simplify.c (gfc_simplify_achar): Use KIND argument.
+	* intrinsic.h (gfc_check_achar, gfc_simplify_achar,
+	gfc_resolve_achar): Adjust prototypes.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/30964
 	PR fortran/33054
 	* trans-expr.c (gfc_conv_function_call): When no formal argument

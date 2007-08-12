@@ -257,14 +257,18 @@ gfc_simplify_abs (gfc_expr *e)
    systems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
-gfc_simplify_achar (gfc_expr *e)
+gfc_simplify_achar (gfc_expr *e, gfc_expr *k)
 {
   gfc_expr *result;
-  int c;
+  int c, kind;
   const char *ch;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
+
+  kind = get_kind (BT_CHARACTER, k, "ACHAR", gfc_default_character_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
 
   ch = gfc_extract_int (e, &c);
 
@@ -275,8 +279,7 @@ gfc_simplify_achar (gfc_expr *e)
     gfc_warning ("Argument of ACHAR function at %L outside of range [0,127]",
 		 &e->where);
 
-  result = gfc_constant_result (BT_CHARACTER, gfc_default_character_kind,
-				&e->where);
+  result = gfc_constant_result (BT_CHARACTER, kind, &e->where);
 
   result->value.character.string = gfc_getmem (2);
 

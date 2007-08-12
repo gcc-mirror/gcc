@@ -443,9 +443,11 @@ gfc_check_abs (gfc_expr *a)
 
 
 try
-gfc_check_achar (gfc_expr *a)
+gfc_check_achar (gfc_expr *a, gfc_expr *kind)
 {
   if (type_check (a, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+  if (kind_check (kind, 1, BT_CHARACTER) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
