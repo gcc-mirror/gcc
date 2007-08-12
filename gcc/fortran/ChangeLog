@@ -1,5 +1,16 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/31629
+	* lang.opt (-fmodule-private): New option.
+	* gfortran.h (gfc_option_t): Add flag_module_private member.
+	* invoke.texi (-fmodule-private): Document the new option.
+	* module.c (gfc_check_access): Allow the -fmodule-private option
+	to modify the default behaviour.
+	* options.c (gfc_init_options): Initialize flag_module_private.
+	(gfc_handle_option): Handle -fmodule-private.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/29600
 	* intrinsic.c (add_functions): Add KIND arguments to COUNT,
 	IACHAR, ICHAR, INDEX, LBOUND, LEN, LEN_TRIM, SCAN, SIZE, UBOUND
