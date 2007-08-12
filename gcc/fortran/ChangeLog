@@ -1,3 +1,57 @@
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/29600
+	* intrinsic.c (add_functions): Add KIND arguments to COUNT,
+	IACHAR, ICHAR, INDEX, LBOUND, LEN, LEN_TRIM, SCAN, SIZE, UBOUND
+	and VERIFY.
+	* iresolve.c (gfc_resolve_count): Add kind argument.
+	(gfc_resolve_iachar): New function.
+	(gfc_resolve_ichar): Add kind argument.
+	(gfc_resolve_index_func): Likewise.
+	(gfc_resolve_lbound): Likewise.
+	(gfc_resolve_len): Likewise.
+	(gfc_resolve_len_trim): Likewise.
+	(gfc_resolve_scan): Likewise.
+	(gfc_resolve_size): New function.
+	(gfc_resolve_ubound): Add kind argument.
+	(gfc_resolve_verify): Likewise.
+	* trans-decl.c (gfc_get_extern_function_decl): Allow specific
+	intrinsics to have 4 arguments.
+	* check.c (gfc_check_count): Add kind argument.
+	(gfc_check_ichar_iachar): Likewise.
+	(gfc_check_index): Likewise.
+	(gfc_check_lbound): Likewise.
+	(gfc_check_len_lentrim): New function.
+	(gfc_check_scan): Add kind argument.
+	(gfc_check_size): Likewise.
+	(gfc_check_ubound): Likewise.
+	(gfc_check_verify): Likewise.
+	* intrinsic.texi: Update documentation for COUNT, IACHAR, ICHAR,
+	INDEX, LBOUND, LEN, LEN_TRIM, SCAN, SIZE, UBOUND and VERIFY.
+	* simplify.c (get_kind): Whitespace fix.
+	(int_expr_with_kind): New function.
+	(gfc_simplify_iachar): Add kind argument.
+	(gfc_simplify_iachar): Likewise.
+	(gfc_simplify_ichar): Likewise.
+	(gfc_simplify_index): Likewise.
+	(simplify_bound_dim): Likewise.
+	(simplify_bound): Likewise.
+	(gfc_simplify_lbound): Likewise.
+	(gfc_simplify_len): Likewise.
+	(gfc_simplify_len_trim): Likewise.
+	(gfc_simplify_scan): Likewise.
+	(gfc_simplify_shape): Pass NULL as kind argument to gfc_simplify_size.
+	(gfc_simplify_size): Add kind argument.
+	(gfc_simplify_ubound): Likewise.
+	(gfc_simplify_verify): Likewise.
+	* intrinsic.h: Update prototypes and add new ones.
+	* trans-intrinsic.c (gfc_conv_intrinsic_index): Rename into
+	gfc_conv_intrinsic_index_scan_verify.
+	(gfc_conv_intrinsic_scan, gfc_conv_intrinsic_verify): Remove.
+	(gfc_conv_intrinsic_function): Call
+	gfc_conv_intrinsic_index_scan_verify to translate the INDEX,
+	SCAN and VERIFY intrinsics.
+
 2007-08-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31189

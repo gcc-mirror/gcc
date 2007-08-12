@@ -2644,10 +2644,12 @@ Inverse function: @ref{ACOSH}
 
 @table @asis
 @item @emph{Description}:
-@code{COUNT(MASK [, DIM])} counts the number of @code{.TRUE.} elements of
-@var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
-taken to be @code{1}.  @var{DIM} is a scaler of type @code{INTEGER} in the
-range of @math{1 /leq DIM /leq n)} where @math{n} is the rank of @var{MASK}.
+
+@code{COUNT(MASK [, DIM [, KIND]])} counts the number of @code{.TRUE.}
+elements of @var{MASK} along the dimension of @var{DIM}.  If @var{DIM} is
+omitted it is taken to be @code{1}.  @var{DIM} is a scaler of type
+@code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n}
+is the rank of @var{MASK}.
 
 @item @emph{Standard}:
 F95 and later
@@ -2656,17 +2658,21 @@ F95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = COUNT(MASK [, DIM])}
+@code{RESULT = COUNT(MASK [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{MASK} @tab The type shall be @code{LOGICAL}.
-@item @var{DIM}  @tab The type shall be @code{INTEGER}.
+@item @var{DIM}  @tab (Optional) The type shall be @code{INTEGER}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} with rank equal to that of
-@var{MASK}.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
+The result has a rank equal to that of @var{MASK}.
 
 @item @emph{Example}:
 @smallexample
@@ -5112,16 +5118,19 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = IACHAR(C)}
+@code{RESULT = IACHAR(C [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C} @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
+@item @var{C}    @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default integer
-kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{Example}:
 @smallexample
@@ -5366,16 +5375,19 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = ICHAR(C)}
+@code{RESULT = ICHAR(C [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{C} @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
+@item @var{C}    @tab Shall be a scalar @code{CHARACTER}, with @code{INTENT(IN)}
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default integer
-kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{Example}:
 @smallexample
@@ -5552,7 +5564,7 @@ F77 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = INDEX(STRING, SUBSTRING [, BACK])}
+@code{RESULT = INDEX(STRING, SUBSTRING [, BACK [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5562,11 +5574,14 @@ Elemental function
 @code{INTENT(IN)}
 @item @var{BACK} @tab (Optional) Shall be a scalar @code{LOGICAL(*)}, with
 @code{INTENT(IN)}
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default integer
-kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{See also}:
 @ref{SCAN}, @ref{VERIFY}
@@ -6111,15 +6126,20 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = LBOUND(ARRAY [, DIM])}
+@code{RESULT = LBOUND(ARRAY [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 If @var{DIM} is absent, the result is an array of the lower bounds of
 @var{ARRAY}.  If @var{DIM} is present, the result is a scalar
 corresponding to the lower bound of the array along that dimension.  If
@@ -6152,16 +6172,20 @@ F77 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{L = LEN(STRING)}
+@code{L = LEN(STRING [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar or array of type
 @code{CHARACTER(*)}, with @code{INTENT(IN)}
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is an @code{INTEGER} of the default kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{See also}:
 @ref{LEN_TRIM}, @ref{ADJUSTL}, @ref{ADJUSTR}
@@ -6185,16 +6209,20 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = LEN_TRIM(STRING)}
+@code{RESULT = LEN_TRIM(STRING [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER(*)},
 with @code{INTENT(IN)}
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is an @code{INTEGER} of the default kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{See also}:
 @ref{LEN}, @ref{ADJUSTL}, @ref{ADJUSTR}
@@ -8788,18 +8816,21 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = SCAN(STRING, SET[, BACK])}
+@code{RESULT = SCAN(STRING, SET[, BACK [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be of type @code{CHARACTER(*)}.
 @item @var{SET}    @tab Shall be of type @code{CHARACTER(*)}.
 @item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
+@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+                        expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default
-integer kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{Example}:
 @smallexample
@@ -9342,7 +9373,7 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = SIZE(ARRAY[, DIM])}
+@code{RESULT = SIZE(ARRAY[, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9351,11 +9382,14 @@ a pointer it must be associated and allocatable arrays must be allocated.
 @item @var{DIM}   @tab (Optional) shall be a scalar of type @code{INTEGER} 
 and its value shall be in the range from 1 to n, where n equals the rank 
 of @var{ARRAY}.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+                      expression indicating the kind parameter of
+		      the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default
-integer kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{Example}:
 @smallexample
@@ -10367,15 +10401,20 @@ F95 and later
 Inquiry function
 
 @item @emph{Syntax}:
-@code{RESULT = UBOUND(ARRAY [, DIM])}
+@code{RESULT = UBOUND(ARRAY [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{ARRAY} @tab Shall be an array, of any type.
 @item @var{DIM} @tab (Optional) Shall be a scalar @code{INTEGER(*)}.
+@item @var{KIND}@tab (Optional) An @code{INTEGER} initialization
+                     expression indicating the kind parameter of
+		     the result.
 @end multitable
 
 @item @emph{Return value}:
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 If @var{DIM} is absent, the result is an array of the upper bounds of
 @var{ARRAY}.  If @var{DIM} is present, the result is a scalar
 corresponding to the upper bound of the array along that dimension.  If
@@ -10533,18 +10572,21 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = VERIFY(STRING, SET[, BACK])}
+@code{RESULT = VERIFY(STRING, SET[, BACK [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{STRING} @tab Shall be of type @code{CHARACTER(*)}.
 @item @var{SET}    @tab Shall be of type @code{CHARACTER(*)}.
 @item @var{BACK}   @tab (Optional) shall be of type @code{LOGICAL}.
+@item @var{KIND}   @tab (Optional) An @code{INTEGER} initialization
+                        expression indicating the kind parameter of
+		        the result.
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default
-integer kind.
+The return value is of type @code{INTEGER} and of kind @var{KIND}. If
+@var{KIND} is absent, the return value is of default integer kind.
 
 @item @emph{Example}:
 @smallexample

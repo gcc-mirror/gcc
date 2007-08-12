@@ -10,7 +10,7 @@
          character(*), intent(in) :: string
          integer(4), intent(in) :: ignore_case
          integer(4) :: same
-         if (len (self) < 1) return ! { dg-error "Type of argument" }
+         if (len (self) < 1) return ! { dg-error "must be CHARACTER" }
          same = 1
    end function
 

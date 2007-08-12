@@ -2759,7 +2759,8 @@ gfc_conv_intrinsic_len_trim (gfc_se * se, gfc_expr * expr)
 /* Returns the starting position of a substring within a string.  */
 
 static void
-gfc_conv_intrinsic_index (gfc_se * se, gfc_expr * expr)
+gfc_conv_intrinsic_index_scan_verify (gfc_se * se, gfc_expr * expr,
+				      tree function)
 {
   tree logical4_type_node = gfc_get_logical_type (4);
   tree type;
@@ -2770,20 +2771,18 @@ gfc_conv_intrinsic_index (gfc_se * se, gfc_expr * expr)
   num_args = gfc_intrinsic_argument_list_length (expr);
   args = alloca (sizeof (tree) * 5);
 
-  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
+  gfc_conv_intrinsic_function_args (se, expr, args,
+				    num_args >= 5 ? 5 : num_args);
   type = gfc_typenode_for_spec (&expr->ts);
 
   if (num_args == 4)
     args[4] = build_int_cst (logical4_type_node, 0);
   else
-    {
-      gcc_assert (num_args == 5);
-      args[4] = convert (logical4_type_node, args[4]);
-    }
+    args[4] = convert (logical4_type_node, args[4]);
 
-  fndecl = build_addr (gfor_fndecl_string_index, current_function_decl);
-  se->expr = build_call_array (TREE_TYPE (TREE_TYPE (gfor_fndecl_string_index)),
-			       fndecl, 5, args);
+  fndecl = build_addr (function, current_function_decl);
+  se->expr = build_call_array (TREE_TYPE (TREE_TYPE (function)), fndecl,
+			       5, args);
   se->expr = convert (type, se->expr);
 
 }
@@ -3471,73 +3470,6 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 }
 
 
-/* Scan a string for any one of the characters in a set of characters.  */
-
-static void
-gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
-{
-  tree logical4_type_node = gfc_get_logical_type (4);
-  tree type;
-  tree fndecl;
-  tree *args;
-  unsigned int num_args;
-
-  num_args = gfc_intrinsic_argument_list_length (expr);
-  args = alloca (sizeof (tree) * 5);
-
-  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
-  type = gfc_typenode_for_spec (&expr->ts);
-
-  if (num_args == 4)
-    args[4] = build_int_cst (logical4_type_node, 0);
-  else
-    {
-      gcc_assert (num_args == 5);
-      args[4] = convert (logical4_type_node, args[4]);
-    }
-
-  fndecl = build_addr (gfor_fndecl_string_scan, current_function_decl);
-  se->expr = build_call_array (TREE_TYPE (TREE_TYPE (gfor_fndecl_string_scan)),
-			       fndecl, 5, args);
-  se->expr = convert (type, se->expr);
-}
-
-
-/* Verify that a set of characters contains all the characters in a string
-   by identifying the position of the first character in a string of
-   characters that does not appear in a given set of characters.  */
-
-static void
-gfc_conv_intrinsic_verify (gfc_se * se, gfc_expr * expr)
-{
-  tree logical4_type_node = gfc_get_logical_type (4);
-  tree type;
-  tree fndecl;
-  tree *args;
-  unsigned int num_args;
-
-  num_args = gfc_intrinsic_argument_list_length (expr);
-  args = alloca (sizeof (tree) * 5);
-
-  gfc_conv_intrinsic_function_args (se, expr, args, num_args);
-  type = gfc_typenode_for_spec (&expr->ts);
-
-  if (num_args == 4)
-    args[4] = build_int_cst (logical4_type_node, 0);
-  else
-    {
-      gcc_assert (num_args == 5);
-      args[4] = convert (logical4_type_node, args[4]);
-    }
-
-  fndecl = build_addr (gfor_fndecl_string_verify, current_function_decl);
-  se->expr = build_call_array (TREE_TYPE (TREE_TYPE (gfor_fndecl_string_verify)),
-			       fndecl, 5, args);
-
-  se->expr = convert (type, se->expr);
-}
-
-
 /* Generate code for SELECTED_INT_KIND (R) intrinsic function.  */
 
 static void
@@ -3862,11 +3794,11 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_SCAN:
-      gfc_conv_intrinsic_scan (se, expr);
+      gfc_conv_intrinsic_index_scan_verify (se, expr, gfor_fndecl_string_scan);
       break;
 
     case GFC_ISYM_VERIFY:
-      gfc_conv_intrinsic_verify (se, expr);
+      gfc_conv_intrinsic_index_scan_verify (se, expr, gfor_fndecl_string_verify);
       break;
 
     case GFC_ISYM_ALLOCATED:
@@ -4029,7 +3961,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_INDEX:
-      gfc_conv_intrinsic_index (se, expr);
+      gfc_conv_intrinsic_index_scan_verify (se, expr, gfor_fndecl_string_index);
       break;
 
     case GFC_ISYM_IOR:

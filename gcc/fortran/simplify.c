@@ -115,19 +115,31 @@ get_kind (bt type, gfc_expr *k, const char *name, int default_kind)
     {
       gfc_error ("KIND parameter of %s at %L must be an initialization "
 		 "expression", name, &k->where);
-
       return -1;
     }
 
   if (gfc_extract_int (k, &kind) != NULL
       || gfc_validate_kind (type, kind, true) < 0)
     {
-
       gfc_error ("Invalid KIND parameter of %s at %L", name, &k->where);
       return -1;
     }
 
   return kind;
+}
+
+
+/* Helper function to get an integer constant with a kind number given
+   by an integer constant expression.  */
+static gfc_expr *
+int_expr_with_kind (int i, gfc_expr *kind, const char *name)
+{
+  gfc_expr *res = gfc_int_expr (i);
+  res->ts.kind = get_kind (BT_INTEGER, kind, name, gfc_default_integer_kind); 
+  if (res->ts.kind == -1)
+    return NULL;
+  else
+    return res;
 }
 
 
@@ -1198,7 +1210,7 @@ gfc_simplify_huge (gfc_expr *e)
    systems that gfortran currently works on are ASCII.  */
 
 gfc_expr *
-gfc_simplify_iachar (gfc_expr *e)
+gfc_simplify_iachar (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
   int index;
@@ -1218,7 +1230,9 @@ gfc_simplify_iachar (gfc_expr *e)
     gfc_warning ("Argument of IACHAR function at %L outside of range 0..127",
 		 &e->where);
 
-  result = gfc_int_expr (index);
+  if ((result = int_expr_with_kind (index, kind, "IACHAR")) == NULL)
+    return &gfc_bad_expr;
+
   result->where = e->where;
 
   return range_check (result, "IACHAR");
@@ -1380,7 +1394,7 @@ gfc_simplify_ibset (gfc_expr *x, gfc_expr *y)
 
 
 gfc_expr *
-gfc_simplify_ichar (gfc_expr *e)
+gfc_simplify_ichar (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
   int index;
@@ -1399,7 +1413,9 @@ gfc_simplify_ichar (gfc_expr *e)
   if (index < 0 || index > UCHAR_MAX)
     gfc_internal_error("Argument of ICHAR at %L out of range", &e->where);
 
-  result = gfc_int_expr (index);
+  if ((result = int_expr_with_kind (index, kind, "ICHAR")) == NULL)
+    return &gfc_bad_expr;
+
   result->where = e->where;
   return range_check (result, "ICHAR");
 }
@@ -1422,7 +1438,7 @@ gfc_simplify_ieor (gfc_expr *x, gfc_expr *y)
 
 
 gfc_expr *
-gfc_simplify_index (gfc_expr *x, gfc_expr *y, gfc_expr *b)
+gfc_simplify_index (gfc_expr *x, gfc_expr *y, gfc_expr *b, gfc_expr *kind)
 {
   gfc_expr *result;
   int back, len, lensub;
@@ -1436,8 +1452,11 @@ gfc_simplify_index (gfc_expr *x, gfc_expr *y, gfc_expr *b)
   else
     back = 0;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				&x->where);
+  k = get_kind (BT_INTEGER, kind, "INDEX", gfc_default_integer_kind); 
+  if (k == -1)
+    return &gfc_bad_expr;
+
+  result = gfc_constant_result (BT_INTEGER, k, &x->where);
 
   len = x->value.character.length;
   lensub = y->value.character.length;
@@ -1938,9 +1957,11 @@ gfc_simplify_kind (gfc_expr *e)
 
 
 static gfc_expr *
-simplify_bound_dim (gfc_expr *array, int d, int upper, gfc_array_spec *as)
+simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
+		    gfc_array_spec *as)
 {
   gfc_expr *l, *u, *result;
+  int k;
 
   /* The last dimension of an assumed-size array is special.  */
   if (d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
@@ -1958,8 +1979,12 @@ simplify_bound_dim (gfc_expr *array, int d, int upper, gfc_array_spec *as)
   if (l->expr_type != EXPR_CONSTANT || u->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				&array->where);
+  k = get_kind (BT_INTEGER, kind, upper ? "UBOUND" : "LBOUND",
+		gfc_default_integer_kind); 
+  if (k == -1)
+    return &gfc_bad_expr;
+
+  result = gfc_constant_result (BT_INTEGER, k, &array->where);
 
   if (mpz_cmp (l->value.integer, u->value.integer) > 0)
     {
@@ -1983,7 +2008,7 @@ simplify_bound_dim (gfc_expr *array, int d, int upper, gfc_array_spec *as)
 
 
 static gfc_expr *
-simplify_bound (gfc_expr *array, gfc_expr *dim, int upper)
+simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 {
   gfc_ref *ref;
   gfc_array_spec *as;
@@ -2039,6 +2064,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, int upper)
       gfc_expr *bounds[GFC_MAX_DIMENSIONS];
       gfc_expr *e;
       gfc_constructor *head, *tail;
+      int k;
 
       /* UBOUND(ARRAY) is not valid for an assumed-size array.  */
       if (upper && as->type == AS_ASSUMED_SIZE)
@@ -2051,7 +2077,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, int upper)
       /* Simplify the bounds for each dimension.  */
       for (d = 0; d < array->rank; d++)
 	{
-	  bounds[d] = simplify_bound_dim (array, d + 1, upper, as);
+	  bounds[d] = simplify_bound_dim (array, kind, d + 1, upper, as);
 	  if (bounds[d] == NULL || bounds[d] == &gfc_bad_expr)
 	    {
 	      int j;
@@ -2067,7 +2093,11 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, int upper)
       e->where = array->where;
       e->expr_type = EXPR_ARRAY;
       e->ts.type = BT_INTEGER;
-      e->ts.kind = gfc_default_integer_kind;
+      k = get_kind (BT_INTEGER, kind, upper ? "UBOUND" : "LBOUND",
+		    gfc_default_integer_kind); 
+      if (k == -1)
+	return &gfc_bad_expr;
+      e->ts.kind = k;
 
       /* The result is a rank 1 array; its size is the rank of the first
 	 argument to {L,U}BOUND.  */
@@ -2110,27 +2140,30 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, int upper)
 	  return &gfc_bad_expr;
 	}
 
-      return simplify_bound_dim (array, d, upper, as);
+      return simplify_bound_dim (array, kind, d, upper, as);
     }
 }
 
 
 gfc_expr *
-gfc_simplify_lbound (gfc_expr *array, gfc_expr *dim)
+gfc_simplify_lbound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  return simplify_bound (array, dim, 0);
+  return simplify_bound (array, dim, kind, 0);
 }
 
 
 gfc_expr *
-gfc_simplify_len (gfc_expr *e)
+gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
+  int k = get_kind (BT_INTEGER, kind, "LEN", gfc_default_integer_kind);
+
+  if (k == -1)
+    return &gfc_bad_expr;
 
   if (e->expr_type == EXPR_CONSTANT)
     {
-      result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				    &e->where);
+      result = gfc_constant_result (BT_INTEGER, k, &e->where);
       mpz_set_si (result->value.integer, e->value.character.length);
       return range_check (result, "LEN");
     }
@@ -2139,8 +2172,7 @@ gfc_simplify_len (gfc_expr *e)
       && e->ts.cl->length->expr_type == EXPR_CONSTANT
       && e->ts.cl->length->ts.type == BT_INTEGER)
     {
-      result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				    &e->where);
+      result = gfc_constant_result (BT_INTEGER, k, &e->where);
       mpz_set (result->value.integer, e->ts.cl->length->value.integer);
       return range_check (result, "LEN");
     }
@@ -2150,17 +2182,19 @@ gfc_simplify_len (gfc_expr *e)
 
 
 gfc_expr *
-gfc_simplify_len_trim (gfc_expr *e)
+gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 {
   gfc_expr *result;
   int count, len, lentrim, i;
+  int k = get_kind (BT_INTEGER, kind, "LEN_TRIM", gfc_default_integer_kind);
+
+  if (k == -1)
+    return &gfc_bad_expr;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				&e->where);
-
+  result = gfc_constant_result (BT_INTEGER, k, &e->where);
   len = e->value.character.length;
 
   for (count = 0, i = 1; i <= len; i++)
@@ -3323,12 +3357,16 @@ gfc_simplify_scale (gfc_expr *x, gfc_expr *i)
 
 
 gfc_expr *
-gfc_simplify_scan (gfc_expr *e, gfc_expr *c, gfc_expr *b)
+gfc_simplify_scan (gfc_expr *e, gfc_expr *c, gfc_expr *b, gfc_expr *kind)
 {
   gfc_expr *result;
   int back;
   size_t i;
   size_t indx, len, lenc;
+  int k = get_kind (BT_INTEGER, kind, "SCAN", gfc_default_integer_kind);
+
+  if (k == -1)
+    return &gfc_bad_expr;
 
   if (e->expr_type != EXPR_CONSTANT || c->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3338,8 +3376,7 @@ gfc_simplify_scan (gfc_expr *e, gfc_expr *c, gfc_expr *b)
   else
     back = 0;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				&e->where);
+  result = gfc_constant_result (BT_INTEGER, k, &e->where);
 
   len = e->value.character.length;
   lenc = c->value.character.length;
@@ -3545,7 +3582,7 @@ gfc_simplify_shape (gfc_expr *source)
 	{
 	  mpz_set_ui (e->value.integer, n + 1);
 
-	  f = gfc_simplify_size (source, e);
+	  f = gfc_simplify_size (source, e, NULL);
 	  gfc_free_expr (e);
 	  if (f == NULL)
 	    {
@@ -3566,11 +3603,15 @@ gfc_simplify_shape (gfc_expr *source)
 
 
 gfc_expr *
-gfc_simplify_size (gfc_expr *array, gfc_expr *dim)
+gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
   mpz_t size;
   gfc_expr *result;
   int d;
+  int k = get_kind (BT_INTEGER, kind, "SCAN", gfc_default_integer_kind);
+
+  if (k == -1)
+    return &gfc_bad_expr;
 
   if (dim == NULL)
     {
@@ -3587,11 +3628,8 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim)
 	return NULL;
     }
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				&array->where);
-
+  result = gfc_constant_result (BT_INTEGER, k, &array->where);
   mpz_set (result->value.integer, size);
-
   return result;
 }
 
@@ -4028,19 +4066,23 @@ gfc_simplify_trim (gfc_expr *e)
 
 
 gfc_expr *
-gfc_simplify_ubound (gfc_expr *array, gfc_expr *dim)
+gfc_simplify_ubound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  return simplify_bound (array, dim, 1);
+  return simplify_bound (array, dim, kind, 1);
 }
 
 
 gfc_expr *
-gfc_simplify_verify (gfc_expr *s, gfc_expr *set, gfc_expr *b)
+gfc_simplify_verify (gfc_expr *s, gfc_expr *set, gfc_expr *b, gfc_expr *kind)
 {
   gfc_expr *result;
   int back;
   size_t index, len, lenset;
   size_t i;
+  int k = get_kind (BT_INTEGER, kind, "VERIFY", gfc_default_integer_kind);
+
+  if (k == -1)
+    return &gfc_bad_expr;
 
   if (s->expr_type != EXPR_CONSTANT || set->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -4050,8 +4092,7 @@ gfc_simplify_verify (gfc_expr *s, gfc_expr *set, gfc_expr *b)
   else
     back = 0;
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
-				&s->where);
+  result = gfc_constant_result (BT_INTEGER, k, &s->where);
 
   len = s->value.character.length;
   lenset = set->value.character.length;

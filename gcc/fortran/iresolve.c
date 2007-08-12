@@ -520,10 +520,13 @@ gfc_resolve_cosh (gfc_expr *f, gfc_expr *x)
 
 
 void
-gfc_resolve_count (gfc_expr *f, gfc_expr *mask, gfc_expr *dim)
+gfc_resolve_count (gfc_expr *f, gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
 
   if (dim != NULL)
     {
@@ -856,10 +859,25 @@ gfc_resolve_ibset (gfc_expr *f, gfc_expr *i, gfc_expr *pos ATTRIBUTE_UNUSED)
 
 
 void
-gfc_resolve_ichar (gfc_expr *f, gfc_expr *c)
+gfc_resolve_iachar (gfc_expr *f, gfc_expr *c, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
+  f->value.function.name = gfc_get_string ("__ichar_%d", c->ts.kind);
+}
+
+
+void
+gfc_resolve_ichar (gfc_expr *f, gfc_expr *c, gfc_expr *kind)
+{
+  f->ts.type = BT_INTEGER;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string ("__ichar_%d", c->ts.kind);
 }
 
@@ -920,12 +938,16 @@ gfc_resolve_ior (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 
 void
 gfc_resolve_index_func (gfc_expr *f, gfc_expr *str,
-			gfc_expr *sub_str ATTRIBUTE_UNUSED, gfc_expr *back)
+			gfc_expr *sub_str ATTRIBUTE_UNUSED, gfc_expr *back,
+			gfc_expr *kind)
 {
   gfc_typespec ts;
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
 
   if (back && back->ts.kind != gfc_default_integer_kind)
     {
@@ -1057,12 +1079,15 @@ gfc_resolve_kill (gfc_expr *f, gfc_expr *p ATTRIBUTE_UNUSED,
 
 
 void
-gfc_resolve_lbound (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+gfc_resolve_lbound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
   static char lbound[] = "__lbound";
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
 
   if (dim == NULL)
     {
@@ -1076,10 +1101,13 @@ gfc_resolve_lbound (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
 
 
 void
-gfc_resolve_len (gfc_expr *f, gfc_expr *string)
+gfc_resolve_len (gfc_expr *f, gfc_expr *string, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
   f->value.function.name
     = gfc_get_string ("__len_%d_i%d", string->ts.kind,
 		      gfc_default_integer_kind);
@@ -1087,10 +1115,13 @@ gfc_resolve_len (gfc_expr *f, gfc_expr *string)
 
 
 void
-gfc_resolve_len_trim (gfc_expr *f, gfc_expr *string)
+gfc_resolve_len_trim (gfc_expr *f, gfc_expr *string, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string ("__len_trim%d", string->ts.kind);
 }
 
@@ -1776,10 +1807,13 @@ gfc_resolve_scale (gfc_expr *f, gfc_expr *x, gfc_expr *i)
 void
 gfc_resolve_scan (gfc_expr *f, gfc_expr *string,
 		  gfc_expr *set ATTRIBUTE_UNUSED,
-		  gfc_expr *back ATTRIBUTE_UNUSED)
+		  gfc_expr *back ATTRIBUTE_UNUSED, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string ("__scan_%d", string->ts.kind);
 }
 
@@ -1869,6 +1903,18 @@ gfc_resolve_sinh (gfc_expr *f, gfc_expr *x)
   f->ts = x->ts;
   f->value.function.name
     = gfc_get_string ("__sinh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+}
+
+
+void
+gfc_resolve_size (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
+		  gfc_expr *dim ATTRIBUTE_UNUSED, gfc_expr *kind)
+{
+  f->ts.type = BT_INTEGER;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
 }
 
 
@@ -2265,12 +2311,15 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
 
 
 void
-gfc_resolve_ubound (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+gfc_resolve_ubound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
   static char ubound[] = "__ubound";
 
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
 
   if (dim == NULL)
     {
@@ -2343,10 +2392,13 @@ gfc_resolve_unpack (gfc_expr *f, gfc_expr *vector, gfc_expr *mask,
 void
 gfc_resolve_verify (gfc_expr *f, gfc_expr *string,
 		    gfc_expr *set ATTRIBUTE_UNUSED,
-		    gfc_expr *back ATTRIBUTE_UNUSED)
+		    gfc_expr *back ATTRIBUTE_UNUSED, gfc_expr *kind)
 {
   f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  if (kind)
+    f->ts.kind = mpz_get_si (kind->value.integer);
+  else
+    f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string ("__verify_%d", string->ts.kind);
 }
 
