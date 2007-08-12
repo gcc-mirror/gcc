@@ -149,10 +149,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define HAVE_LOCAL_CPU_DETECT
 #endif
 
-#if !defined (CC1_CPU_SPEC) && defined (HAVE_LOCAL_CPU_DETECT)
+#ifndef CC1_CPU_SPEC
+#ifdef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC \
 "%{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu)} \
  %{mtune=native:%<mtune=native %:local_cpu_detect(tune)}"
+#else
+#define CC1_CPU_SPEC ""
+#endif
 #endif
 
 /* Architecture type.  */
