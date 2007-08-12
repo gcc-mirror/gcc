@@ -1680,14 +1680,14 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
 	    gfc_warning ("Character length of actual argument shorter "
-			"than of dummy argument '%s' (%d/%d) at %L",
-			f->sym->name, (int) actual_size,
-			(int) formal_size, &a->expr->where);
+			"than of dummy argument '%s' (%lu/%lu) at %L",
+			f->sym->name, actual_size, formal_size,
+			&a->expr->where);
           else if (where)
 	    gfc_warning ("Actual argument contains too few "
-			"elements for dummy argument '%s' (%d/%d) at %L",
-			f->sym->name, (int) actual_size,
-			(int) formal_size, &a->expr->where);
+			"elements for dummy argument '%s' (%lu/%lu) at %L",
+			f->sym->name, actual_size, formal_size,
+			&a->expr->where);
 	  return  0;
 	}
 
