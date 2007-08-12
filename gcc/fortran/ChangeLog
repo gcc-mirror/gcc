@@ -1,5 +1,13 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/32860
+	* error.c (error_uinteger): New function.
+	(error_integer): Call error_uinteger.
+	(error_print): Handle %u, %lu, %li and %ld format specifiers.
+	* interface.c (compare_actual_formal): Use the new %lu specifier.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31629
 	* lang.opt (-fmodule-private): New option.
 	* gfortran.h (gfc_option_t): Add flag_module_private member.

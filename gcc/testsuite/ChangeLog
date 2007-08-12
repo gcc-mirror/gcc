@@ -1,5 +1,10 @@
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/32860
+	* gcc.dg/format/gcc_gfc-1.c: Updated with new formats.
+
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31629
 	* gcc/testsuite/gfortran.dg/module_private_1.f90: New test.
 

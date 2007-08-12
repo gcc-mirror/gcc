@@ -342,6 +342,15 @@ static const format_length_info strfmon_length_specs[] =
   { NULL, 0, 0, NULL, 0, 0 }
 };
 
+
+/* For now, the Fortran front-end routines only use l as length modifier.  */
+static const format_length_info gcc_gfc_length_specs[] =
+{
+  { "l", FMT_LEN_l, STD_C89, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
+};
+
+
 static const format_flag_spec printf_flag_specs[] =
 {
   { ' ',  0, 0, N_("' ' flag"),        N_("the ' ' printf flag"),              STD_C89 },
@@ -631,7 +640,8 @@ static const format_char_info gcc_cxxdiag_char_table[] =
 static const format_char_info gcc_gfc_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
   { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
   { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "cR", NULL },
 
@@ -738,7 +748,7 @@ static const format_kind_info format_types_orig[] =
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_gfc", NULL, gcc_gfc_char_table, "", NULL,
+  { "gcc_gfc", gcc_gfc_length_specs, gcc_gfc_char_table, "", NULL,
     NULL, gcc_gfc_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 0, 0, 0,

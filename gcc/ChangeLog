@@ -1,3 +1,11 @@
+2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32860
+	* c-format.c (gcc_gfc_length_specs): New array.
+	(gcc_gfc_char_table): Add unsigned specifier, and references to
+	the l length modifier.
+	(format_types_orig): Use the new gcc_gfc_length_specs.
+
 2007-08-12  Sa Liu  <saliu@de.ibm.com>
 
 	* emit-rtl.c (try_split): Relink the insns with REG_LIBCALL note
