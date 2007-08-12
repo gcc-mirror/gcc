@@ -1,3 +1,8 @@
+2007-08-12  Sa Liu  <saliu@de.ibm.com>
+
+	* emit-rtl.c (try_split): Relink the insns with REG_LIBCALL note
+	and with REG_RETVAL note after split.
+
 2007-08-11  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.c (mips_sched_reorder):  Mark cycle parameter
