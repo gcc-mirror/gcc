@@ -21,6 +21,8 @@ program test
   call check (ichar (s, k), 117)
   call check (ichar (s, kind=k), 117)
 
+  if (achar(107) /= achar(107,1)) call abort
+
   call check (index (t, s, .true., k), 7)
   call check (index (t, s, kind=k, back=.false.), 5)
 

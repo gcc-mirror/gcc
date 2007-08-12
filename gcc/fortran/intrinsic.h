@@ -32,7 +32,7 @@ try gfc_check_a_p (gfc_expr *, gfc_expr *);
 
 try gfc_check_abs (gfc_expr *);
 try gfc_check_access_func (gfc_expr *, gfc_expr *);
-try gfc_check_achar (gfc_expr *);
+try gfc_check_achar (gfc_expr *, gfc_expr *);
 try gfc_check_all_any (gfc_expr *, gfc_expr *);
 try gfc_check_allocated (gfc_expr *);
 try gfc_check_associated (gfc_expr *, gfc_expr *);
@@ -185,7 +185,7 @@ try gfc_check_unlink_sub (gfc_expr *, gfc_expr *);
 
 /* Simplification functions.  */
 gfc_expr *gfc_simplify_abs (gfc_expr *);
-gfc_expr *gfc_simplify_achar (gfc_expr *);
+gfc_expr *gfc_simplify_achar (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_acos (gfc_expr *);
 gfc_expr *gfc_simplify_acosh (gfc_expr *);
 gfc_expr *gfc_simplify_adjustl (gfc_expr *);
@@ -303,7 +303,7 @@ gfc_expr *gfc_convert_constant (gfc_expr *, bt, int);
 /* Resolution functions.  */
 void gfc_resolve_abs (gfc_expr *, gfc_expr *);
 void gfc_resolve_access (gfc_expr *, gfc_expr *, gfc_expr *);
-void gfc_resolve_achar (gfc_expr *, gfc_expr *);
+void gfc_resolve_achar (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_acos (gfc_expr *, gfc_expr *);
 void gfc_resolve_acosh (gfc_expr *, gfc_expr *);
 void gfc_resolve_aimag (gfc_expr *, gfc_expr *);

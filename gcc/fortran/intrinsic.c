@@ -946,9 +946,10 @@ add_functions (void)
 
   make_generic ("access", GFC_ISYM_ACCESS, GFC_STD_GNU);
 
-  add_sym_1 ("achar", GFC_ISYM_ACHAR, CLASS_ELEMENTAL, ACTUAL_NO, BT_CHARACTER, dc, GFC_STD_F95,
+  add_sym_2 ("achar", GFC_ISYM_ACHAR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_CHARACTER, dc, GFC_STD_F95,
 	     gfc_check_achar, gfc_simplify_achar, gfc_resolve_achar,
-	     i, BT_INTEGER, di, REQUIRED);
+	     i, BT_INTEGER, di, REQUIRED, kind, BT_INTEGER, di, OPTIONAL);
 
   make_generic ("achar", GFC_ISYM_ACHAR, GFC_STD_F95);
 

@@ -133,18 +133,19 @@ gfc_resolve_access (gfc_expr *f, gfc_expr *name ATTRIBUTE_UNUSED,
 
 
 void
-gfc_resolve_achar (gfc_expr *f, gfc_expr *x)
+gfc_resolve_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind)
 {
-  
   f->ts.type = BT_CHARACTER;
-  f->ts.kind = gfc_default_character_kind;
+  f->ts.kind = (kind == NULL)
+	     ? gfc_default_character_kind : mpz_get_si (kind->value.integer);
   f->ts.cl = gfc_get_charlen ();
   f->ts.cl->next = gfc_current_ns->cl_list;
   gfc_current_ns->cl_list = f->ts.cl;
   f->ts.cl->length = gfc_int_expr (1);
 
-  f->value.function.name
-    = gfc_get_string ("__achar_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+  f->value.function.name = gfc_get_string ("__achar_%d_%c%d", f->ts.kind,
+					   gfc_type_letter (x->ts.type),
+					   x->ts.kind);
 }
 
 
