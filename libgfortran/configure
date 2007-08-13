@@ -32613,7 +32613,7 @@ _ACEOF
 
   fi
   case "$host" in
-    *-*-darwin* | *-*-hpux* | *-*-cygwin*)
+    *-*-darwin* | *-*-hpux* | *-*-cygwin* | *-*-mingw* )
 
 cat >>confdefs.h <<\_ACEOF
 #define GTHREAD_USE_WEAK 0
