@@ -1,5 +1,17 @@
 2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/32827
+	* decl.c (variable_decl): Check for an imported symbol
+	by looking for its symtree and testing for the imported
+	attribute.
+	(gfc_match_import): Remove change of symbol's namespace
+	and set the attribute imported instead.
+	* symbol.c (gfc_get_sym_tree): It is not an error if a
+	symbol is imported.
+	* gfortran.h : Add the 'imported' to symbol_attribute.
+
+2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/32962
 	* trans-array.c (gfc_conv_array_transpose): Set the offset
 	of the destination to zero if the loop is zero based.

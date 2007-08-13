@@ -2393,7 +2393,10 @@ gfc_get_sym_tree (const char *name, gfc_namespace *ns, gfc_symtree **result)
 
       p = st->n.sym;
 
-      if (p->ns != ns && (!p->attr.function || ns->proc_name != p))
+      if (p->ns != ns && (!p->attr.function || ns->proc_name != p)
+	    && !(ns->proc_name
+		   && ns->proc_name->attr.if_source == IFSRC_IFBODY
+		   && (ns->has_import_set || p->attr.imported)))
 	{
 	  /* Symbol is from another namespace.  */
 	  gfc_error ("Symbol '%s' at %C has already been host associated",

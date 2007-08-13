@@ -1553,13 +1553,20 @@ variable_decl (int elem)
   if (current_ts.type == BT_DERIVED
       && gfc_current_ns->proc_name
       && gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY
-      && current_ts.derived->ns != gfc_current_ns
-      && !gfc_current_ns->has_import_set)
+      && current_ts.derived->ns != gfc_current_ns)
     {
-      gfc_error ("the type of '%s' at %C has not been declared within the "
-		 "interface", name);
-      m = MATCH_ERROR;
-      goto cleanup;
+      gfc_symtree *st;
+      st = gfc_find_symtree (gfc_current_ns->sym_root, current_ts.derived->name);
+      if (!(current_ts.derived->attr.imported
+		&& st != NULL
+		&& st->n.sym == current_ts.derived)
+	    && !gfc_current_ns->has_import_set)
+	{
+	    gfc_error ("the type of '%s' at %C has not been declared within the "
+		       "interface", name);
+	    m = MATCH_ERROR;
+	    goto cleanup;
+	}
     }
 
   /* In functions that have a RESULT variable defined, the function
@@ -2433,7 +2440,7 @@ gfc_match_import (void)
 	  st = gfc_new_symtree (&gfc_current_ns->sym_root, name);
 	  st->n.sym = sym;
 	  sym->refs++;
-	  sym->ns = gfc_current_ns;
+	  sym->attr.imported = 1;
 
 	  goto next_item;
 
