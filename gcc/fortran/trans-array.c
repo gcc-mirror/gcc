@@ -783,13 +783,18 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
   dest_info->data = gfc_conv_descriptor_data_get (src);
   gfc_conv_descriptor_data_set (&se->pre, dest, dest_info->data);
 
-  /* Copy the offset.  This is not changed by transposition: the top-left
-     element is still at the same offset as before.  */
-  dest_info->offset = gfc_conv_descriptor_offset (src);
+  /* Copy the offset.  This is not changed by transposition; the top-left
+     element is still at the same offset as before, except where the loop
+     starts at zero.  */
+  if (!integer_zerop (loop->from[0]))
+    dest_info->offset = gfc_conv_descriptor_offset (src);
+  else
+    dest_info->offset = gfc_index_zero_node;
+
   gfc_add_modify_expr (&se->pre,
 		       gfc_conv_descriptor_offset (dest),
 		       dest_info->offset);
-
+	  
   if (dest_info->dimen > loop->temp_dim)
     loop->temp_dim = dest_info->dimen;
 }
