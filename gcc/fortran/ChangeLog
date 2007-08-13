@@ -1,3 +1,9 @@
+2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32962
+	* trans-array.c (gfc_conv_array_transpose): Set the offset
+	of the destination to zero if the loop is zero based.
+
 2007-08-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29600
