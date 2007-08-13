@@ -1,5 +1,10 @@
 2007-08-13  Richard Sandiford  <richard@codesourcery.com>
 
+	* gcc.dg/pr21255-4.c: Skip for PIC.
+	* gcc.dg/tree-ssa/loop-1.c: Allow bsrf as well as jsr for SH targets.
+
+2007-08-13  Richard Sandiford  <richard@codesourcery.com>
+
 	* gcc.dg/attr-isr.c: Skip for PIC.
 	* gcc.dg/attr-isr-nosave_low_regs.c: Likewise.
 	* gcc.dg/attr-isr-trapa.c: Likewise.

@@ -42,6 +42,6 @@ void xxx(void)
 /* { dg-final { scan-assembler-times "foo" 5 { xfail hppa*-*-* ia64*-*-* sh*-*-* cris-*-* fido-*-* m68k-*-* } } } */
 /* { dg-final { scan-assembler-times "foo,%r" 5 { target hppa*-*-* } } } */
 /* { dg-final { scan-assembler-times "= foo"  5 { target ia64*-*-* } } } */
-/* { dg-final { scan-assembler-times "jsr|blink\ttr?,r18"  5 { target sh*-*-* } } } */
+/* { dg-final { scan-assembler-times "jsr|bsrf|blink\ttr?,r18"  5 { target sh*-*-* } } } */
 /* { dg-final { scan-assembler-times "Jsr \\\$r" 5 { target cris-*-* } } } */
 /* { dg-final { scan-assembler-times "\[jb\]sr" 5 { target fido-*-* m68k-*-* } } } */

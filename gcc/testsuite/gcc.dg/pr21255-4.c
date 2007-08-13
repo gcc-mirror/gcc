@@ -1,4 +1,4 @@
-/* { dg-do compile { target "sh*-*-*" } } */
+/* { dg-do compile { target { sh*-*-* && nonpic } } } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
 double
