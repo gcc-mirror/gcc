@@ -1401,19 +1401,14 @@ check_format_arg (void *ctx, tree format_tree,
       format_chars += offset;
       format_length -= offset;
     }
-  if (format_length < 1)
+  if (format_length < 1 || format_chars[--format_length] != 0)
     {
       res->number_unterminated++;
       return;
     }
-  if (format_length == 1)
+  if (format_length == 0)
     {
       res->number_empty++;
-      return;
-    }
-  if (format_chars[--format_length] != 0)
-    {
-      res->number_unterminated++;
       return;
     }
 
