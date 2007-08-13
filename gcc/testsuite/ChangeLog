@@ -1,3 +1,8 @@
+2007-08-13  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C/30427
+	*  gcc.dg/vector-1.c: New test.
+
 2007-08-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/pr21255-4.c: Skip for PIC.
