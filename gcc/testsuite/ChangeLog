@@ -1,3 +1,8 @@
+2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32827
+	* gfortran.dg/import6.f90: New test.
+
 2007-08-13  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C/30427

@@ -640,7 +640,8 @@ typedef struct
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     protected:1,		/* Symbol has been marked as protected.  */
     use_assoc:1,		/* Symbol has been use-associated.  */
-    use_only:1;			/* Symbol has been use-associated, with ONLY.  */
+    use_only:1,			/* Symbol has been use-associated, with ONLY.  */
+    imported:1;			/* Symbol has been associated by IMPORT.  */
 
   unsigned in_namelist:1, in_common:1, in_equivalence:1;
   unsigned function:1, subroutine:1, generic:1, generic_copy:1;
