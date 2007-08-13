@@ -1,4 +1,4 @@
-/* { dg-do compile { target sh-*-* sh[1234ble]*-*-*} } */
+/* { dg-do compile { target { { sh-*-* sh[1234ble]*-*-* } && nonpic } } } */
 /* { dg-options "-O" } */
 extern void foo ();
 
