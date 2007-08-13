@@ -2832,7 +2832,10 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       break;
 
     case BIT_NOT_EXPR:
-      if (typecode == INTEGER_TYPE || typecode == VECTOR_TYPE)
+      /* ~ works on integer types and non float vectors. */
+      if (typecode == INTEGER_TYPE
+	  || (typecode == VECTOR_TYPE
+	      && !VECTOR_FLOAT_TYPE_P (TREE_TYPE (arg))))
 	{
 	  if (!noconvert)
 	    arg = default_conversion (arg);

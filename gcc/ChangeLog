@@ -1,3 +1,9 @@
+2007-08-13  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C/30427
+	* c-typeck.c (build_unary_op <case BIT_NOT_EXPR>): Reject vector float
+	types.
+
 2007-08-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm_neon.h: Revert GPLv3 patch to this file.
