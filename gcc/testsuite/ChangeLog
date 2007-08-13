@@ -1,3 +1,9 @@
+2007-08-13  Dan Hipschman  <dsh@google.com>
+
+	PR c/32953
+	* gcc.dg/format/array-1.c: Add an additional test for
+	unterminated format strings of length 1.
+
 2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32926

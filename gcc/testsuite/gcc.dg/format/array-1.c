@@ -7,7 +7,8 @@
 
 const char a1[] = "foo";
 const char a2[] = "foo%d";
-const char b[3] = "foo";
+const char b1[3] = "foo";
+const char b2[1] = "1";
 static const char c1[] = "foo";
 static const char c2[] = "foo%d";
 char d[] = "foo";
@@ -23,7 +24,8 @@ foo (int i, long l)
   printf (a1);
   printf (a2, i);
   printf (a2, l); /* { dg-warning "format" "wrong type with array" } */
-  printf (b); /* { dg-warning "unterminated" "unterminated array" } */
+  printf (b1); /* { dg-warning "unterminated" "unterminated array" } */
+  printf (b2); /* { dg-warning "unterminated" "unterminated array" } */
   printf (c1);
   printf (c2, i);
   printf (c2, l); /* { dg-warning "format" "wrong type with array" } */

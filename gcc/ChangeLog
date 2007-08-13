@@ -1,3 +1,9 @@
+2007-08-13  Dan Hipschman  <dsh@google.com>
+
+	PR c/32953
+	* c-format.c (check_format_arg): Move check for zero-length
+	format strings below the check for unterminated strings.
+
 2007-08-13  Andrew Pinski  <pinskia@gmail.com>
 
 	PR C/30427
