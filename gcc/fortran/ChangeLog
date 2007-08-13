@@ -1,5 +1,11 @@
 2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/32926
+	* match.c (gfc_match_call): Do not create a new symtree in the
+	case where the existing symbol is external and not referenced.
+
+2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/32827
 	* decl.c (variable_decl): Check for an imported symbol
 	by looking for its symtree and testing for the imported
