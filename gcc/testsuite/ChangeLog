@@ -1,3 +1,12 @@
+2007-08-13  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/attr-isr.c: Skip for PIC.
+	* gcc.dg/attr-isr-nosave_low_regs.c: Likewise.
+	* gcc.dg/attr-isr-trapa.c: Likewise.
+	* gcc.dg/pragma-isr-nosave_low_regs.c: Likewise.
+	* gcc.dg/pragma-isr-trapa.c: Likewise.
+	* gcc.dg/pragma-isr-trapa2.c: Likewise.
+
 2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32962
