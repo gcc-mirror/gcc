@@ -1,3 +1,10 @@
+2007-08-13  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS, baseargs): Pass
+	--silent if $silent.
+	* configure: Regenerate.
+
 2003-08-12  Zdenek Dvorak  <ook@ucw.cz>
 
 	* MAINTAINERS (Various Maintainers): Add myself as
