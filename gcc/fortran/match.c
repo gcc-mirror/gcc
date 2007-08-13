@@ -2333,13 +2333,16 @@ gfc_match_call (void)
   if (!sym->attr.generic
 	&& !sym->attr.subroutine)
     {
-      /* ...create a symbol in this scope...  */
-      if (sym->ns != gfc_current_ns
-	    && gfc_get_sym_tree (name, NULL, &st) == 1)
-        return MATCH_ERROR;
+      if (!(sym->attr.external && !sym->attr.referenced))
+	{
+	  /* ...create a symbol in this scope...  */
+	  if (sym->ns != gfc_current_ns
+	        && gfc_get_sym_tree (name, NULL, &st) == 1)
+            return MATCH_ERROR;
 
-      if (sym != st->n.sym)
-	sym = st->n.sym;
+	  if (sym != st->n.sym)
+	    sym = st->n.sym;
+	}
 
       /* ...and then to try to make the symbol into a subroutine.  */
       if (gfc_add_subroutine (&sym->attr, sym->name, NULL) == FAILURE)
