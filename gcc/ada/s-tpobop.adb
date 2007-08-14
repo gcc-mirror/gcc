@@ -123,8 +123,7 @@ package body System.Tasking.Protected_Objects.Operations is
    procedure Requeue_Call
      (Self_Id    : Task_Id;
       Object     : Protection_Entries_Access;
-      Entry_Call : Entry_Call_Link;
-      With_Abort : Boolean);
+      Entry_Call : Entry_Call_Link);
    --  Handle requeue of Entry_Call.
    --  In particular, queue the call if needed, or service it immediately
    --  if possible.
@@ -314,8 +313,7 @@ package body System.Tasking.Protected_Objects.Operations is
    procedure PO_Do_Or_Queue
      (Self_ID    : Task_Id;
       Object     : Protection_Entries_Access;
-      Entry_Call : Entry_Call_Link;
-      With_Abort : Boolean)
+      Entry_Call : Entry_Call_Link)
    is
       E             : constant Protected_Entry_Index :=
                         Protected_Entry_Index (Entry_Call.E);
@@ -366,11 +364,11 @@ package body System.Tasking.Protected_Objects.Operations is
             end if;
 
          else
-            Requeue_Call (Self_ID, Object, Entry_Call, With_Abort);
+            Requeue_Call (Self_ID, Object, Entry_Call);
          end if;
 
       elsif Entry_Call.Mode /= Conditional_Call
-        or else not With_Abort
+        or else not Entry_Call.With_Abort
       then
 
          if Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
@@ -396,7 +394,7 @@ package body System.Tasking.Protected_Objects.Operations is
             end if;
          else
             Queuing.Enqueue (Object.Entry_Queues (E), Entry_Call);
-            Update_For_Queue_To_PO (Entry_Call, With_Abort);
+            Update_For_Queue_To_PO (Entry_Call, Entry_Call.With_Abort);
          end if;
       else
          --  Conditional_Call and With_Abort
@@ -467,8 +465,7 @@ package body System.Tasking.Protected_Objects.Operations is
          end;
 
          if Object.Call_In_Progress = null then
-            Requeue_Call
-              (Self_ID, Object, Entry_Call, Entry_Call.Requeue_With_Abort);
+            Requeue_Call (Self_ID, Object, Entry_Call);
             exit when Entry_Call.State = Cancelled;
 
          else
@@ -628,8 +625,9 @@ package body System.Tasking.Protected_Objects.Operations is
       Entry_Call.Called_PO := To_Address (Object);
       Entry_Call.Called_Task := null;
       Entry_Call.Exception_To_Raise := Ada.Exceptions.Null_Id;
+      Entry_Call.With_Abort := True;
 
-      PO_Do_Or_Queue (Self_ID, Object, Entry_Call, With_Abort => True);
+      PO_Do_Or_Queue (Self_ID, Object, Entry_Call);
       Initially_Abortable := Entry_Call.State = Now_Abortable;
       PO_Service_Entries (Self_ID, Object);
 
@@ -712,8 +710,7 @@ package body System.Tasking.Protected_Objects.Operations is
    procedure Requeue_Call
      (Self_Id    : Task_Id;
       Object     : Protection_Entries_Access;
-      Entry_Call : Entry_Call_Link;
-      With_Abort : Boolean)
+      Entry_Call : Entry_Call_Link)
    is
       New_Object        : Protection_Entries_Access;
       Ceiling_Violation : Boolean;
@@ -731,9 +728,7 @@ package body System.Tasking.Protected_Objects.Operations is
             STPO.Lock_RTS;
          end if;
 
-         Result := Rendezvous.Task_Do_Or_Queue
-           (Self_Id, Entry_Call,
-            With_Abort => Entry_Call.Requeue_With_Abort);
+         Result := Rendezvous.Task_Do_Or_Queue (Self_Id, Entry_Call);
 
          if not Result then
             Queuing.Broadcast_Program_Error
@@ -759,7 +754,7 @@ package body System.Tasking.Protected_Objects.Operations is
                  (Self_Id, Object, Entry_Call);
 
             else
-               PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call, With_Abort);
+               PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call);
                PO_Service_Entries (Self_Id, New_Object);
             end if;
 
@@ -772,7 +767,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
             STPO.Yield (False);
 
-            if Entry_Call.Requeue_With_Abort
+            if Entry_Call.With_Abort
               and then Entry_Call.Cancellation_Attempted
             then
                --  If this is a requeue with abort and someone tried
@@ -782,7 +777,7 @@ package body System.Tasking.Protected_Objects.Operations is
                return;
             end if;
 
-            if not With_Abort
+            if not Entry_Call.With_Abort
               or else Entry_Call.Mode /= Conditional_Call
             then
                E := Protected_Entry_Index (Entry_Call.E);
@@ -812,11 +807,11 @@ package body System.Tasking.Protected_Objects.Operations is
                else
                   Queuing.Enqueue
                     (New_Object.Entry_Queues (E), Entry_Call);
-                  Update_For_Queue_To_PO (Entry_Call, With_Abort);
+                  Update_For_Queue_To_PO (Entry_Call, Entry_Call.With_Abort);
                end if;
 
             else
-               PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call, With_Abort);
+               PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call);
             end if;
          end if;
       end if;
@@ -890,7 +885,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Called_PO := To_Address (New_Object);
       Entry_Call.Called_Task := null;
-      Entry_Call.Requeue_With_Abort := With_Abort;
+      Entry_Call.With_Abort := With_Abort;
       Object.Call_In_Progress := null;
    end Requeue_Protected_Entry;
 
@@ -935,7 +930,7 @@ package body System.Tasking.Protected_Objects.Operations is
       --  at this point, and therefore, the caller cannot cancel the call.
 
       Entry_Call.Needs_Requeue := True;
-      Entry_Call.Requeue_With_Abort := With_Abort;
+      Entry_Call.With_Abort := With_Abort;
       Entry_Call.Called_PO := To_Address (New_Object);
       Entry_Call.Called_Task := null;
       Entry_Call.E := Entry_Index (E);
@@ -1022,8 +1017,9 @@ package body System.Tasking.Protected_Objects.Operations is
       Entry_Call.Called_PO := To_Address (Object);
       Entry_Call.Called_Task := null;
       Entry_Call.Exception_To_Raise := Ada.Exceptions.Null_Id;
+      Entry_Call.With_Abort := True;
 
-      PO_Do_Or_Queue (Self_Id, Object, Entry_Call, With_Abort => True);
+      PO_Do_Or_Queue (Self_Id, Object, Entry_Call);
       PO_Service_Entries (Self_Id, Object);
 
       if Single_Lock then

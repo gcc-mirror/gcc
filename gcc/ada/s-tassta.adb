@@ -770,7 +770,7 @@ package body System.Tasking.Stages is
       pragma Assert (Self_ID = Environment_Task);
 
       --  Set Environment_Task'Callable to false to notify library-level tasks
-      --  that it is waiting for them (cf 5619-003).
+      --  that it is waiting for them.
 
       Self_ID.Callable := False;
 
@@ -798,8 +798,8 @@ package body System.Tasking.Stages is
          exit when Utilities.Independent_Task_Count = 0;
 
          --  We used to yield here, but this did not take into account
-         --  low priority tasks that would cause dead lock in some cases.
-         --  See 8126-020.
+         --  low priority tasks that would cause dead lock in some cases
+         --  (true FIFO scheduling).
 
          Timed_Sleep
            (Self_ID, 0.01, System.OS_Primitives.Relative,
@@ -958,16 +958,22 @@ package body System.Tasking.Stages is
       Secondary_Stack : aliased SSE.Storage_Array (1 .. Secondary_Stack_Size);
 
       pragma Warnings (Off);
+      --  Why are warnings being turned off here???
+
       Secondary_Stack_Address : System.Address := Secondary_Stack'Address;
 
-      Small_Overflow_Guard    : constant := 4 * 1024;
-      Big_Overflow_Guard      : constant := 16 * 1024;
-      Small_Stack_Limit       : constant := 64 * 1024;
-      --  ??? These three values are experimental, and seems to work on most
-      --  platforms. They still need to be analyzed further.
+      Small_Overflow_Guard : constant := 12 * 1024;
+      --  Note: this used to be 4K, but was changed to 12K, since smaller
+      --  values resulted in segmentation faults from dynamic stack analysis.
 
-      Size :
-        Natural := Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
+      Big_Overflow_Guard   : constant := 16 * 1024;
+      Small_Stack_Limit    : constant := 64 * 1024;
+      --  ??? These three values are experimental, and seems to work on most
+      --  platforms. They still need to be analyzed further. They also need
+      --  documentation, what are they???
+
+      Size : Natural :=
+               Natural (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Size);
 
       Overflow_Guard : Natural;
       --  Size of the overflow guard, used by dynamic stack usage analysis
@@ -975,7 +981,7 @@ package body System.Tasking.Stages is
       pragma Warnings (On);
       --  Address of secondary stack. In the fixed secondary stack case, this
       --  value is not modified, causing a warning, hence the bracketing with
-      --  Warnings (Off/On).
+      --  Warnings (Off/On). But why is so much *more* bracketed ???
 
       SEH_Table : aliased SSE.Storage_Array (1 .. 8);
       --  Structured Exception Registration table (2 words)
@@ -1145,8 +1151,7 @@ package body System.Tasking.Stages is
                Cause := Abnormal;
             end if;
          when others =>
-            --  ??? Using an E : others here causes CD2C11A  to fail on
-            --      DEC Unix, see 7925-005.
+            --  ??? Using an E : others here causes CD2C11A to fail on Tru64.
 
             Initialization.Defer_Abort_Nestable (Self_ID);
 
@@ -1253,7 +1258,7 @@ package body System.Tasking.Stages is
       --  Since GCC cannot allocate stack chunks efficiently without reordering
       --  some of the allocations, we have to handle this unexpected situation
       --  here. We should normally never have to call Vulnerable_Complete_Task
-      --  here. See 6602-003 for more details.
+      --  here.
 
       if Self_ID.Common.Activator /= null then
          Vulnerable_Complete_Task (Self_ID);

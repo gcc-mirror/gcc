@@ -187,8 +187,7 @@ package System.Tasking.Protected_Objects.Operations is
    procedure PO_Do_Or_Queue
      (Self_ID    : Task_Id;
       Object     : Entries.Protection_Entries_Access;
-      Entry_Call : Entry_Call_Link;
-      With_Abort : Boolean);
+      Entry_Call : Entry_Call_Link);
    --  This procedure either executes or queues an entry call, depending
    --  on the status of the corresponding barrier. It assumes that abort
    --  is deferred and that the specified object is locked.
@@ -201,10 +200,9 @@ private
    end record;
    pragma Volatile (Communication_Block);
 
-   --  ?????
    --  The Communication_Block seems to be a relic. At the moment, the
    --  compiler seems to be generating unnecessary conditional code based on
    --  this block. See the code generated for async. select with task entry
-   --  call for another way of solving this.
+   --  call for another way of solving this ???
 
 end System.Tasking.Protected_Objects.Operations;
