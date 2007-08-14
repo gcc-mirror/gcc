@@ -802,9 +802,9 @@ reg_referenced_p (const_rtx x, const_rtx body)
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
 int
-reg_set_between_p (rtx reg, rtx from_insn, rtx to_insn)
+reg_set_between_p (const_rtx reg, const_rtx from_insn, const_rtx to_insn)
 {
-  rtx insn;
+  const_rtx insn;
 
   if (from_insn == to_insn)
     return 0;
@@ -817,7 +817,7 @@ reg_set_between_p (rtx reg, rtx from_insn, rtx to_insn)
 
 /* Internals of reg_set_between_p.  */
 int
-reg_set_p (rtx reg, rtx insn)
+reg_set_p (const_rtx reg, const_rtx insn)
 {
   /* We can be passed an insn or part of one.  If we are passed an insn,
      check if a side-effect of the insn clobbers REG.  */

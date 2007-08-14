@@ -45,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "timevar.h"
 
-static int count_basic_blocks (rtx);
+static int count_basic_blocks (const_rtx);
 static void find_basic_blocks_1 (rtx);
 static void make_edges (basic_block, basic_block, int);
 static void make_label_edge (sbitmap, basic_block, rtx, int);
@@ -56,7 +56,7 @@ static void compute_outgoing_frequencies (basic_block);
    block.  */
 
 bool
-inside_basic_block_p (rtx insn)
+inside_basic_block_p (const_rtx insn)
 {
   switch (GET_CODE (insn))
     {
@@ -88,7 +88,7 @@ inside_basic_block_p (rtx insn)
    the basic block.  */
 
 bool
-control_flow_insn_p (rtx insn)
+control_flow_insn_p (const_rtx insn)
 {
   rtx note;
 
@@ -140,11 +140,11 @@ control_flow_insn_p (rtx insn)
 /* Count the basic blocks of the function.  */
 
 static int
-count_basic_blocks (rtx f)
+count_basic_blocks (const_rtx f)
 {
   int count = NUM_FIXED_BLOCKS;
   bool saw_insn = false;
-  rtx insn;
+  const_rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {

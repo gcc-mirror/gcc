@@ -765,7 +765,7 @@ disambiguate_loops_with_multiple_latches (void)
 
 /* Return nonzero if basic block BB belongs to LOOP.  */
 bool
-flow_bb_inside_loop_p (const struct loop *loop, const basic_block bb)
+flow_bb_inside_loop_p (const struct loop *loop, const_basic_block bb)
 {
   struct loop *source_loop;
 
@@ -778,9 +778,9 @@ flow_bb_inside_loop_p (const struct loop *loop, const basic_block bb)
 
 /* Enumeration predicate for get_loop_body_with_size.  */
 static bool
-glb_enum_p (basic_block bb, void *glb_loop)
+glb_enum_p (const_basic_block bb, const void *glb_loop)
 {
-  struct loop *loop = (struct loop *) glb_loop;
+  const struct loop *const loop = (const struct loop *) glb_loop;
   return (bb != loop->header
 	  && dominated_by_p (CDI_DOMINATORS, bb, loop->header));
 }
@@ -797,7 +797,7 @@ get_loop_body_with_size (const struct loop *loop, basic_block *body,
 			 unsigned max_size)
 {
   return dfs_enumerate_from (loop->header, 1, glb_enum_p,
-			     body, max_size, (void *) loop);
+			     body, max_size, loop);
 }
 
 /* Gets basic blocks of a LOOP.  Header is the 0-th block, rest is in dfs
@@ -1581,7 +1581,7 @@ loop_preheader_edge (const struct loop *loop)
 /* Returns true if E is an exit of LOOP.  */
 
 bool
-loop_exit_edge_p (const struct loop *loop, edge e)
+loop_exit_edge_p (const struct loop *loop, const_edge e)
 {
   return (flow_bb_inside_loop_p (loop, e->src)
 	  && !flow_bb_inside_loop_p (loop, e->dest));

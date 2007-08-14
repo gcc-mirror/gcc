@@ -93,7 +93,7 @@ pointer_set_destroy (struct pointer_set_t *pset)
 
    Collisions are resolved by linear probing.  */
 int
-pointer_set_contains (struct pointer_set_t *pset, void *p)
+pointer_set_contains (struct pointer_set_t *pset, const void *p)
 {
   size_t n = hash1 (p, pset->n_slots, pset->log_slots);
 
@@ -226,7 +226,7 @@ void pointer_map_destroy (struct pointer_map_t *pmap)
 
    Collisions are resolved by linear probing.  */
 void **
-pointer_map_contains (struct pointer_map_t *pmap, void *p)
+pointer_map_contains (struct pointer_map_t *pmap, const void *p)
 {
   size_t n = hash1 (p, pmap->n_slots, pmap->log_slots);
 

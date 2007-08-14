@@ -984,7 +984,7 @@ bool convert_affine_scev (struct loop *, tree, tree *, tree *, tree, bool);
 
 bool nowrap_type_p (tree);
 enum ev_direction {EV_DIR_GROWS, EV_DIR_DECREASES, EV_DIR_UNKNOWN};
-enum ev_direction scev_direction (tree);
+enum ev_direction scev_direction (const_tree);
 
 void free_numbers_of_iterations_estimates (void);
 void free_numbers_of_iterations_estimates_loop (struct loop *);

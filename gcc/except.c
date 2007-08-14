@@ -2698,7 +2698,7 @@ can_throw_internal_1 (int region_number, bool is_resx)
 }
 
 bool
-can_throw_internal (rtx insn)
+can_throw_internal (const_rtx insn)
 {
   rtx note;
 
@@ -2752,7 +2752,7 @@ can_throw_external_1 (int region_number, bool is_resx)
 }
 
 bool
-can_throw_external (rtx insn)
+can_throw_external (const_rtx insn)
 {
   rtx note;
 

@@ -218,15 +218,15 @@ extern void flow_loop_tree_node_add (struct loop *, struct loop *);
 extern void flow_loop_tree_node_remove (struct loop *);
 extern void add_loop (struct loop *, struct loop *);
 extern bool flow_loop_nested_p	(const struct loop *, const struct loop *);
-extern bool flow_bb_inside_loop_p (const struct loop *, const basic_block);
+extern bool flow_bb_inside_loop_p (const struct loop *, const_basic_block);
 extern struct loop * find_common_loop (struct loop *, struct loop *);
 struct loop *superloop_at_depth (struct loop *, unsigned);
 struct eni_weights_d;
 extern unsigned tree_num_loop_insns (struct loop *, struct eni_weights_d *);
-extern int num_loop_insns (struct loop *);
-extern int average_num_loop_insns (struct loop *);
+extern int num_loop_insns (const struct loop *);
+extern int average_num_loop_insns (const struct loop *);
 extern unsigned get_loop_level (const struct loop *);
-extern bool loop_exit_edge_p (const struct loop *, edge);
+extern bool loop_exit_edge_p (const struct loop *, const_edge);
 extern void mark_loop_exit_edges (void);
 
 /* Loops & cfg manipulation.  */
@@ -260,7 +260,7 @@ extern void force_single_succ_latches (void);
 extern void verify_loop_structure (void);
 
 /* Loop analysis.  */
-extern bool just_once_each_iteration_p (const struct loop *, basic_block);
+extern bool just_once_each_iteration_p (const struct loop *, const_basic_block);
 gcov_type expected_loop_iterations_unbounded (const struct loop *);
 extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
@@ -270,7 +270,7 @@ HOST_WIDE_INT estimated_loop_iterations_int (struct loop *, bool);
 bool estimated_loop_iterations (struct loop *, bool, double_int *);
 
 /* Loop manipulation.  */
-extern bool can_duplicate_loop_p (struct loop *loop);
+extern bool can_duplicate_loop_p (const struct loop *loop);
 
 #define DLTHE_FLAG_UPDATE_FREQ	1	/* Update frequencies in
 					   duplicate_loop_to_header_edge.  */

@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 
 /* Local functions, macros and variables.  */
-static int op_prio (tree);
+static int op_prio (const_tree);
 static const char *op_symbol (tree);
 static void pretty_print_string (pretty_printer *, const char*);
 static void print_call_name (pretty_printer *, tree);
@@ -2291,7 +2291,7 @@ print_struct_decl (pretty_printer *buffer, tree node, int spc, int flags)
    operators.  */
 
 static int
-op_prio (tree op)
+op_prio (const_tree op)
 {
   if (op == NULL)
     return 9999;

@@ -199,7 +199,7 @@ static VEC(scb_t,heap) *scb_stack;
 /* Return the DECL_UID of the base variable of T.  */
 
 static inline unsigned
-get_name_decl (tree t)
+get_name_decl (const_tree t)
 {
   if (TREE_CODE (t) != SSA_NAME)
     return DECL_UID (t);
@@ -213,12 +213,10 @@ get_name_decl (tree t)
 static int
 operand_build_cmp (const void *p, const void *q)
 {
-  tree e1 = *((const tree *)p);
-  tree e2 = *((const tree *)q);
-  unsigned int u1,u2;
-
-  u1 = get_name_decl (e1);
-  u2 = get_name_decl (e2);
+  const_tree const e1 = *((const_tree const *)p);
+  const_tree const e2 = *((const_tree const *)q);
+  const unsigned int u1 = get_name_decl (e1);
+  const unsigned int u2 = get_name_decl (e2);
 
   /* We want to sort in ascending order.  They can never be equal.  */
 #ifdef ENABLE_CHECKING
