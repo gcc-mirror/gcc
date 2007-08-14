@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,7 +151,7 @@ package GNAT.Table is
    --  array value. Current array values are not affected by this call.
 
    procedure Free;
-   --  Free all allocated memory for the table. A call to init is required
+   --  Free all allocated memory for the table. A call to Init is required
    --  before any use of this table after calling Free.
 
    First : constant Table_Index_Type := Table_Low_Bound;
