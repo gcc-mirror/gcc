@@ -1,3 +1,9 @@
+2007-08-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/30428
+	* c-typeck.c (build_binary_op): Disallow vector float types with
+	BIT_IOR_EXPR, BIT_AND_EXPR, and BIT_XOR_EXPR.
+
 2007-08-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* sched-int.h (struct _dep): Rename field 'kind' to 'type'.

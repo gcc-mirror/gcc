@@ -3214,7 +3214,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
       if ((code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
-	  || (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE))
+	  || (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+	      && !VECTOR_FLOAT_TYPE_P (type0)
+	      && !VECTOR_FLOAT_TYPE_P (type1)))
 	shorten = -1;
       break;
 
