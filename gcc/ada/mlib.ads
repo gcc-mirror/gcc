@@ -34,6 +34,9 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package MLib is
 
+   No_Argument_List : aliased String_List := (1 .. 0 => null);
+   No_Argument      : constant String_List_Access := No_Argument_List'Access;
+
    Max_Characters_In_Library_Name : constant := 20;
    --  Maximum number of characters in a library name.
    --  Used by Check_Library_Name below.
@@ -54,7 +57,6 @@ package MLib is
 
    procedure Build_Library
      (Ofiles      : Argument_List;
-      Afiles      : Argument_List;
       Output_File : String;
       Output_Dir  : String);
    --  Build a static library from a set of object files
@@ -66,10 +68,23 @@ package MLib is
    --  Copy all ALI files Files to directory To.
    --  Mark Interfaces ALI files as interfaces, if any.
 
+   procedure Create_Sym_Links
+     (Lib_Path    : String;
+      Lib_Version : String;
+      Lib_Dir     : String;
+      Maj_Version : String);
+
    function Linker_Library_Path_Option return String_Access;
    --  Linker option to specify to the linker the library directory path.
    --  If non null, the library directory path is to be appended.
    --  Should be deallocated by the caller, when no longer needed.
+
+   function Major_Id_Name
+     (Lib_Filename : String;
+      Lib_Version  : String) return String;
+   --  Returns the major id library file name, if it exists.
+   --  For example, if Lib_Filename is "libtoto.so" and Lib_Version is
+   --  "libtoto.so.1.2", then "libtoto.so.1" is returned.
 
 private
 

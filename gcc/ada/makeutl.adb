@@ -24,9 +24,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Command_Line; use Ada.Command_Line;
-
+with Ada.Command_Line;  use Ada.Command_Line;
 with Osint;    use Osint;
+with Output;   use Output;
 with Prj.Ext;
 with Prj.Util;
 with Snames;   use Snames;
@@ -83,6 +83,46 @@ package body Makeutl is
 
    procedure Add_Linker_Option (Option : String);
 
+   ---------
+   -- Add --
+   ---------
+
+   procedure Add
+     (Option : String_Access;
+      To     : in out String_List_Access;
+      Last   : in out Natural)
+   is
+   begin
+      if Last = To'Last then
+         declare
+            New_Options : constant String_List_Access :=
+                            new String_List (1 .. To'Last * 2);
+         begin
+            New_Options (To'Range) := To.all;
+
+            --  Set all elements of the original options to null to avoid
+            --  deallocation of copies.
+
+            To.all := (others => null);
+
+            Free (To);
+            To := New_Options;
+         end;
+      end if;
+
+      Last := Last + 1;
+      To (Last) := Option;
+   end Add;
+
+   procedure Add
+     (Option : String;
+      To     : in out String_List_Access;
+      Last   : in out Natural)
+   is
+   begin
+      Add (Option => new String'(Option), To => To, Last => Last);
+   end Add;
+
    -----------------------
    -- Add_Linker_Option --
    -----------------------
@@ -109,6 +149,31 @@ package body Makeutl is
          Linker_Options_Buffer (Last_Linker_Option) := new String'(Option);
       end if;
    end Add_Linker_Option;
+
+   -----------------
+   -- Create_Name --
+   -----------------
+
+   function Create_Name (Name : String) return File_Name_Type is
+   begin
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (Name);
+      return Name_Find;
+   end Create_Name;
+
+   function Create_Name (Name : String) return Name_Id is
+   begin
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (Name);
+      return Name_Find;
+   end Create_Name;
+
+   function Create_Name (Name : String) return Path_Name_Type is
+   begin
+      Name_Len := 0;
+      Add_Str_To_Name_Buffer (Name);
+      return Name_Find;
+   end Create_Name;
 
    ----------------------
    -- Delete_All_Marks --
@@ -189,6 +254,31 @@ package body Makeutl is
    begin
       return Union_Id (Key.File) mod Max_Mask_Num;
    end Hash;
+
+   ------------
+   -- Inform --
+   ------------
+
+   procedure Inform (N : File_Name_Type; Msg : String) is
+   begin
+      Inform (Name_Id (N), Msg);
+   end Inform;
+
+   procedure Inform (N : Name_Id := No_Name; Msg : String) is
+   begin
+      Osint.Write_Program_Name;
+
+      Write_Str (": ");
+
+      if N /= No_Name then
+         Write_Str ("""");
+         Write_Name (N);
+         Write_Str (""" ");
+      end if;
+
+      Write_Str (Msg);
+      Write_Eol;
+   end Inform;
 
    ----------------------------
    -- Is_External_Assignment --

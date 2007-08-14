@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,8 @@ package body Sinput.P is
    First : Boolean := True;
    --  Flag used when Load_Project_File is called the first time,
    --  to set Main_Source_File.
-   --  The flag is reset to False at the first call to Load_Project_File
+   --  The flag is reset to False at the first call to Load_Project_File.
+   --  Calling Reset_First sets it back to True.
 
    -----------------------
    -- Load_Project_File --
@@ -51,6 +52,15 @@ package body Sinput.P is
 
       return X;
    end Load_Project_File;
+
+   -----------------
+   -- Reset_First --
+   -----------------
+
+   procedure Reset_First is
+   begin
+      First := True;
+   end Reset_First;
 
    --------------------------------
    -- Restore_Project_Scan_State --
