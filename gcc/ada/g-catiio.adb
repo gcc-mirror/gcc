@@ -306,15 +306,33 @@ package body GNAT.Calendar.Time_IO is
 
                when 's' =>
                   declare
-                     Sec : constant Sec_Number :=
-                             Sec_Number (Julian_Day (Year, Month, Day)
-                                          - Julian_Day (1970, 1, 1)) * 86_400
-                                          + Sec_Number (Hour) * 3_600
-                                          + Sec_Number (Minute) * 60
-                                          + Sec_Number (Second);
+                     --  Compute the number of seconds using Ada.Calendar.Time
+                     --  values rather than Julian days to account for Daylight
+                     --  Savings Time.
+
+                     Neg : Boolean  := False;
+                     Sec : Duration := Date - Time_Of (1970, 1, 1, 0.0);
 
                   begin
-                     Result := Result & Image (Sec, None);
+                     --  Avoid rounding errors and perform special processing
+                     --  for dates earlier than the Unix Epoc.
+
+                     if Sec > 0.0 then
+                        Sec := Sec - 0.5;
+                     elsif Sec < 0.0 then
+                        Neg := True;
+                        Sec := abs (Sec + 0.5);
+                     end if;
+
+                     --  Prepend a minus sign to the result since Sec_Number
+                     --  cannot handle negative numbers.
+
+                     if Neg then
+                        Result :=
+                          Result & "-" & Image (Sec_Number (Sec), None);
+                     else
+                        Result := Result & Image (Sec_Number (Sec), None);
+                     end if;
                   end;
 
                --  Second (00..59)
