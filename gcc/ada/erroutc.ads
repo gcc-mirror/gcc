@@ -263,8 +263,7 @@ package Erroutc is
       Start : Source_Ptr;
       Stop  : Source_Ptr;
       --  Starting and ending source pointers for the range. These are always
-      --  from the same source file. Start is set to No_Location for the case
-      --  of a configuration pragma.
+      --  from the same source file.
 
       Msg : String_Ptr;
       --  Message from pragma Warnings (Off, string)
@@ -277,7 +276,7 @@ package Erroutc is
       --  Length of pattern string (excluding initial/final asterisks)
 
       Open : Boolean;
-      --  Set to True if OFF has been encountered with no matchin ON
+      --  Set to True if OFF has been encountered with no matching ON
 
       Used : Boolean;
       --  Set to True if entry has been used to suppress a warning
@@ -288,6 +287,10 @@ package Erroutc is
       Star_End : Boolean;
       --  True if given pattern had * at end
 
+      Config : Boolean;
+      --  True if pragma is configuration pragma (in which case no matching
+      --  Off pragma is required, and it is not required that a specific
+      --  warning be suppressed).
    end record;
 
    package Specific_Warnings is new Table.Table (
@@ -297,6 +300,23 @@ package Erroutc is
      Table_Initial        => 100,
      Table_Increment      => 200,
      Table_Name           => "Specific_Warnings");
+
+   --  Note on handling configuration case versus specific case. A complication
+   --  arises from this example:
+
+   --     pragma Warnings (Off, "not referenced*");
+   --     procedure Mumble (X : Integer) is
+   --     pragma Warnings (On, "not referenced*");
+   --     begin
+   --        null;
+   --     end Mumble;
+
+   --  The trouble is that the first pragma is technically a configuration
+   --  pragma, and yet it is clearly being used in the context of thinking
+   --  of it as a specific case. To deal with this, what we do is that the
+   --  On entry can match a configuration pragma from the same file, and if
+   --  we find such an On entry, we cancel the indication of it being the
+   --  configuration case. This seems to handle all cases we run into ok.
 
    -----------------
    -- Subprograms --
@@ -430,23 +450,28 @@ package Erroutc is
    --  the input value of E was either already No_Error_Msg, or was the
    --  last non-deleted message.
 
-   procedure Set_Specific_Warning_Off (Loc : Source_Ptr; Msg : String);
+   procedure Set_Specific_Warning_Off
+     (Loc    : Source_Ptr;
+      Msg    : String;
+      Config : Boolean);
    --  This is called in response to the two argument form of pragma Warnings
-   --  where the first argument is OFF, and the second argument is the prefix
-   --  of a specific warning to be suppressed. The first argument is the start
-   --  of the suppression range, and the second argument is the string from
-   --  the pragma. Loc is set to No_Location for the configuration pragma case.
+   --  where the first argument is OFF, and the second argument is a string
+   --  which identifies a specific warning to be suppressed. The first argument
+   --  is the start of the suppression range, and the second argument is the
+   --  string from the pragma. Loc is the location of the pragma (which is the
+   --  start of the range to suppress). Config is True for the configuration
+   --  pragma case (where there is no requirement for a matching OFF pragma).
 
    procedure Set_Specific_Warning_On
      (Loc : Source_Ptr;
       Msg : String;
       Err : out Boolean);
    --  This is called in response to the two argument form of pragma Warnings
-   --  where the first argument is ON, and the second argument is the prefix
-   --  of a specific warning to be suppressed. The first argument is the end
-   --  of the suppression range, and the second argument is the string from
-   --  the pragma. Err is set to True on return to report the error of no
-   --  matching Warnings Off pragma preceding this one.
+   --  where the first argument is ON, and the second argument is a string
+   --  which identifies a specific warning to be suppressed. The first argument
+   --  is the end of the suppression range, and the second argument is the
+   --  string from the pragma. Err is set to True on return to report the error
+   --  of no matching Warnings Off pragma preceding this one.
 
    procedure Set_Warnings_Mode_Off (Loc : Source_Ptr);
    --  Called in response to a pragma Warnings (Off) to record the source

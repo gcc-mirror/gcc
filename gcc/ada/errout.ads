@@ -204,7 +204,14 @@ package Errout is
    --
    --      By convention, the # insertion character is only used at the end of
    --      an error message, so the above strings only appear as the last
-   --      characters of an error message.
+   --      characters of an error message. The only exceptions to this rule
+   --      are that an RM reference may follow in the form (RM .....) and a
+   --      right parenthesis may immediately follow the #. In the case of
+   --      continued messages, # can only appear at the end of a group of
+   --      continuation messsages, except that \\ messages which always start
+   --      a new line end the sequence from the point of view of this rule.
+   --      The idea is that for any use of -gnatj, it will still be the case
+   --      that a location reference appears only at the end of a line.
 
    --    Insertion character } (Right brace: insert type reference)
    --      The character } is replaced by a string describing the type
@@ -244,8 +251,9 @@ package Errout is
    --      the message unconditional which means that it is output even if it
    --      would normally be suppressed. See section above for a description
    --      of the cases in which messages are normally suppressed. Note that
-   --      warnings are never suppressed, so the use of the ! character in a
-   --      warning message is never useful.
+   --      in the case of warnings, the meaning is that the warning should not
+   --      be removed in dead code (that's the only time that the use of !
+   --      has any effect for a warning).
    --
    --      Note: the presence of ! is ignored in continuation messages (i.e.
    --      messages starting with the \ insertion character). The effect of the
@@ -456,6 +464,10 @@ package Errout is
    --  used for keywords (actually the first compilation unit keyword) in the
    --  source file.
 
+   --  Note: a special exception is that RM is never treated as a keyword
+   --  but instead is copied literally into the message, this avoids the
+   --  need for writing 'R'M for all reference manual quotes.
+
    --  In the case of names, the default mode for the error text processor
    --  is to surround the name by quotation marks automatically. The case
    --  used for the identifier names is taken from the source program where
@@ -560,18 +572,23 @@ package Errout is
    --  Initializes for output of error messages. Must be called for each
    --  source file before using any of the other routines in the package.
 
-   procedure Finalize;
+   procedure Finalize (Last_Call : Boolean);
    --  Finalize processing of error message list. Includes processing for
    --  duplicated error messages, and other similar final adjustment of the
    --  list of error messages. Note that this procedure must be called before
    --  calling Compilation_Errors to determine if there were any errors. It
-   --  is perfectly fine to call Finalize more than once. Indeed this can
-   --  make good sense. For example, do some processing that may generate
-   --  messages. Call Finalize to eliminate duplicates and remove deleted
-   --  warnings. Test for compilation errors using Compilation_Errors, then
-   --  generate some more errors/warnings, call Finalize again to make sure
-   --  that all duplicates in these new messages are dealt with, then finally
-   --  call Output_Messages to output the final list of messages.
+   --  is perfectly fine to call Finalize more than once, providing that the
+   --  parameter Last_Call is set False for every call except the last call.
+
+   --  This multiple call capability is used to do some processing that may
+   --  generate messages. Call Finalize to eliminate duplicates and remove
+   --  deleted warnings. Test for compilation errors using Compilation_Errors,
+   --  then generate some more errors/warnings, call Finalize again to make
+   --  sure that all duplicates in these new messages are dealt with, then
+   --  finally call Output_Messages to output the final list of messages. The
+   --  argument Last_Call must be set False on all calls except the last call,
+   --  and must be set True on the last call (a value of True activates some
+   --  processing that must only be done after all messages are posted).
 
    procedure Output_Messages;
    --  Output list of messages, including messages giving number of detected
@@ -676,10 +693,14 @@ package Errout is
 
    procedure Remove_Warning_Messages (N : Node_Id);
    --  Remove any warning messages corresponding to the Sloc of N or any
-   --  of its descendent nodes. No effect if no such warnings.
+   --  of its descendent nodes. No effect if no such warnings. Note that
+   --  style messages (identified by the fact that they start with "(style)"
+   --  are not removed by this call. Basically the idea behind this procedure
+   --  is to remove warnings about execution conditions from known dead code.
 
    procedure Remove_Warning_Messages (L : List_Id);
-   --  Remove warnings on all elements of a list
+   --  Remove warnings on all elements of a list (Calls Remove_Warning_Messages
+   --  on each element of the list, see above).
 
    procedure Set_Ignore_Errors (To : Boolean);
    --  Following a call to this procedure with To=True, all error calls are
@@ -696,7 +717,10 @@ package Errout is
    --  Called in response to a pragma Warnings (On) to record the source
    --  location from which warnings are to be turned back on.
 
-   procedure Set_Specific_Warning_Off (Loc : Source_Ptr; Msg : String)
+   procedure Set_Specific_Warning_Off
+     (Loc    : Source_Ptr;
+      Msg    : String;
+      Config : Boolean)
      renames Erroutc.Set_Specific_Warning_Off;
    --  This is called in response to the two argument form of pragma Warnings
    --  where the first argument is OFF, and the second argument is the prefix
