@@ -31,7 +31,6 @@ with MLib.Fil;
 with MLib.Utl;
 with Opt;
 with Output; use Output;
-with System;
 
 package body MLib.Tgt.Specific is
 
@@ -39,10 +38,7 @@ package body MLib.Tgt.Specific is
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
-      Foreign      : Argument_List;
-      Afiles       : Argument_List;
       Options      : Argument_List;
-      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -59,10 +55,7 @@ package body MLib.Tgt.Specific is
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
-      Foreign      : Argument_List;
-      Afiles       : Argument_List;
       Options      : Argument_List;
-      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -71,15 +64,15 @@ package body MLib.Tgt.Specific is
       Lib_Version  : String  := "";
       Auto_Init    : Boolean := False)
    is
-      pragma Unreferenced (Foreign);
-      pragma Unreferenced (Afiles);
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Auto_Init);
 
       Lib_File : constant String :=
-                   Lib_Dir & Directory_Separator & "lib" &
-                   Fil.Append_To (Lib_Filename, DLL_Ext);
+                   "lib" & Fil.Append_To (Lib_Filename, DLL_Ext);
+
+      Lib_Path : constant String :=
+                   Lib_Dir & Directory_Separator & Lib_File;
 
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
@@ -87,66 +80,54 @@ package body MLib.Tgt.Specific is
    begin
       if Opt.Verbose_Mode then
          Write_Str ("building relocatable shared library ");
-         Write_Line (Lib_File);
+         Write_Line (Lib_Path);
       end if;
 
       if Lib_Version = "" then
          Utl.Gcc
-           (Output_File => Lib_File,
+           (Output_File => Lib_Path,
             Objects     => Ofiles,
             Options     => Options,
-            Options_2   => Options_2,
+            Options_2   => No_Argument_List,
             Driver_Name => Driver_Name);
 
       else
-         Version_Arg := new String'("-Wl,-h," & Lib_Version);
+         declare
+            Maj_Version : constant String :=
+                            Major_Id_Name (Lib_File, Lib_Version);
+         begin
+            if Maj_Version'Length /= 0 then
+               Version_Arg := new String'("-Wl,-h," & Maj_Version);
 
-         if Is_Absolute_Path (Lib_Version) then
-            Utl.Gcc
-              (Output_File => Lib_Version,
-               Objects     => Ofiles,
-               Options     => Options & Version_Arg,
-               Options_2   => Options_2,
-               Driver_Name => Driver_Name);
-            Symbolic_Link_Needed := Lib_Version /= Lib_File;
+            else
+               Version_Arg := new String'("-Wl,-h," & Lib_Version);
+            end if;
 
-         else
-            Utl.Gcc
-              (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
-               Objects     => Ofiles,
-               Options     => Options & Version_Arg,
-               Options_2   => Options_2,
-               Driver_Name => Driver_Name);
-            Symbolic_Link_Needed :=
-              Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
-         end if;
+            if Is_Absolute_Path (Lib_Version) then
+               Utl.Gcc
+                 (Output_File => Lib_Version,
+                  Objects     => Ofiles,
+                  Options     => Options & Version_Arg,
+                  Options_2   => No_Argument_List,
+                  Driver_Name => Driver_Name);
+               Symbolic_Link_Needed := Lib_Version /= Lib_Path;
 
-         if Symbolic_Link_Needed then
-            declare
-               Success : Boolean;
-               Oldpath : String (1 .. Lib_Version'Length + 1);
-               Newpath : String (1 .. Lib_File'Length + 1);
+            else
+               Utl.Gcc
+                 (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
+                  Objects     => Ofiles,
+                  Options     => Options & Version_Arg,
+                  Options_2   => No_Argument_List,
+                  Driver_Name => Driver_Name);
+               Symbolic_Link_Needed :=
+                 Lib_Dir & Directory_Separator & Lib_Version /= Lib_Path;
+            end if;
 
-               Result : Integer;
-               pragma Unreferenced (Result);
-
-               function Symlink
-                 (Oldpath : System.Address;
-                  Newpath : System.Address)
-                  return    Integer;
-               pragma Import (C, Symlink, "__gnat_symlink");
-
-            begin
-               Oldpath (1 .. Lib_Version'Length) := Lib_Version;
-               Oldpath (Oldpath'Last)            := ASCII.NUL;
-               Newpath (1 .. Lib_File'Length)    := Lib_File;
-               Newpath (Newpath'Last)            := ASCII.NUL;
-
-               Delete_File (Lib_File, Success);
-
-               Result := Symlink (Oldpath'Address, Newpath'Address);
-            end;
-         end if;
+            if Symbolic_Link_Needed then
+               Create_Sym_Links
+                 (Lib_Path, Lib_Version, Lib_Dir, Maj_Version);
+            end if;
+         end;
       end if;
    end Build_Dynamic_Library;
 

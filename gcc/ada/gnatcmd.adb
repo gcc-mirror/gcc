@@ -66,15 +66,16 @@ procedure GNATCmd is
    --  Prefix of binder generated file, changed to b__ for VMS
 
    Old_Project_File_Used : Boolean := False;
-   --  This flag indicates a switch -p (for gnatxref and gnatfind) for an old
-   --  fashioned project file. -p cannot be used in conjonction with -P.
+   --  This flag indicates a switch -p (for gnatxref and gnatfind) for
+   --  an old fashioned project file. -p cannot be used in conjonction
+   --  with -P.
 
    Max_Files_On_The_Command_Line : constant := 30; --  Arbitrary
 
    Temp_File_Name : String_Access := null;
    --  The name of the temporary text file to put a list of source/object
-   --  files to pass to a tool, when the number of files exceeds the value of
-   --  Max_Files_On_The_Command_Line.
+   --  files to pass to a tool, when there are more than
+   --  Max_Files_On_The_Command_Line files.
 
    ASIS_Main : String_Access := null;
    --  Main for commands Check, Metric and Pretty, when -U is used
@@ -220,7 +221,7 @@ procedure GNATCmd is
    --  exec directory. This procedure is only used for GNAT LINK when a project
    --  file is specified.
 
-   function Configuration_Pragmas_File return Name_Id;
+   function Configuration_Pragmas_File return Path_Name_Type;
    --  Return an argument, if there is a configuration pragmas file to be
    --  specified for Project, otherwise return No_Name. Used for gnatstub (GNAT
    --  STUB), gnatpp (GNAT PRETTY), gnatelim (GNAT ELIM), and gnatmetric (GNAT
@@ -398,12 +399,12 @@ procedure GNATCmd is
                      --  There is a body, check if it is for this project
 
                      if All_Projects or else
-                        Unit_Data.File_Names (Body_Part).Project =  Project
+                        Unit_Data.File_Names (Body_Part).Project = Project
                      then
                         Subunit := False;
 
-                        if Unit_Data.File_Names (Specification).Name =
-                          No_File
+                        if
+                          Unit_Data.File_Names (Specification).Name = No_File
                         then
                            --  We have a body with no spec: we need to check if
                            --  this is a subunit, because gnatls will complain
@@ -687,11 +688,11 @@ procedure GNATCmd is
    -- Configuration_Pragmas_File --
    --------------------------------
 
-   function Configuration_Pragmas_File return Name_Id is
+   function Configuration_Pragmas_File return Path_Name_Type is
    begin
       Prj.Env.Create_Config_Pragmas_File
         (Project, Project, Project_Tree, Include_Config_Files => False);
-      return Name_Id (Project_Tree.Projects.Table (Project).Config_File_Name);
+      return Project_Tree.Projects.Table (Project).Config_File_Name;
    end Configuration_Pragmas_File;
 
    ------------------------------
@@ -776,7 +777,7 @@ procedure GNATCmd is
       Last : Natural;
 
       Udata : Unit_Data;
-      Path  : File_Name_Type;
+      Path  : Path_Name_Type;
 
    begin
       if GN_Path = null then
@@ -832,7 +833,7 @@ procedure GNATCmd is
 
          while not End_Of_File (File) loop
             Get_Line (File, Line, Last);
-            Path := No_File;
+            Path := No_Path;
 
             for Unit in Unit_Table.First ..
                         Unit_Table.Last (Project_Tree.Units)
@@ -859,7 +860,7 @@ procedure GNATCmd is
 
             Last_Switches.Increment_Last;
 
-            if Path /= No_File then
+            if Path /= No_Path then
                Last_Switches.Table (Last_Switches.Last) :=
                   new String'(Get_Name_String (Path));
 
@@ -917,7 +918,7 @@ procedure GNATCmd is
 
       --  Check if there are library project files
 
-      if MLib.Tgt.Support_For_Libraries /= MLib.Tgt.None then
+      if MLib.Tgt.Support_For_Libraries /= None then
          Set_Libraries (Project, Project_Tree, There_Are_Libraries);
       end if;
 
@@ -1353,6 +1354,8 @@ begin
    Rules_Switches.Set_Last (0);
 
    VMS_Conv.Initialize;
+
+   Set_Mode (Ada_Only);
 
    --  Add the directory where the GNAT driver is invoked in front of the path,
    --  if the GNAT driver is invoked with directory information. Do not do this
@@ -2023,10 +2026,10 @@ begin
             end loop;
 
             declare
-               CP_File : constant Name_Id := Configuration_Pragmas_File;
+               CP_File : constant Path_Name_Type := Configuration_Pragmas_File;
 
             begin
-               if CP_File /= No_Name then
+               if CP_File /= No_Path then
                   if The_Command = Elim then
                      First_Switches.Increment_Last;
                      First_Switches.Table (First_Switches.Last)  :=
@@ -2093,8 +2096,8 @@ begin
                --  indicate to gnatstub the name of the body file with
                --  a -o switch.
 
-               if Data.Naming.Ada_Spec_Suffix /=
-                 Prj.Default_Ada_Spec_Suffix
+               if Body_Suffix_Id_Of (Project_Tree, "ada", Data.Naming) /=
+                    Prj.Default_Ada_Spec_Suffix
                then
                   if File_Index /= 0 then
                      declare
@@ -2103,14 +2106,18 @@ begin
                         Last : Natural := Spec'Last;
 
                      begin
-                        Get_Name_String (Data.Naming.Ada_Spec_Suffix);
+                        Get_Name_String
+                          (Spec_Suffix_Id_Of
+                             (Project_Tree, "ada", Data.Naming));
 
                         if Spec'Length > Name_Len
                           and then Spec (Last - Name_Len + 1 .. Last) =
                           Name_Buffer (1 .. Name_Len)
                         then
                            Last := Last - Name_Len;
-                           Get_Name_String (Data.Naming.Ada_Body_Suffix);
+                           Get_Name_String
+                             (Body_Suffix_Id_Of
+                                (Project_Tree, "ada", Data.Naming));
                            Last_Switches.Increment_Last;
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'("-o");
@@ -2218,6 +2225,17 @@ begin
          if ASIS_Main /= null then
             Get_Closure;
 
+            --  On VMS, set up again the env var for source dirs file. This is
+            --  because the call to gnatmake has set this env var to another
+            --  file that has now been deleted.
+
+            if Hostparm.OpenVMS then
+               Setenv
+                 (Project_Include_Path_File,
+                  Prj.Env.Ada_Include_Path
+                    (Project, Project_Tree, Recursive => True));
+            end if;
+
          --  For gnat check, gnat pretty, gnat metric, gnat list, and gnat
          --  stack, if no file has been put on the command line, call tool
          --  with all the sources of the main project.
@@ -2298,13 +2316,18 @@ begin
 
 exception
    when Error_Exit =>
-      Prj.Env.Delete_All_Path_Files (Project_Tree);
-      Delete_Temp_Config_Files;
+      if not Keep_Temporary_Files then
+         Prj.Env.Delete_All_Path_Files (Project_Tree);
+         Delete_Temp_Config_Files;
+      end if;
+
       Set_Exit_Status (Failure);
 
    when Normal_Exit =>
-      Prj.Env.Delete_All_Path_Files (Project_Tree);
-      Delete_Temp_Config_Files;
+      if not Keep_Temporary_Files then
+         Prj.Env.Delete_All_Path_Files (Project_Tree);
+         Delete_Temp_Config_Files;
+      end if;
 
       --  Since GNATCmd is normally called from DCL (the VMS shell), it must
       --  return an understandable VMS exit status. However the exit status

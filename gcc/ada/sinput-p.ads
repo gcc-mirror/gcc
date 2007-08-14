@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,11 @@ package Sinput.P is
    function Load_Project_File (Path : String) return Source_File_Index;
    --  Load into memory the source of a project source file.
    --  Initialize the Scans state.
+
+   procedure Reset_First;
+   --  Indicate that the next project loaded should be considered as the first
+   --  one, so that Sinput.Main_Source_File is set for this project file. This
+   --  is to get the correct number of lines when error finalization is called.
 
    function Source_File_Is_Subunit (X : Source_File_Index) return Boolean;
    --  This function determines if a source file represents a subunit. It

@@ -26,6 +26,7 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Interfaces.C.Strings;
+with System;
 
 with Hostparm;
 with Opt;
@@ -45,12 +46,9 @@ package body MLib is
 
    procedure Build_Library
      (Ofiles      : Argument_List;
-      Afiles      : Argument_List;
       Output_File : String;
       Output_Dir  : String)
    is
-      pragma Warnings (Off, Afiles);
-
    begin
       if Opt.Verbose_Mode and not Opt.Quiet_Output then
          Write_Line ("building a library...");
@@ -123,6 +121,8 @@ package body MLib is
          end if;
       end Verbose_Copy;
 
+   --  Start of processing for Copy_ALI_Files
+
    begin
       if Interfaces'Length = 0 then
 
@@ -152,6 +152,7 @@ package body MLib is
 
             declare
                File_Name : String := Base_Name (Files (Index).all);
+
             begin
                Canonical_Case_File_Name (File_Name);
 
@@ -214,9 +215,9 @@ package body MLib is
                         end loop;
 
                         --  We are done with the input file, so we close it
+                        --  ignoring any bad status.
 
                         Close (FD, Status);
-                        --  We simply ignore any bad status
 
                         P_Line_Found := False;
 
@@ -274,11 +275,10 @@ package body MLib is
                      end if;
                   end;
 
+               --  This is not an interface ALI
+
                else
-                  --  This is not an interface ALI
-
                   Success := True;
-
                end if;
             end;
 
@@ -288,6 +288,76 @@ package body MLib is
          end loop;
       end if;
    end Copy_ALI_Files;
+
+   ----------------------
+   -- Create_Sym_Links --
+   ----------------------
+
+   procedure Create_Sym_Links
+     (Lib_Path    : String;
+      Lib_Version : String;
+      Lib_Dir     : String;
+      Maj_Version : String)
+   is
+      function Symlink
+        (Oldpath : System.Address;
+         Newpath : System.Address) return Integer;
+      pragma Import (C, Symlink, "__gnat_symlink");
+
+      Success      : Boolean;
+      Version_Path : String_Access;
+
+      Result : Integer;
+      pragma Unreferenced (Result);
+
+   begin
+      if Is_Absolute_Path (Lib_Version) then
+         Version_Path := new String (1 .. Lib_Version'Length + 1);
+         Version_Path (1 .. Lib_Version'Length) := Lib_Version;
+
+      else
+         Version_Path :=
+           new String (1 .. Lib_Dir'Length + 1 + Lib_Version'Length + 1);
+         Version_Path (1 .. Version_Path'Last - 1) :=
+           Lib_Dir & Directory_Separator & Lib_Version;
+      end if;
+
+      Version_Path (Version_Path'Last) := ASCII.NUL;
+
+      if Maj_Version'Length = 0 then
+         declare
+            Newpath : String (1 .. Lib_Path'Length + 1);
+         begin
+            Newpath (1 .. Lib_Path'Length) := Lib_Path;
+            Newpath (Newpath'Last)         := ASCII.NUL;
+            Delete_File (Lib_Path, Success);
+            Result := Symlink (Version_Path (1)'Address, Newpath'Address);
+         end;
+
+      else
+         declare
+            Newpath1 : String (1 .. Lib_Path'Length + 1);
+            Maj_Path : constant String :=
+                         Lib_Dir & Directory_Separator & Maj_Version;
+            Newpath2 : String (1 .. Maj_Path'Length + 1);
+
+         begin
+            Newpath1 (1 .. Lib_Path'Length) := Lib_Path;
+            Newpath1 (Newpath1'Last)        := ASCII.NUL;
+
+            Newpath2 (1 .. Maj_Path'Length) := Maj_Path;
+            Newpath2 (Newpath2'Last)        := ASCII.NUL;
+
+            Delete_File (Maj_Path, Success);
+
+            Result := Symlink (Version_Path (1)'Address, Newpath2'Address);
+
+            Delete_File (Lib_Path, Success);
+
+            Result := Symlink (Newpath2'Address, Newpath1'Address);
+         end;
+      end if;
+   end Create_Sym_Links;
 
    --------------------------------
    -- Linker_Library_Path_Option --
@@ -310,6 +380,66 @@ package body MLib is
          return new String'(S);
       end if;
    end Linker_Library_Path_Option;
+
+   -------------------
+   -- Major_Id_Name --
+   -------------------
+
+   function Major_Id_Name
+     (Lib_Filename : String;
+      Lib_Version  : String)
+      return String
+   is
+      Maj_Version : constant String := Lib_Version;
+      Last_Maj    : Positive;
+      Last        : Positive;
+      Ok_Maj      : Boolean := False;
+
+   begin
+      Last_Maj := Maj_Version'Last;
+      while Last_Maj > Maj_Version'First loop
+         if Maj_Version (Last_Maj) in '0' .. '9' then
+            Last_Maj := Last_Maj - 1;
+
+         else
+            Ok_Maj := Last_Maj /= Maj_Version'Last and then
+            Maj_Version (Last_Maj) = '.';
+
+            if Ok_Maj then
+               Last_Maj := Last_Maj - 1;
+            end if;
+
+            exit;
+         end if;
+      end loop;
+
+      if Ok_Maj then
+         Last := Last_Maj;
+         while Last > Maj_Version'First loop
+            if Maj_Version (Last) in '0' .. '9' then
+               Last := Last - 1;
+
+            else
+               Ok_Maj := Last /= Last_Maj and then
+               Maj_Version (Last) = '.';
+
+               if Ok_Maj then
+                  Last := Last - 1;
+                  Ok_Maj :=
+                    Maj_Version (Maj_Version'First .. Last) = Lib_Filename;
+               end if;
+
+               exit;
+            end if;
+         end loop;
+      end if;
+
+      if Ok_Maj then
+         return Maj_Version (Maj_Version'First .. Last_Maj);
+      else
+         return "";
+      end if;
+   end Major_Id_Name;
 
 --  Package elaboration
 

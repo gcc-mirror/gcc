@@ -44,6 +44,8 @@ package body MLib.Tgt.VMS is
 
    function Object_Ext return String;
 
+   function Library_Major_Minor_Id_Supported return Boolean;
+
    function PIC_Option return String;
 
    -----------------
@@ -110,6 +112,15 @@ package body MLib.Tgt.VMS is
       end if;
    end Libgnat;
 
+   --------------------------------------
+   -- Library_Major_Minor_Id_Supported --
+   --------------------------------------
+
+   function Library_Major_Minor_Id_Supported return Boolean is
+   begin
+      return False;
+   end Library_Major_Minor_Id_Supported;
+
    ----------------
    -- Object_Ext --
    ----------------
@@ -139,4 +150,7 @@ begin
    Libgnat_Ptr                  := Libgnat'Access;
    Object_Ext_Ptr               := Object_Ext'Access;
    PIC_Option_Ptr               := PIC_Option'Access;
+   Library_Major_Minor_Id_Supported_Ptr :=
+                                   Library_Major_Minor_Id_Supported'Access;
+
 end MLib.Tgt.VMS;

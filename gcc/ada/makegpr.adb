@@ -1404,12 +1404,12 @@ package body Makegpr is
       Source    : Other_Source;
 
       Archive_Name : constant String :=
-                       "lib" & Get_Name_String (Data.Display_Name)
+                       "lib" & Get_Name_String (Data.Library_Name)
                        & '.' & Archive_Ext;
       --  The name of the archive file for this project
 
       Archive_Dep_Name : constant String :=
-                           "lib" & Get_Name_String (Data.Display_Name)
+                           "lib" & Get_Name_String (Data.Library_Name)
                            & ".deps";
       --  The name of the archive dependency file for this project
 
@@ -1425,6 +1425,12 @@ package body Makegpr is
       Lib_Opts    : Argument_List_Access := No_Argument'Access;
 
    begin
+      --  Nothing to do if the project is externally built
+
+      if Data.Externally_Built then
+         return;
+      end if;
+
       Check_Archive_Builder;
 
       --  If Unconditionally is False, check if the archive need to be built
@@ -1619,7 +1625,7 @@ package body Makegpr is
          --  If there are sources in Ada, then gnatmake will build the library,
          --  so nothing to do.
 
-         if not Data.Languages (Ada_Language_Index) then
+         if not Data.Langs (Ada_Language_Index) then
 
             --  Get all the object files of the project
 
@@ -1637,7 +1643,6 @@ package body Makegpr is
             if Data.Library_Kind = Static then
                MLib.Build_Library
                  (Ofiles      => Arguments (1 .. Last_Argument),
-                  Afiles      => No_Argument,
                   Output_File => Get_Name_String (Data.Library_Name),
                   Output_Dir  => Get_Name_String (Data.Display_Library_Dir));
 
@@ -1698,10 +1703,7 @@ package body Makegpr is
 
                MLib.Tgt.Build_Dynamic_Library
                  (Ofiles       => Arguments (1 .. Last_Argument),
-                  Foreign      => Arguments (1 .. Last_Argument),
-                  Afiles       => No_Argument,
-                  Options      => No_Argument,
-                  Options_2    => Lib_Opts.all,
+                  Options      => Lib_Opts.all,
                   Interfaces   => No_Argument,
                   Lib_Filename => Get_Name_String (Data.Library_Name),
                   Lib_Dir      => Get_Name_String (Data.Library_Dir),
@@ -1817,6 +1819,7 @@ package body Makegpr is
       Source_Name   : constant String := Get_Name_String (Source.File_Name);
       Source_Path   : constant String := Get_Name_String (Source.Path_Name);
       Object_Name   : constant String := Get_Name_String (Source.Object_Name);
+      C_Object_Name : String := Object_Name;
       Dep_Name      : constant String := Get_Name_String (Source.Dep_Name);
       C_Source_Path : String := Source_Path;
 
@@ -1832,6 +1835,7 @@ package body Makegpr is
 
    begin
       Canonical_Case_File_Name (C_Source_Path);
+      Canonical_Case_File_Name (C_Object_Name);
 
       --  Assume the worst, so that statement "return;" may be used if there
       --  is any problem.
@@ -1957,10 +1961,14 @@ package body Makegpr is
          Start  := 1;
          Finish := Index (Name_Buffer (1 .. Name_Len), ": ");
 
+         if Finish /= 0 then
+            Canonical_Case_File_Name (Name_Buffer (1 .. Finish - 1));
+         end if;
+
          --  First line must start with name of object file, followed by colon
 
          if Finish = 0 or else
-            Name_Buffer (1 .. Finish - 1) /= Object_Name
+            Name_Buffer (1 .. Finish - 1) /= C_Object_Name
          then
             if Verbose_Mode then
                Write_Str  ("      -> dependency file ");
@@ -2155,7 +2163,7 @@ package body Makegpr is
                      Project_Table.Last (Project_Tree.Projects)
       loop
          if
-           Project_Tree.Projects.Table (Project).Languages
+           Project_Tree.Projects.Table (Project).Langs
                                            (C_Plus_Plus_Language_Index)
          then
             C_Plus_Plus_Is_Used := True;
@@ -2430,7 +2438,7 @@ package body Makegpr is
       Dummy        : Boolean := False;
 
       Ada_Is_A_Language : constant Boolean :=
-                            Data.Languages (Ada_Language_Index);
+                            Data.Langs (Ada_Language_Index);
 
    begin
       Ada_Mains.Init;
@@ -2814,7 +2822,7 @@ package body Makegpr is
 
             if not Local_Errors
               and then Data.Library
-              and then not Data.Languages (Ada_Language_Index)
+              and then not Data.Langs (Ada_Language_Index)
               and then not Compile_Only
             then
                Build_Library (Project, Need_To_Rebuild_Archive);
@@ -3349,6 +3357,8 @@ package body Makegpr is
 
    procedure Initialize is
    begin
+      Set_Mode (Ada_Only);
+
       --  Do some necessary package initializations
 
       Csets.Initialize;
@@ -3795,7 +3805,7 @@ package body Makegpr is
 
          --  Only Ada sources in the main project, and even maybe not
 
-         if not Data.Languages (Ada_Language_Index) then
+         if not Data.Langs (Ada_Language_Index) then
 
             --  Fail if the main project has no source of any language
 
@@ -3825,7 +3835,7 @@ package body Makegpr is
          --  There are other language sources. First check if there are also
          --  sources in Ada.
 
-         if Data.Languages (Ada_Language_Index) then
+         if Data.Langs (Ada_Language_Index) then
 
             --  There is a mix of Ada and other language sources in the main
             --  project. Any main that is not a source of the other languages
@@ -3953,7 +3963,7 @@ package body Makegpr is
                --  If C++ is one of the languages, add the --LINK switch to
                --  the linking switches.
 
-               if Data.Languages (C_Plus_Plus_Language_Index) then
+               if Data.Langs (C_Plus_Plus_Language_Index) then
                   Add_Argument (Dash_largs, Verbose_Mode);
                   Add_C_Plus_Plus_Link_For_Gnatmake;
                   Add_Argument (Dash_margs, Verbose_Mode);
@@ -3969,7 +3979,7 @@ package body Makegpr is
 
             --  First, get the linker to invoke
 
-            if Data.Languages (C_Plus_Plus_Language_Index) then
+            if Data.Langs (C_Plus_Plus_Language_Index) then
                Get_Compiler (C_Plus_Plus_Language_Index);
                Linker_Name := Compiler_Names (C_Plus_Plus_Language_Index);
                Linker_Path := Compiler_Paths (C_Plus_Plus_Language_Index);

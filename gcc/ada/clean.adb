@@ -168,15 +168,13 @@ package body Clean is
    -----------------------------
 
    procedure Add_Source_Dir (N : String);
-   --  Call Add_Src_Search_Dir.
-   --  Output one line when in verbose mode.
+   --  Call Add_Src_Search_Dir and output one line when in verbose mode
 
    procedure Add_Source_Directories is
      new Prj.Env.For_All_Source_Dirs (Action => Add_Source_Dir);
 
    procedure Add_Object_Dir (N : String);
-   --  Call Add_Lib_Search_Dir.
-   --  Output one line when in verbose mode.
+   --  Call Add_Lib_Search_Dir and output one line when in verbose mode
 
    procedure Add_Object_Directories is
      new Prj.Env.For_All_Object_Dirs (Action => Add_Object_Dir);
@@ -187,9 +185,9 @@ package body Clean is
    function Assembly_File_Name (Source : File_Name_Type) return String;
    --  Returns the assembly file name corresponding to Source
 
-   procedure Clean_Archive (Project : Project_Id);
-   --  Delete a global archive or a fake library project archive and the
-   --  dependency file, if they exist.
+   procedure Clean_Archive (Project : Project_Id; Global : Boolean);
+   --  Delete a global archive or library project archive and the dependency
+   --  file, if they exist.
 
    procedure Clean_Executables;
    --  Do the cleaning work when no project file is specified
@@ -199,14 +197,13 @@ package body Clean is
    --  a source of the project.
 
    procedure Clean_Library_Directory (Project : Project_Id);
-   --  Delete the library file in a library directory and any ALI file
-   --  of a source of the project in a library ALI directory.
+   --  Delete the library file in a library directory and any ALI file of a
+   --  source of the project in a library ALI directory.
 
    procedure Clean_Project (Project : Project_Id);
-   --  Do the cleaning work when a project file is specified.
-   --  This procedure calls itself recursively when there are several
-   --  project files in the tree rooted at the main project file and switch -r
-   --  has been specified.
+   --  Do the cleaning work when a project file is specified. This procedure
+   --  calls itself recursively when there are several project files in the
+   --  tree rooted at the main project file and switch -r has been specified.
 
    function Debug_File_Name (Source : File_Name_Type) return String;
    --  Name of the expanded source file corresponding to Source
@@ -252,8 +249,8 @@ package body Clean is
    --  not itself extended. Returns No_Project if Project is No_Project.
 
    procedure Usage;
-   --  Display the usage.
-   --  If called several times, the usage is displayed only the first time.
+   --  Display the usage. If called several times, the usage is displayed only
+   --  the first time.
 
    --------------------
    -- Add_Object_Dir --
@@ -337,19 +334,16 @@ package body Clean is
    -- Clean_Archive --
    -------------------
 
-   procedure Clean_Archive (Project : Project_Id) is
-      Current_Dir      : constant Dir_Name_Str := Get_Current_Dir;
-      Data             : constant Project_Data :=
-                           Project_Tree.Projects.Table (Project);
-      Lib_Prefix       : constant String :=
-                           "lib" & Get_Name_String (Data.Display_Name);
+   procedure Clean_Archive (Project : Project_Id; Global : Boolean) is
+      Current_Dir : constant Dir_Name_Str := Get_Current_Dir;
 
-      Archive_Name : constant String :=
-                       Lib_Prefix & '.' & Archive_Ext;
+      Data : constant Project_Data := Project_Tree.Projects.Table (Project);
+
+      Lib_Prefix : String_Access;
+      Archive_Name : String_Access;
       --  The name of the archive file for this project
 
-      Archive_Dep_Name : constant String :=
-                           Lib_Prefix & ".deps";
+      Archive_Dep_Name : String_Access;
       --  The name of the archive dependency file for this project
 
       Obj_Dir : constant String :=
@@ -358,12 +352,29 @@ package body Clean is
    begin
       Change_Dir (Obj_Dir);
 
-      if Is_Regular_File (Archive_Name) then
-         Delete (Obj_Dir, Archive_Name);
+      --  First, get the lib prefix, the archive file name and the archive
+      --  dependency file name.
+
+      if Global then
+         Lib_Prefix :=
+           new String'("lib" & Get_Name_String (Data.Display_Name));
+      else
+         Lib_Prefix :=
+           new String'("lib" & Get_Name_String (Data.Library_Name));
       end if;
 
-      if Is_Regular_File (Archive_Dep_Name) then
-         Delete (Obj_Dir, Archive_Dep_Name);
+      Archive_Name := new String'(Lib_Prefix.all & '.' & Archive_Ext);
+      Archive_Dep_Name := new String'(Lib_Prefix.all & ".deps");
+
+      --  Delete the archive file and the archive dependency file, if they
+      --  exist.
+
+      if Is_Regular_File (Archive_Name.all) then
+         Delete (Obj_Dir, Archive_Name.all);
+      end if;
+
+      if Is_Regular_File (Archive_Dep_Name.all) then
+         Delete (Obj_Dir, Archive_Dep_Name.all);
       end if;
 
       Change_Dir (Current_Dir);
@@ -620,6 +631,8 @@ package body Clean is
    -- Clean_Library_Directory --
    -----------------------------
 
+   Empty_String : aliased String := "";
+
    procedure Clean_Library_Directory (Project : Project_Id) is
       Current : constant String := Get_Current_Dir;
       Data    : constant Project_Data := Project_Tree.Projects.Table (Project);
@@ -636,8 +649,19 @@ package body Clean is
 
       Delete_File : Boolean;
 
+      Minor : String_Access := Empty_String'Unchecked_Access;
+      Major : String_Access := Empty_String'Unchecked_Access;
+
    begin
       if Data.Library then
+         if Data.Library_Kind /= Static
+           and then MLib.Tgt.Library_Major_Minor_Id_Supported
+           and then Data.Lib_Internal_Name /= No_Name
+         then
+            Minor := new String'(Get_Name_String (Data.Lib_Internal_Name));
+            Major := new String'(MLib.Major_Id_Name (DLL_Name, Minor.all));
+         end if;
+
          declare
             Lib_Directory     : constant String :=
                                   Get_Name_String (Data.Display_Library_Dir);
@@ -663,7 +687,9 @@ package body Clean is
                declare
                   Filename : constant String := Name (1 .. Last);
                begin
-                  if Is_Regular_File (Filename) then
+                  if Is_Regular_File (Filename)
+                    or else Is_Symbolic_Link (Filename)
+                  then
                      Canonical_Case_File_Name (Name (1 .. Last));
                      Delete_File := False;
 
@@ -672,14 +698,16 @@ package body Clean is
                        or else
                          ((Data.Library_Kind = Dynamic or else
                              Data.Library_Kind = Relocatable)
-                          and then Name (1 .. Last) = DLL_Name)
+                          and then
+                            (Name (1 .. Last) = DLL_Name
+                             or else Name (1 .. Last) = Minor.all
+                             or else Name (1 .. Last) = Major.all))
                      then
                         if not Do_Nothing then
                            Set_Writable (Filename);
                         end if;
 
                         Delete (Lib_Directory, Filename);
-                        exit;
                      end if;
                   end if;
                end;
@@ -852,7 +880,7 @@ package body Clean is
                --  Source_Dirs or Source_Files is specified as an empty list,
                --  so always look for Ada units in extending projects.
 
-               if Data.Languages (Ada_Language_Index)
+               if Data.Langs (Ada_Language_Index)
                  or else Data.Extends /= No_Project
                then
                   for Unit in Unit_Table.First ..
@@ -1011,7 +1039,7 @@ package body Clean is
                   end loop;
 
                   if Global_Archive then
-                     Clean_Archive (Project);
+                     Clean_Archive (Project, Global => True);
                   end if;
                end if;
 
@@ -1044,9 +1072,9 @@ package body Clean is
                   --  the fake archive and the dependency file, if they exist.
 
                   if Data.Library
-                    and then not Data.Languages (Ada_Language_Index)
+                    and then not Data.Langs (Ada_Language_Index)
                   then
-                     Clean_Archive (Project);
+                     Clean_Archive (Project, Global => False);
                   end if;
                end if;
             end;
@@ -1072,7 +1100,7 @@ package body Clean is
             then
                Delete_Binder_Generated_Files
                  (Get_Name_String (Data.Display_Object_Dir),
-                  Data.Library_Name);
+                  File_Name_Type (Data.Library_Name));
             end if;
          end if;
 
@@ -1226,6 +1254,7 @@ package body Clean is
       else
          if Force_Deletions
            or else Is_Writable_File (Full_Name (1 .. Last))
+           or else Is_Symbolic_Link (Full_Name (1 .. Last))
          then
             Delete_File (Full_Name (1 .. Last), Success);
          else

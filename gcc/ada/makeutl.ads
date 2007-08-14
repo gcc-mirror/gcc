@@ -38,16 +38,38 @@ package Makeutl is
       S2 : String := "";
       S3 : String := "");
    Do_Fail : Fail_Proc := Osint.Fail'Access;
-   --  Comment required ???
+   --  Failing procedure called from procedure Test_If_Relative_Path below.
+   --  May be redirected.
 
-   function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
-   --  Find the index of a unit in a source file. Return zero if the file
-   --  is not a multi-unit source file.
+   Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
+   --  The project tree
+
+   Main_Config_Project : Project_Id;
+   --  The project id of the main configuration project
+
+   procedure Add
+     (Option : String_Access;
+      To     : in out String_List_Access;
+      Last   : in out Natural);
+   procedure Add
+     (Option : String;
+      To     : in out String_List_Access;
+      Last   : in out Natural);
+   --  Add a string to a list of strings
+
+   function Create_Name (Name : String) return File_Name_Type;
+   function Create_Name (Name : String) return Name_Id;
+   function Create_Name (Name : String) return Path_Name_Type;
+   --  Get the Name_Id of a name
 
    function Executable_Prefix_Path return String;
    --  Return the absolute path parent directory of the directory where the
    --  current executable resides, if its directory is named "bin", otherwise
    --  return an empty string.
+
+   procedure Inform (N : Name_Id := No_Name; Msg : String);
+   procedure Inform (N : File_Name_Type; Msg : String);
+   --  Prints out the program name followed by a colon, N and S
 
    function Is_External_Assignment (Argv : String) return Boolean;
    --  Verify that an external assignment switch is syntactically correct
@@ -72,6 +94,10 @@ package Makeutl is
    --  Package Mains is used to store the mains specified on the command line
    --  and to retrieve them when a project file is used, to verify that the
    --  files exist and that they belong to a project file.
+
+   function Unit_Index_Of (ALI_File : File_Name_Type) return Int;
+   --  Find the index of a unit in a source file. Return zero if the file
+   --  is not a multi-unit source file.
 
    package Mains is
 

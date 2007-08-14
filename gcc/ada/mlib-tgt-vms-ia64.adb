@@ -36,8 +36,8 @@ with MLib.Tgt.VMS;
 pragma Warnings (Off, MLib.Tgt.VMS);
 --  MLib.Tgt.VMS is with'ed only for elaboration purposes
 
-with Opt;    use Opt;
-with Output; use Output;
+with Opt;      use Opt;
+with Output;   use Output;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
@@ -47,14 +47,11 @@ with System.CRTL;      use System.CRTL;
 
 package body MLib.Tgt.Specific is
 
-   --  Non default subprogram. See comment in mlib-tgt.ads
+   --  Non default subprogram. See comment in mlib-tgt.ads.
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
-      Foreign      : Argument_List;
-      Afiles       : Argument_List;
       Options      : Argument_List;
-      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -95,10 +92,7 @@ package body MLib.Tgt.Specific is
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
-      Foreign      : Argument_List;
-      Afiles       : Argument_List;
       Options      : Argument_List;
-      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -107,8 +101,6 @@ package body MLib.Tgt.Specific is
       Lib_Version  : String  := "";
       Auto_Init    : Boolean := False)
    is
-      pragma Unreferenced (Foreign);
-      pragma Unreferenced (Afiles);
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
@@ -171,7 +163,7 @@ package body MLib.Tgt.Specific is
 
       function Option_File_Name return String is
       begin
-         if Symbol_Data.Symbol_File = No_Name then
+         if Symbol_Data.Symbol_File = No_Path then
             return "symvec.opt";
          else
             Get_Name_String (Symbol_Data.Symbol_File);
@@ -420,7 +412,7 @@ package body MLib.Tgt.Specific is
 
       --  Reference Symbol File
 
-      if Symbol_Data.Reference /= No_Name then
+      if Symbol_Data.Reference /= No_Path then
          Last_Argument := Last_Argument + 1;
          Arguments (Last_Argument) := new String'("-r");
          Last_Argument := Last_Argument + 1;
@@ -510,7 +502,7 @@ package body MLib.Tgt.Specific is
          Options     => VMS_Options,
          Options_2   => Shared_Libgcc_Switch &
                         Opts (Opts'First .. Last_Opt) &
-                        Opts2 (Opts2'First .. Last_Opt2) & Options_2,
+                        Opts2 (Opts2'First .. Last_Opt2),
          Driver_Name => Driver_Name);
 
       --  The auto-init object file need to be deleted, so that it will not

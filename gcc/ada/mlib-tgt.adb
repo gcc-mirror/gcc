@@ -151,25 +151,19 @@ package body MLib.Tgt is
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
-      Foreign      : Argument_List;
-      Afiles       : Argument_List;
       Options      : Argument_List;
-      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
       Symbol_Data  : Symbol_Record;
-      Driver_Name  : Name_Id  := No_Name;
-      Lib_Version  : String   := "";
-      Auto_Init    : Boolean  := False)
+      Driver_Name  : Name_Id := No_Name;
+      Lib_Version  : String  := "";
+      Auto_Init    : Boolean := False)
    is
    begin
       Build_Dynamic_Library_Ptr
         (Ofiles,
-         Foreign,
-         Afiles,
          Options,
-         Options_2,
          Interfaces,
          Lib_Filename,
          Lib_Dir,
@@ -404,7 +398,9 @@ package body MLib.Tgt is
                            (In_Tree.Projects.Table (Project).Library_Name);
 
          begin
-            if In_Tree.Projects.Table (Project).Library_Kind = Static then
+            if In_Tree.Projects.Table (Project).Library_Kind =
+                 Static
+            then
                Name_Len := 3;
                Name_Buffer (1 .. Name_Len) := "lib";
                Add_Str_To_Name_Buffer (Fil.Append_To (Lib_Name, Archive_Ext));
@@ -418,6 +414,24 @@ package body MLib.Tgt is
          end;
       end if;
    end Library_File_Name_For_Default;
+
+   --------------------------------------
+   -- Library_Major_Minor_Id_Supported --
+   --------------------------------------
+
+   function Library_Major_Minor_Id_Supported return Boolean is
+   begin
+      return Library_Major_Minor_Id_Supported_Ptr.all;
+   end Library_Major_Minor_Id_Supported;
+
+   ----------------------------------------------
+   -- Library_Major_Minor_Id_Supported_Default --
+   ----------------------------------------------
+
+   function Library_Major_Minor_Id_Supported_Default return Boolean is
+   begin
+      return True;
+   end Library_Major_Minor_Id_Supported_Default;
 
    ----------------
    -- Object_Ext --
@@ -490,5 +504,4 @@ package body MLib.Tgt is
    begin
       return Full;
    end Support_For_Libraries_Default;
-
 end MLib.Tgt;
