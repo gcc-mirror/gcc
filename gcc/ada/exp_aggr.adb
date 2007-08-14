@@ -93,6 +93,10 @@ package body Exp_Aggr is
    --  N is an aggregate (record or array). Checks the presence of default
    --  initialization (<>) in any component (Ada 2005: AI-287)
 
+   function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean;
+   --  Returns true if N is an aggregate used to initialize the components
+   --  of an statically allocated dispatch table.
+
    ------------------------------------------------------
    -- Local subprograms for Record Aggregate Expansion --
    ------------------------------------------------------
@@ -115,9 +119,10 @@ package body Exp_Aggr is
    --      aggregate
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id);
-   --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of
-   --  the aggregate. Transform the given aggregate into a sequence of
-   --  assignments component per component.
+   --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of the
+   --  aggregate (which can only be a record type, this procedure is only used
+   --  for record types). Transform the given aggregate into a sequence of
+   --  assignments performed component by component.
 
    function Build_Record_Aggr_Code
      (N                             : Node_Id;
@@ -2059,11 +2064,14 @@ package body Exp_Aggr is
 
          if Controlled_Type (Typ) then
 
-            --  The current aggregate belongs to an allocator which acts as
-            --  the root of a coextension chain.
+            --  The current aggregate belongs to an allocator which creates
+            --  an object through an anonymous access type or acts as the root
+            --  of a coextension chain.
 
             if Present (Alloc)
-              and then Is_Coextension_Root (Alloc)
+              and then
+                (Is_Coextension_Root (Alloc)
+                   or else Ekind (Etype (Alloc)) = E_Anonymous_Access_Type)
             then
                if No (Associated_Final_Chain (Etype (Alloc))) then
                   Build_Final_List (Alloc, Etype (Alloc));
@@ -2116,7 +2124,7 @@ package body Exp_Aggr is
                --  aggregate to its coextension chain.
 
                if Present (Alloc)
-                 and then Is_Coextension (Alloc)
+                 and then Is_Dynamic_Coextension (Alloc)
                then
                   if No (Coextensions (Alloc)) then
                      Set_Coextensions (Alloc, New_Elmt_List);
@@ -3024,7 +3032,11 @@ package body Exp_Aggr is
    -- Convert_Aggr_In_Allocator --
    -------------------------------
 
-   procedure Convert_Aggr_In_Allocator (Decl, Aggr : Node_Id) is
+   procedure Convert_Aggr_In_Allocator
+     (Alloc :  Node_Id;
+      Decl  :  Node_Id;
+      Aggr  :  Node_Id)
+   is
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
       Temp : constant Entity_Id  := Defining_Identifier (Decl);
@@ -3044,6 +3056,14 @@ package body Exp_Aggr is
       --  mechanism. If the enclosing object is not dynamically allocated,
       --  the access discriminant is itself placed on the stack. Otherwise,
       --  some other finalization list is used (see exp_ch4.adb).
+
+      --  Decl has been inserted in the code ahead of the allocator, using
+      --  Insert_Actions. We use Insert_Actions below as well, to ensure that
+      --  subsequent insertions are done in the proper order. Using (for
+      --  example) Insert_Actions_After to place the expanded aggregate
+      --  immediately after Decl may lead to out-of-order references if the
+      --  allocator has generated a finalization list, as when the designated
+      --  object is controlled and there is an open transient scope.
 
       if Ekind (Access_Type) = E_Anonymous_Access_Type
         and then Nkind (Associated_Node_For_Itype (Access_Type)) =
@@ -3074,14 +3094,14 @@ package body Exp_Aggr is
 
             if Has_Task (Typ) then
                Build_Task_Allocate_Block_With_Init_Stmts (L, Aggr, Init_Stmts);
-               Insert_Actions_After (Decl, L);
+               Insert_Actions (Alloc, L);
             else
-               Insert_Actions_After (Decl, Init_Stmts);
+               Insert_Actions (Alloc, Init_Stmts);
             end if;
          end;
 
       else
-         Insert_Actions_After (Decl,
+         Insert_Actions (Alloc,
            Late_Expansion
              (Aggr, Typ, Occ, Flist,
               Associated_Final_Chain (Base_Type (Access_Type))));
@@ -3269,6 +3289,9 @@ package body Exp_Aggr is
       Parent_Node : Node_Id;
 
    begin
+      pragma Assert (not Is_Static_Dispatch_Table_Aggregate (N));
+      pragma Assert (Is_Record_Type (Typ));
+
       Parent_Node := Parent (N);
       Parent_Kind := Nkind (Parent_Node);
 
@@ -3293,34 +3316,47 @@ package body Exp_Aggr is
          end;
       end if;
 
-      --  Just set the Delay flag in the following cases where the
-      --  transformation will be done top down from above:
+      --  Just set the Delay flag in the cases where the transformation
+      --  will be done top down from above.
 
-      --    - internal aggregate (transformed when expanding the parent)
+      if False
 
-      --    - allocators  (see Convert_Aggr_In_Allocator)
+         --  Internal aggregate (transformed when expanding the parent)
 
-      --    - object decl (see Convert_Aggr_In_Object_Decl)
+         or else Parent_Kind = N_Aggregate
+         or else Parent_Kind = N_Extension_Aggregate
+         or else Parent_Kind = N_Component_Association
 
-      --    - safe assignments (see Convert_Aggr_Assignments)
-      --      so far only the assignments in the init procs are taken
-      --      into account
+         --  Allocator (see Convert_Aggr_In_Allocator)
 
-      --    - (Ada 2005) A limited type in a return statement, which will
-      --       be rewritten as an extended return and may have its own
-      --       finalization machinery.
+         or else Parent_Kind = N_Allocator
 
-      if Parent_Kind = N_Aggregate
-        or else Parent_Kind = N_Extension_Aggregate
-        or else Parent_Kind = N_Component_Association
-        or else Parent_Kind = N_Allocator
-        or else (Parent_Kind = N_Object_Declaration and then not Unc_Decl)
-        or else (Parent_Kind = N_Assignment_Statement
-                  and then Inside_Init_Proc)
-        or else
-          (Is_Limited_Record (Typ)
-            and then Present (Parent (Parent (N)))
-            and then Nkind (Parent (Parent (N))) = N_Return_Statement)
+         --  Object declaration (see Convert_Aggr_In_Object_Decl)
+
+         or else (Parent_Kind = N_Object_Declaration and then not Unc_Decl)
+
+         --  Safe assignment (see Convert_Aggr_Assignments). So far only the
+         --  assignments in init procs are taken into account.
+
+         or else (Parent_Kind = N_Assignment_Statement
+                   and then Inside_Init_Proc)
+
+         --  (Ada 2005) An inherently limited type in a return statement,
+         --  which will be handled in a build-in-place fashion, and may be
+         --  rewritten as an extended return and have its own finalization
+         --  machinery. In the case of a simple return, the aggregate needs
+         --  to be delayed until the scope for the return statement has been
+         --  created, so that any finalization chain will be associated with
+         --  that scope. For extended returns, we delay expansion to avoid the
+         --  creation of an unwanted transient scope that could result in
+         --  premature finalization of the return object (which is built in
+         --  in place within the caller's scope).
+
+         or else
+          (Is_Inherently_Limited_Type (Typ)
+            and then
+              (Nkind (Parent (Parent_Node)) = N_Extended_Return_Statement
+                or else Nkind (Parent_Node) = N_Simple_Return_Statement))
       then
          Set_Expansion_Delayed (N);
          return;
@@ -4710,10 +4746,14 @@ package body Exp_Aggr is
          return;
       end if;
 
-      --  If all aggregate components are compile-time known and
-      --  the aggregate has been flattened, nothing left to do.
+      --  If all aggregate components are compile-time known and the aggregate
+      --  has been flattened, nothing left to do. The same occurs if the
+      --  aggregate is used to initialize the components of an statically
+      --  allocated dispatch table.
 
-      if Compile_Time_Known_Aggregate (N) then
+      if Compile_Time_Known_Aggregate (N)
+        or else Is_Static_Dispatch_Table_Aggregate (N)
+      then
          Set_Expansion_Delayed (N, False);
          return;
       end if;
@@ -5165,6 +5205,12 @@ package body Exp_Aggr is
       then
          Expand_Atomic_Aggregate (N, Typ);
          return;
+
+      --  No special management required for aggregates used to initialize
+      --  statically allocated dispatch tables
+
+      elsif Is_Static_Dispatch_Table_Aggregate (N) then
+         return;
       end if;
 
       --  Ada 2005 (AI-318-2): We need to convert to assignments if components
@@ -5606,6 +5652,39 @@ package body Exp_Aggr is
          return Expansion_Delayed (Node);
       end if;
    end Is_Delayed_Aggregate;
+
+   ----------------------------------------
+   -- Is_Static_Dispatch_Table_Aggregate --
+   ----------------------------------------
+
+   function Is_Static_Dispatch_Table_Aggregate (N : Node_Id) return Boolean is
+      Typ : constant Entity_Id := Base_Type (Etype (N));
+
+   begin
+      return Static_Dispatch_Tables
+        and then VM_Target = No_VM
+        and then RTU_Loaded (Ada_Tags)
+
+         --  Avoid circularity when rebuilding the compiler
+
+        and then Cunit_Entity (Get_Source_Unit (N)) /= RTU_Entity (Ada_Tags)
+        and then (Typ = RTE (RE_Dispatch_Table_Wrapper)
+                    or else
+                  Typ = RTE (RE_Address_Array)
+                    or else
+                  Typ = RTE (RE_Type_Specific_Data)
+                    or else
+                  Typ = RTE (RE_Tag_Table)
+                    or else
+                  (RTE_Available (RE_Interface_Data)
+                     and then Typ = RTE (RE_Interface_Data))
+                    or else
+                  (RTE_Available (RE_Interfaces_Array)
+                     and then Typ = RTE (RE_Interfaces_Array))
+                    or else
+                  (RTE_Available (RE_Interface_Data_Element)
+                     and then Typ = RTE (RE_Interface_Data_Element)));
+   end Is_Static_Dispatch_Table_Aggregate;
 
    --------------------
    -- Late_Expansion --
@@ -6131,7 +6210,7 @@ package body Exp_Aggr is
 
          if No (Component_Associations (N)) then
 
-            --  Verify that all components are static integers.
+            --  Verify that all components are static integers
 
             Expr := First (Expressions (N));
             while Present (Expr) loop
