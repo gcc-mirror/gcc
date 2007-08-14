@@ -202,7 +202,7 @@ package body Bcheck is
 
                   elsif Tolerate_Consistency_Errors then
                      Error_Msg
-                       ("?% should be recompiled (% has been modified)");
+                       ("?{ should be recompiled ({ has been modified)");
 
                   else
                      Error_Msg ("{ must be recompiled ({ has been modified)");

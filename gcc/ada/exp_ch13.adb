@@ -86,7 +86,8 @@ package body Exp_Ch13 is
             --  original node is in the source. An exception though is the case
             --  of an access variable which is default initialized to null, and
             --  such initialization is retained.
-            --  Furthermore, if the initialization is the  equivalent aggregate
+
+            --  Furthermore, if the initialization is the equivalent aggregate
             --  of the type initialization procedure, it replaces an implicit
             --  call to the init proc, and must be respected. Note that for
             --  packed types we do not build equivalent aggregates.

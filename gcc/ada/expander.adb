@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -379,8 +379,8 @@ package body Expander is
                when N_Requeue_Statement =>
                   Expand_N_Requeue_Statement (N);
 
-               when N_Return_Statement =>
-                  Expand_N_Return_Statement (N);
+               when N_Simple_Return_Statement =>
+                  Expand_N_Simple_Return_Statement (N);
 
                when N_Selected_Component =>
                   Expand_N_Selected_Component (N);

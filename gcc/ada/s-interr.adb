@@ -257,7 +257,7 @@ package body System.Interrupts is
    Registered_Handler_Tail : R_Link := null;
 
    Access_Hold : Server_Task_Access;
-   --  variable used to allocate Server_Task using "new".
+   --  Variable used to allocate Server_Task using "new"
 
    -----------------------
    -- Local Subprograms --
@@ -920,7 +920,7 @@ package body System.Interrupts is
 
          if New_Handler = null then
 
-            --  The null handler means we are detaching the handler.
+            --  The null handler means we are detaching the handler
 
             User_Handler (Interrupt).Static := False;
 
@@ -1267,18 +1267,18 @@ package body System.Interrupts is
 
       System.Tasking.Utilities.Make_Independent;
 
-      --  Install default action in system level.
+      --  Install default action in system level
 
       IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));
 
-      --  Note: All tasks in RTS will have all the Reserve Interrupts
-      --  being masked (except the Interrupt_Manager) and Keep_Unmasked
-      --  unmasked when created.
+      --  Note: All tasks in RTS will have all the Reserve Interrupts being
+      --  masked (except the Interrupt_Manager) and Keep_Unmasked unmasked when
+      --  created.
 
-      --  Abort_Task_Interrupt is one of the Interrupt unmasked
-      --  in all tasks. We mask the Interrupt in this particular task
-      --  so that "sigwait" is possible to catch an explicitely sent
-      --  Abort_Task_Interrupt from the Interrupt_Manager.
+      --  Abort_Task_Interrupt is one of the Interrupt unmasked in all tasks.
+      --  We mask the Interrupt in this particular task so that "sigwait" is
+      --  possible to catch an explicitely sent Abort_Task_Interrupt from the
+      --  Interrupt_Manager.
 
       --  There are two Interrupt interrupts that this task catch through
       --  "sigwait." One is the Interrupt this task is designated to catch
@@ -1287,7 +1287,7 @@ package body System.Interrupts is
       --  Interrupt_Manager to inform status changes (e.g: become Blocked,
       --  Handler or Entry is to be detached).
 
-      --  Prepare a mask to used for sigwait.
+      --  Prepare a mask to used for sigwait
 
       IMOP.Empty_Interrupt_Mask (Intwait_Mask'Access);
 
@@ -1361,7 +1361,7 @@ package body System.Interrupts is
 
             if Ret_Interrupt = Interrupt_ID (IMNG.Abort_Task_Interrupt) then
 
-               --  Inform the Interrupt_Manager of wakeup from above sigwait.
+               --  Inform the Interrupt_Manager of wakeup from above sigwait
 
                POP.Abort_Task (Interrupt_Manager_ID);
 
@@ -1397,7 +1397,7 @@ package body System.Interrupts is
                   if User_Handler (Interrupt).H /= null then
                      Tmp_Handler := User_Handler (Interrupt).H;
 
-                     --  RTS calls should not be made with self being locked.
+                     --  RTS calls should not be made with self being locked
 
                      POP.Unlock (Self_ID);
 
@@ -1417,7 +1417,7 @@ package body System.Interrupts is
                      Tmp_ID := User_Entry (Interrupt).T;
                      Tmp_Entry_Index := User_Entry (Interrupt).E;
 
-                     --  RTS calls should not be made with self being locked.
+                     --  RTS calls should not be made with self being locked
 
                      if Single_Lock then
                         POP.Unlock_RTS;
@@ -1470,7 +1470,7 @@ package body System.Interrupts is
 --  Elaboration code for package System.Interrupts
 
 begin
-   --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent.
+   --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent
 
    Interrupt_Manager_ID := To_System (Interrupt_Manager'Identity);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -948,7 +948,8 @@ package body CStand is
       Set_Ekind             (Any_Id, E_Variable);
       Set_Scope             (Any_Id, Standard_Standard);
       Set_Etype             (Any_Id, Any_Type);
-      Init_Size_Align       (Any_Id);
+      Init_Esize            (Any_Id);
+      Init_Alignment        (Any_Id);
       Make_Name             (Any_Id, "any id");
 
       Any_Access := New_Standard_Entity;

@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,7 +119,7 @@ package System.OS_Interface is
    SIGCKPT    : constant := 33; --  Checkpoint warning
    SIGRESTART : constant := 34; --  Restart warning
    SIGUME     : constant := 35; --  Uncorrectable memory error
-   --  Signals defined for Posix 1003.1c.
+   --  Signals defined for Posix 1003.1c
    SIGPTINTR    : constant := 47;
    SIGPTRESCHED : constant := 48;
    --  Posix 1003.1b signals

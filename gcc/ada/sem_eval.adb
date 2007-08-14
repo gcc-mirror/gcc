@@ -1501,7 +1501,7 @@ package body Sem_Eval is
                Set_Etype (N, Etype (Right));
             end if;
 
-            Fold_Str (N, End_String, True);
+            Fold_Str (N, End_String, Static => True);
          end if;
       end;
    end Eval_Concatenation;
@@ -2732,7 +2732,7 @@ package body Sem_Eval is
       --  Fold conversion, case of string type. The result is not static
 
       if Is_String_Type (Target_Type) then
-         Fold_Str (N, Strval (Get_String_Val (Operand)), False);
+         Fold_Str (N, Strval (Get_String_Val (Operand)), Static => False);
 
          return;
 
@@ -4450,7 +4450,7 @@ package body Sem_Eval is
          if Raises_Constraint_Error (Expr) then
             Error_Msg_N
               ("expression raises exception, cannot be static " &
-               "('R'M 4.9(34))!", N);
+               "(RM 4.9(34))!", N);
             return;
          end if;
 
@@ -4469,7 +4469,7 @@ package body Sem_Eval is
          then
             Error_Msg_N
               ("static expression must have scalar or string type " &
-               "('R'M 4.9(2))!", N);
+               "(RM 4.9(2))!", N);
             return;
          end if;
       end if;
@@ -4486,19 +4486,19 @@ package body Sem_Eval is
             elsif Ekind (E) = E_Constant then
                if not Is_Static_Expression (Constant_Value (E)) then
                   Error_Msg_NE
-                    ("& is not a static constant ('R'M 4.9(5))!", N, E);
+                    ("& is not a static constant (RM 4.9(5))!", N, E);
                end if;
 
             else
                Error_Msg_NE
                  ("& is not static constant or named number " &
-                  "('R'M 4.9(5))!", N, E);
+                  "(RM 4.9(5))!", N, E);
             end if;
 
          when N_Binary_Op | N_And_Then | N_Or_Else | N_Membership_Test =>
             if Nkind (N) in N_Op_Shift then
                Error_Msg_N
-                ("shift functions are never static ('R'M 4.9(6,18))!", N);
+                ("shift functions are never static (RM 4.9(6,18))!", N);
 
             else
                Why_Not_Static (Left_Opnd (N));
@@ -4522,7 +4522,7 @@ package body Sem_Eval is
             if Attribute_Name (N) = Name_Size then
                Error_Msg_N
                  ("size attribute is only static for scalar type " &
-                  "('R'M 4.9(7,8))", N);
+                  "(RM 4.9(7,8))", N);
 
             --  Flag array cases
 
@@ -4535,14 +4535,14 @@ package body Sem_Eval is
                then
                   Error_Msg_N
                     ("static array attribute must be Length, First, or Last " &
-                     "('R'M 4.9(8))!", N);
+                     "(RM 4.9(8))!", N);
 
                --  Since we know the expression is not-static (we already
                --  tested for this, must mean array is not static).
 
                else
                   Error_Msg_N
-                    ("prefix is non-static array ('R'M 4.9(8))!", Prefix (N));
+                    ("prefix is non-static array (RM 4.9(8))!", Prefix (N));
                end if;
 
                return;
@@ -4556,7 +4556,7 @@ package body Sem_Eval is
             then
                Error_Msg_N
                  ("attribute of generic type is never static " &
-                  "('R'M 4.9(7,8))!", N);
+                  "(RM 4.9(7,8))!", N);
 
             elsif Is_Static_Subtype (E) then
                null;
@@ -4564,43 +4564,43 @@ package body Sem_Eval is
             elsif Is_Scalar_Type (E) then
                Error_Msg_N
                  ("prefix type for attribute is not static scalar subtype " &
-                  "('R'M 4.9(7))!", N);
+                  "(RM 4.9(7))!", N);
 
             else
                Error_Msg_N
                  ("static attribute must apply to array/scalar type " &
-                  "('R'M 4.9(7,8))!", N);
+                  "(RM 4.9(7,8))!", N);
             end if;
 
          when N_String_Literal =>
             Error_Msg_N
-              ("subtype of string literal is non-static ('R'M 4.9(4))!", N);
+              ("subtype of string literal is non-static (RM 4.9(4))!", N);
 
          when N_Explicit_Dereference =>
             Error_Msg_N
-              ("explicit dereference is never static ('R'M 4.9)!", N);
+              ("explicit dereference is never static (RM 4.9)!", N);
 
          when N_Function_Call =>
             Why_Not_Static_List (Parameter_Associations (N));
-            Error_Msg_N ("non-static function call ('R'M 4.9(6,18))!", N);
+            Error_Msg_N ("non-static function call (RM 4.9(6,18))!", N);
 
          when N_Parameter_Association =>
             Why_Not_Static (Explicit_Actual_Parameter (N));
 
          when N_Indexed_Component =>
             Error_Msg_N
-              ("indexed component is never static ('R'M 4.9)!", N);
+              ("indexed component is never static (RM 4.9)!", N);
 
          when N_Procedure_Call_Statement =>
             Error_Msg_N
-              ("procedure call is never static ('R'M 4.9)!", N);
+              ("procedure call is never static (RM 4.9)!", N);
 
          when N_Qualified_Expression =>
             Why_Not_Static (Expression (N));
 
          when N_Aggregate | N_Extension_Aggregate =>
             Error_Msg_N
-              ("an aggregate is never static ('R'M 4.9)!", N);
+              ("an aggregate is never static (RM 4.9)!", N);
 
          when N_Range =>
             Why_Not_Static (Low_Bound (N));
@@ -4614,11 +4614,11 @@ package body Sem_Eval is
 
          when N_Selected_Component =>
             Error_Msg_N
-              ("selected component is never static ('R'M 4.9)!", N);
+              ("selected component is never static (RM 4.9)!", N);
 
          when N_Slice =>
             Error_Msg_N
-              ("slice is never static ('R'M 4.9)!", N);
+              ("slice is never static (RM 4.9)!", N);
 
          when N_Type_Conversion =>
             Why_Not_Static (Expression (N));
@@ -4628,12 +4628,12 @@ package body Sem_Eval is
             then
                Error_Msg_N
                  ("static conversion requires static scalar subtype result " &
-                  "('R'M 4.9(9))!", N);
+                  "(RM 4.9(9))!", N);
             end if;
 
          when N_Unchecked_Type_Conversion =>
             Error_Msg_N
-              ("unchecked type conversion is never static ('R'M 4.9)!", N);
+              ("unchecked type conversion is never static (RM 4.9)!", N);
 
          when others =>
             null;

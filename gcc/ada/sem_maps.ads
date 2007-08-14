@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,14 +64,14 @@ package Sem_Maps is
    --  Retrieve image of E under M, Empty if undefined
 
    procedure Add_Association
-     (M    : in out Map;
+     (M    : Map;
       O_Id : Entity_Id;
       N_Id : Entity_Id;
       Kind : Scope_Kind := S_Local);
    --  Update M in place. On entry M (O_Id) must not be defined
 
    procedure Update_Association
-     (M    : in out Map;
+     (M    : Map;
       O_Id : Entity_Id;
       N_Id : Entity_Id;
       Kind : Scope_Kind := S_Local);

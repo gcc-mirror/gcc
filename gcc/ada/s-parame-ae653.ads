@@ -193,7 +193,7 @@ package System.Parameters is
    -----------------------
 
    Max_Task_Image_Length : constant := 32;
-   --  This constant specifies the maximum length of a task's image.
+   --  This constant specifies the maximum length of a task's image
 
    ------------------------------
    -- Exception Message Length --

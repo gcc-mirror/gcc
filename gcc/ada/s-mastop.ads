@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,8 +88,17 @@ package System.Machine_State_Operations is
    --  Some architectures (notably VMS) use a descriptor to describe
    --  a subprogram address. This function computes the actual starting
    --  address of the code from Loc.
-   --  Do not add pragma Inline, see 9116-002.
+   --
    --  ??? This function will go away when 'Code_Address is fixed on VMS.
+   --
+   --  Do not add pragma Inline to this function: there is a curious
+   --  interaction between rtsfind and front-end inlining. The exception
+   --  declaration in s-auxdec calls rtsfind, which forces several other system
+   --  packages to be compiled. Some of those have a pragma Inline, and we
+   --  compile the corresponding bodies so that inlining can take place. One
+   --  of these packages is s-mastop, which depends on s-auxdec, which is still
+   --  being compiled: we have not seen all the declarations in it yet, so we
+   --  get confused semantic errors.
 
    procedure Set_Machine_State (M : Machine_State);
    --  This routine sets M from the current machine state. It is called

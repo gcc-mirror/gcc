@@ -99,7 +99,7 @@ package body System.OS_Primitives is
 
    Base_Ticks : aliased LARGE_INTEGER;
    BTA : constant LIA := Base_Ticks'Access;
-   --  Holds the Tick count for the base time.
+   --  Holds the Tick count for the base time
 
    Base_Monotonic_Ticks : aliased LARGE_INTEGER;
    BMTA : constant LIA := Base_Monotonic_Ticks'Access;
@@ -160,8 +160,8 @@ package body System.OS_Primitives is
 
       --  If we have a shift of more than Max_Shift seconds we resynchonize the
       --  Clock. This is probably due to a manual Clock adjustment, an DST
-      --  adjustment or an NTP synchronisation. And we want to adjust the
-      --  time for this system (non-monotonic) clock.
+      --  adjustment or an NTP synchronisation. And we want to adjust the time
+      --  for this system (non-monotonic) clock.
 
       if abs (Elap_Secs_Sys - Elap_Secs_Tick) > Max_Shift then
          Get_Base_Time;
@@ -180,7 +180,7 @@ package body System.OS_Primitives is
 
    procedure Get_Base_Time is
 
-      --  The resolution for GetSystemTime is 1 millisecond.
+      --  The resolution for GetSystemTime is 1 millisecond
 
       --  The time to get both base times should take less than 1 millisecond.
       --  Therefore, the elapsed time reported by GetSystemTime between both

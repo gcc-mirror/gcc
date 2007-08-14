@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,6 +74,12 @@ package Itypes is
    --  call to New_Copy_Tree is to create a complete duplicate of a tree,
    --  as though it had appeared separately in the source), the Itype in
    --  question is duplicated as part of the New_Copy_Tree processing.
+   --  As a consequence of this copying mechanism, the association between
+   --  itypes and associated nodes must be one-to-one: several itypes must
+   --  not share an associated node. For example, the semantic decoration
+   --  of an array aggregate generates several itypes: for each index subtype
+   --  and for the array subtype. The associated node of each index subtype
+   --  is the corresponding range expression.
 
    -----------------
    -- Subprograms --

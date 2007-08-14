@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,14 +32,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is Darwin pthreads version of this package.
+--  This is Darwin pthreads version of this package
 
---  This package includes all direct interfaces to OS services
---  that are needed by children of System.
+--  This package includes all direct interfaces to OS services that are needed
+--  by children of System.
 
---  PLEASE DO NOT add any with-clauses to this package
---  or remove the pragma Elaborate_Body.
---  It is designed to be a bottom-level (leaf) package.
+--  PLEASE DO NOT add any with-clauses to this package or remove the pragma
+--  Elaborate_Body. It is designed to be a bottom-level (leaf) package.
 
 with Interfaces.C;
 package System.OS_Interface is
@@ -115,10 +114,10 @@ package System.OS_Interface is
 
    type Signal_Set is array (Natural range <>) of Signal;
 
-   Unmasked    : constant Signal_Set :=
+   Unmasked : constant Signal_Set :=
      (SIGTTIN, SIGTTOU, SIGSTOP, SIGTSTP);
 
-   Reserved    : constant Signal_Set :=
+   Reserved : constant Signal_Set :=
      (SIGKILL, SIGSTOP);
 
    type sigset_t is private;
@@ -174,7 +173,7 @@ package System.OS_Interface is
    ----------
 
    Time_Slice_Supported : constant Boolean := True;
-   --  Indicates wether time slicing is supported.
+   --  Indicates wether time slicing is supported
 
    type timespec is private;
 
@@ -210,7 +209,7 @@ package System.OS_Interface is
 
    function To_Target_Priority
      (Prio : System.Any_Priority) return Interfaces.C.int;
-   --  Maps System.Any_Priority to a POSIX priority.
+   --  Maps System.Any_Priority to a POSIX priority
 
    -------------
    -- Process --

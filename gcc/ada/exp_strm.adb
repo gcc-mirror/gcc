@@ -219,7 +219,7 @@ package body Exp_Strm is
              Make_Identifier (Loc, Name_S),
              Make_Identifier (Loc, Name_V))),
 
-         Make_Return_Statement (Loc,
+         Make_Simple_Return_Statement (Loc,
            Expression => Make_Identifier (Loc, Name_V)));
 
       Fnam :=
@@ -1158,7 +1158,7 @@ package body Exp_Strm is
              Make_Identifier (Loc, Name_S),
              Make_Identifier (Loc, Name_V))),
 
-         Make_Return_Statement (Loc,
+         Make_Simple_Return_Statement (Loc,
            Expression => Make_Identifier (Loc, Name_V)));
 
       Fnam := Make_Stream_Subprogram_Name (Loc, Typ, TSS_Stream_Input);

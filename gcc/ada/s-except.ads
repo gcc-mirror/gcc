@@ -42,7 +42,7 @@ package System.Exceptions is
    pragma Warnings (Off);
    pragma Preelaborate_05;
    pragma Warnings (On);
-   --  To let Ada.Exceptions "with" us and let us "with" Standard_Library.
+   --  To let Ada.Exceptions "with" us and let us "with" Standard_Library
 
    package SSL renames System.Standard_Library;
    --  To let some of the hooks below have formal parameters typed in

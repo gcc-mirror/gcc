@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,7 @@ package System.Img_Uns is
    function Image_Unsigned
      (V    : System.Unsigned_Types.Unsigned)
       return String;
-   --  Computes Unsigned'Image (V) and returns the result.
+   --  Computes Unsigned'Image (V) and returns the result
 
    procedure Set_Image_Unsigned
      (V : System.Unsigned_Types.Unsigned;
