@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,6 +50,7 @@ generic
 
 package Ada.Containers.Indefinite_Hashed_Sets is
    pragma Preelaborate;
+   pragma Remote_Types;
 
    type Set is tagged private;
    pragma Preelaborable_Initialization (Set);
@@ -204,6 +205,9 @@ package Ada.Containers.Indefinite_Hashed_Sets is
    end Generic_Keys;
 
 private
+
+   pragma Inline (Next);
+
    type Node_Type;
    type Node_Access is access Node_Type;
 

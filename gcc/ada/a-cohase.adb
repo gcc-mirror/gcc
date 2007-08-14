@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -327,7 +327,7 @@ package body Ada.Containers.Hashed_Sets is
       declare
          Size : constant Hash_Type := Prime_Numbers.To_Prime (Left.Length);
       begin
-         Buckets := new Buckets_Type (0 .. Size - 1);
+         Buckets := HT_Ops.New_Buckets (Length => Size);
       end;
 
       Length := 0;
@@ -753,7 +753,7 @@ package body Ada.Containers.Hashed_Sets is
       declare
          Size : constant Hash_Type := Prime_Numbers.To_Prime (Length);
       begin
-         Buckets := new Buckets_Type (0 .. Size - 1);
+         Buckets := HT_Ops.New_Buckets (Length => Size);
       end;
 
       Length := 0;
@@ -1248,7 +1248,7 @@ package body Ada.Containers.Hashed_Sets is
          Size : constant Hash_Type :=
                   Prime_Numbers.To_Prime (Left.Length + Right.Length);
       begin
-         Buckets := new Buckets_Type (0 .. Size - 1);
+         Buckets := HT_Ops.New_Buckets (Length => Size);
       end;
 
       Length := 0;
@@ -1426,7 +1426,7 @@ package body Ada.Containers.Hashed_Sets is
          Size : constant Hash_Type :=
                   Prime_Numbers.To_Prime (Left.Length + Right.Length);
       begin
-         Buckets := new Buckets_Type (0 .. Size - 1);
+         Buckets := HT_Ops.New_Buckets (Length => Size);
       end;
 
       Iterate_Left : declare

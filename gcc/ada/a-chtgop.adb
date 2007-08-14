@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,10 @@ with System;  use type System.Address;
 
 package body Ada.Containers.Hash_Tables.Generic_Operations is
 
-   procedure Free is
-     new Ada.Unchecked_Deallocation (Buckets_Type, Buckets_Access);
+   type Buckets_Allocation is access all Buckets_Type;
+   --  Used for allocation and deallocation (see New_Buckets and
+   --  Free_Buckets). This is necessary because Buckets_Access has an empty
+   --  storage pool.
 
    ------------
    -- Adjust --
@@ -66,7 +68,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       --  source table. This has the benefit that when iterating, elements of
       --  the target are delivered in the exact same order as for the source.
 
-      HT.Buckets := new Buckets_Type (Src_Buckets'Range);
+      HT.Buckets := New_Buckets (Length => Src_Buckets'Length);
 
       for Src_Index in Src_Buckets'Range loop
          Src_Node := Src_Buckets (Src_Index);
@@ -220,7 +222,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    procedure Finalize (HT : in out Hash_Table_Type) is
    begin
       Clear (HT);
-      Free (HT.Buckets);
+      Free_Buckets (HT.Buckets);
    end Finalize;
 
    -----------
@@ -245,6 +247,21 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end loop;
    end First;
 
+   ------------------
+   -- Free_Buckets --
+   ------------------
+
+   procedure Free_Buckets (Buckets : in out Buckets_Access) is
+      procedure Free is
+        new Ada.Unchecked_Deallocation (Buckets_Type, Buckets_Allocation);
+
+   begin
+      --  Buckets must have been created by New_Buckets. Here, we convert back
+      --  to the Buckets_Allocation type, and do the free on that.
+
+      Free (Buckets_Allocation (Buckets));
+   end Free_Buckets;
+
    ---------------------
    -- Free_Hash_Table --
    ---------------------
@@ -265,7 +282,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          end loop;
       end loop;
 
-      Free (Buckets);
+      Free_Buckets (Buckets);
    end Free_Hash_Table;
 
    -------------------
@@ -273,8 +290,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    -------------------
 
    function Generic_Equal
-     (L, R : Hash_Table_Type) return Boolean is
-
+     (L, R : Hash_Table_Type) return Boolean
+   is
       L_Index : Hash_Type;
       L_Node  : Node_Access;
 
@@ -386,9 +403,9 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       if HT.Buckets = null
         or else HT.Buckets'Length < N
       then
-         Free (HT.Buckets);
+         Free_Buckets (HT.Buckets);
          NN := Prime_Numbers.To_Prime (N);
-         HT.Buckets := new Buckets_Type (0 .. NN - 1);
+         HT.Buckets := New_Buckets (Length => NN);
       end if;
 
       for J in 1 .. N loop
@@ -481,6 +498,20 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       Source.Length := 0;
    end Move;
 
+   -----------------
+   -- New_Buckets --
+   -----------------
+
+   function New_Buckets (Length : Hash_Type) return Buckets_Access is
+      subtype Rng is Hash_Type range 0 .. Length - 1;
+
+   begin
+      --  Allocate in Buckets_Allocation'Storage_Pool, then convert to
+      --  Buckets_Access.
+
+      return Buckets_Access (Buckets_Allocation'(new Buckets_Type (Rng)));
+   end New_Buckets;
+
    ----------
    -- Next --
    ----------
@@ -521,7 +552,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       if HT.Buckets = null then
          if N > 0 then
             NN := Prime_Numbers.To_Prime (N);
-            HT.Buckets := new Buckets_Type (0 .. NN - 1);
+            HT.Buckets := New_Buckets (Length => NN);
          end if;
 
          return;
@@ -536,7 +567,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          --  length that corresponds to a prime number.)
 
          if N = 0 then
-            Free (HT.Buckets);
+            Free_Buckets (HT.Buckets);
             return;
          end if;
 
@@ -553,8 +584,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          declare
             X : Buckets_Access := HT.Buckets;
          begin
-            HT.Buckets := new Buckets_Type (0 .. NN - 1);
-            Free (X);
+            HT.Buckets := New_Buckets (Length => NN);
+            Free_Buckets (X);
          end;
 
          return;
@@ -595,7 +626,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       end if;
 
       Rehash : declare
-         Dst_Buckets : Buckets_Access := new Buckets_Type (0 .. NN - 1);
+         Dst_Buckets : Buckets_Access := New_Buckets (Length => NN);
          Src_Buckets : Buckets_Access := HT.Buckets;
 
          L : Count_Type renames HT.Length;
@@ -656,7 +687,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
                      end;
                   end loop;
 
-                  Free (Dst_Buckets);
+                  Free_Buckets (Dst_Buckets);
                   raise Program_Error with
                     "hash function raised exception during rehash";
             end;
@@ -667,7 +698,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          HT.Buckets := Dst_Buckets;
          HT.Length := LL;
 
-         Free (Src_Buckets);
+         Free_Buckets (Src_Buckets);
       end Rehash;
    end Reserve_Capacity;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 --  containers.
 
 package Ada.Containers.Hash_Tables is
-   pragma Preelaborate;
+   pragma Pure;  --  so this can be imported by Remote_Types packages
 
    generic
       type Node_Type (<>) is limited private;
@@ -43,7 +43,8 @@ package Ada.Containers.Hash_Tables is
    package Generic_Hash_Table_Types is
       type Buckets_Type is array (Hash_Type range <>) of Node_Access;
 
-      type Buckets_Access is access Buckets_Type;
+      type Buckets_Access is access all Buckets_Type;
+      for Buckets_Access'Storage_Size use 0;  --  so this package can be Pure
 
       type Hash_Table_Type is tagged record
          Buckets : Buckets_Access;
