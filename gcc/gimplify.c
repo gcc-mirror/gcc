@@ -761,7 +761,7 @@ gimple_add_tmp_var (tree tmp)
 /* Determines whether to assign a locus to the statement STMT.  */
 
 static bool
-should_carry_locus_p (tree stmt)
+should_carry_locus_p (const_tree stmt)
 {
   /* Don't emit a line note for a label.  We particularly don't want to
      emit one for the break label, since it doesn't actually correspond
@@ -2891,7 +2891,7 @@ gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
 /* Return true if FDECL is accessing a field that is zero sized.  */
    
 static bool
-zero_sized_field_decl (tree fdecl)
+zero_sized_field_decl (const_tree fdecl)
 {
   if (TREE_CODE (fdecl) == FIELD_DECL && DECL_SIZE (fdecl) 
       && integer_zerop (DECL_SIZE (fdecl)))
@@ -2902,7 +2902,7 @@ zero_sized_field_decl (tree fdecl)
 /* Return true if TYPE is zero sized.  */
    
 static bool
-zero_sized_type (tree type)
+zero_sized_type (const_tree type)
 {
   if (AGGREGATE_TYPE_P (type) && TYPE_SIZE (type)
       && integer_zerop (TYPE_SIZE (type)))
@@ -5181,7 +5181,7 @@ gimplify_omp_workshare (tree *expr_p, tree *pre_p)
    EXPR is this stabilized form.  */
 
 static bool
-goa_lhs_expr_p (tree expr, tree addr)
+goa_lhs_expr_p (const_tree expr, const_tree addr)
 {
   /* Also include casts to other type variants.  The C front end is fond
      of adding these for e.g. volatile variables.  This is like 

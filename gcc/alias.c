@@ -446,7 +446,7 @@ find_base_decl (tree t)
    assignable alias sets.  */
 
 bool
-component_uses_parent_alias_set (tree t)
+component_uses_parent_alias_set (const_tree t)
 {
   while (1)
     {

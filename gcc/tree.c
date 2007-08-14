@@ -6319,7 +6319,7 @@ int_fits_type_p (const_tree c, const_tree type)
    precision of the type are returned instead.  */
 
 void
-get_type_static_bounds (tree type, mpz_t min, mpz_t max)
+get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
 {
   if (!POINTER_TYPE_P (type) && TYPE_MIN_VALUE (type)
       && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)

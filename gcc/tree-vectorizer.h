@@ -448,7 +448,7 @@ extern bitmap vect_memsyms_to_rename;
 extern struct loop *slpeel_tree_peel_loop_to_edge 
   (struct loop *, edge, tree, tree, bool, unsigned int);
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
-extern bool slpeel_can_duplicate_loop_p (struct loop *, edge);
+extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
 #ifdef ENABLE_CHECKING
 extern void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
 #endif

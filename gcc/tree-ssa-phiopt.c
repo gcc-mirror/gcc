@@ -297,18 +297,18 @@ blocks_in_phiopt_order (void)
 /* Return TRUE if block BB has no executable statements, otherwise return
    FALSE.  */
 bool
-empty_block_p (basic_block bb)
+empty_block_p (const_basic_block bb)
 {
-  block_stmt_iterator bsi;
+  const_block_stmt_iterator bsi;
 
   /* BB must have no executable statements.  */
-  bsi = bsi_start (bb);
-  while (!bsi_end_p (bsi)
-	  && (TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR
-	      || IS_EMPTY_STMT (bsi_stmt (bsi))))
-    bsi_next (&bsi);
+  bsi = cbsi_start (bb);
+  while (!cbsi_end_p (bsi)
+	  && (TREE_CODE (cbsi_stmt (bsi)) == LABEL_EXPR
+	      || IS_EMPTY_STMT (cbsi_stmt (bsi))))
+    cbsi_next (&bsi);
 
-  if (!bsi_end_p (bsi))
+  if (!cbsi_end_p (bsi))
     return false;
 
   return true;

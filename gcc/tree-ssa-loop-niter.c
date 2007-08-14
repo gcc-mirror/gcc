@@ -1673,7 +1673,7 @@ simplify_using_outer_evolutions (struct loop *loop, tree expr)
 /* Returns true if EXIT is the only possible exit from LOOP.  */
 
 static bool
-loop_only_exit_p (struct loop *loop, edge exit)
+loop_only_exit_p (const struct loop *loop, const_edge exit)
 {
   basic_block *body;
   block_stmt_iterator bsi;
@@ -2171,7 +2171,7 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
    be nonnegative.  */
  
 static double_int
-derive_constant_upper_bound (tree val)
+derive_constant_upper_bound (const_tree val)
 {
   tree type = TREE_TYPE (val);
   tree op0, op1, subtype, maxt;

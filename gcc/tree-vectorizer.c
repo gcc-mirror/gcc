@@ -948,7 +948,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
  */
 
 bool
-slpeel_can_duplicate_loop_p (struct loop *loop, edge e)
+slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
 {
   edge exit_e = single_exit (loop);
   edge entry_e = loop_preheader_edge (loop);

@@ -2592,6 +2592,12 @@ first_stmt (basic_block bb)
   return !bsi_end_p (i) ? bsi_stmt (i) : NULL_TREE;
 }
 
+const_tree
+const_first_stmt (const_basic_block bb)
+{
+  const_block_stmt_iterator i = cbsi_start (bb);
+  return !cbsi_end_p (i) ? cbsi_stmt (i) : NULL_TREE;
+}
 
 /* Return the last statement in basic block BB.  */
 
@@ -2602,6 +2608,12 @@ last_stmt (basic_block bb)
   return !bsi_end_p (b) ? bsi_stmt (b) : NULL_TREE;
 }
 
+const_tree
+const_last_stmt (const_basic_block bb)
+{
+  const_block_stmt_iterator b = cbsi_last (bb);
+  return !cbsi_end_p (b) ? cbsi_stmt (b) : NULL_TREE;
+}
 
 /* Return the last statement of an otherwise empty block.  Return NULL
    if the block is totally empty, or if it contains more than one

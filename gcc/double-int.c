@@ -112,7 +112,7 @@ double_int_sext (double_int cst, unsigned prec)
    is unsigned.  */
 
 double_int
-tree_to_double_int (tree cst)
+tree_to_double_int (const_tree cst)
 {
   /* We do not need to call double_int_restrict here to ensure the semantics as
      described, as this is the default one for trees.  */
@@ -304,7 +304,7 @@ double_int_to_tree (tree type, double_int cst)
    to be the same as the signedness of TYPE.  */
 
 bool
-double_int_fits_to_tree_p (tree type, double_int cst)
+double_int_fits_to_tree_p (const_tree type, double_int cst)
 {
   double_int ext = double_int_ext (cst,
 				   TYPE_PRECISION (type),
@@ -442,7 +442,7 @@ mpz_set_double_int (mpz_t result, double_int val, bool uns)
    appropriate minimum or maximum TYPE bound.  */
 
 double_int
-mpz_get_double_int (tree type, mpz_t val, bool wrap)
+mpz_get_double_int (const_tree type, mpz_t val, bool wrap)
 {
   unsigned HOST_WIDE_INT *vp;
   size_t count, numb;

@@ -2130,7 +2130,7 @@ extern rtx move_by_pieces (rtx, rtx, unsigned HOST_WIDE_INT,
 			   unsigned int, int);
 
 /* In cfgrtl.c */
-extern void print_rtl_with_bb (FILE *, rtx);
+extern void print_rtl_with_bb (FILE *, const_rtx);
 
 /* In cfg.c.  */
 extern void dump_reg_info (FILE *);

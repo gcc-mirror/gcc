@@ -1,3 +1,50 @@
+2007-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (component_uses_parent_alias_set): Constify.
+	* alias.h (component_uses_parent_alias_set): Likewise.
+	* cfgrtl.c (print_rtl_with_bb): Likewise.
+	* double-int.c (tree_to_double_int, double_int_fits_to_tree_p,
+	mpz_get_double_int): Likewise.
+	* double-int.h (double_int_fits_to_tree_p, tree_to_double_int,
+	mpz_get_double_int): Likewise.
+	* expr.c (is_aligning_offset, undefined_operand_subword_p,
+	mostly_zeros_p, all_zeros_p, safe_from_p, is_aligning_offset):
+	Likewise.
+	* expr.h (safe_from_p): Likewise.
+	* gimple-low.c (try_catch_may_fallthru, block_may_fallthru):
+	Likewise.
+	* gimplify.c (should_carry_locus_p, zero_sized_field_decl,
+	zero_sized_type, goa_lhs_expr_p): Likewise.
+	* omp-low.c (is_variable_sized, use_pointer_for_field): Likewise.
+	* rtl.h (print_rtl_with_bb): Likewise.
+	* sched-vis.c (print_exp, print_value, print_pattern): Likewise.
+	* tree-cfg.c (const_first_stmt, const_last_stmt): New.
+	* tree-flow-inline.h (bb_stmt_list): Constify.
+	(cbsi_start, cbsi_last, cbsi_end_p, cbsi_next, cbsi_prev,
+	cbsi_stmt): New.
+	* tree-flow.h (const_block_stmt_iterator, cbsi_start, cbsi_last,
+	const_first_stmt, const_last_stmt): New.
+	(block_may_fallthru, empty_block_p): Constify.
+	* tree-iterator.c (EXPR_FIRST_BODY, EXPR_LAST_BODY,
+	EXPR_ONLY_BODY): New.
+	(expr_first, expr_last, expr_only): Use macro for body.
+	(const_expr_first, const_expr_last, const_expr_only): New.
+	* tree-iterator.h (const_tree_stmt_iterator, ctsi_start,
+	ctsi_last, ctsi_end_p, ctsi_one_before_end_p, ctsi_next,
+	ctsi_prev, ctsi_stmt): New.
+	* tree-scalar-evolution.c (get_loop_exit_condition): Constify.
+	* tree-scalar-evolution.h (get_loop_exit_condition): Likewise.
+	* tree-ssa-loop-niter.c (loop_only_exit_p,
+	derive_constant_upper_bound): Likewise.
+	* tree-ssa-phiopt.c (empty_block_p): Likewise.
+	* tree-ssa-threadupdate.c (redirection_block_p): Likewise.
+	* tree-vectorizer.c (slpeel_can_duplicate_loop_p): Likewise.
+	* tree-vectorizer.h (slpeel_can_duplicate_loop_p): Likewise.
+	* tree-vrp.c (vrp_bitmap_equal_p): Likewise.
+	* tree.c (get_type_static_bounds): Likewise.
+	* tree.h (const_expr_first, const_expr_last, const_expr_only): New.
+	(get_type_static_bounds): Constify.
+
 2007-08-14  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/30315

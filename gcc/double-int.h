@@ -60,8 +60,8 @@ union tree_node;
 /* Constructors and conversions.  */
 
 union tree_node *double_int_to_tree (union tree_node *, double_int);
-bool double_int_fits_to_tree_p (union tree_node *, double_int);
-double_int tree_to_double_int (union tree_node *);
+bool double_int_fits_to_tree_p (const union tree_node *, double_int);
+double_int tree_to_double_int (const union tree_node *);
 
 /* Constructs double_int from integer CST.  The bits over the precision of
    HOST_WIDE_INT are filled with the sign bit.  */
@@ -179,7 +179,7 @@ double_int_equal_p (double_int cst1, double_int cst2)
 /* Conversion to and from GMP integer representations.  */
 
 void mpz_set_double_int (mpz_t, double_int, bool);
-double_int mpz_get_double_int (tree, mpz_t, bool);
+double_int mpz_get_double_int (const_tree, mpz_t, bool);
 
 
 #endif /* DOUBLE_INT_H */

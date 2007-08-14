@@ -344,7 +344,7 @@ lower_bind_expr (tree_stmt_iterator *tsi, struct lower_data *data)
    This is a subroutine of block_may_fallthru.  */
 
 static bool
-try_catch_may_fallthru (tree stmt)
+try_catch_may_fallthru (const_tree stmt)
 {
   tree_stmt_iterator i;
 
@@ -394,9 +394,9 @@ try_catch_may_fallthru (tree stmt)
    If we're wrong, we'll just delete the extra code later.  */
 
 bool
-block_may_fallthru (tree block)
+block_may_fallthru (const_tree block)
 {
-  tree stmt = expr_last (block);
+  const_tree stmt = const_expr_last (block);
 
   switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
     {

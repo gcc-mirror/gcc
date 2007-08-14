@@ -428,7 +428,7 @@ determine_parallel_type (struct omp_region *region)
 /* Return true if EXPR is variable sized.  */
 
 static inline bool
-is_variable_sized (tree expr)
+is_variable_sized (const_tree expr)
 {
   return !TREE_CONSTANT (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
 }
@@ -481,7 +481,7 @@ maybe_lookup_field (tree var, omp_context *ctx)
    if DECL is to be shared.  */
 
 static bool
-use_pointer_for_field (tree decl, bool shared_p)
+use_pointer_for_field (const_tree decl, bool shared_p)
 {
   if (AGGREGATE_TYPE_P (TREE_TYPE (decl)))
     return true;

@@ -26,7 +26,7 @@ typedef HOST_WIDE_INT alias_set_type;
 extern alias_set_type new_alias_set (void);
 extern alias_set_type get_varargs_alias_set (void);
 extern alias_set_type get_frame_alias_set (void);
-extern bool component_uses_parent_alias_set (tree);
+extern bool component_uses_parent_alias_set (const_tree);
 extern bool alias_set_subset_of (alias_set_type, alias_set_type);
 
 /* This alias set can be used to force a memory to conflict with all
