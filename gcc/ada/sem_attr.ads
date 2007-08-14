@@ -542,18 +542,16 @@ package Sem_Attr is
    --  in appropriate contexts (i.e. in subtype marks, or as prefixes for
    --  other attributes).
 
-   function Name_Modifies_Prefix (Nam : Name_Id) return Boolean;
-   --  Determine whether the name of an attribute reference modifies the
-   --  contents of its prefix. "Read" is such an attribute.
-
-   function Requires_Simple_Name_Prefix (Nam : Name_Id) return Boolean;
-   --  Determine whether the name of an attribute reference requires a simple
-   --  name rather than a value as its prefix. Such prefixes do not need to be
-   --  optimized. For instance in the following example:
-   --     I : constant Integer := 5;
-   --     S : constant Integer := I'Size;
-   --  "Size" requires a simple name prefix since "5'Size" does not make
-   --  sense.
+   function Name_Implies_Lvalue_Prefix (Nam : Name_Id) return Boolean;
+   --  Determine whether the name of an attribute reference categorizes its
+   --  prefix as an lvalue. The following attributes fall under this bracket
+   --  by directly or indirectly modifying their prefixes.
+   --     Access
+   --     Address
+   --     Input
+   --     Read
+   --     Unchecked_Access
+   --     Unrestricted_Access
 
    procedure Resolve_Attribute (N : Node_Id; Typ : Entity_Id);
    --  Performs type resolution of attribute. If the attribute yields a
