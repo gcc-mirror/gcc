@@ -274,10 +274,20 @@ package body Sem_Elim is
             procedure Set_Eliminated;
             --  Set current subprogram entity as eliminated
 
+            --------------------
+            -- Set_Eliminated --
+            --------------------
+
             procedure Set_Eliminated is
             begin
-               Set_Is_Eliminated (E);
-               Elim_Entities.Append ((Prag => Elmt.Prag, Subp => E));
+               --  Never try to eliminate dispatching operation, since we
+               --  can't properly process the eliminated result. This could
+               --  be fixed, but is not worth it.
+
+               if not Is_Dispatching_Operation (E) then
+                  Set_Is_Eliminated (E);
+                  Elim_Entities.Append ((Prag => Elmt.Prag, Subp => E));
+               end if;
             end Set_Eliminated;
 
          begin
@@ -537,6 +547,7 @@ package body Sem_Elim is
                            end if;
 
                            return True;
+
                         else
                            return False;
                         end if;
@@ -547,9 +558,10 @@ package body Sem_Elim is
                      -----------------
 
                      function Skip_Spaces return Natural is
-                        Res : Natural := Idx;
+                        Res : Natural;
 
                      begin
+                        Res := Idx;
                         while Sloc_Trace (Res) = ' ' loop
                            Res := Res + 1;
 
