@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,5 +162,16 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
    --  Used to implement the streaming attribute for hashed containers. It
    --  first clears hash table HT, then populates the hash table by calling
    --  New_Node for each item in Stream.
+
+   function New_Buckets (Length : Hash_Type) return Buckets_Access;
+   pragma Inline (New_Buckets);
+   --  Allocate a new Buckets_Type array with bounds 0..Length-1.
+
+   procedure Free_Buckets (Buckets : in out Buckets_Access);
+   pragma Inline (Free_Buckets);
+   --  Unchecked_Deallocate Buckets.
+
+   --  Note: New_Buckets and Free_Buckets are needed because Buckets_Access has
+   --  an empty pool.
 
 end Ada.Containers.Hash_Tables.Generic_Operations;

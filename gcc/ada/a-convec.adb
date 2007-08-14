@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,11 +57,11 @@ package body Ada.Containers.Vectors is
          end if;
 
          declare
-            RE : Elements_Type renames
-                   Right.Elements (Index_Type'First .. Right.Last);
+            RE : Elements_Array renames
+                   Right.Elements.EA (Index_Type'First .. Right.Last);
 
             Elements : constant Elements_Access :=
-                         new Elements_Type'(RE);
+                         new Elements_Type'(Right.Last, RE);
 
          begin
             return (Controlled with Elements, Right.Last, 0, 0);
@@ -70,11 +70,11 @@ package body Ada.Containers.Vectors is
 
       if RN = 0 then
          declare
-            LE : Elements_Type renames
-                   Left.Elements (Index_Type'First .. Left.Last);
+            LE : Elements_Array renames
+                   Left.Elements.EA (Index_Type'First .. Left.Last);
 
             Elements : constant Elements_Access :=
-                         new Elements_Type'(LE);
+                         new Elements_Type'(Left.Last, LE);
 
          begin
             return (Controlled with Elements, Left.Last, 0, 0);
@@ -100,14 +100,14 @@ package body Ada.Containers.Vectors is
          declare
             Last : constant Index_Type := Index_Type (Last_As_Int);
 
-            LE : Elements_Type renames
-                   Left.Elements (Index_Type'First .. Left.Last);
+            LE : Elements_Array renames
+                   Left.Elements.EA (Index_Type'First .. Left.Last);
 
-            RE : Elements_Type renames
-                   Right.Elements (Index_Type'First .. Right.Last);
+            RE : Elements_Array renames
+                   Right.Elements.EA (Index_Type'First .. Right.Last);
 
             Elements : constant Elements_Access :=
-                         new Elements_Type'(LE & RE);
+                         new Elements_Type'(Last, LE & RE);
 
          begin
             return (Controlled with Elements, Last, 0, 0);
@@ -121,11 +121,10 @@ package body Ada.Containers.Vectors is
    begin
       if LN = 0 then
          declare
-            subtype Elements_Subtype is
-              Elements_Type (Index_Type'First .. Index_Type'First);
-
             Elements : constant Elements_Access :=
-                         new Elements_Subtype'(others => Right);
+                         new Elements_Type'
+                               (Last => Index_Type'First,
+                                EA   => (others => Right));
 
          begin
             return (Controlled with Elements, Index_Type'First, 0, 0);
@@ -149,12 +148,13 @@ package body Ada.Containers.Vectors is
          declare
             Last : constant Index_Type := Index_Type (Last_As_Int);
 
-            LE : Elements_Type renames
-                   Left.Elements (Index_Type'First .. Left.Last);
+            LE : Elements_Array renames
+                   Left.Elements.EA (Index_Type'First .. Left.Last);
 
-            subtype ET is Elements_Type (Index_Type'First .. Last);
-
-            Elements : constant Elements_Access := new ET'(LE & Right);
+            Elements : constant Elements_Access :=
+                         new Elements_Type'
+                               (Last => Last,
+                                EA   => LE & Right);
 
          begin
             return (Controlled with Elements, Last, 0, 0);
@@ -168,11 +168,10 @@ package body Ada.Containers.Vectors is
    begin
       if RN = 0 then
          declare
-            subtype Elements_Subtype is
-              Elements_Type (Index_Type'First .. Index_Type'First);
-
             Elements : constant Elements_Access :=
-                         new Elements_Subtype'(others => Left);
+                         new Elements_Type'
+                               (Last => Index_Type'First,
+                                EA   => (others => Left));
 
          begin
             return (Controlled with Elements, Index_Type'First, 0, 0);
@@ -196,12 +195,13 @@ package body Ada.Containers.Vectors is
          declare
             Last : constant Index_Type := Index_Type (Last_As_Int);
 
-            RE : Elements_Type renames
-                   Right.Elements (Index_Type'First .. Right.Last);
+            RE : Elements_Array renames
+                   Right.Elements.EA (Index_Type'First .. Right.Last);
 
-            subtype ET is Elements_Type (Index_Type'First .. Last);
-
-            Elements : constant Elements_Access := new ET'(Left & RE);
+            Elements : constant Elements_Access :=
+                         new Elements_Type'
+                               (Last => Last,
+                                EA   => Left & RE);
 
          begin
             return (Controlled with Elements, Last, 0, 0);
@@ -218,9 +218,10 @@ package body Ada.Containers.Vectors is
       declare
          Last : constant Index_Type := Index_Type'First + 1;
 
-         subtype ET is Elements_Type (Index_Type'First .. Last);
-
-         Elements : constant Elements_Access := new ET'(Left, Right);
+         Elements : constant Elements_Access :=
+                      new Elements_Type'
+                            (Last => Last,
+                             EA   => (Left, Right));
 
       begin
          return (Controlled with Elements, Last, 0, 0);
@@ -242,7 +243,7 @@ package body Ada.Containers.Vectors is
       end if;
 
       for J in Index_Type range Index_Type'First .. Left.Last loop
-         if Left.Elements (J) /= Right.Elements (J) then
+         if Left.Elements.EA (J) /= Right.Elements.EA (J) then
             return False;
          end if;
       end loop;
@@ -262,15 +263,17 @@ package body Ada.Containers.Vectors is
       end if;
 
       declare
-         E : constant Elements_Access := Container.Elements;
-         L : constant Index_Type := Container.Last;
+         L  : constant Index_Type := Container.Last;
+         EA : Elements_Array renames
+                Container.Elements.EA (Index_Type'First .. L);
 
       begin
          Container.Elements := null;
          Container.Last := No_Index;
          Container.Busy := 0;
          Container.Lock := 0;
-         Container.Elements := new Elements_Type'(E (Index_Type'First .. L));
+
+         Container.Elements := new Elements_Type'(L, EA);
          Container.Last := L;
       end;
    end Adjust;
@@ -326,7 +329,7 @@ package body Ada.Containers.Vectors is
          return 0;
       end if;
 
-      return Container.Elements'Length;
+      return Container.Elements.EA'Length;
    end Capacity;
 
    -----------
@@ -402,15 +405,15 @@ package body Ada.Containers.Vectors is
 
          else
             declare
-               J : constant Index_Type := Index_Type (J_As_Int);
-               E : Elements_Type renames Container.Elements.all;
+               J  : constant Index_Type := Index_Type (J_As_Int);
+               EA : Elements_Array renames Container.Elements.EA;
 
                New_Last_As_Int : constant Int'Base := Old_Last_As_Int - N;
                New_Last        : constant Index_Type :=
                                    Index_Type (New_Last_As_Int);
 
             begin
-               E (Index .. New_Last) := E (J .. Container.Last);
+               EA (Index .. New_Last) := EA (J .. Container.Last);
                Container.Last := New_Last;
             end;
          end if;
@@ -436,17 +439,6 @@ package body Ada.Containers.Vectors is
       end if;
 
       Delete (Container, Position.Index, Count);
-
-      --  This is the old behavior, prior to the York API (2005/06):
-
-      --  if Position.Index <= Container.Last then
-      --    Position := (Container'Unchecked_Access, Position.Index);
-      --  else
-      --    Position := No_Element;
-      --  end if;
-
-      --  This is the behavior specified by the York API:
-
       Position := No_Element;
    end Delete;
 
@@ -513,7 +505,7 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error with "Index is out of range";
       end if;
 
-      return Container.Elements (Index);
+      return Container.Elements.EA (Index);
    end Element;
 
    function Element (Position : Cursor) return Element_Type is
@@ -522,7 +514,11 @@ package body Ada.Containers.Vectors is
          raise Constraint_Error with "Position cursor has no element";
       end if;
 
-      return Element (Position.Container.all, Position.Index);
+      if Position.Index > Position.Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      return Position.Container.Elements.EA (Position.Index);
    end Element;
 
    --------------
@@ -564,7 +560,7 @@ package body Ada.Containers.Vectors is
       end if;
 
       for J in Position.Index .. Container.Last loop
-         if Container.Elements (J) = Item then
+         if Container.Elements.EA (J) = Item then
             return (Container'Unchecked_Access, J);
          end if;
       end loop;
@@ -583,7 +579,7 @@ package body Ada.Containers.Vectors is
    is
    begin
       for Indx in Index .. Container.Last loop
-         if Container.Elements (Indx) = Item then
+         if Container.Elements.EA (Indx) = Item then
             return Indx;
          end if;
       end loop;
@@ -610,7 +606,11 @@ package body Ada.Containers.Vectors is
 
    function First_Element (Container : Vector) return Element_Type is
    begin
-      return Element (Container, Index_Type'First);
+      if Container.Last = No_Index then
+         raise Constraint_Error with "Container is empty";
+      end if;
+
+      return Container.Elements.EA (Index_Type'First);
    end First_Element;
 
    -----------------
@@ -640,10 +640,10 @@ package body Ada.Containers.Vectors is
          end if;
 
          declare
-            E : Elements_Type renames Container.Elements.all;
+            EA : Elements_Array renames Container.Elements.EA;
          begin
             for I in Index_Type'First .. Container.Last - 1 loop
-               if E (I + 1) < E (I) then
+               if EA (I + 1) < EA (I) then
                   return False;
                end if;
             end loop;
@@ -681,35 +681,40 @@ package body Ada.Containers.Vectors is
 
          Target.Set_Length (Length (Target) + Length (Source));
 
-         J := Target.Last;
-         while Source.Last >= Index_Type'First loop
-            pragma Assert (Source.Last <= Index_Type'First
-                             or else not (Source.Elements (Source.Last) <
-                                          Source.Elements (Source.Last - 1)));
+         declare
+            TA : Elements_Array renames Target.Elements.EA;
+            SA : Elements_Array renames Source.Elements.EA;
 
-            if I < Index_Type'First then
-               Target.Elements (Index_Type'First .. J) :=
-                 Source.Elements (Index_Type'First .. Source.Last);
+         begin
+            J := Target.Last;
+            while Source.Last >= Index_Type'First loop
+               pragma Assert (Source.Last <= Index_Type'First
+                                or else not (SA (Source.Last) <
+                                             SA (Source.Last - 1)));
 
-               Source.Last := No_Index;
-               return;
-            end if;
+               if I < Index_Type'First then
+                  TA (Index_Type'First .. J) :=
+                    SA (Index_Type'First .. Source.Last);
 
-            pragma Assert (I <= Index_Type'First
-                             or else not (Target.Elements (I) <
-                                          Target.Elements (I - 1)));
+                  Source.Last := No_Index;
+                  return;
+               end if;
 
-            if Source.Elements (Source.Last) < Target.Elements (I) then
-               Target.Elements (J) := Target.Elements (I);
-               I := I - 1;
+               pragma Assert (I <= Index_Type'First
+                                or else not (TA (I) < TA (I - 1)));
 
-            else
-               Target.Elements (J) := Source.Elements (Source.Last);
-               Source.Last := Source.Last - 1;
-            end if;
+               if SA (Source.Last) < TA (I) then
+                  TA (J) := TA (I);
+                  I := I - 1;
 
-            J := J - 1;
-         end loop;
+               else
+                  TA (J) := SA (Source.Last);
+                  Source.Last := Source.Last - 1;
+               end if;
+
+               J := J - 1;
+            end loop;
+         end;
       end Merge;
 
       ----------
@@ -722,7 +727,7 @@ package body Ada.Containers.Vectors is
             new Generic_Array_Sort
              (Index_Type   => Index_Type,
               Element_Type => Element_Type,
-              Array_Type   => Elements_Type,
+              Array_Type   => Elements_Array,
               "<"          => "<");
 
       begin
@@ -735,7 +740,7 @@ package body Ada.Containers.Vectors is
               "attempt to tamper with cursors (vector is locked)";
          end if;
 
-         Sort (Container.Elements (Index_Type'First .. Container.Last));
+         Sort (Container.Elements.EA (Index_Type'First .. Container.Last));
       end Sort;
 
    end Generic_Sorting;
@@ -819,20 +824,16 @@ package body Ada.Containers.Vectors is
       end if;
 
       if Container.Elements = null then
-         declare
-            subtype Elements_Subtype is
-              Elements_Type (Index_Type'First .. New_Last);
-         begin
-            Container.Elements := new Elements_Subtype'(others => New_Item);
-         end;
-
+         Container.Elements := new Elements_Type'
+                                     (Last => New_Last,
+                                      EA   => (others => New_Item));
          Container.Last := New_Last;
          return;
       end if;
 
-      if New_Last <= Container.Elements'Last then
+      if New_Last <= Container.Elements.Last then
          declare
-            E : Elements_Type renames Container.Elements.all;
+            EA : Elements_Array renames Container.Elements.EA;
 
          begin
             if Before <= Container.Last then
@@ -843,14 +844,14 @@ package body Ada.Containers.Vectors is
                   Index : constant Index_Type := Index_Type (Index_As_Int);
 
                begin
-                  E (Index .. New_Last) := E (Before .. Container.Last);
+                  EA (Index .. New_Last) := EA (Before .. Container.Last);
 
-                  E (Before .. Index_Type'Pred (Index)) :=
+                  EA (Before .. Index_Type'Pred (Index)) :=
                       (others => New_Item);
                end;
 
             else
-               E (Before .. New_Last) := (others => New_Item);
+               EA (Before .. New_Last) := (others => New_Item);
             end if;
          end;
 
@@ -862,7 +863,7 @@ package body Ada.Containers.Vectors is
          C, CC : UInt;
 
       begin
-         C := UInt'Max (1, Container.Elements'Length);
+         C := UInt'Max (1, Container.Elements.EA'Length);  -- ???
          while C < New_Length loop
             if C > UInt'Last / 2 then
                C := UInt'Last;
@@ -894,16 +895,17 @@ package body Ada.Containers.Vectors is
                          Index_Type (First + UInt'Pos (C) - 1);
 
          begin
-            Dst := new Elements_Type (Index_Type'First .. Dst_Last);
+            Dst := new Elements_Type (Dst_Last);
          end;
       end;
 
       declare
-         Src : Elements_Type renames Container.Elements.all;
+         SA : Elements_Array renames Container.Elements.EA;
+         DA : Elements_Array renames Dst.EA;
 
       begin
-         Dst (Index_Type'First .. Index_Type'Pred (Before)) :=
-           Src (Index_Type'First .. Index_Type'Pred (Before));
+         DA (Index_Type'First .. Index_Type'Pred (Before)) :=
+           SA (Index_Type'First .. Index_Type'Pred (Before));
 
          if Before <= Container.Last then
             declare
@@ -913,12 +915,12 @@ package body Ada.Containers.Vectors is
                Index : constant Index_Type := Index_Type (Index_As_Int);
 
             begin
-               Dst (Before .. Index_Type'Pred (Index)) := (others => New_Item);
-               Dst (Index .. New_Last) := Src (Before .. Container.Last);
+               DA (Before .. Index_Type'Pred (Index)) := (others => New_Item);
+               DA (Index .. New_Last) := SA (Before .. Container.Last);
             end;
 
          else
-            Dst (Before .. New_Last) := (others => New_Item);
+            DA (Before .. New_Last) := (others => New_Item);
          end if;
       exception
          when others =>
@@ -969,8 +971,8 @@ package body Ada.Containers.Vectors is
 
       begin
          if Container'Address /= New_Item'Address then
-            Container.Elements (Before .. Dst_Last) :=
-              New_Item.Elements (Index_Type'First .. New_Item.Last);
+            Container.Elements.EA (Before .. Dst_Last) :=
+              New_Item.Elements.EA (Index_Type'First .. New_Item.Last);
 
             return;
          end if;
@@ -979,8 +981,8 @@ package body Ada.Containers.Vectors is
             subtype Src_Index_Subtype is Index_Type'Base range
               Index_Type'First .. Before - 1;
 
-            Src : Elements_Type renames
-                    Container.Elements (Src_Index_Subtype);
+            Src : Elements_Array renames
+                    Container.Elements.EA (Src_Index_Subtype);
 
             Index_As_Int : constant Int'Base :=
                              Int (Before) + Src'Length - 1;
@@ -988,8 +990,8 @@ package body Ada.Containers.Vectors is
             Index : constant Index_Type'Base :=
                       Index_Type'Base (Index_As_Int);
 
-            Dst : Elements_Type renames
-                    Container.Elements (Before .. Index);
+            Dst : Elements_Array renames
+                    Container.Elements.EA (Before .. Index);
 
          begin
             Dst := Src;
@@ -1003,8 +1005,8 @@ package body Ada.Containers.Vectors is
             subtype Src_Index_Subtype is Index_Type'Base range
               Dst_Last + 1 .. Container.Last;
 
-            Src : Elements_Type renames
-                    Container.Elements (Src_Index_Subtype);
+            Src : Elements_Array renames
+                    Container.Elements.EA (Src_Index_Subtype);
 
             Index_As_Int : constant Int'Base :=
                              Dst_Last_As_Int - Src'Length + 1;
@@ -1012,8 +1014,8 @@ package body Ada.Containers.Vectors is
             Index : constant Index_Type :=
                       Index_Type (Index_As_Int);
 
-            Dst : Elements_Type renames
-                    Container.Elements (Index .. Dst_Last);
+            Dst : Elements_Array renames
+                    Container.Elements.EA (Index .. Dst_Last);
 
          begin
             Dst := Src;
@@ -1275,16 +1277,14 @@ package body Ada.Containers.Vectors is
       end if;
 
       if Container.Elements = null then
-         Container.Elements :=
-           new Elements_Type (Index_Type'First .. New_Last);
-
+         Container.Elements := new Elements_Type (New_Last);
          Container.Last := New_Last;
          return;
       end if;
 
-      if New_Last <= Container.Elements'Last then
+      if New_Last <= Container.Elements.Last then
          declare
-            E : Elements_Type renames Container.Elements.all;
+            EA : Elements_Array renames Container.Elements.EA;
          begin
             if Before <= Container.Last then
                declare
@@ -1294,7 +1294,7 @@ package body Ada.Containers.Vectors is
                   Index : constant Index_Type := Index_Type (Index_As_Int);
 
                begin
-                  E (Index .. New_Last) := E (Before .. Container.Last);
+                  EA (Index .. New_Last) := EA (Before .. Container.Last);
                end;
             end if;
          end;
@@ -1307,7 +1307,7 @@ package body Ada.Containers.Vectors is
          C, CC : UInt;
 
       begin
-         C := UInt'Max (1, Container.Elements'Length);
+         C := UInt'Max (1, Container.Elements.EA'Length);  -- ???
          while C < New_Length loop
             if C > UInt'Last / 2 then
                C := UInt'Last;
@@ -1339,16 +1339,17 @@ package body Ada.Containers.Vectors is
                          Index_Type (First + UInt'Pos (C) - 1);
 
          begin
-            Dst := new Elements_Type (Index_Type'First .. Dst_Last);
+            Dst := new Elements_Type (Dst_Last);
          end;
       end;
 
       declare
-         Src : Elements_Type renames Container.Elements.all;
+         SA : Elements_Array renames Container.Elements.EA;
+         DA : Elements_Array renames Dst.EA;
 
       begin
-         Dst (Index_Type'First .. Index_Type'Pred (Before)) :=
-           Src (Index_Type'First .. Index_Type'Pred (Before));
+         DA (Index_Type'First .. Index_Type'Pred (Before)) :=
+           SA (Index_Type'First .. Index_Type'Pred (Before));
 
          if Before <= Container.Last then
             declare
@@ -1358,7 +1359,7 @@ package body Ada.Containers.Vectors is
                Index : constant Index_Type := Index_Type (Index_As_Int);
 
             begin
-               Dst (Index .. New_Last) := Src (Before .. Container.Last);
+               DA (Index .. New_Last) := SA (Before .. Container.Last);
             end;
          end if;
       exception
@@ -1477,7 +1478,11 @@ package body Ada.Containers.Vectors is
 
    function Last_Element (Container : Vector) return Element_Type is
    begin
-      return Element (Container, Container.Last);
+      if Container.Last = No_Index then
+         raise Constraint_Error with "Container is empty";
+      end if;
+
+      return Container.Elements.EA (Container.Last);
    end Last_Element;
 
    ----------------
@@ -1643,7 +1648,7 @@ package body Ada.Containers.Vectors is
       L := L + 1;
 
       begin
-         Process (V.Elements (Index));
+         Process (V.Elements.EA (Index));
       exception
          when others =>
             L := L - 1;
@@ -1689,7 +1694,7 @@ package body Ada.Containers.Vectors is
 
       for J in Count_Type range 1 .. Length loop
          Last := Last + 1;
-         Element_Type'Read (Stream, Container.Elements (Last));
+         Element_Type'Read (Stream, Container.Elements.EA (Last));
          Container.Last := Last;
       end loop;
    end Read;
@@ -1721,7 +1726,7 @@ package body Ada.Containers.Vectors is
            "attempt to tamper with cursors (vector is locked)";
       end if;
 
-      Container.Elements (Index) := New_Item;
+      Container.Elements.EA (Index) := New_Item;
    end Replace_Element;
 
    procedure Replace_Element
@@ -1738,7 +1743,16 @@ package body Ada.Containers.Vectors is
          raise Program_Error with "Position cursor denotes wrong container";
       end if;
 
-      Replace_Element (Container, Position.Index, New_Item);
+      if Position.Index > Container.Last then
+         raise Constraint_Error with "Position cursor is out of range";
+      end if;
+
+      if Container.Lock > 0 then
+         raise Program_Error with
+           "attempt to tamper with cursors (vector is locked)";
+      end if;
+
+      Container.Elements.EA (Position.Index) := New_Item;
    end Replace_Element;
 
    ----------------------
@@ -1761,26 +1775,23 @@ package body Ada.Containers.Vectors is
                Free (X);
             end;
 
-         elsif N < Container.Elements'Length then
+         elsif N < Container.Elements.EA'Length then
             if Container.Busy > 0 then
                raise Program_Error with
                  "attempt to tamper with elements (vector is busy)";
             end if;
 
             declare
-               subtype Array_Index_Subtype is Index_Type'Base range
+               subtype Src_Index_Subtype is Index_Type'Base range
                  Index_Type'First .. Container.Last;
 
-               Src : Elements_Type renames
-                       Container.Elements (Array_Index_Subtype);
-
-               subtype Array_Subtype is
-                 Elements_Type (Array_Index_Subtype);
+               Src : Elements_Array renames
+                       Container.Elements.EA (Src_Index_Subtype);
 
                X : Elements_Access := Container.Elements;
 
             begin
-               Container.Elements := new Array_Subtype'(Src);
+               Container.Elements := new Elements_Type'(Container.Last, Src);
                Free (X);
             end;
          end if;
@@ -1801,11 +1812,8 @@ package body Ada.Containers.Vectors is
             declare
                Last : constant Index_Type := Index_Type (Last_As_Int);
 
-               subtype Array_Subtype is
-                 Elements_Type (Index_Type'First .. Last);
-
             begin
-               Container.Elements := new Array_Subtype;
+               Container.Elements := new Elements_Type (Last);
             end;
          end;
 
@@ -1813,26 +1821,23 @@ package body Ada.Containers.Vectors is
       end if;
 
       if Capacity <= N then
-         if N < Container.Elements'Length then
+         if N < Container.Elements.EA'Length then
             if Container.Busy > 0 then
                raise Program_Error with
                  "attempt to tamper with elements (vector is busy)";
             end if;
 
             declare
-               subtype Array_Index_Subtype is Index_Type'Base range
+               subtype Src_Index_Subtype is Index_Type'Base range
                  Index_Type'First .. Container.Last;
 
-               Src : Elements_Type renames
-                       Container.Elements (Array_Index_Subtype);
-
-               subtype Array_Subtype is
-                 Elements_Type (Array_Index_Subtype);
+               Src : Elements_Array renames
+                       Container.Elements.EA (Src_Index_Subtype);
 
                X : Elements_Access := Container.Elements;
 
             begin
-               Container.Elements := new Array_Subtype'(Src);
+               Container.Elements := new Elements_Type'(Container.Last, Src);
                Free (X);
             end;
 
@@ -1841,7 +1846,7 @@ package body Ada.Containers.Vectors is
          return;
       end if;
 
-      if Capacity = Container.Elements'Length then
+      if Capacity = Container.Elements.EA'Length then
          return;
       end if;
 
@@ -1862,18 +1867,17 @@ package body Ada.Containers.Vectors is
          declare
             Last : constant Index_Type := Index_Type (Last_As_Int);
 
-            subtype Array_Subtype is
-              Elements_Type (Index_Type'First .. Last);
-
-            E : Elements_Access := new Array_Subtype;
+            E : Elements_Access := new Elements_Type (Last);
 
          begin
             declare
-               Src : Elements_Type renames
-                       Container.Elements (Index_Type'First .. Container.Last);
+               subtype Index_Subtype is Index_Type'Base range
+                 Index_Type'First .. Container.Last;
 
-               Tgt : Elements_Type renames
-                       E (Index_Type'First .. Container.Last);
+               Src : Elements_Array renames
+                       Container.Elements.EA (Index_Subtype);
+
+               Tgt : Elements_Array renames E.EA (Index_Subtype);
 
             begin
                Tgt := Src;
@@ -1918,11 +1922,11 @@ package body Ada.Containers.Vectors is
          J := Container.Last;
          while I < J loop
             declare
-               EI : constant Element_Type := E (I);
+               EI : constant Element_Type := E.EA (I);
 
             begin
-               E (I) := E (J);
-               E (J) := EI;
+               E.EA (I) := E.EA (J);
+               E.EA (J) := EI;
             end;
 
             I := I + 1;
@@ -1958,7 +1962,7 @@ package body Ada.Containers.Vectors is
       end if;
 
       for Indx in reverse Index_Type'First .. Last loop
-         if Container.Elements (Indx) = Item then
+         if Container.Elements.EA (Indx) = Item then
             return (Container'Unchecked_Access, Indx);
          end if;
       end loop;
@@ -1985,7 +1989,7 @@ package body Ada.Containers.Vectors is
       end if;
 
       for Indx in reverse Index_Type'First .. Last loop
-         if Container.Elements (Indx) = Item then
+         if Container.Elements.EA (Indx) = Item then
             return Indx;
          end if;
       end loop;
@@ -2071,8 +2075,8 @@ package body Ada.Containers.Vectors is
       end if;
 
       declare
-         EI : Element_Type renames Container.Elements (I);
-         EJ : Element_Type renames Container.Elements (J);
+         EI : Element_Type renames Container.Elements.EA (I);
+         EJ : Element_Type renames Container.Elements.EA (J);
 
          EI_Copy : constant Element_Type := EI;
 
@@ -2158,7 +2162,7 @@ package body Ada.Containers.Vectors is
          end if;
 
          Last := Index_Type (Last_As_Int);
-         Elements := new Elements_Type (Index_Type'First .. Last);
+         Elements := new Elements_Type (Last);
 
          return Vector'(Controlled with Elements, Last, 0, 0);
       end;
@@ -2185,7 +2189,7 @@ package body Ada.Containers.Vectors is
          end if;
 
          Last := Index_Type (Last_As_Int);
-         Elements := new Elements_Type'(Index_Type'First .. Last => New_Item);
+         Elements := new Elements_Type'(Last, EA => (others => New_Item));
 
          return Vector'(Controlled with Elements, Last, 0, 0);
       end;
@@ -2212,7 +2216,7 @@ package body Ada.Containers.Vectors is
       L := L + 1;
 
       begin
-         Process (Container.Elements (Index));
+         Process (Container.Elements.EA (Index));
       exception
          when others =>
             L := L - 1;
@@ -2253,7 +2257,7 @@ package body Ada.Containers.Vectors is
       Count_Type'Base'Write (Stream, Length (Container));
 
       for J in Index_Type'First .. Container.Last loop
-         Element_Type'Write (Stream, Container.Elements (J));
+         Element_Type'Write (Stream, Container.Elements.EA (J));
       end loop;
    end Write;
 

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -48,6 +48,7 @@ generic
 
 package Ada.Containers.Indefinite_Hashed_Maps is
    pragma Preelaborate;
+   pragma Remote_Types;
 
    type Map is tagged private;
    pragma Preelaborable_Initialization (Map);
@@ -159,6 +160,7 @@ private
    pragma Inline (Reserve_Capacity);
    pragma Inline (Has_Element);
    pragma Inline (Equivalent_Keys);
+   pragma Inline (Next);
 
    type Node_Type;
    type Node_Access is access Node_Type;

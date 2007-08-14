@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -32,8 +32,9 @@
 --                                                                          --
 -- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
-with Ada.Finalization;
-with Ada.Streams;
+
+private with Ada.Finalization;
+private with Ada.Streams;
 
 generic
    type Index_Type is range <>;
@@ -43,6 +44,7 @@ generic
 
 package Ada.Containers.Vectors is
    pragma Preelaborate;
+   pragma Remote_Types;
 
    subtype Extended_Index is Index_Type'Base
      range Index_Type'First - 1 ..
@@ -311,10 +313,15 @@ private
    pragma Inline (Update_Element);
    pragma Inline (Replace_Element);
    pragma Inline (Contains);
+   pragma Inline (Next);
+   pragma Inline (Previous);
 
-   type Elements_Type is array (Index_Type range <>) of Element_Type;
+   type Elements_Array is array (Index_Type range <>) of Element_Type;
+   function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   function "=" (L, R : Elements_Type) return Boolean is abstract;
+   type Elements_Type (Last : Index_Type) is limited record
+      EA : Elements_Array (Index_Type'First .. Last);
+   end record;
 
    type Elements_Access is access Elements_Type;
 
@@ -327,8 +334,10 @@ private
       Lock     : Natural := 0;
    end record;
 
+   overriding
    procedure Adjust (Container : in out Vector);
 
+   overriding
    procedure Finalize (Container : in out Vector);
 
    use Ada.Streams;

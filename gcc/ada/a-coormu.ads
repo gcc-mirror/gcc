@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,6 +45,7 @@ generic
 
 package Ada.Containers.Ordered_Multisets is
    pragma Preelaborate;
+   pragma Remote_Types;
 
    function Equivalent_Elements (Left, Right : Element_Type) return Boolean;
 
@@ -244,6 +245,9 @@ package Ada.Containers.Ordered_Multisets is
    end Generic_Keys;
 
 private
+
+   pragma Inline (Next);
+   pragma Inline (Previous);
 
    type Node_Type;
    type Node_Access is access Node_Type;
