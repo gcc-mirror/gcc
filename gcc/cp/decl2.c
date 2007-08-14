@@ -540,8 +540,8 @@ check_java_method (tree method)
    TEMPLATE_DECL, it can be NULL since the parameters can be extracted
    from the declaration. If the function is not a function template, it
    must be NULL.
-   It returns the original declaration for the function, or NULL_TREE
-   if no declaration was found (and an error was emitted).  */
+   It returns the original declaration for the function, NULL_TREE if
+   no declaration was found, error_mark_node if an error was emitted.  */
 
 tree
 check_classfn (tree ctype, tree function, tree template_parms)
@@ -677,16 +677,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
     error ("no %q#D member function declared in class %qT",
 	   function, ctype);
 
-  /* If we did not find the method in the class, add it to avoid
-     spurious errors (unless the CTYPE is not yet defined, in which
-     case we'll only confuse ourselves when the function is declared
-     properly within the class.  */
-  if (COMPLETE_TYPE_P (ctype))
-    add_method (ctype, function, NULL_TREE);
-  
   if (pushed_scope)
     pop_scope (pushed_scope);
-  return NULL_TREE;
+  return error_mark_node;
 }
 
 /* DECL is a function with vague linkage.  Remember it so that at the

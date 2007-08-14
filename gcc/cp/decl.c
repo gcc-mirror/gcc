@@ -3938,8 +3938,9 @@ start_decl (const cp_declarator *declarator,
 				       > template_class_depth (context))
 				      ? current_template_parms
 				      : NULL_TREE);
-	  if (field && duplicate_decls (decl, field,
-					/*newdecl_is_friend=*/false))
+	  if (field && field != error_mark_node
+	      && duplicate_decls (decl, field,
+				 /*newdecl_is_friend=*/false))
 	    decl = field;
 	}
 
@@ -6365,13 +6366,15 @@ grokfndecl (tree ctype,
       && (! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
       && check)
     {
-      tree old_decl;
+      tree old_decl = check_classfn (ctype, decl,
+				     (processing_template_decl
+				      > template_class_depth (ctype))
+				     ? current_template_parms
+				     : NULL_TREE);
 
-      old_decl = check_classfn (ctype, decl,
-				(processing_template_decl
-				 > template_class_depth (ctype))
-				? current_template_parms
-				: NULL_TREE);
+      if (old_decl == error_mark_node)
+	return NULL_TREE;
+
       if (old_decl)
 	{
 	  tree ok;
