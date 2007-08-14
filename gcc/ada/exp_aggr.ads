@@ -40,11 +40,15 @@ package Exp_Aggr is
    --  an N_Aggregate or N_Extension_Aggregate with Expansion_Delayed
    --  This procedure performs in-place aggregate assignment.
 
-   procedure Convert_Aggr_In_Allocator (Decl, Aggr : Node_Id);
-   --  Decl is an access N_Object_Declaration (produced during
-   --  allocator expansion), Aggr is the initial expression aggregate
-   --  of an allocator. This procedure perform in-place aggregate
-   --  assignment in the newly allocated object.
+   procedure Convert_Aggr_In_Allocator
+     (Alloc :  Node_Id;
+      Decl  :  Node_Id;
+      Aggr  :  Node_Id);
+   --  Alloc is the allocator whose expression is the aggregate Aggr.
+   --  Decl is an N_Object_Declaration created during allocator expansion.
+   --  This procedure perform in-place aggregate assignment into the
+   --  temporary declared in Decl, and the allocator becomes an access to
+   --  that temporary.
 
    procedure Convert_Aggr_In_Assignment (N : Node_Id);
    --  If the right-hand side of an assignment is an aggregate, expand the
