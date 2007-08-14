@@ -76,15 +76,15 @@ package Sem_Ch8 is
    --  appearing in context clauses.
 
    procedure Find_Direct_Name (N : Node_Id);
-   --  Given a direct name (Identifier or Operator_Symbol), this routine
-   --  scans the homonym chain for the name searching for corresponding
-   --  visible entities to find the referenced entity (or in the case of
-   --  overloading), entities. On return, the Entity, and Etype fields
-   --  are set. In the non-overloaded case, these are the correct final
-   --  entries. In the overloaded case, Is_Overloaded is set, Etype and
-   --  Entity refer to an arbitrary element of the overloads set, and
-   --  an appropriate list of entries has been made in the overload
-   --  interpretation table (to be disambiguated in the resolve phase).
+   --  Given a direct name (Identifier or Operator_Symbol), this routine scans
+   --  the homonym chain for the name searching for corresponding visible
+   --  entities to find the referenced entity (or in the case of overloading),
+   --  entities. On return, the Entity and Etype fields are set. In the
+   --  non-overloaded case, these are the correct final entries. In the
+   --  overloaded case, Is_Overloaded is set, Etype and Entity refer to an
+   --  arbitrary element of the overloads set, and an appropriate list of
+   --  entries has been made in the overload interpretation table (to be
+   --  disambiguated in the resolve phase).
 
    procedure Find_Selected_Component (N : Node_Id);
    --  Resolve various cases of selected components, recognize expanded names
@@ -93,16 +93,14 @@ package Sem_Ch8 is
    --  Perform name resolution, and verify that the name found is that of a
    --  type. On return the Entity and Etype fields of the node N are set
    --  appropriately. If it is an incomplete type whose full declaration has
-   --  been seen, they are set to the entity in the full declaration.
-   --  Similarly, if the type is private, it has received a full declaration,
-   --  and we are in the private part or body of the package, then the two
-   --  fields are set to the entity of the full declaration as well. This
-   --  procedure also provides special processing for Class types as well.
-
-   function Get_Full_View (T_Name : Entity_Id) return Entity_Id;
-   --  If T_Name is an incomplete type and the full declaration has been
-   --  seen, or is the name of a class_wide type whose root is incomplete.
-   --  return the corresponding full declaration.
+   --  been seen, they are set to the entity in the full declaration. If it
+   --  is an incomplete type associated with an interface visible through a
+   --  limited-with clause, whose full declaration has been seen, they are
+   --  set to the entity in the full declaration. Similarly, if the type is
+   --  private, it has received a full declaration, and we are in the private
+   --  part or body of the package, then the two fields are set to the entity
+   --  of the full declaration as well. This procedure also has special
+   --  processing for 'Class attribute references.
 
    procedure Initialize;
    --  Initializes data structures used for visibility analysis. Must be
