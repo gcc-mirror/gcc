@@ -225,9 +225,11 @@ package body Sem_Ch11 is
 
                Generate_Definition (Choice);
 
-               --  Set source assigned flag, since in effect this field is
-               --  always assigned an initial value by the exception.
+               --  Indicate that choice has an initial value, since in effect
+               --  this field is assigned an initial value by the exception.
+               --  We also consider that it is modified in the source.
 
+               Set_Has_Initial_Value (Choice, True);
                Set_Never_Set_In_Source (Choice, False);
             end if;
 
@@ -269,7 +271,7 @@ package body Sem_Ch11 is
                            if Warn_On_Obsolescent_Feature then
                               Error_Msg_N
                                 ("Numeric_Error is an " &
-                                 "obsolescent feature ('R'M 'J.6(1))?", Id);
+                                 "obsolescent feature (RM J.6(1))?", Id);
                               Error_Msg_N
                                 ("\use Constraint_Error instead?", Id);
                            end if;
@@ -306,7 +308,7 @@ package body Sem_Ch11 is
                                  "generic formal package", Id, Ent);
                               Error_Msg_N
                                 ("\and therefore cannot appear in " &
-                                 "handler ('R'M 11.2(8))", Id);
+                                 "handler (RM 11.2(8))", Id);
                               exit;
 
                            --  If the exception is declared in an inner
@@ -462,7 +464,7 @@ package body Sem_Ch11 is
                       P);
                   Error_Msg_N
                     ("\?RAISE statement may result in abnormal return" &
-                     " ('R'M 6.4.1(17))", P);
+                     " (RM 6.4.1(17))", P);
                end if;
             end if;
          end;

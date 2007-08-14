@@ -208,8 +208,8 @@ package body Sem_Ch3 is
    --
    --  the call completes Def_Id to be the appropriate E_*_Subtype.
    --
-   --  The Elist is the list of discriminant constraints if any (it is set to
-   --  No_Elist if T is not a discriminated type, and to an empty list if
+   --  The Elist is the list of discriminant constraints if any (it is set
+   --  to No_Elist if T is not a discriminated type, and to an empty list if
    --  T has discriminants but there are no discriminant constraints). The
    --  Related_Nod is the same as Decl_Node in Create_Constrained_Components.
    --  The For_Access says whether or not this subtype is really constraining
@@ -307,6 +307,11 @@ package body Sem_Ch3 is
    --  Various checks on legality of full declaration of deferred constant.
    --  Id is the entity for the redeclaration, N is the N_Object_Declaration,
    --  node. The caller has not yet set any attributes of this entity.
+
+   function Contain_Interface
+     (Iface  : Entity_Id;
+      Ifaces : Elist_Id) return Boolean;
+   --  Ada 2005: Determine whether Iface is present in the list Ifaces
 
    procedure Convert_Scalar_Bounds
      (N            : Node_Id;
@@ -935,6 +940,8 @@ package body Sem_Ch3 is
          and then Nkind (D_Ityp) /= N_Object_Declaration
          and then Nkind (D_Ityp) /= N_Object_Renaming_Declaration
          and then Nkind (D_Ityp) /= N_Formal_Type_Declaration
+         and then Nkind (D_Ityp) /= N_Task_Type_Declaration
+         and then Nkind (D_Ityp) /= N_Protected_Type_Declaration
       loop
          D_Ityp := Parent (D_Ityp);
          pragma Assert (D_Ityp /= Empty);
@@ -1386,7 +1393,7 @@ package body Sem_Ch3 is
 
       function Contains_POC (Constr : Node_Id) return Boolean is
       begin
-         --  Prevent cascaded errors.
+         --  Prevent cascaded errors
 
          if Error_Posted (Constr) then
             return False;
@@ -1553,8 +1560,7 @@ package body Sem_Ch3 is
                   E_Class_Wide_Type
             then
                Error_Msg_N
-                 ("access to specific tagged type required ('R'M 3.9.2(9))",
-                  E);
+                 ("access to specific tagged type required (RM 3.9.2(9))", E);
             end if;
 
             --  (Ada 2005: AI-230): Accessibility check for anonymous
@@ -1563,7 +1569,7 @@ package body Sem_Ch3 is
             if Type_Access_Level (Etype (E)) > Type_Access_Level (T) then
                Error_Msg_N
                  ("expression has deeper access level than component " &
-                  "('R'M 3.10.2 (12.2))", E);
+                  "(RM 3.10.2 (12.2))", E);
             end if;
 
             --  The initialization expression is a reference to an access
@@ -2211,6 +2217,8 @@ package body Sem_Ch3 is
          Generate_Definition (Id);
          Enter_Name (Id);
 
+         Mark_Coextensions (N, Object_Definition (N));
+
          T := Find_Type_Of_Object (Object_Definition (N), N);
 
          if Nkind (Object_Definition (N)) = N_Access_Definition
@@ -2265,9 +2273,19 @@ package body Sem_Ch3 is
       if Constant_Present (N)
         and then No (E)
       then
-         if not Is_Package_Or_Generic_Package (Current_Scope) then
+         --  We exclude forward references to tags
+
+         if Is_Imported (Defining_Identifier (N))
+           and then
+            (T = RTE (RE_Tag)
+              or else (Present (Full_View (T))
+                        and then Full_View (T) = RTE (RE_Tag)))
+         then
+            null;
+
+         elsif not Is_Package_Or_Generic_Package (Current_Scope) then
             Error_Msg_N
-              ("invalid context for deferred constant declaration ('R'M 7.4)",
+              ("invalid context for deferred constant declaration (RM 7.4)",
                 N);
             Error_Msg_N
               ("\declaration requires an initialization expression",
@@ -2330,7 +2348,7 @@ package body Sem_Ch3 is
       --  Process initialization expression if present and not in error
 
       if Present (E) and then E /= Error then
-         Mark_Static_Coextensions (E);
+         Mark_Coextensions (N, E);
          Analyze (E);
 
          --  In case of errors detected in the analysis of the expression,
@@ -2367,6 +2385,18 @@ package body Sem_Ch3 is
          if not Constant_Present (N) then
             if Compile_Time_Known_Value (E) then
                Set_Current_Value (Id, E);
+            end if;
+         end if;
+
+         --  Deal with setting of null flags
+
+         if Is_Access_Type (T) then
+            if Known_Non_Null (E) then
+               Set_Is_Known_Non_Null (Id, True);
+            elsif Known_Null (E)
+              and then not Can_Never_Be_Null (Id)
+            then
+               Set_Is_Known_Null (Id, True);
             end if;
          end if;
 
@@ -2572,12 +2602,17 @@ package body Sem_Ch3 is
          Check_Restriction (No_Wide_Characters, Object_Definition (N));
       end if;
 
+      --  Indicate this is not set in source. Certainly true for constants,
+      --  and true for variables so far (will be reset for a variable if and
+      --  when we encounter a modification in the source).
+
+      Set_Never_Set_In_Source (Id, True);
+
       --  Now establish the proper kind and type of the object
 
       if Constant_Present (N) then
-         Set_Ekind               (Id, E_Constant);
-         Set_Never_Set_In_Source (Id, True);
-         Set_Is_True_Constant    (Id, True);
+         Set_Ekind            (Id, E_Constant);
+         Set_Is_True_Constant (Id, True);
 
       else
          Set_Ekind (Id, E_Variable);
@@ -2595,28 +2630,22 @@ package body Sem_Ch3 is
             Check_Shared_Var (Id, T, N);
          end if;
 
-         --  Case of no initializing expression present. If the type is not
-         --  fully initialized, then we set Never_Set_In_Source, since this
-         --  is a case of a potentially uninitialized object. Note that we
-         --  do not consider access variables to be fully initialized for
-         --  this purpose, since it still seems dubious if someone declares
+         --  Set Has_Initial_Value if initializing expression present. Note
+         --  that if there is no initializating expression, we leave the state
+         --  of this flag unchanged (usually it will be False, but notably in
+         --  the case of exception choice variables, it will already be true).
 
-         --  Note that we only do this for source declarations. If the object
-         --  is declared by a generated declaration, we assume that it is not
-         --  appropriate to generate warnings in that case.
-
-         if No (E) then
-            if (Is_Access_Type (T)
-                 or else not Is_Fully_Initialized_Type (T))
-              and then Comes_From_Source (N)
-            then
-               Set_Never_Set_In_Source (Id);
-            end if;
+         if Present (E) then
+            Set_Has_Initial_Value (Id, True);
          end if;
       end if;
 
+      --  Initialize alignment and size
+
       Init_Alignment (Id);
       Init_Esize     (Id);
+
+      --  Deal with aliased case
 
       if Aliased_Present (N) then
          Set_Is_Aliased (Id);
@@ -2641,7 +2670,11 @@ package body Sem_Ch3 is
          end if;
       end if;
 
+      --  Now we can set the type of the object
+
       Set_Etype (Id, Act_T);
+
+      --  Deal with controlled types
 
       if Has_Controlled_Component (Etype (Id))
         or else Is_Controlled (Etype (Id))
@@ -2923,6 +2956,17 @@ package body Sem_Ch3 is
         or else Ekind (Parent_Type) = E_Incomplete_Type
       then
          Error_Msg_N ("premature derivation of incomplete type", Indic);
+         return;
+
+      elsif Is_Concurrent_Type (Parent_Type) then
+         Error_Msg_N
+           ("parent type of a private extension cannot be "
+            & "a synchronized tagged type (RM 3.9.1 (3/1))", N);
+
+         Set_Etype              (T, Any_Type);
+         Set_Ekind              (T, E_Limited_Private_Type);
+         Set_Private_Dependents (T, New_Elmt_List);
+         Set_Error_Posted       (T);
          return;
       end if;
 
@@ -3421,7 +3465,7 @@ package body Sem_Ch3 is
                                      (Subtype_Mark (Subtype_Indication (N)))));
                begin
                   R_Checks :=
-                    Range_Check
+                    Get_Range_Checks
                       (Scalar_Range (Etype (First_Index (Id))),
                        Target_Typ,
                        Etype (First_Index (Id)),
@@ -4096,8 +4140,7 @@ package body Sem_Ch3 is
 
          declare
             Indices : constant List_Id :=
-              New_List (New_Occurrence_Of (Any_Id, Sloc (T)));
-
+                        New_List (New_Occurrence_Of (Any_Id, Sloc (T)));
          begin
             Set_Discrete_Subtype_Definitions (Def, Indices);
             Set_First_Index (T, First (Indices));
@@ -6224,7 +6267,7 @@ package body Sem_Ch3 is
                then
                   Error_Msg_NE
                     ("parent type of& must not be outside generic body"
-                       & " ('R'M 3.9.1(4))",
+                       & " (RM 3.9.1(4))",
                          Indic, Derived_Type);
                end if;
             end;
@@ -6291,13 +6334,20 @@ package body Sem_Ch3 is
 
       --  AI-419: Limitedness is not inherited from an interface parent, so to
       --  be limited in that case the type must be explicitly declared as
-      --  limited.
+      --  limited. However, task and protected interfaces are always limited.
 
-      Set_Is_Limited_Record
-        (Derived_Type,
-         Limited_Present (Type_Def)
-           or else (Is_Limited_Record (Parent_Type)
-                     and then not Is_Interface (Parent_Type)));
+      if Limited_Present (Type_Def) then
+         Set_Is_Limited_Record (Derived_Type);
+
+      elsif Is_Limited_Record (Parent_Type) then
+         if not Is_Interface (Parent_Type)
+           or else Is_Synchronized_Interface (Parent_Type)
+           or else Is_Protected_Interface (Parent_Type)
+           or else Is_Task_Interface (Parent_Type)
+         then
+            Set_Is_Limited_Record (Derived_Type);
+         end if;
+      end if;
 
       --  STEP 2a: process discriminants of derived type if any
 
@@ -6796,23 +6846,41 @@ package body Sem_Ch3 is
          --  from a private extension declaration.
 
          declare
-            Rep   : Node_Id;
+            Rep : Node_Id;
+            --  Used to iterate over representation items of the derived type
+
+            Last_Rep : Node_Id;
+            --  Last representation item of the (non-empty) representation
+            --  item list of the derived type.
+
             Found : Boolean := False;
 
          begin
-            Rep := First_Rep_Item (Derived_Type);
+            Rep      := First_Rep_Item (Derived_Type);
+            Last_Rep := Rep;
             while Present (Rep) loop
                if Rep = First_Rep_Item (Parent_Type) then
                   Found := True;
                   exit;
+
                else
                   Rep := Next_Rep_Item (Rep);
+
+                  if Present (Rep) then
+                     Last_Rep := Rep;
+                  end if;
                end if;
             end loop;
 
+            --  Here if we either encountered the parent type's first rep
+            --  item on the derived type's rep item list (in which case
+            --  Found is True, and we have nothing else to do), or if we
+            --  reached the last rep item of the derived type, which is
+            --  Last_Rep, in which case we further chain the parent type's
+            --  rep items to those of the derived type.
+
             if not Found then
-               Set_Next_Rep_Item
-                 (First_Rep_Item (Derived_Type), First_Rep_Item (Parent_Type));
+               Set_Next_Rep_Item (Last_Rep, First_Rep_Item (Parent_Type));
             end if;
          end;
 
@@ -7353,19 +7421,6 @@ package body Sem_Ch3 is
          elsif not For_Access then
             Set_Cloned_Subtype (Def_Id, T);
          end if;
-
-         --  Handle subtypes associated with statically allocated dispatch
-         --  tables.
-
-         if Static_Dispatch_Tables
-           and then VM_Target = No_VM
-           and then RTU_Loaded (Ada_Tags)
-           and then (T = RTE (RE_Dispatch_Table_Wrapper)
-                       or else
-                     T = RTE (RE_Type_Specific_Data))
-         then
-            Set_Size_Known_At_Compile_Time (Def_Id);
-         end if;
       end if;
    end Build_Discriminated_Subtype;
 
@@ -7701,6 +7756,8 @@ package body Sem_Ch3 is
          --  overriding in Ada2005, but wrappers need to be built for them
          --  (see exp_ch3, Build_Controlling_Function_Wrappers).
 
+         --  Use elseif here and avoid above goto???
+
          if Is_Null_Extension (T)
            and then Has_Controlling_Result (Subp)
            and then Ada_Version >= Ada_05
@@ -7798,22 +7855,16 @@ package body Sem_Ch3 is
                   --  The controlling formal of Subp must be of mode "out",
                   --  "in out" or an access-to-variable to be overridden.
 
+                  --  Error message below needs rewording (remember comma
+                  --  in -gnatj mode) ???
+
                   if Ekind (First_Formal (Subp)) = E_In_Parameter then
                      Error_Msg_NE
                        ("first formal of & must be of mode `OUT`, `IN OUT` " &
                         "or access-to-variable", T, Subp);
-
-                     if Is_Protected_Type
-                          (Corresponding_Concurrent_Type (T))
-                     then
-                        Error_Msg_N
-                          ("\to be overridden by protected procedure or " &
-                           "entry (`R`M 9.4(11))", T);
-                     else
-                        Error_Msg_N
-                          ("\to be overridden by task entry (`R`M 9.4(11))",
-                           T);
-                     end if;
+                     Error_Msg_N
+                       ("\to be overridden by protected procedure or " &
+                        "entry (RM 9.4(11.9/2))", T);
 
                   --  Some other kind of overriding failure
 
@@ -7896,7 +7947,7 @@ package body Sem_Ch3 is
                  and then Ada_Version < Ada_05
                then
                   Error_Msg_N
-                    ("aliased component must be constrained ('R'M 3.6(11))",
+                    ("aliased component must be constrained (RM 3.6(11))",
                       C);
                end if;
 
@@ -7911,7 +7962,7 @@ package body Sem_Ch3 is
               and then Ada_Version < Ada_05
             then
                Error_Msg_N
-                 ("aliased component type must be constrained ('R'M 3.6(11))",
+                 ("aliased component type must be constrained (RM 3.6(11))",
                     T);
             end if;
          end if;
@@ -8705,10 +8756,19 @@ package body Sem_Ch3 is
             Error_Msg_N ("ALIASED required (see declaration#)", N);
          end if;
 
+         --  Allow incomplete declaration of tags (used to handle forward
+         --  references to tags). The check on Ada_Tags avoids cicularities
+         --  when rebuilding the compiler.
+
+         if RTU_Loaded (Ada_Tags)
+           and then T = RTE (RE_Tag)
+         then
+            null;
+
          --  Check that placement is in private part and that the incomplete
          --  declaration appeared in the visible part.
 
-         if Ekind (Current_Scope) = E_Package
+         elsif Ekind (Current_Scope) = E_Package
            and then not In_Private_Part (Current_Scope)
          then
             Error_Msg_Sloc := Sloc (Prev);
@@ -9811,7 +9871,7 @@ package body Sem_Ch3 is
          if Warn_On_Obsolescent_Feature then
             Error_Msg_N
               ("subtype digits constraint is an " &
-               "obsolescent feature ('R'M 'J.3(8))?", C);
+               "obsolescent feature (RM J.3(8))?", C);
          end if;
 
          D := Digits_Expression (C);
@@ -10014,7 +10074,7 @@ package body Sem_Ch3 is
          if Warn_On_Obsolescent_Feature then
             Error_Msg_S
               ("subtype delta constraint is an " &
-               "obsolescent feature ('R'M 'J.3(7))?");
+               "obsolescent feature (RM J.3(7))?");
          end if;
 
          D := Delta_Expression (C);
@@ -10062,6 +10122,31 @@ package body Sem_Ch3 is
 
       Set_Has_Delayed_Freeze (Def_Id);
    end Constrain_Ordinary_Fixed;
+
+   -----------------------
+   -- Contain_Interface --
+   -----------------------
+
+   function Contain_Interface
+     (Iface  : Entity_Id;
+      Ifaces : Elist_Id) return Boolean
+   is
+      Iface_Elmt : Elmt_Id;
+
+   begin
+      if Present (Ifaces) then
+         Iface_Elmt := First_Elmt (Ifaces);
+         while Present (Iface_Elmt) loop
+            if Node (Iface_Elmt) = Iface then
+               return True;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+      end if;
+
+      return False;
+   end Contain_Interface;
 
    ---------------------------
    -- Convert_Scalar_Bounds --
@@ -10501,19 +10586,17 @@ package body Sem_Ch3 is
             begin
                Constr    := First_Elmt (Stored_Constraint (Typ));
                Old_Discr := First_Stored_Discriminant (Typ);
-
                while Present (Constr) loop
                   if Is_Entity_Name (Node (Constr))
                     and then Ekind (Entity (Node (Constr))) = E_Discriminant
                   then
                      New_Discr := Entity (Node (Constr));
 
-                     if Chars (Corresponding_Discriminant (New_Discr))
-                         /= Chars (Old_Discr)
+                     if Chars (Corresponding_Discriminant (New_Discr)) /=
+                        Chars (Old_Discr)
                      then
-
-                        --  The new discriminant has been used to rename
-                        --  a subsequent old discriminant. Introduce a shadow
+                        --  The new discriminant has been used to rename a
+                        --  subsequent old discriminant. Introduce a shadow
                         --  component for the current old discriminant.
 
                         New_C := Create_Component (Old_Discr);
@@ -11691,8 +11774,8 @@ package body Sem_Ch3 is
 
       if Interface_Present (Def) then
          if not Is_Interface (Parent_Type) then
-            Error_Msg_NE ("(Ada 2005) & must be an interface",
-                          Indic, Parent_Type);
+            Error_Msg_NE
+              ("(Ada 2005) & must be an interface", Indic, Parent_Type);
 
          else
             Parent_Node := Parent (Base_Type (Parent_Type));
@@ -11706,20 +11789,24 @@ package body Sem_Ch3 is
                   null;
 
                elsif Protected_Present (Iface_Def) then
-                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
-                    " inherit from protected interface", Indic);
+                  Error_Msg_N
+                    ("(Ada 2005) limited interface cannot "
+                     & "inherit from protected interface", Indic);
 
                elsif Synchronized_Present (Iface_Def) then
-                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
-                    " inherit from synchronized interface", Indic);
+                  Error_Msg_N
+                    ("(Ada 2005) limited interface cannot "
+                     & "inherit from synchronized interface", Indic);
 
                elsif Task_Present (Iface_Def) then
-                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
-                    " inherit from task interface", Indic);
+                  Error_Msg_N
+                    ("(Ada 2005) limited interface cannot "
+                     & "inherit from task interface", Indic);
 
                else
-                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
-                    " inherit from non-limited interface", Indic);
+                  Error_Msg_N
+                    ("(Ada 2005) limited interface cannot "
+                     & "inherit from non-limited interface", Indic);
                end if;
 
             --  Ada 2005 (AI-345): Non-limited interfaces can only inherit
@@ -11734,18 +11821,18 @@ package body Sem_Ch3 is
 
                elsif Protected_Present (Iface_Def) then
                   Error_Msg_N
-                    ("(Ada 2005) non-limited interface cannot " &
-                     "inherit from protected interface", Indic);
+                    ("(Ada 2005) non-limited interface cannot "
+                     & "inherit from protected interface", Indic);
 
                elsif Synchronized_Present (Iface_Def) then
                   Error_Msg_N
-                    ("(Ada 2005) non-limited interface cannot " &
-                     "inherit from synchronized interface", Indic);
+                    ("(Ada 2005) non-limited interface cannot "
+                     & "inherit from synchronized interface", Indic);
 
                elsif Task_Present (Iface_Def) then
                   Error_Msg_N
-                    ("(Ada 2005) non-limited interface cannot " &
-                     "inherit from task interface", Indic);
+                    ("(Ada 2005) non-limited interface cannot "
+                     & "inherit from task interface", Indic);
 
                else
                   null;
@@ -11757,10 +11844,11 @@ package body Sem_Ch3 is
       if Is_Tagged_Type (Parent_Type)
         and then Is_Concurrent_Type (Parent_Type)
         and then not Is_Interface (Parent_Type)
-        and then not Is_Completion
       then
-         Error_Msg_N ("parent type of a record extension cannot be " &
-            "a synchronized tagged type (3.9.1 (3/1)", N);
+         Error_Msg_N
+           ("parent type of a record extension cannot be "
+            & "a synchronized tagged type (RM 3.9.1 (3/1))", N);
+         Set_Etype (T, Any_Type);
          return;
       end if;
 
@@ -12257,6 +12345,36 @@ package body Sem_Ch3 is
       return Expansion;
    end Expand_To_Stored_Constraint;
 
+   ---------------------------
+   -- Find_Hidden_Interface --
+   ---------------------------
+
+   function Find_Hidden_Interface
+     (Src  : Elist_Id;
+      Dest : Elist_Id) return Entity_Id
+   is
+      Iface      : Entity_Id;
+      Iface_Elmt : Elmt_Id;
+
+   begin
+      if Present (Src) and then Present (Dest) then
+         Iface_Elmt := First_Elmt (Src);
+         while Present (Iface_Elmt) loop
+            Iface := Node (Iface_Elmt);
+
+            if Is_Interface (Iface)
+              and then not Contain_Interface (Iface, Dest)
+            then
+               return Iface;
+            end if;
+
+            Next_Elmt (Iface_Elmt);
+         end loop;
+      end if;
+
+      return Empty;
+   end Find_Hidden_Interface;
+
    --------------------
    -- Find_Type_Name --
    --------------------
@@ -12354,8 +12472,9 @@ package body Sem_Ch3 is
                   end if;
                end if;
 
-            --  Ada 2005 (AI-251): Private extension declaration of a
-            --  task type. This case arises with tasks implementing interfaces
+            --  Ada 2005 (AI-251): Private extension declaration of a task
+            --  type or a protected type. This case arises when covering
+            --  interface types.
 
             elsif Nkind (N) = N_Task_Type_Declaration
               or else Nkind (N) = N_Protected_Type_Declaration
@@ -13471,7 +13590,7 @@ package body Sem_Ch3 is
       --  If the component has been declared in an ancestor which is currently
       --  a private type, then it is not visible. The same applies if the
       --  component's containing type is not in an open scope and the original
-      --  component's enclosing type is a visible full type of a private type
+      --  component's enclosing type is a visible full view of a private type
       --  (which can occur in cases where an attempt is being made to reference
       --  a component in a sibling package that is inherited from a visible
       --  component of a type in an ancestor package; the component in the
@@ -13506,6 +13625,7 @@ package body Sem_Ch3 is
          else
             return
               Is_Child_Unit (Cunit_Entity (Current_Sem_Unit))
+                and then In_Open_Scopes (Scope (Original_Scope))
                 and then Is_Local_Type (Type_Scope);
          end if;
 
@@ -14003,6 +14123,7 @@ package body Sem_Ch3 is
 
       Set_Modular_Size (System_Max_Binary_Modulus_Power);
       Init_Alignment (T);
+
    end Modular_Type_Declaration;
 
    --------------------------
@@ -14097,7 +14218,7 @@ package body Sem_Ch3 is
             return OK_For_Limited_Init_In_05
                      (Expression (Original_Node (Exp)));
 
-         when N_Indexed_Component =>
+         when N_Indexed_Component | N_Selected_Component  =>
             return Nkind (Exp) = N_Function_Call;
 
          when others =>
@@ -14284,7 +14405,6 @@ package body Sem_Ch3 is
 
    begin
       --  A composite type other than an array type can have discriminants.
-      --  Discriminants of non-limited types must have a discrete type.
       --  On entry, the current scope is the composite type.
 
       --  The discriminants are initially entered into the scope of the type
@@ -14444,7 +14564,8 @@ package body Sem_Ch3 is
                  or else Ekind (Current_Scope) = E_Limited_Private_Type
                then
                   null;
-               else
+
+               elsif Present (Expression (Discr)) then
                   Error_Msg_N
                     ("(Ada 2005) access discriminants of nonlimited types",
                      Expression (Discr));
@@ -14532,18 +14653,6 @@ package body Sem_Ch3 is
       --  inherently implements. Duplicate entries are not added to
       --  the list Ifaces.
 
-      function Contain_Interface
-        (Iface  : Entity_Id;
-         Ifaces : Elist_Id) return Boolean;
-      --  Ada 2005: Determine whether Iface is present in the list Ifaces
-
-      function Find_Hidden_Interface
-        (Src  : Elist_Id;
-         Dest : Elist_Id) return Entity_Id;
-      --  Ada 2005: Determine whether the interfaces in list Src are all
-      --  present in the list Dest. Return the first differing interface,
-      --  or Empty otherwise.
-
       ------------------------------------
       -- Collect_Implemented_Interfaces --
       ------------------------------------
@@ -14591,10 +14700,8 @@ package body Sem_Ch3 is
                if Present (Full_View (Typ))
                  and then Etype (Typ) /= Full_View (Typ)
                then
-                  if Is_Interface (Etype (Typ))
-                    and then not Contain_Interface (Etype (Typ), Ifaces)
-                  then
-                     Append_Elmt (Etype (Typ), Ifaces);
+                  if Is_Interface (Etype (Typ)) then
+                     Append_Unique_Elmt (Etype (Typ), Ifaces);
                   end if;
 
                   Collect_Implemented_Interfaces (Etype (Typ), Ifaces);
@@ -14603,10 +14710,8 @@ package body Sem_Ch3 is
             --  Non-private types
 
             else
-               if Is_Interface (Etype (Typ))
-                 and then not Contain_Interface (Etype (Typ), Ifaces)
-               then
-                  Append_Elmt (Etype (Typ), Ifaces);
+               if Is_Interface (Etype (Typ)) then
+                  Append_Unique_Elmt (Etype (Typ), Ifaces);
                end if;
 
                Collect_Implemented_Interfaces (Etype (Typ), Ifaces);
@@ -14631,59 +14736,6 @@ package body Sem_Ch3 is
             end loop;
          end if;
       end Collect_Implemented_Interfaces;
-
-      -----------------------
-      -- Contain_Interface --
-      -----------------------
-
-      function Contain_Interface
-        (Iface  : Entity_Id;
-         Ifaces : Elist_Id) return Boolean
-      is
-         Iface_Elmt : Elmt_Id;
-
-      begin
-         if Present (Ifaces) then
-            Iface_Elmt := First_Elmt (Ifaces);
-            while Present (Iface_Elmt) loop
-               if Node (Iface_Elmt) = Iface then
-                  return True;
-               end if;
-
-               Next_Elmt (Iface_Elmt);
-            end loop;
-         end if;
-
-         return False;
-      end Contain_Interface;
-
-      ---------------------------
-      -- Find_Hidden_Interface --
-      ---------------------------
-
-      function Find_Hidden_Interface
-        (Src  : Elist_Id;
-         Dest : Elist_Id) return Entity_Id
-      is
-         Iface      : Entity_Id;
-         Iface_Elmt : Elmt_Id;
-
-      begin
-         if Present (Src) and then Present (Dest) then
-            Iface_Elmt := First_Elmt (Src);
-            while Present (Iface_Elmt) loop
-               Iface := Node (Iface_Elmt);
-
-               if not Contain_Interface (Iface, Dest) then
-                  return Iface;
-               end if;
-
-               Next_Elmt (Iface_Elmt);
-            end loop;
-         end if;
-
-         return Empty;
-      end Find_Hidden_Interface;
 
    --  Start of processing for Process_Full_View
 
@@ -14710,11 +14762,17 @@ package body Sem_Ch3 is
         and then Is_Limited_Type (Priv_T)
         and then not Is_Limited_Type (Full_T)
       then
+         --  If pragma CPP_Class was applied to the private declaration
+         --  propagate the limitedness to the full-view
+
+         if Is_CPP_Class (Priv_T) then
+            Set_Is_Limited_Record (Full_T);
+
          --  GNAT allow its own definition of Limited_Controlled to disobey
          --  this rule in order in ease the implementation. The next test is
          --  safe because Root_Controlled is defined in a private system child
 
-         if Etype (Full_T) = Full_View (RTE (RE_Root_Controlled)) then
+         elsif Etype (Full_T) = Full_View (RTE (RE_Root_Controlled)) then
             Set_Is_Limited_Composite (Full_T);
          else
             Error_Msg_N
@@ -14751,14 +14809,14 @@ package body Sem_Ch3 is
 
             if Present (Iface) then
                Error_Msg_NE ("interface & not implemented by full type " &
-                             "('R'M'-2005 7.3 (7.3/2))", Priv_T, Iface);
+                             "(RM-2005 7.3 (7.3/2))", Priv_T, Iface);
             end if;
 
             Iface := Find_Hidden_Interface (Full_T_Ifaces, Priv_T_Ifaces);
 
             if Present (Iface) then
                Error_Msg_NE ("interface & not implemented by partial view " &
-                             "('R'M'-2005 7.3 (7.3/2))", Full_T, Iface);
+                             "(RM-2005 7.3 (7.3/2))", Full_T, Iface);
             end if;
          end;
       end if;
@@ -15356,7 +15414,7 @@ package body Sem_Ch3 is
             --  the place where we put the check.
 
             if not R_Check_Off then
-               R_Checks := Range_Check (R, T);
+               R_Checks := Get_Range_Checks (R, T);
 
                --  Look up tree to find an appropriate insertion point.
                --  This seems really junk code, and very brittle, couldn't
@@ -15924,11 +15982,14 @@ package body Sem_Ch3 is
          Type_Id : constant Name_Id := Chars (Typ);
 
          function Names_T (Nam : Node_Id) return Boolean;
-
          --  The record type has not been introduced in the current scope
          --  yet, so we must examine the name of the type itself, either
          --  an identifier T, or an expanded name of the form P.T, where
          --  P denotes the current scope.
+
+         -------------
+         -- Names_T --
+         -------------
 
          function Names_T (Nam : Node_Id) return Boolean is
          begin
@@ -15941,8 +16002,8 @@ package body Sem_Ch3 is
                      return Chars (Prefix (Nam)) = Chars (Current_Scope);
 
                   elsif Nkind (Prefix (Nam)) = N_Selected_Component then
-                     return Chars (Selector_Name (Prefix (Nam)))
-                       = Chars (Current_Scope);
+                     return Chars (Selector_Name (Prefix (Nam))) =
+                            Chars (Current_Scope);
                   else
                      return False;
                   end if;
@@ -15953,6 +16014,8 @@ package body Sem_Ch3 is
                return False;
             end if;
          end Names_T;
+
+      --  Start of processing for Mentions_T
 
       begin
          if No (Access_To_Subprogram_Definition (Acc_Def)) then

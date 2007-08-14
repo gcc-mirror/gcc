@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -136,6 +136,13 @@ package Sem_Ch3  is
    --
    --  Note: one might expect this to be private to the package body, but
    --  there is one rather unusual usage in package Exp_Dist.
+
+   function Find_Hidden_Interface
+     (Src  : Elist_Id;
+      Dest : Elist_Id) return Entity_Id;
+   --  Ada 2005: Determine whether the interfaces in list Src are all present
+   --  in the list Dest. Return the first differing interface, or Empty
+   --  otherwise.
 
    function Find_Type_Of_Subtype_Indic (S : Node_Id) return Entity_Id;
    --  Given a subtype indication S (which is really an N_Subtype_Indication
