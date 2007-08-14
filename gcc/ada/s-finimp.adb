@@ -258,7 +258,7 @@ package body System.Finalization_Implementation is
    -----------------------------
 
    --  We know that the detach object is neither at the beginning nor at the
-   --  end of the list, thank's to the dummy First and Last Elements but the
+   --  end of the list, thanks to the dummy First and Last Elements, but the
    --  object may not be attached at all if it is Finalize_Storage_Only
 
    procedure Detach_From_Final_List (Obj : in out Finalizable) is
@@ -273,6 +273,13 @@ package body System.Finalization_Implementation is
          SSL.Lock_Task.all;
          Obj.Next.Prev := Obj.Prev;
          Obj.Prev.Next := Obj.Next;
+
+         --  Reset the pointers so that a new finalization of the same object
+         --  has no effect on the finalization list.
+
+         Obj.Next := null;
+         Obj.Prev := null;
+
          SSL.Unlock_Task.all;
       end if;
 
