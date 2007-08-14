@@ -215,6 +215,11 @@ begin
    Write_Switch_Char ("i?");
    Write_Line ("Identifier char set (?=1/2/3/4/5/8/9/p/f/n/w)");
 
+   --  Line for -gnatI switch
+
+   Write_Switch_Char ("I");
+   Write_Line ("Ignore all representation clauses");
+
    --  Line for -gnatj switch
 
    Write_Switch_Char ("jnn");
@@ -420,13 +425,13 @@ begin
                                                   "assumption");
    Write_Line ("        x*   turn on warnings for export/import");
    Write_Line ("        X    turn off warnings for export/import");
-   Write_Line ("        .x*  turn on warnings for non-local exceptions");
-   Write_Line ("        .X   turn off warnings for non-local exceptions");
+   Write_Line ("        .x   turn on warnings for non-local exceptions");
+   Write_Line ("        .X*  turn off warnings for non-local exceptions");
    Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");
    Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
-   Write_Line ("        z*   turn on size/align warnings for " &
+   Write_Line ("        z*   turn on convention/size/align warnings for " &
                                                   "unchecked conversion");
-   Write_Line ("        Z    turn off size/align warnings for " &
+   Write_Line ("        Z    turn off convention/size/align warnings for " &
                                                   "unchecked conversion");
    Write_Line ("        *    indicates default in above list");
 
@@ -480,11 +485,12 @@ begin
    Write_Line ("        Lnn  check max nest level < nn ");
    Write_Line ("        m    check line length <= 79 characters");
    Write_Line ("        n    check casing of package Standard identifiers");
-   Write_Line ("        Mnn  check line length <= nn  characters");
+   Write_Line ("        Mnn  check line length <= nn characters");
    Write_Line ("        o    check subprogram bodies in alphabetical order");
    Write_Line ("        p    check pragma casing");
    Write_Line ("        r    check casing for identifier references");
    Write_Line ("        s    check separate subprogram specs present");
+   Write_Line ("        S    check separate lines after THEN or ELSE");
    Write_Line ("        t    check token separation rules");
    Write_Line ("        u    check no unnecessary blank lines");
    Write_Line ("        x    check extra parentheses around conditionals");

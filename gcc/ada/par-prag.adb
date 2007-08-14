@@ -1054,6 +1054,7 @@ begin
            Pragma_Atomic                        |
            Pragma_Atomic_Components             |
            Pragma_Attach_Handler                |
+           Pragma_Check_Name                    |
            Pragma_CIL_Constructor               |
            Pragma_Compile_Time_Error            |
            Pragma_Compile_Time_Warning          |
@@ -1091,6 +1092,7 @@ begin
            Pragma_Finalize_Storage_Only         |
            Pragma_Float_Representation          |
            Pragma_Ident                         |
+           Pragma_Implicit_Packing              |
            Pragma_Import                        |
            Pragma_Import_Exception              |
            Pragma_Import_Function               |

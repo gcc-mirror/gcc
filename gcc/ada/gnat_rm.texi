@@ -108,6 +108,7 @@ Implementation Defined Pragmas
 * Pragma Assert::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
+* Pragma Check_Name::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -137,6 +138,7 @@ Implementation Defined Pragmas
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
 * Pragma Import_Object::
@@ -158,6 +160,7 @@ Implementation Defined Pragmas
 * Pragma Linker_Section::
 * Pragma Long_Float::
 * Pragma Machine_Attribute::
+* Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
 * Pragma No_Return::
@@ -217,6 +220,7 @@ Implementation Defined Attributes
 * Elab_Body::
 * Elab_Spec::
 * Emax::
+* Enabled::
 * Enum_Rep::
 * Epsilon::
 * Fixed_Value::
@@ -673,6 +677,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Assert::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
+* Pragma Check_Name::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -702,6 +707,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Finalize_Storage_Only::
 * Pragma Float_Representation::
 * Pragma Ident::
+* Pragma Implicit_Packing::
 * Pragma Import_Exception::
 * Pragma Import_Function::
 * Pragma Import_Object::
@@ -723,6 +729,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Linker_Section::
 * Pragma Long_Float::
 * Pragma Machine_Attribute::
+* Pragma Main::
 * Pragma Main_Storage::
 * Pragma No_Body::
 * Pragma No_Return::
@@ -1012,6 +1019,36 @@ You can also pass records by copy by specifying the convention
 @code{Import} and @code{Export} pragmas, which allow specification of
 passing mechanisms on a parameter by parameter basis.
 
+@node Pragma Check_Name
+@unnumberedsec Pragma Check_Name
+@cindex Defining check names
+@cindex Check names, defining
+@findex Check_Name
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Check_Name (check_name_IDENTIFIER);
+@end smallexample
+
+@noindent
+This is a configuration pragma which defines a new implementation
+defined check name (unless IDENTIFIER matches one of the predefined
+check names, in which case the pragma has no effect). Check names
+are global to a partition, so if two more more configuration pragmas
+are present in a partition mentioning the same name, only one new
+check name is introduced.
+
+An implementation defined check name introduced with this pragma may
+be used in only three contexts: @code{pragma Suppress},
+@code{pragma Unsuppress},
+and as the prefix of a @code{Check_Name'Enabled} attribute reference. For
+any of these three cases, the check name must be visible. A check
+name is visible if it is in the configuration pragmas applying to
+the current unit, or if it appears at the start of any unit that
+is part of the dependency set of the current unit (e.g. units that
+are mentioned in @code{with} clauses.
+
+Normally the default mechanism for passing C convention records to C
 @node Pragma Comment
 @unnumberedsec Pragma Comment
 @findex Comment
@@ -1550,7 +1587,7 @@ always given as strings. At the moment, this form of distinguishing
 overloaded subprograms is implemented only partially, so we do not recommend
 using it for practical subprogram elimination.
 
-Note, that in case of a parameterless procedure its profile is represented
+Note that in case of a parameterless procedure its profile is represented
 as @code{Parameter_Types => ("")}
 
 Alternatively, the @code{Source_Location} parameter is used to specify
@@ -1601,6 +1638,11 @@ relevant names are not visible.
 Note that any change in the source files that includes removing, splitting of
 adding lines may make the set of Eliminate pragmas using SOURCE_LOCATION
 parameter illegal.
+
+It is legal to use pragma Eliminate where the referenced entity is a
+dispatching operation, but it is not clear what this would mean, since
+in general the call does not know which entity is actually being called.
+Consequently, a pragma Eliminate for a dispatching operation is ignored.
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
@@ -2116,6 +2158,41 @@ the DEC Ada 83 pragma of the same name. Note that in DEC Ada 83, the
 maximum allowed length is 31 characters, so if it is important to
 maintain compatibility with this compiler, you should obey this length
 limit.
+
+@node Pragma Implicit_Packing
+@unnumberedsec Pragma Implicit_Packing
+@findex Implicit_Packing
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Implicit_Packing;
+@end smallexample
+
+@noindent
+This is a configuration pragma that requests implicit packing for packed
+arrays for which a size clause is given but no explicit pragma Pack or
+specification of Component_Size is present. Consider this example:
+
+@smallexample @c ada
+type R is array (0 .. 7) of Boolean;
+for R'Size use 8;
+@end smallexample
+
+@noindent
+In accordance with the recommendation in the RM (RM 13.3(53)), a Size clause
+does not change the layout of a composite object. So the Size clause in the
+above example is normally rejected, since the default layout of the array uses
+8-bit components, and thus the array requires a minimum of 64 bits.
+
+If this declaration is compiled in a region of code covered by an occurrence
+of the configuration pragma Implicit_Packing, then the Size clause in this
+and similar examples will cause implicit packing and thus be accepted. For
+this implicit packing to occur, the type in question must be an array of small
+components whose size is known at compile time, and the Size clause must
+specify the exact size that corresponds to the length of the array multiplied
+by the size in bits of the component type.
+@cindex Array packing
 
 @node Pragma Import_Exception
 @unnumberedsec Pragma Import_Exception
@@ -2916,6 +2993,27 @@ defined for each machine.  See the GCC manual for further information.
 It is not possible to specify attributes defined by other languages,
 only attributes defined by the machine the code is intended to run on.
 
+@node Pragma Main
+@unnumberedsec Pragma Main
+@cindex OpenVMS
+@findex Main
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Main
+ (MAIN_OPTION [, MAIN_OPTION]);
+
+MAIN_OPTION ::=
+  [STACK_SIZE              =>] static_integer_EXPRESSION
+| [TASK_STACK_SIZE_DEFAULT =>] static_integer_EXPRESSION
+| [TIME_SLICING_ENABLED    =>] static_boolean_EXPRESSION
+@end smallexample
+
+@noindent
+This pragma is provided for compatibility with OpenVMS VAX Systems.  It has
+no effect in GNAT, other than being syntax checked.
+
 @node Pragma Main_Storage
 @unnumberedsec Pragma Main_Storage
 @cindex OpenVMS
@@ -2930,7 +3028,6 @@ pragma Main_Storage
 MAIN_STORAGE_OPTION ::=
   [WORKING_STORAGE =>] static_SIMPLE_EXPRESSION
 | [TOP_GUARD       =>] static_SIMPLE_EXPRESSION
-
 @end smallexample
 
 @noindent
@@ -3181,7 +3278,7 @@ enumeration literal case).
 Syntax:
 
 @smallexample @c ada
-pragma Passive ([Semaphore | No]);
+pragma Passive [(Semaphore | No)];
 @end smallexample
 
 @noindent
@@ -3202,7 +3299,7 @@ optimized.  GNAT does not attempt to optimize any tasks in this manner
 Syntax:
 
 @smallexample @c ada
-pragma Persistent_BSS [local_NAME]
+pragma Persistent_BSS [(local_NAME)]
 @end smallexample
 
 @noindent
@@ -4567,6 +4664,7 @@ consideration, you should minimize the use of these attributes.
 * Elab_Body::
 * Elab_Spec::
 * Emax::
+* Enabled::
 * Enum_Rep::
 * Epsilon::
 * Fixed_Value::
@@ -4805,6 +4903,27 @@ some error.
 The @code{Emax} attribute is provided for compatibility with Ada 83.  See
 the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
+
+@node Enabled
+@unnumberedsec Enabled
+@findex Enabled
+@noindent
+The @code{Enabled} attribute allows an application program to check at compile
+time to see if the designated check is currently enabled. The prefix is a
+simple identifier, referencing any predefined check name (other than
+@code{All_Checks}) or a check name introduced by pragma Check_Name. If
+no argument is given for the attribute, the check is for the general state
+of the check, if an argument is given, then it is an entity name, and the
+check indicates whether an @code{Suppress} or @code{Unsuppress} has been
+given naming the entity (if not, then the argument is ignored).
+
+Note that instantiations inherit the check status at the point of the
+instantiation, so a useful idiom is to have a library package that
+introduces a check name with @code{pragma Check_Name}, and then contains
+generic packages or subprograms which use the @code{Enabled} attribute
+to see if the check is enabled. A user of this package can then issue
+a @code{pragma Suppress} or @code{pragma Unsuppress} before instantiating
+the package or subprogram, controlling whether the check will be present.
 
 @node Enum_Rep
 @unnumberedsec Enum_Rep
@@ -5847,7 +5966,8 @@ Followed.
 @code{Size} clause on a composite subtype should not affect the
 internal layout of components.
 @end cartouche
-Followed.
+Followed. But note that this can be overridden by use of the implementation
+pragma Implicit_Packing in the case of packed arrays.
 
 @sp 1
 @cartouche
@@ -7322,7 +7442,12 @@ the last line is a single @code{LF} character (@code{16#0A#}).
 @strong{42}.  Implementation-defined check names.  See 11.5(27).
 @end cartouche
 @noindent
-No implementation-defined check names are supported.
+The implementation defined check name Alignment_Check controls checking of
+address clause values for proper alignment (that is, the address supplied
+must be consistent with the alignment of the type).
+
+In addition, a user program can add implementation-defined check names
+by means of the pragma Check_Name.
 
 @sp 1
 @cartouche
@@ -7667,7 +7792,11 @@ This restriction ensures that the generated code does not contain any
 implicit @code{for} loops, either by modifying
 the generated code where possible,
 or by rejecting any construct that would otherwise generate an implicit
-@code{for} loop.
+@code{for} loop. If this restriction is active, it is possible to build
+large array aggregates with all static components without generating an
+intermediate temporary, and without generating a loop to initialize individual
+components..Otherwise, a loop is created for arrays larger than about 5000
+scalar components.
 
 @item No_Initialize_Scalars
 @findex No_Initialize_Scalars
@@ -7773,7 +7902,7 @@ throughout a partition.
 
 In the case of aggregates with others, if the aggregate has a dynamic
 size, there is no way to eliminate the elaboration code (such dynamic
-bounds would be incompatible with @code{Preelaborate} in any case. If
+bounds would be incompatible with @code{Preelaborate} in any case). If
 the bounds are static, then use of this restriction actually modifies
 the code choice of the compiler to avoid generating a loop, and instead
 generate the aggregate statically if possible, no matter how many times
@@ -15637,6 +15766,16 @@ doing the check-in.
 @item VCS_Log_Check
 This is a simple attribute. Its value is a string that specifies
 the command used by the VCS to check the validity of a log file.
+
+@item VCS_Repository_Root
+The VCS repository root path. This is used to create tags or branches
+of the repository. For subversion the value should be the @code{URL}
+as specified to check-out the working copy of the repository.
+
+@item VCS_Patch_Root
+The local root directory to use for building patch file. All patch chunks
+will be relative to this path. The root project directory is used if
+this value is not defined.
 
 @end table
 
