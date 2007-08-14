@@ -185,23 +185,9 @@ package body Ada.Calendar is
 
    function "+" (Left : Time; Right : Duration) return Time is
       pragma Unsuppress (Overflow_Check);
-
       Left_N : constant Time_Rep := Time_Rep (Left);
-      Res_N  : Time_Rep;
-
    begin
-      --  Trivial case
-
-      if Right = Duration (0.0) then
-         return Left;
-      end if;
-
-      Res_N := Left_N + Duration_To_Time_Rep (Right);
-
-      Check_Within_Time_Bounds (Res_N);
-
-      return Time (Res_N);
-
+      return Time (Left_N + Duration_To_Time_Rep (Right));
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -218,23 +204,9 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Duration) return Time is
       pragma Unsuppress (Overflow_Check);
-
       Left_N : constant Time_Rep := Time_Rep (Left);
-      Res_N  : Time_Rep;
-
    begin
-      --  Trivial case
-
-      if Right = Duration (0.0) then
-         return Left;
-      end if;
-
-      Res_N := Left_N - Duration_To_Time_Rep (Right);
-
-      Check_Within_Time_Bounds (Res_N);
-
-      return Time (Res_N);
-
+      return Time (Left_N - Duration_To_Time_Rep (Right));
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -253,7 +225,10 @@ package body Ada.Calendar is
    begin
       Res_N := Time_Rep (Left) - Time_Rep (Right);
 
-      --  The result does not fit in a duration value
+      --  Due to the extended range of Ada time, "-" is capable of producing
+      --  results which may exceed the range of Duration. In order to prevent
+      --  the generation of bogus values by the Unchecked_Conversion, we apply
+      --  the following check.
 
       if Res_N < Dur_Low
         or else Res_N > Dur_High
@@ -644,23 +619,9 @@ package body Ada.Calendar is
 
       function Add (Date : Time; Days : Long_Integer) return Time is
          pragma Unsuppress (Overflow_Check);
-
          Date_N : constant Time_Rep := Time_Rep (Date);
-         Res_N  : Time_Rep;
-
       begin
-         --  Trivial case
-
-         if Days = 0 then
-            return Date;
-         end if;
-
-         Res_N := Date_N + Time_Rep (Days) * Nanos_In_Day;
-
-         Check_Within_Time_Bounds (Res_N);
-
-         return Time (Res_N);
-
+         return Time (Date_N + Time_Rep (Days) * Nanos_In_Day);
       exception
          when Constraint_Error =>
             raise Time_Error;
@@ -679,13 +640,12 @@ package body Ada.Calendar is
       is
          Res_Dur       : Time_Dur;
          Earlier       : Time_Rep;
-         Earlier_Sub   : Time_Rep;
          Elapsed_Leaps : Natural;
          Later         : Time_Rep;
-         Later_Sub     : Time_Rep;
          Negate        : Boolean := False;
          Next_Leap_N   : Time_Rep;
-         Sub_Seconds   : Duration;
+         Sub_Secs      : Duration;
+         Sub_Secs_Diff : Time_Rep;
 
       begin
          --  Both input time values are assumed to be in UTC
@@ -715,23 +675,26 @@ package body Ada.Calendar is
             Elapsed_Leaps := 0;
          end if;
 
-         --  Sub seconds
+         --  Sub seconds processing. We add the resulting difference to one
+         --  of the input dates in order to account for any potential rounding
+         --  of the difference in the next step.
 
-         Earlier_Sub := Earlier mod Nano;
-         Later_Sub   := Later mod Nano;
+         Sub_Secs_Diff := Later mod Nano - Earlier mod Nano;
+         Earlier       := Earlier + Sub_Secs_Diff;
+         Sub_Secs      := Duration (Sub_Secs_Diff) / Nano_F;
 
-         if Later_Sub < Earlier_Sub then
-            Later_Sub := Later_Sub + Time_Rep (1) * Nano;
-            Later     := Later - Time_Rep (1) * Nano;
-         end if;
+         --  Difference processing. This operation should be able to calculate
+         --  the difference between opposite values which are close to the end
+         --  and start of Ada time. To accomodate the large range, we convert
+         --  to seconds. This action may potentially round the two values and
+         --  either add or drop a second. We compensate for this issue in the
+         --  previous step.
 
-         Sub_Seconds := Duration (Later_Sub - Earlier_Sub) / Nano_F;
+         Res_Dur :=
+           Time_Dur (Later / Nano - Earlier / Nano) - Time_Dur (Elapsed_Leaps);
 
-         Res_Dur := Time_Dur (Later / Nano - Earlier / Nano) -
-                    Time_Dur (Elapsed_Leaps);
-
-         Days := Long_Integer (Res_Dur / Secs_In_Day);
-         Seconds := Duration (Res_Dur mod Secs_In_Day) + Sub_Seconds;
+         Days         := Long_Integer (Res_Dur / Secs_In_Day);
+         Seconds      := Duration (Res_Dur mod Secs_In_Day) + Sub_Secs;
          Leap_Seconds := Integer (Elapsed_Leaps);
 
          if Negate then
@@ -750,23 +713,9 @@ package body Ada.Calendar is
 
       function Subtract (Date : Time; Days : Long_Integer) return Time is
          pragma Unsuppress (Overflow_Check);
-
          Date_N : constant Time_Rep := Time_Rep (Date);
-         Res_N  : Time_Rep;
-
       begin
-         --  Trivial case
-
-         if Days = 0 then
-            return Date;
-         end if;
-
-         Res_N := Date_N - Time_Rep (Days) * Nanos_In_Day;
-
-         Check_Within_Time_Bounds (Res_N);
-
-         return Time (Res_N);
-
+         return Time (Date_N - Time_Rep (Days) * Nanos_In_Day);
       exception
          when Constraint_Error =>
             raise Time_Error;
