@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -134,7 +134,7 @@ package System.Interrupts is
    --  already bound to another entry, Program_Error will be raised.
 
    procedure Detach_Interrupt_Entries (T : System.Tasking.Task_Id);
-   --  This procedure detaches all the Interrupt Entries bound to a task.
+   --  This procedure detaches all the Interrupt Entries bound to a task
 
    ------------------------------
    -- POSIX.5 Signals Services --
@@ -157,7 +157,7 @@ package System.Interrupts is
    --  Comment needed ???
 
    procedure Ignore_Interrupt (Interrupt : Interrupt_ID);
-   --  Set the sigacion for the interrupt to SIG_IGN.
+   --  Set the sigacion for the interrupt to SIG_IGN
 
    procedure Unignore_Interrupt (Interrupt : Interrupt_ID);
    --  Comment needed ???

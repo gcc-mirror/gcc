@@ -6,8 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 1991-1994, Florida State University            --
----                     Copyright (C) 1995-2006, AdaCore                     --
+--                      Copyright (C) 1995-2007, AdaCore                    --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,13 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a SGI Pthread version of this package.
+--  This is a SGI Pthread version of this package
 
---  Make a careful study of all signals available under the OS,
---  to see which need to be reserved, kept always unmasked,
---  or kept always unmasked.
---  Be on the lookout for special signals that
---  may be used by the thread library.
+--  Make a careful study of all signals available under the OS, to see which
+--  need to be reserved, kept always unmasked, or kept always unmasked. Be on
+--  the lookout for special signals that may be used by the thread library.
 
 package body System.Interrupt_Management is
 

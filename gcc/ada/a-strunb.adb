@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -847,10 +847,12 @@ package body Ada.Strings.Unbounded is
      (Target : out Unbounded_String;
       Source : String)
    is
+      Old : String_Access := Target.Reference;
    begin
       Target.Last          := Source'Length;
       Target.Reference     := new String (1 .. Source'Length);
       Target.Reference.all := Source;
+      Free (Old);
    end Set_Unbounded_String;
 
    -----------

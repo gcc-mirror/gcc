@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,7 +268,7 @@ package body Ada.Containers.Hash_Tables.Generic_Keys is
          return;
       end if;
 
-      --  The node is a bucket different from the bucket implied by Key.
+      --  The node is a bucket different from the bucket implied by Key
 
       if HT.Busy > 0 then
          raise Program_Error with

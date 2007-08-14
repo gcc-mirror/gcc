@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -177,7 +177,7 @@ package body Ch2 is
 
    --  CHARACTER_LITERAL ::= ' GRAPHIC_CHARACTER '
 
-   --  Handled by the scanner and returned as Tok_Character_Literal
+   --  Handled by the scanner and returned as Tok_Char_Literal
 
    -------------------------
    -- 2.6  String Literal --
@@ -185,7 +185,7 @@ package body Ch2 is
 
    --  STRING LITERAL ::= "{STRING_ELEMENT}"
 
-   --  Handled by the scanner and returned as Tok_Character_Literal
+   --  Handled by the scanner and returned as Tok_String_Literal
    --  or if the string looks like an operator as Tok_Operator_Symbol.
 
    -------------------------
@@ -479,7 +479,7 @@ package body Ch2 is
 
             if Identifier_Seen then
                Error_Msg_SC
-                 ("|pragma argument identifier required here ('R'M' 2.8(4))");
+                 ("|pragma argument identifier required here (RM 2.8(4))");
             end if;
          end if;
       end if;

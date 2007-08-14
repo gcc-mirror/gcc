@@ -40,12 +40,11 @@ package body System.Pool_Size is
    package SSE renames System.Storage_Elements;
    use type SSE.Storage_Offset;
 
-   --  Even though these storage pools are typically only used
-   --  by a single task, if multiple tasks are declared at the
-   --  same or a more nested scope as the storage pool, there
-   --  still may be concurrent access. The current implementation
-   --  of Stack_Bounded_Pool always uses a global lock for protecting
-   --  access. This should eventually be replaced by an atomic
+   --  Even though these storage pools are typically only used by a single
+   --  task, if multiple tasks are declared at the same or a more nested scope
+   --  as the storage pool, there still may be concurrent access. The current
+   --  implementation of Stack_Bounded_Pool always uses a global lock for
+   --  protecting access. This should eventually be replaced by an atomic
    --  linked list implementation for efficiency reasons.
 
    package SSL renames System.Soft_Links;
@@ -58,9 +57,9 @@ package body System.Pool_Size is
 
    package Variable_Size_Management is
 
-      --  Embedded pool that manages allocation of variable-size data.
+      --  Embedded pool that manages allocation of variable-size data
 
-      --  This pool is used as soon as the Elmt_sizS of the pool object is 0.
+      --  This pool is used as soon as the Elmt_sizS of the pool object is 0
 
       --  Allocation is done on the first chunk long enough for the request.
       --  Deallocation just puts the freed chunk at the beginning of the list.

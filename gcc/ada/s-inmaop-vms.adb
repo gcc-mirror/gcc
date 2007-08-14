@@ -283,6 +283,8 @@ package body System.Interrupt_Management.Operations is
          P1     => To_unsigned_long (Interrupt'Address),
          P2     => Interrupt_ID'Size / 8);
 
+      --  The following could use a comment ???
+
       pragma Assert ((Status and 1) = 1);
    end Interrupt_Self_Process;
 

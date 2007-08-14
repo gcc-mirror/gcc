@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,14 +34,13 @@
 --  This package body contains the routines associated with the implementation
 --  of the Task_Info pragma.
 
---  This is the Solaris (native) version of this module.
+--  This is the Solaris (native) version of this module
 
 package body System.Task_Info is
 
-   function Unbound_Thread_Attributes return Thread_Attributes is
-   begin
-      return (False, False);
-   end Unbound_Thread_Attributes;
+   -----------------------------
+   -- Bound_Thread_Attributes --
+   -----------------------------
 
    function Bound_Thread_Attributes return Thread_Attributes is
    begin
@@ -54,10 +53,9 @@ package body System.Task_Info is
       return (True, True, CPU);
    end Bound_Thread_Attributes;
 
-   function New_Unbound_Thread_Attributes return Task_Info_Type is
-   begin
-      return new Thread_Attributes'(False, False);
-   end New_Unbound_Thread_Attributes;
+   ---------------------------------
+   -- New_Bound_Thread_Attributes --
+   ---------------------------------
 
    function New_Bound_Thread_Attributes return Task_Info_Type is
    begin
@@ -69,5 +67,23 @@ package body System.Task_Info is
    begin
       return new Thread_Attributes'(True, True, CPU);
    end New_Bound_Thread_Attributes;
+
+   -----------------------------------
+   -- New_Unbound_Thread_Attributes --
+   -----------------------------------
+
+   function New_Unbound_Thread_Attributes return Task_Info_Type is
+   begin
+      return new Thread_Attributes'(False, False);
+   end New_Unbound_Thread_Attributes;
+
+   -------------------------------
+   -- Unbound_Thread_Attributes --
+   -------------------------------
+
+   function Unbound_Thread_Attributes return Thread_Attributes is
+   begin
+      return (False, False);
+   end Unbound_Thread_Attributes;
 
 end System.Task_Info;

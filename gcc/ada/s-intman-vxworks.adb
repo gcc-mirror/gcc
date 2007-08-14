@@ -31,13 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks version of this package.
+--  This is the VxWorks version of this package
 
---  Make a careful study of all signals available under the OS,
---  to see which need to be reserved, kept always unmasked,
---  or kept always unmasked.
---  Be on the lookout for special signals that
---  may be used by the thread library.
+--  Make a careful study of all signals available under the OS, to see which
+--  need to be reserved, kept always unmasked, or kept always unmasked. Be on
+--  the lookout for special signals that may be used by the thread library.
 
 package body System.Interrupt_Management is
 
@@ -62,9 +60,8 @@ package body System.Interrupt_Management is
 
    function State (Int : Interrupt_ID) return Character;
    pragma Import (C, State, "__gnat_get_interrupt_state");
-   --  Get interrupt state.  Defined in init.c
-   --  The input argument is the interrupt number,
-   --  and the result is one of the following:
+   --  Get interrupt state. Defined in init.c The input argument is the
+   --  interrupt number, and the result is one of the following:
 
    Runtime : constant Character := 'r';
    Default : constant Character := 's';

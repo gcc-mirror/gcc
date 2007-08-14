@@ -78,9 +78,7 @@ package System.Interrupt_Management is
    --  convention that ID zero is not used for any "real" signals, and SIGRARE
    --  = 0 when SIGRARE is not one of the locally supported signals, we can
    --  write:
-
    --     Reserved (SIGRARE) := true;
-
    --  and the initialization code will be portable.
 
    Abort_Task_Interrupt : Signal_ID;

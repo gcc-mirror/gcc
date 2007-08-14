@@ -1806,6 +1806,9 @@ package body Ada.Wide_Text_IO is
      (File : in out Wide_Text_AFCB;
       Item : Stream_Element_Array)
    is
+      pragma Warnings (Off, File);
+      --  Because in this implementation we don't need IN OUT, we only read
+
       Siz : constant size_t := Item'Length;
 
    begin

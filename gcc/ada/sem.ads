@@ -211,26 +211,27 @@ package Sem is
    -----------------------------
 
    Full_Analysis : Boolean := True;
-   --  Switch to indicate whether we are doing a full analysis or a
-   --  pre-analysis. In normal analysis mode (Analysis-Expansion for
-   --  instructions or declarations) or (Analysis-Resolution-Expansion for
-   --  expressions) this flag is set. Note that if we are not generating
-   --  code the expansion phase merely sets the Analyzed flag to True in
-   --  this case. If we are in Pre-Analysis mode (see above) this flag is
-   --  set to False then the expansion phase is skipped.
-   --  When this flag is False the flag Expander_Active is also False
-   --  (the Expander_Activer flag defined in the spec of package Expander
-   --  tells you whether expansion is currently enabled).
-   --  You should really regard this as a read only flag.
+   --  Switch to indicate if we are doing a full analysis or a pre-analysis.
+   --  In normal analysis mode (Analysis-Expansion for instructions or
+   --  declarations) or (Analysis-Resolution-Expansion for expressions) this
+   --  flag is set. Note that if we are not generating code the expansion phase
+   --  merely sets the Analyzed flag to True in this case. If we are in
+   --  Pre-Analysis mode (see above) this flag is set to False then the
+   --  expansion phase is skipped.
+   --
+   --  When this flag is False the flag Expander_Active is also False (the
+   --  Expander_Activer flag defined in the spec of package Expander tells you
+   --  whether expansion is currently enabled). You should really regard this
+   --  as a read only flag.
 
    In_Default_Expression : Boolean := False;
    --  Switch to indicate that we are in a default expression, as described
    --  above. Note that this must be recursively saved on a Semantics call
-   --  since it is possible for the analysis of an expression to result in
-   --  a recursive call (e.g. to get the entity for System.Address as part
-   --  of the processing of an Address attribute reference).
-   --  When this switch is True then Full_Analysis above must be False.
-   --  You should really regard this as a read only flag.
+   --  since it is possible for the analysis of an expression to result in a
+   --  recursive call (e.g. to get the entity for System.Address as part of the
+   --  processing of an Address attribute reference). When this switch is True
+   --  then Full_Analysis above must be False. You should really regard this as
+   --  a read only flag.
 
    In_Deleted_Code : Boolean := False;
    --  If the condition in an if-statement is statically known, the branch
@@ -259,6 +260,121 @@ package Sem is
    --  about unused variables, since these warnings are unreliable in this
    --  case. We could perhaps do a more accurate job and retain some of the
    --  warnings, but it is quite a tricky job. See test 4323-002.
+   --  Should not reference TN's in the source comments ???
+
+   -----------------------------------
+   -- Handling of Check Suppression --
+   -----------------------------------
+
+   --  There are two kinds of suppress checks: scope based suppress checks,
+   --  and entity based suppress checks.
+
+   --  Scope based suppress checks for the predefined checks (from initial
+   --  command line arguments, or from Suppress pragmas not including an entity
+   --  entity name) are recorded in the Sem.Supress variable, and all that is
+   --  necessary is to save the state of this variable on scope entry, and
+   --  restore it on scope exit. This mechanism allows for fast checking of
+   --  the scope suppress state without needing complex data structures.
+
+   --  Entity based checks, from Suppress/Unsuppress pragmas giving an
+   --  Entity_Id and scope based checks for non-predefined checks (introduced
+   --  using pragma Check_Name), are handled as follows. If a suppress or
+   --  unsuppress pragma is encountered for a given entity, then the flag
+   --  Checks_May_Be_Suppressed is set in the entity and an entry is made in
+   --  either the Local_Entity_Suppress stack (case of pragma that appears in
+   --  other than a package spec), or in the Global_Entity_Suppress stack (case
+   --  of pragma that appears in a package spec, which is by the rule of RM
+   --  11.5(7) applicable throughout the life of the entity). Similarly, a
+   --  Suppress/Unsuppress pragma for a non-predefined check which does not
+   --  specify an entity is also stored in one of these stacks.
+
+   --  If the Checks_May_Be_Suppressed flag is set in an entity then the
+   --  procedure is to search first the local and then the global suppress
+   --  stacks (we search these in reverse order, top element first). The only
+   --  other point is that we have to make sure that we have proper nested
+   --  interaction between such specific pragmas and locally applied general
+   --  pragmas applying to all entities. This is achieved by including in the
+   --  Local_Entity_Suppress table dummy entries with an empty Entity field
+   --  that are applicable to all entities. A similar search is needed for any
+   --  non-predefined check even if no specific entity is involved.
+
+   Scope_Suppress : Suppress_Array := Suppress_Options;
+   --  This array contains the current scope based settings of the suppress
+   --  switches. It is initialized from the options as shown, and then modified
+   --  by pragma Suppress. On entry to each scope, the current setting is saved
+   --  the scope stack, and then restored on exit from the scope. This record
+   --  may be rapidly checked to determine the current status of a check if
+   --  no specific entity is involved or if the specific entity involved is
+   --  one for which no specific Suppress/Unsuppress pragma has been set (as
+   --  indicated by the Checks_May_Be_Suppressed flag being set).
+
+   --  This scheme is a little complex, but serves the purpose of enabling
+   --  a very rapid check in the common case where no entity specific pragma
+   --  applies, and gives the right result when such pragmas are used even
+   --  in complex cases of nested Suppress and Unsuppress pragmas.
+
+   --  The Local_Entity_Suppress and Global_Entity_Suppress stacks are handled
+   --  using dynamic allocation and linked lists. We do not often use this
+   --  approach in the compiler (preferring to use extensible tables instead).
+   --  The reason we do it here is that scope stack entries save a pointer to
+   --  the current local stack top, which is also saved and restored on scope
+   --  exit. Furthermore for processing of generics we save pointers to the
+   --  top of the stack, so that the local stack is actually a tree of stacks
+   --  rather than a single stack, a structure that is easy to represent using
+   --  linked lists, but impossible to represent using a single table. Note
+   --  that because of the generic issue, we never release entries in these
+   --  stacks, but that's no big deal, since we are unlikely to have a huge
+   --  number of Suppress/Unsuppress entries in a single compilation.
+
+   type Suppress_Stack_Entry;
+   type Suppress_Stack_Entry_Ptr is access all Suppress_Stack_Entry;
+
+   type Suppress_Stack_Entry is record
+      Entity : Entity_Id;
+      --  Entity to which the check applies, or Empty for a check that has
+      --  no entity name (and thus applies to all entities).
+
+      Check : Check_Id;
+      --  Check which is set (can be All_Checks for the All_Checks case)
+
+      Suppress : Boolean;
+      --  Set True for Suppress, and False for Unsuppress
+
+      Prev : Suppress_Stack_Entry_Ptr;
+      --  Pointer to previous entry on stack
+
+      Next : Suppress_Stack_Entry_Ptr;
+      --  All allocated Suppress_Stack_Entry records are chained together in
+      --  a linked list whose head is Suppress_Stack_Entries, and the Next
+      --  field is used as a forward pointer (null ends the list). This is
+      --  used to free all entries in Sem.Init (which will be important if
+      --  we ever setup the compiler to be reused).
+   end record;
+
+   Suppress_Stack_Entries : Suppress_Stack_Entry_Ptr := null;
+   --  Pointer to linked list of records (see comments for Next above)
+
+   Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
+   --  Pointer to top element of local suppress stack. This is the entry that
+   --  is saved and restored in the scope stack, and also saved for generic
+   --  body expansion.
+
+   Global_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
+   --  Pointer to top element of global suppress stack
+
+   procedure Push_Local_Suppress_Stack_Entry
+     (Entity   : Entity_Id;
+      Check    : Check_Id;
+      Suppress : Boolean);
+   --  Push a new entry on to the top of the local suppress stack, updating
+   --  the value in Local_Suppress_Stack_Top;
+
+   procedure Push_Global_Suppress_Stack_Entry
+     (Entity   : Entity_Id;
+      Check    : Check_Id;
+      Suppress : Boolean);
+   --  Push a new entry on to the top of the global suppress stack, updating
+   --  the value in Global_Suppress_Stack_Top;
 
    -----------------
    -- Scope Stack --
@@ -324,8 +440,8 @@ package Sem is
       Save_Scope_Suppress  : Suppress_Array;
       --  Save contents of Scope_Suppress on entry
 
-      Save_Local_Entity_Suppress : Int;
-      --  Save contents of Local_Entity_Suppress.Last on entry
+      Save_Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
+      --  Save contents of Local_Suppress_Stack on entry to restore on exit
 
       Is_Transient : Boolean;
       --  Marks Transient Scopes (See Exp_Ch7 body for details)
@@ -382,92 +498,6 @@ package Sem is
      Table_Initial        => Alloc.Scope_Stack_Initial,
      Table_Increment      => Alloc.Scope_Stack_Increment,
      Table_Name           => "Sem.Scope_Stack");
-
-   -----------------------------------
-   -- Handling of Check Suppression --
-   -----------------------------------
-
-   --  There are two kinds of suppress checks: scope based suppress checks,
-   --  and entity based suppress checks.
-
-   --  Scope based suppress checks (from initial command line arguments,
-   --  or from Suppress pragmas not including an entity name) are recorded
-   --  in the Sem.Supress variable, and all that is necessary is to save the
-   --  state of this variable on scope entry, and restore it on scope exit.
-
-   --  Entity based suppress checks, from Suppress pragmas giving an Entity_Id,
-   --  are handled as follows. If a suppress or unsuppress pragma is
-   --  encountered for a given entity, then the flag Checks_May_Be_Suppressed
-   --  is set in the entity and an entry is made in either the
-   --  Local_Entity_Suppress table (case of pragma that appears in other than
-   --  a package spec), or in the Global_Entity_Suppress table (case of pragma
-   --  that appears in a package spec, which is by the rule of RM 11.5(7)
-   --  applicable throughout the life of the entity).
-
-   --  If the Checks_May_Be_Suppressed flag is set in an entity then the
-   --  procedure is to search first the local and then the global suppress
-   --  tables (the local one being searched in reverse order, i.e. last in
-   --  searched first). The only other point is that we have to make sure
-   --  that we have proper nested interaction between such specific pragmas
-   --  and locally applied general pragmas applying to all entities. This
-   --  is achieved by including in the Local_Entity_Suppress table dummy
-   --  entries with an empty Entity field that are applicable to all entities.
-
-   Scope_Suppress : Suppress_Array := Suppress_Options;
-   --  This array contains the current scope based settings of the suppress
-   --  switches. It is initialized from the options as shown, and then modified
-   --  by pragma Suppress. On entry to each scope, the current setting is saved
-   --  the scope stack, and then restored on exit from the scope. This record
-   --  may be rapidly checked to determine the current status of a check if
-   --  no specific entity is involved or if the specific entity involved is
-   --  one for which no specific Suppress/Unsuppress pragma has been set (as
-   --  indicated by the Checks_May_Be_Suppressed flag being set).
-
-   --  This scheme is a little complex, but serves the purpose of enabling
-   --  a very rapid check in the common case where no entity specific pragma
-   --  applies, and gives the right result when such pragmas are used even
-   --  in complex cases of nested Suppress and Unsuppress pragmas.
-
-   type Entity_Check_Suppress_Record is record
-      Entity : Entity_Id;
-      --  Entity to which the check applies, or Empty for a local check
-      --  that has no entity name (and thus applies to all entities).
-
-      Check : Check_Id;
-      --  Check which is set (note this cannot be All_Checks, if the All_Checks
-      --  case, a sequence of eentries appears for the individual checks.
-
-      Suppress : Boolean;
-      --  Set True for Suppress, and False for Unsuppress
-   end record;
-
-   --  The Local_Entity_Suppress table is a stack, to which new entries are
-   --  added for Suppress and Unsuppress pragmas appearing in other than
-   --  package specs. Such pragmas are effective only to the end of the scope
-   --  in which they appear. This is achieved by marking the stack on entry
-   --  to a scope and then cutting back the stack to that marked point on
-   --  scope exit.
-
-   package Local_Entity_Suppress is new Table.Table (
-     Table_Component_Type => Entity_Check_Suppress_Record,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Entity_Suppress_Initial,
-     Table_Increment      => Alloc.Entity_Suppress_Increment,
-     Table_Name           => "Local_Entity_Suppress");
-
-   --  The Global_Entity_Suppress table is used for entities which have
-   --  a Suppress or Unsuppress pragma naming a specific entity in a
-   --  package spec. Such pragmas always refer to entities in the package
-   --  spec and are effective throughout the lifetime of the named entity.
-
-   package Global_Entity_Suppress is new Table.Table (
-     Table_Component_Type => Entity_Check_Suppress_Record,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Entity_Suppress_Initial,
-     Table_Increment      => Alloc.Entity_Suppress_Increment,
-     Table_Name           => "Global_Entity_Suppress");
 
    -----------------
    -- Subprograms --

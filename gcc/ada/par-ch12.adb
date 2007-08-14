@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -332,7 +332,7 @@ package body Ch12 is
    begin
       Generic_Assoc_Node := New_Node (N_Generic_Association, Token_Ptr);
 
-      --  Ada2005: an association can be given by: others => <>.
+      --  Ada2005: an association can be given by: others => <>
 
       if Token = Tok_Others then
          if Ada_Version < Ada_05 then
@@ -375,7 +375,7 @@ package body Ch12 is
          end if;
       end if;
 
-      --  In Ada 2005 the actual can be a box.
+      --  In Ada 2005 the actual can be a box
 
       if Token = Tok_Box then
          Scan;

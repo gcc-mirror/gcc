@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package System.Img_LLI is
    pragma Preelaborate;
 
    function Image_Long_Long_Integer (V : Long_Long_Integer) return String;
-   --  Computes Long_Long_Integer'Image (V) and returns the result.
+   --  Computes Long_Long_Integer'Image (V) and returns the result
 
    procedure Set_Image_Long_Long_Integer
      (V : Long_Long_Integer;

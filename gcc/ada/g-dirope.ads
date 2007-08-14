@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2005, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,7 +230,7 @@ package GNAT.Directory_Operations is
    --  Returns True if Dir is open, or False otherwise
 
    procedure Read
-     (Dir  : in out Dir_Type;
+     (Dir  : Dir_Type;
       Str  : out String;
       Last : out Natural);
    --  Reads the next entry from the directory and sets Str to the name

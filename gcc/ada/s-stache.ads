@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 1999-2005 Free Software Foundation, Inc.         --
+--           Copyright (C) 1999-2007, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,7 +73,7 @@ private
      (Limit => System.Null_Address,
       Base  => System.Null_Address,
       Size  => 0);
-   --  Use explicit assignment to avoid elaboration code (call to init proc).
+   --  Use explicit assignment to avoid elaboration code (call to init proc)
 
    Null_Stack : constant Stack_Access := Null_Stack_Info'Access;
    --  Stack_Access value that will return a Stack_Base and Stack_Limit

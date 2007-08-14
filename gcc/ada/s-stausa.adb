@@ -352,7 +352,8 @@ package body System.Stack_Usage is
 
       Task_Name_Blanks :
         constant String (1 .. Task_Name_Length - Task_Name_Str'Length) :=
-          (others => ' ');
+                                                 (others => ' ');
+
    begin
       Set_Output (Standard_Error);
 
@@ -362,6 +363,7 @@ package body System.Stack_Usage is
       end if;
 
       if Result_Array'Length > 0 then
+
          --  Computes the size of the largest strings that will get displayed,
          --  in order to do correct column alignment.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -391,13 +391,13 @@ private
    Null_Str : aliased constant String := "";
    --  Used as name and form of standard files
 
-   Standard_Err_AFCB : aliased Text_AFCB;
    Standard_In_AFCB  : aliased Text_AFCB;
    Standard_Out_AFCB : aliased Text_AFCB;
+   Standard_Err_AFCB : aliased Text_AFCB;
 
-   Standard_Err : aliased File_Type := Standard_Err_AFCB'Access;
    Standard_In  : aliased File_Type := Standard_In_AFCB'Access;
    Standard_Out : aliased File_Type := Standard_Out_AFCB'Access;
+   Standard_Err : aliased File_Type := Standard_Err_AFCB'Access;
    --  Standard files
 
    Current_In   : aliased File_Type := Standard_In;

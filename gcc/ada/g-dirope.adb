@@ -647,7 +647,7 @@ package body GNAT.Directory_Operations is
    ----------
 
    procedure Read
-     (Dir  : in out Dir_Type;
+     (Dir  : Dir_Type;
       Str  : out String;
       Last : out Natural)
    is

@@ -1810,6 +1810,9 @@ package body Ada.Text_IO is
      (File : in out Text_AFCB;
       Item : Stream_Element_Array)
    is
+      pragma Warnings (Off, File);
+      --  Because in this implementation we don't need IN OUT, we only read
+
       function Has_Translated_Characters return Boolean;
       --  return True if Item array contains a character which will be
       --  translated under the text file mode. There is only one such
@@ -1822,6 +1825,10 @@ package body Ada.Text_IO is
 
       Siz : constant size_t := Item'Length;
 
+      -------------------------------
+      -- Has_Translated_Characters --
+      -------------------------------
+
       function Has_Translated_Characters return Boolean is
       begin
          for K in Item'Range loop
@@ -1833,7 +1840,10 @@ package body Ada.Text_IO is
       end Has_Translated_Characters;
 
       Needs_Binary_Write : constant Boolean :=
-        text_translation_required and then Has_Translated_Characters;
+                             text_translation_required
+                               and then Has_Translated_Characters;
+
+   --  Start of processing for Write
 
    begin
       if File.Mode = FCB.In_File then
@@ -1853,7 +1863,6 @@ package body Ada.Text_IO is
       --  with text mode if needed.
 
       if Needs_Binary_Write then
-
          if fflush (File.Stream) = -1 then
             raise Device_Error;
          end if;
@@ -1869,7 +1878,6 @@ package body Ada.Text_IO is
       --  we reset to text mode.
 
       if Needs_Binary_Write then
-
          if fflush (File.Stream) = -1 then
             raise Device_Error;
          end if;
@@ -1887,6 +1895,7 @@ package body Ada.Text_IO is
    Err_Name : aliased String := "*stderr" & ASCII.Nul;
    In_Name  : aliased String := "*stdin" & ASCII.Nul;
    Out_Name : aliased String := "*stdout" & ASCII.Nul;
+
 begin
    -------------------------------
    -- Initialize Standard Files --

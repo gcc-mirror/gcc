@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,7 @@ package System.Parameters is
    -----------------------
 
    Max_Task_Image_Length : constant := 32;
-   --  This constant specifies the maximum length of a task's image.
+   --  This constant specifies the maximum length of a task's image
 
    ------------------------------
    -- Exception Message Length --

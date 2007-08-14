@@ -319,6 +319,10 @@ package body System.Direct_IO is
       procedure Do_Write;
       --  Do the actual write
 
+      --------------
+      -- Do_Write --
+      --------------
+
       procedure Do_Write is
       begin
          FIO.Write_Buf (AP (File), Item, Size);

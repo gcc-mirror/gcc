@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,7 +61,7 @@ package System.Task_Info is
 
    --  The Task_Info pragma appears within a task definition (compare the
    --  definition and implementation of pragma Priority). If no such pragma
-   --  appears, then the value Task_Info_Unspecified is passed. If a pragma
+   --  appears, then the value Unspecified_Task_Info is passed. If a pragma
    --  is present, then it supplies an alternative value. If the argument of
    --  the pragma is a discriminant reference, then the value can be set on
    --  a task by task basis by supplying the appropriate discriminant value.

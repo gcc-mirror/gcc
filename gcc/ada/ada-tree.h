@@ -37,7 +37,6 @@ enum gnat_tree_code {
 union lang_tree_node
   GTY((desc ("0"),
        chain_next ("(union lang_tree_node *)GENERIC_NEXT (&%h.t)")))
-
 {
   union tree_node GTY((tag ("0"))) t;
 };

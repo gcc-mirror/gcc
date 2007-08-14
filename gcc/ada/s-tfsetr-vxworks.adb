@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2001-2005 Free Software Foundation, Inc.         --
+--           Copyright (C) 2001-2007, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,11 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is for VxWorks targets.
+--  This version is for VxWorks targets
 
---  Trace information is sent to WindView using the wvEvent function.
+--  Trace information is sent to WindView using the wvEvent function
 
---  Note that wvEvent is from the VxWorks API.
+--  Note that wvEvent is from the VxWorks API
 
 --  When adding a new event, just give an Id to then event, and then modify
 --  the WindView events database.

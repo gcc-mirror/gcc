@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2005-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2005-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package body GNAT.Altivec.Conversions is
       --  relying on internal knowledge about the bits layout in the different
       --  types (all 128 value bits blocks).
 
-      --  View<->Vector straight bitwise conversions on BE targets.
+      --  View<->Vector straight bitwise conversions on BE targets
 
       function UNC_To_Vector is
          new Ada.Unchecked_Conversion (View_Type, Vector_Type);
@@ -86,7 +86,7 @@ package body GNAT.Altivec.Conversions is
       function UNC_To_View is
          new Ada.Unchecked_Conversion (Vector_Type, View_Type);
 
-      --  Varray->Vector/View for returning mirrored results on LE targets.
+      --  Varray->Vector/View for returning mirrored results on LE targets
 
       function UNC_To_Vector is
          new Ada.Unchecked_Conversion (Varray_Type, Vector_Type);
@@ -94,7 +94,7 @@ package body GNAT.Altivec.Conversions is
       function UNC_To_View is
          new Ada.Unchecked_Conversion (Varray_Type, View_Type);
 
-      --  Vector/View->Varray for to-be-permuted source on LE targets.
+      --  Vector/View->Varray for to-be-permuted source on LE targets
 
       function UNC_To_Varray is
          new Ada.Unchecked_Conversion (Vector_Type, Varray_Type);

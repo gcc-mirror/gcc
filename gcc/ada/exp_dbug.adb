@@ -673,7 +673,7 @@ package body Exp_Dbug is
 
          --  If the front end has already computed a fully qualified name,
          --  then it is also the case that no further qualification is
-         --  required
+         --  required.
 
          if Present (Scope (Scope (Entity)))
            and then not Has_Fully_Qualified_Name (Entity)
@@ -1330,6 +1330,9 @@ package body Exp_Dbug is
 
    procedure Strip_Suffixes (BNPE_Suffix_Found : in out Boolean) is
       SL : Natural;
+
+      pragma Warnings (Off, BNPE_Suffix_Found);
+      --  Since this procedure only ever sets the flag
 
    begin
       --  Search for and strip BNPE suffix

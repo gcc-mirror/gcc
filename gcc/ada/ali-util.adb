@@ -26,7 +26,6 @@
 
 with Debug;   use Debug;
 with Binderr; use Binderr;
-with Lib;     use Lib;
 with Opt;     use Opt;
 with Output;  use Output;
 with Osint;   use Osint;
@@ -248,21 +247,17 @@ package body ALI.Util is
             then
                Text := Read_Library_Info (Afile);
 
-               --  Return with an error if source cannot be found and if this
-               --  is not a library generic (now we can, but does not have to
-               --  compile library generics)
+               --  Return with an error if source cannot be found. We used to
+               --  skip this check when we did not compile library generics
+               --  separately, but we now always do, so there is no special
+               --  case here anymore.
 
                if Text = null then
-                  if Generic_Separately_Compiled (Withs.Table (W).Sfile) then
-                     Error_Msg_File_1 := Afile;
-                     Error_Msg_File_2 := Withs.Table (W).Sfile;
-                     Error_Msg ("{ not found, { must be compiled");
-                     Set_Name_Table_Info (Afile, Int (No_Unit_Id));
-                     return;
-
-                  else
-                     goto Skip_Library_Generics;
-                  end if;
+                  Error_Msg_File_1 := Afile;
+                  Error_Msg_File_2 := Withs.Table (W).Sfile;
+                  Error_Msg ("{ not found, { must be compiled");
+                  Set_Name_Table_Info (Afile, Int (No_Unit_Id));
+                  return;
                end if;
 
                --  Enter in ALIs table
@@ -306,8 +301,6 @@ package body ALI.Util is
 
                   Read_ALI (Idread);
                end if;
-
-               <<Skip_Library_Generics>> null;
 
             --  If the ALI file has already been processed and is an interface,
             --  set the flag in the entry of the Withs table.
