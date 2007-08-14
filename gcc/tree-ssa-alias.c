@@ -1634,10 +1634,12 @@ done:
    grouped to avoid severe compile-time slow downs and memory
    consumption. See compute_memory_partitions.  */
 
-static unsigned int
+unsigned int
 compute_may_aliases (void)
 {
   struct alias_info *ai;
+
+  timevar_push (TV_TREE_MAY_ALIAS);
   
   memset (&alias_stats, 0, sizeof (alias_stats));
 
@@ -1731,32 +1733,14 @@ compute_may_aliases (void)
 
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
+
+  if (need_ssa_update_p ())
+    update_ssa (TODO_update_ssa);
+
+  timevar_pop (TV_TREE_MAY_ALIAS);
   
   return 0;
 }
-
-
-struct tree_opt_pass pass_may_alias = 
-{
-  "alias",				/* name */
-  NULL,					/* gate */
-  compute_may_aliases,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_MAY_ALIAS,			/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  PROP_alias,				/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func
-    | TODO_update_ssa
-    | TODO_ggc_collect
-    | TODO_verify_ssa
-    | TODO_verify_stmts, 		/* todo_flags_finish */
-  0					/* letter */
-};
-
 
 /* Data structure used to count the number of dereferences to PTR
    inside an expression.  */
@@ -4028,7 +4012,7 @@ create_structure_vars (void)
 	  }
       }
 
-  return 0;
+  return TODO_rebuild_alias;
 }
 
 static bool

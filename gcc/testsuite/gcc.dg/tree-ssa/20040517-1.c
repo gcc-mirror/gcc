@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-alias1-vops" } */
+/* { dg-options "-O1 -fdump-tree-salias-vops" } */
 extern void abort (void);
 int a; 
  
@@ -17,5 +17,5 @@ void bar (void)
    malloc functions may clobber global memory.  Only the function result
    does not alias any other pointer.
    Hence, we must have a VDEF for a before and after the call to foo().  */
-/* { dg-final { scan-tree-dump-times "VDEF" 2 "alias1"} } */
-/* { dg-final { cleanup-tree-dump "alias1" } } */
+/* { dg-final { scan-tree-dump-times "VDEF" 2 "salias"} } */
+/* { dg-final { cleanup-tree-dump "salias" } } */

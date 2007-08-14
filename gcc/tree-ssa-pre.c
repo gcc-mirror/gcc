@@ -3981,7 +3981,7 @@ static unsigned int
 do_pre (void)
 {
   execute_pre (false);
-  return 0;
+  return TODO_rebuild_alias;
 }
 
 static bool

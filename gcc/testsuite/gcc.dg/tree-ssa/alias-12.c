@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-alias1-vops" } */
+/* { dg-options "-O2 -fdump-tree-salias-vops" } */
 
 struct {
 	int i;
@@ -13,6 +13,6 @@ int foo(int i)
 	return a.x[i];
 }
 
-/* { dg-final { scan-tree-dump "VDEF" "alias1" } } */
-/* { dg-final { cleanup-tree-dump "alias1" } } */
+/* { dg-final { scan-tree-dump "VDEF" "salias" } } */
+/* { dg-final { cleanup-tree-dump "salias" } } */
 

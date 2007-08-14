@@ -2640,6 +2640,8 @@ execute_fold_all_builtins (void)
 {
   bool cfg_changed = false;
   basic_block bb;
+  unsigned int todoflags = 0;
+  
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator i;
@@ -2697,6 +2699,7 @@ execute_fold_all_builtins (void)
 		{
 		  bool ok = set_rhs (stmtp, result);
 		  gcc_assert (ok);
+		  todoflags |= TODO_rebuild_alias;
 		}
 	    }
 
@@ -2728,9 +2731,12 @@ execute_fold_all_builtins (void)
 	    bsi_next (&i);
 	}
     }
-
+  
   /* Delete unreachable blocks.  */
-  return cfg_changed ? TODO_cleanup_cfg : 0;
+  if (cfg_changed)
+    todoflags |= TODO_cleanup_cfg;
+  
+  return todoflags;
 }
 
 

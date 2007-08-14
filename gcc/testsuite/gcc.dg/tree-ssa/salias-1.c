@@ -15,5 +15,5 @@ int foo(void)
   return a.b.c.j;
 }
 
-/* { dg-final { scan-tree-dump-times "SFT" 2 "salias" } } */
+/* { dg-final { scan-tree-dump-times "structure field tag SFT" 2 "salias" } } */
 /* { dg-final { cleanup-tree-dump "salias" } } */

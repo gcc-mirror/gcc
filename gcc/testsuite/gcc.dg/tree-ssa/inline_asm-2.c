@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-alias1-vops" } */
+/* { dg-options "-O1 -fdump-tree-salias-vops" } */
 /* Test to make sure that inline-asm causes a V_MAY_DEF. */
 
 
@@ -14,5 +14,5 @@ void f(char *a)
 }
 
 /* There should a VDEF for the inline-asm and one for the link_error.  */
-/* { dg-final { scan-tree-dump-times "VDEF" 2 "alias1"} } */
-/* { dg-final { cleanup-tree-dump "alias1" } } */
+/* { dg-final { scan-tree-dump-times "VDEF" 2 "salias"} } */
+/* { dg-final { cleanup-tree-dump "salias" } } */

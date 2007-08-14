@@ -831,6 +831,7 @@ extern void record_vars (tree);
 extern bool block_may_fallthru (const_tree);
 
 /* In tree-ssa-alias.c  */
+extern unsigned int compute_may_aliases (void);
 extern void dump_may_aliases_for (FILE *, tree);
 extern void debug_may_aliases_for (tree);
 extern void dump_alias_info (FILE *);
