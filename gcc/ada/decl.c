@@ -89,10 +89,6 @@ static VEC (tree,heap) *defer_finalize_list;
 static GTY ((if_marked ("tree_int_map_marked_p"),
 	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
 
-/* A hash table used as to cache the result of annotate_value.  */
-static GTY ((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
-  htab_t annotate_value_cache;
-
 static void copy_alias_set (tree, tree);
 static tree substitution_list (Entity_Id, Entity_Id, tree, bool);
 static bool allocatable_size_p (tree, bool);
@@ -743,65 +739,47 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (gnu_type)))))))
 	  gnu_expr = convert (gnu_type, gnu_expr);
 
-	/* See if this is a renaming and handle appropriately depending on
-	   what is renamed and in which context.  There are three cases:
-
-	   1/ This is a constant renaming and we can just make an object
-	      with what is renamed as its initial value,
-
-	   2/ We can reuse a stabilized version of what is renamed in place
-	      of the renaming,
-
-	   3/ If neither 1 nor 2 applies, we make the renaming entity a
-	      constant pointer to what is being renamed.  */
+	/* If this is a renaming, avoid as much as possible to create a new
+	   object.  However, in several cases, creating it is required.  */
 	if (Present (Renamed_Object (gnat_entity)))
 	  {
 	    bool create_normal_object = false;
 
 	    /* If the renamed object had padding, strip off the reference
 	       to the inner object and reset our type.  */
-	    if (TREE_CODE (gnu_expr) == COMPONENT_REF
-		&& (TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))
-		    == RECORD_TYPE)
-		&& (TYPE_IS_PADDING_P
-		    (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))))
+	    if ((TREE_CODE (gnu_expr) == COMPONENT_REF
+		 && TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_expr, 0)))
+		    == RECORD_TYPE
+		 && TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
+		/* Strip useless conversions around the object.  */
+		|| TREE_CODE (gnu_expr) == NOP_EXPR)
 	      {
 		gnu_expr = TREE_OPERAND (gnu_expr, 0);
 		gnu_type = TREE_TYPE (gnu_expr);
 	      }
 
-	    /* Case 1: If this is a constant renaming, treat it as a normal
-	       object whose initial value is what is being renamed.  We cannot
-	       do this if the type is unconstrained or class-wide.  */
-	    if (const_flag
-		&& TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE
-		&& Ekind (Etype (gnat_entity)) != E_Class_Wide_Type)
+	    /* Case 1: If this is a constant renaming stemming from a function
+	       call, treat it as a normal object whose initial value is what
+	       is being renamed.  RM 3.3 says that the result of evaluating a
+	       function call is a constant object.  As a consequence, it can
+	       be the inner object of a constant renaming.  In this case, the
+	       renaming must be fully instantiated, i.e. it cannot be a mere
+	       reference to (part of) an existing object.  */
+	    if (const_flag)
 	      {
-		/* However avoid creating large objects...  */
-		if (TYPE_MODE (gnu_type) != BLKmode)
+	        tree inner_object = gnu_expr;
+		while (handled_component_p (inner_object))
+		  inner_object = TREE_OPERAND (inner_object, 0);
+		if (TREE_CODE (inner_object) == CALL_EXPR)
 		  create_normal_object = true;
-		else
-		  {
-		    /* ...unless we really need to do it.  RM 3.3 says that
-		       the result of evaluating a function call is a constant
-		       object.  As a consequence, it can be the inner object
-		       of a constant renaming.  In this case, the renaming
-		       must be fully instantiated, i.e. it cannot be a mere
-		       reference to (part of) an existing object.  */
-		    tree inner_object = gnu_expr;
-		    while (handled_component_p (inner_object))
-		      inner_object = TREE_OPERAND (inner_object, 0);
-		    if (TREE_CODE (inner_object) == CALL_EXPR)
-		      create_normal_object = true;
-		  }
 	      }
 
 	    /* Otherwise, see if we can proceed with a stabilized version of
-	       the renamed entity or if we need to make a pointer.  */
+	       the renamed entity or if we need to make a new object.  */
 	    if (!create_normal_object)
 	      {
-		bool stable = false;
 		tree maybe_stable_expr = NULL_TREE;
+		bool stable = false;
 
 		/* Case 2: If the renaming entity need not be materialized and
 		   the renamed expression is something we can stabilize, use
@@ -835,7 +813,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       about that failure.  */
 		  }
 
-		/* Case 3: Make this into a constant pointer to the object we
+		/* Case 3: If this is a constant renaming and creating a
+		   new object is allowed and cheap, treat it as a normal
+		   object whose initial value is what is being renamed.  */
+		if (const_flag
+		    && Ekind (Etype (gnat_entity)) != E_Class_Wide_Type
+		    && TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE
+		    && TYPE_MODE (gnu_type) != BLKmode)
+		  ;
+
+		/* Case 4: Make this into a constant pointer to the object we
 		   are to rename and attach the object to the pointer if it is
 		   something we can stabilize.
 
@@ -849,53 +836,54 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   In the rare cases where we cannot stabilize the renamed
 		   object, we just make a "bare" pointer, and the renamed
 		   entity is always accessed indirectly through it.  */
-		{
-		  inner_const_flag = TREE_READONLY (gnu_expr);
-		  const_flag = true;
-		  gnu_type = build_reference_type (gnu_type);
+		else
+		  {
+		    gnu_type = build_reference_type (gnu_type);
+		    inner_const_flag = TREE_READONLY (gnu_expr);
+		    const_flag = true;
 
-		  /* If the previous attempt at stabilization failed, there is
-		     no point in trying again and we reuse the result without
-		     attaching it to the pointer.  In this case it will only
-		     be used as the initializing expression of the pointer
-		     and thus needs no special treatment with regard to
-		     multiple evaluations.  */
-		  if (maybe_stable_expr)
-		    ;
+		    /* If the previous attempt at stabilizing failed, there
+		       is no point in trying again and we reuse the result
+		       without attaching it to the pointer.  In this case it
+		       will only be used as the initializing expression of
+		       the pointer and thus needs no special treatment with
+		       regard to multiple evaluations.  */
+		    if (maybe_stable_expr)
+		      ;
 
-		  /* Otherwise, try to stabilize now and attach the expression
-		     to the pointer if the stabilization succeeds.
+		    /* Otherwise, try to stabilize and attach the expression
+		       to the pointer if the stabilization succeeds.
 
-		     Note that this might introduce SAVE_EXPRs and we don't
-		     check whether we're at the global level or not.  This is
-		     fine since we are building a pointer initializer and
-		     neither the pointer nor the initializing expression can
-		     be accessed before the pointer elaboration has taken
-		     place in a correct program.
+		       Note that this might introduce SAVE_EXPRs and we don't
+		       check whether we're at the global level or not.  This
+		       is fine since we are building a pointer initializer and
+		       neither the pointer nor the initializing expression can
+		       be accessed before the pointer elaboration has taken
+		       place in a correct program.
 
-		     SAVE_EXPRs will be evaluated at the right spots by either
-		     the evaluation of the initializer for the non-global case
-		     or the elaboration code for the global case, and will be
-		     attached to the elaboration procedure in the latter case.
-		     We have no need to force an early evaluation here.  */
-		  else
-		    {
-		      maybe_stable_expr
-			= maybe_stabilize_reference (gnu_expr, true, &stable);
+		       These SAVE_EXPRs will be evaluated at the right place
+		       by either the evaluation of the initializer for the
+		       non-global case or the elaboration code for the global
+		       case, and will be attached to the elaboration procedure
+		       in the latter case.  */
+		    else
+	 	     {
+			maybe_stable_expr
+			  = maybe_stabilize_reference (gnu_expr, true, &stable);
 
-		      if (stable)
-			renamed_obj = maybe_stable_expr;
+			if (stable)
+			  renamed_obj = maybe_stable_expr;
 
-		      /* Attaching is actually performed downstream, as soon
-			 as we have a VAR_DECL for the pointer we make.  */
-		    }
+			/* Attaching is actually performed downstream, as soon
+			   as we have a VAR_DECL for the pointer we make.  */
+		      }
 
-		  gnu_expr
-		    = build_unary_op (ADDR_EXPR, gnu_type, maybe_stable_expr);
+		    gnu_expr
+		      = build_unary_op (ADDR_EXPR, gnu_type, maybe_stable_expr);
 
-		  gnu_size = NULL_TREE;
-		  used_by_ref = true;
-		}
+		    gnu_size = NULL_TREE;
+		    used_by_ref = true;
+		  }
 	      }
 	  }
 
@@ -1063,7 +1051,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
 		    && TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_alloc_type))
 		    && !Is_Imported (gnat_entity))
-		  post_error ("Storage_Error will be raised at run-time?",
+		  post_error ("?Storage_Error will be raised at run-time!",
 			      gnat_entity);
 
 		gnu_expr = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
@@ -1216,25 +1204,33 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && Exception_Mechanism != Back_End_Exceptions)
 	  TREE_ADDRESSABLE (gnu_decl) = 1;
 
-	/* Back-annotate the Alignment of the object if not already in the
-	   tree.  Likewise for Esize if the object is of a constant size.
-	   But if the "object" is actually a pointer to an object, the
-	   alignment and size are the same as the type, so don't back-annotate
-	   the values for the pointer.  */
+	gnu_type = TREE_TYPE (gnu_decl);
+
+	/* Back-annotate Alignment and Esize of the object if not already
+	   known, except for when the object is actually a pointer to the
+	   real object, since alignment and size of a pointer don't have
+	   anything to do with those of the designated object.  Note that
+	   we pick the values of the type, not those of the object, to
+	   shield ourselves from low-level platform-dependent adjustments
+	   like alignment promotion.  This is both consistent with all the
+	   treatment above, where alignment and size are set on the type of
+	   the object and not on the object directly, and makes it possible
+	   to support confirming representation clauses in all cases.  */
+
 	if (!used_by_ref && Unknown_Alignment (gnat_entity))
 	  Set_Alignment (gnat_entity,
-			 UI_From_Int (DECL_ALIGN (gnu_decl) / BITS_PER_UNIT));
+			 UI_From_Int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
 
-	if (!used_by_ref && Unknown_Esize (gnat_entity)
-	    && DECL_SIZE (gnu_decl))
+	if (!used_by_ref && Unknown_Esize (gnat_entity))
 	  {
-	    tree gnu_back_size = DECL_SIZE (gnu_decl);
+	    tree gnu_back_size;
 
-	    if (TREE_CODE (TREE_TYPE (gnu_decl)) == RECORD_TYPE
-		&& TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_decl)))
+	    if (TREE_CODE (gnu_type) == RECORD_TYPE
+		&& TYPE_CONTAINS_TEMPLATE_P (gnu_type))
 	      gnu_back_size
-		= TYPE_SIZE (TREE_TYPE (TREE_CHAIN
-					(TYPE_FIELDS (TREE_TYPE (gnu_decl)))));
+		= TYPE_SIZE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type))));
+            else
+	      gnu_back_size = TYPE_SIZE (gnu_type);
 
 	    Set_Esize (gnat_entity, annotate_value (gnu_back_size));
 	  }
@@ -3157,15 +3153,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      && Present (Freeze_Node (gnat_desig_rep))))
 	  {
 	    gnu_desig_type = make_dummy_type (gnat_desig_equiv);
-  	    made_dummy = 1;
-  	  }
+	    made_dummy = true;
+	  }
 
 	/* Otherwise handle the case of a pointer to itself.  */
 	else if (gnat_desig_equiv == gnat_entity)
 	  {
 	    gnu_type
-	      = build_pointer_type_for_mode (make_node (VOID_TYPE),
-					     p_mode,
+	      = build_pointer_type_for_mode (void_type_node, p_mode,
 					     No_Strict_Aliasing (gnat_entity));
 	    TREE_TYPE (gnu_type) = TYPE_POINTER_TO (gnu_type) = gnu_type;
 	  }
@@ -3173,7 +3168,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If expansion is disabled, the equivalent type of a concurrent
 	   type is absent, so build a dummy pointer type.  */
 	else if (type_annotate_only && No (gnat_desig_equiv))
-	  gnu_type = build_pointer_type (void_type_node);
+	  gnu_type = ptr_void_type_node;
 
 	/* Finally, handle the straightforward case where we can just
 	   elaborate our designated type and point to it.  */
@@ -3302,7 +3297,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Access_Protected_Subprogram_Type:
     case E_Anonymous_Access_Protected_Subprogram_Type:
       if (type_annotate_only && No (gnat_equiv_type))
-	gnu_type = build_pointer_type (void_type_node);
+	gnu_type = ptr_void_type_node;
       else
 	{
 	  /* The runtime representation is the equivalent type. */
@@ -6723,9 +6718,7 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   Node_Id gnat_error_node = gnat_entity;
   unsigned int new_align;
 
-#ifndef MAX_OFILE_ALIGNMENT
-#define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
-#endif
+  unsigned int max_allowed_alignment = get_target_maximum_allowed_alignment ();
 
   if (Present (Alignment_Clause (gnat_entity)))
     gnat_error_node = Expression (Alignment_Clause (gnat_entity));
@@ -6736,16 +6729,14 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   if (Error_Posted (gnat_entity) && !Has_Alignment_Clause (gnat_entity))
     return align;
 
-  /* Within GCC, an alignment is an integer, so we must make sure a
-     value is specified that fits in that range.  Also, alignments of
-     more than MAX_OFILE_ALIGNMENT can't be supported.  */
+  /* Within GCC, an alignment is an integer, so we must make sure a value is
+     specified that fits in that range.  Also, there is an upper bound to
+     alignments we can support/allow.  */
 
   if (! UI_Is_In_Int_Range (alignment)
-      || ((new_align = UI_To_Int (alignment))
-	   > MAX_OFILE_ALIGNMENT / BITS_PER_UNIT))
+      || ((new_align = UI_To_Int (alignment)) > max_allowed_alignment))
     post_error_ne_num ("largest supported alignment for& is ^",
-		       gnat_error_node, gnat_entity,
-		       MAX_OFILE_ALIGNMENT / BITS_PER_UNIT);
+		       gnat_error_node, gnat_entity, max_allowed_alignment);
   else if (!(Present (Alignment_Clause (gnat_entity))
 	     && From_At_Mod (Alignment_Clause (gnat_entity)))
 	   && new_align * BITS_PER_UNIT < align)

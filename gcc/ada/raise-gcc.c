@@ -540,7 +540,7 @@ get_region_description_for (_Unwind_Context *uw_context,
                             region_descriptor *region)
 {
   const unsigned char * p;
-  _uleb128_t tmp;
+  _Unwind_Word tmp;
   unsigned char lpbase_encoding;
 
   /* Get the base address of the lsda information. If the provided context
@@ -705,7 +705,7 @@ get_call_site_action_for (_Unwind_Context *uw_context,
     }
   else
     {
-      _uleb128_t cs_lp, cs_action;
+      _Unwind_Word cs_lp, cs_action;
 
       /* Let the caller know there may be an action to take, but let it
 	 determine the kind.  */
@@ -765,7 +765,7 @@ get_call_site_action_for (_Unwind_Context *uw_context,
   while (p < region->action_table)
     {
       _Unwind_Ptr cs_start, cs_len, cs_lp;
-      _uleb128_t cs_action;
+      _Unwind_Word cs_action;
 
       /* Note that all call-site encodings are "absolute" displacements.  */
       p = read_encoded_value (0, region->call_site_encoding, p, &cs_start);
@@ -913,7 +913,7 @@ get_action_description_for (_Unwind_Context *uw_context,
     {
       const unsigned char * p = action->table_entry;
 
-      _sleb128_t ar_filter, ar_disp;
+      _Unwind_Sword ar_filter, ar_disp;
 
       action->kind = nothing;
 
@@ -1004,6 +1004,12 @@ extern void __gnat_notify_unhandled_exception (void);
 /* Below is the eh personality routine per se. We currently assume that only
    GNU-Ada exceptions are met.  */
 
+#ifdef __USING_SJLJ_EXCEPTIONS__
+#define PERSONALITY_FUNCTION    __gnat_eh_personality_sj
+#else
+#define PERSONALITY_FUNCTION    __gnat_eh_personality
+#endif
+
 /* Major tweak for ia64-vms : the CHF propagation phase calls this personality
    routine with sigargs/mechargs arguments and has very specific expectations
    on possible return values.
@@ -1036,11 +1042,11 @@ typedef _Unwind_Action phases_arg_t;
 #endif
 
 _Unwind_Reason_Code
-__gnat_eh_personality (version_arg_t version_arg,
-                       phases_arg_t phases_arg,
-                       _Unwind_Exception_Class uw_exception_class,
-                       _Unwind_Exception *uw_exception,
-                       _Unwind_Context *uw_context)
+PERSONALITY_FUNCTION (version_arg_t version_arg,
+                      phases_arg_t phases_arg,
+                      _Unwind_Exception_Class uw_exception_class,
+                      _Unwind_Exception *uw_exception,
+                      _Unwind_Context *uw_context)
 {
   /* Fetch the version and phases args with their nominal ABI types for later
      use. This is a noop everywhere except on ia64-vms when called from the
