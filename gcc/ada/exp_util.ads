@@ -438,6 +438,10 @@ package Exp_Util is
    --  False otherwise. True for an empty list. It is an error to call this
    --  routine with No_List as the argument.
 
+   function Is_Library_Level_Tagged_Type (Typ : Entity_Id) return Boolean;
+   --  Return True if Typ is a library level tagged type. Currently we use
+   --  this information to build statically allocated dispatch tables.
+
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation
 
@@ -628,7 +632,7 @@ package Exp_Util is
    --  control to escape doing the undefer call.
 
 private
-   pragma Inline (Force_Evaluation);
    pragma Inline (Duplicate_Subexpr);
-
+   pragma Inline (Force_Evaluation);
+   pragma Inline (Is_Library_Level_Tagged_Type);
 end Exp_Util;

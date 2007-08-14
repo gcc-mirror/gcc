@@ -369,7 +369,7 @@ package body Freeze is
                   and then Etype (Old_S) /= Standard_Void_Type)
       then
          Call_Node :=
-           Make_Return_Statement (Loc,
+           Make_Simple_Return_Statement (Loc,
               Expression =>
                 Make_Function_Call (Loc,
                   Name => Call_Name,
@@ -377,12 +377,12 @@ package body Freeze is
 
       elsif Ekind (Old_S) = E_Enumeration_Literal then
          Call_Node :=
-           Make_Return_Statement (Loc,
+           Make_Simple_Return_Statement (Loc,
               Expression => New_Occurrence_Of (Old_S, Loc));
 
       elsif Nkind (Nam) = N_Character_Literal then
          Call_Node :=
-           Make_Return_Statement (Loc,
+           Make_Simple_Return_Statement (Loc,
              Expression => Call_Name);
 
       else
@@ -2235,7 +2235,9 @@ package body Freeze is
                            Set_Is_Frozen (E, False);
                            return No_List;
 
-                        elsif not After_Last_Declaration then
+                        elsif not After_Last_Declaration
+                          and then not Freezing_Library_Level_Tagged_Type
+                        then
                            Error_Msg_Node_1 := F_Type;
                            Error_Msg
                              ("type& must be fully defined before this point",
@@ -2465,7 +2467,7 @@ package body Freeze is
                then
                   Error_Msg_N
                     ("stand alone atomic constant must be " &
-                     "imported ('R'M 'C.6(13))", E);
+                     "imported ('R'M C.6(13))", E);
 
                elsif Has_Rep_Pragma (E, Name_Volatile)
                        or else
@@ -2473,7 +2475,7 @@ package body Freeze is
                then
                   Error_Msg_N
                     ("stand alone volatile constant must be " &
-                     "imported ('R'M 'C.6(13))", E);
+                     "imported (RM C.6(13))", E);
                end if;
             end if;
 
@@ -2530,6 +2532,100 @@ package body Freeze is
 
          if E /= Base_Type (E) then
 
+            --  Before we do anything else, a specialized test for the case of
+            --  a size given for an array where the array needs to be packed,
+            --  but was not so the size cannot be honored. This would of course
+            --  be caught by the backend, and indeed we don't catch all cases.
+            --  The point is that we can give a better error message in those
+            --  cases that we do catch with the circuitry here. Also if pragma
+            --  Implicit_Packing is set, this is where the packing occurs.
+
+            --  The reason we do this so early is that the processing in the
+            --  automatic packing case affects the layout of the base type, so
+            --  it must be done before we freeze the base type.
+
+            if Is_Array_Type (E) then
+               declare
+                  Lo, Hi : Node_Id;
+                  Ctyp   : constant Entity_Id := Component_Type (E);
+
+               begin
+                  --  Check enabling conditions. These are straightforward
+                  --  except for the test for a limited composite type. This
+                  --  eliminates the rare case of a array of limited components
+                  --  where there are issues of whether or not we can go ahead
+                  --  and pack the array (since we can't freely pack and unpack
+                  --  arrays if they are limited).
+
+                  --  Note that we check the root type explicitly because the
+                  --  whole point is we are doing this test before we have had
+                  --  a chance to freeze the base type (and it is that freeze
+                  --  action that causes stuff to be inherited).
+
+                  if Present (Size_Clause (E))
+                    and then Known_Static_Esize (E)
+                    and then not Is_Packed (E)
+                    and then not Has_Pragma_Pack (E)
+                    and then Number_Dimensions (E) = 1
+                    and then not Has_Component_Size_Clause (E)
+                    and then Known_Static_Esize (Ctyp)
+                    and then not Is_Limited_Composite (E)
+                    and then not Is_Packed (Root_Type (E))
+                    and then not Has_Component_Size_Clause (Root_Type (E))
+                  then
+                     Get_Index_Bounds (First_Index (E), Lo, Hi);
+
+                     if Compile_Time_Known_Value (Lo)
+                       and then Compile_Time_Known_Value (Hi)
+                       and then Known_Static_RM_Size (Ctyp)
+                       and then RM_Size (Ctyp) < 64
+                     then
+                        declare
+                           Lov  : constant Uint      := Expr_Value (Lo);
+                           Hiv  : constant Uint      := Expr_Value (Hi);
+                           Len  : constant Uint      := UI_Max
+                                                         (Uint_0,
+                                                          Hiv - Lov + 1);
+                           Rsiz : constant Uint      := RM_Size (Ctyp);
+                           SZ   : constant Node_Id   := Size_Clause (E);
+                           Btyp : constant Entity_Id := Base_Type (E);
+
+                        --  What we are looking for here is the situation where
+                        --  the RM_Size given would be exactly right if there
+                        --  was a pragma Pack (resulting in the component size
+                        --  being the same as the RM_Size). Furthermore, the
+                        --  component type size must be an odd size (not a
+                        --  multiple of storage unit)
+
+                        begin
+                           if RM_Size (E) = Len * Rsiz
+                             and then Rsiz mod System_Storage_Unit /= 0
+                           then
+                              --  For implicit packing mode, just set the
+                              --  component size silently
+
+                              if Implicit_Packing then
+                                 Set_Component_Size       (Btyp, Rsiz);
+                                 Set_Is_Bit_Packed_Array  (Btyp);
+                                 Set_Is_Packed            (Btyp);
+                                 Set_Has_Non_Standard_Rep (Btyp);
+
+                                 --  Otherwise give an error message
+
+                              else
+                                 Error_Msg_NE
+                                   ("size given for& too small", SZ, E);
+                                 Error_Msg_N
+                                   ("\use explicit pragma Pack "
+                                    & "or use pragma Implicit_Packing", SZ);
+                              end if;
+                           end if;
+                        end;
+                     end if;
+                  end if;
+               end;
+            end if;
+
             --  If ancestor subtype present, freeze that first.
             --  Note that this will also get the base type frozen.
 
@@ -2558,7 +2654,6 @@ package body Freeze is
          if Is_Array_Type (E) then
             declare
                Ctyp : constant Entity_Id := Component_Type (E);
-               Pnod : Node_Id;
 
                Non_Standard_Enum : Boolean := False;
                --  Set true if any of the index types is an enumeration type
@@ -2644,80 +2739,110 @@ package body Freeze is
                         if Csiz /= 0 then
                            declare
                               A : constant Uint := Alignment_In_Bits (Ctyp);
-
                            begin
                               if Csiz < A then
                                  Csiz := A;
                               end if;
                            end;
                         end if;
-
                      end if;
 
+                     --  Case of component size that may result in packing
+
                      if 1 <= Csiz and then Csiz <= 64 then
+                        declare
+                           Ent         : constant Entity_Id :=
+                                           First_Subtype (E);
+                           Pack_Pragma : constant Node_Id :=
+                                           Get_Rep_Pragma (Ent, Name_Pack);
+                           Comp_Size_C : constant Node_Id :=
+                                           Get_Attribute_Definition_Clause
+                                             (Ent, Attribute_Component_Size);
+                        begin
+                           --  Warn if we have pack and component size so that
+                           --  the pack is ignored.
 
-                        --  We set the component size for all cases 1-64
+                           --  Note: here we must check for the presence of a
+                           --  component size before checking for a Pack pragma
+                           --  to deal with the case where the array type is a
+                           --  derived type whose parent is currently private.
 
-                        Set_Component_Size (Base_Type (E), Csiz);
-
-                        --  Check for base type of 8, 16, 32 bits, where the
-                        --  subtype has a length one less than the base type
-                        --  and is unsigned (e.g. Natural subtype of Integer).
-
-                        --  In such cases, if a component size was not set
-                        --  explicitly, then generate a warning.
-
-                        if Has_Pragma_Pack (E)
-                          and then not Has_Component_Size_Clause (E)
-                          and then
-                            (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
-                          and then Esize (Base_Type (Ctyp)) = Csiz + 1
-                        then
-                           Error_Msg_Uint_1 := Csiz;
-                           Pnod :=
-                             Get_Rep_Pragma (First_Subtype (E), Name_Pack);
-
-                           if Present (Pnod) then
+                           if Present (Comp_Size_C)
+                             and then Has_Pragma_Pack (Ent)
+                           then
+                              Error_Msg_Sloc := Sloc (Comp_Size_C);
+                              Error_Msg_NE
+                                ("?pragma Pack for& ignored!",
+                                 Pack_Pragma, Ent);
                               Error_Msg_N
-                                ("pragma Pack causes component size to be ^?",
-                                 Pnod);
-                              Error_Msg_N
-                                ("\use Component_Size to set desired value",
-                                 Pnod);
+                                ("\?explicit component size given#!",
+                                 Pack_Pragma);
                            end if;
-                        end if;
 
-                        --  Actual packing is not needed for 8, 16, 32, 64.
-                        --  Also not needed for 24 if alignment is 1.
+                           --  Set component size if not already set by a
+                           --  component size clause.
 
-                        if        Csiz = 8
-                          or else Csiz = 16
-                          or else Csiz = 32
-                          or else Csiz = 64
-                          or else (Csiz = 24 and then Alignment (Ctyp) = 1)
-                        then
-                           --  Here the array was requested to be packed, but
-                           --  the packing request had no effect, so Is_Packed
-                           --  is reset.
+                           if not Present (Comp_Size_C) then
+                              Set_Component_Size (E, Csiz);
+                           end if;
 
-                           --  Note: semantically this means that we lose track
-                           --  of the fact that a derived type inherited a
-                           --  pragma Pack that was non-effective, but that
-                           --  seems fine.
+                           --  Check for base type of 8, 16, 32 bits, where an
+                           --  unsigned subtype has a length one less than the
+                           --  base type (e.g. Natural subtype of Integer).
 
-                           --  We regard a Pack pragma as a request to set a
-                           --  representation characteristic, and this request
-                           --  may be ignored.
+                           --  In such cases, if a component size was not set
+                           --  explicitly, then generate a warning.
 
-                           Set_Is_Packed (Base_Type (E), False);
+                           if Has_Pragma_Pack (E)
+                             and then not Present (Comp_Size_C)
+                             and then
+                               (Csiz = 7 or else Csiz = 15 or else Csiz = 31)
+                             and then Esize (Base_Type (Ctyp)) = Csiz + 1
+                           then
+                              Error_Msg_Uint_1 := Csiz;
 
-                        --  In all other cases, packing is indeed needed
+                              if Present (Pack_Pragma) then
+                                 Error_Msg_N
+                                   ("?pragma Pack causes component size "
+                                    & "to be ^!", Pack_Pragma);
+                                 Error_Msg_N
+                                   ("\?use Component_Size to set "
+                                    & "desired value!", Pack_Pragma);
+                              end if;
+                           end if;
 
-                        else
-                           Set_Has_Non_Standard_Rep (Base_Type (E));
-                           Set_Is_Bit_Packed_Array  (Base_Type (E));
-                           Set_Is_Packed            (Base_Type (E));
-                        end if;
+                           --  Actual packing is not needed for 8, 16, 32, 64.
+                           --  Also not needed for 24 if alignment is 1.
+
+                           if        Csiz = 8
+                             or else Csiz = 16
+                             or else Csiz = 32
+                             or else Csiz = 64
+                             or else (Csiz = 24 and then Alignment (Ctyp) = 1)
+                           then
+                              --  Here the array was requested to be packed,
+                              --  but the packing request had no effect, so
+                              --  Is_Packed is reset.
+
+                              --  Note: semantically this means that we lose
+                              --  track of the fact that a derived type
+                              --  inherited a pragma Pack that was non-
+                              --  effective, but that seems fine.
+
+                              --  We regard a Pack pragma as a request to set
+                              --  a representation characteristic, and this
+                              --  request may be ignored.
+
+                              Set_Is_Packed (Base_Type (E), False);
+
+                              --  In all other cases, packing is indeed needed
+
+                           else
+                              Set_Has_Non_Standard_Rep (Base_Type (E));
+                              Set_Is_Bit_Packed_Array  (Base_Type (E));
+                              Set_Is_Packed            (Base_Type (E));
+                           end if;
+                        end;
                      end if;
                   end;
 
@@ -2754,63 +2879,6 @@ package body Freeze is
                      end if;
                   end;
                end if;
-
-               --  Check one common case of a size given where the array
-               --  needs to be packed, but was not so the size cannot be
-               --  honored. This would of course be caught by the backend,
-               --  and indeed we don't catch all cases. The point is that
-               --  we can give a better error message in those cases that
-               --  we do catch with the circuitry here.
-
-               declare
-                  Lo, Hi : Node_Id;
-                  Ctyp   : constant Entity_Id := Component_Type (E);
-
-               begin
-                  if Present (Size_Clause (E))
-                    and then Known_Static_Esize (E)
-                    and then not Is_Bit_Packed_Array (E)
-                    and then not Has_Pragma_Pack (E)
-                    and then Number_Dimensions (E) = 1
-                    and then not Has_Component_Size_Clause (E)
-                    and then Known_Static_Esize (Ctyp)
-                  then
-                     Get_Index_Bounds (First_Index (E), Lo, Hi);
-
-                     if Compile_Time_Known_Value (Lo)
-                       and then Compile_Time_Known_Value (Hi)
-                       and then Known_Static_RM_Size (Ctyp)
-                       and then RM_Size (Ctyp) < 64
-                     then
-                        declare
-                           Lov  : constant Uint := Expr_Value (Lo);
-                           Hiv  : constant Uint := Expr_Value (Hi);
-                           Len  : constant Uint :=
-                                    UI_Max (Uint_0, Hiv - Lov + 1);
-                           Rsiz : constant Uint := RM_Size (Ctyp);
-
-                        --  What we are looking for here is the situation where
-                        --  the RM_Size given would be exactly right if there
-                        --  was a pragma Pack (resulting in the component size
-                        --  being the same as the RM_Size). Furthermore, the
-                        --  component type size must be an odd size (not a
-                        --  multiple of storage unit)
-
-                        begin
-                           if RM_Size (E) = Len * Rsiz
-                             and then Rsiz mod System_Storage_Unit /= 0
-                           then
-                              Error_Msg_NE
-                                ("size given for& too small",
-                                   Size_Clause (E), E);
-                              Error_Msg_N
-                                ("\explicit pragma Pack is required",
-                                   Size_Clause (E));
-                           end if;
-                        end;
-                     end if;
-                  end if;
-               end;
 
                --  If any of the index types was an enumeration type with
                --  a non-standard rep clause, then we indicate that the
@@ -2870,6 +2938,16 @@ package body Freeze is
 
          elsif Is_Class_Wide_Type (E) then
             Freeze_And_Append (Root_Type (E), Loc, Result);
+
+            --  If the base type of the class-wide type is still incomplete,
+            --  the class-wide remains unfrozen as well. This is legal when
+            --  E is the formal of a primitive operation of some other type
+            --  which is being frozen.
+
+            if not Is_Frozen (Root_Type (E)) then
+               Set_Is_Frozen (E, False);
+               return Result;
+            end if;
 
             --  If the Class_Wide_Type is an Itype (when type is the anonymous
             --  parent of a derived type) and it is a library-level entity,
@@ -2967,9 +3045,34 @@ package body Freeze is
          elsif Is_Incomplete_Or_Private_Type (E)
            and then not Is_Generic_Type (E)
          then
+            --  The construction of the dispatch table associated with library
+            --  level tagged types forces freezing of all the primitives of the
+            --  type, which may cause premature freezing of the partial view.
+            --  For example:
+
+            --     package Pkg is
+            --        type T is tagged private;
+            --        type DT is new T with private;
+            --        procedure Prim (X : in out T; Y : in out DT'class);
+            --     private
+            --        type T is tagged null record;
+            --        Obj : T;
+            --        type DT is new T with null record;
+            --     end;
+
+            --  In this case the type will be frozen later by the usual
+            --  mechanism: an object declaration, an instantiation, or the
+            --  end of a declarative part.
+
+            if Is_Library_Level_Tagged_Type (E)
+              and then not Present (Full_View (E))
+            then
+               Set_Is_Frozen (E, False);
+               return Result;
+
             --  Case of full view present
 
-            if Present (Full_View (E)) then
+            elsif Present (Full_View (E)) then
 
                --  If full view has already been frozen, then no further
                --  processing is required
@@ -4783,8 +4886,9 @@ package body Freeze is
             return True;
          end;
 
-      else return not Is_Private_Type (T)
-        or else Present (Full_View (Base_Type (T)));
+      else
+         return not Is_Private_Type (T)
+           or else Present (Full_View (Base_Type (T)));
       end if;
    end Is_Fully_Defined;
 
@@ -4818,7 +4922,6 @@ package body Freeze is
       end if;
 
       Formal := First_Formal (E);
-
       while Present (Formal) loop
          if Present (Default_Value (Formal)) then
 
@@ -4841,7 +4944,7 @@ package body Freeze is
                         and then not Vax_Float (Etype (Dcopy)))
               or else Nkind (Dcopy) = N_Character_Literal
               or else Nkind (Dcopy) = N_String_Literal
-              or else Nkind (Dcopy) = N_Null
+              or else Known_Null (Dcopy)
               or else (Nkind (Dcopy) = N_Attribute_Reference
                         and then
                        Attribute_Name (Dcopy) = Name_Null_Parameter)
@@ -5180,7 +5283,7 @@ package body Freeze is
 
          Error_Msg_N
            ("\use pragma Import for & to " &
-            "suppress initialization ('R'M B.1(24))?",
+            "suppress initialization (RM B.1(24))?",
             Nam);
       end if;
    end Warn_Overlay;

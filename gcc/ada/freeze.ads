@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,6 +120,12 @@ package Freeze is
    --  at the freezing point. One special exception occurs with anonymous
    --  base types, where the freeze node is preallocated at the point of
    --  declaration, so that the First_Subtype_Link field can be set.
+
+   Freezing_Library_Level_Tagged_Type : Boolean := False;
+   --  Flag used to indicate that we are freezing the primitives of a library
+   --  level tagged types. Used to disable checks on premature freezing.
+   --  More documentation needed??? why is this flag needed? what are these
+   --  checks? why do they need disabling in some cases?
 
    -----------------
    -- Subprograms --
