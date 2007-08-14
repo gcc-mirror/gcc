@@ -2005,34 +2005,76 @@ package body Sprint is
             Set_Debug_Sloc;
 
             if Write_Indent_Identifiers (Node) then
-               Write_Str_With_Col_Check (" : ");
+               declare
+                  Def_Id : constant Entity_Id := Defining_Identifier (Node);
 
-               if Is_Statically_Allocated (Defining_Identifier (Node)) then
-                  Write_Str_With_Col_Check ("static ");
-               end if;
+               begin
+                  Write_Str_With_Col_Check (" : ");
 
-               if Aliased_Present (Node) then
-                  Write_Str_With_Col_Check ("aliased ");
-               end if;
+                  if Is_Statically_Allocated (Def_Id) then
+                     Write_Str_With_Col_Check ("static ");
+                  end if;
 
-               if Constant_Present (Node) then
-                  Write_Str_With_Col_Check ("constant ");
-               end if;
+                  if Aliased_Present (Node) then
+                     Write_Str_With_Col_Check ("aliased ");
+                  end if;
 
-               --  Ada 2005 (AI-231)
+                  if Constant_Present (Node) then
+                     Write_Str_With_Col_Check ("constant ");
+                  end if;
 
-               if Null_Exclusion_Present (Node) then
-                  Write_Str_With_Col_Check ("not null ");
-               end if;
+                  --  Ada 2005 (AI-231)
 
-               Sprint_Node (Object_Definition (Node));
+                  if Null_Exclusion_Present (Node) then
+                     Write_Str_With_Col_Check ("not null ");
+                  end if;
 
-               if Present (Expression (Node)) then
-                  Write_Str (" := ");
-                  Sprint_Node (Expression (Node));
-               end if;
+                  Sprint_Node (Object_Definition (Node));
 
-               Write_Char (';');
+                  if Present (Expression (Node)) then
+                     Write_Str (" := ");
+                     Sprint_Node (Expression (Node));
+                  end if;
+
+                  Write_Char (';');
+
+                  --  Handle implicit importation and implicit exportation of
+                  --  object declarations:
+                  --    $pragma import (Convention_Id, Def_Id, "...");
+                  --    $pragma export (Convention_Id, Def_Id, "...");
+
+                  if Is_Internal (Def_Id)
+                    and then Present (Interface_Name (Def_Id))
+                  then
+                     Write_Indent_Str_Sloc ("$pragma ");
+
+                     if Is_Imported (Def_Id) then
+                        Write_Str ("import (");
+
+                     else pragma Assert (Is_Exported (Def_Id));
+                        Write_Str ("export (");
+                     end if;
+
+                     declare
+                        Prefix : constant String  := "Convention_";
+                        S      : constant String  := Convention (Def_Id)'Img;
+
+                     begin
+                        Name_Len := S'Last - Prefix'Last;
+                        Name_Buffer (1 .. Name_Len) :=
+                          S (Prefix'Last + 1 .. S'Last);
+                        Set_Casing (All_Lower_Case);
+                        Write_Str (Name_Buffer (1 .. Name_Len));
+                     end;
+
+                     Write_Str (", ");
+                     Write_Id  (Def_Id);
+                     Write_Str (", ");
+                     Write_String_Table_Entry
+                       (Strval (Interface_Name (Def_Id)));
+                     Write_Str (");");
+                  end if;
+               end;
             end if;
 
          when N_Object_Renaming_Declaration =>
@@ -2599,7 +2641,7 @@ package body Sprint is
 
             Write_Char (';');
 
-         when N_Return_Statement =>
+         when N_Simple_Return_Statement =>
             if Present (Expression (Node)) then
                Write_Indent_Str_Sloc ("return ");
                Sprint_Node (Expression (Node));
@@ -3929,36 +3971,45 @@ package body Sprint is
 
    procedure Write_Name_With_Col_Check (N : Name_Id) is
       J : Natural;
+      K : Natural;
+      L : Natural;
 
    begin
       Get_Name_String (N);
 
-      --  Deal with -gnatI which replaces digits in an internal
-      --  name by three dots (e.g. R7b becomes R...b).
+      --  Deal with -gnatdI which replaces any sequence Cnnnb where C is an
+      --  upper case letter, nnn is one or more digits and b is a lower case
+      --  letter by C...b, so that listings do not depend on serial numbers.
 
-      if Debug_Flag_II and then Name_Buffer (1) in 'A' .. 'Z' then
-         J := 2;
-         while J < Name_Len loop
-            exit when Name_Buffer (J) not in 'A' .. 'Z';
-            J := J + 1;
-         end loop;
+      if Debug_Flag_II then
+         J := 1;
+         while J < Name_Len - 1 loop
+            if Name_Buffer (J) in 'A' .. 'Z'
+              and then Name_Buffer (J + 1) in '0' .. '9'
+            then
+               K := J + 1;
+               while K < Name_Len loop
+                  exit when Name_Buffer (K) not in '0' .. '9';
+                  K := K + 1;
+               end loop;
 
-         if Name_Buffer (J) in '0' .. '9' then
-            Write_Str_With_Col_Check (Name_Buffer (1 .. J - 1));
-            Write_Str ("...");
+               if Name_Buffer (K) in 'a' .. 'z' then
+                  L := Name_Len - K + 1;
 
-            while J <= Name_Len loop
-               if Name_Buffer (J) not in '0' .. '9' then
-                  Write_Str (Name_Buffer (J .. Name_Len));
-                  exit;
+                  Name_Buffer (J + 4 .. J + L + 3) :=
+                    Name_Buffer (K .. Name_Len);
+                  Name_Buffer (J + 1 .. J + 3) := "...";
+                  Name_Len := J + L + 3;
+                  J := J + 5;
 
                else
-                  J := J + 1;
+                  J := K;
                end if;
-            end loop;
 
-            return;
-         end if;
+            else
+               J := J + 1;
+            end if;
+         end loop;
       end if;
 
       --  Fall through for normal case
