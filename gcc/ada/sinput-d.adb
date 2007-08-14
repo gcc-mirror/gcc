@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,14 +62,13 @@ package body Sinput.D is
    is
    begin
       Loc := Source_File.Table (Source_File.Last).Source_Last + 1;
-      Source_File.Increment_Last;
+      Source_File.Append (Source_File.Table (Source));
       Dfile := Source_File.Last;
 
       declare
          S : Source_File_Record renames Source_File.Table (Dfile);
 
       begin
-         S := Source_File.Table (Source);
          S.Full_Debug_Name   := Create_Debug_File (S.File_Name);
          S.Debug_Source_Name := Strip_Directory (S.Full_Debug_Name);
          S.Source_First      := Loc;

@@ -139,9 +139,7 @@ package body Stringt is
 
    procedure Start_String is
    begin
-      Strings.Increment_Last;
-      Strings.Table (Strings.Last).String_Index := String_Chars.Last + 1;
-      Strings.Table (Strings.Last).Length := 0;
+      Strings.Append ((String_Index => String_Chars.Last + 1, Length => 0));
    end Start_String;
 
    --  Version to start from initially stored string
@@ -166,9 +164,8 @@ package body Stringt is
            String_Chars.Last + 1;
 
          for J in 1 .. Strings.Table (S).Length loop
-            String_Chars.Increment_Last;
-            String_Chars.Table (String_Chars.Last) :=
-              String_Chars.Table (Strings.Table (S).String_Index + (J - 1));
+            String_Chars.Append
+              (String_Chars.Table (Strings.Table (S).String_Index + (J - 1)));
          end loop;
       end if;
 
@@ -183,8 +180,7 @@ package body Stringt is
 
    procedure Store_String_Char (C : Char_Code) is
    begin
-      String_Chars.Increment_Last;
-      String_Chars.Table (String_Chars.Last) := C;
+      String_Chars.Append (C);
       Strings.Table (Strings.Last).Length :=
         Strings.Table (Strings.Last).Length + 1;
    end Store_String_Char;

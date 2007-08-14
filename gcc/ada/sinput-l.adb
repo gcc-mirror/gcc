@@ -132,10 +132,9 @@ package body Sinput.L is
       A.Lo := Source_File.Table (Xold).Source_First;
       A.Hi := Source_File.Table (Xold).Source_Last;
 
-      Source_File.Increment_Last;
+      Source_File.Append (Source_File.Table (Xold));
       Xnew := Source_File.Last;
 
-      Source_File.Table (Xnew)               := Source_File.Table (Xold);
       Source_File.Table (Xnew).Inlined_Body  := Inlined_Body;
       Source_File.Table (Xnew).Instantiation := Sloc (Inst_Node);
       Source_File.Table (Xnew).Template      := Xold;
@@ -148,6 +147,7 @@ package body Sinput.L is
         Source_File.Table (Xnew - 1).Source_Last + 1;
       A.Adjust := Source_File.Table (Xnew).Source_First - A.Lo;
       Source_File.Table (Xnew).Source_Last := A.Hi + A.Adjust;
+
       Set_Source_File_Index_Table (Xnew);
 
       Source_File.Table (Xnew).Sloc_Adjust :=

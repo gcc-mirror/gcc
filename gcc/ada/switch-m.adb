@@ -119,9 +119,7 @@ package body Switch.M is
          --  Add a new component in the table.
 
          Switches (Last) := new String'(S);
-         Normalized_Switches.Increment_Last;
-         Normalized_Switches.Table (Normalized_Switches.Last) :=
-           Switches (Last);
+         Normalized_Switches.Append (Switches (Last));
       end Add_Switch_Component;
 
    --  Start of processing for Normalize_Compiler_Switches

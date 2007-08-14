@@ -246,14 +246,12 @@ package body Symbols is
                if Last > Symbol_Vector'Length + Equal_Data'Length and then
                  Line (Last - Equal_Data'Length + 1 .. Last) = Equal_Data
                then
-                  Symbol_Table.Increment_Last (Original_Symbols);
-                  Original_Symbols.Table
-                    (Symbol_Table.Last (Original_Symbols)) :=
-                      (Name =>
-                         new String'(Line (Symbol_Vector'Length + 1 ..
-                                           Last - Equal_Data'Length)),
-                       Kind => Data,
-                       Present => True);
+                  Symbol_Table.Append (Original_Symbols,
+                    (Name =>
+                       new String'(Line (Symbol_Vector'Length + 1 ..
+                                         Last - Equal_Data'Length)),
+                     Kind => Data,
+                     Present => True));
 
                --  SYMBOL_VECTOR=(<symbol>=PROCEDURE)
 
@@ -262,14 +260,12 @@ package body Symbols is
                   Line (Last - Equal_Procedure'Length + 1 .. Last) =
                                                               Equal_Procedure
                then
-                  Symbol_Table.Increment_Last (Original_Symbols);
-                  Original_Symbols.Table
-                    (Symbol_Table.Last (Original_Symbols)) :=
+                  Symbol_Table.Append (Original_Symbols,
                     (Name =>
                        new String'(Line (Symbol_Vector'Length + 1 ..
                                          Last - Equal_Procedure'Length)),
                      Kind => Proc,
-                     Present => True);
+                     Present => True));
 
                --  Anything else is incorrectly formatted
 
@@ -536,9 +532,7 @@ package body Symbols is
                      Soft_Minor_ID := False;
                   end if;
 
-                  Symbol_Table.Increment_Last (Original_Symbols);
-                  Original_Symbols.Table
-                    (Symbol_Table.Last (Original_Symbols)) := S_Data;
+                  Symbol_Table.Append (Original_Symbols, S_Data);
                   Complete_Symbols.Table (Index).Present := False;
                end if;
             end loop;
