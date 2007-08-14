@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Solaris version of this package.
+--  This is a Solaris version of this package
 
---  Make a careful study of all signals available under the OS,
---  to see which need to be reserved, kept always unmasked,
---  or kept always unmasked.
+--  Make a careful study of all signals available under the OS, to see which
+--  need to be reserved, kept always unmasked, or kept always unmasked.
 
---  Be on the lookout for special signals that
---  may be used by the thread library.
+--  Be on the lookout for special signals that may be used by the thread
+--  library.
 
 package body System.Interrupt_Management is
 
@@ -73,10 +72,10 @@ package body System.Interrupt_Management is
    -- Notify_Exception --
    ----------------------
 
-   --  This function identifies the Ada exception to be raised using
-   --  the information when the system received a synchronous signal.
-   --  Since this function is machine and OS dependent, different code
-   --  has to be provided for different target.
+   --  This function identifies the Ada exception to be raised using the
+   --  information when the system received a synchronous signal. Since this
+   --  function is machine and OS dependent, different code has to be provided
+   --  for different target.
 
    procedure Notify_Exception
      (signo   : Signal;
@@ -92,8 +91,12 @@ package body System.Interrupt_Management is
       info    : access siginfo_t;
       context : access ucontext_t)
    is
-      pragma Unreferenced (context);
    begin
+      --  Perform the necessary context adjustments prior to a raise
+      --  from a signal handler.
+
+      Adjust_Context_For_Raise (signo, context.all'Address);
+
       --  Check that treatment of exception propagation here
       --  is consistent with treatment of the abort signal in
       --  System.Task_Primitives.Operations.
@@ -171,9 +174,8 @@ package body System.Interrupt_Management is
       Result := sigemptyset (mask'Access);
       pragma Assert (Result = 0);
 
-      --  ??? For the same reason explained above, we can't mask these
-      --  signals because otherwise we won't be able to catch more than
-      --  one signal.
+      --  ??? For the same reason explained above, we can't mask these signals
+      --  because otherwise we won't be able to catch more than one signal.
 
       act.sa_mask := mask;
 
@@ -239,10 +241,10 @@ package body System.Interrupt_Management is
          Reserve (SIGINT) := False;
       end if;
 
-      --  We do not have Signal 0 in reality. We just use this value
-      --  to identify not existing signals (see s-intnam.ads). Therefore,
-      --  Signal 0 should not be used in all signal related operations hence
-      --  mark it as reserved.
+      --  We do not have Signal 0 in reality. We just use this value to
+      --  identify not existing signals (see s-intnam.ads). Therefore, Signal 0
+      --  should not be used in all signal related operations hence mark it as
+      --  reserved.
 
       Reserve (0) := True;
    end Initialize;
