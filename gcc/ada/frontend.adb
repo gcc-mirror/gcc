@@ -322,9 +322,10 @@ begin
             Lib.List;
          end if;
 
-         --  Output any messages for unreferenced entities
+         --  Output waiting warning messages
 
-         Output_Unreferenced_Messages;
+         Sem_Warn.Output_Non_Modifed_In_Out_Warnings;
+         Sem_Warn.Output_Unreferenced_Messages;
          Sem_Warn.Check_Unused_Withs;
       end if;
    end if;

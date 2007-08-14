@@ -31,13 +31,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains host independent type definitions which are used
---  in more than one unit in the compiler. They are gathered here for easy
+--  This package contains host independent type definitions which are used in
+--  more than one unit in the compiler. They are gathered here for easy
 --  reference, though in some cases the full description is found in the
---  relevant module which implements the definition. The main reason that
---  they are not in their "natural" specs is that this would cause a lot
---  of inter-spec dependencies, and in particular some awkward circular
---  dependencies would have to be dealt with.
+--  relevant module which implements the definition. The main reason that they
+--  are not in their "natural" specs is that this would cause a lot of inter-
+--  spec dependencies, and in particular some awkward circular dependencies
+--  would have to be dealt with.
 
 --  WARNING: There is a C version of this package. Any changes to this source
 --  file must be properly reflected in the C header file types.h declarations.
@@ -108,9 +108,9 @@ package Types is
    --  Line terminator characters (LF, VT, FF, CR)
    --
    --  This definition is dubious now that we have two more wide character
-   --  sequences that constitute a line terminator. Every reference to
-   --  this subtype needs checking to make sure the wide character case
-   --  is handled appropriately. ???
+   --  sequences that constitute a line terminator. Every reference to this
+   --  subtype needs checking to make sure the wide character case is handled
+   --  appropriately. ???
 
    subtype Upper_Half_Character is
      Character range Character'Val (16#80#) .. Character'Val (16#FF#);
@@ -134,9 +134,9 @@ package Types is
    -- Types Used for Text Buffer Handling --
    -----------------------------------------
 
-   --  We can't use type String for text buffers, since we must use the
-   --  standard 32-bit integer as an index value, since we count on all
-   --  index values being the same size.
+   --  We can not use type String for text buffers, since we must use the
+   --  standard 32-bit integer as an index value, since we count on all index
+   --  values being the same size.
 
    type Text_Ptr is new Int;
    --  Type used for subscripts in text buffer
@@ -167,9 +167,9 @@ package Types is
 
    type Physical_Line_Number is range 1 .. Int'Last;
    for Physical_Line_Number'Size use 32;
-   --  Line number type, used for storing physical line numbers (i.e.
-   --  line numbers in the physical file being compiled, unaffected by
-   --  the presence of source reference pragmas.
+   --  Line number type, used for storing physical line numbers (i.e. line
+   --  numbers in the physical file being compiled, unaffected by the presence
+   --  of source reference pragmas.
 
    type Column_Number is range 0 .. 32767;
    for Column_Number'Size use 16;
@@ -183,20 +183,20 @@ package Types is
    subtype Source_Buffer is Text_Buffer;
    --  Type used to store text of a source file . The buffer for the main
    --  source (the source specified on the command line) has a lower bound
-   --  starting at zero. Subsequent subsidiary sources have lower bounds
-   --  which are one greater than the previous upper bound.
+   --  starting at zero. Subsequent subsidiary sources have lower bounds which
+   --  are one greater than the previous upper bound.
 
    subtype Big_Source_Buffer is Text_Buffer (0 .. Text_Ptr'Last);
    --  This is a virtual type used as the designated type of the access
    --  type Source_Buffer_Ptr, see Osint.Read_Source_File for details.
 
    type Source_Buffer_Ptr is access all Big_Source_Buffer;
-   --  Pointer to source buffer. We use virtual origin addressing for
-   --  source buffers, with thin pointers. The pointer points to a virtual
-   --  instance of type Big_Source_Buffer, where the actual type is in fact
-   --  of type Source_Buffer. The address is adjusted so that the virtual
-   --  origin addressing works correctly. See Osint.Read_Source_Buffer for
-   --  further details.
+   --  Pointer to source buffer. We use virtual origin addressing for source
+   --  buffers, with thin pointers. The pointer points to a virtual instance
+   --  of type Big_Source_Buffer, where the actual type is in fact of type
+   --  Source_Buffer. The address is adjusted so that the virtual origin
+   --  addressing works correctly. See Osint.Read_Source_Buffer for further
+   --  details.
 
    subtype Source_Ptr is Text_Ptr;
    --  Type used to represent a source location, which is a subscript of a
@@ -215,10 +215,10 @@ package Types is
    --  mode and the corresponding source line in -gnatD mode).
 
    Standard_Location : constant Source_Ptr := -2;
-   --  Used for all nodes in the representation of package Standard other
-   --  than nodes representing the contents of Standard.ASCII. Note that
-   --  testing for <= Standard_Location tests for both Standard_Location
-   --  and for Standard_ASCII_Location.
+   --  Used for all nodes in the representation of package Standard other than
+   --  nodes representing the contents of Standard.ASCII. Note that testing for
+   --  a value being <= Standard_Location tests for both Standard_Location and
+   --  for Standard_ASCII_Location.
 
    Standard_ASCII_Location : constant Source_Ptr := -3;
    --  Used for all nodes in the presentation of package Standard.ASCII
@@ -266,13 +266,13 @@ package Types is
    --  List_Id and Node_Id values (see further description below).
 
    List_High_Bound : constant := 0;
-   --  Maximum List_Id subscript value. This allows up to 100 million list
-   --  Id values, which is in practice infinite, and there is no need to
-   --  check the range. The range overlaps the node range by one element
-   --  (with value zero), which is used both for the Empty node, and for
-   --  indicating no list. The fact that the same value is used is convenient
-   --  because it means that the default value of Empty applies to both nodes
-   --  and lists, and also is more efficient to test for.
+   --  Maximum List_Id subscript value. This allows up to 100 million list Id
+   --  values, which is in practice infinite, and there is no need to check the
+   --  range. The range overlaps the node range by one element (with value
+   --  zero), which is used both for the Empty node, and for indicating no
+   --  list. The fact that the same value is used is convenient because it
+   --  means that the default value of Empty applies to both nodes and lists,
+   --  and also is more efficient to test for.
 
    Node_Low_Bound : constant := 0;
    --  The tree Id values start at zero, because we use zero for Empty (to
@@ -413,10 +413,10 @@ package Types is
    ------------------------------
 
    --  List_Id values are used to identify node lists in the tree. They are
-   --  subscripts into the Lists table declared in package Tree. Note that
-   --  the special value Error_List is a subscript in this table, but the
-   --  value No_List is *not* a valid subscript, and any attempt to apply
-   --  list operations to No_List will cause a (detected) error.
+   --  subscripts into the Lists table declared in package Tree. Note that the
+   --  special value Error_List is a subscript in this table, but the value
+   --  No_List is *not* a valid subscript, and any attempt to apply list
+   --  operations to No_List will cause a (detected) error.
 
    type List_Id is range List_Low_Bound .. List_High_Bound;
    --  Type used to identify a node list
@@ -439,10 +439,10 @@ package Types is
    -- Types for Elists Package --
    ------------------------------
 
-   --  Element list Id values are used to identify element lists stored in
-   --  the tree (see package Tree for further details). They are formed by
-   --  adding a bias (Element_List_Bias) to subscript values in the same
-   --  array that is used for node list headers.
+   --  Element list Id values are used to identify element lists stored in the
+   --  tree (see package Tree for further details). They are formed by adding a
+   --  bias (Element_List_Bias) to subscript values in the same array that is
+   --  used for node list headers.
 
    type Elist_Id is range Elist_Low_Bound .. Elist_High_Bound;
    --  Type used to identify an element list (Elist header table subscript)
@@ -471,8 +471,8 @@ package Types is
    -- Types for Stringt Package --
    -------------------------------
 
-   --  String_Id values are used to identify entries in the strings table.
-   --  They are subscripts into the strings table defined in package Strings.
+   --  String_Id values are used to identify entries in the strings table. They
+   --  are subscripts into the strings table defined in package Strings.
 
    --  Note that with only a few exceptions, which are clearly documented, the
    --  type String_Id should be regarded as a private type. In particular it is
@@ -492,15 +492,15 @@ package Types is
    -- Character Code Type --
    -------------------------
 
-   --  The type Char is used for character data internally in the compiler,
-   --  but character codes in the source are represented by the Char_Code
-   --  type. Each character literal in the source is interpreted as being one
-   --  of the 16#8000_0000 possible Wide_Wide_Character codes, and a unique
-   --  Integer Value is assigned, corresponding to the UTF_32 value, which
-   --  also correspondds to the POS value in the Wide_Wide_Character type,
-   --  and also corresponds to the POS value in the Wide_Character and
-   --  Character types for values that are in appropriate range. String
-   --  literals are similarly interpreted as a sequence of such codes.
+   --  The type Char is used for character data internally in the compiler, but
+   --  character codes in the source are represented by the Char_Code type.
+   --  Each character literal in the source is interpreted as being one of the
+   --  16#8000_0000 possible Wide_Wide_Character codes, and a unique Integer
+   --  Value is assigned, corresponding to the UTF_32 value, which also
+   --  correspondds to the POS value in the Wide_Wide_Character type, and also
+   --  corresponds to the POS value in the Wide_Character and Character types
+   --  for values that are in appropriate range. String literals are similarly
+   --  interpreted as a sequence of such codes.
 
    type Char_Code_Base is mod 2 ** 32;
    for Char_Code_Base'Size use 32;
@@ -530,7 +530,7 @@ package Types is
    pragma Inline (Get_Character);
    --  For a character C that is in Character range (see above function), this
    --  function returns the corresponding Character value. It is an error to
-   --  call Get_Character if C is not in C haracter range
+   --  call Get_Character if C is not in Character range.
 
    function Get_Wide_Character (C : Char_Code) return Wide_Character;
    --  For a character C that is in Wide_Character range (see above function),
@@ -596,11 +596,10 @@ package Types is
    --  Type used to represent time stamp
 
    Empty_Time_Stamp : constant Time_Stamp_Type := (others => ' ');
-   --  Type used to represent an empty or missing time stamp. Looks less
-   --  than any real time stamp if two time stamps are compared. Note that
-   --  although this is not a private type, clients should not rely on the
-   --  exact way in which this string is represented, and instead should
-   --  use the subprograms below.
+   --  Value representing an empty or missing time stamp. Looks less than any
+   --  real time stamp if two time stamps are compared. Note that although this
+   --  is not private, clients should not rely on the exact way in which this
+   --  string is represented, and instead should use the subprograms below.
 
    Dummy_Time_Stamp : constant Time_Stamp_Type := (others => '0');
    --  This is used for dummy time stamp values used in the D lines for
@@ -611,14 +610,15 @@ package Types is
    function ">=" (Left, Right : Time_Stamp_Type) return Boolean;
    function "<"  (Left, Right : Time_Stamp_Type) return Boolean;
    function ">"  (Left, Right : Time_Stamp_Type) return Boolean;
-   --  Comparison functions on time stamps. Note that two time stamps
-   --  are defined as being equal if they have the same day/month/year
-   --  and the hour/minutes/seconds values are within 2 seconds of one
-   --  another. This deals with rounding effects in library file time
-   --  stamps caused by copying operations during installation. We have
-   --  particularly noticed that WinNT seems susceptible to such changes.
-   --  Note: the Empty_Time_Stamp value looks equal to itself, and less
-   --  than any non-empty time stamp value.
+   --  Comparison functions on time stamps. Note that two time stamps are
+   --  defined as being equal if they have the same day/month/year and the
+   --  hour/minutes/seconds values are within 2 seconds of one another. This
+   --  deals with rounding effects in library file time stamps caused by
+   --  copying operations during installation. We have particularly noticed
+   --  that WinNT seems susceptible to such changes.
+   --
+   --  Note : the Empty_Time_Stamp value looks equal to itself, and less than
+   --  any non-empty time stamp value.
 
    procedure Split_Time_Stamp
      (TS      : Time_Stamp_Type;
@@ -644,21 +644,32 @@ package Types is
    -- Types used for Pragma Suppress Management --
    -----------------------------------------------
 
-   type Check_Id is
-     (Access_Check,
-      Accessibility_Check,
-      Alignment_Check,
-      Discriminant_Check,
-      Division_Check,
-      Elaboration_Check,
-      Index_Check,
-      Length_Check,
-      Overflow_Check,
-      Range_Check,
-      Storage_Check,
-      Tag_Check,
-      Validity_Check,
-      All_Checks);
+   type Check_Id is new Nat;
+   --  Type used to represent a check id
+
+   No_Check_Id         : constant := 0;
+   --  Check_Id value used to indicate no check
+
+   Access_Check        : constant :=  1;
+   Accessibility_Check : constant :=  2;
+   Alignment_Check     : constant :=  3;
+   Discriminant_Check  : constant :=  4;
+   Division_Check      : constant :=  5;
+   Elaboration_Check   : constant :=  6;
+   Index_Check         : constant :=  7;
+   Length_Check        : constant :=  8;
+   Overflow_Check      : constant :=  9;
+   Range_Check         : constant := 10;
+   Storage_Check       : constant := 11;
+   Tag_Check           : constant := 12;
+   Validity_Check      : constant := 13;
+   --  Values used to represent individual predefined checks
+
+   All_Checks          : constant := 14;
+   --  Value used to represent All_Checks value
+
+   subtype Predefined_Check_Id is Check_Id range 1 .. All_Checks;
+   --  Subtype for predefined checks, including All_Checks
 
    --  The following array contains an entry for each recognized check name
    --  for pragma Suppress. It is used to represent current settings of scope
@@ -672,7 +683,7 @@ package Types is
    --  We recognize only an explicit suppress of Elaboration_Check as a signal
    --  that the static elaboration checking should skip a compile time check.
 
-   type Suppress_Array is array (Check_Id) of Boolean;
+   type Suppress_Array is array (Predefined_Check_Id) of Boolean;
    pragma Pack (Suppress_Array);
 
    --  To add a new check type to GNAT, the following steps are required:
@@ -691,19 +702,19 @@ package Types is
    --  throughout the compiler or in other GNAT tools.
 
    Unrecoverable_Error : exception;
-   --  This exception is raised to immediately terminate the compilation
-   --  of the current source program. Used in situations where things are
-   --  bad enough that it doesn't seem worth continuing (e.g. max errors
-   --  reached, or a required file is not found). Also raised when the
-   --  compiler finds itself in trouble after an error (see Comperr).
+   --  This exception is raised to immediately terminate the compilation of the
+   --  current source program. Used in situations where things are bad enough
+   --  that it doesn't seem worth continuing (e.g. max errors reached, or a
+   --  required file is not found). Also raised when the compiler finds itself
+   --  in trouble after an error (see Comperr).
 
    Terminate_Program : exception;
    --  This exception is raised to immediately terminate the tool being
-   --  executed. Each tool where this exception may be raised must have
-   --  a single exception handler that contains only a null statement and
-   --  that is the last statement of the program. If needed, procedure
-   --  Set_Exit_Status is called with the appropriate exit status before
-   --  raising Terminate_Program.
+   --  executed. Each tool where this exception may be raised must have a
+   --  single exception handler that contains only a null statement and that is
+   --  the last statement of the program. If needed, procedure Set_Exit_Status
+   --  is called with the appropriate exit status before raising
+   --  Terminate_Program.
 
    ---------------------------------
    -- Parameter Mechanism Control --
@@ -722,10 +733,10 @@ package Types is
    -- Run-Time Exception Codes --
    ------------------------------
 
-   --  When the code generator generates a run-time exception, it provides
-   --  a reason code which is one of the following. This reason code is used
-   --  to select the appropriate run-time routine to be called, determining
-   --  both the exception to be raised, and the message text to be added.
+   --  When the code generator generates a run-time exception, it provides a
+   --  reason code which is one of the following. This reason code is used to
+   --  select the appropriate run-time routine to be called, determining both
+   --  the exception to be raised, and the message text to be added.
 
    --  The prefix CE/PE/SE indicates the exception to be raised
    --    CE = Constraint_Error

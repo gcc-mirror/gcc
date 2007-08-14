@@ -957,7 +957,6 @@ package body Inline is
          --  set (that's why we can't simply use a FOR loop here).
 
          J := 0;
-
          while J <= Pending_Instantiations.Last
            and then Serious_Errors_Detected = 0
          loop

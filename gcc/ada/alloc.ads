@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,14 +63,14 @@ package Alloc is
    Elmts_Initial                    : constant := 1_200;   -- Elists
    Elmts_Increment                  : constant := 100;
 
-   Entity_Suppress_Initial          : constant := 100;     -- Sem
-   Entity_Suppress_Increment        : constant := 200;
-
    Inlined_Bodies_Initial           : constant := 50;      -- Inline
    Inlined_Bodies_Increment         : constant := 200;
 
    Inlined_Initial                  : constant := 100;     -- Inline
    Inlined_Increment                : constant := 100;
+
+   In_Out_Warnings_Initial          : constant := 100;     -- Sem_Warn
+   In_Out_Warnings_Increment        : constant := 100;
 
    Interp_Map_Initial               : constant := 200;     -- Sem_Type
    Interp_Map_Increment             : constant := 100;

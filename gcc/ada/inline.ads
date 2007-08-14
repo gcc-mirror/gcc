@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,8 +37,9 @@
 --  Frontend, and thus are not mutually recursive.
 
 with Alloc;
+with Sem;   use Sem;
 with Table;
-with Types;  use Types;
+with Types; use Types;
 
 package Inline is
 
@@ -51,7 +52,7 @@ package Inline is
    --  global data structure, and the bodies constructed by means of a separate
    --  analysis and expansion step.
 
-   --  See full description in body of Sem_Ch12 for details
+   --  See full description in body of Sem_Ch12 for more details
 
    type Pending_Body_Info is record
       Inst_Node : Node_Id;
@@ -68,6 +69,22 @@ package Inline is
       --  The semantic unit within which the instantiation is found. Must
       --  be restored when compiling the body, to insure that internal enti-
       --  ties use the same counter and are unique over spec and body.
+
+      Scope_Suppress           : Suppress_Array;
+      Local_Suppress_Stack_Top : Suppress_Stack_Entry_Ptr;
+      --  Save suppress information at the point of instantiation. Used to
+      --  properly inherit check status active at this point (see RM 11.5
+      --  (7.2/2), AI95-00224-01):
+      --
+      --    "If a checking pragma applies to a generic instantiation, then the
+      --    checking pragma also applies to the instance. If a checking pragma
+      --    applies to a call to a subprogram that has a pragma Inline applied
+      --    to it, then the checking pragma also applies to the inlined
+      --    subprogram body".
+      --
+      --  This means we have to capture this information from the current scope
+      --  at the point of instantiation.
+
    end record;
 
    package Pending_Instantiations is new Table.Table (
