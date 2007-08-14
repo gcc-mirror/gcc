@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2006, Free Software Foundation, Inc.       --
+--            Copyright (C) 1992-2007, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package System.File_Control_Block is
    --  stream with the semantics specified in the RM for file sharing. All
    --  files opened with "shared=no" will have their own stream.
 
-   type AFCB;
+   type AFCB is tagged;
    type AFCB_Ptr is access all AFCB'Class;
 
    type AFCB is abstract new Ada.Streams.Root_Stream_Type with record
