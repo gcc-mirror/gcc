@@ -1,3 +1,91 @@
+2007-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (rtx_equal_for_memref_p): Constify.
+	* basic-block.h (const_edge, const_basic_block): New.
+	(reg_set_to_hard_reg_set, dfs_enumerate_from, single_succ_p,
+	single_pred_p, single_succ_edge, single_pred_edge, single_succ,
+	single_pred, maybe_hot_bb_p, probably_cold_bb_p,
+	probably_never_executed_bb_p, edge_probability_reliable_p,
+	br_prob_note_reliable_p, forwarder_block_p, flow_nodes_print,
+	inside_basic_block_p, control_flow_insn_p, dominated_by_p):
+	Likewise.
+	* bb-reorder.c (better_edge_p, push_to_next_round_p): Likewise.
+	* bt-load.c (basic_block_freq, insn_sets_btr_p, can_move_up):
+	Likewise.
+	* cfganal.c (flow_active_insn_p, forwarder_block_p,
+	flow_nodes_print, dfs_enumerate_from): Likewise.
+	* cfgbuild.c (count_basic_blocks, inside_basic_block_p,
+	control_flow_insn_p, count_basic_blocks): Likewise.
+	* cfgloop.c (flow_bb_inside_loop_p, glb_enum_p,
+	get_loop_body_with_size, loop_exit_edge_p): Likewise.
+	* cfgloop.h (flow_bb_inside_loop_p, num_loop_insns,
+	average_num_loop_insns, loop_exit_edge_p,
+	just_once_each_iteration_p, can_duplicate_loop_p): Likewise.
+	* cfgloopanal.c (just_once_each_iteration_p, num_loop_insns,
+	average_num_loop_insns, seq_cost): Likewise.
+	* cfgloopmanip.c (rpe_enum_p, can_duplicate_loop_p): Likewise.
+	* dominance.c (dominated_by_p): Likewise.
+	* emit-rtl.c (validate_subreg): Likewise.
+	* except.c (can_throw_internal, can_throw_external): Likewise.
+	* except.h (can_throw_internal, can_throw_external): Likewise.
+	* gcse.c (gcse_constant_p, oprs_unchanged_p, oprs_anticipatable_p,
+	oprs_available_p, hash_expr, expr_equiv_p, oprs_not_set_p,
+	compute_transp, load_killed_in_block_p, reg_killed_on_edge,
+	simple_mem, store_ops_ok, load_kills_store, find_loads,
+	store_killed_in_insn, store_killed_after, store_killed_before,
+	gcse_mem_operand, implicit_set_cond_p, store_killed_in_pat):
+	Likewise.
+	* ifcvt.c (count_bb_insns, cheap_bb_rtx_cost_p, noce_operand_ok,
+	noce_mem_write_may_trap_or_fault_p): Likewise.
+	* pointer-set.c (pointer_set_contains, pointer_map_contains):
+	Likewise.
+	* pointer-set.h (pointer_set_contains, pointer_map_contains):
+	Likewise.
+	* predict.c (can_predict_insn_p, maybe_hot_bb_p,
+	probably_cold_bb_p, probably_never_executed_bb_p,
+	edge_probability_reliable_p, br_prob_note_reliable_p,
+	can_predict_insn_p): Likewise.
+	* regclass.c (reg_set_to_hard_reg_set): Likewise.
+	* resource.c (return_insn_p): Likewise.
+	* rtl.h (reg_set_between_p, reg_set_p, validate_subreg):
+	Likewise.
+	* rtlanal.c (reg_set_between_p, reg_set_p): Likewise.
+	* tracer.c (count_insns, ignore_bb_p, better_p): Likewise.
+	* tree-cfg.c (verify_gimple_unary_expr, verify_gimple_binary_expr,
+	verify_gimple_modify_stmt): Likewise.
+	* tree-chrec.c (is_not_constant_evolution,
+	is_multivariate_chrec_rec, is_multivariate_chrec,
+	chrec_contains_symbols, chrec_contains_undetermined,
+	tree_contains_chrecs, evolution_function_is_affine_multivariate_p,
+	evolution_function_is_univariate_p, avoid_arithmetics_in_type_p,
+	eq_evolutions_p, scev_direction): Likewise.
+	* tree-chrec.h (automatically_generated_chrec_p, tree_is_chrec,
+	eq_evolutions_p, is_multivariate_chrec, chrec_contains_symbols,
+	chrec_contains_symbols_defined_in_loop,
+	chrec_contains_undetermined, tree_contains_chrecs,
+	evolution_function_is_affine_multivariate_p,
+	evolution_function_is_univariate_p, chrec_zerop,
+	evolution_function_is_constant_p, evolution_function_is_affine_p,
+	evolution_function_is_affine_or_constant_p,
+	tree_does_not_contain_chrecs, chrec_type): Likewise.
+	* tree-data-ref.c (tree_fold_divides_p,
+	object_address_invariant_in_loop_p, dr_may_alias_p,
+	ziv_subscript_p, siv_subscript_p, gcd_of_steps_may_divide_p,
+	same_access_functions, constant_access_functions,
+	access_functions_are_affine_or_constant_p, find_vertex_for_stmt):
+	Likewise.
+	* tree-flow.h (scev_direction): Likewise.
+	* tree-gimple.c (is_gimple_stmt): Likewise.
+	* tree-outof-ssa.c (identical_copies_p, identical_stmt_lists_p):
+	Likewise.
+	* tree-pretty-print.c (op_prio): Likewise.
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop,
+	analyzable_condition, backedge_phi_arg_p): Likewise.
+	* tree-scalar-evolution.h (get_chrec_loop): Likewise.
+	* tree-ssa-operands.c (get_name_decl, operand_build_cmp): Likewise.
+	* tree-ssa-threadupdate.c (dbds_continue_enumeration_p):
+	Likewise.
+
 2007-08-13  Dan Hipschman  <dsh@google.com>
 
 	PR c/32953

@@ -50,9 +50,9 @@
 #include "coverage.h"
 #include "tree-pass.h"
 
-static int count_insns (basic_block);
-static bool ignore_bb_p (basic_block);
-static bool better_p (edge, edge);
+static int count_insns (const_basic_block);
+static bool ignore_bb_p (const_basic_block);
+static bool better_p (const_edge, const_edge);
 static edge find_best_successor (basic_block);
 static edge find_best_predecessor (basic_block);
 static int find_trace (basic_block, basic_block *);
@@ -70,7 +70,7 @@ static int branch_ratio_cutoff;
 
 /* Return true if we should ignore the basic block for purposes of tracing.  */
 static bool
-ignore_bb_p (basic_block bb)
+ignore_bb_p (const_basic_block bb)
 {
   if (bb->index < NUM_FIXED_BLOCKS)
     return true;
@@ -82,9 +82,9 @@ ignore_bb_p (basic_block bb)
 /* Return number of instructions in the block.  */
 
 static int
-count_insns (basic_block bb)
+count_insns (const_basic_block bb)
 {
-  rtx insn;
+  const_rtx insn;
   int n = 0;
 
   for (insn = BB_HEAD (bb);
@@ -97,7 +97,7 @@ count_insns (basic_block bb)
 
 /* Return true if E1 is more frequent than E2.  */
 static bool
-better_p (edge e1, edge e2)
+better_p (const_edge e1, const_edge e2)
 {
   if (e1->count != e2->count)
     return e1->count > e2->count;

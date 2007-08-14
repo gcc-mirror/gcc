@@ -35,7 +35,7 @@ static void copy_loops_to (struct loop **, int,
 			   struct loop *);
 static void loop_redirect_edge (edge, basic_block);
 static void remove_bbs (basic_block *, int);
-static bool rpe_enum_p (basic_block, void *);
+static bool rpe_enum_p (const_basic_block, const void *);
 static int find_path (edge, basic_block **);
 static void fix_loop_placements (struct loop *, bool *);
 static bool fix_bb_placement (basic_block);
@@ -46,9 +46,9 @@ static void unloop (struct loop *, bool *);
 
 /* Checks whether basic block BB is dominated by DATA.  */
 static bool
-rpe_enum_p (basic_block bb, void *data)
+rpe_enum_p (const_basic_block bb, const void *data)
 {
-  return dominated_by_p (CDI_DOMINATORS, bb, (basic_block) data);
+  return dominated_by_p (CDI_DOMINATORS, bb, (const_basic_block) data);
 }
 
 /* Remove basic blocks BBS.  NBBS is the number of the basic blocks.  */
@@ -712,7 +712,7 @@ loop_redirect_edge (edge e, basic_block dest)
 
 /* Check whether LOOP's body can be duplicated.  */
 bool
-can_duplicate_loop_p (struct loop *loop)
+can_duplicate_loop_p (const struct loop *loop)
 {
   int ret;
   basic_block *bbs = get_loop_body (loop);

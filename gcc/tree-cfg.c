@@ -3365,7 +3365,7 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
    if there is an error, otherwise false.  */
 
 static bool
-verify_gimple_unary_expr (tree expr)
+verify_gimple_unary_expr (const_tree expr)
 {
   tree op = TREE_OPERAND (expr, 0);
   tree type = TREE_TYPE (expr);
@@ -3395,7 +3395,7 @@ verify_gimple_unary_expr (tree expr)
    if there is an error, otherwise false.  */
 
 static bool
-verify_gimple_binary_expr (tree expr)
+verify_gimple_binary_expr (const_tree expr)
 {
   tree op0 = TREE_OPERAND (expr, 0);
   tree op1 = TREE_OPERAND (expr, 1);
@@ -3906,7 +3906,7 @@ verify_gimple_expr (tree expr)
    is an error, otherwise false.  */
 
 static bool
-verify_gimple_modify_stmt (tree stmt)
+verify_gimple_modify_stmt (const_tree stmt)
 {
   tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
   tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);

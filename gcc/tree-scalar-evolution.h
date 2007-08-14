@@ -40,7 +40,7 @@ extern bool simple_iv (struct loop *, tree, tree, affine_iv *, bool);
 /* Returns the loop of the polynomial chrec CHREC.  */
 
 static inline struct loop *
-get_chrec_loop (tree chrec)
+get_chrec_loop (const_tree chrec)
 {
   return get_loop (CHREC_VARIABLE (chrec));
 }

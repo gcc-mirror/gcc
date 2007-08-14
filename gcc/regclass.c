@@ -262,7 +262,7 @@ unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
    with moving single words, but probably isn't worth the trouble.  */
 
 void
-reg_set_to_hard_reg_set (HARD_REG_SET *to, bitmap from)
+reg_set_to_hard_reg_set (HARD_REG_SET *to, const_bitmap from)
 {
   unsigned i;
   bitmap_iterator bi;

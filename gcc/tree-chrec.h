@@ -33,7 +33,7 @@ extern GTY(()) tree chrec_known;
    include it in the following function.  */
 
 static inline bool
-automatically_generated_chrec_p (tree chrec)
+automatically_generated_chrec_p (const_tree chrec)
 {
   return (chrec == chrec_dont_know
 	  || chrec == chrec_known);
@@ -42,7 +42,7 @@ automatically_generated_chrec_p (tree chrec)
 /* The tree nodes aka. CHRECs.  */
 
 static inline bool
-tree_is_chrec (tree expr)
+tree_is_chrec (const_tree expr)
 {
   if (TREE_CODE (expr) == POLYNOMIAL_CHREC
       || automatically_generated_chrec_p (expr))
@@ -72,22 +72,22 @@ extern tree reset_evolution_in_loop (unsigned, tree, tree);
 extern tree chrec_merge (tree, tree);
 
 /* Observers.  */
-extern bool eq_evolutions_p (tree, tree);
-extern bool is_multivariate_chrec (tree);
+extern bool eq_evolutions_p (const_tree, const_tree);
+extern bool is_multivariate_chrec (const_tree);
 extern bool chrec_is_positive (tree, bool *);
-extern bool chrec_contains_symbols (tree);
-extern bool chrec_contains_symbols_defined_in_loop (tree, unsigned);
-extern bool chrec_contains_undetermined (tree);
-extern bool tree_contains_chrecs (tree, int *);
-extern bool evolution_function_is_affine_multivariate_p (tree, int);
-extern bool evolution_function_is_univariate_p (tree);
+extern bool chrec_contains_symbols (const_tree);
+extern bool chrec_contains_symbols_defined_in_loop (const_tree, unsigned);
+extern bool chrec_contains_undetermined (const_tree);
+extern bool tree_contains_chrecs (const_tree, int *);
+extern bool evolution_function_is_affine_multivariate_p (const_tree, int);
+extern bool evolution_function_is_univariate_p (const_tree);
 extern unsigned nb_vars_in_chrec (tree);
 extern bool evolution_function_is_invariant_p (tree, int);
 
 /* Determines whether CHREC is equal to zero.  */
 
 static inline bool 
-chrec_zerop (tree chrec)
+chrec_zerop (const_tree chrec)
 {
   if (chrec == NULL_TREE)
     return false;
@@ -147,7 +147,7 @@ build_polynomial_chrec (unsigned loop_num,
 /* Determines whether the expression CHREC is a constant.  */
 
 static inline bool 
-evolution_function_is_constant_p (tree chrec)
+evolution_function_is_constant_p (const_tree chrec)
 {
   if (chrec == NULL_TREE)
     return false;
@@ -166,7 +166,7 @@ evolution_function_is_constant_p (tree chrec)
 /* Determine whether the given tree is an affine evolution function or not.  */
 
 static inline bool 
-evolution_function_is_affine_p (tree chrec)
+evolution_function_is_affine_p (const_tree chrec)
 {
   if (chrec == NULL_TREE)
     return false;
@@ -191,7 +191,7 @@ evolution_function_is_affine_p (tree chrec)
    function.  */
 
 static inline bool 
-evolution_function_is_affine_or_constant_p (tree chrec)
+evolution_function_is_affine_or_constant_p (const_tree chrec)
 {
   return evolution_function_is_affine_p (chrec) 
     || evolution_function_is_constant_p (chrec);
@@ -200,7 +200,7 @@ evolution_function_is_affine_or_constant_p (tree chrec)
 /* Determines whether EXPR does not contains chrec expressions.  */
 
 static inline bool
-tree_does_not_contain_chrecs (tree expr)
+tree_does_not_contain_chrecs (const_tree expr)
 {
   return !tree_contains_chrecs (expr, NULL);
 }
@@ -208,7 +208,7 @@ tree_does_not_contain_chrecs (tree expr)
 /* Returns the type of the chrec.  */
 
 static inline tree
-chrec_type (tree chrec)
+chrec_type (const_tree chrec)
 {
   if (automatically_generated_chrec_p (chrec))
     return NULL_TREE;

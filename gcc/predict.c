@@ -77,7 +77,7 @@ static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void predict_paths_leading_to (basic_block, int *, enum br_predictor, enum prediction);
 static void compute_function_frequency (void);
 static void choose_function_section (void);
-static bool can_predict_insn_p (rtx);
+static bool can_predict_insn_p (const_rtx);
 
 /* Information we hold about each branch predictor.
    Filled using information from predict.def.  */
@@ -111,7 +111,7 @@ static const struct predictor_info predictor_info[]= {
    for maximal performance.  */
 
 bool
-maybe_hot_bb_p (basic_block bb)
+maybe_hot_bb_p (const_basic_block bb)
 {
   if (profile_info && flag_branch_probabilities
       && (bb->count
@@ -132,7 +132,7 @@ maybe_hot_bb_p (basic_block bb)
 /* Return true in case BB is cold and should be optimized for size.  */
 
 bool
-probably_cold_bb_p (basic_block bb)
+probably_cold_bb_p (const_basic_block bb)
 {
   if (profile_info && flag_branch_probabilities
       && (bb->count
@@ -148,7 +148,7 @@ probably_cold_bb_p (basic_block bb)
 
 /* Return true in case BB is probably never executed.  */
 bool
-probably_never_executed_bb_p (basic_block bb)
+probably_never_executed_bb_p (const_basic_block bb)
 {
   if (profile_info && flag_branch_probabilities)
     return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
@@ -223,14 +223,14 @@ probability_reliable_p (int prob)
 
 /* Same predicate as above, working on edges.  */
 bool
-edge_probability_reliable_p (edge e)
+edge_probability_reliable_p (const_edge e)
 {
   return probability_reliable_p (e->probability);
 }
 
 /* Same predicate as edge_probability_reliable_p, working on notes.  */
 bool
-br_prob_note_reliable_p (rtx note)
+br_prob_note_reliable_p (const_rtx note)
 {
   gcc_assert (REG_NOTE_KIND (note) == REG_BR_PROB);
   return probability_reliable_p (INTVAL (XEXP (note, 0)));
@@ -358,7 +358,7 @@ clear_bb_predictions (basic_block bb)
    At the moment we represent predictions only on conditional
    jumps, not at computed jump or other complicated cases.  */
 static bool
-can_predict_insn_p (rtx insn)
+can_predict_insn_p (const_rtx insn)
 {
   return (JUMP_P (insn)
 	  && any_condjump_p (insn)

@@ -1688,13 +1688,13 @@ extern int reg_mentioned_p (const_rtx, const_rtx);
 extern int count_occurrences (const_rtx, const_rtx, int);
 extern int reg_referenced_p (const_rtx, const_rtx);
 extern int reg_used_between_p (const_rtx, const_rtx, const_rtx);
-extern int reg_set_between_p (rtx, rtx, rtx);
+extern int reg_set_between_p (const_rtx, const_rtx, const_rtx);
 extern int commutative_operand_precedence (rtx);
 extern bool swap_commutative_operands_p (rtx, rtx);
 extern int modified_between_p (rtx, rtx, rtx);
 extern int no_labels_between_p (const_rtx, const_rtx);
 extern int modified_in_p (rtx, rtx);
-extern int reg_set_p (rtx, rtx);
+extern int reg_set_p (const_rtx, const_rtx);
 extern rtx single_set_2 (const_rtx, const_rtx);
 extern int multiple_sets (const_rtx);
 extern int set_noop_p (const_rtx);
@@ -2076,7 +2076,7 @@ extern rtx gen_const_mem (enum machine_mode, rtx);
 extern rtx gen_frame_mem (enum machine_mode, rtx);
 extern rtx gen_tmp_stack_mem (enum machine_mode, rtx);
 extern bool validate_subreg (enum machine_mode, enum machine_mode,
-			     rtx, unsigned int);
+			     const_rtx, unsigned int);
 
 /* In combine.c  */
 extern unsigned int extended_count (const_rtx, enum machine_mode, int);

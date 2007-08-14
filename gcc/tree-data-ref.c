@@ -128,7 +128,7 @@ static bool subscript_dependence_tester_1 (struct data_dependence_relation *,
 /* Returns true iff A divides B.  */
 
 static inline bool 
-tree_fold_divides_p (tree a, tree b)
+tree_fold_divides_p (const_tree a, const_tree b)
 {
   gcc_assert (TREE_CODE (a) == INTEGER_CST);
   gcc_assert (TREE_CODE (b) == INTEGER_CST);
@@ -1040,7 +1040,7 @@ conflict_fn_no_dependence (void)
 /* Returns true if the address of OBJ is invariant in LOOP.  */
 
 static bool
-object_address_invariant_in_loop_p (struct loop *loop, tree obj)
+object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
 {
   while (handled_component_p (obj))
     {
@@ -1159,12 +1159,12 @@ disjoint_objects_p (tree a, tree b)
    true otherwise.  */
 
 static bool
-dr_may_alias_p (struct data_reference *a, struct data_reference *b)
+dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
 {
-  tree addr_a = DR_BASE_ADDRESS (a);
-  tree addr_b = DR_BASE_ADDRESS (b);
-  tree type_a, type_b;
-  tree decl_a = NULL_TREE, decl_b = NULL_TREE;
+  const_tree addr_a = DR_BASE_ADDRESS (a);
+  const_tree addr_b = DR_BASE_ADDRESS (b);
+  const_tree type_a, type_b;
+  const_tree decl_a = NULL_TREE, decl_b = NULL_TREE;
 
   /* If the sets of virtual operands are disjoint, the memory references do not
      alias.  */
@@ -1355,8 +1355,7 @@ non_affine_dependence_relation (struct data_dependence_relation *ddr)
    variables, i.e., if the ZIV (Zero Index Variable) test is true.  */
 
 static inline bool
-ziv_subscript_p (tree chrec_a, 
-		 tree chrec_b)
+ziv_subscript_p (const_tree chrec_a, const_tree chrec_b)
 {
   return (evolution_function_is_constant_p (chrec_a)
 	  && evolution_function_is_constant_p (chrec_b));
@@ -1366,8 +1365,7 @@ ziv_subscript_p (tree chrec_a,
    variable, i.e., if the SIV (Single Index Variable) test is true.  */
 
 static bool
-siv_subscript_p (tree chrec_a,
-		 tree chrec_b)
+siv_subscript_p (const_tree chrec_a, const_tree chrec_b)
 {
   if ((evolution_function_is_constant_p (chrec_a)
        && evolution_function_is_univariate_p (chrec_b))
@@ -2416,7 +2414,7 @@ analyze_siv_subscript (tree chrec_a,
    of CHREC does not divide CST, false otherwise.  */
 
 static bool
-gcd_of_steps_may_divide_p (tree chrec, tree cst)
+gcd_of_steps_may_divide_p (const_tree chrec, const_tree cst)
 {
   HOST_WIDE_INT cd = 0, val;
   tree step;
@@ -2790,7 +2788,7 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
    same access functions.  */
 
 static bool
-same_access_functions (struct data_dependence_relation *ddr)
+same_access_functions (const struct data_dependence_relation *ddr)
 {
   unsigned i;
 
@@ -2805,7 +2803,7 @@ same_access_functions (struct data_dependence_relation *ddr)
 /* Return true when the DDR contains only constant access functions.  */
 
 static bool
-constant_access_functions (struct data_dependence_relation *ddr)
+constant_access_functions (const struct data_dependence_relation *ddr)
 {
   unsigned i;
 
@@ -3212,8 +3210,8 @@ subscript_dependence_tester (struct data_dependence_relation *ddr,
    constant with respect to LOOP_NEST.  */
 
 static bool 
-access_functions_are_affine_or_constant_p (struct data_reference *a,
-					   struct loop *loop_nest)
+access_functions_are_affine_or_constant_p (const struct data_reference *a,
+					   const struct loop *loop_nest)
 {
   unsigned int i;
   VEC(tree,heap) *fns = DR_ACCESS_FNS (a);
@@ -4341,7 +4339,7 @@ free_data_refs (VEC (data_reference_p, heap) *datarefs)
 /* Returns the index of STMT in RDG.  */
 
 static int
-find_vertex_for_stmt (struct graph *rdg, tree stmt)
+find_vertex_for_stmt (const struct graph *rdg, const_tree stmt)
 {
   int i;
 

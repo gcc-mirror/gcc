@@ -622,7 +622,7 @@ gen_tmp_stack_mem (enum machine_mode mode, rtx addr)
 
 bool
 validate_subreg (enum machine_mode omode, enum machine_mode imode,
-		 rtx reg, unsigned int offset)
+		 const_rtx reg, unsigned int offset)
 {
   unsigned int isize = GET_MODE_SIZE (imode);
   unsigned int osize = GET_MODE_SIZE (omode);

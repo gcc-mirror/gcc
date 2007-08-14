@@ -671,9 +671,9 @@ thread_single_edge (edge e)
 
 static basic_block dbds_ce_stop;
 static bool
-dbds_continue_enumeration_p (basic_block bb, void *stop)
+dbds_continue_enumeration_p (const_basic_block bb, const void *stop)
 {
-  return (bb != (basic_block) stop
+  return (bb != (const_basic_block) stop
 	  && bb != dbds_ce_stop);
 }
 

@@ -353,7 +353,7 @@ find_var_scev_info (tree var)
    LOOP_NB.  */
 
 bool 
-chrec_contains_symbols_defined_in_loop (tree chrec, unsigned loop_nb)
+chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
 {
   int i, n;
 
@@ -898,7 +898,7 @@ set_nb_iterations_in_loop (struct loop *loop,
    EXPR.  */
 
 static bool
-analyzable_condition (tree expr)
+analyzable_condition (const_tree expr)
 {
   tree condition;
   
@@ -1201,9 +1201,9 @@ follow_ssa_edge_in_rhs (struct loop *loop, tree at_stmt, tree rhs,
 /* Checks whether the I-th argument of a PHI comes from a backedge.  */
 
 static bool
-backedge_phi_arg_p (tree phi, int i)
+backedge_phi_arg_p (const_tree phi, int i)
 {
-  edge e = PHI_ARG_EDGE (phi, i);
+  const_edge e = PHI_ARG_EDGE (phi, i);
 
   /* We would in fact like to test EDGE_DFS_BACK here, but we do not care
      about updating it anywhere, and this should work as well most of the

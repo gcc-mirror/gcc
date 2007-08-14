@@ -111,8 +111,8 @@ typedef struct btr_def_s
 
 static int issue_rate;
 
-static int basic_block_freq (basic_block);
-static int insn_sets_btr_p (rtx, int, int *);
+static int basic_block_freq (const_basic_block);
+static int insn_sets_btr_p (const_rtx, int, int *);
 static rtx *find_btr_use (rtx);
 static int btr_referenced_p (rtx, rtx *);
 static int find_btr_reference (rtx *, void *);
@@ -140,7 +140,7 @@ static void btr_def_live_range (btr_def, HARD_REG_SET *);
 static void move_btr_def (basic_block, int, btr_def, bitmap, HARD_REG_SET *);
 static int migrate_btr_def (btr_def, int);
 static void migrate_btr_defs (enum reg_class, int);
-static int can_move_up (basic_block, rtx, int);
+static int can_move_up (const_basic_block, const_rtx, int);
 static void note_btr_set (rtx, const_rtx, void *);
 
 /* The following code performs code motion of target load instructions
@@ -179,7 +179,7 @@ static int first_btr, last_btr;
 
 /* Return an estimate of the frequency of execution of block bb.  */
 static int
-basic_block_freq (basic_block bb)
+basic_block_freq (const_basic_block bb)
 {
   return bb->frequency;
 }
@@ -222,7 +222,7 @@ btr_referenced_p (rtx x, rtx *excludep)
    If such a set is found and REGNO is nonzero, assign the register number
    of the destination register to *REGNO.  */
 static int
-insn_sets_btr_p (rtx insn, int check_const, int *regno)
+insn_sets_btr_p (const_rtx insn, int check_const, int *regno)
 {
   rtx set;
 
@@ -1235,7 +1235,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
 /* We anticipate intra-block scheduling to be done.  See if INSN could move
    up within BB by N_INSNS.  */
 static int
-can_move_up (basic_block bb, rtx insn, int n_insns)
+can_move_up (const_basic_block bb, const_rtx insn, int n_insns)
 {
   while (insn != BB_HEAD (bb) && n_insns > 0)
     {

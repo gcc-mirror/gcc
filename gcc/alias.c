@@ -148,7 +148,7 @@ struct alias_set_entry GTY(())
 };
 typedef struct alias_set_entry *alias_set_entry;
 
-static int rtx_equal_for_memref_p (rtx, rtx);
+static int rtx_equal_for_memref_p (const_rtx, const_rtx);
 static int memrefs_conflict_p (int, rtx, int, rtx, HOST_WIDE_INT);
 static void record_set (rtx, const_rtx, void *);
 static int base_alias_check (rtx, rtx, enum machine_mode,
@@ -1192,7 +1192,7 @@ canon_rtx (rtx x)
    different numbers are, in fact, equivalent.  */
 
 static int
-rtx_equal_for_memref_p (rtx x, rtx y)
+rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 {
   int i;
   int j;

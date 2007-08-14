@@ -53,13 +53,13 @@ static void flow_dfs_compute_reverse_add_bb (depth_first_search_ds,
 static basic_block flow_dfs_compute_reverse_execute (depth_first_search_ds,
 						     basic_block);
 static void flow_dfs_compute_reverse_finish (depth_first_search_ds);
-static bool flow_active_insn_p (rtx);
+static bool flow_active_insn_p (const_rtx);
 
 /* Like active_insn_p, except keep the return value clobber around
    even after reload.  */
 
 static bool
-flow_active_insn_p (rtx insn)
+flow_active_insn_p (const_rtx insn)
 {
   if (active_insn_p (insn))
     return true;
@@ -81,7 +81,7 @@ flow_active_insn_p (rtx insn)
    its single destination.  */
 
 bool
-forwarder_block_p (basic_block bb)
+forwarder_block_p (const_basic_block bb)
 {
   rtx insn;
 
@@ -518,7 +518,7 @@ find_edge_index (struct edge_list *edge_list, basic_block pred, basic_block succ
 /* Dump the list of basic blocks in the bitmap NODES.  */
 
 void
-flow_nodes_print (const char *str, const sbitmap nodes, FILE *file)
+flow_nodes_print (const char *str, const_sbitmap nodes, FILE *file)
 {
   unsigned int node = 0;
   sbitmap_iterator sbi;
@@ -1147,8 +1147,8 @@ flow_dfs_compute_reverse_finish (depth_first_search_ds data)
    found and their list in RSLT.  RSLT can contain at most RSLT_MAX items.  */
 int
 dfs_enumerate_from (basic_block bb, int reverse,
-		    bool (*predicate) (basic_block, void *),
-		    basic_block *rslt, int rslt_max, void *data)
+		    bool (*predicate) (const_basic_block, const void *),
+		    basic_block *rslt, int rslt_max, const void *data)
 {
   basic_block *st, lbb;
   int sp = 0, tv = 0;

@@ -823,7 +823,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 /* Return TRUE if INSN is a return, possibly with a filled delay slot.  */
 
 static bool
-return_insn_p (rtx insn)
+return_insn_p (const_rtx insn)
 {
   if (JUMP_P (insn) && GET_CODE (PATTERN (insn)) == RETURN)
     return true;

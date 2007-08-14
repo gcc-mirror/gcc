@@ -174,11 +174,11 @@ static void find_traces_1_round (int, int, gcov_type, struct trace *, int *,
 				 int, fibheap_t *, int);
 static basic_block copy_bb (basic_block, edge, basic_block, int);
 static fibheapkey_t bb_to_key (basic_block);
-static bool better_edge_p (basic_block, edge, int, int, int, int, edge);
+static bool better_edge_p (const_basic_block, const_edge, int, int, int, int, const_edge);
 static void connect_traces (int, struct trace *);
 static bool copy_bb_p (basic_block, int);
 static int get_uncond_jump_length (void);
-static bool push_to_next_round_p (basic_block, int, int, int, gcov_type);
+static bool push_to_next_round_p (const_basic_block, int, int, int, gcov_type);
 static void find_rarely_executed_basic_blocks_and_crossing_edges (edge **,
 								  int *,
 								  int *);
@@ -198,7 +198,7 @@ static void fix_crossing_unconditional_branches (void);
    current round of trace collection.  */
 
 static bool
-push_to_next_round_p (basic_block bb, int round, int number_of_rounds,
+push_to_next_round_p (const_basic_block bb, int round, int number_of_rounds,
 		      int exec_th, gcov_type count_th)
 {
   bool there_exists_another_round;
@@ -847,8 +847,8 @@ bb_to_key (basic_block bb)
    BEST_PROB; similarly for frequency.  */
 
 static bool
-better_edge_p (basic_block bb, edge e, int prob, int freq, int best_prob,
-	       int best_freq, edge cur_best_edge)
+better_edge_p (const_basic_block bb, const_edge e, int prob, int freq, int best_prob,
+	       int best_freq, const_edge cur_best_edge)
 {
   bool is_better_edge;
 

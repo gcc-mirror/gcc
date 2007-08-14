@@ -87,15 +87,15 @@ static int num_true_changes;
 static int cond_exec_changed_p;
 
 /* Forward references.  */
-static int count_bb_insns (basic_block);
-static bool cheap_bb_rtx_cost_p (basic_block, int);
+static int count_bb_insns (const_basic_block);
+static bool cheap_bb_rtx_cost_p (const_basic_block, int);
 static rtx first_active_insn (basic_block);
 static rtx last_active_insn (basic_block, int);
 static basic_block block_fallthru (basic_block);
 static int cond_exec_process_insns (ce_if_block_t *, rtx, rtx, rtx, rtx, int);
 static rtx cond_exec_get_condition (rtx);
 static rtx noce_get_condition (rtx, rtx *, bool);
-static int noce_operand_ok (rtx);
+static int noce_operand_ok (const_rtx);
 static void merge_if_block (ce_if_block_t *);
 static int find_cond_trap (basic_block, edge, edge);
 static basic_block find_if_header (basic_block, int);
@@ -113,7 +113,7 @@ static rtx block_has_only_trap (basic_block);
 /* Count the number of non-jump active insns in BB.  */
 
 static int
-count_bb_insns (basic_block bb)
+count_bb_insns (const_basic_block bb)
 {
   int count = 0;
   rtx insn = BB_HEAD (bb);
@@ -136,7 +136,7 @@ count_bb_insns (basic_block bb)
    false if the cost of any instruction could not be estimated.  */
 
 static bool
-cheap_bb_rtx_cost_p (basic_block bb, int max_cost)
+cheap_bb_rtx_cost_p (const_basic_block bb, int max_cost)
 {
   int count = 0;
   rtx insn = BB_HEAD (bb);
@@ -2071,7 +2071,7 @@ noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
 /* Return true if OP is ok for if-then-else processing.  */
 
 static int
-noce_operand_ok (rtx op)
+noce_operand_ok (const_rtx op)
 {
   /* We special-case memories, so handle any of them with
      no address side effects.  */
@@ -2087,7 +2087,7 @@ noce_operand_ok (rtx op)
 /* Return true if a write into MEM may trap or fault.  */
 
 static bool
-noce_mem_write_may_trap_or_fault_p (rtx mem)
+noce_mem_write_may_trap_or_fault_p (const_rtx mem)
 {
   rtx addr;
 
