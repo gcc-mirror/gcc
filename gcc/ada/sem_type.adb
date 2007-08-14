@@ -161,6 +161,29 @@ package body Sem_Type is
    pragma Warnings (Off, All_Overloads);
    --  Debugging procedure: list full contents of Overloads table
 
+   function Binary_Op_Interp_Has_Abstract_Op
+     (N : Node_Id;
+      E : Entity_Id) return Entity_Id;
+   --  Given the node and entity of a binary operator, determine whether the
+   --  actuals of E contain an abstract interpretation with regards to the
+   --  types of their corresponding formals. Return the abstract operation or
+   --  Empty.
+
+   function Function_Interp_Has_Abstract_Op
+     (N : Node_Id;
+      E : Entity_Id) return Entity_Id;
+   --  Given the node and entity of a function call, determine whether the
+   --  actuals of E contain an abstract interpretation with regards to the
+   --  types of their corresponding formals. Return the abstract operation or
+   --  Empty.
+
+   function Has_Abstract_Op
+     (N   : Node_Id;
+      Typ : Entity_Id) return Entity_Id;
+   --  Subsidiary routine to Binary_Op_Interp_Has_Abstract_Op and Function_
+   --  Interp_Has_Abstract_Op. Determine whether an overloaded node has an
+   --  abstract interpretation which yields type Typ.
+
    procedure New_Interps (N : Node_Id);
    --  Initialize collection of interpretations for the given node, which is
    --  either an overloaded entity, or an operation whose arguments have
@@ -183,10 +206,10 @@ package body Sem_Type is
    is
       Vis_Type : Entity_Id;
 
-      procedure Add_Entry (Name :  Entity_Id; Typ : Entity_Id);
-      --  Add one interpretation to node. Node is already known to be
-      --  overloaded. Add new interpretation if not hidden by previous
-      --  one, and remove previous one if hidden by new one.
+      procedure Add_Entry (Name : Entity_Id; Typ : Entity_Id);
+      --  Add one interpretation to an overloaded node. Add a new entry if
+      --  not hidden by previous one, and remove previous one if hidden by
+      --  new one.
 
       function Is_Universal_Operation (Op : Entity_Id) return Boolean;
       --  True if the entity is a predefined operator and the operands have
@@ -196,12 +219,26 @@ package body Sem_Type is
       -- Add_Entry --
       ---------------
 
-      procedure Add_Entry (Name :  Entity_Id; Typ : Entity_Id) is
-         Index : Interp_Index;
-         It    : Interp;
+      procedure Add_Entry (Name : Entity_Id; Typ : Entity_Id) is
+         Abstr_Op : Entity_Id := Empty;
+         I        : Interp_Index;
+         It       : Interp;
+
+      --  Start of processing for Add_Entry
 
       begin
-         Get_First_Interp (N, Index, It);
+         --  Find out whether the new entry references interpretations that
+         --  are abstract or disabled by abstract operators.
+
+         if Ada_Version >= Ada_05 then
+            if Nkind (N) in N_Binary_Op then
+               Abstr_Op := Binary_Op_Interp_Has_Abstract_Op (N, Name);
+            elsif Nkind (N) = N_Function_Call then
+               Abstr_Op := Function_Interp_Has_Abstract_Op (N, Name);
+            end if;
+         end if;
+
+         Get_First_Interp (N, I, It);
          while Present (It.Nam) loop
 
             --  A user-defined subprogram hides another declared at an outer
@@ -254,7 +291,7 @@ package body Sem_Type is
                   end if;
 
                else
-                  All_Interp.Table (Index).Nam := Name;
+                  All_Interp.Table (I).Nam := Name;
                   return;
                end if;
 
@@ -268,15 +305,12 @@ package body Sem_Type is
             --  Otherwise keep going
 
             else
-               Get_Next_Interp (Index, It);
+               Get_Next_Interp (I, It);
             end if;
 
          end loop;
 
-         --  On exit, enter new interpretation. The context, or a preference
-         --  rule, will resolve the ambiguity on the second pass.
-
-         All_Interp.Table (All_Interp.Last) := (Name, Typ);
+         All_Interp.Table (All_Interp.Last) := (Name, Typ, Abstr_Op);
          All_Interp.Increment_Last;
          All_Interp.Table (All_Interp.Last) := No_Interp;
       end Add_Entry;
@@ -501,6 +535,27 @@ package body Sem_Type is
       end loop;
    end All_Overloads;
 
+   --------------------------------------
+   -- Binary_Op_Interp_Has_Abstract_Op --
+   --------------------------------------
+
+   function Binary_Op_Interp_Has_Abstract_Op
+     (N : Node_Id;
+      E : Entity_Id) return Entity_Id
+   is
+      Abstr_Op : Entity_Id;
+      E_Left   : constant Node_Id := First_Formal (E);
+      E_Right  : constant Node_Id := Next_Formal (E_Left);
+
+   begin
+      Abstr_Op := Has_Abstract_Op (Left_Opnd (N), Etype (E_Left));
+      if Present (Abstr_Op) then
+         return Abstr_Op;
+      end if;
+
+      return Has_Abstract_Op (Right_Opnd (N), Etype (E_Right));
+   end Binary_Op_Interp_Has_Abstract_Op;
+
    ---------------------
    -- Collect_Interps --
    ---------------------
@@ -567,7 +622,8 @@ package body Sem_Type is
                         and then In_Instance
                         and then not Is_Inherited_Operation (H)
                      then
-                        All_Interp.Table (All_Interp.Last) := (H, Etype (H));
+                        All_Interp.Table (All_Interp.Last) :=
+                          (H, Etype (H), Empty);
                         All_Interp.Increment_Last;
                         All_Interp.Table (All_Interp.Last) := No_Interp;
                         goto Next_Homograph;
@@ -821,9 +877,11 @@ package body Sem_Type is
          return True;
 
       --  If the expected type is an anonymous access, the designated type must
-      --  cover that of the expression.
+      --  cover that of the expression. Use the base type for this check: even
+      --  though access subtypes are rare in sources, they are generated for
+      --  actuals in instantiations.
 
-      elsif Ekind (T1) = E_Anonymous_Access_Type
+      elsif Ekind (BT1) = E_Anonymous_Access_Type
         and then Is_Access_Type (T2)
         and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
@@ -987,10 +1045,11 @@ package body Sem_Type is
       elsif From_With_Type (T1) then
 
          --  If the expected type is the non-limited view of a type, the
-         --  expression may have the limited view.
+         --  expression may have the limited view. If that one in turn is
+         --  incomplete, get full view if available.
 
          if Is_Incomplete_Type (T1) then
-            return Covers (Non_Limited_View (T1), T2);
+            return Covers (Get_Full_View (Non_Limited_View (T1)), T2);
 
          elsif Ekind (T1) = E_Class_Wide_Type then
             return
@@ -1006,7 +1065,7 @@ package body Sem_Type is
          --  verify that the context type is the non-limited view.
 
          if Is_Incomplete_Type (T2) then
-            return Covers (T1, Non_Limited_View (T2));
+            return Covers (T1, Get_Full_View (Non_Limited_View (T2)));
 
          elsif Ekind (T2) = E_Class_Wide_Type then
             return
@@ -1471,7 +1530,7 @@ package body Sem_Type is
       --  then we must check whether the user-defined entity hides the prede-
       --  fined one.
 
-      if Chars (Nam1) in  Any_Operator_Name
+      if Chars (Nam1) in Any_Operator_Name
         and then Standard_Operator
       then
          if        Typ = Universal_Integer
@@ -1677,7 +1736,7 @@ package body Sem_Type is
          end if;
       end if;
 
-      --  an implicit concatenation operator on a string type cannot be
+      --  An implicit concatenation operator on a string type cannot be
       --  disambiguated from the predefined concatenation. This can only
       --  happen with concatenation of string literals.
 
@@ -1687,7 +1746,7 @@ package body Sem_Type is
       then
          return No_Interp;
 
-      --  If the user-defined operator is in  an open scope, or in the scope
+      --  If the user-defined operator is in an open scope, or in the scope
       --  of the resulting type, or given by an expanded name that names its
       --  scope, it hides the predefined operator for the type. Exponentiation
       --  has to be special-cased because the implicit operator does not have
@@ -1904,8 +1963,47 @@ package body Sem_Type is
       else
          return Specific_Type (T, Etype (R));
       end if;
-
    end Find_Unique_Type;
+
+   -------------------------------------
+   -- Function_Interp_Has_Abstract_Op --
+   -------------------------------------
+
+   function Function_Interp_Has_Abstract_Op
+     (N : Node_Id;
+      E : Entity_Id) return Entity_Id
+   is
+      Abstr_Op  : Entity_Id;
+      Act       : Node_Id;
+      Act_Parm  : Node_Id;
+      Form_Parm : Node_Id;
+
+   begin
+      if Is_Overloaded (N) then
+         Act_Parm  := First_Actual (N);
+         Form_Parm := First_Formal (E);
+         while Present (Act_Parm)
+           and then Present (Form_Parm)
+         loop
+            Act := Act_Parm;
+
+            if Nkind (Act) = N_Parameter_Association then
+               Act := Explicit_Actual_Parameter (Act);
+            end if;
+
+            Abstr_Op := Has_Abstract_Op (Act, Etype (Form_Parm));
+
+            if Present (Abstr_Op) then
+               return Abstr_Op;
+            end if;
+
+            Next_Actual (Act_Parm);
+            Next_Formal (Form_Parm);
+         end loop;
+      end if;
+
+      return Empty;
+   end Function_Interp_Has_Abstract_Op;
 
    ----------------------
    -- Get_First_Interp --
@@ -1916,8 +2014,8 @@ package body Sem_Type is
       I  : out Interp_Index;
       It : out Interp)
    is
-      Map_Ptr : Int;
       Int_Ind : Interp_Index;
+      Map_Ptr : Int;
       O_N     : Node_Id;
 
    begin
@@ -2029,6 +2127,34 @@ package body Sem_Type is
          return False;
       end if;
    end Has_Compatible_Type;
+
+   ---------------------
+   -- Has_Abstract_Op --
+   ---------------------
+
+   function Has_Abstract_Op
+     (N   : Node_Id;
+      Typ : Entity_Id) return Entity_Id
+   is
+      I  : Interp_Index;
+      It : Interp;
+
+   begin
+      if Is_Overloaded (N) then
+         Get_First_Interp (N, I, It);
+         while Present (It.Nam) loop
+            if Present (It.Abstract_Op)
+              and then Etype (It.Abstract_Op) = Typ
+            then
+               return It.Abstract_Op;
+            end if;
+
+            Get_Next_Interp (I, It);
+         end loop;
+      end if;
+
+      return Empty;
+   end Has_Abstract_Op;
 
    ----------
    -- Hash --
@@ -2384,18 +2510,17 @@ package body Sem_Type is
       then
          return False;
 
-      else return
-        Is_Numeric_Type (T)
-          and then not In_Open_Scopes (Scope (T))
-          and then not Is_Potentially_Use_Visible (T)
-          and then not In_Use (T)
-          and then not In_Use (Scope (T))
-          and then
+      else
+         return Is_Numeric_Type (T)
+           and then not In_Open_Scopes (Scope (T))
+           and then not Is_Potentially_Use_Visible (T)
+           and then not In_Use (T)
+           and then not In_Use (Scope (T))
+           and then
             (Nkind (Orig_Node) /= N_Function_Call
               or else Nkind (Name (Orig_Node)) /= N_Expanded_Name
               or else Entity (Prefix (Name (Orig_Node))) /= Scope (T))
-
-          and then not In_Instance;
+           and then not In_Instance;
       end if;
    end Is_Invisible_Operator;
 
@@ -2866,6 +2991,15 @@ package body Sem_Type is
       end if;
    end Specific_Type;
 
+   ---------------------
+   -- Set_Abstract_Op --
+   ---------------------
+
+   procedure Set_Abstract_Op (I : Interp_Index; V : Entity_Id) is
+   begin
+      All_Interp.Table (I).Abstract_Op := V;
+   end Set_Abstract_Op;
+
    -----------------------
    -- Valid_Boolean_Arg --
    -----------------------
@@ -2956,9 +3090,9 @@ package body Sem_Type is
          Get_First_Interp (N, I, It);
          Write_Str ("Overloaded entity ");
          Write_Eol;
-         Write_Str ("      Name           Type");
+         Write_Str ("      Name           Type           Abstract Op");
          Write_Eol;
-         Write_Str ("===============================");
+         Write_Str ("===============================================");
          Write_Eol;
          Nam := It.Nam;
 
@@ -2970,6 +3104,14 @@ package body Sem_Type is
             Write_Int (Int (It.Typ));
             Write_Str ("   ");
             Write_Name (Chars (It.Typ));
+
+            if Present (It.Abstract_Op) then
+               Write_Str ("   ");
+               Write_Int (Int (It.Abstract_Op));
+               Write_Str ("   ");
+               Write_Name (Chars (It.Abstract_Op));
+            end if;
+
             Write_Eol;
             Get_Next_Interp (I, It);
             Nam := It.Nam;
