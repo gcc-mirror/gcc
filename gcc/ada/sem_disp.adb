@@ -593,8 +593,9 @@ package body Sem_Disp is
                   Typ := Etype (E);
                end if;
 
-               if not Is_Class_Wide_Type (Typ)
+               if Comes_From_Source (Subp)
                  and then Is_Interface (Typ)
+                 and then not Is_Class_Wide_Type (Typ)
                  and then not Is_Derived_Type (Typ)
                  and then not Is_Generic_Type (Typ)
                  and then not In_Instance
@@ -1211,7 +1212,11 @@ package body Sem_Disp is
 
    function Is_Dynamically_Tagged (N : Node_Id) return Boolean is
    begin
-      return Find_Controlling_Arg (N) /= Empty;
+      if Nkind (N) = N_Error then
+         return False;
+      else
+         return Find_Controlling_Arg (N) /= Empty;
+      end if;
    end Is_Dynamically_Tagged;
 
    --------------------------
@@ -1338,7 +1343,11 @@ package body Sem_Disp is
             if Prim = New_Op then
                null;
 
-            elsif Present (Abstract_Interface_Alias (Prim))
+            --  Note: The check on Is_Subprogram protects the frontend against
+            --  reading attributes in entities that are not yet fully decorated
+
+            elsif Is_Subprogram (Prim)
+              and then Present (Abstract_Interface_Alias (Prim))
               and then Alias (Prim) = Prev_Op
             then
                Set_Alias (Prim, New_Op);
