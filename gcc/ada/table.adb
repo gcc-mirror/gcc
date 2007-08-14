@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,8 +82,7 @@ package body Table is
 
       procedure Append (New_Val : Table_Component_Type) is
       begin
-         Increment_Last;
-         Table (Table_Index_Type (Last_Val)) := New_Val;
+         Set_Item (Table_Index_Type (Last_Val + 1), New_Val);
       end Append;
 
       --------------------
@@ -268,12 +267,65 @@ package body Table is
          (Index : Table_Index_Type;
           Item  : Table_Component_Type)
       is
-      begin
-         if Int (Index) > Max then
-            Set_Last (Index);
-         end if;
+         --  If Item is a value within the current allocation, and we are going
+         --  to reallocate, then we must preserve an intermediate copy here
+         --  before calling Increment_Last. Otherwise, if Table_Component_Type
+         --  is passed by reference, we are going to end up copying from
+         --  storage that might have been deallocated from Increment_Last
+         --  calling Reallocate.
 
-         Table (Index) := Item;
+         subtype Allocated_Table_T is
+           Table_Type (Table'First .. Table_Index_Type (Max + 1));
+         --  A constrained table subtype one element larger than the currently
+         --  allocated table.
+
+         Allocated_Table_Address : constant System.Address :=
+                                     Table.all'Address;
+         --  Used for address clause below (we can't use non-static expression
+         --  Table.all'Address directly in the clause because some older
+         --  versions of the compiler do not allow it).
+
+         Allocated_Table : Allocated_Table_T;
+         pragma Import (Ada, Allocated_Table);
+         for Allocated_Table'Address use Allocated_Table_Address;
+         --  Allocated_Table represents the currently allocated array, plus one
+         --  element (the supplementary element is used to have a convenient
+         --  way of computing the address just past the end of the current
+         --  allocation).
+
+         Need_Realloc : constant Boolean := Int (Index) > Max;
+         --  True if this operation requires storage reallocation (which may
+         --  involve moving table contents around).
+
+      begin
+         --  If we're going to reallocate, check wheter Item references an
+         --  element of the currently allocated table.
+
+         if Need_Realloc
+           and then Allocated_Table'Address <= Item'Address
+           and then Item'Address <
+                      Allocated_Table (Table_Index_Type (Max + 1))'Address
+         then
+            --  If so, save a copy on the stack because Increment_Last will
+            --  reallocate storage and might deallocate the current table.
+
+            declare
+               Item_Copy : constant Table_Component_Type := Item;
+            begin
+               Set_Last (Index);
+               Table (Index) := Item_Copy;
+            end;
+
+         else
+            --  Here we know that either we won't reallocate (case of Index <
+            --  Max) or that Item is not in the currently allocated table.
+
+            if Int (Index) > Last_Val then
+               Set_Last (Index);
+            end if;
+
+            Table (Index) := Item;
+         end if;
       end Set_Item;
 
       --------------
@@ -284,6 +336,7 @@ package body Table is
       begin
          if Int (New_Val) < Last_Val then
             Last_Val := Int (New_Val);
+
          else
             Last_Val := Int (New_Val);
 

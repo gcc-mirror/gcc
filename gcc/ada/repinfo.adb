@@ -212,16 +212,10 @@ package body Repinfo is
    ------------------------
 
    function Create_Discrim_Ref (Discr : Entity_Id) return Node_Ref is
-      N : constant Uint := Discriminant_Number (Discr);
-      T : Nat;
    begin
-      Rep_Table.Increment_Last;
-      T := Rep_Table.Last;
-      Rep_Table.Table (T).Expr := Discrim_Val;
-      Rep_Table.Table (T).Op1  := N;
-      Rep_Table.Table (T).Op2  := No_Uint;
-      Rep_Table.Table (T).Op3  := No_Uint;
-      return UI_From_Int (-T);
+      return Create_Node
+        (Expr => Discrim_Val,
+         Op1  => Discriminant_Number (Discr));
    end Create_Discrim_Ref;
 
    ---------------------------
@@ -229,12 +223,9 @@ package body Repinfo is
    ---------------------------
 
    function Create_Dynamic_SO_Ref (E : Entity_Id) return Dynamic_SO_Ref is
-      T : Nat;
    begin
-      Dynamic_SO_Entity_Table.Increment_Last;
-      T := Dynamic_SO_Entity_Table.Last;
-      Dynamic_SO_Entity_Table.Table (T) := E;
-      return UI_From_Int (-T);
+      Dynamic_SO_Entity_Table.Append (E);
+      return UI_From_Int (-Dynamic_SO_Entity_Table.Last);
    end Create_Dynamic_SO_Ref;
 
    -----------------
@@ -247,15 +238,13 @@ package body Repinfo is
       Op2  : Node_Ref_Or_Val := No_Uint;
       Op3  : Node_Ref_Or_Val := No_Uint) return Node_Ref
    is
-      T : Nat;
    begin
-      Rep_Table.Increment_Last;
-      T := Rep_Table.Last;
-      Rep_Table.Table (T).Expr := Expr;
-      Rep_Table.Table (T).Op1  := Op1;
-      Rep_Table.Table (T).Op2  := Op2;
-      Rep_Table.Table (T).Op3  := Op3;
-      return UI_From_Int (-T);
+      Rep_Table.Append (
+        (Expr => Expr,
+         Op1  => Op1,
+         Op2  => Op2,
+         Op3  => Op3));
+      return UI_From_Int (-Rep_Table.Last);
    end Create_Node;
 
    ---------------------------

@@ -1906,14 +1906,13 @@ package body Sem_Elab is
       --  Delay this call if we are still delaying calls
 
       if Delaying_Elab_Checks then
-         Delay_Check.Increment_Last;
-         Delay_Check.Table (Delay_Check.Last) :=
+         Delay_Check.Append (
            (N              => N,
             E              => E,
             Orig_Ent       => Orig_Ent,
             Curscop        => Current_Scope,
             Outer_Scope    => Outer_Scope,
-            From_Elab_Code => From_Elab_Code);
+            From_Elab_Code => From_Elab_Code));
          return;
 
       --  Otherwise, call phase 2 continuation right now
@@ -2031,8 +2030,7 @@ package body Sem_Elab is
          Outer_Level_Sloc := Loc;
       end if;
 
-      Elab_Visited.Increment_Last;
-      Elab_Visited.Table (Elab_Visited.Last) := E;
+      Elab_Visited.Append (E);
 
       --  If the call is to a function that renames a literal, no check
       --  is needed.
@@ -2076,9 +2074,7 @@ package body Sem_Elab is
       else
          pragma Assert (Nkind (Sbody) = N_Subprogram_Body);
 
-         Elab_Call.Increment_Last;
-         Elab_Call.Table (Elab_Call.Last).Cloc := Loc;
-         Elab_Call.Table (Elab_Call.Last).Ent  := E;
+         Elab_Call.Append ((Cloc => Loc, Ent => E));
 
          if Debug_Flag_LL then
             Write_Str ("Elab_Call.Last = ");

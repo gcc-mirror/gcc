@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,9 +212,7 @@ package body Processing is
 
                         --  Put the new symbol in the table
 
-                        Symbol_Table.Increment_Last (Complete_Symbols);
-                        Complete_Symbols.Table
-                          (Symbol_Table.Last (Complete_Symbols)) := S_Data;
+                        Symbol_Table.Append (Complete_Symbols, S_Data);
                      end;
                   end if;
 
