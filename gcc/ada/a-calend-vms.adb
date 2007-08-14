@@ -156,22 +156,8 @@ package body Ada.Calendar is
 
    function "+" (Left : Time; Right : Duration) return Time is
       pragma Unsuppress (Overflow_Check);
-
-      Res_M : Time;
-
    begin
-      --  Trivial case
-
-      if Right = Duration (0.0) then
-         return Left;
-      end if;
-
-      Res_M := Left + To_Relative_Time (Right);
-
-      Check_Within_Time_Bounds (Res_M);
-
-      return Res_M;
-
+      return Left + To_Relative_Time (Right);
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -192,22 +178,8 @@ package body Ada.Calendar is
 
    function "-" (Left : Time; Right : Duration) return Time is
       pragma Unsuppress (Overflow_Check);
-
-      Res_M : Time;
-
    begin
-      --  Trivial case
-
-      if Right = Duration (0.0) then
-         return Left;
-      end if;
-
-      Res_M := Left - To_Relative_Time (Right);
-
-      Check_Within_Time_Bounds (Res_M);
-
-      return Res_M;
-
+      return Left - To_Relative_Time (Right);
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -226,15 +198,22 @@ package body Ada.Calendar is
    begin
       Res_M := Left - Right;
 
-      --  The result does not fit in a duration value
+      --  Due to the extended range of Ada time, "-" is capable of producing
+      --  results which may exceed the range of Duration. In order to prevent
+      --  the generation of bogus values by the Unchecked_Conversion, we apply
+      --  the following check.
 
       if Res_M < Dur_Low
         or else Res_M >= Dur_High
       then
          raise Time_Error;
+
+      --  Normal case, result fits
+
+      else
+         return To_Duration (Res_M);
       end if;
 
-      return To_Duration (Res_M);
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -629,22 +608,8 @@ package body Ada.Calendar is
 
       function Add (Date : Time; Days : Long_Integer) return Time is
          pragma Unsuppress (Overflow_Check);
-
-         Res_M : Time;
-
       begin
-         --  Trivial case
-
-         if Days = 0 then
-            return Date;
-         end if;
-
-         Res_M := Date + Time (Days) * Milis_In_Day;
-
-         Check_Within_Time_Bounds (Res_M);
-
-         return Res_M;
-
+         return Date + Time (Days) * Milis_In_Day;
       exception
          when Constraint_Error =>
             raise Time_Error;
@@ -732,21 +697,8 @@ package body Ada.Calendar is
 
       function Subtract (Date : Time; Days : Long_Integer) return Time is
          pragma Unsuppress (Overflow_Check);
-
-         Res_M : Time;
-
       begin
-         --  Trivial case
-
-         if Days = 0 then
-            return Date;
-         end if;
-
-         Res_M := Date - Time (Days) * Milis_In_Day;
-
-         Check_Within_Time_Bounds (Res_M);
-
-         return Res_M;
+         return Date - Time (Days) * Milis_In_Day;
       exception
          when Constraint_Error =>
             raise Time_Error;
