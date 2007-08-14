@@ -610,7 +610,13 @@ package body System.File_IO is
 
    function Is_Open (File : AFCB_Ptr) return Boolean is
    begin
-      return (File /= null);
+      --  We return True if the file is open, and the underlying file stream is
+      --  usable. In particular on Windows an application linked with -mwindows
+      --  option set does not have a console attached. In this case standard
+      --  files (Current_Output, Current_Error, Current_Input) are not created.
+      --  We want Is_Open (Current_Output) to return False in this case.
+
+      return File /= null and then fileno (File.Stream) /= -1;
    end Is_Open;
 
    -------------------
