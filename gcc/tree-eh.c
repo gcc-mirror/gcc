@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "ggc.h"
 #include "toplev.h"
+#include "pointer-set.h"
 
 
 /* Nonzero if we are using EH to handle cleanups.  */
@@ -311,6 +312,9 @@ struct leh_tf_state
   size_t goto_queue_size;
   size_t goto_queue_active;
 
+  /* Pointer map to help in searching qoto_queue when it is large.  */
+  struct pointer_map_t *goto_queue_map;
+
   /* The set of unique labels seen as entries in the goto queue.  */
   VEC(tree,heap) *dest_array;
 
@@ -338,29 +342,44 @@ struct leh_tf_state
 static void lower_eh_filter (struct leh_state *, tree *);
 static void lower_eh_constructs_1 (struct leh_state *, tree *);
 
-/* Comparison function for qsort/bsearch.  We're interested in
-   searching goto queue elements for source statements.  */
-
-static int
-goto_queue_cmp (const void *x, const void *y)
-{
-  tree a = ((const struct goto_queue_node *)x)->stmt;
-  tree b = ((const struct goto_queue_node *)y)->stmt;
-  return (a == b ? 0 : a < b ? -1 : 1);
-}
-
 /* Search for STMT in the goto queue.  Return the replacement,
    or null if the statement isn't in the queue.  */
+
+#define LARGE_GOTO_QUEUE 20
 
 static tree
 find_goto_replacement (struct leh_tf_state *tf, tree stmt)
 {
-  struct goto_queue_node tmp, *ret;
-  tmp.stmt = stmt;
-  ret = (struct goto_queue_node *)
-     bsearch (&tmp, tf->goto_queue, tf->goto_queue_active,
-		 sizeof (struct goto_queue_node), goto_queue_cmp);
-  return (ret ? ret->repl_stmt : NULL);
+  unsigned int i;
+  void **slot;
+
+  if (tf->goto_queue_active < LARGE_GOTO_QUEUE)
+    {
+      for (i = 0; i < tf->goto_queue_active; i++)
+	if (tf->goto_queue[i].stmt == stmt)
+	  return tf->goto_queue[i].repl_stmt;
+      return NULL;
+    }
+
+  /* If we have a large number of entries in the goto_queue, create a
+     pointer map and use that for searching.  */
+
+  if (!tf->goto_queue_map)
+    {
+      tf->goto_queue_map = pointer_map_create ();
+      for (i = 0; i < tf->goto_queue_active; i++)
+	{
+	  slot = pointer_map_insert (tf->goto_queue_map, tf->goto_queue[i].stmt);
+          gcc_assert (*slot == NULL);
+	  *slot = (void *) &tf->goto_queue[i];
+	}
+    }
+
+  slot = pointer_map_contains (tf->goto_queue_map, stmt);
+  if (slot != NULL)
+    return (((struct goto_queue_node *) *slot)->repl_stmt);
+
+  return NULL;
 }
 
 /* A subroutine of replace_goto_queue_1.  Handles the sub-clauses of a
@@ -518,6 +537,8 @@ maybe_record_in_goto_queue (struct leh_state *state, tree stmt)
     default:
       gcc_unreachable ();
     }
+
+  gcc_assert (!tf->goto_queue_map);
 
   active = tf->goto_queue_active;
   size = tf->goto_queue_size;
@@ -1371,11 +1392,6 @@ lower_try_finally (struct leh_state *state, tree *tp)
       honor_protect_cleanup_actions (state, &this_state, &this_tf);
     }
 
-  /* Sort the goto queue for efficient searching later.  */
-  if (this_tf.goto_queue_active > 1)
-    qsort (this_tf.goto_queue, this_tf.goto_queue_active,
-	   sizeof (struct goto_queue_node), goto_queue_cmp);
-
   /* Determine how many edges (still) reach the finally block.  Or rather,
      how many destinations are reached by the finally block.  Use this to
      determine how we process the finally block itself.  */
@@ -1415,6 +1431,8 @@ lower_try_finally (struct leh_state *state, tree *tp)
   VEC_free (tree, heap, this_tf.dest_array);
   if (this_tf.goto_queue)
     free (this_tf.goto_queue);
+  if (this_tf.goto_queue_map)
+    pointer_map_destroy (this_tf.goto_queue_map);
 }
 
 /* A subroutine of lower_eh_constructs_1.  Lower a TRY_CATCH_EXPR with a
