@@ -51,8 +51,7 @@ with Tbuild;   use Tbuild;
 ---------
 
 function Par
-  (Configuration_Pragmas : Boolean;
-   From_Limited_With     : Boolean := False) return List_Id
+  (Configuration_Pragmas : Boolean) return List_Id
 is
    Num_Library_Units : Natural := 0;
    --  Count number of units parsed (relevant only in syntax check only mode,
@@ -1042,6 +1041,10 @@ is
       --  it is returned unchanged. Otherwise an error message is issued
       --  and Error is returned.
 
+      procedure Check_No_Right_Paren;
+      --  Called to check that the current token is not a right paren. If it
+      --  is, then an error is given, and the right parenthesis is scanned out.
+
       function Comma_Present return Boolean;
       --  Used in comma delimited lists to determine if a comma is present, or
       --  can reasonably be assumed to have been present (an error message is
@@ -1088,10 +1091,6 @@ is
       --  appear due to a common error (e.g. after the type mark in a procedure
       --  parameter. If a constraint is present, an error message is posted,
       --  and the constraint is scanned and discarded.
-
-      function No_Right_Paren (Expr : Node_Id) return Node_Id;
-      --  Function to check for no right paren at end of expression, returns
-      --  its argument if no right paren, else flags paren and returns Error.
 
       procedure Push_Scope_Stack;
       pragma Inline (Push_Scope_Stack);

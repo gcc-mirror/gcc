@@ -61,15 +61,14 @@ package body Ch3 is
       Done    : out Boolean;
       In_Spec : Boolean);
    --  Scans out a single declarative item, or, in the case of a declaration
-   --  with a list of identifiers, a list of declarations, one for each of
-   --  the identifiers in the list. The declaration or declarations scanned
-   --  are appended to the given list. Done indicates whether or not there
-   --  may be additional declarative items to scan. If Done is True, then
-   --  a decision has been made that there are no more items to scan. If
-   --  Done is False, then there may be additional declarations to scan.
-   --  In_Spec is true if we are scanning a package declaration, and is used
-   --  to generate an appropriate message if a statement is encountered in
-   --  such a context.
+   --  with a list of identifiers, a list of declarations, one for each of the
+   --  identifiers in the list. The declaration or declarations scanned are
+   --  appended to the given list. Done indicates whether or not there may be
+   --  additional declarative items to scan. If Done is True, then a decision
+   --  has been made that there are no more items to scan. If Done is False,
+   --  then there may be additional declarations to scan. In_Spec is true if
+   --  we are scanning a package declaration, and is used to generate an
+   --  appropriate message if a statement is encountered in such a context.
 
    procedure P_Identifier_Declarations
      (Decls   : List_Id;
@@ -2410,7 +2409,7 @@ package body Ch3 is
    begin
       Constraint_Node := New_Node (N_Digits_Constraint, Token_Ptr);
       Scan; -- past DIGITS
-      Expr_Node := P_Expression_No_Right_Paren;
+      Expr_Node := P_Expression;
       Check_Simple_Expression_In_Ada_83 (Expr_Node);
       Set_Digits_Expression (Constraint_Node, Expr_Node);
 
@@ -2442,7 +2441,7 @@ package body Ch3 is
    begin
       Constraint_Node := New_Node (N_Delta_Constraint, Token_Ptr);
       Scan; -- past DELTA
-      Expr_Node := P_Expression_No_Right_Paren;
+      Expr_Node := P_Expression;
       Check_Simple_Expression_In_Ada_83 (Expr_Node);
       Set_Delta_Expression (Constraint_Node, Expr_Node);
 
@@ -3505,7 +3504,8 @@ package body Ch3 is
 
          else
             begin
-               Expr_Node := No_Right_Paren (P_Expression_Or_Range_Attribute);
+               Expr_Node := P_Expression_Or_Range_Attribute;
+               Check_No_Right_Paren;
 
                if Token = Tok_Colon
                  and then Nkind (Expr_Node) = N_Identifier
@@ -3602,7 +3602,7 @@ package body Ch3 is
 
       if Abstract_Present then
          Error_Msg_SP ("ABSTRACT not allowed in interface type definition " &
-                       "('R'M' 3.9.4(2/2))");
+                       "(RM 3.9.4(2/2))");
       end if;
 
       Scan; -- past INTERFACE
@@ -3983,7 +3983,9 @@ package body Ch3 is
       Scan_State : Saved_Scan_State;
 
    begin
-      if Style_Check then Style.Check_Indentation; end if;
+      if Style_Check then
+         Style.Check_Indentation;
+      end if;
 
       case Token is
 

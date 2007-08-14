@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,6 +175,18 @@ package body Util is
          null;
       end if;
    end Check_Misspelling_Of;
+
+   --------------------------
+   -- Check_No_Right_Paren --
+   --------------------------
+
+   procedure Check_No_Right_Paren is
+   begin
+      if Token = Tok_Right_Paren then
+         Error_Msg_SC ("unexpected right parenthesis");
+         Scan; -- past unexpected right paren
+      end if;
+   end Check_No_Right_Paren;
 
    -----------------------------
    -- Check_Simple_Expression --
@@ -586,21 +598,6 @@ package body Util is
          Discard_Junk_Node (P_Constraint_Opt);
       end if;
    end No_Constraint;
-
-   --------------------
-   -- No_Right_Paren --
-   --------------------
-
-   function No_Right_Paren (Expr : Node_Id) return Node_Id is
-   begin
-      if Token = Tok_Right_Paren then
-         Error_Msg_SC ("unexpected right parenthesis");
-         Resync_Expression;
-         return Error;
-      else
-         return Expr;
-      end if;
-   end No_Right_Paren;
 
    ---------------------
    -- Pop_Scope_Stack --
