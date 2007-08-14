@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2006, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,12 +91,14 @@ package System.OS_Interface is
    -- Signal processing definitions --
    -----------------------------------
 
-   --  The how in sigprocmask().
+   --  The how in sigprocmask()
+
    SIG_BLOCK   : constant := 1;
    SIG_UNBLOCK : constant := 2;
    SIG_SETMASK : constant := 3;
 
-   --  The sa_flags in struct sigaction.
+   --  The sa_flags in struct sigaction
+
    SA_SIGINFO   : constant := 16#0002#;
    SA_ONSTACK   : constant := 16#0004#;
 
@@ -156,6 +158,30 @@ package System.OS_Interface is
 
    function getpid return t_id;
    pragma Inline (getpid);
+
+   function Task_Stop (tid : t_id) return int;
+   pragma Inline (Task_Stop);
+   --  If we are in the kernel space, stop the task whose t_id is
+   --  given in parameter in such a way that it can be examined by the
+   --  debugger. This typically maps to taskSuspend on VxWorks 5 and
+   --  to taskStop on VxWorks 6.
+
+   function Task_Cont (tid : t_id) return int;
+   pragma Inline (Task_Cont);
+   --  If we are in the kernel space, continue the task whose t_id is
+   --  given in parameter if it has been stopped previously to be examined
+   --  by the debugger (e.g. by taskStop). It typically maps to taskResume
+   --  on VxWorks 5 and to taskCont on VxWorks 6.
+
+   function Int_Lock return int;
+   pragma Inline (Int_Lock);
+   --  If we are in the kernel space, lock interrupts. It typically maps to
+   --  intLock.
+
+   function Int_Unlock return int;
+   pragma Inline (Int_Unlock);
+   --  If we are in the kernel space, unlock interrupts. It typically maps to
+   --  intUnlock.
 
    ----------
    -- Time --

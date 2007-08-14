@@ -1282,6 +1282,49 @@ package body System.Task_Primitives.Operations is
       end if;
    end Resume_Task;
 
+   --------------------
+   -- Stop_All_Tasks --
+   --------------------
+
+   procedure Stop_All_Tasks
+   is
+      Thread_Self : constant Thread_Id := taskIdSelf;
+      C           : Task_Id;
+
+      Dummy : int;
+      pragma Unreferenced (Dummy);
+
+   begin
+      Dummy := Int_Lock;
+
+      C := All_Tasks_List;
+      while C /= null loop
+         if C.Common.LL.Thread /= 0
+           and then C.Common.LL.Thread /= Thread_Self
+         then
+            Dummy := Task_Stop (C.Common.LL.Thread);
+         end if;
+
+         C := C.Common.All_Tasks_Link;
+      end loop;
+
+      Dummy := Int_Unlock;
+   end Stop_All_Tasks;
+
+   -------------------
+   -- Continue_Task --
+   -------------------
+
+   function Continue_Task (T : ST.Task_Id) return Boolean
+   is
+   begin
+      if T.Common.LL.Thread /= 0 then
+         return Task_Cont (T.Common.LL.Thread) = 0;
+      else
+         return True;
+      end if;
+   end Continue_Task;
+
    ----------------
    -- Initialize --
    ----------------

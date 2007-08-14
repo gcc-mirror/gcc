@@ -61,10 +61,32 @@ package body System.Tasking.Debug is
    procedure Write (Fd : Integer; S : String; Count : Integer);
 
    procedure Put (S : String);
-   --  Display S on standard output.
+   --  Display S on standard output
 
    procedure Put_Line (S : String := "");
-   --  Display S on standard output with an additional line terminator.
+   --  Display S on standard output with an additional line terminator
+
+   ------------------------
+   -- Continue_All_Tasks --
+   ------------------------
+
+   procedure Continue_All_Tasks is
+      C : Task_Id;
+
+      Dummy : Boolean;
+      pragma Unreferenced (Dummy);
+
+   begin
+      STPO.Lock_RTS;
+
+      C := All_Tasks_List;
+      while C /= null loop
+         Dummy := STPO.Continue_Task (C);
+         C := C.Common.All_Tasks_Link;
+      end loop;
+
+      STPO.Unlock_RTS;
+   end Continue_All_Tasks;
 
    --------------------
    -- Get_User_State --
@@ -224,6 +246,15 @@ package body System.Tasking.Debug is
    begin
       STPO.Self.User_State := Value;
    end Set_User_State;
+
+   --------------------
+   -- Stop_All_Tasks --
+   --------------------
+
+   procedure Stop_All_Tasks is
+   begin
+      STPO.Stop_All_Tasks;
+   end Stop_All_Tasks;
 
    -----------------------
    -- Suspend_All_Tasks --
