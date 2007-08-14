@@ -21,7 +21,7 @@
 # This makefile fragment is included in the ada Makefile (both Unix
 # and NT and VMS versions).
 
-# It's purpose is to allow the separate maintainence of the list of
+# Its purpose is to allow the separate maintainence of the list of
 # GNATRTL objects, which frequently changes.
 
 # Objects needed only for tasking
@@ -76,6 +76,7 @@ GNATRTL_TASKING_OBJS= \
 
 # Objects needed for non-tasking.
 GNATRTL_NONTASKING_OBJS= \
+  a-assert$(objext) \
   a-calari$(objext) \
   a-caldel$(objext) \
   a-calend$(objext) \
@@ -158,6 +159,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-ngcefu$(objext) \
   a-ngcoty$(objext) \
   a-ngelfu$(objext) \
+  a-ngrear$(objext) \
   a-nlcefu$(objext) \
   a-nlcoty$(objext) \
   a-nlelfu$(objext) \
@@ -303,6 +305,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-zzunio$(objext) \
   ada$(objext) \
   calendar$(objext) \
+  directio$(objext) \
   g-allein$(objext) \
   g-alleve$(objext) \
   g-altcon$(objext) \
@@ -350,6 +353,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-moreex$(objext) \
   g-os_lib$(objext) \
   g-pehage$(objext) \
+  g-rannum$(objext) \
   g-regexp$(objext) \
   g-regpat$(objext) \
   g-sestin$(objext) \
@@ -523,6 +527,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-poosiz$(objext) \
   s-powtab$(objext) \
   s-purexc$(objext) \
+  s-rannum$(objext) \
   s-regexp$(objext) \
   s-regpat$(objext) \
   s-restri$(objext) \
@@ -584,5 +589,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-wwdcha$(objext) \
   s-wwdenu$(objext) \
   s-wwdwch$(objext) \
+  sequenio$(objext) \
   system$(objext) \
-  text_io$(objext) $(EXTRA_GNATRTL_NONTASKING_OBJS)
+  text_io$(objext) \
+  unchconv$(objext) \
+  unchdeal$(objext) \
+  $(EXTRA_GNATRTL_NONTASKING_OBJS)

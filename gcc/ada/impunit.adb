@@ -247,6 +247,7 @@ package body Impunit is
      "g-moreex",    -- GNAT.Most_Recent_Exception
      "g-os_lib",    -- GNAT.Os_Lib
      "g-pehage",    -- GNAT.Perfect_Hash_Generators
+     "g-rannum",    -- GNAT.Random_Numbers
      "g-regexp",    -- GNAT.Regexp
      "g-regist",    -- GNAT.Registry
      "g-regpat",    -- GNAT.Regpat
@@ -333,6 +334,7 @@ package body Impunit is
    -- Ada Hierarchy Units from Ada 2005 Reference Manual --
    --------------------------------------------------------
 
+     "a-assert",    -- Ada.Assertions
      "a-calari",    -- Ada.Calendar.Arithmetic
      "a-calfor",    -- Ada.Calendar.Formatting
      "a-catizo",    -- Ada.Calendar.Time_Zones
