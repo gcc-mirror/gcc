@@ -210,7 +210,9 @@ package body Ch5 is
          end loop;
 
          begin
-            if Style_Check then Style.Check_Indentation; end if;
+            if Style_Check then
+               Style.Check_Indentation;
+            end if;
 
             --  Deal with reserved identifier (in assignment or call)
 
@@ -1121,7 +1123,10 @@ package body Ch5 is
       begin
          if Token_Is_At_Start_Of_Line and then Token = Tok_Then then
             Check_If_Column;
-            if Style_Check then Style.Check_Then (Loc); end if;
+
+            if Style_Check then
+               Style.Check_Then (Loc);
+            end if;
          end if;
       end Check_Then_Column;
 
@@ -1397,7 +1402,10 @@ package body Ch5 is
       Case_Alt_Node : Node_Id;
 
    begin
-      if Style_Check then Style.Check_Indentation; end if;
+      if Style_Check then
+         Style.Check_Indentation;
+      end if;
+
       Case_Alt_Node := New_Node (N_Case_Statement_Alternative, Token_Ptr);
       T_When; -- past WHEN (or give error in OTHERS case)
       Set_Discrete_Choices (Case_Alt_Node, P_Discrete_Choice_List);
@@ -2069,7 +2077,9 @@ package body Ch5 is
          Set_Declarations (Parent, Decls);
 
          if Token = Tok_Begin then
-            if Style_Check then Style.Check_Indentation; end if;
+            if Style_Check then
+               Style.Check_Indentation;
+            end if;
 
             Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
 

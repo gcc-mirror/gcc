@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,11 +32,16 @@ package body Get_Targ is
 
    function Digits_From_Size (Size : Pos) return Pos is
    begin
-      if    Size =  32 then return  6;
-      elsif Size =  48 then return  9;
-      elsif Size =  64 then return 15;
-      elsif Size =  96 then return 18;
-      elsif Size = 128 then return 18;
+      if    Size =  32 then
+         return  6;
+      elsif Size =  48 then
+         return  9;
+      elsif Size =  64 then
+         return 15;
+      elsif Size =  96 then
+         return 18;
+      elsif Size = 128 then
+         return 18;
       else
          raise Program_Error;
       end if;
@@ -57,10 +62,14 @@ package body Get_Targ is
 
    function Width_From_Size  (Size : Pos) return Pos is
    begin
-      if    Size =  8 then return  4;
-      elsif Size = 16 then return  6;
-      elsif Size = 32 then return 11;
-      elsif Size = 64 then return 21;
+      if    Size =  8 then
+         return  4;
+      elsif Size = 16 then
+         return  6;
+      elsif Size = 32 then
+         return 11;
+      elsif Size = 64 then
+         return 21;
       else
          raise Program_Error;
       end if;

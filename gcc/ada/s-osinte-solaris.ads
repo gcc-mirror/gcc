@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -126,7 +126,7 @@ package System.OS_Interface is
    Unmasked : constant Signal_Set := (SIGTRAP, SIGLWP, SIGPROF);
 
    --  Following signals should not be disturbed.
-   --  See c-posix-signals.c in FLORIST
+   --  See c-posix-signals.c in FLORIST.
 
    Reserved : constant Signal_Set :=
      (SIGKILL, SIGSTOP, SIGWAITING, SIGCANCEL, SIGTRAP, SIGSEGV);
@@ -451,7 +451,7 @@ package System.OS_Interface is
    type id_t is new long;
 
    P_MYID : constant := -1;
-   --  the specified LWP or process is the current one.
+   --  The specified LWP or process is the current one
 
    type struct_pcinfo is record
       pc_cid    : id_t;
@@ -485,21 +485,21 @@ package System.OS_Interface is
    --  Constants for function processor_bind
 
    PBIND_QUERY : constant processorid_t := -2;
-   --  the processor bindings are not changed.
+   --  The processor bindings are not changed
 
    PBIND_NONE  : constant processorid_t := -1;
-   --  the processor bindings of the specified LWPs are cleared.
+   --  The processor bindings of the specified LWPs are cleared
 
    --  Flags for function p_online
 
    PR_OFFLINE : constant int := 1;
-   --  processor is offline, as quiet as possible
+   --  Processor is offline, as quiet as possible
 
    PR_ONLINE  : constant int := 2;
-   --  processor online
+   --  Processor online
 
    PR_STATUS  : constant int := 3;
-   --  value passed to p_online to request status
+   --  Value passed to p_online to request status
 
    function p_online (processorid : processorid_t; flag : int) return int;
    pragma Import (C, p_online, "p_online");
@@ -512,7 +512,7 @@ package System.OS_Interface is
    pragma Import (C, processor_bind, "processor_bind");
 
    procedure pthread_init;
-   --  dummy procedure to share s-intman.adb with other Solaris targets.
+   --  Dummy procedure to share s-intman.adb with other Solaris targets
 
 private
 

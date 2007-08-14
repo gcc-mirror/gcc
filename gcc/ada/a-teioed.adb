@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -933,7 +933,9 @@ package body Ada.Text_IO.Editing is
                               Pic.Contents.Picture.Expanded;
    begin
       for J in Temp'Range loop
-         if Temp (J) = 'b' then Temp (J) := 'B'; end if;
+         if Temp (J) = 'b' then
+            Temp (J) := 'B';
+         end if;
       end loop;
 
       return Temp;
@@ -2448,9 +2450,10 @@ package body Ada.Text_IO.Editing is
 
       procedure Set_State (L : Legality) is
       begin
-         if Debug then Ada.Text_IO.Put_Line
-            ("  Set state from " & Legality'Image (State) &
-                             " to " & Legality'Image (L));
+         if Debug then
+            Ada.Text_IO.Put_Line
+              ("  Set state from " & Legality'Image (State)
+               & " to " & Legality'Image (L));
          end if;
 
          State := L;
@@ -2462,8 +2465,8 @@ package body Ada.Text_IO.Editing is
 
       procedure Skip is
       begin
-         if Debug then Ada.Text_IO.Put_Line
-            ("  Skip " & Pic.Picture.Expanded (Index));
+         if Debug then
+            Ada.Text_IO.Put_Line ("  Skip " & Pic.Picture.Expanded (Index));
          end if;
 
          Index := Index + 1;

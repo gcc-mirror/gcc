@@ -38,20 +38,33 @@ with Interfaces.C; use Interfaces.C;
 
 package body System.OS_Interface is
 
+   -----------
+   -- Errno --
+   -----------
+
    function Errno return int is
       type int_ptr is access all int;
 
       function internal_errno return int_ptr;
       pragma Import (C, internal_errno, "__error");
+
    begin
       return (internal_errno.all);
    end Errno;
+
+   --------------------
+   -- Get_Stack_Base --
+   --------------------
 
    function Get_Stack_Base (thread : pthread_t) return Address is
       pragma Unreferenced (thread);
    begin
       return (0);
    end Get_Stack_Base;
+
+   ------------------
+   -- pthread_init --
+   ------------------
 
    procedure pthread_init is
    begin
@@ -85,15 +98,20 @@ package body System.OS_Interface is
    function To_Timespec (D : Duration) return timespec is
       S : time_t;
       F : Duration;
+
    begin
       S := time_t (Long_Long_Integer (D));
       F := D - Duration (S);
 
       --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-      if F < 0.0 then S := S - 1; F := F + 1.0; end if;
+
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
+
       return timespec'(ts_sec => S,
-        ts_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+                       ts_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
 end System.OS_Interface;
