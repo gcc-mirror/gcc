@@ -1549,21 +1549,58 @@ begin
               Index in Units.Table (ALIs.Table (A).First_Unit).First_Arg ..
                        Units.Table (ALIs.Table (A).First_Unit).Last_Arg
             loop
-               --  Do not compile with the front end switches except for --RTS
-               --  if the binder generated file is in Ada.
+               --  Do not compile with the front end switches. However, --RTS
+               --  is to be dealt with specially because it needs to be passed
+               --  if the binder-generated file is in Ada and may also be used
+               --  to drive the linker.
 
                declare
                   Arg : String_Ptr renames Args.Table (Index);
                begin
-                  if not Is_Front_End_Switch (Arg.all)
-                    or else
-                      (Ada_Bind_File
-                        and then Arg'Length > 5
-                        and then Arg (Arg'First + 2 .. Arg'First + 5) = "RTS=")
-                  then
+                  if not Is_Front_End_Switch (Arg.all) then
                      Binder_Options_From_ALI.Increment_Last;
                      Binder_Options_From_ALI.Table
                        (Binder_Options_From_ALI.Last) := String_Access (Arg);
+
+                  elsif Arg'Length > 5
+                    and then Arg (Arg'First + 2 .. Arg'First + 5) = "RTS="
+                  then
+                     if Ada_Bind_File then
+                        Binder_Options_From_ALI.Increment_Last;
+                        Binder_Options_From_ALI.Table
+                          (Binder_Options_From_ALI.Last)
+                            := String_Access (Arg);
+                     end if;
+
+                     --  GNAT doesn't support the GCC multilib mechanism.
+                     --  This means that, when a multilib switch is used
+                     --  to request a particular compilation mode, the
+                     --  corresponding runtime switch (--RTS) must also be
+                     --  specified. The long-term goal is to fully support the
+                     --  multilib mechanism; however, in the meantime, it is
+                     --  convenient to eliminate the redundancy by keying the
+                     --  compilation mode on a single switch, namely --RTS.
+
+                     --  Pass -mrtp to the linker if --RTS=rtp was passed.
+
+                     if Linker_Path = Gcc_Path
+                       and then Arg'Length > 8
+                       and then Arg (Arg'First + 6 .. Arg'First + 8) = "rtp"
+                     then
+                        Linker_Options.Increment_Last;
+                        Linker_Options.Table (Linker_Options.Last) :=
+                          new String'("-mrtp");
+
+                     --  Pass -fsjlj to the linker if --RTS=sjlj was passed.
+
+                     elsif Linker_Path = Gcc_Path
+                       and then Arg'Length > 9
+                       and then Arg (Arg'First + 6 .. Arg'First + 9) = "sjlj"
+                     then
+                        Linker_Options.Increment_Last;
+                        Linker_Options.Table (Linker_Options.Last) :=
+                          new String'("-fsjlj");
+                     end if;
                   end if;
                end;
             end loop;
