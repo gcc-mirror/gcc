@@ -254,10 +254,27 @@ package body Output is
 
    procedure Write_Eol is
    begin
+      --  Remove any trailing space
+
+      while Next_Col > 1 and then Buffer (Next_Col - 1) = ' ' loop
+         Next_Col := Next_Col - 1;
+      end loop;
+
       Buffer (Next_Col) := ASCII.LF;
       Next_Col := Next_Col + 1;
       Flush_Buffer;
    end Write_Eol;
+
+   ---------------------------
+   -- Write_Eol_Keep_Blanks --
+   ---------------------------
+
+   procedure Write_Eol_Keep_Blanks is
+   begin
+      Buffer (Next_Col) := ASCII.LF;
+      Next_Col := Next_Col + 1;
+      Flush_Buffer;
+   end Write_Eol_Keep_Blanks;
 
    ----------------------
    -- Write_Erase_Char --
