@@ -1,3 +1,13 @@
+2007-08-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32594
+	* trans-expr.c (gfc_conv_substring_expr): Only call
+	gfc_conv_substring if expr->ref is not NULL.
+	* expr.c (gfc_is_constant_expr): If e->ref is NULL, the substring
+	expression might be a constant.
+	(gfc_simplify_expr): Handle missing start and end, as well as
+	missing ref.
+
 2007-08-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32926

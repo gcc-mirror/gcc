@@ -766,8 +766,8 @@ gfc_is_constant_expr (gfc_expr *e)
       break;
 
     case EXPR_SUBSTRING:
-      rv = (gfc_is_constant_expr (e->ref->u.ss.start)
-	    && gfc_is_constant_expr (e->ref->u.ss.end));
+      rv = e->ref == NULL || (gfc_is_constant_expr (e->ref->u.ss.start)
+			      && gfc_is_constant_expr (e->ref->u.ss.end));
       break;
 
     case EXPR_STRUCTURE:
@@ -1542,9 +1542,19 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  char *s;
 	  int start, end;
 
-	  gfc_extract_int (p->ref->u.ss.start, &start);
-	  start--;  /* Convert from one-based to zero-based.  */
-	  gfc_extract_int (p->ref->u.ss.end, &end);
+	  if (p->ref && p->ref->u.ss.start)
+	    {
+	      gfc_extract_int (p->ref->u.ss.start, &start);
+	      start--;  /* Convert from one-based to zero-based.  */
+	    }
+	  else
+	    start = 0;
+
+	  if (p->ref && p->ref->u.ss.end)
+	    gfc_extract_int (p->ref->u.ss.end, &end);
+	  else
+	    end = p->value.character.length;
+
 	  s = gfc_getmem (end - start + 2);
 	  memcpy (s, p->value.character.string + start, end - start);
 	  s[end - start + 1] = '\0';  /* TODO: C-style string.  */

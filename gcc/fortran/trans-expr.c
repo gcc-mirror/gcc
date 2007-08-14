@@ -3243,14 +3243,15 @@ gfc_conv_substring_expr (gfc_se * se, gfc_expr * expr)
 
   ref = expr->ref;
 
-  gcc_assert (ref->type == REF_SUBSTRING);
+  gcc_assert (ref == NULL || ref->type == REF_SUBSTRING);
 
-  se->expr = gfc_build_string_const(expr->value.character.length,
-                                    expr->value.character.string);
+  se->expr = gfc_build_string_const (expr->value.character.length,
+				     expr->value.character.string);
   se->string_length = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (se->expr)));
-  TYPE_STRING_FLAG (TREE_TYPE (se->expr))=1;
+  TYPE_STRING_FLAG (TREE_TYPE (se->expr)) = 1;
 
-  gfc_conv_substring(se,ref,expr->ts.kind,NULL,&expr->where);
+  if (ref)
+    gfc_conv_substring (se, ref, expr->ts.kind, NULL, &expr->where);
 }
 
 
