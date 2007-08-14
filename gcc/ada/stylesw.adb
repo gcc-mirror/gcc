@@ -54,6 +54,7 @@ package body Stylesw is
       Style_Check_Order_Subprograms     := False;
       Style_Check_Pragma_Casing         := False;
       Style_Check_References            := False;
+      Style_Check_Separate_Stmt_Lines   := False;
       Style_Check_Specs                 := False;
       Style_Check_Standard              := False;
       Style_Check_Tokens                := False;
@@ -65,7 +66,7 @@ package body Stylesw is
    ------------------------------
 
    procedure Save_Style_Check_Options (Options : out Style_Check_Options) is
-      P : Natural   := 0;
+      P : Natural := 0;
 
       procedure Add (C : Character; S : Boolean);
       --  Add given character C to string if switch S is true
@@ -126,6 +127,7 @@ package body Stylesw is
       Add ('p', Style_Check_Pragma_Casing);
       Add ('r', Style_Check_References);
       Add ('s', Style_Check_Specs);
+      Add ('S', Style_Check_Separate_Stmt_Lines);
       Add ('t', Style_Check_Tokens);
       Add ('u', Style_Check_Blank_Lines);
       Add ('x', Style_Check_Xtra_Parens);
@@ -167,7 +169,7 @@ package body Stylesw is
    procedure Set_GNAT_Style_Check_Options is
    begin
       Reset_Style_Check_Options;
-      Set_Style_Check_Options ("3aAbcdefhiklmnprstux");
+      Set_Style_Check_Options ("3aAbcdefhiklmnprsStux");
    end Set_GNAT_Style_Check_Options;
 
    -----------------------------
@@ -358,6 +360,9 @@ package body Stylesw is
 
             when 's' =>
                Style_Check_Specs                 := True;
+
+            when 'S' =>
+               Style_Check_Separate_Stmt_Lines   := True;
 
             when 't' =>
                Style_Check_Tokens                := True;

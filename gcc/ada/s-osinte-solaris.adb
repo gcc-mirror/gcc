@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2007, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Solaris version of this package.
+--  This is a Solaris version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -42,6 +42,7 @@ pragma Polling (Off);
 --  tasking operations. It causes infinite loops and other problems.
 
 with Interfaces.C; use Interfaces.C;
+
 package body System.OS_Interface is
 
    -----------------
@@ -60,37 +61,59 @@ package body System.OS_Interface is
    function To_Timespec (D : Duration) return timespec is
       S : time_t;
       F : Duration;
+
    begin
       S := time_t (Long_Long_Integer (D));
       F := D - Duration (S);
 
       --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-      if F < 0.0 then S := S - 1; F := F + 1.0; end if;
+
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
+
       return timespec'(tv_sec  => S,
                        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
+
+   -----------------
+   -- To_Duration --
+   -----------------
 
    function To_Duration (TV : struct_timeval) return Duration is
    begin
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end To_Duration;
 
+   ----------------
+   -- To_Timeval --
+   ----------------
+
    function To_Timeval (D : Duration) return struct_timeval is
       S : long;
       F : Duration;
+
    begin
       S := long (Long_Long_Integer (D));
       F := D - Duration (S);
 
       --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-      if F < 0.0 then S := S - 1; F := F + 1.0; end if;
+
+      if F < 0.0 then
+         S := S - 1;
+         F := F + 1.0;
+      end if;
+
       return
         struct_timeval'
           (tv_sec  => S,
            tv_usec => long (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
+
+   ------------------
+   -- pthread_init --
+   ------------------
 
    procedure pthread_init is
    begin

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -372,12 +372,18 @@ begin
                then
                   Match (Field, Get_Field);
 
-                  if    Field = "Str"   then Field := V_String_Id;
-                  elsif Field = "Node"  then Field := V_Node_Id;
-                  elsif Field = "Name"  then Field := V_Name_Id;
-                  elsif Field = "List"  then Field := V_List_Id;
-                  elsif Field = "Elist" then Field := V_Elist_Id;
-                  elsif Field = "Flag"  then Field := V_Boolean;
+                  if    Field = "Str"   then
+                     Field := V_String_Id;
+                  elsif Field = "Node"  then
+                     Field := V_Node_Id;
+                  elsif Field = "Name"  then
+                     Field := V_Name_Id;
+                  elsif Field = "List"  then
+                     Field := V_List_Id;
+                  elsif Field = "Elist" then
+                     Field := V_Elist_Id;
+                  elsif Field = "Flag"  then
+                     Field := V_Boolean;
                   end if;
 
                   if Field = "Boolean" then
