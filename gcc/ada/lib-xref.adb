@@ -223,13 +223,20 @@ package body Lib.Xref is
       --   Prefix    Of an indexed or selected component that is present in a
       --             subtree rooted by an assignment statement. There is no
       --             restriction of nesting of components, thus cases such as
-      --             A.B(C).D are handled properly.
+      --             A.B (C).D are handled properly.
+      --             However a prefix of a dereference (either implicit or
+      --             explicit) is never considered as on a LHS.
 
       ---------------
       -- Is_On_LHS --
       ---------------
 
-      --  Couldn't we use Is_Lvalue or whatever it is called ???
+      --  ??? There are several routines here and there that perform a similar
+      --      (but subtly different) computation, which should be factored:
+
+      --      Sem_Util.May_Be_Lvalue
+      --      Sem_Util.Known_To_Be_Assigned
+      --      Exp_Ch2.Expand_Entry_Parameter.In_Assignment_Context
 
       function Is_On_LHS (Node : Node_Id) return Boolean is
          N : Node_Id := Node;
@@ -247,13 +254,28 @@ package body Lib.Xref is
 
          while Nkind (Parent (N)) /= N_Assignment_Statement loop
 
-            --  Check whether the parent is a component and the
-            --  current node is its prefix.
+            --  Check whether the parent is a component and the current node
+            --  is its prefix, but return False if the current node has an
+            --  access type, as in that case the selected or indexed component
+            --  is an implicit dereference, and the LHS is the designated
+            --  object, not the access object.
+
+            --  ??? case of a slice assignment?
+
+            --  ??? Note that in some cases this is called too early
+            --  (see comments in Sem_Ch8.Find_Direct_Name), at a point where
+            --  the tree is not fully typed yet. In that case we may lack
+            --  an Etype for N, and we must disable the check for an implicit
+            --  dereference. If the dereference is on an LHS, this causes a
+            --  false positive.
 
             if (Nkind (Parent (N)) = N_Selected_Component
                   or else
                 Nkind (Parent (N)) = N_Indexed_Component)
               and then Prefix (Parent (N)) = N
+              and then not (Present (Etype (N))
+                              and then
+                            Is_Access_Type (Etype (N)))
             then
                N := Parent (N);
             else
@@ -370,7 +392,7 @@ package body Lib.Xref is
          --  a left hand side. We also set the Referenced_As_LHS flag of a
          --  prefix of selected or indexed component.
 
-         if Ekind (E) = E_Variable
+         if (Ekind (E) = E_Variable or else Is_Formal (E))
            and then Is_On_LHS (N)
          then
             Set_Referenced_As_LHS (E);
@@ -1004,9 +1026,8 @@ package body Lib.Xref is
                end if;
             end if;
 
-            --  Collect inherited primitive operations that may be
-            --  declared in another unit and have no visible reference
-            --  in the current one.
+            --  Collect inherited primitive operations that may be declared in
+            --  another unit and have no visible reference in the current one.
 
             if Is_Type (Ent)
               and then Is_Tagged_Type (Ent)

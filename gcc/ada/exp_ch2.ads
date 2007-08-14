@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,9 +37,10 @@ package Exp_Ch2 is
    --  Given an expression N, determines if the expression is a reference
    --  to a formal (of a subprogram or entry), and if so returns the Id
    --  of the corresponding formal entity, otherwise returns Empty. The
-   --  reason that this is in Exp_Ch2 is that it has to deal with the
-   --  case where the reference is to an entry formal, and has been
-   --  expanded already. Since Exp_Ch2 is in charge of the expansion, it
-   --  is best suited to knowing how to detect this case.
+   --  reason that this is in Exp_Ch2 is that it has to deal with the case
+   --  where the reference is to an entry formal, and has been expanded
+   --  already. Since Exp_Ch2 is in charge of the expansion, it is best
+   --  suited to knowing how to detect this case. Also handles the case
+   --  of references to renamings of formals.
 
 end Exp_Ch2;

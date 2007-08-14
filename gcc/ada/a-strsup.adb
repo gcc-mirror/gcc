@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -783,7 +783,7 @@ package body Ada.Strings.Superbounded is
       Index  : Positive) return Character
    is
    begin
-      if Index in 1 .. Source.Current_Length then
+      if Index <= Source.Current_Length then
          return Source.Data (Index);
       else
          raise Strings.Index_Error;

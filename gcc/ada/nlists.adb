@@ -304,7 +304,7 @@ package body Nlists is
       if List = No_List then
          return Empty;
       else
-         pragma Assert (List in First_List_Id .. Lists.Last);
+         pragma Assert (List <= Lists.Last);
          return Lists.Table (List).First;
       end if;
    end First;
@@ -630,7 +630,7 @@ package body Nlists is
 
    function Last (List : List_Id) return Node_Id is
    begin
-      pragma Assert (List in First_List_Id .. Lists.Last);
+      pragma Assert (List <= Lists.Last);
       return Lists.Table (List).Last;
    end Last;
 
@@ -1028,7 +1028,7 @@ package body Nlists is
 
    function Parent (List : List_Id) return Node_Id is
    begin
-      pragma Assert (List in First_List_Id .. Lists.Last);
+      pragma Assert (List <= Lists.Last);
       return Lists.Table (List).Parent;
    end Parent;
 
@@ -1355,7 +1355,7 @@ package body Nlists is
 
    procedure Set_Parent (List : List_Id; Node : Node_Id) is
    begin
-      pragma Assert (List in First_List_Id .. Lists.Last);
+      pragma Assert (List <= Lists.Last);
       Lists.Table (List).Parent := Node;
    end Set_Parent;
 
