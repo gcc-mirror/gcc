@@ -7718,9 +7718,6 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
       return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (x, 0), 1));
     }
 
-  if (flag_pic && SYMBOLIC_CONST (x))
-    return legitimize_pic_address (x, 0);
-
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
     {
       if (GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (x))
@@ -7734,6 +7731,9 @@ legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
 	  return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (x, 0), 1));
 	}
     }
+
+  if (flag_pic && SYMBOLIC_CONST (x))
+    return legitimize_pic_address (x, 0);
 
   /* Canonicalize shifts by 0, 1, 2, 3 into multiply */
   if (GET_CODE (x) == ASHIFT
