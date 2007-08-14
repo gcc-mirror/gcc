@@ -1,5 +1,11 @@
 2007-08-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/33073
+	* trans-intrinsic.c (build_fixbound_expr): Convert to result type
+	in all cases.
+
+2007-08-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/32594
 	* trans-expr.c (gfc_conv_substring_expr): Only call
 	gfc_conv_substring if expr->ref is not NULL.

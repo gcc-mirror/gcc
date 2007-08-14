@@ -314,10 +314,9 @@ build_fixbound_expr (stmtblock_t * pblock, tree arg, tree type, int up)
 static tree
 build_round_expr (tree arg, tree restype)
 {
-  tree tmp;
   tree argtype;
   tree fn;
-  bool longlong, convert;
+  bool longlong;
   int argprec, resprec;
 
   argtype = TREE_TYPE (arg);
@@ -328,21 +327,9 @@ build_round_expr (tree arg, tree restype)
      (lround family) or long long intrinsic (llround).  We might also
      need to convert the result afterwards.  */
   if (resprec <= LONG_TYPE_SIZE)
-    {
-      longlong = false;
-      if (resprec != LONG_TYPE_SIZE)
-	convert = true;
-      else
-	convert = false;
-    }
+    longlong = false;
   else if (resprec <= LONG_LONG_TYPE_SIZE)
-    {
-      longlong = true;
-      if (resprec != LONG_LONG_TYPE_SIZE)
-	convert = true;
-      else
-	convert = false;
-    }
+    longlong = true;
   else
     gcc_unreachable ();
 
@@ -356,10 +343,7 @@ build_round_expr (tree arg, tree restype)
   else
     gcc_unreachable ();
 
-  tmp = build_call_expr (fn, 1, arg);
-  if (convert)
-    tmp = fold_convert (restype, tmp);
-  return tmp;
+  return fold_convert (restype, build_call_expr (fn, 1, arg));
 }
 
 
