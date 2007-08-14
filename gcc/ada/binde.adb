@@ -28,11 +28,13 @@ with Binderr;  use Binderr;
 with Butil;    use Butil;
 with Debug;    use Debug;
 with Fname;    use Fname;
-with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
+with Osint;
 with Output;   use Output;
 with Targparm; use Targparm;
+
+with System.Case_Util; use System.Case_Util;
 
 package body Binde is
 
@@ -864,18 +866,69 @@ package body Binde is
         Units.Table (Before).First_With .. Units.Table (Before).Last_With
       loop
          --  Skip if this with is an interface to a stand-alone library.
-         --  Skip also if no ALI file for this with, happens with certain
-         --  specialized generic files that do not get compiled.
+         --  Skip also if no ALI file for this WITH, happens for language
+         --  defined generics while bootstrapping the compiler (see body of
+         --  Lib.Writ.Write_With_Lines).
 
          if not Withs.Table (W).SAL_Interface
            and then Withs.Table (W).Afile /= No_File
-           and then Generic_Separately_Compiled (Withs.Table (W).Sfile)
          then
-            Elab_All_Links
-              (Unit_Id_Of (Withs.Table (W).Uname),
-               After,
-               Reason,
-               Make_Elab_Entry (Withs.Table (W).Uname, Link));
+            declare
+               Info : constant Int :=
+                        Get_Name_Table_Info
+                          (Withs.Table (W).Uname);
+
+            begin
+               --  If the unit is unknown, for some unknown reason, fail
+               --  graciously explaining that the unit is unknown. Without
+               --  this check, gnatbind will crash in Unit_Id_Of.
+
+               if Info = 0 or else Unit_Id (Info) = No_Unit_Id then
+                  declare
+                     Withed       : String :=
+                                      Get_Name_String (Withs.Table (W).Uname);
+                     Last_Withed  : Natural := Withed'Last;
+                     Withing      : String :=
+                                      Get_Name_String
+                                        (Units.Table (Before).Uname);
+                     Last_Withing : Natural := Withing'Last;
+                     Spec_Body    : String  := " (Spec)";
+
+                  begin
+                     To_Mixed (Withed);
+                     To_Mixed (Withing);
+
+                     if Last_Withed > 2 and then
+                       Withed (Last_Withed - 1) = '%'
+                     then
+                        Last_Withed := Last_Withed - 2;
+                     end if;
+
+                     if Last_Withing > 2 and then
+                       Withing (Last_Withing - 1) = '%'
+                     then
+                        Last_Withing := Last_Withing - 2;
+                     end if;
+
+                     if Units.Table (Before).Utype = Is_Body or else
+                       Units.Table (Before).Utype = Is_Body_Only
+                     then
+                        Spec_Body := " (Body)";
+                     end if;
+
+                     Osint.Fail
+                       ("could not find unit ",
+                        Withed (Withed'First .. Last_Withed) & " needed by " &
+                        Withing (Withing'First .. Last_Withing) & Spec_Body);
+                  end;
+               end if;
+
+               Elab_All_Links
+                 (Unit_Id_Of (Withs.Table (W).Uname),
+                  After,
+                  Reason,
+                  Make_Elab_Entry (Withs.Table (W).Uname, Link));
+            end;
          end if;
       end loop;
 

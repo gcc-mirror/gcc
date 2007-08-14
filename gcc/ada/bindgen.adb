@@ -77,7 +77,7 @@ package body Bindgen is
 
    --  This table assembles the interface state pragma information from
    --  all the units in the partition. Note that Bcheck has already checked
-   --  that the information is consistent across partitions. The entries
+   --  that the information is consistent across units. The entries
    --  in this table are n/u/r/s for not set/user/runtime/system.
 
    package IS_Pragma_Settings is new Table.Table (
@@ -90,7 +90,7 @@ package body Bindgen is
 
    --  This table assembles the Priority_Specific_Dispatching pragma
    --  information from all the units in the partition. Note that Bcheck has
-   --  already checked that the information is consistent across partitions.
+   --  already checked that the information is consistent across units.
    --  The entries in this table are the upper case first character of the
    --  policy name, e.g. 'F' for FIFO_Within_Priorities.
 
@@ -1590,7 +1590,6 @@ package body Bindgen is
       --  if no command line arguments on target, set dummy values
 
       else
-         WBI ("   int result;");
          WBI ("   gnat_argc = 0;");
          WBI ("   gnat_argv = 0;");
          WBI ("   gnat_envp = 0;");
