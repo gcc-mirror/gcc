@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,17 +113,6 @@ package body System.Interrupt_Management is
    is
       pragma Unreferenced (siginfo);
 
-      --  The GCC unwinder requires adjustments to the signal's machine context
-      --  to be able to properly unwind through the signal handler. This is
-      --  achieved by the target specific subprogram below, provided by init.c
-      --  to be usable by the non-tasking handler also.
-
-      procedure Adjust_Context_For_Raise
-        (signo    : Signal;
-         ucontext : System.Address);
-      pragma Import
-        (C, Adjust_Context_For_Raise, "__gnat_adjust_context_for_raise");
-
       Result : Interfaces.C.int;
 
    begin
@@ -133,8 +122,8 @@ package body System.Interrupt_Management is
       Result := pthread_sigmask (SIG_UNBLOCK, Signal_Mask'Access, null);
       pragma Assert (Result = 0);
 
-      --  Perform the necessary context adjustments required by the GCC/ZCX
-      --  unwinder, harmless in the SJLJ case.
+      --  Perform the necessary context adjustments prior to a raise
+      --  from a signal handler.
 
       Adjust_Context_For_Raise (signo, ucontext);
 

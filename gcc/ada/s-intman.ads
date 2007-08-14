@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,10 +70,8 @@ package System.Interrupt_Management is
    --  systems, but is always reserved when it is defined. If we have the
    --  convention that ID zero is not used for any "real" signals, and SIGRARE
    --  = 0 when SIGRARE is not one of the locally supported signals, we can
-   --  write
-
+   --  write:
    --     Reserved (SIGRARE) := True;
-
    --  and the initialization code will be portable.
 
    Abort_Task_Interrupt : Interrupt_ID;
@@ -96,13 +94,22 @@ package System.Interrupt_Management is
    --  or used to implement time delays.
 
    procedure Initialize;
-   --  Initialize the various variables defined in this package.
-   --  This procedure must be called before accessing any object from this
-   --  package, and can be called multiple times.
+   --  Initialize the various variables defined in this package. This procedure
+   --  must be called before accessing any object from this package, and can be
+   --  called multiple times.
 
 private
    type Interrupt_Mask is new System.OS_Interface.sigset_t;
-   --  In some implementations Interrupt_Mask can be represented as a linked
-   --  list.
+   --  In some implementations Interrupt_Mask is represented as a linked list
+
+   procedure Adjust_Context_For_Raise
+     (Signo    : System.OS_Interface.Signal;
+      Ucontext : System.Address);
+   pragma Import
+     (C, Adjust_Context_For_Raise, "__gnat_adjust_context_for_raise");
+   --  Target specific hook performing adjustments to the signal's machine
+   --  context, to be called before an exception may be raised from a signal
+   --  handler. This service is provided by init.c, together with the
+   --  non-tasking signal handler.
 
 end System.Interrupt_Management;
