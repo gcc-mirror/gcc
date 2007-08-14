@@ -17951,7 +17951,7 @@ rs6000_is_costly_dependence (dep_t dep, int cost, int distance)
   if (rs6000_sched_costly_dep == true_store_to_load_dep_costly
       && is_load_insn (next)
       && is_store_insn (insn)
-      && DEP_KIND (dep) == REG_DEP_TRUE)
+      && DEP_TYPE (dep) == REG_DEP_TRUE)
      /* Prevent load after store in the same group if it is a true
 	dependence.  */
      return true;
@@ -18427,15 +18427,15 @@ is_costly_group (rtx *group_insns, rtx next_insn)
 
   for (i = 0; i < issue_rate; i++)
     {
-      dep_link_t link;
+      sd_iterator_def sd_it;
+      dep_t dep;
       rtx insn = group_insns[i];
 
       if (!insn)
 	continue;
 
-      FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
+      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
 	{
-	  dep_t dep = DEP_LINK_DEP (link);
 	  rtx next = DEP_CON (dep);
 
 	  if (next == next_insn

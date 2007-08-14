@@ -54,35 +54,40 @@ struct _dep
   /* Consumer.  */
   rtx con;
 
-  /* Dependency kind (aka dependency major type).  This field is superseded
-     by STATUS below.  Though, it is still in place because all the backends
-     use it.  */
-  enum reg_note kind;
+  /* Dependency major type.  This field is superseded by STATUS below.
+     Though, it is still in place because some targets use it.  */
+  enum reg_note type;
 
   /* Dependency status.  This field holds all dependency types and additional
      information for speculative dependencies.  */
   ds_t status;
 };
-typedef struct _dep *dep_t;
+
+typedef struct _dep dep_def;
+typedef dep_def *dep_t;
 
 #define DEP_PRO(D) ((D)->pro)
 #define DEP_CON(D) ((D)->con)
-#define DEP_KIND(D) ((D)->kind)
+#define DEP_TYPE(D) ((D)->type)
 #define DEP_STATUS(D) ((D)->status)
 
 /* Functions to work with dep.  */
 
+extern void init_dep_1 (dep_t, rtx, rtx, enum reg_note, ds_t);
 extern void init_dep (dep_t, rtx, rtx, enum reg_note);
+
+extern void sd_debug_dep (dep_t);
 
 /* Definition of this struct resides below.  */
 struct _dep_node;
+typedef struct _dep_node *dep_node_t;
 
 /* A link in the dependency list.  This is essentially an equivalent of a
    single {INSN, DEPS}_LIST rtx.  */
 struct _dep_link
 {
   /* Dep node with all the data.  */
-  struct _dep_node *node;
+  dep_node_t node;
 
   /* Next link in the list. For the last one it is NULL.  */
   struct _dep_link *next;
@@ -107,39 +112,22 @@ typedef struct _dep_link *dep_link_t;
 #define DEP_LINK_DEP(N) (DEP_NODE_DEP (DEP_LINK_NODE (N)))
 #define DEP_LINK_PRO(N) (DEP_PRO (DEP_LINK_DEP (N)))
 #define DEP_LINK_CON(N) (DEP_CON (DEP_LINK_DEP (N)))
-#define DEP_LINK_KIND(N) (DEP_KIND (DEP_LINK_DEP (N)))
+#define DEP_LINK_TYPE(N) (DEP_TYPE (DEP_LINK_DEP (N)))
 #define DEP_LINK_STATUS(N) (DEP_STATUS (DEP_LINK_DEP (N)))
-
-void debug_dep_links (dep_link_t);
 
 /* A list of dep_links.  */
 struct _deps_list
 {
+  /* First element.  */
   dep_link_t first;
+
+  /* Total number of elements in the list.  */
+  int n_links;
 };
 typedef struct _deps_list *deps_list_t;
 
 #define DEPS_LIST_FIRST(L) ((L)->first)
-
-/* Macro to walk through deps_list.  */
-#define FOR_EACH_DEP_LINK(LINK, LIST) \
-  for ((LINK) = DEPS_LIST_FIRST (LIST); \
-       (LINK) != NULL; \
-       (LINK) = DEP_LINK_NEXT (LINK))
-
-/* Functions to work with deps_list.  */
-
-deps_list_t create_deps_list (bool);
-void free_deps_list (deps_list_t);
-void delete_deps_list (deps_list_t);
-bool deps_list_empty_p (deps_list_t);
-void debug_deps_list (deps_list_t);
-void add_back_dep_to_deps_list (deps_list_t, dep_t);
-dep_link_t find_link_by_pro_in_deps_list (deps_list_t, rtx);
-dep_link_t find_link_by_con_in_deps_list (deps_list_t, rtx);
-void copy_deps_list_change_con (deps_list_t, deps_list_t, rtx);
-
-void move_dep_link (dep_link_t, deps_list_t);
+#define DEPS_LIST_N_LINKS(L) ((L)->n_links)
 
 /* Suppose we have a dependence Y between insn pro1 and con1, where pro1 has
    additional dependents con0 and con2, and con1 is dependent on additional
@@ -247,7 +235,6 @@ struct _dep_node
   /* Forward link.  */
   struct _dep_link forw;
 };
-typedef struct _dep_node *dep_node_t;
 
 #define DEP_NODE_BACK(N) (&(N)->back)
 #define DEP_NODE_DEP(N) (&(N)->dep)
@@ -469,15 +456,17 @@ extern struct sched_info *current_sched_info;
 
 struct haifa_insn_data
 {
-  /* NB: We can't place 'struct _deps_list' here instead of deps_list_t into
-     h_i_d because when h_i_d extends, addresses of the deps_list->first
-     change without updating deps_list->first->next->prev_nextp.  Thus
-     BACK_DEPS and RESOLVED_BACK_DEPS are allocated on the heap and FORW_DEPS
-     list is allocated on the obstack.  */
+  /* We can't place 'struct _deps_list' into h_i_d instead of deps_list_t
+     because when h_i_d extends, addresses of the deps_list->first
+     change without updating deps_list->first->next->prev_nextp.  */
 
-  /* A list of backward dependencies.  The insn is a consumer of all the
+  /* A list of hard backward dependencies.  The insn is a consumer of all the
      deps mentioned here.  */
-  deps_list_t back_deps;
+  deps_list_t hard_back_deps;
+
+  /* A list of speculative (weak) dependencies.  The insn is a consumer of all
+     the deps mentioned here.  */
+  deps_list_t spec_back_deps;
 
   /* A list of insns which depend on the instruction.  Unlike 'back_deps',
      it represents forward dependencies.  */
@@ -486,17 +475,17 @@ struct haifa_insn_data
   /* A list of scheduled producers of the instruction.  Links are being moved
      from 'back_deps' to 'resolved_back_deps' while scheduling.  */
   deps_list_t resolved_back_deps;
+
+  /* A list of scheduled consumers of the instruction.  Links are being moved
+     from 'forw_deps' to 'resolved_forw_deps' while scheduling to fasten the
+     search in 'forw_deps'.  */
+  deps_list_t resolved_forw_deps;
  
   /* Logical uid gives the original ordering of the insns.  */
   int luid;
 
   /* A priority for each insn.  */
   int priority;
-
-  /* The number of incoming edges in the forward dependency graph.
-     As scheduling proceeds, counts are decreased.  An insn moves to
-     the ready queue when its counter reaches zero.  */
-  int dep_count;
 
   /* Number of instructions referring to this insn.  */
   int ref_count;
@@ -553,13 +542,16 @@ extern struct haifa_insn_data *h_i_d;
 
 /* Accessor macros for h_i_d.  There are more in haifa-sched.c and
    sched-rgn.c.  */
-#define INSN_BACK_DEPS(INSN) (h_i_d[INSN_UID (INSN)].back_deps)
+
+#define INSN_HARD_BACK_DEPS(INSN) (h_i_d[INSN_UID (INSN)].hard_back_deps)
+#define INSN_SPEC_BACK_DEPS(INSN) (h_i_d[INSN_UID (INSN)].spec_back_deps)
 #define INSN_FORW_DEPS(INSN) (h_i_d[INSN_UID (INSN)].forw_deps)
 #define INSN_RESOLVED_BACK_DEPS(INSN) \
   (h_i_d[INSN_UID (INSN)].resolved_back_deps)
+#define INSN_RESOLVED_FORW_DEPS(INSN) \
+  (h_i_d[INSN_UID (INSN)].resolved_forw_deps)
 #define INSN_LUID(INSN)		(h_i_d[INSN_UID (INSN)].luid)
 #define CANT_MOVE(insn)		(h_i_d[INSN_UID (insn)].cant_move)
-#define INSN_DEP_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].dep_count)
 #define INSN_PRIORITY(INSN)	(h_i_d[INSN_UID (INSN)].priority)
 #define INSN_PRIORITY_STATUS(INSN) (h_i_d[INSN_UID (INSN)].priority_status)
 #define INSN_PRIORITY_KNOWN(INSN) (INSN_PRIORITY_STATUS (INSN) > 0)
@@ -694,13 +686,16 @@ enum SPEC_TYPES_OFFSETS {
 #define HARD_DEP (DEP_ANTI << 1)
 
 /* This represents the results of calling sched-deps.c functions, 
-   which modify dependencies.  Possible choices are: a dependence
-   is already present and nothing has been changed; a dependence type
-   has been changed; brand new dependence has been created.  */
+   which modify dependencies.  */
 enum DEPS_ADJUST_RESULT {
-  DEP_PRESENT = 1,
-  DEP_CHANGED = 2,
-  DEP_CREATED = 3
+  /* No dependence needed (e.g. producer == consumer).  */
+  DEP_NODEP,
+  /* Dependence is already present and wasn't modified.  */
+  DEP_PRESENT,
+  /* Existing dependence was modified to include additional information.  */
+  DEP_CHANGED,
+  /* New dependence has been created.  */
+  DEP_CREATED
 };
 
 /* Represents the bits that can be set in the flags field of the 
@@ -730,6 +725,9 @@ enum SPEC_SCHED_FLAGS {
 
 extern FILE *sched_dump;
 extern int sched_verbose;
+
+extern spec_info_t spec_info;
+extern bool haifa_recovery_bb_ever_added_p;
 
 /* Exception Free Loads:
 
@@ -816,23 +814,19 @@ extern void print_insn (char *, rtx, int);
 extern bool sched_insns_conditions_mutex_p (rtx, rtx);
 extern void add_dependence (rtx, rtx, enum reg_note);
 extern void sched_analyze (struct deps *, rtx, rtx);
+extern bool deps_pools_are_empty_p (void);
+extern void sched_free_deps (rtx, rtx, bool);
 extern void init_deps (struct deps *);
 extern void free_deps (struct deps *);
 extern void init_deps_global (void);
 extern void finish_deps_global (void);
-extern void add_forw_dep (dep_link_t);
-extern void compute_forward_dependences (rtx, rtx);
 extern void init_dependency_caches (int);
 extern void free_dependency_caches (void);
 extern void extend_dependency_caches (int, bool);
-extern enum DEPS_ADJUST_RESULT add_or_update_back_dep (rtx, rtx, 
-						       enum reg_note, ds_t);
-extern void add_or_update_back_forw_dep (rtx, rtx, enum reg_note, ds_t);
-extern void add_back_forw_dep (rtx, rtx, enum reg_note, ds_t);
-extern void delete_back_forw_dep (dep_link_t);
 extern dw_t get_dep_weak (ds_t, ds_t);
 extern ds_t set_dep_weak (ds_t, ds_t, dw_t);
 extern ds_t ds_merge (ds_t, ds_t);
+extern void debug_ds (ds_t);
 
 /* Functions in haifa-sched.c.  */
 extern int haifa_classify_insn (rtx);
@@ -851,11 +845,151 @@ extern void sched_finish (void);
 
 extern int try_ready (rtx);
 extern void * xrecalloc (void *, size_t, size_t, size_t);
+extern bool sched_insn_is_legitimate_for_speculation_p (rtx, ds_t);
 extern void unlink_bb_notes (basic_block, basic_block);
 extern void add_block (basic_block, basic_block);
 extern rtx bb_note (basic_block);
 
 /* Functions in sched-rgn.c.  */
+
 extern void debug_dependencies (rtx, rtx);
+
+/* sched-deps.c interface to walk, add, search, update, resolve, delete
+   and debug instruction dependencies.  */
+
+/* Constants defining dependences lists.  */
+
+/* No list.  */
+#define SD_LIST_NONE (0)
+
+/* hard_back_deps.  */
+#define SD_LIST_HARD_BACK (1)
+
+/* spec_back_deps.  */
+#define SD_LIST_SPEC_BACK (2)
+
+/* forw_deps.  */
+#define SD_LIST_FORW (4)
+
+/* resolved_back_deps.  */
+#define SD_LIST_RES_BACK (8)
+
+/* resolved_forw_deps.  */
+#define SD_LIST_RES_FORW (16)
+
+#define SD_LIST_BACK (SD_LIST_HARD_BACK | SD_LIST_SPEC_BACK)
+
+/* A type to hold above flags.  */
+typedef int sd_list_types_def;
+
+extern void sd_next_list (rtx, sd_list_types_def *, deps_list_t *, bool *);
+
+/* Iterator to walk through, resolve and delete dependencies.  */
+struct _sd_iterator
+{
+  /* What lists to walk.  Can be any combination of SD_LIST_* flags.  */
+  sd_list_types_def types;
+
+  /* Instruction dependencies lists of which will be walked.  */
+  rtx insn;
+
+  /* Pointer to the next field of the previous element.  This is not
+     simply a pointer to the next element to allow easy deletion from the
+     list.  When a dep is being removed from the list the iterator
+     will automatically advance because the value in *linkp will start
+     reffering to the next element.  */
+  dep_link_t *linkp;
+
+  /* True if the current list is a resolved one.  */
+  bool resolved_p;
+};
+
+typedef struct _sd_iterator sd_iterator_def;
+
+/* ??? We can move some definitions that are used in below inline functions
+   out of sched-int.h to sched-deps.c provided that the below functions will
+   become global externals.
+   These definitions include:
+   * struct _deps_list: opaque pointer is needed at global scope.
+   * struct _dep_link: opaque pointer is needed at scope of sd_iterator_def.
+   * struct _dep_node: opaque pointer is needed at scope of
+   struct _deps_link.  */
+
+/* Return initialized iterator.  */
+static inline sd_iterator_def
+sd_iterator_start (rtx insn, sd_list_types_def types)
+{
+  /* Some dep_link a pointer to which will return NULL.  */
+  static dep_link_t null_link = NULL;
+
+  sd_iterator_def i;
+
+  i.types = types;
+  i.insn = insn;
+  i.linkp = &null_link;
+
+  /* Avoid 'uninitialized warning'.  */
+  i.resolved_p = false;
+
+  return i;
+}
+
+/* Return the current element.  */
+static inline bool
+sd_iterator_cond (sd_iterator_def *it_ptr, dep_t *dep_ptr)
+{
+  dep_link_t link = *it_ptr->linkp;
+
+  if (link != NULL)
+    {
+      *dep_ptr = DEP_LINK_DEP (link);
+      return true;
+    }
+  else
+    {
+      sd_list_types_def types = it_ptr->types;
+
+      if (types != SD_LIST_NONE)
+	/* Switch to next list.  */
+	{
+	  deps_list_t list;
+
+	  sd_next_list (it_ptr->insn,
+			&it_ptr->types, &list, &it_ptr->resolved_p);
+
+	  it_ptr->linkp = &DEPS_LIST_FIRST (list);
+
+	  return sd_iterator_cond (it_ptr, dep_ptr);
+	}
+
+      *dep_ptr = NULL;
+      return false;
+    }
+}
+
+/* Advance iterator.  */
+static inline void
+sd_iterator_next (sd_iterator_def *it_ptr)
+{
+  it_ptr->linkp = &DEP_LINK_NEXT (*it_ptr->linkp);
+}
+
+/* A cycle wrapper.  */
+#define FOR_EACH_DEP(INSN, LIST_TYPES, ITER, DEP)		\
+  for ((ITER) = sd_iterator_start ((INSN), (LIST_TYPES));	\
+       sd_iterator_cond (&(ITER), &(DEP));			\
+       sd_iterator_next (&(ITER)))
+
+extern int sd_lists_size (rtx, sd_list_types_def);
+extern bool sd_lists_empty_p (rtx, sd_list_types_def);
+extern void sd_init_insn (rtx);
+extern void sd_finish_insn (rtx);
+extern dep_t sd_find_dep_between (rtx, rtx, bool);
+extern void sd_add_dep (dep_t, bool);
+extern enum DEPS_ADJUST_RESULT sd_add_or_update_dep (dep_t, bool);
+extern void sd_resolve_dep (sd_iterator_def);
+extern void sd_copy_back_deps (rtx, rtx, bool);
+extern void sd_delete_dep (sd_iterator_def);
+extern void sd_debug_lists (rtx, sd_list_types_def);
 
 #endif /* GCC_SCHED_INT_H */

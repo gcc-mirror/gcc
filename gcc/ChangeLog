@@ -1,3 +1,188 @@
+2007-08-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* sched-int.h (struct _dep): Rename field 'kind' to 'type'.
+	(DEP_KIND): Rename to DEP_TYPE.  Update all uses.
+	(dep_def): New typedef.
+	(init_dep_1, sd_debug_dep): Declare functions.
+	(DEP_LINK_KIND): Rename to DEP_LINK_TYPE.
+	(debug_dep_links): Remove.
+	(struct _deps_list): New field 'n_links'.
+	(DEPS_LIST_N_LINKS): New macro.
+	(FOR_EACH_DEP_LINK): Remove.
+	(create_deps_list, free_deps_list, delete_deps_list): Remove
+	declaration.
+	(deps_list_empty_p, debug_deps_list, add_back_dep_to_deps_list): Ditto.
+	(find_link_by_pro_in_deps_list, find_link_by_con_in_deps_list): Ditto.
+	(copy_deps_list_change_con, move_dep_link): Ditto.
+	(struct haifa_insn_data): Split field 'back_deps' into 'hard_back_deps'
+	and 'spec_back_deps'.  New field 'resolved_forw_deps'.  Remove field
+	'dep_count'.
+	(INSN_BACK_DEPS): Remove.
+	(INSN_HARD_BACK_DEPS, INSN_SPEC_BACK_DEPS, INSN_RESOLVED_FORW_DEPS):
+	New macros.
+	(INSN_DEP_COUNT): Remove.
+	(enum DEPS_ADJUST_RESULT): Add new constant DEP_NODEP.  Fix comments.
+	(spec_info, haifa_recovery_block_was_added_during_scheduling_p):
+	Declare global variables.
+	(deps_pools_are_empty_p, sched_free_deps): Declare functions.
+	(add_forw_dep, compute_forward_dependences): Remove declarations.
+	(add_or_update_back_dep, add_or_update_back_forw_dep): Ditto.
+	(add_back_forw_dep, delete_back_forw_dep): Ditto.
+	(debug_ds, sched_insn_is_legitimate_for_speculation_p): Declare
+	functions.
+	(SD_LIST_NONE, SD_LIST_HARD_BACK, SD_LIST_SPEC_BACK, SD_LIST_FORW): New
+	constants.
+	(SD_LIST_RES_BACK, SD_LIST_RES_FORW, SD_LIST_BACK): Ditto.
+	(sd_list_types_def): New typedef.
+	(sd_next_list): Declare function.
+	(struct _sd_iterator): New type.
+	(sd_iterator_def): New typedef.
+	(sd_iterator_start, sd_iterator_cond, sd_iterator_next): New inline
+	functions.
+	(FOR_EACH_DEP): New cycle wrapper.
+	(sd_lists_size, sd_lists_empty_p, sd_init_insn, sd_finish_insn):
+	Declare functions.
+	(sd_find_dep_between, sd_add_dep, sd_add_or_update_dep): Ditto.
+	(sd_resolve_dep, sd_copy_back_deps, sd_delete_dep, sd_debug_lists):
+	Ditto.
+
+	* sched-deps.c (init_dep_1): Make global.
+	(DUMP_DEP_PRO, DUMP_DEP_CON, DUMP_DEP_STATUS, DUMP_DEP_ALL): New
+	constants.
+	(dump_dep): New static function.
+	(dump_dep_flags): New static variable.
+	(sd_debug_dep): New function.
+	(add_to_deps_list, remove_from_deps_list): Update 'n_links' field of
+	the list.
+	(move_dep_link): Use remove_from_deps_list (), instead of
+	detach_dep_link ().
+	(dep_links_consistent_p, dump_dep_links, debug_dep_links): Remove.
+	(dep_link_is_detached_p): New static function.
+	(deps_obstack, dl_obstack, dn_obstack): Remove.  Use dn_pool, dl_pool
+	instead.
+	(dn_pool, dl_pool): New alloc_pools.
+	(dn_pool_diff, dl_pool_diff): New static variables.
+	(create_dep_node, delete_dep_node): New static function.
+	(create_deps_list): Make it static.  Use alloc_pool 'dl_pool'.
+	(deps_list_empty_p): Make it static.  Use 'n_links' field.
+	(deps_pools_are_empty_p): New static function.
+	(alloc_deps_list, delete_deps_list): Remove.
+	(dump_deps_list, debug_deps_list, add_back_dep_to_deps_list): Remove.
+	(find_link_by_pro_in_deps_list, find_link_by_con_in_deps_list): Ditto.
+	(copy_deps_list_change_con): Remove.  Use sd_copy_back_deps () instead.
+	(forward_dependency_cache): Remove.
+	(maybe_add_or_update_back_dep_1, add_or_update_back_dep_1): Remove
+	'back' from the names.  Change signature to use dep_t instead of
+	equivalent quad.
+	(add_back_dep): Ditto.  Make global.
+	(check_dep_status): Rename to check_dep ().
+	(sd_next_list, sd_lists_size, sd_lists_empty_p, sd_init_insn):
+	New functions.
+	(sd_finish_insn): Ditto.
+	(sd_find_dep_between_no_cache): New static function.
+	(sd_find_dep_between): New function.
+	(ask_dependency_caches, set_dependency_caches): New static functions.
+	(update_dependency_caches, change_spec_dep_to_hard, update_dep): Ditto.
+	(add_or_update_dep_1): Separate pieces of functionality into
+	ask_dependency_caches (), update_dependency_caches (),
+	change_spec_dep_to_hard (), update_dep ().
+	(get_back_and_forw_lists): New static function.
+	(sd_add_dep): Separate setting of dependency caches into
+	set_dependency_caches ().
+	(sd_add_or_update_dep, sd_resolve_dep, sd_copy_back_deps):
+	New functions.
+	(sd_delete_dep): Ditto.
+	(DUMP_LISTS_SIZE, DUMP_LISTS_DEPS, DUMP_LISTS_ALL): New constants.
+	(dump_lists): New static function.
+	(sd_debug_lists): New debug function.
+	(delete_all_dependences, fixup_sched_groups): Update to use
+	sd_* infrastructure.
+	(sched_analyze_2): Create data-speculative dependency only if
+	data-speculation is enabled.
+	(sched_analyze_insn): If insn cannot be speculative, make all its
+	dependencies non-speculative.
+	(sched_analyze): Use sd_init_insn ().
+	(add_forw_dep, compute_forward_dependencies): Remove.
+	(delete_dep_nodes_in_back_deps): New static function.
+	(sched_free_deps): New function.
+	(init_dependency_caches): Init alloc_pools.
+	(extend_depedency_caches): Update after removing of
+	forward_dependency_cache.
+	(free_dependency_caches): Ditto.  Free alloc_pools.
+	(adjust_add_sorted_back_dep, adjust_back_add_forw_dep): Remove.
+	(delete_forw_dep, add_or_update_back_dep, add_or_update_back_forw_dep):
+	Ditto.
+	(add_back_forw_dep, delete_back_forw_dep): Ditto.
+	(add_dependence): Use init_dep ().
+	(get_dep_weak_1): New static function.
+	(get_dep_weak): Move logic to get_dep_weak_1 ().
+	(dump_ds): New static function moved from haifa-sched.c:
+	debug_spec_status ().
+	(debug_ds): New debug function.
+	(check_dep_status): Rename to check_dep ().  Update to check whole
+	dependencies.
+
+	* haifa-sched.c (spec_info): Make global.
+	(added_recovery_block_p): Rename to
+	'haifa_recovery_block_was_added_during_current_schedule_block_p'.
+	(haifa_recovery_block_was_added_during_scheduling_p): New variable.
+	(dep_cost, priority, rank_for_schedule, schedule_insn): Update
+	to use new interfaces.
+	(ok_for_early_queue_removal): Ditto.
+	(schedule_block): Initialize logical uids of insns emitted by the
+	target.
+	(sched_init): Initialize new variable.
+	(fix_inter_tick, try_ready, fix_tick_ready): Update to use new
+	interfaces.
+	(extend_global): Initialize insn data.
+	(init_h_i_d): Remove code that is now handled in sd_init_insn ().
+	(process_insn_forw_deps_be_in_spec): Change signature.  Update to use
+	new interfaces.
+	(add_to_speculative_block): Update to use new interfaces.
+	(create_recovery_block): Set new variables.
+	(create_check_block_twin, fix_recovery_deps): Update to use new
+	interfaces.
+	(sched_insn_is_legitimate_for_speculation_p): New function.
+	(speculate_insn): Move checking logic to
+	sched_insn_is_legitimate_for_speculation_p ().
+	(sched_remove_insn): Finalize sched-deps information of instruction.
+	(clear_priorities, add_jump_dependencies): Update to use new
+	interfaces.
+	(debug_spec_status): Rename to dump_ds () and move to sched-deps.c.
+	
+	* sched-rgn.c (set_spec_fed, find_conditional_protection): Update
+	to use new interfaces.
+	(is_conditionally_protected, is_pfree, is_prisky) Ditto.
+	(new_ready): Try to use control speculation only if it is available.
+	(add_branch_dependences): Update to use new interfaces.
+	(compute_block_backward_dependences): Rename to
+	compute_block_dependences ().  Call
+	targetm.sched.dependencies_evaluation_hook ().
+	(free_block_dependencies): New static function.
+	(debug_dependencies): Update to use new interfaces.
+	(schedule_region): Remove separate computation of forward dependencies.
+	Move call of targetm.sched.dependencies_evaluation_hook () to
+	compute_block_dependences ().  Free dependencies at the end of
+	scheduling the region.
+
+	* sched-ebb.c (earliest_block_with_similiar_load): Update to use
+	new interfaces.
+	(add_deps_for_risky_insns): Ditto.
+	(schedule_ebb): Remove separate computation of forward dependencies.
+	Free dependencies at the end of	scheduling the ebb.
+
+	* ddg.c (create_ddg_dependence): Update to use new interfaces.
+	(build_intra_loop_deps): Ditto.  Remove separate computation of forward
+	dependencies.  Free sched-deps dependencies.
+
+	* config/ia64/ia64.c (ia64_dependencies_evaluation_hook): Update
+	to use new interfaces.
+	(ia64_dfa_new_cycle, ia64_gen_check): Ditto.
+
+	* config/rs6000/rs6000.c (rs6000_is_costly_dependence): Update to use
+	new interfaces.
+	(is_costly_group): Ditto.
+
 2007-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (rtx_equal_for_memref_p): Constify.

@@ -6341,28 +6341,37 @@ ia64_dependencies_evaluation_hook (rtx head, rtx tail)
     if (INSN_P (insn)
 	&& ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IALU)
       {
-	dep_link_t link;
+	sd_iterator_def sd_it;
+	dep_t dep;
+	bool has_mem_op_consumer_p = false;
 
-	FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
+	FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
 	  {
 	    enum attr_itanium_class c;
 
-	    if (DEP_LINK_KIND (link) != REG_DEP_TRUE)
+	    if (DEP_TYPE (dep) != REG_DEP_TRUE)
 	      continue;
 
-	    next = DEP_LINK_CON (link);
+	    next = DEP_CON (dep);
 	    c = ia64_safe_itanium_class (next);
 	    if ((c == ITANIUM_CLASS_ST
 		 || c == ITANIUM_CLASS_STF)
 		&& ia64_st_address_bypass_p (insn, next))
-	      break;
+	      {
+		has_mem_op_consumer_p = true;
+		break;
+	      }
 	    else if ((c == ITANIUM_CLASS_LD
 		      || c == ITANIUM_CLASS_FLD
 		      || c == ITANIUM_CLASS_FLDP)
 		     && ia64_ld_address_bypass_p (insn, next))
-	      break;
+	      {
+		has_mem_op_consumer_p = true;
+		break;
+	      }
 	  }
-	insn->call = link != 0;
+
+	insn->call = has_mem_op_consumer_p;
       }
 }
 
@@ -6639,14 +6648,15 @@ ia64_dfa_new_cycle (FILE *dump, int verbose, rtx insn, int last_clock,
 
       if (c != ITANIUM_CLASS_MMMUL && c != ITANIUM_CLASS_MMSHF)
 	{
-	  dep_link_t link;
+	  sd_iterator_def sd_it;
+	  dep_t dep;
 	  int d = -1;
 
-	  FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (insn))
-	    if (DEP_LINK_KIND (link) == REG_DEP_TRUE)
+	  FOR_EACH_DEP (insn, SD_LIST_BACK, sd_it, dep)
+	    if (DEP_TYPE (dep) == REG_DEP_TRUE)
 	      {
 		enum attr_itanium_class dep_class;
-		rtx dep_insn = DEP_LINK_PRO (link);
+		rtx dep_insn = DEP_PRO (dep);
 
 		dep_class = ia64_safe_itanium_class (dep_insn);
 		if ((dep_class == ITANIUM_CLASS_MMMUL
@@ -7177,13 +7187,14 @@ ia64_gen_check (rtx insn, rtx label, bool mutate_p)
        As long as patterns are unique for each instruction, this can be
        accomplished by matching ORIG_PAT fields.  */
     {
-      dep_link_t link;
+      sd_iterator_def sd_it;
+      dep_t dep;
       int check_no = 0;
       rtx orig_pat = ORIG_PAT (insn);
 
-      FOR_EACH_DEP_LINK (link, INSN_RESOLVED_BACK_DEPS (insn))
+      FOR_EACH_DEP (insn, SD_LIST_RES_BACK, sd_it, dep)
 	{
-	  rtx x = DEP_LINK_PRO (link);
+	  rtx x = DEP_PRO (dep);
 
 	  if (ORIG_PAT (x) == orig_pat)
 	    check_no = spec_check_no[INSN_UID (x)];
