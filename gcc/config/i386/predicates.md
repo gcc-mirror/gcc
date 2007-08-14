@@ -879,7 +879,8 @@
   switch (code)
     {
     case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCFPmode || inmode == CCFPUmode)
+      if (inmode == CCmode || inmode == CCFPmode || inmode == CCFPUmode
+	  || inmode == CCCmode)
 	return 1;
       return 0;
     case ORDERED: case UNORDERED:
@@ -924,7 +925,11 @@
 	  || inmode == CCGOCmode || inmode == CCNOmode)
 	return 1;
       return 0;
-    case LTU: case GTU: case LEU: case ORDERED: case UNORDERED: case GEU:
+    case LTU: case GTU: case LEU: case GEU:
+      if (inmode == CCmode || inmode == CCCmode)
+	return 1;
+      return 0;
+    case ORDERED: case UNORDERED:
       if (inmode == CCmode)
 	return 1;
       return 0;
@@ -939,7 +944,7 @@
 
 ;; Return 1 if OP is a valid comparison operator testing carry flag to be set.
 (define_predicate "ix86_carry_flag_operator"
-  (match_code "ltu,lt,unlt,gt,ungt,le,unle,ge,unge,ltgt,uneq")
+  (match_code "ltu,lt,unlt,gtu,gt,ungt,le,unle,ge,unge,ltgt,uneq")
 {
   enum machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
@@ -957,6 +962,8 @@
 	return 0;
       code = ix86_fp_compare_code_to_integer (code);
     }
+  else if (inmode == CCCmode)
+   return code == LTU || code == GTU;
   else if (inmode != CCmode)
     return 0;
 

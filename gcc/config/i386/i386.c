@@ -8261,8 +8261,12 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
     case GTU:
       /* ??? Use "nbe" instead of "a" for fcmov lossage on some assemblers.
 	 Those same assemblers have the same but opposite lossage on cmov.  */
-      gcc_assert (mode == CCmode);
-      suffix = fp ? "nbe" : "a";
+      if (mode == CCmode)
+	suffix = fp ? "nbe" : "a";
+      else if (mode == CCCmode)
+	suffix = "b";
+      else
+	gcc_unreachable ();
       break;
     case LT:
       switch (mode)
@@ -8282,7 +8286,7 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
 	}
       break;
     case LTU:
-      gcc_assert (mode == CCmode);
+      gcc_assert (mode == CCmode || mode == CCCmode);
       suffix = "b";
       break;
     case GE:
@@ -8304,7 +8308,7 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
       break;
     case GEU:
       /* ??? As above.  */
-      gcc_assert (mode == CCmode);
+      gcc_assert (mode == CCmode || mode == CCCmode);
       suffix = fp ? "nb" : "ae";
       break;
     case LE:
@@ -8312,8 +8316,13 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
       suffix = "le";
       break;
     case LEU:
-      gcc_assert (mode == CCmode);
-      suffix = "be";
+      /* ??? As above.  */
+      if (mode == CCmode)
+	suffix = "be";
+      else if (mode == CCCmode)
+	suffix = fp ? "nb" : "ae";
+      else
+	gcc_unreachable ();
       break;
     case UNORDERED:
       suffix = fp ? "u" : "p";
@@ -11040,10 +11049,21 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
       return CCZmode;
       /* Codes needing carry flag.  */
     case GEU:			/* CF=0 */
-    case GTU:			/* CF=0 & ZF=0 */
     case LTU:			/* CF=1 */
+      /* Detect overflow checks.  They need just the carry flag.  */
+      if (GET_CODE (op0) == PLUS
+	  && rtx_equal_p (op1, XEXP (op0, 0)))
+	return CCCmode;
+      else
+	return CCmode;
+    case GTU:			/* CF=0 & ZF=0 */
     case LEU:			/* CF=1 | ZF=1 */
-      return CCmode;
+      /* Detect overflow checks.  They need just the carry flag.  */
+      if (GET_CODE (op0) == MINUS
+	  && rtx_equal_p (op1, XEXP (op0, 0)))
+	return CCCmode;
+      else
+	return CCmode;
       /* Codes possibly doable only with sign flag when
          comparing against zero.  */
     case GE:			/* SF=OF   or   SF=0 */
