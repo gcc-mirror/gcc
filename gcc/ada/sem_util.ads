@@ -28,6 +28,7 @@
 
 with Einfo;  use Einfo;
 with Namet;  use Namet;
+with Nmake;
 with Types;  use Types;
 with Uintp;  use Uintp;
 with Urealp; use Urealp;
@@ -147,16 +148,30 @@ package Sem_Util is
    procedure Collect_Abstract_Interfaces
      (T                         : Entity_Id;
       Ifaces_List               : out Elist_Id;
-      Exclude_Parent_Interfaces : Boolean := False);
+      Exclude_Parent_Interfaces : Boolean := False;
+      Use_Full_View             : Boolean := True);
    --  Ada 2005 (AI-251): Collect whole list of abstract interfaces that are
    --  directly or indirectly implemented by T. Exclude_Parent_Interfaces is
    --  used to avoid addition of inherited interfaces to the generated list.
+   --  Use_Full_View is used to collect the interfaces using the full-view
+   --  (if available).
 
    procedure Collect_Interface_Components
      (Tagged_Type     : Entity_Id;
       Components_List : out Elist_Id);
    --  Ada 2005 (AI-251): Collect all the tag components associated with the
    --  secondary dispatch tables of a tagged type.
+
+   procedure Collect_Interfaces_Info
+     (T               : Entity_Id;
+      Ifaces_List     : out Elist_Id;
+      Components_List : out Elist_Id;
+      Tags_List       : out Elist_Id);
+   --  Ada 2005 (AI-251): Collect all the interfaces associated with T plus
+   --  the record component and tag associated with each of these interfaces.
+   --  On exit Ifaces_List, Components_List and Tags_List have the same number
+   --  of elements, and elements at the same position on these tables provide
+   --  information on the same interface type.
 
    function Collect_Primitive_Operations (T : Entity_Id) return Elist_Id;
    --  Called upon type derivation and extension. We scan the declarative
@@ -282,7 +297,7 @@ package Sem_Util is
      (Def_Id      : Entity_Id;
       First_Hom   : Entity_Id;
       Ifaces_List : Elist_Id;
-      In_Scope    : Boolean := True) return Entity_Id;
+      In_Scope    : Boolean) return Entity_Id;
    --  Determine whether entry or subprogram Def_Id overrides a primitive
    --  operation that belongs to one of the interfaces in Ifaces_List. A
    --  specific homonym chain can be specified by setting First_Hom. Flag
@@ -443,8 +458,12 @@ package Sem_Util is
    --  Result of Has_Compatible_Alignment test, description found below. Note
    --  that the values are arranged in increasing order of problematicness.
 
-   function Has_Abstract_Interfaces (Tagged_Type : Entity_Id) return Boolean;
-   --  Returns true if Tagged_Type implements some abstract interface
+   function Has_Abstract_Interfaces
+     (Tagged_Type   : Entity_Id;
+      Use_Full_View : Boolean := True) return Boolean;
+   --  Returns true if Tagged_Type implements some abstract interface. In case
+   --  private types the argument Use_Full_View controls if the check is done
+   --  using its full view (if available).
 
    function Has_Compatible_Alignment
      (Obj  : Entity_Id;
@@ -689,6 +708,9 @@ package Sem_Util is
    --  the N_Statement_Other_Than_Procedure_Call subtype from Sinfo).
    --  Note that a label is *not* a statement, and will return False.
 
+   function Is_Synchronized_Tagged_Type (E : Entity_Id) return Boolean;
+   --  Returns True if E is a synchronized tagged type (AARM 3.9.4 (6/2))
+
    function Is_Transfer (N : Node_Id) return Boolean;
    --  Returns True if the node N is a statement which is known to cause
    --  an unconditional transfer of control at runtime, i.e. the following
@@ -723,17 +745,16 @@ package Sem_Util is
    procedure Kill_Current_Values;
    --  This procedure is called to clear all constant indications from all
    --  entities in the current scope and in any parent scopes if the current
-   --  scope is a block or a package (and that recursion continues to the
-   --  top scope that is not a block or a package). This is used when the
-   --  sequential flow-of-control assumption is violated (occurence of a
-   --  label, head of a loop, or start of an exception handler). The effect
-   --  of the call is to clear the Constant_Value field (but we do not need
-   --  to clear the Is_True_Constant flag, since that only gets reset if
-   --  there really is an assignment somewhere in the entity scope). This
-   --  procedure also calls Kill_All_Checks, since this is a special case
-   --  of needing to forget saved values. This procedure also clears any
-   --  Is_Known_Non_Null flags in variables, constants or parameters
-   --  since these are also not known to be valid.
+   --  scope is a block or a package (and that recursion continues to the top
+   --  scope that is not a block or a package). This is used when the
+   --  sequential flow-of-control assumption is violated (occurence of a label,
+   --  head of a loop, or start of an exception handler). The effect of the
+   --  call is to clear the Constant_Value field (but we do not need to clear
+   --  the Is_True_Constant flag, since that only gets reset if there really is
+   --  an assignment somewhere in the entity scope). This procedure also calls
+   --  Kill_All_Checks, since this is a special case of needing to forget saved
+   --  values. This procedure also clears Is_Known_Non_Null flags in variables,
+   --  constants or parameters since these are also not known to be valid.
 
    procedure Kill_Current_Values (Ent : Entity_Id);
    --  This performs the same processing as described above for the form with
@@ -753,10 +774,27 @@ package Sem_Util is
    --  direction. Cases which may possibly be assignments but are not known to
    --  be may return True from May_Be_Lvalue, but False from this function.
 
-   procedure Mark_Static_Coextensions (Root_Node : Node_Id);
-   --  Perform a tree traversal starting from Root_Node while marking every
-   --  allocator as a static coextension. Cleanup for this action is performed
-   --  in Resolve_Allocator.
+   function Make_Simple_Return_Statement
+     (Sloc       : Source_Ptr;
+      Expression : Node_Id := Empty) return Node_Id
+     renames Nmake.Make_Return_Statement;
+   --  See Sinfo. We rename Make_Return_Statement to the correct Ada 2005
+   --  terminology here. Clients should use Make_Simple_Return_Statement.
+
+   Make_Return_Statement : constant := -2 ** 33;
+   --  Attempt to prevent accidental uses of Make_Return_Statement. If this
+   --  and the one in Nmake are both potentially use-visible, it will cause
+   --  a compilation error. Note that type and value are irrelevant.
+
+   N_Return_Statement : constant := -2**33;
+   --  Attempt to prevent accidental uses of N_Return_Statement; similar to
+   --  Make_Return_Statement above.
+
+   procedure Mark_Coextensions (Context_Nod : Node_Id; Root_Nod : Node_Id);
+   --  Given a node which designates the context of analysis and an origin in
+   --  the tree, traverse from Root_Nod and mark all allocators as either
+   --  dynamic or static depending on Context_Nod. Any erroneous marking is
+   --  cleaned up during resolution.
 
    function May_Be_Lvalue (N : Node_Id) return Boolean;
    --  Determines if N could be an lvalue (e.g. an assignment left hand side).
@@ -911,7 +949,15 @@ package Sem_Util is
    --  capture actual value information, but we can capture conditional tests.
 
    function Same_Name (N1, N2 : Node_Id) return Boolean;
-   --  Determine if two (possibly expanded) names are the same name
+   --  Determine if two (possibly expanded) names are the same name. This is
+   --  a purely syntactic test, and N1 and N2 need not be analyzed.
+
+   function Same_Object (Node1, Node2 : Node_Id) return Boolean;
+   --  Determine if Node1 and Node2 are known to designate the same object.
+   --  This is a semantic test and both nodesmust be fully analyzed. A result
+   --  of True is decisively correct. A result of False does not necessarily
+   --  mean that different objects are designated, just that this could not
+   --  be reliably determined at compile time.
 
    function Same_Type (T1, T2 : Entity_Id) return Boolean;
    --  Determines if T1 and T2 represent exactly the same type. Two types
@@ -921,6 +967,13 @@ package Sem_Util is
    --  It is True if the types are known to be the same, but a result of
    --  False is indecisive (e.g. the compiler may not be able to tell that
    --  two constraints are identical).
+
+   function Same_Value (Node1, Node2 : Node_Id) return Boolean;
+   --  Determines if Node1 and Node2 are known to be the same value, which is
+   --  true if they are both compile time known values and have the same value,
+   --  or if they are the same object (in the sense of function Same_Object).
+   --  A result of False does not necessarily mean they have different values,
+   --  just that it is not possible to determine they have the same value.
 
    function Scope_Within_Or_Same (Scope1, Scope2 : Entity_Id) return Boolean;
    --  Determines if the entity Scope1 is the same as Scope2, or if it is
@@ -967,7 +1020,7 @@ package Sem_Util is
    --  value from T2 to T1. It does NOT copy the RM_Size field, which must be
    --  separately set if this is required to be copied also.
 
-   function Scope_Is_Transient  return Boolean;
+   function Scope_Is_Transient return Boolean;
    --  True if the current scope is transient
 
    function Static_Integer (N : Node_Id) return Uint;
