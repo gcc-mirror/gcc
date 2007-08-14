@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,7 +95,10 @@ package Output is
    --  e.g. CR/LF for DOS, or LF for Unix) to the standard output file.
    --  This routine also empties the line buffer, actually writing it
    --  to the file. Note that Write_Eol is the only routine that causes
-   --  any actual output to be written.
+   --  any actual output to be written. Trailing spaces are removed.
+
+   procedure Write_Eol_Keep_Blanks;
+   --  Similar as Write_Eol, except that trailing spaces are not removed
 
    procedure Write_Int (Val : Int);
    --  Write an integer value with no leading blanks or zeroes. Negative
