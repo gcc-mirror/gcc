@@ -33,6 +33,7 @@
 
 with Opt;   use Opt;
 with Table;
+with Types; use Types;
 
 package body Snames is
 
@@ -179,6 +180,7 @@ package body Snames is
      "ada_2005#" &
      "assertion_policy#" &
      "c_pass_by_copy#" &
+     "check_name#" &
      "compile_time_error#" &
      "compile_time_warning#" &
      "component_alignment#" &
@@ -192,6 +194,7 @@ package body Snames is
      "extensions_allowed#" &
      "external_name_casing#" &
      "float_representation#" &
+     "implicit_packing#" &
      "initialize_scalars#" &
      "interrupt_state#" &
      "license#" &
@@ -447,6 +450,7 @@ package body Snames is
      "digits#" &
      "elaborated#" &
      "emax#" &
+     "enabled#" &
      "enum_rep#" &
      "epsilon#" &
      "exponent#" &
@@ -672,16 +676,12 @@ package body Snames is
      "archive_indexer#" &
      "archive_suffix#" &
      "binder#" &
-     "binder_driver#" &
      "binder_prefix#" &
      "body_suffix#" &
      "builder#" &
      "builder_switches#" &
      "compiler#" &
-     "compiler_driver#" &
      "compiler_kind#" &
-     "compiler_pic_option#" &
-     "compute_dependency#" &
      "config_body_file_name#" &
      "config_body_file_name_pattern#" &
      "config_file_switches#" &
@@ -689,21 +689,18 @@ package body Snames is
      "config_spec_file_name#" &
      "config_spec_file_name_pattern#" &
      "cross_reference#" &
-     "default_builder_switches#" &
-     "default_global_compiler_switches#" &
      "default_language#" &
-     "default_linker#" &
-     "default_minimum_linker_options#" &
      "default_switches#" &
+     "dependency_driver#" &
      "dependency_file_kind#" &
-     "dependency_option#" &
+     "dependency_switches#" &
+     "driver#" &
      "exec_dir#" &
      "executable#" &
      "executable_suffix#" &
      "extends#" &
      "externally_built#" &
      "finder#" &
-     "global_compiler_switches#" &
      "global_configuration_pragmas#" &
      "global_config_file#" &
      "gnatls#" &
@@ -735,7 +732,7 @@ package body Snames is
      "library_symbol_file#" &
      "library_symbol_policy#" &
      "library_version#" &
-     "library_version_options#" &
+     "library_version_switches#" &
      "linker#" &
      "linker_executable_option#" &
      "linker_lib_dir_option#" &
@@ -747,19 +744,19 @@ package body Snames is
      "mapping_spec_suffix#" &
      "mapping_body_suffix#" &
      "metrics#" &
-     "minimum_binder_options#" &
-     "minimum_compiler_options#" &
-     "minimum_linker_options#" &
      "naming#" &
      "objects_path#" &
      "objects_path_file#" &
      "object_dir#" &
+     "pic_option#" &
      "pretty_printer#" &
+     "prefix#" &
      "project#" &
      "roots#" &
+     "required_switches#" &
      "run_path_option#" &
      "runtime_project#" &
-     "shared_library_minimum_options#" &
+     "shared_library_minimum_switches#" &
      "shared_library_prefix#" &
      "shared_library_suffix#" &
      "separate_suffix#" &
@@ -852,15 +849,6 @@ package body Snames is
    begin
       return Attribute_Id'Val (N - First_Attribute_Name);
    end Get_Attribute_Id;
-
-   ------------------
-   -- Get_Check_Id --
-   ------------------
-
-   function Get_Check_Id (N : Name_Id) return Check_Id is
-   begin
-      return Check_Id'Val (N - First_Check_Name);
-   end Get_Check_Id;
 
    -----------------------
    -- Get_Convention_Id --
@@ -1031,15 +1019,6 @@ package body Snames is
    begin
       return N in First_Attribute_Name .. Last_Attribute_Name;
    end Is_Attribute_Name;
-
-   -------------------
-   -- Is_Check_Name --
-   -------------------
-
-   function Is_Check_Name (N : Name_Id) return Boolean is
-   begin
-      return N in First_Check_Name .. Last_Check_Name;
-   end Is_Check_Name;
 
    ------------------------
    -- Is_Convention_Name --

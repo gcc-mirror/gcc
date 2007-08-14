@@ -32,11 +32,11 @@ package body Prj.Attr is
 
    --  Data for predefined attributes and packages
 
-   --  Names end with '#'
+   --  Names are in lower case and end with '#'
 
    --  Package names are preceded by 'P'
 
-   --  Attribute names are preceded by two letters:
+   --  Attribute names are preceded by two or three letters:
 
    --  The first letter is one of
    --    'S' for Single
@@ -52,161 +52,242 @@ package body Prj.Attr is
    --        insensitive
    --    'c' same as 'b', with optional index
 
+   --  The third optional letter is
+   --     'R' to indicate that the attribute is read-only
+
    --  End is indicated by two consecutive '#'
 
    Initialization_Data : constant String :=
 
-   --  project attributes
+   --  project level attributes
 
-     "SVobject_dir#" &
-     "SVexec_dir#" &
-     "LVsource_dirs#" &
-     "LVsource_files#" &
-     "LVlocally_removed_files#" &
-     "SVsource_list_file#" &
-     "SVlibrary_dir#" &
-     "SVlibrary_name#" &
-     "SVlibrary_kind#" &
-     "SVlibrary_version#" &
-     "LVlibrary_interface#" &
-     "SVlibrary_auto_init#" &
-     "LVlibrary_options#" &
-     "SVlibrary_src_dir#" &
-     "SVlibrary_ali_dir#" &
-     "SVlibrary_gcc#" &
-     "SVlibrary_symbol_file#" &
-     "SVlibrary_symbol_policy#" &
-     "SVlibrary_reference_symbol_file#" &
-     "lVmain#" &
-     "LVlanguages#" &
-     "SVmain_language#" &
-     "LVada_roots#" &
-     "SVexternally_built#" &
+   --  General
+
+   "SVRname#" &
+   "lVmain#" &
+   "LVlanguages#" &
+   "SVmain_language#" &
+   "Laroots#" &
+   "SVexternally_built#" &
+
+   --  Directories
+
+   "SVobject_dir#" &
+   "SVexec_dir#" &
+   "LVsource_dirs#" &
+
+   --  Source files
+
+   "LVsource_files#" &
+   "LVlocally_removed_files#" &
+   "SVsource_list_file#" &
+
+   --  Libraries
+
+   "SVlibrary_dir#" &
+   "SVlibrary_name#" &
+   "SVlibrary_kind#" &
+   "SVlibrary_version#" &
+   "LVlibrary_interface#" &
+   "SVlibrary_auto_init#" &
+   "LVlibrary_options#" &
+   "SVlibrary_src_dir#" &
+   "SVlibrary_ali_dir#" &
+   "SVlibrary_gcc#" &
+   "SVlibrary_symbol_file#" &
+   "SVlibrary_symbol_policy#" &
+   "SVlibrary_reference_symbol_file#" &
+
+   --  Configuration - General
+
+   "SVdefault_language#" &
+   "LVrun_path_option#" &
+   "Satoolchain_version#" &
+   "Satoolchain_description#" &
+
+   --  Configuration - Libraries
+
+   "SVlibrary_builder#" &
+   "SVlibrary_support#" &
+
+   --  Configuration - Archives
+
+   "LVarchive_builder#" &
+   "LVarchive_indexer#" &
+   "SVarchive_suffix#" &
+   "LVlibrary_partial_linker#" &
+
+   --  Configuration - Shared libraries
+
+   "SVshared_library_prefix#" &
+   "SVshared_library_suffix#" &
+   "SVsymbolic_link_supported#" &
+   "SVlibrary_major_minor_id_supported#" &
+   "SVlibrary_auto_init_supported#" &
+   "LVshared_library_minimum_switches#" &
+   "LVlibrary_version_switches#" &
 
    --  package Naming
 
-     "Pnaming#" &
-     "Saspecification_suffix#" &
-     "Saspec_suffix#" &
-     "Saimplementation_suffix#" &
-     "Sabody_suffix#" &
-     "SVseparate_suffix#" &
-     "SVcasing#" &
-     "SVdot_replacement#" &
-     "sAspecification#" &
-     "sAspec#" &
-     "sAimplementation#" &
-     "sAbody#" &
-     "Laspecification_exceptions#" &
-     "Laimplementation_exceptions#" &
+   "Pnaming#" &
+   "Saspecification_suffix#" &
+   "Saspec_suffix#" &
+   "Saimplementation_suffix#" &
+   "Sabody_suffix#" &
+   "SVseparate_suffix#" &
+   "SVcasing#" &
+   "SVdot_replacement#" &
+   "sAspecification#" &
+   "sAspec#" &
+   "sAimplementation#" &
+   "sAbody#" &
+   "Laspecification_exceptions#" &
+   "Laimplementation_exceptions#" &
 
    --  package Compiler
 
-     "Pcompiler#" &
-     "Ladefault_switches#" &
-     "Lcswitches#" &
-     "SVlocal_configuration_pragmas#" &
+   "Pcompiler#" &
+   "Ladefault_switches#" &
+   "Lcswitches#" &
+   "SVlocal_configuration_pragmas#" &
+   "Salocal_config_file#" &
+
+   --  Configuration - Compiling
+
+   "Sadriver#" &
+   "Lapic_option#" &
+
+   --  Configuration - Mapping files
+
+   "Lamapping_file_switches#" &
+   "Samapping_spec_suffix#" &
+   "Samapping_body_suffix#" &
+
+   --  Configuration - Config files
+
+   "Laconfig_file_switches#" &
+   "Saconfig_body_file_name#" &
+   "Saconfig_spec_file_name#" &
+   "Saconfig_body_file_name_pattern#" &
+   "Saconfig_spec_file_name_pattern#" &
+   "Saconfig_file_unique#" &
+
+   --  Configuration - Dependencies
+
+   "Ladependency_switches#" &
+   "Lacompute_dependency#" &
+
+   --  Configuration - Search paths
+
+   "Lainclude_switches#" &
+   "Sainclude_path#" &
+   "Sainclude_path_file#" &
 
    --  package Builder
 
-     "Pbuilder#" &
-     "Ladefault_switches#" &
-     "Lcswitches#" &
-     "Scexecutable#" &
-     "SVexecutable_suffix#" &
-     "SVglobal_configuration_pragmas#" &
+   "Pbuilder#" &
+   "Ladefault_switches#" &
+   "Lcswitches#" &
+   "Scexecutable#" &
+   "SVexecutable_suffix#" &
+   "SVglobal_configuration_pragmas#" &
+   "Saglobal_config_file#" &
 
    --  package gnatls
 
-     "Pgnatls#" &
-     "LVswitches#" &
+   "Pgnatls#" &
+   "LVswitches#" &
 
    --  package Binder
 
-     "Pbinder#" &
-     "Ladefault_switches#" &
-     "Lcswitches#" &
+   "Pbinder#" &
+   "Ladefault_switches#" &
+   "Lcswitches#" &
+
+   --  Configuration - Binding
+
+   "Sadriver#" &
+   "Saprefix#" &
+   "Saobjects_path#" &
+   "Saobjects_path_file#" &
 
    --  package Linker
 
-     "Plinker#" &
-     "Ladefault_switches#" &
-     "Lcswitches#" &
-     "LVlinker_options#" &
+   "Plinker#" &
+   "LVrequired_switches#" &
+   "Ladefault_switches#" &
+   "Lcswitches#" &
+   "LVlinker_options#" &
+
+   --  Configuration - Linking
+
+   "SVdriver#" &
+   "LVexecutable_switch#" &
+   "SVlib_dir_switch#" &
+   "SVlib_name_switch#" &
 
    --  package Cross_Reference
 
-     "Pcross_reference#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Pcross_reference#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package Finder
 
-     "Pfinder#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Pfinder#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package Pretty_Printer
 
-     "Ppretty_printer#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Ppretty_printer#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package gnatstub
 
-     "Pgnatstub#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Pgnatstub#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package Check
 
-     "Pcheck#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Pcheck#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package Eliminate
 
-     "Peliminate#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Peliminate#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package Metrics
 
-     "Pmetrics#" &
-     "Ladefault_switches#" &
-     "Lbswitches#" &
+   "Pmetrics#" &
+   "Ladefault_switches#" &
+   "Lbswitches#" &
 
    --  package Ide
 
-     "Pide#" &
-     "Ladefault_switches#" &
-     "SVremote_host#" &
-     "SVprogram_host#" &
-     "SVcommunication_protocol#" &
-     "Sacompiler_command#" &
-     "SVdebugger_command#" &
-     "SVgnatlist#" &
-     "SVvcs_kind#" &
-     "SVvcs_file_check#" &
-     "SVvcs_log_check#" &
+   "Pide#" &
+   "Ladefault_switches#" &
+   "SVremote_host#" &
+   "SVprogram_host#" &
+   "SVcommunication_protocol#" &
+   "Sacompiler_command#" &
+   "SVdebugger_command#" &
+   "SVgnatlist#" &
+   "SVvcs_kind#" &
+   "SVvcs_file_check#" &
+   "SVvcs_log_check#" &
 
    --  package Stack
 
-     "Pstack#" &
-     "LVswitches#" &
+   "Pstack#" &
+   "LVswitches#" &
 
-   --  package Language_Processing
-
-     "Planguage_processing#" &
-     "Lacompiler_driver#" &
-     "Sacompiler_kind#" &
-     "Ladependency_option#" &
-     "Lacompute_dependency#" &
-     "Lainclude_option#" &
-     "Sabinder_driver#" &
-     "SVdefault_linker#" &
-
-     "#";
+   "#";
 
    Initialized : Boolean := False;
    --  A flag to avoid multiple initialization
@@ -274,10 +355,11 @@ package body Prj.Attr is
       Is_An_Attribute   : Boolean           := False;
       Var_Kind          : Variable_Kind     := Undefined;
       Optional_Index    : Boolean           := False;
-      Attr_Kind            : Attribute_Kind := Single;
+      Attr_Kind         : Attribute_Kind    := Single;
       Package_Name      : Name_Id           := No_Name;
       Attribute_Name    : Name_Id           := No_Name;
       First_Attribute   : Attr_Node_Id      := Attr.First_Attribute;
+      Read_Only         : Boolean;
 
       function Attribute_Location return String;
       --  Returns a string depending if we are in the project level attributes
@@ -342,9 +424,9 @@ package body Prj.Attr is
                Package_Attributes.Increment_Last;
                Current_Package := Package_Attributes.Last;
                Package_Attributes.Table (Current_Package) :=
-                 (Name            => Package_Name,
-                  Known           => True,
-                  First_Attribute => Empty_Attr);
+                 (Name             => Package_Name,
+                  Known            => True,
+                  First_Attribute  => Empty_Attr);
                Start := Finish + 1;
 
             when 'S' =>
@@ -402,6 +484,15 @@ package body Prj.Attr is
             end case;
 
             Start := Start + 1;
+
+            if Initialization_Data (Start) = 'R' then
+               Read_Only := True;
+               Start := Start + 1;
+
+            else
+               Read_Only := False;
+            end if;
+
             Finish := Start;
 
             while Initialization_Data (Finish) /= '#' loop
@@ -441,6 +532,7 @@ package body Prj.Attr is
                Var_Kind       => Var_Kind,
                Optional_Index => Optional_Index,
                Attr_Kind      => Attr_Kind,
+               Read_Only      => Read_Only,
                Next           => Empty_Attr);
             Start := Finish + 1;
          end if;
@@ -448,6 +540,15 @@ package body Prj.Attr is
 
       Initialized := True;
    end Initialize;
+
+   ------------------
+   -- Is_Read_Only --
+   ------------------
+
+   function Is_Read_Only (Attribute : Attribute_Node_Id) return Boolean is
+   begin
+      return Attrs.Table (Attribute.Value).Read_Only;
+   end Is_Read_Only;
 
    ----------------
    -- Name_Id_Of --
@@ -582,6 +683,7 @@ package body Prj.Attr is
          Var_Kind       => Var_Kind,
          Optional_Index => Opt_Index,
          Attr_Kind      => Real_Attr_Kind,
+         Read_Only      => False,
          Next           => First_Attr);
       Package_Attributes.Table (In_Package.Value).First_Attribute :=
         Attrs.Last;
@@ -615,7 +717,9 @@ package body Prj.Attr is
       Package_Attributes.Increment_Last;
       Id := (Value => Package_Attributes.Last);
       Package_Attributes.Table (Package_Attributes.Last) :=
-        (Name => Pkg_Name, Known => True, First_Attribute => Empty_Attr);
+        (Name             => Pkg_Name,
+         Known            => True,
+         First_Attribute  => Empty_Attr);
    end Register_New_Package;
 
    procedure Register_New_Package
@@ -682,13 +786,16 @@ package body Prj.Attr is
             Var_Kind       => Attributes (Index).Var_Kind,
             Optional_Index => Attributes (Index).Opt_Index,
             Attr_Kind      => Attr_Kind,
+            Read_Only      => False,
             Next           => First_Attr);
          First_Attr := Attrs.Last;
       end loop;
 
       Package_Attributes.Increment_Last;
       Package_Attributes.Table (Package_Attributes.Last) :=
-        (Name => Pkg_Name, Known => True, First_Attribute => First_Attr);
+        (Name             => Pkg_Name,
+         Known            => True,
+         First_Attribute  => First_Attr);
    end Register_New_Package;
 
    ---------------------------

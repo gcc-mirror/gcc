@@ -153,6 +153,8 @@ package Prj.Attr is
    --  Returns True if Attribute is a known attribute and may have an
    --  optional index. Returns False otherwise.
 
+   function Is_Read_Only (Attribute : Attribute_Node_Id) return Boolean;
+
    function Next_Attribute
      (After : Attribute_Node_Id) return Attribute_Node_Id;
    --  Returns the attribute that follow After in the list of project level
@@ -269,18 +271,18 @@ private
       Var_Kind       : Variable_Kind;
       Optional_Index : Boolean;
       Attr_Kind      : Attribute_Kind;
+      Read_Only      : Boolean;
       Next           : Attr_Node_Id;
    end record;
    --  Data for an attribute
 
    package Attrs is
-     new Table.Table
-       (Table_Component_Type => Attribute_Record,
-        Table_Index_Type     => Attr_Node_Id,
-        Table_Low_Bound      => First_Attribute,
-        Table_Initial        => Attributes_Initial,
-        Table_Increment      => Attributes_Increment,
-        Table_Name           => "Prj.Attr.Attrs");
+      new Table.Table (Table_Component_Type => Attribute_Record,
+                       Table_Index_Type     => Attr_Node_Id,
+                       Table_Low_Bound      => First_Attribute,
+                       Table_Initial        => Attributes_Initial,
+                       Table_Increment      => Attributes_Increment,
+                       Table_Name           => "Prj.Attr.Attrs");
    --  The table of the attributes
 
    --------------
@@ -288,20 +290,19 @@ private
    --------------
 
    type Package_Record is record
-      Name            : Name_Id;
-      Known           : Boolean := True;
-      First_Attribute : Attr_Node_Id;
+      Name             : Name_Id;
+      Known            : Boolean := True;
+      First_Attribute  : Attr_Node_Id;
    end record;
    --  Data for a package
 
    package Package_Attributes is
-     new Table.Table
-       (Table_Component_Type => Package_Record,
-        Table_Index_Type     => Pkg_Node_Id,
-        Table_Low_Bound      => First_Package,
-        Table_Initial        => Packages_Initial,
-        Table_Increment      => Packages_Increment,
-        Table_Name           => "Prj.Attr.Packages");
+      new Table.Table (Table_Component_Type => Package_Record,
+                       Table_Index_Type     => Pkg_Node_Id,
+                       Table_Low_Bound      => First_Package,
+                       Table_Initial        => Packages_Initial,
+                       Table_Increment      => Packages_Increment,
+                       Table_Name           => "Prj.Attr.Packages");
    --  The table of the packages
 
 end Prj.Attr;
