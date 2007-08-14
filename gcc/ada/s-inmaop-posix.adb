@@ -8,7 +8,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2006, AdaCore                     --
+--                     Copyright (C) 1995-2007, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -316,12 +316,7 @@ begin
           (Storage_Elements.Integer_Address (SIG_IGN));
 
       for J in Interrupt_ID loop
-
-         --  We need to check whether J is in Keep_Unmasked because
-         --  the index type of the Keep_Unmasked array is not always
-         --  Interrupt_ID; it may be a subtype of Interrupt_ID.
-
-         if J in Keep_Unmasked'Range and then Keep_Unmasked (J) then
+         if Keep_Unmasked (J) then
             Result := sigaddset (mask'Access, Signal (J));
             pragma Assert (Result = 0);
             Result := sigdelset (allmask'Access, Signal (J));

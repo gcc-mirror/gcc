@@ -250,7 +250,7 @@ package body System.Interrupts is
    Registered_Handler_Tail : R_Link := null;
 
    Access_Hold : Server_Task_Access;
-   --  variable used to allocate Server_Task using "new".
+   --  variable used to allocate Server_Task using "new"
 
    -----------------------
    -- Local Subprograms --
@@ -266,6 +266,7 @@ package body System.Interrupts is
 
    procedure Register_Interrupt_Handler (Handler_Addr : System.Address) is
       New_Node_Ptr : R_Link;
+
    begin
       --  This routine registers the Handler as usable for Dynamic
       --  Interrupt Handler. Routines attaching and detaching Handler
@@ -677,8 +678,7 @@ package body System.Interrupts is
               "dynamic Handler");
          end if;
 
-         --  The interrupt should no longer be ingnored if
-         --  it was ever ignored.
+         --  The interrupt should no longer be ingnored if it was ever ignored
 
          Ignored (Interrupt) := False;
 
@@ -692,7 +692,7 @@ package body System.Interrupts is
 
          if New_Handler = null then
 
-            --  The null handler means we are detaching the handler.
+            --  The null handler means we are detaching the handler
 
             User_Handler (Interrupt).Static := False;
 
@@ -898,7 +898,7 @@ package body System.Interrupts is
                   end if;
                end loop;
 
-               --  Indicate in ATCB that no Interrupt Entries are attached.
+               --  Indicate in ATCB that no Interrupt Entries are attached
 
                T.Interrupt_Entry := False;
             end Detach_Interrupt_Entries;
@@ -956,7 +956,7 @@ package body System.Interrupts is
 
       System.Tasking.Utilities.Make_Independent;
 
-      --  Install default action in system level.
+      --  Install default action in system level
 
       IMOP.Install_Default_Action (IMNG.Interrupt_ID (Interrupt));
 
@@ -966,7 +966,7 @@ package body System.Interrupts is
       IMOP.Add_To_Interrupt_Mask
         (Intwait_Mask'Access, IMNG.Interrupt_ID (Interrupt));
 
-      --  Remember the Interrupt_ID for Abort_Task.
+      --  Remember the Interrupt_ID for Abort_Task
 
       PIO.Set_Interrupt_ID (IMNG.Interrupt_ID (Interrupt), Self_ID);
 
@@ -1014,7 +1014,7 @@ package body System.Interrupts is
                if User_Handler (Interrupt).H /= null then
                   Tmp_Handler := User_Handler (Interrupt).H;
 
-                  --  RTS calls should not be made with self being locked.
+                  --  RTS calls should not be made with self being locked
 
                   POP.Unlock (Self_ID);
 
@@ -1034,7 +1034,7 @@ package body System.Interrupts is
                   Tmp_ID := User_Entry (Interrupt).T;
                   Tmp_Entry_Index := User_Entry (Interrupt).E;
 
-                  --  RTS calls should not be made with self being locked.
+                  --  RTS calls should not be made with self being locked
 
                   POP.Unlock (Self_ID);
 
@@ -1146,8 +1146,7 @@ package body System.Interrupts is
 --  Elaboration code for package System.Interrupts
 
 begin
-
-   --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent.
+   --  Get Interrupt_Manager's ID so that Abort_Interrupt can be sent
 
    Interrupt_Manager_ID := To_System (Interrupt_Manager'Identity);
 
