@@ -2099,7 +2099,7 @@ tree-ssa-operands.o : tree-ssa-operands.c $(TREE_FLOW_H) $(CONFIG_H) \
    coretypes.h langhooks.h $(IPA_REFERENCE_H)
 tree-eh.o : tree-eh.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_H) $(FLAGS_H) $(FUNCTION_H) except.h langhooks.h \
-   $(GGC_H) tree-pass.h coretypes.h $(TIMEVAR_H) $(TM_P_H) \
+   $(GGC_H) tree-pass.h coretypes.h $(TIMEVAR_H) $(TM_P_H) pointer-set.h \
    $(TREE_DUMP_H) $(TREE_INLINE_H) tree-iterator.h toplev.h
 tree-ssa-loop.o : tree-ssa-loop.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) \

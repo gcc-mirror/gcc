@@ -1,3 +1,13 @@
+2007-08-14  Steve Ellcey  <sje@cup.hp.com>
+
+	PR tree-optimization/32941
+	* tree-eh.c (struct leh_tf_state): Add goto_queue_map field.
+	(goto_queue_cmp): Remove.
+	(find_goto_replacement): Change search method.
+	(maybe_record_in_goto_queue): Add assert.
+	(lower_try_finally): Remove qsort call, add pointer_map_destroy call.
+	* Makefile.in (tree-eh.o): Add pointer-set.h dependency.
+
 2007-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (component_uses_parent_alias_set): Constify.
