@@ -1,3 +1,11 @@
+2007-08-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c/30428
+	* gcc.dg/vector-2.c: New test.
+
+	PR c++/30428
+	* g++.dg/ext/vector8.C: New test.
+
 2007-08-13  Dan Hipschman  <dsh@google.com>
 
 	PR c/32953
