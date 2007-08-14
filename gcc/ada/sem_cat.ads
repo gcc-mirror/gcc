@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,14 +42,18 @@ with Types;   use Types;
 package Sem_Cat is
 
    function Has_Stream_Attribute_Definition
-     (Typ : Entity_Id; Nam : TSS_Name_Type) return Boolean;
+     (Typ          : Entity_Id;
+      Nam          : TSS_Name_Type;
+      At_Any_Place : Boolean := False) return Boolean;
    --  True when there is a attribute definition clause specifying attribute
    --  Nam for Typ. In Ada 2005 mode, returns True only when the attribute
-   --  definition clause is visible. Note that attribute definition clauses
+   --  definition clause is visible, unless At_Any_Place is True (in which case
+   --  no visiblity test is made, and True is returned as long as an attribute
+   --  is visible at any place). Note that attribute definition clauses
    --  inherited from parent types are taken into account by this predicate
    --  (to test for presence of an attribute definition clause for one
    --  specific type, excluding inherited definitions, the flags
-   --  Has_Specicied_Stream_* can be used instead).
+   --  Has_Specified_Stream_* can be used instead).
 
    function In_Preelaborated_Unit return Boolean;
    --  Determines if the current scope is within a preelaborated compilation

@@ -71,10 +71,9 @@ package body Sem_Cat is
    --  that no component is declared with a non-static default value.
 
    function Missing_Read_Write_Attributes (E : Entity_Id) return Boolean;
-   --  Return True if the entity or one of its subcomponent is an access
-   --  type which does not have user-defined Read and Write attribute.
-   --  Additionally, in Ada 2005 mode, stream attributes are considered missing
-   --  if the attribute definition clause is not visible.
+   --  Return True if the entity or one of its subcomponents is of an access
+   --  type that does not have user-defined Read and Write attributes visible
+   --  at any place.
 
    function In_RCI_Declaration (N : Node_Id) return Boolean;
    --  Determines if a declaration is  within the visible part of  a Remote
@@ -314,7 +313,9 @@ package body Sem_Cat is
    -------------------------------------
 
    function Has_Stream_Attribute_Definition
-     (Typ : Entity_Id; Nam : TSS_Name_Type) return Boolean
+     (Typ          : Entity_Id;
+      Nam          : TSS_Name_Type;
+      At_Any_Place : Boolean := False) return Boolean
    is
       Rep_Item : Node_Id;
    begin
@@ -322,7 +323,8 @@ package body Sem_Cat is
       --  the list until we find the requested attribute definition clause.
       --  In Ada 2005 mode, clauses are ignored if they are not currently
       --  visible (this is tested using the corresponding Entity, which is
-      --  inserted by the expander at the point where the clause occurs).
+      --  inserted by the expander at the point where the clause occurs),
+      --  unless At_Any_Place is true.
 
       Rep_Item := First_Rep_Item (Typ);
       while Present (Rep_Item) loop
@@ -349,8 +351,13 @@ package body Sem_Cat is
          Next_Rep_Item (Rep_Item);
       end loop;
 
+      --  If At_Any_Place is true, return True if the attribute is available
+      --  at any place; if it is false, return True only if the attribute is
+      --  currently visible.
+
       return Present (Rep_Item)
         and then (Ada_Version < Ada_05
+                   or else At_Any_Place
                    or else not Is_Hidden (Entity (Rep_Item)));
    end Has_Stream_Attribute_Definition;
 
@@ -508,8 +515,24 @@ package body Sem_Cat is
         and then Is_Limited_Record (E)
       then
          return True;
+
+      --  A limited interface is not currently a legal ancestor for the
+      --  designated type of an RACW type, because a type that implements
+      --  such an interface need not be limited. However, the ARG seems to
+      --  incline towards allowing an access to classwide limited interface
+      --  type as a remote access type. This may be revised when the ARG
+      --  rules on this question, but it seems safe to allow it for now,
+      --  in order to see whether it is a useful extension for distributed
+      --  programming, in particular for Brad Moore's buffer taxonomy.
+
+      elsif Is_Limited_Record (E)
+        and then Is_Limited_Interface (E)
+      then
+         return True;
+
       elsif Nkind (P) = N_Private_Extension_Declaration then
          return Is_Recursively_Limited_Private (Etype (E));
+
       elsif Nkind (P) = N_Formal_Type_Declaration
         and then Ekind (E) = E_Record_Type_With_Private
         and then Is_Generic_Type (E)
@@ -531,8 +554,8 @@ package body Sem_Cat is
       U_E            : constant Entity_Id := Underlying_Type (E);
 
       function Has_Read_Write_Attributes (E : Entity_Id) return Boolean;
-      --  Return True if entity has visible attribute definition clauses for
-      --  Read and Write attributes.
+      --  Return True if entity has attribute definition clauses for Read and
+      --  Write attributes that are visible at some place.
 
       -------------------------------
       -- Has_Read_Write_Attributes --
@@ -541,8 +564,10 @@ package body Sem_Cat is
       function Has_Read_Write_Attributes (E : Entity_Id) return Boolean is
       begin
          return True
-           and then Has_Stream_Attribute_Definition (E, TSS_Stream_Read)
-           and then Has_Stream_Attribute_Definition (E, TSS_Stream_Write);
+           and then Has_Stream_Attribute_Definition (E,
+                      TSS_Stream_Read,  At_Any_Place => True)
+           and then Has_Stream_Attribute_Definition (E,
+                      TSS_Stream_Write, At_Any_Place => True);
       end Has_Read_Write_Attributes;
 
    --  Start of processing for Missing_Read_Write_Attributes
@@ -824,16 +849,13 @@ package body Sem_Cat is
         and then (not Inside_A_Generic
                    or else Present (Enclosing_Generic_Body (N)))
       then
-         --  We relax the restriction of 10.2.1(9) within GNAT
-         --  units to allow packages such as Ada.Strings.Unbounded
-         --  to be implemented (i.p., Null_Unbounded_String).
-         --  (There are ACVC tests that check that the restriction
-         --  is enforced, but note that AI-161, once approved,
-         --  will relax the restriction prohibiting default-
-         --  initialized objects of private and controlled
-         --  types.)
+         --  If the type is private, it must have the Ada 2005 pragma
+         --  Has_Preelaborable_Initialization.
+         --  The check is omitted within predefined units. This is probably
+         --  obsolete code to fix the Ada95 weakness in this area ???
 
          if Is_Private_Type (T)
+           and then not Has_Pragma_Preelab_Init (T)
            and then not Is_Internal_File_Name
                           (Unit_File_Name (Get_Source_Unit (N)))
          then
@@ -906,7 +928,7 @@ package body Sem_Cat is
             then
                Entity_Of_Withed := Entity (Name (Item));
                Check_Categorization_Dependencies
-                (U, Entity_Of_Withed, Item, Is_Subunit);
+                 (U, Entity_Of_Withed, Item, Is_Subunit);
             end if;
 
             Next (Item);
@@ -1854,11 +1876,11 @@ package body Sem_Cat is
                if Ada_Version >= Ada_05 then
                   Error_Msg_N
                     ("\must have visible Read and Write attribute " &
-                     "definition clauses ('R'M E.2.2(8))", U_Typ);
+                     "definition clauses (RM E.2.2(8))", U_Typ);
                else
                   Error_Msg_N
                     ("\must have Read and Write attribute " &
-                     "definition clauses ('R'M E.2.2(8))", U_Typ);
+                     "definition clauses (RM E.2.2(8))", U_Typ);
                end if;
             end if;
          end if;
