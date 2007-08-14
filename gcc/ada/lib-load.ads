@@ -110,7 +110,7 @@ package Lib.Load is
       Subunit           : Boolean;
       Corr_Body         : Unit_Number_Type := No_Unit;
       Renamings         : Boolean          := False;
-      From_Limited_With : Boolean          := False) return Unit_Number_Type;
+      With_Node         : Node_Id          := Empty) return Unit_Number_Type;
    --  This function loads and parses the unit specified by Load_Name (or
    --  returns the unit number for the previously constructed units table
    --  entry if this is not the first call for this unit). Required indicates

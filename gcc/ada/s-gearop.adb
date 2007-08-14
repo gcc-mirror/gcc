@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--         Copyright (C) 2006-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,7 +151,12 @@ package body System.Generic_Array_Operations is
 
       for J in R'Range (1) loop
          for K in R'Range (2) loop
-            R (J, K) := Operation (Left (J, K), Right (J, K));
+            R (J, K) :=
+              Operation
+                (Left (J, K),
+                 Right
+                   (J - R'First (1) + Right'First (1),
+                    K - R'First (2) + Right'First (2)));
          end loop;
       end loop;
 
@@ -179,7 +184,12 @@ package body System.Generic_Array_Operations is
 
       for J in R'Range (1) loop
          for K in R'Range (2) loop
-            R (J, K) := Operation (X (J, K), Y (J, K), Z);
+            R (J, K) :=
+              Operation
+                (X (J, K),
+                 Y (J - R'First (1) + Y'First (1),
+                    K - R'First (2) + Y'First (2)),
+                 Z);
          end loop;
       end loop;
 
@@ -203,7 +213,7 @@ package body System.Generic_Array_Operations is
       end if;
 
       for J in R'Range loop
-         R (J) := Operation (Left (J), Right (J));
+         R (J) := Operation (Left (J), Right (J - R'First + Right'First));
       end loop;
 
       return R;
@@ -227,7 +237,7 @@ package body System.Generic_Array_Operations is
       end if;
 
       for J in R'Range loop
-         R (J) := Operation (X (J), Y (J), Z);
+         R (J) := Operation (X (J), Y (J - X'First + Y'First), Z);
       end loop;
 
       return R;
@@ -402,8 +412,8 @@ package body System.Generic_Array_Operations is
    begin
       for J in R'Range (1) loop
          for K in R'Range (2) loop
-            R (J, K) := A (J - R'First (1) + A'First (1),
-                           K - R'First (2) + A'First (2));
+            R (J, K) := A (K - R'First (2) + A'First (1),
+                           J - R'First (1) + A'First (2));
          end loop;
       end loop;
    end Transpose;

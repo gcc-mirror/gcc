@@ -1100,7 +1100,10 @@ package body Sem_Ch7 is
 
          --  The current compilation unit may include private with_clauses,
          --  which are visible in the private part of the current nested
-         --  package, and have to be installed now.
+         --  package, and have to be installed now. This is not done for
+         --  nested instantiations, where the private with_clauses of the
+         --  enclosing unit have no effect once the instantiation info is
+         --  established and we start analyzing the package declaration.
 
          declare
             Comp_Unit : constant Entity_Id := Cunit_Entity (Current_Sem_Unit);
@@ -1108,6 +1111,7 @@ package body Sem_Ch7 is
             if (Ekind (Comp_Unit) = E_Package
                  or else Ekind (Comp_Unit) = E_Generic_Package)
               and then not In_Private_Part (Comp_Unit)
+              and then not In_Instance
             then
                Install_Private_With_Clauses (Comp_Unit);
                Private_With_Clauses_Installed := True;
@@ -2088,7 +2092,7 @@ package body Sem_Ch7 is
 
             else
                Error_Msg_N
-                  ("missing full declaration for deferred constant ('R'M 7.4)",
+                  ("missing full declaration for deferred constant (RM 7.4)",
                      Id);
 
                if Is_Limited_Type (Etype (Id)) then

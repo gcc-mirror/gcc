@@ -31,6 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This version is used on VxWorks. Note that the corresponding spec is in
+--  g-sttsne-locking.ads.
+
 with Interfaces.C; use Interfaces.C;
 
 package body GNAT.Sockets.Thin.Task_Safe_NetDB is

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--         Copyright (C) 2006-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,10 +31,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Comment required if non-RM package ???
+--  This package provides a thin binding to the standard Fortran BLAS library.
+--  Documentation and a reference BLAS implementation is available from
+--  ftp://ftp.netlib.org. The main purpose of this package is to facilitate
+--  implementation of the Ada 2005 Ada.Numerics.Generic_Real_Arrays and
+--  Ada.Numerics.Generic_Complex_Arrays packages. Bindings to other BLAS
+--  routines may be added over time.
+
+--  As actual linker arguments to link with the BLAS implementation differs
+--  according to platform and chosen BLAS implementation, the linker arguments
+--  are given in the body of this package. The body may need to be modified in
+--  order to link with different BLAS implementations tuned to the specific
+--  target.
 
 package Interfaces.Fortran.BLAS is
    pragma Pure;
+   pragma Elaborate_Body;
 
    No_Trans   : aliased constant Character := 'N';
    Trans      : aliased constant Character := 'T';
@@ -81,14 +93,14 @@ package Interfaces.Fortran.BLAS is
       Y     : Double_Precision_Vector;
       Inc_Y : Integer := 1) return Double_Precision;
 
-   function cdot
+   function cdotu
      (N     : Positive;
       X     : Complex_Vector;
       Inc_X : Integer := 1;
       Y     : Complex_Vector;
       Inc_Y : Integer := 1) return Complex;
 
-   function zdot
+   function zdotu
      (N     : Positive;
       X     : Double_Complex_Vector;
       Inc_X : Integer := 1;
@@ -232,7 +244,7 @@ package Interfaces.Fortran.BLAS is
       Ld_C    : Integer);
 
 private
-   pragma Import (Fortran, cdot,   "cdot_");
+   pragma Import (Fortran, cdotu,  "cdotu_");
    pragma Import (Fortran, cgemm,  "cgemm_");
    pragma Import (Fortran, cgemv,  "cgemv_");
    pragma Import (Fortran, ddot,   "ddot_");
@@ -245,7 +257,7 @@ private
    pragma Import (Fortran, sgemm,  "sgemm_");
    pragma Import (Fortran, sgemv,  "sgemv_");
    pragma Import (Fortran, snrm2,  "snrm2_");
-   pragma Import (Fortran, zdot,   "zdot_");
+   pragma Import (Fortran, zdotu,  "zdotu_");
    pragma Import (Fortran, zgemm,  "zgemm_");
    pragma Import (Fortran, zgemv,  "zgemv_");
 end Interfaces.Fortran.BLAS;

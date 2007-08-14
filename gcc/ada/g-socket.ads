@@ -180,13 +180,6 @@ package GNAT.Sockets is
    --           Socket_Level,
    --           (Reuse_Address, True));
 
-   --        --  Join a multicast group
-
-   --        Set_Socket_Option
-   --          (Socket,
-   --           IP_Protocol_For_IP_Level,
-   --           (Add_Membership, Inet_Addr (Group), Any_Inet_Addr));
-
    --        --  Controls the live time of the datagram to avoid it being
    --        --  looped forever due to routing errors. Routers decrement
    --        --  the TTL of every datagram as it traverses from one network
@@ -212,6 +205,16 @@ package GNAT.Sockets is
    --        Address.Port := 55505;
 
    --        Bind_Socket (Socket, Address);
+
+   --        --  Join a multicast group
+
+   --        --  Portability note: On Windows, this option may be set only
+   --        --  on a bound socket.
+
+   --        Set_Socket_Option
+   --          (Socket,
+   --           IP_Protocol_For_IP_Level,
+   --           (Add_Membership, Inet_Addr (Group), Any_Inet_Addr));
 
    --        --  If this socket is intended to send messages, provide the
    --        --  receiver socket address.
@@ -308,11 +311,6 @@ package GNAT.Sockets is
    --        Set_Socket_Option
    --          (Socket,
    --           IP_Protocol_For_IP_Level,
-   --           (Add_Membership, Inet_Addr (Group), Any_Inet_Addr));
-
-   --        Set_Socket_Option
-   --          (Socket,
-   --           IP_Protocol_For_IP_Level,
    --           (Multicast_TTL, 1));
 
    --        Set_Socket_Option
@@ -324,6 +322,11 @@ package GNAT.Sockets is
    --        Address.Port := 55506;
 
    --        Bind_Socket (Socket, Address);
+
+   --        Set_Socket_Option
+   --          (Socket,
+   --           IP_Protocol_For_IP_Level,
+   --           (Add_Membership, Inet_Addr (Group), Any_Inet_Addr));
 
    --        Address.Addr := Inet_Addr (Group);
    --        Address.Port := 55505;

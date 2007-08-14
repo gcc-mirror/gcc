@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--         Copyright (C) 2006-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,7 +146,7 @@ package body System.Generic_Complex_BLAS is
             function Conv_X is new Unchecked_Conversion (Address, X_Ptr);
             function Conv_Y is new Unchecked_Conversion (Address, Y_Ptr);
          begin
-            return To_Complex (BLAS.cdot (N, Conv_X (X'Address).all, Inc_X,
+            return To_Complex (BLAS.cdotu (N, Conv_X (X'Address).all, Inc_X,
                                   Conv_Y (Y'Address).all, Inc_Y));
          end;
 
@@ -157,12 +157,12 @@ package body System.Generic_Complex_BLAS is
             function Conv_X is new Unchecked_Conversion (Address, X_Ptr);
             function Conv_Y is new Unchecked_Conversion (Address, Y_Ptr);
          begin
-            return To_Complex (BLAS.zdot (N, Conv_X (X'Address).all, Inc_X,
+            return To_Complex (BLAS.zdotu (N, Conv_X (X'Address).all, Inc_X,
                                      Conv_Y (Y'Address).all, Inc_Y));
          end;
 
       else
-         return To_Complex (BLAS.zdot (N, To_Double_Complex (X), Inc_X,
+         return To_Complex (BLAS.zdotu (N, To_Double_Complex (X), Inc_X,
                                   To_Double_Complex (Y), Inc_Y));
       end if;
    end dot;
@@ -177,7 +177,7 @@ package body System.Generic_Complex_BLAS is
       M       : Positive;
       N       : Positive;
       K       : Positive;
-      Alpha   : Complex := (1.0, 1.0);
+      Alpha   : Complex := (1.0, 0.0);
       A       : Complex_Matrix;
       Ld_A    : Integer;
       B       : Complex_Matrix;
@@ -251,7 +251,7 @@ package body System.Generic_Complex_BLAS is
      (Trans : access constant Character;
       M     : Natural := 0;
       N     : Natural := 0;
-      Alpha : Complex := (1.0, 1.0);
+      Alpha : Complex := (1.0, 0.0);
       A     : Complex_Matrix;
       Ld_A  : Positive;
       X     : Complex_Vector;

@@ -497,6 +497,11 @@ CND(TCP_NODELAY, "Do not coalesce packets")
 #endif
 CND(SO_REUSEADDR, "Bind reuse local address")
 
+#ifndef SO_REUSEPORT
+#define SO_REUSEPORT -1
+#endif
+CND(SO_REUSEPORT, "Bind reuse port number")
+
 #ifndef SO_KEEPALIVE
 #define SO_KEEPALIVE -1
 #endif

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--         Copyright (C) 2006-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  For platforms without, or with unknown libraries, no libraries are linked
---  by default. The user has to specify the required BLAS and LAPACK libraries
---  explicitly on the command line.
+--  This Interfaces.Fortran.Blas package body contains the required linker
+--  pragmas for automatically linking with the gnalasup linear algebra support
+--  library, and the systems math library. Alternative bodies can be supplied
+--  if different sets of libraries are needed.
 
 package body Interfaces.Fortran.BLAS is
+   pragma Linker_Options ("-lgnala");
+   pragma Linker_Options ("-lgnalasup");
+   pragma Linker_Options ("-lm");
 end Interfaces.Fortran.BLAS;

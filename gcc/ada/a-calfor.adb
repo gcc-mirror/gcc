@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--          Copyright (C) 2006-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,14 +140,36 @@ package body Ada.Calendar.Formatting is
       Hour       : Hour_Number;
       Minute     : Minute_Number;
       Second     : Second_Number;
-      Sub_Second : Second_Duration;
+      Sub_Second : Duration;
       SS_Nat     : Natural;
 
-      Result : String := "00:00:00.00";
+      Low  : Integer;
+      High : Integer;
+
+      Result : String := "-00:00:00.00";
 
    begin
-      Split (Elapsed_Time, Hour, Minute, Second, Sub_Second);
-      SS_Nat := Natural (Sub_Second * 100.0);
+      Split (abs (Elapsed_Time), Hour, Minute, Second, Sub_Second);
+
+      --  Determine the two slice bounds for the result string depending on
+      --  whether the input is negative and whether fractions are requested.
+
+      if Elapsed_Time < 0.0 then
+         Low := 1;
+      else
+         Low := 2;
+      end if;
+
+      if Include_Time_Fraction then
+         High := 12;
+      else
+         High := 9;
+      end if;
+
+      --  Prevent rounding when converting to natural
+
+      Sub_Second := Sub_Second * 100.0 - 0.5;
+      SS_Nat := Natural (Sub_Second);
 
       declare
          Hour_Str   : constant String := Hour_Number'Image (Hour);
@@ -156,47 +178,45 @@ package body Ada.Calendar.Formatting is
          SS_Str     : constant String := Natural'Image (SS_Nat);
 
       begin
-         --  Hour processing, positions 1 and 2
+         --  Hour processing, positions 2 and 3
 
          if Hour < 10 then
-            Result (2) := Hour_Str (2);
+            Result (3) := Hour_Str (2);
          else
-            Result (1) := Hour_Str (2);
-            Result (2) := Hour_Str (3);
+            Result (2) := Hour_Str (2);
+            Result (3) := Hour_Str (3);
          end if;
 
-         --  Minute processing, positions 4 and 5
+         --  Minute processing, positions 5 and 6
 
          if Minute < 10 then
-            Result (5) := Minute_Str (2);
+            Result (6) := Minute_Str (2);
          else
-            Result (4) := Minute_Str (2);
-            Result (5) := Minute_Str (3);
+            Result (5) := Minute_Str (2);
+            Result (6) := Minute_Str (3);
          end if;
 
-         --  Second processing, positions 7 and 8
+         --  Second processing, positions 8 and 9
 
          if Second < 10 then
-            Result (8) := Second_Str (2);
+            Result (9) := Second_Str (2);
          else
-            Result (7) := Second_Str (2);
-            Result (8) := Second_Str (3);
+            Result (8) := Second_Str (2);
+            Result (9) := Second_Str (3);
          end if;
 
-         --  Optional sub second processing, positions 10 and 11
+         --  Optional sub second processing, positions 11 and 12
 
          if Include_Time_Fraction then
             if SS_Nat < 10 then
-               Result (11) := SS_Str (2);
+               Result (12) := SS_Str (2);
             else
-               Result (10) := SS_Str (2);
-               Result (11) := SS_Str (3);
+               Result (11) := SS_Str (2);
+               Result (12) := SS_Str (3);
             end if;
-
-            return Result;
-         else
-            return Result (1 .. 8);
          end if;
+
+         return Result (Low .. High);
       end;
    end Image;
 
@@ -215,7 +235,7 @@ package body Ada.Calendar.Formatting is
       Hour        : Hour_Number;
       Minute      : Minute_Number;
       Second      : Second_Number;
-      Sub_Second  : Second_Duration;
+      Sub_Second  : Duration;
       SS_Nat      : Natural;
       Leap_Second : Boolean;
 
@@ -225,7 +245,10 @@ package body Ada.Calendar.Formatting is
       Split (Date, Year, Month, Day,
              Hour, Minute, Second, Sub_Second, Leap_Second, Time_Zone);
 
-      SS_Nat := Natural (Sub_Second * 100.0);
+      --  Prevent rounding when converting to natural
+
+      Sub_Second := Sub_Second * 100.0 - 0.5;
+      SS_Nat := Natural (Sub_Second);
 
       declare
          Year_Str   : constant String := Year_Number'Image (Year);

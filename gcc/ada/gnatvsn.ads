@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,10 @@ package Gnatvsn is
    --       gives appropriate bug submission instructions that do not reference
    --       customer number etc.
 
+   function Gnat_Free_Software return String;
+   --  Text to be displayed by the different GNAT tools when switch --version
+   --  is used. This text depends on the GNAT build type.
+
    Ver_Len_Max : constant := 64;
    --  Longest possible length for Gnat_Version_String in this or any
    --  other version of GNAT. This is used by the binder to establish
@@ -89,7 +93,14 @@ package Gnatvsn is
    --  the tree format that would result in a compiler being incompatible with
    --  an older version of ASIS, or vice versa.
 
-   Current_Year : constant String := "2006";
+   PCS_Version_Number : constant := 1;
+   --  PCS interface version. This is used to check for consistency between the
+   --  compiler used to generate distribution stubs and the PCS implementation.
+   --  It must be incremented whenever a change is made to the generated code
+   --  for distribution stubs that would result in the compiler being
+   --  incompatible with an older version of the PCS, or vice versa.
+
+   Current_Year : constant String := "2007";
    --  Used in printing copyright messages
 
 end Gnatvsn;

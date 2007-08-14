@@ -33,6 +33,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
+with Gnatvsn;  use Gnatvsn;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Namet;    use Namet;
@@ -862,9 +863,10 @@ package body Rtsfind is
 
       procedure Check_RPC;
       --  Reject programs that make use of distribution features not supported
-      --  on the current target. On such targets (VMS, Vxworks, others?) we
-      --  only provide a minimal body for System.Rpc that only supplies an
-      --  implementation of partition_id.
+      --  on the current target. Also check that the PCS is compatible with
+      --  the code generator version. On such targets (VMS, Vxworks, others?)
+      --  we provide a minimal body for System.Rpc that only supplies an
+      --  implementation of Partition_Id.
 
       function Find_Local_Entity (E : RE_Id) return Entity_Id;
       --  This function is used when entity E is in this compilation's main
@@ -875,6 +877,25 @@ package body Rtsfind is
       ---------------
 
       procedure Check_RPC is
+
+         procedure Check_RPC_Failure (Msg : String);
+         pragma No_Return (Check_RPC_Failure);
+         --  Display Msg on standard error and raise Unrecoverable_Error
+
+         -----------------------
+         -- Check_RPC_Failure --
+         -----------------------
+
+         procedure Check_RPC_Failure (Msg : String) is
+         begin
+            Set_Standard_Error;
+            Write_Str (Msg);
+            Write_Eol;
+            raise Unrecoverable_Error;
+         end Check_RPC_Failure;
+
+      --  Start of processing for Check_RPC
+
       begin
          --  Bypass this check if debug flag -gnatdR set
 
@@ -897,12 +918,14 @@ package body Rtsfind is
                      E = RE_Params_Stream_Type
                        or else
                      E = RE_Request_Access)
-           and then Get_PCS_Name = Name_No_DSA
          then
-            Set_Standard_Error;
-            Write_Str ("distribution feature not supported");
-            Write_Eol;
-            raise Unrecoverable_Error;
+            if Get_PCS_Name = Name_No_DSA then
+               Check_RPC_Failure ("distribution feature not supported");
+
+            elsif Get_PCS_Version /= Gnatvsn.PCS_Version_Number then
+               Check_RPC_Failure ("PCS version mismatch");
+
+            end if;
          end if;
       end Check_RPC;
 

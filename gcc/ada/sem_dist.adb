@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,12 +36,14 @@ with Namet;    use Namet;
 with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
+with Uintp;    use Uintp;
 
 package body Sem_Dist is
 
@@ -202,12 +204,35 @@ package body Sem_Dist is
    ------------------
 
    function Get_PCS_Name return PCS_Names is
-      PCS_Name : constant PCS_Names :=
-                   Chars (Entity (Expression
-                                    (Parent (RTE (RE_DSA_Implementation)))));
    begin
-      return PCS_Name;
+      return
+        Chars (Entity (Expression (Parent (RTE (RE_DSA_Implementation)))));
    end Get_PCS_Name;
+
+   ---------------------
+   -- Get_PCS_Version --
+   ---------------------
+
+   function Get_PCS_Version return Int is
+      PCS_Version_Entity : Entity_Id;
+      PCS_Version        : Int;
+
+   begin
+      if RTE_Available (RE_PCS_Version) then
+         PCS_Version_Entity := RTE (RE_PCS_Version);
+         pragma Assert (Ekind (PCS_Version_Entity) = E_Named_Integer);
+         PCS_Version :=
+           UI_To_Int (Expr_Value (Constant_Value (PCS_Version_Entity)));
+
+      else
+         --  Case of System.Partition_Interface.PCS_Version not found:
+         --  return a null version.
+
+         PCS_Version := 0;
+      end if;
+
+      return PCS_Version;
+   end Get_PCS_Version;
 
    ------------------------
    -- Is_All_Remote_Call --

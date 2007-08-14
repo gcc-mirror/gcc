@@ -857,8 +857,7 @@ package body Osint is
       --  If we come here, the user has typed the executable name with no
       --  directory prefix.
 
-      return Get_Install_Dir
-        (System.OS_Lib.Locate_Exec_On_Path (Exec_Name.all).all);
+      return Get_Install_Dir (Locate_Exec_On_Path (Exec_Name.all).all);
    end Executable_Prefix;
 
    ------------------
@@ -1054,6 +1053,11 @@ package body Osint is
 
    begin
       Fill_Arg (Command_Name'Address, 0);
+
+      if Command_Name = "" then
+         Name_Len := 0;
+         return;
+      end if;
 
       --  The program name might be specified by a full path name. However,
       --  we don't want to print that all out in an error message, so the
@@ -1823,6 +1827,16 @@ package body Osint is
 
       return Name_Enter;
    end Object_File_Name;
+
+   -------------------------------
+   -- OS_Exit_Through_Exception --
+   -------------------------------
+
+   procedure OS_Exit_Through_Exception (Status : Integer) is
+   begin
+      Current_Exit_Status := Status;
+      raise Types.Terminate_Program;
+   end OS_Exit_Through_Exception;
 
    --------------------------
    -- OS_Time_To_GNAT_Time --

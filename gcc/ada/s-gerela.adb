@@ -282,7 +282,7 @@ package body System.Generic_Real_LAPACK is
       N      : Natural;
       A      : in out Real_Matrix;
       Ld_A   : Positive;
-      Tau    : in Real_Vector;
+      Tau    : Real_Vector;
       Work   : out Real_Vector;
       L_Work : Integer;
       Info   : access Integer)

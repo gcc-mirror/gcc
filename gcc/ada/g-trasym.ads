@@ -36,12 +36,13 @@
 --  This capability is currently supported on the following targets:
 
 --     HP-UX
---     Irix MIPS
+--     IRIX
 --     GNU/Linux x86
+--     AIX
 --     Solaris sparc
---     Tru64 alpha
+--     Tru64
 --     OpenVMS/Alpha
---     Windows NT/XP
+--     Windows NT/XP/Vista
 
 --  The routines provided in this package assume that your application has
 --  been compiled with debugging information turned on, since this information
@@ -59,16 +60,15 @@
 --  - archive this executable
 --  - strip a copy of the executable and distribute/deploy this version
 --  - at run time, compute absolute traceback (-bargs -E) from your
---    executable and log it using Ada.Exceptions.Exception_Occurrence
+--    executable and log it using Ada.Exceptions.Exception_Information
 --  - off line, compute the symbolic traceback using the executable archived
 --    with debug info and addr2line or gdb (using info line *<addr>) on the
 --    absolute addresses logged by your application.
 
 --  In order to retrieve symbolic information, functions in this package will
 --  read on disk all the debug information of the executable file (found via
---  Argument (0), so any path information needed to read the executable file
---  need to be provided when launching the executable), and load then in
---  memory, causing a significant cpu and memory overhead.
+--  Argument (0), and looked in the PATH if needed), and load them in memory,
+--  causing a significant cpu and memory overhead.
 
 --  On all platforms except VMS, this package is not intended to be used
 --  within a shared library, symbolic tracebacks are only supported for the
