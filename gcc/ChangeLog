@@ -1,3 +1,22 @@
+2007-08-14  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-pass.h (PROP_pta): Removed.
+	(TODO_rebuild_alias): New.
+	(pass_may_alias): Removed.
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Only rebuild
+	aliasing if we changed something.
+	* tree-ssa-alias.c (compute_may_aliases): Make non-static.  Update
+	SSA internally.
+	(pass_may_alias): Removed.
+	(create_structure_vars): Return TODO_rebuild_alias.
+	* tree-ssa-pre.c (do_pre): Return TODO_rebuild_alias.
+	* tree-sra.c (tree_sra): Only rebuild aliasing if something
+	changed.
+	(tree_sra_early): We never affect aliasing right now.
+	* tree-flow.h (compute_may_aliases): New prototype.
+	* passes.c: Remove pass_may_alias from the passes.
+	(execute_function_todo): Support TODO_rebuild_alias.	
+
 2007-08-14  Kai Tietz  <kai.tietz@onevision.com>
 
 	* i386.c: (legitimize_address): Move dllimported variable check
@@ -385,6 +404,7 @@
 	* emit-rtl.c (try_split): Relink the insns with REG_LIBCALL note
 	and with REG_RETVAL note after split.
 
+>>>>>>> .r127481
 2007-08-11  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.c (mips_sched_reorder):  Mark cycle parameter

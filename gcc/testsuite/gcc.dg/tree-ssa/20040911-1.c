@@ -1,7 +1,7 @@
 /* Verify that points-to information is handled properly for PTR + OFFSET
    pointer arithmetics.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-alias1-vops" } */
+/* { dg-options "-O2 -fdump-tree-salias-vops" } */
 
 char buf[4], *q;
 int foo (int i)
@@ -18,5 +18,5 @@ int foo (int i)
   return *p;
 }
 
-/* { dg-final { scan-tree-dump-not "VUSE <c" "alias1" } } */
-/* { dg-final { cleanup-tree-dump "alias1" } } */
+/* { dg-final { scan-tree-dump-not "VUSE <c" "salias" } } */
+/* { dg-final { cleanup-tree-dump "salias" } } */

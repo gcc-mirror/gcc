@@ -149,12 +149,11 @@ struct dump_file_info
 #define PROP_gimple_leh		(1 << 2)	/* lowered eh */
 #define PROP_cfg		(1 << 3)
 #define PROP_referenced_vars	(1 << 4)
-#define PROP_pta		(1 << 5)
-#define PROP_ssa		(1 << 6)
-#define PROP_no_crit_edges      (1 << 7)
-#define PROP_rtl		(1 << 8)
-#define PROP_alias		(1 << 9)
-#define PROP_gimple_lomp	(1 << 10)	/* lowered OpenMP directives */
+#define PROP_ssa		(1 << 5)
+#define PROP_no_crit_edges      (1 << 6)
+#define PROP_rtl		(1 << 7)
+#define PROP_alias		(1 << 8)
+#define PROP_gimple_lomp	(1 << 9)	/* lowered OpenMP directives */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)
@@ -228,6 +227,9 @@ struct dump_file_info
 /* Internally used for the first instance of a pass.  */
 #define TODO_mark_first_instance	(1 << 18)
 
+/* Rebuild aliasing info.  */
+#define TODO_rebuild_alias                (1 << 19)
+
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
      | TODO_update_ssa_no_phi		\
@@ -278,7 +280,6 @@ extern struct tree_opt_pass pass_dce;
 extern struct tree_opt_pass pass_dce_loop;
 extern struct tree_opt_pass pass_cd_dce;
 extern struct tree_opt_pass pass_merge_phi;
-extern struct tree_opt_pass pass_may_alias;
 extern struct tree_opt_pass pass_split_crit_edges;
 extern struct tree_opt_pass pass_pre;
 extern struct tree_opt_pass pass_profile;

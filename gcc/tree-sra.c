@@ -2400,6 +2400,8 @@ tree_sra (void)
       scan_function ();
       decide_instantiations ();
       scalarize_function ();
+      if (!bitmap_empty_p (sra_candidates))
+	todoflags |= TODO_rebuild_alias;
     }
 
   /* Free allocated memory.  */
@@ -2422,7 +2424,7 @@ tree_sra_early (void)
   ret = tree_sra ();
   early_sra = false;
 
-  return ret;
+  return ret & ~TODO_rebuild_alias;
 }
 
 static bool
