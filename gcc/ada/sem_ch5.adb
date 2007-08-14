@@ -250,7 +250,8 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Assignment
 
    begin
-      Mark_Static_Coextensions (Rhs);
+      Mark_Coextensions (N, Rhs);
+
       Analyze (Rhs);
       Analyze (Lhs);
 
@@ -579,10 +580,10 @@ package body Sem_Ch5 is
         and then Can_Never_Be_Null (T1)
         and then not Assignment_OK (Lhs)
       then
-         if Nkind (Rhs) = N_Null then
+         if Known_Null (Rhs) then
             Apply_Compile_Time_Constraint_Error
               (N   => Rhs,
-               Msg => "(Ada 2005) NULL not allowed in null-excluding objects?",
+               Msg => "(Ada 2005) null not allowed in null-excluding objects?",
                Reason => CE_Null_Not_Allowed);
             return;
 
@@ -640,11 +641,9 @@ package body Sem_Ch5 is
 
          and then Comes_From_Source (N)
 
-         --  Where the entity is the same on both sides
+         --  Where the object is the same on both sides
 
-         and then Is_Entity_Name (Lhs)
-         and then Is_Entity_Name (Original_Node (Rhs))
-         and then Entity (Lhs) = Entity (Original_Node (Rhs))
+         and then Same_Object (Lhs, Original_Node (Rhs))
 
          --  But exclude the case where the right side was an operation
          --  that got rewritten (e.g. JUNK + K, where K was known to be
@@ -654,8 +653,13 @@ package body Sem_Ch5 is
 
         and then Nkind (Original_Node (Rhs)) not in N_Op
       then
-         Error_Msg_NE
-           ("?useless assignment of & to itself", N, Entity (Lhs));
+         if Nkind (Lhs) in N_Has_Entity then
+            Error_Msg_NE
+              ("?useless assignment of & to itself!", N, Entity (Lhs));
+         else
+            Error_Msg_N
+              ("?useless assignment of object to itself!", N);
+         end if;
       end if;
 
       --  Check for non-allowed composite assignment
@@ -1071,7 +1075,6 @@ package body Sem_Ch5 is
 
          begin
             Alt := First (Alternatives (N));
-
             while Present (Alt) loop
                if Alt /= Chosen then
                   Remove_Warning_Messages (Statements (Alt));
@@ -1341,7 +1344,6 @@ package body Sem_Ch5 is
 
             if Present (Elsif_Parts (N)) then
                E := First (Elsif_Parts (N));
-
                while Present (E) loop
                   Remove_Warning_Messages (Then_Statements (E));
                   Next (E);
@@ -2035,7 +2037,7 @@ package body Sem_Ch5 is
                --  the Ada RM annoyingly requires a useless return here!
 
                if Nkind (Original_Node (N)) /= N_Raise_Statement
-                 or else Nkind (Nxt) /= N_Return_Statement
+                 or else Nkind (Nxt) /= N_Simple_Return_Statement
                then
                   --  The rather strange shenanigans with the warning message
                   --  here reflects the fact that Kill_Dead_Code is very good
@@ -2077,7 +2079,7 @@ package body Sem_Ch5 is
 
                   --  Now issue the warning
 
-                  Error_Msg ("?unreachable code", Error_Loc);
+                  Error_Msg ("?unreachable code!", Error_Loc);
                end if;
 
             --  If the unconditional transfer of control instruction is
