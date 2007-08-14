@@ -171,7 +171,7 @@ procedure Gnat1drv is
            and then not Source_File_Is_Subunit (Src_Ind)
            and then not Source_File_Is_No_Body (Src_Ind)
          then
-            Errout.Finalize;
+            Errout.Finalize (Last_Call => False);
 
             Error_Msg_Unit_1 := Sname;
 
@@ -338,6 +338,16 @@ begin
          List_Representation_Info_Mechanisms := True;
       end if;
 
+      --  Disable static allocation of dispatch tables if -gnatd.t or if layout
+      --  is enabled. The front end's layout phase currently treats types that
+      --  have discriminant-dependent arrays as not being static even when a
+      --  discriminant constraint on the type is static, and this leads to
+      --  problems with subtypes of type Ada.Tags.Dispatch_Table_Wrapper. ???
+
+      if Debug_Flag_Dot_T or else Frontend_Layout_On_Target then
+         Static_Dispatch_Tables := False;
+      end if;
+
       --  Output copyright notice if full list mode unless we have a list
       --  file, in which case we defer this so that it is output in the file
 
@@ -417,7 +427,7 @@ begin
       --  Exit with errors if the main source could not be parsed
 
       if Sinput.Main_Source_File = No_Source_File then
-         Errout.Finalize;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Exit_Program (E_Errors);
       end if;
@@ -428,7 +438,7 @@ begin
 
       --  Exit if compilation errors detected
 
-      Errout.Finalize;
+      Errout.Finalize (Last_Call => False);
 
       if Compilation_Errors then
          Treepr.Tree_Dump;
@@ -443,6 +453,7 @@ begin
             Tree_Gen;
          end if;
 
+         Errout.Finalize (Last_Call => True);
          Exit_Program (E_Errors);
       end if;
 
@@ -466,7 +477,7 @@ begin
 
       if Original_Operating_Mode = Check_Syntax then
          Treepr.Tree_Dump;
-         Errout.Finalize;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Tree_Gen;
          Namet.Finalize;
@@ -612,7 +623,7 @@ begin
          Write_Eol;
 
          Sem_Ch13.Validate_Unchecked_Conversions;
-         Errout.Finalize;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Treepr.Tree_Dump;
          Tree_Gen;
@@ -644,7 +655,7 @@ begin
                    or else Targparm.VM_Target /= No_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
-         Errout.Finalize;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Write_ALI (Object => False);
          Tree_Dump;
@@ -700,7 +711,7 @@ begin
       --  indicating that elaboration is required, and also to back annotate
       --  representation information for List_Rep_Info.
 
-      Errout.Finalize;
+      Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
       List_Rep_Info;
 
@@ -758,7 +769,7 @@ begin
 
 exception
    when Unrecoverable_Error =>
-      Errout.Finalize;
+      Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
 
       Set_Standard_Error;

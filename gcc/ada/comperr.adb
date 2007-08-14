@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,7 +120,7 @@ package body Comperr is
       --  Debug flag K disables this behavior (useful for debugging)
 
       if Serious_Errors_Detected /= 0 and then not Debug_Flag_K then
-         Errout.Finalize;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
 
          Set_Standard_Error;

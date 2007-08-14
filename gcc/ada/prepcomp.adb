@@ -41,7 +41,7 @@ with Types;    use Types;
 package body Prepcomp is
 
    No_Preprocessing : Boolean := True;
-   --  Set to True if there is at least one source that needs to be
+   --  Set to False if there is at least one source that needs to be
    --  preprocessed.
 
    Source_Index_Of_Preproc_Data_File : Source_File_Index := No_Source_File;
@@ -560,7 +560,7 @@ package body Prepcomp is
       --  Fail if there were errors in the preprocessing data file
 
       if Total_Errors_Detected > T then
-         Errout.Finalize;
+         Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Fail ("errors found in preprocessing data file """,
                Get_Name_String (N),
@@ -687,7 +687,7 @@ package body Prepcomp is
             --  Fail if errors were found while processing the definition file
 
             if T /= Total_Errors_Detected then
-               Errout.Finalize;
+               Errout.Finalize (Last_Call => True);
                Errout.Output_Messages;
                Fail ("errors found in definition file """,
                      Get_Name_String (N),

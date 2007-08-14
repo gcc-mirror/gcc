@@ -770,7 +770,7 @@ package body Exp_Intr is
 
    begin
       if No_Pool_Assigned (Rtyp) then
-         Error_Msg_N ("?deallocation from empty storage pool", N);
+         Error_Msg_N ("?deallocation from empty storage pool!", N);
       end if;
 
       --  Nothing to do if we know the argument is null
