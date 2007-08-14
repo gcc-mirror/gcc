@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,8 +58,7 @@ package Sem_Ch12 is
    function Copy_Generic_Node
      (N             : Node_Id;
       Parent_Id     : Node_Id;
-      Instantiating : Boolean)
-      return          Node_Id;
+      Instantiating : Boolean) return Node_Id;
    --  Copy the tree for a generic unit or its body. The unit is copied
    --  repeatedly: once to produce a copy on which semantic analysis of
    --  the generic is performed, and once for each instantiation. The tree
@@ -76,11 +75,30 @@ package Sem_Ch12 is
    --  of the ancestors of a child generic that is being instantiated.
 
    procedure Instantiate_Package_Body
-     (Body_Info    : Pending_Body_Info;
-      Inlined_Body : Boolean := False);
+     (Body_Info     : Pending_Body_Info;
+      Inlined_Body  : Boolean := False;
+      Body_Optional : Boolean := False);
    --  Called after semantic analysis, to complete the instantiation of
    --  package instances. The flag Inlined_Body is set if the body is
    --  being instantiated on the fly for inlined purposes.
+   --
+   --  The flag Body_Optional indicates that the call is for an instance
+   --  that precedes the current instance in the same declarative part.
+   --  This call is needed when instantiating a nested generic whose body
+   --  is to be found in the body of an instance. Normally we instantiate
+   --  package bodies only when they appear in the main unit, or when their
+   --  contents are needed for a nested generic G. If unit U contains several
+   --  instances I1, I2, etc. and I2 contains a nested generic, then when U
+   --  appears in the context of some other unit P that contains an instance
+   --  of G, we compile the body of I2, but not that of I1. However, when we
+   --  compile U as the main unit, we compile both bodies. This will lead to
+   --  lead to link-time errors if the compilation of I1 generates public
+   --  symbols, because those in I2 will receive different names in both
+   --  cases. This forces us to analyze the body of I1 even when U is not the
+   --  main unit. We don't want this additional mechanism to generate an error
+   --  when the body of the generic for I1 is not present, and this is the
+   --  reason for the presence of the flag Body_Optional, which is exchanged
+   --  between the current procedure and Load_Parent_Of_Generic.
 
    procedure Instantiate_Subprogram_Body
      (Body_Info : Pending_Body_Info);
