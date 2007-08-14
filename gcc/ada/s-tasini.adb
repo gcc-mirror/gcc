@@ -62,8 +62,6 @@ with System.Soft_Links.Tasking;
 with System.Tasking.Debug;
 --  Used for Trace
 
-with System.Stack_Checking;
-
 with System.Parameters;
 --  used for Single_Lock
 
@@ -103,9 +101,6 @@ package body System.Tasking.Initialization is
    --  Releases lock previously set by call to Task_Lock. In the nested case,
    --  all nested locks must be released before other tasks competing for the
    --  tasking lock are released.
-
-   function Get_Stack_Info return Stack_Checking.Stack_Access;
-   --  Get access to the current task's Stack_Info
 
    function Get_Current_Excep return SSL.EOA;
    --  Task-safe version of SSL.Get_Current_Excep
@@ -382,7 +377,6 @@ package body System.Tasking.Initialization is
       SSL.Lock_Task          := Task_Lock'Access;
       SSL.Unlock_Task        := Task_Unlock'Access;
       SSL.Check_Abort_Status := Check_Abort_Status'Access;
-      SSL.Get_Stack_Info     := Get_Stack_Info'Access;
       SSL.Task_Name          := Task_Name'Access;
       SSL.Update_Exception   := Update_Exception'Access;
       SSL.Get_Current_Excep  := Get_Current_Excep'Access;
@@ -822,15 +816,6 @@ package body System.Tasking.Initialization is
          Wakeup (Caller, Entry_Caller_Sleep);
       end if;
    end Wakeup_Entry_Caller;
-
-   ----------------------
-   -- Soft-Link Bodies --
-   ----------------------
-
-   function Get_Stack_Info return Stack_Checking.Stack_Access is
-   begin
-      return STPO.Self.Common.Compiler_Data.Pri_Stack_Info'Access;
-   end Get_Stack_Info;
 
    -----------------------
    -- Soft-Link Dummies --
