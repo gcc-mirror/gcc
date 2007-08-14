@@ -1,3 +1,13 @@
+2007-08-14  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/27211
+	* decl2.c (check_classfn): Return error_mark_node in case of error;
+	in that case, do not call add_method.
+	* decl.c (start_decl): Deal with check_classfn returning
+	error_mark_node.
+	(grokfndecl): Likewise.
+	* pt.c (tsubst_friend_function): Likewise.
+
 2007-08-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c++/30428
