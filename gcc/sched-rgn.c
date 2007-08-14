@@ -277,7 +277,7 @@ static int is_exception_free (rtx, int, int);
 static bool sets_likely_spilled (rtx);
 static void sets_likely_spilled_1 (rtx, const_rtx, void *);
 static void add_branch_dependences (rtx, rtx);
-static void compute_block_backward_dependences (int);
+static void compute_block_dependences (int);
 
 static void init_regions (void);
 static void schedule_region (int);
@@ -1697,11 +1697,12 @@ update_live (rtx insn, int src)
 static void
 set_spec_fed (rtx load_insn)
 {
-  dep_link_t link;
+  sd_iterator_def sd_it;
+  dep_t dep;
 
-  FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (load_insn))
-    if (DEP_LINK_KIND (link) == REG_DEP_TRUE)
-      FED_BY_SPEC_LOAD (DEP_LINK_CON (link)) = 1;
+  FOR_EACH_DEP (load_insn, SD_LIST_FORW, sd_it, dep)
+    if (DEP_TYPE (dep) == REG_DEP_TRUE)
+      FED_BY_SPEC_LOAD (DEP_CON (dep)) = 1;
 }
 
 /* On the path from the insn to load_insn_bb, find a conditional
@@ -1710,18 +1711,19 @@ branch depending on insn, that guards the speculative load.  */
 static int
 find_conditional_protection (rtx insn, int load_insn_bb)
 {
-  dep_link_t link;
+  sd_iterator_def sd_it;
+  dep_t dep;
 
   /* Iterate through DEF-USE forward dependences.  */
-  FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
+  FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
     {
-      rtx next = DEP_LINK_CON (link);
+      rtx next = DEP_CON (dep);
 
       if ((CONTAINING_RGN (BLOCK_NUM (next)) ==
 	   CONTAINING_RGN (BB_TO_BLOCK (load_insn_bb)))
 	  && IS_REACHABLE (INSN_BB (next), load_insn_bb)
 	  && load_insn_bb != INSN_BB (next)
-	  && DEP_LINK_KIND (link) == REG_DEP_TRUE
+	  && DEP_TYPE (dep) == REG_DEP_TRUE
 	  && (JUMP_P (next)
 	      || find_conditional_protection (next, load_insn_bb)))
 	return 1;
@@ -1746,14 +1748,15 @@ find_conditional_protection (rtx insn, int load_insn_bb)
 static int
 is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 {
-  dep_link_t link;
+  sd_iterator_def sd_it;
+  dep_t dep;
 
-  FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (load_insn))
+  FOR_EACH_DEP (load_insn, SD_LIST_BACK, sd_it, dep)
     {
-      rtx insn1 = DEP_LINK_PRO (link);
+      rtx insn1 = DEP_PRO (dep);
 
       /* Must be a DEF-USE dependence upon non-branch.  */
-      if (DEP_LINK_KIND (link) != REG_DEP_TRUE
+      if (DEP_TYPE (dep) != REG_DEP_TRUE
 	  || JUMP_P (insn1))
 	continue;
 
@@ -1796,27 +1799,29 @@ is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
 static int
 is_pfree (rtx load_insn, int bb_src, int bb_trg)
 {
-  dep_link_t back_link;
+  sd_iterator_def back_sd_it;
+  dep_t back_dep;
   candidate *candp = candidate_table + bb_src;
 
   if (candp->split_bbs.nr_members != 1)
     /* Must have exactly one escape block.  */
     return 0;
 
-  FOR_EACH_DEP_LINK (back_link, INSN_BACK_DEPS (load_insn))
+  FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
-      rtx insn1 = DEP_LINK_PRO (back_link);
+      rtx insn1 = DEP_PRO (back_dep);
 
-      if (DEP_LINK_KIND (back_link) == REG_DEP_TRUE)
+      if (DEP_TYPE (back_dep) == REG_DEP_TRUE)
+	/* Found a DEF-USE dependence (insn1, load_insn).  */
 	{
-	  /* Found a DEF-USE dependence (insn1, load_insn).  */
-	  dep_link_t fore_link;
+	  sd_iterator_def fore_sd_it;
+	  dep_t fore_dep;
 
-	  FOR_EACH_DEP_LINK (fore_link, INSN_FORW_DEPS (insn1))
+	  FOR_EACH_DEP (insn1, SD_LIST_FORW, fore_sd_it, fore_dep)
 	    {
-	      rtx insn2 = DEP_LINK_CON (fore_link);
+	      rtx insn2 = DEP_CON (fore_dep);
 
-	      if (DEP_LINK_KIND (fore_link) == REG_DEP_TRUE)
+	      if (DEP_TYPE (fore_dep) == REG_DEP_TRUE)
 		{
 		  /* Found a DEF-USE dependence (insn1, insn2).  */
 		  if (haifa_classify_insn (insn2) != PFREE_CANDIDATE)
@@ -1849,7 +1854,7 @@ is_prisky (rtx load_insn, int bb_src, int bb_trg)
   if (FED_BY_SPEC_LOAD (load_insn))
     return 1;
 
-  if (deps_list_empty_p (INSN_BACK_DEPS (load_insn)))
+  if (sd_lists_empty_p (load_insn, SD_LIST_BACK))
     /* Dependence may 'hide' out of the region.  */
     return 1;
 
@@ -2081,7 +2086,8 @@ new_ready (rtx next, ds_t ts)
 	  if (not_ex_free
 	      /* We are here because is_exception_free () == false.
 		 But we possibly can handle that with control speculation.  */
-	      && current_sched_info->flags & DO_SPECULATION)
+	      && (current_sched_info->flags & DO_SPECULATION)
+	      && (spec_info->mask & BEGIN_CONTROL))
             /* Here we got new control-speculative instruction.  */
             ts = set_dep_weak (ts, BEGIN_CONTROL, MAX_DEP_WEAK);
 	  else
@@ -2263,8 +2269,7 @@ add_branch_dependences (rtx head, rtx tail)
       if (!NOTE_P (insn))
 	{
 	  if (last != 0
-	      && (find_link_by_pro_in_deps_list (INSN_BACK_DEPS (last), insn)
-		  == NULL))
+	      && sd_find_dep_between (insn, last, false) == NULL)
 	    {
 	      if (! sched_insns_conditions_mutex_p (last, insn))
 		add_dependence (last, insn, REG_DEP_ANTI);
@@ -2472,7 +2477,7 @@ propagate_deps (int bb, struct deps *pred_deps)
   pred_deps->pending_write_mems = 0;
 }
 
-/* Compute backward dependences inside bb.  In a multiple blocks region:
+/* Compute dependences inside bb.  In a multiple blocks region:
    (1) a bb is analyzed after its predecessors, and (2) the lists in
    effect at the end of bb (after analyzing for bb) are inherited by
    bb's successors.
@@ -2490,7 +2495,7 @@ propagate_deps (int bb, struct deps *pred_deps)
    similar, and the result is interblock dependences in the region.  */
 
 static void
-compute_block_backward_dependences (int bb)
+compute_block_dependences (int bb)
 {
   rtx head, tail;
   struct deps tmp_deps;
@@ -2500,6 +2505,7 @@ compute_block_backward_dependences (int bb)
   /* Do the analysis for this block.  */
   gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
   get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
+
   sched_analyze (&tmp_deps, head, tail);
   add_branch_dependences (head, tail);
 
@@ -2508,6 +2514,21 @@ compute_block_backward_dependences (int bb)
 
   /* Free up the INSN_LISTs.  */
   free_deps (&tmp_deps);
+
+  if (targetm.sched.dependencies_evaluation_hook)
+    targetm.sched.dependencies_evaluation_hook (head, tail);
+}
+
+/* Free dependencies of instructions inside BB.  */
+static void
+free_block_dependencies (int bb)
+{
+  rtx head;
+  rtx tail;
+
+  get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
+
+  sched_free_deps (head, tail, true);
 }
 
 /* Remove all INSN_LISTs and EXPR_LISTs from the pending lists and add
@@ -2527,7 +2548,8 @@ free_pending_lists (void)
     }
 }
 
-
+/* Print dependences for debugging starting from FROM_BB.
+   Callable from debugger.  */
 /* Print dependences for debugging starting from FROM_BB.
    Callable from debugger.  */
 void
@@ -2567,8 +2589,6 @@ void debug_dependencies (rtx head, rtx tail)
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
     {
-      dep_link_t link;
-
       if (! INSN_P (insn))
 	{
 	  int n;
@@ -2589,7 +2609,7 @@ void debug_dependencies (rtx head, rtx tail)
 	       INSN_UID (insn),
 	       INSN_CODE (insn),
 	       BLOCK_NUM (insn),
-	       INSN_DEP_COUNT (insn),
+	       sd_lists_size (insn, SD_LIST_BACK),
 	       INSN_PRIORITY (insn),
 	       insn_cost (insn));
 
@@ -2599,8 +2619,13 @@ void debug_dependencies (rtx head, rtx tail)
 	print_reservation (sched_dump, insn);
 
       fprintf (sched_dump, "\t: ");
-      FOR_EACH_DEP_LINK (link, INSN_FORW_DEPS (insn))
-	fprintf (sched_dump, "%d ", INSN_UID (DEP_LINK_CON (link)));
+      {
+	sd_iterator_def sd_it;
+	dep_t dep;
+
+	FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
+	  fprintf (sched_dump, "%d ", INSN_UID (DEP_CON (dep)));
+      }
       fprintf (sched_dump, "\n");
     }
 
@@ -2658,23 +2683,9 @@ schedule_region (int rgn)
       for (bb = 0; bb < current_nr_blocks; bb++)
 	init_deps (bb_deps + bb);
 
-      /* Compute backward dependencies.  */
+      /* Compute dependencies.  */
       for (bb = 0; bb < current_nr_blocks; bb++)
-        compute_block_backward_dependences (bb);
-
-      /* Compute forward dependencies.  */
-      for (bb = current_nr_blocks - 1; bb >= 0; bb--)
-        {
-          rtx head, tail;
-
-	  gcc_assert (EBB_FIRST_BB (bb) == EBB_LAST_BB (bb));
-          get_ebb_head_tail (EBB_FIRST_BB (bb), EBB_LAST_BB (bb), &head, &tail);
-
-          compute_forward_dependences (head, tail);
-
-          if (targetm.sched.dependencies_evaluation_hook)
-            targetm.sched.dependencies_evaluation_hook (head, tail);
-        }
+	compute_block_dependences (bb);
 
       free_pending_lists ();
 
@@ -2826,7 +2837,6 @@ schedule_region (int rgn)
   /* Sanity check: verify that all region insns were scheduled.  */
   gcc_assert (sched_rgn_n_insns == rgn_n_insns);
 
-
   /* Done with this region.  */
 
   if (current_nr_blocks > 1)
@@ -2837,6 +2847,13 @@ schedule_region (int rgn)
       sbitmap_vector_free (ancestor_edges);
       free (rgn_edges);
     }
+
+  /* Free dependencies.  */
+  for (bb = 0; bb < current_nr_blocks; ++bb)
+    free_block_dependencies (bb);
+
+  gcc_assert (haifa_recovery_bb_ever_added_p
+	      || deps_pools_are_empty_p ());
 }
 
 /* Initialize data structures for region scheduling.  */

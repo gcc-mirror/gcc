@@ -303,24 +303,26 @@ static struct sched_info ebb_sched_info =
 static basic_block
 earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
 {
-  dep_link_t back_link;
+  sd_iterator_def back_sd_it;
+  dep_t back_dep;
   basic_block bb, earliest_block = NULL;
 
-  FOR_EACH_DEP_LINK (back_link, INSN_BACK_DEPS (load_insn))
+  FOR_EACH_DEP (load_insn, SD_LIST_BACK, back_sd_it, back_dep)
     {
-      rtx insn1 = DEP_LINK_PRO (back_link);
+      rtx insn1 = DEP_PRO (back_dep);
 
-      if (DEP_LINK_KIND (back_link) == REG_DEP_TRUE)
+      if (DEP_TYPE (back_dep) == REG_DEP_TRUE)	
+	/* Found a DEF-USE dependence (insn1, load_insn).  */
 	{
-	  /* Found a DEF-USE dependence (insn1, load_insn).  */
-	  dep_link_t fore_link;
+	  sd_iterator_def fore_sd_it;
+	  dep_t fore_dep;
 
-	  FOR_EACH_DEP_LINK (fore_link, INSN_FORW_DEPS (insn1))
+	  FOR_EACH_DEP (insn1, SD_LIST_FORW, fore_sd_it, fore_dep)
 	    {
-	      rtx insn2 = DEP_LINK_CON (fore_link);
+	      rtx insn2 = DEP_CON (fore_dep);
 	      basic_block insn2_block = BLOCK_FOR_INSN (insn2);
 
-	      if (DEP_LINK_KIND (fore_link) == REG_DEP_TRUE)
+	      if (DEP_TYPE (fore_dep) == REG_DEP_TRUE)
 		{
 		  if (earliest_block != NULL
 		      && earliest_block->index < insn2_block->index)
@@ -395,23 +397,32 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 	       rank.  */
 	    if (! sched_insns_conditions_mutex_p (insn, prev))
 	      {
-		if (!(current_sched_info->flags & DO_SPECULATION))
+		dep_def _dep, *dep = &_dep;
+
+		init_dep (dep, prev, insn, REG_DEP_ANTI);
+
+		if (!(current_sched_info->flags & USE_DEPS_LIST))
 		  {
 		    enum DEPS_ADJUST_RESULT res;
-		    
-		    res = add_or_update_back_dep (insn, prev,
-						  REG_DEP_ANTI, DEP_ANTI);
 
-		    if (res == DEP_CREATED)
-		      add_forw_dep (DEPS_LIST_FIRST (INSN_BACK_DEPS (insn)));
-		    else
-		      gcc_assert (res != DEP_CHANGED);
+		    res = sd_add_or_update_dep (dep, false);
+
+		    /* We can't change an existing dependency with
+		       DEP_ANTI.  */
+		    gcc_assert (res != DEP_CHANGED);
 		  }
 		else
-		  add_or_update_back_forw_dep (insn, prev, REG_DEP_ANTI,
-					       set_dep_weak (DEP_ANTI,
-							     BEGIN_CONTROL,
-							     MAX_DEP_WEAK));
+		  {
+		    if ((current_sched_info->flags & DO_SPECULATION)
+			&& (spec_info->mask & BEGIN_CONTROL))
+		      DEP_STATUS (dep) = set_dep_weak (DEP_ANTI, BEGIN_CONTROL,
+						       MAX_DEP_WEAK);
+
+		    sd_add_or_update_dep (dep, false);
+
+		    /* Dep_status could have been changed.
+		       No assertion here.  */
+		  }
 	      }
 
             break;
@@ -450,13 +461,10 @@ schedule_ebb (rtx head, rtx tail)
     {
       init_deps_global ();
 
-      /* Compute backward dependencies.  */
+      /* Compute dependencies.  */
       init_deps (&tmp_deps);
       sched_analyze (&tmp_deps, head, tail);
       free_deps (&tmp_deps);
-
-      /* Compute forward dependencies.  */
-      compute_forward_dependences (head, tail);
 
       add_deps_for_risky_insns (head, tail);
 
@@ -510,8 +518,12 @@ schedule_ebb (rtx head, rtx tail)
   
   /* Sanity check: verify that all region insns were scheduled.  */
   gcc_assert (sched_n_insns == n_insns);
-  head = current_sched_info->head;
-  tail = current_sched_info->tail;
+
+  /* Free dependencies.  */
+  sched_free_deps (current_sched_info->head, current_sched_info->tail, true);
+
+  gcc_assert (haifa_recovery_bb_ever_added_p
+	      || deps_pools_are_empty_p ());
 
   if (EDGE_COUNT (last_bb->preds) == 0)
     /* LAST_BB is unreachable.  */

@@ -159,9 +159,9 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
   gcc_assert (link);
 
   /* Note: REG_DEP_ANTI applies to MEM ANTI_DEP as well!!  */
-  if (DEP_KIND (link) == REG_DEP_ANTI)
+  if (DEP_TYPE (link) == REG_DEP_ANTI)
     t = ANTI_DEP;
-  else if (DEP_KIND (link) == REG_DEP_OUTPUT)
+  else if (DEP_TYPE (link) == REG_DEP_OUTPUT)
     t = OUTPUT_DEP;
 
   /* We currently choose not to create certain anti-deps edges and
@@ -368,7 +368,6 @@ build_intra_loop_deps (ddg_ptr g)
   /* Hold the dependency analysis state during dependency calculations.  */
   struct deps tmp_deps;
   rtx head, tail;
-  dep_link_t link;
 
   /* Build the dependence information, using the sched_analyze function.  */
   init_deps_global ();
@@ -383,19 +382,19 @@ build_intra_loop_deps (ddg_ptr g)
   for (i = 0; i < g->num_nodes; i++)
     {
       ddg_node_ptr dest_node = &g->nodes[i];
+      sd_iterator_def sd_it;
+      dep_t dep;
 
       if (! INSN_P (dest_node->insn))
 	continue;
 
-      FOR_EACH_DEP_LINK (link, INSN_BACK_DEPS (dest_node->insn))
+      FOR_EACH_DEP (dest_node->insn, SD_LIST_BACK, sd_it, dep)
 	{
-	  dep_t dep = DEP_LINK_DEP (link);
 	  ddg_node_ptr src_node = get_node_of_insn (g, DEP_PRO (dep));
 
 	  if (!src_node)
 	    continue;
 
-      	  add_forw_dep (link);
 	  create_ddg_dep_from_intra_loop_link (g, src_node, dest_node, dep);
 	}
 
@@ -420,6 +419,9 @@ build_intra_loop_deps (ddg_ptr g)
   /* Free the INSN_LISTs.  */
   finish_deps_global ();
   free_deps (&tmp_deps);
+
+  /* Free dependencies.  */
+  sched_free_deps (head, tail, false);
 }
 
 
