@@ -474,15 +474,12 @@ package body Einfo is
    --    Has_Up_Level_Access             Flag215
    --    Universal_Aliasing              Flag216
    --    Suppress_Value_Tracking_On_Call Flag217
+   --    Is_Primitive                    Flag218
+   --    Has_Initial_Value               Flag219
+   --    Has_Dispatch_Table              Flag220
 
-   --    (unused)                        Flag77
-
-   --    (unused)                        Flag218
-   --    (unused)                        Flag219
-   --    (unused)                        Flag220
-
-   --    (unused)                        Flag221
-   --    (unused)                        Flag222
+   --    Has_Pragma_Preelab_Init         Flag221
+   --    Used_As_Generic_Actual          Flag222
    --    (unused)                        Flag223
    --    (unused)                        Flag224
    --    (unused)                        Flag225
@@ -1194,6 +1191,12 @@ package body Einfo is
       return Flag5 (Id);
    end Has_Discriminants;
 
+   function Has_Dispatch_Table (Id : E) return B is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Flag220 (Id);
+   end Has_Dispatch_Table;
+
    function Has_Enumeration_Rep_Clause (Id : E) return B is
    begin
       pragma Assert (Is_Enumeration_Type (Id));
@@ -1230,6 +1233,13 @@ package body Einfo is
    begin
       return Flag56 (Id);
    end Has_Homonym;
+
+   function Has_Initial_Value (Id : E) return B is
+   begin
+      pragma Assert
+        (Ekind (Id) = E_Variable or else Is_Formal (Id));
+      return Flag219 (Id);
+   end Has_Initial_Value;
 
    function Has_Machine_Radix_Clause (Id : E) return B is
    begin
@@ -1296,6 +1306,11 @@ package body Einfo is
       pragma Assert (Is_Record_Type (Id) or else Is_Array_Type (Id));
       return Flag121 (Implementation_Base_Type (Id));
    end Has_Pragma_Pack;
+
+   function Has_Pragma_Preelab_Init (Id : E) return B is
+   begin
+      return Flag221 (Id);
+   end Has_Pragma_Preelab_Init;
 
    function Has_Pragma_Pure (Id : E) return B is
    begin
@@ -1830,6 +1845,15 @@ package body Einfo is
       return Flag59 (Id);
    end Is_Preelaborated;
 
+   function Is_Primitive (Id : E) return B is
+   begin
+      pragma Assert
+        (Is_Overloadable (Id)
+         or else Ekind (Id) = E_Generic_Function
+         or else Ekind (Id) = E_Generic_Procedure);
+      return Flag218 (Id);
+   end Is_Primitive;
+
    function Is_Primitive_Wrapper (Id : E) return B is
    begin
       pragma Assert (Ekind (Id) = E_Procedure);
@@ -2297,7 +2321,8 @@ package body Einfo is
 
    function Related_Interface (Id : E) return E is
    begin
-      pragma Assert (Ekind (Id) = E_Component);
+      pragma Assert
+        (Ekind (Id) = E_Component or else Ekind (Id) = E_Constant);
       return Node26 (Id);
    end Related_Interface;
 
@@ -2505,6 +2530,11 @@ package body Einfo is
    begin
       return Node16 (Id);
    end Unset_Reference;
+
+   function Used_As_Generic_Actual (Id : E) return B is
+   begin
+      return Flag222 (Id);
+   end Used_As_Generic_Actual;
 
    function Uses_Sec_Stack (Id : E) return B is
    begin
@@ -3428,6 +3458,13 @@ package body Einfo is
       Set_Flag5 (Id, V);
    end Set_Has_Discriminants;
 
+   procedure Set_Has_Dispatch_Table (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+        and then Is_Tagged_Type (Id));
+      Set_Flag220 (Id, V);
+   end Set_Has_Dispatch_Table;
+
    procedure Set_Has_Enumeration_Rep_Clause (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Enumeration_Type (Id));
@@ -3464,6 +3501,13 @@ package body Einfo is
    begin
       Set_Flag56 (Id, V);
    end Set_Has_Homonym;
+
+   procedure Set_Has_Initial_Value (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Ekind (Id) = E_Variable or else Ekind (Id) = E_Out_Parameter);
+      Set_Flag219 (Id, V);
+   end Set_Has_Initial_Value;
 
    procedure Set_Has_Machine_Radix_Clause (Id : E; V : B := True) is
    begin
@@ -3541,6 +3585,11 @@ package body Einfo is
       pragma Assert (Id = Base_Type (Id));
       Set_Flag121 (Id, V);
    end Set_Has_Pragma_Pack;
+
+   procedure Set_Has_Pragma_Preelab_Init (Id : E; V : B := True) is
+   begin
+      Set_Flag221 (Id, V);
+   end Set_Has_Pragma_Preelab_Init;
 
    procedure Set_Has_Pragma_Pure (Id : E; V : B := True) is
    begin
@@ -4097,6 +4146,15 @@ package body Einfo is
       Set_Flag59 (Id, V);
    end Set_Is_Preelaborated;
 
+   procedure Set_Is_Primitive (Id : E; V : B := True) is
+   begin
+      pragma Assert
+        (Is_Overloadable (Id)
+         or else Ekind (Id) = E_Generic_Function
+         or else Ekind (Id) = E_Generic_Procedure);
+      Set_Flag218 (Id, V);
+   end Set_Is_Primitive;
+
    procedure Set_Is_Primitive_Wrapper (Id : E; V : B := True) is
    begin
       pragma Assert (Ekind (Id) = E_Procedure);
@@ -4574,7 +4632,8 @@ package body Einfo is
 
    procedure Set_Related_Interface (Id : E; V : E) is
    begin
-      pragma Assert (Ekind (Id) = E_Component);
+      pragma Assert
+        (Ekind (Id) = E_Component or else Ekind (Id) = E_Constant);
       Set_Node26 (Id, V);
    end Set_Related_Interface;
 
@@ -4793,6 +4852,11 @@ package body Einfo is
       Set_Flag95 (Id, V);
    end Set_Uses_Sec_Stack;
 
+   procedure Set_Used_As_Generic_Actual (Id : E; V : B := True) is
+   begin
+      Set_Flag222 (Id, V);
+   end Set_Used_As_Generic_Actual;
+
    procedure Set_Vax_Float (Id : E; V : B := True) is
    begin
       pragma Assert (Id = Base_Type (Id));
@@ -4918,7 +4982,7 @@ package body Einfo is
    begin
       Set_Uint8  (Id, No_Uint);  -- Normalized_First_Bit
       Set_Uint10 (Id, No_Uint);  -- Normalized_Position_Max
-      Set_Uint11 (Id, No_Uint);  -- Component_First_Bit
+      Set_Uint11 (Id, No_Uint);  -- Component_Bit_Offset
       Set_Uint12 (Id, Uint_0);   -- Esize
       Set_Uint14 (Id, No_Uint);  -- Normalized_Position
    end Init_Component_Location;
@@ -5161,7 +5225,10 @@ package body Einfo is
       if Is_Incomplete_Type (Id)
         and then Present (Non_Limited_View (Id))
       then
-         return Non_Limited_View (Id);
+         --  The non-limited view may itself be an incomplete type, in
+         --  which case get its full view.
+
+         return Get_Full_View (Non_Limited_View (Id));
 
       elsif Is_Class_Wide_Type (Id)
         and then Is_Incomplete_Type (Etype (Id))
@@ -5327,7 +5394,6 @@ package body Einfo is
             P := Parent (P);
          end if;
       end loop;
-
    end Declaration_Node;
 
    ---------------------
@@ -5680,6 +5746,28 @@ package body Einfo is
 
       return Empty;
    end Get_Attribute_Definition_Clause;
+
+   -------------------
+   -- Get_Full_View --
+   -------------------
+
+   function Get_Full_View (T : Entity_Id) return Entity_Id is
+   begin
+      if Ekind (T) = E_Incomplete_Type
+        and then Present (Full_View (T))
+      then
+         return Full_View (T);
+
+      elsif Is_Class_Wide_Type (T)
+        and then Ekind (Root_Type (T)) = E_Incomplete_Type
+        and then Present (Full_View (Root_Type (T)))
+      then
+         return Class_Wide_Type (Full_View (Root_Type (T)));
+
+      else
+         return T;
+      end if;
+   end Get_Full_View;
 
    --------------------
    -- Get_Rep_Pragma --
@@ -6565,6 +6653,11 @@ package body Einfo is
       elsif Ekind (T) = E_Class_Wide_Subtype then
          return Etype (Base_Type (T));
 
+         --  ??? T comes from Base_Type, how can it be a subtype?
+         --  Also Base_Type is supposed to be idempotent, so either way
+         --  this is equivalent to "return Etype (T)" and should be merged
+         --  with the E_Class_Wide_Type case.
+
       --  All other cases
 
       else
@@ -7007,6 +7100,7 @@ package body Einfo is
       W ("Has_Fully_Qualified_Name",        Flag173 (Id));
       W ("Has_Gigi_Rep_Item",               Flag82  (Id));
       W ("Has_Homonym",                     Flag56  (Id));
+      W ("Has_Initial_Value",               Flag219 (Id));
       W ("Has_Machine_Radix_Clause",        Flag83  (Id));
       W ("Has_Master_Entity",               Flag21  (Id));
       W ("Has_Missing_Return",              Flag142 (Id));
@@ -7019,6 +7113,7 @@ package body Einfo is
       W ("Has_Pragma_Elaborate_Body",       Flag150 (Id));
       W ("Has_Pragma_Inline",               Flag157 (Id));
       W ("Has_Pragma_Pack",                 Flag121 (Id));
+      W ("Has_Pragma_Preelab_Init",         Flag221 (Id));
       W ("Has_Pragma_Pure",                 Flag203 (Id));
       W ("Has_Pragma_Pure_Function",        Flag179 (Id));
       W ("Has_Pragma_Unreferenced",         Flag180 (Id));
@@ -7172,8 +7267,10 @@ package body Einfo is
       W ("Suppress_Init_Proc",              Flag105 (Id));
       W ("Suppress_Style_Checks",           Flag165 (Id));
       W ("Suppress_Value_Tracking_On_Call", Flag217 (Id));
+      W ("Is_Primitive",                    Flag218 (Id));
       W ("Treat_As_Volatile",               Flag41  (Id));
       W ("Universal_Aliasing",              Flag216 (Id));
+      W ("Used_As_Generic_Actual",          Flag222 (Id));
       W ("Uses_Sec_Stack",                  Flag95  (Id));
       W ("Vax_Float",                       Flag151 (Id));
       W ("Warnings_Off",                    Flag96  (Id));
@@ -7741,9 +7838,9 @@ package body Einfo is
       end case;
    end Write_Field17_Name;
 
-   -----------------------
+   ------------------------
    -- Write_Field18_Name --
-   -----------------------
+   ------------------------
 
    procedure Write_Field18_Name (Id : Entity_Id) is
    begin
@@ -7770,8 +7867,7 @@ package body Einfo is
          when Fixed_Point_Kind                             =>
             Write_Str ("Delta_Value");
 
-         when E_Constant                                   |
-              E_Variable                                   =>
+         when Object_Kind                                  =>
             Write_Str ("Renamed_Object");
 
          when E_Exception                                  |
@@ -8114,7 +8210,8 @@ package body Einfo is
    procedure Write_Field26_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Component                                  =>
+         when E_Component                                  |
+              E_Constant                                   =>
             Write_Str ("Related_Interface");
 
          when E_Generic_Package                            |
