@@ -32,6 +32,9 @@ with Uintp; use Uintp;
 
 package Exp_Atag is
 
+   --  Note: In all the subprograms of this package formal 'Loc' is the source
+   --  location used in constructing the corresponding nodes.
+
    procedure Build_Common_Dispatching_Select_Statements
      (Loc    : Source_Ptr;
       DT_Ptr : Entity_Id;
@@ -100,12 +103,15 @@ package Exp_Atag is
 
    function Build_Inherit_Prims
      (Loc          : Source_Ptr;
+      Typ          : Entity_Id;
       Old_Tag_Node : Node_Id;
       New_Tag_Node : Node_Id;
       Num_Prims    : Nat) return Node_Id;
    --  Build code that inherits Num_Prims user-defined primitives from the
-   --  dispatch table of the parent type. It is used to copy the dispatch
-   --  table of the parent in case of derivations of CPP_Class types.
+   --  dispatch table of the parent type of tagged type Typ. It is used to
+   --  copy the dispatch table of the parent in the following cases:
+   --    a) case of derivations of CPP_Class types
+   --    b) tagged types whose dispatch table is not statically allocated
    --
    --  Generates:
    --    New_Tag.Prims_Ptr (1 .. Num_Prims) :=
