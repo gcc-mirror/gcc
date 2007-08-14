@@ -205,6 +205,7 @@ AdaCore@*
 * Platform-Specific Information for the Run-Time Libraries::
 * Example of Binder Output File::
 * Elaboration Order Handling in GNAT::
+* Conditional Compilation::
 * Inline Assembler::
 * Compatibility and Porting Guide::
 @ifset unw
@@ -418,7 +419,6 @@ File Name Krunching Using gnatkr
 * Examples of gnatkr Usage::
 
 Preprocessing Using gnatprep
-
 * Using gnatprep::
 * Switches for gnatprep::
 * Form of Definitions File::
@@ -610,6 +610,13 @@ Elaboration Order Handling in GNAT
 * Summary of Procedures for Elaboration Control::
 * Other Elaboration Order Considerations::
 
+Conditional Compilation
+* Use of Boolean Constants::
+* Debugging - A Special Case::
+* Conditionalizing Declarations::
+* Use of Alternative Implementations::
+* Preprocessing::
+
 Inline Assembler
 
 * Basic Assembler Syntax::
@@ -784,7 +791,7 @@ file names on operating systems with a limit on the length of names.
 @item
 @ref{Preprocessing Using gnatprep}, describes @code{gnatprep}, a
 preprocessor utility that allows a single source file to be used to
-generate multiple or parameterized source files, by means of macro
+generate multiple or parameterized source files by means of macro
 substitution.
 
 @ifset vms
@@ -868,6 +875,10 @@ output file for a sample program.
 @item
 @ref{Elaboration Order Handling in GNAT}, describes how GNAT helps
 you deal with elaboration order issues.
+
+@item
+@ref{Conditional Compilation}, describes how to model conditional compilation,
+both with Ada in general and with GNAT facilities in particular.
 
 @item
 @ref{Inline Assembler}, shows how to use the inline assembly facility
@@ -3893,10 +3904,16 @@ Identifier character set
 @ifclear vms
 (@var{c}=1/2/3/4/8/9/p/f/n/w).
 @end ifclear
-@ifset vms
 For details of the possible selections for @var{c},
 see @ref{Character Set Control}.
-@end ifset
+
+@item ^-gnatI^IGNORE_REP_CLAUSES^
+@cindex @option{^-gnatI^IGNORE_REP_CLAUSES^} (@command{gcc})
+Ignore representation clauses. When this switch is used, all
+representation clauses are treated as comments. This is useful
+when initially porting code where you want to ignore rep clause
+problems, and also for compiling foreign code (particularly
+for use with ASIS).
 
 @item -gnatjnn
 @cindex @option{-gnatjnn} (@command{gcc})
@@ -4757,6 +4774,12 @@ then it will warn that the ``>'' or ``<'' part of the test
 is useless and that the operator could be replaced by ``=''.
 An example would be comparing a @code{Natural} variable <= 0.
 
+This warning option also generates warnings if
+one or both tests is optimized away in a membership test for integer
+values if the result can be determined at compile time. Range tests on
+enumeration types are not included, since it is common for such tests
+to include an end point.
+
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwC
@@ -5195,7 +5218,7 @@ This switch activates warnings for exception usage when pragma Restrictions
 (No_Exception_Propagation) is in effect. Warnings are given for implicit or
 explicit exception raises which are not covered by a local handler, and for
 exception handlers which do not cover a local raise. The default is that these
-warnings are given.
+warnings are not given.
 
 @item -gnatw.X
 @emph{Disable warnings for No_Exception_Propagation mode.}
@@ -5866,6 +5889,14 @@ then all identifier references must be cased in the same way as the
 corresponding declaration. No specific casing style is imposed on
 identifiers. The only requirement is for consistency of references
 with declarations.
+
+@item ^S^STATEMENTS_AFTER_THEN_ELSE^
+@emph{Check no statements after THEN/ELSE.}
+If the ^letter S^word STATEMENTS_AFTER_THEN_ELSE^ appears in the
+string after @option{-gnaty} then it is not permitted to write any
+statements on the same line as a THEN OR ELSE keyword following the
+keyword in an IF statement. OR ELSE and AND THEN are not affected,
+and a special exception allows a pragma to appear after ELSE.
 
 @item ^s^SPECS^
 @emph{Check separate specs.}
@@ -6644,6 +6675,7 @@ the @option{-gnatR} switch). For @option{-gnatR1} (which is the default,
 so @option{-gnatR} with no parameter has the same effect), size and alignment
 information is listed for declared array and record types. For
 @option{-gnatR2}, size and alignment information is listed for all
+declared types and objects. Finally @code{-gnatR3} includes symbolic
 expressions for values that are computed at run time for
 variant records. These symbolic expressions have a mostly obvious
 format with #n being used to represent the value of the n'th
@@ -7406,7 +7438,7 @@ and the actual size needed for the current allocation request).
 
 For certain targets, notably VxWorks 653,
 the secondary stack is allocated by carving off a fixed ratio chunk of the
-primary task stack. The -D option is used to defined the
+primary task stack. The -D option is used to define the
 size of the environment task's secondary stack.
 
 @item ^-e^/ELABORATION_DEPENDENCIES^
@@ -15362,6 +15394,11 @@ GNAT-style comment beginning
 @item ^-c4^/COMMENTS_LAYOUT=REFORMAT^
 Reformat comment blocks
 
+@item ^-c5^/COMMENTS_LAYOUT=KEEP_SPECIAL^
+Keep unchanged special form comments
+
+Reformat comment blocks
+
 @cindex @option{^-l@var{n}^/CONSTRUCT_LAYOUT^} (@command{gnatpp})
 @item ^-l1^/CONSTRUCT_LAYOUT=GNAT^
 GNAT-style layout (this is the default)
@@ -15382,6 +15419,11 @@ stops.
 @item ^--no-separate-is^/NO_SEPARATE_IS^
 Do not place the keyword @code{is} on a separate line in a subprogram body in
 case if the specification occupies more then one line.
+
+@cindex @option{^--separate-loop-then^/SEPARATE_LOOP_THEN^} (@command{gnatpp})
+@item ^--separate-loop-then^/SEPARATE_LOOP_THEN^
+Place the keyword @code{loop} in FOR and WHILE loop statements and the
+keywird @code{then} in IF statements on a separate line.
 
 @end table
 
@@ -15813,6 +15855,14 @@ The @option{^-c4^/COMMENTS_LAYOUT=REFORMAT^} switch specifies that whole-line
 comments may be reformatted in typical
 word processor style (that is, moving words between lines and putting as
 many words in a line as possible).
+
+@noindent
+The @option{^-c5^/COMMENTS_LAYOUT=KEEP_SPECIAL^} switch specifies, that comments
+that has a special format (that is, a character that is neither a letter nor digit
+not white space nor line break immediatelly following the leading @code{--} of
+the comment) should be without any change moved from the argument source
+into reformatted source. This switch allows to preserve comments that are used
+as a special marks in the code (e.g. SPARK annotation).
 
 @node Construct Layout
 @subsection Construct Layout
@@ -16867,10 +16917,12 @@ $ gnatkr very_long_unit_name.ads/count=0 --> very_long_unit_name.ads
 @findex gnatprep
 
 @noindent
-The @code{gnatprep} utility provides
-a simple preprocessing capability for Ada programs.
-It is designed for use with GNAT, but is not dependent on any special
-features of GNAT.
+This chapter discusses how to use GNAT's @code{gnatprep} utility for simple
+preprocessing.
+Although designed for use with GNAT, @code{gnatprep} does not depend on any
+special GNAT features.
+For further discussion of conditional compilation in general, see
+@ref{Conditional Compilation}.
 
 @menu
 * Using gnatprep::
@@ -16878,6 +16930,7 @@ features of GNAT.
 * Form of Definitions File::
 * Form of Input Text for gnatprep::
 @end menu
+
 
 @node Using gnatprep
 @section Using @code{gnatprep}
@@ -19781,7 +19834,7 @@ This rule has no parameters.
 
 @noindent
 Flag each call to a predefined relational operator (``<'', ``>'', ``<='',
-``>='', ``='' and ``/='') for the predefined @code{Boolean} type.
+``>='', ``='' and ``/='') for the predefined Boolean type.
 (This rule is useful in enforcing the SPARK language restrictions.)
 
 Calls to predefined relational operators of any type derived from
@@ -20364,6 +20417,7 @@ A non-qualified aggregate is an
 aggregate that is not the expression of a qualified expression. A
 string literal is not considered an aggregate, but an array
 aggregate of a string type is considered as a normal aggregate.
+Aggregates of anonymous array types are not flagged.
 
 This rule has no parameters.
 
@@ -23309,7 +23363,7 @@ from HP Ada 83.
 
 @item  @code{PASSIVE}
 
-@item  @code{PSET_OBJECT}
+@item  @code{PSECT_OBJECT}
 
 @item  @code{SHARE_GENERIC}
 
@@ -25510,9 +25564,9 @@ and in fact there is no correct order.
 
 If one of the two expressions is true, and the other is false, then one
 of the above orders is correct, and the other is incorrect. For example,
-if @code{expression_1} = 1 and @code{expression_2} /= 2,
-then the call to @code{Func_2}
-will occur, but not the call to @code{Func_1.}
+if @code{expression_1} /= 1 and @code{expression_2} = 2,
+then the call to @code{Func_1}
+will occur, but not the call to @code{Func_2.}
 This means that it is essential
 to elaborate the body of @code{Unit_1} before
 the body of @code{Unit_2}, so the first
@@ -25801,7 +25855,7 @@ this case, an Ada compiler must diagnose the situation at bind
 time, and refuse to build an executable program.
 
 @item One or more orders exist, all incorrect
-One or more acceptable elaboration orders exists, and all of them
+One or more acceptable elaboration orders exist, and all of them
 generate an elaboration order problem. In this case, the binder
 can build an executable program, but @code{Program_Error} will be raised
 when the program is run.
@@ -26976,8 +27030,8 @@ of errors. One switch that is useful in this testing is the
 @option{^-p (pessimistic elaboration order)^/PESSIMISTIC_ELABORATION_ORDER^}
 switch for
 @code{gnatbind}.
-Normally the binder tries to find an order that has the best chance of
-of avoiding elaboration problems. With this switch, the binder
+Normally the binder tries to find an order that has the best chance
+of avoiding elaboration problems. However, if this switch is used, the binder
 plays a devil's advocate role, and tries to choose the order that
 has the best chance of failing. If your program works even with this
 switch, then it has a better chance of being error free, but this is still
@@ -27205,8 +27259,472 @@ difference, by looking at the two elaboration orders that are chosen,
 and figuring out which is correct, and then adding the necessary
 @code{Elaborate} or @code{Elaborate_All} pragmas to ensure the desired order.
 
+
+
+@c *******************************
+@node Conditional Compilation
+@appendix Conditional Compilation
+@c *******************************
+@cindex Conditional compilation
+
+@noindent
+It is often necessary to arrange for a single source program
+to serve multiple purposes, where it is compiled in different
+ways to achieve these different goals. Some examples of the
+need for this feature are
+
+@itemize @bullet
+@item  Adapting a program to a different hardware environment
+@item  Adapting a program to a different target architecture
+@item  Turning debugging features on and off
+@item  Arranging for a program to compile with different compilers
+@end itemize
+
+@noindent
+In C, or C++, the typical approach would be to use the preprocessor
+that is defined as part of the language. The Ada language does not
+contain such a feature. This is not an oversight, but rather a very
+deliberate design decision, based on the experience that overuse of
+the preprocessing features in C and C++ can result in programs that
+are extremely difficult to maintain. For example, if we have ten
+switches that can be on or off, this means that there are a thousand
+separate programs, any one of which might not even be syntactically
+correct, and even if syntactically correct, the resulting program
+might not work correctly. Testing all combinations can quickly become
+impossible.
+
+Nevertheless, the need to tailor programs certainly exists, and in
+this Appendix we will discuss how this can
+be achieved using Ada in general, and GNAT in particular.
+
+@menu
+* Use of Boolean Constants::
+* Debugging - A Special Case::
+* Conditionalizing Declarations::
+* Use of Alternative Implementations::
+* Preprocessing::
+@end menu
+
+@node Use of Boolean Constants
+@section Use of Boolean Constants
+
+@noindent
+In the case where the difference is simply which code
+sequence is executed, the cleanest solution is to use Boolean
+constants to control which code is executed.
+
+@smallexample @c ada
+@group
+FP_Initialize_Required : constant Boolean := True;
+...
+if FP_Initialize_Required then
+...
+end if;
+@end group
+@end smallexample
+
+@noindent
+Not only will the code inside the @code{if} statement not be executed if
+the constant Boolean is @code{False}, but it will also be completely
+deleted from the program.
+However, the code is only deleted after the @code{if} statement
+has been checked for syntactic and semantic correctness.
+(In contrast, with preprocessors the code is deleted before the
+compiler ever gets to see it, so it is not checked until the switch
+is turned on.)
+@cindex Preprocessors (contrasted with conditional compilation)
+
+Typically the Boolean constants will be in a separate package,
+something like:
+
+@smallexample @c ada
+@group
+package Config is
+   FP_Initialize_Required : constant Boolean := True;
+   Reset_Available        : constant Boolean := False;
+   ...
+end Config;
+@end group
+@end smallexample
+
+@noindent
+The @code{Config} package exists in multiple forms for the various targets,
+with an appropriate script selecting the version of @code{Config} needed.
+Then any other unit requiring conditional compilation can do a @code{with}
+of @code{Config} to make the constants visible.
+
+
+@node Debugging - A Special Case
+@section Debugging - A Special Case
+
+@noindent
+A common use of conditional code is to execute statements (for example
+dynamic checks, or output of intermediate results) under control of a
+debug switch, so that the debugging behavior can be turned on and off.
+This can be done using a Boolean constant to control whether the code
+is active:
+
+@smallexample @c ada
+@group
+if Debugging then
+   Put_Line ("got to the first stage!");
+end if;
+@end group
+@end smallexample
+
+@noindent
+or
+
+@smallexample @c ada
+@group
+if Debugging and then Temperature > 999.0 then
+   raise Temperature_Crazy;
+end if;
+@end group
+@end smallexample
+
+@noindent
+Since this is a common case, there are special features to deal with
+this in a convenient manner. For the case of tests, Ada 2005 has added
+a pragma @code{Assert} that can be used for such tests. This pragma is modeled
+@cindex pragma @code{Assert}
+on the @code{Assert} pragma that has always been available in GNAT, so this
+feature may be used with GNAT even if you are not using Ada 2005 features.
+The use of pragma @code{Assert} is described in the
+@cite{GNAT Reference Manual}, but as an example, the last test could be written:
+
+@smallexample @c ada
+pragma Assert (Temperature <= 999.0, "Temperature Crazy");
+@end smallexample
+
+@noindent
+or simply
+
+@smallexample @c ada
+pragma Assert (Temperature <= 999.0);
+@end smallexample
+
+@noindent
+In both cases, if assertions are active and the temperature is excessive,
+the exception @code{Assert_Failure} will be raised, with the given string in
+the first case or a string indicating the location of the pragma in the second
+case used as the exception message.
+
+You can turn assertions on and off by using the @code{Assertion_Policy}
+pragma.
+@cindex pragma @code{Assertion_Policy}
+This is an Ada 2005 pragma which is implemented in all modes by
+GNAT, but only in the latest versions of GNAT which include Ada 2005
+capability. Alternatively, you can use the @option{-gnata} switch
+@cindex @option{-gnata} switch
+to enable assertions from the command line (this is recognized by all versions
+of GNAT).
+
+For the example above with the @code{Put_Line}, the GNAT-specific pragma
+@code{Debug} can be used:
+@cindex pragma @code{Debug}
+
+@smallexample @c ada
+pragma Debug (Put_Line ("got to the first stage!"));
+@end smallexample
+
+@noindent
+If debug pragmas are enabled, the argument, which must be of the form of
+a procedure call, is executed (in this case, @code{Put_Line} will be called).
+Only one call can be present, but of course a special debugging procedure
+containing any code you like can be included in the program and then
+called in a pragma @code{Debug} argument as needed.
+
+One advantage of pragma @code{Debug} over the @code{if Debugging then}
+construct is that pragma @code{Debug} can appear in declarative contexts,
+such as at the very beginning of a procedure, before local declarations have
+been elaborated.
+
+Debug pragmas are enabled using either the @option{-gnata} switch that also
+controls assertions, or with a separate Debug_Policy pragma.
+@cindex pragma @code{Debug_Policy}
+The latter pragma is new in the Ada 2005 versions of GNAT (but it can be used
+in Ada 95 and Ada 83 programs as well), and is analogous to
+pragma @code{Assertion_Policy} to control assertions.
+
+@code{Assertion_Policy} and @code{Debug_Policy} are configuration pragmas,
+and thus they can appear in @file{gnat.adc} if you are not using a
+project file, or in the file designated to contain configuration pragmas
+in a project file.
+They then apply to all subsequent compilations. In practice the use of
+the @option{-gnata} switch is often the most convenient method of controlling
+the status of these pragmas.
+
+Note that a pragma is not a statement, so in contexts where a statement
+sequence is required, you can't just write a pragma on its own. You have
+to add a @code{null} statement.
+
+@smallexample @c ada
+@group
+if ... then
+   ... -- some statements
+else
+   pragma Assert (Num_Cases < 10);
+   null;
+end if;
+@end group
+@end smallexample
+
+
+@node Conditionalizing Declarations
+@section Conditionalizing Declarations
+
+@noindent
+In some cases, it may be necessary to conditionalize declarations to meet
+different requirements. For example we might want a bit string whose length
+is set to meet some hardware message requirement.
+
+In some cases, it may be possible to do this using declare blocks controlled
+by conditional constants:
+
+@smallexample @c ada
+@group
+if Small_Machine then
+   declare
+      X : Bit_String (1 .. 10);
+   begin
+      ...
+   end;
+else
+   declare
+      X : Large_Bit_String (1 .. 1000);
+   begin
+      ...
+   end;
+end if;
+@end group
+@end smallexample
+
+@noindent
+Note that in this approach, both declarations are analyzed by the
+compiler so this can only be used where both declarations are legal,
+even though one of them will not be used.
+
+Another approach is to define integer constants, e.g. @code{Bits_Per_Word}, or
+Boolean constants, e.g. @code{Little_Endian}, and then write declarations
+that are parameterized by these constants. For example
+
+@smallexample @c ada
+@group
+for Rec use
+  Field1 at 0 range Boolean'Pos (Little_Endian) * 10 .. Bits_Per_Word;
+end record;
+@end group
+@end smallexample
+
+@noindent
+If @code{Bits_Per_Word} is set to 32, this generates either
+
+@smallexample @c ada
+@group
+for Rec use
+  Field1 at 0 range 0 .. 32;
+end record;
+@end group
+@end smallexample
+
+@noindent
+for the big endian case, or
+
+@smallexample @c ada
+@group
+for Rec use record
+  Field1 at 0 range 10 .. 32;
+end record;
+@end group
+@end smallexample
+
+@noindent
+for the little endian case. Since a powerful subset of Ada expression
+notation is usable for creating static constants, clever use of this
+feature can often solve quite difficult problems in conditionalizing
+compilation (note incidentally that in Ada 95, the little endian
+constant was introduced as @code{System.Default_Bit_Order}, so you do not
+need to define this one yourself).
+
+
+@node Use of Alternative Implementations
+@section Use of Alternative Implementations
+
+@noindent
+In some cases, none of the approaches described above are adequate. This
+can occur for example if the set of declarations required is radically
+different for two different configurations.
+
+In this situation, the official Ada way of dealing with conditionalizing
+such code is to write separate units for the different cases. As long as
+this does not result in excessive duplication of code, this can be done
+without creating maintenance problems. The approach is to share common
+code as far as possible, and then isolate the code and declarations
+that are different. Subunits are often a convenient method for breaking
+out a piece of a unit that is to be conditionalized, with separate files
+for different versions of the subunit for different targets, where the
+build script selects the right one to give to the compiler.
+@cindex Subunits (and conditional compilation)
+
+As an example, consider a situation where a new feature in Ada 2005
+allows something to be done in a really nice way. But your code must be able
+to compile with an Ada 95 compiler. Conceptually you want to say:
+
+@smallexample @c ada
+@group
+if Ada_2005 then
+   ... neat Ada 2005 code
+else
+   ... not quite as neat Ada 95 code
+end if;
+@end group
+@end smallexample
+
+@noindent
+where @code{Ada_2005} is a Boolean constant.
+
+But this won't work when @code{Ada_2005} is set to @code{False},
+since the @code{then} clause will be illegal for an Ada 95 compiler.
+(Recall that although such unreachable code would eventually be deleted
+by the compiler, it still needs to be legal.  If it uses features
+introduced in Ada 2005, it will be illegal in Ada 95.)
+
+So instead we write
+
+@smallexample @c ada
+procedure Insert is separate;
+@end smallexample
+
+@noindent
+Then we have two files for the subunit @code{Insert}, with the two sets of
+code.
+If the package containing this is called @code{File_Queries}, then we might
+have two files
+
+@itemize @bullet
+@item    @file{file_queries-insert-2005.adb}
+@item    @file{file_queries-insert-95.adb}
+@end itemize
+
+@noindent
+and the build script renames the appropriate file to
+
+@smallexample
+file_queries-insert.adb
+@end smallexample
+
+@noindent
+and then carries out the compilation.
+
+This can also be done with project files' naming schemes. For example:
+
+@smallexample @c project
+For Body ("File_Queries.Insert") use "file_queries-insert-2005.ada";
+@end smallexample
+
+@noindent
+Note also that with project files it is desirable to use a different extension
+than @file{ads} / @file{adb} for alternativee versions. Otherwise a naming
+conflict may arise through another commonly used feature: to declare as part
+of the project a set of directories containing all the sources obeying the
+default naming scheme.
+
+The use of alternative units is certainly feasible in all situations,
+and for example the Ada part of the GNAT run-time is conditionalized
+based on the target architecture using this approach. As a specific example,
+consider the implementation of the AST feature in VMS. There is one
+spec:
+
+@smallexample
+s-asthan.ads
+@end smallexample
+
+@noindent
+which is the same for all architectures, and three bodies:
+
+@table @file
+@item    s-asthan.adb
+used for all non-VMS operating systems
+@item    s-asthan-vms-alpha.adb
+used for VMS on the Alpha
+@item    s-asthan-vms-ia64.adb
+used for VMS on the ia64
+@end table
+
+@noindent
+The dummy version @file{s-asthan.adb} simply raises exceptions noting that
+this operating system feature is not available, and the two remaining
+versions interface with the corresponding versions of VMS to provide
+VMS-compatible AST handling. The GNAT build script knows the architecture
+and operating system, and automatically selects the right version,
+renaming it if necessary to @file{s-asthan.adb} before the run-time build.
+
+Another style for arranging alternative implementations is through Ada's
+access-to-subprogram facility.
+In case some functionality is to be conditionally included,
+you can declare an access-to-procedure variable @code{Ref} that is initialized
+to designate a ``do nothing'' procedure, and then invoke @code{Ref.all}
+when appropriate.
+In some library package, set @code{Ref} to @code{Proc'Access} for some
+procedure @code{Proc} that performs the relevant processing.
+The initialization only occurs if the library package is included in the
+program.
+The same idea can also be implemented using tagged types and dispatching
+calls.
+
+
+@node Preprocessing
+@section Preprocessing
+@cindex Preprocessing
+
+@noindent
+Although it is quite possible to conditionalize code without the use of
+C-style preprocessing, as described earlier in this section, it is
+nevertheless convenient in some cases to use the C approach. Moreover,
+older Ada compilers have often provided some preprocessing capability,
+so legacy code may depend on this approach, even though it is not
+standard.
+
+To accommodate such use, GNAT provides a preprocessor (modeled to a large
+extent on the various preprocessors that have been used
+with legacy code on other compilers, to enable easier transition).
+
+The preprocessor may be used in two separate modes. It can be used quite
+separately from the compiler, to generate a separate output source file
+that is then fed to the compiler as a separate step. This is the
+@code{gnatprep} utility, whose use is fully described in
+@ref{Preprocessing Using gnatprep}.
+@cindex @code{gnatprep}
+
+The preprocessing language allows such constructs as
+
+@smallexample
+@group
+#if DEBUG or PRIORITY > 4 then
+   bunch of declarations
+#else
+   completely different bunch of declarations
+#end if;
+@end group
+@end smallexample
+
+@noindent
+The values of the symbols @code{DEBUG} and @code{PRIORITY} can be
+defined either on the command line or in a separate file.
+
+The other way of running the preprocessor is even closer to the C style and
+often more convenient. In this approach the preprocessing is integrated into
+the compilation process. The compiler is fed the preprocessor input which
+includes @code{#if} lines etc, and then the compiler carries out the
+preprocessing internally and processes the resulting output.
+For more details on this approach, see @ref{Integrated Preprocessing}.
+
+
+@c *******************************
 @node Inline Assembler
 @appendix Inline Assembler
+@c *******************************
 
 @noindent
 If you need to write low-level software that interacts directly
@@ -29346,8 +29864,8 @@ provided by @file{API.dll} you must statically link against the DLL or
 an import library which contains a jump table with an entry for each
 routine and variable exported by the DLL. In the Microsoft world this
 import library is called @file{API.lib}. When using GNAT this import
-library is called either @file{libAPI.a} or @file{libapi.a} (names are
-case insensitive).
+library is called either @file{libAPI.dll.a}, @file{libapi.dll.a},
+@file{libAPI.a} or @file{libapi.a} (names are case insensitive).
 
 After you have linked your application with the DLL or the import library
 and you run your application, here is what happens:
@@ -29377,7 +29895,7 @@ routines and routines in the application using the DLL.
 @end itemize
 
 @item
-The entries in the jump table (from the import library @file{libAPI.a}
+The entries in the jump table (from the import library @file{libAPI.dll.a}
 or @file{API.lib} or automatically created when linking against a DLL)
 which is part of your application are initialized with the addresses
 of the routines and variables in @file{API.dll}.
@@ -29427,7 +29945,7 @@ The Ada spec for the routines and/or variables you want to access in
 header files provided with the DLL.
 
 @item
-The import library (@file{libAPI.a} or @file{API.lib}). As previously
+The import library (@file{libAPI.dll.a} or @file{API.lib}). As previously
 mentioned an import library is a statically linked library containing the
 import table which will be filled at load time to point to the actual
 @file{API.dll} routines. Sometimes you don't have an import library for the
@@ -29450,7 +29968,8 @@ $ gnatmake my_ada_app -largs -lAPI
 @noindent
 The argument @option{-largs -lAPI} at the end of the @command{gnatmake} command
 tells the GNAT linker to look first for a library named @file{API.lib}
-(Microsoft-style name) and if not found for a library named @file{libAPI.a}
+(Microsoft-style name) and if not found for a libraries named
+@file{libAPI.dll.a}, @file{API.dll.a} or @file{libAPI.a}.
 (GNAT-style name). Note that if the Ada package spec for @file{API.dll}
 contains the following pragma
 
@@ -29526,10 +30045,11 @@ can have @code{C} or @code{Stdcall} convention.
 
 @noindent
 If a Microsoft-style import library @file{API.lib} or a GNAT-style
-import library @file{libAPI.a} is available with @file{API.dll} you
-can skip this section. You can also skip this section if
-@file{API.dll} is built with GNU tools as in this case it is possible
-to link directly against the DLL. Otherwise read on.
+import library @file{libAPI.dll.a} or @file{libAPI.a} is available
+with @file{API.dll} you can skip this section. You can also skip this
+section if @file{API.dll} or @file{libAPI.dll} is built with GNU tools
+as in this case it is possible to link directly against the
+DLL. Otherwise read on.
 
 @node The Definition File
 @subsubsection The Definition File
@@ -29633,7 +30153,7 @@ definition file and add the right suffix.
 @end enumerate
 
 @item
-Build the import library @code{libAPI.a}, using @code{gnatdll}
+Build the import library @code{libAPI.dll.a}, using @code{gnatdll}
 (@pxref{Using gnatdll}) as follows:
 
 @smallexample
@@ -29757,7 +30277,13 @@ $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
 @cindex DLLs, building
 
 @noindent
-There is nothing specific to Windows in this area. @pxref{Library Projects}.
+There is nothing specific to Windows in the build process.
+@pxref{Library Projects}.
+
+@noindent
+Due to a system limitation, it is not possible under Windows to create threads
+when inside the @code{DllMain} routine which is used for auto-initialization
+of shared libraries, so it is not possible to have library level tasks in SALs.
 
 @node Building DLLs with gnatdll
 @section Building DLLs with gnatdll
@@ -30155,7 +30681,7 @@ Binder options. Pass @var{opts} to the binder.
 @code{gnatdll} to do anything. The name of the generated import library is
 obtained algorithmically from @var{dllfile} as shown in the following
 example: if @var{dllfile} is @code{xyz.dll}, the import library name is
-@code{libxyz.a}. The name of the definition file to use (if not specified
+@code{libxyz.dll.a}. The name of the definition file to use (if not specified
 by option @option{-e}) is obtained algorithmically from @var{dllfile}
 as shown in the following example:
 if @var{dllfile} is @code{xyz.dll}, the definition
@@ -30227,7 +30753,7 @@ $ gnatdll -d api.dll api.ali
 @end smallexample
 
 @noindent
-The above command creates two files: @file{libapi.a} (the import
+The above command creates two files: @file{libapi.dll.a} (the import
 library) and @file{api.dll} (the actual DLL). If you want to create
 only the DLL, just type:
 
@@ -30305,7 +30831,7 @@ $ gnatlink api -o api.jnk api.exp -mdll
 
 @item
 @code{gnatdll} builds the new export table using the new base file and
-generates the DLL import library @file{libAPI.a}.
+generates the DLL import library @file{libAPI.dll.a}.
 
 @smallexample
 @group
