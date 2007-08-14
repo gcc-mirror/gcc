@@ -2373,6 +2373,19 @@ package body Layout is
                         "correspond to C pointer", E);
                   end if;
 
+               --  When the target is AAMP, access-to-subprogram types are fat
+               --  pointers consisting of the subprogram address and a static
+               --  link (with the exception of library-level access types,
+               --  where a simple subprogram address is used).
+
+               elsif AAMP_On_Target
+                 and then
+                   (Ekind (E) = E_Anonymous_Access_Subprogram_Type
+                     or else (Ekind (E) = E_Access_Subprogram_Type
+                               and then Present (Enclosing_Subprogram (E))))
+               then
+                  Init_Size (E, 2 * System_Address_Size);
+
                else
                   Init_Size (E, System_Address_Size);
                end if;
@@ -3084,7 +3097,7 @@ package body Layout is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
-                   Make_Return_Statement (Loc,
+                   Make_Simple_Return_Statement (Loc,
                      Expression => Expr))));
 
       --  The caller requests that the expression be encapsulated in
@@ -3106,7 +3119,7 @@ package body Layout is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (
-                   Make_Return_Statement (Loc, Expression => Expr))));
+                   Make_Simple_Return_Statement (Loc, Expression => Expr))));
 
       --  No reference to V and function not requested, so create a constant
 
