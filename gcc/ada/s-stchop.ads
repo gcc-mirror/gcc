@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,8 @@ pragma Polling (Off);
 --  Turn off polling, we do not want polling to take place during stack
 --  checking operations. It causes infinite loops and other problems.
 
+with System.Storage_Elements;
+
 package System.Stack_Checking.Operations is
    pragma Preelaborate;
 
@@ -58,6 +60,14 @@ package System.Stack_Checking.Operations is
 
    function Stack_Check (Stack_Address : System.Address) return Stack_Access;
    --  This version of Stack_Check should not be inlined
+
+   procedure Notify_Stack_Attributes
+     (Initial_SP : System.Address;
+      Size       : System.Storage_Elements.Storage_Offset);
+   --  Register Initial_SP as the initial stack pointer value for the current
+   --  task when it starts and Size as the associated stack area size. This
+   --  should be called once, after the soft-links have been initialized and
+   --  prior to the first "Stack_Check" call.
 
 private
    Cache : aliased Stack_Access := Null_Stack;
