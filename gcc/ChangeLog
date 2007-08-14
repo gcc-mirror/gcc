@@ -1,3 +1,8 @@
+2007-08-14  Kai Tietz  <kai.tietz@onevision.com>
+
+	* i386.c: (legitimize_address): Move dllimported variable check
+	infront of legitimizing pic address of CONST symbols.
+
 2007-08-14  Steve Ellcey  <sje@cup.hp.com>
 
 	PR tree-optimization/32941
