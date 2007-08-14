@@ -535,6 +535,32 @@ package body Atree is
    subtype NCT_Header_Num is Int range 0 .. 511;
    --  Defines range of headers in hash tables (512 headers)
 
+   --------------------------
+   -- Paren_Count Handling --
+   --------------------------
+
+   --  As noted in the spec, the paren count in a sub-expression node has
+   --  four possible values 0,1,2, and 3. The value 3 really means 3 or more,
+   --  and we use an auxiliary serially scanned table to record the actual
+   --  count. A serial search is fine, only pathological programs will use
+   --  entries in this table. Normal programs won't use it at all.
+
+   type Paren_Count_Entry is record
+      Nod   : Node_Id;
+      --  The node to which this count applies
+
+      Count : Nat range 3 .. Nat'Last;
+      --  The count of parentheses, which will be in the indicated range
+   end record;
+
+   package Paren_Counts is new Table.Table (
+     Table_Component_Type => Paren_Count_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 10,
+     Table_Increment      => 200,
+     Table_Name           => "Paren_Counts");
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -590,6 +616,15 @@ package body Atree is
          Node_Count := Node_Count + 1;
       end if;
 
+      --  Specifically copy Paren_Count to deal with creating new table entry
+      --  if the parentheses count is at the maximum possible value already.
+
+      if Present (Src) and then Nkind (Src) in N_Subexpr then
+         Set_Paren_Count (New_Id, Paren_Count (Src));
+      end if;
+
+      --  Set extension nodes if required
+
       if With_Extension then
          Nodes.Append (Ext1);
          Nodes.Append (Ext2);
@@ -608,7 +643,7 @@ package body Atree is
 
    function Analyzed (N : Node_Id) return Boolean is
    begin
-      pragma Assert (N in Nodes.First .. Nodes.Last);
+      pragma Assert (N <= Nodes.Last);
       return Nodes.Table (N).Analyzed;
    end Analyzed;
 
@@ -622,7 +657,7 @@ package body Atree is
       Save_Link    : constant Union_Id   := Nodes.Table (N).Link;
       Save_CFS     : constant Boolean    := Nodes.Table (N).Comes_From_Source;
       Save_Posted  : constant Boolean    := Nodes.Table (N).Error_Posted;
-      Par_Count    : Paren_Count_Type    := 0;
+      Par_Count    : Nat                 := 0;
 
    begin
       if Nkind (N) in N_Subexpr then
@@ -648,7 +683,7 @@ package body Atree is
 
    function Comes_From_Source (N : Node_Id) return Boolean is
    begin
-      pragma Assert (N in Nodes.First .. Nodes.Last);
+      pragma Assert (N <= Nodes.Last);
       return Nodes.Table (N).Comes_From_Source;
    end Comes_From_Source;
 
@@ -674,6 +709,15 @@ package body Atree is
       Nodes.Table (Destination)         := Nodes.Table (Source);
       Nodes.Table (Destination).In_List := Save_In_List;
       Nodes.Table (Destination).Link    := Save_Link;
+
+      --  Specifically set Paren_Count to make sure auxiliary table entry
+      --  gets correctly made if the parentheses count is at the max value.
+
+      if Nkind (Destination) in N_Subexpr then
+         Set_Paren_Count (Destination, Paren_Count (Source));
+      end if;
+
+      --  Deal with copying extension nodes if present
 
       if Has_Extension (Source) then
          pragma Assert (Has_Extension (Destination));
@@ -923,7 +967,7 @@ package body Atree is
 
    function Error_Posted (N : Node_Id) return Boolean is
    begin
-      pragma Assert (N in Nodes.First .. Nodes.Last);
+      pragma Assert (N <= Nodes.Last);
       return Nodes.Table (N).Error_Posted;
    end Error_Posted;
 
@@ -1092,6 +1136,7 @@ package body Atree is
       Node_Count := 0;
       Atree_Private_Part.Nodes.Init;
       Orig_Nodes.Init;
+      Paren_Counts.Init;
 
       --  Allocate Empty node
 
@@ -1360,9 +1405,11 @@ package body Atree is
          Elmt := First_Elmt (Actual_Map);
          while Present (Elmt) loop
             Ent := Node (Elmt);
+
+            --  Get new entity, and associate old and new
+
             Next_Elmt (Elmt);
             NCT_Assoc.Set (Ent, Node (Elmt));
-            Next_Elmt (Elmt);
 
             if Is_Type (Ent) then
                declare
@@ -1371,10 +1418,17 @@ package body Atree is
 
                begin
                   if Present (Anode) then
+
+                     --  Enter a link between the associated node of the
+                     --  old Itype and the new Itype, for updating later
+                     --  when node is copied.
+
                      NCT_Itype_Assoc.Set (Anode, Node (Elmt));
                   end if;
                end;
             end if;
+
+            Next_Elmt (Elmt);
          end loop;
 
          NCT_Hash_Tables_Used := True;
@@ -1877,6 +1931,7 @@ package body Atree is
             if NCT_Hash_Tables_Used then
 
                Ent := NCT_Assoc.Get (Associated_Node_For_Itype (Old_Itype));
+
                if Present (Ent) then
                   Set_Associated_Node_For_Itype (New_Itype, Ent);
                end if;
@@ -1884,6 +1939,13 @@ package body Atree is
                Ent := NCT_Itype_Assoc.Get (Old_Itype);
                if Present (Ent) then
                   Set_Associated_Node_For_Itype (Ent, New_Itype);
+
+               --  If the hash table has no association for this Itype and
+               --  its associated node, enter one now.
+
+               else
+                  NCT_Itype_Assoc.Set
+                    (Associated_Node_For_Itype (Old_Itype), New_Itype);
                end if;
 
             --  Case of hash tables not used
@@ -2251,11 +2313,11 @@ package body Atree is
    -- Paren_Count --
    -----------------
 
-   function Paren_Count (N : Node_Id) return Paren_Count_Type is
-      C : Paren_Count_Type := 0;
+   function Paren_Count (N : Node_Id) return Nat is
+      C : Nat := 0;
 
    begin
-      pragma Assert (N in Nodes.First .. Nodes.Last);
+      pragma Assert (N <= Nodes.Last);
 
       if Nodes.Table (N).Pflag1 then
          C := C + 1;
@@ -2265,7 +2327,22 @@ package body Atree is
          C := C + 2;
       end if;
 
-      return C;
+      --  Value of 0,1,2 returned as is
+
+      if C <= 2 then
+         return C;
+
+      --  Value of 3 means we search the table, and we must find an entry
+
+      else
+         for J in Paren_Counts.First .. Paren_Counts.Last loop
+            if N = Paren_Counts.Table (J).Nod then
+               return Paren_Counts.Table (J).Count;
+            end if;
+         end loop;
+
+         raise Program_Error;
+      end if;
    end Paren_Count;
 
    ------------
@@ -2375,11 +2452,10 @@ package body Atree is
    -------------
 
    procedure Rewrite (Old_Node, New_Node : Node_Id) is
-
       Old_Error_P : constant Boolean  := Nodes.Table (Old_Node).Error_Posted;
       --  This fields is always preserved in the new node
 
-      Old_Paren_Count     : Paren_Count_Type;
+      Old_Paren_Count     : Nat;
       Old_Must_Not_Freeze : Boolean;
       --  These fields are preserved in the new node only if the new node
       --  and the old node are both subexpression nodes.
@@ -2443,7 +2519,7 @@ package body Atree is
 
    procedure Set_Comes_From_Source (N : Node_Id; Val : Boolean) is
    begin
-      pragma Assert (N in Nodes.First .. Nodes.Last);
+      pragma Assert (N <= Nodes.Last);
       Nodes.Table (N).Comes_From_Source := Val;
    end Set_Comes_From_Source;
 
@@ -2492,11 +2568,31 @@ package body Atree is
    -- Set_Paren_Count --
    ---------------------
 
-   procedure Set_Paren_Count (N : Node_Id; Val : Paren_Count_Type) is
+   procedure Set_Paren_Count (N : Node_Id; Val : Nat) is
    begin
       pragma Assert (Nkind (N) in N_Subexpr);
-      Nodes.Table (N).Pflag1 := (Val mod 2 /= 0);
-      Nodes.Table (N).Pflag2 := (Val >= 2);
+
+      --  Value of 0,1,2 stored as is
+
+      if Val <= 2 then
+         Nodes.Table (N).Pflag1 := (Val mod 2 /= 0);
+         Nodes.Table (N).Pflag2 := (Val = 2);
+
+      --  Value of 3 or greater stores 3 in node and makes table entry
+
+      else
+         Nodes.Table (N).Pflag1 := True;
+         Nodes.Table (N).Pflag2 := True;
+
+         for J in Paren_Counts.First .. Paren_Counts.Last loop
+            if N = Paren_Counts.Table (J).Nod then
+               Paren_Counts.Table (J).Count := Val;
+               return;
+            end if;
+         end loop;
+
+         Paren_Counts.Append ((Nod => N, Count => Val));
+      end if;
    end Set_Paren_Count;
 
    ----------------
@@ -2673,6 +2769,7 @@ package body Atree is
       Tree_Read_Int (Node_Count);
       Nodes.Tree_Read;
       Orig_Nodes.Tree_Read;
+      Paren_Counts.Tree_Read;
    end Tree_Read;
 
    ----------------
@@ -2684,6 +2781,7 @@ package body Atree is
       Tree_Write_Int (Node_Count);
       Nodes.Tree_Write;
       Orig_Nodes.Tree_Write;
+      Paren_Counts.Tree_Write;
    end Tree_Write;
 
    ------------------------------
@@ -2694,31 +2792,31 @@ package body Atree is
 
       function Field1 (N : Node_Id) return Union_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Field1;
       end Field1;
 
       function Field2 (N : Node_Id) return Union_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Field2;
       end Field2;
 
       function Field3 (N : Node_Id) return Union_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Field3;
       end Field3;
 
       function Field4 (N : Node_Id) return Union_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Field4;
       end Field4;
 
       function Field5 (N : Node_Id) return Union_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Field5;
       end Field5;
 
@@ -2862,31 +2960,31 @@ package body Atree is
 
       function Node1 (N : Node_Id) return Node_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Node_Id (Nodes.Table (N).Field1);
       end Node1;
 
       function Node2 (N : Node_Id) return Node_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Node_Id (Nodes.Table (N).Field2);
       end Node2;
 
       function Node3 (N : Node_Id) return Node_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Node_Id (Nodes.Table (N).Field3);
       end Node3;
 
       function Node4 (N : Node_Id) return Node_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Node_Id (Nodes.Table (N).Field4);
       end Node4;
 
       function Node5 (N : Node_Id) return Node_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Node_Id (Nodes.Table (N).Field5);
       end Node5;
 
@@ -3030,31 +3128,31 @@ package body Atree is
 
       function List1 (N : Node_Id) return List_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return List_Id (Nodes.Table (N).Field1);
       end List1;
 
       function List2 (N : Node_Id) return List_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return List_Id (Nodes.Table (N).Field2);
       end List2;
 
       function List3 (N : Node_Id) return List_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return List_Id (Nodes.Table (N).Field3);
       end List3;
 
       function List4 (N : Node_Id) return List_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return List_Id (Nodes.Table (N).Field4);
       end List4;
 
       function List5 (N : Node_Id) return List_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return List_Id (Nodes.Table (N).Field5);
       end List5;
 
@@ -3071,7 +3169,7 @@ package body Atree is
       end List14;
 
       function Elist1 (N : Node_Id) return Elist_Id is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Value : constant Union_Id := Nodes.Table (N).Field1;
       begin
          if Value = 0 then
@@ -3082,7 +3180,7 @@ package body Atree is
       end Elist1;
 
       function Elist2 (N : Node_Id) return Elist_Id is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Value : constant Union_Id := Nodes.Table (N).Field2;
       begin
          if Value = 0 then
@@ -3093,7 +3191,7 @@ package body Atree is
       end Elist2;
 
       function Elist3 (N : Node_Id) return Elist_Id is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Value : constant Union_Id := Nodes.Table (N).Field3;
       begin
          if Value = 0 then
@@ -3104,7 +3202,7 @@ package body Atree is
       end Elist3;
 
       function Elist4 (N : Node_Id) return Elist_Id is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Value : constant Union_Id := Nodes.Table (N).Field4;
       begin
          if Value = 0 then
@@ -3204,24 +3302,24 @@ package body Atree is
 
       function Name1 (N : Node_Id) return Name_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Name_Id (Nodes.Table (N).Field1);
       end Name1;
 
       function Name2 (N : Node_Id) return Name_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Name_Id (Nodes.Table (N).Field2);
       end Name2;
 
       function Str3 (N : Node_Id) return String_Id is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return String_Id (Nodes.Table (N).Field3);
       end Str3;
 
       function Uint2 (N : Node_Id) return Uint is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          U : constant Union_Id := Nodes.Table (N).Field2;
       begin
          if U = 0 then
@@ -3232,7 +3330,7 @@ package body Atree is
       end Uint2;
 
       function Uint3 (N : Node_Id) return Uint is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          U : constant Union_Id := Nodes.Table (N).Field3;
       begin
          if U = 0 then
@@ -3243,7 +3341,7 @@ package body Atree is
       end Uint3;
 
       function Uint4 (N : Node_Id) return Uint is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          U : constant Union_Id := Nodes.Table (N).Field4;
       begin
          if U = 0 then
@@ -3254,7 +3352,7 @@ package body Atree is
       end Uint4;
 
       function Uint5 (N : Node_Id) return Uint is
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          U : constant Union_Id := Nodes.Table (N).Field5;
       begin
          if U = 0 then
@@ -3387,7 +3485,7 @@ package body Atree is
 
       function Ureal3 (N : Node_Id) return Ureal is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return From_Union (Nodes.Table (N).Field3);
       end Ureal3;
 
@@ -3405,91 +3503,91 @@ package body Atree is
 
       function Flag4 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag4;
       end Flag4;
 
       function Flag5 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag5;
       end Flag5;
 
       function Flag6 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag6;
       end Flag6;
 
       function Flag7 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag7;
       end Flag7;
 
       function Flag8 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag8;
       end Flag8;
 
       function Flag9 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag9;
       end Flag9;
 
       function Flag10 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag10;
       end Flag10;
 
       function Flag11 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag11;
       end Flag11;
 
       function Flag12 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag12;
       end Flag12;
 
       function Flag13 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag13;
       end Flag13;
 
       function Flag14 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag14;
       end Flag14;
 
       function Flag15 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag15;
       end Flag15;
 
       function Flag16 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag16;
       end Flag16;
 
       function Flag17 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag17;
       end Flag17;
 
       function Flag18 (N : Node_Id) return Boolean is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          return Nodes.Table (N).Flag18;
       end Flag18;
 
@@ -4767,37 +4865,37 @@ package body Atree is
 
       procedure Set_Nkind (N : Node_Id; Val : Node_Kind) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Nkind := Val;
       end Set_Nkind;
 
       procedure Set_Field1 (N : Node_Id; Val : Union_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field1 := Val;
       end Set_Field1;
 
       procedure Set_Field2 (N : Node_Id; Val : Union_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field2 := Val;
       end Set_Field2;
 
       procedure Set_Field3 (N : Node_Id; Val : Union_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field3 := Val;
       end Set_Field3;
 
       procedure Set_Field4 (N : Node_Id; Val : Union_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field4 := Val;
       end Set_Field4;
 
       procedure Set_Field5 (N : Node_Id; Val : Union_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field5 := Val;
       end Set_Field5;
 
@@ -4941,31 +5039,31 @@ package body Atree is
 
       procedure Set_Node1 (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field1 := Union_Id (Val);
       end Set_Node1;
 
       procedure Set_Node2 (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field2 := Union_Id (Val);
       end Set_Node2;
 
       procedure Set_Node3 (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field3 := Union_Id (Val);
       end Set_Node3;
 
       procedure Set_Node4 (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field4 := Union_Id (Val);
       end Set_Node4;
 
       procedure Set_Node5 (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field5 := Union_Id (Val);
       end Set_Node5;
 
@@ -5109,31 +5207,31 @@ package body Atree is
 
       procedure Set_List1 (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field1 := Union_Id (Val);
       end Set_List1;
 
       procedure Set_List2 (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field2 := Union_Id (Val);
       end Set_List2;
 
       procedure Set_List3 (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field3 := Union_Id (Val);
       end Set_List3;
 
       procedure Set_List4 (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field4 := Union_Id (Val);
       end Set_List4;
 
       procedure Set_List5 (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field5 := Union_Id (Val);
       end Set_List5;
 
@@ -5219,43 +5317,43 @@ package body Atree is
 
       procedure Set_Name1 (N : Node_Id; Val : Name_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field1 := Union_Id (Val);
       end Set_Name1;
 
       procedure Set_Name2 (N : Node_Id; Val : Name_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field2 := Union_Id (Val);
       end Set_Name2;
 
       procedure Set_Str3 (N : Node_Id; Val : String_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field3 := Union_Id (Val);
       end Set_Str3;
 
       procedure Set_Uint2 (N : Node_Id; Val : Uint) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field2 := To_Union (Val);
       end Set_Uint2;
 
       procedure Set_Uint3 (N : Node_Id; Val : Uint) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field3 := To_Union (Val);
       end Set_Uint3;
 
       procedure Set_Uint4 (N : Node_Id; Val : Uint) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field4 := To_Union (Val);
       end Set_Uint4;
 
       procedure Set_Uint5 (N : Node_Id; Val : Uint) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field5 := To_Union (Val);
       end Set_Uint5;
 
@@ -5327,7 +5425,7 @@ package body Atree is
 
       procedure Set_Ureal3 (N : Node_Id; Val : Ureal) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Field3 := To_Union (Val);
       end Set_Ureal3;
 
@@ -5345,91 +5443,91 @@ package body Atree is
 
       procedure Set_Flag4 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag4 := Val;
       end Set_Flag4;
 
       procedure Set_Flag5 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag5 := Val;
       end Set_Flag5;
 
       procedure Set_Flag6 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag6 := Val;
       end Set_Flag6;
 
       procedure Set_Flag7 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag7 := Val;
       end Set_Flag7;
 
       procedure Set_Flag8 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag8 := Val;
       end Set_Flag8;
 
       procedure Set_Flag9 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag9 := Val;
       end Set_Flag9;
 
       procedure Set_Flag10 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag10 := Val;
       end Set_Flag10;
 
       procedure Set_Flag11 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag11 := Val;
       end Set_Flag11;
 
       procedure Set_Flag12 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag12 := Val;
       end Set_Flag12;
 
       procedure Set_Flag13 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag13 := Val;
       end Set_Flag13;
 
       procedure Set_Flag14 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag14 := Val;
       end Set_Flag14;
 
       procedure Set_Flag15 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag15 := Val;
       end Set_Flag15;
 
       procedure Set_Flag16 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag16 := Val;
       end Set_Flag16;
 
       procedure Set_Flag17 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag17 := Val;
       end Set_Flag17;
 
       procedure Set_Flag18 (N : Node_Id; Val : Boolean) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          Nodes.Table (N).Flag18 := Val;
       end Set_Flag18;
 
@@ -6993,42 +7091,62 @@ package body Atree is
 
       procedure Set_Node1_With_Parent (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
-         if Val > Error then Set_Parent (Val, N); end if;
+         pragma Assert (N <= Nodes.Last);
+
+         if Val > Error then
+            Set_Parent (Val, N);
+         end if;
+
          Set_Node1 (N, Val);
       end Set_Node1_With_Parent;
 
       procedure Set_Node2_With_Parent (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
-         if Val > Error then Set_Parent (Val, N); end if;
+         pragma Assert (N <= Nodes.Last);
+
+         if Val > Error then
+            Set_Parent (Val, N);
+         end if;
+
          Set_Node2 (N, Val);
       end Set_Node2_With_Parent;
 
       procedure Set_Node3_With_Parent (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
-         if Val > Error then Set_Parent (Val, N); end if;
+         pragma Assert (N <= Nodes.Last);
+
+         if Val > Error then
+            Set_Parent (Val, N);
+         end if;
+
          Set_Node3 (N, Val);
       end Set_Node3_With_Parent;
 
       procedure Set_Node4_With_Parent (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
-         if Val > Error then Set_Parent (Val, N); end if;
+         pragma Assert (N <= Nodes.Last);
+
+         if Val > Error then
+            Set_Parent (Val, N);
+         end if;
+
          Set_Node4 (N, Val);
       end Set_Node4_With_Parent;
 
       procedure Set_Node5_With_Parent (N : Node_Id; Val : Node_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
-         if Val > Error then Set_Parent (Val, N); end if;
+         pragma Assert (N <= Nodes.Last);
+
+         if Val > Error then
+            Set_Parent (Val, N);
+         end if;
+
          Set_Node5 (N, Val);
       end Set_Node5_With_Parent;
 
       procedure Set_List1_With_Parent (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          if Val /= No_List and then Val /= Error_List then
             Set_Parent (Val, N);
          end if;
@@ -7037,7 +7155,7 @@ package body Atree is
 
       procedure Set_List2_With_Parent (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          if Val /= No_List and then Val /= Error_List then
             Set_Parent (Val, N);
          end if;
@@ -7046,7 +7164,7 @@ package body Atree is
 
       procedure Set_List3_With_Parent (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          if Val /= No_List and then Val /= Error_List then
             Set_Parent (Val, N);
          end if;
@@ -7055,7 +7173,7 @@ package body Atree is
 
       procedure Set_List4_With_Parent (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          if Val /= No_List and then Val /= Error_List then
             Set_Parent (Val, N);
          end if;
@@ -7064,7 +7182,7 @@ package body Atree is
 
       procedure Set_List5_With_Parent (N : Node_Id; Val : List_Id) is
       begin
-         pragma Assert (N in Nodes.First .. Nodes.Last);
+         pragma Assert (N <= Nodes.Last);
          if Val /= No_List and then Val /= Error_List then
             Set_Parent (Val, N);
          end if;

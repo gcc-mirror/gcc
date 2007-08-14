@@ -69,7 +69,7 @@ package body Ch4 is
 
    procedure Bad_Range_Attribute (Loc : Source_Ptr) is
    begin
-      Error_Msg ("range attribute cannot be used in expression", Loc);
+      Error_Msg ("range attribute cannot be used in expression!", Loc);
       Resync_Expression;
    end Bad_Range_Attribute;
 
@@ -1267,18 +1267,14 @@ package body Ch4 is
             then
                Error_Msg
                  ("|parentheses not allowed for range attribute", Lparen_Sloc);
+               Scan; -- past right paren
                return Expr_Node;
             end if;
 
-            --  Bump paren count of expression, note that if the paren count
-            --  is already at the maximum, then we leave it alone. This will
-            --  cause some failures in pathalogical conformance tests, which
-            --  we do not shed a tear over!
+            --  Bump paren count of expression
 
             if Expr_Node /= Error then
-               if Paren_Count (Expr_Node) /= Paren_Count_Type'Last then
-                  Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
-               end if;
+               Set_Paren_Count (Expr_Node, Paren_Count (Expr_Node) + 1);
             end if;
 
             T_Right_Paren; -- past right paren (error message if none)
@@ -1577,11 +1573,13 @@ package body Ch4 is
    --  called in all contexts where a right parenthesis cannot legitimately
    --  follow an expression.
 
-   --  Error recovery: can raise Error_Resync
+   --  Error recovery: can not raise Error_Resync
 
    function P_Expression_No_Right_Paren return Node_Id is
+      Expr : constant Node_Id := P_Expression;
    begin
-      return No_Right_Paren (P_Expression);
+      Check_No_Right_Paren;
+      return Expr;
    end P_Expression_No_Right_Paren;
 
    ----------------------------------------
@@ -1805,7 +1803,10 @@ package body Ch4 is
 
          else
             if Token = Tok_Double_Asterisk then
-               if Style_Check then Style.Check_Exponentiation_Operator; end if;
+               if Style_Check then
+                  Style.Check_Exponentiation_Operator;
+               end if;
+
                Node2 := New_Node (N_Op_Expon, Token_Ptr);
                Scan; -- past **
                Set_Left_Opnd (Node2, Node1);
@@ -1818,7 +1819,11 @@ package body Ch4 is
                exit when Token not in Token_Class_Mulop;
                Tokptr := Token_Ptr;
                Node2 := New_Node (P_Multiplying_Operator, Tokptr);
-               if Style_Check then Style.Check_Binary_Operator; end if;
+
+               if Style_Check then
+                  Style.Check_Binary_Operator;
+               end if;
+
                Scan; -- past operator
                Set_Left_Opnd (Node2, Node1);
                Set_Right_Opnd (Node2, P_Factor);
@@ -1830,7 +1835,11 @@ package body Ch4 is
                exit when Token not in Token_Class_Binary_Addop;
                Tokptr := Token_Ptr;
                Node2 := New_Node (P_Binary_Adding_Operator, Tokptr);
-               if Style_Check then Style.Check_Binary_Operator; end if;
+
+               if Style_Check then
+                  Style.Check_Binary_Operator;
+               end if;
+
                Scan; -- past operator
                Set_Left_Opnd (Node2, Node1);
                Set_Right_Opnd (Node2, P_Term);
@@ -1849,7 +1858,11 @@ package body Ch4 is
          if Token in Token_Class_Unary_Addop then
             Tokptr := Token_Ptr;
             Node1 := New_Node (P_Unary_Adding_Operator, Tokptr);
-            if Style_Check then Style.Check_Unary_Plus_Or_Minus; end if;
+
+            if Style_Check then
+               Style.Check_Unary_Plus_Or_Minus;
+            end if;
+
             Scan; -- past operator
             Set_Right_Opnd (Node1, P_Term);
             Set_Op_Name (Node1);
@@ -1951,6 +1964,39 @@ package body Ch4 is
       Attr_Node : Node_Id;
 
    begin
+      --  We don't just want to roar ahead and call P_Simple_Expression
+      --  here, since we want to handle the case of a parenthesized range
+      --  attribute cleanly.
+
+      if Token = Tok_Left_Paren then
+         declare
+            Lptr       : constant Source_Ptr := Token_Ptr;
+            Scan_State : Saved_Scan_State;
+
+         begin
+            Save_Scan_State (Scan_State);
+            Scan; -- past left paren
+            Sexpr := P_Simple_Expression;
+
+            if Token = Tok_Apostrophe then
+               Attr_Node := P_Range_Attribute_Reference (Sexpr);
+               Expr_Form := EF_Range_Attr;
+
+               if Token = Tok_Right_Paren then
+                  Scan; -- scan past right paren if present
+               end if;
+
+               Error_Msg ("parentheses not allowed for range attribute", Lptr);
+
+               return Attr_Node;
+            end if;
+
+            Restore_Scan_State (Scan_State);
+         end;
+      end if;
+
+      --  Here after dealing with parenthesized range attribute
+
       Sexpr := P_Simple_Expression;
 
       if Token = Tok_Apostrophe then
@@ -2007,7 +2053,11 @@ package body Ch4 is
    begin
       if Token = Tok_Abs then
          Node1 := New_Node (N_Op_Abs, Token_Ptr);
-         if Style_Check then Style.Check_Abs_Not; end if;
+
+         if Style_Check then
+            Style.Check_Abs_Not;
+         end if;
+
          Scan; -- past ABS
          Set_Right_Opnd (Node1, P_Primary);
          Set_Op_Name (Node1);
@@ -2015,7 +2065,11 @@ package body Ch4 is
 
       elsif Token = Tok_Not then
          Node1 := New_Node (N_Op_Not, Token_Ptr);
-         if Style_Check then Style.Check_Abs_Not; end if;
+
+         if Style_Check then
+            Style.Check_Abs_Not;
+         end if;
+
          Scan; -- past NOT
          Set_Right_Opnd (Node1, P_Primary);
          Set_Op_Name (Node1);
@@ -2116,7 +2170,18 @@ package body Ch4 is
             --  Left paren, starts aggregate or parenthesized expression
 
             when Tok_Left_Paren =>
-               return P_Aggregate_Or_Paren_Expr;
+               declare
+                  Expr : constant Node_Id := P_Aggregate_Or_Paren_Expr;
+
+               begin
+                  if Nkind (Expr) = N_Attribute_Reference
+                    and then Attribute_Name (Expr) = Name_Range
+                  then
+                     Bad_Range_Attribute (Sloc (Expr));
+                  end if;
+
+                  return Expr;
+               end;
 
             --  Allocator
 
@@ -2174,7 +2239,10 @@ package body Ch4 is
    function P_Logical_Operator return Node_Kind is
    begin
       if Token = Tok_And then
-         if Style_Check then Style.Check_Binary_Operator; end if;
+         if Style_Check then
+            Style.Check_Binary_Operator;
+         end if;
+
          Scan; -- past AND
 
          if Token = Tok_Then then
@@ -2185,7 +2253,10 @@ package body Ch4 is
          end if;
 
       elsif Token = Tok_Or then
-         if Style_Check then Style.Check_Binary_Operator; end if;
+         if Style_Check then
+            Style.Check_Binary_Operator;
+         end if;
+
          Scan; -- past OR
 
          if Token = Tok_Else then
@@ -2196,7 +2267,10 @@ package body Ch4 is
          end if;
 
       else -- Token = Tok_Xor
-         if Style_Check then Style.Check_Binary_Operator; end if;
+         if Style_Check then
+            Style.Check_Binary_Operator;
+         end if;
+
          Scan; -- past XOR
          return N_Op_Xor;
       end if;
@@ -2235,7 +2309,11 @@ package body Ch4 is
       end if;
 
       Op_Kind := Relop_Node (Token);
-      if Style_Check then Style.Check_Binary_Operator; end if;
+
+      if Style_Check then
+         Style.Check_Binary_Operator;
+      end if;
+
       Scan; -- past operator token
 
       if Prev_Token = Tok_Not then

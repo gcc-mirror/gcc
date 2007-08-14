@@ -94,12 +94,11 @@ package Atree is
    --   Rewrite_Ins   A flag set if a node is marked as a rewrite inserted
    --                 node as a result of a call to Mark_Rewrite_Insertion.
 
-   --   Paren_Count   A 2-bit count used on expression nodes to indicate
-   --                 the level of parentheses. Up to 3 levels can be
-   --                 accomodated. Anything more than 3 levels is treated
-   --                 as 3 levels (conformance tests that complain about
-   --                 this are hereby deemed pathological!). Set to zero
-   --                 for non-subexpression nodes.
+   --   Paren_Count   A 2-bit count used in sub-expression nodes to indicate
+   --                 the level of parentheses. The settings are 0,1,2 and
+   --                 3 for many. If the value is 3, then an auxiliary table
+   --                 is used to indicate the real value. Set to zero for
+   --                 non-subexpression nodes.
 
    --   Comes_From_Source
    --                 This flag is present in all nodes. It is set if the
@@ -202,10 +201,6 @@ package Atree is
    --   Similar definitions for Field7 to Field28 (and Node7-Node28,
    --   Elist7-Elist28, Uint7-Uint28, Ureal7-Ureal28). Note that not all
    --   these functions are defined, only the ones that are actually used.
-
-   type Paren_Count_Type is mod 4;
-   for Paren_Count_Type'Size use 2;
-   --  Type used for Paren_Count field
 
    function Last_Node_Id return Node_Id;
    pragma Inline (Last_Node_Id);
@@ -548,7 +543,7 @@ package Atree is
 
    --  The result returned by Traverse is Abandon if processing was terminated
    --  by a call to Process returning Abandon, otherwise it is OK (meaning that
-   --  all calls to process returned either OK or Skip).
+   --  all calls to process returned either OK, OK_Orig, or Skip).
 
    generic
      with function Process (N : Node_Id) return Traverse_Result is <>;
@@ -579,7 +574,7 @@ package Atree is
    function Sloc              (N : Node_Id) return Source_Ptr;
    pragma Inline (Sloc);
 
-   function Paren_Count       (N : Node_Id) return Paren_Count_Type;
+   function Paren_Count       (N : Node_Id) return Nat;
    pragma Inline (Paren_Count);
 
    function Parent            (N : Node_Id) return Node_Id;
@@ -623,7 +618,7 @@ package Atree is
    procedure Set_Sloc         (N : Node_Id; Val : Source_Ptr);
    pragma Inline (Set_Sloc);
 
-   procedure Set_Paren_Count  (N : Node_Id; Val : Paren_Count_Type);
+   procedure Set_Paren_Count  (N : Node_Id; Val : Nat);
    pragma Inline (Set_Paren_Count);
 
    procedure Set_Parent       (N : Node_Id; Val : Node_Id);

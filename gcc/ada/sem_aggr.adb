@@ -39,11 +39,9 @@ with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
@@ -88,7 +86,7 @@ package body Sem_Aggr is
    --  E_Component/E_Discriminant entity in the record case, in which case the
    --  type of the component will be used for the test. If Typ is any other
    --  kind of entity, the call is ignored. Expr is the component node in the
-   --  aggregate which is an explicit occurrence of NULL. An error will be
+   --  aggregate which is known to have a null value. A warning message will be
    --  issued if the component is null excluding.
    --
    --  It would be better to pass the proper type for Typ ???
@@ -639,9 +637,11 @@ package body Sem_Aggr is
             Index_Typ  : Entity_Id;
 
          begin
-            --  Construct the Index subtype
+            --  Construct the Index subtype, and associate it with the range
+            --  construct that generates it.
 
-            Index_Typ := Create_Itype (Subtype_Kind (Ekind (Index_Base)), N);
+            Index_Typ :=
+              Create_Itype (Subtype_Kind (Ekind (Index_Base)), Aggr_Range (J));
 
             Set_Etype (Index_Typ, Index_Base);
 
@@ -684,32 +684,15 @@ package body Sem_Aggr is
       Set_Is_Internal    (Itype, True);
       Init_Size_Align    (Itype);
 
-      --  Handle aggregate initializing statically allocated dispatch table
-
-      if Static_Dispatch_Tables
-        and then VM_Target = No_VM
-        and then RTU_Loaded (Ada_Tags)
-
-         --  Avoid circularity when rebuilding the compiler
-
-        and then Cunit_Entity (Get_Source_Unit (N)) /= RTU_Entity (Ada_Tags)
-        and then (Etype (N) = RTE (RE_Address_Array)
-                    or else
-                  Base_Type (Etype (N)) = RTE (RE_Tag_Table))
-      then
-         Set_Size_Known_At_Compile_Time (Itype);
-
       --  A simple optimization: purely positional aggregates of static
       --  components should be passed to gigi unexpanded whenever possible,
       --  and regardless of the staticness of the bounds themselves. Subse-
       --  quent checks in exp_aggr verify that type is not packed, etc.
 
-      else
-         Set_Size_Known_At_Compile_Time (Itype,
-            Is_Fully_Positional
-              and then Comes_From_Source (N)
-              and then Size_Known_At_Compile_Time (Component_Type (Typ)));
-      end if;
+      Set_Size_Known_At_Compile_Time (Itype,
+         Is_Fully_Positional
+           and then Comes_From_Source (N)
+           and then Size_Known_At_Compile_Time (Component_Type (Typ)));
 
       --  We always need a freeze node for a packed array subtype, so that
       --  we can build the Packed_Array_Type corresponding to the subtype.
@@ -1022,7 +1005,7 @@ package body Sem_Aggr is
                Pkind = N_Procedure_Call_Statement  or else
                Pkind = N_Generic_Association       or else
                Pkind = N_Formal_Object_Declaration or else
-               Pkind = N_Return_Statement          or else
+               Pkind = N_Simple_Return_Statement   or else
                Pkind = N_Object_Declaration        or else
                Pkind = N_Component_Declaration     or else
                Pkind = N_Parameter_Specification   or else
@@ -1719,7 +1702,7 @@ package body Sem_Aggr is
                --  Ada 2005 (AI-231)
 
                if Ada_Version >= Ada_05
-                 and then Nkind (Expression (Assoc)) = N_Null
+                 and then Known_Null (Expression (Assoc))
                then
                   Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
                end if;
@@ -1851,7 +1834,7 @@ package body Sem_Aggr is
             --  Ada 2005 (AI-231)
 
             if Ada_Version >= Ada_05
-              and then Nkind (Expr) = N_Null
+              and then Known_Null (Expr)
             then
                Check_Can_Never_Be_Null (Etype (N), Expr);
             end if;
@@ -1869,7 +1852,7 @@ package body Sem_Aggr is
             --  Ada 2005 (AI-231)
 
             if Ada_Version >= Ada_05
-              and then Nkind (Assoc) = N_Null
+              and then Known_Null (Assoc)
             then
                Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
             end if;
@@ -2401,7 +2384,7 @@ package body Sem_Aggr is
                      --  Ada 2005 (AI-231)
 
                      if Ada_Version >= Ada_05
-                       and then Nkind (Expression (Assoc)) = N_Null
+                       and then Known_Null (Expression (Assoc))
                      then
                         Check_Can_Never_Be_Null (Compon, Expression (Assoc));
                      end if;
@@ -2731,7 +2714,7 @@ package body Sem_Aggr is
                --  Ada 2005 (AI-231)
 
                if Ada_Version >= Ada_05
-                 and then Nkind (Positional_Expr) = N_Null
+                 and then Known_Null (Positional_Expr)
                then
                   Check_Can_Never_Be_Null (Discrim, Positional_Expr);
                end if;
@@ -2969,7 +2952,7 @@ package body Sem_Aggr is
          --  Ada 2005 (AI-231)
 
          if Ada_Version >= Ada_05
-           and then Nkind (Positional_Expr) = N_Null
+           and then Known_Null (Positional_Expr)
          then
             Check_Can_Never_Be_Null (Component, Positional_Expr);
          end if;
@@ -3052,7 +3035,7 @@ package body Sem_Aggr is
                   then
                      --  We build a partially initialized aggregate with the
                      --  values of the discriminants and box initialization
-                     --  for the rest.
+                     --  for the rest, if other components are present.
 
                      declare
                         Loc        : constant Source_Ptr := Sloc (N);
@@ -3085,13 +3068,29 @@ package body Sem_Aggr is
                            Next_Elmt (Discr_Elmt);
                         end loop;
 
-                        Append
-                          (Make_Component_Association (Loc,
-                             Choices     =>
-                               New_List (Make_Others_Choice (Loc)),
-                             Expression  => Empty,
-                             Box_Present => True),
-                           Component_Associations (Expr));
+                        declare
+                           Comp : Entity_Id;
+
+                        begin
+                           --  Look for a component that is not a discriminant
+                           --  before creating an others box association.
+
+                           Comp := First_Component (Ctyp);
+                           while Present (Comp) loop
+                              if Ekind (Comp) = E_Component then
+                                 Append
+                                   (Make_Component_Association (Loc,
+                                      Choices     =>
+                                        New_List (Make_Others_Choice (Loc)),
+                                      Expression  => Empty,
+                                      Box_Present => True),
+                                    Component_Associations (Expr));
+                                 exit;
+                              end if;
+
+                              Next_Component (Comp);
+                           end loop;
+                        end;
 
                         Add_Association
                           (Component      => Component,
@@ -3271,7 +3270,7 @@ package body Sem_Aggr is
       pragma Assert
         (Ada_Version >= Ada_05
           and then Present (Expr)
-          and then Nkind (Expr) = N_Null);
+          and then Known_Null (Expr));
 
       case Ekind (Typ) is
          when E_Array_Type  =>
@@ -3295,7 +3294,7 @@ package body Sem_Aggr is
          Insert_Action
            (Compile_Time_Constraint_Error
               (Expr,
-               "(Ada 2005) NULL not allowed in null-excluding components?"),
+               "(Ada 2005) null not allowed in null-excluding component?"),
             Make_Raise_Constraint_Error (Sloc (Expr),
               Reason => CE_Access_Check_Failed));
 
