@@ -74,12 +74,18 @@ package body Lib.Util is
    --  Start of processing for Write_Info_Char_Code
 
    begin
-      if Code in 16#00# .. 16#7F# then
+      --  00 .. 7F
+
+      if Code <= 16#7F# then
          Write_Info_Char (Character'Val (Code));
 
-      elsif Code in 16#80# .. 16#FF# then
+      --  80 .. FF
+
+      elsif Code <= 16#FF# then
          Write_Info_Char ('U');
          Write_Info_Hex_Byte (Natural (Code));
+
+      --  0100 .. FFFF
 
       else
          Write_Info_Char ('W');

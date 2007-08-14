@@ -670,7 +670,7 @@ package body Exp_Ch4 is
                   Flist := Get_Allocator_Final_List (N, Base_Type (T), PtrT);
                end if;
 
-               Convert_Aggr_In_Allocator (Tmp_Node, Exp);
+               Convert_Aggr_In_Allocator (N, Tmp_Node, Exp);
             else
                Node := Relocate_Node (N);
                Set_Analyzed (Node);
@@ -741,7 +741,7 @@ package body Exp_Ch4 is
                        Get_Allocator_Final_List (N, Base_Type (T), PtrT);
                   end if;
 
-                  Convert_Aggr_In_Allocator (Tmp_Node, Exp);
+                  Convert_Aggr_In_Allocator (N, Tmp_Node, Exp);
                else
                   Node := Relocate_Node (N);
                   Set_Analyzed (Node);
@@ -935,7 +935,7 @@ package body Exp_Ch4 is
 
          Set_No_Initialization (Expression (Tmp_Node));
          Insert_Action (N, Tmp_Node);
-         Convert_Aggr_In_Allocator (Tmp_Node, Exp);
+         Convert_Aggr_In_Allocator (N, Tmp_Node, Exp);
          Rewrite (N, New_Reference_To (Temp, Loc));
          Analyze_And_Resolve (N, PtrT);
 
@@ -1467,7 +1467,7 @@ package body Exp_Ch4 is
               Make_Implicit_If_Statement (Nod,
                 Condition => Make_Op_Not (Loc, Right_Opnd => Test),
                 Then_Statements => New_List (
-                  Make_Return_Statement (Loc,
+                  Make_Simple_Return_Statement (Loc,
                     Expression => New_Occurrence_Of (Standard_False, Loc))));
          end if;
       end Component_Equality;
@@ -1749,20 +1749,20 @@ package body Exp_Ch4 is
                 Make_Implicit_If_Statement (Nod,
                   Condition => Test_Empty_Arrays,
                   Then_Statements => New_List (
-                    Make_Return_Statement (Loc,
+                    Make_Simple_Return_Statement (Loc,
                       Expression =>
                         New_Occurrence_Of (Standard_True, Loc)))),
 
                 Make_Implicit_If_Statement (Nod,
                   Condition => Test_Lengths_Correspond,
                   Then_Statements => New_List (
-                    Make_Return_Statement (Loc,
+                    Make_Simple_Return_Statement (Loc,
                       Expression =>
                         New_Occurrence_Of (Standard_False, Loc)))),
 
                 Handle_One_Dimension (1, First_Index (Ltyp)),
 
-                Make_Return_Statement (Loc,
+                Make_Simple_Return_Statement (Loc,
                   Expression => New_Occurrence_Of (Standard_True, Loc)))));
 
          Set_Has_Completion (Func_Name, True);
@@ -2590,7 +2590,7 @@ package body Exp_Ch4 is
           Condition       => S_Length_Test (1),
           Then_Statements => New_List (Init_L (1)),
           Elsif_Parts     => Elsif_List,
-          Else_Statements => New_List (Make_Return_Statement (Loc,
+          Else_Statements => New_List (Make_Simple_Return_Statement (Loc,
                                          Expression => S (Nb_Opnds))));
 
       --  Construct the declaration for H
@@ -2641,7 +2641,8 @@ package body Exp_Ch4 is
                       Then_Statements => Copy_Into_R_S (I, I = Nb_Opnds)));
       end loop;
 
-      Append_To (Declare_Stmts, Make_Return_Statement (Loc, Expression => R));
+      Append_To
+        (Declare_Stmts, Make_Simple_Return_Statement (Loc, Expression => R));
 
       --  Construct the declare block
 
@@ -2817,7 +2818,7 @@ package body Exp_Ch4 is
             P := Parent (N);
             while Present (P) loop
                if Nkind (P) = N_Extended_Return_Statement
-                 or else Nkind (P) = N_Return_Statement
+                 or else Nkind (P) = N_Simple_Return_Statement
                then
                   return True;
 
@@ -3441,7 +3442,7 @@ package body Exp_Ch4 is
                --  Postpone the generation of a finalization call for the
                --  current allocator if it acts as a coextension.
 
-               if Is_Coextension (N) then
+               if Is_Dynamic_Coextension (N) then
                   if No (Coextensions (N)) then
                      Set_Coextensions (N, New_Elmt_List);
                   end if;
@@ -3762,26 +3763,62 @@ package body Exp_Ch4 is
             Lo : constant Node_Id := Low_Bound (Rop);
             Hi : constant Node_Id := High_Bound (Rop);
 
+            Ltyp : constant Entity_Id := Etype (Lop);
+
             Lo_Orig : constant Node_Id := Original_Node (Lo);
             Hi_Orig : constant Node_Id := Original_Node (Hi);
 
             Lcheck : constant Compare_Result := Compile_Time_Compare (Lop, Lo);
             Ucheck : constant Compare_Result := Compile_Time_Compare (Lop, Hi);
 
+            Warn1 : constant Boolean :=
+                      Constant_Condition_Warnings
+                        and then Comes_From_Source (N);
+            --  This must be true for any of the optimization warnings, we
+            --  clearly want to give them only for source with the flag on.
+
+            Warn2 : constant Boolean :=
+                      Warn1
+                        and then Nkind (Original_Node (Rop)) = N_Range
+                        and then Is_Integer_Type (Etype (Lo));
+            --  For the case where only one bound warning is elided, we also
+            --  insist on an explicit range and an integer type. The reason is
+            --  that the use of enumeration ranges including an end point is
+            --  common, as is the use of a subtype name, one of whose bounds
+            --  is the same as the type of the expression.
+
          begin
             --  If test is explicit x'first .. x'last, replace by valid check
 
-            if Is_Scalar_Type (Etype (Lop))
+            if Is_Scalar_Type (Ltyp)
               and then Nkind (Lo_Orig) = N_Attribute_Reference
               and then Attribute_Name (Lo_Orig) = Name_First
               and then Nkind (Prefix (Lo_Orig)) in N_Has_Entity
-              and then Entity (Prefix (Lo_Orig)) = Etype (Lop)
+              and then Entity (Prefix (Lo_Orig)) = Ltyp
               and then Nkind (Hi_Orig) = N_Attribute_Reference
               and then Attribute_Name (Hi_Orig) = Name_Last
               and then Nkind (Prefix (Hi_Orig)) in N_Has_Entity
-              and then Entity (Prefix (Hi_Orig)) = Etype (Lop)
+              and then Entity (Prefix (Hi_Orig)) = Ltyp
               and then Comes_From_Source (N)
               and then VM_Target = No_VM
+            then
+               Substitute_Valid_Check;
+               return;
+            end if;
+
+            --  If bounds of type are known at compile time, and the end points
+            --  are known at compile time and identical, this is another case
+            --  for substituting a valid test. We only do this for discrete
+            --  types, since it won't arise in practice for float types.
+
+            if Comes_From_Source (N)
+              and then Is_Discrete_Type (Ltyp)
+              and then Compile_Time_Known_Value (Type_High_Bound (Ltyp))
+              and then Compile_Time_Known_Value (Type_Low_Bound  (Ltyp))
+              and then Compile_Time_Known_Value (Lo)
+              and then Compile_Time_Known_Value (Hi)
+              and then Expr_Value (Type_High_Bound (Ltyp)) = Expr_Value (Hi)
+              and then Expr_Value (Type_Low_Bound  (Ltyp)) = Expr_Value (Lo)
             then
                Substitute_Valid_Check;
                return;
@@ -3795,44 +3832,68 @@ package body Exp_Ch4 is
             --  legality checks, because we are constant-folding beyond RM 4.9.
 
             if Lcheck = LT or else Ucheck = GT then
+               if Warn1 then
+                  Error_Msg_N ("?range test optimized away", N);
+                  Error_Msg_N ("\?value is known to be out of range", N);
+               end if;
+
                Rewrite (N,
                  New_Reference_To (Standard_False, Loc));
                Analyze_And_Resolve (N, Rtyp);
                Set_Is_Static_Expression (N, Static);
+
                return;
 
             --  If both checks are known to succeed, replace result
             --  by True, since we know we are in range.
 
             elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
+               if Warn1 then
+                  Error_Msg_N ("?range test optimized away", N);
+                  Error_Msg_N ("\?value is known to be in range", N);
+               end if;
+
                Rewrite (N,
                  New_Reference_To (Standard_True, Loc));
                Analyze_And_Resolve (N, Rtyp);
                Set_Is_Static_Expression (N, Static);
+
                return;
 
-            --  If lower bound check succeeds and upper bound check is
-            --  not known to succeed or fail, then replace the range check
-            --  with a comparison against the upper bound.
+            --  If lower bound check succeeds and upper bound check is not
+            --  known to succeed or fail, then replace the range check with
+            --  a comparison against the upper bound.
 
             elsif Lcheck in Compare_GE then
+               if Warn2 then
+                  Error_Msg_N ("?lower bound test optimized away", Lo);
+                  Error_Msg_N ("\?value is known to be in range", Lo);
+               end if;
+
                Rewrite (N,
                  Make_Op_Le (Loc,
                    Left_Opnd  => Lop,
                    Right_Opnd => High_Bound (Rop)));
                Analyze_And_Resolve (N, Rtyp);
+
                return;
 
-            --  If upper bound check succeeds and lower bound check is
-            --  not known to succeed or fail, then replace the range check
-            --  with a comparison against the lower bound.
+            --  If upper bound check succeeds and lower bound check is not
+            --  known to succeed or fail, then replace the range check with
+            --  a comparison against the lower bound.
 
             elsif Ucheck in Compare_LE then
+               if Warn2 then
+                  Error_Msg_N ("?upper bound test optimized away", Hi);
+                  Error_Msg_N ("\?value is known to be in range", Hi);
+               end if;
+
                Rewrite (N,
                  Make_Op_Ge (Loc,
                    Left_Opnd  => Lop,
                    Right_Opnd => Low_Bound (Rop)));
                Analyze_And_Resolve (N, Rtyp);
+
                return;
             end if;
          end;
@@ -4203,9 +4264,9 @@ package body Exp_Ch4 is
           Right_Opnd =>
             Make_In (Loc,
               Left_Opnd  => Left_Opnd (N),
-                     Right_Opnd => Right_Opnd (N))));
+              Right_Opnd => Right_Opnd (N))));
 
-      --  We want this tp appear as coming from source if original does (see
+      --  We want this to appear as coming from source if original does (see
       --  tranformations in Expand_N_In).
 
       Set_Comes_From_Source (N, Cfs);
@@ -6295,7 +6356,7 @@ package body Exp_Ch4 is
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (
                 Loop_Statement,
-                Make_Return_Statement (Loc,
+                Make_Simple_Return_Statement (Loc,
                   Expression =>
                     Make_Identifier (Loc, Chars (B)))))));
 
@@ -7413,13 +7474,23 @@ package body Exp_Ch4 is
 
       if Is_Access_Type (Target_Type) then
 
-         --  Apply an accessibility check if the operand is an
-         --  access parameter. Note that other checks may still
-         --  need to be applied below (such as tagged type checks).
+         --  Apply an accessibility check when the conversion operand is an
+         --  access parameter (or a renaming thereof), unless conversion was
+         --  expanded from an unchecked or unrestricted access attribute. Note
+         --  that other checks may still need to be applied below (such as
+         --  tagged type checks).
 
          if Is_Entity_Name (Operand)
-           and then Ekind (Entity (Operand)) in Formal_Kind
+           and then
+             (Is_Formal (Entity (Operand))
+               or else
+                 (Present (Renamed_Object (Entity (Operand)))
+                   and then Is_Entity_Name (Renamed_Object (Entity (Operand)))
+                   and then Is_Formal
+                              (Entity (Renamed_Object (Entity (Operand))))))
            and then Ekind (Etype (Operand)) = E_Anonymous_Access_Type
+           and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
+                      or else Attribute_Name (Original_Node (N)) = Name_Access)
          then
             Apply_Accessibility_Check (Operand, Target_Type);
 
@@ -8172,9 +8243,12 @@ package body Exp_Ch4 is
 
          --  Case of an access discriminant, or (Ada 2005), of an anonymous
          --  access component or anonymous access function result: find the
-         --  final list associated with the scope of the type.
+         --  final list associated with the scope of the type. (In the
+         --  anonymous access component kind, a list controller will have
+         --  been allocated when freezing the record type, and PtrT has an
+         --  Associated_Final_Chain attribute designating it.)
 
-         else
+         elsif No (Associated_Final_Chain (PtrT)) then
             Owner := Scope (PtrT);
          end if;
       end if;
@@ -8480,7 +8554,7 @@ package body Exp_Ch4 is
           Then_Statements => New_List (Inner_If),
 
           Else_Statements => New_List (
-            Make_Return_Statement (Loc,
+            Make_Simple_Return_Statement (Loc,
               Expression =>
                 Make_Op_Gt (Loc,
                   Left_Opnd =>
@@ -8551,7 +8625,7 @@ package body Exp_Ch4 is
 
           Then_Statements =>
             New_List (
-              Make_Return_Statement (Loc,
+              Make_Simple_Return_Statement (Loc,
                 Expression => New_Reference_To (Standard_False, Loc))),
 
           Elsif_Parts => New_List (
@@ -8567,12 +8641,12 @@ package body Exp_Ch4 is
 
               Then_Statements =>
                 New_List (
-                  Make_Return_Statement (Loc,
+                  Make_Simple_Return_Statement (Loc,
                      Expression => New_Reference_To (Standard_True, Loc))))),
 
           Else_Statements => New_List (
             Loop_Statement,
-            Make_Return_Statement (Loc,
+            Make_Simple_Return_Statement (Loc,
               Expression => Final_Expr)));
 
       --  (X : a; Y: a)
@@ -8741,7 +8815,7 @@ package body Exp_Ch4 is
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (
                 Loop_Statement,
-                Make_Return_Statement (Loc,
+                Make_Simple_Return_Statement (Loc,
                   Expression => New_Reference_To (C, Loc)))));
 
       return Func_Body;

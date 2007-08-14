@@ -32,15 +32,16 @@ with Exp_Smem; use Exp_Smem;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Exp_VFpt; use Exp_VFpt;
+with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Sem;      use Sem;
-with Sem_Attr; use Sem_Attr;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -90,13 +91,13 @@ package body Exp_Ch2 is
    procedure Expand_Entry_Parameter (N : Node_Id);
    --  A reference to an entry parameter is modified to be a reference to the
    --  corresponding component of the entry parameter record that is passed by
-   --  the runtime to the accept body procedure
+   --  the runtime to the accept body procedure.
 
    procedure Expand_Formal (N : Node_Id);
    --  A reference to a formal parameter of a protected subprogram is expanded
    --  into the corresponding formal of the unprotected procedure used to
    --  represent the operation within the protected object. In other cases
-   --  Expand_Formal is a noop.
+   --  Expand_Formal is a no-op.
 
    procedure Expand_Protected_Private (N : Node_Id);
    --  A reference to a private component of a protected type is expanded to a
@@ -156,11 +157,18 @@ package body Exp_Ch2 is
 
          and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
 
-         --  Same for attribute references that require a simple name prefix
+         --  Do not replace the prefixes of attribute references, since this
+         --  causes trouble with cases like 4'Size. Also for Name_Asm_Input and
+         --  Name_Asm_Output, don't do replacement anywhere, since we can have
+         --  lvalue references in the arguments.
 
          and then not (Nkind (Parent (N)) = N_Attribute_Reference
-                         and then Requires_Simple_Name_Prefix (
-                                    Attribute_Name (Parent (N))))
+                         and then
+                           (Attribute_Name (Parent (N)) = Name_Asm_Input
+                              or else
+                            Attribute_Name (Parent (N)) = Name_Asm_Output
+                              or else
+                            Prefix (Parent (N)) = N))
 
       then
          --  Case of Current_Value is a compile time known value
@@ -421,6 +429,11 @@ package body Exp_Ch2 is
 
       function In_Assignment_Context (N : Node_Id) return Boolean is
       begin
+         --  Case of use in a call
+
+         --  ??? passing a formal as actual for a mode IN formal is
+         --  considered as an assignment?
+
          if Nkind (Parent (N)) = N_Procedure_Call_Statement
            or else Nkind (Parent (N)) = N_Entry_Call_Statement
            or else
@@ -429,15 +442,25 @@ package body Exp_Ch2 is
          then
             return True;
 
+         --  Case of a parameter association: climb up to enclosing call
+
          elsif Nkind (Parent (N)) = N_Parameter_Association then
             return In_Assignment_Context (Parent (N));
+
+         --  Case of a selected component, indexed component or slice prefix:
+         --  climb up the tree, unless the prefix is of an access type (in
+         --  which case there is an implicit dereference, and the formal itself
+         --  is not being assigned to).
 
          elsif (Nkind (Parent (N)) = N_Selected_Component
                  or else Nkind (Parent (N)) = N_Indexed_Component
                  or else Nkind (Parent (N)) = N_Slice)
+           and then N = Prefix (Parent (N))
+           and then not Is_Access_Type (Etype (N))
            and then In_Assignment_Context (Parent (N))
          then
             return True;
+
          else
             return False;
          end if;
@@ -670,6 +693,8 @@ package body Exp_Ch2 is
    --  through an address clause is rewritten as dereference as well.
 
    function Param_Entity (N : Node_Id) return Entity_Id is
+      Renamed_Obj : Node_Id;
+
    begin
       --  Simple reference case
 
@@ -677,10 +702,22 @@ package body Exp_Ch2 is
          if Is_Formal (Entity (N)) then
             return Entity (N);
 
-         elsif Nkind (Parent (Entity (N))) = N_Object_Renaming_Declaration
-           and then Nkind (Parent (Parent (Entity (N)))) = N_Accept_Statement
-         then
-            return Entity (N);
+         --  Handle renamings of formal parameters and formals of tasks that
+         --  are rewritten as renamings.
+
+         elsif Nkind (Parent (Entity (N))) = N_Object_Renaming_Declaration then
+            Renamed_Obj := Get_Referenced_Object (Renamed_Object (Entity (N)));
+
+            if Is_Entity_Name (Renamed_Obj)
+              and then Is_Formal (Entity (Renamed_Obj))
+            then
+               return Entity (Renamed_Obj);
+
+            elsif
+              Nkind (Parent (Parent (Entity (N)))) = N_Accept_Statement
+            then
+               return Entity (N);
+            end if;
          end if;
 
       else

@@ -796,8 +796,7 @@ package body Treepr is
 
       Notes := False;
 
-      if N not in
-        Atree_Private_Part.Nodes.First .. Atree_Private_Part.Nodes.Last then
+      if N > Atree_Private_Part.Nodes.Last then
          Print_Str (" (no such node)");
          Print_Eol;
          return;

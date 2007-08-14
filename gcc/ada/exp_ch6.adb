@@ -1123,13 +1123,48 @@ package body Exp_Ch6 is
             Rewrite (Actual, New_Reference_To (Temp, Loc));
             Analyze (Actual);
 
-            Append_To (Post_Call,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (Var, Loc),
-                Expression => Expr));
+            --  If the actual is a conversion of a packed reference, it may
+            --  already have been expanded by Remove_Side_Effects, and the
+            --  resulting variable is a temporary which does not designate
+            --  the proper out-parameter, which may not be addressable. In
+            --  that case, generate an assignment to the original expression
+            --  (before expansion of the  packed reference) so that the proper
+            --  expansion of assignment to a packed component can take place.
 
-            Set_Assignment_OK (Name (Last (Post_Call)));
+            declare
+               Obj : Node_Id;
+               Lhs : Node_Id;
+
+            begin
+               if Is_Renaming_Of_Object (Var)
+                 and then Nkind (Renamed_Object (Var)) = N_Selected_Component
+                 and then Is_Entity_Name (Prefix (Renamed_Object (Var)))
+                 and then Nkind (Original_Node (Prefix (Renamed_Object (Var))))
+                   = N_Indexed_Component
+                 and then
+                   Has_Non_Standard_Rep (Etype (Prefix (Renamed_Object (Var))))
+               then
+                  Obj := Renamed_Object (Var);
+                  Lhs :=
+                    Make_Selected_Component (Loc,
+                      Prefix        =>
+                        New_Copy_Tree (Original_Node (Prefix (Obj))),
+                      Selector_Name => New_Copy (Selector_Name (Obj)));
+                  Reset_Analyzed_Flags (Lhs);
+
+               else
+                  Lhs :=  New_Occurrence_Of (Var, Loc);
+               end if;
+
+               Set_Assignment_OK (Lhs);
+
+               Append_To (Post_Call,
+                 Make_Assignment_Statement (Loc,
+                   Name       => Lhs,
+                   Expression => Expr));
+            end;
          end if;
+
       end Add_Call_By_Copy_Code;
 
       ----------------------------------
@@ -2104,13 +2139,21 @@ package body Exp_Ch6 is
 
             if Is_Entity_Name (Prev_Orig) then
 
-               --  When passing an access parameter as the actual to another
-               --  access parameter we need to pass along the actual's own
-               --  associated access level parameter. This is done if we are
-               --  in the scope of the formal access parameter (if this is an
-               --  inlined body the extra formal is irrelevant).
+               --  When passing an access parameter, or a renaming of an access
+               --  parameter, as the actual to another access parameter we need
+               --  to pass along the actual's own access level parameter. This
+               --  is done if we are within the scope of the formal access
+               --  parameter (if this is an inlined body the extra formal is
+               --  irrelevant).
 
-               if Ekind (Entity (Prev_Orig)) in Formal_Kind
+               if (Is_Formal (Entity (Prev_Orig))
+                    or else
+                      (Present (Renamed_Object (Entity (Prev_Orig)))
+                        and then
+                          Is_Entity_Name (Renamed_Object (Entity (Prev_Orig)))
+                        and then
+                          Is_Formal
+                            (Entity (Renamed_Object (Entity (Prev_Orig))))))
                  and then Ekind (Etype (Prev_Orig)) = E_Anonymous_Access_Type
                  and then In_Open_Scopes (Scope (Entity (Prev_Orig)))
                then
@@ -2218,7 +2261,7 @@ package body Exp_Ch6 is
             if Is_Access_Type (Etype (Formal))
               and then Can_Never_Be_Null (Etype (Formal))
               and then Nkind (Prev) /= N_Raise_Constraint_Error
-              and then (Nkind (Prev) = N_Null
+              and then (Known_Null (Prev)
                           or else not Can_Never_Be_Null (Etype (Prev)))
             then
                Install_Null_Excluding_Check (Prev);
@@ -2410,7 +2453,7 @@ package body Exp_Ch6 is
                   then
                      Error_Msg_NE
                        ("tag-indeterminate expression "
-                         & " must have designated type& ('R'M 5.2 (6))",
+                         & " must have designated type& (RM 5.2 (6))",
                            N, Root_Type (Etype (Name (Ass))));
                   else
                      Propagate_Tag (Name (Ass), N);
@@ -2419,7 +2462,7 @@ package body Exp_Ch6 is
                elsif Etype (N) /= Root_Type (Etype (Name (Ass))) then
                   Error_Msg_NE
                     ("tag-indeterminate expression must have type&"
-                     & "('R'M 5.2 (6))", N, Root_Type (Etype (Name (Ass))));
+                     & "(RM 5.2 (6))", N, Root_Type (Etype (Name (Ass))));
 
                else
                   Propagate_Tag (Name (Ass), N);
@@ -2708,9 +2751,21 @@ package body Exp_Ch6 is
       --  In the case where the intrinsic is to be processed by the back end,
       --  the call to Expand_Intrinsic_Call will do nothing, which is fine,
       --  since the idea in this case is to pass the call unchanged.
+      --  If the intrinsic is an inherited unchecked conversion, and the
+      --  derived type is the target type of the conversion, we must retain
+      --  it as the return type of the expression. Otherwise the expansion
+      --  below, which uses the parent operation, will yield the wrong type.
 
       if Is_Intrinsic_Subprogram (Subp) then
          Expand_Intrinsic_Call (N, Subp);
+
+         if Nkind (N) = N_Unchecked_Type_Conversion
+           and then Parent_Subp /= Orig_Subp
+           and then Etype (Parent_Subp) /= Etype (Orig_Subp)
+         then
+            Set_Etype (N, Etype (Orig_Subp));
+         end if;
+
          return;
       end if;
 
@@ -3147,7 +3202,7 @@ package body Exp_Ch6 is
                    and then
                      (No (Stat2)
                        or else
-                         (Nkind (Stat2) = N_Return_Statement
+                         (Nkind (Stat2) = N_Simple_Return_Statement
                            and then No (Next (Stat2))));
             end;
          end if;
@@ -3211,19 +3266,21 @@ package body Exp_Ch6 is
                   Rewrite (N, New_Occurrence_Of (A, Loc));
                   Check_Private_View (N);
 
-               else   --  numeric literal
+               --  Numeric literal
+
+               else
                   Rewrite (N, New_Copy (A));
                end if;
             end if;
 
             return Skip;
 
-         elsif Nkind (N) = N_Return_Statement then
-
+         elsif Nkind (N) = N_Simple_Return_Statement then
             if No (Expression (N)) then
                Make_Exit_Label;
-               Rewrite (N, Make_Goto_Statement (Loc,
-                 Name => New_Copy (Lab_Id)));
+               Rewrite (N,
+                 Make_Goto_Statement (Loc,
+                   Name => New_Copy (Lab_Id)));
 
             else
                if Nkind (Parent (N)) = N_Handled_Sequence_Of_Statements
@@ -3863,7 +3920,7 @@ package body Exp_Ch6 is
          if Is_Inherently_Limited_Type (Typ) then
             return True;
 
-         elsif Nkind (Parent (N)) /= N_Return_Statement then
+         elsif Nkind (Parent (N)) /= N_Simple_Return_Statement then
             return False;
 
          elsif Requires_Transient_Scope (Typ) then
@@ -4113,7 +4170,7 @@ package body Exp_Ch6 is
                Loc := Sloc (Last_Stm);
             end if;
 
-            Append_To (S, Make_Return_Statement (Loc));
+            Append_To (S, Make_Simple_Return_Statement (Loc));
          end if;
       end Add_Return;
 
@@ -4275,7 +4332,8 @@ package body Exp_Ch6 is
       then
          Add_Discriminal_Declarations
            (Declarations (N), Scop, Name_uObject, Loc);
-         Add_Private_Declarations (Declarations (N), Scop, Name_uObject, Loc);
+         Add_Private_Declarations
+           (Declarations (N), Scop, Name_uObject, Loc);
 
          --  Associate privals and discriminals with the next protected
          --  operation body to be expanded. These are used to expand references
@@ -4787,7 +4845,7 @@ package body Exp_Ch6 is
 
    function Is_Build_In_Place_Function_Return (N : Node_Id) return Boolean is
    begin
-      if Nkind (N) = N_Return_Statement
+      if Nkind (N) = N_Simple_Return_Statement
         or else Nkind (N) = N_Extended_Return_Statement
       then
          return Is_Build_In_Place_Function
@@ -4841,11 +4899,7 @@ package body Exp_Ch6 is
          while Present (Iface_DT_Ptr)
             and then Ekind (Node (Iface_DT_Ptr)) = E_Constant
          loop
-            Expand_Interface_Thunk
-              (N           => Prim,
-               Thunk_Alias => Prim,
-               Thunk_Id    => Thunk_Id,
-               Thunk_Code  => Thunk_Code);
+            Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
 
             if Present (Thunk_Code) then
                Insert_Actions (N, New_List (
@@ -4867,89 +4921,88 @@ package body Exp_Ch6 is
       --  Local variables
 
       Subp : constant Entity_Id := Entity (N);
-      Typ  : constant Entity_Id := Etype (Subp);
-      Utyp : constant Entity_Id := Underlying_Type (Typ);
 
    begin
-      if not Static_Dispatch_Tables then
+      --  We suppress the initialization of the dispatch table entry when
+      --  VM_Target because the dispatching mechanism is handled internally
+      --  by the VM.
+
+      if Is_Dispatching_Operation (Subp)
+        and then not Is_Abstract_Subprogram (Subp)
+        and then Present (DTC_Entity (Subp))
+        and then Present (Scope (DTC_Entity (Subp)))
+        and then VM_Target = No_VM
+        and then not Restriction_Active (No_Dispatching_Calls)
+        and then RTE_Available (RE_Tag)
+      then
          declare
-            E   : constant Entity_Id := Subp;
-            Typ : Entity_Id;
+            Typ : constant Entity_Id := Scope (DTC_Entity (Subp));
 
          begin
-            --  We assume that imported CPP primitives correspond with objects
-            --  whose constructor is in the CPP side (and therefore we don't
-            --  need to generate code to register them in the dispatch table).
+            --  Handle private overriden primitives
 
-            if Is_Imported (E)
-              and then Convention (E) = Convention_CPP
-            then
-               return;
+            if not Is_CPP_Class (Typ) then
+               Check_Overriding_Operation (Subp);
             end if;
 
-            --  When a primitive is frozen, enter its name in the corresponding
-            --  dispatch table. If the DTC_Entity field is not set this is
-            --  an overridden primitive that can be ignored. We suppress the
-            --  initialization of the dispatch table entry when VM_Target
-            --  because the dispatching mechanism is handled internally by
-            --  the VM.
+            --  We assume that imported CPP primitives correspond with objects
+            --  whose constructor is in the CPP side; therefore we don't need
+            --  to generate code to register them in the dispatch table.
 
-            if Is_Dispatching_Operation (E)
-              and then not Is_Abstract_Subprogram (E)
-              and then Present (DTC_Entity (E))
-              and then VM_Target = No_VM
-              and then not Is_CPP_Class (Scope (DTC_Entity (E)))
+            if Is_CPP_Class (Typ) then
+               null;
+
+            --  Handle CPP primitives found in derivations of CPP_Class types.
+            --  These primitives must have been inherited from some parent, and
+            --  there is no need to register them in the dispatch table because
+            --  Build_Inherit_Prims takes care of the initialization of these
+            --  slots.
+
+            elsif Is_Imported (Subp)
+                    and then (Convention (Subp) = Convention_CPP
+                                or else Convention (Subp) = Convention_C)
             then
-               Check_Overriding_Operation (E);
+               null;
 
-               --  Register the primitive in its dispatch table if we are not
-               --  compiling under No_Dispatching_Calls restriction
+            --  Generate code to register the primitive in non statically
+            --  allocated dispatch tables
 
-               if not Restriction_Active (No_Dispatching_Calls)
-                 and then RTE_Available (RE_Tag)
+            elsif not Static_Dispatch_Tables
+              or else not
+                Is_Library_Level_Tagged_Type (Scope (DTC_Entity (Subp)))
+            then
+               --  When a primitive is frozen, enter its name in its dispatch
+               --  table slot.
+
+               if not Is_Interface (Typ)
+                 or else Present (Abstract_Interface_Alias (Subp))
                then
-                  Typ := Scope (DTC_Entity (E));
-
-                  if not Is_Interface (Typ)
-                    or else Present (Abstract_Interface_Alias (E))
-                  then
-                     if Is_Predefined_Dispatching_Operation (E) then
-                        Register_Predefined_DT_Entry (E);
-                     end if;
-
-                     Register_Primitive (Loc,
-                       Prim    => E,
-                       Ins_Nod => N);
+                  if Is_Predefined_Dispatching_Operation (Subp) then
+                     Register_Predefined_DT_Entry (Subp);
                   end if;
+
+                  Register_Primitive (Loc,
+                    Prim    => Subp,
+                    Ins_Nod => N);
                end if;
             end if;
          end;
-
-      --  GCC 4.1 backend
-
-      else
-         --  Handle private overriden primitives
-
-         if Is_Dispatching_Operation (Subp)
-           and then not Is_Abstract_Subprogram (Subp)
-           and then Present (DTC_Entity (Subp))
-           and then VM_Target = No_VM
-           and then not Is_CPP_Class (Scope (DTC_Entity (Subp)))
-         then
-            Check_Overriding_Operation (Subp);
-         end if;
       end if;
 
       --  Mark functions that return by reference. Note that it cannot be part
       --  of the normal semantic analysis of the spec since the underlying
       --  returned type may not be known yet (for private types).
 
-      if Is_Inherently_Limited_Type (Typ) then
-         Set_Returns_By_Ref (Subp);
-
-      elsif Present (Utyp) and then CW_Or_Controlled_Type (Utyp) then
-         Set_Returns_By_Ref (Subp);
-      end if;
+      declare
+         Typ  : constant Entity_Id := Etype (Subp);
+         Utyp : constant Entity_Id := Underlying_Type (Typ);
+      begin
+         if Is_Inherently_Limited_Type (Typ) then
+            Set_Returns_By_Ref (Subp);
+         elsif Present (Utyp) and then CW_Or_Controlled_Type (Utyp) then
+            Set_Returns_By_Ref (Subp);
+         end if;
+      end;
    end Freeze_Subprogram;
 
    -------------------------------------------
