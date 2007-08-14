@@ -130,10 +130,6 @@ package body Exp_Attr is
    --  Used for Last, Last, and Length, when the prefix is an array type,
    --  Obtains the corresponding index subtype.
 
-   procedure Expand_Access_To_Type (N : Node_Id);
-   --  A reference to a type within its own scope is resolved to a reference
-   --  to the current instance of the type in its initialization procedure.
-
    procedure Find_Fat_Info
      (T        : Entity_Id;
       Fat_Type : out Entity_Id;
@@ -348,72 +344,6 @@ package body Exp_Attr is
 
       Set_Etype (N, Typ);
    end Expand_Access_To_Protected_Op;
-
-   ---------------------------
-   -- Expand_Access_To_Type --
-   ---------------------------
-
-   procedure Expand_Access_To_Type (N : Node_Id) is
-      Loc    : constant Source_Ptr   := Sloc (N);
-      Typ    : constant Entity_Id    := Etype (N);
-      Pref   : constant Node_Id      := Prefix (N);
-      Par    : Node_Id;
-      Formal : Entity_Id;
-
-   begin
-      if Is_Entity_Name (Pref)
-        and then Is_Type (Entity (Pref))
-      then
-         --  If the current instance name denotes a task type,
-         --  then the access attribute is rewritten to be the
-         --  name of the "_task" parameter associated with the
-         --  task type's task body procedure. An unchecked
-         --  conversion is applied to ensure a type match in
-         --  cases of expander-generated calls (e.g., init procs).
-
-         if Is_Task_Type (Entity (Pref)) then
-            Formal :=
-              First_Entity (Get_Task_Body_Procedure (Entity (Pref)));
-
-            while Present (Formal) loop
-               exit when Chars (Formal) = Name_uTask;
-               Next_Entity (Formal);
-            end loop;
-
-            pragma Assert (Present (Formal));
-
-            Rewrite (N,
-              Unchecked_Convert_To (Typ, New_Occurrence_Of (Formal, Loc)));
-            Set_Etype (N, Typ);
-
-         --  The expression must appear in a default expression,
-         --  (which in the initialization procedure is the rhs of
-         --  an assignment), and not in a discriminant constraint.
-
-         else
-            Par := Parent (N);
-
-            while Present (Par) loop
-               exit when Nkind (Par) = N_Assignment_Statement;
-
-               if Nkind (Par) = N_Component_Declaration then
-                  return;
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            if Present (Par) then
-               Rewrite (N,
-                 Make_Attribute_Reference (Loc,
-                   Prefix => Make_Identifier (Loc, Name_uInit),
-                   Attribute_Name  => Attribute_Name (N)));
-
-               Analyze_And_Resolve (N, Typ);
-            end if;
-         end if;
-      end if;
-   end Expand_Access_To_Type;
 
    --------------------------
    -- Expand_Fpt_Attribute --
@@ -670,12 +600,88 @@ package body Exp_Attr is
       -- Access --
       ------------
 
-      when Attribute_Access =>
+      when Attribute_Access              |
+           Attribute_Unchecked_Access    |
+           Attribute_Unrestricted_Access =>
 
          if Is_Access_Protected_Subprogram_Type (Btyp) then
             Expand_Access_To_Protected_Op (N, Pref, Typ);
 
-         elsif Ekind (Btyp) = E_General_Access_Type then
+         --  If the prefix is a type name, this is a reference to the current
+         --  instance of the type, within its initialization procedure.
+
+         elsif Is_Entity_Name (Pref)
+           and then Is_Type (Entity (Pref))
+         then
+            declare
+               Par    : Node_Id;
+               Formal : Entity_Id;
+
+            begin
+               --  If the current instance name denotes a task type, then the
+               --  access attribute is rewritten to be the name of the "_task"
+               --  parameter associated with the task type's task procedure.
+               --  An unchecked conversion is applied to ensure a type match in
+               --  cases of expander-generated calls (e.g., init procs).
+
+               if Is_Task_Type (Entity (Pref)) then
+                  Formal :=
+                    First_Entity (Get_Task_Body_Procedure (Entity (Pref)));
+                  while Present (Formal) loop
+                     exit when Chars (Formal) = Name_uTask;
+                     Next_Entity (Formal);
+                  end loop;
+
+                  pragma Assert (Present (Formal));
+
+                  Rewrite (N,
+                    Unchecked_Convert_To
+                      (Typ, New_Occurrence_Of (Formal, Loc)));
+                  Set_Etype (N, Typ);
+
+                  return;
+
+               --  The expression must appear in a default expression, (which
+               --  in the initialization procedure is the right-hand side of an
+               --  assignment), and not in a discriminant constraint.
+
+               else
+                  Par := Parent (N);
+                  while Present (Par) loop
+                     exit when Nkind (Par) = N_Assignment_Statement;
+
+                     if Nkind (Par) = N_Component_Declaration then
+                        return;
+                     end if;
+
+                     Par := Parent (Par);
+                  end loop;
+
+                  if Present (Par) then
+                     Rewrite (N,
+                       Make_Attribute_Reference (Loc,
+                         Prefix => Make_Identifier (Loc, Name_uInit),
+                         Attribute_Name  => Attribute_Name (N)));
+
+                     Analyze_And_Resolve (N, Typ);
+                  end if;
+
+                  return;
+               end if;
+            end;
+
+         --  The following handles cases involving interfaces and when the
+         --  prefix of an access attribute is an explicit dereference. In the
+         --  case where the access attribute is specifically Attribute_Access,
+         --  we only do this when the context type is E_General_Access_Type,
+         --  and not for anonymous access types. It seems that this code should
+         --  be used for anonymous contexts as well, but that causes various
+         --  regressions, such as on prefix-notation calls to dispatching
+         --  operations and back-end errors on access type conversions. ???
+
+         elsif Id /= Attribute_Access
+           or else Ekind (Btyp) = E_General_Access_Type
+         then
             declare
                Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
                Parm_Ent   : Entity_Id;
@@ -686,13 +692,23 @@ package body Exp_Attr is
                --  access parameter (or a renaming of such a dereference) and
                --  the context is a general access type (but not an anonymous
                --  access type), then rewrite the attribute as a conversion of
-               --  the access parameter to the context access type.  This will
+               --  the access parameter to the context access type. This will
                --  result in an accessibility check being performed, if needed.
 
                --    (X.all'Access => Acc_Type (X))
 
+               --  Note: Limit the expansion of an attribute applied to a
+               --  dereference of an access parameter so that it's only done
+               --  for 'Access. This fixes a problem with 'Unrestricted_Access
+               --  that leads to errors in the case where the attribute
+               --  type is access-to-variable and the access parameter is
+               --  access-to-constant. The conversion is only done to get
+               --  accessibility checks, so it makes sense to limit it to
+               --  'Access (and consistent with existing comment).
+
                if Nkind (Ref_Object) = N_Explicit_Dereference
                  and then Is_Entity_Name (Prefix (Ref_Object))
+                 and then Id = Attribute_Access
                then
                   Parm_Ent := Entity (Prefix (Ref_Object));
 
@@ -701,29 +717,45 @@ package body Exp_Attr is
                     and then Present (Extra_Accessibility (Parm_Ent))
                   then
                      Conversion :=
-                        Convert_To (Typ, New_Copy_Tree (Prefix (Ref_Object)));
+                       Convert_To (Typ, New_Copy_Tree (Prefix (Ref_Object)));
 
                      Rewrite (N, Conversion);
                      Analyze_And_Resolve (N, Typ);
+
+                     return;
                   end if;
+               end if;
 
                --  Ada 2005 (AI-251): If the designated type is an interface,
-               --  then rewrite the referenced object as a conversion to force
+               --  then rewrite the referenced object as a conversion, to force
                --  the displacement of the pointer to the secondary dispatch
                --  table.
 
-               elsif Is_Interface (Directly_Designated_Type (Btyp)) then
-                  Conversion := Convert_To (Typ, New_Copy_Tree (Ref_Object));
+               if Is_Interface (Directly_Designated_Type (Btyp)) then
+
+                  --  When the object is an explicit dereference, just convert
+                  --  the dereference's prefix.
+
+                  if Nkind (Ref_Object) = N_Explicit_Dereference then
+                     Conversion :=
+                       Convert_To (Typ, New_Copy_Tree (Prefix (Ref_Object)));
+
+                  --  It seems rather bizarre that we generate a conversion of
+                  --  a tagged object to an access type, since such conversions
+                  --  are not normally permitted, but Expand_N_Type_Conversion
+                  --  (actually Expand_Interface_Conversion) is designed to
+                  --  handle them in the interface case. Do we really want to
+                  --  create such odd conversions???
+
+                  else
+                     Conversion :=
+                       Convert_To (Typ, New_Copy_Tree (Ref_Object));
+                  end if;
+
                   Rewrite (N, Conversion);
                   Analyze_And_Resolve (N, Typ);
                end if;
             end;
-
-         --  If the prefix is a type name, this is a reference to the current
-         --  instance of the type, within its initialization procedure.
-
-         else
-            Expand_Access_To_Type (N);
          end if;
 
       --------------
@@ -744,10 +776,9 @@ package body Exp_Attr is
          Task_Proc : Entity_Id;
 
       begin
-         --  If the prefix is a task or a task type, the useful address
-         --  is that of the procedure for the task body, i.e. the actual
-         --  program unit. We replace the original entity with that of
-         --  the procedure.
+         --  If the prefix is a task or a task type, the useful address is that
+         --  of the procedure for the task body, i.e. the actual program unit.
+         --  We replace the original entity with that of the procedure.
 
          if Is_Entity_Name (Pref)
            and then Is_Task_Type (Entity (Pref))
@@ -1013,23 +1044,23 @@ package body Exp_Attr is
       when Attribute_Body_Version | Attribute_Version => Version : declare
          E    : constant Entity_Id :=
                   Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
-         Pent : Entity_Id := Entity (Pref);
+         Pent : Entity_Id;
          S    : String_Id;
 
       begin
          --  If not library unit, get to containing library unit
 
+         Pent := Entity (Pref);
          while Pent /= Standard_Standard
            and then Scope (Pent) /= Standard_Standard
+           and then not Is_Child_Unit (Pent)
          loop
             Pent := Scope (Pent);
          end loop;
 
-         --  Special case Standard
+         --  Special case Standard and Standard.ASCII
 
-         if Pent = Standard_Standard
-           or else Pent = Standard_ASCII
-         then
+         if Pent = Standard_Standard or else Pent = Standard_ASCII then
             Rewrite (N,
               Make_String_Literal (Loc,
                 Strval => Verbose_Library_Version));
@@ -1087,6 +1118,11 @@ package body Exp_Attr is
 
             Set_Is_Imported (E);
             Set_Interface_Name (E, Make_String_Literal (Loc, S));
+
+            --  Set entity as internal to ensure proper Sprint output of its
+            --  implicit importation.
+
+            Set_Is_Internal (E);
 
             --  And now rewrite original reference
 
@@ -4067,32 +4103,6 @@ package body Exp_Attr is
             Expand_Fpt_Attribute_R (N);
          end if;
 
-      ----------------------
-      -- Unchecked_Access --
-      ----------------------
-
-      when Attribute_Unchecked_Access =>
-
-         --  Ada 2005 (AI-251): If the designated type is an interface, then
-         --  rewrite the referenced object as a conversion to force the
-         --  displacement of the pointer to the secondary dispatch table.
-
-         if Is_Interface (Directly_Designated_Type (Btyp)) then
-            declare
-               Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
-               Conversion : Node_Id;
-            begin
-               Conversion := Convert_To (Typ, New_Copy_Tree (Ref_Object));
-               Rewrite (N, Conversion);
-               Analyze_And_Resolve (N, Typ);
-            end;
-
-         --  Otherwise this is like normal Access without a check
-
-         else
-            Expand_Access_To_Type (N);
-         end if;
-
       -----------------
       -- UET_Address --
       -----------------
@@ -4124,6 +4134,11 @@ package body Exp_Attr is
            Make_String_Literal (Loc,
              Strval => String_From_Name_Buffer));
 
+         --  Set entity as internal to ensure proper Sprint output of its
+         --  implicit importation.
+
+         Set_Is_Internal (Ent);
+
          Rewrite (N,
            Make_Attribute_Reference (Loc,
              Prefix => New_Occurrence_Of (Ent, Loc),
@@ -4131,35 +4146,6 @@ package body Exp_Attr is
 
          Analyze_And_Resolve (N, Typ);
       end UET_Address;
-
-      -------------------------
-      -- Unrestricted_Access --
-      -------------------------
-
-      when Attribute_Unrestricted_Access =>
-
-         if Is_Access_Protected_Subprogram_Type (Btyp) then
-            Expand_Access_To_Protected_Op (N, Pref, Typ);
-
-         --  Ada 2005 (AI-251): If the designated type is an interface, then
-         --  rewrite the referenced object as a conversion to force the
-         --  displacement of the pointer to the secondary dispatch table.
-
-         elsif Is_Interface (Directly_Designated_Type (Btyp)) then
-            declare
-               Ref_Object : constant Node_Id := Get_Referenced_Object (Pref);
-               Conversion : Node_Id;
-            begin
-               Conversion := Convert_To (Typ, New_Copy_Tree (Ref_Object));
-               Rewrite (N, Conversion);
-               Analyze_And_Resolve (N, Typ);
-            end;
-
-         --  Otherwise this is like Access without a check
-
-         else
-            Expand_Access_To_Type (N);
-         end if;
 
       ---------------
       -- VADS_Size --
@@ -4895,6 +4881,7 @@ package body Exp_Attr is
            Attribute_Denorm                       |
            Attribute_Digits                       |
            Attribute_Emax                         |
+           Attribute_Enabled                      |
            Attribute_Epsilon                      |
            Attribute_Has_Access_Values            |
            Attribute_Has_Discriminants            |
