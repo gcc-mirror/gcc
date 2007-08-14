@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,6 +95,24 @@ package body System.Stack_Checking.Operations is
       Cache := Null_Stack;
    end Invalidate_Stack_Cache;
 
+   -----------------------------
+   -- Notify_Stack_Attributes --
+   -----------------------------
+
+   procedure Notify_Stack_Attributes
+     (Initial_SP : System.Address;
+      Size       : System.Storage_Elements.Storage_Offset)
+   is
+      --  We retrieve the attributes directly from Set_Stack_Info below, so
+      --  this implementation has nothing to do.
+
+      pragma Unreferenced (Initial_SP);
+      pragma Unreferenced (Size);
+
+   begin
+      null;
+   end Notify_Stack_Attributes;
+
    --------------------
    -- Set_Stack_Info --
    --------------------
@@ -120,7 +138,7 @@ package body System.Stack_Checking.Operations is
       Task_Info : aliased OS_Stack_Info;
 
    begin
-      --  The order of steps 1 .. 3 is important, see specification.
+      --  The order of steps 1 .. 3 is important, see specification
 
       --  1) Get the Stack_Access value for the current task
 

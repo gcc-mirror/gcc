@@ -63,8 +63,9 @@ with System.Soft_Links;
 --  For example when using the restricted run time, it is replaced by
 --  System.Tasking.Restricted.Stages.
 
+with System.Storage_Elements;
 with System.Stack_Checking.Operations;
---  Used for Invalidate_Stack_Cache;
+--  Used for Invalidate_Stack_Cache and Notify_Stack_Attributes;
 
 with Ada.Exceptions;
 --  used for Raise_Exception
@@ -85,6 +86,7 @@ package body System.Task_Primitives.Operations is
    use System.OS_Interface;
    use System.Parameters;
    use System.OS_Primitives;
+   use System.Storage_Elements;
 
    ----------------
    -- Local Data --
@@ -174,6 +176,13 @@ package body System.Task_Primitives.Operations is
 
    function To_pthread_t is new Ada.Unchecked_Conversion
      (unsigned_long, System.OS_Interface.pthread_t);
+
+   procedure Get_Stack_Attributes
+     (T    : Task_Id;
+      ISP  : out System.Address;
+      Size : out Storage_Offset);
+   --  Fill ISP and Size with the Initial Stack Pointer value and the
+   --  thread stack size for task T.
 
    -------------------
    -- Abort_Handler --
@@ -705,6 +714,50 @@ package body System.Task_Primitives.Operations is
       return T.Common.Current_Priority;
    end Get_Priority;
 
+   --------------------------
+   -- Get_Stack_Attributes --
+   --------------------------
+
+   procedure Get_Stack_Attributes
+     (T    : Task_Id;
+      ISP  : out System.Address;
+      Size : out Storage_Offset)
+   is
+      function pthread_getattr_np
+        (thread : pthread_t;
+         attr   : System.Address) return Interfaces.C.int;
+      pragma Import (C, pthread_getattr_np, "pthread_getattr_np");
+
+      function pthread_attr_getstack
+        (attr : System.Address;
+         base : System.Address;
+         size : System.Address) return Interfaces.C.int;
+      pragma Import (C, pthread_attr_getstack, "pthread_attr_getstack");
+
+      Result : Interfaces.C.int;
+
+      Attributes : aliased pthread_attr_t;
+      Stack_Base : aliased System.Address;
+      Stack_Size : aliased Storage_Offset;
+
+   begin
+      Result :=
+        pthread_getattr_np
+          (T.Common.LL.Thread, Attributes'Address);
+      pragma Assert (Result = 0);
+
+      Result :=
+        pthread_attr_getstack
+          (Attributes'Address, Stack_Base'Address, Stack_Size'Address);
+      pragma Assert (Result = 0);
+
+      Result := pthread_attr_destroy (Attributes'Access);
+      pragma Assert (Result = 0);
+
+      ISP  := Stack_Base + Stack_Size;
+      Size := Stack_Size;
+   end Get_Stack_Attributes;
+
    ----------------
    -- Enter_Task --
    ----------------
@@ -726,6 +779,18 @@ package body System.Task_Primitives.Operations is
       end loop;
 
       Unlock_RTS;
+
+      --  Determine where the task stack starts, how large it is, and let the
+      --  stack checking engine know about it.
+
+      declare
+         Initial_SP : System.Address;
+         Stack_Size : Storage_Offset;
+      begin
+         Get_Stack_Attributes (Self_ID, Initial_SP, Stack_Size);
+         System.Stack_Checking.Operations.Notify_Stack_Attributes
+           (Initial_SP, Stack_Size);
+      end;
    end Enter_Task;
 
    --------------
@@ -1140,6 +1205,25 @@ package body System.Task_Primitives.Operations is
          return True;
       end if;
    end Resume_Task;
+
+   --------------------
+   -- Stop_All_Tasks --
+   --------------------
+
+   procedure Stop_All_Tasks is
+   begin
+      null;
+   end Stop_All_Tasks;
+
+   -------------------
+   -- Continue_Task --
+   -------------------
+
+   function Continue_Task (T : ST.Task_Id) return Boolean is
+      pragma Unreferenced (T);
+   begin
+      return False;
+   end Continue_Task;
 
    ----------------
    -- Initialize --
