@@ -1,3 +1,20 @@
+2007-08-14  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/30315
+	* config/i386/i386.h (CANONICALIZE_COMPARISON): New.
+	* config/i386/i386.md (plusminus)(addsub)(SWI): New.
+	(*<addsub><mode>3_cc_overflow): New.
+	(*add<mode>3_cconly_overflow): New.
+	(*sub<mode>3_cconly_overflow): New.
+	(*<addsub>si3_zext_cc_overflow): New.
+	* config/i386/predicates.md (fcmov_comparison_operator): Accept
+	CCCmode for LTU, GTU, LEU and GEU.
+	(ix86_comparison_operator): Likewise.
+	(ix86_carry_flag_operator): Carry flag is set if LTU or GTU in CCCmode.
+	* gcc/config/i386/i386.c (put_condition_code): Support CCCmode.
+	(ix86_cc_mode): Use CCCmode when testing for overflow of PLUS
+	or MINUS expressions.
+
 2007-08-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c/30428

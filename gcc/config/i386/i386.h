@@ -2065,6 +2065,16 @@ do {							\
 
 #define SELECT_CC_MODE(OP, X, Y) ix86_cc_mode ((OP), (X), (Y))
 
+/* Canonicalize overflow checks to save on the insn patterns. We change
+   "a + b < b" into "a + b < a" and "a + b >= b" into "a + b >= a".  */
+#define CANONICALIZE_COMPARISON(code, op0, op1)	\
+{						\
+  if ((code == LTU || code == GEU)		\
+      && GET_CODE (op0) == PLUS			\
+      && rtx_equal_p (op1, XEXP (op0, 1)))	\
+    op1 = XEXP (op0, 0);			\
+}
+
 /* Return nonzero if MODE implies a floating point inequality can be
    reversed.  */
 
