@@ -593,42 +593,23 @@ package Lib is
    --  time stamp are also output. File_Names_Only also restricts the list to
    --  exclude any predefined files.
 
-   function Generic_Separately_Compiled (E : Entity_Id) return Boolean;
-   --  This is the old version of tbe documentation of this function:
-   --
-   --  Most generic units must be separately compiled. Since we always use
+   function Generic_May_Lack_ALI (Sfile : File_Name_Type) return Boolean;
+   --  Generic units must be separately compiled. Since we always use
    --  macro substitution for generics, the resulting object file is a dummy
-   --  one with no code, but the ali file has the normal form, and we need
-   --  this ali file so that the binder can work out a correct order of
-   --  elaboration. However, we do not need to separate compile generics
-   --  if the generic files are language defined, since in this case there
-   --  are no order of elaborration problems, and we can simply incorporate
-   --  the context clause of the generic unit into the client. There are two
-   --  reasons for making this exception for predefined units. First, clearly
-   --  it is more efficient not to introduce extra unnecessary files. Second,
-   --  the old version of GNAT did not compile any generic units. That was
-   --  clearly incorrect in some cases of complex order of elaboration and
-   --  was fixed in version 3.10 of GNAT. However, the transition would have
-   --  caused bootstrap path problems in the case of generics used in the
-   --  compiler itself. The only such generics are predefined ones. This
-   --  function returns True if the given generic unit entity E is for a
-   --  generic unit that should be separately compiled, and false otherwise.
-   --
-   --  Now GNAT can compile any generic unit including predefined ones, but
-   --  because of the backward compatibility (to keep the ability to use old
-   --  compiler versions to build GNAT) compiling library generics is an
-   --  option. That is, now GNAT compiles a library generic as an ordinary
-   --  unit, but it also can build an exeutable in case if its library contains
-   --  some (or all) predefined generics non compiled. See 9628-002 for the
-   --  description of changes to be done to get rid of a special processing of
-   --  library generic.
-   --
-   --  So now this function returns TRUE if a generic MUST be separately
-   --  compiled with the current approach.
+   --  one with no code, but the ALI file has the normal form, and we need
+   --  this ALI file so that the binder can work out a correct order of
+   --  elaboration.
 
-   function Generic_Separately_Compiled
-     (Sfile : File_Name_Type) return  Boolean;
-   --  Same as the previous function, but works directly on a unit file name
+   --  However, ancient versions of GNAT used to not generate code or ALI
+   --  files for generic units, and this would yield complex order of
+   --  elaboration issues. These were fixed in GNAT 3.10. The support for not
+   --  compiling language-defined library generics was retained nonetheless
+   --  to facilitate bootstrap. Specifically, it is convenient to have
+   --  the same list of files to be compiled for all stages. So, if the
+   --  bootstrap compiler does not generate code for a given file, then
+   --  the stage1 compiler (and binder) also must deal with the case of
+   --  that file not being compiled. The predicate Generic_May_Lack_ALI is
+   --  True for those generic units for which missing ALI files are allowed.
 
 private
    pragma Inline (Cunit);
@@ -756,8 +737,8 @@ private
    --  Type to hold list of indirect references to unit number table
 
    type Load_Stack_Entry is record
-      Unit_Number       : Unit_Number_Type;
-      From_Limited_With : Boolean;
+      Unit_Number : Unit_Number_Type;
+      With_Node   : Node_Id;
    end record;
 
    --  The Load_Stack table contains a list of unit numbers (indices into the
