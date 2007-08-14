@@ -39,7 +39,7 @@ with Ada.Unchecked_Conversion;
 package System.Finalization_Root is
    pragma Preelaborate;
 
-   type Root_Controlled;
+   type Root_Controlled is tagged;
 
    type Finalizable_Ptr is access all Root_Controlled'Class;
 
