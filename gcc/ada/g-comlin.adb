@@ -581,6 +581,17 @@ package body GNAT.Command_Line is
                      --  If Concatenate is False and the full argument is not
                      --  recognized as a switch, this is an invalid switch.
 
+                     if Switches (Switches'First) = '*' then
+                        Set_Parameter
+                           (The_Switch,
+                            Arg_Num => Current_Argument,
+                            First   => 1,
+                            Last    => CL.Argument (Current_Argument)'Last);
+                        Is_Switch (Current_Argument) := True;
+                        Dummy := Goto_Next_Argument_In_Section;
+                        return '*';
+                     end if;
+
                      Set_Parameter (The_Switch,
                                     Arg_Num => Current_Argument,
                                     First   => Current_Index,
@@ -596,6 +607,17 @@ package body GNAT.Command_Line is
          else
             --  If Concatenate is False and the full argument is not
             --  recognized as a switch, this is an invalid switch.
+
+            if Switches (Switches'First) = '*' then
+               Set_Parameter
+                  (The_Switch,
+                   Arg_Num => Current_Argument,
+                   First   => 1,
+                   Last    => CL.Argument (Current_Argument)'Last);
+               Is_Switch (Current_Argument) := True;
+               Dummy := Goto_Next_Argument_In_Section;
+               return '*';
+            end if;
 
             Set_Parameter (The_Switch,
                            Arg_Num => Current_Argument,
