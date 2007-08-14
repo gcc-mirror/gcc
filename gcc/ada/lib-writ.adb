@@ -376,11 +376,8 @@ package body Lib.Writ is
             Write_Info_Str (" DE");
          end if;
 
-         --  We set the Elaborate_Body indication if either an explicit pragma
-         --  was present, or if this is an instantiation. RM 12.3(20) requires
-         --  that the body be immediately elaborated after the spec. We would
-         --  normally do that anyway, but the EB we generate here ensures that
-         --  this gets done even when we use the -p gnatbind switch.
+         --  Set the Elaborate_Body indication if either an explicit pragma
+         --  was present, or if this is an instantiation.
 
          if Has_Pragma_Elaborate_Body (Uent)
            or else (Ukind = N_Package_Declaration
@@ -391,8 +388,8 @@ package body Lib.Writ is
          end if;
 
          --  Now see if we should tell the binder that an elaboration entity
-         --  is present, which must be reset to true during elaboration. We
-         --  generate the indication if the following condition is met:
+         --  is present, which must be set to true during elaboration.
+         --  We generate the indication if the following condition is met:
 
          --  If this is a spec ...
 
@@ -630,7 +627,6 @@ package body Lib.Writ is
          Num_Withs  : Int := 0;
          Unum       : Unit_Number_Type;
          Cunit      : Node_Id;
-         Cunite     : Entity_Id;
          Uname      : Unit_Name_Type;
          Fname      : File_Name_Type;
          Pname      : constant Unit_Name_Type :=
@@ -696,7 +692,6 @@ package body Lib.Writ is
          for J in 1 .. Num_Withs loop
             Unum   := With_Table (J);
             Cunit  := Units.Table (Unum).Cunit;
-            Cunite := Units.Table (Unum).Cunit_Entity;
             Uname  := Units.Table (Unum).Unit_Name;
             Fname  := Units.Table (Unum).Unit_File_Name;
 
@@ -706,12 +701,19 @@ package body Lib.Writ is
 
             --  Now we need to figure out the names of the files that contain
             --  the with'ed unit. These will usually be the files for the body,
-            --  except in the case of a package that has no body.
+            --  except in the case of a package that has no body. Note that we
+            --  have a specific exemption here for predefined library generics
+            --  (see comments for Generic_May_Lack_ALI). We do not generate
+            --  dependency upon the ALI file for such units. Older compilers
+            --  used to not support generating code (and ALI) for generics, and
+            --  we want to avoid having different processing (namely, different
+            --  lists of files to be compiled) for different stages of the
+            --  bootstrap.
 
-            if (Nkind (Unit (Cunit)) not in N_Generic_Declaration
-                  and then
-                Nkind (Unit (Cunit)) not in N_Generic_Renaming_Declaration)
-              or else Generic_Separately_Compiled (Cunite)
+            if not ((Nkind (Unit (Cunit)) in N_Generic_Declaration
+                      or else
+                     Nkind (Unit (Cunit)) in N_Generic_Renaming_Declaration)
+                    and then Generic_May_Lack_ALI (Fname))
             then
                Write_Info_Tab (25);
 

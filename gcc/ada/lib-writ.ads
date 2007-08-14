@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -435,7 +435,13 @@ package Lib.Writ is
    --             dynamic elaboration model, as set by either the -gnatE
    --             switch or pragma Elaboration_Checks (Dynamic).
    --
-   --         EB  Unit has pragma Elaborate_Body
+   --         EB  Unit has pragma Elaborate_Body, or is a generic instance
+   --             that has a body. Set for instances because RM 12.3(20)
+   --             requires that the body be immediately elaborated after the
+   --             spec (we would normally do that anyway, because elaborate
+   --             spec and body together whenever possible, and for an instance
+   --             it is always possible; however setting EB ensures that this
+   --             is done even when using the -p gnatbind switch).
    --
    --         EE  Elaboration entity is present which must be set true when
    --             the unit is elaborated. The name of the elaboration entity
