@@ -37,7 +37,6 @@
 
 with System;
 with System.Storage_Elements;
-with Ada.Unchecked_Conversion;
 
 package Ada.Tags is
    pragma Preelaborate_05;
@@ -273,6 +272,7 @@ private
    end record;
 
    type Type_Specific_Data_Ptr is access all Type_Specific_Data;
+   pragma No_Strict_Aliasing (Type_Specific_Data_Ptr);
 
    --  Declarations for the dispatch table record
 
@@ -321,6 +321,8 @@ private
    --  gdb, its name must not be changed.
 
    type Tag is access all Dispatch_Table;
+   pragma No_Strict_Aliasing (Tag);
+
    type Interface_Tag is access all Dispatch_Table;
 
    No_Tag : constant Tag := null;
@@ -329,7 +331,10 @@ private
    --  of the wrapper.
 
    type Tag_Ptr is access all Tag;
+   pragma No_Strict_Aliasing (Tag_Ptr);
+
    type Dispatch_Table_Ptr is access all Dispatch_Table_Wrapper;
+   pragma No_Strict_Aliasing (Dispatch_Table_Ptr);
 
    --  The following type declaration is used by the compiler when the program
    --  is compiled with restriction No_Dispatching_Calls. It is also used with
@@ -340,11 +345,6 @@ private
       NDT_TSD       : System.Address;
       NDT_Prims_Ptr : Natural;
    end record;
-
-   Default_Prim_Op_Count : constant Positive := 15;
-   --  Number of predefined ada primitives: Size, Alignment, Read, Write,
-   --  Input, Output, "=", assignment, deep adjust, deep finalize, async
-   --  select, conditional select, prim_op kind, task_id, and timed select.
 
    DT_Predef_Prims_Size : constant SSE.Storage_Count :=
                             SSE.Storage_Count
@@ -385,6 +385,7 @@ private
    end record;
 
    type Object_Specific_Data_Ptr is access all Object_Specific_Data;
+   pragma No_Strict_Aliasing (Object_Specific_Data_Ptr);
 
    --  The following subprogram specifications are placed here instead of
    --  the package body to see them from the frontend through rtsfind.
@@ -494,52 +495,16 @@ private
    --  Ada 2005 (AI-251): Set the kind of a primitive operation in T's TSD
    --  table indexed by Position.
 
-   --  Unchecked Conversions
-
-   Max_Predef_Prims : constant Natural := 16;
-   --  Compiler should check this constant is OK ???
+   Max_Predef_Prims : constant Positive := 15;
+   --  Number of reserved slots for predefined ada primitives: Size, Alignment,
+   --  Read, Write, Input, Output, "=", assignment, deep adjust, deep finalize,
+   --  async select, conditional select, prim_op kind, task_id, and timed
+   --  select. The compiler checks that this value is correct.
 
    subtype Predef_Prims_Table  is Address_Array (1 .. Max_Predef_Prims);
    type Predef_Prims_Table_Ptr is access Predef_Prims_Table;
+   pragma No_Strict_Aliasing (Predef_Prims_Table_Ptr);
 
    type Addr_Ptr is access System.Address;
-
-   function To_Addr_Ptr is
-      new Ada.Unchecked_Conversion (System.Address, Addr_Ptr);
-
-   function To_Address is
-     new Ada.Unchecked_Conversion (Tag, System.Address);
-
-   function To_Dispatch_Table_Ptr is
-      new Ada.Unchecked_Conversion (Tag, Dispatch_Table_Ptr);
-
-   function To_Dispatch_Table_Ptr is
-      new Ada.Unchecked_Conversion (System.Address, Dispatch_Table_Ptr);
-
-   function To_Object_Specific_Data_Ptr is
-     new Ada.Unchecked_Conversion (System.Address, Object_Specific_Data_Ptr);
-
-   function To_Predef_Prims_Table_Ptr is
-      new Ada.Unchecked_Conversion (System.Address, Predef_Prims_Table_Ptr);
-
-   function To_Tag_Ptr is
-     new Ada.Unchecked_Conversion (System.Address, Tag_Ptr);
-
-   function To_Type_Specific_Data_Ptr is
-     new Ada.Unchecked_Conversion (System.Address, Type_Specific_Data_Ptr);
-
-   --  Primitive dispatching operations are always inlined, to facilitate use
-   --  in a minimal/no run-time environment for high integrity use.
-
-   pragma Inline_Always (Displace);
-   pragma Inline_Always (IW_Membership);
-   pragma Inline_Always (Get_Entry_Index);
-   pragma Inline_Always (Get_Offset_Index);
-   pragma Inline_Always (Get_Prim_Op_Kind);
-   pragma Inline_Always (Get_Tagged_Kind);
-   pragma Inline_Always (Register_Tag);
-   pragma Inline_Always (Set_Entry_Index);
-   pragma Inline_Always (Set_Offset_To_Top);
-   pragma Inline_Always (Set_Prim_Op_Kind);
-
+   pragma No_Strict_Aliasing (Addr_Ptr);
 end Ada.Tags;

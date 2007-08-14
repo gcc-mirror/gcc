@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Exceptions;
+with Ada.Unchecked_Conversion;
 with System.HTable;
 with System.Storage_Elements; use System.Storage_Elements;
 with System.WCh_Con;          use System.WCh_Con;
@@ -76,9 +77,7 @@ package body Ada.Tags is
    pragma Inline_Always (OSD);
    pragma Inline_Always (SSD);
 
-   ---------------------------------------------
-   -- Unchecked Conversions for String Fields --
-   ---------------------------------------------
+   --  Unchecked conversions
 
    function To_Address is
      new Unchecked_Conversion (Cstring_Ptr, System.Address);
@@ -86,16 +85,34 @@ package body Ada.Tags is
    function To_Cstring_Ptr is
      new Unchecked_Conversion (System.Address, Cstring_Ptr);
 
-   --  Disable warnings on possible aliasing problem because we only use
-   --  use this function to convert tags found in the External_Tag of
-   --  locally defined tagged types.
-
-   pragma Warnings (off);
+   --  Disable warnings on possible aliasing problem
 
    function To_Tag is
      new Unchecked_Conversion (Integer_Address, Tag);
 
-   pragma Warnings (on);
+   function To_Addr_Ptr is
+      new Ada.Unchecked_Conversion (System.Address, Addr_Ptr);
+
+   function To_Address is
+     new Ada.Unchecked_Conversion (Tag, System.Address);
+
+   function To_Dispatch_Table_Ptr is
+      new Ada.Unchecked_Conversion (Tag, Dispatch_Table_Ptr);
+
+   function To_Dispatch_Table_Ptr is
+      new Ada.Unchecked_Conversion (System.Address, Dispatch_Table_Ptr);
+
+   function To_Object_Specific_Data_Ptr is
+     new Ada.Unchecked_Conversion (System.Address, Object_Specific_Data_Ptr);
+
+   function To_Predef_Prims_Table_Ptr is
+     new Ada.Unchecked_Conversion (System.Address, Predef_Prims_Table_Ptr);
+
+   function To_Tag_Ptr is
+     new Ada.Unchecked_Conversion (System.Address, Tag_Ptr);
+
+   function To_Type_Specific_Data_Ptr is
+     new Ada.Unchecked_Conversion (System.Address, Type_Specific_Data_Ptr);
 
    ------------------------------------------------
    -- Unchecked Conversions for other components --
@@ -357,7 +374,7 @@ package body Ada.Tags is
 
       --  If the object does not implement the interface we must raise CE
 
-      raise Constraint_Error;
+      raise Constraint_Error with "invalid interface conversion";
    end Displace;
 
    --------
