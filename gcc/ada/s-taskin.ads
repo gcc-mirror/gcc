@@ -799,9 +799,9 @@ package System.Tasking is
       --  Cancellation of the call has been attempted.
       --  Consider merging this into State???
 
-      Requeue_With_Abort : Boolean := False;
-      --  Temporary to tell caller whether requeue is with abort.
-      --  Find a better way of doing this ???
+      With_Abort : Boolean := False;
+      --  Tell caller whether the call may be aborted
+      --  ??? consider merging this with Was_Abortable state
 
       Needs_Requeue : Boolean := False;
       --  Temporary to tell acceptor of task entry call that

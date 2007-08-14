@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -319,8 +319,7 @@ package System.Tasking.Rendezvous is
 
    function Task_Do_Or_Queue
      (Self_ID    : Task_Id;
-      Entry_Call : Entry_Call_Link;
-      With_Abort : Boolean) return Boolean;
+      Entry_Call : Entry_Call_Link) return Boolean;
    --  Call this only with abort deferred and holding no locks, except
    --  the global RTS lock when Single_Lock is True which must be owned.
    --  Returns False iff the call cannot be served or queued, as is the

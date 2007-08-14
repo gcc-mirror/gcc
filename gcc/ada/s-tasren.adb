@@ -456,6 +456,7 @@ package body System.Tasking.Rendezvous is
       Entry_Call.Uninterpreted_Data := Uninterpreted_Data;
       Entry_Call.Called_Task := Acceptor;
       Entry_Call.Exception_To_Raise := Ada.Exceptions.Null_Id;
+      Entry_Call.With_Abort := True;
 
       --  Note: the caller will undefer abort on return (see WARNING above)
 
@@ -463,9 +464,7 @@ package body System.Tasking.Rendezvous is
          Lock_RTS;
       end if;
 
-      if not Task_Do_Or_Queue
-        (Self_Id, Entry_Call, With_Abort => True)
-      then
+      if not Task_Do_Or_Queue (Self_Id, Entry_Call) then
          STPO.Write_Lock (Self_Id);
          Utilities.Exit_One_ATC_Level (Self_Id);
          STPO.Unlock (Self_Id);
@@ -646,9 +645,7 @@ package body System.Tasking.Rendezvous is
                   Lock_RTS;
                end if;
 
-               if not Task_Do_Or_Queue
-                 (Self_Id, Entry_Call, Entry_Call.Requeue_With_Abort)
-               then
+               if not Task_Do_Or_Queue (Self_Id, Entry_Call) then
                   if Single_Lock then
                      Unlock_RTS;
                   end if;
@@ -687,9 +684,7 @@ package body System.Tasking.Rendezvous is
                   end if;
 
                else
-                  POO.PO_Do_Or_Queue
-                    (Self_Id, Called_PO, Entry_Call,
-                     Entry_Call.Requeue_With_Abort);
+                  POO.PO_Do_Or_Queue (Self_Id, Called_PO, Entry_Call);
                   POO.PO_Service_Entries (Self_Id, Called_PO);
                end if;
             end if;
@@ -758,7 +753,7 @@ package body System.Tasking.Rendezvous is
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Called_Task := Acceptor;
       Entry_Call.Called_PO := Null_Address;
-      Entry_Call.Requeue_With_Abort := With_Abort;
+      Entry_Call.With_Abort := With_Abort;
       Object.Call_In_Progress := null;
    end Requeue_Protected_To_Task_Entry;
 
@@ -777,7 +772,7 @@ package body System.Tasking.Rendezvous is
    begin
       Initialization.Defer_Abort (Self_Id);
       Entry_Call.Needs_Requeue := True;
-      Entry_Call.Requeue_With_Abort := With_Abort;
+      Entry_Call.With_Abort := With_Abort;
       Entry_Call.E := Entry_Index (E);
       Entry_Call.Called_Task := Acceptor;
       Initialization.Undefer_Abort (Self_Id);
@@ -1102,12 +1097,12 @@ package body System.Tasking.Rendezvous is
          Unlock_RTS;
       end if;
 
+      Initialization.Undefer_Abort (Self_Id);
+
       --  Call Yield to let other tasks get a chance to run as this is a
       --  potential dispatching point.
 
       Yield (Do_Yield => False);
-
-      Initialization.Undefer_Abort (Self_Id);
       return Return_Count;
    end Task_Count;
 
@@ -1117,8 +1112,7 @@ package body System.Tasking.Rendezvous is
 
    function Task_Do_Or_Queue
      (Self_ID    : Task_Id;
-      Entry_Call : Entry_Call_Link;
-      With_Abort : Boolean) return Boolean
+      Entry_Call : Entry_Call_Link) return Boolean
    is
       E             : constant Task_Entry_Index :=
                         Task_Entry_Index (Entry_Call.E);
@@ -1273,7 +1267,7 @@ package body System.Tasking.Rendezvous is
       --  (re)enqueue the call, if the mode permits that.
 
       if Entry_Call.Mode /= Conditional_Call
-        or else not With_Abort
+        or else not Entry_Call.With_Abort
       then
          --  Timed_Call, Simple_Call, or Asynchronous_Call
 
@@ -1283,7 +1277,8 @@ package body System.Tasking.Rendezvous is
 
          pragma Assert (Old_State < Done);
 
-         Entry_Call.State := New_State (With_Abort, Entry_Call.State);
+         Entry_Call.State :=
+           New_State (Entry_Call.With_Abort, Entry_Call.State);
 
          STPO.Unlock (Acceptor);
 
@@ -1391,14 +1386,13 @@ package body System.Tasking.Rendezvous is
          Entry_Call.Called_Task := Acceptor;
          Entry_Call.Called_PO := Null_Address;
          Entry_Call.Exception_To_Raise := Ada.Exceptions.Null_Id;
+         Entry_Call.With_Abort := True;
 
          if Single_Lock then
             Lock_RTS;
          end if;
 
-         if not Task_Do_Or_Queue
-           (Self_Id, Entry_Call, With_Abort => True)
-         then
+         if not Task_Do_Or_Queue (Self_Id, Entry_Call) then
             STPO.Write_Lock (Self_Id);
             Utilities.Exit_One_ATC_Level (Self_Id);
             STPO.Unlock (Self_Id);
@@ -1759,6 +1753,7 @@ package body System.Tasking.Rendezvous is
       Entry_Call.Called_Task := Acceptor;
       Entry_Call.Called_PO := Null_Address;
       Entry_Call.Exception_To_Raise := Ada.Exceptions.Null_Id;
+      Entry_Call.With_Abort := True;
 
       --  Note: the caller will undefer abort on return (see WARNING above)
 
@@ -1766,9 +1761,7 @@ package body System.Tasking.Rendezvous is
          Lock_RTS;
       end if;
 
-      if not Task_Do_Or_Queue
-       (Self_Id, Entry_Call, With_Abort => True)
-      then
+      if not Task_Do_Or_Queue (Self_Id, Entry_Call) then
          STPO.Write_Lock (Self_Id);
          Utilities.Exit_One_ATC_Level (Self_Id);
          STPO.Unlock (Self_Id);
