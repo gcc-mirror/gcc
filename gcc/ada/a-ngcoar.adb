@@ -65,6 +65,9 @@ package body Ada.Numerics.Generic_Complex_Arrays is
       Complex_Vector => Complex_Vector,
       Complex_Matrix => Complex_Matrix);
 
+   subtype Real is Real_Arrays.Real;
+   --  Work around visibility bug ???
+
    use BLAS, LAPACK;
 
    --  Procedure versions of functions returning unconstrained values.
@@ -1108,7 +1111,7 @@ package body Ada.Numerics.Generic_Complex_Arrays is
    -----------------
 
    procedure Eigensystem
-     (A       : in Complex_Matrix;
+     (A       : Complex_Matrix;
       Values  : out Real_Vector;
       Vectors : out Complex_Matrix)
    is

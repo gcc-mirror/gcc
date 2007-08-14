@@ -31,19 +31,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is used on VMS and LynxOS
+--  This version is used on VMS, LynxOS, and VxWorks. There are two versions of
+--  the body: one for VMS and LynxOS, the other for VxWorks.
 
 package GNAT.Sockets.Thin.Task_Safe_NetDB is
 
    ----------------------------------------
    -- Reentrant network databases access --
    ----------------------------------------
-
-   --  The following routines wrap the Nonreentrant_ versions using the task
-   --  lock, and copy the relevant data structures (under the lock) into the
-   --  result. The Nonreentrant_ versions are expected to be in the parent
-   --  package GNAT.Sockets.Thin (on platforms that use this version of
-   --  Task_Safe_NetDB).
 
    function Safe_Gethostbyname
      (Name     : C.char_array;

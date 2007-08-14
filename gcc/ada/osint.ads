@@ -520,6 +520,14 @@ package Osint is
    -- Termination --
    -----------------
 
+   Current_Exit_Status : Integer := 0;
+   --  Exit status that is set with procedure OS_Exit_Through_Exception below
+   --  and can be used in exception handler for Types.Terminate_Program to call
+   --  Set_Exit_Status as the last action of the program.
+
+   procedure OS_Exit_Through_Exception (Status : Integer);
+   --  Set the Current_Exit_Status, then raise Types.Terminate_Program
+
    type Exit_Code_Type is (
       E_Success,    -- No warnings or errors
       E_Warnings,   -- Compiler warnings generated

@@ -36,7 +36,7 @@ with System;
 
 package body MLib.Utl is
 
-   Gcc_Name : constant String := Osint.Program_Name ("gcc").all;
+   Gcc_Name : String_Access;
    --  Default value of the "gcc" executable used in procedure Gcc
 
    Gcc_Exec : String_Access;
@@ -408,10 +408,14 @@ package body MLib.Utl is
    begin
       if Driver_Name = No_Name then
          if Gcc_Exec = null then
-            Gcc_Exec := Locate_Exec_On_Path (Gcc_Name);
+            if Gcc_Name = null then
+               Gcc_Name :=  Osint.Program_Name ("gcc");
+            end if;
+
+            Gcc_Exec := Locate_Exec_On_Path (Gcc_Name.all);
 
             if Gcc_Exec = null then
-               Fail (Gcc_Name, " not found in path");
+               Fail (Gcc_Name.all, " not found in path");
             end if;
          end if;
 
@@ -579,7 +583,7 @@ package body MLib.Utl is
 
       if not Success then
          if Driver_Name = No_Name then
-            Fail (Gcc_Name, " execution error");
+            Fail (Gcc_Name.all, " execution error");
          else
             Fail (Get_Name_String (Driver_Name), " execution error");
          end if;

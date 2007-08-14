@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 ------------------------------------------------------------------------------
 
 --  This package provides the core high level routines used by GNATDLL
---  to build Windows DLL
+--  to build Windows DLL.
 
 with Ada.Text_IO;
 
@@ -37,6 +37,10 @@ package body MDLL is
 
    use Ada;
    use GNAT;
+
+   --  Convention used for the library names on Windows:
+   --  DLL:            <name>.dll
+   --  Import library: lib<name>.dll
 
    function Get_Dll_Name (Lib_Filename : String) return String;
    --  Returns <Lib_Filename> if it contains a file extension otherwise it
@@ -69,7 +73,7 @@ package body MDLL is
       Bas_File : aliased constant String := Base_Filename & ".base";
       Dll_File : aliased          String := Get_Dll_Name (Lib_Filename);
       Exp_File : aliased          String := Base_Filename & ".exp";
-      Lib_File : aliased constant String := "lib" & Base_Filename & ".a";
+      Lib_File : aliased constant String := "lib" & Base_Filename & ".dll.a";
 
       Bas_Opt  : aliased String := "-Wl,--base-file," & Bas_File;
       Lib_Opt  : aliased String := "-mdll";
@@ -450,10 +454,32 @@ package body MDLL is
       --------------------------
 
       procedure Build_Import_Library (Lib_Filename : String) is
+
+         function No_Lib_Prefix (Filename : String) return String;
+         --  Return Filename without the lib prefix if present
+
+         -------------------
+         -- No_Lib_Prefix --
+         -------------------
+
+         function No_Lib_Prefix (Filename : String) return String is
+         begin
+            if Filename (Filename'First .. Filename'First + 2) = "lib" then
+               return Filename (Filename'First + 3 .. Filename'Last);
+            else
+               return Filename;
+            end if;
+         end No_Lib_Prefix;
+
+         --  Local variables
+
          Def_File      : String renames Def_Filename;
          Dll_File      : constant String := Get_Dll_Name (Lib_Filename);
-         Base_Filename : constant String := MDLL.Fil.Ext_To (Lib_Filename);
-         Lib_File      : constant String := "lib" & Base_Filename & ".a";
+         Base_Filename : constant String :=
+                           MDLL.Fil.Ext_To (No_Lib_Prefix (Lib_Filename));
+         Lib_File      : constant String := "lib" & Base_Filename & ".dll.a";
+
+      --  Start of processing for Build_Import_Library
 
       begin
          if not Quiet then
@@ -469,20 +495,7 @@ package body MDLL is
    --  Start of processing for Build_Import_Library
 
    begin
-      --  If the library has the form lib<name>.a then the def file should be
-      --  <name>.def and the DLL to link against <name>.dll. This is a Windows
-      --  convention and we try as much as possible to follow the platform
-      --  convention.
-
-      if Lib_Filename'Length > 3
-        and then
-          Lib_Filename (Lib_Filename'First .. Lib_Filename'First + 2) = "lib"
-      then
-         Build_Import_Library
-           (Lib_Filename (Lib_Filename'First + 3 .. Lib_Filename'Last));
-      else
-         Build_Import_Library (Lib_Filename);
-      end if;
+      Build_Import_Library (Lib_Filename);
    end Build_Import_Library;
 
    ------------------

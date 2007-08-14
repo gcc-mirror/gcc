@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,11 +80,12 @@ package body MDLL.Fil is
    begin
       if I = 0 then
          return Filename;
+
       else
          if New_Ext = "" then
-            return Head (Filename, I - 1);
+            return Filename (Filename'First .. I - 1);
          else
-            return Head (Filename, I - 1) & '.' & New_Ext;
+            return Filename (Filename'First .. I - 1) & '.' & New_Ext;
          end if;
       end if;
    end Ext_To;

@@ -38,11 +38,9 @@ with GNAT.Table;
 
 with Gnatvsn;
 with Hostparm;
+with Types;
 
 procedure Gnatchop is
-
-   Terminate_Program : exception;
-   --  Used to terminate execution immediately
 
    Config_File_Name : constant String_Access := new String'("gnat.adc");
    --  The name of the file holding the GNAT configuration pragmas
@@ -362,7 +360,7 @@ procedure Gnatchop is
          Set_Exit_Status (Failure);
 
          if Exit_On_Error then
-            raise Terminate_Program;
+            raise Types.Terminate_Program;
          end if;
       end if;
    end Error_Msg;
@@ -696,7 +694,7 @@ procedure Gnatchop is
       return Success;
 
    exception
-      when Failure | Terminate_Program =>
+      when Failure | Types.Terminate_Program =>
          Close (Offset_FD);
          Delete_File (Offset_Name'Address, Success);
          return False;
@@ -1114,7 +1112,7 @@ procedure Gnatchop is
 
             when 'h' =>
                Usage;
-               raise Terminate_Program;
+               raise Types.Terminate_Program;
 
             when 'k' =>
                declare
@@ -1852,7 +1850,7 @@ begin
    return;
 
 exception
-   when Terminate_Program =>
+   when Types.Terminate_Program =>
       null;
 
 end Gnatchop;

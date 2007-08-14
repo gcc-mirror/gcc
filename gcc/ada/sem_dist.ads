@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,12 @@ package Sem_Dist is
    function Get_PCS_Name return PCS_Names;
    --  Return the name of a literal of type System.Partition_Interface.
    --  DSA_Implementation_Type indicating what PCS is currently in use.
+
+   function Get_PCS_Version return Int;
+   --  Return the version number of the PCS API implemented by the PCS.
+   --  The consistency of this version with the one expected by Exp_Dist
+   --  (Gnatvsn.PCS_Version_Number) in Rtsfind.Check_RPC.
+   --  If no PCS version information is available, 0 is returned.
 
    procedure Add_Stub_Constructs (N : Node_Id);
    --  Create the stubs constructs for a remote call interface package
