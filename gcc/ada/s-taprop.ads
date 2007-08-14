@@ -533,4 +533,15 @@ package System.Task_Primitives.Operations is
    --  Such functionality is needed by gdb on some targets (e.g VxWorks)
    --  Return True is the operation is successful
 
+   procedure Stop_All_Tasks;
+   --  Stop all tasks when the underlying thread library provides such
+   --  functionality. Such functionality is needed by gdb on some targets (e.g
+   --  VxWorks) This function can be run from an interrupt handler. Return True
+   --  is the operation is successful
+
+   function Continue_Task (T : ST.Task_Id) return Boolean;
+   --  Continue a specific task when the underlying thread library provides
+   --  such functionality. Such functionality is needed by gdb on some targets
+   --  (e.g VxWorks) Return True is the operation is successful
+
 end System.Task_Primitives.Operations;

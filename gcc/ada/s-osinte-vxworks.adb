@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---         Copyright (C) 1997-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1997-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,12 @@
 
 --  This is the VxWorks version
 
---  This package encapsulates all direct interfaces to OS services
---  that are needed by children of System.
+--  This package encapsulates all direct interfaces to OS services that are
+--  needed by children of System.
 
 pragma Polling (Off);
---  Turn off polling, we do not want ATC polling to take place during
---  tasking operations. It causes infinite loops and other problems.
+--  Turn off polling, we do not want ATC polling to take place during tasking
+--  operations. It causes infinite loops and other problems.
 
 package body System.OS_Interface is
 
@@ -58,6 +58,28 @@ package body System.OS_Interface is
 
       return taskIdSelf;
    end getpid;
+
+   --------------
+   -- Int_Lock --
+   --------------
+
+   function Int_Lock return int is
+      function intLock return int;
+      pragma Import (C, intLock, "intLock");
+   begin
+      return intLock;
+   end Int_Lock;
+
+   ----------------
+   -- Int_Unlock --
+   ----------------
+
+   function Int_Unlock return int is
+      function intUnlock return int;
+      pragma Import (C, intUnlock, "intUnlock");
+   begin
+      return intUnlock;
+   end Int_Unlock;
 
    ----------
    -- kill --
@@ -106,6 +128,28 @@ package body System.OS_Interface is
          return errno;
       end if;
    end sigwait;
+
+   ---------------
+   -- Task_Cont --
+   ---------------
+
+   function Task_Cont (tid : t_id) return int is
+      function taskResume (tid : t_id) return int;
+      pragma Import (C, taskResume, "taskResume");
+   begin
+      return taskResume (tid);
+   end Task_Cont;
+
+   ---------------
+   -- Task_Stop --
+   ---------------
+
+   function Task_Stop (tid : t_id) return int is
+      function taskSuspend (tid : t_id) return int;
+      pragma Import (C, taskSuspend, "taskSuspend");
+   begin
+      return taskSuspend (tid);
+   end Task_Stop;
 
    -----------------
    -- To_Duration --
