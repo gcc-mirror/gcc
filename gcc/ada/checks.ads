@@ -36,8 +36,10 @@
 --  This always occurs whether checks are suppressed or not.  Dynamic range
 --  checks are, of course, not inserted if checks are suppressed.
 
-with Types; use Types;
-with Uintp; use Uintp;
+with Namet;  use Namet;
+with Table;
+with Types;  use Types;
+with Uintp;  use Uintp;
 
 package Checks is
 
@@ -383,8 +385,20 @@ package Checks is
    --  values (i.e. the underlying integer value is used).
 
    type Check_Result is private;
-   --  Type used to return result of Range_Check call, for later use in
+   --  Type used to return result of Get_Range_Checks call, for later use in
    --  call to Insert_Range_Checks procedure.
+
+   function Get_Range_Checks
+     (Ck_Node    : Node_Id;
+      Target_Typ : Entity_Id;
+      Source_Typ : Entity_Id := Empty;
+      Warn_Node  : Node_Id   := Empty) return Check_Result;
+   --  Like Apply_Range_Check, except it does not modify anything. Instead
+   --  it returns an encapsulated result of the check operations for later
+   --  use in a call to Insert_Range_Checks. If Warn_Node is non-empty, its
+   --  Sloc is used, in the static case, for the generated warning or error.
+   --  Additionally, it is used rather than Expr (or Low/High_Bound of Expr)
+   --  in constructing the check.
 
    procedure Append_Range_Checks
      (Checks       : Check_Result;
@@ -392,7 +406,7 @@ package Checks is
       Suppress_Typ : Entity_Id;
       Static_Sloc  : Source_Ptr;
       Flag_Node    : Node_Id);
-   --  Called to append range checks as returned by a call to Range_Check.
+   --  Called to append range checks as returned by a call to Get_Range_Checks.
    --  Stmts is a list to which either the dynamic check is appended or the
    --  raise Constraint_Error statement is appended (for static checks).
    --  Static_Sloc is the Sloc at which the raise CE node points, Flag_Node is
@@ -406,7 +420,7 @@ package Checks is
       Static_Sloc  : Source_Ptr := No_Location;
       Flag_Node    : Node_Id    := Empty;
       Do_Before    : Boolean    := False);
-   --  Called to insert range checks as returned by a call to Range_Check.
+   --  Called to insert range checks as returned by a call to Get_Range_Checks.
    --  Node is the node after which either the dynamic check is inserted or
    --  the raise Constraint_Error statement is inserted (for static checks).
    --  Suppress_Typ is the type to check to determine if checks are suppressed.
@@ -416,19 +430,6 @@ package Checks is
    --  node at which to set the Has_Dynamic_Check flag. Normally the check is
    --  inserted after, if Do_Before is True, the check is inserted before
    --  Node.
-
-   function Range_Check
-     (Ck_Node    : Node_Id;
-      Target_Typ : Entity_Id;
-      Source_Typ : Entity_Id := Empty;
-      Warn_Node  : Node_Id   := Empty)
-      return       Check_Result;
-   --  Like Apply_Range_Check, except it does not modify anything. Instead
-   --  it returns an encapsulated result of the check operations for later
-   --  use in a call to Insert_Range_Checks. If Warn_Node is non-empty, its
-   --  Sloc is used, in the static case, for the generated warning or error.
-   --  Additionally, it is used rather than Expr (or Low/High_Bound of Expr)
-   --  in constructing the check.
 
    -----------------------
    -- Expander Routines --
@@ -658,6 +659,29 @@ package Checks is
    procedure Validity_Check_Range (N : Node_Id);
    --  If N is an N_Range node, then Ensure_Valid is called on its bounds,
    --  if validity checking of operands is enabled.
+
+   -----------------------------
+   -- Handling of Check Names --
+   -----------------------------
+
+   --  The following table contains Name_Id's for recognized checks. The first
+   --  entries (corresponding to the values of the subtype Predefined_Check_Id)
+   --  contain the Name_Id values for the checks that are predefined, including
+   --  All_Checks (see Types). Remaining entries are those that are introduced
+   --  by pragma Check_Names.
+
+   package Check_Names is new Table.Table (
+     Table_Component_Type => Name_Id,
+     Table_Index_Type     => Check_Id,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 30,
+     Table_Increment      => 200,
+     Table_Name           => "Name_Check_Names");
+
+   function Get_Check_Id (N : Name_Id) return Check_Id;
+   --  Function to search above table for matching name. If found returns the
+   --  corresponding Check_Id value in the range 1 .. Check_Name.Last. If not
+   --  found returns No_Check_Id.
 
 private
 
