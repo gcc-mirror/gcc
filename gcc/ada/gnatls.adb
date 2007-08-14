@@ -263,6 +263,7 @@ procedure Gnatls is
       Write_Eol;
       Error_Msg ("wrong ALI format, can't find dependency line for $ in {");
       Exit_Program (E_Fatal);
+      return No_Sdep_Id;
    end Corresponding_Sdep_Entry;
 
    -------------------------
@@ -899,13 +900,21 @@ procedure Gnatls is
    -------------------
 
    procedure Output_Source (Sdep_I : Sdep_Id) is
-      Stamp       : constant Time_Stamp_Type := Sdep.Table (Sdep_I).Stamp;
-      Checksum    : constant Word            := Sdep.Table (Sdep_I).Checksum;
-      FS          : File_Name_Type           := Sdep.Table (Sdep_I).Sfile;
+      Stamp       : Time_Stamp_Type;
+      Checksum    : Word;
+      FS          : File_Name_Type;
       Status      : File_Status;
       Object_Name : String_Access;
 
    begin
+      if Sdep_I = No_Sdep_Id then
+         return;
+      end if;
+
+      Stamp    := Sdep.Table (Sdep_I).Stamp;
+      Checksum := Sdep.Table (Sdep_I).Checksum;
+      FS       := Sdep.Table (Sdep_I).Sfile;
+
       if Print_Source then
          Find_Status (FS, Stamp, Checksum, Status);
          Get_Name_String (FS);
