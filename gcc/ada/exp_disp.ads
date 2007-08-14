@@ -122,11 +122,11 @@ package Exp_Disp is
    --      PPOs are collected and added to the Primitive_Operations list of
    --      a type by the regular analysis mechanism.
 
-   --      PPOs are frozen by Exp_Ch3.Predefined_Primitive_Freeze.
+   --      PPOs are frozen by Exp_Ch3.Predefined_Primitive_Freeze
 
-   --      Thunks for PPOs are created by Make_DT.
+   --      Thunks for PPOs are created by Make_DT
 
-   --      Dispatch table positions of PPOs are set by Set_All_DT_Position.
+   --      Dispatch table positions of PPOs are set by Set_All_DT_Position
 
    --      Calls to PPOs proceed as regular dispatching calls. If the PPO
    --      has a thunk, a call proceeds as a regular dispatching call with
@@ -134,8 +134,8 @@ package Exp_Disp is
 
    --  Guidelines for addition of new predefined primitive operations
 
-   --      Update the value of constant Default_Prim_Op_Count in A-Tags.ads
-   --      to reflect the new number of PPOs.
+   --      Update the value of constant Max_Predef_Prims in a-tags.ads to
+   --      indicate the new number of PPOs.
 
    --      Introduce a new predefined name for the new PPO in Snames.ads and
    --      Snames.adb.
@@ -161,9 +161,18 @@ package Exp_Disp is
    --  for a tagged type. If more predefined primitive operations are
    --  added, the following items must be changed:
 
-   --    Ada.Tags.Defailt_Prim_Op_Count    - indirect use
+   --    Ada.Tags.Max_Predef_Prims         - indirect use
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
+
+   procedure Build_Static_Dispatch_Tables (N : Node_Id);
+   --  N is a library level package declaration or package body. Build the
+   --  static dispatch table of the tagged types defined at library level. In
+   --  case of package declarations with private part the generated nodes are
+   --  added at the end of the list of private declarations. Otherwise they are
+   --  added to the end of the list of public declarations. In case of package
+   --  bodies they are added to the end of the list of declarations of the
+   --  package body.
 
    procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform
@@ -182,21 +191,23 @@ package Exp_Disp is
    --  secondary dispatch table.
 
    procedure Expand_Interface_Thunk
-     (N           : Node_Id;
-      Thunk_Alias : Node_Id;
-      Thunk_Id    : out Entity_Id;
-      Thunk_Code  : out Node_Id);
+     (Prim       : Node_Id;
+      Thunk_Id   : out Entity_Id;
+      Thunk_Code : out Node_Id);
    --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
-   --  generate additional subprograms (thunks) to have a layout compatible
-   --  with the C++ ABI. The thunk modifies the value of the first actual of
-   --  the call (that is, the pointer to the object) before transferring
-   --  control to the target function.
-   --
-   --  Required in 3.4 case, why ??? giant comment needed for any gcc
-   --  specific code ???
+   --  generate additional subprograms (thunks) associated with each primitive
+   --  Prim to have a layout compatible with the C++ ABI. The thunk displaces
+   --  the pointers to the actuals that depend on the controlling type before
+   --  transferring control to the target subprogram. If there is no need to
+   --  generate the thunk then Thunk_Id and Thunk_Code are set to Empty.
+   --  Otherwise they are set to the defining identifier and the subprogram
+   --  body of the generated thunk.
 
-   function Make_DT (Typ : Entity_Id) return List_Id;
-   --  Expand the declarations for the Dispatch Table.
+   function Make_DT (Typ : Entity_Id; N : Node_Id := Empty) return List_Id;
+   --  Expand the declarations for the Dispatch Table. The node N is the
+   --  declaration that forces the generation of the table. It is used to place
+   --  error messages when the declaration leads to the freezing of a given
+   --  primitive operation that has an incomplete non- tagged formal.
 
    function Make_Disp_Asynchronous_Select_Body
      (Typ : Entity_Id) return Node_Id;
@@ -234,10 +245,9 @@ package Exp_Disp is
 
    function Make_Disp_Get_Task_Id_Body
      (Typ : Entity_Id) return Node_Id;
-   --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
-   --  Typ used for retrieving the _task_id field of a task interface class-
-   --  wide type. Generate a null body if Typ is an interface or a non-task
-   --  type.
+   --  Ada 2005 (AI-345): Generate body of the primitive operation of type Typ
+   --  used for retrieving the _task_id field of a task interface class- wide
+   --  type. Generate a null body if Typ is an interface or a non-task type.
 
    function Make_Disp_Get_Task_Id_Spec
      (Typ : Entity_Id) return Node_Id;
@@ -262,6 +272,12 @@ package Exp_Disp is
    --  of Typ used for dispatching in asynchronous, conditional and timed
    --  selects. Generate code to set the primitive operation kinds and entry
    --  indices of primitive operations and primitive wrappers.
+
+   function Make_Tags (Typ : Entity_Id) return List_Id;
+   --  Generate the entities associated with the primary and secondary tags of
+   --  Typ and fill the contents of Access_Disp_Table. In case of library level
+   --  tagged types this routine imports the forward declaration of the tag
+   --  entity, that will be declared and exported by Make_DT.
 
    procedure Register_Primitive
      (Loc     : Source_Ptr;
