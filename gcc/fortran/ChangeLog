@@ -1,3 +1,9 @@
+2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33066
+	* decl.c (gfc_get_type_attr_spec): Fix whitespace.
+	(gfc_match_derived_decl): Fix logic.
+
 2007-08-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33073

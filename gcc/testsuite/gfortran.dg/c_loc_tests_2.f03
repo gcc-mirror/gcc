@@ -56,7 +56,7 @@ contains
   end subroutine test1
 
   subroutine test2() bind(c)
-    type, bind(c) f90type
+    type, bind(c) :: f90type
        integer(c_int) :: i
        real(c_double) :: x
     end type f90type

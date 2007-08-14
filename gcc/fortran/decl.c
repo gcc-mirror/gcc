@@ -5404,7 +5404,7 @@ gfc_get_type_attr_spec (symbol_attribute *attr)
       if (gfc_add_access (attr, ACCESS_PUBLIC, NULL, NULL) == FAILURE)
 	return MATCH_ERROR;
     }
-  else if(gfc_match(" , bind ( c )") == MATCH_YES)
+  else if (gfc_match(" , bind ( c )") == MATCH_YES)
     {
       /* If the type is defined to be bind(c) it then needs to make
 	 sure that all fields are interoperable.  This will
@@ -5435,6 +5435,7 @@ gfc_match_derived_decl (void)
   gfc_symbol *sym;
   match m;
   match is_type_attr_spec = MATCH_NO;
+  bool seen_attr = false;
 
   if (gfc_current_state () == COMP_DERIVED)
     return MATCH_NO;
@@ -5446,9 +5447,11 @@ gfc_match_derived_decl (void)
       is_type_attr_spec = gfc_get_type_attr_spec (&attr);
       if (is_type_attr_spec == MATCH_ERROR)
 	return MATCH_ERROR;
+      if (is_type_attr_spec == MATCH_YES)
+	seen_attr = true;
     } while (is_type_attr_spec == MATCH_YES);
 
-  if (gfc_match (" ::") != MATCH_YES && attr.access != ACCESS_UNKNOWN)
+  if (gfc_match (" ::") != MATCH_YES && seen_attr)
     {
       gfc_error ("Expected :: in TYPE definition at %C");
       return MATCH_ERROR;
