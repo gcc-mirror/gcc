@@ -32,6 +32,7 @@ with Prj.Attr; use Prj.Attr;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
+with Prj.Util; use Prj.Util;
 with Sinput;   use Sinput;
 with Snames;
 
@@ -51,21 +52,32 @@ package body Prj.Proc is
       Equal      => "=");
    --  This hash table contains all processed projects
 
+   package Unit_Htable is new GNAT.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Source_Id,
+      No_Element => No_Source,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  This hash table contains all processed projects
+
    procedure Add (To_Exp : in out Name_Id; Str : Name_Id);
    --  Concatenate two strings and returns another string if both
    --  arguments are not null string.
 
    procedure Add_Attributes
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Decl    : in out Declarations;
-      First   : Attribute_Node_Id);
+     (Project       : Project_Id;
+      Project_Name  : Name_Id;
+      In_Tree       : Project_Tree_Ref;
+      Decl          : in out Declarations;
+      First         : Attribute_Node_Id;
+      Project_Level : Boolean);
    --  Add all attributes, starting with First, with their default
    --  values to the package or project with declarations Decl.
 
    procedure Check
      (In_Tree         : Project_Tree_Ref;
-      Project         : in out Project_Id;
+      Project         : Project_Id;
       Follow_Links    : Boolean;
       When_No_Sources : Error_Warning);
    --  Set all projects to not checked, then call Recursive_Check for the
@@ -166,10 +178,12 @@ package body Prj.Proc is
    --------------------
 
    procedure Add_Attributes
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Decl    : in out Declarations;
-      First   : Attribute_Node_Id)
+     (Project       : Project_Id;
+      Project_Name  : Name_Id;
+      In_Tree       : Project_Tree_Ref;
+      Decl          : in out Declarations;
+      First         : Attribute_Node_Id;
+      Project_Level : Boolean)
    is
       The_Attribute  : Attribute_Node_Id := First;
 
@@ -199,6 +213,15 @@ package body Prj.Proc is
                         Default  => True,
                         Value    => Empty_String,
                         Index    => 0);
+
+                     --  Special case of <project>'Name
+
+                     if Project_Level
+                       and then Attribute_Name_Of (The_Attribute) =
+                                  Snames.Name_Name
+                     then
+                        New_Attribute.Value := Project_Name;
+                     end if;
 
                   --  List attributes have a default value of nil list
 
@@ -235,7 +258,7 @@ package body Prj.Proc is
 
    procedure Check
      (In_Tree         : Project_Tree_Ref;
-      Project         : in out Project_Id;
+      Project         : Project_Id;
       Follow_Links    : Boolean;
       When_No_Sources : Error_Warning)
    is
@@ -248,7 +271,39 @@ package body Prj.Proc is
          In_Tree.Projects.Table (Index).Checked := False;
       end loop;
 
-      Recursive_Check (Project, In_Tree, Follow_Links, When_No_Sources);
+      Recursive_Check
+        (Project, In_Tree, Follow_Links, When_No_Sources);
+
+      --  Set the Other_Part field for the units
+
+      declare
+         Source1 : Source_Id;
+         Name    : Name_Id;
+         Source2 : Source_Id;
+
+      begin
+         Unit_Htable.Reset;
+
+         Source1 := In_Tree.First_Source;
+         while Source1 /= No_Source loop
+            Name := In_Tree.Sources.Table (Source1).Unit;
+
+            if Name /= No_Name then
+               Source2 := Unit_Htable.Get (Name);
+
+               if Source2 = No_Source then
+                  Unit_Htable.Set (K => Name, E => Source1);
+
+               else
+                  Unit_Htable.Remove (Name);
+                  In_Tree.Sources.Table (Source1).Other_Part := Source2;
+                  In_Tree.Sources.Table (Source2).Other_Part := Source1;
+               end if;
+            end if;
+
+            Source1 := In_Tree.Sources.Table (Source1).Next_In_Sources;
+         end loop;
+      end;
    end Check;
 
    -------------------------------
@@ -567,10 +622,10 @@ package body Prj.Proc is
             when N_Variable_Reference | N_Attribute_Reference =>
 
                declare
-                  The_Project     : Project_Id     := Project;
-                  The_Package     : Package_Id     := Pkg;
-                  The_Name        : Name_Id        := No_Name;
-                  The_Variable_Id : Variable_Id    := No_Variable;
+                  The_Project     : Project_Id  := Project;
+                  The_Package     : Package_Id  := Pkg;
+                  The_Name        : Name_Id     := No_Name;
+                  The_Variable_Id : Variable_Id := No_Variable;
                   The_Variable    : Variable_Value;
                   Term_Project    : constant Project_Node_Id :=
                                       Project_Node_Of
@@ -580,7 +635,7 @@ package body Prj.Proc is
                                       Package_Node_Of
                                         (The_Current_Term,
                                          From_Project_Node_Tree);
-                  Index           : Name_Id   := No_Name;
+                  Index           : Name_Id := No_Name;
 
                begin
                   if Term_Project /= Empty_Node and then
@@ -590,7 +645,6 @@ package body Prj.Proc is
 
                      The_Name :=
                        Name_Of (Term_Project, From_Project_Node_Tree);
-
                      The_Project := Imported_Or_Extended_Project_From
                                       (Project   => Project,
                                        In_Tree   => In_Tree,
@@ -603,7 +657,6 @@ package body Prj.Proc is
 
                      The_Name :=
                        Name_Of (Term_Package, From_Project_Node_Tree);
-
                      The_Package := In_Tree.Projects.Table
                                       (The_Project).Decl.Packages;
 
@@ -1140,23 +1193,307 @@ package body Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
       Follow_Links           : Boolean := True;
-      When_No_Sources        : Error_Warning := Error)
+      When_No_Sources        : Error_Warning := Error;
+      Reset_Tree             : Boolean := True)
    is
       Obj_Dir    : Path_Name_Type;
       Extending  : Project_Id;
       Extending2 : Project_Id;
+      Packages   : Package_Id;
+      Element    : Package_Element;
+
+      procedure Process_Attributes (Attrs : Variable_Id);
+
+      ------------------------
+      -- Process_Attributes --
+      ------------------------
+
+      procedure Process_Attributes (Attrs : Variable_Id) is
+         Attribute_Id : Variable_Id;
+         Attribute    : Variable;
+         List         : String_List_Id;
+
+      begin
+         --  Loop through attributes
+
+         Attribute_Id := Attrs;
+         while Attribute_Id /= No_Variable loop
+            Attribute :=
+              In_Tree.Variable_Elements.Table (Attribute_Id);
+
+            if not Attribute.Value.Default then
+               case Attribute.Name is
+                  when Snames.Name_Driver =>
+
+                     --  Attribute Linker'Driver: the default linker to use
+
+                     In_Tree.Config.Linker :=
+                       Path_Name_Type (Attribute.Value.Value);
+
+                  when Snames.Name_Required_Switches =>
+
+                     --  Attribute Linker'Required_Switches: the minimum
+                     --  options to use when invoking the linker
+
+                     Put (Into_List =>
+                          In_Tree.Config.Minimum_Linker_Options,
+                          From_List => Attribute.Value.Values,
+                          In_Tree   => In_Tree);
+
+                  when Snames.Name_Executable_Suffix =>
+
+                     --  Attribute Executable_Suffix: the suffix of the
+                     --  executables.
+
+                     In_Tree.Config.Executable_Suffix :=
+                       Attribute.Value.Value;
+
+                  when Snames.Name_Library_Builder =>
+
+                     --  Attribute Library_Builder: the application to invoke
+                     --  to build libraries.
+
+                     In_Tree.Config.Library_Builder :=
+                       Path_Name_Type (Attribute.Value.Value);
+
+                  when Snames.Name_Archive_Builder =>
+
+                     --  Attribute Archive_Builder: the archive builder
+                     --  (usually "ar") and its minimum options (usually "cr").
+
+                     List := Attribute.Value.Values;
+
+                     if List = Nil_String then
+                        Error_Msg
+                          ("archive builder cannot be null",
+                           Attribute.Value.Location);
+                     end if;
+
+                     Put (Into_List => In_Tree.Config.Archive_Builder,
+                          From_List => List,
+                          In_Tree   => In_Tree);
+
+                  when Snames.Name_Archive_Indexer =>
+
+                     --  Attribute Archive_Indexer: the optional archive
+                     --  indexer (usually "ranlib") with its minimum options
+                     --  (usually none).
+
+                     List := Attribute.Value.Values;
+
+                     if List = Nil_String then
+                        Error_Msg
+                          ("archive indexer cannot be null",
+                           Attribute.Value.Location);
+                     end if;
+
+                     Put (Into_List => In_Tree.Config.Archive_Indexer,
+                          From_List => List,
+                          In_Tree   => In_Tree);
+
+                  when Snames.Name_Library_Partial_Linker =>
+
+                     --  Attribute Library_Partial_Linker: the optional linker
+                     --  driver with its minimum options, to partially link
+                     --  archives.
+
+                     List := Attribute.Value.Values;
+
+                     if List = Nil_String then
+                        Error_Msg
+                          ("partial linker cannot be null",
+                           Attribute.Value.Location);
+                     end if;
+
+                     Put (Into_List => In_Tree.Config.Lib_Partial_Linker,
+                          From_List => List,
+                          In_Tree   => In_Tree);
+
+                  when Snames.Name_Archive_Suffix =>
+                     In_Tree.Config.Archive_Suffix :=
+                       File_Name_Type (Attribute.Value.Value);
+
+                  when Snames.Name_Linker_Executable_Option =>
+
+                     --  Attribute Linker_Executable_Option: optional options
+                     --  to specify an executable name. Defaults to "-o".
+
+                     List := Attribute.Value.Values;
+
+                     if List = Nil_String then
+                        Error_Msg
+                          ("linker executable option cannot be null",
+                           Attribute.Value.Location);
+                     end if;
+
+                     Put (Into_List =>
+                          In_Tree.Config.Linker_Executable_Option,
+                          From_List => List,
+                          In_Tree   => In_Tree);
+
+                  when Snames.Name_Linker_Lib_Dir_Option =>
+
+                     --  Attribute Linker_Lib_Dir_Option: optional options
+                     --  to specify a library search directory. Defaults to
+                     --  "-L".
+
+                     Get_Name_String (Attribute.Value.Value);
+
+                     if Name_Len = 0 then
+                        Error_Msg
+                          ("linker library directory option cannot be empty",
+                           Attribute.Value.Location);
+                     end if;
+
+                     In_Tree.Config.Linker_Lib_Dir_Option :=
+                       Attribute.Value.Value;
+
+                  when Snames.Name_Linker_Lib_Name_Option =>
+
+                     --  Attribute Linker_Lib_Name_Option: optional options
+                     --  to specify the name of a library to be linked in.
+                     --  Defaults to "-l".
+
+                     Get_Name_String (Attribute.Value.Value);
+
+                     if Name_Len = 0 then
+                        Error_Msg
+                          ("linker library name option cannot be empty",
+                           Attribute.Value.Location);
+                     end if;
+
+                     In_Tree.Config.Linker_Lib_Name_Option :=
+                       Attribute.Value.Value;
+
+                  when Snames.Name_Run_Path_Option =>
+
+                     --  Attribute Run_Path_Option: optional options to
+                     --  specify a path for libraries.
+
+                     List := Attribute.Value.Values;
+
+                     if List /= Nil_String then
+                        Put (Into_List => In_Tree.Config.Run_Path_Option,
+                             From_List => List,
+                             In_Tree   => In_Tree);
+                     end if;
+
+                  when Snames.Name_Library_Support =>
+                     declare
+                        pragma Unsuppress (All_Checks);
+                     begin
+                        In_Tree.Config.Lib_Support :=
+                          Library_Support'Value (Get_Name_String
+                                                 (Attribute.Value.Value));
+                     exception
+                        when Constraint_Error =>
+                           Error_Msg
+                             ("invalid value """ &
+                              Get_Name_String (Attribute.Value.Value) &
+                              """ for Library_Support",
+                              Attribute.Value.Location);
+                     end;
+
+                  when Snames.Name_Shared_Library_Prefix =>
+                     In_Tree.Config.Shared_Lib_Prefix :=
+                       File_Name_Type (Attribute.Value.Value);
+
+                  when Snames.Name_Shared_Library_Suffix =>
+                     In_Tree.Config.Shared_Lib_Suffix :=
+                       File_Name_Type (Attribute.Value.Value);
+
+                  when Snames.Name_Symbolic_Link_Supported =>
+                     declare
+                        pragma Unsuppress (All_Checks);
+                     begin
+                        In_Tree.Config.Symbolic_Link_Supported :=
+                          Boolean'Value (Get_Name_String
+                                         (Attribute.Value.Value));
+                     exception
+                        when Constraint_Error =>
+                           Error_Msg
+                             ("invalid value """ &
+                              Get_Name_String (Attribute.Value.Value) &
+                              """ for Symbolic_Link_Supported",
+                              Attribute.Value.Location);
+                     end;
+
+                  when Snames.Name_Library_Major_Minor_Id_Supported =>
+                     declare
+                        pragma Unsuppress (All_Checks);
+                     begin
+                        In_Tree.Config.Lib_Maj_Min_Id_Supported :=
+                          Boolean'Value (Get_Name_String
+                                         (Attribute.Value.Value));
+                     exception
+                        when Constraint_Error =>
+                           Error_Msg
+                             ("invalid value """ &
+                              Get_Name_String (Attribute.Value.Value) &
+                              """ for Library_Major_Minor_Id_Supported",
+                              Attribute.Value.Location);
+                     end;
+
+                  when Snames.Name_Library_Auto_Init_Supported =>
+                     declare
+                        pragma Unsuppress (All_Checks);
+                     begin
+                        In_Tree.Config.Auto_Init_Supported :=
+                          Boolean'Value (Get_Name_String
+                                         (Attribute.Value.Value));
+                     exception
+                        when Constraint_Error =>
+                           Error_Msg
+                             ("invalid value """ &
+                              Get_Name_String (Attribute.Value.Value) &
+                              """ for Library_Auto_Init_Supported",
+                              Attribute.Value.Location);
+                     end;
+
+                  when Snames.Name_Shared_Library_Minimum_Switches =>
+                     List := Attribute.Value.Values;
+
+                     if List /= Nil_String then
+                        Put (Into_List =>
+                               In_Tree.Config.Shared_Lib_Min_Options,
+                             From_List => List,
+                             In_Tree   => In_Tree);
+                     end if;
+
+                  when Snames.Name_Library_Version_Switches =>
+                     List := Attribute.Value.Values;
+
+                     if List /= Nil_String then
+                        Put (Into_List =>
+                               In_Tree.Config.Lib_Version_Options,
+                             From_List => List,
+                             In_Tree   => In_Tree);
+                     end if;
+
+                  when others =>
+                     null;
+               end case;
+            end if;
+
+            Attribute_Id := Attribute.Next;
+         end loop;
+      end Process_Attributes;
 
    begin
       Error_Report := Report_Error;
       Success := True;
 
-      --  Make sure there is no projects in the data structure
+      if Reset_Tree then
 
-      Project_Table.Set_Last (In_Tree.Projects, No_Project);
+         --  Make sure there are no projects in the data structure
+
+         Project_Table.Set_Last (In_Tree.Projects, No_Project);
+      end if;
+
       Processed_Projects.Reset;
 
       --  And process the main project and all of the projects it depends on,
-      --  recursively
+      --  recursively.
 
       Recursive_Process
         (Project                => Project,
@@ -1165,110 +1502,152 @@ package body Prj.Proc is
          From_Project_Node_Tree => From_Project_Node_Tree,
          Extended_By            => No_Project);
 
-      if Project /= No_Project then
-         Check (In_Tree, Project, Follow_Links, When_No_Sources);
-      end if;
+      if not In_Configuration then
 
-      --  If main project is an extending all project, set the object
-      --  directory of all virtual extending projects to the object directory
-      --  of the main project.
+         if Project /= No_Project then
+            Check
+              (In_Tree, Project, Follow_Links, When_No_Sources);
+         end if;
 
-      if Project /= No_Project
-        and then Is_Extending_All (From_Project_Node, From_Project_Node_Tree)
-      then
-         declare
-            Object_Dir : constant Path_Name_Type :=
-                           In_Tree.Projects.Table (Project).Object_Directory;
-         begin
-            for Index in
+         --  If main project is an extending all project, set the object
+         --  directory of all virtual extending projects to the object
+         --  directory of the main project.
+
+         if Project /= No_Project
+           and then
+             Is_Extending_All (From_Project_Node, From_Project_Node_Tree)
+         then
+            declare
+               Object_Dir : constant Path_Name_Type :=
+                              In_Tree.Projects.Table
+                                (Project).Object_Directory;
+            begin
+               for Index in
+                 Project_Table.First .. Project_Table.Last (In_Tree.Projects)
+               loop
+                  if In_Tree.Projects.Table (Index).Virtual then
+                     In_Tree.Projects.Table (Index).Object_Directory :=
+                       Object_Dir;
+                  end if;
+               end loop;
+            end;
+         end if;
+
+         --  Check that no extending project shares its object directory with
+         --  the project(s) it extends.
+
+         if Project /= No_Project then
+            for Proj in
               Project_Table.First .. Project_Table.Last (In_Tree.Projects)
             loop
-               if In_Tree.Projects.Table (Index).Virtual then
-                  In_Tree.Projects.Table (Index).Object_Directory :=
-                    Object_Dir;
-               end if;
-            end loop;
-         end;
-      end if;
+               Extending := In_Tree.Projects.Table (Proj).Extended_By;
 
-      --  Check that no extending project shares its object directory with
-      --  the project(s) it extends.
+               if Extending /= No_Project then
+                  Obj_Dir := In_Tree.Projects.Table (Proj).Object_Directory;
 
-      if Project /= No_Project then
-         for Proj in
-           Project_Table.First .. Project_Table.Last (In_Tree.Projects)
-         loop
-            Extending := In_Tree.Projects.Table (Proj).Extended_By;
+                  --  Check that a project being extended does not share its
+                  --  object directory with any project that extends it,
+                  --  directly or indirectly, including a virtual extending
+                  --  project.
 
-            if Extending /= No_Project then
-               Obj_Dir := In_Tree.Projects.Table (Proj).Object_Directory;
+                  --  Start with the project directly extending it
 
-               --  Check that a project being extended does not share its
-               --  object directory with any project that extends it, directly
-               --  or indirectly, including a virtual extending project.
+                  Extending2 := Extending;
+                  while Extending2 /= No_Project loop
+                     if In_Tree.Projects.Table (Extending2).Ada_Sources /=
+                       Nil_String
+                       and then
+                         In_Tree.Projects.Table (Extending2).Object_Directory =
+                         Obj_Dir
+                     then
+                        if In_Tree.Projects.Table (Extending2).Virtual then
+                           Error_Msg_Name_1 :=
+                             In_Tree.Projects.Table (Proj).Display_Name;
 
-               --  Start with the project directly extending it
-
-               Extending2 := Extending;
-               while Extending2 /= No_Project loop
-                  if In_Tree.Projects.Table (Extending2).Ada_Sources_Present
-                    and then
-                      In_Tree.Projects.Table (Extending2).Object_Directory =
-                                                                      Obj_Dir
-                  then
-                     if In_Tree.Projects.Table (Extending2).Virtual then
-                        Error_Msg_Name_1 :=
-                          In_Tree.Projects.Table (Proj).Display_Name;
-
-                        if Error_Report = null then
-                           Error_Msg
-                             ("project % cannot be extended by a virtual " &
-                              "project with the same object directory",
-                              In_Tree.Projects.Table (Proj).Location);
-                        else
-                           Error_Report
-                             ("project """ &
-                              Get_Name_String (Error_Msg_Name_1) &
-                              """ cannot be extended by a virtual " &
-                              "project with the same object directory",
-                              Project, In_Tree);
-                        end if;
-
-                     else
-                        Error_Msg_Name_1 :=
-                          In_Tree.Projects.Table (Extending2).Display_Name;
-                        Error_Msg_Name_2 :=
-                          In_Tree.Projects.Table (Proj).Display_Name;
-
-                        if Error_Report = null then
-                           Error_Msg
-                             ("project %% cannot extend project %%",
-                              In_Tree.Projects.Table (Extending2).Location);
-                           Error_Msg
-                             ("\they share the same object directory",
-                              In_Tree.Projects.Table (Extending2).Location);
+                           if Error_Report = null then
+                              Error_Msg
+                                ("project %% cannot be extended by a virtual" &
+                                 " project with the same object directory",
+                                 In_Tree.Projects.Table (Proj).Location);
+                           else
+                              Error_Report
+                                ("project """ &
+                                 Get_Name_String (Error_Msg_Name_1) &
+                                 """ cannot be extended by a virtual " &
+                                 "project with the same object directory",
+                                 Project, In_Tree);
+                           end if;
 
                         else
-                           Error_Report
-                             ("project """ &
-                              Get_Name_String (Error_Msg_Name_1) &
-                              """ cannot extend project """ &
-                              Get_Name_String (Error_Msg_Name_2) & """",
-                              Project, In_Tree);
-                           Error_Report
-                             ("they share the same object directory",
-                              Project, In_Tree);
+                           Error_Msg_Name_1 :=
+                             In_Tree.Projects.Table (Extending2).Display_Name;
+                           Error_Msg_Name_2 :=
+                             In_Tree.Projects.Table (Proj).Display_Name;
+
+                           if Error_Report = null then
+                              Error_Msg
+                                ("project %% cannot extend project %%",
+                                 In_Tree.Projects.Table (Extending2).Location);
+                              Error_Msg
+                                ("\they share the same object directory",
+                                 In_Tree.Projects.Table (Extending2).Location);
+
+                           else
+                              Error_Report
+                                ("project """ &
+                                 Get_Name_String (Error_Msg_Name_1) &
+                                 """ cannot extend project """ &
+                                 Get_Name_String (Error_Msg_Name_2) & """",
+                                 Project, In_Tree);
+                              Error_Report
+                                ("they share the same object directory",
+                                 Project, In_Tree);
+                           end if;
                         end if;
                      end if;
-                  end if;
 
-                  --  Continue with the next extending project, if any
+                     --  Continue with the next extending project, if any
 
-                  Extending2 :=
-                    In_Tree.Projects.Table (Extending2).Extended_By;
-               end loop;
-            end if;
-         end loop;
+                     Extending2 :=
+                       In_Tree.Projects.Table (Extending2).Extended_By;
+                  end loop;
+               end if;
+            end loop;
+         end if;
+
+         --  Get the global configuration
+
+         if Project /= No_Project then
+
+            Process_Attributes
+              (In_Tree.Projects.Table (Project).Decl.Attributes);
+
+            --  Loop through packages ???
+
+            Packages := In_Tree.Projects.Table (Project).Decl.Packages;
+            while Packages /= No_Package loop
+               Element := In_Tree.Packages.Table (Packages);
+
+               case Element.Name is
+                  when Snames.Name_Builder =>
+
+                     --  Process attributes of package Builder
+
+                     Process_Attributes (Element.Decl.Attributes);
+
+                  when Snames.Name_Linker =>
+
+                     --  Process attributes of package Linker
+
+                     Process_Attributes (Element.Decl.Attributes);
+
+                  when others =>
+                     null;
+               end case;
+
+               Packages := Element.Next;
+            end loop;
+         end if;
       end if;
 
       Success :=
@@ -1289,12 +1668,15 @@ package body Prj.Proc is
       Pkg                    : Package_Id;
       Item                   : Project_Node_Id)
    is
-      Current_Declarative_Item : Project_Node_Id := Item;
-      Current_Item             : Project_Node_Id := Empty_Node;
+      Current_Declarative_Item : Project_Node_Id;
+      Current_Item             : Project_Node_Id;
 
    begin
-      --  For each declarative item
+      --  Loop through declarative items
 
+      Current_Item := Empty_Node;
+
+      Current_Declarative_Item := Item;
       while Current_Declarative_Item /= Empty_Node loop
 
          --  Get its data
@@ -1313,6 +1695,7 @@ package body Prj.Proc is
          case Kind_Of (Current_Item, From_Project_Node_Tree) is
 
             when N_Package_Declaration =>
+
                --  Do not process a package declaration that should be ignored
 
                if Expression_Kind_Of
@@ -1400,11 +1783,14 @@ package body Prj.Proc is
                         --  Set the default values of the attributes
 
                         Add_Attributes
-                          (Project, In_Tree,
+                          (Project,
+                           In_Tree.Projects.Table (Project).Name,
+                           In_Tree,
                            In_Tree.Packages.Table (New_Pkg).Decl,
                            First_Attribute_Of
                              (Package_Id_Of
-                                (Current_Item, From_Project_Node_Tree)));
+                                (Current_Item, From_Project_Node_Tree)),
+                           Project_Level => False);
 
                         --  And process declarative items of the new package
 
@@ -1444,7 +1830,7 @@ package body Prj.Proc is
                                               From_Project_Node_Tree);
                      --  The name of the attribute
 
-                     New_Array  : Array_Id;
+                     New_Array : Array_Id;
                      --  The new associative array created
 
                      Orig_Array : Array_Id;
@@ -1534,10 +1920,10 @@ package body Prj.Proc is
                      --  Find the project where the value is declared
 
                      Orig_Project_Name :=
-                         Name_Of
-                          (Associative_Project_Of
-                             (Current_Item, From_Project_Node_Tree),
-                              From_Project_Node_Tree);
+                       Name_Of
+                         (Associative_Project_Of
+                              (Current_Item, From_Project_Node_Tree),
+                          From_Project_Node_Tree);
 
                      for Index in Project_Table.First ..
                                   Project_Table.Last
@@ -1745,7 +2131,7 @@ package body Prj.Proc is
 
                            if Error_Report = null then
                               Error_Msg
-                                ("no value defined for %",
+                                ("no value defined for %%",
                                  Location_Of
                                    (Current_Item, From_Project_Node_Tree));
 
@@ -1791,8 +2177,8 @@ package body Prj.Proc is
 
                                  if Error_Report = null then
                                     Error_Msg
-                                      ("value %% is illegal for "
-                                       & "typed string %",
+                                      ("value %% is illegal " &
+                                       "for typed string %%",
                                        Location_Of
                                          (Current_Item,
                                           From_Project_Node_Tree));
@@ -1805,10 +2191,6 @@ package body Prj.Proc is
                                        Get_Name_String (Error_Msg_Name_2) &
                                        """",
                                        Project, In_Tree);
-                                    --  Calls like this to Error_Report are
-                                    --  wrong, since they don't properly case
-                                    --  and decode names corresponding to the
-                                    --  ordinary case of % insertion ???
                                  end if;
                               end if;
                            end;
@@ -2414,8 +2796,7 @@ package body Prj.Proc is
               Location_Of (From_Project_Node, From_Project_Node_Tree);
 
             Processed_Data.Display_Directory :=
-              Path_Name_Type
-                (Directory_Of (From_Project_Node, From_Project_Node_Tree));
+              Directory_Of (From_Project_Node, From_Project_Node_Tree);
             Get_Name_String (Processed_Data.Display_Directory);
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
             Processed_Data.Directory := Name_Find;
@@ -2423,10 +2804,15 @@ package body Prj.Proc is
             Processed_Data.Extended_By := Extended_By;
 
             Add_Attributes
-              (Project, In_Tree, Processed_Data.Decl, Attribute_First);
+              (Project,
+               Name,
+               In_Tree,
+               Processed_Data.Decl,
+               Prj.Attr.Attribute_First,
+               Project_Level => True);
+
             With_Clause :=
               First_With_Clause_Of (From_Project_Node, From_Project_Node_Tree);
-
             while With_Clause /= Empty_Node loop
                declare
                   New_Project : Project_Id;

@@ -26,7 +26,7 @@
 
 with Ada.Unchecked_Deallocation;
 
-with System.Case_Util; use System.Case_Util;
+with GNAT.Case_Util; use GNAT.Case_Util;
 
 with Osint;    use Osint;
 with Output;   use Output;
@@ -55,6 +55,38 @@ package body Prj.Util is
       Close (File.FD);
       Free (File);
    end Close;
+
+   ---------------
+   -- Duplicate --
+   ---------------
+
+   procedure Duplicate
+     (This    : in out Name_List_Index;
+      In_Tree : Project_Tree_Ref)
+   is
+      Old_Current : Name_List_Index;
+      New_Current : Name_List_Index;
+
+   begin
+      if This /= No_Name_List then
+         Old_Current := This;
+         Name_List_Table.Increment_Last (In_Tree.Name_Lists);
+         New_Current := Name_List_Table.Last (In_Tree.Name_Lists);
+         This := New_Current;
+         In_Tree.Name_Lists.Table (New_Current) :=
+           (In_Tree.Name_Lists.Table (Old_Current).Name, No_Name_List);
+
+         loop
+            Old_Current := In_Tree.Name_Lists.Table (Old_Current).Next;
+            exit when Old_Current = No_Name_List;
+            In_Tree.Name_Lists.Table (New_Current).Next := New_Current + 1;
+            Name_List_Table.Increment_Last (In_Tree.Name_Lists);
+            New_Current := New_Current + 1;
+            In_Tree.Name_Lists.Table (New_Current) :=
+              (In_Tree.Name_Lists.Table (Old_Current).Name, No_Name_List);
+         end loop;
+      end if;
+   end Duplicate;
 
    -----------------
    -- End_Of_File --
@@ -101,23 +133,34 @@ package body Prj.Util is
 
       Executable_Suffix : Variable_Value := Nil_Variable_Value;
 
-      Body_Append : constant String := Get_Name_String
-                                          (In_Tree.Projects.Table
-                                            (Project).
-                                              Naming.Ada_Body_Suffix);
+      Executable_Suffix_Name : Name_Id := No_Name;
 
-      Spec_Append : constant String := Get_Name_String
-                                          (In_Tree.Projects.Table
-                                            (Project).
-                                               Naming.Ada_Spec_Suffix);
+      Naming : constant Naming_Data := In_Tree.Projects.Table (Project).Naming;
+
+      Body_Suffix : constant String :=
+                      Body_Suffix_Of (In_Tree, "ada", Naming);
+
+      Spec_Suffix : constant String :=
+                      Spec_Suffix_Of (In_Tree, "ada", Naming);
 
    begin
       if Builder_Package /= No_Package then
-         Executable_Suffix := Prj.Util.Value_Of
-           (Variable_Name => Name_Executable_Suffix,
-            In_Variables  => In_Tree.Packages.Table
-              (Builder_Package).Decl.Attributes,
-            In_Tree       => In_Tree);
+         if Get_Mode = Multi_Language then
+            Executable_Suffix_Name := In_Tree.Config.Executable_Suffix;
+
+         else
+            Executable_Suffix := Prj.Util.Value_Of
+              (Variable_Name => Name_Executable_Suffix,
+               In_Variables  => In_Tree.Packages.Table
+                 (Builder_Package).Decl.Attributes,
+               In_Tree       => In_Tree);
+
+            if Executable_Suffix /= Nil_Variable_Value
+              and then not Executable_Suffix.Default
+            then
+               Executable_Suffix_Name := Executable_Suffix.Value;
+            end if;
+         end if;
 
          if Executable = Nil_Variable_Value and Ada_Main then
             Get_Name_String (Main);
@@ -129,14 +172,6 @@ package body Prj.Util is
                Name : constant String (1 .. Name_Len) :=
                         Name_Buffer (1 .. Name_Len);
                Last : Positive := Name_Len;
-
-               Naming : constant Naming_Data :=
-                          In_Tree.Projects.Table (Project).Naming;
-
-               Spec_Suffix : constant String :=
-                               Get_Name_String (Naming.Ada_Spec_Suffix);
-               Body_Suffix : constant String :=
-                               Get_Name_String (Naming.Ada_Body_Suffix);
 
                Truncated : Boolean := False;
 
@@ -186,13 +221,11 @@ package body Prj.Util is
                Result     : File_Name_Type;
 
             begin
-               if Executable_Suffix /= Nil_Variable_Value
-                 and then not Executable_Suffix.Default
-               then
-                  Executable_Extension_On_Target := Executable_Suffix.Value;
+               if Executable_Suffix_Name /= No_Name then
+                  Executable_Extension_On_Target := Executable_Suffix_Name;
                end if;
 
-               Result := Executable_Name (File_Name_Type (Executable.Value));
+               Result :=  Executable_Name (File_Name_Type (Executable.Value));
                Executable_Extension_On_Target := Saved_EEOT;
                return Result;
             end;
@@ -205,21 +238,21 @@ package body Prj.Util is
       --  otherwise remove any suffix ('.' followed by other characters), if
       --  there is one.
 
-      if Ada_Main and then Name_Len > Body_Append'Length
-         and then Name_Buffer (Name_Len - Body_Append'Length + 1 .. Name_Len) =
-                    Body_Append
+      if Ada_Main and then Name_Len > Body_Suffix'Length
+         and then Name_Buffer (Name_Len - Body_Suffix'Length + 1 .. Name_Len) =
+                    Body_Suffix
       then
          --  Found the body termination, remove it
 
-         Name_Len := Name_Len - Body_Append'Length;
+         Name_Len := Name_Len - Body_Suffix'Length;
 
-      elsif Ada_Main and then Name_Len > Spec_Append'Length
-         and then Name_Buffer (Name_Len - Spec_Append'Length + 1 .. Name_Len) =
-                    Spec_Append
+      elsif Ada_Main and then Name_Len > Spec_Suffix'Length
+         and then Name_Buffer (Name_Len - Spec_Suffix'Length + 1 .. Name_Len) =
+                    Spec_Suffix
       then
          --  Found the spec termination, remove it
 
-         Name_Len := Name_Len - Spec_Append'Length;
+         Name_Len := Name_Len - Spec_Suffix'Length;
 
       else
          --  Remove any suffix, if there is one
@@ -242,9 +275,20 @@ package body Prj.Util is
          end;
 
       else
-         --  Otherwise, add the standard suffix for the platform, if any
+         --  Get the executable name. If Executable_Suffix is defined in the
+         --  configuration, make sure that it will be the extension of the
+         --  executable.
 
-         return Executable_Name (Name_Find);
+         declare
+            Saved_EEOT : constant Name_Id := Executable_Extension_On_Target;
+            Result     : File_Name_Type;
+
+         begin
+            Executable_Extension_On_Target := In_Tree.Config.Executable_Suffix;
+            Result := Executable_Name (Name_Find);
+            Executable_Extension_On_Target := Saved_EEOT;
+            return Result;
+         end;
       end if;
    end Executable_Of;
 
@@ -348,8 +392,10 @@ package body Prj.Util is
       File_Name (File_Name'Last) := ASCII.NUL;
       FD := Open_Read (Name => File_Name'Address,
                        Fmode => GNAT.OS_Lib.Text);
+
       if FD = Invalid_FD then
          File := null;
+
       else
          File := new Text_File_Data;
          File.FD := FD;
@@ -365,6 +411,52 @@ package body Prj.Util is
          end if;
       end if;
    end Open;
+
+   ---------
+   -- Put --
+   ---------
+
+   procedure Put
+     (Into_List : in out Name_List_Index;
+      From_List : String_List_Id;
+      In_Tree   : Project_Tree_Ref)
+   is
+      Current_Name : Name_List_Index;
+      List         : String_List_Id;
+      Element      : String_Element;
+      Last         : Name_List_Index :=
+                       Name_List_Table.Last (In_Tree.Name_Lists);
+
+   begin
+      Current_Name := Into_List;
+      while Current_Name /= No_Name_List and then
+            In_Tree.Name_Lists.Table (Current_Name).Next /= No_Name_List
+      loop
+         Current_Name := In_Tree.Name_Lists.Table (Current_Name).Next;
+      end loop;
+
+      List := From_List;
+      while List /= Nil_String loop
+         Element := In_Tree.String_Elements.Table (List);
+
+         Name_List_Table.Append
+           (In_Tree.Name_Lists,
+            (Name => Element.Value, Next => No_Name_List));
+
+         Last := Last + 1;
+
+         if Current_Name = No_Name_List then
+            Into_List := Last;
+
+         else
+            In_Tree.Name_Lists.Table (Current_Name).Next := Last;
+         end if;
+
+         Current_Name := Last;
+
+         List := Element.Next;
+      end loop;
+   end Put;
 
    --------------
    -- Value_Of --
@@ -386,15 +478,17 @@ package body Prj.Util is
    end Value_Of;
 
    function Value_Of
-     (Index     : Name_Id;
-      In_Array  : Array_Element_Id;
-      In_Tree   : Project_Tree_Ref) return Name_Id
+     (Index    : Name_Id;
+      In_Array : Array_Element_Id;
+      In_Tree  : Project_Tree_Ref) return Name_Id
    is
-      Current    : Array_Element_Id := In_Array;
+      Current    : Array_Element_Id;
       Element    : Array_Element;
       Real_Index : Name_Id := Index;
 
    begin
+      Current := In_Array;
+
       if Current = No_Array_Element then
          return No_Name;
       end if;
@@ -423,23 +517,28 @@ package body Prj.Util is
    end Value_Of;
 
    function Value_Of
-     (Index     : Name_Id;
-      Src_Index : Int := 0;
-      In_Array  : Array_Element_Id;
-      In_Tree   : Project_Tree_Ref) return Variable_Value
+     (Index                  : Name_Id;
+      Src_Index              : Int := 0;
+      In_Array               : Array_Element_Id;
+      In_Tree                : Project_Tree_Ref;
+      Force_Lower_Case_Index : Boolean := False) return Variable_Value
    is
-      Current : Array_Element_Id := In_Array;
-      Element : Array_Element;
-      Real_Index : Name_Id := Index;
+      Current    : Array_Element_Id;
+      Element    : Array_Element;
+      Real_Index : Name_Id;
 
    begin
+      Current := In_Array;
+
       if Current = No_Array_Element then
          return Nil_Variable_Value;
       end if;
 
       Element := In_Tree.Array_Elements.Table (Current);
 
-      if not Element.Index_Case_Sensitive then
+      Real_Index := Index;
+
+      if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
          Get_Name_String (Index);
          To_Lower (Name_Buffer (1 .. Name_Len));
          Real_Index := Name_Find;
@@ -465,7 +564,8 @@ package body Prj.Util is
       Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id;
-      In_Tree                 : Project_Tree_Ref) return Variable_Value
+      In_Tree                 : Project_Tree_Ref;
+      Force_Lower_Case_Index  : Boolean := False) return Variable_Value
    is
       The_Array     : Array_Element_Id;
       The_Attribute : Variable_Value := Nil_Variable_Value;
@@ -482,10 +582,11 @@ package body Prj.Util is
               In_Tree   => In_Tree);
          The_Attribute :=
            Value_Of
-             (Index     => Name,
-              Src_Index => Index,
-              In_Array  => The_Array,
-              In_Tree   => In_Tree);
+             (Index                  => Name,
+              Src_Index              => Index,
+              In_Array               => The_Array,
+              In_Tree                => In_Tree,
+              Force_Lower_Case_Index => Force_Lower_Case_Index);
 
          --  If there is no array element, look for a variable
 
@@ -508,10 +609,11 @@ package body Prj.Util is
       In_Arrays : Array_Id;
       In_Tree   : Project_Tree_Ref) return Name_Id
    is
-      Current : Array_Id := In_Arrays;
+      Current   : Array_Id;
       The_Array : Array_Data;
 
    begin
+      Current := In_Arrays;
       while Current /= No_Array loop
          The_Array := In_Tree.Arrays.Table (Current);
          if The_Array.Name = In_Array then
@@ -530,10 +632,11 @@ package body Prj.Util is
       In_Arrays : Array_Id;
       In_Tree   : Project_Tree_Ref) return Array_Element_Id
    is
-      Current    : Array_Id := In_Arrays;
-      The_Array  : Array_Data;
+      Current   : Array_Id;
+      The_Array : Array_Data;
 
    begin
+      Current := In_Arrays;
       while Current /= No_Array loop
          The_Array := In_Tree.Arrays.Table (Current);
 
@@ -552,10 +655,11 @@ package body Prj.Util is
       In_Packages : Package_Id;
       In_Tree     : Project_Tree_Ref) return Package_Id
    is
-      Current : Package_Id := In_Packages;
+      Current     : Package_Id;
       The_Package : Package_Element;
 
    begin
+      Current := In_Packages;
       while Current /= No_Package loop
          The_Package := In_Tree.Packages.Table (Current);
          exit when The_Package.Name /= No_Name
@@ -571,10 +675,11 @@ package body Prj.Util is
       In_Variables  : Variable_Id;
       In_Tree       : Project_Tree_Ref) return Variable_Value
    is
-      Current      : Variable_Id := In_Variables;
+      Current      : Variable_Id;
       The_Variable : Variable;
 
    begin
+      Current := In_Variables;
       while Current /= No_Variable loop
          The_Variable :=
            In_Tree.Variable_Elements.Table (Current);

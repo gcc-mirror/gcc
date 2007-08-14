@@ -40,6 +40,17 @@ package Prj.Util is
    --  Executable_Suffix is specified, add this suffix, otherwise add the
    --  standard executable suffix for the platform.
 
+   procedure Put
+     (Into_List : in out Name_List_Index;
+      From_List : String_List_Id;
+      In_Tree   : Project_Tree_Ref);
+   --  Append a name list to a string list
+
+   procedure Duplicate
+     (This    : in out Name_List_Index;
+      In_Tree : Project_Tree_Ref);
+   --  Duplicate a name list
+
    function Value_Of
      (Variable : Variable_Value;
       Default  : String) return String;
@@ -58,10 +69,11 @@ package Prj.Util is
    --  associative array.
 
    function Value_Of
-     (Index     : Name_Id;
-      Src_Index : Int := 0;
-      In_Array  : Array_Element_Id;
-      In_Tree   : Project_Tree_Ref) return Variable_Value;
+     (Index                  : Name_Id;
+      Src_Index              : Int := 0;
+      In_Array               : Array_Element_Id;
+      In_Tree                : Project_Tree_Ref;
+      Force_Lower_Case_Index : Boolean := False) return Variable_Value;
    --  Get a string array component (single String or String list). Returns
    --  Nil_Variable_Value if no component Index or if In_Array is null.
    --
@@ -75,7 +87,8 @@ package Prj.Util is
       Index                   : Int := 0;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id;
-      In_Tree                 : Project_Tree_Ref) return Variable_Value;
+      In_Tree                 : Project_Tree_Ref;
+      Force_Lower_Case_Index  : Boolean := False) return Variable_Value;
    --  In a specific package,
    --   - if there exists an array Attribute_Or_Array_Name with an index Name,
    --     returns the corresponding component (depending on the attribute, the

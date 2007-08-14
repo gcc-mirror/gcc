@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,8 @@ package Prj.Pars is
       Project           : out Project_Id;
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
-      When_No_Sources   : Error_Warning := Error);
+      When_No_Sources   : Error_Warning := Error;
+      Reset_Tree        : Boolean := True);
    --  Parse a project files and all its imported project files, in the
    --  project tree In_Tree.
    --
@@ -50,5 +51,8 @@ package Prj.Pars is
    --
    --  When_No_Sources indicates what should be done when no sources
    --  are found in a project for a specified or implied language.
+   --
+   --  When Reset_Tree is True, all the project data are removed from the
+   --  project table before processing.
 
 end Prj.Pars;

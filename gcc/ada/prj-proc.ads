@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,8 @@ package Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
       Follow_Links           : Boolean := True;
-      When_No_Sources        : Error_Warning := Error);
+      When_No_Sources        : Error_Warning := Error;
+      Reset_Tree             : Boolean := True);
    --  Process a project file tree into project file data structures. If
    --  Report_Error is null, use the error reporting mechanism. Otherwise,
    --  report errors using Report_Error.
@@ -52,6 +53,9 @@ package Prj.Proc is
    --
    --  When_No_Sources indicates what should be done when no sources
    --  are found in a project for a specified or implied language.
+   --
+   --  When Reset_Tree is True, all the project data are removed from the
+   --  project table before processing.
    --
    --  Process is a bit of a junk name, how about Process_Project_Tree???
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,10 +24,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  The following package declares data types for GNAT project.
---  These data types are used in the bodies of the Prj hierarchy.
-
---  Above comment seems *far* too general ???
+--  The following package declares a Fail procedure that is used in the
+--  Project Manager.
 
 with Osint;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,7 +59,7 @@ private package Prj.Nmsc is
    --  still valid if they point to a file which is outside of the project),
    --  and that no directory has a name which is a valid source name.
    --
-   --  When_No_Ada_Sources indicates what should be done when no Ada sources
-   --  are found in a project where Ada is a language.
+   --  When_No_Sources indicates what should be done when no sources of a
+   --  language are found in a project where this language is declared.
 
 end Prj.Nmsc;
