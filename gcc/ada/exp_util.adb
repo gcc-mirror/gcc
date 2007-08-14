@@ -31,6 +31,7 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
+with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
@@ -89,8 +90,8 @@ package body Exp_Util is
        Pos    : out Entity_Id;
        Prefix : Entity_Id;
        Sum    : Node_Id;
-       Decls  : in out List_Id;
-       Stats  : in out List_Id);
+       Decls  : List_Id;
+       Stats  : List_Id);
    --  Common processing for Task_Array_Image and Task_Record_Image.
    --  Create local variables and assign prefix of name to result string.
 
@@ -125,8 +126,14 @@ package body Exp_Util is
       Literal_Typ : Entity_Id) return Node_Id;
    --  Produce a Range node whose bounds are:
    --    Low_Bound (Literal_Type) ..
-   --        Low_Bound (Literal_Type) + Length (Literal_Typ) - 1
+   --        Low_Bound (Literal_Type) + (Length (Literal_Typ) - 1)
    --  this is used for expanding declarations like X : String := "sdfgdfg";
+   --
+   --  If the index type of the target array is not integer, we generate:
+   --     Low_Bound (Literal_Type) ..
+   --        Literal_Type'Val
+   --          (Literal_Type'Pos (Low_Bound (Literal_Type))
+   --             + (Length (Literal_Typ) -1))
 
    function New_Class_Wide_Subtype
      (CW_Typ : Entity_Id;
@@ -400,8 +407,8 @@ package body Exp_Util is
       T : Entity_Id;
       --  Entity for name at one index position
 
-      Decls : List_Id := New_List;
-      Stats : List_Id := New_List;
+      Decls : constant List_Id := New_List;
+      Stats : constant List_Id := New_List;
 
    begin
       Pref := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
@@ -680,7 +687,7 @@ package body Exp_Util is
 
    begin
       Append_To (Stats,
-        Make_Return_Statement (Loc,
+        Make_Simple_Return_Statement (Loc,
           Expression => New_Occurrence_Of (Res, Loc)));
 
       Spec := Make_Function_Specification (Loc,
@@ -709,8 +716,8 @@ package body Exp_Util is
        Pos    : out Entity_Id;
        Prefix : Entity_Id;
        Sum    : Node_Id;
-       Decls  : in out List_Id;
-       Stats  : in out List_Id)
+       Decls  : List_Id;
+       Stats  : List_Id)
    is
    begin
       Len := Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
@@ -805,8 +812,8 @@ package body Exp_Util is
       Sel : Entity_Id;
       --  Entity for selector name
 
-      Decls : List_Id := New_List;
-      Stats : List_Id := New_List;
+      Decls : constant List_Id := New_List;
+      Stats : constant List_Id := New_List;
 
    begin
       Pref := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
@@ -1052,36 +1059,17 @@ package body Exp_Util is
 
    procedure Ensure_Defined (Typ : Entity_Id; N : Node_Id) is
       IR : Node_Id;
-      P  : Node_Id;
 
    begin
-      if Is_Itype (Typ) then
+      --  An itype reference must only be created if this is a local
+      --  itype, so that gigi can elaborate it on the proper objstack.
+
+      if Is_Itype (Typ)
+        and then  Scope (Typ) = Current_Scope
+      then
          IR := Make_Itype_Reference (Sloc (N));
          Set_Itype (IR, Typ);
-
-         if not In_Open_Scopes (Scope (Typ))
-           and then Is_Subprogram (Current_Scope)
-           and then Scope (Current_Scope) /= Standard_Standard
-         then
-            --  Insert node in front of subprogram, to avoid scope anomalies
-            --  in gigi.
-
-            P := Parent (N);
-            while Present (P)
-              and then Nkind (P) /= N_Subprogram_Body
-            loop
-               P := Parent (P);
-            end loop;
-
-            if Present (P) then
-               Insert_Action (P, IR);
-            else
-               Insert_Action (N, IR);
-            end if;
-
-         else
-            Insert_Action (N, IR);
-         end if;
+         Insert_Action (N, IR);
       end if;
    end Ensure_Defined;
 
@@ -1316,6 +1304,15 @@ package body Exp_Util is
       elsif Is_Interface (Exp_Typ)
         and then Is_Limited_Interface (Exp_Typ)
       then
+         null;
+
+      --  For limited objects initialized with build in place function calls,
+      --  nothing to be done; otherwise we prematurely introduce an N_Reference
+      --  node in the expression initializing the object, which breaks the
+      --  circuitry that detects and adds the additional arguments to the
+      --  called function.
+
+      elsif Is_Build_In_Place_Function_Call (Exp) then
          null;
 
       else
@@ -2948,6 +2945,16 @@ package body Exp_Util is
       return True;
    end Is_All_Null_Statements;
 
+   ----------------------------------
+   -- Is_Library_Level_Tagged_Type --
+   ----------------------------------
+
+   function Is_Library_Level_Tagged_Type (Typ : Entity_Id) return Boolean is
+   begin
+      return Is_Tagged_Type (Typ)
+        and then Is_Library_Level_Entity (Typ);
+   end Is_Library_Level_Tagged_Type;
+
    -----------------------------------------
    -- Is_Predefined_Dispatching_Operation --
    -----------------------------------------
@@ -3386,7 +3393,7 @@ package body Exp_Util is
 
          if Warn then
             Error_Msg_F
-              ("?this code can never be executed and has been deleted", N);
+              ("?this code can never be executed and has been deleted!", N);
          end if;
 
          --  Recurse into block statements and bodies to process declarations
@@ -3514,7 +3521,7 @@ package body Exp_Util is
 
             Get_Current_Value_Condition (N, Op, Val);
 
-            if Nkind (Val) = N_Null then
+            if Known_Null (Val) then
                if Op = N_Op_Eq then
                   return False;
                elsif Op = N_Op_Ne then
@@ -3578,11 +3585,19 @@ package body Exp_Util is
             Val : Node_Id;
 
          begin
+            --  Constant null value is for sure null
+
+            if Ekind (E) = E_Constant
+              and then Known_Null (Constant_Value (E))
+            then
+               return True;
+            end if;
+
             --  First check if we are in decisive conditional
 
             Get_Current_Value_Condition (N, Op, Val);
 
-            if Nkind (Val) = N_Null then
+            if Known_Null (Val) then
                if Op = N_Op_Eq then
                   return True;
                elsif Op = N_Op_Ne then
@@ -3797,25 +3812,46 @@ package body Exp_Util is
      (Loc         : Source_Ptr;
       Literal_Typ : Entity_Id) return Node_Id
    is
-      Lo : constant Node_Id :=
-             New_Copy_Tree (String_Literal_Low_Bound (Literal_Typ));
+      Lo          : constant Node_Id :=
+                      New_Copy_Tree (String_Literal_Low_Bound (Literal_Typ));
+      Index       : constant Entity_Id := Etype (Lo);
+
+      Hi          : Node_Id;
+      Length_Expr : constant Node_Id :=
+                      Make_Op_Subtract (Loc,
+                        Left_Opnd =>
+                          Make_Integer_Literal (Loc,
+                            Intval => String_Literal_Length (Literal_Typ)),
+                        Right_Opnd =>
+                          Make_Integer_Literal (Loc, 1));
 
    begin
       Set_Analyzed (Lo, False);
 
+         if Is_Integer_Type (Index) then
+            Hi :=
+              Make_Op_Add (Loc,
+                Left_Opnd  => New_Copy_Tree (Lo),
+                Right_Opnd => Length_Expr);
+         else
+            Hi :=
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Val,
+                Prefix => New_Occurrence_Of (Index, Loc),
+                Expressions => New_List (
+                 Make_Op_Add (Loc,
+                   Left_Opnd =>
+                     Make_Attribute_Reference (Loc,
+                       Attribute_Name => Name_Pos,
+                       Prefix => New_Occurrence_Of (Index, Loc),
+                       Expressions => New_List (New_Copy_Tree (Lo))),
+                  Right_Opnd => Length_Expr)));
+         end if;
+
          return
            Make_Range (Loc,
-             Low_Bound => Lo,
-
-             High_Bound =>
-               Make_Op_Subtract (Loc,
-                  Left_Opnd =>
-                    Make_Op_Add (Loc,
-                      Left_Opnd  => New_Copy_Tree (Lo),
-                      Right_Opnd =>
-                        Make_Integer_Literal (Loc,
-                          String_Literal_Length (Literal_Typ))),
-                  Right_Opnd => Make_Integer_Literal (Loc, 1)));
+             Low_Bound  => Lo,
+             High_Bound => Hi);
    end Make_Literal_Range;
 
    ----------------------------
@@ -4401,10 +4437,23 @@ package body Exp_Util is
                return Side_Effect_Free (Expression (N));
 
             --  A selected component is side effect free only if it is a
-            --  side effect free prefixed reference.
+            --  side effect free prefixed reference. If it designates a
+            --  component with a rep. clause it must be treated has having
+            --  a potential side effect, because it may be modified through
+            --  a renaming, and a subsequent use of the renaming as a macro
+            --  will yield the wrong value. This complex interaction between
+            --  renaming and removing side effects is a reminder that the
+            --  latter has become a headache to maintain, and that it should
+            --  be removed in favor of the gcc mechanism to capture values ???
 
             when N_Selected_Component =>
-               return Safe_Prefixed_Reference (N);
+               if Nkind (Parent (N)) = N_Explicit_Dereference
+                 and then Has_Non_Standard_Rep (Designated_Type (Etype (N)))
+               then
+                  return False;
+               else
+                  return Safe_Prefixed_Reference (N);
+               end if;
 
             --  A range is side effect free if the bounds are side effect free
 
@@ -4419,8 +4468,8 @@ package body Exp_Util is
                return Side_Effect_Free (Discrete_Range (N))
                  and then Safe_Prefixed_Reference (N);
 
-            --  A type conversion is side effect free if the expression
-            --  to be converted is side effect free.
+            --  A type conversion is side effect free if the expression to be
+            --  converted is side effect free.
 
             when N_Type_Conversion =>
                return Side_Effect_Free (Expression (N));
@@ -4496,8 +4545,7 @@ package body Exp_Util is
             return False;
 
          elsif Is_Entity_Name (N) then
-            return
-              Ekind (Entity (N)) = E_In_Parameter;
+            return Ekind (Entity (N)) = E_In_Parameter;
 
          elsif Nkind (N) = N_Indexed_Component
            or else Nkind (N) = N_Selected_Component
@@ -4523,19 +4571,19 @@ package body Exp_Util is
 
       Scope_Suppress := (others => True);
 
-      --  If it is a scalar type and we need to capture the value, just
-      --  make a copy.  Likewise for a function call.  And if we have a
-      --  volatile variable and Nam_Req is not set (see comments above
-      --  for Side_Effect_Free).
+      --  If it is a scalar type and we need to capture the value, just make
+      --  a copy. Likewise for a function or operator call. And if we have a
+      --  volatile variable and Nam_Req is not set (see comments above for
+      --  Side_Effect_Free).
 
       if Is_Elementary_Type (Exp_Type)
         and then (Variable_Ref
                    or else Nkind (Exp) = N_Function_Call
+                   or else Nkind (Exp) in N_Op
                    or else (not Name_Req
                              and then Is_Entity_Name (Exp)
                              and then Treat_As_Volatile (Entity (Exp))))
       then
-
          Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
          Set_Etype (Def_Id, Exp_Type);
          Res := New_Reference_To (Def_Id, Loc);
