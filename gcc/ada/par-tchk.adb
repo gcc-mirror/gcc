@@ -696,13 +696,15 @@ package body Tchk is
 
          T_Semicolon;
 
-         --  Scan out junk on rest of line
+         --  Scan out junk on rest of line. Scan stops on END keyword, since
+         --  that seems to help avoid cascaded errors.
 
          Save_Scan_State (Scan_State); -- at start of junk tokens
 
          loop
             if Prev_Token_Ptr < Current_Line_Start
               or else Token = Tok_EOF
+              or else Token = Tok_End
             then
                Restore_Scan_State (Scan_State); -- to where we were
                return;
