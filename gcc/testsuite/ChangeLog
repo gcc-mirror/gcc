@@ -1,3 +1,8 @@
+2007-08-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32594
+	* gfortran.dg/substr_5.f90: New test.
+
 2007-08-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c/30428
