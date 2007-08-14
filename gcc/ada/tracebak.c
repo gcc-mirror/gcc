@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2000-2006, AdaCore                     *
+ *                     Copyright (C) 2000-2007, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -97,7 +97,12 @@ extern void (*Unlock_Task) (void);
 
 #include "tb-alvms.c"
 
+#elif defined (__ia64__) && defined (__VMS__)
+
+#include "tb-ivms.c"
+
 #else
+
 /* No target specific implementation.  */
 
 /*----------------------------------------------------------------*
