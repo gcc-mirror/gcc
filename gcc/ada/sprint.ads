@@ -59,6 +59,8 @@ package Sprint is
    --    Free statement                      free expr [storage_pool = xxx]
    --    Freeze entity with freeze actions   freeze entityname [ actions ]
    --    Implicit call to run time routine   $routine-name
+   --    Implicit exportation                $pragma import (...)
+   --    Implicit importation                $pragma export (...)
    --    Interpretation                      interpretation type [, entity]
    --    Intrinsic calls                     function-name!(arg, arg, arg)
    --    Itype declaration                   [(sub)type declaration without ;]
