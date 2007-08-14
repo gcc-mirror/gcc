@@ -1526,9 +1526,9 @@ rtl_dump_bb (basic_block bb, FILE *outf, int indent)
    basic block.  */
 
 void
-print_rtl_with_bb (FILE *outf, rtx rtx_first)
+print_rtl_with_bb (FILE *outf, const_rtx rtx_first)
 {
-  rtx tmp_rtx;
+  const_rtx tmp_rtx;
   if (rtx_first == 0)
     fprintf (outf, "(nil)\n");
   else

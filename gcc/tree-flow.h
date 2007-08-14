@@ -628,8 +628,15 @@ typedef struct {
   basic_block bb;
 } block_stmt_iterator;
 
+typedef struct {
+  const_tree_stmt_iterator tsi;
+  const_basic_block bb;
+} const_block_stmt_iterator;
+
 static inline block_stmt_iterator bsi_start (basic_block);
+static inline const_block_stmt_iterator cbsi_start (const_basic_block);
 static inline block_stmt_iterator bsi_last (basic_block);
+static inline const_block_stmt_iterator cbsi_last (const_basic_block);
 static inline block_stmt_iterator bsi_after_labels (basic_block);
 block_stmt_iterator bsi_for_stmt (tree);
 static inline bool bsi_end_p (block_stmt_iterator);
@@ -737,7 +744,9 @@ extern void print_loop_ir (FILE *);
 extern void cleanup_dead_labels (void);
 extern void group_case_labels (void);
 extern tree first_stmt (basic_block);
+extern const_tree const_first_stmt (const_basic_block);
 extern tree last_stmt (basic_block);
+extern const_tree const_last_stmt (const_basic_block);
 extern tree last_and_only_stmt (basic_block);
 extern edge find_taken_edge (basic_block, tree);
 extern basic_block label_to_block_fn (struct function *, tree);
@@ -819,7 +828,7 @@ extern tree phi_reverse (tree);
 /* In gimple-low.c  */
 extern void record_vars_into (tree, tree);
 extern void record_vars (tree);
-extern bool block_may_fallthru (tree);
+extern bool block_may_fallthru (const_tree);
 
 /* In tree-ssa-alias.c  */
 extern void dump_may_aliases_for (FILE *, tree);
@@ -959,7 +968,7 @@ extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
 extern tree get_vectype_for_scalar_type (tree);
 
 /* In tree-ssa-phiopt.c */
-bool empty_block_p (basic_block);
+bool empty_block_p (const_basic_block);
 basic_block *blocks_in_phiopt_order (void);
 
 /* In tree-ssa-loop*.c  */

@@ -518,7 +518,7 @@ vrp_operand_equal_p (tree val1, tree val2)
 /* Return true, if the bitmaps B1 and B2 are equal.  */
 
 static inline bool
-vrp_bitmap_equal_p (bitmap b1, bitmap b2)
+vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 {
   return (b1 == b2
 	  || (b1 && b2

@@ -299,66 +299,89 @@ tsi_split_statement_list_before (tree_stmt_iterator *i)
 /* Return the first expression in a sequence of COMPOUND_EXPRs,
    or in a STATEMENT_LIST.  */
 
+#define EXPR_FIRST_BODY do { \
+  if (expr == NULL_TREE) \
+    return expr; \
+  if (TREE_CODE (expr) == STATEMENT_LIST) \
+    { \
+      struct tree_statement_list_node *n = STATEMENT_LIST_HEAD (expr); \
+      return n ? n->stmt : NULL_TREE; \
+    } \
+  while (TREE_CODE (expr) == COMPOUND_EXPR) \
+    expr = TREE_OPERAND (expr, 0); \
+  return expr; \
+} while (0)
+
 tree
 expr_first (tree expr)
 {
-  if (expr == NULL_TREE)
-    return expr;
+  EXPR_FIRST_BODY;
+}
 
-  if (TREE_CODE (expr) == STATEMENT_LIST)
-    {
-      struct tree_statement_list_node *n = STATEMENT_LIST_HEAD (expr);
-      return n ? n->stmt : NULL_TREE;
-    }
-
-  while (TREE_CODE (expr) == COMPOUND_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-  return expr;
+const_tree
+const_expr_first (const_tree expr)
+{
+  EXPR_FIRST_BODY;
 }
 
 /* Return the last expression in a sequence of COMPOUND_EXPRs,
    or in a STATEMENT_LIST.  */
 
+#define EXPR_LAST_BODY do { \
+  if (expr == NULL_TREE) \
+    return expr;\
+  if (TREE_CODE (expr) == STATEMENT_LIST) \
+    { \
+      struct tree_statement_list_node *n = STATEMENT_LIST_TAIL (expr); \
+      return n ? n->stmt : NULL_TREE; \
+    } \
+  while (TREE_CODE (expr) == COMPOUND_EXPR) \
+    expr = TREE_OPERAND (expr, 1); \
+  return expr; \
+} while (0)
+
 tree
 expr_last (tree expr)
 {
-  if (expr == NULL_TREE)
-    return expr;
+  EXPR_LAST_BODY;
+}
 
-  if (TREE_CODE (expr) == STATEMENT_LIST)
-    {
-      struct tree_statement_list_node *n = STATEMENT_LIST_TAIL (expr);
-      return n ? n->stmt : NULL_TREE;
-    }
-
-  while (TREE_CODE (expr) == COMPOUND_EXPR)
-    expr = TREE_OPERAND (expr, 1);
-  return expr;
+const_tree
+const_expr_last (const_tree expr)
+{
+  EXPR_LAST_BODY;
 }
 
 /* If EXPR is a single statement return it.  If EXPR is a
    STATEMENT_LIST containing exactly one statement S, return S.
    Otherwise, return NULL.  */
 
+#define EXPR_ONLY_BODY do { \
+  if (expr == NULL_TREE) \
+    return NULL_TREE; \
+  if (TREE_CODE (expr) == STATEMENT_LIST) \
+    { \
+      struct tree_statement_list_node *n = STATEMENT_LIST_TAIL (expr); \
+      if (n && STATEMENT_LIST_HEAD (expr) == n) \
+	return n->stmt; \
+      else \
+	return NULL_TREE; \
+    } \
+  if (TREE_CODE (expr) == COMPOUND_EXPR) \
+    return NULL_TREE; \
+  return expr; \
+} while (0)
+
 tree 
 expr_only (tree expr)
 {
-  if (expr == NULL_TREE)
-    return NULL_TREE;
+  EXPR_ONLY_BODY;
+}
 
-  if (TREE_CODE (expr) == STATEMENT_LIST)
-    {
-      struct tree_statement_list_node *n = STATEMENT_LIST_TAIL (expr);
-      if (n && STATEMENT_LIST_HEAD (expr) == n)
-	return n->stmt;
-      else
-	return NULL_TREE;
-    }
-
-  if (TREE_CODE (expr) == COMPOUND_EXPR)
-    return NULL_TREE;
-
-  return expr;
+const_tree 
+const_expr_only (const_tree expr)
+{
+  EXPR_ONLY_BODY;
 }
 
 #include "gt-tree-iterator.h"

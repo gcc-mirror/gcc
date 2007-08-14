@@ -932,7 +932,7 @@ analyzable_condition (const_tree expr)
    analyze, then give up.  */
 
 tree 
-get_loop_exit_condition (struct loop *loop)
+get_loop_exit_condition (const struct loop *loop)
 {
   tree res = NULL_TREE;
   edge exit_edge = single_exit (loop);

@@ -146,7 +146,7 @@ static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
 
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_tree);
 
-static int is_aligning_offset (tree, tree);
+static int is_aligning_offset (const_tree, const_tree);
 static void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
@@ -3141,7 +3141,7 @@ emit_move_ccmode (enum machine_mode mode, rtx x, rtx y)
    undefined bits of a paradoxical subreg.  */
 
 static bool
-undefined_operand_subword_p (rtx op, int i)
+undefined_operand_subword_p (const_rtx op, int i)
 {
   enum machine_mode innermode, innermostmode;
   int offset;
@@ -4908,7 +4908,7 @@ count_type_elements (const_tree type, bool allow_flexarr)
 /* Return 1 if EXP contains mostly (3/4)  zeros.  */
 
 static int
-mostly_zeros_p (tree exp)
+mostly_zeros_p (const_tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
 
@@ -4931,7 +4931,7 @@ mostly_zeros_p (tree exp)
 /* Return 1 if EXP contains all zeros.  */
 
 static int
-all_zeros_p (tree exp)
+all_zeros_p (const_tree exp)
 {
   if (TREE_CODE (exp) == CONSTRUCTOR)
 
@@ -6243,7 +6243,7 @@ force_operand (rtx value, rtx target)
    searches for optimization opportunities.  */
 
 int
-safe_from_p (rtx x, tree exp, int top_p)
+safe_from_p (const_rtx x, tree exp, int top_p)
 {
   rtx exp_rtl = 0;
   int i, nops;
@@ -9215,7 +9215,7 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
    aligned more than BIGGEST_ALIGNMENT.  */
 
 static int
-is_aligning_offset (tree offset, tree exp)
+is_aligning_offset (const_tree offset, const_tree exp)
 {
   /* Strip off any conversions.  */
   while (TREE_CODE (offset) == NON_LVALUE_EXPR

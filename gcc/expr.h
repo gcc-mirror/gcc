@@ -740,7 +740,7 @@ extern rtx expand_mult (enum machine_mode, rtx, rtx, rtx, int);
 extern rtx expand_mult_highpart_adjust (enum machine_mode, rtx, rtx, rtx, rtx, int);
 
 extern rtx assemble_static_space (unsigned HOST_WIDE_INT);
-extern int safe_from_p (rtx, tree, int);
+extern int safe_from_p (const_rtx, tree, int);
 
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
