@@ -731,8 +731,8 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
         runtime_error ("Array size of PUT is too small.");
 
       /*  This code now should do correct strides.  */
-      for (i = 0; i < kiss_size; i += 2)
-	memcpy (&kiss_seed[i], &(put->data[i * put->dim[0].stride]),
+      for (i = 0; i < kiss_size / 2; i++)
+	memcpy (&kiss_seed[2*i], &(put->data[i * put->dim[0].stride]),
 		sizeof (GFC_UINTEGER_8));
     }
 
@@ -748,8 +748,8 @@ random_seed_i8 (GFC_INTEGER_8 *size, gfc_array_i8 *put, gfc_array_i8 *get)
 	runtime_error ("Array size of GET is too small.");
 
       /*  This code now should do correct strides.  */
-      for (i = 0; i < kiss_size; i += 2)
-	memcpy (&(get->data[i * get->dim[0].stride]), &kiss_seed[i],
+      for (i = 0; i < kiss_size / 2; i++)
+	memcpy (&(get->data[i * get->dim[0].stride]), &kiss_seed[2*i],
 		sizeof (GFC_UINTEGER_8));
     }
 

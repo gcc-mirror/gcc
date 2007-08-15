@@ -7,8 +7,11 @@ program trs
   integer, allocatable, dimension(:) :: seed, check
   call test_random_seed(size)
   allocate(seed(size),check(size))
+  seed(:) = huge(seed) / 17
   call test_random_seed(put=seed)
   call test_random_seed(get=check)
+  print *, seed
+  print *, check
   if (any (seed /= check)) call abort
 contains
   subroutine test_random_seed(size, put, get)
