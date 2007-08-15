@@ -1,3 +1,8 @@
+2007-08-15  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.java (internalGetFields): Use LinkedHashSet.
+	* classpath/lib/java/lang/Class.class: Rebuilt.
+
 2007-08-15  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* java/lang/natPosixProcess.cc (sigchld_handler) [!SA_SIGINFO]: Remove

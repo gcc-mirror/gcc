@@ -56,7 +56,7 @@ import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.Collection;
 import java.lang.reflect.AnnotatedElement;
@@ -473,7 +473,7 @@ public final class Class<T>
    */
   private Field[] internalGetFields()
   {
-    HashSet set = new HashSet();
+    LinkedHashSet set = new LinkedHashSet();
     set.addAll(Arrays.asList(getDeclaredFields(true)));
     Class[] interfaces = getInterfaces();
     for (int i = 0; i < interfaces.length; i++)
