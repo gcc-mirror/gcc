@@ -1,5 +1,6 @@
 ! PR fortran/32550
 ! { dg-do run }
+! { dg-options "-static-libgcc" { target *-*-darwin* } }
 
       integer, pointer, save :: ptr
       integer, target :: targ

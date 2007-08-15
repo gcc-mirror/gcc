@@ -1,3 +1,9 @@
+2007-08-15  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/32765
+	* testsuite/libgomp.fortran/pr32550.f90: Use -static-libgcc on Darwin.
+	* testsuite/libgomp.fortran/crayptr2.f90: Likwise.
+
 2007-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/32550
