@@ -1,3 +1,8 @@
+2007-08-15  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_file_start): Output a .gnu_attribute
+	directive for the current vector ABI.
+
 2007-08-15  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/32963
