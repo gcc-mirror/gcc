@@ -1,3 +1,13 @@
+2007-08-15  Diego Novillo  <dnovillo@google.com>
+
+	* tree-ssa-alias.c (compute_memory_partitions): Use
+	alias_bitmap_obstack to allocate bitmaps.
+	(reset_alias_info): Factor out of init_alias_info.
+	Mark all name tags not associated to an SSA name for renaming.
+	(init_alias_info): Call it.
+	(create_name_tags): Tidy.  Add comments.
+	(dump_points_to_info_for): Do not call get_mem_sym_stats_for.
+
 2007-08-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/mips/mips.c (vr4130_swap_insns_p): Use new interface to
