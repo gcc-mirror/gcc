@@ -1,3 +1,7 @@
+2007-08-16  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure.host (gnu*): Set use_libgcj_bc to yes.
+
 2007-08-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.java (internalGetFields): Use LinkedHashSet.
