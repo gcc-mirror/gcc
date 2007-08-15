@@ -1,3 +1,10 @@
+2007-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32992
+	* typeck.c (check_return_expr): Don't NRV optimize vars in
+	anonymous unions.
+	* decl.c (finish_function): Comment fix.
+
 2007-08-15  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33035
