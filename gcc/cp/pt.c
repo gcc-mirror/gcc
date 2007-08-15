@@ -3913,7 +3913,9 @@ push_template_decl_real (tree decl, bool is_friend)
 	    if (current == decl)
 	      current = ctx;
 	    else
-	      current = TYPE_CONTEXT (current);
+	      current = (TYPE_P (current)
+			 ? TYPE_CONTEXT (current)
+			 : DECL_CONTEXT (current));
 	  }
     }
 

@@ -1,3 +1,9 @@
+2007-08-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33035
+	* pt.c (push_template_decl_real): Depending on TYPE_P
+	use either TYPE_CONTEXT or DECL_CONTEXT.
+
 2007-08-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (finish_omp_clauses): Strip a NOP_EXPR if
