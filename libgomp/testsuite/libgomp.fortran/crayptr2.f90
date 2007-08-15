@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fopenmp -fcray-pointer -static-libgcc" { target *-*-darwin* } }
 ! { dg-options "-fopenmp -fcray-pointer" }
 
   use omp_lib
