@@ -1,3 +1,9 @@
+2007-08-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33074
+	* emit-rtl.c (try_split): Use INSN_LIST instead of EXPR_LIST for
+	REG_LIBCALL note.
+
 2007-08-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-pass.h (PROP_pta): Removed.

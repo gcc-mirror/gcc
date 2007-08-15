@@ -3274,7 +3274,7 @@ try_split (rtx pat, rtx trial, int last)
 	  /* Relink the insns with REG_LIBCALL note and with REG_RETVAL note 
 	     after split.  */
 	  REG_NOTES (insn_last) 
-	    = gen_rtx_EXPR_LIST (REG_LIBCALL,
+	    = gen_rtx_INSN_LIST (REG_LIBCALL,
 				 XEXP (note, 0),
 				 REG_NOTES (insn_last)); 
 
