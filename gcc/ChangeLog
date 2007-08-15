@@ -1,3 +1,8 @@
+2007-08-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/mips/mips.c (vr4130_swap_insns_p): Use new interface to
+	scheduler dependencies.
+
 2007-08-15  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* config/i386/i386.md (subsi3_carry_zext): Remove "m" constraint for

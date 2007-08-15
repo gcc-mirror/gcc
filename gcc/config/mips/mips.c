@@ -10930,7 +10930,8 @@ vr4130_true_reg_dependence_p (rtx insn)
 static bool
 vr4130_swap_insns_p (rtx insn1, rtx insn2)
 {
-  dep_link_t dep;
+  sd_iterator_def sd_it;
+  dep_t dep;
 
   /* Check for the following case:
 
@@ -10940,11 +10941,11 @@ vr4130_swap_insns_p (rtx insn1, rtx insn2)
 
      If INSN1 is the last instruction blocking X, it would better to
      choose (INSN1, X) over (INSN2, INSN1).  */
-  FOR_EACH_DEP_LINK (dep, INSN_FORW_DEPS (insn1))
-    if (DEP_LINK_KIND (dep) == REG_DEP_ANTI
-	&& INSN_PRIORITY (DEP_LINK_CON (dep)) > INSN_PRIORITY (insn2)
-	&& recog_memoized (DEP_LINK_CON (dep)) >= 0
-	&& get_attr_vr4130_class (DEP_LINK_CON (dep)) == VR4130_CLASS_ALU)
+  FOR_EACH_DEP (insn1, SD_LIST_FORW, sd_it, dep)
+    if (DEP_TYPE (dep) == REG_DEP_ANTI
+	&& INSN_PRIORITY (DEP_CON (dep)) > INSN_PRIORITY (insn2)
+	&& recog_memoized (DEP_CON (dep)) >= 0
+	&& get_attr_vr4130_class (DEP_CON (dep)) == VR4130_CLASS_ALU)
       return false;
 
   if (vr4130_last_insn != 0
