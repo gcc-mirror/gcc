@@ -2340,8 +2340,14 @@ rs6000_file_start (void)
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
   if (TARGET_32BIT && DEFAULT_ABI == ABI_V4)
-    fprintf (file, "\t.gnu_attribute 4, %d\n",
-	     (TARGET_HARD_FLOAT && TARGET_FPRS) ? 1 : 2);
+    {
+      fprintf (file, "\t.gnu_attribute 4, %d\n",
+	       (TARGET_HARD_FLOAT && TARGET_FPRS) ? 1 : 2);
+      fprintf (file, "\t.gnu_attribute 8, %d\n",
+	       (TARGET_ALTIVEC_ABI ? 2
+		: TARGET_SPE_ABI ? 3
+		: 1));
+    }
 #endif
 
   if (DEFAULT_ABI == ABI_AIX || (TARGET_ELF && flag_pic == 2))
