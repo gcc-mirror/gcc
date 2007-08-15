@@ -1,3 +1,7 @@
+2007-08-14  David Daney  <ddaney@avtrex.com>
+
+	* include/private/gcconfig.h: Handle mips64-linux n64 ABI.
+
 2007-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* aclocal.m4: Regenerated.

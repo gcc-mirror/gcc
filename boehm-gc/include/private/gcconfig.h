@@ -1369,7 +1369,12 @@
 #     define DATAEND (_end)
       extern int __data_start[];
 #     define DATASTART ((ptr_t)(__data_start))
-#     define ALIGNMENT 4
+#     ifdef _MIPS_SZPTR
+#	define CPP_WORDSZ _MIPS_SZPTR
+#	define ALIGNMENT (_MIPS_SZPTR/8)
+#     else
+#	define ALIGNMENT 4
+#     endif
 #     define USE_GENERIC_PUSH_REGS
 #     if __GLIBC__ == 2 && __GLIBC_MINOR__ >= 2 || __GLIBC__ > 2
 #        define LINUX_STACKBOTTOM
