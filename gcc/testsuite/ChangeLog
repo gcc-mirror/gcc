@@ -1,3 +1,7 @@
+2007-08-15  Diego Novillo  <dnovillo@google.com>
+
+	gcc.dg/tree-ssa/20070815.c: New test.
+
 2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33077
