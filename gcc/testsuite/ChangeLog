@@ -1,3 +1,8 @@
+2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33077
+	* gfortran.dg/random_7.f90: Initialize variable.
+
 2007-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33074

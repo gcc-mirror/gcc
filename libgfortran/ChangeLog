@@ -1,3 +1,8 @@
+2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33077
+	* intrinsics/random.c (random_seed_i8): Fix code logic.
+
 2007-08-13  Danny Smith  <dannysmit@users.sourceforge.net>
 
 	* acinclude.m4 (GTHREAD_USE_WEAK) Define to 0 for mingw32.
