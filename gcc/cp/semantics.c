@@ -3665,6 +3665,17 @@ finish_omp_clauses (tree clauses)
 	      t = build_special_member_call (NULL_TREE,
 					     complete_ctor_identifier,
 					     t, inner_type, LOOKUP_NORMAL);
+
+	      if (targetm.cxx.cdtor_returns_this ())
+		/* Because constructors and destructors return this,
+		   the call will have been cast to "void".  Remove the
+		   cast here.  We would like to use STRIP_NOPS, but it
+		   wouldn't work here because TYPE_MODE (t) and
+		   TYPE_MODE (TREE_OPERAND (t, 0)) are different.
+		   They are VOIDmode and Pmode, respectively.  */
+		if (TREE_CODE (t) == NOP_EXPR)
+		  t = TREE_OPERAND (t, 0);
+
 	      t = get_callee_fndecl (t);
 	      TREE_VEC_ELT (info, 0) = t;
 	    }
@@ -3676,6 +3687,17 @@ finish_omp_clauses (tree clauses)
 	      t = build1 (INDIRECT_REF, inner_type, t);
 	      t = build_special_member_call (t, complete_dtor_identifier,
 					     NULL, inner_type, LOOKUP_NORMAL);
+
+	      if (targetm.cxx.cdtor_returns_this ())
+		/* Because constructors and destructors return this,
+		   the call will have been cast to "void".  Remove the
+		   cast here.  We would like to use STRIP_NOPS, but it
+		   wouldn't work here because TYPE_MODE (t) and
+		   TYPE_MODE (TREE_OPERAND (t, 0)) are different.
+		   They are VOIDmode and Pmode, respectively.  */
+		if (TREE_CODE (t) == NOP_EXPR)
+		  t = TREE_OPERAND (t, 0);
+
 	      t = get_callee_fndecl (t);
 	      TREE_VEC_ELT (info, 1) = t;
 	    }

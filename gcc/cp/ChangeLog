@@ -1,3 +1,8 @@
+2007-08-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (finish_omp_clauses): Strip a NOP_EXPR if
+	constructors and destructors return this.
+
 2007-08-14  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/27211
