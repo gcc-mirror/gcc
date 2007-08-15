@@ -113,6 +113,7 @@ reg_save_code (int reg, enum machine_mode mode)
   if (!HARD_REGNO_MODE_OK (reg, mode))
      {
        cached_reg_save_code[reg][mode] = -1;
+       cached_reg_restore_code[reg][mode] = -1;
        return -1;
      }
 
@@ -124,6 +125,7 @@ reg_save_code (int reg, enum machine_mode mode)
 
   /* Force re-recognition of the modified insns.  */
   INSN_CODE (saveinsn) = -1;
+  INSN_CODE (restinsn) = -1;
 
   cached_reg_save_code[reg][mode] = recog_memoized (saveinsn);
   cached_reg_restore_code[reg][mode] = recog_memoized (restinsn);
