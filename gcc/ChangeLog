@@ -1,3 +1,13 @@
+2007-08-15  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* config/i386/i386.md (subsi3_carry_zext): Remove "m" constraint for
+	"register_operand".
+	(*iorsi_1_zext): Likewise.
+	(*iorsi_1_zext_imm): Likewise.
+	* config/i386/sse.md: (*sse4_1_extractps): Use "nonimmediate_operand"
+	with "rm"/"xm" constraint.
+	(sse2_vmsqrtv2df2): Likewise.
+
 2007-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/33074

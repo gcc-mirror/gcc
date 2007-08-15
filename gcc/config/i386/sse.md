@@ -1532,7 +1532,7 @@
 })
 
 (define_insn "*sse4_1_extractps"
-  [(set (match_operand:SF 0 "register_operand" "=rm")
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=rm")
 	(vec_select:SF
 	  (match_operand:V4SF 1 "register_operand" "x")
 	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")])))]
@@ -1694,7 +1694,7 @@
 (define_insn "sse2_vmsqrtv2df2"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_merge:V2DF
-	  (sqrt:V2DF (match_operand:V2DF 1 "register_operand" "xm"))
+	  (sqrt:V2DF (match_operand:V2DF 1 "nonimmediate_operand" "xm"))
 	  (match_operand:V2DF 2 "register_operand" "0")
 	  (const_int 1)))]
   "TARGET_SSE2"
