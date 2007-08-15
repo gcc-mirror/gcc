@@ -102,7 +102,15 @@ remove_suffix (char *name, int len)
 tree
 gfc_create_var_np (tree type, const char *prefix)
 {
-  return create_tmp_var_raw (type, prefix);
+  tree t;
+  
+  t = create_tmp_var_raw (type, prefix);
+
+  /* No warnings for anonymous variables.  */
+  if (prefix == NULL)
+    TREE_NO_WARNING (t) = 1;
+
+  return t;
 }
 
 
