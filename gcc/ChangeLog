@@ -92,7 +92,7 @@
 	CCCmode for LTU, GTU, LEU and GEU.
 	(ix86_comparison_operator): Likewise.
 	(ix86_carry_flag_operator): Carry flag is set if LTU or GTU in CCCmode.
-	* gcc/config/i386/i386.c (put_condition_code): Support CCCmode.
+	* config/i386/i386.c (put_condition_code): Support CCCmode.
 	(ix86_cc_mode): Use CCCmode when testing for overflow of PLUS
 	or MINUS expressions.
 
@@ -1172,15 +1172,15 @@
 
 2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
-	* gcc/config/i386/gnu.h (STARTFILE_SPEC): Use gcrt0.o in profile mode, add
+	* config/i386/gnu.h (STARTFILE_SPEC): Use gcrt0.o in profile mode, add
 	-profile option, add pie support.
 	(ENDFILE_SPEC): New spec.
-	* gcc/config/gnu.h (LIB_SPEC): Add -profile option.
+	* config/gnu.h (LIB_SPEC): Add -profile option.
 
 2007-08-08  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
-	* gcc/config/i386/gnu.h (CPP_SPEC): Add -pthread option.
-	* gcc/config/gnu.h (LIB_SPEC): Likewise.
+	* config/i386/gnu.h (CPP_SPEC): Add -pthread option.
+	* config/gnu.h (LIB_SPEC): Likewise.
 
 2007-08-07  Yaz Saito  <saito@google.com>
 	    Ian Lance Taylor  <iant@google.com>
@@ -1957,7 +1957,6 @@
 
 2007-07-29  Mark Mitchell  <mark@codesourcery.com>
 
-	gcc/
 	* config/m68k/lb1sf68.asm (FUNC): New macro.
 	(__mulsi3): Use it.
 	(__udivsi3): Likewise.
@@ -4658,12 +4657,12 @@
 
 2007-07-04  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
-	* config/gcc/v850/v850.c (expand_prologue): Make sure
+	* config/v850/v850.c (expand_prologue): Make sure
 	GEN_INT() argument is sign extended rather than zero extended.
 	(expand_epilogue): Likewise.
 	(output_move_double): Delete.
-	* config/gcc/v850/v850-protos.h (output_move_double): Delete.
-	* config/gcc/v850/v850.md (movdi): Delete.
+	* config/v850/v850-protos.h (output_move_double): Delete.
+	* config/v850/v850.md (movdi): Delete.
 	(*movdi_internal): Delete.
 	(movdf): Delete.
 	(*movdf_internal): Delete.
@@ -5402,7 +5401,7 @@
 	(scan_function): Likewise.
 	(analyze_function): Likewise.
  	(static_execute): Likewise.
-	* gcc/ipa-reference.c (scan_for_static_refs): Likewise.
+	* ipa-reference.c (scan_for_static_refs): Likewise.
 	(merge_callee_local_info): Likewise.
 	(analyze_function): Use type safe memory macros.
 	(static_execute): Likewise. Cast according to the coding conventions.
@@ -6893,12 +6892,12 @@
 
 2007-06-11  Rafael Avila de Espindola  <espindola@google.com>
 
-	* gcc/tree.c (signed_or_unsigned_type_for): New.
+	* tree.c (signed_or_unsigned_type_for): New.
 	(unsigned_type_for): Use signed_or_unsigned_type_for.
 	(signed_type_for): Use signed_or_unsigned_type_for.
-	* gcc/tree.h (signed_or_unsigned_type_for): New.
+	* tree.h (signed_or_unsigned_type_for): New.
 	(get_signed_or_unsigned_type): Remove.
-	* gcc/fold-const.c (fold_negate_expr): Use signed_type_for instead of
+	* fold-const.c (fold_negate_expr): Use signed_type_for instead of
 	lang_hooks.types.signed_type
 	(size_diffop): Likewise.
 	(all_ones_mask_p): Likewise.
@@ -6912,18 +6911,18 @@
 	(fold_ternary): Likewise.
 	(operand_equal_for_comparison_p): Use signed_or_unsigned_type_for
 	instead of get_signed_or_unsigned_type.
-	* gcc/c-objc-common.h (LANG_HOOKS_SIGNED_TYPE): Remove.
+	* c-objc-common.h (LANG_HOOKS_SIGNED_TYPE): Remove.
 	(LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
-	* gcc/expr.c (signed_or_unsigned_type_for): Use
+	* expr.c (signed_or_unsigned_type_for): Use
 	signed_or_unsigned_type_for instead of get_signed_or_unsigned_type.
-	* gcc/langhooks.c (get_signed_or_unsigned_type): Remove.
+	* langhooks.c (get_signed_or_unsigned_type): Remove.
 	(lhd_signed_or_unsigned_type): Remove.
-	* gcc/langhooks.h (lang_hooks_for_types): Remove signed_type and
+	* langhooks.h (lang_hooks_for_types): Remove signed_type and
 	signed_or_unsigned_type.
 	(lhd_signed_or_unsigned_type): Remove.
-	* gcc/expmed.c (make_tree): Use signed_type_for instead of
+	* expmed.c (make_tree): Use signed_type_for instead of
 	lang_hooks.types.signed_type.
-	* gcc/c-common.c (same_scalar_type_ignoring_signedness): Use
+	* c-common.c (same_scalar_type_ignoring_signedness): Use
 	c_common_signed_type instead of lang_hooks.types.signed_type.
 	(c_common_unsigned_type): New.
 	(c_common_signed_type): Just call c_common_signed_or_unsigned_type.
@@ -6931,16 +6930,16 @@
 	c_common_signed_or_unsigned_type.
 	(c_common_nodes_and_builtins): Use c_common_unsigned_type instead of
 	unsigned_type_for.
-	* gcc/convert.c (convert_to_integer): Use signed_type_for instead of
+	* convert.c (convert_to_integer): Use signed_type_for instead of
 	lang_hooks.types.signed_type.
-	* gcc/langhooks-def.h (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
+	* langhooks-def.h (LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): Remove.
 	(LANG_HOOK_FOR_TYPES_INITIALIZER): Remove LANG_HOOKS_SIGNED_TYPE and
 	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE.
-	* gcc/c-format.c (check_format_types): Use c_common_unsigned_type
+	* c-format.c (check_format_types): Use c_common_unsigned_type
 	instead of unsigned_type_for.
-	* gcc/c-decl.c (groakdeclarator): Likewise.
-	* gcc/c-typeck.c (convert_for_assignment): Likewise.
-	* gcc/c-common.h (c_common_unsigned_type): New.
+	* c-decl.c (groakdeclarator): Likewise.
+	* c-typeck.c (convert_for_assignment): Likewise.
+	* c-common.h (c_common_unsigned_type): New.
 
 2007-06-11  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -7656,7 +7655,7 @@
 2007-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/32191
-	* gcc/c-common.c (c_define_builtins): Call targetm.init_builtins ()
+	* c-common.c (c_define_builtins): Call targetm.init_builtins ()
 	before build_common_builtin_nodes ().
 
 2007-06-04  Steve Ellcey  <sje@cup.hp.com>
