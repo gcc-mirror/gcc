@@ -1,3 +1,8 @@
+2007-08-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+ 
+	* gcc.dg/sibcall-3.c: Remove m68k from XFAIL list.
+	* gcc.dg/sibcall-4.c: Ditto.
+
 2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33066
