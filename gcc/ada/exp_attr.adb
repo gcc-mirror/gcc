@@ -37,7 +37,9 @@ with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Exp_VFpt; use Exp_VFpt;
+with Freeze;   use Freeze;
 with Gnatvsn;  use Gnatvsn;
+with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
@@ -3134,16 +3136,66 @@ package body Exp_Attr is
                Subprg := Scope (Subprg);
             end loop;
 
-            Object_Parm :=
-              Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   Make_Selected_Component (Loc,
-                     Prefix => New_Reference_To
+            --  Use of 'Priority inside protected entries and barriers (in
+            --  both cases the type of the first formal of their expanded
+            --  subprogram is Address)
+
+            if Etype (First_Entity (Protected_Body_Subprogram (Subprg)))
+              = RTE (RE_Address)
+            then
+               declare
+                  New_Itype : Entity_Id;
+
+               begin
+                  --  In the expansion of protected entries the type of the
+                  --  first formal of the Protected_Body_Subprogram is an
+                  --  Address. In order to reference the _object component
+                  --  we generate:
+
+                  --    type T is access p__ptTV;
+                  --    freeze T []
+
+                  New_Itype := Create_Itype (E_Access_Type, N);
+                  Set_Etype (New_Itype, New_Itype);
+                  Init_Esize (New_Itype);
+                  Init_Size_Align (New_Itype);
+                  Set_Directly_Designated_Type (New_Itype,
+                    Corresponding_Record_Type (Conctyp));
+                  Freeze_Itype (New_Itype, N);
+
+                  --  Generate:
+                  --    T!(O)._object'unchecked_access
+
+                  Object_Parm :=
+                    Make_Attribute_Reference (Loc,
+                       Prefix =>
+                         Make_Selected_Component (Loc,
+                           Prefix =>
+                             Unchecked_Convert_To (New_Itype,
+                               New_Reference_To
                                  (First_Entity
-                                   (Protected_Body_Subprogram (Subprg)), Loc),
-                   Selector_Name =>
-                       Make_Identifier (Loc, Name_uObject)),
-                 Attribute_Name => Name_Unchecked_Access);
+                                   (Protected_Body_Subprogram (Subprg)),
+                                  Loc)),
+                           Selector_Name =>
+                             Make_Identifier (Loc, Name_uObject)),
+                       Attribute_Name => Name_Unchecked_Access);
+               end;
+
+            --  Use of 'Priority inside a protected subprogram
+
+            else
+               Object_Parm :=
+                 Make_Attribute_Reference (Loc,
+                    Prefix =>
+                      Make_Selected_Component (Loc,
+                        Prefix => New_Reference_To
+                                    (First_Entity
+                                      (Protected_Body_Subprogram (Subprg)),
+                                       Loc),
+                        Selector_Name =>
+                          Make_Identifier (Loc, Name_uObject)),
+                    Attribute_Name => Name_Unchecked_Access);
+            end if;
 
             --  Select the appropriate run-time subprogram
 
@@ -3161,7 +3213,11 @@ package body Exp_Attr is
                 Parameter_Associations => New_List (Object_Parm));
 
             Rewrite (N, Call);
-            Analyze_And_Resolve (N, Typ);
+
+            --  Avoid the generation of extra checks on the pointer to the
+            --  protected object.
+
+            Analyze_And_Resolve (N, Typ, Suppress => Access_Check);
          end;
 
       ------------------
