@@ -2220,7 +2220,7 @@ package body Sem_Ch10 is
       if Limited_Present (N) then
 
          --  Ada 2005 (AI-50217): Build visibility structures but do not
-         --  analyze unit
+         --  analyze the unit.
 
          Build_Limited_Views (N);
          return;
@@ -3147,7 +3147,9 @@ package body Sem_Ch10 is
       --  private descendant of that library unit.
 
       procedure Expand_Limited_With_Clause
-        (Comp_Unit : Node_Id; Nam : Node_Id; N : Node_Id);
+        (Comp_Unit : Node_Id;
+         Nam       : Node_Id;
+         N         : Node_Id);
       --  If a child unit appears in a limited_with clause, there are implicit
       --  limited_with clauses on all parents that are not already visible
       --  through a regular with clause. This procedure creates the implicit
@@ -3220,7 +3222,8 @@ package body Sem_Ch10 is
 
                      E2 := E;
                      while E2 /= Standard_Standard
-                       and then E2 /= WEnt loop
+                       and then E2 /= WEnt
+                     loop
                         E2 := Scope (E2);
                      end loop;
 
@@ -3451,10 +3454,10 @@ package body Sem_Ch10 is
               and then not Limited_View_Installed (Item)
             then
                if not Private_Present (Item)
-                or else Private_Present (N)
-                or else Nkind (Unit (N)) = N_Package_Body
-                or else Nkind (Unit (N)) = N_Subprogram_Body
-                or else Nkind (Unit (N)) = N_Subunit
+                 or else Private_Present (N)
+                 or else Nkind (Unit (N)) = N_Package_Body
+                 or else Nkind (Unit (N)) = N_Subprogram_Body
+                 or else Nkind (Unit (N)) = N_Subunit
                then
                   Install_Limited_Withed_Unit (Item);
                end if;
@@ -3782,13 +3785,113 @@ package body Sem_Ch10 is
       E                : Entity_Id;
       P                : Entity_Id;
       Is_Child_Package : Boolean := False;
+      Lim_Header       : Entity_Id;
+      Lim_Typ          : Entity_Id;
 
-      Lim_Header : Entity_Id;
-      Lim_Typ    : Entity_Id;
+      function Has_Limited_With_Clause
+        (C_Unit : Entity_Id;
+         Pack   : Entity_Id) return Boolean;
+      --  Determine whether any package in the ancestor chain starting with
+      --  C_Unit has a limited with clause for package Pack.
+
+      function Has_With_Clause
+        (C_Unit     : Node_Id;
+         Pack       : Entity_Id;
+         Is_Limited : Boolean := False) return Boolean;
+      --  Determine whether compilation unit C_Unit contains a with clause
+      --  for package Pack. Use flag Is_Limited to designate desired clause
+      --  kind. This is a subsidiary routine to Has_Limited_With_Clause.
 
       function Is_Visible_Through_Renamings (P : Entity_Id) return Boolean;
       --  Check if some package installed though normal with-clauses has a
       --  renaming declaration of package P. AARM 10.1.2(21/2).
+
+      -----------------------------
+      -- Has_Limited_With_Clause --
+      -----------------------------
+
+      function Has_Limited_With_Clause
+        (C_Unit : Entity_Id;
+         Pack   : Entity_Id) return Boolean
+      is
+         Par      : Entity_Id;
+         Par_Unit : Node_Id;
+
+      begin
+         Par := C_Unit;
+         while Present (Par) loop
+            if Ekind (Par) /= E_Package then
+               exit;
+            end if;
+
+            --  Retrieve the Compilation_Unit node for Par and determine if
+            --  its context clauses contain a limited with for Pack.
+
+            Par_Unit := Parent (Parent (Parent (Par)));
+
+            if Nkind (Par_Unit) = N_Package_Declaration then
+               Par_Unit := Parent (Par_Unit);
+            end if;
+
+            if Has_With_Clause (Par_Unit, Pack, True) then
+               return True;
+            end if;
+
+            --  If there are more ancestors, climb up the tree, otherwise
+            --  we are done.
+
+            if Is_Child_Unit (Par) then
+               Par := Scope (Par);
+            else
+               exit;
+            end if;
+         end loop;
+
+         return False;
+      end Has_Limited_With_Clause;
+
+      ---------------------
+      -- Has_With_Clause --
+      ---------------------
+
+      function Has_With_Clause
+        (C_Unit     : Node_Id;
+         Pack       : Entity_Id;
+         Is_Limited : Boolean := False) return Boolean
+      is
+         Item : Node_Id;
+         Nam  : Entity_Id;
+
+      begin
+         if Present (Context_Items (C_Unit)) then
+            Item := First (Context_Items (C_Unit));
+            while Present (Item) loop
+               if Nkind (Item) = N_With_Clause then
+
+                  --  Retrieve the entity of the imported compilation unit
+
+                  if Nkind (Name (Item)) = N_Selected_Component then
+                     Nam := Entity (Selector_Name (Name (Item)));
+                  else
+                     Nam := Entity (Name (Item));
+                  end if;
+
+                  if Nam = Pack
+                    and then
+                      ((Is_Limited and then Limited_Present (Item))
+                          or else
+                       (not Is_Limited and then not Limited_Present (Item)))
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               Next (Item);
+            end loop;
+         end if;
+
+         return False;
+      end Has_With_Clause;
 
       ----------------------------------
       -- Is_Visible_Through_Renamings --
@@ -3924,7 +4027,40 @@ package body Sem_Ch10 is
       if P = Cunit_Entity (Current_Sem_Unit)
         or else
          (Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
-           and then  P = Main_Unit_Entity)
+            and then P = Main_Unit_Entity)
+      then
+         return;
+      end if;
+
+      --  This scenario is similar to the one above, the difference is that
+      --  the compilation of sibling Par.Sib forces the load of parent Par
+      --  which tries to install the limited view of Lim_Pack [1]. However
+      --  Par.Sib has a with clause for Lim_Pack [2] in its body, and thus
+      --  needs the non-limited views of all entities from Lim_Pack.
+
+      --     limited with Lim_Pack;   --  [1]
+      --     package Par is ...           package Lim_Pack is ...
+
+      --                                  with Lim_Pack;  --  [2]
+      --     package Par.Sib is ...       package body Par.Sib is ...
+
+      --  In this case Main_Unit_Entity is the spec of Par.Sib and Current_
+      --  Sem_Unit is the body of Par.Sib.
+
+      if Ekind (P) = E_Package
+        and then Ekind (Main_Unit_Entity) = E_Package
+        and then Is_Child_Unit (Main_Unit_Entity)
+
+         --  The body has a regular with clause
+
+        and then Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
+        and then Has_With_Clause (Cunit (Current_Sem_Unit), P)
+
+         --  One of the ancestors has a limited with clause
+
+        and then Nkind (Parent (Parent (Main_Unit_Entity))) =
+                   N_Package_Specification
+        and then Has_Limited_With_Clause (Scope (Main_Unit_Entity), P)
       then
          return;
       end if;
