@@ -14440,6 +14440,10 @@ instantiate_decl (tree d, int defer_ok,
 		   tf_warning_or_error, tmpl,
 		   /*integral_constant_expression_p=*/false);
 
+      /* Set the current input_location to the end of the function
+         so that finish_function knows where we are.  */
+      input_location = DECL_STRUCT_FUNCTION (code_pattern)->function_end_locus;
+
       /* We don't need the local specializations any more.  */
       htab_delete (local_specializations);
       local_specializations = saved_local_specializations;

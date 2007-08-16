@@ -1,3 +1,8 @@
+2007-08-16  Seongbae Park  <seongbae.park@gmail.com>
+
+        * pt.c (instantiate_decl): Set input_location
+        for the function end.
+
 2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-objcp-common.c (cxx_warn_unused_global_decl, cp_expr_size):
