@@ -1065,7 +1065,7 @@ package body Exp_Util is
       --  itype, so that gigi can elaborate it on the proper objstack.
 
       if Is_Itype (Typ)
-        and then  Scope (Typ) = Current_Scope
+        and then Scope (Typ) = Current_Scope
       then
          IR := Make_Itype_Reference (Sloc (N));
          Set_Itype (IR, Typ);
@@ -2476,6 +2476,7 @@ package body Exp_Util is
                N_Private_Extension_Declaration          |
                N_Private_Type_Declaration               |
                N_Procedure_Instantiation                |
+               N_Protected_Body                         |
                N_Protected_Body_Stub                    |
                N_Protected_Type_Declaration             |
                N_Single_Task_Declaration                |
@@ -2748,7 +2749,6 @@ package body Exp_Util is
                N_Pop_Storage_Error_Label                |
                N_Pragma_Argument_Association            |
                N_Procedure_Specification                |
-               N_Protected_Body                         |
                N_Protected_Definition                   |
                N_Push_Constraint_Error_Label            |
                N_Push_Program_Error_Label               |

@@ -2426,11 +2426,15 @@ package body Exp_Aggr is
             --  Ada 2005 (AI-287): If the ancestor part is an aggregate of
             --  limited type, a recursive call expands the ancestor. Note that
             --  in the limited case, the ancestor part must be either a
-            --  function call (possibly qualified) or aggregate (definitely
-            --  qualified).
+            --  function call (possibly qualified, or wrapped in an unchecked
+            --  conversion) or aggregate (definitely qualified).
 
             elsif Is_Limited_Type (Etype (A))
               and then Nkind (Unqualify (A)) /= N_Function_Call --  aggregate?
+              and then
+                (Nkind (Unqualify (A)) /= N_Unchecked_Type_Conversion
+                   or else
+                 Nkind (Expression (Unqualify (A))) /= N_Function_Call)
             then
                Ancestor_Is_Expression := True;
 

@@ -2946,16 +2946,34 @@ package body Sem_Ch6 is
                     ("not type conformant with declaration#!", Enode);
 
                when Mode_Conformant =>
-                  Error_Msg_N
-                    ("not mode conformant with declaration#!", Enode);
+                  if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
+                     Error_Msg_N
+                       ("not mode conformant with operation inherited#!",
+                         Enode);
+                  else
+                     Error_Msg_N
+                       ("not mode conformant with declaration#!", Enode);
+                  end if;
 
                when Subtype_Conformant =>
-                  Error_Msg_N
-                    ("not subtype conformant with declaration#!", Enode);
+                  if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
+                     Error_Msg_N
+                       ("not subtype conformant with operation inherited#!",
+                         Enode);
+                  else
+                     Error_Msg_N
+                       ("not subtype conformant with declaration#!", Enode);
+                  end if;
 
                when Fully_Conformant =>
-                  Error_Msg_N
-                    ("not fully conformant with declaration#!", Enode);
+                  if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
+                     Error_Msg_N
+                       ("not fully conformant with operation inherited#!",
+                         Enode);
+                  else
+                     Error_Msg_N
+                       ("not fully conformant with declaration#!", Enode);
+                  end if;
             end case;
 
             Error_Msg_NE (Msg, Enode, N);
@@ -4728,6 +4746,17 @@ package body Sem_Ch6 is
          return;
       end if;
 
+      --  If the subprogram is a predefined dispatching subprogram then don't
+      --  generate any extra constrained or accessibility level formals. In
+      --  general we suppress these for internal subprograms (by not calling
+      --  Freeze_Subprogram and Create_Extra_Formals at all), but internally
+      --  generated stream attributes do get passed through because extra
+      --  build-in-place formals are needed in some cases (limited 'Input).
+
+      if Is_Predefined_Dispatching_Operation (E) then
+         goto Test_For_BIP_Extras;
+      end if;
+
       Formal := First_Formal (E);
       while Present (Formal) loop
 
@@ -4817,6 +4846,8 @@ package body Sem_Ch6 is
 
          Next_Formal (Formal);
       end loop;
+
+      <<Test_For_BIP_Extras>>
 
       --  Ada 2005 (AI-318-02): In the case of build-in-place functions, add
       --  appropriate extra formals. See type Exp_Ch6.BIP_Formal_Kind.

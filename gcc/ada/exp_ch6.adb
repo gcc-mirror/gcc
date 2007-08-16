@@ -537,11 +537,11 @@ package body Exp_Ch6 is
       --  function to have a flag or a Uint attribute to identify it. ???
 
       loop
+         pragma Assert (Present (Extra_Formal));
          exit when
            Chars (Extra_Formal) =
              New_External_Name (Chars (Func), BIP_Formal_Suffix (Kind));
          Next_Formal_With_Extras (Extra_Formal);
-         pragma Assert (Present (Extra_Formal));
       end loop;
 
       return Extra_Formal;
@@ -4551,6 +4551,8 @@ package body Exp_Ch6 is
             --  The protected subprogram is declared outside of the protected
             --  body. Given that the body has frozen all entities so far, we
             --  analyze the subprogram and perform freezing actions explicitly.
+            --  including the generation of an explicit freeze node, to ensure
+            --  that gigi has the proper order of elaboration.
             --  If the body is a subunit, the insertion point is before the
             --  stub in the parent.
 
@@ -4562,10 +4564,11 @@ package body Exp_Ch6 is
 
             Insert_Before (Prot_Bod, Prot_Decl);
             Prot_Id := Defining_Unit_Name (Specification (Prot_Decl));
+            Set_Has_Delayed_Freeze (Prot_Id);
 
             Push_Scope (Scope (Scop));
             Analyze (Prot_Decl);
-            Create_Extra_Formals (Prot_Id);
+            Insert_Actions (N, Freeze_Entity (Prot_Id, Loc));
             Set_Protected_Body_Subprogram (Subp, Prot_Id);
             Pop_Scope;
          end if;
@@ -4820,7 +4823,12 @@ package body Exp_Ch6 is
       Function_Id : Entity_Id;
 
    begin
-      if Nkind (Exp_Node) = N_Qualified_Expression then
+      --  Step past qualification or unchecked conversion (the latter can occur
+      --  in cases of calls to 'Input).
+
+      if Nkind (Exp_Node) = N_Qualified_Expression
+        or else Nkind (Exp_Node) = N_Unchecked_Type_Conversion
+      then
          Exp_Node := Expression (N);
       end if;
 
@@ -5022,7 +5030,12 @@ package body Exp_Ch6 is
       Return_Obj_Access : Entity_Id;
 
    begin
-      if Nkind (Func_Call) = N_Qualified_Expression then
+      --  Step past qualification or unchecked conversion (the latter can occur
+      --  in cases of calls to 'Input).
+
+      if Nkind (Func_Call) = N_Qualified_Expression
+        or else Nkind (Func_Call) = N_Unchecked_Type_Conversion
+      then
          Func_Call := Expression (Func_Call);
       end if;
 
@@ -5158,7 +5171,12 @@ package body Exp_Ch6 is
       Return_Obj_Decl : Entity_Id;
 
    begin
-      if Nkind (Func_Call) = N_Qualified_Expression then
+      --  Step past qualification or unchecked conversion (the latter can occur
+      --  in cases of calls to 'Input).
+
+      if Nkind (Func_Call) = N_Qualified_Expression
+        or else Nkind (Func_Call) = N_Unchecked_Type_Conversion
+      then
          Func_Call := Expression (Func_Call);
       end if;
 
@@ -5267,7 +5285,12 @@ package body Exp_Ch6 is
       New_Expr        : Node_Id;
 
    begin
-      if Nkind (Func_Call) = N_Qualified_Expression then
+      --  Step past qualification or unchecked conversion (the latter can occur
+      --  in cases of calls to 'Input).
+
+      if Nkind (Func_Call) = N_Qualified_Expression
+        or else Nkind (Func_Call) = N_Unchecked_Type_Conversion
+      then
          Func_Call := Expression (Func_Call);
       end if;
 
@@ -5372,7 +5395,12 @@ package body Exp_Ch6 is
       Pass_Caller_Acc : Boolean := False;
 
    begin
-      if Nkind (Func_Call) = N_Qualified_Expression then
+      --  Step past qualification or unchecked conversion (the latter can occur
+      --  in cases of calls to 'Input).
+
+      if Nkind (Func_Call) = N_Qualified_Expression
+        or else Nkind (Func_Call) = N_Unchecked_Type_Conversion
+      then
          Func_Call := Expression (Func_Call);
       end if;
 
