@@ -1,3 +1,8 @@
+2007-08-16  Seongbae Park <seongbae.park@gmail.com>
+
+	* tree-eh.c (lower_try_finally_onedest): Reset the locus
+	of GOTO that's relocated to a different block.
+
 2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (const_strip_array_types): New.

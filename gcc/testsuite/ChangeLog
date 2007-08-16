@@ -1,3 +1,9 @@
+2007-08-16  Seongbae Park  <seongbae.park@gmail.com>
+
+	* g++.dg/gcov/gcov-4.C: New test.
+	* lib/gcov.exp (verify-lines): Add support for
+	checking no-coverage lines.
+
 2007-08-16  Victor Kaplansky <victork@il.ibm.com>
 
 	* gcc.dg/vect/vect-vfa-01.c: New.

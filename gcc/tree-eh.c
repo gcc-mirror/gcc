@@ -1020,6 +1020,9 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
 	}
     }
 
+  /* Reset the locus of the goto since we're moving 
+     goto to a different block which might be on a different line. */
+  SET_EXPR_LOCUS (tf->goto_queue[0].cont_stmt, NULL);
   append_to_statement_list (tf->goto_queue[0].cont_stmt, tf->top_p);
   maybe_record_in_goto_queue (state, tf->goto_queue[0].cont_stmt);
 }
