@@ -249,10 +249,20 @@ package body GNAT.Dynamic_Tables is
 
       Allocated_Table : Allocated_Table_T;
       pragma Import (Ada, Allocated_Table);
+      pragma Suppress (Range_Check, On => Allocated_Table);
       for Allocated_Table'Address use Allocated_Table_Address;
       --  Allocated_Table represents the currently allocated array, plus one
       --  element (the supplementary element is used to have a convenient way
-      --  to the address just past the end of the current allocation).
+      --  to the address just past the end of the current allocation). Range
+      --  checks are suppressed because this unit uses direct calls to
+      --  System.Memory for allocation, and this can yield misaligned storage
+      --  (and we cannot rely on the bootstrap compiler supporting specifically
+      --  disabling alignment cheks, so we need to suppress all range checks).
+      --  It is safe to suppress this check here because we know that a
+      --  (possibly misaligned) object of that type does actually exist at that
+      --  address.
+      --  ??? We should really improve the allocation circuitry here to
+      --  guarantee proper alignment.
 
       Need_Realloc : constant Boolean := Integer (Index) > T.P.Max;
       --  True if this operation requires storage reallocation (which may
