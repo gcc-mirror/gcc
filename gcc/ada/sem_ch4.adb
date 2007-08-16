@@ -1005,10 +1005,10 @@ package body Sem_Ch4 is
       Analyze_Expression (L);
       Analyze_Expression (R);
 
-      --  If the entity is present, the  node appears in an instance,
-      --  and denotes a predefined concatenation operation. The resulting
-      --  type is obtained from the arguments when possible. If the arguments
-      --  are aggregates, the array type and the concatenation type must be
+      --  If the entity is present, the node appears in an instance, and
+      --  denotes a predefined concatenation operation. The resulting type is
+      --  obtained from the arguments when possible. If the arguments are
+      --  aggregates, the array type and the concatenation type must be
       --  visible.
 
       if Present (Op_Id) then

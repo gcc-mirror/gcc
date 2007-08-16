@@ -6855,12 +6855,20 @@ and communicates it to the compiler using this switch.
 @subsection Integrated Preprocessing
 
 @noindent
-GNAT sources may be preprocessed immediately before compilation; the actual
+GNAT sources may be preprocessed immediately before compilation.
+In this case, the actual
 text of the source is not the text of the source file, but is derived from it
 through a process called preprocessing. Integrated preprocessing is specified
 through switches @option{-gnatep} and/or @option{-gnateD}. @option{-gnatep}
 indicates, through a text file, the preprocessing data to be used.
 @option{-gnateD} specifies or modifies the values of preprocessing symbol.
+
+@noindent
+Note that when integrated preprocessing is used, the output from the
+preprocessor is not written to any external file. Instead it is passed
+internally to the compiler. If you need to preserve the result of
+preprocessing in a file, then you should use @command{gnatprep}
+to perform the desired preprocessing in stand-alone mode.
 
 @noindent
 It is recommended that @command{gnatmake} switch ^-s^/SWITCH_CHECK^ should be

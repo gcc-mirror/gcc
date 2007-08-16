@@ -53,7 +53,7 @@ package Sem_Type is
    --  Both these structures are initialized at the beginning of every complete
    --  context.
 
-   --  Corresponding to the set of interpretation for a given overloadable
+   --  Corresponding to the set of interpretations for a given overloadable
    --  identifier, there is a set of possible types corresponding to the types
    --  that the overloaded call may return. We keep a 1-to-1 correspondence
    --  between interpretations and types: for user-defined subprograms the
