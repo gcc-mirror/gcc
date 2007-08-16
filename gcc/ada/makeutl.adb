@@ -551,9 +551,10 @@ package body Makeutl is
    ---------------------------
 
    procedure Test_If_Relative_Path
-     (Switch             : in out String_Access;
-      Parent             : String_Access;
-      Including_L_Switch : Boolean := True)
+     (Switch               : in out String_Access;
+      Parent               : String_Access;
+      Including_L_Switch   : Boolean := True;
+      Including_Non_Switch : Boolean := True)
    is
    begin
       if Switch /= null then
@@ -608,7 +609,7 @@ package body Makeutl is
                   end if;
                end if;
 
-            else
+            elsif Including_Non_Switch then
                if not Is_Absolute_Path (Sw) then
                   if Parent = null or else Parent'Length = 0 then
                      Do_Fail
