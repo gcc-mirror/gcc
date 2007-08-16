@@ -1,3 +1,9 @@
+2007-08-16  H.J. Lu  <hongjiu.lu@intel.com>
+	    Andreas Schwab <schwab@suse.de>
+
+	* gcc_update: Use "svn info" for revision number.  Create
+	gcc/REVISION with branch name and revision number.
+
 2007-08-10  Diego Novillo  <dnovillo@google.com>
 
 	* gcc.doxy: Rename from tree-ssa.doxy.
