@@ -5628,6 +5628,8 @@ package body Sem_Ch12 is
             --  reset the entity in the generic copy. A global reference has a
             --  smaller depth than the parent, or else the same depth in case
             --  both are distinct compilation units.
+            --  A child unit is implicitly declared within the enclosing parent
+            --  but is in fact global to it, and must be preserved.
 
             --  It is also possible for Current_Instantiated_Parent to be
             --  defined, and for this not to be a nested generic, namely if the
@@ -5658,7 +5660,9 @@ package body Sem_Ch12 is
                        or else
                      Nkind (Ent) = N_Defining_Operator_Symbol)
               or else No (Scope (Ent))
-              or else Scope (Ent) = Current_Instantiated_Parent.Gen_Id
+              or else
+                (Scope (Ent) = Current_Instantiated_Parent.Gen_Id
+                  and then not Is_Child_Unit (Ent))
               or else (Scope_Depth (Scope (Ent)) >
                              Scope_Depth (Current_Instantiated_Parent.Gen_Id)
                          and then
