@@ -8026,33 +8026,67 @@ package body Exp_Ch3 is
      (Typ       : Entity_Id;
       Operation : TSS_Name_Type) return Boolean
    is
-      Has_Inheritable_Stream_Attribute : Boolean := False;
+      Has_Predefined_Or_Specified_Stream_Attribute : Boolean := False;
 
    begin
+      --  Special case of a limited type extension: a default implementation
+      --  of the stream attributes Read or Write exists if that attribute
+      --  has been specified or is available for an ancestor type; a default
+      --  implementation of the attribute Output (resp. Input) exists if the
+      --  attribute has been specified or Write (resp. Read) is available for
+      --  an ancestor type. The last condition only applies under Ada 2005.
+
       if Is_Limited_Type (Typ)
         and then Is_Tagged_Type (Typ)
-        and then Is_Derived_Type (Typ)
       then
-         --  Special case of a limited type extension: a default implementation
-         --  of the stream attributes Read and Write exists if the attribute
-         --  has been specified for an ancestor type.
+         if Operation = TSS_Stream_Read then
+            Has_Predefined_Or_Specified_Stream_Attribute :=
+              Has_Specified_Stream_Read (Typ);
 
-         Has_Inheritable_Stream_Attribute :=
-           Present (Find_Inherited_TSS (Base_Type (Etype (Typ)), Operation));
+         elsif Operation = TSS_Stream_Write then
+            Has_Predefined_Or_Specified_Stream_Attribute :=
+              Has_Specified_Stream_Write (Typ);
+
+         elsif Operation = TSS_Stream_Input then
+            Has_Predefined_Or_Specified_Stream_Attribute :=
+              Has_Specified_Stream_Input (Typ)
+                or else
+                  (Ada_Version >= Ada_05
+                    and then Stream_Operation_OK (Typ, TSS_Stream_Read));
+
+         elsif Operation = TSS_Stream_Output then
+            Has_Predefined_Or_Specified_Stream_Attribute :=
+              Has_Specified_Stream_Output (Typ)
+                or else
+                  (Ada_Version >= Ada_05
+                    and then Stream_Operation_OK (Typ, TSS_Stream_Write));
+         end if;
+
+         --  Case of inherited TSS_Stream_Read or TSS_Stream_Write
+
+         if not Has_Predefined_Or_Specified_Stream_Attribute
+           and then Is_Derived_Type (Typ)
+           and then (Operation = TSS_Stream_Read
+                      or else Operation = TSS_Stream_Write)
+         then
+            Has_Predefined_Or_Specified_Stream_Attribute :=
+              Present
+                (Find_Inherited_TSS (Base_Type (Etype (Typ)), Operation));
+         end if;
       end if;
 
-      return
-        not (Is_Limited_Type (Typ)
-               and then not Has_Inheritable_Stream_Attribute)
-          and then not Has_Unknown_Discriminants (Typ)
-          and then not (Is_Interface (Typ)
-                         and then (Is_Task_Interface (Typ)
-                                   or else Is_Protected_Interface (Typ)
-                                   or else Is_Synchronized_Interface (Typ)))
-          and then not Restriction_Active (No_Streams)
-          and then not Restriction_Active (No_Dispatch)
-          and then not No_Run_Time_Mode
-          and then RTE_Available (RE_Tag)
-          and then RTE_Available (RE_Root_Stream_Type);
+      return (not Is_Limited_Type (Typ)
+               or else Has_Predefined_Or_Specified_Stream_Attribute)
+        and then not Has_Unknown_Discriminants (Typ)
+        and then not (Is_Interface (Typ)
+                       and then (Is_Task_Interface (Typ)
+                                  or else Is_Protected_Interface (Typ)
+                                  or else Is_Synchronized_Interface (Typ)))
+        and then not Restriction_Active (No_Streams)
+        and then not Restriction_Active (No_Dispatch)
+        and then not No_Run_Time_Mode
+        and then RTE_Available (RE_Tag)
+        and then RTE_Available (RE_Root_Stream_Type);
    end Stream_Operation_OK;
+
 end Exp_Ch3;
