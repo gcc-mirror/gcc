@@ -1,3 +1,36 @@
+2007-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*rep_movdi_rex64): Emit "rep" prefix on
+	the same line as the instruction for all asm dialects.
+	(*rep_movsi): Ditto.
+	(*rep_movsi_rex64): Ditto.
+	(*rep_movqi): Ditto.
+	(*rep_movqi_rex64): Ditto.
+	(*rep_stosdi_rex64): Ditto.
+	(*rep_stossi): Ditto.
+	(*rep_stossi_rex64): Ditto.
+	(*rep_stosqi): Ditto.
+	(*rep_stosqi_rex64): Ditto.
+	(*cmpstrnqi_nz_1): Ditto.
+	(*cmpstrnqi_nz_rex_1): Ditto.
+	(*cmpstrnqi_1): Ditto.
+	(*cmpstrnqi_rex_1): Ditto.
+	(*strlenqi_1): Ditto.
+	(*strlenqi_rex_1): Ditto.
+	* config/i386/sync.md (*sync_compare_and_swap<mode>): Emit "lock"
+	prefix on the same line as the instruction for all asm dialects.
+	(sync_double_compare_and_swap<mode>): Ditto.
+	(*sync_double_compare_and_swapdi_pic): Ditto.
+	(*sync_compare_and_swap_cc<mode>): Ditto.
+	(sync_double_compare_and_swap_cc<mode>): Ditto.
+	(*sync_double_compare_and_swap_ccdi_pic): Ditto.
+	(sync_old_add<mode>): Ditto.
+	(sync_add<mode>): Ditto.
+	(sync_sub<mode>): Ditto.
+	(sync_ior<mode>): Ditto.
+	(sync_and<mode>): Ditto.
+	(sync_xor<mode>): Ditto.
+
 2007-08-16  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/32897
