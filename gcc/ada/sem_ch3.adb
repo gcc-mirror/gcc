@@ -4148,9 +4148,9 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  Create a concatenation operator for the new type. Internal
-      --  array types created for packed entities do not need such, they
-      --  are compatible with the user-defined type.
+      --  Create a concatenation operator for the new type. Internal array
+      --  types created for packed entities do not need such, they are
+      --  compatible with the user-defined type.
 
       if Number_Dimensions (T) = 1
          and then not Is_Packed_Array_Type (T)
@@ -4158,9 +4158,9 @@ package body Sem_Ch3 is
          New_Concatenation_Op (T);
       end if;
 
-      --  In the case of an unconstrained array the parser has already
-      --  verified that all the indices are unconstrained but we still
-      --  need to make sure that the element type is constrained.
+      --  In the case of an unconstrained array the parser has already verified
+      --  that all the indices are unconstrained but we still need to make sure
+      --  that the element type is constrained.
 
       if Is_Indefinite_Subtype (Element_Type) then
          Error_Msg_N
@@ -4180,7 +4180,7 @@ package body Sem_Ch3 is
    ------------------------------------------------------
 
    function Replace_Anonymous_Access_To_Protected_Subprogram
-     (N      : Node_Id) return Entity_Id
+     (N : Node_Id) return Entity_Id
    is
       Loc : constant Source_Ptr := Sloc (N);
 
@@ -4311,9 +4311,9 @@ package body Sem_Ch3 is
       Subt            : Entity_Id;
 
    begin
-      --  Set the designated type so it is available in case this is
-      --  an access to a self-referential type, e.g. a standard list
-      --  type with a next pointer. Will be reset after subtype is built.
+      --  Set the designated type so it is available in case this is an access
+      --  to a self-referential type, e.g. a standard list type with a next
+      --  pointer. Will be reset after subtype is built.
 
       Set_Directly_Designated_Type
         (Derived_Type, Designated_Type (Parent_Type));
@@ -4370,8 +4370,8 @@ package body Sem_Ch3 is
          Set_Can_Never_Be_Null (Derived_Type);
       end if;
 
-      --  Note: we do not copy the Storage_Size_Variable, since
-      --  we always go to the root type for this information.
+      --  Note: we do not copy the Storage_Size_Variable, since we always go to
+      --  the root type for this information.
 
       --  Apply range checks to discriminants for derived record case
       --  ??? THIS CODE SHOULD NOT BE HERE REALLY.
@@ -4411,8 +4411,8 @@ package body Sem_Ch3 is
       New_Indic     : Node_Id;
 
       procedure Make_Implicit_Base;
-      --  If the parent subtype is constrained, the derived type is a
-      --  subtype of an implicit base type derived from the parent base.
+      --  If the parent subtype is constrained, the derived type is a subtype
+      --  of an implicit base type derived from the parent base.
 
       ------------------------
       -- Make_Implicit_Base --
@@ -4720,13 +4720,12 @@ package body Sem_Ch3 is
             Analyze (High_Bound (Range_Expression (Constraint (Indic))));
          end if;
 
-         --  Introduce an implicit base type for the derived type even
-         --  if there is no constraint attached to it, since this seems
-         --  closer to the Ada semantics. Build a full type declaration
-         --  tree for the derived type using the implicit base type as
-         --  the defining identifier. The build a subtype declaration
-         --  tree which applies the constraint (if any) have it replace
-         --  the derived type declaration.
+         --  Introduce an implicit base type for the derived type even if there
+         --  is no constraint attached to it, since this seems closer to the
+         --  Ada semantics. Build a full type declaration tree for the derived
+         --  type using the implicit base type as the defining identifier. The
+         --  build a subtype declaration tree which applies the constraint (if
+         --  any) have it replace the derived type declaration.
 
          Literal := First_Literal (Parent_Type);
          Literals_List := New_List;
@@ -4762,10 +4761,10 @@ package body Sem_Ch3 is
            Make_Defining_Identifier (Sloc (Derived_Type),
              New_External_Name (Chars (Derived_Type), 'B'));
 
-         --  Indicate the proper nature of the derived type. This must
-         --  be done before analysis of the literals, to recognize cases
-         --  when a literal may be hidden by a previous explicit function
-         --  definition (cf. c83031a).
+         --  Indicate the proper nature of the derived type. This must be done
+         --  before analysis of the literals, to recognize cases when a literal
+         --  may be hidden by a previous explicit function definition (cf.
+         --  c83031a).
 
          Set_Ekind (Derived_Type, E_Enumeration_Subtype);
          Set_Etype (Derived_Type, Implicit_Base);
@@ -4796,9 +4795,9 @@ package body Sem_Ch3 is
                                                            (Parent_Type));
          Set_Has_Delayed_Freeze (Implicit_Base);
 
-         --  Process the subtype indication including a validation check
-         --  on the constraint, if any. If a constraint is given, its bounds
-         --  must be implicitly converted to the new type.
+         --  Process the subtype indication including a validation check on the
+         --  constraint, if any. If a constraint is given, its bounds must be
+         --  implicitly converted to the new type.
 
          if Nkind (Indic) = N_Subtype_Indication then
             declare
@@ -4813,9 +4812,9 @@ package body Sem_Ch3 is
                           (Low_Bound  (R), Parent_Type, Implicit_Base);
 
                else
-                  --  Constraint is a Range attribute. Replace with the
-                  --  explicit mention of the bounds of the prefix, which must
-                  --  be a subtype.
+                  --  Constraint is a Range attribute. Replace with explicit
+                  --  mention of the bounds of the prefix, which must be a
+                  --  subtype.
 
                   Analyze (Prefix (R));
                   Hi :=
@@ -4872,8 +4871,8 @@ package body Sem_Ch3 is
 
          Analyze (N);
 
-         --  If pragma Discard_Names applies on the first subtype of the
-         --  parent type, then it must be applied on this subtype as well.
+         --  If pragma Discard_Names applies on the first subtype of the parent
+         --  type, then it must be applied on this subtype as well.
 
          if Einfo.Discard_Names (First_Subtype (Parent_Type)) then
             Set_Discard_Names (Derived_Type);
@@ -5916,15 +5915,15 @@ package body Sem_Ch3 is
       Last_Discrim : Entity_Id;
       Constrs      : Elist_Id;
 
-      Discs        : Elist_Id := New_Elmt_List;
+      Discs : Elist_Id := New_Elmt_List;
       --  An empty Discs list means that there were no constraints in the
       --  subtype indication or that there was an error processing it.
 
-      Assoc_List         : Elist_Id;
-      New_Discrs         : Elist_Id;
-      New_Base           : Entity_Id;
-      New_Decl           : Node_Id;
-      New_Indic          : Node_Id;
+      Assoc_List : Elist_Id;
+      New_Discrs : Elist_Id;
+      New_Base   : Entity_Id;
+      New_Decl   : Node_Id;
+      New_Indic  : Node_Id;
 
       Is_Tagged          : constant Boolean := Is_Tagged_Type (Parent_Type);
       Discriminant_Specs : constant Boolean :=
@@ -5932,11 +5931,11 @@ package body Sem_Ch3 is
       Private_Extension  : constant Boolean :=
                              (Nkind (N) = N_Private_Extension_Declaration);
 
-      Constraint_Present     : Boolean;
-      Inherit_Discrims       : Boolean := False;
-      Save_Etype             : Entity_Id;
-      Save_Discr_Constr      : Elist_Id;
-      Save_Next_Entity       : Entity_Id;
+      Constraint_Present : Boolean;
+      Inherit_Discrims   : Boolean := False;
+      Save_Etype         : Entity_Id;
+      Save_Discr_Constr  : Elist_Id;
+      Save_Next_Entity   : Entity_Id;
 
    begin
       if Ekind (Parent_Type) = E_Record_Type_With_Private
@@ -5982,7 +5981,7 @@ package body Sem_Ch3 is
       else
          Type_Def := Type_Definition (N);
 
-         --  Ekind (Parent_Base) in not necessarily E_Record_Type since
+         --  Ekind (Parent_Base) is not necessarily E_Record_Type since
          --  Parent_Base can be a private type or private extension. However,
          --  for tagged types with an extension the newly added fields are
          --  visible and hence the Derived_Type is always an E_Record_Type.
@@ -6527,13 +6526,13 @@ package body Sem_Ch3 is
       --  Fields inherited from the Parent_Type
 
       Set_Discard_Names
-        (Derived_Type, Einfo.Discard_Names      (Parent_Type));
+        (Derived_Type, Einfo.Discard_Names  (Parent_Type));
       Set_Has_Specified_Layout
-        (Derived_Type, Has_Specified_Layout     (Parent_Type));
+        (Derived_Type, Has_Specified_Layout (Parent_Type));
       Set_Is_Limited_Composite
-        (Derived_Type, Is_Limited_Composite     (Parent_Type));
+        (Derived_Type, Is_Limited_Composite (Parent_Type));
       Set_Is_Private_Composite
-        (Derived_Type, Is_Private_Composite     (Parent_Type));
+        (Derived_Type, Is_Private_Composite (Parent_Type));
 
       --  Fields inherited from the Parent_Base
 
@@ -6544,9 +6543,16 @@ package body Sem_Ch3 is
       Set_Has_Primitive_Operations
         (Derived_Type, Has_Primitive_Operations (Parent_Base));
 
+      --  For non-private case, we also inherit Has_Complex_Representation
+
+      if Ekind (Derived_Type) = E_Record_Type then
+         Set_Has_Complex_Representation
+           (Derived_Type, Has_Complex_Representation (Parent_Base));
+      end if;
+
       --  Direct controlled types do not inherit Finalize_Storage_Only flag
 
-      if not Is_Controlled  (Parent_Type) then
+      if not Is_Controlled (Parent_Type) then
          Set_Finalize_Storage_Only
            (Derived_Type, Finalize_Storage_Only (Parent_Type));
       end if;
@@ -6608,7 +6614,27 @@ package body Sem_Ch3 is
          if Ada_Version >= Ada_05 then
             declare
                Ifaces_List : Elist_Id;
+
             begin
+               --  Checks rules 3.9.4 (13/2 and 14/2)
+
+               if Comes_From_Source (Derived_Type)
+                 and then not Is_Private_Type (Derived_Type)
+                 and then Is_Interface (Parent_Type)
+                 and then not Is_Interface (Derived_Type)
+               then
+                  if Is_Task_Interface (Parent_Type) then
+                     Error_Msg_N
+                       ("(Ada 2005) task type required (RM 3.9.4 (13.2))",
+                        Derived_Type);
+
+                  elsif Is_Protected_Interface (Parent_Type) then
+                     Error_Msg_N
+                       ("(Ada 2005) protected type required (RM 3.9.4 (14.2))",
+                        Derived_Type);
+                  end if;
+               end if;
+
                --  Check ARM rules 3.9.4 (15/2), 9.1 (9.d/2) and 9.4 (11.d/2)
 
                Check_Abstract_Interfaces (N, Type_Def);
@@ -6820,16 +6846,16 @@ package body Sem_Ch3 is
    begin
       --  Set common attributes
 
-      Set_Scope          (Derived_Type, Current_Scope);
+      Set_Scope         (Derived_Type, Current_Scope);
 
-      Set_Ekind          (Derived_Type, Ekind     (Parent_Base));
-      Set_Etype          (Derived_Type,            Parent_Base);
-      Set_Has_Task       (Derived_Type, Has_Task  (Parent_Base));
+      Set_Ekind         (Derived_Type, Ekind    (Parent_Base));
+      Set_Etype         (Derived_Type,           Parent_Base);
+      Set_Has_Task      (Derived_Type, Has_Task (Parent_Base));
 
-      Set_Size_Info      (Derived_Type,                 Parent_Type);
-      Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
-      Set_Convention     (Derived_Type, Convention     (Parent_Type));
-      Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
+      Set_Size_Info     (Derived_Type,                Parent_Type);
+      Set_RM_Size       (Derived_Type, RM_Size       (Parent_Type));
+      Set_Convention    (Derived_Type, Convention    (Parent_Type));
+      Set_Is_Controlled (Derived_Type, Is_Controlled (Parent_Type));
 
       --  The derived type inherits the representation clauses of the parent.
       --  However, for a private type that is completed by a derivation, there
@@ -14200,9 +14226,9 @@ package body Sem_Ch3 is
          return True;
       end if;
 
-      --  Ada 2005 (AI-287, AI-318): Relax the strictness of the front-end in
-      --  case of limited aggregates (including extension aggregates),
-      --  and function calls. The function call may have been give in prefixed
+      --  Ada 2005 (AI-287, AI-318): Relax the strictness of the front end in
+      --  case of limited aggregates (including extension aggregates), and
+      --  function calls. The function call may have been give in prefixed
       --  notation, in which case the original node is an indexed component.
 
       case Nkind (Original_Node (Exp)) is
@@ -14210,7 +14236,7 @@ package body Sem_Ch3 is
             return True;
 
          --  Ada 2005 (AI-251): If a class-wide interface object is initialized
-         --  with a function call, the expander has rewriten the call into an
+         --  with a function call, the expander has rewritten the call into an
          --  N_Type_Conversion node to force displacement of the pointer to
          --  reference the component containing the secondary dispatch table.
 
@@ -14220,6 +14246,13 @@ package body Sem_Ch3 is
 
          when N_Indexed_Component | N_Selected_Component  =>
             return Nkind (Exp) = N_Function_Call;
+
+         --  A use of 'Input is a function call, hence allowed. Normally the
+         --  attribute will be changed to a call, but the attribute by itself
+         --  can occur with -gnatc.
+
+         when N_Attribute_Reference =>
+            return Attribute_Name (Original_Node (Exp)) = Name_Input;
 
          when others =>
             return False;
