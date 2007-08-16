@@ -574,22 +574,31 @@ package body Sem_Ch5 is
          Analyze_And_Resolve (Rhs, T1);
       end if;
 
-      --  Ada 2005 (AI-231)
+      --  Ada 2005 (AI-231): Assignment to not null variable
 
       if Ada_Version >= Ada_05
         and then Can_Never_Be_Null (T1)
         and then not Assignment_OK (Lhs)
       then
+         --  Case where we know the right hand side is null
+
          if Known_Null (Rhs) then
             Apply_Compile_Time_Constraint_Error
               (N   => Rhs,
                Msg => "(Ada 2005) null not allowed in null-excluding objects?",
                Reason => CE_Null_Not_Allowed);
+
+            --  We still mark this as a possible modification, that's necessary
+            --  to reset Is_True_Constant, and desirable for xref purposes.
+
+            Note_Possible_Modification (Lhs);
             return;
 
+         --  If we know the right hand side is non-null, then we convert to the
+         --  target type, since we don't need a run time check in that case.
+
          elsif not Can_Never_Be_Null (T2) then
-            Rewrite (Rhs,
-              Convert_To (T1, Relocate_Node (Rhs)));
+            Rewrite (Rhs, Convert_To (T1, Relocate_Node (Rhs)));
             Analyze_And_Resolve (Rhs, T1);
          end if;
       end if;
