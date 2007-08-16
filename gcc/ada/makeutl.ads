@@ -124,9 +124,10 @@ package Makeutl is
    end Mains;
 
    procedure Test_If_Relative_Path
-     (Switch             : in out String_Access;
-      Parent             : String_Access;
-      Including_L_Switch : Boolean := True);
+     (Switch               : in out String_Access;
+      Parent               : String_Access;
+      Including_L_Switch   : Boolean := True;
+      Including_Non_Switch : Boolean := True);
    --  Test if Switch is a relative search path switch.
    --  If it is, fail if Parent is null, otherwise prepend the path with
    --  Parent. This subprogram is only called when using project files.

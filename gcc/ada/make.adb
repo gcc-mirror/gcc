@@ -2372,7 +2372,8 @@ package body Make is
                                    new String'(Name_Buffer (1 .. Name_Len));
                                  Test_If_Relative_Path
                                    (New_Args (Last_New),
-                                    Parent => Data.Dir_Path);
+                                    Parent => Data.Dir_Path,
+                                    Including_Non_Switch => False);
                               end if;
 
                               Current := Element.Next;
@@ -2399,7 +2400,9 @@ package body Make is
 
                      begin
                         Test_If_Relative_Path
-                          (New_Args (1), Parent => Data.Dir_Path);
+                          (New_Args (1),
+                           Parent               => Data.Dir_Path,
+                           Including_Non_Switch => False);
                         Add_Arguments
                           (Configuration_Pragmas_Switch (Arguments_Project) &
                            New_Args & The_Saved_Gcc_Switches.all);
@@ -5315,12 +5318,16 @@ package body Make is
 
             for J in 1 .. Gcc_Switches.Last loop
                Test_If_Relative_Path
-                 (Gcc_Switches.Table (J), Parent => Dir_Path);
+                 (Gcc_Switches.Table (J),
+                  Parent => Dir_Path,
+                  Including_Non_Switch => False);
             end loop;
 
             for J in 1 .. Saved_Gcc_Switches.Last loop
                Test_If_Relative_Path
-                 (Saved_Gcc_Switches.Table (J), Parent => Current_Work_Dir);
+                 (Saved_Gcc_Switches.Table (J),
+                  Parent => Current_Work_Dir,
+                  Including_Non_Switch => False);
             end loop;
          end;
       end if;
