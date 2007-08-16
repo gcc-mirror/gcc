@@ -106,7 +106,6 @@ package body Einfo is
 
    --    Corresponding_Equality          Node13
    --    Component_Clause                Node13
-   --    Debug_Renaming_Link             Node13
    --    Elaboration_Entity              Node13
    --    Extra_Accessibility             Node13
    --    RM_Size                         Uint13
@@ -214,6 +213,7 @@ package body Einfo is
    --    Abstract_Interface_Alias        Node25
    --    Abstract_Interfaces             Elist25
    --    Current_Use_Clause              Node25
+   --    Debug_Renaming_Link             Node25
    --    DT_Offset_To_Top_Func           Node25
    --    Task_Body_Procedure             Node25
 
@@ -741,7 +741,7 @@ package body Einfo is
 
    function Debug_Renaming_Link (Id : E) return E is
    begin
-      return Node13 (Id);
+      return Node25 (Id);
    end Debug_Renaming_Link;
 
    function Default_Expr_Function (Id : E) return E is
@@ -2997,7 +2997,7 @@ package body Einfo is
 
    procedure Set_Debug_Renaming_Link (Id : E; V : E) is
    begin
-      Set_Node13 (Id, V);
+      Set_Node25 (Id, V);
    end Set_Debug_Renaming_Link;
 
    procedure Set_Default_Expr_Function (Id : E; V : E) is
@@ -7604,9 +7604,6 @@ package body Einfo is
               E_Discriminant                               =>
             Write_Str ("Component_Clause");
 
-         when E_Enumeration_Literal                        =>
-            Write_Str ("Debug_Renaming_Link");
-
          when E_Function                                   =>
             if not Comes_From_Source (Id)
                  and then
@@ -8149,7 +8146,7 @@ package body Einfo is
             if Is_Generic_Instance (Id) then
                Write_Str ("Generic_Renamings");
             else
-               Write_Str ("Limited Views");
+               Write_Str ("Limited_View");
             end if;
 
          --  What about Privals_Chain for protected operations ???
@@ -8197,6 +8194,9 @@ package body Einfo is
 
          when Task_Kind                                    =>
             Write_Str ("Task_Body_Procedure");
+
+         when E_Variable                                   =>
+            Write_Str ("Debug_Renaming_Link");
 
          when others                                       =>
             Write_Str ("Field25??");
