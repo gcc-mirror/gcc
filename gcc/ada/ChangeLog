@@ -1,3 +1,198 @@
+2007-08-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* cstand.adb (Create_Standard): Create an entity for a zero-sized type
+	associated with Standard_Debug_Renaming_Type, to be used as the type of
+	the special variables whose names provide debugger encodings for
+	renaming declarations.
+
+	* einfo.ads, einfo.adb (Debug_Renaming_Link): Change to return Node25.
+	(Set_Debug_Renaming_Link): Change to set Node25.
+	(Write_Field13_Name): Remove case for E_Enumeration_Literal.
+	(Write_Field25_Name): Add case for E_Variable to output
+	"Debug_Renaming_Link".
+	(Write_Field23_Name): Correct the output string for "Limited_View".
+
+	* exp_dbug.adb: Add with and use of Tbuild.
+	(Debug_Renaming_Declaration): Replace creation of an enumeration type
+	and literal with creation of a variable of type
+	Standard_Debug_Renaming_Type whose name encodes both the renamed object
+	and the entity of the renaming declaration.
+	(Qualify_Entity_Name): Add the delayed qualification of the entity name
+	part of the name of a variable that has a Debug_Renaming_Link.
+
+	* stand.ads (Standard_Debug_Renaming_Type): New Entity_Id denoting a
+	special type to be associated with variables that provide debugger
+	encodings for renaming declarations.
+
+2007-08-16  Gary Dismukes  <dismukes@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Extend the test for an
+	ancestor part given by an aggregate to test for an unchecked conversion,
+	since this can occur in some cases when the ancestor part is a function
+	call, and we don't want to fall into the recursive call to this
+	procedure in that case.
+
+	* exp_ch3.adb (Stream_Operation_OK): Revise tests for availability of
+	stream attributes on limited types to account for user-specified
+	attributes as well as whether Input (resp. Output) becomes available
+	due to Read (resp. Write) being available for the type. Change Boolean
+	variable to the more accurate name
+	Has_Predefined_Or_Specified_Stream_Attribute. Change convoluted
+	double-"not" predicate at beginning of return statement to more
+	understandable form.
+
+	* exp_ch5.adb (Expand_N_Extended_Return_Statement): If the extended
+	return has an associated N_Handled_Sequence_Of_Statements, then wrap it
+	in a block statement and use that as the first statement of the
+	expanded return rather than incorrectly using the handled sequence as
+	the first statement.
+
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): If this is a protected
+	operation, generate an explicit freeze node for it rather than
+	generating extra formals, to ensure that gigi has the proper order of
+	elaboration for anonymous subtypes in the signature of the subprograms.
+	(Build_In_Place_Formal): Move assertion to beginning of loop.
+	(Is_Build_In_Place_Function_Call): Allow for an unchecked conversion
+	applied to a function call (occurs for some cases of 'Input).
+	(Make_Build_In_Place_Call_In_*): Allow for an unchecked conversion
+	applied to a function call (occurs for some cases of 'Input).
+
+	* exp_strm.adb (Build_Record_Or_Elementary_Input_Function): For Ada
+	2005, generate an extended return statement enclosing the result object
+	and 'Read call.
+
+	* freeze.adb (Freeze_Record_Type): Extend the current management of
+	components that are access type with an allocator as default value: add
+	missing support to the use of qualified expressions of the
+	allocator (which also cause freezing of the designated type!)
+	(Freeze_Entity): Call Freeze_Subprogram in the case of a predefined
+	dispatching operation, since extra formals may be needed by calls to
+	build-in-place functions (such as stream 'Input).
+
+	* sem_ch6.adb (Create_Extra_Formals): Skip creation of the extra
+	formals for 'Constrained and accessibility level in the case of a
+	predefined dispatching operation.
+
+	* exp_util.adb (Insert_Actions): A protected body is a valid insertion
+	point, no need to find the parent node.
+
+2007-08-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Attribute_Priority): Add missing support for entries
+	and entry barriers.
+
+2007-08-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Entry): Undo previous change because it
+	is not really required and can introduce regression with the debugger.
+	The original problem is fixed with the patch written for checks.adb.
+
+2007-08-16  Thomas Quinot  <quinot@adacore.com>
+
+	* g-dyntab.adb, g-table.adb, table.adb: (Set_Item): Suppress
+	Range_Check on Allocated_Table.
+
+2007-08-16  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Collect_Arguments): Call Test_If_Relative_Path with
+	Including_Non_Switch set to False.
+	(Gnatmake): For the compiler, call Test_If_Relative_Path with
+	Including_Non_Switch set to False.
+
+	* makeutl.adb, makeutl.ads (Test_If_Relative_Path): New Boolean
+	parameter Including_Non_Switch, defaulted to True. When
+	Including_Non_Switch is False, options that are not switches and
+	appear as relative path are not converted to absolute paths.
+
+2007-08-16  Nicolas Roche  <roche@adacore.com>
+
+	* Makefile.in (gnatlib): Propagate FORCE_DEBUG_ADAFLAGS value to sub
+	makefiles
+
+	* Make-lang.in: Update dependencies
+
+2007-08-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb (Has_With_Clause): If the name of the with clause
+	currently inspected is a selected component, retrieve the entity of
+	its selector.
+	(Install_Limited_Withed_Unit): Call Has_Limited_With_Clause starting
+	from the immediate ancestor of Main_Unit_Entity.
+	(Install_Limited_Withed_Unit): Do not install the limited view of
+	package P if P is reachable through an ancestor chain from package C
+	and C also has a with clause for P in its body.
+	(Has_Limited_With_Clause): New routine.
+	(Has_With_Clause): New routine.
+
+2007-08-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): A reference to a child unit of the
+	generic for an enclosing instance is a global reference, even though
+	its scope is the enclosing instance.
+
+2007-08-16  Gary Dismukes  <dismukes@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (OK_For_Limited_Init_In_05): Allow calls to 'Input to
+	initialize a limited object.
+	(Build_Derived_Record_Type): Add missing check of rules ARM 3.9.4
+	13/2 and 14/2.
+	Make sure Has_Complex_Representation is inherited by derived type.
+
+2007-08-16  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Make sure we still note update in
+	exception case
+
+2007-08-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): If the operation
+	implements an operation inherited from a progenitor interface, verify
+	that they are subtype-conformant.
+
+2007-08-16  Hristian Kirtchev  <kirtchev@adacore.com>
+	    Bob Duff  <duff@adacore.com>
+	    Nicolas Setton  <setton@adacore.com>
+
+	* sem_res.adb (Comes_From_Predefined_Lib_Unit): New.
+	(Resolve): Alphabetize local variables. Add new variable From_Lib. When
+	the statement which is being resolved comes from a predefined library
+	unit, all non-predefined library interpretations are skipped.
+	(Resolve_Op_Concat): If string concatenation was folded in the parser,
+	but the "&" is user defined, give an error, because the folding would
+	be wrong.
+
+	* sinfo.ads, sinfo.adb (Is_Folded_In_Parser): New flag to indicate that
+	the parser has folded a long sequence of concatenations of string
+	literals.
+
+	* trans.c (Handled_Sequence_Of_Statements_to_gnu): Mark "JMPBUF_SAVE"
+	and "JMP_BUF" variables as artificial.
+	(N_String_Literal): Do not use alloca for very long string literals. Use
+	xmalloc/free instead. Otherwise the stack might overflow.
+
+	* utils.c (init_gigi_decls): Mark "JMPBUF_T" type as created by the
+	compiler.
+
+2007-08-16  Vincent Celier  <celier@adacore.com>
+
+	* vms_conv.adb (Process_Argument): Ensure that project related options
+	are not put in the -cargs section when using GNAT COMPILE.
+
+2007-08-16  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add note on preprocessing (output file not written)
+
+2007-08-16  Thomas Quinot  <quinot@adacore.com>
+
+	* a-tags.adb: Minor reformatting.
+
+2007-08-16  Bob Duff  <duff@adacore.com>
+
+	* sem_type.ads, sem_ch4.adb: Minor reformatting.
+
 2007-08-14  Thomas Quinot  <quinot@adacore.com>
 
 	* g-soccon-interix.ads, a-excpol-interix.adb, a-intnam-interix.ads, 
