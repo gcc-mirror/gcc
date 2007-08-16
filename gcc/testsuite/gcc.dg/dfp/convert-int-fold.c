@@ -1,4 +1,4 @@
-/* { dg-options "-std=gnu99 -O" } */
+/* { dg-options "-std=gnu99 -O2" } */
 
 /* N1150 5.1 Conversion between decimal floating integer.
    C99 6.3.1.4(1a) New.
