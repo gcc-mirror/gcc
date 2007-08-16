@@ -1,3 +1,12 @@
+2007-08-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33072
+	* module.c (gfc_match_use): Mark user operators as such.
+	(find_use_name_n): Distinguish between operators and other symbols.
+	(find_use_name,number_use_names,mio_namelist,
+	 load_operator_interfaces,load_generic_interfaces,read_module,
+	 write_generic): Update find_use_name_n calls.
+
 2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/29459
