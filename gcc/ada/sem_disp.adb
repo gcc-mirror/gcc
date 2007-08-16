@@ -1333,8 +1333,10 @@ package body Sem_Disp is
       then
          --  Ada 2005 (AI-251): Update the attribute alias of all the aliased
          --  entities of the overridden primitive to reference New_Op, and also
-         --  propagate them the new value of the attribute
-         --  Is_Abstract_Subprogram.
+         --  propagate the proper value of Is_Abstract_Subprogram. Verify
+         --  that the new operation is subtype conformant with the interface
+         --  operations that it implements (for operations inherited from the
+         --  parent itself, this check is made when building the derived type).
 
          Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
          while Present (Elmt) loop
@@ -1351,6 +1353,7 @@ package body Sem_Disp is
               and then Alias (Prim) = Prev_Op
             then
                Set_Alias (Prim, New_Op);
+               Check_Subtype_Conformant (New_Op, Prim);
                Set_Is_Abstract_Subprogram
                  (Prim, Is_Abstract_Subprogram (New_Op));
 
