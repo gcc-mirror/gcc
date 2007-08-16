@@ -11,3 +11,4 @@ stream_test (void)
     input[k] = k * 1.0;
 }
 
+/* { dg-final { cleanup-tree-dump "vect" } } */

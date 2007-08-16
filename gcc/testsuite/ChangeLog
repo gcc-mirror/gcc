@@ -1,5 +1,13 @@
 2007-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/tree-ssa/ssa-dse-10.c: Clean up all dse dump files.
+	* gcc.dg/vect/dump-tree-dceloop-pr26359.c: Clean up all dceloop
+	dump files.
+	* gcc.dg/vect/pr25371.c: Clean up vect dump file.
+	* gcc.dg/vect/pr32366.c: Ditto.
+
+2007-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR testsuite/33082
 	* gcc.dg/dfp/convert-dfp-fold.c: Use -O2 instead of -O in dg-options.
 	* gcc.dg/dfp/convert-bfp-fold.c: Ditto.
