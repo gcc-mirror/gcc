@@ -1,3 +1,11 @@
+2007-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/33082
+	* gcc.dg/dfp/convert-dfp-fold.c: Use -O2 instead of -O in dg-options.
+	* gcc.dg/dfp/convert-bfp-fold.c: Ditto.
+	* gcc.dg/dfp/convert-int-fold.c: Ditto.
+	* gcc.dg/dfp/operator-arith-fold.c: Ditto.
+
 2007-08-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33072
