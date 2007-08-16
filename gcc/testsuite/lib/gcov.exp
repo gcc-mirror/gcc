@@ -42,7 +42,9 @@ proc verify-lines { testcase file } {
     set failed 0
     set fd [open $file r]
     while { [gets $fd line] >= 0 } {
-	if [regexp "^ *(\[^:]*): *(\[0-9\]+):.*count\\((\[0-9\]+)\\)" \
+        # We want to match both "-" and "#####" as count as well as numbers,
+        # since we want to detect lines that shouldn't be marked as covered.
+	if [regexp "^ *(\[^:]*): *(\[0-9\\-#]+):.*count\\((\[0-9\\-#]+)\\)" \
 		"$line" all is n shouldbe] {
 	    if { $is == "" } {
 		fail "$n:no data available for this line"
