@@ -1414,8 +1414,11 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_DATAREFS (res) = VEC_alloc (data_reference_p, heap, 10);
   LOOP_VINFO_DDRS (res) = VEC_alloc (ddr_p, heap, 10 * 10);
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
-  LOOP_VINFO_MAY_MISALIGN_STMTS (res)
-    = VEC_alloc (tree, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_CHECKS));
+  LOOP_VINFO_MAY_MISALIGN_STMTS (res) =
+    VEC_alloc (tree, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS));
+  LOOP_VINFO_MAY_ALIAS_DDRS (res) =
+    VEC_alloc (ddr_p, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
+
 
   return res;
 }
@@ -1495,6 +1498,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
   free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
   VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
+  VEC_free (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
 
   free (loop_vinfo);
   loop->aux = NULL;

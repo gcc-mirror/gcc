@@ -1,3 +1,22 @@
+2007-08-16  Victor Kaplansky <victork@il.ibm.com>
+
+	* gcc.dg/vect/vect-vfa-01.c: New.
+	* gcc.dg/vect/vect-vfa-02.c: New.
+	* gcc.dg/vect/vect-vfa-03.c: New.
+	* gcc.dg/vect/vect-vfa-04.c: New.
+	* gcc.dg/vect/vect-102a.c, gcc.dg/vect/vect-51.c,
+	gcc.dg/vect/pr29145.c, gcc.dg/vect/vect-43.c,
+	gcc.dg/vect/vect-61.c, gcc.dg/vect/vect-53.c,
+	gcc.dg/vect/vect-45.c, gcc.dg/vect/vect-101.c,
+	gcc.dg/vect/vect-37.c, gcc.dg/vect/vect-79.c,
+	gcc.dg/vect/vect-102.c, gcc.dg/vect/vect-dv-2.c,
+	gcc.dg/vect/vect-57.c, gcc.dg/vect/vect-49.c,
+	gfortran.dg/vect/pr19049.f90: Rename to start with
+	prefix no-vfa-.
+	* gcc.dg/vect/vect.exp: Disable versioning for alias
+	when test starts with no-vfa-.
+	* gfortran.dg/vect/vect.exp: Likewise.
+
 2007-08-16  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/torture/pr32897.c: New test.

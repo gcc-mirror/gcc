@@ -113,6 +113,12 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]]  \
 global SAVED_DEFAULT_VECTCFLAGS
 set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
 
+# --param vect-max-version-for-alias-checks=0 tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "--param" "vect-max-version-for-alias-checks=0"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-vfa-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
 # -ffast-math tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-ffast-math"
