@@ -645,7 +645,7 @@ make_cond_expr_edges (basic_block bb)
    element.  */
 
 static bool
-edge_to_cases_cleanup (void *key ATTRIBUTE_UNUSED, void **value,
+edge_to_cases_cleanup (const void *key ATTRIBUTE_UNUSED, void **value,
 		       void *data ATTRIBUTE_UNUSED)
 {
   tree t, next;

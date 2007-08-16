@@ -336,7 +336,7 @@ abstract_virtuals_error (tree decl, tree type)
    pedwarn.  */
 
 void
-cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
+cxx_incomplete_type_diagnostic (const_tree value, const_tree type, int diag_type)
 {
   int decl = 0;
   void (*p_msg) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
@@ -427,7 +427,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
    required by ../tree.c.  */
 #undef cxx_incomplete_type_error
 void
-cxx_incomplete_type_error (tree value, tree type)
+cxx_incomplete_type_error (const_tree value, const_tree type)
 {
   cxx_incomplete_type_diagnostic (value, type, 0);
 }

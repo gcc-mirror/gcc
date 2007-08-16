@@ -4250,8 +4250,8 @@ extern tree create_implicit_typedef		(tree, tree);
 extern tree maybe_push_decl			(tree);
 extern tree force_target_expr			(tree, tree);
 extern tree build_target_expr_with_type		(tree, tree);
-extern int local_variable_p			(tree);
-extern int nonstatic_local_decl_p		(tree);
+extern int local_variable_p			(const_tree);
+extern int nonstatic_local_decl_p		(const_tree);
 extern tree register_dtor_fn			(tree);
 extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cp_fname_init			(const char *, tree *);
@@ -4681,7 +4681,7 @@ extern tree add_stmt_to_compound		(tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree);
 extern void init_tree				(void);
 extern int pod_type_p				(tree);
-extern bool class_tmpl_impl_spec_p		(tree);
+extern bool class_tmpl_impl_spec_p		(const_tree);
 extern int zero_init_p				(tree);
 extern tree canonical_type_variant		(tree);
 extern tree copy_binfo				(tree, tree, tree,
@@ -4737,7 +4737,7 @@ extern linkage_kind decl_linkage		(tree);
 extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 			      void*, struct pointer_set_t*);
 extern int cp_cannot_inline_tree_fn		(tree*);
-extern int cp_auto_var_in_fn_p			(tree,tree);
+extern int cp_auto_var_in_fn_p			(const_tree, const_tree);
 extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);
@@ -4791,7 +4791,7 @@ extern int comp_ptr_ttypes			(tree, tree);
 extern bool comp_ptr_ttypes_const		(tree, tree);
 extern int ptr_reasonably_similar		(tree, tree);
 extern tree build_ptrmemfunc			(tree, tree, int, bool);
-extern int cp_type_quals			(tree);
+extern int cp_type_quals			(const_tree);
 extern bool cp_type_readonly			(tree);
 extern bool cp_has_mutable_p			(tree);
 extern bool at_least_as_qualified_p		(tree, tree);
@@ -4819,9 +4819,9 @@ extern int lvalue_p				(tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
-extern void cxx_incomplete_type_diagnostic	(tree, tree, int);
+extern void cxx_incomplete_type_diagnostic	(const_tree, const_tree, int);
 #undef cxx_incomplete_type_error
-extern void cxx_incomplete_type_error		(tree, tree);
+extern void cxx_incomplete_type_error		(const_tree, const_tree);
 #define cxx_incomplete_type_error(V,T) \
   (cxx_incomplete_type_diagnostic ((V), (T), 0))
 extern tree error_not_base_type			(tree, tree);
@@ -4859,8 +4859,8 @@ extern bool cp_dump_tree			(void *, tree);
 /* In cp/cp-objcp-common.c.  */
 
 extern alias_set_type cxx_get_alias_set		(tree);
-extern bool cxx_warn_unused_global_decl		(tree);
-extern tree cp_expr_size			(tree);
+extern bool cxx_warn_unused_global_decl		(const_tree);
+extern tree cp_expr_size			(const_tree);
 extern size_t cp_tree_size			(enum tree_code);
 extern bool cp_var_mod_type_p			(tree, tree);
 extern void cxx_initialize_diagnostics		(struct diagnostic_context *);

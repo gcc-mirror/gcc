@@ -1,3 +1,17 @@
+2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-objcp-common.c (cxx_warn_unused_global_decl, cp_expr_size):
+	Constify.
+	* cp-tree.h (local_variable_p, nonstatic_local_decl_p,
+	class_tmpl_impl_spec_p, cp_auto_var_in_fn_p, cp_type_quals,
+	cxx_incomplete_type_diagnostic, cxx_incomplete_type_error,
+	cxx_warn_unused_global_decl, cp_expr_size): Likewise.
+	* decl.c (local_variable_p, nonstatic_local_decl_p): Likewise.
+	* tree.c (class_tmpl_impl_spec_p, cp_auto_var_in_fn_p): Likewise.
+	* typeck.c (cp_type_quals): Likewise.
+	* typeck2.c (cxx_incomplete_type_diagnostic,
+	cxx_incomplete_type_error): Likewise.
+
 2007-08-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/31132

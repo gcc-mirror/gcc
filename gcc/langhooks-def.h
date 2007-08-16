@@ -55,13 +55,13 @@ extern int lhd_expand_decl (tree);
 extern void lhd_print_error_function (struct diagnostic_context *,
 				      const char *);
 extern void lhd_set_decl_assembler_name (tree);
-extern bool lhd_warn_unused_global_decl (tree);
-extern void lhd_incomplete_type_error (tree, tree);
+extern bool lhd_warn_unused_global_decl (const_tree);
+extern void lhd_incomplete_type_error (const_tree, const_tree);
 extern tree lhd_type_promotes_to (tree);
 extern void lhd_register_builtin_type (tree, const char *);
 extern bool lhd_decl_ok_for_sibcall (tree);
 extern const char *lhd_comdat_group (tree);
-extern tree lhd_expr_size (tree);
+extern tree lhd_expr_size (const_tree);
 extern size_t lhd_tree_size (enum tree_code);
 extern HOST_WIDE_INT lhd_to_target_charset (HOST_WIDE_INT);
 extern tree lhd_expr_to_decl (tree, bool *, bool *, bool *);
@@ -71,8 +71,8 @@ extern tree lhd_builtin_function (tree decl);
 extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
 					     void *, struct pointer_set_t*);
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
-extern int lhd_tree_inlining_disregard_inline_limits (tree);
-extern int lhd_tree_inlining_auto_var_in_fn_p (tree, tree);
+extern int lhd_tree_inlining_disregard_inline_limits (const_tree);
+extern int lhd_tree_inlining_auto_var_in_fn_p (const_tree, const_tree);
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
 
@@ -175,7 +175,7 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 
 /* Tree dump hooks.  */
 extern bool lhd_tree_dump_dump_tree (void *, tree);
-extern int lhd_tree_dump_type_quals (tree);
+extern int lhd_tree_dump_type_quals (const_tree);
 extern tree lhd_make_node (enum tree_code);
 
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN lhd_tree_dump_dump_tree
@@ -190,10 +190,10 @@ extern tree lhd_make_node (enum tree_code);
    so we create a compile-time error instead.  */
 #define LANG_HOOKS_MAKE_TYPE lhd_make_node
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
-#define LANG_HOOKS_GENERIC_TYPE_P	hook_bool_tree_false
+#define LANG_HOOKS_GENERIC_TYPE_P	hook_bool_const_tree_false
 #define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE lhd_register_builtin_type
-#define LANG_HOOKS_TYPE_MAX_SIZE	lhd_return_null_tree
+#define LANG_HOOKS_TYPE_MAX_SIZE	lhd_return_null_const_tree
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   lhd_omp_firstprivatize_type_sizes
 #define LANG_HOOKS_HASH_TYPES		true

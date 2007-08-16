@@ -161,7 +161,7 @@ require_complete_type (tree value)
    and TYPE is the type that was invalid.  */
 
 void
-c_incomplete_type_error (tree value, tree type)
+c_incomplete_type_error (const_tree value, const_tree type)
 {
   const char *type_code_string;
 
@@ -256,7 +256,7 @@ qualify_type (tree type, tree like)
 /* Return true iff the given tree T is a variable length array.  */
 
 bool
-c_vla_type_p (tree t)
+c_vla_type_p (const_tree t)
 {
   if (TREE_CODE (t) == ARRAY_TYPE
       && C_TYPE_VARIABLE_SIZE (t))

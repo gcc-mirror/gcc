@@ -136,7 +136,7 @@ lhd_staticp (tree ARG_UNUSED (exp))
 /* Called from check_global_declarations.  */
 
 bool
-lhd_warn_unused_global_decl (tree decl)
+lhd_warn_unused_global_decl (const_tree decl)
 {
   /* This is what used to exist in check_global_declarations.  Probably
      not many of these actually apply to non-C languages.  */
@@ -209,7 +209,7 @@ lhd_register_builtin_type (tree ARG_UNUSED (type),
 
 /* Invalid use of an incomplete type.  */
 void
-lhd_incomplete_type_error (tree ARG_UNUSED (value), tree type)
+lhd_incomplete_type_error (const_tree ARG_UNUSED (value), const_tree type)
 {
   gcc_assert (TREE_CODE (type) == ERROR_MARK);
   return;
@@ -316,7 +316,7 @@ lhd_tree_inlining_cannot_inline_tree_fn (tree *fnp)
    if it would exceed inlining limits.  */
 
 int
-lhd_tree_inlining_disregard_inline_limits (tree fn)
+lhd_tree_inlining_disregard_inline_limits (const_tree fn)
 {
   if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
     return 1;
@@ -328,7 +328,7 @@ lhd_tree_inlining_disregard_inline_limits (tree fn)
    whether VT is an automatic variable defined in function FT.  */
 
 int
-lhd_tree_inlining_auto_var_in_fn_p (tree var, tree fn)
+lhd_tree_inlining_auto_var_in_fn_p (const_tree var, const_tree fn)
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
 	  && (((TREE_CODE (var) == VAR_DECL || TREE_CODE (var) == PARM_DECL)
@@ -351,7 +351,7 @@ lhd_tree_dump_dump_tree (void *di ATTRIBUTE_UNUSED, tree t ATTRIBUTE_UNUSED)
    language-specific way.  */
 
 int
-lhd_tree_dump_type_quals (tree t)
+lhd_tree_dump_type_quals (const_tree t)
 {
   return TYPE_QUALS (t);
 }
@@ -360,7 +360,7 @@ lhd_tree_dump_type_quals (tree t)
    in a language-specific way.  Returns a tree for the size in bytes.  */
 
 tree
-lhd_expr_size (tree exp)
+lhd_expr_size (const_tree exp)
 {
   if (DECL_P (exp)
       && DECL_SIZE_UNIT (exp) != 0)

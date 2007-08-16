@@ -39,8 +39,8 @@ struct lang_hooks_for_tree_inlining
 			 tree (*) (tree *, int *, void *),
 			 void *, struct pointer_set_t*);
   int (*cannot_inline_tree_fn) (tree *);
-  int (*disregard_inline_limits) (tree);
-  int (*auto_var_in_fn_p) (tree, tree);
+  int (*disregard_inline_limits) (const_tree);
+  int (*auto_var_in_fn_p) (const_tree, const_tree);
   bool (*var_mod_type_p) (tree, tree);
 };
 
@@ -83,7 +83,7 @@ struct lang_hooks_for_tree_dump
   bool (*dump_tree) (void *, tree);
 
   /* Determine type qualifiers in a language-specific way.  */
-  int (*type_quals) (tree);
+  int (*type_quals) (const_tree);
 };
 
 /* Hooks related to types.  */
@@ -104,7 +104,7 @@ struct lang_hooks_for_types
 
   /* True if the type is an instantiation of a generic type,
      e.g. C++ template implicit specializations.  */
-  bool (*generic_p) (tree);
+  bool (*generic_p) (const_tree);
 
   /* Given a type, apply default promotions to unnamed function
      arguments and return the new type.  Return the same type if no
@@ -125,11 +125,11 @@ struct lang_hooks_for_types
      invalid use of an incomplete type.  VALUE is the expression that
      was used (or 0 if that isn't known) and TYPE is the type that was
      invalid.  */
-  void (*incomplete_type_error) (tree value, tree type);
+  void (*incomplete_type_error) (const_tree value, const_tree type);
 
   /* Called from assign_temp to return the maximum size, if there is one,
      for a type.  */
-  tree (*max_size) (tree);
+  tree (*max_size) (const_tree);
 
   /* Register language specific type size variables as potentially OpenMP
      firstprivate variables.  */
@@ -165,7 +165,7 @@ struct lang_hooks_for_decls
 
   /* Returns true when we should warn for an unused global DECL.
      We will already have checked that it has static binding.  */
-  bool (*warn_unused_global) (tree);
+  bool (*warn_unused_global) (const_tree);
 
   /* Obtain a list of globals and do final output on them at end
      of compilation */
@@ -373,7 +373,7 @@ struct lang_hooks
      expression in a language-dependent way.  Returns a tree for the size
      in bytes.  A frontend can call lhd_expr_size to get the default
      semantics in cases that it doesn't want to handle specially.  */
-  tree (*expr_size) (tree);
+  tree (*expr_size) (const_tree);
 
   /* Convert a character from the host's to the target's character
      set.  The character should be in what C calls the "basic source

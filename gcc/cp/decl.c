@@ -8962,7 +8962,7 @@ require_complete_types_for_parms (tree parms)
 /* Returns nonzero if T is a local variable.  */
 
 int
-local_variable_p (tree t)
+local_variable_p (const_tree t)
 {
   if ((TREE_CODE (t) == VAR_DECL
        /* A VAR_DECL with a context that is a _TYPE is a static data
@@ -8981,7 +8981,7 @@ local_variable_p (tree t)
    containing them is duplicated.)  */
 
 int
-nonstatic_local_decl_p (tree t)
+nonstatic_local_decl_p (const_tree t)
 {
   return ((local_variable_p (t) && !TREE_STATIC (t))
 	  || TREE_CODE (t) == LABEL_DECL

@@ -1,3 +1,7 @@
+2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* misc.c (gnat_type_max_size): Constify.
+
 2007-08-16  Gary Dismukes  <dismukes@adacore.com>
 
 	* cstand.adb (Create_Standard): Create an entity for a zero-sized type

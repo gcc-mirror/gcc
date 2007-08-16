@@ -24,18 +24,19 @@ struct pointer_set_t;
 struct pointer_set_t *pointer_set_create (void);
 void pointer_set_destroy (struct pointer_set_t *pset);
 
-int pointer_set_contains (struct pointer_set_t *pset, const void *p);
-int pointer_set_insert (struct pointer_set_t *pset, void *p);
-void pointer_set_traverse (struct pointer_set_t *, bool (*) (void *, void *),
+int pointer_set_contains (const struct pointer_set_t *pset, const void *p);
+int pointer_set_insert (struct pointer_set_t *pset, const void *p);
+void pointer_set_traverse (const struct pointer_set_t *,
+			   bool (*) (const void *, void *),
 			   void *);
 
 struct pointer_map_t;
 struct pointer_map_t *pointer_map_create (void);
 void pointer_map_destroy (struct pointer_map_t *pmap);
 
-void **pointer_map_contains (struct pointer_map_t *pmap, const void *p);
-void **pointer_map_insert (struct pointer_map_t *pmap, void *p);
-void pointer_map_traverse (struct pointer_map_t *,
-			   bool (*) (void *, void **, void *), void *);
+void **pointer_map_contains (const struct pointer_map_t *pmap, const void *p);
+void **pointer_map_insert (struct pointer_map_t *pmap, const void *p);
+void pointer_map_traverse (const struct pointer_map_t *,
+			   bool (*) (const void *, void **, void *), void *);
 
 #endif  /* POINTER_SET_H  */

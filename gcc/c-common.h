@@ -297,10 +297,6 @@ struct c_language_function GTY(()) {
 
 /* Language-specific hooks.  */
 
-/* Callback that determines if it's ok for a function to have no
-   noreturn attribute.  */
-extern int (*lang_missing_noreturn_ok_p) (tree);
-
 /* If non-NULL, this function is called after a precompile header file
    is loaded.  */
 extern void (*lang_post_pch_load) (void);
@@ -735,6 +731,7 @@ extern void c_register_builtin_type (tree, const char*);
 extern bool c_promoting_integer_type_p (tree);
 extern int self_promoting_args_p (tree);
 extern tree strip_array_types (tree);
+extern const_tree const_strip_array_types (const_tree);
 extern tree strip_pointer_operator (tree);
 extern tree strip_pointer_or_array_types (tree);
 extern HOST_WIDE_INT c_common_to_target_charset (HOST_WIDE_INT);

@@ -1337,7 +1337,7 @@ call_expr:;
    empty.  */
 
 static bool
-assert_is_empty (void *key ATTRIBUTE_UNUSED, void **value,
+assert_is_empty (const void *key ATTRIBUTE_UNUSED, void **value,
 		 void *data ATTRIBUTE_UNUSED)
 {
   gcc_assert (!*value);
