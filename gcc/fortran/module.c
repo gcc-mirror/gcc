@@ -612,6 +612,9 @@ gfc_match_use (void)
 		 == FAILURE))
 	    goto cleanup;
 
+	  if (type == INTERFACE_USER_OP)
+	    new->operator = INTRINSIC_USER;
+
 	  if (only_flag)
 	    {
 	      if (m != MATCH_YES)
@@ -677,10 +680,12 @@ cleanup:
 /* Given a name and a number, inst, return the inst name
    under which to load this symbol. Returns NULL if this
    symbol shouldn't be loaded. If inst is zero, returns
-   the number of instances of this name.  */
+   the number of instances of this name. If interface is
+   true, a user-defined operator is sought, otherwise only
+   non-operators are sought.  */
 
 static const char *
-find_use_name_n (const char *name, int *inst)
+find_use_name_n (const char *name, int *inst, bool interface)
 {
   gfc_use_rename *u;
   int i;
@@ -688,7 +693,9 @@ find_use_name_n (const char *name, int *inst)
   i = 0;
   for (u = gfc_rename_list; u; u = u->next)
     {
-      if (strcmp (u->use_name, name) != 0)
+      if (strcmp (u->use_name, name) != 0
+	  || (u->operator == INTRINSIC_USER && !interface)
+	  || (u->operator != INTRINSIC_USER &&  interface))
 	continue;
       if (++i == *inst)
 	break;
@@ -713,21 +720,21 @@ find_use_name_n (const char *name, int *inst)
    Returns NULL if this symbol shouldn't be loaded.  */
 
 static const char *
-find_use_name (const char *name)
+find_use_name (const char *name, bool interface)
 {
   int i = 1;
-  return find_use_name_n (name, &i);
+  return find_use_name_n (name, &i, interface);
 }
 
 
 /* Given a real name, return the number of use names associated with it.  */
 
 static int
-number_use_names (const char *name)
+number_use_names (const char *name, bool interface)
 {
   int i = 0;
   const char *c;
-  c = find_use_name_n (name, &i);
+  c = find_use_name_n (name, &i, interface);
   return i;
 }
 
@@ -2869,7 +2876,7 @@ mio_namelist (gfc_symbol *sym)
 	 conditionally?  */
       if (sym->attr.flavor == FL_NAMELIST)
 	{
-	  check_name = find_use_name (sym->name);
+	  check_name = find_use_name (sym->name, false);
 	  if (check_name && strcmp (check_name, sym->name) != 0)
 	    gfc_error ("Namelist %s cannot be renamed by USE "
 		       "association to %s", sym->name, check_name);
@@ -3131,7 +3138,7 @@ load_operator_interfaces (void)
       mio_internal_string (module);
 
       /* Decide if we need to load this one or not.  */
-      p = find_use_name (name);
+      p = find_use_name (name, true);
       if (p == NULL)
 	{
 	  while (parse_atom () != ATOM_RPAREN);
@@ -3168,18 +3175,18 @@ load_generic_interfaces (void)
       mio_internal_string (name);
       mio_internal_string (module);
 
-      n = number_use_names (name);
+      n = number_use_names (name, false);
       n = n ? n : 1;
 
       for (i = 1; i <= n; i++)
 	{
 	  /* Decide if we need to load this one or not.  */
-	  p = find_use_name_n (name, &i);
+	  p = find_use_name_n (name, &i, false);
 
 	  if (p == NULL || gfc_find_symbol (p, NULL, 0, &sym))
 	    {
 	      while (parse_atom () != ATOM_RPAREN);
-		continue;
+	      continue;
 	    }
 
 	  if (sym == NULL)
@@ -3548,14 +3555,14 @@ read_module (void)
 
       /* See how many use names there are.  If none, go through the start
 	 of the loop at least once.  */
-      nuse = number_use_names (name);
+      nuse = number_use_names (name, false);
       if (nuse == 0)
 	nuse = 1;
 
       for (j = 1; j <= nuse; j++)
 	{
 	  /* Get the jth local name for this symbol.  */
-	  p = find_use_name_n (name, &j);
+	  p = find_use_name_n (name, &j, false);
 
 	  if (p == NULL && strcmp (name, module_name) == 0)
 	    p = name;
@@ -3958,7 +3965,7 @@ write_generic (gfc_symbol *sym)
     sym->module = gfc_get_string (module_name);
 
   /* See how many use names there are.  If none, use the symbol name.  */
-  nuse = number_use_names (sym->name);
+  nuse = number_use_names (sym->name, false);
   if (nuse == 0)
     {
       mio_symbol_interface (&sym->name, &sym->module, &sym->generic);
@@ -3968,7 +3975,7 @@ write_generic (gfc_symbol *sym)
   for (j = 1; j <= nuse; j++)
     {
       /* Get the jth local name for this symbol.  */
-      p = find_use_name_n (sym->name, &j);
+      p = find_use_name_n (sym->name, &j, false);
 
       mio_symbol_interface (&p, &sym->module, &sym->generic);
     }
