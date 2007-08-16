@@ -1590,6 +1590,14 @@ package body Sinfo is
       return Flag8 (N);
    end Is_Entry_Barrier_Function;
 
+   function Is_Folded_In_Parser
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_String_Literal);
+      return Flag4 (N);
+   end Is_Folded_In_Parser;
+
    function Is_In_Discriminant_Check
       (N : Node_Id) return Boolean is
    begin
@@ -4288,6 +4296,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body);
       Set_Flag8 (N, Val);
    end Set_Is_Entry_Barrier_Function;
+
+   procedure Set_Is_Folded_In_Parser
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_String_Literal);
+      Set_Flag4 (N, Val);
+   end Set_Is_Folded_In_Parser;
 
    procedure Set_Is_In_Discriminant_Check
       (N : Node_Id; Val : Boolean := True) is

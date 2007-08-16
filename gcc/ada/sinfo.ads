@@ -1202,11 +1202,6 @@ package Sinfo is
    --    conditions holds, and the flag is set, then the division or
    --    multiplication can be (and is) converted to a shift.
 
-   --  Is_Overloaded (Flag5-Sem)
-   --    A flag present in all expression nodes. Used temporarily during
-   --    overloading determination. The setting of this flag is not relevant
-   --    once overloading analysis is complete.
-
    --  Is_Protected_Subprogram_Body (Flag7-Sem)
    --    A flag set in a Subprogram_Body block to indicate that it is the
    --    implemenation of a protected subprogram. Such a body needs cleanup
@@ -1820,11 +1815,19 @@ package Sinfo is
 
       --  A STRING_ELEMENT is either a pair of quotation marks ("), or a
       --  single GRAPHIC_CHARACTER other than a quotation mark.
+      --
+      --  Is_Folded_In_Parser is True if the parser created this literal by
+      --  folding a sequence of "&" operators. For example, if the source code
+      --  says "aaa" & "bbb" & "ccc", and the produces "aaabbbccc", the flag is
+      --  set. This flag is needed because the parser doesn't know about
+      --  visibility, so the folded result might be wrong, and semantic
+      --  analysis needs to check for that.
 
       --  N_String_Literal
       --  Sloc points to literal
       --  Strval (Str3) contains Id of string value
       --  Has_Wide_Character (Flag11-Sem)
+      --  Is_Folded_In_Parser (Flag4)
       --  plus fields for expression
 
       ------------------
@@ -7870,6 +7873,9 @@ package Sinfo is
    function Is_Entry_Barrier_Function
      (N : Node_Id) return Boolean;    -- Flag8
 
+   function Is_Folded_In_Parser
+     (N : Node_Id) return Boolean;    -- Flag4
+
    function Is_In_Discriminant_Check
      (N : Node_Id) return Boolean;    -- Flag11
 
@@ -8724,6 +8730,9 @@ package Sinfo is
 
    procedure Set_Is_Entry_Barrier_Function
      (N : Node_Id; Val : Boolean := True);    -- Flag8
+
+   procedure Set_Is_Folded_In_Parser
+     (N : Node_Id; Val : Boolean := True);    -- Flag4
 
    procedure Set_Is_In_Discriminant_Check
      (N : Node_Id; Val : Boolean := True);    -- Flag11
@@ -10817,6 +10826,7 @@ package Sinfo is
    pragma Inline (Is_Controlling_Actual);
    pragma Inline (Is_Dynamic_Coextension);
    pragma Inline (Is_Entry_Barrier_Function);
+   pragma Inline (Is_Folded_In_Parser);
    pragma Inline (Is_In_Discriminant_Check);
    pragma Inline (Is_Machine_Number);
    pragma Inline (Is_Null_Loop);
@@ -11098,6 +11108,7 @@ package Sinfo is
    pragma Inline (Set_Is_Controlling_Actual);
    pragma Inline (Set_Is_Dynamic_Coextension);
    pragma Inline (Set_Is_Entry_Barrier_Function);
+   pragma Inline (Set_Is_Folded_In_Parser);
    pragma Inline (Set_Is_In_Discriminant_Check);
    pragma Inline (Set_Is_Machine_Number);
    pragma Inline (Set_Is_Null_Loop);

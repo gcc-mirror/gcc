@@ -37,6 +37,7 @@ with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
@@ -1546,16 +1547,21 @@ package body Sem_Res is
    -------------
 
    procedure Resolve (N : Node_Id; Typ : Entity_Id) is
-      I         : Interp_Index;
-      I1        : Interp_Index := 0; -- prevent junk warning
-      It        : Interp;
-      It1       : Interp;
-      Found     : Boolean   := False;
-      Seen      : Entity_Id := Empty; -- prevent junk warning
+      Ambiguous : Boolean   := False;
       Ctx_Type  : Entity_Id := Typ;
       Expr_Type : Entity_Id := Empty; -- prevent junk warning
       Err_Type  : Entity_Id := Empty;
-      Ambiguous : Boolean   := False;
+      Found     : Boolean   := False;
+      From_Lib  : Boolean;
+      I         : Interp_Index;
+      I1        : Interp_Index := 0;  -- prevent junk warning
+      It        : Interp;
+      It1       : Interp;
+      Seen      : Entity_Id := Empty; -- prevent junk warning
+
+      function Comes_From_Predefined_Lib_Unit (Nod : Node_Id) return Boolean;
+      --  Determine whether a node comes from a predefined library unit or
+      --  Standard.
 
       procedure Patch_Up_Value (N : Node_Id; Typ : Entity_Id);
       --  Try and fix up a literal so that it matches its expected type. New
@@ -1563,6 +1569,18 @@ package body Sem_Res is
 
       procedure Resolution_Failed;
       --  Called when attempt at resolving current expression fails
+
+      ------------------------------------
+      -- Comes_From_Predefined_Lib_Unit --
+      -------------------------------------
+
+      function Comes_From_Predefined_Lib_Unit (Nod : Node_Id) return Boolean is
+      begin
+         return
+           Sloc (Nod) = Standard_Location
+             or else Is_Predefined_File_Name (Unit_File_Name (
+                       Get_Source_Unit (Sloc (Nod))));
+      end Comes_From_Predefined_Lib_Unit;
 
       --------------------
       -- Patch_Up_Value --
@@ -1659,6 +1677,8 @@ package body Sem_Res is
          Error_Msg_N
            ("prefix must statically denote a non-remote subprogram", N);
       end if;
+
+      From_Lib := Comes_From_Predefined_Lib_Unit (N);
 
       --  If the context is a Remote_Access_To_Subprogram, access attributes
       --  must be resolved with the corresponding fat pointer. There is no need
@@ -1817,6 +1837,16 @@ package body Sem_Res is
                --  some more obscure cases are handled in Disambiguate.
 
                else
+                  --  If the current statement is part of a predefined library
+                  --  unit, then all interpretations which come from user level
+                  --  packages should not be considered.
+
+                  if From_Lib
+                    and then not Comes_From_Predefined_Lib_Unit (It.Nam)
+                  then
+                     goto Continue;
+                  end if;
+
                   Error_Msg_Sloc := Sloc (Seen);
                   It1 := Disambiguate (N, I1, I, Typ);
 
@@ -6335,6 +6365,22 @@ package body Sem_Res is
    --  Start of processing for Resolve_Op_Concat
 
    begin
+      --  The parser folds an enormous sequence of concatenations of string
+      --  literals into "" & "...", where the Is_Folded_In_Parser flag is set
+      --  in the right. If the expression resolves to a predefined "&"
+      --  operator, all is well. Otherwise, the parser's folding is wrong, so
+      --  we give an error. See P_Simple_Expression in Par.Ch4.
+
+      if Nkind (Op2) = N_String_Literal
+        and then Is_Folded_In_Parser (Op2)
+        and then Ekind (Entity (N)) = E_Function
+      then
+         pragma Assert (Nkind (Op1) = N_String_Literal  --  should be ""
+               and then String_Length (Strval (Op1)) = 0);
+         Error_Msg_N ("too many user-defined concatenations", N);
+         return;
+      end if;
+
       Set_Etype (N, Btyp);
 
       if Is_Limited_Composite (Btyp) then

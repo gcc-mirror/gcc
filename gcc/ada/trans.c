@@ -101,6 +101,11 @@ DEF_VEC_ALLOC_P(parm_attr,gc);
 
 struct language_function GTY(())
 {
+/* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca, for
+   fear of running out of stack space. If we need more, we use xmalloc/free
+   instead. */
+#define ALLOCA_THRESHOLD 1000
+
   VEC(parm_attr,gc) *parm_attr_cache;
 };
 
@@ -2508,6 +2513,8 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 					  build_call_0_expr (get_jmpbuf_decl),
 					  false, false, false, false, NULL,
 					  gnat_node);
+      DECL_ARTIFICIAL (gnu_jmpsave_decl) = 1;
+
       /* The __builtin_setjmp receivers will immediately reinstall it.  Now
 	 because of the unstructured form of EH used by setjmp_longjmp, there
 	 might be forward edges going to __builtin_setjmp receivers on which
@@ -2517,6 +2524,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 					 NULL_TREE, jmpbuf_type,
 					 NULL_TREE, false, false, false, false,
 					 NULL, gnat_node);
+      DECL_ARTIFICIAL (gnu_jmpbuf_decl) = 1;
 
       set_block_jmpbuf_decl (gnu_jmpbuf_decl);
 
@@ -3118,8 +3126,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	{
 	  String_Id gnat_string = Strval (gnat_node);
 	  int length = String_Length (gnat_string);
-	  char *string = (char *) alloca (length + 1);
 	  int i;
+	  char *string;
+	  if (length >= ALLOCA_THRESHOLD)
+             string = xmalloc (length + 1); /* in case of large strings */
+          else
+             string = (char *) alloca (length + 1);
 
 	  /* Build the string with the characters in the literal.  Note
 	     that Ada strings are 1-origin.  */
@@ -3135,6 +3147,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	  /* Strings in GCC don't normally have types, but we want
 	     this to not be converted to the array type.  */
 	  TREE_TYPE (gnu_result) = gnu_result_type;
+
+	  if (length >= ALLOCA_THRESHOLD) /* free if heap-allocated */
+             free (string);
 	}
       else
 	{
