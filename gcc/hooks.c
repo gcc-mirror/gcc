@@ -190,6 +190,12 @@ hook_bool_tree_false (tree a ATTRIBUTE_UNUSED)
 }
 
 bool
+hook_bool_const_tree_false (const_tree a ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+bool
 hook_bool_tree_true (tree a ATTRIBUTE_UNUSED)
 {
   return true;

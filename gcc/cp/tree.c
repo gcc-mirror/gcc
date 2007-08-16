@@ -2077,7 +2077,7 @@ pod_type_p (tree t)
 /* Nonzero iff type T is a class template implicit specialization.  */
 
 bool
-class_tmpl_impl_spec_p (tree t)
+class_tmpl_impl_spec_p (const_tree t)
 {
   return CLASS_TYPE_P (t) && CLASSTYPE_TEMPLATE_INSTANTIATION (t);
 }
@@ -2453,7 +2453,7 @@ cp_cannot_inline_tree_fn (tree* fnp)
    function FN.  */
 
 int
-cp_auto_var_in_fn_p (tree var, tree fn)
+cp_auto_var_in_fn_p (const_tree var, const_tree fn)
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
 	  && nonstatic_local_decl_p (var));

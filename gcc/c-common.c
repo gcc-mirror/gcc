@@ -3912,6 +3912,15 @@ strip_array_types (tree type)
   return type;
 }
 
+const_tree
+const_strip_array_types (const_tree type)
+{
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return type;
+}
+
 /* Recursively remove any '*' or '&' operator from TYPE.  */
 tree
 strip_pointer_operator (tree t)

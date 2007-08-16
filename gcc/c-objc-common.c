@@ -55,7 +55,7 @@ c_missing_noreturn_ok_p (tree decl)
    such functions always being inlined when optimizing.  */
 
 int
-c_disregard_inline_limits (tree fn)
+c_disregard_inline_limits (const_tree fn)
 {
   if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
     return 1;
@@ -112,7 +112,7 @@ c_cannot_inline_tree_fn (tree *fnp)
 /* Called from check_global_declarations.  */
 
 bool
-c_warn_unused_global_decl (tree decl)
+c_warn_unused_global_decl (const_tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;

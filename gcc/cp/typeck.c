@@ -6910,9 +6910,9 @@ comp_ptr_ttypes_const (tree to, tree from)
    elements for an array type.  */
 
 int
-cp_type_quals (tree type)
+cp_type_quals (const_tree type)
 {
-  type = strip_array_types (type);
+  type = const_strip_array_types (type);
   if (type == error_mark_node)
     return TYPE_UNQUALIFIED;
   return TYPE_QUALS (type);

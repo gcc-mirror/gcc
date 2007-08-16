@@ -1,3 +1,42 @@
+2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (const_strip_array_types): New.
+	* c-common.h (lang_missing_noreturn_ok_p): Delete.
+	(const_strip_array_types): New.
+	* c-objc-common.c (c_disregard_inline_limits,
+	c_warn_unused_global_decl): Constify.
+	* c-tree.h (c_disregard_inline_limits, c_warn_unused_global_decl,
+	c_vla_type_p, c_incomplete_type_error): Likewise.
+	* c-typeck.c (c_incomplete_type_error, c_vla_type_p): Likewise.
+	* hooks.c (hook_bool_const_tree_false): New.
+	* hooks.h (hook_bool_const_tree_false): Likewise.
+	* langhooks-def.h (lhd_warn_unused_global_decl,
+	lhd_incomplete_type_error, lhd_expr_size,
+	lhd_tree_inlining_disregard_inline_limits,
+	lhd_tree_inlining_auto_var_in_fn_p, lhd_tree_dump_type_quals,
+	LANG_HOOKS_GENERIC_TYPE_P, LANG_HOOKS_TYPE_MAX_SIZE): Constify.
+	* langhooks.c (lhd_warn_unused_global_decl,
+	lhd_incomplete_type_error,
+	lhd_tree_inlining_disregard_inline_limits,
+	lhd_tree_inlining_auto_var_in_fn_p, lhd_tree_dump_type_quals,
+	lhd_expr_size): Likewise.
+	* langhooks.h (lang_hooks_for_tree_inlining,
+	lang_hooks_for_tree_dump, lang_hooks_for_types,
+	lang_hooks_for_decls, lang_hooks): Likewise.
+	* pointer-set.c (pointer_set_t, pointer_set_create,
+	pointer_set_contains, insert_aux, pointer_set_insert,
+	pointer_set_traverse, pointer_map_t, pointer_map_create,
+	pointer_map_contains, pointer_map_insert, pointer_map_traverse):
+	Likewise.
+	* pointer-set.h (pointer_set_contains, pointer_set_insert,
+	pointer_set_traverse, pointer_map_contains, pointer_map_insert,
+	pointer_map_traverse): Likewise.
+	* predict.c (assert_is_empty): Likewise.
+	* tree-affine.c (free_name_expansion): Likewise.
+	* tree-cfg.c (edge_to_cases_cleanup): Likewise.
+	* tree.c (size_in_bytes, max_int_size_in_bytes): Likewise.
+	* tree.h (size_in_bytes, max_int_size_in_bytes): Likewise.
+
 2007-08-16  Victor Kaplansky <victork@il.ibm.com>
 
 	* tree-vectorizer.c (new_loop_vec_info): Initialize new 

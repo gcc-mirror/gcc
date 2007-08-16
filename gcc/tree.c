@@ -1801,7 +1801,7 @@ tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
    make_unsigned_type).  */
 
 tree
-size_in_bytes (tree type)
+size_in_bytes (const_tree type)
 {
   tree t;
 
@@ -1847,7 +1847,7 @@ int_size_in_bytes (const_tree type)
    or return -1 if the size can vary or is larger than an integer.  */
 
 HOST_WIDE_INT
-max_int_size_in_bytes (tree type)
+max_int_size_in_bytes (const_tree type)
 {
   HOST_WIDE_INT size = -1;
   tree size_tree;

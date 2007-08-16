@@ -626,7 +626,7 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
    pointer_map_traverse.  */
 
 static bool
-free_name_expansion (void *key ATTRIBUTE_UNUSED, void **value,
+free_name_expansion (const void *key ATTRIBUTE_UNUSED, void **value,
 		     void *data ATTRIBUTE_UNUSED)
 {
   struct name_expansion *exp = *value;

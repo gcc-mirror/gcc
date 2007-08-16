@@ -53,7 +53,7 @@ cxx_get_alias_set (tree t)
 /* Called from check_global_declarations.  */
 
 bool
-cxx_warn_unused_global_decl (tree decl)
+cxx_warn_unused_global_decl (const_tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return false;
@@ -72,7 +72,7 @@ cxx_warn_unused_global_decl (tree decl)
    might have allocated something there.  */
 
 tree
-cp_expr_size (tree exp)
+cp_expr_size (const_tree exp)
 {
   tree type = TREE_TYPE (exp);
 

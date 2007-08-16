@@ -103,7 +103,7 @@ static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
 static void gnat_expand_body		(tree);
 static void internal_error_function	(const char *, va_list *);
 static void gnat_adjust_rli		(record_layout_info);
-static tree gnat_type_max_size		(tree);
+static tree gnat_type_max_size		(const_tree);
 
 /* Definitions for our language-specific hooks.  */
 
@@ -767,7 +767,7 @@ gnat_get_alias_set (tree type)
    as a constant when possible.  */
 
 static tree
-gnat_type_max_size (tree gnu_type)
+gnat_type_max_size (const_tree gnu_type)
 {
   /* First see what we can get from TYPE_SIZE_UNIT, which might not
      be constant even for simple expressions if it has already been
