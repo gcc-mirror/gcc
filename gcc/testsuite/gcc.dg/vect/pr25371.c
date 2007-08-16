@@ -10,3 +10,4 @@ void slow_close(int n)
       *(mm+i*2*n+i) = 0;
 }
 
+/* { dg-final { cleanup-tree-dump "vect" } } */
