@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -344,6 +344,10 @@ package Stand is
    Standard_A_Char : Entity_Id;
    --  Access to character, used as a component of the exception type to
    --  denote a thin pointer component.
+
+   Standard_Debug_Renaming_Type : Entity_Id;
+   --  A null record type with zero size, used as the type of variables used
+   --  to provide the debugger with name encodings for renaming declarations.
 
    --  The entities labeled Any_xxx are used in situations where the full
    --  characteristics of an entity are not yet known, e.g. Any_Character

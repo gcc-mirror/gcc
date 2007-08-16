@@ -38,6 +38,7 @@ with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Table;
+with Tbuild;   use Tbuild;
 with Urealp;   use Urealp;
 
 package body Exp_Dbug is
@@ -295,12 +296,10 @@ package body Exp_Dbug is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Node_Id    := Defining_Entity (N);
       Nam : constant Node_Id    := Name (N);
-      Rnm : Name_Id;
       Ren : Node_Id;
-      Lit : Entity_Id;
       Typ : Entity_Id;
+      Obj : Entity_Id;
       Res : Node_Id;
-      Def : Entity_Id;
 
       function Output_Subscript (N : Node_Id; S : String) return Boolean;
       --  Outputs a single subscript value as ?nnn (subscript is compile time
@@ -341,36 +340,6 @@ package body Exp_Dbug is
       then
          return Empty;
       end if;
-
-      --  Prepare entity name for type declaration
-
-      Get_Name_String (Chars (Ent));
-
-      case Nkind (N) is
-         when N_Object_Renaming_Declaration =>
-            Add_Str_To_Name_Buffer ("___XR");
-
-         when N_Exception_Renaming_Declaration =>
-            Add_Str_To_Name_Buffer ("___XRE");
-
-         when N_Package_Renaming_Declaration =>
-            Add_Str_To_Name_Buffer ("___XRP");
-
-            --  If it is a child unit create a fully qualified name, to
-            --  disambiguate multiple child units with the same name and
-            --  different parents.
-
-            if Is_Child_Unit (Ent) then
-               Prepend_String_To_Buffer ("__");
-               Prepend_String_To_Buffer
-                 (Get_Name_String (Chars (Scope (Ent))));
-            end if;
-
-         when others =>
-            return Empty;
-      end case;
-
-      Rnm := Name_Find;
 
       --  Get renamed entity and compute suffix
 
@@ -443,9 +412,43 @@ package body Exp_Dbug is
 
       Prepend_String_To_Buffer ("___XE");
 
-      --  For now, the literal name contains only the suffix. The Entity_Id
-      --  value for the name is used to create a link from this literal name
-      --  to the renamed entity using the Debug_Renaming_Link field. Then the
+      --  Include the designation of the form of renaming
+
+      case Nkind (N) is
+         when N_Object_Renaming_Declaration =>
+            Prepend_String_To_Buffer ("___XR");
+
+         when N_Exception_Renaming_Declaration =>
+            Prepend_String_To_Buffer ("___XRE");
+
+         when N_Package_Renaming_Declaration =>
+            Prepend_String_To_Buffer ("___XRP");
+
+         when others =>
+            return Empty;
+      end case;
+
+      --  Add the name of the renaming entity to the front
+
+      Prepend_String_To_Buffer (Get_Name_String (Chars (Ent)));
+
+      --  If it is a child unit create a fully qualified name, to disambiguate
+      --  multiple child units with the same name and different parents.
+
+      if Nkind (N) = N_Package_Renaming_Declaration
+        and then Is_Child_Unit (Ent)
+      then
+         Prepend_String_To_Buffer ("__");
+         Prepend_String_To_Buffer
+           (Get_Name_String (Chars (Scope (Ent))));
+      end if;
+
+      --  Create the special object whose name is the debug encoding for the
+      --  renaming declaration.
+
+      --  For now, the object name contains the suffix encoding for the renamed
+      --  object, but not the name of the leading entity. The object is linked
+      --  the renamed entity using the Debug_Renaming_Link field. Then the
       --  Qualify_Entity_Name procedure uses this link to create the proper
       --  fully qualified name.
 
@@ -453,23 +456,17 @@ package body Exp_Dbug is
       --  qualification of the renamed entity, and it is really much easier to
       --  do this after the renamed entity has itself been fully qualified.
 
-      Lit := Make_Defining_Identifier (Loc, Chars => Name_Enter);
-      Set_Debug_Renaming_Link (Lit, Entity (Ren));
-
-      --  Return the appropriate enumeration type
-
-      Def := Make_Defining_Identifier (Loc, Chars => Rnm);
+      Obj := Make_Defining_Identifier (Loc, Chars => Name_Enter);
       Res :=
-        Make_Full_Type_Declaration (Loc,
-          Defining_Identifier => Def,
-          Type_Definition =>
-            Make_Enumeration_Type_Definition (Loc,
-              Literals => New_List (Lit)));
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Obj,
+          Object_Definition   => New_Reference_To
+                                   (Standard_Debug_Renaming_Type, Loc));
 
-      Set_Needs_Debug_Info (Def);
-      Set_Needs_Debug_Info (Lit);
+      Set_Debug_Renaming_Link (Obj, Entity (Ren));
 
-      Set_Discard_Names (Defining_Identifier (Res));
+      Set_Needs_Debug_Info (Obj);
+
       return Res;
 
    --  If we get an exception, just figure it is a case that we cannot
@@ -1251,17 +1248,69 @@ package body Exp_Dbug is
       if Has_Qualified_Name (Ent) then
          return;
 
-      --  Here is where we create the proper link for renaming
+      --  If the entity is a variable encoding the debug name for an object
+      --  renaming, then the qualified name of the entity associated with the
+      --  renamed object can now be incorporated in the debug name.
 
-      elsif Ekind (Ent) = E_Enumeration_Literal
+      elsif Ekind (Ent) = E_Variable
         and then Present (Debug_Renaming_Link (Ent))
       then
          Name_Len := 0;
          Qualify_Entity_Name (Debug_Renaming_Link (Ent));
          Get_Name_String (Chars (Ent));
-         Prepend_String_To_Buffer
-           (Get_Name_String (Chars (Debug_Renaming_Link (Ent))));
+
+         --  Retrieve the now-qualified name of the renamed entity and insert
+         --  it in the middle of the name, just preceding the suffix encoding
+         --  describing the renamed object.
+
+         declare
+            Renamed_Id : constant String :=
+                           Get_Name_String (Chars (Debug_Renaming_Link (Ent)));
+            Insert_Len : constant Integer := Renamed_Id'Length + 1;
+            Index      : Natural := Name_Len - 3;
+
+         begin
+            --  Loop backwards through the name to find the start of the "___"
+            --  sequence associated with the suffix.
+
+            while Index >= Name_Buffer'First
+              and then (Name_Buffer (Index + 1) /= '_'
+                         or else Name_Buffer (Index + 2) /= '_'
+                         or else Name_Buffer (Index + 3) /= '_')
+            loop
+               Index := Index - 1;
+            end loop;
+
+            pragma Assert (Name_Buffer (Index + 1 .. Index + 3) = "___");
+
+            --  Insert an underscore separator and the entity name just in
+            --  front of the suffix.
+
+            Name_Buffer (Index + 1 + Insert_Len .. Name_Len + Insert_Len) :=
+              Name_Buffer (Index + 1 .. Name_Len);
+            Name_Buffer (Index + 1) := '_';
+            Name_Buffer (Index + 2 .. Index + Insert_Len) := Renamed_Id;
+            Name_Len := Name_Len + Insert_Len;
+         end;
+
+         --  Reset the name of the variable to the new name that includes the
+         --  name of the renamed entity.
+
          Set_Chars (Ent, Name_Enter);
+
+         --  If the entity needs qualification by its scope then develop it
+         --  here, add the variable's name, and again reset the entity name.
+
+         if Qualify_Needed (Scope (Ent)) then
+            Name_Len := 0;
+            Set_Entity_Name (Scope (Ent));
+            Add_Str_To_Name_Buffer ("__");
+
+            Get_Name_String_And_Append (Chars (Ent));
+
+            Set_Chars (Ent, Name_Enter);
+         end if;
+
          Set_Has_Qualified_Name (Ent);
          return;
 

@@ -665,8 +665,8 @@ package Einfo is
 --       determining if Needs_Debug_Info should be set. The back end should
 --       always test Needs_Debug_Info, it should never test Debug_Info_Off.
 
---    Debug_Renaming_Link (Node13)
---       Used to link the enumeration literal of a debug renaming declaration
+--    Debug_Renaming_Link (Node25)
+--       Used to link the variable associated with a debug renaming declaration
 --       to the renamed entity. See Exp_Dbug.Debug_Renaming_Declaration for
 --       details of the use of this field.
 
@@ -4717,7 +4717,6 @@ package Einfo is
    --  E_Enumeration_Literal
    --    Enumeration_Pos                     (Uint11)
    --    Enumeration_Rep                     (Uint12)
-   --    Debug_Renaming_Link                 (Node13)
    --    Alias                               (Node18)
    --    Enumeration_Rep_Expr                (Node22)
    --    Next_Literal                        (synth)
@@ -5250,6 +5249,7 @@ package Einfo is
    --    Interface_Name                      (Node21)
    --    Shared_Var_Assign_Proc              (Node22)
    --    Extra_Constrained                   (Node23)
+   --    Debug_Renaming_Link                 (Node25)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
