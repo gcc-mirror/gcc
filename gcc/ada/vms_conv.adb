@@ -1788,8 +1788,17 @@ package body VMS_Conv is
                   end if;
 
                   if Sw /= null then
-                     case Sw.Translation is
+                     if Cargs
+                       and then Sw.Name /= null
+                       and then
+                         (Sw.Name.all = "/PROJECT_FILE"          or else
+                          Sw.Name.all = "/MESSAGES_PROJECT_FILE" or else
+                          Sw.Name.all = "/EXTERNAL_REFERENCE")
+                     then
+                        Cargs := False;
+                     end if;
 
+                     case Sw.Translation is
                         when T_Direct =>
                            Place_Unix_Switches (Sw.Unix_String);
                            if SwP < Arg'Last
