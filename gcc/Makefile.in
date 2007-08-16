@@ -728,10 +728,17 @@ TM_H      = $(GTM_H) insn-constants.h insn-flags.h options.h
 BASEVER     := $(srcdir)/BASE-VER  # 4.x.y
 DEVPHASE    := $(srcdir)/DEV-PHASE # experimental, prerelease, ""
 DATESTAMP   := $(srcdir)/DATESTAMP # YYYYMMDD or empty
+REVISION    := $(srcdir)/REVISION  # [BRANCH revision XXXXXX]
 
 BASEVER_c   := $(shell cat $(BASEVER))
 DEVPHASE_c  := $(shell cat $(DEVPHASE))
 DATESTAMP_c := $(shell cat $(DATESTAMP))
+
+ifeq (,$(wildcard $(REVISION)))
+REVISION_c  :=
+else
+REVISION_c  := $(shell cat $(REVISION))
+endif
 
 version     := $(BASEVER_c)
 
@@ -743,6 +750,12 @@ version     := $(BASEVER_c)
 BASEVER_s   := "\"$(BASEVER_c)\""
 DEVPHASE_s  := "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
 DATESTAMP_s := "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
+
+ifdef REVISION_c
+REVISION_s  := "\"$(if $(DEVPHASE_c), $(REVISION_c))\""
+else
+REVISION_s  :=
+endif
 
 # Shorthand variables for dependency lists.
 TARGET_H = $(TM_H) target.h insn-modes.h
@@ -1886,9 +1899,10 @@ gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) opts.h intl
 
 dumpvers: dumpvers.c
 
-version.o: version.c version.h $(DATESTAMP) $(BASEVER) $(DEVPHASE)
+version.o: version.c version.h $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
+	-DREVISION=$(REVISION_s) \
 	-DDEVPHASE=$(DEVPHASE_s) -c $(srcdir)/version.c $(OUTPUT_OPTION)
 
 gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
