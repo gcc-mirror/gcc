@@ -1,3 +1,7 @@
+2007-08-16  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/torture/pr32897.c: New test.
+
 2007-08-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/31132

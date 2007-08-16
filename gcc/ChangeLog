@@ -1,3 +1,14 @@
+2007-08-16  Richard Sandiford  <richard@codesourcery.com>
+
+	PR middle-end/32897
+	* reload.c (find_reloads): Check that the memory returned by
+	find_reloads_toplev was not the result of forcing a constant
+	to memory.
+	(find_reloads_toplev): Always use simplify_gen_subreg to get
+	the subreg of a constant.  If the result is also a constant,
+	but not a legitimate one, force it into the constant pool
+	and reload its address.
+
 2007-08-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Add CLZ, CTZ, and

@@ -2794,7 +2794,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      && MEM_P (op)
 	      && REG_P (reg)
 	      && (GET_MODE_SIZE (GET_MODE (reg))
-		  >= GET_MODE_SIZE (GET_MODE (op))))
+		  >= GET_MODE_SIZE (GET_MODE (op)))
+	      && reg_equiv_constant[REGNO (reg)] == 0)
 	    set_unique_reg_note (emit_insn_before (gen_rtx_USE (VOIDmode, reg),
 						   insn),
 				 REG_EQUAL, reg_equiv_memory_loc[REGNO (reg)]);
@@ -4600,14 +4601,6 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
       int regno = REGNO (SUBREG_REG (x));
       rtx tem;
 
-      if (subreg_lowpart_p (x)
-	  && regno >= FIRST_PSEUDO_REGISTER
-	  && reg_renumber[regno] < 0
-	  && reg_equiv_constant[regno] != 0
-	  && (tem = gen_lowpart_common (GET_MODE (x),
-					reg_equiv_constant[regno])) != 0)
-	return tem;
-
       if (regno >= FIRST_PSEUDO_REGISTER
 	  && reg_renumber[regno] < 0
 	  && reg_equiv_constant[regno] != 0)
@@ -4616,6 +4609,15 @@ find_reloads_toplev (rtx x, int opnum, enum reload_type type,
 	    simplify_gen_subreg (GET_MODE (x), reg_equiv_constant[regno],
 				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
 	  gcc_assert (tem);
+	  if (CONSTANT_P (tem) && !LEGITIMATE_CONSTANT_P (tem))
+	    {
+	      tem = force_const_mem (GET_MODE (x), tem);
+	      i = find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
+					&XEXP (tem, 0), opnum, type,
+					ind_levels, insn);
+	      if (address_reloaded)
+		*address_reloaded = i;
+	    }
 	  return tem;
 	}
 
