@@ -4174,6 +4174,9 @@ package body Prj.Nmsc is
                elsif Value = "restricted" then
                   Data.Symbol_Data.Symbol_Policy := Restricted;
 
+               elsif Value = "direct" then
+                  Data.Symbol_Data.Symbol_Policy := Direct;
+
                else
                   Error_Msg
                     (Project, In_Tree,
@@ -4196,7 +4199,7 @@ package body Prj.Nmsc is
             end if;
 
          else
-            --  Library_Symbol_File is defined. Check that the file exists
+            --  Library_Symbol_File is defined.
 
             Data.Symbol_Data.Symbol_File :=
               Path_Name_Type (Lib_Symbol_File.Value);
@@ -4262,43 +4265,28 @@ package body Prj.Nmsc is
                   Lib_Symbol_File.Location);
 
             else
-               OK := not Is_Absolute_Path (Name_Buffer (1 .. Name_Len));
-
-               if OK then
-                  for J in 1 .. Name_Len loop
-                     if Name_Buffer (J) = '/'
-                       or else Name_Buffer (J) = Directory_Separator
-                     then
-                        OK := False;
-                        exit;
-                     end if;
-                  end loop;
-               end if;
-
-               if not OK then
-                  Error_Msg_File_1 :=
-                    File_Name_Type (Lib_Ref_Symbol_File.Value);
-                  Error_Msg
-                    (Project, In_Tree,
-                     "reference symbol file { name is illegal. " &
-                     "Name canot include directory info.",
-                     Lib_Ref_Symbol_File.Location);
+               if not Is_Absolute_Path (Name_Buffer (1 .. Name_Len)) then
+                  Name_Len := 0;
+                  Add_Str_To_Name_Buffer (Get_Name_String (Data.Directory));
+                  Add_Char_To_Name_Buffer (Directory_Separator);
+                  Add_Str_To_Name_Buffer
+                    (Get_Name_String (Lib_Ref_Symbol_File.Value));
+                  Data.Symbol_Data.Reference := Name_Find;
                end if;
 
                if not Is_Regular_File
-                 (Get_Name_String (Data.Object_Directory) &
-                  Directory_Separator &
-                  Get_Name_String (Lib_Ref_Symbol_File.Value))
+                 (Get_Name_String (Data.Symbol_Data.Reference))
                then
                   Error_Msg_File_1 :=
                     File_Name_Type (Lib_Ref_Symbol_File.Value);
 
-                  --  For controlled symbol policy, it is an error if the
-                  --  reference symbol file does not exist. For other symbol
-                  --  policies, this is just a warning
+                  --  For controlled and direct symbol policies, it is an error
+                  --  if the reference symbol file does not exist. For other
+                  --  symbol policies, this is just a warning
 
                   Error_Msg_Warn :=
-                    Data.Symbol_Data.Symbol_Policy /= Controlled;
+                    Data.Symbol_Data.Symbol_Policy /= Controlled
+                    and then Data.Symbol_Data.Symbol_Policy /= Direct;
 
                   Error_Msg
                     (Project, In_Tree,
@@ -4314,6 +4302,36 @@ package body Prj.Nmsc is
                      if Data.Symbol_Data.Symbol_Policy = Compliant then
                         Data.Symbol_Data.Symbol_Policy := Autonomous;
                      end if;
+                  end if;
+               end if;
+
+               --  If both the reference symbol file and the symbol file are
+               --  defined, then check that they are not the same file.
+
+               if Data.Symbol_Data.Symbol_File /= No_Path then
+                  Get_Name_String (Data.Symbol_Data.Symbol_File);
+
+                  if Name_Len > 0 then
+                     declare
+                        Symb_Path : constant String :=
+                                      Normalize_Pathname
+                                        (Get_Name_String
+                                           (Data.Object_Directory) &
+                                         Directory_Separator &
+                                         Name_Buffer (1 .. Name_Len));
+                        Ref_Path  : constant String :=
+                                      Normalize_Pathname
+                                        (Get_Name_String
+                                           (Data.Symbol_Data.Reference));
+                     begin
+                        if Symb_Path = Ref_Path then
+                           Error_Msg
+                             (Project, In_Tree,
+                              "library reference symbol file and library" &
+                              " symbol file cannot be the same file",
+                              Lib_Ref_Symbol_File.Location);
+                        end if;
+                     end;
                   end if;
                end if;
             end if;
@@ -4794,6 +4812,12 @@ package body Prj.Nmsc is
                       Util.Value_Of
                         (Name_Source_Dirs, Data.Decl.Attributes, In_Tree);
 
+      Removed_Source_Dirs : constant Variable_Value :=
+                              Util.Value_Of
+                                (Name_Removed_Source_Dirs,
+                                 Data.Decl.Attributes,
+                                 In_Tree);
+
       Source_Files : constant Variable_Value :=
                       Util.Value_Of
                         (Name_Source_Files, Data.Decl.Attributes, In_Tree);
@@ -4802,9 +4826,11 @@ package body Prj.Nmsc is
 
       procedure Find_Source_Dirs
         (From     : File_Name_Type;
-         Location : Source_Ptr);
-      --  Find one or several source directories, and add them
-      --  to the list of source directories of the project.
+         Location : Source_Ptr;
+         Removed  : Boolean := False);
+      --  Find one or several source directories, and add (or remove, if
+      --  Removed is True) them to the list of source directories of the
+      --  project.
 
       ----------------------
       -- Find_Source_Dirs --
@@ -4812,7 +4838,8 @@ package body Prj.Nmsc is
 
       procedure Find_Source_Dirs
         (From     : File_Name_Type;
-         Location : Source_Ptr)
+         Location : Source_Ptr;
+         Removed  : Boolean := False)
       is
          Directory : constant String := Get_Name_String (From);
          Element   : String_Element;
@@ -4830,6 +4857,7 @@ package body Prj.Nmsc is
             Name     : String (1 .. 250);
             Last     : Natural;
             List     : String_List_Id := Data.Source_Dirs;
+            Prev     : String_List_Id := Nil_String;
             Element  : String_Element;
             Found    : Boolean := False;
 
@@ -4857,11 +4885,12 @@ package body Prj.Nmsc is
             --  then there is nothing to do, just return. If it is not, put
             --  it there and continue recursive processing.
 
-            if Recursive_Dirs.Get (Canonical_Path) then
-               return;
-
-            else
-               Recursive_Dirs.Set (Canonical_Path, True);
+            if not Removed then
+               if Recursive_Dirs.Get (Canonical_Path) then
+                  return;
+               else
+                  Recursive_Dirs.Set (Canonical_Path, True);
+               end if;
             end if;
 
             --  Check if directory is already in list
@@ -4874,12 +4903,13 @@ package body Prj.Nmsc is
                   exit when Found;
                end if;
 
+               Prev := List;
                List := Element.Next;
             end loop;
 
             --  If directory is not already in list, put it there
 
-            if not Found then
+            if (not Removed) and (not Found) then
                if Current_Verbosity = High then
                   Write_Str  ("   ");
                   Write_Line (The_Path (The_Path'First .. The_Path_Last));
@@ -4918,6 +4948,15 @@ package body Prj.Nmsc is
                  (In_Tree.String_Elements);
                In_Tree.String_Elements.Table (Last_Source_Dir) :=
                  Element;
+
+            elsif Removed and Found then
+               if Prev = Nil_String then
+                  Data.Source_Dirs :=
+                    In_Tree.String_Elements.Table (List).Next;
+               else
+                  In_Tree.String_Elements.Table (Prev).Next :=
+                    In_Tree.String_Elements.Table (List).Next;
+               end if;
             end if;
 
             --  Now look for subdirectories. We do that even when this
@@ -4973,14 +5012,14 @@ package body Prj.Nmsc is
       --  Start of processing for Find_Source_Dirs
 
       begin
-         if Current_Verbosity = High then
+         if Current_Verbosity = High and then not Removed then
             Write_Str ("Find_Source_Dirs (""");
             Write_Str (Directory);
             Write_Line (""")");
          end if;
 
-         --  First, check if we are looking for a directory tree,
-         --  indicated by "/**" at the end.
+         --  First, check if we are looking for a directory tree, indicated
+         --  by "/**" at the end.
 
          if Directory'Length >= 3
            and then Directory (Directory'Last - 1 .. Directory'Last) = "**"
@@ -4988,14 +5027,15 @@ package body Prj.Nmsc is
                        or else
                      Directory (Directory'Last - 2) = Directory_Separator)
          then
-            Data.Known_Order_Of_Source_Dirs := False;
+            if not Removed then
+               Data.Known_Order_Of_Source_Dirs := False;
+            end if;
 
             Name_Len := Directory'Length - 3;
 
             if Name_Len = 0 then
 
-               --  This is the case of "/**": all directories
-               --  in the file system.
+               --  Case of "/**": all directories in file system
 
                Name_Len := 1;
                Name_Buffer (1) := Directory (Directory'First);
@@ -5038,8 +5078,8 @@ package body Prj.Nmsc is
                   end if;
 
                else
-                  --  We have an existing directory, we register it and all
-                  --  of its subdirectories.
+                  --  We have an existing directory, we register it and all of
+                  --  its subdirectories.
 
                   if Current_Verbosity = High then
                      Write_Line ("Looking for source directories:");
@@ -5061,6 +5101,8 @@ package body Prj.Nmsc is
             declare
                Path_Name         : Path_Name_Type;
                Display_Path_Name : Path_Name_Type;
+               List              : String_List_Id;
+               Prev              : String_List_Id;
 
             begin
                Locate_Directory
@@ -5087,37 +5129,100 @@ package body Prj.Nmsc is
                   end if;
 
                else
-                  --  As it is an existing directory, we add it to
-                  --  the list of directories.
+                  declare
+                     Path              : constant String :=
+                                           Get_Name_String (Path_Name) &
+                                           Directory_Separator;
+                     Last_Path         : constant Natural :=
+                                           Compute_Directory_Last (Path);
+                     Path_Id           : Name_Id;
+                     Display_Path      : constant String :=
+                                           Get_Name_String
+                                             (Display_Path_Name) &
+                                           Directory_Separator;
+                     Last_Display_Path : constant Natural :=
+                                           Compute_Directory_Last
+                                             (Display_Path);
+                     Display_Path_Id   : Name_Id;
 
-                  String_Element_Table.Increment_Last
-                    (In_Tree.String_Elements);
-                  Element.Value := Name_Id (Path_Name);
-                  Element.Display_Value := Name_Id (Display_Path_Name);
+                  begin
+                     Name_Len := 0;
+                     Add_Str_To_Name_Buffer (Path (Path'First .. Last_Path));
+                     Path_Id := Name_Find;
+                     Name_Len := 0;
+                     Add_Str_To_Name_Buffer
+                       (Display_Path
+                          (Display_Path'First .. Last_Display_Path));
+                     Display_Path_Id := Name_Find;
 
-                  if Last_Source_Dir = Nil_String then
+                     if not Removed then
 
-                     --  This is the first source directory
+                        --  As it is an existing directory, we add it to the
+                        --  list of directories.
 
-                     Data.Source_Dirs := String_Element_Table.Last
-                                        (In_Tree.String_Elements);
+                        String_Element_Table.Increment_Last
+                          (In_Tree.String_Elements);
+                        Element :=
+                          (Value         => Path_Id,
+                           Index         => 0,
+                           Display_Value => Display_Path_Id,
+                           Location      => No_Location,
+                           Flag          => False,
+                           Next          => Nil_String);
 
-                  else
-                     --  We already have source directories,
-                     --  link the previous last to the new one.
+                        if Last_Source_Dir = Nil_String then
 
-                     In_Tree.String_Elements.Table
-                       (Last_Source_Dir).Next :=
-                         String_Element_Table.Last
-                           (In_Tree.String_Elements);
-                  end if;
+                           --  This is the first source directory
 
-                  --  And register this source directory as the new last
+                           Data.Source_Dirs := String_Element_Table.Last
+                             (In_Tree.String_Elements);
 
-                  Last_Source_Dir := String_Element_Table.Last
-                    (In_Tree.String_Elements);
-                  In_Tree.String_Elements.Table
-                    (Last_Source_Dir) := Element;
+                        else
+                           --  We already have source directories, link the
+                           --  previous last to the new one.
+
+                           In_Tree.String_Elements.Table
+                             (Last_Source_Dir).Next :=
+                             String_Element_Table.Last
+                               (In_Tree.String_Elements);
+                        end if;
+
+                        --  And register this source directory as the new last
+
+                        Last_Source_Dir := String_Element_Table.Last
+                          (In_Tree.String_Elements);
+                        In_Tree.String_Elements.Table
+                          (Last_Source_Dir) := Element;
+
+                     else
+                        --  Remove source dir, if present
+
+                        List := Data.Source_Dirs;
+                        Prev := Nil_String;
+
+                        --  Look for source dir in current list
+
+                        while List /= Nil_String loop
+                           Element := In_Tree.String_Elements.Table (List);
+                           exit when Element.Value = Path_Id;
+                           Prev := List;
+                           List := Element.Next;
+                        end loop;
+
+                        if List /= Nil_String then
+                           --  Source dir was found, remove it from the list
+
+                           if Prev = Nil_String then
+                              Data.Source_Dirs :=
+                                In_Tree.String_Elements.Table (List).Next;
+
+                           else
+                              In_Tree.String_Elements.Table (Prev).Next :=
+                                In_Tree.String_Elements.Table (List).Next;
+                           end if;
+                        end if;
+                     end if;
+                  end;
                end if;
             end;
          end if;
@@ -5219,8 +5324,7 @@ package body Prj.Nmsc is
                Exec_Dir.Location);
 
          else
-            --  We check that the specified object directory
-            --  does exist.
+            --  We check that the specified object directory does exist
 
             Locate_Directory
               (Project,
@@ -5273,8 +5377,8 @@ package body Prj.Nmsc is
 
       elsif Source_Dirs.Default then
 
-         --  No Source_Dirs specified: the single source directory
-         --  is the one containing the project file
+         --  No Source_Dirs specified: the single source directory is the one
+         --  containing the project file
 
          String_Element_Table.Increment_Last
            (In_Tree.String_Elements);
@@ -5297,10 +5401,10 @@ package body Prj.Nmsc is
 
       elsif Source_Dirs.Values = Nil_String then
 
-         --  If Source_Dirs is an empty string list, this means
-         --  that this project contains no source. For projects that
-         --  don't extend other projects, this also means that there is no
-         --  need for an object directory, if not specified.
+         --  If Source_Dirs is an empty string list, this means that this
+         --  project contains no source. For projects that don't extend other
+         --  projects, this also means that there is no need for an object
+         --  directory, if not specified.
 
          if Data.Extends = No_Project
            and then  Data.Object_Directory = Data.Directory
@@ -5316,14 +5420,35 @@ package body Prj.Nmsc is
             Element    : String_Element;
 
          begin
-            --  We will find the source directories for each
-            --  element of the list
+            --  Process the source directories for each element of the list
 
             while Source_Dir /= Nil_String loop
                Element :=
                  In_Tree.String_Elements.Table (Source_Dir);
                Find_Source_Dirs
                  (File_Name_Type (Element.Value), Element.Location);
+               Source_Dir := Element.Next;
+            end loop;
+         end;
+      end if;
+
+      if (not Removed_Source_Dirs.Default) and then
+        Removed_Source_Dirs.Values /= Nil_String then
+         declare
+            Source_Dir : String_List_Id;
+            Element    : String_Element;
+
+         begin
+            --  Process the source directories for each element of the list
+
+            Source_Dir := Removed_Source_Dirs.Values;
+            while Source_Dir /= Nil_String loop
+               Element :=
+                 In_Tree.String_Elements.Table (Source_Dir);
+               Find_Source_Dirs
+                 (File_Name_Type (Element.Value),
+                  Element.Location,
+                  Removed => True);
                Source_Dir := Element.Next;
             end loop;
          end;
@@ -5368,8 +5493,8 @@ package body Prj.Nmsc is
    begin
       Data.Mains := Mains.Values;
 
-      --  If no Mains were specified, and if we are an extending
-      --  project, inherit the Mains from the project we are extending.
+      --  If no Mains were specified, and if we are an extending project,
+      --  inherit the Mains from the project we are extending.
 
       if Mains.Default then
          if Data.Extends /= No_Project then
@@ -5602,8 +5727,8 @@ package body Prj.Nmsc is
 
          if Name_Buffer (1 .. Name_Len) /= "." then
 
-            --  If Dot_Replacement is not a single dot, then there should
-            --  not be any dot in the name.
+            --  If Dot_Replacement is not a single dot, then there should not
+            --  be any dot in the name.
 
             for Index in First .. Last loop
                if File (Index) = '.' then
@@ -5757,8 +5882,8 @@ package body Prj.Nmsc is
          return True;
       end if;
 
-      --  If dot replacement is a single dot, and first character of
-      --  suffix is also a dot
+      --  If dot replacement is a single dot, and first character of suffix is
+      --  also a dot
 
       if Dot_Replacement_Is_A_Single_Dot
         and then Suffix (Suffix'First) = '.'
@@ -5862,6 +5987,7 @@ package body Prj.Nmsc is
                      Location);
             end;
          end if;
+
          if Is_Directory (Full_Path_Name) then
             declare
                Normed : constant String :=
@@ -5903,8 +6029,6 @@ package body Prj.Nmsc is
       --  Find the path names of the source files in the Source_Names table
       --  in the source directories and record those that are Ada sources.
 
---      function Source_Of (File_Name : Name_Id) return Source_Id;
-
       procedure Get_Sources_From_File
         (Path     : String;
          Location : Source_Ptr);
@@ -5931,11 +6055,8 @@ package body Prj.Nmsc is
          Name_Str        : String (1 .. 1_024);
          Last            : Natural := 0;
          NL              : Name_Location;
-
          Current_Source  : String_List_Id := Nil_String;
-
          First_Error     : Boolean := True;
-
          Source_Recorded : Boolean := False;
 
       begin
@@ -6020,7 +6141,6 @@ package body Prj.Nmsc is
          --  in a source list file is not found.
 
          NL := Source_Names.Get_First;
-
          while NL /= No_Name_Location loop
             if not NL.Found then
                Err_Vars.Error_Msg_File_1 := NL.Name;
@@ -6080,23 +6200,20 @@ package body Prj.Nmsc is
       ------------------------
 
       procedure Search_Directories (For_All_Sources : Boolean) is
-         Source_Dir      : String_List_Id := Data.Source_Dirs;
-         Element         : String_Element;
-         Dir             : Dir_Type;
-         Name            : String (1 .. 1_000);
-         Last            : Natural;
+         Source_Dir : String_List_Id;
+         Element    : String_Element;
+         Dir        : Dir_Type;
+         Name       : String (1 .. 1_000);
+         Last       : Natural;
 
          File_Name         : File_Name_Type;
          Display_File_Name : File_Name_Type;
-
          Source            : Source_Id;
          Source_To_Replace : Source_Id := No_Source;
          Src_Data          : Source_Data;
          Add_Src           : Boolean;
-
-         Name_Loc        : Name_Location;
-
-         Check_Name      : Boolean;
+         Name_Loc          : Name_Location;
+         Check_Name        : Boolean;
 
          Language              : Language_Index;
          Language_Name         : Name_Id;
@@ -6121,10 +6238,8 @@ package body Prj.Nmsc is
          procedure Check_Naming_Schemes is
             Filename : constant String := Get_Name_String (File_Name);
             Last     : Positive := Filename'Last;
-
             Config   : Language_Config;
-
-            Lang     : Name_List_Index  := Data.Languages;
+            Lang     : Name_List_Index;
 
             Header_File    : Boolean := False;
             First_Language : Language_Index;
@@ -6132,11 +6247,11 @@ package body Prj.Nmsc is
          begin
             Unit := No_Name;
 
+            Lang := Data.Languages;
             while Lang /= No_Name_List loop
-
-               Language := Data.First_Language_Processing;
                Language_Name := In_Tree.Name_Lists.Table (Lang).Name;
 
+               Language := Data.First_Language_Processing;
                while Language /= No_Language_Index loop
                   if In_Tree.Languages_Data.Table (Language).Name =
                     Language_Name
@@ -6146,9 +6261,10 @@ package body Prj.Nmsc is
                      Config := In_Tree.Languages_Data.Table (Language).Config;
 
                      if Config.Kind = File_Based then
-                        --  For file based languages, there is no Unit.
-                        --  Just check if the file name has the implementation
-                        --  or, if it is specified, the template suffix of the
+
+                        --  For file based languages, there is no Unit. Just
+                        --  check if the file name has the implementation or,
+                        --  if it is specified, the template suffix of the
                         --  language.
 
                         Unit := No_Name;
@@ -6225,11 +6341,13 @@ package body Prj.Nmsc is
                         end if;
 
                      elsif not Header_File then
+
                         --  Unit based language
 
                         OK := Config.Naming_Data.Dot_Replacement /= No_File;
 
                         if OK then
+
                            --  Check casing
 
                            case Config.Naming_Data.Casing is
@@ -6270,7 +6388,6 @@ package body Prj.Nmsc is
                                  Suffix : constant String :=
                                    Get_Name_String
                                      (Config.Naming_Data.Separate_Suffix);
-
                               begin
                                  if Filename'Length > Suffix'Length
                                    and then
@@ -6292,7 +6409,6 @@ package body Prj.Nmsc is
                                  Suffix : constant String :=
                                    Get_Name_String
                                      (Config.Naming_Data.Body_Suffix);
-
                               begin
                                  if Filename'Length > Suffix'Length
                                    and then
@@ -6314,7 +6430,6 @@ package body Prj.Nmsc is
                                  Suffix : constant String :=
                                    Get_Name_String
                                      (Config.Naming_Data.Spec_Suffix);
-
                               begin
                                  if Filename'Length > Suffix'Length
                                    and then
@@ -6331,15 +6446,19 @@ package body Prj.Nmsc is
                         end if;
 
                         if OK then
+
                            --  Replace dot replacements with dots
 
                            Name_Len := 0;
 
                            declare
-                              J   : Positive := Filename'First;
+                              J : Positive := Filename'First;
+
                               Dot_Replacement : constant String :=
-                                Get_Name_String
-                                  (Config.Naming_Data.Dot_Replacement);
+                                                  Get_Name_String
+                                                    (Config.Naming_Data.
+                                                       Dot_Replacement);
+
                               Max : constant Positive :=
                                       Last - Dot_Replacement'Length + 1;
 
@@ -6354,6 +6473,7 @@ package body Prj.Nmsc is
                                  then
                                     Name_Buffer (Name_Len) := '.';
                                     J := J + Dot_Replacement'Length;
+
                                  else
                                     if Filename (J) = '.' then
                                        OK := False;
@@ -6371,8 +6491,10 @@ package body Prj.Nmsc is
                         end if;
 
                         if OK then
+
                            --  The name buffer should contain the name of the
                            --  the unit, if it is one.
+
                            --  Check that this is a valid unit name
 
                            Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit);
@@ -6418,13 +6540,16 @@ package body Prj.Nmsc is
             end if;
          end Check_Naming_Schemes;
 
+      --  Start of processing for Search_Directories
+
       begin
          if Current_Verbosity = High then
             Write_Line ("Looking for sources:");
          end if;
 
-         --  For each subdirectory
+         --  Loop through subdirectories
 
+         Source_Dir := Data.Source_Dirs;
          while Source_Dir /= Nil_String loop
             begin
                Element := In_Tree.String_Elements.Table (Source_Dir);
@@ -6458,7 +6583,6 @@ package body Prj.Nmsc is
                         if Is_Regular_File
                           (Source_Directory & Name (1 .. Last))
                         then
-
                            if Current_Verbosity = High then
                               Write_Str  ("   Checking ");
                               Write_Line (Name (1 .. Last));
@@ -6507,9 +6631,9 @@ package body Prj.Nmsc is
 
                               else
                                  if Name_Loc.Found then
-                                    --  Check if it is allowed to have the
-                                    --  same file name in several source
-                                    --  directories.
+
+                                    --  Check if it is OK to have the same file
+                                    --  name in several source directories.
 
                                     if
                                       not Data.Known_Order_Of_Source_Dirs
@@ -6576,6 +6700,7 @@ package body Prj.Nmsc is
 
                                  if Language = No_Language_Index then
                                     if Name_Loc.Found then
+
                                        --  A file name in a list must be
                                        --  a source of a language.
 
@@ -6737,19 +6862,20 @@ package body Prj.Nmsc is
          if Current_Verbosity = High then
             Write_Line ("end Looking for sources.");
          end if;
-
       end Search_Directories;
+
+   --  Start of processing for Look_For_Sources
 
    begin
       if Get_Mode = Ada_Only and then
         Is_A_Language (In_Tree, Data, "ada")
       then
          declare
-            Sources          : constant Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Source_Files,
-                                    Data.Decl.Attributes,
-                                    In_Tree);
+            Sources : constant Variable_Value :=
+                        Util.Value_Of
+                          (Name_Source_Files,
+                           Data.Decl.Attributes,
+                           In_Tree);
 
             Source_List_File : constant Variable_Value :=
                                  Util.Value_Of
@@ -6898,15 +7024,13 @@ package body Prj.Nmsc is
 
                begin
                   while Current /= Nil_String loop
-                     Element :=
-                       In_Tree.String_Elements.Table (Current);
+                     Element := In_Tree.String_Elements.Table (Current);
                      Get_Name_String (Element.Value);
                      Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
                      Name := Name_Find;
 
-                     --  If the element has no location, then use the
-                     --  location of Locally_Removed to report
-                     --  possible errors.
+                     --  If the element has no location, then use the location
+                     --  of Locally_Removed to report possible errors.
 
                      if Element.Location = No_Location then
                         Location := Locally_Removed.Location;
@@ -6990,6 +7114,7 @@ package body Prj.Nmsc is
       end if;
 
       if Get_Mode = Ada_Only and then Data.Other_Sources_Present then
+
          --  Set Source_Present to False. It will be set back to True
          --  whenever a source is found.
 
@@ -7001,8 +7126,8 @@ package body Prj.Nmsc is
             if Is_Present (Lang, Data, In_Tree) then
 
                --  Reset the indication that there are sources of this
-               --  language. It will be set back to True whenever we find a
-               --  source of the language.
+               --  language. It will be set back to True whenever we find
+               --  a source of the language.
 
                Set (Lang, False, Data, In_Tree);
 
@@ -7358,6 +7483,7 @@ package body Prj.Nmsc is
                end;
 
             elsif not Source_List_File.Default then
+
                --  Source_List_File is the name of the file
                --  that contains the source file names
 
@@ -7389,13 +7515,11 @@ package body Prj.Nmsc is
               (For_All_Sources =>
                  Sources.Default and then Source_List_File.Default);
 
-            --  If there are sources that are locally removed, mark them as
-            --  such.
+            --  If there are locally removed sources, mark them as such
 
             if not Locally_Removed.Default then
-
                declare
-                  Current  : String_List_Id := Locally_Removed.Values;
+                  Current  : String_List_Id;
                   Element  : String_Element;
                   Location : Source_Ptr;
                   OK       : Boolean;
@@ -7404,6 +7528,7 @@ package body Prj.Nmsc is
                   Src_Data : Source_Data;
 
                begin
+                  Current := Locally_Removed.Values;
                   while Current /= Nil_String loop
                      Element :=
                        In_Tree.String_Elements.Table (Current);
@@ -7411,9 +7536,8 @@ package body Prj.Nmsc is
                      Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
                      Name := Name_Find;
 
-                     --  If the element has no location, then use the
-                     --  location of Locally_Removed to report
-                     --  possible errors.
+                     --  If the element has no location, then use the location
+                     --  of Locally_Removed to report possible errors.
 
                      if Element.Location = No_Location then
                         Location := Locally_Removed.Location;
@@ -7429,6 +7553,7 @@ package body Prj.Nmsc is
                         Src_Data := In_Tree.Sources.Table (Source);
 
                         if Src_Data.File = Name then
+
                            --  Check that this is from this project or a
                            --  project that the current project extends.
 
@@ -7497,13 +7622,14 @@ package body Prj.Nmsc is
       In_Tree : Project_Tree_Ref;
       Kind    : Spec_Or_Body)
    is
-      Current : Array_Element_Id := List;
+      Current : Array_Element_Id;
       Element : Array_Element;
       Unit    : Unit_Info;
 
    begin
       --  Traverse the list
 
+      Current := List;
       while Current /= No_Array_Element loop
          Element := In_Tree.Array_Elements.Table (Current);
 
@@ -7641,9 +7767,8 @@ package body Prj.Nmsc is
                   Write_Line (""" (ignored).");
                end if;
 
-               --  The file is not included in the source of the project,
-               --  because it is hidden by the exception.
-               --  So, there is nothing else to do.
+               --  The file is not included in the source of the project since
+               --  it is hidden by the exception. So, nothing else to do.
 
                return;
             end if;
@@ -7692,8 +7817,9 @@ package body Prj.Nmsc is
             --  Put the unit in unit list
 
             declare
-               The_Unit      : Unit_Index :=
-                 Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
+               The_Unit : Unit_Index :=
+                            Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
+
                The_Unit_Data : Unit_Data;
 
             begin
@@ -7870,7 +7996,6 @@ package body Prj.Nmsc is
       Last           : Natural := 0;
       NL             : Name_Location;
       First_Error    : Boolean := True;
-
       Suffix         : constant String :=
                          Body_Suffix_Of (Language, Data, In_Tree);
 
@@ -8049,7 +8174,8 @@ package body Prj.Nmsc is
       end if;
 
       In_Tree.Sources.Table (Id).Replaced_By := Replaced_By;
-      --  Remove the source from the global list
+
+      --  Remove the source from the global source list
 
       Source := In_Tree.First_Source;
 
@@ -8132,7 +8258,6 @@ package body Prj.Nmsc is
          In_Tree.Sources.Table (Source).Next_In_Lang :=
            Src_Data.Next_In_Lang;
       end if;
-
    end Remove_Source;
 
    -----------------------
