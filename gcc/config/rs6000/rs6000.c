@@ -20298,8 +20298,13 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total += COSTS_N_INSNS (2);
       return false;
 
+    case CTZ:
     case FFS:
       *total = COSTS_N_INSNS (4);
+      return false;
+
+    case POPCOUNT:
+      *total = COSTS_N_INSNS (6);
       return false;
 
     case NOT:
@@ -20311,6 +20316,7 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
       /* FALLTHRU */
 
     case AND:
+    case CLZ:
     case IOR:
     case XOR:
     case ZERO_EXTRACT:
