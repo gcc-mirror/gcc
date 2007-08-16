@@ -1039,10 +1039,10 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
         {
           fprintf (vect_dump,
-                   "not vectorized: can't determine dependence between ");
+                   "versioning for alias required: can't determine dependence between ");
           print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
           fprintf (vect_dump, " and ");
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
@@ -1052,9 +1052,9 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
         {
-          fprintf (vect_dump, "not vectorized: bad dist vector for ");
+          fprintf (vect_dump, "versioning for alias required: bad dist vector for ");
           print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
           fprintf (vect_dump, " and ");
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
@@ -1108,10 +1108,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  continue;
 	}
 
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
 	{
 	  fprintf (vect_dump,
-		   "not vectorized: possible dependence between data-refs ");
+		   "versioning for alias required: possible dependence "
+		   "between data-refs ");
 	  print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
 	  fprintf (vect_dump, " and ");
 	  print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
@@ -1123,6 +1124,77 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   return false;
 }
 
+/* Return TRUE if DDR_NEW is already found in MAY_ALIAS_DDRS list.  */
+
+static bool
+vect_is_duplicate_ddr (VEC (ddr_p, heap) * may_alias_ddrs, ddr_p ddr_new)
+{
+  unsigned i;
+  ddr_p ddr;
+
+  for (i = 0; VEC_iterate (ddr_p, may_alias_ddrs, i, ddr); i++)
+    {
+      tree dref_A_i, dref_B_i, dref_A_j, dref_B_j;
+
+      dref_A_i = DR_REF (DDR_A (ddr));
+      dref_B_i = DR_REF (DDR_B (ddr));
+      dref_A_j = DR_REF (DDR_A (ddr_new));
+      dref_B_j = DR_REF (DDR_B (ddr_new));
+
+      if ((operand_equal_p (dref_A_i, dref_A_j, 0)
+	   && operand_equal_p (dref_B_i, dref_B_j, 0))
+	  || (operand_equal_p (dref_A_i, dref_B_j, 0)
+	      && operand_equal_p (dref_B_i, dref_A_j, 0)))
+	{
+	  if (vect_print_dump_info (REPORT_DR_DETAILS))
+	    {
+	      fprintf (vect_dump, "found same pair of data references ");
+	      print_generic_expr (vect_dump, dref_A_i, TDF_SLIM);
+	      fprintf (vect_dump, " and ");
+	      print_generic_expr (vect_dump, dref_B_i, TDF_SLIM);
+	    }
+	  return true;
+	}
+    }
+  return false;
+}
+
+/* Save DDR in LOOP_VINFO list of ddrs that may alias and need to be
+   tested at run-time.  Returns false if number of run-time checks
+   inserted by vectorizer is greater than maximum defined by
+   PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS.  */
+static bool
+vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
+{
+  if (vect_print_dump_info (REPORT_DR_DETAILS))
+    {
+      fprintf (vect_dump, "mark for run-time aliasing test between ");
+      print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
+      fprintf (vect_dump, " and ");
+      print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
+    }
+
+  /* Do not add to the list duplicate ddrs.  */
+  if (vect_is_duplicate_ddr (LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), ddr))
+    return true;
+
+  if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo))
+      >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
+    {
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	{
+	  fprintf (vect_dump,
+		   "disable versioning for alias - max number of generated "
+		   "checks exceeded.");
+	}
+
+      VEC_truncate (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), 0);
+
+      return false;
+    }
+  VEC_safe_push (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), ddr);
+  return true;
+}
 
 /* Function vect_analyze_data_ref_dependences.
           
@@ -1133,7 +1205,7 @@ static bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
 {
   unsigned int i;
-  VEC (ddr_p, heap) *ddrs = LOOP_VINFO_DDRS (loop_vinfo);
+  VEC (ddr_p, heap) * ddrs = LOOP_VINFO_DDRS (loop_vinfo);
   struct data_dependence_relation *ddr;
 
   if (vect_print_dump_info (REPORT_DETAILS)) 
@@ -1141,7 +1213,11 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
      
   for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
     if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
+      {
+	/* Add to list of ddrs that need to be tested at run-time.  */
+	if (!vect_mark_for_runtime_alias_test (ddr, loop_vinfo))
       return false;
+      }
 
   return true;
 }
@@ -1554,6 +1630,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   bool stat;
   tree stmt;
   stmt_vec_info stmt_info;
+  int vect_versioning_for_alias_required;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_enhance_data_refs_alignment ===");
@@ -1619,9 +1696,15 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	}
     }
 
-  /* Often peeling for alignment will require peeling for loop-bound, which in 
-     turn requires that we know how to adjust the loop ivs after the loop.  */
-  if (!vect_can_advance_ivs_p (loop_vinfo)
+  vect_versioning_for_alias_required =
+    (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)) > 0);
+
+  /* Temporarily, if versioning for alias is required, we disable peeling
+     until we support peeling and versioning.  Often peeling for alignment
+     will require peeling for loop-bound, which in turn requires that we
+     know how to adjust the loop ivs after the loop.  */
+  if (vect_versioning_for_alias_required
+       || !vect_can_advance_ivs_p (loop_vinfo)
       || !slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
     do_peeling = false;
 
@@ -1749,7 +1832,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (known_alignment_for_access_p (dr)
                   || VEC_length (tree,
                                  LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-                     >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_CHECKS))
+                     >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS))
                 {
                   do_versioning = false;
                   break;

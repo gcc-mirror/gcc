@@ -5805,6 +5805,146 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                  and_tmp_name, ptrsize_zero);
 }
 
+/* Function vect_vfa_segment_size.
+
+   Create an expression that computes the size of segment
+   that will be accessed for a data reference.  The functions takes into
+   account that realignment loads may access one more vector.
+
+   Input:
+     DR: The data reference.
+     VECT_FACTOR: vectorization factor.
+
+   Return an exrpession whose value is the size of segment which will be
+   accessed by DR.  */
+
+static tree
+vect_vfa_segment_size (struct data_reference *dr, tree vect_factor)
+{
+  tree segment_length;
+
+  if (vect_supportable_dr_alignment (dr) == dr_unaligned_software_pipeline)
+    {
+      tree vector_size =
+        build_int_cst (integer_type_node,
+          GET_MODE_SIZE (TYPE_MODE (STMT_VINFO_VECTYPE
+	    (vinfo_for_stmt (DR_STMT (dr))))));
+
+      segment_length =
+	fold_convert (sizetype,
+	  fold_build2 (PLUS_EXPR, integer_type_node,
+	    fold_build2 (MULT_EXPR, integer_type_node, DR_STEP (dr),
+			 vect_factor),
+	    vector_size));
+
+
+    }
+  else
+    {
+      segment_length =
+	fold_convert (sizetype,
+	  fold_build2 (MULT_EXPR, integer_type_node, DR_STEP (dr),
+		       vect_factor));
+    }
+
+    return segment_length;
+}
+
+/* Function vect_create_cond_for_alias_checks.
+
+   Create a conditional expression that represents the run-time checks for
+   overlapping of address ranges represented by a list of data references
+   relations passed as input.
+
+   Input:
+   COND_EXPR  - input conditional expression.  New conditions will be chained
+                with logical and operation.
+   LOOP_VINFO - field LOOP_VINFO_MAY_ALIAS_STMTS contains the list of ddrs
+	        to be checked.
+
+   Output:
+   COND_EXPR - conditional expression.
+   COND_EXPR_STMT_LIST - statements needed to construct the conditional
+                         expression.
+   The returned value is the conditional expression to be used in the if
+   statement that controls which version of the loop gets executed at runtime.
+*/
+
+static void
+vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
+				   tree * cond_expr,
+				   tree * cond_expr_stmt_list)
+{
+  VEC (ddr_p, heap) * may_alias_ddrs =
+    LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
+  tree vect_factor =
+    build_int_cst (integer_type_node, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+
+  ddr_p ddr;
+  unsigned int i;
+  tree part_cond_expr;
+
+  /* Create expression
+     ((store_ptr_0 + store_segment_length_0) < load_ptr_0)
+     || (load_ptr_0 + load_segment_length_0) < store_ptr_0))
+     &&         
+     ...
+     &&
+     ((store_ptr_n + store_segment_length_n) < load_ptr_n)
+     || (load_ptr_n + load_segment_length_n) < store_ptr_n))  */
+
+  if (VEC_empty (ddr_p, may_alias_ddrs))
+    return;
+
+  for (i = 0; VEC_iterate (ddr_p, may_alias_ddrs, i, ddr); i++)
+    {
+      tree stmt_a = DR_STMT (DDR_A (ddr));
+      tree stmt_b = DR_STMT (DDR_B (ddr));
+
+      tree addr_base_a =
+        vect_create_addr_base_for_vector_ref (stmt_a, cond_expr_stmt_list,
+					      NULL_TREE);
+      tree addr_base_b =
+        vect_create_addr_base_for_vector_ref (stmt_b, cond_expr_stmt_list,
+					      NULL_TREE);
+
+      tree segment_length_a = vect_vfa_segment_size (DDR_A (ddr), vect_factor);
+      tree segment_length_b = vect_vfa_segment_size (DDR_B (ddr), vect_factor);
+
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	{
+	  fprintf (vect_dump,
+		   "create runtime check for data references ");
+	  print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
+	  fprintf (vect_dump, " and ");
+	  print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
+	}
+
+
+      part_cond_expr = 
+      	fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+	  fold_build2 (LT_EXPR, boolean_type_node,
+	    fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_a),
+	      addr_base_a,
+	      segment_length_a),
+	    addr_base_b),
+	  fold_build2 (LT_EXPR, boolean_type_node,
+	    fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (addr_base_b),
+	      addr_base_b,
+	      segment_length_b),
+	    addr_base_a));
+      
+      if (*cond_expr)
+	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			          *cond_expr, part_cond_expr);
+      else
+	*cond_expr = part_cond_expr;
+    }
+    if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
+      fprintf (vect_dump, "created %u versioning for alias checks.\n",
+               VEC_length (ddr_p, may_alias_ddrs));
+
+}
 
 /* Function vect_transform_loop.
 
@@ -5827,16 +5967,21 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
 
-  /* If the loop has data references that may or may not be aligned then
+  /* If the loop has data references that may or may not be aligned or/and
+     has data reference relations whose independence was not proven then
      two versions of the loop need to be generated, one which is vectorized
      and one which isn't.  A test is then generated to control which of the
      loops is executed.  The test checks for the alignment of all of the
-     data references that may or may not be aligned. */
+     data references that may or may not be aligned.  An additional
+     sequence of runtime tests is generated for each pairs of DDRs whose
+     independence was not proven.  The vectorized version of loop is 
+     executed only if both alias and alignment tests are passed.  */
 
-  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
+  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
     {
       struct loop *nloop;
-      tree cond_expr;
+      tree cond_expr = NULL_TREE;
       tree cond_expr_stmt_list = NULL_TREE;
       basic_block condition_bb;
       block_stmt_iterator cond_exp_bsi;
@@ -5845,9 +5990,23 @@ vect_transform_loop (loop_vec_info loop_vinfo)
       edge new_exit_e, e;
       tree orig_phi, new_phi, arg;
       unsigned prob = 4 * REG_BR_PROB_BASE / 5;
+      tree gimplify_stmt_list;
 
-      cond_expr = vect_create_cond_for_align_checks (loop_vinfo,
+      if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
+	cond_expr =
+	  vect_create_cond_for_align_checks (loop_vinfo, &cond_expr_stmt_list);
+
+      if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+	vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr,
                                                      &cond_expr_stmt_list);
+
+      cond_expr =
+        fold_build2 (NE_EXPR, boolean_type_node, cond_expr, integer_zero_node);
+      cond_expr =
+        force_gimple_operand (cond_expr, &gimplify_stmt_list, true,
+                              NULL_TREE);
+      append_to_statement_list (gimplify_stmt_list, &cond_expr_stmt_list);
+
       initialize_original_copy_tables ();
       nloop = loop_version (loop, cond_expr, &condition_bb,
 			    prob, prob, REG_BR_PROB_BASE - prob, true);

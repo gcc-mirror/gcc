@@ -1,3 +1,36 @@
+2007-08-16  Victor Kaplansky <victork@il.ibm.com>
+
+	* tree-vectorizer.c (new_loop_vec_info): Initialize new 
+	field.
+	(destroy_loop_vec_info): Add call to VEC_free.
+	* tree-vectorizer.h (may_alias_ddrs): Define.
+	(LOOP_VINFO_MAY_ALIAS_DDRS): Define.
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence):
+	Change reporting to dump.
+	(vect_is_duplicate_ddr): New.
+	(vect_mark_for_runtime_alias_test): New.
+	(vect_analyze_data_ref_dependences) Add call to
+	vect_mark_for_runtime_alias_test.
+	(vect_enhance_data_refs_alignment): Define local variable
+	vect_versioning_for_alias_required, don't perform
+	peeling for alignment if versioning for alias is
+	required.
+	(vect_enhance_data_refs_alignment): Use
+	PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS instead of
+	PARAM_VECT_MAX_VERSION_CHECKS.
+	* tree-vect-transform.c
+	(vect_create_cond_for_alias_checks): New.
+	(vect_transform_loop): Add call to
+	vect_create_cond_for_alias_checks.
+	(vect_vfa_segment_size): New.
+	* params.def (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS):
+	Rename.
+	(PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS): Define.
+	* gcc/doc/invoke.texi
+	(vect-max-version-for-alignment-checks): Document.
+	(vect-max-version-for-alias-checks): Document.
+	(vect-max-version-checks): Remove.
+     
 2007-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*rep_movdi_rex64): Emit "rep" prefix on

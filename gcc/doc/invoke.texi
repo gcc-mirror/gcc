@@ -6741,10 +6741,15 @@ value is 500.
 When set to 1, use expensive methods to eliminate all redundant
 constraints.  The default value is 0.
 
-@item vect-max-version-checks
-The maximum number of runtime checks that can be performed when doing
-loop versioning in the vectorizer.  See option ftree-vect-loop-version
-for more information.
+@item vect-max-version-for-alignment-checks
+The maximum number of runtime checks that can be performed when
+doing loop versioning for alignment in the vectorizer.  See option
+ftree-vect-loop-version for more information.
+
+@item vect-max-version-for-alias-checks
+The maximum number of runtime checks that can be performed when
+doing loop versioning for alias in the vectorizer.  See option
+ftree-vect-loop-version for more information.
 
 @item max-iterations-to-track
 
