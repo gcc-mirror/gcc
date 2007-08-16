@@ -1,3 +1,7 @@
+2007-08-16  Seongbae Park <seongbae.park@gmail.com>
+
+        * g++.dg/gcov/gcov-5.C: New test.
+
 2007-08-16  Seongbae Park  <seongbae.park@gmail.com>
 
 	* g++.dg/gcov/gcov-4.C: New test.
