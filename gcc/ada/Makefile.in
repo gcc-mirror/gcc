@@ -1807,6 +1807,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 		| sed -e 's,^\./xgcc,../../xgcc,' -e 's,-B\./,-B../../,'`" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
                 CFLAGS="$(GNATLIBCFLAGS_FOR_C)" \
+	        FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS)
 	$(MAKE) -C rts \
@@ -1815,6 +1816,7 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	        ADA_INCLUDES="" \
                 CFLAGS="$(GNATLIBCFLAGS)" \
 	        ADAFLAGS="$(GNATLIBFLAGS)" \
+	        FORCE_DEBUG_ADAFLAGS="$(FORCE_DEBUG_ADAFLAGS)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile \
 	        $(GNATRTL_OBJS)
