@@ -2084,12 +2084,10 @@ package body Exp_Ch9 is
       if Debug_Generated_Code then
          Han_Loc := End_Loc;
 
-      --  Otherwise we propagate the original source location to allow the
-      --  correct generation of errors in case of restrictions applied to
-      --  the expanded code.
+      --  Otherwise the inserted code should not be visible to the debugger
 
       else
-         Han_Loc := Sloc (N);
+         Han_Loc := No_Location;
       end if;
 
       Edef :=
@@ -11231,7 +11229,7 @@ package body Exp_Ch9 is
       --  required value is obtained by taking the address of the task body
       --  procedure and converting it (with an unchecked conversion) to the
       --  type required by the task kernel. For further details, see the
-      --  description of Expand_Task_Body
+      --  description of Expand_N_Task_Body
 
       Append_To (Args,
         Unchecked_Convert_To (RTE (RE_Task_Procedure_Access),
