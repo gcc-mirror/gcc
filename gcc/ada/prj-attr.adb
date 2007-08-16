@@ -75,6 +75,7 @@ package body Prj.Attr is
    "SVobject_dir#" &
    "SVexec_dir#" &
    "LVsource_dirs#" &
+   "LVremoved_source_dirs#" &
 
    --  Source files
 

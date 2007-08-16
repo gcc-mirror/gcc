@@ -1029,6 +1029,10 @@ package Prj is
 
    --  The following record describes a project file representation
 
+   --  Note that it is not specified if the path names of directories (source,
+   --  object, library or exec directories) end with or without a directory
+   --  separator.
+
    type Project_Data is record
       Externally_Built : Boolean := False;
       --  True if the project is externally built. In such case, the Project

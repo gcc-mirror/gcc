@@ -753,6 +753,7 @@ package body Snames is
      "prefix#" &
      "project#" &
      "roots#" &
+     "removed_source_dirs#" &
      "required_switches#" &
      "run_path_option#" &
      "runtime_project#" &
