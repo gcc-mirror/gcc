@@ -1,3 +1,13 @@
+2007-08-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (REVISION): New.
+	(REVISION_c): New.
+	(REVISION_s): New.
+	(version.o): Also depend on $(REVISION). Add
+	-DREVISION=$(REVISION_s).
+
+	* version.c (version_string): Add REVISION.
+
 2007-08-16  Seongbae Park <seongbae.park@gmail.com>
 
 	* tree-eh.c (lower_try_finally_onedest): Reset the locus

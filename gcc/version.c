@@ -20,6 +20,7 @@
 const char bug_report_url[] = "<URL:http://gcc.gnu.org/bugs.html>";
 
 /* The complete version string, assembled from several pieces.
-   BASEVER, DATESTAMP, and DEVPHASE are defined by the Makefile.  */
+   BASEVER, DATESTAMP, DEVPHASE, and REVISION are defined by the
+   Makefile.  */
 
-const char version_string[] = BASEVER DATESTAMP DEVPHASE VERSUFFIX;
+const char version_string[] = BASEVER DATESTAMP DEVPHASE VERSUFFIX REVISION;
