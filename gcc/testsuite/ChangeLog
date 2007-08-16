@@ -1,3 +1,8 @@
+2007-08-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31132
+	* g++.dg/template/crash69.C: New.
+
 2007-08-15  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* lib/target-supports.exp (check_effective_target_arm32): Use

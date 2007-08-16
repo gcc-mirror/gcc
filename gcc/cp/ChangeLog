@@ -1,3 +1,9 @@
+2007-08-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31132
+	* pt.c (tsubst_friend_function): When check_classfn
+	returns error_mark_node likewise return it.
+
 2007-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32992

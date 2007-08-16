@@ -6289,7 +6289,7 @@ tsubst_friend_function (tree decl, tree args)
 	  tree fn = check_classfn (context,
 				   new_friend, NULL_TREE);
 
-	  if (fn && fn != error_mark_node)
+	  if (fn)
 	    new_friend = fn;
 	}
     }
