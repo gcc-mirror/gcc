@@ -514,6 +514,10 @@ patches.
 Robert Lipe for OpenServer support, new testsuites, testing, etc.
 
 @item
+Chen Liqin for various S+core related fixes/improvement, and for
+maintaining the S+core port.
+
+@item
 Weiwen Liu for testing and various bug fixes.
 
 @item
