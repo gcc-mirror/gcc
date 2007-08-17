@@ -1,3 +1,9 @@
+2007-08-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error lines.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc: Ditto.
+
 2007-08-17  Chris Fairles  <chris.fairles@gmail.com>
 
 	PR libstdc++/33098
