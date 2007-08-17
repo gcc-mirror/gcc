@@ -77,6 +77,11 @@ export_proto(string_trim);
 extern void string_minmax (GFC_INTEGER_4 *, void **, int, int, ...);
 export_proto(string_minmax);
 
+
+/* Use for functions which can return a zero-length string.  */
+static char zero_length_string = '\0';
+
+
 /* Strings of unequal length are extended with pad characters.  */
 
 int
@@ -167,16 +172,16 @@ string_trim (GFC_INTEGER_4 * len, void ** dest, GFC_INTEGER_4 slen,
     }
   *len = i + 1;
 
-  if (*len > 0)
+  if (*len == 0)
+    *dest = &zero_length_string;
+  else
     {
       /* Allocate space for result string.  */
       *dest = internal_malloc_size (*len);
 
-      /* copy string if necessary.  */
+      /* Copy string if necessary.  */
       memmove (*dest, src, *len);
     }
-  else
-    *dest = NULL;
 }
 
 
@@ -403,14 +408,13 @@ string_minmax (GFC_INTEGER_4 *rlen, void **dest, int op, int nargs, ...)
     }
   va_end (ap);
 
-  if (*rlen > 0)
+  if (*rlen == 0)
+    *dest = &zero_length_string;
+  else
     {
       char * tmp = internal_malloc_size (*rlen);
       memcpy (tmp, res, reslen);
       memset (&tmp[reslen], ' ', *rlen - reslen);
       *dest = tmp;
     }
-  else
-    *dest = NULL;
 }
-

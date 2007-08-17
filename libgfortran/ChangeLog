@@ -1,3 +1,9 @@
+2007-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33079
+	* intrinsics/string_intrinsics.c (string_trim, string_minmax): Fix
+	the zero-length result case.
+
 2007-08-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33077
