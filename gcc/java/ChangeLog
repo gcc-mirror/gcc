@@ -1,3 +1,20 @@
+2007-08-17  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (LABEL_TYPE_STATE): Removed.
+	(load_type_state): Removed.
+	(LABEL_PC): Removed.
+	(LABEL_VERIFIED): Removed.
+	(type_states): Declare.
+	* expr.c (type_states): New global.
+	(load_type_state): Now static.  Use type_states.  Changed
+	argument.
+	(lookup_label): Don't set LABEL_PC.
+	(expand_byte_code): Don't use LABEL_VERIFIED.
+	(note_instructions): Initialize type_states.
+	* verify-glue.c (vfy_note_stack_depth): Rewrote.
+	(vfy_note_stack_type): Use type_states.
+	(vfy_note_local_type): Likewise.
+
 2007-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-parse.c (read_class, java_parse_file): Use CONST_CAST.

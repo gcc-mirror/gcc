@@ -771,16 +771,6 @@ union lang_tree_node
    FIELD_LOCAL_ALIAS.  */
 #define FIELD_THISN(DECL) DECL_LANG_FLAG_7 (VAR_OR_FIELD_CHECK (DECL))
 
-/* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
-#define LABEL_TYPE_STATE(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_1)
-
-/* In a LABEL_DECL, the corresponding bytecode program counter. */
-#define LABEL_PC(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_4)
-
-/* In a LABEL_DECL, true if we have verified instructions starting here. */
-#define LABEL_VERIFIED(NODE) \
-  (instruction_bits[LABEL_PC (NODE)] & BCODE_VERIFIED)
-
 /* The slot number for this local variable. */
 #define DECL_LOCAL_SLOT_NUMBER(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->u.v.slot_number)
@@ -1248,7 +1238,6 @@ extern void set_local_type (int, tree);
 extern int merge_type_state (tree);
 extern int push_type_0 (tree);
 extern void push_type (tree);
-extern void load_type_state (tree);
 extern void add_interface (tree, tree);
 extern tree force_evaluation_order (tree);
 extern tree java_create_object (tree);
@@ -1417,6 +1406,9 @@ extern void rewrite_reflection_indexes (void *);
 
 /* Use CLASS_LOADED_P? FIXME */
 #define CLASS_COMPLETE_P(DECL) DECL_LANG_FLAG_2 (DECL) 
+
+/* A vector used to track type states for the current method.  */
+extern VEC(tree, gc) *type_states;
 
 /* This maps a bytecode offset (PC) to various flags,
    listed below (starting with BCODE_). */
