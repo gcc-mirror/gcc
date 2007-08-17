@@ -1365,11 +1365,6 @@ load_class (tree class_or_name, int verbose)
 	   || CLASS_FROM_CURRENTLY_COMPILED_P (type));
     }
 
-  /* If the class is from source code, then it must already be loaded.  */
-  class_decl = IDENTIFIER_CLASS_VALUE (name);
-  if (class_decl && CLASS_FROM_SOURCE_P (TREE_TYPE (class_decl)))
-    return;
-
   saved = name;
   
   /* If flag_verify_invocations is unset, we don't try to load a class

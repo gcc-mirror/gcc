@@ -48,12 +48,10 @@ struct JCF;
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       IS_ARRAY_LENGTH_ACCESS (in INDIRECT_REF)
    5: HAS_BEEN_ALREADY_PARSED_P (in IDENTIFIER_NODE)
-   6: CAN_COMPLETE_NORMALLY (in statement nodes)
 
    Usage of TYPE_LANG_FLAG_?:
    1: TYPE_ARRAY_P (in RECORD_TYPE).
    2: CLASS_PARSED_P (in RECORD_TYPE).
-   3: CLASS_FROM_SOURCE_P (in RECORD_TYPE).
    4: CLASS_P (in RECORD_TYPE).
    5: CLASS_FROM_CURRENTLY_COMPILED_P (in RECORD_TYPE)
    6: CLASS_BEING_LAIDOUT (in RECORD_TYPE)
@@ -80,11 +78,8 @@ struct JCF;
       CLASS_ABSTRACT (in TYPE_DECL)
       FIELD_TRANSIENT (in FIELD_DECL)
    6: CLASS_SUPER (in TYPE_DECL, ACC_SUPER flag)
-      FIELD_LOCAL_ALIAS (in FIELD_DECL)
    7: DECL_CONSTRUCTOR_P (in FUNCTION_DECL).
       CLASS_STATIC (in TYPE_DECL)
-      FIELD_LOCAL_ALIAS_USED (in FIELD_DECL)
-      FIELD_THISN (in FIELD_DECL)
 */
 
 #define VAR_OR_FIELD_CHECK(DECL) \
@@ -302,7 +297,6 @@ enum java_tree_index
   JTI_VOID_SIGNATURE_NODE,       
   JTI_FINALIZE_IDENTIFIER_NODE,
   JTI_THIS_IDENTIFIER_NODE,  
-  JTI_CLASSDOLLAR_IDENTIFIER_NODE,
   JTI_ONE_ELT_ARRAY_DOMAIN_TYPE,
 
   JTI_RETURN_ADDRESS_TYPE_NODE,
@@ -497,8 +491,6 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_FINALIZE_IDENTIFIER_NODE]  /* "finalize" */
 #define this_identifier_node \
   java_global_trees[JTI_THIS_IDENTIFIER_NODE]  /* "this" */
-#define classdollar_identifier_node \
-  java_global_trees[JTI_CLASSDOLLAR_IDENTIFIER_NODE] /* "class$" */
 #define one_elt_array_domain_type \
   java_global_trees[JTI_ONE_ELT_ARRAY_DOMAIN_TYPE]
 /* The type of the return address of a subroutine. */
@@ -740,9 +732,6 @@ union lang_tree_node
    class has been initialized in this function, and FALSE otherwise.  */
 #define DECL_FUNCTION_INIT_TEST_TABLE(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->u.f.init_test_table)
-/* If LOCAL_CLASS_INITIALIZATION_FLAG_P(decl), give class it initializes. */
-#define DECL_FUNCTION_INIT_TEST_CLASS(DECL) \
-  (DECL_LANG_SPECIFIC(DECL)->u.v.slot_chain)
 /* For each static function decl, itc contains a hash table whose
    entries are keyed on class named that are definitively initialized
    in DECL.  */
@@ -752,24 +741,8 @@ union lang_tree_node
 #define DECL_LOCAL_CNI_METHOD_P(NODE) \
     (DECL_LANG_SPECIFIC (NODE)->u.f.local_cni)
 
-/* A constructor that calls this. */
-#define DECL_INIT_CALLS_THIS(DECL) \
-  (DECL_LANG_SPECIFIC(DECL)->u.f.init_calls_this)
-
 /* True when DECL (a field) is Synthetic.  */
 #define FIELD_SYNTHETIC(DECL) DECL_LANG_FLAG_2 (VAR_OR_FIELD_CHECK (DECL))
-
-/* True when DECL aliases an outer context local variable.  */
-#define FIELD_LOCAL_ALIAS(DECL) DECL_LANG_FLAG_6 (VAR_OR_FIELD_CHECK (DECL))
-
-/* True when DECL, which aliases an outer context local variable is
-   used by the inner classes.  */
-#define FIELD_LOCAL_ALIAS_USED(DECL) DECL_LANG_FLAG_7 (VAR_OR_FIELD_CHECK (DECL))
-
-/* True when DECL is a this$<n> field. Note that
-   FIELD_LOCAL_ALIAS_USED can be differentiated when tested against
-   FIELD_LOCAL_ALIAS.  */
-#define FIELD_THISN(DECL) DECL_LANG_FLAG_7 (VAR_OR_FIELD_CHECK (DECL))
 
 /* The slot number for this local variable. */
 #define DECL_LOCAL_SLOT_NUMBER(NODE) \
@@ -781,35 +754,10 @@ union lang_tree_node
 /* For a VAR_DECL or PARM_DECL, used to chain decls with the same
    slot_number in decl_map. */
 #define DECL_LOCAL_SLOT_CHAIN(NODE) (DECL_LANG_SPECIFIC(NODE)->u.v.slot_chain)
-/* For a FIELD_DECL, holds the name of the access method. Used to
-   read/write the content of the field across nested class boundaries.  */
-#define FIELD_NESTED_ACCESS(DECL) \
-  (DECL_LANG_SPECIFIC (VAR_OR_FIELD_CHECK (DECL))->u.v.am)
-/* Safely tests whether FIELD_NESTED_ACCESS exists or not.  */
-#define FIELD_NESTED_ACCESS_P(DECL) \
-  DECL_LANG_SPECIFIC (DECL) && FIELD_NESTED_ACCESS (DECL)
-/* True if a final field was initialized upon its declaration
-   or in an initializer.  Set after definite assignment.  */
-#define DECL_FIELD_FINAL_IUD(NODE)  (DECL_LANG_SPECIFIC (NODE)->u.v.final_iud)
 /* The class that's the owner of a dynamic binding table.  */
 #define DECL_OWNER(NODE)            (DECL_LANG_SPECIFIC(NODE)->u.v.owner)
-/* True if NODE is a local variable final. */
-#define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && DECL_FINAL (NODE))
-/* True if a final local variable was initialized upon its declaration.  */
-#define DECL_LOCAL_FINAL_IUD(NODE)  (DECL_LANG_SPECIFIC (NODE)->u.v.final_iud)
-/* True if NODE is a final field. */
-#define FINAL_VARIABLE_P(NODE) (FIELD_FINAL (NODE) && !FIELD_STATIC (NODE))
 /* True if NODE is a class final field. */
 #define FIELD_ENUM(DECL)	    (DECL_LANG_SPECIFIC (DECL)->u.v.field_enum)
-#define CLASS_FINAL_VARIABLE_P(NODE) \
-  (FIELD_FINAL (NODE) && FIELD_STATIC (NODE))
-/* True if NODE is a class initialization flag. This macro accesses
-   the flag to read or set it.  */
-#define LOCAL_CLASS_INITIALIZATION_FLAG(NODE) \
-    (DECL_LANG_SPECIFIC (NODE)->u.v.cif)
-/* True if NODE is a class initialization flag. */
-#define LOCAL_CLASS_INITIALIZATION_FLAG_P(NODE) \
-    (DECL_LANG_SPECIFIC (NODE) && LOCAL_CLASS_INITIALIZATION_FLAG(NODE))
 /* True if NODE is a variable that is out of scope.  */
 #define LOCAL_VAR_OUT_OF_SCOPE_P(NODE) \
     (DECL_LANG_SPECIFIC (NODE)->u.v.freed)
@@ -837,12 +785,6 @@ union lang_tree_node
        && TREE_CODE (TREE_TYPE (NODE)) != POINTER_TYPE) \
    || TREE_CODE (NODE) == REAL_CST)
 
-/* For a local VAR_DECL or PARM_DECL, holds the index into a words bitstring
-   that specifies if this decl is definitively assigned.
-   The value -1 means the variable has been definitely assigned (and not
-   definitely unassigned).  The value -2 means we already reported an error. */
-#define DECL_BIT_INDEX(DECL) VAR_OR_FIELD_CHECK (DECL)->decl_common.pointer_alias_set
-
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl_func GTY(())
 {
@@ -869,7 +811,6 @@ struct lang_decl_func GTY(())
 
   unsigned int native : 1;	/* Nonzero if this is a native method  */
   unsigned int init_final : 1;	/* Nonzero all finals are initialized */
-  unsigned int init_calls_this : 1;
   unsigned int strictfp : 1;
   unsigned int invisible : 1;	/* Set for methods we generate
 				   internally but which shouldn't be
@@ -936,10 +877,7 @@ struct lang_decl_var GTY(())
   int start_pc;
   int end_pc;
   tree slot_chain;
-  tree am;			/* Access method for this field (1.1) */
   tree owner;
-  unsigned int final_iud : 1;	/* Final initialized upon declaration */
-  unsigned int cif : 1;		/* True: decl is a class initialization flag */
   unsigned int freed : 1;		/* Decl is no longer in scope.  */
   unsigned int local_slot : 1;	/* Decl is a temporary in the stack frame.  */
   unsigned int class_field : 1; /* Decl needs mangle_class_field.  */
@@ -974,10 +912,6 @@ struct lang_decl GTY(())
 
 #define TYPE_DUMMY(T)		(TYPE_LANG_SPECIFIC(T)->dummy_class)
 
-/* The decl of the synthetic method `class$' used to handle `.class'
-   for non primitive types when compiling to bytecode. */
-
-#define TYPE_DOT_CLASS(T)        (TYPE_LANG_SPECIFIC (T)->dot_class)
 #define TYPE_PACKAGE_LIST(T)     (TYPE_LANG_SPECIFIC (T)->package_list)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC (T)->pic)
 #define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC (T)->poic)
@@ -1002,7 +936,6 @@ struct lang_decl GTY(())
 
 #define TYPE_CTABLE_DECL(T)      (TYPE_LANG_SPECIFIC (T)->ctable_decl)
 #define TYPE_CATCH_CLASSES(T)    (TYPE_LANG_SPECIFIC (T)->catch_classes)
-#define TYPE_VERIFY_METHOD(T)    (TYPE_LANG_SPECIFIC (T)->verify_method)
 
 #define TYPE_TO_RUNTIME_MAP(T)   (TYPE_LANG_SPECIFIC (T)->type_to_runtime_map)
 #define TYPE_ASSERTIONS(T)   	 (TYPE_LANG_SPECIFIC (T)->type_assertions)
@@ -1018,10 +951,6 @@ struct lang_type GTY(())
   struct JCF *jcf;
   struct CPool *cpool;
   tree cpool_data_ref;		/* Cached */
-  tree dot_class;		/* The decl of the `class$' function that
-				   needs to be invoked and generated when
-				   compiling to bytecode to implement
-				   <non_primitive_type>.class */
   tree package_list;		/* List of package names, progressive */
 
   tree otable_methods;          /* List of static decls referred to by this
@@ -1042,9 +971,6 @@ struct lang_type GTY(())
   tree ctable_decl;             /* The table of classes for the runtime
 				   type matcher.  */
   tree catch_classes;
-
-  tree verify_method;		/* The verify method for this class.
-				   Used in split verification.  */
 
   htab_t GTY ((param_is (struct treetreehash_entry))) type_to_runtime_map;   
                                 /* The mapping of classes to exception region
@@ -1360,7 +1286,6 @@ extern void rewrite_reflection_indexes (void *);
    them  */
 #define ID_INIT_P(ID)   ((ID) == init_identifier_node)
 #define ID_CLINIT_P(ID) ((ID) == clinit_identifier_node)
-#define ID_CLASSDOLLAR_P(ID) ((ID) == classdollar_identifier_node)
 
 /* Access flags etc for variable/field (FIELD_DECL, VAR_DECL, or PARM_DECL): */
 
@@ -1441,9 +1366,6 @@ extern const unsigned char *linenumber_table;
 /* The length (in items) of the line number table. */
 extern int linenumber_count;
 
-/* In type_map, means that slot is uninitialized or otherwise unusable. */
-#define TYPE_UNKNOWN NULL_TREE
-
 /* In type_map, means the second half of a 64-bit double or long. */
 #define TYPE_SECOND void_type_node
 
@@ -1455,7 +1377,7 @@ extern int linenumber_count;
 
 /* A array mapping variable/stack slot index to the type current
    in that variable/stack slot.
-   TYPE_UNKNOWN, TYPE_SECOND, and TYPE_NULL are special cases. */
+   TYPE_SECOND and TYPE_NULL are special cases. */
 extern tree *type_map;
 
 /* Map a stack index to the type currently in that slot. */
@@ -1487,9 +1409,6 @@ extern tree *type_map;
 /* True if class TYPE has been parsed (first pass). */
 #define CLASS_PARSED_P(TYPE) TYPE_LANG_FLAG_2 (TYPE)
 
-/* True if class TYPE was defined in Java source code. */
-#define CLASS_FROM_SOURCE_P(TYPE) TYPE_LANG_FLAG_3 (TYPE)
-
 /* True of a RECORD_TYPE of a class/interface type (not array type) */
 #define CLASS_P(TYPE) TYPE_LANG_FLAG_4 (TYPE)
 
@@ -1513,9 +1432,6 @@ extern tree *type_map;
 /* True if TYPE (a TREE_TYPE denoting a class type) was found to
    feature a finalizer method. */
 #define HAS_FINALIZER_P(EXPR) TREE_LANG_FLAG_3 (EXPR)
-
-/* True if NODE (a statement) can complete normally. */
-#define CAN_COMPLETE_NORMALLY(NODE) TREE_LANG_FLAG_6 (NODE)
 
 /* True if NODE belongs to an inner class TYPE_DECL node.
    Verifies that NODE as the attributes of a decl.  */

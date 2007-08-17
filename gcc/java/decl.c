@@ -737,7 +737,6 @@ java_init_decl_processing (void)
   void_signature_node = get_identifier ("()V");
   finalize_identifier_node = get_identifier ("finalize");
   this_identifier_node = get_identifier ("this");
-  classdollar_identifier_node = get_identifier ("class$");
 
   java_lang_cloneable_identifier_node = get_identifier ("java.lang.Cloneable");
   java_io_serializable_identifier_node =
