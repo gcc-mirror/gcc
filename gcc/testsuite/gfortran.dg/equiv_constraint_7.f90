@@ -9,3 +9,4 @@
   EQUIVALENCE(I,J)
  END MODULE DATA
  END
+! { dg-final { cleanup-modules "data" } }

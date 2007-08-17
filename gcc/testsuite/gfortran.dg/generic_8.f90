@@ -28,4 +28,4 @@ CONTAINS
     CALL A(MAXVAL(X),Y)
   END SUBROUTINE T
 END MODULE M
-! { dg-final { cleanup-modules "M" } }
+! { dg-final { cleanup-modules "m" } }

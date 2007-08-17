@@ -8,3 +8,5 @@ contains
     i = 0
   end subroutine sub0
 end module bind_c_implicit_vars
+
+! { dg-final { cleanup-modules "bind_c_implicit_vars" } }

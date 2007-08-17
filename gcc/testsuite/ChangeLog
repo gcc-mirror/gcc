@@ -1,3 +1,36 @@
+2007-08-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/kind_tests_2.f03: Add cleanup-modules.
+	* gfortran.dg/kind_tests_3.f03: Ditto.
+	* gfortran.dg/global_vars_f90_init.f90: Ditto.
+	* gfortran.dg/interface_13.f90: Ditto.
+	* gfortran.dg/pr32738.f90: Ditto.
+	* gfortran.dg/module_private_1.f90: Ditto.
+	* gfortran.dg/test_only_clause.f90: Ditto.
+	* gfortran.dg/bind_c_vars.f90: Ditto.
+	* gfortran.dg/bind_c_dts.f90: Ditto.
+	* gfortran.dg/use_9.f90: Ditto.
+	* gfortran.dg/generic_8.f90: Ditto.
+	* gfortran.dg/bind_c_implicit_vars.f03: Ditto.
+	* gfortran.dg/private_type_6.f90: Ditto.
+	* gfortran.dg/c_assoc.f90: Ditto.
+	* gfortran.dg/private_type_7.f90: Ditto.
+	* gfortran.dg/global_vars_c_init.f90: Ditto.
+	* gfortran.dg/bind_c_dts_2.f03: Ditto.
+	* gfortran.dg/c_f_pointer_tests.f90: Ditto.
+	* gfortran.dg/c_size_t_test.f03: Ditto.
+	* gfortran.dg/used_types_12.f90: Ditto.
+	* gfortran.dg/pr25923.f90: Ditto.
+	* gfortran.dg/test_com_block.f90: Ditto.
+	* gfortran.dg/iso_c_binding_rename_1.f03: Ditto.
+	* gfortran.dg/equiv_constraint_7.f90: Ditto.
+	* gfortran.dg/com_block_driver.f90: Ditto.
+	* gfortran.dg/iso_c_binding_rename_2.f03: Ditto.
+	* gfortran.dg/use_iso_c_binding.f90: Ditto.
+	* gfortran.dg/c_loc_test.f90: Ditto.
+	* gfortran.dg/c_ptr_tests.f03: Ditto.
+	* gfortran.dg/module_interface_1.f90: Ditto.
+
 2007-08-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32870

@@ -22,4 +22,4 @@ program foo_test
   foo2 = bartype(1,2) ! { dg-error "has PRIVATE components" }
   foo2%dummy2 = 5 ! { dg-error "is a PRIVATE component" }
 end program foo_test
-! { dg-final { cleanup-tree-dump "foomod" } }
+! { dg-final { cleanup-modules "foomod" } }

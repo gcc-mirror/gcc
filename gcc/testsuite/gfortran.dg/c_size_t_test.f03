@@ -14,3 +14,5 @@ contains
     end if
   end subroutine sub0
 end module c_size_t_test
+
+! { dg-final { cleanup-modules "c_size_t_test" } }
