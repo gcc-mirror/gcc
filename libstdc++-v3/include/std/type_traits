@@ -240,7 +240,8 @@ namespace std
     {
       // "An imaginary lvalue of type From...".
       static const bool __value = (__is_convertible_simple<typename
-				   add_reference<_From>::type, _To>::__value);
+				   add_lvalue_reference<_From>::type,
+				   _To>::__value);
     };
 
   template<typename _From, typename _To>

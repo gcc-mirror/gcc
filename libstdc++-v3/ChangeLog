@@ -1,3 +1,9 @@
+2007-08-17  Chris Fairles  <chris.fairles@gmail.com>
+
+	PR libstdc++/33098
+	* include/std/type_traits (__is_convertible_helper):
+	Use add_lvalue_reference.
+
 2007-08-17  Johannes Willkomm  <willkomm@sc.rwth-aachen.de>
 
 	PR libstdc++/33084
