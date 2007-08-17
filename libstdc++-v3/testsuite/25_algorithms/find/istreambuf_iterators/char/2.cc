@@ -23,6 +23,8 @@
 #include <algorithm>
 #include <testsuite_hooks.h>
 
+// { dg-require-fileio "" }
+
 // In the occasion of libstdc++/25482
 void test01()
 {
