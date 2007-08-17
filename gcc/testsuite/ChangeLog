@@ -1,3 +1,8 @@
+2007-08-17  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32190
+	* g++.dg/parse/error31.C: New.
+
 2007-08-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/17763
