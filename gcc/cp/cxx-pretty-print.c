@@ -206,6 +206,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       break;
 
     case TYPENAME_TYPE:
+    case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       break;
 
