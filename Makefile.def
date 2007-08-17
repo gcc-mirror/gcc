@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+//   Copyright 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -236,6 +236,9 @@ flags_to_pass = { flag= LIBCXXFLAGS ; };
 flags_to_pass = { flag= STAGE1_CFLAGS ; };
 flags_to_pass = { flag= STAGE1_CHECKING ; };
 flags_to_pass = { flag= STAGE1_LANGUAGES ; };
+flags_to_pass = { flag= STAGE2_CFLAGS ; };
+flags_to_pass = { flag= STAGE3_CFLAGS ; };
+flags_to_pass = { flag= STAGE4_CFLAGS ; };
 flags_to_pass = { flag= GNATBIND ; };
 flags_to_pass = { flag= GNATMAKE ; };
 
@@ -512,26 +515,38 @@ bootstrap_stage = {
 	id=2 ; prev=1 ;
 	bootstrap_target=bootstrap2 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(BOOT_CFLAGS)" ; };
+	stage_cflags="$(STAGE2_CFLAGS)" ; };
+bootstrap_stage = {
+	id=b2g0 ; prev=1 ;
+	bootstrap_target=bootstrap2-debug ;
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_cflags="$(STAGE2_CFLAGS) -g0" ; };
 bootstrap_stage = {
 	id=3 ; prev=2 ; lean=1 ;
 	compare_target=compare ;
 	bootstrap_target=bootstrap ;
 	cleanstrap_target=cleanstrap ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(BOOT_CFLAGS)" ; };
+	stage_cflags="$(STAGE3_CFLAGS)" ; };
+bootstrap_stage = {
+	id=b3g2 ; prev=b2g0 ; lean=1 ;
+	compare_target=compare-debug ;
+	bootstrap_target=bootstrap-debug ;
+	cleanstrap_target=cleanstrap-debug ;
+	stage_configure_flags="@stage2_werror_flag@" ;
+	stage_cflags="$(STAGE3_CFLAGS) -g2" ; };
 bootstrap_stage = {
 	id=4 ; prev=3 ; lean=2 ;
 	compare_target=compare3 ;
 	bootstrap_target=bootstrap4 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags="$(BOOT_CFLAGS)" ; };
+	stage_cflags="$(STAGE4_CFLAGS)" ; };
 bootstrap_stage = {
 	id=profile ; prev=1 ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags='$(BOOT_CFLAGS) -fprofile-generate' ; };
+	stage_cflags='$(STAGE2_CFLAGS) -fprofile-generate' ; };
 bootstrap_stage = {
 	id=feedback ; prev=profile ;
 	bootstrap_target=profiledbootstrap ;
 	stage_configure_flags="@stage2_werror_flag@" ;
-	stage_cflags='$(BOOT_CFLAGS) -fprofile-use' ; };
+	stage_cflags='$(STAGE3_CFLAGS) -fprofile-use' ; };

@@ -3,7 +3,7 @@
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -320,6 +320,14 @@ STAGE1_CFLAGS=@stage1_cflags@
 STAGE1_CHECKING=@stage1_checking@
 STAGE1_LANGUAGES=@stage1_languages@
 
+STAGE2_CFLAGS=$(BOOT_CFLAGS)
+STAGE3_CFLAGS=$(BOOT_CFLAGS)
+STAGE4_CFLAGS=$(BOOT_CFLAGS)
+
+do-compare = @do_compare@
+do-compare3 = $(do-compare)
+do-compare-debug = $(SHELL) $(srcdir)/contrib/compare-debug $$f1 $$f2
+
 # -----------------------------------------------
 # Programs producing files for the TARGET machine
 # -----------------------------------------------
@@ -491,6 +499,9 @@ BASE_FLAGS_TO_PASS = \
 	"STAGE1_CFLAGS=$(STAGE1_CFLAGS)" \
 	"STAGE1_CHECKING=$(STAGE1_CHECKING)" \
 	"STAGE1_LANGUAGES=$(STAGE1_LANGUAGES)" \
+	"STAGE2_CFLAGS=$(STAGE2_CFLAGS)" \
+	"STAGE3_CFLAGS=$(STAGE3_CFLAGS)" \
+	"STAGE4_CFLAGS=$(STAGE4_CFLAGS)" \
 	"GNATBIND=$(GNATBIND)" \
 	"GNATMAKE=$(GNATMAKE)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
@@ -4820,9 +4831,40 @@ configure-stage2-bfd:
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/bfd ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
+	cd $(HOST_SUBDIR)/bfd || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/bfd"; \
+	libsrcdir="$$s/bfd"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif bfd-bootstrap
+
+.PHONY: configure-stageb2g0-bfd maybe-configure-stageb2g0-bfd
+maybe-configure-stageb2g0-bfd:
+@if bfd-bootstrap
+maybe-configure-stageb2g0-bfd: configure-stageb2g0-bfd
+configure-stageb2g0-bfd:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/bfd ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
 	cd $(HOST_SUBDIR)/bfd || exit 1; \
 	case $(srcdir) in \
@@ -4851,9 +4893,40 @@ configure-stage3-bfd:
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/bfd ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
+	cd $(HOST_SUBDIR)/bfd || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/bfd/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/bfd"; \
+	libsrcdir="$$s/bfd"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif bfd-bootstrap
+
+.PHONY: configure-stageb3g2-bfd maybe-configure-stageb3g2-bfd
+maybe-configure-stageb3g2-bfd:
+@if bfd-bootstrap
+maybe-configure-stageb3g2-bfd: configure-stageb3g2-bfd
+configure-stageb3g2-bfd:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/bfd ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
 	cd $(HOST_SUBDIR)/bfd || exit 1; \
 	case $(srcdir) in \
@@ -4882,8 +4955,8 @@ configure-stage4-bfd:
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/bfd ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
 	cd $(HOST_SUBDIR)/bfd || exit 1; \
@@ -4913,8 +4986,8 @@ configure-stageprofile-bfd:
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/bfd ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
 	cd $(HOST_SUBDIR)/bfd || exit 1; \
@@ -4944,8 +5017,8 @@ configure-stagefeedback-bfd:
 	test ! -f $(HOST_SUBDIR)/bfd/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/bfd ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/bfd ; \
 	cd $(HOST_SUBDIR)/bfd || exit 1; \
@@ -5034,7 +5107,7 @@ all-stage2-bfd: configure-stage2-bfd
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-bfd)
 
 maybe-clean-stage2-bfd: clean-stage2-bfd
@@ -5045,6 +5118,41 @@ clean-stage2-bfd:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-bfd/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif bfd-bootstrap
+
+
+.PHONY: all-stageb2g0-bfd maybe-all-stageb2g0-bfd
+.PHONY: clean-stageb2g0-bfd maybe-clean-stageb2g0-bfd
+maybe-all-stageb2g0-bfd:
+maybe-clean-stageb2g0-bfd:
+@if bfd-bootstrap
+maybe-all-stageb2g0-bfd: all-stageb2g0-bfd
+all-stageb2g0: all-stageb2g0-bfd
+TARGET-stageb2g0-bfd = $(TARGET-bfd)
+all-stageb2g0-bfd: configure-stageb2g0-bfd
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/bfd && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-bfd)
+
+maybe-clean-stageb2g0-bfd: clean-stageb2g0-bfd
+clean-stageb2g0: clean-stageb2g0-bfd
+clean-stageb2g0-bfd:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -5069,7 +5177,7 @@ all-stage3-bfd: configure-stage3-bfd
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-bfd)
 
 maybe-clean-stage3-bfd: clean-stage3-bfd
@@ -5080,6 +5188,41 @@ clean-stage3-bfd:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-bfd/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/bfd && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif bfd-bootstrap
+
+
+.PHONY: all-stageb3g2-bfd maybe-all-stageb3g2-bfd
+.PHONY: clean-stageb3g2-bfd maybe-clean-stageb3g2-bfd
+maybe-all-stageb3g2-bfd:
+maybe-clean-stageb3g2-bfd:
+@if bfd-bootstrap
+maybe-all-stageb3g2-bfd: all-stageb3g2-bfd
+all-stageb3g2: all-stageb3g2-bfd
+TARGET-stageb3g2-bfd = $(TARGET-bfd)
+all-stageb3g2-bfd: configure-stageb3g2-bfd
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/bfd && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-bfd)
+
+maybe-clean-stageb3g2-bfd: clean-stageb3g2-bfd
+clean-stageb3g2: clean-stageb3g2-bfd
+clean-stageb3g2-bfd:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/bfd/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-bfd/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -5104,7 +5247,7 @@ all-stage4-bfd: configure-stage4-bfd
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-bfd)
 
 maybe-clean-stage4-bfd: clean-stage4-bfd
@@ -5139,7 +5282,7 @@ all-stageprofile-bfd: configure-stageprofile-bfd
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-bfd)
 
 maybe-clean-stageprofile-bfd: clean-stageprofile-bfd
@@ -5174,7 +5317,7 @@ all-stagefeedback-bfd: configure-stagefeedback-bfd
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/bfd && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-bfd)
 
 maybe-clean-stagefeedback-bfd: clean-stagefeedback-bfd
@@ -5626,9 +5769,40 @@ configure-stage2-opcodes:
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/opcodes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
+	cd $(HOST_SUBDIR)/opcodes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/opcodes"; \
+	libsrcdir="$$s/opcodes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif opcodes-bootstrap
+
+.PHONY: configure-stageb2g0-opcodes maybe-configure-stageb2g0-opcodes
+maybe-configure-stageb2g0-opcodes:
+@if opcodes-bootstrap
+maybe-configure-stageb2g0-opcodes: configure-stageb2g0-opcodes
+configure-stageb2g0-opcodes:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/opcodes ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
 	cd $(HOST_SUBDIR)/opcodes || exit 1; \
 	case $(srcdir) in \
@@ -5657,9 +5831,40 @@ configure-stage3-opcodes:
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/opcodes ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
+	cd $(HOST_SUBDIR)/opcodes || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/opcodes/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/opcodes"; \
+	libsrcdir="$$s/opcodes"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif opcodes-bootstrap
+
+.PHONY: configure-stageb3g2-opcodes maybe-configure-stageb3g2-opcodes
+maybe-configure-stageb3g2-opcodes:
+@if opcodes-bootstrap
+maybe-configure-stageb3g2-opcodes: configure-stageb3g2-opcodes
+configure-stageb3g2-opcodes:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/opcodes ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
 	cd $(HOST_SUBDIR)/opcodes || exit 1; \
 	case $(srcdir) in \
@@ -5688,8 +5893,8 @@ configure-stage4-opcodes:
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/opcodes ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
 	cd $(HOST_SUBDIR)/opcodes || exit 1; \
@@ -5719,8 +5924,8 @@ configure-stageprofile-opcodes:
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/opcodes ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
 	cd $(HOST_SUBDIR)/opcodes || exit 1; \
@@ -5750,8 +5955,8 @@ configure-stagefeedback-opcodes:
 	test ! -f $(HOST_SUBDIR)/opcodes/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/opcodes ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/opcodes ; \
 	cd $(HOST_SUBDIR)/opcodes || exit 1; \
@@ -5840,7 +6045,7 @@ all-stage2-opcodes: configure-stage2-opcodes
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-opcodes)
 
 maybe-clean-stage2-opcodes: clean-stage2-opcodes
@@ -5851,6 +6056,41 @@ clean-stage2-opcodes:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-opcodes/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif opcodes-bootstrap
+
+
+.PHONY: all-stageb2g0-opcodes maybe-all-stageb2g0-opcodes
+.PHONY: clean-stageb2g0-opcodes maybe-clean-stageb2g0-opcodes
+maybe-all-stageb2g0-opcodes:
+maybe-clean-stageb2g0-opcodes:
+@if opcodes-bootstrap
+maybe-all-stageb2g0-opcodes: all-stageb2g0-opcodes
+all-stageb2g0: all-stageb2g0-opcodes
+TARGET-stageb2g0-opcodes = $(TARGET-opcodes)
+all-stageb2g0-opcodes: configure-stageb2g0-opcodes
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-opcodes)
+
+maybe-clean-stageb2g0-opcodes: clean-stageb2g0-opcodes
+clean-stageb2g0: clean-stageb2g0-opcodes
+clean-stageb2g0-opcodes:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -5875,7 +6115,7 @@ all-stage3-opcodes: configure-stage3-opcodes
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-opcodes)
 
 maybe-clean-stage3-opcodes: clean-stage3-opcodes
@@ -5886,6 +6126,41 @@ clean-stage3-opcodes:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-opcodes/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif opcodes-bootstrap
+
+
+.PHONY: all-stageb3g2-opcodes maybe-all-stageb3g2-opcodes
+.PHONY: clean-stageb3g2-opcodes maybe-clean-stageb3g2-opcodes
+maybe-all-stageb3g2-opcodes:
+maybe-clean-stageb3g2-opcodes:
+@if opcodes-bootstrap
+maybe-all-stageb3g2-opcodes: all-stageb3g2-opcodes
+all-stageb3g2: all-stageb3g2-opcodes
+TARGET-stageb3g2-opcodes = $(TARGET-opcodes)
+all-stageb3g2-opcodes: configure-stageb3g2-opcodes
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/opcodes && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-opcodes)
+
+maybe-clean-stageb3g2-opcodes: clean-stageb3g2-opcodes
+clean-stageb3g2: clean-stageb3g2-opcodes
+clean-stageb3g2-opcodes:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/opcodes/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-opcodes/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -5910,7 +6185,7 @@ all-stage4-opcodes: configure-stage4-opcodes
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-opcodes)
 
 maybe-clean-stage4-opcodes: clean-stage4-opcodes
@@ -5945,7 +6220,7 @@ all-stageprofile-opcodes: configure-stageprofile-opcodes
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-opcodes)
 
 maybe-clean-stageprofile-opcodes: clean-stageprofile-opcodes
@@ -5980,7 +6255,7 @@ all-stagefeedback-opcodes: configure-stagefeedback-opcodes
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/opcodes && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-opcodes)
 
 maybe-clean-stagefeedback-opcodes: clean-stagefeedback-opcodes
@@ -6432,9 +6707,40 @@ configure-stage2-binutils:
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/binutils ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
+	cd $(HOST_SUBDIR)/binutils || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/binutils"; \
+	libsrcdir="$$s/binutils"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif binutils-bootstrap
+
+.PHONY: configure-stageb2g0-binutils maybe-configure-stageb2g0-binutils
+maybe-configure-stageb2g0-binutils:
+@if binutils-bootstrap
+maybe-configure-stageb2g0-binutils: configure-stageb2g0-binutils
+configure-stageb2g0-binutils:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/binutils ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
 	cd $(HOST_SUBDIR)/binutils || exit 1; \
 	case $(srcdir) in \
@@ -6463,9 +6769,40 @@ configure-stage3-binutils:
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/binutils ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
+	cd $(HOST_SUBDIR)/binutils || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/binutils/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/binutils"; \
+	libsrcdir="$$s/binutils"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif binutils-bootstrap
+
+.PHONY: configure-stageb3g2-binutils maybe-configure-stageb3g2-binutils
+maybe-configure-stageb3g2-binutils:
+@if binutils-bootstrap
+maybe-configure-stageb3g2-binutils: configure-stageb3g2-binutils
+configure-stageb3g2-binutils:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/binutils ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
 	cd $(HOST_SUBDIR)/binutils || exit 1; \
 	case $(srcdir) in \
@@ -6494,8 +6831,8 @@ configure-stage4-binutils:
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/binutils ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
 	cd $(HOST_SUBDIR)/binutils || exit 1; \
@@ -6525,8 +6862,8 @@ configure-stageprofile-binutils:
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/binutils ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
 	cd $(HOST_SUBDIR)/binutils || exit 1; \
@@ -6556,8 +6893,8 @@ configure-stagefeedback-binutils:
 	test ! -f $(HOST_SUBDIR)/binutils/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/binutils ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/binutils ; \
 	cd $(HOST_SUBDIR)/binutils || exit 1; \
@@ -6646,7 +6983,7 @@ all-stage2-binutils: configure-stage2-binutils
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-binutils)
 
 maybe-clean-stage2-binutils: clean-stage2-binutils
@@ -6657,6 +6994,41 @@ clean-stage2-binutils:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-binutils/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif binutils-bootstrap
+
+
+.PHONY: all-stageb2g0-binutils maybe-all-stageb2g0-binutils
+.PHONY: clean-stageb2g0-binutils maybe-clean-stageb2g0-binutils
+maybe-all-stageb2g0-binutils:
+maybe-clean-stageb2g0-binutils:
+@if binutils-bootstrap
+maybe-all-stageb2g0-binutils: all-stageb2g0-binutils
+all-stageb2g0: all-stageb2g0-binutils
+TARGET-stageb2g0-binutils = $(TARGET-binutils)
+all-stageb2g0-binutils: configure-stageb2g0-binutils
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/binutils && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-binutils)
+
+maybe-clean-stageb2g0-binutils: clean-stageb2g0-binutils
+clean-stageb2g0: clean-stageb2g0-binutils
+clean-stageb2g0-binutils:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -6681,7 +7053,7 @@ all-stage3-binutils: configure-stage3-binutils
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-binutils)
 
 maybe-clean-stage3-binutils: clean-stage3-binutils
@@ -6692,6 +7064,41 @@ clean-stage3-binutils:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-binutils/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/binutils && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif binutils-bootstrap
+
+
+.PHONY: all-stageb3g2-binutils maybe-all-stageb3g2-binutils
+.PHONY: clean-stageb3g2-binutils maybe-clean-stageb3g2-binutils
+maybe-all-stageb3g2-binutils:
+maybe-clean-stageb3g2-binutils:
+@if binutils-bootstrap
+maybe-all-stageb3g2-binutils: all-stageb3g2-binutils
+all-stageb3g2: all-stageb3g2-binutils
+TARGET-stageb3g2-binutils = $(TARGET-binutils)
+all-stageb3g2-binutils: configure-stageb3g2-binutils
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/binutils && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-binutils)
+
+maybe-clean-stageb3g2-binutils: clean-stageb3g2-binutils
+clean-stageb3g2: clean-stageb3g2-binutils
+clean-stageb3g2-binutils:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/binutils/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-binutils/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -6716,7 +7123,7 @@ all-stage4-binutils: configure-stage4-binutils
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-binutils)
 
 maybe-clean-stage4-binutils: clean-stage4-binutils
@@ -6751,7 +7158,7 @@ all-stageprofile-binutils: configure-stageprofile-binutils
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-binutils)
 
 maybe-clean-stageprofile-binutils: clean-stageprofile-binutils
@@ -6786,7 +7193,7 @@ all-stagefeedback-binutils: configure-stagefeedback-binutils
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/binutils && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-binutils)
 
 maybe-clean-stagefeedback-binutils: clean-stagefeedback-binutils
@@ -12740,9 +13147,40 @@ configure-stage2-gas:
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/gas ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
+	cd $(HOST_SUBDIR)/gas || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gas"; \
+	libsrcdir="$$s/gas"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gas-bootstrap
+
+.PHONY: configure-stageb2g0-gas maybe-configure-stageb2g0-gas
+maybe-configure-stageb2g0-gas:
+@if gas-bootstrap
+maybe-configure-stageb2g0-gas: configure-stageb2g0-gas
+configure-stageb2g0-gas:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/gas ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
 	cd $(HOST_SUBDIR)/gas || exit 1; \
 	case $(srcdir) in \
@@ -12771,9 +13209,40 @@ configure-stage3-gas:
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/gas ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
+	cd $(HOST_SUBDIR)/gas || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gas/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gas"; \
+	libsrcdir="$$s/gas"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gas-bootstrap
+
+.PHONY: configure-stageb3g2-gas maybe-configure-stageb3g2-gas
+maybe-configure-stageb3g2-gas:
+@if gas-bootstrap
+maybe-configure-stageb3g2-gas: configure-stageb3g2-gas
+configure-stageb3g2-gas:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/gas ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
 	cd $(HOST_SUBDIR)/gas || exit 1; \
 	case $(srcdir) in \
@@ -12802,8 +13271,8 @@ configure-stage4-gas:
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/gas ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
 	cd $(HOST_SUBDIR)/gas || exit 1; \
@@ -12833,8 +13302,8 @@ configure-stageprofile-gas:
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/gas ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
 	cd $(HOST_SUBDIR)/gas || exit 1; \
@@ -12864,8 +13333,8 @@ configure-stagefeedback-gas:
 	test ! -f $(HOST_SUBDIR)/gas/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/gas ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gas ; \
 	cd $(HOST_SUBDIR)/gas || exit 1; \
@@ -12954,7 +13423,7 @@ all-stage2-gas: configure-stage2-gas
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-gas)
 
 maybe-clean-stage2-gas: clean-stage2-gas
@@ -12965,6 +13434,41 @@ clean-stage2-gas:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-gas/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gas-bootstrap
+
+
+.PHONY: all-stageb2g0-gas maybe-all-stageb2g0-gas
+.PHONY: clean-stageb2g0-gas maybe-clean-stageb2g0-gas
+maybe-all-stageb2g0-gas:
+maybe-clean-stageb2g0-gas:
+@if gas-bootstrap
+maybe-all-stageb2g0-gas: all-stageb2g0-gas
+all-stageb2g0: all-stageb2g0-gas
+TARGET-stageb2g0-gas = $(TARGET-gas)
+all-stageb2g0-gas: configure-stageb2g0-gas
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gas && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-gas)
+
+maybe-clean-stageb2g0-gas: clean-stageb2g0-gas
+clean-stageb2g0: clean-stageb2g0-gas
+clean-stageb2g0-gas:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-gas/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -12989,7 +13493,7 @@ all-stage3-gas: configure-stage3-gas
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-gas)
 
 maybe-clean-stage3-gas: clean-stage3-gas
@@ -13000,6 +13504,41 @@ clean-stage3-gas:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-gas/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gas && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gas-bootstrap
+
+
+.PHONY: all-stageb3g2-gas maybe-all-stageb3g2-gas
+.PHONY: clean-stageb3g2-gas maybe-clean-stageb3g2-gas
+maybe-all-stageb3g2-gas:
+maybe-clean-stageb3g2-gas:
+@if gas-bootstrap
+maybe-all-stageb3g2-gas: all-stageb3g2-gas
+all-stageb3g2: all-stageb3g2-gas
+TARGET-stageb3g2-gas = $(TARGET-gas)
+all-stageb3g2-gas: configure-stageb3g2-gas
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gas && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-gas)
+
+maybe-clean-stageb3g2-gas: clean-stageb3g2-gas
+clean-stageb3g2: clean-stageb3g2-gas
+clean-stageb3g2-gas:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gas/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-gas/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -13024,7 +13563,7 @@ all-stage4-gas: configure-stage4-gas
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-gas)
 
 maybe-clean-stage4-gas: clean-stage4-gas
@@ -13059,7 +13598,7 @@ all-stageprofile-gas: configure-stageprofile-gas
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-gas)
 
 maybe-clean-stageprofile-gas: clean-stageprofile-gas
@@ -13094,7 +13633,7 @@ all-stagefeedback-gas: configure-stagefeedback-gas
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gas && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-gas)
 
 maybe-clean-stagefeedback-gas: clean-stagefeedback-gas
@@ -13546,9 +14085,40 @@ configure-stage2-gcc:
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/gcc ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
+	cd $(HOST_SUBDIR)/gcc || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gcc"; \
+	libsrcdir="$$s/gcc"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gcc-bootstrap
+
+.PHONY: configure-stageb2g0-gcc maybe-configure-stageb2g0-gcc
+maybe-configure-stageb2g0-gcc:
+@if gcc-bootstrap
+maybe-configure-stageb2g0-gcc: configure-stageb2g0-gcc
+configure-stageb2g0-gcc:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/gcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
 	cd $(HOST_SUBDIR)/gcc || exit 1; \
 	case $(srcdir) in \
@@ -13577,9 +14147,40 @@ configure-stage3-gcc:
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/gcc ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
+	cd $(HOST_SUBDIR)/gcc || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gcc/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gcc"; \
+	libsrcdir="$$s/gcc"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif gcc-bootstrap
+
+.PHONY: configure-stageb3g2-gcc maybe-configure-stageb3g2-gcc
+maybe-configure-stageb3g2-gcc:
+@if gcc-bootstrap
+maybe-configure-stageb3g2-gcc: configure-stageb3g2-gcc
+configure-stageb3g2-gcc:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/gcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
 	cd $(HOST_SUBDIR)/gcc || exit 1; \
 	case $(srcdir) in \
@@ -13608,8 +14209,8 @@ configure-stage4-gcc:
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/gcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
 	cd $(HOST_SUBDIR)/gcc || exit 1; \
@@ -13639,8 +14240,8 @@ configure-stageprofile-gcc:
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/gcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
 	cd $(HOST_SUBDIR)/gcc || exit 1; \
@@ -13670,8 +14271,8 @@ configure-stagefeedback-gcc:
 	test ! -f $(HOST_SUBDIR)/gcc/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/gcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc ; \
 	cd $(HOST_SUBDIR)/gcc || exit 1; \
@@ -13760,7 +14361,7 @@ all-stage2-gcc: configure-stage2-gcc
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-stage2-gcc)
 
 maybe-clean-stage2-gcc: clean-stage2-gcc
@@ -13771,6 +14372,41 @@ clean-stage2-gcc:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-gcc/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_GCC_FLAGS) clean
+@endif gcc-bootstrap
+
+
+.PHONY: all-stageb2g0-gcc maybe-all-stageb2g0-gcc
+.PHONY: clean-stageb2g0-gcc maybe-clean-stageb2g0-gcc
+maybe-all-stageb2g0-gcc:
+maybe-clean-stageb2g0-gcc:
+@if gcc-bootstrap
+maybe-all-stageb2g0-gcc: all-stageb2g0-gcc
+all-stageb2g0: all-stageb2g0-gcc
+TARGET-stageb2g0-gcc = $(TARGET-gcc)
+all-stageb2g0-gcc: configure-stageb2g0-gcc
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gcc && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		$(TARGET-stageb2g0-gcc)
+
+maybe-clean-stageb2g0-gcc: clean-stageb2g0-gcc
+clean-stageb2g0: clean-stageb2g0-gcc
+clean-stageb2g0-gcc:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -13795,7 +14431,7 @@ all-stage3-gcc: configure-stage3-gcc
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-stage3-gcc)
 
 maybe-clean-stage3-gcc: clean-stage3-gcc
@@ -13806,6 +14442,41 @@ clean-stage3-gcc:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-gcc/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gcc && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(EXTRA_GCC_FLAGS) clean
+@endif gcc-bootstrap
+
+
+.PHONY: all-stageb3g2-gcc maybe-all-stageb3g2-gcc
+.PHONY: clean-stageb3g2-gcc maybe-clean-stageb3g2-gcc
+maybe-all-stageb3g2-gcc:
+maybe-clean-stageb3g2-gcc:
+@if gcc-bootstrap
+maybe-all-stageb3g2-gcc: all-stageb3g2-gcc
+all-stageb3g2: all-stageb3g2-gcc
+TARGET-stageb3g2-gcc = $(TARGET-gcc)
+all-stageb3g2-gcc: configure-stageb3g2-gcc
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gcc && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		$(TARGET-stageb3g2-gcc)
+
+maybe-clean-stageb3g2-gcc: clean-stageb3g2-gcc
+clean-stageb3g2: clean-stageb3g2-gcc
+clean-stageb3g2-gcc:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-gcc/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -13830,7 +14501,7 @@ all-stage4-gcc: configure-stage4-gcc
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-stage4-gcc)
 
 maybe-clean-stage4-gcc: clean-stage4-gcc
@@ -13865,7 +14536,7 @@ all-stageprofile-gcc: configure-stageprofile-gcc
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-stageprofile-gcc)
 
 maybe-clean-stageprofile-gcc: clean-stageprofile-gcc
@@ -13900,7 +14571,7 @@ all-stagefeedback-gcc: configure-stagefeedback-gcc
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gcc && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) \
 		$(TARGET-stagefeedback-gcc)
 
 maybe-clean-stagefeedback-gcc: clean-stagefeedback-gcc
@@ -15200,9 +15871,40 @@ configure-stage2-gmp:
 	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stageb2g0-gmp maybe-configure-stageb2g0-gmp
+maybe-configure-stageb2g0-gmp:
+@if gmp-bootstrap
+maybe-configure-stageb2g0-gmp: configure-stageb2g0-gmp
+configure-stageb2g0-gmp:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/gmp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
 	cd $(HOST_SUBDIR)/gmp || exit 1; \
 	case $(srcdir) in \
@@ -15231,9 +15933,40 @@ configure-stage3-gmp:
 	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/gmp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
+	cd $(HOST_SUBDIR)/gmp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/gmp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/gmp"; \
+	libsrcdir="$$s/gmp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared
+@endif gmp-bootstrap
+
+.PHONY: configure-stageb3g2-gmp maybe-configure-stageb3g2-gmp
+maybe-configure-stageb3g2-gmp:
+@if gmp-bootstrap
+maybe-configure-stageb3g2-gmp: configure-stageb3g2-gmp
+configure-stageb3g2-gmp:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/gmp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
 	cd $(HOST_SUBDIR)/gmp || exit 1; \
 	case $(srcdir) in \
@@ -15262,8 +15995,8 @@ configure-stage4-gmp:
 	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/gmp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
 	cd $(HOST_SUBDIR)/gmp || exit 1; \
@@ -15293,8 +16026,8 @@ configure-stageprofile-gmp:
 	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/gmp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
 	cd $(HOST_SUBDIR)/gmp || exit 1; \
@@ -15324,8 +16057,8 @@ configure-stagefeedback-gmp:
 	test ! -f $(HOST_SUBDIR)/gmp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/gmp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gmp ; \
 	cd $(HOST_SUBDIR)/gmp || exit 1; \
@@ -15414,7 +16147,7 @@ all-stage2-gmp: configure-stage2-gmp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-gmp)
 
 maybe-clean-stage2-gmp: clean-stage2-gmp
@@ -15425,6 +16158,41 @@ clean-stage2-gmp:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-gmp/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stageb2g0-gmp maybe-all-stageb2g0-gmp
+.PHONY: clean-stageb2g0-gmp maybe-clean-stageb2g0-gmp
+maybe-all-stageb2g0-gmp:
+maybe-clean-stageb2g0-gmp:
+@if gmp-bootstrap
+maybe-all-stageb2g0-gmp: all-stageb2g0-gmp
+all-stageb2g0: all-stageb2g0-gmp
+TARGET-stageb2g0-gmp = $(TARGET-gmp)
+all-stageb2g0-gmp: configure-stageb2g0-gmp
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-gmp)
+
+maybe-clean-stageb2g0-gmp: clean-stageb2g0-gmp
+clean-stageb2g0: clean-stageb2g0-gmp
+clean-stageb2g0-gmp:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -15449,7 +16217,7 @@ all-stage3-gmp: configure-stage3-gmp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-gmp)
 
 maybe-clean-stage3-gmp: clean-stage3-gmp
@@ -15460,6 +16228,41 @@ clean-stage3-gmp:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-gmp/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif gmp-bootstrap
+
+
+.PHONY: all-stageb3g2-gmp maybe-all-stageb3g2-gmp
+.PHONY: clean-stageb3g2-gmp maybe-clean-stageb3g2-gmp
+maybe-all-stageb3g2-gmp:
+maybe-clean-stageb3g2-gmp:
+@if gmp-bootstrap
+maybe-all-stageb3g2-gmp: all-stageb3g2-gmp
+all-stageb3g2: all-stageb3g2-gmp
+TARGET-stageb3g2-gmp = $(TARGET-gmp)
+all-stageb3g2-gmp: configure-stageb3g2-gmp
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/gmp && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-gmp)
+
+maybe-clean-stageb3g2-gmp: clean-stageb3g2-gmp
+clean-stageb3g2: clean-stageb3g2-gmp
+clean-stageb3g2-gmp:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/gmp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-gmp/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -15484,7 +16287,7 @@ all-stage4-gmp: configure-stage4-gmp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-gmp)
 
 maybe-clean-stage4-gmp: clean-stage4-gmp
@@ -15519,7 +16322,7 @@ all-stageprofile-gmp: configure-stageprofile-gmp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-gmp)
 
 maybe-clean-stageprofile-gmp: clean-stageprofile-gmp
@@ -15554,7 +16357,7 @@ all-stagefeedback-gmp: configure-stagefeedback-gmp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/gmp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-gmp)
 
 maybe-clean-stagefeedback-gmp: clean-stagefeedback-gmp
@@ -16000,9 +16803,40 @@ configure-stage2-mpfr:
 	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stageb2g0-mpfr maybe-configure-stageb2g0-mpfr
+maybe-configure-stageb2g0-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stageb2g0-mpfr: configure-stageb2g0-mpfr
+configure-stageb2g0-mpfr:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/mpfr ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
 	cd $(HOST_SUBDIR)/mpfr || exit 1; \
 	case $(srcdir) in \
@@ -16031,9 +16865,40 @@ configure-stage3-mpfr:
 	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/mpfr ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
+	cd $(HOST_SUBDIR)/mpfr || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/mpfr/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/mpfr"; \
+	libsrcdir="$$s/mpfr"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+@endif mpfr-bootstrap
+
+.PHONY: configure-stageb3g2-mpfr maybe-configure-stageb3g2-mpfr
+maybe-configure-stageb3g2-mpfr:
+@if mpfr-bootstrap
+maybe-configure-stageb3g2-mpfr: configure-stageb3g2-mpfr
+configure-stageb3g2-mpfr:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/mpfr ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
 	cd $(HOST_SUBDIR)/mpfr || exit 1; \
 	case $(srcdir) in \
@@ -16062,8 +16927,8 @@ configure-stage4-mpfr:
 	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/mpfr ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
 	cd $(HOST_SUBDIR)/mpfr || exit 1; \
@@ -16093,8 +16958,8 @@ configure-stageprofile-mpfr:
 	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/mpfr ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
 	cd $(HOST_SUBDIR)/mpfr || exit 1; \
@@ -16124,8 +16989,8 @@ configure-stagefeedback-mpfr:
 	test ! -f $(HOST_SUBDIR)/mpfr/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/mpfr ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/mpfr ; \
 	cd $(HOST_SUBDIR)/mpfr || exit 1; \
@@ -16214,7 +17079,7 @@ all-stage2-mpfr: configure-stage2-mpfr
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-mpfr)
 
 maybe-clean-stage2-mpfr: clean-stage2-mpfr
@@ -16225,6 +17090,41 @@ clean-stage2-mpfr:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-mpfr/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stageb2g0-mpfr maybe-all-stageb2g0-mpfr
+.PHONY: clean-stageb2g0-mpfr maybe-clean-stageb2g0-mpfr
+maybe-all-stageb2g0-mpfr:
+maybe-clean-stageb2g0-mpfr:
+@if mpfr-bootstrap
+maybe-all-stageb2g0-mpfr: all-stageb2g0-mpfr
+all-stageb2g0: all-stageb2g0-mpfr
+TARGET-stageb2g0-mpfr = $(TARGET-mpfr)
+all-stageb2g0-mpfr: configure-stageb2g0-mpfr
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-mpfr)
+
+maybe-clean-stageb2g0-mpfr: clean-stageb2g0-mpfr
+clean-stageb2g0: clean-stageb2g0-mpfr
+clean-stageb2g0-mpfr:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -16249,7 +17149,7 @@ all-stage3-mpfr: configure-stage3-mpfr
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-mpfr)
 
 maybe-clean-stage3-mpfr: clean-stage3-mpfr
@@ -16260,6 +17160,41 @@ clean-stage3-mpfr:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-mpfr/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif mpfr-bootstrap
+
+
+.PHONY: all-stageb3g2-mpfr maybe-all-stageb3g2-mpfr
+.PHONY: clean-stageb3g2-mpfr maybe-clean-stageb3g2-mpfr
+maybe-all-stageb3g2-mpfr:
+maybe-clean-stageb3g2-mpfr:
+@if mpfr-bootstrap
+maybe-all-stageb3g2-mpfr: all-stageb3g2-mpfr
+all-stageb3g2: all-stageb3g2-mpfr
+TARGET-stageb3g2-mpfr = $(TARGET-mpfr)
+all-stageb3g2-mpfr: configure-stageb3g2-mpfr
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/mpfr && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-mpfr)
+
+maybe-clean-stageb3g2-mpfr: clean-stageb3g2-mpfr
+clean-stageb3g2: clean-stageb3g2-mpfr
+clean-stageb3g2-mpfr:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/mpfr/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-mpfr/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -16284,7 +17219,7 @@ all-stage4-mpfr: configure-stage4-mpfr
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-mpfr)
 
 maybe-clean-stage4-mpfr: clean-stage4-mpfr
@@ -16319,7 +17254,7 @@ all-stageprofile-mpfr: configure-stageprofile-mpfr
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-mpfr)
 
 maybe-clean-stageprofile-mpfr: clean-stageprofile-mpfr
@@ -16354,7 +17289,7 @@ all-stagefeedback-mpfr: configure-stagefeedback-mpfr
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/mpfr && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-mpfr)
 
 maybe-clean-stagefeedback-mpfr: clean-stagefeedback-mpfr
@@ -18920,9 +19855,40 @@ configure-stage2-intl:
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/intl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
+	cd $(HOST_SUBDIR)/intl || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/intl"; \
+	libsrcdir="$$s/intl"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif intl-bootstrap
+
+.PHONY: configure-stageb2g0-intl maybe-configure-stageb2g0-intl
+maybe-configure-stageb2g0-intl:
+@if intl-bootstrap
+maybe-configure-stageb2g0-intl: configure-stageb2g0-intl
+configure-stageb2g0-intl:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/intl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
 	cd $(HOST_SUBDIR)/intl || exit 1; \
 	case $(srcdir) in \
@@ -18951,9 +19917,40 @@ configure-stage3-intl:
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/intl ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
+	cd $(HOST_SUBDIR)/intl || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/intl"; \
+	libsrcdir="$$s/intl"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif intl-bootstrap
+
+.PHONY: configure-stageb3g2-intl maybe-configure-stageb3g2-intl
+maybe-configure-stageb3g2-intl:
+@if intl-bootstrap
+maybe-configure-stageb3g2-intl: configure-stageb3g2-intl
+configure-stageb3g2-intl:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/intl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
 	cd $(HOST_SUBDIR)/intl || exit 1; \
 	case $(srcdir) in \
@@ -18982,8 +19979,8 @@ configure-stage4-intl:
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/intl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
 	cd $(HOST_SUBDIR)/intl || exit 1; \
@@ -19013,8 +20010,8 @@ configure-stageprofile-intl:
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/intl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
 	cd $(HOST_SUBDIR)/intl || exit 1; \
@@ -19044,8 +20041,8 @@ configure-stagefeedback-intl:
 	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/intl ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl ; \
 	cd $(HOST_SUBDIR)/intl || exit 1; \
@@ -19134,7 +20131,7 @@ all-stage2-intl: configure-stage2-intl
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-intl)
 
 maybe-clean-stage2-intl: clean-stage2-intl
@@ -19145,6 +20142,41 @@ clean-stage2-intl:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-intl/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif intl-bootstrap
+
+
+.PHONY: all-stageb2g0-intl maybe-all-stageb2g0-intl
+.PHONY: clean-stageb2g0-intl maybe-clean-stageb2g0-intl
+maybe-all-stageb2g0-intl:
+maybe-clean-stageb2g0-intl:
+@if intl-bootstrap
+maybe-all-stageb2g0-intl: all-stageb2g0-intl
+all-stageb2g0: all-stageb2g0-intl
+TARGET-stageb2g0-intl = $(TARGET-intl)
+all-stageb2g0-intl: configure-stageb2g0-intl
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/intl && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-intl)
+
+maybe-clean-stageb2g0-intl: clean-stageb2g0-intl
+clean-stageb2g0: clean-stageb2g0-intl
+clean-stageb2g0-intl:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-intl/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -19169,7 +20201,7 @@ all-stage3-intl: configure-stage3-intl
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-intl)
 
 maybe-clean-stage3-intl: clean-stage3-intl
@@ -19180,6 +20212,41 @@ clean-stage3-intl:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-intl/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/intl && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif intl-bootstrap
+
+
+.PHONY: all-stageb3g2-intl maybe-all-stageb3g2-intl
+.PHONY: clean-stageb3g2-intl maybe-clean-stageb3g2-intl
+maybe-all-stageb3g2-intl:
+maybe-clean-stageb3g2-intl:
+@if intl-bootstrap
+maybe-all-stageb3g2-intl: all-stageb3g2-intl
+all-stageb3g2: all-stageb3g2-intl
+TARGET-stageb3g2-intl = $(TARGET-intl)
+all-stageb3g2-intl: configure-stageb3g2-intl
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/intl && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-intl)
+
+maybe-clean-stageb3g2-intl: clean-stageb3g2-intl
+clean-stageb3g2: clean-stageb3g2-intl
+clean-stageb3g2-intl:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-intl/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -19204,7 +20271,7 @@ all-stage4-intl: configure-stage4-intl
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-intl)
 
 maybe-clean-stage4-intl: clean-stage4-intl
@@ -19239,7 +20306,7 @@ all-stageprofile-intl: configure-stageprofile-intl
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-intl)
 
 maybe-clean-stageprofile-intl: clean-stageprofile-intl
@@ -19274,7 +20341,7 @@ all-stagefeedback-intl: configure-stagefeedback-intl
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/intl && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-intl)
 
 maybe-clean-stagefeedback-intl: clean-stagefeedback-intl
@@ -20559,9 +21626,40 @@ configure-stage2-ld:
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/ld ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
+	cd $(HOST_SUBDIR)/ld || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/ld"; \
+	libsrcdir="$$s/ld"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif ld-bootstrap
+
+.PHONY: configure-stageb2g0-ld maybe-configure-stageb2g0-ld
+maybe-configure-stageb2g0-ld:
+@if ld-bootstrap
+maybe-configure-stageb2g0-ld: configure-stageb2g0-ld
+configure-stageb2g0-ld:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/ld ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
 	cd $(HOST_SUBDIR)/ld || exit 1; \
 	case $(srcdir) in \
@@ -20590,9 +21688,40 @@ configure-stage3-ld:
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/ld ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
+	cd $(HOST_SUBDIR)/ld || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/ld/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/ld"; \
+	libsrcdir="$$s/ld"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif ld-bootstrap
+
+.PHONY: configure-stageb3g2-ld maybe-configure-stageb3g2-ld
+maybe-configure-stageb3g2-ld:
+@if ld-bootstrap
+maybe-configure-stageb3g2-ld: configure-stageb3g2-ld
+configure-stageb3g2-ld:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/ld ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
 	cd $(HOST_SUBDIR)/ld || exit 1; \
 	case $(srcdir) in \
@@ -20621,8 +21750,8 @@ configure-stage4-ld:
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/ld ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
 	cd $(HOST_SUBDIR)/ld || exit 1; \
@@ -20652,8 +21781,8 @@ configure-stageprofile-ld:
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/ld ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
 	cd $(HOST_SUBDIR)/ld || exit 1; \
@@ -20683,8 +21812,8 @@ configure-stagefeedback-ld:
 	test ! -f $(HOST_SUBDIR)/ld/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/ld ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/ld ; \
 	cd $(HOST_SUBDIR)/ld || exit 1; \
@@ -20773,7 +21902,7 @@ all-stage2-ld: configure-stage2-ld
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-ld)
 
 maybe-clean-stage2-ld: clean-stage2-ld
@@ -20784,6 +21913,41 @@ clean-stage2-ld:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-ld/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif ld-bootstrap
+
+
+.PHONY: all-stageb2g0-ld maybe-all-stageb2g0-ld
+.PHONY: clean-stageb2g0-ld maybe-clean-stageb2g0-ld
+maybe-all-stageb2g0-ld:
+maybe-clean-stageb2g0-ld:
+@if ld-bootstrap
+maybe-all-stageb2g0-ld: all-stageb2g0-ld
+all-stageb2g0: all-stageb2g0-ld
+TARGET-stageb2g0-ld = $(TARGET-ld)
+all-stageb2g0-ld: configure-stageb2g0-ld
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/ld && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-ld)
+
+maybe-clean-stageb2g0-ld: clean-stageb2g0-ld
+clean-stageb2g0: clean-stageb2g0-ld
+clean-stageb2g0-ld:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-ld/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -20808,7 +21972,7 @@ all-stage3-ld: configure-stage3-ld
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-ld)
 
 maybe-clean-stage3-ld: clean-stage3-ld
@@ -20819,6 +21983,41 @@ clean-stage3-ld:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-ld/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/ld && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif ld-bootstrap
+
+
+.PHONY: all-stageb3g2-ld maybe-all-stageb3g2-ld
+.PHONY: clean-stageb3g2-ld maybe-clean-stageb3g2-ld
+maybe-all-stageb3g2-ld:
+maybe-clean-stageb3g2-ld:
+@if ld-bootstrap
+maybe-all-stageb3g2-ld: all-stageb3g2-ld
+all-stageb3g2: all-stageb3g2-ld
+TARGET-stageb3g2-ld = $(TARGET-ld)
+all-stageb3g2-ld: configure-stageb3g2-ld
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/ld && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-ld)
+
+maybe-clean-stageb3g2-ld: clean-stageb3g2-ld
+clean-stageb3g2: clean-stageb3g2-ld
+clean-stageb3g2-ld:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/ld/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-ld/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -20843,7 +22042,7 @@ all-stage4-ld: configure-stage4-ld
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-ld)
 
 maybe-clean-stage4-ld: clean-stage4-ld
@@ -20878,7 +22077,7 @@ all-stageprofile-ld: configure-stageprofile-ld
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-ld)
 
 maybe-clean-stageprofile-ld: clean-stageprofile-ld
@@ -20913,7 +22112,7 @@ all-stagefeedback-ld: configure-stagefeedback-ld
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/ld && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-ld)
 
 maybe-clean-stagefeedback-ld: clean-stagefeedback-ld
@@ -21365,9 +22564,40 @@ configure-stage2-libcpp:
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/libcpp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
+	cd $(HOST_SUBDIR)/libcpp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcpp"; \
+	libsrcdir="$$s/libcpp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif libcpp-bootstrap
+
+.PHONY: configure-stageb2g0-libcpp maybe-configure-stageb2g0-libcpp
+maybe-configure-stageb2g0-libcpp:
+@if libcpp-bootstrap
+maybe-configure-stageb2g0-libcpp: configure-stageb2g0-libcpp
+configure-stageb2g0-libcpp:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/libcpp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
 	cd $(HOST_SUBDIR)/libcpp || exit 1; \
 	case $(srcdir) in \
@@ -21396,9 +22626,40 @@ configure-stage3-libcpp:
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/libcpp ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
+	cd $(HOST_SUBDIR)/libcpp || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libcpp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libcpp"; \
+	libsrcdir="$$s/libcpp"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif libcpp-bootstrap
+
+.PHONY: configure-stageb3g2-libcpp maybe-configure-stageb3g2-libcpp
+maybe-configure-stageb3g2-libcpp:
+@if libcpp-bootstrap
+maybe-configure-stageb3g2-libcpp: configure-stageb3g2-libcpp
+configure-stageb3g2-libcpp:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/libcpp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
 	cd $(HOST_SUBDIR)/libcpp || exit 1; \
 	case $(srcdir) in \
@@ -21427,8 +22688,8 @@ configure-stage4-libcpp:
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/libcpp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
 	cd $(HOST_SUBDIR)/libcpp || exit 1; \
@@ -21458,8 +22719,8 @@ configure-stageprofile-libcpp:
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/libcpp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
 	cd $(HOST_SUBDIR)/libcpp || exit 1; \
@@ -21489,8 +22750,8 @@ configure-stagefeedback-libcpp:
 	test ! -f $(HOST_SUBDIR)/libcpp/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/libcpp ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libcpp ; \
 	cd $(HOST_SUBDIR)/libcpp || exit 1; \
@@ -21579,7 +22840,7 @@ all-stage2-libcpp: configure-stage2-libcpp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-libcpp)
 
 maybe-clean-stage2-libcpp: clean-stage2-libcpp
@@ -21590,6 +22851,41 @@ clean-stage2-libcpp:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-libcpp/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libcpp-bootstrap
+
+
+.PHONY: all-stageb2g0-libcpp maybe-all-stageb2g0-libcpp
+.PHONY: clean-stageb2g0-libcpp maybe-clean-stageb2g0-libcpp
+maybe-all-stageb2g0-libcpp:
+maybe-clean-stageb2g0-libcpp:
+@if libcpp-bootstrap
+maybe-all-stageb2g0-libcpp: all-stageb2g0-libcpp
+all-stageb2g0: all-stageb2g0-libcpp
+TARGET-stageb2g0-libcpp = $(TARGET-libcpp)
+all-stageb2g0-libcpp: configure-stageb2g0-libcpp
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-libcpp)
+
+maybe-clean-stageb2g0-libcpp: clean-stageb2g0-libcpp
+clean-stageb2g0: clean-stageb2g0-libcpp
+clean-stageb2g0-libcpp:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -21614,7 +22910,7 @@ all-stage3-libcpp: configure-stage3-libcpp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-libcpp)
 
 maybe-clean-stage3-libcpp: clean-stage3-libcpp
@@ -21625,6 +22921,41 @@ clean-stage3-libcpp:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-libcpp/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libcpp-bootstrap
+
+
+.PHONY: all-stageb3g2-libcpp maybe-all-stageb3g2-libcpp
+.PHONY: clean-stageb3g2-libcpp maybe-clean-stageb3g2-libcpp
+maybe-all-stageb3g2-libcpp:
+maybe-clean-stageb3g2-libcpp:
+@if libcpp-bootstrap
+maybe-all-stageb3g2-libcpp: all-stageb3g2-libcpp
+all-stageb3g2: all-stageb3g2-libcpp
+TARGET-stageb3g2-libcpp = $(TARGET-libcpp)
+all-stageb3g2-libcpp: configure-stageb3g2-libcpp
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libcpp && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-libcpp)
+
+maybe-clean-stageb3g2-libcpp: clean-stageb3g2-libcpp
+clean-stageb3g2: clean-stageb3g2-libcpp
+clean-stageb3g2-libcpp:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libcpp/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-libcpp/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -21649,7 +22980,7 @@ all-stage4-libcpp: configure-stage4-libcpp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-libcpp)
 
 maybe-clean-stage4-libcpp: clean-stage4-libcpp
@@ -21684,7 +23015,7 @@ all-stageprofile-libcpp: configure-stageprofile-libcpp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-libcpp)
 
 maybe-clean-stageprofile-libcpp: clean-stageprofile-libcpp
@@ -21719,7 +23050,7 @@ all-stagefeedback-libcpp: configure-stagefeedback-libcpp
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libcpp && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-libcpp)
 
 maybe-clean-stagefeedback-libcpp: clean-stagefeedback-libcpp
@@ -22171,9 +23502,40 @@ configure-stage2-libdecnumber:
 	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/libdecnumber ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stageb2g0-libdecnumber maybe-configure-stageb2g0-libdecnumber
+maybe-configure-stageb2g0-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stageb2g0-libdecnumber: configure-stageb2g0-libdecnumber
+configure-stageb2g0-libdecnumber:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/libdecnumber ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
 	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
 	case $(srcdir) in \
@@ -22202,9 +23564,40 @@ configure-stage3-libdecnumber:
 	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/libdecnumber ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
+	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libdecnumber/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libdecnumber"; \
+	libsrcdir="$$s/libdecnumber"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif libdecnumber-bootstrap
+
+.PHONY: configure-stageb3g2-libdecnumber maybe-configure-stageb3g2-libdecnumber
+maybe-configure-stageb3g2-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-configure-stageb3g2-libdecnumber: configure-stageb3g2-libdecnumber
+configure-stageb3g2-libdecnumber:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/libdecnumber ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
 	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
 	case $(srcdir) in \
@@ -22233,8 +23626,8 @@ configure-stage4-libdecnumber:
 	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/libdecnumber ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
 	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
@@ -22264,8 +23657,8 @@ configure-stageprofile-libdecnumber:
 	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/libdecnumber ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
 	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
@@ -22295,8 +23688,8 @@ configure-stagefeedback-libdecnumber:
 	test ! -f $(HOST_SUBDIR)/libdecnumber/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/libdecnumber ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libdecnumber ; \
 	cd $(HOST_SUBDIR)/libdecnumber || exit 1; \
@@ -22385,7 +23778,7 @@ all-stage2-libdecnumber: configure-stage2-libdecnumber
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-libdecnumber)
 
 maybe-clean-stage2-libdecnumber: clean-stage2-libdecnumber
@@ -22396,6 +23789,41 @@ clean-stage2-libdecnumber:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-libdecnumber/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stageb2g0-libdecnumber maybe-all-stageb2g0-libdecnumber
+.PHONY: clean-stageb2g0-libdecnumber maybe-clean-stageb2g0-libdecnumber
+maybe-all-stageb2g0-libdecnumber:
+maybe-clean-stageb2g0-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stageb2g0-libdecnumber: all-stageb2g0-libdecnumber
+all-stageb2g0: all-stageb2g0-libdecnumber
+TARGET-stageb2g0-libdecnumber = $(TARGET-libdecnumber)
+all-stageb2g0-libdecnumber: configure-stageb2g0-libdecnumber
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-libdecnumber)
+
+maybe-clean-stageb2g0-libdecnumber: clean-stageb2g0-libdecnumber
+clean-stageb2g0: clean-stageb2g0-libdecnumber
+clean-stageb2g0-libdecnumber:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -22420,7 +23848,7 @@ all-stage3-libdecnumber: configure-stage3-libdecnumber
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-libdecnumber)
 
 maybe-clean-stage3-libdecnumber: clean-stage3-libdecnumber
@@ -22431,6 +23859,41 @@ clean-stage3-libdecnumber:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-libdecnumber/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libdecnumber-bootstrap
+
+
+.PHONY: all-stageb3g2-libdecnumber maybe-all-stageb3g2-libdecnumber
+.PHONY: clean-stageb3g2-libdecnumber maybe-clean-stageb3g2-libdecnumber
+maybe-all-stageb3g2-libdecnumber:
+maybe-clean-stageb3g2-libdecnumber:
+@if libdecnumber-bootstrap
+maybe-all-stageb3g2-libdecnumber: all-stageb3g2-libdecnumber
+all-stageb3g2: all-stageb3g2-libdecnumber
+TARGET-stageb3g2-libdecnumber = $(TARGET-libdecnumber)
+all-stageb3g2-libdecnumber: configure-stageb3g2-libdecnumber
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libdecnumber && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-libdecnumber)
+
+maybe-clean-stageb3g2-libdecnumber: clean-stageb3g2-libdecnumber
+clean-stageb3g2: clean-stageb3g2-libdecnumber
+clean-stageb3g2-libdecnumber:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libdecnumber/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-libdecnumber/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -22455,7 +23918,7 @@ all-stage4-libdecnumber: configure-stage4-libdecnumber
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-libdecnumber)
 
 maybe-clean-stage4-libdecnumber: clean-stage4-libdecnumber
@@ -22490,7 +23953,7 @@ all-stageprofile-libdecnumber: configure-stageprofile-libdecnumber
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-libdecnumber)
 
 maybe-clean-stageprofile-libdecnumber: clean-stageprofile-libdecnumber
@@ -22525,7 +23988,7 @@ all-stagefeedback-libdecnumber: configure-stagefeedback-libdecnumber
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libdecnumber && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-libdecnumber)
 
 maybe-clean-stagefeedback-libdecnumber: clean-stagefeedback-libdecnumber
@@ -23401,9 +24864,40 @@ configure-stage2-libiberty:
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/libiberty ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
+	cd $(HOST_SUBDIR)/libiberty || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libiberty"; \
+	libsrcdir="$$s/libiberty"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif libiberty-bootstrap
+
+.PHONY: configure-stageb2g0-libiberty maybe-configure-stageb2g0-libiberty
+maybe-configure-stageb2g0-libiberty:
+@if libiberty-bootstrap
+maybe-configure-stageb2g0-libiberty: configure-stageb2g0-libiberty
+configure-stageb2g0-libiberty:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/libiberty ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
 	cd $(HOST_SUBDIR)/libiberty || exit 1; \
 	case $(srcdir) in \
@@ -23432,9 +24926,40 @@ configure-stage3-libiberty:
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/libiberty ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
+	cd $(HOST_SUBDIR)/libiberty || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiberty/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libiberty"; \
+	libsrcdir="$$s/libiberty"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif libiberty-bootstrap
+
+.PHONY: configure-stageb3g2-libiberty maybe-configure-stageb3g2-libiberty
+maybe-configure-stageb3g2-libiberty:
+@if libiberty-bootstrap
+maybe-configure-stageb3g2-libiberty: configure-stageb3g2-libiberty
+configure-stageb3g2-libiberty:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/libiberty ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
 	cd $(HOST_SUBDIR)/libiberty || exit 1; \
 	case $(srcdir) in \
@@ -23463,8 +24988,8 @@ configure-stage4-libiberty:
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/libiberty ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
 	cd $(HOST_SUBDIR)/libiberty || exit 1; \
@@ -23494,8 +25019,8 @@ configure-stageprofile-libiberty:
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/libiberty ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
 	cd $(HOST_SUBDIR)/libiberty || exit 1; \
@@ -23525,8 +25050,8 @@ configure-stagefeedback-libiberty:
 	test ! -f $(HOST_SUBDIR)/libiberty/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/libiberty ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiberty ; \
 	cd $(HOST_SUBDIR)/libiberty || exit 1; \
@@ -23615,7 +25140,7 @@ all-stage2-libiberty: configure-stage2-libiberty
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-libiberty)
 
 maybe-clean-stage2-libiberty: clean-stage2-libiberty
@@ -23626,6 +25151,41 @@ clean-stage2-libiberty:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-libiberty/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libiberty-bootstrap
+
+
+.PHONY: all-stageb2g0-libiberty maybe-all-stageb2g0-libiberty
+.PHONY: clean-stageb2g0-libiberty maybe-clean-stageb2g0-libiberty
+maybe-all-stageb2g0-libiberty:
+maybe-clean-stageb2g0-libiberty:
+@if libiberty-bootstrap
+maybe-all-stageb2g0-libiberty: all-stageb2g0-libiberty
+all-stageb2g0: all-stageb2g0-libiberty
+TARGET-stageb2g0-libiberty = $(TARGET-libiberty)
+all-stageb2g0-libiberty: configure-stageb2g0-libiberty
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-libiberty)
+
+maybe-clean-stageb2g0-libiberty: clean-stageb2g0-libiberty
+clean-stageb2g0: clean-stageb2g0-libiberty
+clean-stageb2g0-libiberty:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -23650,7 +25210,7 @@ all-stage3-libiberty: configure-stage3-libiberty
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-libiberty)
 
 maybe-clean-stage3-libiberty: clean-stage3-libiberty
@@ -23661,6 +25221,41 @@ clean-stage3-libiberty:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-libiberty/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif libiberty-bootstrap
+
+
+.PHONY: all-stageb3g2-libiberty maybe-all-stageb3g2-libiberty
+.PHONY: clean-stageb3g2-libiberty maybe-clean-stageb3g2-libiberty
+maybe-all-stageb3g2-libiberty:
+maybe-clean-stageb3g2-libiberty:
+@if libiberty-bootstrap
+maybe-all-stageb3g2-libiberty: all-stageb3g2-libiberty
+all-stageb3g2: all-stageb3g2-libiberty
+TARGET-stageb3g2-libiberty = $(TARGET-libiberty)
+all-stageb3g2-libiberty: configure-stageb3g2-libiberty
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/libiberty && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-libiberty)
+
+maybe-clean-stageb3g2-libiberty: clean-stageb3g2-libiberty
+clean-stageb3g2: clean-stageb3g2-libiberty
+clean-stageb3g2-libiberty:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libiberty/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-libiberty/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -23685,7 +25280,7 @@ all-stage4-libiberty: configure-stage4-libiberty
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-libiberty)
 
 maybe-clean-stage4-libiberty: clean-stage4-libiberty
@@ -23720,7 +25315,7 @@ all-stageprofile-libiberty: configure-stageprofile-libiberty
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-libiberty)
 
 maybe-clean-stageprofile-libiberty: clean-stageprofile-libiberty
@@ -23755,7 +25350,7 @@ all-stagefeedback-libiberty: configure-stagefeedback-libiberty
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/libiberty && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-libiberty)
 
 maybe-clean-stagefeedback-libiberty: clean-stagefeedback-libiberty
@@ -33938,9 +35533,40 @@ configure-stage2-zlib:
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/zlib ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
+	cd $(HOST_SUBDIR)/zlib || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/zlib"; \
+	libsrcdir="$$s/zlib"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif zlib-bootstrap
+
+.PHONY: configure-stageb2g0-zlib maybe-configure-stageb2g0-zlib
+maybe-configure-stageb2g0-zlib:
+@if zlib-bootstrap
+maybe-configure-stageb2g0-zlib: configure-stageb2g0-zlib
+configure-stageb2g0-zlib:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(HOST_SUBDIR)/zlib ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
 	cd $(HOST_SUBDIR)/zlib || exit 1; \
 	case $(srcdir) in \
@@ -33969,9 +35595,40 @@ configure-stage3-zlib:
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/zlib ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
+	cd $(HOST_SUBDIR)/zlib || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/zlib/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/zlib"; \
+	libsrcdir="$$s/zlib"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif zlib-bootstrap
+
+.PHONY: configure-stageb3g2-zlib maybe-configure-stageb3g2-zlib
+maybe-configure-stageb3g2-zlib:
+@if zlib-bootstrap
+maybe-configure-stageb3g2-zlib: configure-stageb3g2-zlib
+configure-stageb3g2-zlib:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(HOST_SUBDIR)/zlib ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
 	cd $(HOST_SUBDIR)/zlib || exit 1; \
 	case $(srcdir) in \
@@ -34000,8 +35657,8 @@ configure-stage4-zlib:
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/zlib ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
 	cd $(HOST_SUBDIR)/zlib || exit 1; \
@@ -34031,8 +35688,8 @@ configure-stageprofile-zlib:
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(HOST_SUBDIR)/zlib ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
 	cd $(HOST_SUBDIR)/zlib || exit 1; \
@@ -34062,8 +35719,8 @@ configure-stagefeedback-zlib:
 	test ! -f $(HOST_SUBDIR)/zlib/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/zlib ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/zlib ; \
 	cd $(HOST_SUBDIR)/zlib || exit 1; \
@@ -34152,7 +35809,7 @@ all-stage2-zlib: configure-stage2-zlib
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage2-zlib)
 
 maybe-clean-stage2-zlib: clean-stage2-zlib
@@ -34163,6 +35820,41 @@ clean-stage2-zlib:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage2-zlib/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif zlib-bootstrap
+
+
+.PHONY: all-stageb2g0-zlib maybe-all-stageb2g0-zlib
+.PHONY: clean-stageb2g0-zlib maybe-clean-stageb2g0-zlib
+maybe-all-stageb2g0-zlib:
+maybe-clean-stageb2g0-zlib:
+@if zlib-bootstrap
+maybe-all-stageb2g0-zlib: all-stageb2g0-zlib
+all-stageb2g0: all-stageb2g0-zlib
+TARGET-stageb2g0-zlib = $(TARGET-zlib)
+all-stageb2g0-zlib: configure-stageb2g0-zlib
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/zlib && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb2g0-zlib)
+
+maybe-clean-stageb2g0-zlib: clean-stageb2g0-zlib
+clean-stageb2g0: clean-stageb2g0-zlib
+clean-stageb2g0-zlib:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb2g0-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -34187,7 +35879,7 @@ all-stage3-zlib: configure-stage3-zlib
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage3-zlib)
 
 maybe-clean-stage3-zlib: clean-stage3-zlib
@@ -34198,6 +35890,41 @@ clean-stage3-zlib:
 	else \
 	  [ -f $(HOST_SUBDIR)/stage3-zlib/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/zlib && \
+	$(MAKE) $(FLAGS_TO_PASS)  \
+		$(POSTSTAGE1_FLAGS_TO_PASS)  \
+		 clean
+@endif zlib-bootstrap
+
+
+.PHONY: all-stageb3g2-zlib maybe-all-stageb3g2-zlib
+.PHONY: clean-stageb3g2-zlib maybe-clean-stageb3g2-zlib
+maybe-all-stageb3g2-zlib:
+maybe-clean-stageb3g2-zlib:
+@if zlib-bootstrap
+maybe-all-stageb3g2-zlib: all-stageb3g2-zlib
+all-stageb3g2: all-stageb3g2-zlib
+TARGET-stageb3g2-zlib = $(TARGET-zlib)
+all-stageb3g2-zlib: configure-stageb3g2-zlib
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	cd $(HOST_SUBDIR)/zlib && \
+	$(MAKE) $(FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		$(TARGET-stageb3g2-zlib)
+
+maybe-clean-stageb3g2-zlib: clean-stageb3g2-zlib
+clean-stageb3g2: clean-stageb3g2-zlib
+clean-stageb3g2-zlib:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(HOST_SUBDIR)/zlib/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageb3g2-zlib/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS)  \
@@ -34222,7 +35949,7 @@ all-stage4-zlib: configure-stage4-zlib
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stage4-zlib)
 
 maybe-clean-stage4-zlib: clean-stage4-zlib
@@ -34257,7 +35984,7 @@ all-stageprofile-zlib: configure-stageprofile-zlib
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stageprofile-zlib)
 
 maybe-clean-stageprofile-zlib: clean-stageprofile-zlib
@@ -34292,7 +36019,7 @@ all-stagefeedback-zlib: configure-stagefeedback-zlib
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	cd $(HOST_SUBDIR)/zlib && \
 	$(MAKE) $(FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use" $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-stagefeedback-zlib)
 
 maybe-clean-stagefeedback-zlib: clean-stagefeedback-zlib
@@ -39437,9 +41164,52 @@ configure-stage2-target-libgcc:
 	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
 	$(NORMAL_TARGET_EXPORTS) \
 	 \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 2 in $(TARGET_SUBDIR)/libgcc ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
+	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgcc"; \
+	libsrcdir="$$s/libgcc"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif target-libgcc-bootstrap
+
+.PHONY: configure-stageb2g0-target-libgcc maybe-configure-stageb2g0-target-libgcc
+maybe-configure-stageb2g0-target-libgcc:
+@if target-libgcc-bootstrap
+maybe-configure-stageb2g0-target-libgcc: configure-stageb2g0-target-libgcc
+configure-stageb2g0-target-libgcc:
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libgcc..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgcc/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgcc/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgcc/multilib.tmp $(TARGET_SUBDIR)/libgcc/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgcc/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgcc/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgcc/multilib.tmp $(TARGET_SUBDIR)/libgcc/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgcc/multilib.tmp $(TARGET_SUBDIR)/libgcc/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(STAGE2_CFLAGS) -g0"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -g0"; export LIBCFLAGS; \
+	echo Configuring stage b2g0 in $(TARGET_SUBDIR)/libgcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
 	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
 	case $(srcdir) in \
@@ -39480,9 +41250,52 @@ configure-stage3-target-libgcc:
 	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
 	$(NORMAL_TARGET_EXPORTS) \
 	 \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 3 in $(TARGET_SUBDIR)/libgcc ; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
+	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libgcc/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libgcc"; \
+	libsrcdir="$$s/libgcc"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias} $${srcdiroption} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  @stage2_werror_flag@ 
+@endif target-libgcc-bootstrap
+
+.PHONY: configure-stageb3g2-target-libgcc maybe-configure-stageb3g2-target-libgcc
+maybe-configure-stageb3g2-target-libgcc:
+@if target-libgcc-bootstrap
+maybe-configure-stageb3g2-target-libgcc: configure-stageb3g2-target-libgcc
+configure-stageb3g2-target-libgcc:
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libgcc..."; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libgcc/multilib.tmp 2> /dev/null ; \
+	if test -r $(TARGET_SUBDIR)/libgcc/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libgcc/multilib.tmp $(TARGET_SUBDIR)/libgcc/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libgcc/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libgcc/Makefile; \
+	    mv $(TARGET_SUBDIR)/libgcc/multilib.tmp $(TARGET_SUBDIR)/libgcc/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libgcc/multilib.tmp $(TARGET_SUBDIR)/libgcc/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	CFLAGS="$(STAGE3_CFLAGS) -g2"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -g2"; export LIBCFLAGS; \
+	echo Configuring stage b3g2 in $(TARGET_SUBDIR)/libgcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
 	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
 	case $(srcdir) in \
@@ -39523,8 +41336,8 @@ configure-stage4-target-libgcc:
 	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
 	$(NORMAL_TARGET_EXPORTS) \
 	 \
-	CFLAGS="$(BOOT_CFLAGS)"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS)"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS; \
 	echo Configuring stage 4 in $(TARGET_SUBDIR)/libgcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
 	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
@@ -39566,8 +41379,8 @@ configure-stageprofile-target-libgcc:
 	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
 	$(NORMAL_TARGET_EXPORTS) \
 	 \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"; export LIBCFLAGS; \
 	echo Configuring stage profile in $(TARGET_SUBDIR)/libgcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
 	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
@@ -39609,8 +41422,8 @@ configure-stagefeedback-target-libgcc:
 	test ! -f $(TARGET_SUBDIR)/libgcc/Makefile || exit 0; \
 	$(NORMAL_TARGET_EXPORTS) \
 	 \
-	CFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export CFLAGS; \
-	LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
+	CFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export CFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"; export LIBCFLAGS; \
 	echo Configuring stage feedback in $(TARGET_SUBDIR)/libgcc ; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libgcc ; \
 	cd $(TARGET_SUBDIR)/libgcc || exit 1; \
@@ -39699,7 +41512,7 @@ all-stage2-target-libgcc: configure-stage2-target-libgcc
 	 \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)"   \
+		CFLAGS="$(STAGE2_CFLAGS)" LIBCFLAGS="$(STAGE2_CFLAGS)"   \
 		$(TARGET-stage2-target-libgcc)
 
 maybe-clean-stage2-target-libgcc: clean-stage2-target-libgcc
@@ -39710,6 +41523,41 @@ clean-stage2-target-libgcc:
 	else \
 	  [ -f $(TARGET_SUBDIR)/stage2-libgcc/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgcc && \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS)  \
+		  \
+		 clean
+@endif target-libgcc-bootstrap
+
+
+.PHONY: all-stageb2g0-target-libgcc maybe-all-stageb2g0-target-libgcc
+.PHONY: clean-stageb2g0-target-libgcc maybe-clean-stageb2g0-target-libgcc
+maybe-all-stageb2g0-target-libgcc:
+maybe-clean-stageb2g0-target-libgcc:
+@if target-libgcc-bootstrap
+maybe-all-stageb2g0-target-libgcc: all-stageb2g0-target-libgcc
+all-stageb2g0: all-stageb2g0-target-libgcc
+TARGET-stageb2g0-target-libgcc = $(TARGET-target-libgcc)
+all-stageb2g0-target-libgcc: configure-stageb2g0-target-libgcc
+	@[ $(current_stage) = stageb2g0 ] || $(MAKE) stageb2g0-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	cd $(TARGET_SUBDIR)/libgcc && \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS) -g0" LIBCFLAGS="$(STAGE2_CFLAGS) -g0"   \
+		$(TARGET-stageb2g0-target-libgcc)
+
+maybe-clean-stageb2g0-target-libgcc: clean-stageb2g0-target-libgcc
+clean-stageb2g0: clean-stageb2g0-target-libgcc
+clean-stageb2g0-target-libgcc:
+	@if [ $(current_stage) = stageb2g0 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageb2g0-libgcc/Makefile ] || exit 0; \
+	  $(MAKE) stageb2g0-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS)  \
@@ -39734,7 +41582,7 @@ all-stage3-target-libgcc: configure-stage3-target-libgcc
 	 \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)"   \
+		CFLAGS="$(STAGE3_CFLAGS)" LIBCFLAGS="$(STAGE3_CFLAGS)"   \
 		$(TARGET-stage3-target-libgcc)
 
 maybe-clean-stage3-target-libgcc: clean-stage3-target-libgcc
@@ -39745,6 +41593,41 @@ clean-stage3-target-libgcc:
 	else \
 	  [ -f $(TARGET_SUBDIR)/stage3-libgcc/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(TARGET_SUBDIR)/libgcc && \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS)  \
+		  \
+		 clean
+@endif target-libgcc-bootstrap
+
+
+.PHONY: all-stageb3g2-target-libgcc maybe-all-stageb3g2-target-libgcc
+.PHONY: clean-stageb3g2-target-libgcc maybe-clean-stageb3g2-target-libgcc
+maybe-all-stageb3g2-target-libgcc:
+maybe-clean-stageb3g2-target-libgcc:
+@if target-libgcc-bootstrap
+maybe-all-stageb3g2-target-libgcc: all-stageb3g2-target-libgcc
+all-stageb3g2: all-stageb3g2-target-libgcc
+TARGET-stageb3g2-target-libgcc = $(TARGET-target-libgcc)
+all-stageb3g2-target-libgcc: configure-stageb3g2-target-libgcc
+	@[ $(current_stage) = stageb3g2 ] || $(MAKE) stageb3g2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	 \
+	cd $(TARGET_SUBDIR)/libgcc && \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS) -g2" LIBCFLAGS="$(STAGE3_CFLAGS) -g2"   \
+		$(TARGET-stageb3g2-target-libgcc)
+
+maybe-clean-stageb3g2-target-libgcc: clean-stageb3g2-target-libgcc
+clean-stageb3g2: clean-stageb3g2-target-libgcc
+clean-stageb3g2-target-libgcc:
+	@if [ $(current_stage) = stageb3g2 ]; then \
+	  [ -f $(TARGET_SUBDIR)/libgcc/Makefile ] || exit 0; \
+	else \
+	  [ -f $(TARGET_SUBDIR)/stageb3g2-libgcc/Makefile ] || exit 0; \
+	  $(MAKE) stageb3g2-start; \
 	fi; \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS)  \
@@ -39769,7 +41652,7 @@ all-stage4-target-libgcc: configure-stage4-target-libgcc
 	 \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS)" LIBCFLAGS="$(BOOT_CFLAGS)"   \
+		CFLAGS="$(STAGE4_CFLAGS)" LIBCFLAGS="$(STAGE4_CFLAGS)"   \
 		$(TARGET-stage4-target-libgcc)
 
 maybe-clean-stage4-target-libgcc: clean-stage4-target-libgcc
@@ -39804,7 +41687,7 @@ all-stageprofile-target-libgcc: configure-stageprofile-target-libgcc
 	 \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-generate" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-generate"   \
+		CFLAGS="$(STAGE2_CFLAGS) -fprofile-generate" LIBCFLAGS="$(STAGE2_CFLAGS) -fprofile-generate"   \
 		$(TARGET-stageprofile-target-libgcc)
 
 maybe-clean-stageprofile-target-libgcc: clean-stageprofile-target-libgcc
@@ -39839,7 +41722,7 @@ all-stagefeedback-target-libgcc: configure-stagefeedback-target-libgcc
 	 \
 	cd $(TARGET_SUBDIR)/libgcc && \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) \
-		CFLAGS="$(BOOT_CFLAGS) -fprofile-use" LIBCFLAGS="$(BOOT_CFLAGS) -fprofile-use"   \
+		CFLAGS="$(STAGE3_CFLAGS) -fprofile-use" LIBCFLAGS="$(STAGE3_CFLAGS) -fprofile-use"   \
 		$(TARGET-stagefeedback-target-libgcc)
 
 maybe-clean-stagefeedback-target-libgcc: clean-stagefeedback-target-libgcc
@@ -47725,6 +49608,238 @@ distclean-stage2::
 @endif gcc-bootstrap
 
 
+.PHONY: stageb2g0-start stageb2g0-end
+
+stageb2g0-start::
+	@: $(MAKE); $(stage); \
+	echo stageb2g0 > stage_current ; \
+	echo stageb2g0 > stage_last; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)
+@if bfd
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-bfd ] || \
+	  mkdir stageb2g0-bfd; \
+	mv stageb2g0-bfd bfd  ; \
+	mv stage1-bfd prev-bfd || test -f stage1-lean 
+@endif bfd
+@if opcodes
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-opcodes ] || \
+	  mkdir stageb2g0-opcodes; \
+	mv stageb2g0-opcodes opcodes  ; \
+	mv stage1-opcodes prev-opcodes || test -f stage1-lean 
+@endif opcodes
+@if binutils
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-binutils ] || \
+	  mkdir stageb2g0-binutils; \
+	mv stageb2g0-binutils binutils  ; \
+	mv stage1-binutils prev-binutils || test -f stage1-lean 
+@endif binutils
+@if gas
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-gas ] || \
+	  mkdir stageb2g0-gas; \
+	mv stageb2g0-gas gas  ; \
+	mv stage1-gas prev-gas || test -f stage1-lean 
+@endif gas
+@if gcc
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-gcc ] || \
+	  mkdir stageb2g0-gcc; \
+	mv stageb2g0-gcc gcc  ; \
+	mv stage1-gcc prev-gcc || test -f stage1-lean 
+@endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-gmp ] || \
+	  mkdir stageb2g0-gmp; \
+	mv stageb2g0-gmp gmp  ; \
+	mv stage1-gmp prev-gmp || test -f stage1-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-mpfr ] || \
+	  mkdir stageb2g0-mpfr; \
+	mv stageb2g0-mpfr mpfr  ; \
+	mv stage1-mpfr prev-mpfr || test -f stage1-lean 
+@endif mpfr
+@if intl
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-intl ] || \
+	  mkdir stageb2g0-intl; \
+	mv stageb2g0-intl intl  ; \
+	mv stage1-intl prev-intl || test -f stage1-lean 
+@endif intl
+@if ld
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-ld ] || \
+	  mkdir stageb2g0-ld; \
+	mv stageb2g0-ld ld  ; \
+	mv stage1-ld prev-ld || test -f stage1-lean 
+@endif ld
+@if libcpp
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-libcpp ] || \
+	  mkdir stageb2g0-libcpp; \
+	mv stageb2g0-libcpp libcpp  ; \
+	mv stage1-libcpp prev-libcpp || test -f stage1-lean 
+@endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-libdecnumber ] || \
+	  mkdir stageb2g0-libdecnumber; \
+	mv stageb2g0-libdecnumber libdecnumber  ; \
+	mv stage1-libdecnumber prev-libdecnumber || test -f stage1-lean 
+@endif libdecnumber
+@if libiberty
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-libiberty ] || \
+	  mkdir stageb2g0-libiberty; \
+	mv stageb2g0-libiberty libiberty  ; \
+	mv stage1-libiberty prev-libiberty || test -f stage1-lean 
+@endif libiberty
+@if zlib
+	@cd $(HOST_SUBDIR); [ -d stageb2g0-zlib ] || \
+	  mkdir stageb2g0-zlib; \
+	mv stageb2g0-zlib zlib  ; \
+	mv stage1-zlib prev-zlib || test -f stage1-lean 
+@endif zlib
+	@[ -d stageb2g0-$(TARGET_SUBDIR) ] || \
+	  mkdir stageb2g0-$(TARGET_SUBDIR); \
+	mv stageb2g0-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stage1-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stage1-lean 
+
+stageb2g0-end:: 
+@if bfd
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stageb2g0-bfd ; \
+	  mv prev-bfd stage1-bfd ; :  ; \
+	fi
+@endif bfd
+@if opcodes
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stageb2g0-opcodes ; \
+	  mv prev-opcodes stage1-opcodes ; :  ; \
+	fi
+@endif opcodes
+@if binutils
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stageb2g0-binutils ; \
+	  mv prev-binutils stage1-binutils ; :  ; \
+	fi
+@endif binutils
+@if gas
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stageb2g0-gas ; \
+	  mv prev-gas stage1-gas ; :  ; \
+	fi
+@endif gas
+@if gcc
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stageb2g0-gcc ; \
+	  mv prev-gcc stage1-gcc ; :  ; \
+	fi
+@endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stageb2g0-gmp ; \
+	  mv prev-gmp stage1-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stageb2g0-mpfr ; \
+	  mv prev-mpfr stage1-mpfr ; :  ; \
+	fi
+@endif mpfr
+@if intl
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stageb2g0-intl ; \
+	  mv prev-intl stage1-intl ; :  ; \
+	fi
+@endif intl
+@if ld
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stageb2g0-ld ; \
+	  mv prev-ld stage1-ld ; :  ; \
+	fi
+@endif ld
+@if libcpp
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stageb2g0-libcpp ; \
+	  mv prev-libcpp stage1-libcpp ; :  ; \
+	fi
+@endif libcpp
+@if libdecnumber
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stageb2g0-libdecnumber ; \
+	  mv prev-libdecnumber stage1-libdecnumber ; :  ; \
+	fi
+@endif libdecnumber
+@if libiberty
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stageb2g0-libiberty ; \
+	  mv prev-libiberty stage1-libiberty ; :  ; \
+	fi
+@endif libiberty
+@if zlib
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stageb2g0-zlib ; \
+	  mv prev-zlib stage1-zlib ; :  ; \
+	fi
+@endif zlib
+	@if test -d $(TARGET_SUBDIR) ; then \
+	  mv $(TARGET_SUBDIR) stageb2g0-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR) ; :  ; \
+	fi
+	rm -f stage_current
+
+# Bubble a bug fix through all the stages up to stage b2g0.  They are
+# remade, but not reconfigured.  The next stage (if any) will not be
+# reconfigured as well.
+.PHONY: stageb2g0-bubble
+stageb2g0-bubble:: stage1-bubble
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	if test -f stageb2g0-lean || test -f stage1-lean  ; then \
+	  echo Skipping rebuild of stageb2g0 ; \
+	else \
+	  $(MAKE) stageb2g0-start; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stageb2g0; \
+	fi
+
+.PHONY: all-stageb2g0 clean-stageb2g0
+do-clean: clean-stageb2g0
+
+# FIXME: Will not need to be conditional when toplevel bootstrap is the
+# only possibility, but now it conflicts with no-bootstrap rules
+@if gcc-bootstrap
+
+
+
+.PHONY: bootstrap2-debug bootstrap2-debug-lean
+bootstrap2-debug:
+	echo stageb2g0 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stageb2g0-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+bootstrap2-debug-lean:
+	echo stageb2g0 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stageb2g0-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
+distclean-stage1:: distclean-stageb2g0 
+.PHONY: distclean-stageb2g0
+distclean-stageb2g0::
+	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stageb2g0 || rm -f stage_last
+	rm -rf stageb2g0-* 
+
+
+@endif gcc-bootstrap
+
+
 .PHONY: stage3-start stage3-end
 
 stage3-start::
@@ -47941,7 +50056,7 @@ compare:
 	cd .. ; \
 	for file in $${files} ; do \
 	  f1=$$r/stage2-gcc/$$file; f2=$$r/stage3-gcc/$$file; \
-	  @do_compare@ > /dev/null 2>&1; \
+	  $(do-compare) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
 	      ./cc*-checksum$(objext) | ./libgcc/* ) \
@@ -48003,6 +50118,292 @@ cleanstrap: do-distclean local-clean
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stage3-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+@endif gcc-bootstrap
+
+
+.PHONY: stageb3g2-start stageb3g2-end
+
+stageb3g2-start::
+	@: $(MAKE); $(stage); \
+	echo stageb3g2 > stage_current ; \
+	echo stageb3g2 > stage_last; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)
+@if bfd
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-bfd ] || \
+	  mkdir stageb3g2-bfd; \
+	mv stageb3g2-bfd bfd  ; \
+	mv stageb2g0-bfd prev-bfd || test -f stageb2g0-lean 
+@endif bfd
+@if opcodes
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-opcodes ] || \
+	  mkdir stageb3g2-opcodes; \
+	mv stageb3g2-opcodes opcodes  ; \
+	mv stageb2g0-opcodes prev-opcodes || test -f stageb2g0-lean 
+@endif opcodes
+@if binutils
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-binutils ] || \
+	  mkdir stageb3g2-binutils; \
+	mv stageb3g2-binutils binutils  ; \
+	mv stageb2g0-binutils prev-binutils || test -f stageb2g0-lean 
+@endif binutils
+@if gas
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-gas ] || \
+	  mkdir stageb3g2-gas; \
+	mv stageb3g2-gas gas  ; \
+	mv stageb2g0-gas prev-gas || test -f stageb2g0-lean 
+@endif gas
+@if gcc
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-gcc ] || \
+	  mkdir stageb3g2-gcc; \
+	mv stageb3g2-gcc gcc  ; \
+	mv stageb2g0-gcc prev-gcc || test -f stageb2g0-lean 
+@endif gcc
+@if gmp
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-gmp ] || \
+	  mkdir stageb3g2-gmp; \
+	mv stageb3g2-gmp gmp  ; \
+	mv stageb2g0-gmp prev-gmp || test -f stageb2g0-lean 
+@endif gmp
+@if mpfr
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-mpfr ] || \
+	  mkdir stageb3g2-mpfr; \
+	mv stageb3g2-mpfr mpfr  ; \
+	mv stageb2g0-mpfr prev-mpfr || test -f stageb2g0-lean 
+@endif mpfr
+@if intl
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-intl ] || \
+	  mkdir stageb3g2-intl; \
+	mv stageb3g2-intl intl  ; \
+	mv stageb2g0-intl prev-intl || test -f stageb2g0-lean 
+@endif intl
+@if ld
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-ld ] || \
+	  mkdir stageb3g2-ld; \
+	mv stageb3g2-ld ld  ; \
+	mv stageb2g0-ld prev-ld || test -f stageb2g0-lean 
+@endif ld
+@if libcpp
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-libcpp ] || \
+	  mkdir stageb3g2-libcpp; \
+	mv stageb3g2-libcpp libcpp  ; \
+	mv stageb2g0-libcpp prev-libcpp || test -f stageb2g0-lean 
+@endif libcpp
+@if libdecnumber
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-libdecnumber ] || \
+	  mkdir stageb3g2-libdecnumber; \
+	mv stageb3g2-libdecnumber libdecnumber  ; \
+	mv stageb2g0-libdecnumber prev-libdecnumber || test -f stageb2g0-lean 
+@endif libdecnumber
+@if libiberty
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-libiberty ] || \
+	  mkdir stageb3g2-libiberty; \
+	mv stageb3g2-libiberty libiberty  ; \
+	mv stageb2g0-libiberty prev-libiberty || test -f stageb2g0-lean 
+@endif libiberty
+@if zlib
+	@cd $(HOST_SUBDIR); [ -d stageb3g2-zlib ] || \
+	  mkdir stageb3g2-zlib; \
+	mv stageb3g2-zlib zlib  ; \
+	mv stageb2g0-zlib prev-zlib || test -f stageb2g0-lean 
+@endif zlib
+	@[ -d stageb3g2-$(TARGET_SUBDIR) ] || \
+	  mkdir stageb3g2-$(TARGET_SUBDIR); \
+	mv stageb3g2-$(TARGET_SUBDIR) $(TARGET_SUBDIR)  ; \
+	mv stageb2g0-$(TARGET_SUBDIR) prev-$(TARGET_SUBDIR) || test -f stageb2g0-lean 
+
+stageb3g2-end:: 
+@if bfd
+	@if test -d $(HOST_SUBDIR)/bfd ; then \
+	  cd $(HOST_SUBDIR); mv bfd stageb3g2-bfd ; \
+	  mv prev-bfd stageb2g0-bfd ; :  ; \
+	fi
+@endif bfd
+@if opcodes
+	@if test -d $(HOST_SUBDIR)/opcodes ; then \
+	  cd $(HOST_SUBDIR); mv opcodes stageb3g2-opcodes ; \
+	  mv prev-opcodes stageb2g0-opcodes ; :  ; \
+	fi
+@endif opcodes
+@if binutils
+	@if test -d $(HOST_SUBDIR)/binutils ; then \
+	  cd $(HOST_SUBDIR); mv binutils stageb3g2-binutils ; \
+	  mv prev-binutils stageb2g0-binutils ; :  ; \
+	fi
+@endif binutils
+@if gas
+	@if test -d $(HOST_SUBDIR)/gas ; then \
+	  cd $(HOST_SUBDIR); mv gas stageb3g2-gas ; \
+	  mv prev-gas stageb2g0-gas ; :  ; \
+	fi
+@endif gas
+@if gcc
+	@if test -d $(HOST_SUBDIR)/gcc ; then \
+	  cd $(HOST_SUBDIR); mv gcc stageb3g2-gcc ; \
+	  mv prev-gcc stageb2g0-gcc ; :  ; \
+	fi
+@endif gcc
+@if gmp
+	@if test -d $(HOST_SUBDIR)/gmp ; then \
+	  cd $(HOST_SUBDIR); mv gmp stageb3g2-gmp ; \
+	  mv prev-gmp stageb2g0-gmp ; :  ; \
+	fi
+@endif gmp
+@if mpfr
+	@if test -d $(HOST_SUBDIR)/mpfr ; then \
+	  cd $(HOST_SUBDIR); mv mpfr stageb3g2-mpfr ; \
+	  mv prev-mpfr stageb2g0-mpfr ; :  ; \
+	fi
+@endif mpfr
+@if intl
+	@if test -d $(HOST_SUBDIR)/intl ; then \
+	  cd $(HOST_SUBDIR); mv intl stageb3g2-intl ; \
+	  mv prev-intl stageb2g0-intl ; :  ; \
+	fi
+@endif intl
+@if ld
+	@if test -d $(HOST_SUBDIR)/ld ; then \
+	  cd $(HOST_SUBDIR); mv ld stageb3g2-ld ; \
+	  mv prev-ld stageb2g0-ld ; :  ; \
+	fi
+@endif ld
+@if libcpp
+	@if test -d $(HOST_SUBDIR)/libcpp ; then \
+	  cd $(HOST_SUBDIR); mv libcpp stageb3g2-libcpp ; \
+	  mv prev-libcpp stageb2g0-libcpp ; :  ; \
+	fi
+@endif libcpp
+@if libdecnumber
+	@if test -d $(HOST_SUBDIR)/libdecnumber ; then \
+	  cd $(HOST_SUBDIR); mv libdecnumber stageb3g2-libdecnumber ; \
+	  mv prev-libdecnumber stageb2g0-libdecnumber ; :  ; \
+	fi
+@endif libdecnumber
+@if libiberty
+	@if test -d $(HOST_SUBDIR)/libiberty ; then \
+	  cd $(HOST_SUBDIR); mv libiberty stageb3g2-libiberty ; \
+	  mv prev-libiberty stageb2g0-libiberty ; :  ; \
+	fi
+@endif libiberty
+@if zlib
+	@if test -d $(HOST_SUBDIR)/zlib ; then \
+	  cd $(HOST_SUBDIR); mv zlib stageb3g2-zlib ; \
+	  mv prev-zlib stageb2g0-zlib ; :  ; \
+	fi
+@endif zlib
+	@if test -d $(TARGET_SUBDIR) ; then \
+	  mv $(TARGET_SUBDIR) stageb3g2-$(TARGET_SUBDIR)  ; \
+	  mv prev-$(TARGET_SUBDIR) stageb2g0-$(TARGET_SUBDIR) ; :  ; \
+	fi
+	rm -f stage_current
+
+# Bubble a bug fix through all the stages up to stage b3g2.  They are
+# remade, but not reconfigured.  The next stage (if any) will not be
+# reconfigured as well.
+.PHONY: stageb3g2-bubble
+stageb3g2-bubble:: stageb2g0-bubble
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	if test -f stageb3g2-lean || test -f stageb2g0-lean  ; then \
+	  echo Skipping rebuild of stageb3g2 ; \
+	else \
+	  $(MAKE) stageb3g2-start; \
+	  if $(LEAN); then \
+	    rm -rf stage1-* ; \
+	    $(STAMP) stage1-lean ; \
+	  fi; \
+	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-stageb3g2; \
+	fi
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) compare-debug
+
+.PHONY: all-stageb3g2 clean-stageb3g2
+do-clean: clean-stageb3g2
+
+# FIXME: Will not need to be conditional when toplevel bootstrap is the
+# only possibility, but now it conflicts with no-bootstrap rules
+@if gcc-bootstrap
+
+compare-debug:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	if test -f stageb2g0-lean; then \
+	  echo Cannot compare object files as stage b2g0 was deleted. ; \
+	  exit 0 ; \
+	fi; \
+	: $(MAKE); $(stage); \
+	rm -f .bad_compare ; \
+	echo Comparing stages b2g0 and b3g2 ; \
+	cd stageb3g2-gcc; \
+	files=`find . -name "*$(objext)" -print` ; \
+	cd .. ; \
+	for file in $${files} ; do \
+	  f1=$$r/stageb2g0-gcc/$$file; f2=$$r/stageb3g2-gcc/$$file; \
+	  $(do-compare-debug) > /dev/null 2>&1; \
+	  if test $$? -eq 1; then \
+	    case $$file in \
+	      ./cc*-checksum$(objext) | ./libgcc/* ) \
+	        echo warning: $$file differs ;; \
+	      *) \
+	        echo $$file differs >> .bad_compare ;; \
+	    esac ; \
+	  fi ; \
+	done ; \
+	if [ -f .bad_compare ]; then \
+	  echo "Bootstrap comparison failure!"; \
+	  cat .bad_compare; \
+	  exit 1; \
+	else \
+	  echo Comparison successful.; \
+	fi ; \
+	$(STAMP) compare-debug
+	if $(LEAN); then \
+	  rm -rf stageb2g0-*; \
+	  $(STAMP) stageb2g0-lean; \
+	fi
+
+
+
+.PHONY: bootstrap-debug bootstrap-debug-lean
+bootstrap-debug:
+	echo stageb3g2 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stageb3g2-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+bootstrap-debug-lean:
+	echo stageb3g2 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) LEAN=: stageb3g2-bubble
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
+
+
+# Rules to wipe a stage and all the following ones, also used for cleanstrap
+distclean-stageb2g0:: distclean-stageb3g2 
+.PHONY: distclean-stageb3g2
+distclean-stageb3g2::
+	@: $(MAKE); $(stage)
+	@test "`cat stage_last`" != stageb3g2 || rm -f stage_last
+	rm -rf stageb3g2-* compare-debug 
+
+
+.PHONY: cleanstrap-debug
+cleanstrap-debug: do-distclean local-clean
+	echo stageb3g2 > stage_final
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) stageb3g2-bubble
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -48227,7 +50628,7 @@ compare3:
 	cd .. ; \
 	for file in $${files} ; do \
 	  f1=$$r/stage3-gcc/$$file; f2=$$r/stage4-gcc/$$file; \
-	  @do_compare@ > /dev/null 2>&1; \
+	  $(do-compare3) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
 	      ./cc*-checksum$(objext) | ./libgcc/* ) \
@@ -48759,7 +51160,7 @@ stage_current:
 .PHONY: restrap
 restrap:
 	@: $(MAKE); $(stage)
-	rm -rf stage1-$(TARGET_SUBDIR) stage2-* stage3-* stage4-* stageprofile-* stagefeedback-* 
+	rm -rf stage1-$(TARGET_SUBDIR) stage2-* stageb2g0-* stage3-* stageb3g2-* stage4-* stageprofile-* stagefeedback-* 
 	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all
 @endif gcc-bootstrap
 
@@ -48775,7 +51176,9 @@ configure-target-libssp: stage_last
 configure-target-newlib: stage_last
 configure-stage1-target-libgcc: maybe-all-stage1-gcc
 configure-stage2-target-libgcc: maybe-all-stage2-gcc
+configure-stageb2g0-target-libgcc: maybe-all-stageb2g0-gcc
 configure-stage3-target-libgcc: maybe-all-stage3-gcc
+configure-stageb3g2-target-libgcc: maybe-all-stageb3g2-gcc
 configure-stage4-target-libgcc: maybe-all-stage4-gcc
 configure-stageprofile-target-libgcc: maybe-all-stageprofile-gcc
 configure-stagefeedback-target-libgcc: maybe-all-stagefeedback-gcc
@@ -48852,7 +51255,9 @@ configure-gcc: maybe-configure-intl
 
 configure-stage1-gcc: maybe-configure-stage1-intl
 configure-stage2-gcc: maybe-configure-stage2-intl
+configure-stageb2g0-gcc: maybe-configure-stageb2g0-intl
 configure-stage3-gcc: maybe-configure-stage3-intl
+configure-stageb3g2-gcc: maybe-configure-stageb3g2-intl
 configure-stage4-gcc: maybe-configure-stage4-intl
 configure-stageprofile-gcc: maybe-configure-stageprofile-intl
 configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
@@ -48860,7 +51265,9 @@ configure-gcc: maybe-all-binutils
 
 configure-stage1-gcc: maybe-all-stage1-binutils
 configure-stage2-gcc: maybe-all-stage2-binutils
+configure-stageb2g0-gcc: maybe-all-stageb2g0-binutils
 configure-stage3-gcc: maybe-all-stage3-binutils
+configure-stageb3g2-gcc: maybe-all-stageb3g2-binutils
 configure-stage4-gcc: maybe-all-stage4-binutils
 configure-stageprofile-gcc: maybe-all-stageprofile-binutils
 configure-stagefeedback-gcc: maybe-all-stagefeedback-binutils
@@ -48868,7 +51275,9 @@ configure-gcc: maybe-all-gas
 
 configure-stage1-gcc: maybe-all-stage1-gas
 configure-stage2-gcc: maybe-all-stage2-gas
+configure-stageb2g0-gcc: maybe-all-stageb2g0-gas
 configure-stage3-gcc: maybe-all-stage3-gas
+configure-stageb3g2-gcc: maybe-all-stageb3g2-gas
 configure-stage4-gcc: maybe-all-stage4-gas
 configure-stageprofile-gcc: maybe-all-stageprofile-gas
 configure-stagefeedback-gcc: maybe-all-stagefeedback-gas
@@ -48876,7 +51285,9 @@ configure-gcc: maybe-all-ld
 
 configure-stage1-gcc: maybe-all-stage1-ld
 configure-stage2-gcc: maybe-all-stage2-ld
+configure-stageb2g0-gcc: maybe-all-stageb2g0-ld
 configure-stage3-gcc: maybe-all-stage3-ld
+configure-stageb3g2-gcc: maybe-all-stageb3g2-ld
 configure-stage4-gcc: maybe-all-stage4-ld
 configure-stageprofile-gcc: maybe-all-stageprofile-ld
 configure-stagefeedback-gcc: maybe-all-stagefeedback-ld
@@ -48884,7 +51295,9 @@ all-gcc: all-libiberty
 
 all-stage1-gcc: all-stage1-libiberty
 all-stage2-gcc: all-stage2-libiberty
+all-stageb2g0-gcc: all-stageb2g0-libiberty
 all-stage3-gcc: all-stage3-libiberty
+all-stageb3g2-gcc: all-stageb3g2-libiberty
 all-stage4-gcc: all-stage4-libiberty
 all-stageprofile-gcc: all-stageprofile-libiberty
 all-stagefeedback-gcc: all-stagefeedback-libiberty
@@ -48892,7 +51305,9 @@ all-gcc: maybe-all-gmp
 
 all-stage1-gcc: maybe-all-stage1-gmp
 all-stage2-gcc: maybe-all-stage2-gmp
+all-stageb2g0-gcc: maybe-all-stageb2g0-gmp
 all-stage3-gcc: maybe-all-stage3-gmp
+all-stageb3g2-gcc: maybe-all-stageb3g2-gmp
 all-stage4-gcc: maybe-all-stage4-gmp
 all-stageprofile-gcc: maybe-all-stageprofile-gmp
 all-stagefeedback-gcc: maybe-all-stagefeedback-gmp
@@ -48900,7 +51315,9 @@ all-gcc: maybe-all-intl
 
 all-stage1-gcc: maybe-all-stage1-intl
 all-stage2-gcc: maybe-all-stage2-intl
+all-stageb2g0-gcc: maybe-all-stageb2g0-intl
 all-stage3-gcc: maybe-all-stage3-intl
+all-stageb3g2-gcc: maybe-all-stageb3g2-intl
 all-stage4-gcc: maybe-all-stage4-intl
 all-stageprofile-gcc: maybe-all-stageprofile-intl
 all-stagefeedback-gcc: maybe-all-stagefeedback-intl
@@ -48908,7 +51325,9 @@ all-gcc: maybe-all-mpfr
 
 all-stage1-gcc: maybe-all-stage1-mpfr
 all-stage2-gcc: maybe-all-stage2-mpfr
+all-stageb2g0-gcc: maybe-all-stageb2g0-mpfr
 all-stage3-gcc: maybe-all-stage3-mpfr
+all-stageb3g2-gcc: maybe-all-stageb3g2-mpfr
 all-stage4-gcc: maybe-all-stage4-mpfr
 all-stageprofile-gcc: maybe-all-stageprofile-mpfr
 all-stagefeedback-gcc: maybe-all-stagefeedback-mpfr
@@ -48916,7 +51335,9 @@ all-gcc: maybe-all-build-texinfo
 
 all-stage1-gcc: maybe-all-build-texinfo
 all-stage2-gcc: maybe-all-build-texinfo
+all-stageb2g0-gcc: maybe-all-build-texinfo
 all-stage3-gcc: maybe-all-build-texinfo
+all-stageb3g2-gcc: maybe-all-build-texinfo
 all-stage4-gcc: maybe-all-build-texinfo
 all-stageprofile-gcc: maybe-all-build-texinfo
 all-stagefeedback-gcc: maybe-all-build-texinfo
@@ -48924,7 +51345,9 @@ all-gcc: maybe-all-build-bison
 
 all-stage1-gcc: maybe-all-build-bison
 all-stage2-gcc: maybe-all-build-bison
+all-stageb2g0-gcc: maybe-all-build-bison
 all-stage3-gcc: maybe-all-build-bison
+all-stageb3g2-gcc: maybe-all-build-bison
 all-stage4-gcc: maybe-all-build-bison
 all-stageprofile-gcc: maybe-all-build-bison
 all-stagefeedback-gcc: maybe-all-build-bison
@@ -48932,7 +51355,9 @@ all-gcc: maybe-all-build-byacc
 
 all-stage1-gcc: maybe-all-build-byacc
 all-stage2-gcc: maybe-all-build-byacc
+all-stageb2g0-gcc: maybe-all-build-byacc
 all-stage3-gcc: maybe-all-build-byacc
+all-stageb3g2-gcc: maybe-all-build-byacc
 all-stage4-gcc: maybe-all-build-byacc
 all-stageprofile-gcc: maybe-all-build-byacc
 all-stagefeedback-gcc: maybe-all-build-byacc
@@ -48940,7 +51365,9 @@ all-gcc: maybe-all-build-flex
 
 all-stage1-gcc: maybe-all-build-flex
 all-stage2-gcc: maybe-all-build-flex
+all-stageb2g0-gcc: maybe-all-build-flex
 all-stage3-gcc: maybe-all-build-flex
+all-stageb3g2-gcc: maybe-all-build-flex
 all-stage4-gcc: maybe-all-build-flex
 all-stageprofile-gcc: maybe-all-build-flex
 all-stagefeedback-gcc: maybe-all-build-flex
@@ -48948,7 +51375,9 @@ all-gcc: maybe-all-build-libiberty
 
 all-stage1-gcc: maybe-all-build-libiberty
 all-stage2-gcc: maybe-all-build-libiberty
+all-stageb2g0-gcc: maybe-all-build-libiberty
 all-stage3-gcc: maybe-all-build-libiberty
+all-stageb3g2-gcc: maybe-all-build-libiberty
 all-stage4-gcc: maybe-all-build-libiberty
 all-stageprofile-gcc: maybe-all-build-libiberty
 all-stagefeedback-gcc: maybe-all-build-libiberty
@@ -48956,7 +51385,9 @@ all-gcc: maybe-all-build-fixincludes
 
 all-stage1-gcc: maybe-all-build-fixincludes
 all-stage2-gcc: maybe-all-build-fixincludes
+all-stageb2g0-gcc: maybe-all-build-fixincludes
 all-stage3-gcc: maybe-all-build-fixincludes
+all-stageb3g2-gcc: maybe-all-build-fixincludes
 all-stage4-gcc: maybe-all-build-fixincludes
 all-stageprofile-gcc: maybe-all-build-fixincludes
 all-stagefeedback-gcc: maybe-all-build-fixincludes
@@ -48964,7 +51395,9 @@ all-gcc: maybe-all-zlib
 
 all-stage1-gcc: maybe-all-stage1-zlib
 all-stage2-gcc: maybe-all-stage2-zlib
+all-stageb2g0-gcc: maybe-all-stageb2g0-zlib
 all-stage3-gcc: maybe-all-stage3-zlib
+all-stageb3g2-gcc: maybe-all-stageb3g2-zlib
 all-stage4-gcc: maybe-all-stage4-zlib
 all-stageprofile-gcc: maybe-all-stageprofile-zlib
 all-stagefeedback-gcc: maybe-all-stagefeedback-zlib
@@ -48972,7 +51405,9 @@ all-gcc: all-libcpp
 
 all-stage1-gcc: all-stage1-libcpp
 all-stage2-gcc: all-stage2-libcpp
+all-stageb2g0-gcc: all-stageb2g0-libcpp
 all-stage3-gcc: all-stage3-libcpp
+all-stageb3g2-gcc: all-stageb3g2-libcpp
 all-stage4-gcc: all-stage4-libcpp
 all-stageprofile-gcc: all-stageprofile-libcpp
 all-stagefeedback-gcc: all-stagefeedback-libcpp
@@ -48980,7 +51415,9 @@ all-gcc: all-libdecnumber
 
 all-stage1-gcc: all-stage1-libdecnumber
 all-stage2-gcc: all-stage2-libdecnumber
+all-stageb2g0-gcc: all-stageb2g0-libdecnumber
 all-stage3-gcc: all-stage3-libdecnumber
+all-stageb3g2-gcc: all-stageb3g2-libdecnumber
 all-stage4-gcc: all-stage4-libdecnumber
 all-stageprofile-gcc: all-stageprofile-libdecnumber
 all-stagefeedback-gcc: all-stagefeedback-libdecnumber
@@ -48988,7 +51425,9 @@ all-gcc: maybe-all-libiberty
 
 all-stage1-gcc: maybe-all-stage1-libiberty
 all-stage2-gcc: maybe-all-stage2-libiberty
+all-stageb2g0-gcc: maybe-all-stageb2g0-libiberty
 all-stage3-gcc: maybe-all-stage3-libiberty
+all-stageb3g2-gcc: maybe-all-stageb3g2-libiberty
 all-stage4-gcc: maybe-all-stage4-libiberty
 all-stageprofile-gcc: maybe-all-stageprofile-libiberty
 all-stagefeedback-gcc: maybe-all-stagefeedback-libiberty
@@ -48998,7 +51437,9 @@ configure-libcpp: configure-libiberty
 
 configure-stage1-libcpp: configure-stage1-libiberty
 configure-stage2-libcpp: configure-stage2-libiberty
+configure-stageb2g0-libcpp: configure-stageb2g0-libiberty
 configure-stage3-libcpp: configure-stage3-libiberty
+configure-stageb3g2-libcpp: configure-stageb3g2-libiberty
 configure-stage4-libcpp: configure-stage4-libiberty
 configure-stageprofile-libcpp: configure-stageprofile-libiberty
 configure-stagefeedback-libcpp: configure-stagefeedback-libiberty
@@ -49006,7 +51447,9 @@ configure-libcpp: maybe-configure-intl
 
 configure-stage1-libcpp: maybe-configure-stage1-intl
 configure-stage2-libcpp: maybe-configure-stage2-intl
+configure-stageb2g0-libcpp: maybe-configure-stageb2g0-intl
 configure-stage3-libcpp: maybe-configure-stage3-intl
+configure-stageb3g2-libcpp: maybe-configure-stageb3g2-intl
 configure-stage4-libcpp: maybe-configure-stage4-intl
 configure-stageprofile-libcpp: maybe-configure-stageprofile-intl
 configure-stagefeedback-libcpp: maybe-configure-stagefeedback-intl
@@ -49014,7 +51457,9 @@ all-libcpp: all-libiberty
 
 all-stage1-libcpp: all-stage1-libiberty
 all-stage2-libcpp: all-stage2-libiberty
+all-stageb2g0-libcpp: all-stageb2g0-libiberty
 all-stage3-libcpp: all-stage3-libiberty
+all-stageb3g2-libcpp: all-stageb3g2-libiberty
 all-stage4-libcpp: all-stage4-libiberty
 all-stageprofile-libcpp: all-stageprofile-libiberty
 all-stagefeedback-libcpp: all-stagefeedback-libiberty
@@ -49022,7 +51467,9 @@ all-libcpp: maybe-all-intl
 
 all-stage1-libcpp: maybe-all-stage1-intl
 all-stage2-libcpp: maybe-all-stage2-intl
+all-stageb2g0-libcpp: maybe-all-stageb2g0-intl
 all-stage3-libcpp: maybe-all-stage3-intl
+all-stageb3g2-libcpp: maybe-all-stageb3g2-intl
 all-stage4-libcpp: maybe-all-stage4-intl
 all-stageprofile-libcpp: maybe-all-stageprofile-intl
 all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
@@ -49032,7 +51479,9 @@ configure-mpfr: maybe-all-gmp
 
 configure-stage1-mpfr: maybe-all-stage1-gmp
 configure-stage2-mpfr: maybe-all-stage2-gmp
+configure-stageb2g0-mpfr: maybe-all-stageb2g0-gmp
 configure-stage3-mpfr: maybe-all-stage3-gmp
+configure-stageb3g2-mpfr: maybe-all-stageb3g2-gmp
 configure-stage4-mpfr: maybe-all-stage4-gmp
 configure-stageprofile-mpfr: maybe-all-stageprofile-gmp
 configure-stagefeedback-mpfr: maybe-all-stagefeedback-gmp
@@ -49055,7 +51504,9 @@ configure-bfd: configure-libiberty
 
 configure-stage1-bfd: configure-stage1-libiberty
 configure-stage2-bfd: configure-stage2-libiberty
+configure-stageb2g0-bfd: configure-stageb2g0-libiberty
 configure-stage3-bfd: configure-stage3-libiberty
+configure-stageb3g2-bfd: configure-stageb3g2-libiberty
 configure-stage4-bfd: configure-stage4-libiberty
 configure-stageprofile-bfd: configure-stageprofile-libiberty
 configure-stagefeedback-bfd: configure-stagefeedback-libiberty
@@ -49063,7 +51514,9 @@ configure-bfd: maybe-configure-intl
 
 configure-stage1-bfd: maybe-configure-stage1-intl
 configure-stage2-bfd: maybe-configure-stage2-intl
+configure-stageb2g0-bfd: maybe-configure-stageb2g0-intl
 configure-stage3-bfd: maybe-configure-stage3-intl
+configure-stageb3g2-bfd: maybe-configure-stageb3g2-intl
 configure-stage4-bfd: maybe-configure-stage4-intl
 configure-stageprofile-bfd: maybe-configure-stageprofile-intl
 configure-stagefeedback-bfd: maybe-configure-stagefeedback-intl
@@ -49071,7 +51524,9 @@ all-bfd: maybe-all-libiberty
 
 all-stage1-bfd: maybe-all-stage1-libiberty
 all-stage2-bfd: maybe-all-stage2-libiberty
+all-stageb2g0-bfd: maybe-all-stageb2g0-libiberty
 all-stage3-bfd: maybe-all-stage3-libiberty
+all-stageb3g2-bfd: maybe-all-stageb3g2-libiberty
 all-stage4-bfd: maybe-all-stage4-libiberty
 all-stageprofile-bfd: maybe-all-stageprofile-libiberty
 all-stagefeedback-bfd: maybe-all-stagefeedback-libiberty
@@ -49079,7 +51534,9 @@ all-bfd: maybe-all-intl
 
 all-stage1-bfd: maybe-all-stage1-intl
 all-stage2-bfd: maybe-all-stage2-intl
+all-stageb2g0-bfd: maybe-all-stageb2g0-intl
 all-stage3-bfd: maybe-all-stage3-intl
+all-stageb3g2-bfd: maybe-all-stageb3g2-intl
 all-stage4-bfd: maybe-all-stage4-intl
 all-stageprofile-bfd: maybe-all-stageprofile-intl
 all-stagefeedback-bfd: maybe-all-stagefeedback-intl
@@ -49087,7 +51544,9 @@ configure-binutils: maybe-configure-intl
 
 configure-stage1-binutils: maybe-configure-stage1-intl
 configure-stage2-binutils: maybe-configure-stage2-intl
+configure-stageb2g0-binutils: maybe-configure-stageb2g0-intl
 configure-stage3-binutils: maybe-configure-stage3-intl
+configure-stageb3g2-binutils: maybe-configure-stageb3g2-intl
 configure-stage4-binutils: maybe-configure-stage4-intl
 configure-stageprofile-binutils: maybe-configure-stageprofile-intl
 configure-stagefeedback-binutils: maybe-configure-stagefeedback-intl
@@ -49095,7 +51554,9 @@ all-binutils: maybe-all-libiberty
 
 all-stage1-binutils: maybe-all-stage1-libiberty
 all-stage2-binutils: maybe-all-stage2-libiberty
+all-stageb2g0-binutils: maybe-all-stageb2g0-libiberty
 all-stage3-binutils: maybe-all-stage3-libiberty
+all-stageb3g2-binutils: maybe-all-stageb3g2-libiberty
 all-stage4-binutils: maybe-all-stage4-libiberty
 all-stageprofile-binutils: maybe-all-stageprofile-libiberty
 all-stagefeedback-binutils: maybe-all-stagefeedback-libiberty
@@ -49103,7 +51564,9 @@ all-binutils: maybe-all-opcodes
 
 all-stage1-binutils: maybe-all-stage1-opcodes
 all-stage2-binutils: maybe-all-stage2-opcodes
+all-stageb2g0-binutils: maybe-all-stageb2g0-opcodes
 all-stage3-binutils: maybe-all-stage3-opcodes
+all-stageb3g2-binutils: maybe-all-stageb3g2-opcodes
 all-stage4-binutils: maybe-all-stage4-opcodes
 all-stageprofile-binutils: maybe-all-stageprofile-opcodes
 all-stagefeedback-binutils: maybe-all-stagefeedback-opcodes
@@ -49111,7 +51574,9 @@ all-binutils: maybe-all-bfd
 
 all-stage1-binutils: maybe-all-stage1-bfd
 all-stage2-binutils: maybe-all-stage2-bfd
+all-stageb2g0-binutils: maybe-all-stageb2g0-bfd
 all-stage3-binutils: maybe-all-stage3-bfd
+all-stageb3g2-binutils: maybe-all-stageb3g2-bfd
 all-stage4-binutils: maybe-all-stage4-bfd
 all-stageprofile-binutils: maybe-all-stageprofile-bfd
 all-stagefeedback-binutils: maybe-all-stagefeedback-bfd
@@ -49119,7 +51584,9 @@ all-binutils: maybe-all-build-flex
 
 all-stage1-binutils: maybe-all-build-flex
 all-stage2-binutils: maybe-all-build-flex
+all-stageb2g0-binutils: maybe-all-build-flex
 all-stage3-binutils: maybe-all-build-flex
+all-stageb3g2-binutils: maybe-all-build-flex
 all-stage4-binutils: maybe-all-build-flex
 all-stageprofile-binutils: maybe-all-build-flex
 all-stagefeedback-binutils: maybe-all-build-flex
@@ -49127,7 +51594,9 @@ all-binutils: maybe-all-build-bison
 
 all-stage1-binutils: maybe-all-build-bison
 all-stage2-binutils: maybe-all-build-bison
+all-stageb2g0-binutils: maybe-all-build-bison
 all-stage3-binutils: maybe-all-build-bison
+all-stageb3g2-binutils: maybe-all-build-bison
 all-stage4-binutils: maybe-all-build-bison
 all-stageprofile-binutils: maybe-all-build-bison
 all-stagefeedback-binutils: maybe-all-build-bison
@@ -49135,7 +51604,9 @@ all-binutils: maybe-all-build-byacc
 
 all-stage1-binutils: maybe-all-build-byacc
 all-stage2-binutils: maybe-all-build-byacc
+all-stageb2g0-binutils: maybe-all-build-byacc
 all-stage3-binutils: maybe-all-build-byacc
+all-stageb3g2-binutils: maybe-all-build-byacc
 all-stage4-binutils: maybe-all-build-byacc
 all-stageprofile-binutils: maybe-all-build-byacc
 all-stagefeedback-binutils: maybe-all-build-byacc
@@ -49143,7 +51614,9 @@ all-binutils: maybe-all-intl
 
 all-stage1-binutils: maybe-all-stage1-intl
 all-stage2-binutils: maybe-all-stage2-intl
+all-stageb2g0-binutils: maybe-all-stageb2g0-intl
 all-stage3-binutils: maybe-all-stage3-intl
+all-stageb3g2-binutils: maybe-all-stageb3g2-intl
 all-stage4-binutils: maybe-all-stage4-intl
 all-stageprofile-binutils: maybe-all-stageprofile-intl
 all-stagefeedback-binutils: maybe-all-stagefeedback-intl
@@ -49153,7 +51626,9 @@ configure-gas: maybe-configure-intl
 
 configure-stage1-gas: maybe-configure-stage1-intl
 configure-stage2-gas: maybe-configure-stage2-intl
+configure-stageb2g0-gas: maybe-configure-stageb2g0-intl
 configure-stage3-gas: maybe-configure-stage3-intl
+configure-stageb3g2-gas: maybe-configure-stageb3g2-intl
 configure-stage4-gas: maybe-configure-stage4-intl
 configure-stageprofile-gas: maybe-configure-stageprofile-intl
 configure-stagefeedback-gas: maybe-configure-stagefeedback-intl
@@ -49161,7 +51636,9 @@ all-gas: maybe-all-libiberty
 
 all-stage1-gas: maybe-all-stage1-libiberty
 all-stage2-gas: maybe-all-stage2-libiberty
+all-stageb2g0-gas: maybe-all-stageb2g0-libiberty
 all-stage3-gas: maybe-all-stage3-libiberty
+all-stageb3g2-gas: maybe-all-stageb3g2-libiberty
 all-stage4-gas: maybe-all-stage4-libiberty
 all-stageprofile-gas: maybe-all-stageprofile-libiberty
 all-stagefeedback-gas: maybe-all-stagefeedback-libiberty
@@ -49169,7 +51646,9 @@ all-gas: maybe-all-opcodes
 
 all-stage1-gas: maybe-all-stage1-opcodes
 all-stage2-gas: maybe-all-stage2-opcodes
+all-stageb2g0-gas: maybe-all-stageb2g0-opcodes
 all-stage3-gas: maybe-all-stage3-opcodes
+all-stageb3g2-gas: maybe-all-stageb3g2-opcodes
 all-stage4-gas: maybe-all-stage4-opcodes
 all-stageprofile-gas: maybe-all-stageprofile-opcodes
 all-stagefeedback-gas: maybe-all-stagefeedback-opcodes
@@ -49177,7 +51656,9 @@ all-gas: maybe-all-bfd
 
 all-stage1-gas: maybe-all-stage1-bfd
 all-stage2-gas: maybe-all-stage2-bfd
+all-stageb2g0-gas: maybe-all-stageb2g0-bfd
 all-stage3-gas: maybe-all-stage3-bfd
+all-stageb3g2-gas: maybe-all-stageb3g2-bfd
 all-stage4-gas: maybe-all-stage4-bfd
 all-stageprofile-gas: maybe-all-stageprofile-bfd
 all-stagefeedback-gas: maybe-all-stagefeedback-bfd
@@ -49185,7 +51666,9 @@ all-gas: maybe-all-intl
 
 all-stage1-gas: maybe-all-stage1-intl
 all-stage2-gas: maybe-all-stage2-intl
+all-stageb2g0-gas: maybe-all-stageb2g0-intl
 all-stage3-gas: maybe-all-stage3-intl
+all-stageb3g2-gas: maybe-all-stageb3g2-intl
 all-stage4-gas: maybe-all-stage4-intl
 all-stageprofile-gas: maybe-all-stageprofile-intl
 all-stagefeedback-gas: maybe-all-stagefeedback-intl
@@ -49198,7 +51681,9 @@ configure-ld: maybe-configure-intl
 
 configure-stage1-ld: maybe-configure-stage1-intl
 configure-stage2-ld: maybe-configure-stage2-intl
+configure-stageb2g0-ld: maybe-configure-stageb2g0-intl
 configure-stage3-ld: maybe-configure-stage3-intl
+configure-stageb3g2-ld: maybe-configure-stageb3g2-intl
 configure-stage4-ld: maybe-configure-stage4-intl
 configure-stageprofile-ld: maybe-configure-stageprofile-intl
 configure-stagefeedback-ld: maybe-configure-stagefeedback-intl
@@ -49206,7 +51691,9 @@ all-ld: maybe-all-libiberty
 
 all-stage1-ld: maybe-all-stage1-libiberty
 all-stage2-ld: maybe-all-stage2-libiberty
+all-stageb2g0-ld: maybe-all-stageb2g0-libiberty
 all-stage3-ld: maybe-all-stage3-libiberty
+all-stageb3g2-ld: maybe-all-stageb3g2-libiberty
 all-stage4-ld: maybe-all-stage4-libiberty
 all-stageprofile-ld: maybe-all-stageprofile-libiberty
 all-stagefeedback-ld: maybe-all-stagefeedback-libiberty
@@ -49214,7 +51701,9 @@ all-ld: maybe-all-bfd
 
 all-stage1-ld: maybe-all-stage1-bfd
 all-stage2-ld: maybe-all-stage2-bfd
+all-stageb2g0-ld: maybe-all-stageb2g0-bfd
 all-stage3-ld: maybe-all-stage3-bfd
+all-stageb3g2-ld: maybe-all-stageb3g2-bfd
 all-stage4-ld: maybe-all-stage4-bfd
 all-stageprofile-ld: maybe-all-stageprofile-bfd
 all-stagefeedback-ld: maybe-all-stagefeedback-bfd
@@ -49222,7 +51711,9 @@ all-ld: maybe-all-opcodes
 
 all-stage1-ld: maybe-all-stage1-opcodes
 all-stage2-ld: maybe-all-stage2-opcodes
+all-stageb2g0-ld: maybe-all-stageb2g0-opcodes
 all-stage3-ld: maybe-all-stage3-opcodes
+all-stageb3g2-ld: maybe-all-stageb3g2-opcodes
 all-stage4-ld: maybe-all-stage4-opcodes
 all-stageprofile-ld: maybe-all-stageprofile-opcodes
 all-stagefeedback-ld: maybe-all-stagefeedback-opcodes
@@ -49230,7 +51721,9 @@ all-ld: maybe-all-build-bison
 
 all-stage1-ld: maybe-all-build-bison
 all-stage2-ld: maybe-all-build-bison
+all-stageb2g0-ld: maybe-all-build-bison
 all-stage3-ld: maybe-all-build-bison
+all-stageb3g2-ld: maybe-all-build-bison
 all-stage4-ld: maybe-all-build-bison
 all-stageprofile-ld: maybe-all-build-bison
 all-stagefeedback-ld: maybe-all-build-bison
@@ -49238,7 +51731,9 @@ all-ld: maybe-all-build-byacc
 
 all-stage1-ld: maybe-all-build-byacc
 all-stage2-ld: maybe-all-build-byacc
+all-stageb2g0-ld: maybe-all-build-byacc
 all-stage3-ld: maybe-all-build-byacc
+all-stageb3g2-ld: maybe-all-build-byacc
 all-stage4-ld: maybe-all-build-byacc
 all-stageprofile-ld: maybe-all-build-byacc
 all-stagefeedback-ld: maybe-all-build-byacc
@@ -49246,7 +51741,9 @@ all-ld: maybe-all-build-flex
 
 all-stage1-ld: maybe-all-build-flex
 all-stage2-ld: maybe-all-build-flex
+all-stageb2g0-ld: maybe-all-build-flex
 all-stage3-ld: maybe-all-build-flex
+all-stageb3g2-ld: maybe-all-build-flex
 all-stage4-ld: maybe-all-build-flex
 all-stageprofile-ld: maybe-all-build-flex
 all-stagefeedback-ld: maybe-all-build-flex
@@ -49254,7 +51751,9 @@ all-ld: maybe-all-intl
 
 all-stage1-ld: maybe-all-stage1-intl
 all-stage2-ld: maybe-all-stage2-intl
+all-stageb2g0-ld: maybe-all-stageb2g0-intl
 all-stage3-ld: maybe-all-stage3-intl
+all-stageb3g2-ld: maybe-all-stageb3g2-intl
 all-stage4-ld: maybe-all-stage4-intl
 all-stageprofile-ld: maybe-all-stageprofile-intl
 all-stagefeedback-ld: maybe-all-stagefeedback-intl
@@ -49262,7 +51761,9 @@ configure-opcodes: maybe-configure-intl
 
 configure-stage1-opcodes: maybe-configure-stage1-intl
 configure-stage2-opcodes: maybe-configure-stage2-intl
+configure-stageb2g0-opcodes: maybe-configure-stageb2g0-intl
 configure-stage3-opcodes: maybe-configure-stage3-intl
+configure-stageb3g2-opcodes: maybe-configure-stageb3g2-intl
 configure-stage4-opcodes: maybe-configure-stage4-intl
 configure-stageprofile-opcodes: maybe-configure-stageprofile-intl
 configure-stagefeedback-opcodes: maybe-configure-stagefeedback-intl
@@ -49270,7 +51771,9 @@ all-opcodes: maybe-all-bfd
 
 all-stage1-opcodes: maybe-all-stage1-bfd
 all-stage2-opcodes: maybe-all-stage2-bfd
+all-stageb2g0-opcodes: maybe-all-stageb2g0-bfd
 all-stage3-opcodes: maybe-all-stage3-bfd
+all-stageb3g2-opcodes: maybe-all-stageb3g2-bfd
 all-stage4-opcodes: maybe-all-stage4-bfd
 all-stageprofile-opcodes: maybe-all-stageprofile-bfd
 all-stagefeedback-opcodes: maybe-all-stagefeedback-bfd
@@ -49278,7 +51781,9 @@ all-opcodes: maybe-all-libiberty
 
 all-stage1-opcodes: maybe-all-stage1-libiberty
 all-stage2-opcodes: maybe-all-stage2-libiberty
+all-stageb2g0-opcodes: maybe-all-stageb2g0-libiberty
 all-stage3-opcodes: maybe-all-stage3-libiberty
+all-stageb3g2-opcodes: maybe-all-stageb3g2-libiberty
 all-stage4-opcodes: maybe-all-stage4-libiberty
 all-stageprofile-opcodes: maybe-all-stageprofile-libiberty
 all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
@@ -49286,7 +51791,9 @@ all-opcodes: maybe-all-intl
 
 all-stage1-opcodes: maybe-all-stage1-intl
 all-stage2-opcodes: maybe-all-stage2-intl
+all-stageb2g0-opcodes: maybe-all-stageb2g0-intl
 all-stage3-opcodes: maybe-all-stage3-intl
+all-stageb3g2-opcodes: maybe-all-stageb3g2-intl
 all-stage4-opcodes: maybe-all-stage4-intl
 all-stageprofile-opcodes: maybe-all-stageprofile-intl
 all-stagefeedback-opcodes: maybe-all-stagefeedback-intl

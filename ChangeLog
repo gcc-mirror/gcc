@@ -1,3 +1,12 @@
+2007-08-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.def (STAGE2_CFLAGS, STAGE3_CFLAGS, STAGE4_CFLAGS):
+	Add to flags_to_pass.  Adjust uses of BOOT_CFLAGS.
+	(bootstrap2-debug, bootstrap-debug): New bootstrap stages.
+	* Makefile.tpl (STAGE2_CFLAGS, STAGE3_CFLAGS, STAGE4_CFLAGS): New.
+	(do-compare, do-compare3, do-compare-debug): New.
+	([+compare-target+]): Use them.
+
 2007-08-14  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Change my email address.
