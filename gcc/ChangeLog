@@ -1,3 +1,8 @@
+2007-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (version.o): Depend on $(REVISION) only if
+	REVISION_s is defined.
+
 2007-08-17  Sa Liu  <saliu@de.ibm.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -7,12 +12,12 @@
 
 2007-08-17  Chen Liqin  <liqin@sunnorth.com.cn>
 
-        * config/score/score.md : Update pattern tablejump.
-        * config/score/score.c : Update score_initialize_trampoline 
-        function.
-        * config/score/score.h (TRAMPOLINE_TEMPLATE): Added macro.
-        (TRAMPOLINE_INSNS, TRAMPOLINE_SIZE) Update macro.
-        * doc/contrib.texi: Add my entry.
+	* config/score/score.md : Update pattern tablejump.
+	* config/score/score.c : Update score_initialize_trampoline 
+	function.
+	* config/score/score.h (TRAMPOLINE_TEMPLATE): Added macro.
+	(TRAMPOLINE_INSNS, TRAMPOLINE_SIZE) Update macro.
+	* doc/contrib.texi: Add my entry.
 
 2007-08-16  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1350,7 +1355,7 @@
 	* config/mips/mips.md: Update after above changes.
 
 2007-08-08  Vladimir Yanovsky  <yanov@il.ibm.com>
-            Revital Eres  <eres@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
 	* ddg.c (print_ddg): Add dump information.
 	* modulo-sched.c (print_node_sched_params): Add parameter and

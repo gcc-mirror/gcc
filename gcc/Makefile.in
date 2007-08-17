@@ -1899,7 +1899,11 @@ gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) opts.h intl
 
 dumpvers: dumpvers.c
 
+ifdef REVISION_s
 version.o: version.c version.h $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
+else
+version.o: version.c version.h $(DATESTAMP) $(BASEVER) $(DEVPHASE)
+endif
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
