@@ -1772,7 +1772,6 @@ lookup_label (int pc)
     {
       /* The type of the address of a label is return_address_type_node. */
       tree decl = create_label_decl (name);
-      LABEL_PC (decl) = pc;
       return pushdecl (decl);
     }
 }
@@ -1801,8 +1800,14 @@ create_label_decl (tree name)
   return decl;
 }
 
-/* This maps a bytecode offset (PC) to various flags. */
+/* This maps a bytecode offset (PC) to various flags.  */
 char *instruction_bits;
+
+/* This is a vector of type states for the current method.  It is
+   indexed by PC.  Each element is a tree vector holding the type
+   state at that PC.  We only note type states at basic block
+   boundaries.  */
+VEC(tree, gc) *type_states;
 
 static void
 note_label (int current_pc ATTRIBUTE_UNUSED, int target_pc)
@@ -2953,11 +2958,11 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
   TREE_THIS_VOLATILE (field_ref) = TREE_THIS_VOLATILE (field_decl);
 }
 
-void
-load_type_state (tree label)
+static void
+load_type_state (int pc)
 {
   int i;
-  tree vec = LABEL_TYPE_STATE (label);
+  tree vec = VEC_index (tree, type_states, pc);
   int cur_length = TREE_VEC_LENGTH (vec);
   stack_pointer = cur_length - DECL_MAX_LOCALS(current_function_decl);
   for (i = 0; i < cur_length; i++)
@@ -3000,6 +3005,8 @@ note_instructions (JCF *jcf, tree method)
   byte_ops = jcf->read_ptr;
   instruction_bits = xrealloc (instruction_bits, length + 1);
   memset (instruction_bits, 0, length + 1);
+  type_states = VEC_alloc (tree, gc, length + 1);
+  VEC_safe_grow_cleared (tree, gc, type_states, length + 1);
 
   /* This pass figures out which PC can be the targets of jumps. */
   for (PC = 0; PC < length;)
@@ -3158,8 +3165,8 @@ expand_byte_code (JCF *jcf, tree method)
           flush_quick_stack ();
 	  if ((instruction_bits [PC] & BCODE_TARGET) != 0)
 	    java_add_stmt (build1 (LABEL_EXPR, void_type_node, label));
-	  if (LABEL_VERIFIED (label) || PC == 0)
-	    load_type_state (label);
+	  if ((instruction_bits[PC] & BCODE_VERIFIED) != 0)
+	    load_type_state (PC);
 	}
 
       if (! (instruction_bits [PC] & BCODE_VERIFIED))

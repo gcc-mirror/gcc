@@ -2914,14 +2914,6 @@ struct tree_field_decl GTY(())
 struct tree_label_decl GTY(())
 {
   struct tree_decl_with_rtl common;
-  /* Java's verifier has some need to store information about labels,
-     and was using fields that no longer exist on labels.
-     Once the verifier doesn't need these anymore, they should be removed.  */
-  tree java_field_1;
-  tree java_field_2;
-  tree java_field_3;
-  unsigned int java_field_4;
-
 };
 
 struct tree_result_decl GTY(())
