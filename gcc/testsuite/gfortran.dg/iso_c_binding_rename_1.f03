@@ -81,3 +81,4 @@ contains
   end subroutine sub4
 end module iso_c_binding_rename_1
 
+! { dg-final { cleanup-modules "iso_c_binding_rename_0 iso_c_binding_rename_1" } }

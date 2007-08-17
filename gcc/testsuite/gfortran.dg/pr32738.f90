@@ -42,3 +42,5 @@ program example
   implicit none
      print *, tree_size(1)
 end program example
+
+! { dg-final { cleanup-modules "cluster_definition cluster_tree" } }

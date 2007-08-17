@@ -30,3 +30,5 @@ program testComBlock
      call abort()
   endif
 end program testComBlock
+
+! { dg-final { cleanup-modules "nonf03comblock" } }

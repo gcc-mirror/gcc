@@ -47,3 +47,4 @@ module use_stmt_7
   use iso_c_binding, only: c_int, c_int
 end module use_stmt_7
 
+! { dg-final { cleanup-modules "use_stmt_2 use_stmt_3 use_stmt_4 use_stmt_5 use_stmt_6 use_stmt_7" } }

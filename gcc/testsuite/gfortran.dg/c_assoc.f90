@@ -66,3 +66,5 @@ contains
   end subroutine verify_assoc
   
 end module c_assoc
+
+! { dg-final { cleanup-modules "c_assoc" } }

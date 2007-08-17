@@ -22,3 +22,5 @@ contains
   end function baz
 
 end module foo
+
+! { dg-final { cleanup-modules "foo" } }

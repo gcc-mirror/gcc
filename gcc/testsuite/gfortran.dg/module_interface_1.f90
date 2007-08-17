@@ -35,4 +35,4 @@
     end subroutine Selection_Sort
   end program module_interface
 
-! { dg-final { cleanup-modules "Max_Loc_mod" } }
+! { dg-final { cleanup-modules "max_loc_mod" } }

@@ -32,3 +32,4 @@ program testit
   k = foo(i)
   print *, "in the main:", k
 end program testit
+! { dg-final { cleanup-modules "gfcbug68" } }

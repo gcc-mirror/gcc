@@ -18,3 +18,5 @@ program main
   j = 1
   print *, i, j
 end program main
+
+! { dg-final { cleanup-modules "bar foo" } }

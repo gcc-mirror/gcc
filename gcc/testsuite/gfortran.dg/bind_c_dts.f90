@@ -39,3 +39,5 @@ contains
     myDerived%s = myDerived%s + 1.0;
   end subroutine types_test
 end module bind_c_dts
+
+! { dg-final { cleanup-modules "bind_c_dts" } }

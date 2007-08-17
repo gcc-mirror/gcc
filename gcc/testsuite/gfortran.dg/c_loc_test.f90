@@ -21,4 +21,4 @@ contains
     call test_address(my_c_ptr, 100)
   end subroutine test0
 end module c_loc_test
-! { dg-final { cleanup-modules "c_loc_test.mod" } }
+! { dg-final { cleanup-modules "c_loc_test" } }

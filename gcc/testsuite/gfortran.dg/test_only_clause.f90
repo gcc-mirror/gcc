@@ -18,3 +18,5 @@ module testOnlyClause
       endif
     end subroutine testOnly
 end module testOnlyClause
+
+! { dg-final { cleanup-modules "testonlyclause" } }
