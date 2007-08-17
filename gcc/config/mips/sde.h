@@ -36,11 +36,18 @@ Boston, MA 02111-1307, USA.  */
   /* Remove a redundant -mfp64 for -mabi=n32; we want the !mfp64	\
      multilibs.  There's no need to check whether the architecture	\
      is 64-bit; cc1 will complain if it isn't.  */			\
-  "%{mabi=n32: %<mfp64}"						\
+  "%{mabi=n32: %<mfp64}",						\
 									\
   /* Make sure that an endian option is always present.  This makes	\
      things like LINK_SPEC easier to write.  */				\
-  "%{!EB:%{!EL:%(endian_spec)}}"
+  "%{!EB:%{!EL:%(endian_spec)}}",					\
+									\
+  /* -mcode-xonly is a traditional alias for -mcode-readable=pcrel and	\
+     -mno-data-in-code is a traditional alias for -mcode-readable=no.	\
+     The latter trumps the former.  */					\
+  "%{mno-data-in-code: -mcode-readable=no}",				\
+  "%{!mcode-readable=no: %{mcode-xonly: -mcode-readable=pcrel}}",	\
+  "%<mno-data-in-code %<mcode-xonly"
 
 /* Use trap rather than break for all but MIPS I ISA.  Force -no-mips16,
    so that MIPS16 assembler code requires an explicit ".set mips16".

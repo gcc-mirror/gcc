@@ -1,3 +1,11 @@
+2007-08-17  Richard Sandiford  <richard@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/mt-sde: New file.
+	* configure.ac (mips*-sde-elf*): New stanza.  Use config/mt-sde
+	as target_makefile_frag.
+	* configure: Regenerate.
+
 2007-08-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.def (STAGE2_CFLAGS, STAGE3_CFLAGS, STAGE4_CFLAGS):

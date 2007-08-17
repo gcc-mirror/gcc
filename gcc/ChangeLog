@@ -1,3 +1,13 @@
+2007-08-17  Richard Sandiford  <richard@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/sde.h (DRIVER_SELF_SPECS): Add commas.
+	Treat -mno-data-in-code and -mcode-xonly as aliases for
+	-mcode-readable=no and -mcode-readable=pcrel respectively.
+	* config/mips/t-sde (TARGET_LIBGCC2_CFLAGS): Add -mcode-xonly.
+	(MULTILIB_OPTIONS): Add -mcode-readable=no multilibs.
+	(MULTILIB_DIRNAMES): Update accordingly.
+
 2007-08-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (version.o): Depend on $(REVISION) only if

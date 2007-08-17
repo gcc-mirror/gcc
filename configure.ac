@@ -1748,6 +1748,9 @@ case "${target}" in
   spu-*-*)
     target_makefile_frag="config/mt-spu"
     ;;
+  mips*-sde-elf*)
+    target_makefile_frag="config/mt-sde"
+    ;;
   *-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;
