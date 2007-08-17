@@ -1430,8 +1430,6 @@
    (use (label_ref (match_operand 1 "" "")))]
   ""
 {
-  if (GET_MODE (operands[0]) != ptr_mode)
-    gcc_unreachable ();
   emit_jump_insn (gen_tablejump_internal1 (operands[0], operands[1]));
   DONE;
 })

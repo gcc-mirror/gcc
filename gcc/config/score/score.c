@@ -751,30 +751,13 @@ score_initialize_trampoline (rtx ADDR, rtx FUNC, rtx CHAIN)
 #define FFCACHE          "_flush_cache"
 #define CODE_SIZE        (TRAMPOLINE_INSNS * UNITS_PER_WORD)
 
-  unsigned int tramp[TRAMPOLINE_INSNS] = {
-    0x8103bc56,                         /* mv      r8, r3          */
-    0x9000bc05,                         /* bl      0x0x8           */
-    0xc1238000 | (CODE_SIZE - 8),       /* lw      r9, &func       */
-    0xc0038000
-    | (STATIC_CHAIN_REGNUM << 21)
-    | (CODE_SIZE - 4),                  /* lw  static chain reg, &chain */
-    0x8068bc56,                         /* mv      r3, r8          */
-    0x8009bc08,                         /* br      r9              */
-    0x0,
-    0x0,
-    };
   rtx pfunc, pchain;
-  int i;
-
-  for (i = 0; i < TRAMPOLINE_INSNS; i++)
-    emit_move_insn (gen_rtx_MEM (ptr_mode, plus_constant (ADDR, i << 2)),
-                    GEN_INT (tramp[i]));
 
   pfunc = plus_constant (ADDR, CODE_SIZE);
-  pchain = plus_constant (ADDR, CODE_SIZE + GET_MODE_SIZE (ptr_mode));
+  pchain = plus_constant (ADDR, CODE_SIZE + GET_MODE_SIZE (SImode));
 
-  emit_move_insn (gen_rtx_MEM (ptr_mode, pfunc), FUNC);
-  emit_move_insn (gen_rtx_MEM (ptr_mode, pchain), CHAIN);
+  emit_move_insn (gen_rtx_MEM (SImode, pfunc), FUNC);
+  emit_move_insn (gen_rtx_MEM (SImode, pchain), CHAIN);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, FFCACHE),
                      0, VOIDmode, 2,
                      ADDR, Pmode,
@@ -1301,8 +1284,11 @@ score_print_operand_address (FILE *file, rtx x)
                          INTVAL (addr.offset));
                 break;
               default:
-                fprintf (file, "[%s,%ld]", reg_names[REGNO (addr.reg)],
-                         INTVAL (addr.offset));
+                if (INTVAL(addr.offset) == 0)
+                  fprintf(file, "[%s]", reg_names[REGNO (addr.reg)]);
+                else 
+                  fprintf(file, "[%s, %ld]", reg_names[REGNO (addr.reg)], 
+                          INTVAL(addr.offset));
                 break;
               }
           }

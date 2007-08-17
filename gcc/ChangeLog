@@ -1,3 +1,12 @@
+2007-08-17  Chen liqin  <liqin@sunnorth.com.cn>
+
+        * config/score/score.md : Update pattern tablejump.
+        * config/score/score.c : Update score_initialize_trampoline 
+        function.
+        * config/score/score.h (TRAMPOLINE_TEMPLATE): Added macro.
+        (TRAMPOLINE_INSNS, TRAMPOLINE_SIZE) Update macro.
+        * doc/contrib.texi: Add my entry.
+
 2007-08-02  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*xordi3_cconly"): Change xr to xg.
