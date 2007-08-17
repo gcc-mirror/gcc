@@ -14,10 +14,12 @@ $(T)crtn.o: $(srcdir)/config/mips/crtn.asm $(GCC_PASSES)
 # without the $gp register. Use -fno-optimize-sibling-calls in case
 # we have a mixed mips16/non-mips16 environment where a plain "jump"
 # instuction won't work across the divide (no jx instruction).
-TARGET_LIBGCC2_CFLAGS = -G 0 -fno-optimize-sibling-calls
+# Compile libraries with -mcode-xonly, so that they are link-compatible
+# with both -mcode-readable=pcrel and -mcode-readable=yes.
+TARGET_LIBGCC2_CFLAGS = -G 0 -fno-optimize-sibling-calls -mcode-xonly
 
-MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64 mips16 msoft-float/mfp64
-MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips16 sof f64
+MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64 mips16 msoft-float/mfp64 mcode-readable=no
+MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips16 sof f64 spram
 MULTILIB_MATCHES = EL=mel EB=meb
 
 # The -mfp64 option is only valid in conjunction with -mips32r2.
