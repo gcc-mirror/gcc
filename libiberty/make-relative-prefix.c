@@ -201,10 +201,13 @@ free_split_directories (char **dirs)
 {
   int i = 0;
 
-  while (dirs[i] != NULL)
-    free (dirs[i++]);
+  if (dirs != NULL)
+    {
+      while (dirs[i] != NULL)
+	free (dirs[i++]);
 
-  free ((char *) dirs);
+      free ((char *) dirs);
+    }
 }
 
 /* Given three strings PROGNAME, BIN_PREFIX, PREFIX, return a string that gets
@@ -221,11 +224,11 @@ static char *
 make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 			const char *prefix, const int resolve_links)
 {
-  char **prog_dirs, **bin_dirs, **prefix_dirs;
+  char **prog_dirs = NULL, **bin_dirs = NULL, **prefix_dirs = NULL;
   int prog_num, bin_num, prefix_num;
   int i, n, common;
   int needed_len;
-  char *ret, *ptr, *full_progname = NULL;
+  char *ret = NULL, *ptr, *full_progname;
 
   if (progname == NULL || bin_prefix == NULL || prefix == NULL)
     return NULL;
@@ -305,10 +308,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 
   bin_dirs = split_directories (bin_prefix, &bin_num);
   if (bin_dirs == NULL)
-    {
-      free_split_directories (prog_dirs);
-      return NULL;
-    }
+    goto bailout;
 
   /* Remove the program name from comparison of directory names.  */
   prog_num--;
@@ -326,21 +326,12 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 	}
 
       if (prog_num <= 0 || i == bin_num)
-	{
-	  free_split_directories (prog_dirs);
-	  free_split_directories (bin_dirs);
-	  prog_dirs = bin_dirs = (char **) 0;
-	  return NULL;
-	}
+	goto bailout;
     }
 
   prefix_dirs = split_directories (prefix, &prefix_num);
   if (prefix_dirs == NULL)
-    {
-      free_split_directories (prog_dirs);
-      free_split_directories (bin_dirs);
-      return NULL;
-    }
+    goto bailout;
 
   /* Find how many directories are in common between bin_prefix & prefix.  */
   n = (prefix_num < bin_num) ? prefix_num : bin_num;
@@ -352,12 +343,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 
   /* If there are no common directories, there can be no relative prefix.  */
   if (common == 0)
-    {
-      free_split_directories (prog_dirs);
-      free_split_directories (bin_dirs);
-      free_split_directories (prefix_dirs);
-      return NULL;
-    }
+    goto bailout;
 
   /* Two passes: first figure out the size of the result string, and
      then construct it.  */
@@ -371,7 +357,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
 
   ret = (char *) malloc (needed_len);
   if (ret == NULL)
-    return NULL;
+    goto bailout;
 
   /* Build up the pathnames in argv[0].  */
   *ret = '\0';
@@ -392,6 +378,7 @@ make_relative_prefix_1 (const char *progname, const char *bin_prefix,
   for (i = common; i < prefix_num; i++)
     strcat (ret, prefix_dirs[i]);
 
+ bailout:
   free_split_directories (prog_dirs);
   free_split_directories (bin_dirs);
   free_split_directories (prefix_dirs);
