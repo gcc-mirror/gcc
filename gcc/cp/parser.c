@@ -14417,8 +14417,12 @@ cp_parser_class_head (cp_parser* parser,
 	 class was originally declared, the program is invalid.  */
       if (scope && !is_ancestor (scope, nested_name_specifier))
 	{
-	  error ("declaration of %qD in %qD which does not enclose %qD",
-		 type, scope, nested_name_specifier);
+	  if (at_namespace_scope_p ())
+	    error ("declaration of %qD in namespace %qD which does not "
+		   "enclose %qD", type, scope, nested_name_specifier);
+	  else
+	    error ("declaration of %qD in %qD which does not enclose %qD",
+		   type, scope, nested_name_specifier);
 	  type = NULL_TREE;
 	  goto done;
 	}
