@@ -1,3 +1,9 @@
+2007-08-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c++/28989
+	* g++.dg/expr/lval3.C: New test.
+	* g++.dg/expr/lval4.C: New test.
+
 2007-08-17  Ollie Wild  <aaw@google.com>
 
 	PR c++/31749
