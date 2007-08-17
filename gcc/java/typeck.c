@@ -763,9 +763,7 @@ find_method_in_interfaces (tree searched_class, int flags, tree method_name,
       tree method;
 	  
       /* If the superinterface hasn't been loaded yet, do so now.  */
-      if (CLASS_FROM_SOURCE_P (iclass))
-	safe_layout_class (iclass);
-      else if (!CLASS_LOADED_P (iclass))
+      if (!CLASS_LOADED_P (iclass))
 	load_class (iclass, 1);
 	  
       /* First, we look in ICLASS.  If that doesn't work we'll

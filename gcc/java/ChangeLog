@@ -1,5 +1,56 @@
 2007-08-17  Tom Tromey  <tromey@redhat.com>
 
+	* typeck.c (find_method_in_interfaces): Update.
+	* jcf-parse.c (load_class): Update.
+	* java-gimplify.c (java_gimplify_component_ref): Removed.
+	(java_gimplify_modify_expr): Update.  Removed pre_p and post_p
+	arguments.
+	(java_gimplify_expr): Update.
+	* decl.c (java_init_decl_processing): Update.
+	* class.c (set_constant_value): Update.
+	(make_class_data): Update.
+	(finish_class): Update.
+	(build_static_field_ref): Update.
+	(is_compiled_class): Update.
+	(maybe_layout_super_class): Update.
+	(layout_class): Update.
+	(layout_class_method): Update.
+	* java-tree.h (CAN_COMPLETE_NORMALLY): Removed.
+	(lang_decl_var) <am, final_iud, cif>: Removed fields.
+	(lang_decl_func) <init_calls_this>: Removed field.
+	(lang_type) <dot_class, verify_method>: Removed fields.
+	(FIELD_NESTED_ACCESS): Removed.
+	(FIELD_NESTED_ACCESS_P): Removed.
+	(DECL_FIELD_FINAL_IUD): Removed.
+	(DECL_LOCAL_FINAL_IUD): Removed
+	(LOCAL_FINAL_P): Removed.
+	(FINAL_VARIABLE_P): Removed.
+	(CLASS_FINAL_VARIABLE_P): Removed.
+	(DECL_BIT_INDEX): Removed.
+	(DECL_INIT_CALLS_THIS): Removed.
+	(FIELD_LOCAL_ALIAS): Removed.
+	(FIELD_LOCAL_ALIAS_USED): Removed.
+	(FIELD_THISN): Removed.
+	(DECL_FUNCTION_INIT_TEST_CLASS): Removed.
+	(LOCAL_CLASS_INITIALIZATION_FLAG): Removed.
+	(LOCAL_CLASS_INITIALIZATION_FLAG_P): Removed.
+	(TYPE_DOT_CLASS): Removed.
+	(TYPE_VERIFY_METHOD): Removed.
+	(ID_CLASSDOLLAR_P): Removed.
+	(enum java_tree_index) <JTI_CLASSDOLLAR_IDENTIFIER_NODE>:
+	Removed.
+	(classdollar_identifier_node): Removed.
+	(TYPE_UNKNOWN): Removed.
+	(CLASS_FROM_SOURCE_P): Removed.
+	* expr.c (build_jni_stub): Update.
+	(force_evaluation_order): Update.
+	(build_java_empty_stmt): Update.
+	(build_class_init): Update.
+	(java_stack_swap): Update.
+	(build_jni_stub): Update.
+
+2007-08-17  Tom Tromey  <tromey@redhat.com>
+
 	* java-tree.h (LABEL_TYPE_STATE): Removed.
 	(load_type_state): Removed.
 	(LABEL_PC): Removed.
