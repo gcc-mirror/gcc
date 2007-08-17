@@ -1,3 +1,10 @@
+2007-08-17  Johannes Willkomm  <willkomm@sc.rwth-aachen.de>
+
+	PR libstdc++/33084
+	* include/std/valarray (operator _Op(const _Tp&,
+	const valarray<>&)): Fix typo.
+	* testsuite/26_numerics/numeric_arrays/valarray/33084.cc: New.
+
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.

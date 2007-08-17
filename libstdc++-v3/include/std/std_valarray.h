@@ -1010,7 +1010,7 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, __shift_right)
     {									\
       typedef _BinClos<_Name, _Constant, _ValArray, _Tp, _Tp> _Closure; \
       typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
-      return _Expr<_Closure, _Tp>(_Closure(__t, __v));        	        \
+      return _Expr<_Closure, _Rt>(_Closure(__t, __v));        	        \
     }
 
 _DEFINE_BINARY_OPERATOR(+, __plus)
