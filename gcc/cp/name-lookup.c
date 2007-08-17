@@ -2099,6 +2099,20 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       return;
     }
 
+  /* Shift the old and new bindings around so we're comparing class and
+     enumeration names to each other.  */
+  if (oldval && DECL_IMPLICIT_TYPEDEF_P (oldval))
+    {
+      oldtype = oldval;
+      oldval = NULL_TREE;
+    }
+
+  if (decls.value && DECL_IMPLICIT_TYPEDEF_P (decls.value))
+    {
+      decls.type = decls.value;
+      decls.value = NULL_TREE;
+    }
+
   /* It is impossible to overload a built-in function; any explicit
      declaration eliminates the built-in declaration.  So, if OLDVAL
      is a built-in, then we can just pretend it isn't there.  */
@@ -2108,87 +2122,91 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
       && !DECL_HIDDEN_FRIEND_P (oldval))
     oldval = NULL_TREE;
 
-  /* Check for using functions.  */
-  if (decls.value && is_overloaded_fn (decls.value))
+  if (decls.value)
     {
-      tree tmp, tmp1;
-
-      if (oldval && !is_overloaded_fn (oldval))
+      /* Check for using functions.  */
+      if (is_overloaded_fn (decls.value))
 	{
-	  if (!DECL_IMPLICIT_TYPEDEF_P (oldval))
-	    error ("%qD is already declared in this scope", name);
-	  oldval = NULL_TREE;
-	}
+	  tree tmp, tmp1;
 
-      *newval = oldval;
-      for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
-	{
-	  tree new_fn = OVL_CURRENT (tmp);
-
-	  /* [namespace.udecl]
-
-	     If a function declaration in namespace scope or block
-	     scope has the same name and the same parameter types as a
-	     function introduced by a using declaration the program is
-	     ill-formed.  */
-	  for (tmp1 = oldval; tmp1; tmp1 = OVL_NEXT (tmp1))
+	  if (oldval && !is_overloaded_fn (oldval))
 	    {
-	      tree old_fn = OVL_CURRENT (tmp1);
+	      error ("%qD is already declared in this scope", name);
+	      oldval = NULL_TREE;
+	    }
 
-	      if (new_fn == old_fn)
-		/* The function already exists in the current namespace.  */
-		break;
-	      else if (OVL_USED (tmp1))
-		continue; /* this is a using decl */
-	      else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
-				  TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
+	  *newval = oldval;
+	  for (tmp = decls.value; tmp; tmp = OVL_NEXT (tmp))
+	    {
+	      tree new_fn = OVL_CURRENT (tmp);
+
+	      /* [namespace.udecl]
+
+		 If a function declaration in namespace scope or block
+		 scope has the same name and the same parameter types as a
+		 function introduced by a using declaration the program is
+		 ill-formed.  */
+	      for (tmp1 = oldval; tmp1; tmp1 = OVL_NEXT (tmp1))
 		{
-		  gcc_assert (!DECL_ANTICIPATED (old_fn)
-			      || DECL_HIDDEN_FRIEND_P (old_fn));
+		  tree old_fn = OVL_CURRENT (tmp1);
 
-		  /* There was already a non-using declaration in
-		     this scope with the same parameter types. If both
-		     are the same extern "C" functions, that's ok.  */
-		  if (decls_match (new_fn, old_fn))
+		  if (new_fn == old_fn)
+		    /* The function already exists in the current namespace.  */
 		    break;
-		  else
+		  else if (OVL_USED (tmp1))
+		    continue; /* this is a using decl */
+		  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
+				      TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
 		    {
-		      error ("%qD is already declared in this scope", name);
-		      break;
+		      gcc_assert (!DECL_ANTICIPATED (old_fn)
+				  || DECL_HIDDEN_FRIEND_P (old_fn));
+
+		      /* There was already a non-using declaration in
+			 this scope with the same parameter types. If both
+			 are the same extern "C" functions, that's ok.  */
+		      if (decls_match (new_fn, old_fn))
+			break;
+		      else
+			{
+			  error ("%qD is already declared in this scope", name);
+			  break;
+			}
 		    }
 		}
-	    }
 
-	  /* If we broke out of the loop, there's no reason to add
-	     this function to the using declarations for this
-	     scope.  */
-	  if (tmp1)
-	    continue;
+	      /* If we broke out of the loop, there's no reason to add
+		 this function to the using declarations for this
+		 scope.  */
+	      if (tmp1)
+		continue;
 
-	  /* If we are adding to an existing OVERLOAD, then we no
-	     longer know the type of the set of functions.  */
-	  if (*newval && TREE_CODE (*newval) == OVERLOAD)
-	    TREE_TYPE (*newval) = unknown_type_node;
-	  /* Add this new function to the set.  */
-	  *newval = build_overload (OVL_CURRENT (tmp), *newval);
-	  /* If there is only one function, then we use its type.  (A
-	     using-declaration naming a single function can be used in
-	     contexts where overload resolution cannot be
-	     performed.)  */
-	  if (TREE_CODE (*newval) != OVERLOAD)
-	    {
-	      *newval = ovl_cons (*newval, NULL_TREE);
-	      TREE_TYPE (*newval) = TREE_TYPE (OVL_CURRENT (tmp));
+	      /* If we are adding to an existing OVERLOAD, then we no
+		 longer know the type of the set of functions.  */
+	      if (*newval && TREE_CODE (*newval) == OVERLOAD)
+		TREE_TYPE (*newval) = unknown_type_node;
+	      /* Add this new function to the set.  */
+	      *newval = build_overload (OVL_CURRENT (tmp), *newval);
+	      /* If there is only one function, then we use its type.  (A
+		 using-declaration naming a single function can be used in
+		 contexts where overload resolution cannot be
+		 performed.)  */
+	      if (TREE_CODE (*newval) != OVERLOAD)
+		{
+		  *newval = ovl_cons (*newval, NULL_TREE);
+		  TREE_TYPE (*newval) = TREE_TYPE (OVL_CURRENT (tmp));
+		}
+	      OVL_USED (*newval) = 1;
 	    }
-	  OVL_USED (*newval) = 1;
+	}
+      else
+	{
+	  *newval = decls.value;
+	  if (oldval && !decls_match (*newval, oldval))
+	    error ("%qD is already declared in this scope", name);
 	}
     }
   else
-    {
-      *newval = decls.value;
-      if (oldval && !decls_match (*newval, oldval))
-	error ("%qD is already declared in this scope", name);
-    }
+    *newval = oldval;
 
   if (decls.type && TREE_CODE (decls.type) == TREE_LIST)
     {
@@ -2198,13 +2216,16 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
   else
     {
       *newtype = decls.type;
-      if (oldtype && *newtype && !same_type_p (oldtype, *newtype))
-	{
-	  error ("using declaration %qD introduced ambiguous type %qT",
-		 name, oldtype);
-	  return;
-	}
+      if (oldtype && *newtype && !decls_match (oldtype, *newtype))
+	error ("%qD is already declared in this scope", name);
     }
+
+    /* If *newval is empty, shift any class or enumeration name down.  */
+    if (!*newval)
+      {
+	*newval = *newtype;
+	*newtype = NULL_TREE;
+      }
 }
 
 /* Process a using-declaration at function scope.  */

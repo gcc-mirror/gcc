@@ -1,3 +1,10 @@
+2007-08-17  Ollie Wild  <aaw@google.com>
+
+	PR c++/31749
+	* name-lookup.c (do_nonmember_using_decl): Shift implicit type
+	declarations into appropriate slots for comparison.  Fix type
+	comparison.
+
 2007-08-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32112
