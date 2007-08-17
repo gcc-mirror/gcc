@@ -151,12 +151,16 @@ int main()
 	  // node to the neighbor.
 	  const size_t pot_dist = dist + a_a_edge_legnth[node_id][neighbor_i];
 
+	  if (a_it[neighbor_i] == a_it[0])
+	    continue;
+
 	  // "Relax" the distance (if appropriate) through modify.
 	  if (pot_dist < a_it[neighbor_i]->second)
 	    p.modify(a_it[neighbor_i], pq_value(neighbor_i, pot_dist));
         }
 
       // Done with the node, so we pop it.
+      a_it[node_id] = a_it[0];
       p.pop();
     }
 

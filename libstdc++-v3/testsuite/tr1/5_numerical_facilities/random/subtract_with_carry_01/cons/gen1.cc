@@ -21,6 +21,8 @@
 // 5.1.4.4 class template subtract_with_carry_01 [tr.rand.eng.sub1]
 // 5.1.1 Table 16 line 3 Gen ctor
 
+// { dg-require-time "" }
+
 #include <ctime>
 #include <tr1/random>
 #include <testsuite_hooks.h>

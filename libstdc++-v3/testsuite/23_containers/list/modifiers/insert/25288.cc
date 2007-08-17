@@ -18,6 +18,8 @@
 
 // 23.2.2.3 list modifiers [lib.list.modifiers]
 
+// { dg-require-time "" }
+
 #include <list>
 #include <testsuite_hooks.h>
 #include <ext/throw_allocator.h>

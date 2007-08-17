@@ -21,6 +21,8 @@
 // 5.1.4.2 class template mersenne_twister [tr.rand.eng.mers]
 // 5.1.1 Table 16 line 3 Gen ctor
 
+// { dg-require-time "" }
+
 #include <ctime>
 #include <tr1/random>
 #include <testsuite_hooks.h>

@@ -45,6 +45,8 @@
  * Contains a random-operation test for priority queues.
  */
 
+// { dg-require-time "" }
+
 #include <regression/rand/priority_queue/rand_regression_test.hpp>
 #include <regression/priority_queue/common_type.hpp>
 

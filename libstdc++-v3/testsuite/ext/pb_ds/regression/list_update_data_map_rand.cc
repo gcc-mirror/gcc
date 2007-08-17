@@ -45,6 +45,8 @@
  * Contains a random-operation test for maps and sets.
  */
 
+// { dg-require-time "" }
+
 #include <regression/rand/assoc/rand_regression_test.hpp>
 #include <regression/assoc/common_type.hpp>
 

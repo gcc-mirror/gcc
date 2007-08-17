@@ -21,6 +21,8 @@
 // 5.1.4.1 class template linear_congruential [tr.rand.eng.lcong]
 // 5.1.1 Table 16 line 3 template ctor(gen)
 
+// { dg-require-time "" }
+
 #include <ctime>
 #include <tr1/random>
 #include <testsuite_hooks.h>
