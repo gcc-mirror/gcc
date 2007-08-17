@@ -1,3 +1,8 @@
+2007-08-17  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32870
+	* g++.dg/other/error17.C: Adjust.
+	
 2007-08-17  Ben Elliston  <bje@au.ibm.com>
 
 	PR middle-end/32970

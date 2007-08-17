@@ -1,7 +1,12 @@
+2007-08-17  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32870
+	* parser.c (cp_parser_class_head): Improve error message.
+
 2007-08-16  Seongbae Park  <seongbae.park@gmail.com>
 
-        * pt.c (instantiate_decl): Set input_location
-        for the function end.
+	* pt.c (instantiate_decl): Set input_location
+	for the function end.
 
 2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
