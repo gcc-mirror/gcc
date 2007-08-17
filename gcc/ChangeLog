@@ -1,4 +1,12 @@
+2007-08-17  Sa Liu  <saliu@de.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR middle-end/32970
+	* tree.c (reconstruct_complex_type): For a pointer to a vector,
+	use build_qualified_type to retain qualifiers of the base type.
+
 2007-08-17  Chen Liqin  <liqin@sunnorth.com.cn>
+
         * config/score/score.md : Update pattern tablejump.
         * config/score/score.c : Update score_initialize_trampoline 
         function.

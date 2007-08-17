@@ -7609,10 +7609,7 @@ reconstruct_complex_type (tree type, tree bottom)
   else
     return bottom;
 
-  TYPE_READONLY (outer) = TYPE_READONLY (type);
-  TYPE_VOLATILE (outer) = TYPE_VOLATILE (type);
-
-  return outer;
+  return build_qualified_type (outer, TYPE_QUALS (type));
 }
 
 /* Returns a vector tree node given a mode (integer, vector, or BLKmode) and
