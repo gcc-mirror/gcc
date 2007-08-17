@@ -1,3 +1,9 @@
+2007-08-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c++/28989
+	* tree.c (lvalue_p_1 <case SAVE_EXPR>): SAVE_EXPRs are never
+	lvalues.
+
 2007-08-17  Ollie Wild  <aaw@google.com>
 
 	PR c++/31749
