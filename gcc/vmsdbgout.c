@@ -1150,7 +1150,8 @@ write_srccorr (int fileid, dst_file_info_entry file_info_entry,
     (src_command.dst_a_src_cmd_fields.dst_a_src_decl_src.dst_b_src_df_filename,
      "source_corr (filename length)", dosizeonly);
 
-  totsize += write_debug_string (file_info_entry.file_name,
+  totsize += write_debug_string (remap_debug_filename (
+				    file_info_entry.file_name),
 				 "source file name", dosizeonly);
   totsize += write_debug_data1 (src_cmdtrlr.dst_b_src_df_libmodname,
 				"source_corr (libmodname)", dosizeonly);

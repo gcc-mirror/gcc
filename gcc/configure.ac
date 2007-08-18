@@ -3068,6 +3068,12 @@ if test x"$insn" != x; then
    fi],
   [AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gstabs option.])])
+
+ gcc_GAS_CHECK_FEATURE([--debug-prefix-map option],
+  gcc_cv_as_debug_prefix_map_flag,
+  [2,19,0], [--debug-prefix-map /a=/b], [$insn],,
+  [AC_DEFINE(HAVE_AS_DEBUG_PREFIX_MAP, 1,
+[Define if your assembler supports the --debug-prefix-map option.])])
 fi
 
 AC_CACHE_CHECK([assembler for tolerance to line number 0],

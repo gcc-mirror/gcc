@@ -10906,7 +10906,7 @@ add_comp_dir_attribute (dw_die_ref die)
 {
   const char *wd = get_src_pwd ();
   if (wd != NULL)
-    add_AT_string (die, DW_AT_comp_dir, wd);
+    add_AT_string (die, DW_AT_comp_dir, remap_debug_filename (wd));
 }
 
 /* Given a tree node describing an array bound (either lower or upper) output
@@ -14000,7 +14000,8 @@ maybe_emit_file (struct dwarf_file_data * fd)
       if (DWARF2_ASM_LINE_DEBUG_INFO)
 	{
 	  fprintf (asm_out_file, "\t.file %u ", fd->emitted_number);
-	  output_quoted_string (asm_out_file, fd->filename);
+	  output_quoted_string (asm_out_file,
+				remap_debug_filename (fd->filename));
 	  fputc ('\n', asm_out_file);
 	}
     }
@@ -14167,7 +14168,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
       dw_die_ref bincl_die;
 
       bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die, NULL);
-      add_AT_string (bincl_die, DW_AT_name, filename);
+      add_AT_string (bincl_die, DW_AT_name, remap_debug_filename (filename));
     }
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
@@ -14626,7 +14627,7 @@ file_table_relative_p (void ** slot, void *param)
 {
   bool *p = param;
   struct dwarf_file_data *d = *slot;
-  if (d->emitted_number && !IS_ABSOLUTE_PATH (d->filename))
+  if (!IS_ABSOLUTE_PATH (d->filename))
     {
       *p = true;
       return 0;
@@ -14645,7 +14646,7 @@ dwarf2out_finish (const char *filename)
 
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
-  add_name_attribute (comp_unit_die, filename);
+  add_name_attribute (comp_unit_die, remap_debug_filename (filename));
   if (!IS_ABSOLUTE_PATH (filename))
     add_comp_dir_attribute (comp_unit_die);
   else if (get_AT (comp_unit_die, DW_AT_comp_dir) == NULL)

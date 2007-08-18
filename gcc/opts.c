@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "debug.h"
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 unsigned HOST_WIDE_INT g_switch_value;
@@ -1529,6 +1530,10 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fdbg_cnt_list:
       dbg_cnt_list_all_counters ();
+      break;
+
+    case OPT_fdebug_prefix_map_:
+      add_debug_prefix_map (arg);
       break;
 
     case OPT_fdiagnostics_show_location_:

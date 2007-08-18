@@ -1345,6 +1345,11 @@ GCC, you can explicitly specify the directory where they are installed
 shorthand assumptions are not correct, you can use the explicit
 include and lib options directly.
 
+@item --with-debug-prefix-map=@var{map}
+Convert source directory names using @option{-fdebug-prefix-map} when
+building runtime libraries.  @samp{@var{map}} is a space-separated
+list of maps of the form @samp{@var{old}=@var{new}}.
+
 @end table
 
 @subheading Cross-Compiler-Specific Options

@@ -1,3 +1,12 @@
+2007-08-18  Paul Brook  <paul@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.tpl (DEBUG_PREFIX_CFLAGS_FOR_TARGET): New.
+	(CFLAGS_FOR_TARGET, CXXFLAGS_FOR_TARGET): Include it.
+	* Makefile.in: Regenerate.
+	* configure.ac (--with-debug-prefix-map): New.
+	* configure: Regenerate.
+
 2007-08-17  Richard Sandiford  <richard@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 
