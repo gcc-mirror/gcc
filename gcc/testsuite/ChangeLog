@@ -1,3 +1,8 @@
+2007-08-18  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/32974:
+	* gcc.dg/cpp/pr32974.c: New file.
+
 2007-08-17  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/interface_abstract_1.f90: New.

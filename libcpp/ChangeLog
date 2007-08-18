@@ -1,3 +1,9 @@
+2007-08-18  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/32974:
+	* directives.c (parse_include): Don't check for EOL when
+	processing #pragma dependency.
+
 2007-07-30  Ollie Wild  <aaw@google.com>
 
 	* directives-only.c: New file.
