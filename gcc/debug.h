@@ -167,4 +167,7 @@ extern void debug_free_queue (void);
 extern int debug_nesting;
 extern int symbol_queue_index;
 
+const char *remap_debug_filename (const char *);
+void add_debug_prefix_map (const char *);
+
 #endif /* !GCC_DEBUG_H  */

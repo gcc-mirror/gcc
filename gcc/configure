@@ -16179,6 +16179,43 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
+ echo "$as_me:$LINENO: checking assembler for --debug-prefix-map option" >&5
+echo $ECHO_N "checking assembler for --debug-prefix-map option... $ECHO_C" >&6
+if test "${gcc_cv_as_debug_prefix_map_flag+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_debug_prefix_map_flag=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 0`
+  then gcc_cv_as_debug_prefix_map_flag=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo "$insn" > conftest.s
+    if { ac_try='$gcc_cv_as --debug-prefix-map /a=/b -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_debug_prefix_map_flag=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_debug_prefix_map_flag" >&5
+echo "${ECHO_T}$gcc_cv_as_debug_prefix_map_flag" >&6
+if test $gcc_cv_as_debug_prefix_map_flag = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_DEBUG_PREFIX_MAP 1
+_ACEOF
+
+fi
 fi
 
 echo "$as_me:$LINENO: checking assembler for tolerance to line number 0" >&5

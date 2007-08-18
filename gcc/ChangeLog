@@ -1,3 +1,30 @@
+2007-08-18  Paul Brook  <paul@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (-fdebug-prefix-map=): New option.
+	* opts.c: Include debug.h.
+	(common_handle_option): Handle -fdebug-prefix-map.
+	* final.c: Include ggc.h.
+	(struct debug_prefix_map, debug_prefix_maps, add_debug_prefix_map,
+	remap_debug_filename): New.
+	* Makefile.in (final.o, opts.o): Update dependencies.
+	* debug.h (remap_debug_filename, add_debug_prefix_map): Declare.
+	* configure.ac: Check for assembler --debug-prefix-map support.
+	* configure, config.in: Regenerate.
+	* gcc.c (ASM_MAP): Define conditional on HAVE_AS_DEBUG_PREFIX_MAP.
+	(ASM_DEBUG_SPEC): Include ASM_MAP.
+	* doc/install.texi (--with-debug-prefix-map): Document.
+	* doc/invoke.texi (-fdebug-prefix-map): Document.
+	* dbxout.c (dbxout_init, dbxout_start_source_file,
+	dbxout_source_file): Call remap_debug_filename.
+	* dwarf2out.c (add_comp_dir_attribute, maybe_emit_file,
+	dwarf2out_start_source_file, dwarf2out_finish): Call
+	remap_debug_filename.
+	(file_table_relative_p): Do not check d->emitted_number.
+	* toplev.c (output_file_directive): Call remap_debug_filename.
+	* vmsdbgout.c (write_srccorr): Call remap_debug_filename.
+	* xcoffout.c (xcoffout_source_file): Call remap_debug_filename.
+
 2007-08-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* loop-invariant.c (find_invariants_to_move): Add missing macro

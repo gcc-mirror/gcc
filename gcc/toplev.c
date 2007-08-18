@@ -694,6 +694,8 @@ output_file_directive (FILE *asm_file, const char *input_name)
 
   if (input_name == NULL)
     input_name = "<stdin>";
+  else
+    input_name = remap_debug_filename (input_name);
 
   len = strlen (input_name);
   na = input_name + len;

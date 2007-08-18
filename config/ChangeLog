@@ -1,3 +1,9 @@
+2007-08-18  Paul Brook  <paul@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* mt-gnu (CXXFLAGS_FOR_TARGET): Add
+	$(DEBUG_PREFIX_CFLAGS_FOR_TARGET).
+
 2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* tls.m4 (GCC_CHECK_CC_TLS): New.
