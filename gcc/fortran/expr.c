@@ -2749,7 +2749,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
   is_pure = gfc_pure (NULL);
 
-  if (is_pure && gfc_impure_variable (lvalue->symtree->n.sym))
+  if (is_pure && gfc_impure_variable (lvalue->symtree->n.sym)
+	&& lvalue->symtree->n.sym->value != rvalue)
     {
       gfc_error ("Bad pointer object in PURE procedure at %L", &lvalue->where);
       return FAILURE;
