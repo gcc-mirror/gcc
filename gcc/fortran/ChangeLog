@@ -1,3 +1,9 @@
+2007-08-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/32875
+	* trans-array.c	(get_array_ctor_strlen): Set the character
+	length of a zero length array to zero.
+
 2007-08-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33072
