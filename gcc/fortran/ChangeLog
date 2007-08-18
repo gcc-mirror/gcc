@@ -1,5 +1,11 @@
 2007-08-18  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/32881
+	* expr.c (gfc_check_pointer_assign): If the rhs is the
+	initialization expression for the rhs, there is no error.
+
+2007-08-18  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/32875
 	* trans-array.c	(get_array_ctor_strlen): Set the character
 	length of a zero length array to zero.
