@@ -1,3 +1,9 @@
+2007-08-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32112
+	* error.c (dump_decl): Deal with UNBOUND_CLASS_TEMPLATE.
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Likewise.
+
 2007-08-10  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/17763
