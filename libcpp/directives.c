@@ -698,7 +698,11 @@ parse_include (cpp_reader *pfile, int *pangle_brackets,
       return NULL;
     }
 
-  if (buf == NULL || CPP_OPTION (pfile, discard_comments))
+  if (pfile->directive == &dtable[T_PRAGMA])
+    {
+      /* This pragma allows extra tokens after the file name.  */
+    }
+  else if (buf == NULL || CPP_OPTION (pfile, discard_comments))
     check_eol (pfile);
   else
     {
