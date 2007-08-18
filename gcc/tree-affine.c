@@ -719,3 +719,48 @@ aff_combination_constant_multiple_p (aff_tree *val, aff_tree *div,
   gcc_assert (mult_set);
   return true;
 }
+
+/* Prints the affine VAL to the FILE. */
+
+void
+print_aff (FILE *file, aff_tree *val)
+{
+  unsigned i;
+  bool uns = TYPE_UNSIGNED (val->type);
+  if (POINTER_TYPE_P (val->type))
+    uns = false;
+  fprintf (file, "{\n  type = ");
+  print_generic_expr (file, val->type, TDF_VOPS|TDF_MEMSYMS);
+  fprintf (file, "\n  offset = ");
+  dump_double_int (file, val->offset, uns);
+  if (val->n > 0)
+    {
+      fprintf (file, "\n  elements = {\n");
+      for (i = 0; i < val->n; i++)
+	{
+	  fprintf (file, "    [%d] = ", i);
+	  print_generic_expr (file, val->elts[i].val, TDF_VOPS|TDF_MEMSYMS);
+	  
+	  fprintf (file, " * ");
+	  dump_double_int (file, val->elts[i].coef, uns);
+	  if (i != val->n - 1)
+	    fprintf (file, ", \n");
+	}
+      fprintf (file, "\n  }");
+  }
+  if (val->rest)
+    {
+      fprintf (file, "\n  rest = ");
+      print_generic_expr (file, val->rest, TDF_VOPS|TDF_MEMSYMS);
+    }
+  fprintf (file, "\n}");
+}
+
+/* Prints the affine VAL to the standard error, used for debugging.  */
+
+void
+debug_aff (aff_tree *val)
+{
+  print_aff (stderr, val);
+  fprintf (stderr, "\n");
+}
