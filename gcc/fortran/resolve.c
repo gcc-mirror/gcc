@@ -1968,6 +1968,13 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
+  if (sym && sym->attr.abstract)
+    {
+      gfc_error ("ABSTRACT INTERFACE '%s' must not be referenced at %L",
+		 sym->name, &expr->where);
+      return FAILURE;
+    }
+
   /* If the procedure is external, check for usage.  */
   if (sym && is_external_proc (sym))
     resolve_global_procedure (sym, &expr->where, 0);

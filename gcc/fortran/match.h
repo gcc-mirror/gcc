@@ -195,6 +195,7 @@ match gfc_match_array_ref (gfc_array_ref *, gfc_array_spec *, int);
 match gfc_match_array_constructor (gfc_expr **);
 
 /* interface.c.  */
+match gfc_match_abstract_interface (void);
 match gfc_match_generic_spec (interface_type *, char *, gfc_intrinsic_op *);
 match gfc_match_interface (void);
 match gfc_match_end_interface (void);
