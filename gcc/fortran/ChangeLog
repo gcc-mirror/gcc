@@ -1,4 +1,21 @@
 2007-08-18  Paul Thomas  <pault@gcc.gnu.org>
+	    Janus Weil  <jaydub66@gmail.com>
+
+	* interface.c (gfc_match_interface,gfc_match_abstract_interface,
+	gfc_match_end_interface,gfc_add_interface): Add abstract interface.
+	* dump-parse-tree.c (gfc_show_attr): Ditto.
+	* gfortran.h (interface_type,symbol_attribute): Ditto.
+	* module.c (gfc_match_use,ab_attribute,attr_bits,
+	mio_symbol_attribute): Ditto.
+	* resolve.c (resolve_function): Ditto.
+	* match.h: Ditto.
+	* parse.c (decode_statement): Ditto.
+	(parse_interface): Ditto, check for C1203 (name of abstract interface
+	cannot be the same as an intrinsic type).
+	* decl.c (gfc_match_bind_c): Check for NAME= with abstract interfaces.
+	(access_attr_decl): Handle Abstract interfaces.
+
+2007-08-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32881
 	* expr.c (gfc_check_pointer_assign): If the rhs is the

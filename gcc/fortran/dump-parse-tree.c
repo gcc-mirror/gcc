@@ -591,6 +591,8 @@ gfc_show_attr (symbol_attribute *attr)
   if (attr->in_common)
     gfc_status (" IN-COMMON");
 
+  if (attr->abstract)
+    gfc_status (" ABSTRACT INTERFACE");
   if (attr->function)
     gfc_status (" FUNCTION");
   if (attr->subroutine)

@@ -260,7 +260,7 @@ gfc_statement;
 typedef enum
 {
   INTERFACE_NAMELESS = 1, INTERFACE_GENERIC,
-  INTERFACE_INTRINSIC_OP, INTERFACE_USER_OP
+  INTERFACE_INTRINSIC_OP, INTERFACE_USER_OP, INTERFACE_ABSTRACT
 }
 interface_type;
 
@@ -658,7 +658,7 @@ typedef struct
 
   /* Function/subroutine attributes */
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
-  unsigned unmaskable:1, masked:1, contained:1, mod_proc:1;
+  unsigned unmaskable:1, masked:1, contained:1, mod_proc:1, abstract:1;
 
   /* This is set if the subroutine doesn't return.  Currently, this
      is only possible for intrinsic subroutines.  */

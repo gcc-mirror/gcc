@@ -175,7 +175,8 @@ syntax:
 }
 
 
-/* Match one of the five forms of an interface statement.  */
+/* Match one of the five F95 forms of an interface statement.  The
+   matcher for the abstract interface follows.  */
 
 match
 gfc_match_interface (void)
@@ -232,10 +233,37 @@ gfc_match_interface (void)
       break;
 
     case INTERFACE_NAMELESS:
+    case INTERFACE_ABSTRACT:
       break;
     }
 
   return MATCH_YES;
+}
+
+
+
+/* Match a F2003 abstract interface.  */
+
+match
+gfc_match_abstract_interface (void)
+{
+  match m;
+
+  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ABSTRACT INTERFACE at %C")
+		      == FAILURE)
+    return MATCH_ERROR;
+
+  m = gfc_match_eos ();
+
+  if (m != MATCH_YES)
+    {
+      gfc_error ("Syntax error in ABSTRACT INTERFACE statement at %C");
+      return MATCH_ERROR;
+    }
+
+  current_interface.type = INTERFACE_ABSTRACT;
+
+  return m;
 }
 
 
@@ -270,7 +298,8 @@ gfc_match_end_interface (void)
   switch (current_interface.type)
     {
     case INTERFACE_NAMELESS:
-      if (type != current_interface.type)
+    case INTERFACE_ABSTRACT:
+      if (type != INTERFACE_NAMELESS)
 	{
 	  gfc_error ("Expected a nameless interface at %C");
 	  m = MATCH_ERROR;
@@ -2449,6 +2478,7 @@ gfc_add_interface (gfc_symbol *new)
   switch (current_interface.type)
     {
     case INTERFACE_NAMELESS:
+    case INTERFACE_ABSTRACT:
       return SUCCESS;
 
     case INTERFACE_INTRINSIC_OP:

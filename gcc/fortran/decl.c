@@ -4182,7 +4182,13 @@ gfc_match_bind_c (gfc_symbol *sym)
       if (sym != NULL && sym->name != NULL && has_name_equals == 0)
 	strncpy (sym->binding_label, sym->name, strlen (sym->name) + 1);
     }
-	      
+
+  if (has_name_equals && current_interface.type == INTERFACE_ABSTRACT)
+    {
+      gfc_error ("NAME not allowed on BIND(C) for ABSTRACT INTERFACE at %C");
+      return MATCH_ERROR;
+    }
+
   return MATCH_YES;
 }
 
@@ -4842,6 +4848,7 @@ access_attr_decl (gfc_statement st)
       switch (type)
 	{
 	case INTERFACE_NAMELESS:
+	case INTERFACE_ABSTRACT:
 	  goto syntax;
 
 	case INTERFACE_GENERIC:

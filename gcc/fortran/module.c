@@ -599,6 +599,7 @@ gfc_match_use (void)
       switch (type)
 	{
 	case INTERFACE_NAMELESS:
+	case INTERFACE_ABSTRACT:
 	  gfc_error ("Missing generic specification in USE statement at %C");
 	  goto cleanup;
 
@@ -1519,7 +1520,7 @@ typedef enum
   AB_ELEMENTAL, AB_PURE, AB_RECURSIVE, AB_GENERIC, AB_ALWAYS_EXPLICIT,
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
-  AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C
+  AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT
 }
 ab_attribute;
 
@@ -1557,6 +1558,7 @@ static const mstring attr_bits[] =
     minit ("POINTER_COMP", AB_POINTER_COMP),
     minit ("PRIVATE_COMP", AB_PRIVATE_COMP),
     minit ("PROTECTED", AB_PROTECTED),
+    minit ("ABSTRACT", AB_ABSTRACT),
     minit (NULL, -1)
 };
 
@@ -1639,6 +1641,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_SUBROUTINE, attr_bits);
       if (attr->generic)
 	MIO_NAME (ab_attribute) (AB_GENERIC, attr_bits);
+      if (attr->abstract)
+	MIO_NAME (ab_attribute) (AB_ABSTRACT, attr_bits);
 
       if (attr->sequence)
 	MIO_NAME (ab_attribute) (AB_SEQUENCE, attr_bits);
@@ -1738,6 +1742,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_GENERIC:
 	      attr->generic = 1;
+	      break;
+	    case AB_ABSTRACT:
+	      attr->abstract = 1;
 	      break;
 	    case AB_SEQUENCE:
 	      attr->sequence = 1;
