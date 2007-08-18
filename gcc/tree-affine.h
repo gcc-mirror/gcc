@@ -74,3 +74,7 @@ bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *, double_int *);
 void tree_to_aff_combination_expand (tree, tree, aff_tree *,
 				     struct pointer_map_t **);
 void free_affine_expand_cache (struct pointer_map_t **);
+
+/* Debugging functions.  */
+void print_aff (FILE *, aff_tree *);
+void debug_aff (aff_tree *);

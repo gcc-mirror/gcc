@@ -1,3 +1,10 @@
+2007-08-18  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree-affine.h (print_aff): New prototype.
+	(debug_aff): Likewise.
+	* tree-affine.c (print_aff): New function.
+	(debug_aff): Likewise.
+
 2007-08-18  Paul Brook  <paul@codesourcery.com>
             Joseph Myers  <joseph@codesourcery.com>
 
