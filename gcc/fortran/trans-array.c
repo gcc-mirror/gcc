@@ -1421,6 +1421,13 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
   bool is_const;
   
   is_const = TRUE;
+
+  if (c == NULL)
+    {
+      *len = build_int_cstu (gfc_charlen_type_node, 0);
+      return is_const;
+    }
+
   for (; c; c = c->next)
     {
       switch (c->expr->expr_type)
