@@ -204,6 +204,10 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       pp_cxx_unqualified_id (pp, TEMPLATE_PARM_DECL (t));
       break;
 
+    case UNBOUND_CLASS_TEMPLATE:
+      pp_cxx_unqualified_id (pp, TYPE_NAME (t));
+      break;
+
     default:
       pp_unsupported_tree (pp, t);
       break;

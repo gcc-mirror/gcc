@@ -1,3 +1,8 @@
+2007-08-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32112
+	* g++.dg/template/error26.C: New.
+
 2007-08-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32190

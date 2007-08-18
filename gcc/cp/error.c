@@ -901,6 +901,10 @@ dump_decl (tree t, int flags)
 	pp_type_id (cxx_pp, t);
       break;
 
+    case UNBOUND_CLASS_TEMPLATE:
+      dump_type (t, flags);
+      break;
+
     default:
       pp_unsupported_tree (cxx_pp, t);
       /* Fall through to error.  */
