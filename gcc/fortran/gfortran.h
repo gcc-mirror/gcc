@@ -2056,6 +2056,7 @@ try gfc_add_new_implicit_range (int, int);
 try gfc_merge_new_implicit (gfc_typespec *);
 void gfc_set_implicit_none (void);
 void gfc_check_function_type (gfc_namespace *);
+bool gfc_is_intrinsic_typename (const char *);
 
 gfc_typespec *gfc_get_default_type (gfc_symbol *, gfc_namespace *);
 try gfc_set_default_type (gfc_symbol *, int, gfc_namespace *);

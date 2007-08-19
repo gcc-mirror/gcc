@@ -5468,17 +5468,8 @@ gfc_match_derived_decl (void)
   if (m != MATCH_YES)
     return m;
 
-  /* Make sure the name isn't the name of an intrinsic type.  The
-     'double {precision,complex}' types don't get past the name
-     matcher, unless they're written as a single word or in fixed
-     form.  */
-  if (strcmp (name, "integer") == 0
-      || strcmp (name, "real") == 0
-      || strcmp (name, "character") == 0
-      || strcmp (name, "logical") == 0
-      || strcmp (name, "complex") == 0
-      || strcmp (name, "doubleprecision") == 0
-      || strcmp (name, "doublecomplex") == 0)
+  /* Make sure the name is not the name of an intrinsic type.  */
+  if (gfc_is_intrinsic_typename (name))
     {
       gfc_error ("Type name '%s' at %C cannot be the same as an intrinsic "
 		 "type", name);

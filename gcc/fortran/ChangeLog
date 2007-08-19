@@ -1,3 +1,13 @@
+2007-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_is_intrinsic_typename): Add declaration.
+	* symbol.c (gfc_is_intrinsic_typename): New function.
+	* parse.c (decode_statement): Check for space in ABSTRACT INTERFACE.
+	(parse_interface): Use gfc_is_intrinsic_typename.
+	* decl.c (gfc_match_derived_decl): Ditto.
+	* module.c (gfc_match_use): Use gcc_unreachable() for
+	INTERFACE_ABSTRACT in switch().
+
 2007-08-18  Roger Sayle  <roger@eyesopen.com>
 
 	* primary.c (match_logical_constant_string): New function to match

@@ -172,7 +172,8 @@ decode_statement (void)
   switch (c)
     {
     case 'a':
-      match ("abstract interface", gfc_match_abstract_interface, ST_INTERFACE);
+      match ("abstract% interface", gfc_match_abstract_interface,
+	     ST_INTERFACE);
       match ("allocate", gfc_match_allocate, ST_ALLOCATE);
       match ("allocatable", gfc_match_allocatable, ST_ATTR_DECL);
       match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT);
@@ -1799,13 +1800,10 @@ loop:
   if (current_interface.type == INTERFACE_ABSTRACT)
     {
       gfc_new_block->attr.abstract = 1;
-      if (!strcmp(gfc_new_block->name,"integer")
-	  || !strcmp(gfc_new_block->name,"real")
-	  || !strcmp(gfc_new_block->name,"complex")
-	  || !strcmp(gfc_new_block->name,"character")
-	  || !strcmp(gfc_new_block->name,"logical"))
-	gfc_error ("Name of ABSTRACT INTERFACE at %C cannot be the same as "
-		   "an intrinsic type: %s",gfc_new_block->name);
+      if (gfc_is_intrinsic_typename (gfc_new_block->name))
+	gfc_error ("Name '%s' of ABSTRACT INTERFACE at %C "
+		   "cannot be the same as an intrinsic type",
+		   gfc_new_block->name);
     }
 
   push_state (&s2, new_state, gfc_new_block);

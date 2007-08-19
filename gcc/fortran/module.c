@@ -599,7 +599,6 @@ gfc_match_use (void)
       switch (type)
 	{
 	case INTERFACE_NAMELESS:
-	case INTERFACE_ABSTRACT:
 	  gfc_error ("Missing generic specification in USE statement at %C");
 	  goto cleanup;
 
@@ -659,6 +658,9 @@ gfc_match_use (void)
 	case INTERFACE_INTRINSIC_OP:
 	  new->operator = operator;
 	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
 
       if (gfc_match_eos () == MATCH_YES)
