@@ -1279,6 +1279,8 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 {
   tree stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);  
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree ref = DR_REF (dr);
   tree vectype;
   tree base, base_addr;
@@ -1295,13 +1297,42 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   misalign = DR_INIT (dr);
   aligned_to = DR_ALIGNED_TO (dr);
   base_addr = DR_BASE_ADDRESS (dr);
+
+  /* In case the dataref is in an inner-loop of the loop that is being
+     vectorized (LOOP), we use the base and misalignment information
+     relative to the outer-loop (LOOP). This is ok only if the misalignment
+     stays the same throughout the execution of the inner-loop, which is why
+     we have to check that the stride of the dataref in the inner-loop evenly
+     divides by the vector size.  */
+  if (nested_in_vect_loop_p (loop, stmt))
+    {
+      tree step = DR_STEP (dr);
+      HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+    
+      if (dr_step % UNITS_PER_SIMD_WORD == 0)
+        {
+          if (vect_print_dump_info (REPORT_ALIGNMENT))
+            fprintf (vect_dump, "inner step divides the vector-size.");
+	  misalign = STMT_VINFO_DR_INIT (stmt_info);
+	  aligned_to = STMT_VINFO_DR_ALIGNED_TO (stmt_info);
+	  base_addr = STMT_VINFO_DR_BASE_ADDRESS (stmt_info);
+        }
+      else
+	{
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+	    fprintf (vect_dump, "inner step doesn't divide the vector-size.");
+	  misalign = NULL_TREE;
+	}
+    }
+
   base = build_fold_indirect_ref (base_addr);
   vectype = STMT_VINFO_VECTYPE (stmt_info);
   alignment = ssize_int (TYPE_ALIGN (vectype)/BITS_PER_UNIT);
 
-  if (tree_int_cst_compare (aligned_to, alignment) < 0)
+  if ((aligned_to && tree_int_cst_compare (aligned_to, alignment) < 0)
+      || !misalign)
     {
-      if (vect_print_dump_info (REPORT_DETAILS))
+      if (vect_print_dump_info (REPORT_ALIGNMENT))
 	{
 	  fprintf (vect_dump, "Unknown alignment for access: ");
 	  print_generic_expr (vect_dump, base, TDF_SLIM);
@@ -1980,20 +2011,39 @@ static bool
 vect_analyze_data_ref_access (struct data_reference *dr)
 {
   tree step = DR_STEP (dr);
-  HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
   tree scalar_type = TREE_TYPE (DR_REF (dr));
   HOST_WIDE_INT type_size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
   tree stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+  HOST_WIDE_INT stride;
+
+  /* Don't allow invariant accesses.  */
+  if (dr_step == 0)
+    return false; 
+
+  if (nested_in_vect_loop_p (loop, stmt))
+    {
+      /* For the rest of the analysis we use the outer-loop step.  */
+      step = STMT_VINFO_DR_STEP (stmt_info);
+      dr_step = TREE_INT_CST_LOW (step);
+      
+      if (dr_step == 0)
+	{
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+	    fprintf (vect_dump, "zero step in outer loop.");
+	  if (DR_IS_READ (dr))
+  	    return true; 
+	  else
+	    return false;
+	}
+    }
+    
   /* For interleaving, STRIDE is STEP counted in elements, i.e., the size of the 
      interleaving group (including gaps).  */
-  HOST_WIDE_INT stride = dr_step / type_size;
-
-  if (!step)
-    {
-      if (vect_print_dump_info (REPORT_DETAILS))
-	fprintf (vect_dump, "bad data-ref access");
-      return false;
-    }
+  stride = dr_step / type_size; 
 
   /* Consecutive?  */
   if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type)))
@@ -2001,6 +2051,13 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       /* Mark that it is not interleaving.  */
       DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) = NULL_TREE;
       return true;
+    }
+
+  if (nested_in_vect_loop_p (loop, stmt))
+    {
+      if (vect_print_dump_info (REPORT_ALIGNMENT))
+	fprintf (vect_dump, "strided access in outer loop.");
+      return false;
     }
 
   /* Not consecutive access is possible only if it is a part of interleaving.  */
@@ -2231,6 +2288,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
       tree stmt;
       stmt_vec_info stmt_info;
       basic_block bb;
+      tree base, offset, init;	
    
       if (!dr || !DR_REF (dr))
         {
@@ -2238,36 +2296,13 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	    fprintf (vect_dump, "not vectorized: unhandled data-ref ");
           return false;
         }
- 
-      /* Update DR field in stmt_vec_info struct.  */
+
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
 
-      /* If outer-loop vectorization: we don't yet support datarefs
-	 in the innermost loop.  */
-      bb = bb_for_stmt (stmt);
-      if (bb->loop_father != LOOP_VINFO_LOOP (loop_vinfo))
-	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-	    fprintf (vect_dump, "not vectorized: data-ref in nested loop");
-	  return false;
-	}
-
-      if (STMT_VINFO_DATA_REF (stmt_info))
-        {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-            {
-              fprintf (vect_dump,
-                       "not vectorized: more than one data ref in stmt: ");
-              print_generic_expr (vect_dump, stmt, TDF_SLIM);
-            }
-          return false;
-        }
-      STMT_VINFO_DATA_REF (stmt_info) = dr;
-     
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
-          || !DR_STEP (dr))   
+          || !DR_STEP (dr))
         {
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
             {
@@ -2294,7 +2329,127 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
             }
           return false;
         }
-                       
+
+      base = unshare_expr (DR_BASE_ADDRESS (dr));
+      offset = unshare_expr (DR_OFFSET (dr));
+      init = unshare_expr (DR_INIT (dr));
+	
+      /* Update DR field in stmt_vec_info struct.  */
+      bb = bb_for_stmt (stmt);
+
+      /* If the dataref is in an inner-loop of the loop that is considered for
+	 for vectorization, we also want to analyze the access relative to
+	 the outer-loop (DR contains information only relative to the 
+	 inner-most enclosing loop).  We do that by building a reference to the
+	 first location accessed by the inner-loop, and analyze it relative to
+	 the outer-loop.  */ 	
+      if (nested_in_vect_loop_p (loop, stmt)) 
+	{
+	  tree outer_step, outer_base, outer_init;
+	  HOST_WIDE_INT pbitsize, pbitpos;
+	  tree poffset;
+	  enum machine_mode pmode;
+	  int punsignedp, pvolatilep;
+	  affine_iv base_iv, offset_iv;
+	  tree dinit;
+
+	  /* Build a reference to the first location accessed by the 
+	     inner-loop: *(BASE+INIT). (The first location is actually
+	     BASE+INIT+OFFSET, but we add OFFSET separately later.  */
+	  tree inner_base = build_fold_indirect_ref 
+				(fold_build2 (PLUS_EXPR, TREE_TYPE (base), base, init));
+
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    {
+	      fprintf (dump_file, "analyze in outer-loop: ");
+	      print_generic_expr (dump_file, inner_base, TDF_SLIM);
+	    }
+
+	  outer_base = get_inner_reference (inner_base, &pbitsize, &pbitpos, 
+		          &poffset, &pmode, &punsignedp, &pvolatilep, false);
+	  gcc_assert (outer_base != NULL_TREE);
+
+	  if (pbitpos % BITS_PER_UNIT != 0)
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (dump_file, "failed: bit offset alignment.\n");
+	      return false;
+	    }
+
+	  outer_base = build_fold_addr_expr (outer_base);
+	  if (!simple_iv (loop, stmt, outer_base, &base_iv, false))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (dump_file, "failed: evolution of base is not affine.\n");
+	      return false;
+	    }
+
+	  if (offset)
+	    {
+	      if (poffset)
+		poffset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, poffset);
+	      else
+		poffset = offset;
+	    }
+
+	  if (!poffset)
+	    {
+	      offset_iv.base = ssize_int (0);
+	      offset_iv.step = ssize_int (0);
+	    }
+	  else if (!simple_iv (loop, stmt, poffset, &offset_iv, false))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+	        fprintf (dump_file, "evolution of offset is not affine.\n");
+	      return false;
+	    }
+
+	  outer_init = ssize_int (pbitpos / BITS_PER_UNIT);
+	  split_constant_offset (base_iv.base, &base_iv.base, &dinit);
+	  outer_init =  size_binop (PLUS_EXPR, outer_init, dinit);
+	  split_constant_offset (offset_iv.base, &offset_iv.base, &dinit);
+	  outer_init =  size_binop (PLUS_EXPR, outer_init, dinit);
+
+	  outer_step = size_binop (PLUS_EXPR,
+				fold_convert (ssizetype, base_iv.step),
+				fold_convert (ssizetype, offset_iv.step));
+
+	  STMT_VINFO_DR_STEP (stmt_info) = outer_step;
+	  /* FIXME: Use canonicalize_base_object_address (base_iv.base); */
+	  STMT_VINFO_DR_BASE_ADDRESS (stmt_info) = base_iv.base; 
+	  STMT_VINFO_DR_INIT (stmt_info) = outer_init;
+	  STMT_VINFO_DR_OFFSET (stmt_info) = 
+				fold_convert (ssizetype, offset_iv.base);
+	  STMT_VINFO_DR_ALIGNED_TO (stmt_info) = 
+				size_int (highest_pow2_factor (offset_iv.base));
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\touter base_address: ");
+	      print_generic_expr (dump_file, STMT_VINFO_DR_BASE_ADDRESS (stmt_info), TDF_SLIM);
+	      fprintf (dump_file, "\n\touter offset from base address: ");
+	      print_generic_expr (dump_file, STMT_VINFO_DR_OFFSET (stmt_info), TDF_SLIM);
+	      fprintf (dump_file, "\n\touter constant offset from base address: ");
+	      print_generic_expr (dump_file, STMT_VINFO_DR_INIT (stmt_info), TDF_SLIM);
+	      fprintf (dump_file, "\n\touter step: ");
+	      print_generic_expr (dump_file, STMT_VINFO_DR_STEP (stmt_info), TDF_SLIM);
+	      fprintf (dump_file, "\n\touter aligned to: ");
+	      print_generic_expr (dump_file, STMT_VINFO_DR_ALIGNED_TO (stmt_info), TDF_SLIM);
+	    }
+	}
+
+      if (STMT_VINFO_DATA_REF (stmt_info))
+        {
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+            {
+              fprintf (vect_dump,
+                       "not vectorized: more than one data ref in stmt: ");
+              print_generic_expr (vect_dump, stmt, TDF_SLIM);
+            }
+          return false;
+        }
+      STMT_VINFO_DATA_REF (stmt_info) = dr;
+     
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
       STMT_VINFO_VECTYPE (stmt_info) =

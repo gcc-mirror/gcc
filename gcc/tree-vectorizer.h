@@ -53,7 +53,8 @@ enum operation_type {
 enum dr_alignment_support {
   dr_unaligned_unsupported,
   dr_unaligned_supported,
-  dr_unaligned_software_pipeline,
+  dr_explicit_realign,
+  dr_explicit_realign_optimized,
   dr_aligned
 };
 
@@ -249,8 +250,17 @@ typedef struct _stmt_vec_info {
      data-ref (array/pointer/struct access). A GIMPLE stmt is expected to have 
      at most one such data-ref.  **/
 
-  /* Information about the data-ref (access function, etc).  */
+  /* Information about the data-ref (access function, etc),
+     relative to the inner-most containing loop.  */
   struct data_reference *data_ref_info;
+
+  /* Information about the data-ref relative to this loop
+     nest (the loop that is being considered for vectorization).  */
+  tree dr_base_address;
+  tree dr_init;
+  tree dr_offset;
+  tree dr_step;
+  tree dr_aligned_to;
 
   /* Stmt is part of some pattern (computation idiom)  */
   bool in_pattern_p;
@@ -310,6 +320,13 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VECTYPE(S)              (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)             (S)->vectorized_stmt
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
+
+#define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
+#define STMT_VINFO_DR_INIT(S)              (S)->dr_init
+#define STMT_VINFO_DR_OFFSET(S)            (S)->dr_offset
+#define STMT_VINFO_DR_STEP(S)              (S)->dr_step
+#define STMT_VINFO_DR_ALIGNED_TO(S)        (S)->dr_aligned_to
+
 #define STMT_VINFO_IN_PATTERN_P(S)         (S)->in_pattern_p
 #define STMT_VINFO_RELATED_STMT(S)         (S)->related_stmt
 #define STMT_VINFO_SAME_ALIGN_REFS(S)      (S)->same_align_refs

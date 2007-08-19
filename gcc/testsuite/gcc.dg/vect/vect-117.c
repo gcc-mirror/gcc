@@ -20,7 +20,7 @@ static  int c[N][N] = {{ 1, 2, 3, 4, 5},
 
 volatile int foo;
 
-int main1 (int A[N][N]) 
+int main1 (int A[N][N], int n) 
 {
 
   int i,j;
@@ -28,7 +28,7 @@ int main1 (int A[N][N])
   /* vectorizable */
   for (i = 1; i < N; i++)
   {
-    for (j = 0; j < N; j++)
+    for (j = 0; j < n; j++)
     {
       A[i][j] = A[i-1][j] + A[i][j];
     }
@@ -42,7 +42,7 @@ int main (void)
   int i,j;
 
   foo = 0;
-  main1 (a);
+  main1 (a, N);
 
   /* check results: */
 

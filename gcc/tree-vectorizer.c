@@ -1345,6 +1345,13 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_IN_PATTERN_P (res) = false;
   STMT_VINFO_RELATED_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
+
+  STMT_VINFO_DR_BASE_ADDRESS (res) = NULL;
+  STMT_VINFO_DR_OFFSET (res) = NULL;
+  STMT_VINFO_DR_INIT (res) = NULL;
+  STMT_VINFO_DR_STEP (res) = NULL;
+  STMT_VINFO_DR_ALIGNED_TO (res) = NULL;
+
   if (TREE_CODE (stmt) == PHI_NODE && is_loop_header_bb_p (bb_for_stmt (stmt)))
     STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
   else
@@ -1655,21 +1662,103 @@ get_vectype_for_scalar_type (tree scalar_type)
 enum dr_alignment_support
 vect_supportable_dr_alignment (struct data_reference *dr)
 {
-  tree vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr)));
+  tree stmt = DR_STMT (dr);
+  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   enum machine_mode mode = (int) TYPE_MODE (vectype);
+  struct loop *vect_loop = LOOP_VINFO_LOOP (STMT_VINFO_LOOP_VINFO (stmt_info));
+  bool nested_in_vect_loop = nested_in_vect_loop_p (vect_loop, stmt);
+  bool invariant_in_outerloop = false;
 
   if (aligned_access_p (dr))
     return dr_aligned;
 
+  if (nested_in_vect_loop)
+    {
+      tree outerloop_step = STMT_VINFO_DR_STEP (stmt_info);
+      invariant_in_outerloop =
+	(tree_int_cst_compare (outerloop_step, size_zero_node) == 0);
+    }
+
   /* Possibly unaligned access.  */
+
+  /* We can choose between using the implicit realignment scheme (generating
+     a misaligned_move stmt) and the explicit realignment scheme (generating
+     aligned loads with a REALIGN_LOAD). There are two variants to the explicit
+     realignment scheme: optimized, and unoptimized.
+     We can optimize the realignment only if the step between consecutive
+     vector loads is equal to the vector size.  Since the vector memory
+     accesses advance in steps of VS (Vector Size) in the vectorized loop, it
+     is guaranteed that the misalignment amount remains the same throughout the
+     execution of the vectorized loop.  Therefore, we can create the
+     "realignment token" (the permutation mask that is passed to REALIGN_LOAD)
+     at the loop preheader.
+
+     However, in the case of outer-loop vectorization, when vectorizing a
+     memory access in the inner-loop nested within the LOOP that is now being
+     vectorized, while it is guaranteed that the misalignment of the
+     vectorized memory access will remain the same in different outer-loop
+     iterations, it is *not* guaranteed that is will remain the same throughout
+     the execution of the inner-loop.  This is because the inner-loop advances
+     with the original scalar step (and not in steps of VS).  If the inner-loop
+     step happens to be a multiple of VS, then the misalignment remaines fixed
+     and we can use the optimized realignment scheme.  For example:
+
+      for (i=0; i<N; i++)
+        for (j=0; j<M; j++)
+          s += a[i+j];
+
+     When vectorizing the i-loop in the above example, the step between
+     consecutive vector loads is 1, and so the misalignment does not remain
+     fixed across the execution of the inner-loop, and the realignment cannot
+     be optimized (as illustrated in the following pseudo vectorized loop):
+
+      for (i=0; i<N; i+=4)
+        for (j=0; j<M; j++){
+          vs += vp[i+j]; // misalignment of &vp[i+j] is {0,1,2,3,0,1,2,3,...}
+                         // when j is {0,1,2,3,4,5,6,7,...} respectively.
+                         // (assuming that we start from an aligned address).
+          }
+
+     We therefore have to use the unoptimized realignment scheme:
+
+      for (i=0; i<N; i+=4)
+          for (j=k; j<M; j+=4)
+          vs += vp[i+j]; // misalignment of &vp[i+j] is always k (assuming
+                           // that the misalignment of the initial address is
+                           // 0).
+
+     The loop can then be vectorized as follows:
+
+      for (k=0; k<4; k++){
+        rt = get_realignment_token (&vp[k]);
+        for (i=0; i<N; i+=4){
+          v1 = vp[i+k];
+          for (j=k; j<M; j+=4){
+            v2 = vp[i+j+VS-1];
+            va = REALIGN_LOAD <v1,v2,rt>;
+            vs += va;
+            v1 = v2;
+          }
+        }
+    } */
+
   if (DR_IS_READ (dr))
     {
-      if (optab_handler (vec_realign_load_optab, mode)->insn_code != CODE_FOR_nothing
+      if (optab_handler (vec_realign_load_optab, mode)->insn_code != 
+						   	     CODE_FOR_nothing
 	  && (!targetm.vectorize.builtin_mask_for_load
 	      || targetm.vectorize.builtin_mask_for_load ()))
-	return dr_unaligned_software_pipeline;
+	{
+	    if (nested_in_vect_loop
+		&& TREE_INT_CST_LOW (DR_STEP (dr)) != UNITS_PER_SIMD_WORD)
+	      return dr_explicit_realign;
+	    else
+	      return dr_explicit_realign_optimized;
+	}
 
-      if (optab_handler (movmisalign_optab, mode)->insn_code != CODE_FOR_nothing)
+      if (optab_handler (movmisalign_optab, mode)->insn_code != 
+							     CODE_FOR_nothing)
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
