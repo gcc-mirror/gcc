@@ -1,3 +1,9 @@
+2007-08-18  Roger Sayle  <roger@eyesopen.com>
+
+	* primary.c (match_logical_constant_string): New function to match
+	a ".true." or a ".false.".
+	(match_logical_constant): Use it instead of gfc_match_strings.
+
 2007-08-18  Paul Thomas  <pault@gcc.gnu.org>
 	    Janus Weil  <jaydub66@gmail.com>
 
