@@ -1,3 +1,12 @@
+2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* testsuite/gcc.dg/vect/pr20122.c: Fix test (now vectorized, with
+	versioning for aliasing).
+	* testsuite/gcc.dg/vect/vect-35.c: Likewise.
+
+	* testsuite/gcc.dg/vect/vect-iv-6.c: Fix test for vect_no_align targets.
+	* testsuite/gcc.dg/vect/vect-multitypes-11.c: Likewise.
+
 2007-08-18  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/32974:

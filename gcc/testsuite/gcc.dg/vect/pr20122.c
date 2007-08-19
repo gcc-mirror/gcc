@@ -7,7 +7,8 @@ short Kernshort[24] __attribute__ ((__aligned__(16)));
 static void VecBug(short Kernel[8][24]) __attribute__((noinline));
 static void VecBug2(short Kernel[8][24]) __attribute__((noinline));
 
-/* Not vectorizable: Kernel may alias Kernshort - a global array.  */
+/* Kernel may alias Kernshort - a global array.
+   Use versioning for aliasing.  */
 static void VecBug(short Kernel[8][24])
 {
   int k,i;
@@ -48,7 +49,8 @@ int main (int argc, char **argv)
     return 0;
 }
 
-
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
-/*  { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target vect_no_align } } } */
+/* The loops in VecBug and VecBug2 require versioning for alignment.
+   The loop in main is aligned.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" } } */
+/*  { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { target vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

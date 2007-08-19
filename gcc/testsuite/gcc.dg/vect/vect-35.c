@@ -8,8 +8,8 @@
 int main1 ()
 {  
   union {
-    char a[N] __attribute__ ((__aligned__(16)));
-    char b[N] __attribute__ ((__aligned__(16)));
+    unsigned char a[N] __attribute__ ((__aligned__(16)));
+    unsigned char b[N] __attribute__ ((__aligned__(16)));
   } s;
   int i;
 
@@ -19,8 +19,8 @@ int main1 ()
       s.b[i] = 3*i;
     }
 
-  /* Can't vectorize - dependence analysis fails cause s.a and s.b may
-     overlap.  */
+  /* Dependence analysis fails cause s.a and s.b may overlap.
+     Use runtime aliasing test with versioning.  */
   for (i = 0; i < N; i++)
     {
       s.a[i] = s.b[i] + 1;
@@ -44,6 +44,6 @@ int main (void)
 } 
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "can't determine dependence between" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

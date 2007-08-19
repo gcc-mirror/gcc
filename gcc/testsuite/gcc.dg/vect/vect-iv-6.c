@@ -17,7 +17,8 @@ int main1 (int X)
       by the loop-header phi (as opposed to the other uses of k that are
       defined in the loop), in which case we exercise the fact that we
       reuse the same vector def-use-cycle for both uses. 
-      Peeling to align the store is also applied.  */
+      Peeling to align the store is also applied. This peeling also aligns
+      the load (as they have the same misalignment).  */
 
    do { 
 	arr2[i+1] = 2*k;
@@ -45,5 +46,5 @@ int main (void)
   return main1 (3);
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
