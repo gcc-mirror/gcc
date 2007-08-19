@@ -84,6 +84,8 @@ do_niy (pretty_printer *buffer, tree node)
   pp_string (buffer, " >>>\n");
 }
 
+/* Debugging function to print out a generic expression.  */
+
 void
 debug_generic_expr (tree t)
 {
@@ -91,12 +93,16 @@ debug_generic_expr (tree t)
   fprintf (stderr, "\n");
 }
 
+/* Debugging function to print out a generic statement.  */
+
 void
 debug_generic_stmt (tree t)
 {
   print_generic_stmt (stderr, t, TDF_VOPS|TDF_MEMSYMS);
   fprintf (stderr, "\n");
 }
+
+/* Debugging function to print out a chain of trees .  */
 
 void
 debug_tree_chain (tree t)
