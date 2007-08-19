@@ -977,21 +977,50 @@ no_match:
 }
 
 
+/* Match a .true. or .false.  Returns 1 if a .true. was found,
+   0 if a .false. was found, and -1 otherwise.  */
+static int
+match_logical_constant_string (void)
+{
+  locus orig_loc = gfc_current_locus;
+
+  gfc_gobble_whitespace ();
+  if (gfc_next_char () == '.')
+    {
+      int ch = gfc_next_char();
+      if (ch == 'f')
+	{
+	  if (gfc_next_char () == 'a'
+	      && gfc_next_char () == 'l'
+	      && gfc_next_char () == 's'
+	      && gfc_next_char () == 'e'
+	      && gfc_next_char () == '.')
+	    /* Matched ".false.".  */
+	    return 0;
+	}
+      else if (ch == 't')
+	{
+	  if (gfc_next_char () == 'r'
+	      && gfc_next_char () == 'u'
+	      && gfc_next_char () == 'e'
+	      && gfc_next_char () == '.')
+	    /* Matched ".true.".  */
+	    return 1;
+	}
+    }
+  gfc_current_locus = orig_loc;
+  return -1;
+}
+
 /* Match a .true. or .false.  */
 
 static match
 match_logical_constant (gfc_expr **result)
 {
-  static mstring logical_ops[] = {
-    minit (".false.", 0),
-    minit (".true.", 1),
-    minit (NULL, -1)
-  };
-
   gfc_expr *e;
   int i, kind;
 
-  i = gfc_match_strings (logical_ops);
+  i = match_logical_constant_string ();
   if (i == -1)
     return MATCH_NO;
 
