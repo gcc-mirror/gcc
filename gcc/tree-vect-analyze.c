@@ -325,6 +325,24 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      print_generic_expr (vect_dump, phi, TDF_SLIM);
 	    }
 
+	  if (! is_loop_header_bb_p (bb))
+	    {
+	      /* inner-loop loop-closed exit phi in outer-loop vectorization
+		 (i.e. a phi in the tail of the outer-loop). 
+		 FORNOW: we currently don't support the case that these phis
+		 are not used in the outerloop, cause this case requires
+		 to actually do something here.  */
+	      if (!STMT_VINFO_RELEVANT_P (stmt_info) 
+		  || STMT_VINFO_LIVE_P (stmt_info))
+		{
+		  if (vect_print_dump_info (REPORT_DETAILS))
+		    fprintf (vect_dump, 
+			     "Unsupported loop-closed phi in outer-loop.");
+		  return false;
+		}
+	      continue;
+	    }
+
 	  gcc_assert (stmt_info);
 
 	  if (STMT_VINFO_LIVE_P (stmt_info))
@@ -398,7 +416,9 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	      break;
 	
 	    case vect_reduction_def:
-	      gcc_assert (relevance == vect_unused_in_loop);
+	      gcc_assert (relevance == vect_used_in_outer
+			  || relevance == vect_used_in_outer_by_reduction
+			  || relevance == vect_unused_in_loop);
 	      break;	
 
 	    case vect_induction_def:
@@ -589,50 +609,17 @@ exist_non_indexing_operands_for_use_p (tree use, tree stmt)
 }
 
 
-/* Function vect_analyze_scalar_cycles.
+/* Function vect_analyze_scalar_cycles_1.
 
-   Examine the cross iteration def-use cycles of scalar variables, by
-   analyzing the loop (scalar) PHIs; Classify each cycle as one of the
-   following: invariant, induction, reduction, unknown.
-   
-   Some forms of scalar cycles are not yet supported.
-
-   Example1: reduction: (unsupported yet)
-
-              loop1:
-              for (i=0; i<N; i++)
-                 sum += a[i];
-
-   Example2: induction: (unsupported yet)
-
-              loop2:
-              for (i=0; i<N; i++)
-                 a[i] = i;
-
-   Note: the following loop *is* vectorizable:
-
-              loop3:
-              for (i=0; i<N; i++)
-                 a[i] = b[i];
-
-         even though it has a def-use cycle caused by the induction variable i:
-
-              loop: i_2 = PHI (i_0, i_1)
-                    a[i_2] = ...;
-                    i_1 = i_2 + 1;
-                    GOTO loop;
-
-         because the def-use cycle in loop3 is considered "not relevant" - i.e.,
-         it does not need to be vectorized because it is only used for array
-         indexing (see 'mark_stmts_to_be_vectorized'). The def-use cycle in
-         loop2 on the other hand is relevant (it is being written to memory).
-*/
+   Examine the cross iteration def-use cycles of scalar variables
+   in LOOP. LOOP_VINFO represents the loop that is noe being
+   considered for vectorization (can be LOOP, or an outer-loop
+   enclosing LOOP).  */
 
 static void
-vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
+vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 {
   tree phi;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block bb = loop->header;
   tree dumy;
   VEC(tree,heap) *worklist = VEC_alloc (tree, heap, 64);
@@ -698,7 +685,7 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
       gcc_assert (is_gimple_reg (SSA_NAME_VAR (def)));
       gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
-      reduc_stmt = vect_is_simple_reduction (loop, phi);
+      reduc_stmt = vect_is_simple_reduction (loop_vinfo, phi);
       if (reduc_stmt)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
@@ -714,6 +701,48 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 
   VEC_free (tree, heap, worklist);
   return;
+}
+
+
+/* Function vect_analyze_scalar_cycles.
+
+   Examine the cross iteration def-use cycles of scalar variables, by
+   analyzing the loop-header PHIs of scalar variables; Classify each 
+   cycle as one of the following: invariant, induction, reduction, unknown.
+   We do that for the loop represented by LOOP_VINFO, and also to its
+   inner-loop, if exists.
+   Examples for scalar cycles:
+
+   Example1: reduction:
+
+              loop1:
+              for (i=0; i<N; i++)
+                 sum += a[i];
+
+   Example2: induction:
+
+              loop2:
+              for (i=0; i<N; i++)
+                 a[i] = i;  */
+
+static void
+vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+
+  vect_analyze_scalar_cycles_1 (loop_vinfo, loop);
+
+  /* When vectorizing an outer-loop, the inner-loop is executed sequentially.
+     Reductions in such inner-loop therefore have different properties than
+     the reductions in the nest that gets vectorized:
+     1. When vectorized, they are executed in the same order as in the original
+        scalar loop, so we can't change the order of computation when
+        vectorizing them.
+     2. FIXME: Inner-loop reductions can be used in the inner-loop, so the 
+        current checks are too strict.  */
+
+  if (loop->inner)
+    vect_analyze_scalar_cycles_1 (loop_vinfo, loop->inner);
 }
 
 
@@ -1166,12 +1195,22 @@ vect_is_duplicate_ddr (VEC (ddr_p, heap) * may_alias_ddrs, ddr_p ddr_new)
 static bool
 vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 {
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+
   if (vect_print_dump_info (REPORT_DR_DETAILS))
     {
       fprintf (vect_dump, "mark for run-time aliasing test between ");
       print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
       fprintf (vect_dump, " and ");
       print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
+    }
+
+  /* FORNOW: We don't support versioning with outer-loop vectorization.  */
+  if (loop->inner)
+    {
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	fprintf (vect_dump, "versioning not yet supported for outer-loops.");
+      return false;
     }
 
   /* Do not add to the list duplicate ddrs.  */
@@ -1805,7 +1844,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      4) all misaligned data refs with a known misalignment are supported, and
      5) the number of runtime alignment checks is within reason.  */
 
-  do_versioning = flag_tree_vect_loop_version && (!optimize_size);
+  do_versioning = 
+	flag_tree_vect_loop_version 
+	&& (!optimize_size)
+	&& (!loop->inner); /* FORNOW */
 
   if (do_versioning)
     {
@@ -2188,6 +2230,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
     {
       tree stmt;
       stmt_vec_info stmt_info;
+      basic_block bb;
    
       if (!dr || !DR_REF (dr))
         {
@@ -2199,6 +2242,16 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
       /* Update DR field in stmt_vec_info struct.  */
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
+
+      /* If outer-loop vectorization: we don't yet support datarefs
+	 in the innermost loop.  */
+      bb = bb_for_stmt (stmt);
+      if (bb->loop_father != LOOP_VINFO_LOOP (loop_vinfo))
+	{
+	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	    fprintf (vect_dump, "not vectorized: data-ref in nested loop");
+	  return false;
+	}
 
       if (STMT_VINFO_DATA_REF (stmt_info))
         {
@@ -2287,11 +2340,13 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
 
       /* This is the last stmt in a sequence that was detected as a 
          pattern that can potentially be vectorized.  Don't mark the stmt
-         as relevant/live because it's not going to vectorized.
+         as relevant/live because it's not going to be vectorized.
          Instead mark the pattern-stmt that replaces it.  */
+
+      pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
+
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "last stmt in pattern. don't mark relevant/live.");
-      pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info);
       stmt_info = vinfo_for_stmt (pattern_stmt);
       gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
       save_relevant = STMT_VINFO_RELEVANT (stmt_info);
@@ -2341,7 +2396,8 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
   *live_p = false;
 
   /* cond stmt other than loop exit cond.  */
-  if (is_ctrl_stmt (stmt) && (stmt != LOOP_VINFO_EXIT_COND (loop_vinfo)))
+  if (is_ctrl_stmt (stmt) 
+      && STMT_VINFO_TYPE (vinfo_for_stmt (stmt)) != loop_exit_ctrl_vec_info_type) 
     *relevant = vect_used_in_loop;
 
   /* changing memory.  */
@@ -2398,6 +2454,8 @@ vect_stmt_relevant_p (tree stmt, loop_vec_info loop_vinfo,
    of the respective DEF_STMT is left unchanged.
    - case 2: If STMT is a reduction phi and DEF_STMT is a reduction stmt, we 
    skip DEF_STMT cause it had already been processed.  
+   - case 3: If DEF_STMT and STMT are in different nests, then  "relevant" will
+   be modified accordingly.
 
    Return true if everything is as expected. Return false otherwise.  */
 
@@ -2408,7 +2466,7 @@ process_use (tree stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   stmt_vec_info dstmt_vinfo;
-  basic_block def_bb;
+  basic_block bb, def_bb;
   tree def, def_stmt;
   enum vect_def_type dt;
 
@@ -2429,23 +2487,100 @@ process_use (tree stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
 
   def_bb = bb_for_stmt (def_stmt);
   if (!flow_bb_inside_loop_p (loop, def_bb))
-    return true;
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "def_stmt is out of loop.");
+      return true;
+    }
 
-  /* case 2: A reduction phi defining a reduction stmt (DEF_STMT). DEF_STMT 
-     must have already been processed, so we just check that everything is as 
-     expected, and we are done.  */
+  /* case 2: A reduction phi (STMT) defined by a reduction stmt (DEF_STMT). 
+     DEF_STMT must have already been processed, because this should be the 
+     only way that STMT, which is a reduction-phi, was put in the worklist, 
+     as there should be no other uses for DEF_STMT in the loop.  So we just 
+     check that everything is as expected, and we are done.  */
   dstmt_vinfo = vinfo_for_stmt (def_stmt);
+  bb = bb_for_stmt (stmt);
   if (TREE_CODE (stmt) == PHI_NODE
       && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
       && TREE_CODE (def_stmt) != PHI_NODE
-      && STMT_VINFO_DEF_TYPE (dstmt_vinfo) == vect_reduction_def)
+      && STMT_VINFO_DEF_TYPE (dstmt_vinfo) == vect_reduction_def
+      && bb->loop_father == def_bb->loop_father)
     {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "reduc-stmt defining reduc-phi in the same nest.");
       if (STMT_VINFO_IN_PATTERN_P (dstmt_vinfo))
 	dstmt_vinfo = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (dstmt_vinfo));
       gcc_assert (STMT_VINFO_RELEVANT (dstmt_vinfo) < vect_used_by_reduction);
       gcc_assert (STMT_VINFO_LIVE_P (dstmt_vinfo) 
 		  || STMT_VINFO_RELEVANT (dstmt_vinfo) > vect_unused_in_loop);
       return true;
+    }
+
+  /* case 3a: outer-loop stmt defining an inner-loop stmt:
+	outer-loop-header-bb:
+		d = def_stmt
+	inner-loop:
+		stmt # use (d)
+	outer-loop-tail-bb:
+		...		  */
+  if (flow_loop_nested_p (def_bb->loop_father, bb->loop_father))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "outer-loop def-stmt defining inner-loop stmt.");
+      switch (relevant)
+	{
+	case vect_unused_in_loop:
+	  relevant = (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def) ?
+			vect_used_by_reduction : vect_unused_in_loop;
+	  break;
+	case vect_used_in_outer_by_reduction:
+	  relevant = vect_used_by_reduction;
+	  break;
+	case vect_used_in_outer:
+	  relevant = vect_used_in_loop;
+	  break;
+	case vect_used_by_reduction: 
+	case vect_used_in_loop:
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}   
+    }
+
+  /* case 3b: inner-loop stmt defining an outer-loop stmt:
+	outer-loop-header-bb:
+		...
+	inner-loop:
+		d = def_stmt
+	outer-loop-tail-bb:
+		stmt # use (d)		*/
+  else if (flow_loop_nested_p (bb->loop_father, def_bb->loop_father))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "inner-loop def-stmt defining outer-loop stmt.");
+      switch (relevant)
+        {
+        case vect_unused_in_loop:
+          relevant = (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def) ?
+                        vect_used_in_outer_by_reduction : vect_unused_in_loop;
+          break;
+
+        case vect_used_in_outer_by_reduction:
+        case vect_used_in_outer:
+          break;
+
+        case vect_used_by_reduction:
+          relevant = vect_used_in_outer_by_reduction;
+          break;
+
+        case vect_used_in_loop:
+          relevant = vect_used_in_outer;
+          break;
+
+        default:
+          gcc_unreachable ();
+        }
     }
 
   vect_mark_relevant (worklist, def_stmt, relevant, live_p);
@@ -2556,25 +2691,38 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	 identify stmts that are used solely by a reduction, and therefore the 
 	 order of the results that they produce does not have to be kept.
 
-         Reduction phis are expected to be used by a reduction stmt;  Other 
-	 reduction stmts are expected to be unused in the loop.  These are the 
-	 expected values of "relevant" for reduction phis/stmts in the loop:
+	 Reduction phis are expected to be used by a reduction stmt, or by
+	 in an outer loop;  Other reduction stmts are expected to be
+	 in the loop, and possibly used by a stmt in an outer loop. 
+	 Here are the expected values of "relevant" for reduction phis/stmts:
 
 	 relevance:				phi	stmt
 	 vect_unused_in_loop				ok
+	 vect_used_in_outer_by_reduction	ok	ok
+	 vect_used_in_outer			ok	ok
 	 vect_used_by_reduction			ok
 	 vect_used_in_loop 						  */
 
       if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
         {
-	  switch (relevant)
+	  enum vect_relevant tmp_relevant = relevant;
+	  switch (tmp_relevant)
 	    {
 	    case vect_unused_in_loop:
 	      gcc_assert (TREE_CODE (stmt) != PHI_NODE);
+	      relevant = vect_used_by_reduction;
 	      break;
+
+	    case vect_used_in_outer_by_reduction:
+	    case vect_used_in_outer:
+	      gcc_assert (TREE_CODE (stmt) != WIDEN_SUM_EXPR
+			  && TREE_CODE (stmt) != DOT_PROD_EXPR);
+	      break;
+
 	    case vect_used_by_reduction:
 	      if (TREE_CODE (stmt) == PHI_NODE)
 		break;
+	      /* fall through */
 	    case vect_used_in_loop:
 	    default:
 	      if (vect_print_dump_info (REPORT_DETAILS))
@@ -2582,7 +2730,6 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      VEC_free (tree, heap, worklist);
 	      return false;
 	    }
-	  relevant = vect_used_by_reduction;
 	  live_p = false;	
 	}
 
@@ -2724,11 +2871,39 @@ vect_get_loop_niters (struct loop *loop, tree *number_of_iterations)
 }
 
 
+/* Function vect_analyze_loop_1.
+
+   Apply a set of analyses on LOOP, and create a loop_vec_info struct
+   for it. The different analyses will record information in the
+   loop_vec_info struct.  This is a subset of the analyses applied in
+   vect_analyze_loop, to be applied on an inner-loop nested in the loop
+   that is now considered for (outer-loop) vectorization.  */
+
+static loop_vec_info
+vect_analyze_loop_1 (struct loop *loop)
+{
+  loop_vec_info loop_vinfo;
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "===== analyze_loop_nest_1 =====");
+
+  /* Check the CFG characteristics of the loop (nesting, entry/exit, etc.  */
+
+  loop_vinfo = vect_analyze_loop_form (loop);
+  if (!loop_vinfo)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "bad inner-loop form.");
+      return NULL;
+    }
+
+  return loop_vinfo;
+}
+
+
 /* Function vect_analyze_loop_form.
 
-   Verify the following restrictions (some may be relaxed in the future):
-   - it's an inner-most loop
-   - number of BBs = 2 (which are the loop header and the latch)
+   Verify that certain CFG restrictions hold, including:
    - the loop has a pre-header
    - the loop has a single entry and exit
    - the loop exit condition is simple enough, and the number of iterations
@@ -2740,31 +2915,134 @@ vect_analyze_loop_form (struct loop *loop)
   loop_vec_info loop_vinfo;
   tree loop_cond;
   tree number_of_iterations = NULL;
+  loop_vec_info inner_loop_vinfo = NULL;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_loop_form ===");
 
-  if (loop->inner)
+  /* Different restrictions apply when we are considering an inner-most loop,
+     vs. an outer (nested) loop.  
+     (FORNOW. May want to relax some of these restrictions in the future).  */
+
+  if (!loop->inner)
     {
-      if (vect_print_dump_info (REPORT_OUTER_LOOPS))
-        fprintf (vect_dump, "not vectorized: nested loop.");
+      /* Inner-most loop.  We currently require that the number of BBs is 
+	 exactly 2 (the header and latch).  Vectorizable inner-most loops 
+	 look like this:
+
+                        (pre-header)
+                           |
+                          header <--------+
+                           | |            |
+                           | +--> latch --+
+                           |
+                        (exit-bb)  */
+
+      if (loop->num_nodes != 2)
+        {
+          if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+            fprintf (vect_dump, "not vectorized: too many BBs in loop.");
+          return NULL;
+        }
+
+      if (empty_block_p (loop->header))
+    {
+          if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+            fprintf (vect_dump, "not vectorized: empty loop.");
       return NULL;
+    }
+    }
+  else
+    {
+      struct loop *innerloop = loop->inner;
+      edge backedge, entryedge;
+
+      /* Nested loop. We currently require that the loop is doubly-nested,
+	 contains a single inner loop, and the number of BBs is exactly 5. 
+	 Vectorizable outer-loops look like this:
+
+			(pre-header)
+			   |
+			  header <---+
+			   |         |
+		          inner-loop |
+			   |         |
+			  tail ------+
+			   | 
+		        (exit-bb)
+
+	 The inner-loop has the properties expected of inner-most loops
+	 as described above.  */
+
+      if ((loop->inner)->inner || (loop->inner)->next)
+	{
+	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+	    fprintf (vect_dump, "not vectorized: multiple nested loops.");
+	  return NULL;
+	}
+
+      /* Analyze the inner-loop.  */
+      inner_loop_vinfo = vect_analyze_loop_1 (loop->inner);
+      if (!inner_loop_vinfo)
+	{
+	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+            fprintf (vect_dump, "not vectorized: Bad inner loop.");
+	  return NULL;
+	}
+
+      if (!expr_invariant_in_loop_p (loop,
+					LOOP_VINFO_NITERS (inner_loop_vinfo)))
+	{
+	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+	    fprintf (vect_dump,
+		     "not vectorized: inner-loop count not invariant.");
+	  destroy_loop_vec_info (inner_loop_vinfo, true);
+	  return NULL;
+	}
+
+      if (loop->num_nodes != 5) 
+        {
+	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+	    fprintf (vect_dump, "not vectorized: too many BBs in loop.");
+	  destroy_loop_vec_info (inner_loop_vinfo, true);
+	  return NULL;
+        }
+
+      gcc_assert (EDGE_COUNT (innerloop->header->preds) == 2);
+      backedge = EDGE_PRED (innerloop->header, 1);	  
+      entryedge = EDGE_PRED (innerloop->header, 0);
+      if (EDGE_PRED (innerloop->header, 0)->src == innerloop->latch)
+	{
+	  backedge = EDGE_PRED (innerloop->header, 0);
+	  entryedge = EDGE_PRED (innerloop->header, 1);	
+	}
+	
+      if (entryedge->src != loop->header
+	  || !single_exit (innerloop)
+	  || single_exit (innerloop)->dest !=  EDGE_PRED (loop->latch, 0)->src)
+	{
+	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
+	    fprintf (vect_dump, "not vectorized: unsupported outerloop form.");
+	  destroy_loop_vec_info (inner_loop_vinfo, true);
+	  return NULL;
+	}
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "Considering outer-loop vectorization.");
     }
   
   if (!single_exit (loop) 
-      || loop->num_nodes != 2
       || EDGE_COUNT (loop->header->preds) != 2)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
         {
           if (!single_exit (loop))
             fprintf (vect_dump, "not vectorized: multiple exits.");
-          else if (loop->num_nodes != 2)
-            fprintf (vect_dump, "not vectorized: too many BBs in loop.");
           else if (EDGE_COUNT (loop->header->preds) != 2)
             fprintf (vect_dump, "not vectorized: too many incoming edges.");
         }
-
+      if (inner_loop_vinfo)
+	destroy_loop_vec_info (inner_loop_vinfo, true);
       return NULL;
     }
 
@@ -2777,6 +3055,8 @@ vect_analyze_loop_form (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
         fprintf (vect_dump, "not vectorized: unexpected loop form.");
+      if (inner_loop_vinfo)
+	destroy_loop_vec_info (inner_loop_vinfo, true);
       return NULL;
     }
 
@@ -2794,15 +3074,10 @@ vect_analyze_loop_form (struct loop *loop)
 	{
 	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
 	    fprintf (vect_dump, "not vectorized: abnormal loop exit edge.");
+	  if (inner_loop_vinfo)
+	    destroy_loop_vec_info (inner_loop_vinfo, true);
 	  return NULL;
 	}
-    }
-
-  if (empty_block_p (loop->header))
-    {
-      if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
-        fprintf (vect_dump, "not vectorized: empty loop.");
-      return NULL;
     }
 
   loop_cond = vect_get_loop_niters (loop, &number_of_iterations);
@@ -2810,6 +3085,8 @@ vect_analyze_loop_form (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
 	fprintf (vect_dump, "not vectorized: complicated exit condition.");
+      if (inner_loop_vinfo)
+	destroy_loop_vec_info (inner_loop_vinfo, true);
       return NULL;
     }
   
@@ -2818,6 +3095,8 @@ vect_analyze_loop_form (struct loop *loop)
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
 	fprintf (vect_dump, 
 		 "not vectorized: number of iterations cannot be computed.");
+      if (inner_loop_vinfo)
+	destroy_loop_vec_info (inner_loop_vinfo, true);
       return NULL;
     }
 
@@ -2825,7 +3104,9 @@ vect_analyze_loop_form (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
         fprintf (vect_dump, "Infinite number of iterations.");
-      return false;
+      if (inner_loop_vinfo)
+	destroy_loop_vec_info (inner_loop_vinfo, true);
+      return NULL;
     }
 
   if (!NITERS_KNOWN_P (number_of_iterations))
@@ -2840,12 +3121,19 @@ vect_analyze_loop_form (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
         fprintf (vect_dump, "not vectorized: number of iterations = 0.");
+      if (inner_loop_vinfo)
+        destroy_loop_vec_info (inner_loop_vinfo, false);
       return NULL;
     }
 
   loop_vinfo = new_loop_vec_info (loop);
   LOOP_VINFO_NITERS (loop_vinfo) = number_of_iterations;
-  LOOP_VINFO_EXIT_COND (loop_vinfo) = loop_cond;
+
+  STMT_VINFO_TYPE (vinfo_for_stmt (loop_cond)) = loop_exit_ctrl_vec_info_type;
+
+  /* CHECKME: May want to keep it around it in the future.  */
+  if (inner_loop_vinfo)
+    destroy_loop_vec_info (inner_loop_vinfo, false);
 
   gcc_assert (!loop->aux);
   loop->aux = loop_vinfo;
@@ -2866,6 +3154,15 @@ vect_analyze_loop (struct loop *loop)
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "===== analyze_loop_nest =====");
+
+  if (loop_outer (loop) 
+      && loop_vec_info_for_loop (loop_outer (loop))
+      && LOOP_VINFO_VECTORIZABLE_P (loop_vec_info_for_loop (loop_outer (loop))))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "outer-loop already vectorized.");
+      return NULL;
+    }
 
   /* Check the CFG characteristics of the loop (nesting, entry/exit, etc.  */
 
@@ -2888,7 +3185,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data references.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2906,7 +3203,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "unexpected pattern.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2918,7 +3215,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data alignment.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2927,7 +3224,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "can't determine vectorization factor.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2939,7 +3236,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data dependence.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2951,7 +3248,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data access.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2963,7 +3260,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data alignment.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 
@@ -2975,7 +3272,7 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad operation or unsupported loop bound.");
-      destroy_loop_vec_info (loop_vinfo);
+      destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }
 

@@ -1,5 +1,47 @@
 2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
+	* gcc.dg/vect/vect.exp: Compile tests with -fno-tree-scev-cprop
+	and -fno-tree-reassoc.
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-1.c: Moved to...
+	* gcc.dg/vect/no-scevccp-vect-iv-1.c: New test.
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-2.c: Moved to...
+	* gcc.dg/vect/no-scevccp-vect-iv-2.c: New test.
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-3.c: Moved to...
+	* gcc.dg/vect/no-scevccp-vect-iv-3.c: New test.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-1.c: New test.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-2.c: New test.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-3.c: New test.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-4.c: New test.
+	* gcc.dg/vect/no-scevccp-noreassoc-outer-5.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-1.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-2.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-3.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-4.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-5.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-6.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-7.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-8.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-9.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-9a.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-9b.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-10.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-10a.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-10b.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-11.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-12.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-13.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-14.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-15.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-16.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-17.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-18.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-19.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-20.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-21.c: New test.
+	* gcc.dg/vect/no-scevccp-outer-22.c: New test.
+
+2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
+
 	* testsuite/gcc.dg/vect/pr20122.c: Fix test (now vectorized, with
 	versioning for aliasing).
 	* testsuite/gcc.dg/vect/vect-35.c: Likewise.

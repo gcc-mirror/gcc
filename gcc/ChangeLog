@@ -1,3 +1,96 @@
+2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vectorizer.h (vect_is_simple_reduction): Takes a loop_vec_info
+	as argument instead of struct loop.
+	(nested_in_vect_loop_p): New function.
+	(vect_relevant): Add enum values vect_used_in_outer_by_reduction and
+	vect_used_in_outer.
+	(is_loop_header_bb_p): New. Used to differentiate loop-header phis
+	from other phis in the loop.
+	(destroy_loop_vec_info): Add additional argument to declaration.
+
+	* tree-vectorizer.c (supportable_widening_operation): Also check if
+	nested_in_vect_loop_p (don't allow changing the order in this case).
+	(vect_is_simple_reduction): Takes a loop_vec_info as argument instead
+	of struct loop. Call nested_in_vect_loop_p and don't require
+	flag_unsafe_math_optimizations if it returns true.
+	(new_stmt_vec_info): When setting def_type for phis differentiate 
+	loop-header phis from other phis.
+	(bb_in_loop_p): New function.
+	(new_loop_vec_info): Inner-loop phis already have a stmt_vinfo, so just
+	update their loop_vinfo.  Order of BB traversal now matters - call
+	dfs_enumerate_from with bb_in_loop_p.
+	(destroy_loop_vec_info): Takes additional argument to control whether
+	stmt_vinfo of the loop stmts should be destroyed as well.
+	(vect_is_simple_reduction): Allow the "non-reduction" use of a
+	reduction stmt to be defines by a non loop-header phi.
+	(vectorize_loops): Call destroy_loop_vec_info with additional argument.
+
+	* tree-vect-transform.c (vectorizable_reduction): Call
+	nested_in_vect_loop_p. Check for multitypes in the inner-loop.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_type_demotion): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_live_operation): Likewise.
+	(vectorizable_reduction): Likewise. Also pass loop_info to
+	vect_is_simple_reduction instead of loop.
+	(vect_init_vector): Call nested_in_vect_loop_p.
+	(get_initial_def_for_reduction): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vect_init_vector): Check which loop to work with, in case there's an
+	inner-loop.
+	(get_initial_def_for_inducion): Extend to handle outer-loop
+	vectorization. Fix indentation.
+	(vect_get_vec_def_for_operand): Support phis in the case vect_loop_def.
+	In the case vect_induction_def get the vector def from the induction
+	phi node, instead of calling get_initial_def_for_inducion.
+	(get_initial_def_for_reduction): Extend to handle outer-loop 
+	vectorization.
+	(vect_create_epilog_for_reduction): Extend to handle outer-loop
+	vectorization.
+	(vect_transform_loop): Change assert to just skip this case.  Add a
+	dump printout.
+	(vect_finish_stmt_generation): Add a couple asserts.
+
+	(vect_estimate_min_profitable_iters): Multiply
+	cost of inner-loop stmts (in outer-loop vectorization) by estimated
+	inner-loop bound.
+	(vect_model_reduction_cost): Don't add reduction epilogue cost in case
+	this is an inner-loop reduction in outer-loop vectorization.
+
+	* tree-vect-analyze.c (vect_analyze_scalar_cycles_1): New function.
+	Same code as what used to be vect_analyze_scalar_cycles, only with
+	additional argument loop, and loop_info passed to
+	vect_is_simple_reduction instead of loop.
+	(vect_analyze_scalar_cycles): Code factored out into
+	vect_analyze_scalar_cycles_1. Call it for each relevant loop-nest.
+	Updated documentation.
+	(analyze_operations): Check for inner-loop loop-closed exit-phis during
+	outer-loop vectorization that are live or not used in the outerloop,
+	cause this requires special handling.
+	(vect_enhance_data_refs_alignment): Don't consider versioning for
+	nested-loops.
+	(vect_analyze_data_refs): Check that there are no datarefs in the
+	inner-loop.
+	(vect_mark_stmts_to_be_vectorized): Also consider vect_used_in_outer
+	and vect_used_in_outer_by_reduction cases.
+	(process_use): Also consider the case of outer-loop stmt defining an
+	inner-loop stmt and vice versa.
+	(vect_analyze_loop_1): New function.
+	(vect_analyze_loop_form): Extend, to allow a restricted form of nested
+	loops.  Call vect_analyze_loop_1.
+	(vect_analyze_loop): Skip (inner-)loops within outer-loops that have
+	been vectorized.  Call destroy_loop_vec_info with additional argument.
+
+	* tree-vect-patterns.c (vect_recog_widen_sum_pattern): Don't allow
+	in the inner-loop when doing outer-loop vectorization. Add
+	documentation and printout.
+	(vect_recog_dot_prod_pattern): Likewise. Also add check for
+	GIMPLE_MODIFY_STMT (in case we encounter a phi in the loop).
+
 2007-08-18  Andrew Pinski  <pinskia@gmail.com>
 
 	* tree-affine.h (print_aff): New prototype.
