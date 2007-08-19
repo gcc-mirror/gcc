@@ -1,3 +1,10 @@
+2007-08-19  Andrew Pinski  <pinskia@gmail.com>
+
+	* tree-pretty-print.c (debug_generic_expr): Add a comment about
+	the function.
+	(debug_generic_stmt): Likewise.
+	(debug_tree_chain): Likewise.
+
 2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-data-refs.c (split_constant_offset): Expose.
