@@ -1,5 +1,40 @@
 2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
+	* gcc.dg/vect/vect-117.c: Change inner-loop bound to
+	unknown (so that outer-loop wont get analyzed).
+	* gcc.dg/vect/vect-outer-1a.c: New test.
+	* gcc.dg/vect/vect-outer-1b.c: New test.
+	* gcc.dg/vect/vect-outer-1.c: New test.
+	* gcc.dg/vect/vect-outer-2a.c: New test.
+	* gcc.dg/vect/vect-outer-2b.c: New test.
+	* gcc.dg/vect/vect-outer-2c.c: New test.
+	* gcc.dg/vect/vect-outer-2.c: New test.
+	* gcc.dg/vect/vect-outer-3a.c: New test.
+	* gcc.dg/vect/vect-outer-3b.c: New test.
+	* gcc.dg/vect/vect-outer-3c.c: New test.
+	* gcc.dg/vect/vect-outer-3.c: New test.
+	* gcc.dg/vect/vect-outer-4a.c: New test.
+	* gcc.dg/vect/vect-outer-4b.c: New test.
+	* gcc.dg/vect/vect-outer-4c.c: New test.
+	* gcc.dg/vect/vect-outer-4d.c: New test.
+	* gcc.dg/vect/vect-outer-4e.c: New test.
+	* gcc.dg/vect/vect-outer-4f.c: New test.
+	* gcc.dg/vect/vect-outer-4g.c: New test.
+	* gcc.dg/vect/no-section-anchors-vect-outer-4h.c: New test.
+	* gcc.dg/vect/vect-outer-4i.c: New test.
+	* gcc.dg/vect/vect-outer-4j.c: New test.
+	* gcc.dg/vect/vect-outer-4k.c: New test.
+	* gcc.dg/vect/vect-outer-4l.c: New test.
+	* gcc.dg/vect/vect-outer-4m.c: New test.
+	* gcc.dg/vect/vect-outer-4.c: New test.
+	* gcc.dg/vect/vect-outer-5.c: New test.
+	* gcc.dg/vect/vect-outer-6.c: New test.
+	* gcc.dg/vect/vect-outer-fir.c: New test.
+	* gcc.dg/vect/vect-outer-fir-lb.c: New test.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: New test.	
+
+2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
+
 	* gcc.dg/vect/vect.exp: Compile tests with -fno-tree-scev-cprop
 	and -fno-tree-reassoc.
 	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-1.c: Moved to...

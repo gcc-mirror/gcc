@@ -388,4 +388,7 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
 /* In lambda-code.c  */
 bool lambda_transform_legal_p (lambda_trans_matrix, int, VEC (ddr_p, heap) *);
 
+/* In tree-data-refs.c  */
+void split_constant_offset (tree , tree *, tree *);
+
 #endif  /* GCC_TREE_DATA_REF_H  */

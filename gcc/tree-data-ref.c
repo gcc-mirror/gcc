@@ -489,7 +489,7 @@ dump_ddrs (FILE *file, VEC (ddr_p, heap) *ddrs)
 /* Expresses EXP as VAR + OFF, where off is a constant.  The type of OFF
    will be ssizetype.  */
 
-static void
+void
 split_constant_offset (tree exp, tree *var, tree *off)
 {
   tree type = TREE_TYPE (exp), otype;

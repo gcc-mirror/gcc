@@ -1,5 +1,71 @@
 2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
+	* tree-data-refs.c (split_constant_offset): Expose.
+	* tree-data-refs.h (split_constant_offset): Add declaration.
+
+	* tree-vectorizer.h (dr_alignment_support): Renamed
+	dr_unaligned_software_pipeline to dr_explicit_realign_optimized.
+	Added a new value dr_explicit_realign.
+	(_stmt_vec_info): Added new fields: dr_base_address, dr_init,
+	dr_offset, dr_step, and dr_aligned_to, along with new access
+	functions for these fields: STMT_VINFO_DR_BASE_ADDRESS,
+	STMT_VINFO_DR_INIT, STMT_VINFO_DR_OFFSET, STMT_VINFO_DR_STEP, and
+	STMT_VINFO_DR_ALIGNED_TO.
+
+	* tree-vectorizer.c (vect_supportable_dr_alignment): Add
+	documentation.
+	In case of outer-loop vectorization with non-fixed misalignment - use
+	the dr_explicit_realign scheme instead of the optimized realignment
+	scheme.
+	(new_stmt_vec_info): Initialize new fields.
+
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment): Handle the
+	'nested_in_vect_loop' case. Change verbosity level.
+	(vect_analyze_data_ref_access): Handle the 'nested_in_vect_loop' case.
+	Don't fail on zero step in the outer-loop for loads.
+	(vect_analyze_data_refs): Call split_constant_offset to calculate base,
+	offset and init relative to the outer-loop.
+
+	* tree-vect-transform.c (vect_create_data_ref_ptr): Replace the unused
+	BSI function argument with a new function argument - at_loop.
+	Simplify the condition that determines STEP. Takes additional argument
+	INV_P. Support outer-loop vectorization (handle the nested_in_vect_loop
+	case), including zero step in the outer-loop. Call
+	vect_create_addr_base_for_vector_ref with additional argument.
+	(vect_create_addr_base_for_vector_ref): Takes additional argument LOOP.
+	Updated function documentation. Handle the 'nested_in_vect_loop' case.
+	Fixed and simplified calculation of step.
+	(vectorizable_store): Call vect_create_data_ref_ptr with loop instead
+	of bsi, and with additional argument. Call bump_vector_ptr with
+	additional argument. Fix typos. Handle the 'nested_in_vect_loop' case.
+	(vect_setup_realignment): Takes additional arguments INIT_ADDR and
+	DR_ALIGNMENT_SUPPORT. Returns another value AT_LOOP. Handle the case
+	when the realignment setup needs to take place inside the loop.  Support
+	the dr_explicit_realign scheme. Allow generating the optimized
+	realignment scheme for outer-loop vectorization. Added documentation.
+	(vectorizable_load): Support the dr_explicit_realign scheme. Handle the
+	'nested_in_vect_loop' case, including loads that are invariant in the
+	outer-loop and the realignment schemes. Handle the case when the
+	realignment setup needs to take place inside the loop. Call
+	vect_setup_realignment with additional arguments.  Call
+	vect_create_data_ref_ptr with additional argument and with loop instead
+	of bsi. Fix 80-column overflow. Fix typos. Rename PHI_STMT to PHI.
+	(vect_gen_niters_for_prolog_loop): Call
+	vect_create_addr_base_for_vector_ref with additional arguments.
+	(vect_create_cond_for_align_checks): Likewise.
+	(bump_vector_ptr): Updated to support the new dr_explicit_realign
+	scheme: takes additional argument bump; argument ptr_incr is now
+	optional; updated documentation.
+	(vect_init_vector): Takes additional argument (bsi). Use it, if
+	available, to insert the vector initialization.
+	(get_initial_def_for_induction): Pass additional argument in call to
+	vect_init_vector.
+	(vect_get_vec_def_for_operand): Likewise.
+	(vect_setup_realignment): Likewise.
+	(vectorizable_load): Likewise.
+
+2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
+
 	* tree-vectorizer.h (vect_is_simple_reduction): Takes a loop_vec_info
 	as argument instead of struct loop.
 	(nested_in_vect_loop_p): New function.
