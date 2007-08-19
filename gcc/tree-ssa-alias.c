@@ -322,7 +322,8 @@ sort_tags_by_id (const void *pa, const void *pb)
 
 static void
 init_transitive_clobber_worklist (VEC (tree, heap) **worklist,
-				  VEC (int, heap) **worklist2)
+				  VEC (int, heap) **worklist2,
+				  bitmap on_worklist)
 {
   referenced_var_iterator rvi;
   tree curr;
@@ -332,7 +333,9 @@ init_transitive_clobber_worklist (VEC (tree, heap) **worklist,
       if (MTAG_P (curr) && is_call_clobbered (curr))
 	{
 	  VEC_safe_push (tree, heap, *worklist, curr);
-	  VEC_safe_push (int, heap, *worklist2, var_ann (curr)->escape_mask);
+	  VEC_safe_push (int, heap, *worklist2,
+			 var_ann (curr)->escape_mask);
+	  bitmap_set_bit (on_worklist, DECL_UID (curr));
 	}
     }
 }
@@ -343,13 +346,15 @@ init_transitive_clobber_worklist (VEC (tree, heap) **worklist,
 
 static void
 add_to_worklist (tree alias, VEC (tree, heap) **worklist,
-		 VEC (int, heap) **worklist2,
-		 int reason)
+		 VEC (int, heap) **worklist2, int reason,
+		 bitmap on_worklist)
 {
-  if (MTAG_P (alias) && !is_call_clobbered (alias))
+  if (MTAG_P (alias) && !is_call_clobbered (alias)
+      && !bitmap_bit_p (on_worklist, DECL_UID (alias)))
     {
       VEC_safe_push (tree, heap, *worklist, alias);
       VEC_safe_push (int, heap, *worklist2, reason);
+      bitmap_set_bit (on_worklist, DECL_UID (alias));
     }
 }
 
@@ -358,7 +363,8 @@ add_to_worklist (tree alias, VEC (tree, heap) **worklist,
 
 static void
 mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
-			     VEC (int, heap) **worklist2)
+			     VEC (int, heap) **worklist2,
+			     bitmap on_worklist)
 {
   bitmap aliases;
   bitmap_iterator bi;
@@ -375,9 +381,23 @@ mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
   EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
     {
       entry = referenced_var (i);
-      if (!unmodifiable_var_p (entry))
+      /* If you clobber one part of a structure, you
+	 clobber the entire thing.  While this does not make
+	 the world a particularly nice place, it is necessary
+	 in order to allow C/C++ tricks that involve
+	 pointer arithmetic to work.  */
+      if (TREE_CODE (entry) == STRUCT_FIELD_TAG)
 	{
-	  add_to_worklist (entry, worklist, worklist2, ta->escape_mask);
+	  subvar_t svars;
+	  svars = get_subvars_for_var (SFT_PARENT_VAR (entry));
+	  for (; svars; svars = svars->next)
+	    if (!unmodifiable_var_p (entry))
+	      mark_call_clobbered (svars->var, ta->escape_mask);
+	}
+      else if (!unmodifiable_var_p (entry))
+	{
+	  add_to_worklist (entry, worklist, worklist2, ta->escape_mask,
+			   on_worklist);
 	  mark_call_clobbered (entry, ta->escape_mask);
 	}
     }
@@ -528,8 +548,25 @@ set_initial_properties (struct alias_info *ai)
 	      bitmap_iterator bi;
 	      unsigned int j;	      
 	      EXECUTE_IF_SET_IN_BITMAP (pi->pt_vars, 0, j, bi)
-		if (!unmodifiable_var_p (referenced_var (j)))
-		  mark_call_clobbered (referenced_var (j), pi->escape_mask);
+		{
+		  tree alias = referenced_var (j);
+
+		  /* If you clobber one part of a structure, you
+		     clobber the entire thing.  While this does not make
+		     the world a particularly nice place, it is necessary
+		     in order to allow C/C++ tricks that involve
+		     pointer arithmetic to work.  */
+		  if (TREE_CODE (alias) == STRUCT_FIELD_TAG)
+		    {
+		      subvar_t svars;
+		      svars = get_subvars_for_var (SFT_PARENT_VAR (alias));
+		      for (; svars; svars = svars->next)
+			if (!unmodifiable_var_p (alias))
+			  mark_call_clobbered (svars->var, pi->escape_mask);
+		    }
+		  else if (!unmodifiable_var_p (alias))
+		    mark_call_clobbered (alias, pi->escape_mask);
+		}
 	    }
 	}
 
@@ -573,21 +610,27 @@ static void
 compute_call_clobbered (struct alias_info *ai)
 {
   VEC (tree, heap) *worklist = NULL;
-  VEC(int,heap) *worklist2 = NULL;
-  
+  VEC (int,heap) *worklist2 = NULL;
+  bitmap on_worklist;
+
   timevar_push (TV_CALL_CLOBBER);
+  on_worklist = BITMAP_ALLOC (NULL);
+    
   set_initial_properties (ai);
-  init_transitive_clobber_worklist (&worklist, &worklist2);
+  init_transitive_clobber_worklist (&worklist, &worklist2, on_worklist);
   while (VEC_length (tree, worklist) != 0)
     {
       tree curr = VEC_pop (tree, worklist);
       int reason = VEC_pop (int, worklist2);
-      
+
+      bitmap_clear_bit (on_worklist, DECL_UID (curr));
       mark_call_clobbered (curr, reason);
-      mark_aliases_call_clobbered (curr, &worklist, &worklist2);
+      mark_aliases_call_clobbered (curr, &worklist, &worklist2,
+				   on_worklist);
     }
   VEC_free (tree, heap, worklist);
   VEC_free (int, heap, worklist2);
+  BITMAP_FREE (on_worklist);
   compute_tag_properties ();
   timevar_pop (TV_CALL_CLOBBER);
 }
@@ -3783,11 +3826,14 @@ create_overlap_variables_for (tree var)
 
 	  /* If this field isn't in the used portion,
 	     or it has the exact same offset and size as the last
-	     field, skip it.  */
+	     field, skip it.  Note that we always need the field at
+	     offset 0 so we can properly handle pointers to the
+	     structure.  */
 
-	  if (((fo->offset <= up->minused
-		&& fo->offset + fosize <= up->minused)
-	       || fo->offset >= up->maxused)
+	  if ((fo->offset != 0
+	       && ((fo->offset <= up->minused
+		    && fo->offset + fosize <= up->minused)
+		   || fo->offset >= up->maxused))
 	      || (fo->offset == lastfooffset
 		  && fosize == lastfosize
 		  && currfotype == lastfotype))
@@ -3975,6 +4021,21 @@ create_structure_vars (void)
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator bsi;
+      tree phi;
+      
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  use_operand_p use;
+	  ssa_op_iter iter;
+
+	  FOR_EACH_PHI_ARG (use, phi, iter, SSA_OP_USE)
+	    {
+	      tree op = USE_FROM_PTR (use);
+	      walk_tree_without_duplicates (&op, find_used_portions,
+					    NULL);
+	    }
+	}
+
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  walk_tree_without_duplicates (bsi_stmt_ptr (bsi), 
@@ -4013,7 +4074,7 @@ create_structure_vars (void)
 		  tree sym = referenced_var_lookup (i);
 		  if (get_subvars_for_var (sym))
 		    {
-		      update=true;
+		      update = true;
 		      break;
 		    }
 		}
@@ -4024,7 +4085,7 @@ create_structure_vars (void)
 		  tree sym = referenced_var_lookup (i);
 		  if (get_subvars_for_var (sym))
 		    {
-		      update=true;
+		      update = true;
 		      break;
 		    }
 		}
@@ -4036,7 +4097,7 @@ create_structure_vars (void)
 		  tree sym = referenced_var_lookup (i);
 		  if (get_subvars_for_var (sym))
 		    {
-		      update=true;
+		      update = true;
 		      break;
 		    }
 		}

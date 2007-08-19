@@ -1181,7 +1181,9 @@ append_vuse (tree var)
 /* REF is a tree that contains the entire pointer dereference
    expression, if available, or NULL otherwise.  ALIAS is the variable
    we are asking if REF can access.  OFFSET and SIZE come from the
-   memory access expression that generated this virtual operand.  */
+   memory access expression that generated this virtual operand.
+
+   XXX: We should handle the NO_ALIAS attributes here.  */
 
 static bool
 access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
@@ -1197,6 +1199,11 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   if (alias == gimple_global_var (cfun))
     return true;
 
+  /* If ref is a TARGET_MEM_REF, just return true, as we can't really
+     disambiguate them right now.  */
+  if (ref && TREE_CODE (ref) == TARGET_MEM_REF)
+    return true;
+  
   /* If ALIAS is an SFT, it can't be touched if the offset     
      and size of the access is not overlapping with the SFT offset and
      size.  This is only true if we are accessing through a pointer
@@ -1290,6 +1297,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
 	   && flag_strict_aliasing
 	   && TREE_CODE (ref) != INDIRECT_REF
 	   && !MTAG_P (alias)
+	   && base
 	   && (TREE_CODE (base) != INDIRECT_REF
 	       || TREE_CODE (TREE_TYPE (base)) != UNION_TYPE)
 	   && !AGGREGATE_TYPE_P (TREE_TYPE (alias))
@@ -1335,6 +1343,106 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
   return true;
 }
 
+/* Add the actual variables FULL_REF can access, given a member of
+   full_ref's points-to set VAR, where FULL_REF is an access of SIZE at
+   OFFSET from var. IS_CALL_SITE is true if this is a call, and IS_DEF
+   is true if this is supposed to be a vdef, and false if this should
+   be a VUSE.
+
+   The real purpose of this function is to take a points-to set for a
+   pointer to a structure, say
+
+   struct s {
+     int a;
+     int b;
+   } foo, *foop = &foo;
+
+   and discover which variables an access, such as foop->b, can alias.
+   
+   This is necessary because foop only actually points to foo's first
+   member, so that is all the points-to set contains.  However, an access
+   to foop->a may be touching some single SFT if we have created some
+   SFT's for a structure.  */
+
+static bool
+add_vars_for_offset (tree full_ref, tree var, HOST_WIDE_INT offset,
+		     HOST_WIDE_INT size, bool is_call_site, bool is_def)
+{
+  /* Call-clobbered tags may have non-call-clobbered
+     symbols in their alias sets.  Ignore them if we are
+     adding VOPs for a call site.  */
+  if (is_call_site && !is_call_clobbered (var))
+    return false;
+
+  /* For offset 0, we already have the right variable.  If there is no
+     full_ref, this is not a place we care about (All component
+     related accesses that go through pointers will have full_ref not
+     NULL).
+     Any var for which we didn't create SFT's can't be
+     distinguished.  */
+  if (!full_ref || (offset == 0 && size != -1)
+      || (TREE_CODE (var) != STRUCT_FIELD_TAG
+	  && (!var_can_have_subvars (var) || !get_subvars_for_var (var))))
+    {
+      if (!access_can_touch_variable (full_ref, var, offset, size))
+	return false;
+
+      if (is_def)
+	append_vdef (var);
+      else
+	append_vuse (var);
+      return true;
+    }
+  else if (TREE_CODE (var) == STRUCT_FIELD_TAG)
+    {      
+      if (size == -1)
+	{
+	  bool added = false;
+	  subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
+	  for (; sv; sv = sv->next)
+	    {
+	      if (overlap_subvar (SFT_OFFSET (var) + offset, size,
+				  sv->var, NULL)
+		  && access_can_touch_variable (full_ref, sv->var,
+						offset, size))
+		{
+		  added = true;
+		  if (is_def)
+		    append_vdef (sv->var);
+		  else
+		    append_vuse (sv->var);
+		}
+	    }
+	  return added;
+	}
+      else
+	{
+	  bool added = false;
+	  subvar_t sv = get_subvars_for_var (SFT_PARENT_VAR (var));
+	  for (; sv; sv = sv->next)
+	    {
+	      /* Once we hit the end of the parts that could touch,
+		 stop looking.  */
+	      if (SFT_OFFSET (var) + offset + size <= SFT_OFFSET (sv->var))
+		break;
+	      if (overlap_subvar (SFT_OFFSET (var) + offset, size,
+				  sv->var, NULL)
+		  && access_can_touch_variable (full_ref, sv->var, offset, 
+						size))
+		{
+		  added = true;
+		  if (is_def)
+		    append_vdef (sv->var);
+		  else
+		    append_vuse (sv->var);
+		}
+	    }
+	  return added;
+	}
+    }
+  
+  return false;
+}
 
 /* Add VAR to the virtual operands array.  FLAGS is as in
    get_expr_operands.  FULL_REF is a tree that contains the entire
@@ -1343,7 +1451,7 @@ access_can_touch_variable (tree ref, tree alias, HOST_WIDE_INT offset,
    generated this virtual operand.  IS_CALL_SITE is true if the
    affected statement is a call site.  */
 
-static void 
+static void
 add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 		     tree full_ref, HOST_WIDE_INT offset,
 		     HOST_WIDE_INT size, bool is_call_site)
@@ -1416,17 +1524,8 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
 	    {
 	      al = referenced_var (i);
-	      if (!access_can_touch_variable (full_ref, al, offset, size))
-		continue;
-
-	      /* Call-clobbered tags may have non-call-clobbered
-		 symbols in their alias sets.  Ignore them if we are
-		 adding VOPs for a call site.  */
-	      if (is_call_site && !is_call_clobbered (al))
-		continue;
-
-	      none_added = false;
-	      append_vdef (al);
+	      none_added &= !add_vars_for_offset (full_ref, al, offset, size,
+						  is_call_site, true);
 	    }
 
 	  /* If the variable is also an alias tag, add a virtual
@@ -1443,9 +1542,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	  if (none_added
 	      || (TREE_CODE (var) == SYMBOL_MEMORY_TAG
 		  && is_call_site))
-	    {
-	      append_vdef (var);
-	    }
+	    append_vdef (var);
 	}
       else
 	{
@@ -1453,17 +1550,9 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 	  EXECUTE_IF_SET_IN_BITMAP (aliases, 0, i, bi)
 	    {
 	      al = referenced_var (i);
-	      if (!access_can_touch_variable (full_ref, al, offset, size))
-		continue;
-
-	      /* Call-clobbered tags may have non-call-clobbered
-		 symbols in their alias sets.  Ignore them if we are
-		 adding VOPs for a call site.  */
-	      if (is_call_site && !is_call_clobbered (al))
-		continue;
-
-	      none_added = false;
-	      append_vuse (al);
+	      none_added &= !add_vars_for_offset (full_ref, al, offset, size,
+						  is_call_site, false);
+	      
 	    }
 	  
 	  /* Even if no aliases have been added, we still need to
@@ -1620,9 +1709,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 static void
 get_tmr_operands (tree stmt, tree expr, int flags)
 {
-  tree tag, ref;
-  HOST_WIDE_INT offset, size, maxsize;
-  subvar_t svars, sv;
+  tree tag;
   stmt_ann_t s_ann = stmt_ann (stmt);
 
   /* This statement references memory.  */
@@ -1642,23 +1729,13 @@ get_tmr_operands (tree stmt, tree expr, int flags)
       s_ann->has_volatile_ops = true;
       return;
     }
-
-  if (DECL_P (tag))
+  if (!MTAG_P (tag))
     {
       get_expr_operands (stmt, &tag, flags);
       return;
     }
 
-  ref = get_ref_base_and_extent (tag, &offset, &size, &maxsize);
-  gcc_assert (ref != NULL_TREE);
-  svars = get_subvars_for_var (ref);
-  for (sv = svars; sv; sv = sv->next)
-    {
-      bool exact;		
-
-      if (overlap_subvar (offset, maxsize, sv->var, &exact))
-	add_stmt_operand (&sv->var, s_ann, flags);
-    }
+  add_virtual_operand (tag, s_ann, flags, expr, 0, -1, false);
 }
 
 
@@ -1673,11 +1750,6 @@ add_call_clobber_ops (tree stmt, tree callee)
   stmt_ann_t s_ann = stmt_ann (stmt);
   bitmap not_read_b, not_written_b;
   
-  /* Functions that are not const, pure or never return may clobber
-     call-clobbered variables.  */
-  if (s_ann)
-    s_ann->makes_clobbering_call = true;
-
   /* If we created .GLOBAL_VAR earlier, just use it.  */
   if (gimple_global_var (cfun))
     {
@@ -2032,7 +2104,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
     case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
-      get_indirect_ref_operands (stmt, expr, flags, NULL_TREE, 0, -1, true);
+      get_indirect_ref_operands (stmt, expr, flags, expr, 0, -1, true);
       return;
 
     case TARGET_MEM_REF:
