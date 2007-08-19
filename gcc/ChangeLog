@@ -1,3 +1,91 @@
+2007-08-19  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR 32772
+	Fix PR 32716
+	Fix PR 32328
+	Fix PR 32303
+
+	* tree-flow.h (struct stmt_ann_d): Remove makes_clobbering_call.
+	* tree-ssa-alias.c (init_transitive_clobber_worklist): Add
+	on_worklist argument and avoid adding things to worklist multiple
+	times.
+	(add_to_worklist): Ditto.
+	(mark_aliases_call_clobbered): Mark entire structure clobbered if
+	single SFT is clobbered.
+	(set_initial_properties): Ditto.
+	(compute_call_clobbered): Update for changes to function
+	arguments.
+	(create_overlap_variables_for): Always create SFT for offset 0.
+	(create_structure_vars): Handle PHI's, since we are in SSA form at
+	this point.
+	* tree-ssa-loop-ivopts.c (get_ref_tag): Don't return subvars.
+	* tree-ssa-operands.c (access_can_touch_variable): Don't handle
+	TARGET_MEM_REF.
+	(add_vars_for_offset): Figure out aliases from access + points-to.
+	(add_virtual_operand): Use add_vars-for_offset.
+	(get_tmr_operands): Update for NMT changes, rewrite to be correct.
+	(add_call_clobber_ops): Remove makes_clobbering_call set.
+	(get_expr_operands): Always pass through the INDIRECT_REF
+	reference.
+	* tree-ssa-structalias.c (struct constraint_graph): Remove
+	variables member.
+	Add pe, pe_rep, pointer_label, loc_label, pointed_by, points_to,
+	address_taken, pt_used, number_incoming.
+	(FIRST_ADDR_NODE): Removed.
+	(merge_graph_nodes): Remove broken code for the moment.
+	(init_graph): New function.
+	(build_pred_graph): Remove code to init_graph.
+	Add location equivalence support.
+	(struct scc_info): Rename roots to deleted.
+	(scc_visit): Ditto.
+	(init_scc_info): Ditto
+	(init_topo_info): Use graph->size.
+	(compute_topo_order): Ditto.
+	(do_da_constraint): Removed.
+	(do_sd_constraint): Remove calls to find().
+	set_union_with_increment should always get 0 as last arg here.
+	(do_complex_constraint): Replace do_da_constraint with assert.
+	Stop calling find.
+	(struct equiv_class_label): New.
+	(pointer_equiv_class_table): Ditto.
+	(location_equiv_class_table): Ditto.
+	(equiv_class_label_hash): Ditto.
+	(equiv_class_label_eq): Ditto
+	(equiv_class_lookup): Ditto.
+	(equiv_class_ladd): Ditto.
+	(pointer_equiv_class): Ditto.
+	(location_equiv_class): Ditto.
+	(condense_visit): Rename and rewrite from label_visit to do only
+	SCC related stuff for HU.
+	(label_visit): Do HU work for HU.
+	(perform_var_substitution): Update to do HU and location
+	equivalence.
+	(free_var_substitution_info): Update to free HU and location
+	equivalence structures.  */
+	(find_equivalent_node): Update for pointer but not location
+	equivalence.
+	(unite_pointer_equivalences): New function.
+	(move_complex_constraints): Rewrite to only do moving.
+	(rewrite_constraints): Split out of move_complex_constraints.
+	(solve_graph): Use graph->size.
+	(process_constraint_1): Add from_call argument, use it.
+	Split *a = &b into two constraints.
+	(process_constraint): Use new process_constraint_1.
+	(get_constraint_for_component_ref): Handle bitmaxsize == -1 case.
+	(get_constraint_for): Handle non-pointer integers properly.
+	Remove code that used to handle structures.
+	(handle_ptr_arith): Fix a few bugs in pointer arithmetic handling
+	with unknown addends.
+	(handle_rhs_call): New function.
+	(find_func_aliases): Use handle_rhs_call.
+	(set_uids_in_ptset): Add an assert.
+	(set_used_smts): Fix bug in not considering unified vars.
+	(compute_tbaa_pruning): Stop initing useless iteration_obstack.
+	(compute_points_to_sets): Update for other function changes.
+	(delete_points_to_sets): Ditto.
+	(ipa_pta_execute): Ditto.
+	(pass_ipa_pta): We need to update SSA after ipa_pta.
+	
 2007-08-19  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md: Replace "rim" and "mri" constraints by "g".

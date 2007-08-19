@@ -5020,7 +5020,7 @@ get_ref_tag (tree ref, tree orig)
     }
 
   if (aref && SSA_VAR_P (aref) && get_subvars_for_var (aref))
-    return unshare_expr (sv);
+    return aref;
 
   if (!var)
     return NULL_TREE;
