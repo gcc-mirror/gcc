@@ -4412,6 +4412,15 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #ifndef SEPARATE_LINE_CODE_LABEL
 #define SEPARATE_LINE_CODE_LABEL	"LSM"
 #endif
+
+/* Whether the default text and cold text sections have been used at
+   all.  */
+
+static GTY(()) bool text_section_used = false;
+static GTY(()) bool cold_text_section_used = false;
+
+/* The default cold text section.  */
+static GTY(()) section *cold_text_section;
 
 /* We allow a language front-end to designate a function that is to be
    called to "demangle" any name before it is put into a DIE.  */
@@ -6852,7 +6861,10 @@ size_of_aranges (void)
   size = DWARF_ARANGES_HEADER_SIZE;
 
   /* Count the address/length pair for this compilation unit.  */
-  size += 2 * DWARF2_ADDR_SIZE;
+  if (text_section_used)
+    size += 2 * DWARF2_ADDR_SIZE;
+  if (cold_text_section_used)
+    size += 2 * DWARF2_ADDR_SIZE;
   size += 2 * DWARF2_ADDR_SIZE * arange_table_in_use;
 
   /* Count the two zero words used to terminated the address range table.  */
@@ -7050,6 +7062,18 @@ add_loc_descr_to_loc_list (dw_loc_list_ref *list_head, dw_loc_descr_ref descr,
   *d = new_loc_list (descr, begin, end, section, 0);
 }
 
+/* Note that the current function section is being used for code.  */
+
+static void
+dwarf2out_note_section_used (void)
+{
+  section *sec = current_function_section ();
+  if (sec == text_section)
+    text_section_used = true;
+  else if (sec == cold_text_section)
+    cold_text_section_used = true;
+}
+
 static void
 dwarf2out_switch_text_section (void)
 {
@@ -7068,6 +7092,8 @@ dwarf2out_switch_text_section (void)
   /* Reset the current label on switching text sections, so that we
      don't attempt to advance_loc4 between labels in different sections.  */
   fde->dw_fde_current_label = NULL;
+
+  dwarf2out_note_section_used ();
 }
 
 /* Output the location list given to us.  */
@@ -7553,10 +7579,18 @@ output_aranges (void)
 	dw2_asm_output_data (2, 0, NULL);
     }
 
-  dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_section_label, "Address");
-  dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
-			text_section_label, "Length");
-  if (flag_reorder_blocks_and_partition)
+  /* It is necessary not to output these entries if the sections were
+     not used; if the sections were not used, the length will be 0 and
+     the address may end up as 0 if the section is discarded by ld
+     --gc-sections, leaving an invalid (0, 0) entry that can be
+     confused with the terminator.  */
+  if (text_section_used)
+    {
+      dw2_asm_output_addr (DWARF2_ADDR_SIZE, text_section_label, "Address");
+      dw2_asm_output_delta (DWARF2_ADDR_SIZE, text_end_label,
+			    text_section_label, "Length");
+    }
+  if (cold_text_section_used)
     {
       dw2_asm_output_addr (DWARF2_ADDR_SIZE, cold_text_section_label,
 			   "Address");
@@ -14071,6 +14105,8 @@ dwarf2out_begin_function (tree fun)
 
   if (function_section (fun) != text_section)
     have_multiple_function_sections = true;
+
+  dwarf2out_note_section_used ();
 }
 
 /* Output a label to mark the beginning of a source code line entry
@@ -14343,7 +14379,8 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   ASM_OUTPUT_LABEL (asm_out_file, text_section_label);
   if (flag_reorder_blocks_and_partition)
     {
-      switch_to_section (unlikely_text_section ());
+      cold_text_section = unlikely_text_section ();
+      switch_to_section (cold_text_section);
       ASM_OUTPUT_LABEL (asm_out_file, cold_text_section_label);
     }
 }

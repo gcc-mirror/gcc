@@ -1,3 +1,15 @@
+2007-08-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* dwarf2out.c (text_section_used, cold_text_section_used,
+	cold_text_section, dwarf2out_note_section_used): New.
+	(dwarf2out_init): Initialize cold_text_section.
+	(dwarf2out_switch_text_section, dwarf2out_begin_function): Call
+	dwarf2out_note_section_used.
+	(size_of_aranges): Only count entry for text section if it was
+	used.  Count entry for cold text section if it was used.
+	(output_aranges): Only output entries for text section and cold
+	text section if they were used.
+
 2007-08-19  Andrew Pinski  <pinskia@gmail.com>
 
 	* tree-pretty-print.c (debug_generic_expr): Add a comment about
