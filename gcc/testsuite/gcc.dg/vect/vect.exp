@@ -182,8 +182,20 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-trapping-math-*.\[cS\]]] 
 # -fno-tree-scev-cprop
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
 lappend DEFAULT_VECTCFLAGS "-fno-tree-scev-cprop"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-scev-cprop-*.\[cS\]]]  \
-	"" $DEFAULT_VECTCFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-scevccp-vect-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
+# -fno-tree-scev-cprop
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-tree-scev-cprop"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-scevccp-outer-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
+# -fno-tree-scev-cprop -fno-tree-reassoc
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-fno-tree-scev-cprop" "-fno-tree-reassoc"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-scevccp-noreassoc-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
 
 # -fno-tree-dominator-opts
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS

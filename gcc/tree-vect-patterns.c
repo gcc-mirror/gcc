@@ -148,7 +148,14 @@ widened_name_p (tree name, tree use_stmt, tree *half_type, tree *def_stmt)
    * Return value: A new stmt that will be used to replace the sequence of
    stmts that constitute the pattern. In this case it will be:
         WIDEN_DOT_PRODUCT <x_t, y_t, sum_0>
-*/
+
+   Note: The dot-prod idiom is a widening reduction pattern that is
+         vectorized without preserving all the intermediate results. It
+         produces only N/2 (widened) results (by summing up pairs of
+         intermediate results) rather than all N results.  Therefore, we
+         cannot allow this pattern when we want to get all the results and in
+         the correct order (as is the case when this computation is in an
+         inner-loop nested in an outer-loop that us being vectorized).  */
 
 static tree
 vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
@@ -160,6 +167,8 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
   tree type, half_type;
   tree pattern_expr;
   tree prod_type;
+  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_info);
 
   if (TREE_CODE (last_stmt) != GIMPLE_MODIFY_STMT)
     return NULL;
@@ -242,6 +251,10 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
   gcc_assert (stmt_vinfo);
   if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_loop_def)
     return NULL;
+  /* FORNOW. Can continue analyzing the def-use chain when this stmt in a phi 
+     inside the loop (in case we are analyzing an outer-loop).  */
+  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+    return NULL; 
   expr = GIMPLE_STMT_OPERAND (stmt, 1);
   if (TREE_CODE (expr) != MULT_EXPR)
     return NULL;
@@ -295,6 +308,16 @@ vect_recog_dot_prod_pattern (tree last_stmt, tree *type_in, tree *type_out)
       fprintf (vect_dump, "vect_recog_dot_prod_pattern: detected: ");
       print_generic_expr (vect_dump, pattern_expr, TDF_SLIM);
     }
+
+  /* We don't allow changing the order of the computation in the inner-loop
+     when doing outer-loop vectorization.  */
+  if (nested_in_vect_loop_p (loop, last_stmt))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "vect_recog_dot_prod_pattern: not allowed.");
+      return NULL;
+    }
+
   return pattern_expr;
 }
 
@@ -521,7 +544,14 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
    * Return value: A new stmt that will be used to replace the sequence of
    stmts that constitute the pattern. In this case it will be:
         WIDEN_SUM <x_t, sum_0>
-*/
+
+   Note: The widneing-sum idiom is a widening reduction pattern that is 
+	 vectorized without preserving all the intermediate results. It
+         produces only N/2 (widened) results (by summing up pairs of 
+	 intermediate results) rather than all N results.  Therefore, we 
+	 cannot allow this pattern when we want to get all the results and in 
+	 the correct order (as is the case when this computation is in an 
+	 inner-loop nested in an outer-loop that us being vectorized).  */
 
 static tree
 vect_recog_widen_sum_pattern (tree last_stmt, tree *type_in, tree *type_out)
@@ -531,6 +561,8 @@ vect_recog_widen_sum_pattern (tree last_stmt, tree *type_in, tree *type_out)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   tree type, half_type;
   tree pattern_expr;
+  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_info);
 
   if (TREE_CODE (last_stmt) != GIMPLE_MODIFY_STMT)
     return NULL;
@@ -580,6 +612,16 @@ vect_recog_widen_sum_pattern (tree last_stmt, tree *type_in, tree *type_out)
       fprintf (vect_dump, "vect_recog_widen_sum_pattern: detected: ");
       print_generic_expr (vect_dump, pattern_expr, TDF_SLIM);
     }
+
+  /* We don't allow changing the order of the computation in the inner-loop
+     when doing outer-loop vectorization.  */
+  if (nested_in_vect_loop_p (loop, last_stmt))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "vect_recog_widen_sum_pattern: not allowed.");
+      return NULL;
+    }
+
   return pattern_expr;
 }
 

@@ -92,9 +92,6 @@ typedef struct _loop_vec_info {
   /* The loop basic blocks.  */
   basic_block *bbs;
 
-  /* The loop exit_condition.  */
-  tree exit_cond;
-
   /* Number of iterations.  */
   tree num_iters;
 
@@ -148,7 +145,6 @@ typedef struct _loop_vec_info {
 /* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)            (L)->loop
 #define LOOP_VINFO_BBS(L)             (L)->bbs
-#define LOOP_VINFO_EXIT_COND(L)       (L)->exit_cond
 #define LOOP_VINFO_NITERS(L)          (L)->num_iters
 #define LOOP_VINFO_COST_MODEL_MIN_ITERS(L)	(L)->min_profitable_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)  (L)->vectorizable
@@ -170,6 +166,19 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
 NITERS_KNOWN_P((L)->num_iters)
 
+static inline loop_vec_info
+loop_vec_info_for_loop (struct loop *loop)
+{
+  return (loop_vec_info) loop->aux;
+}
+
+static inline bool
+nested_in_vect_loop_p (struct loop *loop, tree stmt)
+{
+  return (loop->inner 
+          && (loop->inner == (bb_for_stmt (stmt))->loop_father));
+}
+
 /*-----------------------------------------------------------------*/
 /* Info on vectorized defs.                                        */
 /*-----------------------------------------------------------------*/
@@ -185,12 +194,15 @@ enum stmt_vec_info_type {
   induc_vec_info_type,
   type_promotion_vec_info_type,
   type_demotion_vec_info_type,
-  type_conversion_vec_info_type
+  type_conversion_vec_info_type,
+  loop_exit_ctrl_vec_info_type
 };
 
 /* Indicates whether/how a variable is used in the loop.  */
 enum vect_relevant {
   vect_unused_in_loop = 0,
+  vect_used_in_outer_by_reduction,
+  vect_used_in_outer,
 
   /* defs that feed computations that end up (only) in a reduction. These
      defs may be used by non-reduction stmts, but eventually, any 
@@ -408,6 +420,15 @@ is_pattern_stmt_p (stmt_vec_info stmt_info)
   return false;
 }
 
+static inline bool
+is_loop_header_bb_p (basic_block bb)
+{
+  if (bb == (bb->loop_father)->header)
+    return true;
+  gcc_assert (EDGE_COUNT (bb->preds) == 1);
+  return false;
+}
+
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
@@ -467,7 +488,7 @@ extern tree get_vectype_for_scalar_type (tree);
 extern bool vect_is_simple_use (tree, loop_vec_info, tree *, tree *,
 				enum vect_def_type *);
 extern bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *);
-extern tree vect_is_simple_reduction (struct loop *, tree);
+extern tree vect_is_simple_reduction (loop_vec_info, tree);
 extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
 extern enum dr_alignment_support vect_supportable_dr_alignment
   (struct data_reference *);
@@ -479,7 +500,7 @@ extern bool supportable_narrowing_operation (enum tree_code, tree, tree,
 
 /* Creation and deletion of loop and stmt info structs.  */
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
-extern void destroy_loop_vec_info (loop_vec_info);
+extern void destroy_loop_vec_info (loop_vec_info, bool);
 extern stmt_vec_info new_stmt_vec_info (tree stmt, loop_vec_info);
 
 
