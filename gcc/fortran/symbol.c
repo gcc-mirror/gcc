@@ -2909,6 +2909,24 @@ gfc_traverse_ns (gfc_namespace *ns, void (*func) (gfc_symbol *))
 }
 
 
+/* Return TRUE when name is the name of an intrinsic type.  */
+
+bool
+gfc_is_intrinsic_typename (const char *name)
+{
+  if (strcmp (name, "integer") == 0
+      || strcmp (name, "real") == 0
+      || strcmp (name, "character") == 0
+      || strcmp (name, "logical") == 0
+      || strcmp (name, "complex") == 0
+      || strcmp (name, "doubleprecision") == 0
+      || strcmp (name, "doublecomplex") == 0)
+    return true;
+  else
+    return false;
+}
+
+
 /* Return TRUE if the symbol is an automatic variable.  */
 
 static bool
