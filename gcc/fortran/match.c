@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
    unary operators /must/ precede the binary plus and minus, or
    the expression parser breaks.  */
 
-mstring intrinsic_operators[] = {
+static mstring intrinsic_operators[] = {
     minit ("+", INTRINSIC_UPLUS),
     minit ("-", INTRINSIC_UMINUS),
     minit ("+", INTRINSIC_PLUS),
@@ -59,6 +59,80 @@ mstring intrinsic_operators[] = {
     minit ("parens", INTRINSIC_PARENTHESES),
     minit (NULL, INTRINSIC_NONE)
 };
+
+/* For debugging and diagnostic purposes.  Return the textual representation
+   of the intrinsic operator OP.  */
+const char *
+gfc_op2string (gfc_intrinsic_op op)
+{
+  switch (op)
+    {
+    case INTRINSIC_UPLUS:
+    case INTRINSIC_PLUS:
+      return "+";
+
+    case INTRINSIC_UMINUS:
+    case INTRINSIC_MINUS:
+      return "-";
+
+    case INTRINSIC_POWER:
+      return "**";
+    case INTRINSIC_CONCAT:
+      return "//";
+    case INTRINSIC_TIMES:
+      return "*";
+    case INTRINSIC_DIVIDE:
+      return "/";
+
+    case INTRINSIC_AND:
+      return ".and.";
+    case INTRINSIC_OR:
+      return ".or.";
+    case INTRINSIC_EQV:
+      return ".eqv.";
+    case INTRINSIC_NEQV:
+      return ".neqv.";
+
+    case INTRINSIC_EQ_OS:
+      return ".eq.";
+    case INTRINSIC_EQ:
+      return "==";
+    case INTRINSIC_NE_OS:
+      return ".ne.";
+    case INTRINSIC_NE:
+      return "/=";
+    case INTRINSIC_GE_OS:
+      return ".ge.";
+    case INTRINSIC_GE:
+      return ">=";
+    case INTRINSIC_LE_OS:
+      return ".le.";
+    case INTRINSIC_LE:
+      return "<=";
+    case INTRINSIC_LT_OS:
+      return ".lt.";
+    case INTRINSIC_LT:
+      return "<";
+    case INTRINSIC_GT_OS:
+      return ".gt.";
+    case INTRINSIC_GT:
+      return ">";
+    case INTRINSIC_NOT:
+      return ".not.";
+
+    case INTRINSIC_ASSIGN:
+      return "=";
+
+    case INTRINSIC_PARENTHESES:
+      return "parens";
+
+    default:
+      break;
+    }
+
+  gfc_internal_error ("gfc_op2string(): Bad code");
+  /* Not reached.  */
+}
 
 
 /******************** Generic matching subroutines ************************/
