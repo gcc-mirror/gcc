@@ -1,3 +1,9 @@
+2007-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33025
+	* init.c (build_new_1): Rename placement_var variable to placement_expr.
+	Initialize it with save_expr rather than get_temp_regvar.
+
 2007-08-17  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/28989

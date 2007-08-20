@@ -1656,7 +1656,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
      beginning of the storage allocated for an array-new expression in
      order to store the number of elements.  */
   tree cookie_size = NULL_TREE;
-  tree placement_var;
+  tree placement_expr;
   /* True if the function we are calling is a placement allocation
      function.  */
   bool placement_allocation_fn_p;
@@ -1749,17 +1749,16 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   alloc_fn = NULL_TREE;
 
   /* If PLACEMENT is a simple pointer type, then copy it into
-     PLACEMENT_VAR.  */
+     PLACEMENT_EXPR.  */
   if (processing_template_decl
       || placement == NULL_TREE
       || TREE_CHAIN (placement) != NULL_TREE
       || TREE_CODE (TREE_TYPE (TREE_VALUE (placement))) != POINTER_TYPE)
-    placement_var = NULL_TREE;
+    placement_expr = NULL_TREE;
   else
     {
-      placement_var = get_temp_regvar (TREE_TYPE (TREE_VALUE (placement)),
-				       TREE_VALUE (placement));
-      placement = tree_cons (NULL_TREE, placement_var, NULL_TREE);
+      placement_expr = save_expr (TREE_VALUE (placement));
+      placement = tree_cons (NULL_TREE, placement_expr, NULL_TREE);
     }
 
   /* Allocate the object.  */
@@ -1857,7 +1856,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
     {
       rval = build_nop (pointer_type, alloc_call);
       if (placement != NULL)
-	rval = avoid_placement_new_aliasing (rval, placement_var);
+	rval = avoid_placement_new_aliasing (rval, placement_expr);
       return rval;
     }
 
@@ -2122,7 +2121,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   gcc_assert (!lvalue_p (rval));
 
   if (placement != NULL)
-    rval = avoid_placement_new_aliasing (rval, placement_var);
+    rval = avoid_placement_new_aliasing (rval, placement_expr);
 
   return rval;
 }
