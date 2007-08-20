@@ -746,7 +746,7 @@ cp_genericize (tree fndecl)
   /* We do want to see every occurrence of the parms, so we can't just use
      walk_tree's hash functionality.  */
   p_set = pointer_set_create ();
-  walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, p_set, NULL);
+  cp_walk_tree (&DECL_SAVED_TREE (fndecl), cp_genericize_r, p_set, NULL);
   pointer_set_destroy (p_set);
 
   /* Do everything else.  */

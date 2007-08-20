@@ -68,8 +68,6 @@ extern tree lhd_expr_to_decl (tree, bool *, bool *, bool *);
 extern tree lhd_builtin_function (tree decl);
 
 /* Declarations of default tree inlining hooks.  */
-extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
-					     void *, struct pointer_set_t*);
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
 extern int lhd_tree_inlining_disregard_inline_limits (const_tree);
 extern int lhd_tree_inlining_auto_var_in_fn_p (const_tree, const_tree);
@@ -135,7 +133,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE	NULL
 
 /* Tree inlining hooks.  */
-#define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES lhd_tree_inlining_walk_subtrees
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
   lhd_tree_inlining_cannot_inline_tree_fn
 #define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
@@ -146,7 +143,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   hook_bool_tree_tree_false
 
 #define LANG_HOOKS_TREE_INLINING_INITIALIZER { \
-  LANG_HOOKS_TREE_INLINING_WALK_SUBTREES, \
   LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN, \
   LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS, \
   LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, \

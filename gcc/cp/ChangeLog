@@ -1,3 +1,29 @@
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_WALK_SUBTREES):
+	Remove define.
+	* tree.h (cp_walk_tree): New define to walk_tree_1 with
+	cp_walk_subtrees lh parameter.
+	(cp_walk_tree_without_duplicates): New define to
+	walk_tree_without_duplicates_1 with cp_walk_subtrees lh parameter.
+	* tree.c (count_trees): Call
+	cp_walk_tree_without_duplicates.
+	(verify_stmt_tree): Call cp_walk_tree.
+	(break_out_target_exprs): Likewise.
+	(WALK_SUBTREE): Likewise.
+	* cp-gimplify.c (cp_genericize): Likewise.
+	* cp-pt.c (find_parameter_packs_r): Likewise.
+	(uses_parameter_packs): Likewise.
+	(make_pack_expansion): Likewise.
+	(check_for_bare_parameter_packs): Likewise.
+	(for_each_template_parm): Likewise.
+	* decl.c (check_default_argument): Call
+	cp_walk_tree_without_duplicates.
+	* except.c (build_throw): Likewise.
+	* decl2.c (type_visibility): Likewise.
+	* semantics.c (expand_or_defer_fn): Likewise.
+	(finalize_nrv): Call cp_walk_tree.
+
 2007-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33025

@@ -35,9 +35,6 @@ typedef void (*lang_print_tree_hook) (FILE *, tree, int indent);
 
 struct lang_hooks_for_tree_inlining
 {
-  tree (*walk_subtrees) (tree *, int *,
-			 tree (*) (tree *, int *, void *),
-			 void *, struct pointer_set_t*);
   int (*cannot_inline_tree_fn) (tree *);
   int (*disregard_inline_limits) (const_tree);
   int (*auto_var_in_fn_p) (const_tree, const_tree);

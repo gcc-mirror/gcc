@@ -4736,6 +4736,10 @@ extern void verify_stmt_tree			(tree);
 extern linkage_kind decl_linkage		(tree);
 extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 			      void*, struct pointer_set_t*);
+#define cp_walk_tree(a,b,c,d) \
+	walk_tree_1 (a, b, c, d, cp_walk_subtrees)
+#define cp_walk_tree_without_duplicates(a,b,c) \
+	walk_tree_without_duplicates_1 (a, b, c, cp_walk_subtrees)
 extern int cp_cannot_inline_tree_fn		(tree*);
 extern int cp_auto_var_in_fn_p			(const_tree, const_tree);
 extern tree fold_if_not_in_template		(tree);

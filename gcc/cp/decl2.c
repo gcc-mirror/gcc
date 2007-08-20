@@ -1561,7 +1561,7 @@ static int
 type_visibility (tree type)
 {
   int vis = VISIBILITY_DEFAULT;
-  walk_tree_without_duplicates (&type, min_vis_r, &vis);
+  cp_walk_tree_without_duplicates (&type, min_vis_r, &vis);
   return vis;
 }
 

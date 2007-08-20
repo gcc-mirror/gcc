@@ -5026,8 +5026,20 @@ struct pointer_set_t;
 /* The type of a callback function for walking over tree structure.  */
 
 typedef tree (*walk_tree_fn) (tree *, int *, void *);
-extern tree walk_tree (tree*, walk_tree_fn, void*, struct pointer_set_t*);
-extern tree walk_tree_without_duplicates (tree*, walk_tree_fn, void*);
+
+/* The type of a callback function that represents a custom walk_tree.  */
+
+typedef tree (*walk_tree_lh) (tree *, int *, tree (*) (tree *, int *, void *),
+			      void *, struct pointer_set_t*);
+
+extern tree walk_tree_1 (tree*, walk_tree_fn, void*, struct pointer_set_t*,
+			 walk_tree_lh);
+extern tree walk_tree_without_duplicates_1 (tree*, walk_tree_fn, void*,
+					    walk_tree_lh);
+#define walk_tree(a,b,c,d) \
+	walk_tree_1 (a, b, c, d, NULL)
+#define walk_tree_without_duplicates(a,b,c) \
+	walk_tree_without_duplicates_1 (a, b, c, NULL)
 
 /* Assign the RTX to declaration.  */
 

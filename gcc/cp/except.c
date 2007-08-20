@@ -782,7 +782,7 @@ build_throw (tree exp)
 	     we don't have to do them during unwinding.  But first wrap
 	     them in MUST_NOT_THROW_EXPR, since they are run after the
 	     exception object is initialized.  */
-	  walk_tree_without_duplicates (&temp_expr, wrap_cleanups_r, 0);
+	  cp_walk_tree_without_duplicates (&temp_expr, wrap_cleanups_r, 0);
 	  exp = build2 (COMPOUND_EXPR, TREE_TYPE (exp), temp_expr, exp);
 	  exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
 	}
