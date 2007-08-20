@@ -1914,6 +1914,15 @@ inlinable_function_p (tree fn)
   return inlinable;
 }
 
+/* Return true if we shall disregard inlining limits for the function
+   FN during inlining.  */
+
+bool
+disregard_inline_limits_p (tree fn)
+{
+  return lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL_TREE;
+}
+
 /* Estimate the cost of a memory move.  Use machine dependent
    word size and take possible memcpy call into account.  */
 

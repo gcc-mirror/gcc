@@ -290,19 +290,6 @@ lhd_tree_inlining_cannot_inline_tree_fn (tree *fnp)
   return 0;
 }
 
-/* lang_hooks.tree_inlining.disregard_inline_limits is called to
-   determine whether a function should be considered for inlining even
-   if it would exceed inlining limits.  */
-
-int
-lhd_tree_inlining_disregard_inline_limits (const_tree fn)
-{
-  if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
-    return 1;
-
-  return 0;
-}
-
 /* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree
    nodes.  Returns nonzero if it does not want the usual dumping of the
    second argument.  */
