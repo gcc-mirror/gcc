@@ -1134,7 +1134,6 @@ build_aggr_init (tree exp, tree init, int flags)
     /* Just know that we've seen something for this node.  */
     TREE_USED (exp) = 1;
 
-  TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
   is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
@@ -1142,7 +1141,6 @@ build_aggr_init (tree exp, tree init, int flags)
 		      init, LOOKUP_NORMAL|flags);
   stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
-  TREE_TYPE (exp) = type;
   TREE_READONLY (exp) = was_const;
   TREE_THIS_VOLATILE (exp) = was_volatile;
 
@@ -2320,7 +2318,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   tbase = create_temporary_var (ptype);
   tbase_init = build_modify_expr (tbase, NOP_EXPR,
 				  fold_build2 (POINTER_PLUS_EXPR, ptype,
-					       base,
+					       fold_convert (ptype, base),
 					       virtual_size));
   DECL_REGISTER (tbase) = 1;
   controller = build3 (BIND_EXPR, void_type_node, tbase,
