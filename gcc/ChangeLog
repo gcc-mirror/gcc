@@ -1,3 +1,10 @@
+2007-08-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* dwarf2out.c (text_section_used): Move declaration outside ifdef
+	DWARF2_DEBUGGING_INFO.
+	(cold_text_section_used): Same.
+	(cold_text_section): Same.
+
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
         * c-typeck.c (convert_for_assignment): Use the type of
