@@ -673,18 +673,10 @@ expand_one_register_var (tree var)
 
   /* Note if the object is a user variable.  */
   if (!DECL_ARTIFICIAL (var))
-    {
       mark_user_reg (x);
 
-      /* Trust user variables which have a pointer type to really
-	 be pointers.  Do not trust compiler generated temporaries
-	 as our type system is totally busted as it relates to
-	 pointer arithmetic which translates into lots of compiler
-	 generated objects with pointer types, but which are not really
-	 pointers.  */
-      if (POINTER_TYPE_P (type))
-	mark_reg_pointer (x, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (var))));
-    }
+  if (POINTER_TYPE_P (type))
+    mark_reg_pointer (x, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (var))));
 }
 
 /* A subroutine of expand_one_var.  Called to assign rtl to a VAR_DECL that
