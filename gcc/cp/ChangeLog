@@ -1,3 +1,9 @@
+2007-08-20  Pawel Sikora  <pluto@pld-linux.org>
+
+	PR c++/7302
+	* class.c (finish_struct_1): Warn when a class has virtual
+	functions and accessible non-virtual destructor.
+
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/22369
