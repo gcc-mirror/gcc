@@ -303,19 +303,6 @@ lhd_tree_inlining_disregard_inline_limits (const_tree fn)
   return 0;
 }
 
-/* lang_hooks.tree_inlining.auto_var_in_fn_p is called to determine
-   whether VT is an automatic variable defined in function FT.  */
-
-int
-lhd_tree_inlining_auto_var_in_fn_p (const_tree var, const_tree fn)
-{
-  return (DECL_P (var) && DECL_CONTEXT (var) == fn
-	  && (((TREE_CODE (var) == VAR_DECL || TREE_CODE (var) == PARM_DECL)
-	       && ! TREE_STATIC (var))
-	      || TREE_CODE (var) == LABEL_DECL
-	      || TREE_CODE (var) == RESULT_DECL));
-}
-
 /* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree
    nodes.  Returns nonzero if it does not want the usual dumping of the
    second argument.  */

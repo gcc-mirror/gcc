@@ -1,5 +1,14 @@
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
+	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P):
+	Remove.
+	* cp-tree.h (cp_auto_var_in_fn_p): Remove.
+	(nonstatic_local_decl_p): Likewise.
+	* tree.c (cp_auto_var_in_fn_p): Remove.
+	* decl.c (nonstatic_local_decl_p): Remove.
+
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_WALK_SUBTREES):
 	Remove define.
 	* tree.h (cp_walk_tree): New define to walk_tree_1 with

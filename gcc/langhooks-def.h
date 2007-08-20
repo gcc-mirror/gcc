@@ -70,7 +70,6 @@ extern tree lhd_builtin_function (tree decl);
 /* Declarations of default tree inlining hooks.  */
 extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
 extern int lhd_tree_inlining_disregard_inline_limits (const_tree);
-extern int lhd_tree_inlining_auto_var_in_fn_p (const_tree, const_tree);
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *, tree);
 
@@ -137,15 +136,12 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
   lhd_tree_inlining_cannot_inline_tree_fn
 #define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
   lhd_tree_inlining_disregard_inline_limits
-#define LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P \
-  lhd_tree_inlining_auto_var_in_fn_p
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P \
   hook_bool_tree_tree_false
 
 #define LANG_HOOKS_TREE_INLINING_INITIALIZER { \
   LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN, \
   LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS, \
-  LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P, \
   LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P, \
 }
 

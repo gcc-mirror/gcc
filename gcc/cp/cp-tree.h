@@ -4251,7 +4251,6 @@ extern tree maybe_push_decl			(tree);
 extern tree force_target_expr			(tree, tree);
 extern tree build_target_expr_with_type		(tree, tree);
 extern int local_variable_p			(const_tree);
-extern int nonstatic_local_decl_p		(const_tree);
 extern tree register_dtor_fn			(tree);
 extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cp_fname_init			(const char *, tree *);
@@ -4741,7 +4740,6 @@ extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 #define cp_walk_tree_without_duplicates(a,b,c) \
 	walk_tree_without_duplicates_1 (a, b, c, cp_walk_subtrees)
 extern int cp_cannot_inline_tree_fn		(tree*);
-extern int cp_auto_var_in_fn_p			(const_tree, const_tree);
 extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);

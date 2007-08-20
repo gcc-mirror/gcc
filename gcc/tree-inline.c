@@ -428,7 +428,7 @@ remap_decls (tree decls, copy_body_data *id)
       /* We can not chain the local static declarations into the unexpanded_var_list
          as we can't duplicate them or break one decl rule.  Go ahead and link
          them into unexpanded_var_list.  */
-      if (!lang_hooks.tree_inlining.auto_var_in_fn_p (old_var, id->src_fn)
+      if (!auto_var_in_fn_p (old_var, id->src_fn)
 	  && !DECL_EXTERNAL (old_var))
 	{
 	  cfun->unexpanded_var_list = tree_cons (NULL_TREE, old_var,
@@ -586,7 +586,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
      variables.  We don't want to copy static variables; there's only
      one of those, no matter how many times we inline the containing
      function.  Similarly for globals from an outer function.  */
-  else if (lang_hooks.tree_inlining.auto_var_in_fn_p (*tp, fn))
+  else if (auto_var_in_fn_p (*tp, fn))
     {
       tree new_decl;
 
@@ -641,8 +641,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 	 discarding.  */
       if (TREE_CODE (*tp) == GIMPLE_MODIFY_STMT
 	  && GIMPLE_STMT_OPERAND (*tp, 0) == GIMPLE_STMT_OPERAND (*tp, 1)
-	  && (lang_hooks.tree_inlining.auto_var_in_fn_p
-	      (GIMPLE_STMT_OPERAND (*tp, 0), fn)))
+	  && (auto_var_in_fn_p (GIMPLE_STMT_OPERAND (*tp, 0), fn)))
 	{
 	  /* Some assignments VAR = VAR; don't generate any rtl code
 	     and thus don't count as variable modification.  Avoid
@@ -1268,7 +1267,7 @@ self_inlining_addr_expr (tree value, tree fn)
 
   var = get_base_address (TREE_OPERAND (value, 0));
 
-  return var && lang_hooks.tree_inlining.auto_var_in_fn_p (var, fn);
+  return var && auto_var_in_fn_p (var, fn);
 }
 
 static void

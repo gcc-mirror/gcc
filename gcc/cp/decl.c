@@ -8976,18 +8976,6 @@ local_variable_p (const_tree t)
   return 0;
 }
 
-/* Returns nonzero if T is an automatic local variable or a label.
-   (These are the declarations that need to be remapped when the code
-   containing them is duplicated.)  */
-
-int
-nonstatic_local_decl_p (const_tree t)
-{
-  return ((local_variable_p (t) && !TREE_STATIC (t))
-	  || TREE_CODE (t) == LABEL_DECL
-	  || TREE_CODE (t) == RESULT_DECL);
-}
-
 /* Like local_variable_p, but suitable for use as a tree-walking
    function.  */
 
