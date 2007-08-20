@@ -130,6 +130,7 @@ extern void insert_decl_map (copy_body_data *, tree, tree);
 
 unsigned int optimize_inline_calls (tree);
 bool tree_inlinable_function_p (tree);
+bool disregard_inline_limits_p (tree);
 tree copy_tree_r (tree *, int *, void *);
 void clone_body (tree, tree, void *);
 void save_body (tree, tree *, tree *);

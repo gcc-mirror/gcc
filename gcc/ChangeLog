@@ -1,5 +1,25 @@
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
+	* c-objc-common.c (c_disregard_inline_limits): Remove.
+	* c-objc-common.h (c_disregard_inline_limits): Likewise.
+	* cgraphunit.c (cgraph_process_new_functions): Call
+	disregard_inline_limits_p.
+	(cgraph_preserve_function_body_p): Likewise.
+	* ipa-inline.c (compute_inline_parameters): Likewise.
+	* langhooks-def.h (lhd_tree_inlining_disregard_inline_limits):
+	Remove.
+	(LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS): Remove.
+	(LANG_HOOKS_TREE_INLINING_INITIALIZER): Remove initializer for
+	disregard_inline_limits langhook.
+	* langhooks.c (lhd_tree_inlining_disregard_inline_limits):
+	Remove.
+	* langhooks.h (lang_hooks_for_tree_inlining): Remove
+	disregard_inline_limits langhook.
+	* tree-inline.c (disregard_inline_limits_p): New function.
+	* tree-inline.h (disregard_inline_limits_p): Declare.
+
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* langhooks-def.h (lhd_tree_inlining_auto_var_in_fn_p): Remove.
 	(LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P): Likewise.
 	(LANG_HOOKS_TREE_INLINING_INITIALIZER): Remove initializer for

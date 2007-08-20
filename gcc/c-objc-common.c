@@ -50,20 +50,6 @@ c_missing_noreturn_ok_p (tree decl)
   return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
 }
 
-/* We want to inline `extern inline' functions even if this would
-   violate inlining limits.  Some glibc and linux constructs depend on
-   such functions always being inlined when optimizing.  */
-
-int
-c_disregard_inline_limits (const_tree fn)
-{
-  if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL)
-    return 1;
-
-  return (!flag_really_no_inline && DECL_DECLARED_INLINE_P (fn)
-	  && DECL_EXTERNAL (fn));
-}
-
 int
 c_cannot_inline_tree_fn (tree *fnp)
 {
