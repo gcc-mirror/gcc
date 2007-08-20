@@ -1,3 +1,11 @@
+2007-08-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30564
+	* tree-inline.c (optimize_inline_calls): Move the cgraph checking
+	code in front of the compacting of basic blocks.
+	Move the folding of statements inbetween the cgraph checking
+	and compacting of basic blocks.
+
 2007-08-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
            Serge Belyshev  <belyshev@depni.sinp.msu.ru>
 

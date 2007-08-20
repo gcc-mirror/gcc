@@ -1,3 +1,9 @@
+2007-08-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/30564
+	* gcc.c-torture/compile/pr30564-1.c: New test.
+	* gcc.c-torture/compile/pr30564-2.c: New test.
+
 2007-08-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: New test.
