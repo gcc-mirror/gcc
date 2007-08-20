@@ -682,7 +682,7 @@ build_throw (tree exp)
 	 respectively.  */
       temp_type = is_bitfield_expr_with_lowered_type (exp);
       if (!temp_type)
-	temp_type = type_decays_to (TYPE_MAIN_VARIANT (TREE_TYPE (exp)));
+	temp_type = type_decays_to (TREE_TYPE (exp));
 
       /* OK, this is kind of wacky.  The standard says that we call
 	 terminate when the exception handling mechanism, after

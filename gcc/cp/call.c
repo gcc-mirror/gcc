@@ -5514,15 +5514,18 @@ build_new_method_call (tree instance, tree fns, tree args,
 
   instance_ptr = build_this (instance);
 
-  /* It's OK to call destructors on cv-qualified objects.  Therefore,
-     convert the INSTANCE_PTR to the unqualified type, if necessary.  */
-  if (DECL_DESTRUCTOR_P (fn))
+  /* It's OK to call destructors and constructors on cv-qualified objects.
+     Therefore, convert the INSTANCE_PTR to the unqualified type, if
+     necessary.  */
+  if (DECL_DESTRUCTOR_P (fn)
+      || DECL_CONSTRUCTOR_P (fn))
     {
       tree type = build_pointer_type (basetype);
       if (!same_type_p (type, TREE_TYPE (instance_ptr)))
 	instance_ptr = build_nop (type, instance_ptr);
-      name = complete_dtor_identifier;
     }
+  if (DECL_DESTRUCTOR_P (fn))
+    name = complete_dtor_identifier;
 
   class_type = (conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE);
   mem_args = tree_cons (NULL_TREE, instance_ptr, args);

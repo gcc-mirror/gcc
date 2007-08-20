@@ -1,5 +1,23 @@
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
+	PR c++/22369
+	PR c++/22451
+	* call.c (build_new_method_call): Convert initializer to
+	the basetype.
+	* init.c (build_aggr_init): Do not fiddle with types.
+	(build_vec_delete_1): Use correct type for POINTER_PLUS_EXPR.
+	* except.c (build_throw): Do not drop qualifiers for the
+	pointer type.
+	* typeck.c (get_member_function_from_ptrfunc): Do not
+	fiddle with types, instead convert.
+	(build_ptrmemfunc1): Convert to the target type for
+	initialization.
+	(gfc_trans_allocate): Convert result to target type.
+	* cp-objcp-common.c (cxx_get_alias_set): Pointers to
+	pointer-to-member structures shall have alias set zero as well.
+
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P):
 	Remove.
 	* cp-tree.h (cp_auto_var_in_fn_p): Remove.
