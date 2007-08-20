@@ -2823,10 +2823,6 @@ optimize_inline_calls (tree fn)
     gimple_expand_calls_inline (bb, &id);
 
   pop_gimplify_context (NULL);
-  /* Renumber the (code) basic_blocks consecutively.  */
-  compact_blocks ();
-  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
-  number_blocks (fn);
 
 #ifdef ENABLE_CHECKING
     {
@@ -2839,13 +2835,20 @@ optimize_inline_calls (tree fn)
 	gcc_assert (e->inline_failed);
     }
 #endif
+  
+  /* Fold the statements before compacting/renumbering the basic blocks.  */
+  fold_marked_statements (last, id.statements_to_fold);
+  pointer_set_destroy (id.statements_to_fold);
+  
+  /* Renumber the (code) basic_blocks consecutively.  */
+  compact_blocks ();
+  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
+  number_blocks (fn);
 
   /* We are not going to maintain the cgraph edges up to date.
      Kill it so it won't confuse us.  */
   cgraph_node_remove_callees (id.dst_node);
 
-  fold_marked_statements (last, id.statements_to_fold);
-  pointer_set_destroy (id.statements_to_fold);
   fold_cond_expr_cond ();
   if (current_function_has_nonlocal_label)
     make_nonlocal_label_edges ();
