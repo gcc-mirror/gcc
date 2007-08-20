@@ -1,3 +1,11 @@
+2007-08-19  Roger Sayle  <roger@eyesopen.com>
+
+	* match.c (intrinsic_operators): Make static.
+	(gfc_op2string): New function for converting a gfc_intrinsic_op to
+	to a "const char*", replacing the macro of the same name.
+	* gfortran.h (intrinsic_operators): Delete prototype.
+	(gfc_op2string): Replace macro with function prototype.
+
 2007-08-18  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h (gfc_is_intrinsic_typename): Add declaration.

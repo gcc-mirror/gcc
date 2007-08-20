@@ -209,10 +209,6 @@ typedef enum
 gfc_intrinsic_op;
 
 
-/* Strings for all intrinsic operators.  */
-extern mstring intrinsic_operators[];
-
-
 /* This macro is the number of intrinsic operators that exist.
    Assumptions are made about the numbering of the interface_op enums.  */
 #define GFC_INTRINSIC_OPS GFC_INTRINSIC_END
@@ -1962,10 +1958,7 @@ void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
 const char *gfc_basic_typename (bt);
 const char *gfc_typename (gfc_typespec *);
-
-#define gfc_op2string(OP) (OP == INTRINSIC_ASSIGN ? \
-			   "=" : gfc_code2string (intrinsic_operators, OP))
-
+const char *gfc_op2string (gfc_intrinsic_op);
 const char *gfc_code2string (const mstring *, int);
 int gfc_string2code (const mstring *, const char *);
 const char *gfc_intent_string (sym_intent);
