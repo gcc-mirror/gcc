@@ -32,6 +32,7 @@ void foo (){
     out[i] += diff;
   }
  }
+}
 
 /* Vectorized. Changing misalignment in the inner-loop.  */
 void fir (){
