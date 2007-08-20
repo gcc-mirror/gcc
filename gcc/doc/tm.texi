@@ -1502,6 +1502,10 @@ may affect its placement.
 Returns true if the target supports decimal floating point.
 @end deftypefn
 
+@deftypefn {Target Hook} {bool} TARGET_FIXED_POINT_SUPPORTED_P (void)
+Returns true if the target supports fixed-point arithmetic.
+@end deftypefn
+
 @deftypefn {Target Hook} {const char *} TARGET_MANGLE_TYPE (tree @var{type})
 If your target defines any fundamental types, or any types your target
 uses should be mangled differently from the default, define this hook

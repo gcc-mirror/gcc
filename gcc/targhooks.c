@@ -298,6 +298,10 @@ default_scalar_mode_supported_p (enum machine_mode mode)
       return false;
 
     case MODE_DECIMAL_FLOAT:
+    case MODE_FRACT:
+    case MODE_UFRACT:
+    case MODE_ACCUM:
+    case MODE_UACCUM:
       return false;
 
     default:
@@ -311,6 +315,14 @@ bool
 default_decimal_float_supported_p (void)
 {
   return ENABLE_DECIMAL_FLOAT;
+}
+
+/* True if the target supports fixed-point arithmetic.  */
+
+bool
+default_fixed_point_supported_p (void)
+{
+  return ENABLE_FIXED_POINT;
 }
 
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns

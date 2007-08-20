@@ -52,7 +52,7 @@ enum rid
   RID_VOLATILE, RID_SIGNED,  RID_AUTO,  RID_RESTRICT,
 
   /* C extensions */
-  RID_COMPLEX, RID_THREAD,
+  RID_COMPLEX, RID_THREAD, RID_SAT,
 
   /* C++ */
   RID_FRIEND, RID_VIRTUAL, RID_EXPLICIT, RID_EXPORT, RID_MUTABLE,
@@ -72,6 +72,7 @@ enum rid
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
+  RID_FRACT, RID_ACCUM,
 
   /* Too many ways of getting the name of a function as a string */
   RID_FUNCTION_NAME, RID_PRETTY_FUNCTION_NAME, RID_C99_FUNCTION_NAME,
@@ -670,6 +671,8 @@ extern int c_common_handle_option (size_t code, const char *arg, int value);
 extern bool c_common_missing_argument (const char *opt, size_t code);
 extern tree c_common_type_for_mode (enum machine_mode, int);
 extern tree c_common_type_for_size (unsigned int, int);
+extern tree c_common_fixed_point_type_for_size (unsigned int, unsigned int,
+						int, int);
 extern tree c_common_unsigned_type (tree);
 extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
