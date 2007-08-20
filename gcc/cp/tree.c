@@ -1282,7 +1282,7 @@ int
 count_trees (tree t)
 {
   int n_trees = 0;
-  walk_tree_without_duplicates (&t, count_trees_r, &n_trees);
+  cp_walk_tree_without_duplicates (&t, count_trees_r, &n_trees);
   return n_trees;
 }
 
@@ -1319,7 +1319,7 @@ verify_stmt_tree (tree t)
 {
   htab_t statements;
   statements = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
-  walk_tree (&t, verify_stmt_tree_r, &statements, NULL);
+  cp_walk_tree (&t, verify_stmt_tree_r, &statements, NULL);
   htab_delete (statements);
 }
 
@@ -1521,8 +1521,8 @@ break_out_target_exprs (tree t)
     target_remap = splay_tree_new (splay_tree_compare_pointers,
 				   /*splay_tree_delete_key_fn=*/NULL,
 				   /*splay_tree_delete_value_fn=*/NULL);
-  walk_tree (&t, bot_manip, target_remap, NULL);
-  walk_tree (&t, bot_replace, target_remap, NULL);
+  cp_walk_tree (&t, bot_manip, target_remap, NULL);
+  cp_walk_tree (&t, bot_replace, target_remap, NULL);
 
   if (!--target_remap_count)
     {
@@ -2290,7 +2290,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
-      result = walk_tree (&(NODE), func, data, pset);	\
+      result = cp_walk_tree (&(NODE), func, data, pset);	\
       if (result) goto out;				\
     }							\
   while (0)

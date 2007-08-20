@@ -9061,8 +9061,7 @@ check_default_argument (tree decl, tree arg)
 
      The keyword `this' shall not be used in a default argument of a
      member function.  */
-  var = walk_tree_without_duplicates (&arg, local_variable_p_walkfn,
-				      NULL);
+  var = cp_walk_tree_without_duplicates (&arg, local_variable_p_walkfn, NULL);
   if (var)
     {
       error ("default argument %qE uses local variable %qD", arg, var);

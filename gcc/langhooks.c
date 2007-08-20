@@ -276,27 +276,6 @@ lhd_types_compatible_p (tree x, tree y)
   return TYPE_MAIN_VARIANT (x) == TYPE_MAIN_VARIANT (y);
 }
 
-/* lang_hooks.tree_inlining.walk_subtrees is called by walk_tree()
-   after handling common cases, but before walking code-specific
-   sub-trees.  If this hook is overridden for a language, it should
-   handle language-specific tree codes, as well as language-specific
-   information associated to common tree codes.  If a tree node is
-   completely handled within this function, it should set *SUBTREES to
-   0, so that generic handling isn't attempted.  The generic handling
-   cannot deal with language-specific tree codes, so make sure it is
-   set properly.  Both SUBTREES and *SUBTREES is guaranteed to be
-   nonzero when the function is called.  */
-
-tree
-lhd_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
-				 int *subtrees ATTRIBUTE_UNUSED,
-				 walk_tree_fn func ATTRIBUTE_UNUSED,
-				 void *data ATTRIBUTE_UNUSED,
-				 struct pointer_set_t *pset ATTRIBUTE_UNUSED)
-{
-  return NULL_TREE;
-}
-
 /* lang_hooks.tree_inlining.cannot_inline_tree_fn is called to
    determine whether there are language-specific reasons for not
    inlining a given function.  */

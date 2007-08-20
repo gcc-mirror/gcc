@@ -3184,9 +3184,9 @@ expand_or_defer_fn (tree fn)
     }
 
   /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-				simplify_aggr_init_exprs_r,
-				NULL);
+  cp_walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+				   simplify_aggr_init_exprs_r,
+				   NULL);
 
   /* If this is a constructor or destructor body, we have to clone
      it.  */
@@ -3336,7 +3336,7 @@ finalize_nrv (tree *tp, tree var, tree result)
   data.var = var;
   data.result = result;
   data.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
-  walk_tree (tp, finalize_nrv_r, &data, 0);
+  cp_walk_tree (tp, finalize_nrv_r, &data, 0);
   htab_delete (data.visited);
 }
 

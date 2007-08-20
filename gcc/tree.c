@@ -8233,7 +8233,7 @@ num_ending_zeros (const_tree x)
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
-      result = walk_tree (&(NODE), func, data, pset);	\
+      result = walk_tree_1 (&(NODE), func, data, pset, lh);	\
       if (result)					\
 	return result;					\
     }							\
@@ -8245,7 +8245,7 @@ num_ending_zeros (const_tree x)
 
 static tree
 walk_type_fields (tree type, walk_tree_fn func, void *data,
-		  struct pointer_set_t *pset)
+		  struct pointer_set_t *pset, walk_tree_lh lh)
 {
   tree result = NULL_TREE;
 
@@ -8325,7 +8325,8 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
    and to avoid visiting a node more than once.  */
 
 tree
-walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
+walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
+	     struct pointer_set_t *pset, walk_tree_lh lh)
 {
   enum tree_code code;
   int walk_subtrees;
@@ -8372,10 +8373,12 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	return NULL_TREE;
     }
 
-  result = lang_hooks.tree_inlining.walk_subtrees (tp, &walk_subtrees, func,
-						   data, pset);
-  if (result || !walk_subtrees)
-    return result;
+  if (lh)
+    {
+      result = (*lh) (tp, &walk_subtrees, func, data, pset);
+      if (result || !walk_subtrees)
+        return result;
+    }
 
   switch (code)
     {
@@ -8529,7 +8532,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	  if (result || !walk_subtrees)
 	    return result;
 
-	  result = walk_type_fields (*type_p, func, data, pset);
+	  result = walk_type_fields (*type_p, func, data, pset, lh);
 	  if (result)
 	    return result;
 
@@ -8594,7 +8597,7 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	}
       /* If this is a type, walk the needed fields in the type.  */
       else if (TYPE_P (*tp))
-	return walk_type_fields (*tp, func, data, pset);
+	return walk_type_fields (*tp, func, data, pset, lh);
       break;
     }
 
@@ -8608,13 +8611,14 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 /* Like walk_tree, but does not walk duplicate nodes more than once.  */
 
 tree
-walk_tree_without_duplicates (tree *tp, walk_tree_fn func, void *data)
+walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
+				walk_tree_lh lh)
 {
   tree result;
   struct pointer_set_t *pset;
 
   pset = pointer_set_create ();
-  result = walk_tree (tp, func, data, pset);
+  result = walk_tree_1 (tp, func, data, pset, lh);
   pointer_set_destroy (pset);
   return result;
 }

@@ -2391,7 +2391,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
   if (TYPE_P (t))
     {
       tree context = TYPE_CONTEXT (t);
-      walk_tree (&context, &find_parameter_packs_r, ppd, ppd->visited);
+      cp_walk_tree (&context, &find_parameter_packs_r, ppd, ppd->visited);
     }
 
   /* This switch statement will return immediately if we don't find a
@@ -2405,8 +2405,8 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       /* Check the template arguments.  */
-      walk_tree (&TYPE_TI_ARGS (t), &find_parameter_packs_r, ppd, 
-		 ppd->visited);
+      cp_walk_tree (&TYPE_TI_ARGS (t), &find_parameter_packs_r, ppd, 
+		    ppd->visited);
 
       /* Dig out the underlying TEMPLATE_TEMPLATE_PARM.  */
       t = TYPE_TI_TEMPLATE (t);
@@ -2442,7 +2442,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       if (TYPE_TEMPLATE_INFO (t))
         {
           tree args = TREE_VALUE (TYPE_TEMPLATE_INFO (t));
-          walk_tree (&args, &find_parameter_packs_r, ppd, ppd->visited);
+          cp_walk_tree (&args, &find_parameter_packs_r, ppd, ppd->visited);
         }
 
       *walk_subtrees = 0;
@@ -2462,8 +2462,8 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       return NULL_TREE;
 
     case INTEGER_TYPE:
-      walk_tree (&TYPE_MAX_VALUE (t), &find_parameter_packs_r, 
-		 ppd, ppd->visited);
+      cp_walk_tree (&TYPE_MAX_VALUE (t), &find_parameter_packs_r, 
+		    ppd, ppd->visited);
       *walk_subtrees = 0;
       return NULL_TREE;
 
@@ -2485,7 +2485,7 @@ uses_parameter_packs (tree t)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
+  cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   pointer_set_destroy (ppd.visited);
   return parameter_packs != NULL_TREE;
 }
@@ -2535,8 +2535,8 @@ make_pack_expansion (tree arg)
          class expansion.  */
       ppd.visited = pointer_set_create ();
       ppd.parameter_packs = &parameter_packs;
-      walk_tree (&TREE_PURPOSE (arg), &find_parameter_packs_r, 
-                 &ppd, ppd.visited);
+      cp_walk_tree (&TREE_PURPOSE (arg), &find_parameter_packs_r, 
+                    &ppd, ppd.visited);
 
       if (parameter_packs == NULL_TREE)
         {
@@ -2553,8 +2553,8 @@ make_pack_expansion (tree arg)
             {
               /* Determine which parameter packs will be expanded in this
                  argument.  */
-              walk_tree (&TREE_VALUE (value), &find_parameter_packs_r, 
-                         &ppd, ppd.visited);
+              cp_walk_tree (&TREE_VALUE (value), &find_parameter_packs_r, 
+                            &ppd, ppd.visited);
             }
         }
 
@@ -2592,7 +2592,7 @@ make_pack_expansion (tree arg)
   /* Determine which parameter packs will be expanded.  */
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
+  cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
   pointer_set_destroy (ppd.visited);
 
   /* Make sure we found some parameter packs.  */
@@ -2637,7 +2637,7 @@ check_for_bare_parameter_packs (tree t)
 
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = pointer_set_create ();
-  walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
+  cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   pointer_set_destroy (ppd.visited);
 
   if (parameter_packs) 
@@ -5896,10 +5896,10 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data,
     pfd.visited = visited;
   else
     pfd.visited = pointer_set_create ();
-  result = walk_tree (&t,
-		      for_each_template_parm_r,
-		      &pfd,
-		      pfd.visited) != NULL_TREE;
+  result = cp_walk_tree (&t,
+		         for_each_template_parm_r,
+		         &pfd,
+		         pfd.visited) != NULL_TREE;
 
   /* Clean up.  */
   if (!visited)

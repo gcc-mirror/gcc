@@ -55,8 +55,6 @@ static int java_handle_option (size_t scode, const char *arg, int value);
 static void put_decl_string (const char *, int);
 static void put_decl_node (tree);
 static void java_print_error_function (diagnostic_context *, const char *);
-static tree java_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
-					      void *, struct pointer_set_t *);
 static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
 static bool java_dump_tree (void *, tree);
@@ -187,9 +185,6 @@ struct language_function GTY(())
 
 #undef LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR java_gimplify_expr
-
-#undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
-#define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES java_tree_inlining_walk_subtrees
 
 #undef LANG_HOOKS_DECL_OK_FOR_SIBCALL
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL java_decl_ok_for_sibcall
@@ -686,45 +681,6 @@ decl_constant_value (tree decl)
       && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
     return DECL_INITIAL (decl);
   return decl;
-}
-
-/* Walk the language specific tree nodes during inlining.  */
-
-static tree
-java_tree_inlining_walk_subtrees (tree *tp ATTRIBUTE_UNUSED,
-				  int *subtrees ATTRIBUTE_UNUSED,
-				  walk_tree_fn func ATTRIBUTE_UNUSED,
-				  void *data ATTRIBUTE_UNUSED,
-				  struct pointer_set_t *pset ATTRIBUTE_UNUSED)
-{
-  enum tree_code code;
-  tree result;
-
-#define WALK_SUBTREE(NODE)				\
-  do							\
-    {							\
-      result = walk_tree (&(NODE), func, data, pset);	\
-      if (result)					\
-	return result;					\
-    }							\
-  while (0)
-
-  tree t = *tp;
-  if (!t)
-    return NULL_TREE;
-
-  code = TREE_CODE (t);
-  switch (code)
-    {
-    case BLOCK:
-      WALK_SUBTREE (BLOCK_EXPR_BODY (t));
-      return NULL_TREE;
-
-    default:
-      return NULL_TREE;
-    }
-
-  #undef WALK_SUBTREE
 }
 
 /* Every call to a static constructor has an associated boolean

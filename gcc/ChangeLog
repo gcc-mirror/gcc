@@ -1,3 +1,27 @@
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (WALK_SUBTREE): Call walk_tree_1.
+	(walk_type_fields): Take lh parameter.
+	(walk_tree): Rename to ...
+	(walk_tree_1): ... this.  Do not call the walk_subtrees
+	langhook but the now passed callback.  Pass lh on recursion.
+	(walk_tree_without_duplicates): Rename to ...
+	(walk_tree_without_duplicates_1): ... this.  Take lh parameter
+	and call walk_tree_1.
+	* tree.h (walk_tree_lh): New typedef.
+	(walk_tree_1): Declare.
+	(walk_tree_without_duplicates_1): Likewise.
+	(walk_tree): New define to walk_tree_1 with NULL lh parameter.
+	(walk_tree_without_duplicates): New define to
+	walk_tree_without_duplicates_1 with NULL lh parameter.
+	* langhooks.c (lhd_tree_inlining_walk_subtrees): Remove.
+	* langhooks.h (lang_hooks_for_tree_inlining): Remove walk_subtrees
+	langhook.
+	* langhooks-def.h (lhd_tree_inlining_walk_subtrees): Remove.
+	(LANG_HOOKS_TREE_INLINING_WALK_SUBTREES): Likewise.
+	(LANG_HOOKS_TREE_INLINING_INITIALIZER): Remove walk_subtrees
+	initializer.
+
 2007-08-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/30564
