@@ -1898,19 +1898,11 @@ expand_decl (tree decl)
 
       /* Note if the object is a user variable.  */
       if (!DECL_ARTIFICIAL (decl))
-	{
 	  mark_user_reg (DECL_RTL (decl));
 
-	  /* Trust user variables which have a pointer type to really
-	     be pointers.  Do not trust compiler generated temporaries
-	     as our type system is totally busted as it relates to
-	     pointer arithmetic which translates into lots of compiler
-	     generated objects with pointer types, but which are not really
-	     pointers.  */
-	  if (POINTER_TYPE_P (type))
-	    mark_reg_pointer (DECL_RTL (decl),
-			      TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
-	}
+      if (POINTER_TYPE_P (type))
+	mark_reg_pointer (DECL_RTL (decl),
+			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST
