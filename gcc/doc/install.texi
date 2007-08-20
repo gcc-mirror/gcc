@@ -1317,6 +1317,13 @@ or @samp{dpd}).  The @samp{bid} (binary integer decimal) format is
 default on i386 and x86_64 systems, and the @samp{dpd} (densely packed
 decimal) format is default on PowerPC systems.
 
+@item --enable-fixed-point
+@itemx --disable-fixed-point
+Enable (or disable) support for C fixed-point arithmetic.
+This option is enabled by default for some targets (such as MIPS) which
+have hardware-support for fixed-point operations.  On other targets, you
+may enable this option manually.
+
 @item --with-long-double-128
 Specify if @code{long double} type should be 128-bit by default on selected
 GNU/Linux architectures.  If using @code{--without-long-double-128},

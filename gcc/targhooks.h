@@ -55,6 +55,7 @@ extern void default_unwind_emit (FILE *, rtx);
 
 extern bool default_scalar_mode_supported_p (enum machine_mode);
 extern bool default_decimal_float_supported_p (void);
+extern bool default_fixed_point_supported_p (void);
 
 extern const char * default_invalid_within_doloop (rtx);
 

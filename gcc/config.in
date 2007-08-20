@@ -65,6 +65,12 @@
 #endif
 
 
+/* Define to 1 to enable fixed-point arithmetic extension to C. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_FIXED_POINT
+#endif
+
+
 /* Define if you want fold checked that it never destructs its argument. This
    is quite expensive. */
 #ifndef USED_FOR_TARGET
@@ -1363,37 +1369,37 @@
 #endif
 
 
-/* The size of a `int', as computed by sizeof. */
+/* The size of `int', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_INT
 #endif
 
 
-/* The size of a `long', as computed by sizeof. */
+/* The size of `long', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_LONG
 #endif
 
 
-/* The size of a `long long', as computed by sizeof. */
+/* The size of `long long', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_LONG_LONG
 #endif
 
 
-/* The size of a `short', as computed by sizeof. */
+/* The size of `short', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_SHORT
 #endif
 
 
-/* The size of a `void *', as computed by sizeof. */
+/* The size of `void *', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF_VOID_P
 #endif
 
 
-/* The size of a `__int64', as computed by sizeof. */
+/* The size of `__int64', as computed by sizeof. */
 #ifndef USED_FOR_TARGET
 #undef SIZEOF___INT64
 #endif

@@ -479,6 +479,9 @@ struct gcc_target
   /* True if the target supports decimal floating point.  */
   bool (* decimal_float_supported_p) (void);
 
+  /* True if the target supports fixed-point.  */
+  bool (* fixed_point_supported_p) (void);
+
   /* Return true if anonymous bitfields affect structure alignment.  */
   bool (* align_anon_bitfield) (void);
 

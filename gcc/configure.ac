@@ -641,6 +641,28 @@ AC_DEFINE_UNQUOTED(ENABLE_DECIMAL_BID_FORMAT, $bid,
 [Define to 1 to specify that we are using the BID decimal floating
 point format instead of DPD])
 
+# Enable C extension for fixed-point arithmetic.
+AC_ARG_ENABLE(fixed-point,
+[  --enable-fixed-point    enable fixed-point arithmetic extension to C],
+[
+],
+[
+  case $target in
+    mips*-*-*)
+      enable_fixed_point=yes
+      ;;
+    *)
+      AC_MSG_WARN(fixed-point is not supported for this target, ignored)
+      enable_fixed_point=no
+      ;;
+  esac
+])
+AC_SUBST(enable_fixed_point)
+
+fixedpoint=`if test $enable_fixed_point = yes; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(ENABLE_FIXED_POINT, $fixedpoint,
+[Define to 1 to enable fixed-point arithmetic extension to C.])
+
 # Enable threads
 # Pass with no value to take the default
 # Pass with a value to specify a thread package

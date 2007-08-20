@@ -604,9 +604,11 @@ c_common_type (tree t1, tree t2)
   code2 = TREE_CODE (t2);
 
   gcc_assert (code1 == VECTOR_TYPE || code1 == COMPLEX_TYPE
-	      || code1 == REAL_TYPE || code1 == INTEGER_TYPE);
+	      || code1 == FIXED_POINT_TYPE || code1 == REAL_TYPE
+	      || code1 == INTEGER_TYPE);
   gcc_assert (code2 == VECTOR_TYPE || code2 == COMPLEX_TYPE
-	      || code2 == REAL_TYPE || code2 == INTEGER_TYPE);
+	      || code2 == FIXED_POINT_TYPE || code2 == REAL_TYPE
+	      || code2 == INTEGER_TYPE);
 
   /* When one operand is a decimal float type, the other operand cannot be
      a generic float type or a complex type.  We also disallow vector types
@@ -679,6 +681,91 @@ c_common_type (tree t1, tree t2)
       else if (TYPE_MAIN_VARIANT (t1) == dfloat32_type_node
 	       || TYPE_MAIN_VARIANT (t2) == dfloat32_type_node)
 	return dfloat32_type_node;
+    }
+
+  /* Deal with fixed-point types.  */
+  if (code1 == FIXED_POINT_TYPE || code2 == FIXED_POINT_TYPE)
+    {
+      unsigned int unsignedp = 0, satp = 0;
+      enum machine_mode m1, m2;
+      unsigned int fbit1, ibit1, fbit2, ibit2, max_fbit, max_ibit;
+
+      m1 = TYPE_MODE (t1);
+      m2 = TYPE_MODE (t2);
+
+      /* If one input type is saturating, the result type is saturating.  */
+      if (TYPE_SATURATING (t1) || TYPE_SATURATING (t2))
+	satp = 1;
+
+      /* If both fixed-point types are unsigned, the result type is unsigned.
+	 When mixing fixed-point and integer types, follow the sign of the
+	 fixed-point type.
+	 Otherwise, the result type is signed.  */
+      if ((TYPE_UNSIGNED (t1) && TYPE_UNSIGNED (t2)
+	   && code1 == FIXED_POINT_TYPE && code2 == FIXED_POINT_TYPE)
+	  || (code1 == FIXED_POINT_TYPE && code2 != FIXED_POINT_TYPE
+	      && TYPE_UNSIGNED (t1))
+	  || (code1 != FIXED_POINT_TYPE && code2 == FIXED_POINT_TYPE
+	      && TYPE_UNSIGNED (t2)))
+	unsignedp = 1;
+
+      /* The result type is signed.  */
+      if (unsignedp == 0)
+	{
+	  /* If the input type is unsigned, we need to convert to the
+	     signed type.  */
+	  if (code1 == FIXED_POINT_TYPE && TYPE_UNSIGNED (t1))
+	    {
+	      unsigned char mclass = 0;
+	      if (GET_MODE_CLASS (m1) == MODE_UFRACT)
+		mclass = MODE_FRACT;
+	      else if (GET_MODE_CLASS (m1) == MODE_UACCUM)
+		mclass = MODE_ACCUM;
+	      else
+		gcc_unreachable ();
+	      m1 = mode_for_size (GET_MODE_PRECISION (m1), mclass, 0);
+	    }
+	  if (code2 == FIXED_POINT_TYPE && TYPE_UNSIGNED (t2))
+	    {
+	      unsigned char mclass = 0;
+	      if (GET_MODE_CLASS (m2) == MODE_UFRACT)
+		mclass = MODE_FRACT;
+	      else if (GET_MODE_CLASS (m2) == MODE_UACCUM)
+		mclass = MODE_ACCUM;
+	      else
+		gcc_unreachable ();
+	      m2 = mode_for_size (GET_MODE_PRECISION (m2), mclass, 0);
+	    }
+	}
+
+      if (code1 == FIXED_POINT_TYPE)
+	{
+	  fbit1 = GET_MODE_FBIT (m1);
+	  ibit1 = GET_MODE_IBIT (m1);
+	}
+      else
+	{
+	  fbit1 = 0;
+	  /* Signed integers need to subtract one sign bit.  */
+	  ibit1 = TYPE_PRECISION (t1) - (!TYPE_UNSIGNED (t1));
+	}
+
+      if (code2 == FIXED_POINT_TYPE)
+	{
+	  fbit2 = GET_MODE_FBIT (m2);
+	  ibit2 = GET_MODE_IBIT (m2);
+	}
+      else
+	{
+	  fbit2 = 0;
+	  /* Signed integers need to subtract one sign bit.  */
+	  ibit2 = TYPE_PRECISION (t2) - (!TYPE_UNSIGNED (t2));
+	}
+
+      max_ibit = ibit1 >= ibit2 ?  ibit1 : ibit2;
+      max_fbit = fbit1 >= fbit2 ?  fbit1 : fbit2;
+      return c_common_fixed_point_type_for_size (max_ibit, max_fbit, unsignedp,
+						 satp);
     }
 
   /* Both real or both integers; use the one with greater precision.  */
@@ -2808,7 +2895,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	 is enough to prevent anybody from looking inside for
 	 associativity, but won't generate any code.  */
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
-	    || typecode == COMPLEX_TYPE
+	    || typecode == FIXED_POINT_TYPE || typecode == COMPLEX_TYPE
 	    || typecode == VECTOR_TYPE))
 	{
 	  error ("wrong type argument to unary plus");
@@ -2821,7 +2908,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
     case NEGATE_EXPR:
       if (!(typecode == INTEGER_TYPE || typecode == REAL_TYPE
-	    || typecode == COMPLEX_TYPE
+	    || typecode == FIXED_POINT_TYPE || typecode == COMPLEX_TYPE
 	    || typecode == VECTOR_TYPE))
 	{
 	  error ("wrong type argument to unary minus");
@@ -2878,7 +2965,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       break;
 
     case TRUTH_NOT_EXPR:
-      if (typecode != INTEGER_TYPE
+      if (typecode != INTEGER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != REAL_TYPE && typecode != POINTER_TYPE
 	  && typecode != COMPLEX_TYPE)
 	{
@@ -2931,7 +3018,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
       /* Report invalid types.  */
 
-      if (typecode != POINTER_TYPE
+      if (typecode != POINTER_TYPE && typecode != FIXED_POINT_TYPE
 	  && typecode != INTEGER_TYPE && typecode != REAL_TYPE)
 	{
 	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
@@ -2974,6 +3061,25 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
 	    inc = c_size_in_bytes (TREE_TYPE (result_type));
 	    inc = fold_convert (sizetype, inc);
+	  }
+	else if (FRACT_MODE_P (TYPE_MODE (result_type)))
+	  {
+	    /* For signed fract types, we invert ++ to -- or
+	       -- to ++, and change inc from 1 to -1, because
+	       it is not possible to represent 1 in signed fract constants.
+	       For unsigned fract types, the result always overflows and
+	       we get an undefined (original) or the maximum value.  */
+	    if (code == PREINCREMENT_EXPR)
+	      code = PREDECREMENT_EXPR;
+	    else if (code == PREDECREMENT_EXPR)
+	      code = PREINCREMENT_EXPR;
+	    else if (code == POSTINCREMENT_EXPR)
+	      code = POSTDECREMENT_EXPR;
+	    else /* code == POSTDECREMENT_EXPR  */
+	      code = POSTINCREMENT_EXPR;
+
+	    inc = integer_minus_one_node;
+	    inc = convert (argtype, inc);
 	  }
 	else
 	  {
@@ -3924,9 +4030,11 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
     return convert (type, rhs);
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   else if ((codel == INTEGER_TYPE || codel == REAL_TYPE
+	    || codel == FIXED_POINT_TYPE
 	    || codel == ENUMERAL_TYPE || codel == COMPLEX_TYPE
 	    || codel == BOOLEAN_TYPE)
 	   && (coder == INTEGER_TYPE || coder == REAL_TYPE
+	       || coder == FIXED_POINT_TYPE
 	       || coder == ENUMERAL_TYPE || coder == COMPLEX_TYPE
 	       || coder == BOOLEAN_TYPE))
     return convert_and_check (type, rhs);
@@ -4746,9 +4854,9 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 
   /* Handle scalar types, including conversions.  */
 
-  if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
-      || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
-      || code == VECTOR_TYPE)
+  if (code == INTEGER_TYPE || code == REAL_TYPE || code == FIXED_POINT_TYPE
+      || code == POINTER_TYPE || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE
+      || code == COMPLEX_TYPE || code == VECTOR_TYPE)
     {
       if (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
 	  && (TREE_CODE (init) == STRING_CST
@@ -7862,8 +7970,10 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       warn_for_div_by_zero (op1);
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == FIXED_POINT_TYPE
 	   || code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == FIXED_POINT_TYPE
 	      || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE))
 	{
 	  enum tree_code tcode0 = code0, tcode1 = code1;
@@ -7873,7 +7983,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  if (code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE)
 	    tcode1 = TREE_CODE (TREE_TYPE (TREE_TYPE (op1)));
 
-	  if (!(tcode0 == INTEGER_TYPE && tcode1 == INTEGER_TYPE))
+	  if (!((tcode0 == INTEGER_TYPE && tcode1 == INTEGER_TYPE)
+	      || (tcode0 == FIXED_POINT_TYPE && tcode1 == FIXED_POINT_TYPE)))
 	    resultcode = RDIV_EXPR;
 	  else
 	    /* Although it would be tempting to shorten always here, that
@@ -7924,9 +8035,11 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
       if ((code0 == INTEGER_TYPE || code0 == POINTER_TYPE
-	   || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
+	   || code0 == REAL_TYPE || code0 == COMPLEX_TYPE
+	   || code0 == FIXED_POINT_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == POINTER_TYPE
-	      || code1 == REAL_TYPE || code1 == COMPLEX_TYPE))
+	      || code1 == REAL_TYPE || code1 == COMPLEX_TYPE
+	      || code1 == FIXED_POINT_TYPE))
 	{
 	  /* Result of these operations is always an int,
 	     but that does not mean the operands should be
@@ -7943,7 +8056,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	 Also set SHORT_SHIFT if shifting rightward.  */
 
     case RSHIFT_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
+	  && code1 == INTEGER_TYPE)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST && skip_evaluation == 0)
 	    {
@@ -7971,7 +8085,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       break;
 
     case LSHIFT_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if ((code0 == INTEGER_TYPE || code0 == FIXED_POINT_TYPE)
+	  && code1 == INTEGER_TYPE)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST && skip_evaluation == 0)
 	    {
@@ -8002,9 +8117,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	 but don't convert the args to int!  */
       build_type = integer_type_node;
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
-	   || code0 == COMPLEX_TYPE)
+	   || code0 == FIXED_POINT_TYPE || code0 == COMPLEX_TYPE)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
-	      || code1 == COMPLEX_TYPE))
+	      || code1 == FIXED_POINT_TYPE || code1 == COMPLEX_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -8072,8 +8187,10 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case LT_EXPR:
     case GT_EXPR:
       build_type = integer_type_node;
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == FIXED_POINT_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == FIXED_POINT_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -8134,10 +8251,10 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     }
 
   if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE
-       || code0 == VECTOR_TYPE)
+       || code0 == FIXED_POINT_TYPE || code0 == VECTOR_TYPE)
       &&
       (code1 == INTEGER_TYPE || code1 == REAL_TYPE || code1 == COMPLEX_TYPE
-       || code1 == VECTOR_TYPE))
+       || code1 == FIXED_POINT_TYPE || code1 == VECTOR_TYPE))
     {
       int none_complex = (code0 != COMPLEX_TYPE && code1 != COMPLEX_TYPE);
 

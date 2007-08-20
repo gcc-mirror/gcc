@@ -7134,6 +7134,7 @@ build_null_declspecs (void)
   ret->const_p = false;
   ret->volatile_p = false;
   ret->restrict_p = false;
+  ret->saturating_p = false;
   return ret;
 }
 
@@ -7196,7 +7197,7 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	}
       if ((int) i <= (int) RID_LAST_MODIFIER)
 	{
-	  /* "long", "short", "signed", "unsigned" or "_Complex".  */
+	  /* "long", "short", "signed", "unsigned", "_Complex" or "_Sat".  */
 	  bool dupe = false;
 	  switch (i)
 	    {
@@ -7356,8 +7357,54 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      else if (specs->typespec_word == cts_dfloat128)
 		error ("both %<complex%> and %<_Decimal128%> in "
 		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_fract)
+		error ("both %<complex%> and %<_Fract%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_accum)
+		error ("both %<complex%> and %<_Accum%> in "
+		       "declaration specifiers");
+	      else if (specs->saturating_p)
+		error ("both %<complex%> and %<_Sat%> in "
+		       "declaration specifiers");
 	      else
 		specs->complex_p = true;
+	      break;
+	    case RID_SAT:
+	      dupe = specs->saturating_p;
+	      if (pedantic)
+		pedwarn ("ISO C does not support saturating types");
+	      if (specs->typespec_word == cts_void)
+		error ("both %<_Sat%> and %<void%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_bool)
+		error ("both %<_Sat%> and %<_Bool%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_char)
+		error ("both %<_Sat%> and %<char%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_int)
+		error ("both %<_Sat%> and %<int%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_float)
+		error ("both %<_Sat%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_double)
+		error ("both %<_Sat%> and %<double%> in "
+		       "declaration specifiers");
+              else if (specs->typespec_word == cts_dfloat32)
+		error ("both %<_Sat%> and %<_Decimal32%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_dfloat64)
+		error ("both %<_Sat%> and %<_Decimal64%> in "
+		       "declaration specifiers");
+	      else if (specs->typespec_word == cts_dfloat128)
+		error ("both %<_Sat%> and %<_Decimal128%> in "
+		       "declaration specifiers");
+	      else if (specs->complex_p)
+		error ("both %<_Sat%> and %<complex%> in "
+		       "declaration specifiers");
+	      else
+		specs->saturating_p = true;
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -7370,7 +7417,8 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	}
       else
 	{
-	  /* "void", "_Bool", "char", "int", "float" or "double".  */
+	  /* "void", "_Bool", "char", "int", "float", "double", "_Decimal32",
+	     "_Decimal64", "_Decimal128", "_Fract" or "_Accum".  */
 	  if (specs->typespec_word != cts_none)
 	    {
 	      error ("two or more data types in declaration specifiers");
@@ -7394,6 +7442,9 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      else if (specs->complex_p)
 		error ("both %<complex%> and %<void%> in "
 		       "declaration specifiers");
+	      else if (specs->saturating_p)
+		error ("both %<_Sat%> and %<void%> in "
+		       "declaration specifiers");
 	      else
 		specs->typespec_word = cts_void;
 	      return specs;
@@ -7413,6 +7464,9 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      else if (specs->complex_p)
 		error ("both %<complex%> and %<_Bool%> in "
 		       "declaration specifiers");
+	      else if (specs->saturating_p)
+		error ("both %<_Sat%> and %<_Bool%> in "
+		       "declaration specifiers");
 	      else
 		specs->typespec_word = cts_bool;
 	      return specs;
@@ -7423,11 +7477,18 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 	      else if (specs->short_p)
 		error ("both %<short%> and %<char%> in "
 		       "declaration specifiers");
+	      else if (specs->saturating_p)
+		error ("both %<_Sat%> and %<char%> in "
+		       "declaration specifiers");
 	      else
 		specs->typespec_word = cts_char;
 	      return specs;
 	    case RID_INT:
-	      specs->typespec_word = cts_int;
+	      if (specs->saturating_p)
+		error ("both %<_Sat%> and %<int%> in "
+		       "declaration specifiers");
+	      else
+		specs->typespec_word = cts_int;
 	      return specs;
 	    case RID_FLOAT:
 	      if (specs->long_p)
@@ -7441,6 +7502,9 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 		       "declaration specifiers");
 	      else if (specs->unsigned_p)
 		error ("both %<unsigned%> and %<float%> in "
+		       "declaration specifiers");
+	      else if (specs->saturating_p)
+		error ("both %<_Sat%> and %<float%> in "
 		       "declaration specifiers");
 	      else
 		specs->typespec_word = cts_float;
@@ -7457,6 +7521,9 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 		       "declaration specifiers");
 	      else if (specs->unsigned_p)
 		error ("both %<unsigned%> and %<double%> in "
+		       "declaration specifiers");
+	      else if (specs->saturating_p)
+		error ("both %<_Sat%> and %<double%> in "
 		       "declaration specifiers");
 	      else
 		specs->typespec_word = cts_double;
@@ -7490,6 +7557,9 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
                 else if (specs->complex_p)
                   error ("both %<complex%> and %<%s%> in "
                          "declaration specifiers", str);
+                else if (specs->saturating_p)
+                  error ("both %<_Sat%> and %<%s%> in "
+                         "declaration specifiers", str);
 		else if (i == RID_DFLOAT32)
 		  specs->typespec_word = cts_dfloat32;
 		else if (i == RID_DFLOAT64)
@@ -7501,6 +7571,27 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 		error ("decimal floating point not supported for this target");
 	      if (pedantic)
 		pedwarn ("ISO C does not support decimal floating point");
+	      return specs;
+	    case RID_FRACT:
+	    case RID_ACCUM:
+	      {
+		const char *str;
+		if (i == RID_FRACT)
+		  str = "_Fract";
+		else
+		  str = "_Accum";
+                if (specs->complex_p)
+                  error ("both %<complex%> and %<%s%> in "
+                         "declaration specifiers", str);
+		else if (i == RID_FRACT)
+		    specs->typespec_word = cts_fract;
+		else
+		    specs->typespec_word = cts_accum;
+	      }
+	      if (!targetm.fixed_point_supported_p ())
+		error ("fixed-point types not supported for this target");
+	      if (pedantic)
+		pedwarn ("ISO C does not support fixed-point types");
 	      return specs;
 	    default:
 	      /* ObjC reserved word "id", handled below.  */
@@ -7673,6 +7764,8 @@ finish_declspecs (struct c_declspecs *specs)
      "_Complex short" is equivalent to "_Complex short int".  */
   if (specs->typespec_word == cts_none)
     {
+      if (specs->saturating_p)
+	error ("%<_Sat%> is used without %<_Fract%> or %<_Accum%>");
       if (specs->long_p || specs->short_p
 	  || specs->signed_p || specs->unsigned_p)
 	{
@@ -7791,6 +7884,88 @@ finish_declspecs (struct c_declspecs *specs)
 	specs->type = dfloat64_type_node;
       else
 	specs->type = dfloat128_type_node;
+      break;
+    case cts_fract:
+       gcc_assert (!specs->complex_p);
+       if (specs->saturating_p)
+	{
+	  if (specs->long_long_p)
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_long_long_fract_type_node
+			  : sat_long_long_fract_type_node;
+	  else if (specs->long_p)
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_long_fract_type_node
+			  : sat_long_fract_type_node;
+	  else if (specs->short_p)
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_short_fract_type_node
+			  : sat_short_fract_type_node;
+	  else
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_fract_type_node
+			  : sat_fract_type_node;
+          }
+      else
+	{
+	  if (specs->long_long_p)
+	    specs->type = specs->unsigned_p
+			  ? unsigned_long_long_fract_type_node
+			  : long_long_fract_type_node;
+	  else if (specs->long_p)
+	    specs->type = specs->unsigned_p
+			  ? unsigned_long_fract_type_node
+			  : long_fract_type_node;
+	  else if (specs->short_p)
+	    specs->type = specs->unsigned_p
+			  ? unsigned_short_fract_type_node
+			  : short_fract_type_node;
+	  else
+	    specs->type = specs->unsigned_p
+			  ? unsigned_fract_type_node
+			  : fract_type_node;
+          }
+      break;
+    case cts_accum:
+       gcc_assert (!specs->complex_p);
+       if (specs->saturating_p)
+	{
+	  if (specs->long_long_p)
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_long_long_accum_type_node
+			  : sat_long_long_accum_type_node;
+	  else if (specs->long_p)
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_long_accum_type_node
+			  : sat_long_accum_type_node;
+	  else if (specs->short_p)
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_short_accum_type_node
+			  : sat_short_accum_type_node;
+	  else
+	    specs->type = specs->unsigned_p
+			  ? sat_unsigned_accum_type_node
+			  : sat_accum_type_node;
+          }
+      else
+	{
+	  if (specs->long_long_p)
+	    specs->type = specs->unsigned_p
+			  ? unsigned_long_long_accum_type_node
+			  : long_long_accum_type_node;
+	  else if (specs->long_p)
+	    specs->type = specs->unsigned_p
+			  ? unsigned_long_accum_type_node
+			  : long_accum_type_node;
+	  else if (specs->short_p)
+	    specs->type = specs->unsigned_p
+			  ? unsigned_short_accum_type_node
+			  : short_accum_type_node;
+	  else
+	    specs->type = specs->unsigned_p
+			  ? unsigned_accum_type_node
+			  : accum_type_node;
+          }
       break;
     default:
       gcc_unreachable ();

@@ -1,3 +1,67 @@
+2007-08-20  Chao-ying Fu  <fu@mips.com>
+
+	* c-common.h (enum rid): Add new enumeration values of RID_SAT,
+	RID_FRACT, and RID_ACCUM.  RID_SAT needs to be inserted before
+	RID_ONEWAY, so that it can be checked in declspecs_add_type.
+	(c_common_fixed_point_type_for_size): Declare.
+	* c-parser.c (reswords): Add _Fract, _Accum, and _Sat.
+	(c_token_starts_typename): Handle RID_FRACT, RID_ACCUM, and RID_SAT.
+	(c_token_starts_declspecs): Likewise.
+	(c_parser_declspecs): Likewise.
+	(c_parser_attributes): Likewise.
+	* c-tree.h (enum c_typespec_keyword): Add cts_fract and cts_accum.
+	(c_declspecs): Add saturating_p.
+	* c-decl.c (build_null_declspecs): Initialize saturating_p.
+	(declspecs_add_type): Avoid using complex with _Fract, _Accum, or _Sat.
+	Handle RID_SAT.
+	Avoid using void, bool, char, int, float, double, _Decimal32,
+	_Decimal64, _Decimal128, and complex with _Sat.
+	Handle RID_FRACT and RID_ACCUM.
+	Make sure _Sat is used with _Fract or _Accum.
+	(finish_declspecs): Handle cts_fract and cts_accum.
+	* c-common.c (fixed-value.h): New include.
+	(constant_expression_warning): Handle FIXED_CST.
+	(overflow_warning): Likewise.
+	(warnings_for_convert_and_check): Likewise.
+	(c_common_fixed_point_type_for_size): New.
+	(c_common_type_for_mode): Handle fixed-point modes to
+	return various saturating/non-saturating, signed/unsigned types.
+	(c_common_signed_or_unsigned_type): Support fixed-point types.
+	(shorten_compare): Check fixed-point zero.
+	Handle FIXED_POINT_TYPE.
+	(c_common_truthvalue_conversion): Handle FIXED_CST.
+	Handle FIXED_POINT_TYPE.
+	(c_common_nodes_and_builtins): Record builtin types for fixed-point
+	types.
+	(handle_mode_attribute): Handle fixed-point modes.  Need to check
+	if the signness of base type and fixed-point modes are consistent.
+	(handle_vector_size_attribute): Handle fixed-point modes.
+	(same_scalar_type_ignoring_signedness): Handle FIXED_POINT_TYPE.
+	(warn_for_div_by_zero): Check fixed-point zero.
+	* c-typeck.c (c_common_type): Check FIXED_POINT_TYPE.  Build
+	a common fixed-point type based on fbit, ibit, sign, and saturation.
+	(build_unary_op): Allow FIXED_POINT_TYPE for CONVERT_EXPR,
+	NEGATE_EXPR, TRUTH_NOT_EXPR, PREINCREMENT_EXPR, POSTINCREMENT_EXPR,
+	PREDECREMENT_EXPR, and POSTDECREMENT_EXPR.
+	(convert_for_assignment): Support FIXED_POINT_TYPE.
+	(digest_init): Handle FIXED_POINT_TYPE.
+	(build_binary_op): Support FIXED_POINT_TYPE in *_DIV_EXPR,
+	TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR, TRUTH_AND_EXPR, TRUTH_OR_EXPR,
+	TRUTH_XOR_EXPR, RSHIFT_EXPR, LSHIFT_EXPR, EQ_EXPR, NE_EXPR, LE_EXPR,
+	GE_EXPR, LT_EXPR, GT_EXPR.
+	* target-def.h (TARGET_FIXED_POINT_SUPPORTED_P): New.
+	(TARGET_INITIALIZER): Add TARGET_FIXED_POINT_SUPPORTED_P.
+	* target.h (gcc_target): Add fixed_point_supported_p.
+	* targhooks.c (default_scalar_mode_supported_p): Handle MODE_FRACT,
+	MODE_UFRACT, MODE_ACCUM, and MODE_UACCUM.
+	(default_fixed_point_supported_p): Define.
+	* targhooks.h (default_fixed_point_supported_p): Declare.
+	* doc/tm.texi (TARGET_FIXED_POINT_SUPPORTED_P): Add.
+	* doc/install.texi (Configuration): Add --enable-fixed-point.
+	* configure.ac (--enable-fixed-point): New to enable fixed-point
+	arithmetic extension to C.  For mips targets, we enable it by default.
+	* configure, config.in: Regenerate.
+
 2007-08-20  Pawel Sikora  <pluto@pld-linux.org>
 
         * doc/invoke.texi (-Wnon-virtual-dtor): Update documentation.
