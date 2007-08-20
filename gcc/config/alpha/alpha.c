@@ -5834,7 +5834,8 @@ va_list_skip_additions (tree lhs)
 
       if ((TREE_CODE (rhs) != NOP_EXPR
 	   && TREE_CODE (rhs) != CONVERT_EXPR
-	   && (TREE_CODE (rhs) != PLUS_EXPR
+	   && ((TREE_CODE (rhs) != PLUS_EXPR
+		&& TREE_CODE (rhs) != POINTER_PLUS_EXPR)
 	       || TREE_CODE (TREE_OPERAND (rhs, 1)) != INTEGER_CST
 	       || !host_integerp (TREE_OPERAND (rhs, 1), 1)))
 	  || TREE_CODE (TREE_OPERAND (rhs, 0)) != SSA_NAME)
@@ -5876,7 +5877,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
 
   lhs = va_list_skip_additions (TREE_OPERAND (rhs, 0));
   if (lhs == NULL_TREE
-      || TREE_CODE (lhs) != PLUS_EXPR)
+      || TREE_CODE (lhs) != POINTER_PLUS_EXPR)
     return false;
 
   base = TREE_OPERAND (lhs, 0);
@@ -6111,8 +6112,8 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 			     valist, offset_field, NULL_TREE);
 
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-      t = build2 (PLUS_EXPR, ptr_type_node, t,
-		  build_int_cst (NULL_TREE, offset));
+      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
+		  size_int (offset));
       t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (base_field), base_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -6172,8 +6173,8 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
     }
 
   /* Build the final address and force that value into a temporary.  */
-  addr = build2 (PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
-	         fold_convert (ptr_type, addend));
+  addr = build2 (POINTER_PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
+	         fold_convert (sizetype, addend));
   internal_post = NULL;
   gimplify_expr (&addr, pre_p, &internal_post, is_gimple_val, fb_rvalue);
   append_to_statement_list (internal_post, pre_p);
