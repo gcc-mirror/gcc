@@ -1,5 +1,10 @@
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
+        * c-typeck.c (convert_for_assignment): Use the type of
+        the member for the initialization.
+
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* c-objc-common.c (c_disregard_inline_limits): Remove.
 	* c-objc-common.h (c_disregard_inline_limits): Likewise.
 	* cgraphunit.c (cgraph_process_new_functions): Call

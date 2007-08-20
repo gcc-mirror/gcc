@@ -4039,6 +4039,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	  if (pedantic && (!fundecl || !DECL_IN_SYSTEM_HEADER (fundecl)))
 	    pedwarn ("ISO C prohibits argument conversion to union type");
 
+	  rhs = fold_convert (TREE_TYPE (memb), rhs);
 	  return build_constructor_single (type, memb, rhs);
 	}
     }
