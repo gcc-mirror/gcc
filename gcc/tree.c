@@ -6354,6 +6354,19 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
     }
 }
 
+/* auto_var_in_fn_p is called to determine whether VAR is an automatic
+   variable defined in function FN.  */
+
+bool
+auto_var_in_fn_p (tree var, tree fn)
+{
+  return (DECL_P (var) && DECL_CONTEXT (var) == fn
+	  && (((TREE_CODE (var) == VAR_DECL || TREE_CODE (var) == PARM_DECL)
+	       && ! TREE_STATIC (var))
+	      || TREE_CODE (var) == LABEL_DECL
+	      || TREE_CODE (var) == RESULT_DECL));
+}
+
 /* Subprogram of following function.  Called by walk_tree.
 
    Return *TP if it is an automatic variable or parameter of the
@@ -6368,7 +6381,7 @@ find_var_from_fn (tree *tp, int *walk_subtrees, void *data)
     *walk_subtrees = 0;
 
   else if (DECL_P (*tp)
-	   && lang_hooks.tree_inlining.auto_var_in_fn_p (*tp, fn))
+	   && auto_var_in_fn_p (*tp, fn))
     return *tp;
 
   return NULL_TREE;

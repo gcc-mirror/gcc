@@ -2450,16 +2450,6 @@ cp_cannot_inline_tree_fn (tree* fnp)
   return 0;
 }
 
-/* Determine whether VAR is a declaration of an automatic variable in
-   function FN.  */
-
-int
-cp_auto_var_in_fn_p (const_tree var, const_tree fn)
-{
-  return (DECL_P (var) && DECL_CONTEXT (var) == fn
-	  && nonstatic_local_decl_p (var));
-}
-
 /* Like save_expr, but for C++.  */
 
 tree

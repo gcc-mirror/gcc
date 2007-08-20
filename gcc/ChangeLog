@@ -1,5 +1,22 @@
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
+	* langhooks-def.h (lhd_tree_inlining_auto_var_in_fn_p): Remove.
+	(LANG_HOOKS_TREE_INLINING_AUTO_VAR_IN_FN_P): Likewise.
+	(LANG_HOOKS_TREE_INLINING_INITIALIZER): Remove initializer for
+	auto_var_in_fn_p langhook.
+	* langhooks.c (lhd_tree_inlining_auto_var_in_fn_p): Rename and
+	move ...
+	* tree.c (auto_var_in_fn_p): ... here.
+	(find_var_from_fn): Call auto_var_in_fn_p directly.
+	* langhooks.h (lang_hooks_for_tree_inlining): Remove
+	auto_var_in_fn_p langhook.
+	* tree-inline.c (remap_decls): Call auto_var_in_fn_p directly.
+	(copy_body_r): Likewise.
+	(self_inlining_addr_expr): Likewise.
+	* tree.h (auto_var_in_fn_p): Declare.
+
+2007-08-20  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (WALK_SUBTREE): Call walk_tree_1.
 	(walk_type_fields): Take lh parameter.
 	(walk_tree): Rename to ...

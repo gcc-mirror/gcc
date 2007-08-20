@@ -4610,6 +4610,7 @@ extern bool empty_body_p (tree);
 extern tree call_expr_arg (tree, int);
 extern tree *call_expr_argp (tree, int);
 extern tree call_expr_arglist (tree);
+extern bool auto_var_in_fn_p (tree, tree);
 
 /* In stmt.c */
 

@@ -37,7 +37,6 @@ struct lang_hooks_for_tree_inlining
 {
   int (*cannot_inline_tree_fn) (tree *);
   int (*disregard_inline_limits) (const_tree);
-  int (*auto_var_in_fn_p) (const_tree, const_tree);
   bool (*var_mod_type_p) (tree, tree);
 };
 
