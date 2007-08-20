@@ -4052,6 +4052,15 @@ static GTY(()) int label_num;
 /* Cached result of previous call to lookup_filename.  */
 static GTY(()) struct dwarf_file_data * file_table_last_lookup;
 
+/* Whether the default text and cold text sections have been used at
+   all.  */
+
+static GTY(()) bool text_section_used = false;
+static GTY(()) bool cold_text_section_used = false;
+
+/* The default cold text section.  */
+static GTY(()) section *cold_text_section;
+
 #ifdef DWARF2_DEBUGGING_INFO
 
 /* Offset from the "steady-state frame pointer" to the frame base,
@@ -4413,14 +4422,6 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #define SEPARATE_LINE_CODE_LABEL	"LSM"
 #endif
 
-/* Whether the default text and cold text sections have been used at
-   all.  */
-
-static GTY(()) bool text_section_used = false;
-static GTY(()) bool cold_text_section_used = false;
-
-/* The default cold text section.  */
-static GTY(()) section *cold_text_section;
 
 /* We allow a language front-end to designate a function that is to be
    called to "demangle" any name before it is put into a DIE.  */
