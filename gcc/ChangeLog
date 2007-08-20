@@ -1,3 +1,8 @@
+2007-08-19  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/33115
+	* config/i386/darwin.h (CC1_SPEC): Add %(cc1_cpu) in front.
+
 2007-08-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/32940
