@@ -6604,6 +6604,7 @@ check_return_expr (tree retval, bool *no_warning)
 	  && TREE_CODE (retval) == VAR_DECL
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && ! TREE_STATIC (retval)
+	  && ! DECL_ANON_UNION_VAR_P (retval)
 	  && (DECL_ALIGN (retval)
 	      >= DECL_ALIGN (DECL_RESULT (current_function_decl)))
 	  && same_type_p ((TYPE_MAIN_VARIANT
