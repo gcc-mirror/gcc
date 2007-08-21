@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2007-05-13 19:50-0700\n"
+"POT-Creation-Date: 2007-07-18 21:17-0700\n"
 "PO-Revision-Date: 2001-12-05 22:47+0900\n"
 "Last-Translator: Daisuke Yamashita <yamad@mb.infoweb.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -29,7 +29,7 @@ msgstr "` ' フラグ"
 #: c-format.c:347 c-format.c:371
 #, fuzzy
 msgid "the ' ' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の ` ' フラグ"
 
 #: c-format.c:348 c-format.c:372 c-format.c:406 c-format.c:418 c-format.c:475
 #, fuzzy
@@ -39,7 +39,7 @@ msgstr "`+' フラグ"
 #: c-format.c:348 c-format.c:372 c-format.c:406 c-format.c:418
 #, fuzzy
 msgid "the '+' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の `+' フラグ"
 
 #: c-format.c:349 c-format.c:373 c-format.c:419 c-format.c:451
 #, fuzzy
@@ -49,7 +49,7 @@ msgstr "`#' フラグ"
 #: c-format.c:349 c-format.c:373 c-format.c:419
 #, fuzzy
 msgid "the '#' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の `#' フラグ"
 
 #: c-format.c:350 c-format.c:374 c-format.c:449
 #, fuzzy
@@ -59,7 +59,7 @@ msgstr "`0' フラグ"
 #: c-format.c:350 c-format.c:374
 #, fuzzy
 msgid "the '0' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の `0' フラグ"
 
 #: c-format.c:351 c-format.c:375 c-format.c:448 c-format.c:478
 #, fuzzy
@@ -69,7 +69,7 @@ msgstr "`-' フラグ"
 #: c-format.c:351 c-format.c:375
 #, fuzzy
 msgid "the '-' printf flag"
-msgstr "printf の `'' フラグ"
+msgstr "printf の `-' フラグ"
 
 #: c-format.c:352 c-format.c:432
 #, fuzzy
@@ -89,7 +89,7 @@ msgstr "`'' フラグ"
 #: c-format.c:353
 #, fuzzy
 msgid "the 'I' printf flag"
-msgstr "printf の `I' フラグ"
+msgstr "printf の `'' フラグ"
 
 #: c-format.c:354 c-format.c:376 c-format.c:430 c-format.c:452 c-format.c:479
 #: c-format.c:1606 config/sol2-c.c:46
@@ -145,7 +145,7 @@ msgstr "`'' フラグ"
 #: c-format.c:429
 #, fuzzy
 msgid "the 'a' scanf flag"
-msgstr "scanf の `'' フラグ"
+msgstr "scanf の `a' フラグ"
 
 #: c-format.c:430
 msgid "field width in scanf format"
@@ -163,7 +163,7 @@ msgstr "scanf の `'' フラグ"
 #: c-format.c:433
 #, fuzzy
 msgid "the 'I' scanf flag"
-msgstr "scanf の `I' フラグ"
+msgstr "scanf の `'' フラグ"
 
 #: c-format.c:447
 #, fuzzy
@@ -372,7 +372,7 @@ msgstr "ワイド文字列から char の配列が初期化されました"
 
 #. ??? This should not be an error when inlining calls to
 #. unprototyped functions.
-#: c-typeck.c:4721 c-typeck.c:4216 cp/typeck.c:1532
+#: c-typeck.c:4721 c-typeck.c:4216 cp/typeck.c:1530
 #, gcc-internal-format
 msgid "invalid use of non-lvalue array"
 msgstr "非左辺値配列の無効な利用"
@@ -493,7 +493,7 @@ msgstr "配列初期化子内の要素が多すぎます"
 #: c-typeck.c:6711
 #, fuzzy
 msgid "excess elements in vector initializer"
-msgstr "スカラー初期化子内の要素が多すぎます"
+msgstr "構造体初期化子内の要素が多すぎます"
 
 #: c-typeck.c:6735
 msgid "excess elements in scalar initializer"
@@ -2599,7 +2599,7 @@ msgstr "無効な %%H 値"
 #: config/alpha/alpha.c:5142 config/bfin/bfin.c:1237
 #, fuzzy, c-format
 msgid "invalid %%J value"
-msgstr "無効な %%W 値です"
+msgstr "無効な %%Q 値"
 
 #: config/alpha/alpha.c:5172 config/ia64/ia64.c:4656
 #, c-format
@@ -2703,84 +2703,84 @@ msgstr "%V コードに対する無効なオペランド"
 msgid "invalid operand output code"
 msgstr "無効なオペランド出力コード"
 
-#: config/arm/arm.c:11005 config/arm/arm.c:11023
+#: config/arm/arm.c:11006 config/arm/arm.c:11024
 #, fuzzy, c-format
 msgid "predicated Thumb instruction"
 msgstr "文字命令を生成する"
 
-#: config/arm/arm.c:11011
+#: config/arm/arm.c:11012
 #, fuzzy, c-format
 msgid "predicated instruction in conditional sequence"
 msgstr "ret 命令は実装されていません"
 
-#: config/arm/arm.c:11080
+#: config/arm/arm.c:11081
 #, fuzzy, c-format
 msgid "invalid shift operand"
 msgstr "無効な %P オペランドです"
 
-#: config/arm/arm.c:11127 config/arm/arm.c:11137 config/arm/arm.c:11147
-#: config/arm/arm.c:11173 config/arm/arm.c:11191 config/arm/arm.c:11226
-#: config/arm/arm.c:11245 config/arm/arm.c:11260 config/arm/arm.c:11286
-#: config/arm/arm.c:11293 config/arm/arm.c:11300
+#: config/arm/arm.c:11128 config/arm/arm.c:11138 config/arm/arm.c:11148
+#: config/arm/arm.c:11174 config/arm/arm.c:11192 config/arm/arm.c:11227
+#: config/arm/arm.c:11246 config/arm/arm.c:11261 config/arm/arm.c:11287
+#: config/arm/arm.c:11294 config/arm/arm.c:11301
 #, fuzzy, c-format
 msgid "invalid operand for code '%c'"
 msgstr "%R コードに対する無効なオペランド"
 
-#: config/arm/arm.c:11186
+#: config/arm/arm.c:11187
 #, fuzzy, c-format
 msgid "instruction never exectued"
 msgstr "ret 命令は実装されていません"
 
-#: config/arm/arm.c:11311
+#: config/arm/arm.c:11312
 #, fuzzy, c-format
 msgid "missing operand"
 msgstr "項を欠いています"
 
-#: config/avr/avr.c:1046
+#: config/avr/avr.c:1047
 #, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
 msgstr ""
 
-#: config/avr/avr.c:1153
+#: config/avr/avr.c:1154
 msgid "bad address, not (reg+disp):"
 msgstr ""
 
-#: config/avr/avr.c:1160
+#: config/avr/avr.c:1161
 msgid "bad address, not post_inc or pre_dec:"
 msgstr ""
 
-#: config/avr/avr.c:1171
+#: config/avr/avr.c:1172
 #, fuzzy
 msgid "internal compiler error.  Bad address:"
 msgstr "内部コンパイラエラー."
 
-#: config/avr/avr.c:1184
+#: config/avr/avr.c:1185
 #, fuzzy
 msgid "internal compiler error.  Unknown mode:"
 msgstr "内部コンパイラエラー."
 
-#: config/avr/avr.c:1807 config/avr/avr.c:2490
+#: config/avr/avr.c:1808 config/avr/avr.c:2491
 #, fuzzy
 msgid "invalid insn:"
 msgstr "無効な #line"
 
-#: config/avr/avr.c:1841 config/avr/avr.c:1927 config/avr/avr.c:1976
-#: config/avr/avr.c:2004 config/avr/avr.c:2099 config/avr/avr.c:2268
-#: config/avr/avr.c:2524 config/avr/avr.c:2636
+#: config/avr/avr.c:1842 config/avr/avr.c:1928 config/avr/avr.c:1977
+#: config/avr/avr.c:2005 config/avr/avr.c:2100 config/avr/avr.c:2269
+#: config/avr/avr.c:2525 config/avr/avr.c:2637
 msgid "incorrect insn:"
 msgstr ""
 
-#: config/avr/avr.c:2023 config/avr/avr.c:2184 config/avr/avr.c:2339
-#: config/avr/avr.c:2702
+#: config/avr/avr.c:2024 config/avr/avr.c:2185 config/avr/avr.c:2340
+#: config/avr/avr.c:2703
 #, fuzzy
 msgid "unknown move insn:"
-msgstr "不明なレジスタ名です: %s"
+msgstr "不明なマシンモード `%s'"
 
-#: config/avr/avr.c:2932
+#: config/avr/avr.c:2933
 msgid "bad shift insn:"
 msgstr ""
 
-#: config/avr/avr.c:3048 config/avr/avr.c:3496 config/avr/avr.c:3882
+#: config/avr/avr.c:3049 config/avr/avr.c:3497 config/avr/avr.c:3883
 #, fuzzy
 msgid "internal compiler error.  Incorrect shift:"
 msgstr "内部コンパイラエラー."
@@ -2806,17 +2806,17 @@ msgstr ""
 #: config/c4x/c4x.c:1857
 #, fuzzy, c-format
 msgid "c4x_print_operand: %%L inconsistency"
-msgstr "fr30_print_operand: 認識できない %B コードです"
+msgstr "fr30_print_operand: 認識できない %p コードです"
 
 #: config/c4x/c4x.c:1863
 #, fuzzy, c-format
 msgid "c4x_print_operand: %%N inconsistency"
-msgstr "fr30_print_operand: 認識できない %B コードです"
+msgstr "fr30_print_operand: 認識できない %p コードです"
 
 #: config/c4x/c4x.c:1904
 #, fuzzy, c-format
 msgid "c4x_print_operand: %%O inconsistency"
-msgstr "fr30_print_operand: 認識できない %B コードです"
+msgstr "fr30_print_operand: 認識できない %p コードです"
 
 #: config/c4x/c4x.c:1999
 #, fuzzy
@@ -2890,7 +2890,7 @@ msgstr ""
 #: fortran/dump-parse-tree.c:801 c-typeck.c:4520 c-typeck.c:4535
 #: c-typeck.c:4550 final.c:2803 final.c:2805 gcc.c:4742 loop-iv.c:2702
 #: loop-iv.c:2711 rtl-error.c:113 toplev.c:605 tree-ssa-loop-niter.c:1165
-#: cp/parser.c:2087 cp/typeck.c:4468 java/expr.c:413
+#: cp/parser.c:2087 cp/typeck.c:4466 java/expr.c:413
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:5005
 #, gcc-internal-format
 msgid "%s"
@@ -2907,17 +2907,17 @@ msgstr ""
 #: config/cris/cris.c:674
 #, fuzzy
 msgid "invalid operand for 'b' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:691
 #, fuzzy
 msgid "invalid operand for 'o' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:710
 #, fuzzy
 msgid "invalid operand for 'O' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:743
 #, fuzzy
@@ -2927,12 +2927,12 @@ msgstr "%p コードに対する無効なオペランド"
 #: config/cris/cris.c:782
 #, fuzzy
 msgid "invalid operand for 'z' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:836 config/cris/cris.c:866
 #, fuzzy
 msgid "invalid operand for 'H' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:842
 #, fuzzy
@@ -2942,27 +2942,27 @@ msgstr "浮動小数点レジスタを利用する"
 #: config/cris/cris.c:887
 #, fuzzy
 msgid "invalid operand for 'e' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:904
 #, fuzzy
 msgid "invalid operand for 'm' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:929
 #, fuzzy
 msgid "invalid operand for 'A' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:952
 #, fuzzy
 msgid "invalid operand for 'D' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:966
 #, fuzzy
 msgid "invalid operand for 'T' modifier"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/cris/cris.c:975
 #, fuzzy
@@ -3157,14 +3157,14 @@ msgstr ""
 #: config/i386/i386.c:7940
 #, fuzzy, c-format
 msgid "invalid operand code '%c'"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/i386/i386.c:7983
 #, fuzzy, c-format
 msgid "invalid constraints for operand"
 msgstr "オペランドとして無効な式"
 
-#: config/i386/i386.c:13641
+#: config/i386/i386.c:13644
 #, fuzzy
 msgid "unknown insn mode"
 msgstr "不明なマシンモード `%s'"
@@ -3260,7 +3260,7 @@ msgid "post-increment address is not a register"
 msgstr ""
 
 #: config/m32r/m32r.c:2030 config/m32r/m32r.c:2044
-#: config/rs6000/rs6000.c:17905
+#: config/rs6000/rs6000.c:17906
 #, fuzzy
 msgid "bad address"
 msgstr "不正なヘッダバージョン"
@@ -3341,7 +3341,7 @@ msgstr "PRINT_OPERAND NULL ポインタ"
 #: config/mips/mips.c:5577
 #, fuzzy, c-format
 msgid "invalid %%Y value"
-msgstr "無効な %%W 値です"
+msgstr "無効な %%Q 値"
 
 #: config/mips/mips.c:5594 config/mips/mips.c:5602
 #, fuzzy, c-format
@@ -3483,7 +3483,7 @@ msgstr "無効な %%u 値です"
 msgid "invalid %%v value"
 msgstr "無効な %%v 値です"
 
-#: config/rs6000/rs6000.c:19522
+#: config/rs6000/rs6000.c:19523
 #, fuzzy
 msgid "AltiVec argument passed to unprototyped function"
 msgstr "関数への引数が少なすぎます"
@@ -3500,7 +3500,7 @@ msgstr ""
 #: config/score/score.c:1212
 #, fuzzy, c-format
 msgid "invalid operand for code: '%c'"
-msgstr "%N コードに対する無効なオペランド"
+msgstr "%R コードに対する無効なオペランド"
 
 #: config/sh/sh.c:759
 #, fuzzy, c-format
@@ -3512,15 +3512,15 @@ msgstr "%R コードに対する無効なオペランド"
 msgid "invalid operand to %%S"
 msgstr "%R コードに対する無効なオペランド"
 
-#: config/sh/sh.c:7820
+#: config/sh/sh.c:7829
 msgid "created and used with different architectures / ABIs"
 msgstr ""
 
-#: config/sh/sh.c:7822
+#: config/sh/sh.c:7831
 msgid "created and used with different ABIs"
 msgstr ""
 
-#: config/sh/sh.c:7824
+#: config/sh/sh.c:7833
 msgid "created and used with different endianness"
 msgstr ""
 
@@ -3597,7 +3597,7 @@ msgstr "出力オペランドが `asm' 内で定数です"
 #: config/stormy16/stormy16.c:1863
 #, fuzzy, c-format
 msgid "xstormy16_print_operand: unknown code"
-msgstr "ia64_print_operand: 不明なコードです"
+msgstr "fr30_print_operand: 不明なコードです"
 
 #: config/v850/v850.c:372
 msgid "const_double_split got a bad insn:"
@@ -3625,12 +3625,12 @@ msgstr "無効な #pragma %s です"
 #: config/xtensa/xtensa.c:1714
 #, fuzzy, c-format
 msgid "invalid %%x value"
-msgstr "無効な %%W 値です"
+msgstr "無効な %%Q 値"
 
 #: config/xtensa/xtensa.c:1721
 #, fuzzy, c-format
 msgid "invalid %%d value"
-msgstr "無効な %%W 値です"
+msgstr "無効な %%Q 値"
 
 #: config/xtensa/xtensa.c:1742 config/xtensa/xtensa.c:1752
 #, fuzzy, c-format
@@ -3656,11 +3656,11 @@ msgstr "要求されたアラインメントが定数ではありません"
 msgid "candidates are:"
 msgstr ""
 
-#: cp/call.c:6303
+#: cp/call.c:6319
 msgid "candidate 1:"
 msgstr ""
 
-#: cp/call.c:6304
+#: cp/call.c:6320
 msgid "candidate 2:"
 msgstr ""
 
@@ -4704,7 +4704,7 @@ msgstr ""
 #: fortran/decl.c:4231
 #, fuzzy, no-c-format
 msgid "ENUM definition statement expected before %C"
-msgstr "`&' の前に型の名前があるべきです"
+msgstr "`*' の前に型の名前があるべきです"
 
 #: fortran/decl.c:4264
 #, no-c-format
@@ -4774,7 +4774,7 @@ msgstr ""
 #: fortran/dump-parse-tree.c:150
 #, fuzzy, c-format
 msgid " %s "
-msgstr " %s"
+msgstr "%s "
 
 #: fortran/dump-parse-tree.c:177
 #, c-format
@@ -4795,7 +4795,7 @@ msgstr ""
 #: fortran/dump-parse-tree.c:247
 #, fuzzy, c-format
 msgid " %% %s"
-msgstr " %s"
+msgstr "%s: %s"
 
 #: fortran/dump-parse-tree.c:319 fortran/dump-parse-tree.c:386
 #, c-format
@@ -6084,12 +6084,12 @@ msgstr ""
 msgid "Second argument of defined assignment at %L must be INTENT(IN)"
 msgstr ""
 
-#: fortran/interface.c:664 fortran/resolve.c:7191
+#: fortran/interface.c:664 fortran/resolve.c:7203
 #, no-c-format
 msgid "First argument of operator interface at %L must be INTENT(IN)"
 msgstr ""
 
-#: fortran/interface.c:668 fortran/resolve.c:7203
+#: fortran/interface.c:668 fortran/resolve.c:7215
 #, no-c-format
 msgid "Second argument of operator interface at %L must be INTENT(IN)"
 msgstr ""
@@ -7196,7 +7196,7 @@ msgstr ""
 msgid "Syntax error in !$OMP THREADPRIVATE list at %C"
 msgstr ""
 
-#: fortran/openmp.c:686 fortran/resolve.c:4928 fortran/resolve.c:5189
+#: fortran/openmp.c:686 fortran/resolve.c:4935 fortran/resolve.c:5196
 #, no-c-format
 msgid "IF clause at %L requires a scalar LOGICAL expression"
 msgstr ""
@@ -7920,7 +7920,7 @@ msgstr "式の浮動小数点数がオーバーフローしました"
 msgid "Named constant at %C in an EQUIVALENCE"
 msgstr ""
 
-#: fortran/primary.c:2432
+#: fortran/primary.c:2433
 #, no-c-format
 msgid "Expected VARIABLE at %C"
 msgstr ""
@@ -8045,7 +8045,7 @@ msgstr ""
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array '%s' at %L."
 msgstr ""
 
-#: fortran/resolve.c:878 fortran/resolve.c:4406 fortran/resolve.c:5154
+#: fortran/resolve.c:878 fortran/resolve.c:4413 fortran/resolve.c:5161
 #, fuzzy, no-c-format
 msgid "Label %d referenced at %L is never defined"
 msgstr "ラベル %s があらゆる関数の外側で参照されました"
@@ -8080,401 +8080,401 @@ msgstr ""
 msgid "Symbol '%s' at %L is ambiguous"
 msgstr "%s: オプション `%s' はあいまいです\n"
 
-#: fortran/resolve.c:1018
+#: fortran/resolve.c:1025
 #, no-c-format
 msgid "By-value argument at %L is not of numeric type"
 msgstr ""
 
-#: fortran/resolve.c:1025
+#: fortran/resolve.c:1032
 #, no-c-format
 msgid "By-value argument at %L cannot be an array or an array section"
 msgstr ""
 
-#: fortran/resolve.c:1036
+#: fortran/resolve.c:1043
 #, no-c-format
 msgid "By-value argument at %L is not allowed in this context"
 msgstr ""
 
-#: fortran/resolve.c:1045
+#: fortran/resolve.c:1052
 #, no-c-format
 msgid "Kind of by-value argument at %L is larger than default kind"
 msgstr ""
 
-#: fortran/resolve.c:1058
+#: fortran/resolve.c:1065
 #, no-c-format
 msgid "Passing internal procedure at %L by location not allowed"
 msgstr ""
 
-#: fortran/resolve.c:1175
+#: fortran/resolve.c:1182
 #, no-c-format
 msgid "'%s' at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optionalargument with the same rank (12.4.1.5)"
 msgstr ""
 
-#: fortran/resolve.c:1200
+#: fortran/resolve.c:1207
 msgid "elemental subroutine"
 msgstr ""
 
-#: fortran/resolve.c:1333
+#: fortran/resolve.c:1340
 #, no-c-format
 msgid "There is no specific function for the generic '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1343
+#: fortran/resolve.c:1350
 #, no-c-format
 msgid "Generic function '%s' at %L is not consistent with a specific intrinsic interface"
 msgstr ""
 
-#: fortran/resolve.c:1381
+#: fortran/resolve.c:1388
 #, no-c-format
 msgid "Function '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
 msgstr ""
 
-#: fortran/resolve.c:1427
+#: fortran/resolve.c:1434
 #, no-c-format
 msgid "Unable to resolve the specific function '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1483 fortran/resolve.c:7110
+#: fortran/resolve.c:1490 fortran/resolve.c:7122
 #, no-c-format
 msgid "Function '%s' at %L has no IMPLICIT type"
 msgstr ""
 
-#: fortran/resolve.c:1557
+#: fortran/resolve.c:1564
 #, fuzzy, no-c-format
 msgid "'%s' at %L is not a function"
 msgstr "呼び出されたオブジェクトは関数ではありません"
 
 #. Internal procedures are taken care of in resolve_contained_fntype.
-#: fortran/resolve.c:1590
+#: fortran/resolve.c:1597
 #, no-c-format
 msgid "Function '%s' is declared CHARACTER(*) and cannot be used at %L since it is not a dummy argument"
 msgstr ""
 
-#: fortran/resolve.c:1643
+#: fortran/resolve.c:1650
 #, no-c-format
 msgid "User defined non-ELEMENTAL function '%s' at %L not allowed in WORKSHARE construct"
 msgstr ""
 
-#: fortran/resolve.c:1693
+#: fortran/resolve.c:1700
 #, no-c-format
 msgid "reference to non-PURE function '%s' at %L inside a FORALL %s"
 msgstr ""
 
-#: fortran/resolve.c:1700
+#: fortran/resolve.c:1707
 #, no-c-format
 msgid "Function reference to '%s' at %L is to a non-PURE procedure within a PURE procedure"
 msgstr ""
 
-#: fortran/resolve.c:1715
+#: fortran/resolve.c:1722
 #, no-c-format
 msgid "Function '%s' at %L cannot call itself, as it is not RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:1723
+#: fortran/resolve.c:1730
 #, no-c-format
 msgid "Call to ENTRY '%s' at %L is recursive, but function '%s' is not declared as RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:1768
+#: fortran/resolve.c:1775
 #, no-c-format
 msgid "Subroutine call to '%s' in FORALL block at %L is not PURE"
 msgstr ""
 
-#: fortran/resolve.c:1771
+#: fortran/resolve.c:1778
 #, no-c-format
 msgid "Subroutine call to '%s' at %L is not PURE"
 msgstr ""
 
-#: fortran/resolve.c:1835
+#: fortran/resolve.c:1842
 #, no-c-format
 msgid "There is no specific subroutine for the generic '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1844
+#: fortran/resolve.c:1851
 #, no-c-format
 msgid "Generic subroutine '%s' at %L is not consistent with an intrinsic subroutine interface"
 msgstr ""
 
-#: fortran/resolve.c:1879
+#: fortran/resolve.c:1886
 #, no-c-format
 msgid "Subroutine '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
 msgstr ""
 
-#: fortran/resolve.c:1923
+#: fortran/resolve.c:1930
 #, no-c-format
 msgid "Unable to resolve the specific subroutine '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1980
+#: fortran/resolve.c:1987
 #, no-c-format
 msgid "'%s' at %L has a type, which is not consistent with the CALL at %L"
 msgstr ""
 
-#: fortran/resolve.c:2003
+#: fortran/resolve.c:2010
 #, no-c-format
 msgid "SUBROUTINE '%s' at %L cannot call itself, as it is not RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:2011
+#: fortran/resolve.c:2018
 #, no-c-format
 msgid "Call to ENTRY '%s' at %L is recursive, but subroutine '%s' is not declared as RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:2081
+#: fortran/resolve.c:2088
 #, fuzzy, no-c-format
 msgid "Shapes for operands at %L and %L are not conformable"
 msgstr "shared と mdll とは共存できません"
 
-#: fortran/resolve.c:2138
+#: fortran/resolve.c:2145
 #, c-format
 msgid "Operand of unary numeric operator '%s' at %%L is %s"
 msgstr ""
 
-#: fortran/resolve.c:2154
+#: fortran/resolve.c:2161
 #, c-format
 msgid "Operands of binary numeric operator '%s' at %%L are %s/%s"
 msgstr ""
 
-#: fortran/resolve.c:2168
+#: fortran/resolve.c:2175
 #, c-format
 msgid "Operands of string concatenation operator at %%L are %s/%s"
 msgstr ""
 
-#: fortran/resolve.c:2187
+#: fortran/resolve.c:2194
 #, c-format
 msgid "Operands of logical operator '%s' at %%L are %s/%s"
 msgstr ""
 
-#: fortran/resolve.c:2201
+#: fortran/resolve.c:2208
 #, c-format
 msgid "Operand of .NOT. operator at %%L is %s"
 msgstr ""
 
-#: fortran/resolve.c:2211
+#: fortran/resolve.c:2218
 msgid "COMPLEX quantities cannot be compared at %L"
 msgstr ""
 
-#: fortran/resolve.c:2237
+#: fortran/resolve.c:2244
 #, c-format
 msgid "Logicals at %%L must be compared with %s instead of %s"
 msgstr ""
 
-#: fortran/resolve.c:2242
+#: fortran/resolve.c:2249
 #, c-format
 msgid "Operands of comparison operator '%s' at %%L are %s/%s"
 msgstr ""
 
-#: fortran/resolve.c:2250
+#: fortran/resolve.c:2257
 #, c-format
 msgid "Operand of user operator '%s' at %%L is %s"
 msgstr ""
 
-#: fortran/resolve.c:2253
+#: fortran/resolve.c:2260
 #, c-format
 msgid "Operands of user operator '%s' at %%L are %s/%s"
 msgstr ""
 
-#: fortran/resolve.c:2324
+#: fortran/resolve.c:2331
 #, no-c-format
 msgid "Inconsistent ranks for operator at %L and %L"
 msgstr ""
 
-#: fortran/resolve.c:2528
+#: fortran/resolve.c:2535
 #, no-c-format
 msgid "Illegal stride of zero at %L"
 msgstr ""
 
-#: fortran/resolve.c:2577
+#: fortran/resolve.c:2584
 #, fuzzy, no-c-format
 msgid "Array reference at %L is out of bounds"
 msgstr "仮想テーブル %s[%lu]: 要素 %lu が範囲外です"
 
-#: fortran/resolve.c:2598
+#: fortran/resolve.c:2605
 #, no-c-format
 msgid "Rightmost upper bound of assumed size array section not specified at %L"
 msgstr ""
 
-#: fortran/resolve.c:2608
+#: fortran/resolve.c:2615
 #, no-c-format
 msgid "Rank mismatch in array reference at %L (%d/%d)"
 msgstr ""
 
-#: fortran/resolve.c:2636
+#: fortran/resolve.c:2643
 #, no-c-format
 msgid "Array index at %L must be scalar"
 msgstr ""
 
-#: fortran/resolve.c:2642
+#: fortran/resolve.c:2649
 #, no-c-format
 msgid "Array index at %L must be of INTEGER type"
 msgstr ""
 
-#: fortran/resolve.c:2648
+#: fortran/resolve.c:2655
 #, no-c-format
 msgid "Extension: REAL array index at %L"
 msgstr ""
 
-#: fortran/resolve.c:2678
+#: fortran/resolve.c:2685
 #, no-c-format
 msgid "Argument dim at %L must be scalar"
 msgstr ""
 
-#: fortran/resolve.c:2684
+#: fortran/resolve.c:2691
 #, no-c-format
 msgid "Argument dim at %L must be of INTEGER type"
 msgstr ""
 
-#: fortran/resolve.c:2804
+#: fortran/resolve.c:2811
 #, no-c-format
 msgid "Array index at %L is an array of rank %d"
 msgstr ""
 
-#: fortran/resolve.c:2842
+#: fortran/resolve.c:2849
 #, no-c-format
 msgid "Substring start index at %L must be of type INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:2849
+#: fortran/resolve.c:2856
 #, no-c-format
 msgid "Substring start index at %L must be scalar"
 msgstr ""
 
-#: fortran/resolve.c:2858
+#: fortran/resolve.c:2865
 #, no-c-format
 msgid "Substring start index at %L is less than one"
 msgstr ""
 
-#: fortran/resolve.c:2871
+#: fortran/resolve.c:2878
 #, no-c-format
 msgid "Substring end index at %L must be of type INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:2878
+#: fortran/resolve.c:2885
 #, no-c-format
 msgid "Substring end index at %L must be scalar"
 msgstr ""
 
-#: fortran/resolve.c:2888
+#: fortran/resolve.c:2895
 #, no-c-format
 msgid "Substring end index at %L exceeds the string length"
 msgstr ""
 
-#: fortran/resolve.c:2963
+#: fortran/resolve.c:2970
 #, no-c-format
 msgid "Component to the right of a part reference with nonzero rank must not have the POINTER attribute at %L"
 msgstr ""
 
-#: fortran/resolve.c:2971
+#: fortran/resolve.c:2978
 #, no-c-format
 msgid "Component to the right of a part reference with nonzero rank must not have the ALLOCATABLE attribute at %L"
 msgstr ""
 
-#: fortran/resolve.c:2991
+#: fortran/resolve.c:2998
 #, no-c-format
 msgid "Two or more part references with nonzero rank must not be specified at %L"
 msgstr ""
 
-#: fortran/resolve.c:3166
+#: fortran/resolve.c:3173
 #, no-c-format
 msgid "Variable '%s',used in a specification expression, is referenced at %L before the ENTRY statement in which it is a parameter"
 msgstr ""
 
-#: fortran/resolve.c:3171
+#: fortran/resolve.c:3178
 #, no-c-format
 msgid "Variable '%s' is used at %L before the ENTRY statement in which it is a parameter"
 msgstr ""
 
-#: fortran/resolve.c:3294
+#: fortran/resolve.c:3301
 #, no-c-format
 msgid "%s at %L must be a scalar"
 msgstr ""
 
-#: fortran/resolve.c:3302
+#: fortran/resolve.c:3309
 #, no-c-format
 msgid "%s at %L must be INTEGER or REAL"
 msgstr ""
 
-#: fortran/resolve.c:3305
+#: fortran/resolve.c:3312
 #, no-c-format
 msgid "%s at %L must be INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:3321
+#: fortran/resolve.c:3328
 #, no-c-format
 msgid "Obsolete: REAL DO loop iterator at %L"
 msgstr ""
 
-#: fortran/resolve.c:3330
+#: fortran/resolve.c:3337
 #, no-c-format
 msgid "Cannot assign to loop variable in PURE procedure at %L"
 msgstr ""
 
-#: fortran/resolve.c:3354
+#: fortran/resolve.c:3361
 #, no-c-format
 msgid "Step expression in DO loop at %L cannot be zero"
 msgstr ""
 
-#: fortran/resolve.c:3389
+#: fortran/resolve.c:3396
 #, no-c-format
 msgid "FORALL index-name at %L must be a scalar INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:3394
+#: fortran/resolve.c:3401
 #, no-c-format
 msgid "FORALL start expression at %L must be a scalar INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:3401
+#: fortran/resolve.c:3408
 #, no-c-format
 msgid "FORALL end expression at %L must be a scalar INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:3409
+#: fortran/resolve.c:3416
 #, no-c-format
 msgid "FORALL stride expression at %L must be a scalar %s"
 msgstr ""
 
-#: fortran/resolve.c:3414
+#: fortran/resolve.c:3421
 #, no-c-format
 msgid "FORALL stride expression at %L cannot be zero"
 msgstr ""
 
-#: fortran/resolve.c:3512
+#: fortran/resolve.c:3519
 #, no-c-format
 msgid "Expression in DEALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
 msgstr ""
 
-#: fortran/resolve.c:3518
+#: fortran/resolve.c:3525
 #, no-c-format
 msgid "Can't deallocate INTENT(IN) variable '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:3679
+#: fortran/resolve.c:3686
 #, no-c-format
 msgid "The STAT variable '%s' in an ALLOCATE statement must not be allocated in the same statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:3710
+#: fortran/resolve.c:3717
 #, no-c-format
 msgid "Expression in ALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
 msgstr ""
 
-#: fortran/resolve.c:3717
+#: fortran/resolve.c:3724
 #, no-c-format
 msgid "Can't allocate INTENT(IN) variable '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:3741
+#: fortran/resolve.c:3748
 #, no-c-format
 msgid "Array specification required in ALLOCATE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:3771
+#: fortran/resolve.c:3778
 #, no-c-format
 msgid "Bad array specification in ALLOCATE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:3789
+#: fortran/resolve.c:3796
 #, no-c-format
 msgid "'%s' must not appear an the array specification at %L in the same ALLOCATE statement where it is itself allocated"
 msgstr ""
@@ -8483,587 +8483,587 @@ msgstr ""
 #. element in the list.  Either way, we must
 #. issue an error and get the next case from P.
 #. FIXME: Sort P and Q by line number.
-#: fortran/resolve.c:3948
+#: fortran/resolve.c:3955
 #, no-c-format
 msgid "CASE label at %L overlaps with CASE label at %L"
 msgstr ""
 
-#: fortran/resolve.c:3999
+#: fortran/resolve.c:4006
 #, fuzzy, no-c-format
 msgid "Expression in CASE statement at %L must be of type %s"
 msgstr "式の中の文に不完全型があります"
 
-#: fortran/resolve.c:4010
+#: fortran/resolve.c:4017
 #, no-c-format
 msgid "Expression in CASE statement at %L must be kind %d"
 msgstr ""
 
-#: fortran/resolve.c:4022
+#: fortran/resolve.c:4029
 #, no-c-format
 msgid "Expression in CASE statement at %L must be scalar"
 msgstr ""
 
-#: fortran/resolve.c:4069
+#: fortran/resolve.c:4076
 #, no-c-format
 msgid "Selection expression in computed GOTO statement at %L must be a scalar integer expression"
 msgstr ""
 
-#: fortran/resolve.c:4087
+#: fortran/resolve.c:4094
 #, no-c-format
 msgid "Argument of SELECT statement at %L cannot be %s"
 msgstr ""
 
-#: fortran/resolve.c:4096
+#: fortran/resolve.c:4103
 #, no-c-format
 msgid "Argument of SELECT statement at %L must be a scalar expression"
 msgstr ""
 
-#: fortran/resolve.c:4161
+#: fortran/resolve.c:4168
 #, no-c-format
 msgid "The DEFAULT CASE at %L cannot be followed by a second DEFAULT CASE at %L"
 msgstr ""
 
-#: fortran/resolve.c:4188
+#: fortran/resolve.c:4195
 #, no-c-format
 msgid "Logical range in CASE statement at %L is not allowed"
 msgstr ""
 
-#: fortran/resolve.c:4200
+#: fortran/resolve.c:4207
 #, no-c-format
 msgid "constant logical value in CASE statement is repeated at %L"
 msgstr ""
 
-#: fortran/resolve.c:4214
+#: fortran/resolve.c:4221
 #, no-c-format
 msgid "Range specification at %L can never be matched"
 msgstr ""
 
-#: fortran/resolve.c:4317
+#: fortran/resolve.c:4324
 #, no-c-format
 msgid "Logical SELECT CASE block at %L has more that two cases"
 msgstr ""
 
-#: fortran/resolve.c:4356
+#: fortran/resolve.c:4363
 #, no-c-format
 msgid "Data transfer element at %L cannot have POINTER components"
 msgstr ""
 
-#: fortran/resolve.c:4363
+#: fortran/resolve.c:4370
 #, no-c-format
 msgid "Data transfer element at %L cannot have ALLOCATABLE components"
 msgstr ""
 
-#: fortran/resolve.c:4370
+#: fortran/resolve.c:4377
 #, no-c-format
 msgid "Data transfer element at %L cannot have PRIVATE components"
 msgstr ""
 
-#: fortran/resolve.c:4379
+#: fortran/resolve.c:4386
 #, no-c-format
 msgid "Data transfer element at %L cannot be a full reference to an assumed-size array"
 msgstr ""
 
-#: fortran/resolve.c:4413
+#: fortran/resolve.c:4420
 #, no-c-format
 msgid "Statement at %L is not a valid branch target statement for the branch statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:4422
+#: fortran/resolve.c:4429
 #, no-c-format
 msgid "Branch at %L causes an infinite loop"
 msgstr ""
 
-#: fortran/resolve.c:4455
+#: fortran/resolve.c:4462
 #, no-c-format
 msgid "Label at %L is not in the same block as the GOTO statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:4471
+#: fortran/resolve.c:4478
 #, no-c-format
 msgid "Obsolete: GOTO at %L jumps to END of construct at %L"
 msgstr ""
 
-#: fortran/resolve.c:4545
+#: fortran/resolve.c:4552
 #, no-c-format
 msgid "WHERE mask at %L has inconsistent shape"
 msgstr ""
 
-#: fortran/resolve.c:4561
+#: fortran/resolve.c:4568
 #, no-c-format
 msgid "WHERE assignment target at %L has inconsistent shape"
 msgstr ""
 
-#: fortran/resolve.c:4575 fortran/resolve.c:4774
+#: fortran/resolve.c:4582 fortran/resolve.c:4781
 #, no-c-format
 msgid "Unsupported statement inside WHERE at %L"
 msgstr ""
 
-#: fortran/resolve.c:4651
+#: fortran/resolve.c:4658
 #, fuzzy, no-c-format
 msgid "expression reference type error at %L"
 msgstr "一時オブジェクトへの参照を返そうとしています"
 
-#: fortran/resolve.c:4683
+#: fortran/resolve.c:4690
 #, no-c-format
 msgid "Unsupported statement while finding forall index in expression"
 msgstr ""
 
-#: fortran/resolve.c:4730
+#: fortran/resolve.c:4737
 #, no-c-format
 msgid "Assignment to a FORALL index variable at %L"
 msgstr ""
 
-#: fortran/resolve.c:4738
+#: fortran/resolve.c:4745
 #, no-c-format
 msgid "The FORALL with index '%s' cause more than one assignment to this object at %L"
 msgstr ""
 
-#: fortran/resolve.c:4867
+#: fortran/resolve.c:4874
 #, no-c-format
 msgid "An outer FORALL construct already has an index with this name %L"
 msgstr ""
 
-#: fortran/resolve.c:4879 fortran/resolve.c:4882 fortran/resolve.c:4885
+#: fortran/resolve.c:4886 fortran/resolve.c:4889 fortran/resolve.c:4892
 #, no-c-format
 msgid "A FORALL index must not appear in a limit or stride expression in the same FORALL at %L"
 msgstr ""
 
-#: fortran/resolve.c:4938
+#: fortran/resolve.c:4945
 #, no-c-format
 msgid "WHERE/ELSEWHERE clause at %L requires a LOGICAL array"
 msgstr ""
 
-#: fortran/resolve.c:5068
+#: fortran/resolve.c:5075
 #, no-c-format
 msgid "ASSIGNED GOTO statement at %L requires an INTEGER variable"
 msgstr ""
 
-#: fortran/resolve.c:5071
+#: fortran/resolve.c:5078
 #, no-c-format
 msgid "Variable '%s' has not been assigned a target label at %L"
 msgstr ""
 
-#: fortran/resolve.c:5082
+#: fortran/resolve.c:5089
 #, no-c-format
 msgid "Alternate RETURN statement at %L requires a SCALAR-INTEGER return specifier"
 msgstr ""
 
-#: fortran/resolve.c:5097
+#: fortran/resolve.c:5104
 #, no-c-format
 msgid "Subroutine '%s' called instead of assignment at %L must be PURE"
 msgstr ""
 
-#: fortran/resolve.c:5124
+#: fortran/resolve.c:5131
 #, no-c-format
 msgid "rhs of CHARACTER assignment at %L will be truncated (%d/%d)"
 msgstr ""
 
-#: fortran/resolve.c:5133
+#: fortran/resolve.c:5140
 #, no-c-format
 msgid "Cannot assign to variable '%s' in PURE procedure at %L"
 msgstr ""
 
-#: fortran/resolve.c:5142
+#: fortran/resolve.c:5149
 #, no-c-format
 msgid "Right side of assignment at %L is a derived type containing a POINTER in a PURE procedure"
 msgstr ""
 
-#: fortran/resolve.c:5162
+#: fortran/resolve.c:5169
 #, no-c-format
 msgid "ASSIGN statement at %L requires a scalar default INTEGER variable"
 msgstr ""
 
-#: fortran/resolve.c:5177
+#: fortran/resolve.c:5184
 #, no-c-format
 msgid "Arithmetic IF statement at %L requires a numeric expression"
 msgstr ""
 
-#: fortran/resolve.c:5219
+#: fortran/resolve.c:5226
 #, no-c-format
 msgid "Exit condition of DO WHILE loop at %L must be a scalar LOGICAL expression"
 msgstr ""
 
-#: fortran/resolve.c:5226
+#: fortran/resolve.c:5233
 #, no-c-format
 msgid "STAT tag in ALLOCATE statement at %L must be of type INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:5238
+#: fortran/resolve.c:5245
 #, no-c-format
 msgid "STAT tag in DEALLOCATE statement at %L must be of type INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:5304
+#: fortran/resolve.c:5311
 #, no-c-format
 msgid "FORALL mask clause at %L requires a LOGICAL expression"
 msgstr ""
 
-#: fortran/resolve.c:5507
+#: fortran/resolve.c:5514
 #, no-c-format
 msgid "Allocatable array '%s' at %L must have a deferred shape"
 msgstr ""
 
-#: fortran/resolve.c:5510
+#: fortran/resolve.c:5517
 #, no-c-format
 msgid "Scalar object '%s' at %L may not be ALLOCATABLE"
 msgstr ""
 
-#: fortran/resolve.c:5517
+#: fortran/resolve.c:5524
 #, no-c-format
 msgid "Array pointer '%s' at %L must have a deferred shape"
 msgstr ""
 
-#: fortran/resolve.c:5528
+#: fortran/resolve.c:5535
 #, no-c-format
 msgid "Array '%s' at %L cannot have a deferred shape"
 msgstr ""
 
-#: fortran/resolve.c:5584
+#: fortran/resolve.c:5591
 #, no-c-format
 msgid "The module or main program array '%s' at %L must have constant shape"
 msgstr ""
 
-#: fortran/resolve.c:5598
+#: fortran/resolve.c:5605
 #, no-c-format
 msgid "Entity with assumed character length at %L must be a dummy argument or a PARAMETER"
 msgstr ""
 
-#: fortran/resolve.c:5617
+#: fortran/resolve.c:5624
 #, no-c-format
 msgid "'%s' at %L must have constant character length in this context"
 msgstr ""
 
-#: fortran/resolve.c:5655
+#: fortran/resolve.c:5662
 #, no-c-format
 msgid "Allocatable '%s' at %L cannot have an initializer"
 msgstr ""
 
-#: fortran/resolve.c:5658
+#: fortran/resolve.c:5665
 #, no-c-format
 msgid "External '%s' at %L cannot have an initializer"
 msgstr ""
 
-#: fortran/resolve.c:5661
+#: fortran/resolve.c:5668
 #, fuzzy, no-c-format
 msgid "Dummy '%s' at %L cannot have an initializer"
 msgstr "`%s' に `extern' と初期化子の両方があります"
 
-#: fortran/resolve.c:5664
+#: fortran/resolve.c:5671
 #, no-c-format
 msgid "Intrinsic '%s' at %L cannot have an initializer"
 msgstr ""
 
-#: fortran/resolve.c:5667
+#: fortran/resolve.c:5674
 #, no-c-format
 msgid "Function result '%s' at %L cannot have an initializer"
 msgstr ""
 
-#: fortran/resolve.c:5670
+#: fortran/resolve.c:5677
 #, no-c-format
 msgid "Automatic array '%s' at %L cannot have an initializer"
 msgstr ""
 
-#: fortran/resolve.c:5685
+#: fortran/resolve.c:5692
 #, no-c-format
 msgid "The type %s cannot be host associated at %L because it is blocked by an incompatible object of the same name at %L"
 msgstr ""
 
-#: fortran/resolve.c:5709
+#: fortran/resolve.c:5716
 #, no-c-format
 msgid "Object '%s' at %L must have the SAVE attribute %s"
 msgstr ""
 
-#: fortran/resolve.c:5735
+#: fortran/resolve.c:5742
 #, no-c-format
 msgid "Although not referenced, '%s' at %L has ambiguous interfaces"
 msgstr ""
 
-#: fortran/resolve.c:5749
+#: fortran/resolve.c:5761
 #, no-c-format
 msgid "Character-valued statement function '%s' at %L must have constant length"
 msgstr ""
 
-#: fortran/resolve.c:5757
+#: fortran/resolve.c:5769
 #, no-c-format
 msgid "Automatic character length function '%s' at %L must have an explicit interface"
 msgstr ""
 
-#: fortran/resolve.c:5780
+#: fortran/resolve.c:5792
 #, no-c-format
 msgid "'%s' is of a PRIVATE type and cannot be a dummy argument of '%s', which is PUBLIC at %L"
 msgstr ""
 
-#: fortran/resolve.c:5795
+#: fortran/resolve.c:5807
 #, fuzzy, no-c-format
 msgid "External object '%s' at %L may not have an initializer"
 msgstr "可変長オブジェクトは初期化されないことになるでしょう"
 
-#: fortran/resolve.c:5803
+#: fortran/resolve.c:5815
 #, no-c-format
 msgid "ELEMENTAL function '%s' at %L must have a scalar result"
 msgstr ""
 
-#: fortran/resolve.c:5824
+#: fortran/resolve.c:5836
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be array-valued"
 msgstr ""
 
-#: fortran/resolve.c:5828
+#: fortran/resolve.c:5840
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be pointer-valued"
 msgstr ""
 
-#: fortran/resolve.c:5832
+#: fortran/resolve.c:5844
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be pure"
 msgstr ""
 
-#: fortran/resolve.c:5836
+#: fortran/resolve.c:5848
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be recursive"
 msgstr ""
 
-#: fortran/resolve.c:5845
+#: fortran/resolve.c:5857
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L is obsolescent in fortran 95"
 msgstr ""
 
-#: fortran/resolve.c:5870
+#: fortran/resolve.c:5882
 #, no-c-format
 msgid "Character length of component '%s' needs to be a constant specification expression at %L."
 msgstr ""
 
-#: fortran/resolve.c:5885
+#: fortran/resolve.c:5897
 #, no-c-format
 msgid "The component '%s' is a PRIVATE type and cannot be a component of '%s', which is PUBLIC at %L"
 msgstr ""
 
-#: fortran/resolve.c:5895
+#: fortran/resolve.c:5907
 #, no-c-format
 msgid "Component %s of SEQUENCE type declared at %L does not have the SEQUENCE attribute"
 msgstr ""
 
-#: fortran/resolve.c:5905
+#: fortran/resolve.c:5917
 #, no-c-format
 msgid "The pointer component '%s' of '%s' at %L is a type that has not been declared"
 msgstr ""
 
-#: fortran/resolve.c:5923
+#: fortran/resolve.c:5935
 #, no-c-format
 msgid "Component '%s' of '%s' at %L must have constant array bounds."
 msgstr ""
 
-#: fortran/resolve.c:5964
+#: fortran/resolve.c:5976
 #, no-c-format
 msgid "PRIVATE symbol '%s' cannot be member of PUBLIC namelist at %L"
 msgstr ""
 
-#: fortran/resolve.c:5977
+#: fortran/resolve.c:5989
 #, no-c-format
 msgid "The array '%s' must have constant shape to be a NAMELIST object at %L"
 msgstr ""
 
-#: fortran/resolve.c:5990
+#: fortran/resolve.c:6002
 #, no-c-format
 msgid "NAMELIST object '%s' at %L cannot have ALLOCATABLE components"
 msgstr ""
 
-#: fortran/resolve.c:6009
+#: fortran/resolve.c:6021
 #, no-c-format
 msgid "PROCEDURE attribute conflicts with NAMELIST attribute in '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:6026
+#: fortran/resolve.c:6038
 #, no-c-format
 msgid "Parameter array '%s' at %L cannot be automatic or assumed shape"
 msgstr ""
 
-#: fortran/resolve.c:6038
+#: fortran/resolve.c:6050
 #, no-c-format
 msgid "Implicitly typed PARAMETER '%s' at %L doesn't match a later IMPLICIT type"
 msgstr ""
 
-#: fortran/resolve.c:6049
+#: fortran/resolve.c:6061
 #, fuzzy, no-c-format
 msgid "Incompatible derived type in PARAMETER at %L"
 msgstr "%s に互換性のない型"
 
-#: fortran/resolve.c:6151
+#: fortran/resolve.c:6163
 #, no-c-format
 msgid "Assumed size array at %L must be a dummy argument"
 msgstr ""
 
-#: fortran/resolve.c:6154
+#: fortran/resolve.c:6166
 #, no-c-format
 msgid "Assumed shape array at %L must be a dummy argument"
 msgstr ""
 
-#: fortran/resolve.c:6167
+#: fortran/resolve.c:6179
 #, no-c-format
 msgid "Symbol at %L is not a DUMMY variable"
 msgstr ""
 
-#: fortran/resolve.c:6182
+#: fortran/resolve.c:6194
 #, no-c-format
 msgid "The derived type '%s' at %L is of type '%s', which has not been defined."
 msgstr ""
 
-#: fortran/resolve.c:6201
+#: fortran/resolve.c:6213
 #, no-c-format
 msgid "The INTENT(OUT) dummy argument '%s' at %L is ASSUMED SIZE and so cannot have a default initializer"
 msgstr ""
 
-#: fortran/resolve.c:6239
+#: fortran/resolve.c:6251
 #, no-c-format
 msgid "Intrinsic at %L does not exist"
 msgstr ""
 
-#: fortran/resolve.c:6272
+#: fortran/resolve.c:6284
 #, no-c-format
 msgid "Threadprivate at %L isn't SAVEd"
 msgstr ""
 
-#: fortran/resolve.c:6351
+#: fortran/resolve.c:6363
 #, no-c-format
 msgid "BLOCK DATA element '%s' at %L must be in COMMON"
 msgstr ""
 
-#: fortran/resolve.c:6395
+#: fortran/resolve.c:6407
 #, no-c-format
 msgid "Nonconstant array section at %L in DATA statement"
 msgstr ""
 
-#: fortran/resolve.c:6408
+#: fortran/resolve.c:6420
 #, no-c-format
 msgid "DATA statement at %L has more variables than values"
 msgstr ""
 
-#: fortran/resolve.c:6500
+#: fortran/resolve.c:6512
 #, no-c-format
 msgid "iterator start at %L does not simplify"
 msgstr ""
 
-#: fortran/resolve.c:6508
+#: fortran/resolve.c:6520
 #, no-c-format
 msgid "iterator end at %L does not simplify"
 msgstr ""
 
-#: fortran/resolve.c:6516
+#: fortran/resolve.c:6528
 #, no-c-format
 msgid "iterator step at %L does not simplify"
 msgstr ""
 
-#: fortran/resolve.c:6639
+#: fortran/resolve.c:6651
 #, no-c-format
 msgid "DATA statement at %L has more values than variables"
 msgstr ""
 
-#: fortran/resolve.c:6715
+#: fortran/resolve.c:6727
 #, fuzzy, no-c-format
 msgid "Label %d at %L defined but not used"
 msgstr "ラベル `%s' が定義されましたが使われていません"
 
-#: fortran/resolve.c:6720
+#: fortran/resolve.c:6732
 #, fuzzy, no-c-format
 msgid "Label %d at %L defined but cannot be used"
 msgstr "ラベル `%s' が定義されましたが使われていません"
 
-#: fortran/resolve.c:6805
+#: fortran/resolve.c:6817
 #, no-c-format
 msgid "Derived type variable '%s' at %L must have SEQUENCE attribute to be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6813
+#: fortran/resolve.c:6825
 #, no-c-format
 msgid "Derived type variable '%s' at %L cannot have ALLOCATABLE components to be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6828
+#: fortran/resolve.c:6840
 #, no-c-format
 msgid "Derived type variable '%s' at %L with pointer component(s) cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6835
+#: fortran/resolve.c:6847
 #, no-c-format
 msgid "Derived type variable '%s' at %L with default initializer cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6936
+#: fortran/resolve.c:6948
 #, no-c-format
 msgid "Syntax error in EQUIVALENCE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:6953
+#: fortran/resolve.c:6965
 #, no-c-format
 msgid "Initialized objects '%s' and '%s' cannot both be in the EQUIVALENCE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:6967
+#: fortran/resolve.c:6979
 #, no-c-format
 msgid "Common block member '%s' at %L cannot be an EQUIVALENCE object in the pure procedure '%s'"
 msgstr ""
 
-#: fortran/resolve.c:6976
+#: fortran/resolve.c:6988
 #, no-c-format
 msgid "Named constant '%s' at %L cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:7055
+#: fortran/resolve.c:7067
 #, no-c-format
 msgid "Array '%s' at %L with non-constant bounds cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:7066
+#: fortran/resolve.c:7078
 #, no-c-format
 msgid "Structure component '%s' at %L cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:7077
+#: fortran/resolve.c:7089
 #, no-c-format
 msgid "Substring at %L has length zero"
 msgstr ""
 
-#: fortran/resolve.c:7120
+#: fortran/resolve.c:7132
 #, no-c-format
 msgid "PUBLIC function '%s' at %L cannot be of PRIVATE type '%s'"
 msgstr ""
 
-#: fortran/resolve.c:7147
+#: fortran/resolve.c:7159
 #, no-c-format
 msgid "ENTRY '%s' at %L has no IMPLICIT type"
 msgstr ""
 
-#: fortran/resolve.c:7173
+#: fortran/resolve.c:7185
 #, no-c-format
 msgid "User operator procedure '%s' at %L must be a FUNCTION"
 msgstr ""
 
-#: fortran/resolve.c:7179
+#: fortran/resolve.c:7191
 #, no-c-format
 msgid "User operator procedure '%s' at %L cannot be assumed character length"
 msgstr ""
 
-#: fortran/resolve.c:7185
+#: fortran/resolve.c:7197
 #, no-c-format
 msgid "User operator procedure '%s' at %L must have at least one argument"
 msgstr ""
 
-#: fortran/resolve.c:7195
+#: fortran/resolve.c:7207
 #, no-c-format
 msgid "First argument of operator interface at %L cannot be optional"
 msgstr ""
 
-#: fortran/resolve.c:7207
+#: fortran/resolve.c:7219
 #, no-c-format
 msgid "Second argument of operator interface at %L cannot be optional"
 msgstr ""
 
-#: fortran/resolve.c:7211
+#: fortran/resolve.c:7223
 #, no-c-format
 msgid "Operator interface at %L must have, at most, two arguments"
 msgstr ""
 
-#: fortran/resolve.c:7244
+#: fortran/resolve.c:7256
 #, no-c-format
 msgid "Contained procedure '%s' at %L of a PURE procedure must also be PURE"
 msgstr ""
@@ -9579,33 +9579,33 @@ msgstr ""
 msgid "Named COMMON block '%s' at %L shall be of the same size"
 msgstr ""
 
-#: fortran/trans-common.c:669
+#: fortran/trans-common.c:670
 #, no-c-format
 msgid "Bad array reference at %L"
 msgstr ""
 
-#: fortran/trans-common.c:677
+#: fortran/trans-common.c:678
 #, no-c-format
 msgid "Illegal reference type at %L as EQUIVALENCE object"
 msgstr ""
 
-#: fortran/trans-common.c:717
+#: fortran/trans-common.c:718
 #, no-c-format
 msgid "Inconsistent equivalence rules involving '%s' at %L and '%s' at %L"
 msgstr ""
 
 #. Aligning this field would misalign a previous field.
-#: fortran/trans-common.c:850
+#: fortran/trans-common.c:851
 #, no-c-format
 msgid "The equivalence set for variable '%s' declared at %L violates alignment requirements"
 msgstr ""
 
-#: fortran/trans-common.c:915
+#: fortran/trans-common.c:916
 #, no-c-format
 msgid "Equivalence for '%s' does not match ordering of COMMON '%s' at %L"
 msgstr ""
 
-#: fortran/trans-common.c:930
+#: fortran/trans-common.c:931
 #, no-c-format
 msgid "The equivalence set for '%s' cause an invalid extension to COMMON '%s' at %L"
 msgstr ""
@@ -9613,17 +9613,17 @@ msgstr ""
 #. The required offset conflicts with previous alignment
 #. requirements.  Insert padding immediately before this
 #. segment.
-#: fortran/trans-common.c:941
+#: fortran/trans-common.c:942
 #, no-c-format
 msgid "Padding of %d bytes required before '%s' in COMMON '%s' at %L"
 msgstr ""
 
-#: fortran/trans-common.c:967
+#: fortran/trans-common.c:968
 #, no-c-format
 msgid "COMMON '%s' at %L does not exist"
 msgstr ""
 
-#: fortran/trans-common.c:974
+#: fortran/trans-common.c:975
 #, no-c-format
 msgid "COMMON '%s' at %L requires %d bytes of padding at start"
 msgstr ""
@@ -9648,7 +9648,7 @@ msgstr "仮引数 `%s' が void と宣言されています"
 msgid "Unused variable %s declared at %L"
 msgstr "インスタンス変数 `%s' は %s と宣言されています"
 
-#: fortran/trans-expr.c:1954
+#: fortran/trans-expr.c:1962
 #, fuzzy, no-c-format
 msgid "Unknown argument list function at %L"
 msgstr "関数 `%s' への引数が少なすぎます"
@@ -9872,7 +9872,7 @@ msgstr ""
 #: java/gjavah.c:2581
 #, fuzzy, c-format
 msgid "Processing %s\n"
-msgstr "エラーにより %s を閉じます"
+msgstr "%s を作成中.\n"
 
 #: java/gjavah.c:2591
 #, c-format
@@ -11388,12 +11388,12 @@ msgstr "スモールデータ領域: none, sdata, use"
 #: config/pa/pa.opt:24 config/pa/pa.opt:77 config/pa/pa.opt:85
 #, fuzzy
 msgid "Generate PA1.0 code"
-msgstr "CA コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/pa/pa.opt:28 config/pa/pa.opt:89 config/pa/pa.opt:109
 #, fuzzy
 msgid "Generate PA1.1 code"
-msgstr "CA コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/pa/pa.opt:32 config/pa/pa.opt:93
 msgid "Generate PA2.0 code (requires binutils 2.10 or later)"
@@ -11736,7 +11736,7 @@ msgstr "BK レジスタを汎用レジスタとして使用する"
 #: config/c4x/c4x.opt:60
 #, fuzzy
 msgid "Generate code for CPU"
-msgstr "C44 CPU 用のコードを生成する"
+msgstr "C30 CPU 用のコードを生成する"
 
 #: config/c4x/c4x.opt:64
 msgid "Enable use of DB instruction"
@@ -12151,17 +12151,17 @@ msgstr ""
 #: config/sh/sh.opt:45
 #, fuzzy
 msgid "Generate SH1 code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:49
 #, fuzzy
 msgid "Generate SH2 code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:53
 #, fuzzy
 msgid "Generate SH2a code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:57
 #, fuzzy
@@ -12181,22 +12181,22 @@ msgstr "リトルエンディアンのコードを生成"
 #: config/sh/sh.opt:69
 #, fuzzy
 msgid "Generate SH2e code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:73
 #, fuzzy
 msgid "Generate SH3 code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:77
 #, fuzzy
 msgid "Generate SH3e code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:81
 #, fuzzy
 msgid "Generate SH4 code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:85
 #, fuzzy
@@ -12206,7 +12206,7 @@ msgstr "SA コードを生成する"
 #: config/sh/sh.opt:89
 #, fuzzy
 msgid "Generate SH4-200 code"
-msgstr "29000 コードを生成"
+msgstr "29050 コードを生成"
 
 #: config/sh/sh.opt:93
 #, fuzzy
@@ -12216,7 +12216,7 @@ msgstr "SA コードを生成する"
 #: config/sh/sh.opt:97
 #, fuzzy
 msgid "Generate code for SH4 400 series (MMU/FPU-less)"
-msgstr "C44 CPU 用のコードを生成する"
+msgstr "C40 CPU 用のコードを生成する"
 
 #: config/sh/sh.opt:102
 #, fuzzy
@@ -12254,7 +12254,7 @@ msgstr "リトルエンディアンのコードを生成"
 #: config/sh/sh.opt:131
 #, fuzzy
 msgid "Generate SH4a code"
-msgstr "SB コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/sh/sh.opt:135
 #, fuzzy
@@ -12619,7 +12619,7 @@ msgstr "SA コードを生成する"
 #: config/ia64/ilp32.opt:7
 #, fuzzy
 msgid "Generate LP64 code"
-msgstr "CF コードを生成する"
+msgstr "SA コードを生成する"
 
 #: config/darwin.opt:24
 #, fuzzy
@@ -12682,7 +12682,7 @@ msgstr ""
 #: config/mips/mips.opt:52
 #, fuzzy
 msgid "Use trap instructions to check for integer divide by zero"
-msgstr "整数のゼロ除算をトラップしない"
+msgstr "整数のゼロ除算をトラップする"
 
 #: config/mips/mips.opt:56
 msgid "Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations"
@@ -13026,7 +13026,7 @@ msgstr "DB 命令の使用を無効にする"
 #: config/score/score.opt:36
 #, fuzzy
 msgid "Enable unaligned load/store instruction"
-msgstr "並列命令を有効にする"
+msgstr "DB 命令の使用を有効にする"
 
 #: config/score/score.opt:40
 #, fuzzy
@@ -13099,7 +13099,7 @@ msgstr ""
 #: config/v850/v850.opt:24
 #, fuzzy
 msgid "Use registers r2 and r5"
-msgstr "引数をレジスタ渡しにする"
+msgstr "浮動小数点レジスタを利用する"
 
 #: config/v850/v850.opt:28
 msgid "Use 4 byte entries in switch tables"
@@ -13410,7 +13410,7 @@ msgstr ""
 #: config/m32c/m32c.opt:29
 #, fuzzy
 msgid "Compile code for R8C variants"
-msgstr "32 ビットポインタ用にコンパイルする"
+msgstr "64 ビットポインタ用にコンパイルする"
 
 #: config/m32c/m32c.opt:33
 #, fuzzy
@@ -13443,7 +13443,7 @@ msgstr "RPTS 用の最大反復数を指定する"
 #: config/s390/s390.opt:24
 #, fuzzy
 msgid "31 bit ABI"
-msgstr "64 ビット ABI を使用する"
+msgstr "32 ビット ABI を使用する"
 
 #: config/s390/s390.opt:28
 #, fuzzy
@@ -14506,7 +14506,7 @@ msgstr "暗黙の関数宣言に関して警告する"
 #: fortran/lang.opt:58
 #, fuzzy
 msgid "Warn about calls with implicit interface"
-msgstr "複数文字リテラルの使用に関して警告する"
+msgstr "修飾子を取り去るキャストについて警告する"
 
 #: fortran/lang.opt:62
 #, fuzzy
@@ -16545,7 +16545,7 @@ msgstr ""
 msgid "cannot apply %<offsetof%> when %<operator[]%> is overloaded"
 msgstr ""
 
-#: c-common.c:6070 cp/typeck.c:4434
+#: c-common.c:6070 cp/typeck.c:4432
 #, fuzzy, gcc-internal-format
 msgid "attempt to take address of bit-field structure member %qD"
 msgstr "構造体メンバ `%s' のビットフィールドのアドレスを取得しようとしています"
@@ -16597,8 +16597,8 @@ msgstr "配列の添字が `char' 型です"
 #. an unprototyped function, it is compile-time undefined;
 #. making it a constraint in that case was rejected in
 #. DR#252.
-#: c-convert.c:96 c-typeck.c:1691 c-typeck.c:3901 cp/typeck.c:1506
-#: cp/typeck.c:5619 cp/typeck.c:6208 fortran/convert.c:89
+#: c-convert.c:96 c-typeck.c:1691 c-typeck.c:3901 cp/typeck.c:1504
+#: cp/typeck.c:5617 cp/typeck.c:6206 fortran/convert.c:89
 #: treelang/tree-convert.c:79
 #, gcc-internal-format
 msgid "void value not ignored as it ought to be"
@@ -16882,7 +16882,7 @@ msgstr "(未宣言の各変数については、それが最初に現われたそれぞれの関数"
 msgid "%Hfor each function it appears in.)"
 msgstr " に対して一度だけ報告されます。)"
 
-#: c-decl.c:2494 cp/decl.c:2252
+#: c-decl.c:2494 cp/decl.c:2269
 #, fuzzy, gcc-internal-format
 msgid "label %qE referenced outside of any function"
 msgstr "ラベル %s があらゆる関数の外側で参照されました"
@@ -17000,7 +17000,7 @@ msgstr "ポインタ宣言子に不適切な型修飾子"
 msgid "%q+D is usually a function"
 msgstr "`%s' は通常は関数です"
 
-#: c-decl.c:3187 cp/decl.c:3858 cp/decl2.c:780
+#: c-decl.c:3187 cp/decl.c:3875 cp/decl2.c:780
 #, fuzzy, gcc-internal-format
 msgid "typedef %qD is initialized (use __typeof__ instead)"
 msgstr "typedef `%s' が初期化されました"
@@ -17021,7 +17021,7 @@ msgstr "仮引数 `%s' が初期化されました"
 msgid "variable %qD has initializer but incomplete type"
 msgstr "変数 `%s' には初期化子がありますが、不完全型です"
 
-#: c-decl.c:3299 c-decl.c:6023 cp/decl.c:3900 cp/decl.c:10482
+#: c-decl.c:3299 c-decl.c:6023 cp/decl.c:3917 cp/decl.c:10538
 #, fuzzy, gcc-internal-format
 msgid "inline function %q+D given attribute noinline"
 msgstr "関数が大きすぎて inline にできません"
@@ -17151,22 +17151,22 @@ msgstr "関数の定義が `typedef' と宣言されました"
 msgid "storage class specified for structure field %qs"
 msgstr "構造体フィールド `%s' に指定された記憶クラス"
 
-#: c-decl.c:4057 cp/decl.c:7511
+#: c-decl.c:4057 cp/decl.c:7567
 #, fuzzy, gcc-internal-format
 msgid "storage class specified for parameter %qs"
 msgstr "仮引数 `%s' で指定された記憶クラス"
 
-#: c-decl.c:4060 cp/decl.c:7513
+#: c-decl.c:4060 cp/decl.c:7569
 #, gcc-internal-format
 msgid "storage class specified for typename"
 msgstr "型名に対して指定された記憶クラス"
 
-#: c-decl.c:4077 cp/decl.c:7530
+#: c-decl.c:4077 cp/decl.c:7586
 #, fuzzy, gcc-internal-format
 msgid "%qs initialized and declared %<extern%>"
 msgstr "`%s' が初期化されるところで、`extern' 宣言されました"
 
-#: c-decl.c:4080 cp/decl.c:7533
+#: c-decl.c:4080 cp/decl.c:7589
 #, fuzzy, gcc-internal-format
 msgid "%qs has both %<extern%> and initializer"
 msgstr "`%s' に `extern' と初期化子の両方があります"
@@ -17181,12 +17181,12 @@ msgstr "`%s' のトップレベルの宣言が `auto' を指定します"
 msgid "file-scope declaration of %qs specifies %<register%>"
 msgstr "`%s' のトップレベルの宣言が `auto' を指定します"
 
-#: c-decl.c:4092 cp/decl.c:7537
+#: c-decl.c:4092 cp/decl.c:7593
 #, fuzzy, gcc-internal-format
 msgid "nested function %qs declared %<extern%>"
 msgstr "ネストした関数 `%s' は `extern' に宣言されました"
 
-#: c-decl.c:4095 cp/decl.c:7547
+#: c-decl.c:4095 cp/decl.c:7603
 #, gcc-internal-format
 msgid "function-scope %qs implicitly auto and declared %<__thread%>"
 msgstr ""
@@ -17239,7 +17239,7 @@ msgstr "ISO C89 はサイズが評価できない配列 `%s' を禁じます"
 msgid "ISO C90 forbids variable-size array %qs"
 msgstr "ISO C89 は可変長サイズの配列 `%s' を禁じます"
 
-#: c-decl.c:4296 c-decl.c:4551 cp/decl.c:7946
+#: c-decl.c:4296 c-decl.c:4551 cp/decl.c:8002
 #, fuzzy, gcc-internal-format
 msgid "size of array %qs is too large"
 msgstr "配列 `%s' の大きさが大きすぎます"
@@ -17260,12 +17260,12 @@ msgstr ""
 msgid "array type has incomplete element type"
 msgstr "配列の型が不完全要素型を持っています"
 
-#: c-decl.c:4425 cp/decl.c:7631
+#: c-decl.c:4425 cp/decl.c:7687
 #, fuzzy, gcc-internal-format
 msgid "%qs declared as function returning a function"
 msgstr "`%s' は関数を返す関数として宣言されています"
 
-#: c-decl.c:4430 cp/decl.c:7636
+#: c-decl.c:4430 cp/decl.c:7692
 #, fuzzy, gcc-internal-format
 msgid "%qs declared as function returning an array"
 msgstr "`%s' は配列を返す関数として宣言されています"
@@ -17356,7 +17356,7 @@ msgstr "変数 `%s' が `inline' と宣言されました"
 #. A mere warning is sure to result in improper
 #. semantics at runtime.  Don't bother to allow this to
 #. compile.
-#: c-decl.c:4862 cp/decl.c:6398 cp/decl.c:8538
+#: c-decl.c:4862 cp/decl.c:6454 cp/decl.c:8594
 #, fuzzy, gcc-internal-format
 msgid "thread-local storage not supported for this target"
 msgstr "-fdata-sections はこのターゲットで受け入れられません"
@@ -17449,7 +17449,7 @@ msgstr "`%s' のネストした再定義"
 msgid "nested redefinition of %<struct %E%>"
 msgstr "`%s' のネストした再定義"
 
-#: c-decl.c:5359 cp/decl.c:3663
+#: c-decl.c:5359 cp/decl.c:3680
 #, gcc-internal-format
 msgid "declaration does not declare anything"
 msgstr "宣言が何も宣言していません"
@@ -17482,7 +17482,7 @@ msgstr "名前付きメンバ"
 #: c-decl.c:5470
 #, fuzzy, gcc-internal-format
 msgid "struct has no members"
-msgstr "デストラクタは仮引数を取りません"
+msgstr "%s に `%s' という名前のメンバはありません"
 
 #: c-decl.c:5532
 #, fuzzy, gcc-internal-format
@@ -17705,7 +17705,7 @@ msgstr "仮引数 `%s' はプロトタイプに一致しません"
 msgid "argument %qD doesn%'t match prototype"
 msgstr "仮引数 `%s' はプロトタイプに一致しません"
 
-#: c-decl.c:6758 cp/decl.c:11270
+#: c-decl.c:6758 cp/decl.c:11326
 #, fuzzy, gcc-internal-format
 msgid "no return statement in function returning non-void"
 msgstr "戻り型が関数で、`return' に値がありません"
@@ -18001,7 +18001,7 @@ msgstr "-fdata-sections はこのターゲットで受け入れられません"
 #: c-decl.c:7534
 #, fuzzy, gcc-internal-format
 msgid "ISO C does not support decimal floating point"
-msgstr "ISO C++ は `long long' を受け入れません"
+msgstr "ISO C89 は `long long' を受け付けません"
 
 #: c-decl.c:7568
 #, fuzzy, gcc-internal-format
@@ -18485,7 +18485,7 @@ msgstr "変数が使われないときに警告する"
 msgid "%H%qE is not initialized"
 msgstr "初期化子を欠いています"
 
-#: c-omp.c:247 cp/semantics.c:3812
+#: c-omp.c:247 cp/semantics.c:3815
 #, fuzzy, gcc-internal-format
 msgid "%Hmissing controlling predicate"
 msgstr "述語の後ろの '(' を欠いています"
@@ -18495,7 +18495,7 @@ msgstr "述語の後ろの '(' を欠いています"
 msgid "%Hinvalid controlling predicate"
 msgstr "無効な制御式です"
 
-#: c-omp.c:312 cp/semantics.c:3818
+#: c-omp.c:312 cp/semantics.c:3821
 #, fuzzy, gcc-internal-format
 msgid "%Hmissing increment expression"
 msgstr "代入の抑制"
@@ -18528,7 +18528,7 @@ msgstr "%s の後ろの数字を欠いています"
 #: c-opts.c:178
 #, fuzzy, gcc-internal-format
 msgid "missing filename after %qs"
-msgstr "%s の後ろのターゲットを欠いています"
+msgstr "%s の後ろの数字を欠いています"
 
 #: c-opts.c:183
 #, fuzzy, gcc-internal-format
@@ -18683,7 +18683,7 @@ msgstr "ISO C は ネストされた関数を禁じます"
 msgid "expected identifier"
 msgstr "述語は識別子でなければなりません"
 
-#: c-parser.c:1765 cp/parser.c:10509
+#: c-parser.c:1765 cp/parser.c:10521
 #, gcc-internal-format
 msgid "comma at end of enumerator list"
 msgstr "列挙子リストの最後にカンマがあります"
@@ -18768,7 +18768,7 @@ msgstr "`%s' のトップレベルの宣言が `auto' を指定します"
 msgid "wide string literal in %<asm%>"
 msgstr "文字列リテラルが無効です、最後の '\\' を無視します"
 
-#: c-parser.c:2760 c-parser.c:6619 cp/parser.c:19250
+#: c-parser.c:2760 c-parser.c:6619 cp/parser.c:19262
 #, fuzzy, gcc-internal-format
 msgid "expected string literal"
 msgstr "_Pramga が括弧で囲まれた文字列リテラルを受け取りました"
@@ -18880,7 +18880,7 @@ msgstr "ISO C はブレースでまとめられた式を禁じます"
 #: c-parser.c:5289
 #, fuzzy, gcc-internal-format
 msgid "first argument to %<__builtin_choose_expr%> not a constant"
-msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
+msgstr "`__builtin_args_info' の引数は定数でなければなりません"
 
 #: c-parser.c:5456
 #, gcc-internal-format
@@ -18897,27 +18897,27 @@ msgstr "ISO C89 は複合リテラルを禁じます"
 msgid "extra semicolon in method definition specified"
 msgstr "struct や union の中で余分なセミコロンが指定されました"
 
-#: c-parser.c:6525 cp/parser.c:19293
+#: c-parser.c:6525 cp/parser.c:19305
 #, gcc-internal-format
 msgid "%<#pragma omp barrier%> may only be used in compound statements"
 msgstr ""
 
-#: c-parser.c:6536 cp/parser.c:19308
+#: c-parser.c:6536 cp/parser.c:19320
 #, fuzzy, gcc-internal-format
 msgid "%<#pragma omp flush%> may only be used in compound statements"
 msgstr "複合文の終りでラベルを使うことは推奨されません"
 
-#: c-parser.c:6548 cp/parser.c:19334
+#: c-parser.c:6548 cp/parser.c:19346
 #, gcc-internal-format
 msgid "%<#pragma omp section%> may only be used in %<#pragma omp sections%> construct"
 msgstr ""
 
-#: c-parser.c:6554 cp/parser.c:19283
+#: c-parser.c:6554 cp/parser.c:19295
 #, gcc-internal-format
 msgid "%<#pragma GCC pch_preprocess%> must be first"
 msgstr ""
 
-#: c-parser.c:6705 cp/parser.c:18131
+#: c-parser.c:6705 cp/parser.c:18143
 #, fuzzy, gcc-internal-format
 msgid "too many %qs clauses"
 msgstr "入力ファイルが多すぎます"
@@ -18947,7 +18947,7 @@ msgstr ""
 msgid "expected %<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%>, or %<||%>"
 msgstr ""
 
-#: c-parser.c:7086 cp/parser.c:18480
+#: c-parser.c:7086 cp/parser.c:18492
 #, gcc-internal-format
 msgid "schedule %<runtime%> does not take a %<chunk_size%> parameter"
 msgstr ""
@@ -18962,7 +18962,7 @@ msgstr "無効なコードです"
 msgid "expected %<#pragma omp%> clause"
 msgstr ""
 
-#: c-parser.c:7198 cp/parser.c:18589
+#: c-parser.c:7198 cp/parser.c:18601
 #, fuzzy, gcc-internal-format
 msgid "%qs is not valid for %qs"
 msgstr "\"%s\" は正常なファイル名ではありません"
@@ -18982,7 +18982,7 @@ msgstr "行番号 %u に戻るはずでした"
 msgid "for statement expected"
 msgstr "')' または項が必要です"
 
-#: c-parser.c:7460 cp/semantics.c:3798 cp/semantics.c:3842
+#: c-parser.c:7460 cp/semantics.c:3801 cp/semantics.c:3845
 #, gcc-internal-format
 msgid "expected iteration declaration or initialization"
 msgstr ""
@@ -18992,22 +18992,22 @@ msgstr ""
 msgid "expected %<#pragma omp section%> or %<}%>"
 msgstr ""
 
-#: c-parser.c:7811 cp/parser.c:19171 fortran/openmp.c:470
+#: c-parser.c:7811 cp/parser.c:19183 fortran/openmp.c:470
 #, fuzzy, gcc-internal-format
 msgid "threadprivate variables not supported in this target"
 msgstr "セクション属性はこのターゲットでは実装されていません"
 
-#: c-parser.c:7821 cp/semantics.c:3692
+#: c-parser.c:7821 cp/semantics.c:3695
 #, gcc-internal-format
 msgid "%qE declared %<threadprivate%> after first use"
 msgstr ""
 
-#: c-parser.c:7823 cp/semantics.c:3694
+#: c-parser.c:7823 cp/semantics.c:3697
 #, gcc-internal-format
 msgid "automatic variable %qE cannot be %<threadprivate%>"
 msgstr ""
 
-#: c-parser.c:7825 cp/semantics.c:3696
+#: c-parser.c:7825 cp/semantics.c:3699
 #, fuzzy, gcc-internal-format
 msgid "%<threadprivate%> %qE has incomplete type"
 msgstr "仮引数 `%s' は不完全型です"
@@ -19035,7 +19035,7 @@ msgstr "%s へ書き込めません"
 #: c-pch.c:193 c-pch.c:210
 #, fuzzy, gcc-internal-format
 msgid "can%'t seek in %s: %m"
-msgstr "%s を再 open できません"
+msgstr "%s を rewind できません"
 
 #: c-pch.c:201 c-pch.c:243 c-pch.c:283 c-pch.c:334
 #, fuzzy, gcc-internal-format
@@ -19338,17 +19338,17 @@ msgstr "不完全型のポインタへの間接参照"
 msgid "dereferencing %<void *%> pointer"
 msgstr "`void *' ポインタへの間接参照です"
 
-#: c-typeck.c:1913 cp/typeck.c:2369
+#: c-typeck.c:1913 cp/typeck.c:2367
 #, fuzzy, gcc-internal-format
 msgid "invalid type argument of %qs"
 msgstr "`%s' の引数として無効な型"
 
-#: c-typeck.c:1941 cp/typeck.c:2512
+#: c-typeck.c:1941 cp/typeck.c:2510
 #, gcc-internal-format
 msgid "subscripted value is neither array nor pointer"
 msgstr "添字をつけられた値が配列でもポインタでもありません"
 
-#: c-typeck.c:1952 cp/typeck.c:2431 cp/typeck.c:2517
+#: c-typeck.c:1952 cp/typeck.c:2429 cp/typeck.c:2515
 #, gcc-internal-format
 msgid "array subscript is not an integer"
 msgstr "配列の添字が整数型ではありません"
@@ -19491,7 +19491,7 @@ msgstr "比較が & 演算子の項となる場合には括弧をつけることをお勧めします"
 msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
 msgstr "X<=Y<=Z の様な比較は数学的な意味での結果をもたらしません"
 
-#: c-typeck.c:2696 c-typeck.c:2701 cp/typeck.c:3281 cp/typeck.c:3390
+#: c-typeck.c:2696 c-typeck.c:2701 cp/typeck.c:3279 cp/typeck.c:3388
 #, gcc-internal-format
 msgid "comparison with string literal results in unspecified behaviour"
 msgstr ""
@@ -19958,7 +19958,7 @@ msgstr "古い C では自動的な集合体の初期化を拒絶します"
 msgid "(near initialization for %qs)"
 msgstr "(`%s' の初期化は不完全です)"
 
-#: c-typeck.c:5093 cp/decl.c:4824
+#: c-typeck.c:5093 cp/decl.c:4841
 #, fuzzy, gcc-internal-format
 msgid "opaque vector types cannot be initialized"
 msgstr "可変長オブジェクトは初期化されないことになるでしょう"
@@ -19988,7 +19988,7 @@ msgstr ""
 msgid "ISO C forbids %<goto *expr;%>"
 msgstr "ISO C `goto *式;' の書き方を禁じます"
 
-#: c-typeck.c:6982 cp/typeck.c:6461
+#: c-typeck.c:6982 cp/typeck.c:6459
 #, fuzzy, gcc-internal-format
 msgid "function declared %<noreturn%> has a %<return%> statement"
 msgstr "`noreturn' の宣言された関数に `return' 文があります"
@@ -20038,7 +20038,7 @@ msgstr ""
 msgid "%<default%> label in scope of identifier with variably modified type not containing enclosing switch statement"
 msgstr ""
 
-#: c-typeck.c:7196 cp/parser.c:6415
+#: c-typeck.c:7196 cp/parser.c:6427
 #, gcc-internal-format
 msgid "case label not within a switch statement"
 msgstr "case ラベルが switch 文の中にありません"
@@ -20053,17 +20053,17 @@ msgstr "`default' ラベルが switch 文の中にありません"
 msgid "%Hsuggest explicit braces to avoid ambiguous %<else%>"
 msgstr ""
 
-#: c-typeck.c:7386 cp/cp-gimplify.c:97 cp/parser.c:6911
+#: c-typeck.c:7386 cp/cp-gimplify.c:97 cp/parser.c:6923
 #, gcc-internal-format
 msgid "break statement not within loop or switch"
 msgstr "break 文が loop または switch の中にありません"
 
-#: c-typeck.c:7388 cp/parser.c:6932
+#: c-typeck.c:7388 cp/parser.c:6944
 #, gcc-internal-format
 msgid "continue statement not within a loop"
 msgstr "continue 文が loop の中にありません"
 
-#: c-typeck.c:7393 cp/parser.c:6922
+#: c-typeck.c:7393 cp/parser.c:6934
 #, fuzzy, gcc-internal-format
 msgid "break statement used with OpenMP for loop"
 msgstr "break 文が loop または switch の中にありません"
@@ -20083,27 +20083,27 @@ msgstr "式の中の文に不完全型があります"
 msgid "division by zero"
 msgstr "#if でゼロ除算が発生しました"
 
-#: c-typeck.c:7987 cp/typeck.c:3214
+#: c-typeck.c:7987 cp/typeck.c:3212
 #, gcc-internal-format
 msgid "right shift count is negative"
 msgstr "右シフト回数が負の数です"
 
-#: c-typeck.c:7994 cp/typeck.c:3220
+#: c-typeck.c:7994 cp/typeck.c:3218
 #, gcc-internal-format
 msgid "right shift count >= width of type"
 msgstr "右シフト回数 >= 型の幅となっています"
 
-#: c-typeck.c:8015 cp/typeck.c:3239
+#: c-typeck.c:8015 cp/typeck.c:3237
 #, gcc-internal-format
 msgid "left shift count is negative"
 msgstr "左シフト回数が負の数です"
 
-#: c-typeck.c:8018 cp/typeck.c:3241
+#: c-typeck.c:8018 cp/typeck.c:3239
 #, gcc-internal-format
 msgid "left shift count >= width of type"
 msgstr "左シフト回数 >= 型の幅となっています"
 
-#: c-typeck.c:8036 cp/typeck.c:3277
+#: c-typeck.c:8036 cp/typeck.c:3275
 #, gcc-internal-format
 msgid "comparing floating point with == or != is unsafe"
 msgstr "浮動小数点の比較で == や != を使うのは安全ではありません"
@@ -20148,12 +20148,12 @@ msgstr "整数 0 とポインタとの順序比較です"
 msgid "comparison between signed and unsigned"
 msgstr "符合付きと符合無しとの比較です"
 
-#: c-typeck.c:8448 cp/typeck.c:3709
+#: c-typeck.c:8448 cp/typeck.c:3707
 #, gcc-internal-format
 msgid "comparison of promoted ~unsigned with constant"
 msgstr "~で反転された格上げ符合無し型と定数との比較です"
 
-#: c-typeck.c:8456 cp/typeck.c:3717
+#: c-typeck.c:8456 cp/typeck.c:3715
 #, gcc-internal-format
 msgid "comparison of promoted ~unsigned with unsigned"
 msgstr "~で反転された符合無し型と符合無し型との比較です"
@@ -20173,48 +20173,48 @@ msgstr "スカラーが必要な場所に構造体型の値が使われました"
 msgid "used union type value where scalar is required"
 msgstr "スカラーが必要な場所に共用体型の値が使われました"
 
-#: c-typeck.c:8627 cp/semantics.c:3519
+#: c-typeck.c:8627 cp/semantics.c:3522
 #, gcc-internal-format
 msgid "%qE has invalid type for %<reduction%>"
 msgstr ""
 
-#: c-typeck.c:8661 cp/semantics.c:3532
+#: c-typeck.c:8661 cp/semantics.c:3535
 #, gcc-internal-format
 msgid "%qE has invalid type for %<reduction(%s)%>"
 msgstr ""
 
-#: c-typeck.c:8677 cp/semantics.c:3542
+#: c-typeck.c:8677 cp/semantics.c:3545
 #, gcc-internal-format
 msgid "%qE must be %<threadprivate%> for %<copyin%>"
 msgstr ""
 
-#: c-typeck.c:8686 cp/semantics.c:3347
+#: c-typeck.c:8686 cp/semantics.c:3350
 #, fuzzy, gcc-internal-format
 msgid "%qE is not a variable in clause %qs"
 msgstr "インスタンス変数 `%s' は %s と宣言されています"
 
-#: c-typeck.c:8693 c-typeck.c:8713 c-typeck.c:8733 cp/semantics.c:3354
-#: cp/semantics.c:3373 cp/semantics.c:3392
+#: c-typeck.c:8693 c-typeck.c:8713 c-typeck.c:8733 cp/semantics.c:3376
+#: cp/semantics.c:3395
 #, gcc-internal-format
 msgid "%qE appears more than once in data clauses"
 msgstr ""
 
-#: c-typeck.c:8707 cp/semantics.c:3367
+#: c-typeck.c:8707 cp/semantics.c:3370
 #, fuzzy, gcc-internal-format
 msgid "%qE is not a variable in clause %<firstprivate%>"
 msgstr "インスタンス変数 `%s' は private と宣言されています"
 
-#: c-typeck.c:8727 cp/semantics.c:3386
+#: c-typeck.c:8727 cp/semantics.c:3389
 #, fuzzy, gcc-internal-format
 msgid "%qE is not a variable in clause %<lastprivate%>"
 msgstr "インスタンス変数 `%s' は private と宣言されています"
 
-#: c-typeck.c:8785 cp/semantics.c:3583
+#: c-typeck.c:8785 cp/semantics.c:3586
 #, gcc-internal-format
 msgid "%qE is predetermined %qs for %qs"
 msgstr ""
 
-#: calls.c:1961
+#: calls.c:1973
 #, gcc-internal-format
 msgid "function call has aggregate value"
 msgstr "関数呼び出しが集合体の値を持っています"
@@ -20767,7 +20767,7 @@ msgstr "構文解析器のスタックが溢れました"
 #: coverage.c:311
 #, fuzzy, gcc-internal-format
 msgid "%qs is corrupted"
-msgstr "%s が本来よりも短いです"
+msgstr "-f%s はもはやサポートされません"
 
 #: coverage.c:348
 #, fuzzy, gcc-internal-format
@@ -20844,47 +20844,47 @@ msgstr "%s で中断, 位置 %s:%d"
 msgid "exception handling disabled, use -fexceptions to enable"
 msgstr "例外処理を無効にしました. 有効にするには -fexceptions を使ってください"
 
-#: except.c:2879
+#: except.c:2883
 #, fuzzy, gcc-internal-format
 msgid "argument of %<__builtin_eh_return_regno%> must be constant"
 msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
 
-#: except.c:3010
+#: except.c:3014
 #, gcc-internal-format
 msgid "__builtin_eh_return not supported on this target"
 msgstr "__builtin_eh_return はこのターゲットではサポートされていません"
 
-#: except.c:3871 except.c:3880
+#: except.c:3875 except.c:3884
 #, gcc-internal-format
 msgid "region_array is corrupted for region %i"
 msgstr ""
 
-#: except.c:3885
+#: except.c:3889
 #, gcc-internal-format
 msgid "outer block of region %i is wrong"
 msgstr ""
 
-#: except.c:3890
+#: except.c:3894
 #, gcc-internal-format
 msgid "region %i may contain throw and is contained in region that may not"
 msgstr ""
 
-#: except.c:3896
+#: except.c:3900
 #, gcc-internal-format
 msgid "negative nesting depth of region %i"
 msgstr ""
 
-#: except.c:3916
+#: except.c:3920
 #, gcc-internal-format
 msgid "tree list ends on depth %i"
 msgstr ""
 
-#: except.c:3921
+#: except.c:3925
 #, fuzzy, gcc-internal-format
 msgid "array does not match the region tree"
 msgstr "キャストによる関数の型が適合しません"
 
-#: except.c:3927
+#: except.c:3931
 #, gcc-internal-format
 msgid "verify_eh_tree failed"
 msgstr ""
@@ -20894,7 +20894,7 @@ msgstr ""
 msgid "stack limits not supported on this target"
 msgstr "スタック制限はこのターゲットでは実装されていません"
 
-#: fold-const.c:958 tree-ssa-loop-niter.c:1163 tree-vrp.c:4346
+#: fold-const.c:958 tree-ssa-loop-niter.c:1163 tree-vrp.c:4423
 #, fuzzy, gcc-internal-format
 msgid "%H%s"
 msgstr "%s"
@@ -20909,27 +20909,27 @@ msgstr ""
 msgid "comparison is always %d due to width of bit-field"
 msgstr "ビットフィールドの幅のせいで比較が常に %d となります"
 
-#: fold-const.c:4868
+#: fold-const.c:4884
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying range test"
 msgstr ""
 
-#: fold-const.c:5247 fold-const.c:5262
+#: fold-const.c:5263 fold-const.c:5278
 #, gcc-internal-format
 msgid "comparison is always %d"
 msgstr "比較が常に %d となります"
 
-#: fold-const.c:5391
+#: fold-const.c:5407
 #, fuzzy, gcc-internal-format
 msgid "%<or%> of unmatched not-equal tests is always 1"
 msgstr "一致しない値同士での非等価の `or' テストは常に 1 です"
 
-#: fold-const.c:5396
+#: fold-const.c:5412
 #, fuzzy, gcc-internal-format
 msgid "%<and%> of mutually exclusive equal-tests is always 0"
 msgstr "相互排他的な値の等価の `and' テストは常に 0 です"
 
-#: fold-const.c:11859
+#: fold-const.c:11875
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
 msgstr ""
@@ -20944,7 +20944,7 @@ msgstr "変数 `%s' のサイズが大きすぎます"
 msgid "size of variable %q+D is too large"
 msgstr "変数 `%s' のサイズが大きすぎます"
 
-#: function.c:1560
+#: function.c:1560 gimplify.c:4063
 #, fuzzy, gcc-internal-format
 msgid "impossible constraint in %<asm%>"
 msgstr "`asm' 内ではレジスタ制約を行なえません"
@@ -21116,41 +21116,46 @@ msgid "invalid lvalue in asm output %d"
 msgstr "asm 文の中に無効な左辺値"
 
 #: gimplify.c:4064
+#, gcc-internal-format
+msgid "non-memory input %d must stay in memory"
+msgstr ""
+
+#: gimplify.c:4077
 #, fuzzy, gcc-internal-format
 msgid "memory input %d is not directly addressable"
 msgstr "出力番号 %d は直接アドレス指定できません"
 
-#: gimplify.c:4537
+#: gimplify.c:4550
 #, gcc-internal-format
 msgid "%qs not specified in enclosing parallel"
 msgstr ""
 
-#: gimplify.c:4539
+#: gimplify.c:4552
 #, gcc-internal-format
 msgid "%Henclosing parallel"
 msgstr ""
 
-#: gimplify.c:4593
+#: gimplify.c:4606
 #, fuzzy, gcc-internal-format
 msgid "iteration variable %qs should be private"
 msgstr "インスタンス変数 `%s' は private と宣言されています"
 
-#: gimplify.c:4607
+#: gimplify.c:4620
 #, fuzzy, gcc-internal-format
 msgid "iteration variable %qs should not be firstprivate"
 msgstr "インスタンス変数 `%s' は private と宣言されています"
 
-#: gimplify.c:4610
+#: gimplify.c:4623
 #, fuzzy, gcc-internal-format
 msgid "iteration variable %qs should not be reduction"
 msgstr "レジスタ変数 `%s' が入れ子関数の中で使われました"
 
-#: gimplify.c:4734
+#: gimplify.c:4747
 #, gcc-internal-format
 msgid "%s variable %qs is private in outer context"
 msgstr ""
 
-#: gimplify.c:6025
+#: gimplify.c:6051
 #, gcc-internal-format
 msgid "gimplification failed"
 msgstr ""
@@ -21171,37 +21176,37 @@ msgstr "%s を開けません"
 msgid "fix_sched_param: unknown param: %s"
 msgstr "fix_sched_param: 不明なパラメタ: %s"
 
-#: omp-low.c:1266
+#: omp-low.c:1269
 #, gcc-internal-format
 msgid "work-sharing region may not be closely nested inside of work-sharing, critical, ordered or master region"
 msgstr ""
 
-#: omp-low.c:1282
+#: omp-low.c:1285
 #, gcc-internal-format
 msgid "master region may not be closely nested inside of work-sharing region"
 msgstr ""
 
-#: omp-low.c:1296
+#: omp-low.c:1299
 #, gcc-internal-format
 msgid "ordered region may not be closely nested inside of critical region"
 msgstr ""
 
-#: omp-low.c:1302
+#: omp-low.c:1305
 #, gcc-internal-format
 msgid "ordered region must be closely nested inside a loop region with an ordered clause"
 msgstr ""
 
-#: omp-low.c:1316
+#: omp-low.c:1319
 #, gcc-internal-format
 msgid "critical region may not be nested inside a critical region with the same name"
 msgstr ""
 
-#: omp-low.c:4459 cp/decl.c:2515 cp/parser.c:6919 cp/parser.c:6939
+#: omp-low.c:4497 cp/decl.c:2532 cp/parser.c:6931 cp/parser.c:6951
 #, gcc-internal-format
 msgid "invalid exit from OpenMP structured block"
 msgstr ""
 
-#: omp-low.c:4461
+#: omp-low.c:4499
 #, gcc-internal-format
 msgid "invalid entry to OpenMP structured block"
 msgstr ""
@@ -21627,7 +21632,7 @@ msgstr "`asm' のオペランド制約が代替番号とは異なります"
 #: stmt.c:1211
 #, fuzzy, gcc-internal-format
 msgid "duplicate asm operand name %qs"
-msgstr "マクロ仮引数 \"%s\" が重複しています"
+msgstr "重複したメンバ `%s'"
 
 #: stmt.c:1309
 #, gcc-internal-format
@@ -22446,12 +22451,12 @@ msgstr "`%s' はこの関数内で初期化されずに使用される可能性があります"
 msgid "no support for induction"
 msgstr "関数への dllimport を無視する"
 
-#: tree-vrp.c:4328
+#: tree-vrp.c:4405
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying conditional to constant"
 msgstr ""
 
-#: tree-vrp.c:4334
+#: tree-vrp.c:4411
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying conditional"
 msgstr ""
@@ -22472,10 +22477,10 @@ msgid "%q+D redeclared without dllimport attribute: previous dllimport ignored"
 msgstr ""
 
 #: tree.c:3726 tree.c:3738 config/darwin.c:1359 config/arm/arm.c:2906
-#: config/arm/arm.c:2934 config/avr/avr.c:4693 config/h8300/h8300.c:5282
-#: config/h8300/h8300.c:5306 config/i386/i386.c:2382 config/i386/i386.c:17541
+#: config/arm/arm.c:2934 config/avr/avr.c:4694 config/h8300/h8300.c:5282
+#: config/h8300/h8300.c:5306 config/i386/i386.c:2382 config/i386/i386.c:17550
 #: config/ia64/ia64.c:565 config/m68hc11/m68hc11.c:1118
-#: config/rs6000/rs6000.c:17704 config/sh/symbian.c:409
+#: config/rs6000/rs6000.c:17705 config/sh/symbian.c:409
 #: config/sh/symbian.c:416
 #, fuzzy, gcc-internal-format
 msgid "%qs attribute ignored"
@@ -22937,7 +22942,7 @@ msgstr "-mfp-trap-mode スイッチにとっての不正な値 `%s'"
 #: config/alpha/alpha.c:380 config/alpha/alpha.c:392
 #, fuzzy, gcc-internal-format
 msgid "bad value %qs for -mcpu switch"
-msgstr "-mcpu スイッチに対する不正な値 (%s)"
+msgstr "-mcpu スイッチにとっての不正な値 `%s'"
 
 #: config/alpha/alpha.c:399
 #, fuzzy, gcc-internal-format
@@ -23115,39 +23120,40 @@ msgstr "-mpic-register= は -fpic をつけないと役に立ちません"
 msgid "unable to use '%s' for PIC register"
 msgstr "'%s' を PIC のレジスタとして使うことができません"
 
-#: config/arm/arm.c:2874 config/arm/arm.c:2892 config/avr/avr.c:4713
-#: config/bfin/bfin.c:3666 config/c4x/c4x.c:4076 config/h8300/h8300.c:5258
-#: config/i386/i386.c:2337 config/m68hc11/m68hc11.c:1155
-#: config/m68k/m68k.c:381 config/mcore/mcore.c:3032 config/mt/mt.c:1276
-#: config/rs6000/rs6000.c:17630 config/sh/sh.c:7709 config/sh/sh.c:7730
-#: config/sh/sh.c:7753 config/stormy16/stormy16.c:2255 config/v850/v850.c:2123
+#: config/arm/arm.c:2874 config/arm/arm.c:2892 config/avr/avr.c:4714
+#: config/avr/avr.c:4756 config/bfin/bfin.c:3666 config/c4x/c4x.c:4076
+#: config/h8300/h8300.c:5258 config/i386/i386.c:2337
+#: config/m68hc11/m68hc11.c:1155 config/m68k/m68k.c:381
+#: config/mcore/mcore.c:3032 config/mt/mt.c:1276 config/rs6000/rs6000.c:17631
+#: config/sh/sh.c:7718 config/sh/sh.c:7739 config/sh/sh.c:7762
+#: config/stormy16/stormy16.c:2255 config/v850/v850.c:2123
 #, fuzzy, gcc-internal-format
 msgid "%qs attribute only applies to functions"
 msgstr "`%s' 属性は関数に対してのみ適用されます"
 
-#: config/arm/arm.c:12104
+#: config/arm/arm.c:12105
 #, fuzzy, gcc-internal-format
 msgid "unable to compute real location of stacked parameter"
 msgstr "スタックに積まれた仮引数の実際の領域を計算できません"
 
 #. @@@ better error message
-#: config/arm/arm.c:12749 config/arm/arm.c:12786
+#: config/arm/arm.c:12750 config/arm/arm.c:12787
 #, gcc-internal-format
 msgid "selector must be an immediate"
 msgstr "セレクタは即値でなければなりません"
 
 #. @@@ better error message
-#: config/arm/arm.c:12829 config/i386/i386.c:16158 config/i386/i386.c:16192
+#: config/arm/arm.c:12830 config/i386/i386.c:16166 config/i386/i386.c:16200
 #, gcc-internal-format
 msgid "mask must be an immediate"
 msgstr "マスクは即値でなければなりません"
 
-#: config/arm/arm.c:13488
+#: config/arm/arm.c:13489
 #, gcc-internal-format
 msgid "no low registers available for popping high registers"
 msgstr "高位レジスタを pop する為に使用できる低位レジスタがありません"
 
-#: config/arm/arm.c:13712
+#: config/arm/arm.c:13713
 #, fuzzy, gcc-internal-format
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr "Thumb モードでは割り込みサービスルーチンをコード化できません"
@@ -23162,32 +23168,32 @@ msgstr "初期化された変数 `%s' は dllimport マークされています"
 msgid "static variable %q+D is marked dllimport"
 msgstr "静的変数 `%s' は dllimport とマークされています"
 
-#: config/avr/avr.c:568
+#: config/avr/avr.c:569
 #, gcc-internal-format
 msgid "large frame pointer change (%d) with -mtiny-stack"
 msgstr "-mtiny-stack によりラージフレームポインタが変更されます(%d)"
 
-#: config/avr/avr.c:4686
+#: config/avr/avr.c:4687
 #, fuzzy, gcc-internal-format
 msgid "only initialized variables can be placed into program memory area"
 msgstr "プログラムメモリ領域内に配置できる変数だけを初期化しました"
 
-#: config/avr/avr.c:4730
+#: config/avr/avr.c:4731
 #, gcc-internal-format
 msgid "%qs appears to be a misspelled interrupt handler"
 msgstr ""
 
-#: config/avr/avr.c:4738
+#: config/avr/avr.c:4739
 #, gcc-internal-format
 msgid "%qs appears to be a misspelled signal handler"
 msgstr ""
 
-#: config/avr/avr.c:4830
+#: config/avr/avr.c:4847
 #, fuzzy, gcc-internal-format
 msgid "only uninitialized variables can be placed in the .noinit section"
 msgstr "8 ビット領域内に配置できる変数だけが初期化されました"
 
-#: config/avr/avr.c:4844
+#: config/avr/avr.c:4861
 #, gcc-internal-format
 msgid "MCU %qs supported for assembler only"
 msgstr ""
@@ -23732,17 +23738,17 @@ msgstr ""
 msgid "unsupported operand size for extended register"
 msgstr ""
 
-#: config/i386/i386.c:15882 config/rs6000/rs6000.c:7318
+#: config/i386/i386.c:15890 config/rs6000/rs6000.c:7318
 #, gcc-internal-format
 msgid "selector must be an integer constant in the range 0..%wi"
 msgstr ""
 
-#: config/i386/i386.c:16237 config/i386/i386.c:16321
+#: config/i386/i386.c:16245 config/i386/i386.c:16329
 #, fuzzy, gcc-internal-format
 msgid "shift must be an immediate"
 msgstr "マスクは即値でなければなりません"
 
-#: config/i386/i386.c:17551 config/rs6000/rs6000.c:17713
+#: config/i386/i386.c:17560 config/rs6000/rs6000.c:17714
 #, fuzzy, gcc-internal-format
 msgid "%qs incompatible attribute ignored"
 msgstr "`%s' 属性は無視されました"
@@ -23928,7 +23934,7 @@ msgstr "-C と -o は両方を一緒に指定できません"
 msgid "-fPIC is not currently supported on the 68000 or 68010"
 msgstr "今のところ 68000 や 68010 では -fPIC がサポートされていません\n"
 
-#: config/m68k/m68k.c:680 config/rs6000/rs6000.c:13921
+#: config/m68k/m68k.c:680 config/rs6000/rs6000.c:13922
 #, gcc-internal-format
 msgid "stack limit expression is not supported"
 msgstr "スタック制限式を受け付けません"
@@ -24044,7 +24050,7 @@ msgstr "mips16 関数プロファイル"
 #: config/mmix/mmix.c:227
 #, fuzzy, gcc-internal-format
 msgid "-f%s not supported: ignored"
-msgstr "`%s' は %s ではサポートされません"
+msgstr "-mips%d はサポートされません"
 
 #: config/mmix/mmix.c:655
 #, fuzzy, gcc-internal-format
@@ -24117,7 +24123,7 @@ msgstr "-g はこのプロセッサでは GAS を使用する時だけサポートされます"
 msgid "-g option disabled"
 msgstr "-g オプションを無効化しました。"
 
-#: config/pa/pa.c:8225
+#: config/pa/pa.c:8234
 #, gcc-internal-format
 msgid "alignment (%u) for %s exceeds maximum alignment for global common data.  Using %u"
 msgstr ""
@@ -24346,52 +24352,52 @@ msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
 msgid "argument 1 of __builtin_spe_predicate is out of range"
 msgstr "`__builtin_args_info' の引数が範囲外です"
 
-#: config/rs6000/rs6000.c:13884
+#: config/rs6000/rs6000.c:13885
 #, fuzzy, gcc-internal-format
 msgid "stack frame too large"
 msgstr "%s は大きすぎます"
 
-#: config/rs6000/rs6000.c:16413
+#: config/rs6000/rs6000.c:16414
 #, gcc-internal-format
 msgid "no profiling of 64-bit code for this ABI"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17523
+#: config/rs6000/rs6000.c:17524
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is invalid for 64-bit code"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17525
+#: config/rs6000/rs6000.c:17526
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is deprecated; use %<int%>"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17529
+#: config/rs6000/rs6000.c:17530
 #, gcc-internal-format
 msgid "use of %<long long%> in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17531
+#: config/rs6000/rs6000.c:17532
 #, gcc-internal-format
 msgid "use of %<double%> in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17533
+#: config/rs6000/rs6000.c:17534
 #, gcc-internal-format
 msgid "use of %<long double%> in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17535
+#: config/rs6000/rs6000.c:17536
 #, gcc-internal-format
 msgid "use of boolean types in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17537
+#: config/rs6000/rs6000.c:17538
 #, gcc-internal-format
 msgid "use of %<complex%> in AltiVec types is invalid"
 msgstr ""
 
-#: config/rs6000/rs6000.c:17539
+#: config/rs6000/rs6000.c:17540
 #, gcc-internal-format
 msgid "use of decimal floating point types in AltiVec types is invalid"
 msgstr ""
@@ -24590,44 +24596,44 @@ msgstr ""
 msgid "-fPIC and -G are incompatible"
 msgstr "-fPIC と -mcall-%s は共存できません"
 
-#: config/sh/sh.c:6624
+#: config/sh/sh.c:6633
 #, fuzzy, gcc-internal-format
 msgid "__builtin_saveregs not supported by this subtarget"
 msgstr "__builtin_saveregs はこのターゲットでは実装されていません"
 
-#: config/sh/sh.c:7629
+#: config/sh/sh.c:7638
 #, fuzzy, gcc-internal-format
 msgid "%qs attribute only applies to interrupt functions"
 msgstr "`%s' 属性は関数に対してのみ適用されます"
 
-#: config/sh/sh.c:7715
+#: config/sh/sh.c:7724
 #, gcc-internal-format
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
 msgstr ""
 
 #. The argument must be a constant string.
-#: config/sh/sh.c:7737
+#: config/sh/sh.c:7746
 #, fuzzy, gcc-internal-format
 msgid "%qs attribute argument not a string constant"
 msgstr "asm テンプレートが文字列定数ではありません"
 
 #. The argument must be a constant integer.
-#: config/sh/sh.c:7762
+#: config/sh/sh.c:7771
 #, fuzzy, gcc-internal-format
 msgid "%qs attribute argument not an integer constant"
 msgstr "要求された init_priority は整数型の定数ではありません"
 
-#: config/sh/sh.c:9814
+#: config/sh/sh.c:9823
 #, gcc-internal-format
 msgid "r0 needs to be available as a call-clobbered register"
 msgstr ""
 
-#: config/sh/sh.c:9835
+#: config/sh/sh.c:9844
 #, fuzzy, gcc-internal-format
 msgid "Need a second call-clobbered general purpose register"
 msgstr "BK レジスタを汎用レジスタとして使用する"
 
-#: config/sh/sh.c:9843
+#: config/sh/sh.c:9852
 #, gcc-internal-format
 msgid "Need a call-clobbered target register"
 msgstr ""
@@ -25021,173 +25027,178 @@ msgstr ""
 msgid "comparison between %q#T and %q#T"
 msgstr "ポインタと整数との比較を行なっています"
 
-#: cp/call.c:4127
+#: cp/call.c:4138
+#, gcc-internal-format
+msgid "no corresponding deallocation function for `%D'"
+msgstr ""
+
+#: cp/call.c:4143
 #, fuzzy, gcc-internal-format
 msgid "no suitable %<operator %s%> for %qT"
 msgstr "ありえない演算子 '%s'"
 
-#: cp/call.c:4145
+#: cp/call.c:4161
 #, gcc-internal-format
 msgid "%q+#D is private"
 msgstr ""
 
-#: cp/call.c:4147
+#: cp/call.c:4163
 #, gcc-internal-format
 msgid "%q+#D is protected"
 msgstr ""
 
-#: cp/call.c:4149
+#: cp/call.c:4165
 #, gcc-internal-format
 msgid "%q+#D is inaccessible"
 msgstr ""
 
-#: cp/call.c:4150
+#: cp/call.c:4166
 #, gcc-internal-format
 msgid "within this context"
 msgstr ""
 
-#: cp/call.c:4239 cp/cvt.c:265
+#: cp/call.c:4255 cp/cvt.c:265
 #, fuzzy, gcc-internal-format
 msgid "invalid conversion from %qT to %qT"
 msgstr "NaN から整数への変換です"
 
-#: cp/call.c:4241
+#: cp/call.c:4257
 #, fuzzy, gcc-internal-format
 msgid "  initializing argument %P of %qD"
 msgstr "`%s' の引数として無効な型"
 
-#: cp/call.c:4253
+#: cp/call.c:4269
 #, gcc-internal-format
 msgid "passing NULL to non-pointer argument %P of %qD"
 msgstr ""
 
-#: cp/call.c:4256
+#: cp/call.c:4272
 #, fuzzy, gcc-internal-format
 msgid "converting to non-pointer type %qT from NULL"
 msgstr "ポインタ型に変換できません"
 
-#: cp/call.c:4264
+#: cp/call.c:4280
 #, fuzzy, gcc-internal-format
 msgid "passing %qT for argument %P to %qD"
 msgstr "%d 番目の引数が `%s' の型と互換性がありません"
 
-#: cp/call.c:4267
+#: cp/call.c:4283
 #, gcc-internal-format
 msgid "converting to %qT from %qT"
 msgstr ""
 
-#: cp/call.c:4407
+#: cp/call.c:4423
 #, gcc-internal-format
 msgid "cannot bind bitfield %qE to %qT"
 msgstr ""
 
-#: cp/call.c:4410 cp/call.c:4426
+#: cp/call.c:4426 cp/call.c:4442
 #, gcc-internal-format
 msgid "cannot bind packed field %qE to %qT"
 msgstr ""
 
-#: cp/call.c:4413
+#: cp/call.c:4429
 #, fuzzy, gcc-internal-format
 msgid "cannot bind rvalue %qE to %qT"
 msgstr "ソース %s が見つかりません"
 
-#: cp/call.c:4527
+#: cp/call.c:4543
 #, gcc-internal-format
 msgid "cannot pass objects of non-POD type %q#T through %<...%>; call will abort at runtime"
 msgstr ""
 
 #. Undefined behavior [expr.call] 5.2.2/7.
-#: cp/call.c:4555
+#: cp/call.c:4571
 #, gcc-internal-format
 msgid "cannot receive objects of non-POD type %q#T through %<...%>; call will abort at runtime"
 msgstr ""
 
-#: cp/call.c:4598
+#: cp/call.c:4614
 #, gcc-internal-format
 msgid "the default argument for parameter %d of %qD has not yet been parsed"
 msgstr ""
 
-#: cp/call.c:4682
+#: cp/call.c:4698
 #, fuzzy, gcc-internal-format
 msgid "argument of function call might be a candidate for a format attribute"
 msgstr "format 属性をの候補となりそうな関数について警告する"
 
-#: cp/call.c:4819
+#: cp/call.c:4835
 #, gcc-internal-format
 msgid "passing %qT as %<this%> argument of %q#D discards qualifiers"
 msgstr ""
 
-#: cp/call.c:4838
+#: cp/call.c:4854
 #, gcc-internal-format
 msgid "%qT is not an accessible base of %qT"
 msgstr ""
 
-#: cp/call.c:5094
+#: cp/call.c:5110
 #, gcc-internal-format
 msgid "could not find class$ field in java interface type %qT"
 msgstr ""
 
-#: cp/call.c:5337
+#: cp/call.c:5353
 #, fuzzy, gcc-internal-format
 msgid "call to non-function %qD"
 msgstr "関数 %s に呼び出しがありません\n"
 
-#: cp/call.c:5459
+#: cp/call.c:5475
 #, gcc-internal-format
 msgid "no matching function for call to %<%T::%s(%A)%#V%>"
 msgstr ""
 
-#: cp/call.c:5477
+#: cp/call.c:5493
 #, gcc-internal-format
 msgid "call of overloaded %<%s(%A)%> is ambiguous"
 msgstr ""
 
-#: cp/call.c:5503
+#: cp/call.c:5519
 #, gcc-internal-format
 msgid "cannot call member function %qD without object"
 msgstr ""
 
-#: cp/call.c:6123
+#: cp/call.c:6139
 #, gcc-internal-format
 msgid "passing %qT chooses %qT over %qT"
 msgstr ""
 
-#: cp/call.c:6125 cp/name-lookup.c:4259 cp/name-lookup.c:4680
+#: cp/call.c:6141 cp/name-lookup.c:4259 cp/name-lookup.c:4680
 #, fuzzy, gcc-internal-format
 msgid "  in call to %qD"
 msgstr "`%s' への呼び出しはインライン化できません"
 
-#: cp/call.c:6182
+#: cp/call.c:6198
 #, gcc-internal-format
 msgid "choosing %qD over %qD"
 msgstr ""
 
-#: cp/call.c:6183
+#: cp/call.c:6199
 #, fuzzy, gcc-internal-format
 msgid "  for conversion from %qT to %qT"
 msgstr "NaN から整数への変換です"
 
-#: cp/call.c:6185
+#: cp/call.c:6201
 #, gcc-internal-format
 msgid "  because conversion sequence for the argument is better"
 msgstr ""
 
-#: cp/call.c:6299
+#: cp/call.c:6315
 #, gcc-internal-format
 msgid "ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the second:"
 msgstr ""
 
-#: cp/call.c:6443
+#: cp/call.c:6459
 #, fuzzy, gcc-internal-format
 msgid "could not convert %qE to %qT"
 msgstr "0x%l.8x を領域に変換できません"
 
-#: cp/call.c:6577
+#: cp/call.c:6593
 #, gcc-internal-format
 msgid "invalid initialization of non-const reference of type %qT from a temporary of type %qT"
 msgstr ""
 
-#: cp/call.c:6581
+#: cp/call.c:6597
 #, gcc-internal-format
 msgid "invalid initialization of reference of type %qT from expression of type %qT"
 msgstr ""
@@ -25366,7 +25377,7 @@ msgstr ""
 #: cp/class.c:2891
 #, fuzzy, gcc-internal-format
 msgid "field %q+D invalidly declared function type"
-msgstr "パラメタがオフセットの型を不正に宣言しました"
+msgstr "パラメタはメソッドの型を不正に宣言しました"
 
 #: cp/class.c:2897
 #, fuzzy, gcc-internal-format
@@ -25468,7 +25479,7 @@ msgstr ""
 msgid "layout of classes derived from empty class %qT may change in a future version of GCC"
 msgstr ""
 
-#: cp/class.c:4980 cp/parser.c:13573
+#: cp/class.c:4980 cp/parser.c:13585
 #, fuzzy, gcc-internal-format
 msgid "redefinition of %q#T"
 msgstr "`%s' が再定義されました"
@@ -25483,42 +25494,42 @@ msgstr "非仮想デストラクタについて警告する"
 msgid "trying to finish struct, but kicked out due to previous parse errors"
 msgstr "構文解析が構造体の終りに差し掛かりましたが、前のエラーのせいで文脈を見失いました"
 
-#: cp/class.c:5690
+#: cp/class.c:5702
 #, fuzzy, gcc-internal-format
 msgid "language string %<\"%E\"%> not recognized"
 msgstr "言語文字列 `\"%s\"' は認識されません"
 
-#: cp/class.c:5779
+#: cp/class.c:5791
 #, gcc-internal-format
 msgid "cannot resolve overloaded function %qD based on conversion to type %qT"
 msgstr ""
 
-#: cp/class.c:5908
+#: cp/class.c:5920
 #, gcc-internal-format
 msgid "no matches converting function %qD to type %q#T"
 msgstr ""
 
-#: cp/class.c:5931
+#: cp/class.c:5943
 #, gcc-internal-format
 msgid "converting overloaded function %qD to type %q#T is ambiguous"
 msgstr ""
 
-#: cp/class.c:5957
+#: cp/class.c:5969
 #, fuzzy, gcc-internal-format
 msgid "assuming pointer to member %qD"
 msgstr "   ポインタからメンバへの変換で"
 
-#: cp/class.c:5960
+#: cp/class.c:5972
 #, gcc-internal-format
 msgid "(a pointer to member can only be formed with %<&%E%>)"
 msgstr ""
 
-#: cp/class.c:6016 cp/class.c:6050
+#: cp/class.c:6028 cp/class.c:6062
 #, gcc-internal-format
 msgid "not enough type information"
 msgstr "不十分な型情報"
 
-#: cp/class.c:6033
+#: cp/class.c:6045
 #, fuzzy, gcc-internal-format
 msgid "argument of type %qT does not match %qT"
 msgstr "仮引数 `%s' はプロトタイプに一致しません"
@@ -25528,12 +25539,12 @@ msgstr "仮引数 `%s' はプロトタイプに一致しません"
 #. A name N used in a class S shall refer to the same declaration
 #. in its context and when re-evaluated in the completed scope of
 #. S.
-#: cp/class.c:6320 cp/decl.c:1192 cp/name-lookup.c:509
+#: cp/class.c:6332 cp/decl.c:1192 cp/name-lookup.c:509
 #, fuzzy, gcc-internal-format
 msgid "declaration of %q#D"
 msgstr "`%s' が再宣言されました"
 
-#: cp/class.c:6321
+#: cp/class.c:6333
 #, gcc-internal-format
 msgid "changes meaning of %qD from %q+#D"
 msgstr ""
@@ -25573,7 +25584,7 @@ msgstr ""
 msgid "conversion from %qT to %qT discards qualifiers"
 msgstr ""
 
-#: cp/cvt.c:518 cp/typeck.c:5160
+#: cp/cvt.c:518 cp/typeck.c:5158
 #, gcc-internal-format
 msgid "casting %qT to %qT does not dereference pointer"
 msgstr ""
@@ -25591,7 +25602,7 @@ msgstr "NaN から整数への変換です"
 #: cp/cvt.c:693 cp/cvt.c:713
 #, fuzzy, gcc-internal-format
 msgid "%q#T used where a %qT was expected"
-msgstr "複素数型があるべき箇所で、ポインタ値が使われました"
+msgstr "浮動小数点型があるべき箇所で、集合体の値が使われました"
 
 #: cp/cvt.c:728
 #, fuzzy, gcc-internal-format
@@ -25666,7 +25677,7 @@ msgstr ""
 msgid "%qD was declared %<extern%> and later %<static%>"
 msgstr "`%s' は `extern' と宣言され、後で `static' と宣言されました"
 
-#: cp/decl.c:1060 cp/decl.c:1593 objc/objc-act.c:2921 objc/objc-act.c:7489
+#: cp/decl.c:1060 cp/decl.c:1594 objc/objc-act.c:2921 objc/objc-act.c:7489
 #, fuzzy, gcc-internal-format
 msgid "previous declaration of %q+D"
 msgstr "前方での `%s' の宣言"
@@ -25839,7 +25850,7 @@ msgstr ""
 msgid "%Jprevious non-inline declaration here"
 msgstr "前方での `%s' の暗黙的な宣言"
 
-#: cp/decl.c:1592
+#: cp/decl.c:1593
 #, fuzzy, gcc-internal-format
 msgid "redundant redeclaration of %qD in same scope"
 msgstr "`%s' の冗長な再宣言が同一スコープ内にあります"
@@ -25852,303 +25863,303 @@ msgstr "`%s' の冗長な再宣言が同一スコープ内にあります"
 #. that specialization that would cause an implicit
 #. instantiation to take place, in every translation unit in
 #. which such a use occurs.
-#: cp/decl.c:1859
+#: cp/decl.c:1860
 #, gcc-internal-format
 msgid "explicit specialization of %qD after first use"
 msgstr ""
 
-#: cp/decl.c:1943
+#: cp/decl.c:1944
 #, gcc-internal-format
 msgid "%q+D: visibility attribute ignored because it"
 msgstr ""
 
-#: cp/decl.c:1945
+#: cp/decl.c:1946
 #, fuzzy, gcc-internal-format
 msgid "%Jconflicts with previous declaration here"
 msgstr "`%s' のセクションは前方でに宣言されたものと衝突します"
 
-#: cp/decl.c:2312
+#: cp/decl.c:2329
 #, fuzzy, gcc-internal-format
 msgid "jump to label %qD"
 msgstr "case ラベルにジャンプしています"
 
-#: cp/decl.c:2314
+#: cp/decl.c:2331
 #, gcc-internal-format
 msgid "jump to case label"
 msgstr "case ラベルにジャンプしています"
 
-#: cp/decl.c:2316
+#: cp/decl.c:2333
 #, fuzzy, gcc-internal-format
 msgid "%H  from here"
 msgstr "  ここから"
 
-#: cp/decl.c:2335 cp/decl.c:2498
+#: cp/decl.c:2352 cp/decl.c:2515
 #, gcc-internal-format
 msgid "  exits OpenMP structured block"
 msgstr ""
 
-#: cp/decl.c:2356
+#: cp/decl.c:2373
 #, fuzzy, gcc-internal-format
 msgid "  crosses initialization of %q+#D"
 msgstr "(`%s' の初期化は不完全です)"
 
-#: cp/decl.c:2358 cp/decl.c:2473
+#: cp/decl.c:2375 cp/decl.c:2490
 #, gcc-internal-format
 msgid "  enters scope of non-POD %q+#D"
 msgstr ""
 
-#: cp/decl.c:2371 cp/decl.c:2477
+#: cp/decl.c:2388 cp/decl.c:2494
 #, gcc-internal-format
 msgid "  enters try block"
 msgstr "  try ブロックに入ります"
 
-#: cp/decl.c:2373 cp/decl.c:2479
+#: cp/decl.c:2390 cp/decl.c:2496
 #, gcc-internal-format
 msgid "  enters catch block"
 msgstr "  catch ブロックに入ります"
 
-#: cp/decl.c:2383 cp/decl.c:2482
+#: cp/decl.c:2400 cp/decl.c:2499
 #, fuzzy, gcc-internal-format
 msgid "  enters OpenMP structured block"
 msgstr "  try ブロックに入ります"
 
-#: cp/decl.c:2454 cp/decl.c:2494
+#: cp/decl.c:2471 cp/decl.c:2511
 #, fuzzy, gcc-internal-format
 msgid "jump to label %q+D"
 msgstr "case ラベルにジャンプしています"
 
-#: cp/decl.c:2455 cp/decl.c:2495
+#: cp/decl.c:2472 cp/decl.c:2512
 #, gcc-internal-format
 msgid "  from here"
 msgstr "  ここから"
 
 #. Can't skip init of __exception_info.
-#: cp/decl.c:2467
+#: cp/decl.c:2484
 #, fuzzy, gcc-internal-format
 msgid "%J  enters catch block"
 msgstr "  catch ブロックに入ります"
 
-#: cp/decl.c:2471
+#: cp/decl.c:2488
 #, fuzzy, gcc-internal-format
 msgid "  skips initialization of %q+#D"
 msgstr "(`%s' の初期化は不完全です)"
 
-#: cp/decl.c:2547
+#: cp/decl.c:2564
 #, gcc-internal-format
 msgid "label named wchar_t"
 msgstr ""
 
-#: cp/decl.c:2551
+#: cp/decl.c:2568
 #, fuzzy, gcc-internal-format
 msgid "duplicate label %qD"
 msgstr "重複したメンバ `%s'"
 
-#: cp/decl.c:2814
+#: cp/decl.c:2831
 #, fuzzy, gcc-internal-format
 msgid "%qD is not a type"
 msgstr "%s は型 %s ではありません (引数 %d)"
 
-#: cp/decl.c:2820 cp/parser.c:3841
+#: cp/decl.c:2837 cp/parser.c:3853
 #, gcc-internal-format
 msgid "%qD used without template parameters"
 msgstr ""
 
-#: cp/decl.c:2835
+#: cp/decl.c:2852
 #, gcc-internal-format
 msgid "%q#T is not a class"
 msgstr ""
 
-#: cp/decl.c:2847 cp/decl.c:2915
+#: cp/decl.c:2864 cp/decl.c:2932
 #, gcc-internal-format
 msgid "no class template named %q#T in %q#T"
 msgstr ""
 
-#: cp/decl.c:2848
+#: cp/decl.c:2865
 #, gcc-internal-format
 msgid "no type named %q#T in %q#T"
 msgstr ""
 
-#: cp/decl.c:2855
+#: cp/decl.c:2872
 #, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#T, which is not a class template"
 msgstr ""
 
-#: cp/decl.c:2862
+#: cp/decl.c:2879
 #, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#T, which is not a type"
 msgstr ""
 
-#: cp/decl.c:2924
+#: cp/decl.c:2941
 #, fuzzy, gcc-internal-format
 msgid "template parameters do not match template"
 msgstr "仮引数 `%s' の型が宣言されていません"
 
-#: cp/decl.c:2925 cp/friend.c:322 cp/friend.c:330
+#: cp/decl.c:2942 cp/friend.c:322 cp/friend.c:330
 #, fuzzy, gcc-internal-format
 msgid "%q+D declared here"
 msgstr "`%s' は前にここで宣言されました"
 
-#: cp/decl.c:3596
+#: cp/decl.c:3613
 #, gcc-internal-format
 msgid "%Jan anonymous union cannot have function members"
 msgstr ""
 
-#: cp/decl.c:3614
+#: cp/decl.c:3631
 #, gcc-internal-format
 msgid "member %q+#D with constructor not allowed in anonymous aggregate"
 msgstr ""
 
-#: cp/decl.c:3617
+#: cp/decl.c:3634
 #, gcc-internal-format
 msgid "member %q+#D with destructor not allowed in anonymous aggregate"
 msgstr ""
 
-#: cp/decl.c:3620
+#: cp/decl.c:3637
 #, gcc-internal-format
 msgid "member %q+#D with copy assignment operator not allowed in anonymous aggregate"
 msgstr ""
 
-#: cp/decl.c:3645
+#: cp/decl.c:3662
 #, gcc-internal-format
 msgid "multiple types in one declaration"
 msgstr "一つの宣言に複数の型があります"
 
-#: cp/decl.c:3649
+#: cp/decl.c:3666
 #, fuzzy, gcc-internal-format
 msgid "redeclaration of C++ built-in type %qT"
 msgstr "`enum %s' の再宣言"
 
-#: cp/decl.c:3686
+#: cp/decl.c:3703
 #, fuzzy, gcc-internal-format
 msgid "missing type-name in typedef-declaration"
 msgstr "typdef 宣言で型名を欠いています"
 
-#: cp/decl.c:3694
+#: cp/decl.c:3711
 #, gcc-internal-format
 msgid "ISO C++ prohibits anonymous structs"
 msgstr "ISO C++ は無名構造体を禁止しています"
 
-#: cp/decl.c:3701
+#: cp/decl.c:3718
 #, fuzzy, gcc-internal-format
 msgid "%qs can only be specified for functions"
 msgstr "非関数 `%s' の引数に format 属性が指定されました"
 
-#: cp/decl.c:3707
+#: cp/decl.c:3724
 #, gcc-internal-format
 msgid "%<friend%> can only be specified inside a class"
 msgstr ""
 
-#: cp/decl.c:3709
+#: cp/decl.c:3726
 #, fuzzy, gcc-internal-format
 msgid "%<explicit%> can only be specified for constructors"
 msgstr "コンストラクタに対する戻り値の型指定は無視されました"
 
-#: cp/decl.c:3711
+#: cp/decl.c:3728
 #, fuzzy, gcc-internal-format
 msgid "a storage class can only be specified for objects and functions"
 msgstr "%s に対する記憶クラス指定子 `%s'"
 
-#: cp/decl.c:3717
+#: cp/decl.c:3734
 #, gcc-internal-format
 msgid "qualifiers can only be specified for objects and functions"
 msgstr ""
 
-#: cp/decl.c:3747
+#: cp/decl.c:3764
 #, fuzzy, gcc-internal-format
 msgid "attribute ignored in declaration of %q+#T"
 msgstr "`%s' の宣言に二つ以上のデータ型が指定されました"
 
-#: cp/decl.c:3748
+#: cp/decl.c:3765
 #, gcc-internal-format
 msgid "attribute for %q+#T must follow the %qs keyword"
 msgstr ""
 
-#: cp/decl.c:3862
+#: cp/decl.c:3879
 #, fuzzy, gcc-internal-format
 msgid "function %q#D is initialized like a variable"
 msgstr "関数 `%s' が変数であるかのように初期化されました"
 
-#: cp/decl.c:3873
+#: cp/decl.c:3890
 #, fuzzy, gcc-internal-format
 msgid "declaration of %q#D has %<extern%> and is initialized"
 msgstr "`%s' の宣言に `extern' がついており、初期化もされています"
 
-#: cp/decl.c:3889
+#: cp/decl.c:3906
 #, fuzzy, gcc-internal-format
 msgid "definition of %q#D is marked %<dllimport%>"
 msgstr "初期化された変数 `%s' は dllimport マークされています"
 
-#: cp/decl.c:3908
+#: cp/decl.c:3925
 #, gcc-internal-format
 msgid "%q#D is not a static member of %q#T"
 msgstr ""
 
-#: cp/decl.c:3914
+#: cp/decl.c:3931
 #, gcc-internal-format
 msgid "ISO C++ does not permit %<%T::%D%> to be defined as %<%T::%D%>"
 msgstr ""
 
-#: cp/decl.c:3923
+#: cp/decl.c:3940
 #, gcc-internal-format
 msgid "template header not allowed in member definition of explicitly specialized class"
 msgstr ""
 
-#: cp/decl.c:3931
+#: cp/decl.c:3948
 #, fuzzy, gcc-internal-format
 msgid "duplicate initialization of %qD"
 msgstr "重複した初期化子"
 
-#: cp/decl.c:3969
+#: cp/decl.c:3986
 #, fuzzy, gcc-internal-format
 msgid "declaration of %q#D outside of class is not definition"
 msgstr "friend 宣言がクラス定義の中にありません"
 
-#: cp/decl.c:4036
+#: cp/decl.c:4053
 #, fuzzy, gcc-internal-format
 msgid "variable %q#D has initializer but incomplete type"
 msgstr "変数 `%s' には初期化子がありますが、不完全型です"
 
-#: cp/decl.c:4043 cp/decl.c:4770
+#: cp/decl.c:4060 cp/decl.c:4787
 #, fuzzy, gcc-internal-format
 msgid "elements of array %q#D have incomplete type"
 msgstr "配列 `%s' の要素に不完全型があります"
 
-#: cp/decl.c:4053
+#: cp/decl.c:4070
 #, fuzzy, gcc-internal-format
 msgid "aggregate %q#D has incomplete type and cannot be defined"
 msgstr "仮引数 `%s' は不完全型です"
 
-#: cp/decl.c:4100
+#: cp/decl.c:4117
 #, gcc-internal-format
 msgid "%qD declared as reference but not initialized"
 msgstr ""
 
-#: cp/decl.c:4106
+#: cp/decl.c:4123
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids use of initializer list to initialize reference %qD"
 msgstr "ISO C++ は new への集合体初期化子を禁じます"
 
-#: cp/decl.c:4132
+#: cp/decl.c:4149
 #, fuzzy, gcc-internal-format
 msgid "cannot initialize %qT from %qT"
 msgstr "friend 関数 `%s' を初期化できません"
 
-#: cp/decl.c:4160
+#: cp/decl.c:4177
 #, gcc-internal-format
 msgid "name %qD used in a GNU-style designated initializer for an array"
 msgstr ""
 
-#: cp/decl.c:4209
+#: cp/decl.c:4226
 #, fuzzy, gcc-internal-format
 msgid "initializer fails to determine size of %qD"
 msgstr "初期化子は `%s' のサイズの特定に失敗しました"
 
-#: cp/decl.c:4216
+#: cp/decl.c:4233
 #, fuzzy, gcc-internal-format
 msgid "array size missing in %qD"
 msgstr "`%s' での配列サイズを欠いています"
 
-#: cp/decl.c:4228
+#: cp/decl.c:4245
 #, fuzzy, gcc-internal-format
 msgid "zero-size array %qD"
 msgstr "ISO C は サイズ 0 の配列 `%s' を禁じます"
@@ -26156,228 +26167,228 @@ msgstr "ISO C は サイズ 0 の配列 `%s' を禁じます"
 #. An automatic variable with an incomplete type: that is an error.
 #. Don't talk about array types here, since we took care of that
 #. message in grokdeclarator.
-#: cp/decl.c:4271
+#: cp/decl.c:4288
 #, fuzzy, gcc-internal-format
 msgid "storage size of %qD isn't known"
 msgstr "`%s' の領域サイズがわかりません"
 
-#: cp/decl.c:4293
+#: cp/decl.c:4310
 #, fuzzy, gcc-internal-format
 msgid "storage size of %qD isn't constant"
 msgstr "`%s' の領域サイズが一定ではありません"
 
-#: cp/decl.c:4342
+#: cp/decl.c:4359
 #, gcc-internal-format
 msgid "sorry: semantics of inline function static data %q+#D are wrong (you'll wind up with multiple copies)"
 msgstr ""
 
-#: cp/decl.c:4345
+#: cp/decl.c:4362
 #, gcc-internal-format
 msgid "%J  you can work around this by removing the initializer"
 msgstr ""
 
-#: cp/decl.c:4372
+#: cp/decl.c:4389
 #, fuzzy, gcc-internal-format
 msgid "uninitialized const %qD"
 msgstr "未初期化定数を ROM に置かない"
 
-#: cp/decl.c:4484
+#: cp/decl.c:4501
 #, fuzzy, gcc-internal-format
 msgid "invalid type %qT as initializer for a vector of type %qT"
 msgstr "無効なビット列初期化子です"
 
-#: cp/decl.c:4526
+#: cp/decl.c:4543
 #, fuzzy, gcc-internal-format
 msgid "initializer for %qT must be brace-enclosed"
 msgstr "無名基底クラスの初期設定子が曖昧です"
 
-#: cp/decl.c:4544
+#: cp/decl.c:4561
 #, fuzzy, gcc-internal-format
 msgid "%qT has no non-static data member named %qD"
 msgstr "%s に `%s' という名前のメンバはありません"
 
-#: cp/decl.c:4595
+#: cp/decl.c:4612
 #, fuzzy, gcc-internal-format
 msgid "braces around scalar initializer for type %qT"
 msgstr "スカラー初期化子がブレースで囲まれています"
 
-#: cp/decl.c:4678
+#: cp/decl.c:4695
 #, fuzzy, gcc-internal-format
 msgid "missing braces around initializer for %qT"
 msgstr "初期化子のまわりのブレースを欠いています"
 
-#: cp/decl.c:4735
+#: cp/decl.c:4752
 #, fuzzy, gcc-internal-format
 msgid "too many initializers for %qT"
 msgstr "入力ファイルが多すぎます"
 
-#: cp/decl.c:4778
+#: cp/decl.c:4795
 #, fuzzy, gcc-internal-format
 msgid "variable-sized object %qD may not be initialized"
 msgstr "可変長オブジェクトは初期化されないことになるでしょう"
 
-#: cp/decl.c:4784
+#: cp/decl.c:4801
 #, fuzzy, gcc-internal-format
 msgid "%qD has incomplete type"
 msgstr "`%s' は不完全型です"
 
-#: cp/decl.c:4796
+#: cp/decl.c:4813
 #, fuzzy, gcc-internal-format
 msgid "scalar object %qD requires one element in initializer"
 msgstr "共用体初期化子内の要素が多すぎます"
 
-#: cp/decl.c:4844
+#: cp/decl.c:4861
 #, gcc-internal-format
 msgid "%qD must be initialized by constructor, not by %<{...}%>"
 msgstr ""
 
-#: cp/decl.c:4880
+#: cp/decl.c:4897
 #, fuzzy, gcc-internal-format
 msgid "array %qD initialized by parenthesized string literal %qE"
 msgstr "_Pramga が括弧で囲まれた文字列リテラルを受け取りました"
 
-#: cp/decl.c:4895
+#: cp/decl.c:4912
 #, gcc-internal-format
 msgid "structure %qD with uninitialized const members"
 msgstr ""
 
-#: cp/decl.c:4897
+#: cp/decl.c:4914
 #, gcc-internal-format
 msgid "structure %qD with uninitialized reference members"
 msgstr ""
 
-#: cp/decl.c:5106
+#: cp/decl.c:5153
 #, gcc-internal-format
 msgid "assignment (not initialization) in declaration"
 msgstr "宣言の中に代入(初期化ではなく)があります"
 
-#: cp/decl.c:5184
+#: cp/decl.c:5229
 #, fuzzy, gcc-internal-format
 msgid "shadowing previous type declaration of %q#D"
 msgstr "前方での `%s' の宣言"
 
-#: cp/decl.c:5214
+#: cp/decl.c:5259
 #, gcc-internal-format
 msgid "%qD cannot be thread-local because it has non-POD type %qT"
 msgstr ""
 
-#: cp/decl.c:5250
+#: cp/decl.c:5295
 #, gcc-internal-format
 msgid "%qD is thread-local and so cannot be dynamically initialized"
 msgstr ""
 
-#: cp/decl.c:5268
+#: cp/decl.c:5313
 #, fuzzy, gcc-internal-format
 msgid "%qD cannot be initialized by a non-constant expression when being declared"
 msgstr "非定数配列式から配列が初期化されました"
 
-#: cp/decl.c:5857
+#: cp/decl.c:5913
 #, fuzzy, gcc-internal-format
 msgid "destructor for alien class %qT cannot be a member"
 msgstr "他のクラス `%s' のデストラクタを、メンバにはできません"
 
-#: cp/decl.c:5859
+#: cp/decl.c:5915
 #, fuzzy, gcc-internal-format
 msgid "constructor for alien class %qT cannot be a member"
 msgstr "他のクラス `%s' のデストラクタを、メンバにはできません"
 
-#: cp/decl.c:5880
+#: cp/decl.c:5936
 #, gcc-internal-format
 msgid "%qD declared as a %<virtual%> %s"
 msgstr ""
 
-#: cp/decl.c:5882
+#: cp/decl.c:5938
 #, gcc-internal-format
 msgid "%qD declared as an %<inline%> %s"
 msgstr ""
 
-#: cp/decl.c:5884
+#: cp/decl.c:5940
 #, fuzzy, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in %s declaration"
 msgstr "仮引数宣言の中の記憶クラス指定子は無効です"
 
-#: cp/decl.c:5888
+#: cp/decl.c:5944
 #, fuzzy, gcc-internal-format
 msgid "%q+D declared as a friend"
 msgstr "領域 `%s' は関数として宣言されています"
 
-#: cp/decl.c:5894
+#: cp/decl.c:5950
 #, fuzzy, gcc-internal-format
 msgid "%q+D declared with an exception specification"
 msgstr "例外仕様の検査をするコードを生成しない"
 
-#: cp/decl.c:5928
+#: cp/decl.c:5984
 #, gcc-internal-format
 msgid "definition of %qD is not in namespace enclosing %qT"
 msgstr ""
 
-#: cp/decl.c:6017
+#: cp/decl.c:6073
 #, fuzzy, gcc-internal-format
 msgid "defining explicit specialization %qD in friend declaration"
 msgstr "宣言の中に代入(初期化ではなく)があります"
 
 #. Something like `template <class T> friend void f<T>()'.
-#: cp/decl.c:6027
+#: cp/decl.c:6083
 #, gcc-internal-format
 msgid "invalid use of template-id %qD in declaration of primary template"
 msgstr ""
 
-#: cp/decl.c:6057
+#: cp/decl.c:6113
 #, gcc-internal-format
 msgid "default arguments are not allowed in declaration of friend template specialization %qD"
 msgstr ""
 
-#: cp/decl.c:6065
+#: cp/decl.c:6121
 #, gcc-internal-format
 msgid "%<inline%> is not allowed in declaration of friend template specialization %qD"
 msgstr ""
 
-#: cp/decl.c:6108
+#: cp/decl.c:6164
 #, fuzzy, gcc-internal-format
 msgid "cannot declare %<::main%> to be a template"
 msgstr "`::main' を template としては宣言できません"
 
-#: cp/decl.c:6110
+#: cp/decl.c:6166
 #, fuzzy, gcc-internal-format
 msgid "cannot declare %<::main%> to be inline"
 msgstr "`::main' を inline としては宣言できません"
 
-#: cp/decl.c:6112
+#: cp/decl.c:6168
 #, fuzzy, gcc-internal-format
 msgid "cannot declare %<::main%> to be static"
 msgstr "`::main' を static としては宣言できません"
 
-#: cp/decl.c:6140
+#: cp/decl.c:6196
 #, gcc-internal-format
 msgid "non-local function %q#D uses anonymous type"
 msgstr ""
 
-#: cp/decl.c:6143 cp/decl.c:6425
+#: cp/decl.c:6199 cp/decl.c:6481
 #, gcc-internal-format
 msgid "%q+#D does not refer to the unqualified type, so it is not used for linkage"
 msgstr ""
 
-#: cp/decl.c:6149
+#: cp/decl.c:6205
 #, gcc-internal-format
 msgid "non-local function %q#D uses local type %qT"
 msgstr ""
 
-#: cp/decl.c:6172
+#: cp/decl.c:6228
 #, gcc-internal-format
 msgid "%smember function %qD cannot have cv-qualifier"
 msgstr ""
 
-#: cp/decl.c:6224
+#: cp/decl.c:6280
 #, fuzzy, gcc-internal-format
 msgid "%<::main%> must return %<int%>"
 msgstr "`main' は `int' を返さなければなりません"
 
-#: cp/decl.c:6258
+#: cp/decl.c:6314
 #, gcc-internal-format
 msgid "definition of implicitly-declared %qD"
 msgstr ""
 
-#: cp/decl.c:6273 cp/decl2.c:677
+#: cp/decl.c:6329 cp/decl2.c:677
 #, fuzzy, gcc-internal-format
 msgid "no %q#D member function declared in class %qT"
 msgstr "メンバ関数へのポインタが呼ばれましたが、クラススコープ内ではありません"
@@ -26386,546 +26397,546 @@ msgstr "メンバ関数へのポインタが呼ばれましたが、クラススコープ内ではありません"
 #. no linkage can only be used to declare extern "C"
 #. entities.  Since it's not always an error in the
 #. ISO C++ 90 Standard, we only issue a warning.
-#: cp/decl.c:6422
+#: cp/decl.c:6478
 #, gcc-internal-format
 msgid "non-local variable %q#D uses anonymous type"
 msgstr ""
 
-#: cp/decl.c:6431
+#: cp/decl.c:6487
 #, gcc-internal-format
 msgid "non-local variable %q#D uses local type %qT"
 msgstr ""
 
-#: cp/decl.c:6548
+#: cp/decl.c:6604
 #, gcc-internal-format
 msgid "invalid in-class initialization of static data member of non-integral type %qT"
 msgstr ""
 
-#: cp/decl.c:6558
+#: cp/decl.c:6614
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids in-class initialization of non-const static member %qD"
 msgstr "ISO C++ は new 式の初期化での `=' を禁じます"
 
-#: cp/decl.c:6562
+#: cp/decl.c:6618
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids initialization of member constant %qD of non-integral type %qT"
 msgstr "ISO C++ は new 式の初期化での `=' を禁じます"
 
-#: cp/decl.c:6586
+#: cp/decl.c:6642
 #, fuzzy, gcc-internal-format
 msgid "size of array %qD has non-integral type %qT"
 msgstr "配列 `%s' の大きさは非整数型"
 
-#: cp/decl.c:6588
+#: cp/decl.c:6644
 #, fuzzy, gcc-internal-format
 msgid "size of array has non-integral type %qT"
 msgstr "配列 `%s' の大きさは非整数型"
 
-#: cp/decl.c:6624
+#: cp/decl.c:6680
 #, fuzzy, gcc-internal-format
 msgid "size of array %qD is negative"
 msgstr "配列 `%s' の大きさが負です"
 
-#: cp/decl.c:6626
+#: cp/decl.c:6682
 #, fuzzy, gcc-internal-format
 msgid "size of array is negative"
 msgstr "配列 `%s' の大きさが負です"
 
-#: cp/decl.c:6634
+#: cp/decl.c:6690
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids zero-size array %qD"
 msgstr "ISO C は サイズ 0 の配列 `%s' を禁じます"
 
-#: cp/decl.c:6636
+#: cp/decl.c:6692
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids zero-size array"
 msgstr "ISO C は サイズ 0 の配列 `%s' を禁じます"
 
-#: cp/decl.c:6643
+#: cp/decl.c:6699
 #, fuzzy, gcc-internal-format
 msgid "size of array %qD is not an integral constant-expression"
 msgstr "配列 `%s' の大きさは非整数型"
 
-#: cp/decl.c:6646
+#: cp/decl.c:6702
 #, fuzzy, gcc-internal-format
 msgid "size of array is not an integral constant-expression"
 msgstr "定数式が欠けているか無効です"
 
-#: cp/decl.c:6652
+#: cp/decl.c:6708
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids variable-size array %qD"
 msgstr "ISO C89 は可変長サイズの配列 `%s' を禁じます"
 
-#: cp/decl.c:6654
+#: cp/decl.c:6710
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids variable-size array"
 msgstr "ISO C89 は可変長サイズの配列 `%s' を禁じます"
 
-#: cp/decl.c:6685
+#: cp/decl.c:6741
 #, gcc-internal-format
 msgid "overflow in array dimension"
 msgstr "配列の次元がオーバーフローしました"
 
-#: cp/decl.c:6759
+#: cp/decl.c:6815
 #, fuzzy, gcc-internal-format
 msgid "declaration of %qD as %s"
 msgstr "`%s' が再宣言されました"
 
-#: cp/decl.c:6761
+#: cp/decl.c:6817
 #, fuzzy, gcc-internal-format
 msgid "creating %s"
 msgstr "%s を作成中.\n"
 
-#: cp/decl.c:6773
+#: cp/decl.c:6829
 #, gcc-internal-format
 msgid "declaration of %qD as multidimensional array must have bounds for all dimensions except the first"
 msgstr ""
 
-#: cp/decl.c:6777
+#: cp/decl.c:6833
 #, gcc-internal-format
 msgid "multidimensional array must have bounds for all dimensions except the first"
 msgstr ""
 
-#: cp/decl.c:6812
+#: cp/decl.c:6868
 #, fuzzy, gcc-internal-format
 msgid "return type specification for constructor invalid"
 msgstr "コンストラクタに対する戻り値の型指定は無視されました"
 
-#: cp/decl.c:6822
+#: cp/decl.c:6878
 #, fuzzy, gcc-internal-format
 msgid "return type specification for destructor invalid"
 msgstr "コンストラクタに対する戻り値の型指定は無視されました"
 
-#: cp/decl.c:6835
+#: cp/decl.c:6891
 #, fuzzy, gcc-internal-format
 msgid "operator %qT declared to return %qT"
 msgstr "`operator delete' の戻り型は `void' でなければなりません"
 
-#: cp/decl.c:6837
+#: cp/decl.c:6893
 #, fuzzy, gcc-internal-format
 msgid "return type specified for %<operator %T%>"
 msgstr "コンストラクタに対する戻り値の型指定は無視されました"
 
-#: cp/decl.c:6859
+#: cp/decl.c:6915
 #, gcc-internal-format
 msgid "unnamed variable or field declared void"
 msgstr "無名変数やフィールドが void と宣言されました"
 
-#: cp/decl.c:6863
+#: cp/decl.c:6919
 #, fuzzy, gcc-internal-format
 msgid "variable or field %qE declared void"
 msgstr "変数またはフィールドが void と宣言されました"
 
-#: cp/decl.c:6866
+#: cp/decl.c:6922
 #, gcc-internal-format
 msgid "variable or field declared void"
 msgstr "変数またはフィールドが void と宣言されました"
 
-#: cp/decl.c:7031
+#: cp/decl.c:7087
 #, fuzzy, gcc-internal-format
 msgid "invalid use of qualified-name %<::%D%>"
 msgstr "未定義の型 `%s %s' の使用は不適切です"
 
-#: cp/decl.c:7034
+#: cp/decl.c:7090
 #, fuzzy, gcc-internal-format
 msgid "invalid use of qualified-name %<%T::%D%>"
 msgstr "未定義の型 `%s %s' の使用は不適切です"
 
-#: cp/decl.c:7037
+#: cp/decl.c:7093
 #, fuzzy, gcc-internal-format
 msgid "invalid use of qualified-name %<%D::%D%>"
 msgstr "未定義の型 `%s %s' の使用は不適切です"
 
-#: cp/decl.c:7049
+#: cp/decl.c:7105
 #, gcc-internal-format
 msgid "type %qT is not derived from type %qT"
 msgstr ""
 
-#: cp/decl.c:7065 cp/decl.c:7155 cp/decl.c:8228
+#: cp/decl.c:7121 cp/decl.c:7211 cp/decl.c:8284
 #, fuzzy, gcc-internal-format
 msgid "declaration of %qD as non-function"
 msgstr "`%s' の宣言は関数の配列"
 
-#: cp/decl.c:7071
+#: cp/decl.c:7127
 #, fuzzy, gcc-internal-format
 msgid "declaration of %qD as non-member"
 msgstr "`%s' の宣言は仮引数を覆い隠します"
 
-#: cp/decl.c:7100
+#: cp/decl.c:7156
 #, gcc-internal-format
 msgid "declarator-id missing; using reserved word %qD"
 msgstr ""
 
-#: cp/decl.c:7147
+#: cp/decl.c:7203
 #, fuzzy, gcc-internal-format
 msgid "function definition does not declare parameters"
 msgstr "関数の定義が `register' と宣言されました"
 
-#: cp/decl.c:7189
+#: cp/decl.c:7245
 #, fuzzy, gcc-internal-format
 msgid "two or more data types in declaration of %qs"
 msgstr "`%s' の宣言に二つ以上のデータ型が指定されました"
 
-#: cp/decl.c:7256 cp/decl.c:7258
+#: cp/decl.c:7312 cp/decl.c:7314
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids declaration of %qs with no type"
 msgstr "ISO C はメンバのないメンバ宣言を禁じます"
 
-#: cp/decl.c:7283
+#: cp/decl.c:7339
 #, fuzzy, gcc-internal-format
 msgid "%<signed%> or %<unsigned%> invalid for %qs"
 msgstr "short, 符合つきまたは符合なしは `%s' にとって無効です"
 
-#: cp/decl.c:7285
+#: cp/decl.c:7341
 #, fuzzy, gcc-internal-format
 msgid "%<signed%> and %<unsigned%> specified together for %qs"
 msgstr "符合付きと符合無しが `%s' に対して一緒に与えられています"
 
-#: cp/decl.c:7287
+#: cp/decl.c:7343
 #, fuzzy, gcc-internal-format
 msgid "%<long long%> invalid for %qs"
 msgstr "`%s' に対して complex は不適切です"
 
-#: cp/decl.c:7289
+#: cp/decl.c:7345
 #, fuzzy, gcc-internal-format
 msgid "%<long%> invalid for %qs"
 msgstr "`%s' に対して complex は不適切です"
 
-#: cp/decl.c:7291
+#: cp/decl.c:7347
 #, fuzzy, gcc-internal-format
 msgid "%<short%> invalid for %qs"
 msgstr "`%s' に対して complex は不適切です"
 
-#: cp/decl.c:7293
+#: cp/decl.c:7349
 #, fuzzy, gcc-internal-format
 msgid "%<long%> or %<short%> invalid for %qs"
 msgstr "`%s' に対して long, short, signed または unsigned は不適切です"
 
-#: cp/decl.c:7295
+#: cp/decl.c:7351
 #, fuzzy, gcc-internal-format
 msgid "%<long%> or %<short%> specified with char for %qs"
 msgstr "`%s' に対して char とともに long または short が指定されています"
 
-#: cp/decl.c:7297
+#: cp/decl.c:7353
 #, fuzzy, gcc-internal-format
 msgid "%<long%> and %<short%> specified together for %qs"
 msgstr "long と short が `%s' に対して一緒に指定されています"
 
-#: cp/decl.c:7303
+#: cp/decl.c:7359
 #, fuzzy, gcc-internal-format
 msgid "long, short, signed or unsigned used invalidly for %qs"
 msgstr "`%s' に対する long, short, singed や unsigned の使用は不適切です"
 
-#: cp/decl.c:7367
+#: cp/decl.c:7423
 #, fuzzy, gcc-internal-format
 msgid "complex invalid for %qs"
 msgstr "`%s' に対して complex は不適切です"
 
-#: cp/decl.c:7396
+#: cp/decl.c:7452
 #, gcc-internal-format
 msgid "qualifiers are not allowed on declaration of %<operator %T%>"
 msgstr ""
 
-#: cp/decl.c:7408 cp/typeck.c:6842
+#: cp/decl.c:7464 cp/typeck.c:6840
 #, fuzzy, gcc-internal-format
 msgid "ignoring %qV qualifiers added to function type %qT"
 msgstr "関数戻り値の型修飾子は無視されました"
 
-#: cp/decl.c:7431
+#: cp/decl.c:7487
 #, fuzzy, gcc-internal-format
 msgid "member %qD cannot be declared both virtual and static"
 msgstr "非メンバ `%s' を `mutable' とは宣言できません"
 
-#: cp/decl.c:7439
+#: cp/decl.c:7495
 #, gcc-internal-format
 msgid "%<%T::%D%> is not a valid declarator"
 msgstr ""
 
-#: cp/decl.c:7448
+#: cp/decl.c:7504
 #, gcc-internal-format
 msgid "typedef declaration invalid in parameter declaration"
 msgstr "仮引数宣言の中の typedef 宣言は無効です"
 
-#: cp/decl.c:7454
+#: cp/decl.c:7510
 #, gcc-internal-format
 msgid "storage class specifiers invalid in parameter declarations"
 msgstr "仮引数宣言の中の記憶クラス指定子は無効です"
 
-#: cp/decl.c:7461
+#: cp/decl.c:7517
 #, gcc-internal-format
 msgid "virtual outside class declaration"
 msgstr "クラス宣言の外側で virtual 指定しています"
 
-#: cp/decl.c:7479
+#: cp/decl.c:7535
 #, fuzzy, gcc-internal-format
 msgid "multiple storage classes in declaration of %qs"
 msgstr "`%s' の宣言において複数の保存クラス"
 
-#: cp/decl.c:7484
+#: cp/decl.c:7540
 #, fuzzy, gcc-internal-format
 msgid "conflicting specifiers in declaration of %qs"
 msgstr "`%s' の宣言が矛盾しています"
 
-#: cp/decl.c:7507
+#: cp/decl.c:7563
 #, fuzzy, gcc-internal-format
 msgid "storage class specified for %qs"
 msgstr "%s に対する記憶クラス指定子 `%s'"
 
-#: cp/decl.c:7541
+#: cp/decl.c:7597
 #, fuzzy, gcc-internal-format
 msgid "top-level declaration of %qs specifies %<auto%>"
 msgstr "`%s' のトップレベルの宣言が `auto' を指定します"
 
-#: cp/decl.c:7553
+#: cp/decl.c:7609
 #, gcc-internal-format
 msgid "storage class specifiers invalid in friend function declarations"
 msgstr "friend 関数宣言内の記憶クラス指定子は無効です"
 
-#: cp/decl.c:7673
+#: cp/decl.c:7729
 #, gcc-internal-format
 msgid "destructor cannot be static member function"
 msgstr "デストラクタを静的メンバ関数とすることはできません"
 
-#: cp/decl.c:7674
+#: cp/decl.c:7730
 #, gcc-internal-format
 msgid "constructor cannot be static member function"
 msgstr "コンストラクタを静的メンバ関数とすることはできません"
 
-#: cp/decl.c:7678
+#: cp/decl.c:7734
 #, fuzzy, gcc-internal-format
 msgid "destructors may not be cv-qualified"
 msgstr "コンストラクタは virtual 宣言できません"
 
-#: cp/decl.c:7679
+#: cp/decl.c:7735
 #, fuzzy, gcc-internal-format
 msgid "constructors may not be cv-qualified"
 msgstr "コンストラクタは virtual 宣言できません"
 
-#: cp/decl.c:7696
+#: cp/decl.c:7752
 #, gcc-internal-format
 msgid "constructors cannot be declared virtual"
 msgstr "コンストラクタは virtual 宣言できません"
 
-#: cp/decl.c:7709
+#: cp/decl.c:7765
 #, fuzzy, gcc-internal-format
 msgid "can't initialize friend function %qs"
 msgstr "friend 関数 `%s' を初期化できません"
 
 #. Cannot be both friend and virtual.
-#: cp/decl.c:7713
+#: cp/decl.c:7769
 #, gcc-internal-format
 msgid "virtual functions cannot be friends"
 msgstr "仮想関数は friend にできません"
 
-#: cp/decl.c:7717
+#: cp/decl.c:7773
 #, gcc-internal-format
 msgid "friend declaration not in class definition"
 msgstr "friend 宣言がクラス定義の中にありません"
 
-#: cp/decl.c:7719
+#: cp/decl.c:7775
 #, fuzzy, gcc-internal-format
 msgid "can't define friend function %qs in a local class definition"
 msgstr "friend 宣言がクラス定義の中にありません"
 
-#: cp/decl.c:7732
+#: cp/decl.c:7788
 #, fuzzy, gcc-internal-format
 msgid "destructors may not have parameters"
 msgstr "デストラクタは仮引数を取りません"
 
-#: cp/decl.c:7750 cp/decl.c:7757
+#: cp/decl.c:7806 cp/decl.c:7813
 #, fuzzy, gcc-internal-format
 msgid "cannot declare reference to %q#T"
 msgstr "参照を参照として宣言できません"
 
-#: cp/decl.c:7751
+#: cp/decl.c:7807
 #, fuzzy, gcc-internal-format
 msgid "cannot declare pointer to %q#T"
 msgstr "ポインタを参照として宣言できません"
 
-#: cp/decl.c:7759
+#: cp/decl.c:7815
 #, fuzzy, gcc-internal-format
 msgid "cannot declare pointer to %q#T member"
 msgstr "ポインタを参照として宣言できません"
 
-#: cp/decl.c:7822
+#: cp/decl.c:7878
 #, gcc-internal-format
 msgid "template-id %qD used as a declarator"
 msgstr ""
 
-#: cp/decl.c:7872
+#: cp/decl.c:7928
 #, gcc-internal-format
 msgid "member functions are implicitly friends of their class"
 msgstr "メンバ関数は暗黙的にそのクラスの friend です"
 
-#: cp/decl.c:7874
+#: cp/decl.c:7930
 #, gcc-internal-format
 msgid "extra qualification %<%T::%> on member %qs"
 msgstr ""
 
-#: cp/decl.c:7906
+#: cp/decl.c:7962
 #, gcc-internal-format
 msgid "cannot define member function %<%T::%s%> within %<%T%>"
 msgstr ""
 
-#: cp/decl.c:7907
+#: cp/decl.c:7963
 #, gcc-internal-format
 msgid "cannot declare member function %<%T::%s%> within %<%T%>"
 msgstr ""
 
-#: cp/decl.c:7923
+#: cp/decl.c:7979
 #, gcc-internal-format
 msgid "cannot declare member %<%T::%s%> within %qT"
 msgstr ""
 
-#: cp/decl.c:7957
+#: cp/decl.c:8013
 #, gcc-internal-format
 msgid "data member may not have variably modified type %qT"
 msgstr ""
 
-#: cp/decl.c:7959
+#: cp/decl.c:8015
 #, gcc-internal-format
 msgid "parameter may not have variably modified type %qT"
 msgstr ""
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
-#: cp/decl.c:7967
+#: cp/decl.c:8023
 #, fuzzy, gcc-internal-format
 msgid "only declarations of constructors can be %<explicit%>"
 msgstr "`explicit' にできるのは、コンストラクタだけです"
 
-#: cp/decl.c:7975
+#: cp/decl.c:8031
 #, fuzzy, gcc-internal-format
 msgid "non-member %qs cannot be declared %<mutable%>"
 msgstr "非メンバ `%s' を `mutable' とは宣言できません"
 
-#: cp/decl.c:7980
+#: cp/decl.c:8036
 #, fuzzy, gcc-internal-format
 msgid "non-object member %qs cannot be declared %<mutable%>"
 msgstr "非オブジェクトメンバ `%s' を `mutable' とは宣言できません"
 
-#: cp/decl.c:7986
+#: cp/decl.c:8042
 #, fuzzy, gcc-internal-format
 msgid "function %qs cannot be declared %<mutable%>"
 msgstr "関数 `%s' を `mutable' としては宣言できません"
 
-#: cp/decl.c:7991
+#: cp/decl.c:8047
 #, fuzzy, gcc-internal-format
 msgid "static %qs cannot be declared %<mutable%>"
 msgstr "static `%s' を mutable として宣言できません"
 
-#: cp/decl.c:7996
+#: cp/decl.c:8052
 #, fuzzy, gcc-internal-format
 msgid "const %qs cannot be declared %<mutable%>"
 msgstr "const `%s' を `mutable' として宣言できません"
 
-#: cp/decl.c:8028
+#: cp/decl.c:8084
 #, gcc-internal-format
 msgid "%Jtypedef name may not be a nested-name-specifier"
 msgstr ""
 
-#: cp/decl.c:8044
+#: cp/decl.c:8100
 #, gcc-internal-format
 msgid "ISO C++ forbids nested type %qD with same name as enclosing class"
 msgstr ""
 
-#: cp/decl.c:8134
+#: cp/decl.c:8190
 #, fuzzy, gcc-internal-format
 msgid "qualified function types cannot be used to declare %s functions"
 msgstr "関数の返す型が関数であってはなりません"
 
-#: cp/decl.c:8160
+#: cp/decl.c:8216
 #, fuzzy, gcc-internal-format
 msgid "type qualifiers specified for friend class declaration"
 msgstr "一つの空の宣言中に、二つの型が指定されています"
 
-#: cp/decl.c:8165
+#: cp/decl.c:8221
 #, fuzzy, gcc-internal-format
 msgid "%<inline%> specified for friend class declaration"
 msgstr "クラス宣言の外側で virtual 指定しています"
 
-#: cp/decl.c:8173
+#: cp/decl.c:8229
 #, fuzzy, gcc-internal-format
 msgid "template parameters cannot be friends"
 msgstr "複雑なパラメタをもつ関数は inline にできません"
 
-#: cp/decl.c:8175
+#: cp/decl.c:8231
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend class %T::%D%>"
 msgstr ""
 
-#: cp/decl.c:8179
+#: cp/decl.c:8235
 #, fuzzy, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend %#T%>"
 msgstr "friend 宣言がクラス定義の中にありません"
 
-#: cp/decl.c:8192
+#: cp/decl.c:8248
 #, fuzzy, gcc-internal-format
 msgid "trying to make class %qT a friend of global scope"
 msgstr "クラス `%s' を大域スコープの friend にしようとしています"
 
-#: cp/decl.c:8203
+#: cp/decl.c:8259
 #, fuzzy, gcc-internal-format
 msgid "invalid qualifiers on non-member function type"
 msgstr "非メンバ関数での `this' の使用は無効です"
 
-#: cp/decl.c:8218
+#: cp/decl.c:8274
 #, fuzzy, gcc-internal-format
 msgid "abstract declarator %qT used as declaration"
 msgstr "`%s' の宣言はグローバル宣言を覆い隠します"
 
-#: cp/decl.c:8247
+#: cp/decl.c:8303
 #, fuzzy, gcc-internal-format
 msgid "cannot use %<::%> in parameter declaration"
 msgstr "仮引数宣言の中で `::' を使えません"
 
 #. Something like struct S { int N::j; };
-#: cp/decl.c:8293
+#: cp/decl.c:8349
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %<::%>"
 msgstr "無効な用法の of %%d, %%x, 又は %%X"
 
-#: cp/decl.c:8308
+#: cp/decl.c:8364
 #, gcc-internal-format
 msgid "can't make %qD into a method -- not in a class"
 msgstr ""
 
-#: cp/decl.c:8317
+#: cp/decl.c:8373
 #, fuzzy, gcc-internal-format
 msgid "function %qD declared virtual inside a union"
 msgstr "領域 `%s' は関数として宣言されています"
 
-#: cp/decl.c:8326
+#: cp/decl.c:8382
 #, fuzzy, gcc-internal-format
 msgid "%qD cannot be declared virtual, since it is always static"
 msgstr "`::main' を static としては宣言できません"
 
-#: cp/decl.c:8342
+#: cp/decl.c:8398
 #, gcc-internal-format
 msgid "expected qualified name in friend declaration for destructor %qD"
 msgstr ""
 
-#: cp/decl.c:8352
+#: cp/decl.c:8408
 #, fuzzy, gcc-internal-format
 msgid "declaration of %qD as member of %qT"
 msgstr "`%s' の宣言により `this' のメンバが覆い隠されます"
 
-#: cp/decl.c:8428
+#: cp/decl.c:8484
 #, fuzzy, gcc-internal-format
 msgid "field %qD has incomplete type"
 msgstr "領域 `%s' は不完全な型です"
 
-#: cp/decl.c:8430
+#: cp/decl.c:8486
 #, fuzzy, gcc-internal-format
 msgid "name %qT has incomplete type"
 msgstr "仮引数が不完全型です"
 
-#: cp/decl.c:8439
+#: cp/decl.c:8495
 #, fuzzy, gcc-internal-format
 msgid "  in instantiation of template %qT"
 msgstr "%s: `%s' の初期化:\n"
 
-#: cp/decl.c:8448
+#: cp/decl.c:8504
 #, fuzzy, gcc-internal-format
 msgid "%qE is neither function nor member function; cannot be declared friend"
 msgstr "`%s' は関数でもメンバ関数でもありません -- friend とは宣言できません"
@@ -26942,93 +26953,93 @@ msgstr "`%s' は関数でもメンバ関数でもありません -- friend とは宣言できません"
 #. the rest of the compiler does not correctly
 #. handle the initialization unless the member is
 #. static so we make it static below.
-#: cp/decl.c:8500
+#: cp/decl.c:8556
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids initialization of member %qD"
 msgstr "ISO C++ は new 式の初期化での `=' を禁じます"
 
-#: cp/decl.c:8502
+#: cp/decl.c:8558
 #, gcc-internal-format
 msgid "making %qD static"
 msgstr ""
 
-#: cp/decl.c:8572
+#: cp/decl.c:8628
 #, fuzzy, gcc-internal-format
 msgid "storage class %<auto%> invalid for function %qs"
 msgstr "関数 `%s' に対する記憶クラス `auto' は無効です"
 
-#: cp/decl.c:8574
+#: cp/decl.c:8630
 #, fuzzy, gcc-internal-format
 msgid "storage class %<register%> invalid for function %qs"
 msgstr "関数 `%s' に対する記憶クラス `register' は無効です"
 
-#: cp/decl.c:8576
+#: cp/decl.c:8632
 #, fuzzy, gcc-internal-format
 msgid "storage class %<__thread%> invalid for function %qs"
 msgstr "関数 `%s' に対する記憶クラス `auto' は無効です"
 
-#: cp/decl.c:8587
+#: cp/decl.c:8643
 #, fuzzy, gcc-internal-format
 msgid "%<static%> specified invalid for function %qs declared out of global scope"
 msgstr "大域スコープ外の関数 `%s' に対する記憶クラス `inline' は無効です"
 
-#: cp/decl.c:8590
+#: cp/decl.c:8646
 #, fuzzy, gcc-internal-format
 msgid "%<inline%> specifier invalid for function %qs declared out of global scope"
 msgstr "大域スコープ外の関数 `%s' に対する記憶クラス `inline' は無効です"
 
-#: cp/decl.c:8598
+#: cp/decl.c:8654
 #, fuzzy, gcc-internal-format
 msgid "virtual non-class function %qs"
 msgstr "virtual な非クラス関数 `%s'"
 
-#: cp/decl.c:8629
+#: cp/decl.c:8685
 #, fuzzy, gcc-internal-format
 msgid "cannot declare member function %qD to have static linkage"
 msgstr "`::main' を static としては宣言できません"
 
 #. FIXME need arm citation
-#: cp/decl.c:8636
+#: cp/decl.c:8692
 #, gcc-internal-format
 msgid "cannot declare static function inside another function"
 msgstr "他の関数内で static 関数を宣言できません"
 
-#: cp/decl.c:8666
+#: cp/decl.c:8722
 #, gcc-internal-format
 msgid "%<static%> may not be used when defining (as opposed to declaring) a static data member"
 msgstr ""
 
-#: cp/decl.c:8673
+#: cp/decl.c:8729
 #, gcc-internal-format
 msgid "static member %qD declared %<register%>"
 msgstr ""
 
-#: cp/decl.c:8678
+#: cp/decl.c:8734
 #, gcc-internal-format
 msgid "cannot explicitly declare member %q#D to have extern linkage"
 msgstr ""
 
-#: cp/decl.c:8816
+#: cp/decl.c:8872
 #, gcc-internal-format
 msgid "default argument for %q#D has type %qT"
 msgstr ""
 
-#: cp/decl.c:8819
+#: cp/decl.c:8875
 #, gcc-internal-format
 msgid "default argument for parameter of type %qT has type %qT"
 msgstr ""
 
-#: cp/decl.c:8836
+#: cp/decl.c:8892
 #, fuzzy, gcc-internal-format
 msgid "default argument %qE uses local variable %qD"
 msgstr "関数がローカル変数のアドレスを返しています"
 
-#: cp/decl.c:8905
+#: cp/decl.c:8961
 #, fuzzy, gcc-internal-format
 msgid "parameter %qD invalidly declared method type"
 msgstr "パラメタはメソッドの型を不正に宣言しました"
 
-#: cp/decl.c:8929
+#: cp/decl.c:8985
 #, gcc-internal-format
 msgid "parameter %qD includes %s to array of unknown bound %qT"
 msgstr ""
@@ -27048,138 +27059,138 @@ msgstr ""
 #. or implicitly defined), there's no need to worry about their
 #. existence.  Theoretically, they should never even be
 #. instantiated, but that's hard to forestall.
-#: cp/decl.c:9097
+#: cp/decl.c:9153
 #, gcc-internal-format
 msgid "invalid constructor; you probably meant %<%T (const %T&)%>"
 msgstr ""
 
-#: cp/decl.c:9219
+#: cp/decl.c:9275
 #, gcc-internal-format
 msgid "%qD may not be declared within a namespace"
 msgstr ""
 
-#: cp/decl.c:9224
+#: cp/decl.c:9280
 #, fuzzy, gcc-internal-format
 msgid "%qD may not be declared as static"
 msgstr "`::main' を static としては宣言できません"
 
-#: cp/decl.c:9247
+#: cp/decl.c:9303
 #, fuzzy, gcc-internal-format
 msgid "%qD must be a nonstatic member function"
 msgstr "デストラクタを静的メンバ関数とすることはできません"
 
-#: cp/decl.c:9256
+#: cp/decl.c:9312
 #, gcc-internal-format
 msgid "%qD must be either a non-static member function or a non-member function"
 msgstr ""
 
-#: cp/decl.c:9277
+#: cp/decl.c:9333
 #, gcc-internal-format
 msgid "%qD must have an argument of class or enumerated type"
 msgstr ""
 
-#: cp/decl.c:9318
+#: cp/decl.c:9374
 #, gcc-internal-format
 msgid "conversion to %s%s will never use a type conversion operator"
 msgstr "%s%s への変換で型変換演算子が利用されることは決してありません"
 
 #. 13.4.0.3
-#: cp/decl.c:9326
+#: cp/decl.c:9382
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ prohibits overloading operator ?:"
 msgstr "ISO C++ は無名構造体を禁止しています"
 
-#: cp/decl.c:9331
+#: cp/decl.c:9387
 #, gcc-internal-format
 msgid "%qD must not have variable number of arguments"
 msgstr ""
 
-#: cp/decl.c:9382
+#: cp/decl.c:9438
 #, gcc-internal-format
 msgid "postfix %qD must take %<int%> as its argument"
 msgstr ""
 
-#: cp/decl.c:9385
+#: cp/decl.c:9441
 #, gcc-internal-format
 msgid "postfix %qD must take %<int%> as its second argument"
 msgstr ""
 
-#: cp/decl.c:9393
+#: cp/decl.c:9449
 #, fuzzy, gcc-internal-format
 msgid "%qD must take either zero or one argument"
 msgstr "`%s' は 0 か 2 個の引数しかとりません"
 
-#: cp/decl.c:9395
+#: cp/decl.c:9451
 #, fuzzy, gcc-internal-format
 msgid "%qD must take either one or two arguments"
 msgstr "`%s' は 0 か 2 個の引数しかとりません"
 
-#: cp/decl.c:9417
+#: cp/decl.c:9473
 #, gcc-internal-format
 msgid "prefix %qD should return %qT"
 msgstr ""
 
-#: cp/decl.c:9423
+#: cp/decl.c:9479
 #, gcc-internal-format
 msgid "postfix %qD should return %qT"
 msgstr ""
 
-#: cp/decl.c:9432
+#: cp/decl.c:9488
 #, gcc-internal-format
 msgid "%qD must take %<void%>"
 msgstr ""
 
-#: cp/decl.c:9434 cp/decl.c:9443
+#: cp/decl.c:9490 cp/decl.c:9499
 #, gcc-internal-format
 msgid "%qD must take exactly one argument"
 msgstr ""
 
-#: cp/decl.c:9445
+#: cp/decl.c:9501
 #, fuzzy, gcc-internal-format
 msgid "%qD must take exactly two arguments"
 msgstr "`%s' は 0 か 2 個の引数しかとりません"
 
-#: cp/decl.c:9454
+#: cp/decl.c:9510
 #, gcc-internal-format
 msgid "user-defined %qD always evaluates both arguments"
 msgstr ""
 
-#: cp/decl.c:9468
+#: cp/decl.c:9524
 #, gcc-internal-format
 msgid "%qD should return by value"
 msgstr ""
 
-#: cp/decl.c:9480 cp/decl.c:9484
+#: cp/decl.c:9536 cp/decl.c:9540
 #, gcc-internal-format
 msgid "%qD cannot have default arguments"
 msgstr ""
 
-#: cp/decl.c:9542
+#: cp/decl.c:9598
 #, gcc-internal-format
 msgid "using template type parameter %qT after %qs"
 msgstr ""
 
-#: cp/decl.c:9557
+#: cp/decl.c:9613
 #, gcc-internal-format
 msgid "using typedef-name %qD after %qs"
 msgstr ""
 
-#: cp/decl.c:9558
+#: cp/decl.c:9614
 #, fuzzy, gcc-internal-format
 msgid "%q+D has a previous declaration here"
 msgstr "前方での `%s' の宣言"
 
-#: cp/decl.c:9566
+#: cp/decl.c:9622
 #, gcc-internal-format
 msgid "%qT referred to as %qs"
 msgstr ""
 
-#: cp/decl.c:9567 cp/decl.c:9574
+#: cp/decl.c:9623 cp/decl.c:9630
 #, fuzzy, gcc-internal-format
 msgid "%q+T has a previous declaration here"
 msgstr "前方での `%s' の宣言"
 
-#: cp/decl.c:9573
+#: cp/decl.c:9629
 #, gcc-internal-format
 msgid "%qT referred to as enum"
 msgstr ""
@@ -27191,67 +27202,67 @@ msgstr ""
 #. void f(class C);		// No template header here
 #.
 #. then the required template argument is missing.
-#: cp/decl.c:9588
+#: cp/decl.c:9644
 #, gcc-internal-format
 msgid "template argument required for %<%s %T%>"
 msgstr ""
 
-#: cp/decl.c:9636 cp/name-lookup.c:2658
+#: cp/decl.c:9692 cp/name-lookup.c:2658
 #, gcc-internal-format
 msgid "%qD has the same name as the class in which it is declared"
 msgstr ""
 
-#: cp/decl.c:9774
+#: cp/decl.c:9830
 #, fuzzy, gcc-internal-format
 msgid "use of enum %q#D without previous declaration"
 msgstr "事前の宣言なしの大域関数に関して警告する"
 
-#: cp/decl.c:9795
+#: cp/decl.c:9851
 #, fuzzy, gcc-internal-format
 msgid "redeclaration of %qT as a non-template"
 msgstr "`%s' の宣言は仮引数を覆い隠します"
 
-#: cp/decl.c:9796 cp/pt.c:3373
+#: cp/decl.c:9852 cp/pt.c:3373
 #, fuzzy, gcc-internal-format
 msgid "previous declaration %q+D"
 msgstr "前方での `%s' の宣言"
 
-#: cp/decl.c:9907
+#: cp/decl.c:9963
 #, gcc-internal-format
 msgid "derived union %qT invalid"
 msgstr ""
 
-#: cp/decl.c:9916
+#: cp/decl.c:9972
 #, gcc-internal-format
 msgid "Java class %qT cannot have multiple bases"
 msgstr ""
 
-#: cp/decl.c:9927
+#: cp/decl.c:9983
 #, gcc-internal-format
 msgid "Java class %qT cannot have virtual bases"
 msgstr ""
 
-#: cp/decl.c:9948
+#: cp/decl.c:10004
 #, fuzzy, gcc-internal-format
 msgid "base type %qT fails to be a struct or class type"
 msgstr "型修飾子 `%s' は struct や class の後には使えません"
 
-#: cp/decl.c:9981
+#: cp/decl.c:10037
 #, gcc-internal-format
 msgid "recursive type %qT undefined"
 msgstr ""
 
-#: cp/decl.c:9983
+#: cp/decl.c:10039
 #, fuzzy, gcc-internal-format
 msgid "duplicate base type %qT invalid"
 msgstr "重複した case の値"
 
-#: cp/decl.c:10055
+#: cp/decl.c:10111
 #, fuzzy, gcc-internal-format
 msgid "multiple definition of %q#T"
 msgstr "`%s' が再定義されました"
 
-#: cp/decl.c:10056
+#: cp/decl.c:10112
 #, fuzzy, gcc-internal-format
 msgid "%Jprevious definition here"
 msgstr "`%s' は前にここで定義されました"
@@ -27260,47 +27271,47 @@ msgstr "`%s' は前にここで定義されました"
 #.
 #. IF no integral type can represent all the enumerator values, the
 #. enumeration is ill-formed.
-#: cp/decl.c:10195
+#: cp/decl.c:10251
 #, gcc-internal-format
 msgid "no integral type can represent all of the enumerator values for %qT"
 msgstr ""
 
-#: cp/decl.c:10306
+#: cp/decl.c:10362
 #, fuzzy, gcc-internal-format
 msgid "enumerator value for %qD not integer constant"
 msgstr "`%s' の列挙値が整数定数ではありません"
 
-#: cp/decl.c:10334
+#: cp/decl.c:10390
 #, fuzzy, gcc-internal-format
 msgid "overflow in enumeration values at %qD"
 msgstr "列挙値がオーバーフロー"
 
-#: cp/decl.c:10409
+#: cp/decl.c:10465
 #, fuzzy, gcc-internal-format
 msgid "return type %q#T is incomplete"
 msgstr "戻り値の型が不完全型です"
 
-#: cp/decl.c:10519 cp/typeck.c:6579
+#: cp/decl.c:10575 cp/typeck.c:6577
 #, gcc-internal-format
 msgid "%<operator=%> should return a reference to %<*this%>"
 msgstr ""
 
-#: cp/decl.c:10877
+#: cp/decl.c:10933
 #, fuzzy, gcc-internal-format
 msgid "parameter %qD declared void"
 msgstr "仮引数 `%s' が void と宣言されています"
 
-#: cp/decl.c:11358
+#: cp/decl.c:11414
 #, fuzzy, gcc-internal-format
 msgid "invalid member function declaration"
 msgstr "無効な宣言です"
 
-#: cp/decl.c:11373
+#: cp/decl.c:11429
 #, gcc-internal-format
 msgid "%qD is already defined in class %qT"
 msgstr ""
 
-#: cp/decl.c:11582
+#: cp/decl.c:11638
 #, gcc-internal-format
 msgid "static member function %q#D declared with type qualifiers"
 msgstr ""
@@ -27435,62 +27446,62 @@ msgstr ""
 msgid "anonymous struct not inside named type"
 msgstr "無名構造体が名前つき型の中にありません"
 
-#: cp/decl2.c:1107
+#: cp/decl2.c:1108
 #, gcc-internal-format
 msgid "namespace-scope anonymous aggregates must be static"
 msgstr "anonumous 名前空間の集合体は static でなければなりません"
 
-#: cp/decl2.c:1116
+#: cp/decl2.c:1117
 #, fuzzy, gcc-internal-format
 msgid "anonymous union with no members"
 msgstr "無名共用体にメンバがありません"
 
-#: cp/decl2.c:1152
+#: cp/decl2.c:1153
 #, fuzzy, gcc-internal-format
 msgid "%<operator new%> must return type %qT"
 msgstr "`operator delete' の戻り型は `void' でなければなりません"
 
-#: cp/decl2.c:1161
+#: cp/decl2.c:1162
 #, fuzzy, gcc-internal-format
 msgid "%<operator new%> takes type %<size_t%> (%qT) as first parameter"
 msgstr "`operator new' は第一引数として `size_t' をとります"
 
-#: cp/decl2.c:1190
+#: cp/decl2.c:1191
 #, fuzzy, gcc-internal-format
 msgid "%<operator delete%> must return type %qT"
 msgstr "`operator delete' の戻り型は `void' でなければなりません"
 
-#: cp/decl2.c:1199
+#: cp/decl2.c:1200
 #, fuzzy, gcc-internal-format
 msgid "%<operator delete%> takes type %qT as first parameter"
 msgstr "`operator delete' は第一引数として `void *' 型をとります"
 
-#: cp/decl2.c:1862
+#: cp/decl2.c:1863
 #, gcc-internal-format
 msgid "%qT has a field %qD whose type uses the anonymous namespace"
 msgstr ""
 
-#: cp/decl2.c:1868
+#: cp/decl2.c:1869
 #, gcc-internal-format
 msgid "%qT declared with greater visibility than the type of its field %qD"
 msgstr ""
 
-#: cp/decl2.c:1879
+#: cp/decl2.c:1880
 #, gcc-internal-format
 msgid "%qT has a base %qT whose type uses the anonymous namespace"
 msgstr ""
 
-#: cp/decl2.c:1884
+#: cp/decl2.c:1885
 #, gcc-internal-format
 msgid "%qT declared with greater visibility than its base %qT"
 msgstr ""
 
-#: cp/decl2.c:3308
+#: cp/decl2.c:3309
 #, fuzzy, gcc-internal-format
 msgid "inline function %q+D used but never defined"
 msgstr "`%s' が使われましたが未定義です"
 
-#: cp/decl2.c:3462
+#: cp/decl2.c:3463
 #, fuzzy, gcc-internal-format
 msgid "default argument missing for parameter %P of %q+#D"
 msgstr "仮引数リストからの仮引数名を欠いています"
@@ -27522,7 +27533,7 @@ msgstr "C++ と Java の `catch' を一つの翻訳ユニットにまとめます"
 msgid "throwing NULL, which has integral, not pointer type"
 msgstr ""
 
-#: cp/except.c:637 cp/init.c:1723
+#: cp/except.c:637 cp/init.c:1722
 #, gcc-internal-format
 msgid "%qD should never be overloaded"
 msgstr ""
@@ -27631,227 +27642,227 @@ msgstr "friend 宣言がクラス定義の中にありません"
 msgid "(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning"
 msgstr "（もしこれがあなたの意図したものでなければ、関数テンプレートは既に宣言済である事を確認し、ここの関数名の後ろに <> を付け足してください） -Wno-non-template-friend でこの警告表示を無効にします"
 
-#: cp/init.c:334
+#: cp/init.c:333
 #, gcc-internal-format
 msgid "%J%qD should be initialized in the member initialization list"
 msgstr ""
 
-#: cp/init.c:382
+#: cp/init.c:381
 #, gcc-internal-format
 msgid "%Jdefault-initialization of %q#D, which has reference type"
 msgstr ""
 
-#: cp/init.c:388
+#: cp/init.c:387
 #, gcc-internal-format
 msgid "%Juninitialized reference member %qD"
 msgstr ""
 
-#: cp/init.c:391
+#: cp/init.c:390
 #, gcc-internal-format
 msgid "%Juninitialized member %qD with %<const%> type %qT"
 msgstr ""
 
-#: cp/init.c:534
+#: cp/init.c:533
 #, gcc-internal-format
 msgid "%q+D will be initialized after"
 msgstr ""
 
-#: cp/init.c:537
+#: cp/init.c:536
 #, gcc-internal-format
 msgid "base %qT will be initialized after"
 msgstr ""
 
-#: cp/init.c:540
+#: cp/init.c:539
 #, gcc-internal-format
 msgid "  %q+#D"
 msgstr ""
 
-#: cp/init.c:542
+#: cp/init.c:541
 #, gcc-internal-format
 msgid "  base %qT"
 msgstr ""
 
-#: cp/init.c:543
+#: cp/init.c:542
 #, gcc-internal-format
 msgid "%J  when initialized here"
 msgstr ""
 
-#: cp/init.c:559
+#: cp/init.c:558
 #, fuzzy, gcc-internal-format
 msgid "%Jmultiple initializations given for %qD"
 msgstr "(`%s' の初期化は不完全です)"
 
-#: cp/init.c:562
+#: cp/init.c:561
 #, gcc-internal-format
 msgid "%Jmultiple initializations given for base %qT"
 msgstr ""
 
-#: cp/init.c:629
+#: cp/init.c:628
 #, fuzzy, gcc-internal-format
 msgid "%Jinitializations for multiple members of %qT"
 msgstr "可変配列メンバを初期化しています"
 
-#: cp/init.c:691
+#: cp/init.c:690
 #, gcc-internal-format
 msgid "%Jbase class %q#T should be explicitly initialized in the copy constructor"
 msgstr ""
 
-#: cp/init.c:915 cp/init.c:934
+#: cp/init.c:914 cp/init.c:933
 #, gcc-internal-format
 msgid "class %qT does not have any field named %qD"
 msgstr ""
 
-#: cp/init.c:921
+#: cp/init.c:920
 #, fuzzy, gcc-internal-format
 msgid "%q#D is a static data member; it can only be initialized at its definition"
 msgstr "`com_interface' 属性はクラス定義にのみ用いる事ができます"
 
-#: cp/init.c:928
+#: cp/init.c:927
 #, gcc-internal-format
 msgid "%q#D is not a non-static data member of %qT"
 msgstr ""
 
-#: cp/init.c:967
+#: cp/init.c:966
 #, fuzzy, gcc-internal-format
 msgid "unnamed initializer for %qT, which has no base classes"
 msgstr "基底クラスを持つクラスのオブジェクト用の初期化子リストです"
 
-#: cp/init.c:975
+#: cp/init.c:974
 #, gcc-internal-format
 msgid "unnamed initializer for %qT, which uses multiple inheritance"
 msgstr ""
 
-#: cp/init.c:1021
+#: cp/init.c:1020
 #, gcc-internal-format
 msgid "%qD is both a direct base and an indirect virtual base"
 msgstr ""
 
-#: cp/init.c:1029
+#: cp/init.c:1028
 #, gcc-internal-format
 msgid "type %qT is not a direct or virtual base of %qT"
 msgstr ""
 
-#: cp/init.c:1032
+#: cp/init.c:1031
 #, gcc-internal-format
 msgid "type %qT is not a direct base of %qT"
 msgstr ""
 
-#: cp/init.c:1112
+#: cp/init.c:1111
 #, gcc-internal-format
 msgid "bad array initializer"
 msgstr "配列の不正な初期化"
 
-#: cp/init.c:1291
+#: cp/init.c:1290
 #, fuzzy, gcc-internal-format
 msgid "%qT is not an aggregate type"
 msgstr "非集合体型に対して適用された `sigof'"
 
-#: cp/init.c:1345
+#: cp/init.c:1344
 #, gcc-internal-format
 msgid "incomplete type %qT does not have member %qD"
 msgstr ""
 
-#: cp/init.c:1358
+#: cp/init.c:1357
 #, fuzzy, gcc-internal-format
 msgid "invalid pointer to bit-field %qD"
 msgstr "二項演算子 %s が不適切です"
 
-#: cp/init.c:1435
+#: cp/init.c:1434
 #, fuzzy, gcc-internal-format
 msgid "invalid use of non-static member function %qD"
 msgstr "非メンバ関数での `this' の使用は無効です"
 
-#: cp/init.c:1441
+#: cp/init.c:1440
 #, fuzzy, gcc-internal-format
 msgid "invalid use of non-static data member %qD"
 msgstr "メンバへのポインタでの無効な `%s' の使用"
 
-#: cp/init.c:1670
+#: cp/init.c:1669
 #, fuzzy, gcc-internal-format
 msgid "invalid type %<void%> for new"
 msgstr "new に対して無効な型である `void'"
 
-#: cp/init.c:1680
+#: cp/init.c:1679
 #, gcc-internal-format
 msgid "uninitialized const in %<new%> of %q#T"
 msgstr ""
 
-#: cp/init.c:1718
+#: cp/init.c:1717
 #, fuzzy, gcc-internal-format
 msgid "call to Java constructor with %qs undefined"
 msgstr "Java コンストラクタが呼ばれましたが、`%s' は未定義です"
 
-#: cp/init.c:1758
+#: cp/init.c:1757
 #, fuzzy, gcc-internal-format
 msgid "no suitable %qD found in class %qT"
 msgstr "フィールド '%s' がクラス内に見つかりません"
 
-#: cp/init.c:1763
+#: cp/init.c:1762
 #, fuzzy, gcc-internal-format
 msgid "request for member %qD is ambiguous"
 msgstr "要求されたメンバ `%s' は多重継承グラフの中で曖昧です"
 
-#: cp/init.c:1905
+#: cp/init.c:1904
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids initialization in array new"
 msgstr "ISO C++ は new 式の初期化での `=' を禁じます"
 
-#: cp/init.c:2105
+#: cp/init.c:2103
 #, gcc-internal-format
 msgid "size in array new must have integral type"
 msgstr "配列 new でのサイズは完全な型を持たねばなりません"
 
-#: cp/init.c:2121
+#: cp/init.c:2119
 #, gcc-internal-format
 msgid "allocating zero-element array"
 msgstr ""
 
-#: cp/init.c:2129
+#: cp/init.c:2127
 #, gcc-internal-format
 msgid "new cannot be applied to a reference type"
 msgstr "参照型に対して new を適用できません"
 
-#: cp/init.c:2135
+#: cp/init.c:2133
 #, gcc-internal-format
 msgid "new cannot be applied to a function type"
 msgstr "関数型に対して new を適用できません"
 
-#: cp/init.c:2168
+#: cp/init.c:2166
 #, fuzzy, gcc-internal-format
 msgid "call to Java constructor, while %<jclass%> undefined"
 msgstr "Java コンストラクタが呼ばれましたが、`jclass' は未定義です"
 
-#: cp/init.c:2186
+#: cp/init.c:2184
 #, fuzzy, gcc-internal-format
 msgid "can't find %<class$%> in %qT"
 msgstr "class$ が見つかりません"
 
-#: cp/init.c:2545
+#: cp/init.c:2543
 #, gcc-internal-format
 msgid "initializer ends prematurely"
 msgstr "初期設定子の末尾が本来より早く出現しました"
 
-#: cp/init.c:2600
+#: cp/init.c:2598
 #, gcc-internal-format
 msgid "cannot initialize multi-dimensional array with initializer"
 msgstr "多次元配列は初期化子で初期化することができません"
 
-#: cp/init.c:2737
+#: cp/init.c:2735
 #, gcc-internal-format
 msgid "possible problem detected in invocation of delete operator:"
 msgstr ""
 
-#: cp/init.c:2740
+#: cp/init.c:2738
 #, gcc-internal-format
 msgid "neither the destructor nor the class-specific operator delete will be called, even if they are declared when the class is defined."
 msgstr ""
 
-#: cp/init.c:2761
+#: cp/init.c:2759
 #, gcc-internal-format
 msgid "unknown array size in delete"
 msgstr "delete での配列サイズが不明です"
 
-#: cp/init.c:3001
+#: cp/init.c:2999
 #, gcc-internal-format
 msgid "type to vector delete is neither pointer or array type"
 msgstr "ベクトル型の delete ですが、ポインタでも配列型でもありません"
@@ -28081,7 +28092,7 @@ msgstr "前方での `%s' の暗黙的な宣言"
 #: cp/name-lookup.c:1950
 #, fuzzy, gcc-internal-format
 msgid "conflicts with function declaration %q#D"
-msgstr "暗黙の関数宣言に関して警告する"
+msgstr "`%s' の宣言が矛盾しています"
 
 #. It's a nested name with template parameter dependent scope.
 #. This can only be using-declaration for class member.
@@ -28265,7 +28276,7 @@ msgstr ""
 #: cp/parser.c:2014
 #, fuzzy, gcc-internal-format
 msgid "%qD %s"
-msgstr " %s"
+msgstr "%s: %s"
 
 #: cp/parser.c:2050
 #, fuzzy, gcc-internal-format
@@ -28287,7 +28298,7 @@ msgstr "参照型に対して new を適用できません"
 msgid "(perhaps a semicolon is missing after the definition of %qT)"
 msgstr "%s 宣言の後ろのセミコロンを欠いています"
 
-#: cp/parser.c:2133 cp/parser.c:3885 cp/pt.c:4557
+#: cp/parser.c:2133 cp/parser.c:3897 cp/pt.c:4557
 #, gcc-internal-format
 msgid "%qT is not a template"
 msgstr ""
@@ -28359,186 +28370,186 @@ msgstr "ブレースでまとめられた式は関数の内側でのみ許されます"
 msgid "%<this%> may not be used in this context"
 msgstr "マクロ引数内でディレクトリを使うことはできません"
 
-#: cp/parser.c:3222
+#: cp/parser.c:3234
 #, gcc-internal-format
 msgid "local variable %qD may not appear in this context"
 msgstr ""
 
-#: cp/parser.c:3519
+#: cp/parser.c:3531
 #, gcc-internal-format
 msgid "scope %qT before %<~%> is not a class-name"
 msgstr ""
 
-#: cp/parser.c:3620
+#: cp/parser.c:3632
 #, fuzzy, gcc-internal-format
 msgid "declaration of %<~%T%> as member of %qT"
 msgstr "`%s' の宣言により `this' のメンバが覆い隠されます"
 
-#: cp/parser.c:3634
+#: cp/parser.c:3646
 #, gcc-internal-format
 msgid "typedef-name %qD used as destructor declarator"
 msgstr ""
 
-#: cp/parser.c:3844 cp/parser.c:13003 cp/parser.c:15155
+#: cp/parser.c:3856 cp/parser.c:13015 cp/parser.c:15167
 #, fuzzy, gcc-internal-format
 msgid "reference to %qD is ambiguous"
 msgstr "%s: オプション `%s' はあいまいです\n"
 
-#: cp/parser.c:3886 cp/typeck.c:2050 cp/typeck.c:2070
+#: cp/parser.c:3898 cp/typeck.c:2048 cp/typeck.c:2068
 #, gcc-internal-format
 msgid "%qD is not a template"
 msgstr ""
 
-#: cp/parser.c:4275
+#: cp/parser.c:4287
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids compound-literals"
 msgstr "ISO C++ は複合リテラルを禁じます"
 
-#: cp/parser.c:4623
+#: cp/parser.c:4635
 #, gcc-internal-format
 msgid "%qE does not have class type"
 msgstr ""
 
-#: cp/parser.c:4699 cp/typeck.c:1979
+#: cp/parser.c:4711 cp/typeck.c:1977
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %qD"
 msgstr "`restrict' の用法が不適切です"
 
-#: cp/parser.c:5223
+#: cp/parser.c:5235
 #, gcc-internal-format
 msgid "array bound forbidden after parenthesized type-id"
 msgstr ""
 
-#: cp/parser.c:5224
+#: cp/parser.c:5236
 #, gcc-internal-format
 msgid "try removing the parentheses around the type-id"
 msgstr ""
 
-#: cp/parser.c:5426
+#: cp/parser.c:5438
 #, fuzzy, gcc-internal-format
 msgid "expression in new-declarator must have integral or enumeration type"
 msgstr "配列 new でのサイズは完全な型を持たねばなりません"
 
-#: cp/parser.c:5615
+#: cp/parser.c:5627
 #, gcc-internal-format
 msgid "use of old-style cast"
 msgstr "古いスタイルのキャストを使用しています"
 
-#: cp/parser.c:6404
+#: cp/parser.c:6416
 #, fuzzy, gcc-internal-format
 msgid "case label %qE not within a switch statement"
 msgstr "case ラベルが switch 文の中にありません"
 
-#: cp/parser.c:6970
+#: cp/parser.c:6982
 #, gcc-internal-format
 msgid "ISO C++ forbids computed gotos"
 msgstr "ISO C++ は計算型 goto を禁じます"
 
-#: cp/parser.c:7102
+#: cp/parser.c:7114
 #, gcc-internal-format
 msgid "extra %<;%>"
 msgstr ""
 
-#: cp/parser.c:7441
+#: cp/parser.c:7453
 #, gcc-internal-format
 msgid "mixing declarations and function-definitions is forbidden"
 msgstr ""
 
-#: cp/parser.c:7573
+#: cp/parser.c:7585
 #, gcc-internal-format
 msgid "%<friend%> used outside of class"
 msgstr ""
 
-#: cp/parser.c:7727
+#: cp/parser.c:7739
 #, fuzzy, gcc-internal-format
 msgid "class definition may not be declared a friend"
 msgstr "`%s' は関数でもメンバ関数でもありません -- friend とは宣言できません"
 
-#: cp/parser.c:7791 cp/parser.c:14109
+#: cp/parser.c:7803 cp/parser.c:14121
 #, gcc-internal-format
 msgid "templates may not be %<virtual%>"
 msgstr ""
 
-#: cp/parser.c:8044
+#: cp/parser.c:8056
 #, gcc-internal-format
 msgid "only constructors take base initializers"
 msgstr "コンストラクタしか基底初期化子リストをとりません"
 
-#: cp/parser.c:8096
+#: cp/parser.c:8108
 #, fuzzy, gcc-internal-format
 msgid "anachronistic old-style base class initializer"
 msgstr "前時代的な古いスタイルの基底クラス初期化子です"
 
-#: cp/parser.c:8140
+#: cp/parser.c:8152
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (a qualified member initializer is implicitly a type)"
 msgstr ""
 
 #. Warn that we do not support `export'.
-#: cp/parser.c:8485
+#: cp/parser.c:8497
 #, gcc-internal-format
 msgid "keyword %<export%> not implemented, and will be ignored"
 msgstr ""
 
 #. Otherwise, emit an error about the invalid digraph, but continue
 #. parsing because we got our argument list.
-#: cp/parser.c:8878
+#: cp/parser.c:8890
 #, gcc-internal-format
 msgid "%<<::%> cannot begin a template-argument list"
 msgstr ""
 
-#: cp/parser.c:8879
+#: cp/parser.c:8891
 #, gcc-internal-format
 msgid "%<<:%> is an alternate spelling for %<[%>. Insert whitespace between %<<%> and %<::%>"
 msgstr ""
 
-#: cp/parser.c:8886
+#: cp/parser.c:8898
 #, gcc-internal-format
 msgid "(if you use -fpermissive G++ will accept your code)"
 msgstr ""
 
-#: cp/parser.c:8959
+#: cp/parser.c:8971
 #, fuzzy, gcc-internal-format
 msgid "parse error in template argument list"
 msgstr "マクロ引数リストにあり得ないトークン"
 
 #. Explain what went wrong.
-#: cp/parser.c:9072
+#: cp/parser.c:9084
 #, gcc-internal-format
 msgid "non-template %qD used as template"
 msgstr ""
 
-#: cp/parser.c:9073
+#: cp/parser.c:9085
 #, gcc-internal-format
 msgid "use %<%T::template %D%> to indicate that it is a template"
 msgstr ""
 
-#: cp/parser.c:9583
+#: cp/parser.c:9595
 #, gcc-internal-format
 msgid "template specialization with C linkage"
 msgstr ""
 
-#: cp/parser.c:10158
+#: cp/parser.c:10170
 #, gcc-internal-format
 msgid "using %<typename%> outside of template"
 msgstr ""
 
-#: cp/parser.c:10378
+#: cp/parser.c:10390
 #, fuzzy, gcc-internal-format
 msgid "attributes ignored on uninstantiated type"
 msgstr "インスタンス化されない型に対する無効な操作です"
 
-#: cp/parser.c:10382
+#: cp/parser.c:10394
 #, fuzzy, gcc-internal-format
 msgid "attributes ignored on template instantiation"
 msgstr "自動テンプレート実体化を有効にする"
 
-#: cp/parser.c:10387
+#: cp/parser.c:10399
 #, gcc-internal-format
 msgid "attributes ignored on elaborated-type-specifier that is not a forward declaration"
 msgstr ""
 
-#: cp/parser.c:10601
+#: cp/parser.c:10613
 #, fuzzy, gcc-internal-format
 msgid "%qD is not a namespace-name"
 msgstr "\"%s\" は正常なファイル名ではありません"
@@ -28546,137 +28557,137 @@ msgstr "\"%s\" は正常なファイル名ではありません"
 #. [namespace.udecl]
 #.
 #. A using declaration shall not name a template-id.
-#: cp/parser.c:10821
+#: cp/parser.c:10833
 #, gcc-internal-format
 msgid "a template-id may not appear in a using-declaration"
 msgstr ""
 
-#: cp/parser.c:11166
+#: cp/parser.c:11178
 #, fuzzy, gcc-internal-format
 msgid "an asm-specification is not allowed on a function-definition"
 msgstr "初期化子リストは非メンバ関数では使えません"
 
-#: cp/parser.c:11168
+#: cp/parser.c:11180
 #, fuzzy, gcc-internal-format
 msgid "attributes are not allowed on a function-definition"
 msgstr "大域 register 変数が関数定義の後ろにあります"
 
-#: cp/parser.c:11301
+#: cp/parser.c:11313
 #, fuzzy, gcc-internal-format
 msgid "initializer provided for function"
 msgstr "friend 関数 `%s' を初期化できません"
 
-#: cp/parser.c:11321
+#: cp/parser.c:11333
 #, gcc-internal-format
 msgid "attributes after parenthesized initializer ignored"
 msgstr ""
 
-#: cp/parser.c:11701 cp/pt.c:7312
+#: cp/parser.c:11713 cp/pt.c:7312
 #, fuzzy, gcc-internal-format
 msgid "array bound is not an integer constant"
 msgstr "配列の添字が整数型ではありません"
 
-#: cp/parser.c:11778
+#: cp/parser.c:11790
 #, gcc-internal-format
 msgid "%<%T::%D%> is not a type"
 msgstr ""
 
-#: cp/parser.c:11803
+#: cp/parser.c:11815
 #, fuzzy, gcc-internal-format
 msgid "invalid use of constructor as a template"
 msgstr "トップレベルでの `this' の使用は無効です"
 
-#: cp/parser.c:11804
+#: cp/parser.c:11816
 #, gcc-internal-format
 msgid "use %<%T::%D%> instead of %<%T::%D%> to name the constructor in a qualified name"
 msgstr ""
 
-#: cp/parser.c:11963
+#: cp/parser.c:11975
 #, gcc-internal-format
 msgid "%qD is a namespace"
 msgstr ""
 
-#: cp/parser.c:12038
+#: cp/parser.c:12050
 #, fuzzy, gcc-internal-format
 msgid "duplicate cv-qualifier"
 msgstr "重複した case の値"
 
-#: cp/parser.c:12586
+#: cp/parser.c:12598
 #, fuzzy, gcc-internal-format
 msgid "file ends in default argument"
 msgstr "無効なデフォルトテンプレート引数"
 
-#: cp/parser.c:12659
+#: cp/parser.c:12671
 #, gcc-internal-format
 msgid "deprecated use of default argument for parameter of non-function"
 msgstr ""
 
-#: cp/parser.c:12662
+#: cp/parser.c:12674
 #, fuzzy, gcc-internal-format
 msgid "default arguments are only permitted for function parameters"
 msgstr "メソッドは関数ポインタに変換できません"
 
-#: cp/parser.c:12862
+#: cp/parser.c:12874
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ does not allow designated initializers"
 msgstr "ISO C++ は名前つき戻り値を許可しません"
 
-#: cp/parser.c:13446
+#: cp/parser.c:13458
 #, fuzzy, gcc-internal-format
 msgid "invalid class name in declaration of %qD"
 msgstr "`%s' の宣言において複数の保存クラス"
 
-#: cp/parser.c:13457
+#: cp/parser.c:13469
 #, gcc-internal-format
 msgid "declaration of %qD in %qD which does not enclose %qD"
 msgstr ""
 
-#: cp/parser.c:13470
+#: cp/parser.c:13482
 #, gcc-internal-format
 msgid "extra qualification ignored"
 msgstr ""
 
-#: cp/parser.c:13481
+#: cp/parser.c:13493
 #, gcc-internal-format
 msgid "an explicit specialization must be preceded by %<template <>%>"
 msgstr ""
 
-#: cp/parser.c:13574
+#: cp/parser.c:13586
 #, fuzzy, gcc-internal-format
 msgid "previous definition of %q+#T"
 msgstr "前方での `%s' の宣言"
 
-#: cp/parser.c:13809
+#: cp/parser.c:13821
 #, gcc-internal-format
 msgid "%Hextra %<;%>"
 msgstr ""
 
-#: cp/parser.c:13827
+#: cp/parser.c:13839
 #, gcc-internal-format
 msgid "a class-key must be used when declaring a friend"
 msgstr ""
 
-#: cp/parser.c:13841
+#: cp/parser.c:13853
 #, fuzzy, gcc-internal-format
 msgid "friend declaration does not name a class or function"
 msgstr "friend 宣言がクラス定義の中にありません"
 
-#: cp/parser.c:14018
+#: cp/parser.c:14030
 #, gcc-internal-format
 msgid "pure-specifier on function-definition"
 msgstr ""
 
-#: cp/parser.c:14294
+#: cp/parser.c:14306
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed outside of templates"
 msgstr ""
 
-#: cp/parser.c:14296
+#: cp/parser.c:14308
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (the base class is implicitly a type)"
 msgstr ""
 
-#: cp/parser.c:15328
+#: cp/parser.c:15340
 #, gcc-internal-format
 msgid "too few template-parameter-lists"
 msgstr ""
@@ -28685,13 +28696,13 @@ msgstr ""
 #. something like:
 #.
 #. template <class T> template <class U> void S::f();
-#: cp/parser.c:15343
+#: cp/parser.c:15355
 #, gcc-internal-format
 msgid "too many template-parameter-lists"
 msgstr ""
 
 #. Issue an error message.
-#: cp/parser.c:15605
+#: cp/parser.c:15617
 #, fuzzy, gcc-internal-format
 msgid "named return values are no longer supported"
 msgstr "--driver は最早サポートされません"
@@ -28699,82 +28710,82 @@ msgstr "--driver は最早サポートされません"
 #. 14.5.2.2 [temp.mem]
 #.
 #. A local class shall not have member templates.
-#: cp/parser.c:15677
+#: cp/parser.c:15689
 #, gcc-internal-format
 msgid "invalid declaration of member template in local class"
 msgstr ""
 
-#: cp/parser.c:15686
+#: cp/parser.c:15698
 #, gcc-internal-format
 msgid "template with C linkage"
 msgstr ""
 
-#: cp/parser.c:15828
+#: cp/parser.c:15840
 #, fuzzy, gcc-internal-format
 msgid "template declaration of %qs"
 msgstr "`%s' が再宣言されました"
 
-#: cp/parser.c:16043
+#: cp/parser.c:16055
 #, gcc-internal-format
 msgid "%H%<>>%> should be %<> >%> within a nested template argument list"
 msgstr ""
 
-#: cp/parser.c:16058
+#: cp/parser.c:16070
 #, gcc-internal-format
 msgid "spurious %<>>%>, use %<>%> to terminate a template argument list"
 msgstr ""
 
-#: cp/parser.c:16374
+#: cp/parser.c:16386
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %qD in linkage specification"
 msgstr "テンプレート型統一中 `%s' が使用されました"
 
-#: cp/parser.c:16387
+#: cp/parser.c:16399
 #, gcc-internal-format
 msgid "%<__thread%> before %qD"
 msgstr ""
 
-#: cp/parser.c:16682
+#: cp/parser.c:16694
 #, gcc-internal-format
 msgid "%qs tag used in naming %q#T"
 msgstr ""
 
-#: cp/parser.c:16703
+#: cp/parser.c:16715
 #, fuzzy, gcc-internal-format
 msgid "%qD redeclared with different access"
 msgstr "`%s' が別のシンボル種として再宣言されました"
 
-#: cp/parser.c:16720
+#: cp/parser.c:16732
 #, gcc-internal-format
 msgid "%<template%> (as a disambiguator) is only allowed within templates"
 msgstr ""
 
-#: cp/parser.c:16973 cp/parser.c:17896 cp/parser.c:18027
+#: cp/parser.c:16985 cp/parser.c:17908 cp/parser.c:18039
 #, gcc-internal-format
 msgid "misplaced %<@%D%> Objective-C++ construct"
 msgstr ""
 
-#: cp/parser.c:17114
+#: cp/parser.c:17126
 #, gcc-internal-format
 msgid "%<@encode%> must specify a type as an argument"
 msgstr ""
 
-#: cp/parser.c:17429
+#: cp/parser.c:17441
 #, gcc-internal-format
 msgid "invalid Objective-C++ selector name"
 msgstr ""
 
-#: cp/parser.c:17760
+#: cp/parser.c:17772
 #, fuzzy, gcc-internal-format
 msgid "identifier expected after %<@protocol%>"
 msgstr "識別子が必要です"
 
-#: cp/parser.c:19247
+#: cp/parser.c:19259
 #, fuzzy, gcc-internal-format
 msgid "junk at end of %<#pragma GCC pch_preprocess%>"
 msgstr "#pragma GCC java_exceptions の末尾にゴミ"
 
-#: cp/parser.c:19392
+#: cp/parser.c:19404
 #, fuzzy, gcc-internal-format
 msgid "inter-module optimizations not implemented for C++"
 msgstr "ret 命令は実装されていません"
@@ -29366,77 +29377,77 @@ msgstr "初期化子の要素が定数ではありません"
 msgid "  trying to instantiate %qD"
 msgstr "不正な文字列定数です"
 
-#: cp/pt.c:11571
+#: cp/pt.c:11574
 #, fuzzy, gcc-internal-format
 msgid "ambiguous class template instantiation for %q#T"
 msgstr "自動テンプレート実体化を有効にする"
 
-#: cp/pt.c:11574
+#: cp/pt.c:11577
 #, fuzzy, gcc-internal-format
 msgid "%s %+#T"
 msgstr "%s: %s"
 
-#: cp/pt.c:11597 cp/pt.c:11668
+#: cp/pt.c:11600 cp/pt.c:11671
 #, fuzzy, gcc-internal-format
 msgid "explicit instantiation of non-template %q#D"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: cp/pt.c:11613 cp/pt.c:11663
+#: cp/pt.c:11616 cp/pt.c:11666
 #, gcc-internal-format
 msgid "no matching template for %qD found"
 msgstr ""
 
-#: cp/pt.c:11619
+#: cp/pt.c:11622
 #, fuzzy, gcc-internal-format
 msgid "explicit instantiation of %q#D"
 msgstr "%s: `%s' の初期化:\n"
 
-#: cp/pt.c:11655
+#: cp/pt.c:11658
 #, fuzzy, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#D"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: cp/pt.c:11677
+#: cp/pt.c:11680
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids the use of %<extern%> on explicit instantiations"
 msgstr "ISO C++ は減算にメソッドへのポインタを使うことを禁じます"
 
-#: cp/pt.c:11682 cp/pt.c:11775
+#: cp/pt.c:11685 cp/pt.c:11778
 #, fuzzy, gcc-internal-format
 msgid "storage class %qD applied to template instantiation"
 msgstr "自動テンプレート実体化を有効にする"
 
-#: cp/pt.c:11747
+#: cp/pt.c:11750
 #, fuzzy, gcc-internal-format
 msgid "explicit instantiation of non-template type %qT"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: cp/pt.c:11756
+#: cp/pt.c:11759
 #, fuzzy, gcc-internal-format
 msgid "explicit instantiation of %q#T before definition of template"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: cp/pt.c:11764
+#: cp/pt.c:11767
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids the use of %qE on explicit instantiations"
 msgstr "ISO C++ は減算に関数へのポインタを使うことを禁じます"
 
-#: cp/pt.c:11809
+#: cp/pt.c:11812
 #, fuzzy, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#T"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: cp/pt.c:12225
+#: cp/pt.c:12228
 #, fuzzy, gcc-internal-format
 msgid "explicit instantiation of %qD but no definition available"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: cp/pt.c:12383
+#: cp/pt.c:12386
 #, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, possibly from virtual table generation (use -ftemplate-depth-NN to increase the maximum)"
 msgstr ""
 
-#: cp/pt.c:12657
+#: cp/pt.c:12660
 #, fuzzy, gcc-internal-format
 msgid "%q#T is not a valid type for a template constant parameter"
 msgstr "'#' にマクロ仮引数名が続いていません"
@@ -29588,7 +29599,7 @@ msgstr "トップレベルでの `this' の使用は無効です"
 msgid "invalid qualifying scope in pseudo-destructor name"
 msgstr ""
 
-#: cp/semantics.c:1951 cp/typeck.c:2005
+#: cp/semantics.c:1951 cp/typeck.c:2003
 #, gcc-internal-format
 msgid "qualified type %qT does not match destructor name ~%qT"
 msgstr ""
@@ -29648,7 +29659,7 @@ msgstr ""
 msgid "reference to %<%T::%D%> is ambiguous"
 msgstr ""
 
-#: cp/semantics.c:2405 cp/typeck.c:1814
+#: cp/semantics.c:2405 cp/typeck.c:1812
 #, fuzzy, gcc-internal-format
 msgid "%qD is not a member of %qT"
 msgstr "%s に `%s' という名前のメンバはありません"
@@ -29714,22 +29725,32 @@ msgstr ""
 msgid "cannot apply %<offsetof%> to member function %qD"
 msgstr "ISO C++ はメンバ関数への `sizeof' の適用を禁じます"
 
-#: cp/semantics.c:3414
+#: cp/semantics.c:3348
+#, fuzzy, gcc-internal-format
+msgid "%qD is not a variable in clause %qs"
+msgstr "インスタンス変数 `%s' は %s と宣言されています"
+
+#: cp/semantics.c:3357
+#, gcc-internal-format
+msgid "%qD appears more than once in data clauses"
+msgstr ""
+
+#: cp/semantics.c:3417
 #, gcc-internal-format
 msgid "num_threads expression must be integral"
 msgstr ""
 
-#: cp/semantics.c:3428
+#: cp/semantics.c:3431
 #, gcc-internal-format
 msgid "schedule chunk size expression must be integral"
 msgstr ""
 
-#: cp/semantics.c:3558
+#: cp/semantics.c:3561
 #, fuzzy, gcc-internal-format
 msgid "%qE has reference type for %qs"
 msgstr "無効な参照型です"
 
-#: cp/semantics.c:3698
+#: cp/semantics.c:3701
 #, gcc-internal-format
 msgid "%<threadprivate%> %qE is not file, namespace or block scope variable"
 msgstr ""
@@ -29779,244 +29800,244 @@ msgstr "要求された init_priority は内部で使用するために予約されています"
 msgid "%qE attribute is not supported on this platform"
 msgstr "init_priority 属性はこのプラットフォームではサポートされていません"
 
-#: cp/typeck.c:438 cp/typeck.c:452 cp/typeck.c:552
+#: cp/typeck.c:436 cp/typeck.c:450 cp/typeck.c:550
 #, fuzzy, gcc-internal-format
 msgid "%s between distinct pointer types %qT and %qT lacks a cast"
 msgstr "型が全く異なるポインタの比較でキャストを欠いています"
 
-#: cp/typeck.c:514
+#: cp/typeck.c:512
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids %s between pointer of type %<void *%> and pointer-to-function"
 msgstr "ISO C++ は `void *' 型ポインタと関数ポインタとの %s を禁じます"
 
-#: cp/typeck.c:572
+#: cp/typeck.c:570
 #, fuzzy, gcc-internal-format
 msgid "%s between distinct pointer-to-member types %qT and %qT lacks a cast"
 msgstr "型が全く異なるポインタの比較でキャストを欠いています"
 
-#: cp/typeck.c:1255
+#: cp/typeck.c:1253
 #, fuzzy, gcc-internal-format
 msgid "invalid application of %qs to a member function"
 msgstr "非メンバ関数での `this' の使用は無効です"
 
-#: cp/typeck.c:1305
+#: cp/typeck.c:1303
 #, fuzzy, gcc-internal-format
 msgid "invalid application of %<sizeof%> to a bit-field"
 msgstr "ビットフィールドに `__alignof' が適用されました"
 
-#: cp/typeck.c:1310
+#: cp/typeck.c:1308
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids applying %<sizeof%> to an expression of function type"
 msgstr "ISO C++ は関数型の式への `sizeof' の適用を禁じます"
 
-#: cp/typeck.c:1353
+#: cp/typeck.c:1351
 #, gcc-internal-format
 msgid "invalid application of %<__alignof%> to a bit-field"
 msgstr ""
 
-#: cp/typeck.c:1361
+#: cp/typeck.c:1359
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids applying %<__alignof%> to an expression of function type"
 msgstr "ISO C++ は関数型の式への `sizeof' の適用を禁じます"
 
-#: cp/typeck.c:1409
+#: cp/typeck.c:1407
 #, fuzzy, gcc-internal-format
 msgid "invalid use of non-static member function"
 msgstr "非メンバ関数での `this' の使用は無効です"
 
-#: cp/typeck.c:1673
+#: cp/typeck.c:1671
 #, fuzzy, gcc-internal-format
 msgid "deprecated conversion from string constant to %qT"
 msgstr "文字列定数中の \\r エスケープ"
 
-#: cp/typeck.c:1785 cp/typeck.c:2133
+#: cp/typeck.c:1783 cp/typeck.c:2131
 #, gcc-internal-format
 msgid "request for member %qD in %qE, which is of non-class type %qT"
 msgstr ""
 
-#: cp/typeck.c:1812
+#: cp/typeck.c:1810
 #, fuzzy, gcc-internal-format
 msgid "invalid use of nonstatic data member %qE"
 msgstr "メンバへのポインタでの無効な `%s' の使用"
 
-#: cp/typeck.c:1864 cp/typeck.c:1892
+#: cp/typeck.c:1862 cp/typeck.c:1890
 #, gcc-internal-format
 msgid "invalid access to non-static data member %qD of NULL object"
 msgstr ""
 
-#: cp/typeck.c:1867 cp/typeck.c:1894
+#: cp/typeck.c:1865 cp/typeck.c:1892
 #, gcc-internal-format
 msgid "(perhaps the %<offsetof%> macro was used incorrectly)"
 msgstr ""
 
-#: cp/typeck.c:2011
+#: cp/typeck.c:2009
 #, gcc-internal-format
 msgid "the type being destroyed is %qT, but the destructor refers to %qT"
 msgstr ""
 
-#: cp/typeck.c:2171
+#: cp/typeck.c:2169
 #, gcc-internal-format
 msgid "%<%D::%D%> is not a member of %qT"
 msgstr ""
 
-#: cp/typeck.c:2186
+#: cp/typeck.c:2184
 #, gcc-internal-format
 msgid "%qT is not a base of %qT"
 msgstr ""
 
-#: cp/typeck.c:2205
+#: cp/typeck.c:2203
 #, fuzzy, gcc-internal-format
 msgid "%qD has no member named %qE"
 msgstr "%s に `%s' という名前のメンバはありません"
 
-#: cp/typeck.c:2220
+#: cp/typeck.c:2218
 #, fuzzy, gcc-internal-format
 msgid "%qD is not a member template function"
 msgstr "メンバ関数の名前を欠いています"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
-#: cp/typeck.c:2340
+#: cp/typeck.c:2338
 #, gcc-internal-format
 msgid "%qT is not a pointer-to-object type"
 msgstr ""
 
-#: cp/typeck.c:2365
+#: cp/typeck.c:2363
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %qs on pointer to member"
 msgstr "メンバへのポインタでの無効な `%s' の使用"
 
-#: cp/typeck.c:2371
+#: cp/typeck.c:2369
 #, gcc-internal-format
 msgid "invalid type argument"
 msgstr "無効な型引数です"
 
-#: cp/typeck.c:2394
+#: cp/typeck.c:2392
 #, gcc-internal-format
 msgid "subscript missing in array reference"
 msgstr "配列参照での添字を欠いています"
 
-#: cp/typeck.c:2468
+#: cp/typeck.c:2466
 #, gcc-internal-format
 msgid "ISO C++ forbids subscripting non-lvalue array"
 msgstr "ISO C++ は左辺値ではない配列の添字を禁じます"
 
-#: cp/typeck.c:2479
+#: cp/typeck.c:2477
 #, fuzzy, gcc-internal-format
 msgid "subscripting array declared %<register%>"
 msgstr "`register' と宣言された配列に添字をつけようとしています"
 
-#: cp/typeck.c:2562
+#: cp/typeck.c:2560
 #, fuzzy, gcc-internal-format
 msgid "object missing in use of %qE"
 msgstr "メンバへのポインタ構築の使用でオブジェクトを欠いています"
 
-#: cp/typeck.c:2676
+#: cp/typeck.c:2674
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids calling %<::main%> from within program"
 msgstr "ISO C++ はプログラムの中から `::main' を呼び出すことを禁じます"
 
-#: cp/typeck.c:2701
+#: cp/typeck.c:2699
 #, gcc-internal-format
 msgid "must use %<.*%> or %<->*%> to call pointer-to-member function in %<%E (...)%>"
 msgstr ""
 
-#: cp/typeck.c:2715
+#: cp/typeck.c:2713
 #, fuzzy, gcc-internal-format
 msgid "%qE cannot be used as a function"
 msgstr "\"%s\" はマクロ名としては使えません"
 
-#: cp/typeck.c:2795
+#: cp/typeck.c:2793
 #, fuzzy, gcc-internal-format
 msgid "too many arguments to %s %q+#D"
 msgstr "関数 `%s' に対する引数が多すぎます"
 
-#: cp/typeck.c:2796 cp/typeck.c:2898
+#: cp/typeck.c:2794 cp/typeck.c:2896
 #, gcc-internal-format
 msgid "at this point in file"
 msgstr "ファイルのこの位置"
 
-#: cp/typeck.c:2799
+#: cp/typeck.c:2797
 #, gcc-internal-format
 msgid "too many arguments to function"
 msgstr "関数に対する引数が多すぎます"
 
-#: cp/typeck.c:2833
+#: cp/typeck.c:2831
 #, fuzzy, gcc-internal-format
 msgid "parameter %P of %qD has incomplete type %qT"
 msgstr "仮引数が不完全型です"
 
-#: cp/typeck.c:2836
+#: cp/typeck.c:2834
 #, fuzzy, gcc-internal-format
 msgid "parameter %P has incomplete type %qT"
 msgstr "仮引数が不完全型です"
 
-#: cp/typeck.c:2897
+#: cp/typeck.c:2895
 #, fuzzy, gcc-internal-format
 msgid "too few arguments to %s %q+#D"
 msgstr "関数 `%s' への引数が少なすぎます"
 
-#: cp/typeck.c:2901
+#: cp/typeck.c:2899
 #, gcc-internal-format
 msgid "too few arguments to function"
 msgstr "関数への引数が少なすぎます"
 
-#: cp/typeck.c:3049 cp/typeck.c:3059
+#: cp/typeck.c:3047 cp/typeck.c:3057
 #, gcc-internal-format
 msgid "assuming cast to type %qT from overloaded function"
 msgstr ""
 
-#: cp/typeck.c:3141
+#: cp/typeck.c:3139
 #, fuzzy, gcc-internal-format
 msgid "division by zero in %<%E / 0%>"
 msgstr "#if でゼロ除算が発生しました"
 
-#: cp/typeck.c:3143
+#: cp/typeck.c:3141
 #, fuzzy, gcc-internal-format
 msgid "division by zero in %<%E / 0.%>"
 msgstr "#if でゼロ除算が発生しました"
 
-#: cp/typeck.c:3178
+#: cp/typeck.c:3176
 #, fuzzy, gcc-internal-format
 msgid "division by zero in %<%E %% 0%>"
 msgstr "#if でゼロ除算が発生しました"
 
-#: cp/typeck.c:3180
+#: cp/typeck.c:3178
 #, fuzzy, gcc-internal-format
 msgid "division by zero in %<%E %% 0.%>"
 msgstr "#if でゼロ除算が発生しました"
 
-#: cp/typeck.c:3260
+#: cp/typeck.c:3258
 #, gcc-internal-format
 msgid "%s rotate count is negative"
 msgstr "%s ローテート回数が負の値です"
 
-#: cp/typeck.c:3263
+#: cp/typeck.c:3261
 #, gcc-internal-format
 msgid "%s rotate count >= width of type"
 msgstr "%s ローテート回数 >= 型の幅です"
 
-#: cp/typeck.c:3302 cp/typeck.c:3307 cp/typeck.c:3408 cp/typeck.c:3413
+#: cp/typeck.c:3300 cp/typeck.c:3305 cp/typeck.c:3406 cp/typeck.c:3411
 #, gcc-internal-format
 msgid "ISO C++ forbids comparison between pointer and integer"
 msgstr "ISO C++ はポインタと整数との比較を禁じます"
 
-#: cp/typeck.c:3427
+#: cp/typeck.c:3425
 #, gcc-internal-format
 msgid "unordered comparison on non-floating point argument"
 msgstr "非浮動小数点引数での順序付けられない比較です"
 
-#: cp/typeck.c:3465
+#: cp/typeck.c:3463
 #, fuzzy, gcc-internal-format
 msgid "invalid operands of types %qT and %qT to binary %qO"
 msgstr "二項演算子 %s が不適切です"
 
-#: cp/typeck.c:3629
+#: cp/typeck.c:3627
 #, fuzzy, gcc-internal-format
 msgid "comparison between types %q#T and %q#T"
 msgstr "ポインタと整数との比較を行なっています"
 
-#: cp/typeck.c:3665
+#: cp/typeck.c:3663
 #, gcc-internal-format
 msgid "comparison between signed and unsigned integer expressions"
 msgstr "符合付きと符合無しの整数式同士の比較です"
@@ -30025,144 +30046,144 @@ msgstr "符合付きと符合無しの整数式同士の比較です"
 #. performed.  Note that pointer-difference and pointer-addition
 #. have already been handled above, and so we don't end up here in
 #. that case.
-#: cp/typeck.c:3744
+#: cp/typeck.c:3742
 #, fuzzy, gcc-internal-format
 msgid "NULL used in arithmetic"
 msgstr "関数ポインタが計算で使われました"
 
-#: cp/typeck.c:3802
+#: cp/typeck.c:3800
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids using pointer of type %<void *%> in subtraction"
 msgstr "ISO C++ は減算に `void *' 型のポインタを使うことを禁じます"
 
-#: cp/typeck.c:3804
+#: cp/typeck.c:3802
 #, gcc-internal-format
 msgid "ISO C++ forbids using pointer to a function in subtraction"
 msgstr "ISO C++ は減算に関数へのポインタを使うことを禁じます"
 
-#: cp/typeck.c:3806
+#: cp/typeck.c:3804
 #, gcc-internal-format
 msgid "ISO C++ forbids using pointer to a method in subtraction"
 msgstr "ISO C++ は減算にメソッドへのポインタを使うことを禁じます"
 
-#: cp/typeck.c:3818
+#: cp/typeck.c:3816
 #, gcc-internal-format
 msgid "invalid use of a pointer to an incomplete type in pointer arithmetic"
 msgstr "ポインタ演算で不完全型へのポインタを使うことは無効です"
 
-#: cp/typeck.c:3878
+#: cp/typeck.c:3876
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %qE to form a pointer-to-member-function"
 msgstr "メンバへのポインタでの無効な `%s' の使用"
 
-#: cp/typeck.c:3881
+#: cp/typeck.c:3879
 #, gcc-internal-format
 msgid "  a qualified-id is required"
 msgstr ""
 
-#: cp/typeck.c:3886
+#: cp/typeck.c:3884
 #, gcc-internal-format
 msgid "parentheses around %qE cannot be used to form a pointer-to-member-function"
 msgstr ""
 
-#: cp/typeck.c:3909
+#: cp/typeck.c:3907
 #, gcc-internal-format
 msgid "taking address of temporary"
 msgstr "一時オブジェクトのアドレスを取ろうとしています"
 
-#: cp/typeck.c:4157
+#: cp/typeck.c:4155
 #, gcc-internal-format
 msgid "ISO C++ forbids %sing an enum"
 msgstr "ISO C++ は enum の %s を禁じます"
 
-#: cp/typeck.c:4168
+#: cp/typeck.c:4166
 #, fuzzy, gcc-internal-format
 msgid "cannot %s a pointer to incomplete type %qT"
 msgstr "仮引数 `%s' は不完全型を指しています"
 
-#: cp/typeck.c:4174
+#: cp/typeck.c:4172
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids %sing a pointer of type %qT"
 msgstr "ISO C++ は enum の %s を禁じます"
 
-#: cp/typeck.c:4199
+#: cp/typeck.c:4197
 #, gcc-internal-format
 msgid "cast to non-reference type used as lvalue"
 msgstr "左辺値として使われる非参照型へのキャストです"
 
-#: cp/typeck.c:4234
+#: cp/typeck.c:4232
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %<--%> on bool variable %qD"
-msgstr "無効な用法の of %%d, %%x, 又は %%X"
+msgstr "非左辺値配列の無効な利用"
 
 #. ARM $3.4
-#: cp/typeck.c:4263
+#: cp/typeck.c:4261
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids taking address of function %<::main%>"
 msgstr "ISO C++ は `::main' 関数のアドレスを取ることを禁じます"
 
 #. An expression like &memfn.
-#: cp/typeck.c:4319
+#: cp/typeck.c:4317
 #, gcc-internal-format
 msgid "ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say %<&%T::%D%>"
 msgstr ""
 
-#: cp/typeck.c:4324
+#: cp/typeck.c:4322
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say %<&%T::%D%>"
 msgstr "ISO C++ は非左辺値式へのキャストのアドレスを取ることを禁じます"
 
-#: cp/typeck.c:4352
+#: cp/typeck.c:4350
 #, gcc-internal-format
 msgid "ISO C++ forbids taking the address of a cast to a non-lvalue expression"
 msgstr "ISO C++ は非左辺値式へのキャストのアドレスを取ることを禁じます"
 
-#: cp/typeck.c:4376
+#: cp/typeck.c:4374
 #, fuzzy, gcc-internal-format
 msgid "cannot create pointer to reference member %qD"
 msgstr "ポインタを参照として宣言できません"
 
-#: cp/typeck.c:4587
+#: cp/typeck.c:4585
 #, fuzzy, gcc-internal-format
 msgid "cannot take the address of %<this%>, which is an rvalue expression"
 msgstr "`this' は右辺値式であり、そのアドレスを取ることはできません"
 
-#: cp/typeck.c:4610
+#: cp/typeck.c:4608
 #, fuzzy, gcc-internal-format
 msgid "address of explicit register variable %qD requested"
 msgstr "register 変数 `%s' のアドレスが要求されました"
 
-#: cp/typeck.c:4615
+#: cp/typeck.c:4613
 #, gcc-internal-format
 msgid "address requested for %qD, which is declared %<register%>"
 msgstr ""
 
-#: cp/typeck.c:4681
+#: cp/typeck.c:4679
 #, fuzzy, gcc-internal-format
 msgid "%s expression list treated as compound expression"
 msgstr "初期化子リストは複合式として取り扱われました"
 
-#: cp/typeck.c:5078
+#: cp/typeck.c:5076
 #, gcc-internal-format
 msgid "invalid static_cast from type %qT to type %qT"
 msgstr ""
 
-#: cp/typeck.c:5100
+#: cp/typeck.c:5098
 #, fuzzy, gcc-internal-format
 msgid "converting from %qT to %qT"
 msgstr "NaN から整数への変換です"
 
-#: cp/typeck.c:5148
+#: cp/typeck.c:5146
 #, gcc-internal-format
 msgid "invalid cast of an rvalue expression of type %qT to type %qT"
 msgstr ""
 
-#: cp/typeck.c:5207
+#: cp/typeck.c:5205
 #, fuzzy, gcc-internal-format
 msgid "cast from %qT to %qT loses precision"
 msgstr "%s: 全体的な精度の低下"
 
-#: cp/typeck.c:5234
+#: cp/typeck.c:5232
 #, fuzzy, gcc-internal-format
 msgid "cast from %qT to %qT increases required alignment of target type"
 msgstr "キャストによってポインタが示す型の要求アラインメントが増加します"
@@ -30171,160 +30192,160 @@ msgstr "キャストによってポインタが示す型の要求アラインメントが増加します"
 #. where possible, and it is necessary in some cases.  DR 195
 #. addresses this issue, but as of 2004/10/26 is still in
 #. drafting.
-#: cp/typeck.c:5253
+#: cp/typeck.c:5251
 #, gcc-internal-format
 msgid "ISO C++ forbids casting between pointer-to-function and pointer-to-object"
 msgstr "ISO C++ は関数ポインタとオブジェクトポインタの間でのキャストを禁じます"
 
-#: cp/typeck.c:5264
+#: cp/typeck.c:5262
 #, fuzzy, gcc-internal-format
 msgid "invalid cast from type %qT to type %qT"
 msgstr "不完全な typedef `%s' の使用は不適切です"
 
-#: cp/typeck.c:5320
+#: cp/typeck.c:5318
 #, gcc-internal-format
 msgid "invalid use of const_cast with type %qT, which is not a pointer, reference, nor a pointer-to-data-member type"
 msgstr ""
 
-#: cp/typeck.c:5329
+#: cp/typeck.c:5327
 #, gcc-internal-format
 msgid "invalid use of const_cast with type %qT, which is a pointer or reference to a function type"
 msgstr ""
 
-#: cp/typeck.c:5354
+#: cp/typeck.c:5352
 #, gcc-internal-format
 msgid "invalid const_cast of an rvalue of type %qT to type %qT"
 msgstr ""
 
-#: cp/typeck.c:5405
+#: cp/typeck.c:5403
 #, gcc-internal-format
 msgid "invalid const_cast from type %qT to type %qT"
 msgstr ""
 
-#: cp/typeck.c:5473 cp/typeck.c:5478
+#: cp/typeck.c:5471 cp/typeck.c:5476
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids casting to an array type %qT"
 msgstr "ISO C は共用体型へのキャストを禁じます"
 
-#: cp/typeck.c:5486
+#: cp/typeck.c:5484
 #, fuzzy, gcc-internal-format
 msgid "invalid cast to function type %qT"
-msgstr "sizeof が関数型に適用されました"
+msgstr "関数 `%s' に対して不適切な保存クラス"
 
-#: cp/typeck.c:5706
+#: cp/typeck.c:5704
 #, gcc-internal-format
 msgid "  in evaluation of %<%Q(%#T, %#T)%>"
 msgstr ""
 
-#: cp/typeck.c:5775
+#: cp/typeck.c:5773
 #, fuzzy, gcc-internal-format
 msgid "incompatible types in assignment of %qT to %qT"
 msgstr "%d 番目の引数が `%s' の型と互換性がありません"
 
-#: cp/typeck.c:5786
+#: cp/typeck.c:5784
 #, fuzzy, gcc-internal-format
 msgid "array used as initializer"
 msgstr "配列の不正な初期化"
 
-#: cp/typeck.c:5788
+#: cp/typeck.c:5786
 #, fuzzy, gcc-internal-format
 msgid "invalid array assignment"
 msgstr "代入として無効な左辺値です"
 
-#: cp/typeck.c:5910
+#: cp/typeck.c:5908
 #, gcc-internal-format
 msgid "   in pointer to member function conversion"
 msgstr "   ポインタからメンバ関数への変換で"
 
-#: cp/typeck.c:5921 cp/typeck.c:5947
+#: cp/typeck.c:5919 cp/typeck.c:5945
 #, gcc-internal-format
 msgid "pointer to member cast via virtual base %qT"
 msgstr ""
 
-#: cp/typeck.c:5924
+#: cp/typeck.c:5922
 #, fuzzy, gcc-internal-format
 msgid "pointer to member conversion via virtual base %qT"
 msgstr "   ポインタからメンバへの変換で"
 
-#: cp/typeck.c:5933
+#: cp/typeck.c:5931
 #, gcc-internal-format
 msgid "   in pointer to member conversion"
 msgstr "   ポインタからメンバへの変換で"
 
-#: cp/typeck.c:6023
+#: cp/typeck.c:6021
 #, fuzzy, gcc-internal-format
 msgid "invalid conversion to type %qT from type %qT"
 msgstr "無効なバージョン番号形式"
 
-#: cp/typeck.c:6267
+#: cp/typeck.c:6265
 #, gcc-internal-format
 msgid "cannot convert %qT to %qT for argument %qP to %qD"
 msgstr ""
 
-#: cp/typeck.c:6270
+#: cp/typeck.c:6268
 #, fuzzy, gcc-internal-format
 msgid "cannot convert %qT to %qT in %s"
 msgstr "ポインタ型に変換できません"
 
-#: cp/typeck.c:6281
+#: cp/typeck.c:6279
 #, fuzzy, gcc-internal-format
 msgid "%s might be a candidate for a format attribute"
 msgstr "関数は恐らく `%s' format 属性の候補と思われます"
 
-#: cp/typeck.c:6355 cp/typeck.c:6357
+#: cp/typeck.c:6353 cp/typeck.c:6355
 #, fuzzy, gcc-internal-format
 msgid "in passing argument %P of %q+D"
 msgstr "引数 %d 個の `%s' を渡します"
 
-#: cp/typeck.c:6407
+#: cp/typeck.c:6405
 #, gcc-internal-format
 msgid "returning reference to temporary"
 msgstr "一時オブジェクトへの参照を返そうとしています"
 
-#: cp/typeck.c:6414
+#: cp/typeck.c:6412
 #, gcc-internal-format
 msgid "reference to non-lvalue returned"
 msgstr "非左辺値への参照が返されました"
 
-#: cp/typeck.c:6430
+#: cp/typeck.c:6428
 #, fuzzy, gcc-internal-format
 msgid "reference to local variable %q+D returned"
 msgstr "非左辺値への参照が返されました"
 
-#: cp/typeck.c:6433
+#: cp/typeck.c:6431
 #, fuzzy, gcc-internal-format
 msgid "address of local variable %q+D returned"
 msgstr "要求された大域レジスタ変数 `%s' のアドレス"
 
-#: cp/typeck.c:6467
+#: cp/typeck.c:6465
 #, gcc-internal-format
 msgid "returning a value from a destructor"
 msgstr "デストラクタから値を返そうとしています"
 
 #. If a return statement appears in a handler of the
 #. function-try-block of a constructor, the program is ill-formed.
-#: cp/typeck.c:6475
+#: cp/typeck.c:6473
 #, gcc-internal-format
 msgid "cannot return from a handler of a function-try-block of a constructor"
 msgstr "コンストラクタの関数 try ブロックのハンドラからは return できません"
 
 #. You can't return a value from a constructor.
-#: cp/typeck.c:6478
+#: cp/typeck.c:6476
 #, gcc-internal-format
 msgid "returning a value from a constructor"
 msgstr "コンストラクタから値を返そうとしています"
 
-#: cp/typeck.c:6501
+#: cp/typeck.c:6499
 #, fuzzy, gcc-internal-format
 msgid "return-statement with no value, in function returning %qT"
 msgstr "戻り型が関数で、`return' に値がありません"
 
-#: cp/typeck.c:6522
+#: cp/typeck.c:6520
 #, fuzzy, gcc-internal-format
 msgid "return-statement with a value, in function returning 'void'"
 msgstr "戻り型が void の関数で、`return' に値があります"
 
-#: cp/typeck.c:6553
+#: cp/typeck.c:6551
 #, gcc-internal-format
 msgid "%<operator new%> must not return NULL unless it is declared %<throw()%> (or -fcheck-new is in effect)"
 msgstr ""
@@ -30405,92 +30426,92 @@ msgstr "この文法を使って配列を初期化することはできません"
 msgid "int-array initialized from non-wide string"
 msgstr "非ワイド文字列から int の配列が初期化されました"
 
-#: cp/typeck2.c:731
+#: cp/typeck2.c:732
 #, gcc-internal-format
 msgid "cannot initialize aggregate of type %qT with a compound literal"
 msgstr ""
 
-#: cp/typeck2.c:740
+#: cp/typeck2.c:741
 #, gcc-internal-format
 msgid "array must be initialized with a brace-enclosed initializer"
 msgstr ""
 
-#: cp/typeck2.c:816 cp/typeck2.c:917
+#: cp/typeck2.c:817 cp/typeck2.c:918
 #, fuzzy, gcc-internal-format
 msgid "non-trivial designated initializers not supported"
 msgstr "自明でないラベルのついた初期化子です"
 
-#: cp/typeck2.c:940 cp/typeck2.c:954
+#: cp/typeck2.c:941 cp/typeck2.c:955
 #, fuzzy, gcc-internal-format
 msgid "missing initializer for member %qD"
 msgstr "初期化子を欠いています"
 
-#: cp/typeck2.c:945
+#: cp/typeck2.c:946
 #, fuzzy, gcc-internal-format
 msgid "uninitialized const member %qD"
 msgstr "未初期化定数を ROM に置かない"
 
-#: cp/typeck2.c:947
+#: cp/typeck2.c:948
 #, fuzzy, gcc-internal-format
 msgid "member %qD with uninitialized const fields"
 msgstr "未初期化定数を ROM に置かない"
 
-#: cp/typeck2.c:949
+#: cp/typeck2.c:950
 #, fuzzy, gcc-internal-format
 msgid "member %qD is uninitialized reference"
 msgstr "仮引数 `%s' が初期化されました"
 
-#: cp/typeck2.c:1004
+#: cp/typeck2.c:1005
 #, fuzzy, gcc-internal-format
 msgid "no field %qD found in union being initialized"
 msgstr "レコードや共用体にフィールド名がない初期化子です"
 
-#: cp/typeck2.c:1013
+#: cp/typeck2.c:1014
 #, gcc-internal-format
 msgid "index value instead of field name in union initializer"
 msgstr "union 初期化子がフィールド名ではなくインデックス値になっています"
 
-#: cp/typeck2.c:1168
+#: cp/typeck2.c:1169
 #, gcc-internal-format
 msgid "circular pointer delegation detected"
 msgstr "循環ポインタの代表を検出しました"
 
-#: cp/typeck2.c:1181
+#: cp/typeck2.c:1182
 #, fuzzy, gcc-internal-format
 msgid "base operand of %<->%> has non-pointer type %qT"
 msgstr "`->' のベースオペランドがポインタではありません"
 
-#: cp/typeck2.c:1205
+#: cp/typeck2.c:1206
 #, fuzzy, gcc-internal-format
 msgid "result of %<operator->()%> yields non-pointer result"
 msgstr "`operator->()'の結果が非ポインタの結果をもたらします"
 
-#: cp/typeck2.c:1207
+#: cp/typeck2.c:1208
 #, fuzzy, gcc-internal-format
 msgid "base operand of %<->%> is not a pointer"
 msgstr "`->' のベースオペランドがポインタではありません"
 
-#: cp/typeck2.c:1229
+#: cp/typeck2.c:1230
 #, fuzzy, gcc-internal-format
 msgid "%qE cannot be used as a member pointer, since it is of type %qT"
 msgstr "\"%s\" は C++ の演算子であり、マクロ名として使用することはできません"
 
-#: cp/typeck2.c:1238
+#: cp/typeck2.c:1239
 #, gcc-internal-format
 msgid "cannot apply member pointer %qE to %qE, which is of non-class type %qT"
 msgstr ""
 
-#: cp/typeck2.c:1260
+#: cp/typeck2.c:1261
 #, gcc-internal-format
 msgid "pointer to member type %qT incompatible with object type %qT"
 msgstr ""
 
-#: cp/typeck2.c:1482
+#: cp/typeck2.c:1485
 #, fuzzy, gcc-internal-format
 msgid "call to function %qD which throws incomplete type %q#T"
 msgstr "不完全型への変換です"
 
-#: cp/typeck2.c:1485
+#: cp/typeck2.c:1488
 #, fuzzy, gcc-internal-format
 msgid "call to function which throws incomplete type %q#T"
 msgstr "不完全型への変換です"
@@ -30530,12 +30551,12 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 msgid "Possible frontend bug: array constructor not expanded"
 msgstr ""
 
-#: fortran/trans-array.c:4997
+#: fortran/trans-array.c:5012
 #, gcc-internal-format
 msgid "Possible frontend bug: Deferred array size without pointer, allocatable attribute or derived type without allocatable components."
 msgstr ""
 
-#: fortran/trans-array.c:5470
+#: fortran/trans-array.c:5485
 #, gcc-internal-format
 msgid "bad expression type during walk (%d)"
 msgstr ""
@@ -30571,7 +30592,7 @@ msgstr ""
 msgid "Function return value not set"
 msgstr "関数が集合体を返しています"
 
-#: fortran/trans-expr.c:1073
+#: fortran/trans-expr.c:1081
 #, gcc-internal-format
 msgid "Unknown intrinsic op"
 msgstr ""
@@ -32397,29 +32418,17 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "ignoring `%s' at end of `-f%s'"
 #~ msgstr "`%s'(`-f%s' の終りにある) を無視します"
 
-#~ msgid "the ` ' printf flag"
-#~ msgstr "printf の ` ' フラグ"
-
-#~ msgid "the `+' printf flag"
-#~ msgstr "printf の `+' フラグ"
-
-#~ msgid "the `#' printf flag"
-#~ msgstr "printf の `#' フラグ"
-
-#~ msgid "the `0' printf flag"
-#~ msgstr "printf の `0' フラグ"
-
-#~ msgid "the `-' printf flag"
-#~ msgstr "printf の `-' フラグ"
-
 #~ msgid "`I' flag"
 #~ msgstr "`I' フラグ"
+
+#~ msgid "the `I' printf flag"
+#~ msgstr "printf の `I' フラグ"
 
 #~ msgid "`a' flag"
 #~ msgstr "`a' フラグ"
 
-#~ msgid "the `a' scanf flag"
-#~ msgstr "scanf の `a' フラグ"
+#~ msgid "the `I' scanf flag"
+#~ msgstr "scanf の `I' フラグ"
 
 #~ msgid "`_' flag"
 #~ msgstr "`_' フラグ"
@@ -32817,9 +32826,6 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "Use VAX-C alignment"
 #~ msgstr "VAX-C アラインメントを使用"
 
-#~ msgid "invalid %%Q value"
-#~ msgstr "無効な %%Q 値"
-
 #~ msgid "invalid %%V value"
 #~ msgstr "無効な %%V 値"
 
@@ -32844,8 +32850,8 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "Use large memory model"
 #~ msgstr "ラージメモリモデルを利用"
 
-#~ msgid "Generate 29050 code"
-#~ msgstr "29050 コードを生成"
+#~ msgid "Generate 29000 code"
+#~ msgstr "29000 コードを生成"
 
 #~ msgid "Use user global registers"
 #~ msgstr "ユーザグローバルレジスタを利用"
@@ -32868,11 +32874,11 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "Do not store locals in arg registers"
 #~ msgstr "引数レジスタにローカルのものを格納しない"
 
-#~ msgid "bad value `%s' for -mcpu switch"
-#~ msgstr "-mcpu スイッチにとっての不正な値 `%s'"
-
 #~ msgid "Emit IEEE-conformant code, with inexact exceptions"
 #~ msgstr "不適切な例外を含めて IEEE 準拠のコードを発行する"
+
+#~ msgid "bad value (%s) for -mcpu switch"
+#~ msgstr "-mcpu スイッチに対する不正な値 (%s)"
 
 #~ msgid "target CPU does not support APCS-32"
 #~ msgstr "ターゲット CPU は APCS-32 をサポートしません"
@@ -33156,6 +33162,9 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "sorry, not implemented: #pragma noalign NAME"
 #~ msgstr "残念、実装されていません: #pragma noalign NAME"
 
+#~ msgid "Generate SB code"
+#~ msgstr "SB コードを生成する"
+
 #~ msgid "Generate KA code"
 #~ msgstr "KA コードを生成する"
 
@@ -33176,6 +33185,12 @@ msgstr "`%s' 属性は無視されました"
 
 #~ msgid "Generate MC code"
 #~ msgstr "MC コードを生成する"
+
+#~ msgid "Generate CA code"
+#~ msgstr "CA コードを生成する"
+
+#~ msgid "Generate CF code"
+#~ msgstr "CF コードを生成する"
 
 #~ msgid "Use alternate leaf function entries"
 #~ msgstr "関数項目の代わりを利用する"
@@ -33336,9 +33351,6 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "Force functions to be aligned to a 2 byte boundary"
 #~ msgstr "関数を強制的に 2 バイト境界にアラインする"
 
-#~ msgid "-mips%d not supported"
-#~ msgstr "-mips%d はサポートされません"
-
 #~ msgid "-mabi=%s does not support -mips%d"
 #~ msgstr "-mabi=%s は -mips%d をサポートしません"
 
@@ -33443,6 +33455,9 @@ msgstr "`%s' 属性は無視されました"
 
 #~ msgid "Optimize for 3900"
 #~ msgstr "3900 用に最適化する"
+
+#~ msgid "Don't trap on integer divide by zero"
+#~ msgstr "整数のゼロ除算をトラップしない"
 
 #~ msgid "Trap on integer divide overflow"
 #~ msgstr "整数除算のオーバーフローをトラップする"
@@ -33564,6 +33579,9 @@ msgstr "`%s' 属性は無視されました"
 
 #~ msgid "%%S computed all 0's mask"
 #~ msgstr "%%S は全てが 0 のマスクを計算しました"
+
+#~ msgid "invalid %%W value"
+#~ msgstr "無効な %%W 値です"
 
 #~ msgid "Do not use POWER2 instruction set"
 #~ msgstr "POWER2 命令セットを使用しない"
@@ -33718,6 +33736,9 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "too many initialization functions required"
 #~ msgstr "必要とされる初期化関数の数が多すぎます"
 
+#~ msgid "`%s' not supported by %s"
+#~ msgstr "`%s' は %s ではサポートされません"
+
 #~ msgid "(static %s for %s)"
 #~ msgstr "(静的%s: %s 用)"
 
@@ -33769,8 +33790,8 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "Warn when a function is declared extern, then inline"
 #~ msgstr "関数が extern 宣言された後、inline とされた場合に警告する"
 
-#~ msgid "type name expected before `*'"
-#~ msgstr "`*' の前に型の名前があるべきです"
+#~ msgid "type name expected before `&'"
+#~ msgstr "`&' の前に型の名前があるべきです"
 
 #~ msgid "(Each undeclared identifier is reported only once for each function it appears in.)"
 #~ msgstr "(未宣言変数については、それが関数内で最初に現われた時だけ報告されます。)"
@@ -33998,6 +34019,9 @@ msgstr "`%s' 属性は無視されました"
 #~ msgid "comma operator in operand of #if"
 #~ msgstr "カンマ演算子が #if 演算子の中にあります"
 
+#~ msgid "%s is shorter than expected"
+#~ msgstr "%s が本来よりも短いです"
+
 #~ msgid "%s is a block device"
 #~ msgstr "%s はブロックデバイスです"
 
@@ -34024,6 +34048,9 @@ msgstr "`%s' 属性は無視されました"
 
 #~ msgid "Path name missing after %s"
 #~ msgstr "%s の後ろのパス名を欠いています"
+
+#~ msgid "Target missing after %s"
+#~ msgstr "%s の後ろのターゲットを欠いています"
 
 #~ msgid "GNU CPP version %s (cpplib)"
 #~ msgstr "GNU CPP version %s (cpplib)"
@@ -35558,6 +35585,9 @@ msgstr "`%s' 属性は無視されました"
 
 #~ msgid "virtual memory exhausted"
 #~ msgstr "仮想メモリを使い果たしました"
+
+#~ msgid "parameter invalidly declared offset type"
+#~ msgstr "パラメタがオフセットの型を不正に宣言しました"
 
 #~ msgid "`void' in parameter list must be entire list"
 #~ msgstr "パラメタリスト内の `void' はリスト全体でなければなりません"
