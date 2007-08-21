@@ -9528,6 +9528,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 						fold_convert (sizetype, arg1),
 						fold_convert (sizetype, arg0)));
 
+      /* index +p PTR -> PTR +p index */
+      if (POINTER_TYPE_P (TREE_TYPE (arg1))
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
+        return fold_build2 (POINTER_PLUS_EXPR, type,
+			    fold_convert (type, arg1),
+			    fold_convert (sizetype, arg0));
+
       /* (PTR +p B) +p A -> PTR +p (B + A) */
       if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
 	{
