@@ -1,5 +1,9 @@
 2007-08-21  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/pointer-arith-10.c: New testcase.
+
+2007-08-21  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/33122
 	* gcc.c-torture/compile/pr33122.c: New testcase.
 
