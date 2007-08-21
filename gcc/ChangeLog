@@ -1,3 +1,8 @@
+2007-08-21  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-flow-inline.h (next_imm_use_stmt): Remove unecessary
+	whitespace.
+
 2007-08-21  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.c (expand_block_clear): Add TARGET_SPE
