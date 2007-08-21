@@ -1,3 +1,8 @@
+2007-08-21  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/predicates.md (const_call_insn_operand): Invoke
+	SYMBOL_REF_LONG_CALL_P only on SYMBOL_REFs.
+
 2007-08-02  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*xordi3_cconly"): Change xr to xg.

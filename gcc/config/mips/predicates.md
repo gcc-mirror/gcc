@@ -106,7 +106,9 @@
       /* If -mlong-calls, force all calls to use register addressing.  Also,
 	 if this function has the long_call attribute, we must use register
 	 addressing.  */
-      return !TARGET_LONG_CALLS && !SYMBOL_REF_LONG_CALL_P (op);
+      return (!TARGET_LONG_CALLS
+	      && !(GET_CODE (op) == SYMBOL_REF
+		   && SYMBOL_REF_LONG_CALL_P (op)));
 
     case SYMBOL_GOT_GLOBAL:
       /* Without explicit relocs, there is no special syntax for
