@@ -9852,6 +9852,8 @@ expand_block_clear (rtx operands[])
     clear_step = 16;
   else if (TARGET_POWERPC64 && align >= 32)
     clear_step = 8;
+  else if (TARGET_SPE && align >= 64)
+    clear_step = 8;
   else
     clear_step = 4;
 
@@ -9870,10 +9872,15 @@ expand_block_clear (rtx operands[])
 	  clear_bytes = 16;
 	  mode = V4SImode;
 	}
+      else if (bytes >= 8 && TARGET_SPE && align >= 64)
+        {
+          clear_bytes = 8;
+          mode = V2SImode;
+        }
       else if (bytes >= 8 && TARGET_POWERPC64
-	  /* 64-bit loads and stores require word-aligned
-	     displacements.  */
-	  && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
+	       /* 64-bit loads and stores require word-aligned
+		  displacements.  */
+	       && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
 	{
 	  clear_bytes = 8;
 	  mode = DImode;
@@ -9963,6 +9970,12 @@ expand_block_move (rtx operands[])
 	  mode = V4SImode;
 	  gen_func.mov = gen_movv4si;
 	}
+      else if (TARGET_SPE && bytes >= 8 && align >= 64)
+        {
+          move_bytes = 8;
+          mode = V2SImode;
+          gen_func.mov = gen_movv2si;
+        }
       else if (TARGET_STRING
 	  && bytes > 24		/* move up to 32 bytes at a time */
 	  && ! fixed_regs[5]
