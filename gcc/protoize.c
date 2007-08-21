@@ -4525,7 +4525,8 @@ main (int argc, char **const argv)
   else
     {
       if (version_flag)
-	fprintf (stderr, "%s: %s\n", pname, version_string);
+	fprintf (stderr, "%s %s%s\n", pname, pkgversion_string,
+		 version_string);
       do_processing ();
     }
 

@@ -146,6 +146,8 @@ fi
       echo "@clear DEVELOPMENT"
    fi
    echo "@set srcdir $WORKDIR/gcc/gcc"
+   echo "@set VERSION_PACKAGE (GCC)"
+   echo "@set BUGURL @uref{http://gcc.gnu.org/bugs.html}"
 ) > $includedir/gcc-vers.texi
 
 # Now convert the relevant files from texi to HTML, PDF and PostScript.

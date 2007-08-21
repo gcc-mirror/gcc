@@ -1164,8 +1164,8 @@ help (void)
 static void
 version (void)
 {
-  printf ("jcf-dump (GCC) %s\n\n", version_string);
-  printf ("Copyright %s 2006 Free Software Foundation, Inc.\n", _("(C)"));
+  printf ("jcf-dump %s%s\n\n", pkgversion_string, version_string);
+  printf ("Copyright %s 2007 Free Software Foundation, Inc.\n", _("(C)"));
   printf (_("This is free software; see the source for copying conditions.  There is NO\n"
 	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
   exit (0);

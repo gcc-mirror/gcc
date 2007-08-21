@@ -1,3 +1,11 @@
+2007-08-21  Paul Brook  <paul@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* tree1.c (treelang_handle_option): Use pkgversion_string.
+	* treelang.texi (which-treelang): Define to use VERSION_PACKAGE.
+
 2007-07-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.l (update_yylval): Constify.
