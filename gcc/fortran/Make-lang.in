@@ -176,7 +176,8 @@ $(build_htmldir)/gfortran/index.html: $(GFORTRAN_TEXI)
 .INTERMEDIATE: gfortran.pod
 
 gfortran.pod: $(GFORTRAN_TEXI)
-	-$(TEXI2POD) < $(srcdir)/fortran/invoke.texi > $@
+	-$(TEXI2POD) -DBUGURL="$(BUGURL_TEXI)" \
+	  < $(srcdir)/fortran/invoke.texi > $@
 
 # GFORTRAN internals documentation.
 GFC_INTERNALS_TEXI = \

@@ -1,4 +1,5 @@
-@c Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+@c Copyright (C) 2001, 2002, 2003, 2004, 2005,
+@c 2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -62,6 +63,10 @@
 @end ifclear
 @ifset DEVELOPMENT
 @subtitle For @sc{gcc} version @value{version-GCC} (pre-release)
+@end ifset
+@ifset VERSION_PACKAGE
+@sp 1
+@subtitle @value{VERSION_PACKAGE}
 @end ifset
 @c Even if there are no authors, the second titlepage line should be
 @c forced to the bottom of the page.

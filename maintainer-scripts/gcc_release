@@ -196,7 +196,7 @@ EOF
   # Obtain some documentation files from the wwwdocs module.
   inform "Retrieving HTML documentation"
   changedir "${WORKING_DIRECTORY}"
-  for x in bugs faq; do
+  for x in faq; do
     (${CVS} export -r HEAD wwwdocs/htdocs/${x}.html && \
      cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/${x}.html \
         ${SOURCE_DIRECTORY}) || \

@@ -4778,8 +4778,8 @@ main (int argc, char **argv)
 
   if (version)
     {
-      printf (_("mips-tfile (GCC) %s\n"), version_string);
-      fputs ("Copyright (C) 2006 Free Software Foundation, Inc.\n", stdout);
+      printf (_("mips-tfile %s%s\n"), pkgversion_string, version_string);
+      fputs ("Copyright (C) 2007 Free Software Foundation, Inc.\n", stdout);
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
 	     stdout);

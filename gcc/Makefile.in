@@ -750,6 +750,11 @@ version     := $(BASEVER_c)
 BASEVER_s   := "\"$(BASEVER_c)\""
 DEVPHASE_s  := "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
 DATESTAMP_s := "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
+PKGVERSION_s:= "\"@PKGVERSION@\""
+BUGURL_s    := "\"@REPORT_BUGS_TO@\""
+
+PKGVERSION  := @PKGVERSION@
+BUGURL_TEXI := @REPORT_BUGS_TEXI@
 
 ifdef REVISION_c
 REVISION_s  := "\"$(if $(DEVPHASE_c), $(REVISION_c))\""
@@ -1907,7 +1912,8 @@ endif
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
-	-DDEVPHASE=$(DEVPHASE_s) -c $(srcdir)/version.c $(OUTPUT_OPTION)
+	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
+	-DBUGURL=$(BUGURL_s) -c $(srcdir)/version.c $(OUTPUT_OPTION)
 
 gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) bitmap.h $(TREE_H) $(RTL_H) \
@@ -3626,6 +3632,10 @@ gcc-vers.texi: $(BASEVER) $(DEVPHASE)
 	 else echo "@clear DEVELOPMENT"; \
 	 fi) > $@T
 	echo "@set srcdir $(srcdir)" >> $@T
+	if [ -n "$(PKGVERSION)" ]; then \
+	  echo "@set VERSION_PACKAGE $(PKGVERSION)" >> $@T; \
+	fi
+	echo "@set BUGURL $(BUGURL_TEXI)" >> $@T; \
 	mv -f $@T $@
 
 
@@ -3737,7 +3747,7 @@ doc/%.7: %.pod
 
 %.pod: %.texi
 	$(STAMP) $@
-	-$(TEXI2POD) $< > $@
+	-$(TEXI2POD) -DBUGURL="$(BUGURL_TEXI)" $< > $@
 
 .INTERMEDIATE: cpp.pod gcc.pod gfdl.pod fsf-funding.pod
 cpp.pod: cpp.texi cppenv.texi cppopts.texi

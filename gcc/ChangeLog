@@ -1,3 +1,36 @@
+2007-08-21  Paul Brook  <paul@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac: Add --with-pkgversion and --with-bugurl.
+	* configure: Regenerate.
+	* doc/install.texi: Document them.
+	* version.c (version_string): Remove VERSUFFIX.
+	(VERSUFFIX): Remove.
+	(pkgversion_string): New.
+	(bug_report_url): Do not hard-code initializer.
+	* version.h (pkgversion_string): Declare.
+	* Makefile.in (PKGVERSION_s, BUGURL_s, PKGVERSION, BUGURL_TEXI):
+	Define.
+	(version.o): Define PKGVERSION and BUGURL.
+	(gcc-vers.texi): Define VERSION_PACKAGE and BUGURL.
+	(%.pod): Define BUGURL.
+	* gcc.c (process_command, main): Use pkgversion_string.
+	* toplev.c (compile_file, print_version): Likewise.
+	* protoize.c (main): Likewise.
+	* gcov.c (print_version): Likewise.  Update copyright date.
+	* gcov-dump.c (print_version): Likewise.  Update copyright date.
+	* mips-tdump.c (main): Likewise.  Update copyright date.
+	* mips-tfile.c (main): Likewise.  Update copyright date.
+	* doc/include/gcc-common.texi: Include VERSION_PACKAGE as subtitle.
+	* doc/bugreport.texi: Use BUGURL for bug-reporting instructions;
+	shorten description.
+	* doc/gcc.texi: Include VERSION_PACKAGE in version description.
+	* doc/gccint.texi: Likewise.
+	* doc/invoke.texi: Use BUGURL for bug-reporting instructions.
+	Update copyright date.
+
 2007-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_clear): Use FLAGS_REG.

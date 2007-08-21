@@ -1105,8 +1105,14 @@ compile_file (void)
      string is patterned after the ones produced by native SVR4 compilers.  */
 #ifdef IDENT_ASM_OP
   if (!flag_no_ident)
-    fprintf (asm_out_file, "%s\"GCC: (GNU) %s\"\n",
-	     IDENT_ASM_OP, version_string);
+    {
+      const char *pkg_version = "(GNU) ";
+
+      if (strcmp ("(GCC) ", pkgversion_string))
+	pkg_version = pkgversion_string;
+      fprintf (asm_out_file, "%s\"GCC: %s%s\"\n",
+	       IDENT_ASM_OP, pkg_version, version_string);
+    }
 #endif
 
   /* This must be at the end.  Some target ports emit end of file directives
@@ -1174,9 +1180,9 @@ print_version (FILE *file, const char *indent)
 {
   static const char fmt1[] =
 #ifdef __GNUC__
-    N_("%s%s%s version %s (%s)\n%s\tcompiled by GNU C version %s, ")
+    N_("%s%s%s %sversion %s (%s)\n%s\tcompiled by GNU C version %s, ")
 #else
-    N_("%s%s%s version %s (%s) compiled by CC, ")
+    N_("%s%s%s %sversion %s (%s) compiled by CC, ")
 #endif
     ;
   static const char fmt2[] =
@@ -1191,7 +1197,7 @@ print_version (FILE *file, const char *indent)
   fprintf (file,
 	   file == stderr ? _(fmt1) : fmt1,
 	   indent, *indent != 0 ? " " : "",
-	   lang_hooks.name, version_string, TARGET_NAME,
+	   lang_hooks.name, pkgversion_string, version_string, TARGET_NAME,
 	   indent, __VERSION__);
 
   /* We need to stringify the GMP macro values.  Ugh, gmp_version has

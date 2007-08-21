@@ -581,6 +581,29 @@ To configure GCC:
    % @var{srcdir}/configure [@var{options}] [@var{target}]
 @end smallexample
 
+@heading Distributor options
+
+If you will be distributing binary versions of GCC, with modifications
+to the source code, you should use the options described in this
+section to make clear that your version contains modifications.
+
+@table @code
+@item --with-pkgversion=@var{version}
+Specify a string that identifies your package.  You may wish
+to include a build number or build date.  This version string will be
+included in the output of @command{gcc --version}.  This suffix does
+not replace the default version string, only the @samp{GCC} part.
+
+The default value is @samp{GCC}.
+
+@item --with-bugurl=@var{url}
+Specify the URL that users should visit if they wish to report a bug.
+You are of course welcome to forward bugs reported to you to the FSF,
+if you determine that they are not bugs in your modifications.
+
+The default value refers to the FSF's GCC bug tracker.
+
+@end table
 
 @heading Target specification
 @itemize @bullet

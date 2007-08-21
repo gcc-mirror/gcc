@@ -421,8 +421,8 @@ print_usage (int error_p)
 static void
 print_version (void)
 {
-  fnotice (stdout, "gcov (GCC) %s\n", version_string);
-  fprintf (stdout, "Copyright %s 2006 Free Software Foundation, Inc.\n",
+  fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
+  fprintf (stdout, "Copyright %s 2007 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.\n"

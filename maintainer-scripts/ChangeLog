@@ -1,3 +1,12 @@
+2007-08-21  Paul Brook  <paul@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release: Do not include copies of bugs.html in releases.
+	* update_web_docs_svn: Set VERSION_PACKAGE and BUGURL in
+	gcc-vers.texi.
+
 2007-07-06  Joseph Myers  <joseph@codesourcery.com>
 
 	* update_web_docs_svn: Use -o with makeinfo, texi2dvi and texi2pdf

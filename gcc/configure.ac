@@ -769,6 +769,9 @@ esac],
 [onestep=""])
 AC_SUBST(onestep)
 
+ACX_PKGVERSION([GCC])
+ACX_BUGURL([http://gcc.gnu.org/bugs.html])
+
 # Sanity check enable_languages in case someone does not run the toplevel
 # configure # script.
 AC_ARG_ENABLE(languages,

@@ -16,7 +16,12 @@
 @set email-patches gcc-patches@@gcc.gnu.org 
 @set path-treelang gcc/gcc/treelang
 
-@set which-treelang GCC-@value{version-GCC}
+@ifset VERSION_PACKAGE
+@set which-treelang @value{version-GCC} @value{VERSION_PACKAGE}
+@end ifset
+@ifclear VERSION_PACKAGE
+@set which-treelang @value{version-GCC}
+@end ifclear
 @set which-GCC GCC
 
 @set email-josling tej@@melbpc.org.au

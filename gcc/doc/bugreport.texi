@@ -88,7 +88,4 @@ suggestions for improvement of GCC are welcome in any case.
 @section How and where to Report Bugs
 @cindex compiler bugs, reporting
 
-Bugs should be reported to the GCC bug database.  Please refer to
-@uref{http://gcc.gnu.org/bugs.html} for up-to-date instructions how to
-submit bug reports.  Copies of this file in HTML (@file{bugs.html}) and
-plain text (@file{BUGS}) are also part of GCC releases.
+Bugs should be reported to the bug database at @value{BUGURL}.

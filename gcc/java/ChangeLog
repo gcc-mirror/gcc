@@ -1,3 +1,11 @@
+2007-08-21  Paul Brook  <paul@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* jcf-dump.c (version): Use pkgversion_string.  Update copyright
+	date.
+
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
 	* lang.c (java_tree_inlining_walk_subtrees): Remove.
