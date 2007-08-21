@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2007-05-13 19:48-0700\n"
+"POT-Creation-Date: 2007-07-18 21:18-0700\n"
 "PO-Revision-Date: 2001-12-05 22:47+0900\n"
 "Last-Translator: Daisuke Yamashita <yamad@mb.infoweb.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -98,7 +98,7 @@ msgstr ""
 #: charset.c:1132
 #, fuzzy
 msgid "the meaning of '\\x' is different in traditional C"
-msgstr "'\\a' の意味は -traditional をつけた場合と異なります"
+msgstr "`\\x' の意味は -traditional をつけた場合と異なります"
 
 #: charset.c:1149
 msgid "\\x used with no following hex digits"
@@ -766,7 +766,7 @@ msgstr "組み込みマクロ \"%s\" は無効です"
 #: macro.c:156
 #, fuzzy
 msgid "could not determine file timestamp"
-msgstr "spec ファイル %s を見つけることができませんでした\n"
+msgstr "ダンプファイル %s を開けませんでした"
 
 #: macro.c:253
 #, fuzzy
@@ -1734,9 +1734,6 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 #~ msgid "declaration of `extern' variable `%s' in `for' loop initial declaration"
 #~ msgstr "`extern' 変数 `%s' の宣言が `for' ループ初期化宣言内にあります"
 
-#~ msgid "could not open dump file `%s'"
-#~ msgstr "ダンプファイル %s を開けませんでした"
-
 #~ msgid "ignoring `%s' at end of `-f%s'"
 #~ msgstr "`%s'(`-f%s' の終りにある) を無視します"
 
@@ -2105,9 +2102,6 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 
 #~ msgid "universal-character-name used for '%c'"
 #~ msgstr "`%c' にユニバーサルキャラクタ名が使われました"
-
-#~ msgid "the meaning of `\\x' varies with -traditional"
-#~ msgstr "`\\x' の意味は -traditional をつけた場合と異なります"
 
 #~ msgid "hex escape out of range"
 #~ msgstr "16 進エスケープシーケンスが範囲外です"
@@ -7410,6 +7404,9 @@ msgstr "\"%s\" はマクロ仮引数リストに現れてはなりません"
 
 #~ msgid "specs %%include syntax malformed after %ld characters"
 #~ msgstr "specs の %ld 文字目以降の %%include の書式が変です"
+
+#~ msgid "Could not find specs file %s\n"
+#~ msgstr "spec ファイル %s を見つけることができませんでした\n"
 
 #~ msgid "specs %%rename syntax malformed after %ld characters"
 #~ msgstr "specs の %ld 文字目以降の %%rename の書式が変です"
