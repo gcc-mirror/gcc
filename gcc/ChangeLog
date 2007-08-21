@@ -1,3 +1,9 @@
+2007-08-21  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/33134
+	* tree-vrp.c (adjust_range_with_scev): Call
+	set_value_range_to_value.
+
 2007-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-prof.h (gimple_remove_histogram_value): Remove duplicate

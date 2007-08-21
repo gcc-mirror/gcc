@@ -2641,7 +2641,7 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      set_value_range (vr, VR_RANGE, chrec, chrec, vr->equiv);
+      set_value_range_to_value (vr, chrec, vr->equiv);
       return;
     }
 
