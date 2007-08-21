@@ -1,3 +1,10 @@
+2007-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/32912
+	* gcc.dg/pr32912-1.c: New test.
+	* gcc.dg/pr32912-2.c: New test.
+	* gcc.dg/pr32912-3.c: New test.
+
 2007-08-21  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/pointer-arith-10.c: New testcase.
