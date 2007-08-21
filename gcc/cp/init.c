@@ -1755,7 +1755,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
     placement_expr = NULL_TREE;
   else
     {
-      placement_expr = save_expr (TREE_VALUE (placement));
+      placement_expr = get_target_expr (TREE_VALUE (placement));
       placement = tree_cons (NULL_TREE, placement_expr, NULL_TREE);
     }
 
