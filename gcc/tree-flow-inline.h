@@ -1560,7 +1560,6 @@ next_imm_use_stmt (imm_use_iterator *imm)
 
   link_use_stmts_after (imm->imm_use, imm);
   return USE_STMT (imm->imm_use);
-
 }
 
 /* This routine will return the first use on the stmt IMM currently refers
