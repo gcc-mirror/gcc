@@ -1,3 +1,9 @@
+2007-08-21  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (expand_block_clear): Add TARGET_SPE
+	cases to set eight bytes at a time.
+	(expand_block_move): Likewise.
+	
 2007-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/32610
