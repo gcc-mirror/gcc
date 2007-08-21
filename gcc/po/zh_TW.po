@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2007-05-13 19:50-0700\n"
+"POT-Creation-Date: 2007-07-18 21:17-0700\n"
 "PO-Revision-Date: 2006-03-28 09:19+0800\n"
 "Last-Translator: Wei-Lun Chao <chaoweilun@pcmail.com.tw>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -328,7 +328,7 @@ msgstr "用字串常數初始化的陣列類型不合適"
 
 #. ??? This should not be an error when inlining calls to
 #. unprototyped functions.
-#: c-typeck.c:4721 c-typeck.c:4216 cp/typeck.c:1532
+#: c-typeck.c:4721 c-typeck.c:4216 cp/typeck.c:1530
 #, gcc-internal-format
 msgid "invalid use of non-lvalue array"
 msgstr "對非左值陣列的無效使用"
@@ -2630,80 +2630,80 @@ msgstr "%%V 程式碼的運算元無效"
 msgid "invalid operand output code"
 msgstr "無效的運算元輸出程式碼"
 
-#: config/arm/arm.c:11005 config/arm/arm.c:11023
+#: config/arm/arm.c:11006 config/arm/arm.c:11024
 #, c-format
 msgid "predicated Thumb instruction"
 msgstr "預測到的 Thumb 指令"
 
-#: config/arm/arm.c:11011
+#: config/arm/arm.c:11012
 #, c-format
 msgid "predicated instruction in conditional sequence"
 msgstr "在條件序列中預測到的指令"
 
-#: config/arm/arm.c:11080
+#: config/arm/arm.c:11081
 #, fuzzy, c-format
 msgid "invalid shift operand"
-msgstr "無效的 %%s 運算元"
+msgstr "無效的 %%f 運算元"
 
-#: config/arm/arm.c:11127 config/arm/arm.c:11137 config/arm/arm.c:11147
-#: config/arm/arm.c:11173 config/arm/arm.c:11191 config/arm/arm.c:11226
-#: config/arm/arm.c:11245 config/arm/arm.c:11260 config/arm/arm.c:11286
-#: config/arm/arm.c:11293 config/arm/arm.c:11300
+#: config/arm/arm.c:11128 config/arm/arm.c:11138 config/arm/arm.c:11148
+#: config/arm/arm.c:11174 config/arm/arm.c:11192 config/arm/arm.c:11227
+#: config/arm/arm.c:11246 config/arm/arm.c:11261 config/arm/arm.c:11287
+#: config/arm/arm.c:11294 config/arm/arm.c:11301
 #, c-format
 msgid "invalid operand for code '%c'"
 msgstr "程式碼「%c」的運算元無效"
 
-#: config/arm/arm.c:11186
+#: config/arm/arm.c:11187
 #, c-format
 msgid "instruction never exectued"
 msgstr "指令永遠不被執行"
 
-#: config/arm/arm.c:11311
+#: config/arm/arm.c:11312
 #, c-format
 msgid "missing operand"
 msgstr "缺少運算元"
 
-#: config/avr/avr.c:1046
+#: config/avr/avr.c:1047
 #, c-format
 msgid "address operand requires constraint for X, Y, or Z register"
 msgstr ""
 
-#: config/avr/avr.c:1153
+#: config/avr/avr.c:1154
 msgid "bad address, not (reg+disp):"
 msgstr "位址錯誤，不是(reg+disp)："
 
-#: config/avr/avr.c:1160
+#: config/avr/avr.c:1161
 msgid "bad address, not post_inc or pre_dec:"
 msgstr "錯誤的位址，不是 post_inc 或 pre_dec:"
 
-#: config/avr/avr.c:1171
+#: config/avr/avr.c:1172
 msgid "internal compiler error.  Bad address:"
 msgstr "編譯器內部錯誤。錯誤的位址："
 
-#: config/avr/avr.c:1184
+#: config/avr/avr.c:1185
 msgid "internal compiler error.  Unknown mode:"
 msgstr "編譯器內部錯誤。不明的模式："
 
-#: config/avr/avr.c:1807 config/avr/avr.c:2490
+#: config/avr/avr.c:1808 config/avr/avr.c:2491
 msgid "invalid insn:"
 msgstr "無效指令："
 
-#: config/avr/avr.c:1841 config/avr/avr.c:1927 config/avr/avr.c:1976
-#: config/avr/avr.c:2004 config/avr/avr.c:2099 config/avr/avr.c:2268
-#: config/avr/avr.c:2524 config/avr/avr.c:2636
+#: config/avr/avr.c:1842 config/avr/avr.c:1928 config/avr/avr.c:1977
+#: config/avr/avr.c:2005 config/avr/avr.c:2100 config/avr/avr.c:2269
+#: config/avr/avr.c:2525 config/avr/avr.c:2637
 msgid "incorrect insn:"
 msgstr "錯誤指令："
 
-#: config/avr/avr.c:2023 config/avr/avr.c:2184 config/avr/avr.c:2339
-#: config/avr/avr.c:2702
+#: config/avr/avr.c:2024 config/avr/avr.c:2185 config/avr/avr.c:2340
+#: config/avr/avr.c:2703
 msgid "unknown move insn:"
 msgstr "無效的 move 指令："
 
-#: config/avr/avr.c:2932
+#: config/avr/avr.c:2933
 msgid "bad shift insn:"
 msgstr "錯誤的 shift 指令"
 
-#: config/avr/avr.c:3048 config/avr/avr.c:3496 config/avr/avr.c:3882
+#: config/avr/avr.c:3049 config/avr/avr.c:3497 config/avr/avr.c:3883
 msgid "internal compiler error.  Incorrect shift:"
 msgstr "編譯器內部錯誤。不正確的移位量："
 
@@ -2805,7 +2805,7 @@ msgstr "c4x_rptb_rpts_p：重複塊的頂層標籤被移動"
 #: fortran/dump-parse-tree.c:801 c-typeck.c:4520 c-typeck.c:4535
 #: c-typeck.c:4550 final.c:2803 final.c:2805 gcc.c:4742 loop-iv.c:2702
 #: loop-iv.c:2711 rtl-error.c:113 toplev.c:605 tree-ssa-loop-niter.c:1165
-#: cp/parser.c:2087 cp/typeck.c:4468 java/expr.c:413
+#: cp/parser.c:2087 cp/typeck.c:4466 java/expr.c:413
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:5005
 #, gcc-internal-format
 msgid "%s"
@@ -3060,7 +3060,7 @@ msgstr "無效的運算元程式碼「%c」"
 msgid "invalid constraints for operand"
 msgstr "運算元的約束無效"
 
-#: config/i386/i386.c:13641
+#: config/i386/i386.c:13644
 msgid "unknown insn mode"
 msgstr "不明的指令模式"
 
@@ -3150,7 +3150,7 @@ msgid "post-increment address is not a register"
 msgstr "後自增位址不是一個暫存器"
 
 #: config/m32r/m32r.c:2030 config/m32r/m32r.c:2044
-#: config/rs6000/rs6000.c:17905
+#: config/rs6000/rs6000.c:17906
 msgid "bad address"
 msgstr "錯誤位址"
 
@@ -3362,7 +3362,7 @@ msgstr "無效 %%u 值"
 msgid "invalid %%v value"
 msgstr "無效 %%v 值"
 
-#: config/rs6000/rs6000.c:19522
+#: config/rs6000/rs6000.c:19523
 msgid "AltiVec argument passed to unprototyped function"
 msgstr "傳遞 AltiVec 引數給無原型的函式"
 
@@ -3390,15 +3390,15 @@ msgstr "%%R 的運算元無效"
 msgid "invalid operand to %%S"
 msgstr "%%S 的運算元無效"
 
-#: config/sh/sh.c:7820
+#: config/sh/sh.c:7829
 msgid "created and used with different architectures / ABIs"
 msgstr "建立和使用時使用了不同的架構/ABI"
 
-#: config/sh/sh.c:7822
+#: config/sh/sh.c:7831
 msgid "created and used with different ABIs"
 msgstr "建立和使用時使用了不同的 ABI"
 
-#: config/sh/sh.c:7824
+#: config/sh/sh.c:7833
 msgid "created and used with different endianness"
 msgstr "建立和使用時使用了不同的高/低位位元組在前設定"
 
@@ -3530,11 +3530,11 @@ msgstr "位址偏移量不是一個常數"
 msgid "candidates are:"
 msgstr "備選為："
 
-#: cp/call.c:6303
+#: cp/call.c:6319
 msgid "candidate 1:"
 msgstr "備選 1："
 
-#: cp/call.c:6304
+#: cp/call.c:6320
 msgid "candidate 2:"
 msgstr "備選 2："
 
@@ -5090,7 +5090,7 @@ msgstr " FUNCTION"
 #: fortran/dump-parse-tree.c:952
 #, fuzzy, c-format
 msgid " %s("
-msgstr " %s"
+msgstr "%s("
 
 #: fortran/dump-parse-tree.c:968
 #, c-format
@@ -5955,12 +5955,12 @@ msgstr "%L 處定義賦值的第一個參數必須是 INTENT(IN) 或 INTENT(INOU
 msgid "Second argument of defined assignment at %L must be INTENT(IN)"
 msgstr "%L 處定義賦值的第二個參數必須是 INTENT(IN)"
 
-#: fortran/interface.c:664 fortran/resolve.c:7191
+#: fortran/interface.c:664 fortran/resolve.c:7203
 #, no-c-format
 msgid "First argument of operator interface at %L must be INTENT(IN)"
 msgstr "%L 處運算子介面的第一個參數必須是 INTENT(IN)"
 
-#: fortran/interface.c:668 fortran/resolve.c:7203
+#: fortran/interface.c:668 fortran/resolve.c:7215
 #, no-c-format
 msgid "Second argument of operator interface at %L must be INTENT(IN)"
 msgstr "%L 處運算子介面的第二個參數必須是 INTENT(IN)"
@@ -7055,7 +7055,7 @@ msgstr ""
 msgid "Syntax error in !$OMP THREADPRIVATE list at %C"
 msgstr "%C 的 CHARACTER 宣告語法錯誤"
 
-#: fortran/openmp.c:686 fortran/resolve.c:4928 fortran/resolve.c:5189
+#: fortran/openmp.c:686 fortran/resolve.c:4935 fortran/resolve.c:5196
 #, no-c-format
 msgid "IF clause at %L requires a scalar LOGICAL expression"
 msgstr ""
@@ -7775,7 +7775,7 @@ msgstr "%C 處的符號不適用於運算式"
 msgid "Named constant at %C in an EQUIVALENCE"
 msgstr ""
 
-#: fortran/primary.c:2432
+#: fortran/primary.c:2433
 #, no-c-format
 msgid "Expected VARIABLE at %C"
 msgstr "%C 處需要 VARIABLE "
@@ -7900,7 +7900,7 @@ msgstr ""
 msgid "The upper bound in the last dimension must appear in the reference to the assumed size array '%s' at %L."
 msgstr ""
 
-#: fortran/resolve.c:878 fortran/resolve.c:4406 fortran/resolve.c:5154
+#: fortran/resolve.c:878 fortran/resolve.c:4413 fortran/resolve.c:5161
 #, no-c-format
 msgid "Label %d referenced at %L is never defined"
 msgstr "標籤 %d(參照自 %L)從未被定義"
@@ -7935,402 +7935,402 @@ msgstr "ELEMENTAL non-INTRINSIC 程序「%s」在 %L 處不允許做為實際引
 msgid "Symbol '%s' at %L is ambiguous"
 msgstr "符號「%s」(位於 %L)有歧義"
 
-#: fortran/resolve.c:1018
+#: fortran/resolve.c:1025
 #, fuzzy, no-c-format
 msgid "By-value argument at %L is not of numeric type"
 msgstr "%L 處 INT 的引數類型無效"
 
-#: fortran/resolve.c:1025
+#: fortran/resolve.c:1032
 #, no-c-format
 msgid "By-value argument at %L cannot be an array or an array section"
 msgstr ""
 
-#: fortran/resolve.c:1036
+#: fortran/resolve.c:1043
 #, fuzzy, no-c-format
 msgid "By-value argument at %L is not allowed in this context"
 msgstr "此上下文中不允許標準轉換"
 
-#: fortran/resolve.c:1045
+#: fortran/resolve.c:1052
 #, no-c-format
 msgid "Kind of by-value argument at %L is larger than default kind"
 msgstr ""
 
-#: fortran/resolve.c:1058
+#: fortran/resolve.c:1065
 #, no-c-format
 msgid "Passing internal procedure at %L by location not allowed"
 msgstr ""
 
-#: fortran/resolve.c:1175
+#: fortran/resolve.c:1182
 #, no-c-format
 msgid "'%s' at %L is an array and OPTIONAL; IF IT IS MISSING, it cannot be the actual argument of an ELEMENTAL procedure unless there is a non-optionalargument with the same rank (12.4.1.5)"
 msgstr ""
 
-#: fortran/resolve.c:1200
+#: fortran/resolve.c:1207
 #, fuzzy
 msgid "elemental subroutine"
 msgstr "基本的二元作業"
 
-#: fortran/resolve.c:1333
+#: fortran/resolve.c:1340
 #, no-c-format
 msgid "There is no specific function for the generic '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1343
+#: fortran/resolve.c:1350
 #, no-c-format
 msgid "Generic function '%s' at %L is not consistent with a specific intrinsic interface"
 msgstr ""
 
-#: fortran/resolve.c:1381
+#: fortran/resolve.c:1388
 #, no-c-format
 msgid "Function '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
 msgstr ""
 
-#: fortran/resolve.c:1427
+#: fortran/resolve.c:1434
 #, no-c-format
 msgid "Unable to resolve the specific function '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1483 fortran/resolve.c:7110
+#: fortran/resolve.c:1490 fortran/resolve.c:7122
 #, no-c-format
 msgid "Function '%s' at %L has no IMPLICIT type"
 msgstr "函式「%s」在 %L 處沒有 IMPLICIT 類型"
 
-#: fortran/resolve.c:1557
+#: fortran/resolve.c:1564
 #, fuzzy, no-c-format
 msgid "'%s' at %L is not a function"
 msgstr "%q+D 不是一個函式，"
 
 #. Internal procedures are taken care of in resolve_contained_fntype.
-#: fortran/resolve.c:1590
+#: fortran/resolve.c:1597
 #, no-c-format
 msgid "Function '%s' is declared CHARACTER(*) and cannot be used at %L since it is not a dummy argument"
 msgstr ""
 
-#: fortran/resolve.c:1643
+#: fortran/resolve.c:1650
 #, no-c-format
 msgid "User defined non-ELEMENTAL function '%s' at %L not allowed in WORKSHARE construct"
 msgstr ""
 
-#: fortran/resolve.c:1693
+#: fortran/resolve.c:1700
 #, no-c-format
 msgid "reference to non-PURE function '%s' at %L inside a FORALL %s"
 msgstr ""
 
-#: fortran/resolve.c:1700
+#: fortran/resolve.c:1707
 #, no-c-format
 msgid "Function reference to '%s' at %L is to a non-PURE procedure within a PURE procedure"
 msgstr ""
 
-#: fortran/resolve.c:1715
+#: fortran/resolve.c:1722
 #, fuzzy, no-c-format
 msgid "Function '%s' at %L cannot call itself, as it is not RECURSIVE"
 msgstr "指定函式「%s」(位於 %L)不能是 RECURSIVE"
 
-#: fortran/resolve.c:1723
+#: fortran/resolve.c:1730
 #, no-c-format
 msgid "Call to ENTRY '%s' at %L is recursive, but function '%s' is not declared as RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:1768
+#: fortran/resolve.c:1775
 #, no-c-format
 msgid "Subroutine call to '%s' in FORALL block at %L is not PURE"
 msgstr ""
 
-#: fortran/resolve.c:1771
+#: fortran/resolve.c:1778
 #, no-c-format
 msgid "Subroutine call to '%s' at %L is not PURE"
 msgstr ""
 
-#: fortran/resolve.c:1835
+#: fortran/resolve.c:1842
 #, fuzzy, no-c-format
 msgid "There is no specific subroutine for the generic '%s' at %L"
 msgstr "對子處理序名「%s」非預期的使用，在 %C 處"
 
-#: fortran/resolve.c:1844
+#: fortran/resolve.c:1851
 #, no-c-format
 msgid "Generic subroutine '%s' at %L is not consistent with an intrinsic subroutine interface"
 msgstr ""
 
-#: fortran/resolve.c:1879
+#: fortran/resolve.c:1886
 #, no-c-format
 msgid "Subroutine '%s' at %L is INTRINSIC but is not compatible with an intrinsic"
 msgstr ""
 
-#: fortran/resolve.c:1923
+#: fortran/resolve.c:1930
 #, no-c-format
 msgid "Unable to resolve the specific subroutine '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:1980
+#: fortran/resolve.c:1987
 #, no-c-format
 msgid "'%s' at %L has a type, which is not consistent with the CALL at %L"
 msgstr ""
 
-#: fortran/resolve.c:2003
+#: fortran/resolve.c:2010
 #, no-c-format
 msgid "SUBROUTINE '%s' at %L cannot call itself, as it is not RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:2011
+#: fortran/resolve.c:2018
 #, no-c-format
 msgid "Call to ENTRY '%s' at %L is recursive, but subroutine '%s' is not declared as RECURSIVE"
 msgstr ""
 
-#: fortran/resolve.c:2081
+#: fortran/resolve.c:2088
 #, no-c-format
 msgid "Shapes for operands at %L and %L are not conformable"
 msgstr "%L 和 %L 處的運算元外形不相容"
 
-#: fortran/resolve.c:2138
+#: fortran/resolve.c:2145
 #, c-format
 msgid "Operand of unary numeric operator '%s' at %%L is %s"
 msgstr "單位元數值運算子「%s」(位於 %%L)的運算元為 %s"
 
-#: fortran/resolve.c:2154
+#: fortran/resolve.c:2161
 #, c-format
 msgid "Operands of binary numeric operator '%s' at %%L are %s/%s"
 msgstr "二元數值運算子「%s」(位於 %%L)的運算元為 %s/%s"
 
-#: fortran/resolve.c:2168
+#: fortran/resolve.c:2175
 #, c-format
 msgid "Operands of string concatenation operator at %%L are %s/%s"
 msgstr "字串粘貼運算子(位於 %%L)的運算元為 %s/%s"
 
-#: fortran/resolve.c:2187
+#: fortran/resolve.c:2194
 #, c-format
 msgid "Operands of logical operator '%s' at %%L are %s/%s"
 msgstr "邏輯運算子「%s」(位於 %%L)的運算元為 %s/%s"
 
-#: fortran/resolve.c:2201
+#: fortran/resolve.c:2208
 #, c-format
 msgid "Operand of .NOT. operator at %%L is %s"
 msgstr "%%L 處的 .NOT. 運算子的運算元為 %s"
 
-#: fortran/resolve.c:2211
+#: fortran/resolve.c:2218
 msgid "COMPLEX quantities cannot be compared at %L"
 msgstr "%L 處複數不能比較大小"
 
-#: fortran/resolve.c:2237
+#: fortran/resolve.c:2244
 #, c-format
 msgid "Logicals at %%L must be compared with %s instead of %s"
 msgstr "%%L 處邏輯值必須與 %s 比較，而不是 %s"
 
-#: fortran/resolve.c:2242
+#: fortran/resolve.c:2249
 #, c-format
 msgid "Operands of comparison operator '%s' at %%L are %s/%s"
 msgstr "比較運算子「%s」(位於 %%L)的運算元為 %s/%s"
 
-#: fortran/resolve.c:2250
+#: fortran/resolve.c:2257
 #, c-format
 msgid "Operand of user operator '%s' at %%L is %s"
 msgstr "使用者運算子「%s」(位於 %%L)的運算元為 %s"
 
-#: fortran/resolve.c:2253
+#: fortran/resolve.c:2260
 #, c-format
 msgid "Operands of user operator '%s' at %%L are %s/%s"
 msgstr "使用者運算子「%s」(位於 %%L)的運算元為 %s/%s"
 
-#: fortran/resolve.c:2324
+#: fortran/resolve.c:2331
 #, no-c-format
 msgid "Inconsistent ranks for operator at %L and %L"
 msgstr "%L 和 %L 處的運算元秩不一致"
 
-#: fortran/resolve.c:2528
+#: fortran/resolve.c:2535
 #, no-c-format
 msgid "Illegal stride of zero at %L"
 msgstr "%L 零間隔無效"
 
-#: fortran/resolve.c:2577
+#: fortran/resolve.c:2584
 #, no-c-format
 msgid "Array reference at %L is out of bounds"
 msgstr "%L 處陣列參照越界"
 
-#: fortran/resolve.c:2598
+#: fortran/resolve.c:2605
 #, no-c-format
 msgid "Rightmost upper bound of assumed size array section not specified at %L"
 msgstr ""
 
-#: fortran/resolve.c:2608
+#: fortran/resolve.c:2615
 #, no-c-format
 msgid "Rank mismatch in array reference at %L (%d/%d)"
 msgstr "%L 處陣列參照中秩不匹配(%d/%d)"
 
-#: fortran/resolve.c:2636
+#: fortran/resolve.c:2643
 #, no-c-format
 msgid "Array index at %L must be scalar"
 msgstr "%L 處陣列索引必須是標量"
 
-#: fortran/resolve.c:2642
+#: fortran/resolve.c:2649
 #, no-c-format
 msgid "Array index at %L must be of INTEGER type"
 msgstr "%L 處陣列索引必須具有 INTEGER 類型"
 
-#: fortran/resolve.c:2648
+#: fortran/resolve.c:2655
 #, no-c-format
 msgid "Extension: REAL array index at %L"
 msgstr "擴充：%L 處的 REAL 陣列索引"
 
-#: fortran/resolve.c:2678
+#: fortran/resolve.c:2685
 #, no-c-format
 msgid "Argument dim at %L must be scalar"
 msgstr "%L 引數維數必須是標量"
 
-#: fortran/resolve.c:2684
+#: fortran/resolve.c:2691
 #, no-c-format
 msgid "Argument dim at %L must be of INTEGER type"
 msgstr "%L 處引數維數必須具有 INTEGER 類型"
 
-#: fortran/resolve.c:2804
+#: fortran/resolve.c:2811
 #, no-c-format
 msgid "Array index at %L is an array of rank %d"
 msgstr "%L 處陣列索引是一個秩為 %d 的陣列"
 
-#: fortran/resolve.c:2842
+#: fortran/resolve.c:2849
 #, no-c-format
 msgid "Substring start index at %L must be of type INTEGER"
 msgstr "%L 處的子字串起始索引類型必須為 INTEGER"
 
-#: fortran/resolve.c:2849
+#: fortran/resolve.c:2856
 #, no-c-format
 msgid "Substring start index at %L must be scalar"
 msgstr "%L 處的子字串起始索引必須是標量"
 
-#: fortran/resolve.c:2858
+#: fortran/resolve.c:2865
 #, no-c-format
 msgid "Substring start index at %L is less than one"
 msgstr "%L 處的子字串起始索引小於 1"
 
-#: fortran/resolve.c:2871
+#: fortran/resolve.c:2878
 #, no-c-format
 msgid "Substring end index at %L must be of type INTEGER"
 msgstr "%L 處的子字串終止索引類型必須為 INTEGER"
 
-#: fortran/resolve.c:2878
+#: fortran/resolve.c:2885
 #, no-c-format
 msgid "Substring end index at %L must be scalar"
 msgstr "%L 處的子字串終止索引必須是標量"
 
-#: fortran/resolve.c:2888
+#: fortran/resolve.c:2895
 #, fuzzy, no-c-format
 msgid "Substring end index at %L exceeds the string length"
 msgstr "%L 處的子字串終止索引必須是標量"
 
-#: fortran/resolve.c:2963
+#: fortran/resolve.c:2970
 #, no-c-format
 msgid "Component to the right of a part reference with nonzero rank must not have the POINTER attribute at %L"
 msgstr ""
 
-#: fortran/resolve.c:2971
+#: fortran/resolve.c:2978
 #, no-c-format
 msgid "Component to the right of a part reference with nonzero rank must not have the ALLOCATABLE attribute at %L"
 msgstr ""
 
-#: fortran/resolve.c:2991
+#: fortran/resolve.c:2998
 #, no-c-format
 msgid "Two or more part references with nonzero rank must not be specified at %L"
 msgstr ""
 
-#: fortran/resolve.c:3166
+#: fortran/resolve.c:3173
 #, no-c-format
 msgid "Variable '%s',used in a specification expression, is referenced at %L before the ENTRY statement in which it is a parameter"
 msgstr ""
 
-#: fortran/resolve.c:3171
+#: fortran/resolve.c:3178
 #, no-c-format
 msgid "Variable '%s' is used at %L before the ENTRY statement in which it is a parameter"
 msgstr ""
 
-#: fortran/resolve.c:3294
+#: fortran/resolve.c:3301
 #, no-c-format
 msgid "%s at %L must be a scalar"
 msgstr "%s (%L 處)必須是一個標量"
 
-#: fortran/resolve.c:3302
+#: fortran/resolve.c:3309
 #, no-c-format
 msgid "%s at %L must be INTEGER or REAL"
 msgstr "%s (%L 處)必須是 INTEGER 或 REAL"
 
-#: fortran/resolve.c:3305
+#: fortran/resolve.c:3312
 #, no-c-format
 msgid "%s at %L must be INTEGER"
 msgstr "%s (%L 處)必須是 INTEGER"
 
-#: fortran/resolve.c:3321
+#: fortran/resolve.c:3328
 #, no-c-format
 msgid "Obsolete: REAL DO loop iterator at %L"
 msgstr "已過時：%L 處的 REAL DO 循環游標"
 
-#: fortran/resolve.c:3330
+#: fortran/resolve.c:3337
 #, no-c-format
 msgid "Cannot assign to loop variable in PURE procedure at %L"
 msgstr "於 %L 處的 PURE 程序中無法指定至迴圈變數"
 
-#: fortran/resolve.c:3354
+#: fortran/resolve.c:3361
 #, no-c-format
 msgid "Step expression in DO loop at %L cannot be zero"
 msgstr "步進敘述於 %L 處的 DO 迴圈中不可為零"
 
-#: fortran/resolve.c:3389
+#: fortran/resolve.c:3396
 #, no-c-format
 msgid "FORALL index-name at %L must be a scalar INTEGER"
 msgstr "%L 處 FORALL 索引名稱必須是 INTEGER 標量"
 
-#: fortran/resolve.c:3394
+#: fortran/resolve.c:3401
 #, no-c-format
 msgid "FORALL start expression at %L must be a scalar INTEGER"
 msgstr "%L 處的 FORALL 啟始敘述必須是 INTEGER 標量"
 
-#: fortran/resolve.c:3401
+#: fortran/resolve.c:3408
 #, no-c-format
 msgid "FORALL end expression at %L must be a scalar INTEGER"
 msgstr "%L 處的 FORALL 結束敘述必須是 INTEGER 標量"
 
-#: fortran/resolve.c:3409
+#: fortran/resolve.c:3416
 #, no-c-format
 msgid "FORALL stride expression at %L must be a scalar %s"
 msgstr "%L 處的 FORALL 步幅敘述必須是 %s 標量"
 
-#: fortran/resolve.c:3414
+#: fortran/resolve.c:3421
 #, no-c-format
 msgid "FORALL stride expression at %L cannot be zero"
 msgstr "%L 處的 FORALL 步幅敘述不能為零"
 
-#: fortran/resolve.c:3512
+#: fortran/resolve.c:3519
 #, no-c-format
 msgid "Expression in DEALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
 msgstr ""
 
-#: fortran/resolve.c:3518
+#: fortran/resolve.c:3525
 #, no-c-format
 msgid "Can't deallocate INTENT(IN) variable '%s' at %L"
 msgstr ""
 
-#: fortran/resolve.c:3679
+#: fortran/resolve.c:3686
 #, no-c-format
 msgid "The STAT variable '%s' in an ALLOCATE statement must not be allocated in the same statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:3710
+#: fortran/resolve.c:3717
 #, no-c-format
 msgid "Expression in ALLOCATE statement at %L must be ALLOCATABLE or a POINTER"
 msgstr ""
 
-#: fortran/resolve.c:3717
+#: fortran/resolve.c:3724
 #, fuzzy, no-c-format
 msgid "Can't allocate INTENT(IN) variable '%s' at %L"
 msgstr "COMMON 變數「%s」在 %C 處不允許有初始值設定"
 
-#: fortran/resolve.c:3741
+#: fortran/resolve.c:3748
 #, no-c-format
 msgid "Array specification required in ALLOCATE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:3771
+#: fortran/resolve.c:3778
 #, no-c-format
 msgid "Bad array specification in ALLOCATE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:3789
+#: fortran/resolve.c:3796
 #, no-c-format
 msgid "'%s' must not appear an the array specification at %L in the same ALLOCATE statement where it is itself allocated"
 msgstr ""
@@ -8339,587 +8339,587 @@ msgstr ""
 #. element in the list.  Either way, we must
 #. issue an error and get the next case from P.
 #. FIXME: Sort P and Q by line number.
-#: fortran/resolve.c:3948
+#: fortran/resolve.c:3955
 #, no-c-format
 msgid "CASE label at %L overlaps with CASE label at %L"
 msgstr ""
 
-#: fortran/resolve.c:3999
+#: fortran/resolve.c:4006
 #, no-c-format
 msgid "Expression in CASE statement at %L must be of type %s"
 msgstr "%L 處 CASE 敘述中的運算式必須具有 %s 類型"
 
-#: fortran/resolve.c:4010
+#: fortran/resolve.c:4017
 #, no-c-format
 msgid "Expression in CASE statement at %L must be kind %d"
 msgstr "%L 處 CASE 敘述中的運算式種類必須為 %d"
 
-#: fortran/resolve.c:4022
+#: fortran/resolve.c:4029
 #, no-c-format
 msgid "Expression in CASE statement at %L must be scalar"
 msgstr "%L 處 CASE 敘述中的運算式必須為標量"
 
-#: fortran/resolve.c:4069
+#: fortran/resolve.c:4076
 #, no-c-format
 msgid "Selection expression in computed GOTO statement at %L must be a scalar integer expression"
 msgstr ""
 
-#: fortran/resolve.c:4087
+#: fortran/resolve.c:4094
 #, no-c-format
 msgid "Argument of SELECT statement at %L cannot be %s"
 msgstr "%L 處 SELECT 敘述的引數不能是 %s"
 
-#: fortran/resolve.c:4096
+#: fortran/resolve.c:4103
 #, no-c-format
 msgid "Argument of SELECT statement at %L must be a scalar expression"
 msgstr "%L 處 SELECT 敘述中的引數必須為標量"
 
-#: fortran/resolve.c:4161
+#: fortran/resolve.c:4168
 #, no-c-format
 msgid "The DEFAULT CASE at %L cannot be followed by a second DEFAULT CASE at %L"
 msgstr ""
 
-#: fortran/resolve.c:4188
+#: fortran/resolve.c:4195
 #, no-c-format
 msgid "Logical range in CASE statement at %L is not allowed"
 msgstr ""
 
-#: fortran/resolve.c:4200
+#: fortran/resolve.c:4207
 #, no-c-format
 msgid "constant logical value in CASE statement is repeated at %L"
 msgstr ""
 
-#: fortran/resolve.c:4214
+#: fortran/resolve.c:4221
 #, no-c-format
 msgid "Range specification at %L can never be matched"
 msgstr ""
 
-#: fortran/resolve.c:4317
+#: fortran/resolve.c:4324
 #, no-c-format
 msgid "Logical SELECT CASE block at %L has more that two cases"
 msgstr ""
 
-#: fortran/resolve.c:4356
+#: fortran/resolve.c:4363
 #, no-c-format
 msgid "Data transfer element at %L cannot have POINTER components"
 msgstr ""
 
-#: fortran/resolve.c:4363
+#: fortran/resolve.c:4370
 #, no-c-format
 msgid "Data transfer element at %L cannot have ALLOCATABLE components"
 msgstr ""
 
-#: fortran/resolve.c:4370
+#: fortran/resolve.c:4377
 #, no-c-format
 msgid "Data transfer element at %L cannot have PRIVATE components"
 msgstr ""
 
-#: fortran/resolve.c:4379
+#: fortran/resolve.c:4386
 #, no-c-format
 msgid "Data transfer element at %L cannot be a full reference to an assumed-size array"
 msgstr ""
 
-#: fortran/resolve.c:4413
+#: fortran/resolve.c:4420
 #, no-c-format
 msgid "Statement at %L is not a valid branch target statement for the branch statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:4422
+#: fortran/resolve.c:4429
 #, no-c-format
 msgid "Branch at %L causes an infinite loop"
 msgstr "%L 處的分支導致無窮循環"
 
-#: fortran/resolve.c:4455
+#: fortran/resolve.c:4462
 #, no-c-format
 msgid "Label at %L is not in the same block as the GOTO statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:4471
+#: fortran/resolve.c:4478
 #, no-c-format
 msgid "Obsolete: GOTO at %L jumps to END of construct at %L"
 msgstr ""
 
-#: fortran/resolve.c:4545
+#: fortran/resolve.c:4552
 #, no-c-format
 msgid "WHERE mask at %L has inconsistent shape"
 msgstr ""
 
-#: fortran/resolve.c:4561
+#: fortran/resolve.c:4568
 #, no-c-format
 msgid "WHERE assignment target at %L has inconsistent shape"
 msgstr ""
 
-#: fortran/resolve.c:4575 fortran/resolve.c:4774
+#: fortran/resolve.c:4582 fortran/resolve.c:4781
 #, no-c-format
 msgid "Unsupported statement inside WHERE at %L"
 msgstr "%L 處在 WHERE 內不支援的敘述"
 
-#: fortran/resolve.c:4651
+#: fortran/resolve.c:4658
 #, fuzzy, no-c-format
 msgid "expression reference type error at %L"
 msgstr "%L 處運算式參照類型錯誤"
 
-#: fortran/resolve.c:4683
+#: fortran/resolve.c:4690
 #, no-c-format
 msgid "Unsupported statement while finding forall index in expression"
 msgstr ""
 
-#: fortran/resolve.c:4730
+#: fortran/resolve.c:4737
 #, no-c-format
 msgid "Assignment to a FORALL index variable at %L"
 msgstr "%L 處向 FORALL 索引變數賦值"
 
-#: fortran/resolve.c:4738
+#: fortran/resolve.c:4745
 #, no-c-format
 msgid "The FORALL with index '%s' cause more than one assignment to this object at %L"
 msgstr ""
 
-#: fortran/resolve.c:4867
+#: fortran/resolve.c:4874
 #, no-c-format
 msgid "An outer FORALL construct already has an index with this name %L"
 msgstr ""
 
-#: fortran/resolve.c:4879 fortran/resolve.c:4882 fortran/resolve.c:4885
+#: fortran/resolve.c:4886 fortran/resolve.c:4889 fortran/resolve.c:4892
 #, no-c-format
 msgid "A FORALL index must not appear in a limit or stride expression in the same FORALL at %L"
 msgstr ""
 
-#: fortran/resolve.c:4938
+#: fortran/resolve.c:4945
 #, no-c-format
 msgid "WHERE/ELSEWHERE clause at %L requires a LOGICAL array"
 msgstr "%L 處的 WHERE/ELSEWHERE 子句需要一個 LOGICAL 陣列"
 
-#: fortran/resolve.c:5068
+#: fortran/resolve.c:5075
 #, no-c-format
 msgid "ASSIGNED GOTO statement at %L requires an INTEGER variable"
 msgstr ""
 
-#: fortran/resolve.c:5071
+#: fortran/resolve.c:5078
 #, no-c-format
 msgid "Variable '%s' has not been assigned a target label at %L"
 msgstr "變數「%s」在 %L 尚未指派到目標標籤"
 
-#: fortran/resolve.c:5082
+#: fortran/resolve.c:5089
 #, fuzzy, no-c-format
 msgid "Alternate RETURN statement at %L requires a SCALAR-INTEGER return specifier"
 msgstr "%L 處的 INQUIRE 敘述需要 FILE 或 UNIT 限定符"
 
-#: fortran/resolve.c:5097
+#: fortran/resolve.c:5104
 #, no-c-format
 msgid "Subroutine '%s' called instead of assignment at %L must be PURE"
 msgstr "%L 處用以取代賦值的副例程「%s」呼叫必須是 PURE"
 
-#: fortran/resolve.c:5124
+#: fortran/resolve.c:5131
 #, no-c-format
 msgid "rhs of CHARACTER assignment at %L will be truncated (%d/%d)"
 msgstr ""
 
-#: fortran/resolve.c:5133
+#: fortran/resolve.c:5140
 #, no-c-format
 msgid "Cannot assign to variable '%s' in PURE procedure at %L"
 msgstr ""
 
-#: fortran/resolve.c:5142
+#: fortran/resolve.c:5149
 #, no-c-format
 msgid "Right side of assignment at %L is a derived type containing a POINTER in a PURE procedure"
 msgstr ""
 
-#: fortran/resolve.c:5162
+#: fortran/resolve.c:5169
 #, no-c-format
 msgid "ASSIGN statement at %L requires a scalar default INTEGER variable"
 msgstr ""
 
-#: fortran/resolve.c:5177
+#: fortran/resolve.c:5184
 #, no-c-format
 msgid "Arithmetic IF statement at %L requires a numeric expression"
 msgstr ""
 
-#: fortran/resolve.c:5219
+#: fortran/resolve.c:5226
 #, no-c-format
 msgid "Exit condition of DO WHILE loop at %L must be a scalar LOGICAL expression"
 msgstr ""
 
-#: fortran/resolve.c:5226
+#: fortran/resolve.c:5233
 #, no-c-format
 msgid "STAT tag in ALLOCATE statement at %L must be of type INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:5238
+#: fortran/resolve.c:5245
 #, no-c-format
 msgid "STAT tag in DEALLOCATE statement at %L must be of type INTEGER"
 msgstr ""
 
-#: fortran/resolve.c:5304
+#: fortran/resolve.c:5311
 #, no-c-format
 msgid "FORALL mask clause at %L requires a LOGICAL expression"
 msgstr ""
 
-#: fortran/resolve.c:5507
+#: fortran/resolve.c:5514
 #, no-c-format
 msgid "Allocatable array '%s' at %L must have a deferred shape"
 msgstr "可指派的陣列「%s」在 %L 處必須有延遲的外形"
 
-#: fortran/resolve.c:5510
+#: fortran/resolve.c:5517
 #, no-c-format
 msgid "Scalar object '%s' at %L may not be ALLOCATABLE"
 msgstr ""
 
-#: fortran/resolve.c:5517
+#: fortran/resolve.c:5524
 #, no-c-format
 msgid "Array pointer '%s' at %L must have a deferred shape"
 msgstr "陣列指標「%s」在 %L 處必須有延遲的外形"
 
-#: fortran/resolve.c:5528
+#: fortran/resolve.c:5535
 #, no-c-format
 msgid "Array '%s' at %L cannot have a deferred shape"
 msgstr "陣列「%s」在 %L 處不能有延遲的外形"
 
-#: fortran/resolve.c:5584
+#: fortran/resolve.c:5591
 #, no-c-format
 msgid "The module or main program array '%s' at %L must have constant shape"
 msgstr "模組或主程式陣列「%s」在 %L 處必須有常態的外形"
 
-#: fortran/resolve.c:5598
+#: fortran/resolve.c:5605
 #, no-c-format
 msgid "Entity with assumed character length at %L must be a dummy argument or a PARAMETER"
 msgstr ""
 
-#: fortran/resolve.c:5617
+#: fortran/resolve.c:5624
 #, no-c-format
 msgid "'%s' at %L must have constant character length in this context"
 msgstr ""
 
-#: fortran/resolve.c:5655
+#: fortran/resolve.c:5662
 #, no-c-format
 msgid "Allocatable '%s' at %L cannot have an initializer"
 msgstr "可指派的「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5658
+#: fortran/resolve.c:5665
 #, no-c-format
 msgid "External '%s' at %L cannot have an initializer"
 msgstr "外部「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5661
+#: fortran/resolve.c:5668
 #, no-c-format
 msgid "Dummy '%s' at %L cannot have an initializer"
 msgstr "啞元「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5664
+#: fortran/resolve.c:5671
 #, no-c-format
 msgid "Intrinsic '%s' at %L cannot have an initializer"
 msgstr "內建函式「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5667
+#: fortran/resolve.c:5674
 #, no-c-format
 msgid "Function result '%s' at %L cannot have an initializer"
 msgstr "函式結果「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5670
+#: fortran/resolve.c:5677
 #, no-c-format
 msgid "Automatic array '%s' at %L cannot have an initializer"
 msgstr "自動陣列「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5685
+#: fortran/resolve.c:5692
 #, no-c-format
 msgid "The type %s cannot be host associated at %L because it is blocked by an incompatible object of the same name at %L"
 msgstr ""
 
-#: fortran/resolve.c:5709
+#: fortran/resolve.c:5716
 #, no-c-format
 msgid "Object '%s' at %L must have the SAVE attribute %s"
 msgstr "%L 處的物件「%s」必須有 SAVE 屬性 %s"
 
-#: fortran/resolve.c:5735
+#: fortran/resolve.c:5742
 #, no-c-format
 msgid "Although not referenced, '%s' at %L has ambiguous interfaces"
 msgstr ""
 
-#: fortran/resolve.c:5749
+#: fortran/resolve.c:5761
 #, no-c-format
 msgid "Character-valued statement function '%s' at %L must have constant length"
 msgstr ""
 
-#: fortran/resolve.c:5757
+#: fortran/resolve.c:5769
 #, fuzzy, no-c-format
 msgid "Automatic character length function '%s' at %L must have an explicit interface"
 msgstr "自動陣列「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5780
+#: fortran/resolve.c:5792
 #, no-c-format
 msgid "'%s' is of a PRIVATE type and cannot be a dummy argument of '%s', which is PUBLIC at %L"
 msgstr ""
 
-#: fortran/resolve.c:5795
+#: fortran/resolve.c:5807
 #, no-c-format
 msgid "External object '%s' at %L may not have an initializer"
 msgstr "外部物件「%s」在 %L 處不能有初始值設定"
 
-#: fortran/resolve.c:5803
+#: fortran/resolve.c:5815
 #, fuzzy, no-c-format
 msgid "ELEMENTAL function '%s' at %L must have a scalar result"
 msgstr "內建函式「%s」 於 %L 處必須有至少兩個引數"
 
-#: fortran/resolve.c:5824
+#: fortran/resolve.c:5836
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be array-valued"
 msgstr "CHARACTER(*) 函式「%s」(位於 %L)不能以陣列賦值"
 
-#: fortran/resolve.c:5828
+#: fortran/resolve.c:5840
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be pointer-valued"
 msgstr "CHARACTER(*) 函式「%s」(位於 %L)不能以指標賦值"
 
-#: fortran/resolve.c:5832
+#: fortran/resolve.c:5844
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be pure"
 msgstr "CHARACTER(*) 函式「%s」(位於 %L)不能是純量"
 
-#: fortran/resolve.c:5836
+#: fortran/resolve.c:5848
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L cannot be recursive"
 msgstr ""
 
-#: fortran/resolve.c:5845
+#: fortran/resolve.c:5857
 #, no-c-format
 msgid "CHARACTER(*) function '%s' at %L is obsolescent in fortran 95"
 msgstr ""
 
-#: fortran/resolve.c:5870
+#: fortran/resolve.c:5882
 #, no-c-format
 msgid "Character length of component '%s' needs to be a constant specification expression at %L."
 msgstr ""
 
-#: fortran/resolve.c:5885
+#: fortran/resolve.c:5897
 #, no-c-format
 msgid "The component '%s' is a PRIVATE type and cannot be a component of '%s', which is PUBLIC at %L"
 msgstr ""
 
-#: fortran/resolve.c:5895
+#: fortran/resolve.c:5907
 #, fuzzy, no-c-format
 msgid "Component %s of SEQUENCE type declared at %L does not have the SEQUENCE attribute"
 msgstr "%C 處的元件必須有 POINTER 屬性"
 
-#: fortran/resolve.c:5905
+#: fortran/resolve.c:5917
 #, no-c-format
 msgid "The pointer component '%s' of '%s' at %L is a type that has not been declared"
 msgstr ""
 
-#: fortran/resolve.c:5923
+#: fortran/resolve.c:5935
 #, no-c-format
 msgid "Component '%s' of '%s' at %L must have constant array bounds."
 msgstr ""
 
-#: fortran/resolve.c:5964
+#: fortran/resolve.c:5976
 #, no-c-format
 msgid "PRIVATE symbol '%s' cannot be member of PUBLIC namelist at %L"
 msgstr ""
 
-#: fortran/resolve.c:5977
+#: fortran/resolve.c:5989
 #, no-c-format
 msgid "The array '%s' must have constant shape to be a NAMELIST object at %L"
 msgstr ""
 
-#: fortran/resolve.c:5990
+#: fortran/resolve.c:6002
 #, no-c-format
 msgid "NAMELIST object '%s' at %L cannot have ALLOCATABLE components"
 msgstr ""
 
-#: fortran/resolve.c:6009
+#: fortran/resolve.c:6021
 #, fuzzy, no-c-format
 msgid "PROCEDURE attribute conflicts with NAMELIST attribute in '%s' at %L"
 msgstr "%s 屬性與 %s 屬性衝突，在「%s」中，位於 %L"
 
-#: fortran/resolve.c:6026
+#: fortran/resolve.c:6038
 #, no-c-format
 msgid "Parameter array '%s' at %L cannot be automatic or assumed shape"
 msgstr ""
 
-#: fortran/resolve.c:6038
+#: fortran/resolve.c:6050
 #, no-c-format
 msgid "Implicitly typed PARAMETER '%s' at %L doesn't match a later IMPLICIT type"
 msgstr ""
 
-#: fortran/resolve.c:6049
+#: fortran/resolve.c:6061
 #, no-c-format
 msgid "Incompatible derived type in PARAMETER at %L"
 msgstr ""
 
-#: fortran/resolve.c:6151
+#: fortran/resolve.c:6163
 #, no-c-format
 msgid "Assumed size array at %L must be a dummy argument"
 msgstr "假定大小的陣列在 %L 處必須是啞引數"
 
-#: fortran/resolve.c:6154
+#: fortran/resolve.c:6166
 #, no-c-format
 msgid "Assumed shape array at %L must be a dummy argument"
 msgstr "假定外形的陣列在 %L 處必須是啞引數"
 
-#: fortran/resolve.c:6167
+#: fortran/resolve.c:6179
 #, no-c-format
 msgid "Symbol at %L is not a DUMMY variable"
 msgstr "%L 處的符號不是一個 DUMMY 變數"
 
-#: fortran/resolve.c:6182
+#: fortran/resolve.c:6194
 #, no-c-format
 msgid "The derived type '%s' at %L is of type '%s', which has not been defined."
 msgstr ""
 
-#: fortran/resolve.c:6201
+#: fortran/resolve.c:6213
 #, no-c-format
 msgid "The INTENT(OUT) dummy argument '%s' at %L is ASSUMED SIZE and so cannot have a default initializer"
 msgstr ""
 
-#: fortran/resolve.c:6239
+#: fortran/resolve.c:6251
 #, no-c-format
 msgid "Intrinsic at %L does not exist"
 msgstr "%L 處的內建函式不存在"
 
-#: fortran/resolve.c:6272
+#: fortran/resolve.c:6284
 #, no-c-format
 msgid "Threadprivate at %L isn't SAVEd"
 msgstr ""
 
-#: fortran/resolve.c:6351
+#: fortran/resolve.c:6363
 #, no-c-format
 msgid "BLOCK DATA element '%s' at %L must be in COMMON"
 msgstr ""
 
-#: fortran/resolve.c:6395
+#: fortran/resolve.c:6407
 #, no-c-format
 msgid "Nonconstant array section at %L in DATA statement"
 msgstr ""
 
-#: fortran/resolve.c:6408
+#: fortran/resolve.c:6420
 #, no-c-format
 msgid "DATA statement at %L has more variables than values"
 msgstr ""
 
-#: fortran/resolve.c:6500
+#: fortran/resolve.c:6512
 #, no-c-format
 msgid "iterator start at %L does not simplify"
 msgstr ""
 
-#: fortran/resolve.c:6508
+#: fortran/resolve.c:6520
 #, fuzzy, no-c-format
 msgid "iterator end at %L does not simplify"
 msgstr "%L 處的內建函式不存在"
 
-#: fortran/resolve.c:6516
+#: fortran/resolve.c:6528
 #, fuzzy, no-c-format
 msgid "iterator step at %L does not simplify"
 msgstr "%L 迭代次數不能為零"
 
-#: fortran/resolve.c:6639
+#: fortran/resolve.c:6651
 #, no-c-format
 msgid "DATA statement at %L has more values than variables"
 msgstr ""
 
-#: fortran/resolve.c:6715
+#: fortran/resolve.c:6727
 #, no-c-format
 msgid "Label %d at %L defined but not used"
 msgstr "標籤 %d 於 %L 經定義但未被使用"
 
-#: fortran/resolve.c:6720
+#: fortran/resolve.c:6732
 #, no-c-format
 msgid "Label %d at %L defined but cannot be used"
 msgstr "標籤 %d 於 %L 經定義但無法被使用"
 
-#: fortran/resolve.c:6805
+#: fortran/resolve.c:6817
 #, no-c-format
 msgid "Derived type variable '%s' at %L must have SEQUENCE attribute to be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6813
+#: fortran/resolve.c:6825
 #, no-c-format
 msgid "Derived type variable '%s' at %L cannot have ALLOCATABLE components to be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6828
+#: fortran/resolve.c:6840
 #, no-c-format
 msgid "Derived type variable '%s' at %L with pointer component(s) cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6835
+#: fortran/resolve.c:6847
 #, no-c-format
 msgid "Derived type variable '%s' at %L with default initializer cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:6936
+#: fortran/resolve.c:6948
 #, no-c-format
 msgid "Syntax error in EQUIVALENCE statement at %L"
 msgstr "%L 處 EQUIVALENCE 敘述語法錯誤"
 
-#: fortran/resolve.c:6953
+#: fortran/resolve.c:6965
 #, no-c-format
 msgid "Initialized objects '%s' and '%s' cannot both be in the EQUIVALENCE statement at %L"
 msgstr ""
 
-#: fortran/resolve.c:6967
+#: fortran/resolve.c:6979
 #, no-c-format
 msgid "Common block member '%s' at %L cannot be an EQUIVALENCE object in the pure procedure '%s'"
 msgstr ""
 
-#: fortran/resolve.c:6976
+#: fortran/resolve.c:6988
 #, no-c-format
 msgid "Named constant '%s' at %L cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:7055
+#: fortran/resolve.c:7067
 #, no-c-format
 msgid "Array '%s' at %L with non-constant bounds cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:7066
+#: fortran/resolve.c:7078
 #, no-c-format
 msgid "Structure component '%s' at %L cannot be an EQUIVALENCE object"
 msgstr ""
 
-#: fortran/resolve.c:7077
+#: fortran/resolve.c:7089
 #, no-c-format
 msgid "Substring at %L has length zero"
 msgstr "%L 的子字串長度為零"
 
-#: fortran/resolve.c:7120
+#: fortran/resolve.c:7132
 #, no-c-format
 msgid "PUBLIC function '%s' at %L cannot be of PRIVATE type '%s'"
 msgstr "PUBLIC 函式「%s」在 %L 處不能是 PRIVATE 類型「%s」"
 
-#: fortran/resolve.c:7147
+#: fortran/resolve.c:7159
 #, no-c-format
 msgid "ENTRY '%s' at %L has no IMPLICIT type"
 msgstr "ENTRY「%s」在 %L 處沒有 IMPLICIT 類型"
 
-#: fortran/resolve.c:7173
+#: fortran/resolve.c:7185
 #, no-c-format
 msgid "User operator procedure '%s' at %L must be a FUNCTION"
 msgstr ""
 
-#: fortran/resolve.c:7179
+#: fortran/resolve.c:7191
 #, no-c-format
 msgid "User operator procedure '%s' at %L cannot be assumed character length"
 msgstr ""
 
-#: fortran/resolve.c:7185
+#: fortran/resolve.c:7197
 #, fuzzy, no-c-format
 msgid "User operator procedure '%s' at %L must have at least one argument"
 msgstr "內建函式「%s」 於 %L 處必須有至少兩個引數"
 
-#: fortran/resolve.c:7195
+#: fortran/resolve.c:7207
 #, fuzzy, no-c-format
 msgid "First argument of operator interface at %L cannot be optional"
 msgstr "%L 處運算子介面的第一個參數必須是 INTENT(IN)"
 
-#: fortran/resolve.c:7207
+#: fortran/resolve.c:7219
 #, fuzzy, no-c-format
 msgid "Second argument of operator interface at %L cannot be optional"
 msgstr "%L 處運算子介面的第二個參數必須是 INTENT(IN)"
 
-#: fortran/resolve.c:7211
+#: fortran/resolve.c:7223
 #, fuzzy, no-c-format
 msgid "Operator interface at %L must have, at most, two arguments"
 msgstr "內建函式「%s」 於 %L 處必須有至少兩個引數"
 
-#: fortran/resolve.c:7244
+#: fortran/resolve.c:7256
 #, no-c-format
 msgid "Contained procedure '%s' at %L of a PURE procedure must also be PURE"
 msgstr ""
@@ -9435,33 +9435,33 @@ msgstr ""
 msgid "Named COMMON block '%s' at %L shall be of the same size"
 msgstr ""
 
-#: fortran/trans-common.c:669
+#: fortran/trans-common.c:670
 #, no-c-format
 msgid "Bad array reference at %L"
 msgstr "%L 處陣列參照錯誤"
 
-#: fortran/trans-common.c:677
+#: fortran/trans-common.c:678
 #, no-c-format
 msgid "Illegal reference type at %L as EQUIVALENCE object"
 msgstr ""
 
-#: fortran/trans-common.c:717
+#: fortran/trans-common.c:718
 #, no-c-format
 msgid "Inconsistent equivalence rules involving '%s' at %L and '%s' at %L"
 msgstr ""
 
 #. Aligning this field would misalign a previous field.
-#: fortran/trans-common.c:850
+#: fortran/trans-common.c:851
 #, no-c-format
 msgid "The equivalence set for variable '%s' declared at %L violates alignment requirements"
 msgstr ""
 
-#: fortran/trans-common.c:915
+#: fortran/trans-common.c:916
 #, no-c-format
 msgid "Equivalence for '%s' does not match ordering of COMMON '%s' at %L"
 msgstr ""
 
-#: fortran/trans-common.c:930
+#: fortran/trans-common.c:931
 #, no-c-format
 msgid "The equivalence set for '%s' cause an invalid extension to COMMON '%s' at %L"
 msgstr ""
@@ -9469,17 +9469,17 @@ msgstr ""
 #. The required offset conflicts with previous alignment
 #. requirements.  Insert padding immediately before this
 #. segment.
-#: fortran/trans-common.c:941
+#: fortran/trans-common.c:942
 #, no-c-format
 msgid "Padding of %d bytes required before '%s' in COMMON '%s' at %L"
 msgstr ""
 
-#: fortran/trans-common.c:967
+#: fortran/trans-common.c:968
 #, fuzzy, no-c-format
 msgid "COMMON '%s' at %L does not exist"
 msgstr "%L 處的內建函式不存在"
 
-#: fortran/trans-common.c:974
+#: fortran/trans-common.c:975
 #, no-c-format
 msgid "COMMON '%s' at %L requires %d bytes of padding at start"
 msgstr ""
@@ -9504,7 +9504,7 @@ msgstr "參數 %qD 被宣告為 void"
 msgid "Unused variable %s declared at %L"
 msgstr "實體變數 %qs 宣告為 %s"
 
-#: fortran/trans-expr.c:1954
+#: fortran/trans-expr.c:1962
 #, fuzzy, no-c-format
 msgid "Unknown argument list function at %L"
 msgstr "函式「%s」在 %C 處缺少參數清單"
@@ -11965,7 +11965,7 @@ msgstr "產生不帶 FPU 的 SH4 程式碼"
 #: config/sh/sh.opt:97
 #, fuzzy
 msgid "Generate code for SH4 400 series (MMU/FPU-less)"
-msgstr "為 C44 CPU 產生程式碼"
+msgstr "為 C40 CPU 產生程式碼"
 
 #: config/sh/sh.opt:102
 #, fuzzy
@@ -12357,7 +12357,7 @@ msgstr "設定 sizeof(bool) 為 1"
 #: config/darwin.opt:36
 #, fuzzy
 msgid "Generate code for darwin loadable kernel extentions"
-msgstr "為 68060 產生程式碼，不使用新指令"
+msgstr "為 68040 產生程式碼，不使用新指令"
 
 #: config/darwin.opt:40
 #, fuzzy
@@ -12697,7 +12697,7 @@ msgstr "使用 AltiVec 指令"
 #: config/score/score.opt:36
 #, fuzzy
 msgid "Enable unaligned load/store instruction"
-msgstr "啟用平行指令"
+msgstr "啟用 DB 指令"
 
 #: config/score/score.opt:40
 #, fuzzy
@@ -15968,7 +15968,7 @@ msgstr "對非靜態資料成員 %qD 的無效使用"
 msgid "cannot apply %<offsetof%> when %<operator[]%> is overloaded"
 msgstr ""
 
-#: c-common.c:6070 cp/typeck.c:4434
+#: c-common.c:6070 cp/typeck.c:4432
 #, gcc-internal-format
 msgid "attempt to take address of bit-field structure member %qD"
 msgstr "試圖取位元段結構成員 %qD 的位址"
@@ -16020,8 +16020,8 @@ msgstr "陣列下標類型為 %<char%>"
 #. an unprototyped function, it is compile-time undefined;
 #. making it a constraint in that case was rejected in
 #. DR#252.
-#: c-convert.c:96 c-typeck.c:1691 c-typeck.c:3901 cp/typeck.c:1506
-#: cp/typeck.c:5619 cp/typeck.c:6208 fortran/convert.c:89
+#: c-convert.c:96 c-typeck.c:1691 c-typeck.c:3901 cp/typeck.c:1504
+#: cp/typeck.c:5617 cp/typeck.c:6206 fortran/convert.c:89
 #: treelang/tree-convert.c:79
 #, gcc-internal-format
 msgid "void value not ignored as it ought to be"
@@ -16305,7 +16305,7 @@ msgstr "%H(即使在一個函式內多次出現，每個未宣告的識別碼在
 msgid "%Hfor each function it appears in.)"
 msgstr "%H所在的函式內只報告一次。)"
 
-#: c-decl.c:2494 cp/decl.c:2252
+#: c-decl.c:2494 cp/decl.c:2269
 #, gcc-internal-format
 msgid "label %qE referenced outside of any function"
 msgstr "標籤 %qE 在所有函式外被參照"
@@ -16423,7 +16423,7 @@ msgstr "static 或類型限定符出現在抽象宣告中"
 msgid "%q+D is usually a function"
 msgstr "%q+D 一般是一個函式"
 
-#: c-decl.c:3187 cp/decl.c:3858 cp/decl2.c:780
+#: c-decl.c:3187 cp/decl.c:3875 cp/decl2.c:780
 #, gcc-internal-format
 msgid "typedef %qD is initialized (use __typeof__ instead)"
 msgstr "typedef %qD 被初始化(改用 __typeof__)"
@@ -16444,7 +16444,7 @@ msgstr "參數 %qD 已初始化"
 msgid "variable %qD has initializer but incomplete type"
 msgstr "變數 %qD 有初始值設定但類型不完全"
 
-#: c-decl.c:3299 c-decl.c:6023 cp/decl.c:3900 cp/decl.c:10482
+#: c-decl.c:3299 c-decl.c:6023 cp/decl.c:3917 cp/decl.c:10538
 #, gcc-internal-format
 msgid "inline function %q+D given attribute noinline"
 msgstr "為內聯函式 %q+D 給定了 noinline 屬性"
@@ -16574,22 +16574,22 @@ msgstr "函式宣告定義為 %<__thread%>"
 msgid "storage class specified for structure field %qs"
 msgstr "為結構欄位 %qs 指定了存儲類別"
 
-#: c-decl.c:4057 cp/decl.c:7511
+#: c-decl.c:4057 cp/decl.c:7567
 #, gcc-internal-format
 msgid "storage class specified for parameter %qs"
 msgstr "為參數 %qs 指定了存儲類別"
 
-#: c-decl.c:4060 cp/decl.c:7513
+#: c-decl.c:4060 cp/decl.c:7569
 #, gcc-internal-format
 msgid "storage class specified for typename"
 msgstr "為類型名指定了存儲類別"
 
-#: c-decl.c:4077 cp/decl.c:7530
+#: c-decl.c:4077 cp/decl.c:7586
 #, gcc-internal-format
 msgid "%qs initialized and declared %<extern%>"
 msgstr "%qs 已初始化，卻又被宣告為 %<extern%>"
 
-#: c-decl.c:4080 cp/decl.c:7533
+#: c-decl.c:4080 cp/decl.c:7589
 #, gcc-internal-format
 msgid "%qs has both %<extern%> and initializer"
 msgstr "%qs 既有 %<extern%> 又有初始值設定"
@@ -16604,12 +16604,12 @@ msgstr "檔案作用欄位中 %qs 的宣告指定了 %<auto%>"
 msgid "file-scope declaration of %qs specifies %<register%>"
 msgstr "檔案作用欄位中 %qs 的宣告指定了 %<register%>"
 
-#: c-decl.c:4092 cp/decl.c:7537
+#: c-decl.c:4092 cp/decl.c:7593
 #, gcc-internal-format
 msgid "nested function %qs declared %<extern%>"
 msgstr "巢狀函式 %qs 被宣告為 %<extern%>"
 
-#: c-decl.c:4095 cp/decl.c:7547
+#: c-decl.c:4095 cp/decl.c:7603
 #, gcc-internal-format
 msgid "function-scope %qs implicitly auto and declared %<__thread%>"
 msgstr "函式作用欄位的 %qs 隱含為 auto，卻被宣告為 %<__thread%>"
@@ -16662,7 +16662,7 @@ msgstr "ISO C90 不允許陣列 %qs，因為不能計算其大小"
 msgid "ISO C90 forbids variable-size array %qs"
 msgstr "ISO C90 不允許彈性陣列 %qs"
 
-#: c-decl.c:4296 c-decl.c:4551 cp/decl.c:7946
+#: c-decl.c:4296 c-decl.c:4551 cp/decl.c:8002
 #, gcc-internal-format
 msgid "size of array %qs is too large"
 msgstr "陣列 %qs 太大"
@@ -16683,12 +16683,12 @@ msgstr "不允許在 using 宣告中使用命名空間 %qD"
 msgid "array type has incomplete element type"
 msgstr "陣列元素的類型不完全"
 
-#: c-decl.c:4425 cp/decl.c:7631
+#: c-decl.c:4425 cp/decl.c:7687
 #, gcc-internal-format
 msgid "%qs declared as function returning a function"
 msgstr "%qs 宣告為回傳一個函式的函式"
 
-#: c-decl.c:4430 cp/decl.c:7636
+#: c-decl.c:4430 cp/decl.c:7692
 #, gcc-internal-format
 msgid "%qs declared as function returning an array"
 msgstr "%qs 宣告為回傳一個陣列的函式"
@@ -16779,7 +16779,7 @@ msgstr "變數 %q+D 宣告為 %<inline%>"
 #. A mere warning is sure to result in improper
 #. semantics at runtime.  Don't bother to allow this to
 #. compile.
-#: c-decl.c:4862 cp/decl.c:6398 cp/decl.c:8538
+#: c-decl.c:4862 cp/decl.c:6454 cp/decl.c:8594
 #, gcc-internal-format
 msgid "thread-local storage not supported for this target"
 msgstr "執行緒局部存儲在此目標平臺上不受支援"
@@ -16872,7 +16872,7 @@ msgstr "巢狀的 %<union %E%> 重定義"
 msgid "nested redefinition of %<struct %E%>"
 msgstr "巢狀的 %<struct %E%> 重定義"
 
-#: c-decl.c:5359 cp/decl.c:3663
+#: c-decl.c:5359 cp/decl.c:3680
 #, gcc-internal-format
 msgid "declaration does not declare anything"
 msgstr "沒有宣告任何東西"
@@ -17128,7 +17128,7 @@ msgstr "引數 %qD 與內建原型不符"
 msgid "argument %qD doesn%'t match prototype"
 msgstr "引數 %qD 與原型不符"
 
-#: c-decl.c:6758 cp/decl.c:11270
+#: c-decl.c:6758 cp/decl.c:11326
 #, gcc-internal-format
 msgid "no return statement in function returning non-void"
 msgstr "在有回傳值的函式中未發現 return 敘述"
@@ -17399,7 +17399,7 @@ msgstr "宣告中同時使用了 <long%> 和 %<short%>"
 #: c-decl.c:7513
 #, fuzzy, gcc-internal-format
 msgid "both %<short%> and %<%s%> in declaration specifiers"
-msgstr "宣告中同時使用了 %<short%> 和 %<char%>"
+msgstr "宣告中同時使用了 %<short%> 和 %<void%>"
 
 #: c-decl.c:7516
 #, fuzzy, gcc-internal-format
@@ -17424,7 +17424,7 @@ msgstr "-fdata-sections 在此目標平臺上不受支援"
 #: c-decl.c:7534
 #, fuzzy, gcc-internal-format
 msgid "ISO C does not support decimal floating point"
-msgstr "ISO C++ 不支援 %<long long%>"
+msgstr "ISO C90 不支援 %<long long%>"
 
 #: c-decl.c:7568
 #, gcc-internal-format
@@ -17908,7 +17908,7 @@ msgstr "實體變數 %qs 大小不明"
 msgid "%H%qE is not initialized"
 msgstr "參數 %qD 已初始化"
 
-#: c-omp.c:247 cp/semantics.c:3812
+#: c-omp.c:247 cp/semantics.c:3815
 #, gcc-internal-format
 msgid "%Hmissing controlling predicate"
 msgstr ""
@@ -17918,7 +17918,7 @@ msgstr ""
 msgid "%Hinvalid controlling predicate"
 msgstr "無效的條件運算元"
 
-#: c-omp.c:312 cp/semantics.c:3818
+#: c-omp.c:312 cp/semantics.c:3821
 #, fuzzy, gcc-internal-format
 msgid "%Hmissing increment expression"
 msgstr "取消賦值"
@@ -18106,7 +18106,7 @@ msgstr "ISO C++ 不允許巢狀函式"
 msgid "expected identifier"
 msgstr "需要識別碼"
 
-#: c-parser.c:1765 cp/parser.c:10509
+#: c-parser.c:1765 cp/parser.c:10521
 #, gcc-internal-format
 msgid "comma at end of enumerator list"
 msgstr "列舉表以逗號結尾"
@@ -18191,7 +18191,7 @@ msgstr "需要指定宣告或 %<...%>"
 msgid "wide string literal in %<asm%>"
 msgstr "%<asm%> 中出現寬字面字串"
 
-#: c-parser.c:2760 c-parser.c:6619 cp/parser.c:19250
+#: c-parser.c:2760 c-parser.c:6619 cp/parser.c:19262
 #, gcc-internal-format
 msgid "expected string literal"
 msgstr "需要字面字串"
@@ -18320,27 +18320,27 @@ msgstr "ISO C90 不允許複合字面值"
 msgid "extra semicolon in method definition specified"
 msgstr "為方法定義指定了多餘的分號"
 
-#: c-parser.c:6525 cp/parser.c:19293
+#: c-parser.c:6525 cp/parser.c:19305
 #, gcc-internal-format
 msgid "%<#pragma omp barrier%> may only be used in compound statements"
 msgstr ""
 
-#: c-parser.c:6536 cp/parser.c:19308
+#: c-parser.c:6536 cp/parser.c:19320
 #, gcc-internal-format
 msgid "%<#pragma omp flush%> may only be used in compound statements"
 msgstr ""
 
-#: c-parser.c:6548 cp/parser.c:19334
+#: c-parser.c:6548 cp/parser.c:19346
 #, gcc-internal-format
 msgid "%<#pragma omp section%> may only be used in %<#pragma omp sections%> construct"
 msgstr ""
 
-#: c-parser.c:6554 cp/parser.c:19283
+#: c-parser.c:6554 cp/parser.c:19295
 #, fuzzy, gcc-internal-format
 msgid "%<#pragma GCC pch_preprocess%> must be first"
 msgstr "#pragma GCC pch_preprocess 格式不正確，已忽略"
 
-#: c-parser.c:6705 cp/parser.c:18131
+#: c-parser.c:6705 cp/parser.c:18143
 #, fuzzy, gcc-internal-format
 msgid "too many %qs clauses"
 msgstr "輸入檔案太多"
@@ -18370,7 +18370,7 @@ msgstr ""
 msgid "expected %<+%>, %<*%>, %<-%>, %<&%>, %<^%>, %<|%>, %<&&%>, or %<||%>"
 msgstr "需要 %<:%>，%<,%>，%<;%>，%<}%> 或 %<__attribute__%>"
 
-#: c-parser.c:7086 cp/parser.c:18480
+#: c-parser.c:7086 cp/parser.c:18492
 #, gcc-internal-format
 msgid "schedule %<runtime%> does not take a %<chunk_size%> parameter"
 msgstr ""
@@ -18385,7 +18385,7 @@ msgstr "無效的 const_double 運算元"
 msgid "expected %<#pragma omp%> clause"
 msgstr ""
 
-#: c-parser.c:7198 cp/parser.c:18589
+#: c-parser.c:7198 cp/parser.c:18601
 #, fuzzy, gcc-internal-format
 msgid "%qs is not valid for %qs"
 msgstr "%qs 不是一個有效的輸出檔案"
@@ -18405,7 +18405,7 @@ msgstr "非預期的模組結束"
 msgid "for statement expected"
 msgstr "需要 %s 敘述在 %L 處"
 
-#: c-parser.c:7460 cp/semantics.c:3798 cp/semantics.c:3842
+#: c-parser.c:7460 cp/semantics.c:3801 cp/semantics.c:3845
 #, fuzzy, gcc-internal-format
 msgid "expected iteration declaration or initialization"
 msgstr "需要宣告或敘述"
@@ -18415,22 +18415,22 @@ msgstr "需要宣告或敘述"
 msgid "expected %<#pragma omp section%> or %<}%>"
 msgstr "需要 %<,%> 或 %<}%>"
 
-#: c-parser.c:7811 cp/parser.c:19171 fortran/openmp.c:470
+#: c-parser.c:7811 cp/parser.c:19183 fortran/openmp.c:470
 #, fuzzy, gcc-internal-format
 msgid "threadprivate variables not supported in this target"
 msgstr "執行緒局部存儲在此目標平臺上不受支援"
 
-#: c-parser.c:7821 cp/semantics.c:3692
+#: c-parser.c:7821 cp/semantics.c:3695
 #, fuzzy, gcc-internal-format
 msgid "%qE declared %<threadprivate%> after first use"
 msgstr "%q+F 宣告為 %<static%> 卻從未定義過"
 
-#: c-parser.c:7823 cp/semantics.c:3694
+#: c-parser.c:7823 cp/semantics.c:3697
 #, fuzzy, gcc-internal-format
 msgid "automatic variable %qE cannot be %<threadprivate%>"
 msgstr "實體變數 %qs 被宣告為私有的"
 
-#: c-parser.c:7825 cp/semantics.c:3696
+#: c-parser.c:7825 cp/semantics.c:3699
 #, fuzzy, gcc-internal-format
 msgid "%<threadprivate%> %qE has incomplete type"
 msgstr "%J參數 %u 類型不完全"
@@ -18761,17 +18761,17 @@ msgstr "提領參照不完全類型的指標"
 msgid "dereferencing %<void *%> pointer"
 msgstr "提領 %<void *%> 指標"
 
-#: c-typeck.c:1913 cp/typeck.c:2369
+#: c-typeck.c:1913 cp/typeck.c:2367
 #, gcc-internal-format
 msgid "invalid type argument of %qs"
 msgstr "%qs 的引數類型無效"
 
-#: c-typeck.c:1941 cp/typeck.c:2512
+#: c-typeck.c:1941 cp/typeck.c:2510
 #, gcc-internal-format
 msgid "subscripted value is neither array nor pointer"
 msgstr "下標運算的左運算元既非陣列也非指標"
 
-#: c-typeck.c:1952 cp/typeck.c:2431 cp/typeck.c:2517
+#: c-typeck.c:1952 cp/typeck.c:2429 cp/typeck.c:2515
 #, gcc-internal-format
 msgid "array subscript is not an integer"
 msgstr "陣列下標不是一個整數"
@@ -18852,7 +18852,7 @@ msgstr "根據原型，引數 %d (%qE) 將做為 %<float%> 而不是 %<double%> 
 #: c-typeck.c:2488
 #, fuzzy, gcc-internal-format
 msgid "passing argument %d of %qE as %qT rather than %qT due to prototype"
-msgstr "根據原型，引數 %d (%qE) 將做為複數而不是整數傳遞"
+msgstr "根據原型，引數 %d (%qE) 將做為整數而不是複數傳遞"
 
 #: c-typeck.c:2509
 #, gcc-internal-format
@@ -18914,7 +18914,7 @@ msgstr "建議在 & 的運算元中出現的 + 或 - 前後加上括號"
 msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
 msgstr "形如 X<=Y<=Z 的比較並不具備其在數學上的意義"
 
-#: c-typeck.c:2696 c-typeck.c:2701 cp/typeck.c:3281 cp/typeck.c:3390
+#: c-typeck.c:2696 c-typeck.c:2701 cp/typeck.c:3279 cp/typeck.c:3388
 #, fuzzy, gcc-internal-format
 msgid "comparison with string literal results in unspecified behaviour"
 msgstr "%q+D 的弱宣告出現在第一次使用之後將導致不可預期的行為"
@@ -19381,7 +19381,7 @@ msgstr "傳統 C 不接受自動的聚合初始化"
 msgid "(near initialization for %qs)"
 msgstr "(在 %qs 的初始化附近)"
 
-#: c-typeck.c:5093 cp/decl.c:4824
+#: c-typeck.c:5093 cp/decl.c:4841
 #, gcc-internal-format
 msgid "opaque vector types cannot be initialized"
 msgstr "不透明的向量類型不能被初始化"
@@ -19411,7 +19411,7 @@ msgstr "跳至具有可變類型的識別碼的作用欄位中"
 msgid "ISO C forbids %<goto *expr;%>"
 msgstr "ISO C++ 不允許 %<goto *expr;%>"
 
-#: c-typeck.c:6982 cp/typeck.c:6461
+#: c-typeck.c:6982 cp/typeck.c:6459
 #, gcc-internal-format
 msgid "function declared %<noreturn%> has a %<return%> statement"
 msgstr "被宣告為 %<noreturn%> 的函式卻有 %<return%> 敘述"
@@ -19461,7 +19461,7 @@ msgstr "case 標籤出現在沒有包含的 switch 敘述的可變類型識別�
 msgid "%<default%> label in scope of identifier with variably modified type not containing enclosing switch statement"
 msgstr "%<default%> 標籤出現在沒有包含的 switch 敘述的可變類型識別碼的作用欄位中"
 
-#: c-typeck.c:7196 cp/parser.c:6415
+#: c-typeck.c:7196 cp/parser.c:6427
 #, gcc-internal-format
 msgid "case label not within a switch statement"
 msgstr "case 標籤出現在開關敘述外"
@@ -19476,17 +19476,17 @@ msgstr "%<default%> 標籤未出現在 switch 敘述內"
 msgid "%Hsuggest explicit braces to avoid ambiguous %<else%>"
 msgstr "%H建議明確地使用大括號以避免出現有歧義的 %<else%>"
 
-#: c-typeck.c:7386 cp/cp-gimplify.c:97 cp/parser.c:6911
+#: c-typeck.c:7386 cp/cp-gimplify.c:97 cp/parser.c:6923
 #, gcc-internal-format
 msgid "break statement not within loop or switch"
 msgstr "break 敘述不在循環或開關敘述內"
 
-#: c-typeck.c:7388 cp/parser.c:6932
+#: c-typeck.c:7388 cp/parser.c:6944
 #, gcc-internal-format
 msgid "continue statement not within a loop"
 msgstr "continue 敘述出現在循環以外"
 
-#: c-typeck.c:7393 cp/parser.c:6922
+#: c-typeck.c:7393 cp/parser.c:6934
 #, fuzzy, gcc-internal-format
 msgid "break statement used with OpenMP for loop"
 msgstr "break 敘述不在循環或開關敘述內"
@@ -19506,27 +19506,27 @@ msgstr "運算式敘述類型不完全"
 msgid "division by zero"
 msgstr "被零除"
 
-#: c-typeck.c:7987 cp/typeck.c:3214
+#: c-typeck.c:7987 cp/typeck.c:3212
 #, gcc-internal-format
 msgid "right shift count is negative"
 msgstr "右移次數為負"
 
-#: c-typeck.c:7994 cp/typeck.c:3220
+#: c-typeck.c:7994 cp/typeck.c:3218
 #, gcc-internal-format
 msgid "right shift count >= width of type"
 msgstr "右移次數大於或等於類型寬度"
 
-#: c-typeck.c:8015 cp/typeck.c:3239
+#: c-typeck.c:8015 cp/typeck.c:3237
 #, gcc-internal-format
 msgid "left shift count is negative"
 msgstr "左移次數為負"
 
-#: c-typeck.c:8018 cp/typeck.c:3241
+#: c-typeck.c:8018 cp/typeck.c:3239
 #, gcc-internal-format
 msgid "left shift count >= width of type"
 msgstr "左移次數大於或等於類型寬度"
 
-#: c-typeck.c:8036 cp/typeck.c:3277
+#: c-typeck.c:8036 cp/typeck.c:3275
 #, gcc-internal-format
 msgid "comparing floating point with == or != is unsafe"
 msgstr "使用 == 或 != 比較浮點數是不安全的"
@@ -19571,12 +19571,12 @@ msgstr "指標與整數 0 比較大小"
 msgid "comparison between signed and unsigned"
 msgstr "比較有號和無號數"
 
-#: c-typeck.c:8448 cp/typeck.c:3709
+#: c-typeck.c:8448 cp/typeck.c:3707
 #, gcc-internal-format
 msgid "comparison of promoted ~unsigned with constant"
 msgstr "比較常數和取反後又經提升的無號數"
 
-#: c-typeck.c:8456 cp/typeck.c:3717
+#: c-typeck.c:8456 cp/typeck.c:3715
 #, gcc-internal-format
 msgid "comparison of promoted ~unsigned with unsigned"
 msgstr "比較無號數和取反後又經提升的無號數"
@@ -19596,48 +19596,48 @@ msgstr "需要標量時使用了結構類型"
 msgid "used union type value where scalar is required"
 msgstr "需要標量時使用了聯合類型"
 
-#: c-typeck.c:8627 cp/semantics.c:3519
+#: c-typeck.c:8627 cp/semantics.c:3522
 #, fuzzy, gcc-internal-format
 msgid "%qE has invalid type for %<reduction%>"
 msgstr "錯誤地使用了 %<restrict%>"
 
-#: c-typeck.c:8661 cp/semantics.c:3532
+#: c-typeck.c:8661 cp/semantics.c:3535
 #, gcc-internal-format
 msgid "%qE has invalid type for %<reduction(%s)%>"
 msgstr ""
 
-#: c-typeck.c:8677 cp/semantics.c:3542
+#: c-typeck.c:8677 cp/semantics.c:3545
 #, gcc-internal-format
 msgid "%qE must be %<threadprivate%> for %<copyin%>"
 msgstr ""
 
-#: c-typeck.c:8686 cp/semantics.c:3347
+#: c-typeck.c:8686 cp/semantics.c:3350
 #, fuzzy, gcc-internal-format
 msgid "%qE is not a variable in clause %qs"
 msgstr "%qT 是 %qT 的一個不可存取的基礎類別"
 
-#: c-typeck.c:8693 c-typeck.c:8713 c-typeck.c:8733 cp/semantics.c:3354
-#: cp/semantics.c:3373 cp/semantics.c:3392
+#: c-typeck.c:8693 c-typeck.c:8713 c-typeck.c:8733 cp/semantics.c:3376
+#: cp/semantics.c:3395
 #, gcc-internal-format
 msgid "%qE appears more than once in data clauses"
 msgstr ""
 
-#: c-typeck.c:8707 cp/semantics.c:3367
+#: c-typeck.c:8707 cp/semantics.c:3370
 #, fuzzy, gcc-internal-format
 msgid "%qE is not a variable in clause %<firstprivate%>"
 msgstr "實體變數 %qs 被宣告為私有的"
 
-#: c-typeck.c:8727 cp/semantics.c:3386
+#: c-typeck.c:8727 cp/semantics.c:3389
 #, fuzzy, gcc-internal-format
 msgid "%qE is not a variable in clause %<lastprivate%>"
 msgstr "實體變數 %qs 被宣告為私有的"
 
-#: c-typeck.c:8785 cp/semantics.c:3583
+#: c-typeck.c:8785 cp/semantics.c:3586
 #, gcc-internal-format
 msgid "%qE is predetermined %qs for %qs"
 msgstr ""
 
-#: calls.c:1961
+#: calls.c:1973
 #, gcc-internal-format
 msgid "function call has aggregate value"
 msgstr "函式呼叫有聚合類型"
@@ -20267,47 +20267,47 @@ msgstr "在 %s 中放棄，於 %s:%d"
 msgid "exception handling disabled, use -fexceptions to enable"
 msgstr ""
 
-#: except.c:2879
+#: except.c:2883
 #, gcc-internal-format
 msgid "argument of %<__builtin_eh_return_regno%> must be constant"
 msgstr "%<__builtin_eh_return_regno%> 的引數必須是常數"
 
-#: except.c:3010
+#: except.c:3014
 #, gcc-internal-format
 msgid "__builtin_eh_return not supported on this target"
 msgstr "__builtin_eh_return 在此目標平臺上不受支援"
 
-#: except.c:3871 except.c:3880
+#: except.c:3875 except.c:3884
 #, gcc-internal-format
 msgid "region_array is corrupted for region %i"
 msgstr ""
 
-#: except.c:3885
+#: except.c:3889
 #, gcc-internal-format
 msgid "outer block of region %i is wrong"
 msgstr ""
 
-#: except.c:3890
+#: except.c:3894
 #, gcc-internal-format
 msgid "region %i may contain throw and is contained in region that may not"
 msgstr ""
 
-#: except.c:3896
+#: except.c:3900
 #, gcc-internal-format
 msgid "negative nesting depth of region %i"
 msgstr ""
 
-#: except.c:3916
+#: except.c:3920
 #, gcc-internal-format
 msgid "tree list ends on depth %i"
 msgstr ""
 
-#: except.c:3921
+#: except.c:3925
 #, gcc-internal-format
 msgid "array does not match the region tree"
 msgstr ""
 
-#: except.c:3927
+#: except.c:3931
 #, gcc-internal-format
 msgid "verify_eh_tree failed"
 msgstr "verify_eh_tree 失敗"
@@ -20317,7 +20317,7 @@ msgstr "verify_eh_tree 失敗"
 msgid "stack limits not supported on this target"
 msgstr "堆疊限制在此目標平臺上不受支援"
 
-#: fold-const.c:958 tree-ssa-loop-niter.c:1163 tree-vrp.c:4346
+#: fold-const.c:958 tree-ssa-loop-niter.c:1163 tree-vrp.c:4423
 #, gcc-internal-format
 msgid "%H%s"
 msgstr "%H%s"
@@ -20332,27 +20332,27 @@ msgstr ""
 msgid "comparison is always %d due to width of bit-field"
 msgstr "由於位元段寬度所限，比較結果永遠為 %d"
 
-#: fold-const.c:4868
+#: fold-const.c:4884
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying range test"
 msgstr ""
 
-#: fold-const.c:5247 fold-const.c:5262
+#: fold-const.c:5263 fold-const.c:5278
 #, gcc-internal-format
 msgid "comparison is always %d"
 msgstr "比較結果始終為 %d"
 
-#: fold-const.c:5391
+#: fold-const.c:5407
 #, gcc-internal-format
 msgid "%<or%> of unmatched not-equal tests is always 1"
 msgstr "對兩個不匹配的不等比較取 %<or%> 的結果總為 1"
 
-#: fold-const.c:5396
+#: fold-const.c:5412
 #, gcc-internal-format
 msgid "%<and%> of mutually exclusive equal-tests is always 0"
 msgstr "對兩個互斥的相等比較取 %<and%> 的結果永遠是 0"
 
-#: fold-const.c:11859
+#: fold-const.c:11875
 #, gcc-internal-format
 msgid "fold check: original tree changed by fold"
 msgstr ""
@@ -20367,7 +20367,7 @@ msgstr "%J局部物件的總大小太大"
 msgid "size of variable %q+D is too large"
 msgstr "變數 %q+D 的大小太大"
 
-#: function.c:1560
+#: function.c:1560 gimplify.c:4063
 #, gcc-internal-format
 msgid "impossible constraint in %<asm%>"
 msgstr "%<asm%> 中不可能的約束"
@@ -20540,40 +20540,45 @@ msgstr "組譯輸出 %d 中左值無效"
 
 #: gimplify.c:4064
 #, gcc-internal-format
+msgid "non-memory input %d must stay in memory"
+msgstr ""
+
+#: gimplify.c:4077
+#, gcc-internal-format
 msgid "memory input %d is not directly addressable"
 msgstr "記憶體輸入 %d 不可直接定址"
 
-#: gimplify.c:4537
+#: gimplify.c:4550
 #, gcc-internal-format
 msgid "%qs not specified in enclosing parallel"
 msgstr ""
 
-#: gimplify.c:4539
+#: gimplify.c:4552
 #, gcc-internal-format
 msgid "%Henclosing parallel"
 msgstr ""
 
-#: gimplify.c:4593
+#: gimplify.c:4606
 #, fuzzy, gcc-internal-format
 msgid "iteration variable %qs should be private"
 msgstr "實體變數 %qs 被宣告為私有的"
 
-#: gimplify.c:4607
+#: gimplify.c:4620
 #, fuzzy, gcc-internal-format
 msgid "iteration variable %qs should not be firstprivate"
 msgstr "實體變數 %qs 被宣告為私有的"
 
-#: gimplify.c:4610
+#: gimplify.c:4623
 #, fuzzy, gcc-internal-format
 msgid "iteration variable %qs should not be reduction"
 msgstr "巢狀函式中使用了暫存器變數 %qs"
 
-#: gimplify.c:4734
+#: gimplify.c:4747
 #, fuzzy, gcc-internal-format
 msgid "%s variable %qs is private in outer context"
 msgstr "局部變數 %qD 不應出現在此上下文中"
 
-#: gimplify.c:6025
+#: gimplify.c:6051
 #, gcc-internal-format
 msgid "gimplification failed"
 msgstr "gimplification 失敗"
@@ -20594,37 +20599,37 @@ msgstr "無法開啟 %s：%m"
 msgid "fix_sched_param: unknown param: %s"
 msgstr ""
 
-#: omp-low.c:1266
+#: omp-low.c:1269
 #, gcc-internal-format
 msgid "work-sharing region may not be closely nested inside of work-sharing, critical, ordered or master region"
 msgstr ""
 
-#: omp-low.c:1282
+#: omp-low.c:1285
 #, gcc-internal-format
 msgid "master region may not be closely nested inside of work-sharing region"
 msgstr ""
 
-#: omp-low.c:1296
+#: omp-low.c:1299
 #, gcc-internal-format
 msgid "ordered region may not be closely nested inside of critical region"
 msgstr ""
 
-#: omp-low.c:1302
+#: omp-low.c:1305
 #, gcc-internal-format
 msgid "ordered region must be closely nested inside a loop region with an ordered clause"
 msgstr ""
 
-#: omp-low.c:1316
+#: omp-low.c:1319
 #, gcc-internal-format
 msgid "critical region may not be nested inside a critical region with the same name"
 msgstr ""
 
-#: omp-low.c:4459 cp/decl.c:2515 cp/parser.c:6919 cp/parser.c:6939
+#: omp-low.c:4497 cp/decl.c:2532 cp/parser.c:6931 cp/parser.c:6951
 #, gcc-internal-format
 msgid "invalid exit from OpenMP structured block"
 msgstr ""
 
-#: omp-low.c:4461
+#: omp-low.c:4499
 #, gcc-internal-format
 msgid "invalid entry to OpenMP structured block"
 msgstr ""
@@ -21869,12 +21874,12 @@ msgstr "%H此函式中的 %qD 在使用前可能未初始化"
 msgid "no support for induction"
 msgstr "不支援歸納"
 
-#: tree-vrp.c:4328
+#: tree-vrp.c:4405
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying conditional to constant"
 msgstr ""
 
-#: tree-vrp.c:4334
+#: tree-vrp.c:4411
 #, gcc-internal-format
 msgid "assuming signed overflow does not occur when simplifying conditional"
 msgstr ""
@@ -21895,10 +21900,10 @@ msgid "%q+D redeclared without dllimport attribute: previous dllimport ignored"
 msgstr "%q+D 重宣告時沒有 dllimport 屬性：忽略先前的 dllimport"
 
 #: tree.c:3726 tree.c:3738 config/darwin.c:1359 config/arm/arm.c:2906
-#: config/arm/arm.c:2934 config/avr/avr.c:4693 config/h8300/h8300.c:5282
-#: config/h8300/h8300.c:5306 config/i386/i386.c:2382 config/i386/i386.c:17541
+#: config/arm/arm.c:2934 config/avr/avr.c:4694 config/h8300/h8300.c:5282
+#: config/h8300/h8300.c:5306 config/i386/i386.c:2382 config/i386/i386.c:17550
 #: config/ia64/ia64.c:565 config/m68hc11/m68hc11.c:1118
-#: config/rs6000/rs6000.c:17704 config/sh/symbian.c:409
+#: config/rs6000/rs6000.c:17705 config/sh/symbian.c:409
 #: config/sh/symbian.c:416
 #, gcc-internal-format
 msgid "%qs attribute ignored"
@@ -22538,39 +22543,40 @@ msgstr "-mpic-register= 不與 -fpic 並用時不起作用"
 msgid "unable to use '%s' for PIC register"
 msgstr "「%s」不能做為 PIC 暫存器"
 
-#: config/arm/arm.c:2874 config/arm/arm.c:2892 config/avr/avr.c:4713
-#: config/bfin/bfin.c:3666 config/c4x/c4x.c:4076 config/h8300/h8300.c:5258
-#: config/i386/i386.c:2337 config/m68hc11/m68hc11.c:1155
-#: config/m68k/m68k.c:381 config/mcore/mcore.c:3032 config/mt/mt.c:1276
-#: config/rs6000/rs6000.c:17630 config/sh/sh.c:7709 config/sh/sh.c:7730
-#: config/sh/sh.c:7753 config/stormy16/stormy16.c:2255 config/v850/v850.c:2123
+#: config/arm/arm.c:2874 config/arm/arm.c:2892 config/avr/avr.c:4714
+#: config/avr/avr.c:4756 config/bfin/bfin.c:3666 config/c4x/c4x.c:4076
+#: config/h8300/h8300.c:5258 config/i386/i386.c:2337
+#: config/m68hc11/m68hc11.c:1155 config/m68k/m68k.c:381
+#: config/mcore/mcore.c:3032 config/mt/mt.c:1276 config/rs6000/rs6000.c:17631
+#: config/sh/sh.c:7718 config/sh/sh.c:7739 config/sh/sh.c:7762
+#: config/stormy16/stormy16.c:2255 config/v850/v850.c:2123
 #, gcc-internal-format
 msgid "%qs attribute only applies to functions"
 msgstr "%qs 屬性只能套用於函式"
 
-#: config/arm/arm.c:12104
+#: config/arm/arm.c:12105
 #, gcc-internal-format
 msgid "unable to compute real location of stacked parameter"
 msgstr ""
 
 #. @@@ better error message
-#: config/arm/arm.c:12749 config/arm/arm.c:12786
+#: config/arm/arm.c:12750 config/arm/arm.c:12787
 #, gcc-internal-format
 msgid "selector must be an immediate"
 msgstr "選擇子必須是立即數值"
 
 #. @@@ better error message
-#: config/arm/arm.c:12829 config/i386/i386.c:16158 config/i386/i386.c:16192
+#: config/arm/arm.c:12830 config/i386/i386.c:16166 config/i386/i386.c:16200
 #, gcc-internal-format
 msgid "mask must be an immediate"
 msgstr "遮罩必須是一個立即數值"
 
-#: config/arm/arm.c:13488
+#: config/arm/arm.c:13489
 #, gcc-internal-format
 msgid "no low registers available for popping high registers"
 msgstr "高暫存器彈堆疊時沒有可用的低暫存器"
 
-#: config/arm/arm.c:13712
+#: config/arm/arm.c:13713
 #, gcc-internal-format
 msgid "interrupt Service Routines cannot be coded in Thumb mode"
 msgstr ""
@@ -22585,32 +22591,32 @@ msgstr "經初始化的變數 %q+D 被標記為 dllimport"
 msgid "static variable %q+D is marked dllimport"
 msgstr "經初始化的變數 %q+D 被標記為 dllimport"
 
-#: config/avr/avr.c:568
+#: config/avr/avr.c:569
 #, gcc-internal-format
 msgid "large frame pointer change (%d) with -mtiny-stack"
 msgstr "框架指標發生大的變更(%d)，但卻指定了 -mtiny-stack"
 
-#: config/avr/avr.c:4686
+#: config/avr/avr.c:4687
 #, gcc-internal-format
 msgid "only initialized variables can be placed into program memory area"
 msgstr ""
 
-#: config/avr/avr.c:4730
+#: config/avr/avr.c:4731
 #, gcc-internal-format
 msgid "%qs appears to be a misspelled interrupt handler"
 msgstr "%qs 似乎是一個拼寫錯的插斷處理者"
 
-#: config/avr/avr.c:4738
+#: config/avr/avr.c:4739
 #, gcc-internal-format
 msgid "%qs appears to be a misspelled signal handler"
 msgstr "%qs 似乎是一個拼寫錯的信號處理者"
 
-#: config/avr/avr.c:4830
+#: config/avr/avr.c:4847
 #, gcc-internal-format
 msgid "only uninitialized variables can be placed in the .noinit section"
 msgstr "只有未初始化的變數才能放在 .noinit 區段中"
 
-#: config/avr/avr.c:4844
+#: config/avr/avr.c:4861
 #, gcc-internal-format
 msgid "MCU %qs supported for assembler only"
 msgstr "MCU %qs 只支援組譯器"
@@ -23155,17 +23161,17 @@ msgstr "擴充的暫存器沒有高半部分"
 msgid "unsupported operand size for extended register"
 msgstr "擴充的暫存器不支援的運算元大小"
 
-#: config/i386/i386.c:15882 config/rs6000/rs6000.c:7318
+#: config/i386/i386.c:15890 config/rs6000/rs6000.c:7318
 #, gcc-internal-format
 msgid "selector must be an integer constant in the range 0..%wi"
 msgstr "選擇子必須是 0 到 %wi 間的整常數"
 
-#: config/i386/i386.c:16237 config/i386/i386.c:16321
+#: config/i386/i386.c:16245 config/i386/i386.c:16329
 #, gcc-internal-format
 msgid "shift must be an immediate"
 msgstr "偏移值必須是立即數值"
 
-#: config/i386/i386.c:17551 config/rs6000/rs6000.c:17713
+#: config/i386/i386.c:17560 config/rs6000/rs6000.c:17714
 #, gcc-internal-format
 msgid "%qs incompatible attribute ignored"
 msgstr "%qs 忽略不相容的屬性"
@@ -23351,7 +23357,7 @@ msgstr "不能同時指定 -msep-data 和 -mid-shared-library"
 msgid "-fPIC is not currently supported on the 68000 or 68010"
 msgstr "-fPIC 目前在 68000 和 68010 上不受支援"
 
-#: config/m68k/m68k.c:680 config/rs6000/rs6000.c:13921
+#: config/m68k/m68k.c:680 config/rs6000/rs6000.c:13922
 #, gcc-internal-format
 msgid "stack limit expression is not supported"
 msgstr "不支援堆疊限制運算式"
@@ -23540,7 +23546,7 @@ msgstr "此處理器只有使用 GAS 時才支援 -g"
 msgid "-g option disabled"
 msgstr "-g 選項已被停用"
 
-#: config/pa/pa.c:8225
+#: config/pa/pa.c:8234
 #, gcc-internal-format
 msgid "alignment (%u) for %s exceeds maximum alignment for global common data.  Using %u"
 msgstr ""
@@ -23769,52 +23775,52 @@ msgstr "__builtin_spe_predicate 的第一個引數必須是常數"
 msgid "argument 1 of __builtin_spe_predicate is out of range"
 msgstr "__builtin_spe_predicate 的第 1 個引數越界"
 
-#: config/rs6000/rs6000.c:13884
+#: config/rs6000/rs6000.c:13885
 #, gcc-internal-format
 msgid "stack frame too large"
 msgstr "堆疊框架太大"
 
-#: config/rs6000/rs6000.c:16413
+#: config/rs6000/rs6000.c:16414
 #, gcc-internal-format
 msgid "no profiling of 64-bit code for this ABI"
 msgstr "此 ABI 不支援取樣 64 位元程式碼"
 
-#: config/rs6000/rs6000.c:17523
+#: config/rs6000/rs6000.c:17524
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is invalid for 64-bit code"
 msgstr "對於 64 位元程式碼在 AltiVec 類型中使用 %<long%> 無效"
 
-#: config/rs6000/rs6000.c:17525
+#: config/rs6000/rs6000.c:17526
 #, gcc-internal-format
 msgid "use of %<long%> in AltiVec types is deprecated; use %<int%>"
 msgstr "在 AltiVec 類型中使用 %<long%> 已過時；請改用 %<int%>"
 
-#: config/rs6000/rs6000.c:17529
+#: config/rs6000/rs6000.c:17530
 #, gcc-internal-format
 msgid "use of %<long long%> in AltiVec types is invalid"
 msgstr "在 AltiVec 類型中使用 %<long long%> 無效"
 
-#: config/rs6000/rs6000.c:17531
+#: config/rs6000/rs6000.c:17532
 #, gcc-internal-format
 msgid "use of %<double%> in AltiVec types is invalid"
 msgstr "在 AltiVec 類型中使用 %<double%> 無效"
 
-#: config/rs6000/rs6000.c:17533
+#: config/rs6000/rs6000.c:17534
 #, gcc-internal-format
 msgid "use of %<long double%> in AltiVec types is invalid"
 msgstr "在 AltiVec 類型中使用 %<long double%> 無效"
 
-#: config/rs6000/rs6000.c:17535
+#: config/rs6000/rs6000.c:17536
 #, gcc-internal-format
 msgid "use of boolean types in AltiVec types is invalid"
 msgstr "在 AltiVec 類型中使用布林類型無效"
 
-#: config/rs6000/rs6000.c:17537
+#: config/rs6000/rs6000.c:17538
 #, gcc-internal-format
 msgid "use of %<complex%> in AltiVec types is invalid"
 msgstr "在 AltiVec 類型中使用 %<complex%> 無效"
 
-#: config/rs6000/rs6000.c:17539
+#: config/rs6000/rs6000.c:17540
 #, fuzzy, gcc-internal-format
 msgid "use of decimal floating point types in AltiVec types is invalid"
 msgstr "在 AltiVec 類型中使用布林類型無效"
@@ -24013,44 +24019,44 @@ msgstr "%qs 使用動態堆疊指派"
 msgid "-fPIC and -G are incompatible"
 msgstr "-fPIC 與 -mcall-%s 互不相容"
 
-#: config/sh/sh.c:6624
+#: config/sh/sh.c:6633
 #, gcc-internal-format
 msgid "__builtin_saveregs not supported by this subtarget"
 msgstr "__builtin_saveregs 在此子目的上不受支援"
 
-#: config/sh/sh.c:7629
+#: config/sh/sh.c:7638
 #, gcc-internal-format
 msgid "%qs attribute only applies to interrupt functions"
 msgstr "%qs 屬性只能套用到插斷函式上"
 
-#: config/sh/sh.c:7715
+#: config/sh/sh.c:7724
 #, gcc-internal-format
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
 msgstr "屬性 interrupt_handler 與 -m5-compact 不相容"
 
 #. The argument must be a constant string.
-#: config/sh/sh.c:7737
+#: config/sh/sh.c:7746
 #, gcc-internal-format
 msgid "%qs attribute argument not a string constant"
 msgstr "%qs 屬性的參數不是一個字串常數"
 
 #. The argument must be a constant integer.
-#: config/sh/sh.c:7762
+#: config/sh/sh.c:7771
 #, gcc-internal-format
 msgid "%qs attribute argument not an integer constant"
 msgstr "%qs 屬性的參數不是一個整型常數"
 
-#: config/sh/sh.c:9814
+#: config/sh/sh.c:9823
 #, gcc-internal-format
 msgid "r0 needs to be available as a call-clobbered register"
 msgstr "r0 需要做為呼叫篡改的暫存器"
 
-#: config/sh/sh.c:9835
+#: config/sh/sh.c:9844
 #, gcc-internal-format
 msgid "Need a second call-clobbered general purpose register"
 msgstr "需要另一個呼叫篡改的通用暫存器"
 
-#: config/sh/sh.c:9843
+#: config/sh/sh.c:9852
 #, gcc-internal-format
 msgid "Need a call-clobbered target register"
 msgstr "需要一個呼叫篡改的通用暫存器"
@@ -24444,173 +24450,178 @@ msgstr "%<%D(int)%> 沒有出現在字尾 %qs 中，嘗試使用字首運算子"
 msgid "comparison between %q#T and %q#T"
 msgstr "在 %q#T 和 %q#T 間比較"
 
-#: cp/call.c:4127
+#: cp/call.c:4138
+#, gcc-internal-format
+msgid "no corresponding deallocation function for `%D'"
+msgstr ""
+
+#: cp/call.c:4143
 #, gcc-internal-format
 msgid "no suitable %<operator %s%> for %qT"
 msgstr "沒有合適的 %<operator %s%> 給 %qT"
 
-#: cp/call.c:4145
+#: cp/call.c:4161
 #, gcc-internal-format
 msgid "%q+#D is private"
 msgstr "%q+#D 是私有的"
 
-#: cp/call.c:4147
+#: cp/call.c:4163
 #, gcc-internal-format
 msgid "%q+#D is protected"
 msgstr "%q+#D 是保護的"
 
-#: cp/call.c:4149
+#: cp/call.c:4165
 #, gcc-internal-format
 msgid "%q+#D is inaccessible"
 msgstr "%q+#D 無法存取"
 
-#: cp/call.c:4150
+#: cp/call.c:4166
 #, gcc-internal-format
 msgid "within this context"
 msgstr "在此上下文中"
 
-#: cp/call.c:4239 cp/cvt.c:265
+#: cp/call.c:4255 cp/cvt.c:265
 #, gcc-internal-format
 msgid "invalid conversion from %qT to %qT"
 msgstr "從類型 %qT 到類型 %qT 的轉換無效"
 
-#: cp/call.c:4241
+#: cp/call.c:4257
 #, gcc-internal-format
 msgid "  initializing argument %P of %qD"
 msgstr "  初始化引數 %P，屬於 %qD"
 
-#: cp/call.c:4253
+#: cp/call.c:4269
 #, gcc-internal-format
 msgid "passing NULL to non-pointer argument %P of %qD"
 msgstr "將 NULL 做為非指標引數 %P 傳遞給 %qD"
 
-#: cp/call.c:4256
+#: cp/call.c:4272
 #, gcc-internal-format
 msgid "converting to non-pointer type %qT from NULL"
 msgstr "將 NULL 轉換到非指標類型 %qT"
 
-#: cp/call.c:4264
+#: cp/call.c:4280
 #, gcc-internal-format
 msgid "passing %qT for argument %P to %qD"
 msgstr "將 %qT 做為引數 %P 傳遞給 %qD"
 
-#: cp/call.c:4267
+#: cp/call.c:4283
 #, gcc-internal-format
 msgid "converting to %qT from %qT"
 msgstr "當轉換到 %qT (從 %qT)時"
 
-#: cp/call.c:4407
+#: cp/call.c:4423
 #, gcc-internal-format
 msgid "cannot bind bitfield %qE to %qT"
 msgstr "無法將位元段 %qE 繫結到 %qT"
 
-#: cp/call.c:4410 cp/call.c:4426
+#: cp/call.c:4426 cp/call.c:4442
 #, gcc-internal-format
 msgid "cannot bind packed field %qE to %qT"
 msgstr "不能將緊實的欄位 %qE 繫結到 %qT"
 
-#: cp/call.c:4413
+#: cp/call.c:4429
 #, gcc-internal-format
 msgid "cannot bind rvalue %qE to %qT"
 msgstr "無法將右值 %qE 繫結到 %qT"
 
-#: cp/call.c:4527
+#: cp/call.c:4543
 #, gcc-internal-format
 msgid "cannot pass objects of non-POD type %q#T through %<...%>; call will abort at runtime"
 msgstr "不能透過 %<...%> 傳遞有非簡單舊資料類型 %q#T 的物件；呼叫會在執行時中止"
 
 #. Undefined behavior [expr.call] 5.2.2/7.
-#: cp/call.c:4555
+#: cp/call.c:4571
 #, gcc-internal-format
 msgid "cannot receive objects of non-POD type %q#T through %<...%>; call will abort at runtime"
 msgstr "不能透過 %<...%> 接受有非簡單舊資料類型 %q#T 的物件；呼叫會在執行時中止"
 
-#: cp/call.c:4598
+#: cp/call.c:4614
 #, gcc-internal-format
 msgid "the default argument for parameter %d of %qD has not yet been parsed"
 msgstr "參數 %d(屬於 %qD)尚未被解析到"
 
-#: cp/call.c:4682
+#: cp/call.c:4698
 #, gcc-internal-format
 msgid "argument of function call might be a candidate for a format attribute"
 msgstr "函式的引數可能是 format 屬性的備選"
 
-#: cp/call.c:4819
+#: cp/call.c:4835
 #, gcc-internal-format
 msgid "passing %qT as %<this%> argument of %q#D discards qualifiers"
 msgstr "將 %qT 做為 %q#D 的 %<this%> 引數時丟棄了類型限定"
 
-#: cp/call.c:4838
+#: cp/call.c:4854
 #, gcc-internal-format
 msgid "%qT is not an accessible base of %qT"
 msgstr "%qT 是 %qT 的一個不可存取的基礎類別"
 
-#: cp/call.c:5094
+#: cp/call.c:5110
 #, gcc-internal-format
 msgid "could not find class$ field in java interface type %qT"
 msgstr "在 java 介面類型 %qT 中找不到 class$ 欄位"
 
-#: cp/call.c:5337
+#: cp/call.c:5353
 #, gcc-internal-format
 msgid "call to non-function %qD"
 msgstr "呼叫非函式的 %qD"
 
-#: cp/call.c:5459
+#: cp/call.c:5475
 #, gcc-internal-format
 msgid "no matching function for call to %<%T::%s(%A)%#V%>"
 msgstr "對 %<%T::%s(%A)%#V%> 的呼叫沒有匹配的函式"
 
-#: cp/call.c:5477
+#: cp/call.c:5493
 #, gcc-internal-format
 msgid "call of overloaded %<%s(%A)%> is ambiguous"
 msgstr "對多載的 %<%s(%A)%> 的呼叫有歧義"
 
-#: cp/call.c:5503
+#: cp/call.c:5519
 #, gcc-internal-format
 msgid "cannot call member function %qD without object"
 msgstr "沒有物件無法呼叫成員函式 %qD"
 
-#: cp/call.c:6123
+#: cp/call.c:6139
 #, gcc-internal-format
 msgid "passing %qT chooses %qT over %qT"
 msgstr "傳遞 %qT 時選擇 %qT 而不是 %qT"
 
-#: cp/call.c:6125 cp/name-lookup.c:4259 cp/name-lookup.c:4680
+#: cp/call.c:6141 cp/name-lookup.c:4259 cp/name-lookup.c:4680
 #, gcc-internal-format
 msgid "  in call to %qD"
 msgstr "  在呼叫 %qD 時"
 
-#: cp/call.c:6182
+#: cp/call.c:6198
 #, gcc-internal-format
 msgid "choosing %qD over %qD"
 msgstr "選擇 %qD 而不是 %qD"
 
-#: cp/call.c:6183
+#: cp/call.c:6199
 #, gcc-internal-format
 msgid "  for conversion from %qT to %qT"
 msgstr "  當從 %qT 轉換為 %qT 時"
 
-#: cp/call.c:6185
+#: cp/call.c:6201
 #, gcc-internal-format
 msgid "  because conversion sequence for the argument is better"
 msgstr "  因為前者的引數類型轉換序列更好"
 
-#: cp/call.c:6299
+#: cp/call.c:6315
 #, gcc-internal-format
 msgid "ISO C++ says that these are ambiguous, even though the worst conversion for the first is better than the worst conversion for the second:"
 msgstr "ISO C++ 認為有歧義，盡管第一個備選的最差類型轉換要好於第二個備選的最差類型轉換"
 
-#: cp/call.c:6443
+#: cp/call.c:6459
 #, gcc-internal-format
 msgid "could not convert %qE to %qT"
 msgstr "不能將 %qE 轉換為 %qT"
 
-#: cp/call.c:6577
+#: cp/call.c:6593
 #, gcc-internal-format
 msgid "invalid initialization of non-const reference of type %qT from a temporary of type %qT"
 msgstr "將類型為 %qT 的非 const 參照初始化為類型為 %qT 的臨時變數無效"
 
-#: cp/call.c:6581
+#: cp/call.c:6597
 #, gcc-internal-format
 msgid "invalid initialization of reference of type %qT from expression of type %qT"
 msgstr "將類型為 %qT 的參照初始化為類型為 %qT 的運算式無效"
@@ -24891,7 +24902,7 @@ msgstr "%q+D 包含一個空類別，基礎類別的位置在 GCC 的未來版�
 msgid "layout of classes derived from empty class %qT may change in a future version of GCC"
 msgstr "空類別 %qT 的衍生類別的版面設置在 GCC 的未來版本中可能會起變化"
 
-#: cp/class.c:4980 cp/parser.c:13573
+#: cp/class.c:4980 cp/parser.c:13585
 #, gcc-internal-format
 msgid "redefinition of %q#T"
 msgstr "%q#T 重定義"
@@ -24906,42 +24917,42 @@ msgstr "%q#T 有虛函式卻沒有虛解構函式"
 msgid "trying to finish struct, but kicked out due to previous parse errors"
 msgstr "試圖完成結構，但為先前的解析錯誤所插斷"
 
-#: cp/class.c:5690
+#: cp/class.c:5702
 #, gcc-internal-format
 msgid "language string %<\"%E\"%> not recognized"
 msgstr "語言字串 %<\"%E\"%> 不可識別"
 
-#: cp/class.c:5779
+#: cp/class.c:5791
 #, gcc-internal-format
 msgid "cannot resolve overloaded function %qD based on conversion to type %qT"
 msgstr "無法解析多載函式 %qD，基於向類型 %qT 的轉換"
 
-#: cp/class.c:5908
+#: cp/class.c:5920
 #, gcc-internal-format
 msgid "no matches converting function %qD to type %q#T"
 msgstr "沒有可將函式 %qD 轉換到類型 %q#T 的匹配項"
 
-#: cp/class.c:5931
+#: cp/class.c:5943
 #, gcc-internal-format
 msgid "converting overloaded function %qD to type %q#T is ambiguous"
 msgstr "將多載函式 %qD 轉換為類型 %q#T 有歧義"
 
-#: cp/class.c:5957
+#: cp/class.c:5969
 #, gcc-internal-format
 msgid "assuming pointer to member %qD"
 msgstr "假定是成員指標 %qD"
 
-#: cp/class.c:5960
+#: cp/class.c:5972
 #, gcc-internal-format
 msgid "(a pointer to member can only be formed with %<&%E%>)"
 msgstr "(成員指標只能用 %<&%E%> 構成)"
 
-#: cp/class.c:6016 cp/class.c:6050
+#: cp/class.c:6028 cp/class.c:6062
 #, gcc-internal-format
 msgid "not enough type information"
 msgstr "類型資訊不充分"
 
-#: cp/class.c:6033
+#: cp/class.c:6045
 #, gcc-internal-format
 msgid "argument of type %qT does not match %qT"
 msgstr "引數類型為 %qT，與 %qT 不匹配"
@@ -24951,12 +24962,12 @@ msgstr "引數類型為 %qT，與 %qT 不匹配"
 #. A name N used in a class S shall refer to the same declaration
 #. in its context and when re-evaluated in the completed scope of
 #. S.
-#: cp/class.c:6320 cp/decl.c:1192 cp/name-lookup.c:509
+#: cp/class.c:6332 cp/decl.c:1192 cp/name-lookup.c:509
 #, gcc-internal-format
 msgid "declaration of %q#D"
 msgstr "%q#D 的宣告"
 
-#: cp/class.c:6321
+#: cp/class.c:6333
 #, gcc-internal-format
 msgid "changes meaning of %qD from %q+#D"
 msgstr "變更了 %qD 的原意 %q+#D"
@@ -24996,7 +25007,7 @@ msgstr "成員指標經由虛基礎類別從 %qT 轉換到 %qT"
 msgid "conversion from %qT to %qT discards qualifiers"
 msgstr "從 %qT 到 %qT 的轉換丟失了限定資訊"
 
-#: cp/cvt.c:518 cp/typeck.c:5160
+#: cp/cvt.c:518 cp/typeck.c:5158
 #, gcc-internal-format
 msgid "casting %qT to %qT does not dereference pointer"
 msgstr "從 %qT 轉換到 %qT 並未提領指標"
@@ -25089,7 +25100,7 @@ msgstr "  備選轉換包括 %qD 和 %qD"
 msgid "%qD was declared %<extern%> and later %<static%>"
 msgstr "%qD 先被宣告為 %<extern%> 後又被宣告為 %<static%>"
 
-#: cp/decl.c:1060 cp/decl.c:1593 objc/objc-act.c:2921 objc/objc-act.c:7489
+#: cp/decl.c:1060 cp/decl.c:1594 objc/objc-act.c:2921 objc/objc-act.c:7489
 #, gcc-internal-format
 msgid "previous declaration of %q+D"
 msgstr "%q+D 的前一個宣告"
@@ -25262,7 +25273,7 @@ msgstr "%q#D 在被宣告為內聯之前被用到"
 msgid "%Jprevious non-inline declaration here"
 msgstr "%J先前的非內聯宣告在這裡"
 
-#: cp/decl.c:1592
+#: cp/decl.c:1593
 #, gcc-internal-format
 msgid "redundant redeclaration of %qD in same scope"
 msgstr "同一作用欄位中 %qD 冗餘的重宣告"
@@ -25275,303 +25286,303 @@ msgstr "同一作用欄位中 %qD 冗餘的重宣告"
 #. that specialization that would cause an implicit
 #. instantiation to take place, in every translation unit in
 #. which such a use occurs.
-#: cp/decl.c:1859
+#: cp/decl.c:1860
 #, gcc-internal-format
 msgid "explicit specialization of %qD after first use"
 msgstr "在初次使用後明確特例化 %qD"
 
-#: cp/decl.c:1943
+#: cp/decl.c:1944
 #, gcc-internal-format
 msgid "%q+D: visibility attribute ignored because it"
 msgstr "%q+D：可見性屬性被忽略，因為它"
 
-#: cp/decl.c:1945
+#: cp/decl.c:1946
 #, gcc-internal-format
 msgid "%Jconflicts with previous declaration here"
 msgstr "%J與此處先前的宣告衝突"
 
-#: cp/decl.c:2312
+#: cp/decl.c:2329
 #, gcc-internal-format
 msgid "jump to label %qD"
 msgstr "跳轉至標籤 %qD"
 
-#: cp/decl.c:2314
+#: cp/decl.c:2331
 #, gcc-internal-format
 msgid "jump to case label"
 msgstr "跳轉至 case 標籤"
 
-#: cp/decl.c:2316
+#: cp/decl.c:2333
 #, gcc-internal-format
 msgid "%H  from here"
 msgstr "%H  從這裡"
 
-#: cp/decl.c:2335 cp/decl.c:2498
+#: cp/decl.c:2352 cp/decl.c:2515
 #, gcc-internal-format
 msgid "  exits OpenMP structured block"
 msgstr ""
 
-#: cp/decl.c:2356
+#: cp/decl.c:2373
 #, gcc-internal-format
 msgid "  crosses initialization of %q+#D"
 msgstr "  略過 %q+#D 的初始化"
 
-#: cp/decl.c:2358 cp/decl.c:2473
+#: cp/decl.c:2375 cp/decl.c:2490
 #, gcc-internal-format
 msgid "  enters scope of non-POD %q+#D"
 msgstr "  進入非簡單舊資料 %q+#D 的作用欄位"
 
-#: cp/decl.c:2371 cp/decl.c:2477
+#: cp/decl.c:2388 cp/decl.c:2494
 #, gcc-internal-format
 msgid "  enters try block"
 msgstr "  進入 try 區塊"
 
-#: cp/decl.c:2373 cp/decl.c:2479
+#: cp/decl.c:2390 cp/decl.c:2496
 #, gcc-internal-format
 msgid "  enters catch block"
 msgstr "  進入 catch 區塊"
 
-#: cp/decl.c:2383 cp/decl.c:2482
+#: cp/decl.c:2400 cp/decl.c:2499
 #, fuzzy, gcc-internal-format
 msgid "  enters OpenMP structured block"
 msgstr "  進入 try 區塊"
 
-#: cp/decl.c:2454 cp/decl.c:2494
+#: cp/decl.c:2471 cp/decl.c:2511
 #, gcc-internal-format
 msgid "jump to label %q+D"
 msgstr "跳轉至標籤 %q+D"
 
-#: cp/decl.c:2455 cp/decl.c:2495
+#: cp/decl.c:2472 cp/decl.c:2512
 #, gcc-internal-format
 msgid "  from here"
 msgstr "  從這裡"
 
 #. Can't skip init of __exception_info.
-#: cp/decl.c:2467
+#: cp/decl.c:2484
 #, gcc-internal-format
 msgid "%J  enters catch block"
 msgstr "%J 進入 catch 區塊"
 
-#: cp/decl.c:2471
+#: cp/decl.c:2488
 #, gcc-internal-format
 msgid "  skips initialization of %q+#D"
 msgstr "  略過 %q+#D 的初始化"
 
-#: cp/decl.c:2547
+#: cp/decl.c:2564
 #, gcc-internal-format
 msgid "label named wchar_t"
 msgstr "標籤名為 wchar_t"
 
-#: cp/decl.c:2551
+#: cp/decl.c:2568
 #, gcc-internal-format
 msgid "duplicate label %qD"
 msgstr "重複的標籤 %qD"
 
-#: cp/decl.c:2814
+#: cp/decl.c:2831
 #, fuzzy, gcc-internal-format
 msgid "%qD is not a type"
 msgstr "%qD 不是一個範本"
 
-#: cp/decl.c:2820 cp/parser.c:3841
+#: cp/decl.c:2837 cp/parser.c:3853
 #, gcc-internal-format
 msgid "%qD used without template parameters"
 msgstr "%qD 使用時未帶範本參數"
 
-#: cp/decl.c:2835
+#: cp/decl.c:2852
 #, fuzzy, gcc-internal-format
 msgid "%q#T is not a class"
 msgstr "%q#T 不是一個範本"
 
-#: cp/decl.c:2847 cp/decl.c:2915
+#: cp/decl.c:2864 cp/decl.c:2932
 #, gcc-internal-format
 msgid "no class template named %q#T in %q#T"
 msgstr "沒具名為 %q#T 的類別範本，在%q#T 中 "
 
-#: cp/decl.c:2848
+#: cp/decl.c:2865
 #, gcc-internal-format
 msgid "no type named %q#T in %q#T"
 msgstr "沒具名為 %q#T 的類型，在%q#T 中 "
 
-#: cp/decl.c:2855
+#: cp/decl.c:2872
 #, fuzzy, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#T, which is not a class template"
 msgstr "%qT 被解析到非類別類型 %qT"
 
-#: cp/decl.c:2862
+#: cp/decl.c:2879
 #, fuzzy, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#T, which is not a type"
 msgstr "%<%T::%D%> 不是一個類型"
 
-#: cp/decl.c:2924
+#: cp/decl.c:2941
 #, gcc-internal-format
 msgid "template parameters do not match template"
 msgstr "範本參數與範本不符"
 
-#: cp/decl.c:2925 cp/friend.c:322 cp/friend.c:330
+#: cp/decl.c:2942 cp/friend.c:322 cp/friend.c:330
 #, gcc-internal-format
 msgid "%q+D declared here"
 msgstr "%q+D 已在此宣告過"
 
-#: cp/decl.c:3596
+#: cp/decl.c:3613
 #, gcc-internal-format
 msgid "%Jan anonymous union cannot have function members"
 msgstr "%J一個匿名聯合不能有函式成員"
 
-#: cp/decl.c:3614
+#: cp/decl.c:3631
 #, gcc-internal-format
 msgid "member %q+#D with constructor not allowed in anonymous aggregate"
 msgstr "有建構式的成員 %q+#D 不允許在匿名聚合中出現"
 
-#: cp/decl.c:3617
+#: cp/decl.c:3634
 #, gcc-internal-format
 msgid "member %q+#D with destructor not allowed in anonymous aggregate"
 msgstr "有構構函式的成員 %q+#D 不允許在匿名聚合中出現"
 
-#: cp/decl.c:3620
+#: cp/decl.c:3637
 #, gcc-internal-format
 msgid "member %q+#D with copy assignment operator not allowed in anonymous aggregate"
 msgstr "有複製賦值運算子的成員 %q+#D 不能用在聯合中"
 
-#: cp/decl.c:3645
+#: cp/decl.c:3662
 #, gcc-internal-format
 msgid "multiple types in one declaration"
 msgstr "一個宣告指定了多個類型"
 
-#: cp/decl.c:3649
+#: cp/decl.c:3666
 #, gcc-internal-format
 msgid "redeclaration of C++ built-in type %qT"
 msgstr "對 C++ 內建類型 %qT 的重宣告"
 
-#: cp/decl.c:3686
+#: cp/decl.c:3703
 #, gcc-internal-format
 msgid "missing type-name in typedef-declaration"
 msgstr "typedef 宣告中缺少類型名"
 
-#: cp/decl.c:3694
+#: cp/decl.c:3711
 #, gcc-internal-format
 msgid "ISO C++ prohibits anonymous structs"
 msgstr "ISO C++ 不允許匿名結構"
 
-#: cp/decl.c:3701
+#: cp/decl.c:3718
 #, gcc-internal-format
 msgid "%qs can only be specified for functions"
 msgstr "只能為函式指定 %qs"
 
-#: cp/decl.c:3707
+#: cp/decl.c:3724
 #, gcc-internal-format
 msgid "%<friend%> can only be specified inside a class"
 msgstr "%<friend%> 只能在類別中指定"
 
-#: cp/decl.c:3709
+#: cp/decl.c:3726
 #, gcc-internal-format
 msgid "%<explicit%> can only be specified for constructors"
 msgstr "只能為建構式指定 %<explicit%>"
 
-#: cp/decl.c:3711
+#: cp/decl.c:3728
 #, gcc-internal-format
 msgid "a storage class can only be specified for objects and functions"
 msgstr "只能為物件和函式指定存儲類別"
 
-#: cp/decl.c:3717
+#: cp/decl.c:3734
 #, gcc-internal-format
 msgid "qualifiers can only be specified for objects and functions"
 msgstr "只能為物件和函式指定類型限定"
 
-#: cp/decl.c:3747
+#: cp/decl.c:3764
 #, gcc-internal-format
 msgid "attribute ignored in declaration of %q+#T"
 msgstr "屬性於 %q+#T 的宣告中被忽略"
 
-#: cp/decl.c:3748
+#: cp/decl.c:3765
 #, gcc-internal-format
 msgid "attribute for %q+#T must follow the %qs keyword"
 msgstr "%q+#T 的屬性必須跟在 %qs 關鍵字後面"
 
-#: cp/decl.c:3862
+#: cp/decl.c:3879
 #, gcc-internal-format
 msgid "function %q#D is initialized like a variable"
 msgstr "函式 %q#D 像變數一樣被初始化"
 
-#: cp/decl.c:3873
+#: cp/decl.c:3890
 #, gcc-internal-format
 msgid "declaration of %q#D has %<extern%> and is initialized"
 msgstr "%q#D 宣告有 %<extern%> 並被初始化"
 
-#: cp/decl.c:3889
+#: cp/decl.c:3906
 #, fuzzy, gcc-internal-format
 msgid "definition of %q#D is marked %<dllimport%>"
 msgstr "函式 %q+D 的定義被標記為 dllimport"
 
-#: cp/decl.c:3908
+#: cp/decl.c:3925
 #, gcc-internal-format
 msgid "%q#D is not a static member of %q#T"
 msgstr "%q#D 不是 %q#T 的靜態成員"
 
-#: cp/decl.c:3914
+#: cp/decl.c:3931
 #, gcc-internal-format
 msgid "ISO C++ does not permit %<%T::%D%> to be defined as %<%T::%D%>"
 msgstr "ISO C++ 不允許將 %<%T::%D%> 定義為 %<%T::%D%>"
 
-#: cp/decl.c:3923
+#: cp/decl.c:3940
 #, gcc-internal-format
 msgid "template header not allowed in member definition of explicitly specialized class"
 msgstr "範本頭不允許出現在明確特例化類別的成員定義中"
 
-#: cp/decl.c:3931
+#: cp/decl.c:3948
 #, gcc-internal-format
 msgid "duplicate initialization of %qD"
 msgstr "ISO C++ 不允許成員 %qD 的初始化"
 
-#: cp/decl.c:3969
+#: cp/decl.c:3986
 #, gcc-internal-format
 msgid "declaration of %q#D outside of class is not definition"
 msgstr "出現在類別外的 %q#D 的宣告不是定義"
 
-#: cp/decl.c:4036
+#: cp/decl.c:4053
 #, gcc-internal-format
 msgid "variable %q#D has initializer but incomplete type"
 msgstr "變數 %q#D 有初始值設定，但是類型不完全"
 
-#: cp/decl.c:4043 cp/decl.c:4770
+#: cp/decl.c:4060 cp/decl.c:4787
 #, gcc-internal-format
 msgid "elements of array %q#D have incomplete type"
 msgstr "陣列 %q#D 的元素類型不完全"
 
-#: cp/decl.c:4053
+#: cp/decl.c:4070
 #, gcc-internal-format
 msgid "aggregate %q#D has incomplete type and cannot be defined"
 msgstr "聚合 %q#D 類型不完全，無法被定義"
 
-#: cp/decl.c:4100
+#: cp/decl.c:4117
 #, gcc-internal-format
 msgid "%qD declared as reference but not initialized"
 msgstr "%qD 宣告為參照卻未被初始化"
 
-#: cp/decl.c:4106
+#: cp/decl.c:4123
 #, gcc-internal-format
 msgid "ISO C++ forbids use of initializer list to initialize reference %qD"
 msgstr "ISO C++ 不允許使用初始值設定清單來初始化參照 %qD"
 
-#: cp/decl.c:4132
+#: cp/decl.c:4149
 #, gcc-internal-format
 msgid "cannot initialize %qT from %qT"
 msgstr "不能初始化 %qT，從 %qT"
 
-#: cp/decl.c:4160
+#: cp/decl.c:4177
 #, gcc-internal-format
 msgid "name %qD used in a GNU-style designated initializer for an array"
 msgstr "名稱 %qD 用在 GNU 風格的陣列指定元素初始值設定中"
 
-#: cp/decl.c:4209
+#: cp/decl.c:4226
 #, gcc-internal-format
 msgid "initializer fails to determine size of %qD"
 msgstr "初始值設定無法決定 %qD 的大小"
 
-#: cp/decl.c:4216
+#: cp/decl.c:4233
 #, gcc-internal-format
 msgid "array size missing in %qD"
 msgstr "%qD 缺少陣列大小"
 
-#: cp/decl.c:4228
+#: cp/decl.c:4245
 #, gcc-internal-format
 msgid "zero-size array %qD"
 msgstr "大小為 0 的陣列 %qD"
@@ -25579,228 +25590,228 @@ msgstr "大小為 0 的陣列 %qD"
 #. An automatic variable with an incomplete type: that is an error.
 #. Don't talk about array types here, since we took care of that
 #. message in grokdeclarator.
-#: cp/decl.c:4271
+#: cp/decl.c:4288
 #, gcc-internal-format
 msgid "storage size of %qD isn't known"
 msgstr "%qD 的存儲大小不明"
 
-#: cp/decl.c:4293
+#: cp/decl.c:4310
 #, gcc-internal-format
 msgid "storage size of %qD isn't constant"
 msgstr "%qD 的存儲大小不是常數"
 
-#: cp/decl.c:4342
+#: cp/decl.c:4359
 #, gcc-internal-format
 msgid "sorry: semantics of inline function static data %q+#D are wrong (you'll wind up with multiple copies)"
 msgstr "對不起：內聯函式中靜態資料 %q+#D 的語義是錯的(您會得到此變數的多份複製)"
 
-#: cp/decl.c:4345
+#: cp/decl.c:4362
 #, gcc-internal-format
 msgid "%J  you can work around this by removing the initializer"
 msgstr "%J  變通的作法是刪除初始值設定"
 
-#: cp/decl.c:4372
+#: cp/decl.c:4389
 #, gcc-internal-format
 msgid "uninitialized const %qD"
 msgstr "未初始化的常數 %qD"
 
-#: cp/decl.c:4484
+#: cp/decl.c:4501
 #, gcc-internal-format
 msgid "invalid type %qT as initializer for a vector of type %qT"
 msgstr "無效類型 %qT 做為類型為 %qT 的向量的初始化設定"
 
-#: cp/decl.c:4526
+#: cp/decl.c:4543
 #, gcc-internal-format
 msgid "initializer for %qT must be brace-enclosed"
 msgstr "%qT 的初始化設定必須在大括號內"
 
-#: cp/decl.c:4544
+#: cp/decl.c:4561
 #, gcc-internal-format
 msgid "%qT has no non-static data member named %qD"
 msgstr "%qT 沒具名為 %qD 的非靜態資料成員"
 
-#: cp/decl.c:4595
+#: cp/decl.c:4612
 #, gcc-internal-format
 msgid "braces around scalar initializer for type %qT"
 msgstr "類型 %qT 的標量初始化帶大括號"
 
-#: cp/decl.c:4678
+#: cp/decl.c:4695
 #, gcc-internal-format
 msgid "missing braces around initializer for %qT"
 msgstr "%qT 的初始值設定周圍缺少大括號"
 
-#: cp/decl.c:4735
+#: cp/decl.c:4752
 #, gcc-internal-format
 msgid "too many initializers for %qT"
 msgstr "%qT 的初始值設定項太多"
 
-#: cp/decl.c:4778
+#: cp/decl.c:4795
 #, gcc-internal-format
 msgid "variable-sized object %qD may not be initialized"
 msgstr "可變大小的物件 %qD 不能被初始化"
 
-#: cp/decl.c:4784
+#: cp/decl.c:4801
 #, gcc-internal-format
 msgid "%qD has incomplete type"
 msgstr "%qD 類型不完全"
 
-#: cp/decl.c:4796
+#: cp/decl.c:4813
 #, fuzzy, gcc-internal-format
 msgid "scalar object %qD requires one element in initializer"
 msgstr "聯合初始值設定項中有多餘元素"
 
-#: cp/decl.c:4844
+#: cp/decl.c:4861
 #, gcc-internal-format
 msgid "%qD must be initialized by constructor, not by %<{...}%>"
 msgstr "%qD 必須由建構式而不是 %<{...}%> 初始化"
 
-#: cp/decl.c:4880
+#: cp/decl.c:4897
 #, gcc-internal-format
 msgid "array %qD initialized by parenthesized string literal %qE"
 msgstr "陣列 %qD 被有括號的字面字串 %qE 所初始化"
 
-#: cp/decl.c:4895
+#: cp/decl.c:4912
 #, gcc-internal-format
 msgid "structure %qD with uninitialized const members"
 msgstr "結構 %qD 有未初始化的常數成員"
 
-#: cp/decl.c:4897
+#: cp/decl.c:4914
 #, gcc-internal-format
 msgid "structure %qD with uninitialized reference members"
 msgstr "結構 %qD 有未初始化的參照成員"
 
-#: cp/decl.c:5106
+#: cp/decl.c:5153
 #, gcc-internal-format
 msgid "assignment (not initialization) in declaration"
 msgstr "賦值(不是初始化)出現在宣告中"
 
-#: cp/decl.c:5184
+#: cp/decl.c:5229
 #, gcc-internal-format
 msgid "shadowing previous type declaration of %q#D"
 msgstr "隱藏了早先的類型宣告 %q#D"
 
-#: cp/decl.c:5214
+#: cp/decl.c:5259
 #, gcc-internal-format
 msgid "%qD cannot be thread-local because it has non-POD type %qT"
 msgstr "%qD 不能是執行緒區域性的，因為它有非簡單舊資料的類型 %qT"
 
-#: cp/decl.c:5250
+#: cp/decl.c:5295
 #, gcc-internal-format
 msgid "%qD is thread-local and so cannot be dynamically initialized"
 msgstr "%qD 是執行緒區域性的，所以不能被動態地初始化"
 
-#: cp/decl.c:5268
+#: cp/decl.c:5313
 #, gcc-internal-format
 msgid "%qD cannot be initialized by a non-constant expression when being declared"
 msgstr "%qD 不能由一個宣告時非常數的運算式初始化"
 
-#: cp/decl.c:5857
+#: cp/decl.c:5913
 #, gcc-internal-format
 msgid "destructor for alien class %qT cannot be a member"
 msgstr "其它類別 %qT 的解構函式不能做為成員"
 
-#: cp/decl.c:5859
+#: cp/decl.c:5915
 #, gcc-internal-format
 msgid "constructor for alien class %qT cannot be a member"
 msgstr "其它類別 %qT 的建構式不能做為成員"
 
-#: cp/decl.c:5880
+#: cp/decl.c:5936
 #, gcc-internal-format
 msgid "%qD declared as a %<virtual%> %s"
 msgstr "%qD 宣告為 %<virtual%> %s"
 
-#: cp/decl.c:5882
+#: cp/decl.c:5938
 #, gcc-internal-format
 msgid "%qD declared as an %<inline%> %s"
 msgstr "%qD 宣告為 %<inline%> %s"
 
-#: cp/decl.c:5884
+#: cp/decl.c:5940
 #, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in %s declaration"
 msgstr "為 %qD 指定的 %<const%> 和 %<volatile%> 在 %s 宣告中無效"
 
-#: cp/decl.c:5888
+#: cp/decl.c:5944
 #, gcc-internal-format
 msgid "%q+D declared as a friend"
 msgstr "%q+D 宣告為夥伴"
 
-#: cp/decl.c:5894
+#: cp/decl.c:5950
 #, gcc-internal-format
 msgid "%q+D declared with an exception specification"
 msgstr "%q+D 宣告時有異常指定"
 
-#: cp/decl.c:5928
+#: cp/decl.c:5984
 #, gcc-internal-format
 msgid "definition of %qD is not in namespace enclosing %qT"
 msgstr "%qD 的定義不在包含 %qT 的命名空間中"
 
-#: cp/decl.c:6017
+#: cp/decl.c:6073
 #, gcc-internal-format
 msgid "defining explicit specialization %qD in friend declaration"
 msgstr "在夥伴宣告中定義明確特例化 %qD"
 
 #. Something like `template <class T> friend void f<T>()'.
-#: cp/decl.c:6027
+#: cp/decl.c:6083
 #, gcc-internal-format
 msgid "invalid use of template-id %qD in declaration of primary template"
 msgstr "在基本範本的宣告中對範本識別碼 %qD 的使用無效"
 
-#: cp/decl.c:6057
+#: cp/decl.c:6113
 #, gcc-internal-format
 msgid "default arguments are not allowed in declaration of friend template specialization %qD"
 msgstr "夥伴範本特例化 %qD 中不允許出現預設參數"
 
-#: cp/decl.c:6065
+#: cp/decl.c:6121
 #, gcc-internal-format
 msgid "%<inline%> is not allowed in declaration of friend template specialization %qD"
 msgstr "%<inline%> 不允許用於夥伴範本特例化 %qD 的宣告"
 
-#: cp/decl.c:6108
+#: cp/decl.c:6164
 #, gcc-internal-format
 msgid "cannot declare %<::main%> to be a template"
 msgstr "不能將 %<::main%> 宣告為一個範本"
 
-#: cp/decl.c:6110
+#: cp/decl.c:6166
 #, gcc-internal-format
 msgid "cannot declare %<::main%> to be inline"
 msgstr "不能將 %<::main%> 宣告為 inline"
 
-#: cp/decl.c:6112
+#: cp/decl.c:6168
 #, gcc-internal-format
 msgid "cannot declare %<::main%> to be static"
 msgstr "不能將 %<::main%> 宣告為 static"
 
-#: cp/decl.c:6140
+#: cp/decl.c:6196
 #, gcc-internal-format
 msgid "non-local function %q#D uses anonymous type"
 msgstr "非局部函式 %q#D 使用匿名類型"
 
-#: cp/decl.c:6143 cp/decl.c:6425
+#: cp/decl.c:6199 cp/decl.c:6481
 #, gcc-internal-format
 msgid "%q+#D does not refer to the unqualified type, so it is not used for linkage"
 msgstr "%q+#D 未指明非限定類型，所以它不做為外部連結"
 
-#: cp/decl.c:6149
+#: cp/decl.c:6205
 #, gcc-internal-format
 msgid "non-local function %q#D uses local type %qT"
 msgstr "非局部函式 %q#D 使用了局部類型 %qT"
 
-#: cp/decl.c:6172
+#: cp/decl.c:6228
 #, gcc-internal-format
 msgid "%smember function %qD cannot have cv-qualifier"
 msgstr "%s成員函式 %qD 不能擁有 cv 限定符"
 
-#: cp/decl.c:6224
+#: cp/decl.c:6280
 #, gcc-internal-format
 msgid "%<::main%> must return %<int%>"
 msgstr "%<::main%> 必須回傳 %<int%>"
 
-#: cp/decl.c:6258
+#: cp/decl.c:6314
 #, gcc-internal-format
 msgid "definition of implicitly-declared %qD"
 msgstr "隱含宣告的 %qD 的定義"
 
-#: cp/decl.c:6273 cp/decl2.c:677
+#: cp/decl.c:6329 cp/decl2.c:677
 #, gcc-internal-format
 msgid "no %q#D member function declared in class %qT"
 msgstr "成員函式 %q#D 未在類別 %qT 中宣告"
@@ -25809,546 +25820,546 @@ msgstr "成員函式 %q#D 未在類別 %qT 中宣告"
 #. no linkage can only be used to declare extern "C"
 #. entities.  Since it's not always an error in the
 #. ISO C++ 90 Standard, we only issue a warning.
-#: cp/decl.c:6422
+#: cp/decl.c:6478
 #, gcc-internal-format
 msgid "non-local variable %q#D uses anonymous type"
 msgstr "非局部變數 %q#D 使用了匿名類型"
 
-#: cp/decl.c:6431
+#: cp/decl.c:6487
 #, gcc-internal-format
 msgid "non-local variable %q#D uses local type %qT"
 msgstr "非局部變數 %q#D 使用了局部類型 %qT"
 
-#: cp/decl.c:6548
+#: cp/decl.c:6604
 #, gcc-internal-format
 msgid "invalid in-class initialization of static data member of non-integral type %qT"
 msgstr "類別中對具有非整數類型 %qT 的靜態資料成員的初始化無效"
 
-#: cp/decl.c:6558
+#: cp/decl.c:6614
 #, gcc-internal-format
 msgid "ISO C++ forbids in-class initialization of non-const static member %qD"
 msgstr "ISO C++ 不允許在類別內初始化非常數靜態成員 %qD"
 
-#: cp/decl.c:6562
+#: cp/decl.c:6618
 #, gcc-internal-format
 msgid "ISO C++ forbids initialization of member constant %qD of non-integral type %qT"
 msgstr "ISO C++ 不允許初始化成員常數 %qD，因為它有非整數的類型 %qT"
 
-#: cp/decl.c:6586
+#: cp/decl.c:6642
 #, gcc-internal-format
 msgid "size of array %qD has non-integral type %qT"
 msgstr "陣列 %qD 的大小具有非整數類型 %qT"
 
-#: cp/decl.c:6588
+#: cp/decl.c:6644
 #, gcc-internal-format
 msgid "size of array has non-integral type %qT"
 msgstr "陣列 %qT 的大小的類型不是整數"
 
-#: cp/decl.c:6624
+#: cp/decl.c:6680
 #, gcc-internal-format
 msgid "size of array %qD is negative"
 msgstr "陣列 %qD 的大小為負"
 
-#: cp/decl.c:6626
+#: cp/decl.c:6682
 #, gcc-internal-format
 msgid "size of array is negative"
 msgstr "陣列大小為負數"
 
-#: cp/decl.c:6634
+#: cp/decl.c:6690
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array %qD"
 msgstr "ISO C 不允許大小為 0 的陣列 %qD"
 
-#: cp/decl.c:6636
+#: cp/decl.c:6692
 #, gcc-internal-format
 msgid "ISO C++ forbids zero-size array"
 msgstr "ISO C++ 不允許大小為 0 的陣列"
 
-#: cp/decl.c:6643
+#: cp/decl.c:6699
 #, gcc-internal-format
 msgid "size of array %qD is not an integral constant-expression"
 msgstr "陣列 %qD 的大小不是一個整數常運算式"
 
-#: cp/decl.c:6646
+#: cp/decl.c:6702
 #, gcc-internal-format
 msgid "size of array is not an integral constant-expression"
 msgstr "陣列大小不是一個整數常運算式"
 
-#: cp/decl.c:6652
+#: cp/decl.c:6708
 #, gcc-internal-format
 msgid "ISO C++ forbids variable-size array %qD"
 msgstr "ISO C++ 不允許彈性陣列 %qD"
 
-#: cp/decl.c:6654
+#: cp/decl.c:6710
 #, gcc-internal-format
 msgid "ISO C++ forbids variable-size array"
 msgstr "ISO C++ 不允許彈性陣列"
 
-#: cp/decl.c:6685
+#: cp/decl.c:6741
 #, gcc-internal-format
 msgid "overflow in array dimension"
 msgstr "陣列維數溢出"
 
-#: cp/decl.c:6759
+#: cp/decl.c:6815
 #, gcc-internal-format
 msgid "declaration of %qD as %s"
 msgstr "%qD 宣告為 %s"
 
-#: cp/decl.c:6761
+#: cp/decl.c:6817
 #, gcc-internal-format
 msgid "creating %s"
 msgstr "建立 %s"
 
-#: cp/decl.c:6773
+#: cp/decl.c:6829
 #, gcc-internal-format
 msgid "declaration of %qD as multidimensional array must have bounds for all dimensions except the first"
 msgstr "多維陣列 %qD 的宣告必須至少指定除第一維以外所有維的大小"
 
-#: cp/decl.c:6777
+#: cp/decl.c:6833
 #, gcc-internal-format
 msgid "multidimensional array must have bounds for all dimensions except the first"
 msgstr "宣告多維陣列必須至少指定除第一維以外所有維的大小"
 
-#: cp/decl.c:6812
+#: cp/decl.c:6868
 #, gcc-internal-format
 msgid "return type specification for constructor invalid"
 msgstr "為建構式指定回傳值無效"
 
-#: cp/decl.c:6822
+#: cp/decl.c:6878
 #, gcc-internal-format
 msgid "return type specification for destructor invalid"
 msgstr "指定解構函式的回傳類型無效"
 
-#: cp/decl.c:6835
+#: cp/decl.c:6891
 #, gcc-internal-format
 msgid "operator %qT declared to return %qT"
 msgstr "運算子 %qT 宣告為有 %qT 回傳值"
 
-#: cp/decl.c:6837
+#: cp/decl.c:6893
 #, gcc-internal-format
 msgid "return type specified for %<operator %T%>"
 msgstr "為 %<operator %T%> 指定了回傳值"
 
-#: cp/decl.c:6859
+#: cp/decl.c:6915
 #, gcc-internal-format
 msgid "unnamed variable or field declared void"
 msgstr "無名變數或欄位宣告為 void"
 
-#: cp/decl.c:6863
+#: cp/decl.c:6919
 #, gcc-internal-format
 msgid "variable or field %qE declared void"
 msgstr "變數或欄位 %qE 宣告為 void"
 
-#: cp/decl.c:6866
+#: cp/decl.c:6922
 #, gcc-internal-format
 msgid "variable or field declared void"
 msgstr "變數或欄位宣告為 void"
 
-#: cp/decl.c:7031
+#: cp/decl.c:7087
 #, fuzzy, gcc-internal-format
 msgid "invalid use of qualified-name %<::%D%>"
 msgstr "錯誤地使用了 %<::%>"
 
-#: cp/decl.c:7034
+#: cp/decl.c:7090
 #, fuzzy, gcc-internal-format
 msgid "invalid use of qualified-name %<%T::%D%>"
 msgstr "對未定義類型 %<%s %E%> 的使用無效"
 
-#: cp/decl.c:7037
+#: cp/decl.c:7093
 #, fuzzy, gcc-internal-format
 msgid "invalid use of qualified-name %<%D::%D%>"
 msgstr "對未定義類型 %<%s %E%> 的使用無效"
 
-#: cp/decl.c:7049
+#: cp/decl.c:7105
 #, gcc-internal-format
 msgid "type %qT is not derived from type %qT"
 msgstr "類型 %qT 不是由類型 %qT 衍生的"
 
-#: cp/decl.c:7065 cp/decl.c:7155 cp/decl.c:8228
+#: cp/decl.c:7121 cp/decl.c:7211 cp/decl.c:8284
 #, gcc-internal-format
 msgid "declaration of %qD as non-function"
 msgstr "%qD 沒有宣告為一個函式"
 
-#: cp/decl.c:7071
+#: cp/decl.c:7127
 #, gcc-internal-format
 msgid "declaration of %qD as non-member"
 msgstr "%qD 未宣告為成員"
 
-#: cp/decl.c:7100
+#: cp/decl.c:7156
 #, gcc-internal-format
 msgid "declarator-id missing; using reserved word %qD"
 msgstr "缺少宣告識別碼：使用了保留字 %qD"
 
-#: cp/decl.c:7147
+#: cp/decl.c:7203
 #, fuzzy, gcc-internal-format
 msgid "function definition does not declare parameters"
 msgstr "函式宣告定義為 %<register%>"
 
-#: cp/decl.c:7189
+#: cp/decl.c:7245
 #, gcc-internal-format
 msgid "two or more data types in declaration of %qs"
 msgstr "%qs 的宣告指定了兩個以上的資料類型"
 
-#: cp/decl.c:7256 cp/decl.c:7258
+#: cp/decl.c:7312 cp/decl.c:7314
 #, gcc-internal-format
 msgid "ISO C++ forbids declaration of %qs with no type"
 msgstr "ISO C++ 不允許宣告無類型的 %qs"
 
-#: cp/decl.c:7283
+#: cp/decl.c:7339
 #, fuzzy, gcc-internal-format
 msgid "%<signed%> or %<unsigned%> invalid for %qs"
 msgstr "為 %qs 使用 short、signed 或 unsigned 無效"
 
-#: cp/decl.c:7285
+#: cp/decl.c:7341
 #, fuzzy, gcc-internal-format
 msgid "%<signed%> and %<unsigned%> specified together for %qs"
 msgstr "為 %qs 同時給定了 signed 和 unsigned"
 
-#: cp/decl.c:7287
+#: cp/decl.c:7343
 #, fuzzy, gcc-internal-format
 msgid "%<long long%> invalid for %qs"
 msgstr "對 %qs 而言無效的複數"
 
-#: cp/decl.c:7289
+#: cp/decl.c:7345
 #, fuzzy, gcc-internal-format
 msgid "%<long%> invalid for %qs"
 msgstr "對 %qs 而言無效的複數"
 
-#: cp/decl.c:7291
+#: cp/decl.c:7347
 #, fuzzy, gcc-internal-format
 msgid "%<short%> invalid for %qs"
 msgstr "對 %qs 而言無效的複數"
 
-#: cp/decl.c:7293
+#: cp/decl.c:7349
 #, fuzzy, gcc-internal-format
 msgid "%<long%> or %<short%> invalid for %qs"
 msgstr "為 %qs 使用 long、short、signed 或 unsigned 無效"
 
-#: cp/decl.c:7295
+#: cp/decl.c:7351
 #, fuzzy, gcc-internal-format
 msgid "%<long%> or %<short%> specified with char for %qs"
 msgstr "為 char %qs 給定了 long 或 short"
 
-#: cp/decl.c:7297
+#: cp/decl.c:7353
 #, fuzzy, gcc-internal-format
 msgid "%<long%> and %<short%> specified together for %qs"
 msgstr "為 %qs 同時給定了 long 和 short"
 
-#: cp/decl.c:7303
+#: cp/decl.c:7359
 #, gcc-internal-format
 msgid "long, short, signed or unsigned used invalidly for %qs"
 msgstr "為 %qs 使用 long、short、signed 或 unsigned 無效"
 
-#: cp/decl.c:7367
+#: cp/decl.c:7423
 #, gcc-internal-format
 msgid "complex invalid for %qs"
 msgstr "對 %qs 而言無效的複數"
 
-#: cp/decl.c:7396
+#: cp/decl.c:7452
 #, gcc-internal-format
 msgid "qualifiers are not allowed on declaration of %<operator %T%>"
 msgstr "%<operator %T%> 的宣告中不能使用限定符"
 
-#: cp/decl.c:7408 cp/typeck.c:6842
+#: cp/decl.c:7464 cp/typeck.c:6840
 #, gcc-internal-format
 msgid "ignoring %qV qualifiers added to function type %qT"
 msgstr "忽略 %qV 限定符，在函式類型 %qT 上"
 
-#: cp/decl.c:7431
+#: cp/decl.c:7487
 #, gcc-internal-format
 msgid "member %qD cannot be declared both virtual and static"
 msgstr "成員 %qD 不能既被宣告為虛函式，又被宣告為靜態函式"
 
-#: cp/decl.c:7439
+#: cp/decl.c:7495
 #, gcc-internal-format
 msgid "%<%T::%D%> is not a valid declarator"
 msgstr "%<%T::%D%> 不是一個有效的宣告"
 
-#: cp/decl.c:7448
+#: cp/decl.c:7504
 #, gcc-internal-format
 msgid "typedef declaration invalid in parameter declaration"
 msgstr "參數宣告中出現的 typedef 宣告無效"
 
-#: cp/decl.c:7454
+#: cp/decl.c:7510
 #, gcc-internal-format
 msgid "storage class specifiers invalid in parameter declarations"
 msgstr "為參數宣告指定了無效的存儲類別"
 
-#: cp/decl.c:7461
+#: cp/decl.c:7517
 #, gcc-internal-format
 msgid "virtual outside class declaration"
 msgstr "virtual 用在類別宣告以外"
 
-#: cp/decl.c:7479
+#: cp/decl.c:7535
 #, gcc-internal-format
 msgid "multiple storage classes in declaration of %qs"
 msgstr "%qs 的宣告指定了多個存儲類別"
 
-#: cp/decl.c:7484
+#: cp/decl.c:7540
 #, fuzzy, gcc-internal-format
 msgid "conflicting specifiers in declaration of %qs"
 msgstr "相互衝突的宣告 %q#D"
 
-#: cp/decl.c:7507
+#: cp/decl.c:7563
 #, gcc-internal-format
 msgid "storage class specified for %qs"
 msgstr "為 %qs 指定了存儲類別"
 
-#: cp/decl.c:7541
+#: cp/decl.c:7597
 #, gcc-internal-format
 msgid "top-level declaration of %qs specifies %<auto%>"
 msgstr "在頂層將 %qs 宣告為 %<auto%>"
 
-#: cp/decl.c:7553
+#: cp/decl.c:7609
 #, gcc-internal-format
 msgid "storage class specifiers invalid in friend function declarations"
 msgstr "為夥伴函式宣告指定了無效的存儲類別"
 
-#: cp/decl.c:7673
+#: cp/decl.c:7729
 #, gcc-internal-format
 msgid "destructor cannot be static member function"
 msgstr "解構函式不能是靜態成員函式"
 
-#: cp/decl.c:7674
+#: cp/decl.c:7730
 #, gcc-internal-format
 msgid "constructor cannot be static member function"
 msgstr "建構式不能是靜態成員函式"
 
-#: cp/decl.c:7678
+#: cp/decl.c:7734
 #, gcc-internal-format
 msgid "destructors may not be cv-qualified"
 msgstr "解構函式不能被 cv 限定"
 
-#: cp/decl.c:7679
+#: cp/decl.c:7735
 #, gcc-internal-format
 msgid "constructors may not be cv-qualified"
 msgstr "建構式不能帶 cv 限定"
 
-#: cp/decl.c:7696
+#: cp/decl.c:7752
 #, gcc-internal-format
 msgid "constructors cannot be declared virtual"
 msgstr "建構式不能被宣告為虛函式"
 
-#: cp/decl.c:7709
+#: cp/decl.c:7765
 #, gcc-internal-format
 msgid "can't initialize friend function %qs"
 msgstr "無法初始化夥伴函式 %qs"
 
 #. Cannot be both friend and virtual.
-#: cp/decl.c:7713
+#: cp/decl.c:7769
 #, gcc-internal-format
 msgid "virtual functions cannot be friends"
 msgstr "虛函式不能是夥伴"
 
-#: cp/decl.c:7717
+#: cp/decl.c:7773
 #, gcc-internal-format
 msgid "friend declaration not in class definition"
 msgstr "夥伴宣告不在類別定義內"
 
-#: cp/decl.c:7719
+#: cp/decl.c:7775
 #, gcc-internal-format
 msgid "can't define friend function %qs in a local class definition"
 msgstr "局部類別定義中不能定義夥伴函式 %qs"
 
-#: cp/decl.c:7732
+#: cp/decl.c:7788
 #, gcc-internal-format
 msgid "destructors may not have parameters"
 msgstr "解構函式不能有參數"
 
-#: cp/decl.c:7750 cp/decl.c:7757
+#: cp/decl.c:7806 cp/decl.c:7813
 #, gcc-internal-format
 msgid "cannot declare reference to %q#T"
 msgstr "無法宣告對 %q#T 的參照"
 
-#: cp/decl.c:7751
+#: cp/decl.c:7807
 #, gcc-internal-format
 msgid "cannot declare pointer to %q#T"
 msgstr "無法宣告參照 %q#T 的指標"
 
-#: cp/decl.c:7759
+#: cp/decl.c:7815
 #, gcc-internal-format
 msgid "cannot declare pointer to %q#T member"
 msgstr "無法宣告參照 %q#T 成員的指標"
 
-#: cp/decl.c:7822
+#: cp/decl.c:7878
 #, gcc-internal-format
 msgid "template-id %qD used as a declarator"
 msgstr "範本識別碼 %qD 做為宣告"
 
-#: cp/decl.c:7872
+#: cp/decl.c:7928
 #, gcc-internal-format
 msgid "member functions are implicitly friends of their class"
 msgstr "成員函式隱含地成為所屬類別的夥伴"
 
-#: cp/decl.c:7874
+#: cp/decl.c:7930
 #, gcc-internal-format
 msgid "extra qualification %<%T::%> on member %qs"
 msgstr "有多餘的限定 %<%T::%> 於成員 %qs 上"
 
-#: cp/decl.c:7906
+#: cp/decl.c:7962
 #, gcc-internal-format
 msgid "cannot define member function %<%T::%s%> within %<%T%>"
 msgstr "無法定義成員函式 %<%T::%s%> 於 %<%T%> 之內"
 
-#: cp/decl.c:7907
+#: cp/decl.c:7963
 #, gcc-internal-format
 msgid "cannot declare member function %<%T::%s%> within %<%T%>"
 msgstr "無法宣告成員函式 %<%T::%s%> 於 %<%T%> 之內"
 
-#: cp/decl.c:7923
+#: cp/decl.c:7979
 #, gcc-internal-format
 msgid "cannot declare member %<%T::%s%> within %qT"
 msgstr "無法宣告成員 %<%T::%s%> 於 %qT 之內"
 
-#: cp/decl.c:7957
+#: cp/decl.c:8013
 #, gcc-internal-format
 msgid "data member may not have variably modified type %qT"
 msgstr "資料成員不能具有可變類型 %qT"
 
-#: cp/decl.c:7959
+#: cp/decl.c:8015
 #, gcc-internal-format
 msgid "parameter may not have variably modified type %qT"
 msgstr "參數不能具有可變類型 %qT"
 
 #. [dcl.fct.spec] The explicit specifier shall only be used in
 #. declarations of constructors within a class definition.
-#: cp/decl.c:7967
+#: cp/decl.c:8023
 #, gcc-internal-format
 msgid "only declarations of constructors can be %<explicit%>"
 msgstr "只有建構式才能被宣告為 %<explicit%>"
 
-#: cp/decl.c:7975
+#: cp/decl.c:8031
 #, gcc-internal-format
 msgid "non-member %qs cannot be declared %<mutable%>"
 msgstr "非成員 %qs 不能被宣告為 %<mutable%>"
 
-#: cp/decl.c:7980
+#: cp/decl.c:8036
 #, gcc-internal-format
 msgid "non-object member %qs cannot be declared %<mutable%>"
 msgstr "非物件成員 %qs 不能被宣告為 %<mutable%>"
 
-#: cp/decl.c:7986
+#: cp/decl.c:8042
 #, gcc-internal-format
 msgid "function %qs cannot be declared %<mutable%>"
 msgstr "函式 %qs 不能被宣告為 %<mutable%>"
 
-#: cp/decl.c:7991
+#: cp/decl.c:8047
 #, gcc-internal-format
 msgid "static %qs cannot be declared %<mutable%>"
 msgstr "靜態 %qs 不能被宣告為 %<mutable%>"
 
-#: cp/decl.c:7996
+#: cp/decl.c:8052
 #, gcc-internal-format
 msgid "const %qs cannot be declared %<mutable%>"
 msgstr "常數 %qs 不能被宣告為 %<mutable%>"
 
-#: cp/decl.c:8028
+#: cp/decl.c:8084
 #, gcc-internal-format
 msgid "%Jtypedef name may not be a nested-name-specifier"
 msgstr "%Jtypedef 名不能是巢狀名指定"
 
-#: cp/decl.c:8044
+#: cp/decl.c:8100
 #, gcc-internal-format
 msgid "ISO C++ forbids nested type %qD with same name as enclosing class"
 msgstr "ISO C++ 不允許嵌類別的類型 %qD 與其所屬的類別同名"
 
-#: cp/decl.c:8134
+#: cp/decl.c:8190
 #, gcc-internal-format
 msgid "qualified function types cannot be used to declare %s functions"
 msgstr "限定的函式類型不能用來宣告 %s 函式"
 
-#: cp/decl.c:8160
+#: cp/decl.c:8216
 #, gcc-internal-format
 msgid "type qualifiers specified for friend class declaration"
 msgstr "為夥伴類別宣告指定了類型限定"
 
-#: cp/decl.c:8165
+#: cp/decl.c:8221
 #, gcc-internal-format
 msgid "%<inline%> specified for friend class declaration"
 msgstr "夥伴函式宣告中出現了 %<inline%>"
 
-#: cp/decl.c:8173
+#: cp/decl.c:8229
 #, gcc-internal-format
 msgid "template parameters cannot be friends"
 msgstr "範本參數不能是夥伴"
 
-#: cp/decl.c:8175
+#: cp/decl.c:8231
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend class %T::%D%>"
 msgstr "夥伴宣告需要 class，即 %<friend class %T::%D%>"
 
-#: cp/decl.c:8179
+#: cp/decl.c:8235
 #, gcc-internal-format
 msgid "friend declaration requires class-key, i.e. %<friend %#T%>"
 msgstr "夥伴宣告需要 class，即 %<friend %#T%>"
 
-#: cp/decl.c:8192
+#: cp/decl.c:8248
 #, gcc-internal-format
 msgid "trying to make class %qT a friend of global scope"
 msgstr "試圖讓 %qT 成為全域欄位的夥伴"
 
-#: cp/decl.c:8203
+#: cp/decl.c:8259
 #, gcc-internal-format
 msgid "invalid qualifiers on non-member function type"
 msgstr "非成員函式類型上的限定符無效"
 
-#: cp/decl.c:8218
+#: cp/decl.c:8274
 #, gcc-internal-format
 msgid "abstract declarator %qT used as declaration"
 msgstr "抽象宣告 %qT 做為宣告"
 
-#: cp/decl.c:8247
+#: cp/decl.c:8303
 #, gcc-internal-format
 msgid "cannot use %<::%> in parameter declaration"
 msgstr "不能在參數宣告中使用 %<::%>"
 
 #. Something like struct S { int N::j; };
-#: cp/decl.c:8293
+#: cp/decl.c:8349
 #, gcc-internal-format
 msgid "invalid use of %<::%>"
 msgstr "錯誤地使用了 %<::%>"
 
-#: cp/decl.c:8308
+#: cp/decl.c:8364
 #, gcc-internal-format
 msgid "can't make %qD into a method -- not in a class"
 msgstr "%qD 不能是一個方法 -- 不在類別中"
 
-#: cp/decl.c:8317
+#: cp/decl.c:8373
 #, gcc-internal-format
 msgid "function %qD declared virtual inside a union"
 msgstr "聯合成員函式 %qD 被宣告為虛函式"
 
-#: cp/decl.c:8326
+#: cp/decl.c:8382
 #, gcc-internal-format
 msgid "%qD cannot be declared virtual, since it is always static"
 msgstr "%qD 不能宣告為虛函式，因為它總是靜態的"
 
-#: cp/decl.c:8342
+#: cp/decl.c:8398
 #, gcc-internal-format
 msgid "expected qualified name in friend declaration for destructor %qD"
 msgstr "在解構函式 %qD 中的夥伴宣告需要限定名"
 
-#: cp/decl.c:8352
+#: cp/decl.c:8408
 #, gcc-internal-format
 msgid "declaration of %qD as member of %qT"
 msgstr "%qD 宣告為 %qT 的一個成員"
 
-#: cp/decl.c:8428
+#: cp/decl.c:8484
 #, gcc-internal-format
 msgid "field %qD has incomplete type"
 msgstr "欄位 %qD 類型不完全"
 
-#: cp/decl.c:8430
+#: cp/decl.c:8486
 #, gcc-internal-format
 msgid "name %qT has incomplete type"
 msgstr "名稱 %qT 類型不完全"
 
-#: cp/decl.c:8439
+#: cp/decl.c:8495
 #, gcc-internal-format
 msgid "  in instantiation of template %qT"
 msgstr "  在範本 %qT 的實體化中"
 
-#: cp/decl.c:8448
+#: cp/decl.c:8504
 #, gcc-internal-format
 msgid "%qE is neither function nor member function; cannot be declared friend"
 msgstr "%qE 既不是函式也不是成員函式；不能宣告為夥伴"
@@ -26365,93 +26376,93 @@ msgstr "%qE 既不是函式也不是成員函式；不能宣告為夥伴"
 #. the rest of the compiler does not correctly
 #. handle the initialization unless the member is
 #. static so we make it static below.
-#: cp/decl.c:8500
+#: cp/decl.c:8556
 #, gcc-internal-format
 msgid "ISO C++ forbids initialization of member %qD"
 msgstr "ISO C++ 不允許成員 %qD 的初始化"
 
-#: cp/decl.c:8502
+#: cp/decl.c:8558
 #, gcc-internal-format
 msgid "making %qD static"
 msgstr "使 %qD 成為靜態的"
 
-#: cp/decl.c:8572
+#: cp/decl.c:8628
 #, gcc-internal-format
 msgid "storage class %<auto%> invalid for function %qs"
 msgstr "函式 %qs 的存儲類別 %<auto%> 無效"
 
-#: cp/decl.c:8574
+#: cp/decl.c:8630
 #, gcc-internal-format
 msgid "storage class %<register%> invalid for function %qs"
 msgstr "函式 %qs 的存儲類別 %<register%> 無效"
 
-#: cp/decl.c:8576
+#: cp/decl.c:8632
 #, gcc-internal-format
 msgid "storage class %<__thread%> invalid for function %qs"
 msgstr "函式 %qs 的存儲類別 %<__thread%> 無效"
 
-#: cp/decl.c:8587
+#: cp/decl.c:8643
 #, gcc-internal-format
 msgid "%<static%> specified invalid for function %qs declared out of global scope"
 msgstr "在全域作用欄位外為函式 %qs 指定 %<static%> 無效"
 
-#: cp/decl.c:8590
+#: cp/decl.c:8646
 #, gcc-internal-format
 msgid "%<inline%> specifier invalid for function %qs declared out of global scope"
 msgstr "在全域作用欄位外為函式 %qs 指定 %<inline%> 無效"
 
-#: cp/decl.c:8598
+#: cp/decl.c:8654
 #, gcc-internal-format
 msgid "virtual non-class function %qs"
 msgstr "虛函式 %qs 不是類別成員"
 
-#: cp/decl.c:8629
+#: cp/decl.c:8685
 #, gcc-internal-format
 msgid "cannot declare member function %qD to have static linkage"
 msgstr "不能將成員函式 %qD 宣告為有靜態連結"
 
 #. FIXME need arm citation
-#: cp/decl.c:8636
+#: cp/decl.c:8692
 #, gcc-internal-format
 msgid "cannot declare static function inside another function"
 msgstr "不能在另一個函式中宣告一個靜態函式"
 
-#: cp/decl.c:8666
+#: cp/decl.c:8722
 #, gcc-internal-format
 msgid "%<static%> may not be used when defining (as opposed to declaring) a static data member"
 msgstr "與宣告不同，定義靜態資料成員時不能使用 %<static%>"
 
-#: cp/decl.c:8673
+#: cp/decl.c:8729
 #, gcc-internal-format
 msgid "static member %qD declared %<register%>"
 msgstr "靜態成員 %qD 宣告為 %<register%>"
 
-#: cp/decl.c:8678
+#: cp/decl.c:8734
 #, gcc-internal-format
 msgid "cannot explicitly declare member %q#D to have extern linkage"
 msgstr "不能明確地將成員 %q#D 宣告為有外部連結"
 
-#: cp/decl.c:8816
+#: cp/decl.c:8872
 #, gcc-internal-format
 msgid "default argument for %q#D has type %qT"
 msgstr "%q#D 的預設引數類型為 %qT"
 
-#: cp/decl.c:8819
+#: cp/decl.c:8875
 #, gcc-internal-format
 msgid "default argument for parameter of type %qT has type %qT"
 msgstr "類型為 %qT 的參數的預設引數卻有類型 %qT"
 
-#: cp/decl.c:8836
+#: cp/decl.c:8892
 #, gcc-internal-format
 msgid "default argument %qE uses local variable %qD"
 msgstr "預設引數 %qE 使用了局部變數 %qD"
 
-#: cp/decl.c:8905
+#: cp/decl.c:8961
 #, gcc-internal-format
 msgid "parameter %qD invalidly declared method type"
 msgstr "參數 %qD 被無效地被宣告為具有方法類型"
 
-#: cp/decl.c:8929
+#: cp/decl.c:8985
 #, gcc-internal-format
 msgid "parameter %qD includes %s to array of unknown bound %qT"
 msgstr "參數 %qD 包含了 %s，後者參照有不明邊界 %qT 的陣列"
@@ -26471,138 +26482,138 @@ msgstr "參數 %qD 包含了 %s，後者參照有不明邊界 %qT 的陣列"
 #. or implicitly defined), there's no need to worry about their
 #. existence.  Theoretically, they should never even be
 #. instantiated, but that's hard to forestall.
-#: cp/decl.c:9097
+#: cp/decl.c:9153
 #, gcc-internal-format
 msgid "invalid constructor; you probably meant %<%T (const %T&)%>"
 msgstr "無效的建構式：您要的可能是 %<%T (const %T&)%>"
 
-#: cp/decl.c:9219
+#: cp/decl.c:9275
 #, gcc-internal-format
 msgid "%qD may not be declared within a namespace"
 msgstr "%qD 不能在命名空間宣告"
 
-#: cp/decl.c:9224
+#: cp/decl.c:9280
 #, gcc-internal-format
 msgid "%qD may not be declared as static"
 msgstr "%qD 不能被宣告為靜態的"
 
-#: cp/decl.c:9247
+#: cp/decl.c:9303
 #, gcc-internal-format
 msgid "%qD must be a nonstatic member function"
 msgstr "%qD 必須是一個非靜態的成員函式"
 
-#: cp/decl.c:9256
+#: cp/decl.c:9312
 #, gcc-internal-format
 msgid "%qD must be either a non-static member function or a non-member function"
 msgstr "%qD 必須是一個非靜態成員函式或非成員函式"
 
-#: cp/decl.c:9277
+#: cp/decl.c:9333
 #, gcc-internal-format
 msgid "%qD must have an argument of class or enumerated type"
 msgstr "%qD 的引數必須有類別或列舉類型"
 
-#: cp/decl.c:9318
+#: cp/decl.c:9374
 #, gcc-internal-format
 msgid "conversion to %s%s will never use a type conversion operator"
 msgstr "向 %s%s 的轉換永遠不會用到類型轉換運算子"
 
 #. 13.4.0.3
-#: cp/decl.c:9326
+#: cp/decl.c:9382
 #, gcc-internal-format
 msgid "ISO C++ prohibits overloading operator ?:"
 msgstr "ISO C++ 不允許多載 ?: 運算子"
 
-#: cp/decl.c:9331
+#: cp/decl.c:9387
 #, fuzzy, gcc-internal-format
 msgid "%qD must not have variable number of arguments"
 msgstr "%qD 必須帶 1 或 2 個引數"
 
-#: cp/decl.c:9382
+#: cp/decl.c:9438
 #, gcc-internal-format
 msgid "postfix %qD must take %<int%> as its argument"
 msgstr "字尾 %qD 必須使用 %<int%> 做為它的參數"
 
-#: cp/decl.c:9385
+#: cp/decl.c:9441
 #, gcc-internal-format
 msgid "postfix %qD must take %<int%> as its second argument"
 msgstr "字尾 %qD 必須使用 %<int%> 做為它的第二個參數"
 
-#: cp/decl.c:9393
+#: cp/decl.c:9449
 #, gcc-internal-format
 msgid "%qD must take either zero or one argument"
 msgstr "%qD 必須帶 0 或 1 個引數"
 
-#: cp/decl.c:9395
+#: cp/decl.c:9451
 #, gcc-internal-format
 msgid "%qD must take either one or two arguments"
 msgstr "%qD 必須帶 1 或 2 個引數"
 
-#: cp/decl.c:9417
+#: cp/decl.c:9473
 #, gcc-internal-format
 msgid "prefix %qD should return %qT"
 msgstr "字首 %qD 應當回傳 %qT"
 
-#: cp/decl.c:9423
+#: cp/decl.c:9479
 #, gcc-internal-format
 msgid "postfix %qD should return %qT"
 msgstr "字尾 %qD 應當回傳 %qT"
 
-#: cp/decl.c:9432
+#: cp/decl.c:9488
 #, gcc-internal-format
 msgid "%qD must take %<void%>"
 msgstr "%qD 必須有 %<void%> 類型"
 
-#: cp/decl.c:9434 cp/decl.c:9443
+#: cp/decl.c:9490 cp/decl.c:9499
 #, gcc-internal-format
 msgid "%qD must take exactly one argument"
 msgstr "%qD 帶且僅帶 1 個引數"
 
-#: cp/decl.c:9445
+#: cp/decl.c:9501
 #, gcc-internal-format
 msgid "%qD must take exactly two arguments"
 msgstr "%qD 帶且僅帶 2 個引數"
 
-#: cp/decl.c:9454
+#: cp/decl.c:9510
 #, gcc-internal-format
 msgid "user-defined %qD always evaluates both arguments"
 msgstr "使用者定義的 %qD 總是計算所有兩個參數"
 
-#: cp/decl.c:9468
+#: cp/decl.c:9524
 #, gcc-internal-format
 msgid "%qD should return by value"
 msgstr "%qD 應當回傳值而非參照"
 
-#: cp/decl.c:9480 cp/decl.c:9484
+#: cp/decl.c:9536 cp/decl.c:9540
 #, gcc-internal-format
 msgid "%qD cannot have default arguments"
 msgstr "%qD 不能有預設參數"
 
-#: cp/decl.c:9542
+#: cp/decl.c:9598
 #, gcc-internal-format
 msgid "using template type parameter %qT after %qs"
 msgstr "使用範本類型參數 %qT，在 %qs 後"
 
-#: cp/decl.c:9557
+#: cp/decl.c:9613
 #, gcc-internal-format
 msgid "using typedef-name %qD after %qs"
 msgstr "使用 typedef 名 %qD，在 %qs 後"
 
-#: cp/decl.c:9558
+#: cp/decl.c:9614
 #, gcc-internal-format
 msgid "%q+D has a previous declaration here"
 msgstr "%q+D 先前在此處有過宣告"
 
-#: cp/decl.c:9566
+#: cp/decl.c:9622
 #, gcc-internal-format
 msgid "%qT referred to as %qs"
 msgstr "%qT 做為 %qs 被參照"
 
-#: cp/decl.c:9567 cp/decl.c:9574
+#: cp/decl.c:9623 cp/decl.c:9630
 #, gcc-internal-format
 msgid "%q+T has a previous declaration here"
 msgstr "%q+T 先前在此處有過宣告"
 
-#: cp/decl.c:9573
+#: cp/decl.c:9629
 #, gcc-internal-format
 msgid "%qT referred to as enum"
 msgstr "%qT 做為列舉被參照"
@@ -26614,67 +26625,67 @@ msgstr "%qT 做為列舉被參照"
 #. void f(class C);		// No template header here
 #.
 #. then the required template argument is missing.
-#: cp/decl.c:9588
+#: cp/decl.c:9644
 #, gcc-internal-format
 msgid "template argument required for %<%s %T%>"
 msgstr "%<%s %T%> 需要範本參數"
 
-#: cp/decl.c:9636 cp/name-lookup.c:2658
+#: cp/decl.c:9692 cp/name-lookup.c:2658
 #, gcc-internal-format
 msgid "%qD has the same name as the class in which it is declared"
 msgstr "%qD 與其宣告所在的類別同名"
 
-#: cp/decl.c:9774
+#: cp/decl.c:9830
 #, gcc-internal-format
 msgid "use of enum %q#D without previous declaration"
 msgstr "使用列舉 %q#D 前沒有給出宣告"
 
-#: cp/decl.c:9795
+#: cp/decl.c:9851
 #, gcc-internal-format
 msgid "redeclaration of %qT as a non-template"
 msgstr "%qT 重宣告為非範本"
 
-#: cp/decl.c:9796 cp/pt.c:3373
+#: cp/decl.c:9852 cp/pt.c:3373
 #, gcc-internal-format
 msgid "previous declaration %q+D"
 msgstr "先前的宣告 %q+D"
 
-#: cp/decl.c:9907
+#: cp/decl.c:9963
 #, gcc-internal-format
 msgid "derived union %qT invalid"
 msgstr "衍生聯合 %qT 無效"
 
-#: cp/decl.c:9916
+#: cp/decl.c:9972
 #, gcc-internal-format
 msgid "Java class %qT cannot have multiple bases"
 msgstr "Java 類別 %qT 不能有多個基礎類別"
 
-#: cp/decl.c:9927
+#: cp/decl.c:9983
 #, gcc-internal-format
 msgid "Java class %qT cannot have virtual bases"
 msgstr "Java 類別 %qT 不能有虛基礎類別"
 
-#: cp/decl.c:9948
+#: cp/decl.c:10004
 #, gcc-internal-format
 msgid "base type %qT fails to be a struct or class type"
 msgstr "基礎類別型 %qT 不是結構或類別"
 
-#: cp/decl.c:9981
+#: cp/decl.c:10037
 #, gcc-internal-format
 msgid "recursive type %qT undefined"
 msgstr "遞迴的類型 %qT 未定義"
 
-#: cp/decl.c:9983
+#: cp/decl.c:10039
 #, gcc-internal-format
 msgid "duplicate base type %qT invalid"
 msgstr "重複的基礎類別型 %qT 無效"
 
-#: cp/decl.c:10055
+#: cp/decl.c:10111
 #, gcc-internal-format
 msgid "multiple definition of %q#T"
 msgstr "%q#T 多次定義"
 
-#: cp/decl.c:10056
+#: cp/decl.c:10112
 #, gcc-internal-format
 msgid "%Jprevious definition here"
 msgstr "%J前一個定義在這裡"
@@ -26683,47 +26694,47 @@ msgstr "%J前一個定義在這裡"
 #.
 #. IF no integral type can represent all the enumerator values, the
 #. enumeration is ill-formed.
-#: cp/decl.c:10195
+#: cp/decl.c:10251
 #, gcc-internal-format
 msgid "no integral type can represent all of the enumerator values for %qT"
 msgstr "沒有一個整數類型可以表示 %qT 的所有列舉值"
 
-#: cp/decl.c:10306
+#: cp/decl.c:10362
 #, gcc-internal-format
 msgid "enumerator value for %qD not integer constant"
 msgstr "%qD 的列舉值不是整數常數"
 
-#: cp/decl.c:10334
+#: cp/decl.c:10390
 #, gcc-internal-format
 msgid "overflow in enumeration values at %qD"
 msgstr "%qD 處列舉值溢出"
 
-#: cp/decl.c:10409
+#: cp/decl.c:10465
 #, gcc-internal-format
 msgid "return type %q#T is incomplete"
 msgstr "回傳值類型 %q#T 為不完全"
 
-#: cp/decl.c:10519 cp/typeck.c:6579
+#: cp/decl.c:10575 cp/typeck.c:6577
 #, gcc-internal-format
 msgid "%<operator=%> should return a reference to %<*this%>"
 msgstr "%<operator=%> 應當回傳一個對 %<*this%> 的參照"
 
-#: cp/decl.c:10877
+#: cp/decl.c:10933
 #, gcc-internal-format
 msgid "parameter %qD declared void"
 msgstr "參數 %qD 被宣告為 void"
 
-#: cp/decl.c:11358
+#: cp/decl.c:11414
 #, gcc-internal-format
 msgid "invalid member function declaration"
 msgstr "無效的成員函式宣告"
 
-#: cp/decl.c:11373
+#: cp/decl.c:11429
 #, gcc-internal-format
 msgid "%qD is already defined in class %qT"
 msgstr "%qD 已在類別 %qT 中定義過"
 
-#: cp/decl.c:11582
+#: cp/decl.c:11638
 #, gcc-internal-format
 msgid "static member function %q#D declared with type qualifiers"
 msgstr "靜態成員函式 %q#D 的宣告帶有類型限定符"
@@ -26858,62 +26869,62 @@ msgstr "靜態成員 %qD 不能是位元段"
 msgid "anonymous struct not inside named type"
 msgstr "匿名結構不在具名類型內"
 
-#: cp/decl2.c:1107
+#: cp/decl2.c:1108
 #, gcc-internal-format
 msgid "namespace-scope anonymous aggregates must be static"
 msgstr "命名空間欄位的匿名聚合必須是靜態的"
 
-#: cp/decl2.c:1116
+#: cp/decl2.c:1117
 #, gcc-internal-format
 msgid "anonymous union with no members"
 msgstr "匿名聯合沒有成員"
 
-#: cp/decl2.c:1152
+#: cp/decl2.c:1153
 #, gcc-internal-format
 msgid "%<operator new%> must return type %qT"
 msgstr "%<operator new%> 必須回傳 %qT"
 
-#: cp/decl2.c:1161
+#: cp/decl2.c:1162
 #, gcc-internal-format
 msgid "%<operator new%> takes type %<size_t%> (%qT) as first parameter"
 msgstr "%<operator new%> 的第一個參數類型為 %<size_t%> (%qT)"
 
-#: cp/decl2.c:1190
+#: cp/decl2.c:1191
 #, gcc-internal-format
 msgid "%<operator delete%> must return type %qT"
 msgstr "%<operator delete%> 必須回傳 %qT"
 
-#: cp/decl2.c:1199
+#: cp/decl2.c:1200
 #, gcc-internal-format
 msgid "%<operator delete%> takes type %qT as first parameter"
 msgstr "%<operator delete%> 的第一個參數類型為 %qT"
 
-#: cp/decl2.c:1862
+#: cp/decl2.c:1863
 #, gcc-internal-format
 msgid "%qT has a field %qD whose type uses the anonymous namespace"
 msgstr ""
 
-#: cp/decl2.c:1868
+#: cp/decl2.c:1869
 #, gcc-internal-format
 msgid "%qT declared with greater visibility than the type of its field %qD"
 msgstr ""
 
-#: cp/decl2.c:1879
+#: cp/decl2.c:1880
 #, gcc-internal-format
 msgid "%qT has a base %qT whose type uses the anonymous namespace"
 msgstr ""
 
-#: cp/decl2.c:1884
+#: cp/decl2.c:1885
 #, gcc-internal-format
 msgid "%qT declared with greater visibility than its base %qT"
 msgstr ""
 
-#: cp/decl2.c:3308
+#: cp/decl2.c:3309
 #, gcc-internal-format
 msgid "inline function %q+D used but never defined"
 msgstr "使用了內聯函式 %q+D 但從未定義過"
 
-#: cp/decl2.c:3462
+#: cp/decl2.c:3463
 #, gcc-internal-format
 msgid "default argument missing for parameter %P of %q+#D"
 msgstr "參數 %P (屬於 %q+#D)缺少預設引數"
@@ -26945,7 +26956,7 @@ msgstr "在同一個翻譯單元中混合使用 C++ 和 Java 異常獲取"
 msgid "throwing NULL, which has integral, not pointer type"
 msgstr "拋出 NULL，它的類型是整數而不是指標"
 
-#: cp/except.c:637 cp/init.c:1723
+#: cp/except.c:637 cp/init.c:1722
 #, gcc-internal-format
 msgid "%qD should never be overloaded"
 msgstr "%qD 永遠不應該被多載"
@@ -27054,227 +27065,227 @@ msgstr "夥伴宣告 %q#D 宣告了一個非範本函式"
 msgid "(if this is not what you intended, make sure the function template has already been declared and add <> after the function name here) -Wno-non-template-friend disables this warning"
 msgstr "(如果這不是您原來的想法，請確定此函式範本已經宣告過，並在這裡的函式名後面加入 <>) -Wno-non-template-friend 停用此警告"
 
-#: cp/init.c:334
+#: cp/init.c:333
 #, gcc-internal-format
 msgid "%J%qD should be initialized in the member initialization list"
 msgstr "%J%qD 應該在成員初始化清單中被初始化"
 
-#: cp/init.c:382
+#: cp/init.c:381
 #, gcc-internal-format
 msgid "%Jdefault-initialization of %q#D, which has reference type"
 msgstr "%J預設初始化具有參照類型的 %q#D"
 
-#: cp/init.c:388
+#: cp/init.c:387
 #, gcc-internal-format
 msgid "%Juninitialized reference member %qD"
 msgstr "%J未初始化的參照成員 %qD"
 
-#: cp/init.c:391
+#: cp/init.c:390
 #, gcc-internal-format
 msgid "%Juninitialized member %qD with %<const%> type %qT"
 msgstr "%J未初始化的成員 %qD 具有 %<const%> 類型 %qT"
 
-#: cp/init.c:534
+#: cp/init.c:533
 #, gcc-internal-format
 msgid "%q+D will be initialized after"
 msgstr "%q+D 將隨後被初始化"
 
-#: cp/init.c:537
+#: cp/init.c:536
 #, gcc-internal-format
 msgid "base %qT will be initialized after"
 msgstr "基礎類別 %qT 將在"
 
-#: cp/init.c:540
+#: cp/init.c:539
 #, gcc-internal-format
 msgid "  %q+#D"
 msgstr "  %q+#D"
 
-#: cp/init.c:542
+#: cp/init.c:541
 #, gcc-internal-format
 msgid "  base %qT"
 msgstr "  基礎類別 %qT"
 
-#: cp/init.c:543
+#: cp/init.c:542
 #, gcc-internal-format
 msgid "%J  when initialized here"
 msgstr "%J  當在這裡初始化時"
 
-#: cp/init.c:559
+#: cp/init.c:558
 #, gcc-internal-format
 msgid "%Jmultiple initializations given for %qD"
 msgstr "%J為 %qD 給定了多個初始化設定"
 
-#: cp/init.c:562
+#: cp/init.c:561
 #, gcc-internal-format
 msgid "%Jmultiple initializations given for base %qT"
 msgstr "%J為基礎類別 %qT 給定了多個初始化設定"
 
-#: cp/init.c:629
+#: cp/init.c:628
 #, gcc-internal-format
 msgid "%Jinitializations for multiple members of %qT"
 msgstr "%J初始化 %qT 的多個成員"
 
-#: cp/init.c:691
+#: cp/init.c:690
 #, gcc-internal-format
 msgid "%Jbase class %q#T should be explicitly initialized in the copy constructor"
 msgstr "%J基礎類別 %q#T 應該在複製建構式中明確地初始化"
 
-#: cp/init.c:915 cp/init.c:934
+#: cp/init.c:914 cp/init.c:933
 #, gcc-internal-format
 msgid "class %qT does not have any field named %qD"
 msgstr "類別 %qT 沒具名為 %qD 的欄位"
 
-#: cp/init.c:921
+#: cp/init.c:920
 #, gcc-internal-format
 msgid "%q#D is a static data member; it can only be initialized at its definition"
 msgstr "%q#D 是一個靜態資料成員；它只能在定義時被初始化"
 
-#: cp/init.c:928
+#: cp/init.c:927
 #, gcc-internal-format
 msgid "%q#D is not a non-static data member of %qT"
 msgstr "%q#D 不是 %qT 的非靜態資料成員"
 
-#: cp/init.c:967
+#: cp/init.c:966
 #, gcc-internal-format
 msgid "unnamed initializer for %qT, which has no base classes"
 msgstr "對沒有基礎類別的 %qT 的無名初始化"
 
-#: cp/init.c:975
+#: cp/init.c:974
 #, gcc-internal-format
 msgid "unnamed initializer for %qT, which uses multiple inheritance"
 msgstr "對使用了多繼承的 %qT 的無名初始化"
 
-#: cp/init.c:1021
+#: cp/init.c:1020
 #, gcc-internal-format
 msgid "%qD is both a direct base and an indirect virtual base"
 msgstr "%qD 既是一個直接基礎類別又是一個間接虛基礎類別"
 
-#: cp/init.c:1029
+#: cp/init.c:1028
 #, gcc-internal-format
 msgid "type %qT is not a direct or virtual base of %qT"
 msgstr "類型 %qT 不是 %qT 的直接或虛基礎類別"
 
-#: cp/init.c:1032
+#: cp/init.c:1031
 #, gcc-internal-format
 msgid "type %qT is not a direct base of %qT"
 msgstr "類型 %qT 不是 %qT 的直接基礎類別"
 
-#: cp/init.c:1112
+#: cp/init.c:1111
 #, gcc-internal-format
 msgid "bad array initializer"
 msgstr "錯誤的陣列初始值設定"
 
-#: cp/init.c:1291
+#: cp/init.c:1290
 #, gcc-internal-format
 msgid "%qT is not an aggregate type"
 msgstr "%qT 不是一個聚合類型"
 
-#: cp/init.c:1345
+#: cp/init.c:1344
 #, gcc-internal-format
 msgid "incomplete type %qT does not have member %qD"
 msgstr "不完全類型 %qT 沒有成員 %qD"
 
-#: cp/init.c:1358
+#: cp/init.c:1357
 #, gcc-internal-format
 msgid "invalid pointer to bit-field %qD"
 msgstr "參照位元段 %qD 指標無效"
 
-#: cp/init.c:1435
+#: cp/init.c:1434
 #, gcc-internal-format
 msgid "invalid use of non-static member function %qD"
 msgstr "對非靜態成員函式 %qD 的使用無效"
 
-#: cp/init.c:1441
+#: cp/init.c:1440
 #, gcc-internal-format
 msgid "invalid use of non-static data member %qD"
 msgstr "對非靜態資料成員 %qD 的無效使用"
 
-#: cp/init.c:1670
+#: cp/init.c:1669
 #, gcc-internal-format
 msgid "invalid type %<void%> for new"
 msgstr "對 new 而言類型 %<void%> 無效"
 
-#: cp/init.c:1680
+#: cp/init.c:1679
 #, gcc-internal-format
 msgid "uninitialized const in %<new%> of %q#T"
 msgstr "%<new%> %q#T 時常數未初始化"
 
-#: cp/init.c:1718
+#: cp/init.c:1717
 #, gcc-internal-format
 msgid "call to Java constructor with %qs undefined"
 msgstr "呼叫 Java 建構式，但沒有定義 %qs"
 
-#: cp/init.c:1758
+#: cp/init.c:1757
 #, gcc-internal-format
 msgid "no suitable %qD found in class %qT"
 msgstr "找不到合適的 %qD，在類別 %qT 中"
 
-#: cp/init.c:1763
+#: cp/init.c:1762
 #, gcc-internal-format
 msgid "request for member %qD is ambiguous"
 msgstr "對成員 %qD 的請求有歧義"
 
-#: cp/init.c:1905
+#: cp/init.c:1904
 #, gcc-internal-format
 msgid "ISO C++ forbids initialization in array new"
 msgstr "ISO C++ 不允許在陣列 new 中初始化"
 
-#: cp/init.c:2105
+#: cp/init.c:2103
 #, gcc-internal-format
 msgid "size in array new must have integral type"
 msgstr "陣列 new 的大小必須有整數類型"
 
-#: cp/init.c:2121
+#: cp/init.c:2119
 #, gcc-internal-format
 msgid "allocating zero-element array"
 msgstr ""
 
-#: cp/init.c:2129
+#: cp/init.c:2127
 #, gcc-internal-format
 msgid "new cannot be applied to a reference type"
 msgstr "new 不能用於參照類型"
 
-#: cp/init.c:2135
+#: cp/init.c:2133
 #, gcc-internal-format
 msgid "new cannot be applied to a function type"
 msgstr "new 不能用於函式類型"
 
-#: cp/init.c:2168
+#: cp/init.c:2166
 #, gcc-internal-format
 msgid "call to Java constructor, while %<jclass%> undefined"
 msgstr "呼叫 Java 建構式，但沒有定義 %<jclass%>"
 
-#: cp/init.c:2186
+#: cp/init.c:2184
 #, fuzzy, gcc-internal-format
 msgid "can't find %<class$%> in %qT"
 msgstr "找不到類別$"
 
-#: cp/init.c:2545
+#: cp/init.c:2543
 #, gcc-internal-format
 msgid "initializer ends prematurely"
 msgstr "初始值設定在完成之前結束"
 
-#: cp/init.c:2600
+#: cp/init.c:2598
 #, gcc-internal-format
 msgid "cannot initialize multi-dimensional array with initializer"
 msgstr "不能用初始值設定項來初始化多維陣列"
 
-#: cp/init.c:2737
+#: cp/init.c:2735
 #, gcc-internal-format
 msgid "possible problem detected in invocation of delete operator:"
 msgstr "偵測到呼叫 delete 運算子時可能出現的問題："
 
-#: cp/init.c:2740
+#: cp/init.c:2738
 #, gcc-internal-format
 msgid "neither the destructor nor the class-specific operator delete will be called, even if they are declared when the class is defined."
 msgstr "解構函式和類別特定的 delete 運算子均不會被呼叫，即使它們在類別定義時已經宣告。"
 
-#: cp/init.c:2761
+#: cp/init.c:2759
 #, gcc-internal-format
 msgid "unknown array size in delete"
 msgstr "delete 時陣列大小不明"
 
-#: cp/init.c:3001
+#: cp/init.c:2999
 #, gcc-internal-format
 msgid "type to vector delete is neither pointer or array type"
 msgstr "向量 delete 的引數類型既非指標也非陣列"
@@ -27710,7 +27721,7 @@ msgstr "不能在回傳類型中定義新類型"
 msgid "(perhaps a semicolon is missing after the definition of %qT)"
 msgstr "(%qT 的定義末尾可能缺少一個分號)"
 
-#: cp/parser.c:2133 cp/parser.c:3885 cp/pt.c:4557
+#: cp/parser.c:2133 cp/parser.c:3897 cp/pt.c:4557
 #, gcc-internal-format
 msgid "%qT is not a template"
 msgstr "%qT 不是一個範本"
@@ -27782,186 +27793,186 @@ msgstr "敘述運算式只能用於函式內"
 msgid "%<this%> may not be used in this context"
 msgstr "%<this%> 不能用在此上下文中"
 
-#: cp/parser.c:3222
+#: cp/parser.c:3234
 #, gcc-internal-format
 msgid "local variable %qD may not appear in this context"
 msgstr "局部變數 %qD 不應出現在此上下文中"
 
-#: cp/parser.c:3519
+#: cp/parser.c:3531
 #, fuzzy, gcc-internal-format
 msgid "scope %qT before %<~%> is not a class-name"
 msgstr "%qT 既不是類別也不是命名空間"
 
-#: cp/parser.c:3620
+#: cp/parser.c:3632
 #, gcc-internal-format
 msgid "declaration of %<~%T%> as member of %qT"
 msgstr "%<~%T%> 宣告為 %qT 的一個成員"
 
-#: cp/parser.c:3634
+#: cp/parser.c:3646
 #, gcc-internal-format
 msgid "typedef-name %qD used as destructor declarator"
 msgstr "typedef 名 %qD 用於解構函式宣告"
 
-#: cp/parser.c:3844 cp/parser.c:13003 cp/parser.c:15155
+#: cp/parser.c:3856 cp/parser.c:13015 cp/parser.c:15167
 #, gcc-internal-format
 msgid "reference to %qD is ambiguous"
 msgstr "對 %qD 的參照有歧義"
 
-#: cp/parser.c:3886 cp/typeck.c:2050 cp/typeck.c:2070
+#: cp/parser.c:3898 cp/typeck.c:2048 cp/typeck.c:2068
 #, gcc-internal-format
 msgid "%qD is not a template"
 msgstr "%qD 不是一個範本"
 
-#: cp/parser.c:4275
+#: cp/parser.c:4287
 #, gcc-internal-format
 msgid "ISO C++ forbids compound-literals"
 msgstr "ISO C++ 不允許複合字面值"
 
-#: cp/parser.c:4623
+#: cp/parser.c:4635
 #, gcc-internal-format
 msgid "%qE does not have class type"
 msgstr "%qE 不是一個類別"
 
-#: cp/parser.c:4699 cp/typeck.c:1979
+#: cp/parser.c:4711 cp/typeck.c:1977
 #, gcc-internal-format
 msgid "invalid use of %qD"
 msgstr "錯誤地使用了 %qD"
 
-#: cp/parser.c:5223
+#: cp/parser.c:5235
 #, gcc-internal-format
 msgid "array bound forbidden after parenthesized type-id"
 msgstr "括起的類型識別碼後面不能出現陣列邊界"
 
-#: cp/parser.c:5224
+#: cp/parser.c:5236
 #, gcc-internal-format
 msgid "try removing the parentheses around the type-id"
 msgstr "請嘗試刪除類型識別碼兩邊的括號"
 
-#: cp/parser.c:5426
+#: cp/parser.c:5438
 #, gcc-internal-format
 msgid "expression in new-declarator must have integral or enumeration type"
 msgstr "new 宣告中的運算式必須具有整數或列舉類型"
 
-#: cp/parser.c:5615
+#: cp/parser.c:5627
 #, gcc-internal-format
 msgid "use of old-style cast"
 msgstr "使用舊式的類型轉換"
 
-#: cp/parser.c:6404
+#: cp/parser.c:6416
 #, gcc-internal-format
 msgid "case label %qE not within a switch statement"
 msgstr "case 標籤 %qE 未出現在 switch 敘述中"
 
-#: cp/parser.c:6970
+#: cp/parser.c:6982
 #, gcc-internal-format
 msgid "ISO C++ forbids computed gotos"
 msgstr "ISO C++ 不允許執行時可知的 goto 目的"
 
-#: cp/parser.c:7102
+#: cp/parser.c:7114
 #, gcc-internal-format
 msgid "extra %<;%>"
 msgstr "多餘的 %<;%>"
 
-#: cp/parser.c:7441
+#: cp/parser.c:7453
 #, gcc-internal-format
 msgid "mixing declarations and function-definitions is forbidden"
 msgstr "不能混合宣告和函式定義"
 
-#: cp/parser.c:7573
+#: cp/parser.c:7585
 #, fuzzy, gcc-internal-format
 msgid "%<friend%> used outside of class"
 msgstr "%<friend%> 只能在類別中指定"
 
-#: cp/parser.c:7727
+#: cp/parser.c:7739
 #, gcc-internal-format
 msgid "class definition may not be declared a friend"
 msgstr "類別定義不能被宣告為夥伴"
 
-#: cp/parser.c:7791 cp/parser.c:14109
+#: cp/parser.c:7803 cp/parser.c:14121
 #, gcc-internal-format
 msgid "templates may not be %<virtual%>"
 msgstr ""
 
-#: cp/parser.c:8044
+#: cp/parser.c:8056
 #, gcc-internal-format
 msgid "only constructors take base initializers"
 msgstr "只有建構式才能有基礎類別初始值設定"
 
-#: cp/parser.c:8096
+#: cp/parser.c:8108
 #, gcc-internal-format
 msgid "anachronistic old-style base class initializer"
 msgstr "年代錯誤的舊式基礎類別初始值設定"
 
-#: cp/parser.c:8140
+#: cp/parser.c:8152
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (a qualified member initializer is implicitly a type)"
 msgstr "關鍵字 %<typename%> 不允許用在此上下文中(限定的初始值設定隱含地是一個類型)"
 
 #. Warn that we do not support `export'.
-#: cp/parser.c:8485
+#: cp/parser.c:8497
 #, gcc-internal-format
 msgid "keyword %<export%> not implemented, and will be ignored"
 msgstr "關鍵字 %<export%> 未實作，將被忽略"
 
 #. Otherwise, emit an error about the invalid digraph, but continue
 #. parsing because we got our argument list.
-#: cp/parser.c:8878
+#: cp/parser.c:8890
 #, gcc-internal-format
 msgid "%<<::%> cannot begin a template-argument list"
 msgstr "不能以 %<<::%> 開始一個範本引數清單"
 
-#: cp/parser.c:8879
+#: cp/parser.c:8891
 #, gcc-internal-format
 msgid "%<<:%> is an alternate spelling for %<[%>. Insert whitespace between %<<%> and %<::%>"
 msgstr "%<<:%> 是 %<[%> 的另一種拼法。請在 %<<%> 和 %<::%> 間加上空格"
 
-#: cp/parser.c:8886
+#: cp/parser.c:8898
 #, gcc-internal-format
 msgid "(if you use -fpermissive G++ will accept your code)"
 msgstr "(如果您使用 -fpermissive G++ 會接受您的程式碼)"
 
-#: cp/parser.c:8959
+#: cp/parser.c:8971
 #, gcc-internal-format
 msgid "parse error in template argument list"
 msgstr "範本引數表語法錯誤"
 
 #. Explain what went wrong.
-#: cp/parser.c:9072
+#: cp/parser.c:9084
 #, gcc-internal-format
 msgid "non-template %qD used as template"
 msgstr "非範本 %qD 做為範本"
 
-#: cp/parser.c:9073
+#: cp/parser.c:9085
 #, gcc-internal-format
 msgid "use %<%T::template %D%> to indicate that it is a template"
 msgstr "使用 %<%T::template %D%> 來表示這是一個範本"
 
-#: cp/parser.c:9583
+#: cp/parser.c:9595
 #, gcc-internal-format
 msgid "template specialization with C linkage"
 msgstr "特例化範本有 C 連結"
 
-#: cp/parser.c:10158
+#: cp/parser.c:10170
 #, gcc-internal-format
 msgid "using %<typename%> outside of template"
 msgstr "在範本外使用 %<typename%>"
 
-#: cp/parser.c:10378
+#: cp/parser.c:10390
 #, fuzzy, gcc-internal-format
 msgid "attributes ignored on uninstantiated type"
 msgstr "%qE 屬性在不是類別的類型上被忽略"
 
-#: cp/parser.c:10382
+#: cp/parser.c:10394
 #, fuzzy, gcc-internal-format
 msgid "attributes ignored on template instantiation"
 msgstr "為範本實體化化套用了存儲類型 %qD"
 
-#: cp/parser.c:10387
+#: cp/parser.c:10399
 #, gcc-internal-format
 msgid "attributes ignored on elaborated-type-specifier that is not a forward declaration"
 msgstr ""
 
-#: cp/parser.c:10601
+#: cp/parser.c:10613
 #, gcc-internal-format
 msgid "%qD is not a namespace-name"
 msgstr "%qD 不是一個命名空間"
@@ -27969,137 +27980,137 @@ msgstr "%qD 不是一個命名空間"
 #. [namespace.udecl]
 #.
 #. A using declaration shall not name a template-id.
-#: cp/parser.c:10821
+#: cp/parser.c:10833
 #, gcc-internal-format
 msgid "a template-id may not appear in a using-declaration"
 msgstr "範本識別碼不允許出現在 using 宣告中"
 
-#: cp/parser.c:11166
+#: cp/parser.c:11178
 #, gcc-internal-format
 msgid "an asm-specification is not allowed on a function-definition"
 msgstr "函式定義中不允許出現 asm 指定"
 
-#: cp/parser.c:11168
+#: cp/parser.c:11180
 #, gcc-internal-format
 msgid "attributes are not allowed on a function-definition"
 msgstr "函式定義中不允許有屬性"
 
-#: cp/parser.c:11301
+#: cp/parser.c:11313
 #, fuzzy, gcc-internal-format
 msgid "initializer provided for function"
 msgstr "無法初始化夥伴函式 %qs"
 
-#: cp/parser.c:11321
+#: cp/parser.c:11333
 #, gcc-internal-format
 msgid "attributes after parenthesized initializer ignored"
 msgstr "括起的初始值設定後出現的屬性被忽略"
 
-#: cp/parser.c:11701 cp/pt.c:7312
+#: cp/parser.c:11713 cp/pt.c:7312
 #, gcc-internal-format
 msgid "array bound is not an integer constant"
 msgstr "陣列邊界不是一個整數常數"
 
-#: cp/parser.c:11778
+#: cp/parser.c:11790
 #, gcc-internal-format
 msgid "%<%T::%D%> is not a type"
 msgstr "%<%T::%D%> 不是一個類型"
 
-#: cp/parser.c:11803
+#: cp/parser.c:11815
 #, gcc-internal-format
 msgid "invalid use of constructor as a template"
 msgstr "將建構式做為範本用法無效"
 
-#: cp/parser.c:11804
+#: cp/parser.c:11816
 #, gcc-internal-format
 msgid "use %<%T::%D%> instead of %<%T::%D%> to name the constructor in a qualified name"
 msgstr "使用 %<%T::%D%> 而不是 %<%T::%D%> 來以限定名指定建構式"
 
-#: cp/parser.c:11963
+#: cp/parser.c:11975
 #, gcc-internal-format
 msgid "%qD is a namespace"
 msgstr "%qD 是一個命名空間"
 
-#: cp/parser.c:12038
+#: cp/parser.c:12050
 #, gcc-internal-format
 msgid "duplicate cv-qualifier"
 msgstr "重複的 cv 限定"
 
-#: cp/parser.c:12586
+#: cp/parser.c:12598
 #, gcc-internal-format
 msgid "file ends in default argument"
 msgstr "檔案在預設參數處結束"
 
-#: cp/parser.c:12659
+#: cp/parser.c:12671
 #, gcc-internal-format
 msgid "deprecated use of default argument for parameter of non-function"
 msgstr "為非函式指定預設參數的用法已過時"
 
-#: cp/parser.c:12662
+#: cp/parser.c:12674
 #, gcc-internal-format
 msgid "default arguments are only permitted for function parameters"
 msgstr "預設參數只允許出現在函式參數中"
 
-#: cp/parser.c:12862
+#: cp/parser.c:12874
 #, gcc-internal-format
 msgid "ISO C++ does not allow designated initializers"
 msgstr "ISO C++ 不允許指定元素初始值設定"
 
-#: cp/parser.c:13446
+#: cp/parser.c:13458
 #, gcc-internal-format
 msgid "invalid class name in declaration of %qD"
 msgstr "%qD 的宣告中類別名無效"
 
-#: cp/parser.c:13457
+#: cp/parser.c:13469
 #, gcc-internal-format
 msgid "declaration of %qD in %qD which does not enclose %qD"
 msgstr "%qD 宣告出現在 %qD 中，而後者並不包含 %qD"
 
-#: cp/parser.c:13470
+#: cp/parser.c:13482
 #, gcc-internal-format
 msgid "extra qualification ignored"
 msgstr "忽略額外的限定"
 
-#: cp/parser.c:13481
+#: cp/parser.c:13493
 #, gcc-internal-format
 msgid "an explicit specialization must be preceded by %<template <>%>"
 msgstr "明確特例化前必須有 %<template <>%>"
 
-#: cp/parser.c:13574
+#: cp/parser.c:13586
 #, gcc-internal-format
 msgid "previous definition of %q+#T"
 msgstr "%q+#T 的上一個定義"
 
-#: cp/parser.c:13809
+#: cp/parser.c:13821
 #, gcc-internal-format
 msgid "%Hextra %<;%>"
 msgstr "%H多餘的 %<;%>"
 
-#: cp/parser.c:13827
+#: cp/parser.c:13839
 #, gcc-internal-format
 msgid "a class-key must be used when declaring a friend"
 msgstr "宣告夥伴時必須使用 class 關鍵字"
 
-#: cp/parser.c:13841
+#: cp/parser.c:13853
 #, gcc-internal-format
 msgid "friend declaration does not name a class or function"
 msgstr "夥伴宣告沒有指定類別或函式名"
 
-#: cp/parser.c:14018
+#: cp/parser.c:14030
 #, gcc-internal-format
 msgid "pure-specifier on function-definition"
 msgstr "函式定義上有 pure 指定"
 
-#: cp/parser.c:14294
+#: cp/parser.c:14306
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed outside of templates"
 msgstr "關鍵字 %<typename%> 不能在範本以外使用"
 
-#: cp/parser.c:14296
+#: cp/parser.c:14308
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (the base class is implicitly a type)"
 msgstr "關鍵字 %<typename%> 不允許用在此上下文中(基礎類別隱含地是一個類型)"
 
-#: cp/parser.c:15328
+#: cp/parser.c:15340
 #, gcc-internal-format
 msgid "too few template-parameter-lists"
 msgstr "範本參數表太少"
@@ -28108,13 +28119,13 @@ msgstr "範本參數表太少"
 #. something like:
 #.
 #. template <class T> template <class U> void S::f();
-#: cp/parser.c:15343
+#: cp/parser.c:15355
 #, gcc-internal-format
 msgid "too many template-parameter-lists"
 msgstr "範本參數表太多"
 
 #. Issue an error message.
-#: cp/parser.c:15605
+#: cp/parser.c:15617
 #, gcc-internal-format
 msgid "named return values are no longer supported"
 msgstr "具名回傳值不再被支援"
@@ -28122,82 +28133,82 @@ msgstr "具名回傳值不再被支援"
 #. 14.5.2.2 [temp.mem]
 #.
 #. A local class shall not have member templates.
-#: cp/parser.c:15677
+#: cp/parser.c:15689
 #, fuzzy, gcc-internal-format
 msgid "invalid declaration of member template in local class"
 msgstr "局部類別中對成員範本 %q#D 的宣告無效"
 
-#: cp/parser.c:15686
+#: cp/parser.c:15698
 #, gcc-internal-format
 msgid "template with C linkage"
 msgstr "C 連結的範本"
 
-#: cp/parser.c:15828
+#: cp/parser.c:15840
 #, gcc-internal-format
 msgid "template declaration of %qs"
 msgstr "%qs 宣告為範本"
 
-#: cp/parser.c:16043
+#: cp/parser.c:16055
 #, gcc-internal-format
 msgid "%H%<>>%> should be %<> >%> within a nested template argument list"
 msgstr "%H在巢狀範本引數清單中應當使用 %<> >%> 而非 %<>>%>"
 
-#: cp/parser.c:16058
+#: cp/parser.c:16070
 #, gcc-internal-format
 msgid "spurious %<>>%>, use %<>%> to terminate a template argument list"
 msgstr "可疑的 %<>>%>，使用 %<>%> 來結束範本引數清單"
 
-#: cp/parser.c:16374
+#: cp/parser.c:16386
 #, fuzzy, gcc-internal-format
 msgid "invalid use of %qD in linkage specification"
 msgstr "無效的基礎類別"
 
-#: cp/parser.c:16387
+#: cp/parser.c:16399
 #, fuzzy, gcc-internal-format
 msgid "%<__thread%> before %qD"
 msgstr "%<__thread%> 出現在 %<extern%> 之前"
 
-#: cp/parser.c:16682
+#: cp/parser.c:16694
 #, gcc-internal-format
 msgid "%qs tag used in naming %q#T"
 msgstr "使用了 %qs 標記，在命名 %q#T 時"
 
-#: cp/parser.c:16703
+#: cp/parser.c:16715
 #, gcc-internal-format
 msgid "%qD redeclared with different access"
 msgstr "%qD 重宣告時有不同的可存取性"
 
-#: cp/parser.c:16720
+#: cp/parser.c:16732
 #, gcc-internal-format
 msgid "%<template%> (as a disambiguator) is only allowed within templates"
 msgstr "做為消歧義的 %<template%> 只能用於範本內"
 
-#: cp/parser.c:16973 cp/parser.c:17896 cp/parser.c:18027
+#: cp/parser.c:16985 cp/parser.c:17908 cp/parser.c:18039
 #, gcc-internal-format
 msgid "misplaced %<@%D%> Objective-C++ construct"
 msgstr "位置錯誤的 %<@%D%> Objective-C++ 建構"
 
-#: cp/parser.c:17114
+#: cp/parser.c:17126
 #, gcc-internal-format
 msgid "%<@encode%> must specify a type as an argument"
 msgstr "%<@encode%> 必須指定一個類型做為引數"
 
-#: cp/parser.c:17429
+#: cp/parser.c:17441
 #, gcc-internal-format
 msgid "invalid Objective-C++ selector name"
 msgstr "無效的 Objective-C++ 選擇子名"
 
-#: cp/parser.c:17760
+#: cp/parser.c:17772
 #, gcc-internal-format
 msgid "identifier expected after %<@protocol%>"
 msgstr "%<@protocol%> 需要識別碼"
 
-#: cp/parser.c:19247
+#: cp/parser.c:19259
 #, fuzzy, gcc-internal-format
 msgid "junk at end of %<#pragma GCC pch_preprocess%>"
 msgstr "%<#pragma pack%> 末尾有無用字元"
 
-#: cp/parser.c:19392
+#: cp/parser.c:19404
 #, gcc-internal-format
 msgid "inter-module optimizations not implemented for C++"
 msgstr "模組間最佳化淍未為 C++ 實作"
@@ -28787,77 +28798,77 @@ msgstr "整型運算式 %qE 不是常數"
 msgid "  trying to instantiate %qD"
 msgstr "  試圖實體化 %qD"
 
-#: cp/pt.c:11571
+#: cp/pt.c:11574
 #, gcc-internal-format
 msgid "ambiguous class template instantiation for %q#T"
 msgstr "%q#T 的類別範本實體化有歧義"
 
-#: cp/pt.c:11574
+#: cp/pt.c:11577
 #, gcc-internal-format
 msgid "%s %+#T"
 msgstr "%s %+#T"
 
-#: cp/pt.c:11597 cp/pt.c:11668
+#: cp/pt.c:11600 cp/pt.c:11671
 #, gcc-internal-format
 msgid "explicit instantiation of non-template %q#D"
 msgstr "對非範本 %q#D 的明確實體化"
 
-#: cp/pt.c:11613 cp/pt.c:11663
+#: cp/pt.c:11616 cp/pt.c:11666
 #, gcc-internal-format
 msgid "no matching template for %qD found"
 msgstr "沒有找到與 %qD 匹配的範本"
 
-#: cp/pt.c:11619
+#: cp/pt.c:11622
 #, gcc-internal-format
 msgid "explicit instantiation of %q#D"
 msgstr "對 %q#D 的明確實體化"
 
-#: cp/pt.c:11655
+#: cp/pt.c:11658
 #, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#D"
 msgstr "對 %q#D 重複的明確實體化"
 
-#: cp/pt.c:11677
+#: cp/pt.c:11680
 #, gcc-internal-format
 msgid "ISO C++ forbids the use of %<extern%> on explicit instantiations"
 msgstr "ISO C++ 不允許在明確實體化時使用 %<extern%>"
 
-#: cp/pt.c:11682 cp/pt.c:11775
+#: cp/pt.c:11685 cp/pt.c:11778
 #, gcc-internal-format
 msgid "storage class %qD applied to template instantiation"
 msgstr "為範本實體化化套用了存儲類型 %qD"
 
-#: cp/pt.c:11747
+#: cp/pt.c:11750
 #, gcc-internal-format
 msgid "explicit instantiation of non-template type %qT"
 msgstr "明確實體化非範本類型 %qT"
 
-#: cp/pt.c:11756
+#: cp/pt.c:11759
 #, gcc-internal-format
 msgid "explicit instantiation of %q#T before definition of template"
 msgstr "%q#T 的明確實體化出現在範本定義之前"
 
-#: cp/pt.c:11764
+#: cp/pt.c:11767
 #, gcc-internal-format
 msgid "ISO C++ forbids the use of %qE on explicit instantiations"
 msgstr "ISO C++ 不允許在明確實體化時使用 %qE"
 
-#: cp/pt.c:11809
+#: cp/pt.c:11812
 #, gcc-internal-format
 msgid "duplicate explicit instantiation of %q#T"
 msgstr "對 %q#T 重複的明確實體化"
 
-#: cp/pt.c:12225
+#: cp/pt.c:12228
 #, gcc-internal-format
 msgid "explicit instantiation of %qD but no definition available"
 msgstr "明確實體化 %qD 時沒有可用的定義"
 
-#: cp/pt.c:12383
+#: cp/pt.c:12386
 #, gcc-internal-format
 msgid "template instantiation depth exceeds maximum of %d instantiating %q+D, possibly from virtual table generation (use -ftemplate-depth-NN to increase the maximum)"
 msgstr "範本實體化深度超過了最大值 %d，當實體化 %q+D 時，可能是由於產生虛函式表所致(使用 -ftemplate-depth-NN 來增大最大值)"
 
-#: cp/pt.c:12657
+#: cp/pt.c:12660
 #, gcc-internal-format
 msgid "%q#T is not a valid type for a template constant parameter"
 msgstr "%q#T 不是一個有效的範本常數參數類型"
@@ -29009,7 +29020,7 @@ msgstr "在頂層使用 %<this%> 無效"
 msgid "invalid qualifying scope in pseudo-destructor name"
 msgstr "偽解構函式名的限定作用欄位無效"
 
-#: cp/semantics.c:1951 cp/typeck.c:2005
+#: cp/semantics.c:1951 cp/typeck.c:2003
 #, gcc-internal-format
 msgid "qualified type %qT does not match destructor name ~%qT"
 msgstr "限定的類型 %qT 不匹配解構函式名 ~%qT"
@@ -29069,7 +29080,7 @@ msgstr "巢狀名指定中使用了不完全的類型 %qT"
 msgid "reference to %<%T::%D%> is ambiguous"
 msgstr "對 %<%T::%D%> 的參照有歧義"
 
-#: cp/semantics.c:2405 cp/typeck.c:1814
+#: cp/semantics.c:2405 cp/typeck.c:1812
 #, gcc-internal-format
 msgid "%qD is not a member of %qT"
 msgstr "%qD 不是 %qT 的成員"
@@ -29135,22 +29146,32 @@ msgstr ""
 msgid "cannot apply %<offsetof%> to member function %qD"
 msgstr "對非靜態成員函式 %qD 的使用無效"
 
-#: cp/semantics.c:3414
+#: cp/semantics.c:3348
+#, fuzzy, gcc-internal-format
+msgid "%qD is not a variable in clause %qs"
+msgstr "%qT 是 %qT 的一個不可存取的基礎類別"
+
+#: cp/semantics.c:3357
+#, gcc-internal-format
+msgid "%qD appears more than once in data clauses"
+msgstr ""
+
+#: cp/semantics.c:3417
 #, gcc-internal-format
 msgid "num_threads expression must be integral"
 msgstr ""
 
-#: cp/semantics.c:3428
+#: cp/semantics.c:3431
 #, gcc-internal-format
 msgid "schedule chunk size expression must be integral"
 msgstr ""
 
-#: cp/semantics.c:3558
+#: cp/semantics.c:3561
 #, fuzzy, gcc-internal-format
 msgid "%qE has reference type for %qs"
 msgstr "形成 %s，參照參照類型 %qT"
 
-#: cp/semantics.c:3698
+#: cp/semantics.c:3701
 #, gcc-internal-format
 msgid "%<threadprivate%> %qE is not file, namespace or block scope variable"
 msgstr ""
@@ -29200,244 +29221,244 @@ msgstr "請求的 init_priority 保留為內部使用"
 msgid "%qE attribute is not supported on this platform"
 msgstr "%qE 屬性在此平台上不受支援"
 
-#: cp/typeck.c:438 cp/typeck.c:452 cp/typeck.c:552
+#: cp/typeck.c:436 cp/typeck.c:450 cp/typeck.c:550
 #, gcc-internal-format
 msgid "%s between distinct pointer types %qT and %qT lacks a cast"
 msgstr "%s(在不同的指標類型 %qT 和 %qT 之間)需要一個轉換"
 
-#: cp/typeck.c:514
+#: cp/typeck.c:512
 #, gcc-internal-format
 msgid "ISO C++ forbids %s between pointer of type %<void *%> and pointer-to-function"
 msgstr "ISO C++ 不允許在 %<void *%> 和函式指標間 %s"
 
-#: cp/typeck.c:572
+#: cp/typeck.c:570
 #, gcc-internal-format
 msgid "%s between distinct pointer-to-member types %qT and %qT lacks a cast"
 msgstr "%s(在不同的成員指標類型 %qT 和 %qT 之間)需要一個轉換"
 
-#: cp/typeck.c:1255
+#: cp/typeck.c:1253
 #, gcc-internal-format
 msgid "invalid application of %qs to a member function"
 msgstr "%qs 用於成員函式無效"
 
-#: cp/typeck.c:1305
+#: cp/typeck.c:1303
 #, fuzzy, gcc-internal-format
 msgid "invalid application of %<sizeof%> to a bit-field"
 msgstr "對位元段使用 %qs 無效"
 
-#: cp/typeck.c:1310
+#: cp/typeck.c:1308
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids applying %<sizeof%> to an expression of function type"
 msgstr "ISO C++ 不允許將 %qs 套用到函式類型的運算式上"
 
-#: cp/typeck.c:1353
+#: cp/typeck.c:1351
 #, fuzzy, gcc-internal-format
 msgid "invalid application of %<__alignof%> to a bit-field"
 msgstr "對位元段使用 %qs 無效"
 
-#: cp/typeck.c:1361
+#: cp/typeck.c:1359
 #, fuzzy, gcc-internal-format
 msgid "ISO C++ forbids applying %<__alignof%> to an expression of function type"
 msgstr "ISO C++ 不允許將 %qs 套用到函式類型的運算式上"
 
-#: cp/typeck.c:1409
+#: cp/typeck.c:1407
 #, gcc-internal-format
 msgid "invalid use of non-static member function"
 msgstr "對非靜態成員函式的使用無效"
 
-#: cp/typeck.c:1673
+#: cp/typeck.c:1671
 #, fuzzy, gcc-internal-format
 msgid "deprecated conversion from string constant to %qT"
 msgstr "從字串常數到 %qT 的轉換已過時"
 
-#: cp/typeck.c:1785 cp/typeck.c:2133
+#: cp/typeck.c:1783 cp/typeck.c:2131
 #, gcc-internal-format
 msgid "request for member %qD in %qE, which is of non-class type %qT"
 msgstr "對成員 %qD 的請求出現在 %qE 中，而後者具有非類別類型 %qT"
 
-#: cp/typeck.c:1812
+#: cp/typeck.c:1810
 #, gcc-internal-format
 msgid "invalid use of nonstatic data member %qE"
 msgstr "對非靜態資料成員 %qE 的使用無效"
 
-#: cp/typeck.c:1864 cp/typeck.c:1892
+#: cp/typeck.c:1862 cp/typeck.c:1890
 #, gcc-internal-format
 msgid "invalid access to non-static data member %qD of NULL object"
 msgstr "對 NULL 物件非靜態資料成員 %qD 的存取無效"
 
-#: cp/typeck.c:1867 cp/typeck.c:1894
+#: cp/typeck.c:1865 cp/typeck.c:1892
 #, gcc-internal-format
 msgid "(perhaps the %<offsetof%> macro was used incorrectly)"
 msgstr "(可能錯誤使用了 %<offsetof%> 巨集)"
 
-#: cp/typeck.c:2011
+#: cp/typeck.c:2009
 #, gcc-internal-format
 msgid "the type being destroyed is %qT, but the destructor refers to %qT"
 msgstr "被解構的類型是 %qT，但解構函式卻使用了 %qT"
 
-#: cp/typeck.c:2171
+#: cp/typeck.c:2169
 #, gcc-internal-format
 msgid "%<%D::%D%> is not a member of %qT"
 msgstr "%<%D::%D%> 不是 %qT 的成員"
 
-#: cp/typeck.c:2186
+#: cp/typeck.c:2184
 #, gcc-internal-format
 msgid "%qT is not a base of %qT"
 msgstr "%qT 不是 %qT 的基礎類別"
 
-#: cp/typeck.c:2205
+#: cp/typeck.c:2203
 #, gcc-internal-format
 msgid "%qD has no member named %qE"
 msgstr "%qD 沒具名為 %qE 的成員"
 
-#: cp/typeck.c:2220
+#: cp/typeck.c:2218
 #, gcc-internal-format
 msgid "%qD is not a member template function"
 msgstr "%qD 不是一個成員範本函式"
 
 #. A pointer to incomplete type (other than cv void) can be
 #. dereferenced [expr.unary.op]/1
-#: cp/typeck.c:2340
+#: cp/typeck.c:2338
 #, gcc-internal-format
 msgid "%qT is not a pointer-to-object type"
 msgstr "%qT 不是一個參照物件的類型"
 
-#: cp/typeck.c:2365
+#: cp/typeck.c:2363
 #, gcc-internal-format
 msgid "invalid use of %qs on pointer to member"
 msgstr "將 %qs 用在成員指標上無效"
 
-#: cp/typeck.c:2371
+#: cp/typeck.c:2369
 #, gcc-internal-format
 msgid "invalid type argument"
 msgstr "無效的類型參數"
 
-#: cp/typeck.c:2394
+#: cp/typeck.c:2392
 #, gcc-internal-format
 msgid "subscript missing in array reference"
 msgstr "陣列參照缺少下標"
 
-#: cp/typeck.c:2468
+#: cp/typeck.c:2466
 #, gcc-internal-format
 msgid "ISO C++ forbids subscripting non-lvalue array"
 msgstr "ISO C++ 不允許按下標存取非左值的陣列"
 
-#: cp/typeck.c:2479
+#: cp/typeck.c:2477
 #, gcc-internal-format
 msgid "subscripting array declared %<register%>"
 msgstr "按下標存取宣告為 %<register%> 的陣列"
 
-#: cp/typeck.c:2562
+#: cp/typeck.c:2560
 #, gcc-internal-format
 msgid "object missing in use of %qE"
 msgstr "使用 %qE 時缺少物件"
 
-#: cp/typeck.c:2676
+#: cp/typeck.c:2674
 #, gcc-internal-format
 msgid "ISO C++ forbids calling %<::main%> from within program"
 msgstr "ISO C++ 不允許在程式裡呼叫 %<::main%>"
 
-#: cp/typeck.c:2701
+#: cp/typeck.c:2699
 #, gcc-internal-format
 msgid "must use %<.*%> or %<->*%> to call pointer-to-member function in %<%E (...)%>"
 msgstr "必須用 %<.*%> or %<->*%> 呼叫 <%E (...)%> 中的成員函式指標"
 
-#: cp/typeck.c:2715
+#: cp/typeck.c:2713
 #, gcc-internal-format
 msgid "%qE cannot be used as a function"
 msgstr "%qE 不能做為函式"
 
-#: cp/typeck.c:2795
+#: cp/typeck.c:2793
 #, gcc-internal-format
 msgid "too many arguments to %s %q+#D"
 msgstr "給予 %s %q+#D 的引數太多"
 
-#: cp/typeck.c:2796 cp/typeck.c:2898
+#: cp/typeck.c:2794 cp/typeck.c:2896
 #, gcc-internal-format
 msgid "at this point in file"
 msgstr "在檔案的這個地方"
 
-#: cp/typeck.c:2799
+#: cp/typeck.c:2797
 #, gcc-internal-format
 msgid "too many arguments to function"
 msgstr "給予函式的引數太多"
 
-#: cp/typeck.c:2833
+#: cp/typeck.c:2831
 #, gcc-internal-format
 msgid "parameter %P of %qD has incomplete type %qT"
 msgstr "參數 %P (屬於 %qD)的類型 %qT 不完全"
 
-#: cp/typeck.c:2836
+#: cp/typeck.c:2834
 #, gcc-internal-format
 msgid "parameter %P has incomplete type %qT"
 msgstr "參數 %P 的類型 %qT 不完全"
 
-#: cp/typeck.c:2897
+#: cp/typeck.c:2895
 #, gcc-internal-format
 msgid "too few arguments to %s %q+#D"
 msgstr "給予 %s %q+#D 的引數太少"
 
-#: cp/typeck.c:2901
+#: cp/typeck.c:2899
 #, gcc-internal-format
 msgid "too few arguments to function"
 msgstr "給予函式的引數太少"
 
-#: cp/typeck.c:3049 cp/typeck.c:3059
+#: cp/typeck.c:3047 cp/typeck.c:3057
 #, gcc-internal-format
 msgid "assuming cast to type %qT from overloaded function"
 msgstr "假定從多載函式轉換到類型 %qT"
 
-#: cp/typeck.c:3141
+#: cp/typeck.c:3139
 #, gcc-internal-format
 msgid "division by zero in %<%E / 0%>"
 msgstr "%<%E / 0%> 中被零除"
 
-#: cp/typeck.c:3143
+#: cp/typeck.c:3141
 #, gcc-internal-format
 msgid "division by zero in %<%E / 0.%>"
 msgstr "%<%E / 0.%> 中被零除"
 
-#: cp/typeck.c:3178
+#: cp/typeck.c:3176
 #, gcc-internal-format
 msgid "division by zero in %<%E %% 0%>"
 msgstr "%<%E / %% 0%> 中被零除"
 
-#: cp/typeck.c:3180
+#: cp/typeck.c:3178
 #, gcc-internal-format
 msgid "division by zero in %<%E %% 0.%>"
 msgstr "%<%E / %% 0.%> 中被零除"
 
-#: cp/typeck.c:3260
+#: cp/typeck.c:3258
 #, gcc-internal-format
 msgid "%s rotate count is negative"
 msgstr "%s 循環移位次數為負"
 
-#: cp/typeck.c:3263
+#: cp/typeck.c:3261
 #, gcc-internal-format
 msgid "%s rotate count >= width of type"
 msgstr "%s 循環移位次數大於或等於類型寬度"
 
-#: cp/typeck.c:3302 cp/typeck.c:3307 cp/typeck.c:3408 cp/typeck.c:3413
+#: cp/typeck.c:3300 cp/typeck.c:3305 cp/typeck.c:3406 cp/typeck.c:3411
 #, gcc-internal-format
 msgid "ISO C++ forbids comparison between pointer and integer"
 msgstr "ISO C++ 不允許比較指標和整數的值"
 
-#: cp/typeck.c:3427
+#: cp/typeck.c:3425
 #, gcc-internal-format
 msgid "unordered comparison on non-floating point argument"
 msgstr "非浮點引數間的無效比較"
 
-#: cp/typeck.c:3465
+#: cp/typeck.c:3463
 #, gcc-internal-format
 msgid "invalid operands of types %qT and %qT to binary %qO"
 msgstr "運算元類型 %qT 和 %qT 對二進位 %qO 而言無效"
 
-#: cp/typeck.c:3629
+#: cp/typeck.c:3627
 #, gcc-internal-format
 msgid "comparison between types %q#T and %q#T"
 msgstr "在類型 %q#T 和 %q#T 間比較"
 
-#: cp/typeck.c:3665
+#: cp/typeck.c:3663
 #, gcc-internal-format
 msgid "comparison between signed and unsigned integer expressions"
 msgstr "在有號和無號整數運算式間比較"
@@ -29446,144 +29467,144 @@ msgstr "在有號和無號整數運算式間比較"
 #. performed.  Note that pointer-difference and pointer-addition
 #. have already been handled above, and so we don't end up here in
 #. that case.
-#: cp/typeck.c:3744
+#: cp/typeck.c:3742
 #, gcc-internal-format
 msgid "NULL used in arithmetic"
 msgstr "算術運算式中使用了 NULL"
 
-#: cp/typeck.c:3802
+#: cp/typeck.c:3800
 #, gcc-internal-format
 msgid "ISO C++ forbids using pointer of type %<void *%> in subtraction"
 msgstr "ISO C++ 不允許在減法中使用類型為 %<void *%> 的指標"
 
-#: cp/typeck.c:3804
+#: cp/typeck.c:3802
 #, gcc-internal-format
 msgid "ISO C++ forbids using pointer to a function in subtraction"
 msgstr "ISO C++ 不允許在減法中使用函式指標"
 
-#: cp/typeck.c:3806
+#: cp/typeck.c:3804
 #, gcc-internal-format
 msgid "ISO C++ forbids using pointer to a method in subtraction"
 msgstr "ISO C++ 不允許在減法中使用參照方法的指標"
 
-#: cp/typeck.c:3818
+#: cp/typeck.c:3816
 #, gcc-internal-format
 msgid "invalid use of a pointer to an incomplete type in pointer arithmetic"
 msgstr "在指標算術中使用參照不完全類型的指標無效"
 
-#: cp/typeck.c:3878
+#: cp/typeck.c:3876
 #, gcc-internal-format
 msgid "invalid use of %qE to form a pointer-to-member-function"
 msgstr "用 %qE 形成成員函式指標的用法無效。"
 
-#: cp/typeck.c:3881
+#: cp/typeck.c:3879
 #, gcc-internal-format
 msgid "  a qualified-id is required"
 msgstr "  需要一個限定的識別碼"
 
-#: cp/typeck.c:3886
+#: cp/typeck.c:3884
 #, fuzzy, gcc-internal-format
 msgid "parentheses around %qE cannot be used to form a pointer-to-member-function"
 msgstr "%qE 兩邊的括號不能用來建構一個成員函式指標"
 
-#: cp/typeck.c:3909
+#: cp/typeck.c:3907
 #, gcc-internal-format
 msgid "taking address of temporary"
 msgstr "取臨時變數的位址"
 
-#: cp/typeck.c:4157
+#: cp/typeck.c:4155
 #, gcc-internal-format
 msgid "ISO C++ forbids %sing an enum"
 msgstr "ISO C++ 不允許 %sing 一個列舉"
 
-#: cp/typeck.c:4168
+#: cp/typeck.c:4166
 #, gcc-internal-format
 msgid "cannot %s a pointer to incomplete type %qT"
 msgstr "不能將指標 %s 到不完全的類型 %qT"
 
-#: cp/typeck.c:4174
+#: cp/typeck.c:4172
 #, gcc-internal-format
 msgid "ISO C++ forbids %sing a pointer of type %qT"
 msgstr "ISO C++ 不允許 %s 一個類型為 %qT 的指標"
 
-#: cp/typeck.c:4199
+#: cp/typeck.c:4197
 #, gcc-internal-format
 msgid "cast to non-reference type used as lvalue"
 msgstr "向非參照類型的轉換做為左值"
 
-#: cp/typeck.c:4234
+#: cp/typeck.c:4232
 #, gcc-internal-format
 msgid "invalid use of %<--%> on bool variable %qD"
 msgstr "對於 bool 變數 %qD 使用 %<--%> 無效"
 
 #. ARM $3.4
-#: cp/typeck.c:4263
+#: cp/typeck.c:4261
 #, gcc-internal-format
 msgid "ISO C++ forbids taking address of function %<::main%>"
 msgstr "ISO C++ 不允許取函式 %<::main%> 的位址"
 
 #. An expression like &memfn.
-#: cp/typeck.c:4319
+#: cp/typeck.c:4317
 #, gcc-internal-format
 msgid "ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say %<&%T::%D%>"
 msgstr "ISO C++ 不允許透過提取一個未限定的或帶括號的非靜態成員函式的位址來形成一個成員函式指標。請使用 %<&%T::%D%>"
 
-#: cp/typeck.c:4324
+#: cp/typeck.c:4322
 #, gcc-internal-format
 msgid "ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say %<&%T::%D%>"
 msgstr "ISO C++ 不允許透過取已繫結的成員函式的位址來建構成員函式指標。請改用 %<&%T::%D%>"
 
-#: cp/typeck.c:4352
+#: cp/typeck.c:4350
 #, gcc-internal-format
 msgid "ISO C++ forbids taking the address of a cast to a non-lvalue expression"
 msgstr "ISO C++ 不允許取轉換到非左值運算式的位址"
 
-#: cp/typeck.c:4376
+#: cp/typeck.c:4374
 #, gcc-internal-format
 msgid "cannot create pointer to reference member %qD"
 msgstr "不能建立參照參照成員 %qD 的指標"
 
-#: cp/typeck.c:4587
+#: cp/typeck.c:4585
 #, gcc-internal-format
 msgid "cannot take the address of %<this%>, which is an rvalue expression"
 msgstr "無法取右值運算式 %<this%> 的位址"
 
-#: cp/typeck.c:4610
+#: cp/typeck.c:4608
 #, gcc-internal-format
 msgid "address of explicit register variable %qD requested"
 msgstr "要求明確暫存器變數 %qD 的位址。"
 
-#: cp/typeck.c:4615
+#: cp/typeck.c:4613
 #, gcc-internal-format
 msgid "address requested for %qD, which is declared %<register%>"
 msgstr "請求宣告為 %<register%> 的 %qD 的位址"
 
-#: cp/typeck.c:4681
+#: cp/typeck.c:4679
 #, gcc-internal-format
 msgid "%s expression list treated as compound expression"
 msgstr "%s 運算式清單被看作複合運算式"
 
-#: cp/typeck.c:5078
+#: cp/typeck.c:5076
 #, gcc-internal-format
 msgid "invalid static_cast from type %qT to type %qT"
 msgstr "從類型 %qT 到類型 %qT 中的 static_cast 無效"
 
-#: cp/typeck.c:5100
+#: cp/typeck.c:5098
 #, gcc-internal-format
 msgid "converting from %qT to %qT"
 msgstr "從 %qT 轉換到 %qT"
 
-#: cp/typeck.c:5148
+#: cp/typeck.c:5146
 #, gcc-internal-format
 msgid "invalid cast of an rvalue expression of type %qT to type %qT"
 msgstr "從具有類型 %qT 的右值運算式到類型 %qT 中的轉換無效"
 
-#: cp/typeck.c:5207
+#: cp/typeck.c:5205
 #, gcc-internal-format
 msgid "cast from %qT to %qT loses precision"
 msgstr "從 %qT 到 %qT 的轉換損失精度"
 
-#: cp/typeck.c:5234
+#: cp/typeck.c:5232
 #, gcc-internal-format
 msgid "cast from %qT to %qT increases required alignment of target type"
 msgstr "從 %qT 到 %qT 的轉換增大了目的類型的對齊需求"
@@ -29592,160 +29613,160 @@ msgstr "從 %qT 到 %qT 的轉換增大了目的類型的對齊需求"
 #. where possible, and it is necessary in some cases.  DR 195
 #. addresses this issue, but as of 2004/10/26 is still in
 #. drafting.
-#: cp/typeck.c:5253
+#: cp/typeck.c:5251
 #, gcc-internal-format
 msgid "ISO C++ forbids casting between pointer-to-function and pointer-to-object"
 msgstr "ISO C++ 不允許在函式指標和物件指標間進行轉換"
 
-#: cp/typeck.c:5264
+#: cp/typeck.c:5262
 #, gcc-internal-format
 msgid "invalid cast from type %qT to type %qT"
 msgstr "從類型 %qT 到類型 %qT 的轉換無效"
 
-#: cp/typeck.c:5320
+#: cp/typeck.c:5318
 #, gcc-internal-format
 msgid "invalid use of const_cast with type %qT, which is not a pointer, reference, nor a pointer-to-data-member type"
 msgstr "在類型 %qT 上使用 const_cast 無效，因為它既不是指標，也不是參照，也不是資料成員指標"
 
-#: cp/typeck.c:5329
+#: cp/typeck.c:5327
 #, gcc-internal-format
 msgid "invalid use of const_cast with type %qT, which is a pointer or reference to a function type"
 msgstr "在類型 %qT 上使用 const_cast 無效，因為它是一個指標函式類型的指標或參照"
 
-#: cp/typeck.c:5354
+#: cp/typeck.c:5352
 #, gcc-internal-format
 msgid "invalid const_cast of an rvalue of type %qT to type %qT"
 msgstr "從類型 %qT 到類型 %qT 中的 const_cast 無效"
 
-#: cp/typeck.c:5405
+#: cp/typeck.c:5403
 #, gcc-internal-format
 msgid "invalid const_cast from type %qT to type %qT"
 msgstr "從類型 %qT 到類型 %qT 中的 const_cast 無效"
 
-#: cp/typeck.c:5473 cp/typeck.c:5478
+#: cp/typeck.c:5471 cp/typeck.c:5476
 #, gcc-internal-format
 msgid "ISO C++ forbids casting to an array type %qT"
 msgstr "ISO C++ 不允許轉換為陣列類型 %qT"
 
-#: cp/typeck.c:5486
+#: cp/typeck.c:5484
 #, gcc-internal-format
 msgid "invalid cast to function type %qT"
 msgstr "向函式類型 %qT 的轉換無效"
 
-#: cp/typeck.c:5706
+#: cp/typeck.c:5704
 #, gcc-internal-format
 msgid "  in evaluation of %<%Q(%#T, %#T)%>"
 msgstr "  在求 %<%Q(%#T, %#T)%> 值時"
 
-#: cp/typeck.c:5775
+#: cp/typeck.c:5773
 #, gcc-internal-format
 msgid "incompatible types in assignment of %qT to %qT"
 msgstr "將 %qT 賦值給 %qT 時類型不相容"
 
-#: cp/typeck.c:5786
+#: cp/typeck.c:5784
 #, fuzzy, gcc-internal-format
 msgid "array used as initializer"
 msgstr "錯誤的陣列初始值設定"
 
-#: cp/typeck.c:5788
+#: cp/typeck.c:5786
 #, fuzzy, gcc-internal-format
 msgid "invalid array assignment"
 msgstr "賦值運算中的左值無效"
 
-#: cp/typeck.c:5910
+#: cp/typeck.c:5908
 #, gcc-internal-format
 msgid "   in pointer to member function conversion"
 msgstr "  在成員函式指標轉換中"
 
-#: cp/typeck.c:5921 cp/typeck.c:5947
+#: cp/typeck.c:5919 cp/typeck.c:5945
 #, gcc-internal-format
 msgid "pointer to member cast via virtual base %qT"
 msgstr "成員指標轉換經由虛基礎類別 %qT"
 
-#: cp/typeck.c:5924
+#: cp/typeck.c:5922
 #, gcc-internal-format
 msgid "pointer to member conversion via virtual base %qT"
 msgstr "成員指標轉換經由虛基礎類別 %qT"
 
-#: cp/typeck.c:5933
+#: cp/typeck.c:5931
 #, gcc-internal-format
 msgid "   in pointer to member conversion"
 msgstr "  在成員指標轉換中"
 
-#: cp/typeck.c:6023
+#: cp/typeck.c:6021
 #, gcc-internal-format
 msgid "invalid conversion to type %qT from type %qT"
 msgstr "到類型 %qT 的轉換無效，從類型 %qT"
 
-#: cp/typeck.c:6267
+#: cp/typeck.c:6265
 #, gcc-internal-format
 msgid "cannot convert %qT to %qT for argument %qP to %qD"
 msgstr "不能從 %qT 轉換到 %qT，為引數 %qP(屬於 %qD)"
 
-#: cp/typeck.c:6270
+#: cp/typeck.c:6268
 #, gcc-internal-format
 msgid "cannot convert %qT to %qT in %s"
 msgstr "不能將 %qT 轉換為 %qT，在 %s 中"
 
-#: cp/typeck.c:6281
+#: cp/typeck.c:6279
 #, gcc-internal-format
 msgid "%s might be a candidate for a format attribute"
 msgstr "%s 可能是 format 屬性的一個備選"
 
-#: cp/typeck.c:6355 cp/typeck.c:6357
+#: cp/typeck.c:6353 cp/typeck.c:6355
 #, gcc-internal-format
 msgid "in passing argument %P of %q+D"
 msgstr "在傳遞引數 %P (屬於 %q+D)"
 
-#: cp/typeck.c:6407
+#: cp/typeck.c:6405
 #, gcc-internal-format
 msgid "returning reference to temporary"
 msgstr "回傳臨時變數的參照"
 
-#: cp/typeck.c:6414
+#: cp/typeck.c:6412
 #, gcc-internal-format
 msgid "reference to non-lvalue returned"
 msgstr "回傳了一個非左值的參照"
 
-#: cp/typeck.c:6430
+#: cp/typeck.c:6428
 #, gcc-internal-format
 msgid "reference to local variable %q+D returned"
 msgstr "回傳了對局部變數的 %q+D 的參照"
 
-#: cp/typeck.c:6433
+#: cp/typeck.c:6431
 #, gcc-internal-format
 msgid "address of local variable %q+D returned"
 msgstr "回傳了局部變數的 %q+D 的位址"
 
-#: cp/typeck.c:6467
+#: cp/typeck.c:6465
 #, gcc-internal-format
 msgid "returning a value from a destructor"
 msgstr "解構函式回傳值"
 
 #. If a return statement appears in a handler of the
 #. function-try-block of a constructor, the program is ill-formed.
-#: cp/typeck.c:6475
+#: cp/typeck.c:6473
 #, gcc-internal-format
 msgid "cannot return from a handler of a function-try-block of a constructor"
 msgstr "不能從建構式的異常處理中回傳"
 
 #. You can't return a value from a constructor.
-#: cp/typeck.c:6478
+#: cp/typeck.c:6476
 #, gcc-internal-format
 msgid "returning a value from a constructor"
 msgstr "建構式回傳值"
 
-#: cp/typeck.c:6501
+#: cp/typeck.c:6499
 #, gcc-internal-format
 msgid "return-statement with no value, in function returning %qT"
 msgstr "在回傳 %qT 的函式中，回傳敘述不帶回傳值"
 
-#: cp/typeck.c:6522
+#: cp/typeck.c:6520
 #, gcc-internal-format
 msgid "return-statement with a value, in function returning 'void'"
 msgstr "在回傳「void」的函式中，回傳敘述帶回傳值"
 
-#: cp/typeck.c:6553
+#: cp/typeck.c:6551
 #, gcc-internal-format
 msgid "%<operator new%> must not return NULL unless it is declared %<throw()%> (or -fcheck-new is in effect)"
 msgstr "%<operator new%> 不能回傳 NULL，除非它被宣告為 %<throw()%> (或 -fcheck-new 起作用)"
@@ -29826,92 +29847,92 @@ msgstr "不能用以語法初始化陣列"
 msgid "int-array initialized from non-wide string"
 msgstr "int 型陣列由非寬字串初始化"
 
-#: cp/typeck2.c:731
+#: cp/typeck2.c:732
 #, gcc-internal-format
 msgid "cannot initialize aggregate of type %qT with a compound literal"
 msgstr "不可使用複合原文初始化類型為 %qT 的聚集"
 
-#: cp/typeck2.c:740
+#: cp/typeck2.c:741
 #, gcc-internal-format
 msgid "array must be initialized with a brace-enclosed initializer"
 msgstr ""
 
-#: cp/typeck2.c:816 cp/typeck2.c:917
+#: cp/typeck2.c:817 cp/typeck2.c:918
 #, gcc-internal-format
 msgid "non-trivial designated initializers not supported"
 msgstr "不平凡的代理初始值設定不受支援"
 
-#: cp/typeck2.c:940 cp/typeck2.c:954
+#: cp/typeck2.c:941 cp/typeck2.c:955
 #, gcc-internal-format
 msgid "missing initializer for member %qD"
 msgstr "成員 %qD 缺少初始值設定"
 
-#: cp/typeck2.c:945
+#: cp/typeck2.c:946
 #, gcc-internal-format
 msgid "uninitialized const member %qD"
 msgstr "未初始化的常數成員 %qD"
 
-#: cp/typeck2.c:947
+#: cp/typeck2.c:948
 #, gcc-internal-format
 msgid "member %qD with uninitialized const fields"
 msgstr "成員 %qD 有未初始化的常數欄位"
 
-#: cp/typeck2.c:949
+#: cp/typeck2.c:950
 #, gcc-internal-format
 msgid "member %qD is uninitialized reference"
 msgstr "成員 %qD 是未初始化的參照"
 
-#: cp/typeck2.c:1004
+#: cp/typeck2.c:1005
 #, gcc-internal-format
 msgid "no field %qD found in union being initialized"
 msgstr "在初始化的聯合中找不到欄位 %qD"
 
-#: cp/typeck2.c:1013
+#: cp/typeck2.c:1014
 #, gcc-internal-format
 msgid "index value instead of field name in union initializer"
 msgstr "在聯合初始值設定中出現了索引值而不是欄位名"
 
-#: cp/typeck2.c:1168
+#: cp/typeck2.c:1169
 #, gcc-internal-format
 msgid "circular pointer delegation detected"
 msgstr "偵測到循環指標代理"
 
-#: cp/typeck2.c:1181
+#: cp/typeck2.c:1182
 #, gcc-internal-format
 msgid "base operand of %<->%> has non-pointer type %qT"
 msgstr "%<->%> 的基運算元具有非指標類型 %qT"
 
-#: cp/typeck2.c:1205
+#: cp/typeck2.c:1206
 #, gcc-internal-format
 msgid "result of %<operator->()%> yields non-pointer result"
 msgstr "%<operator->()%> 的結果給出了非指標的結果"
 
-#: cp/typeck2.c:1207
+#: cp/typeck2.c:1208
 #, gcc-internal-format
 msgid "base operand of %<->%> is not a pointer"
 msgstr "%<->%> 的左運算元不是一個指標"
 
-#: cp/typeck2.c:1229
+#: cp/typeck2.c:1230
 #, gcc-internal-format
 msgid "%qE cannot be used as a member pointer, since it is of type %qT"
 msgstr "%qE 不能做為成員指標，因為它的類型為 %qT"
 
-#: cp/typeck2.c:1238
+#: cp/typeck2.c:1239
 #, fuzzy, gcc-internal-format
 msgid "cannot apply member pointer %qE to %qE, which is of non-class type %qT"
 msgstr "無法將成員指標 %qE 套用到 %qE 上，因為後者的類型 %qT 不是一個聚集"
 
-#: cp/typeck2.c:1260
+#: cp/typeck2.c:1261
 #, gcc-internal-format
 msgid "pointer to member type %qT incompatible with object type %qT"
 msgstr "成員指標類型 %qT 與物件類型 %qT 不相容"
 
-#: cp/typeck2.c:1482
+#: cp/typeck2.c:1485
 #, gcc-internal-format
 msgid "call to function %qD which throws incomplete type %q#T"
 msgstr "呼叫的函式 %qD 會拋出不完全的類型 %q#T"
 
-#: cp/typeck2.c:1485
+#: cp/typeck2.c:1488
 #, gcc-internal-format
 msgid "call to function which throws incomplete type %q#T"
 msgstr "呼叫的函式會拋出不完全的類型 %q#T"
@@ -29951,12 +29972,12 @@ msgstr "要求暫存器變數 %qs 的位址"
 msgid "Possible frontend bug: array constructor not expanded"
 msgstr "前端程式可能的程式缺陷：陣列建構式未能展開"
 
-#: fortran/trans-array.c:4997
+#: fortran/trans-array.c:5012
 #, fuzzy, gcc-internal-format
 msgid "Possible frontend bug: Deferred array size without pointer, allocatable attribute or derived type without allocatable components."
 msgstr "可能的前端程式缺陷：提領陣列大小時沒有指標或可指派屬性。"
 
-#: fortran/trans-array.c:5470
+#: fortran/trans-array.c:5485
 #, gcc-internal-format
 msgid "bad expression type during walk (%d)"
 msgstr ""
@@ -29992,7 +30013,7 @@ msgstr "模組變數 %s 的後端程式宣告已存在"
 msgid "Function return value not set"
 msgstr "未設定函式回傳值"
 
-#: fortran/trans-expr.c:1073
+#: fortran/trans-expr.c:1081
 #, gcc-internal-format
 msgid "Unknown intrinsic op"
 msgstr "不明的內建作業"
@@ -30491,7 +30512,7 @@ msgstr ""
 msgid ""
 "%s.\n"
 "%s"
-msgstr "%s：%s"
+msgstr "%s\n"
 
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:3277
 #, fuzzy, gcc-internal-format
@@ -30503,7 +30524,7 @@ msgstr "缺少左括號"
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:12050
 #, fuzzy, gcc-internal-format
 msgid "Unreachable statement"
-msgstr "需要敘述"
+msgstr "%C 敘述無法歸類別"
 
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:3309
 #, gcc-internal-format
@@ -31101,7 +31122,7 @@ msgstr "隱藏了早先的類型宣告 %q#D"
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:15417
 #, fuzzy, gcc-internal-format
 msgid "No label definition found for %qs"
-msgstr "%q#T 重定義"
+msgstr "%q+D 重定義"
 
 #: /scratch/mitchell/gcc-releases/gcc-4.2.0-20070316/gcc-4.2.0-20070316/gcc/java/parse.y:15430
 #, fuzzy, gcc-internal-format
