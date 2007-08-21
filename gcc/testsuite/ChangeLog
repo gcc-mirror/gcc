@@ -1,3 +1,8 @@
+2007-08-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33122
+	* gcc.c-torture/compile/pr33122.c: New testcase.
+
 2007-03-20  Pawel Sikora  <pluto@pld-linux.org>
 
         * g++.dg/warn/Wnvdtor-2.C: New testcase.
