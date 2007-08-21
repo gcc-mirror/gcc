@@ -9756,7 +9756,7 @@ ix86_expand_clear (rtx dest)
   /* This predicate should match that for movsi_xor and movdi_xor_rex64.  */
   if (reload_completed && (!TARGET_USE_MOV0 || optimize_size))
     {
-      rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, 17));
+      rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
       tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
     }
 
@@ -11726,9 +11726,9 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	    vec = rtvec_alloc (3 + !use_fcomi);
 	    RTVEC_ELT (vec, 0) = tmp;
 	    RTVEC_ELT (vec, 1)
-	      = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 18));
+	      = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, FPSR_REG));
 	    RTVEC_ELT (vec, 2)
-	      = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 17));
+	      = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, FLAGS_REG));
 	    if (! use_fcomi)
 	      RTVEC_ELT (vec, 3)
 		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (HImode));
@@ -12009,8 +12009,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
   enum machine_mode mode =
     GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
 
-  /* Do not handle DImode compares that go through special path.
-     Also we can't deal with FP compares yet.  This is possible to add.  */
+  /* Do not handle DImode compares that go through special path.  */
   if (mode == (TARGET_64BIT ? TImode : DImode))
     return false;
 
@@ -12037,9 +12036,10 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	  code = swap_condition (code);
 	}
 
-      /* Try to expand the comparison and verify that we end up with carry flag
-	 based comparison.  This is fails to be true only when we decide to expand
-	 comparison using arithmetic that is not too common scenario.  */
+      /* Try to expand the comparison and verify that we end up with
+	 carry flag based comparison.  This fails to be true only when
+	 we decide to expand comparison using arithmetic that is not
+	 too common scenario.  */
       start_sequence ();
       compare_op = ix86_expand_fp_compare (code, op0, op1, NULL_RTX,
 					   &second_test, &bypass_test);
@@ -12048,19 +12048,24 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 
       if (second_test || bypass_test)
 	return false;
+
       if (GET_MODE (XEXP (compare_op, 0)) == CCFPmode
 	  || GET_MODE (XEXP (compare_op, 0)) == CCFPUmode)
         code = ix86_fp_compare_code_to_integer (GET_CODE (compare_op));
       else
 	code = GET_CODE (compare_op);
+
       if (code != LTU && code != GEU)
 	return false;
+
       emit_insn (compare_seq);
       *pop = compare_op;
       return true;
     }
+
   if (!INTEGRAL_MODE_P (mode))
     return false;
+
   switch (code)
     {
     case LTU:
@@ -15477,7 +15482,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
   /* Avoid branch in fixing the byte.  */
   tmpreg = gen_lowpart (QImode, tmpreg);
   emit_insn (gen_addqi3_cc (tmpreg, tmpreg, tmpreg));
-  cmp = gen_rtx_LTU (Pmode, gen_rtx_REG (CCmode, 17), const0_rtx);
+  cmp = gen_rtx_LTU (Pmode, gen_rtx_REG (CCmode, FLAGS_REG), const0_rtx);
   if (TARGET_64BIT)
     emit_insn (gen_subdi3_carry_rex64 (out, out, GEN_INT (3), cmp));
   else

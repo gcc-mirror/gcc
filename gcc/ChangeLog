@@ -1,3 +1,10 @@
+2007-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_clear): Use FLAGS_REG.
+	(ix86_expand_strlensi_unroll_1): Ditto.
+	(ix86_expand_branch): Use FLAGS_REG and FPSR_REG.
+	(ix86_expand_carry_flag_compare): Update comment.
+
 2007-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/32912
