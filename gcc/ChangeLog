@@ -1,3 +1,9 @@
+2007-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/32912
+	* fold-const.c (fold_unary): Optimize BIT_NOT_EXPR of VECTOR_CST.
+	(fold_binary): Handle vectors in X | ~X and X ^ ~X optimizations.
+
 2007-08-21  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_binary): Revert removing of index +p PTR folding.
