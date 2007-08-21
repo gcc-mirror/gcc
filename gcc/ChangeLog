@@ -1,3 +1,9 @@
+2007-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/32610
+	* dwarf2out.c (gen_decl_die): Don't call
+	gen_tagged_type_instantiation_die if decl doesn't have tagged type.
+
 2007-08-21  Paul Brook  <paul@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
