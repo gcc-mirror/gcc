@@ -1,5 +1,10 @@
 2007-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
+	* value-prof.h (gimple_remove_histogram_value): Remove duplicate
+	prototype.
+	
+2007-08-21  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-flow-inline.h (next_imm_use_stmt): Remove unecessary
 	whitespace.
 
