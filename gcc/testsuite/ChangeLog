@@ -1,5 +1,9 @@
 2007-08-21  Ian Lance Taylor  <iant@google.com>
 
+	* g++.dg/torture/pr33134.C: Moved from g++.dg/tree-ssa.
+
+2007-08-21  Ian Lance Taylor  <iant@google.com>
+
 	PR tree-optimization/33134
 	* g++.dg/tree-ssa/pr33134.C: New test.
 
@@ -2549,6 +2553,10 @@
 
 	PR fortran/32360
 	* gfortran.dg/pointer_assign_3.f90: New test.
+
+2007-06-21  Sebastian Pop  <sebpop@gmail.com>
+
+	* gcc/testsuite/gcc.dg/tree-ssa/pr19590.c: New.
 
 2007-06-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
