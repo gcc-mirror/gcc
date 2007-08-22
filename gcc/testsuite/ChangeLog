@@ -1,3 +1,8 @@
+2007-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33007
+	* gcc.dg/pr33007.c: New testcase.
+
 2007-08-22  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.c-torture/execute/strcmp-1.x: Delete.
