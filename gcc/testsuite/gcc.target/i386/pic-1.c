@@ -1,5 +1,5 @@
 /* PR target/8340 */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-fPIC" } */

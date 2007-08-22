@@ -1,6 +1,6 @@
 /* PR middle-end/17767 */
 /* Contributed by Volker Reichelt <reichelt@igpm.rwth-aachen.de> */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O -mmmx" } */
 typedef int __m64 __attribute__ ((vector_size (8)));
 typedef short __v4hi __attribute__ ((vector_size (8)));

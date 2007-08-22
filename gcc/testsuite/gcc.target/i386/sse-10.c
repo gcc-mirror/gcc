@@ -1,5 +1,5 @@
 /* PR 17930 */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O1 -msse2 -mfpmath=sse -mno-accumulate-outgoing-args -fno-omit-frame-pointer" } */
 
 #include "../../gcc.dg/i386-cpuid.h"

@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
+/* { dg-do run { target *-*-linux* } } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -fasynchronous-unwind-tables -O2" } */
 /* Test complex CFA value expressions.  */
 

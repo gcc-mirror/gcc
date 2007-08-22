@@ -1,7 +1,7 @@
 /* Test that stack alignment is preserved with pending_stack_adjust
    with stdcall functions.  */
 
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options -mpreferred-stack-boundary=4 } */
 

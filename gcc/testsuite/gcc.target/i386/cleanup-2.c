@@ -1,4 +1,5 @@
-/* { dg-do run { target { { i?86-*-linux* x86_64-*-linux* } && lp64 } } } */
+/* { dg-do run { target *-*-linux* } } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -fasynchronous-unwind-tables -O2" } */
 /* Test complex CFA value expressions.  */
 

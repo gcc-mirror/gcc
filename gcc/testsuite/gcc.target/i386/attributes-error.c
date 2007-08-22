@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 
 void foo1(int i, int j) __attribute__((fastcall, cdecl)); /* { dg-error "not compatible" } */

@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -march=pentiumpro -minline-all-stringops" } */
 /* { dg-final { scan-assembler "rep" } } */

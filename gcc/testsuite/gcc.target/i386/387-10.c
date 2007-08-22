@@ -1,5 +1,5 @@
 /* PR tree-optimization/24964 */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mfpmath=387" } */
 
 double fabs(double x);

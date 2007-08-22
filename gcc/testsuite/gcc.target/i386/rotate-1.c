@@ -13,4 +13,4 @@ main (void)
   return c;
 }
 
-/* { dg-final { scan-assembler "rolb" { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-assembler "rolb" } } */

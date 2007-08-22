@@ -7,7 +7,7 @@
    Written by Michael Meissner, March 9, 2002.
    Target by Roger Sayle, April 25, 2002.  */
 
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2 -minline-all-stringops" } */
 
 extern void *memset (void *, int, __SIZE_TYPE__);

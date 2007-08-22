@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O0 -msse" } */
 
 typedef float __vr __attribute__ ((vector_size (16)));

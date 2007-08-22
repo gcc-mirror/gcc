@@ -1,4 +1,5 @@
-/* { dg-do run { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
+/* { dg-do run } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.1" } */
 

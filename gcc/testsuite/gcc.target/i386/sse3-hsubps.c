@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2 -msse3" } */
 
 #include "sse3-check.h"

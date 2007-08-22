@@ -1,3 +1,31 @@
+2007-08-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/*.c: Remove target selectors from dg-do directives.
+	* gcc.target/i386/991129-1.c, gcc.target/i386/991209-1.c,
+	gcc.target/i386/991214-1.c, gcc.target/i386/pr26778.c,
+	gcc.target/i386/pr27827.c, gcc.target/i386/pr30505.c,
+	gcc.target/i386/pr32389.c, gcc.target/i386/sse-8.c,
+	gcc.target/i386/stack-realign.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-1.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-2.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-3.c: Require ilp32
+	target using dg-require-effective-target directive.
+	* gcc.target/i386/amd64-abi-1.c, gcc.target/i386/amd64-abi-2.c,
+	gcc.target/i386/cleanup-2.c, gcc.target/i386/cmpxchg16b-1.c,
+	gcc.target/i386/gcc-have-sync-compare-and-swap-4.c,
+	gcc.target/i386/large-size-array-3.c, gcc.target/i386/pr25254.c,
+	gcc.target/i386/pr31167.c, gcc.target/i386/pr32268.c,
+	gcc.target/i386/pr32661-1.c, gcc.target/i386/pr32708-2.c,
+	gcc.target/i386/pr32708-3.c, gcc.target/i386/sse4_1-pextrq.c,
+	gcc.target/i386/sse4_1-pinsrq.c, gcc.target/i386/sse4_2-crc32q.c,
+	gcc.target/i386/sse4_2-popcntq.c, gcc.target/i386/stack-prot-kernel.c:
+	Require lp64 target using dg-require-effective-target directive.
+	* gcc.target/i386/cleanup-1.c, gcc.target/i386/cleanup-2.c,
+	gcc.target/i386/pr32268.c: Use *-*-linux* target selector in dg-do
+	directive.
+	* gcc.target/i386/20010202-1.c: Move from here ...
+	* gcc.dg/20010202-1.c: ... to here.
+
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33142

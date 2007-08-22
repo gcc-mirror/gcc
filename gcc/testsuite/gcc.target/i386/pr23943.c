@@ -1,6 +1,6 @@
 /* This used to ICE in side_effects_p, due to a problem in cse.c.
    Origin: marcus at jet dot franken dot de.  */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fPIC" } */
 

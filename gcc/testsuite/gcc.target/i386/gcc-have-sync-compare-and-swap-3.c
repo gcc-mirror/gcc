@@ -1,5 +1,6 @@
-/* { dg-do preprocess { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-march=i586" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-do preprocess } */
+/* { dg-require-effective-target ilp32 } */
+/* { dg-options "-march=i586" } */
 
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
 #error nonono

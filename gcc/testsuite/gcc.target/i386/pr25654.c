@@ -1,4 +1,5 @@
-/* { dg-do run { target ilp32 } } */
+/* { dg-do run } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -mpreferred-stack-boundary=2 -march=i686 -frename-registers" } */
 
 extern void abort (void) __attribute__((noreturn));

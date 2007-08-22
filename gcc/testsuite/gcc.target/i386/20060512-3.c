@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-* } } */
+/* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-std=gnu99 -msse2 -mstackrealign" } */
 #include <emmintrin.h>
