@@ -1,3 +1,8 @@
+2007-08-22  Krister Walfridsson  <cato@df.lth.se>
+
+	* env.c ( __gnat_clearenv): Use the __gnat_unsetenv mechanism for
+	NetBSD.
+
 2007-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* misc.c (gnat_type_max_size): Constify.
