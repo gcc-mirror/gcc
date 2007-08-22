@@ -1920,6 +1920,11 @@ inlinable_function_p (tree fn)
 bool
 disregard_inline_limits_p (tree fn)
 {
+  /* GNU extern inline functions are supposed to be cheap.  */
+  if (DECL_DECLARED_INLINE_P (fn)
+      && DECL_EXTERNAL (fn))
+    return true;
+
   return lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) != NULL_TREE;
 }
 
