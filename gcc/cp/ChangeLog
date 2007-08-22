@@ -3,6 +3,7 @@
 	PR c++/29365
 	* pt.c (outermost_tinst_level): New function.
 	* lex.c (in_main_input_context): New function.
+	* cp-tree.h: Declare it.
 	* decl2.c (constrain_class_visibility): Use it to avoid warning
 	about uses of the anonymous namespace in the main input file.
 
