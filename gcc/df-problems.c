@@ -3425,7 +3425,7 @@ df_note_bb_compute (unsigned int bb_index,
 	    {
 	      struct df_mw_hardreg *mws = *mws_rec; 
 	      if ((mws->type == DF_REF_REG_DEF) 
-		  && !df_ignore_stack_reg (REGNO (mws->mw_reg)))
+		  && !df_ignore_stack_reg (mws->start_regno))
 		old_unused_notes 
 		  = df_set_unused_notes_for_mw (insn, old_unused_notes, 
 						mws, live, do_not_gen, 
@@ -3488,7 +3488,7 @@ df_note_bb_compute (unsigned int bb_index,
 	{
 	  struct df_mw_hardreg *mws = *mws_rec; 
 	  if ((mws->type != DF_REF_REG_DEF)  
-	      && !df_ignore_stack_reg (REGNO (mws->mw_reg)))
+	      && !df_ignore_stack_reg (mws->start_regno))
 	    old_dead_notes
 	      = df_set_dead_notes_for_mw (insn, old_dead_notes, 
 					  mws, live, do_not_gen,
