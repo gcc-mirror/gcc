@@ -24,6 +24,9 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
+/* Define to 1 if the target assembler supports thread-local storage. */
+#undef HAVE_CC_TLS
+
 /* Define to 1 if you have the `ceilf' function. */
 #undef HAVE_CEILF
 

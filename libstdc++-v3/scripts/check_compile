@@ -28,7 +28,7 @@ PCH_FLAGS=`$flags_script --cxxpchflags`
 FLAGS=`$flags_script --cxxflags`
 TEST_FLAGS="-S"
 COMPILER=`$flags_script --build-cxx`
-CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $TEST_FLAGS"
+CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS -Wfatal-errors $TEST_FLAGS"
 
 echo "compile line is:"
 echo $CXX
@@ -49,7 +49,6 @@ do
 #	mv $OUTPUT_NAME binaries
 	rm $OUTPUT_NAME
     fi
-    echo ""
     let UNIQUE_ID+=1 
   fi
 done

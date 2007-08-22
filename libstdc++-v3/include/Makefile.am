@@ -754,7 +754,10 @@ host_headers = \
 	${host_srcdir}/os_defines.h \
 	${glibcxx_srcdir}/$(ATOMIC_WORD_SRCDIR)/atomic_word.h \
 	${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h \
-	${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h	
+	${glibcxx_srcdir}/$(CPU_DEFINES_SRCDIR)/cpu_defines.h \
+	${glibcxx_srcdir}/include/precompiled/stdc++.h \
+	${glibcxx_srcdir}/include/precompiled/stdtr1c++.h \
+	${glibcxx_srcdir}/include/precompiled/extc++.h 
 
 # Non-installed host_header files.
 COMPATIBILITY_H = config/abi/compatibility.h
@@ -809,10 +812,8 @@ pch_output_anchors = \
 PCHFLAGS=-Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 if GLIBCXX_BUILD_PCH
 pch_build = ${pch_output}
-pch_install = install-pch
 else
 pch_build =
-pch_install =
 endif
 
 # List of all timestamp files.  By keeping only one copy of this list, both
@@ -1129,7 +1130,7 @@ ${pch3_output}: ${pch3_source} ${pch2_output}
 # the rest are taken from the original source tree.
 
 if GLIBCXX_HOSTED
-install-data-local: install-headers ${pch_install}
+install-data-local: install-headers 
 else
 install-data-local: install-freestanding-headers
 endif
@@ -1218,16 +1219,6 @@ install-headers:
 	for file in ${host_headers} ${host_headers_extra} \
 	 ${thread_host_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
-
-install-pch:
-	$(mkinstalldirs) $(DESTDIR)${pch1_output_installdir}
-	for file in ${pch1_output_builddir}/*; do \
-	  $(INSTALL_DATA) $$file $(DESTDIR)${pch1_output_installdir}; done
-	$(mkinstalldirs) $(DESTDIR)${pch2_output_installdir}
-	for file in ${pch2_output_builddir}/*; do \
-	  $(INSTALL_DATA) $$file $(DESTDIR)${pch2_output_installdir}; done
-	$(INSTALL_DATA) ${pch1_output_anchor} $(DESTDIR)${host_installdir}
-	$(INSTALL_DATA) ${pch2_output_anchor} $(DESTDIR)${host_installdir}
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = ${pch_output} ${pch_output_anchors}

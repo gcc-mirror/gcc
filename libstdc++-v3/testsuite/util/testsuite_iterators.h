@@ -61,8 +61,7 @@ namespace __gnu_test
     {
       T* first;
       T* last;
-      BoundsContainer(T* _first, T* _last)
-	: first(_first), last(_last)
+      BoundsContainer(T* _first, T* _last) : first(_first), last(_last)
       { }
     };
 
@@ -73,7 +72,7 @@ namespace __gnu_test
       T* incrementedto;
       bool* writtento;
       OutputContainer(T* _first, T* _last)
-	: BoundsContainer<T>(_first, _last), incrementedto(_first)
+      : BoundsContainer<T>(_first, _last), incrementedto(_first)
       {
 	writtento = new bool[this->last - this->first];
 	for(int i = 0; i < this->last - this->first; i++)
@@ -114,21 +113,21 @@ namespace __gnu_test
    * instansiated directly, but generated from a test_container
    */
   template<class T>
-  struct output_iterator_wrapper: public std::iterator
-  <std::output_iterator_tag, T, ptrdiff_t, T*, T&>
+  struct output_iterator_wrapper
+  : public std::iterator<std::output_iterator_tag, T, ptrdiff_t, T*, T&>
   {
     typedef OutputContainer<T> ContainerType;
     T* ptr;
     ContainerType* SharedInfo;
 
     output_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
-      :ptr(_ptr), SharedInfo(SharedInfo_in)
+    : ptr(_ptr), SharedInfo(SharedInfo_in)
     {
       ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last);
     }
     
     output_iterator_wrapper(const output_iterator_wrapper& in)
-      :ptr(in.ptr), SharedInfo(in.SharedInfo)
+    : ptr(in.ptr), SharedInfo(in.SharedInfo)
     { }
 
     WritableObject<T>
@@ -175,8 +174,8 @@ namespace __gnu_test
    * instansiated directly, but generated from a test_container
    */
   template<class T>
-  class input_iterator_wrapper:public std::iterator
-  <std::input_iterator_tag, T, ptrdiff_t, T*, T&>
+  class input_iterator_wrapper
+  : public std::iterator<std::input_iterator_tag, T, ptrdiff_t, T*, T&>
   {
   protected:
     input_iterator_wrapper()
@@ -188,11 +187,11 @@ namespace __gnu_test
     ContainerType* SharedInfo;
 
     input_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
-      : ptr(_ptr), SharedInfo(SharedInfo_in)
+    : ptr(_ptr), SharedInfo(SharedInfo_in)
     { ITERATOR_VERIFY(ptr >= SharedInfo->first && ptr <= SharedInfo->last); }
     
     input_iterator_wrapper(const input_iterator_wrapper& in)
-      : ptr(in.ptr), SharedInfo(in.SharedInfo)
+    : ptr(in.ptr), SharedInfo(in.SharedInfo)
     { }
 
     bool
@@ -257,16 +256,16 @@ namespace __gnu_test
    * instansiated directly, but generated from a test_container
    */
   template<class T>
-  struct forward_iterator_wrapper:public input_iterator_wrapper<T>
+  struct forward_iterator_wrapper : public input_iterator_wrapper<T>
   {
     typedef BoundsContainer<T> ContainerType;
     typedef std::forward_iterator_tag iterator_category;
     forward_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
-      :input_iterator_wrapper<T>(_ptr, SharedInfo_in)
+    : input_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
     
     forward_iterator_wrapper(const forward_iterator_wrapper& in)
-      :input_iterator_wrapper<T>(in)
+    : input_iterator_wrapper<T>(in)
     { }
 
     forward_iterator_wrapper()
@@ -311,16 +310,16 @@ namespace __gnu_test
    * instansiated directly, but generated from a test_container
    */
   template<class T>
-  struct bidirectional_iterator_wrapper:public forward_iterator_wrapper<T>
+  struct bidirectional_iterator_wrapper : public forward_iterator_wrapper<T>
   {
     typedef BoundsContainer<T> ContainerType;
     typedef std::bidirectional_iterator_tag iterator_category;
     bidirectional_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
-      :forward_iterator_wrapper<T>(_ptr, SharedInfo_in)
+    : forward_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
     bidirectional_iterator_wrapper(const bidirectional_iterator_wrapper& in)
-      :forward_iterator_wrapper<T>(in)
+    : forward_iterator_wrapper<T>(in)
     { }
 
     bidirectional_iterator_wrapper(): forward_iterator_wrapper<T>()
@@ -375,16 +374,17 @@ namespace __gnu_test
    * instansiated directly, but generated from a test_container
    */
   template<class T>
-  struct random_access_iterator_wrapper:public bidirectional_iterator_wrapper<T>
+  struct random_access_iterator_wrapper 
+  : public bidirectional_iterator_wrapper<T>
   {
     typedef BoundsContainer<T> ContainerType;
     typedef std::random_access_iterator_tag iterator_category;
     random_access_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
-      : bidirectional_iterator_wrapper<T>(_ptr, SharedInfo_in)
+    : bidirectional_iterator_wrapper<T>(_ptr, SharedInfo_in)
     { }
 
     random_access_iterator_wrapper(const random_access_iterator_wrapper<T>& in)
-      : bidirectional_iterator_wrapper<T>(in)
+    : bidirectional_iterator_wrapper<T>(in)
     { }
 
     random_access_iterator_wrapper():bidirectional_iterator_wrapper<T>()
