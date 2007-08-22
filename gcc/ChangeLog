@@ -1,5 +1,10 @@
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
+	* tree-inline.c (inlinable_function_p): Restore disregarding
+	inline limits for GNU extern inline functions.
+
+2007-08-22  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/32563
 	* tree.c (host_integerp): Treat sizetype as signed as it is
 	sign-extended.
