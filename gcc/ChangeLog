@@ -1,3 +1,7 @@
+2007-08-22  David Daney  <ddaney@avtrex.com>
+
+	* doc/install.texi (Testing): Mention testing on a simulator.
+
 2007-08-22  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (DFP_TO_DFP): Check for overflow.

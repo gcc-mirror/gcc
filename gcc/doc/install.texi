@@ -1986,6 +1986,9 @@ might emit some harmless messages resembling
 @samp{WARNING: Couldn't find the global config file.} or
 @samp{WARNING: Couldn't find tool init file} that can be ignored.
 
+If you are testing a cross-compiler, you may want to run the testsuite
+on a simulator as described at @uref{http://gcc.gnu.org/simtest-howto.html}.
+
 @section How can you run the testsuite on selected tests?
 
 In order to run sets of tests selectively, there are targets
