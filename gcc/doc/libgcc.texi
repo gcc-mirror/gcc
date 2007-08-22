@@ -557,63 +557,68 @@ sign bit, so they can produce negative zero and negative NaN@.
 
 @subsection Conversion functions
 
-@c DFP/DFP conversions
 @deftypefn {Runtime Function} _Decimal64 __dpd_extendsddd2 (_Decimal32 @var{a})
 @deftypefnx {Runtime Function} _Decimal64 __bid_extendsddd2 (_Decimal32 @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __dpd_extendsdtd2 (_Decimal32 @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __bid_extendsdtd2 (_Decimal32 @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __dpd_extendddtd2 (_Decimal64 @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __bid_extendddtd2 (_Decimal64 @var{a})
-@c DFP/binary FP conversions
-@deftypefnx {Runtime Function} _Decimal32 __dpd_extendsfsd (float @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __bid_extendsfsd (float @var{a})
-@deftypefnx {Runtime Function} double __dpd_extendsddf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} double __bid_extendsddf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} {long double} __dpd_extendsdxf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} {long double} __bid_extendsdxf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __dpd_extendsfdd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_truncddsd2 (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __dpd_trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_trunctdsd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_trunctddd2 (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_trunctddd2 (_Decimal128 @var{a})
+These functions convert the value @var{a} from one decimal floating type
+to another.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal64 __dpd_extendsfdd (float @var{a})
 @deftypefnx {Runtime Function} _Decimal64 __bid_extendsfdd (float @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __dpd_extenddfdd (double @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __bid_extenddfdd (double @var{a})
-@deftypefnx {Runtime Function} {long double} __dpd_extendddxf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} {long double} __bid_extendddxf (_Decimal64 @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __dpd_extendsftd (float @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __bid_extendsftd (float @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __dpd_extenddftd (double @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __bid_extenddftd (double @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __dpd_extendxftd ({long double} @var{a})
 @deftypefnx {Runtime Function} _Decimal128 __bid_extendxftd ({long double} @var{a})
-These functions extend @var{a} to the wider mode of their return type.
-@end deftypefn
-
-@c DFP/DFP conversions
-@deftypefn {Runtime Function} _Decimal32 __dpd_truncddsd2 (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __bid_truncddsd2 (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __dpd_trunctdsd2 (_Decimal128 @var{a})
-@deftypefnx {Runtime Function} _Decimal32 __bid_trunctdsd2 (_Decimal128 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __dpd_trunctddd2 (_Decimal128 @var{a})
-@deftypefnx {Runtime Function} _Decimal64 __bid_trunctddd2 (_Decimal128 @var{a})
-@c DFP/binary FP conversions
-@deftypefnx {Runtime Function} float __dpd_truncsdsf (_Decimal32 @var{a})
-@deftypefnx {Runtime Function} float __bid_truncsdsf (_Decimal32 @var{a})
 @deftypefnx {Runtime Function} _Decimal32 __dpd_truncdfsd (double @var{a})
 @deftypefnx {Runtime Function} _Decimal32 __bid_truncdfsd (double @var{a})
 @deftypefnx {Runtime Function} _Decimal32 __dpd_truncxfsd ({long double} @var{a})
 @deftypefnx {Runtime Function} _Decimal32 __bid_truncxfsd ({long double} @var{a})
-@deftypefnx {Runtime Function} float __dpd_truncddsf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} float __bid_truncddsf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} double __dpd_truncdddf (_Decimal64 @var{a})
-@deftypefnx {Runtime Function} double __bid_truncdddf (_Decimal64 @var{a})
 @deftypefnx {Runtime Function} _Decimal64 __dpd_truncxfdd ({long double} @var{a})
 @deftypefnx {Runtime Function} _Decimal64 __bid_truncxfdd ({long double} @var{a})
+These functions convert the value of @var{a} from a binary floating type
+to a decimal floating type of a different size.
+@end deftypefn
+
+@deftypefn {Runtime Function} float __dpd_truncddsf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} float __bid_truncddsf (_Decimal64 @var{a})
 @deftypefnx {Runtime Function} float __dpd_trunctdsf (_Decimal128 @var{a})
 @deftypefnx {Runtime Function} float __bid_trunctdsf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} double __dpd_extendsddf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} double __bid_extendsddf (_Decimal32 @var{a})
 @deftypefnx {Runtime Function} double __dpd_trunctddf (_Decimal128 @var{a})
 @deftypefnx {Runtime Function} double __bid_trunctddf (_Decimal128 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendsdxf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} {long double} __dpd_extendddxf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} {long double} __bid_extendddxf (_Decimal64 @var{a})
 @deftypefnx {Runtime Function} {long double} __dpd_trunctdxf (_Decimal128 @var{a})
 @deftypefnx {Runtime Function} {long double} __bid_trunctdxf (_Decimal128 @var{a})
-These functions truncate @var{a} to the narrower mode of their return
-type.
+These functions convert the value of @var{a} from a decimal floating type
+to a binary floating type of a different size.
+@end deftypefn
+
+@deftypefn {Runtime Function} _Decimal32 __dpd_extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal32 __bid_extendsfsd (float @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __dpd_extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} _Decimal64 __bid_extenddfdd (double @var{a})
+@deftypefnx {Runtime Function} float __dpd_truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} float __bid_truncsdsf (_Decimal32 @var{a})
+@deftypefnx {Runtime Function} double __dpd_truncdddf (_Decimal64 @var{a})
+@deftypefnx {Runtime Function} double __bid_truncdddf (_Decimal64 @var{a})
+These functions convert the value of @var{a} between decimal and
+binary floating types of the same size.
 @end deftypefn
 
 @deftypefn {Runtime Function} int __dpd_fixsdsi (_Decimal32 @var{a})
