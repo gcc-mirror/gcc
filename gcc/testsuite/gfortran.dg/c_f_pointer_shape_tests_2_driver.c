@@ -7,6 +7,7 @@ void test_long_long_2d(int *array, int num_rows, int num_cols);
 void test_long_1d(int *array, int num_elems);
 void test_int_1d(int *array, int num_elems);
 void test_short_1d(int *array, int num_elems);
+void test_mixed(int *array, int num_elems);
 
 int main(int argc, char **argv)
 {
@@ -36,6 +37,10 @@ int main(int argc, char **argv)
 
   /* Test c_f_pointer where SHAPE is of type integer, kind=c_short.  */
   test_short_1d(my_array, NUM_ELEMS);
-  
+
+  /* Test c_f_pointer where SHAPE is of type integer, kind=c_int and
+	  kind=c_long_long.  */
+  test_mixed(my_array, NUM_ELEMS);
+
   return 0;
 }
