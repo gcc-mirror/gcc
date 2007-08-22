@@ -86,6 +86,29 @@ contains
        if(myArrayPtr(i) /= (i-1)) call abort ()
     end do
   end subroutine test_short_1d
+
+  subroutine test_mixed(cPtr, num_elems) bind(c)
+    use, intrinsic :: iso_c_binding
+    type(c_ptr), value :: cPtr
+    integer(c_int), value :: num_elems
+    integer, dimension(:), pointer :: myArrayPtr
+    integer(c_int), dimension(1) :: shape1
+    integer(c_long_long), dimension(1) :: shape2
+    integer :: i
+
+    shape1(1) = num_elems
+    call c_f_pointer(cPtr, myArrayPtr, shape1) 
+    do i = 1, num_elems
+       if(myArrayPtr(i) /= (i-1)) call abort ()
+    end do
+
+    nullify(myArrayPtr)
+    shape2(1) = num_elems
+    call c_f_pointer(cPtr, myArrayPtr, shape2) 
+    do i = 1, num_elems
+       if(myArrayPtr(i) /= (i-1)) call abort ()
+    end do
+  end subroutine test_mixed
 end module c_f_pointer_shape_tests_2
 ! { dg-final { cleanup-modules "c_f_pointer_shape_tests_2" } } 
 

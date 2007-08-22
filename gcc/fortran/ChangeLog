@@ -1,3 +1,9 @@
+2007-08-22  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33020
+	* resolve.c (gfc_iso_c_sub_interface): Remove setting of type and
+	kind for optional SHAPE parameter of C_F_POINTER.
+
 2007-08-22  Janus Weil  <jaydub66@gmail.com>
 
 	* decl.c (match_attr_spec): Pass on errors from gfc_match_bind_c.

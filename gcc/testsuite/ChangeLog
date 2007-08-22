@@ -1,3 +1,12 @@
+2007-08-22  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33020
+	* gfortran.dg/c_f_pointer_shape_tests_2.f03: Update test to
+	include multiple kinds for SHAPE parameter within a single
+	namespace.
+	* gfortran.dg/c_f_pointer_shape_tests_2_driver.c: Ditto.
+	* gfortran.dg/c_f_pointer_shape_tests_3.f03: New test case. 
+
 2007-08-22  Janus Weil  <jaydub66@gmail.com>
 
 	* interface_abstract_1.f90: Extended test case.

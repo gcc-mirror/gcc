@@ -2351,11 +2351,6 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
      formal args) before resolving.  */
   gfc_procedure_use (sym, &c->ext.actual, &(c->loc));
 
-  /* Give the optional SHAPE formal arg a type now that we've done our
-     initial checking against the actual.  */
-  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER)
-    sym->formal->next->next->sym->ts.type = BT_INTEGER;
-
   if ((sym->intmod_sym_id == ISOCBINDING_F_POINTER) ||
       (sym->intmod_sym_id == ISOCBINDING_F_PROCPOINTER))
     {
@@ -2395,13 +2390,6 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	{
 	  /* the 1 means to add the optional arg to formal list */
 	  new_sym = get_iso_c_sym (sym, name, binding_label, 1);
-	 
-	  /* Set the kind for the SHAPE array to that of the actual
-	     (if given).  */
-	  if (c->ext.actual != NULL && c->ext.actual->next != NULL
-	      && c->ext.actual->next->expr->rank != 0)
-	    new_sym->formal->next->next->sym->ts.kind =
-	      c->ext.actual->next->next->expr->ts.kind;
 	 
 	  /* for error reporting, say it's declared where the original was */
 	  new_sym->declared_at = sym->declared_at;
