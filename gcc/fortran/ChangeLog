@@ -1,3 +1,10 @@
+2007-08-22  Janus Weil  <jaydub66@gmail.com>
+
+	* decl.c (match_attr_spec): Pass on errors from gfc_match_bind_c.
+	(gfc_match_bind_c): Bugfix in check for NAME= with abstract interfaces.
+	(gfc_match_mopdproc): Bugfix to reject module procedures in
+	abstract interfaces.
+
 2007-08-22  Kai Tietz  <kai.tietz@onevision.com>
 
 	* f95-lang.c: (gfc_init_decl_processing): Choose sizetype by using
