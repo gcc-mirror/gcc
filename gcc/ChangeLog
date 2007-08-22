@@ -1,5 +1,7 @@
 2007-08-22  Janis Johnson  <janis187@us.ibm.com>
 
+	* config/dfp-bit.c (DFP_TO_DFP): Check for overflow.
+
 	* doc/libgcc.texi (Decimal float library routines): Fix formatting
 	and rearrange floating point conversion functions into different
 	categories.

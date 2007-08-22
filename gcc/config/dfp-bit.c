@@ -414,7 +414,8 @@ DFP_TO_DFP (DFP_C_TYPE f_from)
     {
       /* decNumber exception flags we care about here.  */
       int ieee_flags;
-      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation;
+      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation
+		      | DEC_IEEE_854_Overflow;
       dec_flags &= context.status;
       ieee_flags = DFP_IEEE_FLAGS (dec_flags);
       if (ieee_flags != 0)
