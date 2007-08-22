@@ -86,7 +86,7 @@
    (FDPIC_REG			15)
    ])
 
-(define_mode_macro IMODE [QI HI SI DI])
+(define_mode_iterator IMODE [QI HI SI DI])
 (define_mode_attr IMODEsuffix [(QI "b") (HI "h") (SI "") (DI "d")])
 (define_mode_attr BREADsuffix [(QI "ub") (HI "uh") (SI "") (DI "d")])
 

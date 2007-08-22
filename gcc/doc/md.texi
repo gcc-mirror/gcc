@@ -47,7 +47,7 @@ See the next chapter for information on the C header file.
                            predication.
 * Constant Definitions::Defining symbolic constants that can be used in the
                         md file.
-* Macros::              Using macros to generate patterns from a template.
+* Iterators::           Using iterators to generate patterns from a template.
 @end menu
 
 @node Overview
@@ -7649,22 +7649,22 @@ The constants that are defined with a define_constant are also output
 in the insn-codes.h header file as #defines.
 @end ifset
 @ifset INTERNALS
-@node Macros
-@section Macros
-@cindex macros in @file{.md} files
+@node Iterators
+@section Iterators
+@cindex iterators in @file{.md} files
 
 Ports often need to define similar patterns for more than one machine
-mode or for more than one rtx code.  GCC provides some simple macro
+mode or for more than one rtx code.  GCC provides some simple iterator
 facilities to make this process easier.
 
 @menu
-* Mode Macros::         Generating variations of patterns for different modes.
-* Code Macros::         Doing the same for codes.
+* Mode Iterators::         Generating variations of patterns for different modes.
+* Code Iterators::         Doing the same for codes.
 @end menu
 
-@node Mode Macros
-@subsection Mode Macros
-@cindex mode macros in @file{.md} files
+@node Mode Iterators
+@subsection Mode Iterators
+@cindex mode iterators in @file{.md} files
 
 Ports often need to define similar patterns for two or more different modes.
 For example:
@@ -7681,25 +7681,25 @@ If a port uses @code{SImode} pointers in one configuration and
 @code{SImode} and @code{DImode} patterns for manipulating pointers.
 @end itemize
 
-Mode macros allow several patterns to be instantiated from one
+Mode iterators allow several patterns to be instantiated from one
 @file{.md} file template.  They can be used with any type of
 rtx-based construct, such as a @code{define_insn},
 @code{define_split}, or @code{define_peephole2}.
 
 @menu
-* Defining Mode Macros:: Defining a new mode macro.
-* Substitutions::	 Combining mode macros with substitutions
-* Examples::             Examples
+* Defining Mode Iterators:: Defining a new mode iterator.
+* Substitutions::	    Combining mode iterators with substitutions
+* Examples::		    Examples
 @end menu
 
-@node Defining Mode Macros
-@subsubsection Defining Mode Macros
-@findex define_mode_macro
+@node Defining Mode Iterators
+@subsubsection Defining Mode Iterators
+@findex define_mode_iterator
 
-The syntax for defining a mode macro is:
+The syntax for defining a mode iterator is:
 
 @smallexample
-(define_mode_macro @var{name} [(@var{mode1} "@var{cond1}") ... (@var{moden} "@var{condn}")])
+(define_mode_iterator @var{name} [(@var{mode1} "@var{cond1}") ... (@var{moden} "@var{condn}")])
 @end smallexample
 
 This allows subsequent @file{.md} file constructs to use the mode suffix
@@ -7712,7 +7712,7 @@ C condition will also require that @var{condi} be true.
 For example:
 
 @smallexample
-(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 @end smallexample
 
 defines a new mode suffix @code{:P}.  Every construct that uses
@@ -7726,21 +7726,21 @@ as ``always true''.  @code{(@var{mode} "")} can also be abbreviated
 to @code{@var{mode}}.  For example:
 
 @smallexample
-(define_mode_macro GPR [SI (DI "TARGET_64BIT")])
+(define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
 @end smallexample
 
 means that the @code{:DI} expansion only applies if @code{TARGET_64BIT}
 but that the @code{:SI} expansion has no such constraint.
 
-Macros are applied in the order they are defined.  This can be
-significant if two macros are used in a construct that requires
+Iterators are applied in the order they are defined.  This can be
+significant if two iterators are used in a construct that requires
 substitutions.  @xref{Substitutions}.
 
 @node Substitutions
-@subsubsection Substitution in Mode Macros
+@subsubsection Substitution in Mode Iterators
 @findex define_mode_attr
 
-If an @file{.md} file construct uses mode macros, each version of the
+If an @file{.md} file construct uses mode iterators, each version of the
 construct will often need slightly different strings or modes.  For
 example:
 
@@ -7756,7 +7756,7 @@ each instruction will often use a different assembler mnemonic.
 
 @item
 When a @code{define_insn} requires operands with different modes,
-using a macro for one of the operand modes usually requires a specific
+using an iterator for one of the operand modes usually requires a specific
 mode for the other operand(s).
 @end itemize
 
@@ -7772,9 +7772,9 @@ upper case.  You can define other attributes using:
 where @var{name} is the name of the attribute and @var{valuei}
 is the value associated with @var{modei}.
 
-When GCC replaces some @var{:macro} with @var{:mode}, it will scan
+When GCC replaces some @var{:iterator} with @var{:mode}, it will scan
 each string and mode in the pattern for sequences of the form
-@code{<@var{macro}:@var{attr}>}, where @var{attr} is the name of a
+@code{<@var{iterator}:@var{attr}>}, where @var{attr} is the name of a
 mode attribute.  If the attribute is defined for @var{mode}, the whole
 @code{<...>} sequence will be replaced by the appropriate attribute
 value.
@@ -7782,7 +7782,7 @@ value.
 For example, suppose an @file{.md} file has:
 
 @smallexample
-(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 (define_mode_attr load [(SI "lw") (DI "ld")])
 @end smallexample
 
@@ -7794,23 +7794,23 @@ will use @code{"lw\t%0,%1"} and the @code{DI} version will use
 Here is an example of using an attribute for a mode:
 
 @smallexample
-(define_mode_macro LONG [SI DI])
+(define_mode_iterator LONG [SI DI])
 (define_mode_attr SHORT [(SI "HI") (DI "SI")])
 (define_insn ...
   (sign_extend:LONG (match_operand:<LONG:SHORT> ...)) ...)
 @end smallexample
 
-The @code{@var{macro}:} prefix may be omitted, in which case the
-substitution will be attempted for every macro expansion.
+The @code{@var{iterator}:} prefix may be omitted, in which case the
+substitution will be attempted for every iterator expansion.
 
 @node Examples
-@subsubsection Mode Macro Examples
+@subsubsection Mode Iterator Examples
 
 Here is an example from the MIPS port.  It defines the following
 modes and attributes (among others):
 
 @smallexample
-(define_mode_macro GPR [SI (DI "TARGET_64BIT")])
+(define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
 (define_mode_attr d [(SI "") (DI "d")])
 @end smallexample
 
@@ -7850,28 +7850,28 @@ This is exactly equivalent to:
    (set_attr "mode" "DI")])
 @end smallexample
 
-@node Code Macros
-@subsection Code Macros
-@cindex code macros in @file{.md} files
-@findex define_code_macro
+@node Code Iterators
+@subsection Code Iterators
+@cindex code iterators in @file{.md} files
+@findex define_code_iterator
 @findex define_code_attr
 
-Code macros operate in a similar way to mode macros.  @xref{Mode Macros}.
+Code iterators operate in a similar way to mode iterators.  @xref{Mode Iterators}.
 
 The construct:
 
 @smallexample
-(define_code_macro @var{name} [(@var{code1} "@var{cond1}") ... (@var{coden} "@var{condn}")])
+(define_code_iterator @var{name} [(@var{code1} "@var{cond1}") ... (@var{coden} "@var{condn}")])
 @end smallexample
 
 defines a pseudo rtx code @var{name} that can be instantiated as
 @var{codei} if condition @var{condi} is true.  Each @var{codei}
 must have the same rtx format.  @xref{RTL Classes}.
 
-As with mode macros, each pattern that uses @var{name} will be
+As with mode iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by
 @var{code1}, once with all uses replaced by @var{code2}, and so on.
-@xref{Defining Mode Macros}.
+@xref{Defining Mode Iterators}.
 
 It is possible to define attributes for codes as well as for modes.
 There are two standard code attributes: @code{code}, the name of the
@@ -7882,11 +7882,11 @@ Other attributes are defined using:
 (define_code_attr @var{name} [(@var{code1} "@var{value1}") ... (@var{coden} "@var{valuen}")])
 @end smallexample
 
-Here's an example of code macros in action, taken from the MIPS port:
+Here's an example of code iterators in action, taken from the MIPS port:
 
 @smallexample
-(define_code_macro any_cond [unordered ordered unlt unge uneq ltgt unle ungt
-                             eq ne gt ge lt le gtu geu ltu leu])
+(define_code_iterator any_cond [unordered ordered unlt unge uneq ltgt unle ungt
+                                eq ne gt ge lt le gtu geu ltu leu])
 
 (define_expand "b<code>"
   [(set (pc)

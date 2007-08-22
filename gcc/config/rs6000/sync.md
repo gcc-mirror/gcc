@@ -21,7 +21,7 @@
 (define_mode_attr larx [(SI "lwarx") (DI "ldarx")])
 (define_mode_attr stcx [(SI "stwcx.") (DI "stdcx.")])
 
-(define_code_macro FETCHOP [plus minus ior xor and])
+(define_code_iterator FETCHOP [plus minus ior xor and])
 (define_code_attr fetchop_name
   [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
 (define_code_attr fetchop_pred

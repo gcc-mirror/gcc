@@ -36,13 +36,13 @@
    ])
 
 ;; Modes using a 64-bit register.
-(define_mode_macro SPE64 [DF V4HI V2SF V1DI V2SI])
+(define_mode_iterator SPE64 [DF V4HI V2SF V1DI V2SI])
 
 ;; Likewise, but allow TFmode (two registers) as well.
-(define_mode_macro SPE64TF [DF V4HI V2SF V1DI V2SI TF])
+(define_mode_iterator SPE64TF [DF V4HI V2SF V1DI V2SI TF])
 
 ;; DImode and TImode.
-(define_mode_macro DITI [DI TI])
+(define_mode_iterator DITI [DI TI])
 
 (define_insn "*negsf2_gpr"
   [(set (match_operand:SF 0 "gpc_reg_operand" "=r")

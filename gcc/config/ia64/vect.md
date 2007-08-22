@@ -20,9 +20,9 @@
 
 ;; Integer vector operations
 
-(define_mode_macro VECINT [V8QI V4HI V2SI])
-(define_mode_macro VECINT12 [V8QI V4HI])
-(define_mode_macro VECINT24 [V4HI V2SI])
+(define_mode_iterator VECINT [V8QI V4HI V2SI])
+(define_mode_iterator VECINT12 [V8QI V4HI])
+(define_mode_iterator VECINT24 [V4HI V2SI])
 (define_mode_attr vecsize [(V8QI "1") (V4HI "2") (V2SI "4")])
 
 (define_expand "mov<mode>"

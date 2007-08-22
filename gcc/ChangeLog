@@ -1,3 +1,28 @@
+2007-08-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/md.texi (Iterators): Renamed from Macros.  All contents
+	changed to reflect rename of respectively define_code_macro and
+	define_mode_macro to define_code_iterator and define_mode_iterator.
+	(Mode Iterators, Code Iterators): Similar.
+	* read-rtl.c (struct iterator_group, struct iterator_traverse_data)
+	(uses_mode_iterator_p, apply_mode_iterator, uses_code_iterator_p)
+	(apply_iterator_to_string, uses_iterator_p, apply_iterator_traverse)
+	(initialize_iterators, find_iterator, check_code_iterator)
+	(map_attr_string, apply_mode_maps, apply_iterator_to_rtx, add_mapping)
+	(read_mapping, read_rtx_1): Similar.
+	* config/alpha/sync.md, config/alpha/alpha.md, config/frv/frv.md,
+	config/s390/s390.md, config/m32c/blkmov.md, config/m32c/m32c.md,
+	config/spu/spu.md, config/sparc/sparc.md, config/sparc/sync.md,
+	config/i386/i386.md, config/i386/mmx.md, config/i386/sse.md,
+	config/i386/sync.md, config/crx/crx.md, config/xtensa/xtensa.md,
+	config/cris/cris.c, config/cris/cris.md, config/ia64/sync.md,
+	config/ia64/div.md, config/ia64/vect.md, config/ia64/ia64.md,
+	config/m68k/m68k.md, config/rs6000/spe.md, config/rs6000/altivec.md,
+	config/rs6000/sync.md, config/rs6000/rs6000.md,
+	config/arm/vec-common.md, config/arm/neon.md, config/arm/iwmmxt.md,
+	config/arm/arm.md, config/mips/mips-dsp.md, config/mips/mips.md,
+	config/vax/vax.md, config/bfin/bfin.md: Similar.
+
 2007-08-22  David Daney  <ddaney@avtrex.com>
 
 	* doc/install.texi (Testing): Mention testing on a simulator.

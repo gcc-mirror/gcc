@@ -150,9 +150,9 @@
 ;; Iterator definitions.
 
 ;; For the "usual" pattern size alternatives.
-(define_mode_macro BWD [SI HI QI])
-(define_mode_macro WD [SI HI])
-(define_mode_macro BW [HI QI])
+(define_mode_iterator BWD [SI HI QI])
+(define_mode_iterator WD [SI HI])
+(define_mode_iterator BW [HI QI])
 (define_mode_attr S [(SI "HI") (HI "QI")])
 (define_mode_attr s [(SI "hi") (HI "qi")])
 (define_mode_attr m [(SI ".d") (HI ".w") (QI ".b")])
@@ -160,19 +160,19 @@
 (define_mode_attr nbitsm1 [(SI "31") (HI "15") (QI "7")])
 
 ;; For the sign_extend+zero_extend variants.
-(define_code_macro szext [sign_extend zero_extend])
+(define_code_iterator szext [sign_extend zero_extend])
 (define_code_attr u [(sign_extend "") (zero_extend "u")])
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
 ;; For the shift variants.
-(define_code_macro shift [ashiftrt lshiftrt ashift])
-(define_code_macro shiftrt [ashiftrt lshiftrt])
+(define_code_iterator shift [ashiftrt lshiftrt ashift])
+(define_code_iterator shiftrt [ashiftrt lshiftrt])
 (define_code_attr shlr [(ashiftrt "ashr") (lshiftrt "lshr") (ashift "ashl")])
 (define_code_attr slr [(ashiftrt "asr") (lshiftrt "lsr") (ashift "lsl")])
 
-(define_code_macro ncond [eq ne gtu ltu geu leu])
-(define_code_macro ocond [gt le])
-(define_code_macro rcond [lt ge])
+(define_code_iterator ncond [eq ne gtu ltu geu leu])
+(define_code_iterator ocond [gt le])
+(define_code_iterator rcond [lt ge])
 (define_code_attr CC [(eq "eq") (ne "ne") (gt "gt") (gtu "hi") (lt "lt")
 		      (ltu "lo") (ge "ge") (geu "hs") (le "le") (leu "ls")])
 (define_code_attr rCC [(eq "ne") (ne "eq") (gt "le") (gtu "ls") (lt "ge")

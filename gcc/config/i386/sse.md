@@ -21,17 +21,17 @@
 
 ;; 16 byte integral modes handled by SSE, minus TImode, which gets
 ;; special-cased for TARGET_64BIT.
-(define_mode_macro SSEMODEI [V16QI V8HI V4SI V2DI])
+(define_mode_iterator SSEMODEI [V16QI V8HI V4SI V2DI])
 
 ;; All 16-byte vector modes handled by SSE
-(define_mode_macro SSEMODE [V16QI V8HI V4SI V2DI V4SF V2DF])
+(define_mode_iterator SSEMODE [V16QI V8HI V4SI V2DI V4SF V2DF])
 
 ;; Mix-n-match
-(define_mode_macro SSEMODE12 [V16QI V8HI])
-(define_mode_macro SSEMODE24 [V8HI V4SI])
-(define_mode_macro SSEMODE14 [V16QI V4SI])
-(define_mode_macro SSEMODE124 [V16QI V8HI V4SI])
-(define_mode_macro SSEMODE248 [V8HI V4SI V2DI])
+(define_mode_iterator SSEMODE12 [V16QI V8HI])
+(define_mode_iterator SSEMODE24 [V8HI V4SI])
+(define_mode_iterator SSEMODE14 [V16QI V4SI])
+(define_mode_iterator SSEMODE124 [V16QI V8HI V4SI])
+(define_mode_iterator SSEMODE248 [V8HI V4SI V2DI])
 
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr ssevecsize [(V16QI "b") (V8HI "w") (V4SI "d") (V2DI "q")])

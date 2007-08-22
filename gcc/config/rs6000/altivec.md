@@ -162,13 +162,13 @@
   ])
 
 ;; Vec int modes
-(define_mode_macro VI [V4SI V8HI V16QI])
+(define_mode_iterator VI [V4SI V8HI V16QI])
 ;; Short vec in modes
-(define_mode_macro VIshort [V8HI V16QI])
+(define_mode_iterator VIshort [V8HI V16QI])
 ;; Vec float modes
-(define_mode_macro VF [V4SF])
-;; Vec modes, pity mode macros are not composable
-(define_mode_macro V [V4SI V8HI V16QI V4SF])
+(define_mode_iterator VF [V4SF])
+;; Vec modes, pity mode iterators are not composable
+(define_mode_iterator V [V4SI V8HI V16QI V4SF])
 
 (define_mode_attr VI_char [(V4SI "w") (V8HI "h") (V16QI "b")])
 

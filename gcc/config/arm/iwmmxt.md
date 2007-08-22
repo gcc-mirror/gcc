@@ -20,10 +20,10 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; Integer element sizes implemented by IWMMXT.
-(define_mode_macro VMMX [V2SI V4HI V8QI])
+(define_mode_iterator VMMX [V2SI V4HI V8QI])
 
 ;; Integer element sizes for shifts.
-(define_mode_macro VSHFT [V4HI V2SI DI])
+(define_mode_iterator VSHFT [V4HI V2SI DI])
 
 ;; Determine element size suffix from vector mode.
 (define_mode_attr MMX_char [(V8QI "b") (V4HI "h") (V2SI "w") (DI "d")])
