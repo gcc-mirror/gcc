@@ -1,3 +1,9 @@
+2007-08-22  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR rtl-optimization/32557
+	* df-problems.c (df_note_bb_compute): Use mws->start_regno instead
+	of REGNO (mws->mw_reg).
+
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33007
