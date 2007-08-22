@@ -1,3 +1,8 @@
+2007-08-22  Kai Tietz  <kai.tietz@onevision.com>
+
+	* f95-lang.c: (gfc_init_decl_processing): Choose sizetype by using
+	Pmode.
+
 2007-08-21  Paul Brook  <paul@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
