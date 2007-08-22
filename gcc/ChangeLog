@@ -1,3 +1,9 @@
+2007-02-16  Christian Bruel  <christian.bruel@st.com>	
+            Richard Guenther <rguenther@suse.de>
+	
+	* fold-const.c (fold_binary): Optimize A-A if -ffinite-math-only.
+	* simplify_rtx (simplify_binary_operation_1): Likewise.
+		
 2007-08-22  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR rtl-optimization/32557
