@@ -244,6 +244,9 @@ main (int argc, char **argv)
       printf ("   DFA state.  */\n");
       printf ("extern int cpu_unit_reservation_p (state_t, int);\n");
       printf ("#endif\n\n");
+      printf ("/* The following function returns true if insn\n");
+      printf ("   has a dfa reservation.  */\n");
+      printf ("extern bool insn_has_dfa_reservation_p (rtx);\n\n");
       printf ("/* Clean insn code cache.  It should be called if there\n");
       printf ("   is a chance that condition value in a\n");
       printf ("   define_insn_reservation will be changed after\n");

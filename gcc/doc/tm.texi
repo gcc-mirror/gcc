@@ -6180,6 +6180,20 @@ The hook is analogous to @samp{TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN} but
 used to initialize data used by the previous hook.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SCHED_DFA_PRE_CYCLE_ADVANCE (void)
+The hook to notify target that the current simulated cycle is about to finish.
+The hook is analogous to @samp{TARGET_SCHED_DFA_PRE_CYCLE_INSN} but used
+to change the state in more complicated situations - e.g. when advancing
+state on a single insn is not enough.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SCHED_DFA_POST_CYCLE_ADVANCE (void)
+The hook to notify target that new simulated cycle has just started.
+The hook is analogous to @samp{TARGET_SCHED_DFA_POST_CYCLE_INSN} but used
+to change the state in more complicated situations - e.g. when advancing
+state on a single insn is not enough.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD (void)
 This hook controls better choosing an insn from the ready insn queue
 for the @acronym{DFA}-based insn scheduler.  Usually the scheduler

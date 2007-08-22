@@ -6859,6 +6859,8 @@ output_reserved_units_table_name (FILE *f, automaton_t automaton)
 
 #define CPU_UNIT_RESERVATION_P_FUNC_NAME "cpu_unit_reservation_p"
 
+#define INSN_HAS_DFA_RESERVATION_P_FUNC_NAME "insn_has_dfa_reservation_p"
+
 #define DFA_CLEAN_INSN_CACHE_FUNC_NAME  "dfa_clean_insn_cache"
 
 #define DFA_CLEAR_SINGLE_INSN_CACHE_FUNC_NAME "dfa_clear_single_insn_cache"
@@ -8346,6 +8348,42 @@ output_cpu_unit_reservation_p (void)
   fprintf (output_file, "  return 0;\n}\n\n");
 }
 
+/* The following function outputs a function to check if insn
+   has a dfa reservation.  */
+static void
+output_insn_has_dfa_reservation_p (void)
+{
+  fprintf (output_file,
+	   "bool\n%s (rtx %s ATTRIBUTE_UNUSED)\n{\n",
+           INSN_HAS_DFA_RESERVATION_P_FUNC_NAME,
+           INSN_PARAMETER_NAME);
+
+  if (DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num == 0)
+    {
+      fprintf (output_file, "  return false;\n}\n\n");
+      return;
+    }
+
+  fprintf (output_file, "  int %s;\n\n", INTERNAL_INSN_CODE_NAME);
+
+  fprintf (output_file, "  if (%s == 0)\n    %s = %s;\n",
+	   INSN_PARAMETER_NAME,
+	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME);
+  fprintf (output_file, "  else\n\
+    {\n\
+      %s = %s (%s);\n\
+      if (%s > %s)\n\
+        %s = %s;\n\
+    }\n\n",
+	   INTERNAL_INSN_CODE_NAME, DFA_INSN_CODE_FUNC_NAME,
+	       INSN_PARAMETER_NAME,
+	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME,
+	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME);
+
+  fprintf (output_file, "  return %s != %s;\n}\n\n",
+	   INTERNAL_INSN_CODE_NAME, ADVANCE_CYCLE_VALUE_NAME);
+}
+
 /* The function outputs PHR interface functions `dfa_clean_insn_cache'
    and 'dfa_clear_single_insn_cache'.  */
 static void
@@ -9138,6 +9176,7 @@ write_automata (void)
   fprintf (output_file, "\n#if %s\n\n", CPU_UNITS_QUERY_MACRO_NAME);
   output_get_cpu_unit_code_func ();
   output_cpu_unit_reservation_p ();
+  output_insn_has_dfa_reservation_p ();
   fprintf (output_file, "\n#endif /* #if %s */\n\n",
 	   CPU_UNITS_QUERY_MACRO_NAME);
   output_dfa_clean_insn_cache_func ();

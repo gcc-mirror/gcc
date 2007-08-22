@@ -303,6 +303,13 @@ struct gcc_target
     void (* init_dfa_post_cycle_insn) (void);
     rtx (* dfa_post_cycle_insn) (void);
 
+    /* The values of the following two members are pointers to
+       functions used to simplify the automaton descriptions.
+       dfa_pre_advance_cycle and dfa_post_advance_cycle are getting called
+       immediatelly before and after cycle is advanced.  */
+    void (* dfa_pre_advance_cycle) (void);
+    void (* dfa_post_advance_cycle) (void);
+
     /* The following member value is a pointer to a function returning value
        which defines how many insns in queue `ready' will we try for
        multi-pass scheduling.  If the member value is nonzero and the

@@ -1142,6 +1142,9 @@ adjust_priority (rtx prev)
 HAIFA_INLINE static void
 advance_one_cycle (void)
 {
+  if (targetm.sched.dfa_pre_advance_cycle)
+    targetm.sched.dfa_pre_advance_cycle ();
+
   if (targetm.sched.dfa_pre_cycle_insn)
     state_transition (curr_state,
 		      targetm.sched.dfa_pre_cycle_insn ());
@@ -1151,6 +1154,9 @@ advance_one_cycle (void)
   if (targetm.sched.dfa_post_cycle_insn)
     state_transition (curr_state,
 		      targetm.sched.dfa_post_cycle_insn ());
+
+  if (targetm.sched.dfa_post_advance_cycle)
+    targetm.sched.dfa_post_advance_cycle ();
 }
 
 /* Clock at which the previous instruction was issued.  */
