@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* This test checks for absolute memory operands.  */
 /* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2 -march=k8" } */

@@ -1,6 +1,6 @@
 /* Test asm clobbers on x86. */
 
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-skip-if "" { ilp32 } { "-fpic" "-fPIC" } { "" } } */
 
 extern void abort (void);

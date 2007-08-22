@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O0 -fpic" } */
 

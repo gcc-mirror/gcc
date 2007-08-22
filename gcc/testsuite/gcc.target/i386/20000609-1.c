@@ -1,4 +1,4 @@
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O1 -ffast-math -march=i686" } */
 

@@ -1,7 +1,7 @@
 /* Test if functions marked __attribute__((used)), but with address never
    taken in C code, don't use alternate calling convention for local
    functions on IA-32.  */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* The asm in this test uses an absolute address.  */
 /* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2" } */

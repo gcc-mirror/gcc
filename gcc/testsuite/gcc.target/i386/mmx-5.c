@@ -1,6 +1,6 @@
 /* PR rtl-optimization/17853 */
 /* Contributed by Stuart Hastings <stuart@apple.com> */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mmmx" } */
 #include <mmintrin.h>
 #include <stdlib.h>

@@ -1,5 +1,5 @@
 /* PR rtl-optimization/18614 */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
 
 typedef double v2df __attribute__ ((vector_size (16)));

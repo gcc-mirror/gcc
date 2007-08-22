@@ -1,4 +1,5 @@
-/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-do compile } */
+/* { dg-require-effective-target ilp32 } */
 /* { dg-options "-ansi -pedantic" } */
 
 int foo ()

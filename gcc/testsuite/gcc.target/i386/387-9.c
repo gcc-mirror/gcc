@@ -1,5 +1,5 @@
 /* Verify that 387 fsincos instruction is generated.  */
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O -funsafe-math-optimizations -march=i686" } */
 

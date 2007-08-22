@@ -1,5 +1,5 @@
 /* PR optimization/9888 */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mtune=k6 -O3" } */
 

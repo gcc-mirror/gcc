@@ -1,5 +1,5 @@
 /* PR opt/6722 */
-/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2" } */
 
 #if !__PIC__

@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mpreferred-stack-boundary=2 -march=i586 -O2 -fomit-frame-pointer" } */
 

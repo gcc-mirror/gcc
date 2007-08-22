@@ -1,6 +1,6 @@
 /* PR target/8870 */
 /* Originator: otaylor@redhat.com */
-/* { dg-do compile { target i?86-*-* x86_64-*-*} } */
+/* { dg-do compile } */
 /* { dg-options "-O1 -mmmx -march=k8" } */
 
 typedef short v4hi __attribute__ ((vector_size (8)));

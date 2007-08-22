@@ -1,4 +1,5 @@
-/* { dg-do preprocess { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
+/* { dg-do preprocess } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-mcx16" } */
 
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
