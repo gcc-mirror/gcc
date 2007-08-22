@@ -1,3 +1,7 @@
+2007-08-22  Bernhard Fischer  <rep.dot.nop@gmail.com>
+
+	* libgfortran/Makefile.am (AM_CPPFLAGS): Commentary typo fix.
+
 2007-08-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33079
