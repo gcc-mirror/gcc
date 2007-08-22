@@ -4079,6 +4079,7 @@ extern void yyerror				(const char *);
 extern void yyhook				(int);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
+extern bool in_main_input_context		(void);
 
 /* in method.c */
 extern void init_method				(void);
@@ -4161,6 +4162,7 @@ extern tree build_non_dependent_args		(tree);
 extern bool reregister_specialization		(tree, tree, tree);
 extern tree fold_non_dependent_expr		(tree);
 extern bool explicit_class_specialization_p     (tree);
+extern tree outermost_tinst_level		(void);
 
 /* in repo.c */
 extern void init_repo				(void);
