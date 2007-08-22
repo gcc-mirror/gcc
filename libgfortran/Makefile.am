@@ -22,7 +22,7 @@ myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 
-## io.h conflicts with some a system header on some platforms, so
+## io.h conflicts with a system header on some platforms, so
 ## use -iquote
 AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 	      -I$(srcdir)/$(MULTISRCTOP)../gcc/config \
