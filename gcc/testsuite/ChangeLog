@@ -1,3 +1,8 @@
+2007-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33142
+	* gcc.c-torture/execute/pr33142.c: New testcase.
+
 2007-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32992

@@ -1523,11 +1523,11 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	  -~[MIN, MIN] == ~[MIN, MIN]
 	  -[MIN, 0] == [0, MAX]  for -fno-wrapv
 	  -[MIN, 0] == [0, MIN]  for -fwrapv (will be set to varying later)  */
-      min = vr0.max == TYPE_MIN_VALUE (TREE_TYPE (expr))
+      min = tree_int_cst_equal (vr0.max, TYPE_MIN_VALUE (TREE_TYPE (expr)))
 	    ? TYPE_MIN_VALUE (TREE_TYPE (expr))
 	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
 
-      max = vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr))
+      max = tree_int_cst_equal (vr0.min, TYPE_MIN_VALUE (TREE_TYPE (expr)))
 	    ? (vr0.type == VR_ANTI_RANGE || flag_wrapv
 	       ? TYPE_MIN_VALUE (TREE_TYPE (expr))
 	       : TYPE_MAX_VALUE (TREE_TYPE (expr)))
@@ -1540,9 +1540,9 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
          useful range.  */
       if (flag_wrapv
 	  && ((vr0.type == VR_RANGE
-	       && vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)))
+	       && tree_int_cst_equal (vr0.min, TYPE_MIN_VALUE (TREE_TYPE (expr))))
 	      || (vr0.type == VR_ANTI_RANGE
-	          && vr0.min != TYPE_MIN_VALUE (TREE_TYPE (expr))
+	          && !tree_int_cst_equal (vr0.min, TYPE_MIN_VALUE (TREE_TYPE (expr)))
 		  && !range_includes_zero_p (&vr0))))
 	{
 	  set_value_range_to_varying (vr);
@@ -1551,7 +1551,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	
       /* ABS_EXPR may flip the range around, if the original range
 	 included negative values.  */
-      min = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)))
+      min = (tree_int_cst_equal (vr0.min, TYPE_MIN_VALUE (TREE_TYPE (expr))))
 	    ? TYPE_MAX_VALUE (TREE_TYPE (expr))
 	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
 
@@ -1575,7 +1575,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	         or ~[-INF + 1, min (abs(MIN), abs(MAX))] when
 		 flag_wrapv is set and the original anti-range doesn't include
 	         TYPE_MIN_VALUE, remember -TYPE_MIN_VALUE = TYPE_MIN_VALUE.  */
-	      min = (flag_wrapv && vr0.min != type_min_value
+	      min = (flag_wrapv && !tree_int_cst_equal (vr0.min, type_min_value)
 		     ? int_const_binop (PLUS_EXPR,
 					type_min_value,
 					integer_one_node, 0)
