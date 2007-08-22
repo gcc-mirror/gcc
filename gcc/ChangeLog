@@ -1,3 +1,9 @@
+2007-08-22  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/32949
+	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Test nowrap_type_p
+	before failing for ivs with non-constant step.
+
 2007-08-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/md.texi (Iterators): Renamed from Macros.  All contents
