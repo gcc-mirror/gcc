@@ -1,5 +1,12 @@
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/33007
+	* builtins.c (expand_builtin_int_roundingfn): Replace call
+	argument wrapped with SAVE_EXPR directly.
+	(expand_builtin_int_roundingfn_2): Likewise.
+
+2007-08-22  Richard Guenther  <rguenther@suse.de>
+
 	* tree-inline.c (inlinable_function_p): Restore disregarding
 	inline limits for GNU extern inline functions.
 
