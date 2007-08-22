@@ -1,3 +1,14 @@
+2007-08-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32563
+	* g++.dg/torture/pr32563.C: New testcase.
+
+	Backport from mainline:
+	2007-05-30  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/dg.exp: Prune torture/.
+	* g++.dg/torture/dg-torture.exp: New testsuite.
+
 2007-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32992

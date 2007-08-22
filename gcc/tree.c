@@ -4540,7 +4540,8 @@ host_integerp (tree t, int pos)
 	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)
 	      || (! pos && TREE_INT_CST_HIGH (t) == -1
 		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0
-		  && !TYPE_UNSIGNED (TREE_TYPE (t)))
+		  && (!TYPE_UNSIGNED (TREE_TYPE (t))
+		      || TYPE_IS_SIZETYPE (TREE_TYPE (t))))
 	      || (pos && TREE_INT_CST_HIGH (t) == 0)));
 }
 
