@@ -1,3 +1,8 @@
+2007-08-22  Janus Weil  <jaydub66@gmail.com>
+
+	* interface_abstract_1.f90: Extended test case.
+	* interface_abstract_3.f90: New test.
+
 2007-08-21  Christian Bruel  <christian.bruel@st.com>
 
 	* gcc.dg/fold-sub.c: New test.

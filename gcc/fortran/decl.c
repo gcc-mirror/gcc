@@ -2549,8 +2549,11 @@ match_attr_spec (void)
 	      /* Chomp the comma.  */
 	      peek_char = gfc_next_char ();
 	      /* Try and match the bind(c).  */
-	      if (gfc_match_bind_c (NULL) == MATCH_YES)
+	      m = gfc_match_bind_c (NULL);
+	      if (m == MATCH_YES)
 		d = DECL_IS_BIND_C;
+	      else if (m == MATCH_ERROR)
+		goto cleanup;
 	    }
 	}
 
@@ -4183,7 +4186,8 @@ gfc_match_bind_c (gfc_symbol *sym)
 	strncpy (sym->binding_label, sym->name, strlen (sym->name) + 1);
     }
 
-  if (has_name_equals && current_interface.type == INTERFACE_ABSTRACT)
+  if (has_name_equals && gfc_current_state () == COMP_INTERFACE
+      && current_interface.type == INTERFACE_ABSTRACT)
     {
       gfc_error ("NAME not allowed on BIND(C) for ABSTRACT INTERFACE at %C");
       return MATCH_ERROR;
@@ -5327,7 +5331,8 @@ gfc_match_modproc (void)
 
   if (gfc_state_stack->state != COMP_INTERFACE
       || gfc_state_stack->previous == NULL
-      || current_interface.type == INTERFACE_NAMELESS)
+      || current_interface.type == INTERFACE_NAMELESS
+      || current_interface.type == INTERFACE_ABSTRACT)
     {
       gfc_error ("MODULE PROCEDURE at %C must be in a generic module "
 		 "interface");

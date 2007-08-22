@@ -12,4 +12,10 @@ abstract interface
   subroutine real() ! { dg-error "cannot be the same as an intrinsic type" }
   end subroutine real
 end interface
+
+contains
+
+  subroutine sub() bind(C,name="subC")
+  end subroutine
+
 end
