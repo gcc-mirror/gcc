@@ -1,3 +1,7 @@
+2007-08-21  Christian Bruel  <christian.bruel@st.com>
+
+	* gcc.dg/fold-sub.c: New test.
+	
 2007-08-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/20000724-1.c, gcc.dg/980312-1.c, gcc.dg/980313-1.c,

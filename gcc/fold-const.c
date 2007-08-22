@@ -10149,10 +10149,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 Also note that operand_equal_p is always false if an operand
 	 is volatile.  */
 
-      if ((! FLOAT_TYPE_P (type)
-	   || (flag_unsafe_math_optimizations
-	       && !HONOR_NANS (TYPE_MODE (type))
-	       && !HONOR_INFINITIES (TYPE_MODE (type))))
+      if ((!FLOAT_TYPE_P (type) || !HONOR_NANS (TYPE_MODE (type)))
 	  && operand_equal_p (arg0, arg1, 0))
 	return fold_convert (type, integer_zero_node);
 
