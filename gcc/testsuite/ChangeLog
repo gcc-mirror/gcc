@@ -1,3 +1,12 @@
+2007-08-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/20000724-1.c, gcc.dg/980312-1.c, gcc.dg/980313-1.c,
+	gcc.dg/attr-returns_twice-1.c, gcc.dg/inline-mcpy.c, gcc.dg/pr25196.c,
+	gcc.dg/pr25993.c, gcc.dg/pr26449.c, gcc.dg/pr28839.c,
+	gcc.dg/pr32191.c: Move to gcc.target/i386 directory.
+	* gcc.target/i386/pr31854.c, gcc.target/i386/pr32065-1.c,
+	gcc.target/i386/pr32065-2.c: Use dg-require-effective-target dfp.
+
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33007

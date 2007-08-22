@@ -1,4 +1,4 @@
-/* { dg-do link { target i?86-*-* x86_64-*-* } } */
+/* { dg-do link } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 

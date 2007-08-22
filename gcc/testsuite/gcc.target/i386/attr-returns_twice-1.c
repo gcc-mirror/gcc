@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-Wclobbered" } */
 
 int newsetjmp(void) __attribute__((returns_twice));

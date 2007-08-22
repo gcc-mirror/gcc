@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -ftree-vectorize -funswitch-loops" } */
 
 static int ready[10];

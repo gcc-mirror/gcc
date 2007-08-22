@@ -1,4 +1,5 @@
-/* { dg-do run { target dfp } } */
+/* { dg-do run } */
+/* { dg-require-effective-target dfp } */
 /* { dg-options "-Os -msse -std=gnu99" } */
 
 extern void abort (void);
