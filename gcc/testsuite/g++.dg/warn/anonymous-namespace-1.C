@@ -13,5 +13,6 @@ class foobar1
   good g;
 };
 
+#line 17 "foo.C"
 class foobar : public bad { }; // { dg-warning "uses the anonymous namespace" }
 class foobar2 { bad b; }; // { dg-warning "uses the anonymous namespace" }

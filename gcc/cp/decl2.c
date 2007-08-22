@@ -1854,8 +1854,7 @@ constrain_class_visibility (tree type)
 
 	if (subvis == VISIBILITY_ANON)
 	  {
-	    if (strcmp (main_input_filename,
-	                DECL_SOURCE_FILE (TYPE_MAIN_DECL (ftype))))
+	    if (!in_main_input_context ())
 	      warning (0, "\
 %qT has a field %qD whose type uses the anonymous namespace",
 		       type, t);
@@ -1875,8 +1874,7 @@ constrain_class_visibility (tree type)
 
       if (subvis == VISIBILITY_ANON)
         {
-	  if (strcmp (main_input_filename,
-	              DECL_SOURCE_FILE (TYPE_MAIN_DECL (TREE_TYPE (t)))))
+	  if (!in_main_input_context())
 	    warning (0, "\
 %qT has a base %qT whose type uses the anonymous namespace",
 		     type, TREE_TYPE (t));
