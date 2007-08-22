@@ -881,7 +881,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     valarray<_Tp>::min() const
     {
       _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
-      return *std::min_element(_M_data, _M_data+_M_size);
+      return *std::min_element(_M_data, _M_data + _M_size);
     }
 
   template<typename _Tp>
@@ -889,7 +889,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     valarray<_Tp>::max() const
     {
       _GLIBCXX_DEBUG_ASSERT(_M_size > 0);
-      return *std::max_element(_M_data, _M_data+_M_size);
+      return *std::max_element(_M_data, _M_data + _M_size);
     }
   
   template<class _Tp>

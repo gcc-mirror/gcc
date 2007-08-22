@@ -39,16 +39,12 @@
 // purpose. It is provided "as is" without express or implied
 // warranty.
 
-/** @file ext/vstring.h
+/** @file ext/throw_allocator.h
  *  This file is a GNU extension to the Standard C++ Library.
  *
  *  Contains an exception-throwing allocator, useful for testing
  *  exception safety. In addition, allocation addresses are stored and
  *  sanity checked.
- */
-
-/**
- * @file throw_allocator.h 
  */
 
 #ifndef _THROW_ALLOCATOR_H

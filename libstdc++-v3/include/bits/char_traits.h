@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
    *  types, but who don't need to change the definitions of any function
    *  defined in char_traits, can specialize __gnu_cxx::_Char_types
    *  while leaving __gnu_cxx::char_traits alone. */
-  template <class _CharT>
+  template<typename _CharT>
     struct _Char_types
     {
       typedef unsigned long   int_type;

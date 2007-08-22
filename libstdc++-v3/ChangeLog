@@ -1,3 +1,18 @@
+2007-08-21  Benjamin Kosnik  <bkoz@montsouris.artheist.org>
+
+	* include/Makefile.am (install-data-local): Remove pch-install rules.
+	(host_headers): Add stdc++.h, stdtr1c++.h, extc++.h.
+	* include/Makefile.in: Regenerate.
+	* config.h.in: Same.
+
+	* scripts/check_compile: Remove space between outputs.	
+	* include/ext/throw_allocator.h: Correct doxygen markup.	
+	* include/bits/char_traits.h: Correct spacing.
+	* include/bits/stl_function.h: Same, for 80 column.
+	* include/std/valarray: Same.
+	* testsuite/util/testsuite_iterators.h: Same.	
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Format.
+	
 2007-08-17  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR testsuite/31884
@@ -24,10 +39,14 @@
 	testsuite/ext/throw_allocator/check_deallocate_null.cc,
 	testsuite/ext/throw_allocator/check_new.cc,
 	testsuite/ext/throw_allocator/deallocate_local.cc,
-	testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/cons/gen1.cc,
-	testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/cons/gen1.cc,
-	testsuite/tr1/5_numerical_facilities/random/linear_congruential/cons/gen1.cc,
-	testsuite/tr1/5_numerical_facilities/random/mersenne_twister/cons/gen1.cc,
+	testsuite/tr1/5_numerical_facilities/random/subtract_with_carry_01/
+	cons/gen1.cc,
+	testsuite/tr1/5_numerical_facilities/random/subtract_with_carry/cons/
+	gen1.cc,
+	testsuite/tr1/5_numerical_facilities/random/linear_congruential/cons/
+	gen1.cc,
+	testsuite/tr1/5_numerical_facilities/random/mersenne_twister/cons/
+	gen1.cc,
 	testsuite/23_containers/list/modifiers/insert/25288.cc: Use
 	dg-require-time.
 

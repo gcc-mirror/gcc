@@ -124,9 +124,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 20.3.2 arithmetic
   /** @defgroup s20_3_2_arithmetic Arithmetic Classes
-   *  Because basic math often needs to be done during an algorithm, the library
-   *  provides functors for those operations.  See the documentation for
-   *  @link s20_3_1_base the base classes@endlink for examples of their use.
+
+   *  Because basic math often needs to be done during an algorithm,
+   *  the library provides functors for those operations.  See the
+   *  documentation for @link s20_3_1_base the base classes@endlink
+   *  for examples of their use.
    *
    *  @{
    */
@@ -249,7 +251,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // 20.3.4 logical operations
   /** @defgroup s20_3_4_logical Boolean Operations Classes
-   *  Here are wrapper functors for Boolean operations:  @c &&, @c ||, and @c !.
+   *  Here are wrapper functors for Boolean operations: @c &&, @c ||,
+   *  and @c !.
    *
    *  @{
    */
@@ -360,15 +363,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template <class _Predicate>
     class binary_negate
     : public binary_function<typename _Predicate::first_argument_type,
-			     typename _Predicate::second_argument_type,
-			     bool>
+			     typename _Predicate::second_argument_type, bool>
     {
     protected:
       _Predicate _M_pred;
+
     public:
       explicit
-      binary_negate(const _Predicate& __x)
-      : _M_pred(__x) { }
+      binary_negate(const _Predicate& __x) : _M_pred(__x) { }
 
       bool
       operator()(const typename _Predicate::first_argument_type& __x,
@@ -605,7 +607,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *
    *  @{
    */
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp>
     class mem_fun_t : public unary_function<_Tp*, _Ret>
     {
@@ -621,7 +624,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)();
     };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp>
     class const_mem_fun_t : public unary_function<const _Tp*, _Ret>
     {
@@ -637,7 +641,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)() const;
     };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp>
     class mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
@@ -653,7 +658,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)();
   };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp>
     class const_mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
@@ -669,7 +675,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)() const;
     };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp, class _Arg>
     class mem_fun1_t : public binary_function<_Tp*, _Arg, _Ret>
     {
@@ -685,7 +692,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)(_Arg);
     };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp, class _Arg>
     class const_mem_fun1_t : public binary_function<const _Tp*, _Arg, _Ret>
     {
@@ -701,7 +709,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)(_Arg) const;
     };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp, class _Arg>
     class mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
@@ -717,7 +726,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Ret (_Tp::*_M_f)(_Arg);
     };
 
-  /// One of the @link s20_3_8_memadaptors adaptors for member pointers@endlink.
+  /// One of the @link s20_3_8_memadaptors adaptors for member
+  /// pointers@endlink.
   template <class _Ret, class _Tp, class _Arg>
     class const_mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {

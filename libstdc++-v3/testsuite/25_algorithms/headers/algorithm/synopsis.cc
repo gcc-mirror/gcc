@@ -20,385 +20,442 @@
 
 #include <algorithm>
 
-namespace std {
+namespace std
+ {
   // 25.1, non-modifying sequence operations:
-  template<class InputIterator, class Function>
-    Function for_each(InputIterator first, InputIterator last, Function f);
-  template<class InputIterator, class T>
-    InputIterator find(InputIterator first, InputIterator last,
-                               const T& value);
-  template<class InputIterator, class Predicate>
-    InputIterator find_if(InputIterator first, InputIterator last,
-                                   Predicate pred);
-  template<class ForwardIterator1, class ForwardIterator2>
-    ForwardIterator1
-       find_end(ForwardIterator1 first1, ForwardIterator1 last1,
-                    ForwardIterator2 first2, ForwardIterator2 last2);
-  template<class ForwardIterator1, class ForwardIterator2,
-               class BinaryPredicate>
-    ForwardIterator1
-       find_end(ForwardIterator1 first1, ForwardIterator1 last1,
-                    ForwardIterator2 first2, ForwardIterator2 last2,
-                    BinaryPredicate pred);
-  template<class ForwardIterator1, class ForwardIterator2>
-    ForwardIterator1
-       find_first_of(ForwardIterator1 first1, ForwardIterator1 last1,
-                           ForwardIterator2 first2, ForwardIterator2 last2);
-  template<class ForwardIterator1, class ForwardIterator2,
-               class BinaryPredicate>
-    ForwardIterator1
-       find_first_of(ForwardIterator1 first1, ForwardIterator1 last1,
-                    ForwardIterator2 first2, ForwardIterator2 last2,
-                    BinaryPredicate pred);
+  template<typename _IIter, typename _Funct>
+    _Funct 
+    for_each(_IIter, _IIter, _Funct);
 
-template<class ForwardIterator>
-  ForwardIterator adjacent_find(ForwardIterator first,
-                                ForwardIterator last);
+  template<typename _IIter, typename _Tp>
+    _IIter 
+    find(_IIter, _IIter, const _Tp&);
 
-template<class ForwardIterator, class BinaryPredicate>
-  ForwardIterator adjacent_find(ForwardIterator first,
-      ForwardIterator last, BinaryPredicate pred);
+  template<typename _IIter, typename _Predicate>
+    _IIter 
+    find_if(_IIter, _IIter, _Predicate);
 
-template<class InputIterator, class T>
-  typename iterator_traits<InputIterator>::difference_type
-    count(InputIterator first, InputIterator last, const T& value);
+  template<typename _FIter1, typename _FIter2>
+    _FIter1
+    find_end(_FIter1, _FIter1, _FIter2, _FIter2);
 
-template<class InputIterator, class Predicate>
-  typename iterator_traits<InputIterator>::difference_type
-    count_if(InputIterator first, InputIterator last, Predicate pred);
-template<class InputIterator1, class InputIterator2>
-  pair<InputIterator1, InputIterator2>
-    mismatch(InputIterator1 first1, InputIterator1 last1,
-             InputIterator2 first2);
-template
- <class InputIterator1, class InputIterator2, class BinaryPredicate>
-  pair<InputIterator1, InputIterator2>
-    mismatch(InputIterator1 first1, InputIterator1 last1,
-      InputIterator2 first2, BinaryPredicate pred);
-template<class InputIterator1, class InputIterator2>
-  bool equal(InputIterator1 first1, InputIterator1 last1,
-             InputIterator2 first2);
-template
- <class InputIterator1, class InputIterator2, class BinaryPredicate>
-  bool equal(InputIterator1 first1, InputIterator1 last1,
-             InputIterator2 first2, BinaryPredicate pred);
+  template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _FIter1
+    find_end(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
-template<class ForwardIterator1, class ForwardIterator2>
-  ForwardIterator1 search
-    (ForwardIterator1 first1, ForwardIterator1 last1,
-     ForwardIterator2 first2, ForwardIterator2 last2);
+  template<typename _FIter1, typename _FIter2>
+    _FIter1
+    find_first_of(_FIter1, _FIter1, _FIter2, _FIter2);
 
-template<class ForwardIterator1, class ForwardIterator2,
-         class BinaryPredicate>
-  ForwardIterator1 search
-    (ForwardIterator1 first1, ForwardIterator1 last1,
-     ForwardIterator2 first2, ForwardIterator2 last2,
-                          BinaryPredicate pred);
+  template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _FIter1
+    find_first_of(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
-template<class ForwardIterator, class Size, class T>
-  ForwardIterator search_n(ForwardIterator first, ForwardIterator last,
-                          Size count, const T& value);
+  template<typename _FIter>
+    _FIter 
+    adjacent_find(_FIter, _FIter);
 
-template <class ForwardIterator, class Size, class T, class BinaryPredicate>
-  ForwardIterator search_n(ForwardIterator first, ForwardIterator last,
-                          Size count, const T& value,
-                          BinaryPredicate pred);
+  template<typename _FIter, typename _BinaryPredicate>
+    _FIter 
+    adjacent_find(_FIter, _FIter, _BinaryPredicate);
 
-// 25.2, modifying sequence operations:
-// 25.2.1, copy:
-template<class InputIterator, class OutputIterator>
-  OutputIterator copy(InputIterator first, InputIterator last,
-                               OutputIterator result);
-template<class BidirectionalIterator1, class BidirectionalIterator2>
-  BidirectionalIterator2
-     copy_backward
-         (BidirectionalIterator1 first, BidirectionalIterator1 last,
-          BidirectionalIterator2 result);
-// 25.2.2, swap:
-template<class T> void swap(T& a, T& b);
-template<class ForwardIterator1, class ForwardIterator2>
-  ForwardIterator2 swap_ranges(ForwardIterator1 first1,
-         ForwardIterator1 last1, ForwardIterator2 first2);
-template<class ForwardIterator1, class ForwardIterator2>
-  void iter_swap(ForwardIterator1 a, ForwardIterator2 b);
-template<class InputIterator, class OutputIterator, class UnaryOperation>
-  OutputIterator transform(InputIterator first, InputIterator last,
-                                      OutputIterator result, UnaryOperation op);
-template<class InputIterator1, class InputIterator2, class OutputIterator,
-             class BinaryOperation>
-  OutputIterator transform(InputIterator1 first1, InputIterator1 last1,
-                                      InputIterator2 first2, OutputIterator result,
-                                      BinaryOperation binary_op);
-template<class ForwardIterator, class T>
-  void replace(ForwardIterator first, ForwardIterator last,
-                     const T& old_value, const T& new_value);
-template<class ForwardIterator, class Predicate, class T>
-  void replace_if(ForwardIterator first, ForwardIterator last,
-                         Predicate pred, const T& new_value);
-template<class InputIterator, class OutputIterator, class T>
-  OutputIterator replace_copy(InputIterator first, InputIterator last,
-                                         OutputIterator result,
-                                         const T& old_value, const T& new_value);
-template<class Iterator, class OutputIterator, class Predicate, class T>
-  OutputIterator replace_copy_if(Iterator first, Iterator last,
-                                            OutputIterator result,
-                                            Predicate pred, const T& new_value);
-template<class ForwardIterator, class T>
-  void fill(ForwardIterator first, ForwardIterator last, const T& value);
-template<class OutputIterator, class Size, class T>
-  void fill_n(OutputIterator first, Size n, const T& value);
-template<class ForwardIterator, class Generator>
-  void generate(ForwardIterator first, ForwardIterator last,
-                       Generator gen);
-template<class OutputIterator, class Size, class Generator>
-  void generate_n(OutputIterator first, Size n, Generator gen);
+  template<typename _IIter, typename _Tp>
+    typename iterator_traits<_IIter>::difference_type
+    count(_IIter, _IIter, const _Tp&);
 
-template<class ForwardIterator, class T>
-  ForwardIterator remove(ForwardIterator first, ForwardIterator last,
-                                const T& value);
-template<class ForwardIterator, class Predicate>
-  ForwardIterator remove_if(ForwardIterator first, ForwardIterator last,
-                                   Predicate pred);
-template<class InputIterator, class OutputIterator, class T>
-  OutputIterator remove_copy(InputIterator first, InputIterator last,
-                                    OutputIterator result, const T& value);
-template<class InputIterator, class OutputIterator, class Predicate>
-  OutputIterator remove_copy_if(InputIterator first, InputIterator last,
-                                       OutputIterator result, Predicate pred);
-template<class ForwardIterator>
-  ForwardIterator unique(ForwardIterator first, ForwardIterator last);
-template<class ForwardIterator, class BinaryPredicate>
-  ForwardIterator unique(ForwardIterator first, ForwardIterator last,
-                                BinaryPredicate pred);
-template<class InputIterator, class OutputIterator>
-  OutputIterator unique_copy(InputIterator first, InputIterator last,
-                                    OutputIterator result);
-template<class InputIterator, class OutputIterator, class BinaryPredicate>
-  OutputIterator unique_copy(InputIterator first, InputIterator last,
-                                    OutputIterator result, BinaryPredicate pred);
-template<class BidirectionalIterator>
-  void reverse(BidirectionalIterator first, BidirectionalIterator last);
-template<class BidirectionalIterator, class OutputIterator>
-  OutputIterator reverse_copy(BidirectionalIterator first,
-                                     BidirectionalIterator last,
-                                     OutputIterator result);
-template<class ForwardIterator>
-  void rotate(ForwardIterator first, ForwardIterator middle,
-                     ForwardIterator last);
-template<class ForwardIterator, class OutputIterator>
-  OutputIterator rotate_copy
-     (ForwardIterator first, ForwardIterator middle,
-       ForwardIterator last, OutputIterator result);
-template<class RandomAccessIterator>
-  void random_shuffle(RandomAccessIterator first,
-                             RandomAccessIterator last);
-template<class RandomAccessIterator, class RandomNumberGenerator>
-  void random_shuffle(RandomAccessIterator first,
-                             RandomAccessIterator last,
-                             RandomNumberGenerator& rand);
-// 25.2.12, partitions:
-template<class BidirectionalIterator, class Predicate>
-  BidirectionalIterator partition(BidirectionalIterator first,
-                                         BidirectionalIterator last,
-                                         Predicate pred);
-template<class BidirectionalIterator, class Predicate>
-  BidirectionalIterator stable_partition(BidirectionalIterator first,
-                                                 BidirectionalIterator last,
-                                                Predicate pred);
-// 25.3, sorting and related operations:
-// 25.3.1, sorting:
-template<class RandomAccessIterator>
-  void sort(RandomAccessIterator first, RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void sort(RandomAccessIterator first, RandomAccessIterator last,
-                  Compare comp);
-template<class RandomAccessIterator>
-  void stable_sort(RandomAccessIterator first, RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void stable_sort(RandomAccessIterator first, RandomAccessIterator last,
-                            Compare comp);
-template<class RandomAccessIterator>
-  void partial_sort(RandomAccessIterator first,
-                              RandomAccessIterator middle,
-                              RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void partial_sort(RandomAccessIterator first,
-                              RandomAccessIterator middle,
-                              RandomAccessIterator last, Compare comp);
-template<class InputIterator, class RandomAccessIterator>
-  RandomAccessIterator
-     partial_sort_copy(InputIterator first, InputIterator last,
-                                RandomAccessIterator result_first,
-                                RandomAccessIterator result_last);
-template<class InputIterator, class RandomAccessIterator, class Compare>
-  RandomAccessIterator
-     partial_sort_copy(InputIterator first, InputIterator last,
-                                RandomAccessIterator result_first,
-                                RandomAccessIterator result_last,
-                                Compare comp);
-template<class RandomAccessIterator>
-  void nth_element(RandomAccessIterator first, RandomAccessIterator nth,
-                            RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void nth_element(RandomAccessIterator first, RandomAccessIterator nth,
-                            RandomAccessIterator last, Compare comp);
-// 25.3.3, binary search:
-template<class ForwardIterator, class T>
-  ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last,
-                                         const T& value);
-template<class ForwardIterator, class T, class Compare>
-  ForwardIterator lower_bound(ForwardIterator first, ForwardIterator last,
-                                         const T& value, Compare comp);
-template<class ForwardIterator, class T>
-  ForwardIterator upper_bound(ForwardIterator first, ForwardIterator last,
-                                         const T& value);
-template<class ForwardIterator, class T, class Compare>
-  ForwardIterator upper_bound(ForwardIterator first, ForwardIterator last,
-                                         const T& value, Compare comp);
-template<class ForwardIterator, class T>
-  pair<ForwardIterator, ForwardIterator>
-     equal_range(ForwardIterator first, ForwardIterator last,
-                        const T& value);
-template<class ForwardIterator, class T, class Compare>
-  pair<ForwardIterator, ForwardIterator>
-     equal_range(ForwardIterator first, ForwardIterator last,
-                        const T& value, Compare comp);
-template<class ForwardIterator, class T>
-  bool binary_search(ForwardIterator first, ForwardIterator last,
-                             const T& value);
-template<class ForwardIterator, class T, class Compare>
-  bool binary_search(ForwardIterator first, ForwardIterator last,
-                             const T& value, Compare comp);
-// 25.3.4, merge:
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-  OutputIterator merge(InputIterator1 first1, InputIterator1 last1,
-                               InputIterator2 first2, InputIterator2 last2,
-                               OutputIterator result);
-template<class InputIterator1, class InputIterator2, class OutputIterator,
-             class Compare>
-  OutputIterator merge(InputIterator1 first1, InputIterator1 last1,
-                               InputIterator2 first2, InputIterator2 last2,
-                               OutputIterator result, Compare comp);
-template<class BidirectionalIterator>
-  void inplace_merge(BidirectionalIterator first,
-                             BidirectionalIterator middle,
-                             BidirectionalIterator last);
-template<class BidirectionalIterator, class Compare>
-  void inplace_merge(BidirectionalIterator first,
-                             BidirectionalIterator middle,
-                             BidirectionalIterator last, Compare comp);
-// 25.3.5, set operations:
-template<class InputIterator1, class InputIterator2>
-  bool includes(InputIterator1 first1, InputIterator1 last1,
-                        InputIterator2 first2, InputIterator2 last2);
-template<class InputIterator1, class InputIterator2, class Compare>
-  bool includes
-     (InputIterator1 first1, InputIterator1 last1,
-       InputIterator2 first2, InputIterator2 last2, Compare comp);
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-  OutputIterator set_union(InputIterator1 first1, InputIterator1 last1,
-                                   InputIterator2 first2, InputIterator2 last2,
-                                   OutputIterator result);
-template<class InputIterator1, class InputIterator2, class OutputIterator,
-             class Compare>
-  OutputIterator set_union(InputIterator1 first1, InputIterator1 last1,
-                                   InputIterator2 first2, InputIterator2 last2,
-                                   OutputIterator result, Compare comp);
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-  OutputIterator set_intersection
-        (InputIterator1 first1, InputIterator1 last1,
-          InputIterator2 first2, InputIterator2 last2,
-          OutputIterator result);
-template<class InputIterator1, class InputIterator2, class OutputIterator,
-             class Compare>
-  OutputIterator set_intersection
-        (InputIterator1 first1, InputIterator1 last1,
-          InputIterator2 first2, InputIterator2 last2,
-          OutputIterator result, Compare comp);
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-  OutputIterator set_difference
-        (InputIterator1 first1, InputIterator1 last1,
-          InputIterator2 first2, InputIterator2 last2,
-          OutputIterator result);
-template<class InputIterator1, class InputIterator2, class OutputIterator,
-             class Compare>
-  OutputIterator set_difference
-        (InputIterator1 first1, InputIterator1 last1,
-          InputIterator2 first2, InputIterator2 last2,
-          OutputIterator result, Compare comp);
-template<class InputIterator1, class InputIterator2, class OutputIterator>
-  OutputIterator
-     set_symmetric_difference(InputIterator1 first1, InputIterator1 last1,
-                                    InputIterator2 first2, InputIterator2 last2,
-                                    OutputIterator result);
-template<class InputIterator1, class InputIterator2, class OutputIterator,
-              class Compare>
-  OutputIterator
-     set_symmetric_difference(InputIterator1 first1, InputIterator1 last1,
-                                    InputIterator2 first2, InputIterator2 last2,
-                                    OutputIterator result, Compare comp);
-// 25.3.6, heap operations:
-template<class RandomAccessIterator>
-  void push_heap(RandomAccessIterator first, RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void push_heap(RandomAccessIterator first, RandomAccessIterator last,
-                        Compare comp);
-template<class RandomAccessIterator>
-  void pop_heap(RandomAccessIterator first, RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void pop_heap(RandomAccessIterator first, RandomAccessIterator last,
-                       Compare comp);
-template<class RandomAccessIterator>
-  void make_heap(RandomAccessIterator first, RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void make_heap(RandomAccessIterator first, RandomAccessIterator last,
-                        Compare comp);
-template<class RandomAccessIterator>
-  void sort_heap(RandomAccessIterator first, RandomAccessIterator last);
-template<class RandomAccessIterator, class Compare>
-  void sort_heap(RandomAccessIterator first, RandomAccessIterator last,
-                        Compare comp);
+  template<typename _IIter, typename _Predicate>
+    typename iterator_traits<_IIter>::difference_type
+    count_if(_IIter, _IIter, _Predicate);
+
+  template<typename _IIter1, typename _IIter2>
+    pair<_IIter1, _IIter2>
+    mismatch(_IIter1, _IIter1, _IIter2);
+
+  template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    pair<_IIter1, _IIter2>
+    mismatch(_IIter1, _IIter1, _IIter2, _BinaryPredicate);
+
+  template<typename _IIter1, typename _IIter2>
+    bool 
+    equal(_IIter1, _IIter1, _IIter2);
+
+  template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    bool 
+    equal(_IIter1, _IIter1, _IIter2, _BinaryPredicate);
+
+  template<typename _FIter1, typename _FIter2>
+    _FIter1 
+    search(_FIter1, _FIter1, _FIter2, _FIter2);
+
+  template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _FIter1 
+    search(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
+
+  template<typename _FIter, typename _Size, typename _Tp>
+    _FIter 
+    search_n(_FIter, _FIter, _Size, const _Tp&);
+
+  template<typename _FIter, typename _Size, typename _Tp, 
+	   typename _BinaryPredicate>
+    _FIter 
+    search_n(_FIter, _FIter, _Size, const _Tp&, _BinaryPredicate);
+
+  // 25.2, modifying sequence operations:
+  // 25.2.1, copy:
+  template<typename _IIter, typename _OIter>
+    _OIter 
+    copy(_IIter, _IIter, _OIter);
+
+  template<typename _BIter1, typename _BIter2>
+    _BIter2
+    copy_backward (_BIter1, _BIter1, _BIter2);
+
+  // 25.2.2, swap:
+  template<typename _Tp> 
+    void 
+    swap(_Tp&, _Tp& b);
+
+  template<typename _FIter1, typename _FIter2>
+    _FIter2 
+    swap_ranges(_FIter1 first1, _FIter1, _FIter2);
+
+  template<typename _FIter1, typename _FIter2>
+    void 
+    iter_swap(_FIter1, _FIter2 b);
+
+  template<typename _IIter, typename _OIter, typename _UnaryOperation>
+    _OIter 
+    transform(_IIter, _IIter, _OIter, _UnaryOperation op);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, 
+	   typename _BinaryOperation>
+    _OIter 
+    transform(_IIter1, _IIter1, _IIter2, _OIter, _BinaryOperation);
+
+  template<typename _FIter, typename _Tp>
+    void 
+    replace(_FIter, _FIter, const _Tp&, const _Tp&);
+
+  template<typename _FIter, typename _Predicate, typename _Tp>
+    void 
+    replace_if(_FIter, _FIter, _Predicate, const _Tp&);
+
+  template<typename _IIter, typename _OIter, typename _Tp>
+    _OIter 
+    replace_copy(_IIter, _IIter, _OIter, const _Tp&, const _Tp&);
+
+  template<typename _Iter, typename _OIter, typename _Predicate, typename _Tp>
+    _OIter 
+    replace_copy_if(_Iter, _Iter, _OIter, _Predicate, const _Tp&);
+
+  template<typename _FIter, typename _Tp>
+    void 
+    fill(_FIter, _FIter, const _Tp&);
+
+  template<typename _OIter, typename _Size, typename _Tp>
+    void 
+    fill_n(_OIter, _Size n, const _Tp&);
+
+  template<typename _FIter, typename _Generator>
+    void 
+    generate(_FIter, _FIter, _Generator);
+
+  template<typename _OIter, typename _Size, typename _Generator>
+    void 
+    generate_n(_OIter, _Size, _Generator);
+
+  template<typename _FIter, typename _Tp>
+    _FIter 
+    remove(_FIter, _FIter, const _Tp&);
+
+  template<typename _FIter, typename _Predicate>
+    _FIter 
+    remove_if(_FIter, _FIter, _Predicate);
+
+  template<typename _IIter, typename _OIter, typename _Tp>
+    _OIter 
+    remove_copy(_IIter, _IIter, _OIter, const _Tp&);
+
+  template<typename _IIter, typename _OIter, typename _Predicate>
+    _OIter 
+    remove_copy_if(_IIter, _IIter, _OIter, _Predicate);
+
+  template<typename _FIter>
+    _FIter 
+    unique(_FIter, _FIter);
+
+  template<typename _FIter, typename _BinaryPredicate>
+    _FIter 
+    unique(_FIter, _FIter, _BinaryPredicate);
+
+  template<typename _IIter, typename _OIter>
+    _OIter 
+    unique_copy(_IIter, _IIter, _OIter);
+
+  template<typename _IIter, typename _OIter, typename _BinaryPredicate>
+    _OIter 
+    unique_copy(_IIter, _IIter, _OIter, _BinaryPredicate);
+
+  template<typename _BIter>
+    void 
+    reverse(_BIter, _BIter);
+
+  template<typename _BIter, typename _OIter>
+    _OIter 
+    reverse_copy(_BIter, _BIter, _OIter);
+
+  template<typename _FIter>
+    void 
+    rotate(_FIter, _FIter, _FIter);
+
+  template<typename _FIter, typename _OIter>
+    _OIter 
+    rotate_copy (_FIter, _FIter, _FIter, _OIter);
+
+  template<typename _RAIter>
+    void 
+    random_shuffle(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Generator>
+    void 
+    random_shuffle(_RAIter, _RAIter, _Generator&);
+
+  // 25.2.12, partitions:
+  template<typename _BIter, typename _Predicate>
+    _BIter 
+    partition(_BIter, _BIter, _Predicate);
+
+  template<typename _BIter, typename _Predicate>
+    _BIter 
+    stable_partition(_BIter, _BIter, _Predicate);
+
+  // 25.3, sorting and related operations:
+  // 25.3.1, sorting:
+  template<typename _RAIter>
+    void 
+    sort(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    sort(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    void 
+    stable_sort(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    stable_sort(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    void 
+    partial_sort(_RAIter, _RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    partial_sort(_RAIter, _RAIter, _RAIter, _Compare);
+
+  template<typename _IIter, typename _RAIter>
+    _RAIter
+    partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter);
+
+  template<typename _IIter, typename _RAIter, typename _Compare>
+    _RAIter
+    partial_sort_copy(_IIter, _IIter, _RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    void 
+    nth_element(_RAIter, _RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    nth_element(_RAIter, _RAIter, _RAIter, _Compare);
+
+  // 25.3.3, binary search:
+  template<typename _FIter, typename _Tp>
+    _FIter 
+    lower_bound(_FIter, _FIter, const _Tp&);
+
+  template<typename _FIter, typename _Tp, typename _Compare>
+    _FIter 
+    lower_bound(_FIter, _FIter, const _Tp&, _Compare);
+
+  template<typename _FIter, typename _Tp>
+    _FIter 
+    upper_bound(_FIter, _FIter, const _Tp&);
+
+  template<typename _FIter, typename _Tp, typename _Compare>
+    _FIter 
+    upper_bound(_FIter, _FIter, const _Tp&, _Compare);
+
+  template<typename _FIter, typename _Tp>
+    pair<_FIter, _FIter>
+    equal_range(_FIter, _FIter, const _Tp&);
+
+  template<typename _FIter, typename _Tp, typename _Compare>
+    pair<_FIter, _FIter>
+    equal_range(_FIter, _FIter, const _Tp&, _Compare);
+
+  template<typename _FIter, typename _Tp>
+    bool 
+    binary_search(_FIter, _FIter, const _Tp&);
+
+  template<typename _FIter, typename _Tp, typename _Compare>
+    bool 
+    binary_search(_FIter, _FIter, const _Tp&, _Compare);
+
+  // 25.3.4, merge:
+  template<typename _IIter1, typename _IIter2, typename _OIter>
+    _OIter 
+    merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, 
+	   typename _Compare>
+    _OIter 
+    merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
+
+  template<typename _BIter>
+    void 
+    inplace_merge(_BIter, _BIter, _BIter);
+
+  template<typename _BIter, typename _Compare>
+    void 
+    inplace_merge(_BIter, _BIter, _BIter, _Compare);
+
+  // 25.3.5, set operations:
+  template<typename _IIter1, typename _IIter2>
+    bool 
+    includes(_IIter1, _IIter1, _IIter2, _IIter2);
+
+  template<typename _IIter1, typename _IIter2, typename _Compare>
+    bool 
+    includes(_IIter1, _IIter1, _IIter2, _IIter2, _Compare);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter>
+    _OIter 
+    set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter,
+	   typename _Compare>
+    _OIter 
+    set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter>
+    _OIter 
+    set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter,
+	   typename _Compare>
+    _OIter 
+    set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter>
+    _OIter 
+    set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, 
+	   typename _Compare>
+    _OIter 
+    set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter>
+    _OIter
+    set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, 
+	   typename _Compare>
+    _OIter
+    set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, 
+			     _OIter, _Compare);
+
+  // 25.3.6, heap operations:
+  template<typename _RAIter>
+    void 
+    push_heap(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    push_heap(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    void 
+    pop_heap(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    pop_heap(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    void 
+    make_heap(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    make_heap(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    void 
+    sort_heap(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    void 
+    sort_heap(_RAIter, _RAIter, _Compare);
 
   // 25.3.7, minimum and maximum:
-  template<class T> const T& min(const T& a, const T& b);
-  template<class T, class Compare>
-    const T& min(const T& a, const T& b, Compare comp);
-  template<class T> const T& max(const T& a, const T& b);
-  template<class T, class Compare>
-    const T& max(const T& a, const T& b, Compare comp);
-  template<class ForwardIterator>
-    ForwardIterator min_element
-       (ForwardIterator first, ForwardIterator last);
-  template<class ForwardIterator, class Compare>
-    ForwardIterator min_element(ForwardIterator first, ForwardIterator last,
-                                     Compare comp);
-  template<class ForwardIterator>
-    ForwardIterator max_element
-       (ForwardIterator first, ForwardIterator last);
-  template<class ForwardIterator, class Compare>
-    ForwardIterator max_element(ForwardIterator first, ForwardIterator last,
-                                     Compare comp);
-  template<class InputIterator1, class InputIterator2>
-    bool lexicographical_compare
-          (InputIterator1 first1, InputIterator1 last1,
-            InputIterator2 first2, InputIterator2 last2);
-  template<class InputIterator1, class InputIterator2, class Compare>
-    bool lexicographical_compare
-          (InputIterator1 first1, InputIterator1 last1,
-            InputIterator2 first2, InputIterator2 last2,
-            Compare comp);
+  template<typename _Tp> 
+    const _Tp& 
+    min(const _Tp&, const _Tp&);
+
+  template<typename _Tp, typename _Compare>
+    const _Tp& 
+    min(const _Tp&, const _Tp&, _Compare);
+
+  template<typename _Tp> 
+    const _Tp& 
+    max(const _Tp&, const _Tp&);
+
+  template<typename _Tp, typename _Compare>
+    const _Tp& 
+    max(const _Tp&, const _Tp&, _Compare);
+
+  template<typename _FIter>
+    _FIter 
+    min_element(_FIter, _FIter);
+
+  template<typename _FIter, typename _Compare>
+    _FIter 
+    min_element(_FIter, _FIter, _Compare);
+
+  template<typename _FIter>
+    _FIter 
+    max_element(_FIter, _FIter);
+
+  template<typename _FIter, typename _Compare>
+    _FIter 
+    max_element(_FIter, _FIter, _Compare);
+
+  template<typename _IIter1, typename _IIter2>
+    bool 
+    lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2);
+
+  template<typename _IIter1, typename _IIter2, typename _Compare>
+    bool 
+    lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, _Compare);
 
   // 25.3.9, permutations
-  template<class BidirectionalIterator>
-    bool next_permutation(BidirectionalIterator first,
-                                 BidirectionalIterator last);
-  template<class BidirectionalIterator, class Compare>
-    bool next_permutation(BidirectionalIterator first,
-                                 BidirectionalIterator last, Compare comp);
-  template<class BidirectionalIterator>
-    bool prev_permutation(BidirectionalIterator first,
-                                 BidirectionalIterator last);
-  template<class BidirectionalIterator, class Compare>
-    bool prev_permutation(BidirectionalIterator first,
-                                 BidirectionalIterator last, Compare comp);
+  template<typename _BIter>
+    bool 
+    next_permutation(_BIter, _BIter);
+
+  template<typename _BIter, typename _Compare>
+    bool 
+    next_permutation(_BIter, _BIter, _Compare);
+
+  template<typename _BIter>
+    bool 
+    prev_permutation(_BIter, _BIter);
+
+  template<typename _BIter, typename _Compare>
+    bool 
+    prev_permutation(_BIter, _BIter, _Compare);
 }
