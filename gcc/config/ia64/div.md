@@ -158,7 +158,7 @@
 ;; to be written for RFmode only and to not have to handle multiple
 ;; modes or to have to handle a register in more than one mode.
 
-(define_mode_macro SDX_F [SF DF XF])
+(define_mode_iterator SDX_F [SF DF XF])
 
 (define_insn "extend<mode>rf2"
   [(set (match_operand:RF 0 "fr_register_operand" "=f")

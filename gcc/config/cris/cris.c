@@ -870,9 +870,8 @@ cris_print_operand (FILE *file, rtx x, int code)
 
     case 'e':
       /* Like 'E', but ignore state set by 'x'.  FIXME: Use code
-	 iterators ("code macros") and attributes in cris.md to avoid
-	 the need for %x and %E (and %e) and state passed between
-	 those modifiers.  */
+	 iterators and attributes in cris.md to avoid the need for %x
+	 and %E (and %e) and state passed between those modifiers.  */
       cris_output_insn_is_bound = 0;
       /* FALL THROUGH.  */
     case 'E':

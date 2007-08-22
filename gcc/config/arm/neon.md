@@ -162,97 +162,97 @@
    (UNSPEC_VZIP2		204)])
 
 ;; Double-width vector modes.
-(define_mode_macro VD [V8QI V4HI V2SI V2SF])
+(define_mode_iterator VD [V8QI V4HI V2SI V2SF])
 
 ;; Double-width vector modes plus 64-bit elements.
-(define_mode_macro VDX [V8QI V4HI V2SI V2SF DI])
+(define_mode_iterator VDX [V8QI V4HI V2SI V2SF DI])
 
 ;; Same, without floating-point elements.
-(define_mode_macro VDI [V8QI V4HI V2SI])
+(define_mode_iterator VDI [V8QI V4HI V2SI])
 
 ;; Quad-width vector modes.
-(define_mode_macro VQ [V16QI V8HI V4SI V4SF])
+(define_mode_iterator VQ [V16QI V8HI V4SI V4SF])
 
 ;; Quad-width vector modes plus 64-bit elements.
-(define_mode_macro VQX [V16QI V8HI V4SI V4SF V2DI])
+(define_mode_iterator VQX [V16QI V8HI V4SI V4SF V2DI])
 
 ;; Same, without floating-point elements.
-(define_mode_macro VQI [V16QI V8HI V4SI])
+(define_mode_iterator VQI [V16QI V8HI V4SI])
 
 ;; Same, with TImode added, for moves.
-(define_mode_macro VQXMOV [V16QI V8HI V4SI V4SF V2DI TI])
+(define_mode_iterator VQXMOV [V16QI V8HI V4SI V4SF V2DI TI])
 
 ;; Opaque structure types wider than TImode.
-(define_mode_macro VSTRUCT [EI OI CI XI])
+(define_mode_iterator VSTRUCT [EI OI CI XI])
 
 ;; Number of instructions needed to load/store struct elements. FIXME!
 (define_mode_attr V_slen [(EI "2") (OI "2") (CI "3") (XI "4")])
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
-(define_mode_macro VTAB [TI EI OI])
+(define_mode_iterator VTAB [TI EI OI])
 
 ;; vtbl<n> suffix for above modes.
 (define_mode_attr VTAB_n [(TI "2") (EI "3") (OI "4")])
 
 ;; Widenable modes.
-(define_mode_macro VW [V8QI V4HI V2SI])
+(define_mode_iterator VW [V8QI V4HI V2SI])
 
 ;; Narrowable modes.
-(define_mode_macro VN [V8HI V4SI V2DI])
+(define_mode_iterator VN [V8HI V4SI V2DI])
 
 ;; All supported vector modes (except singleton DImode).
-(define_mode_macro VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DI])
+(define_mode_iterator VDQ [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF V2DI])
 
 ;; All supported vector modes (except those with 64-bit integer elements).
-(define_mode_macro VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
+(define_mode_iterator VDQW [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF])
 
 ;; Supported integer vector modes (not 64 bit elements).
-(define_mode_macro VDQIW [V8QI V16QI V4HI V8HI V2SI V4SI])
+(define_mode_iterator VDQIW [V8QI V16QI V4HI V8HI V2SI V4SI])
 
 ;; Supported integer vector modes (not singleton DI)
-(define_mode_macro VDQI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
+(define_mode_iterator VDQI [V8QI V16QI V4HI V8HI V2SI V4SI V2DI])
 
 ;; Vector modes, including 64-bit integer elements.
-(define_mode_macro VDQX [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF DI V2DI])
+(define_mode_iterator VDQX [V8QI V16QI V4HI V8HI V2SI V4SI V2SF V4SF DI V2DI])
 
 ;; Vector modes including 64-bit integer elements, but no floats.
-(define_mode_macro VDQIX [V8QI V16QI V4HI V8HI V2SI V4SI DI V2DI])
+(define_mode_iterator VDQIX [V8QI V16QI V4HI V8HI V2SI V4SI DI V2DI])
 
 ;; Vector modes for float->int conversions.
-(define_mode_macro VCVTF [V2SF V4SF])
+(define_mode_iterator VCVTF [V2SF V4SF])
 
 ;; Vector modes form int->float conversions.
-(define_mode_macro VCVTI [V2SI V4SI])
+(define_mode_iterator VCVTI [V2SI V4SI])
 
 ;; Vector modes for doubleword multiply-accumulate, etc. insns.
-(define_mode_macro VMD [V4HI V2SI V2SF])
+(define_mode_iterator VMD [V4HI V2SI V2SF])
 
 ;; Vector modes for quadword multiply-accumulate, etc. insns.
-(define_mode_macro VMQ [V8HI V4SI V4SF])
+(define_mode_iterator VMQ [V8HI V4SI V4SF])
 
 ;; Above modes combined.
-(define_mode_macro VMDQ [V4HI V2SI V2SF V8HI V4SI V4SF])
+(define_mode_iterator VMDQ [V4HI V2SI V2SF V8HI V4SI V4SF])
 
 ;; As VMD, but integer modes only.
-(define_mode_macro VMDI [V4HI V2SI])
+(define_mode_iterator VMDI [V4HI V2SI])
 
 ;; As VMQ, but integer modes only.
-(define_mode_macro VMQI [V8HI V4SI])
+(define_mode_iterator VMQI [V8HI V4SI])
 
 ;; Above modes combined.
-(define_mode_macro VMDQI [V4HI V2SI V8HI V4SI])
+(define_mode_iterator VMDQI [V4HI V2SI V8HI V4SI])
 
 ;; Modes with 8-bit and 16-bit elements.
-(define_mode_macro VX [V8QI V4HI V16QI V8HI])
+(define_mode_iterator VX [V8QI V4HI V16QI V8HI])
 
 ;; Modes with 8-bit elements.
-(define_mode_macro VE [V8QI V16QI])
+(define_mode_iterator VE [V8QI V16QI])
 
 ;; Modes with 64-bit elements only.
-(define_mode_macro V64 [DI V2DI])
+(define_mode_iterator V64 [DI V2DI])
 
 ;; Modes with 32-bit elements only.
-(define_mode_macro V32 [V2SI V2SF V4SI V4SF])
+(define_mode_iterator V32 [V2SI V2SF V4SI V4SF])
 
 ;; (Opposite) mode to convert to/from for above conversions.
 (define_mode_attr V_CVTTO [(V2SI "V2SF") (V2SF "V2SI")
@@ -394,10 +394,10 @@
                           (DI   "ti") (V2DI  "oi")])
 
 ;; Operations on two halves of a quadword vector.
-(define_code_macro vqh_ops [plus smin smax umin umax])
+(define_code_iterator vqh_ops [plus smin smax umin umax])
 
 ;; Same, without unsigned variants (for use with *SFmode pattern).
-(define_code_macro vqhs_ops [plus smin smax])
+(define_code_iterator vqhs_ops [plus smin smax])
 
 ;; Assembler mnemonics for above codes.
 (define_code_attr VQH_mnem [(plus "vadd") (smin "vmin") (smax "vmax")

@@ -73,12 +73,12 @@
 
 ;;  Mode Macro Definitions
 
-(define_mode_macro ALLMT [QI HI SI SF DI DF])
-(define_mode_macro CRXMM [QI HI SI SF])
-(define_mode_macro CRXIM [QI HI SI])
-(define_mode_macro DIDFM [DI DF])
-(define_mode_macro SISFM [SI SF])
-(define_mode_macro SHORT [QI HI])
+(define_mode_iterator ALLMT [QI HI SI SF DI DF])
+(define_mode_iterator CRXMM [QI HI SI SF])
+(define_mode_iterator CRXIM [QI HI SI])
+(define_mode_iterator DIDFM [DI DF])
+(define_mode_iterator SISFM [SI SF])
+(define_mode_iterator SHORT [QI HI])
 
 (define_mode_attr tIsa [(QI "b") (HI "w") (SI "d") (SF "d")])
 (define_mode_attr lImmArith [(QI "4") (HI "4") (SI "6")])
@@ -94,20 +94,20 @@
 
 ;;  Code Macro Definitions
 
-(define_code_macro sz_xtnd [sign_extend zero_extend])
+(define_code_iterator sz_xtnd [sign_extend zero_extend])
 (define_code_attr sIsa [(sign_extend "") (zero_extend "u")])
 (define_code_attr sPat [(sign_extend "s") (zero_extend "u")])
 (define_code_attr szPat [(sign_extend "") (zero_extend "zero_")])
 (define_code_attr szIsa [(sign_extend "s") (zero_extend "z")])
 
-(define_code_macro sh_oprnd [ashift ashiftrt lshiftrt])
+(define_code_iterator sh_oprnd [ashift ashiftrt lshiftrt])
 (define_code_attr shIsa [(ashift "ll") (ashiftrt "ra") (lshiftrt "rl")])
 (define_code_attr shPat [(ashift "ashl") (ashiftrt "ashr") (lshiftrt "lshr")])
 
-(define_code_macro mima_oprnd [smax umax smin umin])
+(define_code_iterator mima_oprnd [smax umax smin umin])
 (define_code_attr mimaIsa [(smax "maxs") (umax "maxu") (smin "mins") (umin "minu")])
 
-(define_code_macro any_cond [eq ne gt gtu lt ltu ge geu le leu])
+(define_code_iterator any_cond [eq ne gt gtu lt ltu ge geu le leu])
 
 ;;  Addition Instructions
 

@@ -309,12 +309,12 @@
 (define_attr "ce_count" "" (const_int 1))
 
 ;;---------------------------------------------------------------------------
-;; Mode macros
+;; Mode iterators
 
 ; A list of modes that are exactly 64 bits in size.  We use this to expand
 ; some splits that are the same for all modes when operating on ARM 
 ; registers.
-(define_mode_macro ANY64 [DI DF V8QI V4HI V2SI V2SF])
+(define_mode_iterator ANY64 [DI DF V8QI V4HI V2SI V2SF])
 
 ;;---------------------------------------------------------------------------
 ;; Predicates

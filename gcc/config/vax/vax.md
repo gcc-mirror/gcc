@@ -42,11 +42,11 @@
 
 ;; Integer modes supported on VAX, with a mapping from machine mode
 ;; to mnemonic suffix.  DImode is always a special case.
-(define_mode_macro VAXint [QI HI SI])
+(define_mode_iterator VAXint [QI HI SI])
 (define_mode_attr  isfx [(QI "b") (HI "w") (SI "l")])
 
 ;; Similar for float modes supported on VAX.
-(define_mode_macro VAXfp [SF DF])
+(define_mode_iterator VAXfp [SF DF])
 (define_mode_attr  fsfx [(SF "f") (DF "%#")])
 
 ;; Some output patterns want integer immediates with a prefix...
@@ -1012,7 +1012,7 @@
   "jbr %l0")
 
 ;; Conditional jumps
-(define_code_macro any_cond [eq ne gt lt gtu ltu ge le geu leu])
+(define_code_iterator any_cond [eq ne gt lt gtu ltu ge le geu leu])
 
 (define_insn "b<code>"
   [(set (pc)

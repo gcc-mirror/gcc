@@ -464,31 +464,31 @@
   [(set_attr "type" "multi")
    (set_attr "can_delay" "no")])
 
-;; This mode macro allows 32-bit and 64-bit GPR patterns to be generated
+;; This mode iterator allows 32-bit and 64-bit GPR patterns to be generated
 ;; from the same template.
-(define_mode_macro GPR [SI (DI "TARGET_64BIT")])
+(define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
 
-;; This mode macro allows :P to be used for patterns that operate on
+;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
-(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 
-;; This mode macro allows :MOVECC to be used anywhere that a
+;; This mode iterator allows :MOVECC to be used anywhere that a
 ;; conditional-move-type condition is needed.
-(define_mode_macro MOVECC [SI (DI "TARGET_64BIT") (CC "TARGET_HARD_FLOAT")])
+(define_mode_iterator MOVECC [SI (DI "TARGET_64BIT") (CC "TARGET_HARD_FLOAT")])
 
-;; This mode macro allows the QI and HI extension patterns to be defined from
+;; This mode iterator allows the QI and HI extension patterns to be defined from
 ;; the same template.
-(define_mode_macro SHORT [QI HI])
+(define_mode_iterator SHORT [QI HI])
 
-;; This mode macro allows :ANYF to be used wherever a scalar or vector
+;; This mode iterator allows :ANYF to be used wherever a scalar or vector
 ;; floating-point mode is allowed.
-(define_mode_macro ANYF [(SF "TARGET_HARD_FLOAT")
-			 (DF "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT")
-			 (V2SF "TARGET_PAIRED_SINGLE_FLOAT")])
+(define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
+			    (DF "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT")
+			    (V2SF "TARGET_PAIRED_SINGLE_FLOAT")])
 
 ;; Like ANYF, but only applies to scalar modes.
-(define_mode_macro SCALARF [(SF "TARGET_HARD_FLOAT")
-			    (DF "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT")])
+(define_mode_iterator SCALARF [(SF "TARGET_HARD_FLOAT")
+			       (DF "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT")])
 
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
 ;; 32-bit version and "dsubu" in the 64-bit version.
@@ -545,26 +545,26 @@
 (define_mode_attr recip_condition
   [(SF "ISA_HAS_FP4") (DF "ISA_HAS_FP4") (V2SF "TARGET_SB1")])
 
-;; This code macro allows all branch instructions to be generated from
+;; This code iterator allows all branch instructions to be generated from
 ;; a single define_expand template.
-(define_code_macro any_cond [unordered ordered unlt unge uneq ltgt unle ungt
-			     eq ne gt ge lt le gtu geu ltu leu])
+(define_code_iterator any_cond [unordered ordered unlt unge uneq ltgt unle ungt
+			        eq ne gt ge lt le gtu geu ltu leu])
 
-;; This code macro allows signed and unsigned widening multiplications
+;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
-(define_code_macro any_extend [sign_extend zero_extend])
+(define_code_iterator any_extend [sign_extend zero_extend])
 
-;; This code macro allows the three shift instructions to be generated
+;; This code iterator allows the three shift instructions to be generated
 ;; from the same template.
-(define_code_macro any_shift [ashift ashiftrt lshiftrt])
+(define_code_iterator any_shift [ashift ashiftrt lshiftrt])
 
-;; This code macro allows all native floating-point comparisons to be
+;; This code iterator allows all native floating-point comparisons to be
 ;; generated from the same template.
-(define_code_macro fcond [unordered uneq unlt unle eq lt le])
+(define_code_iterator fcond [unordered uneq unlt unle eq lt le])
 
-;; This code macro is used for comparisons that can be implemented
+;; This code iterator is used for comparisons that can be implemented
 ;; by swapping the operands.
-(define_code_macro swapped_fcond [ge gt unge ungt])
+(define_code_iterator swapped_fcond [ge gt unge ungt])
 
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.

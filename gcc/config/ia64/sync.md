@@ -18,12 +18,12 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_macro IMODE [QI HI SI DI])
-(define_mode_macro I124MODE [QI HI SI])
-(define_mode_macro I48MODE [SI DI])
+(define_mode_iterator IMODE [QI HI SI DI])
+(define_mode_iterator I124MODE [QI HI SI])
+(define_mode_iterator I48MODE [SI DI])
 (define_mode_attr modesuffix [(QI "1") (HI "2") (SI "4") (DI "8")])
 
-(define_code_macro FETCHOP [plus minus ior xor and])
+(define_code_iterator FETCHOP [plus minus ior xor and])
 (define_code_attr fetchop_name
   [(plus "add") (minus "sub") (ior "ior") (xor "xor") (and "and")])
 

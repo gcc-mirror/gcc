@@ -875,7 +875,7 @@
 
 ;; DImode logical operations
 
-(define_code_macro any_logical [and ior xor])
+(define_code_iterator any_logical [and ior xor])
 (define_code_attr optab [(and "and")
 			 (ior "ior")
 			 (xor "xor")])
@@ -3544,7 +3544,7 @@
   [(set_attr "type" "dsp32")])
 
 
-(define_code_macro s_or_u [sign_extend zero_extend])
+(define_code_iterator s_or_u [sign_extend zero_extend])
 (define_code_attr su_optab [(sign_extend "mul")
 			    (zero_extend "umul")])
 (define_code_attr su_modifier [(sign_extend "IS")

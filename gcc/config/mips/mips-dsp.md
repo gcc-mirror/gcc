@@ -6,18 +6,18 @@
    (CCDSP_CC_REGNUM	186)
    (CCDSP_EF_REGNUM	187)])
 
-;; This mode macro allows si, v2hi, v4qi for all possible modes in DSP ASE.
-(define_mode_macro DSP [(SI "TARGET_DSP")
-			(V2HI "TARGET_DSP")
-		 	(V4QI "TARGET_DSP")])
+;; This mode iterator allows si, v2hi, v4qi for all possible modes in DSP ASE.
+(define_mode_iterator DSP [(SI "TARGET_DSP")
+			   (V2HI "TARGET_DSP")
+		 	   (V4QI "TARGET_DSP")])
 
-;; This mode macro allows v2hi, v4qi for vector/SIMD data.
-(define_mode_macro DSPV [(V2HI "TARGET_DSP")
-			 (V4QI "TARGET_DSP")])
+;; This mode iterator allows v2hi, v4qi for vector/SIMD data.
+(define_mode_iterator DSPV [(V2HI "TARGET_DSP")
+			    (V4QI "TARGET_DSP")])
 
-;; This mode macro allows si, v2hi for Q31 and V2Q15 fixed-point data.
-(define_mode_macro DSPQ [(SI "TARGET_DSP")
-		         (V2HI "TARGET_DSP")])
+;; This mode iterator allows si, v2hi for Q31 and V2Q15 fixed-point data.
+(define_mode_iterator DSPQ [(SI "TARGET_DSP")
+			    (V2HI "TARGET_DSP")])
 
 ;; DSP instructions use q for fixed-point data, and u for integer in the infix.
 (define_mode_attr dspfmt1 [(SI "q") (V2HI "q") (V4QI "u")])

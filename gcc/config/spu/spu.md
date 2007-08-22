@@ -159,9 +159,9 @@
 (include "constraints.md")
 
 
-;; Mode macros
+;; Mode iterators
 
-(define_mode_macro ALL [QI V16QI
+(define_mode_iterator ALL [QI V16QI
 			HI V8HI
 			SI V4SI
 			DI V2DI
@@ -171,43 +171,43 @@
 
 ; Everything except DI and TI which are handled separately because
 ; they need different constraints to correctly test VOIDmode constants
-(define_mode_macro MOV [QI V16QI
+(define_mode_iterator MOV [QI V16QI
 			HI V8HI
 			SI V4SI
 			V2DI
                         SF V4SF
                         DF V2DF])
 
-(define_mode_macro DTI  [DI TI])
+(define_mode_iterator DTI  [DI TI])
 
-(define_mode_macro VINT [QI V16QI
+(define_mode_iterator VINT [QI V16QI
 			 HI V8HI
 			 SI V4SI
 			 DI V2DI
 			 TI])
 
-(define_mode_macro VQHSI [QI V16QI
+(define_mode_iterator VQHSI [QI V16QI
 			  HI V8HI
 			  SI V4SI])
 
-(define_mode_macro VHSI [HI V8HI
+(define_mode_iterator VHSI [HI V8HI
 			 SI V4SI])
 
-(define_mode_macro VSDF [SF V4SF
+(define_mode_iterator VSDF [SF V4SF
                          DF V2DF])
 
-(define_mode_macro VSI [SI V4SI])
-(define_mode_macro VDI [DI V2DI])
-(define_mode_macro VSF [SF V4SF])
-(define_mode_macro VDF [DF V2DF])
+(define_mode_iterator VSI [SI V4SI])
+(define_mode_iterator VDI [DI V2DI])
+(define_mode_iterator VSF [SF V4SF])
+(define_mode_iterator VDF [DF V2DF])
 
-(define_mode_macro VCMP [V16QI
+(define_mode_iterator VCMP [V16QI
 			 V8HI
 			 V4SI
                          V4SF
                          V2DF])
 
-(define_mode_macro VCMPU [V16QI
+(define_mode_iterator VCMPU [V16QI
 			  V8HI
 			  V4SI])
 
@@ -233,10 +233,10 @@
 		          (SI "G")  (V4SI "G")])
 
 ;; Used for carry and borrow instructions.
-(define_mode_macro CBOP  [SI DI V4SI V2DI])
+(define_mode_iterator CBOP  [SI DI V4SI V2DI])
 
 ;; Used in vec_set and vec_extract
-(define_mode_macro V [V2DI V4SI V8HI V16QI V2DF V4SF])
+(define_mode_iterator V [V2DI V4SI V8HI V16QI V2DF V4SF])
 (define_mode_attr inner  [(V16QI "QI")
 			  (V8HI  "HI")
 			  (V4SI  "SI")

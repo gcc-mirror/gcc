@@ -31,14 +31,14 @@
 ;; direction of the user via a builtin.
 
 ;; 8 byte integral modes handled by MMX (and by extension, SSE)
-(define_mode_macro MMXMODEI [V8QI V4HI V2SI])
+(define_mode_iterator MMXMODEI [V8QI V4HI V2SI])
 
 ;; All 8-byte vector modes handled by MMX
-(define_mode_macro MMXMODE [V8QI V4HI V2SI V2SF])
+(define_mode_iterator MMXMODE [V8QI V4HI V2SI V2SF])
 
 ;; Mix-n-match
-(define_mode_macro MMXMODE12 [V8QI V4HI])
-(define_mode_macro MMXMODE24 [V4HI V2SI])
+(define_mode_iterator MMXMODE12 [V8QI V4HI])
+(define_mode_iterator MMXMODE24 [V4HI V2SI])
 
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize [(V8QI "b") (V4HI "w") (V2SI "d") (DI "q")])

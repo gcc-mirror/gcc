@@ -18,14 +18,14 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_macro IMODE [QI HI SI (DI "TARGET_64BIT")])
+(define_mode_iterator IMODE [QI HI SI (DI "TARGET_64BIT")])
 (define_mode_attr modesuffix [(QI "b") (HI "w") (SI "l") (DI "q")])
 (define_mode_attr modeconstraint [(QI "q") (HI "r") (SI "r") (DI "r")])
 (define_mode_attr immconstraint [(QI "i") (HI "i") (SI "i") (DI "e")])
 
-(define_mode_macro CASMODE [QI HI SI (DI "TARGET_64BIT || TARGET_CMPXCHG8B")
+(define_mode_iterator CASMODE [QI HI SI (DI "TARGET_64BIT || TARGET_CMPXCHG8B")
 			   (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
-(define_mode_macro DCASMODE
+(define_mode_iterator DCASMODE
   [(DI "!TARGET_64BIT && TARGET_CMPXCHG8B && !flag_pic")
    (TI "TARGET_64BIT && TARGET_CMPXCHG16B")])
 (define_mode_attr doublemodesuffix [(DI "8") (TI "16")])

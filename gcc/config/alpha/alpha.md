@@ -88,12 +88,12 @@
 
 ;; On non-BWX targets, CQImode must be handled the similarly to HImode
 ;; when generating reloads.
-(define_mode_macro RELOAD12 [QI HI CQI])
+(define_mode_iterator RELOAD12 [QI HI CQI])
 (define_mode_attr reloadmode [(QI "qi") (HI "hi") (CQI "hi")])
 
-;; Other mode macros
-(define_mode_macro I12MODE [QI HI])
-(define_mode_macro I48MODE [SI DI])
+;; Other mode iterators
+(define_mode_iterator I12MODE [QI HI])
+(define_mode_iterator I48MODE [SI DI])
 (define_mode_attr modesuffix [(SI "l") (DI "q")])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
@@ -6253,7 +6253,7 @@
 
 ;; Vector operations
 
-(define_mode_macro VEC [V8QI V4HI V2SI])
+(define_mode_iterator VEC [V8QI V4HI V2SI])
 
 (define_expand "mov<mode>"
   [(set (match_operand:VEC 0 "nonimmediate_operand" "")

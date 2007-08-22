@@ -37,9 +37,9 @@
   (UNSPECV_S32C1I	5)
 ])
 
-;; This code macro allows signed and unsigned widening multiplications
+;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
-(define_code_macro any_extend [sign_extend zero_extend])
+(define_code_iterator any_extend [sign_extend zero_extend])
 
 ;; <u> expands to an empty string when doing a signed operation and
 ;; "u" when doing an unsigned operation.
@@ -48,32 +48,32 @@
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
-;; This code macro allows four integer min/max operations to be
+;; This code iterator allows four integer min/max operations to be
 ;; generated from one template.
-(define_code_macro any_minmax [smin umin smax umax])
+(define_code_iterator any_minmax [smin umin smax umax])
 
 ;; <minmax> expands to the opcode name for any_minmax operations.
 (define_code_attr minmax [(smin "min") (umin "minu")
 			  (smax "max") (umax "maxu")])
 
-;; This code macro allows all branch instructions to be generated from
+;; This code iterator allows all branch instructions to be generated from
 ;; a single define_expand template.
-(define_code_macro any_cond [eq ne gt ge lt le gtu geu ltu leu])
+(define_code_iterator any_cond [eq ne gt ge lt le gtu geu ltu leu])
 
-;; This code macro is for setting a register from a comparison.
-(define_code_macro any_scc [eq ne gt ge lt le])
+;; This code iterator is for setting a register from a comparison.
+(define_code_iterator any_scc [eq ne gt ge lt le])
 
-;; This code macro is for floating-point comparisons.
-(define_code_macro any_scc_sf [eq lt le])
+;; This code iterator is for floating-point comparisons.
+(define_code_iterator any_scc_sf [eq lt le])
 
-;; These macros allow to combine most atomic operations.
-(define_code_macro ATOMIC [and ior xor plus minus mult])
+;; This iterator and attribute allow to combine most atomic operations.
+(define_code_iterator ATOMIC [and ior xor plus minus mult])
 (define_code_attr atomic [(and "and") (ior "ior") (xor "xor") 
 			  (plus "add") (minus "sub") (mult "nand")])
 
-;; These mode macros allow the HI and QI patterns to be defined from
+;; This mode iterator allows the HI and QI patterns to be defined from
 ;; the same template.
-(define_mode_macro HQI [HI QI])
+(define_mode_iterator HQI [HI QI])
 
 
 ;; Attributes.

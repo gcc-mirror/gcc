@@ -51,7 +51,7 @@
   "if (m32c_expand_movmemhi(operands)) DONE; FAIL;"
   )
 
-;; We can't use mode macros for these because M16C uses r1h to extend
+;; We can't use mode iterators for these because M16C uses r1h to extend
 ;; the source address, for copying data from ROM to RAM.  We don't yet
 ;; support that, but we need to zero our r1h, so the patterns differ.
 

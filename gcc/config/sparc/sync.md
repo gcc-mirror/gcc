@@ -18,9 +18,9 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_macro I12MODE [QI HI])
-(define_mode_macro I24MODE [HI SI])
-(define_mode_macro I48MODE [SI (DI "TARGET_ARCH64 || TARGET_V8PLUS")])
+(define_mode_iterator I12MODE [QI HI])
+(define_mode_iterator I24MODE [HI SI])
+(define_mode_iterator I48MODE [SI (DI "TARGET_ARCH64 || TARGET_V8PLUS")])
 (define_mode_attr modesuffix [(SI "") (DI "x")])
 
 (define_expand "memory_barrier"

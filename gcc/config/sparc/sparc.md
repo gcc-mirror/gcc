@@ -1701,7 +1701,7 @@
    (set_attr "branch_type" "reg")])
 
 
-(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+(define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
 
 ;; Load in operand 0 the (absolute) address of operand 1, which is a symbolic
 ;; value subject to a PC-relative relocation.  Operand 2 is a helper function
@@ -2340,7 +2340,7 @@
 ;; Floating point and vector move instructions
 
 ;; We don't define V1SI because SI should work just fine.
-(define_mode_macro V32 [SF V2HI V4QI])
+(define_mode_iterator V32 [SF V2HI V4QI])
 
 ;; Yes, you guessed it right, the former movsf expander.
 (define_expand "mov<V32:mode>"
@@ -2476,7 +2476,7 @@
   [(set (match_dup 0) (high:SF (match_dup 1)))
    (set (match_dup 0) (lo_sum:SF (match_dup 0) (match_dup 1)))])
 
-(define_mode_macro V64 [DF V2SI V4HI V8QI])
+(define_mode_iterator V64 [DF V2SI V4HI V8QI])
 
 ;; Yes, you again guessed it right, the former movdf expander.
 (define_expand "mov<V64:mode>"
@@ -5276,8 +5276,8 @@
 ;; We define DImode `and' so with DImode `not' we can get
 ;; DImode `andn'.  Other combinations are possible.
 
-(define_mode_macro V64I [DI V2SI V4HI V8QI])
-(define_mode_macro V32I [SI V2HI V4QI])
+(define_mode_iterator V64I [DI V2SI V4HI V8QI])
+(define_mode_iterator V32I [SI V2HI V4QI])
 
 (define_expand "and<V64I:mode>3"
   [(set (match_operand:V64I 0 "register_operand" "")
