@@ -532,6 +532,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/stdexcept \
                          include/streambuf \
                          include/string \
+                         include/system_error \
                          include/tuple \
                          include/type_traits \
                          include/unordered_map \

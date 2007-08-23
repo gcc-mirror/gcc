@@ -13792,7 +13792,7 @@ _ACEOF
 
 
 
-# Check for compiler support that doesn't require linking.
+# Enable compiler support that doesn't require linking.
 
   echo "$as_me:$LINENO: checking for exception model to use" >&5
 echo $ECHO_N "checking for exception model to use... $ECHO_C" >&6
@@ -13956,7 +13956,7 @@ echo "${ECHO_T}$enable_libstdcxx_pch" >&6
 
 
 
-# Enable all the variable C++ runtime options.
+# Enable all the variable C++ runtime options that doesn't require linking.
 
   echo "$as_me:$LINENO: checking for underlying I/O to use" >&5
 echo $ECHO_N "checking for underlying I/O to use... $ECHO_C" >&6
@@ -16530,6 +16530,202 @@ _ACEOF
   fi
 
 
+# Checks for operating systems support that don't require linking.
+
+
+  echo "$as_me:$LINENO: checking for EOWNERDEAD" >&5
+echo $ECHO_N "checking for EOWNERDEAD... $ECHO_C" >&6
+  if test "${ac_system_error1+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+ int i = EOWNERDEAD;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_system_error1=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_system_error1=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+  echo "$as_me:$LINENO: result: $ac_system_error1" >&5
+echo "${ECHO_T}$ac_system_error1" >&6
+  if test x"$ac_system_error1" = x"yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_EOWNERDEAD 1
+_ACEOF
+
+  fi
+
+  echo "$as_me:$LINENO: checking for ENOTRECOVERABLE" >&5
+echo $ECHO_N "checking for ENOTRECOVERABLE... $ECHO_C" >&6
+  if test "${ac_system_error2+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+ int i = ENOTRECOVERABLE;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_system_error2=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_system_error2=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+  echo "$as_me:$LINENO: result: $ac_system_error2" >&5
+echo "${ECHO_T}$ac_system_error2" >&6
+  if test x"$ac_system_error2" = x"yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_ENOTRECOVERABLE 1
+_ACEOF
+
+  fi
+
+  echo "$as_me:$LINENO: checking for sys_nerr" >&5
+echo $ECHO_N "checking for sys_nerr... $ECHO_C" >&6
+  if test "${ac_system_error3+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <errno.h>
+int
+main ()
+{
+ int i = sys_nerr;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_system_error3=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_system_error3=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+
+  echo "$as_me:$LINENO: result: $ac_system_error3" >&5
+echo "${ECHO_T}$ac_system_error3" >&6
+  if test x"$ac_system_error3" = x"yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_SYS_NERR 1
+_ACEOF
+
+  fi
+
+
 # No surprises, no surprises...
 
   echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
@@ -16571,7 +16767,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 16574 "configure"
+#line 16770 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
