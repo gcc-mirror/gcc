@@ -1,3 +1,9 @@
+2007-08-23  Brian Sidebotham  <brian.sidebotham@gmail.com>
+
+	* configure.ac (leb128): Modify sed statement to work with any binutils
+	version string.
+	* configure: Regenerate
+
 2007-08-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/arc/arc-protos.h arc_select_cc_mode, gen_compare_reg):
