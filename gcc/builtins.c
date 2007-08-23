@@ -1813,7 +1813,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
   bool errno_set = false;
-  tree arg, narg;
+  tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -1886,12 +1886,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
       /* Wrap the computation of the argument in a SAVE_EXPR, as we may
 	 need to expand the argument again.  This way, we will not perform
 	 side-effects more the once.  */
-      narg = builtin_save_expr (arg);
-      if (narg != arg)
-	{
-	  arg = narg;
-	  exp = build_call_expr (fndecl, 1, arg);
-	}
+      CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
       op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
@@ -1979,10 +1974,9 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
   rtx op0, op1, insns;
   int op1_type = REAL_TYPE;
   tree fndecl = get_callee_fndecl (exp);
-  tree arg0, arg1, narg;
+  tree arg0, arg1;
   enum machine_mode mode;
   bool errno_set = true;
-  bool stable = true;
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
@@ -2039,21 +2033,8 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
     errno_set = false;
 
   /* Always stabilize the argument list.  */
-  narg = builtin_save_expr (arg1);
-  if (narg != arg1)
-    {
-      arg1 = narg;
-      stable = false;
-    }
-  narg = builtin_save_expr (arg0);
-  if (narg != arg0)
-    {
-      arg0 = narg;
-      stable = false;
-    }
-
-  if (! stable)
-    exp = build_call_expr (fndecl, 2, arg0, arg1);
+  CALL_EXPR_ARG (exp, 0) = arg0 = builtin_save_expr (arg0);
+  CALL_EXPR_ARG (exp, 1) = arg1 = builtin_save_expr (arg1);
 
   op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
   op1 = expand_normal (arg1);
@@ -2099,7 +2080,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
   rtx op0, insns;
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
-  tree arg, narg;
+  tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -2139,12 +2120,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
       /* Wrap the computation of the argument in a SAVE_EXPR, as we may
 	 need to expand the argument again.  This way, we will not perform
 	 side-effects more the once.  */
-      narg = save_expr (arg);
-      if (narg != arg)
-	{
-	  arg = narg;
-	  exp = build_call_expr (fndecl, 1, arg);
-	}
+      CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
       op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
@@ -2211,7 +2187,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
   bool errno_set = false;
-  tree arg, narg;
+  tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
     return NULL_RTX;
@@ -2257,12 +2233,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
       /* Wrap the computation of the argument in a SAVE_EXPR, as we may
 	 need to expand the argument again.  This way, we will not perform
 	 side-effects more the once.  */
-      narg = builtin_save_expr (arg);
-      if (narg != arg)
-	{
-	  arg = narg;
-	  exp = build_call_expr (fndecl, 1, arg);
-	}
+      CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
       op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
@@ -2549,7 +2520,7 @@ expand_builtin_int_roundingfn (tree exp, rtx target, rtx subtarget)
   /* Wrap the computation of the argument in a SAVE_EXPR, as we may
      need to expand the argument again.  This way, we will not perform
      side-effects more the once.  */
-  CALL_EXPR_ARG (exp, 0) = builtin_save_expr (arg);
+  CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
   op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
@@ -2673,7 +2644,7 @@ expand_builtin_int_roundingfn_2 (tree exp, rtx target, rtx subtarget)
   /* Wrap the computation of the argument in a SAVE_EXPR, as we may
      need to expand the argument again.  This way, we will not perform
      side-effects more the once.  */
-  CALL_EXPR_ARG (exp, 0) = builtin_save_expr (arg);
+  CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
   op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
 
