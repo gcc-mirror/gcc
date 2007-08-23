@@ -110,7 +110,7 @@ const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 
 const unsigned char rtx_code_size[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)				\
-  ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
+  ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE || (ENUM) == CONST_FIXED\
    ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
    : RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (rtunion)),
 
@@ -234,6 +234,7 @@ copy_rtx (rtx orig)
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -374,6 +375,7 @@ rtx_equal_p (const_rtx x, const_rtx y)
     case SCRATCH:
     case CONST_DOUBLE:
     case CONST_INT:
+    case CONST_FIXED:
       return 0;
 
     default:

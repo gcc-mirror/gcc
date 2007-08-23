@@ -2821,6 +2821,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case PC:
     case CC0:

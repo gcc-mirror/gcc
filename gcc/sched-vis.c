@@ -447,6 +447,10 @@ print_value (char *buf, const_rtx x, int verbose)
 		 (unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (x));
       cur = safe_concat (buf, cur, t);
       break;
+    case CONST_FIXED:
+      fixed_to_decimal (t, CONST_FIXED_VALUE (x), sizeof (t));
+      cur = safe_concat (buf, cur, t);
+      break;
     case CONST_STRING:
       cur = safe_concat (buf, cur, "\"");
       cur = safe_concat (buf, cur, XSTR (x, 0));

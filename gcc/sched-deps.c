@@ -1680,6 +1680,7 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case CONST:

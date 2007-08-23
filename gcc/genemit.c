@@ -257,6 +257,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       return;
 
     case CONST_DOUBLE:
+    case CONST_FIXED:
       /* These shouldn't be written in MD files.  Instead, the appropriate
 	 routines in varasm.c should be called.  */
       gcc_unreachable ();

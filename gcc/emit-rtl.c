@@ -164,6 +164,10 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct reg_attrs)))
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_double_htab;
 
+/* A hash table storing all CONST_FIXEDs.  */
+static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
+     htab_t const_fixed_htab;
+
 #define first_insn (cfun->emit->x_first_insn)
 #define last_insn (cfun->emit->x_last_insn)
 #define cur_insn_uid (cfun->emit->x_cur_insn_uid)
@@ -179,6 +183,9 @@ static int const_int_htab_eq (const void *, const void *);
 static hashval_t const_double_htab_hash (const void *);
 static int const_double_htab_eq (const void *, const void *);
 static rtx lookup_const_double (rtx);
+static hashval_t const_fixed_htab_hash (const void *);
+static int const_fixed_htab_eq (const void *, const void *);
+static rtx lookup_const_fixed (rtx);
 static hashval_t mem_attrs_htab_hash (const void *);
 static int mem_attrs_htab_eq (const void *, const void *);
 static mem_attrs *get_mem_attrs (alias_set_type, tree, rtx, rtx, unsigned int,
@@ -245,6 +252,33 @@ const_double_htab_eq (const void *x, const void *y)
   else
     return real_identical (CONST_DOUBLE_REAL_VALUE (a),
 			   CONST_DOUBLE_REAL_VALUE (b));
+}
+
+/* Returns a hash code for X (which is really a CONST_FIXED).  */
+
+static hashval_t
+const_fixed_htab_hash (const void *x)
+{
+  rtx value = (rtx) x;
+  hashval_t h;
+
+  h = fixed_hash (CONST_FIXED_VALUE (value));
+  /* MODE is used in the comparison, so it should be in the hash.  */
+  h ^= GET_MODE (value);
+  return h;
+}
+
+/* Returns nonzero if the value represented by X (really a ...)
+   is the same as that represented by Y (really a ...).  */
+
+static int
+const_fixed_htab_eq (const void *x, const void *y)
+{
+  rtx a = (rtx)x, b = (rtx)y;
+
+  if (GET_MODE (a) != GET_MODE (b))
+    return 0;
+  return fixed_identical (CONST_FIXED_VALUE (a), CONST_FIXED_VALUE (b));
 }
 
 /* Returns a hash code for X (which is a really a mem_attrs *).  */
@@ -450,6 +484,34 @@ const_double_from_real_value (REAL_VALUE_TYPE value, enum machine_mode mode)
   real->u.rv = value;
 
   return lookup_const_double (real);
+}
+
+/* Determine whether FIXED, a CONST_FIXED, already exists in the
+   hash table.  If so, return its counterpart; otherwise add it
+   to the hash table and return it.  */
+
+static rtx
+lookup_const_fixed (rtx fixed)
+{
+  void **slot = htab_find_slot (const_fixed_htab, fixed, INSERT);
+  if (*slot == 0)
+    *slot = fixed;
+
+  return (rtx) *slot;
+}
+
+/* Return a CONST_FIXED rtx for a fixed-point value specified by
+   VALUE in mode MODE.  */
+
+rtx
+const_fixed_from_fixed_value (FIXED_VALUE_TYPE value, enum machine_mode mode)
+{
+  rtx fixed = rtx_alloc (CONST_FIXED);
+  PUT_MODE (fixed, mode);
+
+  fixed->u.fv = value;
+
+  return lookup_const_fixed (fixed);
 }
 
 /* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair
@@ -2224,6 +2286,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -2423,6 +2486,7 @@ repeat:
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -2540,6 +2604,7 @@ repeat:
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -2609,6 +2674,7 @@ set_used_flags (rtx x)
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -4838,6 +4904,7 @@ copy_insn_1 (rtx orig)
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -5096,13 +5163,16 @@ init_emit_once (int line_numbers)
   /* We need reg_raw_mode, so initialize the modes now.  */
   init_reg_modes_once ();
 
-  /* Initialize the CONST_INT, CONST_DOUBLE, and memory attribute hash
-     tables.  */
+  /* Initialize the CONST_INT, CONST_DOUBLE, CONST_FIXED, and memory attribute
+     hash tables.  */
   const_int_htab = htab_create_ggc (37, const_int_htab_hash,
 				    const_int_htab_eq, NULL);
 
   const_double_htab = htab_create_ggc (37, const_double_htab_hash,
 				       const_double_htab_eq, NULL);
+
+  const_fixed_htab = htab_create_ggc (37, const_fixed_htab_hash,
+				      const_fixed_htab_eq, NULL);
 
   mem_attrs_htab = htab_create_ggc (37, mem_attrs_htab_hash,
 				    mem_attrs_htab_eq, NULL);
@@ -5280,6 +5350,8 @@ init_emit_once (int line_numbers)
       FCONST0(mode).data.high = 0;
       FCONST0(mode).data.low = 0;
       FCONST0(mode).mode = mode;
+      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
+				      FCONST0 (mode), mode);
     }
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_UFRACT);
@@ -5289,6 +5361,8 @@ init_emit_once (int line_numbers)
       FCONST0(mode).data.high = 0;
       FCONST0(mode).data.low = 0;
       FCONST0(mode).mode = mode;
+      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
+				      FCONST0 (mode), mode);
     }
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_ACCUM);
@@ -5298,6 +5372,8 @@ init_emit_once (int line_numbers)
       FCONST0(mode).data.high = 0;
       FCONST0(mode).data.low = 0;
       FCONST0(mode).mode = mode;
+      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
+				      FCONST0 (mode), mode);
 
       /* We store the value 1.  */
       FCONST1(mode).data.high = 0;
@@ -5308,6 +5384,8 @@ init_emit_once (int line_numbers)
                      &FCONST1(mode).data.low,
 		     &FCONST1(mode).data.high,
                      SIGNED_FIXED_POINT_MODE_P (mode));
+      const_tiny_rtx[1][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
+				      FCONST1 (mode), mode);
     }
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_UACCUM);
@@ -5317,6 +5395,8 @@ init_emit_once (int line_numbers)
       FCONST0(mode).data.high = 0;
       FCONST0(mode).data.low = 0;
       FCONST0(mode).mode = mode;
+      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
+				      FCONST0 (mode), mode);
 
       /* We store the value 1.  */
       FCONST1(mode).data.high = 0;
@@ -5327,6 +5407,38 @@ init_emit_once (int line_numbers)
                      &FCONST1(mode).data.low,
 		     &FCONST1(mode).data.high,
                      SIGNED_FIXED_POINT_MODE_P (mode));
+      const_tiny_rtx[1][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
+				      FCONST1 (mode), mode);
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FRACT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_UFRACT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_ACCUM);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+      const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
+    }
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_UACCUM);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
+      const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
     }
 
   for (i = (int) CCmode; i < (int) MAX_MACHINE_MODE; ++i)

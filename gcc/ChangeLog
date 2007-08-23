@@ -1,3 +1,99 @@
+2007-08-22  Chao-ying Fu  <fu@mips.com>
+
+	* rtl.c (rtx_code_size): Check CONST_FIXED to calcualte correct sizes
+	in DEF_RTL_EXPR.
+	(copy_rtx): Handle CONST_FIXED.
+	(rtx_equal_p): Likewise.
+	* rtl.h (fixed_value.h): New include.
+	(rtx_def): Add a new field of fixed_value to u.
+	(XCNMPFV): Define for accessing fixed_value.
+	(CONST_FIXED_VALUE, CONST_FIXED_VALUE_HIGH, CONST_FIXED_VALUE_LOW):
+	Define.
+	* rtl.def (CONST_FIXED): New constant.
+	(SS_MULT, US_MULT, SS_DIV, US_DIV, FRACT_CONVERT,
+	UNSIGNED_FRACT_CONVERT, SAT_FRACT, UNSIGNED_SAT_FRACT, US_NEG,
+	US_ASHIFT): New codes.
+	* doc/rtl.texi (Expressions): Document const_fixed, us_neg, ss_mult,
+	us_mult, ss_div, us_div, us_ashift, fract_convert, sat_fract,
+	unsigned_fract_convert, unsigned_sat_fract): Document them.
+	* varasm.c (assemble_integer): Extend to support fixed-point constants
+	by using different machine classes.
+	(decode_addr_const): Handle FIXED_CST.
+	(const_hash_1): Likewise.
+	(compare_constant): Likewise.
+	(copy_constant): Likewise.
+	(const_rtx_hash_1): Handle CONST_FIXED.
+	(output_constant_pool_2): Handle MODE_FRACT, MODE_UFRACT, MODE_ACCUM,
+	MODE_UACCUM, MODE_VECTOR_FRACT, MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM,
+	MODE_VECTOR_UACCUM.
+	(initializer_constant_valid_p): Handle FIXED_CST.
+	(output_constant): Support FIXED_POINT_TYPE.
+	* gengenrtl.c (excluded_rtx): Check CONST_FIXED to exclude.
+	* cse.c (hash_rtx): Support CONST_FIXED.
+	(exp_equiv_p): Likewise.
+	(cannon_reg): Likewise.
+	(fold_rtx): Likewise.
+	(equiv_constant): Likewise.
+	(cse_process_notes_1): Likewise.
+	(count_reg_usage): Likewise.
+	* cselib.c (entry_and_rtx_equal_p): Check CONST_FIXED.
+	(rtx_equal_for_cselib_p): Handle CONST_FIXED.
+	(wrap_constant): Check CONST_FIXED.
+	(cselib_hash_rtx): Support CONST_FIXED.
+	(cselib_subst_to_values): Likewise.
+	* df-scan.c (df_uses_record): Likewise.
+	* gcse.c (want_to_gcse_p): Likewise.
+	(oprs_unchanged_p): Likewise.
+	(oprs_not_set_p): Likewise.
+	(compute_transp): Likewise.
+	(extract_mentioned_regs_helper): Likewise.
+	* genemit.c (gen_exp): Likewise.
+	* local-alloc.c (equiv_init_varies_p): Likewise.
+	(contains_replace_regs): Likewise.
+	(memref_referenced_p): Likewise.
+	* loop-invariant.c (check_maybe_invariant): Likewise.
+	(hash_invariant_expr_1): Likewise.
+	(invariant_expr_equal_p): Likewise.
+	* postreload-gcse.c (oprs_unchanged_p): Likewise.
+	* regclass.c (reg_scan_mark_refs): Likewise.
+	* regrename.c (scan_rtx): Likewise.
+	* resource.c (mark_referenced_resources): Likewise.
+	(mark_set_resources): Likewise.
+	* rtlanal.c (rtx_unstable_p): Likewise.
+	(rtx_varies_p): Likewise.
+	(count_occurrences): Likewise.
+	(reg_mentioned_p): Likewise.
+	(modified_between_p): Likewise.
+	(modified_in_p): Likewise.
+	(volatile_insn_p): Likewise.
+	(volatile_refs_p): Likewise.
+	(side_effects_p): Likewise.
+	(may_trap_p_1): Likewise.
+	(inequality_comparisons_p): Likewise.
+	(computed_jump_p_1): Likewise.
+	(commutative_operand_precedence): Likewise.
+	* sched-deps.c (sched_analyze_2): Likewise.
+	* sched-vis.c (print_value): Likewise.
+	* reload.c (operands_match_p): Likewise.
+	(subst_reg_equivs): Likewise.
+	* reload1.c (eliminate_regs_1): Likewise.
+	(elimination_effects): Likewise.
+	(scan_paradoxical_subregs): Likewise.
+	* alias.c (rtx_equal_for_memref_p): Likewise.
+	* Makefile.in (RTL_BASE_H): Add fixed-value.h.
+	* emit-rtl.c (const_fixed_htab): New hash table.
+	(const_fixed_htab_hash, const_fixed_htab_eq, lookup_const_fixed):
+	Declare.
+	(const_fixed_htab_hash, const_fixed_htab_eq, lookup_const_fixed,
+	const_fixed_from_fixed_value): New functions.
+	(verify_rtx_sharing): Handle CONST_FIXED.
+	(copy_rtx_if_shared_1): Likewise.
+	(reset_used_flags): Likewise.
+	(set_used_flags): Likewise.
+	(copy_insn_1): Likewise.
+	(init_emit_once): Create const_fixed_htab.
+	Store fixed-point scalar and vector zero and one to const_tiny_rtx.
+
 2007-08-22  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/32949

@@ -2160,6 +2160,11 @@ hash_rtx (const_rtx x, enum machine_mode mode, int *do_not_record_p,
 		 + (unsigned int) CONST_DOUBLE_HIGH (x));
       return hash;
 
+    case CONST_FIXED:
+      hash += (unsigned int) code + (unsigned int) GET_MODE (x);
+      hash += fixed_hash (CONST_FIXED_VALUE (x));
+      return hash;
+
     case CONST_VECTOR:
       {
 	int units;
@@ -2401,6 +2406,7 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
     case CC0:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
       return x == y;
 
     case LABEL_REF:
@@ -2667,6 +2673,7 @@ canon_reg (rtx x, rtx insn)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -2962,6 +2969,7 @@ fold_rtx (rtx x, rtx insn)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -3028,6 +3036,7 @@ fold_rtx (rtx x, rtx insn)
 	  case SYMBOL_REF:
 	  case LABEL_REF:
 	  case CONST_DOUBLE:
+	  case CONST_FIXED:
 	  case CONST_VECTOR:
 	    const_arg = folded_arg;
 	    break;
@@ -3645,7 +3654,8 @@ equiv_constant (rtx x)
 
       /* See if we previously assigned a constant value to this SUBREG.  */
       if ((new = lookup_as_function (x, CONST_INT)) != 0
-          || (new = lookup_as_function (x, CONST_DOUBLE)) != 0)
+          || (new = lookup_as_function (x, CONST_DOUBLE)) != 0
+          || (new = lookup_as_function (x, CONST_FIXED)) != 0)
         return new;
 
       if (REG_P (SUBREG_REG (x))
@@ -5707,6 +5717,7 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case PC:
     case CC0:
@@ -6317,6 +6328,7 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:

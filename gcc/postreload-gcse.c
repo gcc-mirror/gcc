@@ -522,6 +522,7 @@ oprs_unchanged_p (rtx x, rtx insn, bool after_insn)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:

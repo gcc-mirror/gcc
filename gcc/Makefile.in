@@ -770,7 +770,7 @@ HOSTHOOKS_DEF_H = hosthooks-def.h $(HOOKS_H)
 LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h $(HOOKS_H)
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H) reg-notes.def insn-notes.def \
-  input.h $(REAL_H) statistics.h vec.h
+  input.h $(REAL_H) statistics.h vec.h fixed-value.h
 RTL_H = $(RTL_BASE_H) genrtl.h
 PARAMS_H = params.h params.def
 BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def

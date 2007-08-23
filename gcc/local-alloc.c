@@ -538,6 +538,7 @@ equiv_init_varies_p (rtx x)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -655,6 +656,7 @@ contains_replace_regs (rtx x)
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case PC:
     case CC0:
@@ -703,6 +705,7 @@ memref_referenced_p (rtx memref, rtx x)
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case PC:
     case CC0:
