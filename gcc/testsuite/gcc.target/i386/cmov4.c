@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=k8" } */
-/* { dg-final { scan-assembler "cmov" } } */
+/* { dg-final { scan-assembler "cmov\[^4\]" } } */
 
 /* Verify that if conversion happends for memory references.  */
 int ARCHnodes;
