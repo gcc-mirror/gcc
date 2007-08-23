@@ -1,3 +1,13 @@
+2007-08-23  Richard Guenther  <rguenther@suse.de>
+
+	* builtins.c (expand_builtin_mathfn): Wrap argument in
+	save_expr directly instead of re-building the call.
+	(expand_builtin_mathfn_2): Likewise.
+	(expand_builtin_mathfn_3): Likewise.
+	(expand_builtin_interclass_mathfn): Likewise.
+	(expand_builtin_int_roundingfn): Set arg.
+	(expand_builtin_int_roundingfn_2): Likewise.
+
 2007-08-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/i386/sse.md (*sse_and<mode>3, *sse_ior<mode>3,
