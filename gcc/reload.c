@@ -2210,6 +2210,7 @@ operands_match_p (rtx x, rtx y)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
       return 0;
 
     case LABEL_REF:
@@ -5142,6 +5143,7 @@ subst_reg_equivs (rtx ad, rtx insn)
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:

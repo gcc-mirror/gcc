@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "real.h"
 #include "vec.h"
+#include "fixed-value.h"
 #include "alias.h"
 
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
@@ -308,6 +309,7 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
     HOST_WIDE_INT hwint[1];
     struct block_symbol block_sym;
     struct real_value rv;
+    struct fixed_value fv;
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
 };
 
@@ -530,6 +532,13 @@ struct rtvec_def GTY(()) {
 				 __LINE__, __FUNCTION__);		\
    &_rtx->u.rv; })
 
+#define XCNMPFV(RTX, C, M) __extension__				\
+({ rtx const _rtx = (RTX);						\
+   if (GET_CODE (_rtx) != (C) || GET_MODE (_rtx) == (M))		\
+     rtl_check_failed_code_mode (_rtx, (C), (M), true, __FILE__,	\
+				 __LINE__, __FUNCTION__);		\
+   &_rtx->u.fv; })
+
 #define BLOCK_SYMBOL_CHECK(RTX) __extension__				\
 ({ __typeof (RTX) const _symbol = (RTX);				\
    const unsigned int flags = RTL_CHECKC1 (_symbol, 1, SYMBOL_REF).rt_int; \
@@ -574,6 +583,7 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 #define XCMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMPRV(RTX, C, M)	    (&(RTX)->u.rv)
+#define XCNMPFV(RTX, C, M)	    (&(RTX)->u.fv)
 #define BLOCK_SYMBOL_CHECK(RTX)	    (&(RTX)->u.block_sym)
 
 #endif
@@ -1010,6 +1020,13 @@ rhs_regno (const_rtx x)
 #define CONST_DOUBLE_HIGH(r) XCMWINT (r, 1, CONST_DOUBLE, VOIDmode)
 #define CONST_DOUBLE_REAL_VALUE(r) \
   ((const struct real_value *) XCNMPRV (r, CONST_DOUBLE, VOIDmode))
+
+#define CONST_FIXED_VALUE(r) \
+  ((const struct fixed_value *) XCNMPFV (r, CONST_FIXED, VOIDmode))
+#define CONST_FIXED_VALUE_HIGH(r) \
+  ((HOST_WIDE_INT) (CONST_FIXED_VALUE(r)->data.high))
+#define CONST_FIXED_VALUE_LOW(r) \
+  ((HOST_WIDE_INT) (CONST_FIXED_VALUE(r)->data.low))
 
 /* For a CONST_VECTOR, return element #n.  */
 #define CONST_VECTOR_ELT(RTX, N) XCVECEXP (RTX, 0, N, CONST_VECTOR)

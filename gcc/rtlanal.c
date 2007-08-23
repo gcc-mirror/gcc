@@ -120,6 +120,7 @@ rtx_unstable_p (const_rtx x)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -194,6 +195,7 @@ rtx_varies_p (const_rtx x, bool for_alias)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -573,6 +575,7 @@ count_occurrences (const_rtx x, const_rtx find, int count_dest)
     case REG:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case CODE_LABEL:
@@ -659,6 +662,7 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
     case CONST_INT:
     case CONST_VECTOR:
     case CONST_DOUBLE:
+    case CONST_FIXED:
       /* These are kept unique for a given value.  */
       return 0;
 
@@ -854,6 +858,7 @@ modified_between_p (rtx x, rtx start, rtx end)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
@@ -912,6 +917,7 @@ modified_in_p (rtx x, rtx insn)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
@@ -1974,6 +1980,7 @@ volatile_insn_p (const_rtx x)
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CC0:
     case PC:
@@ -2038,6 +2045,7 @@ volatile_refs_p (const_rtx x)
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CC0:
     case PC:
@@ -2100,6 +2108,7 @@ side_effects_p (const_rtx x)
     case CONST_INT:
     case CONST:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CC0:
     case PC:
@@ -2189,6 +2198,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
       /* Handle these cases quickly.  */
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -2388,6 +2398,7 @@ inequality_comparisons_p (const_rtx x)
     case CC0:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CONST:
     case LABEL_REF:
@@ -2637,6 +2648,7 @@ computed_jump_p_1 (const_rtx x)
     case CONST:
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case SYMBOL_REF:
     case REG:
@@ -2873,6 +2885,8 @@ commutative_operand_precedence (rtx op)
     return -8;
   if (code == CONST_DOUBLE)
     return -7;
+  if (code == CONST_FIXED)
+    return -7;
   op = avoid_constant_pool_reference (op);
   code = GET_CODE (op);
 
@@ -2882,6 +2896,8 @@ commutative_operand_precedence (rtx op)
       if (code == CONST_INT)
         return -6;
       if (code == CONST_DOUBLE)
+        return -5;
+      if (code == CONST_FIXED)
         return -5;
       return -4;
 

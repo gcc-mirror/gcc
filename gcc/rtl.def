@@ -323,6 +323,9 @@ DEF_RTL_EXPR(RESX, "resx", "i", RTX_EXTRA)
 /* numeric integer constant */
 DEF_RTL_EXPR(CONST_INT, "const_int", "w", RTX_CONST_OBJ)
 
+/* fixed-point constant */
+DEF_RTL_EXPR(CONST_FIXED, "const_fixed", "www", RTX_CONST_OBJ)
+
 /* numeric floating point constant.
    Operands hold the value.  They are all 'w' and there may be from 2 to 6;
    see real.h.  */
@@ -452,8 +455,18 @@ DEF_RTL_EXPR(NEG, "neg", "e", RTX_UNARY)
 
 DEF_RTL_EXPR(MULT, "mult", "ee", RTX_COMM_ARITH)
 
+/* Multiplication with signed saturation */
+DEF_RTL_EXPR(SS_MULT, "ss_mult", "ee", RTX_COMM_ARITH)
+/* Multiplication with unsigned saturation */
+DEF_RTL_EXPR(US_MULT, "us_mult", "ee", RTX_COMM_ARITH)
+
 /* Operand 0 divided by operand 1.  */
 DEF_RTL_EXPR(DIV, "div", "ee", RTX_BIN_ARITH)
+/* Division with signed saturation */
+DEF_RTL_EXPR(SS_DIV, "ss_div", "ee", RTX_BIN_ARITH)
+/* Division with unsigned saturation */
+DEF_RTL_EXPR(US_DIV, "us_div", "ee", RTX_BIN_ARITH)
+
 /* Remainder of operand 0 divided by operand 1.  */
 DEF_RTL_EXPR(MOD, "mod", "ee", RTX_BIN_ARITH)
 
@@ -576,6 +589,37 @@ DEF_RTL_EXPR(UNSIGNED_FLOAT, "unsigned_float", "e", RTX_UNARY)
    Value is defined only when the operand's value is an integer.  */
 DEF_RTL_EXPR(UNSIGNED_FIX, "unsigned_fix", "e", RTX_UNARY)
 
+/* Conversions involving fractional fixed-point types without saturation,
+   including:
+     fractional to fractional (of different precision),
+     signed integer to fractional,
+     fractional to signed integer,
+     floating point to fractional,
+     fractional to floating point.
+   NOTE: fractional can be either signed or unsigned for conversions.  */
+DEF_RTL_EXPR(FRACT_CONVERT, "fract_convert", "e", RTX_UNARY)
+
+/* Conversions involving fractional fixed-point types and unsigned integer
+   without saturation, including:
+     unsigned integer to fractional,
+     fractional to unsigned integer.
+   NOTE: fractional can be either signed or unsigned for conversions.  */
+DEF_RTL_EXPR(UNSIGNED_FRACT_CONVERT, "unsigned_fract_convert", "e", RTX_UNARY)
+
+/* Conversions involving fractional fixed-point types with saturation,
+   including:
+     fractional to fractional (of different precision),
+     signed integer to fractional,
+     floating point to fractional.
+   NOTE: fractional can be either signed or unsigned for conversions.  */
+DEF_RTL_EXPR(SAT_FRACT, "sat_fract", "e", RTX_UNARY)
+
+/* Conversions involving fractional fixed-point types and unsigned integer
+   with saturation, including:
+     unsigned integer to fractional.
+   NOTE: fractional can be either signed or unsigned for conversions.  */
+DEF_RTL_EXPR(UNSIGNED_SAT_FRACT, "unsigned_sat_fract", "e", RTX_UNARY)
+
 /* Absolute value */
 DEF_RTL_EXPR(ABS, "abs", "e", RTX_UNARY)
 
@@ -662,12 +706,17 @@ DEF_RTL_EXPR(SS_MINUS, "ss_minus", "ee", RTX_BIN_ARITH)
 
 /* Negation with signed saturation.  */
 DEF_RTL_EXPR(SS_NEG, "ss_neg", "e", RTX_UNARY)
+/* Negation with unsigned saturation.  */
+DEF_RTL_EXPR(US_NEG, "us_neg", "e", RTX_UNARY)
 
 /* Absolute value with signed saturation.  */
 DEF_RTL_EXPR(SS_ABS, "ss_abs", "e", RTX_UNARY)
 
 /* Shift left with signed saturation.  */
 DEF_RTL_EXPR(SS_ASHIFT, "ss_ashift", "ee", RTX_BIN_ARITH)
+
+/* Shift left with unsigned saturation.  */
+DEF_RTL_EXPR(US_ASHIFT, "us_ashift", "ee", RTX_BIN_ARITH)
 
 /* Operand 0 minus operand 1, with unsigned saturation.  */
 DEF_RTL_EXPR(US_MINUS, "us_minus", "ee", RTX_BIN_ARITH)

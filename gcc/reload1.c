@@ -2411,6 +2411,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
@@ -2804,6 +2805,7 @@ elimination_effects (rtx x, enum machine_mode mem_mode)
     {
     case CONST_INT:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR:
     case CONST:
     case SYMBOL_REF:
@@ -3952,6 +3954,7 @@ scan_paradoxical_subregs (rtx x)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+    case CONST_FIXED:
     case CONST_VECTOR: /* shouldn't happen, but just in case.  */
     case CC0:
     case PC:
