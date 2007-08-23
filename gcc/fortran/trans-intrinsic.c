@@ -1420,10 +1420,9 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
 /* Get the minimum/maximum value of all the parameters.
     minmax (a1, a2, a3, ...)
     {
-      if (a2 .op. a1 || isnan(a1))
+      mvar = a1;
+      if (a2 .op. mvar || isnan(mvar))
         mvar = a2;
-      else
-        mvar = a1;
       if (a3 .op. mvar || isnan(mvar))
         mvar = a3;
       ...
@@ -1436,17 +1435,14 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 {
-  tree limit;
   tree tmp;
   tree mvar;
   tree val;
   tree thencase;
-  tree elsecase;
   tree *args;
   tree type;
   gfc_actual_arglist *argexpr;
-  unsigned int i;
-  unsigned int nargs;
+  unsigned int i, nargs;
 
   nargs = gfc_intrinsic_argument_list_length (expr);
   args = alloca (sizeof (tree) * nargs);
@@ -1454,50 +1450,15 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
   gfc_conv_intrinsic_function_args (se, expr, args, nargs);
   type = gfc_typenode_for_spec (&expr->ts);
 
-  /* The first and second arguments should be present, if they are
-     optional dummy arguments.  */
   argexpr = expr->value.function.actual;
-  if (argexpr->expr->expr_type == EXPR_VARIABLE
-      && argexpr->expr->symtree->n.sym->attr.optional
-      && TREE_CODE (args[0]) == INDIRECT_REF)
-    {
-      /* Check the first argument.  */
-      tree cond;
-      char *msg;
-
-      asprintf (&msg, "First argument of '%s' intrinsic should be present",
-		expr->symtree->n.sym->name);
-      cond = build2 (EQ_EXPR, boolean_type_node, TREE_OPERAND (args[0], 0),
-		     build_int_cst (TREE_TYPE (TREE_OPERAND (args[0], 0)), 0));
-      gfc_trans_runtime_check (cond, &se->pre, &expr->where, msg);
-      gfc_free (msg);
-    }
-
-  if (argexpr->next->expr->expr_type == EXPR_VARIABLE
-      && argexpr->next->expr->symtree->n.sym->attr.optional
-      && TREE_CODE (args[1]) == INDIRECT_REF)
-    {
-      /* Check the second argument.  */
-      tree cond;
-      char *msg;
-
-      asprintf (&msg, "Second argument of '%s' intrinsic should be present",
-		expr->symtree->n.sym->name);
-      cond = build2 (EQ_EXPR, boolean_type_node, TREE_OPERAND (args[1], 0),
-		     build_int_cst (TREE_TYPE (TREE_OPERAND (args[1], 0)), 0));
-      gfc_trans_runtime_check (cond, &se->pre, &expr->where, msg);
-      gfc_free (msg);
-    }
-
-  limit = args[0];
-  if (TREE_TYPE (limit) != type)
-    limit = convert (type, limit);
+  if (TREE_TYPE (args[0]) != type)
+    args[0] = convert (type, args[0]);
   /* Only evaluate the argument once.  */
-  if (TREE_CODE (limit) != VAR_DECL && !TREE_CONSTANT (limit))
-    limit = gfc_evaluate_now (limit, &se->pre);
+  if (TREE_CODE (args[0]) != VAR_DECL && !TREE_CONSTANT (args[0]))
+    args[0] = gfc_evaluate_now (args[0], &se->pre);
 
   mvar = gfc_create_var (type, "M");
-  elsecase = build2_v (MODIFY_EXPR, mvar, limit);
+  gfc_add_modify_expr (&se->pre, mvar, args[0]);
   for (i = 1, argexpr = argexpr->next; i < nargs; i++)
     {
       tree cond, isnan;
@@ -1505,7 +1466,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
       val = args[i]; 
 
       /* Handle absent optional arguments by ignoring the comparison.  */
-      if (i > 0 && argexpr->expr->expr_type == EXPR_VARIABLE
+      if (argexpr->expr->expr_type == EXPR_VARIABLE
 	  && argexpr->expr->symtree->n.sym->attr.optional
 	  && TREE_CODE (val) == INDIRECT_REF)
 	cond = build2 (NE_EXPR, boolean_type_node, TREE_OPERAND (val, 0),
@@ -1521,25 +1482,23 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
 
       thencase = build2_v (MODIFY_EXPR, mvar, convert (type, val));
 
-      tmp = build2 (op, boolean_type_node, convert (type, val), limit);
+      tmp = build2 (op, boolean_type_node, convert (type, val), mvar);
 
       /* FIXME: When the IEEE_ARITHMETIC module is implemented, the call to
 	 __builtin_isnan might be made dependent on that module being loaded,
 	 to help performance of programs that don't rely on IEEE semantics.  */
-      if (FLOAT_TYPE_P (TREE_TYPE (limit)))
+      if (FLOAT_TYPE_P (TREE_TYPE (mvar)))
 	{
-	  isnan = build_call_expr (built_in_decls[BUILT_IN_ISNAN], 1, limit);
+	  isnan = build_call_expr (built_in_decls[BUILT_IN_ISNAN], 1, mvar);
 	  tmp = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, tmp,
 			     fold_convert (boolean_type_node, isnan));
 	}
-      tmp = build3_v (COND_EXPR, tmp, thencase, elsecase);
+      tmp = build3_v (COND_EXPR, tmp, thencase, build_empty_stmt ());
 
       if (cond != NULL_TREE)
 	tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
 
       gfc_add_expr_to_block (&se->pre, tmp);
-      elsecase = build_empty_stmt ();
-      limit = mvar;
       argexpr = argexpr->next;
     }
   se->expr = mvar;
