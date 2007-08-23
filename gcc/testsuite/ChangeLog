@@ -1,4 +1,6 @@
-2007-08-23  Jakub Jelinek  <jakub@redhat.com>
+2007-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/assumed_charlen_sharing.f90: New test.
 
 	PR c++/31941
 	* g++.dg/parse/crash37.C: New test.
