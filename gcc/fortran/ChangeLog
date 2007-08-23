@@ -1,3 +1,9 @@
+2007-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33095
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Remove
+	runtime error checking.
+
 2007-08-22  Roger Sayle  <roger@eyesopen.com>
 	    Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
 
