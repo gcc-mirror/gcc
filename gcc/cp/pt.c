@@ -2215,8 +2215,6 @@ check_explicit_specialization (tree declarator,
               /* This specialization has the same linkage and visibility as
                  the function template it specializes.  */
               TREE_PUBLIC (decl) = TREE_PUBLIC (tmpl_func);
-	      if (! TREE_PUBLIC (decl) && DECL_INTERFACE_KNOWN (tmpl_func))
-		DECL_INTERFACE_KNOWN (decl) = 1;
               DECL_THIS_STATIC (decl) = DECL_THIS_STATIC (tmpl_func);
               if (DECL_VISIBILITY_SPECIFIED (tmpl_func))
                 {
