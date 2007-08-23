@@ -1980,7 +1980,7 @@ check_explicit_specialization (tree declarator,
 		 context.  */
 	      fns = lookup_qualified_name (CP_DECL_CONTEXT (decl), dname,
 					   false, true);
-	      if (!fns || !is_overloaded_fn (fns))
+	      if (fns == error_mark_node || !is_overloaded_fn (fns))
 		{
 		  error ("%qD is not a template function", dname);
 		  fns = error_mark_node;
@@ -2215,6 +2215,8 @@ check_explicit_specialization (tree declarator,
               /* This specialization has the same linkage and visibility as
                  the function template it specializes.  */
               TREE_PUBLIC (decl) = TREE_PUBLIC (tmpl_func);
+	      if (! TREE_PUBLIC (decl) && DECL_INTERFACE_KNOWN (tmpl_func))
+		DECL_INTERFACE_KNOWN (decl) = 1;
               DECL_THIS_STATIC (decl) = DECL_THIS_STATIC (tmpl_func);
               if (DECL_VISIBILITY_SPECIFIED (tmpl_func))
                 {
