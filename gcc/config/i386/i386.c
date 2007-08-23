@@ -8495,6 +8495,8 @@ get_some_local_dynamic_name (void)
    X -- don't print any sort of PIC '@' suffix for a symbol.
    & -- print some in-use local-dynamic symbol name.
    H -- print a memory address offset by 8; used for sse high-parts
+   + -- print a branch hint as 'cs' or 'ds' prefix
+   ; -- print a semicolon (after prefixes due to bug in older gas).
  */
 
 void
@@ -8776,6 +8778,15 @@ print_operand (FILE *file, rtx x, int code)
 	      }
 	    return;
 	  }
+
+	case ';':
+#if TARGET_MACHO
+	  fputs (" ; ", file);
+#else
+	  fputc (' ', file);
+#endif
+	  return;
+
 	default:
 	    output_operand_lossage ("invalid operand code '%c'", code);
 	}

@@ -2229,7 +2229,7 @@ do {									\
    print_operand function.  */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '*' || (CODE) == '+' || (CODE) == '&')
+  ((CODE) == '*' || (CODE) == '+' || (CODE) == '&' || (CODE) == ';')
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
   print_operand ((FILE), (X), (CODE))
