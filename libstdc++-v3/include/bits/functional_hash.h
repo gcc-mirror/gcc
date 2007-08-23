@@ -59,5 +59,21 @@
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
 #endif
 
+#include <system_error>
+
+namespace std
+{
+  template<>
+    struct hash<error_code> : public unary_function<error_code, size_t>
+    {      
+      size_t
+      operator()(error_code __e) const
+      { 
+	const char* __p = reinterpret_cast<const char*>(&__e);
+	return _Fnv_hash<>::hash(__p, sizeof(__e));
+      }
+    };
+}
+
 #endif // _FUNCTIONAL_HASH_H
 

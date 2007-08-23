@@ -63,6 +63,12 @@
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
 
+/* Define if ENOTRECOVERABLE exists. */
+#undef HAVE_ENOTRECOVERABLE
+
+/* Define if EOWNERDEAD exists. */
+#undef HAVE_EOWNERDEAD
+
 /* Define to 1 if you have the `expf' function. */
 #undef HAVE_EXPF
 
@@ -330,6 +336,9 @@
 
 /* Define to 1 if you have the <sys/machine.h> header file. */
 #undef HAVE_SYS_MACHINE_H
+
+/* Define if sys_nerr exists. */
+#undef HAVE_SYS_NERR
 
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
