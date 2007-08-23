@@ -169,12 +169,12 @@ static void aof_asm_init_sections (void);
 static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool arm_pass_by_reference (CUMULATIVE_ARGS *,
-				   enum machine_mode, tree, bool);
-static bool arm_promote_prototypes (tree);
+				   enum machine_mode, const_tree, bool);
+static bool arm_promote_prototypes (const_tree);
 static bool arm_default_short_enums (void);
 static bool arm_align_anon_bitfield (void);
-static bool arm_return_in_msb (tree);
-static bool arm_must_pass_in_stack (enum machine_mode, tree);
+static bool arm_return_in_msb (const_tree);
+static bool arm_must_pass_in_stack (enum machine_mode, const_tree);
 #ifdef TARGET_UNWIND_INFO
 static void arm_unwind_emit (FILE *, rtx);
 static bool arm_output_ttype (rtx);
@@ -299,9 +299,9 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 #define TARGET_INIT_LIBFUNCS arm_init_libfuncs
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES arm_promote_prototypes
 #undef TARGET_PASS_BY_REFERENCE
@@ -2702,7 +2702,7 @@ arm_canonicalize_comparison (enum rtx_code code, enum machine_mode mode,
 /* Define how to find the value returned by a function.  */
 
 rtx
-arm_function_value(tree type, tree func ATTRIBUTE_UNUSED)
+arm_function_value(const_tree type, const_tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   int unsignedp ATTRIBUTE_UNUSED;
@@ -2755,7 +2755,7 @@ arm_apply_result_size (void)
    or in a register (false).  This is called by the macro
    RETURN_IN_MEMORY.  */
 int
-arm_return_in_memory (tree type)
+arm_return_in_memory (const_tree type)
 {
   HOST_WIDE_INT size;
 
@@ -3010,7 +3010,7 @@ arm_arg_partial_bytes (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 static bool
 arm_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
-		       tree type, bool named ATTRIBUTE_UNUSED)
+		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
 }
@@ -6523,7 +6523,7 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
    register.  */
 
 static bool
-arm_return_in_msb (tree valtype)
+arm_return_in_msb (const_tree valtype)
 {
   return (TARGET_AAPCS_BASED
           && BYTES_BIG_ENDIAN
@@ -8179,7 +8179,7 @@ arm_reload_out_hi (rtx *operands)
    (padded to the size of a word) should be passed in a register.  */
 
 static bool
-arm_must_pass_in_stack (enum machine_mode mode, tree type)
+arm_must_pass_in_stack (enum machine_mode mode, const_tree type)
 {
   if (TARGET_AAPCS_BASED)
     return must_pass_in_stack_var_size (mode, type);
@@ -8195,7 +8195,7 @@ arm_must_pass_in_stack (enum machine_mode mode, tree type)
    aggregate types are placed in the lowest memory address.  */
 
 bool
-arm_pad_arg_upward (enum machine_mode mode, tree type)
+arm_pad_arg_upward (enum machine_mode mode, const_tree type)
 {
   if (!TARGET_AAPCS_BASED)
     return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
@@ -18177,7 +18177,7 @@ arm_no_early_mul_dep (rtx producer, rtx consumer)
    using APCS or ATPCS.  */
 
 static bool
-arm_promote_prototypes (tree t ATTRIBUTE_UNUSED)
+arm_promote_prototypes (const_tree t ATTRIBUTE_UNUSED)
 {
     return !TARGET_AAPCS_BASED;
 }

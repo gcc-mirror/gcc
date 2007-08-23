@@ -1523,7 +1523,9 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 
 #if defined(ASM_OUTPUT_REG_PUSH)
   if (sval && svrtx != NULL_RTX && REG_P (svrtx))
-    ASM_OUTPUT_REG_PUSH (file, REGNO (svrtx));
+    {
+      ASM_OUTPUT_REG_PUSH (file, REGNO (svrtx));
+    }
 #endif
 
 #if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
@@ -1554,7 +1556,9 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 
 #if defined(ASM_OUTPUT_REG_PUSH)
   if (sval && svrtx != NULL_RTX && REG_P (svrtx))
-    ASM_OUTPUT_REG_POP (file, REGNO (svrtx));
+    {
+      ASM_OUTPUT_REG_POP (file, REGNO (svrtx));
+    }
 #endif
 }
 

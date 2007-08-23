@@ -78,7 +78,7 @@ extern void alpha_initialize_trampoline (rtx, rtx, rtx, int, int, int);
 extern void alpha_va_start (tree, rtx);
 extern rtx alpha_va_arg (tree, tree);
 extern rtx function_arg (CUMULATIVE_ARGS, enum machine_mode, tree, int);
-extern rtx function_value (tree, tree, enum machine_mode);
+extern rtx function_value (const_tree, const_tree, enum machine_mode);
 
 extern void alpha_start_function (FILE *, const char *, tree);
 extern void alpha_end_function (FILE *, const char *, tree);

@@ -126,7 +126,7 @@ static rtx        emit_new_cond_insn            (rtx, int);
 static rtx        conditionalize_block          (rtx);
 static void       conditionalize_optimization   (void);
 static void       mcore_reorg                   (void);
-static rtx        handle_structs_in_regs        (enum machine_mode, tree, int);
+static rtx        handle_structs_in_regs        (enum machine_mode, const_tree, int);
 static void       mcore_mark_dllexport          (tree);
 static void       mcore_mark_dllimport          (tree);
 static int        mcore_dllexport_p             (tree);
@@ -145,7 +145,7 @@ static int        mcore_and_cost               	(rtx);
 static int        mcore_ior_cost               	(rtx);
 static bool       mcore_rtx_costs		(rtx, int, int, int *);
 static void       mcore_external_libcall	(rtx);
-static bool       mcore_return_in_memory	(tree, tree);
+static bool       mcore_return_in_memory	(const_tree, const_tree);
 static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, bool);
@@ -187,11 +187,11 @@ static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 #define TARGET_MACHINE_DEPENDENT_REORG	mcore_reorg
 
 #undef  TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS	hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS	hook_bool_const_tree_true
 #undef  TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN	hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN	hook_bool_const_tree_true
 #undef  TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES	hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES	hook_bool_const_tree_true
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY		mcore_return_in_memory
@@ -2662,7 +2662,7 @@ mcore_override_options (void)
    hold a function argument of mode MODE and type TYPE.  */
 
 int
-mcore_num_arg_regs (enum machine_mode mode, tree type)
+mcore_num_arg_regs (enum machine_mode mode, const_tree type)
 {
   int size;
 
@@ -2678,7 +2678,7 @@ mcore_num_arg_regs (enum machine_mode mode, tree type)
 }
 
 static rtx
-handle_structs_in_regs (enum machine_mode mode, tree type, int reg)
+handle_structs_in_regs (enum machine_mode mode, const_tree type, int reg)
 {
   int size;
 
@@ -2722,7 +2722,7 @@ handle_structs_in_regs (enum machine_mode mode, tree type, int reg)
 }
 
 rtx
-mcore_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+mcore_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   int unsigned_p;
@@ -3102,8 +3102,8 @@ mcore_external_libcall (rtx fun)
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-mcore_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+mcore_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  HOST_WIDE_INT size = int_size_in_bytes (type);
+  const HOST_WIDE_INT size = int_size_in_bytes (type);
   return (size == -1 || size > 2 * UNITS_PER_WORD);
 }

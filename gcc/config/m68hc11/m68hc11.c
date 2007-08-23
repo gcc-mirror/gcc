@@ -88,7 +88,7 @@ static int autoinc_mode (rtx);
 static int m68hc11_make_autoinc_notes (rtx *, void *);
 static void m68hc11_init_libfuncs (void);
 static rtx m68hc11_struct_value_rtx (tree, int);
-static bool m68hc11_return_in_memory (tree, tree);
+static bool m68hc11_return_in_memory (const_tree, const_tree);
 
 /* Must be set to 1 to produce debug messages.  */
 int debug_m6811 = 0;
@@ -1479,7 +1479,7 @@ m68hc11_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
    Structures are stored left shifted in their argument slot.  */
 int
-m68hc11_function_arg_padding (enum machine_mode mode, tree type)
+m68hc11_function_arg_padding (enum machine_mode mode, const_tree type)
 {
   if (type != 0 && AGGREGATE_TYPE_P (type))
     return upward;
@@ -5483,7 +5483,7 @@ m68hc11_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
    in the register (D + X = 4).  */
 
 static bool
-m68hc11_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+m68hc11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   if (TYPE_MODE (type) == BLKmode)
     {

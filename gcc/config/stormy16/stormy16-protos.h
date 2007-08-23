@@ -44,7 +44,7 @@ extern rtx xstormy16_function_arg
 #if defined (TREE_CODE) && defined (RTX_CODE)
 extern void xstormy16_expand_builtin_va_start (tree, rtx);
 extern void xstormy16_initialize_trampoline (rtx, rtx, rtx);
-extern rtx xstormy16_function_value (tree, tree);
+extern rtx xstormy16_function_value (const_tree, const_tree);
 #endif
 
 #ifdef RTX_CODE

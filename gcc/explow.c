@@ -778,10 +778,10 @@ copy_to_suggested_reg (rtx x, rtx target, enum machine_mode mode)
 #endif
 
 enum machine_mode
-promote_mode (tree type, enum machine_mode mode, int *punsignedp,
+promote_mode (const_tree type, enum machine_mode mode, int *punsignedp,
 	      int for_call ATTRIBUTE_UNUSED)
 {
-  enum tree_code code = TREE_CODE (type);
+  const enum tree_code code = TREE_CODE (type);
   int unsignedp = *punsignedp;
 
 #ifndef PROMOTE_MODE
@@ -1476,7 +1476,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
    and 0 otherwise.  */
 
 rtx
-hard_function_value (tree valtype, tree func, tree fntype,
+hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
 		     int outgoing ATTRIBUTE_UNUSED)
 {
   rtx val;

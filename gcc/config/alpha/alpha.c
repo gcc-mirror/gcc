@@ -5646,7 +5646,7 @@ alpha_arg_partial_bytes (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 /* Return true if TYPE must be returned in memory, instead of in registers.  */
 
 static bool
-alpha_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
+alpha_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = VOIDmode;
   int size;
@@ -5696,7 +5696,7 @@ alpha_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 static bool
 alpha_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 			 enum machine_mode mode,
-			 tree type ATTRIBUTE_UNUSED,
+			 const_tree type ATTRIBUTE_UNUSED,
 			 bool named ATTRIBUTE_UNUSED)
 {
   return mode == TFmode || mode == TCmode;
@@ -5711,7 +5711,7 @@ alpha_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
    $f0 for floating-point functions.  */
 
 rtx
-function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
+function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 		enum machine_mode mode)
 {
   unsigned int regnum, dummy;
@@ -9751,7 +9751,7 @@ alpha_use_linkage (rtx linkage ATTRIBUTE_UNUSED,
    registers.  */
 
 static bool
-unicosmk_must_pass_in_stack (enum machine_mode mode, tree type)
+unicosmk_must_pass_in_stack (enum machine_mode mode, const_tree type)
 {
   if (type == NULL)
     return false;
@@ -10664,11 +10664,11 @@ alpha_init_libfuncs (void)
 #define TARGET_MACHINE_DEPENDENT_REORG alpha_reorg
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_false
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY alpha_return_in_memory
 #undef TARGET_PASS_BY_REFERENCE

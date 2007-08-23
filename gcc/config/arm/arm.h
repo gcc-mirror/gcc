@@ -2401,7 +2401,7 @@ extern int making_const_table;
            fprintf (STREAM, "\t.thumb\n\t.thumb_func\n") ;	\
         }						\
       if (TARGET_POKE_FUNCTION_NAME)			\
-        arm_poke_function_name (STREAM, (char *) NAME);	\
+        arm_poke_function_name (STREAM, (const char *) NAME);	\
     }							\
   while (0)
 

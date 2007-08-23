@@ -84,8 +84,8 @@ default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
 }
 
 bool
-default_return_in_memory (tree type,
-			  tree fntype ATTRIBUTE_UNUSED)
+default_return_in_memory (const_tree type,
+			  const_tree fntype ATTRIBUTE_UNUSED)
 {
 #ifndef RETURN_IN_MEMORY
   return (TYPE_MODE (type) == BLKmode);
@@ -229,7 +229,7 @@ default_cxx_get_cookie_size (tree type)
 
 bool
 hook_pass_by_reference_must_pass_in_stack (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
-	enum machine_mode mode ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED,
+	enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type ATTRIBUTE_UNUSED,
 	bool named_arg ATTRIBUTE_UNUSED)
 {
   return targetm.calls.must_pass_in_stack (mode, type);
@@ -241,7 +241,7 @@ hook_pass_by_reference_must_pass_in_stack (CUMULATIVE_ARGS *c ATTRIBUTE_UNUSED,
 bool
 hook_callee_copies_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 			  enum machine_mode mode ATTRIBUTE_UNUSED,
-			  tree type ATTRIBUTE_UNUSED, bool named)
+			  const_tree type ATTRIBUTE_UNUSED, bool named)
 {
   return named;
 }
@@ -382,7 +382,7 @@ bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false (
 	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED,
-	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   return false;
 }
@@ -391,7 +391,7 @@ bool
 hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true (
 	CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 	enum machine_mode mode ATTRIBUTE_UNUSED,
-	tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
+	const_tree type ATTRIBUTE_UNUSED, bool named ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -516,8 +516,8 @@ hook_bool_rtx_commutative_p (rtx x, int outer_code ATTRIBUTE_UNUSED)
 }
 
 rtx
-default_function_value (tree ret_type ATTRIBUTE_UNUSED,
-			tree fn_decl_or_type,
+default_function_value (const_tree ret_type ATTRIBUTE_UNUSED,
+			const_tree fn_decl_or_type,
 			bool outgoing ATTRIBUTE_UNUSED)
 {
   /* The old interface doesn't handle receiving the function type.  */

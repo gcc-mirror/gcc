@@ -259,7 +259,7 @@ do { fprintf (asm_out_file, "\t.tag\t");	\
 /* Set the sdb tag identifier string for TYPE to NAME.  */
 
 #define SET_KNOWN_TYPE_TAG(TYPE, NAME) \
-  TYPE_SYMTAB_POINTER (TYPE) = (char *)(NAME)
+  TYPE_SYMTAB_POINTER (TYPE) = (const char *)(NAME)
 
 /* Return the name (a string) of the struct, union or enum tag
    described by the TREE_LIST node LINK.  This is 0 for an anonymous one.  */
@@ -580,7 +580,7 @@ plain_type_1 (tree type, int level)
     case QUAL_UNION_TYPE:
     case ENUMERAL_TYPE:
       {
-	char *tag;
+	const char *tag;
 #ifdef SDB_ALLOW_FORWARD_REFERENCES
 	sdbout_record_type_name (type);
 #endif

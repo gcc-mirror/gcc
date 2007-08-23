@@ -567,7 +567,7 @@ extern HOST_WIDE_INT int_expr_size (tree);
 
 /* Return an rtx that refers to the value returned by a function
    in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_function_value (tree, tree, tree, int);
+extern rtx hard_function_value (const_tree, const_tree, const_tree, int);
 
 extern rtx prepare_call_address (rtx, rtx, rtx *, int, int);
 
@@ -688,7 +688,7 @@ extern rtx force_reg (enum machine_mode, rtx);
 extern rtx force_not_mem (rtx);
 
 /* Return mode and signedness to use when object is promoted.  */
-extern enum machine_mode promote_mode (tree, enum machine_mode, int *, int);
+extern enum machine_mode promote_mode (const_tree, enum machine_mode, int *, int);
 
 /* Remove some bytes from the stack.  An rtx says how many.  */
 extern void adjust_stack (rtx);

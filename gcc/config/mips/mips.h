@@ -2613,7 +2613,7 @@ while (0)
 
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) \
-  mips_declare_object (STREAM, NAME, "", ":\n", 0)
+  mips_declare_object (STREAM, NAME, "", ":\n")
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl\t"

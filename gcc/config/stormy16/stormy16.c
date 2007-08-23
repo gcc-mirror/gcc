@@ -58,7 +58,7 @@ static void xstormy16_init_builtins (void);
 static rtx xstormy16_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static bool xstormy16_rtx_costs (rtx, int, int, int *);
 static int xstormy16_address_cost (rtx);
-static bool xstormy16_return_in_memory (tree, tree);
+static bool xstormy16_return_in_memory (const_tree, const_tree);
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -1515,7 +1515,7 @@ xstormy16_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
 /* Worker function for FUNCTION_VALUE.  */
 
 rtx
-xstormy16_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+xstormy16_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   mode = TYPE_MODE (valtype);
@@ -2637,9 +2637,9 @@ xstormy16_reorg (void)
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  HOST_WIDE_INT size = int_size_in_bytes (type);
+  const HOST_WIDE_INT size = int_size_in_bytes (type);
   return (size == -1 || size > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS);
 }
 
@@ -2670,11 +2670,11 @@ xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR xstormy16_expand_builtin_va_arg
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY xstormy16_return_in_memory

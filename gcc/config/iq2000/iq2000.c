@@ -157,16 +157,15 @@ static section *iq2000_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
 static void iq2000_init_builtins      (void);
 static rtx  iq2000_expand_builtin     (tree, rtx, rtx, enum machine_mode, int);
-static bool iq2000_return_in_memory   (tree, tree);
+static bool iq2000_return_in_memory   (const_tree, const_tree);
 static void iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *,
 					   enum machine_mode, tree, int *,
 					   int);
 static bool iq2000_rtx_costs          (rtx, int, int, int *);
 static int  iq2000_address_cost       (rtx);
 static section *iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
-static bool iq2000_return_in_memory   (tree, tree);
 static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
-				       tree, bool);
+				       const_tree, bool);
 static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
 
@@ -191,11 +190,11 @@ static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
 
 #undef  TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS	hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS	hook_bool_const_tree_true
 #undef  TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN	hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN	hook_bool_const_tree_true
 #undef  TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES	hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES	hook_bool_const_tree_true
 
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY		iq2000_return_in_memory
@@ -1184,7 +1183,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
    and type TYPE in CUM, or 0 if the argument is to be passed on the stack.  */
 
 struct rtx_def *
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
+function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, const_tree type,
 	      int named)
 {
   rtx ret;
@@ -1202,7 +1201,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	       "function_arg( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, "%p", (void *) type);
+      fprintf (stderr, "%p", (const void *) type);
       fprintf (stderr, ", %d ) = ", named);
     }
 
@@ -2199,7 +2198,7 @@ iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
    FUNC.  */
 
 rtx
-iq2000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+iq2000_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
   int reg = GP_RETURN;
   enum machine_mode mode = TYPE_MODE (valtype);
@@ -2216,7 +2215,7 @@ iq2000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 
 static bool
 iq2000_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			  tree type, bool named ATTRIBUTE_UNUSED)
+			  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int size;
 
@@ -2825,7 +2824,7 @@ iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-iq2000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+iq2000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return ((int_size_in_bytes (type) > (2 * UNITS_PER_WORD))
 	  || (int_size_in_bytes (type) == -1));

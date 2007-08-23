@@ -36,11 +36,11 @@ extern int          mcore_naked_function_p       	(void);
 
 #ifdef TREE_CODE
 #ifdef HAVE_MACHINE_MODES
-extern int          mcore_num_arg_regs           	(enum machine_mode, tree);
+extern int          mcore_num_arg_regs           	(enum machine_mode, const_tree);
 #endif /* HAVE_MACHINE_MODES */
 
 #ifdef RTX_CODE
-extern rtx          mcore_function_value         	(tree, tree);
+extern rtx          mcore_function_value         	(const_tree, const_tree);
 #endif /* RTX_CODE */
 #endif /* TREE_CODE */
 

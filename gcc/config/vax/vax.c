@@ -82,7 +82,7 @@ static rtx vax_struct_value_rtx (tree, int);
 #define TARGET_ADDRESS_COST vax_address_cost
 
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX vax_struct_value_rtx

@@ -146,7 +146,7 @@ static bool pdp11_assemble_integer (rtx, unsigned int, int);
 static void pdp11_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void pdp11_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static bool pdp11_rtx_costs (rtx, int, int, int *);
-static bool pdp11_return_in_memory (tree, tree);
+static bool pdp11_return_in_memory (const_tree, const_tree);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -384,7 +384,8 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	/* change fp -> r5 due to the compile error on libgcc2.c */
 	for (i =7 ; i >= 0 ; i--)					
 	  if (df_regs_ever_live_p (i) && ! call_used_regs[i])		
-		fprintf(stream, "\tmov %#o(r5), %s\n",(-fsize-2*j--)&0xffff, reg_names[i]);
+		fprintf(stream, "\tmov %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
+			(-fsize-2*j--)&0xffff, reg_names[i]);
 
 	/* get ACs */						
 	via_ac = FIRST_PSEUDO_REGISTER -1;
@@ -402,7 +403,8 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 		&& df_regs_ever_live_p (i)
 		&& ! call_used_regs[i])
 	    {
-		fprintf(stream, "\tldd %#o(r5), %s\n", (-fsize-k)&0xffff, reg_names[i]);
+		fprintf(stream, "\tldd %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
+			(-fsize-k)&0xffff, reg_names[i]);
 		k -= 8;
 	    }
 	    
@@ -412,7 +414,8 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	    {
 	        gcc_assert (LOAD_FPU_REG_P(via_ac));
 		    
-		fprintf(stream, "\tldd %#o(r5), %s\n", (-fsize-k)&0xffff, reg_names[via_ac]);
+		fprintf(stream, "\tldd %#" HOST_WIDE_INT_PRINT "o(r5), %s\n",
+			(-fsize-k)&0xffff, reg_names[via_ac]);
 		fprintf(stream, "\tstd %s, %s\n", reg_names[via_ac], reg_names[i]);
 		k -= 8;
 	    }
@@ -453,7 +456,8 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 		fprintf(stream, "\tmov (sp)+, %s\n", reg_names[i]);	
 								
 	if (fsize)						
-	    fprintf((stream), "\tadd $%#o, sp\n", (fsize)&0xffff);      		
+	    fprintf((stream), "\tadd $%#" HOST_WIDE_INT_PRINT "o, sp\n",
+		    (fsize)&0xffff);      		
     }			
 					
     fprintf (stream, "\trts pc\n");					
@@ -1080,8 +1084,7 @@ static const int move_costs[N_REG_CLASSES][N_REG_CLASSES] =
    -- as we do here with 22 -- or not ? */
 
 int 
-register_move_cost(c1, c2)
-  enum reg_class c1, c2;
+register_move_cost(enum reg_class c1, enum reg_class c2)
 {
     return move_costs[(int)c1][(int)c2];
 }
@@ -1752,7 +1755,7 @@ output_addr_const_pdp11 (FILE *file, rtx x)
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-pdp11_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   /* Should probably return DImode and DFmode in memory, lest
      we fill up all regs!

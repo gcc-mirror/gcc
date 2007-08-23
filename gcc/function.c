@@ -1742,17 +1742,17 @@ struct tree_opt_pass pass_instantiate_virtual_regs =
    EXP may be a type node or an expression (whose type is tested).  */
 
 int
-aggregate_value_p (tree exp, tree fntype)
+aggregate_value_p (const_tree exp, const_tree fntype)
 {
   int i, regno, nregs;
   rtx reg;
 
-  tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
+  const_tree type = (TYPE_P (exp)) ? exp : TREE_TYPE (exp);
 
   /* DECL node associated with FNTYPE when relevant, which we might need to
      check for by-invisible-reference returns, typically for CALL_EXPR input
      EXPressions.  */
-  tree fndecl = NULL_TREE;
+  const_tree fndecl = NULL_TREE;
   
   if (fntype)
     switch (TREE_CODE (fntype))

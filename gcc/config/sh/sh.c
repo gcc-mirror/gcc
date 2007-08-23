@@ -242,7 +242,7 @@ static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 						struct save_schedule_s *, int);
 
 static rtx sh_struct_value_rtx (tree, int);
-static bool sh_return_in_memory (tree, tree);
+static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
 static void sh_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 static bool sh_strict_argument_naming (CUMULATIVE_ARGS *);
@@ -250,9 +250,9 @@ static bool sh_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 static tree sh_build_builtin_va_list (void);
 static tree sh_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool sh_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				  tree, bool);
+				  const_tree, bool);
 static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
-			      tree, bool);
+			      const_tree, bool);
 static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 			         tree, bool);
 static int sh_dwarf_calling_convention (tree);
@@ -7354,7 +7354,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 }
 
 bool
-sh_promote_prototypes (tree type)
+sh_promote_prototypes (const_tree type)
 {
   if (TARGET_HITACHI)
     return 0;
@@ -7369,8 +7369,8 @@ sh_promote_prototypes (tree type)
    loads them into the full 64-bits registers.  */
 
 static int
-shcompact_byref (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		 tree type, bool named)
+shcompact_byref (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		 const_tree type, bool named)
 {
   unsigned HOST_WIDE_INT size;
 
@@ -7394,7 +7394,7 @@ shcompact_byref (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static bool
 sh_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		      tree type, bool named)
+		      const_tree type, bool named)
 {
   if (targetm.calls.must_pass_in_stack (mode, type))
     return true;
@@ -7416,7 +7416,7 @@ sh_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static bool
 sh_callee_copies (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		  tree type, bool named ATTRIBUTE_UNUSED)
+		  const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   /* ??? How can it possibly be correct to return true only on the
      caller side of the equation?  Is there someplace else in the
@@ -7715,7 +7715,7 @@ sh_struct_value_rtx (tree fndecl, int incoming ATTRIBUTE_UNUSED)
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-sh_return_in_memory (tree type, tree fndecl)
+sh_return_in_memory (const_tree type, const_tree fndecl)
 {
   if (TARGET_SH5)
     {
@@ -8052,7 +8052,7 @@ sh_handle_renesas_attribute (tree *node ATTRIBUTE_UNUSED,
 
 /* True if __attribute__((renesas)) or -mrenesas.  */
 int
-sh_attr_renesas_p (tree td)
+sh_attr_renesas_p (const_tree td)
 {
   if (TARGET_HITACHI)
     return 1;

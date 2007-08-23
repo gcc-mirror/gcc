@@ -7644,7 +7644,7 @@ s390_emit_epilogue (bool sibcall)
    MODE must be specified.  */
 
 static int
-s390_function_arg_size (enum machine_mode mode, tree type)
+s390_function_arg_size (enum machine_mode mode, const_tree type)
 {
   if (type)
     return int_size_in_bytes (type);
@@ -7742,7 +7742,7 @@ s390_function_arg_integer (enum machine_mode mode, tree type)
 
 static bool
 s390_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
-			enum machine_mode mode, tree type,
+			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
   int size = s390_function_arg_size (mode, type);
@@ -7842,7 +7842,7 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
    hidden first argument.  */
 
 static bool
-s390_return_in_memory (tree type, tree fundecl ATTRIBUTE_UNUSED)
+s390_return_in_memory (const_tree type, const_tree fundecl ATTRIBUTE_UNUSED)
 {
   /* We accept small integral (and similar) types.  */
   if (INTEGRAL_TYPE_P (type)
@@ -7869,7 +7869,7 @@ s390_return_in_memory (tree type, tree fundecl ATTRIBUTE_UNUSED)
    value of mode MODE from a libcall.  */
 
 rtx
-s390_function_value (tree type, enum machine_mode mode)
+s390_function_value (const_tree type, enum machine_mode mode)
 {
   if (type)
     {
@@ -9318,9 +9318,9 @@ s390_reorg (void)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR s390_gimplify_va_arg
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE s390_pass_by_reference
 

@@ -740,7 +740,7 @@ static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 				    tree);
 static rtx rs6000_emit_set_long_const (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
-static bool rs6000_return_in_memory (tree, tree);
+static bool rs6000_return_in_memory (const_tree, const_tree);
 static void rs6000_file_start (void);
 #if TARGET_ELF
 static int rs6000_elf_reloc_rw_mask (void);
@@ -871,16 +871,16 @@ static void rs6000_darwin64_record_arg_flush (CUMULATIVE_ARGS *,
 					      HOST_WIDE_INT,
 					      rtx[], int *);
 static void rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *,
-					       tree, HOST_WIDE_INT,
-					       rtx[], int *);
-static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, tree, int, bool);
+						const_tree, HOST_WIDE_INT,
+						rtx[], int *);
+static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree, int, bool);
 static rtx rs6000_mixed_function_arg (enum machine_mode, tree, int);
 static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
 				    int *, int);
 static bool rs6000_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				      tree, bool);
+				      const_tree, bool);
 static int rs6000_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, bool);
 static const char *invalid_arg_for_unprototyped_fn (tree, tree, tree);
@@ -893,7 +893,7 @@ static void rs6000_darwin_file_start (void);
 
 static tree rs6000_build_builtin_va_list (void);
 static tree rs6000_gimplify_va_arg (tree, tree, tree *, tree *);
-static bool rs6000_must_pass_in_stack (enum machine_mode, tree);
+static bool rs6000_must_pass_in_stack (enum machine_mode, const_tree);
 static bool rs6000_scalar_mode_supported_p (enum machine_mode);
 static bool rs6000_vector_mode_supported_p (enum machine_mode);
 static int get_vec_cmp_insn (enum rtx_code, enum machine_mode,
@@ -1125,9 +1125,9 @@ static const char alt_reg_names[][8] =
 /* On rs6000, function arguments are promoted, as are function return
    values.  */
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY rs6000_return_in_memory
@@ -4765,7 +4765,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
    memory always.  The cast to unsigned makes -1 > 8.  */
 
 static bool
-rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   /* In the darwin64 abi, try to use registers for larger structs
      if possible.  */
@@ -4887,7 +4887,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 /* Return true if TYPE must be passed on the stack and not in registers.  */
 
 static bool
-rs6000_must_pass_in_stack (enum machine_mode mode, tree type)
+rs6000_must_pass_in_stack (enum machine_mode mode, const_tree type)
 {
   if (DEFAULT_ABI == ABI_AIX || TARGET_64BIT)
     return must_pass_in_stack_var_size (mode, type);
@@ -4905,7 +4905,7 @@ rs6000_must_pass_in_stack (enum machine_mode mode, tree type)
    argument slot.  */
 
 enum direction
-function_arg_padding (enum machine_mode mode, tree type)
+function_arg_padding (enum machine_mode mode, const_tree type)
 {
 #ifndef AGGREGATE_PADDING_FIXED
 #define AGGREGATE_PADDING_FIXED 0
@@ -5464,7 +5464,7 @@ rs6000_darwin64_record_arg_flush (CUMULATIVE_ARGS *cum,
 /* Recursive workhorse for the following.  */
 
 static void
-rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, tree type,
+rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 				    HOST_WIDE_INT startbitpos, rtx rvec[],
 				    int *k)
 {
@@ -5534,7 +5534,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, tree type,
    calling convention.  */
 
 static rtx
-rs6000_darwin64_record_arg (CUMULATIVE_ARGS *orig_cum, tree type,
+rs6000_darwin64_record_arg (CUMULATIVE_ARGS *orig_cum, const_tree type,
 			    int named, bool retval)
 {
   rtx rvec[FIRST_PSEUDO_REGISTER];
@@ -5992,7 +5992,7 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static bool
 rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-			  enum machine_mode mode, tree type,
+			  enum machine_mode mode, const_tree type,
 			  bool named ATTRIBUTE_UNUSED)
 {
   if (DEFAULT_ABI == ABI_V4 && TARGET_IEEEQUAD && mode == TFmode)
@@ -7737,13 +7737,13 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   tree arg0, arg1, arg2;
   enum machine_mode mode0, mode1, mode2;
   rtx pat, op0, op1, op2;
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
 
   *expandedp = false;
 
   /* Handle DST variants.  */
-  d = (struct builtin_description *) bdesc_dst;
+  d = bdesc_dst;
   for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
     if (d->code == fcode)
       {
@@ -7896,8 +7896,8 @@ altivec_expand_vec_ext_builtin (tree exp, rtx target)
 static rtx
 altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 {
-  struct builtin_description *d;
-  struct builtin_description_predicates *dp;
+  const struct builtin_description *d;
+  const struct builtin_description_predicates *dp;
   size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -8026,13 +8026,13 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     }
 
   /* Expand abs* operations.  */
-  d = (struct builtin_description *) bdesc_abs;
+  d = bdesc_abs;
   for (i = 0; i < ARRAY_SIZE (bdesc_abs); i++, d++)
     if (d->code == fcode)
       return altivec_expand_abs_builtin (d->icode, exp, target);
 
   /* Expand the AltiVec predicates.  */
-  dp = (struct builtin_description_predicates *) bdesc_altivec_preds;
+  dp = bdesc_altivec_preds;
   for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
     if (dp->code == fcode)
       return altivec_expand_predicate_builtin (dp->icode, dp->opcode,
@@ -8407,7 +8407,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
   rtx ret;
   bool success;
@@ -8492,7 +8492,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return rs6000_expand_binop_builtin (d->icode, exp, target);
 
   /* Handle simple ternary operations.  */
-  d = (struct builtin_description *) bdesc_3arg;
+  d = bdesc_3arg;
   for (i = 0; i < ARRAY_SIZE  (bdesc_3arg); i++, d++)
     if (d->code == fcode)
       return rs6000_expand_ternop_builtin (d->icode, exp, target);
@@ -8867,8 +8867,8 @@ spe_init_builtins (void)
 static void
 altivec_init_builtins (void)
 {
-  struct builtin_description *d;
-  struct builtin_description_predicates *dp;
+  const struct builtin_description *d;
+  const struct builtin_description_predicates *dp;
   size_t i;
   tree ftype;
 
@@ -9049,12 +9049,12 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_vec_ctu", opaque_ftype_opaque_int, ALTIVEC_BUILTIN_VEC_CTU);
 
   /* Add the DST variants.  */
-  d = (struct builtin_description *) bdesc_dst;
+  d = bdesc_dst;
   for (i = 0; i < ARRAY_SIZE (bdesc_dst); i++, d++)
     def_builtin (d->mask, d->name, void_ftype_pcvoid_int_int, d->code);
 
   /* Initialize the predicates.  */
-  dp = (struct builtin_description_predicates *) bdesc_altivec_preds;
+  dp = bdesc_altivec_preds;
   for (i = 0; i < ARRAY_SIZE (bdesc_altivec_preds); i++, dp++)
     {
       enum machine_mode mode1;
@@ -9092,7 +9092,7 @@ altivec_init_builtins (void)
     }
 
   /* Initialize the abs* operators.  */
-  d = (struct builtin_description *) bdesc_abs;
+  d = bdesc_abs;
   for (i = 0; i < ARRAY_SIZE (bdesc_abs); i++, d++)
     {
       enum machine_mode mode0;
@@ -9223,7 +9223,7 @@ altivec_init_builtins (void)
 static void
 rs6000_common_init_builtins (void)
 {
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
 
   tree v4sf_ftype_v4sf_v4sf_v16qi
@@ -9420,7 +9420,7 @@ rs6000_common_init_builtins (void)
 				V8HI_type_node, V8HI_type_node, NULL_TREE);
 
   /* Add the simple ternary operators.  */
-  d = (struct builtin_description *) bdesc_3arg;
+  d = bdesc_3arg;
   for (i = 0; i < ARRAY_SIZE (bdesc_3arg); i++, d++)
     {
       enum machine_mode mode0, mode1, mode2, mode3;
@@ -20762,7 +20762,7 @@ rs6000_complex_function_value (enum machine_mode mode)
    fp1, unless -msoft-float.  */
 
 rtx
-rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+rs6000_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   unsigned int regno;
