@@ -1,3 +1,8 @@
+2007-08-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/i386/sse.md (*sse_and<mode>3, *sse_ior<mode>3,
+	*sse_nand<mode>3, *sse_xor<mode>3): New.
+
 2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (PRINT_OPERAND_PUNCT_VALID_P): Add ';' code.
