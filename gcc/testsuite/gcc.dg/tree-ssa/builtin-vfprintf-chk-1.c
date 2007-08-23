@@ -32,7 +32,7 @@ test (va_list ap1, va_list ap2, va_list ap3, va_list ap4, va_list ap5,
 /* { dg-final { scan-tree-dump "vi0.*fwrite.*\"hello\".*1, 5, fp.*vi1" "fab"} } */
 /* { dg-final { scan-tree-dump "vi1.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi2" "fab"} } */
 /* { dg-final { scan-tree-dump "vi2.*fputc.*fp.*vi3" "fab"} } */
-/* { dg-final { scan-tree-dump "vi3 = 0\[^\(\)\]*vi4 = 0" "fab"} } */
+/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "fab"} } */
 /* { dg-final { scan-tree-dump "vi4.*__vfprintf_chk.*fp.*1.*\"%s\".*vi5" "fab"} } */
 /* { dg-final { scan-tree-dump "vi5.*__vfprintf_chk.*fp.*1.*\"%c\".*vi6" "fab"} } */
 /* { dg-final { scan-tree-dump "vi6.*__vfprintf_chk.*fp.*1.*\"%s\\\\n\".*vi7" "fab"} } */

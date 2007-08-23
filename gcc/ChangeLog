@@ -1,5 +1,10 @@
 2007-08-23  Richard Guenther  <rguenther@suse.de>
 
+	* tree-pretty-print.c (dump_generic_node): Annotate
+	GIMPLE_MODIFY_STMTs with volatile ops with "{v}".
+
+2007-08-23  Richard Guenther  <rguenther@suse.de>
+
 	* builtins.c (expand_builtin_mathfn): Wrap argument in
 	save_expr directly instead of re-building the call.
 	(expand_builtin_mathfn_2): Likewise.

@@ -32,7 +32,7 @@ void test (void)
 /* { dg-final { scan-tree-dump "vi0.*fwrite.*\"hello\".*1, 5, fp.*vi1" "fab"} } */
 /* { dg-final { scan-tree-dump "vi1.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi2" "fab"} } */
 /* { dg-final { scan-tree-dump "vi2.*fputc.*fp.*vi3" "fab"} } */
-/* { dg-final { scan-tree-dump "vi3 = 0\[^\(\)\]*vi4 = 0" "fab"} } */
+/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "fab"} } */
 /* { dg-final { scan-tree-dump "vi4.*fwrite.*\"hello\".*1, 5, fp.*vi5" "fab"} } */
 /* { dg-final { scan-tree-dump "vi5.*fwrite.*\"hello\\\\n\".*1, 6, fp.*vi6" "fab"} } */
 /* { dg-final { scan-tree-dump "vi6.*fputc.*fp.*vi7" "fab"} } */
