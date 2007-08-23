@@ -1,3 +1,22 @@
+2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (PRINT_OPERAND_PUNCT_VALID_P): Add ';' code.
+	* config/i386/i386.c (print_operand): Handle ';' code.  Output
+	semicolon for TARGET_MACHO.
+	* config/i386/sync.md (*sync_compare_and_swap<mode>): Use '%;' to
+	emit semicolon after 'lock' prefix.
+	(sync_double_compare_and_swap<mode>): Ditto.
+	(*sync_double_compare_and_swapdi_pic): Ditto.
+	(*sync_compare_and_swap_cc<mode>): Ditto.
+	(sync_double_compare_and_swap_cc<mode>): Ditto.
+	(*sync_double_compare_and_swap_ccdi_pic): Ditto.
+	(sync_old_add<mode>): Ditto.
+	(sync_add<mode>): Ditto.
+	(sync_sub<mode>): Ditto.
+	(sync_ior<mode>): Ditto.
+	(sync_and<mode>): Ditto.
+	(sync_xor<mode>): Ditto.
+
 2007-08-22  Chao-ying Fu  <fu@mips.com>
 
 	* rtl.c (rtx_code_size): Check CONST_FIXED to calcualte correct sizes
@@ -287,8 +306,8 @@
 	* c-tree.h (enum c_typespec_keyword): Add cts_fract and cts_accum.
 	(c_declspecs): Add saturating_p.
 	* c-decl.c (build_null_declspecs): Initialize saturating_p.
-	(declspecs_add_type): Avoid using complex with _Fract, _Accum, or _Sat.
-	Handle RID_SAT.
+	(declspecs_add_type): Avoid using complex with _Fract, _Accum, or
+	_Sat.  Handle RID_SAT.
 	Avoid using void, bool, char, int, float, double, _Decimal32,
 	_Decimal64, _Decimal128, and complex with _Sat.
 	Handle RID_FRACT and RID_ACCUM.
@@ -584,14 +603,14 @@
 	'nested_in_vect_loop' case. Change verbosity level.
 	(vect_analyze_data_ref_access): Handle the 'nested_in_vect_loop' case.
 	Don't fail on zero step in the outer-loop for loads.
-	(vect_analyze_data_refs): Call split_constant_offset to calculate base,
-	offset and init relative to the outer-loop.
+	(vect_analyze_data_refs): Call split_constant_offset to calculate
+	base, offset and init relative to the outer-loop.
 
 	* tree-vect-transform.c (vect_create_data_ref_ptr): Replace the unused
 	BSI function argument with a new function argument - at_loop.
 	Simplify the condition that determines STEP. Takes additional argument
-	INV_P. Support outer-loop vectorization (handle the nested_in_vect_loop
-	case), including zero step in the outer-loop. Call
+	INV_P. Support outer-loop vectorization (handle the
+	nested_in_vect_loop case), including zero step in the outer-loop. Call
 	vect_create_addr_base_for_vector_ref with additional argument.
 	(vect_create_addr_base_for_vector_ref): Takes additional argument LOOP.
 	Updated function documentation. Handle the 'nested_in_vect_loop' case.
@@ -601,12 +620,12 @@
 	additional argument. Fix typos. Handle the 'nested_in_vect_loop' case.
 	(vect_setup_realignment): Takes additional arguments INIT_ADDR and
 	DR_ALIGNMENT_SUPPORT. Returns another value AT_LOOP. Handle the case
-	when the realignment setup needs to take place inside the loop.  Support
-	the dr_explicit_realign scheme. Allow generating the optimized
+	when the realignment setup needs to take place inside the loop.
+	Support the dr_explicit_realign scheme. Allow generating the optimized
 	realignment scheme for outer-loop vectorization. Added documentation.
-	(vectorizable_load): Support the dr_explicit_realign scheme. Handle the
-	'nested_in_vect_loop' case, including loads that are invariant in the
-	outer-loop and the realignment schemes. Handle the case when the
+	(vectorizable_load): Support the dr_explicit_realign scheme. Handle
+	the 'nested_in_vect_loop' case, including loads that are invariant in
+	the outer-loop and the realignment schemes. Handle the case when the
 	realignment setup needs to take place inside the loop. Call
 	vect_setup_realignment with additional arguments.  Call
 	vect_create_data_ref_ptr with additional argument and with loop instead
@@ -644,9 +663,9 @@
 	(new_stmt_vec_info): When setting def_type for phis differentiate 
 	loop-header phis from other phis.
 	(bb_in_loop_p): New function.
-	(new_loop_vec_info): Inner-loop phis already have a stmt_vinfo, so just
-	update their loop_vinfo.  Order of BB traversal now matters - call
-	dfs_enumerate_from with bb_in_loop_p.
+	(new_loop_vec_info): Inner-loop phis already have a stmt_vinfo, so
+	just update their loop_vinfo.  Order of BB traversal now matters -
+	call dfs_enumerate_from with bb_in_loop_p.
 	(destroy_loop_vec_info): Takes additional argument to control whether
 	stmt_vinfo of the loop stmts should be destroyed as well.
 	(vect_is_simple_reduction): Allow the "non-reduction" use of a
@@ -1105,8 +1124,8 @@
 	(add_back_forw_dep, delete_back_forw_dep): Ditto.
 	(debug_ds, sched_insn_is_legitimate_for_speculation_p): Declare
 	functions.
-	(SD_LIST_NONE, SD_LIST_HARD_BACK, SD_LIST_SPEC_BACK, SD_LIST_FORW): New
-	constants.
+	(SD_LIST_NONE, SD_LIST_HARD_BACK, SD_LIST_SPEC_BACK, SD_LIST_FORW):
+	New constants.
 	(SD_LIST_RES_BACK, SD_LIST_RES_FORW, SD_LIST_BACK): Ditto.
 	(sd_list_types_def): New typedef.
 	(sd_next_list): Declare function.
@@ -1247,8 +1266,8 @@
 	Free dependencies at the end of	scheduling the ebb.
 
 	* ddg.c (create_ddg_dependence): Update to use new interfaces.
-	(build_intra_loop_deps): Ditto.  Remove separate computation of forward
-	dependencies.  Free sched-deps dependencies.
+	(build_intra_loop_deps): Ditto.  Remove separate computation of
+	forward dependencies.  Free sched-deps dependencies.
 
 	* config/ia64/ia64.c (ia64_dependencies_evaluation_hook): Update
 	to use new interfaces.
@@ -2322,13 +2341,14 @@
 2007-08-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/32780
-	* fold-const.c (fold_binary <case MINUS_EXPR>): Fix the type of operands
-	for the folding of "A - (A & B)" into "~B & A"; cast them to type.
+	* fold-const.c (fold_binary <case MINUS_EXPR>): Fix the type of
+	operands for the folding of "A - (A & B)" into "~B & A"; cast them
+	to type.
 
 2007-08-03  Zdenek Dvorak  <ook@ucw.cz>
 
-	* tree-ssa-threadupdate.c (thread_through_all_blocks): Use loops' state
-	accessor functions.
+	* tree-ssa-threadupdate.c (thread_through_all_blocks): Use loops'
+	state accessor functions.
 	* cfgloopmanip.c (remove_path, create_preheaders,
 	force_single_succ_latches, fix_loop_structure): Ditto.
 	* tree-ssa-loop-manip.c (rewrite_into_loop_closed_ssa,
@@ -3211,8 +3231,8 @@
 
 2007-07-27  Jan Hubicka  <jh@suse.cz>
 
-	* config/i386/i386.c (register_move_cost): Remove accidentally comitted
-	#if 0 block.
+	* config/i386/i386.c (register_move_cost): Remove accidentally
+	comitted #if 0 block.
 
 	* attribs.c: Include hashtab.h
 	(attribute_hash): New.
@@ -4141,7 +4161,8 @@
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/PR28690
-	* optabs.c (expand_binop): (emit_cmp_and_jump_insns): Allow EQ compares.
+	* optabs.c (expand_binop): (emit_cmp_and_jump_insns): Allow
+	EQ compares.
 	* rtlanal.c (commutative_operand_precedence): Prefer both REG_POINTER
 	and MEM_POINTER operands over REG and MEM operands.
 	(swap_commutative_operands_p): Change return value to bool.
@@ -4187,8 +4208,8 @@
 	(expand_copysign_absneg): If back end provides signbit insn, use it
 	instead of bit operations on floating point argument.
 	* builtins.c (enum insn_code signbit_optab[]): Remove array.
-	(expand_builtin_signbit): Check signbit_optab->handlers[].insn_code for
-	availability of signbit insn.
+	(expand_builtin_signbit): Check signbit_optab->handlers[].insn_code
+	for availability of signbit insn.
 
 	* config/i386/i386.md (signbit<mode>2): New insn pattern to implement
 	signbitf, signbit and signbitl built-ins as inline x87 intrinsics when
@@ -4473,8 +4494,8 @@
 	* pa-protos.h (pa_eh_return_handler_rtx): Declare.
 	* pa.c (pa_extra_live_on_entry, rp_saved): Declare.
 	(TARGET_EXTRA_LIVE_ON_ENTRY): Define.
-	(pa_output_function_prologue): Use rp_saved and current_function_is_leaf
-	to generate .CALLINFO statement.
+	(pa_output_function_prologue): Use rp_saved and
+	current_function_is_leaf to generate .CALLINFO statement.
 	(hppa_expand_prologue): Set rp_saved.
 	(hppa_expand_epilogue): Use rp_saved.
 	(pa_extra_live_on_entry, pa_eh_return_handler_rtx): New functions.
