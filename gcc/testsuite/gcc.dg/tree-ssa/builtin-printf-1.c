@@ -32,11 +32,11 @@ void test (void)
 /* { dg-final { scan-tree-dump "vi0.*printf.*\"hello\".*vi1" "fab"} } */
 /* { dg-final { scan-tree-dump "vi1.*puts.*\"hello\".*vi2" "fab"} } */
 /* { dg-final { scan-tree-dump "vi2.*putchar.*vi3" "fab"} } */
-/* { dg-final { scan-tree-dump "vi3 = 0\[^\(\)\]*vi4 = 0" "fab"} } */
+/* { dg-final { scan-tree-dump "vi3 ={v} 0\[^\(\)\]*vi4 ={v} 0" "fab"} } */
 /* { dg-final { scan-tree-dump "vi4.*printf.*\"hello\".*vi5" "fab"} } */
 /* { dg-final { scan-tree-dump "vi5.*puts.*\"hello\".*vi6" "fab"} } */
 /* { dg-final { scan-tree-dump "vi6.*putchar.*vi7" "fab"} } */
-/* { dg-final { scan-tree-dump "vi7 = 0\[^\(\)\]*vi8 = 0" "fab"} } */
+/* { dg-final { scan-tree-dump "vi7 ={v} 0\[^\(\)\]*vi8 ={v} 0" "fab"} } */
 /* { dg-final { scan-tree-dump "vi8.*putchar.*vi9" "fab"} } */
 /* { dg-final { scan-tree-dump "vi9.*puts.*\"hello\\\\n\".*via" "fab"} } */
 /* { dg-final { cleanup-tree-dump "fab" } } */

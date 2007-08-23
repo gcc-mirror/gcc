@@ -1081,6 +1081,13 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       if (TREE_CODE (node) == GIMPLE_MODIFY_STMT
 	  && MOVE_NONTEMPORAL (node))
 	pp_string (buffer, "{nt}");
+      if (TREE_CODE (node) == GIMPLE_MODIFY_STMT)
+	{
+	stmt_ann_t ann;
+        if ((ann = stmt_ann (node))
+	    && ann->has_volatile_ops)
+	  pp_string (buffer, "{v}");
+        }
       pp_space (buffer);
       dump_generic_node (buffer, GENERIC_TREE_OPERAND (node, 1), spc, flags,
 	  		 false);
