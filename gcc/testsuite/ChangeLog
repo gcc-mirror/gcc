@@ -1,3 +1,8 @@
+2007-08-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32328
+	* testsuite/gcc.dg/pr32328.c: New testcase.
+
 2007-08-23  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.c-torture/execute/simd-4.x: Only run when stdint.h types are
