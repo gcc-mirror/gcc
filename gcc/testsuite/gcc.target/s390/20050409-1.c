@@ -1,6 +1,6 @@
 /* This used to ICE due to a regmove problem on s390.  */
 
-/* { dg-do compile { target s390*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 

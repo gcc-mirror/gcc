@@ -1,6 +1,6 @@
 /* This used to ICE due to a reload bug on s390*.  */
 
-/* { dg-do compile { target s390*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
 
 extern void *alloca (__SIZE_TYPE__);

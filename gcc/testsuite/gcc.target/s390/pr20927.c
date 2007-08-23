@@ -1,6 +1,6 @@
 /* This caused an ICE on s390x due to a reload inheritance bug.  */
 
-/* { dg-do compile { target s390*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 struct point { double x, y; };

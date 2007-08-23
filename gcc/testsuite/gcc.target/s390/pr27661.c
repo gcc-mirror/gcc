@@ -1,6 +1,6 @@
 /* This used to ICE on s390 due to a reload bug.  */
 
-/* { dg-do compile { target s390*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -march=z990 -ftracer" } */
 
 extern int memcmp (const void *s1, const void *s2, unsigned long n);

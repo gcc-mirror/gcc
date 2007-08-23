@@ -1,3 +1,13 @@
+2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/s390: New directory.
+	* gcc.target/s390/s390.exp: New file.
+	* gcc.dg/20020926-1.c, gcc.dg/20030123-1.c, gcc.dg/20030129-1.c,
+	gcc.dg/20040305-1.c, gcc.dg/20041109-1.c, gcc.dg/20041216-1.c,
+	gcc.dg/20050409-1.c, gcc.dg/20050524-1.c, gcc.dg/20050824-1.c,
+	gcc.dg/pr20927.c, gcc.dg/pr24624.c, gcc.dg/pr27661.c: Move to
+	gcc.target/s390 directory.
+
 2007-08-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32328
@@ -145,7 +155,7 @@
 
 2007-03-20  Pawel Sikora  <pluto@pld-linux.org>
 
-        * g++.dg/warn/Wnvdtor-2.C: New testcase.
+	* g++.dg/warn/Wnvdtor-2.C: New testcase.
 
 2007-08-20  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -204,7 +214,7 @@
 	* gcc.dg/vect/vect-outer-6.c: New test.
 	* gcc.dg/vect/vect-outer-fir.c: New test.
 	* gcc.dg/vect/vect-outer-fir-lb.c: New test.
-	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: New test.	
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: New test.
 
 2007-08-19  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -254,7 +264,8 @@
 	versioning for aliasing).
 	* testsuite/gcc.dg/vect/vect-35.c: Likewise.
 
-	* testsuite/gcc.dg/vect/vect-iv-6.c: Fix test for vect_no_align targets.
+	* testsuite/gcc.dg/vect/vect-iv-6.c: Fix test for vect_no_align
+	targets.
 	* testsuite/gcc.dg/vect/vect-multitypes-11.c: Likewise.
 
 2007-08-18  Tom Tromey  <tromey@redhat.com>
@@ -580,8 +591,8 @@
 
 	PR middle-end/32813
 	* gfortran.fortran-torture/compile/emptyif-1.f90: New test.
-	* lib/fortran-torture.exp (fortran-torture): Use TORTURE_OPTIONS instead
-	of just -O.
+	* lib/fortran-torture.exp (fortran-torture): Use TORTURE_OPTIONS
+	instead of just -O.
 
 2007-08-08  Richard Sandiford  <richard@codesourcery.com>
 
@@ -631,7 +642,7 @@
 	* gfortran.dg/vect-5.f90: Likewise.
 	* lib/target-supports.exp (check_effective_target_natural_alignment): 
 	Return false for darwin. 
-	(check_effective_target_vector_alignment_reachable_for_double): New.	
+	(check_effective_target_vector_alignment_reachable_for_double): New.
 
 2007-08-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
@@ -694,7 +705,7 @@
 	* gfortran.dg/isnan_1.f90: New test.
 
 2007-08-05  Vladimir Yanovsky  <yanov@il.ibm.com>
-            Revital Eres <eres@il.ibm.com>
+	    Revital Eres <eres@il.ibm.com>
 
 	* gcc.dg/sms-antideps.c: New test.
 
@@ -986,7 +997,7 @@
 	* gfortran.dg/entry_11.f90: New test.
 
 2007-07-29  Vladimir Yanovsky  <yanov@il.ibm.com>
-            Revital Eres  <eres@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
 	* gfortran.dg/sms-1.f90: New test.
 
@@ -1433,7 +1444,7 @@
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
-        * gcc.target/mips/mips-sched-madd.c: New test case.
+	* gcc.target/mips/mips-sched-madd.c: New test case.
 
 2007-07-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
