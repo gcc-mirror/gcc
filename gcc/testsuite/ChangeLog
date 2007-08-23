@@ -1,5 +1,9 @@
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/32573
+	PR middle-end/32946
+	* gcc.dg/pr32573.c: New test.
+
 	PR c++/32898
 	* g++.dg/lookup/ns3.C: New test.
 

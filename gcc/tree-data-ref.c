@@ -1229,6 +1229,9 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_B (res) = b;
   DDR_LOOP_NEST (res) = NULL;
   DDR_REVERSED_P (res) = false;
+  DDR_SUBSCRIPTS (res) = NULL;
+  DDR_DIR_VECTS (res) = NULL;
+  DDR_DIST_VECTS (res) = NULL;
 
   if (a == NULL || b == NULL)
     {
@@ -1268,8 +1271,6 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_SUBSCRIPTS (res) = VEC_alloc (subscript_p, heap, DR_NUM_DIMENSIONS (a));
   DDR_LOOP_NEST (res) = loop_nest;
   DDR_INNER_LOOP (res) = 0;
-  DDR_DIR_VECTS (res) = NULL;
-  DDR_DIST_VECTS (res) = NULL;
 
   for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
     {
@@ -1333,6 +1334,7 @@ finalize_ddr_dependent (struct data_dependence_relation *ddr,
 
   DDR_ARE_DEPENDENT (ddr) = chrec;  
   free_subscripts (DDR_SUBSCRIPTS (ddr));
+  DDR_SUBSCRIPTS (ddr) = NULL;
 }
 
 /* The dependence relation DDR cannot be represented by a distance
@@ -2961,7 +2963,7 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
   lambda_vector dist_v;
 
   if (DDR_ARE_DEPENDENT (ddr) != NULL_TREE)
-    return true;
+    return false;
 
   if (same_access_functions (ddr))
     {
@@ -3013,11 +3015,13 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
       if (!lambda_vector_lexico_pos (dist_v, DDR_NB_LOOPS (ddr)))
 	{
 	  lambda_vector save_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
-	  subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr),
-					 loop_nest);
+	  if (!subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr),
+					      loop_nest))
+	    return false;
 	  compute_subscript_distance (ddr);
-	  build_classic_dist_vector_1 (ddr, DDR_B (ddr), DDR_A (ddr),
-				       save_v, &init_b, &index_carry);
+	  if (!build_classic_dist_vector_1 (ddr, DDR_B (ddr), DDR_A (ddr),
+					    save_v, &init_b, &index_carry))
+	    return false;
 	  save_dist_v (ddr, save_v);
 	  DDR_REVERSED_P (ddr) = true;
 
@@ -3047,21 +3051,26 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 	{
 	  lambda_vector save_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
 	  lambda_vector_copy (dist_v, save_v, DDR_NB_LOOPS (ddr));
-	  save_dist_v (ddr, save_v);
 
 	  if (DDR_NB_LOOPS (ddr) > 1)
 	    {
 	      lambda_vector opposite_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
 
-	      subscript_dependence_tester_1 (ddr, DDR_B (ddr), DDR_A (ddr),
-					     loop_nest);
+	      if (!subscript_dependence_tester_1 (ddr, DDR_B (ddr),
+						  DDR_A (ddr), loop_nest))
+		return false;
 	      compute_subscript_distance (ddr);
-	      build_classic_dist_vector_1 (ddr, DDR_B (ddr), DDR_A (ddr),
-					   opposite_v, &init_b, &index_carry);
+	      if (!build_classic_dist_vector_1 (ddr, DDR_B (ddr), DDR_A (ddr),
+						opposite_v, &init_b,
+						&index_carry))
+		return false;
 
+	      save_dist_v (ddr, save_v);
 	      add_outer_distances (ddr, dist_v, index_carry);
 	      add_outer_distances (ddr, opposite_v, index_carry);
 	    }
+	  else
+	    save_dist_v (ddr, save_v);
 	}
     }
   else
@@ -4288,8 +4297,12 @@ free_dependence_relation (struct data_dependence_relation *ddr)
   if (ddr == NULL)
     return;
 
-  if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE && DDR_SUBSCRIPTS (ddr))
+  if (DDR_SUBSCRIPTS (ddr))
     free_subscripts (DDR_SUBSCRIPTS (ddr));
+  if (DDR_DIST_VECTS (ddr))
+    VEC_free (lambda_vector, heap, DDR_DIST_VECTS (ddr));
+  if (DDR_DIR_VECTS (ddr))
+    VEC_free (lambda_vector, heap, DDR_DIR_VECTS (ddr));
 
   free (ddr);
 }
