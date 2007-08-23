@@ -1,3 +1,18 @@
+2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/17390
+	* config/i386/i386.c (ix86_expand_fp_compare): Expand fp comparison to
+	fake fcomi i387 instruction for !TARGET_CMOVE.
+	(ix86_expand_branch): Expand natural sequence with one jump for
+	all targets, not only TARGET_CMOVE.
+	* config/i386/i386.md (*cmpfp_0_cc): New define_insn_and_split
+	pattern to implement fake fcomi sequence.  Split instruction after
+	reload to correct compare sequences.
+	(*cmpfp_xf_cc): Ditto.
+	(*cmpfp_<mode>_cc): Ditto.
+	(*cmpfp_u_cc): Ditto.
+	(*cmpfp_<mode>_cc): Ditto.
+
 2007-08-23  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Annotate

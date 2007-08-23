@@ -11471,26 +11471,24 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch,
   ix86_fp_comparison_codes (code, &bypass_code, &first_code, &second_code);
 
   /* Do fcomi/sahf based test when profitable.  */
-  if ((TARGET_CMOVE || TARGET_SAHF)
+  if (ix86_fp_comparison_arithmetics_cost (code) > cost
       && (bypass_code == UNKNOWN || bypass_test)
-      && (second_code == UNKNOWN || second_test)
-      && ix86_fp_comparison_arithmetics_cost (code) > cost)
+      && (second_code == UNKNOWN || second_test))
     {
+      tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
+      tmp = gen_rtx_SET (VOIDmode, gen_rtx_REG (fpcmp_mode, FLAGS_REG),
+			 tmp);
       if (TARGET_CMOVE)
-	{
-	  tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
-	  tmp = gen_rtx_SET (VOIDmode, gen_rtx_REG (fpcmp_mode, FLAGS_REG),
-			     tmp);
-	  emit_insn (tmp);
-	}
+	emit_insn (tmp);
       else
 	{
-	  tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
-	  tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), UNSPEC_FNSTSW);
+	  gcc_assert (TARGET_SAHF);
+
 	  if (!scratch)
 	    scratch = gen_reg_rtx (HImode);
-	  emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp2));
-	  emit_insn (gen_x86_sahf_1 (scratch));
+	  tmp2 = gen_rtx_CLOBBER (VOIDmode, scratch);
+
+	  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, tmp2)));
 	}
 
       /* The FP codes work out to act like unsigned.  */
@@ -11717,8 +11715,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	/* Check whether we will use the natural sequence with one jump.  If
 	   so, we can expand jump early.  Otherwise delay expansion by
 	   creating compound insn to not confuse optimizers.  */
-	if (bypass_code == UNKNOWN && second_code == UNKNOWN
-	    && TARGET_CMOVE)
+	if (bypass_code == UNKNOWN && second_code == UNKNOWN)
 	  {
 	    ix86_split_fp_branch (code, ix86_compare_op0, ix86_compare_op1,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
