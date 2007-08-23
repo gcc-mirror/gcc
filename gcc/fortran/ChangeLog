@@ -1,3 +1,10 @@
+2007-08-22  Roger Sayle  <roger@eyesopen.com>
+	    Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+
+	* match.c (intrinsic_operators): Delete.
+	(gfc_match_intrinsic_op): Rewrite matcher to avoid calling
+	gfc_match_strings.
+
 2007-08-22  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33020

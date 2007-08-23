@@ -26,39 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 
-/* For matching and debugging purposes.  Order matters here!  The
-   unary operators /must/ precede the binary plus and minus, or
-   the expression parser breaks.  */
-
-static mstring intrinsic_operators[] = {
-    minit ("+", INTRINSIC_UPLUS),
-    minit ("-", INTRINSIC_UMINUS),
-    minit ("+", INTRINSIC_PLUS),
-    minit ("-", INTRINSIC_MINUS),
-    minit ("**", INTRINSIC_POWER),
-    minit ("//", INTRINSIC_CONCAT),
-    minit ("*", INTRINSIC_TIMES),
-    minit ("/", INTRINSIC_DIVIDE),
-    minit (".and.", INTRINSIC_AND),
-    minit (".or.", INTRINSIC_OR),
-    minit (".eqv.", INTRINSIC_EQV),
-    minit (".neqv.", INTRINSIC_NEQV),
-    minit (".eq.", INTRINSIC_EQ_OS),
-    minit ("==", INTRINSIC_EQ),
-    minit (".ne.", INTRINSIC_NE_OS),
-    minit ("/=", INTRINSIC_NE),
-    minit (".ge.", INTRINSIC_GE_OS),
-    minit (">=", INTRINSIC_GE),
-    minit (".le.", INTRINSIC_LE_OS),
-    minit ("<=", INTRINSIC_LE),
-    minit (".lt.", INTRINSIC_LT_OS),
-    minit ("<", INTRINSIC_LT),
-    minit (".gt.", INTRINSIC_GT_OS),
-    minit (">", INTRINSIC_GT),
-    minit (".not.", INTRINSIC_NOT),
-    minit ("parens", INTRINSIC_PARENTHESES),
-    minit (NULL, INTRINSIC_NONE)
-};
 
 /* For debugging and diagnostic purposes.  Return the textual representation
    of the intrinsic operator OP.  */
@@ -726,15 +693,224 @@ gfc_match_symbol (gfc_symbol **matched_symbol, int host_assoc)
 match
 gfc_match_intrinsic_op (gfc_intrinsic_op *result)
 {
-  gfc_intrinsic_op op;
+  locus orig_loc = gfc_current_locus;
+  int ch;
 
-  op = (gfc_intrinsic_op) gfc_match_strings (intrinsic_operators);
+  gfc_gobble_whitespace ();
+  ch = gfc_next_char ();
+  switch (ch)
+    {
+    case '+':
+      /* Matched "+".  */
+      *result = INTRINSIC_PLUS;
+      return MATCH_YES;
 
-  if (op == INTRINSIC_NONE)
-    return MATCH_NO;
+    case '-':
+      /* Matched "-".  */
+      *result = INTRINSIC_MINUS;
+      return MATCH_YES;
 
-  *result = op;
-  return MATCH_YES;
+    case '=':
+      if (gfc_next_char () == '=')
+	{
+	  /* Matched "==".  */
+	  *result = INTRINSIC_EQ;
+	  return MATCH_YES;
+	}
+      break;
+
+    case '<':
+      if (gfc_peek_char () == '=')
+	{
+	  /* Matched "<=".  */
+	  gfc_next_char ();
+	  *result = INTRINSIC_LE;
+	  return MATCH_YES;
+	}
+      /* Matched "<".  */
+      *result = INTRINSIC_LT;
+      return MATCH_YES;
+
+    case '>':
+      if (gfc_peek_char () == '=')
+	{
+	  /* Matched ">=".  */
+	  gfc_next_char ();
+	  *result = INTRINSIC_GE;
+	  return MATCH_YES;
+	}
+      /* Matched ">".  */
+      *result = INTRINSIC_GT;
+      return MATCH_YES;
+
+    case '*':
+      if (gfc_peek_char () == '*')
+	{
+	  /* Matched "**".  */
+	  gfc_next_char ();
+	  *result = INTRINSIC_POWER;
+	  return MATCH_YES;
+	}
+      /* Matched "*".  */
+      *result = INTRINSIC_TIMES;
+      return MATCH_YES;
+
+    case '/':
+      ch = gfc_peek_char ();
+      if (ch == '=')
+	{
+	  /* Matched "/=".  */
+	  gfc_next_char ();
+	  *result = INTRINSIC_NE;
+	  return MATCH_YES;
+	}
+      else if (ch == '/')
+	{
+	  /* Matched "//".  */
+	  gfc_next_char ();
+	  *result = INTRINSIC_CONCAT;
+	  return MATCH_YES;
+	}
+      /* Matched "/".  */
+      *result = INTRINSIC_DIVIDE;
+      return MATCH_YES;
+
+    case '.':
+      ch = gfc_next_char ();
+      switch (ch)
+	{
+	case 'a':
+	  if (gfc_next_char () == 'n'
+	      && gfc_next_char () == 'd'
+	      && gfc_next_char () == '.')
+	    {
+	      /* Matched ".and.".  */
+	      *result = INTRINSIC_AND;
+	      return MATCH_YES;
+	    }
+	  break;
+
+	case 'e':
+	  if (gfc_next_char () == 'q')
+	    {
+	      ch = gfc_next_char ();
+	      if (ch == '.')
+		{
+		  /* Matched ".eq.".  */
+		  *result = INTRINSIC_EQ_OS;
+		  return MATCH_YES;
+		}
+	      else if (ch == 'v')
+		{
+		  if (gfc_next_char () == '.')
+		    {
+		      /* Matched ".eqv.".  */
+		      *result = INTRINSIC_EQV;
+		      return MATCH_YES;
+		    }
+		}
+	    }
+	  break;
+
+	case 'g':
+	  ch = gfc_next_char ();
+	  if (ch == 'e')
+	    {
+	      if (gfc_next_char () == '.')
+		{
+		  /* Matched ".ge.".  */
+		  *result = INTRINSIC_GE_OS;
+		  return MATCH_YES;
+		}
+	    }
+	  else if (ch == 't')
+	    {
+	      if (gfc_next_char () == '.')
+		{
+		  /* Matched ".gt.".  */
+		  *result = INTRINSIC_GT_OS;
+		  return MATCH_YES;
+		}
+	    }
+	  break;
+
+	case 'l':
+	  ch = gfc_next_char ();
+	  if (ch == 'e')
+	    {
+	      if (gfc_next_char () == '.')
+		{
+		  /* Matched ".le.".  */
+		  *result = INTRINSIC_LE_OS;
+		  return MATCH_YES;
+		}
+	    }
+	  else if (ch == 't')
+	    {
+	      if (gfc_next_char () == '.')
+		{
+		  /* Matched ".lt.".  */
+		  *result = INTRINSIC_LT_OS;
+		  return MATCH_YES;
+		}
+	    }
+	  break;
+
+	case 'n':
+	  ch = gfc_next_char ();
+	  if (ch == 'e')
+	    {
+	      ch = gfc_next_char ();
+	      if (ch == '.')
+		{
+		  /* Matched ".ne.".  */
+		  *result = INTRINSIC_NE_OS;
+		  return MATCH_YES;
+		}
+	      else if (ch == 'q')
+		{
+		  if (gfc_next_char () == 'v'
+		      && gfc_next_char () == '.')
+		    {
+		      /* Matched ".neqv.".  */
+		      *result = INTRINSIC_NEQV;
+		      return MATCH_YES;
+		    }
+		}
+	    }
+	  else if (ch == 'o')
+	    {
+	      if (gfc_next_char () == 't'
+		  && gfc_next_char () == '.')
+		{
+		  /* Matched ".not.".  */
+		  *result = INTRINSIC_NOT;
+		  return MATCH_YES;
+		}
+	    }
+	  break;
+
+	case 'o':
+	  if (gfc_next_char () == 'r'
+	      && gfc_next_char () == '.')
+	    {
+	      /* Matched ".or.".  */
+	      *result = INTRINSIC_OR;
+	      return MATCH_YES;
+	    }
+	  break;
+
+	default:
+	  break;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  gfc_current_locus = orig_loc;
+  return MATCH_NO;
 }
 
 
