@@ -262,8 +262,9 @@ rm -f LAST_UPDATED gcc/REVISION
 
 revision=`svn info | awk '/Revision:/ { print $2 }'`
 branch=`svn info | sed -ne "/URL:/ {
-s,.*/gcc/,,g
-s,branches/,,
+s,.*/trunk,trunk,
+s,.*/branches/,,
+s,.*/tags/,,
 p
 }"`
 {
