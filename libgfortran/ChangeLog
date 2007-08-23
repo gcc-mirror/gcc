@@ -1,3 +1,13 @@
+2007-08-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/23138
+	* acinclude.m4 (LIBGFOR_CHECK_MINGW_SNPRINTF): New check.
+	* configure.ac: Use LIBGFOR_CHECK_MINGW_SNPRINTF.
+	* libgfortran.h: If HAVE_MINGW_SNPRINTF is true, use __mingw_snprintf
+	instead of snprintf.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2007-08-22  Bernhard Fischer  <rep.dot.nop@gmail.com>
 
 	* libgfortran/Makefile.am (AM_CPPFLAGS): Commentary typo fix.

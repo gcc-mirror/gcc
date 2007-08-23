@@ -70,6 +70,16 @@ typedef off_t gfc_offset;
 #endif
 
 
+/* On mingw, work around the buggy Windows snprintf() by using the one
+   mingw provides, __mingw_snprintf().  We also provide a prototype for
+   __mingw_snprintf(), because the mingw headers currently don't have one.  */
+#if HAVE_MINGW_SNPRINTF
+extern int __mingw_snprintf (char *, size_t, const char *, ...);
+#undef snprintf
+#define snprintf __mingw_snprintf
+#endif
+
+
 /* For a library, a standard prefix is a requirement in order to partition
    the namespace.  IPREFIX is for symbols intended to be internal to the
    library.  */

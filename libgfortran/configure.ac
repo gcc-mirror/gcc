@@ -383,6 +383,9 @@ LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT
 
+# Check whether __mingw_snprintf() is present
+LIBGFOR_CHECK_MINGW_SNPRINTF
+
 # Check for GNU libc feenableexcept
 AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
 
