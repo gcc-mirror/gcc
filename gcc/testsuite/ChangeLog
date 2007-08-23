@@ -1,3 +1,9 @@
+2007-08-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.target/i386/cmov3.c: Fix scan-assembler.
+	* gcc.target/i386/cmov4.c: Fix scan-assembler.
+	* gcc.target/i386/xchg-2.c: Fix scan-assembler.
+
 2007-08-22  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33020
