@@ -241,7 +241,6 @@ dataflow 		Kenneth Zadeck		zadeck@naturalbridge.com
 Fortran			Janne Blomqvist		jb@gcc.gnu.org
 Fortran			Tobias Burnus		burnus@net-b.de
 Fortran			François-Xavier Coudert	fxcoudert@gcc.gnu.org
-Fortran			Bud Davis		jmdavis@link.com
 Fortran			Jerry DeLisle		jvdelisle@gcc.gnu.org
 Fortran			Erik Edelmann		erik.edelmann@iki.fi
 Fortran			Steve Kargl		sgk@troutmask.apl.washington.edu
@@ -295,6 +294,7 @@ R. Kelley Cook					kcook@gcc.gnu.org
 Christian Cornelssen				ccorn@cs.tu-berlin.de
 Ian Dall					ian@beware.dropbear.id.au
 David Daney					ddaney@avtrex.com
+Bud Davis					jmdavis@link.com
 Benoit Dupont de Dinechin			benoit.dupont-de-dinechin@st.com
 Mohan Embar					gnustuff@thisiscool.com
 Revital Eres                                    eres@il.ibm.com 
