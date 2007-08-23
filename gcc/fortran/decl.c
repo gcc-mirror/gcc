@@ -1462,10 +1462,11 @@ variable_decl (int elem)
 	  break;
 
 	/* Non-constant lengths need to be copied after the first
-	   element.  */
+	   element.  Also copy assumed lengths.  */
 	case MATCH_NO:
-	  if (elem > 1 && current_ts.cl->length
-	      && current_ts.cl->length->expr_type != EXPR_CONSTANT)
+	  if (elem > 1
+	      && (current_ts.cl->length == NULL
+		  || current_ts.cl->length->expr_type != EXPR_CONSTANT))
 	    {
 	      cl = gfc_get_charlen ();
 	      cl->next = gfc_current_ns->cl_list;
