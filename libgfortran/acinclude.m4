@@ -386,3 +386,19 @@ AC_DEFUN([LIBGFOR_CHECK_FPSETMASK], [
     AC_DEFINE(HAVE_FPSETMASK, 1, [Define if you have fpsetmask.])
   fi
 ])
+
+dnl Check whether we have a mingw that provides a __mingw_snprintf function
+AC_DEFUN([LIBGFOR_CHECK_MINGW_SNPRINTF], [
+  AC_CACHE_CHECK([whether __mingw_snprintf is present], have_mingw_snprintf, [
+    AC_TRY_LINK([
+#include <stdio.h>
+extern int __mingw_snprintf (char *, size_t, const char *, ...);
+],[
+__mingw_snprintf (NULL, 0, "%d\n", 1);
+],
+    eval "have_mingw_snprintf=yes", eval "have_mingw_snprintf=no")
+  ])
+  if test x"$have_mingw_snprintf" = xyes; then
+    AC_DEFINE(HAVE_MINGW_SNPRINTF, 1, [Define if you have __mingw_snprintf.])
+  fi
+])
