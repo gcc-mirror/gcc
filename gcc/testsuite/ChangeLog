@@ -13,6 +13,11 @@
 
 2007-08-23  Paolo Bonzini  <bonzini@gnu.org>
 
+	* gcc.target/i386/xorps-sse.c: New.
+	* gcc.target/i386/xorps-sse2.c: New.
+
+2007-08-23  Paolo Bonzini  <bonzini@gnu.org>
+
 	* gcc.target/i386/cmov3.c: Fix scan-assembler.
 	* gcc.target/i386/cmov4.c: Fix scan-assembler.
 	* gcc.target/i386/xchg-2.c: Fix scan-assembler.
