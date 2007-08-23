@@ -2,7 +2,7 @@
    because stabs referred to an optimized-away literal pool
    entry.  */
 
-/* { dg-do run { target s390*-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2 -fno-omit-frame-pointer -gstabs" } */
 
 int main (void)

@@ -1,7 +1,7 @@
 /* This test case used to abort due to a reload bug with
    elimination offsets.  */
 
-/* { dg-do run { target s390*-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O2 -mpacked-stack" } */
 
 extern void abort (void);

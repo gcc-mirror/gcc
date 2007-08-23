@@ -5,7 +5,7 @@
    reordering which leads to an insn with wrong alias info.
    The scheduler afterwards exchanges the mvc and st instructions 
    not recognizing the anti dependence.  */
-/* { dg-do run { target s390-*-* } } */
+/* { dg-do run } */
 /* { dg-options "-O3 -mtune=z990 -fno-inline" } */
 
 extern void exit (int);

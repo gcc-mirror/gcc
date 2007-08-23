@@ -1,6 +1,6 @@
 /* This used to ICE due to a literal pool handling bug on s390x.  */
 
-/* { dg-do compile { target s390*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
 
 static struct table { int x; } table[3];

@@ -1,7 +1,7 @@
 /* Make sure that the S/390 specific shift_count_operand
    predicate work properly.  */
 
-/* { dg-do compile { target s390*-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O3" } */
 
 unsigned long long
