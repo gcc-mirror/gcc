@@ -4426,7 +4426,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
 bool
 must_pass_in_stack_var_size (enum machine_mode mode ATTRIBUTE_UNUSED,
-			     tree type)
+			     const_tree type)
 {
   if (!type)
     return false;
@@ -4448,7 +4448,7 @@ must_pass_in_stack_var_size (enum machine_mode mode ATTRIBUTE_UNUSED,
 /* ??? Should be able to merge these two by examining BLOCK_REG_PADDING.  */
 
 bool
-must_pass_in_stack_var_size_or_pad (enum machine_mode mode, tree type)
+must_pass_in_stack_var_size_or_pad (enum machine_mode mode, const_tree type)
 {
   if (!type)
     return false;

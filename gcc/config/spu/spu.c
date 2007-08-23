@@ -113,8 +113,8 @@ static tree spu_handle_vector_attribute (tree * node, tree name, tree args,
 					 int flags,
 					 unsigned char *no_add_attrs);
 static int spu_naked_function_p (tree func);
-static unsigned char spu_pass_by_reference (int *cum, enum machine_mode mode,
-					    tree type, unsigned char named);
+static unsigned char spu_pass_by_reference (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+					    const_tree type, unsigned char named);
 static tree spu_build_builtin_va_list (void);
 static tree spu_gimplify_va_arg_expr (tree valist, tree type, tree * pre_p,
 				      tree * post_p);
@@ -128,7 +128,7 @@ static unsigned char spu_rtx_costs (rtx x, int code, int outer_code,
 				    int *total);
 static unsigned char spu_function_ok_for_sibcall (tree decl, tree exp);
 static void spu_init_libfuncs (void);
-static bool spu_return_in_memory (tree type, tree fntype);
+static bool spu_return_in_memory (const_tree type, const_tree fntype);
 static void fix_range (const char *);
 static void spu_encode_section_info (tree, rtx, int);
 static tree spu_builtin_mul_widen_even (tree);
@@ -3020,7 +3020,7 @@ spu_initial_elimination_offset (int from, int to)
 }
 
 rtx
-spu_function_value (tree type, tree func ATTRIBUTE_UNUSED)
+spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode = TYPE_MODE (type);
   int byte_size = ((mode == BLKmode)
@@ -3102,7 +3102,7 @@ spu_function_arg (CUMULATIVE_ARGS cum,
 static bool
 spu_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
-		       tree type, bool named ATTRIBUTE_UNUSED)
+		       const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
 }
@@ -4396,7 +4396,7 @@ spu_gen_subreg (enum machine_mode mode, rtx x)
 }
 
 static bool
-spu_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+spu_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return (TYPE_MODE (type) == BLKmode
 	  && ((type) == 0

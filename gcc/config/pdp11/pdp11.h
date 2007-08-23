@@ -983,7 +983,7 @@ extern struct rtx_def *cc0_reg_rtx;
       long sval[2];							\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
       REAL_VALUE_TO_TARGET_DOUBLE (r, sval);				\
-      fprintf (FILE, "$%#o", sval[0] >> 16); }				\
+      fprintf (FILE, "$%#lo", sval[0] >> 16); }				\
   else { putc ('$', FILE); output_addr_const_pdp11 (FILE, X); }}
 
 /* Print a memory address as an operand to reference that memory location.  */

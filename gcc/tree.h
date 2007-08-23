@@ -2311,7 +2311,7 @@ struct tree_type GTY(())
   tree reference_to;
   union tree_type_symtab {
     int GTY ((tag ("0"))) address;
-    char * GTY ((tag ("1"))) pointer;
+    const char * GTY ((tag ("1"))) pointer;
     struct die_struct * GTY ((tag ("2"))) die;
   } GTY ((desc ("debug_hooks == &sdb_debug_hooks ? 1 : debug_hooks == &dwarf2_debug_hooks ? 2 : 0"),
 	  descbits ("2"))) symtab;
@@ -4803,7 +4803,7 @@ extern void expand_function_start (tree);
 extern void stack_protect_prologue (void);
 extern void stack_protect_epilogue (void);
 extern void recompute_tree_invariant_for_addr_expr (tree);
-extern bool needs_to_live_in_memory (tree);
+extern bool needs_to_live_in_memory (const_tree);
 extern tree reconstruct_complex_type (tree, tree);
 
 extern int real_onep (const_tree);
@@ -4858,7 +4858,7 @@ extern void free_temp_slots (void);
 extern void pop_temp_slots (void);
 extern void push_temp_slots (void);
 extern void preserve_temp_slots (rtx);
-extern int aggregate_value_p (tree, tree);
+extern int aggregate_value_p (const_tree, const_tree);
 extern void push_function_context (void);
 extern void pop_function_context (void);
 extern void push_function_context_to (tree);
@@ -4921,8 +4921,8 @@ extern int call_expr_flags (const_tree);
 
 extern int setjmp_call_p (const_tree);
 extern bool alloca_call_p (const_tree);
-extern bool must_pass_in_stack_var_size (enum machine_mode, tree);
-extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, tree);
+extern bool must_pass_in_stack_var_size (enum machine_mode, const_tree);
+extern bool must_pass_in_stack_var_size_or_pad (enum machine_mode, const_tree);
 
 /* In attribs.c.  */
 

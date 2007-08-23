@@ -60,6 +60,6 @@ extern void         mt_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
 extern rtx          mt_function_arg	 (const CUMULATIVE_ARGS *, enum machine_mode, tree, int, int);
 extern void	    mt_va_start	 (tree, rtx);
 extern enum reg_class mt_secondary_reload_class (enum reg_class, enum machine_mode, rtx);
-extern rtx	    mt_function_value	 (tree, enum machine_mode, tree);
+extern rtx	    mt_function_value	 (const_tree, enum machine_mode, const_tree);
 #endif
 #endif

@@ -119,7 +119,7 @@ static void cris_init_libfuncs (void);
 static bool cris_rtx_costs (rtx, int, int, int *);
 static int cris_address_cost (rtx);
 static bool cris_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				    tree, bool);
+				    const_tree, bool);
 static int cris_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static tree cris_md_asm_clobbers (tree, tree, tree);
@@ -169,7 +169,7 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_ADDRESS_COST cris_address_cost
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX cris_struct_value_rtx
 #undef TARGET_SETUP_INCOMING_VARARGS
@@ -3402,7 +3402,7 @@ cris_setup_incoming_varargs (CUMULATIVE_ARGS *ca,
 
 static bool
 cris_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
-			enum machine_mode mode, tree type,
+			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
   return (targetm.calls.must_pass_in_stack (mode, type)

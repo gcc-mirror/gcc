@@ -60,10 +60,7 @@ static int c4x_parse_pragma (const char *, tree *, tree *);
   do { warning (OPT_Wpragmas, gmsgid, arg); return -1; } while (0)
 
 static int
-c4x_parse_pragma (name, func, sect)
-     const char *name;
-     tree *func;
-     tree *sect;
+c4x_parse_pragma (const char *name, tree *func, tree *sect)
 {
   tree f, s, x;
 
@@ -93,8 +90,7 @@ c4x_parse_pragma (name, func, sect)
 }
 
 void
-c4x_pr_CODE_SECTION (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+c4x_pr_CODE_SECTION (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree func, sect;
 
@@ -106,8 +102,7 @@ c4x_pr_CODE_SECTION (pfile)
 }
 
 void
-c4x_pr_DATA_SECTION (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+c4x_pr_DATA_SECTION (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree func, sect;
 
@@ -119,8 +114,7 @@ c4x_pr_DATA_SECTION (pfile)
 }
 
 void
-c4x_pr_FUNC_IS_PURE (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+c4x_pr_FUNC_IS_PURE (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree func;
 
@@ -130,8 +124,7 @@ c4x_pr_FUNC_IS_PURE (pfile)
 }
 
 void
-c4x_pr_FUNC_NEVER_RETURNS (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+c4x_pr_FUNC_NEVER_RETURNS (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree func;
 
@@ -141,8 +134,7 @@ c4x_pr_FUNC_NEVER_RETURNS (pfile)
 }
 
 void
-c4x_pr_INTERRUPT (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+c4x_pr_INTERRUPT (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   tree func;
 
@@ -154,7 +146,6 @@ c4x_pr_INTERRUPT (pfile)
 /* Used for FUNC_CANNOT_INLINE, FUNC_EXT_CALLED, FUNC_IS_SYSTEM,
    FUNC_NO_GLOBAL_ASG, and FUNC_NO_IND_ASG.  */
 void
-c4x_pr_ignored (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+c4x_pr_ignored (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
 }

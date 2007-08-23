@@ -59,8 +59,8 @@
 #define CE_REG_CLASS_P(C) \
   ((C) == HI_REG || (C) == LO_REG || (C) == CE_REGS)
 
-static int score_arg_partial_bytes (const CUMULATIVE_ARGS *,
-                                    enum machine_mode, tree, int);
+static int score_arg_partial_bytes (CUMULATIVE_ARGS *,
+                                    enum machine_mode, tree, bool);
 
 static int score_symbol_insns (enum score_symbol_type);
 
@@ -104,13 +104,13 @@ static int score_address_cost (rtx);
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK  hook_bool_tree_hwi_hwi_tree_true
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS    hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS    hook_bool_const_tree_true
 
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN  hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN  hook_bool_const_tree_true
 
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES       hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES       hook_bool_const_tree_true
 
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK       must_pass_in_stack_var_size
@@ -137,7 +137,7 @@ static int score_address_cost (rtx);
    small structures are returned in a register.
    Objects with varying size must still be returned in memory.  */
 static bool
-score_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
+score_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
   return ((TYPE_MODE (type) == BLKmode)
           || (int_size_in_bytes (type) > 2 * UNITS_PER_WORD)
@@ -147,7 +147,7 @@ score_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 /* Return nonzero when an argument must be passed by reference.  */
 static bool
 score_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-                         enum machine_mode mode, tree type,
+                         enum machine_mode mode, const_tree type,
                          bool named ATTRIBUTE_UNUSED)
 {
   /* If we have a variable-sized parameter, we have no choice.  */
@@ -156,7 +156,7 @@ score_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 
 /* Return a legitimate address for REG + OFFSET.  */
 static rtx
-score_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
+score_add_offset (rtx temp ATTRIBUTE_UNUSED, rtx reg, HOST_WIDE_INT offset)
 {
   if (!IMM_IN_RANGE (offset, 15, 1))
     {
@@ -685,8 +685,8 @@ score_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 /* Implement TARGET_ARG_PARTIAL_BYTES macro.  */
 static int
-score_arg_partial_bytes (const CUMULATIVE_ARGS *cum,
-                         enum machine_mode mode, tree type, int named)
+score_arg_partial_bytes (CUMULATIVE_ARGS *cum,
+                         enum machine_mode mode, tree type, bool named)
 {
   struct score_arg_info info;
   classify_arg (cum, mode, type, named, &info);
@@ -730,7 +730,7 @@ score_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    VALTYPE is the return type and MODE is VOIDmode.  For libcalls,
    VALTYPE is null and MODE is the mode of the return value.  */
 rtx
-score_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
+score_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
                       enum machine_mode mode)
 {
   if (valtype)

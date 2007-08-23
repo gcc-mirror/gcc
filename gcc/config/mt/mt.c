@@ -631,9 +631,9 @@ mt_arg_partial_bytes (CUMULATIVE_ARGS * pcum,
 /* Implement TARGET_PASS_BY_REFERENCE hook.  */
 static bool
 mt_pass_by_reference (CUMULATIVE_ARGS * cum ATTRIBUTE_UNUSED,
-		       enum machine_mode mode ATTRIBUTE_UNUSED,
-		       tree type,
-		       bool named ATTRIBUTE_UNUSED)
+		      enum machine_mode mode ATTRIBUTE_UNUSED,
+		      const_tree type,
+		      bool named ATTRIBUTE_UNUSED)
 {
   return (type && int_size_in_bytes (type) > 4 * UNITS_PER_WORD);
 }
@@ -1464,7 +1464,7 @@ mt_secondary_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
 /* Handle FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE, and LIBCALL_VALUE
    macros.  */
 rtx
-mt_function_value (tree valtype, enum machine_mode mode, tree func_decl ATTRIBUTE_UNUSED)
+mt_function_value (const_tree valtype, enum machine_mode mode, const_tree func_decl ATTRIBUTE_UNUSED)
 {
   if ((mode) == DImode || (mode) == DFmode)
     return gen_rtx_MEM (mode, gen_rtx_REG (mode, RETURN_VALUE_REGNUM));
@@ -1631,7 +1631,7 @@ mt_split_words (enum machine_mode nmode,
 
 /* Implement TARGET_MUST_PASS_IN_STACK hook.  */
 static bool
-mt_pass_in_stack (enum machine_mode mode ATTRIBUTE_UNUSED, tree type)
+mt_pass_in_stack (enum machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
 {
   return (((type) != 0
 	   && (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
@@ -2469,7 +2469,7 @@ const struct attribute_spec mt_attribute_table[];
 #undef  TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX		mt_struct_value_rtx
 #undef  TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES	hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES	hook_bool_const_tree_true
 #undef  TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE	mt_pass_by_reference
 #undef  TARGET_MUST_PASS_IN_STACK

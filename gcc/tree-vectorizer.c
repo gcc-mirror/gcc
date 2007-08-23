@@ -1378,7 +1378,7 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
 static bool
 bb_in_loop_p (const_basic_block bb, const void *data)
 {
-  struct loop *loop = (struct loop *)data;
+  const struct loop *const loop = (const struct loop *)data;
   if (flow_bb_inside_loop_p (loop, bb))
     return true;
   return false;

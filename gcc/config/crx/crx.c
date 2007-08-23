@@ -135,7 +135,7 @@ rtx crx_compare_op1 = NULL_RTX;
 static bool crx_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static rtx crx_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 				 int incoming ATTRIBUTE_UNUSED);
-static bool crx_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED);
+static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED);
 static int crx_address_cost (rtx);
 
 /*****************************************************************************/
@@ -204,7 +204,7 @@ crx_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 /* Implements hook TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-crx_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   if (TYPE_MODE (type) == BLKmode)
     {

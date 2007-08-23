@@ -130,7 +130,7 @@ static rtx gen_float_relational (enum rtx_code, rtx, rtx);
 static rtx gen_conditional_move (rtx);
 static rtx fixup_subreg_mem (rtx);
 static struct machine_function * xtensa_init_machine_status (void);
-static bool xtensa_return_in_msb (tree);
+static bool xtensa_return_in_msb (const_tree);
 static void printx (FILE *, signed int);
 static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
 static rtx xtensa_builtin_saveregs (void);
@@ -140,7 +140,7 @@ static section *xtensa_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
 static bool xtensa_rtx_costs (rtx, int, int, int *);
 static tree xtensa_build_builtin_va_list (void);
-static bool xtensa_return_in_memory (tree, tree);
+static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, tree, bool);
@@ -179,11 +179,11 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_BUILD_BUILTIN_VA_LIST xtensa_build_builtin_va_list
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY xtensa_return_in_memory
@@ -1842,7 +1842,7 @@ function_arg_boundary (enum machine_mode mode, tree type)
 
 
 static bool
-xtensa_return_in_msb (tree valtype)
+xtensa_return_in_msb (const_tree valtype)
 {
   return (TARGET_BIG_ENDIAN
 	  && AGGREGATE_TYPE_P (valtype)
@@ -3100,7 +3100,7 @@ xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-xtensa_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+xtensa_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type)
 	  > 4 * UNITS_PER_WORD);

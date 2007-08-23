@@ -202,6 +202,12 @@ hook_bool_tree_true (tree a ATTRIBUTE_UNUSED)
 }
 
 bool
+hook_bool_const_tree_true (const_tree a ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+bool
 hook_bool_tree_tree_false (tree a ATTRIBUTE_UNUSED, tree b ATTRIBUTE_UNUSED)
 {
   return false;

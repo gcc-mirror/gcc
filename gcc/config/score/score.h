@@ -791,7 +791,7 @@ typedef struct score_args
 
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) \
-  score_declare_object (STREAM, NAME, "", ":\n", 0)
+  score_declare_object (STREAM, NAME, "", ":\n")
 
 /* This says how to output an external.  It would be possible not to
    output anything and let undefined symbol become external. However

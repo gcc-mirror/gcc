@@ -375,7 +375,7 @@ static void frv_output_const_unspec		(FILE *,
 						 const struct frv_unspec *);
 static bool frv_function_ok_for_sibcall		(tree, tree);
 static rtx frv_struct_value_rtx			(tree, int);
-static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
+static bool frv_must_pass_in_stack (enum machine_mode mode, const_tree type);
 static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
@@ -3114,7 +3114,7 @@ frv_init_cumulative_args (CUMULATIVE_ARGS *cum,
    in registers.  */
 
 static bool
-frv_must_pass_in_stack (enum machine_mode mode, tree type)
+frv_must_pass_in_stack (enum machine_mode mode, const_tree type)
 {
   if (mode == BLKmode)
     return true;

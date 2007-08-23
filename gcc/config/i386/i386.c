@@ -1573,7 +1573,7 @@ static bool ext_80387_constants_init = 0;
 
 
 static struct machine_function * ix86_init_machine_status (void);
-static rtx ix86_function_value (tree, tree, bool);
+static rtx ix86_function_value (const_tree, const_tree, bool);
 static int ix86_function_regparm (tree, tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
@@ -3011,7 +3011,7 @@ ix86_function_regparm (tree type, tree decl)
    indirectly or considering a libcall.  Otherwise return 0.  */
 
 static int
-ix86_function_sseregparm (tree type, tree decl)
+ix86_function_sseregparm (const_tree type, const_tree decl)
 {
   gcc_assert (!TARGET_64BIT);
 
@@ -3038,7 +3038,8 @@ ix86_function_sseregparm (tree type, tree decl)
      (and DFmode for SSE2) arguments in SSE registers.  */
   if (decl && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
     {
-      struct cgraph_local_info *i = cgraph_local_info (decl);
+      /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
+      struct cgraph_local_info *i = cgraph_local_info ((tree)CONST_CAST(decl));
       if (i && i->local)
 	return TARGET_SSE2 ? 2 : 1;
     }
@@ -3182,7 +3183,7 @@ ix86_function_arg_regno_p (int regno)
 /* Return if we do not know how to pass TYPE solely in registers.  */
 
 static bool
-ix86_must_pass_in_stack (enum machine_mode mode, tree type)
+ix86_must_pass_in_stack (enum machine_mode mode, const_tree type)
 {
   if (must_pass_in_stack_var_size_or_pad (mode, type))
     return true;
@@ -3263,7 +3264,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
    the middle-end decides to do with these vector types.  */
 
 static enum machine_mode
-type_natural_mode (tree type)
+type_natural_mode (const_tree type)
 {
   enum machine_mode mode = TYPE_MODE (type);
 
@@ -3377,7 +3378,7 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
 */
 
 static int
-classify_argument (enum machine_mode mode, tree type,
+classify_argument (enum machine_mode mode, const_tree type,
 		   enum x86_64_reg_class classes[MAX_CLASSES], int bit_offset)
 {
   HOST_WIDE_INT bytes =
@@ -3649,7 +3650,7 @@ classify_argument (enum machine_mode mode, tree type,
 /* Examine the argument and return set number of register required in each
    class.  Return 0 iff parameter should be passed in memory.  */
 static int
-examine_argument (enum machine_mode mode, tree type, int in_return,
+examine_argument (enum machine_mode mode, const_tree type, int in_return,
 		  int *int_nregs, int *sse_nregs)
 {
   enum x86_64_reg_class regclass[MAX_CLASSES];
@@ -3692,7 +3693,7 @@ examine_argument (enum machine_mode mode, tree type, int in_return,
 
 static rtx
 construct_container (enum machine_mode mode, enum machine_mode orig_mode,
-		     tree type, int in_return, int nintregs, int nsseregs,
+		     const_tree type, int in_return, int nintregs, int nsseregs,
 		     const int *intreg, int sse_regno)
 {
   /* The following variables hold the static issued_error state.  */
@@ -4191,7 +4192,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
 static bool
 ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
-			tree type, bool named ATTRIBUTE_UNUSED)
+			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   if (TARGET_64BIT_MS_ABI)
     {
@@ -4342,7 +4343,7 @@ ix86_function_value_regno_p (int regno)
 
 static rtx
 function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
-		   tree fntype, tree fn)
+		   const_tree fntype, const_tree fn)
 {
   unsigned int regno;
 
@@ -4381,7 +4382,7 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
 
 static rtx
 function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
-		   tree valtype)
+		   const_tree valtype)
 {
   rtx ret;
 
@@ -4438,10 +4439,10 @@ function_value_ms_64 (enum machine_mode orig_mode, enum machine_mode mode)
 }
 
 static rtx
-ix86_function_value_1 (tree valtype, tree fntype_or_decl,
+ix86_function_value_1 (const_tree valtype, const_tree fntype_or_decl,
 		       enum machine_mode orig_mode, enum machine_mode mode)
 {
-  tree fn, fntype;
+  const_tree fn, fntype;
 
   fn = NULL_TREE;
   if (fntype_or_decl && DECL_P (fntype_or_decl))
@@ -4457,7 +4458,7 @@ ix86_function_value_1 (tree valtype, tree fntype_or_decl,
 }
 
 static rtx
-ix86_function_value (tree valtype, tree fntype_or_decl,
+ix86_function_value (const_tree valtype, const_tree fntype_or_decl,
 		     bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode, orig_mode;
@@ -4476,7 +4477,7 @@ ix86_libcall_value (enum machine_mode mode)
 /* Return true iff type is returned in memory.  */
 
 static int
-return_in_memory_32 (tree type, enum machine_mode mode)
+return_in_memory_32 (const_tree type, enum machine_mode mode)
 {
   HOST_WIDE_INT size;
 
@@ -4516,14 +4517,14 @@ return_in_memory_32 (tree type, enum machine_mode mode)
 }
 
 static int
-return_in_memory_64 (tree type, enum machine_mode mode)
+return_in_memory_64 (const_tree type, enum machine_mode mode)
 {
   int needed_intregs, needed_sseregs;
   return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
 }
 
 static int
-return_in_memory_ms_64 (tree type, enum machine_mode mode)
+return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
 {
   HOST_WIDE_INT size = int_size_in_bytes (type);
 
@@ -4536,9 +4537,9 @@ return_in_memory_ms_64 (tree type, enum machine_mode mode)
 }
 
 int
-ix86_return_in_memory (tree type)
+ix86_return_in_memory (const_tree type)
 {
-  enum machine_mode mode = type_natural_mode (type);
+  const enum machine_mode mode = type_natural_mode (type);
 
   if (TARGET_64BIT_MS_ABI)
     return return_in_memory_ms_64 (type, mode);
@@ -4554,7 +4555,7 @@ ix86_return_in_memory (tree type)
    are returned in memory, rather than in MMX registers.  */
 
 int 
-ix86_sol10_return_in_memory (tree type)
+ix86_sol10_return_in_memory (const_tree type)
 {
   int size;
   enum machine_mode mode = type_natural_mode (type);
@@ -23633,7 +23634,7 @@ static const struct attribute_spec ix86_attribute_table[] =
 #define TARGET_MD_ASM_CLOBBERS ix86_md_asm_clobbers
 
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX ix86_struct_value_rtx
 #undef TARGET_SETUP_INCOMING_VARARGS

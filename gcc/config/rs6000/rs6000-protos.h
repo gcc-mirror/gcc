@@ -123,7 +123,7 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 extern int function_arg_boundary (enum machine_mode, tree);
 extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern tree altivec_resolve_overloaded_builtin (tree, tree);
-extern rtx rs6000_function_value (tree, tree);
+extern rtx rs6000_function_value (const_tree, const_tree);
 extern rtx rs6000_libcall_value (enum machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
 extern int function_ok_for_sibcall (tree);
@@ -131,7 +131,7 @@ extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (tree);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-extern enum direction function_arg_padding (enum machine_mode, tree);
+extern enum direction function_arg_padding (enum machine_mode, const_tree);
 #endif /* ARGS_SIZE_RTX */
 
 #endif /* TREE_CODE */

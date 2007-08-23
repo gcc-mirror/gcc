@@ -223,7 +223,7 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int);
 extern int function_arg_boundary (enum machine_mode, tree);
-extern bool mips_pad_arg_upward (enum machine_mode, tree);
+extern bool mips_pad_arg_upward (enum machine_mode, const_tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
 extern void mips_va_start (tree, rtx);
 
@@ -262,7 +262,7 @@ extern enum mips_loadgp_style mips_current_loadgp_style (void);
 extern void mips_expand_prologue (void);
 extern void mips_expand_epilogue (int);
 extern int mips_can_use_return_insn (void);
-extern struct rtx_def *mips_function_value (tree, tree, enum machine_mode);
+extern struct rtx_def *mips_function_value (const_tree, const_tree, enum machine_mode);
 
 extern bool mips_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);

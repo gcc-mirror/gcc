@@ -55,7 +55,7 @@ void score_init_cumulative_args (CUMULATIVE_ARGS *cum,
 void score_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
                                  tree type, int named);
 
-rtx score_function_value (tree valtype, tree func, enum machine_mode mode);
+rtx score_function_value (const_tree valtype, const_tree func, enum machine_mode mode);
 
 rtx score_va_arg (tree va_list, tree type);
 
@@ -71,7 +71,8 @@ int score_register_move_cost (enum machine_mode mode, enum reg_class to,
                               enum reg_class from);
 
 void score_declare_object (FILE *stream, const char *name,
-                           const char *directive, const char *fmt, ...);
+                           const char *directive, const char *fmt, ...)
+     ATTRIBUTE_PRINTF_4;
 
 void score_declare_object_name (FILE *stream, const char *name, tree decl);
 

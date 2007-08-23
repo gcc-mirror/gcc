@@ -1407,6 +1407,7 @@ do {                                                                    \
 /* Output #ident as a .ident.  */
 
 /* output external reference */
+#undef ASM_OUTPUT_EXTERNAL
 #define ASM_OUTPUT_EXTERNAL(FILE,DECL,NAME) \
   {fputs ("\t; extern\t", FILE); \
   assemble_name (FILE, NAME); \

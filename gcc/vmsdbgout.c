@@ -149,13 +149,13 @@ static char *full_name (const char *);
 static unsigned int lookup_filename (const char *);
 static void addr_const_to_string (char *, rtx);
 static int write_debug_header (DST_HEADER *, const char *, int);
-static int write_debug_addr (char *, const char *, int);
+static int write_debug_addr (const char *, const char *, int);
 static int write_debug_data1 (unsigned int, const char *, int);
 static int write_debug_data2 (unsigned int, const char *, int);
 static int write_debug_data4 (unsigned long, const char *, int);
 static int write_debug_data8 (unsigned long long, const char *, int);
-static int write_debug_delta4 (char *, char *, const char *, int);
-static int write_debug_string (char *, const char *, int);
+static int write_debug_delta4 (const char *, const char *, const char *, int);
+static int write_debug_string (const char *, const char *, int);
 static int write_modbeg (int);
 static int write_modend (int);
 static int write_rtnbeg (int, int);
@@ -381,7 +381,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
   do						\
     {						\
       register int slen = strlen(P);		\
-      register char *p = (P);			\
+      register const char *p = (P);		\
       register int i;				\
       fprintf (FILE, "\t.ascii \"");		\
       for (i = 0; i < slen; i++)		\
@@ -579,7 +579,7 @@ write_debug_header (DST_HEADER *header, const char *comment, int dosizeonly)
    nonzero.  */
 
 static int
-write_debug_addr (char *symbol, const char *comment, int dosizeonly)
+write_debug_addr (const char *symbol, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -668,8 +668,8 @@ write_debug_data8 (unsigned long long data8, const char *comment,
    DOSIZEONLY is nonzero.  */
 
 static int
-write_debug_delta4 (char *label1, char *label2, const char *comment,
-		    int dosizeonly)
+write_debug_delta4 (const char *label1, const char *label2,
+		    const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -687,7 +687,7 @@ write_debug_delta4 (char *label1, char *label2, const char *comment,
    nonzero.  */
 
 static int
-write_debug_string (char *string, const char *comment, int dosizeonly)
+write_debug_string (const char *string, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -788,7 +788,7 @@ write_modend (int dosizeonly)
 static int
 write_rtnbeg (int rtnnum, int dosizeonly)
 {
-  char *rtnname;
+  const char *rtnname;
   int rtnnamelen;
   char *rtnentryname;
   int totsize = 0;
@@ -797,7 +797,7 @@ write_rtnbeg (int rtnnum, int dosizeonly)
   DST_PROLOG prolog;
   vms_func_ref fde = &func_table[rtnnum];
 
-  rtnname = (char *)fde->vms_func_name;
+  rtnname = fde->vms_func_name;
   rtnnamelen = strlen (rtnname);
   rtnentryname = concat (rtnname, "..en", NULL);
 
@@ -825,7 +825,7 @@ write_rtnbeg (int rtnnum, int dosizeonly)
 				   dosizeonly);
       totsize += write_debug_data1 (strlen (go), "length of main_name",
 				    dosizeonly);
-      totsize += write_debug_string ((char *) go, "main name", dosizeonly);
+      totsize += write_debug_string (go, "main name", dosizeonly);
     }
 
   /* The header length never includes the length byte.  */
@@ -1441,7 +1441,7 @@ lookup_filename (const char *file_name)
   static unsigned int last_file_lookup_index = 0;
   register char *fn;
   register unsigned i;
-  char *fnam;
+  const char *fnam;
   long long cdt;
   long ebk;
   short ffb;
@@ -1480,7 +1480,7 @@ lookup_filename (const char *file_name)
       ebk = 0;
       ffb = 0;
       rfo = 0;
-      fnam = (char *) "";
+      fnam = "";
       flen = 0;
     }
 

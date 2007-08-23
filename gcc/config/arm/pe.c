@@ -39,8 +39,7 @@ extern int current_function_anonymous_args;
 tree current_class_type; /* FIXME */
 
 int
-arm_dllexport_p (decl)
-     tree decl;
+arm_dllexport_p (tree decl)
 {
   tree exp;
 
@@ -57,8 +56,7 @@ arm_dllexport_p (decl)
 /* Return nonzero if DECL is a dllimport'd object.  */
 
 int
-arm_dllimport_p (decl)
-     tree decl;
+arm_dllimport_p (tree decl)
 {
   tree imp;
 
@@ -79,8 +77,7 @@ arm_dllimport_p (decl)
 /* Return nonzero if SYMBOL is marked as being dllexport'd.  */
 
 int
-arm_dllexport_name_p (symbol)
-     const char * symbol;
+arm_dllexport_name_p (const char *symbol)
 {
   return symbol[0] == ARM_PE_FLAG_CHAR && symbol[1] == 'e' && symbol[2] == '.';
 }
@@ -88,8 +85,7 @@ arm_dllexport_name_p (symbol)
 /* Return nonzero if SYMBOL is marked as being dllimport'd.  */
 
 int
-arm_dllimport_name_p (symbol)
-     const char * symbol;
+arm_dllimport_name_p (const char *symbol)
 {
   return symbol[0] == ARM_PE_FLAG_CHAR && symbol[1] == 'i' && symbol[2] == '.';
 }
@@ -98,8 +94,7 @@ arm_dllimport_name_p (symbol)
    Note that we override the previous setting (e.g.: dllimport).  */
 
 void
-arm_mark_dllexport (decl)
-     tree decl;
+arm_mark_dllexport (tree decl)
 {
   const char * oldname;
   char * newname;
@@ -134,8 +129,7 @@ arm_mark_dllexport (decl)
 /* Mark a DECL as being dllimport'd.  */
 
 void
-arm_mark_dllimport (decl)
-     tree decl;
+arm_mark_dllimport (tree decl)
 {
   const char * oldname;
   char * newname;
@@ -201,10 +195,7 @@ arm_mark_dllimport (decl)
 }
 
 void
-arm_pe_encode_section_info (decl, rtl, first)
-     tree decl;
-     rtx rtl;
-     int first ATTRIBUTE_UNUSED;
+arm_pe_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 {
   /* This bit is copied from arm_encode_section_info.  */
   if (optimize > 0 && TREE_CONSTANT (decl))
@@ -239,9 +230,7 @@ arm_pe_encode_section_info (decl, rtl, first)
 }
 
 void
-arm_pe_unique_section (decl, reloc)
-     tree decl;
-     int reloc;
+arm_pe_unique_section (tree decl, int reloc)
 {
   int len;
   const char * name;

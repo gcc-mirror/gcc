@@ -734,7 +734,7 @@ while (0)
 	switch (XINT ((X), 1))						\
 	  {								\
 	  case UNSPEC_INT_LABEL:					\
-	    asm_fprintf ((STREAM), ".%LLIL%d",				\
+	    asm_fprintf ((STREAM), ".%LLIL" HOST_WIDE_INT_PRINT_DEC,	\
  			 INTVAL (XVECEXP ((X), 0, 0)));			\
 	    break;							\
 	  case UNSPEC_PIC:						\

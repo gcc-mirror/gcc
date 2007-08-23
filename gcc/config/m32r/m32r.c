@@ -81,13 +81,13 @@ static int    m32r_issue_rate (void);
 
 static void m32r_encode_section_info (tree, rtx, int);
 static bool m32r_in_small_data_p (tree);
-static bool m32r_return_in_memory (tree, tree);
+static bool m32r_return_in_memory (const_tree, const_tree);
 static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *);
 static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				    tree, bool);
+				    const_tree, bool);
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 
@@ -129,7 +129,7 @@ static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_ADDRESS_COST hook_int_rtx_0
 
 #undef  TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY m32r_return_in_memory
 #undef  TARGET_SETUP_INCOMING_VARARGS
@@ -458,7 +458,7 @@ m32r_in_small_data_p (tree decl)
   section = DECL_SECTION_NAME (decl);
   if (section)
     {
-      char *name = (char *) TREE_STRING_POINTER (section);
+      const char *const name = TREE_STRING_POINTER (section);
       if (strcmp (name, ".sdata") == 0 || strcmp (name, ".sbss") == 0)
 	return true;
     }
@@ -639,7 +639,7 @@ memreg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
 static bool
 m32r_pass_by_reference (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
-			enum machine_mode mode, tree type,
+			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
   int size;
@@ -1006,7 +1006,7 @@ m32r_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-m32r_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+m32r_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return m32r_pass_by_reference (NULL, TYPE_MODE (type), type, false);
 }

@@ -124,7 +124,7 @@ extern int pc_or_label_operand (rtx, enum machine_mode);
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
 #ifdef TREE_CODE
-extern enum direction function_arg_padding (enum machine_mode, tree);
+extern enum direction function_arg_padding (enum machine_mode, const_tree);
 #endif
 #endif /* ARGS_SIZE_RTX */
 extern int non_hard_reg_operand (rtx, enum machine_mode);
@@ -160,9 +160,9 @@ extern int reloc_needed (tree);
 #ifdef RTX_CODE
 extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode,
 			 tree, int);
-extern rtx function_value (tree, tree);
+extern rtx function_value (const_tree, const_tree);
 #endif
-extern bool pa_return_in_memory (tree, tree);
+extern bool pa_return_in_memory (const_tree, const_tree);
 #endif /* TREE_CODE */
 
 extern void pa_asm_output_aligned_bss (FILE *, const char *,

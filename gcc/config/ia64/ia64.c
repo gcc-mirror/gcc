@@ -195,13 +195,13 @@ static rtx gen_movdi_x (rtx, rtx, rtx);
 static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
-static enum machine_mode hfa_element_mode (tree, bool);
+static enum machine_mode hfa_element_mode (const_tree, bool);
 static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static int ia64_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static bool ia64_function_ok_for_sibcall (tree, tree);
-static bool ia64_return_in_memory (tree, tree);
+static bool ia64_return_in_memory (const_tree, const_tree);
 static bool ia64_rtx_costs (rtx, int, int, int *);
 static void fix_range (const char *);
 static bool ia64_handle_option (size_t, const char *, int);
@@ -3870,7 +3870,7 @@ ia64_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    aggregates are excluded because our parallels crash the middle-end.  */
 
 static enum machine_mode
-hfa_element_mode (tree type, bool nested)
+hfa_element_mode (const_tree type, bool nested)
 {
   enum machine_mode element_mode = VOIDmode;
   enum machine_mode mode;
@@ -4346,7 +4346,7 @@ ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
    in a register.  */
 
 static bool
-ia64_return_in_memory (tree valtype, tree fntype ATTRIBUTE_UNUSED)
+ia64_return_in_memory (const_tree valtype, const_tree fntype ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   enum machine_mode hfa_mode;
@@ -4382,7 +4382,7 @@ ia64_return_in_memory (tree valtype, tree fntype ATTRIBUTE_UNUSED)
 /* Return rtx for register that holds the function return value.  */
 
 rtx
-ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+ia64_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   enum machine_mode hfa_mode;
@@ -7376,7 +7376,8 @@ static htab_t bundle_state_table;
 static unsigned
 bundle_state_hash (const void *bundle_state)
 {
-  const struct bundle_state *state = (struct bundle_state *) bundle_state;
+  const struct bundle_state *const state
+    = (const struct bundle_state *) bundle_state;
   unsigned result, i;
 
   for (result = i = 0; i < dfa_state_size; i++)
@@ -7390,8 +7391,10 @@ bundle_state_hash (const void *bundle_state)
 static int
 bundle_state_eq_p (const void *bundle_state_1, const void *bundle_state_2)
 {
-  const struct bundle_state * state1 = (struct bundle_state *) bundle_state_1;
-  const struct bundle_state * state2 = (struct bundle_state *) bundle_state_2;
+  const struct bundle_state *const state1
+    = (const struct bundle_state *) bundle_state_1;
+  const struct bundle_state *const state2
+    = (const struct bundle_state *) bundle_state_2;
 
   return (state1->insn_num == state2->insn_num
 	  && memcmp (state1->dfa_state, state2->dfa_state,
@@ -9235,7 +9238,7 @@ ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
    most significant bits of the stack slot.  */
 
 enum direction
-ia64_hpux_function_arg_padding (enum machine_mode mode, tree type)
+ia64_hpux_function_arg_padding (enum machine_mode mode, const_tree type)
 {
    /* Exception to normal case for structures/unions/etc.  */
 

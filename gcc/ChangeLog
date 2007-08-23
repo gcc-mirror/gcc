@@ -1,3 +1,223 @@
+2007-08-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/arc/arc-protos.h arc_select_cc_mode, gen_compare_reg):
+	Wrap in RTX_CODE macro guard.
+	* config/arm/pe.c (arm_dllexport_p, arm_dllimport_p,
+	arm_dllexport_name_p, arm_dllimport_name_p, arm_mark_dllexport,
+	arm_mark_dllimport, arm_pe_encode_section_info,
+	arm_pe_unique_section): Use ISO-C function declarations.
+	* config/c4x/c4x-c.c (c4x_parse_pragma, c4x_pr_CODE_SECTION,
+	c4x_pr_DATA_SECTION, c4x_pr_FUNC_IS_PURE,
+	c4x_pr_FUNC_NEVER_RETURNS, c4x_pr_INTERRUPT, c4x_pr_ignored):
+	Likewise.
+	* config/iq2000/iq2000.h (ASM_OUTPUT_SKIP): Fix format warning.
+	* config/m68hc11/m68hc11.h (ASM_OUTPUT_EXTERNAL): Undef before
+	defining.
+	* config/mips/mips.h (ASM_DECLARE_OBJECT_NAME): Fix format
+	warnings.
+	* config/mn10300/mn10300.h (OUTPUT_ADDR_CONST_EXTRA): Likewise.
+	* config/pdp11/pdp11.c (pdp11_output_function_epilogue): Likewise.
+	(register_move_cost): Use ISO-C function declarations.
+	* config/pdp11/pdp11.h (PRINT_OPERAND): Fix format warnings.
+	* config/score/score-protos.h (score_declare_object): Add
+	ATTRIBUTE_PRINTF_4.
+	* config/score/score.h (ASM_DECLARE_OBJECT_NAME): Fix format
+	warnings.
+	* final.c (profile_function): Avoid empty if-bodies.
+	
+	
+	* calls.c (must_pass_in_stack_var_size,
+	must_pass_in_stack_var_size_or_pad): Constify.
+	* config/alpha/alpha-protos.h (function_value): Likewise.
+	* config/alpha/alpha.c (alpha_return_in_memory,
+	alpha_pass_by_reference, function_value,
+	unicosmk_must_pass_in_stack, TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES):
+	Likewise.
+	* config/arc/arc.c (arc_return_in_memory, arc_pass_by_reference,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN,
+	TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* config/arm/arm-protos.h (arm_return_in_memory,
+	arm_pad_arg_upward, arm_function_value): Likewise.
+	* config/arm/arm.c (arm_pass_by_reference,
+	arm_promote_prototypes, arm_return_in_msb, arm_must_pass_in_stack,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN,
+	arm_function_value, arm_return_in_memory, arm_pad_arg_upward):
+	Likewise.
+	* config/arm/arm.h (ARM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/avr/avr-protos.h (avr_function_value): Likewise.
+	* config/avr/avr.c (avr_return_in_memory,
+	gas_output_limited_string, gas_output_ascii, avr_function_value,
+	avr_return_in_memory): Likewise.
+	* config/bfin/bfin-protos.h (bfin_return_in_memory): Likewise.
+	* config/bfin/bfin.c (bfin_pass_by_reference,
+	bfin_return_in_memory, TARGET_PROMOTE_PROTOTYPES,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN):
+	Likewise.
+	* config/cris/cris.c (cris_pass_by_reference,
+	TARGET_PROMOTE_FUNCTION_ARGS): Likewise.
+	* config/crx/crx.c (crx_return_in_memory): Likewise.
+	* config/darwin.c (function_base, machopic_function_base_name):
+	Likewise.
+	* config/fr30/fr30.c (fr30_must_pass_in_stack,
+	TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* config/frv/frv.c (frv_must_pass_in_stack): Likewise.
+	* config/h8300/h8300.c (h8300_return_in_memory): Likewise.
+	* config/i386/i386-protos.h (ix86_return_in_memory,
+	ix86_sol10_return_in_memory): Likewise.
+	* config/i386/i386.c (ix86_function_value,
+	ix86_function_sseregparm, ix86_must_pass_in_stack,
+	type_natural_mode, classify_argument, examine_argument,
+	construct_container, ix86_pass_by_reference, function_value_32,
+	function_value_64, ix86_function_value_1, return_in_memory_32,
+	return_in_memory_64, return_in_memory_ms_64,
+	ix86_return_in_memory, ix86_sol10_return_in_memory,
+	TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* config/ia64/ia64-protos.h (ia64_function_value,
+	ia64_hpux_function_arg_padding): Likewise.
+	* config/ia64/ia64.c (hfa_element_mode, ia64_return_in_memory,
+	ia64_function_value, bundle_state_hash, bundle_state_eq_p,
+	ia64_hpux_function_arg_padding): Likewise.
+	* config/iq2000/iq2000-protos.h (function_arg,
+	iq2000_function_value): Likewise.
+	* config/iq2000/iq2000.c (iq2000_return_in_memory,
+	iq2000_pass_by_reference, TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES,
+	function_arg, iq2000_function_value): Likewise.
+	* config/m32c/m32c-protos.h (m32c_function_value,
+	m32c_promote_function_return): Likewise.
+	* config/m32c/m32c.c (m32c_pass_by_reference,
+	m32c_promote_prototypes, m32c_promote_function_return,
+	m32c_function_value): Likewise.
+	* config/m32r/m32r.c (m32r_return_in_memory,
+	m32r_pass_by_reference, TARGET_PROMOTE_PROTOTYPES,
+	m32r_in_small_data_p): Likewise.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_function_arg_padding):
+	Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_return_in_memory,
+	m68hc11_function_arg_padding): Likewise.
+	* config/m68k/m68k-protos.h (m68k_function_value): Likewise.
+	* config/m68k/m68k.c (TARGET_PROMOTE_PROTOTYPES,
+	m68k_function_value): Likewise.
+	* config/mcore/mcore-protos.h (mcore_num_arg_regs,
+	mcore_function_value): Likewise.
+	* config/mcore/mcore.c (handle_structs_in_regs,
+	mcore_return_in_memory, TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES,
+	mcore_num_arg_regs, mcore_function_value): Likewise.
+	* config/mips/mips-protos.h (mips_pad_arg_upward,
+	mips_function_value): Likewise.
+	* config/mips/mips.c (mips_fpr_return_fields, mips_return_in_msb,
+	mips_return_in_memory, mips_pass_by_reference, mips_callee_copies,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN,
+	TARGET_PROMOTE_PROTOTYPES, mips_pad_arg_upward,
+	mips_function_value): Likewise.
+	* config/mmix/mmix-protos.h (mmix_function_outgoing_value):
+	Likewise.
+	* config/mmix/mmix.c (mmix_pass_by_reference,
+	TARGET_PROMOTE_FUNCTION_ARGS, mmix_function_outgoing_value,
+	mmix_encode_section_info): Likewise.
+	* config/mn10300/mn10300-protos.h (mn10300_function_value):
+	Likewise.
+	* config/mn10300/mn10300.c (mn10300_return_in_memory,
+	mn10300_pass_by_reference, TARGET_PROMOTE_PROTOTYPES,
+	mn10300_function_value): Likewise.
+	* config/mt/mt-protos.h (mt_function_value): Likewise.
+	* config/mt/mt.c (mt_pass_by_reference, mt_function_value,
+	mt_pass_in_stack, TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* config/pa/pa-protos.h (function_arg_padding, function_value,
+	pa_return_in_memory): Likewise.
+	* config/pa/pa.c (pa_pass_by_reference,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES,
+	function_arg_padding, function_value, pa_return_in_memory):
+	Likewise.
+	* config/pdp11/pdp11.c (pdp11_return_in_memory): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_function_value,
+	function_arg_padding): Likewise.
+	* config/rs6000/rs6000.c (rs6000_return_in_memory,
+	rs6000_darwin64_record_arg_recurse, rs6000_darwin64_record_arg,
+	rs6000_pass_by_reference, rs6000_must_pass_in_stack,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN,
+	function_arg_padding, altivec_expand_dst_builtin,
+	altivec_expand_builtin, rs6000_expand_builtin, spe_init_builtins,
+	altivec_init_builtins, rs6000_common_init_builtins,
+	rs6000_function_value): Likewise.
+	* s390/s390-protos.h (s390_function_value): Likewise.
+	* config/s390/s390.c (s390_function_arg_size,
+	s390_pass_by_reference, s390_return_in_memory,
+	s390_function_value, TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	* config/score/score-protos.h (score_function_value): Likewise.
+	* config/score/score.c (score_arg_partial_bytes,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN,
+	TARGET_PROMOTE_PROTOTYPES, score_return_in_memory,
+	score_pass_by_reference, score_add_offset, score_function_value):
+	Likewise.
+	* config/sh/sh-protos.h (sh_attr_renesas_p,
+	sh_promote_prototypes): Likewise.
+	* config/sh/sh.c (sh_return_in_memory, sh_pass_by_reference,
+	sh_callee_copies, sh_promote_prototypes, shcompact_byref,
+	sh_attr_renesas_p): Likewise.
+	* config/sparc/sparc-protos.h (function_value,
+	function_arg_padding): Likewise.
+	* config/sparc/sparc.c (sparc_promote_prototypes,
+	sparc_return_in_memory, sparc_pass_by_reference,
+	TARGET_PROMOTE_FUNCTION_ARGS, TARGET_PROMOTE_FUNCTION_RETURN,
+	function_arg_record_value_2, function_arg_record_value_1,
+	function_arg_record_value, function_arg_record_value,
+	function_arg_padding, function_value): Likewise.
+	* config/spu/spu-protos.h (spu_function_value): Likewise.
+	* config/spu/spu.c (spu_pass_by_reference, spu_return_in_memory,
+	spu_function_value): Likewise.
+	* config/stormy16/stormy16-protos.h (xstormy16_function_value):
+	Likewise.
+	* config/stormy16/stormy16.c (xstormy16_return_in_memory,
+	xstormy16_function_value, TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES):
+	Likewise.
+	* config/v850/v850.c (v850_return_in_memory,
+	v850_pass_by_reference, TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* config/vax/vax.c (TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* config/xtensa/xtensa.c (xtensa_return_in_msb,
+	xtensa_return_in_memory, TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES):
+	Likewise.
+	* explow.c (promote_mode, hard_function_value): Likewise.
+	* expr.h (hard_function_value, promote_mode): Likewise.
+	* function.c (aggregate_value_p): Likewise.
+	* hooks.c (hook_bool_const_tree_true): New.
+	* hooks.h (hook_bool_const_tree_true): New.
+	* sdbout.c (SET_KNOWN_TYPE_TAG, plain_type_1): Constify.
+	* target-def.h (TARGET_PROMOTE_FUNCTION_ARGS,
+	TARGET_PROMOTE_FUNCTION_RETURN, TARGET_PROMOTE_PROTOTYPES,
+	TARGET_RETURN_IN_MSB): Likewise.
+	* target.h (promote_function_args, promote_function_return,
+	promote_prototypes, return_in_memory, return_in_msb,
+	pass_by_reference, must_pass_in_stack, callee_copies,
+	function_value): Likewise.
+	* targhooks.c (default_return_in_memory,
+	hook_pass_by_reference_must_pass_in_stack,
+	hook_callee_copies_named,
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false,
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true,
+	default_function_value): Likewise. 
+	* targhooks.h (default_return_in_memory,
+	hook_pass_by_reference_must_pass_in_stack,
+	hook_callee_copies_named,
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false,
+	hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true,
+	default_function_value): Likewise.
+	* tree-ssa-structalias.c (const_equiv_class_label_t): New.
+	(equiv_class_label_hash, equiv_class_label_eq): Constify.
+	* tree-vectorizer.c (bb_in_loop_p): Likewise.
+	* tree.c (needs_to_live_in_memory): Likewise.
+	* tree.h (struct tree_type, needs_to_live_in_memory,
+	aggregate_value_p, must_pass_in_stack_var_size,
+	must_pass_in_stack_var_size_or_pad): Likewise.
+	* vmsdbgout.c (write_debug_addr, write_debug_delta4,
+	write_debug_string, ASM_OUTPUT_DEBUG_STRING, write_rtnbeg,
+	lookup_filename): Likewise.
+
 2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/17390

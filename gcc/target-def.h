@@ -532,13 +532,13 @@
 
 #define TARGET_ARM_EABI_UNWINDER false
 
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_false
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_false
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_false
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_false
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_false
 
 #define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
 #define TARGET_RETURN_IN_MEMORY default_return_in_memory
-#define TARGET_RETURN_IN_MSB hook_bool_tree_false
+#define TARGET_RETURN_IN_MSB hook_bool_const_tree_false
 
 #define TARGET_EXPAND_BUILTIN_SAVEREGS default_expand_builtin_saveregs
 #define TARGET_SETUP_INCOMING_VARARGS default_setup_incoming_varargs

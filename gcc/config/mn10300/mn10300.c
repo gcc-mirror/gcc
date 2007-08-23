@@ -72,10 +72,10 @@ static int mn10300_address_cost_1 (rtx, int *);
 static int mn10300_address_cost (rtx);
 static bool mn10300_rtx_costs (rtx, int, int, int *);
 static void mn10300_file_start (void);
-static bool mn10300_return_in_memory (tree, tree);
+static bool mn10300_return_in_memory (const_tree, const_tree);
 static rtx mn10300_builtin_saveregs (void);
 static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				       tree, bool);
+				       const_tree, bool);
 static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				      tree, bool);
 
@@ -102,7 +102,7 @@ static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_ENCODE_SECTION_INFO mn10300_encode_section_info
 
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY mn10300_return_in_memory
 #undef TARGET_PASS_BY_REFERENCE
@@ -1431,7 +1431,7 @@ initial_offset (int from, int to)
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
-mn10300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+mn10300_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   /* Return values > 8 bytes in length in memory.  */
   return (int_size_in_bytes (type) > 8
@@ -1482,7 +1482,7 @@ mn10300_va_start (tree valist, rtx nextarg)
 
 static bool
 mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-			   enum machine_mode mode, tree type,
+			   enum machine_mode mode, const_tree type,
 			   bool named ATTRIBUTE_UNUSED)
 {
   unsigned HOST_WIDE_INT size;
@@ -1592,7 +1592,7 @@ mn10300_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    callers relying on this extra copy.  */
 
 rtx
-mn10300_function_value (tree valtype, tree func, int outgoing)
+mn10300_function_value (const_tree valtype, const_tree func, int outgoing)
 {
   rtx rv;
   enum machine_mode mode = TYPE_MODE (valtype);

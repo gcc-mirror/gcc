@@ -346,8 +346,8 @@ static section *mips_select_rtx_section (enum machine_mode, rtx,
 static section *mips_function_rodata_section (tree);
 static bool mips_in_small_data_p (tree);
 static bool mips_use_anchors_for_symbol_p (rtx);
-static int mips_fpr_return_fields (tree, tree *);
-static bool mips_return_in_msb (tree);
+static int mips_fpr_return_fields (const_tree, tree *);
+static bool mips_return_in_msb (const_tree);
 static rtx mips_return_fpr_pair (enum machine_mode mode,
 				 enum machine_mode mode1, HOST_WIDE_INT,
 				 enum machine_mode mode2, HOST_WIDE_INT);
@@ -381,7 +381,7 @@ static bool mips_strict_matching_cpu_name_p (const char *, const char *);
 static bool mips_matching_cpu_name_p (const char *, const char *);
 static const struct mips_cpu_info *mips_parse_cpu (const char *);
 static const struct mips_cpu_info *mips_cpu_info_from_isa (int);
-static bool mips_return_in_memory (tree, tree);
+static bool mips_return_in_memory (const_tree, const_tree);
 static bool mips_strict_argument_naming (CUMULATIVE_ARGS *);
 static void mips_macc_chains_record (rtx);
 static void mips_macc_chains_reorder (rtx *, int);
@@ -402,9 +402,9 @@ static void mips_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 static tree mips_build_builtin_va_list (void);
 static tree mips_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
-				    tree, bool);
+				    const_tree, bool);
 static bool mips_callee_copies (CUMULATIVE_ARGS *, enum machine_mode mode,
-				tree, bool);
+				const_tree, bool);
 static int mips_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode mode,
 				   tree, bool);
 static bool mips_valid_pointer_mode (enum machine_mode);
@@ -1278,11 +1278,11 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #define TARGET_GIMPLIFY_VA_ARG_EXPR mips_gimplify_va_arg_expr
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
-#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_const_tree_true
 #undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_const_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY mips_return_in_memory
@@ -4376,7 +4376,7 @@ function_arg_boundary (enum machine_mode mode, tree type)
    byte does.  */
 
 bool
-mips_pad_arg_upward (enum machine_mode mode, tree type)
+mips_pad_arg_upward (enum machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the first byte of every stack argument
      is passed in the first byte of the stack slot.  */
@@ -8439,7 +8439,7 @@ mips_use_anchors_for_symbol_p (rtx symbol)
    type.  */
 
 static int
-mips_fpr_return_fields (tree valtype, tree *fields)
+mips_fpr_return_fields (const_tree valtype, tree *fields)
 {
   tree field;
   int i;
@@ -8479,7 +8479,7 @@ mips_fpr_return_fields (tree valtype, tree *fields)
       - the structure is not returned in floating-point registers.  */
 
 static bool
-mips_return_in_msb (tree valtype)
+mips_return_in_msb (const_tree valtype)
 {
   tree fields[2];
 
@@ -8524,7 +8524,7 @@ mips_return_fpr_pair (enum machine_mode mode,
    VALTYPE is null and MODE is the mode of the return value.  */
 
 rtx
-mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
+mips_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
 		     enum machine_mode mode)
 {
   if (valtype)
@@ -8600,7 +8600,7 @@ mips_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 
 static bool
 mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-			enum machine_mode mode, tree type,
+			enum machine_mode mode, const_tree type,
 			bool named ATTRIBUTE_UNUSED)
 {
   if (mips_abi == ABI_EABI)
@@ -8624,7 +8624,7 @@ mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 static bool
 mips_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 		    enum machine_mode mode ATTRIBUTE_UNUSED,
-		    tree type ATTRIBUTE_UNUSED, bool named)
+		    const_tree type ATTRIBUTE_UNUSED, bool named)
 {
   return mips_abi == ABI_EABI && named;
 }
@@ -10808,7 +10808,7 @@ mips_hard_regno_nregs (int regno, enum machine_mode mode)
    course.  */
 
 static bool
-mips_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
+mips_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 {
   if (TARGET_OLDABI)
     return (TYPE_MODE (type) == BLKmode);
