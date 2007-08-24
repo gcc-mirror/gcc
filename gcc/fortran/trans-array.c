@@ -4712,7 +4712,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tmp = gfc_conv_descriptor_dtype (parm);
       gfc_add_modify_expr (&loop.pre, tmp, gfc_get_dtype (parmtype));
 
-      if (se->direct_byref)
+      /* Set offset for assignments to pointer only to zero if it is not
+         the full array.  */
+      if (se->direct_byref
+	  && info->ref && info->ref->u.ar.type != AR_FULL)
 	base = gfc_index_zero_node;
       else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
 	base = gfc_evaluate_now (gfc_conv_array_offset (desc), &loop.pre);
@@ -4763,12 +4766,11 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  from = loop.from[dim];
 	  to = loop.to[dim];
 
-	  /* If we have an array section or are assigning to a pointer,
-	     make sure that the lower bound is 1.  References to the full
+	  /* If we have an array section or are assigning make sure that
+	     the lower bound is 1.  References to the full
 	     array should otherwise keep the original bounds.  */
 	  if ((!info->ref
-	       || info->ref->u.ar.type != AR_FULL
-	       || se->direct_byref)
+	          || info->ref->u.ar.type != AR_FULL)
 	      && !integer_onep (from))
 	    {
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
@@ -4788,7 +4790,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  stride = fold_build2 (MULT_EXPR, gfc_array_index_type,
 				stride, info->stride[dim]);
 
-	  if (se->direct_byref)
+	  if (se->direct_byref && info->ref && info->ref->u.ar.type != AR_FULL)
 	    {
 	      base = fold_build2 (MINUS_EXPR, TREE_TYPE (base),
 				  base, stride);
@@ -4824,7 +4826,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	}
 
       if ((se->direct_byref || GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
-	     && !se->data_not_needed)
+	  && !se->data_not_needed)
 	{
 	  /* Set the offset.  */
 	  tmp = gfc_conv_descriptor_offset (parm);
