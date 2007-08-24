@@ -269,12 +269,12 @@ static void pex_child_error (struct pex_obj *, const char *, const char *, int)
      ATTRIBUTE_NORETURN;
 static int pex_unix_open_read (struct pex_obj *, const char *, int);
 static int pex_unix_open_write (struct pex_obj *, const char *, int);
-static long pex_unix_exec_child (struct pex_obj *, int, const char *,
+static pid_t pex_unix_exec_child (struct pex_obj *, int, const char *,
 				 char * const *, char * const *,
 				 int, int, int, int,
 				 const char **, int *);
 static int pex_unix_close (struct pex_obj *, int);
-static int pex_unix_wait (struct pex_obj *, long, int *, struct pex_time *,
+static int pex_unix_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
 			  int, const char **, int *);
 static int pex_unix_pipe (struct pex_obj *, int *, int);
 static FILE *pex_unix_fdopenr (struct pex_obj *, int, int);
@@ -355,7 +355,7 @@ pex_child_error (struct pex_obj *obj, const char *executable,
 
 extern char **environ;
 
-static long
+static pid_t
 pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     char * const * argv, char * const * env,
                      int in, int out, int errdes,
@@ -384,7 +384,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
     case -1:
       *err = errno;
       *errmsg = VFORK_STRING;
-      return -1;
+      return (pid_t) -1;
 
     case 0:
       /* Child process.  */
@@ -435,7 +435,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	}
 
       /* NOTREACHED */
-      return -1;
+      return (pid_t) -1;
 
     default:
       /* Parent process.  */
@@ -445,7 +445,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	    {
 	      *err = errno;
 	      *errmsg = "close";
-	      return -1;
+	      return (pid_t) -1;
 	    }
 	}
       if (out != STDOUT_FILE_NO)
@@ -454,7 +454,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	    {
 	      *err = errno;
 	      *errmsg = "close";
-	      return -1;
+	      return (pid_t) -1;
 	    }
 	}
       if (errdes != STDERR_FILE_NO)
@@ -463,18 +463,18 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	    {
 	      *err = errno;
 	      *errmsg = "close";
-	      return -1;
+	      return (pid_t) -1;
 	    }
 	}
 
-      return (long) pid;
+      return pid;
     }
 }
 
 /* Wait for a child process to complete.  */
 
 static int
-pex_unix_wait (struct pex_obj *obj, long pid, int *status,
+pex_unix_wait (struct pex_obj *obj, pid_t pid, int *status,
 	       struct pex_time *time, int done, const char **errmsg,
 	       int *err)
 {

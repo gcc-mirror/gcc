@@ -79,12 +79,12 @@ backslashify (char *s)
 
 static int pex_win32_open_read (struct pex_obj *, const char *, int);
 static int pex_win32_open_write (struct pex_obj *, const char *, int);
-static long pex_win32_exec_child (struct pex_obj *, int, const char *,
+static pid_t pex_win32_exec_child (struct pex_obj *, int, const char *,
 				  char * const *, char * const *,
                                   int, int, int, int,
 				  const char **, int *);
 static int pex_win32_close (struct pex_obj *, int);
-static int pex_win32_wait (struct pex_obj *, long, int *,
+static int pex_win32_wait (struct pex_obj *, pid_t, int *,
 			   struct pex_time *, int, const char **, int *);
 static int pex_win32_pipe (struct pex_obj *, int *, int);
 static FILE *pex_win32_fdopenr (struct pex_obj *, int, int);
@@ -522,7 +522,7 @@ env_compare (const void *a_ptr, const void *b_ptr)
   return c1 - c2;
 }
 
-static long
+static pid_t
 win32_spawn (const char *executable,
 	     BOOL search,
 	     char *const *argv,
@@ -597,7 +597,7 @@ win32_spawn (const char *executable,
 
       free (full_executable);
 
-      return -1;
+      return (pid_t) -1;
     }
 
   /* Clean up.  */
@@ -606,7 +606,7 @@ win32_spawn (const char *executable,
   if (env_block)
     free (env_block);
 
-  return (long) pi->hProcess;
+  return (pid_t) pi->hProcess;
 
  error:
   if (env_block)
@@ -616,17 +616,17 @@ win32_spawn (const char *executable,
   if (full_executable)
     free (full_executable);
 
-  return -1;
+  return (pid_t) -1;
 }
 
-static long
+static pid_t
 spawn_script (const char *executable, char *const *argv,
               char* const *env,
 	      DWORD dwCreationFlags,
 	      LPSTARTUPINFO si,
 	      LPPROCESS_INFORMATION pi)
 {
-  int pid = -1;
+  pid_t pid = (pid_t) -1;
   int save_errno = errno;
   int fd = _open (executable, _O_RDONLY);
 
@@ -673,7 +673,7 @@ spawn_script (const char *executable, char *const *argv,
 				     dwCreationFlags, si, pi);
 		  if (executable1 != newex)
 		    free ((char *) newex);
-		  if (pid < 0)
+		  if ((long) pid < 0)
 		    {
 		      newex = msys_rootify (executable1);
 		      if (newex != executable1)
@@ -689,14 +689,14 @@ spawn_script (const char *executable, char *const *argv,
 	    }
 	}
     }
-  if (pid < 0)
+  if ((long) pid < 0)
     errno = save_errno;
   return pid;
 }
 
 /* Execute a child.  */
 
-static long
+static pid_t
 pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
 		      const char *executable, char * const * argv,
                       char* const* env,
@@ -705,7 +705,7 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
 		      const char **errmsg,
 		      int *err)
 {
-  long pid;
+  pid_t pid;
   HANDLE stdin_handle;
   HANDLE stdout_handle;
   HANDLE stderr_handle;
@@ -780,10 +780,10 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
   /* Create the child process.  */  
   pid = win32_spawn (executable, (flags & PEX_SEARCH) != 0,
 		     argv, env, dwCreationFlags, &si, &pi);
-  if (pid == -1)
+  if (pid == (pid_t) -1)
     pid = spawn_script (executable, argv, env, dwCreationFlags,
                         &si, &pi);
-  if (pid == -1)
+  if (pid == (pid_t) -1)
     {
       *err = ENOENT;
       *errmsg = "CreateProcess";
@@ -808,7 +808,7 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
    macros.  Note that WIFSIGNALED will never be true under CRTDLL. */
 
 static int
-pex_win32_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, long pid,
+pex_win32_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, pid_t pid,
 		int *status, struct pex_time *time, int done ATTRIBUTE_UNUSED,
 		const char **errmsg, int *err)
 {
@@ -883,7 +883,7 @@ main (int argc ATTRIBUTE_UNUSED, char **argv)
   char const *errmsg;
   int err;
   argv++;
-  printf ("%ld\n", pex_win32_exec_child (NULL, PEX_SEARCH, argv[0], argv, NULL, 0, 0, 1, 2, &errmsg, &err));
+  printf ("%ld\n", (long) pex_win32_exec_child (NULL, PEX_SEARCH, argv[0], argv, NULL, 0, 0, 1, 2, &errmsg, &err));
   exit (0);
 }
 #endif

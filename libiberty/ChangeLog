@@ -1,3 +1,11 @@
+2007-08-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* pex-common.h: (pex_funcs): Retyped wait and exec_child to pid_t.
+	* pex-djgpp.c: Likewise.
+	* pex-msdos.c: Likewise.
+	* pex-unix.c: Likewise.
+	* pex-win32.c: Likewise.
+
 2007-08-17  Michael Snyder  <msnyder@access-company.com>
 
 	* make-relative-prefix.c (make_relative_prefix_1): Resource leaks.
