@@ -1,5 +1,8 @@
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/32898
+	* g++.dg/lookup/ns3.C: New test.
+
 	PR debug/32610
 	* gcc.dg/debug/pr32610.c: New test.
 

@@ -2924,7 +2924,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
   /* See whether this has been declared in the namespace.  */
   old = lookup_qualified_name (scope, DECL_NAME (decl), false, true);
-  if (!old)
+  if (old == error_mark_node)
     /* No old declaration at all.  */
     goto complain;
   if (!is_overloaded_fn (decl))
