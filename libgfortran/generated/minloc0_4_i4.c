@@ -148,13 +148,13 @@ minloc0_4_i4 (gfc_array_i4 * const restrict retarray,
 
 
 extern void mminloc0_4_i4 (gfc_array_i4 * const restrict, 
-	gfc_array_i4 * const restrict, gfc_array_l4 * const restrict);
+	gfc_array_i4 * const restrict, gfc_array_l1 * const restrict);
 export_proto(mminloc0_4_i4);
 
 void
 mminloc0_4_i4 (gfc_array_i4 * const restrict retarray, 
 	gfc_array_i4 * const restrict array,
-	gfc_array_l4 * const restrict mask)
+	gfc_array_l1 * const restrict mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -163,9 +163,10 @@ mminloc0_4_i4 (gfc_array_i4 * const restrict retarray,
   index_type dstride;
   GFC_INTEGER_4 *dest;
   const GFC_INTEGER_4 *base;
-  GFC_LOGICAL_4 *mbase;
+  GFC_LOGICAL_1 *mbase;
   int rank;
   index_type n;
+  int mask_kind;
 
   rank = GFC_DESCRIPTOR_RANK (array);
   if (rank <= 0)
@@ -189,12 +190,25 @@ mminloc0_4_i4 (gfc_array_i4 * const restrict retarray,
         runtime_error ("dimension of return array incorrect");
     }
 
+  mask_kind = GFC_DESCRIPTOR_SIZE (mask);
+
+  mbase = mask->data;
+
+  if (mask_kind == 1 || mask_kind == 2 || mask_kind == 4 || mask_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+      || mask_kind == 16
+#endif
+      )
+    mbase = GFOR_POINTER_TO_L1 (mbase, mask_kind);
+  else
+    runtime_error ("Funny sized logical array");
+
   dstride = retarray->dim[0].stride;
   dest = retarray->data;
   for (n = 0; n < rank; n++)
     {
       sstride[n] = array->dim[n].stride;
-      mstride[n] = mask->dim[n].stride;
+      mstride[n] = mask->dim[n].stride * mask_kind;
       extent[n] = array->dim[n].ubound + 1 - array->dim[n].lbound;
       count[n] = 0;
       if (extent[n] <= 0)
@@ -207,17 +221,6 @@ mminloc0_4_i4 (gfc_array_i4 * const restrict retarray,
     }
 
   base = array->data;
-  mbase = mask->data;
-
-  if (GFC_DESCRIPTOR_SIZE (mask) != 4)
-    {
-      /* This allows the same loop to be used for all logical types.  */
-      assert (GFC_DESCRIPTOR_SIZE (mask) == 8);
-      for (n = 0; n < rank; n++)
-        mstride[n] <<= 1;
-      mbase = (GFOR_POINTER_L8_TO_L4 (mbase));
-    }
-
 
   /* Initialize the return value.  */
   for (n = 0; n < rank; n++)

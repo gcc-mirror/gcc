@@ -36,7 +36,7 @@ Boston, MA 02110-1301, USA.  */
 
 static void
 unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
-		 const gfc_array_l4 *mask, const gfc_array_char *field,
+		 const gfc_array_l1 *mask, const gfc_array_char *field,
 		 index_type size, index_type fsize)
 {
   /* r.* indicates the return array.  */
@@ -54,7 +54,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
   /* m.* indicates the mask array.  */
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type mstride0;
-  const GFC_LOGICAL_4 *mptr;
+  const GFC_LOGICAL_1 *mptr;
 
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -62,8 +62,30 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
   index_type dim;
 
   int empty;
+  int mask_kind;
 
   empty = 0;
+
+  mptr = mask->data;
+
+  /* Use the same loop for all logical types, by using GFC_LOGICAL_1
+     and using shifting to address size and endian issues.  */
+
+  mask_kind = GFC_DESCRIPTOR_SIZE (mask);
+
+  if (mask_kind == 1 || mask_kind == 2 || mask_kind == 4 || mask_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+      || mask_kind == 16
+#endif
+      )
+    {
+      /*  Don't convert a NULL pointer as we use test for NULL below.  */
+      if (mptr)
+	mptr = GFOR_POINTER_TO_L1 (mptr, mask_kind);
+    }
+  else
+    runtime_error ("Funny sized logical array");
+
   if (ret->data == NULL)
     {
       /* The front end has signalled that we need to populate the
@@ -80,7 +102,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 	  empty = empty || extent[n] <= 0;
 	  rstride[n] = ret->dim[n].stride * size;
 	  fstride[n] = field->dim[n].stride * fsize;
-	  mstride[n] = mask->dim[n].stride;
+	  mstride[n] = mask->dim[n].stride * mask_kind;
 	  rs *= extent[n];
 	}
       ret->offset = 0;
@@ -96,7 +118,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
 	  empty = empty || extent[n] <= 0;
 	  rstride[n] = ret->dim[n].stride * size;
 	  fstride[n] = field->dim[n].stride * fsize;
-	  mstride[n] = mask->dim[n].stride;
+	  mstride[n] = mask->dim[n].stride * mask_kind;
 	}
       if (rstride[0] == 0)
 	rstride[0] = size;
@@ -118,19 +140,7 @@ unpack_internal (gfc_array_char *ret, const gfc_array_char *vector,
   mstride0 = mstride[0];
   rptr = ret->data;
   fptr = field->data;
-  mptr = mask->data;
   vptr = vector->data;
-
-  /* Use the same loop for both logical types. */
-  if (GFC_DESCRIPTOR_SIZE (mask) != 4)
-    {
-      if (GFC_DESCRIPTOR_SIZE (mask) != 8)
-        runtime_error ("Funny sized logical array");
-      for (n = 0; n < dim; n++)
-        mstride[n] <<= 1;
-      mstride0 <<= 1;
-      mptr = GFOR_POINTER_L8_TO_L4 (mptr);
-    }
 
   while (rptr)
     {
