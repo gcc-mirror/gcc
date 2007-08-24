@@ -1,3 +1,7 @@
+2007-08-24  David Daney  <ddaney@avtrex.com>
+
+	* testsuite/libffi.call/return_sl.c: New test.
+
 2007-08-10  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libffi.call/cls_multi_ushort.c,
