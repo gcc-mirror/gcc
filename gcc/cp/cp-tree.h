@@ -4741,7 +4741,6 @@ extern tree cp_walk_subtrees (tree*, int*, walk_tree_fn,
 	walk_tree_1 (a, b, c, d, cp_walk_subtrees)
 #define cp_walk_tree_without_duplicates(a,b,c) \
 	walk_tree_without_duplicates_1 (a, b, c, cp_walk_subtrees)
-extern int cp_cannot_inline_tree_fn		(tree*);
 extern tree fold_if_not_in_template		(tree);
 extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);

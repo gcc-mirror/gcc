@@ -2398,58 +2398,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 #undef WALK_SUBTREE
 }
 
-/* Decide whether there are language-specific reasons to not inline a
-   function as a tree.  */
-
-int
-cp_cannot_inline_tree_fn (tree* fnp)
-{
-  tree fn = *fnp;
-
-  /* We can inline a template instantiation only if it's fully
-     instantiated.  */
-  if (DECL_TEMPLATE_INFO (fn)
-      && TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
-    {
-      /* Don't instantiate functions that are not going to be
-	 inlined.  */
-      if (!DECL_INLINE (DECL_TEMPLATE_RESULT
-			(template_for_substitution (fn))))
-	return 1;
-
-      fn = *fnp = instantiate_decl (fn, /*defer_ok=*/0, /*undefined_ok=*/0);
-
-      if (TI_PENDING_TEMPLATE_FLAG (DECL_TEMPLATE_INFO (fn)))
-	return 1;
-    }
-
-  if (flag_really_no_inline
-      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
-    return 1;
-
-  /* Don't auto-inline functions that might be replaced at link-time
-     with an alternative definition.  */ 
-  if (!DECL_DECLARED_INLINE_P (fn) && DECL_REPLACEABLE_P (fn))
-    {
-      DECL_UNINLINABLE (fn) = 1;
-      return 1;
-    }
-
-  if (varargs_function_p (fn))
-    {
-      DECL_UNINLINABLE (fn) = 1;
-      return 1;
-    }
-
-  if (! function_attribute_inlinable_p (fn))
-    {
-      DECL_UNINLINABLE (fn) = 1;
-      return 1;
-    }
-
-  return 0;
-}
-
 /* Like save_expr, but for C++.  */
 
 tree

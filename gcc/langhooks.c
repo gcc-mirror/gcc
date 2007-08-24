@@ -276,20 +276,6 @@ lhd_types_compatible_p (tree x, tree y)
   return TYPE_MAIN_VARIANT (x) == TYPE_MAIN_VARIANT (y);
 }
 
-/* lang_hooks.tree_inlining.cannot_inline_tree_fn is called to
-   determine whether there are language-specific reasons for not
-   inlining a given function.  */
-
-int
-lhd_tree_inlining_cannot_inline_tree_fn (tree *fnp)
-{
-  if (flag_really_no_inline
-      && lookup_attribute ("always_inline", DECL_ATTRIBUTES (*fnp)) == NULL)
-    return 1;
-
-  return 0;
-}
-
 /* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree
    nodes.  Returns nonzero if it does not want the usual dumping of the
    second argument.  */
