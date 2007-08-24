@@ -1303,12 +1303,12 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
   fi
 
   AC_MSG_CHECKING([for sys_nerr])
-  AC_CACHE_VAL(ac_system_error3, [
+  AC_CACHE_VAL(ac_system_error9, [
   AC_TRY_COMPILE([#include <errno.h> ], [ int i = sys_nerr; ],
-             [ac_system_error3=yes], [ac_system_error3=no])
+             [ac_system_error9=yes], [ac_system_error9=no])
   ])
-  AC_MSG_RESULT($ac_system_error3)
-  if test x"$ac_system_error3" = x"yes"; then
+  AC_MSG_RESULT($ac_system_error9)
+  if test x"$ac_system_error9" = x"yes"; then
     AC_DEFINE(HAVE_SYS_NERR, 1, [Define if sys_nerr exists.])
   fi
 ])
