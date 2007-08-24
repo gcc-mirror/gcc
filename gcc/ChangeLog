@@ -1,3 +1,8 @@
+2007-08-24  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.c (print_operand): Report error instead of
+	ICE for wrong operand.
+
 2007-08-24  Michael Matz  <matz@suse.de>
 
 	* Makefile.in (GTFILES_H): Use $(patsubst) instead of $(subst).
