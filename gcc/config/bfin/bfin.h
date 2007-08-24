@@ -76,6 +76,8 @@ extern int target_flags;
 	builtin_define ("__BFIN_FDPIC__");	\
       if (TARGET_ID_SHARED_LIBRARY)		\
 	builtin_define ("__ID_SHARED_LIB__");	\
+      if (flag_no_builtin)			\
+	builtin_define ("__NO_BUILTIN");	\
     }                                           \
   while (0)
 #endif

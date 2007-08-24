@@ -1,5 +1,10 @@
 2007-08-24  Jie Zhang  <jie.zhang@analog.com>
 
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	__NO_BUILTIN if -fno-builtin.
+
+2007-08-24  Jie Zhang  <jie.zhang@analog.com>
+
 	* config/bfin/bfin.c (print_operand): Report error instead of
 	ICE for wrong operand.
 
