@@ -1282,6 +1282,26 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
     AC_DEFINE(HAVE_ENOTRECOVERABLE, 1, [Define if ENOTRECOVERABLE exists.])
   fi
 
+  AC_MSG_CHECKING([for ENOLINK])
+  AC_CACHE_VAL(ac_system_error3, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOLINK; ],
+             [ac_system_error3=yes], [ac_system_error3=no])
+  ])
+  AC_MSG_RESULT($ac_system_error3)
+  if test x"$ac_system_error3" = x"yes"; then
+    AC_DEFINE(HAVE_ENOLINK, 1, [Define if ENOLINK exists.])
+  fi
+
+  AC_MSG_CHECKING([for EPROTO])
+  AC_CACHE_VAL(ac_system_error_4, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = EPROTO; ],
+             [ac_system_error_4=yes], [ac_system_error_4=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_4)
+  if test x"$ac_system_error_4" = x"yes"; then
+    AC_DEFINE(HAVE_EPROTO, 1, [Define if EPROTO exists.])
+  fi
+
   AC_MSG_CHECKING([for sys_nerr])
   AC_CACHE_VAL(ac_system_error3, [
   AC_TRY_COMPILE([#include <errno.h> ], [ int i = sys_nerr; ],

@@ -93,7 +93,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       network_unreachable = 			ENETUNREACH,
       no_buffer_space = 			ENOBUFS,
       no_child_process = 			ECHILD,
+#ifdef _GLIBCXX_HAVE_ENOLINK
       no_link = 				ENOLINK,
+#endif
       no_lock_available = 			ENOLCK,
       no_message_available = 			ENODATA, 
       no_message = 				ENOMSG, 
@@ -119,7 +121,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       owner_dead = 				EOWNERDEAD,
 #endif
       permission_denied = 			EACCES,
+#ifdef _GLIBCXX_HAVE_EPROTO
       protocol_error = 				EPROTO,
+#endif
       protocol_not_supported = 			EPROTONOSUPPORT,
       read_only_file_system = 			EROFS,
       resource_deadlock_would_occur = 		EDEADLK,

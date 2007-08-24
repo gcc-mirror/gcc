@@ -1,3 +1,14 @@
+2007-08-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add ENOLINK, EPROTO
+	for netbsd.
+	* configure: Regenerate.
+	* include/std/system_error: Guard.	
+	* testsuite/19_diagnostics/headers/system_error/
+	types_std_c++0x.cc: Same.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
+	line numbers.
+
 2007-08-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/system_error: New file.
