@@ -92,7 +92,10 @@ call_ ## FUNC (void)					\
     && !defined(inhibit_libc) && !defined(CRTSTUFFT_O) \
     && defined(__GLIBC__) && __GLIBC__ >= 2
 #include <link.h>
-# if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \
+/* uClibc pretends to be glibc 2.2 and DT_CONFIG is defined in its link.h.
+   But it doesn't use PT_GNU_EH_FRAME ELF segment currently.  */
+# if !defined(__UCLIBC__) \
+     && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \
      || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && defined(DT_CONFIG)))
 #  define USE_PT_GNU_EH_FRAME
 # endif
