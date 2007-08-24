@@ -1,3 +1,13 @@
+2007-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33166
+	* tree-ssa.c (useless_type_conversion_p): Split into a
+	recursive and a non-recursive part.
+	(useless_type_conversion_p_1): New function.
+	* tree-ssa-ccp.c (fold_stmt_r): Make sure that the result
+	from maybe_fold_offset_to_reference is trivially convertible
+	to the desired type before doing the simplification.
+
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_expr): Optimize initialization of an array

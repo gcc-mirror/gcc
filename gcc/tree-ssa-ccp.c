@@ -2060,7 +2060,12 @@ fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
 		      (TREE_OPERAND (expr, 0),
 		       integer_zero_node,
 		       TREE_TYPE (TREE_TYPE (expr)))))
-        t = build_fold_addr_expr_with_type (t, TREE_TYPE (expr));
+	{
+	  tree ptr_type = build_pointer_type (TREE_TYPE (t));
+	  if (!useless_type_conversion_p (TREE_TYPE (expr), ptr_type))
+	    return NULL_TREE;
+          t = build_fold_addr_expr_with_type (t, ptr_type);
+	}
       break;
 
       /* ??? Could handle more ARRAY_REFs here, as a variant of INDIRECT_REF.

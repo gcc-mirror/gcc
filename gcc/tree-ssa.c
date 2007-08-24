@@ -885,32 +885,10 @@ delete_tree_ssa (void)
   cfun->gimple_df = NULL;
 }
 
+/* Helper function for useless_type_conversion_p.  */
 
-/* Return true if the conversion from INNER_TYPE to OUTER_TYPE is a
-   useless type conversion, otherwise return false.
-
-   This function implicitly defines the middle-end type system.  With
-   the notion of 'a < b' meaning that useless_type_conversion_p (a, b)
-   holds and 'a > b' meaning that useless_type_conversion_p (b, a) holds,
-   the following invariants shall be fulfilled:
-
-     1) useless_type_conversion_p is transitive.
-	If a < b and b < c then a < c.
-
-     2) useless_type_conversion_p is not symmetric.
-	From a < b does not follow a > b.
-
-     3) Types define the available set of operations applicable to values.
-	A type conversion is useless if the operations for the target type
-	is a subset of the operations for the source type.  For example
-	casts to void* are useless, casts from void* are not (void* can't
-	be dereferenced or offsetted, but copied, hence its set of operations
-	is a strict subset of that of all other data pointer types).  Casts
-	to const T* are useless (can't be written to), casts from const T*
-	to T* are not.  */
-
-bool
-useless_type_conversion_p (tree outer_type, tree inner_type)
+static bool
+useless_type_conversion_p_1 (tree outer_type, tree inner_type)
 {
   /* Qualifiers on value types do not matter.  */
   inner_type = TYPE_MAIN_VARIANT (inner_type);
@@ -964,11 +942,6 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
   else if (POINTER_TYPE_P (inner_type)
 	   && POINTER_TYPE_P (outer_type))
     {
-      /* If the outer type is (void *), then the conversion is not
-	 necessary.  */
-      if (TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
-	return true;
-
       /* Don't lose casts between pointers to volatile and non-volatile
 	 qualified types.  Doing so would result in changing the semantics
 	 of later accesses.  */
@@ -1002,22 +975,22 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
 	 to types are effectively the same.  We can strip qualifiers
 	 on pointed-to types for further comparison, which is done in
 	 the callee.  */
-      return useless_type_conversion_p (TREE_TYPE (outer_type),
-				        TREE_TYPE (inner_type));
+      return useless_type_conversion_p_1 (TREE_TYPE (outer_type),
+				          TREE_TYPE (inner_type));
     }
 
   /* Recurse for complex types.  */
   else if (TREE_CODE (inner_type) == COMPLEX_TYPE
 	   && TREE_CODE (outer_type) == COMPLEX_TYPE)
-    return useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type));
+    return useless_type_conversion_p_1 (TREE_TYPE (outer_type),
+				        TREE_TYPE (inner_type));
 
   /* Recurse for vector types with the same number of subparts.  */
   else if (TREE_CODE (inner_type) == VECTOR_TYPE
 	   && TREE_CODE (outer_type) == VECTOR_TYPE
 	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
-    return useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type));
+    return useless_type_conversion_p_1 (TREE_TYPE (outer_type),
+				        TREE_TYPE (inner_type));
 
   /* For aggregates we may need to fall back to structural equality
      checks.  */
@@ -1035,6 +1008,43 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
     }
 
   return false;
+}
+
+/* Return true if the conversion from INNER_TYPE to OUTER_TYPE is a
+   useless type conversion, otherwise return false.
+
+   This function implicitly defines the middle-end type system.  With
+   the notion of 'a < b' meaning that useless_type_conversion_p (a, b)
+   holds and 'a > b' meaning that useless_type_conversion_p (b, a) holds,
+   the following invariants shall be fulfilled:
+
+     1) useless_type_conversion_p is transitive.
+	If a < b and b < c then a < c.
+
+     2) useless_type_conversion_p is not symmetric.
+	From a < b does not follow a > b.
+
+     3) Types define the available set of operations applicable to values.
+	A type conversion is useless if the operations for the target type
+	is a subset of the operations for the source type.  For example
+	casts to void* are useless, casts from void* are not (void* can't
+	be dereferenced or offsetted, but copied, hence its set of operations
+	is a strict subset of that of all other data pointer types).  Casts
+	to const T* are useless (can't be written to), casts from const T*
+	to T* are not.  */
+
+bool
+useless_type_conversion_p (tree outer_type, tree inner_type)
+{
+  /* If the outer type is (void *), then the conversion is not
+     necessary.  We have to make sure to not apply this while
+     recursing though.  */
+  if (POINTER_TYPE_P (inner_type)
+      && POINTER_TYPE_P (outer_type)
+      && TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
+    return true;
+
+  return useless_type_conversion_p_1 (outer_type, inner_type);
 }
 
 /* Return true if a conversion from either type of TYPE1 and TYPE2
