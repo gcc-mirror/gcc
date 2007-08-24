@@ -1,5 +1,9 @@
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
+	* expr.c (get_inner_reference): Remove unused variable.
+
+2007-08-24  Richard Guenther  <rguenther@suse.de>
+
 	* expr.c (get_inner_reference): Do computation of bitoffset
 	from offset in a way we can detect overflow reliably.
 

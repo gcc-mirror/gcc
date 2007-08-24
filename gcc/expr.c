@@ -5654,7 +5654,6 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   enum machine_mode mode = VOIDmode;
   tree offset = size_zero_node;
   tree bit_offset = bitsize_zero_node;
-  tree tem;
 
   /* First get the mode, signedness, and size.  We do this from just the
      outermost expression.  */
