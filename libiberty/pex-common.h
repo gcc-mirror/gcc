@@ -26,6 +26,12 @@ Boston, MA 02110-1301, USA.  */
 #include "libiberty.h"
 #include <stdio.h>
 
+/* pid_t is may defined by config.h or sys/types.h needs to be
+   included.  */
+#if !defined(pid_t) && defined(HAVE_SYS_TYPES_H)
+#include <sys/types.h>
+#endif
+
 #define install_error_msg "installation problem, cannot exec `%s'"
 
 /* stdin file number.  */
@@ -108,7 +114,7 @@ struct pex_funcs
      closed in the child process.  The function should handle the
      PEX_STDERR_TO_STDOUT flag.  Return >= 0 on success, or -1 on
      error and set *ERRMSG and *ERR.  */
-  long (*exec_child) (struct pex_obj *, int /* flags */,
+  pid_t (*exec_child) (struct pex_obj *, int /* flags */,
                       const char */* executable */, char * const * /* argv */,
                       char * const * /* env */,
                       int /* in */, int /* out */, int /* errdes */,
@@ -120,7 +126,7 @@ struct pex_funcs
      and time in *TIME (if it is not null).  CHILD is from fork.  DONE
      is 1 if this is called via pex_free.  ERRMSG and ERR are as in
      fork.  Return 0 on success, -1 on error.  */
-  int (*wait) (struct pex_obj *, long /* child */, int * /* status */,
+  int (*wait) (struct pex_obj *, pid_t /* child */, int * /* status */,
                struct pex_time * /* time */, int /* done */,
                const char ** /* errmsg */, int * /* err */);
   /* Create a pipe (only called if PEX_USE_PIPES is set) storing two
