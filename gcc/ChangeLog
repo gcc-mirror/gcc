@@ -1,3 +1,9 @@
+2007-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/32912
+	* fold-const.c (fold_binary): Only optimize X | ~X and X ^ ~X for
+	integral types.
+
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33142
