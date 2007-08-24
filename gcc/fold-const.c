@@ -9384,6 +9384,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* ~X | X is -1.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1))
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
 	  t1 = build_int_cst (type, -1);
@@ -9393,6 +9394,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* X | ~X is -1.  */
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
 	  t1 = build_int_cst (type, -1);
@@ -9500,6 +9502,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* ~X ^ X is -1.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1))
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
 	{
 	  t1 = build_int_cst (type, -1);
@@ -9509,6 +9512,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* X ^ ~X is -1.  */
       if (TREE_CODE (arg1) == BIT_NOT_EXPR
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 	  && operand_equal_p (arg0, TREE_OPERAND (arg1, 0), 0))
 	{
 	  t1 = build_int_cst (type, -1);
