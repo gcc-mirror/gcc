@@ -1,5 +1,8 @@
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/31941
+	* g++.dg/parse/crash37.C: New test.
+
 	PR c++/32898
 	* g++.dg/lookup/ns3.C: New test.
 

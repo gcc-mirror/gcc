@@ -1,5 +1,9 @@
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/31941
+	* error.c (resolve_virtual_fun_from_obj_type_ref): Handle
+	TARGET_VTABLE_USES_DESCRIPTORS targets properly.
+
 	PR c++/32898
 	* name-lookup.c (set_decl_namespace): lookup_qualified_name failure
 	is error_mark_node rather than NULL_TREE.
