@@ -1,3 +1,9 @@
+2007-08-24  Tom Tromey  <tromey@redhat.com>
+
+	* varpool.c (varpool_last_needed_node): Fix comment typo.
+	* c-decl.c (duplicate_decls): Fix comment typo.
+	(clone_underlying_type): Update comment.
+
 2007-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/alpha/alpha.c (alpha_mangle_type, decl_has_samegp,
