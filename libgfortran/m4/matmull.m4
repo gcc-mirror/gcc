@@ -40,15 +40,15 @@ include(iparm.m4)dnl
    Either a or b can be rank 1.  In this case x or y is 1.  */
 
 extern void matmul_'rtype_code` ('rtype` * const restrict, 
-	gfc_array_l4 * const restrict, gfc_array_l4 * const restrict);
+	gfc_array_l1 * const restrict, gfc_array_l1 * const restrict);
 export_proto(matmul_'rtype_code`);
 
 void
 matmul_'rtype_code` ('rtype` * const restrict retarray, 
-	gfc_array_l4 * const restrict a, gfc_array_l4 * const restrict b)
+	gfc_array_l1 * const restrict a, gfc_array_l1 * const restrict b)
 {
-  const GFC_INTEGER_4 * restrict abase;
-  const GFC_INTEGER_4 * restrict bbase;
+  const GFC_LOGICAL_1 * restrict abase;
+  const GFC_LOGICAL_1 * restrict bbase;
   'rtype_name` * restrict dest;
   index_type rxstride;
   index_type rystride;
@@ -58,9 +58,11 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
   index_type ystride;
   index_type x;
   index_type y;
+  int a_kind;
+  int b_kind;
 
-  const GFC_INTEGER_4 * restrict pa;
-  const GFC_INTEGER_4 * restrict pb;
+  const GFC_LOGICAL_1 * restrict pa;
+  const GFC_LOGICAL_1 * restrict pb;
   index_type astride;
   index_type bstride;
   index_type count;
@@ -100,17 +102,29 @@ matmul_'rtype_code` ('rtype` * const restrict retarray,
     }
 
   abase = a->data;
-  if (GFC_DESCRIPTOR_SIZE (a) != 4)
-    {
-      assert (GFC_DESCRIPTOR_SIZE (a) == 8);
-      abase = GFOR_POINTER_L8_TO_L4 (abase);
-    }
+  a_kind = GFC_DESCRIPTOR_SIZE (a);
+
+  if (a_kind == 1 || a_kind == 2 || a_kind == 4 || a_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+     || a_kind == 16
+#endif
+     )
+    abase = GFOR_POINTER_TO_L1 (abase, a_kind);
+  else
+    internal_error (NULL, "Funny sized logical array");
+
   bbase = b->data;
-  if (GFC_DESCRIPTOR_SIZE (b) != 4)
-    {
-      assert (GFC_DESCRIPTOR_SIZE (b) == 8);
-      bbase = GFOR_POINTER_L8_TO_L4 (bbase);
-    }
+  b_kind = GFC_DESCRIPTOR_SIZE (b);
+
+  if (b_kind == 1 || b_kind == 2 || b_kind == 4 || b_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+     || b_kind == 16
+#endif
+     )
+    bbase = GFOR_POINTER_TO_L1 (bbase, b_kind);
+  else
+    internal_error (NULL, "Funny sized logical array");
+
   dest = retarray->data;
 '
 sinclude(`matmul_asm_'rtype_code`.m4')dnl
@@ -130,7 +144,7 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
      one.  */
   if (GFC_DESCRIPTOR_RANK (a) == 1)
     {
-      astride = a->dim[0].stride;
+      astride = a->dim[0].stride * a_kind;
       count = a->dim[0].ubound + 1 - a->dim[0].lbound;
       xstride = 0;
       rxstride = 0;
@@ -138,14 +152,14 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
     }
   else
     {
-      astride = a->dim[1].stride;
+      astride = a->dim[1].stride * a_kind;
       count = a->dim[1].ubound + 1 - a->dim[1].lbound;
       xstride = a->dim[0].stride;
       xcount = a->dim[0].ubound + 1 - a->dim[0].lbound;
     }
   if (GFC_DESCRIPTOR_RANK (b) == 1)
     {
-      bstride = b->dim[0].stride;
+      bstride = b->dim[0].stride * b_kind;
       assert(count == b->dim[0].ubound + 1 - b->dim[0].lbound);
       ystride = 0;
       rystride = 0;
@@ -153,7 +167,7 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
     }
   else
     {
-      bstride = b->dim[0].stride;
+      bstride = b->dim[0].stride * b_kind;
       assert(count == b->dim[0].ubound + 1 - b->dim[0].lbound);
       ystride = b->dim[1].stride;
       ycount = b->dim[1].ubound + 1 - b->dim[1].lbound;

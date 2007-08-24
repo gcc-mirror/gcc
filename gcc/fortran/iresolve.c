@@ -77,32 +77,18 @@ check_charlen_present (gfc_expr *source)
 static void
 resolve_mask_arg (gfc_expr *mask)
 {
-  int newkind;
 
-  /* The mask can be kind 4 or 8 for the array case.
+  /* The mask can be any kind for an array.
      For the scalar case, coerce it to kind=4 unconditionally
      (because this is the only kind we have a library function
      for).  */
 
-  newkind = 0;
-
-  if (mask->rank == 0)
-    {
-      if (mask->ts.kind != 4)
-	newkind = 4;
-    }
-  else
-    {
-      if (mask->ts.kind < 4)
-	newkind = gfc_default_logical_kind;
-    }
-
-  if (newkind)
+  if (mask->rank == 0 && mask->ts.kind != 4)
     {
       gfc_typespec ts;
 
       ts.type = BT_LOGICAL;
-      ts.kind = newkind;
+      ts.kind = 4;
       gfc_convert_type (mask, &ts, 2);
     }
 }

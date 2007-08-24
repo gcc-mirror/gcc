@@ -76,7 +76,7 @@ array valued, and the other one where MASK is scalar.  */
 
 static void
 pack_internal (gfc_array_char *ret, const gfc_array_char *array,
-	       const gfc_array_l4 *mask, const gfc_array_char *vector,
+	       const gfc_array_l1 *mask, const gfc_array_char *vector,
 	       index_type size)
 {
   /* r.* indicates the return array.  */
@@ -89,7 +89,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   /* m.* indicates the mask array.  */
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type mstride0;
-  const GFC_LOGICAL_4 *mptr;
+  const GFC_LOGICAL_1 *mptr;
 
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -98,8 +98,31 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
   index_type dim;
   index_type nelem;
   index_type total;
+  int mask_kind;
 
   dim = GFC_DESCRIPTOR_RANK (array);
+
+  sptr = array->data;
+  mptr = mask->data;
+
+  /* Use the same loop for all logical types, by using GFC_LOGICAL_1
+     and using shifting to address size and endian issues.  */
+
+  mask_kind = GFC_DESCRIPTOR_SIZE (mask);
+
+  if (mask_kind == 1 || mask_kind == 2 || mask_kind == 4 || mask_kind == 8
+#ifdef HAVE_GFC_LOGICAL_16
+      || mask_kind == 16
+#endif
+      )
+    {
+      /*  Don't convert a NULL pointer as we use test for NULL below.  */
+      if (mptr)
+	mptr = GFOR_POINTER_TO_L1 (mptr, mask_kind);
+    }
+  else
+    runtime_error ("Funny sized logical array");
+
   zero_sized = 0;
   for (n = 0; n < dim; n++)
     {
@@ -108,25 +131,12 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
       if (extent[n] <= 0)
        zero_sized = 1;
       sstride[n] = array->dim[n].stride * size;
-      mstride[n] = mask->dim[n].stride;
+      mstride[n] = mask->dim[n].stride * mask_kind;
     }
   if (sstride[0] == 0)
     sstride[0] = size;
   if (mstride[0] == 0)
-    mstride[0] = 1;
-
-  sptr = array->data;
-  mptr = mask->data;
-
-  /* Use the same loop for both logical types. */
-  if (GFC_DESCRIPTOR_SIZE (mask) != 4)
-    {
-      if (GFC_DESCRIPTOR_SIZE (mask) != 8)
-        runtime_error ("Funny sized logical array");
-      for (n = 0; n < dim; n++)
-        mstride[n] <<= 1;
-      mptr = GFOR_POINTER_L8_TO_L4 (mptr);
-    }
+    mstride[0] = mask_kind;
 
   if (ret->data == NULL || compile_options.bounds_check)
     {
@@ -156,7 +166,7 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 	     cache behavior in the case where our cache is not big
 	     enough to hold all elements that have to be copied.  */
 
-	  const GFC_LOGICAL_4 *m = mptr;
+	  const GFC_LOGICAL_1 *m = mptr;
 
 	  total = 0;
 	  if (zero_sized)
