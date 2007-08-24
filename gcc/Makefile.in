@@ -3094,7 +3094,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   @all_gtfiles@
 
-GTFILES_H = $(subst /,-, $(subst $(srcdir)/,gt-, $(subst .c,.h, \
+GTFILES_H = $(subst /,-, $(patsubst $(srcdir)/%,gt-%, $(patsubst %.c,%.h, \
 		  $(filter %.c, $(GTFILES)))))
 
 GTFILES_LANG_H = $(patsubst [%], gtype-%.h, $(filter [%], $(GTFILES)))
