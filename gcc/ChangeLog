@@ -1,3 +1,7 @@
+2007-08-24  Michael Matz  <matz@suse.de>
+
+	* Makefile.in (GTFILES_H): Use $(patsubst) instead of $(subst).
+
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33166
