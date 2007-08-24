@@ -4472,10 +4472,52 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 
       return NULL_RTX;
     }
+  else if (TREE_CODE (exp) == STRING_CST
+	   && !nontemporal && !call_param_p
+	   && TREE_STRING_LENGTH (exp) > 0
+	   && TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+    {
+      /* Optimize initialization of an array with a STRING_CST.  */
+      HOST_WIDE_INT exp_len, str_copy_len;
+      rtx dest_mem;
+
+      exp_len = int_expr_size (exp);
+      if (exp_len <= 0)
+	goto normal_expr;
+
+      str_copy_len = strlen (TREE_STRING_POINTER (exp));
+      if (str_copy_len < TREE_STRING_LENGTH (exp) - 1)
+	goto normal_expr;
+
+      str_copy_len = TREE_STRING_LENGTH (exp);
+      if ((STORE_MAX_PIECES & (STORE_MAX_PIECES - 1)) == 0)
+	{
+	  str_copy_len += STORE_MAX_PIECES - 1;
+	  str_copy_len &= ~(STORE_MAX_PIECES - 1);
+	}
+      str_copy_len = MIN (str_copy_len, exp_len);
+      if (!can_store_by_pieces (str_copy_len, builtin_strncpy_read_str,
+				(void *) TREE_STRING_POINTER (exp),
+				MEM_ALIGN (target)))
+	goto normal_expr;
+
+      dest_mem = target;
+
+      dest_mem = store_by_pieces (dest_mem,
+				  str_copy_len, builtin_strncpy_read_str,
+				  (void *) TREE_STRING_POINTER (exp),
+				  MEM_ALIGN (target),
+				  exp_len > str_copy_len ? 1 : 0);
+      if (exp_len > str_copy_len)
+	clear_storage (dest_mem, GEN_INT (exp_len - str_copy_len),
+		       BLOCK_OP_NORMAL);
+      return NULL_RTX;
+    }
   else
     {
       rtx tmp_target;
 
+  normal_expr:
       /* If we want to use a nontemporal store, force the value to
 	 register first.  */
       tmp_target = nontemporal ? NULL_RTX : target;

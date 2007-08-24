@@ -1,5 +1,7 @@
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/array-init-1.c: New test.
+
 	PR c++/32567
 	* g++.dg/parse/crash36.C: New test.
 
