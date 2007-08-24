@@ -1965,7 +1965,7 @@ tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) toplev.h \
    langhooks.h $(TREE_INLINE_H) $(CGRAPH_H) intl.h $(FUNCTION_H) $(TREE_GIMPLE_H) \
    debug.h $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-iterator.h tree-mudflap.h \
-   ipa-prop.h value-prof.h
+   ipa-prop.h value-prof.h $(TARGET_H) $(INTEGRATE_H)
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(GGC_H) langhooks.h $(REAL_H) tree-iterator.h fixed-value.h
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
