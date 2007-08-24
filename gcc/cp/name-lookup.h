@@ -190,9 +190,6 @@ struct cp_binding_level GTY(())
     /* An array of static functions and variables (for namespaces only) */
     VEC(tree,gc) *static_decls;
 
-    /* A chain of VTABLE_DECL nodes.  */
-    tree vtables;
-
     /* A list of USING_DECL nodes.  */
     tree usings;
 

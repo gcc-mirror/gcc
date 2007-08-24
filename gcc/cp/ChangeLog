@@ -1,3 +1,8 @@
+2007-08-24  Ollie Wild  <aaw@google.com>
+
+	* name-lookup.c (add_decl_to_level): Remove addition to vtables chain.
+	* name-lookup.h (cp_binding_level): Remove vtables member.
+
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (cp_cannot_inline_tree_fn): Remove.

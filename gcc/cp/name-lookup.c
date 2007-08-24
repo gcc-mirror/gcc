@@ -536,16 +536,15 @@ supplement_binding (cxx_binding *binding, tree decl)
 static void
 add_decl_to_level (tree decl, cxx_scope *b)
 {
+  /* We used to record virtual tables as if they were ordinary
+     variables, but no longer do so.  */
+  gcc_assert (!(TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl)));
+
   if (TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
     {
       TREE_CHAIN (decl) = b->namespaces;
       b->namespaces = decl;
-    }
-  else if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))
-    {
-      TREE_CHAIN (decl) = b->vtables;
-      b->vtables = decl;
     }
   else
     {
