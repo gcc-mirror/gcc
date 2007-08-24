@@ -3409,12 +3409,10 @@ got_specific:
      (4)   A reference to an elemental standard intrinsic function,
            where each argument is an initialization expression  */
 
-  if (gfc_init_expr 
-      && isym->elemental
-      && (expr->ts.type != BT_INTEGER || expr->ts.type != BT_CHARACTER)
-      && gfc_notify_std (GFC_STD_F2003, "Extension: Evaluation of "
-			"nonstandard initialization expression at %L",
-			&expr->where) == FAILURE)
+  if (gfc_init_expr && isym->elemental && flag
+      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Elemental function "
+			"as initialization expression with non-integer/non-"
+		        "character arguments at %L", &expr->where) == FAILURE)
     return MATCH_ERROR;
 
   return MATCH_YES;
