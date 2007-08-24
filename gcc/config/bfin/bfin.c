@@ -1310,26 +1310,31 @@ print_operand (FILE *file, rtx x, char code)
 	case REG:
 	  if (code == 'h')
 	    {
-	      gcc_assert (REGNO (x) < 32);
-	      fprintf (file, "%s", short_reg_names[REGNO (x)]);
-	      /*fprintf (file, "\n%d\n ", REGNO (x));*/
-	      break;
+	      if (REGNO (x) < 32)
+		fprintf (file, "%s", short_reg_names[REGNO (x)]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else if (code == 'd')
 	    {
-	      gcc_assert (REGNO (x) < 32);
-	      fprintf (file, "%s", high_reg_names[REGNO (x)]);
-	      break;
+	      if (REGNO (x) < 32)
+		fprintf (file, "%s", high_reg_names[REGNO (x)]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else if (code == 'w')
 	    {
-	      gcc_assert (REGNO (x) == REG_A0 || REGNO (x) == REG_A1);
-	      fprintf (file, "%s.w", reg_names[REGNO (x)]);
+	      if (REGNO (x) == REG_A0 || REGNO (x) == REG_A1)
+		fprintf (file, "%s.w", reg_names[REGNO (x)]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else if (code == 'x')
 	    {
-	      gcc_assert (REGNO (x) == REG_A0 || REGNO (x) == REG_A1);
-	      fprintf (file, "%s.x", reg_names[REGNO (x)]);
+	      if (REGNO (x) == REG_A0 || REGNO (x) == REG_A1)
+		fprintf (file, "%s.x", reg_names[REGNO (x)]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else if (code == 'v')
 	    {
@@ -1342,18 +1347,24 @@ print_operand (FILE *file, rtx x, char code)
 	    }
 	  else if (code == 'D')
 	    {
-	      fprintf (file, "%s", dregs_pair_names[REGNO (x)]);
+	      if (D_REGNO_P (REGNO (x)))
+		fprintf (file, "%s", dregs_pair_names[REGNO (x)]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else if (code == 'H')
 	    {
-	      gcc_assert (mode == DImode || mode == DFmode);
-	      gcc_assert (REG_P (x));
-	      fprintf (file, "%s", reg_names[REGNO (x) + 1]);
+	      if ((mode == DImode || mode == DFmode) && REG_P (x))
+		fprintf (file, "%s", reg_names[REGNO (x) + 1]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else if (code == 'T')
 	    {
-	      gcc_assert (D_REGNO_P (REGNO (x)));
-	      fprintf (file, "%s", byte_reg_names[REGNO (x)]);
+	      if (D_REGNO_P (REGNO (x)))
+		fprintf (file, "%s", byte_reg_names[REGNO (x)]);
+	      else
+		output_operand_lossage ("invalid operand for code '%c'", code);
 	    }
 	  else 
 	    fprintf (file, "%s", reg_names[REGNO (x)]);
