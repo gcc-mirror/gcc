@@ -2184,6 +2184,8 @@ struct sh_args {
   (move_by_pieces_ninsns (SIZE, ALIGN, STORE_MAX_PIECES + 1) \
    < (TARGET_SMALLCODE ? 2 : ((ALIGN >= 32) ? 16 : 2)))
 
+#define SET_BY_PIECES_P(SIZE, ALIGN) STORE_BY_PIECES_P(SIZE, ALIGN)
+
 /* Macros to check register numbers against specific register classes.  */
 
 /* These assume that REGNO is a hard or pseudo reg number.

@@ -803,9 +803,12 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1, *s390_compare_emitte
     || (TARGET_64BIT && (SIZE) == 8) )
 
 /* This macro is used to determine whether store_by_pieces should be
-   called to "memset" storage with byte values other than zero, or
-   to "memcpy" storage when the source is a constant string.  */
+   called to "memcpy" storage when the source is a constant string.  */
 #define STORE_BY_PIECES_P(SIZE, ALIGN) MOVE_BY_PIECES_P (SIZE, ALIGN)
+
+/* Likewise to decide whether to "memset" storage with byte values
+   other than zero.  */
+#define SET_BY_PIECES_P(SIZE, ALIGN) STORE_BY_PIECES_P (SIZE, ALIGN)
 
 /* Don't perform CSE on function addresses.  */
 #define NO_FUNCTION_CSE

@@ -1,3 +1,36 @@
+2007-08-24  Sandra Loosemore  <sandra@codesourcery.com>
+            Nigel Stephens <nigel@mips.com>
+
+	PR target/11787
+
+	* doc/tm.texi (SET_RATIO, SET_BY_PIECES_P): Document new macros.
+	(STORE_BY_PIECES_P): No longer applies to __builtin_memset.
+	* expr.c (SET_BY_PIECES_P): Define.
+	(can_store_by_pieces, store_by_pieces): Add MEMSETP argument; use
+	it to decide whether to use SET_BY_PIECES_P or STORE_BY_PIECES_P.
+	(store_expr):  Pass MEMSETP argument to can_store_by_pieces and
+	store_by_pieces.
+	* expr.h (SET_RATIO): Define.
+	(can_store_by_pieces, store_by_pieces):	Update prototypes.
+	* builtins.c (expand_builtin_memcpy): Pass MEMSETP argument to
+	can_store_by_pieces/store_by_pieces.
+	(expand_builtin_memcpy_args): Likewise.
+	(expand_builtin_strncpy): Likewise.
+	(expand_builtin_memset_args): Likewise.  Also remove special case
+	for optimize_size so that can_store_by_pieces/SET_BY_PIECES_P can
+	decide what to do instead.
+	* value-prof.c (tree_stringops_transform): Pass MEMSETP argument
+	to can_store_by_pieces.
+
+	* config/sh/sh.h (SET_BY_PIECES_P): Clone from STORE_BY_PIECES_P.
+	* config/s390/s390.h (SET_BY_PIECES_P): Likewise.
+
+	* config/mips/mips.opt (mmemcpy): Change from Var to Mask.
+	* config/mips/mips.c (override_options): Make -Os default to -mmemcpy.
+	* config/mips/mips.h (MIPS_CALL_RATIO): Define.
+	(MOVE_RATIO, CLEAR_RATIO, SET_RATIO): Define.
+	(STORE_BY_PIECES_P): Define.
+
 2007-08-24  Tom Tromey  <tromey@redhat.com>
 
 	* varpool.c (varpool_last_needed_node): Fix comment typo.
