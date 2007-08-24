@@ -5690,6 +5690,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	*pbitsize = tree_low_cst (size_tree, 1);
     }
 
+  *pmode = mode;
+
   /* Compute cumulative bit-offset for nested component-refs and array-refs,
      and find the ultimate containing object.  */
   while (1)
@@ -5774,18 +5776,25 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
  done:
 
   /* If OFFSET is constant, see if we can return the whole thing as a
-     constant bit position.  Otherwise, split it up.  */
-  if (host_integerp (offset, 0)
-      && 0 != (tem = size_binop (MULT_EXPR,
-				 fold_convert (bitsizetype, offset),
-				 bitsize_unit_node))
-      && 0 != (tem = size_binop (PLUS_EXPR, tem, bit_offset))
-      && host_integerp (tem, 0))
-    *pbitpos = tree_low_cst (tem, 0), *poffset = 0;
-  else
-    *pbitpos = tree_low_cst (bit_offset, 0), *poffset = offset;
+     constant bit position.  Make sure to handle overflow during
+     this conversion.  */
+  if (host_integerp (offset, 0))
+    {
+      double_int tem = double_int_mul (tree_to_double_int (offset),
+				       uhwi_to_double_int (BITS_PER_UNIT));
+      tem = double_int_add (tem, tree_to_double_int (bit_offset));
+      if (double_int_fits_in_shwi_p (tem))
+	{
+	  *pbitpos = double_int_to_shwi (tem);
+	  *poffset = NULL_TREE;
+	  return exp;
+	}
+    }
 
-  *pmode = mode;
+  /* Otherwise, split it up.  */
+  *pbitpos = tree_low_cst (bit_offset, 0);
+  *poffset = offset;
+
   return exp;
 }
 
