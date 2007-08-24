@@ -702,7 +702,7 @@ struct processor_costs power6_cost = {
 
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
-static const char *rs6000_invalid_within_doloop (rtx);
+static const char *rs6000_invalid_within_doloop (const_rtx);
 static rtx rs6000_generate_compare (enum rtx_code);
 static void rs6000_emit_stack_tie (void);
 static void rs6000_frame_related (rtx, rtx, HOST_WIDE_INT, rtx, rtx);
@@ -728,10 +728,10 @@ static void rs6000_assemble_visibility (tree, int);
 static int rs6000_ra_ever_killed (void);
 static tree rs6000_handle_longcall_attribute (tree *, tree, tree, int, bool *);
 static tree rs6000_handle_altivec_attribute (tree *, tree, tree, int, bool *);
-static bool rs6000_ms_bitfield_layout_p (tree);
+static bool rs6000_ms_bitfield_layout_p (const_tree);
 static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static void rs6000_eliminate_indexed_memrefs (rtx operands[2]);
-static const char *rs6000_mangle_type (tree);
+static const char *rs6000_mangle_type (const_tree);
 extern const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes (tree);
 static bool rs6000_reg_live_or_pic_offset_p (int);
@@ -753,7 +753,7 @@ static section *rs6000_elf_select_rtx_section (enum machine_mode, rtx,
 static void rs6000_elf_encode_section_info (tree, rtx, int)
      ATTRIBUTE_UNUSED;
 #endif
-static bool rs6000_use_blocks_for_constant_p (enum machine_mode, rtx);
+static bool rs6000_use_blocks_for_constant_p (enum machine_mode, const_rtx);
 #if TARGET_XCOFF
 static void rs6000_xcoff_asm_output_anchor (rtx);
 static void rs6000_xcoff_asm_globalize_label (FILE *, const char *);
@@ -805,7 +805,7 @@ static tree rs6000_builtin_mul_widen_odd (tree);
 static tree rs6000_builtin_conversion (enum tree_code, tree);
 
 static void def_builtin (int, const char *, tree, int);
-static bool rs6000_vector_alignment_reachable (tree, bool);
+static bool rs6000_vector_alignment_reachable (const_tree, bool);
 static void rs6000_init_builtins (void);
 static rtx rs6000_expand_unop_builtin (enum insn_code, tree, rtx);
 static rtx rs6000_expand_binop_builtin (enum insn_code, tree, rtx);
@@ -850,7 +850,7 @@ static void compute_save_world_info (rs6000_stack_t *info_ptr);
 static void is_altivec_return_reg (rtx, void *);
 static rtx generate_set_vrsave (rtx, rs6000_stack_t *, int);
 int easy_vector_constant (rtx, enum machine_mode);
-static bool rs6000_is_opaque_type (tree);
+static bool rs6000_is_opaque_type (const_tree);
 static rtx rs6000_dwarf_register_span (rtx);
 static void rs6000_init_dwarf_reg_sizes_extra (tree);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
@@ -883,7 +883,7 @@ static bool rs6000_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				      const_tree, bool);
 static int rs6000_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, bool);
-static const char *invalid_arg_for_unprototyped_fn (tree, tree, tree);
+static const char *invalid_arg_for_unprototyped_fn (const_tree, const_tree, const_tree);
 #if TARGET_MACHO
 static void macho_branch_islands (void);
 static int no_previous_def (tree function_name);
@@ -1100,7 +1100,7 @@ static const char alt_reg_names[][8] =
 #define TARGET_ASM_OUTPUT_MI_THUNK rs6000_output_mi_thunk
 
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL rs6000_function_ok_for_sibcall
@@ -1141,7 +1141,7 @@ static const char alt_reg_names[][8] =
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED hook_bool_CUMULATIVE_ARGS_true
 #undef TARGET_SPLIT_COMPLEX_ARG
-#define TARGET_SPLIT_COMPLEX_ARG hook_bool_tree_true
+#define TARGET_SPLIT_COMPLEX_ARG hook_bool_const_tree_true
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK rs6000_must_pass_in_stack
 #undef TARGET_PASS_BY_REFERENCE
@@ -1914,7 +1914,7 @@ rs6000_builtin_mul_widen_odd (tree type)
    how may iterations are required to reach desired alignment.  */
 
 static bool
-rs6000_vector_alignment_reachable (tree type ATTRIBUTE_UNUSED, bool is_packed)
+rs6000_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed)
 {
   if (is_packed)
     return false;
@@ -14119,7 +14119,7 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
    PowerPC uses the COUNT register for branch on table instructions.  */
 
 static const char *
-rs6000_invalid_within_doloop (rtx insn)
+rs6000_invalid_within_doloop (const_rtx insn)
 {
   if (CALL_P (insn))
     return "Function call in the loop.";
@@ -19003,7 +19003,7 @@ rs6000_handle_altivec_attribute (tree *node,
    elements; we must teach the compiler how to mangle them.  */
 
 static const char *
-rs6000_mangle_type (tree type)
+rs6000_mangle_type (const_tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
 
@@ -19133,7 +19133,7 @@ rs6000_handle_struct_attribute (tree *node, tree name,
 }
 
 static bool
-rs6000_ms_bitfield_layout_p (tree record_type)
+rs6000_ms_bitfield_layout_p (const_tree record_type)
 {
   return (TARGET_USE_MS_BITFIELD_LAYOUT &&
           !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
@@ -19235,7 +19235,7 @@ rs6000_elf_encode_section_info (tree decl, rtx rtl, int first)
 }
 
 bool
-rs6000_elf_in_small_data_p (tree decl)
+rs6000_elf_in_small_data_p (const_tree decl)
 {
   if (rs6000_sdata == SDATA_NONE)
     return false;
@@ -19279,7 +19279,7 @@ rs6000_elf_in_small_data_p (tree decl)
 /* Implement TARGET_USE_BLOCKS_FOR_CONSTANT_P.  */
 
 static bool
-rs6000_use_blocks_for_constant_p (enum machine_mode mode, rtx x)
+rs6000_use_blocks_for_constant_p (enum machine_mode mode, const_rtx x)
 {
   return !ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode);
 }
@@ -20965,7 +20965,7 @@ rs6000_initial_elimination_offset (int from, int to)
 /* Return true if TYPE is a SPE or AltiVec opaque type.  */
 
 static bool
-rs6000_is_opaque_type (tree type)
+rs6000_is_opaque_type (const_tree type)
 {
   return (type == opaque_V2SI_type_node
 	      || type == opaque_V2SF_type_node
@@ -21092,7 +21092,7 @@ rs6000_vector_mode_supported_p (enum machine_mode mode)
 
 /* Target hook for invalid_arg_for_unprototyped_fn. */
 static const char *
-invalid_arg_for_unprototyped_fn (tree typelist, tree funcdecl, tree val)
+invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const_tree val)
 {
   return (!rs6000_darwin64_abi
 	  && typelist == 0

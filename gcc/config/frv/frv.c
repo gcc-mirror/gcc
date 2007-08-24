@@ -270,7 +270,7 @@ frv_cpu_t frv_cpu_type = CPU_TYPE;	/* value of -mcpu= */
 
 static bool frv_handle_option			(size_t, const char *, int);
 static int frv_default_flags_for_cpu		(void);
-static int frv_string_begins_with		(tree, const char *);
+static int frv_string_begins_with		(const_tree, const char *);
 static FRV_INLINE bool frv_small_data_reloc_p	(rtx, int);
 static void frv_print_operand_memory_reference_reg
 						(FILE *, rtx);
@@ -358,7 +358,7 @@ static bool frv_assemble_integer		(rtx, unsigned, int);
 static void frv_init_builtins			(void);
 static rtx frv_expand_builtin			(tree, rtx, rtx, enum machine_mode, int);
 static void frv_init_libfuncs			(void);
-static bool frv_in_small_data_p			(tree);
+static bool frv_in_small_data_p			(const_tree);
 static void frv_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 static void frv_setup_incoming_varargs		(CUMULATIVE_ARGS *,
@@ -833,9 +833,9 @@ frv_optimization_options (int level, int size ATTRIBUTE_UNUSED)
 /* Return true if NAME (a STRING_CST node) begins with PREFIX.  */
 
 static int
-frv_string_begins_with (tree name, const char *prefix)
+frv_string_begins_with (const_tree name, const char *prefix)
 {
-  int prefix_len = strlen (prefix);
+  const int prefix_len = strlen (prefix);
 
   /* Remember: NAME's length includes the null terminator.  */
   return (TREE_STRING_LENGTH (name) > prefix_len
@@ -9430,10 +9430,10 @@ frv_expand_builtin (tree exp,
 }
 
 static bool
-frv_in_small_data_p (tree decl)
+frv_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
-  tree section_name;
+  const_tree section_name;
 
   /* Don't apply the -G flag to internal compiler structures.  We
      should leave such structures in the main data section, partly

@@ -291,7 +291,7 @@ static bool mips_valid_base_register_p (rtx, enum machine_mode, int);
 static bool mips_classify_address (struct mips_address_info *, rtx,
 				   enum machine_mode, int);
 static bool mips_cannot_force_const_mem (rtx);
-static bool mips_use_blocks_for_constant_p (enum machine_mode, rtx);
+static bool mips_use_blocks_for_constant_p (enum machine_mode, const_rtx);
 static int mips_symbol_insns (enum mips_symbol_type, enum machine_mode);
 static bool mips16_unextended_reference_p (enum machine_mode mode, rtx, rtx);
 static rtx mips_force_temporary (rtx, rtx);
@@ -344,8 +344,8 @@ static int symbolic_expression_p (rtx);
 static section *mips_select_rtx_section (enum machine_mode, rtx,
 					 unsigned HOST_WIDE_INT);
 static section *mips_function_rodata_section (tree);
-static bool mips_in_small_data_p (tree);
-static bool mips_use_anchors_for_symbol_p (rtx);
+static bool mips_in_small_data_p (const_tree);
+static bool mips_use_anchors_for_symbol_p (const_rtx);
 static int mips_fpr_return_fields (const_tree, tree *);
 static bool mips_return_in_msb (const_tree);
 static rtx mips_return_fpr_pair (enum machine_mode mode,
@@ -423,7 +423,7 @@ static rtx mips_expand_builtin_compare (enum mips_builtin_type,
 static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 static void mips_encode_section_info (tree, rtx, int);
 static void mips_extra_live_on_entry (bitmap);
-static int mips_comp_type_attributes (tree, tree);
+static int mips_comp_type_attributes (const_tree, const_tree);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
 static void mips_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
@@ -1292,7 +1292,7 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK mips_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS mips_setup_incoming_varargs
@@ -1357,13 +1357,13 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    attributes on the given TYPE.  */
 
 static bool
-mips_near_type_p (tree type)
+mips_near_type_p (const_tree type)
 {
   return lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL;
 }
 
 static bool
-mips_far_type_p (tree type)
+mips_far_type_p (const_tree type)
 {
   return (lookup_attribute ("long_call", TYPE_ATTRIBUTES (type)) != NULL
 	  || lookup_attribute ("far", TYPE_ATTRIBUTES (type)) != NULL);
@@ -1375,7 +1375,7 @@ mips_far_type_p (tree type)
    warning to be generated).  */
 
 static int
-mips_comp_type_attributes (tree type1, tree type2)
+mips_comp_type_attributes (const_tree type1, const_tree type2)
 {
   /* Check for mismatch of non-default calling convention.  */
   if (TREE_CODE (type1) != FUNCTION_TYPE)
@@ -1412,11 +1412,10 @@ mips_split_plus (rtx x, rtx *base_ptr, HOST_WIDE_INT *offset_ptr)
    (in the STB_GLOBAL sense).  */
 
 static bool
-mips_global_symbol_p (rtx x)
+mips_global_symbol_p (const_rtx x)
 {
-  tree decl;
+  const_tree const decl = SYMBOL_REF_DECL (x);
 
-  decl = SYMBOL_REF_DECL (x);
   if (!decl)
     return !SYMBOL_REF_LOCAL_P (x);
 
@@ -1429,7 +1428,7 @@ mips_global_symbol_p (rtx x)
 /* Return true if SYMBOL_REF X binds locally.  */
 
 static bool
-mips_symbol_binds_local_p (rtx x)
+mips_symbol_binds_local_p (const_rtx x)
 {
   return (SYMBOL_REF_DECL (x)
 	  ? targetm.binds_local_p (SYMBOL_REF_DECL (x))
@@ -1440,7 +1439,7 @@ mips_symbol_binds_local_p (rtx x)
    LABEL_REF X in context CONTEXT.  */
 
 static enum mips_symbol_type
-mips_classify_symbol (rtx x, enum mips_symbol_context context)
+mips_classify_symbol (const_rtx x, enum mips_symbol_context context)
 {
   if (TARGET_RTP_PIC)
     return SYMBOL_GOT_DISP;
@@ -1789,7 +1788,7 @@ mips_cannot_force_const_mem (rtx x)
 
 static bool
 mips_use_blocks_for_constant_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-				rtx x ATTRIBUTE_UNUSED)
+				const_rtx x ATTRIBUTE_UNUSED)
 {
   return !TARGET_MIPS16_PCREL_LOADS;
 }
@@ -8367,7 +8366,7 @@ mips_function_rodata_section (tree decl)
    mips_classify_symbol decide when to use %gp_rel(...)($gp) accesses.  */
 
 static bool
-mips_in_small_data_p (tree decl)
+mips_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 
@@ -8416,7 +8415,7 @@ mips_in_small_data_p (tree decl)
    where the PC acts as an anchor.  */
 
 static bool
-mips_use_anchors_for_symbol_p (rtx symbol)
+mips_use_anchors_for_symbol_p (const_rtx symbol)
 {
   switch (mips_classify_symbol (symbol, SYMBOL_CONTEXT_MEM))
     {

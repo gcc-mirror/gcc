@@ -169,14 +169,14 @@ static void ia64_dependencies_evaluation_hook (rtx, rtx);
 static void ia64_init_dfa_pre_cycle_insn (void);
 static rtx ia64_dfa_pre_cycle_insn (void);
 static int ia64_first_cycle_multipass_dfa_lookahead_guard (rtx);
-static bool ia64_first_cycle_multipass_dfa_lookahead_guard_spec (rtx);
+static bool ia64_first_cycle_multipass_dfa_lookahead_guard_spec (const_rtx);
 static int ia64_dfa_new_cycle (FILE *, int, rtx, int, int, int *);
 static void ia64_h_i_d_extended (void);
 static int ia64_mode_to_int (enum machine_mode);
 static void ia64_set_sched_flags (spec_info_t);
 static int ia64_speculate_insn (rtx, ds_t, rtx *);
 static rtx ia64_gen_spec_insn (rtx, ds_t, int, bool, bool);
-static bool ia64_needs_block_p (rtx);
+static bool ia64_needs_block_p (const_rtx);
 static rtx ia64_gen_check (rtx, rtx, bool);
 static int ia64_spec_check_p (rtx);
 static int ia64_spec_check_src_p (rtx);
@@ -211,7 +211,7 @@ static void emit_all_insn_group_barriers (FILE *);
 static void final_emit_insn_group_barriers (FILE *);
 static void emit_predicate_relation_info (void);
 static void ia64_reorg (void);
-static bool ia64_in_small_data_p (tree);
+static bool ia64_in_small_data_p (const_tree);
 static void process_epilogue (FILE *, rtx, bool, bool);
 static int process_set (FILE *, rtx, rtx, bool, bool);
 
@@ -278,10 +278,10 @@ static tree ia64_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
 static bool ia64_cannot_force_const_mem (rtx);
-static const char *ia64_mangle_type (tree);
-static const char *ia64_invalid_conversion (tree, tree);
-static const char *ia64_invalid_unary_op (int, tree);
-static const char *ia64_invalid_binary_op (int, tree, tree);
+static const char *ia64_mangle_type (const_tree);
+static const char *ia64_invalid_conversion (const_tree, const_tree);
+static const char *ia64_invalid_unary_op (int, const_tree);
+static const char *ia64_invalid_binary_op (int, const_tree, const_tree);
 static enum machine_mode ia64_c_mode_for_suffix (char);
 
 /* Table of valid machine attributes.  */
@@ -396,7 +396,7 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START ia64_file_start
@@ -6578,7 +6578,7 @@ ia64_first_cycle_multipass_dfa_lookahead_guard (rtx insn)
    can be chosen.  */
 
 static bool
-ia64_first_cycle_multipass_dfa_lookahead_guard_spec (rtx insn)
+ia64_first_cycle_multipass_dfa_lookahead_guard_spec (const_rtx insn)
 {
   gcc_assert (insn  && INSN_P (insn));
   /* Size of ALAT is 32.  As far as we perform conservative data speculation,
@@ -7039,7 +7039,7 @@ enum { SPEC_GEN_CHECK_MUTATION_OFFSET = 5 * SPEC_N };
 
 /* Return nonzero, if INSN needs branchy recovery check.  */
 static bool
-ia64_needs_block_p (rtx insn)
+ia64_needs_block_p (const_rtx insn)
 {
   int check_no;
 
@@ -8714,7 +8714,7 @@ ia64_eh_uses (int regno)
    types which can't go in sdata/sbss.  */
 
 static bool
-ia64_in_small_data_p (tree exp)
+ia64_in_small_data_p (const_tree exp)
 {
   if (TARGET_NO_SDATA)
     return false;
@@ -9768,7 +9768,7 @@ ia64_profile_hook (int labelno)
 /* Return the mangling of TYPE if it is an extended fundamental type.  */
 
 static const char *
-ia64_mangle_type (tree type)
+ia64_mangle_type (const_tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
 
@@ -9793,7 +9793,7 @@ ia64_mangle_type (tree type)
 /* Return the diagnostic message string if conversion from FROMTYPE to
    TOTYPE is not allowed, NULL otherwise.  */
 static const char *
-ia64_invalid_conversion (tree fromtype, tree totype)
+ia64_invalid_conversion (const_tree fromtype, const_tree totype)
 {
   /* Reject nontrivial conversion to or from __fpreg.  */
   if (TYPE_MODE (fromtype) == RFmode
@@ -9809,7 +9809,7 @@ ia64_invalid_conversion (tree fromtype, tree totype)
 /* Return the diagnostic message string if the unary operation OP is
    not permitted on TYPE, NULL otherwise.  */
 static const char *
-ia64_invalid_unary_op (int op, tree type)
+ia64_invalid_unary_op (int op, const_tree type)
 {
   /* Reject operations on __fpreg other than unary + or &.  */
   if (TYPE_MODE (type) == RFmode
@@ -9822,7 +9822,7 @@ ia64_invalid_unary_op (int op, tree type)
 /* Return the diagnostic message string if the binary operation OP is
    not permitted on TYPE1 and TYPE2, NULL otherwise.  */
 static const char *
-ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, tree type1, tree type2)
+ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree type2)
 {
   /* Reject operations on __fpreg.  */
   if (TYPE_MODE (type1) == RFmode || TYPE_MODE (type2) == RFmode)

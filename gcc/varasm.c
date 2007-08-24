@@ -1056,7 +1056,7 @@ decode_reg_name (const char *asmspec)
 /* Return true if DECL's initializer is suitable for a BSS section.  */
 
 static bool
-bss_initializer_p (tree decl)
+bss_initializer_p (const_tree decl)
 {
   return (DECL_INITIAL (decl) == NULL
 	  || DECL_INITIAL (decl) == error_mark_node
@@ -5544,7 +5544,7 @@ init_varasm_once (void)
 }
 
 enum tls_model
-decl_default_tls_model (tree decl)
+decl_default_tls_model (const_tree decl)
 {
   enum tls_model kind;
   bool is_local;
@@ -5784,7 +5784,7 @@ default_select_section (tree decl, int reloc,
 }
 
 enum section_category
-categorize_decl_for_section (tree decl, int reloc)
+categorize_decl_for_section (const_tree decl, int reloc)
 {
   enum section_category ret;
 
@@ -5866,7 +5866,7 @@ categorize_decl_for_section (tree decl, int reloc)
 }
 
 bool
-decl_readonly_section (tree decl, int reloc)
+decl_readonly_section (const_tree decl, int reloc)
 {
   switch (categorize_decl_for_section (decl, reloc))
     {
@@ -6154,7 +6154,7 @@ default_asm_output_anchor (rtx symbol)
 /* The default implementation of TARGET_USE_ANCHORS_FOR_SYMBOL_P.  */
 
 bool
-default_use_anchors_for_symbol_p (rtx symbol)
+default_use_anchors_for_symbol_p (const_rtx symbol)
 {
   section *sect;
   tree decl;
@@ -6193,13 +6193,13 @@ default_use_anchors_for_symbol_p (rtx symbol)
    wrt cross-module name binding.  */
 
 bool
-default_binds_local_p (tree exp)
+default_binds_local_p (const_tree exp)
 {
   return default_binds_local_p_1 (exp, flag_shlib);
 }
 
 bool
-default_binds_local_p_1 (tree exp, int shlib)
+default_binds_local_p_1 (const_tree exp, int shlib)
 {
   bool local_p;
 

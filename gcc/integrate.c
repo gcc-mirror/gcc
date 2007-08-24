@@ -69,15 +69,15 @@ static void set_block_abstract_flags (tree, int);
 /* Return false if the function FNDECL cannot be inlined on account of its
    attributes, true otherwise.  */
 bool
-function_attribute_inlinable_p (tree fndecl)
+function_attribute_inlinable_p (const_tree fndecl)
 {
   if (targetm.attribute_table)
     {
-      tree a;
+      const_tree a;
 
       for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
 	{
-	  tree name = TREE_PURPOSE (a);
+	  const_tree name = TREE_PURPOSE (a);
 	  int i;
 
 	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)

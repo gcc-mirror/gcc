@@ -378,7 +378,7 @@ extern bool first_function_block_is_cold;
 
 /* Decide whether DECL needs to be in a writable section.
    RELOC is the same as for SELECT_SECTION.  */
-extern bool decl_readonly_section (tree, int);
+extern bool decl_readonly_section (const_tree, int);
 
 /* This can be used to compute RELOC for the function above, when
    given a constant expression.  */
@@ -579,7 +579,7 @@ extern unsigned int default_section_type_flags (tree, const char *, int);
 extern bool have_global_bss_p (void);
 extern void default_no_named_section (const char *, unsigned int, tree);
 extern void default_elf_asm_named_section (const char *, unsigned int, tree);
-extern enum section_category categorize_decl_for_section (tree, int);
+extern enum section_category categorize_decl_for_section (const_tree, int);
 extern void default_coff_asm_named_section (const char *, unsigned int, tree);
 extern void default_pe_asm_named_section (const char *, unsigned int, tree);
 
@@ -602,9 +602,9 @@ extern section *default_elf_select_rtx_section (enum machine_mode, rtx,
 extern void default_encode_section_info (tree, rtx, int);
 extern const char *default_strip_name_encoding (const char *);
 extern void default_asm_output_anchor (rtx);
-extern bool default_use_anchors_for_symbol_p (rtx);
-extern bool default_binds_local_p (tree);
-extern bool default_binds_local_p_1 (tree, int);
+extern bool default_use_anchors_for_symbol_p (const_rtx);
+extern bool default_binds_local_p (const_tree);
+extern bool default_binds_local_p_1 (const_tree, int);
 extern void default_globalize_label (FILE *, const char *);
 extern void default_globalize_decl_name (FILE *, tree);
 extern void default_emit_unwind_label (FILE *, tree, int, int);

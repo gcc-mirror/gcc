@@ -135,7 +135,7 @@ static tree spu_builtin_mul_widen_even (tree);
 static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (bool);
-static bool spu_vector_alignment_reachable (tree, bool);
+static bool spu_vector_alignment_reachable (const_tree, bool);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -5485,7 +5485,7 @@ spu_builtin_vectorization_cost (bool runtime_test)
    how may iterations are required to reach desired alignment.  */
 
 static bool
-spu_vector_alignment_reachable (tree type ATTRIBUTE_UNUSED, bool is_packed)
+spu_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed)
 {
   if (is_packed)
     return false;

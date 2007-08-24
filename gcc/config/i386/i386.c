@@ -1574,7 +1574,7 @@ static bool ext_80387_constants_init = 0;
 
 static struct machine_function * ix86_init_machine_status (void);
 static rtx ix86_function_value (const_tree, const_tree, bool);
-static int ix86_function_regparm (tree, tree);
+static int ix86_function_regparm (const_tree, const_tree);
 static void ix86_compute_frame_layout (struct ix86_frame *);
 static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 						 rtx, rtx, int);
@@ -2905,7 +2905,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
    warning to be generated).  */
 
 static int
-ix86_comp_type_attributes (tree type1, tree type2)
+ix86_comp_type_attributes (const_tree type1, const_tree type2)
 {
   /* Check for mismatch of non-default calling convention.  */
   const char *const rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
@@ -2938,7 +2938,7 @@ ix86_comp_type_attributes (tree type1, tree type2)
    or considering a libcall.  */
 
 static int
-ix86_function_regparm (tree type, tree decl)
+ix86_function_regparm (const_tree type, const_tree decl)
 {
   tree attr;
   int regparm = ix86_regparm;
@@ -2957,7 +2957,8 @@ ix86_function_regparm (tree type, tree decl)
   if (decl && TREE_CODE (decl) == FUNCTION_DECL
       && flag_unit_at_a_time && !profile_flag)
     {
-      struct cgraph_local_info *i = cgraph_local_info (decl);
+      /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
+      struct cgraph_local_info *i = cgraph_local_info ((tree)CONST_CAST(decl));
       if (i && i->local)
 	{
 	  int local_regparm, globals = 0, regno;
@@ -21150,7 +21151,7 @@ ix86_handle_struct_attribute (tree *node, tree name,
 }
 
 static bool
-ix86_ms_bitfield_layout_p (tree record_type)
+ix86_ms_bitfield_layout_p (const_tree record_type)
 {
   return (TARGET_MS_BITFIELD_LAYOUT &&
 	  !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
@@ -21192,9 +21193,9 @@ x86_this_parameter (tree function)
 /* Determine whether x86_output_mi_thunk can succeed.  */
 
 static bool
-x86_can_output_mi_thunk (tree thunk ATTRIBUTE_UNUSED,
+x86_can_output_mi_thunk (const_tree thunk ATTRIBUTE_UNUSED,
 			 HOST_WIDE_INT delta ATTRIBUTE_UNUSED,
-			 HOST_WIDE_INT vcall_offset, tree function)
+			 HOST_WIDE_INT vcall_offset, const_tree function)
 {
   /* 64-bit can handle anything.  */
   if (TARGET_64BIT)
@@ -22834,7 +22835,7 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
 /* Return the mangling of TYPE if it is an extended fundamental type.  */
 
 static const char *
-ix86_mangle_type (tree type)
+ix86_mangle_type (const_tree type)
 {
   type = TYPE_MAIN_VARIANT (type);
 
@@ -23580,7 +23581,7 @@ static const struct attribute_spec ix86_attribute_table[] =
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ix86_cannot_force_const_mem
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
-#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_rtx_true
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS ix86_delegitimize_address

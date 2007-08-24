@@ -57,7 +57,7 @@ extern bool default_scalar_mode_supported_p (enum machine_mode);
 extern bool default_decimal_float_supported_p (void);
 extern bool default_fixed_point_supported_p (void);
 
-extern const char * default_invalid_within_doloop (rtx);
+extern const char * default_invalid_within_doloop (const_rtx);
 
 extern tree default_builtin_vectorized_function
   (enum built_in_function, tree, tree);
@@ -66,7 +66,7 @@ extern tree default_builtin_vectorized_conversion (enum tree_code, tree);
 
 extern tree default_builtin_reciprocal (enum built_in_function, bool, bool);
 
-extern bool default_builtin_vector_alignment_reachable (tree, bool);
+extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */
@@ -81,8 +81,8 @@ extern bool hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 extern int hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
   (CUMULATIVE_ARGS *, enum machine_mode, tree, bool);
 extern const char *hook_invalid_arg_for_unprototyped_fn
-  (tree, tree, tree);
-extern bool hook_bool_rtx_commutative_p (rtx, int);
+  (const_tree, const_tree, const_tree);
+extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);
 extern rtx default_function_value (const_tree, const_tree, bool);
 extern rtx default_internal_arg_pointer (void);
 extern enum reg_class default_secondary_reload (bool, rtx, enum reg_class,

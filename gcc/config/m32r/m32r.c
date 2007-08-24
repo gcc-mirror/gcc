@@ -80,7 +80,7 @@ static int    m32r_adjust_priority (rtx, int);
 static int    m32r_issue_rate (void);
 
 static void m32r_encode_section_info (tree, rtx, int);
-static bool m32r_in_small_data_p (tree);
+static bool m32r_in_small_data_p (const_tree);
 static bool m32r_return_in_memory (const_tree, const_tree);
 static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
@@ -445,9 +445,9 @@ m32r_encode_section_info (tree decl, rtx rtl, int first)
    the object doesn't fit the linker will give an error.  */
 
 static bool
-m32r_in_small_data_p (tree decl)
+m32r_in_small_data_p (const_tree decl)
 {
-  tree section;
+  const_tree section;
 
   if (TREE_CODE (decl) != VAR_DECL)
     return false;

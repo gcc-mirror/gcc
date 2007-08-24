@@ -4370,7 +4370,7 @@ s390_output_dwarf_dtprel (FILE *file, int size, rtx x)
 /* Implement TARGET_MANGLE_TYPE.  */
 
 static const char *
-s390_mangle_type (tree type)
+s390_mangle_type (const_tree type)
 {
   if (TYPE_MAIN_VARIANT (type) == long_double_type_node
       && TARGET_LONG_DOUBLE_128)
@@ -9290,7 +9290,7 @@ s390_reorg (void)
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK s390_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
@@ -9334,7 +9334,7 @@ s390_reorg (void)
 #define TARGET_CC_MODES_COMPATIBLE s390_cc_modes_compatible
 
 #undef TARGET_INVALID_WITHIN_DOLOOP
-#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_rtx_null
+#define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_null
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL

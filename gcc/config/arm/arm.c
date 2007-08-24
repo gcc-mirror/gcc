@@ -116,7 +116,7 @@ static tree arm_handle_notshared_attribute (tree *, tree, tree, int, bool *);
 static void arm_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void arm_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void thumb1_output_function_prologue (FILE *, HOST_WIDE_INT);
-static int arm_comp_type_attributes (tree, tree);
+static int arm_comp_type_attributes (const_tree, const_tree);
 static void arm_set_default_type_attributes (tree);
 static int arm_adjust_cost (rtx, rtx, rtx, int);
 static int count_insns_for_constant (HOST_WIDE_INT, int);
@@ -3185,7 +3185,7 @@ arm_handle_notshared_attribute (tree *node,
    are compatible, and 2 if they are nearly compatible (which causes a
    warning to be generated).  */
 static int
-arm_comp_type_attributes (tree type1, tree type2)
+arm_comp_type_attributes (const_tree type1, const_tree type2)
 {
   int l1, l2, s1, s2;
 
@@ -18966,7 +18966,7 @@ static arm_mangle_map_entry arm_mangle_map[] = {
 };
 
 const char *
-arm_mangle_type (tree type)
+arm_mangle_type (const_tree type)
 {
   arm_mangle_map_entry *pos = arm_mangle_map;
 

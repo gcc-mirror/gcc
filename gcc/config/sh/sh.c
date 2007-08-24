@@ -214,7 +214,7 @@ static bool sh_function_ok_for_sibcall (tree, tree);
 static bool sh_cannot_modify_jumps_p (void);
 static int sh_target_reg_class (void);
 static bool sh_optimize_target_register_callee_saved (bool);
-static bool sh_ms_bitfield_layout_p (tree);
+static bool sh_ms_bitfield_layout_p (const_tree);
 
 static void sh_init_builtins (void);
 static void sh_media_init_builtins (void);
@@ -255,7 +255,7 @@ static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
 			      const_tree, bool);
 static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 			         tree, bool);
-static int sh_dwarf_calling_convention (tree);
+static int sh_dwarf_calling_convention (const_tree);
 
 
 /* Initialize the GCC target structure.  */
@@ -281,7 +281,7 @@ static int sh_dwarf_calling_convention (tree);
 #define TARGET_ASM_OUTPUT_MI_THUNK sh_output_mi_thunk
 
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START sh_file_start
@@ -9346,7 +9346,7 @@ sh_optimize_target_register_callee_saved (bool after_prologue_epilogue_gen)
 }
 
 static bool
-sh_ms_bitfield_layout_p (tree record_type ATTRIBUTE_UNUSED)
+sh_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
 {
   return (TARGET_SH5 || TARGET_HITACHI || sh_attr_renesas_p (record_type));
 }
@@ -9774,7 +9774,7 @@ sh_vector_mode_supported_p (enum machine_mode mode)
 /* Implements target hook dwarf_calling_convention.  Return an enum
    of dwarf_calling_convention.  */
 int
-sh_dwarf_calling_convention (tree func)
+sh_dwarf_calling_convention (const_tree func)
 {
   if (sh_attr_renesas_p (func))
     return DW_CC_GNU_renesas_sh;

@@ -64,7 +64,7 @@ static tree interrupt_handler (tree *, tree, tree, int, bool *);
 static tree function_vector_handler (tree *, tree, tree, int, bool *);
 static int interrupt_p (tree node);
 static bool m32c_asm_integer (rtx, unsigned int, int);
-static int m32c_comp_type_attributes (tree, tree);
+static int m32c_comp_type_attributes (const_tree, const_tree);
 static bool m32c_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
@@ -2829,8 +2829,8 @@ static const struct attribute_spec m32c_attribute_table[] = {
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES m32c_comp_type_attributes
 static int
-m32c_comp_type_attributes (tree type1 ATTRIBUTE_UNUSED,
-			   tree type2 ATTRIBUTE_UNUSED)
+m32c_comp_type_attributes (const_tree type1 ATTRIBUTE_UNUSED,
+			   const_tree type2 ATTRIBUTE_UNUSED)
 {
   /* 0=incompatible 1=compatible 2=warning */
   return 1;
