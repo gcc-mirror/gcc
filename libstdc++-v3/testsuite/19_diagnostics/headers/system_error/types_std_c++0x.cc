@@ -67,7 +67,11 @@ namespace gnu
   using std::network_unreachable; 
   using std::no_buffer_space; 
   using std::no_child_process;
+
+#ifdef _GLIBCXX_HAVE_ENOLINK
   using std::no_link; 
+#endif
+
   using std::no_lock_available; 
   using std::no_message_available; 
   using std::no_message; 
@@ -96,7 +100,11 @@ namespace gnu
 #endif
 
   using std::permission_denied;
+
+#ifdef _GLIBCXX_HAVE_EPROTO
   using std::protocol_error; 
+#endif
+
   using std::protocol_not_supported;
   using std::read_only_file_system; 
   using std::resource_deadlock_would_occur;
