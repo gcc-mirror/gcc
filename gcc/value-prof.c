@@ -1392,13 +1392,13 @@ tree_stringops_transform (block_stmt_iterator *bsi)
     case BUILT_IN_MEMSET:
       if (!can_store_by_pieces (val, builtin_memset_read_str,
 				CALL_EXPR_ARG (call, 1),
-				dest_align))
+				dest_align, true))
 	return false;
       break;
     case BUILT_IN_BZERO:
       if (!can_store_by_pieces (val, builtin_memset_read_str,
 				integer_zero_node,
-				dest_align))
+				dest_align, true))
 	return false;
       break;
     default:

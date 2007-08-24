@@ -5897,12 +5897,30 @@ will be used.  Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{CLEAR_RATIO}.
 @end defmac
 
+@defmac SET_RATIO
+The threshold of number of scalar move insns, @emph{below} which a sequence
+of insns should be generated to set memory to a constant value, instead of
+a block set insn or a library call.  
+Increasing the value will always make code faster, but
+eventually incurs high cost in increased code size.
+
+If you don't define this, it defaults to the value of @code{MOVE_RATIO}.
+@end defmac
+
+@defmac SET_BY_PIECES_P (@var{size}, @var{alignment})
+A C expression used to determine whether @code{store_by_pieces} will be
+used to set a chunk of memory to a constant value, or whether some 
+other mechanism will be used.  Used by @code{__builtin_memset} when 
+storing values other than constant zero.
+Defaults to 1 if @code{move_by_pieces_ninsns} returns less
+than @code{SET_RATIO}.
+@end defmac
+
 @defmac STORE_BY_PIECES_P (@var{size}, @var{alignment})
 A C expression used to determine whether @code{store_by_pieces} will be
-used to set a chunk of memory to a constant value, or whether some other
-mechanism will be used.  Used by @code{__builtin_memset} when storing
-values other than constant zero and by @code{__builtin_strcpy} when
-when called with a constant source string.
+used to set a chunk of memory to a constant string value, or whether some 
+other mechanism will be used.  Used by @code{__builtin_strcpy} when
+called with a constant source string.
 Defaults to 1 if @code{move_by_pieces_ninsns} returns less
 than @code{MOVE_RATIO}.
 @end defmac

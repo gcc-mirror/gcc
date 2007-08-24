@@ -5323,6 +5323,11 @@ override_options (void)
       flag_delayed_branch = 0;
     }
 
+  /* Prefer a call to memcpy over inline code when optimizing for size,
+     though see MOVE_RATIO in mips.h.  */
+  if (optimize_size && (target_flags_explicit & MASK_MEMCPY) == 0)
+    target_flags |= MASK_MEMCPY;
+
 #ifdef MIPS_TFMODE_FORMAT
   REAL_MODE_FORMAT (TFmode) = &MIPS_TFMODE_FORMAT;
 #endif

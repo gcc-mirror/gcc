@@ -3331,11 +3331,11 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  (void *) src_str, dest_align))
+				  (void *) src_str, dest_align, false))
 	{
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
-				      (void *) src_str, dest_align, 0);
+				      (void *) src_str, dest_align, false, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3444,13 +3444,14 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len, tree type,
 	  && GET_CODE (len_rtx) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-				  (void *) src_str, dest_align))
+				  (void *) src_str, dest_align, false))
 	{
 	  dest_mem = get_memory_rtx (dest, len);
 	  set_mem_align (dest_mem, dest_align);
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
-				      (void *) src_str, dest_align, endp);
+				      (void *) src_str, dest_align,
+				      false, endp);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3792,13 +3793,13 @@ expand_builtin_strncpy (tree exp, rtx target, enum machine_mode mode)
 	  if (!p || dest_align == 0 || !host_integerp (len, 1)
 	      || !can_store_by_pieces (tree_low_cst (len, 1),
 				       builtin_strncpy_read_str,
-				       (void *) p, dest_align))
+				       (void *) p, dest_align, false))
 	    return NULL_RTX;
 
 	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_strncpy_read_str,
-			   (void *) p, dest_align, 0);
+			   (void *) p, dest_align, false, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3926,14 +3927,15 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
        * We can't pass builtin_memset_gen_str as that emits RTL.  */
       c = 1;
       if (host_integerp (len, 1)
-	  && !(optimize_size && tree_low_cst (len, 1) > 1)
 	  && can_store_by_pieces (tree_low_cst (len, 1),
-				  builtin_memset_read_str, &c, dest_align))
+				  builtin_memset_read_str, &c, dest_align,
+				  true))
 	{
 	  val_rtx = force_reg (TYPE_MODE (unsigned_char_type_node),
 			       val_rtx);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
-			   builtin_memset_gen_str, val_rtx, dest_align, 0);
+			   builtin_memset_gen_str, val_rtx, dest_align,
+			   true, 0);
 	}
       else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
 					dest_align, expected_align,
@@ -3951,11 +3953,11 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   if (c)
     {
       if (host_integerp (len, 1)
-	  && !(optimize_size && tree_low_cst (len, 1) > 1)
 	  && can_store_by_pieces (tree_low_cst (len, 1),
-				  builtin_memset_read_str, &c, dest_align))
+				  builtin_memset_read_str, &c, dest_align,
+				  true))
 	store_by_pieces (dest_mem, tree_low_cst (len, 1),
-			 builtin_memset_read_str, &c, dest_align, 0);
+			 builtin_memset_read_str, &c, dest_align, true, 0);
       else if (!set_storage_via_setmem (dest_mem, len_rtx, GEN_INT (c),
 					dest_align, expected_align,
 					expected_size))

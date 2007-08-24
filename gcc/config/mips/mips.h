@@ -2785,6 +2785,57 @@ while (0)
 
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (POINTER_SIZE == 64 ? "long int" : "int")
+
+/* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
+   values were determined experimentally by benchmarking with CSiBE.
+   In theory, the call overhead is higher for TARGET_ABICALLS (especially
+   for o32 where we have to restore $gp afterwards as well as make an
+   indirect call), but in practice, bumping this up higher for
+   TARGET_ABICALLS doesn't make much difference to code size.  */
+
+#define MIPS_CALL_RATIO 8
+
+/* Define MOVE_RATIO to encourage use of movmemsi when enabled,
+   since it should always generate code at least as good as
+   move_by_pieces().  But when inline movmemsi pattern is disabled
+   (i.e., with -mips16 or -mmemcpy), instead use a value approximating
+   the length of a memcpy call sequence, so that move_by_pieces will
+   generate inline code if it is shorter than a function call.
+   Since move_by_pieces_ninsns() counts memory-to-memory moves, but
+   we'll have to generate a load/store pair for each, halve the value of 
+   MIPS_CALL_RATIO to take that into account.
+   The default value for MOVE_RATIO when HAVE_movmemsi is true is 2.
+   There is no point to setting it to less than this to try to disable
+   move_by_pieces entirely, because that also disables some desirable 
+   tree-level optimizations, specifically related to optimizing a
+   one-byte string copy into a simple move byte operation.  */
+
+#define MOVE_RATIO \
+  ((TARGET_MIPS16 || TARGET_MEMCPY) ? MIPS_CALL_RATIO / 2 : 2)
+
+/* For CLEAR_RATIO, when optimizing for size, give a better estimate
+   of the length of a memset call, but use the default otherwise.  */
+
+#define CLEAR_RATIO \
+  (optimize_size ? MIPS_CALL_RATIO : 15)
+
+/* This is similar to CLEAR_RATIO, but for a non-zero constant, so when
+   optimizing for size adjust the ratio to account for the overhead of
+   loading the constant and replicating it across the word.  */
+
+#define SET_RATIO \
+  (optimize_size ? MIPS_CALL_RATIO - 2 : 15)
+
+/* STORE_BY_PIECES_P can be used when copying a constant string, but
+   in that case each word takes 3 insns (lui, ori, sw), or more in
+   64-bit mode, instead of 2 (lw, sw).  For now we always fail this
+   and let the move_by_pieces code copy the string from read-only
+   memory.  In the future, this could be tuned further for multi-issue
+   CPUs that can issue stores down one pipe and arithmetic instructions
+   down another; in that case, the lui/ori/sw combination would be a
+   win for long enough strings.  */
+
+#define STORE_BY_PIECES_P(SIZE, ALIGN) 0
 
 #ifndef __mips16
 /* Since the bits of the _init and _fini function is spread across
