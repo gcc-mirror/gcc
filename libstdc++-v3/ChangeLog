@@ -1,5 +1,10 @@
 2007-08-24  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* acinclude.m4: Fix duplicate variable names.
+	* configure: Regenerate.
+
+2007-08-24  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add ENOLINK, EPROTO
 	for netbsd.
 	* configure: Regenerate.

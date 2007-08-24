@@ -16791,7 +16791,7 @@ _ACEOF
 
   echo "$as_me:$LINENO: checking for sys_nerr" >&5
 echo $ECHO_N "checking for sys_nerr... $ECHO_C" >&6
-  if test "${ac_system_error3+set}" = set; then
+  if test "${ac_system_error9+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -16832,20 +16832,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_system_error3=yes
+  ac_system_error9=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_system_error3=no
+ac_system_error9=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 fi
 
-  echo "$as_me:$LINENO: result: $ac_system_error3" >&5
-echo "${ECHO_T}$ac_system_error3" >&6
-  if test x"$ac_system_error3" = x"yes"; then
+  echo "$as_me:$LINENO: result: $ac_system_error9" >&5
+echo "${ECHO_T}$ac_system_error9" >&6
+  if test x"$ac_system_error9" = x"yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_SYS_NERR 1
