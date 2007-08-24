@@ -19,14 +19,14 @@
 
 2007-08-23  Richard Guenther  <rguenther@suse.de>
 
-	* gcc.dg/tree-ssa/fprinf-1.c: Adjust patterns.
-	* gcc.dg/tree-ssa/fprinf-chk-1.c: Likewise.
-	* gcc.dg/tree-ssa/prinf-1.c: Likewise.
-	* gcc.dg/tree-ssa/prinf-chk-1.c: Likewise.
-	* gcc.dg/tree-ssa/vfprinf-chk-1.c: Likewise.
-	* gcc.dg/tree-ssa/vfprinf-chk-1.c: Likewise.
-	* gcc.dg/tree-ssa/vprinf-chk-1.c: Likewise.
-	* gcc.dg/tree-ssa/vprinf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-fprintf-1.c: Adjust patterns.
+	* gcc.dg/tree-ssa/builtin-fprintf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-printf-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-printf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vfprintf-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vfprintf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vprintf-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vprintf-chk-1.c: Likewise.
 
 2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
