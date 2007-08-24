@@ -1,3 +1,9 @@
+2007-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/33157
+	* ifcvt.c (noce_find_if_block): Do not clear if_info.cond_earliest
+	field when initializing if_info structure.
+
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (tree-inline.o): Add $(TARGET_H) and $(INTEGRATE_H)
