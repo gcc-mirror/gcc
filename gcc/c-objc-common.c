@@ -50,51 +50,6 @@ c_missing_noreturn_ok_p (tree decl)
   return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
 }
 
-int
-c_cannot_inline_tree_fn (tree *fnp)
-{
-  tree fn = *fnp;
-  bool do_warning = (warn_inline
-		     && DECL_INLINE (fn)
-		     && DECL_DECLARED_INLINE_P (fn)
-		     && !DECL_IN_SYSTEM_HEADER (fn));
-  tree always_inline = lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn));
-
-  if (flag_really_no_inline && always_inline == NULL)
-    {
-      if (do_warning)
-	warning (OPT_Winline, "function %q+F can never be inlined because it "
-		 "is suppressed using -fno-inline", fn);
-      goto cannot_inline;
-    }
-
-  /* Don't auto-inline anything that might not be bound within
-     this unit of translation.  */
-  if (always_inline == NULL
-      && !DECL_DECLARED_INLINE_P (fn)
-      && !targetm.binds_local_p (fn))
-    {
-      if (do_warning)
-	warning (OPT_Winline, "function %q+F can never be inlined because it "
-		 "might not be bound within this unit of translation", fn);
-      goto cannot_inline;
-    }
-
-  if (!function_attribute_inlinable_p (fn))
-    {
-      if (do_warning)
-	warning (OPT_Winline, "function %q+F can never be inlined because it "
-		 "uses attributes conflicting with inlining", fn);
-      goto cannot_inline;
-    }
-
-  return 0;
-
- cannot_inline:
-  DECL_UNINLINABLE (fn) = 1;
-  return 1;
-}
-
 /* Called from check_global_declarations.  */
 
 bool

@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "value-prof.h"
 #include "tree-pass.h"
+#include "target.h"
+#include "integrate.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -1848,18 +1850,44 @@ static bool
 inlinable_function_p (tree fn)
 {
   bool inlinable = true;
+  bool do_warning;
+  tree always_inline;
 
   /* If we've already decided this function shouldn't be inlined,
      there's no need to check again.  */
   if (DECL_UNINLINABLE (fn))
     return false;
 
-  /* See if there is any language-specific reason it cannot be
-     inlined.  (It is important that this hook be called early because
-     in C++ it may result in template instantiation.)
-     If the function is not inlinable for language-specific reasons,
-     it is left up to the langhook to explain why.  */
-  inlinable = !lang_hooks.tree_inlining.cannot_inline_tree_fn (&fn);
+  /* We only warn for functions declared `inline' by the user.  */
+  do_warning = (warn_inline
+		&& DECL_INLINE (fn)
+		&& DECL_DECLARED_INLINE_P (fn)
+		&& !DECL_IN_SYSTEM_HEADER (fn));
+
+  always_inline = lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn));
+
+  if (flag_really_no_inline
+      && always_inline == NULL)
+    {
+      if (do_warning)
+        warning (OPT_Winline, "function %q+F can never be inlined because it "
+                 "is suppressed using -fno-inline", fn);
+      inlinable = false;
+    }
+
+  /* Don't auto-inline anything that might not be bound within
+     this unit of translation.  */
+  else if (!DECL_DECLARED_INLINE_P (fn)
+	   && DECL_REPLACEABLE_P (fn))
+    inlinable = false;
+
+  else if (!function_attribute_inlinable_p (fn))
+    {
+      if (do_warning)
+        warning (OPT_Winline, "function %q+F can never be inlined because it "
+                 "uses attributes conflicting with inlining", fn);
+      inlinable = false;
+    }
 
   /* If we don't have the function body available, we can't inline it.
      However, this should not be recorded since we also get here for
@@ -1893,14 +1921,8 @@ inlinable_function_p (tree fn)
 	 about functions that would for example call alloca.  But since
 	 this a property of the function, just one warning is enough.
 	 As a bonus we can now give more details about the reason why a
-	 function is not inlinable.
-	 We only warn for functions declared `inline' by the user.  */
-      bool do_warning = (warn_inline
-			 && DECL_INLINE (fn)
-			 && DECL_DECLARED_INLINE_P (fn)
-			 && !DECL_IN_SYSTEM_HEADER (fn));
-
-      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
+	 function is not inlinable.  */
+      if (always_inline)
 	sorry (inline_forbidden_reason, fn);
       else if (do_warning)
 	warning (OPT_Winline, inline_forbidden_reason, fn);

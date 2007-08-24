@@ -104,9 +104,6 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #undef LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE cxx_attribute_table
 
-#undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
-#define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
-  cp_cannot_inline_tree_fn
 #undef LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_VAR_MOD_TYPE_P cp_var_mod_type_p
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN

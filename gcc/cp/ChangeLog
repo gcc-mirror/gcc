@@ -1,3 +1,10 @@
+2007-08-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (cp_cannot_inline_tree_fn): Remove.
+	* cp-tree.h (cp_cannot_inline_tree_fn): Likewise.
+	* cp-objcp-common.h (LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN):
+	Remove define.
+
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32567

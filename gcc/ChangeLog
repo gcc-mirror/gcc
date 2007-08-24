@@ -1,5 +1,20 @@
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
+	* Makefile.in (tree-inline.o): Add $(TARGET_H) and $(INTEGRATE_H)
+	dependencies.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Remove.
+	* langhooks.c (lhd_tree_inlining_cannot_inline_tree_fn): Likewise.
+	* tree-inline.c (inlinable_function_p): Fold in common parts of
+	the cannot_inline_tree_fn langhook.
+	* langhooks-def.h (lhd_tree_inlining_cannot_inline_tree_fn): Remove.
+	(LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN): Likewise.
+	(LANG_HOOKS_TREE_INLINING_INITIALIZER): Remove initializer for
+	cannot_inline_tree_fn langhook.
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Remove
+	cannot_inline_tree_fn member.
+
+2007-08-24  Richard Guenther  <rguenther@suse.de>
+
 	* expr.c (get_inner_reference): Do computation of bitoffset
 	from offset in a way we can detect overflow reliably.
 
