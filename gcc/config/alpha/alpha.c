@@ -240,7 +240,7 @@ alpha_handle_option (size_t code, const char *arg, int value)
 /* Implement TARGET_MANGLE_TYPE.  */
 
 static const char *
-alpha_mangle_type (tree type)
+alpha_mangle_type (const_tree type)
 {
   if (TYPE_MAIN_VARIANT (type) == long_double_type_node
       && TARGET_LONG_DOUBLE_128)
@@ -717,7 +717,7 @@ tls_symbolic_operand_type (rtx symbol)
    function in the current unit of translation.  */
 
 static bool
-decl_has_samegp (tree decl)
+decl_has_samegp (const_tree decl)
 {
   /* Functions that are not local can be overridden, and thus may
      not share the same gp.  */
@@ -740,7 +740,7 @@ decl_has_samegp (tree decl)
 /* Return true if EXP should be placed in the small data section.  */
 
 static bool
-alpha_in_small_data_p (tree exp)
+alpha_in_small_data_p (const_tree exp)
 {
   /* We want to merge strings, so we never consider them small data.  */
   if (TREE_CODE (exp) == STRING_CST)
@@ -5762,7 +5762,7 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
    should not split these values.  */
 
 static bool
-alpha_split_complex_arg (tree type)
+alpha_split_complex_arg (const_tree type)
 {
   return TYPE_MODE (type) != TCmode;
 }
@@ -5864,7 +5864,7 @@ va_list_skip_additions (tree lhs)
    current statement.  */
 
 static bool
-alpha_stdarg_optimize_hook (struct stdarg_info *si, tree lhs, tree rhs)
+alpha_stdarg_optimize_hook (struct stdarg_info *si, const_tree lhs, const_tree rhs)
 {
   tree base, offset, arg1, arg2;
   int offset_arg = 1;
@@ -10650,7 +10650,7 @@ alpha_init_libfuncs (void)
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK alpha_output_mi_thunk_osf
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 #undef TARGET_STDARG_OPTIMIZE_HOOK
 #define TARGET_STDARG_OPTIMIZE_HOOK alpha_stdarg_optimize_hook
 #endif

@@ -1671,7 +1671,7 @@ darwin_file_end (void)
    functions at dynamic-link time, except for vtables in kexts.  */
 
 bool
-darwin_binds_local_p (tree decl)
+darwin_binds_local_p (const_tree decl)
 {
   return default_binds_local_p_1 (decl,
 				  TARGET_KEXTABI && DARWIN_VTABLE_P (decl));

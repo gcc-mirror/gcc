@@ -259,7 +259,7 @@ const_double_htab_eq (const void *x, const void *y)
 static hashval_t
 const_fixed_htab_hash (const void *x)
 {
-  rtx value = (rtx) x;
+  const_rtx const value = (const_rtx) x;
   hashval_t h;
 
   h = fixed_hash (CONST_FIXED_VALUE (value));
@@ -274,7 +274,7 @@ const_fixed_htab_hash (const void *x)
 static int
 const_fixed_htab_eq (const void *x, const void *y)
 {
-  rtx a = (rtx)x, b = (rtx)y;
+  const_rtx const a = (const_rtx) x, b = (const_rtx) y;
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;

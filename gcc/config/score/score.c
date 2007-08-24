@@ -101,7 +101,7 @@ static int score_address_cost (rtx);
 #define TARGET_ASM_OUTPUT_MI_THUNK      th_output_mi_thunk
 
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK  hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK  hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS    hook_bool_const_tree_true
@@ -427,7 +427,7 @@ th_select_rtx_section (enum machine_mode mode, rtx x,
 
 /* Implement TARGET_IN_SMALL_DATA_P.  */
 static bool
-th_in_small_data_p (tree decl)
+th_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 

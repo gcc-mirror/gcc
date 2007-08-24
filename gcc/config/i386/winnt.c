@@ -146,7 +146,7 @@ i386_pe_determine_dllimport_p (tree decl)
 /* Handle the -mno-fun-dllimport target switch.  */
 
 bool
-i386_pe_valid_dllimport_attribute_p (tree decl)
+i386_pe_valid_dllimport_attribute_p (const_tree decl)
 {
    if (TARGET_NOP_FUN_DLLIMPORT && TREE_CODE (decl) == FUNCTION_DECL)
      return false;
@@ -328,7 +328,7 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 }
 
 bool
-i386_pe_binds_local_p (tree exp)
+i386_pe_binds_local_p (const_tree exp)
 {
   /* PE does not do dynamic binding.  Indeed, the only kind of
      non-local reference comes from a dllimport'd symbol.  */

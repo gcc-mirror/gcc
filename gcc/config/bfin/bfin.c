@@ -140,7 +140,8 @@ conditional_register_usage (void)
 /* Examine machine-dependent attributes of function type FUNTYPE and return its
    type.  See the definition of E_FUNKIND.  */
 
-static e_funkind funkind (tree funtype)
+static e_funkind
+funkind (const_tree funtype)
 {
   tree attrs = TYPE_ATTRIBUTES (funtype);
   if (lookup_attribute ("interrupt_handler", attrs))
@@ -4578,7 +4579,7 @@ handle_int_attribute (tree *node, tree name,
    warning to be generated).  */
 
 static int
-bfin_comp_type_attributes (tree type1, tree type2)
+bfin_comp_type_attributes (const_tree type1, const_tree type2)
 {
   e_funkind kind1, kind2;
 
@@ -5376,7 +5377,7 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK bfin_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST bfin_adjust_cost

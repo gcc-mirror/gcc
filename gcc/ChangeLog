@@ -1,3 +1,141 @@
+2007-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/alpha/alpha.c (alpha_mangle_type, decl_has_samegp,
+	alpha_in_small_data_p, alpha_split_complex_arg,
+	alpha_stdarg_optimize_hook, TARGET_ASM_CAN_OUTPUT_MI_THUNK):
+	Constify.
+	* config/arm/arm-protos.h (arm_mangle_type): Likewise.
+	* config/arm/arm.c (arm_comp_type_attributes, arm_mangle_type):
+	Likewise.
+	* config/bfin/bfin.c (funkind, bfin_comp_type_attributes,
+	TARGET_ASM_CAN_OUTPUT_MI_THUNK): Likewise.
+	* config/darwin-protos.h (darwin_binds_local_p): Likewise.
+	* config/darwin.c (darwin_binds_local_p): Likewise.
+	* config/frv/frv.c (frv_string_begins_with, frv_in_small_data_p):
+	Likewise.
+	* config/i386/i386-protos.h (i386_pe_binds_local_p,
+	i386_pe_valid_dllimport_attribute_p): Likewise.
+	* config/i386/i386.c (ix86_function_regparm,
+	ix86_comp_type_attributes, ix86_ms_bitfield_layout_p,
+	x86_can_output_mi_thunk, ix86_mangle_type,
+	TARGET_USE_BLOCKS_FOR_CONSTANT_P): Likewise.
+	* config/i386/winnt.c (i386_pe_valid_dllimport_attribute_p,
+	i386_pe_binds_local_p): Likewise.
+	* config/ia64/ia64.c
+	(ia64_first_cycle_multipass_dfa_lookahead_guard_spec,
+	ia64_needs_block_p, ia64_in_small_data_p, ia64_mangle_type,
+	ia64_invalid_conversion, ia64_invalid_unary_op,
+	ia64_invalid_binary_op, TARGET_ASM_CAN_OUTPUT_MI_THUNK):
+	Likewise.
+	* config/m32c/m32c.c (m32c_comp_type_attributes): Likewise.
+	* config/m32r/m32r.c (m32r_in_small_data_p): Likewise.
+	* config/m68k/m68k.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): Likewise.
+	* config/mips/mips.c (mips_use_blocks_for_constant_p,
+	mips_in_small_data_p, mips_use_anchors_for_symbol_p,
+	mips_comp_type_attributes, TARGET_ASM_CAN_OUTPUT_MI_THUNK,
+	mips_near_type_p, mips_far_type_p, mips_global_symbol_p,
+	mips_symbol_binds_local_p, mips_classify_symbol): Likewise.
+	* config/pa/pa.c (pa_commutative_p): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_elf_in_small_data_p):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_invalid_within_doloop,
+	rs6000_ms_bitfield_layout_p, rs6000_mangle_type,
+	rs6000_use_blocks_for_constant_p,
+	rs6000_vector_alignment_reachable, rs6000_is_opaque_type,
+	invalid_arg_for_unprototyped_fn, TARGET_ASM_CAN_OUTPUT_MI_THUNK,
+	TARGET_SPLIT_COMPLEX_ARG, rs6000_elf_in_small_data_p): Likewise.
+	* config/s390/s390.c (s390_mangle_type,
+	TARGET_ASM_CAN_OUTPUT_MI_THUNK, TARGET_INVALID_WITHIN_DOLOOP):
+	Likewise.
+	* config/score/score.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK,
+	th_in_small_data_p): Likewise.
+	* config/sh/sh.c (sh_ms_bitfield_layout_p,
+	sh_dwarf_calling_convention, TARGET_ASM_CAN_OUTPUT_MI_THUNK):
+	Likewise.
+	* config/sparc/sparc.c (sparc_can_output_mi_thunk,
+	sparc_mangle_type): Likewise.
+	* config/spu/spu.c (spu_vector_alignment_reachable): Likewise.
+	* config/xtensa/xtensa.c (TARGET_SPLIT_COMPLEX_ARG): Likewise.
+	* emit-rtl.c (const_fixed_htab_hash, const_fixed_htab_eq):
+	Likewise.
+	* hooks.c (hook_bool_mode_const_rtx_false,
+	hook_bool_mode_const_rtx_true,
+	hook_bool_const_tree_hwi_hwi_const_tree_false,
+	hook_bool_const_tree_hwi_hwi_const_tree_true,
+	hook_int_const_tree_0, hook_int_const_tree_const_tree_1,
+	hook_constcharptr_const_tree_null,
+	hook_constcharptr_const_rtx_null,
+	hook_constcharptr_const_tree_const_tree_null,
+	hook_constcharptr_int_const_tree_null,
+	hook_constcharptr_int_const_tree_const_tree_null): New.
+	(hook_bool_mode_rtx_false, hook_bool_mode_rtx_true,
+	hook_bool_tree_hwi_hwi_tree_false,
+	hook_bool_tree_hwi_hwi_tree_true, hook_int_tree_0,
+	hook_int_tree_tree_1, hook_constcharptr_tree_null,
+	hook_constcharptr_rtx_null, hook_constcharptr_tree_tree_null,
+	hook_constcharptr_int_tree_null,
+	hook_constcharptr_int_tree_tree_null): Delete.
+	(default_can_output_mi_thunk_no_vcall): Constify.
+	* hooks.h (hook_bool_mode_rtx_false, hook_bool_mode_rtx_true,
+	hook_bool_tree_hwi_hwi_tree_false,
+	hook_bool_tree_hwi_hwi_tree_true, hook_int_tree_0,
+	hook_int_tree_tree_1, hook_constcharptr_tree_null,
+	hook_constcharptr_rtx_null, hook_constcharptr_tree_tree_null,
+	hook_constcharptr_int_tree_null,
+	hook_constcharptr_int_tree_tree_null): Delete.
+	(hook_bool_mode_const_rtx_false, hook_bool_mode_const_rtx_true,
+	hook_bool_const_tree_hwi_hwi_const_tree_false,
+	hook_bool_const_tree_hwi_hwi_const_tree_true,
+	hook_int_const_tree_0, hook_int_const_tree_const_tree_1,
+	hook_constcharptr_const_tree_null,
+	hook_constcharptr_const_rtx_null,
+	hook_constcharptr_const_tree_const_tree_null,
+	hook_constcharptr_int_const_tree_null,
+	hook_constcharptr_int_const_tree_const_tree_null): New.
+	(default_can_output_mi_thunk_no_vcall): Constify.
+	* integrate.c (function_attribute_inlinable_p): Likewise.
+	* integrate.h (function_attribute_inlinable_p): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.
+	* output.h (decl_readonly_section, categorize_decl_for_section,
+	default_use_anchors_for_symbol_p, default_binds_local_p,
+	default_binds_local_p_1): Likewise.
+	* rtl.h (rtx_renumbered_equal_p, decl_default_tls_model):
+	Likewise.
+	* target-def.h (TARGET_ASM_CAN_OUTPUT_MI_THUNK,
+	TARGET_VALID_DLLIMPORT_ATTRIBUTE_P, TARGET_VECTOR_OPAQUE_P,
+	TARGET_COMMUTATIVE_P, TARGET_USE_BLOCKS_FOR_CONSTANT_P,
+	TARGET_COMP_TYPE_ATTRIBUTES,
+	TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P,
+	TARGET_MS_BITFIELD_LAYOUT_P, TARGET_MANGLE_TYPE,
+	TARGET_IN_SMALL_DATA_P, TARGET_INVALID_CONVERSION,
+	TARGET_INVALID_UNARY_OP, TARGET_INVALID_BINARY_OP,
+	TARGET_DWARF_CALLING_CONVENTION): Likewise.
+	* target.h (can_output_mi_thunk, needs_block_p,
+	first_cycle_multipass_dfa_lookahead_guard_spec,
+	vector_alignment_reachable, comp_type_attributes,
+	function_attribute_inlinable_p, ms_bitfield_layout_p, mangle_type,
+	commutative_p, use_blocks_for_constant_p,
+	use_anchors_for_symbol_p, in_small_data_p, binds_local_p,
+	vector_opaque_p, dwarf_calling_convention, stdarg_optimize_hook,
+	invalid_within_doloop, valid_dllimport_attribute_p,
+	split_complex_arg, invalid_arg_for_unprototyped_fn,
+	invalid_conversion, invalid_unary_op, invalid_binary_op):
+	Likewise.
+	* targhooks.c (default_invalid_within_doloop,
+	hook_invalid_arg_for_unprototyped_fn,
+	default_builtin_vector_alignment_reachable): Likewise.
+	(hook_bool_rtx_commutative_p): Delete.
+	(hook_bool_const_rtx_commutative_p): New.
+	* targhooks.h (default_invalid_within_doloop,
+	default_builtin_vector_alignment_reachable,
+	hook_invalid_arg_for_unprototyped_fn): Constify.
+	(hook_bool_rtx_commutative_p): Delete.
+	(hook_bool_const_rtx_commutative_p): New.
+	* varasm.c (bss_initializer_p, decl_default_tls_model,
+	categorize_decl_for_section, decl_readonly_section,
+	default_use_anchors_for_symbol_p, default_binds_local_p,
+	default_binds_local_p_1): Constify.
+
 2007-08-24  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define

@@ -336,7 +336,7 @@ default_fixed_point_supported_p (void)
    these cases.  */
 
 const char *
-default_invalid_within_doloop (rtx insn)
+default_invalid_within_doloop (const_rtx insn)
 {
   if (CALL_P (insn))
     return "Function call in loop.";
@@ -412,9 +412,9 @@ hook_void_bitmap (bitmap regs ATTRIBUTE_UNUSED)
 
 const char *
 hook_invalid_arg_for_unprototyped_fn (
-	tree typelist ATTRIBUTE_UNUSED,
-	tree funcdecl ATTRIBUTE_UNUSED,
-	tree val ATTRIBUTE_UNUSED)
+	const_tree typelist ATTRIBUTE_UNUSED,
+	const_tree funcdecl ATTRIBUTE_UNUSED,
+	const_tree val ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
@@ -510,7 +510,8 @@ default_hidden_stack_protect_fail (void)
 }
 
 bool
-hook_bool_rtx_commutative_p (rtx x, int outer_code ATTRIBUTE_UNUSED)
+hook_bool_const_rtx_commutative_p (const_rtx x,
+				   int outer_code ATTRIBUTE_UNUSED)
 {
   return COMMUTATIVE_P (x);
 }
@@ -665,7 +666,7 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
 }
 
 bool
-default_builtin_vector_alignment_reachable (tree type, bool is_packed)
+default_builtin_vector_alignment_reachable (const_tree type, bool is_packed)
 {
   if (is_packed)
     return false;

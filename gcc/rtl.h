@@ -2036,7 +2036,7 @@ extern int only_sets_cc0_p (const_rtx);
 extern int sets_cc0_p (const_rtx);
 extern int invert_jump_1 (rtx, rtx);
 extern int invert_jump (rtx, rtx, int);
-extern int rtx_renumbered_equal_p (rtx, rtx);
+extern int rtx_renumbered_equal_p (const_rtx, const_rtx);
 extern int true_regnum (const_rtx);
 extern unsigned int reg_or_subregno (const_rtx);
 extern int redirect_jump_1 (rtx, rtx);
@@ -2218,7 +2218,7 @@ extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
 
 /* In varasm.c */
 extern void init_varasm_once (void);
-extern enum tls_model decl_default_tls_model (tree);
+extern enum tls_model decl_default_tls_model (const_tree);
   
 /* In rtl.c */
 extern void traverse_md_constants (int (*) (void **, void *), void *);

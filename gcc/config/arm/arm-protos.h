@@ -214,6 +214,6 @@ extern void arm_pr_long_calls (struct cpp_reader *);
 extern void arm_pr_no_long_calls (struct cpp_reader *);
 extern void arm_pr_long_calls_off (struct cpp_reader *);
 
-extern const char *arm_mangle_type (tree);
+extern const char *arm_mangle_type (const_tree);
 
 #endif /* ! GCC_ARM_PROTOS_H */

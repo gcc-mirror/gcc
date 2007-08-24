@@ -84,7 +84,7 @@ extern void darwin_asm_output_dwarf_delta (FILE *, int, const char *,
 					   const char *);
 extern void darwin_asm_output_dwarf_offset (FILE *, int, const char *,
 					    section *);
-extern bool darwin_binds_local_p (tree);
+extern bool darwin_binds_local_p (const_tree);
 extern void darwin_cpp_builtins (struct cpp_reader *);
 extern void darwin_asm_output_anchor (rtx symbol);
 extern bool darwin_kextabi_p (void);

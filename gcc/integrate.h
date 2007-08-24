@@ -32,5 +32,5 @@ extern void allocate_initial_values (rtx *);
 /* Check whether there's any attribute in a function declaration that
    makes the function uninlinable.  Returns false if it finds any,
    true otherwise.  */
-extern bool function_attribute_inlinable_p (tree);
+extern bool function_attribute_inlinable_p (const_tree);
 

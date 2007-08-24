@@ -1419,7 +1419,7 @@ invert_jump (rtx jump, rtx nlabel, int delete_unused)
    reversed.  */
 
 int
-rtx_renumbered_equal_p (rtx x, rtx y)
+rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 {
   int i;
   const enum rtx_code code = GET_CODE (x);

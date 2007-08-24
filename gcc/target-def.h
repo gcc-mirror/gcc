@@ -142,7 +142,7 @@
 #endif
 
 #define TARGET_ASM_OUTPUT_MI_THUNK NULL
-#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_false
+#define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_false
 
 #if !defined(TARGET_HAVE_CTORS_DTORS)
 # if defined(TARGET_ASM_CONSTRUCTOR) && defined(TARGET_ASM_DESTRUCTOR)
@@ -174,7 +174,7 @@
 #endif
 
 #ifndef TARGET_VALID_DLLIMPORT_ATTRIBUTE_P
-#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P hook_bool_tree_true
+#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P hook_bool_const_tree_true
 #endif
 
 #ifndef TARGET_HAVE_TLS
@@ -450,7 +450,7 @@
 #endif
 
 #ifndef TARGET_VECTOR_OPAQUE_P
-#define TARGET_VECTOR_OPAQUE_P hook_bool_tree_false
+#define TARGET_VECTOR_OPAQUE_P hook_bool_const_tree_false
 #endif
 
 /* In hooks.c.  */
@@ -459,24 +459,24 @@
 #define TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED hook_bool_bool_false
 #define TARGET_CANNOT_FORCE_CONST_MEM hook_bool_rtx_false
 #define TARGET_CANNOT_COPY_INSN_P NULL
-#define TARGET_COMMUTATIVE_P hook_bool_rtx_commutative_p
+#define TARGET_COMMUTATIVE_P hook_bool_const_rtx_commutative_p
 #define TARGET_DELEGITIMIZE_ADDRESS hook_rtx_rtx_identity
-#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_rtx_false
+#define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_false
 #define TARGET_MIN_ANCHOR_OFFSET 0
 #define TARGET_MAX_ANCHOR_OFFSET 0
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P default_use_anchors_for_symbol_p
 #define TARGET_FUNCTION_OK_FOR_SIBCALL hook_bool_tree_tree_false
-#define TARGET_COMP_TYPE_ATTRIBUTES hook_int_tree_tree_1
+#define TARGET_COMP_TYPE_ATTRIBUTES hook_int_const_tree_const_tree_1
 #ifndef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES hook_void_tree
 #endif
 #define TARGET_INSERT_ATTRIBUTES hook_void_tree_treeptr
-#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P hook_bool_tree_false
-#define TARGET_MS_BITFIELD_LAYOUT_P hook_bool_tree_false
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P hook_bool_const_tree_false
+#define TARGET_MS_BITFIELD_LAYOUT_P hook_bool_const_tree_false
 #define TARGET_ALIGN_ANON_BITFIELD hook_bool_void_false
 #define TARGET_NARROW_VOLATILE_BITFIELD hook_bool_void_false
 #define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_false
-#define TARGET_MANGLE_TYPE hook_constcharptr_tree_null
+#define TARGET_MANGLE_TYPE hook_constcharptr_const_tree_null
 #define TARGET_ALLOCATE_INITIAL_VALUE NULL
 
 #ifndef TARGET_INIT_LIBFUNCS
@@ -484,7 +484,7 @@
 #endif
 
 #ifndef TARGET_IN_SMALL_DATA_P
-#define TARGET_IN_SMALL_DATA_P hook_bool_tree_false
+#define TARGET_IN_SMALL_DATA_P hook_bool_const_tree_false
 #endif
 
 #ifndef TARGET_MANGLE_DECL_ASSEMBLER_NAME
@@ -499,9 +499,9 @@
 #define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN hook_invalid_arg_for_unprototyped_fn
 #endif
 
-#define TARGET_INVALID_CONVERSION hook_constcharptr_tree_tree_null
-#define TARGET_INVALID_UNARY_OP hook_constcharptr_int_tree_null
-#define TARGET_INVALID_BINARY_OP hook_constcharptr_int_tree_tree_null
+#define TARGET_INVALID_CONVERSION hook_constcharptr_const_tree_const_tree_null
+#define TARGET_INVALID_UNARY_OP hook_constcharptr_int_const_tree_null
+#define TARGET_INVALID_BINARY_OP hook_constcharptr_int_const_tree_const_tree_null
 
 #define TARGET_FIXED_CONDITION_CODE_REGS hook_bool_uintp_uintp_false
 
@@ -521,7 +521,7 @@
 
 #define TARGET_MD_ASM_CLOBBERS hook_tree_tree_tree_tree_3rd_identity
 
-#define TARGET_DWARF_CALLING_CONVENTION hook_int_tree_0
+#define TARGET_DWARF_CALLING_CONVENTION hook_int_const_tree_0
 
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC 0
 

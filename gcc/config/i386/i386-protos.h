@@ -211,9 +211,9 @@ extern void i386_pe_declare_function_type (FILE *, const char *, int);
 extern void i386_pe_record_external_function (tree, const char *);
 extern void i386_pe_maybe_record_exported_symbol (tree, const char *, int);
 extern void i386_pe_encode_section_info (tree, rtx, int);
-extern bool i386_pe_binds_local_p (tree);
+extern bool i386_pe_binds_local_p (const_tree);
 extern const char *i386_pe_strip_name_encoding_full (const char *);
-extern bool i386_pe_valid_dllimport_attribute_p (tree);
+extern bool i386_pe_valid_dllimport_attribute_p (const_tree);
 extern unsigned int i386_pe_section_type_flags (tree, const char *, int);
 extern void i386_pe_asm_named_section (const char *, unsigned int, tree);
 extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,

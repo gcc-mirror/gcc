@@ -208,9 +208,9 @@ struct gcc_target
        too much undo-able setup involved in invoking output_mi_thunk.
        Could be fixed by making output_mi_thunk emit rtl instead of
        text to the output file.  */
-    bool (* can_output_mi_thunk) (tree thunk_decl, HOST_WIDE_INT delta,
+    bool (* can_output_mi_thunk) (const_tree thunk_decl, HOST_WIDE_INT delta,
 				  HOST_WIDE_INT vcall_offset,
-				  tree function_decl);
+				  const_tree function_decl);
 
     /* Output any boilerplate text needed at the beginning of a
        translation unit.  */
@@ -373,7 +373,7 @@ struct gcc_target
        by the insn scheduler.  It should return true if the check instruction
        corresponding to the instruction passed as the parameter needs a
        recovery block.  */
-    bool (* needs_block_p) (rtx);
+    bool (* needs_block_p) (const_rtx);
 
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return a pattern for the check
@@ -391,7 +391,7 @@ struct gcc_target
        passed as the parameter, the insn will not be chosen to be
        issued.  This hook is used to discard speculative instructions,
        that stand at the first position of the ready list.  */
-    bool (* first_cycle_multipass_dfa_lookahead_guard_spec) (rtx);
+    bool (* first_cycle_multipass_dfa_lookahead_guard_spec) (const_rtx);
 
     /* The following member value is a pointer to a function that provides
        information about the speculation capabilities of the target.
@@ -428,7 +428,7 @@ struct gcc_target
 
     /* Return true if vector alignment is reachable (by peeling N
        iterations) for the given type.  */
-    bool (* vector_alignment_reachable) (tree, bool);
+    bool (* vector_alignment_reachable) (const_tree, bool);
   } vectorize;
 
   /* The initial value of target_flags.  */
@@ -467,7 +467,7 @@ struct gcc_target
   /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
      one if they are compatible and two if they are nearly compatible
      (which causes a warning to be generated).  */
-  int (* comp_type_attributes) (tree type1, tree type2);
+  int (* comp_type_attributes) (const_tree type1, const_tree type2);
 
   /* Assign default attributes to the newly defined TYPE.  */
   void (* set_default_type_attributes) (tree type);
@@ -477,11 +477,11 @@ struct gcc_target
 
   /* Return true if FNDECL (which has at least one machine attribute)
      can be inlined despite its machine attributes, false otherwise.  */
-  bool (* function_attribute_inlinable_p) (tree fndecl);
+  bool (* function_attribute_inlinable_p) (const_tree fndecl);
 
   /* Return true if bitfields in RECORD_TYPE should follow the
      Microsoft Visual C++ bitfield layout rules.  */
-  bool (* ms_bitfield_layout_p) (tree record_type);
+  bool (* ms_bitfield_layout_p) (const_tree record_type);
 
   /* True if the target supports decimal floating point.  */
   bool (* decimal_float_supported_p) (void);
@@ -519,7 +519,7 @@ struct gcc_target
   /* For a vendor-specific TYPE, return a pointer to a statically-allocated
      string containing the C++ mangling for TYPE.  In all other cases, return
      NULL.  */
-  const char * (* mangle_type) (tree type);
+  const char * (* mangle_type) (const_tree type);
 
   /* Make any adjustments to libfunc names needed for this target.  */
   void (* init_libfuncs) (void);
@@ -550,20 +550,20 @@ struct gcc_target
   bool (* cannot_copy_insn_p) (rtx);
 
   /* True if X is considered to be commutative.  */
-  bool (* commutative_p) (rtx, int);
+  bool (* commutative_p) (const_rtx, int);
 
   /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
   rtx (* delegitimize_address) (rtx);
 
   /* True if the given constant can be put into an object_block.  */
-  bool (* use_blocks_for_constant_p) (enum machine_mode, rtx);
+  bool (* use_blocks_for_constant_p) (enum machine_mode, const_rtx);
 
   /* The minimum and maximum byte offsets for anchored addresses.  */
   HOST_WIDE_INT min_anchor_offset;
   HOST_WIDE_INT max_anchor_offset;
 
   /* True if section anchors can be used to access the given symbol.  */
-  bool (* use_anchors_for_symbol_p) (rtx);
+  bool (* use_anchors_for_symbol_p) (const_rtx);
 
   /* True if it is OK to do sibling call optimization for the specified
      call expression EXP.  DECL will be the called function, or NULL if
@@ -571,11 +571,11 @@ struct gcc_target
   bool (*function_ok_for_sibcall) (tree decl, tree exp);
 
   /* True if EXP should be placed in a "small data" section.  */
-  bool (* in_small_data_p) (tree);
+  bool (* in_small_data_p) (const_tree);
 
   /* True if EXP names an object for which name resolution must resolve
      to the current module.  */
-  bool (* binds_local_p) (tree);
+  bool (* binds_local_p) (const_tree);
 
   /* Modify and return the identifier of a DECL's external name,
      originally identified by ID, as required by the target,
@@ -621,7 +621,7 @@ struct gcc_target
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
   /* True if a vector is opaque.  */
-  bool (* vector_opaque_p) (tree);
+  bool (* vector_opaque_p) (const_tree);
 
   /* Compute a (partial) cost for rtx X.  Return true if the complete
      cost has been computed, and false if subexpressions should be
@@ -712,7 +712,7 @@ struct gcc_target
      enum dwarf_calling_convention, but because of forward declarations
      and not wanting to include dwarf2.h everywhere target.h is included
      the function is being declared as an int.  */
-  int (* dwarf_calling_convention) (tree);
+  int (* dwarf_calling_convention) (const_tree);
 
   /* This target hook allows the backend to emit frame-related insns that
      contain UNSPECs or UNSPEC_VOLATILEs.  The call frame debugging info
@@ -727,7 +727,7 @@ struct gcc_target
      from VA_ARG_EXPR.  LHS is left hand side of MODIFY_EXPR, RHS
      is right hand side.  Returns true if the statements doesn't need
      to be checked for va_list references.  */
-  bool (* stdarg_optimize_hook) (struct stdarg_info *ai, tree lhs, tree rhs);
+  bool (* stdarg_optimize_hook) (struct stdarg_info *ai, const_tree lhs, const_tree rhs);
 
   /* This target hook allows the operating system to override the DECL
      that represents the external variable that contains the stack
@@ -740,12 +740,12 @@ struct gcc_target
 
   /* Returns NULL if target supports the insn within a doloop block,
      otherwise it returns an error message.  */
-  const char * (*invalid_within_doloop) (rtx);
+  const char * (*invalid_within_doloop) (const_rtx);
 
   /* DECL is a variable or function with __attribute__((dllimport))
      specified.  Use this hook if the target needs to add extra validation
      checks to  handle_dll_attribute ().  */
-  bool (* valid_dllimport_attribute_p) (tree decl);
+  bool (* valid_dllimport_attribute_p) (const_tree decl);
 
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {
@@ -775,7 +775,7 @@ struct gcc_target
 
     /* Given a complex type T, return true if a parameter of type T
        should be passed as two scalars.  */
-    bool (* split_complex_arg) (tree type);
+    bool (* split_complex_arg) (const_tree type);
 
     /* Return true if type T, mode MODE, may not be passed in registers,
        but must be passed on the stack.  */
@@ -797,8 +797,9 @@ struct gcc_target
 
     /* Return the diagnostic message string if function without a prototype
        is not allowed for this 'val' argument; NULL otherwise. */
-    const char *(*invalid_arg_for_unprototyped_fn) (tree typelist,
-					     	    tree funcdecl, tree val);
+    const char *(*invalid_arg_for_unprototyped_fn) (const_tree typelist,
+					     	    const_tree funcdecl,
+						    const_tree val);
 
     /* Return an rtx for the return value location of the function
        specified by FN_DECL_OR_TYPE with a return type of RET_TYPE.  */
@@ -812,15 +813,15 @@ struct gcc_target
 
   /* Return the diagnostic message string if conversion from FROMTYPE
      to TOTYPE is not allowed, NULL otherwise.  */
-  const char *(*invalid_conversion) (tree fromtype, tree totype);
+  const char *(*invalid_conversion) (const_tree fromtype, const_tree totype);
 
   /* Return the diagnostic message string if the unary operation OP is
      not permitted on TYPE, NULL otherwise.  */
-  const char *(*invalid_unary_op) (int op, tree type);
+  const char *(*invalid_unary_op) (int op, const_tree type);
 
   /* Return the diagnostic message string if the binary operation OP
      is not permitted on TYPE1 and TYPE2, NULL otherwise.  */
-  const char *(*invalid_binary_op) (int op, tree type1, tree type2);
+  const char *(*invalid_binary_op) (int op, const_tree type1, const_tree type2);
 
   /* Return the class for a secondary reload, and fill in extra information.  */
   enum reg_class (*secondary_reload) (bool, rtx, enum reg_class,

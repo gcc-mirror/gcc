@@ -71,16 +71,16 @@ hook_bool_mode_false (enum machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Generic hook that takes (enum machine_mode, rtx) and returns false.  */
 bool
-hook_bool_mode_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
-			  rtx value ATTRIBUTE_UNUSED)
+hook_bool_mode_const_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
+				const_rtx value ATTRIBUTE_UNUSED)
 {
   return false;
 }
 
 /* Generic hook that takes (enum machine_mode, rtx) and returns true.  */
 bool
-hook_bool_mode_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
-			 rtx value ATTRIBUTE_UNUSED)
+hook_bool_mode_const_rtx_true (enum machine_mode mode ATTRIBUTE_UNUSED,
+			       const_rtx value ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -93,19 +93,19 @@ hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUT
 
 /* Used for the TARGET_ASM_CAN_OUTPUT_MI_THUNK hook.  */
 bool
-hook_bool_tree_hwi_hwi_tree_false (tree a ATTRIBUTE_UNUSED,
-				   HOST_WIDE_INT b ATTRIBUTE_UNUSED,
-				   HOST_WIDE_INT c ATTRIBUTE_UNUSED,
-				   tree d ATTRIBUTE_UNUSED)
+hook_bool_const_tree_hwi_hwi_const_tree_false (const_tree a ATTRIBUTE_UNUSED,
+					       HOST_WIDE_INT b ATTRIBUTE_UNUSED,
+					       HOST_WIDE_INT c ATTRIBUTE_UNUSED,
+					       const_tree d ATTRIBUTE_UNUSED)
 {
   return false;
 }
 
 bool
-hook_bool_tree_hwi_hwi_tree_true (tree a ATTRIBUTE_UNUSED,
-				  HOST_WIDE_INT b ATTRIBUTE_UNUSED,
-				  HOST_WIDE_INT c ATTRIBUTE_UNUSED,
-				  tree d ATTRIBUTE_UNUSED)
+hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree a ATTRIBUTE_UNUSED,
+					      HOST_WIDE_INT b ATTRIBUTE_UNUSED,
+					      HOST_WIDE_INT c ATTRIBUTE_UNUSED,
+					      const_tree d ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -126,23 +126,23 @@ hook_bool_size_t_constcharptr_int_true (size_t a ATTRIBUTE_UNUSED,
 }
 
 bool
-default_can_output_mi_thunk_no_vcall (tree a ATTRIBUTE_UNUSED,
+default_can_output_mi_thunk_no_vcall (const_tree a ATTRIBUTE_UNUSED,
 				      HOST_WIDE_INT b ATTRIBUTE_UNUSED,
 				      HOST_WIDE_INT c,
-				      tree d ATTRIBUTE_UNUSED)
+				      const_tree d ATTRIBUTE_UNUSED)
 {
   return c == 0;
 }
 
 int
-hook_int_tree_0 (tree a ATTRIBUTE_UNUSED)
+hook_int_const_tree_0 (const_tree a ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
 /* ??? Used for comp_type_attributes, which ought to return bool.  */
 int
-hook_int_tree_tree_1 (tree a ATTRIBUTE_UNUSED, tree b ATTRIBUTE_UNUSED)
+hook_int_const_tree_const_tree_1 (const_tree a ATTRIBUTE_UNUSED, const_tree b ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -272,7 +272,7 @@ hook_tree_tree_tree_tree_3rd_identity (tree a ATTRIBUTE_UNUSED,
 
 /* Generic hook that takes a tree and returns a NULL string.  */
 const char *
-hook_constcharptr_tree_null (tree t ATTRIBUTE_UNUSED)
+hook_constcharptr_const_tree_null (const_tree t ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
@@ -293,29 +293,29 @@ hook_tree_tree_tree_null (tree t0 ATTRIBUTE_UNUSED, tree t1 ATTRIBUTE_UNUSED)
 
 /* Generic hook that takes a rtx and returns a NULL string.  */
 const char *
-hook_constcharptr_rtx_null (rtx r ATTRIBUTE_UNUSED)
+hook_constcharptr_const_rtx_null (const_rtx r ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
 
 const char *
-hook_constcharptr_tree_tree_null (tree t0 ATTRIBUTE_UNUSED,
-				  tree t1 ATTRIBUTE_UNUSED)
+hook_constcharptr_const_tree_const_tree_null (const_tree t0 ATTRIBUTE_UNUSED,
+					      const_tree t1 ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
 
 const char *
-hook_constcharptr_int_tree_null (int i ATTRIBUTE_UNUSED,
-				 tree t0 ATTRIBUTE_UNUSED)
+hook_constcharptr_int_const_tree_null (int i ATTRIBUTE_UNUSED,
+				       const_tree t0 ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
 
 const char *
-hook_constcharptr_int_tree_tree_null (int i ATTRIBUTE_UNUSED,
-				      tree t0 ATTRIBUTE_UNUSED,
-				      tree t1 ATTRIBUTE_UNUSED)
+hook_constcharptr_int_const_tree_const_tree_null (int i ATTRIBUTE_UNUSED,
+						  const_tree t0 ATTRIBUTE_UNUSED,
+						  const_tree t1 ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
