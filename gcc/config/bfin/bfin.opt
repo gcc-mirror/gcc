@@ -64,6 +64,10 @@ mlong-calls
 Target Report Mask(LONG_CALLS)
 Avoid generating pc-relative calls; use indirection
 
+mfast-fp
+Target Report Mask(FAST_FP)
+Link with the fast floating-point library
+
 mfdpic
 Target Report Mask(FDPIC)
 Enable Function Descriptor PIC mode

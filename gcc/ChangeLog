@@ -1,3 +1,12 @@
+2007-08-24  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.opt (mfast-fp): Add.
+	* config/bfin/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Let
+	libbffastfp override libgcc if -mfast-fp.
+	* config/bfin/bfin.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* doc/invoke.texi (Option Summary): Mention -mfast-fp.
+	(Blackfin Options): Document -mfast-fp.
+
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/32573

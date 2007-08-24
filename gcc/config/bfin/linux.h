@@ -35,7 +35,8 @@ asm (TEXT_SECTION_ASM_OP);
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{mfast-fp:-lbffastfp} %{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
+  "%{static:--start-group} %{mfast-fp:-lbffastfp} %G %L %{static:--end-group} \
+   %{!static:%{mfast-fp:-lbffastfp} %G}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "\
