@@ -1,3 +1,8 @@
+2007-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/31941
+	* g++.dg/parse/crash37.C: New test.
+
 2007-08-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33142
