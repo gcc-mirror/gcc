@@ -4259,6 +4259,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    errstring ="no post-decrement operator for type";
 	  break;
 	}
+      else if (arg == error_mark_node)
+	return error_mark_node;
 
       /* Report something read-only.  */
 

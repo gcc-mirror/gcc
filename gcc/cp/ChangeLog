@@ -1,5 +1,10 @@
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/32567
+	* typeck.c (build_unary_op) <case PREINCREMENT_EXPR>: Return
+	error_mark_node right away if build_expr_type_conversion
+	returned it.
+
 	PR c++/32898
 	* name-lookup.c (set_decl_namespace): lookup_qualified_name failure
 	is error_mark_node rather than NULL_TREE.
