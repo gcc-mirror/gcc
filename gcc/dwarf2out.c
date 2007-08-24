@@ -13197,7 +13197,8 @@ gen_decl_die (tree decl, dw_die_ref context_die)
 	 was generated within the original definition of an inline function) we
 	 have to generate a special (abbreviated) DW_TAG_structure_type,
 	 DW_TAG_union_type, or DW_TAG_enumeration_type DIE here.  */
-      if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE)
+      if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE
+	  && is_tagged_type (TREE_TYPE (decl)))
 	{
 	  gen_tagged_type_instantiation_die (TREE_TYPE (decl), context_die);
 	  break;

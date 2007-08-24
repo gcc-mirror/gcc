@@ -1,3 +1,9 @@
+2007-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/32610
+	* dwarf2out.c (gen_decl_die): Don't call
+	gen_tagged_type_instantiation_die if decl doesn't have tagged type.
+
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (get_inner_reference): Remove unused variable.
