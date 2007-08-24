@@ -1,3 +1,11 @@
+2007-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (store_expr): Optimize initialization of an array
+	with STRING_CST.
+	* expr.h (builtin_strncpy_read_str): New prototype.
+	* builtins.c (builtin_strncpy_read_str): Remove prototype.
+	No longer static.
+
 2007-08-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/33157
