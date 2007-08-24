@@ -1,3 +1,9 @@
+2007-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33178
+	* intrinsic.c (gfc_intrinsic_func_interface): Fix initialization
+	expression check.
+
 2007-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32972

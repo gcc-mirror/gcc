@@ -1,3 +1,9 @@
+2007-08-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33178
+	* gfortran.dg/initialization_4.f90: Update dg-error.
+	* gfortran.dg/initialization_13.f90: New.
+
 2007-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33166
