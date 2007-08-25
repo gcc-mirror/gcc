@@ -3103,7 +3103,7 @@ if test x"$insn" != x; then
 
  gcc_GAS_CHECK_FEATURE([--debug-prefix-map option],
   gcc_cv_as_debug_prefix_map_flag,
-  [2,19,0], [--debug-prefix-map /a=/b], [$insn],,
+  [2,18,0], [--debug-prefix-map /a=/b], [$insn],,
   [AC_DEFINE(HAVE_AS_DEBUG_PREFIX_MAP, 1,
 [Define if your assembler supports the --debug-prefix-map option.])])
 fi
