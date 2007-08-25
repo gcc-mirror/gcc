@@ -2318,11 +2318,6 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       *walk_subtrees_p = 0;
       break;
 
-    case TINST_LEVEL:
-      WALK_SUBTREE (TINST_DECL (*tp));
-      *walk_subtrees_p = 0;
-      break;
-
     case PTRMEM_CST:
       WALK_SUBTREE (TREE_TYPE (*tp));
       *walk_subtrees_p = 0;

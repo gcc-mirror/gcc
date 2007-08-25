@@ -229,15 +229,6 @@ struct template_parm_index_s GTY(())
 };
 typedef struct template_parm_index_s template_parm_index;
 
-struct tinst_level_s GTY(())
-{
-  struct tree_common common;
-  tree decl;
-  location_t locus;
-  int in_system_header_p;
-};
-typedef struct tinst_level_s * tinst_level_t;
-
 struct ptrmem_cst GTY(())
 {
   struct tree_common common;
@@ -527,7 +518,6 @@ enum cp_tree_node_structure_enum {
   TS_CP_GENERIC,
   TS_CP_IDENTIFIER,
   TS_CP_TPI,
-  TS_CP_TINST_LEVEL,
   TS_CP_PTRMEM,
   TS_CP_BINDING,
   TS_CP_OVERLOAD,
@@ -547,7 +537,6 @@ union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
   union tree_node GTY ((tag ("TS_CP_GENERIC"),
 			desc ("tree_node_structure (&%h)"))) generic;
   struct template_parm_index_s GTY ((tag ("TS_CP_TPI"))) tpi;
-  struct tinst_level_s GTY ((tag ("TS_CP_TINST_LEVEL"))) tinst_level;
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
@@ -3553,15 +3542,6 @@ typedef enum unification_kind_t {
   DEDUCE_EXACT
 } unification_kind_t;
 
-/* Macros for operating on a template instantiation level node.  */
-
-#define TINST_DECL(NODE) \
-  (((tinst_level_t) TINST_LEVEL_CHECK (NODE))->decl)
-#define TINST_LOCATION(NODE) \
-  (((tinst_level_t) TINST_LEVEL_CHECK (NODE))->locus)
-#define TINST_IN_SYSTEM_HEADER_P(NODE) \
-  (((tinst_level_t) TINST_LEVEL_CHECK (NODE))->in_system_header_p)
-
 /* in class.c */
 
 extern int current_class_depth;
@@ -4056,6 +4036,24 @@ struct cp_declarator {
   } u;
 };
 
+/* A level of template instantiation.  */
+struct tinst_level GTY(())
+{
+  /* The immediately deeper level in the chain.  */
+  struct tinst_level *next;
+
+  /* The original node.  Can be either a DECL (for a function or static
+     data member) or a TYPE (for a class), depending on what we were
+     asked to instantiate.  */
+  tree decl;
+
+  /* The location where the template is instantiated.  */
+  location_t locus;
+
+  /* True if the location is in a system header.  */
+  bool in_system_header_p;
+};
+
 /* A parameter list indicating for a function with no parameters,
    e.g  "int f(void)".  */
 extern cp_parameter_declarator *no_parameters;
@@ -4448,7 +4446,7 @@ extern tree most_general_template		(tree);
 extern tree get_mostly_instantiated_function_type (tree);
 extern int problematic_instantiation_changed	(void);
 extern void record_last_problematic_instantiation (void);
-extern tree current_instantiation		(void);
+extern struct tinst_level *current_instantiation(void);
 extern tree maybe_get_template_decl_from_type_decl (tree);
 extern int processing_template_parmlist;
 extern bool dependent_type_p			(tree);
@@ -4466,7 +4464,7 @@ extern tree build_non_dependent_args		(tree);
 extern bool reregister_specialization		(tree, tree, tree);
 extern tree fold_non_dependent_expr		(tree);
 extern bool explicit_class_specialization_p     (tree);
-extern tree outermost_tinst_level		(void);
+extern struct tinst_level *outermost_tinst_level(void);
 
 /* in repo.c */
 extern void init_repo				(void);

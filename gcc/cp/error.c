@@ -82,7 +82,8 @@ static const char *function_category (tree);
 static void maybe_print_instantiation_context (diagnostic_context *);
 static void print_instantiation_full_context (diagnostic_context *);
 static void print_instantiation_partial_context (diagnostic_context *,
-						 tree, location_t);
+						 struct tinst_level *,
+						 location_t);
 static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
@@ -2388,30 +2389,30 @@ function_category (tree fn)
 static void
 print_instantiation_full_context (diagnostic_context *context)
 {
-  tree p = current_instantiation ();
+  struct tinst_level *p = current_instantiation ();
   location_t location = input_location;
 
   if (p)
     {
-      if (current_function_decl != TINST_DECL (p)
+      if (current_function_decl != p->decl
 	  && current_function_decl != NULL_TREE)
 	/* We can get here during the processing of some synthesized
-	   method.  Then, TINST_DECL (p) will be the function that's causing
+	   method.  Then, P->DECL will be the function that's causing
 	   the synthesis.  */
 	;
       else
 	{
-	  if (current_function_decl == TINST_DECL (p))
+	  if (current_function_decl == p->decl)
 	    /* Avoid redundancy with the "In function" line.  */;
 	  else
 	    pp_verbatim (context->printer,
 			 "%s: In instantiation of %qs:\n",
 			 LOCATION_FILE (location),
-			 decl_as_string (TINST_DECL (p),
+			 decl_as_string (p->decl,
 					 TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
-	  location = TINST_LOCATION (p);
-	  p = TREE_CHAIN (p);
+	  location = p->locus;
+	  p = p->next;
 	}
     }
 
@@ -2421,19 +2422,19 @@ print_instantiation_full_context (diagnostic_context *context)
 /* Same as above but less verbose.  */
 static void
 print_instantiation_partial_context (diagnostic_context *context,
-				     tree t, location_t loc)
+				     struct tinst_level *t, location_t loc)
 {
   expanded_location xloc;
-  for (; ; t = TREE_CHAIN (t))
+  for (; ; t = t->next)
     {
       xloc = expand_location (loc);
-      if (t == NULL_TREE)
+      if (t == NULL)
 	break;
       pp_verbatim (context->printer, "%s:%d:   instantiated from %qs\n",
 		   xloc.file, xloc.line,
-		   decl_as_string (TINST_DECL (t),
+		   decl_as_string (t->decl,
 				   TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
-      loc = TINST_LOCATION (t);
+      loc = t->locus;
     }
   pp_verbatim (context->printer, "%s:%d:   instantiated from here",
 	       xloc.file, xloc.line);

@@ -1,3 +1,36 @@
+2007-08-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* decl.c (cp_tree_node_structure): Kill TINST_LEVEL case.
+	* cp-objcp-common.c (cp_tree_size): Ditto.
+	* tree.c (cp_walk_subtrees): Ditto
+	* cp-tree.def (TINST_LEVEL): Go away.
+	* cp-tree.h (struct tinst_level_s): Rename to struct tinst_level,
+	move together with other non-tree structs.
+	(enum cp_tree_node_structure_enum): Nuke TS_CP_TINST_LEVEL.
+	(union lang_tree_node): Eliminate tinst_level field.
+	(TINST_DECL, TINST_LOCATION, TINST_IN_SYSTEM_HEADER_P): Annihilate.
+	(current_instantiation, outermost_tinst_level): Return
+	a "struct tinst_level *".
+
+	* error.c (print_instantiation_partial_context): Change second
+	parameter to a "struct tinst_level *".  Replace accessor macros
+	with field access.
+	(print_instantiation_full_context): Likewise.
+	* lex.c (in_main_input_context): Likewise.
+
+	* pt.c (struct pending_templates): New.
+	(pending_templates, last_pending_template): Use it as a type.
+	(current_tinst_level): Change typo to "struct tinst_level *"
+	(reopen_tinst_level): Accept "struct tinst_level *", return decl.
+	(add_pending_template): Construct a "struct pending_template".
+	Replace TINST_LEVEL accessor macros with field access.
+	(push_tinst_level): Likewise, using GGC_NEW instead of make_node.
+	(pop_tinst_level): Likewise.
+	(instantiate_pending_templates): Likewise.  Factor common code used
+	when an instantiation has been done.
+	(outermost_tinst_level): Replace tree_last with loop.
+	(current_instantiation): Return a "struct tinst_level *".
+
 2007-08-24  Ollie Wild  <aaw@google.com>
 
 	* name-lookup.c (add_decl_to_level): Remove addition to vtables chain.
