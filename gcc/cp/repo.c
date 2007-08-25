@@ -347,7 +347,7 @@ repo_emit_p (tree decl)
    export from this translation unit.  */
 
 bool
-repo_export_class_p (tree class_type)
+repo_export_class_p (const_tree class_type)
 {
   if (!flag_use_repository)
     return false;

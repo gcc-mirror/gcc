@@ -319,7 +319,7 @@ extern int c_expand_decl (tree);
 extern int field_decl_cmp (const void *, const void *);
 extern void resort_sorted_fields (void *, void *, gt_pointer_operator,
 				  void *);
-extern bool has_c_linkage (tree decl);
+extern bool has_c_linkage (const_tree decl);
 
 /* Switches common to the C front ends.  */
 
@@ -677,7 +677,7 @@ extern tree c_common_unsigned_type (tree);
 extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
-extern bool decl_with_nonnull_addr_p (tree);
+extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_common_truthvalue_conversion (tree);
 extern void c_apply_type_quals_to_decl (int, tree);
 extern tree c_sizeof_or_alignof_type (tree, bool, int);
@@ -731,8 +731,8 @@ extern void c_common_finish (void);
 extern void c_common_parse_file (int);
 extern alias_set_type c_common_get_alias_set (tree);
 extern void c_register_builtin_type (tree, const char*);
-extern bool c_promoting_integer_type_p (tree);
-extern int self_promoting_args_p (tree);
+extern bool c_promoting_integer_type_p (const_tree);
+extern int self_promoting_args_p (const_tree);
 extern tree strip_array_types (tree);
 extern const_tree const_strip_array_types (const_tree);
 extern tree strip_pointer_operator (tree);
@@ -772,7 +772,7 @@ enum c_tree_code {
 
 #undef DEFTREECODE
 
-extern int anon_aggr_type_p (tree);
+extern int anon_aggr_type_p (const_tree);
 
 /* For a VAR_DECL that is an anonymous union, these are the various
    sub-variables that make up the anonymous union.  */
@@ -830,7 +830,7 @@ extern tree finish_label_address_expr (tree);
 extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 
-extern bool vector_types_convertible_p (tree t1, tree t2, bool emit_lax_note);
+extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 extern void c_expand_body (tree);

@@ -543,7 +543,7 @@ extern struct c_label_context_se *label_context_stack_se;
 extern struct c_label_context_vm *label_context_stack_vm;
 
 extern tree require_complete_type (tree);
-extern int same_translation_unit_p (tree, tree);
+extern int same_translation_unit_p (const_tree, const_tree);
 extern int comptypes (tree, tree);
 extern bool c_vla_type_p (const_tree);
 extern bool c_mark_addressable (tree);

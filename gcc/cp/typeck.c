@@ -51,7 +51,7 @@ static tree cp_pointer_int_sum (enum tree_code, tree, tree);
 static tree rationalize_conditional_expr (enum tree_code, tree);
 static int comp_ptr_ttypes_real (tree, tree, int);
 static bool comp_except_types (tree, tree, bool);
-static bool comp_array_types (tree, tree, bool);
+static bool comp_array_types (const_tree, const_tree, bool);
 static tree pointer_diff (tree, tree, tree);
 static tree get_delta_difference (tree, tree, bool, bool);
 static void casts_away_constness_r (tree *, tree *);
@@ -151,7 +151,7 @@ complete_type_or_else (tree type, tree value)
 /* Return truthvalue of whether type of EXP is instantiated.  */
 
 int
-type_unknown_p (tree exp)
+type_unknown_p (const_tree exp)
 {
   return (TREE_CODE (exp) == TREE_LIST
 	  || TREE_TYPE (exp) == unknown_type_node);
@@ -820,10 +820,10 @@ comp_except_types (tree a, tree b, bool exact)
    we should try to make use of that.  */
 
 bool
-comp_except_specs (tree t1, tree t2, bool exact)
+comp_except_specs (const_tree t1, const_tree t2, bool exact)
 {
-  tree probe;
-  tree base;
+  const_tree probe;
+  const_tree base;
   int  length = 0;
 
   if (t1 == t2)
@@ -867,7 +867,7 @@ comp_except_specs (tree t1, tree t2, bool exact)
    [] can match [size].  */
 
 static bool
-comp_array_types (tree t1, tree t2, bool allow_redeclaration)
+comp_array_types (const_tree t1, const_tree t2, bool allow_redeclaration)
 {
   tree d1;
   tree d2;
@@ -1154,7 +1154,7 @@ comptypes (tree t1, tree t2, int strict)
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
 
 bool
-at_least_as_qualified_p (tree type1, tree type2)
+at_least_as_qualified_p (const_tree type1, const_tree type2)
 {
   int q1 = cp_type_quals (type1);
   int q2 = cp_type_quals (type2);
@@ -1167,7 +1167,7 @@ at_least_as_qualified_p (tree type1, tree type2)
    more cv-qualified that TYPE1, and 0 otherwise.  */
 
 int
-comp_cv_qualification (tree type1, tree type2)
+comp_cv_qualification (const_tree type1, const_tree type2)
 {
   int q1 = cp_type_quals (type1);
   int q2 = cp_type_quals (type2);
@@ -1206,9 +1206,9 @@ comp_cv_qual_signature (tree type1, tree type2)
    element by element.  */
 
 bool
-compparms (tree parms1, tree parms2)
+compparms (const_tree parms1, const_tree parms2)
 {
-  tree t1, t2;
+  const_tree t1, t2;
 
   /* An unspecified parmlist matches any specified parmlist
      whose argument types don't need default promotions.  */
@@ -1398,7 +1398,7 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
    violates these rules.  */
 
 bool
-invalid_nonstatic_memfn_p (tree expr)
+invalid_nonstatic_memfn_p (const_tree expr)
 {
   if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
     {
@@ -1413,7 +1413,7 @@ invalid_nonstatic_memfn_p (tree expr)
    of the bitfield.  Otherwise, return NULL_TREE.  */
 
 tree
-is_bitfield_expr_with_lowered_type (tree exp)
+is_bitfield_expr_with_lowered_type (const_tree exp)
 {
   switch (TREE_CODE (exp))
     {
@@ -1452,7 +1452,7 @@ is_bitfield_expr_with_lowered_type (tree exp)
    than NULL_TREE.  */
 
 tree
-unlowered_expr_type (tree exp)
+unlowered_expr_type (const_tree exp)
 {
   tree type;
 
@@ -1633,7 +1633,7 @@ inline_conversion (tree exp)
    decay_conversion to one.  */
 
 int
-string_conv_p (tree totype, tree exp, int warn)
+string_conv_p (const_tree totype, const_tree exp, int warn)
 {
   tree t;
 
@@ -6853,7 +6853,7 @@ comp_ptr_ttypes (tree to, tree from)
    type or inheritance-related types, regardless of cv-quals.  */
 
 int
-ptr_reasonably_similar (tree to, tree from)
+ptr_reasonably_similar (const_tree to, const_tree from)
 {
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
@@ -6927,18 +6927,18 @@ cp_type_quals (const_tree type)
    arrays.  */
 
 bool
-cp_type_readonly (tree type)
+cp_type_readonly (const_tree type)
 {
-  type = strip_array_types (type);
+  type = const_strip_array_types (type);
   return TYPE_READONLY (type);
 }
 
 /* Returns nonzero if the TYPE contains a mutable member.  */
 
 bool
-cp_has_mutable_p (tree type)
+cp_has_mutable_p (const_tree type)
 {
-  type = strip_array_types (type);
+  type = const_strip_array_types (type);
 
   return CLASS_TYPE_P (type) && CLASSTYPE_HAS_MUTABLE (type);
 }
@@ -7110,7 +7110,7 @@ non_reference (tree t)
    how the lvalue is being used and so selects the error message.  */
 
 int
-lvalue_or_else (tree ref, enum lvalue_use use)
+lvalue_or_else (const_tree ref, enum lvalue_use use)
 {
   int win = lvalue_p (ref);
 

@@ -4606,11 +4606,11 @@ extern bool commutative_tree_code (enum tree_code);
 extern tree upper_bound_in_type (tree, tree);
 extern tree lower_bound_in_type (tree, tree);
 extern int operand_equal_for_phi_arg_p (const_tree, const_tree);
-extern bool empty_body_p (tree);
+extern bool empty_body_p (const_tree);
 extern tree call_expr_arg (tree, int);
 extern tree *call_expr_argp (tree, int);
 extern tree call_expr_arglist (tree);
-extern bool auto_var_in_fn_p (tree, tree);
+extern bool auto_var_in_fn_p (const_tree, const_tree);
 
 /* In stmt.c */
 
@@ -5142,8 +5142,8 @@ extern tree tree_mem_ref_addr (tree, tree);
 extern void copy_mem_ref_info (tree, tree);
 
 /* In tree-vrp.c */
-extern bool ssa_name_nonzero_p (tree);
-extern bool ssa_name_nonnegative_p (tree);
+extern bool ssa_name_nonzero_p (const_tree);
+extern bool ssa_name_nonnegative_p (const_tree);
 
 /* In tree-object-size.c.  */
 extern void init_object_sizes (void);

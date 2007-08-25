@@ -59,7 +59,7 @@ static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
 static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
-static bool java_decl_ok_for_sibcall (tree);
+static bool java_decl_ok_for_sibcall (const_tree);
 static tree java_get_callee_fndecl (const_tree);
 static void java_clear_binding_stack (void);
 
@@ -894,7 +894,7 @@ java_dump_tree (void *dump_info, tree t)
    SecurityManager.getClassContext().  */
 
 static bool
-java_decl_ok_for_sibcall (tree decl)
+java_decl_ok_for_sibcall (const_tree decl)
 {
   return (decl != NULL && DECL_CONTEXT (decl) == output_class
 	  && DECL_INLINE (decl));

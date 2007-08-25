@@ -228,7 +228,7 @@ pop_file_scope (void)
 
 /* c-pragma.c needs to query whether a decl has extern "C" linkage.  */
 bool
-has_c_linkage (tree decl)
+has_c_linkage (const_tree decl)
 {
   return DECL_EXTERN_C_P (decl);
 }

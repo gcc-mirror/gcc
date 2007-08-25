@@ -1774,7 +1774,7 @@ layout_vtable_decl (tree binfo, int n)
    have the same signature.  */
 
 int
-same_signature_p (tree fndecl, tree base_fndecl)
+same_signature_p (const_tree fndecl, const_tree base_fndecl)
 {
   /* One destructor overrides another if they are the same kind of
      destructor.  */

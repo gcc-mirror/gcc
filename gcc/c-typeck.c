@@ -74,12 +74,12 @@ static int missing_braces_mentioned;
 static int require_constant_value;
 static int require_constant_elements;
 
-static bool null_pointer_constant_p (tree);
+static bool null_pointer_constant_p (const_tree);
 static tree qualify_type (tree, tree);
-static int tagged_types_tu_compatible_p (tree, tree);
+static int tagged_types_tu_compatible_p (const_tree, const_tree);
 static int comp_target_types (tree, tree);
-static int function_types_compatible_p (tree, tree);
-static int type_lists_compatible_p (tree, tree);
+static int function_types_compatible_p (const_tree, const_tree);
+static int type_lists_compatible_p (const_tree, const_tree);
 static tree decl_constant_value_for_broken_optimization (tree);
 static tree lookup_field (tree, tree);
 static int convert_arguments (int, tree *, tree, tree, tree, tree);
@@ -102,15 +102,15 @@ static void set_nonincremental_init (void);
 static void set_nonincremental_init_from_string (tree);
 static tree find_init_member (tree);
 static void readonly_error (tree, enum lvalue_use);
-static int lvalue_or_else (tree, enum lvalue_use);
-static int lvalue_p (tree);
+static int lvalue_or_else (const_tree, enum lvalue_use);
+static int lvalue_p (const_tree);
 static void record_maybe_used_decl (tree);
-static int comptypes_internal (tree, tree);
+static int comptypes_internal (const_tree, const_tree);
 
 /* Return true if EXP is a null pointer constant, false otherwise.  */
 
 static bool
-null_pointer_constant_p (tree expr)
+null_pointer_constant_p (const_tree expr)
 {
   /* This should really operate on c_expr structures, but they aren't
      yet available everywhere required.  */
@@ -127,8 +127,8 @@ null_pointer_constant_p (tree expr)
 
 struct tagged_tu_seen_cache {
   const struct tagged_tu_seen_cache * next;
-  tree t1;
-  tree t2;
+  const_tree t1;
+  const_tree t2;
   /* The return value of tagged_types_tu_compatible_p if we had seen
      these two types already.  */
   int val;
@@ -869,10 +869,10 @@ comptypes (tree type1, tree type2)
    differs from comptypes, in that we don't free the seen types.  */
 
 static int
-comptypes_internal (tree type1, tree type2)
+comptypes_internal (const_tree type1, const_tree type2)
 {
-  tree t1 = type1;
-  tree t2 = type2;
+  const_tree t1 = type1;
+  const_tree t2 = type2;
   int attrval, val;
 
   /* Suppress errors caused by previously reported errors.  */
@@ -1045,7 +1045,7 @@ comp_target_types (tree ttl, tree ttr)
    being parsed, so if two trees have context chains ending in null,
    they're in the same translation unit.  */
 int
-same_translation_unit_p (tree t1, tree t2)
+same_translation_unit_p (const_tree t1, const_tree t2)
 {
   while (t1 && TREE_CODE (t1) != TRANSLATION_UNIT_DECL)
     switch (TREE_CODE_CLASS (TREE_CODE (t1)))
@@ -1077,7 +1077,7 @@ same_translation_unit_p (tree t1, tree t2)
 /* Allocate the seen two types, assuming that they are compatible. */
 
 static struct tagged_tu_seen_cache *
-alloc_tagged_tu_seen_cache (tree t1, tree t2)
+alloc_tagged_tu_seen_cache (const_tree t1, const_tree t2)
 {
   struct tagged_tu_seen_cache *tu = XNEW (struct tagged_tu_seen_cache);
   tu->next = tagged_tu_seen_base;
@@ -1125,7 +1125,7 @@ free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *tu_til)
    rules.  */
 
 static int
-tagged_types_tu_compatible_p (tree t1, tree t2)
+tagged_types_tu_compatible_p (const_tree t1, const_tree t2)
 {
   tree s1, s2;
   bool needs_warning = false;
@@ -1339,7 +1339,7 @@ tagged_types_tu_compatible_p (tree t1, tree t2)
    Otherwise, the argument types must match.  */
 
 static int
-function_types_compatible_p (tree f1, tree f2)
+function_types_compatible_p (const_tree f1, const_tree f2)
 {
   tree args1, args2;
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
@@ -1402,7 +1402,7 @@ function_types_compatible_p (tree f1, tree f2)
    or 2 for compatible with warning.  */
 
 static int
-type_lists_compatible_p (tree args1, tree args2)
+type_lists_compatible_p (const_tree args1, const_tree args2)
 {
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
   int val = 1;
@@ -1503,7 +1503,7 @@ type_lists_compatible_p (tree args1, tree args2)
 /* Compute the size to increment a pointer by.  */
 
 static tree
-c_size_in_bytes (tree type)
+c_size_in_bytes (const_tree type)
 {
   enum tree_code code = TREE_CODE (type);
 
@@ -3198,9 +3198,9 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
    Lvalues can have their address taken, unless they have C_DECL_REGISTER.  */
 
 static int
-lvalue_p (tree ref)
+lvalue_p (const_tree ref)
 {
-  enum tree_code code = TREE_CODE (ref);
+  const enum tree_code code = TREE_CODE (ref);
 
   switch (code)
     {
@@ -3274,7 +3274,7 @@ readonly_error (tree arg, enum lvalue_use use)
    how the lvalue is being used and so selects the error message.  */
 
 static int
-lvalue_or_else (tree ref, enum lvalue_use use)
+lvalue_or_else (const_tree ref, enum lvalue_use use)
 {
   int win = lvalue_p (ref);
 

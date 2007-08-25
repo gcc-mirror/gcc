@@ -166,7 +166,7 @@ struct lang_hooks_for_decls
   void (*final_write_globals) (void);
 
   /* True if this decl may be called via a sibcall.  */
-  bool (*ok_for_sibcall) (tree);
+  bool (*ok_for_sibcall) (const_tree);
 
   /* Return the COMDAT group into which this DECL should be placed.
      It is known that the DECL belongs in *some* COMDAT group when
@@ -179,7 +179,7 @@ struct lang_hooks_for_decls
 
   /* True if OpenMP should privatize what this DECL points to rather
      than the DECL itself.  */
-  bool (*omp_privatize_by_reference) (tree);
+  bool (*omp_privatize_by_reference) (const_tree);
 
   /* Return sharing kind if OpenMP sharing attribute of DECL is
      predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */

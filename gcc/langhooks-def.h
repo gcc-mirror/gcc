@@ -59,7 +59,7 @@ extern bool lhd_warn_unused_global_decl (const_tree);
 extern void lhd_incomplete_type_error (const_tree, const_tree);
 extern tree lhd_type_promotes_to (tree);
 extern void lhd_register_builtin_type (tree, const char *);
-extern bool lhd_decl_ok_for_sibcall (tree);
+extern bool lhd_decl_ok_for_sibcall (const_tree);
 extern const char *lhd_comdat_group (tree);
 extern tree lhd_expr_size (const_tree);
 extern size_t lhd_tree_size (enum tree_code);
@@ -204,7 +204,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_WRITE_GLOBALS write_global_declarations
 #define LANG_HOOKS_DECL_OK_FOR_SIBCALL	lhd_decl_ok_for_sibcall
 #define LANG_HOOKS_COMDAT_GROUP lhd_comdat_group
-#define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_tree_false
+#define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE hook_bool_const_tree_false
 #define LANG_HOOKS_OMP_PREDETERMINED_SHARING lhd_omp_predetermined_sharing
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR hook_bool_tree_bool_false
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE hook_bool_tree_bool_false

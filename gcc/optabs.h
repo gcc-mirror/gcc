@@ -667,7 +667,7 @@ enum can_compare_purpose
 
 /* Return the optab used for computing the given operation on the type
    given by the second argument.  */
-extern optab optab_for_tree_code (enum tree_code, tree);
+extern optab optab_for_tree_code (enum tree_code, const_tree);
 
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */

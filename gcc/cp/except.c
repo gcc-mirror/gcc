@@ -905,7 +905,7 @@ is_admissible_throw_operand (tree expr)
 #include "cfns.h"
 
 int
-nothrow_libfn_p (tree fn)
+nothrow_libfn_p (const_tree fn)
 {
   tree id;
 

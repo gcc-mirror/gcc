@@ -1583,7 +1583,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
    on ALIGNMENT bit boundary.  */
 
 bool 
-vect_can_force_dr_alignment_p (tree decl, unsigned int alignment)
+vect_can_force_dr_alignment_p (const_tree decl, unsigned int alignment)
 {
   if (TREE_CODE (decl) != VAR_DECL)
     return false;
@@ -2061,7 +2061,7 @@ supportable_widening_operation (enum tree_code code, tree stmt, tree vectype,
 
 bool
 supportable_narrowing_operation (enum tree_code code,
-				 tree stmt, tree vectype,
+				 const_tree stmt, const_tree vectype,
 				 enum tree_code *code1)
 {
   enum machine_mode vec_mode;

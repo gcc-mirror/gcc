@@ -474,7 +474,7 @@ tree gfc_truthvalue_conversion (tree);
 tree gfc_builtin_function (tree);
 
 /* In trans-openmp.c */
-bool gfc_omp_privatize_by_reference (tree);
+bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
 tree gfc_omp_clause_default_ctor (tree, tree);
 bool gfc_omp_disregard_value_expr (tree, bool);

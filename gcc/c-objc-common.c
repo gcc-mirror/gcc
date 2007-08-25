@@ -166,7 +166,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
 /* In C and ObjC, all decls have "C" linkage.  */
 bool
-has_c_linkage (tree decl ATTRIBUTE_UNUSED)
+has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 {
   return true;
 }

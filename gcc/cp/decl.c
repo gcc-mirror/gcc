@@ -9204,7 +9204,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
    operator.  */
 
 int
-copy_fn_p (tree d)
+copy_fn_p (const_tree d)
 {
   tree args;
   tree arg_type;
@@ -9260,7 +9260,7 @@ copy_fn_p (tree d)
    operator, false otherwise.  */
 
 bool
-move_fn_p (tree d)
+move_fn_p (const_tree d)
 {
   tree args;
   tree arg_type;
@@ -9359,7 +9359,7 @@ void grok_special_member_properties (tree decl)
    if the class has a constructor of the form X(X).  */
 
 int
-grok_ctor_properties (tree ctype, tree decl)
+grok_ctor_properties (const_tree ctype, const_tree decl)
 {
   int ctor_parm = copy_fn_p (decl);
 

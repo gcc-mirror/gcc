@@ -330,7 +330,7 @@ lhd_tree_size (enum tree_code c ATTRIBUTE_UNUSED)
    sibcall.  */
 
 bool
-lhd_decl_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED)
+lhd_decl_ok_for_sibcall (const_tree decl ATTRIBUTE_UNUSED)
 {
   return true;
 }

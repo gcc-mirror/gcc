@@ -43,7 +43,7 @@ static tree build_cplus_array_type_1 (tree, tree);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
-static cp_lvalue_kind lvalue_p_1 (tree, int);
+static cp_lvalue_kind lvalue_p_1 (const_tree, int);
 static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
@@ -58,7 +58,7 @@ static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
    nonzero, rvalues of class type are considered lvalues.  */
 
 static cp_lvalue_kind
-lvalue_p_1 (tree ref,
+lvalue_p_1 (const_tree ref,
 	    int treat_class_rvalues_as_lvalues)
 {
   cp_lvalue_kind op1_lvalue_kind = clk_none;
@@ -223,7 +223,7 @@ lvalue_p_1 (tree ref,
    computes the C++ definition of lvalue.  */
 
 cp_lvalue_kind
-real_lvalue_p (tree ref)
+real_lvalue_p (const_tree ref)
 {
   return lvalue_p_1 (ref,
 		     /*treat_class_rvalues_as_lvalues=*/0);
@@ -233,7 +233,7 @@ real_lvalue_p (tree ref)
    considered lvalues.  */
 
 int
-lvalue_p (tree ref)
+lvalue_p (const_tree ref)
 {
   return
     (lvalue_p_1 (ref, /*class rvalue ok*/ 1) != clk_none);
@@ -243,7 +243,7 @@ lvalue_p (tree ref)
    constant-expression. */
 
 bool
-builtin_valid_in_constant_expr_p (tree decl)
+builtin_valid_in_constant_expr_p (const_tree decl)
 {
   /* At present BUILT_IN_CONSTANT_P is the only builtin we're allowing
      in constant-expressions.  We may want to add other builtins later. */
@@ -1673,7 +1673,7 @@ decl_namespace_context (tree decl)
    nested, or false otherwise.  */
 
 bool
-decl_anon_ns_mem_p (tree decl)
+decl_anon_ns_mem_p (const_tree decl)
 {
   while (1)
     {
@@ -1971,9 +1971,9 @@ error_type (tree arg)
 /* Does FUNCTION use a variable-length argument list?  */
 
 int
-varargs_function_p (tree function)
+varargs_function_p (const_tree function)
 {
-  tree parm = TYPE_ARG_TYPES (TREE_TYPE (function));
+  const_tree parm = TYPE_ARG_TYPES (TREE_TYPE (function));
   for (; parm; parm = TREE_CHAIN (parm))
     if (TREE_VALUE (parm) == void_type_node)
       return 0;
@@ -1983,9 +1983,9 @@ varargs_function_p (tree function)
 /* Returns 1 if decl is a member of a class.  */
 
 int
-member_p (tree decl)
+member_p (const_tree decl)
 {
-  const tree ctx = DECL_CONTEXT (decl);
+  const_tree const ctx = DECL_CONTEXT (decl);
   return (ctx && TYPE_P (ctx));
 }
 
@@ -2039,7 +2039,7 @@ maybe_dummy_object (tree type, tree* binfop)
 /* Returns 1 if OB is a placeholder object, or a pointer to one.  */
 
 int
-is_dummy_object (tree ob)
+is_dummy_object (const_tree ob)
 {
   if (TREE_CODE (ob) == INDIRECT_REF)
     ob = TREE_OPERAND (ob, 0);
@@ -2050,9 +2050,9 @@ is_dummy_object (tree ob)
 /* Returns 1 iff type T is a POD type, as defined in [basic.types].  */
 
 int
-pod_type_p (tree t)
+pod_type_p (const_tree t)
 {
-  t = strip_array_types (t);
+  t = const_strip_array_types (t);
 
   if (t == error_mark_node)
     return 1;
@@ -2087,9 +2087,9 @@ class_tmpl_impl_spec_p (const_tree t)
    zeros in it.  */
 
 int
-zero_init_p (tree t)
+zero_init_p (const_tree t)
 {
-  t = strip_array_types (t);
+  t = const_strip_array_types (t);
 
   if (t == error_mark_node)
     return 1;
@@ -2420,7 +2420,7 @@ init_tree (void)
    predicate to test whether or not DECL is a special function.  */
 
 special_function_kind
-special_function_p (tree decl)
+special_function_p (const_tree decl)
 {
   /* Rather than doing all this stuff with magic names, we should
      probably have a field of type `special_function_kind' in
