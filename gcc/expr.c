@@ -4519,9 +4519,8 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       dest_mem = store_by_pieces (dest_mem,
 				  str_copy_len, builtin_strncpy_read_str,
 				  (void *) TREE_STRING_POINTER (exp),
-				  MEM_ALIGN (target),
-				  exp_len > str_copy_len ? 1 : 0,
-				  false);
+				  MEM_ALIGN (target), false,
+				  exp_len > str_copy_len ? 1 : 0);
       if (exp_len > str_copy_len)
 	clear_storage (dest_mem, GEN_INT (exp_len - str_copy_len),
 		       BLOCK_OP_NORMAL);

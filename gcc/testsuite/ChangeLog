@@ -1,3 +1,7 @@
+2007-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/array-init-2.c: New test.
+
 2007-08-24  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33178
