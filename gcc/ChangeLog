@@ -1,3 +1,7 @@
+2007-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (store_expr): Fix order of store_by_pieces arguments.
+
 2007-08-24  Sandra Loosemore  <sandra@codesourcery.com>
             Nigel Stephens <nigel@mips.com>
 
@@ -8,7 +12,7 @@
 	* expr.c (SET_BY_PIECES_P): Define.
 	(can_store_by_pieces, store_by_pieces): Add MEMSETP argument; use
 	it to decide whether to use SET_BY_PIECES_P or STORE_BY_PIECES_P.
-	(store_expr):  Pass MEMSETP argument to can_store_by_pieces and
+	(store_expr): Pass MEMSETP argument to can_store_by_pieces and
 	store_by_pieces.
 	* expr.h (SET_RATIO): Define.
 	(can_store_by_pieces, store_by_pieces):	Update prototypes.
