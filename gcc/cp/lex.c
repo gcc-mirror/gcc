@@ -856,11 +856,11 @@ make_aggr_type (enum tree_code code)
 bool
 in_main_input_context (void)
 {
-  tree tl = outermost_tinst_level();
+  struct tinst_level *tl = outermost_tinst_level();
 
   if (tl)
     return strcmp (main_input_filename,
-		   LOCATION_FILE (TINST_LOCATION (tl))) == 0;
+                  LOCATION_FILE (tl->locus)) == 0;
   else
     return strcmp (main_input_filename, input_filename) == 0;
 }

@@ -52,12 +52,14 @@ typedef int (*tree_fn_t) (tree, void*);
 
 /* The PENDING_TEMPLATES is a TREE_LIST of templates whose
    instantiations have been deferred, either because their definitions
-   were not yet available, or because we were putting off doing the work.
-   The TREE_PURPOSE of each entry is either a DECL (for a function or
-   static data member), or a TYPE (for a class) indicating what we are
-   hoping to instantiate.  The TREE_VALUE is not used.  */
-static GTY(()) tree pending_templates;
-static GTY(()) tree last_pending_template;
+   were not yet available, or because we were putting off doing the work.  */
+struct pending_template GTY (()) {
+  struct pending_template *next;
+  struct tinst_level *tinst;
+};
+
+static GTY(()) struct pending_template *pending_templates;
+static GTY(()) struct pending_template *last_pending_template;
 
 int processing_template_parmlist;
 static int template_header_count;
@@ -65,7 +67,7 @@ static int template_header_count;
 static GTY(()) tree saved_trees;
 static VEC(int,heap) *inline_parm_levels;
 
-static GTY(()) tree current_tinst_level;
+static GTY(()) struct tinst_level *current_tinst_level;
 
 static GTY(()) tree saved_access_scope;
 
@@ -104,7 +106,7 @@ static int unify (tree, tree, tree, tree, int);
 static void add_pending_template (tree);
 static int push_tinst_level (tree);
 static void pop_tinst_level (void);
-static void reopen_tinst_level (tree);
+static tree reopen_tinst_level (struct tinst_level *);
 static tree tsubst_initializer_list (tree, tree);
 static tree get_class_bindings (tree, tree, tree);
 static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t,
@@ -5139,7 +5141,7 @@ add_pending_template (tree d)
   tree ti = (TYPE_P (d)
 	     ? CLASSTYPE_TEMPLATE_INFO (d)
 	     : DECL_TEMPLATE_INFO (d));
-  tree pt;
+  struct pending_template *pt;
   int level;
 
   if (TI_PENDING_TEMPLATE_FLAG (ti))
@@ -5148,14 +5150,16 @@ add_pending_template (tree d)
   /* We are called both from instantiate_decl, where we've already had a
      tinst_level pushed, and instantiate_template, where we haven't.
      Compensate.  */
-  level = !(current_tinst_level && TINST_DECL (current_tinst_level) == d);
+  level = !current_tinst_level || current_tinst_level->decl != d;
 
   if (level)
     push_tinst_level (d);
 
-  pt = tree_cons (current_tinst_level, d, NULL_TREE);
+  pt = GGC_NEW (struct pending_template);
+  pt->next = NULL;
+  pt->tinst = current_tinst_level;
   if (last_pending_template)
-    TREE_CHAIN (last_pending_template) = pt;
+    last_pending_template->next = pt;
   else
     pending_templates = pt;
 
@@ -5974,7 +5978,7 @@ static int last_template_error_tick;
 static int
 push_tinst_level (tree d)
 {
-  tree new;
+  struct tinst_level *new;
 
   if (tinst_depth >= max_tinst_depth)
     {
@@ -5994,11 +5998,11 @@ push_tinst_level (tree d)
       return 0;
     }
 
-  new = make_node (TINST_LEVEL);
-  TINST_DECL (new) = d;
-  TINST_LOCATION (new) = input_location;
-  TINST_IN_SYSTEM_HEADER_P (new) = in_system_header;
-  TREE_CHAIN (new) = current_tinst_level;
+  new = GGC_NEW (struct tinst_level);
+  new->decl = d;
+  new->locus = input_location;
+  new->in_system_header_p = in_system_header;
+  new->next = current_tinst_level;
   current_tinst_level = new;
 
   ++tinst_depth;
@@ -6017,41 +6021,44 @@ push_tinst_level (tree d)
 static void
 pop_tinst_level (void)
 {
-  tree old = current_tinst_level;
-
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
-  input_location = TINST_LOCATION (old);
-  in_system_header = TINST_IN_SYSTEM_HEADER_P (old);
-  current_tinst_level = TREE_CHAIN (old);
+  input_location = current_tinst_level->locus;
+  in_system_header = current_tinst_level->in_system_header_p;
+  current_tinst_level = current_tinst_level->next;
   --tinst_depth;
   ++tinst_level_tick;
 }
 
 /* We're instantiating a deferred template; restore the template
    instantiation context in which the instantiation was requested, which
-   is one step out from LEVEL.  */
+   is one step out from LEVEL.  Return the corresponding DECL or TYPE.  */
 
-static void
-reopen_tinst_level (tree level)
+static tree
+reopen_tinst_level (struct tinst_level *level)
 {
-  tree t;
+  struct tinst_level *t;
 
   tinst_depth = 0;
-  for (t = level; t; t = TREE_CHAIN (t))
+  for (t = level; t; t = t->next)
     ++tinst_depth;
 
   current_tinst_level = level;
   pop_tinst_level ();
+  return level->decl;
 }
 
 /* Returns the TINST_LEVEL which gives the original instantiation
    context.  */
 
-tree
+struct tinst_level *
 outermost_tinst_level (void)
 {
-  return tree_last (current_tinst_level);
+  struct tinst_level *level = current_tinst_level;
+  if (level)
+    while (level->next)
+      level = level->next;
+  return level;
 }
 
 /* DECL is a friend FUNCTION_DECL or TEMPLATE_DECL.  ARGS is the
@@ -14486,8 +14493,6 @@ out:
 void
 instantiate_pending_templates (int retries)
 {
-  tree *t;
-  tree last = NULL_TREE;
   int reconsider;
   location_t saved_loc = input_location;
   int saved_in_system_header = in_system_header;
@@ -14497,7 +14502,7 @@ instantiate_pending_templates (int retries)
      to avoid infinite loop.  */
   if (pending_templates && retries >= max_tinst_depth)
     {
-      tree decl = TREE_VALUE (pending_templates);
+      tree decl = pending_templates->tinst->decl;
 
       error ("template instantiation depth exceeds maximum of %d"
 	     " instantiating %q+D, possibly from virtual table generation"
@@ -14511,14 +14516,13 @@ instantiate_pending_templates (int retries)
 
   do
     {
+      struct pending_template **t = &pending_templates;
+      struct pending_template *last = NULL;
       reconsider = 0;
-
-      t = &pending_templates;
       while (*t)
 	{
-	  tree instantiation = TREE_VALUE (*t);
-
-	  reopen_tinst_level (TREE_PURPOSE (*t));
+	  tree instantiation = reopen_tinst_level ((*t)->tinst);
+	  bool complete = false;
 
 	  if (TYPE_P (instantiation))
 	    {
@@ -14539,15 +14543,7 @@ instantiate_pending_templates (int retries)
 		    reconsider = 1;
 		}
 
-	      if (COMPLETE_TYPE_P (instantiation))
-		/* If INSTANTIATION has been instantiated, then we don't
-		   need to consider it again in the future.  */
-		*t = TREE_CHAIN (*t);
-	      else
-		{
-		  last = *t;
-		  t = &TREE_CHAIN (*t);
-		}
+	      complete = COMPLETE_TYPE_P (instantiation);
 	    }
 	  else
 	    {
@@ -14562,19 +14558,21 @@ instantiate_pending_templates (int retries)
 		    reconsider = 1;
 		}
 
-	      if (DECL_TEMPLATE_SPECIALIZATION (instantiation)
-		  || DECL_TEMPLATE_INSTANTIATED (instantiation))
-		/* If INSTANTIATION has been instantiated, then we don't
-		   need to consider it again in the future.  */
-		*t = TREE_CHAIN (*t);
-	      else
-		{
-		  last = *t;
-		  t = &TREE_CHAIN (*t);
-		}
+	      complete = (DECL_TEMPLATE_SPECIALIZATION (instantiation)
+			  || DECL_TEMPLATE_INSTANTIATED (instantiation));
+	    }
+
+	  if (complete)
+	    /* If INSTANTIATION has been instantiated, then we don't
+	       need to consider it again in the future.  */
+	    *t = (*t)->next;
+	  else
+	    {
+	      last = *t;
+	      t = &(*t)->next;
 	    }
 	  tinst_depth = 0;
-	  current_tinst_level = NULL_TREE;
+	  current_tinst_level = NULL;
 	}
       last_pending_template = last;
     }
@@ -14823,7 +14821,7 @@ record_last_problematic_instantiation (void)
   last_template_error_tick = tinst_level_tick;
 }
 
-tree
+struct tinst_level *
 current_instantiation (void)
 {
   return current_tinst_level;
