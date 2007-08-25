@@ -1,3 +1,9 @@
+2007-08-26  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	PR bootstrap/30620
+	* Makefile.in (libbackend.o): Add gcov-iov.h dependency and
+	pass defines needed for version.c.
+
 2007-08-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (--debug-prefix-map check): Change assembler
