@@ -1,3 +1,7 @@
+2007-08-25  Hans Kester  <hans.kester@ellips.nl>
+
+	* config.gcc : Add x86_64-elf target.
+
 2007-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (store_expr): Fix order of store_by_pieces arguments.
