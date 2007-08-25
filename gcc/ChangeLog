@@ -1,3 +1,52 @@
+2007-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (vector_types_convertible_p,
+	decl_with_nonnull_addr_p, c_promoting_integer_type_p,
+	self_promoting_args_p): Constify.
+	* c-common.h (has_c_linkage, decl_with_nonnull_addr_p,
+	c_promoting_integer_type_p, self_promoting_args_p,
+	anon_aggr_type_p, vector_types_convertible_p): Likewise.
+	* c-decl.c (anon_aggr_type_p): Likewise.
+	* * c-dump.c (dump_stmt): Likewise.
+	* c-objc-common.c (has_c_linkage): Likewise.
+	* c-tree.h (same_translation_unit_p): Likewise.
+	* c-typeck.c (null_pointer_constant_p,
+	tagged_types_tu_compatible_p, function_types_compatible_p,
+	type_lists_compatible_p, lvalue_or_else, lvalue_p,
+	comptypes_internal, struct tagged_tu_seen_cache,
+	same_translation_unit_p, alloc_tagged_tu_seen_cache,
+	c_size_in_bytes): Likewise.
+	* ggc-common.c (compare_ptr_data, hash_descriptor, eq_descriptor,
+	hash_ptr, eq_ptr): Likewise.
+	* langhooks-def.h (lhd_decl_ok_for_sibcall,
+	LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE): Likewise.
+	* langhooks.c (lhd_decl_ok_for_sibcall): Likewise.
+	* langhooks.h (ok_for_sibcall, omp_privatize_by_reference):
+	Likewise.
+	* optabs.c (optab_for_tree_code): Likewise.
+	* optabs.h (optab_for_tree_code): Likewise.
+	* rtl.h (simplify_rtx): Likewise.
+	* simplify-rtx.c (simplify_rtx): Likewise.
+	* tree-dump.c (queue, queue_and_dump_index, queue_and_dump_type,
+	dump_flag, dump_node): Likewise.
+	* tree-dump.h (struct dump_info, dump_stmt, queue_and_dump_index,
+	queue_and_dump_type, dump_flag): Likewise.
+	* tree-flow.h (vect_can_force_dr_alignment_p): Likewise.
+	* tree-pass.h (dump_node): Likewise.
+	* tree-vectorizer.c (vect_can_force_dr_alignment_p,
+	supportable_narrowing_operation): Likewise.
+	* tree-vectorizer.h (vect_can_force_dr_alignment_p,
+	supportable_narrowing_operation): Likewise.
+	* tree-vrp.c (needs_overflow_infinity, supports_overflow_infinity,
+	is_negative_overflow_infinity, is_positive_overflow_infinity,
+	is_overflow_infinity, vrp_val_is_max, vrp_val_is_min,
+	nonnull_arg_p, get_value_range, vrp_operand_equal_p,
+	update_value_range, add_equivalence, ssa_name_nonnegative_p,
+	ssa_name_nonzero_p, fp_predicate): Likewise.
+	* tree.c (auto_var_in_fn_p, empty_body_p): Likewise.
+	* tree.h (empty_body_p, auto_var_in_fn_p, ssa_name_nonzero_p,
+	ssa_name_nonnegative_p): Likewise.
+
 2007-08-25  Hans Kester  <hans.kester@ellips.nl>
 
 	* config.gcc : Add x86_64-elf target.

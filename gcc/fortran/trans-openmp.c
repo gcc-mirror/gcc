@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
    than the DECL itself.  */
 
 bool
-gfc_omp_privatize_by_reference (tree decl)
+gfc_omp_privatize_by_reference (const_tree decl)
 {
   tree type = TREE_TYPE (decl);
 

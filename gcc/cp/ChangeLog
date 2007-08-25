@@ -1,3 +1,45 @@
+2007-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (sufficient_parms_p): Constify.
+	* class.c (same_signature_p): Likewise.
+	* cp-gimplify.c (is_invisiref_parm,
+	cxx_omp_privatize_by_reference): Likewise.
+	* cp-objcp-common.c (has_c_linkage): Likewise.
+	* cp-tree.h (NON_THUNK_FUNCTION_CHECK, THUNK_FUNCTION_CHECK,
+	sufficient_parms_p, same_signature_p, copy_fn_p, move_fn_p,
+	grok_ctor_properties, nothrow_libfn_p, skip_artificial_parms_for,
+	num_artificial_parms_for, comp_template_parms,
+	template_parameter_pack_p, any_dependent_template_arguments_p,
+	any_type_dependent_arguments_p, any_value_dependent_elements_p,
+	repo_export_class_p, cxx_omp_privatize_by_reference, pod_type_p,
+	zero_init_p, member_p, cp_lvalue_kind,
+	builtin_valid_in_constant_expr_p, decl_anon_ns_mem_p,
+	varargs_function_p, is_dummy_object, special_function_kind,
+	string_conv_p, type_unknown_p, comp_except_specs, compparms,
+	comp_cv_qualification, is_bitfield_expr_with_lowered_type,
+	unlowered_expr_type, ptr_reasonably_similar, cp_type_readonly,
+	cp_has_mutable_p, at_least_as_qualified_p,
+	invalid_nonstatic_memfn_p, lvalue_or_else, lvalue_p): Likewise.
+	* decl.c (copy_fn_p, move_fn_p, grok_ctor_properties): Likewise.
+	* except.c (nothrow_libfn_p): Likewise.
+	* method.c (skip_artificial_parms_for, num_artificial_parms_for):
+	Likewise.
+	* pt.c (comp_template_parms, template_parameter_pack_p,
+	any_type_dependent_arguments_p, any_value_dependent_elements_p,
+	any_dependent_template_arguments_p): Likewise.
+	* repo.c (repo_export_class_p): Likewise.
+	* semantics.c (anon_aggr_type_p): Likewise.
+	* tree.c (lvalue_p_1, real_lvalue_p, lvalue_p,
+	builtin_valid_in_constant_expr_p, decl_anon_ns_mem_p,
+	varargs_function_p, member_p, is_dummy_object, pod_type_p,
+	zero_init_p, special_function_p): Likewise.
+	* typeck.c (comp_array_types, type_unknown_p, comp_except_specs,
+	comp_array_types, at_least_as_qualified_p, comp_cv_qualification,
+	compparms, invalid_nonstatic_memfn_p,
+	is_bitfield_expr_with_lowered_type, unlowered_expr_type,
+	string_conv_p, ptr_reasonably_similar, cp_type_readonly,
+	cp_has_mutable_p, lvalue_or_else): Likewise.
+
 2007-08-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* decl.c (cp_tree_node_structure): Kill TINST_LEVEL case.

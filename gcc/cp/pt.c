@@ -2264,10 +2264,10 @@ check_explicit_specialization (tree declarator,
    DECL_TEMPLATE_PARMS.  */
 
 int
-comp_template_parms (tree parms1, tree parms2)
+comp_template_parms (const_tree parms1, const_tree parms2)
 {
-  tree p1;
-  tree p2;
+  const_tree p1;
+  const_tree p2;
 
   if (parms1 == parms2)
     return 1;
@@ -2318,7 +2318,7 @@ comp_template_parms (tree parms1, tree parms2)
 
 /* Determine whether PARM is a parameter pack.  */
 bool 
-template_parameter_pack_p (tree parm)
+template_parameter_pack_p (const_tree parm)
 {
   /* Determine if we have a non-type template parameter pack.  */
   if (TREE_CODE (parm) == PARM_DECL)
@@ -15320,7 +15320,7 @@ type_dependent_expression_p (tree expression)
    contains a type-dependent expression.  */
 
 bool
-any_type_dependent_arguments_p (tree args)
+any_type_dependent_arguments_p (const_tree args)
 {
   while (args)
     {
@@ -15337,7 +15337,7 @@ any_type_dependent_arguments_p (tree args)
    expressions) contains any value-dependent expressions.  */
 
 bool
-any_value_dependent_elements_p (tree list)
+any_value_dependent_elements_p (const_tree list)
 {
   for (; list; list = TREE_CHAIN (list))
     if (value_dependent_expression_p (TREE_VALUE (list)))
@@ -15432,7 +15432,7 @@ any_template_arguments_need_structural_equality_p (tree args)
    any dependent arguments.  */
 
 bool
-any_dependent_template_arguments_p (tree args)
+any_dependent_template_arguments_p (const_tree args)
 {
   int i;
   int j;
@@ -15444,7 +15444,7 @@ any_dependent_template_arguments_p (tree args)
 
   for (i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
     {
-      tree level = TMPL_ARGS_LEVEL (args, i + 1);
+      const_tree level = TMPL_ARGS_LEVEL (args, i + 1);
       for (j = 0; j < TREE_VEC_LENGTH (level); ++j)
 	if (dependent_template_arg_p (TREE_VEC_ELT (level, j)))
 	  return true;

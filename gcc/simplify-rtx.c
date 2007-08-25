@@ -5019,10 +5019,10 @@ simplify_gen_subreg (enum machine_mode outermode, rtx op,
     simplification and 1 for tree simplification.  */
 
 rtx
-simplify_rtx (rtx x)
+simplify_rtx (const_rtx x)
 {
-  enum rtx_code code = GET_CODE (x);
-  enum machine_mode mode = GET_MODE (x);
+  const enum rtx_code code = GET_CODE (x);
+  const enum machine_mode mode = GET_MODE (x);
 
   switch (GET_RTX_CLASS (code))
     {

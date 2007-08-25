@@ -78,7 +78,7 @@ extern int dump_enabled_p (enum tree_dump_index);
 extern int dump_initialized_p (enum tree_dump_index);
 extern FILE *dump_begin (enum tree_dump_index, int *);
 extern void dump_end (enum tree_dump_index, FILE *);
-extern void dump_node (tree, int, FILE *);
+extern void dump_node (const_tree, int, FILE *);
 extern int dump_switch_p (const char *);
 extern const char *dump_flag_name (enum tree_dump_index);
 

@@ -1172,7 +1172,7 @@ check_main_parameter_types (tree decl)
    in effect, emit a note telling the user about that option if such
    a note has not previously been emitted.  */
 bool
-vector_types_convertible_p (tree t1, tree t2, bool emit_lax_note)
+vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
 {
   static bool emitted_lax_note = false;
   bool convertible_lax;
@@ -2896,7 +2896,7 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
    NULL.  */
 
 bool
-decl_with_nonnull_addr_p (tree expr)
+decl_with_nonnull_addr_p (const_tree expr)
 {
   return (DECL_P (expr)
 	  && (TREE_CODE (expr) == PARM_DECL
@@ -4097,7 +4097,7 @@ def_builtin_1 (enum built_in_function fncode,
    integral promotions defined in ISO C99 6.3.1.1/2.  */
 
 bool
-c_promoting_integer_type_p (tree t)
+c_promoting_integer_type_p (const_tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -4127,9 +4127,9 @@ c_promoting_integer_type_p (tree t)
    and none of their types is affected by default promotions.  */
 
 int
-self_promoting_args_p (tree parms)
+self_promoting_args_p (const_tree parms)
 {
-  tree t;
+  const_tree t;
   for (t = parms; t; t = TREE_CHAIN (t))
     {
       tree type = TREE_VALUE (t);

@@ -6359,7 +6359,7 @@ get_type_static_bounds (const_tree type, mpz_t min, mpz_t max)
    variable defined in function FN.  */
 
 bool
-auto_var_in_fn_p (tree var, tree fn)
+auto_var_in_fn_p (const_tree var, const_tree fn)
 {
   return (DECL_P (var) && DECL_CONTEXT (var) == fn
 	  && (((TREE_CODE (var) == VAR_DECL || TREE_CODE (var) == PARM_DECL)
@@ -8642,10 +8642,10 @@ walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
    empty statements.  */
 
 bool
-empty_body_p (tree stmt)
+empty_body_p (const_tree stmt)
 {
-  tree_stmt_iterator i;
-  tree body;
+  const_tree_stmt_iterator i;
+  const_tree body;
 
   if (IS_EMPTY_STMT (stmt))
     return true;
@@ -8656,8 +8656,8 @@ empty_body_p (tree stmt)
   else
     return false;
 
-  for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
-    if (!empty_body_p (tsi_stmt (i)))
+  for (i = ctsi_start (body); !ctsi_end_p (i); ctsi_next (&i))
+    if (!empty_body_p (ctsi_stmt (i)))
       return false;
 
   return true;

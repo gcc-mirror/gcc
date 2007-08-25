@@ -467,7 +467,7 @@ null_ptr_cst_p (tree t)
    ellipsis.  */
 
 bool
-sufficient_parms_p (tree parmlist)
+sufficient_parms_p (const_tree parmlist)
 {
   for (; parmlist && parmlist != void_list_node;
        parmlist = TREE_CHAIN (parmlist))

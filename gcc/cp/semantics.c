@@ -436,7 +436,7 @@ add_decl_expr (tree decl)
    declared is not an anonymous union" [class.union].  */
 
 int
-anon_aggr_type_p (tree node)
+anon_aggr_type_p (const_tree node)
 {
   return ANON_AGGR_TYPE_P (node);
 }

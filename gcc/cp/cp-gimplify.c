@@ -590,7 +590,7 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
 }
 
 static inline bool
-is_invisiref_parm (tree t)
+is_invisiref_parm (const_tree t)
 {
   return ((TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
 	  && DECL_BY_REFERENCE (t));
@@ -928,7 +928,7 @@ cxx_omp_clause_dtor (tree clause, tree decl)
    than the DECL itself.  */
 
 bool
-cxx_omp_privatize_by_reference (tree decl)
+cxx_omp_privatize_by_reference (const_tree decl)
 {
   return is_invisiref_parm (decl);
 }

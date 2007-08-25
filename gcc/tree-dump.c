@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "real.h"
 #include "fixed-value.h"
 
-static unsigned int queue (dump_info_p, tree, int);
+static unsigned int queue (dump_info_p, const_tree, int);
 static void dump_index (dump_info_p, unsigned int);
 static void dequeue_and_dump (dump_info_p);
 static void dump_new_line (dump_info_p);
@@ -45,7 +45,7 @@ static int dump_enable_all (int, int);
    assigned to T.  */
 
 static unsigned int
-queue (dump_info_p di, tree t, int flags)
+queue (dump_info_p di, const_tree t, int flags)
 {
   dump_queue_p dq;
   dump_node_info_p dni;
@@ -94,7 +94,7 @@ dump_index (dump_info_p di, unsigned int index)
    index of T is printed.  */
 
 void
-queue_and_dump_index (dump_info_p di, const char *field, tree t, int flags)
+queue_and_dump_index (dump_info_p di, const char *field, const_tree t, int flags)
 {
   unsigned int index;
   splay_tree_node n;
@@ -122,7 +122,7 @@ queue_and_dump_index (dump_info_p di, const char *field, tree t, int flags)
 /* Dump the type of T.  */
 
 void
-queue_and_dump_type (dump_info_p di, tree t)
+queue_and_dump_type (dump_info_p di, const_tree t)
 {
   queue_and_dump_index (di, "type", TREE_TYPE (t), DUMP_NONE);
 }
@@ -735,7 +735,7 @@ dequeue_and_dump (dump_info_p di)
 /* Return nonzero if FLAG has been specified for the dump, and NODE
    is not the root node of the dump.  */
 
-int dump_flag (dump_info_p di, int flag, tree node)
+int dump_flag (dump_info_p di, int flag, const_tree node)
 {
   return (di->flags & flag) && (node != di->node);
 }
@@ -743,7 +743,7 @@ int dump_flag (dump_info_p di, int flag, tree node)
 /* Dump T, and all its children, on STREAM.  */
 
 void
-dump_node (tree t, int flags, FILE *stream)
+dump_node (const_tree t, int flags, FILE *stream)
 {
   struct dump_info di;
   dump_queue_p dq;

@@ -58,7 +58,7 @@ struct dump_info
   /* The stream on which to dump the information.  */
   FILE *stream;
   /* The original node.  */
-  tree node;
+  const_tree node;
   /* User flags.  */
   int flags;
   /* The next unused node index.  */
@@ -85,13 +85,13 @@ extern void dump_pointer (dump_info_p, const char *, void *);
 extern void dump_int (dump_info_p, const char *, int);
 extern void dump_string (dump_info_p, const char *);
 extern void dump_string_field (dump_info_p, const char *, const char *);
-extern void dump_stmt (dump_info_p, tree);
-extern void queue_and_dump_index (dump_info_p, const char *, tree, int);
-extern void queue_and_dump_type (dump_info_p, tree);
+extern void dump_stmt (dump_info_p, const_tree);
+extern void queue_and_dump_index (dump_info_p, const char *, const_tree, int);
+extern void queue_and_dump_type (dump_info_p, const_tree);
 extern void dump_function (enum tree_dump_index, tree);
 extern void dump_function_to_file (tree, FILE *, int);
 extern void debug_function (tree, int);
-extern int dump_flag (dump_info_p, int, tree);
+extern int dump_flag (dump_info_p, int, const_tree);
 
 extern unsigned int dump_register (const char *, const char *, const char *, 
 				   int, int);

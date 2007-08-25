@@ -1,3 +1,7 @@
+2007-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lang.c (java_decl_ok_for_sibcall): Likewise.
+
 2007-08-21  Paul Brook  <paul@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>

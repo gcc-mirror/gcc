@@ -357,8 +357,8 @@ call_alloc (void **slot, void *state_p)
 static int
 compare_ptr_data (const void *p1_p, const void *p2_p)
 {
-  struct ptr_data *p1 = *(struct ptr_data *const *)p1_p;
-  struct ptr_data *p2 = *(struct ptr_data *const *)p2_p;
+  const struct ptr_data *const p1 = *(const struct ptr_data *const *)p1_p;
+  const struct ptr_data *const p2 = *(const struct ptr_data *const *)p2_p;
   return (((size_t)p1->new_addr > (size_t)p2->new_addr)
 	  - ((size_t)p1->new_addr < (size_t)p2->new_addr));
 }
@@ -794,7 +794,7 @@ static htab_t loc_hash;
 static hashval_t
 hash_descriptor (const void *p)
 {
-  const struct loc_descriptor *d = p;
+  const struct loc_descriptor *const d = p;
 
   return htab_hash_pointer (d->function) | d->line;
 }
@@ -802,8 +802,8 @@ hash_descriptor (const void *p)
 static int
 eq_descriptor (const void *p1, const void *p2)
 {
-  const struct loc_descriptor *d = p1;
-  const struct loc_descriptor *d2 = p2;
+  const struct loc_descriptor *const d = p1;
+  const struct loc_descriptor *const d2 = p2;
 
   return (d->file == d2->file && d->line == d2->line
 	  && d->function == d2->function);
@@ -822,7 +822,7 @@ struct ptr_hash_entry
 static hashval_t
 hash_ptr (const void *p)
 {
-  const struct ptr_hash_entry *d = p;
+  const struct ptr_hash_entry *const d = p;
 
   return htab_hash_pointer (d->ptr);
 }
@@ -830,7 +830,7 @@ hash_ptr (const void *p)
 static int
 eq_ptr (const void *p1, const void *p2)
 {
-  const struct ptr_hash_entry *p = p1;
+  const struct ptr_hash_entry *const p = p1;
 
   return (p->ptr == p2);
 }

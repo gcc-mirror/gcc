@@ -1185,7 +1185,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
    as there are artificial parms in FN.  */
 
 tree
-skip_artificial_parms_for (tree fn, tree list)
+skip_artificial_parms_for (const_tree fn, tree list)
 {
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
     list = TREE_CHAIN (list);
@@ -1203,7 +1203,7 @@ skip_artificial_parms_for (tree fn, tree list)
    artificial parms in FN.  */
 
 int
-num_artificial_parms_for (tree fn)
+num_artificial_parms_for (const_tree fn)
 {
   int count = 0;
 
