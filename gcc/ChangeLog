@@ -1,3 +1,11 @@
+2007-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/33181
+	* ifcvt.c (noce_get_alt_condition): Make sure that the previous
+	non NOTE insn doesn't cross basic block.
+	(noce_try_abs): Likewise.
+	(noce_process_if_block): Likewise.
+
 2007-08-26  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/33151
