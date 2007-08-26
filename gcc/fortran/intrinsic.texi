@@ -121,6 +121,7 @@ Some basic guidelines for editing this document:
 * @code{FSEEK}:         FSEEK,     Low level file positioning subroutine
 * @code{FSTAT}:         FSTAT,     Get file status
 * @code{FTELL}:         FTELL,     Current stream position
+* @code{GAMMA}:         GAMMA,     Gamma function
 * @code{GERROR}:        GERROR,    Get last system error message
 * @code{GETARG}:        GETARG,    Get command line arguments
 * @code{GET_COMMAND}:   GET_COMMAND, Get the entire command line
@@ -161,6 +162,7 @@ Some basic guidelines for editing this document:
 * @code{LBOUND}:        LBOUND,    Lower dimension bounds of an array
 * @code{LEN}:           LEN,       Length of a character entity
 * @code{LEN_TRIM}:      LEN_TRIM,  Length of a character entity without trailing blank characters
+* @code{LGAMMA}:        LGAMMA,    Logarithm of the Gamma function
 * @code{LGE}:           LGE,       Lexical greater than or equal
 * @code{LGT}:           LGT,       Lexical greater than
 * @code{LINK}:          LINK,      Create a hard link
@@ -4484,6 +4486,65 @@ END PROGRAM
 
 
 
+@node GAMMA
+@section @code{GAMMA} --- Gamma function
+@fnindex GAMMA
+@fnindex DGAMMA
+@cindex Gamma function
+@cindex Factorial function
+
+@table @asis
+@item @emph{Description}:
+@code{GAMMA(X)} computes Gamma (@math{\Gamma}) of @var{X}. For positive,
+integer values of @var{X} the Gamma function simplifies to the factorial
+function @math{\Gamma(x)=(x-1)!}.
+
+@tex
+$$
+\Gamma(x) = \int_0^\infty t^{x-1}{\rm e}^{-t}\,{\rm d}t
+$$
+@end tex
+
+@item @emph{Standard}:
+GNU Extension
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{X = GAMMA(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab Shall be of type @code{REAL} and neither zero
+nor a negative integer.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL} of the same kind as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_gamma
+  real :: x = 1.0
+  x = gamma(x) ! returns 1.0
+end program test_gamma
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument         @tab Return type       @tab Standard
+@item @code{GAMMA(X)}  @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DGAMMA(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}    @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Logarithm of the Gamma function: @ref{LGAMMA}
+
+@end table
+
+
+
 @node GERROR
 @section @code{GERROR} --- Get last system error message
 @fnindex GERROR
@@ -6226,6 +6287,60 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 
 @item @emph{See also}:
 @ref{LEN}, @ref{ADJUSTL}, @ref{ADJUSTR}
+@end table
+
+
+
+@node LGAMMA
+@section @code{LGAMMA} --- Logarithm of the Gamma function
+@fnindex GAMMA
+@fnindex ALGAMA
+@fnindex DLGAMA
+@cindex Gamma function, logarithm of
+@cindex 
+
+@table @asis
+@item @emph{Description}:
+@code{GAMMA(X)} computes the natural logrithm of the absolute value of the
+Gamma (@math{\Gamma}) function.
+
+@item @emph{Standard}:
+GNU Extension
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{X = LGAMMA(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab Shall be of type @code{REAL} and neither zero
+nor a negative integer.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{REAL} of the same kind as @var{X}.
+
+@item @emph{Example}:
+@smallexample
+program test_log_gamma
+  real :: x = 1.0
+  x = lgamma(x) ! returns 0.0
+end program test_log_gamma
+@end smallexample
+
+@item @emph{Specific names}:
+@multitable @columnfractions .20 .20 .20 .25
+@item Name             @tab Argument         @tab Return type       @tab Standard
+@item @code{LGAMMA(X)} @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{ALGAMA(X)} @tab @code{REAL(4) X} @tab @code{REAL(4)}    @tab GNU Extension
+@item @code{DLGAMA(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}    @tab GNU Extension
+@end multitable
+
+@item @emph{See also}:
+Gamma function: @ref{GAMMA}
+
 @end table
 
 

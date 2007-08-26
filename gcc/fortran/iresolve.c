@@ -757,6 +757,15 @@ gfc_resolve_g77_math1 (gfc_expr *f, gfc_expr *x)
 
 
 void
+gfc_resolve_gamma (gfc_expr *f, gfc_expr *x)
+{
+  f->ts = x->ts;
+  f->value.function.name
+    = gfc_get_string ("__gamma_%d", x->ts.kind);
+}
+
+
+void
 gfc_resolve_getcwd (gfc_expr *f, gfc_expr *n ATTRIBUTE_UNUSED)
 {
   f->ts.type = BT_INTEGER;
@@ -1110,6 +1119,15 @@ gfc_resolve_len_trim (gfc_expr *f, gfc_expr *string, gfc_expr *kind)
   else
     f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = gfc_get_string ("__len_trim%d", string->ts.kind);
+}
+
+
+void
+gfc_resolve_lgamma (gfc_expr *f, gfc_expr *x)
+{
+  f->ts = x->ts;
+  f->value.function.name
+    = gfc_get_string ("__lgamma_%d", x->ts.kind);
 }
 
 

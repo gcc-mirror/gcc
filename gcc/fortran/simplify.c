@@ -1183,6 +1183,24 @@ gfc_simplify_fraction (gfc_expr *x)
 
 
 gfc_expr *
+gfc_simplify_gamma (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
+  gfc_set_model_kind (x->ts.kind);
+
+  mpfr_gamma (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "GAMMA");
+}
+
+
+gfc_expr *
 gfc_simplify_huge (gfc_expr *e)
 {
   gfc_expr *result;
@@ -2210,6 +2228,27 @@ gfc_simplify_len_trim (gfc_expr *e, gfc_expr *kind)
 
   mpz_set_si (result->value.integer, lentrim);
   return range_check (result, "LEN_TRIM");
+}
+
+gfc_expr *
+gfc_simplify_lgamma (gfc_expr *x __attribute__((unused)))
+{
+#if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
+  gfc_set_model_kind (x->ts.kind);
+
+  mpfr_lgamma (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "LGAMMA");
+#else
+  return NULL;
+#endif
 }
 
 

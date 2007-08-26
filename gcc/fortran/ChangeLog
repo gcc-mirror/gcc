@@ -1,5 +1,17 @@
 2007-08-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/32980
+	* intrinsic.h (gfc_simplify_gamma,gfc_simplify_lgamma,
+	gfc_resolve_gamma,gfc_resolve_lgamma): New function declations.
+	* mathbuiltins.def: Define GAMMA and LGAMMA.
+	* intrinsic.c (add_functions): Add GAMMA, DGAMMA, LGAMMA, ALGAMA
+	and DLGAMA.
+	* simplify.c (gfc_simplify_gamma,gfc_simplify_lgamma): New functions.
+	* iresolve.c (gfc_resolve_gamma,gfc_resolve_lgamma): New functions.
+	* intrinsic.texi: Add documentation for GAMMA and LGAMMA.
+
+2007-08-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/33188
 	* parse.c (parse_derived): Support empty derived type
 	definitions for Fortran 2003.

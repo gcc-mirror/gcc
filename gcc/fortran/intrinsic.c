@@ -1453,6 +1453,16 @@ add_functions (void)
 
   make_generic ("fput", GFC_ISYM_FPUT, GFC_STD_GNU);
 
+  add_sym_1 ("gamma", GFC_ISYM_GAMMA, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_gamma, gfc_resolve_gamma,
+	     x, BT_REAL, dr, REQUIRED);
+
+  add_sym_1 ("dgamma", GFC_ISYM_GAMMA, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_gamma, gfc_resolve_gamma,
+	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("gamma", GFC_ISYM_GAMMA, GFC_STD_GNU);
+
   /* Unix IDs (g77 compatibility)  */
   add_sym_1 ("getcwd", GFC_ISYM_GETCWD, NO_CLASS, ACTUAL_NO, BT_INTEGER, di,  GFC_STD_GNU,
 	     NULL, NULL, gfc_resolve_getcwd,
@@ -1689,6 +1699,21 @@ add_functions (void)
   make_alias ("lnblnk", GFC_STD_GNU);
 
   make_generic ("len_trim", GFC_ISYM_LEN_TRIM, GFC_STD_F95);
+
+  add_sym_1 ("lgamma", GFC_ISYM_LGAMMA, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_lgamma, gfc_resolve_lgamma,
+	     x, BT_REAL, dr, REQUIRED);
+
+  add_sym_1 ("algama", GFC_ISYM_LGAMMA, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_lgamma, gfc_resolve_lgamma,
+	     x, BT_REAL, dr, REQUIRED);
+
+  add_sym_1 ("dlgama", GFC_ISYM_LGAMMA, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_lgamma, gfc_resolve_lgamma,
+	     x, BT_REAL, dr, REQUIRED);
+
+  make_generic ("lgamma", GFC_ISYM_LGAMMA, GFC_STD_GNU);
+
 
   add_sym_2 ("lge", GFC_ISYM_LGE, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F77,
 	     NULL, gfc_simplify_lge, NULL,

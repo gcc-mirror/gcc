@@ -1,5 +1,12 @@
 2007-08-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/32980
+	* gfortran.dg/gamma_1.f90: New.
+	* gfortran.dg/gamma_2.f90: New.
+	* gfortran.dg/gamma_3.f90: New.
+
+2007-08-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/33188
 	* gfortran.dg/used_types_18.f90: New.
 
