@@ -1094,6 +1094,30 @@ gfc_trans_flush (gfc_code * code)
 }
 
 
+/* Create a dummy iostat variable to catch any error due to bad unit.  */
+
+static gfc_expr *
+create_dummy_iostat (void)
+{
+  gfc_symtree *st;
+  gfc_expr *e;
+
+  st = gfc_get_unique_symtree (gfc_current_ns);
+  st->n.sym = gfc_new_symbol (st->name, gfc_current_ns);
+  st->n.sym->ts.type = BT_INTEGER;
+  st->n.sym->ts.kind = 4;
+  st->n.sym->attr.referenced = 1;
+  st->n.sym->refs = 1;
+  e = gfc_get_expr ();
+  e->expr_type = EXPR_VARIABLE;
+  e->symtree = st;
+  e->ts.type = BT_INTEGER;
+  e->ts.kind = 4;
+
+  return e;
+}
+
+
 /* Translate the non-IOLENGTH form of an INQUIRE statement.  */
 
 tree
@@ -1133,8 +1157,17 @@ gfc_trans_inquire (gfc_code * code)
 			p->file);
 
   if (p->exist)
-    mask |= set_parameter_ref (&block, &post_block, var, IOPARM_inquire_exist,
-			       p->exist);
+    {
+      mask |= set_parameter_ref (&block, &post_block, var, IOPARM_inquire_exist,
+				 p->exist);
+    
+      if (p->unit && !p->iostat)
+	{
+	  p->iostat = create_dummy_iostat ();
+	  mask |= set_parameter_ref (&block, &post_block, var,
+				     IOPARM_common_iostat, p->iostat);
+	}
+    }
 
   if (p->opened)
     mask |= set_parameter_ref (&block, &post_block, var, IOPARM_inquire_opened,
