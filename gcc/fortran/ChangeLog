@@ -1,3 +1,8 @@
+2007-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_GAMMA and
+	GFC_ISYM_LGAMMA.
+
 2007-08-26  Asher Langton  <langton2@llnl.gov>
 	    Tobias Burnus  <burnus@net-b.de>
 
