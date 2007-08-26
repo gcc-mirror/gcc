@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
    In order to value number memory, we assign value numbers to vuses.
    This enables us to note that, for example, stores to the same
    address of the same value from the same starting memory states are
-   equivalent.  
+   equivalent.
    TODO:
 
    1. We can iterate only the changing portions of the SCC's, but
@@ -264,7 +264,7 @@ VN_INFO_SET (tree name, vn_ssa_aux_t value)
 }
 
 /* Get the value numbering info for a given SSA name, creating it if
-   it does not exist.  */ 
+   it does not exist.  */
 
 vn_ssa_aux_t
 VN_INFO_GET (tree name)
@@ -367,7 +367,7 @@ vn_reference_eq (const void *p1, const void *p2)
       if (VEC_index (tree, vr2->vuses, i) != v)
 	return false;
     }
-  
+
   for (i = 0; VEC_iterate (vn_reference_op_s, vr1->operands, i, vro); i++)
     {
       if (!vn_reference_op_eq (VEC_index (vn_reference_op_s, vr2->operands, i),
@@ -554,7 +554,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	  break;
 	default:
 	  gcc_unreachable ();
-	  
+
 	}
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
@@ -1078,7 +1078,7 @@ visit_copy (tree lhs, tree rhs)
   /* Follow chains of copies to their destination.  */
   while (SSA_VAL (rhs) != rhs && TREE_CODE (SSA_VAL (rhs)) == SSA_NAME)
     rhs = SSA_VAL (rhs);
-  
+
   /* The copy may have a more interesting constant filled expression
      (we don't, since we know our RHS is just an SSA name).  */
   VN_INFO (lhs)->has_constants = VN_INFO (rhs)->has_constants;
@@ -1302,10 +1302,10 @@ visit_phi (tree phi)
 	  VN_INFO (PHI_RESULT (phi))->has_constants = false;
 	  VN_INFO (PHI_RESULT (phi))->expr = sameval;
 	}
-      
+
       if (TREE_CODE (sameval) == SSA_NAME)
 	return visit_copy (PHI_RESULT (phi), sameval);
-      
+
       return set_ssa_val_to (PHI_RESULT (phi), sameval);
     }
 
@@ -1601,7 +1601,7 @@ visit_use (tree use)
 		 have been value numbering optimistically, and
 		 iterating. They may become non-constant in this case,
 		 even if they were optimistically constant. */
-		 
+
 	      VN_INFO (lhs)->has_constants = false;
 	      VN_INFO (lhs)->expr = lhs;
 	    }
@@ -1730,7 +1730,7 @@ process_scc (VEC (tree, heap) *scc)
   if (VEC_length (tree, scc) == 1)
     {
       tree use = VEC_index (tree, scc, 0);
-      if (!VN_INFO (use)->use_processed) 
+      if (!VN_INFO (use)->use_processed)
 	visit_use (use);
     }
   else
@@ -1988,7 +1988,7 @@ free_scc_vn (void)
 	    SSA_NAME_VALUE (name) = NULL;
 	}
     }
-      
+
   VEC_free (vn_ssa_aux_t, heap, vn_ssa_aux_table);
   VEC_free (tree, heap, sccstack);
   free_vn_table (valid_info);

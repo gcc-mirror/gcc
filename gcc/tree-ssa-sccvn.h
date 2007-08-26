@@ -59,6 +59,6 @@ tree vn_reference_lookup (tree, VEC (tree, gc) *);
 void vn_reference_insert (tree, tree, VEC (tree, gc) *);
 VEC (tree, gc) *shared_vuses_from_stmt (tree);
 VEC (tree, gc) *copy_vuses_from_stmt (tree);
-				  
+
 
 #endif /* TREE_SSA_SCCVN_H  */

@@ -1,3 +1,8 @@
+2007-08-26  Bernhard Fischer  <aldot@gcc.gnu.org>
+
+	* tree-ssa-sccvn.c, tree-ssa-sccvn.h, tree-vn.c,
+	tree-ssa-pre.c: Remove unnecessary trailing whitespace.
+
 2007-08-26  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/32991
