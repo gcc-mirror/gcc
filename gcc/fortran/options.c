@@ -86,7 +86,10 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_f2c = 0;
   gfc_option.flag_second_underscore = -1;
   gfc_option.flag_implicit_none = 0;
-  gfc_option.flag_max_stack_var_size = 32768;
+
+  /* Default value of flag_max_stack_var_size is set in gfc_post_options.  */
+  gfc_option.flag_max_stack_var_size = -2;
+
   gfc_option.flag_range_check = 1;
   gfc_option.flag_pack_derived = 0;
   gfc_option.flag_repack_arrays = 0;
@@ -103,6 +106,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_d_lines = -1;
   gfc_option.flag_openmp = 0;
   gfc_option.flag_sign_zero = 1;
+  gfc_option.flag_recursive = 0;
 
   gfc_option.fpe = 0;
 
@@ -289,6 +293,37 @@ gfc_post_options (const char **pfilename)
      otherwise.  */
   if (gfc_option.flag_second_underscore == -1)
     gfc_option.flag_second_underscore = gfc_option.flag_f2c;
+
+  if (!gfc_option.flag_automatic && gfc_option.flag_max_stack_var_size != -2
+      && gfc_option.flag_max_stack_var_size != 0)
+    gfc_warning_now ("Flag -fno-automatic overwrites -fmax-stack-var-size=%d",
+		     gfc_option.flag_max_stack_var_size);
+  else if (!gfc_option.flag_automatic && gfc_option.flag_recursive)
+    gfc_warning_now ("Flag -fno-automatic overwrites -frecursive");
+  else if (!gfc_option.flag_automatic && gfc_option.flag_openmp)
+    gfc_warning_now ("Flag -fno-automatic overwrites -frecursive implied by "
+		     "-fopenmp");
+  else if (gfc_option.flag_max_stack_var_size != -2
+	   && gfc_option.flag_recursive)
+    gfc_warning_now ("Flag -frecursive overwrites -fmax-stack-var-size=%d",
+		     gfc_option.flag_max_stack_var_size);
+  else if (gfc_option.flag_max_stack_var_size != -2
+	   && gfc_option.flag_openmp)
+    gfc_warning_now ("Flag -fmax-stack-var-size=%d overwrites -frecursive "
+		     "implied by -fopenmp", 
+		     gfc_option.flag_max_stack_var_size);
+
+  /* Implied -frecursive; implemented as -fmax-stack-var-size=-1.  */
+  if (gfc_option.flag_max_stack_var_size == -2 && gfc_option.flag_openmp)
+    gfc_option.flag_max_stack_var_size = -1;
+
+  /* Set default.  */
+  if (gfc_option.flag_max_stack_var_size == -2)
+    gfc_option.flag_max_stack_var_size = 32768;
+
+  /* Implement -frecursive as -fmax-stack-var-size=-1.  */
+  if (gfc_option.flag_recursive)
+    gfc_option.flag_max_stack_var_size = -1;
 
   /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
   if (!gfc_option.flag_automatic)
@@ -698,6 +733,11 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 			 MAX_SUBRECORD_LENGTH);
 
       gfc_option.max_subrecord_length = value;
+      break;
+
+    case OPT_frecursive:
+      gfc_option.flag_recursive = 1;
+      break;
     }
 
   return result;
