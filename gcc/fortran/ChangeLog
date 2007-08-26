@@ -1,5 +1,11 @@
 2007-08-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/31298
+	* module.c (mio_symbol_ref,mio_interface_rest):  Return pointer_info.
+	(load_operator_interfaces): Support multible loading of an operator.
+
+2007-08-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/32985
 	* match.c (gfc_match_common): Remove SEQUENCE diagnostics.
 	* resolve.c (resolve_common_blocks): Add SEQUENCE diagnostics;

@@ -1,5 +1,10 @@
 2007-08-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/31298
+	* gfortran.dg/use_10.f90: New.
+
+2007-08-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/32985
 	* gfortran.dg/namelist_14.f90: Make test case valid.
 	* gfortran.dg/common_10.f90: New.
