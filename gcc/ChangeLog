@@ -1,3 +1,16 @@
+2007-08-26  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/33151
+	* config/rs6000/predicates.md (offsettable_mem_operand): Memory
+	operand without auto-inc-dec.
+	* config/rs6000/rs6000.md (floatsidf2_internal): Use
+	offsettable_mem_operand.
+	(floatunssidf2_internal): Same.
+	(fix_truncdfsi2_internal): Same.
+	(floatsidf_ppc64): Same.
+	(floatunssidf_ppc64): Same.
+	(fix_trunctfsi2_internal): Same.
+
 2007-08-26  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	PR bootstrap/30620
