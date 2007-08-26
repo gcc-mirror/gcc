@@ -1,3 +1,10 @@
+2007-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33055
+	* io/inquire.c (inquire_via_unit):  If inquiring by unit, check for 
+	an error condition from the IOSTAT variable and set EXIST to false if
+	there was a bad unit number.
+
 2007-08-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/32972
