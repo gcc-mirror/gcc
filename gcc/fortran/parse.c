@@ -1544,11 +1544,11 @@ parse_derived (void)
 	case ST_END_TYPE:
 	  compiling_type = 0;
 
-	  if (!seen_component)
-	    {
-	      gfc_error ("Derived type definition at %C has no components");
-	      error_flag = 1;
-	    }
+	  if (!seen_component
+	      && (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Derived type "
+			         "definition at %C without components")
+		  == FAILURE))
+	    error_flag = 1;
 
 	  accept_statement (ST_END_TYPE);
 	  break;
