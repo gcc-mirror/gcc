@@ -1,4 +1,7 @@
 ! { dg-do run }
+! { dg-options "-fdefault-integer-8" }
+! 
+! NOTE: This test is identical to negative_unit.f except -fdefault-integer-8
 !
 ! PR libfortran/20660 and other bugs (not filed in bugzilla) relating
 ! to negative units
