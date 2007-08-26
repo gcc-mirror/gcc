@@ -1,5 +1,11 @@
 2007-08-26  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/32991
+	* config/alpha/constraints.md: Delete "svn:mime-type" property
+	with svn propdel "svn:mime-type".
+
+2007-08-26  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/33181
 	* ifcvt.c (noce_get_alt_condition): Make sure that the previous
 	non NOTE insn doesn't cross basic block.
