@@ -606,49 +606,58 @@ resolve_entries (gfc_namespace *ns)
 static void
 resolve_common_blocks (gfc_symtree *common_root)
 {
-   gfc_symtree *symtree;
-   gfc_symbol *sym;
+  gfc_symbol *sym, *csym;
 
-   if (common_root == NULL)
-     return;
+  if (common_root == NULL)
+    return;
 
-   for (symtree = common_root; symtree->left; symtree = symtree->left);
+  if (common_root->left)
+    resolve_common_blocks (common_root->left);
+  if (common_root->right)
+    resolve_common_blocks (common_root->right);
 
-   for (; symtree; symtree = symtree->right)
-     {
-	gfc_find_symbol (symtree->name, gfc_current_ns, 0, &sym);
-	if (sym == NULL)
-	  continue;
+  for (csym = common_root->n.common->head; csym; csym = csym->common_next)
+    {
+      if (csym->ts.type == BT_DERIVED
+	  && !(csym->ts.derived->attr.sequence
+	       || csym->ts.derived->attr.is_bind_c))
+	{
+	    gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+			   "has neither the SEQUENCE nor the BIND(C) "
+			   "attribute", csym->name,
+			   &csym->declared_at);
+	}
+      else if (csym->ts.type == BT_DERIVED
+	       && csym->ts.derived->attr.alloc_comp)
+	{
+	    gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+			   "has an ultimate component that is "
+			   "allocatable", csym->name,
+			   &csym->declared_at);
+	}
+    }
 
-	if (sym->attr.flavor == FL_PARAMETER)
-	  {
-	    gfc_error ("COMMON block '%s' at %L is used as PARAMETER at %L",
-		       sym->name, &symtree->n.common->where,
-		       &sym->declared_at);
-	  }
+  gfc_find_symbol (common_root->name, gfc_current_ns, 0, &sym);
+  if (sym == NULL)
+    return;
 
-	if (sym->attr.intrinsic)
-	  {
-	    gfc_error ("COMMON block '%s' at %L is also an intrinsic "
-		       "procedure", sym->name,
-		       &symtree->n.common->where);
-	  }
-	else if (sym->attr.result
-		 ||(sym->attr.function && gfc_current_ns->proc_name == sym))
-	  {
-	    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' "
-			    "at %L that is also a function result", sym->name,
-			    &symtree->n.common->where);
-	  }
-	else if (sym->attr.flavor == FL_PROCEDURE
-		&& sym->attr.proc != PROC_INTERNAL
-		&& sym->attr.proc != PROC_ST_FUNCTION)
-	  {
-	    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' "
-			    "at %L that is also a global procedure", sym->name,
-			    &symtree->n.common->where);
-	  }
-     }
+  if (sym->attr.flavor == FL_PARAMETER)
+    gfc_error ("COMMON block '%s' at %L is used as PARAMETER at %L",
+	       sym->name, &common_root->n.common->where, &sym->declared_at);
+
+  if (sym->attr.intrinsic)
+    gfc_error ("COMMON block '%s' at %L is also an intrinsic procedure",
+	       sym->name, &common_root->n.common->where);
+  else if (sym->attr.result
+	   ||(sym->attr.function && gfc_current_ns->proc_name == sym))
+    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' at %L "
+		    "that is also a function result", sym->name,
+		    &common_root->n.common->where);
+  else if (sym->attr.flavor == FL_PROCEDURE && sym->attr.proc != PROC_INTERNAL
+	   && sym->attr.proc != PROC_ST_FUNCTION)
+    gfc_notify_std (GFC_STD_F2003, "Fortran 2003: COMMON block '%s' at %L "
+		    "that is also a global procedure", sym->name,
+		    &common_root->n.common->where);
 }
 
 

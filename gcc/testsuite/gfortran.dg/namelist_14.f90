@@ -6,6 +6,7 @@
 
 module global
   type             ::  mt
+    sequence
     integer        ::  ii(4)
   end type mt
 end module global

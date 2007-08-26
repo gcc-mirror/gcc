@@ -2885,14 +2885,6 @@ gfc_match_common (void)
 	  if (gfc_add_in_common (&sym->attr, sym->name, NULL) == FAILURE)
 	    goto cleanup;
 
-	  /* Derived type names must have the SEQUENCE attribute.  */
-	  if (sym->ts.type == BT_DERIVED && !sym->ts.derived->attr.sequence)
-	    {
-	      gfc_error ("Derived type variable in COMMON at %C does not "
-			 "have the SEQUENCE attribute");
-	      goto cleanup;
-	    }
-
 	  if (tail != NULL)
 	    tail->common_next = sym;
 	  else
