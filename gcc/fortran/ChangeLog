@@ -1,3 +1,9 @@
+2007-08-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33188
+	* parse.c (parse_derived): Support empty derived type
+	definitions for Fortran 2003.
+
 2007-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* trans-openmp.c (gfc_omp_privatize_by_reference): Constify.
