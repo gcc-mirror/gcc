@@ -1391,7 +1391,8 @@ write_atom (atom_type atom, const void *v)
    written.  */
 
 static void mio_expr (gfc_expr **);
-static void mio_symbol_ref (gfc_symbol **);
+pointer_info *mio_symbol_ref (gfc_symbol **);
+pointer_info *mio_interface_rest (gfc_interface **);
 static void mio_symtree_ref (gfc_symtree **);
 
 /* Read or write an enumerated value.  On writing, we return the input
@@ -2247,7 +2248,7 @@ mio_formal_arglist (gfc_symbol *sym)
 
 /* Save or restore a reference to a symbol node.  */
 
-void
+pointer_info *
 mio_symbol_ref (gfc_symbol **symp)
 {
   pointer_info *p;
@@ -2266,6 +2267,7 @@ mio_symbol_ref (gfc_symbol **symp)
       if (p->u.rsym.state == UNUSED)
 	p->u.rsym.state = NEEDED;
     }
+  return p;
 }
 
 
@@ -2916,10 +2918,11 @@ mio_namelist (gfc_symbol *sym)
    interfaces.  Checking for duplicate and ambiguous interfaces has to
    be done later when all symbols have been loaded.  */
 
-static void
+pointer_info *
 mio_interface_rest (gfc_interface **ip)
 {
   gfc_interface *tail, *p;
+  pointer_info *pi = NULL;
 
   if (iomode == IO_OUTPUT)
     {
@@ -2945,7 +2948,7 @@ mio_interface_rest (gfc_interface **ip)
 
 	  p = gfc_get_interface ();
 	  p->where = gfc_current_locus;
-	  mio_symbol_ref (&p->sym);
+	  pi = mio_symbol_ref (&p->sym);
 
 	  if (tail == NULL)
 	    *ip = p;
@@ -2957,6 +2960,7 @@ mio_interface_rest (gfc_interface **ip)
     }
 
   mio_rparen ();
+  return pi;
 }
 
 
@@ -3136,6 +3140,8 @@ load_operator_interfaces (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1], module[GFC_MAX_SYMBOL_LEN + 1];
   gfc_user_op *uop;
+  pointer_info *pi = NULL;
+  int n, i;
 
   mio_lparen ();
 
@@ -3146,16 +3152,34 @@ load_operator_interfaces (void)
       mio_internal_string (name);
       mio_internal_string (module);
 
-      /* Decide if we need to load this one or not.  */
-      p = find_use_name (name, true);
-      if (p == NULL)
+      n = number_use_names (name, true);
+      n = n ? n : 1;
+
+      for (i = 1; i <= n; i++)
 	{
-	  while (parse_atom () != ATOM_RPAREN);
-	}
-      else
-	{
-	  uop = gfc_get_uop (p);
-	  mio_interface_rest (&uop->operator);
+	  /* Decide if we need to load this one or not.  */
+	  p = find_use_name_n (name, &i, true);
+
+	  if (p == NULL)
+	    {
+	      while (parse_atom () != ATOM_RPAREN);
+	      continue;
+	    }
+
+	  if (i == 1)
+	    {
+	      uop = gfc_get_uop (p);
+	      pi = mio_interface_rest (&uop->operator);
+	    }
+	  else
+	    {
+	      if (gfc_find_uop (p, NULL))
+		continue;
+	      uop = gfc_get_uop (p);
+	      uop->operator = gfc_get_interface ();
+	      uop->operator->where = gfc_current_locus;
+	      add_fixup (pi->integer, &uop->operator->sym);
+	    }
 	}
     }
 
