@@ -218,7 +218,7 @@ Set default accessibility of module entities to PRIVATE.
 
 fopenmp
 Fortran
-Enable OpenMP
+Enable OpenMP (also sets frecursive)
 
 fpack-derived
 Fortran
@@ -239,6 +239,10 @@ Use a 4-byte record marker for unformatted files
 frecord-marker=8
 Fortran RejectNegative
 Use an 8-byte record marker for unformatted files
+
+frecursive
+Fortran
+Allocate local variables on the stack to allow indirect recursion
 
 frepack-arrays
 Fortran

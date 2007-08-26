@@ -1,3 +1,14 @@
+2007-08-26  Asher Langton  <langton2@llnl.gov>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Add flag_recursive.
+	* lang.opt: Add -frecursive option and update -fopenmp.
+	* invoke.texi (-frecursive): Document new option.
+	(-fopenmp,-fno-automatic,-fmax-stack-var-size): Update.
+	* options.c (gfc_init_options, gfc_post_options,
+	gfc_handle_option): Add -frecursive and modify -fopenmp.
+	(gfc_post_options): Add warning for conflicting flags.
+
 2007-08-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31298

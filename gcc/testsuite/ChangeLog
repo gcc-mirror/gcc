@@ -1,3 +1,8 @@
+2007-08-26  Asher Langton  <langton2@llnl.gov>
+
+	* gfortran.dg/recursive_stack.f90: New.
+	* gfortran.dg/openmp_stack.f90: New.
+
 2007-08-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/31298

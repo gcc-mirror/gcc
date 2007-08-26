@@ -156,7 +156,7 @@ and warnings}.
 -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
--fblas-matmul-limit=@var{n}}
+-fblas-matmul-limit=@var{n} -frecursive}
 @end table
 
 @menu
@@ -296,7 +296,7 @@ and @code{c$omp}, @code{*$omp} and @code{!$omp} directives in fixed form,
 @code{!$} conditional compilation sentinels in free form
 and @code{c$}, @code{*$} and @code{!$} sentinels in fixed form, 
 and when linking arranges for the OpenMP runtime library to be linked
-in.
+in.  The option @option{-fopenmp} implies @option{-frecursive}.
 
 @item -frange-check
 @opindex @code{frange-check}
@@ -710,10 +710,13 @@ it.
 @opindex @code{fno-automatic}
 @cindex @code{SAVE} statement
 @cindex statement, @code{SAVE}
-Treat each program unit as if the @code{SAVE} statement was specified for
-every local variable and array referenced in it. Does not affect common
-blocks. (Some Fortran compilers provide this option under the name
-@option{-static}.)
+Treat each program unit (except those marked as RECURSIVE) as if the
+@code{SAVE} statement were specified for every local variable and array
+referenced in it. Does not affect common blocks. (Some Fortran compilers
+provide this option under the name @option{-static} or @option{-save}.)
+The default, which is @option{-fautomatic}, uses the stack for local
+variables smaller than the value given by @option{-fmax-stack-var-size}.
+Use the option @option{-frecursive} to use no static memory. 
 
 @item -ff2c
 @opindex ff2c
@@ -865,7 +868,10 @@ substring references.
 @item -fmax-stack-var-size=@var{n}
 @opindex @code{fmax-stack-var-size}
 This option specifies the size in bytes of the largest array that will be put
-on the stack.
+on the stack; if the size is exceeded static memory is used (except in
+procedures marked as RECURSIVE). Use the option @option{-frecursive} to
+allow for recursive procedures which do not have a RECURSIVE attribute or
+for parallel programs. Use @option{-fno-automatic} to never use the stack.
 
 This option currently only affects local arrays declared with constant
 bounds, and may not apply to all character variables.
@@ -918,6 +924,12 @@ involved are not square, the size comparison is performed using the
 geometric mean of the dimensions of the argument and result matrices.
 
 The default value for @var{n} is 30.
+
+@item -frecursive
+@opindex @code{frecursive}
+Allow indirect recursion by forcing all local arrays to be allocated
+on the stack. This flag cannot be used together with
+@option{-fmax-stack-var-size=} or @option{-fno-automatic}.
 
 @end table
 
