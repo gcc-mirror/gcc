@@ -59,7 +59,7 @@ bool
 expressions_equal_p (tree e1, tree e2)
 {
   tree te1, te2;
-  
+
   if (e1 == e2)
     return true;
 
@@ -82,7 +82,7 @@ expressions_equal_p (tree e1, tree e2)
       return true;
 
     }
-  else if (TREE_CODE (e1) == TREE_CODE (e2) 
+  else if (TREE_CODE (e1) == TREE_CODE (e2)
 	   && (te1 == te2
 	       || types_compatible_p (te1, te2))
 	   && operand_equal_p (e1, e2, OEP_PURE_SAME))
@@ -92,7 +92,7 @@ expressions_equal_p (tree e1, tree e2)
 }
 
 /* Set the value handle for expression E to value V.  */
-   
+
 void
 set_value_handle (tree e, tree v)
 {
@@ -132,12 +132,12 @@ print_creation_to_file (tree v, tree expr, VEC (tree, gc) *vuses)
   print_generic_expr (dump_file, v, dump_flags);
   fprintf (dump_file, " for ");
   print_generic_expr (dump_file, expr, dump_flags);
-  
+
   if (vuses && VEC_length (tree, vuses) != 0)
     {
       size_t i;
       tree vuse;
-      
+
       fprintf (dump_file, " vuses: (");
       for (i = 0; VEC_iterate (tree, vuses, i, vuse); i++)
 	{
@@ -146,7 +146,7 @@ print_creation_to_file (tree v, tree expr, VEC (tree, gc) *vuses)
 	    fprintf (dump_file, ",");
 	}
       fprintf (dump_file, ")");
-    }		   
+    }
   fprintf (dump_file, "\n");
 }
 
@@ -154,7 +154,7 @@ print_creation_to_file (tree v, tree expr, VEC (tree, gc) *vuses)
 /* Sort the VUSE array so that we can do equality comparisons
    quicker on two vuse vecs.  */
 
-void 
+void
 sort_vuses (VEC (tree,gc) *vuses)
 {
   if (VEC_length (tree, vuses) > 1)
@@ -167,7 +167,7 @@ sort_vuses (VEC (tree,gc) *vuses)
 /* Sort the VUSE array so that we can do equality comparisons
    quicker on two vuse vecs.  */
 
-void 
+void
 sort_vuses_heap (VEC (tree,heap) *vuses)
 {
   if (VEC_length (tree, vuses) > 1)
@@ -279,7 +279,7 @@ vn_lookup (tree expr)
       if (TREE_CODE (expr) == CALL_EXPR || DECL_P (expr))
 	return vn_reference_lookup (expr, NULL);
       else if (TREE_CODE (expr) == SSA_NAME)
-	return SSA_NAME_VALUE (expr);      
+	return SSA_NAME_VALUE (expr);
       else if (TREE_CODE (expr) == ADDR_EXPR)
 	return vn_unary_op_lookup (expr);
       /* FALLTHROUGH */
@@ -291,7 +291,7 @@ vn_lookup (tree expr)
 
 /* Search in the value numbering tables for an existing instance of
    expression EXPR,  and return its value, or NULL if none has been set.  STMT
-   represents the stmt associated with EXPR.  It is used when computing the 
+   represents the stmt associated with EXPR.  It is used when computing the
    hash value for EXPR for reference operations.  */
 
 tree
@@ -328,9 +328,9 @@ static tree
 create_value_handle_for_expr (tree expr, VEC(tree, gc) *vuses)
 {
   tree v;
-  
+
   v = make_value_handle (TREE_TYPE (expr));
-  
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     print_creation_to_file (v, expr, vuses);
   return v;
@@ -343,7 +343,7 @@ tree
 vn_lookup_or_add (tree expr)
 {
   tree v = vn_lookup (expr);
-  
+
   if (v == NULL_TREE)
     {
       v = create_value_handle_for_expr (expr, NULL);
@@ -387,10 +387,10 @@ tree
 vn_lookup_or_add_with_vuses (tree expr, VEC (tree, gc) *vuses)
 {
   tree v;
-  
+
   if (!vuses || VEC_length (tree, vuses) == 0)
     return vn_lookup_or_add (expr);
-  
+
   v = vn_lookup_with_vuses (expr, vuses);
   if (v == NULL_TREE)
     {
