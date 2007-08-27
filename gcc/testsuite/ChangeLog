@@ -1,5 +1,32 @@
 2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.dg/arm-eabi1.c, gcc.dg/symbian1.c, cc.dg/symbian2.c,
+	gcc.dg/symbian3.c, gcc.dg/symbian4.c, gcc.dg/symbian5.c,
+	gcc.dg/20051215-1.c: Move to gcc.target/arm directory.
+	* gcc.dg/const-compare.c, gcc.dg/non-lazy-ptr-test.c,
+	gcc.dg/unsigned-long-compare.c, gcc.dg/rs6000-leaf.c: Move to
+	gcc.target/powerpc directory.
+	* gcc.dg/m68k-pic-1.c, gcc.dg/m68k-slp-ice.c: Move to
+	gcc.target/m68k directory.
+	* gcc.dg/i386-darwin-fpmath.c: Move to gcc.target/i386 directory.
+	* gcc.dg/cris-peep2-andu1.c, gcc.dg/cris-peep2-andu2.c,
+	gcc.dg/cris-peep2-xsrand.c, gcc.dg/cris-peep2-xsrand2.c: Move to
+	gcc.target/cris directory.
+	* gcc.dg/20020620-1.c: Move to gcc.target/mips directory.
+	* gcc.dg/bfin-longcall-1.c, gcc.dg/bfin-longcall-2.c: Move to
+	gcc.target/bfin directory.
+
+	* gcc.target/sh: New directory.
+	* gcc.target/sh/sh.exp: New file.
+	* gcc.dg/pr21255-1.c, gcc.dg/pr21255-2-mb.c, gcc.dg/pr21255-2-ml.c,
+	gcc.dg/pr21255-3.c, gcc.dg/pr21255-4.c, gcc.dg/sh4a-bitmovua.c,
+	gcc.dg/sh4a-cos.c, gcc.dg/sh4a-cosf.c, gcc.dg/sh4a-fprun.c,
+	gcc.dg/sh4a-fsrra.c, gcc.dg/sh4a-memmovua.c, gcc.dg/sh4a-sin.c,
+	gcc.dg/sh4a-sincosf.c, gcc.dg/sh4a-sinf.c gcc.dg/sh-relax.c,
+	gcc.dg/sh-relax-vxworks.c: Move to gcc.target/sh directory.
+	
+2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pow-1.c: Fix scan-assembler-not.
 	* gcc.target/i386/asm-3.c: Skip -fpic ilp32 targets only.
 	* gcc.target/i386/20020523-1.c: Require nonpic effective target.
