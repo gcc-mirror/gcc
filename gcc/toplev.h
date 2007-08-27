@@ -101,6 +101,8 @@ extern void write_global_declarations (void);
 
 extern void dump_memory_report (bool);
 
+extern void target_reinit (void);
+
 /* A unique local time stamp, might be zero if none is available.  */
 extern unsigned local_tick;
 

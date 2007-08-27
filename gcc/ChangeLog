@@ -1,3 +1,60 @@
+2007-08-27  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+            Nigel Stephens <nigel@mips.com>
+
+	Separate target-specific initialization from general
+	back-end initialization.
+
+	* toplev.c (init_alignments): New, split out from...
+	(process_options): ...here.
+	(backend_init_target):  New, split out from...
+	(backend_init): ...here.
+	(lang_dependent_init_target):  New, split out from...
+	(lang_dependent_init): ...here.
+	(target_reinit): New.
+	* toplev.h (target_reinit): Declare.
+	* expr.c (init_expr_target): Renamed from init_expr_once, since it
+	now can be called more than once.  Update comments.
+	* expr.h (init_expr_target): Likewise.
+	* alias.c (init_alias_target): Renamed from init_alias_once, since it
+	now can be called more than once.  Explicitly zero
+	static_reg_base_value.
+	* emit-rtl.c (init_emit_regs): New, split out from...
+	(init_emit_once): Here.
+	* regclass.c (initial_fixed_regs, initial_call_used_regs): Make
+	non-const, so that changes from command-line arguments can overwrite
+	values provided by the static initializers.
+	(initial_call_really_used_regs): New, used similarly to the above.
+	(initial_reg_names): Likewise.
+	(last_mode_for_init_move_cost): Promoted function-local static to
+	file-scope static to make it accessible outside init_move_cost.
+	(init_reg_sets): Do not initialize fixed_regs and call_used_regs yet.
+	Do not initialize inv_reg_alloc_order yet, either.  Do initialize
+	reg_names since it is needed for parsing command-line options.
+	(init_move_cost): Use last_mode_for_init_move_cost instead of
+	function-local static.
+	(init_reg_sets_1): Initialize fixed_regs, call_used_regs, and
+	call_really_used_regs now.  Reinitialize reg_names.  Also
+	initialize inv_reg_alloc_order.  Zero reg_class_subunion and
+	reg_class_superunion.  Clear losing_caller_save_reg_set.
+	Preserve global registers if called more than once.  Reset
+	move cost, may_move_in_cost, may_move_out_cost, and
+	last_mode_for_init_move_cost.
+	(init_reg_modes_target): Renamed from init_reg_modes_once, since it
+	can now be invoked more than once.  Update comments.
+	(init_regs): Update comments.
+	(fix_register): Update initial_fixed_regs, initial_call_used_regs,
+	and initial_call_really_used_regs, instead of the non-initial 
+        variables.  This allows us to save the command-line register settings
+	after target reinitialization.
+	(init_reg_autoinc): Zero forbidden_inc_dec_classes.
+	* rtl.h (init_emit_regs): Declare.
+	(init_reg_modes_target, init_alias_target): Renamed as described
+	above.
+	* reload1.c (init_reload): Update comments.
+	* optabs.c (init_optabs): Likewise.
+	* cfgloopanal.c (init_set_costs): Explicitly zero target_avail_regs.
+	
 2007-08-26  Chao-ying Fu  <fu@mips.com>
 
 	* rtl.h (XCNMPFV): Preserve const-ness of parameters through use of

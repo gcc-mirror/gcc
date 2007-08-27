@@ -334,6 +334,7 @@ init_set_costs (void)
   rtx mem = validize_mem (gen_rtx_MEM (SImode, addr));
   unsigned i;
 
+  target_avail_regs = 0;
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i)
 	&& !fixed_regs[i])
