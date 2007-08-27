@@ -172,7 +172,7 @@ static void vmsdbgout_start_source_file (unsigned int, const char *);
 static void vmsdbgout_end_source_file (unsigned int);
 static void vmsdbgout_begin_block (unsigned int, unsigned int);
 static void vmsdbgout_end_block (unsigned int, unsigned int);
-static bool vmsdbgout_ignore_block (tree);
+static bool vmsdbgout_ignore_block (const_tree);
 static void vmsdbgout_source_line (unsigned int, const char *);
 static void vmsdbgout_begin_prologue (unsigned int, const char *);
 static void vmsdbgout_end_prologue (unsigned int, const char *);
@@ -1363,7 +1363,7 @@ vmsdbgout_end_block (register unsigned line, register unsigned blocknum)
 /* Not implemented in VMS Debug.  */
 
 static bool
-vmsdbgout_ignore_block (tree block)
+vmsdbgout_ignore_block (const_tree block)
 {
   bool retval = 0;
 

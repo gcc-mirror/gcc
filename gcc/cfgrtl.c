@@ -62,8 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 
-static int can_delete_note_p (rtx);
-static int can_delete_label_p (rtx);
+static int can_delete_note_p (const_rtx);
+static int can_delete_label_p (const_rtx);
 static void commit_one_edge_insertion (edge);
 static basic_block rtl_split_edge (edge);
 static bool rtl_move_block_after (basic_block, basic_block);
@@ -84,7 +84,7 @@ static void rtl_make_forwarder_block (edge);
    so that we may simply delete it.  */
 
 static int
-can_delete_note_p (rtx note)
+can_delete_note_p (const_rtx note)
 {
   return (NOTE_KIND (note) == NOTE_INSN_DELETED
 	  || NOTE_KIND (note) == NOTE_INSN_BASIC_BLOCK);
@@ -93,7 +93,7 @@ can_delete_note_p (rtx note)
 /* True if a given label can be deleted.  */
 
 static int
-can_delete_label_p (rtx label)
+can_delete_label_p (const_rtx label)
 {
   return (!LABEL_PRESERVE_P (label)
 	  /* User declared labels must be preserved.  */
@@ -625,7 +625,8 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
 /* Return true when block A and B can be merged.  */
 static bool
-rtl_can_merge_blocks (basic_block a,basic_block b)
+
+rtl_can_merge_blocks (const_basic_block a, const_basic_block b)
 {
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -2530,7 +2531,7 @@ cfg_layout_delete_block (basic_block bb)
 
 /* Return true when blocks A and B can be safely merged.  */
 static bool
-cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
+cfg_layout_can_merge_blocks_p (const_basic_block a, const_basic_block b)
 {
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -2686,7 +2687,7 @@ rtl_make_forwarder_block (edge fallthru ATTRIBUTE_UNUSED)
    instructions that must stay with the call, 0 otherwise.  */
 
 static bool
-rtl_block_ends_with_call_p (basic_block bb)
+rtl_block_ends_with_call_p (const_basic_block bb)
 {
   rtx insn = BB_END (bb);
 
@@ -2700,7 +2701,7 @@ rtl_block_ends_with_call_p (basic_block bb)
 /* Return 1 if BB ends with a conditional branch, 0 otherwise.  */
 
 static bool
-rtl_block_ends_with_condjump_p (basic_block bb)
+rtl_block_ends_with_condjump_p (const_basic_block bb)
 {
   return any_condjump_p (BB_END (bb));
 }
@@ -2709,7 +2710,7 @@ rtl_block_ends_with_condjump_p (basic_block bb)
    Helper function for rtl_flow_call_edges_add.  */
 
 static bool
-need_fake_edge_p (rtx insn)
+need_fake_edge_p (const_rtx insn)
 {
   if (!INSN_P (insn))
     return false;
@@ -3012,11 +3013,11 @@ insert_insn_end_bb_new (rtx pat, basic_block bb)
    it to the destination of the other edge from E->src.  */
 
 static bool
-rtl_can_remove_branch_p (edge e)
+rtl_can_remove_branch_p (const_edge e)
 {
-  basic_block src = e->src;
-  basic_block target = EDGE_SUCC (src, EDGE_SUCC (src, 0) == e)->dest;
-  rtx insn = BB_END (src), set;
+  const_basic_block src = e->src;
+  const_basic_block target = EDGE_SUCC (src, EDGE_SUCC (src, 0) == e)->dest;
+  const_rtx insn = BB_END (src), set;
 
   /* The conditions are taken from try_redirect_by_replacing_jump.  */
   if (target == EXIT_BLOCK_PTR)
@@ -3082,7 +3083,7 @@ struct cfg_hooks rtl_cfg_hooks = {
    should only be used through the cfghooks interface, and we do not want to
    move them here since it would require also moving quite a lot of related
    code.  They are in cfglayout.c.  */
-extern bool cfg_layout_can_duplicate_bb_p (basic_block);
+extern bool cfg_layout_can_duplicate_bb_p (const_basic_block);
 extern basic_block cfg_layout_duplicate_bb (basic_block);
 
 struct cfg_hooks cfg_layout_rtl_cfg_hooks = {

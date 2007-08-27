@@ -1593,16 +1593,26 @@ extern rtx make_jump_insn_raw (rtx);
 extern void add_function_usage_to (rtx, rtx);
 extern rtx last_call_insn (void);
 extern rtx previous_insn (rtx);
+extern const_rtx const_previous_insn (const_rtx);
 extern rtx next_insn (rtx);
+extern const_rtx const_next_insn (const_rtx);
 extern rtx prev_nonnote_insn (rtx);
+extern const_rtx const_prev_nonnote_insn (const_rtx);
 extern rtx next_nonnote_insn (rtx);
+extern const_rtx const_next_nonnote_insn (const_rtx);
 extern rtx prev_real_insn (rtx);
+extern const_rtx const_prev_real_insn (const_rtx);
 extern rtx next_real_insn (rtx);
+extern const_rtx const_next_real_insn (const_rtx);
 extern rtx prev_active_insn (rtx);
+extern const_rtx const_prev_active_insn (const_rtx);
 extern rtx next_active_insn (rtx);
+extern const_rtx const_next_active_insn (const_rtx);
 extern int active_insn_p (const_rtx);
 extern rtx prev_label (rtx);
+extern const_rtx const_prev_label (const_rtx);
 extern rtx next_label (rtx);
+extern const_rtx const_next_label (const_rtx);
 extern rtx skip_consecutive_labels (rtx);
 extern rtx next_cc0_user (rtx);
 extern rtx prev_cc0_setter (rtx);
@@ -1708,9 +1718,9 @@ extern int reg_used_between_p (const_rtx, const_rtx, const_rtx);
 extern int reg_set_between_p (const_rtx, const_rtx, const_rtx);
 extern int commutative_operand_precedence (rtx);
 extern bool swap_commutative_operands_p (rtx, rtx);
-extern int modified_between_p (rtx, rtx, rtx);
+extern int modified_between_p (const_rtx, const_rtx, const_rtx);
 extern int no_labels_between_p (const_rtx, const_rtx);
-extern int modified_in_p (rtx, rtx);
+extern int modified_in_p (const_rtx, const_rtx);
 extern int reg_set_p (const_rtx, const_rtx);
 extern rtx single_set_2 (const_rtx, const_rtx);
 extern int multiple_sets (const_rtx);
@@ -1721,6 +1731,7 @@ extern int refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);
 extern int reg_overlap_mentioned_p (const_rtx, const_rtx);
 extern const_rtx set_of (const_rtx, const_rtx);
 extern void note_stores (const_rtx, void (*) (rtx, const_rtx, void *), void *);
+extern void const_note_stores (const_rtx, void (*) (const_rtx, const_rtx, const void *), const void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
 extern int dead_or_set_p (const_rtx, const_rtx);
 extern int dead_or_set_regno_p (const_rtx, unsigned int);
@@ -1753,7 +1764,7 @@ extern int in_expr_list_p (const_rtx, const_rtx);
 extern void remove_node_from_expr_list (const_rtx, rtx *);
 extern int loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx find_first_parameter_load (rtx, rtx);
-extern bool keep_with_call_p (rtx);
+extern bool keep_with_call_p (const_rtx);
 extern bool label_is_jump_target_p (const_rtx, const_rtx);
 extern int insn_rtx_cost (rtx);
 
@@ -2028,7 +2039,7 @@ extern int condjump_p (const_rtx);
 extern int any_condjump_p (const_rtx);
 extern int any_uncondjump_p (const_rtx);
 extern rtx pc_set (const_rtx);
-extern rtx condjump_label (rtx);
+extern rtx condjump_label (const_rtx);
 extern int simplejump_p (const_rtx);
 extern int returnjump_p (rtx);
 extern int onlyjump_p (const_rtx);
@@ -2043,10 +2054,10 @@ extern int redirect_jump_1 (rtx, rtx);
 extern void redirect_jump_2 (rtx, rtx, rtx, int, int);
 extern int redirect_jump (rtx, rtx, int);
 extern void rebuild_jump_labels (rtx);
-extern rtx reversed_comparison (rtx, enum machine_mode);
-extern enum rtx_code reversed_comparison_code (rtx, rtx);
-extern enum rtx_code reversed_comparison_code_parts (enum rtx_code, rtx,
-						     rtx, rtx);
+extern rtx reversed_comparison (const_rtx, enum machine_mode);
+extern enum rtx_code reversed_comparison_code (const_rtx, const_rtx);
+extern enum rtx_code reversed_comparison_code_parts (enum rtx_code, const_rtx,
+						     const_rtx, const_rtx);
 extern void delete_for_peephole (rtx, rtx);
 extern int condjump_in_parallel_p (const_rtx);
 
@@ -2246,14 +2257,14 @@ extern int output_dependence (const_rtx, const_rtx);
 extern void init_alias_once (void);
 extern void init_alias_analysis (void);
 extern void end_alias_analysis (void);
-extern bool memory_modified_in_insn_p (rtx, rtx);
+extern bool memory_modified_in_insn_p (const_rtx, const_rtx);
 extern rtx find_base_term (rtx);
 extern rtx gen_hard_reg_clobber (enum machine_mode, unsigned int);
 extern rtx get_reg_known_value (unsigned int);
 extern bool get_reg_known_equiv_p (unsigned int);
 
 #ifdef STACK_REGS
-extern int stack_regs_mentioned (rtx insn);
+extern int stack_regs_mentioned (const_rtx insn);
 #endif
 
 /* In toplev.c */

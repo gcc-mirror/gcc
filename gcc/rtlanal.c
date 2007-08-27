@@ -844,9 +844,9 @@ reg_set_p (const_rtx reg, const_rtx insn)
    X contains a MEM; this routine does usememory aliasing.  */
 
 int
-modified_between_p (rtx x, rtx start, rtx end)
+modified_between_p (const_rtx x, const_rtx start, const_rtx end)
 {
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;
   rtx insn;
@@ -907,9 +907,9 @@ modified_between_p (rtx x, rtx start, rtx end)
    does use memory aliasing.  */
 
 int
-modified_in_p (rtx x, rtx insn)
+modified_in_p (const_rtx x, const_rtx insn)
 {
-  enum rtx_code code = GET_CODE (x);
+  const enum rtx_code code = GET_CODE (x);
   const char *fmt;
   int i, j;
 
@@ -1412,41 +1412,49 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
   If the item being stored in or clobbered is a SUBREG of a hard register,
   the SUBREG will be passed.  */
 
+#define NOTE_STORES_BODY(NOTE_STORES_FN) do { \
+  int i; \
+  if (GET_CODE (x) == COND_EXEC) \
+    x = COND_EXEC_CODE (x); \
+  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER) \
+    { \
+      rtx dest = SET_DEST (x); \
+      while ((GET_CODE (dest) == SUBREG \
+	      && (!REG_P (SUBREG_REG (dest)) \
+		  || REGNO (SUBREG_REG (dest)) >= FIRST_PSEUDO_REGISTER)) \
+	     || GET_CODE (dest) == ZERO_EXTRACT \
+	     || GET_CODE (dest) == STRICT_LOW_PART) \
+	dest = XEXP (dest, 0); \
+      /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions, \
+	 each of whose first operand is a register.  */ \
+      if (GET_CODE (dest) == PARALLEL) \
+	{ \
+	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--) \
+	    if (XEXP (XVECEXP (dest, 0, i), 0) != 0) \
+	      (*fun) (XEXP (XVECEXP (dest, 0, i), 0), x, data); \
+	} \
+      else \
+	(*fun) (dest, x, data); \
+    } \
+  else if (GET_CODE (x) == PARALLEL) \
+    for (i = XVECLEN (x, 0) - 1; i >= 0; i--) \
+      NOTE_STORES_FN (XVECEXP (x, 0, i), fun, data); \
+} while (0)
+
 void
 note_stores (const_rtx x, void (*fun) (rtx, const_rtx, void *), void *data)
 {
-  int i;
-
-  if (GET_CODE (x) == COND_EXEC)
-    x = COND_EXEC_CODE (x);
-
-  if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
-    {
-      rtx dest = SET_DEST (x);
-
-      while ((GET_CODE (dest) == SUBREG
-	      && (!REG_P (SUBREG_REG (dest))
-		  || REGNO (SUBREG_REG (dest)) >= FIRST_PSEUDO_REGISTER))
-	     || GET_CODE (dest) == ZERO_EXTRACT
-	     || GET_CODE (dest) == STRICT_LOW_PART)
-	dest = XEXP (dest, 0);
-
-      /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions,
-	 each of whose first operand is a register.  */
-      if (GET_CODE (dest) == PARALLEL)
-	{
-	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	    if (XEXP (XVECEXP (dest, 0, i), 0) != 0)
-	      (*fun) (XEXP (XVECEXP (dest, 0, i), 0), x, data);
-	}
-      else
-	(*fun) (dest, x, data);
-    }
-
-  else if (GET_CODE (x) == PARALLEL)
-    for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-      note_stores (XVECEXP (x, 0, i), fun, data);
+  NOTE_STORES_BODY(note_stores);
 }
+
+void
+const_note_stores (const_rtx x, void (*fun) (const_rtx, const_rtx, const void *), const void *data)
+{
+  NOTE_STORES_BODY(const_note_stores);
+}
+
+#undef NOTE_STORES_BODY
+
 
 /* Like notes_stores, but call FUN for each expression that is being
    referenced in PBODY, a pointer to the PATTERN of an insn.  We only call
@@ -3363,7 +3371,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
    call instruction.  */
 
 bool
-keep_with_call_p (rtx insn)
+keep_with_call_p (const_rtx insn)
 {
   rtx set;
 
@@ -3384,7 +3392,7 @@ keep_with_call_p (rtx insn)
 	 if we can break or not.  */
       if (SET_DEST (set) == stack_pointer_rtx)
 	{
-	  rtx i2 = next_nonnote_insn (insn);
+	  const_rtx i2 = const_next_nonnote_insn (insn);
 	  if (i2 && keep_with_call_p (i2))
 	    return true;
 	}

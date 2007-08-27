@@ -167,7 +167,7 @@ static rtx adjust_offset_for_component_ref (tree, rtx);
 static int nonoverlapping_memrefs_p (const_rtx, const_rtx);
 static int write_dependence_p (const_rtx, const_rtx, int);
 
-static void memory_modified_1 (rtx, const_rtx, void *);
+static void memory_modified_1 (const_rtx, const_rtx, const void *);
 static void record_alias_subset (alias_set_type, alias_set_type);
 
 /* Set up all info needed to perform alias analysis on memory references.  */
@@ -2354,11 +2354,11 @@ init_alias_once (void)
    to be memory reference.  */
 static bool memory_modified;
 static void
-memory_modified_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
+memory_modified_1 (const_rtx x, const_rtx pat ATTRIBUTE_UNUSED, const void *data)
 {
   if (MEM_P (x))
     {
-      if (anti_dependence (x, (rtx)data) || output_dependence (x, (rtx)data))
+      if (anti_dependence (x, (const_rtx)data) || output_dependence (x, (const_rtx)data))
 	memory_modified = true;
     }
 }
@@ -2367,12 +2367,12 @@ memory_modified_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 /* Return true when INSN possibly modify memory contents of MEM
    (i.e. address can be modified).  */
 bool
-memory_modified_in_insn_p (rtx mem, rtx insn)
+memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
 {
   if (!INSN_P (insn))
     return false;
   memory_modified = false;
-  note_stores (PATTERN (insn), memory_modified_1, mem);
+  const_note_stores (PATTERN (insn), memory_modified_1, mem);
   return memory_modified;
 }
 

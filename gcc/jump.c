@@ -233,7 +233,8 @@ mark_all_labels (rtx f)
    description should define REVERSIBLE_CC_MODE and REVERSE_CONDITION macros
    to help this function avoid overhead in these cases.  */
 enum rtx_code
-reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn)
+reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
+				const_rtx arg1, const_rtx insn)
 {
   enum machine_mode mode;
 
@@ -290,7 +291,7 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
 
   if (GET_MODE_CLASS (mode) == MODE_CC || CC0_P (arg0))
     {
-      rtx prev;
+      const_rtx prev;
       /* Try to search for the comparison to determine the real mode.
          This code is expensive, but with sane machine description it
          will be never used, since REVERSIBLE_CC_MODE will return true
@@ -298,9 +299,9 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
       if (! insn)
 	return UNKNOWN;
 
-      for (prev = prev_nonnote_insn (insn);
+      for (prev = const_prev_nonnote_insn (insn);
 	   prev != 0 && !LABEL_P (prev);
-	   prev = prev_nonnote_insn (prev))
+	   prev = const_prev_nonnote_insn (prev))
 	{
 	  const_rtx set = set_of (arg0, prev);
 	  if (set && GET_CODE (set) == SET
@@ -346,7 +347,7 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
 /* A wrapper around the previous function to take COMPARISON as rtx
    expression.  This simplifies many callers.  */
 enum rtx_code
-reversed_comparison_code (rtx comparison, rtx insn)
+reversed_comparison_code (const_rtx comparison, const_rtx insn)
 {
   if (!COMPARISON_P (comparison))
     return UNKNOWN;
@@ -358,7 +359,7 @@ reversed_comparison_code (rtx comparison, rtx insn)
 /* Return comparison with reversed code of EXP.
    Return NULL_RTX in case we fail to do the reversal.  */
 rtx
-reversed_comparison (rtx exp, enum machine_mode mode)
+reversed_comparison (const_rtx exp, enum machine_mode mode)
 {
   enum rtx_code reversed_code = reversed_comparison_code (exp, NULL_RTX);
   if (reversed_code == UNKNOWN)
@@ -789,7 +790,7 @@ any_condjump_p (const_rtx insn)
 /* Return the label of a conditional jump.  */
 
 rtx
-condjump_label (rtx insn)
+condjump_label (const_rtx insn)
 {
   rtx x = pc_set (insn);
 

@@ -56,7 +56,7 @@ struct gcc_debug_hooks
      instructions.  This may not be the case for blocks containing
      nested functions, since we may actually call such a function even
      though the BLOCK information is messed up.  Defaults to true.  */
-  bool (* ignore_block) (tree);
+  bool (* ignore_block) (const_tree);
 
   /* Record a source file location at (FILE, LINE).  */
   void (* source_line) (unsigned int line, const char *file);
@@ -140,7 +140,7 @@ extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
 extern void debug_nothing_tree_int (tree, int);
 extern void debug_nothing_tree_tree (tree, tree);
-extern bool debug_true_tree (tree);
+extern bool debug_true_const_tree (const_tree);
 extern void debug_nothing_rtx (rtx);
 
 /* Hooks for various debug formats.  */
