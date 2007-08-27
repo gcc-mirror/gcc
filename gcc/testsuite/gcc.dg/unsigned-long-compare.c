@@ -6,7 +6,7 @@
    expansion emits a function whose return is unbiased and needs
    adjustment. */
 /* Origin: Carlos O'Donell <carlos@codesourcery.com> */
-/* { dg-do run { target arm-*-*eabi* } } */
+/* { dg-do run } */
 /* { dg-options "" } */
 #include <stdlib.h>
 
