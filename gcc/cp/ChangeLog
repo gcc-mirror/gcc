@@ -1,3 +1,11 @@
+2007-08-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* decl.c (GNU_INLINE_P): New.
+	(duplicate_decls): Handle gnu_inline.  Merge attributes and
+	some flags in overriding definitions.
+	(redeclaration_error_message): Handle gnu_inline.
+	(start_preparsed_function): Likewise.
+
 2007-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (sufficient_parms_p): Constify.

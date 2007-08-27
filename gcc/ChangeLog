@@ -1,3 +1,8 @@
+2007-08-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* doc/extend.texi (gnu_inline funtion attribute): Document C++
+	behavior.
+
 2007-08-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31337

@@ -1,3 +1,15 @@
+2007-08-27  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/ext/gnu-inline-common.h: New.
+	* g++.dg/ext/gnu-inline-global-reject.C: New.
+	* g++.dg/ext/gnu-inline-global.C: New.
+	* g++.dg/ext/gnu-inline-namespace.C: New.
+	* g++.dg/ext/gnu-inline-anon-namespace.C: New.
+	* g++.dg/ext/gnu-inline-class.C: New.
+	* g++.dg/ext/gnu-inline-class-static.C: New.
+	* g++.dg/ext/gnu-inline-template-class.C: New.
+	* g++.dg/ext/gnu-inline-template-func.C: New.
+
 2007-08-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31337

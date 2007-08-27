@@ -1718,8 +1718,8 @@ refer to the single copy in the library.  Note that the two
 definitions of the functions need not be precisely the same, although
 if they do not have the same effect your program may behave oddly.
 
-If the function is neither @code{extern} nor @code{static}, then the
-function is compiled as a standalone function, as well as being
+In C, if the function is neither @code{extern} nor @code{static}, then
+the function is compiled as a standalone function, as well as being
 inlined where possible.
 
 This is how GCC traditionally handled functions declared
@@ -1730,6 +1730,10 @@ available in GCC 4.1.3 and later.  It is available if either of the
 preprocessor macros @code{__GNUC_GNU_INLINE__} or
 @code{__GNUC_STDC_INLINE__} are defined.  @xref{Inline,,An Inline
 Function is As Fast As a Macro}.
+
+In C++, this attribute does not depend on @code{extern} in any way,
+but it still requires the @code{inline} keyword to enable its special
+behavior.
 
 @cindex @code{flatten} function attribute
 @item flatten

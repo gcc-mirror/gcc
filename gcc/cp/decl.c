@@ -1098,6 +1098,10 @@ check_redeclaration_exception_specification (tree new_decl,
     }
 }
 
+#define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
+			  && lookup_attribute ("gnu_inline",		\
+					       DECL_ATTRIBUTES (fn)))
+
 /* If NEWDECL is a redeclaration of OLDDECL, merge the declarations.
    If the redeclaration is invalid, a diagnostic is issued, and the
    error_mark_node is returned.  Otherwise, OLDDECL is returned.
@@ -1634,20 +1638,46 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	= chainon (DECL_TEMPLATE_SPECIALIZATIONS (olddecl),
 		   DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
 
+      DECL_ATTRIBUTES (old_result)
+	= (*targetm.merge_decl_attributes) (old_result, new_result);
+
       if (DECL_FUNCTION_TEMPLATE_P (newdecl))
 	{
-	  DECL_INLINE (old_result)
-	    |= DECL_INLINE (new_result);
-	  DECL_DECLARED_INLINE_P (old_result)
-	    |= DECL_DECLARED_INLINE_P (new_result);
-	  check_redeclaration_exception_specification (newdecl, olddecl);
+	  if (GNU_INLINE_P (old_result) != GNU_INLINE_P (new_result)
+	      && DECL_INITIAL (new_result))
+	    {
+	      if (DECL_INITIAL (old_result))
+		{
+		  DECL_INLINE (old_result) = 0;
+		  DECL_UNINLINABLE (old_result) = 1;
+		}
+	      else
+		{
+		  DECL_INLINE (old_result) = DECL_INLINE (new_result);
+		  DECL_UNINLINABLE (old_result) = DECL_UNINLINABLE (new_result);
+		}
+	      DECL_EXTERNAL (old_result) = DECL_EXTERNAL (new_result);
+	      DECL_NOT_REALLY_EXTERN (old_result)
+		= DECL_NOT_REALLY_EXTERN (new_result);
+	      DECL_INTERFACE_KNOWN (old_result)
+		= DECL_INTERFACE_KNOWN (new_result);
+	      DECL_DECLARED_INLINE_P (old_result)
+		= DECL_DECLARED_INLINE_P (new_result);
+	    }
+	  else
+	    {
+	      DECL_INLINE (old_result)
+		|= DECL_INLINE (new_result);
+	      DECL_DECLARED_INLINE_P (old_result)
+		|= DECL_DECLARED_INLINE_P (new_result);
+	      check_redeclaration_exception_specification (newdecl, olddecl);
+	    }
 	}
 
       /* If the new declaration is a definition, update the file and
 	 line information on the declaration, and also make
 	 the old declaration the same definition.  */
-      if (DECL_INITIAL (old_result) == NULL_TREE
-	  && DECL_INITIAL (new_result) != NULL_TREE)
+      if (DECL_INITIAL (new_result) != NULL_TREE)
 	{
 	  DECL_SOURCE_LOCATION (olddecl)
 	    = DECL_SOURCE_LOCATION (old_result)
@@ -1805,9 +1835,30 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   new_template = NULL_TREE;
   if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
     {
-      DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
-      DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
-      DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
+      bool old_decl_gnu_inline;
+
+      if ((DECL_INTERFACE_KNOWN (olddecl)
+	   && TREE_CODE (olddecl) == FUNCTION_DECL)
+	  || (TREE_CODE (olddecl) == TEMPLATE_DECL
+	      && TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == FUNCTION_DECL))
+	{
+	  tree fn = olddecl;
+
+	  if (TREE_CODE (fn) == TEMPLATE_DECL)
+	    fn = DECL_TEMPLATE_RESULT (olddecl);
+
+	  old_decl_gnu_inline = GNU_INLINE_P (fn) && DECL_INITIAL (fn);
+	}
+      else
+	old_decl_gnu_inline = false;
+
+      if (!old_decl_gnu_inline)
+	{
+	  DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
+	  DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
+	  DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
+	  DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
+	}
       DECL_TEMPLATE_INSTANTIATED (newdecl)
 	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
 
@@ -1880,6 +1931,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
 	  /* [temp.expl.spec/14] We don't inline explicit specialization
 	     just because the primary template says so.  */
+	}
+      else if (new_defines_function && DECL_INITIAL (olddecl))
+	{
+	  /* C++ is always in in unit-at-a-time mode, so we never
+	     inline re-defined extern inline functions.  */
+	  DECL_INLINE (newdecl) = 0;
+	  DECL_UNINLINABLE (newdecl) = 1;
 	}
       else
 	{
@@ -2123,9 +2181,25 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	{
 	  if (DECL_NAME (olddecl) == NULL_TREE)
 	    return "%q#D not declared in class";
-	  else
+	  else if (!GNU_INLINE_P (olddecl)
+		   || GNU_INLINE_P (newdecl))
 	    return "redefinition of %q#D";
 	}
+
+      if (DECL_DECLARED_INLINE_P (olddecl) && DECL_DECLARED_INLINE_P (newdecl))
+	{
+	  bool olda = GNU_INLINE_P (olddecl);
+	  bool newa = GNU_INLINE_P (newdecl);
+
+	  if (olda != newa)
+	    {
+	      if (newa)
+		return "%q+D redeclared inline with %<gnu_inline%> attribute";
+	      else
+		return "%q+D redeclared inline without %<gnu_inline%> attribute";
+	    }
+	}
+
       return NULL;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -2151,8 +2225,23 @@ redeclaration_error_message (tree newdecl, tree olddecl)
       ot = DECL_TEMPLATE_RESULT (olddecl);
       if (DECL_TEMPLATE_INFO (ot))
 	ot = DECL_TEMPLATE_RESULT (template_for_substitution (ot));
-      if (DECL_INITIAL (nt) && DECL_INITIAL (ot))
+      if (DECL_INITIAL (nt) && DECL_INITIAL (ot)
+	  && (!GNU_INLINE_P (ot) || GNU_INLINE_P (nt)))
 	return "redefinition of %q#D";
+
+      if (DECL_DECLARED_INLINE_P (ot) && DECL_DECLARED_INLINE_P (nt))
+	{
+	  bool olda = GNU_INLINE_P (ot);
+	  bool newa = GNU_INLINE_P (nt);
+
+	  if (olda != newa)
+	    {
+	      if (newa)
+		return "%q+D redeclared inline with %<gnu_inline%> attribute";
+	      else
+		return "%q+D redeclared inline without %<gnu_inline%> attribute";
+	    }
+	}
 
       /* Core issue #226 (C++0x): 
            
@@ -10786,6 +10875,14 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && lookup_attribute ("noinline", attrs))
     warning (0, "inline function %q+D given attribute noinline", decl1);
 
+  /* Handle gnu_inline attribute.  */
+  if (GNU_INLINE_P (decl1))
+    {
+      DECL_EXTERNAL (decl1) = 1;
+      DECL_NOT_REALLY_EXTERN (decl1) = 0;
+      DECL_INTERFACE_KNOWN (decl1) = 1;
+    }
+
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
     /* This is a constructor, we must ensure that any default args
        introduced by this definition are propagated to the clones
@@ -11071,8 +11168,9 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   else
     {
       /* This is a definition, not a reference.
-	 So clear DECL_EXTERNAL.  */
-      DECL_EXTERNAL (decl1) = 0;
+	 So clear DECL_EXTERNAL, unless this is a GNU extern inline.  */
+      if (!GNU_INLINE_P (decl1))
+	DECL_EXTERNAL (decl1) = 0;
 
       if ((DECL_DECLARED_INLINE_P (decl1)
 	   || DECL_TEMPLATE_INSTANTIATION (decl1))
