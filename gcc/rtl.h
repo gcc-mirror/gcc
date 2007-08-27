@@ -533,7 +533,7 @@ struct rtvec_def GTY(()) {
    &_rtx->u.rv; })
 
 #define XCNMPFV(RTX, C, M) __extension__				\
-({ rtx const _rtx = (RTX);						\
+({ __typeof (RTX) const _rtx = (RTX);					\
    if (GET_CODE (_rtx) != (C) || GET_MODE (_rtx) == (M))		\
      rtl_check_failed_code_mode (_rtx, (C), (M), true, __FILE__,	\
 				 __LINE__, __FUNCTION__);		\
