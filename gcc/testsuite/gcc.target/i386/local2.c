@@ -1,6 +1,7 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2 -funit-at-a-time -fomit-frame-pointer" } */
-/* { dg-skip-if "PR 25214" { ilp32 } { "-fpic" "-fPIC" } { "" } } */
 /* { dg-final { scan-assembler-not "sub\[^\\n\]*sp" } } */
 
 static __attribute__ ((noinline)) q ();

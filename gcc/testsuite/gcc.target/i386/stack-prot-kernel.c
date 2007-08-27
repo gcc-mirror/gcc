@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-skip-if "darwin x86_64 is pic" { *-*-darwin* } { "*" } { "" } } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2 -fstack-protector-all -mcmodel=kernel" } */
 
 void test1 (int x)
