@@ -1,3 +1,7 @@
+2007-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	* simplify.c (gfc_simplify_lgamma): Fix mpfr_lgamma call.
+
 2007-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33055
