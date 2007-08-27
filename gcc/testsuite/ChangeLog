@@ -1,3 +1,8 @@
+2007-08-27  Kazu Hirata  <kazu@codesourcery.com>
+
+	* lib/target-supports.exp (check_profiling_available):
+	Set profiling_available_saved to 0 on fido-*-elf.
+
 2007-08-27  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/33173
