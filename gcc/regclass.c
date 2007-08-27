@@ -1221,7 +1221,7 @@ init_reg_autoinc (void)
 #ifdef FORBIDDEN_INC_DEC_CLASSES
   int i;
 
-  memset (forbidden_inc_dec_class, 0, sizeof forbidden_inc_dec_classes);
+  memset (forbidden_inc_dec_class, 0, sizeof forbidden_inc_dec_class);
   for (i = 0; i < N_REG_CLASSES; i++)
     {
       rtx r = gen_rtx_raw_REG (VOIDmode, 0);

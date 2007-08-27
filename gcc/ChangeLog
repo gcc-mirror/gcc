@@ -1,3 +1,7 @@
+2007-08-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* regclass.c (init_reg_autoinc): Fix typo.
+
 2007-08-27  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/33173
