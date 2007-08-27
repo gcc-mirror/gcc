@@ -1,3 +1,7 @@
+2007-08-27  Hans Kester  <hans.kester@ellips.nl>
+
+	* config.host : Add x86_64-elf target.
+
 2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac (set_have_cc_tls): Add a missing =.
