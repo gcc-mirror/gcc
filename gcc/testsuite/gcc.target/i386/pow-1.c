@@ -21,4 +21,4 @@ double test4 (double x)
   return __builtin_pow (x, -5./2.);
 }
 
-/* { dg-final { scan-assembler-not "call" } } */
+/* { dg-final { scan-assembler-not "call\[ \t\]*pow" } } */
