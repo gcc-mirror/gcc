@@ -1,6 +1,13 @@
+2007-08-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/31385
+	* config/i386/i386.h (VALID_DFP_MODE_P): New.
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Allow DFP in
+	GPR.
+
 2007-08-27  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
-            Nigel Stephens <nigel@mips.com>
+	    Nigel Stephens <nigel@mips.com>
 
 	Separate target-specific initialization from general
 	back-end initialization.

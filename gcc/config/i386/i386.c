@@ -20568,6 +20568,8 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return 1;
   else if (VALID_FP_MODE_P (mode))
     return 1;
+  else if (VALID_DFP_MODE_P (mode))
+    return 1;
   /* Lots of MMX code casts 8 byte vector modes to DImode.  If we then go
      on to use that value in smaller contexts, this can easily force a
      pseudo to be allocated to GENERAL_REGS.  Since this is no worse than

@@ -1088,6 +1088,9 @@ do {									\
    place emms and femms instructions.  */
 #define UNITS_PER_SIMD_WORD (TARGET_SSE ? 16 : UNITS_PER_WORD)
 
+#define VALID_DFP_MODE_P(MODE)						\
+    ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
+
 #define VALID_FP_MODE_P(MODE)						\
     ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode		\
      || (MODE) == SCmode || (MODE) == DCmode || (MODE) == XCmode)	\
