@@ -312,7 +312,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_end_source_file,	         /* end_source_file */
   sdbout_begin_block,		         /* begin_block */
   sdbout_end_block,		         /* end_block */
-  debug_true_tree,		         /* ignore_block */
+  debug_true_const_tree,	         /* ignore_block */
   sdbout_source_line,		         /* source_line */
 #ifdef MIPS_DEBUGGING_INFO
   /* Defer on MIPS systems so that parameter descriptions follow

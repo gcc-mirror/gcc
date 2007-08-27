@@ -90,6 +90,7 @@ extern bool is_gimple_non_addressable (tree t);
 extern bool is_gimple_call_addr (tree);
 /* If T makes a function call, returns the CALL_EXPR operand.  */
 extern tree get_call_expr_in (tree t);
+extern const_tree const_get_call_expr_in (const_tree t);
 
 extern void recalculate_side_effects (tree);
 

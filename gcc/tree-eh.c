@@ -148,14 +148,16 @@ remove_stmt_from_eh_region (tree t)
 }
 
 int
-lookup_stmt_eh_region_fn (struct function *ifun, tree t)
+lookup_stmt_eh_region_fn (struct function *ifun, const_tree t)
 {
   struct throw_stmt_node *p, n;
 
   if (!get_eh_throw_stmt_table (ifun))
     return -2;
 
-  n.stmt = t;
+  /* The CONST_CAST is okay because we don't modify n.stmt throughout
+     its scope, or the scope of p.  */
+  n.stmt = (tree) CONST_CAST (t);
   p = (struct throw_stmt_node *) htab_find (get_eh_throw_stmt_table (ifun),
                                             &n);
 
@@ -163,7 +165,7 @@ lookup_stmt_eh_region_fn (struct function *ifun, tree t)
 }
 
 int
-lookup_stmt_eh_region (tree t)
+lookup_stmt_eh_region (const_tree t)
 {
   /* We can get called from initialized data when -fnon-call-exceptions
      is on; prevent crash.  */
@@ -2032,7 +2034,7 @@ tree_could_throw_p (tree t)
 }
 
 bool
-tree_can_throw_internal (tree stmt)
+tree_can_throw_internal (const_tree stmt)
 {
   int region_nr;
   bool is_resx = false;

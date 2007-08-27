@@ -162,7 +162,7 @@ probably_never_executed_bb_p (const_basic_block bb)
    PREDICTOR.  */
 
 bool
-rtl_predicted_by_p (basic_block bb, enum br_predictor predictor)
+rtl_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 {
   rtx note;
   if (!INSN_P (BB_END (bb)))
@@ -183,7 +183,7 @@ static struct pointer_map_t *bb_predictions;
    PREDICTOR.  */
 
 bool
-tree_predicted_by_p (basic_block bb, enum br_predictor predictor)
+tree_predicted_by_p (const_basic_block bb, enum br_predictor predictor)
 {
   struct edge_prediction *i;
   void **preds = pointer_map_contains (bb_predictions, bb);

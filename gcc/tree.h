@@ -3998,8 +3998,8 @@ extern bool range_in_array_bounds_p (tree);
 extern tree value_member (tree, tree);
 extern tree purpose_member (const_tree, tree);
 
-extern int attribute_list_equal (tree, tree);
-extern int attribute_list_contained (tree, tree);
+extern int attribute_list_equal (const_tree, const_tree);
+extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
 extern int tree_int_cst_lt (const_tree, const_tree);
 extern int tree_int_cst_compare (const_tree, const_tree);
@@ -4143,6 +4143,7 @@ extern int is_attribute_p (const char *, const_tree);
    of the attribute or NULL_TREE if not found.  */
 
 extern tree lookup_attribute (const char *, tree);
+extern const_tree const_lookup_attribute (const char *, const_tree);
 
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
    modified list.  */

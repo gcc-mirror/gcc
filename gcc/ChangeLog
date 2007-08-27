@@ -1,3 +1,86 @@
+2007-08-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (memory_modified_1, memory_modified_in_insn_p):
+	Constify.
+	* basic-block.h (tree_predicted_by_p, rtl_predicted_by_p):
+	Likewise.
+	* bb-reorder.c (copy_bb_p): Likewise.
+	* cfghooks.c (can_remove_branch_p, can_merge_blocks_p,
+	predicted_by_p, can_duplicate_block_p, block_ends_with_call_p,
+	block_ends_with_condjump_p): Likewise.
+	* cfghooks.h (can_remove_branch_p, can_merge_blocks_p,
+	predicted_by_p, can_duplicate_block_p, block_ends_with_call_p,
+	block_ends_with_condjump_p): Likewise.
+	* cfglayout.c (cfg_layout_can_duplicate_bb_p): Likewise.
+	* cfgrtl.c (can_delete_note_p, can_delete_label_p,
+	rtl_can_merge_blocks, cfg_layout_can_merge_blocks_p,
+	rtl_block_ends_with_call_p, rtl_block_ends_with_condjump_p,
+	need_fake_edge_p, rtl_can_remove_branch_p): Likewise.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Use
+	debug_true_const_tree instad of debug_true_tree.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	* debug.h (ignore_block, debug_true_const_tree): Constify.
+	* dwarf2out.c (stack_adjust_offset, clobbers_queued_reg_save,
+	dwarf2out_ignore_block, is_pseudo_reg, is_tagged_type,
+	decl_ultimate_origin, block_ultimate_origin, lookup_decl_loc,
+	same_dw_val_p, add_ranges, is_subrange_type, type_is_enum,
+	dbx_reg_number, is_based_loc, field_type,
+	simple_type_align_in_bits, simple_decl_align_in_bits,
+	simple_type_size_in_bits, field_byte_offset, insert_float,
+	type_tag, member_declared_type, is_redundant_typedef,
+	secname_for_decl, is_inlined_entry_point): Likewise.
+	* emit-rtl.c (const_next_insn, const_previous_insn,
+	const_next_nonnote_insn, const_prev_nonnote_insn,
+	const_next_real_insn, const_prev_real_insn,
+	const_next_active_insn, const_prev_active_insn, const_next_label,
+	const_prev_label): Likewise.
+	* except.h (lookup_stmt_eh_region_fn, lookup_stmt_eh_region):
+	Likewise.
+	* haifa-sched.c (may_trap_exp, haifa_classify_insn,
+	find_set_reg_weight, no_real_insns_p, find_set_reg_weight,
+	sched_insn_is_legitimate_for_speculation_p): Likewise.
+	* jump.c (reversed_comparison_code_parts,
+	reversed_comparison_code, reversed_comparison, condjump_label):
+	Likewise.
+	* predict.c (rtl_predicted_by_p, tree_predicted_by_p): Likewise.
+	* reg-stack.c (stack_regs_mentioned_p, stack_regs_mentioned):
+	Likewise.
+	* rtl.h (const_previous_insn, const_next_insn,
+	const_prev_nonnote_insn, const_next_nonnote_insn,
+	const_prev_real_insn, const_next_real_insn,
+	const_prev_active_insn, const_next_active_insn, const_prev_label,
+	const_next_label, modified_between_p, modified_in_p,
+	const_note_storeskeep_with_call_p, condjump_label,
+	reversed_comparison, reversed_comparison_code,
+	reversed_comparison_code_parts, memory_modified_in_insn_p,
+	stack_regs_mentioned): Likewise.
+	* rtlanal.c (modified_between_p, modified_in_p, const_note_stores,
+	keep_with_call_p): Likewise.
+	* sched-deps.c (deps_may_trap_p, sched_get_condition,
+	conditions_mutex_p, sched_insns_conditions_mutex_psd_next_list,
+	sd_lists_size, sd_lists_empty_p): Likewise.
+	* sched-int.h (sched_insns_conditions_mutex_p,
+	haifa_classify_insn, no_real_insns_p,
+	sched_insn_is_legitimate_for_speculation_p, sd_next_list,
+	sd_lists_size, sd_lists_empty_p): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* tree-cfg.c (tree_can_merge_blocks_p, is_ctrl_altering_stmt,
+	stmt_ends_bb_p, tree_can_remove_branch_p, tree_can_duplicate_bb_p,
+	-tree_block_ends_with_call_p, tree_block_ends_with_condjump_p):
+	Likewise.
+	* tree-eh.c (lookup_stmt_eh_region_fn, lookup_stmt_eh_region,
+	tree_can_throw_internal): Likewise.
+	* tree-flow-inline.h (phi_nodes): Likewise.
+	* tree-flow.h (phi_nodesstmt_ends_bb_p, is_ctrl_altering_stmt,
+	tree_can_throw_internal, lookup_stmt_eh_region): Likewise.
+	* tree-gimple.c (const_get_call_expr_in): Likewise.
+	* tree-gimple.h (const_get_call_expr_in): Likewise.
+	* tree.c (const_lookup_attribute, attribute_list_equal,
+	attribute_list_contained): Likewise.
+	* tree.h (attribute_list_equal, attribute_list_contained,
+	const_lookup_attribute): Likewise.
+	* vmsdbgout.c (vmsdbgout_ignore_block): Likewise.
+
 2007-08-26  Bernhard Fischer  <aldot@gcc.gnu.org>
 
 	* tree-ssa-sccvn.c, tree-ssa-sccvn.h, tree-vn.c,

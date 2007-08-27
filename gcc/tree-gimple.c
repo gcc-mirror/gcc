@@ -436,18 +436,28 @@ is_gimple_call_addr (tree t)
 /* If T makes a function call, return the corresponding CALL_EXPR operand.
    Otherwise, return NULL_TREE.  */
 
+#define GET_CALL_EXPR_IN_BODY do { \
+  /* FIXME tuples: delete the assertion below when conversion complete.  */ \
+  gcc_assert (TREE_CODE (t) != MODIFY_EXPR); \
+  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT) \
+    t = GIMPLE_STMT_OPERAND (t, 1); \
+  if (TREE_CODE (t) == WITH_SIZE_EXPR) \
+    t = TREE_OPERAND (t, 0); \
+  if (TREE_CODE (t) == CALL_EXPR) \
+    return t; \
+  return NULL_TREE; \
+} while (0)
+
 tree
 get_call_expr_in (tree t)
 {
-  /* FIXME tuples: delete the assertion below when conversion complete.  */
-  gcc_assert (TREE_CODE (t) != MODIFY_EXPR);
-  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
-    t = GIMPLE_STMT_OPERAND (t, 1);
-  if (TREE_CODE (t) == WITH_SIZE_EXPR)
-    t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) == CALL_EXPR)
-    return t;
-  return NULL_TREE;
+  GET_CALL_EXPR_IN_BODY;
+}
+
+const_tree
+const_get_call_expr_in (const_tree t)
+{
+  GET_CALL_EXPR_IN_BODY;
 }
 
 /* Given a memory reference expression T, return its base address.

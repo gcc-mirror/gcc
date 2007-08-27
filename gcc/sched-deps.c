@@ -418,7 +418,7 @@ static bitmap_head *anti_dependency_cache;
 static bitmap_head *spec_dependency_cache;
 static int cache_size;
 
-static int deps_may_trap_p (rtx);
+static int deps_may_trap_p (const_rtx);
 static void add_dependence_list (rtx, rtx, int, enum reg_note);
 static void add_dependence_list_and_free (rtx, rtx *, int, enum reg_note);
 static void delete_all_dependences (rtx);
@@ -429,8 +429,8 @@ static void sched_analyze_1 (struct deps *, rtx, rtx);
 static void sched_analyze_2 (struct deps *, rtx, rtx);
 static void sched_analyze_insn (struct deps *, rtx, rtx);
 
-static rtx sched_get_condition (rtx);
-static int conditions_mutex_p (rtx, rtx);
+static rtx sched_get_condition (const_rtx);
+static int conditions_mutex_p (const_rtx, const_rtx);
 
 static enum DEPS_ADJUST_RESULT maybe_add_or_update_dep_1 (dep_t, bool,
 							  rtx, rtx);
@@ -446,13 +446,13 @@ static void check_dep (dep_t, bool);
 /* Return nonzero if a load of the memory reference MEM can cause a trap.  */
 
 static int
-deps_may_trap_p (rtx mem)
+deps_may_trap_p (const_rtx mem)
 {
-  rtx addr = XEXP (mem, 0);
+  const_rtx addr = XEXP (mem, 0);
 
   if (REG_P (addr) && REGNO (addr) >= FIRST_PSEUDO_REGISTER)
     {
-      rtx t = get_reg_known_value (REGNO (addr));
+      const_rtx t = get_reg_known_value (REGNO (addr));
       if (t)
 	addr = t;
     }
@@ -462,7 +462,7 @@ deps_may_trap_p (rtx mem)
 /* Find the condition under which INSN is executed.  */
 
 static rtx
-sched_get_condition (rtx insn)
+sched_get_condition (const_rtx insn)
 {
   rtx pat = PATTERN (insn);
   rtx src;
@@ -498,7 +498,7 @@ sched_get_condition (rtx insn)
 /* Return nonzero if conditions COND1 and COND2 can never be both true.  */
 
 static int
-conditions_mutex_p (rtx cond1, rtx cond2)
+conditions_mutex_p (const_rtx cond1, const_rtx cond2)
 {
   if (COMPARISON_P (cond1)
       && COMPARISON_P (cond2)
@@ -512,7 +512,7 @@ conditions_mutex_p (rtx cond1, rtx cond2)
 /* Return true if insn1 and insn2 can never depend on one another because
    the conditions under which they are executed are mutually exclusive.  */
 bool
-sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
+sched_insns_conditions_mutex_p (const_rtx insn1, const_rtx insn2)
 {
   rtx cond1, cond2;
 
@@ -542,7 +542,7 @@ sched_insns_conditions_mutex_p (rtx insn1, rtx insn2)
    This function is used to switch sd_iterator to the next list.
    !!! For internal use only.  Might consider moving it to sched-int.h.  */
 void
-sd_next_list (rtx insn, sd_list_types_def *types_ptr,
+sd_next_list (const_rtx insn, sd_list_types_def *types_ptr,
 	      deps_list_t *list_ptr, bool *resolved_p_ptr)
 {
   sd_list_types_def types = *types_ptr;
@@ -587,7 +587,7 @@ sd_next_list (rtx insn, sd_list_types_def *types_ptr,
 
 /* Return the summary size of INSN's lists defined by LIST_TYPES.  */
 int
-sd_lists_size (rtx insn, sd_list_types_def list_types)
+sd_lists_size (const_rtx insn, sd_list_types_def list_types)
 {
   int size = 0;
 
@@ -605,7 +605,7 @@ sd_lists_size (rtx insn, sd_list_types_def list_types)
 
 /* Return true if INSN's lists defined by LIST_TYPES are all empty.  */
 bool
-sd_lists_empty_p (rtx insn, sd_list_types_def list_types)
+sd_lists_empty_p (const_rtx insn, sd_list_types_def list_types)
 {
   return sd_lists_size (insn, list_types) == 0;
 }

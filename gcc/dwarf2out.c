@@ -354,12 +354,12 @@ static void reg_save (const char *, unsigned, unsigned, HOST_WIDE_INT);
 #ifdef DWARF2_UNWIND_INFO
 static void initial_return_save (rtx);
 #endif
-static HOST_WIDE_INT stack_adjust_offset (rtx);
+static HOST_WIDE_INT stack_adjust_offset (const_rtx);
 static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_call_frame_info (int);
 static void dwarf2out_stack_adjust (rtx, bool);
 static void flush_queued_reg_saves (void);
-static bool clobbers_queued_reg_save (rtx);
+static bool clobbers_queued_reg_save (const_rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
 
 /* Support for complex CFA locations.  */
@@ -1025,10 +1025,10 @@ initial_return_save (rtx rtl)
    contains.  */
 
 static HOST_WIDE_INT
-stack_adjust_offset (rtx pattern)
+stack_adjust_offset (const_rtx pattern)
 {
-  rtx src = SET_SRC (pattern);
-  rtx dest = SET_DEST (pattern);
+  const_rtx src = SET_SRC (pattern);
+  const_rtx dest = SET_DEST (pattern);
   HOST_WIDE_INT offset = 0;
   enum rtx_code code;
 
@@ -1286,7 +1286,7 @@ flush_queued_reg_saves (void)
    have a new location for?  */
 
 static bool
-clobbers_queued_reg_save (rtx insn)
+clobbers_queued_reg_save (const_rtx insn)
 {
   struct queued_reg_save *q;
 
@@ -3651,7 +3651,7 @@ static void dwarf2out_start_source_file (unsigned, const char *);
 static void dwarf2out_end_source_file (unsigned);
 static void dwarf2out_begin_block (unsigned, unsigned);
 static void dwarf2out_end_block (unsigned, unsigned);
-static bool dwarf2out_ignore_block (tree);
+static bool dwarf2out_ignore_block (const_tree);
 static void dwarf2out_global_decl (tree);
 static void dwarf2out_type_decl (tree, int);
 static void dwarf2out_imported_module_or_decl (tree, tree);
@@ -4069,14 +4069,14 @@ static HOST_WIDE_INT frame_pointer_fb_offset;
 
 /* Forward declarations for functions defined in this file.  */
 
-static int is_pseudo_reg (rtx);
+static int is_pseudo_reg (const_rtx);
 static tree type_main_variant (tree);
-static int is_tagged_type (tree);
+static int is_tagged_type (const_tree);
 static const char *dwarf_tag_name (unsigned);
 static const char *dwarf_attr_name (unsigned);
 static const char *dwarf_form_name (unsigned);
-static tree decl_ultimate_origin (tree);
-static tree block_ultimate_origin (tree);
+static tree decl_ultimate_origin (const_tree);
+static tree block_ultimate_origin (const_tree);
 static tree decl_class_context (tree);
 static void add_dwarf_attr (dw_die_ref, dw_attr_ref);
 static inline enum dw_val_class AT_class (dw_attr_ref);
@@ -4139,7 +4139,7 @@ static int decl_die_table_eq (const void *, const void *);
 static dw_die_ref lookup_decl_die (tree);
 static hashval_t decl_loc_table_hash (const void *);
 static int decl_loc_table_eq (const void *, const void *);
-static var_loc_list *lookup_decl_loc (tree);
+static var_loc_list *lookup_decl_loc (const_tree);
 static void equate_decl_number_to_die (tree, dw_die_ref);
 static void add_var_loc_to_decl (tree, struct var_loc_node *);
 static void print_spaces (FILE *);
@@ -4151,7 +4151,7 @@ static void loc_checksum (dw_loc_descr_ref, struct md5_ctx *);
 static void attr_checksum (dw_attr_ref, struct md5_ctx *, int *);
 static void die_checksum (dw_die_ref, struct md5_ctx *, int *);
 static int same_loc_p (dw_loc_descr_ref, dw_loc_descr_ref, int *);
-static int same_dw_val_p (dw_val_node *, dw_val_node *, int *);
+static int same_dw_val_p (const dw_val_node *, const dw_val_node *, int *);
 static int same_attr_p (dw_attr_ref, dw_attr_ref, int *);
 static int same_die_p (dw_die_ref, dw_die_ref, int *);
 static int same_die_p_wrap (dw_die_ref, dw_die_ref);
@@ -4191,18 +4191,18 @@ static void output_pubnames (VEC (pubname_entry,gc) *);
 static void add_arange (tree, dw_die_ref);
 static void output_aranges (void);
 static unsigned int add_ranges_num (int);
-static unsigned int add_ranges (tree);
+static unsigned int add_ranges (const_tree);
 static unsigned int add_ranges_by_labels (const char *, const char *);
 static void output_ranges (void);
 static void output_line_info (void);
 static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
 static int is_base_type (tree);
-static bool is_subrange_type (tree);
+static bool is_subrange_type (const_tree);
 static dw_die_ref subrange_type_die (tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
-static int type_is_enum (tree);
-static unsigned int dbx_reg_number (rtx);
+static int type_is_enum (const_tree);
+static unsigned int dbx_reg_number (const_rtx);
 static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static dw_loc_descr_ref reg_loc_descriptor (rtx, enum var_init_status);
 static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int, 
@@ -4212,7 +4212,7 @@ static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx,
 static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
 static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT,
 					 enum var_init_status);
-static int is_based_loc (rtx);
+static int is_based_loc (const_rtx);
 static dw_loc_descr_ref mem_loc_descriptor (rtx, enum machine_mode mode,
 					    enum var_init_status);
 static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx,
@@ -4221,18 +4221,18 @@ static dw_loc_descr_ref loc_descriptor (rtx, enum var_init_status);
 static dw_loc_descr_ref loc_descriptor_from_tree_1 (tree, int);
 static dw_loc_descr_ref loc_descriptor_from_tree (tree);
 static HOST_WIDE_INT ceiling (HOST_WIDE_INT, unsigned int);
-static tree field_type (tree);
-static unsigned int simple_type_align_in_bits (tree);
-static unsigned int simple_decl_align_in_bits (tree);
-static unsigned HOST_WIDE_INT simple_type_size_in_bits (tree);
-static HOST_WIDE_INT field_byte_offset (tree);
+static tree field_type (const_tree);
+static unsigned int simple_type_align_in_bits (const_tree);
+static unsigned int simple_decl_align_in_bits (const_tree);
+static unsigned HOST_WIDE_INT simple_type_size_in_bits (const_tree);
+static HOST_WIDE_INT field_byte_offset (const_tree);
 static void add_AT_location_description	(dw_die_ref, enum dwarf_attribute,
 					 dw_loc_descr_ref);
 static void add_data_member_location_attribute (dw_die_ref, tree);
 static void add_const_value_attribute (dw_die_ref, rtx);
 static void insert_int (HOST_WIDE_INT, unsigned, unsigned char *);
 static HOST_WIDE_INT extract_int (const unsigned char *, unsigned);
-static void insert_float (rtx, unsigned char *);
+static void insert_float (const_rtx, unsigned char *);
 static rtx rtl_for_decl_location (tree);
 static void add_location_or_const_value_attribute (dw_die_ref, tree,
 						   enum dwarf_attribute);
@@ -4256,8 +4256,8 @@ static inline int local_scope_p (dw_die_ref);
 static inline int class_or_namespace_scope_p (dw_die_ref);
 static void add_type_attribute (dw_die_ref, tree, int, int, dw_die_ref);
 static void add_calling_convention_attribute (dw_die_ref, tree);
-static const char *type_tag (tree);
-static tree member_declared_type (tree);
+static const char *type_tag (const_tree);
+static tree member_declared_type (const_tree);
 #if 0
 static const char *decl_start_label (tree);
 #endif
@@ -4290,7 +4290,7 @@ static void gen_type_die (tree, dw_die_ref);
 static void gen_tagged_type_instantiation_die (tree, dw_die_ref);
 static void gen_block_die (tree, dw_die_ref, int);
 static void decls_for_scope (tree, dw_die_ref, int);
-static int is_redundant_typedef (tree);
+static int is_redundant_typedef (const_tree);
 static void gen_namespace_die (tree);
 static void gen_decl_die (tree, dw_die_ref);
 static dw_die_ref force_decl_die (tree);
@@ -4437,7 +4437,7 @@ dwarf2out_set_demangle_name_func (const char *(*func) (const char *))
 /* Test if rtl node points to a pseudo register.  */
 
 static inline int
-is_pseudo_reg (rtx rtl)
+is_pseudo_reg (const_rtx rtl)
 {
   return ((REG_P (rtl) && REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
 	  || (GET_CODE (rtl) == SUBREG
@@ -4467,7 +4467,7 @@ type_main_variant (tree type)
 /* Return nonzero if the given type node represents a tagged type.  */
 
 static inline int
-is_tagged_type (tree type)
+is_tagged_type (const_tree type)
 {
   enum tree_code code = TREE_CODE (type);
 
@@ -4863,7 +4863,7 @@ dwarf_form_name (unsigned int form)
    given block.  */
 
 static tree
-decl_ultimate_origin (tree decl)
+decl_ultimate_origin (const_tree decl)
 {
   if (!CODE_CONTAINS_STRUCT (TREE_CODE (decl), TS_DECL_COMMON))
     return NULL_TREE;
@@ -4888,7 +4888,7 @@ decl_ultimate_origin (tree decl)
    given block.  */
 
 static tree
-block_ultimate_origin (tree block)
+block_ultimate_origin (const_tree block)
 {
   tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
 
@@ -5734,7 +5734,7 @@ decl_loc_table_eq (const void *x, const void *y)
 /* Return the var_loc list associated with a given declaration.  */
 
 static inline var_loc_list *
-lookup_decl_loc (tree decl)
+lookup_decl_loc (const_tree decl)
 {
   return htab_find_with_hash (decl_loc_table, decl, DECL_UID (decl));
 }
@@ -6099,7 +6099,7 @@ same_loc_p (dw_loc_descr_ref loc1, dw_loc_descr_ref loc2, int *mark)
 
 /* Do the values look the same?  */
 static int
-same_dw_val_p (dw_val_node *v1, dw_val_node *v2, int *mark)
+same_dw_val_p (const dw_val_node *v1, const dw_val_node *v2, int *mark)
 {
   dw_loc_descr_ref loc1, loc2;
   rtx r1, r2;
@@ -7667,7 +7667,7 @@ add_ranges_num (int num)
    range terminator if BLOCK is NULL.  */
 
 static unsigned int
-add_ranges (tree block)
+add_ranges (const_tree block)
 {
   return add_ranges_num (block ? BLOCK_NUMBER (block) : 0);
 }
@@ -8515,7 +8515,7 @@ is_base_type (tree type)
    ERROR_MARK node.  */
 
 static inline unsigned HOST_WIDE_INT
-simple_type_size_in_bits (tree type)
+simple_type_size_in_bits (const_tree type)
 {
   if (TREE_CODE (type) == ERROR_MARK)
     return BITS_PER_WORD;
@@ -8531,7 +8531,7 @@ simple_type_size_in_bits (tree type)
    emitted as a subrange type.  */
 
 static inline bool
-is_subrange_type (tree type)
+is_subrange_type (const_tree type)
 {
   tree subtype = TREE_TYPE (type);
 
@@ -8757,7 +8757,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
    an enumerated type.  */
 
 static inline int
-type_is_enum (tree type)
+type_is_enum (const_tree type)
 {
   return TREE_CODE (type) == ENUMERAL_TYPE;
 }
@@ -8765,7 +8765,7 @@ type_is_enum (tree type)
 /* Return the DBX register number described by a given RTL node.  */
 
 static unsigned int
-dbx_reg_number (rtx rtl)
+dbx_reg_number (const_rtx rtl)
 {
   unsigned regno = REGNO (rtl);
 
@@ -8991,7 +8991,7 @@ based_loc_descr (rtx reg, HOST_WIDE_INT offset,
 /* Return true if this RTL expression describes a base+offset calculation.  */
 
 static inline int
-is_based_loc (rtx rtl)
+is_based_loc (const_rtx rtl)
 {
   return (GET_CODE (rtl) == PLUS
 	  && ((REG_P (XEXP (rtl, 0))
@@ -9840,7 +9840,7 @@ ceiling (HOST_WIDE_INT value, unsigned int boundary)
    ERROR_MARK node.  */
 
 static inline tree
-field_type (tree decl)
+field_type (const_tree decl)
 {
   tree type;
 
@@ -9859,13 +9859,13 @@ field_type (tree decl)
    be an ERROR_MARK node.  */
 
 static inline unsigned
-simple_type_align_in_bits (tree type)
+simple_type_align_in_bits (const_tree type)
 {
   return (TREE_CODE (type) != ERROR_MARK) ? TYPE_ALIGN (type) : BITS_PER_WORD;
 }
 
 static inline unsigned
-simple_decl_align_in_bits (tree decl)
+simple_decl_align_in_bits (const_tree decl)
 {
   return (TREE_CODE (decl) != ERROR_MARK) ? DECL_ALIGN (decl) : BITS_PER_WORD;
 }
@@ -9896,7 +9896,7 @@ round_up_to_align (HOST_WIDE_INT t, unsigned int align)
    just yet).  */
 
 static HOST_WIDE_INT
-field_byte_offset (tree decl)
+field_byte_offset (const_tree decl)
 {
   HOST_WIDE_INT object_offset_in_bits;
   HOST_WIDE_INT bitpos_int;
@@ -10162,7 +10162,7 @@ extract_int (const unsigned char *src, unsigned int size)
 /* Writes floating point values to dw_vec_const array.  */
 
 static void
-insert_float (rtx rtl, unsigned char *array)
+insert_float (const_rtx rtl, unsigned char *array)
 {
   REAL_VALUE_TYPE rv;
   long val[4];
@@ -10622,7 +10622,7 @@ rtl_for_decl_location (tree decl)
    XXX: If you split a variable across multiple sections, we won't notice.  */
 
 static const char *
-secname_for_decl (tree decl)
+secname_for_decl (const_tree decl)
 {
   const char *secname;
 
@@ -11488,7 +11488,7 @@ add_calling_convention_attribute (dw_die_ref subr_die, tree type)
    was declared without a tag.  */
 
 static const char *
-type_tag (tree type)
+type_tag (const_tree type)
 {
   const char *name = 0;
 
@@ -11526,7 +11526,7 @@ type_tag (tree type)
    for bit field types.  */
 
 static inline tree
-member_declared_type (tree member)
+member_declared_type (const_tree member)
 {
   return (DECL_BIT_FIELD_TYPE (member)
 	  ? DECL_BIT_FIELD_TYPE (member) : TREE_TYPE (member));
@@ -12484,7 +12484,7 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
    first subblock's abstract origin is the function's outermost block,
    then we're looking at the main entry point.  */
 static bool
-is_inlined_entry_point (tree stmt)
+is_inlined_entry_point (const_tree stmt)
 {
   tree decl, block;
 
@@ -13339,7 +13339,7 @@ decls_for_scope (tree stmt, dw_die_ref context_die, int depth)
 /* Is this a typedef we can avoid emitting?  */
 
 static inline int
-is_redundant_typedef (tree decl)
+is_redundant_typedef (const_tree decl)
 {
   if (TYPE_DECL_IS_STUB (decl))
     return 1;
@@ -13950,7 +13950,7 @@ dwarf2out_end_block (unsigned int line ATTRIBUTE_UNUSED, unsigned int blocknum)
    we may end up calling them anyway.  */
 
 static bool
-dwarf2out_ignore_block (tree block)
+dwarf2out_ignore_block (const_tree block)
 {
   tree decl;
 

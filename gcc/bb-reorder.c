@@ -176,7 +176,7 @@ static basic_block copy_bb (basic_block, edge, basic_block, int);
 static fibheapkey_t bb_to_key (basic_block);
 static bool better_edge_p (const_basic_block, const_edge, int, int, int, int, const_edge);
 static void connect_traces (int, struct trace *);
-static bool copy_bb_p (basic_block, int);
+static bool copy_bb_p (const_basic_block, int);
 static int get_uncond_jump_length (void);
 static bool push_to_next_round_p (const_basic_block, int, int, int, gcov_type);
 static void find_rarely_executed_basic_blocks_and_crossing_edges (edge **,
@@ -1156,7 +1156,7 @@ connect_traces (int n_traces, struct trace *traces)
    when code size is allowed to grow by duplication.  */
 
 static bool
-copy_bb_p (basic_block bb, int code_may_grow)
+copy_bb_p (const_basic_block bb, int code_may_grow)
 {
   int size = 0;
   int max_size = uncond_jump_length;

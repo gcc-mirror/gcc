@@ -611,7 +611,7 @@ addresses_taken (tree stmt)
 /* Return the PHI nodes for basic block BB, or NULL if there are no
    PHI nodes.  */
 static inline tree
-phi_nodes (basic_block bb)
+phi_nodes (const_basic_block bb)
 {
   gcc_assert (!(bb->flags & BB_RTL));
   if (!bb->il.tree)

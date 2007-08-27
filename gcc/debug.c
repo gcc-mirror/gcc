@@ -32,7 +32,7 @@ const struct gcc_debug_hooks do_nothing_debug_hooks =
   debug_nothing_int,
   debug_nothing_int_int,	         /* begin_block */
   debug_nothing_int_int,	         /* end_block */
-  debug_true_tree,		         /* ignore_block */
+  debug_true_const_tree,	         /* ignore_block */
   debug_nothing_int_charstar,	         /* source_line */
   debug_nothing_int_charstar,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
@@ -72,7 +72,7 @@ debug_nothing_tree_tree (tree t1 ATTRIBUTE_UNUSED,
 }
 
 bool
-debug_true_tree (tree block ATTRIBUTE_UNUSED)
+debug_true_const_tree (const_tree block ATTRIBUTE_UNUSED)
 {
   return true;
 }

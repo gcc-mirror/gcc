@@ -104,7 +104,7 @@ static inline void change_bb_for_stmt (tree t, basic_block bb);
 
 /* Flowgraph optimization and cleanup.  */
 static void tree_merge_blocks (basic_block, basic_block);
-static bool tree_can_merge_blocks_p (basic_block, basic_block);
+static bool tree_can_merge_blocks_p (const_basic_block, const_basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (basic_block, tree);
@@ -1135,10 +1135,10 @@ group_case_labels (void)
 /* Checks whether we can merge block B into block A.  */
 
 static bool
-tree_can_merge_blocks_p (basic_block a, basic_block b)
+tree_can_merge_blocks_p (const_basic_block a, const_basic_block b)
 {
-  tree stmt;
-  block_stmt_iterator bsi;
+  const_tree stmt;
+  const_block_stmt_iterator bsi;
   tree phi;
 
   if (!single_succ_p (a))
@@ -1158,7 +1158,7 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
 
   /* If A ends by a statement causing exceptions or something similar, we
      cannot merge the blocks.  */
-  stmt = last_stmt (a);
+  stmt = const_last_stmt (a);
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
@@ -1184,9 +1184,9 @@ tree_can_merge_blocks_p (basic_block a, basic_block b)
     }
 
   /* Do not remove user labels.  */
-  for (bsi = bsi_start (b); !bsi_end_p (bsi); bsi_next (&bsi))
+  for (bsi = cbsi_start (b); !cbsi_end_p (bsi); cbsi_next (&bsi))
     {
-      stmt = bsi_stmt (bsi);
+      stmt = cbsi_stmt (bsi);
       if (TREE_CODE (stmt) != LABEL_EXPR)
 	break;
       if (!DECL_ARTIFICIAL (LABEL_EXPR_LABEL (stmt)))
@@ -2451,12 +2451,12 @@ is_ctrl_stmt (const_tree t)
    (e.g., a call to a non-returning function).  */
 
 bool
-is_ctrl_altering_stmt (tree t)
+is_ctrl_altering_stmt (const_tree t)
 {
-  tree call;
+  const_tree call;
 
   gcc_assert (t);
-  call = get_call_expr_in (t);
+  call = const_get_call_expr_in (t);
   if (call)
     {
       /* A non-pure/const CALL_EXPR alters flow control if the current
@@ -2558,7 +2558,7 @@ stmt_starts_bb_p (const_tree t, const_tree prev_t)
 /* Return true if T should end a basic block.  */
 
 bool
-stmt_ends_bb_p (tree t)
+stmt_ends_bb_p (const_tree t)
 {
   return is_ctrl_stmt (t) || is_ctrl_altering_stmt (t);
 }
@@ -4860,7 +4860,7 @@ tree_redirect_edge_and_branch (edge e, basic_block dest)
    it to the destination of the other edge from E->src.  */
 
 static bool
-tree_can_remove_branch_p (edge e)
+tree_can_remove_branch_p (const_edge e)
 {
   if (e->flags & EDGE_ABNORMAL)
     return false;
@@ -4956,7 +4956,7 @@ tree_move_block_after (basic_block bb, basic_block after)
 /* Return true if basic_block can be duplicated.  */
 
 static bool
-tree_can_duplicate_bb_p (basic_block bb ATTRIBUTE_UNUSED)
+tree_can_duplicate_bb_p (const_basic_block bb ATTRIBUTE_UNUSED)
 {
   return true;
 }
@@ -5917,10 +5917,10 @@ debug_loop_ir (void)
    otherwise.  */
 
 static bool
-tree_block_ends_with_call_p (basic_block bb)
+tree_block_ends_with_call_p (const_basic_block bb)
 {
-  block_stmt_iterator bsi = bsi_last (bb);
-  return get_call_expr_in (bsi_stmt (bsi)) != NULL;
+  const_block_stmt_iterator bsi = cbsi_last (bb);
+  return const_get_call_expr_in (cbsi_stmt (bsi)) != NULL;
 }
 
 
@@ -5928,9 +5928,9 @@ tree_block_ends_with_call_p (basic_block bb)
    otherwise.  */
 
 static bool
-tree_block_ends_with_condjump_p (basic_block bb)
+tree_block_ends_with_condjump_p (const_basic_block bb)
 {
-  tree stmt = last_stmt (bb);
+  const_tree stmt = const_last_stmt (bb);
   return (stmt && TREE_CODE (stmt) == COND_EXPR);
 }
 

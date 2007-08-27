@@ -2865,102 +2865,168 @@ get_max_uid (void)
 /* Return the next insn.  If it is a SEQUENCE, return the first insn
    of the sequence.  */
 
+#define NEXT_INSN_BODY do { \
+  if (insn) \
+    { \
+      insn = NEXT_INSN (insn); \
+      if (insn && NONJUMP_INSN_P (insn) \
+	  && GET_CODE (PATTERN (insn)) == SEQUENCE) \
+	insn = XVECEXP (PATTERN (insn), 0, 0); \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 next_insn (rtx insn)
 {
-  if (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn && NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, 0);
-    }
-
-  return insn;
+  NEXT_INSN_BODY;
 }
+
+const_rtx
+const_next_insn (const_rtx insn)
+{
+  NEXT_INSN_BODY;
+}
+
+#undef NEXT_INSN_BODY
 
 /* Return the previous insn.  If it is a SEQUENCE, return the last insn
    of the sequence.  */
 
+#define PREVIOUS_INSN_BODY do { \
+  if (insn) \
+    { \
+      insn = PREV_INSN (insn); \
+      if (insn && NONJUMP_INSN_P (insn) \
+	  && GET_CODE (PATTERN (insn)) == SEQUENCE) \
+	insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1); \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 previous_insn (rtx insn)
 {
-  if (insn)
-    {
-      insn = PREV_INSN (insn);
-      if (insn && NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = XVECEXP (PATTERN (insn), 0, XVECLEN (PATTERN (insn), 0) - 1);
-    }
-
-  return insn;
+  PREVIOUS_INSN_BODY;
 }
+
+const_rtx
+const_previous_insn (const_rtx insn)
+{
+  PREVIOUS_INSN_BODY;
+}
+
+#undef PREVIOUS_INSN_BODY
 
 /* Return the next insn after INSN that is not a NOTE.  This routine does not
    look inside SEQUENCEs.  */
 
+#define NEXT_NONNOTE_INSN_BODY do { \
+  while (insn) \
+    { \
+      insn = NEXT_INSN (insn); \
+      if (insn == 0 || !NOTE_P (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 next_nonnote_insn (rtx insn)
 {
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || !NOTE_P (insn))
-	break;
-    }
-
-  return insn;
+  NEXT_NONNOTE_INSN_BODY;
 }
+
+const_rtx
+const_next_nonnote_insn (const_rtx insn)
+{
+  NEXT_NONNOTE_INSN_BODY;
+}
+
+#undef NEXT_NONNOTE_INSN_BODY
 
 /* Return the previous insn before INSN that is not a NOTE.  This routine does
    not look inside SEQUENCEs.  */
 
+#define PREV_NONNOTE_INSN_BODY do { \
+  while (insn) \
+    { \
+      insn = PREV_INSN (insn); \
+      if (insn == 0 || !NOTE_P (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 prev_nonnote_insn (rtx insn)
 {
-  while (insn)
-    {
-      insn = PREV_INSN (insn);
-      if (insn == 0 || !NOTE_P (insn))
-	break;
-    }
-
-  return insn;
+  PREV_NONNOTE_INSN_BODY;
 }
+
+const_rtx
+const_prev_nonnote_insn (const_rtx insn)
+{
+  PREV_NONNOTE_INSN_BODY;
+}
+
+#undef PREV_NONNOTE_INSN_BODY
 
 /* Return the next INSN, CALL_INSN or JUMP_INSN after INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
+#define NEXT_REAL_INSN_BODY do { \
+  while (insn) \
+    { \
+      insn = NEXT_INSN (insn); \
+      if (insn == 0 || INSN_P (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 next_real_insn (rtx insn)
 {
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || INSN_P (insn))
-	break;
-    }
-
-  return insn;
+  NEXT_REAL_INSN_BODY;
 }
+
+const_rtx
+const_next_real_insn (const_rtx insn)
+{
+  NEXT_REAL_INSN_BODY;
+}
+
+#undef NEXT_REAL_INSN_BODY
 
 /* Return the last INSN, CALL_INSN or JUMP_INSN before INSN;
    or 0, if there is none.  This routine does not look inside
    SEQUENCEs.  */
 
+#define PREV_REAL_INSN_BODY do { \
+  while (insn) \
+    { \
+      insn = PREV_INSN (insn); \
+      if (insn == 0 || INSN_P (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 prev_real_insn (rtx insn)
 {
-  while (insn)
-    {
-      insn = PREV_INSN (insn);
-      if (insn == 0 || INSN_P (insn))
-	break;
-    }
-
-  return insn;
+  PREV_REAL_INSN_BODY;
 }
+
+const_rtx
+const_prev_real_insn (const_rtx insn)
+{
+  PREV_REAL_INSN_BODY;
+}
+
+#undef PREV_REAL_INSN_BODY
 
 /* Return the last CALL_INSN in the current list, or 0 if there is none.
    This routine does not look inside SEQUENCEs.  */
@@ -2992,65 +3058,109 @@ active_insn_p (const_rtx insn)
 		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
 }
 
+#define NEXT_ACTIVE_INSN_BODY do { \
+  while (insn) \
+    { \
+      insn = NEXT_INSN (insn); \
+      if (insn == 0 || active_insn_p (insn)) \
+	break; \
+    } \
+  return insn;\
+} while (0)
+
 rtx
 next_active_insn (rtx insn)
 {
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || active_insn_p (insn))
-	break;
-    }
-
-  return insn;
+  NEXT_ACTIVE_INSN_BODY;
 }
+
+const_rtx
+const_next_active_insn (const_rtx insn)
+{
+  NEXT_ACTIVE_INSN_BODY;
+}
+
+#undef NEXT_ACTIVE_INSN_BODY
 
 /* Find the last insn before INSN that really does something.  This routine
    does not look inside SEQUENCEs.  Until reload has completed, this is the
    same as prev_real_insn.  */
 
+#define PREV_ACTIVE_INSN_BODY do { \
+  while (insn) \
+    { \
+      insn = PREV_INSN (insn);\
+      if (insn == 0 || active_insn_p (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
+
 rtx
 prev_active_insn (rtx insn)
 {
-  while (insn)
-    {
-      insn = PREV_INSN (insn);
-      if (insn == 0 || active_insn_p (insn))
-	break;
-    }
-
-  return insn;
+  PREV_ACTIVE_INSN_BODY;
 }
 
+const_rtx
+const_prev_active_insn (const_rtx insn)
+{
+  PREV_ACTIVE_INSN_BODY;
+}
+
+#undef PREV_ACTIVE_INSN_BODY
+
 /* Return the next CODE_LABEL after the insn INSN, or 0 if there is none.  */
+
+#define NEXT_LABEL_BODY do { \
+  while (insn) \
+    { \
+      insn = NEXT_INSN (insn); \
+      if (insn == 0 || LABEL_P (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
 
 rtx
 next_label (rtx insn)
 {
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || LABEL_P (insn))
-	break;
-    }
-
-  return insn;
+  NEXT_LABEL_BODY;
 }
 
+const_rtx
+const_next_label (const_rtx insn)
+{
+  NEXT_LABEL_BODY;
+}
+
+#undef NEXT_LABEL_BODY
+
 /* Return the last CODE_LABEL before the insn INSN, or 0 if there is none.  */
+
+#define PREV_LABEL_BODY do { \
+  while (insn) \
+    { \
+      insn = PREV_INSN (insn); \
+      if (insn == 0 || LABEL_P (insn)) \
+	break; \
+    } \
+  return insn; \
+} while (0)
 
 rtx
 prev_label (rtx insn)
 {
-  while (insn)
-    {
-      insn = PREV_INSN (insn);
-      if (insn == 0 || LABEL_P (insn))
-	break;
-    }
-
-  return insn;
+  PREV_LABEL_BODY;
 }
+
+const_rtx
+const_prev_label (const_rtx insn)
+{
+  PREV_LABEL_BODY;
+}
+
+#undef PREV_LABEL_BODY
 
 /* Return the last label to mark the same position as LABEL.  Return null
    if LABEL itself is null.  */

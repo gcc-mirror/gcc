@@ -328,7 +328,7 @@ static int clock_var;
 /* Number of instructions in current scheduling region.  */
 static int rgn_n_insns;
 
-static int may_trap_exp (rtx, int);
+static int may_trap_exp (const_rtx, int);
 
 /* Nonzero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
@@ -342,7 +342,7 @@ static int may_trap_exp (rtx, int);
    as found by analyzing insn's expression.  */
 
 static int
-may_trap_exp (rtx x, int is_store)
+may_trap_exp (const_rtx x, int is_store)
 {
   enum rtx_code code;
 
@@ -415,7 +415,7 @@ may_trap_exp (rtx x, int is_store)
    being either PFREE or PRISKY.  */
 
 int
-haifa_classify_insn (rtx insn)
+haifa_classify_insn (const_rtx insn)
 {
   rtx pat = PATTERN (insn);
   int tmp_class = TRAP_FREE;
@@ -499,7 +499,7 @@ static int rank_for_schedule (const void *, const void *);
 static void swap_sort (rtx *, int);
 static void queue_insn (rtx, int);
 static int schedule_insn (rtx);
-static int find_set_reg_weight (rtx);
+static int find_set_reg_weight (const_rtx);
 static void find_insn_reg_weight (basic_block);
 static void find_insn_reg_weight1 (rtx);
 static void adjust_priority (rtx);
@@ -1358,7 +1358,7 @@ get_ebb_head_tail (basic_block beg, basic_block end, rtx *headp, rtx *tailp)
 /* Return nonzero if there are no real insns in the range [ HEAD, TAIL ].  */
 
 int
-no_real_insns_p (rtx head, rtx tail)
+no_real_insns_p (const_rtx head, const_rtx tail)
 {
   while (head != NEXT_INSN (tail))
     {
@@ -1408,7 +1408,7 @@ rm_other_notes (rtx head, rtx tail)
    a new register is not needed.  */
 
 static int
-find_set_reg_weight (rtx x)
+find_set_reg_weight (const_rtx x)
 {
   if (GET_CODE (x) == CLOBBER
       && register_operand (SET_DEST (x), VOIDmode))
@@ -4017,7 +4017,7 @@ change_pattern (rtx insn, rtx new_pat)
 
 /* Return true if INSN can potentially be speculated with type DS.  */
 bool
-sched_insn_is_legitimate_for_speculation_p (rtx insn, ds_t ds)
+sched_insn_is_legitimate_for_speculation_p (const_rtx insn, ds_t ds)
 {
   if (HAS_INTERNAL_DEP (insn))
     return false;

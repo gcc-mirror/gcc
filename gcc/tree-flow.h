@@ -545,7 +545,7 @@ struct edge_prediction GTY((chain_next ("%h.ep_next")))
 };
 
 /* Accessors for basic block annotations.  */
-static inline tree phi_nodes (basic_block);
+static inline tree phi_nodes (const_basic_block);
 static inline void set_phi_nodes (basic_block, tree);
 
 /*---------------------------------------------------------------------------
@@ -721,9 +721,9 @@ extern void free_omp_regions (void);
 #define PENDING_STMT(e)	((e)->insns.t)
 
 extern void delete_tree_cfg_annotations (void);
-extern bool stmt_ends_bb_p (tree);
+extern bool stmt_ends_bb_p (const_tree);
 extern bool is_ctrl_stmt (const_tree);
-extern bool is_ctrl_altering_stmt (tree);
+extern bool is_ctrl_altering_stmt (const_tree);
 extern bool computed_goto_p (const_tree);
 extern bool simple_goto_p (const_tree);
 extern bool tree_can_make_abnormal_goto (const_tree);
@@ -1073,9 +1073,9 @@ static inline bool unmodifiable_var_p (const_tree);
 extern void make_eh_edges (tree);
 extern bool tree_could_trap_p (tree);
 extern bool tree_could_throw_p (tree);
-extern bool tree_can_throw_internal (tree);
+extern bool tree_can_throw_internal (const_tree);
 extern bool tree_can_throw_external (tree);
-extern int lookup_stmt_eh_region (tree);
+extern int lookup_stmt_eh_region (const_tree);
 extern void add_stmt_to_eh_region (tree, int);
 extern bool remove_stmt_from_eh_region (tree);
 extern bool maybe_clean_or_replace_eh_stmt (tree, tree);
