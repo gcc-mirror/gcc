@@ -2235,6 +2235,7 @@ gfc_simplify_lgamma (gfc_expr *x __attribute__((unused)))
 {
 #if MPFR_VERSION >= MPFR_VERSION_NUM(2,3,0)
   gfc_expr *result;
+  int sg;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2243,7 +2244,7 @@ gfc_simplify_lgamma (gfc_expr *x __attribute__((unused)))
 
   gfc_set_model_kind (x->ts.kind);
 
-  mpfr_lgamma (result->value.real, x->value.real, GFC_RND_MODE);
+  mpfr_lgamma (result->value.real, &sg, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "LGAMMA");
 #else
