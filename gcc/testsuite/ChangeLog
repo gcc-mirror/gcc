@@ -2,11 +2,11 @@
 
 	* gcc.target/i386/pow-1.c: Fix scan-assembler-not.
 	* gcc.target/i386/asm-3.c: Skip -fpic ilp32 targets only.
-	* gcc.target/i386/tailcall-1.c: Ditto.
 	* gcc.target/i386/20020523-1.c: Require nonpic effective target.
 	* gcc.target/i386/local2.c: Ditto.
 	* gcc.target/i386/stack-prot-kernel.c: Ditto.
 	* gcc.target/i386/20011119-1.c: Ditto.
+	* gcc.target/i386/tailcall-1.c: Ditto. Check ilp32 targets only.
 	* gcc.target/i386/fastcall-1.c: Fix target selector.
 	
 2007-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
