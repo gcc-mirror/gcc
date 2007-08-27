@@ -1,3 +1,9 @@
+2007-08-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/31337
+	* gimplify.c (gimplify_modify_expr): Discard the assignment of 
+	zero-sized types after calling gimplify_modify_expr_rhs.
+
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/32610

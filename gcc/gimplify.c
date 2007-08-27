@@ -3532,8 +3532,16 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   gcc_assert (TREE_CODE (*expr_p) == MODIFY_EXPR
 	      || TREE_CODE (*expr_p) == INIT_EXPR);
 
-  /* For zero sized types only gimplify the left hand side and right hand side
-     as statements and throw away the assignment.  */
+  /* See if any simplifications can be done based on what the RHS is.  */
+  ret = gimplify_modify_expr_rhs (expr_p, from_p, to_p, pre_p, post_p,
+				  want_value);
+  if (ret != GS_UNHANDLED)
+    return ret;
+
+  /* For zero sized types only gimplify the left hand side and right hand
+     side as statements and throw away the assignment.  Do this after
+     gimplify_modify_expr_rhs so we handle TARGET_EXPRs of addressable
+     types properly.  */
   if (zero_sized_type (TREE_TYPE (*from_p)))
     {
       gimplify_stmt (from_p);
@@ -3543,12 +3551,6 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
       *expr_p = NULL_TREE;
       return GS_ALL_DONE;
     }
-
-  /* See if any simplifications can be done based on what the RHS is.  */
-  ret = gimplify_modify_expr_rhs (expr_p, from_p, to_p, pre_p, post_p,
-				  want_value);
-  if (ret != GS_UNHANDLED)
-    return ret;
 
   /* If the value being copied is of variable width, compute the length
      of the copy into a WITH_SIZE_EXPR.   Note that we need to do this
