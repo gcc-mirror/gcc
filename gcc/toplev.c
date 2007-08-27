@@ -1685,6 +1685,31 @@ target_supports_section_anchors_p (void)
   return true;
 }
 
+/* Default the align_* variables to 1 if they're still unset, and
+   set up the align_*_log variables.  */
+static void
+init_alignments (void)
+{
+  if (align_loops <= 0)
+    align_loops = 1;
+  if (align_loops_max_skip > align_loops)
+    align_loops_max_skip = align_loops - 1;
+  align_loops_log = floor_log2 (align_loops * 2 - 1);
+  if (align_jumps <= 0)
+    align_jumps = 1;
+  if (align_jumps_max_skip > align_jumps)
+    align_jumps_max_skip = align_jumps - 1;
+  align_jumps_log = floor_log2 (align_jumps * 2 - 1);
+  if (align_labels <= 0)
+    align_labels = 1;
+  align_labels_log = floor_log2 (align_labels * 2 - 1);
+  if (align_labels_max_skip > align_labels)
+    align_labels_max_skip = align_labels - 1;
+  if (align_functions <= 0)
+    align_functions = 1;
+  align_functions_log = floor_log2 (align_functions * 2 - 1);
+}
+
 /* Process the options that have been parsed.  */
 static void
 process_options (void)
@@ -1729,23 +1754,6 @@ process_options (void)
     }
   else
     aux_base_name = "gccaux";
-
-  /* Set up the align_*_log variables, defaulting them to 1 if they
-     were still unset.  */
-  if (align_loops <= 0) align_loops = 1;
-  if (align_loops_max_skip > align_loops || !align_loops)
-    align_loops_max_skip = align_loops - 1;
-  align_loops_log = floor_log2 (align_loops * 2 - 1);
-  if (align_jumps <= 0) align_jumps = 1;
-  if (align_jumps_max_skip > align_jumps || !align_jumps)
-    align_jumps_max_skip = align_jumps - 1;
-  align_jumps_log = floor_log2 (align_jumps * 2 - 1);
-  if (align_labels <= 0) align_labels = 1;
-  align_labels_log = floor_log2 (align_labels * 2 - 1);
-  if (align_labels_max_skip > align_labels || !align_labels)
-    align_labels_max_skip = align_labels - 1;
-  if (align_functions <= 0) align_functions = 1;
-  align_functions_log = floor_log2 (align_functions * 2 - 1);
 
   /* Unrolling all loops implies that standard loop unrolling must also
      be done.  */
@@ -1998,7 +2006,50 @@ process_options (void)
     }
 }
 
-/* Initialize the compiler back end.  */
+/* This function can be called multiple times to reinitialize the compiler
+   back end when register classes or instruction sets have changed,
+   before each function.  */
+static void
+backend_init_target (void)
+{
+  /* Initialize alignment variables.  */
+  init_alignments ();
+
+  /* This reinitializes hard_frame_pointer, and calls init_reg_modes_target()
+     to initialize reg_raw_mode[].  */
+  init_emit_regs ();
+
+  /* This invokes target hooks to set fixed_reg[] etc, which is
+     mode-dependent.  */
+  init_regs ();
+
+  /* This depends on stack_pointer_rtx.  */
+  init_fake_stack_mems ();
+
+  /* Sets static_base_value[HARD_FRAME_POINTER_REGNUM], which is
+     mode-dependent.  */
+  init_alias_target ();
+
+  /* Depends on HARD_FRAME_POINTER_REGNUM.  */
+  init_reload ();
+
+  /* The following initialization functions need to generate rtl, so
+     provide a dummy function context for them.  */
+  init_dummy_function_start ();
+
+  /* rtx_cost is mode-dependent, so cached values need to be recomputed
+     on a mode change.  */
+  init_expmed ();
+
+  /* We may need to recompute regno_save_code[] and regno_restore_code[]
+     after a mode change as well.  */
+  if (flag_caller_saves)
+    init_caller_save ();
+  expand_dummy_function_end ();
+}
+
+/* Initialize the compiler back end.  This function is called only once,
+   when starting the compiler.  */
 static void
 backend_init (void)
 {
@@ -2011,19 +2062,34 @@ backend_init (void)
 		    || flag_test_coverage);
 
   init_rtlanal ();
-  init_regs ();
-  init_fake_stack_mems ();
-  init_alias_once ();
   init_inline_once ();
-  init_reload ();
   init_varasm_once ();
+
+  /* Initialize the target-specific back end pieces.  */
+  backend_init_target ();
+}
+
+/* Initialize things that are both lang-dependent and target-dependent.
+   This function can be called more than once if target parameters change.  */
+static void
+lang_dependent_init_target (void)
+{
+  /* This creates various _DECL nodes, so needs to be called after the
+     front end is initialized.  It also depends on the HAVE_xxx macros
+     generated from the target machine description.  */
+  init_optabs ();
 
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */
   init_dummy_function_start ();
-  init_expmed ();
-  if (flag_caller_saves)
-    init_caller_save ();
+
+  /* Do the target-specific parts of expr initialization.  */
+  init_expr_target ();
+
+  /* Although the actions of init_set_costs are language-independent,
+     it uses optabs, so we cannot call it from backend_init.  */
+  init_set_costs ();
+
   expand_dummy_function_end ();
 }
 
@@ -2048,21 +2114,12 @@ lang_dependent_init (const char *name)
 
   init_asm_output (name);
 
-  /* These create various _DECL nodes, so need to be called after the
+  /* This creates various _DECL nodes, so needs to be called after the
      front end is initialized.  */
   init_eh ();
-  init_optabs ();
 
-  /* The following initialization functions need to generate rtl, so
-     provide a dummy function context for them.  */
-  init_dummy_function_start ();
-  init_expr_once ();
-
-  /* Although the actions of init_set_costs are language-independent,
-     it uses optabs, so we cannot call it from backend_init.  */
-  init_set_costs ();
-
-  expand_dummy_function_end ();
+  /* Do the target-specific parts of the initialization.  */
+  lang_dependent_init_target ();
 
   /* If dbx symbol table desired, initialize writing it and output the
      predefined types.  */
@@ -2080,6 +2137,19 @@ lang_dependent_init (const char *name)
   timevar_pop (TV_SYMOUT);
 
   return 1;
+}
+
+
+/* Reinitialize everything when target parameters, such as register usage,
+   have changed.  */
+void
+target_reinit (void)
+{
+  /* Reinitialise RTL backend.  */
+  backend_init_target ();
+
+  /* Reinitialize lang-dependent parts.  */
+  lang_dependent_init_target ();
 }
 
 void

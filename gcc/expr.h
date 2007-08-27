@@ -352,9 +352,9 @@ extern rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 
 /* Functions from expr.c:  */
 
-/* This is run once per compilation to set up which modes can be used
-   directly in memory and to initialize the block move optab.  */
-extern void init_expr_once (void);
+/* This is run during target initialization to set up which modes can be 
+   used directly in memory and to initialize the block move optab.  */
+extern void init_expr_target (void);
 
 /* This is run at the start of compiling a function.  */
 extern void init_expr (void);

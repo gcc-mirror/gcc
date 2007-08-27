@@ -243,11 +243,12 @@ enum insn_code sync_lock_release[NUM_MACHINE_MODES];
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
 #endif
 
-/* This is run once per compilation to set up which modes can be used
-   directly in memory and to initialize the block move optab.  */
+/* This is run to set up which modes can be used
+   directly in memory and to initialize the block move optab.  It is run
+   at the beginning of compilation and when the target is reinitialized.  */
 
 void
-init_expr_once (void)
+init_expr_target (void)
 {
   rtx insn, pat;
   enum machine_mode mode;

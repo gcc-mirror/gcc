@@ -2325,9 +2325,11 @@ output_dependence (const_rtx mem, const_rtx x)
 
 
 void
-init_alias_once (void)
+init_alias_target (void)
 {
   int i;
+
+  memset (static_reg_base_value, 0, sizeof static_reg_base_value);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     /* Check whether this register can hold an incoming pointer

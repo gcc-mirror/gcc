@@ -81,7 +81,7 @@ HARD_REG_SET fixed_reg_set;
 
 /* Data for initializing the above.  */
 
-static const char initial_fixed_regs[] = FIXED_REGISTERS;
+static char initial_fixed_regs[] = FIXED_REGISTERS;
 
 /* Indexed by hard register number, contains 1 for registers
    that are fixed use or are clobbered by function calls.
@@ -100,7 +100,7 @@ HARD_REG_SET losing_caller_save_reg_set;
 
 /* Data for initializing the above.  */
 
-static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
+static char initial_call_used_regs[] = CALL_USED_REGISTERS;
 
 /* This is much like call_used_regs, except it doesn't have to
    be a superset of FIXED_REGISTERS. This vector indicates
@@ -108,7 +108,8 @@ static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
    regs_invalidated_by_call.  */
 
 #ifdef CALL_REALLY_USED_REGISTERS
-char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
+static char initial_call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
+char call_really_used_regs[FIRST_PSEUDO_REGISTER];
 #endif
 
 #ifdef CALL_REALLY_USED_REGISTERS
@@ -192,7 +193,11 @@ enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
 /* Array containing all of the register names.  */
 
-const char * reg_names[] = REGISTER_NAMES;
+const char * reg_names[FIRST_PSEUDO_REGISTER];
+
+/* Data for initializing the above.  */
+
+const char * initial_reg_names[] = REGISTER_NAMES;
 
 /* Array containing all of the register class names.  */
 
@@ -229,6 +234,9 @@ static move_table *may_move_in_cost[MAX_MACHINE_MODE];
    of the second so in that case the cost is zero.  */
 
 static move_table *may_move_out_cost[MAX_MACHINE_MODE];
+
+/* Keep track of the last mode we initialized move costs for.  */
+static int last_mode_for_init_move_cost;
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
@@ -298,19 +306,12 @@ init_reg_sets (void)
 	  SET_HARD_REG_BIT (reg_class_contents[i], j);
     }
 
-  /* Sanity check: make sure the target macros FIXED_REGISTERS and
-     CALL_USED_REGISTERS had the right number of initializers.  */
-  gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
-  gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
-
-  memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
-  memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
   memset (global_regs, 0, sizeof global_regs);
 
-#ifdef REG_ALLOC_ORDER
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    inv_reg_alloc_order[reg_alloc_order[i]] = i;
-#endif
+  /* Processing of command-line options like -ffixed needs to know the
+     initial set of register names, so initialize that now.  */
+  gcc_assert (sizeof reg_names == sizeof initial_reg_names);
+  memcpy (reg_names, initial_reg_names, sizeof reg_names);
 }
 
 /* Initialize may_move_cost and friends for mode M.  */
@@ -319,7 +320,6 @@ static void
 init_move_cost (enum machine_mode m)
 {
   static unsigned short last_move_cost[N_REG_CLASSES][N_REG_CLASSES];
-  static int last_mode = -1;
   bool all_match = true;
   unsigned int i, j;
 
@@ -339,14 +339,14 @@ init_move_cost (enum machine_mode m)
 	  all_match &= (last_move_cost[i][j] == cost);
 	  last_move_cost[i][j] = cost;
 	}
-  if (all_match && last_mode != -1)
+  if (all_match && last_mode_for_init_move_cost != -1)
     {
-      move_cost[m] = move_cost[last_mode];
-      may_move_in_cost[m] = may_move_in_cost[last_mode];
-      may_move_out_cost[m] = may_move_out_cost[last_mode];
+      move_cost[m] = move_cost[last_mode_for_init_move_cost];
+      may_move_in_cost[m] = may_move_in_cost[last_mode_for_init_move_cost];
+      may_move_out_cost[m] = may_move_out_cost[last_mode_for_init_move_cost];
       return;
     }
-  last_mode = m;
+  last_mode_for_init_move_cost = m;
   move_cost[m] = (move_table *)xmalloc (sizeof (move_table)
 					* N_REG_CLASSES);
   may_move_in_cost[m] = (move_table *)xmalloc (sizeof (move_table)
@@ -412,6 +412,31 @@ init_reg_sets_1 (void)
   unsigned int i, j;
   unsigned int /* enum machine_mode */ m;
 
+  /* Sanity check:  make sure the target macros FIXED_REGISTERS and
+     CALL_USED_REGISTERS had the right number of initializers.  */
+  gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
+  gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
+
+  memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
+  memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
+
+  /* Likewise for call_really_used_regs.  */
+#ifdef CALL_REALLY_USED_REGISTERS
+  gcc_assert (sizeof call_really_used_regs
+	      == sizeof initial_call_really_used_regs);
+  memcpy (call_really_used_regs, initial_call_really_used_regs,
+	  sizeof call_really_used_regs);
+#endif
+
+  /* And similarly for reg_names.  */
+  gcc_assert (sizeof reg_names == sizeof initial_reg_names);
+  memcpy (reg_names, initial_reg_names, sizeof reg_names);
+
+#ifdef REG_ALLOC_ORDER
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    inv_reg_alloc_order[reg_alloc_order[i]] = i;
+#endif
+
   /* This macro allows the fixed or call-used registers
      and the register classes to depend on target flags.  */
 
@@ -431,6 +456,7 @@ init_reg_sets_1 (void)
      reg_class_subunion[I][J] gets the largest-numbered reg-class
      that is contained in the union of classes I and J.  */
 
+  memset (reg_class_subunion, 0, sizeof reg_class_subunion);
   for (i = 0; i < N_REG_CLASSES; i++)
     {
       for (j = 0; j < N_REG_CLASSES; j++)
@@ -453,6 +479,7 @@ init_reg_sets_1 (void)
      reg_class_superunion[I][J] gets the smallest-numbered reg-class
      containing the union of classes I and J.  */
 
+  memset (reg_class_superunion, 0, sizeof reg_class_superunion);
   for (i = 0; i < N_REG_CLASSES; i++)
     {
       for (j = 0; j < N_REG_CLASSES; j++)
@@ -511,6 +538,7 @@ init_reg_sets_1 (void)
   CLEAR_HARD_REG_SET (call_used_reg_set);
   CLEAR_HARD_REG_SET (call_fixed_reg_set);
   CLEAR_HARD_REG_SET (regs_invalidated_by_call);
+  CLEAR_HARD_REG_SET (losing_caller_save_reg_set);
 
   memcpy (call_fixed_regs, fixed_regs, sizeof call_fixed_regs);
 
@@ -564,6 +592,18 @@ init_reg_sets_1 (void)
 	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
 
+  /* Preserve global registers if called more than once.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (global_regs[i])
+	{
+	  fixed_regs[i] = call_used_regs[i] = call_fixed_regs[i] = 1;
+	  SET_HARD_REG_BIT (fixed_reg_set, i);
+	  SET_HARD_REG_BIT (call_used_reg_set, i);
+	  SET_HARD_REG_BIT (call_fixed_reg_set, i);
+	}
+    }
+
   memset (have_regs_of_mode, 0, sizeof (have_regs_of_mode));
   memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
   for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)
@@ -582,14 +622,36 @@ init_reg_sets_1 (void)
 	     have_regs_of_mode [m] = 1;
 	  }
      }
+
+  /* Reset move_cost and friends, making sure we only free shared
+     table entries once.  */
+  for (i = 0; i < MAX_MACHINE_MODE; i++)
+    if (move_cost[i])
+      {
+	for (j = 0; j < i && move_cost[i] != move_cost[j]; j++)
+	  ;
+	if (i == j)
+	  {
+	    free (move_cost[i]);
+	    free (may_move_in_cost[i]);
+	    free (may_move_out_cost[i]);
+	  }
+      }
+  memset (move_cost, 0, sizeof move_cost);
+  memset (may_move_in_cost, 0, sizeof may_move_in_cost);
+  memset (may_move_out_cost, 0, sizeof may_move_out_cost);
+  last_mode_for_init_move_cost = -1;
 }
 
 /* Compute the table of register modes.
    These values are used to record death information for individual registers
-   (as opposed to a multi-register mode).  */
+   (as opposed to a multi-register mode).
+   This function might be invoked more than once, if the target has support
+   for changing register usage conventions on a per-function basis.
+*/
 
 void
-init_reg_modes_once (void)
+init_reg_modes_target (void)
 {
   int i, j;
 
@@ -611,8 +673,10 @@ init_reg_modes_once (void)
     }
 }
 
-/* Finish initializing the register sets and
-   initialize the register modes.  */
+/* Finish initializing the register sets and initialize the register modes.
+   This function might be invoked more than once, if the target has support
+   for changing register usage conventions on a per-function basis.
+*/
 
 void
 init_regs (void)
@@ -782,11 +846,11 @@ fix_register (const char *name, int fixed, int call_used)
 	}
       else
 	{
-	  fixed_regs[i] = fixed;
-	  call_used_regs[i] = call_used;
+	  initial_fixed_regs[i] = fixed;
+	  initial_call_used_regs[i] = call_used;
 #ifdef CALL_REALLY_USED_REGISTERS
 	  if (fixed == 0)
-	    call_really_used_regs[i] = call_used;
+	    initial_call_really_used_regs[i] = call_used;
 #endif
 	}
     }
@@ -1157,6 +1221,7 @@ init_reg_autoinc (void)
 #ifdef FORBIDDEN_INC_DEC_CLASSES
   int i;
 
+  memset (forbidden_inc_dec_class, 0, sizeof forbidden_inc_dec_classes);
   for (i = 0; i < N_REG_CLASSES; i++)
     {
       rtx r = gen_rtx_raw_REG (VOIDmode, 0);
