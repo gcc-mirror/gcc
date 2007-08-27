@@ -1,3 +1,9 @@
+2007-08-27  Daniel Berlin  <dberlin@dberlin.org>
+
+	PR tree-optimization/33173
+	
+	* gcc.c-torture/compile/pr33173.c: New.
+
 2007-08-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/31385

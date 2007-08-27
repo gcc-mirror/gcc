@@ -16,5 +16,5 @@ int foo(void)
   return a.i;
 }
 
-/* { dg-final { scan-tree-dump-times "VDEF" 2 "salias" } } */
+/* { dg-final { scan-tree-dump-times "VDEF" 4 "salias" } } */
 /* { dg-final { cleanup-tree-dump "salias" } } */
