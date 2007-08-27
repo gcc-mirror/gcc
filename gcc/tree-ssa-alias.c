@@ -3967,7 +3967,7 @@ find_used_portions (tree *tp, int *walk_subtrees, void *lhs_p)
 	for (i = 0; i < nargs; i++)
 	  {
 	    tree *arg = &CALL_EXPR_ARG (*tp, i);
-	    if (TREE_CODE (*arg) != ADDR_EXPR)
+	    if (TREE_CODE (*arg) == ADDR_EXPR)
               find_used_portions (arg, walk_subtrees, NULL);
 	  }
 	*walk_subtrees = 0;

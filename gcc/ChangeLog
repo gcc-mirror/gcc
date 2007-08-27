@@ -1,3 +1,8 @@
+2007-08-27  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/33173
+	* tree-ssa-alias.c (find_used_portions): Fix reversed test.
+
 2007-08-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/31385
