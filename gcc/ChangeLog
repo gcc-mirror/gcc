@@ -1,3 +1,8 @@
+2007-08-26  Chao-ying Fu  <fu@mips.com>
+
+	* rtl.h (XCNMPFV): Preserve const-ness of parameters through use of
+	__typeof().
+
 2007-08-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (memory_modified_1, memory_modified_in_insn_p):
