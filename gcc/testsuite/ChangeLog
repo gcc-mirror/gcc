@@ -1,11 +1,14 @@
-2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
+2007-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/unsigned-long-compare.c: Remove target selector.
+
+2007-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/arm-eabi1.c, gcc.dg/symbian1.c, cc.dg/symbian2.c,
 	gcc.dg/symbian3.c, gcc.dg/symbian4.c, gcc.dg/symbian5.c,
 	gcc.dg/20051215-1.c: Move to gcc.target/arm directory.
 	* gcc.dg/const-compare.c, gcc.dg/non-lazy-ptr-test.c,
-	gcc.dg/unsigned-long-compare.c, gcc.dg/rs6000-leaf.c: Move to
-	gcc.target/powerpc directory.
+	gcc.dg/rs6000-leaf.c: Move to gcc.target/powerpc directory.
 	* gcc.dg/m68k-pic-1.c, gcc.dg/m68k-slp-ice.c: Move to
 	gcc.target/m68k directory.
 	* gcc.dg/i386-darwin-fpmath.c: Move to gcc.target/i386 directory.
@@ -24,8 +27,8 @@
 	gcc.dg/sh4a-fsrra.c, gcc.dg/sh4a-memmovua.c, gcc.dg/sh4a-sin.c,
 	gcc.dg/sh4a-sincosf.c, gcc.dg/sh4a-sinf.c gcc.dg/sh-relax.c,
 	gcc.dg/sh-relax-vxworks.c: Move to gcc.target/sh directory.
-	
-2007-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+2007-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pow-1.c: Fix scan-assembler-not.
 	* gcc.target/i386/asm-3.c: Skip -fpic ilp32 targets only.
@@ -35,7 +38,7 @@
 	* gcc.target/i386/20011119-1.c: Ditto.
 	* gcc.target/i386/tailcall-1.c: Ditto. Check ilp32 targets only.
 	* gcc.target/i386/fastcall-1.c: Fix target selector.
-	
+
 2007-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33055
