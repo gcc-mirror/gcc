@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
+#include <stddef.h>
 
 union tree_node;
 typedef union tree_node *tree;
@@ -63,7 +64,7 @@ main (void)
   for (i = 0; i < 2; i++)
     {
       unexpanded_var_list = malloc (sizeof (struct tree_list));
-      unexpanded_var_list->list.value = (tree) (long unsigned) (i & 1);
+      unexpanded_var_list->list.value = (tree) (ptrdiff_t) (i & 1);
       unexpanded_var_list->common.chain = last;
       last = unexpanded_var_list;
     }
