@@ -1954,6 +1954,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
 	  DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
 	    = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
+
+	  DECL_DISREGARD_INLINE_LIMITS (newdecl)
+	    = DECL_DISREGARD_INLINE_LIMITS (olddecl)
+	    = (DECL_DISREGARD_INLINE_LIMITS (newdecl)
+	       || DECL_DISREGARD_INLINE_LIMITS (olddecl));
 	}
 
       /* Preserve abstractness on cloned [cd]tors.  */

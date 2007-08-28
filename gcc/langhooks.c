@@ -480,6 +480,9 @@ add_builtin_function (const char *name,
   TREE_PUBLIC (decl)         = 1;
   DECL_EXTERNAL (decl)       = 1;
   DECL_BUILT_IN_CLASS (decl) = cl;
+
+  DECL_FUNCTION_CODE (decl)  = -1;
+  gcc_assert (DECL_FUNCTION_CODE (decl) >= function_code);
   DECL_FUNCTION_CODE (decl)  = function_code;
 
   if (library_name)

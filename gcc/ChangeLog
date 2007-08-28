@@ -1,3 +1,22 @@
+2007-08-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (DECL_DISREGARD_INLINE_LIMITS): New.
+	(struct tree_function_decl): Make function_code a bitfield.
+	Add disregard_inline_limits flag.
+	* cgraphunit.c (cgraph_process_new_functions): Check
+	DECL_DISREGARD_INLINE_LIMITS instead of disregard_inline_limits_p.
+	(cgraph_preserve_function_body_p): Likewise.
+	* ipa-inline.c (compute_inline_parameters): Likewise.
+	* c-decl.c (finish_function): Set DECL_DISREGARD_INLINE_LIMITS
+	for GNU C extern inline functions.
+	(merge_decls): Merge DECL_DISREGARD_INLINE_LIMITS.
+	* tree-inline.c (disregard_inline_limits_p): Remove.
+	* tree-inline.h (disregard_inline_limits_p): Likewise.
+	* c-common.c (handle_always_inline_attribute): Set
+	DECL_DISREGARD_INLINE_LIMITS.
+	* langhooks.c (add_builtin_function): Verify the function code
+	fits in the bitfield.
+
 2007-08-28  Mircea Namolaru  <namolaru@il.ibm.com>
             Vladimir Yanovsky  <yanov@il.ibm.com>
             Revital Eres  <eres@il.ibm.com>

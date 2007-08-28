@@ -1529,7 +1529,7 @@ compute_inline_parameters (void)
 					       &eni_inlining_weights);
   if (node->local.inlinable && !node->local.disregard_inline_limits)
     node->local.disregard_inline_limits
-      = disregard_inline_limits_p (current_function_decl);
+      = DECL_DISREGARD_INLINE_LIMITS (current_function_decl);
   if (flag_really_no_inline && !node->local.disregard_inline_limits)
     node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */

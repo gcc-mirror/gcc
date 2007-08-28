@@ -3273,6 +3273,13 @@ struct tree_decl_non_common GTY(())
 #define DECL_DECLARED_INLINE_P(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.declared_inline_flag)
 
+/* Nonzero in a FUNCTION_DECL that should be always inlined by the inliner
+   disregarding size and cost heuristics.  This is equivalent to using
+   the always_inline attribute without the required diagnostics if the
+   function cannot be inlined.  */
+#define DECL_DISREGARD_INLINE_LIMITS(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.disregard_inline_limits)
+
 /* For FUNCTION_DECL, this holds a pointer to a structure ("struct function")
    that describes the status of this function.  */
 #define DECL_STRUCT_FUNCTION(NODE) (FUNCTION_DECL_CHECK (NODE)->function_decl.f)
@@ -3299,27 +3306,33 @@ struct tree_function_decl GTY(())
 {
   struct tree_decl_non_common common;
 
+  struct function *f;
+
   /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
-     DECL_FUNCTION_CODE.  Otherwise unused.  */
-  enum built_in_function function_code;
+     DECL_FUNCTION_CODE.  Otherwise unused.
+     ???  The bitfield needs to be able to hold all target function
+	  codes as well.  */
+  ENUM_BITFIELD(built_in_function) function_code : 10;
+  ENUM_BITFIELD(built_in_class) built_in_class : 2;
 
   unsigned static_ctor_flag : 1;
   unsigned static_dtor_flag : 1;
   unsigned uninlinable : 1;
   unsigned possibly_inlined : 1;
+
   unsigned novops_flag : 1;
   unsigned returns_twice_flag : 1;
   unsigned malloc_flag : 1;
   unsigned pure_flag : 1;
-
   unsigned declared_inline_flag : 1;
   unsigned regdecl_flag : 1;
   unsigned inline_flag : 1;
   unsigned no_instrument_function_entry_exit : 1;
-  unsigned no_limit_stack : 1;
-  ENUM_BITFIELD(built_in_class) built_in_class : 2;
 
-  struct function *f;
+  unsigned no_limit_stack : 1;
+  unsigned disregard_inline_limits : 1;
+
+  /* 6 bits left */
 };
 
 /* For a TYPE_DECL, holds the "original" type.  (TREE_TYPE has the copy.) */

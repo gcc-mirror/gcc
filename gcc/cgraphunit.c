@@ -381,7 +381,7 @@ cgraph_process_new_functions (void)
 	  node->local.self_insns = estimate_num_insns (fndecl,
 						       &eni_inlining_weights);
 	  node->local.disregard_inline_limits
-	    |= disregard_inline_limits_p (fndecl);
+	    |= DECL_DISREGARD_INLINE_LIMITS (fndecl);
 	  /* Inlining characteristics are maintained by the
 	     cgraph_mark_inline.  */
 	  node->global.insns = node->local.self_insns;
@@ -1252,7 +1252,7 @@ cgraph_preserve_function_body_p (tree decl)
   struct cgraph_node *node;
   if (!cgraph_global_info_ready)
     return (flag_really_no_inline
-	    ? disregard_inline_limits_p (decl)
+	    ? DECL_DISREGARD_INLINE_LIMITS (decl)
 	    : DECL_INLINE (decl));
   /* Look if there is any clone around.  */
   for (node = cgraph_node (decl); node; node = node->next_clone)

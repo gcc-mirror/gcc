@@ -1819,6 +1819,11 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 
 	  DECL_UNINLINABLE (newdecl) = DECL_UNINLINABLE (olddecl)
 	    = (DECL_UNINLINABLE (newdecl) || DECL_UNINLINABLE (olddecl));
+
+	  DECL_DISREGARD_INLINE_LIMITS (newdecl)
+	    = DECL_DISREGARD_INLINE_LIMITS (olddecl)
+	    = (DECL_DISREGARD_INLINE_LIMITS (newdecl)
+	       || DECL_DISREGARD_INLINE_LIMITS (olddecl));
 	}
 
       if (DECL_BUILT_IN (olddecl))
@@ -6770,6 +6775,11 @@ finish_function (void)
 
   /* Finalize the ELF visibility for the function.  */
   c_determine_visibility (fndecl);
+
+  /* For GNU C extern inline functions disregard inline limits.  */
+  if (DECL_EXTERNAL (fndecl) 
+      && DECL_DECLARED_INLINE_P (fndecl))
+    DECL_DISREGARD_INLINE_LIMITS (fndecl) = 1;
 
   /* Genericize before inlining.  Delay genericizing nested functions
      until their parent function is genericized.  Since finalizing
