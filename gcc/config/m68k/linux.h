@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef STRICT_ALIGNMENT
 #define STRICT_ALIGNMENT 0
+#undef M68K_HONOR_TARGET_STRICT_ALIGNMENT
+#define M68K_HONOR_TARGET_STRICT_ALIGNMENT 0
 
 /* Here are four prefixes that are used by asm_fprintf to
    facilitate customization for alternate assembler syntaxes.

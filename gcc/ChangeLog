@@ -1,3 +1,13 @@
+2007-08-28  Nathan Sidwell  <nathan@codesourcery.com>
+	    Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc/config/m68k/linux.h
+	(M68K_HONOR_TARGET_STRICT_ALIGNMENT): Redefine as 0.
+	* config/m68k/m68k.c (TARGET_RETURN_IN_MEMORY): New.
+	(m68k_return_in_memory): New.
+	* gcc/config/m68k/m68k.h (M68K_HONOR_TARGET_STRICT_ALIGNMENT):
+	New.
+
 2007-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32661
