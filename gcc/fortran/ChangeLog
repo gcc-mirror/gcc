@@ -1,3 +1,11 @@
+2007-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/22244
+	* Make-lang.in (fortran/trans-types.o): Depend on $(FLAGS_H).
+	* trans-types.c: Include flags.h.
+	(gfc_get_nodesc_array_type): Add TYPE_DECL TYPE_NAME with
+	correct bounds and dimensions for packed arrays.
+
 2007-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	* simplify.c (gfc_simplify_lgamma): Fix mpfr_lgamma call.
