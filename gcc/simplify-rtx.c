@@ -2659,6 +2659,85 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  if (GET_CODE (trueop0) == CONST_VECTOR)
 	    return CONST_VECTOR_ELT (trueop0, INTVAL (XVECEXP
 						      (trueop1, 0, 0)));
+
+	  /* Extract a scalar element from a nested VEC_SELECT expression
+	     (with optional nested VEC_CONCAT expression).  Some targets
+	     (i386) extract scalar element from a vector using chain of
+	     nested VEC_SELECT expressions.  When input operand is a memory
+	     operand, this operation can be simplified to a simple scalar
+	     load from an offseted memory address.  */
+	  if (GET_CODE (trueop0) == VEC_SELECT)
+	    {
+	      rtx op0 = XEXP (trueop0, 0);
+	      rtx op1 = XEXP (trueop0, 1);
+
+	      enum machine_mode opmode = GET_MODE (op0);
+	      int elt_size = GET_MODE_SIZE (GET_MODE_INNER (opmode));
+	      int n_elts = GET_MODE_SIZE (opmode) / elt_size;
+
+	      int i = INTVAL (XVECEXP (trueop1, 0, 0));
+	      int elem;
+
+	      rtvec vec;
+	      rtx tmp_op, tmp;
+
+	      gcc_assert (GET_CODE (op1) == PARALLEL);
+	      gcc_assert (i < n_elts);
+
+	      /* Select element, pointed by nested selector.  */
+	      elem = INTVAL (CONST_VECTOR_ELT (op1, i));
+
+	      /* Handle the case when nested VEC_SELECT wraps VEC_CONCAT.  */
+	      if (GET_CODE (op0) == VEC_CONCAT)
+		{
+		  rtx op00 = XEXP (op0, 0);
+		  rtx op01 = XEXP (op0, 1);
+
+		  enum machine_mode mode00, mode01;
+		  int n_elts00, n_elts01;
+
+		  mode00 = GET_MODE (op00);
+		  mode01 = GET_MODE (op01);
+
+		  /* Find out number of elements of each operand.  */
+		  if (VECTOR_MODE_P (mode00))
+		    {
+		      elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode00));
+		      n_elts00 = GET_MODE_SIZE (mode00) / elt_size;
+		    }
+		  else
+		    n_elts00 = 1;
+
+		  if (VECTOR_MODE_P (mode01))
+		    {
+		      elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode01));
+		      n_elts01 = GET_MODE_SIZE (mode01) / elt_size;
+		    }
+		  else
+		    n_elts01 = 1;
+
+		  gcc_assert (n_elts == n_elts00 + n_elts01);
+
+		  /* Select correct operand of VEC_CONCAT
+		     and adjust selector. */
+		  if (elem < n_elts01)
+		    tmp_op = op00;
+		  else
+		    {
+		      tmp_op = op01;
+		      elem -= n_elts00;
+		    }
+		}
+	      else
+		tmp_op = op0;
+
+	      vec = rtvec_alloc (1);
+	      RTVEC_ELT (vec, 0) = GEN_INT (elem);
+
+	      tmp = gen_rtx_fmt_ee (code, mode,
+				    tmp_op, gen_rtx_PARALLEL (VOIDmode, vec));
+	      return tmp;
+	    }
 	}
       else
 	{
