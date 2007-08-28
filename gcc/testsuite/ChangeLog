@@ -1,3 +1,8 @@
+2007-08-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33209
+	* g++.dg/template/error29.C: New.
+
 2007-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32596
