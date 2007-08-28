@@ -82,8 +82,21 @@ along with GCC; see the file COPYING3.  If not see
       perform modulo variable expansion for live ranges that span more than
       II cycles (i.e. use register copies to prevent a def from overwriting
       itself before reaching the use).
-*/
 
+    SMS works with countable loops (1) whose control part can be easily
+    decoupled from the rest of the loop and (2) whose loop count can
+    be easily adjusted.  This is because we peel a constant number of
+    iterations into a prologue and epilogue for which we want to avoid
+    emitting the control part, and a kernel which is to iterate that
+    constant number of iterations less than the original loop.  So the
+    control part should be a set of insns clearly identified and having
+    its own iv, not otherwise used in the loop (at-least for now), which
+    initializes a register before the loop to the number of iterations.
+    Currently SMS relies on the do-loop pattern to recognize such loops,
+    where (1) the control part comprises of all insns defining and/or
+    using a certain 'count' register and (2) the loop count can be
+    adjusted by modifying this register prior to the loop.  
+    TODO: Rely on cfgloop analysis instead.  */
 
 /* This page defines partial-schedule structures and functions for
    modulo scheduling.  */
@@ -182,10 +195,11 @@ static int sms_order_nodes (ddg_ptr, int, int * result);
 static void set_node_sched_params (ddg_ptr);
 static partial_schedule_ptr sms_schedule_by_order (ddg_ptr, int, int, int *);
 static void permute_partial_schedule (partial_schedule_ptr ps, rtx last);
-static void generate_prolog_epilog (partial_schedule_ptr ,struct loop * loop, rtx);
+static void generate_prolog_epilog (partial_schedule_ptr, struct loop *loop,
+                                    rtx, rtx);
 static void duplicate_insns_of_cycles (partial_schedule_ptr ps,
 				       int from_stage, int to_stage,
-				       int is_prolog);
+				       int is_prolog, rtx count_reg);
 
 #define SCHED_ASAP(x) (((node_sched_params_ptr)(x)->aux.info)->asap)
 #define SCHED_TIME(x) (((node_sched_params_ptr)(x)->aux.info)->time)
@@ -261,20 +275,22 @@ static struct sched_info sms_sched_info =
 };
 
 
-/* Return the register decremented and tested in INSN,
-   or zero if it is not a decrement-and-branch insn.  */
-
+/* Given HEAD and TAIL which are the first and last insns in a loop;
+   return the register which controls the loop.  Return zero if it has
+   more than one occurrence in the loop besides the control part or the
+   do-loop pattern is not of the form we expect.  */
 static rtx
-doloop_register_get (rtx insn ATTRIBUTE_UNUSED)
+doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_doloop_end
-  rtx pattern, reg, condition;
+  rtx reg, condition, insn;
+  bool found = false;
 
-  if (! JUMP_P (insn))
+  if (!JUMP_P (tail))
     return NULL_RTX;
 
-  pattern = PATTERN (insn);
-  condition = doloop_condition_get (pattern);
+  /* TODO: Free SMS's dependence on doloop_condition_get.  */
+  condition = doloop_condition_get (tail);
   if (! condition)
     return NULL_RTX;
 
@@ -286,6 +302,29 @@ doloop_register_get (rtx insn ATTRIBUTE_UNUSED)
   else
     gcc_unreachable ();
 
+  /* Check that the COUNT_REG has no other occurrences in the loop
+     until the decrement.  We assume the control part consists of
+     either a single (parallel) branch-on-count or a (non-parallel)
+     branch immediately preceded by a single (decrement) insn.  */
+  for (insn = head; insn != PREV_INSN (tail); insn = NEXT_INSN (insn))
+    if ((found = reg_mentioned_p (reg, insn)) == true)
+      break;
+  if (found)
+    {
+      if (dump_file)
+        fprintf (dump_file, "SMS count_reg found outside control\n");
+
+      return NULL_RTX;
+    }
+  /* One last check in case the do-loop pattern is parallel.  */
+  if (GET_CODE (PATTERN (tail)) == PARALLEL)
+    if (reg_mentioned_p (reg, PREV_INSN (tail)))
+      {
+        if (dump_file)
+          fprintf (dump_file, "SMS count_reg found outside control\n");
+
+        return NULL_RTX;
+      }
   return reg;
 #else
   return NULL_RTX;
@@ -583,7 +622,7 @@ permute_partial_schedule (partial_schedule_ptr ps, rtx last)
 
 static void
 duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
-			   int to_stage, int for_prolog)
+			   int to_stage, int for_prolog, rtx count_reg)
 {
   int row;
   ps_insn_ptr ps_ij;
@@ -594,6 +633,13 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 	ddg_node_ptr u_node = ps_ij->node;
 	int j, i_reg_moves;
 	rtx reg_move = NULL_RTX;
+
+        /* Do not duplicate any insn which refers to count_reg as it
+           belongs to the control part.
+           TODO: This should be done by analyzing the control part of
+           the loop.  */
+        if (reg_mentioned_p (count_reg, u_node->insn))
+          continue;
 
 	if (for_prolog)
 	  {
@@ -643,23 +689,35 @@ duplicate_insns_of_cycles (partial_schedule_ptr ps, int from_stage,
 
 /* Generate the instructions (including reg_moves) for prolog & epilog.  */
 static void
-generate_prolog_epilog (partial_schedule_ptr ps, struct loop * loop, rtx count_reg)
+generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
+                        rtx count_reg, rtx count_init)
 {
   int i;
   int last_stage = PS_STAGE_COUNT (ps) - 1;
   edge e;
-
+  
   /* Generate the prolog, inserting its insns on the loop-entry edge.  */
   start_sequence ();
 
-  if (count_reg)
-   /* Generate a subtract instruction at the beginning of the prolog to
-      adjust the loop count by STAGE_COUNT.  */
-   emit_insn (gen_sub2_insn (count_reg, GEN_INT (last_stage)));
+  if (!count_init)
+    {
+      /* Generate instructions at the beginning of the prolog to
+         adjust the loop count by STAGE_COUNT.  If loop count is constant
+         (count_init), this constant is adjusted by STAGE_COUNT in
+         generate_prolog_epilog function.  */
+      rtx sub_reg = NULL_RTX;
+
+      sub_reg = expand_simple_binop (GET_MODE (count_reg), MINUS,
+                                     count_reg, GEN_INT (last_stage),
+                                     count_reg, 1, OPTAB_DIRECT);
+      gcc_assert (REG_P (sub_reg));
+      if (REGNO (sub_reg) != REGNO (count_reg))
+        emit_move_insn (count_reg, sub_reg);
+    }
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, 0, i, 1);
-
+    duplicate_insns_of_cycles (ps, 0, i, 1, count_reg);
+  
   /* Put the prolog on the entry edge.  */
   e = loop_preheader_edge (loop);
   split_edge_and_insert (e, get_insns ());
@@ -670,8 +728,8 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop * loop, rtx count_r
   start_sequence ();
 
   for (i = 0; i < last_stage; i++)
-    duplicate_insns_of_cycles (ps, i + 1, last_stage, 0);
-
+    duplicate_insns_of_cycles (ps, i + 1, last_stage, 0, count_reg);
+  
   /* Put the epilogue on the exit edge.  */
   gcc_assert (single_exit (loop));
   e = single_exit (loop);
@@ -907,20 +965,27 @@ sms_schedule (void)
         }
 
       /* Make sure this is a doloop.  */
-      if ( !(count_reg = doloop_register_get (tail)))
+      if ( !(count_reg = doloop_register_get (head, tail)))
 	continue;
 
       /* Don't handle BBs with calls or barriers, or !single_set insns,
          or auto-increment insns (to avoid creating invalid reg-moves
          for the auto-increment insns).  
-         ??? Should handle auto-increment insns.  */
-      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
-	if (CALL_P (insn)
-	    || BARRIER_P (insn)
-	    || (INSN_P (insn) && !JUMP_P (insn)
-		&& !single_set (insn) && GET_CODE (PATTERN (insn)) != USE)
-            || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0))
-	  break;
+         ??? Should handle auto-increment insns.
+         ??? Should handle insns defining subregs.  */
+     for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
+      {
+         rtx set;
+
+        if (CALL_P (insn)
+            || BARRIER_P (insn)
+            || (INSN_P (insn) && !JUMP_P (insn)
+                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE)
+            || (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
+            || (INSN_P (insn) && (set = single_set (insn))
+                && GET_CODE (SET_DEST (set)) == SUBREG))
+        break;
+      }
 
       if (insn != NEXT_INSN (tail))
 	{
@@ -932,8 +997,11 @@ sms_schedule (void)
 		fprintf (dump_file, "SMS loop-with-barrier\n");
               else if (FIND_REG_INC_NOTE (insn, NULL_RTX) != 0)
                 fprintf (dump_file, "SMS reg inc\n");
-	      else
-		fprintf (dump_file, "SMS loop-with-not-single-set\n");
+              else if ((INSN_P (insn) && !JUMP_P (insn)
+                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
+                fprintf (dump_file, "SMS loop-with-not-single-set\n");
+              else
+               fprintf (dump_file, "SMS loop with subreg in lhs\n");
 	      print_rtl_single (dump_file, insn);
 	    }
 
@@ -998,7 +1066,7 @@ sms_schedule (void)
       /* In case of th loop have doloop register it gets special
 	 handling.  */
       count_init = NULL_RTX;
-      if ((count_reg = doloop_register_get (tail)))
+      if ((count_reg = doloop_register_get (head, tail)))
 	{
 	  basic_block pre_header;
 
@@ -1072,7 +1140,10 @@ sms_schedule (void)
 	     the closing_branch was scheduled and should appear in the last (ii-1)
 	     row.  Otherwise, we are free to schedule the branch, and we let nodes
 	     that were scheduled at the first PS_MIN_CYCLE cycle appear in the first
-	     row; this should reduce stage_count to minimum.  */
+	     row; this should reduce stage_count to minimum.  
+             TODO: Revisit the issue of scheduling the insns of the
+             control part relative to the branch when the control part
+             has more than one insn.  */
 	  normalize_sched_times (ps);
 	  rotate_partial_schedule (ps, PS_MIN_CYCLE (ps));
 	  set_columns_for_ps (ps);
@@ -1111,11 +1182,8 @@ sms_schedule (void)
 	  if (dump_file)
 	    print_node_sched_params (dump_file, g->num_nodes, g);
 	  /* Generate prolog and epilog.  */
-	  if (count_reg && !count_init)
-	    generate_prolog_epilog (ps, loop, count_reg);
-	  else
-	    generate_prolog_epilog (ps, loop, NULL_RTX);
-	    
+          generate_prolog_epilog (ps, loop, count_reg, count_init);
+ 
 	  free_undo_replace_buff (reg_move_replaces);
 	}
 

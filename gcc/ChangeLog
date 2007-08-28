@@ -1,3 +1,31 @@
+2007-08-28  Mircea Namolaru  <namolaru@il.ibm.com>
+            Vladimir Yanovsky  <yanov@il.ibm.com>
+            Revital Eres  <eres@il.ibm.com>
+            Andrey Belevantsev  <abel@ispras.ru>
+
+	* config/spu/spu.md: Recognize doloop pattern when -fmodulo-sched
+	is set.
+	* modulo-sched.c: Add documentation regarding do-loop.
+	(doloop_register_get): Change number of arguments to support
+	the new do-loop pattern and check whether COUNT_REG has no other
+	occurences in the loop besides in the control part.
+	(duplicate_insns_of_cycles): Do not duplicate the insn which
+	changes count_reg as it is already adjusted.
+	(generate_prolog_epilog): New argument to support the new
+	do-loop pattern.  Change the subtract instruction to use
+	expand_simple_binop.  Call duplicate_insns_of_cycles with new
+	argument.
+	(sms_schedule): Call doloop_register_get and
+	generate_prolog_epilog with new argument.  Do not handle loops
+	with single sets insns with subreg in their lhs.
+	* loop-doloop.c (doloop_optimize): Support for another do-loop
+	pattern.
+	(doloop_condition_get): Gets an instruction instead of a pattern
+	and change the return condition when the do-loop pattern is
+	not parallel.
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Handle only reg
+	deps when considering to not create edges.
+
 2007-08-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/extend.texi (gnu_inline funtion attribute): Document C++
