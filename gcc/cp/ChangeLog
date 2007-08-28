@@ -1,3 +1,7 @@
+2007-08-28  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (duplicate_decls): Merge DECL_DISREGARD_INLINE_LIMITS.
+
 2007-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 	
 	* error.c (dump_expr): Handle COMPLEX_CST.

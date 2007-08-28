@@ -4864,8 +4864,9 @@ handle_always_inline_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
     {
-      /* Do nothing else, just set the attribute.  We'll get at
-	 it later with lookup_attribute.  */
+      /* Set the attribute and mark it for disregarding inline
+	 limits.  */
+      DECL_DISREGARD_INLINE_LIMITS (*node) = 1;
     }
   else
     {
