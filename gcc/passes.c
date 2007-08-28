@@ -762,13 +762,13 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_machine_reorg);
 	  NEXT_PASS (pass_cleanup_barriers);
 	  NEXT_PASS (pass_delay_slots);
-	  NEXT_PASS (pass_df_finish);
 	  NEXT_PASS (pass_split_for_shorten_branches);
 	  NEXT_PASS (pass_convert_to_eh_region_ranges);
 	  NEXT_PASS (pass_shorten_branches);
 	  NEXT_PASS (pass_set_nothrow_function_flags);
 	  NEXT_PASS (pass_final);
 	}
+      NEXT_PASS (pass_df_finish);
     }
   NEXT_PASS (pass_clean_state);
   *p = NULL;
