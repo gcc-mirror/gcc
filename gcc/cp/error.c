@@ -2049,6 +2049,11 @@ dump_expr (tree t, int flags)
       pp_id_expression (cxx_pp, t);
       break;
 
+    case TEMPLATE_TYPE_PARM:
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      dump_type (t, flags);
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
