@@ -13,6 +13,12 @@
 
 2007-08-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/29000
+	* pt.c (build_non_dependent_expr, type_dependent_expression_p): 
+	Look inside STMT_EXPR.
+	* semantics.c (stmt_expr_value_expr): New fn.
+	* cp-tree.h: Declare it.
+
 	PR c++/28558
 	* decl.c (groktypename): Ignore attributes applied to class type.
 

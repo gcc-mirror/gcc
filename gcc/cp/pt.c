@@ -15277,6 +15277,9 @@ type_dependent_expression_p (tree expression)
       && !DECL_TEMPLATE_TEMPLATE_PARM_P (expression))
     return false;
 
+  if (TREE_CODE (expression) == STMT_EXPR)
+    expression = stmt_expr_value_expr (expression);
+
   if (TREE_TYPE (expression) == unknown_type_node)
     {
       if (TREE_CODE (expression) == ADDR_EXPR)
@@ -15617,6 +15620,8 @@ build_non_dependent_expr (tree expr)
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
   inner_expr = expr;
+  if (TREE_CODE (inner_expr) == STMT_EXPR)
+    inner_expr = stmt_expr_value_expr (inner_expr);
   if (TREE_CODE (inner_expr) == ADDR_EXPR)
     inner_expr = TREE_OPERAND (inner_expr, 0);
   if (TREE_CODE (inner_expr) == COMPONENT_REF)
