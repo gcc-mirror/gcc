@@ -3887,6 +3887,48 @@ selb\t%0,%4,%0,%3"
   [(set_attr "type" "br")])
 
 
+
+ ;; Define the subtract-one-and-jump insns so loop.c
+ ;; knows what to generate.
+ (define_expand "doloop_end"
+   [(use (match_operand 0 "" ""))      ; loop pseudo
+    (use (match_operand 1 "" ""))      ; iterations; zero if unknown
+    (use (match_operand 2 "" ""))      ; max iterations
+    (use (match_operand 3 "" ""))      ; loop level
+    (use (match_operand 4 "" ""))]     ; label
+   ""
+   "
+ {
+   /* Currently SMS relies on the do-loop pattern to recognize loops
+      where (1) the control part comprises of all insns defining and/or
+      using a certain 'count' register and (2) the loop count can be
+      adjusted by modifying this register prior to the loop.
+.     ??? The possible introduction of a new block to initialize the
+      new IV can potentially effects branch optimizations.  */
+   if (optimize > 0 && flag_modulo_sched)
+   {
+     rtx s0;
+     rtx bcomp;
+     rtx loc_ref;
+
+     /* Only use this on innermost loops.  */
+     if (INTVAL (operands[3]) > 1)
+       FAIL;
+     if (GET_MODE (operands[0]) != SImode)
+       FAIL;
+
+     s0 = operands [0];
+     emit_move_insn (s0, gen_rtx_PLUS (SImode, s0, GEN_INT (-1)));
+     bcomp = gen_rtx_NE(SImode, s0, const0_rtx);
+     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [4]);
+     emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+                                  gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
+                                                        loc_ref, pc_rtx)));
+
+     DONE;
+   }
+ }")
+
 ;; convert between any two modes, avoiding any GCC assumptions
 (define_expand "spu_convert"
   [(set (match_operand 0 "spu_reg_operand" "")

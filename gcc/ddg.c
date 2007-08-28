@@ -176,12 +176,16 @@ create_ddg_dep_from_intra_loop_link (ddg_ptr g, ddg_node_ptr src_node,
       rtx set;
 
       set = single_set (dest_node->insn);
-      if (set)
+      /* TODO: Handle registers that REG_P is not true for them, i.e.
+         subregs and special registers.  */
+      if (set && REG_P (SET_DEST (set)))
         {
           int regno = REGNO (SET_DEST (set));
-          struct df_ref *first_def =
-            df_bb_regno_first_def_find (g->bb, regno);
+          struct df_ref *first_def;
           struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (g->bb);
+
+          first_def = df_bb_regno_first_def_find (g->bb, regno);
+          gcc_assert (first_def);
 
           if (bitmap_bit_p (bb_info->gen, first_def->id))
             return;

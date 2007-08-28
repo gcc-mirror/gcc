@@ -1,3 +1,10 @@
+2007-08-28  Mircea Namolaru  <namolaru@il.ibm.com>
+            Vladimir Yanovsky  <yanov@il.ibm.com>
+            Revital Eres  <eres@il.ibm.com>
+            Andrey Belevantsev  <abel@ispras.ru>
+
+	* gcc.dg/sms-1.c: New test.
+
 2007-08-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/ext/gnu-inline-common.h: New.
