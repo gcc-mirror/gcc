@@ -1754,6 +1754,25 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
   return result;
 }
 
+/* Returns the expression which provides the value of STMT_EXPR.  */
+
+tree
+stmt_expr_value_expr (tree stmt_expr)
+{
+  tree t = STMT_EXPR_STMT (stmt_expr);
+
+  if (TREE_CODE (t) == BIND_EXPR)
+    t = BIND_EXPR_BODY (t);
+
+  if (TREE_CODE (t) == STATEMENT_LIST)
+    t = STATEMENT_LIST_TAIL (t)->stmt;
+
+  if (TREE_CODE (t) == EXPR_STMT)
+    t = EXPR_STMT_EXPR (t);
+
+  return t;
+}
+
 /* Perform Koenig lookup.  FN is the postfix-expression representing
    the function (or functions) to call; ARGS are the arguments to the
    call.  Returns the functions to be considered by overload
