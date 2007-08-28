@@ -1012,6 +1012,13 @@ pp_c_constant (c_pretty_printer *pp, tree e)
       pp_c_string_literal (pp, e);
       break;
 
+    case COMPLEX_CST:
+      /* Sometimes, we are confused and we think a complex literal
+         is a constant.  Such thing is a compound literal which
+         grammatically belongs to postifx-expr production.  */
+      pp_c_compound_literal (pp, e);
+      break;
+
     default:
       pp_unsupported_tree (pp, e);
       break;
