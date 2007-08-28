@@ -1,5 +1,8 @@
 2007-08-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/32370
+	* gcc.dg/pr32370.c: New test.
+
 	PR rtl-optimization/33148
 	* gcc.c-torture/compile/20070827-1.c: New test.
 
