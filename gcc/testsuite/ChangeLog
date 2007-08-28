@@ -1,3 +1,8 @@
+2007-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32596
+	* g++.dg/ext/visibility/anon5.C: New test.
+
 2007-07-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/gamma_4.f90: Fix large-real kind selection.
