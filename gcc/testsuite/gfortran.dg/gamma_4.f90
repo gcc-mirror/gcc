@@ -10,7 +10,7 @@
 program gamma_test
 implicit none
 intrinsic :: gamma, lgamma
-integer, parameter :: qp = selected_real_kind(p=15,r=900)
+integer, parameter :: qp = selected_real_kind(precision (0.0_8) + 1)
 
 real(qp) :: rqp
 
