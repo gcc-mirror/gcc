@@ -1,3 +1,9 @@
+2007-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+	
+	* error.c (dump_expr): Handle COMPLEX_CST.
+	* cxx-pretty-print.c (pp_cxx_primary_expression): Likewise.
+	(pp_cxx_expression): Likewise.
+
 2007-08-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* decl.c (GNU_INLINE_P): New.
