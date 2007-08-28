@@ -1,3 +1,8 @@
+2007-08-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (struct tree_function_decl): Increase size of
+	function_code bitfield.
+
 2007-08-28  Nathan Sidwell  <nathan@codesourcery.com>
 	    Kazu Hirata  <kazu@codesourcery.com>
 
