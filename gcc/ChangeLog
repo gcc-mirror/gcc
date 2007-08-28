@@ -1,3 +1,11 @@
+2007-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/32914
+	* dwarf2out.c (rtl_for_decl_init): If vector decl has CONSTRUCTOR
+	initializer, use build_vector_from_ctor if possible to create
+	VECTOR_CST out of it.  If vector initializer is not VECTOR_CST
+	even after this, return NULL.
+
 2007-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.c (pp_c_constant): Handle COMPLEX_CST.
