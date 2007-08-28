@@ -134,6 +134,9 @@ static void m68k_compute_frame_layout (void);
 static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
 static bool m68k_rtx_costs (rtx, int, int, int *);
+#if M68K_HONOR_TARGET_STRICT_ALIGNMENT
+static bool m68k_return_in_memory (tree, tree);
+#endif
 
 
 /* Specify the identification number of the library being built */
@@ -204,6 +207,11 @@ int m68k_last_compare_had_fp_operands;
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL m68k_ok_for_sibcall_p
+
+#if M68K_HONOR_TARGET_STRICT_ALIGNMENT
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY m68k_return_in_memory
+#endif
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -4386,3 +4394,25 @@ m68k_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
   else
     return gen_rtx_REG (mode, D0_REG);
 }
+
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+#if M68K_HONOR_TARGET_STRICT_ALIGNMENT
+static bool
+m68k_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  enum machine_mode mode = TYPE_MODE (type);
+
+  if (mode == BLKmode)
+    return true;
+
+  /* If TYPE's known alignment is less than the alignment of MODE that
+     would contain the structure, then return in memory.  We need to
+     do so to maintain the compatibility between code compiled with
+     -mstrict-align and that compiled with -mno-strict-align.  */
+  if (AGGREGATE_TYPE_P (type)
+      && TYPE_ALIGN (type) < GET_MODE_ALIGNMENT (mode))
+    return true;
+
+  return false;
+}
+#endif
