@@ -1,3 +1,10 @@
+2007-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32596
+	PR c++/32400
+	* pt.c (check_explicit_specialization): Set DECL_INTERFACE_KNOWN
+	and DECL_NOT_REALLY_EXTERN if tmpl_func is not public.
+
 2007-08-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28558
