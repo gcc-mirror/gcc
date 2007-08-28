@@ -1477,6 +1477,7 @@ dump_expr (tree t, int flags)
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
+    case COMPLEX_CST:
       pp_constant (cxx_pp, t);
       break;
 

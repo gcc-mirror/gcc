@@ -352,6 +352,7 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
     {
     case INTEGER_CST:
     case REAL_CST:
+    case COMPLEX_CST:
     case STRING_CST:
       pp_cxx_constant (pp, t);
       break;
@@ -928,6 +929,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case STRING_CST:
     case INTEGER_CST:
     case REAL_CST:
+    case COMPLEX_CST:
       pp_cxx_constant (pp, t);
       break;
 
