@@ -1542,6 +1542,22 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V4SF")])
 
+(define_insn_and_split "*vec_extract_v4sf_mem"
+  [(set (match_operand:SF 0 "register_operand" "=x*rf")
+       (vec_select:SF
+	 (match_operand:V4SF 1 "memory_operand" "o")
+	 (parallel [(match_operand 2 "const_0_to_3_operand" "n")])))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  int i = INTVAL (operands[2]);
+
+  emit_move_insn (operands[0], adjust_address (operands[1], SFmode, i*4));
+  DONE;
+})
+
 (define_expand "vec_extractv4sf"
   [(match_operand:SF 0 "register_operand" "")
    (match_operand:V4SF 1 "register_operand" "")
@@ -4632,6 +4648,22 @@
   [(set (match_dup 0) (match_dup 1))]
 {
   operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));
+})
+
+(define_insn_and_split "*vec_ext_v4si_mem"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(vec_select:SI
+	  (match_operand:V4SI 1 "memory_operand" "o")
+	  (parallel [(match_operand 2 "const_0_to_3_operand" "")])))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  int i = INTVAL (operands[2]);
+
+  emit_move_insn (operands[0], adjust_address (operands[1], SImode, i*4));
+  DONE;
 })
 
 (define_expand "sse_storeq"
