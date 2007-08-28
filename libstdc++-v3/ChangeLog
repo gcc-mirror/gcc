@@ -1,3 +1,11 @@
+2007-08-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/33128
+	* include/tr1_impl/random (uniform_int<>::_M_call): Deal with
+	__urng() returning negative values.
+	* testsuite/tr1/5_numerical_facilities/random/uniform_int/33128.cc:
+	New.
+
 2007-08-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4: Fix duplicate variable names.
