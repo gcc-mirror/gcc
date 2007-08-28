@@ -3877,7 +3877,13 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   type_specifiers->attributes = NULL_TREE;
   type = grokdeclarator (declarator, type_specifiers, TYPENAME, 0, &attrs);
   if (attrs)
-    cplus_decl_attributes (&type, attrs, 0);
+    {
+      if (CLASS_TYPE_P (type))
+	warning (OPT_Wattributes, "ignoring attributes applied to class type "
+		 "outside of definition");
+      else
+	cplus_decl_attributes (&type, attrs, 0);
+    }
   return type;
 }
 

@@ -1,3 +1,8 @@
+2007-08-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28558
+	* decl.c (groktypename): Ignore attributes applied to class type.
+
 2007-08-28  Richard Guenther  <rguenther@suse.de>
 
 	* decl.c (duplicate_decls): Merge DECL_DISREGARD_INLINE_LIMITS.
