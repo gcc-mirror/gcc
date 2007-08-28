@@ -1,3 +1,21 @@
+2007-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/write.c (stdbool.h): Add include. (sign_t): Move typedef to
+	new file write_float.def. Include write_float.def.
+	(extract_real): Delete. (calculate_sign): Delete.
+	(calculate_exp): Delete. (calculate_G_format): Delete.
+	(output_float): Delete. (write_float): Delete.
+	* io/write_float.def (calculate_sign): Added.
+	(output_float): Refactored to be independent of kind and added to this
+	file for inclusion. (write_infnan): New function to write "Infinite" or
+	"NaN" depending on flags passed, independent of kind.
+	(CALCULATE_EXP): New macro to build kind specific functions. Use it.
+	(OUTPUT_FLOAT_FMT_G): New macro, likewise. Use it.
+	(DTOA, DTOAL): Macros to implement "decimal to ascii".
+	(WRITE_FLOAT): New macro for kind specific write_float functions.
+	(write_float): Revised function to determine kind and use WRITE_FLOAT
+	to implement kind specific output.
+
 2007-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33055
