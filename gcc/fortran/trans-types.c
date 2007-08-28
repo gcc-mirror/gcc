@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-const.h"
 #include "real.h"
+#include "flags.h"
 
 
 #if (GFC_MAX_DIMENSIONS < 10)
@@ -1232,7 +1233,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
     {
       /* Fill in the stride and bound components of the type.  */
       if (known_stride)
-	tmp =  gfc_conv_mpz_to_tree (stride, gfc_index_integer_kind);
+	tmp = gfc_conv_mpz_to_tree (stride, gfc_index_integer_kind);
       else
         tmp = NULL_TREE;
       GFC_TYPE_ARRAY_STRIDE (type, n) = tmp;
@@ -1329,6 +1330,24 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
   mpz_clear (offset);
   mpz_clear (stride);
   mpz_clear (delta);
+
+  /* In debug info represent packed arrays as multi-dimensional
+     if they have rank > 1 and with proper bounds, instead of flat
+     arrays.  */
+  if (known_stride && write_symbols != NO_DEBUG)
+    {
+      tree gtype = etype, rtype, type_decl;
+
+      for (n = as->rank - 1; n >= 0; n--)
+	{
+	  rtype = build_range_type (gfc_array_index_type,
+				    GFC_TYPE_ARRAY_LBOUND (type, n),
+				    GFC_TYPE_ARRAY_UBOUND (type, n));
+	  gtype = build_array_type (gtype, rtype);
+	}
+      TYPE_NAME (type) = type_decl = build_decl (TYPE_DECL, NULL, gtype);
+      DECL_ORIGINAL_TYPE (type_decl) = gtype;
+    }
 
   if (packed != PACKED_STATIC || !known_stride)
     {
