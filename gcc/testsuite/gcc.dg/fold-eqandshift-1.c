@@ -25,15 +25,25 @@ int test4(int d)
   return (d >> 3) & 4;
 }
 
+#if __INT_MAX__ == 32767
+#define INT_BITS 16
+#elif __INT_MAX__ == 2147483647
+#define INT_BITS 32
+#elif __INT_MAX__ == 9223372036854775807
+#define INT_BITS 64
+#else
+#error Please add support for your target here.
+#endif
+
 void test5(int e)
 {
-  if ((e >> 31) & 64)
+  if ((e >> (INT_BITS - 1)) & 64)
     foo();
 }
 
 void test6(unsigned int f)
 {
-  if ((f >> 31) & 64)
+  if ((f >> (INT_BITS - 1)) & 64)
     foo();
 }
 

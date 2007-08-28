@@ -1,3 +1,16 @@
+2007-08-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	* gcc.c-torture/compile/limits-blockid.c: Reduce testcase size to
+	10000 for targets where "int" can't hold at least 100000.
+	* gcc.c-torture/compile/limits-enumconst.c: Likewise.
+	* gcc.dg/fold-eqandshift-1.c (INT_BITS): New.
+	(test5)(test6): Use it.
+	* gcc.dg/pr30744-1.c (r): Use pointer sized integer.
+	* gcc.dg/tree-ssa/foldaddr-1.c (foo): Likewise.
+	* gcc.dg/tree-ssa/loadpre6.c (main): Likewise.
+	* gcc.dg/tls/opt-5.c (__gen_tempname): Avoid overflowing 16-bit	int.
+	* gcc.dg/attr-alloc_size.c (test): Likewise.
+
 2007-08-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33209

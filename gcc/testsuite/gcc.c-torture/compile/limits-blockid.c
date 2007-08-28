@@ -14,5 +14,9 @@
 
 void q9_func(void)
 {
+#if __INT_MAX__ >= 100000
   LIM5(char t)
+#else
+  LIM4(char t)
+#endif
 }

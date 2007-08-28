@@ -1,15 +1,16 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
+#include <stddef.h>
 
 typedef struct {
-  unsigned long unique;
+  ptrdiff_t unique;
 } G;
 
 void r(G* n)
 {
-  unsigned long p;
-  if (((G *) ((void *)((~(unsigned long)(p))))) != ((void *)0)) {
-    ((G *) ((void *)((~(unsigned long)(p)))))->unique = n->unique;
+  ptrdiff_t p;
+  if (((G *) ((void *)((~(ptrdiff_t)(p))))) != ((void *)0)) {
+    ((G *) ((void *)((~(ptrdiff_t)(p)))))->unique = n->unique;
   }
 }
 

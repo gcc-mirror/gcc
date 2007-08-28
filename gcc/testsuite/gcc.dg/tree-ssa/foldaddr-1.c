@@ -1,11 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-original" } */
-
+#include <stddef.h>
 
 char *a;
 int foo(char *b)
 {
-        return a+5+(long)b == (long)b+a;
+        return a+5+(ptrdiff_t)b == (ptrdiff_t)b+a;
 }
 
 /* Folding should have determined that the two addresses were

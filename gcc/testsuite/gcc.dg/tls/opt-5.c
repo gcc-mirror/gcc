@@ -34,12 +34,12 @@ __gen_tempname (char *tmpl, int kind)
   char *XXXXXX;
   static uint64_t value;
   uint64_t random_time_bits;
-  unsigned int count;
+  unsigned long count;
   int fd = -1;
   int save_errno = __libc_errno;
   struct stat64 st;
-  unsigned int attempts_min = 62 * 62 * 62;
-  unsigned int attempts = attempts_min < 238328 ? 238328 : attempts_min;
+  unsigned long attempts_min = 62L * 62L * 62L;
+  unsigned long attempts = attempts_min < 238328 ? 238328 : attempts_min;
 
   len = strlen (tmpl);
   if (len < 6 || strcmp(&tmpl[len - 6], "XXXXXX"))

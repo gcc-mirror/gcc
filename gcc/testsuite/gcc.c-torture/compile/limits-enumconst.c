@@ -14,5 +14,9 @@
 
 enum q21_enum
 {
+#if __INT_MAX__ >= 100000
   LIM5 (e)
+#else
+  LIM4 (e)
+#endif
 };
