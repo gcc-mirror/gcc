@@ -11,20 +11,16 @@ implicit none
 intrinsic :: gamma, lgamma
 integer, parameter :: sp = kind(1.0)
 integer, parameter :: dp = kind(1.0d0)
-integer, parameter :: qp = selected_real_kind(p=15,r=900)
 
 real(sp) :: rsp
 real(dp) :: rdp
-real(dp) :: rqp
 
 if (abs(gamma(1.0_sp)  - 1.0_sp) > tiny(1.0_sp)) call abort()
 if (abs(gamma(1.0_dp)  - 1.0_dp) > tiny(1.0_dp)) call abort()
-if (abs(gamma(1.0_qp)  - 1.0_qp) > tiny(1.0_qp)) call abort()
 if (abs(dgamma(1.0_dp) - 1.0_dp) > tiny(1.0_dp)) call abort()
 
 if (abs(lgamma(1.0_sp)) > tiny(1.0_sp)) call abort()
 if (abs(lgamma(1.0_dp)) > tiny(1.0_dp)) call abort()
-if (abs(lgamma(1.0_qp)) > tiny(1.0_qp)) call abort()
 if (abs(algama(1.0_sp)) > tiny(1.0_sp)) call abort()
 if (abs(dlgama(1.0_dp)) > tiny(1.0_dp)) call abort()
 end program gamma_test

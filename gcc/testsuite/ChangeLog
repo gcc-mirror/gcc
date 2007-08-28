@@ -1,3 +1,9 @@
+2007-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/gamma_1.f90: Remove large-real tests.
+	* gfortran.dg/gamma_2.f90: Remove large-real tests.
+	* gfortran.dg/gamma_4.f90: New: large-real tests.
+
 2007-08-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28558
