@@ -1618,7 +1618,11 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
         result_type
         _M_call(_UniformRandomNumberGenerator& __urng,
 		result_type __min, result_type __max, true_type)
-        { return result_type(__urng() % (__max - __min + 1)) + __min; }
+        { 
+	  typedef typename __gnu_cxx::__add_unsigned<typename
+	    _UniformRandomNumberGenerator::result_type>::__type __utype;
+	  return result_type(__utype(__urng()) % (__max - __min + 1)) + __min;
+	}
 
       template<typename _UniformRandomNumberGenerator>
         result_type
