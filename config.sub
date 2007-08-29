@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation,
 #   Inc.
 
-timestamp='2007-04-29'
+timestamp='2007-06-28'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -475,11 +475,7 @@ case $basic_machine in
 		basic_machine=craynv-cray
 		os=-unicosmp
 		;;
-	cr16c)
-		basic_machine=cr16c-unknown
-		os=-elf
-		;;
-        cr16)
+	cr16)
 		basic_machine=cr16-unknown
 		os=-elf
 		;;
