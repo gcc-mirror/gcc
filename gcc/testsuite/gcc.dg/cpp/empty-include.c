@@ -8,6 +8,6 @@
  * We should get an error.
  */
 
-/* {dg-do preprocess} */
+/* { dg-do preprocess } */
 #include "" /* { dg-error "empty" "error on empty filename in include" } */
 int x; /* Otherwise we have an empty file and get more errors. */

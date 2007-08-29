@@ -1,3 +1,13 @@
+2007-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr31344.c: Move to ...
+	* gcc.dg/dfp/pr31344.c: ... here.
+	* gcc.dg/sibcall-6.c: Simplify dg-skip-if directive.
+	* gcc.dg/20050503-1.c: Ditto.
+	* gcc.dg/20050111-1.c: Simplify i?86 and x86_64 dg-options directive.
+	* gcc.dg/20061127-1.c: Compile only for fpic targets.
+	* gcc.dg/20060801-1.c: Ditto.
+
 2007-08-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gfortran.dg/isnan_1.f90: Add -mieee for sh.

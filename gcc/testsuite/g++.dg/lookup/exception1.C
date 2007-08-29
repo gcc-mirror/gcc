@@ -1,5 +1,5 @@
 /* PR 2743 */
-/* {dg-do compile} */
+/* { dg-do compile } */
 
 namespace ns {
   class Exception
