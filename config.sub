@@ -479,6 +479,10 @@ case $basic_machine in
 		basic_machine=cr16c-unknown
 		os=-elf
 		;;
+        cr16)
+		basic_machine=cr16-unknown
+		os=-elf
+		;;
 	crds | unos)
 		basic_machine=m68k-crds
 		;;
