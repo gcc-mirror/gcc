@@ -1,4 +1,14 @@
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32989
+	* iresolve.c (gfc_resolve_getarg): Handle non-default integer
+	kinds.
+	* check.c (gfc_check_getarg): New function
+	* intrinsic.h: Add prototype for gfc_check_getarg.
+	* intrinsic.c (add_subroutines): Add reference to gfc_check_getarg.
+	* intrinsic.texi (GETARG): Adjust documentation.
+
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@gcc.gnu.org>
 
 	PR fortran/33105

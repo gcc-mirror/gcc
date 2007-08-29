@@ -4609,21 +4609,22 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GETARG(N, ARG)}
+@code{CALL GETARG(POS, VALUE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N}   @tab Shall be of type @code{INTEGER(4)}, @math{@var{N} \geq 0}
-@item @var{ARG} @tab Shall be of type @code{CHARACTER(*)}. 
+@item @var{POS}   @tab Shall be of type @code{INTEGER} and not wider than
+the default integer kind; @math{@var{POS} \geq 0}
+@item @var{VALUE} @tab Shall be of type @code{CHARACTER(*)}. 
 @end multitable
 
 @item @emph{Return value}:
-After @code{GETARG} returns, the @var{ARG} argument holds the @var{N}th 
-command line argument. If @var{ARG} can not hold the argument, it is 
-truncated to fit the length of @var{ARG}. If there are less than @var{N}
-arguments specified at the command line, @var{ARG} will be filled with blanks.
-If @math{@var{N} = 0}, @var{ARG} is set to the name of the program (on systems
-that support this feature).
+After @code{GETARG} returns, the @var{VALUE} argument holds the
+@var{POS}th command line argument. If @var{VALUE} can not hold the
+argument, it is truncated to fit the length of @var{VALUE}. If there are
+less than @var{POS} arguments specified at the command line, @var{VALUE}
+will be filled with blanks. If @math{@var{POS} = 0}, @var{VALUE} is set
+to the name of the program (on systems that support this feature).
 
 @item @emph{Example}:
 @smallexample

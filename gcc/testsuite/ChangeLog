@@ -1,3 +1,9 @@
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32989
+	* gfortran.fortran-torture/execute/getarg_1.f90: Add check for
+	non-default integer kind arguments.
+
 2007-08-29  Tobias Burnus  <burnus@gcc.gnu.org>
 
 	PR fortran/33105

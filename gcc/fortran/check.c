@@ -3234,6 +3234,28 @@ gfc_check_getcwd_sub (gfc_expr *cwd, gfc_expr *status)
 
 
 try
+gfc_check_getarg (gfc_expr *pos, gfc_expr *value)
+{
+  if (type_check (pos, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (pos->ts.kind > gfc_default_integer_kind)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be of a kind "
+		 "not wider than the default kind (%d)",
+		 gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
+		 &pos->where, gfc_default_integer_kind);
+      return FAILURE;
+    }
+
+  if (type_check (value, 1, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_getlog (gfc_expr *msg)
 {
   if (type_check (msg, 0, BT_CHARACTER) == FAILURE)

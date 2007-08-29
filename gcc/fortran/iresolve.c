@@ -2675,9 +2675,18 @@ void
 gfc_resolve_getarg (gfc_code *c)
 {
   const char *name;
-  int kind;
-  kind = gfc_default_integer_kind;
-  name = gfc_get_string (PREFIX ("getarg_i%d"), kind);
+
+  if (c->ext.actual->expr->ts.kind != gfc_default_integer_kind)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_default_integer_kind;
+
+      gfc_convert_type (c->ext.actual->expr, &ts, 2);
+    }
+
+  name = gfc_get_string (PREFIX ("getarg_i%d"), gfc_default_integer_kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
 
