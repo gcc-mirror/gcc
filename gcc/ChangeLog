@@ -1,3 +1,16 @@
+2007-08-29  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/bfin.c (bfin_expand_call): Inline PLT with l1_text
+	attribute when appropriate.
+	(bfin_handle_l1_text_attribute): New.
+	(bfin_handle_l1_data_attribute): New.
+	(bfin_attribute_table): Add attributes: l1_text, l1_data,
+	l1_data_A and l1_data_B.
+	* doc/extend.texi (node Function Attributes): Document l1_text
+	function attribute.
+	(Variable Attributes): Add Blackfin subsection. Document l1_data,
+	l1_data_A and l1_data_B variable attributes.
+
 2007-08-28  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/bfin.opt (minline-plt): Add.

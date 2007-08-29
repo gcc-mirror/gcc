@@ -2148,6 +2148,13 @@ When used together with @code{interrupt_handler}, @code{exception_handler}
 or @code{nmi_handler}, code will be generated to load the stack pointer
 from the USP register in the function prologue.
 
+@item l1_text
+@cindex @code{l1_text} function attribute
+This attribute specifies a function to be placed into L1 Instruction
+SRAM. The function will be put into a specific section named @code{.l1.text}.
+With @option{-mfdpic}, function calls with a such function as the callee
+or caller will use inlined PLT.
+
 @item long_call/short_call
 @cindex indirect calls on ARM
 This attribute specifies how a particular function is called on
@@ -3463,6 +3470,24 @@ The @code{dllimport} attribute is described in @xref{Function Attributes}.
 @item dllexport
 The @code{dllexport} attribute is described in @xref{Function Attributes}.
 
+@end table
+
+@subsection Blackfin Variable Attributes
+
+Three attributes are currently defined for the Blackfin.
+
+@table @code
+@item l1_data
+@item l1_data_A
+@item l1_data_B
+@cindex @code{l1_data} variable attribute
+@cindex @code{l1_data_A} variable attribute
+@cindex @code{l1_data_B} variable attribute
+Use these attributes on the Blackfin to place the variable into L1 Data SRAM.
+Variables with @code{l1_data} attribute will be put into the specific section
+named @code{.l1.data}. Those with @code{l1_data_A} attribute will be put into
+the specific section named @code{.l1.data.A}. Those with @code{l1_data_B}
+attribute will be put into the specific section named @code{.l1.data.B}.
 @end table
 
 @subsection M32R/D Variable Attributes

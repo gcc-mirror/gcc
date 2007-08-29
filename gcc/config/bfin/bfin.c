@@ -1879,11 +1879,30 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
 
   if (TARGET_FDPIC)
     {
+      int caller_has_l1_text, callee_has_l1_text;
+
+      caller_has_l1_text = callee_has_l1_text = 0;
+
+      if (lookup_attribute ("l1_text",
+			    DECL_ATTRIBUTES (cfun->decl)) != NULL_TREE)
+	caller_has_l1_text = 1;
+
+      if (GET_CODE (callee) == SYMBOL_REF
+	  && SYMBOL_REF_DECL (callee) && DECL_P (SYMBOL_REF_DECL (callee))
+	  && lookup_attribute
+	       ("l1_text",
+		DECL_ATTRIBUTES (SYMBOL_REF_DECL (callee))) != NULL_TREE)
+	callee_has_l1_text = 1;
+
       if (GET_CODE (callee) != SYMBOL_REF
 	  || bfin_longcall_p (callee, INTVAL (cookie))
 	  || (GET_CODE (callee) == SYMBOL_REF
 	      && !SYMBOL_REF_LOCAL_P (callee)
-	      && TARGET_INLINE_PLT))
+	      && TARGET_INLINE_PLT)
+	  || caller_has_l1_text != callee_has_l1_text
+	  || (caller_has_l1_text && callee_has_l1_text
+	      && (GET_CODE (callee) != SYMBOL_REF
+		  || !SYMBOL_REF_LOCAL_P (callee))))
 	{
 	  rtx addr = callee;
 	  if (! address_operand (addr, Pmode))
@@ -4646,6 +4665,91 @@ bfin_handle_longcall_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
+/* Handle a "l1_text" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+bfin_handle_l1_text_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree decl = *node;
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      error ("`%s' attribute only applies to functions",
+	     IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  /* The decl may have already been given a section attribute
+     from a previous declaration. Ensure they match.  */
+  else if (DECL_SECTION_NAME (decl) != NULL_TREE
+	   && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		      ".l1.text") != 0)
+    {
+      error ("section of %q+D conflicts with previous declaration",
+	     decl);
+      *no_add_attrs = true;
+    }
+  else
+    DECL_SECTION_NAME (decl) = build_string (9, ".l1.text");
+
+  return NULL_TREE;
+}
+
+/* Handle a "l1_data", "l1_data_A" or "l1_data_B" attribute;
+   arguments as in struct attribute_spec.handler.  */
+
+static tree
+bfin_handle_l1_data_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree decl = *node;
+
+  if (TREE_CODE (decl) != VAR_DECL)
+    {
+      error ("`%s' attribute only applies to variables",
+	     IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else if (current_function_decl != NULL_TREE
+	   && !TREE_STATIC (decl))
+    {
+      error ("`%s' attribute cannot be specified for local variables",
+	     IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
+    {
+      const char *section_name;
+
+      if (strcmp (IDENTIFIER_POINTER (name), "l1_data") == 0)
+	section_name = ".l1.data";
+      else if (strcmp (IDENTIFIER_POINTER (name), "l1_data_A") == 0)
+	section_name = ".l1.data.A";
+      else if (strcmp (IDENTIFIER_POINTER (name), "l1_data_B") == 0)
+	section_name = ".l1.data.B";
+      else
+	gcc_unreachable ();
+
+      /* The decl may have already been given a section attribute
+	 from a previous declaration. Ensure they match.  */
+      if (DECL_SECTION_NAME (decl) != NULL_TREE
+	  && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+		     section_name) != 0)
+	{
+	  error ("section of %q+D conflicts with previous declaration",
+		 decl);
+	  *no_add_attrs = true;
+	}
+      else
+	DECL_SECTION_NAME (decl)
+	  = build_string (strlen (section_name) + 1, section_name);
+    }
+
+ return NULL_TREE;
+}
+
 /* Table of valid machine attributes.  */
 const struct attribute_spec bfin_attribute_table[] =
 {
@@ -4658,6 +4762,10 @@ const struct attribute_spec bfin_attribute_table[] =
   { "saveall", 0, 0, false, true,  true, NULL },
   { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute },
   { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute },
+  { "l1_text", 0, 0, true, false, false,  bfin_handle_l1_text_attribute },
+  { "l1_data", 0, 0, true, false, false,  bfin_handle_l1_data_attribute },
+  { "l1_data_A", 0, 0, true, false, false, bfin_handle_l1_data_attribute },
+  { "l1_data_B", 0, 0, true, false, false,  bfin_handle_l1_data_attribute },
   { NULL, 0, 0, false, false, false, NULL }
 };
 
