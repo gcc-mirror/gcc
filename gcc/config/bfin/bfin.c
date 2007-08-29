@@ -5411,25 +5411,25 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	  || GET_MODE (target) != V2HImode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, V2HImode))
 	target = gen_reg_rtx (tmode);
-      if (! register_operand (op0, GET_MODE (op0)))
-	op0 = copy_to_mode_reg (GET_MODE (op0), op0);
       if (! register_operand (op1, GET_MODE (op1)))
 	op1 = copy_to_mode_reg (GET_MODE (op1), op1);
+      if (! register_operand (op2, GET_MODE (op2)))
+	op2 = copy_to_mode_reg (GET_MODE (op2), op2);
 
       tmp1 = gen_reg_rtx (SImode);
       tmp2 = gen_reg_rtx (SImode);
-      emit_insn (gen_ashlsi3 (tmp1, gen_lowpart (SImode, op2), GEN_INT (16)));
-      emit_move_insn (tmp2, gen_lowpart (SImode, op2));
+      emit_insn (gen_ashlsi3 (tmp1, gen_lowpart (SImode, op0), GEN_INT (16)));
+      emit_move_insn (tmp2, gen_lowpart (SImode, op0));
       emit_insn (gen_movstricthi_1 (gen_lowpart (HImode, tmp2), const0_rtx));
       emit_insn (gen_load_accumulator_pair (accvec, tmp1, tmp2));
-      emit_insn (gen_flag_macv2hi_parts_acconly (accvec, op0, op1, const0_rtx,
+      emit_insn (gen_flag_macv2hi_parts_acconly (accvec, op1, op2, const0_rtx,
 						 const0_rtx, const0_rtx,
 						 const1_rtx, accvec, const0_rtx,
 						 const0_rtx,
 						 GEN_INT (MACFLAG_W32)));
       tmp1 = (fcode == BFIN_BUILTIN_CPLX_MAC_16 ? const1_rtx : const0_rtx);
       tmp2 = (fcode == BFIN_BUILTIN_CPLX_MAC_16 ? const0_rtx : const1_rtx);
-      emit_insn (gen_flag_macv2hi_parts (target, op0, op1, const1_rtx,
+      emit_insn (gen_flag_macv2hi_parts (target, op1, op2, const1_rtx,
 					 const1_rtx, const1_rtx,
 					 const0_rtx, accvec, tmp1, tmp2,
 					 GEN_INT (MACFLAG_NONE), accvec));
