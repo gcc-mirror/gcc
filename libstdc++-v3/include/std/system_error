@@ -93,22 +93,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       network_unreachable = 			ENETUNREACH,
       no_buffer_space = 			ENOBUFS,
       no_child_process = 			ECHILD,
+
 #ifdef _GLIBCXX_HAVE_ENOLINK
       no_link = 				ENOLINK,
 #endif
       no_lock_available = 			ENOLCK,
+
+#ifdef _GLIBCXX_HAVE_ENODATA
       no_message_available = 			ENODATA, 
+#endif
+
       no_message = 				ENOMSG, 
       no_protocol_option = 			ENOPROTOOPT,
       no_space_on_device = 			ENOSPC,
+
+#ifdef _GLIBCXX_HAVE_ENOSR
       no_stream_resources = 			ENOSR,
+#endif
+
       no_such_device_or_address = 		ENXIO,
       no_such_device = 				ENODEV,
       no_such_file_or_directory = 		ENOENT,
       no_such_process = 			ESRCH,
       not_a_directory = 			ENOTDIR,
       not_a_socket = 				ENOTSOCK,
+
+#ifdef _GLIBCXX_HAVE_ENOSTR
       not_a_stream = 				ENOSTR,
+#endif
+
       not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
       not_supported = 				ENOTSUP,
@@ -132,7 +145,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef _GLIBCXX_HAVE_ENOTRECOVERABLE
       state_not_recoverable = 			ENOTRECOVERABLE,
 #endif
+
+#ifdef _GLIBCXX_HAVE_ETIME
       stream_timeout = 				ETIME,
+#endif
+
       text_file_busy = 				ETXTBSY,
       timed_out = 				ETIMEDOUT,
       too_many_files_open_in_system = 		ENFILE,
