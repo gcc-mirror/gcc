@@ -1,4 +1,4 @@
--- {dg-do run }
+-- { dg-do run }
 
 with prefix1; use prefix1;
 procedure test_prefix1 is
