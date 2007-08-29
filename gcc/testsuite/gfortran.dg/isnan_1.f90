@@ -1,6 +1,8 @@
 ! Test for the ISNAN intrinsic
 !
 ! { dg-do run }
+! { dg-options "-pedantic-errors -mieee" { target sh*-*-* } }
+!
   implicit none
   real :: x
   x = -1.0
