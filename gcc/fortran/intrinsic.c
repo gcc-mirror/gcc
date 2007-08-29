@@ -2377,7 +2377,7 @@ add_subroutines (void)
     *val = "value", *num = "number", *name = "name",
     *trim_name = "trim_name", *ut = "unit", *han = "handler",
     *sec = "seconds", *res = "result", *of = "offset", *md = "mode",
-    *whence = "whence";
+    *whence = "whence", *pos = "pos";
 
   int di, dr, dc, dl, ii;
 
@@ -2461,8 +2461,8 @@ add_subroutines (void)
 	      REQUIRED);
 
   add_sym_2s ("getarg", GFC_ISYM_GETARG, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
-	      NULL, NULL, gfc_resolve_getarg,
-	      c, BT_INTEGER, di, REQUIRED, vl, BT_CHARACTER, dc, REQUIRED);
+	      gfc_check_getarg, NULL, gfc_resolve_getarg,
+	      pos, BT_INTEGER, di, REQUIRED, val, BT_CHARACTER, dc, REQUIRED);
 
   add_sym_1s ("getlog", GFC_ISYM_GETLOG, NO_CLASS, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_getlog, NULL, gfc_resolve_getlog, c, BT_CHARACTER,
