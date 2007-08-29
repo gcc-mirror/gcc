@@ -7,7 +7,7 @@
 
 typedef struct { char c[STACK_SIZE/2]; } big_t;
 
-typedef int __attribute__((vector_size (8))) vecint;
+typedef int __attribute__((mode(SI))) __attribute__((vector_size (8))) vecint;
 typedef int __attribute__((mode(SI))) siint;
 
 vecint i = { 150, 100 };
