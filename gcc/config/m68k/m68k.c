@@ -639,9 +639,8 @@ m68k_get_function_kind (tree func)
 {
   tree a;
 
-  if (TREE_CODE (func) != FUNCTION_DECL)
-    return false;
-
+  gcc_assert (TREE_CODE (func) == FUNCTION_DECL);
+  
   a = lookup_attribute ("interrupt", DECL_ATTRIBUTES (func));
   if (a != NULL_TREE)
     return m68k_fk_interrupt_handler;
@@ -1258,14 +1257,30 @@ flags_in_68881 (void)
   return cc_status.flags & CC_IN_68881;
 }
 
-/* Implement TARGET_FUNCTION_OK_FOR_SIBCALL_P.  We cannot use sibcalls
-   for nested functions because we use the static chain register for
-   indirect calls.  */
+/* Implement TARGET_FUNCTION_OK_FOR_SIBCALL_P.  */
 
 static bool
-m68k_ok_for_sibcall_p (tree decl ATTRIBUTE_UNUSED, tree exp)
+m68k_ok_for_sibcall_p (tree decl, tree exp)
 {
-  return TREE_OPERAND (exp, 2) == NULL;
+  enum m68k_function_kind kind;
+  
+  /* We cannot use sibcalls for nested functions because we use the
+     static chain register for indirect calls.  */
+  if (CALL_EXPR_STATIC_CHAIN (exp))
+    return false;
+
+  kind = m68k_get_function_kind (current_function_decl);
+  if (kind == m68k_fk_normal_function)
+    /* We can always sibcall from a normal function, because it's
+       undefined if it is calling an interrupt function.  */
+    return true;
+
+  /* Otherwise we can only sibcall if the function kind is known to be
+     the same.  */
+  if (decl && m68k_get_function_kind (decl) == kind)
+    return true;
+  
+  return false;
 }
 
 /* Convert X to a legitimate function call memory reference and return the
