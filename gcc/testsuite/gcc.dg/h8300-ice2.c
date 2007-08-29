@@ -1,4 +1,4 @@
-/* { dg-do compile target { h8300-*-* } } */
+/* { dg-do compile } */
 /* ICE for signed/unsigned long and signed char comparison */
 int main()
 {

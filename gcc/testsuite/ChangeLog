@@ -1,3 +1,7 @@
+2007-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/h8300-ice2.c: Remove target selector.
+
 2007-08-29  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33215
