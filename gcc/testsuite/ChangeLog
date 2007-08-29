@@ -1,3 +1,8 @@
+2007-08-29  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33194
+	* g++.dg/other/canon-33194.C: New.
+
 2007-08-29  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.c-torture/execute/simd-1.c: Use SImode vector elements.

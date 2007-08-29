@@ -3678,12 +3678,6 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
       TYPE_REFERENCE_TO (ntype) = 0;
       TYPE_ATTRIBUTES (ntype) = attribute;
 
-      if (TYPE_STRUCTURAL_EQUALITY_P (ttype))
-	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
-      else
-	TYPE_CANONICAL (ntype)
-	  = build_qualified_type (TYPE_CANONICAL (ttype), quals);
-
       /* Create a new main variant of TYPE.  */
       TYPE_MAIN_VARIANT (ntype) = ntype;
       TYPE_NEXT_VARIANT (ntype) = 0;
@@ -3726,8 +3720,12 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
       /* If the target-dependent attributes make NTYPE different from
 	 its canonical type, we will need to use structural equality
 	 checks for this qualified type. */
-      if (!targetm.comp_type_attributes (ntype, ttype))
+      ttype = build_qualified_type (ttype, TYPE_UNQUALIFIED);
+      if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
+          || !targetm.comp_type_attributes (ntype, ttype))
 	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
+      else
+	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
 
       ttype = build_qualified_type (ntype, quals);
     }
