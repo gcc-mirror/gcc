@@ -1,3 +1,8 @@
+2007-08-28  Nathan Sidwell  <nathan@codesourcery.com>
+	    Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.target/m68k/interrupt-1.c: New.
+
 2007-08-28  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	* gcc.c-torture/compile/limits-blockid.c: Reduce testcase size to
