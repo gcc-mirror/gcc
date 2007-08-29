@@ -1,3 +1,7 @@
+2007-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (CONST_CAST): Avoid union for gcc-4.0.x.
+
 2007-08-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (struct tree_function_decl): Increase size of
