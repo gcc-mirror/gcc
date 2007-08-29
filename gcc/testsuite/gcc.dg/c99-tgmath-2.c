@@ -11,4 +11,4 @@ float foo(float x)
   return sin(x);
 }
 
-/* {dg-final {scan-assembler "sinf" } } */
+/* { dg-final { scan-assembler "sinf" } } */

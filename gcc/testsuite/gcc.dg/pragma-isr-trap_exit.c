@@ -1,4 +1,4 @@
-/* { dg-do compile { target sh-*-* sh[1234ble]*-*-*} } */
+/* { dg-do compile { target sh-*-* sh[1234ble]*-*-* } } */
 /* { dg-options "-O" } */
 /* This test case will check whether trapa is generated only for isr.  */
 #pragma interrupt

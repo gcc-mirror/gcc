@@ -11,4 +11,4 @@ complex double foo(complex double x)
   return exp(x);
 }
 
-/* {dg-final {scan-assembler "cexp" } } */
+/* { dg-final { scan-assembler "cexp" } } */

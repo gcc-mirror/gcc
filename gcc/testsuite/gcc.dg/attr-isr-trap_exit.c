@@ -1,4 +1,4 @@
-/* { dg-do compile { target sh-*-* sh[1234ble]*-*-*} } */
+/* { dg-do compile { target sh-*-* sh[1234ble]*-*-* } } */
 /* { dg-options "-O" } */
 /* Check that trapa / interrput_handler attributes can paired in
    either order.  */

@@ -1,4 +1,4 @@
-/* { dg-do compile { target h8300-*-* sh-*-* sh[1234ble]*-*-*} } */
+/* { dg-do compile { target h8300-*-* sh-*-* sh[1234ble]*-*-* } } */
 /* { dg-options "-O" } */
 /* This test case will check whether rte is generated only for isr.  */
 #pragma interrupt
