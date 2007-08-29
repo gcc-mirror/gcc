@@ -1,3 +1,8 @@
+2007-08-29  Olivier Hainque  <hainque@adacore.com>
+
+	* xcoffout.c: #include debug.h.
+	* Makefile.in (xcoffout.o): Add debug.h dependency.
+
 2007-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1) [VEC_SELECT]:
