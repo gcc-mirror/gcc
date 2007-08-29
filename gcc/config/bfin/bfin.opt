@@ -72,6 +72,10 @@ mfdpic
 Target Report Mask(FDPIC)
 Enable Function Descriptor PIC mode
 
+minline-plt
+Target Report Mask(INLINE_PLT)
+Enable inlining of PLT in function calls
+
 mstack-check-l1
 Target Report Mask(STACK_CHECK_L1)
 Do stack checking using bounds in L1 scratch memory

@@ -450,7 +450,7 @@ Objective-C and Objective-C++ Dialects}.
 -mstack-check-l1  -mid-shared-library  -mno-id-shared-library @gol
 -mshared-library-id=@var{n}  -mleaf-id-shared-library @gol
 -mno-leaf-id-shared-library  -msep-data  -mno-sep-data  -mlong-calls @gol
--mno-long-calls -mfast-fp}
+-mno-long-calls -mfast-fp -minline-plt}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -8618,6 +8618,11 @@ function calls via function pointers.
 Link with the fast floating-point library. This library relaxes some of
 the IEEE floating-point standard's rules for checking inputs against
 Not-a-Number (NAN), in the interest of performance.
+
+@item -minline-plt
+@opindex minline-plt
+Enable inlining of PLT entries in function calls to functions that are
+not known to bind locally.  It has no effect without @option{-mfdpic}.
 @end table
 
 @node CRIS Options
