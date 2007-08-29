@@ -1036,6 +1036,12 @@ gfc_init_builtin_functions (void)
 		      "malloc", false);
   DECL_IS_MALLOC (built_in_decls[BUILT_IN_MALLOC]) = 1;
 
+  tmp = tree_cons (NULL_TREE, pvoid_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, size_type_node, tmp);
+  ftype = build_function_type (pvoid_type_node, tmp);
+  gfc_define_builtin ("__builtin_realloc", ftype, BUILT_IN_REALLOC,
+		      "realloc", false);
+
   tmp = tree_cons (NULL_TREE, void_type_node, void_list_node);
   ftype = build_function_type (integer_type_node, tmp);
   gfc_define_builtin ("__builtin_isnan", ftype, BUILT_IN_ISNAN,

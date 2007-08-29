@@ -1,3 +1,8 @@
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc/builtin-types.def (BT_FN_PTR_PTR_SIZE): New type.
+	* gcc/builtins.def (BUILT_IN_REALLOC): New builtin.
+
 2007-08-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33194

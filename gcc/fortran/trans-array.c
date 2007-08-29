@@ -843,17 +843,11 @@ gfc_grow_array (stmtblock_t * pblock, tree desc, tree extra)
   /* Calculate the new array size.  */
   size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (desc)));
   tmp = build2 (PLUS_EXPR, gfc_array_index_type, ubound, gfc_index_one_node);
-  arg1 = build2 (MULT_EXPR, gfc_array_index_type, tmp,
-		 fold_convert (gfc_array_index_type, size));
+  arg1 = build2 (MULT_EXPR, size_type_node, fold_convert (size_type_node, tmp),
+		 fold_convert (size_type_node, size));
 
-  /* Pick the realloc function.  */
-  if (gfc_index_integer_kind == 4 || gfc_index_integer_kind == 8)
-    tmp = gfor_fndecl_internal_realloc;
-  else
-    gcc_unreachable ();
-
-  /* Set the new data pointer.  */
-  tmp = build_call_expr (tmp, 2, arg0, arg1);
+  /* Call the realloc() function.  */
+  tmp = gfc_call_realloc (pblock, arg0, arg1);
   gfc_conv_descriptor_data_set (pblock, desc, tmp);
 }
 
@@ -3571,7 +3565,6 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
 {
   tree tmp;
   tree pointer;
-  tree allocate;
   tree offset;
   tree size;
   gfc_expr **lower;
@@ -3629,22 +3622,11 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree pstat)
   pointer = gfc_conv_descriptor_data_get (se->expr);
   STRIP_NOPS (pointer);
 
-  if (TYPE_PRECISION (gfc_array_index_type) == 32 ||
-      TYPE_PRECISION (gfc_array_index_type) == 64)
-    {
-      if (allocatable_array)
-	allocate = gfor_fndecl_allocate_array;
-      else
-	allocate = gfor_fndecl_allocate;
-    }
-  else
-    gcc_unreachable ();
-
   /* The allocate_array variants take the old pointer as first argument.  */
   if (allocatable_array)
-    tmp = build_call_expr (allocate, 3, pointer, size, pstat);
+    tmp = gfc_allocate_array_with_status (&se->pre, pointer, size, pstat);
   else
-    tmp = build_call_expr (allocate, 2, size, pstat);
+    tmp = gfc_allocate_with_status (&se->pre, size, pstat);
   tmp = build2 (MODIFY_EXPR, void_type_node, pointer, tmp);
   gfc_add_expr_to_block (&se->pre, tmp);
 
@@ -3680,7 +3662,7 @@ gfc_array_deallocate (tree descriptor, tree pstat)
   STRIP_NOPS (var);
 
   /* Parameter is the address of the data component.  */
-  tmp = build_call_expr (gfor_fndecl_deallocate, 2, var, pstat);
+  tmp = gfc_deallocate_with_status (var, pstat, false);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Zero the data pointer.  */
@@ -4998,7 +4980,6 @@ tree
 gfc_trans_dealloc_allocated (tree descriptor)
 { 
   tree tmp;
-  tree ptr;
   tree var;
   stmtblock_t block;
 
@@ -5006,13 +4987,11 @@ gfc_trans_dealloc_allocated (tree descriptor)
 
   var = gfc_conv_descriptor_data_get (descriptor);
   STRIP_NOPS (var);
-  tmp = gfc_create_var (gfc_array_index_type, NULL);
-  ptr = build_fold_addr_expr (tmp);
 
-  /* Call array_deallocate with an int* present in the second argument.
+  /* Call array_deallocate with an int * present in the second argument.
      Although it is ignored here, it's presence ensures that arrays that
      are already deallocated are ignored.  */
-  tmp = build_call_expr (gfor_fndecl_deallocate, 2, var, ptr);
+  tmp = gfc_deallocate_with_status (var, NULL_TREE, true);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Zero the data pointer.  */

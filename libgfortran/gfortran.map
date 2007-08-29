@@ -11,8 +11,6 @@ GFORTRAN_1.0 {
     _gfortran_all_l16;
     _gfortran_all_l4;
     _gfortran_all_l8;
-    _gfortran_allocate;
-    _gfortran_allocate_array;
     _gfortran_any_l16;
     _gfortran_any_l4;
     _gfortran_any_l8;
@@ -60,7 +58,6 @@ GFORTRAN_1.0 {
     _gfortran_ctime;
     _gfortran_ctime_sub;
     _gfortran_date_and_time;
-    _gfortran_deallocate;
     _gfortran_eoshift0_1;
     _gfortran_eoshift0_1_char;
     _gfortran_eoshift0_2;
@@ -167,7 +164,6 @@ GFORTRAN_1.0 {
     _gfortran_ierrno_i4;
     _gfortran_ierrno_i8;
     _gfortran_internal_pack;
-    _gfortran_internal_realloc;
     _gfortran_internal_unpack;
     _gfortran_irand;
     _gfortran_isatty_l4;

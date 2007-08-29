@@ -1,3 +1,8 @@
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/alloc_comp_basics_1.f90: Update check.
+	* gfortran.dg/alloc_comp_constructor_1.f90: Update check.
+
 2007-08-29  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33194

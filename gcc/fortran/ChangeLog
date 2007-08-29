@@ -1,3 +1,25 @@
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-array.c (gfc_grow_array): Use gfc_call_realloc.
+	(gfc_array_allocate): Use gfc_allocate_with_status and
+	gfc_allocate_array_with_status.
+	(gfc_array_deallocate): Use gfc_deallocate_with_status.
+	(gfc_trans_dealloc_allocated): Use gfc_deallocate_with_status.
+	* trans-stmt.c (gfc_trans_allocate): Use gfc_allocate_with_status.
+	(gfc_trans_deallocate): Use gfc_deallocate_with_status.
+	* trans.c (gfc_allocate_with_status, gfc_allocate_array_with_status,
+	gfc_deallocate_with_status, gfc_call_realloc): New functions.
+	* trans.h (gfc_allocate_with_status, gfc_allocate_array_with_status,
+	gfc_deallocate_with_status, gfc_call_realloc): New prototypes.
+	(gfor_fndecl_internal_realloc, gfor_fndecl_allocate,
+	gfor_fndecl_allocate_array, gfor_fndecl_deallocate): Remove.
+	* f95-lang.c (gfc_init_builtin_functions): Create decl for
+	BUILT_IN_REALLOC.
+	* trans-decl.c (gfor_fndecl_internal_realloc,
+	gfor_fndecl_allocate, gfor_fndecl_allocate_array,
+	gfor_fndecl_deallocate): Remove function decls.
+	(gfc_build_builtin_function_decls): Likewise.
+
 2007-08-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33055
