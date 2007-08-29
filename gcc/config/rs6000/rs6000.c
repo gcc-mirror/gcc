@@ -19234,6 +19234,16 @@ rs6000_elf_encode_section_info (tree decl, rtx rtl, int first)
     }
 }
 
+static inline bool
+compare_section_name (const char *section, const char *template)
+{
+  int len;
+
+  len = strlen (template);
+  return (strncmp (section, template, len) == 0
+	  && (section[len] == 0 || section[len] == '.'));
+}
+
 bool
 rs6000_elf_in_small_data_p (const_tree decl)
 {
@@ -19251,10 +19261,12 @@ rs6000_elf_in_small_data_p (const_tree decl)
   if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
     {
       const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
-      if (strcmp (section, ".sdata") == 0
-	  || strcmp (section, ".sdata2") == 0
-	  || strcmp (section, ".sbss") == 0
-	  || strcmp (section, ".sbss2") == 0
+      if (compare_section_name (section, ".sdata") == 0
+	  || compare_section_name (section, ".sdata2") == 0
+	  || compare_section_name (section, ".gnu.linkonce.s") == 0
+	  || compare_section_name (section, ".sbss") == 0
+	  || compare_section_name (section, ".sbss2") == 0
+	  || compare_section_name (section, ".gnu.linkonce.sb") == 0
 	  || strcmp (section, ".PPC.EMB.sdata0") == 0
 	  || strcmp (section, ".PPC.EMB.sbss0") == 0)
 	return true;
