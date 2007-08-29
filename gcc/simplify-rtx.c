@@ -2685,7 +2685,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      gcc_assert (i < n_elts);
 
 	      /* Select element, pointed by nested selector.  */
-	      elem = INTVAL (CONST_VECTOR_ELT (op1, i));
+	      elem = INTVAL (XVECEXP (op1, 0, i));
 
 	      /* Handle the case when nested VEC_SELECT wraps VEC_CONCAT.  */
 	      if (GET_CODE (op0) == VEC_CONCAT)
