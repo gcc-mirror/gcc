@@ -7201,7 +7201,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	    }
 	}
 
-      if (TARGET_SH4)
+      if (TARGET_SH4 || TARGET_SH2A_DOUBLE)
 	{
 	  pass_as_float = ((TREE_CODE (eff_type) == REAL_TYPE && size <= 8)
 			   || (TREE_CODE (eff_type) == COMPLEX_TYPE
@@ -7313,7 +7313,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	  tmp = build1 (LABEL_EXPR, void_type_node, lab_false);
 	  gimplify_and_add (tmp, pre_p);
 
-	  if (size > 4 && ! TARGET_SH4)
+	  if (size > 4 && ! (TARGET_SH4 || TARGET_SH2A))
 	    {
 	      tmp = build2 (GIMPLE_MODIFY_STMT, ptr_type_node,
 		  	    next_o, next_o_limit);
