@@ -1,5 +1,10 @@
 2007-08-29  Jie Zhang  <jie.zhang@analog.com>
 
+	* config/bfin/bfin.c (bfin_expand_builtin): Fix the argument
+	order of __builtin_bfin_cmplx_mac and __builtin_bfin_cmplx_msu.
+
+2007-08-29  Jie Zhang  <jie.zhang@analog.com>
+
 	Revert
 	2007-08-29  Jie Zhang  <jie.zhang@analog.com>
 	* config/bfin/bfin.md (composev2hi): Put operands into vector
