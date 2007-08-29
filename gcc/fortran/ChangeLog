@@ -1,3 +1,16 @@
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/33105
+	* intrinsic.c (add_functions): Add IS_IOSTAT_END and
+	IS_IOSTAT_EOR intrinsics.
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_IS_IOSTAT_END and
+	GFC_ISYM_IS_IOSTAT_EOR.
+	* trans-intrinsic.c (gfc_conv_has_intvalue): New function.
+	(gfc_conv_intrinsic_function): Call gfc_conv_has_intvalue for
+	GFC_ISYM_IS_IOSTAT_END and GFC_ISYM_IS_IOSTAT_EOR.
+	* intrinsic.texi: Add IS_IOSTAT_END and IS_IOSTAT_EOR.
+
 2007-08-28  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33215

@@ -2759,6 +2759,22 @@ gfc_conv_intrinsic_isnan (gfc_se * se, gfc_expr * expr)
   se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
 }
 
+
+/* Intrinsics IS_IOSTAT_END and IS_IOSTAT_EOR just need to compare
+   their argument against a constant integer value.  */
+
+static void
+gfc_conv_has_intvalue (gfc_se * se, gfc_expr * expr, const int value)
+{
+  tree arg;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  se->expr = fold_build2 (EQ_EXPR, gfc_typenode_for_spec (&expr->ts),
+			  arg, build_int_cst (TREE_TYPE (arg), value));
+}
+
+
+
 /* MERGE (tsource, fsource, mask) = mask ? tsource : fsource.  */
 
 static void
@@ -3909,6 +3925,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_IOR:
       gfc_conv_intrinsic_bitop (se, expr, BIT_IOR_EXPR);
+      break;
+
+    case GFC_ISYM_IS_IOSTAT_END:
+      gfc_conv_has_intvalue (se, expr, -1);
+      break;
+
+    case GFC_ISYM_IS_IOSTAT_EOR:
+      gfc_conv_has_intvalue (se, expr, -2);
       break;
 
     case GFC_ISYM_ISNAN:

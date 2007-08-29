@@ -1633,6 +1633,18 @@ add_functions (void)
 
   make_generic ("isatty", GFC_ISYM_ISATTY, GFC_STD_GNU);
 
+  add_sym_1 ("is_iostat_end", GFC_ISYM_IS_IOSTAT_END,
+	     CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,
+	     gfc_check_i, NULL, NULL, i, BT_INTEGER, 0, REQUIRED);
+
+  make_generic ("is_iostat_end", GFC_ISYM_IS_IOSTAT_END, GFC_STD_F2003);
+
+  add_sym_1 ("is_iostat_eor", GFC_ISYM_IS_IOSTAT_EOR,
+	     CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F2003,
+	     gfc_check_i, NULL, NULL, i, BT_INTEGER, 0, REQUIRED);
+
+  make_generic ("is_iostat_eor", GFC_ISYM_IS_IOSTAT_EOR, GFC_STD_F2003);
+
   add_sym_1 ("isnan", GFC_ISYM_ISNAN, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL,
 	     dl, GFC_STD_GNU, gfc_check_isnan, NULL, NULL,
 	     x, BT_REAL, 0, REQUIRED);

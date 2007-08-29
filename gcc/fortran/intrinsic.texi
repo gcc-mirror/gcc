@@ -152,6 +152,8 @@ Some basic guidelines for editing this document:
 * @code{INT8}:          INT8,      Convert to 64-bit integer type
 * @code{IOR}:           IOR,       Bitwise logical or
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
+* @code{IS_IOSTAT_END}:  IS_IOSTAT_END, Test for end-of-file value
+* @code{IS_IOSTAT_EOR}:  IS_IOSTAT_EOR, Test for end-of-record value
 * @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
 * @code{ISHFT}:         ISHFT,     Shift bits
 * @code{ISHFTC}:        ISHFTC,    Shift bits circularly
@@ -5874,6 +5876,96 @@ program test_irand
 end program test_irand
 @end smallexample
 
+@end table
+
+
+
+@node IS_IOSTAT_END
+@section @code{IS_IOSTAT_END} --- Test for end-of-file value
+@fnindex IS_IOSTAT_END
+@cindex IOSTAT, end of file
+
+@table @asis
+@item @emph{Description}:
+@code{IS_IOSTAT_END} tests whether an variable has the value of the I/O
+status ``end of file''. The function is equivalent to comparing the variable
+with the @code{IOSTAT_END} parameter of the intrinsic module
+@code{ISO_FORTRAN_ENV}.
+
+@item @emph{Standard}:
+Fortran 2003.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = IS_IOSTAT_END(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of the type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
+@var{I} has the value which indicates an end of file condition for
+IOSTAT= specifiers, and is @code{.FALSE.} otherwise.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM iostat
+  IMPLICIT NONE
+  INTEGER :: stat, i
+  OPEN(88, FILE='test.dat')
+  READ(88, *, IOSTAT=stat) i
+  IF(IS_IOSTAT_END(stat)) STOP 'END OF FILE'
+END PROGRAM
+@end smallexample
+@end table
+
+
+
+@node IS_IOSTAT_EOR
+@section @code{IS_IOSTAT_EOR} --- Test for end-of-record value
+@fnindex IS_IOSTAT_EOR
+@cindex IOSTAT, end of record
+
+@table @asis
+@item @emph{Description}:
+@code{IS_IOSTAT_EOR} tests whether an variable has the value of the I/O
+status ``end of record''. The function is equivalent to comparing the
+variable with the @code{IOSTAT_EOR} parameter of the intrinsic module
+@code{ISO_FORTRAN_ENV}.
+
+@item @emph{Standard}:
+Fortran 2003.
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = IS_IOSTAT_EOR(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of the type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
+@var{I} has the value which indicates an end of file condition for
+IOSTAT= specifiers, and is @code{.FALSE.} otherwise.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM iostat
+  IMPLICIT NONE
+  INTEGER :: stat, i(50)
+  OPEN(88, FILE='test.dat', FORM='UNFORMATTED')
+  READ(88, IOSTAT=stat) i
+  IF(IS_IOSTAT_EOR(stat)) STOP 'END OF RECORD'
+END PROGRAM
+@end smallexample
 @end table
 
 
