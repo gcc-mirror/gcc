@@ -447,7 +447,9 @@ typedef enum
   ERROR_READ_OVERFLOW,
   ERROR_INTERNAL,
   ERROR_INTERNAL_UNIT,
-  ERROR_ALLOCATION,
+  ERROR_ALLOCATION,		/* Keep in sync with value used in
+				   gcc/fortran/trans.c
+				   (gfc_allocate_array_with_status).  */
   ERROR_DIRECT_EOR,
   ERROR_SHORT_RECORD,
   ERROR_CORRUPT_FILE,

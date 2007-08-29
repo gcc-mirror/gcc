@@ -450,6 +450,18 @@ tree gfc_call_free (tree);
 /* Allocate memory after performing a few checks.  */
 tree gfc_call_malloc (stmtblock_t *, tree, tree);
 
+/* Allocate memory for arrays, with optional status variable.  */
+tree gfc_allocate_array_with_status (stmtblock_t *, tree, tree, tree);
+
+/* Allocate memory, with optional status variable.  */
+tree gfc_allocate_with_status (stmtblock_t *, tree, tree);
+
+/* Generate code to deallocate an array.  */
+tree gfc_deallocate_with_status (tree, tree, bool);
+
+/* Generate code to call realloc().  */
+tree gfc_call_realloc (stmtblock_t *, tree, tree);
+
 /* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool);
 
@@ -483,10 +495,6 @@ struct gimplify_omp_ctx;
 void gfc_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *, tree);
 
 /* Runtime library function decls.  */
-extern GTY(()) tree gfor_fndecl_internal_realloc;
-extern GTY(()) tree gfor_fndecl_allocate;
-extern GTY(()) tree gfor_fndecl_allocate_array;
-extern GTY(()) tree gfor_fndecl_deallocate;
 extern GTY(()) tree gfor_fndecl_pause_numeric;
 extern GTY(()) tree gfor_fndecl_pause_string;
 extern GTY(()) tree gfor_fndecl_stop_numeric;

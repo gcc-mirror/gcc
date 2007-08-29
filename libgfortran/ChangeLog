@@ -1,3 +1,11 @@
+2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/memory.c (internal_realloc, allocate, allocate_array,
+	deallocate): Remove functions.
+	* gfortran.map (_gfortran_allocate, _gfortran_allocate_array,
+	_gfortran_deallocate, _gfortran_internal_realloc): Remove symbols.
+	* libgfortran.h (error_codes): Add comment.
+
 2007-08-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33055

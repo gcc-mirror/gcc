@@ -73,10 +73,6 @@ tree gfc_static_ctors;
 
 /* Function declarations for builtin library functions.  */
 
-tree gfor_fndecl_internal_realloc;
-tree gfor_fndecl_allocate;
-tree gfor_fndecl_allocate_array;
-tree gfor_fndecl_deallocate;
 tree gfor_fndecl_pause_numeric;
 tree gfor_fndecl_pause_string;
 tree gfor_fndecl_stop_numeric;
@@ -2273,35 +2269,10 @@ void
 gfc_build_builtin_function_decls (void)
 {
   tree gfc_int4_type_node = gfc_get_int_type (4);
-  tree gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
-
-  gfor_fndecl_internal_realloc =
-    gfc_build_library_function_decl (get_identifier
-				     (PREFIX("internal_realloc")),
-				     pvoid_type_node, 2, pvoid_type_node,
-				     gfc_array_index_type);
-
-  gfor_fndecl_allocate =
-    gfc_build_library_function_decl (get_identifier (PREFIX("allocate")),
-				     pvoid_type_node, 2,
-				     gfc_array_index_type, gfc_pint4_type_node);
-  DECL_IS_MALLOC (gfor_fndecl_allocate) = 1;
-
-  gfor_fndecl_allocate_array =
-    gfc_build_library_function_decl (get_identifier (PREFIX("allocate_array")),
-				     pvoid_type_node, 3, pvoid_type_node,
-				     gfc_array_index_type, gfc_pint4_type_node);
-  DECL_IS_MALLOC (gfor_fndecl_allocate_array) = 1;
-
-  gfor_fndecl_deallocate =
-    gfc_build_library_function_decl (get_identifier (PREFIX("deallocate")),
-				     void_type_node, 2, pvoid_type_node,
-				     gfc_pint4_type_node);
 
   gfor_fndecl_stop_numeric =
     gfc_build_library_function_decl (get_identifier (PREFIX("stop_numeric")),
 				     void_type_node, 1, gfc_int4_type_node);
-
   /* Stop doesn't return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_stop_numeric) = 1;
 

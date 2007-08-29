@@ -3565,11 +3565,7 @@ gfc_trans_allocate (gfc_code * code)
       TREE_USED (error_label) = 1;
     }
   else
-    {
-      pstat = integer_zero_node;
-      stat = error_label = NULL_TREE;
-    }
-
+    pstat = stat = error_label = NULL_TREE;
 
   for (al = code->ext.alloc_list; al != NULL; al = al->next)
     {
@@ -3590,7 +3586,7 @@ gfc_trans_allocate (gfc_code * code)
 	  if (expr->ts.type == BT_CHARACTER && tmp == NULL_TREE)
 	    tmp = se.string_length;
 
-	  tmp = build_call_expr (gfor_fndecl_allocate, 2, tmp, pstat);
+	  tmp = gfc_allocate_with_status (&se.pre, tmp, pstat);
 	  tmp = build2 (MODIFY_EXPR, void_type_node, se.expr,
 			fold_convert (TREE_TYPE (se.expr), tmp));
 	  gfc_add_expr_to_block (&se.pre, tmp);
@@ -3679,10 +3675,7 @@ gfc_trans_deallocate (gfc_code * code)
       gfc_add_modify_expr (&block, astat, build_int_cst (TREE_TYPE (astat), 0));
     }
   else
-    {
-      pstat = apstat = null_pointer_node;
-      stat = astat = NULL_TREE;
-    }
+    pstat = apstat = stat = astat = NULL_TREE;
 
   for (al = code->ext.alloc_list; al != NULL; al = al->next)
     {
@@ -3720,7 +3713,7 @@ gfc_trans_deallocate (gfc_code * code)
 	tmp = gfc_array_deallocate (se.expr, pstat);
       else
 	{
-	  tmp = build_call_expr (gfor_fndecl_deallocate, 2, se.expr, pstat);
+	  tmp = gfc_deallocate_with_status (se.expr, pstat, false);
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  tmp = build2 (MODIFY_EXPR, void_type_node,
