@@ -1,3 +1,9 @@
+2007-08-29  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33215
+	* gfortran.dg/binding_label_tests_15.f03: New test case.
+	* gfortran.dg/binding_label_tests_16.f03: Ditto.
+
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/alloc_comp_basics_1.f90: Update check.
@@ -61,7 +67,7 @@
 	PR c++/32596
 	* g++.dg/ext/visibility/anon5.C: New test.
 
-2007-07-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
+2007-08-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	* gfortran.dg/gamma_4.f90: Fix large-real kind selection.
 

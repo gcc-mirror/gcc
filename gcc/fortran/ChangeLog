@@ -1,3 +1,13 @@
+2007-08-28  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33215
+	* decl.c (build_sym): Pass number of identifiers on line to
+	set_binding_label.
+	(set_binding_label): Verify that only one identifier given if
+	NAME= specified, even if the given binding label has zero length.
+	(gfc_match_bind_c): Remove declaration for has_name_equals because
+	it hides the static global one that is needed.
+
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-array.c (gfc_grow_array): Use gfc_call_realloc.

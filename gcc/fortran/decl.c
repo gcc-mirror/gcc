@@ -980,9 +980,10 @@ build_sym (const char *name, gfc_charlen *cl,
     {
       if (sym->binding_label[0] == '\0')
         {
-          /* Here, we're not checking the numIdents (the last param).
-             This could be an error we're letting slip through!  */
-          if (set_binding_label (sym->binding_label, sym->name, 1) == FAILURE)
+	  /* Set the binding label and verify that if a NAME= was specified
+	     then only one identifier was in the entity-decl-list.  */
+	  if (set_binding_label (sym->binding_label, sym->name,
+				 num_idents_on_line) == FAILURE)
             return FAILURE;
         }
     }
@@ -2847,15 +2848,15 @@ cleanup:
 try
 set_binding_label (char *dest_label, const char *sym_name, int num_idents)
 {
+  if (num_idents > 1 && has_name_equals)
+    {
+      gfc_error ("Multiple identifiers provided with "
+		 "single NAME= specifier at %C");
+      return FAILURE;
+    }
+
   if (curr_binding_label[0] != '\0')
     {
-      if (num_idents > 1 || num_idents_on_line > 1)
-        {
-          gfc_error ("Multiple identifiers provided with "
-                     "single NAME= specifier at %C");
-          return FAILURE;
-        }
-
       /* Binding label given; store in temp holder til have sym.  */
       strncpy (dest_label, curr_binding_label,
                strlen (curr_binding_label) + 1);
@@ -4084,7 +4085,6 @@ gfc_match_bind_c (gfc_symbol *sym)
   char binding_label[GFC_MAX_SYMBOL_LEN + 1];
   match double_quote;
   match single_quote;
-  int has_name_equals = 0;
 
   /* Initialize the flag that specifies whether we encountered a NAME= 
      specifier or not.  */
