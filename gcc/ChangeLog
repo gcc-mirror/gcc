@@ -1,3 +1,10 @@
+2007-08-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/33168
+	* config/rs6000/rs6000.c (compare_section_name): New function.
+	(rs6000_elf_in_small_data_p): Compare section prefixes instead
+	of full name.
+
 2007-08-29  Olivier Hainque  <hainque@adacore.com>
 
 	* xcoffout.c: #include debug.h.
