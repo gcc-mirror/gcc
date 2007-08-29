@@ -7,7 +7,6 @@
 !
 ! Bugs submitted by Walt Brainerd
       integer i
-      integer, parameter ::ERROR_BAD_UNIT = 5005
       logical l
       
       i = 0
@@ -22,11 +21,5 @@
       i = 0
       inquire (unit=-42, exist=l)
       if (l) call abort
-
-      i = 0 
-! This one is nasty
-      inquire (unit=2_8*huge(0_4)+20_8, exist=l, iostat=i)
-      if (l) call abort
-      if (i.ne.ERROR_BAD_UNIT) call abort
 
       end
