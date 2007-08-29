@@ -1,3 +1,7 @@
+2007-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h: Activate -Wcast-qual as warning-only.
+
 2007-08-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/33168
