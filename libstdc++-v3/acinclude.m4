@@ -1302,6 +1302,46 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
     AC_DEFINE(HAVE_EPROTO, 1, [Define if EPROTO exists.])
   fi
 
+  AC_MSG_CHECKING([for ENODATA])
+  AC_CACHE_VAL(ac_system_error_5, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENODATA; ],
+             [ac_system_error_5=yes], [ac_system_error_5=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_5)
+  if test x"$ac_system_error_5" = x"yes"; then
+    AC_DEFINE(HAVE_ENODATA, 1, [Define if ENODATA exists.])
+  fi
+
+  AC_MSG_CHECKING([for ENOSR])
+  AC_CACHE_VAL(ac_system_error_6, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOSR; ],
+             [ac_system_error_6=yes], [ac_system_error_6=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_6)
+  if test x"$ac_system_error_6" = x"yes"; then
+    AC_DEFINE(HAVE_ENOSR, 1, [Define if ENOSR exists.])
+  fi
+
+  AC_MSG_CHECKING([for ENOSTR])
+  AC_CACHE_VAL(ac_system_error_7, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ENOSTR; ],
+             [ac_system_error_7=yes], [ac_system_error_7=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_7)
+  if test x"$ac_system_error_7" = x"yes"; then
+    AC_DEFINE(HAVE_ENOSTR, 1, [Define if ENOSTR exists.])
+  fi
+
+  AC_MSG_CHECKING([for ETIME])
+  AC_CACHE_VAL(ac_system_error_8, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ETIME; ],
+             [ac_system_error_8=yes], [ac_system_error_8=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_8)
+  if test x"$ac_system_error_8" = x"yes"; then
+    AC_DEFINE(HAVE_ETIME, 1, [Define if ETIME exists.])
+  fi
+
   AC_MSG_CHECKING([for sys_nerr])
   AC_CACHE_VAL(ac_system_error9, [
   AC_TRY_COMPILE([#include <errno.h> ], [ int i = sys_nerr; ],

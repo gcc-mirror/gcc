@@ -63,8 +63,17 @@
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
 
+/* Define if ENODATA exists. */
+#undef HAVE_ENODATA
+
 /* Define if ENOLINK exists. */
 #undef HAVE_ENOLINK
+
+/* Define if ENOSR exists. */
+#undef HAVE_ENOSR
+
+/* Define if ENOSTR exists. */
+#undef HAVE_ENOSTR
 
 /* Define if ENOTRECOVERABLE exists. */
 #undef HAVE_ENOTRECOVERABLE
@@ -74,6 +83,9 @@
 
 /* Define if EPROTO exists. */
 #undef HAVE_EPROTO
+
+/* Define if ETIME exists. */
+#undef HAVE_ETIME
 
 /* Define to 1 if you have the `expf' function. */
 #undef HAVE_EXPF
