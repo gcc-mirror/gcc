@@ -1,5 +1,12 @@
 2007-08-29  Jie Zhang  <jie.zhang@analog.com>
 
+	Revert
+	2007-08-29  Jie Zhang  <jie.zhang@analog.com>
+	* config/bfin/bfin.md (composev2hi): Put operands into vector
+	with correct order.
+
+2007-08-29  Jie Zhang  <jie.zhang@analog.com>
+
 	* config/bfin/bfin.md (composev2hi): Put operands into vector
 	with correct order.
 
