@@ -10,4 +10,4 @@ foo (void)
 {
   (int) x = 1; /* { dg-bogus "warning" "warning in place of error" } */
 }
-/* { dg-error "lvalue" "cast as lvalue" { target *-*-*} 11 } */
+/* { dg-error "lvalue" "cast as lvalue" { target *-*-* } 11 } */

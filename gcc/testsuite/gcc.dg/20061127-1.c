@@ -1,4 +1,5 @@
-/* { dg-do compile { target lp64 } } */
+/* { dg-do compile { target fpic } } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O1 -fPIC" } */
 
 /* PR target/29319 */

@@ -11,4 +11,4 @@ complex double foo(complex float x, float y)
   return pow(x, y);
 }
 
-/* {dg-final {scan-assembler "cpowf" } } */
+/* { dg-final { scan-assembler "cpowf" } } */

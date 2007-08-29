@@ -1,4 +1,5 @@
-/* { dg-do compile { target { lp64 } } } */
+/* { dg-do compile { target fpic } } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-fPIC" } */
 char *ptr = 0;
 char array[100];
