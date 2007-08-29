@@ -1,3 +1,8 @@
+2007-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1) [VEC_SELECT]:
+	Change CONST_VECTOR_ELT to XVECEXP in elem calculation.
+
 2007-08-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-pretty-print.c (dump_generic_node): Print
