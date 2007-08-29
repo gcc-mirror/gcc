@@ -1,3 +1,9 @@
+2007-08-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Print
+	label DECL_UID as D.%u.
+	* tree-dfa.c (dump_variable): Print DECL_UID as D.%u.
+
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gcc/builtin-types.def (BT_FN_PTR_PTR_SIZE): New type.

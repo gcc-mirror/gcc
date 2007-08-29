@@ -863,7 +863,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
         pp_printf (buffer, "<L" HOST_WIDE_INT_PRINT_DEC ">",
 		   LABEL_DECL_UID (node));
       else
-        pp_printf (buffer, "<D%u>", DECL_UID (node));
+        pp_printf (buffer, "<D.%u>", DECL_UID (node));
       break;
 
     case TYPE_DECL:
