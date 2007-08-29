@@ -1,6 +1,6 @@
-2007-08-29  M R Swami Reddy  <MR.Swami.Redd@nsc.com>
+2007-08-29  Nick Clifton  <nickc@redhat.com>
 
-	* config.sub: Add support for cr16 target.
+	* config.sub, config.guess: Update from upstream sources.
 
 2007-08-22  Bud Davis   <jmdavis@link.com>
 
