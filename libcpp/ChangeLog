@@ -1,3 +1,14 @@
+2007-08-30  Chao-ying Fu  <fu@mips.com>
+
+	* expr.c (interpret_float_suffix): Support hr, r, lr, llr, uhr, ur,
+	ulr, ullr, hk, k, lk, llk, uhk, uk, ulk, ullk.
+	(cpp_classify_number): Support decimal fixed-point constants without
+	exponents.
+	Warn about fixed-point constants when -pedantic.
+	* include/cpplib.h (CPP_N_SMALL, CPP_N_MEDIUM, CPP_N_LARGE): Change
+	comments to support fixed-point values.
+	(CPP_N_FRACT, CPP_N_ACCUM): Define.
+
 2007-08-18  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/32974:
