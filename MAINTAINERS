@@ -105,6 +105,7 @@ hpux			Dave Anglin		dave.anglin@nrc.ca
 hpux			Steve Ellcey		sje@cup.hp.com
 irix, osf		Rainer Orth		ro@TechFak.Uni-Bielefeld.DE
 netbsd			Jason Thorpe		thorpej@netbsd.org
+netbsd			Krister Walfridsson	cato@df.lth.se
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
@@ -413,7 +414,6 @@ Caroline Tice					ctice@apple.com
 Michael Tiemann					tiemann@redhat.com
 David Ung					davidu@mips.com
 Jonathan Wakely					redi@gcc.gnu.org
-Krister Walfridsson				cato@df.lth.se
 Feng Wang					fengwang@nudt.edu.cn
 Stephen M. Webb					stephen.webb@bregmasoft.com
 John Wehle					john@feith.com

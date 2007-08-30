@@ -1,3 +1,8 @@
+2007-08-30  Krister Walfridsson  <cato@df.lth.se>
+
+	* MAINTAINERS (OS Port Maintainers): Add myself as NetBSD maintainer.
+	(Write After Approval): Remove myself.
+
 2007-08-29  Nick Clifton  <nickc@redhat.com>
 
 	* config.sub, config.guess: Update from upstream sources.
