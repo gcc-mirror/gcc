@@ -644,6 +644,7 @@ find_defs (struct loop *loop, basic_block *body)
 
   if (dump_file)
     {
+      df_dump_region (dump_file);
       fprintf (dump_file, "*****starting processing of loop  ******\n");
       print_rtl_with_bb (dump_file, get_insns ());
       fprintf (dump_file, "*****ending processing of loop  ******\n");
