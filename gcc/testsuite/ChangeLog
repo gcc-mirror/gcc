@@ -1,3 +1,13 @@
+2007-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-dg.exp (cleanup-profile-file): New procedure.
+	* gcc.dg/20021014-1.c: Use cleanup-profile-file.
+	* gcc.dg/gcc.dg/20021014-1.c: Ditto.
+	* gcc.dg/pr32450.c: Ditto.
+	* gcc.dg/nest.c: Ditto.
+	* gcc.dg/nested-func-4.c: Ditto.
+	* g++.old-deja/g++.law/profile1.C: Ditto.
+
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32989

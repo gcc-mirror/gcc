@@ -8,3 +8,5 @@ main()
 {
   printf ("PASS\n");
 }
+
+/* { dg-final { cleanup-profile-file } } */

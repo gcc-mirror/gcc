@@ -21,3 +21,5 @@ int main(void)
   foo (2);
   return 0;
 }
+
+/* { dg-final { cleanup-profile-file } } */
