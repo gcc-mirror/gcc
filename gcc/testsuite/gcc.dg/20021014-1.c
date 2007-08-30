@@ -23,3 +23,5 @@ int main (void)
     abort ();
   exit (0);
 }
+
+/* { dg-final { cleanup-profile-file } } */

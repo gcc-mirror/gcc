@@ -352,6 +352,12 @@ proc remove-build-file { pat } {
     }
 }
 
+# Remove runtime-generated profile file for the current test.
+proc cleanup-profile-file { } {
+    remove-build-file "mon.out"
+    remove-build-file "gmon.out"
+}
+
 # Remove compiler-generated coverage files for the current test.
 proc cleanup-coverage-files { } {
     # This assumes that we are two frames down from dg-test or some other proc

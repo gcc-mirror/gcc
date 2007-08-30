@@ -32,3 +32,5 @@ int main ()
   add ();
   return stack_pointer - 1;
 }
+
+/* { dg-final { cleanup-profile-file } } */
