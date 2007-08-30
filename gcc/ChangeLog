@@ -1,5 +1,11 @@
 2007-08-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/s390/s390.md ("*add<mode>3_alc_carry1_cc",
+	"*add<mode>3_alc_carry1_cconly", "*add<mode>3_alc_carry2_cc",
+	"*add<mode>3_alc_carry2_cconly"): New insn definitions.
+
+2007-08-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_expand_addcc): Emit canonical alc
 	pattern.
 	* config/s390/s390.md ("*add<mode>3_alc_cc", "*add<mode>3_alc",
