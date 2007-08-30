@@ -1,3 +1,18 @@
+2007-08-30  Chao-ying Fu  <fu@mips.com>
+
+	* c-lex.c (interpret_fixed): Declare.
+	(interpret_float): Process _Fract and _Accum.
+	(interpret_fixed): New function.
+	* final.c (output_addr_const): Process CONST_FIXED.
+	* simplify-rtx.c (simplify_const_unary_operation): Handle US_NEG.
+	(simplify_binary_operation_1): Handle US_ASHIFT, SS_MULT, US_MULT,
+	SS_DIV, US_DIV.
+	(simplify_const_binary_operation): Handle SS_MULT, US_MULT, SS_DIV,
+	US_DIV, US_ASHIFT.
+	(simplify_immed_subreg): Support CONST_FIXED.
+	Process MODE_FRACT, MODE_UFRACT, MODE_ACCUM, MODE_UACCUM.
+	(simplify_subreg): Support CONST_FIXED.
+
 2007-08-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/rs6000/ppu_intrinsics.h: New file.
