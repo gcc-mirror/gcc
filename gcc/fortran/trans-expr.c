@@ -220,10 +220,9 @@ gfc_get_expr_charlen (gfc_expr *e)
    value.  */
 
 void
-gfc_trans_init_string_length (gfc_charlen * cl, stmtblock_t * pblock)
+gfc_conv_string_length (gfc_charlen * cl, stmtblock_t * pblock)
 {
   gfc_se se;
-  tree tmp;
 
   gfc_init_se (&se, NULL);
   gfc_conv_expr_type (&se, cl->length, gfc_charlen_type_node);
@@ -231,8 +230,10 @@ gfc_trans_init_string_length (gfc_charlen * cl, stmtblock_t * pblock)
 			 build_int_cst (gfc_charlen_type_node, 0));
   gfc_add_block_to_block (pblock, &se.pre);
 
-  tmp = cl->backend_decl;
-  gfc_add_modify_expr (pblock, tmp, se.expr);
+  if (cl->backend_decl)
+    gfc_add_modify_expr (pblock, cl->backend_decl, se.expr);
+  else
+    cl->backend_decl = gfc_evaluate_now (se.expr, pblock);
 }
 
 
@@ -1823,6 +1824,9 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
   gfc_conv_ss_startstride (&loop);
 
   /* Build an ss for the temporary.  */
+  if (expr->ts.type == BT_CHARACTER && !expr->ts.cl->backend_decl)
+    gfc_conv_string_length (expr->ts.cl, &parmse->pre);
+
   base_type = gfc_typenode_for_spec (&expr->ts);
   if (GFC_ARRAY_TYPE_P (base_type)
 		|| GFC_DESCRIPTOR_TYPE_P (base_type))
@@ -1833,39 +1837,11 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
   loop.temp_ss->data.temp.type = base_type;
 
   if (expr->ts.type == BT_CHARACTER)
-    {
-      gfc_ref *char_ref = expr->ref;
+    loop.temp_ss->string_length = expr->ts.cl->backend_decl;
+  else
+    loop.temp_ss->string_length = NULL;
 
-      for (; char_ref; char_ref = char_ref->next)
-	if (char_ref->type == REF_SUBSTRING)
-	  {
-	    gfc_se tmp_se;
-
-	    expr->ts.cl = gfc_get_charlen ();
-	    expr->ts.cl->next = char_ref->u.ss.length->next;
-	    char_ref->u.ss.length->next = expr->ts.cl;
-
-	    gfc_init_se (&tmp_se, NULL);
-	    gfc_conv_expr_type (&tmp_se, char_ref->u.ss.end,
-				gfc_array_index_type);
-	    tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
-			       tmp_se.expr, gfc_index_one_node);
-	    tmp = gfc_evaluate_now (tmp, &parmse->pre);
-	    gfc_init_se (&tmp_se, NULL);
-	    gfc_conv_expr_type (&tmp_se, char_ref->u.ss.start,
-				gfc_array_index_type);
-	    tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			       tmp, tmp_se.expr);
-	    tmp = fold_convert (gfc_charlen_type_node, tmp);
-	    expr->ts.cl->backend_decl = tmp;
-
-	    break;
-	  }
-      loop.temp_ss->data.temp.type
-		= gfc_typenode_for_spec (&expr->ts);
-      loop.temp_ss->string_length = expr->ts.cl->backend_decl;
-    }
-
+  parmse->string_length = loop.temp_ss->string_length;
   loop.temp_ss->data.temp.dimen = loop.dimen;
   loop.temp_ss->next = gfc_ss_terminator;
 

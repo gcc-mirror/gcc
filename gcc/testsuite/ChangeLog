@@ -1,3 +1,14 @@
+2007-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31879
+	* gfortran.dg/char_length_7.f90: New test.
+	* gfortran.dg/char_length_9.f90: New test.
+	* gfortran.dg/char_assign_1.f90: Add extra warning.
+
+	PR fortran/31197
+	PR fortran/31258
+	* gfortran.dg/char_length_8.f90: New test.
+
 2007-08-30  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* gcc.target/powerpc/ppu-intrinsics.c: New testcase.
