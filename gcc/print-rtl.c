@@ -749,14 +749,10 @@ print_rtl_single (FILE *outf, const_rtx x)
 {
   outfile = outf;
   sawclose = 0;
-  if (! flag_dump_unnumbered)
-    {
-      fputs (print_rtx_head, outfile);
-      print_rtx (x);
-      putc ('\n', outf);
-      return 1;
-    }
-  return 0;
+  fputs (print_rtx_head, outfile);
+  print_rtx (x);
+  putc ('\n', outf);
+  return 1;
 }
 
 
