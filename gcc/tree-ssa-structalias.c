@@ -3655,6 +3655,27 @@ handle_rhs_call  (tree rhs)
     }
 }
 
+/* For non-IPA mode, generate constraints necessary for a call
+   that returns a pointer and assigns it to LHS.  This simply makes
+   the LHS point to anything.  */
+
+static void
+handle_lhs_call (tree lhs)
+{
+  VEC(ce_s, heap) *lhsc = NULL;
+  struct constraint_expr rhsc;
+  unsigned int j;
+  struct constraint_expr *lhsp;
+
+  rhsc.var = anything_id;
+  rhsc.offset = 0;
+  rhsc.type = ADDRESSOF;
+  get_constraint_for (lhs, &lhsc);
+  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
+    process_constraint_1 (new_constraint (*lhsp, rhsc), true);
+  VEC_free (ce_s, heap, lhsc);
+}
+
 /* Walk statement T setting up aliasing constraints according to the
    references found in T.  This function is the main part of the
    constraint builder.  AI points to auxiliary alias information used
@@ -3726,7 +3747,11 @@ find_func_aliases (tree origt)
       if (!in_ipa_mode)
 	{
 	  if (TREE_CODE (t) == GIMPLE_MODIFY_STMT)
-	    handle_rhs_call (GIMPLE_STMT_OPERAND (t, 1));
+	    {
+	      handle_rhs_call (GIMPLE_STMT_OPERAND (t, 1));
+	      if (POINTER_TYPE_P (TREE_TYPE (GIMPLE_STMT_OPERAND (t, 1))))
+		handle_lhs_call (GIMPLE_STMT_OPERAND (t, 0));
+	    }
 	  else
 	    handle_rhs_call (t);
 	}
