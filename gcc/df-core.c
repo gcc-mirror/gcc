@@ -1761,6 +1761,7 @@ df_print_regset (FILE *file, bitmap r)
 
 
 /* Dump dataflow info.  */
+
 void
 df_dump (FILE *file)
 {
@@ -1775,6 +1776,34 @@ df_dump (FILE *file)
     }
 
   fprintf (file, "\n");
+}
+
+
+/* Dump dataflow info for df->blocks_to_analyze.  */
+
+void
+df_dump_region (FILE *file)
+{
+  if (df->blocks_to_analyze)
+    {
+      bitmap_iterator bi;
+      unsigned int bb_index;
+
+      fprintf (file, "\n\nstarting region dump\n");
+      df_dump_start (file);
+      
+      EXECUTE_IF_SET_IN_BITMAP (df->blocks_to_analyze, 0, bb_index, bi) 
+	{
+	  basic_block bb = BASIC_BLOCK (bb_index);
+	  
+	  df_print_bb_index (bb, file);
+	  df_dump_top (bb, file);
+	  df_dump_bottom (bb, file);
+	}
+      fprintf (file, "\n");
+    }
+  else 
+    df_dump (file);
 }
 
 

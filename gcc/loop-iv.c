@@ -280,7 +280,7 @@ iv_analysis_loop_init (struct loop *loop)
   df_set_blocks (blocks);
   df_analyze ();
   if (dump_file)
-    df_dump (dump_file);
+    df_dump_region (dump_file);
 
   check_iv_ref_table_size ();
   BITMAP_FREE (blocks);

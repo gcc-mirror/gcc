@@ -836,6 +836,7 @@ extern bool df_reg_used (rtx, rtx);
 extern void df_worklist_dataflow (struct dataflow *,bitmap, int *, int);
 extern void df_print_regset (FILE *file, bitmap r);
 extern void df_dump (FILE *);
+extern void df_dump_region (FILE *);
 extern void df_dump_start (FILE *);
 extern void df_dump_top (basic_block, FILE *);
 extern void df_dump_bottom (basic_block, FILE *);

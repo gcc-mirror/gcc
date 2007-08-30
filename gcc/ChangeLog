@@ -1,3 +1,11 @@
+2007-08-30  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* df-core.h (df_dump_region): New function.
+	* df.h (df_dump_region): New function.
+	* loop-invariant.c (find_defs): Add call to df_dump_region.
+	* loop-iv.c (iv_analysis_loop_init): Changed call from df_dump to
+	df_dump_region.
+	
 2007-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (start_preparsed_function): Set
