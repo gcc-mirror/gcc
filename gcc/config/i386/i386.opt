@@ -182,6 +182,10 @@ mtune=
 Target RejectNegative Joined Var(ix86_tune_string)
 Schedule code for given CPU
 
+mveclibabi=
+Target RejectNegative Joined Var(ix86_veclibabi_string)
+Vector library ABI to use
+
 ;; ISA support
 
 m32
