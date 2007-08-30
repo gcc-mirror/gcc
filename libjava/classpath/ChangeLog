@@ -1,3 +1,10 @@
+2007-08-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
+
+	* java/util/EnumSet.java:
+	Documented.
+	(complementOf(EnumSet)): Fixed to flip only
+	the bits used by the enumset.
+
 2007-07-31  Dalibor Topic  <robilad@kaffe.org>
 
 	PR 32844
