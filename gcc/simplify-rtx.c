@@ -1149,6 +1149,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case SS_TRUNCATE:
 	case US_TRUNCATE:
 	case SS_NEG:
+	case US_NEG:
 	  return 0;
 
 	default:
@@ -2565,6 +2566,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
     case ASHIFT:
     case SS_ASHIFT:
+    case US_ASHIFT:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
       if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
@@ -2644,6 +2646,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case US_PLUS:
     case SS_MINUS:
     case US_MINUS:
+    case SS_MULT:
+    case US_MULT:
+    case SS_DIV:
+    case US_DIV:
       /* ??? There are simplifications that can be done.  */
       return 0;
 
@@ -3353,7 +3359,12 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case US_PLUS:
 	case SS_MINUS:
 	case US_MINUS:
+	case SS_MULT:
+	case US_MULT:
+	case SS_DIV:
+	case US_DIV:
 	case SS_ASHIFT:
+	case US_ASHIFT:
 	  /* ??? There are simplifications that can be done.  */
 	  return 0;
 	  
@@ -4466,8 +4477,9 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
   return 0;
 }
 
-/* Evaluate a SUBREG of a CONST_INT or CONST_DOUBLE or CONST_VECTOR,
-   returning another CONST_INT or CONST_DOUBLE or CONST_VECTOR.
+/* Evaluate a SUBREG of a CONST_INT or CONST_DOUBLE or CONST_FIXED
+   or CONST_VECTOR,
+   returning another CONST_INT or CONST_DOUBLE or CONST_FIXED or CONST_VECTOR.
 
    Works by unpacking OP into a collection of 8-bit values
    represented as a little-endian array of 'unsigned char', selecting by BYTE,
@@ -4605,6 +4617,25 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		*vp++ = 0;
 	    }
 	  break;
+
+        case CONST_FIXED:
+	  if (elem_bitsize <= HOST_BITS_PER_WIDE_INT)
+	    {
+	      for (i = 0; i < elem_bitsize; i += value_bit)
+		*vp++ = CONST_FIXED_VALUE_LOW (el) >> i;
+	    }
+	  else
+	    {
+	      for (i = 0; i < HOST_BITS_PER_WIDE_INT; i += value_bit)
+		*vp++ = CONST_FIXED_VALUE_LOW (el) >> i;
+              for (; i < 2 * HOST_BITS_PER_WIDE_INT && i < elem_bitsize;
+		   i += value_bit)
+		*vp++ = CONST_FIXED_VALUE_HIGH (el)
+			>> (i - HOST_BITS_PER_WIDE_INT);
+	      for (; i < elem_bitsize; i += value_bit)
+		*vp++ = 0;
+	    }
+          break;
 	  
 	default:
 	  gcc_unreachable ();
@@ -4723,6 +4754,28 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	    elems[elem] = CONST_DOUBLE_FROM_REAL_VALUE (r, outer_submode);
 	  }
 	  break;
+
+	case MODE_FRACT:
+	case MODE_UFRACT:
+	case MODE_ACCUM:
+	case MODE_UACCUM:
+	  {
+	    FIXED_VALUE_TYPE f;
+	    f.data.low = 0;
+	    f.data.high = 0;
+	    f.mode = outer_submode;
+
+	    for (i = 0;
+		 i < HOST_BITS_PER_WIDE_INT && i < elem_bitsize;
+		 i += value_bit)
+	      f.data.low |= (HOST_WIDE_INT)(*vp++ & value_mask) << i;
+	    for (; i < elem_bitsize; i += value_bit)
+	      f.data.high |= ((HOST_WIDE_INT)(*vp++ & value_mask)
+			     << (i - HOST_BITS_PER_WIDE_INT));
+
+	    elems[elem] = CONST_FIXED_FROM_FIXED_VALUE (f, outer_submode);
+          }
+          break;
 	    
 	default:
 	  gcc_unreachable ();
@@ -4757,6 +4810,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 
   if (GET_CODE (op) == CONST_INT
       || GET_CODE (op) == CONST_DOUBLE
+      || GET_CODE (op) == CONST_FIXED
       || GET_CODE (op) == CONST_VECTOR)
     return simplify_immed_subreg (outermode, op, innermode, byte);
 

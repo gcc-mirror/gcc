@@ -61,6 +61,7 @@ bool c_lex_return_raw_strings = false;
 
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
+static tree interpret_fixed (const cpp_token *, unsigned int);
 static enum integer_type_kind narrowest_unsigned_type
 	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
 static enum integer_type_kind narrowest_signed_type
@@ -640,6 +641,10 @@ interpret_float (const cpp_token *token, unsigned int flags)
   char *copy;
   size_t copylen;
 
+  /* Decode _Fract and _Accum.  */
+  if (flags & CPP_N_FRACT || flags & CPP_N_ACCUM)
+    return interpret_fixed (token, flags);
+
   /* Decode type based on width and properties. */
   if (flags & CPP_N_DFLOAT)
     if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
@@ -727,6 +732,131 @@ interpret_float (const cpp_token *token, unsigned int flags)
   value = build_real (type, real);
   if (flags & CPP_N_IMAGINARY)
     value = build_complex (NULL_TREE, convert (type, integer_zero_node), value);
+
+  return value;
+}
+
+/* Interpret TOKEN, a fixed-point number with FLAGS as classified
+   by cpplib.  */
+
+static tree
+interpret_fixed (const cpp_token *token, unsigned int flags)
+{
+  tree type;
+  tree value;
+  FIXED_VALUE_TYPE fixed;
+  char *copy;
+  size_t copylen;
+
+  copylen = token->val.str.len;
+
+  if (flags & CPP_N_FRACT) /* _Fract.  */
+    {
+      if (flags & CPP_N_UNSIGNED) /* Unsigned _Fract.  */
+	{
+	  if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+	    {
+	      type = unsigned_long_long_fract_type_node;
+	      copylen -= 4;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_MEDIUM)
+	    {
+	      type = unsigned_long_fract_type_node;
+	      copylen -= 3;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
+	    {
+	      type = unsigned_short_fract_type_node;
+	      copylen -= 3;
+	    }
+          else
+	    {
+	      type = unsigned_fract_type_node;
+	      copylen -= 2;
+	    }
+	}
+      else /* Signed _Fract.  */
+	{
+	  if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+	    {
+	      type = long_long_fract_type_node;
+	      copylen -= 3;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_MEDIUM)
+	    {
+	      type = long_fract_type_node;
+	      copylen -= 2;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
+	    {
+	      type = short_fract_type_node;
+	      copylen -= 2;
+	    }
+          else
+	    {
+	      type = fract_type_node;
+	      copylen --;
+	    }
+	  }
+    }
+  else /* _Accum.  */
+    {
+      if (flags & CPP_N_UNSIGNED) /* Unsigned _Accum.  */
+	{
+	  if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+	    {
+	      type = unsigned_long_long_accum_type_node;
+	      copylen -= 4;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_MEDIUM)
+	    {
+	      type = unsigned_long_accum_type_node;
+	      copylen -= 3;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
+	    {
+	      type = unsigned_short_accum_type_node;
+	      copylen -= 3;
+	     }
+	  else
+	    {
+	      type = unsigned_accum_type_node;
+	      copylen -= 2;
+	    }
+	}
+      else /* Signed _Accum.  */
+        {
+	  if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
+	    {
+	      type = long_long_accum_type_node;
+	      copylen -= 3;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_MEDIUM)
+	    {
+	      type = long_accum_type_node;
+	      copylen -= 2;
+	    }
+	  else if ((flags & CPP_N_WIDTH) == CPP_N_SMALL)
+	    {
+	      type = short_accum_type_node;
+	      copylen -= 2;
+	    }
+	  else
+	    {
+	      type = accum_type_node;
+	      copylen --;
+	    }
+	}
+    }
+
+  copy = (char *) alloca (copylen + 1);
+  memcpy (copy, token->val.str.text, copylen);
+  copy[copylen] = '\0';
+
+  fixed_from_string (&fixed, copy, TYPE_MODE (type));
+
+  /* Create a node with determined type and value.  */
+  value = build_fixed (type, fixed);
 
   return value;
 }

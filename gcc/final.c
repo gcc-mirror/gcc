@@ -3377,6 +3377,10 @@ output_addr_const (FILE *file, rtx x)
 	output_operand_lossage ("floating constant misused");
       break;
 
+    case CONST_FIXED:
+      fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_FIXED_VALUE_LOW (x));
+      break;
+
     case PLUS:
       /* Some assemblers need integer constants to appear last (eg masm).  */
       if (GET_CODE (XEXP (x, 0)) == CONST_INT)
