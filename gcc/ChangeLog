@@ -1,3 +1,10 @@
+2007-08-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_expand_addcc): Emit canonical alc
+	pattern.
+	* config/s390/s390.md ("*add<mode>3_alc_cc", "*add<mode>3_alc",
+	"addti3", "*adddi3_31z", "*scond<mode>"): Make alc pattern canonical.
+
 2007-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h: Activate -Wcast-qual as warning-only.

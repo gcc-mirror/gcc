@@ -3927,8 +3927,8 @@ s390_expand_addcc (enum rtx_code cmp_code, rtx cmp_op0, rtx cmp_op1,
 	  if (!register_operand (src, GET_MODE (dst)))
 	    src = force_reg (GET_MODE (dst), src);
 
-	  src = gen_rtx_PLUS (GET_MODE (dst), src, const0_rtx);
-	  op_res = gen_rtx_PLUS (GET_MODE (dst), src, op_res);
+	  op_res = gen_rtx_PLUS (GET_MODE (dst), op_res, src);
+	  op_res = gen_rtx_PLUS (GET_MODE (dst), op_res, const0_rtx);
 	}
 
       p = rtvec_alloc (2);
