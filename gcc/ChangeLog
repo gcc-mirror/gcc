@@ -1,5 +1,12 @@
 2007-08-30  Kenneth Zadeck <zadeck@naturalbridge.com>
 
+	* cfg.c (dump_flow_info): Change to also print entry and exit
+	block info.
+	* print-rtl.c (print_rtl_single): Allow to print rtl with
+	-fdump-unnumbered.
+	
+2007-08-30  Kenneth Zadeck <zadeck@naturalbridge.com>
+
 	* df-core.h (df_dump_region): New function.
 	* df.h (df_dump_region): New function.
 	* loop-invariant.c (find_defs): Add call to df_dump_region.

@@ -646,7 +646,7 @@ dump_flow_info (FILE *file, int flags)
     dump_reg_info (file);
 
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
-  FOR_EACH_BB (bb)
+  FOR_ALL_BB (bb)
     {
       dump_bb_info (bb, true, true, flags, "", file);
       check_bb_profile (bb, file);
