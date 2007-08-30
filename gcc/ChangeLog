@@ -5,6 +5,10 @@
 	SImode and update m.  Don't run gen_lowpart_common on arbitrary
 	memory address, force it to register first.
 
+	PR middle-end/32758
+	* dce.c (dce_process_block): Don't delete setters of
+	artificially used registers.
+
 2007-08-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/s390/s390.md ("*add<mode>3_alc_carry1_cc",
