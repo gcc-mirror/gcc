@@ -1,3 +1,7 @@
+2007-08-30  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* gij.cc (version): Update Copyright year.
+
 2007-08-16  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure.host (gnu*): Set use_libgcj_bc to yes.
