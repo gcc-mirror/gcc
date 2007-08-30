@@ -1,5 +1,13 @@
 2007-08-30  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/33199
+	* tree-ssa-structalias.c (handle_lhs_call): New function.
+	(find_func_aliases): In non-IPA mode make sure that for
+	calls that return a pointer we add a constraint for the
+	result to point to anything.
+
+2007-08-30  Richard Guenther  <rguenther@suse.de>
+
 	* doc/invoke.texi (-mveclibabi): Document new target option.
 	* config/i386/i386.opt (-mveclibabi): New target option.
 	* config/i386/i386.c (ix86_veclib_handler): Handler for
