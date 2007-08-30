@@ -1,3 +1,16 @@
+2007-08-30  Richard Guenther  <rguenther@suse.de>
+
+	* doc/invoke.texi (-mveclibabi): Document new target option.
+	* config/i386/i386.opt (-mveclibabi): New target option.
+	* config/i386/i386.c (ix86_veclib_handler): Handler for
+	vectorization library support.
+	(override_options): Handle the -mveclibabi option, initialize
+	the vectorization library handler.
+	(ix86_builtin_vectorized_function): As fallback call the
+	vectorization library handler, if set.
+	(ix86_veclibabi_acml): New static function for ACML ABI style
+	vectorization support.
+
 2007-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_sync): For QI or HI mode

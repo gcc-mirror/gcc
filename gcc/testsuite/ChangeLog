@@ -1,3 +1,7 @@
+2007-08-30  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.target/i386/vectorize5.c: New testcase.
+
 2007-08-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33228

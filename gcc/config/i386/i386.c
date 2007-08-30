@@ -1620,6 +1620,10 @@ static int ix86_isa_flags_explicit;
 
 #define OPTION_MASK_ISA_SSE4A_UNSET OPTION_MASK_ISA_SSE4
 
+/* Vectorization library interface and handlers.  */
+tree (*ix86_veclib_handler)(enum built_in_function, tree, tree) = NULL;
+static tree ix86_veclibabi_acml (enum built_in_function, tree, tree);
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -2408,6 +2412,16 @@ override_options (void)
   /* If the i387 is disabled, then do not return values in it. */
   if (!TARGET_80387)
     target_flags &= ~MASK_FLOAT_RETURNS;
+
+  /* Use external vectorized library in vectorizing intrinsics.  */
+  if (ix86_veclibabi_string)
+    {
+      if (strcmp (ix86_veclibabi_string, "acml") == 0)
+	ix86_veclib_handler = ix86_veclibabi_acml;
+      else
+	error ("unknown vectorization library ABI type (%s) for "
+	       "-mveclibabi= switch", ix86_veclibabi_string);
+    }
 
   if ((x86_accumulate_outgoing_args & ix86_tune_mask)
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
@@ -19934,32 +19948,121 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
       if (out_mode == DFmode && out_n == 2
 	  && in_mode == DFmode && in_n == 2)
 	return ix86_builtins[IX86_BUILTIN_SQRTPD];
-      return NULL_TREE;
+      break;
 
     case BUILT_IN_SQRTF:
       if (out_mode == SFmode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
 	return ix86_builtins[IX86_BUILTIN_SQRTPS];
-      return NULL_TREE;
+      break;
 
     case BUILT_IN_LRINT:
       if (out_mode == SImode && out_n == 4
 	  && in_mode == DFmode && in_n == 2)
 	return ix86_builtins[IX86_BUILTIN_VEC_PACK_SFIX];
-      return NULL_TREE;
+      break;
 
     case BUILT_IN_LRINTF:
       if (out_mode == SImode && out_n == 4
 	  && in_mode == SFmode && in_n == 4)
 	return ix86_builtins[IX86_BUILTIN_CVTPS2DQ];
-      return NULL_TREE;
+      break;
 
     default:
       ;
     }
 
+  /* Dispatch to a handler for a vectorization library.  */
+  if (ix86_veclib_handler)
+    return (*ix86_veclib_handler)(fn, type_out, type_in);
+
   return NULL_TREE;
 }
+
+/* Handler for an ACML-style interface to a library with vectorized
+   intrinsics.  */
+
+static tree
+ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
+{
+  char name[20] = "__vr.._";
+  tree fntype, new_fndecl, args;
+  unsigned arity;
+  const char *bname;
+  enum machine_mode el_mode, in_mode;
+  int n, in_n;
+
+  /* The ACML is 64bits only and suitable for unsafe math only as
+     it does not correctly support parts of IEEE with the required
+     precision such as denormals.  */
+  if (!TARGET_64BIT
+      || !flag_unsafe_math_optimizations)
+    return NULL_TREE;
+
+  el_mode = TYPE_MODE (TREE_TYPE (type_out));
+  n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  if (el_mode != in_mode
+      || n != in_n)
+    return NULL_TREE;
+
+  switch (fn)
+    {
+    case BUILT_IN_SIN:
+    case BUILT_IN_COS:
+    case BUILT_IN_EXP:
+    case BUILT_IN_LOG:
+    case BUILT_IN_LOG2:
+    case BUILT_IN_LOG10:
+      name[4] = 'd';
+      name[5] = '2';
+      if (el_mode != DFmode
+	  || n != 2)
+	return NULL_TREE;
+      break;
+
+    case BUILT_IN_SINF:
+    case BUILT_IN_COSF:
+    case BUILT_IN_EXPF:
+    case BUILT_IN_POWF:
+    case BUILT_IN_LOGF:
+    case BUILT_IN_LOG2F:
+    case BUILT_IN_LOG10F:
+      name[4] = 's';
+      name[5] = '4';
+      if (el_mode != SFmode
+	  || n != 4)
+	return NULL_TREE;
+      break;
+    
+    default:
+      return NULL_TREE;
+    }
+
+  bname = IDENTIFIER_POINTER (DECL_NAME (implicit_built_in_decls[fn]));
+  sprintf (name + 7, "%s", bname+10);
+
+  arity = 0;
+  for (args = DECL_ARGUMENTS (implicit_built_in_decls[fn]); args;
+       args = TREE_CHAIN (args))
+    arity++;
+
+  if (arity == 1)
+    fntype = build_function_type_list (type_out, type_in, NULL);
+  else
+    fntype = build_function_type_list (type_out, type_in, type_in, NULL);
+
+  /* Build a function declaration for the vectorized function.  */
+  new_fndecl = build_decl (FUNCTION_DECL, get_identifier (name), fntype);
+  TREE_PUBLIC (new_fndecl) = 1;
+  DECL_EXTERNAL (new_fndecl) = 1;
+  DECL_IS_NOVOPS (new_fndecl) = 1;
+  TREE_READONLY (new_fndecl) = 1;
+
+  return new_fndecl;
+}
+
 
 /* Returns a decl of a function that implements conversion of the
    input vector of type TYPE, or NULL_TREE if it is not available.  */
