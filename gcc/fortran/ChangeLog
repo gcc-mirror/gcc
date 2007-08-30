@@ -1,3 +1,9 @@
+2007-08-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33228
+	* interface.c (check_interface0): Improve error for external procs.
+	(check_sym_interfaces): Fix checking of module procedures.
+
 2007-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32989
