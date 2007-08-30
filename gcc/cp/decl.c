@@ -10892,6 +10892,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       DECL_EXTERNAL (decl1) = 1;
       DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
+      DECL_DISREGARD_INLINE_LIMITS (decl1) = 1;
     }
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
