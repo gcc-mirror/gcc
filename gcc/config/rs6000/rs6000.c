@@ -12757,14 +12757,16 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	    ishift = GET_MODE_BITSIZE (SImode) - GET_MODE_BITSIZE (mode);
 
 	  shift = GEN_INT (ishift);
+	  used_m = change_address (used_m, SImode, 0);
 	}
       else
 	{
 	  rtx addrSI, aligned_addr;
 	  int shift_mask = mode == QImode ? 0x18 : 0x10;
 
-	  addrSI = force_reg (SImode, gen_lowpart_common (SImode,
-							  XEXP (used_m, 0)));
+	  addrSI = gen_lowpart_common (SImode,
+				       force_reg (Pmode, XEXP (used_m, 0)));
+	  addrSI = force_reg (SImode, addrSI);
 	  shift = gen_reg_rtx (SImode);
 
 	  emit_insn (gen_rlwinm (shift, addrSI, GEN_INT (3),
@@ -12777,14 +12779,14 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 				       1, OPTAB_LIB_WIDEN);
 	  used_m = change_address (used_m, SImode, aligned_addr);
 	  set_mem_align (used_m, 32);
-	  /* It's safe to keep the old alias set of USED_M, because
-	     the operation is atomic and only affects the original
-	     USED_M.  */
-	  if (GET_CODE (m) == NOT)
-	    m = gen_rtx_NOT (SImode, used_m);
-	  else
-	    m = used_m;
 	}
+      /* It's safe to keep the old alias set of USED_M, because
+	 the operation is atomic and only affects the original
+	 USED_M.  */
+      if (GET_CODE (m) == NOT)
+	m = gen_rtx_NOT (SImode, used_m);
+      else
+	m = used_m;
 
       if (GET_CODE (op) == NOT)
 	{
