@@ -1,3 +1,8 @@
+2007-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/inline-24.c: New test.
+	* g++.dg/opt/inline11.C: New test.
+
 2007-08-30  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.target/i386/vectorize5.c: New testcase.
