@@ -19,7 +19,6 @@
 2007-08-17  Richard Sandiford  <richard@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 
-	* config/mt-sde: New file.
 	* configure.ac (mips*-sde-elf*): New stanza.  Use config/mt-sde
 	as target_makefile_frag.
 	* configure: Regenerate.
