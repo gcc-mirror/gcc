@@ -83,12 +83,18 @@ static unsigned int
 interpret_float_suffix (const uchar *s, size_t len)
 {
   size_t f, l, w, q, i, d;
+  size_t r, k, u, h;
 
   f = l = w = q = i = d = 0;
+  r = k = u = h = 0;
 
   while (len--)
     switch (s[len])
       {
+      case 'r': case 'R': r++; break;
+      case 'k': case 'K': k++; break;
+      case 'u': case 'U': u++; break;
+      case 'h': case 'H': h++; break;
       case 'f': case 'F':
 	if (d > 0)
 	  return 0;
@@ -98,6 +104,9 @@ interpret_float_suffix (const uchar *s, size_t len)
 	if (d > 0)
 	  return 0;
 	l++;
+	/* If there are two Ls, they must be adjacent and the same case.  */
+	if (l == 2 && s[len] != s[len + 1])
+	  return 0;
 	break;
       case 'w': case 'W':
 	if (d > 0)
@@ -116,7 +125,34 @@ interpret_float_suffix (const uchar *s, size_t len)
 	return 0;
       }
 
-  if (f + l + w + q > 1 || i > 1)
+  if (r + k > 1 || h > 1 || l > 2 || u > 1)
+    return 0;
+
+  if (r == 1)
+    {
+      if (f || i || d || w || q)
+	return 0;
+
+      return (CPP_N_FRACT
+	      | (u ? CPP_N_UNSIGNED : 0)
+	      | (h ? CPP_N_SMALL :
+		 l == 2 ? CPP_N_LARGE :
+		 l == 1 ? CPP_N_MEDIUM :  0));
+    }
+
+  if (k == 1)
+    {
+      if (f || i || d || w || q)
+	return 0;
+
+      return (CPP_N_ACCUM
+	      | (u ? CPP_N_UNSIGNED : 0)
+	      | (h ? CPP_N_SMALL :
+		 l == 2 ? CPP_N_LARGE :
+		 l == 1 ? CPP_N_MEDIUM :  0));
+    }
+
+  if (f + l + w + q > 1 || i > 1 || h + u > 0)
     return 0;
 
   /* Allow dd, df, dl suffixes for decimal float constants.  */
@@ -238,6 +274,26 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	}
     }
 
+  /* The suffix may be for decimal fixed-point constants without exponent.  */
+  if (radix != 16 && float_flag == NOT_FLOAT)
+    {
+      result = interpret_float_suffix (str, limit - str);
+      if ((result & CPP_N_FRACT) || (result & CPP_N_ACCUM))
+	{
+	  result |= CPP_N_FLOATING;
+	  /* We need to restore the radix to 10, if the radix is 8.  */
+	  if (radix == 8)
+	    radix = 10;
+
+	  if (CPP_PEDANTIC (pfile))
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "fixed-point constants are a GCC extension");
+	  goto syntax_ok;
+	}
+      else
+	result = 0;
+    }
+
   if (float_flag != NOT_FLOAT && radix == 8)
     radix = 10;
 
@@ -304,6 +360,10 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
           return CPP_N_INVALID;
         }
 
+      if ((result & (CPP_N_FRACT | CPP_N_ACCUM)) && CPP_PEDANTIC (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "fixed-point constants are a GCC extension");
+
       if ((result & CPP_N_DFLOAT) && CPP_PEDANTIC (pfile))
 	cpp_error (pfile, CPP_DL_PEDWARN,
 		   "decimal float constants are a GCC extension");
@@ -343,6 +403,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       result |= CPP_N_INTEGER;
     }
 
+ syntax_ok:
   if ((result & CPP_N_IMAGINARY) && CPP_PEDANTIC (pfile))
     cpp_error (pfile, CPP_DL_PEDWARN,
 	       "imaginary constants are a GCC extension");
