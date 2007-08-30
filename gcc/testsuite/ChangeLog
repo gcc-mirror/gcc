@@ -4,6 +4,9 @@
 	(AI): Add AI_ALIGN.
 	* gcc.dg/sync-3.c: New test.
 
+	PR middle-end/32758
+	* gcc.dg/cleanup-12.c: New test.
+
 2007-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-dg.exp (cleanup-profile-file): New procedure.
