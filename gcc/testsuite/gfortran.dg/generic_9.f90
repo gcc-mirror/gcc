@@ -21,7 +21,7 @@ MODULE class_foo
 USE class_foo_type, ONLY: foo, bar_init_set_int
 
 INTERFACE foo_init
-  MODULE PROCEDURE foo_init_default  ! { dg-error "does not come from a module" }
+  MODULE PROCEDURE foo_init_default  ! { dg-error "is not a module procedure" }
 END INTERFACE
 
 INTERFACE bar_init

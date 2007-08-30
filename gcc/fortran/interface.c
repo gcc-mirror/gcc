@@ -988,9 +988,13 @@ check_interface0 (gfc_interface *p, const char *interface_name)
   for (; p; p = p->next)
     if (!p->sym->attr.function && !p->sym->attr.subroutine)
       {
-	gfc_error ("Procedure '%s' in %s at %L is neither function nor "
-		   "subroutine", p->sym->name, interface_name,
-		   &p->sym->declared_at);
+	if (p->sym->attr.external)
+	  gfc_error ("Procedure '%s' in %s at %L has no explicit interface",
+		     p->sym->name, interface_name, &p->sym->declared_at);
+	else
+	  gfc_error ("Procedure '%s' in %s at %L is neither function nor "
+		     "subroutine", p->sym->name, interface_name,
+		     &p->sym->declared_at);
 	return 1;
       }
   p = psave;
@@ -1081,11 +1085,10 @@ check_sym_interfaces (gfc_symbol *sym)
 
       for (p = sym->generic; p; p = p->next)
 	{
-	  if (!p->sym->attr.use_assoc && p->sym->attr.mod_proc
-	      && p->sym->attr.if_source != IFSRC_DECL)
+	  if (p->sym->attr.mod_proc && p->sym->attr.if_source != IFSRC_DECL)
 	    {
-	      gfc_error ("MODULE PROCEDURE '%s' at %L does not come "
-			 "from a module", p->sym->name, &p->where);
+	      gfc_error ("'%s' at %L is not a module procedure",
+			 p->sym->name, &p->where);
 	      return;
 	    }
 	}
