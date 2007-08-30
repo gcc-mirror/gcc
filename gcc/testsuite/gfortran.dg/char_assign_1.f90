@@ -11,7 +11,7 @@ character(len=2), dimension(5) :: p
 character(len=3), dimension(5) :: q
 
 y(:)%c = "abcdef" ! { dg-warning "in assignment \\(5/6\\)" }
-p(1) = y(1)%c(3:)
+p(1) = y(1)%c(3:) ! { dg-warning "in assignment \\(2/3\\)" }
 if (p(1).ne."cd") call abort()
 
 p(1) = y(1)%c  ! { dg-warning "in assignment \\(2/5\\)" }

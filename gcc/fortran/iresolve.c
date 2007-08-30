@@ -534,6 +534,9 @@ gfc_resolve_cshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 {
   int n;
 
+  if (array->ts.type == BT_CHARACTER && array->ref)
+    gfc_resolve_substring_charlen (array);
+
   f->ts = array->ts;
   f->rank = array->rank;
   f->shape = gfc_copy_shape (array->shape, array->rank);
@@ -653,6 +656,9 @@ gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 		     gfc_expr *boundary, gfc_expr *dim)
 {
   int n;
+
+  if (array->ts.type == BT_CHARACTER && array->ref)
+    gfc_resolve_substring_charlen (array);
 
   f->ts = array->ts;
   f->rank = array->rank;
@@ -1382,6 +1388,12 @@ gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,
 		   gfc_expr *fsource ATTRIBUTE_UNUSED,
 		   gfc_expr *mask ATTRIBUTE_UNUSED)
 {
+  if (tsource->ts.type == BT_CHARACTER && tsource->ref)
+    gfc_resolve_substring_charlen (tsource);
+
+  if (fsource->ts.type == BT_CHARACTER && fsource->ref)
+    gfc_resolve_substring_charlen (fsource);
+
   if (tsource->ts.type == BT_CHARACTER)
     check_charlen_present (tsource);
 
@@ -1590,6 +1602,9 @@ void
 gfc_resolve_pack (gfc_expr *f, gfc_expr *array, gfc_expr *mask,
 		  gfc_expr *vector ATTRIBUTE_UNUSED)
 {
+  if (array->ts.type == BT_CHARACTER && array->ref)
+    gfc_resolve_substring_charlen (array);
+
   f->ts = array->ts;
   f->rank = 1;
 
@@ -1692,6 +1707,9 @@ gfc_resolve_reshape (gfc_expr *f, gfc_expr *source, gfc_expr *shape,
   mpz_t rank;
   int kind;
   int i;
+
+  if (source->ts.type == BT_CHARACTER && source->ref)
+    gfc_resolve_substring_charlen (source);
 
   f->ts = source->ts;
 
@@ -1984,6 +2002,9 @@ void
 gfc_resolve_spread (gfc_expr *f, gfc_expr *source, gfc_expr *dim,
 		    gfc_expr *ncopies)
 {
+  if (source->ts.type == BT_CHARACTER && source->ref)
+    gfc_resolve_substring_charlen (source);
+
   if (source->ts.type == BT_CHARACTER)
     check_charlen_present (source);
 
@@ -2258,6 +2279,10 @@ gfc_resolve_transfer (gfc_expr *f, gfc_expr *source ATTRIBUTE_UNUSED,
 void
 gfc_resolve_transpose (gfc_expr *f, gfc_expr *matrix)
 {
+
+  if (matrix->ts.type == BT_CHARACTER && matrix->ref)
+    gfc_resolve_substring_charlen (matrix);
+
   f->ts = matrix->ts;
   f->rank = 2;
   if (matrix->shape)
@@ -2384,6 +2409,9 @@ void
 gfc_resolve_unpack (gfc_expr *f, gfc_expr *vector, gfc_expr *mask,
 		    gfc_expr *field ATTRIBUTE_UNUSED)
 {
+  if (vector->ts.type == BT_CHARACTER && vector->ref)
+    gfc_resolve_substring_charlen (vector);
+
   f->ts = vector->ts;
   f->rank = mask->rank;
   resolve_mask_arg (mask);

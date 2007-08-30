@@ -1,3 +1,28 @@
+2007-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31879
+	PR fortran/31197
+	PR fortran/31258
+	PR fortran/32703
+	* gfortran.h : Add prototype for gfc_resolve_substring_charlen.
+	* resolve.c (gfc_resolve_substring_charlen): New function.
+	(resolve_ref): Call gfc_resolve_substring_charlen.
+	(gfc_resolve_character_operator): New function.
+	(gfc_resolve_expr): Call the new functions in cases where the
+	character length is missing.
+	* iresolve.c (cshift, eoshift, merge, pack, reshape, spread,
+	transpose, unpack): Call gfc_resolve_substring_charlen for
+	source expressions that are character and have a reference.
+	* trans.h (gfc_trans_init_string_length) Change name to
+	gfc_conv_string_length; modify references in trans-expr.c,
+	trans-array.c and trans-decl.c.
+	* trans-expr.c (gfc_trans_string_length): Handle case of no
+	backend_decl.
+	(gfc_conv_aliased_arg): Remove code for treating substrings
+	and replace with call to gfc_trans_string_length.
+	* trans-array.c (gfc_conv_expr_descriptor): Remove code for
+	treating strings and call gfc_trans_string_length instead.
+
 2007-08-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33228

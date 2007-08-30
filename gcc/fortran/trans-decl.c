@@ -2374,7 +2374,7 @@ gfc_trans_dummy_character (gfc_symbol *sym, gfc_charlen *cl, tree fnbody)
   gfc_start_block (&body);
 
   /* Evaluate the string length expression.  */
-  gfc_trans_init_string_length (cl, &body);
+  gfc_conv_string_length (cl, &body);
 
   gfc_trans_vla_type_sizes (sym, &body);
 
@@ -2398,7 +2398,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
   gfc_start_block (&body);
 
   /* Evaluate the string length expression.  */
-  gfc_trans_init_string_length (sym->ts.cl, &body);
+  gfc_conv_string_length (sym->ts.cl, &body);
 
   gfc_trans_vla_type_sizes (sym, &body);
 

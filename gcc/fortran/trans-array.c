@@ -1375,7 +1375,7 @@ get_array_ctor_all_strlen (stmtblock_t *block, gfc_expr *e, tree *len)
   if (*len && INTEGER_CST_P (*len))
     return;
 
-  if (!e->ref && e->ts.cl->length
+  if (!e->ref && e->ts.cl && e->ts.cl->length
 	&& e->ts.cl->length->expr_type == EXPR_CONSTANT)
     {
       /* This is easy.  */
@@ -1638,17 +1638,6 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
       bool const_string = get_array_ctor_strlen (&loop->pre, c, &ss->string_length);
       if (!ss->string_length)
 	gfc_todo_error ("complex character array constructors");
-
-      /* It is surprising but still possible to wind up with expressions that
-	 lack a character length.
-	 TODO Find the offending part of the front end and cure this properly.
-	 Concatenation involving arrays is the main culprit.  */
-      if (!ss->expr->ts.cl)
-	{
-	  ss->expr->ts.cl = gfc_get_charlen ();
-	  ss->expr->ts.cl->next = gfc_current_ns->cl_list;
-	  gfc_current_ns->cl_list = ss->expr->ts.cl->next;
-	}
 
       ss->expr->ts.cl->backend_decl = ss->string_length;
 
@@ -3909,7 +3898,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   if (sym->ts.type == BT_CHARACTER
       && onstack && !INTEGER_CST_P (sym->ts.cl->backend_decl))
     {
-      gfc_trans_init_string_length (sym->ts.cl, &block);
+      gfc_conv_string_length (sym->ts.cl, &block);
 
       gfc_trans_vla_type_sizes (sym, &block);
 
@@ -3933,7 +3922,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
 
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.cl->backend_decl))
-    gfc_trans_init_string_length (sym->ts.cl, &block);
+    gfc_conv_string_length (sym->ts.cl, &block);
 
   size = gfc_trans_array_bounds (type, sym, &offset, &block);
 
@@ -3999,7 +3988,7 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
 
   if (sym->ts.type == BT_CHARACTER
       && TREE_CODE (sym->ts.cl->backend_decl) == VAR_DECL)
-    gfc_trans_init_string_length (sym->ts.cl, &block);
+    gfc_conv_string_length (sym->ts.cl, &block);
 
   /* Evaluate the bounds of the array.  */
   gfc_trans_array_bounds (type, sym, &offset, &block);
@@ -4091,7 +4080,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 
   if (sym->ts.type == BT_CHARACTER
       && TREE_CODE (sym->ts.cl->backend_decl) == VAR_DECL)
-    gfc_trans_init_string_length (sym->ts.cl, &block);
+    gfc_conv_string_length (sym->ts.cl, &block);
 
   checkparm = (sym->as->type == AS_EXPLICIT && flag_bounds_check);
 
@@ -4530,63 +4519,18 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss = gfc_get_ss ();
       loop.temp_ss->type = GFC_SS_TEMP;
       loop.temp_ss->next = gfc_ss_terminator;
-      if (expr->ts.type == BT_CHARACTER)
-	{
-	  if (expr->ts.cl == NULL)
-	    {
-	      /* This had better be a substring reference!  */
-	      gfc_ref *char_ref = expr->ref;
-	      for (; char_ref; char_ref = char_ref->next)
-		if (char_ref->type == REF_SUBSTRING)
-		  {
-		    mpz_t char_len;
-		    expr->ts.cl = gfc_get_charlen ();
-		    expr->ts.cl->next = char_ref->u.ss.length->next;
-		    char_ref->u.ss.length->next = expr->ts.cl;
 
-		    mpz_init_set_ui (char_len, 1);
-		    mpz_add (char_len, char_len,
-			     char_ref->u.ss.end->value.integer);
-		    mpz_sub (char_len, char_len,
-			     char_ref->u.ss.start->value.integer);
-		    expr->ts.cl->backend_decl
-			= gfc_conv_mpz_to_tree (char_len,
-					gfc_default_character_kind);
-		    /* Cast is necessary for *-charlen refs.  */
-		    expr->ts.cl->backend_decl
-			= convert (gfc_charlen_type_node,
-				   expr->ts.cl->backend_decl);
-		    mpz_clear (char_len);
-		      break;
-		  }
-	      gcc_assert (char_ref != NULL);
-	      loop.temp_ss->data.temp.type
-		= gfc_typenode_for_spec (&expr->ts);
-	      loop.temp_ss->string_length = expr->ts.cl->backend_decl;
-	    }
-	  else if (expr->ts.cl->length
-		     && expr->ts.cl->length->expr_type == EXPR_CONSTANT)
-	    {
-	      gfc_conv_const_charlen (expr->ts.cl);
-	      loop.temp_ss->data.temp.type
-		= gfc_typenode_for_spec (&expr->ts);
-	      loop.temp_ss->string_length
-		= TYPE_SIZE_UNIT (loop.temp_ss->data.temp.type);
-	    }
-	  else
-	    {
-	      loop.temp_ss->data.temp.type
-		= gfc_typenode_for_spec (&expr->ts);
-	      loop.temp_ss->string_length = expr->ts.cl->backend_decl;
-	    }
-	  se->string_length = loop.temp_ss->string_length;
-	}
+      if (expr->ts.type == BT_CHARACTER && !expr->ts.cl->backend_decl)
+	gfc_conv_string_length (expr->ts.cl, &se->pre);
+
+      loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
+
+      if (expr->ts.type == BT_CHARACTER)
+	loop.temp_ss->string_length = expr->ts.cl->backend_decl;
       else
-	{
-	  loop.temp_ss->data.temp.type
-	    = gfc_typenode_for_spec (&expr->ts);
-	  loop.temp_ss->string_length = NULL;
-	}
+	loop.temp_ss->string_length = NULL;
+
+      se->string_length = loop.temp_ss->string_length;
       loop.temp_ss->data.temp.dimen = loop.dimen;
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
@@ -5318,7 +5262,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.cl->backend_decl))
     {
-      gfc_trans_init_string_length (sym->ts.cl, &fnblock);
+      gfc_conv_string_length (sym->ts.cl, &fnblock);
       gfc_trans_vla_type_sizes (sym, &fnblock);
     }
 
