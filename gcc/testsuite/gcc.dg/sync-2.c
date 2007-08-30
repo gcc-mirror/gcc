@@ -8,7 +8,11 @@
 extern void abort (void);
 extern void *memcpy (void *, const void *, __SIZE_TYPE__);
 
-static char AI[18];
+#ifndef AI_ALIGN
+#define AI_ALIGN
+#endif
+
+static char AI[18] AI_ALIGN;
 static char init_qi[18] = { 3,5,7,9,0,0,0,0,-1,0,0,0,0,0,-1,0,0,0 };
 static char test_qi[18] = { 3,5,7,9,1,4,22,-12,7,8,9,7,1,-12,7,8,9,7 };
 
