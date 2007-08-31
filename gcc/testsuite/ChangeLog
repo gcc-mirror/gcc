@@ -1,5 +1,10 @@
 2007-08-31  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/33210
+	* g++.dg/template/error30.C: New.
+
+2007-08-31  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/32113
 	* g++.dg/template/crash70.C: New.
 
