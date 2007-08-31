@@ -56,6 +56,10 @@
 #define PPC405_ERRATUM77 0
 #endif
 
+#ifndef TARGET_PAIRED_FLOAT
+#define TARGET_PAIRED_FLOAT 0
+#endif
+
 /* Common ASM definitions used by ASM_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
 #define ASM_CPU_SPEC \
@@ -472,6 +476,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define UNITS_PER_FP_WORD 8
 #define UNITS_PER_ALTIVEC_WORD 16
 #define UNITS_PER_SPE_WORD 8
+#define UNITS_PER_PAIRED_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
@@ -555,8 +560,10 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 :	\
     (TARGET_E500_DOUBLE && TYPE_MODE (TYPE) == DFmode) ? 64 : \
-    (TARGET_SPE && TREE_CODE (TYPE) == VECTOR_TYPE \
-     && SPE_VECTOR_MODE (TYPE_MODE (TYPE))) ? 64 : ALIGN)
+    ((TARGET_SPE && TREE_CODE (TYPE) == VECTOR_TYPE \
+     && SPE_VECTOR_MODE (TYPE_MODE (TYPE))) || (TARGET_PAIRED_FLOAT \
+        && TREE_CODE (TYPE) == VECTOR_TYPE \
+        && PAIRED_VECTOR_MODE (TYPE_MODE (TYPE)))) ? 64 : ALIGN)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -595,7 +602,8 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    Align vectors to 128 bits.  Align SPE vectors and E500 v2 doubles to
    64 bits.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
-  (TREE_CODE (TYPE) == VECTOR_TYPE ? (TARGET_SPE_ABI ? 64 : 128)	\
+  (TREE_CODE (TYPE) == VECTOR_TYPE ? ((TARGET_SPE_ABI \
+   || TARGET_PAIRED_FLOAT) ? 64 : 128)	\
    : (TARGET_E500_DOUBLE && TYPE_MODE (TYPE) == DFmode) ? 64 \
    : TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
@@ -831,6 +839,9 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 /* SPE SIMD registers are just the GPRs.  */
 #define SPE_SIMD_REGNO_P(N) ((N) <= 31)
 
+/* PAIRED SIMD registers are just the FPRs.  */
+#define PAIRED_SIMD_REGNO_P(N) ((N) >= 32 && (N) <= 63)
+
 /* True if register is the XER register.  */
 #define XER_REGNO_P(N) ((N) == XER_REGNO)
 
@@ -859,9 +870,13 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
          || (MODE) == V1DImode          \
          || (MODE) == V2SImode)
 
-#define UNITS_PER_SIMD_WORD					\
-        (TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD		\
-	 : (TARGET_SPE ? UNITS_PER_SPE_WORD : UNITS_PER_WORD))
+#define PAIRED_VECTOR_MODE(MODE)        \
+         ((MODE) == V2SFmode)            
+
+#define UNITS_PER_SIMD_WORD					     \
+	(TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD		     \
+	 : (TARGET_SPE ? UNITS_PER_SPE_WORD : (TARGET_PAIRED_FLOAT ? \
+	 UNITS_PER_PAIRED_WORD : UNITS_PER_WORD)))
 
 /* Value is TRUE if hard register REGNO can hold a value of
    machine-mode MODE.  */
@@ -2948,6 +2963,35 @@ enum rs6000_builtins
   SPE_BUILTIN_MTSPEFSCR,
   SPE_BUILTIN_MFSPEFSCR,
   SPE_BUILTIN_BRINC,
+
+  /* PAIRED builtins.  */
+  PAIRED_BUILTIN_DIVV2SF3,
+  PAIRED_BUILTIN_ABSV2SF2,
+  PAIRED_BUILTIN_NEGV2SF2,
+  PAIRED_BUILTIN_SQRTV2SF2,
+  PAIRED_BUILTIN_ADDV2SF3,
+  PAIRED_BUILTIN_SUBV2SF3,
+  PAIRED_BUILTIN_RESV2SF2,
+  PAIRED_BUILTIN_MULV2SF3,
+  PAIRED_BUILTIN_MSUB,
+  PAIRED_BUILTIN_MADD,
+  PAIRED_BUILTIN_NMSUB,
+  PAIRED_BUILTIN_NMADD,
+  PAIRED_BUILTIN_NABSV2SF2,
+  PAIRED_BUILTIN_SUM0,
+  PAIRED_BUILTIN_SUM1,
+  PAIRED_BUILTIN_MULS0,
+  PAIRED_BUILTIN_MULS1,
+  PAIRED_BUILTIN_MERGE00,
+  PAIRED_BUILTIN_MERGE01,
+  PAIRED_BUILTIN_MERGE10,
+  PAIRED_BUILTIN_MERGE11,
+  PAIRED_BUILTIN_MADDS0,
+  PAIRED_BUILTIN_MADDS1,
+  PAIRED_BUILTIN_STX,
+  PAIRED_BUILTIN_LX,
+  PAIRED_BUILTIN_CMPU0,
+  PAIRED_BUILTIN_CMPU1,
 
   RS6000_BUILTIN_COUNT
 };
