@@ -1,3 +1,13 @@
+2007-08-31  Richard Guenther  <rguenther@suse.de>
+
+	* function.c (allocate_struct_function): Do not set
+	current_function_returns_pointer.
+	* function.h (struct var_refs_queue): Remove.
+	(struct simple_obstack_stack): Likewise.
+	(struct function): Remove fixup_var_refs_queue member.
+	Remove returns_pointer flag.
+	(current_function_returns_pointer): Remove define.
+
 2007-08-31  Nick Clifton  <nickc@redhat.com>
 
 	* tree-ssa-coalesce.c (compare_pairs): Use the elements as
