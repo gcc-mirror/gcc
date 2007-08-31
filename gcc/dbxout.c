@@ -326,7 +326,6 @@ static void dbxout_type_name (tree);
 static void dbxout_class_name_qualifiers (tree);
 static int dbxout_symbol_location (tree, tree, const char *, rtx);
 static void dbxout_symbol_name (tree, const char *, int);
-static void dbxout_block (tree, int, tree);
 static void dbxout_global_decl (tree);
 static void dbxout_type_decl (tree, int);
 static void dbxout_handle_pch (unsigned);
@@ -1215,6 +1214,9 @@ dbxout_handle_pch (unsigned at_end)
 }
 
 #if defined (DBX_DEBUGGING_INFO)
+
+static void dbxout_block (tree, int, tree);
+
 /* Output debugging info to FILE to switch to sourcefile FILENAME.  */
 
 static void
@@ -3343,6 +3345,8 @@ dbxout_args (tree args)
     }
 }
 
+#if defined (DBX_DEBUGGING_INFO)
+
 /* Subroutine of dbxout_block.  Emit an N_LBRAC stab referencing LABEL.
    BEGIN_LABEL is the name of the beginning of the function, which may
    be required.  */
@@ -3473,7 +3477,6 @@ dbxout_block (tree block, int depth, tree args)
    Usually this follows the function's code,
    but on some systems, it comes before.  */
 
-#if defined (DBX_DEBUGGING_INFO)
 static void
 dbxout_begin_function (tree decl)
 {

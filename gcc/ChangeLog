@@ -1,3 +1,10 @@
+2007-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* dbxout.c (dbxout_block): Move declaration within the first
+	#if defined (DBX_DEBUGGING_INFO) block.  Rearrange another such
+	block to include the definition, together with the associated
+	helpers.
+
 2007-08-31  David Edelsohn  <edelsohn@gnu.org>
             Revital Eres  <eres@il.ibm.com>
 
