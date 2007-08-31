@@ -1,3 +1,17 @@
+2007-08-29  Nick Clifton  <nickc@redhat.com>
+
+	* typeck.c: Change copyright header to refer to version	3 of the
+	GNU General Public License and to point readers at the COPYING3
+	file and the FSF's license web page.
+	* optimize.c, lang-specs.h, init.c, class.c, repo.c, decl.c,
+	config-lang.in, cp-tree.def, call.c, decl.h, ptree.c,
+	Make-lang.in, method.c, rtti.c, cp-objcp-common.c, g++spec.c,
+	cp-objcp-common.h, except.c, error.c, operators.def, cvt.c,
+	tree.c, mangle.c, cp-tree.h, dump.c, search.c, friend.c, expr.c,
+	cp-gimplify.c, cxx-pretty-print.c, cp-lang.c, typeck2.c, pt.c,
+	cxx-pretty-print.h, semantics.c, name-lookup.c, lex.c, decl2.c,
+	name-lookup.h, parser.c: Likewise.
+
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/31941

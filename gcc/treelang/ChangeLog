@@ -1,3 +1,20 @@
+2007-08-29  Nick Clifton  <nickc@redhat.com>
+
+	* parse.y: Change copyright header to refer to version 3 of the
+	GNU General Public License and to point readers at the COPYING3
+	file and the FSF's license web page.
+	* lex.l: Likewise.
+	* lang.opt: Likewise.
+	* lang-specs.h: Likewise.
+	* treelang.h: Likewise.
+	* config-lang.in: Likewise.
+	* tree-convert.c: Likewise.
+	* treetree.c: Likewise.
+	* tree1.c: Likewise.
+	* Make-lang.in: Likewise.
+	* treetree.h: Likewise.
+	* spec.c: Likewise.
+	
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.

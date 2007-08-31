@@ -12,8 +12,8 @@ some of these tests with Niklas, others were included in bug reports I
 had sent to {g++,gcc}@cygnus.com.  It is, therefore, possible that
 these tests duplicate tests in other directories.
 
-All files in this directory, including this file, are Copyright FSF 1995
-and fall under the GPL version 2.0 or later.
+All files in this directory, including this file, are Copyright
+FSF 1995, 2007 and fall under the GPL version 3 or later.
 
 Gerald Baumgartner
 gb@cs.purdue.edu

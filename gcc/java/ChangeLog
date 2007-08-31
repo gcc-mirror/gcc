@@ -1,3 +1,16 @@
+2007-08-29  Nick Clifton  <nickc@redhat.com>
+
+	* java-gimplify.c: Change copyright header to refer to version 3
+	of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* typeck.c, lang-specs.h, mangle_name.c, jcf-dump.c, class.c,
+	decl.c, config-lang.in, jcf-parse.c, constants.c, Make-lang.in,
+	resource.c, except.c, builtins.c, jvspec.c, java-tree.def,
+	javaop.def, jcf-path.c, verify-glue.c, jcf-depend.c, lang.opt,
+	jcf-reader.c, mangle.c, zextract.c, jcf-io.c, jcf.h, zipfile.h,
+	verify.h, java-except.h, win32-host.c, expr.c, jvgenmain.c,
+	parse.h, lang.c, java-tree.h, javaop.h, boehm.c: Likewise.
+
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.

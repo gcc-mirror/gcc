@@ -1,3 +1,11 @@
+2007-08-29  Nick Clifton  <nickc@redhat.com>
+
+	* Make-lang.in: Change copyright header to refer to version 3 of
+	the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* lang-specs.h, objcp-decl.c, objcp-decl.h, config-lang.in,
+	objcp-lang.c: Likewise.
+
 2007-07-19  Release Manager
 
 	* GCC 4.2.1 released.

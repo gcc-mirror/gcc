@@ -1,3 +1,20 @@
+2007-08-29  Nick Clifton  <nickc@redhat.com>
+
+	* arith.c: Change copyright header to refer to version 3 of the
+	GNU General Public License and to point readers at the COPYING3
+	file and the FSF's license web page.
+	* openmp.c, interface.c, intrinsic.c, trans-array.c, trans-expr.c,
+	symbol.c, intrinsic.h, decl.c, trans-array.h, matchexp.c,
+	dump-parse-tree.c, trans-common.c, array.c, Make-lang.in,
+	trans-openmp.c, gfortran.h, error.c, lang.opt, data.c,
+	trans-const.c, trans-stmt.c, expr.c, trans-const.h, trans-stmt.h,
+	module.c, trans.c, scanner.c, trans-types.c, trans.h,
+	gfortranspec.c, trans-types.h, lang-specs.h, io.c, bbt.c,
+	resolve.c, f95-lang.c, st.c, iresolve.c, match.c, trans-decl.c,
+	trans-io.c, match.h, parse.c, arith.h, check.c, dependency.c,
+	parse.h, types.def, convert.c, dependency.h, primary.c,
+	trans-intrinsic.c, options.c, misc.c, simplify.c: Likewise.
+
 2007-07-29  Daniel Franke  <franke.daniel@gmail.com>
 
 	Backport from trunk:
