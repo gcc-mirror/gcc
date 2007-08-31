@@ -1,3 +1,7 @@
+2007-08-31  Matthias Klose  <doko@ubuntu.com>
+
+	* classpath/lib/java/util/EnumSet*.class: Regenerate
+
 2007-08-30  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* gij.cc (version): Update Copyright year.
