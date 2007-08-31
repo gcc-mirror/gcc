@@ -1,3 +1,11 @@
+2007-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/32914
+	* dwarf2out.c (rtl_for_decl_init): If vector decl has CONSTRUCTOR
+	initializer, use build_vector_from_ctor if possible to create
+	VECTOR_CST out of it.  If vector initializer is not VECTOR_CST
+	even after this, return NULL.
+
 2007-08-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31337

@@ -1,3 +1,9 @@
+2007-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/32914
+	* d++.dg/debug/const3.C: New test.
+	* d++.dg/debug/const4.C: New test.
+
 2007-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/32912

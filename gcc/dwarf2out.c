@@ -10065,6 +10065,43 @@ rtl_for_decl_init (tree init, tree type)
   else if (initializer_constant_valid_p (init, type)
 	   && ! walk_tree (&init, reference_to_unused, NULL, NULL))
     {
+      /* Convert vector CONSTRUCTOR initializers to VECTOR_CST if
+	 possible.  */
+      if (TREE_CODE (type) == VECTOR_TYPE)
+	switch (TREE_CODE (init))
+	  {
+	  case VECTOR_CST:
+	    break;
+	  case CONSTRUCTOR:
+	    if (TREE_CONSTANT (init))
+	      {
+		VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (init);
+		bool constant_p = true;
+		tree value;
+		unsigned HOST_WIDE_INT ix;
+
+		/* Even when ctor is constant, it might contain non-*_CST
+		   elements (e.g. { 1.0/0.0 - 1.0/0.0, 0.0 }) and those don't
+		   belong into VECTOR_CST nodes.  */
+		FOR_EACH_CONSTRUCTOR_VALUE (elts, ix, value)
+		  if (!CONSTANT_CLASS_P (value))
+		    {
+		      constant_p = false;
+		      break;
+		    }
+
+		if (constant_p)
+		  {
+		    init = build_vector_from_ctor (type, elts);
+		    break;
+		  }
+	      }
+	    /* FALLTHRU */
+
+	  default:
+	    return NULL;
+	  }
+
       rtl = expand_expr (init, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
 
       /* If expand_expr returns a MEM, it wasn't immediate.  */
