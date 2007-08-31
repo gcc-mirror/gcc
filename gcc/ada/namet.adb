@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,7 +149,7 @@ package body Namet is
 
             else
                Write_Str ("Hash_Table (");
-               Write_Int (Int (J));
+               Write_Int (J);
                Write_Str (") has ");
 
                declare

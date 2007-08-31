@@ -99,7 +99,7 @@ package body Restrict is
         and then not Suppress_Restriction_Message (N)
       then
          Namet.Unlock;
-         Check_Restriction (Restriction_Id'(No_Elaboration_Code), N);
+         Check_Restriction (No_Elaboration_Code, N);
          Namet.Lock;
       end if;
    end Check_Elaboration_Code_Allowed;
@@ -110,7 +110,7 @@ package body Restrict is
 
    procedure Check_No_Implicit_Heap_Alloc (N : Node_Id) is
    begin
-      Check_Restriction (Restriction_Id'(No_Implicit_Heap_Allocations), N);
+      Check_Restriction (No_Implicit_Heap_Allocations, N);
    end Check_No_Implicit_Heap_Alloc;
 
    ---------------------------

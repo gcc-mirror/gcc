@@ -7582,10 +7582,15 @@ package body Sem_Res is
          end if;
 
          if Is_Entity_Name (Orig_N)
-           and then Etype (Entity (Orig_N)) = Orig_T
+           and then
+             (Etype (Entity (Orig_N)) = Orig_T
+                or else
+                  (Ekind (Entity (Orig_N)) = E_Loop_Parameter
+                     and then Covers (Orig_T, Etype (Entity (Orig_N)))))
          then
+            Error_Msg_Node_2 := Orig_T;
             Error_Msg_NE
-              ("?useless conversion, & has this type!", N, Entity (Orig_N));
+              ("?redundant conversion, & is of type &!", N, Entity (Orig_N));
          end if;
       end if;
 
@@ -8803,9 +8808,14 @@ package body Sem_Res is
                     ("\?Program_Error will be raised at run time", Operand);
 
                else
-                  Error_Msg_N
-                    ("cannot convert local pointer to non-local access type",
-                     Operand);
+                  --  Avoid generation of spurious error message
+
+                  if not Error_Posted (N) then
+                     Error_Msg_N
+                      ("cannot convert local pointer to non-local access type",
+                       Operand);
+                  end if;
+
                   return False;
                end if;
 
