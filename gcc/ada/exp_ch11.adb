@@ -142,8 +142,15 @@ package body Exp_Ch11 is
 
       Stmnts := New_List (
         Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (Clean, Loc)),
-        Make_Raise_Statement (Loc));
+          Name => New_Occurrence_Of (Clean, Loc)));
+
+      --  Avoid generation of raise stmt if compiling with no exceptions
+      --  propagation
+
+      if not Restriction_Active (No_Exception_Propagation) then
+         Append_To (Stmnts,
+           Make_Raise_Statement (Loc));
+      end if;
 
       Set_Exception_Handlers (HSS, New_List (
         Make_Implicit_Exception_Handler (Loc,
