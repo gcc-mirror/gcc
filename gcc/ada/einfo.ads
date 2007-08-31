@@ -1997,6 +1997,12 @@ package Einfo is
 --       Applies to all entities. Determine if given entity is a derived type.
 --       Always false if argument is not a type.
 
+--    Is_Descendent_Of_Address (Flag223)
+--       Applies to all types. Indicates that a type is an address type that
+--       is visibly a numeric type. Used for semantic checks on VMS to remove
+--       ambiguities in universal integer expressions that may have an address
+--       interpretation
+
 --    Is_Discrete_Type (synthesized)
 --       Applies to all entities, true for all discrete types and subtypes
 
@@ -2480,6 +2486,10 @@ package Einfo is
 --       Present in access type and subtype entities. Set if the type or
 --       subtype appears in a pure unit. Used to give an error message at
 --       freeze time if the access type has a storage pool.
+
+--    Is_Raised (Flag224)
+--       Present in entities which denote exceptions. Set if the exception is
+--       thrown by a raise statement.
 
 --    Is_Real_Type (synthesized)
 --       Applies to all entities, true for real types and subtypes
@@ -4745,6 +4755,7 @@ package Einfo is
    --    Exception_Code                      (Uint22)
    --    Discard_Names                       (Flag88)
    --    Is_VMS_Exception                    (Flag133)
+   --    Is_Raised                           (Flag224)
 
    --  E_Exception_Type
    --    Equivalent_Type                     (Node18)
@@ -5734,6 +5745,7 @@ package Einfo is
    function Is_Public                           (Id : E) return B;
    function Is_Pure                             (Id : E) return B;
    function Is_Pure_Unit_Access_Type            (Id : E) return B;
+   function Is_Raised                           (Id : E) return B;
    function Is_Remote_Call_Interface            (Id : E) return B;
    function Is_Remote_Types                     (Id : E) return B;
    function Is_Renaming_Of_Object               (Id : E) return B;
@@ -5871,6 +5883,7 @@ package Einfo is
    function Is_Concurrent_Type                  (Id : E) return B;
    function Is_Decimal_Fixed_Point_Type         (Id : E) return B;
    function Is_Digits_Type                      (Id : E) return B;
+   function Is_Descendent_Of_Address            (Id : E) return B;
    function Is_Discrete_Or_Fixed_Point_Type     (Id : E) return B;
    function Is_Discrete_Type                    (Id : E) return B;
    function Is_Elementary_Type                  (Id : E) return B;
@@ -6223,6 +6236,7 @@ package Einfo is
    procedure Set_Is_Constructor                  (Id : E; V : B := True);
    procedure Set_Is_Controlled                   (Id : E; V : B := True);
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
+   procedure Set_Is_Descendent_Of_Address        (Id : E; V : B := True);
    procedure Set_Is_Discrim_SO_Function          (Id : E; V : B := True);
    procedure Set_Is_Dispatching_Operation        (Id : E; V : B := True);
    procedure Set_Is_Eliminated                   (Id : E; V : B := True);
@@ -6271,6 +6285,7 @@ package Einfo is
    procedure Set_Is_Public                       (Id : E; V : B := True);
    procedure Set_Is_Pure                         (Id : E; V : B := True);
    procedure Set_Is_Pure_Unit_Access_Type        (Id : E; V : B := True);
+   procedure Set_Is_Raised                       (Id : E; V : B := True);
    procedure Set_Is_Remote_Call_Interface        (Id : E; V : B := True);
    procedure Set_Is_Remote_Types                 (Id : E; V : B := True);
    procedure Set_Is_Renaming_Of_Object           (Id : E; V : B := True);
@@ -6826,6 +6841,7 @@ package Einfo is
    pragma Inline (Is_Decimal_Fixed_Point_Type);
    pragma Inline (Is_Discrim_SO_Function);
    pragma Inline (Is_Digits_Type);
+   pragma Inline (Is_Descendent_Of_Address);
    pragma Inline (Is_Discrete_Or_Fixed_Point_Type);
    pragma Inline (Is_Discrete_Type);
    pragma Inline (Is_Dispatching_Operation);
@@ -6895,6 +6911,7 @@ package Einfo is
    pragma Inline (Is_Public);
    pragma Inline (Is_Pure);
    pragma Inline (Is_Pure_Unit_Access_Type);
+   pragma Inline (Is_Raised);
    pragma Inline (Is_Real_Type);
    pragma Inline (Is_Record_Type);
    pragma Inline (Is_Remote_Call_Interface);
@@ -7216,6 +7233,7 @@ package Einfo is
    pragma Inline (Set_Is_Constructor);
    pragma Inline (Set_Is_Controlled);
    pragma Inline (Set_Is_Controlling_Formal);
+   pragma Inline (Set_Is_Descendent_Of_Address);
    pragma Inline (Set_Is_Discrim_SO_Function);
    pragma Inline (Set_Is_Dispatching_Operation);
    pragma Inline (Set_Is_Eliminated);
@@ -7264,6 +7282,7 @@ package Einfo is
    pragma Inline (Set_Is_Public);
    pragma Inline (Set_Is_Pure);
    pragma Inline (Set_Is_Pure_Unit_Access_Type);
+   pragma Inline (Set_Is_Raised);
    pragma Inline (Set_Is_Remote_Call_Interface);
    pragma Inline (Set_Is_Remote_Types);
    pragma Inline (Set_Is_Renaming_Of_Object);

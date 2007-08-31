@@ -480,8 +480,8 @@ package body Einfo is
 
    --    Has_Pragma_Preelab_Init         Flag221
    --    Used_As_Generic_Actual          Flag222
-   --    (unused)                        Flag223
-   --    (unused)                        Flag224
+   --    Is_Descendent_Of_Address        Flag223
+   --    Is_Raised                       Flag224
    --    (unused)                        Flag225
    --    (unused)                        Flag226
    --    (unused)                        Flag227
@@ -1634,6 +1634,12 @@ package body Einfo is
       return Flag176 (Id);
    end Is_Discrim_SO_Function;
 
+   function Is_Descendent_Of_Address (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag223 (Id);
+   end Is_Descendent_Of_Address;
+
    function Is_Dispatching_Operation (Id : E) return B is
    begin
       pragma Assert (Nkind (Id) in N_Entity);
@@ -1893,6 +1899,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       return Flag189 (Id);
    end Is_Pure_Unit_Access_Type;
+
+   function Is_Raised (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Exception);
+      return Flag224 (Id);
+   end Is_Raised;
 
    function Is_Remote_Call_Interface (Id : E) return B is
    begin
@@ -3913,6 +3925,12 @@ package body Einfo is
       Set_Flag74 (Id, V);
    end Set_Is_CPP_Class;
 
+   procedure Set_Is_Descendent_Of_Address (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag223 (Id, V);
+   end Set_Is_Descendent_Of_Address;
+
    procedure Set_Is_Discrim_SO_Function (Id : E; V : B := True) is
    begin
       Set_Flag176 (Id, V);
@@ -4194,6 +4212,12 @@ package body Einfo is
       pragma Assert (Is_Access_Type (Id));
       Set_Flag189 (Id, V);
    end Set_Is_Pure_Unit_Access_Type;
+
+   procedure Set_Is_Raised (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Exception);
+      Set_Flag224 (Id, V);
+   end Set_Is_Raised;
 
    procedure Set_Is_Remote_Call_Interface (Id : E; V : B := True) is
    begin
@@ -7168,6 +7192,7 @@ package body Einfo is
       W ("Is_Constructor",                  Flag76  (Id));
       W ("Is_Controlled",                   Flag42  (Id));
       W ("Is_Controlling_Formal",           Flag97  (Id));
+      W ("Is_Descendent_Of_Address",        Flag223 (Id));
       W ("Is_Discrim_SO_Function",          Flag176 (Id));
       W ("Is_Dispatching_Operation",        Flag6   (Id));
       W ("Is_Eliminated",                   Flag124 (Id));
@@ -7215,6 +7240,7 @@ package body Einfo is
       W ("Is_Public",                       Flag10  (Id));
       W ("Is_Pure",                         Flag44  (Id));
       W ("Is_Pure_Unit_Access_Type",        Flag189 (Id));
+      W ("Is_Raised",                       Flag224 (Id));
       W ("Is_Remote_Call_Interface",        Flag62  (Id));
       W ("Is_Remote_Types",                 Flag61  (Id));
       W ("Is_Renaming_Of_Object",           Flag112 (Id));

@@ -264,6 +264,17 @@ package body Sem_Ch11 is
                      Error_Msg_N ("exception name expected", Id);
 
                   else
+                     --  Emit a warning at the declaration level when a local
+                     --  exception is never raised explicitly.
+
+                     if Warn_On_Redundant_Constructs
+                       and then not Is_Raised (Entity (Id))
+                       and then Scope (Entity (Id)) = Current_Scope
+                     then
+                        Error_Msg_NE
+                          ("?exception & is never raised", Entity (Id), Id);
+                     end if;
+
                      if Present (Renamed_Entity (Entity (Id))) then
                         if Entity (Id) = Standard_Numeric_Error then
                            Check_Restriction (No_Obsolescent_Features, Id);
@@ -513,6 +524,8 @@ package body Sem_Ch11 is
          then
             Error_Msg_N
               ("exception name expected in raise statement", Exception_Id);
+         else
+            Set_Is_Raised (Exception_Name);
          end if;
 
          if Present (Expression (N)) then
