@@ -1,3 +1,16 @@
+2007-08-30  Ollie Wild  <aaw@google.com>
+
+	* cvt.c (cp_convert_to_pointer): Remove force parameter. Call
+	convert_ptrmem for pointer to member conversions.
+	(convert_to_pointer_force): Update cp_convert_to_pointer call.
+	(ocp_convert): Update cp_convert_to_pointer call.
+	* typeck.c (convert_ptrmem): Add conditional for null pointers to
+	members.
+	(build_static_cast_1): Check can_convert for conversions in either
+	direction.
+	(get_delta_difference_1): New function.
+	(get_delta_difference): Refactor to call get_delta_difference_1.
+
 2007-08-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33209

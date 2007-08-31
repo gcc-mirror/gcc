@@ -4868,9 +4868,19 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 				    allow_inverse_p,
 				    c_cast_p);
       if (!integer_zerop (delta))
-	expr = cp_build_binary_op (PLUS_EXPR,
-				   build_nop (ptrdiff_type_node, expr),
-				   delta);
+	{
+	  tree cond, op1, op2;
+
+	  cond = cp_build_binary_op (EQ_EXPR,
+				     expr,
+				     build_int_cst (TREE_TYPE (expr), -1));
+	  op1 = build_nop (ptrdiff_type_node, expr);
+	  op2 = cp_build_binary_op (PLUS_EXPR, op1, delta);
+
+	  expr = fold_build3 (COND_EXPR, ptrdiff_type_node, cond, op1, op2);
+			 
+	}
+
       return build_nop (type, expr);
     }
   else
@@ -5101,7 +5111,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 	  t1 = intype;
 	  t2 = type;
 	}
-      if (can_convert (t1, t2))
+      if (can_convert (t1, t2) || can_convert (t2, t1))
 	{
 	  if (!c_cast_p)
 	    check_for_casting_away_constness (intype, type, diag_fn,
@@ -5967,7 +5977,43 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   return build_modify_expr (lhs, modifycode, rhs);
 }
 
-
+/* Helper function for get_delta_difference which assumes FROM is a base
+   class of TO.  Returns a delta for the conversion of pointer-to-member
+   of FROM to pointer-to-member of TO.  If the conversion is invalid,
+   returns zero.  If FROM is not a base class of TO, returns NULL_TREE.
+   If C_CAST_P is true, this conversion is taking place as part of a C-style
+   cast.  */
+
+static tree
+get_delta_difference_1 (tree from, tree to, bool c_cast_p)
+{
+  tree binfo;
+  base_kind kind;
+
+  binfo = lookup_base (to, from, c_cast_p ? ba_unique : ba_check, &kind);
+  if (kind == bk_inaccessible || kind == bk_ambig)
+    {
+      error ("   in pointer to member function conversion");
+      return size_zero_node;
+    }
+  else if (binfo)
+    {
+      if (kind != bk_via_virtual)
+	return BINFO_OFFSET (binfo);
+      else
+	/* FROM is a virtual base class of TO.  Issue an error or warning
+	   depending on whether or not this is a reinterpret cast.  */
+	{
+	  error ("pointer to member conversion via virtual base %qT",
+		 BINFO_TYPE (binfo_from_vbase (binfo)));
+
+	  return size_zero_node;
+	}
+      }
+    else
+      return NULL_TREE;
+}
+
 /* Get difference in deltas for different pointer to member function
    types.  Returns an integer constant of type PTRDIFF_TYPE_NODE.  If
    the conversion is invalid, the constant is zero.  If
@@ -5985,56 +6031,36 @@ get_delta_difference (tree from, tree to,
 		      bool allow_inverse_p,
 		      bool c_cast_p)
 {
-  tree binfo;
-  base_kind kind;
   tree result;
 
-  /* Assume no conversion is required.  */
-  result = integer_zero_node;
-  binfo = lookup_base (to, from, c_cast_p ? ba_unique : ba_check, &kind);
-  if (kind == bk_inaccessible || kind == bk_ambig)
-    error ("   in pointer to member function conversion");
-  else if (binfo)
-    {
-      if (kind != bk_via_virtual)
-	result = BINFO_OFFSET (binfo);
-      else
-	{
-	  tree virt_binfo = binfo_from_vbase (binfo);
-
-	  /* This is a reinterpret cast, we choose to do nothing.  */
-	  if (allow_inverse_p)
-	    warning (0, "pointer to member cast via virtual base %qT",
-		     BINFO_TYPE (virt_binfo));
-	  else
-	    error ("pointer to member conversion via virtual base %qT",
-		   BINFO_TYPE (virt_binfo));
-	}
-    }
-  else if (same_type_ignoring_top_level_qualifiers_p (from, to))
-    /* Pointer to member of incomplete class is permitted*/;
-  else if (!allow_inverse_p)
-    {
-      error_not_base_type (from, to);
-      error ("   in pointer to member conversion");
-    }
+  if (same_type_ignoring_top_level_qualifiers_p (from, to))
+    /* Pointer to member of incomplete class is permitted*/
+    result = size_zero_node;
   else
-    {
-      binfo = lookup_base (from, to, c_cast_p ? ba_unique : ba_check, &kind);
-      if (binfo)
-	{
-	  if (kind != bk_via_virtual)
-	    result = size_diffop (size_zero_node, BINFO_OFFSET (binfo));
-	  else
-	    {
-	      /* This is a reinterpret cast, we choose to do nothing.  */
-	      tree virt_binfo = binfo_from_vbase (binfo);
+    result = get_delta_difference_1 (from, to, c_cast_p);
 
-	      warning (0, "pointer to member cast via virtual base %qT",
-		       BINFO_TYPE (virt_binfo));
-	    }
-	}
-    }
+  if (!result)
+  {
+    if (!allow_inverse_p)
+      {
+	error_not_base_type (from, to);
+	error ("   in pointer to member conversion");
+	result = size_zero_node;
+      }
+    else
+      {
+	result = get_delta_difference_1 (to, from, c_cast_p);
+
+	if (result)
+	  result = size_diffop (size_zero_node, result);
+	else
+	  {
+	    error_not_base_type (from, to);
+	    error ("   in pointer to member conversion");
+	    result = size_zero_node;
+	  }
+      }
+  }
 
   return fold_if_not_in_template (convert_to_integer (ptrdiff_type_node,
 						      result));
