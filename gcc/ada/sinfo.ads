@@ -1818,8 +1818,8 @@ package Sinfo is
       --
       --  Is_Folded_In_Parser is True if the parser created this literal by
       --  folding a sequence of "&" operators. For example, if the source code
-      --  says "aaa" & "bbb" & "ccc", and the produces "aaabbbccc", the flag is
-      --  set. This flag is needed because the parser doesn't know about
+      --  says "aaa" & "bbb" & "ccc", and this produces "aaabbbccc", the flag
+      --  is set. This flag is needed because the parser doesn't know about
       --  visibility, so the folded result might be wrong, and semantic
       --  analysis needs to check for that.
 

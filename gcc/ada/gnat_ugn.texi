@@ -15433,6 +15433,15 @@ case if the specification occupies more then one line.
 Place the keyword @code{loop} in FOR and WHILE loop statements and the
 keywird @code{then} in IF statements on a separate line.
 
+@cindex @option{^--use-on-new-line^/USE_ON_NEW_LINE^} (@command{gnatpp})
+@item ^--use-on-new-line^/USE_ON_NEW_LINE^
+Start each USE clause in a context clause from a separate line.
+
+@cindex @option{^--separate-stmt-name^/STMT_NAME_ON_NEW_LINE^} (@command{gnatpp})
+@item ^--separate-stmt-name^/STMT_NAME_ON_NEW_LINE^
+Use a separate line for a loop or block statement name, but do not use an extra
+indentation level for the statement itself.
+
 @end table
 
 @ifclear vms
@@ -16015,6 +16024,13 @@ end loop Clear;                               A (J) := 0;
 A further difference between GNAT style layout and compact layout is that
 GNAT style layout inserts empty lines as separation for
 compound statements, return statements and bodies.
+
+Note that the layout specified by
+@option{^--separate-stmt-name^/STMT_NAME_ON_NEW_LINE^}
+for named block and loop statements overrides the layout defined by these
+constructs by @option{^-l1^/CONSTRUCT_LAYOUT=GNAT^},
+@option{^-l2^/CONSTRUCT_LAYOUT=COMPACT^} or
+@option{^-l3^/CONSTRUCT_LAYOUT=UNCOMPACT^} option.
 
 @node Name Casing
 @subsection Name Casing

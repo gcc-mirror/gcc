@@ -346,7 +346,7 @@ package Stand is
    --  denote a thin pointer component.
 
    Standard_Debug_Renaming_Type : Entity_Id;
-   --  A null record type with zero size, used as the type of variables used
+   --  A zero-size subtype of Integer, used as the type of variables used
    --  to provide the debugger with name encodings for renaming declarations.
 
    --  The entities labeled Any_xxx are used in situations where the full
