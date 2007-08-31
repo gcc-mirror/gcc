@@ -301,7 +301,8 @@ latch_dominating_def (rtx reg, struct df_ref **def)
 
   for (adef = DF_REG_DEF_CHAIN (regno); adef; adef = adef->next_reg)
     {
-      if (!bitmap_bit_p (bb_info->out, DF_REF_ID (adef)))
+      if (!bitmap_bit_p (df->blocks_to_analyze, DF_REF_BB (adef)->index)
+	  || !bitmap_bit_p (bb_info->out, DF_REF_ID (adef)))
 	continue;
 
       /* More than one reaching definition.  */
