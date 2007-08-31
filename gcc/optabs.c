@@ -1246,6 +1246,56 @@ swap_commutative_operands_with_target (rtx target, rtx op0, rtx op1)
     return rtx_equal_p (op1, target);
 }
 
+/* Return true if BINOPTAB implements a shift operation.  */
+
+static bool
+shift_optab_p (optab binoptab)
+{
+  switch (binoptab->code)
+    {
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+    case ROTATE:
+    case ROTATERT:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if BINOPTAB implements a commutatative binary operation.  */
+
+static bool
+commutative_optab_p (optab binoptab)
+{
+  return (GET_RTX_CLASS (binoptab->code) == RTX_COMM_ARITH
+	  || binoptab == smul_widen_optab
+	  || binoptab == umul_widen_optab
+	  || binoptab == smul_highpart_optab
+	  || binoptab == umul_highpart_optab);
+}
+
+/* X is to be used in mode MODE as an operand to BINOPTAB.  If we're
+   optimizing, and if the operand is a constant that costs more than
+   1 instruction, force the constant into a register and return that
+   register.  Return X otherwise.  UNSIGNEDP says whether X is unsigned.  */
+
+static rtx
+avoid_expensive_constant (enum machine_mode mode, optab binoptab,
+			  rtx x, bool unsignedp)
+{
+  if (optimize
+      && CONSTANT_P (x)
+      && rtx_cost (x, binoptab->code) > COSTS_N_INSNS (1))
+    {
+      if (GET_MODE (x) != VOIDmode)
+	x = convert_modes (mode, VOIDmode, x, unsignedp);
+      x = force_reg (mode, x);
+    }
+  return x;
+}
 
 /* Helper function for expand_binop: handle the case where there
    is an insn that directly implements the indicated operation.
@@ -1254,55 +1304,72 @@ static rtx
 expand_binop_directly (enum machine_mode mode, optab binoptab,
 		       rtx op0, rtx op1,
 		       rtx target, int unsignedp, enum optab_methods methods,
-		       int commutative_op, rtx last)
+		       rtx last)
 {
   int icode = (int) optab_handler (binoptab, mode)->insn_code;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   enum machine_mode mode1 = insn_data[icode].operand[2].mode;
   enum machine_mode tmp_mode;
+  bool commutative_p;
   rtx pat;
   rtx xop0 = op0, xop1 = op1;
   rtx temp;
+  rtx swap;
   
   if (target)
     temp = target;
   else
     temp = gen_reg_rtx (mode);
-  
+
   /* If it is a commutative operator and the modes would match
      if we would swap the operands, we can save the conversions.  */
-  if (commutative_op)
+  commutative_p = commutative_optab_p (binoptab);
+  if (commutative_p
+      && GET_MODE (xop0) != mode0 && GET_MODE (xop1) != mode1
+      && GET_MODE (xop0) == mode1 && GET_MODE (xop1) == mode1)
     {
-      if (GET_MODE (op0) != mode0 && GET_MODE (op1) != mode1
-	  && GET_MODE (op0) == mode1 && GET_MODE (op1) == mode0)
-	{
-	  rtx tmp;
-	  
-	  tmp = op0; op0 = op1; op1 = tmp;
-	  tmp = xop0; xop0 = xop1; xop1 = tmp;
-	}
+      swap = xop0;
+      xop0 = xop1;
+      xop1 = swap;
     }
   
+  /* If we are optimizing, force expensive constants into a register.  */
+  xop0 = avoid_expensive_constant (mode0, binoptab, xop0, unsignedp);
+  if (!shift_optab_p (binoptab))
+    xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
+
   /* In case the insn wants input operands in modes different from
      those of the actual operands, convert the operands.  It would
      seem that we don't need to convert CONST_INTs, but we do, so
      that they're properly zero-extended, sign-extended or truncated
      for their mode.  */
   
-  if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
+  if (GET_MODE (xop0) != mode0 && mode0 != VOIDmode)
     xop0 = convert_modes (mode0,
-			  GET_MODE (op0) != VOIDmode
-			  ? GET_MODE (op0)
+			  GET_MODE (xop0) != VOIDmode
+			  ? GET_MODE (xop0)
 			  : mode,
 			  xop0, unsignedp);
   
-  if (GET_MODE (op1) != mode1 && mode1 != VOIDmode)
+  if (GET_MODE (xop1) != mode1 && mode1 != VOIDmode)
     xop1 = convert_modes (mode1,
-			  GET_MODE (op1) != VOIDmode
-			  ? GET_MODE (op1)
+			  GET_MODE (xop1) != VOIDmode
+			  ? GET_MODE (xop1)
 			  : mode,
 			  xop1, unsignedp);
   
+  /* If operation is commutative,
+     try to make the first operand a register.
+     Even better, try to make it the same as the target.
+     Also try to make the last operand a constant.  */
+  if (commutative_p
+      && swap_commutative_operands_with_target (target, xop0, xop1))
+    {
+      swap = xop1;
+      xop1 = xop0;
+      xop0 = swap;
+    }
+
   /* Now, if insn's predicates don't allow our operands, put them into
      pseudo regs.  */
   
@@ -1375,12 +1442,6 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
   enum mode_class class;
   enum machine_mode wider_mode;
   rtx temp;
-  int commutative_op = 0;
-  int shift_op = (binoptab->code == ASHIFT
-		  || binoptab->code == ASHIFTRT
-		  || binoptab->code == LSHIFTRT
-		  || binoptab->code == ROTATE
-		  || binoptab->code == ROTATERT);
   rtx entry_last = get_last_insn ();
   rtx last;
 
@@ -1395,46 +1456,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       binoptab = add_optab;
     }
 
-  /* If we are inside an appropriately-short loop and we are optimizing,
-     force expensive constants into a register.  */
-  if (CONSTANT_P (op0) && optimize
-      && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
-    {
-      if (GET_MODE (op0) != VOIDmode)
-	op0 = convert_modes (mode, VOIDmode, op0, unsignedp);
-      op0 = force_reg (mode, op0);
-    }
-
-  if (CONSTANT_P (op1) && optimize
-      && ! shift_op && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
-    {
-      if (GET_MODE (op1) != VOIDmode)
-	op1 = convert_modes (mode, VOIDmode, op1, unsignedp);
-      op1 = force_reg (mode, op1);
-    }
-
   /* Record where to delete back to if we backtrack.  */
   last = get_last_insn ();
-
-  /* If operation is commutative,
-     try to make the first operand a register.
-     Even better, try to make it the same as the target.
-     Also try to make the last operand a constant.  */
-  if (GET_RTX_CLASS (binoptab->code) == RTX_COMM_ARITH
-      || binoptab == smul_widen_optab
-      || binoptab == umul_widen_optab
-      || binoptab == smul_highpart_optab
-      || binoptab == umul_highpart_optab)
-    {
-      commutative_op = 1;
-
-      if (swap_commutative_operands_with_target (target, op0, op1))
-	{
-	  temp = op1;
-	  op1 = op0;
-	  op0 = temp;
-	}
-    }
 
   /* If we can do it with a three-operand insn, do so.  */
 
@@ -1442,7 +1465,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && optab_handler (binoptab, mode)->insn_code != CODE_FOR_nothing)
     {
       temp = expand_binop_directly (mode, binoptab, op0, op1, target,
-				    unsignedp, methods, commutative_op, last);
+				    unsignedp, methods, last);
       if (temp)
 	return temp;
     }
@@ -1469,8 +1492,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 			       NULL_RTX, unsignedp, OPTAB_DIRECT);
 				   
       temp = expand_binop_directly (mode, otheroptab, op0, newop1,
-				    target, unsignedp, methods,
-				    commutative_op, last);
+				    target, unsignedp, methods, last);
       if (temp)
 	return temp;
     }
@@ -1529,7 +1551,14 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 		 || binoptab == add_optab || binoptab == sub_optab
 		 || binoptab == smul_optab || binoptab == ashl_optab)
 		&& class == MODE_INT)
-	      no_extend = 1;
+	      {
+		no_extend = 1;
+		xop0 = avoid_expensive_constant (mode, binoptab,
+						 xop0, unsignedp);
+		if (binoptab != ashl_optab)
+		  xop1 = avoid_expensive_constant (mode, binoptab,
+						   xop1, unsignedp);
+	      }
 
 	    xop0 = widen_operand (xop0, wider_mode, mode, unsignedp, no_extend);
 
@@ -1557,6 +1586,18 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      delete_insns_since (last);
 	  }
       }
+
+  /* If operation is commutative,
+     try to make the first operand a register.
+     Even better, try to make it the same as the target.
+     Also try to make the last operand a constant.  */
+  if (commutative_optab_p (binoptab)
+      && swap_commutative_operands_with_target (target, op0, op1))
+    {
+      temp = op1;
+      op1 = op0;
+      op0 = temp;
+    }
 
   /* These can be done a word at a time.  */
   if ((binoptab == and_optab || binoptab == ior_optab || binoptab == xor_optab)
@@ -1980,7 +2021,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       start_sequence ();
 
-      if (shift_op)
+      if (shift_optab_p (binoptab))
 	{
 	  op1_mode = targetm.libgcc_shift_count_mode ();
 	  /* Specify unsigned here,
@@ -2256,16 +2297,6 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
 
   class = GET_MODE_CLASS (mode);
 
-  /* If we are inside an appropriately-short loop and we are optimizing,
-     force expensive constants into a register.  */
-  if (CONSTANT_P (op0) && optimize
-      && rtx_cost (op0, binoptab->code) > COSTS_N_INSNS (1))
-    op0 = force_reg (mode, op0);
-
-  if (CONSTANT_P (op1) && optimize
-      && rtx_cost (op1, binoptab->code) > COSTS_N_INSNS (1))
-    op1 = force_reg (mode, op1);
-
   if (!targ0)
     targ0 = gen_reg_rtx (mode);
   if (!targ1)
@@ -2281,6 +2312,10 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
       enum machine_mode mode1 = insn_data[icode].operand[2].mode;
       rtx pat;
       rtx xop0 = op0, xop1 = op1;
+
+      /* If we are optimizing, force expensive constants into a register.  */
+      xop0 = avoid_expensive_constant (mode0, binoptab, xop0, unsignedp);
+      xop1 = avoid_expensive_constant (mode1, binoptab, xop1, unsignedp);
 
       /* In case the insn wants input operands in modes different from
 	 those of the actual operands, convert the operands.  It would

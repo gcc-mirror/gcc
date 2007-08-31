@@ -1,3 +1,20 @@
+2007-08-31  Richard Sandiford  <richard@codesourcery.com>
+
+	* optabs.c (shift_optab_p, commutative_optab_p): New functions,
+	split out from expand_binop.
+	(avoid_expensive_constant): New function.
+	(expand_binop_directly): Remove commutative_op argument and
+	call cummutative_optab_p instead.  Do not change op0 or op1
+	when swapping xop0 and xop1.  Apply avoid_expensive_constant
+	to each argument after potential swapping.  Enforce the
+	canonical order of commutative operands.
+	(expand_binop): Use shift_optab_p and commutative_optab_p.
+	Update the calls to expand_binop_directly.  Only force constants
+	into registers when widening an operation.  Only swap operands
+	once a direct expansion has been rejected.
+	(expand_twoval_binop): Only force constants into registers when
+	using a direct expansion.
+
 2007-08-31  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* sched-deps.c (update_dep): Mark arguments with ATTRIBUTE_UNUSED.
