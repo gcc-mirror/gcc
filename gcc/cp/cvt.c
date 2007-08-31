@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "decl.h"
 #include "target.h"
 
-static tree cp_convert_to_pointer (tree, tree, bool);
+static tree cp_convert_to_pointer (tree, tree);
 static tree convert_to_pointer_force (tree, tree);
 static tree build_type_conversion (tree, tree);
 static tree build_up_reference (tree, tree, int, tree);
@@ -71,12 +71,10 @@ static void warn_ref_binding (tree, tree, tree);
      else if dealing with method pointers, delegate
      else convert blindly
    else if converting class, pass off to build_type_conversion
-   else try C-style pointer conversion.  If FORCE is true then allow
-   conversions via virtual bases (these are permitted by reinterpret_cast,
-   but not static_cast).  */
+   else try C-style pointer conversion.  */
 
 static tree
-cp_convert_to_pointer (tree type, tree expr, bool force)
+cp_convert_to_pointer (tree type, tree expr)
 {
   tree intype = TREE_TYPE (expr);
   enum tree_code form;
@@ -174,61 +172,17 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
 
       return build_nop (type, expr);
     }
-  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
-    {
-      tree b1;
-      tree b2;
-      tree binfo;
-      enum tree_code code = PLUS_EXPR;
-      base_kind bk;
-
-      b1 = TYPE_PTRMEM_CLASS_TYPE (type);
-      b2 = TYPE_PTRMEM_CLASS_TYPE (intype);
-      binfo = lookup_base (b1, b2, ba_check, &bk);
-      if (!binfo)
-	{
-	  binfo = lookup_base (b2, b1, ba_check, &bk);
-	  code = MINUS_EXPR;
-	}
-      if (binfo == error_mark_node)
-	return error_mark_node;
-
-      if (bk == bk_via_virtual)
-	{
-	  if (force)
-	    warning (0, "pointer to member cast from %qT to %qT is via"
-		     " virtual base", intype, type);
-	  else
-	    {
-	      error ("pointer to member cast from %qT to %qT is"
-		     " via virtual base", intype, type);
-	      return error_mark_node;
-	    }
-	  /* This is a reinterpret cast, whose result is unspecified.
-	     We choose to do nothing.  */
-	  return build1 (NOP_EXPR, type, expr);
-	}
-
-      if (TREE_CODE (expr) == PTRMEM_CST)
-	expr = cplus_expand_constant (expr);
-
-      if (binfo && !integer_zerop (BINFO_OFFSET (binfo)))
-	expr = size_binop (code,
-			   build_nop (sizetype, expr),
-			   BINFO_OFFSET (binfo));
-      return build_nop (type, expr);
-    }
-  else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
-    return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0,
-			     /*c_cast_p=*/false);
+  else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
+    return convert_ptrmem (type, expr, /*allow_inverse_p=*/false,
+			   /*c_cast_p=*/false);
   else if (TYPE_PTRMEMFUNC_P (intype))
     {
       if (!warn_pmf2ptr)
 	{
 	  if (TREE_CODE (expr) == PTRMEM_CST)
 	    return cp_convert_to_pointer (type,
-					  PTRMEM_CST_MEMBER (expr),
-					  force);
+					  PTRMEM_CST_MEMBER (expr));
 	  else if (TREE_CODE (expr) == OFFSET_REF)
 	    {
 	      tree object = TREE_OPERAND (expr, 0);
@@ -333,7 +287,7 @@ convert_to_pointer_force (tree type, tree expr)
 	}
     }
 
-  return cp_convert_to_pointer (type, expr, true);
+  return cp_convert_to_pointer (type, expr);
 }
 
 /* We are passing something to a function which requires a reference.
@@ -720,7 +674,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
       return fold_if_not_in_template (convert_to_integer (type, e));
     }
   if (POINTER_TYPE_P (type) || TYPE_PTR_TO_MEMBER_P (type))
-    return fold_if_not_in_template (cp_convert_to_pointer (type, e, false));
+    return fold_if_not_in_template (cp_convert_to_pointer (type, e));
   if (code == VECTOR_TYPE)
     {
       tree in_vtype = TREE_TYPE (e);

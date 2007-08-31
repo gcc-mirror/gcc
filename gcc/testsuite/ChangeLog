@@ -1,3 +1,13 @@
+2007-08-30  Ollie Wild  <aaw@google.com>
+
+	g++.dg/conversion/ptrmem2.C: New test.
+	g++.dg/conversion/ptrmem3.C: New test.
+	g++.dg/conversion/ptrmem4.C: New test.
+	g++.dg/conversion/ptrmem5.C: New test.
+	g++.dg/conversion/ptrmem6.C: New test.
+	g++.dg/conversion/ptrmem7.C: New test.
+	g++.dg/conversion/ptrmem8.C: New test.
+
 2007-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31879
