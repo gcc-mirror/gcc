@@ -1,3 +1,9 @@
+2007-08-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32113
+	* search.c (lookup_member): Check the name argument for
+	error_mark_node.
+
 2007-08-29  Nick Clifton  <nickc@redhat.com>
 
 	* typeck.c: Change copyright header to refer to version	3 of the

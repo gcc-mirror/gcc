@@ -1,3 +1,8 @@
+2007-08-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32113
+	* g++.dg/template/crash70.C: New.
+
 2007-08-31  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/execute.exp: Change copyright header to
