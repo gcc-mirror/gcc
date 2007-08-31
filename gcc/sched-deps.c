@@ -943,7 +943,9 @@ change_spec_dep_to_hard (sd_iterator_def sd_it)
    data-speculative dependence should be updated.  */
 static enum DEPS_ADJUST_RESULT
 update_dep (dep_t dep, dep_t new_dep,
-	    sd_iterator_def sd_it, rtx mem1, rtx mem2)
+	    sd_iterator_def sd_it ATTRIBUTE_UNUSED,
+	    rtx mem1 ATTRIBUTE_UNUSED,
+	    rtx mem2 ATTRIBUTE_UNUSED)
 {
   enum DEPS_ADJUST_RESULT res = DEP_PRESENT;
   enum reg_note old_type = DEP_TYPE (dep);
@@ -2200,6 +2202,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
   if (SCHED_GROUP_P (insn))
     fixup_sched_groups (insn);
 
+#ifdef INSN_SCHEDULING
   if ((current_sched_info->flags & DO_SPECULATION)
       && !sched_insn_is_legitimate_for_speculation_p (insn, 0))
     /* INSN has an internal dependency (e.g. r14 = [r14]) and thus cannot
@@ -2212,6 +2215,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn)
 	   sd_iterator_cond (&sd_it, &dep);)
 	change_spec_dep_to_hard (sd_it);
     }
+#endif
 }
 
 /* Analyze every insn between HEAD and TAIL inclusive, creating backward
