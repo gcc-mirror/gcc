@@ -3828,8 +3828,6 @@ allocate_struct_function (tree fndecl)
       current_function_returns_struct = 1;
     }
 
-  current_function_returns_pointer = POINTER_TYPE_P (TREE_TYPE (result));
-
   current_function_stdarg
     = (fntype
        && TYPE_ARG_TYPES (fntype) != 0

@@ -20,16 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_FUNCTION_H
 #define GCC_FUNCTION_H
+
 #include "tree.h"
 #include "hashtab.h"
-
-struct var_refs_queue GTY(())
-{
-  rtx modified;
-  enum machine_mode promoted_mode;
-  int unsignedp;
-  struct var_refs_queue *next;
-};
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -42,14 +35,6 @@ struct sequence_stack GTY(())
   rtx first;
   rtx last;
   struct sequence_stack *next;
-};
-
-/* Stack of single obstacks.  */
-
-struct simple_obstack_stack
-{
-  struct obstack *obstack;
-  struct simple_obstack_stack *next;
 };
 
 struct emit_status GTY(())
@@ -292,10 +277,6 @@ struct function GTY(())
   /* List of available temp slots.  */
   struct temp_slot *x_avail_temp_slots;
 
-  /* This slot is initialized as 0 and is added to
-     during the nested function.  */
-  struct var_refs_queue *fixup_var_refs_queue;
-
   /* Current nesting level for temporaries.  */
   int x_temp_slot_level;
 
@@ -374,6 +355,7 @@ struct function GTY(())
      function.  */
   unsigned int va_list_fpr_size : 8;
 
+
   /* How commonly executed the function is.  Initialized during branch
      probabilities pass.  */
   ENUM_BITFIELD (function_frequency) function_frequency : 2;
@@ -385,9 +367,6 @@ struct function GTY(())
   /* Nonzero if function being compiled needs to
      return the address of where it has put a structure value.  */
   unsigned int returns_pcc_struct : 1;
-
-  /* Nonzero if the current function returns a pointer type.  */
-  unsigned int returns_pointer : 1;
 
   /* Nonzero if function being compiled can call setjmp.  */
   unsigned int calls_setjmp : 1;
@@ -402,6 +381,7 @@ struct function GTY(())
 
   /* Nonzero if the function calls __builtin_eh_return.  */
   unsigned int calls_eh_return : 1;
+
 
   /* Nonzero if function being compiled receives nonlocal gotos
      from nested functions.  */
@@ -437,6 +417,7 @@ struct function GTY(())
      function.  */
   unsigned int limit_stack : 1;
 
+
   /* Nonzero if current function uses stdarg.h or equivalent.  */
   unsigned int stdarg : 1;
 
@@ -466,13 +447,14 @@ struct function GTY(())
   /* Set when the call to function itself has been emit.  */
   unsigned int recursive_call_emit : 1;
 
+
   /* Set when the tail call has been produced.  */
   unsigned int tail_call_emit : 1;
 
   /* FIXME tuples: This bit is temporarily here to mark when a
      function has been gimplified, so we can make sure we're not
      creating non GIMPLE tuples after gimplification.  */
-  unsigned gimplified : 1;
+  unsigned int gimplified : 1;
 };
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
@@ -496,7 +478,6 @@ extern int trampolines_created;
 #define current_function_pops_args (cfun->pops_args)
 #define current_function_returns_struct (cfun->returns_struct)
 #define current_function_returns_pcc_struct (cfun->returns_pcc_struct)
-#define current_function_returns_pointer (cfun->returns_pointer)
 #define current_function_calls_setjmp (cfun->calls_setjmp)
 #define current_function_calls_alloca (cfun->calls_alloca)
 #define current_function_accesses_prior_frames (cfun->accesses_prior_frames)
