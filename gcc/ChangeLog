@@ -1,3 +1,10 @@
+2007-08-31  Nick Clifton  <nickc@redhat.com>
+
+	PR target/33132
+	* config/m32r/constraints.md: Add W constraint for integer zero.
+	* config/m32r/m32r.md (get_pc): Use W and i constraints.
+	Fix length calculation by using alternatives.
+
 2007-08-31  Richard Sandiford  <richard@codesourcery.com>
 
 	* optabs.c (shift_optab_p, commutative_optab_p): New functions,

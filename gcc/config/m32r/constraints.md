@@ -39,6 +39,7 @@
 ;; S is for stores with pre {inc,dec}rement
 ;; T is for indirect of a pointer.
 ;; U is for loads with post increment.
+;; W is used for an immediate value of 0.
 ;;
 ;; Register constraints
 
@@ -128,3 +129,9 @@
   "A load with post increment."
   (and (match_code "mem")
        (match_test "LOAD_POSTINC_P (GET_MODE (op), XEXP (op, 0))")))
+
+(define_constraint "W"
+  "zero immediate."
+  (and (match_code "const_int")
+       (match_test "ival == 0")))
+
