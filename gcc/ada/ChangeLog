@@ -1,3 +1,197 @@
+2007-08-31  Vincent Celier  <celier@adacore.com>
+
+	PR ada/4720
+
+	* gnatchop.adb, gnatfind.adb, gnatlink.adb, gnatls.adb, 
+	gnatname.adb, gnatxref.adb, gprep.adb, clean.adb gnatbind.adb
+	(Check_Version_And_Help): New procedure in package Switch to process
+	switches --version and --help.
+	Use Check_Version_And_Help in GNAT tools
+
+	* make.adb:  Ditto.
+	(Compile_Sources): Make sure that sources that are "excluded" are not
+	compiled.
+	(Gnatmake): Do not issue -aO. to gnatbind and only issue -I- if a
+	project file is used.
+	(Version_Switch): Remove, moved to Switch
+	(Help_Switch): Remove, moved to Switch
+	(Display_Version): Remove, moved to Switch
+
+	* switch.ads, switch.adb (Check_Version_And_Help): New procedure in
+	package Switch to process switches --version and --help.
+	(Display_Version): New procedure
+
+	* gnatvsn.ads, gnatvsn.adb (Copyright_Holder): New function.
+
+2007-08-31  Javier Miranda  <miranda@adacore.com>
+
+	* a-tags.adb (Internal_Tag): Protect the run-time against wrong
+	internal tags.
+
+2007-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (In_Declarative_Region_Of_Subprogram_Body): New routine.
+	(Mark_Non_Null): If the node for which we just generated an access check
+	is a reference to an *in* parameter and the reference appears in the
+	declarative part of a subprogram body, mark the node as known non null.
+
+2007-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.ads, einfo.adb: New flag Is_Raised (Flag224). Update the
+	structure of E_Exception to reflect the new flag.
+	(Is_Raised, Set_Is_Raised): New inlined routines.
+	Update the usage of available flag to reflect the addition of Is_Raised.
+	(Is_Raised, Set_Is_Raised): Bodies of new routines.
+	(Write_Entity_Flags): Write the status of flag Is_Raised.
+	(Is_Descendent_Of_Address): New entity flag, to simplify handling of
+	spurious ambiguities when integer literals appear in the context of an
+	address type that is a visible integer type.
+
+	* sem_ch11.adb (Analyze_Exception_Handler): Add code to warn on local
+	exceptions never being raised.
+	(Analyze_Raise_Statement): When analyzing an exception, mark it as being
+	explicitly raised.
+
+2007-08-31  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch11.adb (Expand_At_End_Handler): Avoid generation of raise
+	statement when compiling under restriction No_Exceptions_Proparation.
+
+2007-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc): If there is a static
+	initialization aggregate for the type, generate itype references for
+	thetypes of its (sub)components, to prevent out-of-scope errors in gigi.
+
+2007-08-31  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch8.adb (Expand_N_Package_Renaming_Declaration): In the case of a
+	library-level package renaming, pass the declaration associated with
+	the renaming's special debug variable to Qualify_Entity_Names to ensure
+	that its encoded name is properly qualified.
+
+	* exp_dbug.adb (Qualify_All_Entity_Names): Check for a variable entity
+	occurring in the list of entities to qualify, and do not attempt to
+	traverse an entity list in that case. Variables associated with
+`	library-level package renamings can now occur in the table.
+
+	* exp_dbug.ads: Revise documentation of the encoding for renaming
+	declarations.
+
+2007-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* layout.adb (Layout_Type): Use Underlying_Type to determine whether an
+	access type points to an unconstrained array.
+
+2007-08-31  Hristian Kirtchev  <kirtchev@adacore.com>
+
+        * restrict.adb, namet.adb, par-util.adb: Remove redundant type
+	conversion.
+
+	* sem_res.adb (Resolve_Qualified_Expression): Add machinery to detect
+	simple redundant qualifications. The check is performed whenever the
+	expression is a non-overloaded identifier.
+	(Resolve_Type_Conversion): Enchance the redundant type conversion check
+	to include loop parameters.
+	(Valid_Conversion): Avoid generation of spurious error message.
+
+2007-08-31  Bob Duff  <duff@adacore.com>
+
+	* par-ch4.adb (P_Simple_Expression): Fold long sequences of
+	concatenations of string literals into a single literal, in order to
+	avoid very deep recursion in the front end, which was causing stack
+	overflow.
+
+	* sem_eval.adb (Eval_Concatenation): If the left operand is the empty
+	string, and the right operand is a string literal (the case of "" &
+	"..."), optimize by avoiding copying the right operand -- just use the
+	value of the right operand directly.
+
+	* stringt.adb (Store_String_Chars): Optimize by growing the
+	String_Chars table all at once, rather than appending characters one by
+	one.
+	(Write_String_Table_Entry): If the string to be printed is very long,
+	just print the first few characters, followed by the length. Otherwise,
+	doing "pn(n)" in the debugger can take an extremely long time.
+
+	* sem_prag.adb (Process_Interface_Name): Replace loop doing
+	Store_String_Char with Store_String_Chars.
+
+2007-08-31  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add new attribute Excluded_Source_Files
+
+	* prj-nmsc.adb: Use attribute Excluded_Source_Files before
+	Locally_Removed_Files.
+
+	* snames.ads, snames.adb: New standard name Excluded_Source_Files
+
+2007-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Subunit_Context): When analyzing context
+	clauses of subunits, ignore limited_with_clauses that are illegal and
+	have not been fully analyzed.
+
+2007-08-31  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: The predicate Is_Descendent_Of_Address is now an entity
+	flag, for effiency. It is called when analyzing arithmetic operators
+	and also for actuals in calls that are universal_integers. The flag is
+	set for the predefined type address, and for any type or subtype
+	derived from it.
+
+	* sem_ch4.adb (Analyze_One_Call): Reject an actual that is a
+	Universal_Integer, when the formal is a descendent of address and the
+	call appears in user code.
+	(Analyze_Selected_Component): if the prefix is a private extension, the
+	tag component is visible.
+
+	* sem_util.ads, sem_util.adb: Remove Is_Descendent_Of_Address, now an
+	entity flag.
+
+2007-08-31  Robert Dewar  <dewar@adacore.com>
+
+	* s-fileio.adb (Open): Normalize file name to lower case in non-case
+	sensitive file name systems to avoid unexpected mismatch in Vista.
+
+2007-08-31  Vincent Celier  <celier@adacore.com>
+
+	* tempdir.adb: On VMS, take into account GNUTMPDIR before TMPDIR
+
+2007-08-31  Vincent Celier  <celier@adacore.com>
+
+	* symbols-vms.adb (Initialize): Read symbol files with continuation
+	lines
+	(Finalize): If symbol is long, split the line
+
+2007-08-31  Vincent Celier  <celier@adacore.com>
+
+	* fmap.ads: Minor comment updates
+
+2007-08-31  GNAT Script  <nobody@adacore.com>
+
+	* Make-lang.in: Makefile automatically updated
+
+2007-08-31  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Minor comment fix.
+
+2007-08-31  Thomas Quinot  <quinot@adacore.com>
+
+	* stand.ads: (Standard_Debug_Renaming_Type): Make comment consistent
+	with implementation.
+	Documentation cleanup only.
+
+2007-08-31  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add new qualifier /STMT_NAME_ON_NEW_LINE for the new
+	gnatpp '--separate-stmt-name' option.
+	Add new qualifier /USE_ON_NEW_LIN for the new gnatpp '--use-on-new-line'
+	option.
+
+	* gnat_ugn.texi: Add description for the new gnatpp
+	'--separate-stmt-name' and '--use-on-new-line' options.
+
 2007-08-31  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (LIBGNAT_TARGET_PAIRS): Use system-linux-ppc64.ads
