@@ -628,9 +628,50 @@ package body Ada.Tags is
             end loop;
 
             if Addr_Last <= External'Last then
-               Addr :=
-                 Integer_Address'Value (External (Addr_First .. Addr_Last));
-               return To_Tag (Addr);
+
+               --  Protect the run-time against wrong internal tags. We
+               --  cannot use exception handlers here because it would
+               --  disable the use of this run-time compiling with
+               --  restriction No_Exception_Handler.
+
+               declare
+                  C         : Character;
+                  Wrong_Tag : Boolean := False;
+
+               begin
+                  if External (Addr_First) /= '1'
+                    or else External (Addr_First + 1) /= '6'
+                    or else External (Addr_First + 2) /= '#'
+                  then
+                     Wrong_Tag := True;
+
+                  else
+                     for J in Addr_First + 3 .. Addr_Last - 1 loop
+                        C := External (J);
+
+                        if not (C in '0' .. '9')
+                          and then not (C in 'A' .. 'F')
+                          and then not (C in 'a' .. 'f')
+                        then
+                           Wrong_Tag := True;
+                           exit;
+                        end if;
+                     end loop;
+                  end if;
+
+                  --  Convert the numeric value into a tag
+
+                  if not Wrong_Tag then
+                     Addr := Integer_Address'Value
+                               (External (Addr_First .. Addr_Last));
+
+                     --  Internal tags never have value 0
+
+                     if Addr /= 0 then
+                        return To_Tag (Addr);
+                     end if;
+                  end if;
+               end;
             end if;
          end;
 
