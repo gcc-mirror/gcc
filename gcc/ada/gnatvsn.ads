@@ -68,6 +68,10 @@ package Gnatvsn is
    --  Text to be displayed by the different GNAT tools when switch --version
    --  is used. This text depends on the GNAT build type.
 
+   function Copyright_Holder return String;
+   --  Return the name of the Copyright holder to be displayed by the different
+   --  GNAT tools when switch --version is used.
+
    Ver_Len_Max : constant := 64;
    --  Longest possible length for Gnat_Version_String in this or any
    --  other version of GNAT. This is used by the binder to establish

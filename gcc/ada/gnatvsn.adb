@@ -33,6 +33,15 @@
 
 package body Gnatvsn is
 
+   ----------------------
+   -- Copyright_Holder --
+   ----------------------
+
+   function Copyright_Holder return String is
+   begin
+      return "Free Software Foundation, Inc.";
+   end Copyright_Holder;
+
    ------------------------
    -- Gnat_Free_Software --
    ------------------------

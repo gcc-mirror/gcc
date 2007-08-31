@@ -24,13 +24,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Xr_Tabls; use Xr_Tabls;
-with Xref_Lib; use Xref_Lib;
+with Opt;
 with Osint;    use Osint;
 with Types;    use Types;
-
-with Gnatvsn;
-with Opt;
+with Switch;   use Switch;
+with Xr_Tabls; use Xr_Tabls;
+with Xref_Lib; use Xref_Lib;
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
@@ -57,6 +56,9 @@ procedure Gnatxref is
    procedure Parse_Cmd_Line;
    --  Parse every switch on the command line
 
+   procedure Usage;
+   --  Display the usage
+
    procedure Write_Usage;
    --  Print a small help page for program usage
 
@@ -66,6 +68,10 @@ procedure Gnatxref is
 
    procedure Parse_Cmd_Line is
    begin
+      --  First check for --version or --help
+
+      Check_Version_And_Help ("GNATXREF", "1998", Usage'Unrestricted_Access);
+
       loop
          case
            GNAT.Command_Line.Getopt
@@ -205,14 +211,12 @@ procedure Gnatxref is
          Write_Usage;
    end Parse_Cmd_Line;
 
-   -----------------
-   -- Write_Usage --
-   -----------------
+   -----------
+   -- Usage --
+   -----------
 
-   procedure Write_Usage is
+   procedure Usage is
    begin
-      Put_Line ("GNATXREF " & Gnatvsn.Gnat_Version_String);
-      Put_Line ("Copyright 1998-2005, AdaCore");
       Put_Line ("Usage: gnatxref [switches] file1 file2 ...");
       New_Line;
       Put_Line ("  file ... list of source files to xref, " &
@@ -238,6 +242,17 @@ procedure Gnatxref is
       Put_Line ("   -v        Print a 'tags' file for vi");
       New_Line;
 
+   end Usage;
+
+   -----------------
+   -- Write_Usage --
+   -----------------
+
+   procedure Write_Usage is
+   begin
+      Display_Version ("GNATXREF", "1998");
+      New_Line;
+      Usage;
       raise Usage_Error;
    end Write_Usage;
 

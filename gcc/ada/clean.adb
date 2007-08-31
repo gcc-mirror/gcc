@@ -26,7 +26,6 @@
 
 with ALI;      use ALI;
 with Csets;
-with Gnatvsn;  use Gnatvsn;
 with Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with Namet;    use Namet;
@@ -39,6 +38,7 @@ with Prj.Ext;
 with Prj.Pars;
 with Prj.Util; use Prj.Util;
 with Snames;
+with Switch;   use Switch;
 with Table;
 with Targparm; use Targparm;
 with Types;    use Types;
@@ -1342,11 +1342,7 @@ package body Clean is
    begin
       if not Copyright_Displayed then
          Copyright_Displayed := True;
-         Put_Line
-           ("GNATCLEAN " & Gnatvsn.Gnat_Version_String
-            & " Copyright 2003-"
-            & Current_Year
-            & " Free Software Foundation, Inc.");
+         Display_Version ("GNATCLEAN", "2003");
       end if;
    end Display_Copyright;
 
@@ -1640,9 +1636,14 @@ package body Clean is
    procedure Parse_Cmd_Line is
       Last         : constant Natural := Argument_Count;
       Source_Index : Int := 0;
-      Index        : Positive := 1;
+      Index        : Positive;
 
    begin
+      --  First, check for --version and --help
+
+      Check_Version_And_Help ("GNATCLEAN", "2003", Usage'Access);
+
+      Index := 1;
       while Index <= Last loop
          declare
             Arg : constant String := Argument (Index);

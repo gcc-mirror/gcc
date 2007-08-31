@@ -205,6 +205,9 @@ procedure Gnatlink is
    procedure Process_Binder_File (Name : String);
    --  Reads the binder file and extracts linker arguments
 
+   procedure Usage;
+   --  Display usage
+
    procedure Write_Header;
    --  Show user the program name, version and copyright
 
@@ -291,6 +294,10 @@ procedure Gnatlink is
       --  linker's argument without parsing it.
 
    begin
+      --  First, check for --version and --help
+
+      Check_Version_And_Help ("GNATLINK", "1995", Usage'Unrestricted_Access);
+
       --  Loop through arguments of gnatlink command
 
       Next_Arg := 1;
@@ -1329,32 +1336,12 @@ procedure Gnatlink is
       Status := fclose (Fd);
    end Process_Binder_File;
 
-   ------------------
-   -- Write_Header --
-   ------------------
+   -----------
+   -- Usage --
+   -----------
 
-   procedure Write_Header is
+   procedure Usage is
    begin
-      if Verbose_Mode then
-         Write_Eol;
-         Write_Str ("GNATLINK ");
-         Write_Str (Gnat_Version_String);
-         Write_Eol;
-         Write_Str ("Copyright 1995-" &
-                    Current_Year &
-                    ", Free Software Foundation, Inc");
-         Write_Eol;
-      end if;
-   end Write_Header;
-
-   -----------------
-   -- Write_Usage --
-   -----------------
-
-   procedure Write_Usage is
-   begin
-      Write_Header;
-
       Write_Str ("Usage: ");
       Write_Str (Base_Name (Command_Name));
       Write_Str (" switches mainprog.ali [non-Ada-objects] [linker-options]");
@@ -1385,6 +1372,28 @@ procedure Gnatlink is
       Write_Eol;
       Write_Line ("  [non-Ada-objects]  list of non Ada object files");
       Write_Line ("  [linker-options]   other options for the linker");
+   end Usage;
+
+   ------------------
+   -- Write_Header --
+   ------------------
+
+   procedure Write_Header is
+   begin
+      if Verbose_Mode then
+         Write_Eol;
+         Display_Version ("GNATLINK", "1995");
+      end if;
+   end Write_Header;
+
+   -----------------
+   -- Write_Usage --
+   -----------------
+
+   procedure Write_Usage is
+   begin
+      Write_Header;
+      Usage;
    end Write_Usage;
 
 --  Start of processing for Gnatlink

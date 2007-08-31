@@ -392,8 +392,6 @@ package body Make is
 
    Shared_String           : aliased String := "-shared";
    Force_Elab_Flags_String : aliased String := "-F";
-   Version_Switch          : constant String := "--version";
-   Help_Switch             : constant String := "--help";
 
    No_Shared_Switch : aliased Argument_List := (1 .. 0 => null);
    Shared_Switch    : aliased Argument_List := (1 => Shared_String'Access);
@@ -508,9 +506,6 @@ package body Make is
    -------------------
    -- Misc Routines --
    -------------------
-
-   procedure Display_Version;
-   --  Display version when switch --version is used
 
    procedure List_Depend;
    --  Prints to standard output the list of object dependencies. This list
@@ -3562,15 +3557,22 @@ package body Make is
                               if Uid /= Prj.No_Unit_Index then
                                  Udata := Project_Tree.Units.Table (Uid);
 
-                                 if Udata.File_Names (Body_Part).Name /=
-                                                                     No_File
+                                 if
+                                    Udata.File_Names (Body_Part).Name /=
+                                                                       No_File
+                                   and then
+                                     Udata.File_Names (Body_Part).Path /= Slash
                                  then
                                     Sfile := Udata.File_Names (Body_Part).Name;
                                     Source_Index :=
                                       Udata.File_Names (Body_Part).Index;
 
-                                 elsif Udata.File_Names (Specification).Name /=
-                                                                     No_File
+                                 elsif
+                                    Udata.File_Names (Specification).Name /=
+                                                                        No_File
+                                   and then
+                                    Udata.File_Names (Specification).Path /=
+                                                                          Slash
                                  then
                                     Sfile :=
                                       Udata.File_Names (Specification).Name;
@@ -4062,26 +4064,6 @@ package body Make is
    begin
       Display_Executed_Programs := Display;
    end Display_Commands;
-
-   ---------------------
-   -- Display_Version --
-   ---------------------
-
-   procedure Display_Version is
-   begin
-      Write_Str ("GNATMAKE ");
-      Write_Str (Gnatvsn.Gnat_Version_String);
-      Write_Eol;
-
-      Write_Str ("Copyright (C) 1995-");
-      Write_Str (Gnatvsn.Current_Year);
-      Write_Str (", Free Software Foundation, Inc.");
-      Write_Eol;
-
-      Write_Str (Gnatvsn.Gnat_Free_Software);
-      Write_Eol;
-      Write_Eol;
-   end Display_Version;
 
    -------------
    -- Empty_Q --
@@ -4821,14 +4803,7 @@ package body Make is
 
       if Verbose_Mode then
          Write_Eol;
-         Write_Str ("GNATMAKE ");
-         Write_Str (Gnatvsn.Gnat_Version_String);
-         Write_Eol;
-         Write_Str
-           ("Copyright 1995-" &
-            Current_Year &
-            ", Free Software Foundation, Inc.");
-         Write_Eol;
+         Display_Version ("GNATMAKE ", "1995");
       end if;
 
       if Main_Project /= No_Project
@@ -4901,7 +4876,6 @@ package body Make is
          Main_Index := Current_File_Index;
       end if;
 
-      Add_Switch ("-I-", Binder, And_Save => True);
       Add_Switch ("-I-", Compiler, And_Save => True);
 
       if Main_Project = No_Project then
@@ -4914,10 +4888,6 @@ package body Make is
                Compiler, Append_Switch => False,
                And_Save => False);
 
-            Add_Switch ("-aO" & Normalized_CWD,
-                        Binder,
-                        Append_Switch => False,
-                        And_Save => False);
          end if;
 
       else
@@ -4930,6 +4900,7 @@ package body Make is
          --  projects.
 
          Look_In_Primary_Dir := False;
+         Add_Switch ("-I-", Binder, And_Save => True);
       end if;
 
       --  If the user wants a program without a main subprogram, add the
@@ -6670,49 +6641,16 @@ package body Make is
 
       --  Scan the switches and arguments
 
-      declare
-         Args                   : Argument_List (1 .. Argument_Count);
-         Version_Switch_Present : Boolean := False;
-         Help_Switch_Present    : Boolean := False;
+      --  First, scan to detect --version and/or --help
 
-      begin
-         --  First, scan to detect --version and/or --help
+      Check_Version_And_Help ("GNATMAKE", "1995", Makeusg'Access);
 
-         for Next_Arg in 1 .. Argument_Count loop
-            Args (Next_Arg) := new String'(Argument (Next_Arg));
+      --  Scan again the switch and arguments, now that we are sure that
+      --  they do not include --version or --help.
 
-            if Args (Next_Arg).all = Version_Switch then
-               Version_Switch_Present := True;
-            elsif Args (Next_Arg).all = Help_Switch then
-               Help_Switch_Present := True;
-            end if;
-         end loop;
-
-         --  If --version was used, display version and exit
-
-         if Version_Switch_Present then
-            Set_Standard_Output;
-            Display_Version;
-            Exit_Program (E_Success);
-         end if;
-
-         --  If --help was used, display help and exit
-
-         if Help_Switch_Present then
-            Set_Standard_Output;
-            Makeusg;
-            Write_Eol;
-            Write_Line ("Report bugs to report@adacore.com");
-            Exit_Program (E_Success);
-         end if;
-
-         --  Scan again the switch and arguments, now that we are sure that
-         --  they do not include --version or --help.
-
-         Scan_Args : for Next_Arg in Args'Range loop
-            Scan_Make_Arg (Args (Next_Arg).all, And_Save => True);
-         end loop Scan_Args;
-      end;
+      Scan_Args : for Next_Arg in 1 .. Argument_Count loop
+         Scan_Make_Arg (Argument (Next_Arg), And_Save => True);
+      end loop Scan_Args;
 
       if Commands_To_Stdout then
          Set_Standard_Output;

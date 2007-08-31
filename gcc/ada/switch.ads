@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,30 +31,43 @@
 --  switches that are recognized. In addition, package Debug documents
 --  the otherwise undocumented debug switches that are also recognized.
 
+with Gnatvsn;
 with Types; use Types;
 
 package Switch is
 
-   --  Note: The default switch character is indicated by Switch_Character,
-   --  but regardless of what it is, a hyphen is always allowed as an
-   --  (alternative) switch character.
+   --  Common switches for GNU tools
 
-   --  Note: In GNAT, the case of switches is not significant if
-   --  Switches_Case_Sensitive is False. If this is the case, switch
-   --  characters, or letters appearing in the parameter to a switch, may be
-   --  either upper case or lower case.
+   Version_Switch : constant String := "--version";
+   Help_Switch    : constant String := "--help";
 
    -----------------
    -- Subprograms --
    -----------------
 
+   type Procedure_Ptr is access procedure;
+
+   procedure Check_Version_And_Help
+     (Tool_Name      : String;
+      Initial_Year   : String;
+      Usage          : Procedure_Ptr;
+      Version_String : String := Gnatvsn.Gnat_Version_String);
+   --  Check if switches --version or --help is used. If one of this switch
+   --  is used, issue the proper messages and end the process.
+
+   procedure Display_Version
+     (Tool_Name      : String;
+      Initial_Year   : String;
+      Version_String : String := Gnatvsn.Gnat_Version_String);
+   --  Display version of a tool when switch --version is used
+
    function Is_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars is at least two characters long,
-   --  and the first character indicates it is a switch.
+   --  and the first character is an hyphen ('-').
 
    function Is_Front_End_Switch (Switch_Chars : String) return Boolean;
    --  Returns True iff Switch_Chars represents a front-end switch,
-   --  ie. it starts with -I or -gnat.
+   --  ie. it starts with -I, -gnat or -?RTS.
 
 private
 
