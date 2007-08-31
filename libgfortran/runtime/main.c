@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2003, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -27,13 +27,11 @@ along with libgfortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config.h"
-#include <stdio.h>
+#include "libgfortran.h"
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 
-#include "libgfortran.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

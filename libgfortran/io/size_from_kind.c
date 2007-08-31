@@ -1,4 +1,4 @@
-/* Copyright (C) 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2007 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -31,8 +31,6 @@ Boston, MA 02110-1301, USA.  */
 /* This file contains utility functions for determining the size of a
    variable given its kind. */
 
-#include "config.h"
-#include "libgfortran.h"
 #include "io.h"
 
 size_t

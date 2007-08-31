@@ -1,5 +1,5 @@
 /* Implementation of the EXIT intrinsic.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -29,7 +29,6 @@ write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 
-#include "config.h"
 #include "libgfortran.h"
 
 #ifdef HAVE_STDLIB_H

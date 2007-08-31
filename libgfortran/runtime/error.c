@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -28,10 +28,8 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 
-#include "config.h"
+#include "libgfortran.h"
 #include <assert.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <errno.h>
 
@@ -57,7 +55,6 @@ Boston, MA 02110-1301, USA.  */
 #include <sys/resource.h>
 #endif
 
-#include "libgfortran.h"
 
 #ifdef __MINGW32__
 #define HAVE_GETPID 1

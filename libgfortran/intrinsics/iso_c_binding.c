@@ -32,10 +32,10 @@ Boston, MA 02110-1301, USA.  */
 /* Implement the functions and subroutines provided by the intrinsic
    iso_c_binding module.  */
 
-#include <stdlib.h>
-
 #include "libgfortran.h"
 #include "iso_c_binding.h"
+
+#include <stdlib.h>
 
 
 /* Set the fields of a Fortran pointer descriptor to point to the

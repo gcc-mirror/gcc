@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -27,15 +27,11 @@ along with Libgfortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-
-#include "config.h"
+#include "io.h"
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include "libgfortran.h"
-#include "io.h"
 
 /* read.c -- Deal with formatted reads */
 

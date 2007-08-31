@@ -27,10 +27,8 @@ along with libgfortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config.h"
-#include <string.h>
-
 #include "libgfortran.h"
+#include <string.h>
 
 /* Compare a C-style string with a fortran style string in a case-insensitive
    manner.  Used for decoding string options to various statements.  Returns

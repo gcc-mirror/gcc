@@ -28,9 +28,8 @@ License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config.h"
-#include <stdlib.h>
 #include "libgfortran.h"
+#include <stdlib.h>
 
 /* If GFC_CLEAR_MEMORY is defined, the memory allocation routines will
    return memory that is guaranteed to be set to zero.  This can have
