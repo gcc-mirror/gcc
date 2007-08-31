@@ -202,10 +202,27 @@ package body Stringt is
    end Store_String_Chars;
 
    procedure Store_String_Chars (S : String_Id) is
+
+      --  We are essentially doing this:
+
+      --   for J in 1 .. String_Length (S) loop
+      --      Store_String_Char (Get_String_Char (S, J));
+      --   end loop;
+
+      --  but when the string is long it's more efficient to grow the
+      --  String_Chars table all at once.
+
+      S_First  : constant Int := Strings.Table (S).String_Index;
+      S_Len    : constant Int := String_Length (S);
+      Old_Last : constant Int := String_Chars.Last;
+      New_Last : constant Int := Old_Last + S_Len;
+
    begin
-      for J in 1 .. String_Length (S) loop
-         Store_String_Char (Get_String_Char (S, J));
-      end loop;
+      String_Chars.Set_Last (New_Last);
+      String_Chars.Table (Old_Last + 1 .. New_Last) :=
+        String_Chars.Table (S_First .. S_First + S_Len - 1);
+      Strings.Table (Strings.Last).Length :=
+        Strings.Table (Strings.Last).Length + S_Len;
    end Store_String_Chars;
 
    ----------------------
@@ -416,6 +433,15 @@ package body Stringt is
 
             else
                Write_Char_Code (C);
+            end if;
+
+            --  If string is very long, quit
+
+            if J >= 1000 then  --  arbitrary limit
+               Write_Str ("""...etc (length = ");
+               Write_Int (String_Length (Id));
+               Write_Str (")");
+               return;
             end if;
          end loop;
 
