@@ -1,3 +1,8 @@
+2007-08-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* tree-ssa-propagate.c (set_rhs): Remove the copied annotation
+	from the original statement.
+
 2007-08-30  Chao-ying Fu  <fu@mips.com>
 
 	* c-lex.c (interpret_fixed): Declare.
