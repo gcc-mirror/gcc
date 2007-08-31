@@ -3736,13 +3736,10 @@ package body Sem_Prag is
             end if;
 
             String_Val := Strval (Expr_Value_S (Link_Nam));
-
-            for J in 1 .. String_Length (String_Val) loop
-               Store_String_Char (Get_String_Char (String_Val, J));
-            end loop;
-
+            Store_String_Chars (String_Val);
             Link_Nam :=
-              Make_String_Literal (Sloc (Link_Nam), End_String);
+              Make_String_Literal (Sloc (Link_Nam),
+                Strval => End_String);
          end if;
 
          Set_Encoded_Interface_Name

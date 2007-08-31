@@ -1451,9 +1451,10 @@ package body Sem_Eval is
       --  concatenations with such aggregates.
 
       declare
-         Left_Str  : constant Node_Id := Get_String_Val (Left);
-         Left_Len  : Nat;
-         Right_Str : constant Node_Id := Get_String_Val (Right);
+         Left_Str   : constant Node_Id := Get_String_Val (Left);
+         Left_Len   : Nat;
+         Right_Str  : constant Node_Id := Get_String_Val (Right);
+         Folded_Val : String_Id;
 
       begin
          --  Establish new string literal, and store left operand. We make
@@ -1465,26 +1466,36 @@ package body Sem_Eval is
 
          if Nkind (Left_Str) = N_String_Literal then
             Left_Len :=  String_Length (Strval (Left_Str));
-            Start_String (Strval (Left_Str));
+
+            --  If the left operand is the empty string, and the right operand
+            --  is a string literal (the case of "" & "..."), the result is the
+            --  value of the right operand. This optimization is important when
+            --  Is_Folded_In_Parser, to avoid copying an enormous right
+            --  operand.
+
+            if Left_Len = 0 and then Nkind (Right_Str) = N_String_Literal then
+               Folded_Val := Strval (Right_Str);
+            else
+               Start_String (Strval (Left_Str));
+            end if;
+
          else
             Start_String;
             Store_String_Char (UI_To_CC (Char_Literal_Value (Left_Str)));
             Left_Len := 1;
          end if;
 
-         --  Now append the characters of the right operand
+         --  Now append the characters of the right operand, unless we
+         --  optimized the "" & "..." case above.
 
          if Nkind (Right_Str) = N_String_Literal then
-            declare
-               S : constant String_Id := Strval (Right_Str);
-
-            begin
-               for J in 1 .. String_Length (S) loop
-                  Store_String_Char (Get_String_Char (S, J));
-               end loop;
-            end;
+            if Left_Len /= 0 then
+               Store_String_Chars (Strval (Right_Str));
+               Folded_Val := End_String;
+            end if;
          else
             Store_String_Char (UI_To_CC (Char_Literal_Value (Right_Str)));
+            Folded_Val := End_String;
          end if;
 
          Set_Is_Static_Expression (N, Stat);
@@ -1501,7 +1512,7 @@ package body Sem_Eval is
                Set_Etype (N, Etype (Right));
             end if;
 
-            Fold_Str (N, End_String, Static => True);
+            Fold_Str (N, Folded_Val, Static => True);
          end if;
       end;
    end Eval_Concatenation;

@@ -28,6 +28,8 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
 --  by RM section rather than alphabetical
 
+with Stringt; use Stringt;
+
 separate (Par)
 package body Ch4 is
 
@@ -1870,18 +1872,122 @@ package body Ch4 is
             Node1 := P_Term;
          end if;
 
-         --  Scan out sequence of terms separated by binary adding operators
+         --  In the following, we special-case a sequence of concatentations of
+         --  string literals, such as "aaa" & "bbb" & ... & "ccc", with nothing
+         --  else mixed in. For such a sequence, we return a tree representing
+         --  "" & "aaabbb...ccc" (a single concatenation). This is done only if
+         --  the number of concatenations is large. If semantic analysis
+         --  resolves the "&" to a predefined one, then this folding gives the
+         --  right answer. Otherwise, semantic analysis will complain about a
+         --  capacity-exceeded error. The purpose of this trick is to avoid
+         --  creating a deeply nested tree, which would cause deep recursion
+         --  during semantics, causing stack overflow. This way, we can handle
+         --  enormous concatenations in the normal case of predefined "&".  We
+         --  first build up the normal tree, and then rewrite it if
+         --  appropriate.
 
-         loop
-            exit when Token not in Token_Class_Binary_Addop;
-            Tokptr := Token_Ptr;
-            Node2 := New_Node (P_Binary_Adding_Operator, Tokptr);
-            Scan; -- past operator
-            Set_Left_Opnd (Node2, Node1);
-            Set_Right_Opnd (Node2, P_Term);
-            Set_Op_Name (Node2);
-            Node1 := Node2;
-         end loop;
+         declare
+            Num_Concats_Threshold : constant Positive := 1000;
+            --  Arbitrary threshold value to enable optimization
+
+            First_Node : constant Node_Id := Node1;
+            Is_Strlit_Concat : Boolean;
+            --  True iff we've parsed a sequence of concatenations of string
+            --  literals, with nothing else mixed in.
+
+            Num_Concats : Natural;
+            --  Number of "&" operators if Is_Strlit_Concat is True
+
+         begin
+            Is_Strlit_Concat :=
+              Nkind (Node1) = N_String_Literal
+                and then Token = Tok_Ampersand;
+            Num_Concats := 0;
+
+            --  Scan out sequence of terms separated by binary adding operators
+
+            loop
+               exit when Token not in Token_Class_Binary_Addop;
+               Tokptr := Token_Ptr;
+               Node2 := New_Node (P_Binary_Adding_Operator, Tokptr);
+               Scan; -- past operator
+               Set_Left_Opnd (Node2, Node1);
+               Node1 := P_Term;
+               Set_Right_Opnd (Node2, Node1);
+               Set_Op_Name (Node2);
+
+               --  Check if we're still concatenating string literals
+
+               Is_Strlit_Concat :=
+                 Is_Strlit_Concat
+                   and then Nkind (Node2) = N_Op_Concat
+                 and then Nkind (Node1) = N_String_Literal;
+
+               if Is_Strlit_Concat then
+                  Num_Concats := Num_Concats + 1;
+               end if;
+
+               Node1 := Node2;
+            end loop;
+
+            --  If we have an enormous series of concatenations of string
+            --  literals, rewrite as explained above. The Is_Folded_In_Parser
+            --  flag tells semantic analysis that if the "&" is not predefined,
+            --  the folded value is wrong.
+
+            if Is_Strlit_Concat
+              and then Num_Concats >= Num_Concats_Threshold
+            then
+               declare
+                  Empty_String_Val : String_Id;
+                  --  String_Id for ""
+
+                  Strlit_Concat_Val : String_Id;
+                  --  Contains the folded value (which will be correct if the
+                  --  "&" operators are the predefined ones).
+
+                  Cur_Node : Node_Id;
+                  --  For walking up the tree
+
+                  New_Node : Node_Id;
+                  --  Folded node to replace Node1
+
+                  Loc : constant Source_Ptr := Sloc (First_Node);
+
+               begin
+                  --  Walk up the tree starting at the leftmost string literal
+                  --  (First_Node), building up the Strlit_Concat_Val as we
+                  --  go. Note that we do not use recursion here -- the whole
+                  --  point is to avoid recursively walking that enormous tree.
+
+                  Start_String;
+                  Store_String_Chars (Strval (First_Node));
+
+                  Cur_Node := Parent (First_Node);
+                  while Present (Cur_Node) loop
+                     pragma Assert (Nkind (Cur_Node) = N_Op_Concat and then
+                        Nkind (Right_Opnd (Cur_Node)) = N_String_Literal);
+
+                     Store_String_Chars (Strval (Right_Opnd (Cur_Node)));
+                     Cur_Node := Parent (Cur_Node);
+                  end loop;
+
+                  Strlit_Concat_Val := End_String;
+
+                  --  Create new folded node, and rewrite result with a concat-
+                  --  enation of an empty string literal and the folded node.
+
+                  Start_String;
+                  Empty_String_Val := End_String;
+                  New_Node :=
+                    Make_Op_Concat (Loc,
+                      Make_String_Literal (Loc, Empty_String_Val),
+                      Make_String_Literal (Loc, Strlit_Concat_Val,
+                        Is_Folded_In_Parser => True));
+                  Rewrite (Node1, New_Node);
+               end;
+            end if;
+         end;
 
          --  All done, we clearly do not have name or numeric literal so this
          --  is a case of a simple expression which is some other possibility.
