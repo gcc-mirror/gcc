@@ -1,3 +1,24 @@
+2007-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/33211
+
+	* regclass.c (initial_fixed_regs): Revert previous change and make
+	it const again.
+	(initial_call_used_regs): Likewise.
+	(initial_call_really_used_regs): Delete, reverting previous addition.
+	(initial_reg_names): Likewise.
+	(init_reg_sets): Revert previous change.
+	(saved_fixed_regs): New.
+	(saved_call_used_regs): New.
+	(saved_call_really_used_regs): New.
+	(saved_reg_names): New.
+	(save_register_info): New.
+	(restore_register_info): New.
+	(init_reg_sets_1): Replace reset of register info with call to
+	restore_register_info.
+	* rtl.h (save_register_info): Declare.
+	* toplev.c (backend_init): Call save_register_info.
+
 2007-08-30  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* tree-ssa-propagate.c (set_rhs): Remove the copied annotation

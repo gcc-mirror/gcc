@@ -2064,6 +2064,7 @@ backend_init (void)
   init_rtlanal ();
   init_inline_once ();
   init_varasm_once ();
+  save_register_info ();
 
   /* Initialize the target-specific back end pieces.  */
   backend_init_target ();

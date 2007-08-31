@@ -2190,6 +2190,7 @@ extern void globalize_reg (int);
 extern void init_reg_modes_target (void);
 extern void init_regs (void);
 extern void init_fake_stack_mems (void);
+extern void save_register_info (void);
 extern void init_reg_sets (void);
 extern void regclass (rtx, int);
 extern void reg_scan (rtx, unsigned int);
