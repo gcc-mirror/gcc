@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "output.h"
 #include "diagnostic.h"
 #include "real.h"
 #include "hashtab.h"
@@ -178,7 +179,7 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
     {
       if (TREE_CODE (t) == LABEL_DECL
           && LABEL_DECL_UID (t) != -1)
-        pp_printf (buffer, "L." HOST_WIDE_INT_PRINT_DEC,
+        pp_printf (buffer, "L.%wd",
 		   LABEL_DECL_UID (t));
       else
 	{
@@ -860,7 +861,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       if (DECL_NAME (node))
 	dump_decl_name (buffer, node, flags);
       else if (LABEL_DECL_UID (node) != -1)
-        pp_printf (buffer, "<L" HOST_WIDE_INT_PRINT_DEC ">",
+        pp_printf (buffer, "<L%wd>",
 		   LABEL_DECL_UID (node));
       else
         pp_printf (buffer, "<D.%u>", DECL_UID (node));
