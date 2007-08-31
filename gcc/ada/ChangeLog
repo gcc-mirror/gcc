@@ -1,3 +1,9 @@
+2007-08-31  Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (LIBGNAT_TARGET_PAIRS): Use system-linux-ppc64.ads
+	when compiling for powerpc64-*-linux.
+	* system-linux-ppc64.ads: New file.
+
 2007-08-22  Krister Walfridsson  <cato@df.lth.se>
 
 	* env.c ( __gnat_clearenv): Use the __gnat_unsetenv mechanism for
