@@ -704,6 +704,7 @@ See RS/6000 and PowerPC Options.
 -misel=yes  -misel=no @gol
 -mspe -mno-spe @gol
 -mspe=yes  -mspe=no @gol
+-mpaired @gol
 -mvrsave -mno-vrsave @gol
 -mmulhw -mno-mulhw @gol
 -mdlmzb -mno-dlmzb @gol
@@ -12580,6 +12581,13 @@ This switch has been deprecated.  Use @option{-misel} and
 @opindex mspe
 @opindex mno-spe
 This switch enables or disables the generation of SPE simd
+instructions.
+
+@item -mpaired
+@itemx -mno-paired
+@opindex mpaired
+@opindex mno-paired
+This switch enables or disables the generation of PAIRED simd
 instructions.
 
 @item -mspe=@var{yes/no}

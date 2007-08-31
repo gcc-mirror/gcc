@@ -1,3 +1,39 @@
+2007-08-31  David Edelsohn  <edelsohn@gnu.org>
+            Revital Eres  <eres@il.ibm.com>
+
+        * doc/invoke.texi (-mpaired): Document flag.
+        * config.gcc: Include paired.h in powerpc extra_headers and
+        750cl.h in powerpc-*-linux*paired*.
+        * config/rs6000/rs6000.opt (-mpaired): New flag.
+        * config/rs6000/rs6000.c (paired_init_builtins,
+        paired_expand_builtin, paired_expand_lv_builtin,
+        paired_expand_stv_builtin, paired_expand_predicate_builtin):
+        New functions to support the paired single builtin functions.
+        (rs6000_hard_regno_mode_ok): Handle PAIRED_VECTOR_MODE.
+        (def_builtin, bdesc_3arg, bdesc_2arg, bdesc_1arg): Add paired
+        single builtins.
+        (bdesc_paired_preds): New structure for paired predicate
+        instructions.
+        (rs6000_expand_builtin): Expand paired single builtins.
+        (rs6000_init_builtins): Init paired single builtins.
+        (rs6000_common_init_builtins): Add v2sf_ftype_v2sf_v2sf_v2sf.
+        Rename v2sf_ftype_v2sf_v2sf to v2sf_ftype_v2sf_v2sf_spe
+        and v2sf_ftype_v2sf_spe to v2sf_ftype_v2sf.  Add new types
+        v2sf_ftype_v2sf_v2sf and v2sf_ftype_v2sf.
+        (rs6000_vector_mode_supported_p): Support paired vector mode.
+        * config/rs6000/rs6000.h: (UNITS_PER_PAIRED_WORD,
+        PAIRED_VECTOR_MODE, PAIRED_SIMD_REGNO_P, TARGET_PAIRED_FLOAT):
+        New.
+        (LOCAL_ALIGNMENT): Handle PAIRED_VECTOR_MODE.
+        (DATA_ALIGNMENT): Likewise.
+        (UNITS_PER_SIMD_WORD): Handle PAIRED_VECTOR_MODE.
+        (rs6000_builtins): Add PAIRED builtins.
+        * config/rs6000/rs6000.md: Include paired.md.
+        * config/rs6000/paired.h: New.
+        * config/rs6000/paired.md: New.
+        * config/rs6000/750cl.h: New.
+        * config/rs6000/spe.md: Recognize movv2sf instruction for 750cl.
+
 2007-08-30  Ollie Wild  <aaw@google.com>
 
 	* c-opts.c (c_common_handle_option): Support -fno-directives-only.

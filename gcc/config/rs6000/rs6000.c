@@ -815,6 +815,12 @@ static void altivec_init_builtins (void);
 static void rs6000_common_init_builtins (void);
 static void rs6000_init_libfuncs (void);
 
+static void paired_init_builtins (void);
+static rtx paired_expand_builtin (tree, rtx, bool *);
+static rtx paired_expand_lv_builtin (enum insn_code, tree, rtx);
+static rtx paired_expand_stv_builtin (enum insn_code, tree);
+static rtx paired_expand_predicate_builtin (enum insn_code, tree, rtx);
+
 static void enable_mask_for_builtins (struct builtin_description *, int,
 				      enum rs6000_builtins,
 				      enum rs6000_builtins);
@@ -1224,12 +1230,14 @@ rs6000_hard_regno_mode_ok (int regno, enum machine_mode mode)
      This excludes the 32-bit decimal float mode for now.  */
   if (FP_REGNO_P (regno))
     return
-      (SCALAR_FLOAT_MODE_P (mode)
+      ((SCALAR_FLOAT_MODE_P (mode)
        && (mode != TDmode || (regno % 2) == 0)
        && mode != SDmode
        && FP_REGNO_P (regno + HARD_REGNO_NREGS (regno, mode) - 1))
       || (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_SIZE (mode) == UNITS_PER_FP_WORD);
+	  && GET_MODE_SIZE (mode) == UNITS_PER_FP_WORD)
+      || (PAIRED_SIMD_REGNO_P (regno) && TARGET_PAIRED_FLOAT
+           && PAIRED_VECTOR_MODE (mode)));
 
   /* The CR register can only hold CC modes.  */
   if (CR_REGNO_P (regno))
@@ -6594,7 +6602,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 static void
 def_builtin (int mask, const char *name, tree type, int code)
 {
-  if (mask & target_flags)
+  if ((mask & target_flags) || TARGET_PAIRED_FLOAT)
     {
       if (rs6000_builtin_decls[code])
 	abort ();
@@ -6648,6 +6656,15 @@ static const struct builtin_description bdesc_3arg[] =
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_nmsub", ALTIVEC_BUILTIN_VEC_NMSUB },
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_perm", ALTIVEC_BUILTIN_VEC_PERM },
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sel", ALTIVEC_BUILTIN_VEC_SEL },
+
+  { 0, CODE_FOR_paired_msub, "__builtin_paired_msub", PAIRED_BUILTIN_MSUB },
+  { 0, CODE_FOR_paired_madd, "__builtin_paired_madd", PAIRED_BUILTIN_MADD },
+  { 0, CODE_FOR_paired_madds0, "__builtin_paired_madds0", PAIRED_BUILTIN_MADDS0 },
+  { 0, CODE_FOR_paired_madds1, "__builtin_paired_madds1", PAIRED_BUILTIN_MADDS1 },
+  { 0, CODE_FOR_paired_nmsub, "__builtin_paired_nmsub", PAIRED_BUILTIN_NMSUB },
+  { 0, CODE_FOR_paired_nmadd, "__builtin_paired_nmadd", PAIRED_BUILTIN_NMADD },
+  { 0, CODE_FOR_paired_sum0, "__builtin_paired_sum0", PAIRED_BUILTIN_SUM0 },
+  { 0, CODE_FOR_paired_sum1, "__builtin_paired_sum1", PAIRED_BUILTIN_SUM1 },
 };
 
 /* DST operations: void foo (void *, const int, const char).  */
@@ -6909,6 +6926,17 @@ static struct builtin_description bdesc_2arg[] =
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_sums", ALTIVEC_BUILTIN_VEC_SUMS },
   { MASK_ALTIVEC, CODE_FOR_nothing, "__builtin_vec_xor", ALTIVEC_BUILTIN_VEC_XOR },
 
+  { 0, CODE_FOR_divv2sf3, "__builtin_paired_divv2sf3", PAIRED_BUILTIN_DIVV2SF3 },
+  { 0, CODE_FOR_addv2sf3, "__builtin_paired_addv2sf3", PAIRED_BUILTIN_ADDV2SF3 },
+  { 0, CODE_FOR_subv2sf3, "__builtin_paired_subv2sf3", PAIRED_BUILTIN_SUBV2SF3 },
+  { 0, CODE_FOR_mulv2sf3, "__builtin_paired_mulv2sf3", PAIRED_BUILTIN_MULV2SF3 },
+  { 0, CODE_FOR_paired_muls0, "__builtin_paired_muls0", PAIRED_BUILTIN_MULS0 },
+  { 0, CODE_FOR_paired_muls1, "__builtin_paired_muls1", PAIRED_BUILTIN_MULS1 },
+  { 0, CODE_FOR_paired_merge00, "__builtin_paired_merge00", PAIRED_BUILTIN_MERGE00 },
+  { 0, CODE_FOR_paired_merge01, "__builtin_paired_merge01", PAIRED_BUILTIN_MERGE01 },
+  { 0, CODE_FOR_paired_merge10, "__builtin_paired_merge10", PAIRED_BUILTIN_MERGE10 },
+  { 0, CODE_FOR_paired_merge11, "__builtin_paired_merge11", PAIRED_BUILTIN_MERGE11 },
+
   /* Place holder, leave as first spe builtin.  */
   { 0, CODE_FOR_spe_evaddw, "__builtin_spe_evaddw", SPE_BUILTIN_EVADDW },
   { 0, CODE_FOR_spe_evand, "__builtin_spe_evand", SPE_BUILTIN_EVAND },
@@ -7122,6 +7150,15 @@ static struct builtin_description bdesc_spe_evsel[] =
   { 0, CODE_FOR_spe_evfststeq, "__builtin_spe_evsel_fststeq", SPE_BUILTIN_EVSEL_FSTSTEQ },
 };
 
+/* PAIRED predicates.  */
+static const struct builtin_description bdesc_paired_preds[] =
+{
+  /* Place-holder.  Leave as first.  */
+  { 0, CODE_FOR_paired_cmpu0, "__builtin_paired_cmpu0", PAIRED_BUILTIN_CMPU0 },
+  /* Place-holder.  Leave as last.  */
+  { 0, CODE_FOR_paired_cmpu1, "__builtin_paired_cmpu1", PAIRED_BUILTIN_CMPU1 },
+};
+
 /* ABS* operations.  */
 
 static const struct builtin_description bdesc_abs[] =
@@ -7210,7 +7247,13 @@ static struct builtin_description bdesc_1arg[] =
   { 0, CODE_FOR_spe_evsubfumiaaw, "__builtin_spe_evsubfumiaaw", SPE_BUILTIN_EVSUBFUMIAAW },
 
   /* Place-holder.  Leave as last unary SPE builtin.  */
-  { 0, CODE_FOR_spe_evsubfusiaaw, "__builtin_spe_evsubfusiaaw", SPE_BUILTIN_EVSUBFUSIAAW }
+  { 0, CODE_FOR_spe_evsubfusiaaw, "__builtin_spe_evsubfusiaaw", SPE_BUILTIN_EVSUBFUSIAAW },
+
+  { 0, CODE_FOR_absv2sf2, "__builtin_paired_absv2sf2", PAIRED_BUILTIN_ABSV2SF2 },
+  { 0, CODE_FOR_nabsv2sf2, "__builtin_paired_nabsv2sf2", PAIRED_BUILTIN_NABSV2SF2 },
+  { 0, CODE_FOR_negv2sf2, "__builtin_paired_negv2sf2", PAIRED_BUILTIN_NEGV2SF2 },
+  { 0, CODE_FOR_sqrtv2sf2, "__builtin_paired_sqrtv2sf2", PAIRED_BUILTIN_SQRTV2SF2 },
+  { 0, CODE_FOR_resv2sf2, "__builtin_paired_resv2sf2", PAIRED_BUILTIN_RESV2SF2 }
 };
 
 static rtx
@@ -7445,6 +7488,52 @@ altivec_expand_predicate_builtin (enum insn_code icode, const char *opcode,
 }
 
 static rtx
+paired_expand_lv_builtin (enum insn_code icode, tree exp, rtx target)
+{
+  rtx pat, addr;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode0 = Pmode;
+  enum machine_mode mode1 = Pmode;
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
+  if (target == 0
+      || GET_MODE (target) != tmode
+      || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  op1 = copy_to_mode_reg (mode1, op1);
+
+  if (op0 == const0_rtx)
+    {
+      addr = gen_rtx_MEM (tmode, op1);
+    }
+  else
+    {
+      op0 = copy_to_mode_reg (mode0, op0);
+      addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op0, op1));
+    }
+
+  pat = GEN_FCN (icode) (target, addr);
+
+  if (! pat)
+    return 0;
+  emit_insn (pat);
+
+  return target;
+}
+
+static rtx
 altivec_expand_lv_builtin (enum insn_code icode, tree exp, rtx target)
 {
   rtx pat, addr;
@@ -7518,6 +7607,47 @@ spe_expand_stv_builtin (enum insn_code icode, tree exp)
     op2 = copy_to_mode_reg (mode1, op2);
 
   pat = GEN_FCN (icode) (op1, op2, op0);
+  if (pat)
+    emit_insn (pat);
+  return NULL_RTX;
+}
+
+static rtx
+paired_expand_stv_builtin (enum insn_code icode, tree exp)
+{
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  tree arg1 = CALL_EXPR_ARG (exp, 1);
+  tree arg2 = CALL_EXPR_ARG (exp, 2);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx op2 = expand_normal (arg2);
+  rtx pat, addr;
+  enum machine_mode tmode = insn_data[icode].operand[0].mode;
+  enum machine_mode mode1 = Pmode;
+  enum machine_mode mode2 = Pmode;
+
+  /* Invalid arguments.  Bail before doing anything stoopid!  */
+  if (arg0 == error_mark_node
+      || arg1 == error_mark_node
+      || arg2 == error_mark_node)
+    return const0_rtx;
+
+  if (! (*insn_data[icode].operand[1].predicate) (op0, tmode))
+    op0 = copy_to_mode_reg (tmode, op0);
+
+  op2 = copy_to_mode_reg (mode2, op2);
+
+  if (op1 == const0_rtx)
+    {
+      addr = gen_rtx_MEM (tmode, op2);
+    }
+  else
+    {
+      op1 = copy_to_mode_reg (mode1, op1);
+      addr = gen_rtx_MEM (tmode, gen_rtx_PLUS (Pmode, op1, op2));
+    }
+
+  pat = GEN_FCN (icode) (addr, op0);
   if (pat)
     emit_insn (pat);
   return NULL_RTX;
@@ -8071,6 +8201,39 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
   return NULL_RTX;
 }
 
+/* Expand the builtin in EXP and store the result in TARGET.  Store
+   true in *EXPANDEDP if we found a builtin to expand.  */
+static rtx
+paired_expand_builtin (tree exp, rtx target, bool * expandedp)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  struct builtin_description *d;
+  size_t i;
+
+  *expandedp = true;
+
+  switch (fcode)
+    {
+    case PAIRED_BUILTIN_STX:
+      return paired_expand_stv_builtin (CODE_FOR_paired_stx, exp);
+    case PAIRED_BUILTIN_LX:
+      return paired_expand_lv_builtin (CODE_FOR_paired_lx, exp, target);
+    default:
+      break;
+      /* Fall through.  */
+    }
+
+  /* Expand the paired predicates.  */
+  d = (struct builtin_description *) bdesc_paired_preds;
+  for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); i++, d++)
+    if (d->code == fcode)
+      return paired_expand_predicate_builtin (d->icode, exp, target);
+
+  *expandedp = false;
+  return NULL_RTX;
+}
+
 /* Binops that need to be initialized manually, but can be expanded
    automagically by rs6000_expand_binop_builtin.  */
 static struct builtin_description bdesc_2arg_spe[] =
@@ -8234,6 +8397,78 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
 
   *expandedp = false;
   return NULL_RTX;
+}
+
+static rtx
+paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
+{
+  rtx pat, scratch, tmp;
+  tree form = CALL_EXPR_ARG (exp, 0);
+  tree arg0 = CALL_EXPR_ARG (exp, 1);
+  tree arg1 = CALL_EXPR_ARG (exp, 2);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  int form_int;
+  enum rtx_code code;
+
+  if (TREE_CODE (form) != INTEGER_CST)
+    {
+      error ("argument 1 of __builtin_paired_predicate must be a constant");
+      return const0_rtx;
+    }
+  else
+    form_int = TREE_INT_CST_LOW (form);
+
+  gcc_assert (mode0 == mode1);
+
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return const0_rtx;
+
+  if (target == 0
+      || GET_MODE (target) != SImode
+      || !(*insn_data[icode].operand[0].predicate) (target, SImode))
+    target = gen_reg_rtx (SImode);
+  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
+    op1 = copy_to_mode_reg (mode1, op1);
+
+  scratch = gen_reg_rtx (CCFPmode);
+
+  pat = GEN_FCN (icode) (scratch, op0, op1);
+  if (!pat)
+    return const0_rtx;
+
+  emit_insn (pat);
+
+  switch (form_int)
+    {
+      /* LT bit.  */
+    case 0:
+      code = LT;
+      break;
+      /* GT bit.  */
+    case 1:
+      code = GT;
+      break;
+      /* EQ bit.  */
+    case 2:
+      code = EQ;
+      break;
+      /* UN bit.  */
+    case 3:
+      emit_insn (gen_move_from_CR_ov_bit (target, scratch));
+      return target;
+    default:
+      error ("argument 1 of __builtin_paired_predicate is out of range");
+      return const0_rtx;
+    }
+
+  tmp = gen_rtx_fmt_ee (code, SImode, scratch, const0_rtx);
+  emit_move_insn (target, tmp);
+  return target;
 }
 
 static rtx
@@ -8476,8 +8711,15 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (success)
 	return ret;
     }
+  if (TARGET_PAIRED_FLOAT)
+    {
+      ret = paired_expand_builtin (exp, target, &success);
 
-  gcc_assert (TARGET_ALTIVEC || TARGET_SPE);
+      if (success)
+	return ret;
+    }  
+
+  gcc_assert (TARGET_ALTIVEC || TARGET_SPE || TARGET_PAIRED_FLOAT);
 
   /* Handle simple unary operations.  */
   d = (struct builtin_description *) bdesc_1arg;
@@ -8603,11 +8845,13 @@ rs6000_init_builtins (void)
 					    get_identifier ("__vector __pixel"),
 					    pixel_V8HI_type_node));
 
+  if (TARGET_PAIRED_FLOAT)
+    paired_init_builtins ();
   if (TARGET_SPE)
     spe_init_builtins ();
   if (TARGET_ALTIVEC)
     altivec_init_builtins ();
-  if (TARGET_ALTIVEC || TARGET_SPE)
+  if (TARGET_ALTIVEC || TARGET_SPE || TARGET_PAIRED_FLOAT)
     rs6000_common_init_builtins ();
 
 #if TARGET_XCOFF
@@ -8855,6 +9099,62 @@ spe_init_builtins (void)
 	  break;
 	case V2SFmode:
 	  type = v2sf_ftype_4_v2sf;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      def_builtin (d->mask, d->name, type, d->code);
+    }
+}
+
+static void
+paired_init_builtins (void)
+{
+  struct builtin_description *d;
+  size_t i;
+  tree endlink = void_list_node;
+
+   tree int_ftype_int_v2sf_v2sf
+    = build_function_type
+    (integer_type_node,
+     tree_cons (NULL_TREE, integer_type_node,
+                tree_cons (NULL_TREE, V2SF_type_node,
+                           tree_cons (NULL_TREE, V2SF_type_node,
+                                      endlink))));
+  tree pcfloat_type_node =
+    build_pointer_type (build_qualified_type
+			(float_type_node, TYPE_QUAL_CONST));
+
+  tree v2sf_ftype_long_pcfloat = build_function_type_list (V2SF_type_node,
+							   long_integer_type_node,
+							   pcfloat_type_node,
+							   NULL_TREE);
+  tree void_ftype_v2sf_long_pcfloat =
+    build_function_type_list (void_type_node,
+			      V2SF_type_node,
+			      long_integer_type_node,
+			      pcfloat_type_node,
+			      NULL_TREE);
+
+
+  def_builtin (0, "__builtin_paired_lx", v2sf_ftype_long_pcfloat,
+	       PAIRED_BUILTIN_LX);
+
+
+  def_builtin (0, "__builtin_paired_stx", void_ftype_v2sf_long_pcfloat,
+	       PAIRED_BUILTIN_STX);
+
+  /* Predicates.  */
+  d = (struct builtin_description *) bdesc_paired_preds;
+  for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); ++i, d++)
+    {
+      tree type;
+
+      switch (insn_data[d->icode].operand[1].mode)
+	{
+	case V2SFmode:
+	  type = int_ftype_int_v2sf_v2sf;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -9226,6 +9526,11 @@ rs6000_common_init_builtins (void)
   const struct builtin_description *d;
   size_t i;
 
+  tree v2sf_ftype_v2sf_v2sf_v2sf
+    = build_function_type_list (V2SF_type_node,
+                                V2SF_type_node, V2SF_type_node,
+                                V2SF_type_node, NULL_TREE);
+
   tree v4sf_ftype_v4sf_v4sf_v16qi
     = build_function_type_list (V4SF_type_node,
 				V4SF_type_node, V4SF_type_node,
@@ -9258,10 +9563,16 @@ rs6000_common_init_builtins (void)
 				opaque_V2SI_type_node,
 				opaque_V2SI_type_node, NULL_TREE);
 
-  tree v2sf_ftype_v2sf_v2sf
+  tree v2sf_ftype_v2sf_v2sf_spe
     = build_function_type_list (opaque_V2SF_type_node,
 				opaque_V2SF_type_node,
 				opaque_V2SF_type_node, NULL_TREE);
+
+  tree v2sf_ftype_v2sf_v2sf
+    = build_function_type_list (V2SF_type_node,
+                                V2SF_type_node,
+                                V2SF_type_node, NULL_TREE);
+
 
   tree v2si_ftype_int_int
     = build_function_type_list (opaque_V2SI_type_node,
@@ -9276,9 +9587,13 @@ rs6000_common_init_builtins (void)
     = build_function_type_list (opaque_V2SI_type_node,
 				opaque_V2SI_type_node, NULL_TREE);
 
-  tree v2sf_ftype_v2sf
+  tree v2sf_ftype_v2sf_spe
     = build_function_type_list (opaque_V2SF_type_node,
 				opaque_V2SF_type_node, NULL_TREE);
+
+  tree v2sf_ftype_v2sf
+    = build_function_type_list (V2SF_type_node,
+                                V2SF_type_node, NULL_TREE);
 
   tree v2sf_ftype_v2si
     = build_function_type_list (opaque_V2SF_type_node,
@@ -9466,6 +9781,9 @@ rs6000_common_init_builtins (void)
 	    case V16QImode:
 	      type = v16qi_ftype_v16qi_v16qi_v16qi;
 	      break;
+            case V2SFmode:
+                type = v2sf_ftype_v2sf_v2sf_v2sf;
+              break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -9574,8 +9892,11 @@ rs6000_common_init_builtins (void)
 	    case V2SImode:
 	      type = v2si_ftype_v2si_v2si;
 	      break;
-	    case V2SFmode:
-	      type = v2sf_ftype_v2sf_v2sf;
+            case V2SFmode:
+              if (TARGET_PAIRED_FLOAT)
+                type = v2sf_ftype_v2sf_v2sf;
+              else
+                type = v2sf_ftype_v2sf_v2sf_spe;
 	      break;
 	    case SImode:
 	      type = int_ftype_int_int;
@@ -9714,7 +10035,12 @@ rs6000_common_init_builtins (void)
       else if (mode0 == V2SImode && mode1 == V2SImode)
 	type = v2si_ftype_v2si;
       else if (mode0 == V2SFmode && mode1 == V2SFmode)
-	type = v2sf_ftype_v2sf;
+        {
+          if (TARGET_PAIRED_FLOAT)
+            type = v2sf_ftype_v2sf;
+          else
+            type = v2sf_ftype_v2sf_spe;
+        }
       else if (mode0 == V2SFmode && mode1 == V2SImode)
 	type = v2sf_ftype_v2si;
       else if (mode0 == V2SImode && mode1 == V2SFmode)
@@ -21093,6 +21419,9 @@ rs6000_scalar_mode_supported_p (enum machine_mode mode)
 static bool
 rs6000_vector_mode_supported_p (enum machine_mode mode)
 {
+
+  if (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (mode))
+    return true;
 
   if (TARGET_SPE && SPE_VECTOR_MODE (mode))
     return true;

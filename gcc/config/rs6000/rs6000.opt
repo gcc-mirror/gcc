@@ -201,6 +201,10 @@ mspe
 Target Var(rs6000_spe)
 Generate SPE SIMD instructions on E500
 
+mpaired
+Target Var(rs6000_paired_float)
+Generate PPC750CL paired-single instructions
+
 mspe=
 Target RejectNegative Joined
 -mspe=yes/no	Deprecated option.  Use -mspe/-mno-spe instead

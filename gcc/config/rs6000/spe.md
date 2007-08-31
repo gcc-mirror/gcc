@@ -2678,7 +2678,7 @@
 (define_expand "movv2sf"
   [(set (match_operand:V2SF 0 "nonimmediate_operand" "")
 	(match_operand:V2SF 1 "any_operand" ""))]
-  "TARGET_SPE"
+  "TARGET_SPE || TARGET_PAIRED_FLOAT"
   "{ rs6000_emit_move (operands[0], operands[1], V2SFmode); DONE; }")
 
 (define_insn "*movv2sf_internal"
