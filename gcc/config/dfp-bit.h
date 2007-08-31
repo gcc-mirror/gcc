@@ -454,9 +454,9 @@ typedef unsigned int USItype __attribute__ ((mode (SI)));
 typedef unsigned int UDItype __attribute__ ((mode (DI)));
 
 /* The type of the result of a decimal float comparison.  This must
-   match `word_mode' in GCC for the target.  */
+   match `__libgcc_cmp_return__' in GCC for the target.  */
 
-typedef int CMPtype __attribute__ ((mode (word)));
+typedef int CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 
 /* Prototypes.  */
 

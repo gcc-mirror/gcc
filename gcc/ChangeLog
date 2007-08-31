@@ -1,3 +1,15 @@
+2007-08-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* optabs.c (prepare_float_lib_cmp): Use
+	libgcc_cmp_return_mode instead of word_mode.
+	* config/dfp-bit.h: Likewise.
+	* config/fp-bit.h: Likewise.
+	* config/spu/spu.c (spu_libgcc_cmp_return_mode):
+	New function.
+	(spu_libgcc_shift_count_mode): New function.
+	(TARGET_LIBGCC_CMP_RETURN_MODE): Define.
+	(TARGET_LIBGCC_SHIFT_COUNT_MODE): Define.
+
 2007-08-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* tree-pretty-print.c: Include output.h.
@@ -38,6 +50,7 @@
 	* optabs.c (shift_optab_p, commutative_optab_p): New functions,
 	split out from expand_binop.
 	(avoid_expensive_constant): New function.
+	(expand_binop_directly): Remove commutative_op argument and
 	(expand_binop_directly): Remove commutative_op argument and
 	call cummutative_optab_p instead.  Do not change op0 or op1
 	when swapping xop0 and xop1.  Apply avoid_expensive_constant
