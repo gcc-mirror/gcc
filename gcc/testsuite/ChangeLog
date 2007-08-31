@@ -1,3 +1,9 @@
+2007-08-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33232
+	* gfortran.dg/eor_handling_2.f90: Add dg-warnings.
+	* gfortran.dg/read_1.f90: New.
+
 2007-08-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33210
