@@ -1,3 +1,13 @@
+2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
+	
+	* cp-demangle.c (d_dump): Handle
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE. 
+	(d_make_comp): Ditto.
+	(cplus_demangle_type): Ditto.
+	(d_print_comp): Ditto.
+	(d_print_mod): Ditto.
+	(d_print_function_type): Ditto.
+
 2007-08-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	* pex-common.h: (pex_funcs): Retyped wait and exec_child to pid_t.

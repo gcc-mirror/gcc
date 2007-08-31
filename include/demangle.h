@@ -296,6 +296,9 @@ enum demangle_component_type
   /* A reference.  The one subtree is the type which is being
      referenced.  */
   DEMANGLE_COMPONENT_REFERENCE,
+  /* C++0x: An rvalue reference.  The one subtree is the type which is
+     being referenced.  */
+  DEMANGLE_COMPONENT_RVALUE_REFERENCE,
   /* A complex type.  The one subtree is the base type.  */
   DEMANGLE_COMPONENT_COMPLEX,
   /* An imaginary type.  The one subtree is the base type.  */
