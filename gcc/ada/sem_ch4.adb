@@ -2136,6 +2136,8 @@ package body Sem_Ch4 is
             --  of the analysis of the call with the user-defined operation,
             --  because the parameter names may be wrong and yet the hiding
             --  takes place. Fixes b34014o.
+            --  The abstract operations on address do not hide the predefined
+            --  operator (this is the purpose of making them abstract).
 
             if Is_Overloaded (Name (N)) then
                declare
@@ -2146,6 +2148,11 @@ package body Sem_Ch4 is
                   Get_First_Interp (Name (N), I, It);
                   while Present (It.Nam) loop
                      if Ekind (It.Nam) /= E_Operator
+                        and then not
+                          (Is_Abstract_Subprogram (It.Nam)
+                            and then
+                              Is_Descendent_Of_Address
+                                 (Etype (First_Formal (It.Nam))))
                         and then Hides_Op (It.Nam, Nam)
                         and then
                           Has_Compatible_Type
@@ -2196,7 +2203,21 @@ package body Sem_Ch4 is
             if Nkind (Parent (Actual)) /= N_Parameter_Association
               or else Chars (Selector_Name (Parent (Actual))) = Chars (Formal)
             then
-               if Has_Compatible_Type (Actual, Etype (Formal)) then
+               --  The actual can be compatible with the formal, but we must
+               --  also check that the context is not an address type that is
+               --  visibly an integer type, as is the case in VMS_64. In this
+               --  case the use of literals is illegal, except in the body of
+               --  descendents of system, where arithmetic operations on
+               --  address are of course used.
+
+               if Has_Compatible_Type (Actual, Etype (Formal))
+                 and then
+                  (Etype (Actual) /= Universal_Integer
+                    or else not Is_Descendent_Of_Address (Etype (Formal))
+                    or else
+                      Is_Predefined_File_Name
+                        (Unit_File_Name (Get_Source_Unit (N))))
+               then
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
@@ -2889,9 +2910,12 @@ package body Sem_Ch4 is
             end if;
 
             --  If the prefix is a private extension, check only the visible
-            --  components of the partial view.
+            --  components of the partial view. This must include the tag,
+            --  wich can appear in expanded code in a tag check.
 
-            if Ekind (Type_To_Use) = E_Record_Type_With_Private then
+            if Ekind (Type_To_Use) = E_Record_Type_With_Private
+              and then  Chars (Selector_Name (N)) /= Name_uTag
+            then
                exit when Comp = Last_Entity (Type_To_Use);
             end if;
 
@@ -4855,7 +4879,7 @@ package body Sem_Ch4 is
                   exit;
 
                --  In Ada 2005, this operation does not participate in Overload
-               --  resolution. If the operation is defined in in a predefined
+               --  resolution. If the operation is defined in a predefined
                --  unit, it is one of the operations declared abstract in some
                --  variants of System, and it must be removed as well.
 
