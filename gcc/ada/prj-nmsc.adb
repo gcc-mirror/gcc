@@ -4812,9 +4812,9 @@ package body Prj.Nmsc is
                       Util.Value_Of
                         (Name_Source_Dirs, Data.Decl.Attributes, In_Tree);
 
-      Removed_Source_Dirs : constant Variable_Value :=
+      Excluded_Source_Dirs : constant Variable_Value :=
                               Util.Value_Of
-                                (Name_Removed_Source_Dirs,
+                                (Name_Excluded_Source_Dirs,
                                  Data.Decl.Attributes,
                                  In_Tree);
 
@@ -5416,12 +5416,13 @@ package body Prj.Nmsc is
 
       else
          declare
-            Source_Dir : String_List_Id := Source_Dirs.Values;
+            Source_Dir : String_List_Id;
             Element    : String_Element;
 
          begin
             --  Process the source directories for each element of the list
 
+            Source_Dir := Source_Dirs.Values;
             while Source_Dir /= Nil_String loop
                Element :=
                  In_Tree.String_Elements.Table (Source_Dir);
@@ -5432,8 +5433,9 @@ package body Prj.Nmsc is
          end;
       end if;
 
-      if (not Removed_Source_Dirs.Default) and then
-        Removed_Source_Dirs.Values /= Nil_String then
+      if not Excluded_Source_Dirs.Default
+        and then Excluded_Source_Dirs.Values /= Nil_String
+      then
          declare
             Source_Dir : String_List_Id;
             Element    : String_Element;
@@ -5441,7 +5443,7 @@ package body Prj.Nmsc is
          begin
             --  Process the source directories for each element of the list
 
-            Source_Dir := Removed_Source_Dirs.Values;
+            Source_Dir := Excluded_Source_Dirs.Values;
             while Source_Dir /= Nil_String loop
                Element :=
                  In_Tree.String_Elements.Table (Source_Dir);
@@ -6883,9 +6885,9 @@ package body Prj.Nmsc is
                                     Data.Decl.Attributes,
                                     In_Tree);
 
-            Locally_Removed  : constant Variable_Value :=
+            Excluded_Sources : Variable_Value :=
                                  Util.Value_Of
-                                   (Name_Locally_Removed_Files,
+                                   (Name_Excluded_Source_Files,
                                     Data.Decl.Attributes,
                                     In_Tree);
 
@@ -7008,13 +7010,24 @@ package body Prj.Nmsc is
                  (Project, In_Tree, Data, Follow_Links);
             end if;
 
+            --  If Excluded_ource_Files is not declared, check
+            --  Locally_Removed_Files.
+
+            if Excluded_Sources.Default then
+               Excluded_Sources :=
+                 Util.Value_Of
+                   (Name_Locally_Removed_Files,
+                    Data.Decl.Attributes,
+                    In_Tree);
+            end if;
+
             --  If there are sources that are locally removed, mark them as
             --  such in the Units table.
 
-            if not Locally_Removed.Default then
+            if not Excluded_Sources.Default then
 
                declare
-                  Current  : String_List_Id := Locally_Removed.Values;
+                  Current  : String_List_Id := Excluded_Sources.Values;
                   Element  : String_Element;
                   Location : Source_Ptr;
                   OK       : Boolean;
@@ -7030,10 +7043,10 @@ package body Prj.Nmsc is
                      Name := Name_Find;
 
                      --  If the element has no location, then use the location
-                     --  of Locally_Removed to report possible errors.
+                     --  of Excluded_Sources to report possible errors.
 
                      if Element.Location = No_Location then
-                        Location := Locally_Removed.Location;
+                        Location := Excluded_Sources.Location;
                      else
                         Location := Element.Location;
                      end if;
@@ -7409,14 +7422,25 @@ package body Prj.Nmsc is
                                     Data.Decl.Attributes,
                                     In_Tree);
 
-            Locally_Removed  : constant Variable_Value :=
+            Excluded_Sources : Variable_Value :=
                                  Util.Value_Of
-                                   (Name_Locally_Removed_Files,
+                                   (Name_Excluded_Source_Files,
                                     Data.Decl.Attributes,
                                     In_Tree);
             Name_Loc         : Name_Location;
 
          begin
+            --  If Excluded_ource_Files is not declared, check
+            --  Locally_Removed_Files.
+
+            if Excluded_Sources.Default then
+               Excluded_Sources :=
+                 Util.Value_Of
+                   (Name_Locally_Removed_Files,
+                    Data.Decl.Attributes,
+                    In_Tree);
+            end if;
+
             if not Sources.Default then
                if not Source_List_File.Default then
                   Error_Msg
@@ -7517,7 +7541,7 @@ package body Prj.Nmsc is
 
             --  If there are locally removed sources, mark them as such
 
-            if not Locally_Removed.Default then
+            if not Excluded_Sources.Default then
                declare
                   Current  : String_List_Id;
                   Element  : String_Element;
@@ -7528,7 +7552,7 @@ package body Prj.Nmsc is
                   Src_Data : Source_Data;
 
                begin
-                  Current := Locally_Removed.Values;
+                  Current := Excluded_Sources.Values;
                   while Current /= Nil_String loop
                      Element :=
                        In_Tree.String_Elements.Table (Current);
@@ -7537,10 +7561,10 @@ package body Prj.Nmsc is
                      Name := Name_Find;
 
                      --  If the element has no location, then use the location
-                     --  of Locally_Removed to report possible errors.
+                     --  of Excluded_Sources to report possible errors.
 
                      if Element.Location = No_Location then
-                        Location := Locally_Removed.Location;
+                        Location := Excluded_Sources.Location;
                      else
                         Location := Element.Location;
                      end if;
