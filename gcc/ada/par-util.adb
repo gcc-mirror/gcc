@@ -61,7 +61,7 @@ package body Util is
       end if;
 
       for J in S'Range loop
-         S (J) := Fold_Lower (Tname (Integer (J) + 4));
+         S (J) := Fold_Lower (Tname (J + 4));
       end loop;
 
       Get_Name_String (Token_Name);
