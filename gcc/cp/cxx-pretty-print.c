@@ -190,6 +190,8 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
+    case TYPENAME_TYPE:
+    case UNBOUND_CLASS_TEMPLATE:
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       break;
 
@@ -205,9 +207,12 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       pp_cxx_unqualified_id (pp, TEMPLATE_PARM_DECL (t));
       break;
 
-    case TYPENAME_TYPE:
-    case UNBOUND_CLASS_TEMPLATE:
-      pp_cxx_unqualified_id (pp, TYPE_NAME (t));
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      pp_cxx_cv_qualifier_seq (pp, t);
+      pp_cxx_unqualified_id (pp, TYPE_IDENTIFIER (t));
+      pp_cxx_begin_template_argument_list (pp);
+      pp_cxx_template_argument_list (pp, TYPE_TI_ARGS (t));
+      pp_cxx_end_template_argument_list (pp);
       break;
 
     default:
