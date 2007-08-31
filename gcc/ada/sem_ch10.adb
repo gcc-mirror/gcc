@@ -1892,15 +1892,20 @@ package body Sem_Ch10 is
                --  Protect frontend against previous errors in context clauses
 
                if Nkind (Name (Item)) /= N_Selected_Component then
-                  Unit_Name := Entity (Name (Item));
-                  while Is_Child_Unit (Unit_Name) loop
-                     Set_Is_Visible_Child_Unit (Unit_Name);
-                     Unit_Name := Scope (Unit_Name);
-                  end loop;
+                  if Error_Posted (Item) then
+                     null;
 
-                  if not Is_Immediately_Visible (Unit_Name) then
-                     Set_Is_Immediately_Visible (Unit_Name);
-                     Set_Context_Installed (Item);
+                  else
+                     Unit_Name := Entity (Name (Item));
+                     while Is_Child_Unit (Unit_Name) loop
+                        Set_Is_Visible_Child_Unit (Unit_Name);
+                        Unit_Name := Scope (Unit_Name);
+                     end loop;
+
+                     if not Is_Immediately_Visible (Unit_Name) then
+                        Set_Is_Immediately_Visible (Unit_Name);
+                        Set_Context_Installed (Item);
+                     end if;
                   end if;
                end if;
 
@@ -1932,6 +1937,7 @@ package body Sem_Ch10 is
                --  Protect frontend against previous errors in context clauses
 
               and then Nkind (Name (Item)) /= N_Selected_Component
+              and then not Error_Posted (Item)
             then
                Unit_Name := Entity (Name (Item));
                while Is_Child_Unit (Unit_Name) loop
