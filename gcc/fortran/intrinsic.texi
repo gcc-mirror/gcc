@@ -6390,7 +6390,6 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @fnindex ALGAMA
 @fnindex DLGAMA
 @cindex Gamma function, logarithm of
-@cindex 
 
 @table @asis
 @item @emph{Description}:
