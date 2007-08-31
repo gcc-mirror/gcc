@@ -1,5 +1,8 @@
 2007-08-31  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/33148
+	* gcc.c-torture/compile/20070827-1.c: New test.
+
 	PR debug/32914
 	* d++.dg/debug/const3.C: New test.
 	* d++.dg/debug/const4.C: New test.
