@@ -1,3 +1,8 @@
+2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
+
+	* mangle.c (write_type): Change mangling of rvalue reference from
+	`RR' to `O'. 
+
 2007-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (duplicate_decls): Remove duplicated line.
@@ -33,6 +38,7 @@
 	(get_delta_difference_1): New function.
 	(get_delta_difference): Refactor to call get_delta_difference_1.
 
+>>>>>>> .r127998
 2007-08-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33209
