@@ -6502,6 +6502,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
   type1 = cp_parser_type_id (parser);
 
+  if (type1 == error_mark_node)
+    return error_mark_node;
+
   /* Build a trivial decl-specifier-seq.  */
   clear_decl_specs (&decl_specs);
   decl_specs.type = type1;
@@ -6516,6 +6519,9 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
  
       type2 = cp_parser_type_id (parser);
 
+      if (type2 == error_mark_node)
+	return error_mark_node;
+
       /* Build a trivial decl-specifier-seq.  */
       clear_decl_specs (&decl_specs);
       decl_specs.type = type2;
@@ -6527,8 +6533,8 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
 
   cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
 
-  /* Complete the trait expr, which may mean either processing the
-     static assert now or saving it for template instantiation.  */
+  /* Complete the trait expression, which may mean either processing
+     the trait expr now or saving it for template instantiation.  */
   return finish_trait_expr (kind, type1, type2);
 }
 

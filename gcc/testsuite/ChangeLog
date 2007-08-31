@@ -1,3 +1,8 @@
+2007-08-31  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33212
+	* g++.dg/ext/is_class_error.C: New.
+
 2007-08-31  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/test_oalign.adb, oalign[12].ads: New test.
@@ -5,24 +10,24 @@
 2007-08-31  David Edelsohn  <edelsohn@gnu.org>
             Revital Eres  <eres@il.ibm.com>
 
-        * gcc.target/powerpc/paired-1.c: New test.
-        * gcc.target/powerpc/paired-2.c: New test.
-        * gcc.target/powerpc/paired-3.c: New test.
-        * gcc.target/powerpc/paired-4.c: New test.
-        * gcc.target/powerpc/paired-5.c: New test.
-        * gcc.target/powerpc/paired-6.c: New test.
-        * gcc.target/powerpc/paired-7.c: New test.
-        * gcc.target/powerpc/ppc-paired.c: New test.
+	* gcc.target/powerpc/paired-1.c: New test.
+	* gcc.target/powerpc/paired-2.c: New test.
+	* gcc.target/powerpc/paired-3.c: New test.
+	* gcc.target/powerpc/paired-4.c: New test.
+	* gcc.target/powerpc/paired-5.c: New test.
+	* gcc.target/powerpc/paired-6.c: New test.
+	* gcc.target/powerpc/paired-7.c: New test.
+	* gcc.target/powerpc/ppc-paired.c: New test.
 
-2007-08-30  Ollie Wild  <aaw@google.com>
+2007-08-31  Ollie Wild  <aaw@google.com>
 
-	g++.dg/conversion/ptrmem2.C: New test.
-	g++.dg/conversion/ptrmem3.C: New test.
-	g++.dg/conversion/ptrmem4.C: New test.
-	g++.dg/conversion/ptrmem5.C: New test.
-	g++.dg/conversion/ptrmem6.C: New test.
-	g++.dg/conversion/ptrmem7.C: New test.
-	g++.dg/conversion/ptrmem8.C: New test.
+	* g++.dg/conversion/ptrmem2.C: New test.
+	* g++.dg/conversion/ptrmem3.C: New test.
+	* g++.dg/conversion/ptrmem4.C: New test.
+	* g++.dg/conversion/ptrmem5.C: New test.
+	* g++.dg/conversion/ptrmem6.C: New test.
+	* g++.dg/conversion/ptrmem7.C: New test.
+	* g++.dg/conversion/ptrmem8.C: New test.
 
 2007-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
