@@ -9885,7 +9885,23 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			init = cp_fname_init (name, &TREE_TYPE (decl));
 		      }
 		    else
-		      init = RECUR (init);
+		      {
+			tree t = RECUR (init);
+
+			if (init && !t)
+			  /* If we had an initializer but it
+			     instantiated to nothing,
+			     value-initialize the object.  This will
+			     only occur when the initializer was a
+			     pack expansion where the parameter packs
+			     used in that expansion were of length
+			     zero.  */
+			  init = build_default_init (TREE_TYPE (decl),
+                                                     NULL_TREE);
+			else
+			  init = t;
+		      }
+
 		    finish_decl (decl, init, NULL_TREE);
 		  }
 	      }
@@ -10489,12 +10505,25 @@ tsubst_copy_and_build (tree t,
       return build_x_arrow (op1);
 
     case NEW_EXPR:
-      return build_new
-	(RECUR (TREE_OPERAND (t, 0)),
-	 RECUR (TREE_OPERAND (t, 1)),
-	 RECUR (TREE_OPERAND (t, 2)),
-	 RECUR (TREE_OPERAND (t, 3)),
-	 NEW_EXPR_USE_GLOBAL (t));
+      {
+	tree init = RECUR (TREE_OPERAND (t, 3));
+
+	if (TREE_OPERAND (t, 3) && !init)
+	  /* If there was an initializer in the the original tree, but
+	     it instantiated to an empty list, then we should pass on
+	     VOID_ZERO_NODE to tell build_new that it was an empty
+	     initializer () rather than no initializer.  This can only
+	     happen when the initializer is a pack expansion whose
+	     parameter packs are of length zero.  */
+	  init = void_zero_node;
+
+	return build_new
+	  (RECUR (TREE_OPERAND (t, 0)),
+	   RECUR (TREE_OPERAND (t, 1)),
+	   RECUR (TREE_OPERAND (t, 2)),
+	   init,
+	   NEW_EXPR_USE_GLOBAL (t));
+      }
 
     case DELETE_EXPR:
      return delete_sanity
