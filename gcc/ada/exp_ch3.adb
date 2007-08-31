@@ -3091,8 +3091,70 @@ package body Exp_Ch3 is
             Set_Debug_Info_Off (Proc_Id);
          end if;
 
-         Set_Static_Initialization
-           (Proc_Id, Build_Equivalent_Record_Aggregate (Rec_Type));
+         declare
+            Agg : constant Node_Id :=
+                    Build_Equivalent_Record_Aggregate (Rec_Type);
+
+            procedure Collect_Itypes (Comp : Node_Id);
+            --  Generate references to itypes in the aggregate, because
+            --  the first use of the aggregate may be in a nested scope.
+
+            --------------------
+            -- Collect_Itypes --
+            --------------------
+
+            procedure Collect_Itypes (Comp : Node_Id) is
+               Ref      : Node_Id;
+               Sub_Aggr : Node_Id;
+               Typ      : Entity_Id;
+
+            begin
+               if Is_Array_Type (Etype (Comp))
+                 and then Is_Itype (Etype (Comp))
+               then
+                  Typ := Etype (Comp);
+                  Ref := Make_Itype_Reference (Loc);
+                  Set_Itype (Ref, Typ);
+                  Append_Freeze_Action (Rec_Type, Ref);
+
+                  Ref := Make_Itype_Reference (Loc);
+                  Set_Itype (Ref, Etype (First_Index (Typ)));
+                  Append_Freeze_Action (Rec_Type, Ref);
+
+                  Sub_Aggr := First (Expressions (Comp));
+
+                  --  Recurse on nested arrays
+
+                  while Present (Sub_Aggr) loop
+                     Collect_Itypes (Sub_Aggr);
+                     Next (Sub_Aggr);
+                  end loop;
+               end if;
+            end Collect_Itypes;
+
+         begin
+            --  If there is a static initialization aggregate for the type,
+            --  generate itype references for the types of its (sub)components,
+            --  to prevent out-of-scope errors in the resulting tree.
+            --  The aggregate may have been rewritten as a Raise node, in which
+            --  case there are no relevant itypes.
+
+            if Present (Agg)
+              and then Nkind (Agg) = N_Aggregate
+            then
+               Set_Static_Initialization (Proc_Id, Agg);
+
+               declare
+                  Comp  : Node_Id;
+               begin
+                  Comp := First (Component_Associations (Agg));
+                  while Present (Comp) loop
+                     Collect_Itypes (Expression (Comp));
+                     Next (Comp);
+                  end loop;
+               end;
+            end if;
+         end;
       end if;
    end Build_Record_Init_Proc;
 
@@ -6779,9 +6841,9 @@ package body Exp_Ch3 is
       Formal      : Entity_Id;
       Par_Formal  : Entity_Id;
       Formal_Node : Node_Id;
-      Func_Spec   : Node_Id;
-      Func_Decl   : Node_Id;
       Func_Body   : Node_Id;
+      Func_Decl   : Node_Id;
+      Func_Spec   : Node_Id;
       Return_Stmt : Node_Id;
 
    begin
