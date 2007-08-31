@@ -1,3 +1,7 @@
+2007-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/test_oalign.adb, oalign[12].ads: New test.
+	
 2007-08-31  David Edelsohn  <edelsohn@gnu.org>
             Revital Eres  <eres@il.ibm.com>
 
