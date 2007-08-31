@@ -751,6 +751,7 @@ set_rhs (tree *stmt_p, tree expr)
 		SSA_NAME_DEF_STMT (var) = *stmt_p;
 	    }
 	}
+      stmt->base.ann = NULL;
       break;
     }
 
