@@ -108,9 +108,9 @@ typedef int TItype __attribute__ ((mode (TI)));
 #endif
 
 /* The type of the result of a floating point comparison.  This must
-   match `word_mode' in GCC for the target.  */
+   match `__libgcc_cmp_return__' in GCC for the target.  */
 #ifndef CMPtype
-typedef int CMPtype __attribute__ ((mode (word)));
+typedef int CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #endif
 
 typedef unsigned int UHItype __attribute__ ((mode (HI)));

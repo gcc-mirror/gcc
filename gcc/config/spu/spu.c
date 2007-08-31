@@ -174,6 +174,12 @@ static int cpat_info(unsigned char *arr, int size, int *prun, int *pstart);
 static enum immediate_class classify_immediate (rtx op,
 						enum machine_mode mode);
 
+static enum machine_mode
+spu_libgcc_cmp_return_mode (void);
+
+static enum machine_mode
+spu_libgcc_shift_count_mode (void);
+
 /* Built in types.  */
 tree spu_builtin_types[SPU_BTI_MAX];
 
@@ -274,6 +280,12 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTOR_ALIGNMENT_REACHABLE spu_vector_alignment_reachable
+
+#undef TARGET_LIBGCC_CMP_RETURN_MODE
+#define TARGET_LIBGCC_CMP_RETURN_MODE spu_libgcc_cmp_return_mode
+
+#undef TARGET_LIBGCC_SHIFT_COUNT_MODE
+#define TARGET_LIBGCC_SHIFT_COUNT_MODE spu_libgcc_shift_count_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5502,4 +5514,21 @@ spu_init_expanders (void)
    * expanding the prologue. */
   if (cfun)
     REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = 8;
-}       
+}
+
+static enum machine_mode
+spu_libgcc_cmp_return_mode (void)
+{
+
+/* For SPU word mode is TI mode so it is better to use SImode
+   for compare returns.  */
+  return SImode;
+}
+
+static enum machine_mode
+spu_libgcc_shift_count_mode (void)
+{
+/* For SPU word mode is TI mode so it is better to use SImode
+   for shift counts.  */
+  return SImode;
+}

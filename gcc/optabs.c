@@ -4232,10 +4232,11 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
   rtx x = *px;
   rtx y = *py;
   enum machine_mode orig_mode = GET_MODE (x);
-  enum machine_mode mode;
+  enum machine_mode mode, cmp_mode;
   rtx value, target, insns, equiv;
   rtx libfunc = 0;
   bool reversed_p = false;
+  cmp_mode = targetm.libgcc_cmp_return_mode ();
 
   for (mode = orig_mode;
        mode != VOIDmode;
@@ -4274,14 +4275,14 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
      condition can be determined at compile-time.  */
   if (comparison == UNORDERED)
     {
-      rtx temp = simplify_gen_relational (NE, word_mode, mode, x, x);
-      equiv = simplify_gen_relational (NE, word_mode, mode, y, y);
-      equiv = simplify_gen_ternary (IF_THEN_ELSE, word_mode, word_mode,
+      rtx temp = simplify_gen_relational (NE, cmp_mode, mode, x, x);
+      equiv = simplify_gen_relational (NE, cmp_mode, mode, y, y);
+      equiv = simplify_gen_ternary (IF_THEN_ELSE, cmp_mode, cmp_mode,
 				    temp, const_true_rtx, equiv);
     }
   else
     {
-      equiv = simplify_gen_relational (comparison, word_mode, mode, x, y);
+      equiv = simplify_gen_relational (comparison, cmp_mode, mode, x, y);
       if (! FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
 	{
 	  rtx true_rtx, false_rtx;
@@ -4321,18 +4322,18 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
 	    default:
 	      gcc_unreachable ();
 	    }
-	  equiv = simplify_gen_ternary (IF_THEN_ELSE, word_mode, word_mode,
+	  equiv = simplify_gen_ternary (IF_THEN_ELSE, cmp_mode, cmp_mode,
 					equiv, true_rtx, false_rtx);
 	}
     }
 
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-				   word_mode, 2, x, mode, y, mode);
+				   cmp_mode, 2, x, mode, y, mode);
   insns = get_insns ();
   end_sequence ();
 
-  target = gen_reg_rtx (word_mode);
+  target = gen_reg_rtx (cmp_mode);
   emit_libcall_block (insns, target, value, equiv);
 
   if (comparison == UNORDERED
@@ -4341,7 +4342,7 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
 
   *px = target;
   *py = const0_rtx;
-  *pmode = word_mode;
+  *pmode = cmp_mode;
   *pcomparison = comparison;
   *punsignedp = 0;
 }
