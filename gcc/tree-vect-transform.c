@@ -124,7 +124,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int byte_misalign;
-  int innerloop_iters, factor;
+  int innerloop_iters = 0, factor;
 
   /* Cost model disabled.  */
   if (!flag_vect_cost_model)
