@@ -5992,10 +5992,8 @@ build_complex_type (tree component_type)
 	  = build_complex_type (TYPE_CANONICAL (component_type));
     }
 
-  /* If we are writing Dwarf2 output we need to create a name,
-     since complex is a fundamental type.  */
-  if ((write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
-      && ! TYPE_NAME (t))
+  /* We need to create a name, since complex is a fundamental type.  */
+  if (! TYPE_NAME (t))
     {
       const char *name;
       if (component_type == char_type_node)
