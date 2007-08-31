@@ -314,8 +314,22 @@ add_coalesce (coalesce_list_p cl, int p1, int p2,
 static int 
 compare_pairs (const void *p1, const void *p2)
 {
-  return (*(const_coalesce_pair_p const*)p1)->cost
-    - (*(const_coalesce_pair_p const*)p2)->cost;
+  const_coalesce_pair_p const * pp1 = p1;
+  const_coalesce_pair_p const * pp2 = p2;
+  int result;
+
+  result = (* pp2)->cost - (* pp1)->cost;
+  /* Since qsort does not guarantee stability we use the elements
+     as a secondary key.  This provides us with independence from
+     the host's implementation of the sorting algorithm.  */
+  if (result == 0)
+    {
+      result = (* pp2)->first_element - (* pp1)->first_element;
+      if (result == 0)
+	result = (* pp2)->second_element - (* pp1)->second_element;
+    }
+
+  return result;
 }
 
 

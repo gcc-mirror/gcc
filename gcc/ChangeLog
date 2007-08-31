@@ -1,5 +1,10 @@
 2007-08-31  Nick Clifton  <nickc@redhat.com>
 
+	* tree-ssa-coalesce.c (compare_pairs): Use the elements as
+	secondary keys in order to obtain a stable sort.
+
+2007-08-31  Nick Clifton  <nickc@redhat.com>
+
 	PR target/33132
 	* config/m32r/constraints.md: Add W constraint for integer zero.
 	* config/m32r/m32r.md (get_pc): Use W and i constraints.
