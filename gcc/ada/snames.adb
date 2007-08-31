@@ -695,6 +695,8 @@ package body Snames is
      "dependency_file_kind#" &
      "dependency_switches#" &
      "driver#" &
+     "excluded_source_dirs#" &
+     "excluded_source_files#" &
      "exec_dir#" &
      "executable#" &
      "executable_suffix#" &
@@ -753,7 +755,6 @@ package body Snames is
      "prefix#" &
      "project#" &
      "roots#" &
-     "removed_source_dirs#" &
      "required_switches#" &
      "run_path_option#" &
      "runtime_project#" &
