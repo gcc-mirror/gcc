@@ -1,3 +1,9 @@
+2007-08-31 Douglas Gregor <doug.gregor@gmail.com>
+
+	PR c++/32597
+	* gcc/testsuite/g++.dg/cpp0x/variadic-new2.C: New.
+	* gcc/testsuite/g++.dg/cpp0x/variadic-new.C: New.
+
 2007-08-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33232

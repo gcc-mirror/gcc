@@ -1,3 +1,15 @@
+2007-08-31 Douglas Gregor <doug.gregor@gmail.com>
+
+	PR c++/32597
+	* init.c (build_default_init): Make extern.
+	* cp-tree.h (build_default_init): Declare here.
+	* pt.c (tsubst_expr): When the instantiation of the initializer of
+	a variable results in an empty list, default-initialize the
+	variable.
+	(tsubst_copy_and_build): When the instantiation of the initializer
+	in a new expression results in an empty initializer list,
+	default-initialize it.
+
 2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* mangle.c (write_type): Change mangling of rvalue reference from

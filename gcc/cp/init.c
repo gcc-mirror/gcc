@@ -51,7 +51,6 @@ static tree initializing_context (tree);
 static void expand_cleanup_for_base (tree, tree);
 static tree get_temp_regvar (tree, tree);
 static tree dfs_initialize_vtbl_ptrs (tree, void *);
-static tree build_default_init (tree, tree);
 static tree build_dtor_call (tree, special_function_kind, int);
 static tree build_field_list (tree, tree, int *);
 static tree build_vtbl_address (tree);
@@ -275,7 +274,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
    returns NULL_TREE; the caller is responsible for arranging for the
    constructors to be called.  */
 
-static tree
+tree
 build_default_init (tree type, tree nelts)
 {
   /* [dcl.init]:
