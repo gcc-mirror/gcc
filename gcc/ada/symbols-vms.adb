@@ -42,6 +42,9 @@ package body Symbols is
    Symbol_File_Name : String_Access := null;
    --  Name of the symbol file
 
+   Long_Symbol_Length : constant := 100;
+   --  Magic length of symbols, over which the lines are split
+
    Sym_Policy : Policy := Autonomous;
    --  The symbol policy. Set by Initialize
 
@@ -120,8 +123,10 @@ package body Symbols is
       Success       : out Boolean)
    is
       File : Ada.Text_IO.File_Type;
-      Line : String (1 .. 1_000);
+      Line : String (1 .. 2_000);
       Last : Natural;
+
+      Offset : Natural;
 
    begin
       --  Record the symbol file name
@@ -221,7 +226,26 @@ package body Symbols is
          --  Read line by line
 
          while not End_Of_File (File) loop
-            Get_Line (File, Line, Last);
+            Offset := 0;
+            loop
+               Get_Line (File, Line (Offset + 1 .. Line'Last), Last);
+               exit when Line (Last) /= '-';
+
+               if End_Of_File (File) then
+                  if not Quiet then
+                     Put_Line ("symbol file """ & Reference &
+                               """ is incorrectly formatted:");
+                     Put_Line ("""" & Line (1 .. Last) & """");
+                  end if;
+
+                  Close (File);
+                  Success := False;
+                  return;
+
+               else
+                  Offset := Last - 1;
+               end if;
+            end loop;
 
             --  Ignore empty lines
 
@@ -549,7 +573,22 @@ package body Symbols is
             for Index in 1 .. Symbol_Table.Last (Original_Symbols) loop
                if Original_Symbols.Table (Index).Present then
                   Put (File, Symbol_Vector);
+
+                  --  Split the line if symbol name length is too large
+
+                  if Original_Symbols.Table (Index).Name'Length >
+                    Long_Symbol_Length
+                  then
+                     Put_Line (File, "-");
+                  end if;
+
                   Put (File, Original_Symbols.Table (Index).Name.all);
+
+                  if Original_Symbols.Table (Index).Name'Length >
+                    Long_Symbol_Length
+                  then
+                     Put_Line (File, "-");
+                  end if;
 
                   if Original_Symbols.Table (Index).Kind = Data then
                      Put_Line (File, Equal_Data);
