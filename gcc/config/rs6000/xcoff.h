@@ -60,6 +60,10 @@
 
 #define MAX_OFILE_ALIGNMENT 32768
 
+/* Default alignment factor for csect directives, chosen to honor
+   BIGGEST_ALIGNMENT.  */
+#define XCOFF_CSECT_DEFAULT_ALIGNMENT_STR "4"
+
 /* Return nonzero if this entry is to be written into the constant
    pool in a special way.  We do so if this is a SYMBOL_REF, LABEL_REF
    or a CONST containing one of them.  If -mfp-in-toc (the default),
@@ -277,9 +281,10 @@
 /* Output before instructions.  */
 #define TEXT_SECTION_ASM_OP "\t.csect .text[PR]"
 
-/* Output before writable data.
-   Align entire section to BIGGEST_ALIGNMENT.  */
-#define DATA_SECTION_ASM_OP "\t.csect .data[RW],3"
+/* Output before writable data.  */
+#define DATA_SECTION_ASM_OP \
+  "\t.csect .data[RW]," XCOFF_CSECT_DEFAULT_ALIGNMENT_STR
+
 
 /* Define to prevent DWARF2 unwind info in the data section rather
    than in the .eh_frame section.  We do this because the AIX linker

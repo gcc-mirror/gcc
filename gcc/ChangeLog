@@ -1,5 +1,16 @@
 2007-08-31  Olivier Hainque  <hainque@adacore.com>
 
+	* config/rs6000/xcoff.h (XCOFF_CSECT_DEFAULT_ALIGNMENT_STR): New
+	internal macro. Default alignment factor for csect directives, chosen
+	to match what BIGGEST_ALIGNMENT allows.
+	(DATA_SECTION_ASM_OP): Use it.
+	* config/rs6000/rs6000.c
+	(rs6000_xcoff_output_readonly_section_asm_op):
+	Use XCOFF_CSECT_DEFAULT_ALIGNMENT_STR.
+	(rs6000_xcoff_output_readwrite_section_asm_op): Likewise.
+	
+2007-08-31  Olivier Hainque  <hainque@adacore.com>
+
 	* dbxout.c (dbxout_block): Move declaration within the first
 	#if defined (DBX_DEBUGGING_INFO) block.  Rearrange another such
 	block to include the definition, together with the associated

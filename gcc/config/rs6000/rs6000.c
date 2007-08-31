@@ -20205,8 +20205,9 @@ rs6000_xcoff_asm_globalize_label (FILE *stream, const char *name)
 static void
 rs6000_xcoff_output_readonly_section_asm_op (const void *directive)
 {
-  fprintf (asm_out_file, "\t.csect %s[RO],3\n",
-	   *(const char *const *) directive);
+  fprintf (asm_out_file, "\t.csect %s[RO],%s\n",
+	   *(const char *const *) directive,
+	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
 }
 
 /* Likewise for read-write sections.  */
@@ -20214,8 +20215,9 @@ rs6000_xcoff_output_readonly_section_asm_op (const void *directive)
 static void
 rs6000_xcoff_output_readwrite_section_asm_op (const void *directive)
 {
-  fprintf (asm_out_file, "\t.csect %s[RW],3\n",
-	   *(const char *const *) directive);
+  fprintf (asm_out_file, "\t.csect %s[RW],%s\n",
+	   *(const char *const *) directive,
+	   XCOFF_CSECT_DEFAULT_ALIGNMENT_STR);
 }
 
 /* A get_unnamed_section callback, used for switching to toc_section.  */
