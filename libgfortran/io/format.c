@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -32,11 +32,9 @@ Boston, MA 02110-1301, USA.  */
 /* format.c-- parse a FORMAT string into a binary format suitable for
  * interpretation during I/O statements */
 
-#include "config.h"
+#include "io.h"
 #include <ctype.h>
 #include <string.h>
-#include "libgfortran.h"
-#include "io.h"
 
 #define FARRAY_SIZE 64
 

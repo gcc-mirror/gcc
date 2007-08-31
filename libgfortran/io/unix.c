@@ -30,22 +30,17 @@ Boston, MA 02110-1301, USA.  */
 
 /* Unix stream I/O module */
 
-#include "config.h"
+#include "io.h"
 #include <stdlib.h>
 #include <limits.h>
 
 #include <unistd.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <assert.h>
 
 #include <string.h>
 #include <errno.h>
-
-#include "libgfortran.h"
-#include "io.h"
 
 #ifndef SSIZE_MAX
 #define SSIZE_MAX SHRT_MAX

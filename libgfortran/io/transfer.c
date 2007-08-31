@@ -32,11 +32,9 @@ Boston, MA 02110-1301, USA.  */
 
 /* transfer.c -- Top level handling of data transfer statements.  */
 
-#include "config.h"
+#include "io.h"
 #include <string.h>
 #include <assert.h>
-#include "libgfortran.h"
-#include "io.h"
 
 
 /* Calling conventions:  Data transfer statements are unlike other

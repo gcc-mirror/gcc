@@ -1,5 +1,5 @@
 `/* Support routines for the intrinsic power (**) operator.
-   Copyright 2004 Free Software Foundation, Inc.
+   Copyright 2004, 2007 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -28,8 +28,8 @@ License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config.h"
 #include "libgfortran.h"'
+
 include(iparm.m4)dnl
 
 /* Use Binary Method to calculate the powi. This is not an optimal but

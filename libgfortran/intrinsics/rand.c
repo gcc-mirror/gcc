@@ -1,5 +1,5 @@
 /* Implementation of the IRAND, RAND, and SRAND intrinsics.
-   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -35,7 +35,6 @@ Boston, MA 02110-1301, USA.  */
    31, 1192-1201 (1988).  It is also provided solely for compatibility 
    with G77.  */
 
-#include "config.h"
 #include "libgfortran.h"
 #include <gthr.h>
 

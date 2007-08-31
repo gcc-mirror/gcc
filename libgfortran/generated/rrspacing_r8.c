@@ -1,5 +1,5 @@
 /* Implementation of the RRSPACING intrinsic
-   Copyright 2006 Free Software Foundation, Inc.
+   Copyright 2006, 2007 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargl@gcc.gnu.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -28,7 +28,6 @@ License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config.h"
 #include "libgfortran.h"
 
 

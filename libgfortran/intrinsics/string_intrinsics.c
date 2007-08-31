@@ -36,11 +36,10 @@ Boston, MA 02110-1301, USA.  */
    compiler translates the actual intrinsics calls to calls to
    functions in this file.  */
 
+#include "libgfortran.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <stdarg.h>
-
-#include "libgfortran.h"
 
 
 /* String functions.  */

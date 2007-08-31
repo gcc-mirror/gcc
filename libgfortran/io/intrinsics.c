@@ -28,16 +28,13 @@ License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-#include "config.h"
-#include "libgfortran.h"
+#include "io.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
 #include <string.h>
-
-#include "io.h"
 
 static const int five = 5;
 static const int six = 6;

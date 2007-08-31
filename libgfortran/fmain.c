@@ -1,4 +1,3 @@
-#include "config.h"
 #include "libgfortran.h"
 
 /* The main Fortran program actually is a function, called MAIN__.

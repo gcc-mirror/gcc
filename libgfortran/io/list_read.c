@@ -29,11 +29,9 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 
-#include "config.h"
+#include "io.h"
 #include <string.h>
 #include <ctype.h>
-#include "libgfortran.h"
-#include "io.h"
 
 
 /* List directed input.  Several parsing subroutines are practically
