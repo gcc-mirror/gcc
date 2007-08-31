@@ -619,7 +619,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fdirectives_only:
-      cpp_opts->directives_only = 1;
+      cpp_opts->directives_only = value;
       break;
 
     case OPT_fdollars_in_identifiers:
