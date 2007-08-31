@@ -1025,12 +1025,12 @@ static const struct compiler default_compilers[] =
   {".S", "@assembler-with-cpp", 0, 1, 0},
   {"@assembler-with-cpp",
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
-   "%(trad_capable_cpp) -lang-asm %(cpp_options)\
+   "%(trad_capable_cpp) -lang-asm %(cpp_options) -fno-directives-only\
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E:%{!S:-o %|.s |\n\
        as %(asm_debug) %(asm_options) %|.s %A }}}}"
 #else
-   "%(trad_capable_cpp) -lang-asm %(cpp_options)\
+   "%(trad_capable_cpp) -lang-asm %(cpp_options) -fno-directives-only\
       %{E|M|MM:%(cpp_debug_options)}\
       %{!M:%{!MM:%{!E:%{!S:-o %|.s |\n\
        as %(asm_debug) %(asm_options) %m.s %A }}}}"

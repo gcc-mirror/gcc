@@ -1,3 +1,9 @@
+2007-08-30  Ollie Wild  <aaw@google.com>
+
+	* c-opts.c (c_common_handle_option): Support -fno-directives-only.
+	* gcc.c (default_compilers): Add -fno-directives-only to
+	@assembler-with-cpp.
+
 2007-08-30  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/33211
