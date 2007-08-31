@@ -1,3 +1,7 @@
+2007-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (duplicate_decls): Remove duplicated line.
+
 2007-08-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33210
