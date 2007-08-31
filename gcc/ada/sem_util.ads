@@ -609,11 +609,6 @@ package Sem_Util is
    --  This is the RM definition, a type is a descendent of another type if it
    --  is the same type or is derived from a descendent of the other type.
 
-   function Is_Descendent_Of_Address (T1 : Entity_Id) return Boolean;
-   --  Returns True if type T1 is a descendent of Address or its base type.
-   --  Similar to calling Is_Descendent_Of with Base_Type (RTE (RE_Address))
-   --  except that it avoids creating an unconditional dependency on System.
-
    function Is_False (U : Uint) return Boolean;
    --  The argument is a Uint value which is the Boolean'Pos value of a
    --  Boolean operand (i.e. is either 0 for False, or 1 for True). This

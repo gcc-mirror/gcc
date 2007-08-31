@@ -5421,25 +5421,6 @@ package body Sem_Util is
       raise Program_Error;
    end Is_Descendent_Of;
 
-   ------------------------------
-   -- Is_Descendent_Of_Address --
-   ------------------------------
-
-   function Is_Descendent_Of_Address (T1 : Entity_Id) return Boolean is
-   begin
-      --  If Address has not been loaded, answer must be False
-
-      if not RTU_Loaded (System) then
-         return False;
-
-      --  Otherwise we can get the entity we are interested in without
-      --  causing an unwanted dependency on System, and do the test.
-
-      else
-         return Is_Descendent_Of (T1, Base_Type (RTE (RE_Address)));
-      end if;
-   end Is_Descendent_Of_Address;
-
    --------------
    -- Is_False --
    --------------
