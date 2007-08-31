@@ -2342,67 +2342,56 @@ package body Layout is
          --  a fat pointer is used (pointer-to-unconstrained array case),
          --  twice the address size to accommodate a fat pointer.
 
+         elsif Present (Underlying_Type (Designated_Type (E)))
+            and then Is_Array_Type (Underlying_Type (Designated_Type (E)))
+            and then not Is_Constrained (Underlying_Type (Designated_Type (E)))
+            and then not Has_Completion_In_Body (Underlying_Type
+                                                 (Designated_Type (E)))
+            and then not Debug_Flag_6
+         then
+            Init_Size (E, 2 * System_Address_Size);
+
+            --  Check for bad convention set
+
+            if Warn_On_Export_Import
+              and then
+                (Convention (E) = Convention_C
+                   or else
+                 Convention (E) = Convention_CPP)
+            then
+               Error_Msg_N
+                 ("?this access type does not correspond to C pointer", E);
+            end if;
+
+         --  When the target is AAMP, access-to-subprogram types are fat
+         --  pointers consisting of the subprogram address and a static
+         --  link (with the exception of library-level access types,
+         --  where a simple subprogram address is used).
+
+         elsif AAMP_On_Target
+           and then
+             (Ekind (E) = E_Anonymous_Access_Subprogram_Type
+               or else (Ekind (E) = E_Access_Subprogram_Type
+                         and then Present (Enclosing_Subprogram (E))))
+         then
+            Init_Size (E, 2 * System_Address_Size);
+
          else
-            declare
-               Desig : Entity_Id := Designated_Type (E);
-
-            begin
-               if Is_Private_Type (Desig)
-                 and then Present (Full_View (Desig))
-               then
-                  Desig := Full_View (Desig);
-               end if;
-
-               if Is_Array_Type (Desig)
-                 and then not Is_Constrained (Desig)
-                 and then not Has_Completion_In_Body (Desig)
-                 and then not Debug_Flag_6
-               then
-                  Init_Size (E, 2 * System_Address_Size);
-
-                  --  Check for bad convention set
-
-                  if Warn_On_Export_Import
-                    and then
-                      (Convention (E) = Convention_C
-                         or else
-                       Convention (E) = Convention_CPP)
-                  then
-                     Error_Msg_N
-                       ("?this access type does not " &
-                        "correspond to C pointer", E);
-                  end if;
-
-               --  When the target is AAMP, access-to-subprogram types are fat
-               --  pointers consisting of the subprogram address and a static
-               --  link (with the exception of library-level access types,
-               --  where a simple subprogram address is used).
-
-               elsif AAMP_On_Target
-                 and then
-                   (Ekind (E) = E_Anonymous_Access_Subprogram_Type
-                     or else (Ekind (E) = E_Access_Subprogram_Type
-                               and then Present (Enclosing_Subprogram (E))))
-               then
-                  Init_Size (E, 2 * System_Address_Size);
-
-               else
-                  Init_Size (E, System_Address_Size);
-               end if;
-            end;
+            Init_Size (E, System_Address_Size);
          end if;
 
          --  On VMS, reset size to 32 for convention C access type if no
          --  explicit size clause is given and the default size is 64. Really
          --  we do not know the size, since depending on options for the VMS
-         --  compiler, the size of a pointer type can be 32 or 64, but choosing
-         --  32 as the default improves compatibility with legacy VMS code.
+         --  compiler, the size of a pointer type can be 32 or 64, but
+         --  choosing 32 as the default improves compatibility with legacy
+         --  VMS code.
 
          --  Note: we do not use Has_Size_Clause in the test below, because we
-         --  want to catch the case of a derived type inheriting a size clause.
-         --  We want to consider this to be an explicit size clause for this
-         --  purpose, since it would be weird not to inherit the size in this
-         --  case.
+         --  want to catch the case of a derived type inheriting a size
+         --  clause.  We want to consider this to be an explicit size clause
+         --  for this purpose, since it would be weird not to inherit the size
+         --  in this case.
 
          if OpenVMS_On_Target
            and then (Convention (E) = Convention_C
