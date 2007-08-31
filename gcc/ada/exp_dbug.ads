@@ -603,8 +603,7 @@ package Exp_Dbug is
       --   for most debugging formats. However, we do not ever need XD
       --   encoding for enumeration base types, since here it is always
       --   clear what the bounds are from the total number of enumeration
-      --   literals, and of course we do not need to encode the dummy XR
-      --   types generated for renamings.
+      --   literals.
 
       --     typ___XD
       --     typ___XDL_lowerbound
@@ -969,20 +968,23 @@ package Exp_Dbug is
 
    --  Consider a renaming declaration of the form
 
-   --    x typ renames y;
+   --    x : typ renames y;
 
    --  There is one case in which no special debugging information is required,
-   --  namely the case of an object renaming where the backend allocates a
+   --  namely the case of an object renaming where the back end allocates a
    --  reference for the renamed variable, and the entity x is this reference.
    --  The debugger can handle this case without any special processing or
    --  encoding (it won't know it was a renaming, but that does not matter).
 
-   --  All other cases of renaming generate a dummy type definition for
-   --  an entity whose name is:
+   --  All other cases of renaming generate a dummy variable for an entity
+   --  whose name is of the form:
 
-   --    x___XR    for an object renaming
-   --    x___XRE   for an exception renaming
-   --    x___XRP   for a package renaming
+   --    x___XR_...    for an object renaming
+   --    x___XRE_...   for an exception renaming
+   --    x___XRP_...   for a package renaming
+
+   --  and where the "..." represents a suffix that describes the structure of
+   --  the object name given in the renaming (see details below).
 
    --  The name is fully qualified in the usual manner, i.e. qualified in the
    --  same manner as the entity x would be. In the case of a package renaming
@@ -992,24 +994,24 @@ package Exp_Dbug is
 
    --  Note: subprogram renamings are not encoded at the present time
 
-   --  The type is an enumeration type with a single enumeration literal
-   --  that is an identifier which describes the renamed variable.
+   --  The suffix of the variable name describing the renamed object is
+   --  defined to use the following encoding:
 
-   --    For the simple entity case, where y is an entity name,
-   --    the enumeration is of the form:
+   --    For the simple entity case, where y is just an entity name, the suffix
+   --    is of the form:
 
-   --       (y___XE)
+   --       y___XE
 
-   --          i.e. the enumeration type has a single field, whose name matches
-   --          the name y, with the XE suffix. The entity for this enumeration
-   --          literal is fully qualified in the usual manner. All subprogram,
-   --          exception, and package renamings fall into this category, as
-   --          well as simple object renamings.
+   --          i.e. the suffix has a single field, the first part matching the
+   --          name y, followed by a "___" separator, ending with sequence XE.
+   --          The entity name portion is fully qualified in the usual manner.
+   --          This same naming scheme is followed for all forms of encoded
+   --          renamings that rename a simple entity.
 
    --    For the object renaming case where y is a selected component or an
-   --    indexed component, the literal name is suffixed by additional fields
+   --    indexed component, the variable name is suffixed by additional fields
    --    that give details of the components. The name starts as above with a
-   --    y___XE entity indicating the outer level variable. Then a series of
+   --    y___XE name indicating the outer level object entity. Then a series of
    --    selections and indexing operations can be specified as follows:
 
    --      Indexed component
@@ -1020,20 +1022,19 @@ package Exp_Dbug is
 
    --          XSnnn
 
-   --            Here nnn is a constant value, encoded as a decimal
-   --            integer (pos value for enumeration type case). Negative
-   --            values have a trailing 'm' as usual.
+   --            Here nnn is a constant value, encoded as a decimal integer
+   --            (pos value for enumeration type case). Negative values have
+   --            a trailing 'm' as usual.
 
    --          XSe
 
-   --            Here e is the (unqualified) name of a constant entity in
-   --            the same scope as the renaming which contains the subscript
-   --            value.
+   --            Here e is the (unqualified) name of a constant entity in the
+   --            same scope as the renaming which contains the subscript value.
 
    --      Slice
 
    --        For the slice case, we have two entries. The first is for the
-   --        lower bound of the slice, and has the form
+   --        lower bound of the slice, and has the form:
 
    --          XLnnn
    --          XLe
@@ -1069,21 +1070,24 @@ package Exp_Dbug is
    --           z : string renames g (1,5).m(2 ..3)
    --        end p;
 
-   --     The generated type definition would appear as
+   --     The generated variable entity would appear as
 
-   --       type p__z___XR is
-   --         (p__g___XEXS1XS5XRmXL2XS3);
-   --          p__g___XE--------------------outer entity is g
-   --                   XS1-----------------first subscript for g
-   --                      XS5--------------second subscript for g
-   --                         XRm-----------select field m
-   --                            XL2--------lower bound of slice
-   --                               XS3-----upper bound of slice
+   --       p__z___XR_p__g___XEXS1XS5XRmXL2XS3 : _renaming_type;
+   --                 p__g___XE--------------------outer entity is g
+   --                          XS1-----------------first subscript for g
+   --                             XS5--------------second subscript for g
+   --                                XRm-----------select field m
+   --                                   XL2--------lower bound of slice
+   --                                      XS3-----upper bound of slice
+
+   --     Note that the type of the variable is a special internal type named
+   --     _renaming_type. This type is an arbitrary type of zero size created
+   --     in package Standard (see cstand.adb) and is ignored by the debugger.
 
    function Debug_Renaming_Declaration (N : Node_Id) return Node_Id;
-   --  The argument N is a renaming declaration. The result is a type
-   --  declaration as described in the above paragraphs. If not special
-   --  debug declaration, than Empty is returned.
+   --  The argument N is a renaming declaration. The result is a variable
+   --  declaration as described in the above paragraphs. If N is not a special
+   --  debug declaration, then Empty is returned.
 
    ---------------------------
    -- Packed Array Encoding --

@@ -319,6 +319,14 @@ package body Exp_Ch8 is
                end if;
 
                Analyze (Decl);
+
+               --  Enter the debug variable in the qualification list, which
+               --  must be done at this point because auxiliary declarations
+               --  occur at the library level and aren't associated with a
+               --  normal scope.
+
+               Qualify_Entity_Names (Decl);
+
                Pop_Scope;
             end;
 

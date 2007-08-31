@@ -1011,17 +1011,25 @@ package body Exp_Dbug is
          E := Defining_Entity (Name_Qualify_Units.Table (J));
          Qualify_Entity_Name (E);
 
-         Ent := First_Entity (E);
-         while Present (Ent) loop
-            Qualify_Entity_Name (Ent);
-            Next_Entity (Ent);
+         --  Normally entities in the qualification list are scopes, but in the
+         --  case of a library-level package renaming there is an associated
+         --  variable that encodes the debugger name and that variable is
+         --  entered in the list since it occurs in the Aux_Decls list of the
+         --  compilation and doesn't have a normal scope.
 
-            --  There are odd cases where Last_Entity (E) = E. This happens
-            --  in the case of renaming of packages. This test avoids getting
-            --  stuck in such cases.
+         if Ekind (E) /= E_Variable then
+            Ent := First_Entity (E);
+            while Present (Ent) loop
+               Qualify_Entity_Name (Ent);
+               Next_Entity (Ent);
 
-            exit when Ent = E;
-         end loop;
+               --  There are odd cases where Last_Entity (E) = E. This happens
+               --  in the case of renaming of packages. This test avoids
+               --  getting stuck in such cases.
+
+               exit when Ent = E;
+            end loop;
+         end if;
       end loop;
    end Qualify_All_Entity_Names;
 
