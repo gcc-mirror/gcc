@@ -40,6 +40,7 @@ with Output;      use Output;
 with Rident;      use Rident;
 with Sdefault;
 with Snames;
+with Switch;      use Switch;
 with Targparm;    use Targparm;
 with Types;       use Types;
 
@@ -1528,6 +1529,10 @@ begin
    Csets.Initialize;
    Snames.Initialize;
 
+   --  First check for --version or --help
+
+   Check_Version_And_Help ("GNATLS", "1997", Usage'Unrestricted_Access);
+
    --  Loop to scan out arguments
 
    Next_Arg := 1;
@@ -1572,13 +1577,7 @@ begin
       Targparm.Get_Target_Parameters;
 
       Write_Eol;
-      Write_Str ("GNATLS ");
-      Write_Str (Gnat_Version_String);
-      Write_Eol;
-      Write_Str ("Copyright 1997-" &
-                 Current_Year &
-                 ", Free Software Foundation, Inc.");
-      Write_Eol;
+      Display_Version ("GNATLS", "1997");
       Write_Eol;
       Write_Str ("Source Search Path:");
       Write_Eol;

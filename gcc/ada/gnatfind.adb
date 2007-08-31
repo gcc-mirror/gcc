@@ -24,13 +24,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Opt;
+with Osint;    use Osint;
+with Switch;   use Switch;
+with Types;    use Types;
 with Xr_Tabls; use Xr_Tabls;
 with Xref_Lib; use Xref_Lib;
-with Osint;    use Osint;
-with Types;    use Types;
-
-with Gnatvsn;
-with Opt;
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 with Ada.Text_IO;       use Ada.Text_IO;
@@ -69,8 +68,11 @@ procedure Gnatfind is
    procedure Parse_Cmd_Line;
    --  Parse every switch on the command line
 
+   procedure Usage;
+   --  Display the usage
+
    procedure Write_Usage;
-   --  Print a small help page for program usage
+   --  Print a small help page for program usage and exit program
 
    --------------------
    -- Parse_Cmd_Line --
@@ -78,6 +80,14 @@ procedure Gnatfind is
 
    procedure Parse_Cmd_Line is
    begin
+      --  First check for --version or --help
+
+      Check_Version_And_Help ("GNATFIND", "1998", Usage'Unrestricted_Access);
+
+      --  Now scan the other switches
+
+      GNAT.Command_Line.Initialize_Option_Scan;
+
       loop
          case
            GNAT.Command_Line.Getopt
@@ -232,14 +242,12 @@ procedure Gnatfind is
          Write_Usage;
    end Parse_Cmd_Line;
 
-   -----------------
-   -- Write_Usage --
-   -----------------
+   -----------
+   -- Usage --
+   -----------
 
-   procedure Write_Usage is
+   procedure Usage is
    begin
-      Put_Line ("GNATFIND " & Gnatvsn.Gnat_Version_String);
-      Put_Line ("Copyright 1998-2005, AdaCore");
       Put_Line ("Usage: gnatfind pattern[:sourcefile[:line[:column]]] "
                 & "[file1 file2 ...]");
       New_Line;
@@ -276,7 +284,18 @@ procedure Gnatfind is
                 & " only)");
       Put_Line ("   -s        Print source line");
       Put_Line ("   -t        Print type hierarchy");
+   end Usage;
+
+   -----------------
+   -- Write_Usage --
+   -----------------
+
+   procedure Write_Usage is
+   begin
+      Display_Version ("GNATFIND", "1998");
       New_Line;
+
+      Usage;
 
       raise Usage_Error;
    end Write_Usage;

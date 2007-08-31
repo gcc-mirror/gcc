@@ -37,7 +37,6 @@ with Csets;
 with Debug;    use Debug;
 with Fmap;
 with Fname;    use Fname;
-with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
@@ -423,6 +422,12 @@ begin
       Shared_Libgnat := (Shared_Libgnat_Default = SHARED);
    end;
 
+   --  Scan the switches and arguments
+
+   --  First, scan to detect --version and/or --help
+
+   Check_Version_And_Help ("GNATBIND", "1995", Bindusg.Display'Access);
+
    --  Use low level argument routines to avoid dragging in the secondary stack
 
    Next_Arg := 1;
@@ -553,13 +558,7 @@ begin
 
    if Verbose_Mode then
       Write_Eol;
-      Write_Str ("GNATBIND ");
-      Write_Str (Gnat_Version_String);
-      Write_Eol;
-      Write_Str ("Copyright 1995-" &
-                 Current_Year &
-                 ", Free Software Foundation, Inc.");
-      Write_Eol;
+      Display_Version ("GNATBIND", "1995");
    end if;
 
    --  Output usage information if no files

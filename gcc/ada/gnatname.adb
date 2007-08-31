@@ -24,12 +24,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Gnatvsn;  use Gnatvsn;
 with Hostparm;
 with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Makr;
+with Switch;   use Switch;
 with Table;
 
 with Ada.Command_Line;  use Ada.Command_Line;
@@ -169,12 +169,7 @@ procedure Gnatname is
       if not Version_Output then
          Version_Output := True;
          Output.Write_Eol;
-         Output.Write_Str ("GNATNAME ");
-         Output.Write_Line (Gnatvsn.Gnat_Version_String);
-         Output.Write_Line
-           ("Copyright 2001-" &
-            Current_Year &
-            ", Free Software Foundation, Inc.");
+         Display_Version ("GNATNAME", "2001");
       end if;
    end Output_Version;
 
@@ -184,6 +179,12 @@ procedure Gnatname is
 
    procedure Scan_Args is
    begin
+      --  First check for --version or --help
+
+      Check_Version_And_Help ("GNATNAME", "2001", Usage'Unrestricted_Access);
+
+      --  Now scan the other switches
+
       Initialize_Option_Scan;
 
       --  Scan options first

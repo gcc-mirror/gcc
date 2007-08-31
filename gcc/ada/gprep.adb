@@ -27,7 +27,6 @@
 with Csets;
 with Err_Vars; use Err_Vars;
 with Errutil;
-with Gnatvsn;  use Gnatvsn;
 with Namet;    use Namet;
 with Opt;
 with Osint;    use Osint;
@@ -37,15 +36,16 @@ with Scng;
 with Sinput.C;
 with Snames;
 with Stringt;  use Stringt;
+with Switch;   use Switch;
 with Types;    use Types;
 
-with Ada.Text_IO;               use Ada.Text_IO;
+with Ada.Text_IO;     use Ada.Text_IO;
 
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.Command_Line;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
-with System.OS_Lib;             use System.OS_Lib;
+with System.OS_Lib; use System.OS_Lib;
 
 package body GPrep is
 
@@ -138,10 +138,7 @@ package body GPrep is
    procedure Display_Copyright is
    begin
       if not Copyright_Displayed then
-         Write_Line ("GNAT Preprocessor " & Gnatvsn.Gnat_Version_String);
-         Write_Line ("Copyright 1996-" &
-                     Current_Year &
-                     ", Free Software Foundation, Inc.");
+         Display_Version ("GNAT Preprocessor", "1996");
          Copyright_Displayed := True;
       end if;
    end Display_Copyright;
@@ -704,7 +701,13 @@ package body GPrep is
       Switch : Character;
 
    begin
-      --  Parse the switches
+      --  First check for --version or --help
+
+      Check_Version_And_Help ("GNATPREP", "1996", Usage'Access);
+
+      --  Now scan the other switches
+
+      GNAT.Command_Line.Initialize_Option_Scan;
 
       loop
          begin

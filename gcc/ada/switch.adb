@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Osint;
+with Osint;  use Osint;
+with Output; use Output;
 
 package body Switch is
 
@@ -41,6 +42,87 @@ package body Switch is
    begin
       Osint.Fail ("invalid switch: ", Switch);
    end Bad_Switch;
+
+   ----------------------------
+   -- Check_Version_And_Help --
+   ----------------------------
+
+   procedure Check_Version_And_Help
+     (Tool_Name      : String;
+      Initial_Year   : String;
+      Usage          : Procedure_Ptr;
+      Version_String : String := Gnatvsn.Gnat_Version_String)
+   is
+      Version_Switch_Present : Boolean := False;
+      Help_Switch_Present    : Boolean := False;
+      Next_Arg               : Natural;
+
+   begin
+      --  First check for --version or --help
+
+      Next_Arg := 1;
+      while Next_Arg < Arg_Count loop
+         declare
+            Next_Argv : String (1 .. Len_Arg (Next_Arg));
+         begin
+            Fill_Arg (Next_Argv'Address, Next_Arg);
+
+            if Next_Argv = Version_Switch then
+               Version_Switch_Present := True;
+
+            elsif Next_Argv = Help_Switch then
+               Help_Switch_Present := True;
+            end if;
+
+            Next_Arg := Next_Arg + 1;
+         end;
+      end loop;
+
+      --  If --version was used, display version and exit
+
+      if Version_Switch_Present then
+         Set_Standard_Output;
+         Display_Version (Tool_Name, Initial_Year, Version_String);
+         Write_Str (Gnatvsn.Gnat_Free_Software);
+         Write_Eol;
+         Write_Eol;
+         Exit_Program (E_Success);
+      end if;
+
+      --  If --help was used, display help and exit
+
+      if Help_Switch_Present then
+         Set_Standard_Output;
+         Usage.all;
+         Write_Eol;
+         Write_Line ("Report bugs to report@adacore.com");
+         Exit_Program (E_Success);
+      end if;
+   end Check_Version_And_Help;
+
+   ---------------------
+   -- Display_Version --
+   ---------------------
+
+   procedure Display_Version
+     (Tool_Name      : String;
+      Initial_Year   : String;
+      Version_String : String := Gnatvsn.Gnat_Version_String)
+   is
+   begin
+      Write_Str (Tool_Name);
+      Write_Char (' ');
+      Write_Str (Version_String);
+      Write_Eol;
+
+      Write_Str ("Copyright (C) ");
+      Write_Str (Initial_Year);
+      Write_Char ('-');
+      Write_Str (Gnatvsn.Current_Year);
+      Write_Str (", ");
+      Write_Str (Gnatvsn.Copyright_Holder);
+      Write_Eol;
+   end Display_Version;
 
    -------------------------
    -- Is_Front_End_Switch --

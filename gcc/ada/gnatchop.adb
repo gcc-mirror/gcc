@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,8 @@ with GNAT.OS_Lib;                use GNAT.OS_Lib;
 with GNAT.Heap_Sort_G;
 with GNAT.Table;
 
-with Gnatvsn;
 with Hostparm;
+with Switch;   use Switch;
 with Types;
 
 procedure Gnatchop is
@@ -1158,14 +1158,7 @@ procedure Gnatchop is
 
             when 'v' =>
                Verbose_Mode := True;
-
-               --  Why is following written to standard error. Most other
-               --  tools write to standard output ???
-
-               Put (Standard_Error, "GNATCHOP ");
-               Put_Line (Standard_Error, Gnatvsn.Gnat_Version_String);
-               Put_Line
-                 (Standard_Error, "Copyright 1998-2005, AdaCore");
+               Display_Version ("GNATCHOP", "1998");
 
             when 'w' =>
                Overwrite_Files := True;
@@ -1766,6 +1759,10 @@ begin
    end if;
 
    --  Process command line options and initialize global variables
+
+   --  First, scan to detect --version and/or --help
+
+   Check_Version_And_Help ("GNATCHOP", "1998", Usage'Unrestricted_Access);
 
    if not Scan_Arguments then
       Set_Exit_Status (Failure);
