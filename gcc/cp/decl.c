@@ -1855,7 +1855,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       if (!old_decl_gnu_inline)
 	{
 	  DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
-	  DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
 	  DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
 	  DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
 	}
