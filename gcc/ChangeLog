@@ -1,3 +1,10 @@
+2007-09-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c (TARGET_DEFAULT_TARGET_FLAGS): Remove.
+	(override_options): Turn on -mstrict-align on non-ColdFire
+	targets.
+	* config/m68k/m68k.h (BIGGEST_ALIGNMENT): Update a comment.
+
 2007-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (const_strip_array_types): Delete.
