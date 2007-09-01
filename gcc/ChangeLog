@@ -1,3 +1,9 @@
+2007-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_expr): Fix check for conversions
+	between integral types.  Also allow conversions between
+	pointer types.
+
 2007-08-31  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* optabs.c (prepare_float_lib_cmp): Use
