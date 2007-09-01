@@ -1158,7 +1158,9 @@ tree_can_merge_blocks_p (const_basic_block a, const_basic_block b)
 
   /* If A ends by a statement causing exceptions or something similar, we
      cannot merge the blocks.  */
-  stmt = const_last_stmt (a);
+  /* This CONST_CAST is okay because last_stmt doesn't modify its
+     argument and the return value is assign to a const_tree.  */
+  stmt = last_stmt ((basic_block)CONST_CAST(a));
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
@@ -2592,13 +2594,6 @@ first_stmt (basic_block bb)
   return !bsi_end_p (i) ? bsi_stmt (i) : NULL_TREE;
 }
 
-const_tree
-const_first_stmt (const_basic_block bb)
-{
-  const_block_stmt_iterator i = cbsi_start (bb);
-  return !cbsi_end_p (i) ? cbsi_stmt (i) : NULL_TREE;
-}
-
 /* Return the last statement in basic block BB.  */
 
 tree
@@ -2606,13 +2601,6 @@ last_stmt (basic_block bb)
 {
   block_stmt_iterator b = bsi_last (bb);
   return !bsi_end_p (b) ? bsi_stmt (b) : NULL_TREE;
-}
-
-const_tree
-const_last_stmt (const_basic_block bb)
-{
-  const_block_stmt_iterator b = cbsi_last (bb);
-  return !cbsi_end_p (b) ? cbsi_stmt (b) : NULL_TREE;
 }
 
 /* Return the last statement of an otherwise empty block.  Return NULL
@@ -5932,7 +5920,9 @@ tree_block_ends_with_call_p (const_basic_block bb)
 static bool
 tree_block_ends_with_condjump_p (const_basic_block bb)
 {
-  const_tree stmt = const_last_stmt (bb);
+  /* This CONST_CAST is okay because last_stmt doesn't modify its
+     argument and the return value is not modified.  */
+  const_tree stmt = last_stmt ((basic_block)CONST_CAST(bb));
   return (stmt && TREE_CODE (stmt) == COND_EXPR);
 }
 

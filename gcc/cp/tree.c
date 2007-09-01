@@ -2052,7 +2052,9 @@ is_dummy_object (const_tree ob)
 int
 pod_type_p (const_tree t)
 {
-  t = const_strip_array_types (t);
+  /* This CONST_CAST is okay because strip_array_types returns it's
+     argument unmodified and we assign it to a const_tree.  */
+  t = strip_array_types ((tree)CONST_CAST(t));
 
   if (t == error_mark_node)
     return 1;
@@ -2089,7 +2091,9 @@ class_tmpl_impl_spec_p (const_tree t)
 int
 zero_init_p (const_tree t)
 {
-  t = const_strip_array_types (t);
+  /* This CONST_CAST is okay because strip_array_types returns it's
+     argument unmodified and we assign it to a const_tree.  */
+  t = strip_array_types ((tree)CONST_CAST(t));
 
   if (t == error_mark_node)
     return 1;

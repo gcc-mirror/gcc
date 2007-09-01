@@ -396,7 +396,9 @@ try_catch_may_fallthru (const_tree stmt)
 bool
 block_may_fallthru (const_tree block)
 {
-  const_tree stmt = const_expr_last (block);
+  /* This CONST_CAST is okay because expr_last returns it's argument
+     unmodified and we assign it to a const_tree.  */
+  const_tree stmt = expr_last ((tree)CONST_CAST(block));
 
   switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
     {
