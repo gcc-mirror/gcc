@@ -3574,8 +3574,10 @@ verify_gimple_expr (tree expr)
 	    return true;
 	  }
 
-	/* Allow conversions between integral types.  */
-        if (INTEGRAL_TYPE_P (type) == INTEGRAL_TYPE_P (TREE_TYPE (op)))
+	/* Allow conversions between integral types and between
+	   pointer types.  */
+        if ((INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (op)))
+	    || (POINTER_TYPE_P (type) && POINTER_TYPE_P (TREE_TYPE (op))))
 	  return false;
 
 	/* Allow conversions between integral types and pointers only if
