@@ -477,7 +477,7 @@ remove_unused_scope_block_p (tree scope)
     {
       next = &TREE_CHAIN (*t);
 
-      /* Debug info of nested function reffers to the block of the
+      /* Debug info of nested function refers to the block of the
 	 function.  */
       if (TREE_CODE (*t) == FUNCTION_DECL)
 	unused = false;

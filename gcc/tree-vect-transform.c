@@ -4619,7 +4619,7 @@ vect_setup_realignment (tree stmt, block_stmt_iterator *bsi,
      The problem arises only if the memory access is in an inner-loop nested
      inside LOOP, which is now being vectorized using outer-loop vectorization.
      This is the only case when the misalignment of the memory access may not
-     remain fixed thtoughout the iterations of the inner-loop (as exaplained in
+     remain fixed throughout the iterations of the inner-loop (as explained in
      detail in vect_supportable_dr_alignment).  In this case, not only is the
      optimized realignment scheme not applicable, but also the misalignment
      computation (and generation of the realignment token that is passed to
@@ -6467,7 +6467,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
      DR: The data reference.
      VECT_FACTOR: vectorization factor.
 
-   Return an exrpession whose value is the size of segment which will be
+   Return an expression whose value is the size of segment which will be
    accessed by DR.  */
 
 static tree

@@ -3632,7 +3632,7 @@ df_record_entry_block_defs (bitmap entry_block_defs)
 }
 
 
-/* Update the defs in the entry bolck.  */
+/* Update the defs in the entry block.  */
 
 void
 df_update_entry_block_defs (void)

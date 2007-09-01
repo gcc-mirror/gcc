@@ -5868,7 +5868,7 @@ vfp3_const_double_index (rtx x)
     return -1;
 
   /* Sign, mantissa and exponent are now in the correct form to plug into the
-     formulae described in the comment above.  */
+     formula described in the comment above.  */
   return (sign << 7) | ((exponent ^ 3) << 4) | (mantissa - 16);
 }
 

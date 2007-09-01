@@ -1701,7 +1701,7 @@ vect_supportable_dr_alignment (struct data_reference *dr)
      iterations, it is *not* guaranteed that is will remain the same throughout
      the execution of the inner-loop.  This is because the inner-loop advances
      with the original scalar step (and not in steps of VS).  If the inner-loop
-     step happens to be a multiple of VS, then the misalignment remaines fixed
+     step happens to be a multiple of VS, then the misalignment remains fixed
      and we can use the optimized realignment scheme.  For example:
 
       for (i=0; i<N; i++)

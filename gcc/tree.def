@@ -1017,7 +1017,7 @@ DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 6)
 	      which of the sections to execute.  */
 DEFTREECODE (OMP_SECTIONS, "omp_sections", tcc_statement, 3)
 
-/* This tree immediatelly follows OMP_SECTIONS, and represents the switch
+/* This tree immediately follows OMP_SECTIONS, and represents the switch
    used to decide which branch is taken.  */
 DEFTREECODE (OMP_SECTIONS_SWITCH, "omp_sections_switch", tcc_statement, 0)
 

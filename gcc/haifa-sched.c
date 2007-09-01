@@ -2924,7 +2924,7 @@ try_ready (rtx next)
   else
     {
       /* One of the NEXT's dependencies has been resolved.
-	 Recalcute NEXT's status.  */
+	 Recalculate NEXT's status.  */
 
       *ts &= ~SPECULATIVE & ~HARD_DEP;
 
@@ -3857,7 +3857,7 @@ create_check_block_twin (rtx insn, bool mutate_p)
       DONE_SPEC (insn) = ts & BEGIN_SPEC;
       CHECK_SPEC (check) = ts & BEGIN_SPEC;
 
-      /* Luckyness of future speculations solely depends upon initial
+      /* Luckiness of future speculations solely depends upon initial
 	 BEGIN speculation.  */
       if (ts & BEGIN_DATA)
 	fs = set_dep_weak (fs, BE_IN_DATA, get_dep_weak (ts, BEGIN_DATA));

@@ -789,7 +789,7 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define CONST_CAST(X) ((void*)(X))
 #endif
 
-/* Acivate -Wcast-qual as a warning (not an error/-Werror).  */
+/* Activate -Wcast-qual as a warning (not an error/-Werror).  */
 #if GCC_VERSION >= 4003
 #pragma GCC diagnostic warning "-Wcast-qual"
 #endif

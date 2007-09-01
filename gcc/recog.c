@@ -443,7 +443,7 @@ confirm_change_group (void)
       if (changes[i].unshare)
 	*changes[i].loc = copy_rtx (*changes[i].loc);
 
-      /* Avoid unnecesary rescaning when multiple changes to same instruction
+      /* Avoid unnecesary rescanning when multiple changes to same instruction
          are made.  */
       if (object)
 	{
