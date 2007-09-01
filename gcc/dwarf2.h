@@ -1,7 +1,7 @@
 /* Declarations and definitions of codes relating to the DWARF2 and
    DWARF3 symbolic debugging information formats.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    Written by Gary Funck (gary@intrepid.com) The Ada Joint Program
    Office (AJPO), Florida State University and Silicon Graphics Inc.
@@ -14,7 +14,7 @@
 
    GCC is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
-   Software Foundation; either version 2, or (at your option) any later
+   Software Foundation; either version 3, or (at your option) any later
    version.
 
    GCC is distributed in the hope that it will be useful, but WITHOUT
@@ -23,9 +23,8 @@
    License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GCC; see the file COPYING.  If not, write to the Free
-   Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301, USA.  */
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
 
 /* This file is derived from the DWARF specification (a public document)
    Revision 2.0.0 (July 27, 1993) developed by the UNIX International

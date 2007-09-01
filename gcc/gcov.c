@@ -1,14 +1,14 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
 
 Gcov is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
+the Free Software Foundation; either version 3, or (at your option)
 any later version.
 
 Gcov is distributed in the hope that it will be useful,
@@ -17,9 +17,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Gcov; see the file COPYING.  If not, write to
-the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+along with Gcov; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* ??? Print a list of the ten blocks with the highest execution counts,
    and list the line numbers corresponding to those blocks.  Also, perhaps

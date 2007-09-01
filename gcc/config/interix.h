@@ -1,6 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    Interix
-   Copyright (C) 1994, 1995, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1999, 2002, 2004, 2007
+   Free Software Foundation, Inc.
    Donn Terry, Softway Systems, Inc. (donn@softway.com)
    Modified from code
       Contributed by Douglas B. Rupp (drupp@cs.washington.edu).
@@ -9,7 +10,7 @@ This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
+the Free Software Foundation; either version 3, or (at your option)
 any later version.
 
 GCC is distributed in the hope that it will be useful,
@@ -18,9 +19,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with GCC; see the file COPYING.  If not, write to
-the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.  */
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* POSIX/Uni-thread only for now.  Look at the winnt version
 for windows/multi thread */
