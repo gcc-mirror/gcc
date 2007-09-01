@@ -185,8 +185,6 @@ int m68k_last_compare_had_fp_operands;
 #undef TARGET_ASM_FILE_START_APP_OFF
 #define TARGET_ASM_FILE_START_APP_OFF true
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS MASK_STRICT_ALIGNMENT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION m68k_handle_option
 
@@ -510,6 +508,11 @@ override_options (void)
   /* Use the architecture setting to derive default values for
      certain flags.  */
   target_mask = 0;
+
+  /* ColdFire is lenient about alignment.  */
+  if (!TARGET_COLDFIRE)
+    target_mask |= MASK_STRICT_ALIGNMENT;
+
   if ((m68k_cpu_flags & FL_BITFIELD) != 0)
     target_mask |= MASK_BITFIELD;
   if ((m68k_cpu_flags & FL_CF_HWDIV) != 0)

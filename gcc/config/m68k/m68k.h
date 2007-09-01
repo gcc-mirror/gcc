@@ -305,8 +305,7 @@ along with GCC; see the file COPYING3.  If not see
 /* No data type wants to be aligned rounder than this.
    Most published ABIs say that ints should be aligned on 16-bit
    boundaries, but CPUs with 32-bit busses get better performance
-   aligned on 32-bit boundaries.  ColdFires without a misalignment
-   module require 32-bit alignment.  */
+   aligned on 32-bit boundaries.  */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_INT ? 32 : 16)
 
 #define STRICT_ALIGNMENT (TARGET_STRICT_ALIGNMENT)
