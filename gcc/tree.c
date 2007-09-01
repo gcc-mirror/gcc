@@ -3809,28 +3809,19 @@ is_attribute_p (const char *attr, const_tree ident)
    returns the first occurrence; the TREE_CHAIN of the return value should
    be passed back in if further occurrences are wanted.  */
 
-#define LOOKUP_ATTRIBUTE_BODY(TYPE) do { \
-  TYPE l; \
-  size_t attr_len = strlen (attr_name); \
-  for (l = list; l; l = TREE_CHAIN (l)) \
-    { \
-      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE); \
-      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l))) \
-	return l; \
-    } \
-  return NULL_TREE; \
-} while (0)
-
 tree
 lookup_attribute (const char *attr_name, tree list)
 {
-  LOOKUP_ATTRIBUTE_BODY(tree);
-}
+  tree l;
+  size_t attr_len = strlen (attr_name);
 
-const_tree
-const_lookup_attribute (const char *attr_name, const_tree list)
-{
-  LOOKUP_ATTRIBUTE_BODY(const_tree);
+  for (l = list; l; l = TREE_CHAIN (l))
+    {
+      gcc_assert (TREE_CODE (TREE_PURPOSE (l)) == IDENTIFIER_NODE);
+      if (is_attribute_with_length_p (attr_name, attr_len, TREE_PURPOSE (l)))
+	return l;
+    }
+  return NULL_TREE;
 }
 
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
@@ -4800,10 +4791,14 @@ attribute_list_contained (const_tree l1, const_tree l2)
   for (; t2 != 0; t2 = TREE_CHAIN (t2))
     {
       const_tree attr;
-      for (attr = const_lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)), l1);
+      /* This CONST_CAST is okay because lookup_attribute does not
+	 modify its argument and the return value is assigned to a
+	 const_tree.  */
+      for (attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    (tree)CONST_CAST(l1));
 	   attr != NULL_TREE;
-	   attr = const_lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-					  TREE_CHAIN (attr)))
+	   attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    TREE_CHAIN (attr)))
 	{
 	  if (TREE_VALUE (t2) != NULL
 	      && TREE_CODE (TREE_VALUE (t2)) == TREE_LIST

@@ -1,3 +1,32 @@
+2007-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (const_strip_array_types): Delete.
+	* c-common.h (const_strip_array_types): Likewise.
+	* emit-rtl.c (const_next_insn, const_previous_insn,
+	const_next_nonnote_insn, const_prev_nonnote_insn,
+	const_next_real_insn, const_prev_real_insn,
+	const_next_active_insn, const_prev_active_insn, const_next_label,
+	const_prev_label): Delete.
+	* gimple-low.c (block_may_fallthru): Use expr_last.
+	* jump.c (reversed_comparison_code_parts): Use prev_nonnote_insn.
+	* rtl.h (const_previous_insn, const_next_insn,
+	const_prev_nonnote_insn, const_next_nonnote_insn,
+	const_prev_real_insn, const_next_real_insn,
+	const_prev_active_insn, const_next_active_insn, const_prev_label,
+	const_next_label): Delete.
+	* rtlanal.c (keep_with_call_p): Use next_nonnote_insn.
+	* system.h (CONST_CAST): Update comment.
+	* tree-cfg.c (tree_can_merge_blocks_p): Use last_stmt.
+	(const_first_stmt, const_last_stmt): Delete.
+	(tree_block_ends_with_condjump_p): Use last_stmt.
+	* tree-flow.h (const_first_stmt, const_last_stmt): Delete.
+	* tree-iterator.c (const_expr_first, const_expr_last,
+	const_expr_only): Delete.
+	* tree.c (const_lookup_attribute): Likewise.
+	(attribute_list_contained): Use lookup_attribute.
+	* tree.h (const_lookup_attribute, const_expr_first,
+	const_expr_last, const_expr_only): Delete.
+
 2007-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (create_name_tags): Use TYPE_VOLATILE

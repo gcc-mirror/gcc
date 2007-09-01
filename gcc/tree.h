@@ -4156,7 +4156,6 @@ extern int is_attribute_p (const char *, const_tree);
    of the attribute or NULL_TREE if not found.  */
 
 extern tree lookup_attribute (const char *, tree);
-extern const_tree const_lookup_attribute (const char *, const_tree);
 
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
    modified list.  */
@@ -4303,11 +4302,8 @@ extern tree non_lvalue (tree);
 extern tree convert (tree, tree);
 extern unsigned int expr_align (const_tree);
 extern tree expr_first (tree);
-extern const_tree const_expr_first (const_tree);
 extern tree expr_last (tree);
-extern const_tree const_expr_last (const_tree);
 extern tree expr_only (tree);
-extern const_tree const_expr_only (const_tree);
 extern tree size_in_bytes (const_tree);
 extern HOST_WIDE_INT int_size_in_bytes (const_tree);
 extern HOST_WIDE_INT max_int_size_in_bytes (const_tree);

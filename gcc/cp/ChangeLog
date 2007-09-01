@@ -1,3 +1,9 @@
+2007-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.c (pod_type_p, zero_init_p): Use strip_array_types.
+	* typeck.c (cp_type_quals, cp_type_readonly, cp_has_mutable_p):
+	Likewise.
+
 2007-08-31 Douglas Gregor <doug.gregor@gmail.com>
 
 	PR c++/32597
