@@ -1466,11 +1466,6 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
   /* Mark the statement as having memory operands.  */
   s_ann->references_memory = true;
 
-  /* Mark statements with volatile operands.  Optimizers should back
-     off from statements having volatile operands.  */
-  if (TREE_THIS_VOLATILE (sym) && s_ann)
-    s_ann->has_volatile_ops = true;
-
   /* If the variable cannot be modified and this is a VDEF change
      it into a VUSE.  This happens when read-only variables are marked
      call-clobbered and/or aliased to writable variables.  So we only
@@ -1499,7 +1494,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 
   if (aliases == NULL)
     {
-      if (s_ann && !gimple_aliases_computed_p (cfun))
+      if (!gimple_aliases_computed_p (cfun))
         s_ann->has_volatile_ops = true;
 
       /* The variable is not aliased or it is an alias tag.  */
@@ -1630,7 +1625,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
   stmt_ann_t s_ann = stmt_ann (stmt);
 
   s_ann->references_memory = true;
-  if (s_ann && TREE_THIS_VOLATILE (expr))
+  if (TREE_THIS_VOLATILE (expr))
     s_ann->has_volatile_ops = true; 
 
   if (SSA_VAR_P (ptr))
@@ -1677,8 +1672,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
 
 	  /* Aliasing information is missing; mark statement as
 	     volatile so we won't optimize it out too actively.  */
-          else if (s_ann
-	           && !gimple_aliases_computed_p (cfun)
+          else if (!gimple_aliases_computed_p (cfun)
                    && (flags & opf_def))
             s_ann->has_volatile_ops = true;
 	}
@@ -1688,8 +1682,7 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags,
       /* If a constant is used as a pointer, we can't generate a real
 	 operand for it but we mark the statement volatile to prevent
 	 optimizations from messing things up.  */
-      if (s_ann)
-	s_ann->has_volatile_ops = true;
+      s_ann->has_volatile_ops = true;
       return;
     }
   else
@@ -2121,6 +2114,9 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	HOST_WIDE_INT offset, size, maxsize;
 	bool none = true;
 
+	if (TREE_THIS_VOLATILE (expr))
+	  s_ann->has_volatile_ops = true;
+
 	/* This component reference becomes an access to all of the
 	   subvariables it can touch, if we can determine that, but
 	   *NOT* the real one.  If we can't determine which fields we
@@ -2148,8 +2144,10 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	    if (!none)
 	      flags |= opf_no_vops;
 
-	    if (TREE_THIS_VOLATILE (expr))
-	      get_stmt_ann (stmt)->has_volatile_ops = true;
+	    if ((DECL_P (ref) && TREE_THIS_VOLATILE (ref))
+		|| (TREE_CODE (ref) == SSA_NAME
+		    && TREE_THIS_VOLATILE (SSA_NAME_VAR (ref))))
+	      s_ann->has_volatile_ops = true;
 	  }
 	else if (TREE_CODE (ref) == INDIRECT_REF)
 	  {
@@ -2165,7 +2163,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	
 	if (code == COMPONENT_REF)
 	  {
-	    if (s_ann && TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
+	    if (TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
 	      s_ann->has_volatile_ops = true; 
 	    get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_use);
 	  }
