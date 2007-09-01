@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
    If any generic parameter is complex, we use a complex version.  Otherwise
    we use a real version.  If the real part of any generic parameter is long
    double, we use the long double version.  Otherwise if the real part of any
-   generic paramter is double or of integer type, we use the double version.
+   generic parameter is double or of integer type, we use the double version.
    Otherwise we use the float version. */
 
 #define __tg_cplx(expr) \

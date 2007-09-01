@@ -306,7 +306,7 @@ struct gcc_target
     /* The values of the following two members are pointers to
        functions used to simplify the automaton descriptions.
        dfa_pre_advance_cycle and dfa_post_advance_cycle are getting called
-       immediatelly before and after cycle is advanced.  */
+       immediately before and after cycle is advanced.  */
     void (* dfa_pre_advance_cycle) (void);
     void (* dfa_post_advance_cycle) (void);
 

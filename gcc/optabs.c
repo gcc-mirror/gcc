@@ -1265,7 +1265,7 @@ shift_optab_p (optab binoptab)
     }
 }
 
-/* Return true if BINOPTAB implements a commutatative binary operation.  */
+/* Return true if BINOPTAB implements a commutative binary operation.  */
 
 static bool
 commutative_optab_p (optab binoptab)

@@ -188,7 +188,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
 #endif /* __powerpc64__ */
 
 #ifdef __powerpc64__
-/* Work around the hadware bug in the current Cell implemention.  */
+/* Work around the hardware bug in the current Cell implementation.  */
 #define __mftb() __extension__					\
   ({ unsigned long long result;					\
   __asm__ volatile ("1: mftb %[current_tb]\n"			\

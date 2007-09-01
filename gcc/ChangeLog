@@ -1,5 +1,14 @@
 2007-09-01  Kazu Hirata  <kazu@codesourcery.com>
 
+	* config/arm/arm.c, config/rs6000/ppu_intrinsics.h,
+	config/spu/spu.c, df-scan.c, fixed-value.c, fold-const.c,
+	ginclude/tgmath.h, haifa-sched.c, optabs.c, recog.c,
+	sched-deps.c, sched-int.h, system.h, target.h,
+	tree-ssa-live.c, tree-vect-transform.c, tree-vectorizer.c,
+	tree.def: Fix comment typos.
+
+2007-09-01  Kazu Hirata  <kazu@codesourcery.com>
+
 	* config/m68k/m68k.c (TARGET_DEFAULT_TARGET_FLAGS): Remove.
 	(override_options): Turn on -mstrict-align on non-ColdFire
 	targets.

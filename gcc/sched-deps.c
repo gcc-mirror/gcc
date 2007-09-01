@@ -359,7 +359,7 @@ free_deps_list (deps_list_t l)
 }
 
 /* Return true if there is no dep_nodes and deps_lists out there.
-   After the region is scheduled all the depedency nodes and lists
+   After the region is scheduled all the dependency nodes and lists
    should [generally] be returned to pool.  */
 bool
 deps_pools_are_empty_p (void)
@@ -648,7 +648,7 @@ sd_finish_insn (rtx insn)
 /* Find a dependency between producer PRO and consumer CON.
    Search through resolved dependency lists if RESOLVED_P is true.
    If no such dependency is found return NULL,
-   overwise return the dependency and initialize SD_IT_PTR [if it is nonnull]
+   otherwise return the dependency and initialize SD_IT_PTR [if it is nonnull]
    with an iterator pointing to it.  */
 static dep_t
 sd_find_dep_between_no_cache (rtx pro, rtx con, bool resolved_p,

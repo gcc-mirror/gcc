@@ -897,7 +897,7 @@ struct _sd_iterator
      simply a pointer to the next element to allow easy deletion from the
      list.  When a dep is being removed from the list the iterator
      will automatically advance because the value in *linkp will start
-     reffering to the next element.  */
+     referring to the next element.  */
   dep_link_t *linkp;
 
   /* True if the current list is a resolved one.  */

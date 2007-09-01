@@ -553,7 +553,7 @@ do_fixed_divide (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
 			 &r.low, &r.high, 0);
  	}
 
-      /* Divide r by pos_b to quo_r.  The remanider is in mod.  */
+      /* Divide r by pos_b to quo_r.  The remainder is in mod.  */
       div_and_round_double (TRUNC_DIV_EXPR, 1, r.low, r.high, pos_b.low,
 			    pos_b.high, &quo_r.low, &quo_r.high, &mod.low,
 			    &mod.high);
@@ -613,7 +613,7 @@ do_fixed_divide (FIXED_VALUE_TYPE *f, const FIXED_VALUE_TYPE *a,
   return overflow_p;
 }
 
-/* Calculate F = A << B if LEFT_P.  Otherwies, F = A >> B.
+/* Calculate F = A << B if LEFT_P.  Otherwise, F = A >> B.
    If SAT_P, saturate the result to the max or the min.
    Return true, if !SAT_P and overflow.  */
 

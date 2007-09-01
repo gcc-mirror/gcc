@@ -5484,7 +5484,7 @@ spu_builtin_vectorization_cost (bool runtime_test)
   /* If the branch of the runtime test is taken - i.e. - the vectorized
      version is skipped - this incurs a misprediction cost (because the
      vectorized version is expected to be the fall-through).  So we subtract
-     the latency of a mispredicted branch from the costs that are incured
+     the latency of a mispredicted branch from the costs that are incurred
      when the vectorized version is executed.  */
   if (runtime_test)
     return -19;
