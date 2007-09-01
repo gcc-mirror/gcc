@@ -1,5 +1,16 @@
 2007-09-01  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-alias.c (create_name_tags): Use TYPE_VOLATILE
+	instead of TREE_THIS_VOLATILE.
+	* tree-ssa-operands.c (add_virtual_operand): Do not set
+	has_volatile_ops.  Do not check s_ann for NULL.
+	(get_indirect_ref_operands): Likewise.
+	(get_expr_operands): Likewise.  For all reference trees
+	set has_volatile_ops based on TREE_THIS_VOLATILE.  Also
+	check base of reference for TREE_THIS_VOLATILE.
+
+2007-09-01  Richard Guenther  <rguenther@suse.de>
+
 	* tree-cfg.c (verify_gimple_expr): Fix check for conversions
 	between integral types.  Also allow conversions between
 	pointer types.

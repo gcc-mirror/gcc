@@ -2216,7 +2216,7 @@ create_name_tags (void)
 
       /* Inherit volatility from the pointed-to type.  */
       TREE_THIS_VOLATILE (pi->name_mem_tag)
-	|= TREE_THIS_VOLATILE (TREE_TYPE (TREE_TYPE (ptr)));
+	|= TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (ptr)));
       
       /* Mark the new name tag for renaming.  */
       mark_sym_for_renaming (pi->name_mem_tag);
