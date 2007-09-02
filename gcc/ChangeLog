@@ -1,3 +1,7 @@
+2007-09-01  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* ggc-page.c (ggc_pch_read): Call validate_free_objects.
+
 2007-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	PR middle-end/33272

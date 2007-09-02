@@ -2243,6 +2243,9 @@ ggc_pch_read (FILE *f, void *addr)
 #ifdef ENABLE_GC_CHECKING
   poison_pages ();
 #endif
+  /* Since we free all the allocated objects, the free list becomes
+     useless.  Validate it now, which will also clear it.  */
+  validate_free_objects();
 
   /* No object read from a PCH file should ever be freed.  So, set the
      context depth to 1, and set the depth of all the currently-allocated
