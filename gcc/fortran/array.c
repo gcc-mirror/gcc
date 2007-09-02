@@ -1281,6 +1281,7 @@ expand_iterator (gfc_constructor *c)
 
   mpz_init (trip);
   mpz_init (frame.value);
+  frame.prev = NULL;
 
   start = gfc_copy_expr (c->iterator->start);
   if (gfc_simplify_expr (start, 1) == FAILURE)
