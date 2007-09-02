@@ -2468,6 +2468,21 @@ syntax:
 }
 
 
+/* A minimal implementation of gfc_match without whitespace, escape
+   characters or variable arguments.  Returns true if the next
+   characters match the TARGET template exactly.  */
+
+static bool
+match_string_p (const char *target)
+{
+  const char *p;
+
+  for (p = target; *p; p++)
+    if (gfc_next_char () != *p)
+      return false;
+  return true;
+}
+
 /* Matches an attribute specification including array specs.  If
    successful, leaves the variables current_attr and current_as
    holding the specification.  Also sets the colon_seen variable for
@@ -2488,7 +2503,7 @@ match_attr_spec (void)
     DECL_IN, DECL_OUT, DECL_INOUT, DECL_INTRINSIC, DECL_OPTIONAL,
     DECL_PARAMETER, DECL_POINTER, DECL_PROTECTED, DECL_PRIVATE,
     DECL_PUBLIC, DECL_SAVE, DECL_TARGET, DECL_VALUE, DECL_VOLATILE,
-    DECL_IS_BIND_C, DECL_COLON, DECL_NONE,
+    DECL_IS_BIND_C, DECL_NONE,
     GFC_DECL_END /* Sentinel */
   }
   decl_types;
@@ -2496,35 +2511,12 @@ match_attr_spec (void)
 /* GFC_DECL_END is the sentinel, index starts at 0.  */
 #define NUM_DECL GFC_DECL_END
 
-  static mstring decls[] = {
-    minit (", allocatable", DECL_ALLOCATABLE),
-    minit (", dimension", DECL_DIMENSION),
-    minit (", external", DECL_EXTERNAL),
-    minit (", intent ( in )", DECL_IN),
-    minit (", intent ( out )", DECL_OUT),
-    minit (", intent ( in out )", DECL_INOUT),
-    minit (", intrinsic", DECL_INTRINSIC),
-    minit (", optional", DECL_OPTIONAL),
-    minit (", parameter", DECL_PARAMETER),
-    minit (", pointer", DECL_POINTER),
-    minit (", protected", DECL_PROTECTED),
-    minit (", private", DECL_PRIVATE),
-    minit (", public", DECL_PUBLIC),
-    minit (", save", DECL_SAVE),
-    minit (", target", DECL_TARGET),
-    minit (", value", DECL_VALUE),
-    minit (", volatile", DECL_VOLATILE),
-    minit ("::", DECL_COLON),
-    minit (NULL, DECL_NONE)
-  };
-
   locus start, seen_at[NUM_DECL];
   int seen[NUM_DECL];
   decl_types d;
   const char *attr;
   match m;
   try t;
-  char peek_char;
 
   gfc_clear_attr (&current_attr);
   start = gfc_current_locus;
@@ -2538,29 +2530,171 @@ match_attr_spec (void)
 
   for (;;)
     {
-      d = (decl_types) gfc_match_strings (decls);
+      int ch;
 
-      if (d == DECL_NONE)
+      d = DECL_NONE;
+      gfc_gobble_whitespace ();
+
+      ch = gfc_next_char ();
+      if (ch == ':')
 	{
-	  /* See if we can find the bind(c) since all else failed. 
-	     We need to skip over any whitespace and stop on the ','.  */
+	  /* This is the successful exit condition for the loop.  */
+	  if (gfc_next_char () == ':')
+	    break;
+	}
+      else if (ch == ',')
+	{
 	  gfc_gobble_whitespace ();
-	  peek_char = gfc_peek_char ();
-	  if (peek_char == ',')
+	  switch (gfc_peek_char ())
 	    {
-	      /* Chomp the comma.  */
-	      peek_char = gfc_next_char ();
+	    case 'a':
+	      if (match_string_p ("allocatable"))
+		d = DECL_ALLOCATABLE;
+	      break;
+
+	    case 'b':
 	      /* Try and match the bind(c).  */
 	      m = gfc_match_bind_c (NULL);
 	      if (m == MATCH_YES)
 		d = DECL_IS_BIND_C;
 	      else if (m == MATCH_ERROR)
 		goto cleanup;
+	      break;
+
+	    case 'd':
+	      if (match_string_p ("dimension"))
+		d = DECL_DIMENSION;
+	      break;
+
+	    case 'e':
+	      if (match_string_p ("external"))
+		d = DECL_EXTERNAL;
+	      break;
+
+	    case 'i':
+	      if (match_string_p ("int"))
+		{
+		  ch = gfc_next_char ();
+		  if (ch == 'e')
+		    {
+		      if (match_string_p ("nt"))
+			{
+			  /* Matched "intent".  */
+			  /* TODO: Call match_intent_spec from here.  */
+			  if (gfc_match (" ( in out )") == MATCH_YES)
+			    d = DECL_INOUT;
+			  else if (gfc_match (" ( in )") == MATCH_YES)
+			    d = DECL_IN;
+			  else if (gfc_match (" ( out )") == MATCH_YES)
+			    d = DECL_OUT;
+			}
+		    }
+		  else if (ch == 'r')
+		    {
+		      if (match_string_p ("insic"))
+			{
+			  /* Matched "intrinsic".  */
+			  d = DECL_INTRINSIC;
+			}
+		    }
+		}
+	      break;
+
+	    case 'o':
+	      if (match_string_p ("optional"))
+		d = DECL_OPTIONAL;
+	      break;
+
+	    case 'p':
+	      gfc_next_char ();
+	      switch (gfc_next_char ())
+		{
+		case 'a':
+		  if (match_string_p ("rameter"))
+		    {
+		      /* Matched "parameter".  */
+		      d = DECL_PARAMETER;
+		    }
+		  break;
+
+		case 'o':
+		  if (match_string_p ("inter"))
+		    {
+		      /* Matched "pointer".  */
+		      d = DECL_POINTER;
+		    }
+		  break;
+
+		case 'r':
+		  ch = gfc_next_char ();
+		  if (ch == 'i')
+		    {
+		      if (match_string_p ("vate"))
+			{
+			  /* Matched "private".  */
+			  d = DECL_PRIVATE;
+			}
+		    }
+		  else if (ch == 'o')
+		    {
+		      if (match_string_p ("tected"))
+			{
+			  /* Matched "protected".  */
+			  d = DECL_PROTECTED;
+			}
+		    }
+		  break;
+
+		case 'u':
+		  if (match_string_p ("blic"))
+		    {
+		      /* Matched "public".  */
+		      d = DECL_PUBLIC;
+		    }
+		  break;
+		}
+	      break;
+
+	    case 's':
+	      if (match_string_p ("save"))
+		d = DECL_SAVE;
+	      break;
+
+	    case 't':
+	      if (match_string_p ("target"))
+		d = DECL_TARGET;
+	      break;
+
+	    case 'v':
+	      gfc_next_char ();
+	      ch = gfc_next_char ();
+	      if (ch == 'a')
+		{
+		  if (match_string_p ("lue"))
+		    {
+		      /* Matched "value".  */
+		      d = DECL_VALUE;
+		    }
+		}
+	      else if (ch == 'o')
+		{
+		  if (match_string_p ("latile"))
+		    {
+		      /* Matched "volatile".  */
+		      d = DECL_VOLATILE;
+		    }
+		}
+	      break;
 	    }
 	}
 
-      if (d == DECL_NONE || d == DECL_COLON)
-	break;
+      /* No double colon and no recognizable decl_type, so assume that
+	 we've been looking at something else the whole time.  */
+      if (d == DECL_NONE)
+	{
+	  m = MATCH_NO;
+	  goto cleanup;
+	}
 
       seen[d]++;
       seen_at[d] = gfc_current_locus;
@@ -2578,14 +2712,6 @@ match_attr_spec (void)
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
 	}
-    }
-
-  /* No double colon, so assume that we've been looking at something
-     else the whole time.  */
-  if (d == DECL_NONE)
-    {
-      m = MATCH_NO;
-      goto cleanup;
     }
 
   /* Since we've seen a double colon, we have to be looking at an
@@ -2667,8 +2793,8 @@ match_attr_spec (void)
 
       if (gfc_current_state () == COMP_DERIVED
 	  && d != DECL_DIMENSION && d != DECL_POINTER
-	  && d != DECL_COLON     && d != DECL_PRIVATE
-	  && d != DECL_PUBLIC    && d != DECL_NONE)
+	  && d != DECL_PRIVATE   && d != DECL_PUBLIC
+	  && d != DECL_NONE)
 	{
 	  if (d == DECL_ALLOCATABLE)
 	    {

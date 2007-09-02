@@ -46,7 +46,6 @@ match gfc_match_st_label (gfc_st_label **);
 match gfc_match_label (void);
 match gfc_match_small_int (int *);
 match gfc_match_small_int_expr (int *, gfc_expr **);
-int gfc_match_strings (mstring *);
 match gfc_match_name (char *);
 match gfc_match_name_C (char *buffer);
 match gfc_match_symbol (gfc_symbol **, int);
