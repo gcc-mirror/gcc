@@ -4719,6 +4719,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      type = c_build_qualified_type (type, type_quals);
 	    type = build_pointer_type (type);
 	    type_quals = array_ptr_quals;
+	    if (type_quals)
+	      type = c_build_qualified_type (type, type_quals);
 
 	    /* We don't yet implement attributes in this context.  */
 	    if (array_ptr_attrs != NULL_TREE)
