@@ -62,7 +62,6 @@
 	(get_delta_difference_1): New function.
 	(get_delta_difference): Refactor to call get_delta_difference_1.
 
->>>>>>> .r127998
 2007-08-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33209
