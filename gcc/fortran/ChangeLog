@@ -1,3 +1,8 @@
+2007-09-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR fortran/33276
+	* array.c (expand_iterator): Initialize frame.prev.
+
 2007-08-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33232
