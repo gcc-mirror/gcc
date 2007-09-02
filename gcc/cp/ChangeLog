@@ -1,3 +1,9 @@
+2007-09-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33208
+	* typeck.c (build_unary_op): Fix error message for
+	Boolean expression as operand to operator--.
+
 2007-09-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.c (pod_type_p, zero_init_p): Use strip_array_types.

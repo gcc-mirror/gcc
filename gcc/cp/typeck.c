@@ -4323,7 +4323,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  {
 	    if (code == POSTDECREMENT_EXPR || code == PREDECREMENT_EXPR)
 	      {
-		error ("invalid use of %<--%> on bool variable %qD", arg);
+		error ("invalid use of Boolean expression as operand "
+		       "to %<operator--%>");
 		return error_mark_node;
 	      }
 	    val = boolean_increment (code, arg);

@@ -7,6 +7,6 @@ struct S {
 S s;
 
 void f() {
-  s.x--; // { dg-error "bool" }
-  --s.x; // { dg-error "bool" }
+  s.x--; // { dg-error "Boolean expression" }
+  --s.x; // { dg-error "Boolean expression" }
 }
