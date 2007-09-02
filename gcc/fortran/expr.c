@@ -1329,6 +1329,7 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
 {
   int end;
   int start;
+  int length;
   char *chr;
 
   if (p->ref->u.ss.start->expr_type != EXPR_CONSTANT
@@ -1336,13 +1337,16 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
     return FAILURE;
 
   *newp = gfc_copy_expr (p);
-  chr = p->value.character.string;
+  gfc_free ((*newp)->value.character.string);
+
   end = (int) mpz_get_ui (p->ref->u.ss.end->value.integer);
   start = (int) mpz_get_ui (p->ref->u.ss.start->value.integer);
+  length = end - start + 1;
 
-  (*newp)->value.character.length = end - start + 1;
-  strncpy ((*newp)->value.character.string, &chr[start - 1],
-	   (*newp)->value.character.length);
+  chr = (*newp)->value.character.string = gfc_getmem (length + 1);
+  (*newp)->value.character.length = length;
+  memcpy (chr, &p->value.character.string[start - 1], length);
+  chr[length] = '\0';
   return SUCCESS;
 }
 

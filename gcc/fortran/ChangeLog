@@ -1,3 +1,10 @@
+2007-09-02  Tobias Schlüuter  <tobi@gcc.gnu.org>
+
+	* dump-parse-tree.c (show_char_const): New function.
+	(gfc_show_expr): Use it.
+	* expr.c (find_substring_ref): Rework to not keep characters
+	dangling beyond end of string.
+
 2007-09-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/33276
