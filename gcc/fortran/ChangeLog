@@ -1,3 +1,13 @@
+2007-09-02  Roger Sayle  <roger@eyesopen.com>
+
+	* decl.c (match_string_p): New helper function to explicitly match
+	a string of characters.
+	(match_attr_spec): Remove no longer needed DECL_COLON from decl_types.
+	Delete decls array and peek_char.  Rewrite decl attribute parser to
+	avoid calling gfc_match_strings.
+	* match.c (gfc_match_strings): Delete unused function.
+	* match.h (gfc_match_strings): Delete prototype.
+
 2007-09-02  Tobias Schlüuter  <tobi@gcc.gnu.org>
 
 	* dump-parse-tree.c (show_char_const): New function.
