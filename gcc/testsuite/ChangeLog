@@ -1,5 +1,8 @@
 2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
 
+	* gcc.target/cris/builtin_bswap_v3.c: New testcase.
+	* gcc.target/cris/builtin_bswap_v8.c: New testcase.
+
 	* gcc.dg/torture/cris-asm-mof-1.c: Skip if -march defined.
 
 2007-09-02  David Daney  <ddaney@avtrex.com>
