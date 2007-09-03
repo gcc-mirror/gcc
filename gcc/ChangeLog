@@ -1,3 +1,17 @@
+2007-09-03  Vladimir Yanovsky  <yanov@il.ibm.com>
+            Ayal Zaks  <zaks@il.ibm.com>
+            Revital Eres  <eres@il.ibm.com>
+
+	* modulo-sched.c (ps_insert_empty_row, verify_partial_schedule,
+	compute_split_row): New functions.
+	(ps_unschedule_node): Remove.
+	(normalize_sched_times): Iterate over the already scheduled
+	insns instead of the number of nodes.
+	(MAX_SPLIT_NUM): New definition.
+	(sms_schedule_by_order): Change the scheduling heuristic to
+	avoid useless increases of initiation interval ii.
+	(get_sched_window): Add dump printouts.
+
 2007-09-02  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (UNSPEC_COMPARE_AND_SWAP, UNSPEC_SYNC_OLD_OP,

@@ -172,13 +172,15 @@ static partial_schedule_ptr create_partial_schedule (int ii, ddg_ptr, int histor
 static void free_partial_schedule (partial_schedule_ptr);
 static void reset_partial_schedule (partial_schedule_ptr, int new_ii);
 void print_partial_schedule (partial_schedule_ptr, FILE *);
+static void verify_partial_schedule (partial_schedule_ptr, sbitmap);
 static ps_insn_ptr ps_add_node_check_conflicts (partial_schedule_ptr,
 						ddg_node_ptr node, int cycle,
 						sbitmap must_precede,
 						sbitmap must_follow);
 static void rotate_partial_schedule (partial_schedule_ptr, int);
 void set_row_column_for_ps (partial_schedule_ptr);
-static bool ps_unschedule_node (partial_schedule_ptr, ddg_node_ptr );
+static void ps_insert_empty_row (partial_schedule_ptr, int, sbitmap);
+static int compute_split_row (sbitmap, int, int, int, ddg_node_ptr);
 
 
 /* This page defines constants and structures for the modulo scheduling
@@ -568,23 +570,27 @@ free_undo_replace_buff (struct undo_replace_buff_elem *reg_move_replaces)
 static void
 normalize_sched_times (partial_schedule_ptr ps)
 {
-  int i;
-  ddg_ptr g = ps->g;
+  int row;
   int amount = PS_MIN_CYCLE (ps);
   int ii = ps->ii;
+  ps_insn_ptr crr_insn;
 
-  /* Don't include the closing branch assuming that it is the last node.  */
-  for (i = 0; i < g->num_nodes - 1; i++)
-    {
-      ddg_node_ptr u = &g->nodes[i];
-      int normalized_time = SCHED_TIME (u) - amount;
+  for (row = 0; row < ii; row++)
+    for (crr_insn = ps->rows[row]; crr_insn; crr_insn = crr_insn->next_in_row)
+      {
+	ddg_node_ptr u = crr_insn->node;
+	int normalized_time = SCHED_TIME (u) - amount;
 
-      gcc_assert (normalized_time >= 0);
-
-      SCHED_TIME (u) = normalized_time;
-      SCHED_ROW (u) = normalized_time % ii;
-      SCHED_STAGE (u) = normalized_time / ii;
-    }
+	if (dump_file)
+	  fprintf (dump_file, "crr_insn->node=%d, crr_insn->cycle=%d,\
+		   min_cycle=%d\n", crr_insn->node->cuid, SCHED_TIME
+		   (u), ps->min_cycle);
+	gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
+	gcc_assert (SCHED_TIME (u) <= ps->max_cycle);
+	SCHED_TIME (u) = normalized_time;
+	SCHED_ROW (u) = normalized_time % ii;
+	SCHED_STAGE (u) = normalized_time / ii;
+      }
 }
 
 /* Set SCHED_COLUMN of each node according to its position in PS.  */
@@ -1277,6 +1283,9 @@ sms_schedule (void)
    set to 0 to save compile time.  */
 #define DFA_HISTORY SMS_DFA_HISTORY
 
+/* A threshold for the number of repeated unsuccessful attempts to insert
+   an empty row, before we flush the partial schedule and start over.  */
+#define MAX_SPLIT_NUM 10
 /* Given the partial schedule PS, this function calculates and returns the
    cycles in which we can schedule the node with the given index I.
    NOTE: Here we do the backtracking in SMS, in some special cases. We have
@@ -1315,6 +1324,18 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
       for (e = u_node->in; e != 0; e = e->next_in)
 	{
 	  ddg_node_ptr v_node = e->src;
+
+          if (dump_file)
+            {     
+	      fprintf (dump_file, "\nProcessing edge: ");
+              print_ddg_edge (dump_file, e);
+	      fprintf (dump_file,
+		       "\nScheduling %d (%d) in psp_not_empty,"
+		       " checking node %d (%d): ", u_node->cuid,
+		       INSN_UID (u_node->insn), v_node->cuid, INSN_UID
+		       (v_node->insn));
+            }
+
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
 	      int node_st = SCHED_TIME (v_node)
@@ -1329,6 +1350,11 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
       start = early_start;
       end = MIN (end, early_start + ii);
       step = 1;
+
+      if (dump_file)
+        fprintf (dump_file,
+		 "\nScheduling %d (%d) in a window (%d..%d) with step %d\n",
+		 u_node->cuid, INSN_UID (u_node->insn), start, end, step);
     }
 
   else if (!psp_not_empty && pss_not_empty)
@@ -1339,18 +1365,45 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
       for (e = u_node->out; e != 0; e = e->next_out)
 	{
 	  ddg_node_ptr v_node = e->dest;
+
+          if (dump_file)
+            {
+              fprintf (dump_file, "\nProcessing edge:");
+              print_ddg_edge (dump_file, e);
+              fprintf (dump_file,
+                       "\nScheduling %d (%d) in pss_not_empty,"
+                       " checking node %d (%d): ", u_node->cuid,
+                       INSN_UID (u_node->insn), v_node->cuid, INSN_UID
+                       (v_node->insn));
+            }
+
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
 	      late_start = MIN (late_start,
 				SCHED_TIME (v_node) - e->latency
 				+ (e->distance * ii));
+               if (dump_file)
+                 fprintf (dump_file, "late_start = %d;", late_start);
+
 	      if (e->data_type == MEM_DEP)
 		end = MAX (end, SCHED_TIME (v_node) - ii + 1);
+             if (dump_file)
+                 fprintf (dump_file, "end = %d\n", end);
+
 	    }
+          else if (dump_file)
+            fprintf (dump_file, "the node is not scheduled\n");
+
 	}
       start = late_start;
       end = MAX (end, late_start - ii);
       step = -1;
+
+      if (dump_file)
+        fprintf (dump_file,
+                 "\nScheduling %d (%d) in a window (%d..%d) with step %d\n",
+                 u_node->cuid, INSN_UID (u_node->insn), start, end, step);
+
     }
 
   else if (psp_not_empty && pss_not_empty)
@@ -1364,6 +1417,17 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
 	{
 	  ddg_node_ptr v_node = e->src;
 
+	  if (dump_file)
+	    {
+              fprintf (dump_file, "\nProcessing edge:");
+              print_ddg_edge (dump_file, e);
+	      fprintf (dump_file,
+		       "\nScheduling %d (%d) in psp_pss_not_empty,"
+		       " checking p %d (%d): ", u_node->cuid, INSN_UID
+		       (u_node->insn), v_node->cuid, INSN_UID
+		       (v_node->insn));
+	    }
+
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
 	      early_start = MAX (early_start,
@@ -1376,6 +1440,17 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
       for (e = u_node->out; e != 0; e = e->next_out)
 	{
 	  ddg_node_ptr v_node = e->dest;
+
+	  if (dump_file)
+	    {
+              fprintf (dump_file, "\nProcessing edge:");
+              print_ddg_edge (dump_file, e);
+	      fprintf (dump_file,
+		       "\nScheduling %d (%d) in psp_pss_not_empty,"
+		       " checking s %d (%d): ", u_node->cuid, INSN_UID
+		       (u_node->insn), v_node->cuid, INSN_UID
+		       (v_node->insn));
+	    }
 
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
@@ -1404,8 +1479,13 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
   sbitmap_free (pss);
 
   if ((start >= end && step == 1) || (start <= end && step == -1))
+    {
+      if (dump_file)
+	fprintf (dump_file, "\nEmpty window: start=%d, end=%d, step=%d\n",
+		 start, end, step);
     return -1;
-  else
+    }
+
     return 0;
 }
 
@@ -1415,10 +1495,11 @@ static partial_schedule_ptr
 sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 {
   int ii = mii;
-  int i, c, success;
-  int try_again_with_larger_ii = true;
+  int i, c, success, num_splits = 0;
+  int flush_and_start_over = true;
   int num_nodes = g->num_nodes;
   ddg_edge_ptr e;
+  ps_insn_ptr psi;
   int start, end, step; /* Place together into one struct?  */
   sbitmap sched_nodes = sbitmap_alloc (num_nodes);
   sbitmap must_precede = sbitmap_alloc (num_nodes);
@@ -1430,19 +1511,13 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
   sbitmap_ones (tobe_scheduled);
   sbitmap_zero (sched_nodes);
 
-  while ((! sbitmap_equal (tobe_scheduled, sched_nodes)
-	 || try_again_with_larger_ii ) && ii < maxii)
+  while (flush_and_start_over && (ii < maxii))
     {
-      int j;
-      bool unscheduled_nodes = false;
 
       if (dump_file)
 	fprintf (dump_file, "Starting with ii=%d\n", ii);
-      if (try_again_with_larger_ii)
-	{
-	  try_again_with_larger_ii = false;
-	  sbitmap_zero (sched_nodes);
-	}
+      flush_and_start_over = false;
+      sbitmap_zero (sched_nodes);
 
       for (i = 0; i < num_nodes; i++)
 	{
@@ -1466,99 +1541,269 @@ sms_schedule_by_order (ddg_ptr g, int mii, int maxii, int *nodes_order)
 	    continue;
 
 	  /* Try to get non-empty scheduling window.  */
-	  j = i;
-	  while (get_sched_window (ps, nodes_order, i, sched_nodes, ii, &start, &step, &end) < 0
-		 && j > 0)
-	    {
-	      unscheduled_nodes = true;
-	      if (TEST_BIT (NODE_PREDECESSORS (u_node), nodes_order[j - 1])
-		  || TEST_BIT (NODE_SUCCESSORS (u_node), nodes_order[j - 1]))
-		{
-		  ps_unschedule_node (ps, &ps->g->nodes[nodes_order[j - 1]]);
-		  RESET_BIT (sched_nodes, nodes_order [j - 1]);
-		}
-	      j--;
-	    }
-	  if (j < 0)
-	    {
-	      /* ??? Try backtracking instead of immediately ii++?  */
-	      ii++;
-	      try_again_with_larger_ii = true;
-	      reset_partial_schedule (ps, ii);
-	      break;
-	    }
-	  /* 2. Try scheduling u in window.  */
-	  if (dump_file)
-	    fprintf (dump_file,
-		     "Trying to schedule node %d in (%d .. %d) step %d\n",
-		     u, start, end, step);
+	 success = 0;
+         if (get_sched_window (ps, nodes_order, i, sched_nodes, ii, &start,
+                                &step, &end) == 0)
+            {
+              if (dump_file)
+                fprintf (dump_file, "\nTrying to schedule node %d \
+                        INSN = %d  in (%d .. %d) step %d\n", u, (INSN_UID
+                        (g->nodes[u].insn)), start, end, step);
+              /* Use must_follow & must_precede bitmaps to determine order
+                 of nodes within the cycle.  */
 
-          /* use must_follow & must_precede bitmaps to determine order
-	     of nodes within the cycle.  */
-          sbitmap_zero (must_precede);
-          sbitmap_zero (must_follow);
-          /* TODO: We can add an insn to the must_precede or must_follow
-             bitmaps only if it has tight dependence to U and they
-             both scheduled in the same row.  The current check is less
-             conservative and content with the fact that both U and the
-             insn are scheduled in the same row.  */
-          for (e = u_node->in; e != 0; e = e->next_in)
-            if (TEST_BIT (sched_nodes, e->src->cuid)
-                && (SMODULO (SCHED_TIME (e->src), ii) == SMODULO (start, ii)))
-              SET_BIT (must_precede, e->src->cuid);
+              /* use must_follow & must_precede bitmaps to determine order
+                 of nodes within the cycle.  */
+              sbitmap_zero (must_precede);
+              sbitmap_zero (must_follow);
+              /* TODO: We can add an insn to the must_precede or must_follow
+                 bitmaps only if it has tight dependence to U and they
+                 both scheduled in the same row.  The current check is less
+                 conservative and content with the fact that both U and the
+                 insn are scheduled in the same row.  */
+              for (e = u_node->in; e != 0; e = e->next_in)
+                if (TEST_BIT (sched_nodes, e->src->cuid)
+                    && (SMODULO (SCHED_TIME (e->src), ii) ==
+                        SMODULO (start, ii)))
+                  SET_BIT (must_precede, e->src->cuid);
 
-          for (e = u_node->out; e != 0; e = e->next_out)
-            if (TEST_BIT (sched_nodes, e->dest->cuid)
-                && (SMODULO (SCHED_TIME (e->dest), ii) ==
-                    SMODULO ((end - step), ii)))
-              SET_BIT (must_follow, e->dest->cuid);
+              for (e = u_node->out; e != 0; e = e->next_out)
+                if (TEST_BIT (sched_nodes, e->dest->cuid)
+                    && (SMODULO (SCHED_TIME (e->dest), ii) ==
+                        SMODULO ((end - step), ii)))
+                  SET_BIT (must_follow, e->dest->cuid);
 
-	  success = 0;
-	  if ((step > 0 && start < end) ||  (step < 0 && start > end))
-	    for (c = start; c != end; c += step)
-	      {
-		ps_insn_ptr psi;
+              gcc_assert ((step > 0 && start < end)
+                          || (step < 0 && start > end));
 
-		psi = ps_add_node_check_conflicts (ps, u_node, c,
-						   must_precede,
-						   must_follow);
+              for (c = start; c != end; c += step)
+                {
+                  verify_partial_schedule (ps, sched_nodes);
 
-  		if (psi)
-		  {
-		    SCHED_TIME (u_node) = c;
-		    SET_BIT (sched_nodes, u);
-		    success = 1;
-		    if (dump_file)
-		      fprintf (dump_file, "Schedule in %d\n", c);
-		    break;
-		  }
-	      }
-	  if (!success)
-	    {
-	      /* ??? Try backtracking instead of immediately ii++?  */
-	      ii++;
-	      try_again_with_larger_ii = true;
-	      reset_partial_schedule (ps, ii);
-	      break;
-	    }
-	  if (unscheduled_nodes)
-	    break;
+                  psi = ps_add_node_check_conflicts (ps, u_node, c,
+                                                     must_precede,
+                                                     must_follow);
 
-	  /* ??? If (success), check register pressure estimates.  */
-	} /* Continue with next node.  */
-    } /* While try_again_with_larger_ii.  */
+                  if (psi)
+                    {
+                      SCHED_TIME (u_node) = c;
+                      SET_BIT (sched_nodes, u);
+                      success = 1;
+                      num_splits = 0;
+                      if (dump_file)
+                        fprintf (dump_file, "Scheduled w/o split in %d\n", c);
+
+                      break;
+                    }
+                }
+              verify_partial_schedule (ps, sched_nodes);
+            }
+            if (!success)
+            {
+              int split_row;
+
+              if (ii++ == maxii)
+                break;
+
+              if (num_splits >= MAX_SPLIT_NUM)
+                {
+                  num_splits = 0;
+                  flush_and_start_over = true;
+                  verify_partial_schedule (ps, sched_nodes);
+                  reset_partial_schedule (ps, ii);
+                  verify_partial_schedule (ps, sched_nodes);
+                  break;
+                }
+
+              num_splits++;
+              if (step == 1)
+                split_row = compute_split_row (sched_nodes, start, end,
+                                               ps->ii, u_node);
+              else
+                split_row = compute_split_row (sched_nodes, end, start,
+                                               ps->ii, u_node);
+
+              ps_insert_empty_row (ps, split_row, sched_nodes);
+              i--;              /* Go back and retry node i.  */
+
+              if (dump_file)
+                fprintf (dump_file, "num_splits=%d\n", num_splits);
+            }
+
+          /* ??? If (success), check register pressure estimates.  */
+        }                       /* Continue with next node.  */
+    }                           /* While flush_and_start_over.  */
+  if (ii >= maxii)
+    {
+      free_partial_schedule (ps);
+      ps = NULL;
+    }
+  else
+    gcc_assert (sbitmap_equal (tobe_scheduled, sched_nodes));
 
   sbitmap_free (sched_nodes);
   sbitmap_free (must_precede);
   sbitmap_free (must_follow);
   sbitmap_free (tobe_scheduled);
 
-  if (ii >= maxii)
-    {
-      free_partial_schedule (ps);
-      ps = NULL;
-    }
   return ps;
+}
+
+/* This function inserts a new empty row into PS at the position
+   according to SPLITROW, keeping all already scheduled instructions
+   intact and updating their SCHED_TIME and cycle accordingly.  */
+static void
+ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
+		     sbitmap sched_nodes)
+{
+  ps_insn_ptr crr_insn;
+  ps_insn_ptr *rows_new;
+  int ii = ps->ii;
+  int new_ii = ii + 1;
+  int row;
+
+  verify_partial_schedule (ps, sched_nodes);
+
+  /* We normalize sched_time and rotate ps to have only non-negative sched
+     times, for simplicity of updating cycles after inserting new row.  */
+  split_row -= ps->min_cycle;
+  split_row = SMODULO (split_row, ii);
+  if (dump_file)
+    fprintf (dump_file, "split_row=%d\n", split_row);
+
+  normalize_sched_times (ps);
+  rotate_partial_schedule (ps, ps->min_cycle);
+
+  rows_new = (ps_insn_ptr *) xcalloc (new_ii, sizeof (ps_insn_ptr));
+  for (row = 0; row < split_row; row++)
+    {
+      rows_new[row] = ps->rows[row];
+      ps->rows[row] = NULL;
+      for (crr_insn = rows_new[row];
+	   crr_insn; crr_insn = crr_insn->next_in_row)
+	{
+	  ddg_node_ptr u = crr_insn->node;
+	  int new_time = SCHED_TIME (u) + (SCHED_TIME (u) / ii);
+
+	  SCHED_TIME (u) = new_time;
+	  crr_insn->cycle = new_time;
+	  SCHED_ROW (u) = new_time % new_ii;
+	  SCHED_STAGE (u) = new_time / new_ii;
+	}
+
+    }
+
+  rows_new[split_row] = NULL;
+
+  for (row = split_row; row < ii; row++)
+    {
+      rows_new[row + 1] = ps->rows[row];
+      ps->rows[row] = NULL;
+      for (crr_insn = rows_new[row + 1];
+	   crr_insn; crr_insn = crr_insn->next_in_row)
+	{
+	  ddg_node_ptr u = crr_insn->node;
+	  int new_time = SCHED_TIME (u) + (SCHED_TIME (u) / ii) + 1;
+
+	  SCHED_TIME (u) = new_time;
+	  crr_insn->cycle = new_time;
+	  SCHED_ROW (u) = new_time % new_ii;
+	  SCHED_STAGE (u) = new_time / new_ii;
+	}
+    }
+
+  /* Updating ps.  */
+  ps->min_cycle = ps->min_cycle + ps->min_cycle / ii
+    + (SMODULO (ps->min_cycle, ii) >= split_row ? 1 : 0);
+  ps->max_cycle = ps->max_cycle + ps->max_cycle / ii
+    + (SMODULO (ps->max_cycle, ii) >= split_row ? 1 : 0);
+  free (ps->rows);
+  ps->rows = rows_new;
+  ps->ii = new_ii;
+  gcc_assert (ps->min_cycle >= 0);
+
+  verify_partial_schedule (ps, sched_nodes);
+
+  if (dump_file)
+    fprintf (dump_file, "min_cycle=%d, max_cycle=%d\n", ps->min_cycle,
+	     ps->max_cycle);
+}
+
+/* Given U_NODE which is the node that failed to be scheduled; LOW and
+   UP which are the boundaries of it's scheduling window; compute using
+   SCHED_NODES and II a row in the partial schedule that can be splitted
+   which will separate a critical predecessor from a critical successor
+   thereby expanding the window, and return it.  */
+static int
+compute_split_row (sbitmap sched_nodes, int low, int up, int ii,
+		   ddg_node_ptr u_node)
+{
+  ddg_edge_ptr e;
+  int lower = INT_MIN, upper = INT_MAX;
+  ddg_node_ptr crit_pred = NULL;
+  ddg_node_ptr crit_succ = NULL;
+  int crit_cycle;
+
+  for (e = u_node->in; e != 0; e = e->next_in)
+    {
+      ddg_node_ptr v_node = e->src;
+
+      if (TEST_BIT (sched_nodes, v_node->cuid)
+	  && (low == SCHED_TIME (v_node) + e->latency - (e->distance * ii)))
+	if (SCHED_TIME (v_node) > lower)
+	  {
+	    crit_pred = v_node;
+	    lower = SCHED_TIME (v_node);
+	  }
+    }
+
+  if (crit_pred != NULL)
+    {
+      crit_cycle = SCHED_TIME (crit_pred) + 1;
+      return SMODULO (crit_cycle, ii);
+    }
+
+  for (e = u_node->out; e != 0; e = e->next_out)
+    {
+      ddg_node_ptr v_node = e->dest;
+      if (TEST_BIT (sched_nodes, v_node->cuid)
+	  && (up == SCHED_TIME (v_node) - e->latency + (e->distance * ii)))
+	if (SCHED_TIME (v_node) < upper)
+	  {
+	    crit_succ = v_node;
+	    upper = SCHED_TIME (v_node);
+	  }
+    }
+
+  if (crit_succ != NULL)
+    {
+      crit_cycle = SCHED_TIME (crit_succ);
+      return SMODULO (crit_cycle, ii);
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Both crit_pred and crit_succ are NULL\n");
+
+  return SMODULO ((low + up + 1) / 2, ii);
+}
+
+static void
+verify_partial_schedule (partial_schedule_ptr ps, sbitmap sched_nodes)
+{
+  int row;
+  ps_insn_ptr crr_insn;
+
+  for (row = 0; row < ps->ii; row++)
+    for (crr_insn = ps->rows[row]; crr_insn; crr_insn = crr_insn->next_in_row)
+      {
+	ddg_node_ptr u = crr_insn->node;
+
+	gcc_assert (TEST_BIT (sched_nodes, u->cuid));
+	/* ??? Test also that all nodes of sched_nodes are in ps, perhaps by
+	   popcount (sched_nodes) == number of insns in ps.  */
+	gcc_assert (SCHED_TIME (u) >= ps->min_cycle);
+	gcc_assert (SCHED_TIME (u) <= ps->max_cycle);
+      }
 }
 
 
@@ -2361,26 +2606,6 @@ rotate_partial_schedule (partial_schedule_ptr ps, int start_cycle)
   ps->min_cycle -= start_cycle;
 }
 
-/* Remove the node N from the partial schedule PS; because we restart the DFA
-   each time we want to check for resource conflicts; this is equivalent to
-   unscheduling the node N.  */
-static bool
-ps_unschedule_node (partial_schedule_ptr ps, ddg_node_ptr n)
-{
-  ps_insn_ptr ps_i;
-  int row = SMODULO (SCHED_TIME (n), ps->ii);
-
-  if (row < 0 || row > ps->ii)
-    return false;
-
-  for (ps_i = ps->rows[row];
-       ps_i &&  ps_i->node != n;
-       ps_i = ps_i->next_in_row);
-  if (!ps_i)
-    return false;
-
-  return remove_node_from_ps (ps, ps_i);
-}
 #endif /* INSN_SCHEDULING */
 
 static bool
