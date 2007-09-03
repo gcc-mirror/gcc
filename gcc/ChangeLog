@@ -1,3 +1,8 @@
+2007-09-03  Anatoly Sokolov <aesok@post.ru>
+
+	PR target/28902
+ 	* config/avr/avr.h (TARGET_VTABLE_ENTRY_ALIGN): Define.
+
 2007-09-01  Nick Clifton  <nickc@redhat.com>
 
 	* COPYING3, COPYING3.LIB: New files.

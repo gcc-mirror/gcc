@@ -95,6 +95,7 @@ extern GTY(()) section *progmem_section;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 8
 
+#define TARGET_VTABLE_ENTRY_ALIGN 8
 
 #define STRICT_ALIGNMENT 0
 
