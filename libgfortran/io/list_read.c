@@ -887,7 +887,9 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
       goto get_string;
 
     default:
-      if (dtp->u.p.namelist_mode)
+      if (dtp->u.p.namelist_mode
+	  && (dtp->u.p.current_unit->flags.delim == DELIM_APOSTROPHE
+	      || dtp->u.p.current_unit->flags.delim == DELIM_QUOTE))
 	{
 	  unget_char (dtp,c);
 	  return;
