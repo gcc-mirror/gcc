@@ -310,83 +310,83 @@ translate_error (int code)
 
   switch (code)
     {
-    case ERROR_EOR:
+    case LIBERROR_EOR:
       p = "End of record";
       break;
 
-    case ERROR_END:
+    case LIBERROR_END:
       p = "End of file";
       break;
 
-    case ERROR_OK:
+    case LIBERROR_OK:
       p = "Successful return";
       break;
 
-    case ERROR_OS:
+    case LIBERROR_OS:
       p = "Operating system error";
       break;
 
-    case ERROR_BAD_OPTION:
+    case LIBERROR_BAD_OPTION:
       p = "Bad statement option";
       break;
 
-    case ERROR_MISSING_OPTION:
+    case LIBERROR_MISSING_OPTION:
       p = "Missing statement option";
       break;
 
-    case ERROR_OPTION_CONFLICT:
+    case LIBERROR_OPTION_CONFLICT:
       p = "Conflicting statement options";
       break;
 
-    case ERROR_ALREADY_OPEN:
+    case LIBERROR_ALREADY_OPEN:
       p = "File already opened in another unit";
       break;
 
-    case ERROR_BAD_UNIT:
+    case LIBERROR_BAD_UNIT:
       p = "Unattached unit";
       break;
 
-    case ERROR_FORMAT:
+    case LIBERROR_FORMAT:
       p = "FORMAT error";
       break;
 
-    case ERROR_BAD_ACTION:
+    case LIBERROR_BAD_ACTION:
       p = "Incorrect ACTION specified";
       break;
 
-    case ERROR_ENDFILE:
+    case LIBERROR_ENDFILE:
       p = "Read past ENDFILE record";
       break;
 
-    case ERROR_BAD_US:
+    case LIBERROR_BAD_US:
       p = "Corrupt unformatted sequential file";
       break;
 
-    case ERROR_READ_VALUE:
+    case LIBERROR_READ_VALUE:
       p = "Bad value during read";
       break;
 
-    case ERROR_READ_OVERFLOW:
+    case LIBERROR_READ_OVERFLOW:
       p = "Numeric overflow on read";
       break;
 
-    case ERROR_INTERNAL:
+    case LIBERROR_INTERNAL:
       p = "Internal error in run-time library";
       break;
 
-    case ERROR_INTERNAL_UNIT:
+    case LIBERROR_INTERNAL_UNIT:
       p = "Internal unit I/O error";
       break;
 
-    case ERROR_DIRECT_EOR:
+    case LIBERROR_DIRECT_EOR:
       p = "Write exceeds length of DIRECT access record";
       break;
 
-    case ERROR_SHORT_RECORD:
+    case LIBERROR_SHORT_RECORD:
       p = "I/O past end of record on unformatted file";
       break;
 
-    case ERROR_CORRUPT_FILE:
+    case LIBERROR_CORRUPT_FILE:
       p = "Unformatted file structure has been corrupted";
       break;
 
@@ -412,11 +412,11 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
 {
   /* Set the error status.  */
   if ((cmp->flags & IOPARM_HAS_IOSTAT))
-    *cmp->iostat = (family == ERROR_OS) ? errno : family;
+    *cmp->iostat = (family == LIBERROR_OS) ? errno : family;
 
   if (message == NULL)
     message =
-      (family == ERROR_OS) ? get_oserror () : translate_error (family);
+      (family == LIBERROR_OS) ? get_oserror () : translate_error (family);
 
   if (cmp->flags & IOPARM_HAS_IOMSG)
     cf_strcpy (cmp->iomsg, cmp->iomsg_len, message);
@@ -425,13 +425,13 @@ generate_error (st_parameter_common *cmp, int family, const char *message)
   cmp->flags &= ~IOPARM_LIBRETURN_MASK;
   switch (family)
     {
-    case ERROR_EOR:
+    case LIBERROR_EOR:
       cmp->flags |= IOPARM_LIBRETURN_EOR;
       if ((cmp->flags & IOPARM_EOR))
 	return;
       break;
 
-    case ERROR_END:
+    case LIBERROR_END:
       cmp->flags |= IOPARM_LIBRETURN_END;
       if ((cmp->flags & IOPARM_END))
 	return;

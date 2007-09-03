@@ -942,7 +942,7 @@ format_error (st_parameter_dt *dtp, const fnode *f, const char *message)
   *p++ = '^';
   *p = '\0';
 
-  generate_error (&dtp->common, ERROR_FORMAT, buffer);
+  generate_error (&dtp->common, LIBERROR_FORMAT, buffer);
 }
 
 

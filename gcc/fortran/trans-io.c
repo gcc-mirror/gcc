@@ -457,10 +457,7 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
   if (type == IOPARM_common_unit && e->ts.kind != 4)
     {
       tree cond, max;
-      ioerror_codes bad_unit;
       int i;
-
-      bad_unit = IOERROR_BAD_UNIT;
 
       /* Don't evaluate the UNIT number multiple times.  */
       se.expr = gfc_evaluate_now (se.expr, &se.pre);
@@ -468,7 +465,7 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
       /* UNIT numbers should be nonnegative.  */
       cond = fold_build2 (LT_EXPR, boolean_type_node, se.expr,
 			  build_int_cst (TREE_TYPE (se.expr),0));
-      gfc_trans_io_runtime_check (cond, var, bad_unit,
+      gfc_trans_io_runtime_check (cond, var, LIBERROR_BAD_UNIT,
 			       "Negative unit number in I/O statement",
 			       &se.pre);
     
@@ -477,7 +474,7 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
       max = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, 4);
       cond = fold_build2 (GT_EXPR, boolean_type_node, se.expr,
 			  fold_convert (TREE_TYPE (se.expr), max));
-      gfc_trans_io_runtime_check (cond, var, bad_unit,
+      gfc_trans_io_runtime_check (cond, var, LIBERROR_BAD_UNIT,
 			       "Unit number in I/O statement too large",
 			       &se.pre);
 
@@ -519,14 +516,10 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
       addr = convert (TREE_TYPE (p->field), build_fold_addr_expr (se.expr));
 
       /* If this is for the iostat variable initialize the
-	 user variable to IOERROR_OK which is zero.  */
+	 user variable to LIBERROR_OK which is zero.  */
       if (type == IOPARM_common_iostat)
-	{
-	  ioerror_codes ok;
-	  ok = IOERROR_OK;
-          gfc_add_modify_expr (block, se.expr,
-			       build_int_cst (TREE_TYPE (se.expr), ok));
-	}
+	gfc_add_modify_expr (block, se.expr,
+			     build_int_cst (TREE_TYPE (se.expr), LIBERROR_OK));
     }
   else
     {
@@ -537,14 +530,10 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
 				    st_parameter_field[type].name);
 
       /* If this is for the iostat variable, initialize the
-	 user variable to IOERROR_OK which is zero.  */
+	 user variable to LIBERROR_OK which is zero.  */
       if (type == IOPARM_common_iostat)
-	{
-	  ioerror_codes ok;
-	  ok = IOERROR_OK;
-          gfc_add_modify_expr (block, tmpvar,
-			       build_int_cst (TREE_TYPE (tmpvar), ok));
-	}
+	gfc_add_modify_expr (block, tmpvar,
+			     build_int_cst (TREE_TYPE (tmpvar), LIBERROR_OK));
 
       addr = build_fold_addr_expr (tmpvar);
 	/* After the I/O operation, we set the variable from the temporary.  */

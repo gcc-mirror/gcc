@@ -3928,11 +3928,11 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_IS_IOSTAT_END:
-      gfc_conv_has_intvalue (se, expr, -1);
+      gfc_conv_has_intvalue (se, expr, LIBERROR_END);
       break;
 
     case GFC_ISYM_IS_IOSTAT_EOR:
-      gfc_conv_has_intvalue (se, expr, -2);
+      gfc_conv_has_intvalue (se, expr, LIBERROR_EOR);
       break;
 
     case GFC_ISYM_ISNAN:

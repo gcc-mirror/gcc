@@ -62,7 +62,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.max_continue_free = 39;
   gfc_option.max_identifier_length = GFC_MAX_SYMBOL_LEN;
   gfc_option.max_subrecord_length = 0;
-  gfc_option.convert = CONVERT_NATIVE;
+  gfc_option.convert = GFC_CONVERT_NATIVE;
   gfc_option.record_marker = 0;
   gfc_option.verbose = 0;
 
@@ -704,19 +704,19 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fconvert_little_endian:
-      gfc_option.convert = CONVERT_LITTLE;
+      gfc_option.convert = GFC_CONVERT_LITTLE;
       break;
 
     case OPT_fconvert_big_endian:
-      gfc_option.convert = CONVERT_BIG;
+      gfc_option.convert = GFC_CONVERT_BIG;
       break;
 
     case OPT_fconvert_native:
-      gfc_option.convert = CONVERT_NATIVE;
+      gfc_option.convert = GFC_CONVERT_NATIVE;
       break;
 
     case OPT_fconvert_swap:
-      gfc_option.convert = CONVERT_SWAP;
+      gfc_option.convert = GFC_CONVERT_SWAP;
       break;
 
     case OPT_frecord_marker_4:

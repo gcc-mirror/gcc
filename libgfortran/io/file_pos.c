@@ -90,7 +90,7 @@ formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
   return;
 
  io_error:
-  generate_error (&fpp->common, ERROR_OS, NULL);
+  generate_error (&fpp->common, LIBERROR_OS, NULL);
 }
 
 
@@ -122,8 +122,8 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
       if (p == NULL || length_read != length)
 	goto io_error;
 
-      /* Only CONVERT_NATIVE and CONVERT_SWAP are valid here.  */
-      if (u->flags.convert == CONVERT_NATIVE)
+      /* Only GFC_CONVERT_NATIVE and GFC_CONVERT_SWAP are valid here.  */
+      if (u->flags.convert == GFC_CONVERT_NATIVE)
 	{
 	  switch (length)
 	    {
@@ -178,7 +178,7 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
   return;
 
  io_error:
-  generate_error (&fpp->common, ERROR_OS, NULL);
+  generate_error (&fpp->common, LIBERROR_OS, NULL);
 }
 
 
@@ -195,7 +195,7 @@ st_backspace (st_parameter_filepos *fpp)
   u = find_unit (fpp->common.unit);
   if (u == NULL)
     {
-      generate_error (&fpp->common, ERROR_BAD_UNIT, NULL);
+      generate_error (&fpp->common, LIBERROR_BAD_UNIT, NULL);
       goto done;
     }
 
@@ -296,7 +296,7 @@ st_rewind (st_parameter_filepos *fpp)
   if (u != NULL)
     {
       if (u->flags.access == ACCESS_DIRECT)
-	generate_error (&fpp->common, ERROR_BAD_OPTION,
+	generate_error (&fpp->common, LIBERROR_BAD_OPTION,
 			"Cannot REWIND a file opened for DIRECT access");
       else
 	{
@@ -312,7 +312,7 @@ st_rewind (st_parameter_filepos *fpp)
 	  u->last_record = 0;
 
 	  if (file_position (u->s) != 0 && sseek (u->s, 0) == FAILURE)
-	    generate_error (&fpp->common, ERROR_OS, NULL);
+	    generate_error (&fpp->common, LIBERROR_OS, NULL);
 
 	  /* Handle special files like /dev/null differently.  */
 	  if (!is_special (u->s))
@@ -359,7 +359,7 @@ st_flush (st_parameter_filepos *fpp)
     }
   else
     /* FLUSH on unconnected unit is illegal: F95 std., 9.3.5. */ 
-    generate_error (&fpp->common, ERROR_BAD_OPTION,
+    generate_error (&fpp->common, LIBERROR_BAD_OPTION,
 			"Specified UNIT in FLUSH is not connected");
 
   library_end ();

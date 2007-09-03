@@ -473,11 +473,6 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
   return res;
 }
 
-/* The status variable of allocate statement is set to ERROR_ALLOCATION 
-   when the allocation wasn't successful. This value needs to be kept in
-   sync with libgfortran/libgfortran.h.  */
-#define ERROR_ALLOCATION 5014
-
 /* Allocate memory, using an optional status argument.
  
    This function follows the following pseudo-code:
@@ -495,7 +490,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       {
         if (stat)
         {
-          *stat = ERROR_ALLOCATION;
+          *stat = LIBERROR_ALLOCATION;
           newmem = NULL;
         }
         else
@@ -508,7 +503,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
         if (newmem == NULL)
         {
           if (stat)
-            *stat = ERROR_ALLOCATION;
+            *stat = LIBERROR_ALLOCATION;
           else
             runtime_error ("Out of memory");
         }
@@ -558,7 +553,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
       gfc_start_block (&set_status_block);
       gfc_add_modify_expr (&set_status_block,
 			   build1 (INDIRECT_REF, status_type, status),
-			   build_int_cst (status_type, ERROR_ALLOCATION));
+			   build_int_cst (status_type, LIBERROR_ALLOCATION));
       gfc_add_modify_expr (&set_status_block, res,
 			   build_int_cst (pvoid_type_node, 0));
 
@@ -589,7 +584,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 			  build_int_cst (status_type, 0));
       tmp2 = fold_build2 (MODIFY_EXPR, status_type,
 			  build1 (INDIRECT_REF, status_type, status),
-			  build_int_cst (status_type, ERROR_ALLOCATION));
+			  build_int_cst (status_type, LIBERROR_ALLOCATION));
       tmp = fold_build3 (COND_EXPR, void_type_node, cond, tmp,
 			 tmp2);
     }
@@ -627,7 +622,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 	{
 	  free (mem);
 	  mem = allocate (size, stat);
-	  *stat = ERROR_ALLOCATION;
+	  *stat = LIBERROR_ALLOCATION;
 	  return mem;
 	}
 	else
@@ -675,7 +670,7 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
 
       gfc_add_modify_expr (&set_status_block,
 			   build1 (INDIRECT_REF, status_type, status),
-			   build_int_cst (status_type, ERROR_ALLOCATION));
+			   build_int_cst (status_type, LIBERROR_ALLOCATION));
 
       tmp = fold_build2 (EQ_EXPR, boolean_type_node, status,
 			 build_int_cst (status_type, 0));
