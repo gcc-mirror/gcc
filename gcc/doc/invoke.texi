@@ -5289,7 +5289,8 @@ instructions by overlapping different iterations.
 Perform more aggressive SMS based modulo scheduling with register moves
 allowed.  By setting this flag certain anti-dependences edges will be
 deleted which will trigger the generation of reg-moves based on the
-life-range analysis.
+life-range analysis.  This option is effective only with
+@option{-fmodulo-sched} enabled.
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg
