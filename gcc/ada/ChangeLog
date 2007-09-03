@@ -1,3 +1,14 @@
+2007-09-03  Nick Clifton  <nickc@redhat.com>
+
+	* Make-lang.in: Change copyright header to refer to version 3 of
+	the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* ada-tree.def, nmake.adt, nlists.h, snames.h, utils.c,
+	Makefile.rtl, Makefile.in, config-lang.in, uintp.h, urealp.h,
+	namet.h, decl.c, utils2.c, lang.opt, elists.h, atree.h, types.h,
+	treeprs.adt, lang-specs.h, cuintp.c, stringt.h, gnatbl.c:
+	Likewise.
+ 
 2007-08-22  Krister Walfridsson  <cato@df.lth.se>
 
 	* env.c ( __gnat_clearenv): Use the __gnat_unsetenv mechanism for
