@@ -173,7 +173,7 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_OMP_CRITICAL:
-      gfc_free (CONST_CAST (p->ext.omp_name));
+      gfc_free (CONST_CAST (char *, p->ext.omp_name));
       break;
 
     case EXEC_OMP_FLUSH:

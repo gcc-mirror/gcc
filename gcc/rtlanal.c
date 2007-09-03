@@ -3395,7 +3395,7 @@ keep_with_call_p (const_rtx insn)
 	  /* This CONST_CAST is okay because next_nonnote_insn just
 	     returns it's argument and we assign it to a const_rtx
 	     variable.  */
-	  const_rtx i2 = next_nonnote_insn ((rtx)CONST_CAST(insn));
+	  const_rtx i2 = next_nonnote_insn (CONST_CAST_RTX(insn));
 	  if (i2 && keep_with_call_p (i2))
 	    return true;
 	}

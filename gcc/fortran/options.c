@@ -244,7 +244,7 @@ gfc_post_options (const char **pfilename)
     gfc_add_include_path (".", true);
 
   if (canon_source_file != gfc_source_file)
-    gfc_free (CONST_CAST (canon_source_file));
+    gfc_free (CONST_CAST (char *, canon_source_file));
 
   /* Decide which form the file will be read in as.  */
 

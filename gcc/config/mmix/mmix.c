@@ -1141,7 +1141,7 @@ mmix_encode_section_info (tree decl, rtx rtl, int first)
       char *newstr;
 
       /* Why is the return type of ggc_alloc_string const?  */
-      newstr = (char *) CONST_CAST (ggc_alloc_string ("", len + 1));
+      newstr = CONST_CAST (char *, ggc_alloc_string ("", len + 1));
 
       strcpy (newstr + 1, str);
       *newstr = '@';

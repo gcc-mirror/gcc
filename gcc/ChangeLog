@@ -1,3 +1,32 @@
+2007-09-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (CONST_CAST2, CONST_CAST_TREE, CONST_CAST_RTX,
+	CONST_CAST_BB): New macros for type-specific casts.
+	(CONST_CAST): Add a TYPE parameter and define it in terms of
+	CONST_CAST2.
+
+	* c-decl.c (c_make_fname_decl): Supply a TYPE for CONST_CAST.
+	* c-lex.c (cb_ident, lex_string): Likewise,
+	* c-typeck.c (free_all_tagged_tu_seen_up_to): Likewise,
+	* config/i386/i386.c (ix86_function_regparm,
+	ix86_function_sseregparm): Use CONST_CAST_TREE.
+	* config/mmix/mmix.c (mmix_encode_section_info): Supply a TYPE for
+	CONST_CAST.
+	* gcc.c (set_spec, read_specs, for_each_path, execute, do_spec_1,
+	give_switch, set_multilib_dir): Likewise,
+	* gengtype-parse.c (string_seq, typedef_name): Likewise,
+	* gimple-low.c (block_may_fallthru): Use CONST_CAST_TREE.
+	* jump.c (reversed_comparison_code_parts): Use CONST_CAST_RTX.
+	* passes.c (execute_one_pass): Supply a TYPE for CONST_CAST.
+	* prefix.c (update_path): Likewise,
+	* pretty-print.c (pp_base_destroy_prefix): Likewise,
+	* rtlanal.c (keep_with_call_p): Use CONST_CAST_RTX.
+	* tree-cfg.c (tree_can_merge_blocks_p,
+	tree_block_ends_with_condjump_p): Use CONST_CAST_BB.
+	* tree-eh.c (lookup_stmt_eh_region_fn): USe CONST_CAST_TREE.
+	* tree.c (build_string): Supply a TYPE for CONST_CAST.
+	(attribute_list_contained): Use CONST_CAST_TREE.
+
 2007-09-03  Krister Walfridsson  <cato@df.lth.se>
 
 	* config/netbsd-elf.h (USE_LD_AS_NEEDED): Define.

@@ -266,7 +266,7 @@ update_path (const char *path, const char *key)
 
       result = concat (key, &path[len], NULL);
       if (free_key)
-	free (CONST_CAST (key));
+	free (CONST_CAST (char *, key));
       result = translate_name (result);
     }
   else

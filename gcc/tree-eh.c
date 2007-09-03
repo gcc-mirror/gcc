@@ -157,7 +157,7 @@ lookup_stmt_eh_region_fn (struct function *ifun, const_tree t)
 
   /* The CONST_CAST is okay because we don't modify n.stmt throughout
      its scope, or the scope of p.  */
-  n.stmt = (tree) CONST_CAST (t);
+  n.stmt = CONST_CAST_TREE (t);
   p = (struct throw_stmt_node *) htab_find (get_eh_throw_stmt_table (ifun),
                                             &n);
 

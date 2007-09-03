@@ -187,7 +187,7 @@ cb_ident (cpp_reader * ARG_UNUSED (pfile),
       if (cpp_interpret_string (pfile, str, 1, &cstr, false))
 	{
 	  ASM_OUTPUT_IDENT (asm_out_file, (const char *) cstr.text);
-	  free (CONST_CAST (cstr.text));
+	  free (CONST_CAST (unsigned char *, cstr.text));
 	}
     }
 #endif
@@ -941,7 +941,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
       (parse_in, strs, concats + 1, &istr, wide))
     {
       value = build_string (istr.len, (const char *) istr.text);
-      free (CONST_CAST (istr.text));
+      free (CONST_CAST (unsigned char *, istr.text));
 
       if (c_lex_string_translate == -1)
 	{
@@ -962,7 +962,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 	      *valp = build_string (istr.len, (const char *) istr.text);
 	      valp = &TREE_CHAIN (*valp);
 	    }
-	  free (CONST_CAST (istr.text));
+	  free (CONST_CAST (unsigned char *, istr.text));
 	}
     }
   else

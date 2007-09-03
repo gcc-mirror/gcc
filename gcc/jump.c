@@ -302,9 +302,9 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
       /* These CONST_CAST's are okay because prev_nonnote_insn just
 	 returns it's argument and we assign it to a const_rtx
 	 variable.  */
-      for (prev = prev_nonnote_insn ((rtx)(CONST_CAST(insn)));
+      for (prev = prev_nonnote_insn (CONST_CAST_RTX(insn));
 	   prev != 0 && !LABEL_P (prev);
-	   prev = prev_nonnote_insn ((rtx)(CONST_CAST(prev))))
+	   prev = prev_nonnote_insn (CONST_CAST_RTX(prev)))
 	{
 	  const_rtx set = set_of (arg0, prev);
 	  if (set && GET_CODE (set) == SET
