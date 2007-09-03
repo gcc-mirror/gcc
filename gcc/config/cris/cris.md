@@ -2671,6 +2671,13 @@
   "lz %1,%0"
   [(set_attr "slottable" "yes")])
 
+(define_insn "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (bswap:SI (match_operand:SI 1 "register_operand" "0")))]
+  "TARGET_HAS_SWAP"
+  "swapwb %0"
+  [(set_attr "slottable" "yes")])
+
 ;; Bound-insn.  Defined to be the same as an unsigned minimum, which is an
 ;; operation supported by gcc.  Used in casesi, but used now and then in
 ;; normal code too.
