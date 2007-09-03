@@ -11,7 +11,7 @@
       character*(8) names2(nd,nd)
       character*(8) names3(nd,nd)
       namelist / mynml /  names, names2, names3
-      open(unit=20,status='scratch')
+      open(unit=20,status='scratch', delim='apostrophe')
       write (20, '(a)') "&MYNML"
       write (20, '(a)') "NAMES = 25*'0'"
       write (20, '(a)') "NAMES2 = 25*'0'"
