@@ -1,3 +1,9 @@
+2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+	* config/cris/cris.h (TARGET_HAS_SWAP): Defined to describe
+	availability of swap instruction.
+	* config/cris/cris.md (bswapsi2): Implement using swap instruction.
+
 2007-09-03  Revital Eres  <eres@il.ibm.com>
 
 	* doc/invoke.texi (-fmodulo-sched-allow-regmoves): Update

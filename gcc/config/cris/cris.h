@@ -279,6 +279,7 @@ extern int target_flags;
 
 #define TARGET_HAS_MUL_INSNS (cris_cpu_version >= CRIS_CPU_NG)
 #define TARGET_HAS_LZ (cris_cpu_version >= CRIS_CPU_ETRAX4)
+#define TARGET_HAS_SWAP (cris_cpu_version >= CRIS_CPU_SVINTO)
 
 #define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
 
