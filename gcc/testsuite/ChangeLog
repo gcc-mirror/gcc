@@ -1,3 +1,15 @@
+2007-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-1.c: Restored.  Moved
+	to ...
+	* gcc.dg/vect/no-scevccp-vect-iv-1.c: New test.
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-2.c: Restored.  Moved
+	to ...
+	* gcc.dg/vect/no-scevccp-vect-iv-2.c: New test.
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-3.c: Restored.  Moved
+	to ...
+	* gcc.dg/vect/no-scevccp-vect-iv-3.c: New test.
+
 2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
 
 	* gcc.target/cris/builtin_bswap_v3.c: New testcase.
