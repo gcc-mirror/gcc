@@ -1,3 +1,10 @@
+2007-09-02  David Daney  <ddaney@avtrex.com>
+
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: New test.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-2.c: Ditto.
+	* gcc.target/mips/atomic-memory-1.c: Ditto.
+	* testsuite/gcc.target/mips/atomic-memory-2.c: Ditto.
+
 2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
 
 	* gcc.target/cris/builtin_clz_v0.c: New testcase.

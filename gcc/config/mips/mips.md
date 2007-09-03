@@ -53,7 +53,11 @@
    (UNSPEC_RDHWR		34)
    (UNSPEC_SYNCI		35)
    (UNSPEC_SYNC			36)
-
+   (UNSPEC_COMPARE_AND_SWAP	37)
+   (UNSPEC_SYNC_OLD_OP		38)
+   (UNSPEC_SYNC_NEW_OP		39)
+   (UNSPEC_SYNC_EXCHANGE	40)
+   
    (UNSPEC_ADDRESS_FIRST	100)
 
    (FAKE_CALL_REGNO		79)
@@ -576,12 +580,18 @@
 ;; <optab> expands to the name of the optab for a particular code.
 (define_code_attr optab [(ashift "ashl")
 			 (ashiftrt "ashr")
-			 (lshiftrt "lshr")])
+			 (lshiftrt "lshr")
+			 (ior "ior")
+			 (xor "xor")
+			 (and "and")])
 
 ;; <insn> expands to the name of the insn that implements a particular code.
 (define_code_attr insn [(ashift "sll")
 			(ashiftrt "sra")
-			(lshiftrt "srl")])
+			(lshiftrt "srl")
+			(ior "or")
+			(xor "xor")
+			(and "and")])
 
 ;; <fcond> is the c.cond.fmt condition associated with a particular code.
 (define_code_attr fcond [(unordered "un")
@@ -597,6 +607,14 @@
 				 (gt "lt")
 				 (unge "ule")
 				 (ungt "ult")])
+
+;; Atomic fetch bitwise operations.
+(define_code_macro fetchop_bit [ior xor and])
+
+;; <immediate_insn> expands to the name of the insn that implements
+;; a particular code to operate in immediate values.
+(define_code_attr immediate_insn [(ior "ori") (xor "xori") (and "andi")])
+
 
 ;; .........................
 ;;
@@ -4251,7 +4269,7 @@
 
 (define_insn "sync"
   [(unspec_volatile [(const_int 0)] UNSPEC_SYNC)]
-  "ISA_HAS_SYNCI"
+  "ISA_HAS_SYNC"
   "sync")
 
 (define_insn "synci"
@@ -4261,7 +4279,7 @@
   "synci\t0(%0)")
 
 (define_insn "rdhwr"
-  [(set (match_operand:SI 0 "general_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=d")
         (unspec_volatile [(match_operand:SI 1 "const_int_operand" "n")]
         UNSPEC_RDHWR))]
   "ISA_HAS_SYNCI"
@@ -4283,6 +4301,225 @@
          "\t.set\tpop";
 }
   [(set_attr "length" "20")])
+
+;; Atomic memory operations.
+
+(define_expand "memory_barrier"
+  [(unspec_volatile [(const_int 0)] UNSPEC_SYNC)]
+  "ISA_HAS_SYNC"
+  "")
+
+(define_insn "sync_compare_and_swap<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "d,d")
+			      (match_operand:GPR 3 "arith_operand" "I,d")]
+	 UNSPEC_COMPARE_AND_SWAP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_COMPARE_AND_SWAP ("<d>", "li");
+  else
+    return MIPS_COMPARE_AND_SWAP ("<d>", "move");
+}
+  [(set_attr "length" "28")])
+
+(define_insn "sync_add<mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "+R,R")
+	(unspec_volatile:GPR
+          [(plus:GPR (match_dup 0)
+			      (match_operand:GPR 1 "arith_operand" "I,d"))]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_OP ("<d>", "<d>addiu");	
+  else
+    return MIPS_SYNC_OP ("<d>", "<d>addu");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_sub<mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "+R")
+	(unspec_volatile:GPR
+          [(minus:GPR (match_dup 0)
+			      (match_operand:GPR 1 "register_operand" "d"))]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+    return MIPS_SYNC_OP ("<d>", "<d>subu");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_old_add<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+          [(plus:GPR (match_dup 1)
+		     (match_operand:GPR 2 "arith_operand" "I,d"))]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_OLD_OP ("<d>", "<d>addiu");	
+  else
+    return MIPS_SYNC_OLD_OP ("<d>", "<d>addu");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_old_sub<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d")
+	(match_operand:GPR 1 "memory_operand" "+R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+          [(minus:GPR (match_dup 1)
+		      (match_operand:GPR 2 "register_operand" "d"))]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  return MIPS_SYNC_OLD_OP ("<d>", "<d>subu");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_new_add<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+        (plus:GPR (match_operand:GPR 1 "memory_operand" "+R,R")
+		  (match_operand:GPR 2 "arith_operand" "I,d")))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	  [(plus:GPR (match_dup 1) (match_dup 2))]
+	 UNSPEC_SYNC_NEW_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_NEW_OP ("<d>", "<d>addiu");	
+  else
+    return MIPS_SYNC_NEW_OP ("<d>", "<d>addu");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_new_sub<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d")
+        (minus:GPR (match_operand:GPR 1 "memory_operand" "+R")
+		   (match_operand:GPR 2 "register_operand" "d")))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	  [(minus:GPR (match_dup 1) (match_dup 2))]
+	 UNSPEC_SYNC_NEW_OP))]
+  "ISA_HAS_LL_SC"
+{
+  return MIPS_SYNC_NEW_OP ("<d>", "<d>subu");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_<optab><mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "+R,R")
+	(unspec_volatile:GPR
+          [(fetchop_bit:GPR (match_operand:GPR 1 "uns_arith_operand" "K,d")
+			      (match_dup 0))]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_OP ("<d>", "<immediate_insn>");	
+  else
+    return MIPS_SYNC_OP ("<d>", "<insn>");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_old_<optab><mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+          [(fetchop_bit:GPR (match_operand:GPR 2 "uns_arith_operand" "K,d")
+			    (match_dup 1))]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_OLD_OP ("<d>", "<immediate_insn>");	
+  else
+    return MIPS_SYNC_OLD_OP ("<d>", "<insn>");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_new_<optab><mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+          [(fetchop_bit:GPR (match_operand:GPR 2 "uns_arith_operand" "K,d")
+			    (match_dup 1))]
+	 UNSPEC_SYNC_NEW_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_NEW_OP ("<d>", "<immediate_insn>");	
+  else
+    return MIPS_SYNC_NEW_OP ("<d>", "<insn>");	
+}
+  [(set_attr "length" "24")])
+
+(define_insn "sync_nand<mode>"
+  [(set (match_operand:GPR 0 "memory_operand" "+R,R")
+	(unspec_volatile:GPR [(match_operand:GPR 1 "uns_arith_operand" "K,d")]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_NAND ("<d>", "andi");	
+  else
+    return MIPS_SYNC_NAND ("<d>", "and");	
+}
+  [(set_attr "length" "28")])
+
+(define_insn "sync_old_nand<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+        (unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
+	 UNSPEC_SYNC_OLD_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_OLD_NAND ("<d>", "andi");	
+  else
+    return MIPS_SYNC_OLD_NAND ("<d>", "and");	
+}
+  [(set_attr "length" "28")])
+
+(define_insn "sync_new_nand<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
+	 UNSPEC_SYNC_NEW_OP))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_NEW_NAND ("<d>", "andi");	
+  else
+    return MIPS_SYNC_NEW_NAND ("<d>", "and");	
+}
+  [(set_attr "length" "28")])
+
+(define_insn "sync_lock_test_and_set<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+	(match_operand:GPR 1 "memory_operand" "+R,R"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]
+	 UNSPEC_SYNC_EXCHANGE))]
+  "ISA_HAS_LL_SC"
+{
+  if (which_alternative == 0)
+    return MIPS_SYNC_EXCHANGE ("<d>", "li");
+  else
+    return MIPS_SYNC_EXCHANGE ("<d>", "move");
+}
+  [(set_attr "length" "24")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
