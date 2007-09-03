@@ -95,37 +95,9 @@ enum insn_code vcondu_gen_code[NUM_MACHINE_MODES];
    the code to be used in the trap insn and all other fields are ignored.  */
 static GTY(()) rtx trap_rtx;
 
-static int add_equal_note (rtx, rtx, enum rtx_code, rtx, rtx);
-static rtx widen_operand (rtx, enum machine_mode, enum machine_mode, int,
-			  int);
-static void prepare_cmp_insn (rtx *, rtx *, enum rtx_code *, rtx,
-			      enum machine_mode *, int *,
-			      enum can_compare_purpose);
-static enum insn_code can_fix_p (enum machine_mode, enum machine_mode, int,
-				 int *);
-static enum insn_code can_float_p (enum machine_mode, enum machine_mode, int);
-static optab new_optab (void);
-static convert_optab new_convert_optab (void);
-static inline optab init_optab (enum rtx_code);
-static inline optab init_optabv (enum rtx_code);
-static inline convert_optab init_convert_optab (enum rtx_code);
-static void init_libfuncs (optab, int, int, const char *, int);
-static void init_integral_libfuncs (optab, const char *, int);
-static void init_floating_libfuncs (optab, const char *, int);
-static void init_interclass_conv_libfuncs (convert_optab, const char *,
-					   enum mode_class, enum mode_class);
-static void init_intraclass_conv_libfuncs (convert_optab, const char *,
-					   enum mode_class, bool);
-static void emit_cmp_and_jump_insn_1 (rtx, rtx, enum machine_mode,
-				      enum rtx_code, int, rtx);
 static void prepare_float_lib_cmp (rtx *, rtx *, enum rtx_code *,
 				   enum machine_mode *, int *);
-static rtx widen_clz (enum machine_mode, rtx, rtx);
-static rtx expand_parity (enum machine_mode, rtx, rtx);
-static rtx expand_ffs (enum machine_mode, rtx, rtx);
-static rtx expand_ctz (enum machine_mode, rtx, rtx);
-static enum rtx_code get_rtx_code (enum tree_code, bool);
-static rtx vector_compare_rtx (tree, bool, enum insn_code);
+static rtx expand_unop_direct (enum machine_mode, optab, rtx, rtx, int);
 
 /* Current libcall id.  It doesn't matter what these are, as long
    as they are unique to each libcall that is emitted.  */
@@ -2500,6 +2472,76 @@ widen_clz (enum machine_mode mode, rtx op0, rtx target)
   return 0;
 }
 
+/* Try calculating clz of a double-word quantity as two clz's of word-sized
+   quantities, choosing which based on whether the high word is nonzero.  */
+static rtx
+expand_doubleword_clz (enum machine_mode mode, rtx op0, rtx target)
+{
+  rtx xop0 = force_reg (mode, op0);
+  rtx subhi = gen_highpart (word_mode, xop0);
+  rtx sublo = gen_lowpart (word_mode, xop0);
+  rtx hi0_label = gen_label_rtx ();
+  rtx after_label = gen_label_rtx ();
+  rtx seq, temp, result;
+
+  /* If we were not given a target, use a word_mode register, not a
+     'mode' register.  The result will fit, and nobody is expecting
+     anything bigger (the return type of __builtin_clz* is int).  */
+  if (!target)
+    target = gen_reg_rtx (word_mode);
+
+  /* In any case, write to a word_mode scratch in both branches of the
+     conditional, so we can ensure there is a single move insn setting
+     'target' to tag a REG_EQUAL note on.  */
+  result = gen_reg_rtx (word_mode);
+
+  start_sequence ();
+
+  /* If the high word is not equal to zero,
+     then clz of the full value is clz of the high word.  */
+  emit_cmp_and_jump_insns (subhi, CONST0_RTX (word_mode), EQ, 0,
+			   word_mode, true, hi0_label);
+
+  temp = expand_unop_direct (word_mode, clz_optab, subhi, result, true);
+  if (!temp)
+    goto fail;
+
+  if (temp != result)
+    convert_move (result, temp, true);
+
+  emit_jump_insn (gen_jump (after_label));
+  emit_barrier ();
+
+  /* Else clz of the full value is clz of the low word plus the number
+     of bits in the high word.  */
+  emit_label (hi0_label);
+
+  temp = expand_unop_direct (word_mode, clz_optab, sublo, 0, true);
+  if (!temp)
+    goto fail;
+  temp = expand_binop (word_mode, add_optab, temp,
+		       GEN_INT (GET_MODE_BITSIZE (word_mode)),
+		       result, true, OPTAB_DIRECT);
+  if (!temp)
+    goto fail;
+  if (temp != result)
+    convert_move (result, temp, true);
+
+  emit_label (after_label);
+  convert_move (target, result, true);
+
+  seq = get_insns ();
+  end_sequence ();
+
+  add_equal_note (seq, target, CLZ, xop0, 0);
+  emit_insn (seq);
+  return target;
+
+ fail:
+  end_sequence ();
+  return 0;
+}
+
 /* Try calculating
 	(bswap:narrow x)
    as
@@ -2604,65 +2646,130 @@ expand_parity (enum machine_mode mode, rtx op0, rtx target)
   return 0;
 }
 
-/* Try calculating ffs(x) using clz(x).  Since the ffs builtin promises
-   to return zero for a zero value and clz may have an undefined value
-   in that case, only do this if we know clz returns the right thing so
-   that we don't have to generate a test and branch.  */
+/* Try calculating ctz(x) as K - clz(x & -x) ,
+   where K is GET_MODE_BITSIZE(mode) - 1.
+
+   Both __builtin_ctz and __builtin_clz are undefined at zero, so we
+   don't have to worry about what the hardware does in that case.  (If
+   the clz instruction produces the usual value at 0, which is K, the
+   result of this code sequence will be -1; expand_ffs, below, relies
+   on this.  It might be nice to have it be K instead, for consistency
+   with the (very few) processors that provide a ctz with a defined
+   value, but that would take one more instruction, and it would be
+   less convenient for expand_ffs anyway.  */
+
+static rtx
+expand_ctz (enum machine_mode mode, rtx op0, rtx target)
+{
+  rtx seq, temp;
+  
+  if (optab_handler (clz_optab, mode)->insn_code == CODE_FOR_nothing)
+    return 0;
+  
+  start_sequence ();
+
+  temp = expand_unop_direct (mode, neg_optab, op0, NULL_RTX, true);
+  if (temp)
+    temp = expand_binop (mode, and_optab, op0, temp, NULL_RTX,
+			 true, OPTAB_DIRECT);
+  if (temp)
+    temp = expand_unop_direct (mode, clz_optab, temp, NULL_RTX, true);
+  if (temp)
+    temp = expand_binop (mode, sub_optab, GEN_INT (GET_MODE_BITSIZE (mode) - 1),
+			 temp, target,
+			 true, OPTAB_DIRECT);
+  if (temp == 0)
+    {
+      end_sequence ();
+      return 0;
+    }
+
+  seq = get_insns ();
+  end_sequence ();
+
+  add_equal_note (seq, temp, CTZ, op0, 0);
+  emit_insn (seq);
+  return temp;
+}
+
+
+/* Try calculating ffs(x) using ctz(x) if we have that instruction, or
+   else with the sequence used by expand_clz.
+   
+   The ffs builtin promises to return zero for a zero value and ctz/clz
+   may have an undefined value in that case.  If they do not give us a
+   convenient value, we have to generate a test and branch.  */
 static rtx
 expand_ffs (enum machine_mode mode, rtx op0, rtx target)
 {
   HOST_WIDE_INT val;
-  if (clz_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing
-      && CLZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2
-      && val == GET_MODE_BITSIZE (mode))
+  bool defined_at_zero;
+  rtx temp, seq;
+
+  if (optab_handler (ctz_optab, mode)->insn_code != CODE_FOR_nothing)
     {
-      rtx last = get_last_insn ();
-      rtx temp;
+      start_sequence ();
 
-      temp = expand_unop (mode, neg_optab, op0, NULL_RTX, true);
-      if (temp)
-	temp = expand_binop (mode, and_optab, op0, temp, NULL_RTX,
-			     true, OPTAB_DIRECT);
-      if (temp)
-	temp = expand_unop (mode, clz_optab, temp, NULL_RTX, true);
-      if (temp)
-	temp = expand_binop (mode, sub_optab,
-			     GEN_INT (GET_MODE_BITSIZE (mode)),
-			     temp,
-			     target, true, OPTAB_DIRECT);
-      if (temp == 0)
-	delete_insns_since (last);
-      return temp;
+      temp = expand_unop_direct (mode, ctz_optab, op0, 0, true);
+      if (!temp)
+	goto fail;
+
+      defined_at_zero = (CTZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2);
     }
-  return 0;
-}
-
-/* We can compute ctz(x) using clz(x) with a similar recipe.  Here the ctz
-   builtin has an undefined result on zero, just like clz, so we don't have
-   to do that check.  */
-static rtx
-expand_ctz (enum machine_mode mode, rtx op0, rtx target)
-{
-  if (clz_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
+  else if (optab_handler (clz_optab, mode)->insn_code != CODE_FOR_nothing)
     {
-      rtx last = get_last_insn ();
-      rtx temp;
+      start_sequence ();
+      temp = expand_ctz (mode, op0, 0);
+      if (!temp)
+	goto fail;
 
-      temp = expand_unop (mode, neg_optab, op0, NULL_RTX, true);
-      if (temp)
-	temp = expand_binop (mode, and_optab, op0, temp, NULL_RTX,
-			     true, OPTAB_DIRECT);
-      if (temp)
-	temp = expand_unop (mode, clz_optab, temp, NULL_RTX, true);
-      if (temp)
-	temp = expand_binop (mode, xor_optab, temp,
-			     GEN_INT (GET_MODE_BITSIZE (mode) - 1),
-			     target,
-			     true, OPTAB_DIRECT);
-      if (temp == 0)
-	delete_insns_since (last);
-      return temp;
+      if (CLZ_DEFINED_VALUE_AT_ZERO (mode, val) == 2)
+	{
+	  defined_at_zero = true;
+	  val = (GET_MODE_BITSIZE (mode) - 1) - val;
+	}
     }
+  else
+    return 0;
+
+  if (defined_at_zero && val == -1)
+    /* No correction needed at zero.  */;
+  else 
+    {
+      /* We don't try to do anything clever with the situation found
+	 on some processors (eg Alpha) where ctz(0:mode) ==
+	 bitsize(mode).  If someone can think of a way to send N to -1
+	 and leave alone all values in the range 0..N-1 (where N is a
+	 power of two), cheaper than this test-and-branch, please add it.
+
+	 The test-and-branch is done after the operation itself, in case
+	 the operation sets condition codes that can be recycled for this.
+	 (This is true on i386, for instance.)  */
+
+      rtx nonzero_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (op0, CONST0_RTX (mode), NE, 0,
+			       mode, true, nonzero_label);
+
+      convert_move (temp, GEN_INT (-1), false);
+      emit_label (nonzero_label);
+    }
+
+  /* temp now has a value in the range -1..bitsize-1.  ffs is supposed
+     to produce a value in the range 0..bitsize.  */
+  temp = expand_binop (mode, add_optab, temp, GEN_INT (1),
+		       target, false, OPTAB_DIRECT);
+  if (!temp)
+    goto fail;
+
+  seq = get_insns ();
+  end_sequence ();
+
+  add_equal_note (seq, temp, FFS, op0, 0);
+  emit_insn (seq);
+  return temp;
+
+ fail:
+  end_sequence ();
   return 0;
 }
 
@@ -2791,34 +2898,19 @@ expand_absneg_bit (enum rtx_code code, enum machine_mode mode,
   return target;
 }
 
-/* Generate code to perform an operation specified by UNOPTAB
-   on operand OP0, with result having machine-mode MODE.
-
-   UNSIGNEDP is for the case where we have to widen the operands
-   to perform the operation.  It says to use zero-extension.
-
-   If TARGET is nonzero, the value
-   is generated there, if it is convenient to do so.
-   In all cases an rtx is returned for the locus of the value;
-   this may or may not be TARGET.  */
-
-rtx
-expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
+/* As expand_unop, but will fail rather than attempt the operation in a
+   different mode or with a libcall.  */
+static rtx
+expand_unop_direct (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	     int unsignedp)
 {
-  enum mode_class class;
-  enum machine_mode wider_mode;
-  rtx temp;
-  rtx last = get_last_insn ();
-  rtx pat;
-
-  class = GET_MODE_CLASS (mode);
-
   if (optab_handler (unoptab, mode)->insn_code != CODE_FOR_nothing)
     {
       int icode = (int) optab_handler (unoptab, mode)->insn_code;
       enum machine_mode mode0 = insn_data[icode].operand[1].mode;
       rtx xop0 = op0;
+      rtx last = get_last_insn ();
+      rtx pat, temp;
 
       if (target)
 	temp = target;
@@ -2854,16 +2946,49 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
       else
 	delete_insns_since (last);
     }
+  return 0;
+}
+
+/* Generate code to perform an operation specified by UNOPTAB
+   on operand OP0, with result having machine-mode MODE.
+
+   UNSIGNEDP is for the case where we have to widen the operands
+   to perform the operation.  It says to use zero-extension.
+
+   If TARGET is nonzero, the value
+   is generated there, if it is convenient to do so.
+   In all cases an rtx is returned for the locus of the value;
+   this may or may not be TARGET.  */
+
+rtx
+expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
+	     int unsignedp)
+{
+  enum mode_class class = GET_MODE_CLASS (mode);
+  enum machine_mode wider_mode;
+  rtx temp;
+
+  temp = expand_unop_direct (mode, unoptab, op0, target, unsignedp);
+  if (temp)
+    return temp;
 
   /* It can't be done in this mode.  Can we open-code it in a wider mode?  */
 
-  /* Widening clz needs special treatment.  */
+  /* Widening (or narrowing) clz needs special treatment.  */
   if (unoptab == clz_optab)
     {
       temp = widen_clz (mode, op0, target);
       if (temp)
 	return temp;
-      else
+
+      if (GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+	  && optab_handler (unoptab, word_mode)->insn_code != CODE_FOR_nothing)
+	{
+	  temp = expand_doubleword_clz (mode, op0, target);
+	  if (temp)
+	    return temp;
+	}
+
 	goto try_libcall;
     }
 
@@ -2893,6 +3018,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	if (optab_handler (unoptab, wider_mode)->insn_code != CODE_FOR_nothing)
 	  {
 	    rtx xop0 = op0;
+	    rtx last = get_last_insn ();
 
 	    /* For certain operations, we need not actually extend
 	       the narrow operand, as long as we will truncate the
@@ -3052,6 +3178,7 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	      || optab_handler (unoptab, wider_mode)->libfunc)
 	    {
 	      rtx xop0 = op0;
+	      rtx last = get_last_insn ();
 
 	      /* For certain operations, we need not actually extend
 		 the narrow operand, as long as we will truncate the

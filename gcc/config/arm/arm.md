@@ -10747,46 +10747,6 @@
   [(set_attr "predicable" "yes")
    (set_attr "insn" "clz")])
 
-(define_expand "ffssi2"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ffs:SI (match_operand:SI 1 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch5"
-  "
-  {
-    rtx t1, t2, t3;
-
-    t1 = gen_reg_rtx (SImode);
-    t2 = gen_reg_rtx (SImode);
-    t3 = gen_reg_rtx (SImode);
-
-    emit_insn (gen_negsi2 (t1, operands[1]));
-    emit_insn (gen_andsi3 (t2, operands[1], t1));
-    emit_insn (gen_clzsi2 (t3, t2));
-    emit_insn (gen_subsi3 (operands[0], GEN_INT (32), t3));
-    DONE;
-  }"
-)
-
-(define_expand "ctzsi2"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ctz:SI (match_operand:SI 1 "s_register_operand" "")))]
-  "TARGET_32BIT && arm_arch5"
-  "
-  {
-    rtx t1, t2, t3;
-
-    t1 = gen_reg_rtx (SImode);
-    t2 = gen_reg_rtx (SImode);
-    t3 = gen_reg_rtx (SImode);
-
-    emit_insn (gen_negsi2 (t1, operands[1]));
-    emit_insn (gen_andsi3 (t2, operands[1], t1));
-    emit_insn (gen_clzsi2 (t3, t2));
-    emit_insn (gen_subsi3 (operands[0], GEN_INT (31), t3));
-    DONE;
-  }"
-)
-
 ;; V5E instructions.
 
 (define_insn "prefetch"
