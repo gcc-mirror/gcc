@@ -20,7 +20,7 @@ program namelist_15
 
   namelist /mynml/ x
 
-  open (10, status = "scratch")
+  open (10, status = "scratch", delim='apostrophe')
   write (10, '(A)') "&MYNML"
   write (10, '(A)') " x = 3, 4, 'dd', 'ee', 'ff', 'gg',"
   write (10, '(A)') "     4, 5, 'hh', 'ii', 'jj', 'kk',"
