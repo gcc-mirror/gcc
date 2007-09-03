@@ -226,6 +226,10 @@ UDItype __umulsidi3 (USItype, USItype);
 #define UDIV_TIME 100
 #endif /* __arm__ */
 
+#if defined (__CRIS__) && __CRIS_arch_version >= 3
+#define count_leading_zeros(COUNT, X) ((COUNT) = __builtin_clz (X))
+#endif /* __CRIS__ */
+
 #if defined (__hppa) && W_TYPE_SIZE == 32
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add %4,%5,%1\n\taddc %2,%3,%0"				\

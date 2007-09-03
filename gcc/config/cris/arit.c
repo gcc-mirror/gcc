@@ -48,8 +48,7 @@ Boston, MA 02110-1301, USA.
 #include "config.h"
 
 #if defined (__CRIS_arch_version) && __CRIS_arch_version >= 3
-#define LZ(v) __extension__ \
- ({ int tmp_; __asm__ ("lz %1,%0" : "=r" (tmp_) : "r" (v)); tmp_; })
+#define LZ(v) __builtin_clz (v)
 #endif
 
 

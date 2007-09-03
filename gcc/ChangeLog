@@ -1,3 +1,14 @@
+2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
+	    Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (TARGET_HAS_LZ, CLZ_DEFINED_VALUE_AT_ZERO):
+	Defined to describe availability and behavior of CLZ.
+	* config/cris/cris.md (clzsi2): Implement using lz instruction.
+	* config/cris/cris.opt: Tweak comment for "-metrax4".
+	* config/cris/arit.c (LZ): When defined, define as __builtin_clz.
+	* longlong.h [__CRIS__ && __CRIS_arch_version >= 3]
+	(count_leading_zeros): Define.
+
 2007-09-01  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* ggc-page.c (ggc_pch_read): Call validate_free_objects.

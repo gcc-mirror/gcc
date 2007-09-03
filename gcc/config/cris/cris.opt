@@ -45,7 +45,7 @@ Target Report Mask(MUL_BUG)
 Work around bug in multiplication instruction
 
 ; TARGET_ETRAX4_ADD: Instruction-set additions from Etrax 4 and up.
-; (Just "lz", which we don't really generate from GCC -- yet).
+; (Just "lz".)
 metrax4
 Target Report Mask(ETRAX4_ADD)
 Compile for ETRAX 4 (CRIS v3)
