@@ -121,7 +121,7 @@ by type.  Explanations are in the following sections.
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
 -ffree-line-length-@var{n}  -ffree-line-length-none @gol
 -fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 @gol
--fcray-pointer  -fopenmp  -frange-check -fno-backslash -fmodule-private}
+-fcray-pointer  -fopenmp  -fno-range-check -fno-backslash -fmodule-private}
 
 @item Error and Warning Options
 @xref{Error and Warning Options,,Options to request or suppress errors
@@ -298,9 +298,9 @@ and @code{c$}, @code{*$} and @code{!$} sentinels in fixed form,
 and when linking arranges for the OpenMP runtime library to be linked
 in.  The option @option{-fopenmp} implies @option{-frecursive}.
 
-@item -frange-check
+@item -fno-range-check
 @opindex @code{frange-check}
-Enable range checking on results of simplification of constant
+Disable range checking on results of simplification of constant
 expressions during compilation.  For example, by default, GNU Fortran
 will give an overflow error at compile time when simplifying @code{a =
 EXP(1000)}. With @option{-fno-range-check}, no error will be given and
