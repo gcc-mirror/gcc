@@ -3677,6 +3677,16 @@ placed in either the @code{.bss_below100} section or the
 
 @end table
 
+@subsection AVR Variable Attributes
+
+@table @code
+@item progmem
+@cindex @code{progmem} variable attribute
+The @code{progmem} attribute is used on the AVR to place data in the Program
+Memory address space. The AVR is a Harvard Architecture processor and data
+normally resides in the Data Memory address space.
+@end table
+
 @node Type Attributes
 @section Specifying Attributes of Types
 @cindex attribute of types
