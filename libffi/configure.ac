@@ -95,10 +95,10 @@ case "$host" in
 	;;
 
   mips-sgi-irix5.* | mips-sgi-irix6.*)
-	TARGET=MIPS_IRIX; TARGETDIR=mips
+	TARGET=MIPS; TARGETDIR=mips
 	;;
   mips*-*-linux*)
-	TARGET=MIPS_LINUX; TARGETDIR=mips
+	TARGET=MIPS; TARGETDIR=mips
 	;;
 
   powerpc*-*-linux* | powerpc-*-sysv*)
@@ -151,8 +151,7 @@ if test $TARGETDIR = unknown; then
   AC_MSG_ERROR(["libffi has not been ported to $host."])
 fi
 
-AM_CONDITIONAL(MIPS_IRIX, test x$TARGET = xMIPS_IRIX)
-AM_CONDITIONAL(MIPS_LINUX, test x$TARGET = xMIPS_LINUX)
+AM_CONDITIONAL(MIPS, test x$TARGET = xMIPS)
 AM_CONDITIONAL(SPARC, test x$TARGET = xSPARC)
 AM_CONDITIONAL(X86, test x$TARGET = xX86)
 AM_CONDITIONAL(X86_WIN32, test x$TARGET = xX86_WIN32)
@@ -175,11 +174,6 @@ AM_CONDITIONAL(SH64, test x$TARGET = xSH64)
 AM_CONDITIONAL(PA_LINUX, test x$TARGET = xPA_LINUX)
 AM_CONDITIONAL(PA_HPUX, test x$TARGET = xPA_HPUX)
 AM_CONDITIONAL(PA64_HPUX, test x$TARGET = xPA64_HPUX)
-
-case x$TARGET in
-  xMIPS*) TARGET=MIPS ;;
-  *) ;;
-esac
 
 AC_HEADER_STDC
 AC_CHECK_FUNCS(memcpy)

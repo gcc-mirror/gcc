@@ -84,10 +84,7 @@ libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 
 nodist_libffi_la_SOURCES =
 
-if MIPS_IRIX
-nodist_libffi_la_SOURCES += src/mips/ffi.c src/mips/o32.S src/mips/n32.S
-endif
-if MIPS_LINUX
+if MIPS
 nodist_libffi_la_SOURCES += src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 endif
 if X86
