@@ -609,7 +609,7 @@
 				 (ungt "ult")])
 
 ;; Atomic fetch bitwise operations.
-(define_code_macro fetchop_bit [ior xor and])
+(define_code_iterator fetchop_bit [ior xor and])
 
 ;; <immediate_insn> expands to the name of the insn that implements
 ;; a particular code to operate in immediate values.
