@@ -1,3 +1,7 @@
+2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+	* gcc.dg/torture/cris-asm-mof-1.c: Skip if -march defined.
+
 2007-09-02  David Daney  <ddaney@avtrex.com>
 
 	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: New test.
