@@ -37,15 +37,13 @@ Boston, MA 02110-1301, USA.  */
 #include <float.h>
 #include <stdarg.h>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338327
-#endif
-
 #if HAVE_COMPLEX_H
 # include <complex.h>
 #else
 #define complex __complex__
 #endif
+
+#include "../gcc/fortran/libgfortran.h"
 
 #include "config.h"
 #include "c99_protos.h"
@@ -276,9 +274,6 @@ internal_proto(l8_to_l4_offset);
 #define GFC_REAL_16_RADIX FLT_RADIX
 #endif
 
-#ifndef GFC_MAX_DIMENSIONS
-#define GFC_MAX_DIMENSIONS 7
-#endif
 
 typedef struct descriptor_dimension
 {
@@ -330,25 +325,6 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_8) gfc_array_l8;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 #endif
 
-#define GFC_DTYPE_RANK_MASK 0x07
-#define GFC_DTYPE_TYPE_SHIFT 3
-#define GFC_DTYPE_TYPE_MASK 0x38
-#define GFC_DTYPE_SIZE_SHIFT 6
-
-/* added for f03.  --Rickett, 02.28.06 */
-#define GFC_NUM_RANK_BITS 3
-
-enum
-{
-  GFC_DTYPE_UNKNOWN = 0,
-  GFC_DTYPE_INTEGER,
-  /* TODO: recognize logical types.  */
-  GFC_DTYPE_LOGICAL,
-  GFC_DTYPE_REAL,
-  GFC_DTYPE_COMPLEX,
-  GFC_DTYPE_DERIVED,
-  GFC_DTYPE_CHARACTER
-};
 
 #define GFC_DESCRIPTOR_RANK(desc) ((desc)->dtype & GFC_DTYPE_RANK_MASK)
 #define GFC_DESCRIPTOR_TYPE(desc) (((desc)->dtype & GFC_DTYPE_TYPE_MASK) \
@@ -423,60 +399,6 @@ typedef struct
 }
 st_option;
 
-/* Runtime errors.  The EOR and EOF errors are required to be negative.
-   These codes must be kept sychronized with their equivalents in
-   gcc/fortran/gfortran.h .  */
-
-typedef enum
-{
-  ERROR_FIRST = -3,		/* Marker for the first error.  */
-  ERROR_EOR = -2,
-  ERROR_END = -1,
-  ERROR_OK = 0,			/* Indicates success, must be zero.  */
-  ERROR_OS = 5000,		/* Operating system error, more info in errno.  */
-  ERROR_OPTION_CONFLICT,
-  ERROR_BAD_OPTION,
-  ERROR_MISSING_OPTION,
-  ERROR_ALREADY_OPEN,
-  ERROR_BAD_UNIT,
-  ERROR_FORMAT,
-  ERROR_BAD_ACTION,
-  ERROR_ENDFILE,
-  ERROR_BAD_US,
-  ERROR_READ_VALUE,
-  ERROR_READ_OVERFLOW,
-  ERROR_INTERNAL,
-  ERROR_INTERNAL_UNIT,
-  ERROR_ALLOCATION,		/* Keep in sync with value used in
-				   gcc/fortran/trans.c
-				   (gfc_allocate_array_with_status).  */
-  ERROR_DIRECT_EOR,
-  ERROR_SHORT_RECORD,
-  ERROR_CORRUPT_FILE,
-  ERROR_LAST			/* Not a real error, the last error # + 1.  */
-}
-error_codes;
-
-
-/* Flags to specify which standard/extension contains a feature.
-   Keep them in sync with their counterparts in gcc/fortran/gfortran.h.  */
-#define GFC_STD_LEGACY          (1<<6) /* Backward compatibility.  */
-#define GFC_STD_GNU             (1<<5)    /* GNU Fortran extension.  */
-#define GFC_STD_F2003           (1<<4)    /* New in F2003.  */
-/* Note that no features were obsoleted nor deleted in F2003.  */
-#define GFC_STD_F95             (1<<3)    /* New in F95.  */
-#define GFC_STD_F95_DEL         (1<<2)    /* Deleted in F95.  */
-#define GFC_STD_F95_OBS         (1<<1)    /* Obsoleted in F95.  */
-#define GFC_STD_F77             (1<<0)    /* Up to and including F77.  */
-
-/* Bitmasks for the various FPE that can be enabled.
-   Keep them in sync with their counterparts in gcc/fortran/gfortran.h.  */
-#define GFC_FPE_INVALID    (1<<0)
-#define GFC_FPE_DENORMAL   (1<<1)
-#define GFC_FPE_ZERO       (1<<2)
-#define GFC_FPE_OVERFLOW   (1<<3)
-#define GFC_FPE_UNDERFLOW  (1<<4)
-#define GFC_FPE_PRECISION  (1<<5)
 
 /* This is returned by notification_std to know if, given the flags
    that were given (-std=, -pedantic) we should issue an error, a warning
@@ -505,8 +427,8 @@ iexport_data_proto(filename);
 #define gfc_alloca(x)  __builtin_alloca(x)
 
 
-/* Various I/O stuff also used in other parts of the library.  */
-
+/* Directory for creating temporary files.  Only used when none of the
+   following environment variables exist: GFORTRAN_TMPDIR, TMP and TEMP.  */
 #define DEFAULT_TEMPDIR "/tmp"
 
 /* The default value of record length for preconnected units is defined
@@ -514,9 +436,6 @@ iexport_data_proto(filename);
    Default value is 1 Gb.  */
 #define DEFAULT_RECL 1073741824
 
-typedef enum
-{ CONVERT_NONE=-1, CONVERT_NATIVE, CONVERT_SWAP, CONVERT_BIG, CONVERT_LITTLE }
-unit_convert;
 
 #define CHARACTER2(name) \
               gfc_charlen_type name ## _len; \

@@ -3212,7 +3212,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* If this is the main program and an -fconvert option was provided,
      add a call to set_convert.  */
 
-  if (sym->attr.is_main_program && gfc_option.convert != CONVERT_NATIVE)
+  if (sym->attr.is_main_program && gfc_option.convert != GFC_CONVERT_NATIVE)
     {
       tmp = build_call_expr (gfor_fndecl_set_convert, 1,
 			     build_int_cst (integer_type_node,

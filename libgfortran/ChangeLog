@@ -1,3 +1,38 @@
+2007-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31675
+	* libgfortran.h: Include gcc/fortran/libgfortran.h.
+	Remove M_PI, GFC_MAX_DIMENSIONS, GFC_DTYPE_*, GFC_NUM_RANK_BITS,
+	error_codes, GFC_STD_*, GFC_FPE_* and unit_convert.
+	* runtime/environ.c (variable_table): Use GFC_*_UNIT_NUMBER instead
+	of hardcoded constants.
+	(do_parse, init_unformatted): Use GFC_CONVERT_* macros instead of
+	CONVERT_*.
+	* runtime/string.c (find_option): Use LIBERROR_BAD_OPTION instead
+	of ERROR_BAD_OPTION.
+	* runtime/error.c (translate_error, generate_error): Use
+	LIBERROR_* macros instead of ERROR_*.
+	* io/file_pos.c (formatted_backspace, unformatted_backspace,
+	st_backspace, st_rewind, st_flush): Rename macros.
+	* io/open.c (convert_opt, edit_modes, new_unit, already_open,
+	st_open): Likewise.
+	* io/close.c (st_close): Likewise.
+	* io/list_read.c (next_char, convert_integer, parse_repeat,
+	read_logical, read_integer, read_character, parse_real,
+	check_type, list_formatted_read_scalar, namelist_read,
+	nml_err_ret): Likewise.
+	* io/read.c (convert_real, read_l, read_decimal, read_radix,
+	read_f): Likewise.
+	* io/inquire.c (inquire_via_unit): Likewise.
+	* io/unit.c (get_internal_unit): Likewise.
+	* io/transfer.c (read_sf, read_block, read_block_direct,
+	write_block, write_buf, unformatted_read, unformatted_write,
+	formatted_transfer_scalar, us_read, us_write, data_transfer_init,
+	skip_record, next_record_r, write_us_marker, next_record_w_unf,
+	next_record_w, finalize_transfer, st_read, st_write_done):
+	Likewise.
+	* io/format.c (format_error): Likewise.
+
 2007-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* m4/minloc1.m4: Update copyright year and ajust headers order.

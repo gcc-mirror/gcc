@@ -73,7 +73,7 @@ st_close (st_parameter_close *clp)
       if (u->flags.status == STATUS_SCRATCH)
 	{
 	  if (status == CLOSE_KEEP)
-	    generate_error (&clp->common, ERROR_BAD_OPTION,
+	    generate_error (&clp->common, LIBERROR_BAD_OPTION,
 			    "Can't KEEP a scratch file on CLOSE");
 #if !HAVE_UNLINK_OPEN_FILE
 	  path = (char *) gfc_alloca (u->file_len + 1);

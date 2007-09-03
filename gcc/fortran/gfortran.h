@@ -28,6 +28,11 @@ along with GCC; see the file COPYING3.  If not see
    multiple header files.  Besides, Microsoft's winnt.h was 250k last
    time I looked, so by comparison this is perfectly reasonable.  */
 
+/* Declarations common to the front-end and library are put in
+   libgfortran/libgfortran_frontend.h  */
+#include "libgfortran.h"
+
+
 #include "system.h"
 #include "intl.h"
 #include "coretypes.h"
@@ -57,7 +62,6 @@ char *alloca ();
 #define GFC_MAX_SYMBOL_LEN 63   /* Must be at least 63 for F2003.  */
 #define GFC_MAX_BINDING_LABEL_LEN 126 /* (2 * GFC_MAX_SYMBOL_LEN) */
 #define GFC_MAX_LINE 132	/* Characters beyond this are not seen.  */
-#define GFC_MAX_DIMENSIONS 7	/* Maximum dimensions in an array.  */
 #define GFC_LETTERS 26		/* Number of letters in the alphabet.  */
 
 #define MAX_SUBRECORD_LENGTH 2147483639   /* 2**31-9 */
@@ -95,33 +99,6 @@ typedef struct
 }
 mstring;
 
-
-/* Flags to specify which standard/extension contains a feature.  */
-#define GFC_STD_LEGACY		(1<<6) /* Backward compatibility.  */
-#define GFC_STD_GNU		(1<<5)    /* GNU Fortran extension.  */
-#define GFC_STD_F2003		(1<<4)    /* New in F2003.  */
-/* Note that no additional features were deleted or made obsolescent
-   in F2003.  */
-#define GFC_STD_F95		(1<<3)    /* New in F95.  */
-#define GFC_STD_F95_DEL		(1<<2)    /* Deleted in F95.  */
-#define GFC_STD_F95_OBS		(1<<1)    /* Obsolescent in F95.  */
-#define GFC_STD_F77		(1<<0)    /* Included in F77, but not
-					     deleted or obsolescent in
-					     later standards.  */
-
-/* Bitmasks for the various FPE that can be enabled.  */
-#define GFC_FPE_INVALID    (1<<0)
-#define GFC_FPE_DENORMAL   (1<<1)
-#define GFC_FPE_ZERO       (1<<2)
-#define GFC_FPE_OVERFLOW   (1<<3)
-#define GFC_FPE_UNDERFLOW  (1<<4)
-#define GFC_FPE_PRECISION  (1<<5)
-
-/* Keep this in sync with libgfortran/io/io.h ! */
-
-typedef enum
-  { CONVERT_NATIVE=0, CONVERT_SWAP, CONVERT_BIG, CONVERT_LITTLE }
-options_convert;
 
 
 /*************************** Enums *****************************/
@@ -531,38 +508,6 @@ enum gfc_isym_id
   GFC_ISYM_YN
 };
 typedef enum gfc_isym_id gfc_isym_id;
-
-/* Runtime errors.  The EOR and EOF errors are required to be negative.
-   These codes must be kept synchronized with their equivalents in
-   libgfortran/libgfortran.h .  */
-
-typedef enum
-{
-  IOERROR_FIRST = -3,		/* Marker for the first error.  */
-  IOERROR_EOR = -2,
-  IOERROR_END = -1,
-  IOERROR_OK = 0,			/* Indicates success, must be zero.  */
-  IOERROR_OS = 5000,		/* Operating system error, more info in errno.  */
-  IOERROR_OPTION_CONFLICT,
-  IOERROR_BAD_OPTION,
-  IOERROR_MISSING_OPTION,
-  IOERROR_ALREADY_OPEN,
-  IOERROR_BAD_UNIT,
-  IOERROR_FORMAT,
-  IOERROR_BAD_ACTION,
-  IOERROR_ENDFILE,
-  IOERROR_BAD_US,
-  IOERROR_READ_VALUE,
-  IOERROR_READ_OVERFLOW,
-  IOERROR_INTERNAL,
-  IOERROR_INTERNAL_UNIT,
-  IOERROR_ALLOCATION,
-  IOERROR_DIRECT_EOR,
-  IOERROR_SHORT_RECORD,
-  IOERROR_CORRUPT_FILE,
-  IOERROR_LAST			/* Not a real error, the last error # + 1.  */
-}
-ioerror_codes;
 
 
 /************************* Structures *****************************/

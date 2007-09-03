@@ -1,3 +1,27 @@
+2007-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31675
+	* libgfortran.h: New file.
+	* iso-fortran-env.def: Use macros in the new header instead of
+	hardcoded integer constants.
+	* Make-lang.in (F95_PARSER_OBJS, GFORTRAN_TRANS_DEPS): Add
+	fortran/libgfortran.h.
+	* gfortran.h (GFC_STD_*, GFC_FPE_*, options_convert,
+	ioerror_codes): Remove.
+	* trans.c (ERROR_ALLOCATION): Remove.
+	(gfc_call_malloc, gfc_allocate_with_status,
+	gfc_allocate_array_with_status): Use LIBERROR_ALLOCATION.
+	* trans-types.h (GFC_DTYPE_*): Remove.
+	* trans-decl.c (gfc_generate_function_code): Use
+	GFC_CONVERT_NATIVE instead of CONVERT_NATIVE.
+	* trans-io.c (set_parameter_value, set_parameter_ref): Use
+	LIBERROR_* macros instead of IOERROR_ macros.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Use
+	LIBERROR_END and LIBERROR_EOR instead of hardcoded constants.
+	* options.c (gfc_init_options): Use GFC_CONVERT_NATIVE instead of
+	CONVERT_NATIVE.
+	(gfc_handle_option): Use GFC_CONVERT_* macros instead of CONVERT_*.
+
 2007-09-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* invoke.texi: Fix the -frange-checking option entry.

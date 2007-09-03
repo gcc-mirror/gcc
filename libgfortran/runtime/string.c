@@ -122,7 +122,7 @@ find_option (st_parameter_common *cmp, const char *s1, gfc_charlen_type s1_len,
     if (compare0 (s1, s1_len, opts->name))
       return opts->value;
 
-  generate_error (cmp, ERROR_BAD_OPTION, error_message);
+  generate_error (cmp, LIBERROR_BAD_OPTION, error_message);
 
   return -1;
 }

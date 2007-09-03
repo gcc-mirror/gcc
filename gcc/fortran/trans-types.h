@@ -24,22 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_BACKEND_H
 #define GFC_BACKEND_H
 
-#define GFC_DTYPE_RANK_MASK 0x07
-#define GFC_DTYPE_TYPE_SHIFT 3
-#define GFC_DTYPE_TYPE_MASK 0x38
-#define GFC_DTYPE_SIZE_SHIFT 6
-
-enum
-{
-  GFC_DTYPE_UNKNOWN = 0,
-  GFC_DTYPE_INTEGER,
-  GFC_DTYPE_LOGICAL,
-  GFC_DTYPE_REAL,
-  GFC_DTYPE_COMPLEX,
-  GFC_DTYPE_DERIVED,
-  GFC_DTYPE_CHARACTER
-};
-
 extern GTY(()) tree gfc_array_index_type;
 extern GTY(()) tree gfc_array_range_type;
 extern GTY(()) tree gfc_character1_type_node;

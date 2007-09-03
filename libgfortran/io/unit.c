@@ -375,7 +375,7 @@ get_internal_unit (st_parameter_dt *dtp)
   iunit = get_mem (sizeof (gfc_unit));
   if (iunit == NULL)
     {
-      generate_error (&dtp->common, ERROR_INTERNAL_UNIT, NULL);
+      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
       return NULL;
     }
 

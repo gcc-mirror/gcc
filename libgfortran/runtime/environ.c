@@ -460,17 +460,18 @@ show_signal (variable * v)
 
 
 static variable variable_table[] = {
-  {"GFORTRAN_STDIN_UNIT", 5, &options.stdin_unit, init_integer, show_integer,
+  {"GFORTRAN_STDIN_UNIT", GFC_STDIN_UNIT_NUMBER, &options.stdin_unit,
+   init_integer, show_integer,
    "Unit number that will be preconnected to standard input\n"
    "(No preconnection if negative)", 0},
 
-  {"GFORTRAN_STDOUT_UNIT", 6, &options.stdout_unit, init_integer,
-   show_integer,
+  {"GFORTRAN_STDOUT_UNIT", GFC_STDOUT_UNIT_NUMBER, &options.stdout_unit,
+   init_integer, show_integer,
    "Unit number that will be preconnected to standard output\n"
    "(No preconnection if negative)", 0},
 
-  {"GFORTRAN_STDERR_UNIT", 0, &options.stderr_unit, init_integer,
-   show_integer,
+  {"GFORTRAN_STDERR_UNIT", GFC_STDERR_UNIT_NUMBER, &options.stderr_unit,
+   init_integer, show_integer,
    "Unit number that will be preconnected to standard error\n"
    "(No preconnection if negative)", 0},
 
@@ -622,7 +623,7 @@ show_variables (void)
   st_printf ("\nRuntime error codes:");
   st_printf ("\n--------------------\n");
 
-  for (n = ERROR_FIRST + 1; n < ERROR_LAST; n++)
+  for (n = LIBERROR_FIRST + 1; n < LIBERROR_LAST; n++)
     if (n < 0 || n > 9)
       st_printf ("%d  %s\n", n, translate_error (n));
     else
@@ -881,19 +882,19 @@ do_parse (void)
   switch (tok)
     {
     case NATIVE:
-      endian = CONVERT_NATIVE;
+      endian = GFC_CONVERT_NATIVE;
       break;
 
     case SWAP:
-      endian = CONVERT_SWAP;
+      endian = GFC_CONVERT_SWAP;
       break;
 
     case BIG:
-      endian = CONVERT_BIG;
+      endian = GFC_CONVERT_BIG;
       break;
 
     case LITTLE:
-      endian = CONVERT_LITTLE;
+      endian = GFC_CONVERT_LITTLE;
       break;
 
     case INTEGER:
@@ -948,25 +949,25 @@ do_parse (void)
 	case NATIVE:
 	  if (next_token () != ':')
 	    goto error;
-	  endian = CONVERT_NATIVE;
+	  endian = GFC_CONVERT_NATIVE;
 	  break;
 
 	case SWAP:
 	  if (next_token () != ':')
 	    goto error;
-	  endian = CONVERT_SWAP;
+	  endian = GFC_CONVERT_SWAP;
 	  break;
 
 	case LITTLE:
 	  if (next_token () != ':')
 	    goto error;
-	  endian = CONVERT_LITTLE;
+	  endian = GFC_CONVERT_LITTLE;
 	  break;
 
 	case BIG:
 	  if (next_token () != ':')
 	    goto error;
-	  endian = CONVERT_BIG;
+	  endian = GFC_CONVERT_BIG;
 	  break;
 
 	case INTEGER:
@@ -1034,7 +1035,7 @@ do_parse (void)
  end:
   return 0;
  error:
-  def = CONVERT_NONE;
+  def = GFC_CONVERT_NONE;
   return -1;
 }
 
@@ -1042,7 +1043,7 @@ void init_unformatted (variable * v)
 {
   char *val;
   val = getenv (v->name);
-  def = CONVERT_NONE;
+  def = GFC_CONVERT_NONE;
   n_elist = 0;
 
   if (val == NULL)

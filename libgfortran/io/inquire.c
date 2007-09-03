@@ -302,11 +302,11 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	switch (u->flags.convert)
 	  {
 	    /*  l8_to_l4_offset is 0 for little-endian, 1 for big-endian.  */
-	  case CONVERT_NATIVE:
+	  case GFC_CONVERT_NATIVE:
 	    p = l8_to_l4_offset ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
 	    break;
 
-	  case CONVERT_SWAP:
+	  case GFC_CONVERT_SWAP:
 	    p = l8_to_l4_offset ? "LITTLE_ENDIAN" : "BIG_ENDIAN";
 	    break;
 
