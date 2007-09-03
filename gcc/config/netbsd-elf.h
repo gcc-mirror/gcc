@@ -91,3 +91,8 @@ along with GCC; see the file COPYING3.  If not see
        %{rdynamic:-export-dynamic} \
        %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}} \
      %{static:-static}}"
+
+/* Use --as-needed -lgcc_s for eh support.  */
+#ifdef HAVE_LD_AS_NEEDED
+#define USE_LD_AS_NEEDED 1
+#endif

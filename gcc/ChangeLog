@@ -1,3 +1,7 @@
+2007-09-03  Krister Walfridsson  <cato@df.lth.se>
+
+	* config/netbsd-elf.h (USE_LD_AS_NEEDED): Define.
+
 2007-09-03  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/33290
