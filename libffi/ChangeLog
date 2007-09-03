@@ -1,3 +1,12 @@
+2007-09-03  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* Makefile.am: Unify MIPS_IRIX and MIPS_LINUX into MIPS.
+	* configure.ac: Likewise.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* configure: Likewise.
+
 2007-08-24  David Daney  <ddaney@avtrex.com>
 
 	* testsuite/libffi.call/return_sl.c: New test.
