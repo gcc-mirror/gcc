@@ -2702,8 +2702,8 @@ expand_ctz (enum machine_mode mode, rtx op0, rtx target)
 static rtx
 expand_ffs (enum machine_mode mode, rtx op0, rtx target)
 {
-  HOST_WIDE_INT val;
-  bool defined_at_zero;
+  HOST_WIDE_INT val = 0;
+  bool defined_at_zero = false;
   rtx temp, seq;
 
   if (optab_handler (ctz_optab, mode)->insn_code != CODE_FOR_nothing)
