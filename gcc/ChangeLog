@@ -1,3 +1,8 @@
+2007-09-03  Revital Eres  <eres@il.ibm.com>
+
+	* doc/invoke.texi (-fmodulo-sched-allow-regmoves): Update
+	Documentation.
+
 2007-09-03  Vladimir Yanovsky  <yanov@il.ibm.com>
             Ayal Zaks  <zaks@il.ibm.com>
             Revital Eres  <eres@il.ibm.com>
