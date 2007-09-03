@@ -1290,7 +1290,13 @@ avoid_expensive_constant (enum machine_mode mode, optab binoptab,
       && CONSTANT_P (x)
       && rtx_cost (x, binoptab->code) > COSTS_N_INSNS (1))
     {
-      if (GET_MODE (x) != VOIDmode)
+      if (GET_CODE (x) == CONST_INT)
+	{
+	  HOST_WIDE_INT intval = trunc_int_for_mode (INTVAL (x), mode);
+	  if (intval != INTVAL (x))
+	    x = GEN_INT (intval);
+	}
+      else
 	x = convert_modes (mode, VOIDmode, x, unsignedp);
       x = force_reg (mode, x);
     }
