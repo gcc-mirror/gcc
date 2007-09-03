@@ -1,5 +1,11 @@
 2007-09-03  Richard Sandiford  <richard@codesourcery.com>
 
+	PR middle-end/33290
+	* optabs.c (avoid_expensive_constant): Canonicalize CONST_INTs
+	before forcing them into a register.
+
+2007-09-03  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.md (fetchop_bit): Use define_code_iterator
 	rather than define_code_macro.
 
