@@ -1,3 +1,8 @@
+2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+	* gcc.target/cris/builtin_clz_v0.c: New testcase.
+	* gcc.target/cris/builtin_clz_v3.c: New testcase.
+
 2007-09-02  Tobias Schlüuter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/substr_6.f90: New test.
