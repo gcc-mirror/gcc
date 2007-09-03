@@ -4849,39 +4849,6 @@
    (set (attr "pool_range") (const_int 1024))]
 )
 
-;; This variant is used for AOF assembly, since it needs to mention the
-;; pic register in the rtl.
-(define_expand "pic_load_addr_based"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(unspec:SI [(match_operand 1 "" "") (match_dup 2)] UNSPEC_PIC_SYM))]
-  "TARGET_ARM && flag_pic"
-  "operands[2] = cfun->machine->pic_reg;"
-)
-
-(define_insn "*pic_load_addr_based_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(unspec:SI [(match_operand 1 "" "")
-		    (match_operand 2 "s_register_operand" "r")]
-		   UNSPEC_PIC_SYM))]
-  "TARGET_EITHER && flag_pic && operands[2] == cfun->machine->pic_reg"
-  "*
-#ifdef AOF_ASSEMBLER
-  operands[1] = aof_pic_entry (operands[1]);
-#endif
-  output_asm_insn (\"ldr%?\\t%0, %a1\", operands);
-  return \"\";
-  "
-  [(set_attr "type" "load1")
-   (set (attr "pool_range")
-	(if_then_else (eq_attr "is_thumb" "yes")
-		      (const_int 1024)
-		      (const_int 4096)))
-   (set (attr "neg_pool_range")
-	(if_then_else (eq_attr "is_thumb" "yes")
-		      (const_int 0)
-		      (const_int 4084)))]
-)
-
 (define_insn "pic_add_dot_plus_four"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI [(plus:SI (match_operand:SI 1 "register_operand" "0")

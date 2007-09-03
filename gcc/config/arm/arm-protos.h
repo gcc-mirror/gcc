@@ -163,13 +163,6 @@ extern rtx arm_function_value(const_tree, const_tree);
 #endif
 extern int arm_apply_result_size (void);
 
-#if defined AOF_ASSEMBLER
-extern rtx aof_pic_entry (rtx);
-extern void aof_add_import (const char *);
-extern void aof_delete_import (const char *);
-extern void zero_init_section (void);
-#endif /* AOF_ASSEMBLER */
-
 #endif /* RTX_CODE */
 
 extern int arm_float_words_big_endian (void);

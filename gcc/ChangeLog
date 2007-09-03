@@ -1,3 +1,17 @@
+2007-09-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc: Delete stanza for arm-semi-aof and
+	armel-semi-aof targets.
+	* config/arm/arm-protos.h
+	* config/arm/arm.c
+	* config/arm/arm.h: Delete all #ifdef AOF_ASSEMBLER blocks;
+	make all #ifndef AOF_ASSEMBLER blocks unconditional.  Also
+	delete aof_pic_label and remove mention of AOF in comments.
+	* config/arm/arm.md: Delete patterns used only for AOF assembly.
+	* config/arm/aof.h
+	* config/arm/semiaof.h
+	* config/arm/t-semi: Delete file.
+
 2007-09-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (CONST_CAST2, CONST_CAST_TREE, CONST_CAST_RTX,
