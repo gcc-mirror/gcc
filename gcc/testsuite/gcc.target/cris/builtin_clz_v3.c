@@ -2,7 +2,7 @@
    The lz insn was implemented in CRIS v3 (ETRAX 4).  */
 /* { dg-do compile } */
 /* { dg-skip-if "" { "cris-*-elf" } { "-march*" } { "" } } */
-/* { dg-options "-O2 -march=v8" } */
+/* { dg-options "-O2 -march=v3" } */
 /* { dg-final { scan-assembler "\[ \t\]lz\[ \t\]" } } */
 
 int
