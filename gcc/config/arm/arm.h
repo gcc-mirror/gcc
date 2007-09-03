@@ -132,8 +132,6 @@ extern rtx pool_vector_label;
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed.  */
 extern int return_used_this_function;
-/* Used to produce AOF syntax assembler.  */
-extern GTY(()) rtx aof_pic_label;
 
 /* Just in case configure has failed to define anything.  */
 #ifndef TARGET_CPU_DEFAULT
@@ -1650,8 +1648,7 @@ typedef struct
 
 
 /* If your target environment doesn't prefix user functions with an
-   underscore, you may wish to re-define this to prevent any conflicts.
-   e.g. AOF may prefix mcount with an underscore.  */
+   underscore, you may wish to re-define this to prevent any conflicts.  */
 #ifndef ARM_MCOUNT_NAME
 #define ARM_MCOUNT_NAME "*mcount"
 #endif
@@ -1922,21 +1919,11 @@ typedef struct
 
 /* Recognize any constant value that is a valid address.  */
 /* XXX We can address any constant, eventually...  */
-
-#ifdef AOF_ASSEMBLER
-
-#define CONSTANT_ADDRESS_P(X)		\
-  (GET_CODE (X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (X))
-
-#else
-
 /* ??? Should the TARGET_ARM here also apply to thumb2?  */
 #define CONSTANT_ADDRESS_P(X)  			\
   (GET_CODE (X) == SYMBOL_REF 			\
    && (CONSTANT_POOL_ADDRESS_P (X)		\
        || (TARGET_ARM && optimize > 0 && SYMBOL_REF_FLAG (X))))
-
-#endif /* AOF_ASSEMBLER */
 
 /* True if SYMBOL + OFFSET constants must refer to something within
    SYMBOL's section.  */

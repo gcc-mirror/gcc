@@ -76,9 +76,7 @@ static unsigned long thumb1_compute_save_reg_mask (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_sfm (int, int);
 static int arm_size_return_regs (void);
-#ifndef AOF_ASSEMBLER
 static bool arm_assemble_integer (rtx, unsigned int, int);
-#endif
 static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
 static HOST_WIDE_INT int_log2 (HOST_WIDE_INT);
@@ -158,14 +156,6 @@ static void arm_encode_section_info (tree, rtx, int);
 static void arm_file_end (void);
 static void arm_file_start (void);
 
-#ifdef AOF_ASSEMBLER
-static void aof_globalize_label (FILE *, const char *);
-static void aof_dump_imports (FILE *);
-static void aof_dump_pic_table (FILE *);
-static void aof_file_start (void);
-static void aof_file_end (void);
-static void aof_asm_init_sections (void);
-#endif
 static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool arm_pass_by_reference (CUMULATIVE_ARGS *,
@@ -213,25 +203,10 @@ static void arm_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END arm_file_end
 
-#ifdef AOF_ASSEMBLER
-#undef  TARGET_ASM_BYTE_OP
-#define TARGET_ASM_BYTE_OP "\tDCB\t"
-#undef  TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP "\tDCW\t"
-#undef  TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP "\tDCD\t"
-#undef TARGET_ASM_GLOBALIZE_LABEL
-#define TARGET_ASM_GLOBALIZE_LABEL aof_globalize_label
-#undef TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START aof_file_start
-#undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END aof_file_end
-#else
 #undef  TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP NULL
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER arm_assemble_integer
-#endif
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE arm_output_function_prologue
@@ -3433,9 +3408,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
   if (GET_CODE (orig) == SYMBOL_REF
       || GET_CODE (orig) == LABEL_REF)
     {
-#ifndef AOF_ASSEMBLER
       rtx pic_ref, address;
-#endif
       rtx insn;
       int subregs = 0;
 
@@ -3450,11 +3423,6 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  subregs = 1;
 	}
 
-#ifdef AOF_ASSEMBLER
-      /* The AOF assembler can generate relocations for these directly, and
-	 understands that the PIC register has to be added into the offset.  */
-      insn = emit_insn (gen_pic_load_addr_based (reg, orig));
-#else
       if (subregs)
 	address = gen_reg_rtx (Pmode);
       else
@@ -3487,7 +3455,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	}
 
       insn = emit_move_insn (reg, pic_ref);
-#endif
+
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
       set_unique_reg_note (insn, REG_EQUAL, orig);
@@ -3616,7 +3584,6 @@ static GTY(()) int pic_labelno;
 void
 arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 {
-#ifndef AOF_ASSEMBLER
   rtx l1, labelno, pic_tmp, pic_tmp2, pic_rtx, pic_reg;
   rtx global_offset_table;
 
@@ -3707,7 +3674,6 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
   emit_insn (gen_rtx_USE (VOIDmode, pic_reg));
-#endif /* AOF_ASSEMBLER */
 }
 
 
@@ -9105,14 +9071,6 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
 {
   Mfix * fix = (Mfix *) obstack_alloc (&minipool_obstack, sizeof (* fix));
 
-#ifdef AOF_ASSEMBLER
-  /* PIC symbol references need to be converted into offsets into the
-     based area.  */
-  /* XXX This shouldn't be done here.  */
-  if (flag_pic && GET_CODE (value) == SYMBOL_REF)
-    value = aof_pic_entry (value);
-#endif /* AOF_ASSEMBLER */
-
   fix->insn = insn;
   fix->address = address;
   fix->loc = loc;
@@ -11282,11 +11240,6 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
   if (current_function_calls_eh_return)
     asm_fprintf (f, "\t@ Calls __builtin_eh_return.\n");
 
-#ifdef AOF_ASSEMBLER
-  if (flag_pic)
-    asm_fprintf (f, "\tmov\t%r, %r\n", IP_REGNUM, PIC_OFFSET_TABLE_REGNUM);
-#endif
-
   return_used_this_function = 0;
 }
 
@@ -13115,7 +13068,6 @@ arm_print_operand (FILE *stream, rtx x, int code)
     }
 }
 
-#ifndef AOF_ASSEMBLER
 /* Target hook for assembling integer objects.  The ARM version needs to
    handle word-sized values specially.  */
 static bool
@@ -13243,7 +13195,6 @@ arm_elf_asm_destructor (rtx symbol, int priority)
 {
   arm_elf_asm_cdtor (symbol, priority, /*is_ctor=*/false);
 }
-#endif
 
 /* A finite state machine takes care of noticing whether or not instructions
    can be conditionally executed, and thus decrease execution time and code
@@ -17629,239 +17580,6 @@ arm_file_end (void)
     }
 }
 
-rtx aof_pic_label;
-
-#ifdef AOF_ASSEMBLER
-/* Special functions only needed when producing AOF syntax assembler.  */
-
-struct pic_chain
-{
-  struct pic_chain * next;
-  const char * symname;
-};
-
-static struct pic_chain * aof_pic_chain = NULL;
-
-rtx
-aof_pic_entry (rtx x)
-{
-  struct pic_chain ** chainp;
-  int offset;
-
-  if (aof_pic_label == NULL_RTX)
-    {
-      aof_pic_label = gen_rtx_SYMBOL_REF (Pmode, "x$adcons");
-    }
-
-  for (offset = 0, chainp = &aof_pic_chain; *chainp;
-       offset += 4, chainp = &(*chainp)->next)
-    if ((*chainp)->symname == XSTR (x, 0))
-      return plus_constant (aof_pic_label, offset);
-
-  *chainp = (struct pic_chain *) xmalloc (sizeof (struct pic_chain));
-  (*chainp)->next = NULL;
-  (*chainp)->symname = XSTR (x, 0);
-  return plus_constant (aof_pic_label, offset);
-}
-
-void
-aof_dump_pic_table (FILE *f)
-{
-  struct pic_chain * chain;
-
-  if (aof_pic_chain == NULL)
-    return;
-
-  asm_fprintf (f, "\tAREA |%r$$adcons|, BASED %r\n",
-	       PIC_OFFSET_TABLE_REGNUM,
-	       PIC_OFFSET_TABLE_REGNUM);
-  fputs ("|x$adcons|\n", f);
-
-  for (chain = aof_pic_chain; chain; chain = chain->next)
-    {
-      fputs ("\tDCD\t", f);
-      assemble_name (f, chain->symname);
-      fputs ("\n", f);
-    }
-}
-
-int arm_text_section_count = 1;
-
-/* A get_unnamed_section callback for switching to the text section.  */
-
-static void
-aof_output_text_section_asm_op (const void *data ATTRIBUTE_UNUSED)
-{
-  fprintf (asm_out_file, "\tAREA |C$$code%d|, CODE, READONLY",
-	   arm_text_section_count++);
-  if (flag_pic)
-    fprintf (asm_out_file, ", PIC, REENTRANT");
-  fprintf (asm_out_file, "\n");
-}
-
-static int arm_data_section_count = 1;
-
-/* A get_unnamed_section callback for switching to the data section.  */
-
-static void
-aof_output_data_section_asm_op (const void *data ATTRIBUTE_UNUSED)
-{
-  fprintf (asm_out_file, "\tAREA |C$$data%d|, DATA\n",
-	   arm_data_section_count++);
-}
-
-/* Implement TARGET_ASM_INIT_SECTIONS.
-
-   AOF Assembler syntax is a nightmare when it comes to areas, since once
-   we change from one area to another, we can't go back again.  Instead,
-   we must create a new area with the same attributes and add the new output
-   to that.  Unfortunately, there is nothing we can do here to guarantee that
-   two areas with the same attributes will be linked adjacently in the
-   resulting executable, so we have to be careful not to do pc-relative
-   addressing across such boundaries.  */
-
-static void
-aof_asm_init_sections (void)
-{
-  text_section = get_unnamed_section (SECTION_CODE,
-				      aof_output_text_section_asm_op, NULL);
-  data_section = get_unnamed_section (SECTION_WRITE,
-				      aof_output_data_section_asm_op, NULL);
-  readonly_data_section = text_section;
-}
-
-void
-zero_init_section (void)
-{
-  static int zero_init_count = 1;
-
-  fprintf (asm_out_file, "\tAREA |C$$zidata%d|,NOINIT\n", zero_init_count++);
-  in_section = NULL;
-}
-
-/* The AOF assembler is religiously strict about declarations of
-   imported and exported symbols, so that it is impossible to declare
-   a function as imported near the beginning of the file, and then to
-   export it later on.  It is, however, possible to delay the decision
-   until all the functions in the file have been compiled.  To get
-   around this, we maintain a list of the imports and exports, and
-   delete from it any that are subsequently defined.  At the end of
-   compilation we spit the remainder of the list out before the END
-   directive.  */
-
-struct import
-{
-  struct import * next;
-  const char * name;
-};
-
-static struct import * imports_list = NULL;
-
-void
-aof_add_import (const char *name)
-{
-  struct import * new;
-
-  for (new = imports_list; new; new = new->next)
-    if (new->name == name)
-      return;
-
-  new = (struct import *) xmalloc (sizeof (struct import));
-  new->next = imports_list;
-  imports_list = new;
-  new->name = name;
-}
-
-void
-aof_delete_import (const char *name)
-{
-  struct import ** old;
-
-  for (old = &imports_list; *old; old = & (*old)->next)
-    {
-      if ((*old)->name == name)
-	{
-	  *old = (*old)->next;
-	  return;
-	}
-    }
-}
-
-int arm_main_function = 0;
-
-static void
-aof_dump_imports (FILE *f)
-{
-  /* The AOF assembler needs this to cause the startup code to be extracted
-     from the library.  Brining in __main causes the whole thing to work
-     automagically.  */
-  if (arm_main_function)
-    {
-      switch_to_section (text_section);
-      fputs ("\tIMPORT __main\n", f);
-      fputs ("\tDCD __main\n", f);
-    }
-
-  /* Now dump the remaining imports.  */
-  while (imports_list)
-    {
-      fprintf (f, "\tIMPORT\t");
-      assemble_name (f, imports_list->name);
-      fputc ('\n', f);
-      imports_list = imports_list->next;
-    }
-}
-
-static void
-aof_globalize_label (FILE *stream, const char *name)
-{
-  default_globalize_label (stream, name);
-  if (! strcmp (name, "main"))
-    arm_main_function = 1;
-}
-
-static void
-aof_file_start (void)
-{
-  fputs ("__r0\tRN\t0\n", asm_out_file);
-  fputs ("__a1\tRN\t0\n", asm_out_file);
-  fputs ("__a2\tRN\t1\n", asm_out_file);
-  fputs ("__a3\tRN\t2\n", asm_out_file);
-  fputs ("__a4\tRN\t3\n", asm_out_file);
-  fputs ("__v1\tRN\t4\n", asm_out_file);
-  fputs ("__v2\tRN\t5\n", asm_out_file);
-  fputs ("__v3\tRN\t6\n", asm_out_file);
-  fputs ("__v4\tRN\t7\n", asm_out_file);
-  fputs ("__v5\tRN\t8\n", asm_out_file);
-  fputs ("__v6\tRN\t9\n", asm_out_file);
-  fputs ("__sl\tRN\t10\n", asm_out_file);
-  fputs ("__fp\tRN\t11\n", asm_out_file);
-  fputs ("__ip\tRN\t12\n", asm_out_file);
-  fputs ("__sp\tRN\t13\n", asm_out_file);
-  fputs ("__lr\tRN\t14\n", asm_out_file);
-  fputs ("__pc\tRN\t15\n", asm_out_file);
-  fputs ("__f0\tFN\t0\n", asm_out_file);
-  fputs ("__f1\tFN\t1\n", asm_out_file);
-  fputs ("__f2\tFN\t2\n", asm_out_file);
-  fputs ("__f3\tFN\t3\n", asm_out_file);
-  fputs ("__f4\tFN\t4\n", asm_out_file);
-  fputs ("__f5\tFN\t5\n", asm_out_file);
-  fputs ("__f6\tFN\t6\n", asm_out_file);
-  fputs ("__f7\tFN\t7\n", asm_out_file);
-  switch_to_section (text_section);
-}
-
-static void
-aof_file_end (void)
-{
-  if (flag_pic)
-    aof_dump_pic_table (asm_out_file);
-  arm_file_end ();
-  aof_dump_imports (asm_out_file);
-  fputs ("\tEND\n", asm_out_file);
-}
-#endif /* AOF_ASSEMBLER */
-
 #ifndef ARM_PE
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
@@ -17872,12 +17590,8 @@ aof_file_end (void)
 static void
 arm_encode_section_info (tree decl, rtx rtl, int first)
 {
-  /* This doesn't work with AOF syntax, since the string table may be in
-     a different AREA.  */
-#ifndef AOF_ASSEMBLER
   if (optimize > 0 && TREE_CONSTANT (decl))
     SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
-#endif
 
   default_encode_section_info (decl, rtl, first);
 }
