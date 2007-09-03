@@ -297,6 +297,7 @@ static void set_spec (const char *, const char *);
 static struct compiler *lookup_compiler (const char *, size_t, const char *);
 static char *build_search_list (const struct path_prefix *, const char *,
 				bool, bool);
+static void xputenv (char *);
 static void putenv_from_prefixes (const struct path_prefix *, const char *,
 				  bool);
 static int access_check (const char *, int);
@@ -2598,6 +2599,16 @@ add_to_obstack (char *path, void *data)
   return NULL;
 }
 
+/* Add or change the value of an environment variable, outputting the
+   change to standard error if in verbose mode.  */
+static void
+xputenv (char *string)
+{
+  if (verbose_flag)
+    notice ("%s\n", string);
+  putenv (string);
+}
+
 /* Build a list of search directories from PATHS.
    PREFIX is a string to prepend to the list.
    If CHECK_DIR_P is true we ensure the directory exists.
@@ -2632,7 +2643,7 @@ static void
 putenv_from_prefixes (const struct path_prefix *paths, const char *env_var,
 		      bool do_multi)
 {
-  putenv (build_search_list (paths, env_var, true, do_multi));
+  xputenv (build_search_list (paths, env_var, true, do_multi));
 }
 
 /* Check whether NAME can be accessed in MODE.  This is like access,
@@ -3413,7 +3424,7 @@ process_command (int argc, const char **argv)
 						 standard_bindir_prefix,
 						 standard_libexec_prefix);
       if (gcc_exec_prefix)
-	putenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL));
+	xputenv (concat ("GCC_EXEC_PREFIX=", gcc_exec_prefix, NULL));
     }
   else
     {
@@ -4332,7 +4343,7 @@ set_collect_gcc_options (void)
 	}
     }
   obstack_grow (&collect_obstack, "\0", 1);
-  putenv (XOBFINISH (&collect_obstack, char *));
+  xputenv (XOBFINISH (&collect_obstack, char *));
 }
 
 /* Process a spec string, accumulating and running commands.  */
@@ -6218,11 +6229,11 @@ main (int argc, char **argv)
   obstack_init (&collect_obstack);
   obstack_grow (&collect_obstack, "COLLECT_GCC=", sizeof ("COLLECT_GCC=") - 1);
   obstack_grow (&collect_obstack, argv[0], strlen (argv[0]) + 1);
-  putenv (XOBFINISH (&collect_obstack, char *));
+  xputenv (XOBFINISH (&collect_obstack, char *));
 
 #ifdef INIT_ENVIRONMENT
   /* Set up any other necessary machine specific environment variables.  */
-  putenv (INIT_ENVIRONMENT);
+  xputenv (INIT_ENVIRONMENT);
 #endif
 
   /* Make a table of what switches there are (switches, n_switches).

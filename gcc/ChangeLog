@@ -1,3 +1,11 @@
+2007-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.c (xputenv): New function.
+	(putenv_from_prefixes): Use xputenv instead of putenv.
+	(process_command): Use xputenv instead of putenv.
+	(set_collect_gcc_options): Use xputenv instead of putenv.
+	(main): Use xputenv instead of putenv.
+
 2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>
 
 	* config/cris/cris.h (TARGET_HAS_SWAP): Defined to describe
