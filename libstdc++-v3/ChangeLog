@@ -1,3 +1,9 @@
+2007-09-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/33293
+	* include/bits/stl_numeric.h (accumulate, inner_product):
+	Add inline function-specifier.
+
 2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* testsuite/abi/demangle/cxx0x/rref.cc: New.
