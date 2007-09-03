@@ -1,5 +1,20 @@
 2007-09-03  Zack Weinberg  <zack@codesourcery.com>
 
+	* optabs.c: Remove unnecessary forward declarations.
+	(expand_unop_direct): New, broken out of expand_unop.
+	(expand_doubleword_clz): New.
+	(expand_ctz): Move above expand_ffs.  Use
+	start_sequence, end_sequence, add_equal_note, and
+	expand_unop_direct.  Add more commentary.
+	(expand_ffs): Try both ctz optab and expand_ctz.
+	Generate a test and branch if the hardware doesn't give us
+	a useful value for input zero.  Style improvements similar to
+	expand_ctz.
+
+	* config/arm/arm.md (ffssi2, ctzsi2): Delete.
+
+2007-09-03  Zack Weinberg  <zack@codesourcery.com>
+
 	* config.gcc: Delete stanza for arm-semi-aof and
 	armel-semi-aof targets.
 	* config/arm/arm-protos.h
