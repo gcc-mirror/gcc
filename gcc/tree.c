@@ -1194,8 +1194,8 @@ build_string (int len, const char *str)
   TREE_CONSTANT (s) = 1;
   TREE_INVARIANT (s) = 1;
   TREE_STRING_LENGTH (s) = len;
-  memcpy (CONST_CAST (TREE_STRING_POINTER (s)), str, len);
-  ((char *) CONST_CAST (TREE_STRING_POINTER (s)))[len] = '\0';
+  memcpy (s->string.str, str, len);
+  s->string.str[len] = '\0';
 
   return s;
 }
@@ -4795,7 +4795,7 @@ attribute_list_contained (const_tree l1, const_tree l2)
 	 modify its argument and the return value is assigned to a
 	 const_tree.  */
       for (attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
-				    (tree)CONST_CAST(l1));
+				    CONST_CAST_TREE(l1));
 	   attr != NULL_TREE;
 	   attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
 				    TREE_CHAIN (attr)))

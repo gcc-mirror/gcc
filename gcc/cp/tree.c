@@ -2054,7 +2054,7 @@ pod_type_p (const_tree t)
 {
   /* This CONST_CAST is okay because strip_array_types returns it's
      argument unmodified and we assign it to a const_tree.  */
-  t = strip_array_types ((tree)CONST_CAST(t));
+  t = strip_array_types (CONST_CAST_TREE(t));
 
   if (t == error_mark_node)
     return 1;
@@ -2093,7 +2093,7 @@ zero_init_p (const_tree t)
 {
   /* This CONST_CAST is okay because strip_array_types returns it's
      argument unmodified and we assign it to a const_tree.  */
-  t = strip_array_types ((tree)CONST_CAST(t));
+  t = strip_array_types (CONST_CAST_TREE(t));
 
   if (t == error_mark_node)
     return 1;

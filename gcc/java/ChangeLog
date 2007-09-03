@@ -1,3 +1,9 @@
+2007-09-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-parse.c (read_class, java_parse_file): Supply a TYPE for
+	CONST_CAST.
+	* jcf.h (JCF_FINISH): Likewise.
+
 2007-08-28  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (java.tags): Don't tag '*.y' files.

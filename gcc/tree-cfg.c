@@ -1160,7 +1160,7 @@ tree_can_merge_blocks_p (const_basic_block a, const_basic_block b)
      cannot merge the blocks.  */
   /* This CONST_CAST is okay because last_stmt doesn't modify its
      argument and the return value is assign to a const_tree.  */
-  stmt = last_stmt ((basic_block)CONST_CAST(a));
+  stmt = last_stmt (CONST_CAST_BB(a));
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
@@ -5922,7 +5922,7 @@ tree_block_ends_with_condjump_p (const_basic_block bb)
 {
   /* This CONST_CAST is okay because last_stmt doesn't modify its
      argument and the return value is not modified.  */
-  const_tree stmt = last_stmt ((basic_block)CONST_CAST(bb));
+  const_tree stmt = last_stmt (CONST_CAST_BB(bb));
   return (stmt && TREE_CODE (stmt) == COND_EXPR);
 }
 

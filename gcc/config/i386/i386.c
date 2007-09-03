@@ -2972,7 +2972,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       && flag_unit_at_a_time && !profile_flag)
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
-      struct cgraph_local_info *i = cgraph_local_info ((tree)CONST_CAST(decl));
+      struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
       if (i && i->local)
 	{
 	  int local_regparm, globals = 0, regno;
@@ -3054,7 +3054,7 @@ ix86_function_sseregparm (const_tree type, const_tree decl)
   if (decl && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
     {
       /* FIXME: remove this CONST_CAST when cgraph.[ch] is constified.  */
-      struct cgraph_local_info *i = cgraph_local_info ((tree)CONST_CAST(decl));
+      struct cgraph_local_info *i = cgraph_local_info (CONST_CAST_TREE(decl));
       if (i && i->local)
 	return TARGET_SSE2 ? 2 : 1;
     }

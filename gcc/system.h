@@ -784,10 +784,14 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 
 #if defined(__GNUC__) && GCC_VERSION != 4000
 /* GCC 4.0.x has a bug where it may ICE on this expression.  */
-#define CONST_CAST(X) ((__extension__(union {__typeof(X)_q; void *_v;})(X))._v)
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
 #else
-#define CONST_CAST(X) ((void*)(X))
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((TOTYPE)(FROMTYPE)(X))
 #endif
+#define CONST_CAST(TYPE,X) CONST_CAST2(TYPE, const TYPE, (X))
+#define CONST_CAST_TREE(X) CONST_CAST(union tree_node *, (X))
+#define CONST_CAST_RTX(X) CONST_CAST(struct rtx_def *, (X))
+#define CONST_CAST_BB(X) CONST_CAST(struct basic_block_def *, (X))
 
 /* Activate -Wcast-qual as a warning (not an error/-Werror).  */
 #if GCC_VERSION >= 4003

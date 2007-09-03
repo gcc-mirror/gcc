@@ -1,3 +1,12 @@
+2007-09-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (name_as_c_string): Supply a TYPE for CONST_CAST.
+	* decl.c (cp_make_fname_decl): Likewise,
+	* parser.c (cp_parser_string_literal): Likewise,
+	* tree.c (pod_type_p, zero_init_p): Use CONST_CAST_TREE.
+	* typeck.c (cp_type_quals, cp_type_readonly, cp_has_mutable_p):
+	Likewise,
+
 2007-09-02  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33208

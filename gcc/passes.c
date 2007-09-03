@@ -1136,7 +1136,7 @@ execute_one_pass (struct tree_opt_pass *pass)
   /* Flush and close dump file.  */
   if (dump_file_name)
     {
-      free (CONST_CAST (dump_file_name));
+      free (CONST_CAST (char *, dump_file_name));
       dump_file_name = NULL;
     }
 

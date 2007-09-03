@@ -302,7 +302,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   g77_xargc = argc;
   g77_xargv = argv;
   g77_newargc = 0;
-  g77_newargv = (const char **) CONST_CAST (argv);
+  g77_newargv = CONST_CAST2 (const char **, const char *const *, argv);
 
   /* First pass through arglist.
 

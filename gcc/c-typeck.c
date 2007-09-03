@@ -1113,7 +1113,7 @@ free_all_tagged_tu_seen_up_to (const struct tagged_tu_seen_cache *tu_til)
       const struct tagged_tu_seen_cache *const tu1
 	= (const struct tagged_tu_seen_cache *) tu;
       tu = tu1->next;
-      free (CONST_CAST (tu1));
+      free (CONST_CAST (struct tagged_tu_seen_cache *, tu1));
     }
   tagged_tu_seen_base = tu_til;
 }

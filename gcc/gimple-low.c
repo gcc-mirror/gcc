@@ -398,7 +398,7 @@ block_may_fallthru (const_tree block)
 {
   /* This CONST_CAST is okay because expr_last returns it's argument
      unmodified and we assign it to a const_tree.  */
-  const_tree stmt = expr_last ((tree)CONST_CAST(block));
+  const_tree stmt = expr_last (CONST_CAST_TREE(block));
 
   switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
     {
