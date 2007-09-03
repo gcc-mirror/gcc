@@ -278,6 +278,7 @@ extern int target_flags;
 #define CRIS_DEFAULT_CPU_VERSION CRIS_CPU_BASE
 
 #define TARGET_HAS_MUL_INSNS (cris_cpu_version >= CRIS_CPU_NG)
+#define TARGET_HAS_LZ (cris_cpu_version >= CRIS_CPU_ETRAX4)
 
 #define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
 
@@ -1406,6 +1407,8 @@ enum cris_pic_symbol_type
 /* Maybe SHIFT_COUNT_TRUNCATED is safe to define?  FIXME: Check later.  */
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
+
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 
 #define Pmode SImode
 

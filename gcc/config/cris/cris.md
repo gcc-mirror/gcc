@@ -2663,7 +2663,14 @@
 	(subreg:BW (match_dup 3) 0))]
   ""
   "operands[2] = gen_reg_rtx (SImode); operands[3] = gen_reg_rtx (SImode);")
-
+
+(define_insn "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_HAS_LZ"
+  "lz %1,%0"
+  [(set_attr "slottable" "yes")])
+
 ;; Bound-insn.  Defined to be the same as an unsigned minimum, which is an
 ;; operation supported by gcc.  Used in casesi, but used now and then in
 ;; normal code too.
