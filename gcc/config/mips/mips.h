@@ -881,6 +881,13 @@ extern enum mips_code_readable_setting mips_code_readable;
 /* ISA includes synci, jr.hb and jalr.hb.  */
 #define ISA_HAS_SYNCI (ISA_MIPS32R2 && !TARGET_MIPS16)
 
+/* ISA includes sync.  */
+#define ISA_HAS_SYNC ((mips_isa >= 2 || TARGET_MIPS3900) && !TARGET_MIPS16)
+
+/* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
+   because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
+   instructions.  */
+#define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS16)
 
 /* Add -G xx support.  */
 
@@ -2871,3 +2878,140 @@ while (0)
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
 #endif
+
+/* Return an asm string that atomically:
+
+     - Compares memory reference %1 to register %2 and, if they are
+       equal, changes %1 to %3.
+
+     - Sets register %0 to the old value of memory reference %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc" instructions
+   and OP is the instruction that should be used to load %3 into a
+   register.  */
+#define MIPS_COMPARE_AND_SWAP(SUFFIX, OP)	\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "\tbne\t%0,%2,2f\n"				\
+  "\t" OP "\t%@,%3\n"				\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "2:%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %0 to %0 INSN %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  */
+#define MIPS_SYNC_OP(SUFFIX, INSN)		\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%@,%0\n"			\
+  "\t" INSN "\t%@,%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%0\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %1 to %1 INSN %2.
+
+     - Sets register %0 to the old value of memory reference %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  */
+#define MIPS_SYNC_OLD_OP(SUFFIX, INSN)		\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "\t" INSN "\t%@,%0,%2\n"			\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %1 to %1 INSN %2.
+
+     - Sets register %0 to the new value of memory reference %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  */
+#define MIPS_SYNC_NEW_OP(SUFFIX, INSN)		\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "\t" INSN "\t%@,%0,%2\n"			\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\t" INSN "\t%0,%0,%2%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %0 to ~%0 AND %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  INSN is the and instruction needed to and a register
+   with %2.  */
+#define MIPS_SYNC_NAND(SUFFIX, INSN)		\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%@,%0\n"			\
+  "\tnor\t%@,%@,%.\n"				\
+  "\t" INSN "\t%@,%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%0\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %1 to ~%1 AND %2.
+
+     - Sets register %0 to the old value of memory reference %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  INSN is the and instruction needed to and a register
+   with %2.  */
+#define MIPS_SYNC_OLD_NAND(SUFFIX, INSN)	\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "\tnor\t%@,%0,%.\n"				\
+  "\t" INSN "\t%@,%@,%2\n"			\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %1 to ~%1 AND %2.
+
+     - Sets register %0 to the new value of memory reference %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  INSN is the and instruction needed to and a register
+   with %2.  */
+#define MIPS_SYNC_NEW_NAND(SUFFIX, INSN)	\
+  "%(%<%[sync\n"				\
+  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "\tnor\t%0,%0,%.\n"				\
+  "\t" INSN "\t%@,%0,%2\n"			\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\t" INSN "\t%0,%0,%2%]%>%)"
+
+/* Return an asm string that atomically:
+
+     - Sets memory reference %1 to %2.
+
+     - Sets register %0 to the old value of memory reference %1.
+
+   SUFFIX is the suffix that should be added to "ll" and "sc"
+   instructions.  OP is the and instruction that should be used to
+   load %2 into a register.  */
+#define MIPS_SYNC_EXCHANGE(SUFFIX, OP)		\
+  "%(%<%[\n"					\
+  "1:\tll" SUFFIX "\t%0,%1\n"			\
+  "\t" OP "\t%@,%2\n"				\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tbeq\t%@,%.,1b\n"				\
+  "\tnop\n"					\
+  "\tsync%]%>%)"
+
