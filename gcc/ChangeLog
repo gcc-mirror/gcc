@@ -1,5 +1,8 @@
 2007-09-03  Zack Weinberg  <zack@codesourcery.com>
 
+	* optabs.c (expand_ffs): Initialize val and defined_at_zero
+	to avoid warnings.
+
 	* optabs.c: Remove unnecessary forward declarations.
 	(expand_unop_direct): New, broken out of expand_unop.
 	(expand_doubleword_clz): New.
