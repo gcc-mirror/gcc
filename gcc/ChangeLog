@@ -1,3 +1,36 @@
+2007-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (debug_optab_libfunc): Update; make available to gdb.
+	(libfunc_entry): New structure.
+	(libfunc_hash): New hashtable.
+	(hash_libfunc): New function.
+	(eq_libfunc): New function.
+	(convert_optab_libfunc): New function.
+	(optab_libfunc): New function.
+	(expand_binop, sign_expand_binop, expand_twoval_binop_libfunc,
+	expand_unop, prepare_cmp_insn, prepare_float_insn, gen_add2_insn,
+	expand_float, expand_fix, new_optab, new_convert_optab):
+	 Update for new libfunc API.
+	(init_libfunc, init_integral_libfuncs,
+	init_floating_libfuncs, init_interclass_conv_libfuncs
+	init_intraclass_conv_libfuncs): Remove; reorganize all logic to:
+	(gen_libfunc, gen_int_libfunc, gen_fp_libfunc, gen_int_fp_libfunc,
+	gen_intv_fp_libfunc, gen_interclass_conv_libfunc,
+	gen_int_to_fp_conv_libfunc, gen_ufloat_conv_libfunc,
+	gen_int_to_fp_nondecimal_conv_libfunc, gen_fp_to_int_conv_libfunc,
+	gen_intraclass_conv_libfunc, gen_trunc_conv_libfunc,
+	gen_extend_conv_libfunc): New.
+	(init_one_libfunc): Revamp for hashtables.
+	(set_conv_libfunc): Likewise.
+	(init_optabs): Initialize hashtable; use lazy initialization where possible.
+	* optabs.h (optab_handlers): Move out of GGC.
+	(optab, convert_optab): Move out of GGC; add lazy gen info.
+	(code_to_optab, convert_optab_table, optab_table): Move out of GGC.
+	(optab_libfunc, convert_optab_libfunc): New.
+	* builtins.c (expand_builtin_powi): Update for new API.
+	* expr.c (convert_move): Likewise.
+	* expmed.c (expand_divmod): Likewise.
+
 2007-09-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_stack_info): Allocate space for the

@@ -39,15 +39,17 @@ along with GCC; see the file COPYING3.  If not see
    A few optabs, such as move_optab and cmp_optab, are used
    by special code.  */
 
-struct optab_handlers GTY(())
+struct optab_handlers
 {
   enum insn_code insn_code;
-  rtx libfunc;
 };
 
-struct optab GTY(())
+struct optab
 {
   enum rtx_code code;
+  const char *libcall_basename;
+  char libcall_suffix;
+  void (*libcall_gen)(struct optab *, const char *name, char suffix, enum machine_mode);
   struct optab_handlers handlers[NUM_MACHINE_MODES];
 };
 typedef struct optab * optab;
@@ -55,9 +57,13 @@ typedef struct optab * optab;
 /* A convert_optab is for some sort of conversion operation between
    modes.  The first array index is the destination mode, the second
    is the source mode.  */
-struct convert_optab GTY(())
+struct convert_optab
 {
   enum rtx_code code;
+  const char *libcall_basename;
+  void (*libcall_gen)(struct convert_optab *, const char *name,
+		      enum machine_mode,
+		      enum machine_mode);
   struct optab_handlers handlers[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
 };
 typedef struct convert_optab *convert_optab;
@@ -324,7 +330,7 @@ enum optab_index
   OTI_MAX
 };
 
-extern GTY(()) optab optab_table[OTI_MAX];
+extern optab optab_table[OTI_MAX];
 
 #define add_optab (optab_table[OTI_add])
 #define sub_optab (optab_table[OTI_sub])
@@ -498,7 +504,7 @@ enum convert_optab_index
   COI_MAX
 };
 
-extern GTY(()) convert_optab convert_optab_table[COI_MAX];
+extern convert_optab convert_optab_table[COI_MAX];
 
 #define sext_optab (convert_optab_table[COI_sext])
 #define zext_optab (convert_optab_table[COI_zext])
@@ -521,7 +527,7 @@ extern enum insn_code reload_in_optab[NUM_MACHINE_MODES];
 extern enum insn_code reload_out_optab[NUM_MACHINE_MODES];
 
 /* Contains the optab used for each rtx code.  */
-extern GTY(()) optab code_to_optab[NUM_RTX_CODE + 1];
+extern optab code_to_optab[NUM_RTX_CODE + 1];
 
 
 typedef rtx (*rtxfun) (rtx);
@@ -709,4 +715,8 @@ extern rtx expand_vec_shift_expr (tree, rtx);
 #define convert_optab_handler(optab,mode,mode2) \
 	(&(optab)->handlers[(int) (mode)][(int) (mode2)])
 
+extern rtx optab_libfunc (optab optab, enum machine_mode mode);
+extern rtx optab_libfunc (optab optab, enum machine_mode mode);
+extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
+			          enum machine_mode mode2);
 #endif /* GCC_OPTABS_H */

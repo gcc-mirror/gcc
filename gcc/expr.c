@@ -443,7 +443,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 	}
 
       /* Otherwise use a libcall.  */
-      libcall = convert_optab_handler (tab, to_mode, from_mode)->libfunc;
+      libcall = convert_optab_libfunc (tab, to_mode, from_mode);
 
       /* Is this conversion implemented yet?  */
       gcc_assert (libcall);
