@@ -1,5 +1,9 @@
 2007-09-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/31419
+	* call.c (reference_binding): Don't look for user-defined conversions
+	to the same type.
+
 	PR c++/31411
 	* except.c (initialize_handler_parm): Put a CLEANUP_POINT_EXPR inside
 	the MUST_NOT_THROW_EXPR.
