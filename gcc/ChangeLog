@@ -1,5 +1,11 @@
 2007-09-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
+	* config/rs6000/rs6000.c (rs6000_stack_info): Allocate space for the
+	GOT pointer only if there is a constant pool.  Use the allocated space
+	for SPE also.
+
+2007-09-04  Daniel Jacobowitz  <dan@codesourcery.com>
+
 	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Correct
 	typo for AltiVec.
 
