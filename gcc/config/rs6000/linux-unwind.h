@@ -296,7 +296,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 	    {
 	      fs->regs.reg[i + R_VR0].how = REG_SAVED_OFFSET;
 	      fs->regs.reg[i + R_VR0].loc.offset
-		= (long) &vregs[i] - new_cfa;
+		= (long) &vregs->vr[i] - new_cfa;
 	    }
 
 	  fs->regs.reg[R_VSCR].how = REG_SAVED_OFFSET;

@@ -1,3 +1,8 @@
+2007-09-04  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Correct
+	typo for AltiVec.
+
 2007-09-04  Revital Eres  <eres@il.ibm.com>
 	    Richard Guenther  <rguenther@suse.de>
 	    R. Clint Whaley  <whaley@cs.utsa.edu>
