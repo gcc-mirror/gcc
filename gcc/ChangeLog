@@ -3,6 +3,16 @@
 	* config/rs6000/tramp.asm: Include config.h.
 	Check __PIC__ or __pic__ macro instead of SHARED.
 
+	PR rtl-optimization/32300
+	* see.c (see_copy_insn): New function.
+	(see_def_extension_not_merged, see_merge_one_use_extension,
+	see_merge_one_def_extension): Use it.  Avoid changing
+	PREV_INSN/NEXT_INSN chains directly, insted emit insns
+	into sequences.  Call df_insn_delete on temporary insns
+	that won't be emitted into the insn stream.
+	(rest_of_handle_see): Turn off DF_DEFER_INSN_RESCAN
+	and run df_process_deferred_rescans () before run_fast_dce.
+
 	PR tree-optimization/33017
 	* tree-data-ref.c (split_constant_offset) <case SSA_NAME>: Don't
 	recurse for pure or const function calls.
