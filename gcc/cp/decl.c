@@ -5463,6 +5463,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  maybe_commonize_var (decl);
 	}
 
+      /* This needs to happen after the linkage is set. */
+      determine_visibility (decl);
+
       make_rtl_for_nonlocal_decl (decl, init, asmspec);
 
       /* Check for abstractness of the type. Notice that there is no
@@ -5473,9 +5476,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	abstract_virtuals_error (decl, TREE_TYPE (type));
       else
 	abstract_virtuals_error (decl, type);
-
-      /* This needs to happen after the linkage is set. */
-      determine_visibility (decl);
 
       if (TREE_CODE (decl) == FUNCTION_DECL
 	  || TREE_TYPE (decl) == error_mark_node)
