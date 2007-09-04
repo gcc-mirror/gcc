@@ -1,3 +1,28 @@
+2007-09-04    <aph@redhat.com>
+
+	* src/arm/sysv.S (UNWIND): New.
+	(Whole file): Conditionally compile unwinder directives.
+	* src/arm/sysv.S: Add unwinder directives.
+
+	* src/arm/ffi.c (ffi_prep_args): Align structs by at least 4 bytes.
+	Only treat r0 as a struct address if we're actually returning a
+	struct by address.
+	Only copy the bytes that are actually within a struct.
+	(ffi_prep_cif_machdep): A Composite Type not larger than 4 bytes
+	is returned in r0, not passed by address.
+	(ffi_call): Allocate a word-sized temporary for the case where
+	a composite is returned in r0.
+	(ffi_prep_incoming_args_SYSV): Align as necessary.
+
+2007-08-05  Steven Newbury  <s_j_newbury@yahoo.co.uk>
+
+	* src/arm/ffi.c (FFI_INIT_TRAMPOLINE): Use __clear_cache instead of 
+	directly using the sys_cacheflush syscall.
+
+2007-07-27  Andrew Haley  <aph@redhat.com>
+
+	* src/arm/sysv.S (ffi_closure_SYSV): Add soft-float.
+
 2007-09-03  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* Makefile.am: Unify MIPS_IRIX and MIPS_LINUX into MIPS.
