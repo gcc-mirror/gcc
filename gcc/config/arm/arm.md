@@ -1340,7 +1340,22 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "mulsidi3"
+;; 32x32->64 widening multiply.
+;; As with mulsi3, the only difference between the v3-5 and v6+
+;; versions of these patterns is the requirement that the output not
+;; overlap the inputs, but that still means we have to have a named
+;; expander and two different starred insns.
+
+(define_expand "mulsidi3"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(mult:DI
+	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" ""))
+	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))))]
+  "TARGET_32BIT && arm_arch3m"
+  ""
+)
+
+(define_insn "*mulsidi3_nov6"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" "%r"))
@@ -1351,7 +1366,7 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "mulsidi3_v6"
+(define_insn "*mulsidi3_v6"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(mult:DI
 	 (sign_extend:DI (match_operand:SI 1 "s_register_operand" "r"))
@@ -1362,7 +1377,16 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "umulsidi3"
+(define_expand "umulsidi3"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(mult:DI
+	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" ""))
+	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))))]
+  "TARGET_32BIT && arm_arch3m"
+  ""
+)
+
+(define_insn "*umulsidi3_nov6"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")
 	(mult:DI
 	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" "%r"))
@@ -1373,7 +1397,7 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "umulsidi3_v6"
+(define_insn "*umulsidi3_v6"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(mult:DI
 	 (zero_extend:DI (match_operand:SI 1 "s_register_operand" "r"))
@@ -1412,7 +1436,21 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "smulsi3_highpart"
+(define_expand "smulsi3_highpart"
+  [(parallel
+    [(set (match_operand:SI 0 "s_register_operand" "")
+	  (truncate:SI
+	   (lshiftrt:DI
+	    (mult:DI
+	     (sign_extend:DI (match_operand:SI 1 "s_register_operand" ""))
+	     (sign_extend:DI (match_operand:SI 2 "s_register_operand" "")))
+	    (const_int 32))))
+     (clobber (match_scratch:SI 3 ""))])]
+  "TARGET_32BIT && arm_arch3m"
+  ""
+)
+
+(define_insn "*smulsi3_highpart_nov6"
   [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -1427,7 +1465,7 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "smulsi3_highpart_v6"
+(define_insn "*smulsi3_highpart_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -1442,7 +1480,21 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "umulsi3_highpart"
+(define_expand "umulsi3_highpart"
+  [(parallel
+    [(set (match_operand:SI 0 "s_register_operand" "")
+	  (truncate:SI
+	   (lshiftrt:DI
+	    (mult:DI
+	     (zero_extend:DI (match_operand:SI 1 "s_register_operand" ""))
+	      (zero_extend:DI (match_operand:SI 2 "s_register_operand" "")))
+	    (const_int 32))))
+     (clobber (match_scratch:SI 3 ""))])]
+  "TARGET_32BIT && arm_arch3m"
+  ""
+)
+
+(define_insn "*umulsi3_highpart_nov6"
   [(set (match_operand:SI 0 "s_register_operand" "=&r,&r")
 	(truncate:SI
 	 (lshiftrt:DI
@@ -1457,7 +1509,7 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "umulsi3_highpart_v6"
+(define_insn "*umulsi3_highpart_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(truncate:SI
 	 (lshiftrt:DI

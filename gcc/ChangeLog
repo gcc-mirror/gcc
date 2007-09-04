@@ -1,3 +1,10 @@
+2007-09-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/arm/arm.md (mulsidi3, umulsidi3, mulsi3_highpart)
+	(umulsi3_highpart): Make into expanders; existing insns are
+	now named *[insn]_nov6.  Add stars to existing [insn]_v6
+	counterparts' names.
+
 2007-09-03  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.in (DRIVER_DEFINES, gcc.o, gccspec.o, protoize.o)
