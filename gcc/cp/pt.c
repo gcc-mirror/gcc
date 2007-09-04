@@ -507,6 +507,37 @@ get_innermost_template_args (tree args, int n)
   return new_args;
 }
 
+/* The inverse of get_innermost_template_args: Return all but the innermost
+   EXTRA_LEVELS levels of template arguments from the ARGS.  */
+
+static tree
+strip_innermost_template_args (tree args, int extra_levels)
+{
+  tree new_args;
+  int n = TMPL_ARGS_DEPTH (args) - extra_levels;
+  int i;
+
+  gcc_assert (n >= 0);
+
+  /* If N is 1, just return the outermost set of template arguments.  */
+  if (n == 1)
+    return TMPL_ARGS_LEVEL (args, 1);
+
+  /* If we're not removing anything, just return the arguments we were
+     given.  */
+  gcc_assert (extra_levels >= 0);
+  if (extra_levels == 0)
+    return args;
+
+  /* Make a new set of arguments, not containing the inner arguments.  */
+  new_args = make_tree_vec (n);
+  for (i = 1; i <= n; ++i)
+    SET_TMPL_ARGS_LEVEL (new_args, i,
+			 TMPL_ARGS_LEVEL (args, i));
+
+  return new_args;
+}
+
 /* We've got a template header coming up; push to a new level for storing
    the parms.  */
 
@@ -11521,20 +11552,53 @@ most_specialized_class (tree type, tree tmpl)
   int fate;
   bool ambiguous_p;
   tree args;
+  tree outer_args = NULL_TREE;
 
   tmpl = most_general_template (tmpl);
   args = CLASSTYPE_TI_ARGS (type);
+
+  /* For determining which partial specialization to use, only the
+     innermost args are interesting.  */
+  if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (args))
+    {
+      outer_args = strip_innermost_template_args (args, 1);
+      args = INNERMOST_TEMPLATE_ARGS (args);
+    }
+
   for (t = DECL_TEMPLATE_SPECIALIZATIONS (tmpl); t; t = TREE_CHAIN (t))
     {
       tree partial_spec_args;
       tree spec_args;
+      tree parms = TREE_VALUE (t);
 
       partial_spec_args = CLASSTYPE_TI_ARGS (TREE_TYPE (t));
-      spec_args = get_class_bindings (TREE_VALUE (t),
+      if (outer_args)
+	{
+	  int i;
+
+	  /* Discard the outer levels of args, and then substitute in the
+	     template args from the enclosing class.  */
+	  partial_spec_args = INNERMOST_TEMPLATE_ARGS (partial_spec_args);
+	  partial_spec_args = tsubst_template_args
+	    (partial_spec_args, outer_args, tf_none, NULL_TREE);
+
+	  /* PARMS already refers to just the innermost parms, but the
+	     template parms in partial_spec_args had their levels lowered
+	     by tsubst, so we need to do the same for the parm list.  We
+	     can't just tsubst the TREE_VEC itself, as tsubst wants to
+	     treat a TREE_VEC as an argument vector.  */
+	  parms = copy_node (parms);
+	  for (i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
+	    TREE_VEC_ELT (parms, i) =
+	      tsubst (TREE_VEC_ELT (parms, i), outer_args, tf_none, NULL_TREE);
+	}
+      spec_args = get_class_bindings (parms,
 				      partial_spec_args,
 				      args);
       if (spec_args)
 	{
+	  if (outer_args)
+	    spec_args = add_to_template_args (outer_args, spec_args);
 	  list = tree_cons (spec_args, TREE_VALUE (t), list);
 	  TREE_TYPE (list) = TREE_TYPE (t);
 	}

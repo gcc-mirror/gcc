@@ -1,3 +1,11 @@
+2007-09-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/14032
+	* pt.c (most_specialized_class): Substitute outer template
+	arguments into the arguments of a member template partial
+	specialization.
+	(strip_innermost_template_args): New fn.
+
 2007-08-31  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32113
