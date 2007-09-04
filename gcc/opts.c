@@ -353,6 +353,7 @@ static bool profile_arc_flag_set, flag_profile_values_set;
 static bool flag_unroll_loops_set, flag_tracer_set;
 static bool flag_value_profile_transformations_set;
 static bool flag_peel_loops_set, flag_branch_probabilities_set;
+static bool flag_inline_functions_set;
 
 /* Functions excluded from profiling.  */
 
@@ -821,6 +822,7 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize >= 2)
     {
+      flag_inline_small_functions = 1;
       flag_thread_jumps = 1;
       flag_crossjumping = 1;
       flag_optimize_sibling_calls = 1;
@@ -1605,6 +1607,10 @@ common_handle_option (size_t scode, const char *arg, int value,
       profile_arc_flag_set = true;
       break;
 
+    case OPT_finline_functions:
+      flag_inline_functions_set = true;
+      break;
+
     case OPT_fprofile_use:
       if (!flag_branch_probabilities_set)
         flag_branch_probabilities = value;
@@ -1618,6 +1624,8 @@ common_handle_option (size_t scode, const char *arg, int value,
         flag_tracer = value;
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
+      if (!flag_inline_functions_set)
+        flag_inline_functions = value;
       break;
 
     case OPT_fprofile_generate:
