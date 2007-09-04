@@ -4478,6 +4478,18 @@ subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
 	}
     }
 
+  /* Check if we are loading something from the constant pool via float
+     extension; in this case we would undo compress_float_constant
+     optimization and degenerate constant load to an immediate value.  */
+  if (GET_CODE (x) == FLOAT_EXTEND
+      && MEM_P (XEXP (x, 0))
+      && MEM_READONLY_P (XEXP (x, 0)))
+    {
+      rtx tmp = avoid_constant_pool_reference (x);
+      if (x != tmp)
+        return x;
+    }
+
   /* Try to simplify X.  If the simplification changed the code, it is likely
      that further simplification will help, so loop, but limit the number
      of repetitions that will be performed.  */
