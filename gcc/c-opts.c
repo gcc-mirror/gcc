@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "mkdeps.h"
 #include "target.h"
+#include "tm_p.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true

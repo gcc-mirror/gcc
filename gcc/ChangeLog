@@ -1,3 +1,7 @@
+2007-09-04  Ben Elliston  <bje@au.ibm.com>
+
+	* c-opts.c: Include "tm_p.h".
+
 2007-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33291
