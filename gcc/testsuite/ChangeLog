@@ -1,5 +1,10 @@
 2007-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR middle-end/33187
+	* gcc.target/i386/cmov7.c: New file.
+
+2007-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/sse4a-check.h: New file.
 	* gcc.target/i386/sse4a-extract.c: Include sse4a-check.h. Remove main.
 	* gcc.target/i386/sse4a-insert.c: Ditto.

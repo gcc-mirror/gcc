@@ -1,3 +1,9 @@
+2007-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/33187
+	* combine.c (subst): Do not try to simplify X if it represents load
+	of FP constant from the constant pool via float extension.
+
 2007-09-04  Ben Elliston  <bje@au.ibm.com>
 
 	* c-opts.c: Include "tm_p.h".
