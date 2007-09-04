@@ -1795,7 +1795,7 @@ c-pretty-print.o : c-pretty-print.c $(C_PRETTY_PRINT_H) \
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)		\
         $(TREE_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h langhooks.h		\
         $(TREE_INLINE_H) $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H)	\
-        opts.h options.h $(MKDEPS_H) c-incpath.h cppdefault.h
+        opts.h options.h $(MKDEPS_H) c-incpath.h cppdefault.h $(TM_P_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
