@@ -1,3 +1,8 @@
+2007-09-05  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.target/powerpc/ppu-intrinsics.c: Add test cases for the
+	__protected_stream family of macros.
+
 2007-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/loadpre8.c: Disable inlining.

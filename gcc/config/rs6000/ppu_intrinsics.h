@@ -246,10 +246,10 @@ typedef int __V4SI __attribute__((vector_size(16)));
 	   		       | ((ID) & 0xF))) : : "memory")
 
 #define __protected_unlimited_stream_set(DIRECTION, ADDR, ID)	\
-	__dcbt_TH1000 ((ADDR), (DIRECTION)>>1, 0, (ID))
+	__dcbt_TH1000 ((ADDR), (DIRECTION)>>1, 1, (ID))
 
 #define __protected_stream_set(DIRECTION, ADDR, ID)	\
-	__dcbt_TH1000 ((ADDR), (DIRECTION)>>1, 1, (ID))
+	__dcbt_TH1000 ((ADDR), (DIRECTION)>>1, 0, (ID))
 
 #define __protected_stream_stop_all()			\
 	__dcbt_TH1010 (0, 3, 0, 0, 0, 0)
@@ -257,8 +257,8 @@ typedef int __V4SI __attribute__((vector_size(16)));
 #define __protected_stream_stop(ID)			\
 	__dcbt_TH1010 (0, 2, 0, 0, 0, (ID))
 
-#define __protected_stream_count(CNT, ID)		\
-	__dcbt_TH1010 (0, 0, (CNT), 0, 0, (ID))
+#define __protected_stream_count(COUNT, ID)		\
+	__dcbt_TH1010 (0, 0, (COUNT), 0, 0, (ID))
 
 #define __protected_stream_go()				\
 	__dcbt_TH1010 (1, 0, 0, 0, 0, 0)
