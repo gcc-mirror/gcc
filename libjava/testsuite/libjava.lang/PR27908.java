@@ -13,7 +13,8 @@ class PR27908
     (t2 = new Thread (r2)).start();
     (t3 = new Thread (r3)).start();
 
-    Thread.yield();
+    while (! (r1.isRunning() && r2.isRunning() && r3.isRunning()))
+      Thread.yield();
 
     r1.stop();
     r2.stop();
@@ -45,6 +46,11 @@ class PR27908
     {
       running = false;
     }
+
+    public boolean isRunning()
+    {
+      return running;
+    }
   }
 
   private static class run2 implements Runnable
@@ -64,6 +70,11 @@ class PR27908
     {
       running = false;
     }
+
+    public boolean isRunning()
+    {
+      return running;
+    }
   }
 
   static class run3 implements Runnable
@@ -82,6 +93,11 @@ class PR27908
     void stop ()
     {
       running = false;
+    }
+
+    public boolean isRunning()
+    {
+      return running;
     }
   }
 }
