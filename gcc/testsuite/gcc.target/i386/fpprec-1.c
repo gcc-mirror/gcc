@@ -1,10 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-math-errno -fno-trapping-math -msse2 -mfpmath=sse" } */
 
-#include "../../gcc.dg/i386-cpuid.h"
-
-extern void abort(void);
-extern int printf(const char *format, ...);
+#include "sse2-check.h"
 
 double x[] = { __builtin_nan(""), __builtin_inf(), -__builtin_inf(),
 	-0x1.fffffffffffffp+1023, 0x1.fffffffffffffp+1023,  /* +-DBL_MAX */
@@ -71,20 +68,12 @@ CHECK(floor)
 CHECK(ceil)
 CHECK(trunc)
 
-int main()
+static void
+sse2_test (void)
 {
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_cpuid ();
-
-  if ((cpu_facilities & bit_SSE2) != bit_SSE2)
-    /* If host has no SSE2 support, pass.  */
-    return 0;
-
   check_round ();
   check_rint ();
   check_floor ();
   check_ceil ();
   check_trunc ();
-  return 0;
 }

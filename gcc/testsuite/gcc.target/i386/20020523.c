@@ -1,13 +1,11 @@
 /* PR target/6753
    This testcase was miscompiled because sse_mov?fcc_const0*
    patterns were missing earlyclobber.  */
-/* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-march=pentium3 -msse -ffast-math -O2" } */
 
-#include "../../gcc.dg/i386-cpuid.h"
-extern void abort (void);
-extern void exit (int);
+/* { dg-do run } */
+/* { dg-options "-O2 -msse -mfpmath=sse -ffast-math" } */
+
+#include "sse-check.h"
 
 float one = 1.f;
 
@@ -27,27 +25,16 @@ typedef struct
   float t;
 } T;
 
-void bail_if_no_sse (void)
-{
-  unsigned int edx;
-  /* See if capabilities include SSE (25th bit; 26 for SSE2).  */
-  edx = i386_cpuid();
-  if (!(edx & bit_SSE))
-    exit (0);
-}
-
-int main (void)
+static void
+sse_test (void)
 {
   int i;
   T x[1];
 
-  bail_if_no_sse ();
   for (i = 0; i < 1; i++)
     {
       x[i].t = foo ();
       x[i].t = 0.f > x[i].t ? 0.f : x[i].t;
       bar (x[i].t);
     }
-
-  exit (0);
 }

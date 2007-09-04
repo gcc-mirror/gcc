@@ -13,7 +13,7 @@
 /* { dg-options "-O2 -mmmx" } */
 /* { dg-require-effective-target ilp32 } */
 
-#include "../../gcc.dg/i386-cpuid.h"
+#include "mmx-check.h"
 
 extern void abort (void);
 
@@ -34,19 +34,9 @@ bar (double arg)
 				     __builtin_apply_args (), 16));
 }
 
-int
-main (int argc, char **argv)
+static void
+mmx_test (void)
 {
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_cpuid ();
-
-  if (!(cpu_facilities & bit_MMX))
-    /* If host has no MMX support, pass.  */
-    return 0;
-
   if (bar (116.0) != 117.0)
     abort ();
-
-  return 0;
 }

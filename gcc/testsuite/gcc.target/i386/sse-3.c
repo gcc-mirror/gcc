@@ -1,10 +1,10 @@
 /* PR target/21149 */
 /* { dg-do run } */
 /* { dg-options "-O2 -msse" } */
-#include <xmmintrin.h>
-#include "../../gcc.dg/i386-cpuid.h"
 
-extern void abort (void);
+#include "sse-check.h"
+
+#include <xmmintrin.h>
 
 void
 __attribute__((noinline))
@@ -28,26 +28,9 @@ foo (__m128 *x)
   check (w, 0, 0, 2, -3);
 }
 
-void
-__attribute__((noinline))
-run_tests (void)
+static void
+sse_test (void)
 {
   __m128 y = _mm_set_ps (-3, 2, 1, 9);
   foo (&y);
-}
-
-int
-main ()
-{
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_cpuid ();
-
-  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_CMOV))
-      != (bit_MMX | bit_SSE | bit_CMOV))
-    /* If host has no vector support, pass.  */
-    return 0;
-
-  run_tests ();
-  return 0;
 }

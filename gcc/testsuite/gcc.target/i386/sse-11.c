@@ -1,10 +1,10 @@
 /* PR rtl-optimization/21239 */
 /* { dg-do run } */
 /* { dg-options "-O2 -msse2" } */
-#include <emmintrin.h>
-#include "../../gcc.dg/i386-cpuid.h"
 
-extern void abort (void);
+#include "sse2-check.h"
+
+#include <emmintrin.h>
 
 void
 foo (unsigned int x, double *y, const double *z)
@@ -49,8 +49,8 @@ bar (unsigned int x, float *y, const float *z)
     }
 }
 
-void __attribute__((noinline))
-run_tests (void)
+static void
+sse2_test (void)
 {
   unsigned int i;
   double a[16], b[16];
@@ -71,22 +71,4 @@ run_tests (void)
       if (c[i] != 4)
 	abort ();
     }
-}
-
-int
-main ()
-{
-  unsigned long cpu_facilities;
-  unsigned int i;
-  double a[19], b[19];
-
-  cpu_facilities = i386_cpuid ();
-
-  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_SSE2 | bit_CMOV))
-      != (bit_MMX | bit_SSE | bit_SSE2 | bit_CMOV))
-    /* If host has no vector support, pass.  */
-    return 0;
-
-  run_tests ();
-  return 0;
 }
