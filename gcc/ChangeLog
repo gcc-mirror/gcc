@@ -1,3 +1,19 @@
+2007-09-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33291
+	* tree-pretty-print.c (dump_generic_node): Dump all
+	qualifiers for pointer types, not only first.  Dump
+	qualifiers for aggregate types as well.
+	* tree-ssa-ccp.c (maybe_fold_offset_to_array_ref): Always
+	use the canonical type for building ARRAY_REFs.
+	* gimplify.c (canonicalize_addr_expr): Clean up.  The
+	correct validness check is compatibility of the pointer
+	types.  Always use the canonical type for building
+	ARRAY_REFs and ADDR_EXPRs.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Revert
+	change that disabled propagation of ADDR_EXPRs into statements
+	with volatile ops.
+
 2007-09-03  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/arm/arm.md (mulsidi3, umulsidi3, mulsi3_highpart)

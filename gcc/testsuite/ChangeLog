@@ -1,3 +1,12 @@
+2007-09-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33291
+	* gcc.dg/volatile2.c: New testcase.
+	* gcc.dg/pr32721.c: Adjust volatile reference pattern.
+	* gcc.dg/tree-ssa/forwprop-1.c: Remove xfail.
+	* gcc.dg/tree-ssa/forwprop-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr17141-1.c: Likewise.
+
 2007-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33253
