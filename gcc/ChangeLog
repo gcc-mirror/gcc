@@ -1,3 +1,10 @@
+2007-09-05  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/ppu_intrinsics.h (__protected_stream_count):
+	Rename count macro arugment for clarity.
+	(__protected_unlimited_stream_set): Pass UG=1 to __dcbt_TH1000.
+	(__protected_stream_set): Likewise, pass 0.
+
 2007-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-tailcall.c (eliminate_tail_call): Expect unrenamed return value.

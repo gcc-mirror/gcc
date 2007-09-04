@@ -32,5 +32,12 @@ int main ()
   i = __fctiw (d);
   i = __fctiwz (d);
 
+  __protected_stream_count (1, 2);
+  __protected_stream_go ();
+  __protected_stream_set (1, 0x1000, 3);
+  __protected_stream_stop (3);
+  __protected_stream_stop_all ();
+  __protected_unlimited_stream_set (3, 0x1000, 1);
+
   return 0;
 }
