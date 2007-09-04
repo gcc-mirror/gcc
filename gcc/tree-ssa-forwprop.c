@@ -717,13 +717,6 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	  continue;
 	}
 
-      /* If the use_stmt has side-effects, don't propagate into it.  */
-      if (stmt_ann (use_stmt)->has_volatile_ops)
-	{
-	  all = false;
-	  continue;
-	}
-
       push_stmt_changes (&use_stmt);
 
       result = forward_propagate_addr_expr_1 (name, rhs, use_stmt,

@@ -1572,50 +1572,46 @@ canonicalize_component_ref (tree *expr_p)
    ==>
       &array[L]
    where L is the lower bound.  For simplicity, only do this for constant
-   lower bound.  */
+   lower bound.
+   The constraint is that the type of &array[L] is trivially convertible
+   to T *.  */
 
 static void
 canonicalize_addr_expr (tree *expr_p)
 {
   tree expr = *expr_p;
-  tree ctype = TREE_TYPE (expr);
   tree addr_expr = TREE_OPERAND (expr, 0);
-  tree atype = TREE_TYPE (addr_expr);
-  tree dctype, datype, ddatype, otype, obj_expr;
+  tree datype, ddatype, pddatype;
 
-  /* Both cast and addr_expr types should be pointers.  */
-  if (!POINTER_TYPE_P (ctype) || !POINTER_TYPE_P (atype))
+  /* We simplify only conversions from an ADDR_EXPR to a pointer type.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (expr))
+      || TREE_CODE (addr_expr) != ADDR_EXPR)
     return;
 
   /* The addr_expr type should be a pointer to an array.  */
-  datype = TREE_TYPE (atype);
+  datype = TREE_TYPE (TREE_TYPE (addr_expr));
   if (TREE_CODE (datype) != ARRAY_TYPE)
     return;
 
-  /* Both cast and addr_expr types should address the same object type.  */
-  dctype = TREE_TYPE (ctype);
+  /* The pointer to element type shall be trivially convertible to
+     the expression pointer type.  */
   ddatype = TREE_TYPE (datype);
-  if (!useless_type_conversion_p (dctype, ddatype))
-    return;
-
-  /* The addr_expr and the object type should match.  */
-  obj_expr = TREE_OPERAND (addr_expr, 0);
-  otype = TREE_TYPE (obj_expr);
-  if (!useless_type_conversion_p (datype, otype))
+  pddatype = build_pointer_type (ddatype);
+  if (!useless_type_conversion_p (pddatype, ddatype))
     return;
 
   /* The lower bound and element sizes must be constant.  */
-  if (!TYPE_SIZE_UNIT (dctype)
-      || TREE_CODE (TYPE_SIZE_UNIT (dctype)) != INTEGER_CST
+  if (!TYPE_SIZE_UNIT (ddatype)
+      || TREE_CODE (TYPE_SIZE_UNIT (ddatype)) != INTEGER_CST
       || !TYPE_DOMAIN (datype) || !TYPE_MIN_VALUE (TYPE_DOMAIN (datype))
       || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (datype))) != INTEGER_CST)
     return;
 
   /* All checks succeeded.  Build a new node to merge the cast.  */
-  *expr_p = build4 (ARRAY_REF, dctype, obj_expr,
+  *expr_p = build4 (ARRAY_REF, ddatype, TREE_OPERAND (addr_expr, 0),
 		    TYPE_MIN_VALUE (TYPE_DOMAIN (datype)),
 		    NULL_TREE, NULL_TREE);
-  *expr_p = build1 (ADDR_EXPR, ctype, *expr_p);
+  *expr_p = build1 (ADDR_EXPR, pddatype, *expr_p);
 }
 
 /* *EXPR_P is a NOP_EXPR or CONVERT_EXPR.  Remove it and/or other conversions

@@ -14,5 +14,5 @@ spinlock1 = &spinlock[1];
  while (*spinlock0);
 }
 
-/* { dg-final { scan-tree-dump "={v} spinlock.0." "optimized" } } */
+/* { dg-final { scan-tree-dump "={v} \\*spinlock0" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

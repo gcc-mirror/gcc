@@ -1644,7 +1644,7 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type)
   /* Make sure to possibly truncate late after offsetting.  */
   idx = fold_convert (idx_type, idx);
 
-  return build4 (ARRAY_REF, orig_type, base, idx, NULL_TREE, NULL_TREE);
+  return build4 (ARRAY_REF, elt_type, base, idx, NULL_TREE, NULL_TREE);
 }
 
 

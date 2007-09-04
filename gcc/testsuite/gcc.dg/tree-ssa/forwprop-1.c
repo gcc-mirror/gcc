@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-forwprop" }  */
+/* { dg-options "-O2 -fdump-tree-forwprop1" }  */
 
 /* We should be able to optimize this to b->t[i] = 1 during
    early optimizations.  */
@@ -15,8 +15,5 @@ void f(struct a * b, __SIZE_TYPE__ i)
   c[i] = 1;
 }
 
-/* { dg-final { scan-tree-dump "t\\\[i.*\\\] = 1;" "forwprop1" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "t\\\[i.*\\\] = 1;" "forwprop2" } } */
-/* { dg-final { cleanup-tree-dump "forwprop?" } } */
-
-
+/* { dg-final { scan-tree-dump "t\\\[i.*\\\] = 1;" "forwprop1" } } */
+/* { dg-final { cleanup-tree-dump "forwprop1" } } */
