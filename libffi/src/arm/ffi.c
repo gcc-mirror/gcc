@@ -40,7 +40,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 
   argp = stack;
 
-  if ( ecif->cif->rtype->type == FFI_TYPE_STRUCT ) {
+  if ( ecif->cif->flags == FFI_TYPE_STRUCT ) {
     *(void **) argp = ecif->rvalue;
     argp += 4;
   }
@@ -57,6 +57,9 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
       if (((*p_arg)->alignment - 1) & (unsigned) argp) {
 	argp = (char *) ALIGN(argp, (*p_arg)->alignment);
       }
+
+      if ((*p_arg)->type == FFI_TYPE_STRUCT)
+	argp = (char *) ALIGN(argp, 4);
 
 	  z = (*p_arg)->size;
 	  if (z < sizeof(int))
@@ -81,7 +84,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 		  break;
 		  
 		case FFI_TYPE_STRUCT:
-		  *(unsigned int *) argp = (unsigned int)*(UINT32 *)(* p_argv);
+		  memcpy(argp, *p_argv, (*p_arg)->size);
 		  break;
 
 		default:
@@ -115,7 +118,6 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   switch (cif->rtype->type)
     {
     case FFI_TYPE_VOID:
-    case FFI_TYPE_STRUCT:
     case FFI_TYPE_FLOAT:
     case FFI_TYPE_DOUBLE:
       cif->flags = (unsigned) cif->rtype->type;
@@ -124,6 +126,17 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     case FFI_TYPE_SINT64:
     case FFI_TYPE_UINT64:
       cif->flags = (unsigned) FFI_TYPE_SINT64;
+      break;
+
+    case FFI_TYPE_STRUCT:
+      if (cif->rtype->size <= 4)
+	/* A Composite Type not larger than 4 bytes is returned in r0.  */
+	cif->flags = (unsigned)FFI_TYPE_INT;
+      else
+	/* A Composite Type larger than 4 bytes, or whose size cannot
+	   be determined statically ... is stored in memory at an
+	   address passed [in r0].  */
+	cif->flags = (unsigned)FFI_TYPE_STRUCT;
       break;
 
     default:
@@ -141,21 +154,27 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
+  int small_struct = (cif->flags == FFI_TYPE_INT 
+		      && cif->rtype->type == FFI_TYPE_STRUCT);
+
   ecif.cif = cif;
   ecif.avalue = avalue;
+
+  unsigned int temp;
   
   /* If the return value is a struct and we don't have a return	*/
   /* value address then we need to make one		        */
 
   if ((rvalue == NULL) && 
-      (cif->rtype->type == FFI_TYPE_STRUCT))
+      (cif->flags == FFI_TYPE_STRUCT))
     {
       ecif.rvalue = alloca(cif->rtype->size);
     }
+  else if (small_struct)
+    ecif.rvalue = &temp;
   else
     ecif.rvalue = rvalue;
-    
-  
+
   switch (cif->abi) 
     {
     case FFI_SYSV:
@@ -167,6 +186,8 @@ void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
       FFI_ASSERT(0);
       break;
     }
+  if (small_struct)
+    memcpy (rvalue, &temp, cif->rtype->size);
 }
 
 /** private members **/
@@ -228,9 +249,12 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
     {
       size_t z;
 
+      size_t alignment = (*p_arg)->alignment;
+      if (alignment < 4)
+	alignment = 4;
       /* Align if necessary */
-      if ((sizeof(int) - 1) & (unsigned) argp) {
-	argp = (char *) ALIGN(argp, sizeof(int));
+      if ((alignment - 1) & (unsigned) argp) {
+	argp = (char *) ALIGN(argp, alignment);
       }
 
       z = (*p_arg)->size;
@@ -248,21 +272,16 @@ ffi_prep_incoming_args_SYSV(char *stack, void **rvalue,
 
 /* How to make a trampoline.  */
 
-#define FFI_INIT_TRAMPOLINE(TRAMP,FUN,CTX) \
-({ unsigned char *__tramp = (unsigned char*)(TRAMP); \
-   unsigned int  __fun = (unsigned int)(FUN); \
-   unsigned int  __ctx = (unsigned int)(CTX); \
+#define FFI_INIT_TRAMPOLINE(TRAMP,FUN,CTX)				\
+({ unsigned char *__tramp = (unsigned char*)(TRAMP);			\
+   unsigned int  __fun = (unsigned int)(FUN);				\
+   unsigned int  __ctx = (unsigned int)(CTX);				\
    *(unsigned int*) &__tramp[0] = 0xe92d000f; /* stmfd sp!, {r0-r3} */	\
-   *(unsigned int*) &__tramp[4] = 0xe59f0000; /* ldr r0, [pc] */ \
-   *(unsigned int*) &__tramp[8] = 0xe59ff000; /* ldr pc, [pc] */ \
-   *(unsigned int*) &__tramp[12] = __ctx; \
-   *(unsigned int*) &__tramp[16] = __fun; \
-   register unsigned long _beg __asm ("a1") = (unsigned long) (&__tramp[0]);	\
-   register unsigned long _end __asm ("a2") = (unsigned long) (&__tramp[19]);	\
-   register unsigned long _flg __asm ("a3") = 0;			\
-   __asm __volatile ("swi 0x9f0002		@ sys_cacheflush"	\
-	   		    : "=r" (_beg)				\
-	   		    : "0" (_beg), "r" (_end), "r" (_flg));	\
+   *(unsigned int*) &__tramp[4] = 0xe59f0000; /* ldr r0, [pc] */	\
+   *(unsigned int*) &__tramp[8] = 0xe59ff000; /* ldr pc, [pc] */	\
+   *(unsigned int*) &__tramp[12] = __ctx;				\
+   *(unsigned int*) &__tramp[16] = __fun;				\
+   __clear_cache((&__tramp[0]), (&__tramp[19]));			\
  })
 
 
