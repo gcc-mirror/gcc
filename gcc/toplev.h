@@ -148,6 +148,8 @@ extern struct ht *ident_hash;
 
 extern void set_fast_math_flags         (int);
 
+extern void set_unsafe_math_optimizations_flags (int);
+
 /* Handle -d switch.  */
 extern void decode_d_option		(const char *);
 

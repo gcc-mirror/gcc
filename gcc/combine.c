@@ -4699,7 +4699,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
        || code == AND || code == IOR || code == XOR
        || code == SMAX || code == SMIN || code == UMAX || code == UMIN)
       && ((INTEGRAL_MODE_P (mode) && code != DIV)
-	  || (flag_unsafe_math_optimizations && FLOAT_MODE_P (mode))))
+	  || (flag_associative_math && FLOAT_MODE_P (mode))))
     {
       if (GET_CODE (XEXP (x, 0)) == code)
 	{
@@ -4972,7 +4972,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 	}
 
       /* Try simplify a*(b/c) as (a*b)/c.  */
-      if (FLOAT_MODE_P (mode) && flag_unsafe_math_optimizations
+      if (FLOAT_MODE_P (mode) && flag_associative_math 
 	  && GET_CODE (XEXP (x, 0)) == DIV)
 	{
 	  rtx tem = simplify_binary_operation (MULT, mode,

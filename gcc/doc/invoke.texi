@@ -6173,6 +6173,7 @@ it might, and @option{-fno-math-errno} is the default.
 
 @item -funsafe-math-optimizations
 @opindex funsafe-math-optimizations
+
 Allow optimizations for floating-point arithmetic that (a) assume
 that arguments and results are valid and (b) may violate IEEE or
 ANSI standards.  When used at link-time, it may include libraries
@@ -6184,8 +6185,35 @@ it can result in incorrect output for programs which depend on
 an exact implementation of IEEE or ISO rules/specifications for
 math functions. It may, however, yield faster code for programs
 that do not require the guarantees of these specifications.
+Enables @option{-freciprocal-math} and @option{-fassociative-math}.
 
 The default is @option{-fno-unsafe-math-optimizations}.
+
+@item -fassociative-math
+@opindex -fassociative-math
+
+Allow re-association of operands in series of floating-point operations.
+This violates the ISO C and C++ language standard by possibly changing
+computation result.  NOTE: re-ordering may change the sign of zero as
+well as ignore NaNs and inhibit or create underflow or overflow (and
+thus cannot be used on a code which relies on rounding behavior like
+@code{(x + 2**52) - 2**52)}.  May also reorder floating-point comparisons
+and thus may not be used when ordered comparisons are required.
+This flag doesn't make much sense without @option{-fno-signed-zeros}
+or @option{-fno-trapping-math} or with @option{-frounding-math}.
+
+The default is @option{-fno-associative-math}.
+
+@item -freciprocal-math
+@opindex -freciprocal-math
+
+Allow the reciprocal of a value to be used instead of dividing by
+the value if this enables optimizations.  For example @code{x / y}
+can be replaced with @code{x * (1/y)} which is useful if @code{(1/y)}
+is subject to common subexpression elimination.  Note that this loses
+precision and increases the number of flops operating on the value.
+
+The default is @option{-fno-reciprocal-math}.
 
 @item -ffinite-math-only
 @opindex ffinite-math-only

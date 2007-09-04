@@ -1125,6 +1125,15 @@ funsafe-loop-optimizations
 Common Report Var(flag_unsafe_loop_optimizations) Optimization
 Allow loop optimizations to assume that the loops behave in normal way
 
+fassociative-math
+Common Report Var(flag_associative_math)
+Allow optimization for floating-point arithmetic which may change the
+result of the operation due to rounding.
+
+freciprocal-math
+Common Report Var(flag_reciprocal_math)
+Same as -fassociative-math for expressions which include division.
+
 ; Nonzero means that unsafe floating-point math optimizations are allowed
 ; for the sake of speed.  IEEE compliance is not guaranteed, and operations
 ; are allowed to assume that their arguments and results are "normal"

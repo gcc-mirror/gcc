@@ -1723,9 +1723,9 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	return tem;
 
       /* Reassociate floating point addition only when the user
-	 specifies unsafe math optimizations.  */
+	 specifies associative math operations.  */
       if (FLOAT_MODE_P (mode)
-	  && flag_unsafe_math_optimizations)
+	  && flag_associative_math)
 	{
 	  tem = simplify_associative_operation (code, mode, op0, op1);
 	  if (tem)
@@ -2480,8 +2480,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		return simplify_gen_unary (NEG, mode, op0, mode);
 
 	      /* Change FP division by a constant into multiplication.
-		 Only do this with -funsafe-math-optimizations.  */
-	      if (flag_unsafe_math_optimizations
+		 Only do this with -freciprocal-math.  */
+	      if (flag_reciprocal_math
 		  && !REAL_VALUES_EQUAL (d, dconst0))
 		{
 		  REAL_ARITHMETIC (d, RDIV_EXPR, dconst1, d);

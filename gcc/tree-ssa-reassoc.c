@@ -1244,14 +1244,14 @@ break_up_subtract_bb (basic_block bb)
 	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
 
 	  TREE_VISITED (stmt) = 0;
-	  /* If unsafe math optimizations we can do reassociation for
+	  /* If associative-math we can do reassociation for
 	     non-integral types.  Or, we can do reassociation for
 	     non-saturating fixed-point types.  */
 	  if ((!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	       || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
 	      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs))
 		  || !SCALAR_FLOAT_TYPE_P (TREE_TYPE(lhs))
-		  || !flag_unsafe_math_optimizations)
+		  || !flag_associative_math)
 	      && (!NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE (rhs))
 		  || !NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE(lhs))))
 	    continue;
@@ -1294,14 +1294,14 @@ reassociate_bb (basic_block bb)
 	  if (TREE_VISITED (stmt))
 	    continue;
 
-	  /* If unsafe math optimizations we can do reassociation for
+	  /* If associative-math we can do reassociation for
 	     non-integral types.  Or, we can do reassociation for
 	     non-saturating fixed-point types.  */
 	  if ((!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
 	       || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
 	      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs))
 		  || !SCALAR_FLOAT_TYPE_P (TREE_TYPE(lhs))
-		  || !flag_unsafe_math_optimizations)
+		  || !flag_associative_math)
 	      && (!NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE (rhs))
 		  || !NON_SAT_FIXED_POINT_TYPE_P (TREE_TYPE(lhs))))
 	    continue;

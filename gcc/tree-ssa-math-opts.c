@@ -443,7 +443,7 @@ execute_cse_reciprocals_1 (block_stmt_iterator *def_bsi, tree def)
 static bool
 gate_cse_reciprocals (void)
 {
-  return optimize && !optimize_size && flag_unsafe_math_optimizations;
+  return optimize && !optimize_size && flag_reciprocal_math;
 }
 
 /* Go through all the floating-point SSA_NAMEs, and call

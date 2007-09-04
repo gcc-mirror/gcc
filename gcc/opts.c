@@ -1559,6 +1559,10 @@ common_handle_option (size_t scode, const char *arg, int value,
       set_fast_math_flags (value);
       break;
 
+    case OPT_funsafe_math_optimizations:
+      set_unsafe_math_optimizations_flags (value);
+      break;
+
     case OPT_ffixed_:
       fix_register (arg, 1, 1);
       break;
@@ -1857,6 +1861,8 @@ set_fast_math_flags (int set)
 {
   flag_trapping_math = !set;
   flag_unsafe_math_optimizations = set;
+  flag_associative_math = set;
+  flag_reciprocal_math = set;
   flag_finite_math_only = set;
   flag_signed_zeros = !set;
   flag_errno_math = !set;
@@ -1866,6 +1872,15 @@ set_fast_math_flags (int set)
       flag_rounding_math = 0;
       flag_cx_limited_range = 1;
     }
+}
+
+/* When -funsafe-math-optimizations is set the following 
+   flags are set as well.  */ 
+void
+set_unsafe_math_optimizations_flags (int set)
+{
+  flag_reciprocal_math = set;
+  flag_associative_math = set;
 }
 
 /* Return true iff flags are set as if -ffast-math.  */

@@ -1631,7 +1631,7 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   mode2 = GET_MODE (something);
   if ((FLOAT_MODE_P (mode1) 
        || FLOAT_MODE_P (mode2)) 
-      && !flag_unsafe_math_optimizations) 
+      && !flag_associative_math) 
     return NULL;
 
   if (dump_file)
