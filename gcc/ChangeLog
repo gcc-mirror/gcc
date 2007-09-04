@@ -1,3 +1,12 @@
+2007-09-04  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* c-format.c: Include alloc-pool.h.
+	(check_format_info_main): New argument fwt_alloc.  Use allocation
+	pool instead of GC.  Remove GC deallocation code.
+	(check_format_arg): Create allocation pool, pass it to
+	check_format_info_main and free it afterwards.
+	* Makefile.in (c-format.o): Add alloc-pool.h dependency.
+
 2007-09-05  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/ppu_intrinsics.h (__protected_stream_count):
