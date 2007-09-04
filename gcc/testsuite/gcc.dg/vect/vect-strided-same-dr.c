@@ -12,7 +12,7 @@ typedef struct {
 
 s buffer1[N], buffer2[N];
 
-int
+__attribute__ ((noinline)) int
 main1 (s * __restrict__  pIn, s* __restrict__ pOut)
 {
   unsigned short i, x, y, d;

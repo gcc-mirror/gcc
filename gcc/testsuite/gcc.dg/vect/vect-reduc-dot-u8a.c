@@ -21,7 +21,7 @@ unsigned char Y[N] __attribute__ ((__aligned__(16)));
    Widening summation can also be supported by type promotion and non-widening 
    summation (vect_unpack).
    */
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo (int len) {
   int i;
   unsigned int result = 0;

@@ -7,7 +7,7 @@
 
 int a[N];
 
-int
+__attribute__ ((noinline)) int
 foo (){
   int i,j;
   int sum;

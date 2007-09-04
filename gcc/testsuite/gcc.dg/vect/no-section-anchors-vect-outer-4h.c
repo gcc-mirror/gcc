@@ -10,6 +10,7 @@ unsigned int out[N];
 
 /* Outer-loop vectorization. */
 
+__attribute__ ((noinline))
 void
 foo (){
   int i,j;

@@ -10,7 +10,7 @@ typedef struct {
    unsigned char b;
 } s;
 
-int
+__attribute__ ((noinline)) int
 main1 (s *arr)
 {
   s *ptr = arr;

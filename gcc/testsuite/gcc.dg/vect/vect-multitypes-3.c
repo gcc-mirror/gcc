@@ -12,6 +12,7 @@ short sb[N] __attribute__ ((__aligned__(16))) =
 char cb[N] __attribute__ ((__aligned__(16))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
+__attribute__ ((noinline)) 
 int main1 (int n, int * __restrict__ pib, 
 	   short * __restrict__ psb, 
 	   char * __restrict__ pcb)

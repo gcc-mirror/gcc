@@ -8,6 +8,7 @@
 int a[N];
 int results[N] = {0,1,2,3,0,0,0,0,0,0,0,0,12,13,14,15};
 
+__attribute__ ((noinline))
 int main1()
 {
   int i;

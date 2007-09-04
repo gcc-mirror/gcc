@@ -13,7 +13,7 @@ signed short Y[N] __attribute__ ((__aligned__(16)));
    Detected as a dot-product pattern.
    Vectorized on targets that support dot-product for signed shorts.  */
 
-int
+__attribute__ ((noinline)) int
 foo (int len)
 {
   int i;

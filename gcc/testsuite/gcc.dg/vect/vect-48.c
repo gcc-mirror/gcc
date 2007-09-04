@@ -15,7 +15,7 @@
    vect-49.c is similar to this one with one difference:
         aliasing is a problem.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float *pb, float *pc)
 {
   float pa[N] __attribute__ ((__aligned__(16)));

@@ -9,6 +9,7 @@
 static int a[N] = {1,2,3,4,5,6,7,8,9};
 static int b[N] = {2,3,4,5,6,7,8,9,0};
 
+__attribute__ ((noinline))
 int main1 () {
   int i;
   int *p, *q, *p1, *q1;

@@ -11,6 +11,7 @@ struct tmp_struct
   int y[N];
 };
 	 
+__attribute__ ((noinline))
 int main1 ()
 {  
   int i, *q;

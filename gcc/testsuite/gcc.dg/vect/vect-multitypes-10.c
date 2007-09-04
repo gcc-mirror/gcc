@@ -13,7 +13,7 @@ signed short Y[N] __attribute__ ((__aligned__(16)));
 int result[N];
 
 /* Unsigned type promotion (hi->si) */
-int
+__attribute__ ((noinline)) int
 foo1(int len) {
   int i;
 
@@ -24,7 +24,7 @@ foo1(int len) {
 }
 
 /* Signed type promotion (hi->si) */
-int
+__attribute__ ((noinline)) int
 foo2(int len) {
   int i;
 

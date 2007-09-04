@@ -6,7 +6,7 @@ signed short block[N][N];
 
 /* memory references in the inner-loop */
 
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo (){
   int i,j;
   unsigned int diff = 0;

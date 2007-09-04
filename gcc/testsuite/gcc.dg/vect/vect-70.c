@@ -17,6 +17,7 @@ struct test1{
   struct s e[N]; /* array e.n is aligned */
 };
 
+__attribute__ ((noinline))
 int main1 ()
 {
   int i,j;

@@ -6,6 +6,7 @@
 #define N 16
 #define M 4
 
+__attribute__ ((noinline))
 int main1 ()
 {
   int i, j;

@@ -10,7 +10,7 @@ unsigned char Y[N] __attribute__ ((__aligned__(16)));
 unsigned short result[N];
 
 /* char->short widening-mult */
-int
+__attribute__ ((noinline)) int
 foo1(int len) {
   int i;
 

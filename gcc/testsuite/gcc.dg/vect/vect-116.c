@@ -5,6 +5,8 @@
 #include "tree-vect.h"
 
 extern void abort (void);
+
+__attribute__ ((noinline))
 void foo()
 {
   static unsigned char A[256], B[256], C[256];

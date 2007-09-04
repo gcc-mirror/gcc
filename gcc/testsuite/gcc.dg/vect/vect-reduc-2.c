@@ -8,6 +8,7 @@
 
 /* Test vectorization of reduction of signed-int.  */
 
+__attribute__ ((noinline))
 void main1 (int x, int max_result, int min_result)
 {
   int i;

@@ -17,6 +17,7 @@ static int b[N] = {17,24,7,0,2,3,4,31,82};
 static int c[N] = {9,17,24,7,0,2,3,4,31};
 volatile int foo;
 
+__attribute__ ((noinline))
 int main1 (int x, int y) {
   int i;
   struct extraction *p;

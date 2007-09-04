@@ -17,7 +17,7 @@ float pc[N] __attribute__ ((__aligned__(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13
    can use this information (generate prolog and epilog loops
    with known number of iterations, and only if needed).  */
 
-int
+__attribute__ ((noinline)) int
 main1 ()
 {
   int i;
@@ -37,7 +37,7 @@ main1 ()
   return 0;
 }
 
-int
+__attribute__ ((noinline)) int
 main2 ()
 {
   int i;
@@ -57,7 +57,7 @@ main2 ()
   return 0;
 }
 
-int
+__attribute__ ((noinline)) int
 main3 (int n)
 {
   int i;

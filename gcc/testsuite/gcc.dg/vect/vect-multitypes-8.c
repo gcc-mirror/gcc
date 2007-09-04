@@ -12,7 +12,7 @@ unsigned short uresultY[N];
 
 /* Unsigned type demotion (si->hi) */
 
-int
+__attribute__ ((noinline)) int
 foo1(int len) {
   int i;
 

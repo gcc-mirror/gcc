@@ -13,7 +13,7 @@ extern int a[N];
    the same alignment. Peeling to align one of the accesses will 
    align the other.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (int * pa)
 {
   int i;
@@ -31,7 +31,7 @@ main1 (int * pa)
    the same alignment. Peeling to align one of the accesses will 
    align the other.  */
 
-int
+__attribute__ ((noinline)) int
 main2 ()
 {
   int i;
@@ -44,7 +44,7 @@ main2 ()
   return 0;
 }
 
-int 
+__attribute__ ((noinline)) int
 main3 ()
 {
   int i;

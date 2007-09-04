@@ -6,7 +6,7 @@
 #define N 40
 int a[200*N];
 
-void
+__attribute__ ((noinline)) void
 foo (){
   int i,j;
   int sum,s=0;

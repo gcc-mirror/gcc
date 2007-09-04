@@ -5,7 +5,7 @@
 
 #define N 26
  
-int main1 (int X)
+__attribute__ ((noinline)) int main1 (int X)
 {  
   int s = X;
   int i;

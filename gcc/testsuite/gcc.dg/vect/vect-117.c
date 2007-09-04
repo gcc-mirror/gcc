@@ -20,6 +20,7 @@ static  int c[N][N] = {{ 1, 2, 3, 4, 5},
 
 volatile int foo;
 
+__attribute__ ((noinline))
 int main1 (int A[N][N], int n) 
 {
 

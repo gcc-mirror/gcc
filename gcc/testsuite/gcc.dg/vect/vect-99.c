@@ -2,6 +2,7 @@
 
 int ca[100];
 
+__attribute__ ((noinline))
 void foo (int n)
 {
   unsigned int i;

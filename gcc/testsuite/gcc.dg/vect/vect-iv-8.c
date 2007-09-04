@@ -5,7 +5,7 @@
 
 #define N 26
  
-int main1 (short X)
+__attribute__ ((noinline)) int main1 (short X)
 {  
   unsigned char a[N];
   unsigned short b[N];

@@ -6,7 +6,7 @@
 #define N 40
 
 
-int
+__attribute__ ((noinline)) int
 foo (int *a){
   int i,j;
   int sum;

@@ -6,6 +6,7 @@
 
 #define N 26
  
+__attribute__ ((noinline))
 unsigned int main1 ()
 {  
   unsigned short i;

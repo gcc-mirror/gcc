@@ -8,7 +8,7 @@
 int a[N];
 int b[N];
 
-int
+__attribute__ ((noinline)) int
 foo (int n){
   int i,j;
   int sum,x,y;

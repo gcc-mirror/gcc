@@ -5,6 +5,7 @@
 
 #define N 256
 
+__attribute__ ((noinline))
 void bar (float *pa, float *pb, float *pc) 
 {
   int i;
@@ -27,7 +28,7 @@ void bar (float *pa, float *pb, float *pc)
    vect-45.c is similar to this one with one difference:
         can't prove that pointers don't alias.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float * __restrict__ pa, float * __restrict__ pb, float * __restrict__ pc)
 {
   int i;

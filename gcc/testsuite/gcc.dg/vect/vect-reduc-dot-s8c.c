@@ -13,7 +13,7 @@ signed char Y[N] __attribute__ ((__aligned__(16)));
 /* char->int->int dot product. 
    Not detected as a dot-product pattern.
    Currently fails to be vectorized due to presence of type conversions. */
-int
+__attribute__ ((noinline)) int
 foo3(int len) {
   int i;
   int result = 0;

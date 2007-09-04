@@ -14,7 +14,7 @@ struct foo {
   int y[N];
 } __attribute__((packed));
 
-int
+__attribute__ ((noinline)) int
 main1 (struct foo * __restrict__ p)
 {
   int i;

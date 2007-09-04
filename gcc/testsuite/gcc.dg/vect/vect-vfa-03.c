@@ -18,7 +18,7 @@ struct S X[N] = {10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16,
 		 23, 23, 24, 24, 25, 25};
 struct S Y[N] = {};
  
-void
+__attribute__ ((noinline)) void
 foo (struct S * in, struct S * out)
 {
   int i;

@@ -6,6 +6,7 @@
 #define N 16
 #define DIFF 242
 
+__attribute__ ((noinline))
 void main1 (short x, short max_result, short min_result)
 {
   int i;

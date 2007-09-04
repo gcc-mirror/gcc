@@ -15,7 +15,7 @@ unsigned short Y[N] __attribute__ ((__aligned__(16)));
    promotes the ushorts to int, and then the product is promoted to unsigned 
    int for the addition.  Which results in an int->unsigned int cast, which 
    since no bits are modified in the cast should be trivially vectorizable.  */
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo2(int len) {
   int i;
   unsigned int result = 0;

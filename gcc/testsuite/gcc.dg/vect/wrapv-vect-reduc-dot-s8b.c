@@ -19,7 +19,7 @@ signed char Y[N] __attribute__ ((__aligned__(16)));
    Can also be vectorized as widening-mult + summation,
    or with type-conversion support.
  */
-short
+__attribute__ ((noinline)) short
 foo(int len) {
   int i;
   short result = 0;

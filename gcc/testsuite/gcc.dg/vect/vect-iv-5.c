@@ -5,7 +5,7 @@
 
 #define N 16
  
-int main1 ()
+__attribute__ ((noinline)) int main1 ()
 {  
   float arr[N];
   float f = 1.0;

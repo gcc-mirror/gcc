@@ -5,6 +5,7 @@
 
 #define N 256
 
+__attribute__ ((noinline))
 void bar (float *pa, float *pb, float *pc)
 {
   int i;
@@ -28,7 +29,7 @@ void bar (float *pa, float *pb, float *pc)
    vect-56.c is similar to this one with two differences:
         aliasing is a problem, and the write access is aligned.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float *pa)
 {
   int i;

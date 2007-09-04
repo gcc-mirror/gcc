@@ -5,6 +5,7 @@
 
 #define N 256
 
+__attribute__ ((noinline))
 void bar (float *pa, float *pb, float *pc) 
 {
   int i;
@@ -25,7 +26,7 @@ void bar (float *pa, float *pb, float *pc)
    The loop bound is known and divisible by the vectorization factor.
    No aliasing problems.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float * __restrict__ pa)
 {
   int i;

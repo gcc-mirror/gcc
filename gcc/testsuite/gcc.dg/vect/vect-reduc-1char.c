@@ -6,7 +6,7 @@
 #define N 16
 #define DIFF 242
 
-void
+__attribute__ ((noinline)) void
 main1 (unsigned char x, unsigned char max_result, unsigned char min_result)
 {
   int i;

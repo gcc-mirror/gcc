@@ -8,6 +8,7 @@
 /* Test vectorization of reduction of unsigned-int in the presence
    of unknown-loop-bound.  */
 
+__attribute__ ((noinline))
 int main1 (int n, int res)
 {
   int i;

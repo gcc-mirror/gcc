@@ -7,7 +7,7 @@
 
 unsigned short in[N];
 
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo (short scale){
   int i;
   unsigned short j;
@@ -24,7 +24,7 @@ foo (short scale){
   return sum;
 }
 
-unsigned short
+__attribute__ ((noinline)) unsigned short
 bar (void)
 {
   unsigned short j;

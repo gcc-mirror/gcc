@@ -16,7 +16,7 @@ unsigned short a[N];
 unsigned short b[N];
 unsigned short c[N];
 
-int
+__attribute__ ((noinline)) int
 main1 (s *arr)
 {
   int i;

@@ -5,7 +5,7 @@
 
 #define N 40
 
-int
+__attribute__ ((noinline)) int
 foo (){
   int i,j;
   int sum,s=0;
@@ -21,6 +21,7 @@ foo (){
   return s;
 }
 
+__attribute__ ((noinline))
 int bar (int i, int j)
 {
 return (i + j);

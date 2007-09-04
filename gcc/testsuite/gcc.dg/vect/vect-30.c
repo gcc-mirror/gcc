@@ -9,6 +9,7 @@ float b[N] = {0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30};
 float a[N];
 float c[N];
 
+__attribute__ ((noinline))
 int main1 (int n)
 {
   int i=0;
@@ -29,6 +30,7 @@ int main1 (int n)
   return 0;
 }
 
+__attribute__ ((noinline))
 int main2 (unsigned int n)
 {
   int i=0;

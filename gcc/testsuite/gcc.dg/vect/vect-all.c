@@ -13,6 +13,7 @@ float fresults1[N] = {192.00,240.00,288.00,336.00,384.00,432.00,480.00,528.00,48
 float fresults2[N] = {0.00,6.00,12.00,18.00,24.00,30.00,36.00,42.00,0.00,54.00,120.00,198.00,288.00,390.00,504.00,630.00};
 
 /****************************************************/
+__attribute__ ((noinline))
 void icheck_results (int *a, int *results)
 {
   int i;
@@ -23,6 +24,7 @@ void icheck_results (int *a, int *results)
     }
 }
 
+__attribute__ ((noinline))
 void fcheck_results (float *a, float *results)
 {
   int i;
@@ -33,31 +35,31 @@ void fcheck_results (float *a, float *results)
     }
 }   
 
-void 
+__attribute__ ((noinline)) void 
 fbar_mul (float *a)
 {
   fcheck_results (a, fmul_results);
 } 
 
-void 
+__attribute__ ((noinline)) void 
 fbar_add (float *a)
 {
   fcheck_results (a, fadd_results);
 } 
 
-void 
+__attribute__ ((noinline)) void 
 ibar_add (int *a)
 {
   icheck_results (a, iadd_results);
 } 
 
-void 
+__attribute__ ((noinline)) void 
 fbar1 (float *a)
 {
   fcheck_results (a, fresults1);
 } 
 
-void 
+__attribute__ ((noinline)) void 
 fbar2 (float *a)
 {
   fcheck_results (a, fresults2);
@@ -66,7 +68,7 @@ fbar2 (float *a)
 
 /* All of the loops below are currently vectorizable.  */
 
-int
+__attribute__ ((noinline)) int
 main1 ()
 {
   int i,j;

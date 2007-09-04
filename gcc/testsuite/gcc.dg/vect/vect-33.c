@@ -11,6 +11,7 @@ struct test {
 
 extern struct test s;
  
+__attribute__ ((noinline))
 int main1 ()
 {  
   int i;

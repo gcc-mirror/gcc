@@ -11,7 +11,7 @@ signed char X[N] __attribute__ ((__aligned__(16)));
 short result[N];
 
 /* Unsigned type promotion (qi->hi) */
-int
+__attribute__ ((noinline)) int
 foo1(int len) {
   int i;
 
@@ -21,7 +21,7 @@ foo1(int len) {
 }
 
 /* Signed type promotion (qi->hi) */
-int
+__attribute__ ((noinline)) int
 foo2(int len) {
   int i;
 

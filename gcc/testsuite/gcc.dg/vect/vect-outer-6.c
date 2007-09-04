@@ -13,6 +13,7 @@ float C[N] __attribute__ ((__aligned__(16)));
 float D[N] __attribute__ ((__aligned__(16)));
 extern void abort(void); 
 
+__attribute__ ((noinline))
 int main1 ()
 {  
   float s;

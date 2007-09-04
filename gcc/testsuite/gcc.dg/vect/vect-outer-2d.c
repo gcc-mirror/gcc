@@ -5,7 +5,7 @@
 #define N 40
 float image[N][N][N+1] __attribute__ ((__aligned__(16)));
 
-void
+__attribute__ ((noinline)) void
 foo (){
   int i,j,k;
 

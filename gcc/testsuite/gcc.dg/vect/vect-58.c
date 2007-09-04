@@ -5,6 +5,7 @@
 
 #define N 256
 
+__attribute__ ((noinline))
 void bar (float *pa, float *pb, float *pc)
 {
   int i;
@@ -25,7 +26,7 @@ void bar (float *pa, float *pb, float *pc)
    vect-54.c is similar to this one with one difference:
         the loop bound is known.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (int n)
 {
   int i;
