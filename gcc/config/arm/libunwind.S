@@ -237,5 +237,6 @@ UNWIND_WRAPPER _Unwind_RaiseException 1
 UNWIND_WRAPPER _Unwind_Resume 1
 UNWIND_WRAPPER _Unwind_Resume_or_Rethrow 1
 UNWIND_WRAPPER _Unwind_ForcedUnwind 3
+UNWIND_WRAPPER _Unwind_Backtrace 2
 
-#endif  /* __symbian__ */
+#endif  /* ndef __symbian__ */
