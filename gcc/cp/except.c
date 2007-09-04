@@ -388,6 +388,9 @@ initialize_handler_parm (tree decl, tree exp)
 	 See also expand_default_init.  */
       init = ocp_convert (TREE_TYPE (decl), init,
 			  CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+      /* Force cleanups now to avoid nesting problems with the
+	 MUST_NOT_THROW_EXPR.  */
+      init = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (init), init);
       init = build1 (MUST_NOT_THROW_EXPR, TREE_TYPE (init), init);
     }
 
