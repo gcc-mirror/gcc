@@ -39,6 +39,10 @@ using namespace java::lang::reflect;
 using namespace java::util;
 using namespace gnu::gcj::runtime;
 
+#ifdef __ARM_EABI_UNWINDER__
+#define _URC_NORMAL_STOP _URC_FAILURE
+#endif
+
 // Maps ncode values to their containing native class.
 // NOTE: Currently this Map contradicts class GC for native classes. This map
 // (and the "new class stack") will need to use WeakReferences in order to 
