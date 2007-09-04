@@ -29,6 +29,10 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   set name [file rootname $filename]
   set soname lib${name}.${so_extension}
 
+  if { [istarget "*arm-*eabi*"] } {
+      lappend options "additional_flags=-fexceptions"
+  }
+
   lappend options "additional_flags=${so_flag} -fPIC"
   # Find the generated header.
   lappend options "additional_flags=-I. -I.. -I$srcdir/$subdir -fdollars-in-identifiers"

@@ -379,6 +379,7 @@ proc libjava_arguments {{mode compile}} {
     if {$mode == "link"} {
 	global wrapper_file wrap_compile_flags
 	lappend args "additional_flags=$wrap_compile_flags"
+	lappend args "additional_flags=-specs=libgcj-test.spec"
 	lappend args "libs=$wrapper_file"
 	lappend args "libs=$libjava"
 	lappend args debug
