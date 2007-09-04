@@ -1075,7 +1075,10 @@ java_init_decl_processing (void)
   eh_personality_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
                                              ? "__gcj_personality_sj0"
                                              : "__gcj_personality_v0");
-  default_init_unwind_resume_libfunc ();
+  if (targetm.arm_eabi_unwinder)
+    unwind_resume_libfunc = init_one_libfunc ("__cxa_end_cleanup");
+  else
+    default_init_unwind_resume_libfunc ();
 
   lang_eh_runtime_type = do_nothing;
 
