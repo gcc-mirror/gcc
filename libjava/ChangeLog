@@ -1,3 +1,54 @@
+2007-09-04  Andrew Haley  <aph@redhat.com>
+
+	PR java/27908
+	* testsuite/libjava.lang/PR27908.java
+	({run1,run2,run3}.isRunning): New Method.
+	(main): Fix race condition.
+
+2007-08-29  Andrew Haley  <aph@redhat.com>
+
+	* gnu/classpath/natVMStackWalker.cc (VMStackWalker::getCallingClass):
+	Make sure we're not sibcalled.
+	(GET_CALLING_CLASS): Define for ARM EABI.
+
+2007-08-22  Andrew Haley  <aph@redhat.com>
+
+	* configure.host (BACKTRACESPEC): Add arm*-linux*.
+
+2007-08-22  Andrew Haley  <aph@redhat.com>
+
+	* configure.ac (LIBSTDCXXSPEC): New.
+	* configure.host: Add arm*-linux* to pthread test.
+	* configure.ac (LIBGCJTESTSPEC): Add path to libstdc++ for ARM
+	EABI.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Use
+	-fexceptions for ARM EABI.
+	* testsuite/lib/libjava.exp (libjava_arguments): Add libgcj-test.spec.
+	(libjava_invoke): Log the invocation.
+
+2007-08-15  Andrew Haley  <aph@redhat.com>
+
+	* configure.ac (extra_ldflags): Define.
+	* Makefile.am: Use extra_ldflags for all executables.
+
+2007-08-14  Andrew Haley  <aph@redhat.com>
+
+	* sysdep/arm/backtrace.h: Remove stubs for _Unwind_GetIPInfo,
+	_Unwind_GetRegionStart, and _Unwind_Backtrace.
+
+2007-07-27  Andrew Haley  <aph@redhat.com>
+
+	* gnu/classpath/natVMStackWalker.cc (GET_CALLING_CLASS): Stub for
+	ARM EABI.
+	* exception.cc (get_exception_header_from_ue): New.
+	(get_ttype_entry): ARM EABI version.
+	(PERSONALITY_FUNCTION): Add ARM EABI code.
+	* sysdep/arm/backtrace.h: New file.
+	* stacktrace.cc (_URC_NORMAL_STOP): New.
+	* configure.ac (extra_ldflags_libjava): Add libsupc++.la for ARM
+	EABI.
+	* configure.host (BACKTRACESPEC): Add arm/backtrace.h.
+
 2007-08-31  Matthias Klose  <doko@ubuntu.com>
 
 	* classpath/lib/java/util/EnumSet*.class: Regenerate
