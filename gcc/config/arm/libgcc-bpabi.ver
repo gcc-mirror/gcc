@@ -81,3 +81,10 @@ GCC_3.5 {
   # GNU-specific entry point.
   __gnu_unwind_frame
 }
+
+%exclude {
+  _Unwind_Backtrace
+}
+GCC_4.3.0 {
+  _Unwind_Backtrace
+}
