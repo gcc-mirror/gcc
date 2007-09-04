@@ -1,3 +1,7 @@
+2007-08-29  Andrew Haley  <aph@redhat.com>
+
+        * config/arm/libgcc-bpabi.ver: Add _Unwind_Backtrace as GCC_4.3.0.
+
 2007-08-08  Andrew Haley  <aph@redhat.com>
 
 	* config/arm/libunwind.S (UNWIND_WRAPPER _Unwind_Backtrace): New.
