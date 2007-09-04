@@ -258,6 +258,7 @@ decode_statement (void)
       match ("pointer", gfc_match_pointer, ST_ATTR_DECL);
       if (gfc_match_private (&st) == MATCH_YES)
 	return st;
+      match ("procedure", gfc_match_procedure, ST_PROCEDURE);
       match ("program", gfc_match_program, ST_PROGRAM);
       if (gfc_match_public (&st) == MATCH_YES)
 	return st;
@@ -719,7 +720,8 @@ next_statement (void)
 
 #define case_decl case ST_ATTR_DECL: case ST_COMMON: case ST_DATA_DECL: \
   case ST_EQUIVALENCE: case ST_NAMELIST: case ST_STATEMENT_FUNCTION: \
-  case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE
+  case ST_TYPE: case ST_INTERFACE: case ST_OMP_THREADPRIVATE: \
+  case ST_PROCEDURE
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -1077,6 +1079,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_PROGRAM:
       p = "PROGRAM";
+      break;
+    case ST_PROCEDURE:
+      p = "PROCEDURE";
       break;
     case ST_READ:
       p = "READ";
@@ -1537,6 +1542,7 @@ parse_derived (void)
 	  unexpected_eof ();
 
 	case ST_DATA_DECL:
+	case ST_PROCEDURE:
 	  accept_statement (st);
 	  seen_component = 1;
 	  break;
@@ -1749,6 +1755,7 @@ loop:
 				  gfc_new_block->formal, NULL);
       break;
 
+    case ST_PROCEDURE:
     case ST_MODULE_PROC:	/* The module procedure matcher makes
 				   sure the context is correct.  */
       accept_statement (st);

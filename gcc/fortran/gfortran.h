@@ -222,7 +222,7 @@ typedef enum
   ST_OMP_END_WORKSHARE, ST_OMP_DO, ST_OMP_FLUSH, ST_OMP_MASTER, ST_OMP_ORDERED,
   ST_OMP_PARALLEL, ST_OMP_PARALLEL_DO, ST_OMP_PARALLEL_SECTIONS,
   ST_OMP_PARALLEL_WORKSHARE, ST_OMP_SECTIONS, ST_OMP_SECTION, ST_OMP_SINGLE,
-  ST_OMP_THREADPRIVATE, ST_OMP_WORKSHARE,
+  ST_OMP_THREADPRIVATE, ST_OMP_WORKSHARE, ST_PROCEDURE,
   ST_NONE
 }
 gfc_statement;
@@ -589,7 +589,8 @@ typedef struct
     imported:1;			/* Symbol has been associated by IMPORT.  */
 
   unsigned in_namelist:1, in_common:1, in_equivalence:1;
-  unsigned function:1, subroutine:1, generic:1, generic_copy:1;
+  unsigned function:1, subroutine:1, procedure:1;
+  unsigned generic:1, generic_copy:1;
   unsigned implicit_type:1;	/* Type defined via implicit rules.  */
   unsigned untyped:1;           /* No implicit type could be found.  */
 
@@ -960,6 +961,8 @@ typedef struct gfc_symbol
   gfc_array_spec *as;
   struct gfc_symbol *result;	/* function result symbol */
   gfc_component *components;	/* Derived type components */
+
+  struct gfc_symbol *interface;	/* For PROCEDURE declarations.  */
 
   /* Defined only for Cray pointees; points to their pointer.  */
   struct gfc_symbol *cp_pointer;
@@ -2039,6 +2042,7 @@ try gfc_add_recursive (symbol_attribute *, locus *);
 try gfc_add_function (symbol_attribute *, const char *, locus *);
 try gfc_add_subroutine (symbol_attribute *, const char *, locus *);
 try gfc_add_volatile (symbol_attribute *, const char *, locus *);
+try gfc_add_proc (symbol_attribute *attr, const char *name, locus *where);
 
 try gfc_add_access (symbol_attribute *, gfc_access, const char *, locus *);
 try gfc_add_is_bind_c(symbol_attribute *, const char *, locus *, int);
@@ -2109,6 +2113,8 @@ void gfc_symbol_state (void);
 
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
+
+void copy_formal_args (gfc_symbol *dest, gfc_symbol *src);
 
 /* intrinsic.c */
 extern int gfc_init_expr;
