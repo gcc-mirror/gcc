@@ -1843,21 +1843,18 @@ DRIVER_DEFINES = \
   -DTOOLDIR_BASE_PREFIX=\"$(libsubdir_to_prefix)$(prefix_to_exec_prefix)\" \
   @TARGET_SYSTEM_ROOT_DEFINE@ \
   $(VALGRIND_DRIVER_DEFINES) \
-  `test "X$${SHLIB_LINK}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
-  `test "X$${SHLIB_MULTILIB}" = "X" || echo "-DNO_SHARED_LIBGCC_MULTILIB"`
+  `test "X$${SHLIB_LINK}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"`
 
 gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H) $(FLAGS_H) \
     configargs.h $(OBSTACK_H) opts.h
-	(SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
 
 gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
-	(SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
@@ -3279,16 +3276,14 @@ unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
 
 protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
-	(SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
 unprotoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) \
     $(SYSTEM_H) coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
-	(SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))

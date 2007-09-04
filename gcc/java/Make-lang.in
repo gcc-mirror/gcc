@@ -58,8 +58,7 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 
 jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
   $(GCC_H) $(CONFIG_H)
-	(SHLIB_LINK='$(SHLIB_LINK)' \
-	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
+	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
 

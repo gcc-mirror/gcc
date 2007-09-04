@@ -1,3 +1,7 @@
+2007-09-03  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Make-lang.in (jvspec.o): Remove SHLIB_MULTILIB.
+
 2007-09-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-parse.c (read_class, java_parse_file): Supply a TYPE for

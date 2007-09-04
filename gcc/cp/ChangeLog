@@ -1,3 +1,7 @@
+2007-09-03  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Make-lang.in (g++spec.o): Remove SHLIB_MULTILIB.
+
 2007-09-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (name_as_c_string): Supply a TYPE for CONST_CAST.
