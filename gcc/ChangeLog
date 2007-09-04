@@ -1,3 +1,12 @@
+2007-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* regrename.c(copyprop_hardreg_forward_1): Unshare when doing copyprop.
+
+2007-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* regrename.c (build_def_use): Don't share RTL between MATCH_OPERATOR
+	and corresponding MATCH_DUP.
+
 2007-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR middle-end/33187
