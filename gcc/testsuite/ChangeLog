@@ -1,3 +1,8 @@
+2007-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33017
+	* gcc.dg/pr33017.c: New test.
+
 2007-09-05  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.target/powerpc/ppu-intrinsics.c: Add test cases for the
