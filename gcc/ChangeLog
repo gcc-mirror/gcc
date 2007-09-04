@@ -3,6 +3,10 @@
 	* config/rs6000/tramp.asm: Include config.h.
 	Check __PIC__ or __pic__ macro instead of SHARED.
 
+	PR tree-optimization/33017
+	* tree-data-ref.c (split_constant_offset) <case SSA_NAME>: Don't
+	recurse for pure or const function calls.
+
 2007-09-04  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* c-format.c: Include alloc-pool.h.

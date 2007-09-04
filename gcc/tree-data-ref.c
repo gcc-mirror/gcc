@@ -574,7 +574,8 @@ split_constant_offset (tree exp, tree *var, tree *off)
 
 	    if (!TREE_SIDE_EFFECTS (def_stmt_rhs) 
 		&& EXPR_P (def_stmt_rhs)
-		&& !REFERENCE_CLASS_P (def_stmt_rhs))
+		&& !REFERENCE_CLASS_P (def_stmt_rhs)
+		&& !get_call_expr_in (def_stmt_rhs))
 	      {
 		split_constant_offset (def_stmt_rhs, &var0, &off0);
 		var0 = fold_convert (type, var0);
