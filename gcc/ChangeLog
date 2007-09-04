@@ -1,3 +1,8 @@
+2007-09-03  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.in (DRIVER_DEFINES, gcc.o, gccspec.o, protoize.o)
+	(unprotoize.o): Remove SHLIB_MULTILIB.
+
 2007-09-03  Eric Weddington  <eweddington@cso.atmel.com>
 
 	* doc/extend.texi: Document progmem attribute for AVR.
