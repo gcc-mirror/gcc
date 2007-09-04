@@ -986,7 +986,8 @@ check_interface0 (gfc_interface *p, const char *interface_name)
   /* Make sure all symbols in the interface have been defined as
      functions or subroutines.  */
   for (; p; p = p->next)
-    if (!p->sym->attr.function && !p->sym->attr.subroutine)
+    if ((!p->sym->attr.function && !p->sym->attr.subroutine)
+	|| !p->sym->attr.if_source)
       {
 	if (p->sym->attr.external)
 	  gfc_error ("Procedure '%s' in %s at %L has no explicit interface",

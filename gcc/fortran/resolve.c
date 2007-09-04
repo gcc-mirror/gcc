@@ -7362,6 +7362,25 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
+  if (sym->attr.procedure && sym->interface
+      && sym->attr.if_source != IFSRC_DECL)
+    {
+      /* Get the attributes from the interface (now resolved).  */
+      if (sym->interface->attr.if_source || sym->interface->attr.intrinsic)
+	{
+	  sym->ts = sym->interface->ts;
+	  sym->attr.function = sym->interface->attr.function;
+	  sym->attr.subroutine = sym->interface->attr.subroutine;
+	  copy_formal_args (sym, sym->interface);
+	}
+      else if (sym->interface->name[0] != '\0')
+	{
+	  gfc_error ("Interface '%s' of procedure '%s' at %L must be explicit",
+		    sym->interface->name, sym->name, &sym->declared_at);
+	  return;
+	}
+    }
+
   if (sym->attr.flavor == FL_DERIVED && resolve_fl_derived (sym) == FAILURE)
     return;
 

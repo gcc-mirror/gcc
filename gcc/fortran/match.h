@@ -133,6 +133,7 @@ match gfc_match_old_kind_spec (gfc_typespec *);
 match gfc_match_end (gfc_statement *);
 match gfc_match_data_decl (void);
 match gfc_match_formal_arglist (gfc_symbol *, int, int);
+match gfc_match_procedure (void);
 match gfc_match_function_decl (void);
 match gfc_match_entry (void);
 match gfc_match_subroutine (void);

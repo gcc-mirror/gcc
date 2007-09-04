@@ -1,3 +1,20 @@
+2007-09-04  Janus Weil  <jaydub66@gmail.com>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	* decl.c (match_procedure_decl,match_procedure_in_interface,
+	gfc_match_procedure): Handle PROCEDURE statements.
+	* gfortran.h (struct gfc_symbol): New member "gfc_symbol *interface".
+	(enum gfc_statement): New element "ST_PROCEDURE".
+	(strcut symbol_attribute): New member "unsigned procedure".
+	* interface.c (check_interface0): Extended error checking.
+	* match.h: Add gfc_match_procedure prototype.
+	* parse.c (decode_statement,next_statement,gfc_ascii_statement,
+	parse_derived,parse_interface): Implement PROCEDURE statements.
+	* resolve.c (resolve_symbol): Ditto.
+	* symbol.c (check_conflict): Ditto.
+	(gfc_add_proc): New function for setting the procedure attribute.
+	(copy_formal_args): New function for copying formal argument lists.
+
 2007-09-03  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Make-lang.in (gfortranspec.o): Remove SHLIB_MULTILIB.

@@ -3759,6 +3759,248 @@ gfc_match_suffix (gfc_symbol *sym, gfc_symbol **result)
 }
 
 
+/* Match a PROCEDURE declaration (R1211).  */
+
+static match
+match_procedure_decl (void)
+{
+  match m;
+  locus old_loc, entry_loc;
+  gfc_symbol *sym, *proc_if = NULL;
+  int num;
+
+  old_loc = entry_loc = gfc_current_locus;
+
+  gfc_clear_ts (&current_ts);
+
+  if (gfc_match (" (") != MATCH_YES)
+    {
+      gfc_current_locus = entry_loc;
+      return MATCH_NO;
+    }
+
+  /* Get the type spec. for the procedure interface.  */
+  old_loc = gfc_current_locus;
+  m = match_type_spec (&current_ts, 0);
+  if (m == MATCH_YES || (m == MATCH_NO && gfc_peek_char () == ')'))
+    goto got_ts;
+
+  if (m == MATCH_ERROR)
+    return m;
+
+  gfc_current_locus = old_loc;
+
+  /* Get the name of the procedure or abstract interface
+  to inherit the interface from.  */
+  m = gfc_match_symbol (&proc_if, 1);
+
+  if (m == MATCH_NO)
+    goto syntax;
+  else if (m == MATCH_ERROR)
+    return m;
+
+  /* Various interface checks.  */
+  if (proc_if)
+    {
+      if (proc_if->generic)
+	{
+	  gfc_error ("Interface '%s' at %C may not be generic", proc_if->name);
+	  return MATCH_ERROR;
+	}
+      if (proc_if->attr.proc == PROC_ST_FUNCTION)
+	{
+	  gfc_error ("Interface '%s' at %C may not be a statement function",
+		    proc_if->name);
+	  return MATCH_ERROR;
+	}
+      /* Handle intrinsic procedures.  */
+      if (gfc_intrinsic_name (proc_if->name, 0)
+	  || gfc_intrinsic_name (proc_if->name, 1))
+	proc_if->attr.intrinsic = 1;
+      if (proc_if->attr.intrinsic
+	  && !gfc_intrinsic_actual_ok (proc_if->name, 0))
+	{
+	  gfc_error ("Intrinsic procedure '%s' not allowed "
+		    "in PROCEDURE statement at %C", proc_if->name);
+	  return MATCH_ERROR;
+	}
+      /* TODO: Allow intrinsics with gfc_intrinsic_actual_ok
+	 (proc_if->name, 0) after PR33162 is fixed.  */
+      if (proc_if->attr.intrinsic)
+	{
+	  gfc_error ("Fortran 2003: Support for intrinsic procedure '%s' "
+		     "in PROCEDURE statement at %C not yet implemented "
+		     "in gfortran", proc_if->name);
+	  return MATCH_ERROR;
+	}
+    }
+
+got_ts:
+
+  if (gfc_match (" )") != MATCH_YES)
+    {
+      gfc_current_locus = entry_loc;
+      return MATCH_NO;
+    }
+
+  /* Parse attributes.  */
+  m = match_attr_spec();
+  if (m == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  /* Get procedure symbols.  */
+  for(num=1;;num++)
+    {
+
+      m = gfc_match_symbol (&sym, 0);
+      if (m == MATCH_NO)
+	goto syntax;
+      else if (m == MATCH_ERROR)
+	return m;
+
+      /* Add current_attr to the symbol attributes.  */
+      if (gfc_copy_attr (&sym->attr, &current_attr, NULL) == FAILURE)
+	return MATCH_ERROR;
+
+      if (sym->attr.is_bind_c)
+	{
+	  /* Check for C1218.  */
+	  if (!proc_if || !proc_if->attr.is_bind_c)
+	    {
+	      gfc_error ("BIND(C) attribute at %C requires "
+			"an interface with BIND(C)");
+	      return MATCH_ERROR;
+	    }
+	  /* Check for C1217.  */
+	  if (has_name_equals && sym->attr.pointer)
+	    {
+	      gfc_error ("BIND(C) procedure with NAME may not have "
+			"POINTER attribute at %C");
+	      return MATCH_ERROR;
+	    }
+	  if (has_name_equals && sym->attr.dummy)
+	    {
+	      gfc_error ("Dummy procedure at %C may not have "
+			"BIND(C) attribute with NAME");
+	      return MATCH_ERROR;
+	    }
+	  /* Set binding label for BIND(C).  */
+	  if (set_binding_label (sym->binding_label, sym->name, num) != SUCCESS)
+	    return MATCH_ERROR;
+	}
+
+      if (!sym->attr.pointer && gfc_add_external (&sym->attr, NULL) == FAILURE)
+	return MATCH_ERROR;
+      if (gfc_add_proc (&sym->attr, sym->name, NULL) == FAILURE)
+	return MATCH_ERROR;
+
+      /* Set interface.  */
+      if (proc_if != NULL)
+	sym->interface = proc_if;
+      else if (current_ts.type != BT_UNKNOWN)
+	{
+	  sym->interface = gfc_new_symbol ("", gfc_current_ns);
+	  sym->interface->ts = current_ts;
+	  sym->interface->attr.function = 1;
+	  sym->ts = sym->interface->ts;
+	  sym->attr.function = sym->interface->attr.function;
+	}
+
+      if (gfc_match_eos () == MATCH_YES)
+	return MATCH_YES;
+      if (gfc_match_char (',') != MATCH_YES)
+	goto syntax;
+    }
+
+syntax:
+  gfc_error ("Syntax error in PROCEDURE statement at %C");
+  return MATCH_ERROR;
+}
+
+
+/* Match a PROCEDURE declaration inside an interface (R1206).  */
+
+static match
+match_procedure_in_interface (void)
+{
+  match m;
+  gfc_symbol *sym;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+
+  if (current_interface.type == INTERFACE_NAMELESS
+      || current_interface.type == INTERFACE_ABSTRACT)
+    {
+      gfc_error ("PROCEDURE at %C must be in a generic interface");
+      return MATCH_ERROR;
+    }
+
+  for(;;)
+    {
+      m = gfc_match_name (name);
+      if (m == MATCH_NO)
+	goto syntax;
+      else if (m == MATCH_ERROR)
+	return m;
+      if (gfc_get_symbol (name, gfc_current_ns->parent, &sym))
+	return MATCH_ERROR;
+
+      if (gfc_add_interface (sym) == FAILURE)
+	return MATCH_ERROR;
+
+      sym->attr.procedure = 1;
+
+      if (gfc_match_eos () == MATCH_YES)
+	break;
+      if (gfc_match_char (',') != MATCH_YES)
+	goto syntax;
+    }
+
+  return MATCH_YES;
+
+syntax:
+  gfc_error ("Syntax error in PROCEDURE statement at %C");
+  return MATCH_ERROR;
+}
+
+
+/* General matcher for PROCEDURE declarations.  */
+
+match
+gfc_match_procedure (void)
+{
+  match m;
+
+  switch (gfc_current_state ())
+    {
+    case COMP_NONE:
+    case COMP_PROGRAM:
+    case COMP_MODULE:
+    case COMP_SUBROUTINE:
+    case COMP_FUNCTION:
+      m = match_procedure_decl ();
+      break;
+    case COMP_INTERFACE:
+      m = match_procedure_in_interface ();
+      break;
+    case COMP_DERIVED:
+      gfc_error ("Fortran 2003: Procedure components at %C are "
+		"not yet implemented in gfortran");
+      return MATCH_ERROR;
+    default:
+      return MATCH_NO;
+    }
+
+  if (m != MATCH_YES)
+    return m;
+
+  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PROCEDURE statement at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  return m;
+}
+
+
 /* Match a function declaration.  */
 
 match
