@@ -1,6 +1,7 @@
 2007-09-04  Ben Elliston  <bje@au.ibm.com>
 
 	* c-opts.c: Include "tm_p.h".
+	* Makefile.in (c-opts.o): Add $(TM_P_H) as a dependency.
 
 2007-09-04  Richard Guenther  <rguenther@suse.de>
 
