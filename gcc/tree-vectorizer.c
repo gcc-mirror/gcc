@@ -2304,7 +2304,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, tree phi)
      outer-loop vectorization is safe.  */
 
   /* CHECKME: check for !flag_finite_math_only too?  */
-  if (SCALAR_FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations
+  if (SCALAR_FLOAT_TYPE_P (type) && !flag_associative_math
       && !nested_in_vect_loop_p (vect_loop, def_stmt)) 
     {
       /* Changing the order of operations changes the semantics.  */

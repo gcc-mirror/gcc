@@ -9096,8 +9096,9 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 
       /* Likewise, we can simplify a comparison of a real constant with
          a MINUS_EXPR whose first operand is also a real constant, i.e.
-         (c1 - x) < c2 becomes x > c1-c2.  */
-      if (flag_unsafe_math_optimizations
+         (c1 - x) < c2 becomes x > c1-c2.  Reordering is allowed on 
+         floating-point types only if -fassociative-math is set.  */
+      if (flag_associative_math
 	  && TREE_CODE (arg1) == REAL_CST
 	  && TREE_CODE (arg0) == MINUS_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == REAL_CST
@@ -9651,11 +9652,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	}
 
       /* Handle (A1 * C1) + (A2 * C2) with A1, A2 or C1, C2 being the
-	 same or one.  Make sure type is not saturating.  */
+	 same or one.  Make sure type is not saturating.
+	 fold_plusminus_mult_expr will re-associate.  */
       if ((TREE_CODE (arg0) == MULT_EXPR
 	   || TREE_CODE (arg1) == MULT_EXPR)
 	  && !TYPE_SATURATING (type)
-	  && (!FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
+	  && (!FLOAT_TYPE_P (type) || flag_associative_math))
         {
 	  tree tem = fold_plusminus_mult_expr (code, type, arg0, arg1);
 	  if (tem)
@@ -9791,8 +9793,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    return fold_build2 (MULT_EXPR, type, arg0,
 				build_real (type, dconst2));
 
-          /* Convert a + (b*c + d*e) into (a + b*c) + d*e.  */
-          if (flag_unsafe_math_optimizations
+          /* Convert a + (b*c + d*e) into (a + b*c) + d*e.  
+             We associate floats only if the user has specified
+             -fassociative-math.  */
+          if (flag_associative_math
               && TREE_CODE (arg1) == PLUS_EXPR
               && TREE_CODE (arg0) != MULT_EXPR)
             {
@@ -9806,8 +9810,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
                   return fold_build2 (PLUS_EXPR, type, tree0, tree11);
                 }
             }
-          /* Convert (b*c + d*e) + a into b*c + (d*e +a).  */
-          if (flag_unsafe_math_optimizations
+          /* Convert (b*c + d*e) + a into b*c + (d*e +a).  
+             We associate floats only if the user has specified
+             -fassociative-math.  */
+          if (flag_associative_math
               && TREE_CODE (arg0) == PLUS_EXPR
               && TREE_CODE (arg1) != MULT_EXPR)
             {
@@ -9898,10 +9904,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       /* In most languages, can't associate operations on floats through
 	 parentheses.  Rather than remember where the parentheses were, we
 	 don't associate floats at all, unless the user has specified
-	 -funsafe-math-optimizations.
+	 -fassociative-math.
 	 And, we need to make sure type is not saturating.  */
 
-      if ((! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
+      if ((! FLOAT_TYPE_P (type) || flag_associative_math)
 	  && !TYPE_SATURATING (type))
 	{
 	  tree var0, con0, lit0, minus_lit0;
@@ -10202,11 +10208,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	return tem;
 
       /* Handle (A1 * C1) - (A2 * C2) with A1, A2 or C1, C2 being the
-	 same or one.  Make sure type is not saturating.  */
+	 same or one.  Make sure type is not saturating.
+	 fold_plusminus_mult_expr will re-associate.  */
       if ((TREE_CODE (arg0) == MULT_EXPR
 	   || TREE_CODE (arg1) == MULT_EXPR)
 	  && !TYPE_SATURATING (type)
-	  && (!FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
+	  && (!FLOAT_TYPE_P (type) || flag_associative_math))
         {
 	  tree tem = fold_plusminus_mult_expr (code, type, arg0, arg1);
 	  if (tem)
@@ -10297,8 +10304,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && real_minus_onep (arg1))
 	    return fold_convert (type, negate_expr (arg0));
 
-	  /* Convert (C1/X)*C2 into (C1*C2)/X.  */
-	  if (flag_unsafe_math_optimizations
+	  /* Convert (C1/X)*C2 into (C1*C2)/X.  This transformation may change
+             the result for floating point types due to rounding so it is applied
+             only if -fassociative-math was specify.  */
+	  if (flag_associative_math
 	      && TREE_CODE (arg0) == RDIV_EXPR
 	      && TREE_CODE (arg1) == REAL_CST
 	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == REAL_CST)
@@ -10962,12 +10971,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 
       /* If ARG1 is a constant, we can convert this to a multiply by the
 	 reciprocal.  This does not have the same rounding properties,
-	 so only do this if -funsafe-math-optimizations.  We can actually
+	 so only do this if -freciprocal-math.  We can actually
 	 always safely do it if ARG1 is a power of two, but it's hard to
 	 tell if it is or not in a portable manner.  */
       if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  if (flag_unsafe_math_optimizations
+	  if (flag_reciprocal_math
 	      && 0 != (tem = const_binop (code, build_real (type, dconst1),
 					  arg1, 0)))
 	    return fold_build2 (MULT_EXPR, type, arg0, tem);
@@ -10984,15 +10993,15 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		}
 	    }
 	}
-      /* Convert A/B/C to A/(B*C).  */
-      if (flag_unsafe_math_optimizations
+      /* Convert A/B/C to A/(B*C).  */ 
+      if (flag_reciprocal_math
 	  && TREE_CODE (arg0) == RDIV_EXPR)
 	return fold_build2 (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
 			    fold_build2 (MULT_EXPR, type,
 					 TREE_OPERAND (arg0, 1), arg1));
 
       /* Convert A/(B/C) to (A/B)*C.  */
-      if (flag_unsafe_math_optimizations
+      if (flag_reciprocal_math
 	  && TREE_CODE (arg1) == RDIV_EXPR)
 	return fold_build2 (MULT_EXPR, type,
 			    fold_build2 (RDIV_EXPR, type, arg0,
@@ -11000,7 +11009,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			    TREE_OPERAND (arg1, 1));
 
       /* Convert C1/(X*C2) into (C1/C2)/X.  */
-      if (flag_unsafe_math_optimizations
+      if (flag_reciprocal_math
 	  && TREE_CODE (arg1) == MULT_EXPR
 	  && TREE_CODE (arg0) == REAL_CST
 	  && TREE_CODE (TREE_OPERAND (arg1, 1)) == REAL_CST)

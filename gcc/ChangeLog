@@ -1,3 +1,35 @@
+2007-09-04  Revital Eres  <eres@il.ibm.com>
+	    Richard Guenther  <rguenther@suse.de>
+	    R. Clint Whaley  <whaley@cs.utsa.edu>
+
+	* doc/invoke.texi (-fassociative-math, -freciprocal-math):
+	Document new flags.
+	* tree-tailcall.c (process_assignment): Use -fassociative-math
+	when reodering operands of floating-point type.
+	* fold-const.c (fold_comparison, fold_binary): Use
+	-fassociative-math and -freciprocal-math instead of
+	-funsafe-math-optimization flag.
+	* toplev.h (set_unsafe_math_optimizations_flags): Declare function.
+	* tree-ssa-math-opts.c (gate_cse_reciprocals): Use
+	-freciprocal-math instead of -funsafe-math-optimizations.
+	* opts.c (set_fast_math_flags): Set -freciprocal-math and
+	-fassociative-math when -ffast-math is set.
+	(set_unsafe_math_optimizations_flags): New Function
+	to set -freciprocal-math and -fassociative-math when
+	-funsafe-math-optimizations is set.
+	(common_handle_option): Call it.
+	* tree-vectorizer.c (vect_is_simple_reduction): Use
+	-fassociative-math when doing reduction on floats.
+	* loop-unroll.c (analyze_insn_to_expand_var): Use
+	-fassociative-math when expanding an accumulator of type float.
+	* simplify-rtx.c (simplify_binary_operation_1): Use
+	-fassociative-math and -freciprocal-math when reordeing operands
+	of floating-point type.
+	* combine.c (combine_simplify_rtx): Likewise.
+	* tree-ssa-reassoc.c (break_up_subtract_bb, reassociate_bb):
+	Likewise.
+	* common.opt (-fassociative-math, -freciprocal-math): New flags.
+
 2007-09-04  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/18608
