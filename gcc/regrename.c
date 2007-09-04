@@ -807,16 +807,8 @@ build_def_use (basic_block bb)
 	    }
 	  for (i = 0; i < recog_data.n_dups; i++)
 	    {
-	      int dup_num = recog_data.dup_num[i];
-
 	      old_dups[i] = *recog_data.dup_loc[i];
 	      *recog_data.dup_loc[i] = cc0_rtx;
-
-	      /* For match_dup of match_operator or match_parallel, share
-		 them, so that we don't miss changes in the dup.  */
-	      if (icode >= 0
-		  && insn_data[icode].operand[dup_num].eliminable == 0)
-		old_dups[i] = recog_data.operand[dup_num];
 	    }
 
 	  scan_rtx (insn, &PATTERN (insn), NO_REGS, terminate_all_read,
@@ -1745,7 +1737,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	      recog_data.operand[i] = new;
 	      for (j = 0; j < recog_data.n_dups; j++)
 		if (recog_data.dup_num[j] == i)
-		  validate_change (insn, recog_data.dup_loc[j], new, 1);
+		  validate_unshare_change (insn, recog_data.dup_loc[j], new, 1);
 
 	      any_replacements = true;
 	    }
