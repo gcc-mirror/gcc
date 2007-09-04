@@ -1,3 +1,15 @@
+2007-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (-finline-small-functions): Document.
+	* ipa-inline.c (cgraph_default_inline_p): Do not use DECL_INLINE
+	when deciding what is inlinable.
+	(cgraph_decide_recursive_inlining): Handle flag_inline_functions.
+	(cgraph_decide_inlining_of_small_function): Handle new flags.
+	(cgraph_decide_inlining_incrementally): Likewise.
+	* opts.c (decode_options): Enable flag_inline_small_functions at -O2
+	* common.opt (finline-small-functions): New.
+	* Makefile.in (build/gengtype.o-warn): Work around PR29478
+
 2007-09-04  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (add_virtual_operand): Only mark

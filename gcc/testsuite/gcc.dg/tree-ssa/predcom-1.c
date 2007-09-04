@@ -6,6 +6,7 @@ void abort (void);
 
 unsigned fib[1000];
 
+__attribute__ ((noinline))
 void count_fib(void)
 {
   int i;
@@ -18,6 +19,7 @@ void count_fib(void)
 
 unsigned avg[1000];
 
+__attribute__ ((noinline))
 void count_averages(int n)
 {
   int i;

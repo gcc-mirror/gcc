@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options -O2 } */
 
+extern void do_something_usefull();
 /* Check that we finish compiling even if instructed to
    flatten a cyclic callgraph.  Verify we correctly
    flatten with another function marked flatten in the
@@ -27,6 +28,7 @@ void __attribute__((flatten)) doubleindirect(void);
 static void doubleindirect2(void)
 {
   doubleindirect();
+  do_something_usefull ();
 }
 static void doubleindirect1(void)
 {
@@ -42,6 +44,7 @@ static void subcycle1(void);
 static void subcycle2(void)
 {
   subcycle1();
+  do_something_usefull ();
 }
 static void subcycle1(void)
 {
@@ -58,6 +61,7 @@ static void doublesubcycle2(void);
 static void doublesubcycle3(void)
 {
   doublesubcycle1();
+  do_something_usefull ();
 }
 static void doublesubcycle2(void)
 {

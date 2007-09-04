@@ -404,10 +404,10 @@ cgraph_default_inline_p (struct cgraph_node *n, const char **reason)
 
   if (n->inline_decl)
     decl = n->inline_decl;
-  if (!DECL_INLINE (decl))
+  if (!flag_inline_small_functions && !DECL_DECLARED_INLINE_P (decl))
     {
       if (reason)
-	*reason = N_("function not inlinable");
+	*reason = N_("function not inline candidate");
       return false;
     }
 
@@ -666,7 +666,8 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
   int depth = 0;
   int n = 0;
 
-  if (optimize_size)
+  if (optimize_size
+      || (!flag_inline_functions && !DECL_DECLARED_INLINE_P (node->decl)))
     return false;
 
   if (DECL_DECLARED_INLINE_P (node->decl))
@@ -863,6 +864,7 @@ cgraph_decide_inlining_of_small_functions (void)
       struct cgraph_node *where;
       int growth =
 	cgraph_estimate_size_after_inlining (1, edge->caller, edge->callee);
+      const char *not_good = NULL;
 
       growth -= edge->caller->global.insns;
 
@@ -916,13 +918,19 @@ cgraph_decide_inlining_of_small_functions (void)
 	    }
 	}
 
-      if ((!cgraph_maybe_hot_edge_p (edge) || optimize_size) && growth > 0)
+      if (!cgraph_maybe_hot_edge_p (edge))
+ 	not_good = N_("call is unlikely and code size would grow");
+      if (!flag_inline_functions
+	  && !DECL_DECLARED_INLINE_P (edge->callee->decl))
+ 	not_good = N_("function not declared inline and code size would grow");
+      if (optimize_size)
+ 	not_good = N_("optimizing for size and code size would grow");
+      if (not_good && growth > 0)
 	{
           if (!cgraph_recursive_inlining_p (edge->caller, edge->callee,
 				            &edge->inline_failed))
 	    {
-	      edge->inline_failed = 
-		N_("call is unlikely");
+	      edge->inline_failed = not_good;
 	      if (dump_file)
 		fprintf (dump_file, " inline_failed:%s.\n", edge->inline_failed);
 	    }
@@ -1363,7 +1371,9 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	/* When the function body would grow and inlining the function won't
 	   eliminate the need for offline copy of the function, don't inline.
 	 */
-	if (mode == INLINE_SIZE
+	if ((mode == INLINE_SIZE
+	     || (!flag_inline_functions
+		 && !DECL_DECLARED_INLINE_P (e->callee->decl)))
 	    && (cgraph_estimate_size_after_inlining (1, e->caller, e->callee)
 		> e->caller->global.insns)
 	    && cgraph_estimate_growth (e->callee) > 0)

@@ -328,7 +328,7 @@ Objective-C and Objective-C++ Dialects}.
 -fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
 -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-functions-called-once @gol
--finline-limit=@var{n}  -fkeep-inline-functions @gol
+-finline-small-functions -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmodulo-sched -fmodulo-sched-allow-regmoves -fno-branch-count-reg @gol
 -fno-default-inline  -fno-defer-pop -fmove-loop-invariants @gol
@@ -5033,6 +5033,7 @@ compilation time.
 -ftree-fre @gol
 -ftree-ch @gol
 -funit-at-a-time @gol
+-finline-small-functions @gol
 -fmerge-constants}
 
 @option{-O} also turns on @option{-fomit-frame-pointer} on machines
@@ -5171,6 +5172,15 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 Don't pay attention to the @code{inline} keyword.  Normally this option
 is used to keep the compiler from expanding any functions inline.
 Note that if you are not optimizing, no functions can be expanded inline.
+
+@item -finline-small-functions
+@opindex finline-small-functions
+Integrate functions into their callers when their body is smaller than expected
+function call code (so overall size of program gets smaller).  The compiler
+heuristically decides which functions are simple enough to be worth integrating
+in this way.
+
+Enabled at level @option{-O2}.
 
 @item -finline-functions
 @opindex finline-functions

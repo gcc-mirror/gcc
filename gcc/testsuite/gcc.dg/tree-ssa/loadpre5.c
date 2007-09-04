@@ -2,6 +2,8 @@
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
 int p;
 int r;
+
+__attribute__ ((noinline))
 int a(void)
 {
   return p;

@@ -562,6 +562,10 @@ finline
 Common Report Var(flag_no_inline,0) Init(2)
 Pay attention to the \"inline\" keyword
 
+finline-small-functions
+Common Report Var(flag_inline_small_functions) Optimization
+Integrate simple functions into their callers when code size is known to not growth
+
 finline-functions
 Common Report Var(flag_inline_functions) Optimization
 Integrate simple functions into their callers
