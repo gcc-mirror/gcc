@@ -1381,7 +1381,7 @@ AC_SUBST(toolexecmainlibdir)
 AC_SUBST(toolexeclibdir)
 
 # Determine gcj and libgcj version number.
-gcjversion=`$GCJ -v 2>&1 | sed -n 's/^.*version \([[^ ]]*\).*$/\1/p'`
+gcjversion=`cat "$srcdir/../gcc/BASE-VER"`
 libgcj_soversion=`awk -F: '/^[[^#]].*:/ { print $1 }' $srcdir/libtool-version`
 GCJVERSION=$gcjversion
 AC_SUBST(GCJVERSION)
