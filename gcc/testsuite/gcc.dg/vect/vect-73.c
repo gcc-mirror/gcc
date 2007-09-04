@@ -9,6 +9,7 @@ int ic[N*2];
 
 #define ia (ic+N)
 
+__attribute__ ((noinline))
 int main1 ()
 {
   int i, j;

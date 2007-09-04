@@ -8,7 +8,7 @@ float out[N];
 
 /* Outer-loop vectorization with non-consecutive access. Not vectorized yet.  */
 
-void
+__attribute__ ((noinline)) void
 foo (){
   int i,j;
   float diff;

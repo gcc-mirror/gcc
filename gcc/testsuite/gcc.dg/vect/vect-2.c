@@ -4,7 +4,8 @@
 #include "tree-vect.h"
 
 #define N 16
- 
+
+__attribute__ ((noinline)) 
 int main1 ()
 {  
   char cb[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};

@@ -7,6 +7,7 @@
 
 #define N 16
  
+__attribute__ ((noinline))
 int main1 ()
 {  
   long long unsigned int ca[N];

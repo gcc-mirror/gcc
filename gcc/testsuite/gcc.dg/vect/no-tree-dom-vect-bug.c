@@ -5,7 +5,7 @@
 
 long stack_vars_sorted[32];
 
-int
+__attribute__ ((noinline)) int
 main1 (long n)
 {
   long si;

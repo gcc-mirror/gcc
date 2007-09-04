@@ -26,7 +26,7 @@ signed char Y[N] __attribute__ ((__aligned__(16)));
    Alternatively, the loop could also be vectorized as widening-mult + summation,
    or with type-conversion support.
  */
-short
+__attribute__ ((noinline)) short
 foo2(int len) {
   int i;
   short result = 0;

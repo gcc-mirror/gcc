@@ -10,7 +10,7 @@ typedef struct {
    unsigned int b;
 } ii;
 
-int
+__attribute__ ((noinline)) int
 main1 ()
 {
   unsigned short arr[N];

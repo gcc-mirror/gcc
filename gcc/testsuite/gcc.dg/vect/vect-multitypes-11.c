@@ -7,7 +7,7 @@
 
 short x[N] __attribute__ ((__aligned__(16)));
 
-int
+__attribute__ ((noinline)) int
 foo (int len, int *z) {
   int i;
 

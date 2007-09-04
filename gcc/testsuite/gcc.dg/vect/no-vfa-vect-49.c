@@ -5,6 +5,7 @@
 
 #define N 256
 
+__attribute__ ((noinline))
 void bar (float *pa, float *pb, float *pc) 
 {
   int i;
@@ -27,7 +28,7 @@ void bar (float *pa, float *pb, float *pc)
    vect-48.c is similar to this one with one difference:
         aliasing is not a problem.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float *pb, float *pc)
 {
   float pa[N] __attribute__ ((__aligned__(16)));

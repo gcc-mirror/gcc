@@ -11,6 +11,7 @@ struct tmp
      int ia[N];
 };
 
+__attribute__ ((noinline))
 int main1 (int off)
 {
   struct tmp sb[N];

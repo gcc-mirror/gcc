@@ -12,7 +12,7 @@ typedef struct {
    unsigned short d;
 } s;
 
-int
+__attribute__ ((noinline)) int
 main1 ()
 {
   s arr[N];

@@ -5,7 +5,7 @@
 
 #define N 16
 
-int
+static __attribute__ ((noinline)) int
 main1 (void)
 {
   int i;

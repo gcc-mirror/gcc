@@ -5,7 +5,7 @@
 
 #define N 64
 
-unsigned short
+__attribute__ ((noinline)) unsigned short
 foo (short scale){
   int i;
   unsigned short j;
@@ -22,7 +22,7 @@ foo (short scale){
   return sum;
 }
 
-unsigned short
+__attribute__ ((noinline)) unsigned short
 bar (void)
 {
   unsigned short j;

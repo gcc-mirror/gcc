@@ -5,6 +5,8 @@
 #include "tree-vect.h"
 
 extern void abort (void);
+
+__attribute__ ((noinline))
 void u ()
 {  
   unsigned int A[4] = {0x08000000,0xffffffff,0xff0000ff,0xf0000001};
@@ -19,6 +21,8 @@ void u ()
     if (C[i] != Answer[i])
       abort ();
 }
+
+__attribute__ ((noinline))
 void s()
 {
   signed int A[4] = {0x08000000,0xffffffff,0xff0000ff,0xf0000001};
@@ -34,6 +38,7 @@ void s()
       abort ();
 }
 
+__attribute__ ((noinline))
 int main1 ()
 {
   u();

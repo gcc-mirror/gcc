@@ -6,7 +6,7 @@
 #define N 26
 int a[N];
  
-int main1 (int X)
+__attribute__ ((noinline)) int main1 (int X)
 {  
   int s = X;
   int i;

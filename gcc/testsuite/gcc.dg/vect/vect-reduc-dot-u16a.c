@@ -14,7 +14,7 @@ unsigned short Y[N] __attribute__ ((__aligned__(16)));
 /* short->short->int dot product. 
    Not detected as a dot-product pattern.
    Requires support for non-widneing multiplication and widening-summation.  */
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo1(int len) {
   int i;
   unsigned int result = 0;

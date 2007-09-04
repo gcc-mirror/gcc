@@ -13,7 +13,7 @@ signed short Y[N] __attribute__ ((__aligned__(16)));
 /* short->short->int dot product.  Should be vectorized on architectures
    supporting vectorized multiplication of two short args with short result,
    e.g "mulv4hi3" and widenning sum */
-int
+__attribute__ ((noinline)) int
 foo (int len)
 {
   int i;

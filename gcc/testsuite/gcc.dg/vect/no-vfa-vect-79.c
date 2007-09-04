@@ -12,7 +12,7 @@ float fc[N] __attribute__ ((__aligned__(16))) = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7
 /* Like vect-80.c but the pointers are not annotated as restricted,
    and therefore can't be antialiased.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float *pa, float *pb, float *pc)
 {
   int i;

@@ -11,6 +11,7 @@ struct
   double d[N];
 } a;
 
+__attribute__ ((noinline))
 int main1()
 {
   int i;

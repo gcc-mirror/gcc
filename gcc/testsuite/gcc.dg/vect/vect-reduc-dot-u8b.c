@@ -18,7 +18,7 @@ unsigned char Y[N] __attribute__ ((__aligned__(16)));
    Alternatively, this test can be vectorized using vect_widen_mult_qi (or
    vect_unpack and non-widening multplication: vect_unpack && vect_short_mult).
    */
-unsigned short
+__attribute__ ((noinline)) unsigned short
 foo (int len) {
   int i;
   unsigned short result = 0;

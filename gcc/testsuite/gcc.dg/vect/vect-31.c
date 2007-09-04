@@ -18,6 +18,7 @@ struct s{
   struct t e;   /* unaligned (offset 2N+4N+4 B) */
 };
  
+__attribute__ ((noinline))
 int main1 ()
 {  
   int i;

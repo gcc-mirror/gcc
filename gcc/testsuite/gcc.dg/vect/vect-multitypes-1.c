@@ -18,7 +18,7 @@ int ib[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,
    which will also align the access to 'ia[i+3]', and the loop could be 
    vectorized on all targets that support unaligned loads.  */
 
-int main1 (int n)
+__attribute__ ((noinline)) int main1 (int n)
 {
   int i;
 
@@ -46,7 +46,7 @@ int main1 (int n)
    This will not align the access 'sa[i+3]' (for which we need to
    peel 5 iterations), so the loop can not be vectorized.  */
 
-int main2 (int n)
+__attribute__ ((noinline)) int main2 (int n)
 {
   int i;
 

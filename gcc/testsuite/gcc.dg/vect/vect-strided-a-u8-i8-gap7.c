@@ -16,7 +16,7 @@ typedef struct {
    unsigned char h;
 } s;
 
-int
+__attribute__ ((noinline)) int
 main1 ()
 {
   int i;

@@ -5,7 +5,7 @@
 
 #define N 16
  
-int main1 ()
+__attribute__ ((noinline)) int main1 ()
 {  
   unsigned int arr1[N];
   unsigned short arr2[N];

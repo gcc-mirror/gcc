@@ -7,7 +7,7 @@
 extern void abort (void);
 typedef signed char T;
 
-void
+__attribute__ ((noinline)) void
 testmax (const T *c, T init, T result)
 {
   T lc[N], accum = init;
@@ -23,7 +23,7 @@ testmax (const T *c, T init, T result)
     abort ();
 }
 
-void
+__attribute__ ((noinline)) void
 testmin (const T *c, T init, T result)
 {
   T lc[N], accum = init;

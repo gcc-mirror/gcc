@@ -9,6 +9,7 @@
 
 extern void abort(void); 
 
+__attribute__ ((noinline)) 
 int main1 ()
 {  
   float A[N] __attribute__ ((__aligned__(16)));

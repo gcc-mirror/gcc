@@ -15,6 +15,7 @@ struct extraction
 static int a[N] = {1,2,3,4,5,6,7,8,9};
 static int b[N] = {2,3,4,5,6,7,8,9,0};
 
+__attribute__ ((noinline))
 int main1 () {
   int i;
   struct extraction *p;
@@ -38,6 +39,7 @@ int main1 () {
   return 0;
 }
 
+__attribute__ ((noinline))
 int main2 () {
   int i;
   int c[N] = {1,2,3,4,5,6,7,8,9};

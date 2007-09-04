@@ -5,7 +5,7 @@
 
 #define N 16
  
-int main1 (int X)
+__attribute__ ((noinline)) int main1 (int X)
 {  
   int arr1[N+1];
   int arr2[N+1];

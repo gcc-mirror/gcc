@@ -23,6 +23,7 @@ struct test1{
   int l;
 };
 
+__attribute__ ((noinline))
 int main1 ()
 {
   int i;

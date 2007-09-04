@@ -5,7 +5,7 @@
 
 #define N 32
 
-int main1 ()
+__attribute__ ((noinline)) int main1 ()
 {
   int i;
   int ia[N];

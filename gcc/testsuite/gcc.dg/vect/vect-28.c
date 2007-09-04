@@ -8,6 +8,7 @@
 
 /* unaligned store.  */
 
+__attribute__ ((noinline))
 int main1 (int off)
 {
   int i;

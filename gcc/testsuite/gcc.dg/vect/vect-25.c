@@ -5,6 +5,7 @@
 
 #define N 128
 
+__attribute__ ((noinline))
 int main1 (int n, int *p)
 {
   int i;

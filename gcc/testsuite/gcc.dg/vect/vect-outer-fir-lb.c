@@ -14,6 +14,7 @@ float fir_out[N];
 /* Currently not vectorized because the loop-count for the inner-loop
    has a maybe_zero component. Will be fixed when we incorporate the
    "cond_expr in rhs" patch.  */
+__attribute__ ((noinline))
 void foo (){
  int i,j,k;
  float diff;
@@ -39,6 +40,7 @@ void foo (){
 }
 
 /* Vectorized. Changing misalignment in the inner-loop.  */
+__attribute__ ((noinline))
 void fir (){
   int i,j,k;
   float diff;

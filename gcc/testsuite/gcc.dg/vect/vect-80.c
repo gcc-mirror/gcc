@@ -13,7 +13,7 @@ float fc[N] __attribute__ ((__aligned__(16))) = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7
    the expression that represents the first location accessed - is
    more involved than just an ssa_name.  */
 
-int
+__attribute__ ((noinline)) int
 main1 (float * __restrict__ pa, float * __restrict__ pb, float *__restrict__ pc)
 {
   int i;

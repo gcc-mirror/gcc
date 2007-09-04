@@ -6,6 +6,7 @@
 #define N 16
 char x[N] __attribute__ ((__aligned__(16)));
  
+__attribute__ ((noinline))
 int main1 (char *y)
 {  
   struct {

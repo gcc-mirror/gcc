@@ -7,7 +7,7 @@
 #define SUM 0 
  
 /* Require widening-mult or data-unpacking (for the type promotion).  */
-int
+__attribute__ ((noinline)) int
 main1 (short *in, int off, short scale, int n)
 {
  int i;

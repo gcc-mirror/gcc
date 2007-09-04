@@ -9,7 +9,7 @@ unsigned short in[N];
 unsigned short coef[N];
 unsigned short a[N];
 
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo (short scale){
   int i;
   unsigned short j;

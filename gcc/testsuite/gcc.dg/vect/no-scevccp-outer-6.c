@@ -5,7 +5,7 @@
 
 #define N 40
 
-int
+__attribute__ ((noinline)) int
 foo (int * __restrict__ b, int k){
   int i,j;
   int sum,x;

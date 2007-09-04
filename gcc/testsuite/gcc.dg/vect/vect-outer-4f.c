@@ -11,7 +11,7 @@ unsigned char arr[N];
 /* Outer-loop vectorization. */
 /* Not vectorized due to multiple-types in the inner-loop.  */
 
-unsigned int
+__attribute__ ((noinline)) unsigned int
 foo (){
   int i,j;
   unsigned int diff;
@@ -28,7 +28,7 @@ foo (){
   return s;
 }
 
-unsigned int
+__attribute__ ((noinline)) unsigned int
 bar (int i, unsigned int diff, unsigned short *in)
 {
     int j;

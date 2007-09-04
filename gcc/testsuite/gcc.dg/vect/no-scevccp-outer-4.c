@@ -9,7 +9,7 @@ int a[N];
 
 /* induction variable k advances through inner and outer loops.  */
 
-int
+__attribute__ ((noinline)) int
 foo (int n){
   int i,j,k=0;
   int sum;

@@ -8,7 +8,7 @@
 int a[N];
 short b[N];
 
-int
+__attribute__ ((noinline)) int
 foo (){
   int i,j;
   int sum;

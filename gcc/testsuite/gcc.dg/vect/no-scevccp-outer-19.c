@@ -8,7 +8,7 @@
 unsigned short a[N];
 unsigned int b[N];
 
-int
+__attribute__ ((noinline)) int
 foo (){
   unsigned short i,j;
   unsigned short sum;

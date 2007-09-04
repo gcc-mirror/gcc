@@ -6,6 +6,7 @@
 #define N 16
 #define DIFF 242
 
+__attribute__ ((noinline))
 int main1 (float x, float max_result)
 {
   int i;

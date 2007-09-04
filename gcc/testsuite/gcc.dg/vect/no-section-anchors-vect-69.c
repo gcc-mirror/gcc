@@ -33,6 +33,7 @@ struct test2{
 struct test1 tmp1[4];
 struct test2 tmp2[4];
 
+__attribute__ ((noinline))
 int main1 ()
 {  
   int i,j;

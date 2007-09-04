@@ -5,7 +5,7 @@
 
 #define N 64
 
-int
+__attribute__ ((noinline)) int
 main1 ()
 {
   int i;

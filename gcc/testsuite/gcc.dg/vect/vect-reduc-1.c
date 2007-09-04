@@ -8,6 +8,7 @@
 
 /* Test vectorization of reduction of unsigned-int.  */
 
+__attribute__ ((noinline))
 void main1 (unsigned int x, unsigned int max_result, unsigned int min_result)
 {
   int i;
