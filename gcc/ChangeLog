@@ -1,5 +1,9 @@
 2007-09-04  Jan Hubicka  <jh@suse.cz>
 
+	* tree-tailcall.c (eliminate_tail_call): Expect unrenamed return value.
+
+2007-09-04  Jan Hubicka  <jh@suse.cz>
+
 	* invoke.texi (-finline-small-functions): Document.
 	* ipa-inline.c (cgraph_default_inline_p): Do not use DECL_INLINE
 	when deciding what is inlinable.
