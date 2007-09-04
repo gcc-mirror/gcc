@@ -13910,6 +13910,7 @@ rs6000_stack_info (void)
   int reg_size = TARGET_32BIT ? 4 : 8;
   int ehrd_size;
   int save_align;
+  int first_gp;
   HOST_WIDE_INT non_fixed_size;
 
   memset (&info, 0, sizeof (info));
@@ -13929,14 +13930,19 @@ rs6000_stack_info (void)
   /* Calculate which registers need to be saved & save area size.  */
   info_ptr->first_gp_reg_save = first_reg_to_save ();
   /* Assume that we will have to save RS6000_PIC_OFFSET_TABLE_REGNUM,
-     even if it currently looks like we won't.  */
+     even if it currently looks like we won't.  Reload may need it to
+     get at a constant; if so, it will have already created a constant
+     pool entry for it.  */
   if (((TARGET_TOC && TARGET_MINIMAL_TOC)
        || (flag_pic == 1 && DEFAULT_ABI == ABI_V4)
        || (flag_pic && DEFAULT_ABI == ABI_DARWIN))
+      && current_function_uses_const_pool
       && info_ptr->first_gp_reg_save > RS6000_PIC_OFFSET_TABLE_REGNUM)
-    info_ptr->gp_size = reg_size * (32 - RS6000_PIC_OFFSET_TABLE_REGNUM);
+    first_gp = RS6000_PIC_OFFSET_TABLE_REGNUM;
   else
-    info_ptr->gp_size = reg_size * (32 - info_ptr->first_gp_reg_save);
+    first_gp = info_ptr->first_gp_reg_save;
+
+  info_ptr->gp_size = reg_size * (32 - first_gp);
 
   /* For the SPE, we have an additional upper 32-bits on each GPR.
      Ideally we should save the entire 64-bits only when the upper
@@ -14024,7 +14030,7 @@ rs6000_stack_info (void)
 	    + info_ptr->parm_size);
 
   if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
-    info_ptr->spe_gp_size = 8 * (32 - info_ptr->first_gp_reg_save);
+    info_ptr->spe_gp_size = 8 * (32 - first_gp);
   else
     info_ptr->spe_gp_size = 0;
 
