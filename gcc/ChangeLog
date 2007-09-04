@@ -1,3 +1,8 @@
+2007-09-04  Emmanuel Thome  <Emmanuel.Thome@inria.fr>
+
+	PR c++/14178
+	* common.opt: Mention ABI version 2 in comment.
+
 2007-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* optabs.c (debug_optab_libfunc): Update; make available to gdb.
@@ -22,7 +27,8 @@
 	gen_extend_conv_libfunc): New.
 	(init_one_libfunc): Revamp for hashtables.
 	(set_conv_libfunc): Likewise.
-	(init_optabs): Initialize hashtable; use lazy initialization where possible.
+	(init_optabs): Initialize hashtable; use lazy initialization where
+	possible.
 	* optabs.h (optab_handlers): Move out of GGC.
 	(optab, convert_optab): Move out of GGC; add lazy gen info.
 	(code_to_optab, convert_optab_table, optab_table): Move out of GGC.

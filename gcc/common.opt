@@ -251,6 +251,8 @@ Common Separate
 ;
 ; 1: The version of the ABI first used in G++ 3.2.
 ;
+; 2: The version of the ABI first used in G++ 3.4.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
