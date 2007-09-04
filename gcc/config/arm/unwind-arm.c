@@ -950,6 +950,66 @@ _Unwind_DeleteException (_Unwind_Exception * exc)
 }
 
 
+/* Perform stack backtrace through unwind data.  */
+_Unwind_Reason_Code
+__gnu_Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument,
+		       phase2_vrs * entry_vrs);
+_Unwind_Reason_Code
+__gnu_Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument,
+		       phase2_vrs * entry_vrs)
+{
+  phase1_vrs saved_vrs;
+  _Unwind_Reason_Code code;
+
+  _Unwind_Control_Block ucb;
+  _Unwind_Control_Block *ucbp = &ucb;
+
+  /* Set the pc to the call site.  */
+  entry_vrs->core.r[R_PC] = entry_vrs->core.r[R_LR];
+
+  /* Save the core registers.  */
+  saved_vrs.core = entry_vrs->core;
+  /* Set demand-save flags.  */
+  saved_vrs.demand_save_flags = ~(_uw) 0;
+  
+  do
+    {
+      /* Find the entry for this routine.  */
+      if (get_eit_entry (ucbp, saved_vrs.core.r[R_PC]) != _URC_OK)
+	{
+	  code = _URC_FAILURE;
+	  break;
+	}
+
+      /* The dwarf unwinder assumes the context structure holds things
+	 like the function and LSDA pointers.  The ARM implementation
+	 caches these in the exception header (UCB).  To avoid
+	 rewriting everything we make the virtual IP register point at
+	 the UCB.  */
+      _Unwind_SetGR((_Unwind_Context *)&saved_vrs, 12, (_Unwind_Ptr) ucbp);
+
+      /* Call trace function.  */
+      if ((*trace) ((_Unwind_Context *) &saved_vrs, trace_argument) 
+	  != _URC_NO_REASON)
+	{
+	  code = _URC_FAILURE;
+	  break;
+	}
+
+      /* Call the pr to decide what to do.  */
+      code = ((personality_routine) UCB_PR_ADDR (ucbp))
+	(_US_VIRTUAL_UNWIND_FRAME | _US_FORCE_UNWIND, 
+	 ucbp, (void *) &saved_vrs);
+    }
+  while (code != _URC_END_OF_STACK
+	 && code != _URC_FAILURE);
+
+ finish:
+  restore_non_core_regs (&saved_vrs);
+  return code;
+}
+
+
 /* Common implementation for ARM ABI defined personality routines.
    ID is the index of the personality routine, other arguments are as defined
    by __aeabi_unwind_cpp_pr{0,1,2}.  */
