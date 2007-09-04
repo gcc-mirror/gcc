@@ -3886,8 +3886,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
   if (compute_mode == VOIDmode)
     for (compute_mode = mode; compute_mode != VOIDmode;
 	 compute_mode = GET_MODE_WIDER_MODE (compute_mode))
-      if (optab_handler (optab1, compute_mode)->libfunc
-	  || optab_handler (optab2, compute_mode)->libfunc)
+      if (optab_libfunc (optab1, compute_mode)
+	  || optab_libfunc (optab2, compute_mode))
 	break;
 
   /* If we still couldn't find a mode, use MODE, but expand_binop will

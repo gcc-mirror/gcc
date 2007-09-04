@@ -3060,7 +3060,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
   if (GET_MODE (op1) != mode2)
     op1 = convert_to_mode (mode2, op1, 0);
 
-  target = emit_library_call_value (optab_handler (powi_optab, mode)->libfunc,
+  target = emit_library_call_value (optab_libfunc (powi_optab, mode),
 				    target, LCT_CONST_MAKE_BLOCK, mode, 2,
 				    op0, mode, op1, mode2);
 
