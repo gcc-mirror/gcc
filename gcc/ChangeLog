@@ -1,8 +1,13 @@
-2007-08-29  Andrew Haley  <aph@redhat.com>
+2007-09-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (add_virtual_operand): Only mark
+	stores as has_volatile_ops if alias information is not available.
+
+2007-09-04  Andrew Haley  <aph@redhat.com>
 
         * config/arm/libgcc-bpabi.ver: Add _Unwind_Backtrace as GCC_4.3.0.
 
-2007-08-08  Andrew Haley  <aph@redhat.com>
+2007-09-04  Andrew Haley  <aph@redhat.com>
 
 	* config/arm/libunwind.S (UNWIND_WRAPPER _Unwind_Backtrace): New.
 	* config/arm/unwind-arm.h (__gnu_Unwind_Backtrace): New.
