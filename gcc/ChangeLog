@@ -1,3 +1,8 @@
+2007-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/tramp.asm: Include config.h.
+	Check __PIC__ or __pic__ macro instead of SHARED.
+
 2007-09-04  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* c-format.c: Include alloc-pool.h.
