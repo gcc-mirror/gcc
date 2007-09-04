@@ -3,8 +3,10 @@
 
 /* { dg-do run } */
 /* { dg-options "-O2 -msse2 -mfpmath=sse" } */
+
+#include "sse2-check.h"
+
 #include <assert.h>
-#include "../../gcc.dg/i386-cpuid.h"
 
 static float xs (void)
 {
@@ -26,18 +28,11 @@ double yd (double a)
   return xd () * a;
 }
 
-int main()
+static void
+sse2_test (void)
 {
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_cpuid ();
-
-  if (cpu_facilities & bit_SSE2)
-    {
-      assert (ys (1) == xs ());
-      assert (ys (2) == xs () * 2);
-      assert (yd (1) == xd ());
-      assert (yd (2) == xd () * 2);
-    }
-  return 0;
+  assert (ys (1) == xs ());
+  assert (ys (2) == xs () * 2);
+  assert (yd (1) == xd ());
+  assert (yd (2) == xd () * 2);
 }

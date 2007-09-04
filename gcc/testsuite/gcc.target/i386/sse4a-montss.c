@@ -1,25 +1,10 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sse4a } */
 /* { dg-options "-O2 -msse4a" } */
+
+#include "sse4a-check.h"
+
 #include <ammintrin.h>
-#include <stdlib.h>
-#include "../../gcc.dg/i386-cpuid.h"
-
-static void sse4a_test (void);
-
-int
-main ()
-{  
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_extended_cpuid_ecx ();
-
-  /* Run SSE4a test only if host has SSE4a support.  */
-  if ((cpu_facilities & bit_SSE4a))
-    sse4a_test ();
-
-  exit (0);
-}
 
 static void 
 sse4a_test_movntss (float *out, float *in)
@@ -60,6 +45,4 @@ sse4a_test (void)
 
   if (fail != 0)
     abort ();
-
-  exit (0);
 }

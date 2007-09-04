@@ -1,28 +1,20 @@
 /* PR target/13685 */
 /* { dg-do run } */
 /* { dg-options "-Os -msse" } */
-#include <stdlib.h>
-#include <stdio.h>
+
+#include "sse-check.h"
+
 #include <xmmintrin.h>
-#include "../../gcc.dg/i386-cpuid.h"
 
 void foo (__m128 *, __m64 *, int);
 
 __m128 xmm0 = { 0 };
 __m64 mm0 = { 0 };
 
-int
-main ()
+static void
+sse_test (void)
 {
-  unsigned long cpu_facilities = i386_cpuid ();
-  
-  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_CMOV))
-      != (bit_MMX | bit_SSE | bit_CMOV))
-    /* If host has no SSE support, pass.  */
-    return 0;
-
   foo (&xmm0, &mm0, 4);
-  return 0;
 }
 
 void

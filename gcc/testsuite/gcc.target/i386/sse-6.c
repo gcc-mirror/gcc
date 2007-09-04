@@ -1,14 +1,10 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -msse2" } */
-#include <xmmintrin.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "../../gcc.dg/i386-cpuid.h"
 
-#ifndef NOINLINE
-#define NOINLINE __attribute__ ((noinline))
-#endif
+#include "sse2-check.h"
+
+#include <emmintrin.h>
+#include <string.h>
 
 #define SHIFT (4)
 
@@ -60,17 +56,9 @@ const char *reference_sse2[] = {
   ""
 };
 
-int main()
+static void
+sse2_test (void)
 {
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_cpuid ();
-
-  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_SSE2 | bit_CMOV))
-      != (bit_MMX | bit_SSE | bit_SSE2 | bit_CMOV))
-    /* If host has no vector support, pass.  */
-    exit (0);
-
   a128.s[0] = 0x01234567;
   a128.s[1] = 0x01234567;
   a128.s[2] = 0x01234567;
@@ -108,22 +96,18 @@ int main()
 
   s128 = b128.v;
 
-  if (cpu_facilities & bit_SSE2)
-    {
-      sse2_tests();
-      check (buf, reference_sse2);
+  sse2_tests();
+  check (buf, reference_sse2);
 #ifdef DEBUG
-      printf ("sse2 testing:\n");
-      printf (buf);
-      printf ("\ncomparison:\n");
-      printf (comparison);
+  printf ("sse2 testing:\n");
+  printf (buf);
+  printf ("\ncomparison:\n");
+  printf (comparison);
 #endif
-      buf[0] = '\0';
-    }
+  buf[0] = '\0';
 
   if (errors != 0)
     abort ();
-  exit (0);
 }
 
 void NOINLINE

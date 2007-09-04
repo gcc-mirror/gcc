@@ -2,7 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-O1 -msse2 -mfpmath=sse -mno-accumulate-outgoing-args -fno-omit-frame-pointer" } */
 
-#include "../../gcc.dg/i386-cpuid.h"
+#include "sse2-check.h"
 
 typedef _Complex double complex_16;
 
@@ -21,14 +21,10 @@ test (complex_16 a[5][5])
       }
 }
 
-int main()
+static void
+sse2_test (void)
 {
   static complex_16 work[5][5];
-  unsigned long cpu_facilities;
 
-  cpu_facilities = i386_cpuid ();
-  if (cpu_facilities & bit_SSE2)
-    test (work); 
-
-  return 0;
+  test (work); 
 }

@@ -1,3 +1,33 @@
+2007-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse4a-check.h: New file.
+	* gcc.target/i386/sse4a-extract.c: Include sse4a-check.h. Remove main.
+	* gcc.target/i386/sse4a-insert.c: Ditto.
+	* gcc.target/i386/sse4a-montsd.c: Ditto.
+	* gcc.target/i386/sse4a-montss.c: Ditto.
+	* gcc.target/i386/mmx-check.h: New file.
+	* gcc.target/i386/mmx-4.c: Include mmx-check.h. Remove main.
+	* gcc.target/i386/builtin-apply-mmx.c: Ditto.
+	* gcc.target/i386/sse-check.h: New file.
+	* gcc.target/i386/pr13685: Include sse-check.h. Remove main.
+	* gcc.target/i386/sse-3.c: Ditto.
+	* gcc.target/i386/sse-7.c: Ditto.
+	* gcc.target/i386/sse-9.c: Ditto.
+	* gcc.target/i386/ssefn-3.c: Ditto.
+	* gcc.target/i386/sse-recip.c: Ditto.
+	* gcc.target/i386/sse-recip-vec.c: Ditto.
+	* gcc.target/i386/20020523.c: Ditto. Rename from 20020523-2.c.
+	* gcc.target/i386/20020523-1.c: Remove.
+	* gcc.target/i386/sse2-lrint-vec.c: Include sse2-check.h. Remove main.
+	* gcc.target/i386/sse2-lrintf-vec.c: Ditto.
+	* gcc.target/i386/ssefn-4.c: Ditto.
+	* gcc.target/i386/sse-6.c: Ditto.
+	* gcc.target/i386/sse-10.c: Ditto.
+	* gcc.target/i386/sse-11.c: Ditto.
+	* gcc.target/i386/sse-18.c: Ditto.
+	* gcc.target/i386/fpprec-1.c: Ditto.
+	* g++.dg/other/i386-1.C: Ditto.
+
 2007-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33291
