@@ -1068,7 +1068,7 @@ register C++ destructors for local statics and global objects.
 This is essential for fully standards-compliant handling of
 destructors, but requires __cxa_atexit in libc.  This option is currently
 only available on systems with GNU libc.  When enabled, this will cause
-@option{-fuse-cxa-exit} to be passed by default.
+@option{-fuse-cxa-atexit} to be passed by default.
 
 @item --enable-target-optspace
 Specify that target
