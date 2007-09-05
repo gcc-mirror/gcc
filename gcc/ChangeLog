@@ -1,5 +1,17 @@
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 
+	gcc/
+	* config/mips/mips.c (mips_legitimize_tls_address): Call sorry
+	if we encounter TLS address in MIPS16 mode.
+	(mips_legitimize_const_move):  Check cannot_force_const_mem for
+	the (const (plus symbol offset)) case; this forces invalid TLS
+	address in MIPS16 mode to be caught by the above call to sorry.
+	(override_options): Don't reset targetm.have_tls in MIPS16 mode,
+	because that now enables emutls, which is not ABI compatible
+	with native TLS in non-MIPS16 mode.
+
+2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+
 	Add target hook invoked when cfun changes.
 
 	* doc/tm.texi (TARGET_SET_CURRENT_FUNCTION): Document.

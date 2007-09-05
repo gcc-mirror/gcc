@@ -2326,6 +2326,12 @@ mips_legitimize_tls_address (rtx loc)
   rtx dest, insn, v0, v1, tmp1, tmp2, eqv;
   enum tls_model model;
 
+  if (TARGET_MIPS16)
+    {
+      sorry ("MIPS16 TLS");
+      return gen_reg_rtx (Pmode);
+    }
+
   v0 = gen_rtx_REG (Pmode, GP_RETURN);
   v1 = gen_rtx_REG (Pmode, GP_RETURN + 1);
 
@@ -2591,13 +2597,14 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
       return;
     }
 
-  /* If we have (const (plus symbol offset)), load the symbol first
-     and then add in the offset.  This is usually better than forcing
-     the constant into memory, at least in non-mips16 code.  */
+  /* If we have (const (plus symbol offset)), and that expression cannot
+     be forced into memory, load the symbol first and add in the offset.
+     In non-MIPS16 mode, prefer to do this even if the constant _can_ be
+     forced into memory, as it usually produces better code.  */
   split_const (src, &base, &offset);
-  if (!TARGET_MIPS16
-      && offset != const0_rtx
-      && (can_create_pseudo_p () || SMALL_INT (offset)))
+  if (offset != const0_rtx
+      && (targetm.cannot_force_const_mem (src)
+	  || (!TARGET_MIPS16 && can_create_pseudo_p ())))
     {
       base = mips_force_temporary (dest, base);
       mips_emit_move (dest, mips_add_offset (0, base, INTVAL (offset)));
@@ -5599,11 +5606,6 @@ override_options (void)
   mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
 
   mips_lo_relocs[SYMBOL_HALF] = "%half(";
-
-  /* We don't have a thread pointer access instruction on MIPS16, or
-     appropriate TLS relocations.  */
-  if (TARGET_MIPS16)
-    targetm.have_tls = false;
 
   /* Default to working around R4000 errata only if the processor
      was selected explicitly.  */
