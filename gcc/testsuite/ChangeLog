@@ -1,3 +1,8 @@
+2007-09-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/29731
+	* g++.dg/parse/template24.C: New.
+
 2007-09-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* g++.dg/other/spu2vmx-1.C: New test.

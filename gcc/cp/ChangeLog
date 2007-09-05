@@ -1,3 +1,9 @@
+2007-09-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/29731 (again)
+	* parser.c (cp_parser_primary_expression): Return error_mark_node
+	when a statement-expression is found in a template-argument list.
+
 2007-09-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31419
