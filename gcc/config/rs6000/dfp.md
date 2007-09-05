@@ -405,3 +405,151 @@
 { rs6000_split_multireg_move (operands[0], operands[1]); DONE; }
   [(set_attr "length" "8,8,8,20,20,16")])
 
+;; Hardware support for decimal floating point operations.
+
+(define_insn "extendddtd2"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(float_extend:TD (match_operand:DD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dctqpq %0,%1"
+  [(set_attr "type" "fp")])
+
+;; The result of drdpq is an even/odd register pair with the converted
+;; value in the even register and zero in the odd register.
+;; FIXME: Avoid the register move by using a reload constraint to ensure
+;; that the result is the first of the pair receiving the result of drdpq.
+
+(define_insn "trunctddd2"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(float_truncate:DD (match_operand:TD 1 "gpc_reg_operand" "f")))
+   (clobber (match_scratch:TD 2 "=f"))]
+  "TARGET_DFP"
+  "drdpq %2,%1\;fmr %0,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "adddd3"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(plus:DD (match_operand:DD 1 "gpc_reg_operand" "%f")
+		 (match_operand:DD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dadd %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "addtd3"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(plus:TD (match_operand:TD 1 "gpc_reg_operand" "%f")
+		 (match_operand:TD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "daddq %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "subdd3"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(minus:DD (match_operand:DD 1 "gpc_reg_operand" "f")
+		  (match_operand:DD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dsub %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "subtd3"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(minus:TD (match_operand:TD 1 "gpc_reg_operand" "f")
+		  (match_operand:TD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dsubq %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "muldd3"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(mult:DD (match_operand:DD 1 "gpc_reg_operand" "%f")
+		 (match_operand:DD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dmul %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "multd3"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(mult:TD (match_operand:TD 1 "gpc_reg_operand" "%f")
+		 (match_operand:TD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dmulq %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "divdd3"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(div:DD (match_operand:DD 1 "gpc_reg_operand" "f")
+		(match_operand:DD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "ddiv %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "divtd3"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(div:TD (match_operand:TD 1 "gpc_reg_operand" "f")
+		(match_operand:TD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "ddivq %0,%1,%2"
+  [(set_attr "type" "fp")])
+
+(define_insn "*cmpdd_internal1"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(compare:CCFP (match_operand:DD 1 "gpc_reg_operand" "f")
+		      (match_operand:DD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dcmpu %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "*cmptd_internal1"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(compare:CCFP (match_operand:TD 1 "gpc_reg_operand" "f")
+		      (match_operand:TD 2 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dcmpuq %0,%1,%2"
+  [(set_attr "type" "fpcompare")])
+
+(define_insn "floatditd2"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(float:TD (match_operand:DI 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dcffixq %0,%1"
+  [(set_attr "type" "fp")])
+
+;; Convert a decimal64 to a decimal64 whose value is an integer.
+;; This is the first stage of converting it to an integer type.
+
+(define_insn "ftruncdd2"
+  [(set (match_operand:DD 0 "gpc_reg_operand" "=f")
+	(fix:DD (match_operand:DD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "drintn. 0,%0,%1,1"
+  [(set_attr "type" "fp")])
+
+;; Convert a decimal64 whose value is an integer to an actual integer.
+;; This is the second stage of converting decimal float to integer type.
+
+(define_insn "fixdddi2"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=f")
+	(fix:DI (match_operand:DD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dctfix %0,%1"
+  [(set_attr "type" "fp")])
+
+;; Convert a decimal128 to a decimal128 whose value is an integer.
+;; This is the first stage of converting it to an integer type.
+
+(define_insn "ftrunctd2"
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=f")
+	(fix:TD (match_operand:TD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "drintnq. 0,%0,%1,1"
+  [(set_attr "type" "fp")])
+
+;; Convert a decimal128 whose value is an integer to an actual integer.
+;; This is the second stage of converting decimal float to integer type.
+
+(define_insn "fixtddi2"
+  [(set (match_operand:DI 0 "gpc_reg_operand" "=f")
+	(fix:DI (match_operand:TD 1 "gpc_reg_operand" "f")))]
+  "TARGET_DFP"
+  "dctfixq %0,%1"
+  [(set_attr "type" "fp")])

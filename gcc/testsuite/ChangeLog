@@ -1,3 +1,8 @@
+2007-09-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.target/powerpc/dfp-dd.c: New test.
+	* gcc.target/powerpc/dfp-td.c: New test.
+
 2007-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/va-arg-pack-1.c: New test.
