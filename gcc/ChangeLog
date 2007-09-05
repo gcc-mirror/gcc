@@ -1,3 +1,10 @@
+2007-09-05  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/ppu_intrinsics.h (__ldarx): Use `Z' constraint,
+	not `m' for *ptrp.
+	(__stdcx): Make asm volatile.
+	(__stwcx, __stdcx): Return only 0 or 1.
+
 2007-09-05  Jan Hubicka  <jh@suse.cz>
 
 	Revert:
