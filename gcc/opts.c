@@ -1635,6 +1635,8 @@ common_handle_option (size_t scode, const char *arg, int value,
         flag_profile_values = value;
       if (!flag_value_profile_transformations_set)
         flag_value_profile_transformations = value;
+      if (!flag_inline_functions_set)
+        flag_inline_functions = value;
       break;
 
     case OPT_fprofile_values:

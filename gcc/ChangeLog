@@ -1,3 +1,8 @@
+2007-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (common_handle_option): Enable inlining functions for
+	-fprofile-generate.
+
 2007-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtin-attrs.def (ATTR_NONNULL_3): New.
