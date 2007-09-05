@@ -5,10 +5,9 @@
 extern void abort (void);
 extern void exit (int);
 
-#if !defined(__mips16)
 unsigned int g;
 
-unsigned long long f (unsigned int x)
+unsigned __attribute__ ((nomips16)) long long f (unsigned int x)
 {
   union { unsigned long long ll; unsigned int parts[2]; } u;
 
@@ -17,7 +16,7 @@ unsigned long long f (unsigned int x)
   return u.ll;
 }
 
-int main ()
+int __attribute__ ((nomips16)) main ()
 {
   union { unsigned long long ll; unsigned int parts[2]; } u;
 
@@ -26,6 +25,3 @@ int main ()
     abort ();
   exit (0);
 }
-#else
-int main () { exit (0); }
-#endif

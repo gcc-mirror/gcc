@@ -1,6 +1,8 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -march=mips32r2 -mno-mips16" } */
+/* { dg-mips-options "-O -march=mips32r2" } */
 /* { dg-final { scan-assembler "\tins\t" } } */
+
+#define NOMIPS16 __attribute__ ((nomips16)) 
 
 struct
 {
@@ -9,7 +11,7 @@ struct
   unsigned int k : 4;
 } s;
 
-void
+NOMIPS16 void
 foo (void)
 {
   s.j = 1;
