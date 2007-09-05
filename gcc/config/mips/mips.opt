@@ -42,6 +42,10 @@ mbranch-likely
 Target Report Mask(BRANCHLIKELY)
 Use Branch Likely instructions, overriding the architecture default
 
+mflip-mips16
+Target Report Var(TARGET_FLIP_MIPS16)
+Switch on/off MIPS16 ASE on alternating functions for compiler testing
+
 mcheck-zero-division
 Target Report Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero

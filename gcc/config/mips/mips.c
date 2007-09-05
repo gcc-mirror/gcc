@@ -424,6 +424,8 @@ static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 static void mips_encode_section_info (tree, rtx, int);
 static void mips_extra_live_on_entry (bitmap);
 static int mips_comp_type_attributes (const_tree, const_tree);
+static void mips_set_mips16_mode (int);
+static void mips_set_current_function (tree);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
 static void mips_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
@@ -617,6 +619,18 @@ int mips_abi = MIPS_ABI_DEFAULT;
 /* Cost information to use.  */
 const struct mips_rtx_cost_data *mips_cost;
 
+/* Remember the ambient target flags, excluding mips16.  */
+static int mips_base_target_flags;
+/* The mips16 command-line target flags only.  */
+static bool mips_base_mips16;
+/* Similar copies of option settings.  */
+static int mips_base_schedule_insns; /* flag_schedule_insns */
+static int mips_base_reorder_blocks_and_partition; /* flag_reorder... */
+static int mips_base_align_loops; /* align_loops */
+static int mips_base_align_jumps; /* align_jumps */
+static int mips_base_align_functions; /* align_functions */
+static GTY(()) int mips16_flipper;
+
 /* The -mtext-loads setting.  */
 enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
 
@@ -715,6 +729,9 @@ const struct attribute_spec mips_attribute_table[] =
   { "long_call",   0, 0, false, true,  true,  NULL },
   { "far",     	   0, 0, false, true,  true,  NULL },
   { "near",        0, 0, false, true,  true,  NULL },
+  /* Switch MIPS16 ASE on and off per-function.  */
+  { "mips16", 	   0, 0, false, true,  true,  NULL },
+  { "nomips16",    0, 0, false, true,  true,  NULL },
   { NULL,	   0, 0, false, false, false, NULL }
 };
 
@@ -1251,6 +1268,9 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL mips_function_ok_for_sibcall
 
+#undef TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION mips_set_current_function
+
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE mips_valid_pointer_mode
 #undef TARGET_RTX_COSTS
@@ -1369,6 +1389,19 @@ mips_far_type_p (const_tree type)
 	  || lookup_attribute ("far", TYPE_ATTRIBUTES (type)) != NULL);
 }
 
+/* Similar predicates for "mips16"/"nomips16" attributes.  */
+
+static bool
+mips_mips16_type_p (const_tree type)
+{
+  return lookup_attribute ("mips16", TYPE_ATTRIBUTES (type)) != NULL;
+}
+
+static bool
+mips_nomips16_type_p (const_tree type)
+{
+  return lookup_attribute ("nomips16", TYPE_ATTRIBUTES (type)) != NULL;
+}
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
    are compatible, and 2 if they are nearly compatible (which causes a
@@ -1385,6 +1418,11 @@ mips_comp_type_attributes (const_tree type1, const_tree type2)
   if (mips_far_type_p (type1) && mips_near_type_p (type2))
     return 0;
   if (mips_near_type_p (type1) && mips_far_type_p (type2))
+    return 0;
+
+  /* Mips16/nomips16 attributes must match exactly.  */
+  if (mips_nomips16_type_p (type1) != mips_nomips16_type_p (type2)
+      || mips_mips16_type_p (type1) != mips_mips16_type_p (type2))
     return 0;
 
   return 1;
@@ -3789,13 +3827,22 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 }
 
 
-/* We can handle any sibcall when TARGET_SIBCALLS is true.  */
+/* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
 
 static bool
-mips_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
-			      tree exp ATTRIBUTE_UNUSED)
+mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 {
-  return TARGET_SIBCALLS;
+  if (!TARGET_SIBCALLS)
+    return false;
+
+  /* We can't do a sibcall if the called function is a MIPS16 function
+     because there is no direct "jx" instruction equivalent to "jalx" to
+     switch the ISA mode.  */
+  if (decl && SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (decl), 0)))
+    return false;
+
+  /* Otherwise OK.  */
+  return true;
 }
 
 /* Emit code to move general operand SRC into condition-code
@@ -5038,6 +5085,231 @@ mips_set_tune (const struct mips_cpu_info *info)
     }
 }
 
+/* Initialize mips_split_addresses from the associated command-line
+   settings.
+
+   mips_split_addresses is a half-way house between explicit
+   relocations and the traditional assembler macros.  It can
+   split absolute 32-bit symbolic constants into a high/lo_sum
+   pair but uses macros for other sorts of access.
+   
+   Like explicit relocation support for REL targets, it relies
+   on GNU extensions in the assembler and the linker.
+
+   Although this code should work for -O0, it has traditionally
+   been treated as an optimization.  */
+
+static void
+mips_init_split_addresses (void)
+{
+  if (!TARGET_MIPS16 && TARGET_SPLIT_ADDRESSES
+      && optimize && !flag_pic
+      && !ABI_HAS_64BIT_SYMBOLS)
+    mips_split_addresses = 1;
+  else
+    mips_split_addresses = 0;
+}
+
+/* (Re-)Initialize information about relocs.  */
+
+static void
+mips_init_relocs (void)
+{
+  memset (mips_split_p, '\0', sizeof (mips_split_p));
+  memset (mips_hi_relocs, '\0', sizeof (mips_hi_relocs));
+  memset (mips_lo_relocs, '\0', sizeof (mips_lo_relocs));
+
+  if (ABI_HAS_64BIT_SYMBOLS)
+    {
+      if (TARGET_EXPLICIT_RELOCS)
+	{
+	  mips_split_p[SYMBOL_64_HIGH] = true;
+	  mips_hi_relocs[SYMBOL_64_HIGH] = "%highest(";
+	  mips_lo_relocs[SYMBOL_64_HIGH] = "%higher(";
+
+	  mips_split_p[SYMBOL_64_MID] = true;
+	  mips_hi_relocs[SYMBOL_64_MID] = "%higher(";
+	  mips_lo_relocs[SYMBOL_64_MID] = "%hi(";
+
+	  mips_split_p[SYMBOL_64_LOW] = true;
+	  mips_hi_relocs[SYMBOL_64_LOW] = "%hi(";
+	  mips_lo_relocs[SYMBOL_64_LOW] = "%lo(";
+
+	  mips_split_p[SYMBOL_ABSOLUTE] = true;
+	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
+	}
+    }
+  else
+    {
+      if (TARGET_EXPLICIT_RELOCS || mips_split_addresses || TARGET_MIPS16)
+	{
+	  mips_split_p[SYMBOL_ABSOLUTE] = true;
+	  mips_hi_relocs[SYMBOL_ABSOLUTE] = "%hi(";
+	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
+
+	  mips_lo_relocs[SYMBOL_32_HIGH] = "%hi(";
+	}
+    }
+
+  if (TARGET_MIPS16)
+    {
+      /* The high part is provided by a pseudo copy of $gp.  */
+      mips_split_p[SYMBOL_GP_RELATIVE] = true;
+      mips_lo_relocs[SYMBOL_GP_RELATIVE] = "%gprel(";
+    }
+
+  if (TARGET_EXPLICIT_RELOCS)
+    {
+      /* Small data constants are kept whole until after reload,
+	 then lowered by mips_rewrite_small_data.  */
+      mips_lo_relocs[SYMBOL_GP_RELATIVE] = "%gp_rel(";
+
+      mips_split_p[SYMBOL_GOT_PAGE_OFST] = true;
+      if (TARGET_NEWABI)
+	{
+	  mips_lo_relocs[SYMBOL_GOTOFF_PAGE] = "%got_page(";
+	  mips_lo_relocs[SYMBOL_GOT_PAGE_OFST] = "%got_ofst(";
+	}
+      else
+	{
+	  mips_lo_relocs[SYMBOL_GOTOFF_PAGE] = "%got(";
+	  mips_lo_relocs[SYMBOL_GOT_PAGE_OFST] = "%lo(";
+	}
+
+      if (TARGET_XGOT)
+	{
+	  /* The HIGH and LO_SUM are matched by special .md patterns.  */
+	  mips_split_p[SYMBOL_GOT_DISP] = true;
+
+	  mips_split_p[SYMBOL_GOTOFF_DISP] = true;
+	  mips_hi_relocs[SYMBOL_GOTOFF_DISP] = "%got_hi(";
+	  mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got_lo(";
+
+	  mips_split_p[SYMBOL_GOTOFF_CALL] = true;
+	  mips_hi_relocs[SYMBOL_GOTOFF_CALL] = "%call_hi(";
+	  mips_lo_relocs[SYMBOL_GOTOFF_CALL] = "%call_lo(";
+	}
+      else
+	{
+	  if (TARGET_NEWABI)
+	    mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got_disp(";
+	  else
+	    mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got(";
+	  mips_lo_relocs[SYMBOL_GOTOFF_CALL] = "%call16(";
+	}
+    }
+
+  if (TARGET_NEWABI)
+    {
+      mips_split_p[SYMBOL_GOTOFF_LOADGP] = true;
+      mips_hi_relocs[SYMBOL_GOTOFF_LOADGP] = "%hi(%neg(%gp_rel(";
+      mips_lo_relocs[SYMBOL_GOTOFF_LOADGP] = "%lo(%neg(%gp_rel(";
+    }
+
+  /* Thread-local relocation operators.  */
+  mips_lo_relocs[SYMBOL_TLSGD] = "%tlsgd(";
+  mips_lo_relocs[SYMBOL_TLSLDM] = "%tlsldm(";
+  mips_split_p[SYMBOL_DTPREL] = 1;
+  mips_hi_relocs[SYMBOL_DTPREL] = "%dtprel_hi(";
+  mips_lo_relocs[SYMBOL_DTPREL] = "%dtprel_lo(";
+  mips_lo_relocs[SYMBOL_GOTTPREL] = "%gottprel(";
+  mips_split_p[SYMBOL_TPREL] = 1;
+  mips_hi_relocs[SYMBOL_TPREL] = "%tprel_hi(";
+  mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
+
+  mips_lo_relocs[SYMBOL_HALF] = "%half(";
+}
+
+static GTY(()) int was_mips16_p = -1;
+
+/* Set up the target-dependent global state so that it matches the
+   current function's ISA mode.  */
+
+static void
+mips_set_mips16_mode (int mips16_p)
+{
+  if (mips16_p == was_mips16_p)
+    return;
+
+  /* Restore base settings of various flags.  */
+  target_flags = mips_base_target_flags;
+  align_loops = mips_base_align_loops;
+  align_jumps = mips_base_align_jumps;
+  align_functions = mips_base_align_functions;
+  flag_schedule_insns = mips_base_schedule_insns;
+  flag_reorder_blocks_and_partition = mips_base_reorder_blocks_and_partition;
+  flag_delayed_branch = mips_flag_delayed_branch;
+  
+  if (mips16_p) 
+    {
+      /* Select mips16 instruction set.  */
+      target_flags |= MASK_MIPS16;
+
+      /* Don't run the scheduler before reload, since it tends to
+         increase register pressure.  */
+      flag_schedule_insns = 0;
+
+      /* Don't do hot/cold partitioning.  The constant layout code expects
+       the whole function to be in a single section.  */
+      flag_reorder_blocks_and_partition = 0;
+
+      /* Silently disable -mexplicit-relocs since it doesn't apply
+	 to mips16 code.  Even so, it would overly pedantic to warn
+	 about "-mips16 -mexplicit-relocs", especially given that
+	 we use a %gprel() operator.  */
+      target_flags &= ~MASK_EXPLICIT_RELOCS;
+
+      /* Silently disable DSP extensions.  */
+      target_flags &= ~MASK_DSP;
+      target_flags &= ~MASK_DSPR2;
+    }
+  else 
+    {
+      /* Reset to select base non-mips16 ISA.  */
+      target_flags &= ~MASK_MIPS16;
+
+      /* When using explicit relocs, we call dbr_schedule from within
+	 mips_reorg.  */
+      if (TARGET_EXPLICIT_RELOCS)
+	flag_delayed_branch = 0;
+
+      /* Provide default values for align_* for 64-bit targets.  */
+      if (TARGET_64BIT)
+	{
+	  if (align_loops == 0)
+	    align_loops = 8;
+	  if (align_jumps == 0)
+	    align_jumps = 8;
+	  if (align_functions == 0)
+	    align_functions = 8;
+	}
+    }
+
+  /* (Re)initialize mips target internals for new ISA.  */
+  mips_init_split_addresses ();
+  mips_init_relocs ();
+
+  if (was_mips16_p >= 0)
+    /* Reinitialize target-dependent state.  */
+    target_reinit ();
+
+  was_mips16_p = TARGET_MIPS16;
+}
+
+/* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current 
+   function should use the MIPS16 ISA and switch modes accordingly.  */
+
+static void
+mips_set_current_function (tree fndecl)
+{
+  int mips16p;
+  if (fndecl)
+    mips16p = SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (fndecl), 0));
+  else
+    mips16p = mips_base_mips16;
+  mips_set_mips16_mode (mips16p);
+}
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -5265,6 +5537,14 @@ override_options (void)
       target_flags &= ~MASK_ABICALLS;
     }
 
+  /* MIPS16 cannot generate PIC yet.  */
+  if (TARGET_MIPS16 && (flag_pic || TARGET_ABICALLS))
+    {
+      sorry ("MIPS16 PIC");
+      target_flags &= ~MASK_ABICALLS;
+      flag_pic = flag_pie = flag_shlib = 0;
+    }
+
   if (TARGET_ABICALLS)
     {
       /* We need to set flag_pic for executables as well as DSOs
@@ -5282,53 +5562,11 @@ override_options (void)
   if (TARGET_VXWORKS_RTP && mips_section_threshold > 0)
     warning (0, "-G and -mrtp are incompatible");
 
-  /* mips_split_addresses is a half-way house between explicit
-     relocations and the traditional assembler macros.  It can
-     split absolute 32-bit symbolic constants into a high/lo_sum
-     pair but uses macros for other sorts of access.
-
-     Like explicit relocation support for REL targets, it relies
-     on GNU extensions in the assembler and the linker.
-
-     Although this code should work for -O0, it has traditionally
-     been treated as an optimization.  */
-  if (!TARGET_MIPS16 && TARGET_SPLIT_ADDRESSES
-      && optimize && !flag_pic
-      && !ABI_HAS_64BIT_SYMBOLS)
-    mips_split_addresses = 1;
-  else
-    mips_split_addresses = 0;
-
   /* -mvr4130-align is a "speed over size" optimization: it usually produces
      faster code, but at the expense of more nops.  Enable it at -O3 and
      above.  */
   if (optimize > 2 && (target_flags_explicit & MASK_VR4130_ALIGN) == 0)
     target_flags |= MASK_VR4130_ALIGN;
-
-  if (TARGET_MIPS16)
-    {
-      /* Don't run the scheduler before reload, since it tends to
-         increase register pressure.  */
-      flag_schedule_insns = 0;
-
-      /* Don't do hot/cold partitioning.  The constant layout code expects
-	 the whole function to be in a single section.  */
-      flag_reorder_blocks_and_partition = 0;
-
-      /* Silently disable -mexplicit-relocs since it doesn't apply
-	 to mips16 code.  Even so, it would overly pedantic to warn
-	 about "-mips16 -mexplicit-relocs", especially given that
-	 we use a %gprel() operator.  */
-      target_flags &= ~MASK_EXPLICIT_RELOCS;
-    }
-
-  /* When using explicit relocs, we call dbr_schedule from within
-     mips_reorg.  */
-  if (TARGET_EXPLICIT_RELOCS)
-    {
-      mips_flag_delayed_branch = flag_delayed_branch;
-      flag_delayed_branch = 0;
-    }
 
   /* Prefer a call to memcpy over inline code when optimizing for size,
      though see MOVE_RATIO in mips.h.  */
@@ -5362,9 +5600,6 @@ override_options (void)
   /* If TARGET_DSPR2, enable MASK_DSP.  */
   if (TARGET_DSPR2)
     target_flags |= MASK_DSP;
-
-  if (TARGET_MIPS16 && TARGET_DSP)
-    error ("-mips16 and -mdsp cannot be used together");
 
   mips_print_operand_punct['?'] = 1;
   mips_print_operand_punct['#'] = 1;
@@ -5493,119 +5728,8 @@ override_options (void)
      initialized yet, so we can't use that here.  */
   gpr_mode = TARGET_64BIT ? DImode : SImode;
 
-  /* Provide default values for align_* for 64-bit targets.  */
-  if (TARGET_64BIT && !TARGET_MIPS16)
-    {
-      if (align_loops == 0)
-	align_loops = 8;
-      if (align_jumps == 0)
-	align_jumps = 8;
-      if (align_functions == 0)
-	align_functions = 8;
-    }
-
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;
-
-  if (ABI_HAS_64BIT_SYMBOLS)
-    {
-      if (TARGET_EXPLICIT_RELOCS)
-	{
-	  mips_split_p[SYMBOL_64_HIGH] = true;
-	  mips_hi_relocs[SYMBOL_64_HIGH] = "%highest(";
-	  mips_lo_relocs[SYMBOL_64_HIGH] = "%higher(";
-
-	  mips_split_p[SYMBOL_64_MID] = true;
-	  mips_hi_relocs[SYMBOL_64_MID] = "%higher(";
-	  mips_lo_relocs[SYMBOL_64_MID] = "%hi(";
-
-	  mips_split_p[SYMBOL_64_LOW] = true;
-	  mips_hi_relocs[SYMBOL_64_LOW] = "%hi(";
-	  mips_lo_relocs[SYMBOL_64_LOW] = "%lo(";
-
-	  mips_split_p[SYMBOL_ABSOLUTE] = true;
-	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
-	}
-    }
-  else
-    {
-      if (TARGET_EXPLICIT_RELOCS || mips_split_addresses || TARGET_MIPS16)
-	{
-	  mips_split_p[SYMBOL_ABSOLUTE] = true;
-	  mips_hi_relocs[SYMBOL_ABSOLUTE] = "%hi(";
-	  mips_lo_relocs[SYMBOL_ABSOLUTE] = "%lo(";
-
-	  mips_lo_relocs[SYMBOL_32_HIGH] = "%hi(";
-	}
-    }
-
-  if (TARGET_MIPS16)
-    {
-      /* The high part is provided by a pseudo copy of $gp.  */
-      mips_split_p[SYMBOL_GP_RELATIVE] = true;
-      mips_lo_relocs[SYMBOL_GP_RELATIVE] = "%gprel(";
-    }
-
-  if (TARGET_EXPLICIT_RELOCS)
-    {
-      /* Small data constants are kept whole until after reload,
-	 then lowered by mips_rewrite_small_data.  */
-      mips_lo_relocs[SYMBOL_GP_RELATIVE] = "%gp_rel(";
-
-      mips_split_p[SYMBOL_GOT_PAGE_OFST] = true;
-      if (TARGET_NEWABI)
-	{
-	  mips_lo_relocs[SYMBOL_GOTOFF_PAGE] = "%got_page(";
-	  mips_lo_relocs[SYMBOL_GOT_PAGE_OFST] = "%got_ofst(";
-	}
-      else
-	{
-	  mips_lo_relocs[SYMBOL_GOTOFF_PAGE] = "%got(";
-	  mips_lo_relocs[SYMBOL_GOT_PAGE_OFST] = "%lo(";
-	}
-
-      if (TARGET_XGOT)
-	{
-	  /* The HIGH and LO_SUM are matched by special .md patterns.  */
-	  mips_split_p[SYMBOL_GOT_DISP] = true;
-
-	  mips_split_p[SYMBOL_GOTOFF_DISP] = true;
-	  mips_hi_relocs[SYMBOL_GOTOFF_DISP] = "%got_hi(";
-	  mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got_lo(";
-
-	  mips_split_p[SYMBOL_GOTOFF_CALL] = true;
-	  mips_hi_relocs[SYMBOL_GOTOFF_CALL] = "%call_hi(";
-	  mips_lo_relocs[SYMBOL_GOTOFF_CALL] = "%call_lo(";
-	}
-      else
-	{
-	  if (TARGET_NEWABI)
-	    mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got_disp(";
-	  else
-	    mips_lo_relocs[SYMBOL_GOTOFF_DISP] = "%got(";
-	  mips_lo_relocs[SYMBOL_GOTOFF_CALL] = "%call16(";
-	}
-    }
-
-  if (TARGET_NEWABI)
-    {
-      mips_split_p[SYMBOL_GOTOFF_LOADGP] = true;
-      mips_hi_relocs[SYMBOL_GOTOFF_LOADGP] = "%hi(%neg(%gp_rel(";
-      mips_lo_relocs[SYMBOL_GOTOFF_LOADGP] = "%lo(%neg(%gp_rel(";
-    }
-
-  /* Thread-local relocation operators.  */
-  mips_lo_relocs[SYMBOL_TLSGD] = "%tlsgd(";
-  mips_lo_relocs[SYMBOL_TLSLDM] = "%tlsldm(";
-  mips_split_p[SYMBOL_DTPREL] = 1;
-  mips_hi_relocs[SYMBOL_DTPREL] = "%dtprel_hi(";
-  mips_lo_relocs[SYMBOL_DTPREL] = "%dtprel_lo(";
-  mips_lo_relocs[SYMBOL_GOTTPREL] = "%gottprel(";
-  mips_split_p[SYMBOL_TPREL] = 1;
-  mips_hi_relocs[SYMBOL_TPREL] = "%tprel_hi(";
-  mips_lo_relocs[SYMBOL_TPREL] = "%tprel_lo(";
-
-  mips_lo_relocs[SYMBOL_HALF] = "%half(";
 
   /* Default to working around R4000 errata only if the processor
      was selected explicitly.  */
@@ -5618,6 +5742,19 @@ override_options (void)
   if ((target_flags_explicit & MASK_FIX_R4400) == 0
       && mips_matching_cpu_name_p (mips_arch_info->name, "r4400"))
     target_flags |= MASK_FIX_R4400;
+
+  /* Save base state of options.  */
+  mips_base_mips16 = TARGET_MIPS16;
+  mips_base_target_flags = target_flags;
+  mips_base_schedule_insns = flag_schedule_insns;
+  mips_base_reorder_blocks_and_partition = flag_reorder_blocks_and_partition;
+  mips_base_align_loops = align_loops;
+  mips_base_align_jumps = align_jumps;
+  mips_base_align_functions = align_functions;
+  mips_flag_delayed_branch = flag_delayed_branch;
+
+  /* Now select the mips16 or 32-bit instruction set, as requested.  */
+  mips_set_mips16_mode (mips_base_mips16);
 }
 
 /* Swap the register information for registers I and I + 1, which
@@ -6372,9 +6509,6 @@ mips_file_start (void)
   /* Generate the pseudo ops that System V.4 wants.  */
   if (TARGET_ABICALLS)
     fprintf (asm_out_file, "\t.abicalls\n");
-
-  if (TARGET_MIPS16)
-    fprintf (asm_out_file, "\t.set\tmips16\n");
 
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\n%s -G value = %d, Arch = %s, ISA = %d\n",
@@ -7229,6 +7363,12 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       && TARGET_HARD_FLOAT_ABI
       && current_function_args_info.fp_code != 0)
     build_mips16_function_stub (file);
+
+  /* Select the mips16 mode for this function.  */
+  if (TARGET_MIPS16)
+    fprintf (file, "\t.set\tmips16\n");
+  else 
+    fprintf (file, "\t.set\tnomips16\n");
 
   if (!FUNCTION_NAME_ALREADY_DECLARED)
     {
@@ -8186,7 +8326,6 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	TARGET_CALL_SAVED_GP ? 15 : GLOBAL_POINTER_REGNUM;
 
       SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
-
     }
 
   /* Set up the global pointer for n32 or n64 abicalls.  If
@@ -8237,7 +8376,8 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Jump to the target function.  Use a sibcall if direct jumps are
      allowed, otherwise load the address into a register first.  */
   fnaddr = XEXP (DECL_RTL (function), 0);
-  if (TARGET_MIPS16 || TARGET_USE_GOT || SYMBOL_REF_LONG_CALL_P (fnaddr))
+  if (TARGET_MIPS16 || TARGET_USE_GOT || SYMBOL_REF_LONG_CALL_P (fnaddr)
+      || SYMBOL_REF_MIPS16_FUNC_P (fnaddr))
     {
       /* This is messy.  gas treats "la $25,foo" as part of a call
 	 sequence and may allow a global "foo" to be lazily bound.
@@ -9073,8 +9213,6 @@ build_mips16_function_stub (FILE *file)
       fputs ("\n", file);
     }
 
-  fprintf (file, "\t.set\tmips16\n");
-
   switch_to_section (function_section (current_function_decl));
 }
 
@@ -9405,8 +9543,6 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	  assemble_name (asm_out_file, stubname);
 	  fputs ("\n", asm_out_file);
 	}
-
-      fprintf (asm_out_file, "\t.set\tmips16\n");
 
       /* Record this stub.  */
       l = (struct mips16_stub *) xmalloc (sizeof *l);
@@ -11648,6 +11784,13 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   fcode = DECL_FUNCTION_CODE (fndecl);
 
+  if (TARGET_MIPS16)
+    {
+      error ("built-in function %qs not supported for MIPS16",
+	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+      return const0_rtx;
+    }
+
   bdesc = NULL;
   for (m = bdesc_arrays; m < &bdesc_arrays[ARRAY_SIZE (bdesc_arrays)]; m++)
     {
@@ -12154,6 +12297,43 @@ mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
 				       const1_rtx, const0_rtx);
 }
 
+/* Return true if we should force MIPS16 mode for the function named by
+   the SYMBOL_REF SYMBOL, which belongs to DECL and has type TYPE.
+   FIRST is true if this is the first time handling this decl.  */
+
+static bool
+mips_use_mips16_mode_p (rtx symbol, tree decl, int first, tree type)
+{
+  tree parent;
+
+  /* Explicit function attributes take precedence.  */
+  if (mips_mips16_type_p (type))
+    return true;
+  if (mips_nomips16_type_p (type))
+    return false;
+
+  /* A nested function should inherit the MIPS16 setting from its parent.  */
+  parent = decl_function_context (decl);
+  if (parent)
+    return SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (parent), 0));
+
+  /* Handle -mflip-mips16.  */
+  if (TARGET_FLIP_MIPS16
+      && !DECL_BUILT_IN (decl)
+      && !DECL_ARTIFICIAL (decl))
+    {
+      if (!first)
+	/* Use the setting we picked first time around.  */
+	return SYMBOL_REF_MIPS16_FUNC_P (symbol);
+
+      mips16_flipper = !mips16_flipper;
+      if (mips16_flipper)
+	return !mips_base_mips16;
+    }
+
+  return mips_base_mips16;
+}
+
 /* Set SYMBOL_REF_FLAGS for the SYMBOL_REF inside RTL, which belongs to DECL.
    FIRST is true if this is the first time handling this decl.  */
 
@@ -12165,10 +12345,19 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       rtx symbol = XEXP (rtl, 0);
+      tree type = TREE_TYPE (decl);
 
-      if ((TARGET_LONG_CALLS && !mips_near_type_p (TREE_TYPE (decl)))
-	  || mips_far_type_p (TREE_TYPE (decl)))
+      if ((TARGET_LONG_CALLS && !mips_near_type_p (type))
+	  || mips_far_type_p (type))
 	SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LONG_CALL;
+
+      if (mips_use_mips16_mode_p (symbol, decl, first, type))
+	{
+	  if (flag_pic || TARGET_ABICALLS)
+	    sorry ("MIPS16 PIC");
+	  else
+	    SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_MIPS16_FUNC;
+	}
     }
 }
 
