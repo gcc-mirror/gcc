@@ -1,3 +1,8 @@
+2007-09-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_emit_movem_store): Call copy_rtx on
+	parts re-used for REG_FRAME_RELATED_EXPR.
+
 2007-09-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* optabs.c (expand_float): Convert unsigned integer as signed only
