@@ -4786,14 +4786,14 @@ cse_insn (rtx insn, rtx libcall_insn)
 				  src_related_cost, src_related_regcost) <= 0
 		   && preferable (src_eqv_cost, src_eqv_regcost,
 				  src_elt_cost, src_elt_regcost) <= 0)
-	    trial = copy_rtx (src_eqv_here), src_eqv_cost = MAX_COST;
+	    trial = src_eqv_here, src_eqv_cost = MAX_COST;
 	  else if (src_related
 		   && preferable (src_related_cost, src_related_regcost,
 				  src_elt_cost, src_elt_regcost) <= 0)
-	    trial = copy_rtx (src_related), src_related_cost = MAX_COST;
+	    trial = src_related, src_related_cost = MAX_COST;
 	  else
 	    {
-	      trial = copy_rtx (elt->exp);
+	      trial = elt->exp;
 	      elt = elt->next_same_value;
 	      src_elt_cost = MAX_COST;
 	    }
@@ -7024,7 +7024,7 @@ struct tree_opt_pass pass_cse =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
   TODO_ggc_collect |
   TODO_verify_flow,                     /* todo_flags_finish */
@@ -7082,7 +7082,7 @@ struct tree_opt_pass pass_cse2 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func |
   TODO_ggc_collect |
   TODO_verify_flow,                     /* todo_flags_finish */

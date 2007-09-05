@@ -1952,7 +1952,7 @@ struct tree_opt_pass pass_regrename =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func,                       /* todo_flags_finish */
   'n'                                   /* letter */
 };
@@ -1985,7 +1985,7 @@ struct tree_opt_pass pass_cprop_hardreg =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  TODO_dump_func | TODO_verify_rtl_sharing, /* todo_flags_finish */
   'n'                                   /* letter */
 };
 

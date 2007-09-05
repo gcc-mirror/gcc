@@ -5513,7 +5513,7 @@ struct tree_opt_pass pass_thread_prologue_and_epilogue =
   TODO_verify_flow,                     /* todo_flags_start */
   TODO_dump_func |
   TODO_df_verify |
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_ggc_collect,                     /* todo_flags_finish */
   'w'                                   /* letter */
 };
