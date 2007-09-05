@@ -1,3 +1,48 @@
+2007-09-05  Jan Hubicka  <jh@suse.cz>
+
+	* regrename.c (pass_regrename, pass_cprop_hardreg): Add RTL sharing
+	verifier.
+	* fwprop.c (pass_rtl_fwprop, pass_rtl_fwprop_add): Likewise.
+	* see.c (pass_see): Likewise.
+	* tracer.c (pass_tracer): Likewise.
+	* postreload-gcse.c (pass_gcse2): Likewise.
+	* postreload.c (pass_postreload_cse): Likewise.
+	* mode-switching.c (pass_mode_switching): Likewise.
+	* modulo-sched.c (pass_sms): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* web.c (pass_web): Likweise.
+	* combine-stack-adj.c (pass_stack_adjustments): Likewise.
+	* dce.c (pass_ud_rtl_dce, pass_fast_rtl_dce): Likewise.
+	* loop-init.c (pass_rtl_loop_init): Likewise.
+	(pass_rtl_loop_done, pass_rtl_move_loop_, pass_rtl_unswitch,
+	pass_rtl_unroll_and, pass_rtl_doloop): Likewise.
+	* global.c (pass_global_alloc): Likewise.
+	* ifcvt.c (pass_rtl_ifcvt, pass_if_after_combine,
+	pass_if_after_reload): Likewise.
+	* reload.c (pass_peephole2, pass_split_for_shoren_branches): Likewise.
+	* dse.c (pass_rtl_dse1, pass_rtl_dse2): Likewise.
+	* regmove.c (pass_regmove): Likewise.
+	* function.c (pass_thread_prologugues_epilogues): Likewise.
+	* gcse.c (pass_gcse): Likewise.
+	* rtl-factoring.c (pass_rtl_seqabstr): Likewise.
+	* lower-subreg.c (pass_lower_subreg2): Likewise.
+	* bt-load.c (pass_branch_target_load): Likewise.
+	* emit-rtl.c (pass_unshare_all_rtl): Likewise.
+	* cfgcleanup.c (pass_jump, pass_jump2): Likewise.
+	* combine.c (pass_combine): Likewise.
+	* bb-reorder.c (pass_duplicate_comp, pass_reorder_blocks): Likewise.
+	(pass_partition_blocks): Likewise.
+	* var-tracking.c (pass_variable_track): Likewise.
+	* reg-stack.c (pass_stack_regs_run): Likewise.
+	* sched-rgn.c (pass_sched, pass_sched2): Likewise.
+	* passes.c (pass_postreload): Likewise.
+	(execute_function_todo): Add TODO_verify_rtl_sharing handling code.
+	* tree-pass.h (TODO_verify_rtl_sharing): New.
+	(TODO_update_ssa, TODO_update_ssa_no_phi, TODO_update_ssa_full_phi,
+	TODO_update_ssa_only_virtuals, TODO_remove_unused_locals,
+	TODO_set_props, TODO_df_finish, TODO_df_verify,
+	TODO_mark_first_instance, TODO_rebuild_alias): Renumber.
+
 2007-09-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (all_ones_mask_p, sign_bit_p, simple_operand_p,

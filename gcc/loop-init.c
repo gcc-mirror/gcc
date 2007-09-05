@@ -185,7 +185,7 @@ struct tree_opt_pass pass_rtl_loop_init =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  TODO_dump_func | TODO_verify_rtl_sharing, /* todo_flags_finish */
   'L'                                   /* letter */
 };
 
@@ -218,7 +218,7 @@ struct tree_opt_pass pass_rtl_loop_done =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  TODO_dump_func | TODO_verify_rtl_sharing, /* todo_flags_finish */
   'L'                                   /* letter */
 };
 
@@ -252,7 +252,7 @@ struct tree_opt_pass pass_rtl_move_loop_invariants =
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */ 
   TODO_df_verify |
-  TODO_df_finish |
+  TODO_df_finish | TODO_verify_rtl_sharing |
   TODO_dump_func,                       /* todo_flags_finish */
   'L'                                   /* letter */
 };
@@ -286,7 +286,7 @@ struct tree_opt_pass pass_rtl_unswitch =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  TODO_dump_func | TODO_verify_rtl_sharing, /* todo_flags_finish */
   'L'                                   /* letter */
 };
 
@@ -332,7 +332,7 @@ struct tree_opt_pass pass_rtl_unroll_and_peel_loops =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  TODO_dump_func | TODO_verify_rtl_sharing, /* todo_flags_finish */
   'L'                                   /* letter */
 };
 
@@ -371,7 +371,7 @@ struct tree_opt_pass pass_rtl_doloop =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func,                       /* todo_flags_finish */
+  TODO_dump_func | TODO_verify_rtl_sharing, /* todo_flags_finish */
   'L'                                   /* letter */
 };
 
