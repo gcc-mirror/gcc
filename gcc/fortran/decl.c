@@ -1173,15 +1173,30 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	  /* Update symbol character length according initializer.  */
 	  if (sym->ts.cl->length == NULL)
 	    {
+	      int clen;
 	      /* If there are multiple CHARACTER variables declared on the
 		 same line, we don't want them to share the same length.  */
 	      sym->ts.cl = gfc_get_charlen ();
 	      sym->ts.cl->next = gfc_current_ns->cl_list;
 	      gfc_current_ns->cl_list = sym->ts.cl;
 
-	      if (sym->attr.flavor == FL_PARAMETER
-		  && init->expr_type == EXPR_ARRAY)
-		sym->ts.cl->length = gfc_copy_expr (init->ts.cl->length);
+	      if (sym->attr.flavor == FL_PARAMETER)
+		{
+		  if (init->expr_type == EXPR_CONSTANT)
+		    {
+		      clen = init->value.character.length;
+		      sym->ts.cl->length = gfc_int_expr (clen);
+		    }
+		  else if (init->expr_type == EXPR_ARRAY)
+		    {
+		      gfc_expr *p = init->value.constructor->expr;
+		      clen = p->value.character.length;
+		      sym->ts.cl->length = gfc_int_expr (clen);
+		    }
+		  else if (init->ts.cl && init->ts.cl->length)
+		    sym->ts.cl->length =
+				gfc_copy_expr (sym->value->ts.cl->length);
+		}
 	    }
 	  /* Update initializer character length according symbol.  */
 	  else if (sym->ts.cl->length->expr_type == EXPR_CONSTANT)
