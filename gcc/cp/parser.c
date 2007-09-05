@@ -3166,9 +3166,11 @@ cp_parser_primary_expression (cp_parser *parser,
 		 int i = ({ int j = 3; j + 1; });
 
 	       at class or namespace scope.  */
-	    if (!parser->in_function_body)
+	    if (!parser->in_function_body
+		|| parser->in_template_argument_list_p)
 	      {
-		error ("statement-expressions are allowed only inside functions");
+		error ("statement-expressions are not allowed outside "
+		       "functions nor in template-argument lists");
 		cp_parser_skip_to_end_of_block_or_statement (parser);
 		expr = error_mark_node;
 	      }
