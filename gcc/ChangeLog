@@ -1,3 +1,8 @@
+2007-09-05  Ian Lance Taylor  <iant@google.com>
+
+	* init-regs.c (initialize_uninitialized_regs): Call
+	emit_insn_before rather than add_insn_before.
+
 2007-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.def (BUILT_IN_VA_ARG_PACK): New built-in.
