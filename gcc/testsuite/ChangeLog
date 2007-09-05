@@ -1,3 +1,11 @@
+2007-09-05  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/tree-ssa/builtin-expect-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-expect-2.c: New test.
+	* gcc.dg/tree-ssa/builtin-expect-3.c: New test.
+	* gcc.dg/tree-ssa/builtin-expect-4.c: New test.
+	* gcc.dg/tree-ssa/builtin-expect-5.c: New test.
+
 2007-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/30302
