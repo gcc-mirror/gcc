@@ -620,7 +620,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips64 @gol
--mips16  -mno-mips16  -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
+-mips16  -mno-mips16  -mflip-mips16 @gol
+-mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mxgot  -mno-xgot  -mgp32  -mgp64 @gol
 -mfp32  -mfp64  -mhard-float  -msoft-float @gol
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
@@ -11625,6 +11626,16 @@ Equivalent to @samp{-march=mips64}.
 @opindex mno-mips16
 Generate (do not generate) MIPS16 code.  If GCC is targetting a
 MIPS32 or MIPS64 architecture, it will make use of the MIPS16e ASE@.
+
+MIPS16 code generation can also be controlled on a per-function basis
+by means of @code{mips16} and @code{nomips16} attributes.  
+@xref{Function Attributes}, for more information.
+
+@item -mflip-mips16
+@opindex mflip-mips16
+Generate MIPS16 code on alternating functions.  This option is provided
+for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
+not intended for ordinary use in compiling user code.
 
 @item -mabi=32
 @itemx -mabi=o64

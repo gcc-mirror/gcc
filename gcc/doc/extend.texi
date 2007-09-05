@@ -2202,6 +2202,24 @@ long as the old pointer is never referred to (including comparing it
 to the new pointer) after the function returns a non-@code{NULL}
 value.
 
+@item mips16/nomips16
+@cindex @code{mips16} attribute
+@cindex @code{nomips16} attribute
+
+On MIPS targets, you can use the @code{mips16} and @code{nomips16}
+function attributes to locally select or turn off MIPS16 code generation.
+A function with the @code{mips16} attribute is emitted as MIPS16 code, 
+while MIPS16 code generation is disabled for functions with the 
+@code{nomips16} attribute.  These attributes override the 
+@option{-mips16} and @option{-mno-mips16} options on the command line
+(@pxref{MIPS Options}).  
+
+When compiling files containing mixed MIPS16 and non-MIPS16 code, the
+preprocessor symbol @code{__mips16} reflects the setting on the command line,
+not that within individual functions.  Mixed MIPS16 and non-MIPS16 code
+may interact badly with some GCC extensions such as @code{__builtin_apply}
+(@pxref{Constructing Calls}).
+
 @item model (@var{model-name})
 @cindex function addressability on the M32R/D
 @cindex variable addressability on the IA-64

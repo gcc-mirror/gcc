@@ -1,6 +1,54 @@
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+            Nigel Stephens <nigel@mips.com>
 
-	gcc/
+	Add mips16/nomips16 function attributes and -mflip-mips16 option
+	for testing mixed-mode compilation.
+
+	* config/mips/mips.opt (mflip-mips16): New.
+
+	* config/mips/mips.h (SYMBOL_FLAG_MIPS16_FUNC): Define.
+	(SYMBOL_FLAG_MIPS16_FUNC_P): Define.
+
+	* config/mips/mips.c (mips_base_target_flags): New.
+	(mips_base_mips16): New.
+	(mips_base_schedule_insns): New.
+	(mips_base_reorder_blocks_and_partition): New.
+	(mips_base_align_loops): New.
+	(mips_base_align_jumps): New.
+	(mips_base_align_functions): New.
+	(mips16_flipper): New.
+	(mips_attribute_table): Add "mips16" and "nomips16" entries.
+	(TARGET_SET_CURRENT_FUNCTION): Define.
+	(mips_mips16_type_p, mips_nomips16_type_p): New.
+	(mips_comp_type_attributes): Check mips16/nomips16 attributes.
+	(mips_function_ok_for_sibcall): Make it deal with functions with
+	mips16 attributes.
+	(mips_init_split_addresses): New, split out from override_options.
+	(mips_init_relocs): New, split out from override_options.
+	(was_mips16_p): New.
+	(mips_set_mips16_mode): New, split out from override_options.
+	(mips_set_current_function): New.
+	(override_options):  Add sorry for unsupported mips16/pic
+	combination.  Remove error for mips16/dsp combination.	Save
+	base option settings.  
+	(mips_file_start): Move mips16 mode setting output from here....
+	(mips_output_function_prologue): ....to here.
+	(mips_output_mi_thunk): Check for mips16 function.
+	(build_mips16_function_stub): Don't set .mips16 here.
+	(build_mips16_call_stub): Likewise.
+	(mips_expand_builtin): Error in mips16 mode.
+	(mips_use_mips16_mode_p): New.
+	(mips_encode_section_info): Check for mips16 function, and set
+	SYMBOL_REF_FLAGS accordingly.
+
+	* doc/extend.texi (Function Attributes): Document new
+	mips16/nomips16 attributes.
+	* doc/invoke.texi (Option Summary): Add -mflip-mips16.
+	(MIPS Options): Document -mflip-mips16.
+
+2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* config/mips/mips.c (mips_legitimize_tls_address): Call sorry
 	if we encounter TLS address in MIPS16 mode.
 	(mips_legitimize_const_move):  Check cannot_force_const_mem for
