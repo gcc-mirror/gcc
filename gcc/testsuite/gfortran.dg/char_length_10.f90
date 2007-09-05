@@ -1,4 +1,4 @@
-{ dg-do compile }
+! { dg-do compile }
 ! Checks the fix for PR33241, in which the assumed character
 ! length of the parameter was never filled in with that of
 ! the initializer.
