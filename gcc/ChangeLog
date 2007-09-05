@@ -1,3 +1,13 @@
+2007-09-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* Makefile.in (stmt.o): Add alloc-pool.h dependency.
+	* stmt.c: Include alloc-pool.h.
+	(struct case_node): Remove GTY marker.
+	(add_case_node): New parameter case_node_pool.  Use it for
+	allocation of r.
+	(expand_case): New allocation pool case_node_pool.  Initialize it,
+	pass to add_case_node and free it.
+
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
             Nigel Stephens <nigel@mips.com>
