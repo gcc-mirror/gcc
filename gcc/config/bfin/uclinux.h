@@ -44,6 +44,8 @@ asm (TEXT_SECTION_ASM_OP);
     }						\
   while (0)
 
+#define MD_UNWIND_SUPPORT "config/bfin/linux-unwind.h"
+
 /* Like the definition in gcc.c, but for purposes of uClinux, every link is
    static.  */
 #define MFWRAP_SPEC " %{fmudflap|fmudflapth: \

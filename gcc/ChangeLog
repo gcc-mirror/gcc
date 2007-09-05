@@ -1,3 +1,9 @@
+2007-09-06  Jie Zhang  <jie.zhang@analog.com>
+
+	* config/bfin/linux-unwind.h: New file.
+	* config/bfin/linux.h (MD_UNWIND_SUPPORT): Define.
+	* config/bfin/uclinux.h (MD_UNWIND_SUPPORT): Define.
+
 2007-09-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* Makefile.in (stmt.o): Add alloc-pool.h dependency.

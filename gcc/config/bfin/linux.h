@@ -48,3 +48,4 @@ asm (TEXT_SECTION_ASM_OP);
    %{!dynamic-linker:-dynamic-linker /lib/ld-uClibc.so.0}} \
    %{static}} -init __init -fini __fini"
 
+#define MD_UNWIND_SUPPORT "config/bfin/linux-unwind.h"
