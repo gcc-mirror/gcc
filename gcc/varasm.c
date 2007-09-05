@@ -4190,7 +4190,7 @@ initializer_constant_valid_p (tree value, tree endtype)
 						      endtype);
 	  tree valid1 = initializer_constant_valid_p (TREE_OPERAND (value, 1),
 						      endtype);
-	  /* If either term is absolute, use the other terms relocation.  */
+	  /* If either term is absolute, use the other term's relocation.  */
 	  if (valid0 == null_pointer_node)
 	    return valid1;
 	  if (valid1 == null_pointer_node)
