@@ -1,3 +1,7 @@
+2007-09-05  Pat Haugen  <pthaugen@us.ibm.com>
+
+        * MAINTAINERS (Write After Approval): Add myself.
+
 2007-09-05  Richard Guenther  <rguenther@suse.de>
 
 	* configure.ac (--enable-stage1-checking): If neither --enable-checking
