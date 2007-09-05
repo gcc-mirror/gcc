@@ -5120,10 +5120,11 @@ expand_float (rtx to, rtx from, int unsignedp)
 	  }
       }
 
-  /* Unsigned integer, and no way to convert directly.  For binary
-     floating point modes, convert as signed, then conditionally adjust
-     the result.  */
-  if (unsignedp && can_do_signed && !DECIMAL_FLOAT_MODE_P (GET_MODE (to)))
+  /* Unsigned integer, and no way to convert directly.  Convert as signed,
+     then unconditionally adjust the result.  For decimal float values we
+     do this only if we have already determined that a signed conversion
+     provides sufficient accuracy.  */
+  if (unsignedp && (can_do_signed || !DECIMAL_FLOAT_MODE_P (GET_MODE (to))))
     {
       rtx label = gen_label_rtx ();
       rtx temp;
@@ -5214,7 +5215,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 			       0, label);
 
 
-      real_2expN (&offset, GET_MODE_BITSIZE (GET_MODE (from)));
+      real_2expN (&offset, GET_MODE_BITSIZE (GET_MODE (from)), fmode);
       temp = expand_binop (fmode, add_optab, target,
 			   CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode),
 			   target, 0, OPTAB_LIB_WIDEN);
@@ -5325,14 +5326,16 @@ expand_fix (rtx to, rtx from, int unsignedp)
      anything with a wider integer mode.
 
      This code used to extend FP value into mode wider than the destination.
-     This is not needed.  Consider, for instance conversion from SFmode
+     This is needed for decimal float modes which cannot accurately
+     represent one plus the highest signed number of the same size, but
+     not for binary modes.  Consider, for instance conversion from SFmode
      into DImode.
 
      The hot path through the code is dealing with inputs smaller than 2^63
      and doing just the conversion, so there is no bits to lose.
 
      In the other path we know the value is positive in the range 2^63..2^64-1
-     inclusive.  (as for other imput overflow happens and result is undefined)
+     inclusive.  (as for other input overflow happens and result is undefined)
      So we know that the most important bit set in mantissa corresponds to
      2^63.  The subtraction of 2^63 should not generate any rounding as it
      simply clears out that bit.  The rest is trivial.  */
@@ -5340,15 +5343,16 @@ expand_fix (rtx to, rtx from, int unsignedp)
   if (unsignedp && GET_MODE_BITSIZE (GET_MODE (to)) <= HOST_BITS_PER_WIDE_INT)
     for (fmode = GET_MODE (from); fmode != VOIDmode;
 	 fmode = GET_MODE_WIDER_MODE (fmode))
-      if (CODE_FOR_nothing != can_fix_p (GET_MODE (to), fmode, 0,
-					 &must_trunc))
+      if (CODE_FOR_nothing != can_fix_p (GET_MODE (to), fmode, 0, &must_trunc)
+	  && (!DECIMAL_FLOAT_MODE_P (fmode)
+	      || GET_MODE_BITSIZE (fmode) > GET_MODE_BITSIZE (GET_MODE (to))))
 	{
 	  int bitsize;
 	  REAL_VALUE_TYPE offset;
 	  rtx limit, lab1, lab2, insn;
 
 	  bitsize = GET_MODE_BITSIZE (GET_MODE (to));
-	  real_2expN (&offset, bitsize - 1);
+	  real_2expN (&offset, bitsize - 1, fmode);
 	  limit = CONST_DOUBLE_FROM_REAL_VALUE (offset, fmode);
 	  lab1 = gen_label_rtx ();
 	  lab2 = gen_label_rtx ();
