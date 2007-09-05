@@ -1494,8 +1494,7 @@ add_virtual_operand (tree var, stmt_ann_t s_ann, int flags,
 
   if (aliases == NULL)
     {
-      if (!gimple_aliases_computed_p (cfun)
-	  && (flags & opf_def))
+      if (!gimple_aliases_computed_p (cfun))
         s_ann->has_volatile_ops = true;
 
       /* The variable is not aliased or it is an alias tag.  */

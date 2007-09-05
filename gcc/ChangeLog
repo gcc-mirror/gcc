@@ -1,3 +1,14 @@
+2007-09-05  Jan Hubicka  <jh@suse.cz>
+
+	Revert:
+
+	2007-09-04  Jan Hubicka  <jh@suse.cz>
+	* tree-tailcall.c (eliminate_tail_call): Expect unrenamed return value.
+
+	2007-09-04  Richard Guenther  <rguenther@suse.de>
+	* tree-ssa-operands.c (add_virtual_operand): Only mark
+	stores as has_volatile_ops if alias information is not available.
+
 2007-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/tramp.asm: Include config.h.
