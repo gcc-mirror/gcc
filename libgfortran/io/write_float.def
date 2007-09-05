@@ -1,0 +1,812 @@
+/* Copyright (C) 2007 Free Software Foundation, Inc.
+   Contributed by Andy Vaught
+   Write float code factoring to this file by Jerry DeLisle   
+
+This file is part of the GNU Fortran 95 runtime library (libgfortran).
+
+Libgfortran is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+In addition to the permissions in the GNU General Public License, the
+Free Software Foundation gives you unlimited permission to link the
+compiled version of this file into combinations with other programs,
+and to distribute those combinations without any restriction coming
+from the use of this file.  (The General Public License restrictions
+do apply in other respects; for example, they cover modification of
+the file, and distribution when not linked into a combine
+executable.)
+
+Libgfortran is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Libgfortran; see the file COPYING.  If not, write to
+the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.  */
+
+#include "config.h"
+
+typedef enum
+{ SIGN_NONE, SIGN_MINUS, SIGN_PLUS }
+sign_t;
+
+/* Given a flag that indicates if a value is negative or not, return a
+   sign_t that gives the sign that we need to produce.  */
+
+static sign_t
+calculate_sign (st_parameter_dt *dtp, int negative_flag)
+{
+  sign_t s = SIGN_NONE;
+
+  if (negative_flag)
+    s = SIGN_MINUS;
+  else
+    switch (dtp->u.p.sign_status)
+      {
+      case SIGN_SP:
+	s = SIGN_PLUS;
+	break;
+      case SIGN_SS:
+	s = SIGN_NONE;
+	break;
+      case SIGN_S:
+	s = options.optional_plus ? SIGN_PLUS : SIGN_NONE;
+	break;
+      }
+
+  return s;
+}
+
+
+/* Output a real number according to its format which is FMT_G free.  */
+
+static void
+output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size, 
+	      int sign_bit, bool zero_flag, int ndigits, int edigits)
+{
+  char *out;
+  char *digits;
+  int e;
+  char expchar;
+  format_token ft;
+  int w;
+  int d;
+  /* Number of digits before the decimal point.  */
+  int nbefore;
+  /* Number of zeros after the decimal point.  */
+  int nzero;
+  /* Number of digits after the decimal point.  */
+  int nafter;
+  /* Number of zeros after the decimal point, whatever the precision.  */
+  int nzero_real;
+  int leadzero;
+  int nblanks;
+  int i;
+  sign_t sign;
+
+  ft = f->format;
+  w = f->u.real.w;
+  d = f->u.real.d;
+
+  nzero_real = -1;
+
+  /* We should always know the field width and precision.  */
+  if (d < 0)
+    internal_error (&dtp->common, "Unspecified precision");
+
+  /* Use sprintf to print the number in the format +D.DDDDe+ddd
+     For an N digit exponent, this gives us (MIN_FIELD_WIDTH-5)-N digits
+     after the decimal point, plus another one before the decimal point.  */
+
+  sign = calculate_sign (dtp, sign_bit);
+
+  /* #   The result will always contain a decimal point, even if no
+   *     digits follow it
+   *
+   * -   The converted value is to be left adjusted on the field boundary
+   *
+   * +   A sign (+ or -) always be placed before a number
+   *
+   * MIN_FIELD_WIDTH  minimum field width
+   *
+   * *   (ndigits-1) is used as the precision
+   *
+   *   e format: [-]d.dddeÂ±dd where there is one digit before the
+   *   decimal-point character and the number of digits after it is
+   *   equal to the precision. The exponent always contains at least two
+   *   digits; if the value is zero, the exponent is 00.
+   */
+
+  /* Check the given string has punctuation in the correct places.  */
+  if (d != 0 && (buffer[2] != '.' || buffer[ndigits + 2] != 'e'))
+      internal_error (&dtp->common, "printf is broken");
+
+  /* Read the exponent back in.  */
+  e = atoi (&buffer[ndigits + 3]) + 1;
+
+  /* Make sure zero comes out as 0.0e0.   */
+  if (zero_flag)
+    {
+      e = 0;
+      if (compile_options.sign_zero == 1)
+	sign = calculate_sign (dtp, sign_bit);
+      else
+	sign = calculate_sign (dtp, 0);
+    }
+
+  /* Normalize the fractional component.  */
+  buffer[2] = buffer[1];
+  digits = &buffer[2];
+
+  /* Figure out where to place the decimal point.  */
+  switch (ft)
+    {
+    case FMT_F:
+      nbefore = e + dtp->u.p.scale_factor;
+      if (nbefore < 0)
+	{
+	  nzero = -nbefore;
+          nzero_real = nzero;
+	  if (nzero > d)
+	    nzero = d;
+	  nafter = d - nzero;
+	  nbefore = 0;
+	}
+      else
+	{
+	  nzero = 0;
+	  nafter = d;
+	}
+      expchar = 0;
+      break;
+
+    case FMT_E:
+    case FMT_D:
+      i = dtp->u.p.scale_factor;
+      if (!zero_flag)
+	e -= i;
+      if (i < 0)
+	{
+	  nbefore = 0;
+	  nzero = -i;
+	  nafter = d + i;
+	}
+      else if (i > 0)
+	{
+	  nbefore = i;
+	  nzero = 0;
+	  nafter = (d - i) + 1;
+	}
+      else /* i == 0 */
+	{
+	  nbefore = 0;
+	  nzero = 0;
+	  nafter = d;
+	}
+
+      if (ft == FMT_E)
+	expchar = 'E';
+      else
+	expchar = 'D';
+      break;
+
+    case FMT_EN:
+      /* The exponent must be a multiple of three, with 1-3 digits before
+	 the decimal point.  */
+      if (!zero_flag)
+        e--;
+      if (e >= 0)
+	nbefore = e % 3;
+      else
+	{
+	  nbefore = (-e) % 3;
+	  if (nbefore != 0)
+	    nbefore = 3 - nbefore;
+	}
+      e -= nbefore;
+      nbefore++;
+      nzero = 0;
+      nafter = d;
+      expchar = 'E';
+      break;
+
+    case FMT_ES:
+      if (!zero_flag)
+        e--;
+      nbefore = 1;
+      nzero = 0;
+      nafter = d;
+      expchar = 'E';
+      break;
+
+    default:
+      /* Should never happen.  */
+      internal_error (&dtp->common, "Unexpected format token");
+    }
+
+  /* Round the value.  */
+  if (nbefore + nafter == 0)
+    {
+      ndigits = 0;
+      if (nzero_real == d && digits[0] >= '5')
+        {
+          /* We rounded to zero but shouldn't have */
+          nzero--;
+          nafter = 1;
+          digits[0] = '1';
+          ndigits = 1;
+        }
+    }
+  else if (nbefore + nafter < ndigits)
+    {
+      ndigits = nbefore + nafter;
+      i = ndigits;
+      if (digits[i] >= '5')
+	{
+	  /* Propagate the carry.  */
+	  for (i--; i >= 0; i--)
+	    {
+	      if (digits[i] != '9')
+		{
+		  digits[i]++;
+		  break;
+		}
+	      digits[i] = '0';
+	    }
+
+	  if (i < 0)
+	    {
+	      /* The carry overflowed.  Fortunately we have some spare space
+		 at the start of the buffer.  We may discard some digits, but
+		 this is ok because we already know they are zero.  */
+	      digits--;
+	      digits[0] = '1';
+	      if (ft == FMT_F)
+		{
+		  if (nzero > 0)
+		    {
+		      nzero--;
+		      nafter++;
+		    }
+		  else
+		    nbefore++;
+		}
+	      else if (ft == FMT_EN)
+		{
+		  nbefore++;
+		  if (nbefore == 4)
+		    {
+		      nbefore = 1;
+		      e += 3;
+		    }
+		}
+	      else
+		e++;
+	    }
+	}
+    }
+
+  /* Calculate the format of the exponent field.  */
+  if (expchar)
+    {
+      edigits = 1;
+      for (i = abs (e); i >= 10; i /= 10)
+	edigits++;
+
+      if (f->u.real.e < 0)
+	{
+	  /* Width not specified.  Must be no more than 3 digits.  */
+	  if (e > 999 || e < -999)
+	    edigits = -1;
+	  else
+	    {
+	      edigits = 4;
+	      if (e > 99 || e < -99)
+		expchar = ' ';
+	    }
+	}
+      else
+	{
+	  /* Exponent width specified, check it is wide enough.  */
+	  if (edigits > f->u.real.e)
+	    edigits = -1;
+	  else
+	    edigits = f->u.real.e + 2;
+	}
+    }
+  else
+    edigits = 0;
+
+  /* Pick a field size if none was specified.  */
+  if (w <= 0)
+    w = nbefore + nzero + nafter + (sign != SIGN_NONE ? 2 : 1);
+
+  /* Create the ouput buffer.  */
+  out = write_block (dtp, w);
+  if (out == NULL)
+    return;
+
+  /* Zero values always output as positive, even if the value was negative
+     before rounding.  */
+  for (i = 0; i < ndigits; i++)
+    {
+      if (digits[i] != '0')
+	break;
+    }
+  if (i == ndigits)
+    {
+      /* The output is zero, so set the sign according to the sign bit unless
+	 -fno-sign-zero was specified.  */
+      if (compile_options.sign_zero == 1)
+        sign = calculate_sign (dtp, sign_bit);
+      else
+	sign = calculate_sign (dtp, 0);
+    }
+
+  /* Work out how much padding is needed.  */
+  nblanks = w - (nbefore + nzero + nafter + edigits + 1);
+  if (sign != SIGN_NONE)
+    nblanks--;
+
+  /* Check the value fits in the specified field width.  */
+  if (nblanks < 0 || edigits == -1)
+    {
+      star_fill (out, w);
+      return;
+    }
+
+  /* See if we have space for a zero before the decimal point.  */
+  if (nbefore == 0 && nblanks > 0)
+    {
+      leadzero = 1;
+      nblanks--;
+    }
+  else
+    leadzero = 0;
+
+  /* Pad to full field width.  */
+
+  if ( ( nblanks > 0 ) && !dtp->u.p.no_leading_blank)
+    {
+      memset (out, ' ', nblanks);
+      out += nblanks;
+    }
+
+  /* Output the initial sign (if any).  */
+  if (sign == SIGN_PLUS)
+    *(out++) = '+';
+  else if (sign == SIGN_MINUS)
+    *(out++) = '-';
+
+  /* Output an optional leading zero.  */
+  if (leadzero)
+    *(out++) = '0';
+
+  /* Output the part before the decimal point, padding with zeros.  */
+  if (nbefore > 0)
+    {
+      if (nbefore > ndigits)
+	{
+	  i = ndigits;
+	  memcpy (out, digits, i);
+	  ndigits = 0;
+	  while (i < nbefore)
+	    out[i++] = '0';
+	}
+      else
+	{
+	  i = nbefore;
+	  memcpy (out, digits, i);
+	  ndigits -= i;
+	}
+
+      digits += i;
+      out += nbefore;
+    }
+  /* Output the decimal point.  */
+  *(out++) = '.';
+
+  /* Output leading zeros after the decimal point.  */
+  if (nzero > 0)
+    {
+      for (i = 0; i < nzero; i++)
+	*(out++) = '0';
+    }
+
+  /* Output digits after the decimal point, padding with zeros.  */
+  if (nafter > 0)
+    {
+      if (nafter > ndigits)
+	i = ndigits;
+      else
+	i = nafter;
+
+      memcpy (out, digits, i);
+      while (i < nafter)
+	out[i++] = '0';
+
+      digits += i;
+      ndigits -= i;
+      out += nafter;
+    }
+
+  /* Output the exponent.  */
+  if (expchar)
+    {
+      if (expchar != ' ')
+	{
+	  *(out++) = expchar;
+	  edigits--;
+	}
+#if HAVE_SNPRINTF
+      snprintf (buffer, size, "%+0*d", edigits, e);
+#else
+      sprintf (buffer, "%+0*d", edigits, e);
+#endif
+      memcpy (out, buffer, edigits);
+    }
+  if (dtp->u.p.no_leading_blank)
+    {
+      out += edigits;
+      memset( out , ' ' , nblanks );
+      dtp->u.p.no_leading_blank = 0;
+    }
+#undef STR
+#undef STR1
+#undef MIN_FIELD_WIDTH
+}
+
+
+/* Write "Infinite" or "Nan" as appropriate for the given format.  */
+
+static void
+write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit)
+{
+  char * p, fin;
+  int nb = 0;
+
+  if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
+    {
+	  nb =  f->u.real.w;
+	  
+	  /* If the field width is zero, the processor must select a width 
+	     not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
+	     
+	  if (nb == 0) nb = 4;
+	  p = write_block (dtp, nb);
+          if (p == NULL)
+            return;
+	  if (nb < 3)
+	    {
+	      memset (p, '*',nb);
+	      return;
+	    }
+
+	  memset(p, ' ', nb);
+	  if (!isnan_flag)
+	    {
+	      if (sign_bit)
+	        {
+	        
+	          /* If the sign is negative and the width is 3, there is
+	             insufficient room to output '-Inf', so output asterisks */
+	             
+	          if (nb == 3)
+	            {
+	              memset (p, '*',nb);
+	              return;
+	            }
+	            
+	          /* The negative sign is mandatory */
+	            
+	          fin = '-';
+		}    
+	      else
+	      
+	          /* The positive sign is optional, but we output it for
+	             consistency */
+		  fin = '+';
+
+	      if (nb > 8)
+	      
+	        /* We have room, so output 'Infinity' */
+		memcpy(p + nb - 8, "Infinity", 8);
+	      else
+	      
+	        /* For the case of width equals 8, there is not enough room
+	           for the sign and 'Infinity' so we go with 'Inf' */
+		memcpy(p + nb - 3, "Inf", 3);
+
+	      if (nb < 9 && nb > 3)
+		p[nb - 4] = fin;  /* Put the sign in front of Inf */
+	      else if (nb > 8)
+		p[nb - 9] = fin;  /* Put the sign in front of Infinity */
+	    }
+	  else
+	    memcpy(p + nb - 3, "NaN", 3);
+	  return;
+	}
+    }
+
+
+/* Returns the value of 10**d.  */
+
+#define CALCULATE_EXP(x) \
+inline static GFC_REAL_ ## x \
+calculate_exp_ ## x  (int d)\
+{\
+  int i;\
+  GFC_REAL_ ## x r = 1.0;\
+  for (i = 0; i< (d >= 0 ? d : -d); i++)\
+    r *= 10;\
+  r = (d >= 0) ? r : 1.0 / r;\
+  return r;\
+}
+
+CALCULATE_EXP(4)
+
+CALCULATE_EXP(8)
+
+#ifdef HAVE_GFC_REAL_10
+CALCULATE_EXP(10)
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+CALCULATE_EXP(16)
+#endif
+#undef CALCULATE_EXP
+
+/* Generate corresponding I/O format for FMT_G and output.
+   The rules to translate FMT_G to FMT_E or FMT_F from DEC fortran
+   LRM (table 11-2, Chapter 11, "I/O Formatting", P11-25) is:
+
+   Data Magnitude                              Equivalent Conversion
+   0< m < 0.1-0.5*10**(-d-1)                   Ew.d[Ee]
+   m = 0                                       F(w-n).(d-1), n' '
+   0.1-0.5*10**(-d-1)<= m < 1-0.5*10**(-d)     F(w-n).d, n' '
+   1-0.5*10**(-d)<= m < 10-0.5*10**(-d+1)      F(w-n).(d-1), n' '
+   10-0.5*10**(-d+1)<= m < 100-0.5*10**(-d+2)  F(w-n).(d-2), n' '
+   ................                           ..........
+   10**(d-1)-0.5*10**(-1)<= m <10**d-0.5       F(w-n).0,n(' ')
+   m >= 10**d-0.5                              Ew.d[Ee]
+
+   notes: for Gw.d ,  n' ' means 4 blanks
+          for Gw.dEe, n' ' means e+2 blanks  */
+
+#define OUTPUT_FLOAT_FMT_G(x) \
+static void \
+output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
+		      GFC_REAL_ ## x m, char *buffer, size_t size, \
+		      int sign_bit, bool zero_flag, int ndigits, int edigits) \
+{ \
+  int e = f->u.real.e;\
+  int d = f->u.real.d;\
+  int w = f->u.real.w;\
+  fnode *newf;\
+  GFC_REAL_ ## x exp_d;\
+  int low, high, mid;\
+  int ubound, lbound;\
+  char *p;\
+  int save_scale_factor, nb = 0;\
+\
+  save_scale_factor = dtp->u.p.scale_factor;\
+  newf = get_mem (sizeof (fnode));\
+\
+  exp_d = calculate_exp_ ## x (d);\
+  if ((m > 0.0 && m < 0.1 - 0.05 / exp_d) || (m >= exp_d - 0.5 ) ||\
+      ((m == 0.0) && !(compile_options.allow_std & GFC_STD_F2003)))\
+    { \
+      newf->format = FMT_E;\
+      newf->u.real.w = w;\
+      newf->u.real.d = d;\
+      newf->u.real.e = e;\
+      nb = 0;\
+      goto finish;\
+    }\
+\
+  mid = 0;\
+  low = 0;\
+  high = d + 1;\
+  lbound = 0;\
+  ubound = d + 1;\
+\
+  while (low <= high)\
+    { \
+      GFC_REAL_ ## x temp;\
+      mid = (low + high) / 2;\
+\
+      temp = 0.1 * calculate_exp_ ## x (mid) - 0.5\
+	     * calculate_exp_ ## x (mid - d - 1);\
+\
+      if (m < temp)\
+        { \
+          ubound = mid;\
+          if (ubound == lbound + 1)\
+            break;\
+          high = mid - 1;\
+        }\
+      else if (m > temp)\
+        { \
+          lbound = mid;\
+          if (ubound == lbound + 1)\
+            { \
+              mid ++;\
+              break;\
+            }\
+          low = mid + 1;\
+        }\
+      else\
+        break;\
+    }\
+\
+  if (e < 0)\
+    nb = 4;\
+  else\
+    nb = e + 2;\
+\
+  newf->format = FMT_F;\
+  newf->u.real.w = f->u.real.w - nb;\
+\
+  if (m == 0.0)\
+    newf->u.real.d = d - 1;\
+  else\
+    newf->u.real.d = - (mid - d - 1);\
+\
+  dtp->u.p.scale_factor = 0;\
+\
+ finish:\
+  output_float (dtp, newf, buffer, size, sign_bit, zero_flag, ndigits, \
+		edigits);\
+  dtp->u.p.scale_factor = save_scale_factor;\
+\
+  free_mem(newf);\
+\
+  if (nb > 0)\
+    { \
+      p = write_block (dtp, nb);\
+      if (p == NULL)\
+	return;\
+      memset (p, ' ', nb);\
+    }\
+}\
+
+OUTPUT_FLOAT_FMT_G(4)
+
+OUTPUT_FLOAT_FMT_G(8)
+
+#ifdef HAVE_GFC_REAL_10
+OUTPUT_FLOAT_FMT_G(10)
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+OUTPUT_FLOAT_FMT_G(16)
+#endif
+
+#undef OUTPUT_FLOAT_FMT_G
+
+/* Define a macro to build code for write_float.  */
+
+#ifdef HAVE_SNPRINTF
+
+#define DTOA \
+snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
+	  "e", ndigits - 1, tmp);
+
+#define DTOAL \
+snprintf (buffer, size, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
+	  "Le", ndigits - 1, tmp);
+
+#else
+
+#define DTOA \
+sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
+	 "e", ndigits - 1, tmp);
+
+#define DTOAL \
+sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
+	 "Le", ndigits - 1, tmp);
+
+#endif
+
+#define WRITE_FLOAT(x,y)\
+{\
+	GFC_REAL_ ## x tmp;\
+	tmp = * (GFC_REAL_ ## x *)source;\
+	sign_bit = signbit (tmp);\
+	if (!isfinite (tmp))\
+	  { \
+	    write_infnan (dtp, f, isnan (tmp), sign_bit);\
+	    return;\
+	  }\
+	tmp = sign_bit ? -tmp : tmp;\
+	if (f->u.real.d == 0 && f->format == FMT_F)\
+	  {\
+	    if (tmp < 0.5)\
+	      tmp = 0.0;\
+	    else if (tmp < 1.0)\
+	      tmp = tmp + 0.5;\
+	  }\
+	zero_flag = (tmp == 0.0);\
+\
+	DTOA ## y\
+\
+	if (f->format != FMT_G)\
+	  output_float (dtp, f, buffer, size, sign_bit, zero_flag, ndigits, \
+			edigits);\
+	else \
+	  output_float_FMT_G_ ## x (dtp, f, tmp, buffer, size, sign_bit, \
+				    zero_flag, ndigits, edigits);\
+}\
+
+/* Output a real number according to its format.  */
+
+static void
+write_float (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
+{
+
+#if defined(HAVE_GFC_REAL_16) && __LDBL_DIG__ > 18
+# define MIN_FIELD_WIDTH 46
+#else
+# define MIN_FIELD_WIDTH 31
+#endif
+#define STR(x) STR1(x)
+#define STR1(x) #x
+
+  /* This must be large enough to accurately hold any value.  */
+  char buffer[MIN_FIELD_WIDTH+1];
+  int sign_bit, ndigits, edigits;
+  bool zero_flag;
+  size_t size;
+
+  size = MIN_FIELD_WIDTH+1;
+
+  /* printf pads blanks for us on the exponent so we just need it big enough
+     to handle the largest number of exponent digits expected.  */
+  edigits=4;
+
+  if (f->format == FMT_F || f->format == FMT_EN || f->format == FMT_G 
+      || ((f->format == FMT_D || f->format == FMT_E)
+      && dtp->u.p.scale_factor != 0))
+    {
+      /* Always convert at full precision to avoid double rounding.  */
+      ndigits = MIN_FIELD_WIDTH - 4 - edigits;
+    }
+  else
+    {
+      /* The number of digits is known, so let printf do the rounding.  */
+      if (f->format == FMT_ES)
+	ndigits = f->u.real.d + 1;
+      else
+	ndigits = f->u.real.d;
+      if (ndigits > MIN_FIELD_WIDTH - 4 - edigits)
+	ndigits = MIN_FIELD_WIDTH - 4 - edigits;
+    }
+
+  switch (len)
+    {
+    case 4:
+      WRITE_FLOAT(4,)
+      break;
+
+    case 8:
+      WRITE_FLOAT(8,)
+      break;
+
+#ifdef HAVE_GFC_REAL_10
+    case 10:
+      WRITE_FLOAT(10,L)
+      break;
+#endif
+#ifdef HAVE_GFC_REAL_16
+    case 16:
+      WRITE_FLOAT(16,L)
+      break;
+#endif
+    default:
+      internal_error (NULL, "bad real kind");
+    }
+}
