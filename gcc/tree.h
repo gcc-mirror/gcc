@@ -464,6 +464,8 @@ struct gimple_stmt GTY(())
            VAR_DECL or FUNCTION_DECL or IDENTIFIER_NODE
        ASM_VOLATILE_P in
            ASM_EXPR
+       CALL_EXPR_VA_ARG_PACK in
+	  CALL_EXPR
        TYPE_CACHED_VALUES_P in
           ..._TYPE
        SAVE_EXPR_RESOLVED_P in
@@ -1221,6 +1223,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    been substituted with a VAR_DECL that contains the value.  */
 #define SAVE_EXPR_RESOLVED_P(NODE) \
   (TREE_CHECK (NODE, SAVE_EXPR)->base.public_flag)
+
+/* Set on a CALL_EXPR if this stdarg call should be passed the argument
+   pack.  */
+#define CALL_EXPR_VA_ARG_PACK(NODE) \
+  (CALL_EXPR_CHECK(NODE)->base.public_flag)
 
 /* In any expression, decl, or constant, nonzero means it has side effects or
    reevaluation of the whole expression could produce a different value.

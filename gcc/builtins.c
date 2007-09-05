@@ -6270,6 +6270,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_ARGS_INFO:
       return expand_builtin_args_info (exp);
 
+    case BUILT_IN_VA_ARG_PACK:
+      /* All valid uses of __builtin_va_arg_pack () are removed during
+	 inlining.  */
+      error ("invalid use of %<__builtin_va_arg_pack ()%>");
+      return const0_rtx;
+
       /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
       if (fold_builtin_next_arg (exp, false))
@@ -10472,14 +10478,32 @@ fold_call_expr (tree exp, bool ignore)
   tree fndecl = get_callee_fndecl (exp);
   if (fndecl
       && TREE_CODE (fndecl) == FUNCTION_DECL
-      && DECL_BUILT_IN (fndecl))
+      && DECL_BUILT_IN (fndecl)
+      /* If CALL_EXPR_VA_ARG_PACK is set, the arguments aren't finalized
+	 yet.  Defer folding until we see all the arguments
+	 (after inlining).  */
+      && !CALL_EXPR_VA_ARG_PACK (exp))
     {
+      int nargs = call_expr_nargs (exp);
+
+      /* Before gimplification CALL_EXPR_VA_ARG_PACK is not set, but
+	 instead last argument is __builtin_va_arg_pack ().  Defer folding
+	 even in that case, until arguments are finalized.  */
+      if (nargs && TREE_CODE (CALL_EXPR_ARG (exp, nargs - 1)) == CALL_EXPR)
+	{
+	  tree fndecl2 = get_callee_fndecl (CALL_EXPR_ARG (exp, nargs - 1));
+	  if (fndecl2
+	      && TREE_CODE (fndecl2) == FUNCTION_DECL
+	      && DECL_BUILT_IN_CLASS (fndecl2) == BUILT_IN_NORMAL
+	      && DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
+	    return NULL_TREE;
+	}
+
       /* FIXME: Don't use a list in this interface.  */
       if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
 	  return targetm.fold_builtin (fndecl, CALL_EXPR_ARGS (exp), ignore);
       else
 	{
-	  int nargs = call_expr_nargs (exp);
 	  if (nargs <= MAX_ARGS_TO_FOLD_BUILTIN)
 	    {
 	      tree *args = CALL_EXPR_ARGP (exp);
@@ -10565,6 +10589,17 @@ fold_builtin_call_array (tree type,
     if (TREE_CODE (fndecl) == FUNCTION_DECL
         && DECL_BUILT_IN (fndecl))
       {
+	/* If last argument is __builtin_va_arg_pack (), arguments to this
+	   function are not finalized yet.  Defer folding until they are.  */
+	if (n && TREE_CODE (argarray[n - 1]) == CALL_EXPR)
+	  {
+	    tree fndecl2 = get_callee_fndecl (argarray[n - 1]);
+	    if (fndecl2
+		&& TREE_CODE (fndecl2) == FUNCTION_DECL
+		&& DECL_BUILT_IN_CLASS (fndecl2) == BUILT_IN_NORMAL
+		&& DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
+	      return build_call_array (type, fn, n, argarray);
+	  }
         if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
           {
             tree arglist = NULL_TREE;
