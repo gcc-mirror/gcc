@@ -1,3 +1,9 @@
+2007-09-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33210
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Deal with
+	BOUND_TEMPLATE_TEMPLATE_PARM.
+
 2007-09-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/14032

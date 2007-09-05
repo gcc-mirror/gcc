@@ -207,6 +207,14 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
       pp_cxx_unqualified_id (pp, TYPE_NAME (t));
       break;
 
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+      pp_cxx_cv_qualifier_seq (pp, t);
+      pp_cxx_unqualified_id (pp, TYPE_IDENTIFIER (t));
+      pp_cxx_begin_template_argument_list (pp);
+      pp_cxx_template_argument_list (pp, TYPE_TI_ARGS (t));
+      pp_cxx_end_template_argument_list (pp);
+      break;
+ 
     default:
       pp_unsupported_tree (pp, t);
       break;
