@@ -1,3 +1,25 @@
+2007-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_VA_ARG_PACK): New built-in.
+	* tree.h (CALL_EXPR_VA_ARG_PACK): Define.
+	* tree-inline.h (copy_body_data): Add call_expr field.
+	* tree-inline.c (expand_call_inline): Initialize call_expr.
+	(copy_bb): Append anonymous inline fn arguments to arguments
+	when inlining a CALL_EXPR_VA_ARG_PACK call.
+	* builtins.c (expand_builtin): Issue an error if
+	BUILT_IN_VA_ARG_PACK is seen during expand.
+	(fold_call_expr, fold_builtin_call_array): Don't fold
+	CALL_EXPR_VA_ARG_PACK CALL_EXPRs or calls with
+	__builtin_va_arg_pack () call as last argument.
+	* gimplify.c (gimplify_call_expr): If last argument to a vararg
+	function is __builtin_va_arg_pack (), decrease number of call
+	arguments and instead set CALL_EXPR_VA_ARG_PACK on the CALL_EXPR.
+	* expr.c (expand_expr_real_1): Issue an error if
+	CALL_EXPR_VA_ARG_PACK CALL_EXPR is seen during expand.
+	* tree-pretty-print.c (dump_generic_node): Handle printing
+	CALL_EXPR_VA_ARG_PACK bit on CALL_EXPRs.
+	* doc/extend.texi (__builtin_va_arg_pack): Document.
+
 2007-09-05  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR tree-optimization/21513
@@ -92,7 +114,7 @@
 	(was_mips16_p): New.
 	(mips_set_mips16_mode): New, split out from override_options.
 	(mips_set_current_function): New.
-	(override_options):  Add sorry for unsupported mips16/pic
+	(override_options): Add sorry for unsupported mips16/pic
 	combination.  Remove error for mips16/dsp combination.	Save
 	base option settings.  
 	(mips_file_start): Move mips16 mode setting output from here....
@@ -114,7 +136,7 @@
 
 	* config/mips/mips.c (mips_legitimize_tls_address): Call sorry
 	if we encounter TLS address in MIPS16 mode.
-	(mips_legitimize_const_move):  Check cannot_force_const_mem for
+	(mips_legitimize_const_move): Check cannot_force_const_mem for
 	the (const (plus symbol offset)) case; this forces invalid TLS
 	address in MIPS16 mode to be caught by the above call to sorry.
 	(override_options): Don't reset targetm.have_tls in MIPS16 mode,
@@ -134,7 +156,7 @@
 	* function.h: Here.
 	(set_cfun): Declare.
 	* tree-inline.c (cfun_stack, push_cfun, pop_cfun): Moved to...
-	* function.c:  Here.
+	* function.c: Here.
 	(push_function_context_to): Use allocate_struct_function
 	to create null context, not init_dummy_function_start.  Use set_cfun.
 	(pop_function_context_from): Use set_cfun.
@@ -168,7 +190,7 @@
 
 2007-09-05  Kenneth Zadeck <zadeck@naturalbridge.com>
 
-	* regrename.c (rerename_optimize):  Use deferred rescanning and
+	* regrename.c (rerename_optimize): Use deferred rescanning and
 	insert explicit calls to rescan insns when changed.
 	
 2007-09-05  Jan Hubicka  <jh@suse.cz>
@@ -1178,9 +1200,9 @@
 
 	* toplev.c (init_alignments): New, split out from...
 	(process_options): ...here.
-	(backend_init_target):  New, split out from...
+	(backend_init_target): New, split out from...
 	(backend_init): ...here.
-	(lang_dependent_init_target):  New, split out from...
+	(lang_dependent_init_target): New, split out from...
 	(lang_dependent_init): ...here.
 	(target_reinit): New.
 	* toplev.h (target_reinit): Declare.
@@ -3338,7 +3360,7 @@
 
 2007-08-11  David Daney  <ddaney@avtrex.com>
 
-	* config/mips/mips.c (mips_sched_reorder):  Mark cycle parameter
+	* config/mips/mips.c (mips_sched_reorder): Mark cycle parameter
 	as ATTRIBUTE_UNUSED.
 
 2007-08-11  David Edelsohn  <edelsohn@gnu.org>
@@ -3514,17 +3536,17 @@
 
 2007-08-09  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* config/mips/mips.opt (mhard-float, msoft-float):  Make these
+	* config/mips/mips.opt (mhard-float, msoft-float): Make these
 	control TARGET_HARD_FLOAT_ABI and TARGET_SOFT_FLOAT_ABI, rather
 	than TARGET_HARD_FLOAT and TARGET_SOFT_FLOAT.  
 	* config/mips/mips.h (mips16_hard_float): Delete.
-	(TARGET_HARD_FLOAT_ABI, TARGET_SOFT_FLOAT_ABI):  Delete these
+	(TARGET_HARD_FLOAT_ABI, TARGET_SOFT_FLOAT_ABI): Delete these
 	definitions, and replace with....
 	(TARGET_HARD_FLOAT, TARGET_SOFT_FLOAT): Define.
 	* config/mips/mips.c (mips16_hard_float): Delete.  Replace
 	all references with (TARGET_MIPS16 && TARGET_HARD_FLOAT_ABI).
 	(MIPS_MARCH_CONTROLS_SOFT_FLOAT): Update comments.
-	(override_options):  Replace MASK_SOFT_FLOAT references with
+	(override_options): Replace MASK_SOFT_FLOAT references with
 	MASK_SOFT_FLOAT_ABI.  Delete twiddling with MASK_SOFT_FLOAT
 	and mips16_hard_float when TARGET_MIPS16.
 	
@@ -3562,7 +3584,7 @@
 	tri-state integer.
 	* optabs.c (expand_ffs, expand_ctz): New functions to compute
 	ffs and ctz using clz.
-	(expand_unop):  Call them.
+	(expand_unop): Call them.
 	* config/rs6000/rs6000.h (CLZ_DEFINED_VALUE_AT_ZERO): Fix its
 	result value.
 	(CTZ_DEFINED_VALUE_AT_ZERO): Likewise.
@@ -4687,7 +4709,7 @@
 
 2007-08-01  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* reload.c (find_reloads_address_part):  Pass correct MEMREFLOC
+	* reload.c (find_reloads_address_part): Pass correct MEMREFLOC
 	argument to find_reloads_address.
 
 2007-08-01  Daniel Jacobowitz  <dan@codesourcery.com>
@@ -4846,7 +4868,7 @@
 
 2007-07-31  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* config/mips/mips.h (ISA_HAS_SYNCI):  Add !TARGET_MIPS16 test.
+	* config/mips/mips.h (ISA_HAS_SYNCI): Add !TARGET_MIPS16 test.
 
 2007-07-31  Revital Eres  <eres@il.ibm.com>
 
@@ -6228,7 +6250,7 @@
 
 2007-07-18  Caroline Tice  <ctice@apple.com>
 	
-	* var-tracking.c (find_src_status):  Check for  COND_EXEC insns
+	* var-tracking.c (find_src_status): Check for  COND_EXEC insns
 	and handle them correctly; check that src is not NULL before
 	trying to use it.
 	(find_src_set_src): Likewise.
@@ -6392,7 +6414,7 @@
 2007-07-16  Sandra Loosemore  <sandra@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 
-	* config/mips/mips.md:  Include 20kc.md.
+	* config/mips/mips.md: Include 20kc.md.
 	* config/mips/20kc.md: New file.
 	* config/mips/mips.c (mips_rtx_cost_data): Fill in 20Kc costs.
 	(mips_adjust_cost): Tweak for 20Kc.
@@ -8876,7 +8898,7 @@
 	* df-problems.c (df_ru_alloc, df_rd_alloc, df_lr_alloc,
 	df_live_alloc, df_urec_alloc, df_note_alloc): set optional_p.
 	(problem_RU, problem_RD, problem_LR, problem_UREC, problem_CHAIN,
-	problem_NOTE):  Initialize free_blocks_on_set_blocks.
+	problem_NOTE): Initialize free_blocks_on_set_blocks.
 	(df_lr_bb_local_compute): Recompute luids if df_live problem is
 	not active.
 	(df_live_set_all_dirty, df_note_alloc): New function.
@@ -9341,7 +9363,7 @@
 	* tree-ssa.c (tree_ssa_useless_type_conversion_1):
 	Convert the MIN/MAX of the inner type to the outer
 	type before comparing them.
-	* tree-ssa-loop-prefetch.c (idx_analyze_ref):  Handle
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Handle
 	POINTER_PLUS_EXPR instead of PLUS_EXPR.
 	(issue_prefetch_ref): Create a POINTER_PLUS_EXPR instead
 	of PLUS_EXPR for pointers.
@@ -10916,7 +10938,7 @@
 	* config/mn10300/mn10300.md: Include.
 	* config/mn10300/mn10300.c(mn10300_secondary_reload_class):
 	Fix up for removed macro.
-	* config/mn10300/predicates.md (call_address_operand):  Ditto.
+	* config/mn10300/predicates.md (call_address_operand): Ditto.
 	* config/mn10300/mn10300.h (REG_CLASS_FROM_LETTER): Delete.
 	(CONST_OK_FOR_I): Ditto.
 	(CONST_OK_FOR_J): Ditto.
@@ -11279,10 +11301,10 @@
 	* doc/extend.texi (Function Attributes): Document MIPS "near" and
 	"far" attributes.
 
-	* testsuite/gcc.target/mips/near-far-1.c:  New test case.
-	* testsuite/gcc.target/mips/near-far-2.c:  New test case.
-	* testsuite/gcc.target/mips/near-far-3.c:  New test case.
-	* testsuite/gcc.target/mips/near-far-4.c:  New test case.
+	* testsuite/gcc.target/mips/near-far-1.c: New test case.
+	* testsuite/gcc.target/mips/near-far-2.c: New test case.
+	* testsuite/gcc.target/mips/near-far-3.c: New test case.
+	* testsuite/gcc.target/mips/near-far-4.c: New test case.
 
 2007-05-25  Eric Christopher  <echristo@apple.com>
 
@@ -11444,7 +11466,7 @@
 	stmt_dominates_stmt_p, get_lsm_tmp_name): Declare.
 	* Makefile.in (tree-predcom.o): Add.
 	(tree-affine.o): Add TREE_GIMPLE_H dependency.
-	* passes.c (init_optimization_passes):  Add dceloop after
+	* passes.c (init_optimization_passes): Add dceloop after
 	copy propagation in loop optimizer.  Add predictive commoning
 	to loop optimizer passes.
 
@@ -12692,7 +12714,7 @@
 
 2007-05-14  Dave Korn  <dave.korn@artimi.com>
 
-	* genautomata.c (gen_regexp_el):  Allocate correct size for regexp.
+	* genautomata.c (gen_regexp_el): Allocate correct size for regexp.
 
 2007-05-14  Rafael Avila de Espindola  <espindola@google.com>
 
@@ -13905,7 +13927,7 @@
 
 2007-04-26  Steve Ellcey  <sje@cup.hp.com>
 
-	* config/ia64/ia64.md (ip_value):  Fix itanium_class attribute.
+	* config/ia64/ia64.md (ip_value): Fix itanium_class attribute.
 
 2007-04-26  Richard Guenther  <rguenther@suse.de>
 
@@ -14219,7 +14241,7 @@
 	(create_phi_node): Use set_phi_nodes.
 	* omp-low.c (expand_omp_parallel): Use bb_stmt_list.
 	* tree-if-conv.c (process_phi_nodes): Use set_phi_nodes.
-	(combine_blocks):  Use bb_stmt_list and set_bb_stmt_list.
+	(combine_blocks): Use bb_stmt_list and set_bb_stmt_list.
 	* tree-flow-inline.h (phi_nodes, set_phi_nodes,
 	(bsi_start, bsi_last): Use bb_stmt_list.
 	(phi_nodes_ptr, bb_stmt_list, set_bb_stmt_list): New functions.
@@ -14788,7 +14810,7 @@
 	* tree-ssa-loop-ivopts.c (ivopts_global_cost_for_size): Use
 	estimate_reg_pressure_cost.  Add number of ivs.
 	(determine_set_costs): Dump target_reg_cost.
-	* loop-invariant.c (gain_for_invariant):  Use
+	* loop-invariant.c (gain_for_invariant): Use
 	estimate_reg_pressure_cost.  Removed n_inv_uses argument.
 	(best_gain_for_invariant, find_invariants_to_move): Remove
 	n_inv_uses.
@@ -15663,7 +15685,7 @@
 2007-04-07  Bruce Korb  <bkorb@gnu.org>
 
 	* c.opt: Add -Wformat-contains-nul.
-	* c-format.c (set_Wformat):  Set warn_format_contains_nul to the
+	* c-format.c (set_Wformat): Set warn_format_contains_nul to the
 	  -Wformat setting.
 	(check_format_info_main): Check OPT_Wformat_contains_nul before emitting
 	the NUL byte warning.
@@ -15689,7 +15711,7 @@
 	argument "reliable".
 	(infer_loop_bounds_from_ref, infer_loop_bounds_from_array):
 	Add argument "reliable".  Propagate it through calls.
-	(infer_loop_bounds_from_undefined):  Derive number of iterations
+	(infer_loop_bounds_from_undefined): Derive number of iterations
 	estimates from references in blocks that do not dominate loop latch.
 	(gcov_type_to_double_int): New function.
 	(estimate_numbers_of_iterations_loop): Use gcov_type_to_double_int
@@ -17893,7 +17915,7 @@
 	(dsp_32only_bdesc): New description table for 32-bit only DSP REV 1
 	and 2 builtins.
 	(bdesc_map): Add one field of unsupported_target_flags.
-	(bdesc_arrays):  Update entries to have extra fields.  Add
+	(bdesc_arrays): Update entries to have extra fields.  Add
 	dsp_32only_bdesc.
 	(mips_init_builtins): Initialize new function types.
 	Check unsupported_target_fileds to filter out builtins.
@@ -18896,7 +18918,7 @@
 
 2007-03-01  Zdenek Dvorak  <dvorakz@suse.cz>
 
-	* tree-ssa-loop-prefetch.c (determine_unroll_factor):  Bound the
+	* tree-ssa-loop-prefetch.c (determine_unroll_factor): Bound the
 	unroll factor by the estimated number of iterations.
 	(loop_prefetch_arrays): Do not prefetch in loops that iterate less
 	than prefetch latency.
@@ -19352,7 +19374,7 @@
 2007-02-23  Steve Ellcey  <sje@cup.hp.com>
 
 	PR debug/29614
-	* varpool.c (varpool_assemble_pending_decls):  Set
+	* varpool.c (varpool_assemble_pending_decls): Set
 	varpool_last_needed_node to null.
 
 2007-02-23  DJ Delorie  <dj@redhat.com>
@@ -19456,8 +19478,8 @@
 	* config/spu/spu-protos.h (spu_init_expanders): Declare.
 	* config/spu/spu.c (spu_expand_prologue): Set REGNO_POINTER_ALIGN for
 	HARD_FRAME_POINTER_REGNUM.
-	(spu_legitimate_address):  Use regno_aligned_for_reload.
-	(regno_aligned_for_load):  HARD_FRAME_POINTER_REGNUM is only 16 byte
+	(spu_legitimate_address): Use regno_aligned_for_reload.
+	(regno_aligned_for_load): HARD_FRAME_POINTER_REGNUM is only 16 byte
 	aligned when frame_pointer_needed is true.
 	(spu_init_expanders): New.  Set alignment of HARD_FRAME_POINTER_REGNUM
 	to 8 bits.
@@ -19473,7 +19495,7 @@
 	rotqmbi_<mode>, rotqmby_<mode>, ashr<mode>3, rotma_<mode>,
 	rotl<mode>3, rotlti3, rotqbybi_ti, rotqby_ti, rotqbi_ti): Use
 	spu_nonmem_operand instead of spu_shift_operands.  Use new modifiers.
-	(lshr<mode>3_reg):  Fix rtl description.
+	(lshr<mode>3_reg): Fix rtl description.
 
 	Make sure mulhisi immediate operands are valid.
 	* config/spu/predicates.md (imm_K_operand): Add.
@@ -19488,7 +19510,7 @@
 	* config/spu/spu.c (print_operand): Handle HIGH correctly.
 	(spu_split_immediate): Split CONST_VECTORs with -mlarge-mem.
 	(immediate_load_p): Allow symbols that use 2 instructions to create.
-	(classify_immediate, spu_builtin_splats):  Don't accept a CONST_VECTOR
+	(classify_immediate, spu_builtin_splats): Don't accept a CONST_VECTOR
 	with symbols when flag_pic is set.
 	(const_vector_immediate_p): New.
 	(logical_immediate_p, iohl_immediate_p, arith_immediate_p): Don't
@@ -19531,14 +19553,14 @@
 	* config/spu/spu_internals.h: Ditto.
 
 	Fix incorrect operand modifiers.
-	* config/spu/spu-builtins.md (spu_mpy, spu_mpyu):  Remove use of %H.
-	* config/spu/spu.md (xor<mode>3):  Change %S to %J.
+	* config/spu/spu-builtins.md (spu_mpy, spu_mpyu): Remove use of %H.
+	* config/spu/spu.md (xor<mode>3): Change %S to %J.
 
 	Optimize one case of zero_extend of a vec_select.
-	* config/spu/spu.md (_vec_extractv8hi_ze):  Add.
+	* config/spu/spu.md (_vec_extractv8hi_ze): Add.
 
 	Accept any immediate for hbr.
-	* config/spu/spu.md (hbr):  Change s constraints to i.
+	* config/spu/spu.md (hbr): Change s constraints to i.
 
 2007-02-21  Paul Brook  <paul@codesourcery.com>
 
@@ -19843,7 +19865,7 @@
 2007-02-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/28173
-	* simplify-rtx.c (simplify_binary_operation_1) <IOR>:  Optimize
+	* simplify-rtx.c (simplify_binary_operation_1) <IOR>: Optimize
 	(X & C1) | C2 as C2 when (C1 & C2) == C1 and X has no side-effects.
 	Optimize (X & C1) | C2 as X | C2 when (C1 | C2) == ~0.
 	Canonicalize (X & C1) | C2 as (X & (C1 & ~C2)) | C2.
@@ -20275,7 +20297,7 @@
 	of an arglist.  Change return type to bool.  Use new CALL_EXPR
 	accessors.
 
-	(fold_builtin_strstr):  Pass call arguments individually instead
+	(fold_builtin_strstr): Pass call arguments individually instead
 	of as an arglist, fixing callers appropriately.  Use new CALL_EXPR
 	accessors and constructors.  Return NULL_TREE instead of 0.
 	(fold_builtin_strchr): Likewise.
@@ -20320,7 +20342,7 @@
 	(fold_ternary): Remove CALL_EXPR case, since they are no longer
 	ternary expressions.
 	(fold): Add logic for tcc_vl_exp.
-	(fold_checksum_tree):  Make it know about tcc_vl_exp.  Use
+	(fold_checksum_tree): Make it know about tcc_vl_exp.  Use
 	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
 	(fold_build3_stat): Add assertion to flag broken interface for
 	constructing CALL_EXPRs.
@@ -20350,7 +20372,7 @@
 	* tree-vrp.c (stmt_interesting_for_vrp): Use new CALL_EXPR accessors.
 	(vrp_visit_stmt): Likewise.
 
-	* tree-ssa-loop-im.c (outermost_invariant_loop_expr):  Make it
+	* tree-ssa-loop-im.c (outermost_invariant_loop_expr): Make it
 	know about tcc_vl_exp.  Use TREE_OPERAND_LENGTH instead of
 	TREE_CODE_LENGTH.
 	(force_move_till_expr): Likewise.
@@ -20544,7 +20566,7 @@
 	(estimate_num_insns_1): Use new CALL_EXPR accessors.
 	(expand_call_inline): Tidy up call to initialize_inlined_parameters.
 
-	* tree-vect-transform.c (vect_create_epilog_for_reduction):  Use
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Use
 	TREE_OPERAND_LENGTH instead of TREE_CODE_LENGTH.
 	(vectorizable_reduction): Likewise.
 	(vectorizable_call): Use new CALL_EXPR iterators.
@@ -20647,7 +20669,7 @@
 	(arm_expand_unop_builtin): Likewise.
 	(arm_expand_builtin): Use new CALL_EXPR accessors.
 
-	* config/mips/mips.c (mips_expand_builtin):  Use new CALL_EXPR
+	* config/mips/mips.c (mips_expand_builtin): Use new CALL_EXPR
 	accessors.
 
 	* config/bfin/bfin.c (bfin_expand_binop_builtin): Pass entire
@@ -22819,7 +22841,7 @@
 	* tree-data-ref.c (tree_fold_divides_p): Don't use tree_fold_gcd to
 	test whether one constant integer is a multiple of another.  Instead
 	call int_const_binop with TRUNC_MOD_EXPR and test for a zero result.
-	* fold-const.c (multiple_of_p):  We've determined both TOP and
+	* fold-const.c (multiple_of_p): We've determined both TOP and
 	BOTTOM are integer constants so we can call int_const_binop directly
 	instead of the more generic const_binop.
 
@@ -22962,7 +22984,7 @@
 
 	PR other/30182
 	* config/pa/pa.c (pa_init_builtins): Set asm names for finite routines.
-	* config/ia64/ia64.c (ia64_init_builtins):  Ditto.
+	* config/ia64/ia64.c (ia64_init_builtins): Ditto.
 
 2007-01-25  Richard Guenther  <rguenther@suse.de>
 
@@ -23505,7 +23527,7 @@
 	* longlong.h (count_leading_zeros, COUNT_LEADING_ZEROS_0): Add
 	ColdFire alternatives.
 	* config/m68k/m68k.h (CLZ_DEFINED_VALUE_AT_ZERO): New macro.
-	* config/m68k/m68k.md (clzsi2):  Define for ColdFire
+	* config/m68k/m68k.md (clzsi2): Define for ColdFire
 	architectures that support ff1 instruction.
 
 2007-01-19  Richard Sandiford  <richard@codesourcery.com>
@@ -25667,7 +25689,7 @@
 
 2007-01-02  Steve Ellcey  <sje@cup.hp.com>
 
-	* sbitmap.c (HOST_BITS_PER_LONG_LONG):  Change to
+	* sbitmap.c (HOST_BITS_PER_LONG_LONG): Change to
 	HOST_BITS_PER_LONGLONG
 
 2007-01-02  Manuel Lopez-Ibanez <manu@gcc.gnu.org>

@@ -7935,6 +7935,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return expand_expr (OBJ_TYPE_REF_EXPR (exp), target, tmode, modifier);
 
     case CALL_EXPR:
+      /* All valid uses of __builtin_va_arg_pack () are removed during
+	 inlining.  */
+      if (CALL_EXPR_VA_ARG_PACK (exp))
+	error ("invalid use of %<__builtin_va_arg_pack ()%>");
       /* Check for a built-in function.  */
       if (TREE_CODE (CALL_EXPR_FN (exp)) == ADDR_EXPR
 	  && (TREE_CODE (TREE_OPERAND (CALL_EXPR_FN (exp), 0))

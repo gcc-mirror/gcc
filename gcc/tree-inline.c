@@ -815,8 +815,58 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 	     into multiple statements, we need to process all of them.  */
 	  while (!bsi_end_p (copy_bsi))
 	    {
-	      stmt = bsi_stmt (copy_bsi);
+	      tree *stmtp = bsi_stmt_ptr (copy_bsi);
+	      tree stmt = *stmtp;
 	      call = get_call_expr_in (stmt);
+
+	      if (call && CALL_EXPR_VA_ARG_PACK (call) && id->call_expr)
+		{
+		  /* __builtin_va_arg_pack () should be replaced by
+		     all arguments corresponding to ... in the caller.  */
+		  tree p, *argarray, new_call, *call_ptr;
+		  int nargs = call_expr_nargs (id->call_expr);
+
+		  for (p = DECL_ARGUMENTS (id->src_fn); p; p = TREE_CHAIN (p))
+		    nargs--;
+
+		  argarray = (tree *) alloca ((nargs + call_expr_nargs (call))
+					      * sizeof (tree));
+
+		  memcpy (argarray, CALL_EXPR_ARGP (call),
+			  call_expr_nargs (call) * sizeof (*argarray));
+		  memcpy (argarray + call_expr_nargs (call),
+			  CALL_EXPR_ARGP (id->call_expr)
+			  + (call_expr_nargs (id->call_expr) - nargs),
+			  nargs * sizeof (*argarray));
+
+		  new_call = build_call_array (TREE_TYPE (call),
+					       CALL_EXPR_FN (call),
+					       nargs + call_expr_nargs (call),
+					       argarray);
+		  /* Copy all CALL_EXPR flags, locus and block, except
+		     CALL_EXPR_VA_ARG_PACK flag.  */
+		  CALL_EXPR_STATIC_CHAIN (new_call)
+		    = CALL_EXPR_STATIC_CHAIN (call);
+		  CALL_EXPR_TAILCALL (new_call) = CALL_EXPR_TAILCALL (call);
+		  CALL_EXPR_RETURN_SLOT_OPT (new_call)
+		    = CALL_EXPR_RETURN_SLOT_OPT (call);
+		  CALL_FROM_THUNK_P (new_call) = CALL_FROM_THUNK_P (call);
+		  CALL_CANNOT_INLINE_P (new_call)
+		    = CALL_CANNOT_INLINE_P (call);
+		  TREE_NOTHROW (new_call) = TREE_NOTHROW (call);
+		  SET_EXPR_LOCUS (new_call, EXPR_LOCUS (call));
+		  TREE_BLOCK (new_call) = TREE_BLOCK (call);
+
+		  call_ptr = stmtp;
+		  if (TREE_CODE (*call_ptr) == GIMPLE_MODIFY_STMT)
+		    call_ptr = &GIMPLE_STMT_OPERAND (*call_ptr, 1);
+		  if (TREE_CODE (*call_ptr) == WITH_SIZE_EXPR)
+		    call_ptr = &TREE_OPERAND (*call_ptr, 0);
+		  gcc_assert (*call_ptr == call);
+		  *call_ptr = new_call;
+		  stmt = *stmtp;
+		  update_stmt (stmt);
+		}
 
 	      /* Statements produced by inlining can be unfolded, especially
 		 when we constant propagated some operands.  We can't fold
@@ -2518,6 +2568,7 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   id->src_fn = fn;
   id->src_node = cg_edge->callee;
   id->src_cfun = DECL_STRUCT_FUNCTION (fn);
+  id->call_expr = t;
 
   initialize_inlined_parameters (id, t, fn, bb);
 

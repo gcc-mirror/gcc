@@ -2170,8 +2170,50 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	    }
 	}
     }
-  else if (nargs != 0)
-    CALL_CANNOT_INLINE_P (*expr_p) = 1;
+  else
+    {
+      if (nargs != 0)
+	CALL_CANNOT_INLINE_P (*expr_p) = 1;
+      i = 0;
+      p = NULL_TREE;
+    }
+
+  /* If the last argument is __builtin_va_arg_pack () and it is not
+     passed as a named argument, decrease the number of CALL_EXPR
+     arguments and set instead the CALL_EXPR_VA_ARG_PACK flag.  */
+  if (!p
+      && i < nargs
+      && TREE_CODE (CALL_EXPR_ARG (*expr_p, nargs - 1)) == CALL_EXPR)
+    {
+      tree last_arg = CALL_EXPR_ARG (*expr_p, nargs - 1);
+      tree last_arg_fndecl = get_callee_fndecl (last_arg);
+
+      if (last_arg_fndecl
+	  && TREE_CODE (last_arg_fndecl) == FUNCTION_DECL
+	  && DECL_BUILT_IN_CLASS (last_arg_fndecl) == BUILT_IN_NORMAL
+	  && DECL_FUNCTION_CODE (last_arg_fndecl) == BUILT_IN_VA_ARG_PACK)
+	{
+	  tree call = *expr_p;
+
+	  --nargs;
+	  *expr_p = build_call_array (TREE_TYPE (call), CALL_EXPR_FN (call),
+				      nargs, CALL_EXPR_ARGP (call));
+	  /* Copy all CALL_EXPR flags, locus and block, except
+	     CALL_EXPR_VA_ARG_PACK flag.  */
+	  CALL_EXPR_STATIC_CHAIN (*expr_p) = CALL_EXPR_STATIC_CHAIN (call);
+	  CALL_EXPR_TAILCALL (*expr_p) = CALL_EXPR_TAILCALL (call);
+	  CALL_EXPR_RETURN_SLOT_OPT (*expr_p)
+	    = CALL_EXPR_RETURN_SLOT_OPT (call);
+	  CALL_FROM_THUNK_P (*expr_p) = CALL_FROM_THUNK_P (call);
+	  CALL_CANNOT_INLINE_P (*expr_p)
+	    = CALL_CANNOT_INLINE_P (call);
+	  TREE_NOTHROW (*expr_p) = TREE_NOTHROW (call);
+	  SET_EXPR_LOCUS (*expr_p, EXPR_LOCUS (call));
+	  TREE_BLOCK (*expr_p) = TREE_BLOCK (call);
+	  /* Set CALL_EXPR_VA_ARG_PACK.  */
+	  CALL_EXPR_VA_ARG_PACK (*expr_p) = 1;
+	}
+    }
 
   /* Finally, gimplify the function arguments.  */
   for (i = (PUSH_ARGS_REVERSED ? nargs - 1 : 0);

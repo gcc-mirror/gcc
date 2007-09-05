@@ -1228,6 +1228,15 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	      }
 	  }
       }
+      if (CALL_EXPR_VA_ARG_PACK (node))
+	{
+	  if (call_expr_nargs (node) > 0)
+	    {
+	      pp_character (buffer, ',');
+	      pp_space (buffer);
+	    }
+	  pp_string (buffer, "__builtin_va_arg_pack ()");
+	}
       pp_character (buffer, ')');
 
       op1 = CALL_EXPR_STATIC_CHAIN (node);

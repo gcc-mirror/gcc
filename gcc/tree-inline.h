@@ -56,6 +56,10 @@ typedef struct copy_body_data
   /* Current BLOCK.  */
   tree block;
 
+  /* CALL_EXPR if va arg parameter packs should be expanded or NULL
+     is not.  */
+  tree call_expr;
+
   /* Exception region the inlined call lie in.  */
   int eh_region;
   /* Take region number in the function being copied, add this value and

@@ -1,3 +1,8 @@
+2007-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/va-arg-pack-1.c: New test.
+	* gcc.dg/va-arg-pack-1.c: New test.
+
 2007-09-05  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/tree-ssa/builtin-expect-1.c: New test.

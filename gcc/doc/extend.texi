@@ -556,6 +556,32 @@ the containing function.  You should specify, for @var{result}, a value
 returned by @code{__builtin_apply}.
 @end deftypefn
 
+@deftypefn {Built-in Function} __builtin_va_arg_pack ()
+This built-in function represents all anonymous arguments of an inline
+function.  It can be used only in inline functions which will be always
+inlined, never compiled as a separate function, such as those using
+@code{__attribute__ ((__always_inline__))} or
+@code{__attribute__ ((__gnu_inline__))} extern inline functions.
+It must be only passed as last argument to some other function
+with variable arguments.  This is useful for writing small wrapper
+inlines for variable argument functions, when using preprocessor
+macros is undesirable.  For example:
+@smallexample
+extern int myprintf (FILE *f, const char *format, ...);
+extern inline __attribute__ ((__gnu_inline__)) int
+myprintf (FILE *f, const char *format, ...)
+@{
+  int r = fprintf (f, "myprintf: ");
+  if (r < 0)
+    return r;
+  int s = fprintf (f, format, __builtin_va_arg_pack ());
+  if (s < 0)
+    return s;
+  return r + s;
+@}
+@end smallexample
+@end deftypefn
+
 @node Typeof
 @section Referring to a Type with @code{typeof}
 @findex typeof
