@@ -929,9 +929,6 @@
 	
 2007-08-30  Jakub Jelinek  <jakub@redhat.com>
 
-	* decl.c (start_preparsed_function): Set
-	DECL_DISREGARD_INLINE_LIMITS for GNU_INLINE_P functions.
-
 	PR target/33168
 	* config/rs6000/rs6000.c (rs6000_elf_in_small_data_p): Return
 	true if any of the compare_section_name calls returned true,
