@@ -3131,24 +3131,6 @@ emit_associated_thunks (tree fn)
 void
 expand_body (tree fn)
 {
-  tree saved_function;
-
-  /* Compute the appropriate object-file linkage for inline
-     functions.  */
-  if (DECL_DECLARED_INLINE_P (fn))
-    import_export_decl (fn);
-
-  /* If FN is external, then there's no point in generating RTL for
-     it.  This situation can arise with an inline function under
-     `-fexternal-templates'; we instantiate the function, even though
-     we're not planning on emitting it, in case we get a chance to
-     inline it.  */
-  if (DECL_EXTERNAL (fn))
-    return;
-
-  /* ??? When is this needed?  */
-  saved_function = current_function_decl;
-
   /* Emit any thunks that should be emitted at the same time as FN.  */
   emit_associated_thunks (fn);
 
@@ -3158,8 +3140,6 @@ expand_body (tree fn)
   gcc_assert (function_depth == 0);
 
   c_expand_body (fn);
-
-  current_function_decl = saved_function;
 
   if (DECL_CLONED_FUNCTION_P (fn))
     {
