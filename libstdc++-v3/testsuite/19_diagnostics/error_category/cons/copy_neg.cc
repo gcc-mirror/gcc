@@ -50,7 +50,7 @@ int main()
   return 0;
 }
 
-// { dg-error "is private" "" { target *-*-* } 183 }
+// { dg-error "is private" "" { target *-*-* } 187 }
 // { dg-error "within this context" "" { target *-*-* } 29 }
 // { dg-error "first required here" "" { target *-*-* } 48 }
 // { dg-excess-errors "copy constructor" }

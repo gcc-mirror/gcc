@@ -1,3 +1,13 @@
+2007-09-05  Roger Sayle  <roger@eyesopen.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add EBADMSG for darwin.
+	* configure: Regenerate.
+	* include/std/system_error: Guard.
+	* testsuite/19_diagnostics/headers/system_error/
+	types_std_c++0x.cc: Same.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Adjust
+	line numbers.
+
 2007-09-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/33293

@@ -1351,6 +1351,16 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
   if test x"$ac_system_error9" = x"yes"; then
     AC_DEFINE(HAVE_SYS_NERR, 1, [Define if sys_nerr exists.])
   fi
+
+  AC_MSG_CHECKING([for EBADMSG])
+  AC_CACHE_VAL(ac_system_error_10, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = EBADMSG; ],
+             [ac_system_error_10=yes], [ac_system_error_10=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_10)
+  if test x"$ac_system_error_10" = x"yes"; then
+    AC_DEFINE(HAVE_EBADMSG, 1, [Define if EBADMSG exists.])
+  fi
 ])
 
 dnl
