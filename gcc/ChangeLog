@@ -1,3 +1,11 @@
+2007-09-04  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config.gcc (powerpc*-*-*): Install
+	spu2vmx.h, vec_types.h, and si2vmx.h headers.
+	* config/rs6000/spu2vmx.h: New header.
+	* config/rs6000/si2vmx.h: New header.
+	* config/rs6000/vec_types.h: New header.
+
 2007-09-05  Ben Elliston  <bje@au.ibm.com>
 
 	* varasm.c (initializer_constant_valid_p): Fix comment typo.
