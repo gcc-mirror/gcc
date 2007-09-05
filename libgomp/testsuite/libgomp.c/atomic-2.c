@@ -1,6 +1,10 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mcx16" { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 
+#ifdef __x86_64__
+#include "cpuid.h"
+#endif
+
 double d = 1.5;
 long double ld = 3;
 extern void abort (void);
@@ -20,11 +24,12 @@ int
 main (void)
 {
 #ifdef __x86_64__
-# define bit_CX16 (1 << 13)
-  unsigned int ax, bx, cx, dx;
-  __asm__ ("cpuid" : "=a" (ax), "=b" (bx), "=c" (cx), "=d" (dx)
-           : "0" (1) : "cc");
-  if (!(cx & bit_CX16))
+  unsigned int eax, ebx, ecx, edx;
+
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+    return 0;
+
+  if (!(ecx & bit_CMPXCHG16B))
     return 0;
 #endif
   test ();

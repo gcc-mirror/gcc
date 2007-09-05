@@ -1,3 +1,23 @@
+2007-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/i386-cpuid.h: Remove.
+	* gcc.target/i386/mmx-check.h: Include cpuid.h.
+	(main): Use __get_cpuid to get target features.
+	* gcc.target/i386/sse-check.h: Ditto.
+	* gcc.target/i386/sse2-check.h: Ditto.
+	* gcc.target/i386/sse3-check.h: Ditto.
+	* gcc.target/i386/ssse3-check.h: Ditto.
+	* gcc.target/i386/sse4_1-check.h: Ditto.
+	* gcc.target/i386/sse4_2-check.h: Ditto.
+	* gcc.target/i386/sse4a-check.h: Ditto.
+	* gcc.dg/torture/pr16104-1.c: Ditto.
+	(do_test): Change to void.
+	* gcc.target/i386/mmx-4.c: Do not use NOINLINE.
+	* gcc.target/i386/sse-6.c: Ditto.
+	* gcc.target/i386/sse-7.c: Ditto.
+	* g++.dg/other/i386-1.C: Include cpuid.h.
+	(main): New function.  Use __get_cpuid to get target fetaures.
+
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
             Nigel Stephens <nigel@mips.com>
@@ -225,7 +245,8 @@
 	* gcc.dg/vect/vect-intfloat-conversion-4a.c: Mark functions noinline.
 	* gcc.dg/vect/vect-109.c: Mark functions noinline.
 	* gcc.dg/vect/no-scevccp-outer-22.c: Mark functions noinline.
-	* gcc.dg/vect/no-section-anchors-vect-outer-4h.c: Mark functions noinline.
+	* gcc.dg/vect/no-section-anchors-vect-outer-4h.c: Mark functions
+	noinline.
 	* gcc.dg/vect/vect-iv-3.c: Mark functions noinline.
 	* gcc.dg/vect/vect-reduc-pattern-2b.c: Mark functions noinline.
 	* gcc.dg/vect/vect-reduc-dot-s8a.c: Mark functions noinline.
@@ -361,15 +382,15 @@
 2007-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse4a-check.h: New file.
-	* gcc.target/i386/sse4a-extract.c: Include sse4a-check.h. Remove main.
+	* gcc.target/i386/sse4a-extract.c: Include sse4a-check.h.  Remove main.
 	* gcc.target/i386/sse4a-insert.c: Ditto.
 	* gcc.target/i386/sse4a-montsd.c: Ditto.
 	* gcc.target/i386/sse4a-montss.c: Ditto.
 	* gcc.target/i386/mmx-check.h: New file.
-	* gcc.target/i386/mmx-4.c: Include mmx-check.h. Remove main.
+	* gcc.target/i386/mmx-4.c: Include mmx-check.h.  Remove main.
 	* gcc.target/i386/builtin-apply-mmx.c: Ditto.
 	* gcc.target/i386/sse-check.h: New file.
-	* gcc.target/i386/pr13685: Include sse-check.h. Remove main.
+	* gcc.target/i386/pr13685: Include sse-check.h.  Remove main.
 	* gcc.target/i386/sse-3.c: Ditto.
 	* gcc.target/i386/sse-7.c: Ditto.
 	* gcc.target/i386/sse-9.c: Ditto.
@@ -378,7 +399,7 @@
 	* gcc.target/i386/sse-recip-vec.c: Ditto.
 	* gcc.target/i386/20020523.c: Ditto. Rename from 20020523-2.c.
 	* gcc.target/i386/20020523-1.c: Remove.
-	* gcc.target/i386/sse2-lrint-vec.c: Include sse2-check.h. Remove main.
+	* gcc.target/i386/sse2-lrint-vec.c: Include sse2-check.h.  Remove main.
 	* gcc.target/i386/sse2-lrintf-vec.c: Ditto.
 	* gcc.target/i386/ssefn-4.c: Ditto.
 	* gcc.target/i386/sse-6.c: Ditto.
@@ -406,14 +427,11 @@
 
 2007-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
-	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-1.c: Restored.  Moved
-	to ...
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-1.c: Restored.  Moved to ...
 	* gcc.dg/vect/no-scevccp-vect-iv-1.c: New test.
-	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-2.c: Restored.  Moved
-	to ...
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-2.c: Restored.  Moved to ...
 	* gcc.dg/vect/no-scevccp-vect-iv-2.c: New test.
-	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-3.c: Restored.  Moved
-	to ...
+	* gcc.dg/vect/no-tree-scev-cprop-vect-iv-3.c: Restored.  Moved to ...
 	* gcc.dg/vect/no-scevccp-vect-iv-3.c: New test.
 
 2007-09-03  Jesper Nilsson  <jesper.nilsson@axis.com>

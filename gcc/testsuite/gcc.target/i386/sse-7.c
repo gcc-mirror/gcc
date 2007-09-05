@@ -16,7 +16,7 @@ typedef union {
   unsigned int u[2];
 }vecInWord;
 
-void sse_tests (void) NOINLINE;
+void sse_tests (void) __attribute__((noinline));
 void dump64_16 (char *, char *, vecInWord);
 int check (const char *, const char *[]);
 
@@ -53,7 +53,7 @@ sse_test (void)
     abort ();
 }
 
-void NOINLINE
+void __attribute__((noinline))
 sse_tests (void)
 {
   /* pshufw */

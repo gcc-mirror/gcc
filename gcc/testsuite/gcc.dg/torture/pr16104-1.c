@@ -2,7 +2,7 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-msse2" } */
 
-#include "../i386-cpuid.h"
+#include "cpuid.h"
 
 extern void abort (void);
 
@@ -41,12 +41,12 @@ test5 (V2USI x)
   return (V2SI) x;
 }
 
-int
+void
 __attribute__ ((noinline))
 do_test (void)
 {
   if (sizeof (short) != 2 || sizeof (int) != 4 || sizeof (long long) != 8)
-    return 0;
+    return;
 
   if (test1 () != 0)
     abort ();
@@ -70,19 +70,19 @@ do_test (void)
   u.x = test5 (z);
   if (u.y[0] != 6 || u.y[1] != 6)
     abort ();
-  return 0;
 }
 
 int
 main (void)
 {
-  unsigned long cpu_facilities;
-
-  cpu_facilities = i386_cpuid ();
-
-  if ((cpu_facilities & (bit_MMX | bit_SSE | bit_CMOV | bit_SSE2))
-      != (bit_MMX | bit_SSE | bit_CMOV | bit_SSE2))
+  unsigned int eax, ebx, ecx, edx;
+ 
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
     return 0;
 
-  return do_test ();
+  /* Run SSE2 test only if host has SSE2 support.  */
+  if (edx & bit_SSE2)
+    do_test ();
+
+  return 0;
 }

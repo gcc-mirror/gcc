@@ -1,4 +1,35 @@
-2007-09-06  Jie Zhang  <jie.zhang@analog.com>
+2007-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc/config/i386/cpuid.h: New file.
+	* gcc/config/i386/driver-i386.c: Include cpuid.h.
+	(describe_cache): Shrink size and line strings to 100 bytes.
+	(detect_caches_amd): Return "" for unsupported max_ext_level.
+	Use __cpuid function.
+	(detect_caches_intel): Return "" for unsupported max_level.
+	Use __cpuid function.
+	(host_detect_local_cpu): Change feature flag variables to
+	unsigned int.  Initialize only extended feature flag variables.
+	Use __get_cpuid_max to determine max supported cpuid level.
+	Use __cpuid function to determine supported features.  Fix
+	calculation of family id.  Remove is_amd and check signature
+	directly.  Check for Geode signature.  Handle family 4 id.
+	[PROCESSOR_GENERIC32]: New default for unknown family id.  Move
+	cpu discovery code to lower part of the function.
+	[PROCESSOR_PENTIUM, PROCESSOR_K6, PROCESSOR_ATHLON]: Do not tune
+	for sub-architecture.
+	[PROCESSOR_PENTIUMPRO]: Simplify cpu discovery code.
+	[PROCESSOR_K8]: Add k8-sse3 architecture.
+	[PROCESSOR_NOCONA]: Remove.
+	[PROCESSOR_GENERIC64]: Ditto.
+	* gcc/config/i386/x-i386 (driver-i386.o): Depend on cpuid.h.
+	* gcc/config/i386/crtfastmath.c: Include cpuid.h.  Use __get_cpuid
+	to check for SSE and FXSAVE support.
+	* gcc/config/i386/t-crtfm (crtfastmath.o): Depend on cpuid.h.
+	Add -minline-all-stringops.
+	* gcc/config.gcc (i[34567]86-*-*): Add cpuid.h to extra_headers.
+	(x86_64-*-*): Ditto.
+
+2007-09-05  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/linux-unwind.h: New file.
 	* config/bfin/linux.h (MD_UNWIND_SUPPORT): Define.

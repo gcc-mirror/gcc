@@ -16,7 +16,7 @@ typedef union {
   unsigned int u[2];
 }vecInWord;
 
-void mmx_tests (void) NOINLINE;
+void mmx_tests (void) __attribute__((noinline));
 void dump64_16 (char *, char *, vecInWord);
 void dump64_32 (char *, char *, vecInWord);
 void dump64_64 (char *, char *, vecInWord);
@@ -90,7 +90,7 @@ mmx_test (void)
     abort ();
 }
 
-void NOINLINE
+void __attribute__((noinline))
 mmx_tests (void)
 {
   /* psraw */

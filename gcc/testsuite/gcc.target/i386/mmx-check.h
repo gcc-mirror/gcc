@@ -1,20 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../gcc.dg/i386-cpuid.h"
+#include "cpuid.h"
 
 static void mmx_test (void);
 
 int
 main ()
 {
-  unsigned long cpu_facilities;
+  unsigned int eax, ebx, ecx, edx;
  
-  cpu_facilities = i386_cpuid_edx ();
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+    return 0;
 
   /* Run MMX test only if host has MMX support.  */
-  if ((cpu_facilities & bit_MMX))
+  if (edx & bit_MMX)
     mmx_test ();
 
-  exit (0);
+  return 0;
 }

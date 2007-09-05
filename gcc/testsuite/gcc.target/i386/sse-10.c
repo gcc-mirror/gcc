@@ -6,7 +6,7 @@
 
 typedef _Complex double complex_16;
 
-void NOINLINE
+void __attribute__((noinline))
 test (complex_16 a[5][5])
 {
   int i, j, k;

@@ -1,3 +1,10 @@
+2007-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libgomp.c/atomic-1.c: Include cpuid.h for i386 targets.
+	(main): Use __get_cpuid to get i386 target fetaures.
+	* testsuite/libgomp.c/atomic-2.c: Include cpuid.h for x86_64 targets.
+	(main): Use __get_cpuid to get x86_64 target fetaures.
+
 2007-08-15  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/32765
