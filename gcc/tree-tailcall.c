@@ -800,8 +800,7 @@ eliminate_tail_call (struct tailcall *t)
 
       /* Result of the call will no longer be defined.  So adjust the
 	 SSA_NAME_DEF_STMT accordingly.  */
-      if (TREE_CODE (rslt) == SSA_NAME)
-        SSA_NAME_DEF_STMT (rslt) = build_empty_stmt ();
+      SSA_NAME_DEF_STMT (rslt) = build_empty_stmt ();
     }
 
   bsi_remove (&t->call_bsi, true);
