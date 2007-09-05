@@ -1,3 +1,7 @@
+2007-09-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure.host(gnu*): Set use_libgcj_bc to yes.
+
 2007-09-04  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Do not pass --with-native-libdir to classpath.

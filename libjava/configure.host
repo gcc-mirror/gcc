@@ -353,7 +353,7 @@ case "${host}" in
 esac
 
 case "${host}" in
-  *linux*|*-kfreebsd*-gnu|gnu*)
+  *linux*|*-kfreebsd*-gnu|*-gnu*)
     use_libgcj_bc=yes
   ;;
   *)
