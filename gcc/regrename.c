@@ -184,8 +184,8 @@ regrename_optimize (void)
   df_set_flags (DF_LR_RUN_DCE);
   df_note_add_problem ();
   df_analyze ();
-  df_set_flags (DF_NO_INSN_RESCAN);
-  
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
   memset (tick, 0, sizeof tick);
 
   gcc_obstack_init (&rename_obstack);
@@ -345,8 +345,6 @@ regrename_optimize (void)
     }
 
   obstack_free (&rename_obstack, NULL);
-  df_clear_flags (DF_NO_INSN_RESCAN);
-  df_insn_rescan_all ();
 
   if (dump_file)
     fputc ('\n', dump_file);
@@ -364,6 +362,7 @@ do_replace (struct du_chain *chain, int reg)
       if (regno >= FIRST_PSEUDO_REGISTER)
 	ORIGINAL_REGNO (*chain->loc) = regno;
       REG_ATTRS (*chain->loc) = attr;
+      df_insn_rescan (chain->insn);
       chain = chain->next_use;
     }
 }
@@ -815,9 +814,11 @@ build_def_use (basic_block bb)
 		    OP_IN, 0);
 
 	  for (i = 0; i < recog_data.n_dups; i++)
-	    *recog_data.dup_loc[i] = old_dups[i];
+	    *recog_data.dup_loc[i] = copy_rtx (old_dups[i]);
 	  for (i = 0; i < n_ops; i++)
 	    *recog_data.operand_loc[i] = old_operands[i];
+	  if (recog_data.n_dups)
+	    df_insn_rescan (insn);
 
 	  /* Step 2B: Can't rename function call argument registers.  */
 	  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
