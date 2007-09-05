@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2007 Free Software Foundation, Inc.
  *
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,8 +34,11 @@
 #define MXCSR_DAZ (1 << 6)	/* Enable denormals are zero mode */
 #define MXCSR_FTZ (1 << 15)	/* Enable flush to zero mode */
 
-#define FXSAVE	(1 << 24)
-#define SSE	(1 << 25)
+#ifndef __x86_64__
+/* All 64-bit targets have SSE and DAZ;
+   only check them explicitly for 32-bit ones. */
+#include "cpuid.h"
+#endif
 
 static void __attribute__((constructor))
 #ifndef __x86_64__
@@ -47,38 +50,18 @@ __attribute__ ((force_align_arg_pointer))
 set_fast_math (void)
 {
 #ifndef __x86_64__
-  /* All 64-bit targets have SSE and DAZ; only check them explicitly
-     for 32-bit ones. */
   unsigned int eax, ebx, ecx, edx;
 
-  /* See if we can use cpuid.  */
-  asm volatile ("pushfl; pushfl; popl %0; movl %0,%1; xorl %2,%0;"
-		"pushl %0; popfl; pushfl; popl %0; popfl"
-		: "=&r" (eax), "=&r" (ebx)
-		: "i" (0x00200000));
-
-  if (((eax ^ ebx) & 0x00200000) == 0)
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
     return;
 
-  /* Check the highest input value for eax.  */
-  asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1"
-		: "=a" (eax), "=r" (ebx), "=c" (ecx), "=d" (edx)
-		: "0" (0));
-
-  if (eax == 0)
-    return;
-
-  asm volatile ("xchgl %%ebx, %1; cpuid; xchgl %%ebx, %1"
-		: "=a" (eax), "=r" (ebx), "=c" (ecx), "=d" (edx)
-		: "0" (1));
-
-  if (edx & SSE)
+  if (edx & bit_SSE)
     {
       unsigned int mxcsr = __builtin_ia32_stmxcsr ();
   
       mxcsr |= MXCSR_FTZ;
 
-      if (edx & FXSAVE)
+      if (edx & bit_FXSAVE)
 	{
 	  /* Check if DAZ is available.  */
 	  struct

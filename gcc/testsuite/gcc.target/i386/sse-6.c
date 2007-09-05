@@ -16,7 +16,7 @@ typedef union {
   unsigned char c[16];
 }vecInLong;
 
-void sse2_tests (void) NOINLINE;
+void sse2_tests (void) __attribute__((noinline));
 void dump128_16 (char *, char *, vecInLong);
 void dump128_32 (char *, char *, vecInLong);
 void dump128_64 (char *, char *, vecInLong);
@@ -110,7 +110,7 @@ sse2_test (void)
     abort ();
 }
 
-void NOINLINE
+void __attribute__((noinline))
 sse2_tests (void)
 {
   /* psraw */

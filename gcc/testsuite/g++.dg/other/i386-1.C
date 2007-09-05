@@ -1,9 +1,9 @@
 /* { dg-do run { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-msse2" } */
 
-#include "../../gcc.target/i386/sse2-check.h"
-
 #include <xmmintrin.h>
+
+#include "cpuid.h"
 
 static void
 sse2_test (void)
@@ -19,4 +19,19 @@ sse2_test (void)
   _mm_store_ss(&r, v);
   if (r != 3.0f)
     abort ();
+}
+
+int
+main ()
+{
+  unsigned int eax, ebx, ecx, edx;
+ 
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+    return 0;
+
+  /* Run SSE2 test only if host has SSE2 support.  */
+  if (edx & bit_SSE2)
+    sse2_test ();
+
+  return 0;
 }

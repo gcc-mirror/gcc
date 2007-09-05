@@ -1,20 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../gcc.dg/i386-cpuid.h"
+#include "cpuid.h"
 
 static void sse4_2_test (void);
 
 int
 main ()
 {
-  unsigned long cpu_facilities;
+  unsigned int eax, ebx, ecx, edx;
  
-  cpu_facilities = i386_cpuid_ecx ();
+  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+    return 0;
 
   /* Run SSE4.2 test only if host has SSE4.2 support.  */
-  if ((cpu_facilities & bit_SSE4_2))
+  if (ecx & bit_SSE4_2)
     sse4_2_test ();
 
-  exit (0);
+  return 0;
 }
