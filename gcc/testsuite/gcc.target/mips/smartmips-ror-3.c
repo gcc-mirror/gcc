@@ -1,9 +1,11 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -msmartmips -mno-mips16" } */
+/* { dg-mips-options "-O -msmartmips" } */
+
+#define NOMIPS16 __attribute__ ((nomips16)) 
 
 #define S 13
 
-int rotate_left_constant (unsigned a)
+NOMIPS16 int rotate_left_constant (unsigned a)
 {
   return (a << S) | (a >> (32 - S));
 }

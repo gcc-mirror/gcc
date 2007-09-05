@@ -1,6 +1,8 @@
-/* { dg-mips-options "-mips16 -mcode-readable=pcrel -mgp32" } */
+/* { dg-mips-options "-mcode-readable=pcrel -mgp32" } */
 
-int
+#define MIPS16 __attribute__ ((mips16))
+
+MIPS16 int
 foo (int i)
 {
   switch (i)
@@ -18,7 +20,7 @@ foo (int i)
 
 extern int k[];
 
-int *
+MIPS16 int *
 bar (void)
 {
   return k;

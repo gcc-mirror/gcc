@@ -2,6 +2,39 @@
 	    David Ung  <davidu@mips.com>
             Nigel Stephens <nigel@mips.com>
 
+	* gcc.c-torture/compile/mipscop-1.c: Add nomips16 attributes.
+	* gcc.c-torture/compile/mipscop-2.c: Likewise.
+	* gcc.c-torture/compile/mipscop-3.c: Likewise.
+	* gcc.c-torture/compile/mipscop-4.c: Likewise.
+	* gcc.dg/torture/mips-hilo-1.c: Likewise.
+	* gcc.dg/torture/mips-hilo-2.c: Likewise.
+	* gcc.dg/torture/pr19683-1.c: Likewise.
+	* gcc.target/mips/madd-3.c: Likewise.
+	* gcc.target/mips/maddu-3.c: Likewise.
+	* gcc.target/mips/msub-3.c: Likewise.
+	* gcc.target/mips/msubu-3.c: Likewise.
+	* gcc.target/mips/asm-1.c: Likewise.
+	* gcc.target/mips/branch-1.c: Likewise.
+	* gcc.target/mips/ins-1.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+	* gcc.target/mips/smartmips-lwxs.c: Likewise.
+	* gcc.target/mips/smartmips-ror-1.c: Likewise.
+	* gcc.target/mips/smartmips-ror-2.c: Likewise.
+	* gcc.target/mips/smartmips-ror-3.c: Likewise.
+	* gcc.target/mips/smartmips-ror-4.c: Likewise.
+	* gcc.target/mips/dspr2-MULT.c: Likewise.
+	* gcc.target/mips/dspr2-MULTU.c: Likewise.
+	* gcc.target/mips/mips32-dsp-run.c: Likewise.
+	* gcc.target/mips/mips32-dspr2-type.c: Likewise.
+	* gcc.target/mips/code-readable-1.c: Add mips16 attributes.
+	* gcc.target/mips/code-readable-2.c: Likewise.
+	* gcc.target/mips/code-readable-3.c: Likewise.
+
+2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+            Nigel Stephens <nigel@mips.com>
+
 	* gcc.target/mips/mips16-attributes.c: New.
 
 2007-09-05  Paul Thomas  <pault@gcc.gnu.org>

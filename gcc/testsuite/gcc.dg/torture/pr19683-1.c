@@ -6,7 +6,6 @@
 extern void abort (void);
 extern void exit (int);
 
-#ifndef __mips16
 #define REPEAT10(X, Y)					\
   X(Y##0); X(Y##1); X(Y##2); X(Y##3); X(Y##4);		\
   X(Y##5); X(Y##6); X(Y##7); X(Y##8); X(Y##9)
@@ -17,7 +16,7 @@ extern void exit (int);
 
 union u { unsigned long long ll; unsigned int i[2]; };
 
-unsigned int
+unsigned int __attribute__ ((nomips16))
 foo (volatile unsigned int *ptr)
 {
   union u u;
@@ -30,7 +29,7 @@ foo (volatile unsigned int *ptr)
   return result;
 }
 
-int
+int __attribute__ ((nomips16))
 main (void)
 {
   unsigned int array[] = { 1000 * 1000 * 1000 };
@@ -41,10 +40,3 @@ main (void)
     abort ();
   exit (0);
 }
-#else
-int
-main (void)
-{
-  exit (0);
-}
-#endif

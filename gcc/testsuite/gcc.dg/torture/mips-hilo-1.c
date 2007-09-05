@@ -6,10 +6,8 @@
 extern void abort (void);
 extern void exit (int);
 
-#if !defined(__mips16)
-
 #define DECLARE(TYPE)							\
-  TYPE __attribute__ ((noinline))					\
+  TYPE __attribute__ ((noinline)) __attribute__ ((nomips16))		\
   f1##TYPE (TYPE x1, TYPE x2, TYPE x3)					\
   {									\
     TYPE t1, t2;							\
@@ -19,7 +17,7 @@ extern void exit (int);
     return t1 + t2;							\
   }									\
 									\
-  TYPE __attribute__ ((noinline))					\
+  TYPE __attribute__ ((noinline)) __attribute__ ((nomips16))		\
   f2##TYPE (TYPE x1, TYPE x2, TYPE x3)					\
   {									\
     TYPE t1, t2;							\
@@ -73,6 +71,3 @@ main ()
 #endif
   exit (0);
 }
-#else
-int main () { exit (0); }
-#endif
