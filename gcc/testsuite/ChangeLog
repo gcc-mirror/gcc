@@ -1,3 +1,9 @@
+2007-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/eh/builtin1.C: New test.
+	* g++.dg/eh/builtin2.C: New test.
+	* g++.dg/eh/builtin3.C: New test.
+
 2007-09-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.target/powerpc/dfp-dd.c: New test.
