@@ -1,3 +1,24 @@
+2007-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-attrs.def (ATTR_NONNULL_3): New.
+	(DEF_FORMAT_ATTRIBUTE): Use just ATTR_NONNULL_##FA instead of
+	ATTR_NOTHROW_NONNULL_##FA.
+	(DEF_FORMAT_ATTRIBUTE_NOTHROW, DEF_FORMAT_ATTRIBUTE_BOTH): New macros.
+	(ATTR_FORMAT_PRINTF_NOTHROW_2_0, ATTR_PRINTF_NOTHROW_2_3,
+	ATTR_FORMAT_PRINTF_NOTHROW_3_0, ATTR_FORMAT_PRINTF_NOTHROW_3_4,
+	ATTR_FORMAT_PRINTF_NOTHROW_4_0, ATTR_PRINTF_NOTHROW_4_5,
+	ATTR_FORMAT_PRINTF_NOTHROW_5_0, ATTR_FORMAT_PRINTF_NOTHROW_5_6,
+	ATTR_FORMAT_SCANF_NOTHROW_2_0, ATTR_FORMAT_SCANF_NOTHROW_2_3,
+	ATTR_FORMAT_STRFTIME_NOTHROW_3_0, ATTR_FORMAT_STRFMON_NOTHROW_3_4):
+	New.
+	(ATTR_FORMAT_PRINTF_4_0, ATTR_PRINTF_4_5, ATTR_FORMAT_PRINTF_5_0,
+	ATTR_FORMAT_PRINTF_5_6, ATTR_FORMAT_STRFTIME_3_0,
+	ATTR_FORMAT_NOTHROW_3_4): Remove.
+	* builtins.def (snprintf, sprintf, sscanf, vsnprintf, vsprintf,
+	vsscanf, strfmon, strftime, __snprintf_chk, __sprintf_chk,
+	__vsnprintf_chk, __vsprintf_chk): Use ATTR_FORMAT_*_NOTHROW_*
+	instead of ATTR_FORMAT_*_*.
+
 2007-09-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_emit_movem_store): Call copy_rtx on
