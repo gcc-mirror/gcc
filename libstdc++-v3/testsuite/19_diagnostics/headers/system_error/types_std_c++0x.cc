@@ -37,7 +37,11 @@ namespace gnu
   using std::argument_out_of_domain;
   using std:: bad_address;
   using std::bad_file_descriptor;
+
+#ifdef _GLIBCXX_HAVE_EBADMSG
   using std::bad_message;
+#endif
+
   using std::broken_pipe;
   using std::connection_aborted;
   using std::connection_already_in_progress; 

@@ -63,7 +63,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       argument_out_of_domain = 			EDOM,
       bad_address = 				EFAULT,
       bad_file_descriptor = 			EBADF,
+
+#ifdef _GLIBCXX_HAVE_EBADMSG
       bad_message = 				EBADMSG,
+#endif
+
       broken_pipe = 				EPIPE,
       connection_aborted = 			ECONNABORTED,
       connection_already_in_progress = 		EALREADY,
