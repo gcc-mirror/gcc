@@ -5697,6 +5697,13 @@ simplification) based on a dominator tree traversal.  This also
 performs jump threading (to reduce jumps to jumps). This flag is
 enabled by default at @option{-O} and higher.
 
+@item -ftree-dse
+@opindex ftree-dse
+Perform dead store elimination (DSE) on trees.  A dead store is a store into
+a memory location which will later be overwritten by another store without
+any intervening loads.  In this case the earlier store can be deleted.  This
+flag is enabled by default at @option{-O} and higher.
+
 @item -ftree-ch
 Perform loop header copying on trees.  This is beneficial since it increases
 effectiveness of code motion optimizations.  It also saves one jump.  This flag

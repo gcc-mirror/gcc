@@ -1,3 +1,10 @@
+2007-09-05  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR web/32965
+	PR tree-optimization/13756
+	* doc/invoke.texi (Options That Control Optimization): Document
+	-ftree-dse.
+
 2007-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc/config/i386/cpuid.h: New file.
