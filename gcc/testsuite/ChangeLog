@@ -4,6 +4,9 @@
 	* g++.dg/eh/builtin2.C: New test.
 	* g++.dg/eh/builtin3.C: New test.
 
+	PR c++/33289
+	* g++.dg/eh/builtin4.C: New test.
+
 2007-09-05  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.target/powerpc/dfp-dd.c: New test.
