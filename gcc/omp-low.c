@@ -1144,10 +1144,10 @@ create_omp_child_function (omp_context *ctx)
   /* Allocate memory for the function structure.  The call to 
      allocate_struct_function clobbers CFUN, so we need to restore
      it afterward.  */
-  allocate_struct_function (decl);
+  push_struct_function (decl);
   DECL_SOURCE_LOCATION (decl) = EXPR_LOCATION (ctx->stmt);
   cfun->function_end_locus = EXPR_LOCATION (ctx->stmt);
-  cfun = ctx->cb.src_cfun;
+  pop_cfun ();
 }
 
 
@@ -2403,7 +2403,7 @@ static void
 expand_omp_parallel (struct omp_region *region)
 {
   basic_block entry_bb, exit_bb, new_bb;
-  struct function *child_cfun, *saved_cfun;
+  struct function *child_cfun;
   tree child_fn, block, t, ws_args;
   block_stmt_iterator si;
   tree entry_stmt;
@@ -2413,7 +2413,6 @@ expand_omp_parallel (struct omp_region *region)
   entry_stmt = last_stmt (region->entry);
   child_fn = OMP_PARALLEL_FN (entry_stmt);
   child_cfun = DECL_STRUCT_FUNCTION (child_fn);
-  saved_cfun = cfun;
 
   entry_bb = region->entry;
   exit_bb = region->exit;

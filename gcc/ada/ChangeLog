@@ -1,3 +1,8 @@
+2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans.c (Compilation_unit_to_gnu): Use set_cfun.
+	* utils.c (end_subprog_body): Likewise.
+
 2007-09-03  Nick Clifton  <nickc@redhat.com>
 
 	* Make-lang.in: Change copyright header to refer to version 3 of

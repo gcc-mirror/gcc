@@ -1,3 +1,48 @@
+2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Add target hook invoked when cfun changes.
+
+	* doc/tm.texi (TARGET_SET_CURRENT_FUNCTION): Document.
+	* target.h (struct gcc_target): Add set_current_function.
+	* target-def.h (TARGET_SET_CURRENT_FUNCTION): Define.
+	(TARGET_INITIALIZER): Add initializer for set_current_function.
+	* tree.h (push_struct_function): New.
+	* tree-inline.h (push_cfun, pop_cfun): Move declarations to...
+	* function.h: Here.
+	(set_cfun): Declare.
+	* tree-inline.c (cfun_stack, push_cfun, pop_cfun): Moved to...
+	* function.c:  Here.
+	(push_function_context_to): Use allocate_struct_function
+	to create null context, not init_dummy_function_start.  Use set_cfun.
+	(pop_function_context_from): Use set_cfun.
+	(in_dummy_function): New.
+	(invoke_set_current_function_hook): New.
+	(set_cfun): New.
+	(push_cfun, pop_cfun): Use set_cfun.
+	(push_struct_function): New.
+	(allocate_struct_function): Call invoke_set_current_function_hook
+	before returning.
+	(prepare_function_start): Don't set cfun here.  Remove unused
+	argument; fix all callers.
+	(init_dummy_function_start): Fiddle with in_dummy_function.  Call
+	push_struct_function.
+	(init_function_start): Set cfun here.
+	(expand_dummy_function_end): Fiddle with in_dummy_function.  Pop cfun.
+	* omp-low.c (create_omp_child_function): Use push_struct_function
+	and pop_cfun to save/restore state.
+	(expand_omp_parallel): Remove unused saved_cfun variable.
+	* cgraphunit.c (ipa_passes): Use set_cfun.
+	* gimple-low.c (record_vars_into): Use push_cfun/pop_cfun here.
+	* dwarf2out.c (dwarf2out_abstract_function): Likewise.
+	* matrix-reorg.c (transform_allocation_sites): Likewise.
+	(matrix_reorg): Use set_cfun.
+	* gimplify.c (gimplify_function_tree): Use push_cfun/pop_cfun here.
+	* tree-optimize.c (tree_rest_of_compilation): Remove one redundant
+	assignment to cfun; use set_cfun for the other.
+	* tree-cfg.c (move_sese_region_to_fn): Use set_cfun.
+	(dump_function_to_file): Use push_cfun/pop_cfun here.
+	* c-decl.c (finish_function): Use set_cfun.
+
 2007-09-05  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* regrename.c (rerename_optimize):  Use deferred rescanning and

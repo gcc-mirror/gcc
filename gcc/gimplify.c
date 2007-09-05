@@ -6466,9 +6466,10 @@ gimplify_function_tree (tree fndecl)
 
   oldfn = current_function_decl;
   current_function_decl = fndecl;
-  cfun = DECL_STRUCT_FUNCTION (fndecl);
-  if (cfun == NULL)
-    allocate_struct_function (fndecl);
+  if (DECL_STRUCT_FUNCTION (fndecl))
+    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
+  else
+    push_struct_function (fndecl);
 
   for (parm = DECL_ARGUMENTS (fndecl); parm ; parm = TREE_CHAIN (parm))
     {
@@ -6520,7 +6521,7 @@ gimplify_function_tree (tree fndecl)
 
   cfun->gimplified = true;
   current_function_decl = oldfn;
-  cfun = oldfn ? DECL_STRUCT_FUNCTION (oldfn) : NULL;
+  pop_cfun ();
 }
 
 /* Expands EXPR to list of gimple statements STMTS.  If SIMPLE is true,

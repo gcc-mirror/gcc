@@ -2874,7 +2874,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
   allocate_struct_function (gnu_elab_proc_decl);
   Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
-  cfun = 0;
+  set_cfun (NULL);
 
   /* For a body, first process the spec if there is one. */
   if (Nkind (Unit (gnat_node)) == N_Package_Body

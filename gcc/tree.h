@@ -4859,6 +4859,7 @@ extern void init_dummy_function_start (void);
 extern void expand_dummy_function_end (void);
 extern unsigned int init_function_for_compilation (void);
 extern void allocate_struct_function (tree);
+extern void push_struct_function (tree fndecl);
 extern void init_function_start (tree);
 extern bool use_register_for_decl (const_tree);
 extern void generate_setjmp_warnings (void);
