@@ -1,3 +1,8 @@
+2007-09-05  Jan Hubicka  <jh@suse.cz>
+
+	* cp/sematics.c (expand_body): Remove unnecesary import_export_decl
+	call, DECL_EXTERNAL checks and current_function_decl saving.
+
 2007-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/29731 (again)
