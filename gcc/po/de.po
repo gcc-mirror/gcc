@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.2.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-07-18 21:17-0700\n"
-"PO-Revision-Date: 2007-08-15 12:20+0200\n"
+"PO-Revision-Date: 2007-08-30 10:55+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -4090,7 +4090,7 @@ msgstr "CHARACTER-Ausdruck bei %L wird abgeschnitten (%d/%d)"
 #: fortran/decl.c:771
 #, no-c-format
 msgid "The CHARACTER elements of the array constructor at %L must have the same length (%d/%d)"
-msgstr "Die CHARACTER-Elemente des Feldkonstruktors bei %L muss die gleiche Länge haben (%d/%d)"
+msgstr "Die CHARACTER-Elemente des Feldkonstruktors bei %L müssen die gleiche Länge haben (%d/%d)"
 
 #: fortran/decl.c:862
 #, no-c-format

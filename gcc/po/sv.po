@@ -7,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.2.0\n"
+"Project-Id-Version: gcc 4.2.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-07-18 21:17-0700\n"
-"PO-Revision-Date: 2007-07-20 22:38+0200\n"
+"PO-Revision-Date: 2007-09-02 13:54+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -20495,7 +20495,7 @@ msgstr "ogiltigt l-värde i asm-utdata %d"
 #: gimplify.c:4064
 #, gcc-internal-format
 msgid "non-memory input %d must stay in memory"
-msgstr ""
+msgstr "icke-minnesindata %d måste stanna i minnet"
 
 #: gimplify.c:4077
 #, gcc-internal-format
@@ -24426,7 +24426,7 @@ msgstr "jämföreslse mellan %q#T och %q#T"
 #: cp/call.c:4138
 #, gcc-internal-format
 msgid "no corresponding deallocation function for `%D'"
-msgstr ""
+msgstr "ingen motsvarande avallokeringsfunktion för \"%D\""
 
 #: cp/call.c:4143
 #, gcc-internal-format
@@ -29128,14 +29128,14 @@ msgid "cannot apply %<offsetof%> to member function %qD"
 msgstr "det går inte att använda %<offsetof%> på medlemsfunktion %qD"
 
 #: cp/semantics.c:3348
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is not a variable in clause %qs"
-msgstr "%qE är inte en variabel i klausul %qs"
+msgstr "%qD är inte en variabel i klausul %qs"
 
 #: cp/semantics.c:3357
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD appears more than once in data clauses"
-msgstr "%qE förekommer mer än en gång i dataklausuler"
+msgstr "%qD förekommer mer än en gång i dataklausuler"
 
 #: cp/semantics.c:3417
 #, gcc-internal-format
