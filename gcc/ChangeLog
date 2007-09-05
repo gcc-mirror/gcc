@@ -1,5 +1,9 @@
 2007-09-05  Ben Elliston  <bje@au.ibm.com>
 
+	* varasm.c (initializer_constant_valid_p): Fix comment typo.
+
+2007-09-05  Ben Elliston  <bje@au.ibm.com>
+
 	* config/rs6000/ppu_intrinsics.h (__ldarx): Use `Z' constraint,
 	not `m' for *ptrp.
 	(__stdcx): Make asm volatile.
