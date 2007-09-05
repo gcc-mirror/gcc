@@ -2928,7 +2928,7 @@ finish_id_expression (tree id_expression,
 	{
 	  if (DECL_P (decl) && DECL_NONLOCAL (decl)
 	      && DECL_CLASS_SCOPE_P (decl)
-	      && DECL_CONTEXT (decl) != current_class_type)
+	      && context_for_name_lookup (decl) != current_class_type)
 	    {
 	      tree path;
 

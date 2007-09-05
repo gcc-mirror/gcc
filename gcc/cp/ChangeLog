@@ -1,3 +1,11 @@
+2007-09-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/30302
+	* semantics.c (finish_id_expression): Use context_for_name_lookup
+	insted of DECL_CONTEXT,	to see through anonymous structs and unions.
+	* class.c (finish_struct_anon): Deal correctly with anonymous
+	structs (vs unions, as GNU extension) in error messages.
+
 2007-09-05  Jan Hubicka  <jh@suse.cz>
 
 	* cp/sematics.c (expand_body): Remove unnecesary import_export_decl
