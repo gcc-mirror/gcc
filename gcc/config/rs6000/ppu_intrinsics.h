@@ -356,7 +356,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
     doublewordsize *ptrp = (doublewordsize*)(void*)(base);	\
   __asm__ volatile ("ldarx %0,%y1"			\
 	   : "=r" (result)				\
-	   : "m" (*ptrp));				\
+	   : "Z" (*ptrp));				\
   result; })
 #endif /* __powerpc64__ */
 
@@ -369,7 +369,7 @@ typedef int __V4SI __attribute__((vector_size(16)));
 	   : "=r" (result),			\
 	     "=Z" (*ptrp)			\
 	   : "r" (value) : "cr0");		\
-  (result & 0x20000000); })
+  ((result & 0x20000000) >> 29); })
 
 
 #ifdef __powerpc64__
@@ -377,12 +377,12 @@ typedef int __V4SI __attribute__((vector_size(16)));
   ({unsigned long long result;				\
     typedef  struct {char a[8];} doublewordsize;	\
     doublewordsize *ptrp = (doublewordsize*)(void*)(base);	\
-  __asm__ ("stdcx. %2,%y1\n"				\
+  __asm__ volatile ("stdcx. %2,%y1\n"			\
 	   "\tmfocrf %0,0x80"				\
 	   : "=r" (result),				\
 	     "=Z" (*ptrp)				\
 	   : "r" (value) : "cr0");			\
-  (result & 0x20000000); })
+  ((result & 0x20000000) >> 29); })
 #endif /* __powerpc64__ */
 
 #define __mffs() __extension__			\
