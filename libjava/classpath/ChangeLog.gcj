@@ -1,3 +1,8 @@
+2007-09-04  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Append libgcj soversion to nativeexeclibdir.
+	* configure: Regenerate.
+
 2007-08-04  Matthias Klose  <doko@ubuntu.com>
 
 	* java/util/EnumMap.java (clone): Add cast.

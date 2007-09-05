@@ -1,5 +1,10 @@
 2007-09-04  Matthias Klose  <doko@ubuntu.com>
 
+	* configure.ac: Do not pass --with-native-libdir to classpath.
+	* configure: Regenerate.
+
+2007-09-04  Matthias Klose  <doko@ubuntu.com>
+
 	PR libgcj/33278
 	* configure.ac: Robustify extraction of gcj version.
 	* configure: Regenerate.
