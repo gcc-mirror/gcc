@@ -145,7 +145,7 @@ static rtx expand_builtin_sprintf (tree, rtx, enum machine_mode);
 static tree stabilize_va_list (tree, int);
 static rtx expand_builtin_expect (tree, rtx);
 static tree fold_builtin_constant_p (tree);
-static tree fold_builtin_expect (tree);
+static tree fold_builtin_expect (tree, tree);
 static tree fold_builtin_classify_type (tree);
 static tree fold_builtin_strlen (tree);
 static tree fold_builtin_inf (tree, int);
@@ -7054,21 +7054,80 @@ fold_builtin_constant_p (tree arg)
   return NULL_TREE;
 }
 
-/* Fold a call to __builtin_expect with argument ARG, if we expect that a
-   comparison against the argument will fold to a constant.  In practice,
-   this means a true constant or the address of a non-weak symbol.  */
+/* Create builtin_expect with PRED and EXPECTED as its arguments and
+   return it as a truthvalue.  */
 
 static tree
-fold_builtin_expect (tree arg)
+build_builtin_expect_predicate (tree pred, tree expected)
 {
-  tree inner;
+  tree fn, arg_types, pred_type, expected_type, call_expr, ret_type;
 
-  /* If the argument isn't invariant, then there's nothing we can do.  */
-  if (!TREE_INVARIANT (arg))
+  fn = built_in_decls[BUILT_IN_EXPECT];
+  arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
+  ret_type = TREE_TYPE (TREE_TYPE (fn));
+  pred_type = TREE_VALUE (arg_types);
+  expected_type = TREE_VALUE (TREE_CHAIN (arg_types));
+
+  pred = fold_convert (pred_type, pred);
+  expected = fold_convert (expected_type, expected);
+  call_expr = build_call_expr (fn, 2, pred, expected);
+
+  return build2 (NE_EXPR, TREE_TYPE (pred), call_expr,
+		 build_int_cst (ret_type, 0));
+}
+
+/* Fold a call to builtin_expect with arguments ARG0 and ARG1.  Return
+   NULL_TREE if no simplification is possible.  */
+
+static tree
+fold_builtin_expect (tree arg0, tree arg1)
+{
+  tree inner, fndecl;
+  enum tree_code code;
+
+  /* If this is a builtin_expect within a builtin_expect keep the
+     inner one.  See through a comparison against a constant.  It
+     might have been added to create a thruthvalue.  */
+  inner = arg0;
+  if (COMPARISON_CLASS_P (inner)
+      && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST)
+    inner = TREE_OPERAND (inner, 0);
+
+  if (TREE_CODE (inner) == CALL_EXPR
+      && (fndecl = get_callee_fndecl (inner))
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT)
+    return arg0;
+
+  /* Distribute the expected value over short-circuiting operators.
+     See through the cast from truthvalue_type_node to long.  */
+  inner = arg0;
+  while (TREE_CODE (inner) == NOP_EXPR
+	 && INTEGRAL_TYPE_P (TREE_TYPE (inner))
+	 && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (inner, 0))))
+    inner = TREE_OPERAND (inner, 0);
+
+  code = TREE_CODE (inner);
+  if (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
+    {
+      tree op0 = TREE_OPERAND (inner, 0);
+      tree op1 = TREE_OPERAND (inner, 1);
+
+      op0 = build_builtin_expect_predicate (op0, arg1);
+      op1 = build_builtin_expect_predicate (op1, arg1);
+      inner = build2 (code, TREE_TYPE (inner), op0, op1);
+
+      return fold_convert (TREE_TYPE (arg0), inner);
+    }
+
+  /* If the argument isn't invariant then there's nothing else we can do.  */
+  if (!TREE_INVARIANT (arg0))
     return NULL_TREE;
 
-  /* If we're looking at an address of a weak decl, then do not fold.  */
-  inner = arg;
+  /* If we expect that a comparison against the argument will fold to
+     a constant return the constant.  In practice, this means a true
+     constant or the address of a non-weak symbol.  */
+  inner = arg0;
   STRIP_NOPS (inner);
   if (TREE_CODE (inner) == ADDR_EXPR)
     {
@@ -7082,8 +7141,8 @@ fold_builtin_expect (tree arg)
 	return NULL_TREE;
     }
 
-  /* Otherwise, ARG already has the proper type for the return value.  */
-  return arg;
+  /* Otherwise, ARG0 already has the proper type for the return value.  */
+  return arg0;
 }
 
 /* Fold a call to __builtin_classify_type with argument ARG.  */
@@ -10110,7 +10169,7 @@ fold_builtin_2 (tree fndecl, tree arg0, tree arg1, bool ignore)
       return fold_builtin_strpbrk (arg0, arg1, type);
 
     case BUILT_IN_EXPECT:
-      return fold_builtin_expect (arg0);
+      return fold_builtin_expect (arg0, arg1);
 
     CASE_FLT_FN (BUILT_IN_POW):
       return fold_builtin_pow (fndecl, arg0, arg1, type);

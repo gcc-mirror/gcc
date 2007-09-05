@@ -1,3 +1,12 @@
+2007-09-05  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR tree-optimization/21513
+	* builtins.c (build_builtin_expect_predicate): New function.
+	(fold_builtin_expect): Add argument for expected value.
+	Distribute __builtin_expect over short-circuiting operations.
+	Fold nested builtin_expects.
+	(fold_builtin_2): Adjust call to fold_builtin_expect.
+
 2007-09-05  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR web/32965
