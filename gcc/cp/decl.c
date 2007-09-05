@@ -1280,6 +1280,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = type;
 	}
 
+      /* If a function is explicitly declared "throw ()", propagate that to
+	 the corresponding builtin.  */
+      if (DECL_BUILT_IN_CLASS (olddecl) == BUILT_IN_NORMAL
+	  && DECL_ANTICIPATED (olddecl)
+	  && TREE_NOTHROW (newdecl)
+	  && !TREE_NOTHROW (olddecl)
+	  && built_in_decls [DECL_FUNCTION_CODE (olddecl)] != NULL_TREE
+	  && built_in_decls [DECL_FUNCTION_CODE (olddecl)] != olddecl
+	  && types_match)
+	TREE_NOTHROW (built_in_decls [DECL_FUNCTION_CODE (olddecl)]) = 1;
+
       /* Whether or not the builtin can throw exceptions has no
 	 bearing on this declarator.  */
       TREE_NOTHROW (olddecl) = 0;

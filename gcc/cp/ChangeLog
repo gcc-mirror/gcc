@@ -1,3 +1,8 @@
+2007-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (duplicate_decls): Set TREE_NOTHROW on __builtin_XX
+	decl if a prototype for XX is provided with throw().
+
 2007-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/30302
