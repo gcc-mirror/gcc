@@ -2046,6 +2046,7 @@ gfc_match_rvalue (gfc_expr **result)
   int i;
   gfc_typespec *ts;
   bool implicit_char;
+  gfc_ref *ref;
 
   m = gfc_match_name (name);
   if (m != MATCH_YES)
@@ -2143,6 +2144,34 @@ gfc_match_rvalue (gfc_expr **result)
 
       e->symtree = symtree;
       m = match_varspec (e, 0);
+
+      if (sym->ts.is_c_interop || sym->ts.is_iso_c)
+	break;
+
+      /* Variable array references to derived type parameters cause
+	 all sorts of headaches in simplification.  Make them variable
+	 and scrub any module identity because they do not appear to
+	 be referencable from the module.  */  
+      if (sym->value && sym->ts.type == BT_DERIVED && e->ref)
+	{
+	  for (ref = e->ref; ref; ref = ref->next)
+	    if (ref->type == REF_ARRAY)
+	      break;
+
+	  if (ref == NULL)
+	    break;
+
+	  ref = e->ref;
+	  e->ref = NULL;
+	  gfc_free_expr (e);
+	  e = gfc_get_expr ();
+	  e->expr_type = EXPR_VARIABLE;
+	  e->symtree = symtree;
+	  e->ref = ref;
+	  sym->attr.use_assoc = 0;
+	  sym->module = NULL;
+	}
+
       break;
 
     case FL_DERIVED:

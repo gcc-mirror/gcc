@@ -1,3 +1,17 @@
+2007-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31564
+	* primary.c (gfc_match_rvalue): Make expressions that refer
+	to derived type parameters that have array references into
+	variable expressions.  Remove references to use association
+	from the symbol.
+
+	PR fortran/33241
+	* decl.c (add_init_expr_to_sym): Provide assumed character
+	length parameters with the length of the initialization
+	expression, if a constant, or that of the first element of
+	an array.
+
 2007-09-04  Janus Weil  <jaydub66@gmail.com>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
