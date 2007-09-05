@@ -3,6 +3,10 @@
 	* decl.c (duplicate_decls): Set TREE_NOTHROW on __builtin_XX
 	decl if a prototype for XX is provided with throw().
 
+	PR c++/33289
+	* decl.c (builtin_function_1): Set DECL_ANTICIPATED also
+	on __*_chk non-__builtin_* decls.
+
 2007-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/30302
