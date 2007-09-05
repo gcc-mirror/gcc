@@ -1,16 +1,16 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007.
 #
 # Remember: GCC team does not want RCS keywords in the header!
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.1.1\n"
+"Project-Id-Version: cpplib 4.2.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-07-18 21:18-0700\n"
-"PO-Revision-Date: 2006-06-24 19:07+0200\n"
+"PO-Revision-Date: 2007-09-01 12:51+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -265,12 +265,12 @@ msgstr "ogiltigt #%s-direktiv"
 #: directives.c:1077
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
-msgstr ""
+msgstr "registrerar pragman i namnrymden \"%s\" med namnexpansion som inte passar ihop"
 
 #: directives.c:1086
-#, fuzzy, c-format
+#, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
-msgstr "registrerar \"%s\" både som ett pragma och ett pragma namespace"
+msgstr "registrerar pragma \"%s\" med namnexpansion och utan namnrymd"
 
 #: directives.c:1104
 #, c-format
@@ -289,7 +289,7 @@ msgstr "#pragma %s är redan registrerat"
 
 #: directives.c:1140
 msgid "registering pragma with NULL handler"
-msgstr ""
+msgstr "registrerar pragma med NULL-hanterare"
 
 #: directives.c:1350
 msgid "#pragma once in main file"
@@ -429,9 +429,9 @@ msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionell C tillåter inte suffixet \"%.*s\""
 
 #: expr.c:268
-#, fuzzy, c-format
+#, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
-msgstr "ogiltigt suffix \"%.*s\" på flyttalskonstant"
+msgstr "ogiltigt suffix \"%.*s\" på hexadecimal flyttalskonstant"
 
 #: expr.c:281
 #, c-format
@@ -688,9 +688,9 @@ msgid "null character(s) preserved in literal"
 msgstr "nolltecken bevarade i konstant"
 
 #: lex.c:650
-#, fuzzy, c-format
+#, c-format
 msgid "missing terminating %c character"
-msgstr "saknar avslutande tecken >"
+msgstr "avslutande %c-tecken saknas"
 
 #: lex.c:842
 msgid "no newline at end of file"
@@ -742,13 +742,12 @@ msgid "invalid built-in macro \"%s\""
 msgstr "ogiltigt inbyggt makro \"%s\""
 
 #: macro.c:156
-#, fuzzy
 msgid "could not determine file timestamp"
-msgstr "kunde inte bstämma datum och tid"
+msgstr "det gick inte att avgöra fils tidsstämpel"
 
 #: macro.c:253
 msgid "could not determine date and time"
-msgstr "kunde inte bstämma datum och tid"
+msgstr "det gick inte att avgöra datum och tid"
 
 #: macro.c:416
 msgid "invalid string literal, ignoring final '\\'"
