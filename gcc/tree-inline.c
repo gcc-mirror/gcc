@@ -2333,27 +2333,6 @@ init_inline_once (void)
   eni_time_weights.omp_cost = 40;
 }
 
-typedef struct function *function_p;
-
-DEF_VEC_P(function_p);
-DEF_VEC_ALLOC_P(function_p,heap);
-
-/* Initialized with NOGC, making this poisonous to the garbage collector.  */
-static VEC(function_p,heap) *cfun_stack;
-
-void
-push_cfun (struct function *new_cfun)
-{
-  VEC_safe_push (function_p, heap, cfun_stack, cfun);
-  cfun = new_cfun;
-}
-
-void
-pop_cfun (void)
-{
-  cfun = VEC_pop (function_p, cfun_stack);
-}
-
 /* Install new lexical TREE_BLOCK underneath 'current_block'.  */
 static void
 add_lexical_block (tree current_block, tree new_block)

@@ -570,6 +570,11 @@ struct gcc_target
      this is an indirect call.  */
   bool (*function_ok_for_sibcall) (tree decl, tree exp);
 
+  /* Establish appropriate back-end context for processing the function
+     FNDECL.  The argument might be NULL to indicate processing at top
+     level, outside of any function scope.  */
+  void (*set_current_function) (tree fndecl);
+
   /* True if EXP should be placed in a "small data" section.  */
   bool (* in_small_data_p) (const_tree);
 

@@ -10139,6 +10139,23 @@ The default value of this hook is @code{NULL}, which disables any special
 allocation.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_SET_CURRENT_FUNCTION (tree @var{decl})
+The compiler invokes this hook whenever it changes its current function 
+context (@code{cfun}).  You can define this function if
+the back end needs to perform any initialization or reset actions on a
+per-function basis.  For example, it may be used to implement function
+attributes that affect register usage or code generation patterns.
+The argument @var{decl} is the declaration for the new function context,
+and may be null to indicate that the compiler has left a function context
+and is returning to processing at the top level.
+The default hook function does nothing.
+
+GCC sets @code{cfun} to a dummy function context during initialization of
+some parts of the back end.  The hook function is not invoked in this
+situation; you need not worry about the hook being invoked recursively,
+or when the back end is in a partially-initialized state.
+@end deftypefn
+
 @defmac TARGET_OBJECT_SUFFIX
 Define this macro to be a C string representing the suffix for object
 files on your target machine.  If you do not define this macro, GCC will

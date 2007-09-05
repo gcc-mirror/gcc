@@ -474,6 +474,11 @@ extern int virtuals_instantiated;
 /* Nonzero if at least one trampoline has been created.  */
 extern int trampolines_created;
 
+/* cfun shouldn't be set directly; use one of these functions instead.  */
+extern void set_cfun (struct function *new_cfun);
+extern void push_cfun (struct function *new_cfun);
+extern void pop_cfun (void);
+
 /* For backward compatibility... eventually these should all go away.  */
 #define current_function_pops_args (cfun->pops_args)
 #define current_function_returns_struct (cfun->returns_struct)

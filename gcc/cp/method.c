@@ -446,7 +446,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       assemble_end_function (thunk_fndecl, fnname);
       init_insn_lengths ();
       current_function_decl = 0;
-      cfun = 0;
+      set_cfun (NULL);
       TREE_ASM_WRITTEN (thunk_fndecl) = 1;
     }
   else

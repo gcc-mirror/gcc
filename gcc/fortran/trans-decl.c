@@ -1727,7 +1727,7 @@ build_entry_thunks (gfc_namespace * ns)
       /* We're leaving the context of this function, so zap cfun.
 	 It's still in DECL_STRUCT_FUNCTION, and we'll restore it in
 	 tree_rest_of_compilation.  */
-      cfun = NULL;
+      set_cfun (NULL);
 
       current_function_decl = NULL_TREE;
 
@@ -3341,7 +3341,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* We're leaving the context of this function, so zap cfun.
      It's still in DECL_STRUCT_FUNCTION, and we'll restore it in
      tree_rest_of_compilation.  */
-  cfun = NULL;
+  set_cfun (NULL);
 
   if (old_context)
     {

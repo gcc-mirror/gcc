@@ -5582,7 +5582,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Switch context to the child function to initialize DEST_FN's CFG.  */
   gcc_assert (dest_cfun->cfg == NULL);
-  cfun = dest_cfun;
+  set_cfun (dest_cfun);
 
   init_empty_tree_cfg ();
 
@@ -5605,7 +5605,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 	}
     }
 
-  cfun = saved_cfun;
+  set_cfun (saved_cfun);
 
   /* Move blocks from BBS into DEST_CFUN.  */
   gcc_assert (VEC_length (basic_block, bbs) >= 2);
@@ -5655,11 +5655,11 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
      FIXME, this is silly.  The CFG ought to become a parameter to
      these helpers.  */
-  cfun = dest_cfun;
+  set_cfun (dest_cfun);
   make_edge (ENTRY_BLOCK_PTR, entry_bb, EDGE_FALLTHRU);
   if (exit_bb)
     make_edge (exit_bb,  EXIT_BLOCK_PTR, 0);
-  cfun = saved_cfun;
+  set_cfun (saved_cfun);
 
   /* Back in the original function, the SESE region has disappeared,
      create a new basic block in its place.  */
@@ -5695,7 +5695,6 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   bool ignore_topmost_bind = false, any_var = false;
   basic_block bb;
   tree chain;
-  struct function *saved_cfun;
 
   fprintf (file, "%s (", lang_hooks.decl_printable_name (fn, 2));
 
@@ -5720,8 +5719,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
     }
 
   /* Switch CFUN to point to FN.  */
-  saved_cfun = cfun;
-  cfun = DECL_STRUCT_FUNCTION (fn);
+  push_cfun (DECL_STRUCT_FUNCTION (fn));
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
@@ -5792,7 +5790,7 @@ dump_function_to_file (tree fn, FILE *file, int flags)
   fprintf (file, "\n\n");
 
   /* Restore CFUN.  */
-  cfun = saved_cfun;
+  pop_cfun ();
 }
 
 

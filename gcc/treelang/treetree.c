@@ -473,7 +473,7 @@ tree_code_create_function_wrapup (location_t loc)
 
   /* We are not inside of any scope now.  */
   current_function_decl = NULL_TREE;
-  cfun = NULL;
+  set_cfun (NULL);
 
   /* Pass the current function off to the middle end.  */
   (void)cgraph_node (fn_decl);

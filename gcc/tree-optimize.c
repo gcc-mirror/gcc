@@ -387,7 +387,6 @@ tree_rest_of_compilation (tree fndecl)
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
-  cfun = DECL_STRUCT_FUNCTION (fndecl);
   saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (fndecl);
   init_function_start (fndecl);
@@ -410,7 +409,7 @@ tree_rest_of_compilation (tree fndecl)
   bitmap_obstack_release (NULL);
   
   DECL_SAVED_TREE (fndecl) = NULL;
-  cfun = 0;
+  set_cfun (NULL);
 
   /* If requested, warn about function definitions where the function will
      return a value (usually of some struct or union type) which itself will

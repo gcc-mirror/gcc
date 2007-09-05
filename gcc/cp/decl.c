@@ -11744,7 +11744,7 @@ finish_function (int flags)
 
   /* We're leaving the context of this function, so zap cfun.  It's still in
      DECL_STRUCT_FUNCTION, and we'll restore it in tree_rest_of_compilation.  */
-  cfun = NULL;
+  set_cfun (NULL);
   current_function_decl = NULL;
 
   /* If this is an in-class inline definition, we may have to pop the

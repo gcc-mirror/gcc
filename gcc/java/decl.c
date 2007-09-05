@@ -1848,7 +1848,7 @@ finish_method (tree fndecl)
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
   if (DECL_STRUCT_FUNCTION (fndecl))
-    cfun = DECL_STRUCT_FUNCTION (fndecl);
+    set_cfun (DECL_STRUCT_FUNCTION (fndecl));
   else
     allocate_struct_function (fndecl);
 #ifdef USE_MAPPED_LOCATION

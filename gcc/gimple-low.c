@@ -718,10 +718,8 @@ lower_builtin_setjmp (tree_stmt_iterator *tsi)
 void
 record_vars_into (tree vars, tree fn)
 {
-  struct function *saved_cfun = cfun;
-
   if (fn != current_function_decl)
-    cfun = DECL_STRUCT_FUNCTION (fn);
+    push_cfun (DECL_STRUCT_FUNCTION (fn));
 
   for (; vars; vars = TREE_CHAIN (vars))
     {
@@ -742,7 +740,7 @@ record_vars_into (tree vars, tree fn)
     }
 
   if (fn != current_function_decl)
-    cfun = saved_cfun;
+    pop_cfun ();
 }
 
 

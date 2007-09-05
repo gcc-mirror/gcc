@@ -1,3 +1,8 @@
+2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* trans-decl.c (build_entry_thunks): Use set_cfun.
+	(gfc_generate_function_code): Likewise.
+
 2007-09-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31564
