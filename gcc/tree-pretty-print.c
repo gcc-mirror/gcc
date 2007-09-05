@@ -38,14 +38,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Local functions, macros and variables.  */
 static int op_prio (const_tree);
-static const char *op_symbol (tree);
+static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*);
-static void print_call_name (pretty_printer *, tree);
+static void print_call_name (pretty_printer *, const_tree);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_declaration (pretty_printer *, tree, int, int);
-static void print_struct_decl (pretty_printer *, tree, int, int);
-static void do_niy (pretty_printer *, tree);
+static void print_struct_decl (pretty_printer *, const_tree, int, int);
+static void do_niy (pretty_printer *, const_tree);
 static void dump_vops (pretty_printer *, tree, int, int);
 static void dump_generic_bb_buff (pretty_printer *, basic_block, int, int);
 
@@ -65,7 +65,7 @@ static int initialized = 0;
 /* Try to print something for an unknown tree code.  */
 
 static void
-do_niy (pretty_printer *buffer, tree node)
+do_niy (pretty_printer *buffer, const_tree node)
 {
   int i, len;
 
@@ -2243,7 +2243,7 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
    FIXME: Still incomplete.  */
 
 static void
-print_struct_decl (pretty_printer *buffer, tree node, int spc, int flags)
+print_struct_decl (pretty_printer *buffer, const_tree node, int spc, int flags)
 {
   /* Print the name of the structure.  */
   if (TYPE_NAME (node))
@@ -2627,7 +2627,7 @@ op_symbol_code (enum tree_code code)
 /* Return the symbol associated with operator OP.  */
 
 static const char *
-op_symbol (tree op)
+op_symbol (const_tree op)
 {
   return op_symbol_code (TREE_CODE (op));
 }
@@ -2635,7 +2635,7 @@ op_symbol (tree op)
 /* Prints the name of a CALL_EXPR.  */
 
 static void
-print_call_name (pretty_printer *buffer, tree node)
+print_call_name (pretty_printer *buffer, const_tree node)
 {
   tree op0;
 

@@ -530,7 +530,7 @@ static inline bool noreturn_call_p (tree);
 static inline void update_stmt (tree);
 static inline bool stmt_modified_p (tree);
 static inline bitmap may_aliases (const_tree);
-static inline int get_lineno (tree);
+static inline int get_lineno (const_tree);
 static inline bitmap addresses_taken (tree);
 
 /*---------------------------------------------------------------------------

@@ -114,9 +114,9 @@ static tree optimize_bit_field_compare (enum tree_code, tree, tree, tree);
 static tree decode_field_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
 				    enum machine_mode *, int *, int *,
 				    tree *, tree *);
-static int all_ones_mask_p (tree, int);
-static tree sign_bit_p (tree, tree);
-static int simple_operand_p (tree);
+static int all_ones_mask_p (const_tree, int);
+static tree sign_bit_p (tree, const_tree);
+static int simple_operand_p (const_tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
 static tree range_successor (tree);
@@ -134,12 +134,12 @@ static tree extract_muldiv_1 (tree, tree, enum tree_code, tree, bool *);
 static tree fold_binary_op_with_conditional_arg (enum tree_code, tree,
 						 tree, tree,
 						 tree, tree, int);
-static bool fold_real_zero_addition_p (tree, tree, int);
+static bool fold_real_zero_addition_p (const_tree, const_tree, int);
 static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
 				 tree, tree, tree);
 static tree fold_inf_compare (enum tree_code, tree, tree, tree);
 static tree fold_div_compare (enum tree_code, tree, tree, tree);
-static bool reorder_operands_p (tree, tree);
+static bool reorder_operands_p (const_tree, const_tree);
 static tree fold_negate_const (tree, tree);
 static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
@@ -877,7 +877,7 @@ div_and_round_double (enum tree_code code, int uns,
    Otherwise returns NULL_TREE.  */
 
 static tree
-div_if_zero_remainder (enum tree_code code, tree arg1, tree arg2)
+div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
 {
   unsigned HOST_WIDE_INT int1l, int2l;
   HOST_WIDE_INT int1h, int2h;
@@ -952,7 +952,7 @@ fold_defer_overflow_warnings (void)
    deferred code.  */
 
 void
-fold_undefer_overflow_warnings (bool issue, tree stmt, int code)
+fold_undefer_overflow_warnings (bool issue, const_tree stmt, int code)
 {
   const char *warnmsg;
   location_t locus;
@@ -1598,7 +1598,7 @@ associate_trees (tree t1, tree t2, enum tree_code code, tree type)
    for use in int_const_binop, size_binop and size_diffop.  */
 
 static bool
-int_binop_types_match_p (enum tree_code code, tree type1, tree type2)
+int_binop_types_match_p (enum tree_code code, const_tree type1, const_tree type2)
 {
   if (TREE_CODE (type1) != INTEGER_TYPE && !POINTER_TYPE_P (type1))
     return false;
@@ -2110,7 +2110,7 @@ size_diffop (tree arg0, tree arg1)
    INTEGER_CST to another integer type.  */
 
 static tree
-fold_convert_const_int_from_int (tree type, tree arg1)
+fold_convert_const_int_from_int (tree type, const_tree arg1)
 {
   tree t;
 
@@ -2133,7 +2133,7 @@ fold_convert_const_int_from_int (tree type, tree arg1)
    to an integer type.  */
 
 static tree
-fold_convert_const_int_from_real (enum tree_code code, tree type, tree arg1)
+fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg1)
 {
   int overflow = 0;
   tree t;
@@ -2211,7 +2211,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, tree arg1)
    FIXED_CST to an integer type.  */
 
 static tree
-fold_convert_const_int_from_fixed (tree type, tree arg1)
+fold_convert_const_int_from_fixed (tree type, const_tree arg1)
 {
   tree t;
   double_int temp, temp_trunc;
@@ -2266,7 +2266,7 @@ fold_convert_const_int_from_fixed (tree type, tree arg1)
    to another floating point type.  */
 
 static tree
-fold_convert_const_real_from_real (tree type, tree arg1)
+fold_convert_const_real_from_real (tree type, const_tree arg1)
 {
   REAL_VALUE_TYPE value;
   tree t;
@@ -2282,7 +2282,7 @@ fold_convert_const_real_from_real (tree type, tree arg1)
    to a floating point type.  */
 
 static tree
-fold_convert_const_real_from_fixed (tree type, tree arg1)
+fold_convert_const_real_from_fixed (tree type, const_tree arg1)
 {
   REAL_VALUE_TYPE value;
   tree t;
@@ -2300,7 +2300,7 @@ fold_convert_const_real_from_fixed (tree type, tree arg1)
    to another fixed-point type.  */
 
 static tree
-fold_convert_const_fixed_from_fixed (tree type, tree arg1)
+fold_convert_const_fixed_from_fixed (tree type, const_tree arg1)
 {
   FIXED_VALUE_TYPE value;
   tree t;
@@ -2325,7 +2325,7 @@ fold_convert_const_fixed_from_fixed (tree type, tree arg1)
    to a fixed-point type.  */
 
 static tree
-fold_convert_const_fixed_from_int (tree type, tree arg1)
+fold_convert_const_fixed_from_int (tree type, const_tree arg1)
 {
   FIXED_VALUE_TYPE value;
   tree t;
@@ -2352,7 +2352,7 @@ fold_convert_const_fixed_from_int (tree type, tree arg1)
    to a fixed-point type.  */
 
 static tree
-fold_convert_const_fixed_from_real (tree type, tree arg1)
+fold_convert_const_fixed_from_real (tree type, const_tree arg1)
 {
   FIXED_VALUE_TYPE value;
   tree t;
@@ -2631,7 +2631,7 @@ fold_convert (tree type, tree arg)
    otherwise.  */
 
 static bool
-maybe_lvalue_p (tree x)
+maybe_lvalue_p (const_tree x)
 {
   /* We only need to wrap lvalue tree codes.  */
   switch (TREE_CODE (x))
@@ -4123,7 +4123,7 @@ decode_field_reference (tree exp, HOST_WIDE_INT *pbitsize,
    bit positions.  */
 
 static int
-all_ones_mask_p (tree mask, int size)
+all_ones_mask_p (const_tree mask, int size)
 {
   tree type = TREE_TYPE (mask);
   unsigned int precision = TYPE_PRECISION (type);
@@ -4147,7 +4147,7 @@ all_ones_mask_p (tree mask, int size)
    or NULL_TREE otherwise.  */
 
 static tree
-sign_bit_p (tree exp, tree val)
+sign_bit_p (tree exp, const_tree val)
 {
   unsigned HOST_WIDE_INT mask_lo, lo;
   HOST_WIDE_INT mask_hi, hi;
@@ -4202,7 +4202,7 @@ sign_bit_p (tree exp, tree val)
    to be evaluated unconditionally.  */
 
 static int
-simple_operand_p (tree exp)
+simple_operand_p (const_tree exp)
 {
   /* Strip any conversions that don't change the machine mode.  */
   STRIP_NOPS (exp);
@@ -6471,7 +6471,7 @@ fold_binary_op_with_conditional_arg (enum tree_code code,
    modes, X + 0 is not the same as X because -0 + 0 is 0.  */
 
 static bool
-fold_real_zero_addition_p (tree type, tree addend, int negate)
+fold_real_zero_addition_p (const_tree type, const_tree addend, int negate)
 {
   if (!real_zerop (addend))
     return false;
@@ -6984,7 +6984,7 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
    such that the evaluation of arg1 occurs before arg0.  */
 
 static bool
-reorder_operands_p (tree arg0, tree arg1)
+reorder_operands_p (const_tree arg0, const_tree arg1)
 {
   if (! flag_evaluation_order)
       return true;
@@ -13148,9 +13148,9 @@ fold (tree expr)
 #ifdef ENABLE_FOLD_CHECKING
 #undef fold
 
-static void fold_checksum_tree (tree, struct md5_ctx *, htab_t);
-static void fold_check_failed (tree, tree);
-void print_fold_checksum (tree);
+static void fold_checksum_tree (const_tree, struct md5_ctx *, htab_t);
+static void fold_check_failed (const_tree, const_tree);
+void print_fold_checksum (const_tree);
 
 /* When --enable-checking=fold, compute a digest of expr before
    and after actual fold call to see if fold did not accidentally
@@ -13184,7 +13184,7 @@ fold (tree expr)
 }
 
 void
-print_fold_checksum (tree expr)
+print_fold_checksum (const_tree expr)
 {
   struct md5_ctx ctx;
   unsigned char checksum[16], cnt;
@@ -13201,15 +13201,15 @@ print_fold_checksum (tree expr)
 }
 
 static void
-fold_check_failed (tree expr ATTRIBUTE_UNUSED, tree ret ATTRIBUTE_UNUSED)
+fold_check_failed (const_tree expr ATTRIBUTE_UNUSED, const_tree ret ATTRIBUTE_UNUSED)
 {
   internal_error ("fold check: original tree changed by fold");
 }
 
 static void
-fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
+fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
 {
-  void **slot;
+  const void **slot;
   enum tree_code code;
   struct tree_function_decl buf;
   int i, len;
@@ -13221,7 +13221,7 @@ recursive_label:
 	      && sizeof (struct tree_type) <= sizeof (struct tree_function_decl));
   if (expr == NULL)
     return;
-  slot = htab_find_slot (ht, expr, INSERT);
+  slot = (const void **) htab_find_slot (ht, expr, INSERT);
   if (*slot != NULL)
     return;
   *slot = expr;
@@ -13231,8 +13231,8 @@ recursive_label:
     {
       /* Allow DECL_ASSEMBLER_NAME to be modified.  */
       memcpy ((char *) &buf, expr, tree_size (expr));
+      SET_DECL_ASSEMBLER_NAME ((tree)&buf, NULL);
       expr = (tree) &buf;
-      SET_DECL_ASSEMBLER_NAME (expr, NULL);
     }
   else if (TREE_CODE_CLASS (code) == tcc_type
 	   && (TYPE_POINTER_TO (expr) || TYPE_REFERENCE_TO (expr)
@@ -13240,15 +13240,16 @@ recursive_label:
 	       || TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)))
     {
       /* Allow these fields to be modified.  */
+      tree tmp;
       memcpy ((char *) &buf, expr, tree_size (expr));
-      expr = (tree) &buf;
-      TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr) = 0;
-      TYPE_POINTER_TO (expr) = NULL;
-      TYPE_REFERENCE_TO (expr) = NULL;
-      if (TYPE_CACHED_VALUES_P (expr))
+      expr = tmp = (tree) &buf;
+      TYPE_CONTAINS_PLACEHOLDER_INTERNAL (tmp) = 0;
+      TYPE_POINTER_TO (tmp) = NULL;
+      TYPE_REFERENCE_TO (tmp) = NULL;
+      if (TYPE_CACHED_VALUES_P (tmp))
 	{
-	  TYPE_CACHED_VALUES_P (expr) = 0;
-	  TYPE_CACHED_VALUES (expr) = NULL;
+	  TYPE_CACHED_VALUES_P (tmp) = 0;
+	  TYPE_CACHED_VALUES (tmp) = NULL;
 	}
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
@@ -13358,7 +13359,7 @@ recursive_label:
    outputs differ.  */
 
 void
-debug_fold_checksum (tree t)
+debug_fold_checksum (const_tree t)
 {
   int i;
   unsigned char checksum[16];
@@ -13710,7 +13711,7 @@ fold_build_call_array_initializer (tree type, tree fn,
    transformed version).  */
 
 int
-multiple_of_p (tree type, tree top, tree bottom)
+multiple_of_p (tree type, const_tree top, const_tree bottom)
 {
   if (operand_equal_p (top, bottom, 0))
     return 1;

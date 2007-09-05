@@ -313,7 +313,7 @@ may_aliases (const_tree var)
 /* Return the line number for EXPR, or return -1 if we have no line
    number information for it.  */
 static inline int
-get_lineno (tree expr)
+get_lineno (const_tree expr)
 {
   if (expr == NULL_TREE)
     return -1;

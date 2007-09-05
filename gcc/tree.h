@@ -4675,7 +4675,7 @@ extern tree fold_ignored_result (tree);
 extern tree fold_abs_const (tree, tree);
 extern tree fold_indirect_ref_1 (tree, tree);
 extern void fold_defer_overflow_warnings (void);
-extern void fold_undefer_overflow_warnings (bool, tree, int);
+extern void fold_undefer_overflow_warnings (bool, const_tree, int);
 extern void fold_undefer_and_ignore_overflow_warnings (void);
 extern bool fold_deferring_overflow_warnings_p (void);
 extern tree maybe_fold_offset_to_reference (tree, tree, tree);
@@ -4725,7 +4725,7 @@ enum operand_equal_flag
 };
 
 extern int operand_equal_p (const_tree, const_tree, unsigned int);
-extern int multiple_of_p (tree, tree, tree);
+extern int multiple_of_p (tree, const_tree, const_tree);
 extern tree omit_one_operand (tree, tree, tree);
 extern tree omit_two_operands (tree, tree, tree, tree);
 extern tree invert_truthvalue (tree);
@@ -4752,7 +4752,6 @@ extern enum tree_code invert_tree_comparison (enum tree_code, bool);
 
 extern bool tree_expr_nonzero_p (tree);
 extern bool tree_expr_nonzero_warnv_p (tree, bool *);
-extern int multiple_of_p (tree, tree, tree);
 
 /* In builtins.c */
 extern tree fold_call_expr (tree, bool);
@@ -4770,7 +4769,7 @@ extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree build_function_call_expr (tree, tree);
 extern tree fold_build_call_expr (tree, tree, tree, tree);
 extern tree fold_builtin_call_array (tree, tree, int, tree *);
-extern void debug_fold_checksum (tree);
+extern void debug_fold_checksum (const_tree);
 extern tree build_call_expr (tree, int, ...);
 extern tree mathfn_built_in (tree, enum built_in_function fn);
 extern tree strip_float_extensions (tree);
