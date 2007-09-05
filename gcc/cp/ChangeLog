@@ -117,6 +117,11 @@
 	(get_delta_difference_1): New function.
 	(get_delta_difference): Refactor to call get_delta_difference_1.
 
+2007-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (start_preparsed_function): Set
+	DECL_DISREGARD_INLINE_LIMITS for GNU_INLINE_P functions.
+
 2007-08-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33209
