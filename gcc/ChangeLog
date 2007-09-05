@@ -1,5 +1,12 @@
 2007-09-05  Jan Hubicka  <jh@suse.cz>
 
+	* optabs.c (libfunc_entry): Change optab to integer.
+	(hash_libfunc, convert_optab_libfunc, optab_libfunc,
+	set_optab_libfunc, set_conv_libfunc): Use optable indexes instead
+	of pointers for hashing.
+
+2007-09-05  Jan Hubicka  <jh@suse.cz>
+
 	* regrename.c (pass_regrename, pass_cprop_hardreg): Add RTL sharing
 	verifier.
 	* fwprop.c (pass_rtl_fwprop, pass_rtl_fwprop_add): Likewise.

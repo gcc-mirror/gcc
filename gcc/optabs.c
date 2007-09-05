@@ -123,7 +123,7 @@ void debug_optab_libfuncs (void);
    optab.  In the first case mode2 is unused.  */
 struct libfunc_entry GTY(())
 {
-  void * GTY((skip)) optab;
+  size_t optab;
   enum machine_mode mode1, mode2;
   rtx libfunc;
 };
@@ -139,7 +139,7 @@ hash_libfunc (const void *p)
   const struct libfunc_entry *const e = (const struct libfunc_entry *) p;
 
   return (((int) e->mode1 + (int) e->mode2 * NUM_MACHINE_MODES)
-	  ^ htab_hash_pointer (e->optab));
+	  ^ e->optab);
 }
 
 /* Used for optab_hash.  */
@@ -165,7 +165,7 @@ convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,
   struct libfunc_entry e;
   struct libfunc_entry **slot;
 
-  e.optab = optab;
+  e.optab = (size_t) (convert_optab_table[0] - optab);
   e.mode1 = mode1;
   e.mode2 = mode2;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
@@ -194,7 +194,7 @@ optab_libfunc (optab optab, enum machine_mode mode)
   struct libfunc_entry e;
   struct libfunc_entry **slot;
 
-  e.optab = optab;
+  e.optab = (size_t) (optab_table[0] - optab);
   e.mode1 = mode;
   e.mode2 = VOIDmode;
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, NO_INSERT);
@@ -5938,7 +5938,7 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
   rtx val;
   struct libfunc_entry e;
   struct libfunc_entry **slot;
-  e.optab = optable;
+  e.optab = (size_t) (optab_table[0] - optable);
   e.mode1 = mode;
   e.mode2 = VOIDmode;
 
@@ -5949,7 +5949,7 @@ set_optab_libfunc (optab optable, enum machine_mode mode, const char *name)
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
     *slot = ggc_alloc (sizeof (struct libfunc_entry));
-  (*slot)->optab = optable;
+  (*slot)->optab = (size_t) (optab_table[0] - optable);
   (*slot)->mode1 = mode;
   (*slot)->mode2 = VOIDmode;
   (*slot)->libfunc = val;
@@ -5965,7 +5965,7 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
   rtx val;
   struct libfunc_entry e;
   struct libfunc_entry **slot;
-  e.optab = optable;
+  e.optab = (size_t) (convert_optab_table[0] - optable);
   e.mode1 = tmode;
   e.mode2 = fmode;
 
@@ -5976,7 +5976,7 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
   slot = (struct libfunc_entry **) htab_find_slot (libfunc_hash, &e, INSERT);
   if (*slot == NULL)
     *slot = ggc_alloc (sizeof (struct libfunc_entry));
-  (*slot)->optab = optable;
+  (*slot)->optab = (size_t) (convert_optab_table[0] - optable);
   (*slot)->mode1 = tmode;
   (*slot)->mode2 = fmode;
   (*slot)->libfunc = val;
