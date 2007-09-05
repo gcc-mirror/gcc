@@ -1,3 +1,27 @@
+2007-09-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (all_ones_mask_p, sign_bit_p, simple_operand_p,
+	fold_real_zero_addition_p, reorder_operands_p,
+	div_if_zero_remainder, fold_undefer_overflow_warnings,
+	int_binop_types_match_p, fold_convert_const_int_from_int,
+	fold_convert_const_int_from_real,
+	fold_convert_const_int_from_fixed,
+	fold_convert_const_real_from_real,
+	fold_convert_const_real_from_fixed,
+	fold_convert_const_fixed_from_fixed,
+	fold_convert_const_fixed_from_int,
+	fold_convert_const_fixed_from_real, maybe_lvalue_p,
+	fold_checksum_tree, fold_check_failed, print_fold_checksum,
+	debug_fold_checksum, multiple_of_p): Constify.
+	* tree-flow-inline.h (get_lineno): Likewise.
+	* tree-flow.h (get_lineno): Likewise.
+	* tree-object-size.c (compute_object_offset, addr_object_size,
+	alloc_object_size, pass_through_call): Likewise.
+	* tree-pretty-print.c (op_symbol, print_call_name,
+	print_struct_decl, do_niy): Likewise.
+	* tree.h (fold_undefer_overflow_warnings, multiple_of_p,
+	debug_fold_checksum): Likewise.
+
 2007-09-04  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/33029
