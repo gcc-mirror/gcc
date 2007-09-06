@@ -542,7 +542,8 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 			      gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 				       gen_rtx_HIGH (Pmode, offset))));
 	  emit_insn (gen_rtx_SET (Pmode, reg,
-				  gen_rtx_LO_SUM (Pmode, hi_sum_reg, offset)));
+				  gen_rtx_LO_SUM (Pmode, hi_sum_reg,
+						  copy_rtx (offset))));
 
 	  orig = reg;
 #else
@@ -552,7 +553,8 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	  emit_insn (gen_rtx_SET (VOIDmode, reg,
 				  gen_rtx_HIGH (Pmode, offset)));
 	  emit_insn (gen_rtx_SET (VOIDmode, reg,
-				  gen_rtx_LO_SUM (Pmode, reg, offset)));
+				  gen_rtx_LO_SUM (Pmode, reg,
+						  copy_rtx (offset))));
 	  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 
 	  orig = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, reg);
@@ -714,7 +716,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
 	      emit_insn (gen_macho_high (temp_reg, asym));
 	      mem = gen_const_mem (GET_MODE (orig),
-				   gen_rtx_LO_SUM (Pmode, temp_reg, asym));
+				   gen_rtx_LO_SUM (Pmode, temp_reg,
+						   copy_rtx (asym)));
 	      emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 #else
 	      /* Some other CPU -- WriteMe! but right now there are no other
@@ -746,7 +749,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 
 	      mem = gen_const_mem (GET_MODE (orig),
 				  gen_rtx_LO_SUM (Pmode,
-						  hi_sum_reg, offset));
+						  hi_sum_reg,
+						  copy_rtx (offset)));
 	      insn = emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 	      set_unique_reg_note (insn, REG_EQUAL, pic_ref);
 
@@ -762,7 +766,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 								   offset))));
 	      emit_insn (gen_rtx_SET (VOIDmode, reg,
 				  gen_rtx_LO_SUM (Pmode, reg,
-					   gen_rtx_CONST (Pmode, offset))));
+					   gen_rtx_CONST (Pmode,
+						   	  copy_rtx (offset)))));
 	      pic_ref = gen_rtx_PLUS (Pmode,
 				      pic_offset_table_rtx, reg);
 #endif
@@ -822,13 +827,15 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 								    offset))));
 	      emit_insn (gen_rtx_SET (VOIDmode, reg,
 				      gen_rtx_LO_SUM (Pmode,
-						      hi_sum_reg, offset)));
+						      hi_sum_reg,
+						      copy_rtx (offset))));
 	      pic_ref = reg;
 #else
 	      emit_insn (gen_rtx_SET (VOIDmode, reg,
 				      gen_rtx_HIGH (Pmode, offset)));
 	      emit_insn (gen_rtx_SET (VOIDmode, reg,
-				      gen_rtx_LO_SUM (Pmode, reg, offset)));
+				      gen_rtx_LO_SUM (Pmode, reg,
+						      copy_rtx (offset))));
 	      pic_ref = gen_rtx_PLUS (Pmode,
 				      pic_offset_table_rtx, reg);
 #endif
