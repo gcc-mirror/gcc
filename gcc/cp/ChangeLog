@@ -1,3 +1,9 @@
+2007-09-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32674
+	* decl.c (cp_finish_decl): When processing_template_decl,
+	deal correctly with init as TREE_LIST.
+
 2007-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33210

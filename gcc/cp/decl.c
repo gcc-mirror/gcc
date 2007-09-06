@@ -5214,7 +5214,21 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  goto finish_end;
 	}
 
-      init = fold_non_dependent_expr (init);
+      if (TREE_CODE (init) == TREE_LIST)
+	{
+	  /* If the parenthesized-initializer form was used (e.g.,
+	     "int A<N>::i(X)"), then INIT will be a TREE_LIST of initializer
+	     arguments.  (There is generally only one.)  We convert them
+	     individually.  */
+	  tree list = init;
+	  for (; list; list = TREE_CHAIN (list))
+	    {
+	      tree elt = TREE_VALUE (list);
+	      TREE_VALUE (list) = fold_non_dependent_expr (elt);
+	    }
+	}
+      else
+	init = fold_non_dependent_expr (init);
       processing_template_decl = 0;
     }
 

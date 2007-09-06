@@ -1,3 +1,8 @@
+2007-09-06  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/32674
+	* g++.dg/template/static31.C: New.
+
 2007-09-06  David Daney  <ddaney@avtrex.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
