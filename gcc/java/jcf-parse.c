@@ -1586,6 +1586,13 @@ parse_class_file (void)
   java_layout_seen_class_methods ();
 
   input_location = DECL_SOURCE_LOCATION (TYPE_NAME (current_class));
+#ifdef USE_MAPPED_LOCATION
+  {
+    /* Re-enter the current file.  */
+    expanded_location loc = expand_location (input_location);
+    linemap_add (line_table, LC_ENTER, 0, loc.file, loc.line);
+  }
+#endif
   file_start_location = input_location;
   (*debug_hooks->start_source_file) (input_line, input_filename);
 
