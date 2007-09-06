@@ -1,3 +1,10 @@
+2007-09-06  Roman Zippel  <zippel@linux-m68k.org>
+
+	* sysdep/m68k/locks.h: New file.
+	* configure.host: Set sysdeps_dir and libgcj_interpreter for m68k.
+	* configure.ac: Set SIGNAL_HANDLER for m68*-*-linux*.
+	* configure: Regenerate.
+
 2007-09-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure.host(gnu*): Set use_libgcj_bc to yes.

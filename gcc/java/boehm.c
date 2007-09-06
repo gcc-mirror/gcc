@@ -97,6 +97,14 @@ mark_reference_fields (tree field,
 
       offset = int_byte_position (field);
       size_bytes = int_size_in_bytes (TREE_TYPE (field));
+
+      if (offset % (POINTER_SIZE / BITS_PER_UNIT))
+	{
+	  *all_bits_set = -1;
+	  *pointer_after_end = 1;
+	  break;
+	}
+
       if (JREFERENCE_TYPE_P (TREE_TYPE (field))
 	  /* An `object' of type gnu.gcj.RawData is actually non-Java
 	     data.  */

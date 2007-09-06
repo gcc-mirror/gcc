@@ -146,6 +146,10 @@ case "${host}" in
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=no
 	;;
+  m68k-*)
+	sysdeps_dir=m68k
+	libgcj_interpreter=yes
+	;;
   powerpc64*-*)
 	sysdeps_dir=powerpc
 	libgcj_interpreter=yes
@@ -202,6 +206,7 @@ case "${host}" in
   ia64-* | \
   x86_64*-linux* | \
   hppa*-linux* | \
+  m68k*-linux* | \
   sh-linux* | sh[34]*-linux*)
   	can_unwind_signal=yes
 	libgcj_ld_symbolic='-Wl,-Bsymbolic'
