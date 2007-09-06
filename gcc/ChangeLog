@@ -1,3 +1,8 @@
+2007-09-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.md (fixuns_truncdfsi2, fixuns_truncdfdi2)
+	(fixuns_truncsfsi2, fixuns_truncsfdi2): Update calls to real_2expN.
+
 2007-09-06  Revital Eres  <eres@il.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_offset_address_p):
