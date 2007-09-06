@@ -1,5 +1,10 @@
 2007-09-06  Jan Hubicka  <jh@suse.cz>
 
+	* i386.c (ix86_expand_lround, ix86_expand_round): Update call of
+	real_2expN.
+
+2007-09-06  Jan Hubicka  <jh@suse.cz>
+
 	* opts.c (common_handle_option): Enable inlining functions for
 	-fprofile-generate.
 
