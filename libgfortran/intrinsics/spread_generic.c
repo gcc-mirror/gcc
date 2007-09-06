@@ -110,26 +110,75 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
     }
   else
     {
+      int zero_sized;
+
+      zero_sized = 0;
+
       dim = 0;
       if (GFC_DESCRIPTOR_RANK(ret) != rrank)
 	runtime_error ("rank mismatch in spread()");
 
-      for (n = 0; n < rrank; n++)
+      if (compile_options.bounds_check)
 	{
-	  if (n == *along - 1)
+	  for (n = 0; n < rrank; n++)
 	    {
-	      rdelta = ret->dim[n].stride * size;
-	    }
-	  else
-	    {
-	      count[dim] = 0;
-	      extent[dim] = source->dim[dim].ubound + 1
-		- source->dim[dim].lbound;
-	      sstride[dim] = source->dim[dim].stride * size;
-	      rstride[dim] = ret->dim[n].stride * size;
-	      dim++;
+	      index_type ret_extent;
+
+	      ret_extent = ret->dim[n].ubound + 1 - ret->dim[n].lbound;
+	      if (n == *along - 1)
+		{
+		  rdelta = ret->dim[n].stride * size;
+
+		  if (ret_extent != ncopies)
+		    runtime_error("Incorrect extent in return value of SPREAD"
+				  " intrinsic in dimension %d: is %ld,"
+				  " should be %ld", n+1, (long int) ret_extent,
+				  (long int) ncopies);
+		}
+	      else
+		{
+		  count[dim] = 0;
+		  extent[dim] = source->dim[dim].ubound + 1
+		    - source->dim[dim].lbound;
+		  if (ret_extent != extent[dim])
+		    runtime_error("Incorrect extent in return value of SPREAD"
+				  " intrinsic in dimension %d: is %ld,"
+				  " should be %ld", n+1, (long int) ret_extent,
+				  (long int) extent[dim]);
+		    
+		  if (extent[dim] <= 0)
+		    zero_sized = 1;
+		  sstride[dim] = source->dim[dim].stride * size;
+		  rstride[dim] = ret->dim[n].stride * size;
+		  dim++;
+		}
 	    }
 	}
+      else
+	{
+	  for (n = 0; n < rrank; n++)
+	    {
+	      if (n == *along - 1)
+		{
+		  rdelta = ret->dim[n].stride * size;
+		}
+	      else
+		{
+		  count[dim] = 0;
+		  extent[dim] = source->dim[dim].ubound + 1
+		    - source->dim[dim].lbound;
+		  if (extent[dim] <= 0)
+		    zero_sized = 1;
+		  sstride[dim] = source->dim[dim].stride * size;
+		  rstride[dim] = ret->dim[n].stride * size;
+		  dim++;
+		}
+	    }
+	}
+
+      if (zero_sized)
+	return;
+
       if (sstride[0] == 0)
 	sstride[0] = size;
     }

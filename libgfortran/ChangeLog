@@ -1,3 +1,10 @@
+2007-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/33298
+	* intrinsics/spread_generic.c(spread_internal): Enable
+	bounds checking by comparing extents if the bounds_check
+	option has been set.  If any extent is <=0, return early.
+
 2007-09-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* libgfortran.h: Include config.h first.
