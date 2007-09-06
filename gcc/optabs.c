@@ -1359,7 +1359,8 @@ static rtx
 avoid_expensive_constant (enum machine_mode mode, optab binoptab,
 			  rtx x, bool unsignedp)
 {
-  if (optimize
+  if (mode != VOIDmode
+      && optimize
       && CONSTANT_P (x)
       && rtx_cost (x, binoptab->code) > COSTS_N_INSNS (1))
     {
