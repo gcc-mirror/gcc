@@ -1,3 +1,8 @@
+2007-09-07  Roman Zippel  <zippel@linux-m68k.org>
+
+	boehm.c (mark_reference_fields): Move misaligned pointer check
+	after JREFERENCE_TYPE_P test
+
 2007-09-06  Roman Zippel  <zippel@linux-m68k.org>
 
 	* boehm.c (mark_reference_fields): Don't use bitmap as gc_descr
