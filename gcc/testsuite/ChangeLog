@@ -1,3 +1,9 @@
+2007-09-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33271
+	* gfortran.dg/nint_2.f90: xfail on powerpc-ibm-aix* and
+	powerpc*-linux-gnu.
+
 2007-09-06  David Daney  <ddaney@avtrex.com>
 	    Richard Sandiford  <richard@codesourcery.com>
 
