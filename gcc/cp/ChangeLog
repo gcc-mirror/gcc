@@ -1,5 +1,8 @@
 2007-09-05  Jason Merrill  <jason@redhat.com>
 
+	PR c++/15745
+	* except.c (prepare_eh_type): Use type_decays_to.
+
 	PR c++/15097
 	* init.c (build_delete): Use build_headof to get the address of the
 	complete object if we aren't using the deleting destructor.

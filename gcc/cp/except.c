@@ -115,6 +115,9 @@ prepare_eh_type (tree type)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
+  /* Functions and arrays decay to pointers.  */
+  type = type_decays_to (type);
+
   return type;
 }
 
