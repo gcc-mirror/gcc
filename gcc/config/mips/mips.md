@@ -2805,7 +2805,7 @@
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  real_2expN (&offset, 31, DFmode);
+  real_2expN (&offset, 31);
 
   if (reg1)			/* Turn off complaints about unreached code.  */
     {
@@ -2850,7 +2850,7 @@
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  real_2expN (&offset, 63, DFmode);
+  real_2expN (&offset, 63);
 
   mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
   do_pending_stack_adjust ();
@@ -2892,7 +2892,7 @@
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  real_2expN (&offset, 31, SFmode);
+  real_2expN (&offset, 31);
 
   mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
   do_pending_stack_adjust ();
@@ -2934,7 +2934,7 @@
   rtx label2 = gen_label_rtx ();
   REAL_VALUE_TYPE offset;
 
-  real_2expN (&offset, 63, SFmode);
+  real_2expN (&offset, 63);
 
   mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
   do_pending_stack_adjust ();

@@ -1,3 +1,38 @@
+2007-09-06  Janis Johnson  <janis187@us.ibm.com>
+
+	Revert:
+
+ 	2007-09-06  Jan Hubicka  <jh@suse.cz>
+ 
+	* i386.c (ix86_expand_lround, ix86_expand_round): Update call of
+	real_2expN.
+
+	2007-09-06  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.md (fixuns_truncdfsi2, fixuns_truncdfdi2)
+	(fixuns_truncsfsi2, fixuns_truncsfdi2): Update calls to real_2expN.
+
+	2007-09-05  Janis Johnson  <janis187@us.ibm.com>
+
+	* optabs.c (expand_float): Convert unsigned integer as signed only
+	if it provides sufficient accuracy; add mode argument to real_2expN.
+	(expand_fix): Fix comment typos; extend binary float into mode
+	wider than destination for converion to unsigned integer; add mode
+	argument to real_2expN.
+	* real.c (real_2expN): Add mode argument to special-case decimal
+	float values.
+	* real.h (real_2expN): Ditto.
+	* fixed-value.c (check_real_for_fixed_mode): Add mode argument to
+	real_2expN.
+	(fixed_from_string): Ditto.
+	(fixed_to_decimal): Ditto.
+	(fixed_convert_from_real): Ditto.
+	(real_convert_from_fixed): Ditto.
+	* config/rs6000/rs6000.md (FP): Include DD and TD modes.
+	* config/rs6000/dfp.md (extendddtd2, adddd3, addtd3, subdd3, subtd3,
+	muldd3, multd3, divdd3, divtd3, cmpdd_internal1, cmptd_internal1,
+	floatditd2, ftruncdd2, fixdddi2, ftrunctd2, fixddi2): New.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* tree-cfg.c (remove_bb): Only warn if line is non-zero.
