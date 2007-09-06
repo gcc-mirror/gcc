@@ -1,3 +1,16 @@
+2007-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse3-addsubpd.c: Add -mfpmath=sse to dg-options.
+	* gcc.target/i386/sse3-addsubps.c: Ditto.
+	* gcc.target/i386/sse3-haddpd.c: Ditto.
+	* gcc.target/i386/sse3-haddps.c: Ditto.
+	* gcc.target/i386/sse3-hsubpd.c: Ditto.
+	* gcc.target/i386/sse3-hsubps.c: Ditto.
+	* gcc.target/i386/sse3-lddqu.c: Ditto.
+	* gcc.target/i386/sse3-movddup.c: Ditto.
+	* gcc.target/i386/sse3-movshdup.c: Ditto.
+	* gcc.target/i386/sse3-movsldup.c: Ditto.
+
 2007-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33302
