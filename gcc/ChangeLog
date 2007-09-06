@@ -1,3 +1,10 @@
+2007-09-06  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+	* longlong.h [__CRIS_arch_version >= 8] (count_trailing_zeros):
+	Defined.
+	* config/cris/cris.md (ctzsi2, cris_swap_bits): Implemented.
+	* config/cris/cris.h (CTZ_DEFINED_VALUE_AT_ZERO): Defined.
+
 2007-09-06  Jie Zhang  <jie.zhang@analog.com>
 
 	* config.gcc (tm_file): Add linux.h for bfin*-uclinux*.

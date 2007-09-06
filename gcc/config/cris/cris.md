@@ -69,7 +69,8 @@
    (CRIS_UNSPEC_GOT 2)
    (CRIS_UNSPEC_GOTREL 3)
    (CRIS_UNSPEC_GOTREAD 4)
-   (CRIS_UNSPEC_PLTGOTREAD 5)])
+   (CRIS_UNSPEC_PLTGOTREAD 5)
+   (CRIS_UNSPEC_SWAP_BITS 6)])
 
 ;; Register numbers.
 (define_constants
@@ -2677,6 +2678,31 @@
   "TARGET_HAS_SWAP"
   "swapwb %0"
   [(set_attr "slottable" "yes")])
+
+;; This instruction swaps all bits in a register.
+;; That means that the most significant bit is put in the place
+;; of the least significant bit, and so on.
+
+(define_insn "cris_swap_bits"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "0")]
+		   CRIS_UNSPEC_SWAP_BITS))]
+  "TARGET_HAS_SWAP"
+  "swapwbr %0"
+  [(set_attr "slottable" "yes")])
+
+;; Implement ctz using two instructions, one for bit swap and one for clz.
+;; Defines a scratch register to avoid clobbering input.
+
+(define_expand "ctzsi2"
+  [(set (match_dup 2)
+	(match_operand:SI 1 "register_operand"))
+   (set (match_dup 2)
+	(unspec:SI [(match_dup 2)] CRIS_UNSPEC_SWAP_BITS))
+   (set (match_operand:SI 0 "register_operand")
+	(clz:SI (match_dup 2)))]
+  "TARGET_HAS_LZ && TARGET_HAS_SWAP"
+  "operands[2] = gen_reg_rtx (SImode);")
 
 ;; Bound-insn.  Defined to be the same as an unsigned minimum, which is an
 ;; operation supported by gcc.  Used in casesi, but used now and then in
