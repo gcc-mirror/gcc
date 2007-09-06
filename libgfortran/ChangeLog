@@ -1,4 +1,11 @@
-2007-03-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2007-09-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33253
+	* io/write.c (nml_write_obj): Set the delimiter correctly before calling
+	write_character. (namelist_write): Clean up the code a little and add
+	comments to clarify what its doing.
+
+2007-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33225
 	* io/write.c (stdbool.h): Add include. (sign_t): Move typedef to
