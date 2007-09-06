@@ -828,7 +828,7 @@ fd_open (unix_stream * s)
   s->st.sfree = (void *) fd_sfree;
   s->st.close = (void *) fd_close;
   s->st.seek = (void *) fd_seek;
-  s->st.truncate = (void *) fd_truncate;
+  s->st.trunc = (void *) fd_truncate;
   s->st.read = (void *) fd_read;
   s->st.write = (void *) fd_write;
   s->st.set = (void *) fd_sset;
@@ -1042,7 +1042,7 @@ open_internal (char *base, int length)
   s->st.sfree = (void *) mem_sfree;
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
-  s->st.truncate = (void *) mem_truncate;
+  s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read;
   s->st.write = (void *) mem_write;
   s->st.set = (void *) mem_set;

@@ -54,7 +54,7 @@ typedef struct stream
   try (*sfree) (struct stream *);
   try (*close) (struct stream *);
   try (*seek) (struct stream *, gfc_offset);
-  try (*truncate) (struct stream *);
+  try (*trunc) (struct stream *);
   int (*read) (struct stream *, void *, size_t *);
   int (*write) (struct stream *, const void *, size_t *);
   try (*set) (struct stream *, int, size_t);
@@ -74,7 +74,7 @@ stream;
 #define salloc_w_at(s, len, where) ((s)->alloc_w_at)(s, len, where)
 
 #define sseek(s, pos) ((s)->seek)(s, pos)
-#define struncate(s) ((s)->truncate)(s)
+#define struncate(s) ((s)->trunc)(s)
 #define sread(s, buf, nbytes) ((s)->read)(s, buf, nbytes)
 #define swrite(s, buf, nbytes) ((s)->write)(s, buf, nbytes)
 

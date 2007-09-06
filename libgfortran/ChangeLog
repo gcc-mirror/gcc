@@ -1,3 +1,10 @@
+2007-09-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* libgfortran.h: Include config.h first.
+	* io/io.h (struct stream): Rename truncate to trunc.
+	* io/unix.c (fd_open): Same.
+	(open_internal): Same.
+
 2007-09-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253
