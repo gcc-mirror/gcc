@@ -2092,7 +2092,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	    if (string[0])
 	      {
-		location_t loc;
+		expanded_location loc;
 
 		if (! app_on)
 		  {
@@ -2100,7 +2100,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		    app_on = 1;
 		  }
 #ifdef USE_MAPPED_LOCATION
-		loc = ASM_INPUT_SOURCE_LOCATION (body);
+		loc = expand_location (ASM_INPUT_SOURCE_LOCATION (body));
 #else
 		loc.file = ASM_INPUT_SOURCE_FILE (body);
 		loc.line = ASM_INPUT_SOURCE_LINE (body);
@@ -2124,6 +2124,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    rtx *ops = alloca (noperands * sizeof (rtx));
 	    const char *string;
 	    location_t loc;
+	    expanded_location expanded;
 
 	    /* There's no telling what that did to the condition codes.  */
 	    CC_STATUS_INIT;
@@ -2133,6 +2134,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    /* Inhibit dieing on what would otherwise be compiler bugs.  */
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;
+	    expanded = expand_location (loc);
 
 #ifdef FINAL_PRESCAN_INSN
 	    FINAL_PRESCAN_INSN (insn, ops, insn_noperands);
@@ -2146,12 +2148,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		    fputs (ASM_APP_ON, file);
 		    app_on = 1;
 		  }
-		if (loc.file && loc.line)
+		if (expanded.file && expanded.line)
 		  fprintf (asm_out_file, "%s %i \"%s\" 1\n",
-			   ASM_COMMENT_START, loc.line, loc.file);
+			   ASM_COMMENT_START, expanded.line, expanded.file);
 	        output_asm_insn (string, ops);
 #if HAVE_AS_LINE_ZERO
-		if (loc.file && loc.line)
+		if (expanded.file && expanded.line)
 		  fprintf (asm_out_file, "%s 0 \"\" 2\n", ASM_COMMENT_START);
 #endif
 	      }

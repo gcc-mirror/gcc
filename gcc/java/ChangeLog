@@ -1,3 +1,14 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* lang.c (java_post_options): Update.
+	* jcf-parse.c (set_source_filename): Update.
+	(give_name_to_class): Update.
+	(jcf_parse): Update.
+	(duplicate_class_warning): Update.
+	(parse_class_file): Update.
+	(java_parse_file): Update.
+	* expr.c (expand_byte_code): Update.
+
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* decl.c (finish_method): Use set_cfun.

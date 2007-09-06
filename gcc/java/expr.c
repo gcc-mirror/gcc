@@ -3194,7 +3194,7 @@ expand_byte_code (JCF *jcf, tree method)
 		{
 		  int line = GET_u2 (linenumber_pointer - 2);
 #ifdef USE_MAPPED_LOCATION
-		  input_location = linemap_line_start (&line_table, line, 1);
+		  input_location = linemap_line_start (line_table, line, 1);
 #else
 		  input_location.line = line;
 #endif

@@ -218,7 +218,7 @@ c_common_init_options (unsigned int argc, const char **argv)
     }
 
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
-				ident_hash, &line_table);
+				ident_hash, line_table);
 
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
@@ -1485,7 +1485,7 @@ finish_options (void)
       size_t i;
 
       cb_file_change (parse_in,
-		      linemap_add (&line_table, LC_RENAME, 0,
+		      linemap_add (line_table, LC_RENAME, 0,
 				   _("<built-in>"), 0));
 
       cpp_init_builtins (parse_in, flag_hosted);
@@ -1503,7 +1503,7 @@ finish_options (void)
       cpp_opts->warn_dollars = (cpp_opts->pedantic && !cpp_opts->c99);
 
       cb_file_change (parse_in,
-		      linemap_add (&line_table, LC_RENAME, 0,
+		      linemap_add (line_table, LC_RENAME, 0,
 				   _("<command-line>"), 0));
 
       for (i = 0; i < deferred_count; i++)
@@ -1568,7 +1568,7 @@ push_command_line_include (void)
 
       /* Set this here so the client can change the option if it wishes,
 	 and after stacking the main file so we don't trace the main file.  */
-      line_table.trace_includes = cpp_opts->print_include_names;
+      line_table->trace_includes = cpp_opts->print_include_names;
     }
 }
 

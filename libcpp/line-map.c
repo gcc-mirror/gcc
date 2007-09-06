@@ -1,5 +1,5 @@
 /* Map logical line numbers to (source file, line number) pairs.
-   Copyright (C) 2001, 2003, 2004
+   Copyright (C) 2001, 2003, 2004, 2007
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -96,8 +96,15 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 
   if (set->used == set->allocated)
     {
+      line_map_realloc reallocator
+	= set->reallocator ? set->reallocator : xrealloc;
       set->allocated = 2 * set->allocated + 256;
-      set->maps = XRESIZEVEC (struct line_map, set->maps, set->allocated);
+      set->maps
+	= (struct line_map *) (*reallocator) (set->maps,
+					      set->allocated
+					      * sizeof (struct line_map));
+      memset (&set->maps[set->used], 0, ((set->allocated - set->used)
+					 * sizeof (struct line_map)));
     }
 
   map = &set->maps[set->used];

@@ -146,7 +146,7 @@ location_t unknown_location = { NULL, 0 };
 
 location_t input_location;
 
-struct line_maps line_table;
+struct line_maps *line_table;
 
 /* Stack of currently pending input files.  */
 
@@ -1601,6 +1601,14 @@ default_tree_printer (pretty_printer * pp, text_info *text, const char *spec,
   return true;
 }
 
+/* A helper function; used as the reallocator function for cpp's line
+   table.  */
+static void *
+realloc_for_line_map (void *ptr, size_t len)
+{
+  return ggc_realloc (ptr, len);
+}
+
 /* Initialization of the front end environment, before command line
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
@@ -1657,7 +1665,9 @@ general_init (const char *argv0)
      table.  */
   init_ggc ();
   init_stringpool ();
-  linemap_init (&line_table);
+  line_table = GGC_NEW (struct line_maps);
+  linemap_init (line_table);
+  line_table->reallocator = realloc_for_line_map;
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */

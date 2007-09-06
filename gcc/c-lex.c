@@ -205,7 +205,7 @@ cb_line_change (cpp_reader * ARG_UNUSED (pfile), const cpp_token *token,
 #else
     {
       source_location loc = token->src_loc;
-      const struct line_map *map = linemap_lookup (&line_table, loc);
+      const struct line_map *map = linemap_lookup (line_table, loc);
       input_line = SOURCE_LINE (map, loc);
     }
 #endif
@@ -283,7 +283,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
       const cpp_token *s;
 #ifndef USE_MAPPED_LOCATION
       location_t fe_loc;
-      const struct line_map *map = linemap_lookup (&line_table, loc);
+      const struct line_map *map = linemap_lookup (line_table, loc);
       fe_loc.file = map->to_file;
       fe_loc.line = SOURCE_LINE (map, loc);
 #else
@@ -309,7 +309,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 static void
 cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 {
-  const struct line_map *map = linemap_lookup (&line_table, loc);
+  const struct line_map *map = linemap_lookup (line_table, loc);
   (*debug_hooks->define) (SOURCE_LINE (map, loc),
 			  (const char *) cpp_macro_definition (pfile, node));
 }
@@ -319,7 +319,7 @@ static void
 cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
 	  cpp_hashnode *node)
 {
-  const struct line_map *map = linemap_lookup (&line_table, loc);
+  const struct line_map *map = linemap_lookup (line_table, loc);
   (*debug_hooks->undef) (SOURCE_LINE (map, loc),
 			 (const char *) NODE_NAME (node));
 }
@@ -338,15 +338,15 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 
   timevar_push (TV_CPP);
  retry:
+#ifdef USE_MAPPED_LOCATION
+  tok = cpp_get_token_with_location (parse_in, loc);
+#else
   tok = cpp_get_token (parse_in);
+  *loc = input_location;
+#endif
   type = tok->type;
 
  retry_after_at:
-#ifdef USE_MAPPED_LOCATION
-  *loc = tok->src_loc;
-#else
-  *loc = input_location;
-#endif
   switch (type)
     {
     case CPP_PADDING:
@@ -390,10 +390,19 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
       /* An @ may give the next token special significance in Objective-C.  */
       if (c_dialect_objc ())
 	{
+#ifdef USE_MAPPED_LOCATION
+	  location_t atloc = *loc;
+	  location_t newloc;
+#else
 	  location_t atloc = input_location;
+#endif
 
 	retry_at:
+#ifdef USE_MAPPED_LOCATION
+	  tok = cpp_get_token_with_location (parse_in, &newloc);
+#else
 	  tok = cpp_get_token (parse_in);
+#endif
 	  type = tok->type;
 	  switch (type)
 	    {
@@ -417,6 +426,9 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 	    default:
 	      /* ... or not.  */
 	      error ("%Hstray %<@%> in program", &atloc);
+#ifdef USE_MAPPED_LOCATION
+	      *loc = newloc;
+#endif
 	      goto retry_after_at;
 	    }
 	  break;

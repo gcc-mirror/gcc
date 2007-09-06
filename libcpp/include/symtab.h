@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003, 2004, 2007 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -19,7 +19,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #define LIBCPP_SYMTAB_H
 
 #include "obstack.h"
+#ifndef GTY
 #define GTY(x) /* nothing */
+#endif
 
 /* This is what each hash table entry points to.  It may be embedded
    deeply within another object.  */

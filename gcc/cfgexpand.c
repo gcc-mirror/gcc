@@ -1312,7 +1312,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
       add_reg_br_prob_note (last, true_edge->probability);
       maybe_dump_rtl_for_tree_stmt (stmt, last);
       if (true_edge->goto_locus)
-  	set_curr_insn_source_location (*true_edge->goto_locus);
+  	set_curr_insn_source_location (location_from_locus (true_edge->goto_locus));
       false_edge->flags |= EDGE_FALLTHRU;
       return NULL;
     }
@@ -1322,7 +1322,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
       add_reg_br_prob_note (last, false_edge->probability);
       maybe_dump_rtl_for_tree_stmt (stmt, last);
       if (false_edge->goto_locus)
-  	set_curr_insn_source_location (*false_edge->goto_locus);
+  	set_curr_insn_source_location (location_from_locus (false_edge->goto_locus));
       true_edge->flags |= EDGE_FALLTHRU;
       return NULL;
     }
@@ -1353,7 +1353,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   maybe_dump_rtl_for_tree_stmt (stmt, last2);
 
   if (false_edge->goto_locus)
-    set_curr_insn_source_location (*false_edge->goto_locus);
+    set_curr_insn_source_location (location_from_locus (false_edge->goto_locus));
 
   return new_bb;
 }
@@ -1620,7 +1620,7 @@ expand_gimple_basic_block (basic_block bb)
     {
       emit_jump (label_rtx_for_bb (e->dest));
       if (e->goto_locus)
-        set_curr_insn_source_location (*e->goto_locus);
+        set_curr_insn_source_location (location_from_locus (e->goto_locus));
       e->flags &= ~EDGE_FALLTHRU;
     }
 

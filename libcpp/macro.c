@@ -1,7 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006 Free Software Foundation, Inc.
+   2006, 2007 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1094,6 +1094,8 @@ const cpp_token *
 cpp_get_token (cpp_reader *pfile)
 {
   const cpp_token *result;
+  bool can_set = pfile->set_invocation_location;
+  pfile->set_invocation_location = false;
 
   for (;;)
     {
@@ -1139,6 +1141,10 @@ cpp_get_token (cpp_reader *pfile)
 
       if (!(node->flags & NODE_DISABLED))
 	{
+	  /* If not in a macro context, and we're going to start an
+	     expansion, record the location.  */
+	  if (can_set && !context->macro)
+	    pfile->invocation_location = result->src_loc;
 	  if (!pfile->state.prevent_expansion
 	      && enter_macro_context (pfile, node))
 	    {
@@ -1160,6 +1166,27 @@ cpp_get_token (cpp_reader *pfile)
 
       break;
     }
+
+  return result;
+}
+
+/* Like cpp_get_token, but also returns a location separate from the
+   one provided by the returned token.  LOC is an out parameter; *LOC
+   is set to the location "as expected by the user".  This matters
+   when a token results from macro expansion -- the token's location
+   will indicate where the macro is defined, but *LOC will be the
+   location of the start of the expansion.  */
+const cpp_token *
+cpp_get_token_with_location (cpp_reader *pfile, source_location *loc)
+{
+  const cpp_token *result;
+
+  pfile->set_invocation_location = true;
+  result = cpp_get_token (pfile);
+  if (pfile->context->macro)
+    *loc = pfile->invocation_location;
+  else
+    *loc = result->src_loc;
 
   return result;
 }

@@ -1,3 +1,12 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* tree1.c (treelang_init): Update.
+	(treelang_parse_file): Update.
+	(treelang_parse_file): Update.
+	(treelang_parse_file): Update.
+	* lex.l: Update.
+	(update_lineno_charno): Likewise.
+
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* treetree.c (tree_code_create_function_wrapup):  Use set_cfun.

@@ -365,7 +365,7 @@ set_source_filename (JCF *jcf, int index)
       
   sfname = find_sourcefile (sfname);
 #ifdef USE_MAPPED_LOCATION
-  line_table.maps[line_table.used-1].to_file = sfname;
+  line_table->maps[line_table->used-1].to_file = sfname;
 #else
   input_filename = sfname;
   DECL_SOURCE_LOCATION (TYPE_NAME (current_class)) = input_location;
@@ -1209,8 +1209,8 @@ give_name_to_class (JCF *jcf, int i)
       {
       tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
       const char *sfname = IDENTIFIER_POINTER (source_name);
-      linemap_add (&line_table, LC_ENTER, false, sfname, 0);
-      input_location = linemap_line_start (&line_table, 0, 1);
+      linemap_add (line_table, LC_ENTER, false, sfname, 0);
+      input_location = linemap_line_start (line_table, 0, 1);
       file_start_location = input_location;
       DECL_SOURCE_LOCATION (TYPE_NAME (this_class)) = input_location;
       if (main_input_filename == NULL && jcf == main_jcf)
@@ -1497,7 +1497,7 @@ jcf_parse (JCF* jcf)
     annotation_write_byte (JV_DONE_ATTR);
 
 #ifdef USE_MAPPED_LOCATION
-  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 #endif
 
   /* The fields of class_type_node are already in correct order. */
@@ -1532,8 +1532,8 @@ duplicate_class_warning (const char *filename)
 {
   location_t warn_loc;
 #ifdef USE_MAPPED_LOCATION
-  linemap_add (&line_table, LC_RENAME, 0, filename, 0);
-  warn_loc = linemap_line_start (&line_table, 0, 1);
+  linemap_add (line_table, LC_RENAME, 0, filename, 0);
+  warn_loc = linemap_line_start (line_table, 0, 1);
 #else
   warn_loc.file = filename;
   warn_loc.line = 0;
@@ -1650,7 +1650,7 @@ parse_class_file (void)
 	    }
 #ifdef USE_MAPPED_LOCATION
 	  if (min_line != 0)
-	    input_location = linemap_line_start (&line_table, min_line, 1);
+	    input_location = linemap_line_start (line_table, min_line, 1);
 #else
 	  if (min_line != 0)
 	    input_line = min_line;
@@ -1926,8 +1926,8 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  main_jcf->read_state = finput;
 	  main_jcf->filbuf = jcf_filbuf_from_stdio;
 #ifdef USE_MAPPED_LOCATION
-	  linemap_add (&line_table, LC_ENTER, false, filename, 0);
-	  input_location = linemap_line_start (&line_table, 0, 1);
+	  linemap_add (line_table, LC_ENTER, false, filename, 0);
+	  input_location = linemap_line_start (line_table, 0, 1);
 #endif
 	  if (open_in_zip (main_jcf, filename, NULL, 0) <  0)
 	    fatal_error ("bad zip/jar file %s", filename);
@@ -1935,7 +1935,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  /* Register all the classes defined there.  */
 	  process_zip_dir (main_jcf->read_state);
 #ifdef USE_MAPPED_LOCATION
-	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+	  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 #endif
 	  parse_zip_file_entries ();
 	}
@@ -1950,7 +1950,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	  java_parser_context_restore_global ();
 	  java_pop_parser_context (1);
 #ifdef USE_MAPPED_LOCATION
-	  linemap_add (&line_table, LC_LEAVE, false, NULL, 0);
+	  linemap_add (line_table, LC_LEAVE, false, NULL, 0);
 #endif
 #endif
 	}
