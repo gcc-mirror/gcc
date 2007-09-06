@@ -1,3 +1,7 @@
+2007-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* semantics.c (expand_body): Do not mark arguments of clones used.
+
 2007-09-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32674

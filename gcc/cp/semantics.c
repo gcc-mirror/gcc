@@ -3140,26 +3140,6 @@ expand_body (tree fn)
   gcc_assert (function_depth == 0);
 
   c_expand_body (fn);
-
-  if (DECL_CLONED_FUNCTION_P (fn))
-    {
-      /* If this is a clone, go through the other clones now and mark
-	 their parameters used.  We have to do that here, as we don't
-	 know whether any particular clone will be expanded, and
-	 therefore cannot pick one arbitrarily.  */
-      tree probe;
-
-      for (probe = TREE_CHAIN (DECL_CLONED_FUNCTION (fn));
-	   probe && DECL_CLONED_FUNCTION_P (probe);
-	   probe = TREE_CHAIN (probe))
-	{
-	  tree parms;
-
-	  for (parms = DECL_ARGUMENTS (probe);
-	       parms; parms = TREE_CHAIN (parms))
-	    TREE_USED (parms) = 1;
-	}
-    }
 }
 
 /* Generate RTL for FN.  */
