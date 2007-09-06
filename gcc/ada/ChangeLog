@@ -1,3 +1,7 @@
+2007-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c (convert_with_check): Update call to real_2expN.
+
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* trans.c (Compilation_unit_to_gnu): Use set_cfun.
