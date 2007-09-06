@@ -1,3 +1,14 @@
+2007-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32586
+	* tree-ssa-sccvn.c (simplify_binary_expression): Avoid
+	folding if nothing changed.
+	(simplify_unary_expression): New function.  Do tree combining
+	on conversion like codes.
+	(try_to_simplify): Call it.
+	* builtins.c (fold_builtin_cexp): Fold the built expressions.
+	* fold-const.c (fold_unary): Test result of get_callee_fndecl().
+
 2007-09-06  Jan Hubicka  <jh@suse.cz>
 
 	PR target/33318
