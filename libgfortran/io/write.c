@@ -868,6 +868,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   size_t base_name_len;
   size_t base_var_name_len;
   size_t tot_len;
+  unit_delim tmp_delim;
 
   /* Write namelist variable names in upper case. If a derived type,
      nothing is output.  If a component, base and base_name are set.  */
@@ -984,11 +985,13 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
               break;
 
 	    case GFC_DTYPE_CHARACTER:
-	      if (dtp->u.p.nml_delim)
-		write_character (dtp, &dtp->u.p.nml_delim, 1);
+	      tmp_delim = dtp->u.p.current_unit->flags.delim;
+	      if (dtp->u.p.nml_delim == '"')
+		dtp->u.p.current_unit->flags.delim = DELIM_QUOTE;
+	      if (dtp->u.p.nml_delim == '\'')
+		dtp->u.p.current_unit->flags.delim = DELIM_APOSTROPHE;
 	      write_character (dtp, p, obj->string_length);
-	      if (dtp->u.p.nml_delim)
-		write_character (dtp, &dtp->u.p.nml_delim, 1);
+	      dtp->u.p.current_unit->flags.delim = tmp_delim;
               break;
 
 	    case GFC_DTYPE_REAL:
@@ -1130,7 +1133,6 @@ namelist_write (st_parameter_dt *dtp)
   /* Set the delimiter for namelist output.  */
 
   tmp_delim = dtp->u.p.current_unit->flags.delim;
-  dtp->u.p.current_unit->flags.delim = DELIM_NONE;
   switch (tmp_delim)
     {
     case (DELIM_QUOTE):
@@ -1146,10 +1148,12 @@ namelist_write (st_parameter_dt *dtp)
       break;
     }
 
+  /* Temporarily disable namelist delimters.  */
+  dtp->u.p.current_unit->flags.delim = DELIM_NONE;
+
   write_character (dtp, "&", 1);
 
   /* Write namelist name in upper case - f95 std.  */
-
   for (i = 0 ;i < dtp->namelist_name_len ;i++ )
     {
       c = toupper (dtp->namelist_name[i]);
@@ -1165,14 +1169,14 @@ namelist_write (st_parameter_dt *dtp)
 	  t1 = nml_write_obj (dtp, t2, dummy_offset, dummy, dummy_name);
 	}
     }
+
 #ifdef HAVE_CRLF
   write_character (dtp, "  /\r\n", 5);
 #else
   write_character (dtp, "  /\n", 4);
 #endif
 
-  /* Recover the original delimiter.  */
-
+  /* Restore the original delimiter.  */
   dtp->u.p.current_unit->flags.delim = tmp_delim;
 }
 
