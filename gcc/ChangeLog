@@ -1,3 +1,14 @@
+2007-09-05  Ian Lance Taylor  <iant@google.com>
+
+	* tree-pretty-print.c (dump_decl_name): Cast LABEL_DECL_UID to int
+	when printing.
+	(dump_generic_node): Likewise.
+	* print-rtl.c (print_decl_name): Likewise.
+	* print-tree.c (print_node_brief): Likewise.
+	(print_node): Likewise.
+	* Makefile.in (RTL_BASE_H): Add alias.h.
+	(TREE_H): Likewise.
+
 2007-09-06  Jesper Nilsson  <jesper.nilsson@axis.com>
 
 	* longlong.h [__CRIS_arch_version >= 8] (count_trailing_zeros):
