@@ -228,6 +228,9 @@ UDItype __umulsidi3 (USItype, USItype);
 
 #if defined (__CRIS__) && __CRIS_arch_version >= 3
 #define count_leading_zeros(COUNT, X) ((COUNT) = __builtin_clz (X))
+#if __CRIS_arch_version >= 8
+#define count_trailing_zeros(COUNT, X) ((COUNT) = __builtin_ctz (X))
+#endif
 #endif /* __CRIS__ */
 
 #if defined (__hppa) && W_TYPE_SIZE == 32

@@ -1410,6 +1410,7 @@ enum cris_pic_symbol_type
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 
 #define Pmode SImode
 
