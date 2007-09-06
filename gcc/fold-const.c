@@ -8464,7 +8464,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
       if (TREE_CODE (arg0) == CALL_EXPR)
 	{
 	  tree fn = get_callee_fndecl (arg0);
-	  if (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
+	  if (fn && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
 	    switch (DECL_FUNCTION_CODE (fn))
 	      {
 	      CASE_FLT_FN (BUILT_IN_CEXPI):
@@ -8506,7 +8506,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
       if (TREE_CODE (arg0) == CALL_EXPR)
 	{
 	  tree fn = get_callee_fndecl (arg0);
-	  if (DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
+	  if (fn && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
 	    switch (DECL_FUNCTION_CODE (fn))
 	      {
 	      CASE_FLT_FN (BUILT_IN_CEXPI):

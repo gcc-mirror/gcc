@@ -7799,13 +7799,13 @@ fold_builtin_cexp (tree arg0, tree type)
       icall = builtin_save_expr (icall);
       rcall = build_call_expr (rfn, 1, realp);
       rcall = builtin_save_expr (rcall);
-      return build2 (COMPLEX_EXPR, type,
-		     build2 (MULT_EXPR, rtype,
-			     rcall,
-			     build1 (REALPART_EXPR, rtype, icall)),
-		     build2 (MULT_EXPR, rtype,
-			     rcall,
-			     build1 (IMAGPART_EXPR, rtype, icall)));
+      return fold_build2 (COMPLEX_EXPR, type,
+			  fold_build2 (MULT_EXPR, rtype,
+				       rcall,
+			 	       fold_build1 (REALPART_EXPR, rtype, icall)),
+			  fold_build2 (MULT_EXPR, rtype,
+				       rcall,
+				       fold_build1 (IMAGPART_EXPR, rtype, icall)));
     }
 
   return NULL_TREE;
