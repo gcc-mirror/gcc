@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "tree-gimple.h"
 #include "bitmap.h"
+#include "diagnostic.h"
 
 /* True if X is an unspec wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -5327,7 +5328,12 @@ static void
 mips_set_current_function (tree fndecl)
 {
   int mips16p;
-  if (fndecl)
+  if (errorcount || sorrycount)
+    /* Avoid generating RTL when fndecl is possibly invalid.  Best to fall
+       back on non-MIPS16 mode to avoid any strange secondary errors about
+       use of unsupported features in MIPS16 mode.  */
+    mips16p = false;
+  else if (fndecl)
     mips16p = SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (fndecl), 0));
   else
     mips16p = mips_base_mips16;
