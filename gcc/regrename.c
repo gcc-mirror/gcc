@@ -559,20 +559,19 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class cl,
 	    int index_op;
 	    unsigned regno0 = REGNO (op0), regno1 = REGNO (op1);
 
-	    if (REGNO_OK_FOR_INDEX_P (regno0)
-		&& regno_ok_for_base_p (regno1, mode, PLUS, REG))
+	    if (REGNO_OK_FOR_INDEX_P (regno1)
+		&& regno_ok_for_base_p (regno0, mode, PLUS, REG))
+	      index_op = 1;
+	    else if (REGNO_OK_FOR_INDEX_P (regno0)
+		     && regno_ok_for_base_p (regno1, mode, PLUS, REG))
 	      index_op = 0;
-	    else if (REGNO_OK_FOR_INDEX_P (regno1)
-		     && regno_ok_for_base_p (regno0, mode, PLUS, REG))
+	    else if (regno_ok_for_base_p (regno0, mode, PLUS, REG)
+		     || REGNO_OK_FOR_INDEX_P (regno1))
 	      index_op = 1;
 	    else if (regno_ok_for_base_p (regno1, mode, PLUS, REG))
 	      index_op = 0;
-	    else if (regno_ok_for_base_p (regno0, mode, PLUS, REG))
-	      index_op = 1;
-	    else if (REGNO_OK_FOR_INDEX_P (regno1))
-	      index_op = 1;
 	    else
-	      index_op = 0;
+	      index_op = 1;
 
 	    locI = &XEXP (x, index_op);
 	    locB = &XEXP (x, !index_op);
@@ -1476,20 +1475,19 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 	    int index_op;
 	    unsigned regno0 = REGNO (op0), regno1 = REGNO (op1);
 
-	    if (REGNO_OK_FOR_INDEX_P (regno0)
-		&& regno_ok_for_base_p (regno1, mode, PLUS, REG))
+	    if (REGNO_OK_FOR_INDEX_P (regno1)
+		&& regno_ok_for_base_p (regno0, mode, PLUS, REG))
+	      index_op = 1;
+	    else if (REGNO_OK_FOR_INDEX_P (regno0)
+		     && regno_ok_for_base_p (regno1, mode, PLUS, REG))
 	      index_op = 0;
-	    else if (REGNO_OK_FOR_INDEX_P (regno1)
-		     && regno_ok_for_base_p (regno0, mode, PLUS, REG))
+	    else if (regno_ok_for_base_p (regno0, mode, PLUS, REG)
+		     || REGNO_OK_FOR_INDEX_P (regno1))
 	      index_op = 1;
 	    else if (regno_ok_for_base_p (regno1, mode, PLUS, REG))
 	      index_op = 0;
-	    else if (regno_ok_for_base_p (regno0, mode, PLUS, REG))
-	      index_op = 1;
-	    else if (REGNO_OK_FOR_INDEX_P (regno1))
-	      index_op = 1;
 	    else
-	      index_op = 0;
+	      index_op = 1;
 
 	    locI = &XEXP (x, index_op);
 	    locB = &XEXP (x, !index_op);
