@@ -676,8 +676,10 @@
 
     start_sequence ();
     value =
-      emit_library_call_value (ufloat_optab->handlers[DFmode][SImode].libfunc,
-			       NULL_RTX, LCT_NORMAL, DFmode, 1, r0, SImode);
+      emit_library_call_value (convert_optab_libfunc (ufloat_optab,
+                                                      DFmode, SImode),
+                               NULL_RTX, LCT_NORMAL, DFmode, 1, r0, SImode);
+
     insns = get_insns ();
     end_sequence ();
     emit_libcall_block (insns, r1, value,
@@ -713,8 +715,10 @@
 
     start_sequence ();
     value =
-      emit_library_call_value (ufloat_optab->handlers[DFmode][DImode].libfunc,
-			       NULL_RTX, LCT_NORMAL, DFmode, 1, r0, DImode);
+      emit_library_call_value (convert_optab_libfunc (ufloat_optab,
+                                                      DFmode, DImode),
+                               NULL_RTX, LCT_NORMAL, DFmode, 1, r0, DImode);
+
     insns = get_insns ();
     end_sequence ();
     emit_libcall_block (insns, r1, value,

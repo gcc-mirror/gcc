@@ -1,3 +1,10 @@
+2007-09-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+            Jan Hubicka  <jh@suse.cz>
+
+	* config/spu/spu.md (floatsidf2): Use convert_optab_libfunc
+	instead of ufloat_optab->handlers directly.
+	(floatdidf2): Likewise.
+
 2007-09-06  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/mips/mips.c:  Include diagnostic.h.
