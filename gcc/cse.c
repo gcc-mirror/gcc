@@ -3246,7 +3246,8 @@ fold_rtx (rtx x, rtx insn)
 		      /* If we have a cheaper expression now, use that
 			 and try folding it further, from the top.  */
 		      if (cheapest_simplification != x)
-			return fold_rtx (cheapest_simplification, insn);
+			return fold_rtx (copy_rtx (cheapest_simplification),
+					 insn);
 		    }
 		}
 
