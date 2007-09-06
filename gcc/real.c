@@ -2304,7 +2304,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
 /* Fills R with 2**N.  */
 
 void
-real_2expN (REAL_VALUE_TYPE *r, int n, enum machine_mode fmode)
+real_2expN (REAL_VALUE_TYPE *r, int n)
 {
   memset (r, 0, sizeof (*r));
 
@@ -2319,9 +2319,6 @@ real_2expN (REAL_VALUE_TYPE *r, int n, enum machine_mode fmode)
       SET_REAL_EXP (r, n);
       r->sig[SIGSZ-1] = SIG_MSB;
     }
-
-  if (DECIMAL_FLOAT_MODE_P (fmode))
-    decimal_real_convert (r, fmode, r);
 }
 
 

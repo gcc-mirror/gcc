@@ -23144,7 +23144,7 @@ ix86_expand_lround (rtx op0, rtx op1)
 
   /* load nextafter (0.5, 0.0) */
   fmt = REAL_MODE_FORMAT (mode);
-  real_2expN (&half_minus_pred_half, -(fmt->p) - 1, mode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1);
   REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
 
   /* adj = copysign (0.5, op1) */
@@ -23555,7 +23555,7 @@ ix86_expand_round (rtx operand0, rtx operand1)
 
   /* load nextafter (0.5, 0.0) */
   fmt = REAL_MODE_FORMAT (mode);
-  real_2expN (&half_minus_pred_half, -(fmt->p) - 1, mode);
+  real_2expN (&half_minus_pred_half, -(fmt->p) - 1);
   REAL_ARITHMETIC (pred_half, MINUS_EXPR, dconsthalf, half_minus_pred_half);
 
   /* xa = xa + 0.5 */
