@@ -1543,6 +1543,9 @@ case "${host}" in
  mips*-*-linux*)
     SIGNAL_HANDLER=include/mips-signal.h
     ;;
+ m68*-*-linux*)
+    SIGNAL_HANDLER=include/dwarf2-signal.h
+    ;;
  powerpc*-*-darwin*)
     SIGNAL_HANDLER=include/darwin-signal.h
     ;;
