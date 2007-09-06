@@ -1,6 +1,7 @@
 2007-09-06  Roman Zippel  <zippel@linux-m68k.org>
 
-	* boehm.c: Don't use bitmap as gc_descr if pointer is misaligned.
+	* boehm.c (mark_reference_fields): Don't use bitmap as gc_descr
+	if pointer is misaligned.
 
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
