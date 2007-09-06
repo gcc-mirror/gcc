@@ -70,7 +70,8 @@ public class StackTrace2
             && frame.getFileName().equals("StackTrace2.java")))
       System.out.println("OK");
     else
-      System.out.println("FAIL - expected " + expected_line + ", got: " +
-			 frame.getLineNumber());
+      System.out.println("FAIL - expected " + expected_line + ", got: "
+			 + frame.getLineNumber() + ", in file "
+			 + frame.getFileName());
   }
 }
