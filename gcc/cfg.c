@@ -667,7 +667,7 @@ void
 dump_edge_info (FILE *file, edge e, int do_succ)
 {
   basic_block side = (do_succ ? e->dest : e->src);
-  /* both ENTRY_BLOCK_PTR & EXIT_BLOCK_PTR depend upon cfun */
+  /* both ENTRY_BLOCK_PTR & EXIT_BLOCK_PTR depend upon cfun. */
   if (cfun && side == ENTRY_BLOCK_PTR)
     fputs (" ENTRY", file);
   else if (cfun && side == EXIT_BLOCK_PTR)
