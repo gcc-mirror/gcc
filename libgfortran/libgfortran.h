@@ -31,6 +31,9 @@ Boston, MA 02110-1301, USA.  */
 #ifndef LIBGFOR_H
 #define LIBGFOR_H
 
+/* config.h MUST be first because it can affect system headers.  */
+#include "config.h"
+
 #include <stdio.h>
 #include <math.h>
 #include <stddef.h>
@@ -45,7 +48,6 @@ Boston, MA 02110-1301, USA.  */
 
 #include "../gcc/fortran/libgfortran.h"
 
-#include "config.h"
 #include "c99_protos.h"
 
 #if HAVE_IEEEFP_H
