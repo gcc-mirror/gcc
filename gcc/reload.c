@@ -5464,16 +5464,12 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 
 	else if (code0 == REG && code1 == REG)
 	  {
-	    if (REGNO_OK_FOR_INDEX_P (REGNO (op0))
-		&& regno_ok_for_base_p (REGNO (op1), mode, PLUS, REG))
+	    if (REGNO_OK_FOR_INDEX_P (REGNO (op1))
+		&& regno_ok_for_base_p (REGNO (op0), mode, PLUS, REG))
 	      return 0;
-	    else if (REGNO_OK_FOR_INDEX_P (REGNO (op1))
-		     && regno_ok_for_base_p (REGNO (op0), mode, PLUS, REG))
+	    else if (REGNO_OK_FOR_INDEX_P (REGNO (op0))
+		     && regno_ok_for_base_p (REGNO (op1), mode, PLUS, REG))
 	      return 0;
-	    else if (regno_ok_for_base_p (REGNO (op1), mode, PLUS, REG))
-	      find_reloads_address_1 (mode, orig_op0, 1, PLUS, SCRATCH,
-				      &XEXP (x, 0), opnum, type, ind_levels,
-				      insn);
 	    else if (regno_ok_for_base_p (REGNO (op0), mode, PLUS, REG))
 	      find_reloads_address_1 (mode, orig_op1, 1, PLUS, SCRATCH,
 				      &XEXP (x, 1), opnum, type, ind_levels,
@@ -5482,16 +5478,20 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 	      find_reloads_address_1 (mode, orig_op0, 0, PLUS, REG,
 				      &XEXP (x, 0), opnum, type, ind_levels,
 				      insn);
+	    else if (regno_ok_for_base_p (REGNO (op1), mode, PLUS, REG))
+	      find_reloads_address_1 (mode, orig_op0, 1, PLUS, SCRATCH,
+				      &XEXP (x, 0), opnum, type, ind_levels,
+				      insn);
 	    else if (REGNO_OK_FOR_INDEX_P (REGNO (op0)))
 	      find_reloads_address_1 (mode, orig_op1, 0, PLUS, REG,
 				      &XEXP (x, 1), opnum, type, ind_levels,
 				      insn);
 	    else
 	      {
-		find_reloads_address_1 (mode, orig_op0, 1, PLUS, SCRATCH,
+		find_reloads_address_1 (mode, orig_op0, 0, PLUS, REG,
 					&XEXP (x, 0), opnum, type, ind_levels,
 					insn);
-		find_reloads_address_1 (mode, orig_op1, 0, PLUS, REG,
+		find_reloads_address_1 (mode, orig_op1, 1, PLUS, SCRATCH,
 					&XEXP (x, 1), opnum, type, ind_levels,
 					insn);
 	      }
