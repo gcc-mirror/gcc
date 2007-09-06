@@ -1,5 +1,10 @@
 2007-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/33225
+	* gfortran.dg./fmt_float.f90: New test.
+
+2007-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran/33253
 	* gfortran.dg/namelist_38.f90: Update test for DELIM= .
 
