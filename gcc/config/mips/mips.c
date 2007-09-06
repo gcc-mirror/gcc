@@ -1553,6 +1553,21 @@ mips_classify_symbol (const_rtx x, enum mips_symbol_context context)
   return SYMBOL_ABSOLUTE;
 }
 
+/* Classify symbolic expression X, given that it appears in context
+   CONTEXT.  */
+
+static enum mips_symbol_type
+mips_classify_symbolic_expression (rtx x, enum mips_symbol_context context)
+{
+  rtx offset;
+
+  split_const (x, &x, &offset);
+  if (UNSPEC_ADDRESS_P (x))
+    return UNSPEC_ADDRESS_TYPE (x);
+
+  return mips_classify_symbol (x, context);
+}
+
 /* Return true if OFFSET is within the range [0, ALIGN), where ALIGN
    is the alignment (in bytes) of SYMBOL_REF X.  */
 
@@ -1747,9 +1762,18 @@ mips_classify_address (struct mips_address_info *info, rtx x,
       info->type = ADDRESS_LO_SUM;
       info->reg = XEXP (x, 0);
       info->offset = XEXP (x, 1);
+      /* We have to trust the creator of the LO_SUM to do something vaguely
+	 sane.  Target-independent code that creates a LO_SUM should also
+	 create and verify the matching HIGH.  Target-independent code that
+	 adds an offset to a LO_SUM must prove that the offset will not
+	 induce a carry.  Failure to do either of these things would be
+	 a bug, and we are not required to check for it here.  The MIPS
+	 backend itself should only create LO_SUMs for valid symbolic
+	 constants, with the high part being either a HIGH or a copy
+	 of _gp. */
+      info->symbol_type
+	= mips_classify_symbolic_expression (info->offset, SYMBOL_CONTEXT_MEM);
       return (mips_valid_base_register_p (info->reg, mode, strict)
-	      && mips_symbolic_constant_p (info->offset, SYMBOL_CONTEXT_MEM,
-					   &info->symbol_type)
 	      && mips_symbol_insns (info->symbol_type, mode) > 0
 	      && mips_lo_relocs[info->symbol_type] != 0);
 
@@ -6290,8 +6314,8 @@ print_operand_reloc (FILE *file, rtx op, enum mips_symbol_context context,
   enum mips_symbol_type symbol_type;
   const char *p;
 
-  if (!mips_symbolic_constant_p (op, context, &symbol_type)
-      || relocs[symbol_type] == 0)
+  symbol_type = mips_classify_symbolic_expression (op, context);
+  if (relocs[symbol_type] == 0)
     fatal_insn ("PRINT_OPERAND, invalid operand for relocation", op);
 
   fputs (relocs[symbol_type], file);
