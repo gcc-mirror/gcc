@@ -75,7 +75,7 @@ print_decl_name (FILE *outfile, const_tree node)
   else
     {
       if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
-	fprintf (outfile, "L." HOST_WIDE_INT_PRINT_DEC, LABEL_DECL_UID (node));
+	fprintf (outfile, "L.%d", (int) LABEL_DECL_UID (node));
       else
         {
           char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
