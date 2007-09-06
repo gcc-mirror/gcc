@@ -1,3 +1,8 @@
+2007-09-06  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+	* gcc.target/cris/builtin_ctz_v3.c: New testcase.
+	* gcc.target/cris/builtin_ctz_v8.c: New testcase.
+
 2007-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/eh/builtin1.C: New test.
