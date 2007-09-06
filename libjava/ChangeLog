@@ -1,3 +1,9 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.lang/StackTrace2.jar: Rebuilt.
+	* testsuite/libjava.lang/StackTrace2.java (checkLine): Print file
+	name.
+
 2007-09-06  Roman Zippel  <zippel@linux-m68k.org>
 
 	* sysdep/m68k/locks.h: New file.
