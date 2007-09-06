@@ -1,5 +1,3 @@
-#define OBJECT_FORMAT_ELF
-
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC "\
 %{msim:%{!shared:crt0%O%s}} \

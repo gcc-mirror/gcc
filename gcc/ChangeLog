@@ -1,3 +1,21 @@
+2007-09-06  Jie Zhang  <jie.zhang@analog.com>
+
+	* config.gcc (tm_file): Add linux.h for bfin*-uclinux*.
+	(tm_defines): Define UCLIBC_DEFAULT to 1.
+	(extra_options): Add linux.opt.
+	* config/bfin/linux.h (CPLUSPLUS_CPP_SPEC): Don't define.
+	(CRT_CALL_STATIC_FUNCTION): Likewise.
+	(NO_IMPLICIT_EXTERN_C): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Define as LINUX_TARGET_OS_CPP_BUILTINS.
+	* config/bfin/elf.h (OBJECT_FORMAT_ELF): Don't define.
+	* config/bfin/uclinux.h (CPLUSPLUS_CPP_SPEC): Don't define.
+	(ENDFILE_SPEC): Don't define.
+	(LIB_SPEC): Likewise.
+	(CRT_CALL_STATIC_FUNCTION): Likewise.
+	(NO_IMPLICIT_EXTERN_C): Likewise.
+	(LINUX_TARGET_OS_CPP_BUILTINS): Likewise.
+	(TARGET_OS_CPP_BUILTINS): Define as LINUX_TARGET_OS_CPP_BUILTINS.
+
 2007-09-06  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_lround, ix86_expand_round): Update call of
