@@ -151,7 +151,9 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   while (true)
     {
       /* Don't worry about unreachable blocks.  */
-      if (EDGE_COUNT (bb->preds) > 0 || bb == ENTRY_BLOCK_PTR)
+      if (EDGE_COUNT (bb->preds) > 0
+	  || bb == ENTRY_BLOCK_PTR
+	  || bb == EXIT_BLOCK_PTR)
 	{
 	  /* If block BB is not interesting to the caller, then none of the
 	     callbacks that walk the statements in BB are going to be
