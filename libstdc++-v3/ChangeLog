@@ -1,3 +1,7 @@
+2007-09-06  Matthias Klose  <doko@debian.org>
+
+	* testsuite/27_io/headers/cstdlib: Remove empty directory.
+
 2007-09-05  Roger Sayle  <roger@eyesopen.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add EBADMSG for darwin.
