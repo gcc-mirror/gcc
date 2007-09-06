@@ -1,3 +1,8 @@
+2007-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (PREFERRED_RELOAD_CLASS): Don't reload autoinc
+	addresses into I registers.
+
 2007-09-06  Jan Hubicka  <jh@suse.cz>
 	    Andreas Tobler  <a.tobler@schweiz.org>
 
