@@ -1,3 +1,9 @@
+2007-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33302
+	* domwalk.c (walk_dominator_tree): The exit block is
+	interesting even if it is not reachable.
+
 2007-09-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/33306
