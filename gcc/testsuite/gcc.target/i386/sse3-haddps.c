@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -msse3" } */
+/* { dg-options "-O2 -msse3 -mfpmath=sse" } */
 
 #include "sse3-check.h"
 
