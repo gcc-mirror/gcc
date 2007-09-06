@@ -1,3 +1,11 @@
+2007-09-06  David Daney  <ddaney@avtrex.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/33256
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_forced_le.
+	(dg-mips-options): Skip -EB and -meb tests when $mips_forced_le.
+	* gcc.target/mips/pr33256.c: New test.
+
 2007-09-05  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33210

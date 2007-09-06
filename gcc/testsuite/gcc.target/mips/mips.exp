@@ -37,6 +37,7 @@ load_lib gcc-dg.exp
 #    $mips_forced_isa:	 true if the command line uses -march=* or -mips*
 #    $mips_forced_abi:	 true if the command line uses -mabi=* or -mgp*
 #    $mips_forced_float: true if the command line uses -mhard/soft-float
+#    $mips_forced_le	 true if the command line uses -EL or -mel
 proc setup_mips_tests {} {
     global mips_isa
     global mips_arch
@@ -47,6 +48,7 @@ proc setup_mips_tests {} {
     global mips_forced_isa
     global mips_forced_abi
     global mips_forced_float
+    global mips_forced_le
 
     global compiler_flags
     global tool
@@ -81,6 +83,7 @@ proc setup_mips_tests {} {
     set mips_forced_isa [regexp -- {(-mips|-march)} $compiler_flags]
     set mips_forced_abi [regexp -- {(-mgp|-mabi)} $compiler_flags]
     set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
+    set mips_forced_le [regexp -- {-(EL|mel)[[:>:]]} $compiler_flags]
 }
 
 # Return true if command-line option FLAG forces 32-bit code.
@@ -116,6 +119,10 @@ proc is_gp32_flag {flag} {
 #    -mhard-float
 #	Select the given floating-point mode.  Skip the test if the
 #	multilib flags force a different selection.
+#
+#    -EB
+#	Select big-endian code.  Skip the test if the multilib flags
+#	force a little-endian target.
 proc dg-mips-options {args} {
     upvar dg-extra-tool-flags extra_tool_flags
     upvar dg-do-what do_what
@@ -129,6 +136,7 @@ proc dg-mips-options {args} {
     global mips_forced_isa
     global mips_forced_abi
     global mips_forced_float
+    global mips_forced_le
 
     set flags [lindex $args 1]
     set matches 1
@@ -168,6 +176,10 @@ proc dg-mips-options {args} {
 	    }
 	} elseif {[regexp -- {^-m(hard|soft)-float} $flag dummy float]} {
 	    if {$mips_float != $float && $mips_forced_float} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-(EB|meb)$} $flag]} {
+	    if {$mips_forced_le} {
 		set matches 0
 	    }
 	}

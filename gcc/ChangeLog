@@ -1,3 +1,10 @@
+2007-09-06  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/33256
+	* config/mips/mips.c (mips_classify_symbolic_expression): New function.
+	(mips_classify_address): Use it instead of mips_symbolic_constant_p.
+	(print_operand_reloc): Likewise.
+
 2007-09-03  Anatoly Sokolov <aesok@post.ru>
 
 	PR target/28902
