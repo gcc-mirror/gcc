@@ -1,3 +1,8 @@
+2007-09-06  Richard Sandiford  <richard@codesourcery.com>
+
+	PR middle-end/33306
+	* optabs.c (avoid_expensive_constant): Do nothing if MODE is VOIDmode.
+
 2007-09-06  Basile Starynkevitch  <basile@starynkevitch.net>
 
 	* cfg.c (dump_bb_info, dump_edge_info): Added cfun test for 
