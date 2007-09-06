@@ -534,9 +534,11 @@ dump_bb_info (basic_block bb, bool header, bool footer, int flags,
       fprintf (file, ", loop_depth %d, count ", bb->loop_depth);
       fprintf (file, HOST_WIDEST_INT_PRINT_DEC, bb->count);
       fprintf (file, ", freq %i", bb->frequency);
-      if (maybe_hot_bb_p (bb))
+      /* Both maybe_hot_bb_p & probably_never_executed_bb_p functions
+	 crash without cfun. */ 
+      if (cfun && maybe_hot_bb_p (bb))
 	fprintf (file, ", maybe hot");
-      if (probably_never_executed_bb_p (bb))
+      if (cfun && probably_never_executed_bb_p (bb))
 	fprintf (file, ", probably never executed");
       fprintf (file, ".\n");
 
@@ -665,10 +667,10 @@ void
 dump_edge_info (FILE *file, edge e, int do_succ)
 {
   basic_block side = (do_succ ? e->dest : e->src);
-
-  if (side == ENTRY_BLOCK_PTR)
+  /* both ENTRY_BLOCK_PTR & EXIT_BLOCK_PTR depend upon cfun */
+  if (cfun && side == ENTRY_BLOCK_PTR)
     fputs (" ENTRY", file);
-  else if (side == EXIT_BLOCK_PTR)
+  else if (cfun && side == EXIT_BLOCK_PTR)
     fputs (" EXIT", file);
   else
     fprintf (file, " %d", side->index);
