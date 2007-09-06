@@ -1,3 +1,9 @@
+2007-09-06  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips.c:  Include diagnostic.h.
+	(mips_set_current_function): Check errorcount and sorrycount 
+	before generating RTL.
+
 2007-09-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/33256
