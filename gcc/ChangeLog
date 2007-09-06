@@ -1,3 +1,45 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* tree-cfg.c (remove_bb): Only warn if line is non-zero.
+	* c-pch.c (c_common_read_pch): Restore current location after
+	reading PCH file.
+	* tree.c (expand_location): Update.
+	(expr_filename): Changed return type.  Unified the two cases.
+	(expr_lineno): Likewise.
+	(annotate_with_file_line): Don't use EXPR_LINENO and EXPR_FILENAME
+	as lvalues.
+	* toplev.c (line_table): Changed type.
+	(general_init): Update.
+	(realloc_for_line_map): New function.
+	(general_init): Allocate line_table using GC.
+	* fix-header.c (line_table): Changed type.
+	(read_scan_file): Update.
+	(read_scan_file): Update.
+	* c-ppoutput.c (maybe_print_line): Update.
+	(print_line): Update.
+	(cb_line_change): Update.
+	(cb_define): Update.
+	(pp_file_change): Update.
+	* c-opts.c (c_common_init_options): Update.
+	(finish_options): Update.
+	(push_command_line_include): Update.
+	* c-lex.c (cb_line_change): Update.
+	(cb_def_pragma): Update.
+	(cb_define): Update.
+	(cb_undef): Update.
+	(c_lex_with_flags): Use cpp_get_token_with_location.
+	* input.h (line_table): Changed type.
+	(location_from_locus): New macro.
+	* tree.h (EXPR_FILENAME): No longer an lvalue.
+	(EXPR_LINENO): Likewise.
+	(expr_locus, set_expr_locus): Declare separately for
+	USE_MAPPED_LOCATION.
+	(expr_filename, expr_lineno): Changed return type.
+	* gimplify.c (tree_to_gimple_tuple): Use SET_EXPR_LOCUS.
+	* cfgexpand.c (expand_gimple_cond_expr): Use location_from_locus.
+	(expand_gimple_basic_block): Likewise.
+	* final.c (final_scan_insn): Use expanded_location.
+
 2007-09-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/32586

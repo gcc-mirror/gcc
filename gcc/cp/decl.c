@@ -11632,7 +11632,10 @@ finish_function (int flags)
 	     return is unreachable, so put the statement on the
 	     special line 0.  */
 #ifdef USE_MAPPED_LOCATION
-	  SET_EXPR_LOCATION (stmt, UNKNOWN_LOCATION);
+	  {
+	    location_t linezero = linemap_line_start (line_table, 0, 1);
+	    SET_EXPR_LOCATION (stmt, linezero);
+	  }
 #else
 	  annotate_with_file_line (stmt, input_filename, 0);
 #endif

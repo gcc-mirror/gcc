@@ -696,6 +696,12 @@ typedef struct gfc_linebuf
 
 #define gfc_linebuf_header_size (offsetof (gfc_linebuf, line))
 
+#ifdef USE_MAPPED_LOCATION
+#define gfc_linebuf_linenum(LBUF) (LOCATION_LINE ((LBUF)->location))
+#else
+#define gfc_linebuf_linenum(LBUF) ((LBUF)->linenum)
+#endif
+
 typedef struct
 {
   char *nextc;

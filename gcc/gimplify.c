@@ -3607,7 +3607,7 @@ tree_to_gimple_tuple (tree *tp)
         /* The set to base above overwrites the CODE.  */
         TREE_SET_CODE ((tree) gs, GIMPLE_MODIFY_STMT);
 
-        gs->locus = EXPR_LOCUS (*tp);
+	SET_EXPR_LOCUS ((tree) gs, EXPR_LOCUS (*tp));
         gs->operands[0] = TREE_OPERAND (*tp, 0);
         gs->operands[1] = TREE_OPERAND (*tp, 1);
         gs->block = TREE_BLOCK (*tp);

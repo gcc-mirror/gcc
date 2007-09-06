@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_INPUT_H
 
 #include "line-map.h"
-extern struct line_maps line_table;
+extern GTY(()) struct line_maps *line_table;
 
 /* The location for declarations in "<built-in>" */
 #define BUILTINS_LOCATION ((source_location) 2)
@@ -50,6 +50,8 @@ extern expanded_location expand_location (source_location);
 typedef source_location location_t; /* deprecated typedef */
 typedef source_location source_locus; /* to be removed */
 
+#define location_from_locus(LOCUS) (LOCUS)
+
 #else /* ! USE_MAPPED_LOCATION */
 
 struct location_s GTY(())
@@ -68,6 +70,8 @@ typedef location_t *source_locus;
 #define expand_location(FILELINE) (FILELINE)
 extern location_t unknown_location;
 #define UNKNOWN_LOCATION unknown_location
+
+#define location_from_locus(LOCUS) (* (LOCUS))
 
 #endif /* ! USE_MAPPED_LOCATION */
 

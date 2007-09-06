@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -225,6 +225,14 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   _cpp_init_hashtable (pfile, table);
 
   return pfile;
+}
+
+/* Set the line_table entry in PFILE.  This is called after reading a
+   PCH file, as the old line_table will be incorrect.  */
+void
+cpp_set_line_map (cpp_reader *pfile, struct line_maps *line_table)
+{
+  pfile->line_table = line_table;
 }
 
 /* Free resources used by PFILE.  Accessing PFILE after this function

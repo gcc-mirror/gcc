@@ -710,7 +710,7 @@ restart:
       /* We've got a continuation line.  If we are on the very next line after
 	 the last continuation, increment the continuation line count and
 	 check whether the limit has been exceeded.  */
-      if (gfc_current_locus.lb->linenum == continue_line + 1)
+      if (gfc_linebuf_linenum (gfc_current_locus.lb) == continue_line + 1)
 	{
 	  if (++continue_count == gfc_option.max_continue_free)
 	    {
@@ -719,7 +719,7 @@ restart:
 			     "statement at %C", gfc_option.max_continue_free);
 	    }
 	}
-      continue_line = gfc_current_locus.lb->linenum;
+      continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
 
       /* Now find where it continues. First eat any comment lines.  */
       openmp_cond_flag = skip_free_comments ();
@@ -831,7 +831,7 @@ restart:
       /* We've got a continuation line.  If we are on the very next line after
 	 the last continuation, increment the continuation line count and
 	 check whether the limit has been exceeded.  */
-      if (gfc_current_locus.lb->linenum == continue_line + 1)
+      if (gfc_linebuf_linenum (gfc_current_locus.lb) == continue_line + 1)
 	{
 	  if (++continue_count == gfc_option.max_continue_fixed)
 	    {
@@ -842,8 +842,8 @@ restart:
 	    }
 	}
 
-      if (continue_line < gfc_current_locus.lb->linenum)
-	continue_line = gfc_current_locus.lb->linenum;
+      if (continue_line < gfc_linebuf_linenum (gfc_current_locus.lb))
+	continue_line = gfc_linebuf_linenum (gfc_current_locus.lb);
     }
 
   /* Ready to read first character of continuation line, which might
@@ -1170,7 +1170,7 @@ get_file (const char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
     f->inclusion_line = current_file->line;
 
 #ifdef USE_MAPPED_LOCATION
-  linemap_add (&line_table, reason, false, f->filename, 1);
+  linemap_add (line_table, reason, false, f->filename, 1);
 #endif
 
   return f;
@@ -1514,7 +1514,7 @@ load_file (const char *filename, bool initial)
 
 #ifdef USE_MAPPED_LOCATION
       b->location
-	= linemap_line_start (&line_table, current_file->line++, 120);
+	= linemap_line_start (line_table, current_file->line++, 120);
 #else
       b->linenum = current_file->line++;
 #endif
@@ -1537,7 +1537,7 @@ load_file (const char *filename, bool initial)
 
   current_file = current_file->up;
 #ifdef USE_MAPPED_LOCATION
-  linemap_add (&line_table, LC_LEAVE, 0, NULL, 0);
+  linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
 #endif
   return SUCCESS;
 }

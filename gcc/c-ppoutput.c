@@ -234,7 +234,7 @@ scan_translation_unit_trad (cpp_reader *pfile)
 static void
 maybe_print_line (source_location src_loc)
 {
-  const struct line_map *map = linemap_lookup (&line_table, src_loc);
+  const struct line_map *map = linemap_lookup (line_table, src_loc);
   int src_line = SOURCE_LINE (map, src_loc);
   /* End the previous line of text.  */
   if (print.printed)
@@ -268,7 +268,7 @@ print_line (source_location src_loc, const char *special_flags)
 
   if (!flag_no_line_commands)
     {
-      const struct line_map *map = linemap_lookup (&line_table, src_loc);
+      const struct line_map *map = linemap_lookup (line_table, src_loc);
 
       size_t to_file_len = strlen (map->to_file);
       unsigned char *to_file_quoted =
@@ -317,7 +317,7 @@ cb_line_change (cpp_reader *pfile, const cpp_token *token,
      ought to care.  Some things do care; the fault lies with them.  */
   if (!CPP_OPTION (pfile, traditional))
     {
-      const struct line_map *map = linemap_lookup (&line_table, src_loc);
+      const struct line_map *map = linemap_lookup (line_table, src_loc);
       int spaces = SOURCE_COLUMN (map, src_loc) - 2;
       print.printed = 1;
 
@@ -349,7 +349,7 @@ cb_define (cpp_reader *pfile, source_location line, cpp_hashnode *node)
     fputs ((const char *) NODE_NAME (node), print.outf);
 
   putc ('\n', print.outf);
-  if (linemap_lookup (&line_table, line)->to_line != 0)
+  if (linemap_lookup (line_table, line)->to_line != 0)
     print.src_line++;
 }
 
@@ -430,7 +430,7 @@ pp_file_change (const struct line_map *map)
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
 	    {
-	      const struct line_map *from = INCLUDED_FROM (&line_table, map);
+	      const struct line_map *from = INCLUDED_FROM (line_table, map);
 	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
 	    }
 	  if (map->reason == LC_ENTER)

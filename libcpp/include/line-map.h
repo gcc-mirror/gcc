@@ -1,5 +1,5 @@
 /* Map logical line numbers to (source file, line number) pairs.
-   Copyright (C) 2001, 2003, 2004
+   Copyright (C) 2001, 2003, 2004, 2007
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -23,6 +23,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #ifndef LIBCPP_LINE_MAP_H
 #define LIBCPP_LINE_MAP_H
 
+#ifndef GTY
+#define GTY(x) /* nothing */
+#endif
+
 /* Reason for adding a line change with add_line_map ().  LC_ENTER is
    when including a new file, e.g. a #include directive in C.
    LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
@@ -34,6 +38,9 @@ enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 /* Long-term, we want to use this to replace struct location_s (in input.h),
    and effectively typedef source_location location_t.  */
 typedef unsigned int source_location;
+
+/* Memory allocation function typedef.  Works like xrealloc.  */
+typedef void *(*line_map_realloc) (void *, size_t);
 
 /* Physical source file TO_FILE at line TO_LINE at column 0 is represented
    by the logical START_LOCATION.  TO_LINE+L at column C is represented by
@@ -47,7 +54,7 @@ typedef unsigned int source_location;
    creation of this line map, SYSP is one for a system header, two for
    a C system header file that therefore needs to be extern "C"
    protected in C++, and zero otherwise.  */
-struct line_map
+struct line_map GTY(())
 {
   const char *to_file;
   unsigned int to_line;
@@ -61,9 +68,9 @@ struct line_map
 };
 
 /* A set of chronological line_map structures.  */
-struct line_maps
+struct line_maps GTY(())
 {
-  struct line_map *maps;
+  struct line_map * GTY ((length ("%h.used"))) maps;
   unsigned int allocated;
   unsigned int used;
 
@@ -89,6 +96,10 @@ struct line_maps
   /* The maximum column number we can quickly allocate.  Higher numbers
      may require allocating a new line_map.  */
   unsigned int max_column_hint;
+
+  /* If non-null, the allocator to use when resizing 'maps'.  If null,
+     xrealloc is used.  */
+  line_map_realloc reallocator;
 };
 
 /* Initialize a line map set.  */

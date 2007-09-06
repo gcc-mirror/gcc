@@ -1598,8 +1598,8 @@ struct tree_constructor GTY(())
 #define EXPR_HAS_LOCATION(NODE) expr_has_location ((NODE))
 #define EXPR_LOCUS(NODE) expr_locus ((NODE))
 #define SET_EXPR_LOCUS(NODE, FROM) set_expr_locus ((NODE), (FROM))
-#define EXPR_FILENAME(NODE) *(expr_filename ((NODE)))
-#define EXPR_LINENO(NODE) *(expr_lineno ((NODE)))
+#define EXPR_FILENAME(NODE) (expr_filename ((NODE)))
+#define EXPR_LINENO(NODE) (expr_lineno ((NODE)))
 
 /* True if a tree is an expression or statement that can have a
    location.  */
@@ -4840,22 +4840,17 @@ extern tree find_compatible_field (tree, tree);
 extern location_t expr_location (const_tree);
 extern void set_expr_location (tree, location_t);
 extern bool expr_has_location (const_tree);
-extern
+
 #ifdef USE_MAPPED_LOCATION
-source_location *
+extern source_locus *expr_locus (const_tree);
+extern void set_expr_locus (tree, source_location *);
 #else
-source_locus
+extern source_locus expr_locus (const_tree);
+extern void set_expr_locus (tree, source_locus loc);
 #endif
-expr_locus (const_tree);
-extern void set_expr_locus (tree,
-#ifdef USE_MAPPED_LOCATION
-                            source_location *loc
-#else
-		            source_locus loc
-#endif
-			   );
-extern const char **expr_filename (const_tree);
-extern int *expr_lineno (const_tree);
+extern const char *expr_filename (const_tree);
+extern int expr_lineno (const_tree);
+
 extern tree *tree_block (tree);
 extern tree *generic_tree_operand (tree, int);
 extern tree *generic_tree_type (tree);

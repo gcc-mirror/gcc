@@ -1,3 +1,11 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* scanner.c (get_file): Update.
+	(load_file): Update.
+	(gfc_next_char_literal): Use gfc_linebuf_linenum.
+	* f95-lang.c (gfc_init): Update.
+	* gfortran.h (gfc_linebuf_linenum): New macro.
+
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* trans-decl.c (build_entry_thunks): Use set_cfun.

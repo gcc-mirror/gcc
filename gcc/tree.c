@@ -3403,7 +3403,7 @@ expand_location (source_location loc)
     }
   else
     {
-      const struct line_map *map = linemap_lookup (&line_table, loc);
+      const struct line_map *map = linemap_lookup (line_table, loc);
       xloc.file = map->to_file;
       xloc.line = SOURCE_LINE (map, loc);
       xloc.column = SOURCE_COLUMN (map, loc);
@@ -3419,6 +3419,8 @@ expand_location (source_location loc)
 void
 annotate_with_file_line (tree node, const char *file, int line)
 {
+  location_t *new_loc;
+
   /* Roughly one percent of the calls to this function are to annotate
      a node with the same information already attached to that node!
      Just return instead of wasting memory.  */
@@ -3443,10 +3445,11 @@ annotate_with_file_line (tree node, const char *file, int line)
       return;
     }
 
-  SET_EXPR_LOCUS (node, ggc_alloc (sizeof (location_t)));
-  EXPR_LINENO (node) = line;
-  EXPR_FILENAME (node) = file;
-  last_annotated_node = EXPR_LOCUS (node);
+  new_loc = GGC_NEW (location_t);
+  new_loc->file = file;
+  new_loc->line = line;
+  SET_EXPR_LOCUS (node, new_loc);
+  last_annotated_node = new_loc;
 }
 
 void
@@ -3509,13 +3512,13 @@ expr_locus (const_tree node)
 {
 #ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
-    return &GIMPLE_STMT_LOCUS (node);
-  return EXPR_P (node) ? &node->exp.locus : (location_t *) NULL;
+    return CONST_CAST (source_location *, &GIMPLE_STMT_LOCUS (node));
+  return (EXPR_P (node)
+	  ? CONST_CAST (source_location *, &node->exp.locus)
+	  : (source_location *) NULL);
 #else
   if (GIMPLE_STMT_P (node))
     return GIMPLE_STMT_LOCUS (node);
-  /* ?? The cast below was originally "(location_t *)" in the macro,
-     but that makes no sense.  ?? */
   return EXPR_P (node) ? node->exp.locus : (source_locus) NULL;
 #endif
 }
@@ -3552,33 +3555,24 @@ set_expr_locus (tree node,
 #endif
 }
 
-const char **
+/* Return the file name of the location of NODE.  */
+const char *
 expr_filename (const_tree node)
 {
-#ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
-    return &LOCATION_FILE (GIMPLE_STMT_LOCUS (node));
-  return &LOCATION_FILE (EXPR_CHECK (node)->exp.locus);
-#else
-  if (GIMPLE_STMT_P (node))
-    return &GIMPLE_STMT_LOCUS (node)->file;
-  return &(EXPR_CHECK (node)->exp.locus->file);
-#endif
+    return LOCATION_FILE (location_from_locus (GIMPLE_STMT_LOCUS (node)));
+  return LOCATION_FILE (location_from_locus (EXPR_CHECK (node)->exp.locus));
 }
 
-int *
+/* Return the line number of the location of NODE.  */
+int
 expr_lineno (const_tree node)
 {
-#ifdef USE_MAPPED_LOCATION
   if (GIMPLE_STMT_P (node))
-    return &LOCATION_LINE (GIMPLE_STMT_LOCUS (node));
-  return &LOCATION_LINE (EXPR_CHECK (node)->exp.locus);
-#else
-  if (GIMPLE_STMT_P (node))
-    return &GIMPLE_STMT_LOCUS (node)->line;
-  return &EXPR_CHECK (node)->exp.locus->line;
-#endif
+    return LOCATION_LINE (location_from_locus (GIMPLE_STMT_LOCUS (node)));
+  return LOCATION_LINE (location_from_locus (EXPR_CHECK (node)->exp.locus));
 }
+
 
 /* Return a declaration like DDECL except that its DECL_ATTRIBUTES
    is ATTRIBUTE.  */

@@ -76,7 +76,7 @@ static void dump_lex_value (int lexret);
  { 
    /* ??? Should really allocate only what we need.  */
    yylval = my_malloc (sizeof (struct prod_token_parm_item));
-   LINEMAP_POSITION_FOR_COLUMN (input_location, &line_table,
+   LINEMAP_POSITION_FOR_COLUMN (input_location, line_table,
 				next_tree_charno);
    ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
@@ -233,7 +233,7 @@ update_lineno_charno (void)
    /* Update the values we send to caller in case we sometimes don't
       tell them about all the 'tokens' eg comments etc.  */
    int yyl;
-   LINEMAP_POSITION_FOR_COLUMN (input_location, &line_table,
+   LINEMAP_POSITION_FOR_COLUMN (input_location, line_table,
 				next_tree_charno);
    ((struct prod_token_parm_item *)yylval)->tp.tok.location = input_location;
    ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
@@ -243,7 +243,7 @@ update_lineno_charno (void)
          if ( yytext[yyl] == '\n' ) 
             {
 #ifdef USE_MAPPED_LOCATION
-	      source_location s = linemap_line_start (&line_table, ++lineno,
+	      source_location s = linemap_line_start (line_table, ++lineno,
 						      80);
 	      input_location = s;
 #else

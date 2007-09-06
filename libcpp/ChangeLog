@@ -1,3 +1,22 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* internal.h (struct cpp_reader) <invocation_location>: New
+	field.
+	(struct cpp_reader) <set_invocation_location>: Likewise.
+	* init.c (cpp_set_line_map): New function.
+	* line-map.c (linemap_add): Use linemap's allocator.
+	* include/line-map.h (GTY): Define.
+	(line_map_realloc): New typedef.
+	(struct line_map): Mark with GTY.
+	(struct line_maps): Likewise.
+	(struct line_maps) <maps>: Likewise.
+	(struct line_maps) <reallocator>: New field.
+	* include/symtab.h (GTY): Conditionally define.
+	* include/cpplib.h (cpp_set_line_map): Declare.
+	(cpp_get_token_with_location): Declare.
+	* macro.c (cpp_get_token): Set invocation_location on the reader.
+	(cpp_get_token_with_location): New function.
+
 2007-08-30  Chao-ying Fu  <fu@mips.com>
 
 	* expr.c (interpret_float_suffix): Support hr, r, lr, llr, uhr, ur,
