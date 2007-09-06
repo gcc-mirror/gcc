@@ -1,3 +1,7 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* libiberty.h (pex_free): Document process killing.
+
 2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
 	
 	* demangle.h (enum demangle_component_type): Add

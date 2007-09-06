@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright 2001, 2002, 2005 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2005, 2007 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -541,7 +541,8 @@ struct pex_time
 extern int pex_get_times (struct pex_obj *, int count,
 			  struct pex_time *vector);
 
-/* Clean up a pex_obj.  */
+/* Clean up a pex_obj.  If you have not called pex_get_times or
+   pex_get_status, this will try to kill the subprocesses.  */
 
 extern void pex_free (struct pex_obj *);
 
