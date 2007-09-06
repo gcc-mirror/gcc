@@ -1,3 +1,7 @@
+2007-09-06  Tom Tromey  <tromey@redhat.com>
+
+	* pexecute.txh (pex_free): Document process killing.
+
 2007-08-31  Douglas Gregor  <doug.gregor@gmail.com>
 	
 	* cp-demangle.c (d_dump): Handle

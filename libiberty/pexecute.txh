@@ -265,7 +265,9 @@ process times, all the fields will be set to @code{0}.
 
 @deftypefn Extension void pex_free (struct pex_obj @var{obj})
 
-Clean up and free all data associated with @var{obj}.
+Clean up and free all data associated with @var{obj}.  If you have not
+yet called @code{pex_get_times} or @code{pex_get_status}, this will
+try to kill the subprocesses.
 
 @end deftypefn
 
