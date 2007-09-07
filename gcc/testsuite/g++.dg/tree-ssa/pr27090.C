@@ -17,5 +17,5 @@ int foo(Foo& f)
         return f.get();
 }
 
-/* { dg-final { scan-tree-dump "return f->x;" "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "return f->x;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
