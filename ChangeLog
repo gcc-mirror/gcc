@@ -1,3 +1,9 @@
+2007-09-07  Andrew Haley  <aph@redhat.com>
+
+	* configure.ac (noconfigdirs): Remove target-libffi and
+	target-libjava.
+	* configure: Regenerate.
+
 2007-09-06  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR target/33281
