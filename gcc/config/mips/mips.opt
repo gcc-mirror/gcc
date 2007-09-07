@@ -96,6 +96,10 @@ mexplicit-relocs
 Target Report Mask(EXPLICIT_RELOCS)
 Use NewABI-style %reloc() assembly operators
 
+mextern-sdata
+Target Report Var(TARGET_EXTERN_SDATA) Init(1)
+Use -G for data that is not defined by the current object
+
 mfix-r4000
 Target Report Mask(FIX_R4000)
 Work around certain R4000 errata
@@ -148,6 +152,10 @@ mgp64
 Target Report RejectNegative Mask(64BIT)
 Use 64-bit general registers
 
+mgpopt
+Target Report Var(TARGET_GPOPT) Init(1)
+Use GP-relative addressing to access small data
+
 mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
 Allow the use of hardware floating-point ABI and instructions
@@ -163,6 +171,10 @@ Generate MIPS16 code
 mips3d
 Target Report RejectNegative Mask(MIPS3D)
 Use MIPS-3D instructions
+
+mlocal-sdata
+Target Report Var(TARGET_LOCAL_SDATA) Init(1)
+Use -G for object-local data
 
 mlong-calls
 Target Report Var(TARGET_LONG_CALLS)

@@ -1,3 +1,16 @@
+2007-09-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/attr-alias-3.c: Use real asm for MIPS.
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_forced_gp
+	and mips_forced_no_er.
+	(dg-mips-options): Add -mno-abicalls when a small-data option is
+	specified.  Skip tests with small-data options if mips_forced_gp.
+	Skip tests with -mexplicit-relocs if mips_forced_no_er.
+	* gcc.target/mips/sdata-1.c: New test.
+	* gcc.target/mips/sdata-2.c: Likewise.
+	* gcc.target/mips/sdata-3.c: Likewise.
+	* gcc.target/mips/sdata-4.c: Likewise.
+
 2007-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/33298

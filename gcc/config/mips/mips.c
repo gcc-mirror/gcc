@@ -341,7 +341,6 @@ static void mips_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void mips_restore_reg (rtx, rtx);
 static void mips_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				  HOST_WIDE_INT, tree);
-static int symbolic_expression_p (rtx);
 static section *mips_select_rtx_section (enum machine_mode, rtx,
 					 unsigned HOST_WIDE_INT);
 static section *mips_function_rodata_section (tree);
@@ -1474,6 +1473,17 @@ mips_symbol_binds_local_p (const_rtx x)
 	  : SYMBOL_REF_LOCAL_P (x));
 }
 
+/* Return true if rtx constants of mode MODE should be put into a small
+   data section.  */
+
+static bool
+mips_rtx_constant_in_small_data_p (enum machine_mode mode)
+{
+  return (!TARGET_EMBEDDED_DATA
+	  && TARGET_LOCAL_SDATA
+	  && GET_MODE_SIZE (mode) <= mips_section_threshold);
+}
+
 /* Return the method that should be used to access SYMBOL_REF or
    LABEL_REF X in context CONTEXT.  */
 
@@ -1508,14 +1518,14 @@ mips_classify_symbol (const_rtx x, enum mips_symbol_context context)
       if (TARGET_MIPS16_PCREL_LOADS && context == SYMBOL_CONTEXT_MEM)
 	return SYMBOL_PC_RELATIVE;
 
-      if (!TARGET_EMBEDDED_DATA
-	  && GET_MODE_SIZE (get_pool_mode (x)) <= mips_section_threshold)
+      if (mips_rtx_constant_in_small_data_p (get_pool_mode (x)))
 	return SYMBOL_GP_RELATIVE;
     }
 
   /* Do not use small-data accesses for weak symbols; they may end up
      being zero.  */
-  if (SYMBOL_REF_SMALL_P (x)
+  if (TARGET_GPOPT
+      && SYMBOL_REF_SMALL_P (x)
       && !SYMBOL_REF_WEAK (x))
     return SYMBOL_GP_RELATIVE;
 
@@ -5576,21 +5586,14 @@ override_options (void)
     }
 
   if (TARGET_ABICALLS)
-    {
-      /* We need to set flag_pic for executables as well as DSOs
-	 because we may reference symbols that are not defined in
-	 the final executable.  (MIPS does not use things like
-	 copy relocs, for example.)
+    /* We need to set flag_pic for executables as well as DSOs
+       because we may reference symbols that are not defined in
+       the final executable.  (MIPS does not use things like
+       copy relocs, for example.)
 
-	 Also, there is a body of code that uses __PIC__ to distinguish
-	 between -mabicalls and -mno-abicalls code.  */
-      flag_pic = 1;
-      if (mips_section_threshold > 0)
-	warning (0, "%<-G%> is incompatible with %<-mabicalls%>");
-    }
-
-  if (TARGET_VXWORKS_RTP && mips_section_threshold > 0)
-    warning (0, "-G and -mrtp are incompatible");
+       Also, there is a body of code that uses __PIC__ to distinguish
+       between -mabicalls and -mno-abicalls code.  */
+    flag_pic = 1;
 
   /* -mvr4130-align is a "speed over size" optimization: it usually produces
      faster code, but at the expense of more nops.  Enable it at -O3 and
@@ -5602,6 +5605,29 @@ override_options (void)
      though see MOVE_RATIO in mips.h.  */
   if (optimize_size && (target_flags_explicit & MASK_MEMCPY) == 0)
     target_flags |= MASK_MEMCPY;
+
+  /* If we have a nonzero small-data limit, check that the -mgpopt
+     setting is consistent with the other target flags.  */
+  if (mips_section_threshold > 0)
+    {
+      if (!TARGET_GPOPT)
+	{
+	  if (!TARGET_MIPS16 && !TARGET_EXPLICIT_RELOCS)
+	    error ("%<-mno-gpopt%> needs %<-mexplicit-relocs%>");
+
+	  TARGET_LOCAL_SDATA = false;
+	  TARGET_EXTERN_SDATA = false;
+	}
+      else
+	{
+	  if (TARGET_VXWORKS_RTP)
+	    warning (0, "cannot use small-data accesses for %qs", "-mrtp");
+
+	  if (TARGET_ABICALLS)
+	    warning (0, "cannot use small-data accesses for %qs",
+		     "-mabicalls");
+	}
+    }
 
 #ifdef MIPS_TFMODE_FORMAT
   REAL_MODE_FORMAT (TFmode) = &MIPS_TFMODE_FORMAT;
@@ -8453,54 +8479,17 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   reload_completed = 0;
 }
 
-/* Returns nonzero if X contains a SYMBOL_REF.  */
-
-static int
-symbolic_expression_p (rtx x)
-{
-  if (GET_CODE (x) == SYMBOL_REF)
-    return 1;
-
-  if (GET_CODE (x) == CONST)
-    return symbolic_expression_p (XEXP (x, 0));
-
-  if (UNARY_P (x))
-    return symbolic_expression_p (XEXP (x, 0));
-
-  if (ARITHMETIC_P (x))
-    return (symbolic_expression_p (XEXP (x, 0))
-	    || symbolic_expression_p (XEXP (x, 1)));
-
-  return 0;
-}
-
-/* Choose the section to use for the constant rtx expression X that has
-   mode MODE.  */
+/* Implement TARGET_SELECT_RTX_SECTION.  */
 
 static section *
 mips_select_rtx_section (enum machine_mode mode, rtx x,
 			 unsigned HOST_WIDE_INT align)
 {
-  if (TARGET_EMBEDDED_DATA)
-    {
-      /* For embedded applications, always put constants in read-only data,
-	 in order to reduce RAM usage.  */
-      return mergeable_constant_section (mode, align, 0);
-    }
-  else
-    {
-      /* For hosted applications, always put constants in small data if
-	 possible, as this gives the best performance.  */
-      /* ??? Consider using mergeable small data sections.  */
+  /* ??? Consider using mergeable small data sections.  */
+  if (mips_rtx_constant_in_small_data_p (mode))
+    return get_named_section (NULL, ".sdata", 0);
 
-      if (GET_MODE_SIZE (mode) <= (unsigned) mips_section_threshold
-	  && mips_section_threshold > 0)
-	return get_named_section (NULL, ".sdata", 0);
-      else if (flag_pic && symbolic_expression_p (x))
-	return get_named_section (NULL, ".data.rel.ro", 3);
-      else
-	return mergeable_constant_section (mode, align, 0);
-    }
+  return default_elf_select_rtx_section (mode, x, align);
 }
 
 /* Implement TARGET_ASM_FUNCTION_RODATA_SECTION.
@@ -8566,7 +8555,7 @@ mips_in_small_data_p (const_tree decl)
 
       /* If a symbol is defined externally, the assembler will use the
 	 usual -G rules when deciding how to implement macros.  */
-      if (TARGET_EXPLICIT_RELOCS || !DECL_EXTERNAL (decl))
+      if (mips_lo_relocs[SYMBOL_GP_RELATIVE] || !DECL_EXTERNAL (decl))
 	return true;
     }
   else if (TARGET_EMBEDDED_DATA)
@@ -8579,6 +8568,19 @@ mips_in_small_data_p (const_tree decl)
       if (TREE_READONLY (decl)
 	  && !TREE_SIDE_EFFECTS (decl)
 	  && (!DECL_INITIAL (decl) || TREE_CONSTANT (DECL_INITIAL (decl))))
+	return false;
+    }
+
+  /* Enforce -mlocal-sdata.  */
+  if (!TARGET_LOCAL_SDATA && !TREE_PUBLIC (decl))
+    return false;
+
+  /* Enforce -mextern-sdata.  */
+  if (!TARGET_EXTERN_SDATA && DECL_P (decl))
+    {
+      if (DECL_EXTERNAL (decl))
+	return false;
+      if (DECL_COMMON (decl) && DECL_INITIAL (decl) == NULL)
 	return false;
     }
 

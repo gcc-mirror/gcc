@@ -1,3 +1,22 @@
+2007-09-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* doc/invoke.texi: Document the MIPS -mlocal-sdata, -mextern-sdata
+	and -mgpopt options.  Adjust the -G documentation to match.
+	* config/mips/mips.opt (mextern-data, mgpopt, mlocal-data): New.
+	* config/mips/mips.c (mips_rtx_constant_in_small_data_p): New
+	function, split out from mips_classify_symbol.  Return false for
+	!TARGET_LOCAL_SDATA.
+	(mips_classify_symbol): Call mips_rtx_constant_in_small_data_p.
+	Only use GP-relative accesses for non-pool symbols if TARGET_GPOPT.
+	(override_options): Check whether the -mgpopt setting is consistent
+	with the other flags.
+	(symbolic_expression_p): Delete.
+	(mips_select_rtx_section): Use mips_rtx_constant_in_small_data_p
+	and default_elf_select_rtx_section.
+	(mips_in_small_data_p): Honor section attributes for MIPS16 too.
+	Return false for local data unless TARGET_LOCAL_SDATA.  Likewise
+	external data and TARGET_EXTERN_SDATA.
+
 2007-09-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33303
