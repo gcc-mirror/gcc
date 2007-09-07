@@ -202,7 +202,7 @@ record_references_in_initializer (tree decl)
 /* Rebuild cgraph edges for current function node.  This needs to be run after
    passes that don't update the cgraph.  */
 
-static unsigned int
+unsigned int
 rebuild_cgraph_edges (void)
 {
   basic_block bb;

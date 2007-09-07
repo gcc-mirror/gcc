@@ -2247,21 +2247,72 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       get_expr_operands (stmt, &CHANGE_DYNAMIC_TYPE_LOCATION (expr), opf_use);
       return;
 
+    case OMP_FOR:
+      {
+	tree init = OMP_FOR_INIT (expr);
+	tree cond = OMP_FOR_COND (expr);
+	tree incr = OMP_FOR_INCR (expr);
+	tree c, clauses = OMP_FOR_CLAUSES (stmt);
+
+	get_expr_operands (stmt, &GIMPLE_STMT_OPERAND (init, 0), opf_def);
+	get_expr_operands (stmt, &GIMPLE_STMT_OPERAND (init, 1), opf_use);
+	get_expr_operands (stmt, &TREE_OPERAND (cond, 1), opf_use);
+	get_expr_operands (stmt, &TREE_OPERAND (GIMPLE_STMT_OPERAND (incr, 1), 1),
+			   opf_use);
+
+	c = find_omp_clause (clauses, OMP_CLAUSE_SCHEDULE);
+	if (c)
+	  get_expr_operands (stmt, &OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c),
+			     opf_use);
+	return;
+      }
+
+    case OMP_CONTINUE:
+      {
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_def);
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_use);
+	return;
+      }
+
+    case OMP_PARALLEL:
+      {
+	tree c, clauses = OMP_PARALLEL_CLAUSES (stmt);
+
+	if (OMP_PARALLEL_DATA_ARG (stmt))
+	  {
+	    get_expr_operands (stmt, &OMP_PARALLEL_DATA_ARG (stmt), opf_use);
+	    add_to_addressable_set (OMP_PARALLEL_DATA_ARG (stmt),
+				    &s_ann->addresses_taken);
+	  }
+
+	c = find_omp_clause (clauses, OMP_CLAUSE_IF);
+	if (c)
+	  get_expr_operands (stmt, &OMP_CLAUSE_IF_EXPR (c), opf_use);
+	c = find_omp_clause (clauses, OMP_CLAUSE_NUM_THREADS);
+	if (c)
+	  get_expr_operands (stmt, &OMP_CLAUSE_NUM_THREADS_EXPR (c), opf_use);
+	return;
+      }
+
+    case OMP_SECTIONS:
+      {
+	get_expr_operands (stmt, &OMP_SECTIONS_CONTROL (expr), opf_def);
+	return;
+      }
+
     case BLOCK:
     case FUNCTION_DECL:
     case EXC_PTR_EXPR:
     case FILTER_EXPR:
     case LABEL_DECL:
     case CONST_DECL:
-    case OMP_PARALLEL:
-    case OMP_SECTIONS:
-    case OMP_FOR:
     case OMP_SINGLE:
     case OMP_MASTER:
     case OMP_ORDERED:
     case OMP_CRITICAL:
     case OMP_RETURN:
-    case OMP_CONTINUE:
+    case OMP_SECTION:
+    case OMP_SECTIONS_SWITCH:
       /* Expressions that make no memory references.  */
       return;
 
