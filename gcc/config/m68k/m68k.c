@@ -780,9 +780,7 @@ m68k_save_reg (unsigned int regno, bool interrupt_handler)
 {
   if (flag_pic && regno == PIC_REG)
     {
-      /* A function that receives a nonlocal goto must save all call-saved
-	 registers.  */
-      if (current_function_has_nonlocal_label)
+      if (current_function_saves_all_registers)
 	return true;
       if (current_function_uses_pic_offset_table)
 	return true;

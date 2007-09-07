@@ -387,9 +387,10 @@ struct function GTY(())
      from nested functions.  */
   unsigned int has_nonlocal_label : 1;
 
-  /* Nonzero if function calls builtin_unwind_init.  */
-  unsigned int calls_unwind_init : 1;
-  
+  /* Nonzero if function saves all registers, e.g. if it has a nonlocal
+     label that can reach the exit block via non-exceptional paths. */
+  unsigned int saves_all_registers : 1;
+
   /* Nonzero if function being compiled has nonlocal gotos to parent
      function.  */
   unsigned int has_nonlocal_goto : 1;
@@ -503,7 +504,7 @@ extern void pop_cfun (void);
 #define current_function_uses_const_pool (cfun->uses_const_pool)
 #define current_function_epilogue_delay_list (cfun->epilogue_delay_list)
 #define current_function_has_nonlocal_label (cfun->has_nonlocal_label)
-#define current_function_calls_unwind_init (cfun->calls_unwind_init)
+#define current_function_saves_all_registers (cfun->saves_all_registers)
 #define current_function_has_nonlocal_goto (cfun->has_nonlocal_goto)
 #define current_function_has_asm_statement (cfun->has_asm_statement)
 
