@@ -627,9 +627,9 @@ rtl_merge_blocks (basic_block a, basic_block b)
 
 
 /* Return true when block A and B can be merged.  */
-static bool
 
-rtl_can_merge_blocks (const_basic_block a, const_basic_block b)
+static bool
+rtl_can_merge_blocks (basic_block a, basic_block b)
 {
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -2535,8 +2535,9 @@ cfg_layout_delete_block (basic_block bb)
 }
 
 /* Return true when blocks A and B can be safely merged.  */
+
 static bool
-cfg_layout_can_merge_blocks_p (const_basic_block a, const_basic_block b)
+cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 {
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -2692,7 +2693,7 @@ rtl_make_forwarder_block (edge fallthru ATTRIBUTE_UNUSED)
    instructions that must stay with the call, 0 otherwise.  */
 
 static bool
-rtl_block_ends_with_call_p (const_basic_block bb)
+rtl_block_ends_with_call_p (basic_block bb)
 {
   rtx insn = BB_END (bb);
 

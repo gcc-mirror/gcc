@@ -745,21 +745,6 @@ bsi_start (basic_block bb)
   return bsi;
 }
 
-static inline const_block_stmt_iterator
-cbsi_start (const_basic_block bb)
-{
-  const_block_stmt_iterator bsi;
-  if (bb->index < NUM_FIXED_BLOCKS)
-    {
-      bsi.tsi.ptr = NULL;
-      bsi.tsi.container = NULL;
-    }
-  else
-    bsi.tsi = ctsi_start (bb_stmt_list (bb));
-  bsi.bb = bb;
-  return bsi;
-}
-
 /* Return a block statement iterator that points to the first non-label
    statement in block BB.  */
 
@@ -792,34 +777,12 @@ bsi_last (basic_block bb)
   return bsi;
 }
 
-static inline const_block_stmt_iterator
-cbsi_last (const_basic_block bb)
-{
-  const_block_stmt_iterator bsi;
-
-  if (bb->index < NUM_FIXED_BLOCKS)
-    {
-      bsi.tsi.ptr = NULL;
-      bsi.tsi.container = NULL;
-    }
-  else
-    bsi.tsi = ctsi_last (bb_stmt_list (bb));
-  bsi.bb = bb;
-  return bsi;
-}
-
 /* Return true if block statement iterator I has reached the end of
    the basic block.  */
 static inline bool
 bsi_end_p (block_stmt_iterator i)
 {
   return tsi_end_p (i.tsi);
-}
-
-static inline bool
-cbsi_end_p (const_block_stmt_iterator i)
-{
-  return ctsi_end_p (i.tsi);
 }
 
 /* Modify block statement iterator I so that it is at the next
@@ -830,12 +793,6 @@ bsi_next (block_stmt_iterator *i)
   tsi_next (&i->tsi);
 }
 
-static inline void
-cbsi_next (const_block_stmt_iterator *i)
-{
-  ctsi_next (&i->tsi);
-}
-
 /* Modify block statement iterator I so that it is at the previous
    statement in the basic block.  */
 static inline void
@@ -844,24 +801,12 @@ bsi_prev (block_stmt_iterator *i)
   tsi_prev (&i->tsi);
 }
 
-static inline void
-cbsi_prev (const_block_stmt_iterator *i)
-{
-  ctsi_prev (&i->tsi);
-}
-
 /* Return the statement that block statement iterator I is currently
    at.  */
 static inline tree
 bsi_stmt (block_stmt_iterator i)
 {
   return tsi_stmt (i.tsi);
-}
-
-static inline const_tree
-cbsi_stmt (const_block_stmt_iterator i)
-{
-  return ctsi_stmt (i.tsi);
 }
 
 /* Return a pointer to the statement that block statement iterator I

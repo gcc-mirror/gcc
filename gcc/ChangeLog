@@ -1,3 +1,10 @@
+2007-09-07  Diego Novillo  <dnovillo@google.com>
+
+	* tree-flow.h (const_block_stmt_iterator): Remove.
+	Update all users to use block_stmt_iterator.
+	* tree-iterator.h (const_tree_stmt_iterator): Remove.
+	Update all users to use tree_stmt_iterator.
+
 2007-09-07  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/mips/mips.c (mips_set_current_function): Temporarily

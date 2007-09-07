@@ -61,7 +61,7 @@ struct cfg_hooks
   bool (*move_block_after) (basic_block b, basic_block a);
 
   /* Return true when blocks A and B can be merged into single basic block.  */
-  bool (*can_merge_blocks_p) (const_basic_block a, const_basic_block b);
+  bool (*can_merge_blocks_p) (basic_block a, basic_block b);
 
   /* Merge blocks A and B.  */
   void (*merge_blocks) (basic_block a, basic_block b);
@@ -89,7 +89,7 @@ struct cfg_hooks
 
   /* Say whether a block ends with a call, possibly followed by some
      other code that must stay with the call.  */
-  bool (*block_ends_with_call_p) (const_basic_block);
+  bool (*block_ends_with_call_p) (basic_block);
 
   /* Say whether a block ends with a conditional branch.  Switches
      and unconditional branches do not qualify.  */
@@ -151,7 +151,7 @@ extern void delete_basic_block (basic_block);
 extern basic_block split_edge (edge);
 extern basic_block create_basic_block (void *, void *, basic_block);
 extern basic_block create_empty_bb (basic_block);
-extern bool can_merge_blocks_p (const_basic_block, const_basic_block);
+extern bool can_merge_blocks_p (basic_block, basic_block);
 extern void merge_blocks (basic_block, basic_block);
 extern edge make_forwarder_block (basic_block, bool (*)(edge),
 				  void (*) (basic_block));
@@ -161,7 +161,7 @@ extern void predict_edge (edge e, enum br_predictor predictor, int probability);
 extern bool predicted_by_p (const_basic_block bb, enum br_predictor predictor);
 extern bool can_duplicate_block_p (const_basic_block);
 extern basic_block duplicate_block (basic_block, edge, basic_block);
-extern bool block_ends_with_call_p (const_basic_block bb);
+extern bool block_ends_with_call_p (basic_block bb);
 extern bool block_ends_with_condjump_p (const_basic_block bb);
 extern int flow_call_edges_add (sbitmap);
 extern void execute_on_growing_pred (edge);
