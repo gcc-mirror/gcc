@@ -1,18 +1,12 @@
-2007-09-07  Janis Johnson  <janis187@us.ibm.com>
+2007-09-07  Eric Botcazou  <ebotcazou@adacore.com>
 
-	Reapply reverted change:
+	Re-apply accidentally reverted change:
 
-        2007-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+	2007-02-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-        * trans.c (convert_with_check): Update call to real_2expN.
-
-2007-09-06  Janis Johnson  <janis187@us.ibm.com>
-
-	Revert:
-
-	2007-09-06  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* trans.c (convert_with_check): Update call to real_2expN.
+	* raise-gcc.c (get_region_description_for, get_call_site_action_for,
+	get_action_description_for): Replace _Unwind_Word with _uleb128_t 
+	and _Unwind_SWord with _sleb128_t.
 
 2007-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -1011,7 +1005,7 @@
 	(build_global_cdtor): Delete.
 	(gnat_write_global_declarations): Do not call build_global_cdtor.
 
-	* lang-specs.h: If TARGET_VXWORKS_RTP is defined, append -mrtp when
+	* lang-spARGET_VXWORKS_RTP is defined, append -mrtp when
 	-fRTS=rtp is specified.
 	If CONFIG_DUAL_EXCEPTIONS is 1, append -fsjlj when -fRTS=sjlj is
 	specified.
