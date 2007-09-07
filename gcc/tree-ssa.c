@@ -1378,3 +1378,99 @@ struct tree_opt_pass pass_late_warn_uninitialized =
   0,                                    /* todo_flags_finish */
   0				        /* letter */
 };
+
+/* Compute TREE_ADDRESSABLE for local variables.  */
+
+static unsigned int
+execute_update_addresses_taken (void)
+{
+  tree var;
+  referenced_var_iterator rvi;
+  block_stmt_iterator bsi;
+  basic_block bb;
+  bitmap addresses_taken = BITMAP_ALLOC (NULL);
+  bitmap vars_updated = BITMAP_ALLOC (NULL);
+  bool update_vops;
+  tree phi;
+
+  /* Collect into ADDRESSES_TAKEN all variables whose address is taken within
+     the function body.  */
+  FOR_EACH_BB (bb)
+    {
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  stmt_ann_t s_ann = stmt_ann (bsi_stmt (bsi));
+
+	  if (s_ann->addresses_taken)
+	    bitmap_ior_into (addresses_taken, s_ann->addresses_taken);
+	}
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+	{
+	  unsigned i, phi_num_args = PHI_NUM_ARGS (phi);
+	  for (i = 0; i < phi_num_args; i++)
+	    {
+	      tree op = PHI_ARG_DEF (phi, i), var;
+	      if (TREE_CODE (op) == ADDR_EXPR
+		  && (var = get_base_address (TREE_OPERAND (op, 0))) != NULL_TREE
+		  && DECL_P (var))
+		bitmap_set_bit (addresses_taken, DECL_UID (var));
+	    }
+	}
+    }
+
+  /* When possible, clear ADDRESSABLE bit and mark variable for conversion into
+     SSA.  */
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    if (!is_global_var (var)
+	&& TREE_CODE (var) != RESULT_DECL
+	&& TREE_ADDRESSABLE (var)
+	&& !bitmap_bit_p (addresses_taken, DECL_UID (var)))
+      {
+        TREE_ADDRESSABLE (var) = 0;
+	if (is_gimple_reg (var))
+	  mark_sym_for_renaming (var);
+	update_vops = true;
+	bitmap_set_bit (vars_updated, DECL_UID (var));
+	if (dump_file)
+	  {
+	    fprintf (dump_file, "No longer having address taken ");
+	    print_generic_expr (dump_file, var, 0);
+	    fprintf (dump_file, "\n");
+	  }
+      }
+
+  /* Operand caches needs to be recomputed for operands referencing the updated
+     variables.  */
+  if (update_vops)
+    FOR_EACH_BB (bb)
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+
+	  if ((LOADED_SYMS (stmt)
+	       && bitmap_intersect_p (LOADED_SYMS (stmt), vars_updated))
+	      || (STORED_SYMS (stmt)
+		  && bitmap_intersect_p (STORED_SYMS (stmt), vars_updated)))
+	    update_stmt (stmt);
+	}
+  BITMAP_FREE (addresses_taken);
+  BITMAP_FREE (vars_updated);
+  return 0;
+}
+
+struct tree_opt_pass pass_update_address_taken =
+{
+  "addressables",			/* name */
+  NULL,					/* gate */
+  execute_update_addresses_taken,	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_update_ssa,                      /* todo_flags_finish */
+  0				        /* letter */
+};

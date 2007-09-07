@@ -306,6 +306,7 @@ extern struct tree_opt_pass pass_forwprop;
 extern struct tree_opt_pass pass_phiprop;
 extern struct tree_opt_pass pass_tree_ifcombine;
 extern struct tree_opt_pass pass_dse;
+extern struct tree_opt_pass pass_simple_dse;
 extern struct tree_opt_pass pass_nrv;
 extern struct tree_opt_pass pass_mark_used_blocks;
 extern struct tree_opt_pass pass_rename_ssa_copies;
@@ -445,6 +446,7 @@ extern struct tree_opt_pass pass_early_inline;
 extern struct tree_opt_pass pass_inline_parameters;
 extern struct tree_opt_pass pass_apply_inline;
 extern struct tree_opt_pass pass_all_early_optimizations;
+extern struct tree_opt_pass pass_update_address_taken;
 
 /* The root of the compilation pass tree, once constructed.  */
 extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
