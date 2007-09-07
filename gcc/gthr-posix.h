@@ -211,11 +211,80 @@ __gthread_active_p (void)
 
 #else /* not SUPPORTS_WEAK */
 
+/* Similar to Solaris, HP-UX 11 for PA-RISC provides stubs for pthread
+   calls in shared flavors of the HP-UX C library.  Most of the stubs
+   have no functionality.  The details are described in the "libc cumulative
+   patch" for each subversion of HP-UX 11.  There are two special interfaces
+   provided for checking whether an application is linked to a pthread
+   library or not.  However, these interfaces aren't available in early
+   libc versions.  We also can't use pthread_once as some libc versions
+   call the init function.  So, we use pthread_create to check whether it
+   is possible to create a thread or not.  The stub implementation returns
+   the error number ENOSYS.  */
+
+#if defined(__hppa__) && defined(__hpux__)
+
+#include <errno.h>
+
+static volatile int __gthread_active = -1;
+
+static void *
+__gthread_start (void *arg __attribute__((unused)))
+{
+  return NULL;
+}
+
+static void __gthread_active_init (void) __attribute__((noinline));
+static void
+__gthread_active_init (void)
+{
+  static pthread_mutex_t __gthread_active_mutex = PTHREAD_MUTEX_INITIALIZER;
+  pthread_t t;
+  int result;
+
+  __gthrw_(pthread_mutex_lock) (&__gthread_active_mutex);
+  if (__gthread_active < 0)
+    {
+      result = __gthrw_(pthread_create) (&t, NULL, __gthread_start, NULL);
+      if (result != ENOSYS)
+	{
+	  __gthread_active = 1;
+	  if (!result)
+	    __gthrw_(pthread_join) (t, NULL);
+	}
+      else
+	__gthread_active = 0;
+    }
+  __gthrw_(pthread_mutex_unlock) (&__gthread_active_mutex);
+}
+
+static inline int
+__gthread_active_p (void)
+{
+  /* Avoid reading __gthread_active twice on the main code path.  */
+  int __gthread_active_latest_value = __gthread_active;
+
+  /* This test is not protected to avoid taking a lock on the main code
+     path so every update of __gthread_active in a threaded program must
+     be atomic with regard to the result of the test.  */
+  if (__builtin_expect (__gthread_active_latest_value < 0, 0))
+    {
+      __gthread_active_init ();
+      __gthread_active_latest_value = __gthread_active;
+    }
+
+  return __gthread_active_latest_value != 0;
+}
+
+#else /* not hppa-hpux */
+
 static inline int
 __gthread_active_p (void)
 {
   return 1;
 }
+
+#endif /* hppa-hpux */
 
 #endif /* SUPPORTS_WEAK */
 

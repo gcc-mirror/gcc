@@ -1,3 +1,10 @@
+2007-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/33286
+	* gthr-posix.h (__gthread_active_p): Add implementation for hppa-hpux.
+	(__gthread_active,__gthread_start, __gthread_active_init): New.
+	* gthr-posix95.h: Likewise.
+
 2007-09-07  Roman Zippel <zippel@linux-m68k.org>
 
 	* function.h (struct function): Rename calls_unwind_init
