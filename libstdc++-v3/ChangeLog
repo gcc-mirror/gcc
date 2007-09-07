@@ -1,3 +1,28 @@
+2007-09-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Check CXXFLAGS.
+	* scripts/testsuite_flags.in: CXXFLAGS_default, matching dejagnu.
+
+	* include/std/ostream: Spacing tweak.
+	* include/ext/hashtable.h: Use <algorithm>.
+	* include/ext/slist: Same.
+	* include/ext/rope: Same.
+	* include/bits/stl_function.h: Format.
+	* include/tr1_impl/array: Remove section number in doxygen markup.
+	* src/list.cc: Comment tweak.	
+	
+	* docs/doxygen/user.cfg.in: Update for include/tr1_impl.
+	
+	* testsuite/25_algorithms/search_n/iterator.cc: Add using declaration.
+	* testsuite/25_algorithms/nth_element/1.cc:  Same.
+	* testsuite/21_strings/char_traits/requirements/short/1.cc: Use
+	char_type typedef to the underlying character type.	
+	* testsuite/21_strings/char_traits/requirements/wchar_t/typedefs.cc:
+	Remove -ansi -pedantic-errors.
+	* testsuite/21_strings/char_traits/requirements/char/typedefs.cc: Same.
+	* testsuite/tr1/6_containers/headers/functional/synopsis.cc:
+	Remove specializations.
+	
 2007-09-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_vector.h (_Vector_base<>::_M_allocate):

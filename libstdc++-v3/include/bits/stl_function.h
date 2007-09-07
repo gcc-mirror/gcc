@@ -99,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  This is one of the @link s20_3_1_base functor base classes@endlink.
    */
-  template <class _Arg, class _Result>
+  template<typename _Arg, typename _Result>
     struct unary_function
     {
       typedef _Arg argument_type;   ///< @c argument_type is the type of the
@@ -111,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  This is one of the @link s20_3_1_base functor base classes@endlink.
    */
-  template <class _Arg1, class _Arg2, class _Result>
+  template<typename _Arg1, typename _Arg2, typename _Result>
     struct binary_function
     {
       typedef _Arg1 first_argument_type;   ///< the type of the first argument
@@ -133,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @{
    */
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct plus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct minus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -151,7 +151,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct multiplies : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct divides : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -169,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct modulus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -178,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_2_arithmetic math functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct negate : public unary_function<_Tp, _Tp>
     {
       _Tp
@@ -195,7 +195,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @{
    */
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct equal_to : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -204,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct not_equal_to : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -213,7 +213,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct greater : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -222,7 +222,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct less : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct greater_equal : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_3_comparisons comparison functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct less_equal : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @{
    */
   /// One of the @link s20_3_4_logical Boolean operations functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct logical_and : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -266,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_4_logical Boolean operations functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct logical_or : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -275,7 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_4_logical Boolean operations functors@endlink.
-  template <class _Tp>
+  template<typename _Tp>
     struct logical_not : public unary_function<_Tp, bool>
     {
       bool
@@ -286,7 +286,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 660. Missing Bitwise Operations.
-  template <class _Tp>
+  template<typename _Tp>
     struct bit_and : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -294,7 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __x & __y; }
     };
 
-  template <class _Tp>
+  template<typename _Tp>
     struct bit_or : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -302,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __x | __y; }
     };
 
-  template <class _Tp>
+  template<typename _Tp>
     struct bit_xor : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -338,15 +338,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @{
    */
   /// One of the @link s20_3_5_negators negation functors@endlink.
-  template <class _Predicate>
+  template<typename _Predicate>
     class unary_negate
     : public unary_function<typename _Predicate::argument_type, bool>
     {
     protected:
       _Predicate _M_pred;
+
     public:
       explicit
-      unary_negate(const _Predicate& __x) : _M_pred(__x) {}
+      unary_negate(const _Predicate& __x) : _M_pred(__x) { }
 
       bool
       operator()(const typename _Predicate::argument_type& __x) const
@@ -354,13 +355,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_5_negators negation functors@endlink.
-  template <class _Predicate>
+  template<typename _Predicate>
     inline unary_negate<_Predicate>
     not1(const _Predicate& __pred)
     { return unary_negate<_Predicate>(__pred); }
 
   /// One of the @link s20_3_5_negators negation functors@endlink.
-  template <class _Predicate>
+  template<typename _Predicate>
     class binary_negate
     : public binary_function<typename _Predicate::first_argument_type,
 			     typename _Predicate::second_argument_type, bool>
@@ -379,7 +380,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_5_negators negation functors@endlink.
-  template <class _Predicate>
+  template<typename _Predicate>
     inline binary_negate<_Predicate>
     not2(const _Predicate& __pred)
     { return binary_negate<_Predicate>(__pred); }
@@ -417,7 +418,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @{
    */
   /// One of the @link s20_3_6_binder binder functors@endlink.
-  template <class _Operation>
+  template<typename _Operation>
     class binder1st
     : public unary_function<typename _Operation::second_argument_type,
 			    typename _Operation::result_type>
@@ -425,10 +426,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       _Operation op;
       typename _Operation::first_argument_type value;
+
     public:
       binder1st(const _Operation& __x,
 		const typename _Operation::first_argument_type& __y)
-      : op(__x), value(__y) {}
+      : op(__x), value(__y) { }
 
       typename _Operation::result_type
       operator()(const typename _Operation::second_argument_type& __x) const
@@ -442,7 +444,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
-  template <class _Operation, class _Tp>
+  template<typename _Operation, typename _Tp>
     inline binder1st<_Operation>
     bind1st(const _Operation& __fn, const _Tp& __x)
     {
@@ -451,7 +453,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
-  template <class _Operation>
+  template<typename _Operation>
     class binder2nd
     : public unary_function<typename _Operation::first_argument_type,
 			    typename _Operation::result_type>
@@ -459,10 +461,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     protected:
       _Operation op;
       typename _Operation::second_argument_type value;
+
     public:
       binder2nd(const _Operation& __x,
 		const typename _Operation::second_argument_type& __y)
-      : op(__x), value(__y) {}
+      : op(__x), value(__y) { }
 
       typename _Operation::result_type
       operator()(const typename _Operation::first_argument_type& __x) const
@@ -476,7 +479,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_6_binder binder functors@endlink.
-  template <class _Operation, class _Tp>
+  template<typename _Operation, typename _Tp>
     inline binder2nd<_Operation>
     bind2nd(const _Operation& __fn, const _Tp& __x)
     {
@@ -506,17 +509,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @{
    */
   /// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
-  template <class _Arg, class _Result>
+  template<typename _Arg, typename _Result>
     class pointer_to_unary_function : public unary_function<_Arg, _Result>
     {
     protected:
       _Result (*_M_ptr)(_Arg);
+
     public:
-      pointer_to_unary_function() {}
+      pointer_to_unary_function() { }
 
       explicit
       pointer_to_unary_function(_Result (*__x)(_Arg))
-      : _M_ptr(__x) {}
+      : _M_ptr(__x) { }
 
       _Result
       operator()(_Arg __x) const
@@ -524,24 +528,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
-  template <class _Arg, class _Result>
+  template<typename _Arg, typename _Result>
     inline pointer_to_unary_function<_Arg, _Result>
     ptr_fun(_Result (*__x)(_Arg))
     { return pointer_to_unary_function<_Arg, _Result>(__x); }
 
   /// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
-  template <class _Arg1, class _Arg2, class _Result>
+  template<typename _Arg1, typename _Arg2, typename _Result>
     class pointer_to_binary_function
     : public binary_function<_Arg1, _Arg2, _Result>
     {
     protected:
       _Result (*_M_ptr)(_Arg1, _Arg2);
+
     public:
-      pointer_to_binary_function() {}
+      pointer_to_binary_function() { }
 
       explicit
       pointer_to_binary_function(_Result (*__x)(_Arg1, _Arg2))
-      : _M_ptr(__x) {}
+      : _M_ptr(__x) { }
 
       _Result
       operator()(_Arg1 __x, _Arg2 __y) const
@@ -549,13 +554,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   /// One of the @link s20_3_7_adaptors adaptors for function pointers@endlink.
-  template <class _Arg1, class _Arg2, class _Result>
+  template<typename _Arg1, typename _Arg2, typename _Result>
     inline pointer_to_binary_function<_Arg1, _Arg2, _Result>
     ptr_fun(_Result (*__x)(_Arg1, _Arg2))
     { return pointer_to_binary_function<_Arg1, _Arg2, _Result>(__x); }
   /** @}  */
 
-  template <class _Tp>
+  template<typename _Tp>
     struct _Identity : public unary_function<_Tp,_Tp>
     {
       _Tp&
@@ -567,7 +572,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __x; }
     };
 
-  template <class _Pair>
+  template<typename _Pair>
     struct _Select1st : public unary_function<_Pair,
 					      typename _Pair::first_type>
     {
@@ -580,7 +585,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __x.first; }
     };
 
-  template <class _Pair>
+  template<typename _Pair>
     struct _Select2nd : public unary_function<_Pair,
 					      typename _Pair::second_type>
     {
@@ -609,178 +614,186 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    */
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     class mem_fun_t : public unary_function<_Tp*, _Ret>
     {
     public:
       explicit
       mem_fun_t(_Ret (_Tp::*__pf)())
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(_Tp* __p) const
       { return (__p->*_M_f)(); }
+
     private:
       _Ret (_Tp::*_M_f)();
     };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     class const_mem_fun_t : public unary_function<const _Tp*, _Ret>
     {
     public:
       explicit
       const_mem_fun_t(_Ret (_Tp::*__pf)() const)
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(const _Tp* __p) const
       { return (__p->*_M_f)(); }
+
     private:
       _Ret (_Tp::*_M_f)() const;
     };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     class mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
     public:
       explicit
       mem_fun_ref_t(_Ret (_Tp::*__pf)())
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(_Tp& __r) const
       { return (__r.*_M_f)(); }
+
     private:
       _Ret (_Tp::*_M_f)();
   };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     class const_mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
     public:
       explicit
       const_mem_fun_ref_t(_Ret (_Tp::*__pf)() const)
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(const _Tp& __r) const
       { return (__r.*_M_f)(); }
+
     private:
       _Ret (_Tp::*_M_f)() const;
     };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     class mem_fun1_t : public binary_function<_Tp*, _Arg, _Ret>
     {
     public:
       explicit
       mem_fun1_t(_Ret (_Tp::*__pf)(_Arg))
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(_Tp* __p, _Arg __x) const
       { return (__p->*_M_f)(__x); }
+
     private:
       _Ret (_Tp::*_M_f)(_Arg);
     };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     class const_mem_fun1_t : public binary_function<const _Tp*, _Arg, _Ret>
     {
     public:
       explicit
       const_mem_fun1_t(_Ret (_Tp::*__pf)(_Arg) const)
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(const _Tp* __p, _Arg __x) const
       { return (__p->*_M_f)(__x); }
+
     private:
       _Ret (_Tp::*_M_f)(_Arg) const;
     };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     class mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
     public:
       explicit
       mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg))
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(_Tp& __r, _Arg __x) const
       { return (__r.*_M_f)(__x); }
+
     private:
       _Ret (_Tp::*_M_f)(_Arg);
     };
 
   /// One of the @link s20_3_8_memadaptors adaptors for member
   /// pointers@endlink.
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     class const_mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
     public:
       explicit
       const_mem_fun1_ref_t(_Ret (_Tp::*__pf)(_Arg) const)
-      : _M_f(__pf) {}
+      : _M_f(__pf) { }
 
       _Ret
       operator()(const _Tp& __r, _Arg __x) const
       { return (__r.*_M_f)(__x); }
+
     private:
       _Ret (_Tp::*_M_f)(_Arg) const;
     };
 
   // Mem_fun adaptor helper functions.  There are only two:
   // mem_fun and mem_fun_ref.
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     inline mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)())
     { return mem_fun_t<_Ret, _Tp>(__f); }
 
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     inline const_mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)() const)
     { return const_mem_fun_t<_Ret, _Tp>(__f); }
 
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     inline mem_fun_ref_t<_Ret, _Tp>
     mem_fun_ref(_Ret (_Tp::*__f)())
     { return mem_fun_ref_t<_Ret, _Tp>(__f); }
 
-  template <class _Ret, class _Tp>
+  template<typename _Ret, typename _Tp>
     inline const_mem_fun_ref_t<_Ret, _Tp>
     mem_fun_ref(_Ret (_Tp::*__f)() const)
     { return const_mem_fun_ref_t<_Ret, _Tp>(__f); }
 
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     inline mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun(_Ret (_Tp::*__f)(_Arg))
     { return mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     inline const_mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun(_Ret (_Tp::*__f)(_Arg) const)
     { return const_mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     inline mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun_ref(_Ret (_Tp::*__f)(_Arg))
     { return mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
-  template <class _Ret, class _Tp, class _Arg>
+  template<typename _Ret, typename _Tp, typename _Arg>
     inline const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun_ref(_Ret (_Tp::*__f)(_Arg) const)
     { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
