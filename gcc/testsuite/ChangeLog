@@ -1,3 +1,8 @@
+2007-09-07 Uros Bizjak <ubizjak@gmail.com>
+
+	PR tree-optimization/32821
+	* gcc.dg/tree-ssa/pr32821.c: New file.
+
 2007-09-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/attr-alias-3.c: Use real asm for MIPS.

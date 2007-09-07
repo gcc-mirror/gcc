@@ -1,3 +1,10 @@
+2007-09-07  Richard Guenther  <rguenther@suse.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/32821
+	* tree_if_conv.c (combine_blocks): Use alloc_stmt_list instead of
+	NULL in the call to set_bb_stmt_list.
+
 2007-09-07  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (build_mips16_call_stub): Emit all direct
