@@ -213,7 +213,6 @@ st_backspace (st_parameter_filepos *fpp)
       u->endfile = AT_ENDFILE;
       u->flags.position = POSITION_APPEND;
       flush (u->s);
-      struncate (u->s);
     }
   else
     {
