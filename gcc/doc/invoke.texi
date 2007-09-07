@@ -629,7 +629,9 @@ Objective-C and Objective-C++ Dialects}.
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
 -mips3d  -mno-mips3d  -mmt  -mno-mt @gol
 -mlong64  -mlong32  -msym32  -mno-sym32 @gol
--G@var{num}  -membedded-data  -mno-embedded-data @gol
+-G@var{num}  -mlocal-sdata  -mno-local-sdata @gol
+-mextern-sdata  -mno-extern-sdata  -mgpopt  -mno-gopt @gol
+-membedded-data  -mno-embedded-data @gol
 -muninit-const-in-rodata  -mno-uninit-const-in-rodata @gol
 -mcode-readable=@var{setting} @gol
 -msplit-addresses  -mno-split-addresses @gol
@@ -11850,14 +11852,69 @@ to generate shorter and faster references to symbolic addresses.
 
 @item -G @var{num}
 @opindex G
-@cindex smaller data references (MIPS)
-@cindex gp-relative references (MIPS)
-Put global and static items less than or equal to @var{num} bytes into
-the small data or bss section instead of the normal data or bss section.
-This allows the data to be accessed using a single instruction.
+Put definitions of externally-visible data in a small data section
+if that data is no bigger than @var{num} bytes.  GCC can then access
+the data more efficiently; see @option{-mgpopt} for details.
 
-All modules should be compiled with the same @option{-G @var{num}}
-value.
+The default @option{-G} option depends on the configuration.
+
+@item -mlocal-sdata
+@itemx -mno-local-sdata
+@opindex mlocal-sdata
+@opindex mno-local-sdata
+Extend (do not extend) the @option{-G} behavior to local data too,
+such as to static variables in C.  @option{-mlocal-sdata} is the
+default for all configurations.
+
+If the linker complains that an application is using too much small data,
+you might want to try rebuilding the less performance-critical parts with
+@option{-mno-local-sdata}.  You might also want to build large
+libraries with @option{-mno-local-sdata}, so that the libraries leave
+more room for the main program.
+
+@item -mextern-sdata
+@itemx -mno-extern-sdata
+@opindex mextern-sdata
+@opindex mno-extern-sdata
+Assume (do not assume) that externally-defined data will be in
+a small data section if that data is within the @option{-G} limit.
+@option{-mextern-sdata} is the default for all configurations.
+
+If you compile a module @var{Mod} with @option{-mextern-sdata} @option{-G
+@var{num}} @option{-mgpopt}, and @var{Mod} references a variable @var{Var}
+that is no bigger than @var{num} bytes, you must make sure that @var{Var}
+is placed in a small data section.  If @var{Var} is defined by another
+module, you must either compile that module with a high-enough
+@option{-G} setting or attach a @code{section} attribute to @var{Var}'s
+definition.  If @var{Var} is common, you must link the application
+with a high-enough @option{-G} setting.
+
+The easiest way of satisfying these restrictions is to compile
+and link every module with the same @option{-G} option.  However,
+you may wish to build a library that supports several different
+small data limits.  You can do this by compiling the library with
+the highest supported @option{-G} setting and additionally using
+@option{-mno-extern-sdata} to stop the library from making assumptions
+about externally-defined data.
+
+@item -mgpopt
+@itemx -mno-gpopt
+@opindex mgpopt
+@opindex mno-gpopt
+Use (do not use) GP-relative accesses for symbols that are known to be
+in a small data section; see @option{-G}, @option{-mlocal-sdata} and
+@option{-mextern-sdata}.  @option{-mgpopt} is the default for all
+configurations.
+
+@option{-mno-gpopt} is useful for cases where the @code{$gp} register
+might not hold the value of @code{_gp}.  For example, if the code is
+part of a library that might be used in a boot monitor, programs that
+call boot monitor routines will pass an unknown value in @code{$gp}.
+(In such situations, the boot monitor itself would usually be compiled
+with @option{-G0}.)
+
+@option{-mno-gpopt} implies @option{-mno-local-sdata} and
+@option{-mno-extern-sdata}.
 
 @item -membedded-data
 @itemx -mno-embedded-data

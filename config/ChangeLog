@@ -1,3 +1,8 @@
+2007-09-07  Richard Sandiford  <richard@codesourcery.com>
+
+	* mt-sde (CFLAGS_FOR_TARGET): Add -mno-gpopt.
+	(CXXFLAGS_FOR_TARGET): Likewise.
+
 2007-08-18  Paul Brook  <paul@codesourcery.com>
             Joseph Myers  <joseph@codesourcery.com>
 

@@ -52,5 +52,11 @@ extern ftype Af4a __attribute__((alias ("lf4")));
 static ftype *pf4a = &Af4a;
 
 main() {
+#ifdef __mips
+  /* Use real asm for MIPS, to stop the assembler warning about
+     orphaned high-part relocations.  */
+  asm volatile ("lw $2,%0\n\tlw $2,%1" : : "m" (pv4a), "m" (pf4a) : "$2");
+#else
   asm volatile ("" : : "m" (pv4a), "m" (pf4a));
+#endif
 }
