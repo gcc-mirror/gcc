@@ -1,3 +1,19 @@
+2007-09-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR libstdc++/33203
+	* configure.host (error_constants_dir):  New variable,
+	defaulting to os/generic.
+	( mingw32*): Overide default.
+	* configure.ac (ERROR_CONSTANTS_SRCDIR): New.
+	* configure: Regenerate.
+	* include/Makefile.am (host_headers): Add
+	$(ERROR_CONSTANTS_SRCDIR)/error_constants.h .
+	* include/Makefile.in: Regenerate.
+	* include/std/system_error (enum posix_errno): Remove.
+	Include <bits/error_constants.h> instead.
+	* config/os/mingw32/error_constants.h: New.
+	* config/os/generic/error_constants.h: New.
+
 2007-09-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/lib/libstdc++.exp: Check CXXFLAGS.
