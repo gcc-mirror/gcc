@@ -5344,19 +5344,8 @@ mips_set_mips16_mode (int mips16_p)
    function should use the MIPS16 ISA and switch modes accordingly.  */
 
 static void
-mips_set_current_function (tree fndecl)
+mips_set_current_function (tree fndecl ATTRIBUTE_UNUSED)
 {
-  int mips16p;
-  if (errorcount || sorrycount)
-    /* Avoid generating RTL when fndecl is possibly invalid.  Best to fall
-       back on non-MIPS16 mode to avoid any strange secondary errors about
-       use of unsupported features in MIPS16 mode.  */
-    mips16p = false;
-  else if (fndecl)
-    mips16p = SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (fndecl), 0));
-  else
-    mips16p = mips_base_mips16;
-  mips_set_mips16_mode (mips16p);
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
