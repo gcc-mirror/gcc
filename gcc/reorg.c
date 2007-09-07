@@ -3863,17 +3863,6 @@ dbr_schedule (rtx first)
       relax_delay_slots (first);
     }
 
-  /* Delete any USE insns made by update_block; subsequent passes don't need
-     them or know how to deal with them.  */
-  for (insn = first; insn; insn = next)
-    {
-      next = NEXT_INSN (insn);
-
-      if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE
-	  && INSN_P (XEXP (PATTERN (insn), 0)))
-	next = delete_related_insns (insn);
-    }
-
   /* If we made an end of function label, indicate that it is now
      safe to delete it by undoing our prior adjustment to LABEL_NUSES.
      If it is now unused, delete it.  */
@@ -3884,6 +3873,17 @@ dbr_schedule (rtx first)
   if (HAVE_return && end_of_function_label != 0)
     make_return_insns (first);
 #endif
+
+  /* Delete any USE insns made by update_block; subsequent passes don't need
+     them or know how to deal with them.  */
+  for (insn = first; insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+
+      if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE
+	  && INSN_P (XEXP (PATTERN (insn), 0)))
+	next = delete_related_insns (insn);
+    }
 
   obstack_free (&unfilled_slots_obstack, unfilled_firstobj);
 
