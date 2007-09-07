@@ -34,26 +34,10 @@ typedef struct {
   tree container;
 } tree_stmt_iterator;
 
-typedef struct {
-  struct tree_statement_list_node *ptr;
-  const_tree container;
-} const_tree_stmt_iterator;
-
 static inline tree_stmt_iterator
 tsi_start (tree t)
 {
   tree_stmt_iterator i;
-
-  i.ptr = STATEMENT_LIST_HEAD (t);
-  i.container = t;
-
-  return i;
-}
-
-static inline const_tree_stmt_iterator
-ctsi_start (const_tree t)
-{
-  const_tree_stmt_iterator i;
 
   i.ptr = STATEMENT_LIST_HEAD (t);
   i.container = t;
@@ -72,17 +56,6 @@ tsi_last (tree t)
   return i;
 }
 
-static inline const_tree_stmt_iterator
-ctsi_last (tree t)
-{
-  const_tree_stmt_iterator i;
-
-  i.ptr = STATEMENT_LIST_TAIL (t);
-  i.container = t;
-
-  return i;
-}
-
 static inline bool
 tsi_end_p (tree_stmt_iterator i)
 {
@@ -90,19 +63,7 @@ tsi_end_p (tree_stmt_iterator i)
 }
 
 static inline bool
-ctsi_end_p (const_tree_stmt_iterator i)
-{
-  return i.ptr == NULL;
-}
-
-static inline bool
 tsi_one_before_end_p (tree_stmt_iterator i)
-{
-  return i.ptr != NULL && i.ptr->next == NULL;
-}
-
-static inline bool
-ctsi_one_before_end_p (const_tree_stmt_iterator i)
 {
   return i.ptr != NULL && i.ptr->next == NULL;
 }
@@ -114,19 +75,7 @@ tsi_next (tree_stmt_iterator *i)
 }
 
 static inline void
-ctsi_next (const_tree_stmt_iterator *i)
-{
-  i->ptr = i->ptr->next;
-}
-
-static inline void
 tsi_prev (tree_stmt_iterator *i)
-{
-  i->ptr = i->ptr->prev;
-}
-
-static inline void
-ctsi_prev (const_tree_stmt_iterator *i)
 {
   i->ptr = i->ptr->prev;
 }
@@ -139,12 +88,6 @@ tsi_stmt_ptr (tree_stmt_iterator i)
 
 static inline tree
 tsi_stmt (tree_stmt_iterator i)
-{
-  return i.ptr->stmt;
-}
-
-static inline const_tree
-ctsi_stmt (const_tree_stmt_iterator i)
 {
   return i.ptr->stmt;
 }

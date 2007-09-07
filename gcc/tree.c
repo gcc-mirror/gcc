@@ -8635,10 +8635,10 @@ walk_tree_without_duplicates_1 (tree *tp, walk_tree_fn func, void *data,
    empty statements.  */
 
 bool
-empty_body_p (const_tree stmt)
+empty_body_p (tree stmt)
 {
-  const_tree_stmt_iterator i;
-  const_tree body;
+  tree_stmt_iterator i;
+  tree body;
 
   if (IS_EMPTY_STMT (stmt))
     return true;
@@ -8649,8 +8649,8 @@ empty_body_p (const_tree stmt)
   else
     return false;
 
-  for (i = ctsi_start (body); !ctsi_end_p (i); ctsi_next (&i))
-    if (!empty_body_p (ctsi_stmt (i)))
+  for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
+    if (!empty_body_p (tsi_stmt (i)))
       return false;
 
   return true;

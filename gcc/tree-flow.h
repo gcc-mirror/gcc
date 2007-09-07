@@ -624,15 +624,8 @@ typedef struct {
   basic_block bb;
 } block_stmt_iterator;
 
-typedef struct {
-  const_tree_stmt_iterator tsi;
-  const_basic_block bb;
-} const_block_stmt_iterator;
-
 static inline block_stmt_iterator bsi_start (basic_block);
-static inline const_block_stmt_iterator cbsi_start (const_basic_block);
 static inline block_stmt_iterator bsi_last (basic_block);
-static inline const_block_stmt_iterator cbsi_last (const_basic_block);
 static inline block_stmt_iterator bsi_after_labels (basic_block);
 block_stmt_iterator bsi_for_stmt (tree);
 static inline bool bsi_end_p (block_stmt_iterator);
@@ -965,7 +958,7 @@ extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
 extern tree get_vectype_for_scalar_type (tree);
 
 /* In tree-ssa-phiopt.c */
-bool empty_block_p (const_basic_block);
+bool empty_block_p (basic_block);
 basic_block *blocks_in_phiopt_order (void);
 
 /* In tree-ssa-loop*.c  */

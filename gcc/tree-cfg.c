@@ -105,7 +105,7 @@ static inline void change_bb_for_stmt (tree t, basic_block bb);
 
 /* Flowgraph optimization and cleanup.  */
 static void tree_merge_blocks (basic_block, basic_block);
-static bool tree_can_merge_blocks_p (const_basic_block, const_basic_block);
+static bool tree_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (basic_block, tree);
@@ -1136,10 +1136,10 @@ group_case_labels (void)
 /* Checks whether we can merge block B into block A.  */
 
 static bool
-tree_can_merge_blocks_p (const_basic_block a, const_basic_block b)
+tree_can_merge_blocks_p (basic_block a, basic_block b)
 {
   const_tree stmt;
-  const_block_stmt_iterator bsi;
+  block_stmt_iterator bsi;
   tree phi;
 
   if (!single_succ_p (a))
@@ -1161,7 +1161,7 @@ tree_can_merge_blocks_p (const_basic_block a, const_basic_block b)
      cannot merge the blocks.  */
   /* This CONST_CAST is okay because last_stmt doesn't modify its
      argument and the return value is assign to a const_tree.  */
-  stmt = last_stmt (CONST_CAST_BB(a));
+  stmt = last_stmt (CONST_CAST_BB (a));
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
@@ -1187,9 +1187,9 @@ tree_can_merge_blocks_p (const_basic_block a, const_basic_block b)
     }
 
   /* Do not remove user labels.  */
-  for (bsi = cbsi_start (b); !cbsi_end_p (bsi); cbsi_next (&bsi))
+  for (bsi = bsi_start (b); !bsi_end_p (bsi); bsi_next (&bsi))
     {
-      stmt = cbsi_stmt (bsi);
+      stmt = bsi_stmt (bsi);
       if (TREE_CODE (stmt) != LABEL_EXPR)
 	break;
       if (!DECL_ARTIFICIAL (LABEL_EXPR_LABEL (stmt)))
@@ -6037,10 +6037,10 @@ debug_loop_ir (void)
    otherwise.  */
 
 static bool
-tree_block_ends_with_call_p (const_basic_block bb)
+tree_block_ends_with_call_p (basic_block bb)
 {
-  const_block_stmt_iterator bsi = cbsi_last (bb);
-  return const_get_call_expr_in (cbsi_stmt (bsi)) != NULL;
+  block_stmt_iterator bsi = bsi_last (bb);
+  return const_get_call_expr_in (bsi_stmt (bsi)) != NULL;
 }
 
 
