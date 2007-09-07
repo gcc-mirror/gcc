@@ -1,3 +1,8 @@
+2007-09-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/mips/mips.c (mips_set_current_function): Temporarily
+	make this a no-op to fix bootstrap errors, pending rewrite.
+
 2007-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* reorg.c (dbr_schedule): Move code removing placeholder USEs later
