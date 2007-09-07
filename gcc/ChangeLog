@@ -1,3 +1,9 @@
+2007-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33330
+	* tree-ssa-operands.c (access_can_touch_variable): An access
+	of the form (*p)[0] can touch a variable of same size.
+
 2007-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (init_optimization_passes): Add simple dce and addressable
