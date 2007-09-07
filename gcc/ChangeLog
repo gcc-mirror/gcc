@@ -1,3 +1,9 @@
+2007-09-07  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33299
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Update uses 
+	for all relevant loop-exit phis, not just the first.
+
 2007-09-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33330
