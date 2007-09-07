@@ -1912,8 +1912,8 @@ language.
 
 The common predefined macros are GNU C extensions.  They are available
 with the same meanings regardless of the machine or operating system on
-which you are using GNU C@.  Their names all start with double
-underscores.
+which you are using GNU C or GNU Fortran.  Their names all start with
+double underscores.
 
 @table @code
 
@@ -1924,11 +1924,14 @@ generate unique identifiers.  Care must be taken to ensure that
 @code{__COUNTER__} is not expanded prior to inclusion of precompiled headers
 which use it.  Otherwise, the precompiled headers will not be used.
 
+@item __GFORTRAN__
+The GNU Fortran compiler defines this. 
+
 @item __GNUC__
 @itemx __GNUC_MINOR__
 @itemx __GNUC_PATCHLEVEL__
 These macros are defined by all GNU compilers that use the C
-preprocessor: C, C++, and Objective-C@.  Their values are the major
+preprocessor: C, C++, Objective-C and Fortran.  Their values are the major
 version, minor version, and patch level of the compiler, as integer
 constants.  For example, GCC 3.2.1 will define @code{__GNUC__} to 3,
 @code{__GNUC_MINOR__} to 2, and @code{__GNUC_PATCHLEVEL__} to 1.  These

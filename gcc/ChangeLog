@@ -1,3 +1,8 @@
+2007-09-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33303
+	* doc/cpp.texi (Common Predefined Macros): Add __GFORTRAN__.
+
 2007-09-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* regrename.c (copyprop_hardreg_forward_1): New variable next. Use
