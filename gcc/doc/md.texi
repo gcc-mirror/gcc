@@ -3587,10 +3587,18 @@ Add operand 2 and operand 1, storing the result in operand 0.  All operands
 must have mode @var{m}.  This can be used even on two-address machines, by
 means of constraints requiring operands 1 and 0 to be the same location.
 
+@cindex @code{ssadd@var{m}3} instruction pattern
+@cindex @code{usadd@var{m}3} instruction pattern
 @cindex @code{sub@var{m}3} instruction pattern
+@cindex @code{sssub@var{m}3} instruction pattern
+@cindex @code{ussub@var{m}3} instruction pattern
 @cindex @code{mul@var{m}3} instruction pattern
+@cindex @code{ssmul@var{m}3} instruction pattern
+@cindex @code{usmul@var{m}3} instruction pattern
 @cindex @code{div@var{m}3} instruction pattern
+@cindex @code{ssdiv@var{m}3} instruction pattern
 @cindex @code{udiv@var{m}3} instruction pattern
+@cindex @code{usdiv@var{m}3} instruction pattern
 @cindex @code{mod@var{m}3} instruction pattern
 @cindex @code{umod@var{m}3} instruction pattern
 @cindex @code{umin@var{m}3} instruction pattern
@@ -3598,8 +3606,11 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @cindex @code{and@var{m}3} instruction pattern
 @cindex @code{ior@var{m}3} instruction pattern
 @cindex @code{xor@var{m}3} instruction pattern
-@item @samp{sub@var{m}3}, @samp{mul@var{m}3}
-@itemx @samp{div@var{m}3}, @samp{udiv@var{m}3}
+@item @samp{ssadd@var{m}3}, @samp{usadd@var{m}3}
+@item @samp{sub@var{m}3}, @samp{sssub@var{m}3}, @samp{ussub@var{m}3}
+@item @samp{mul@var{m}3}, @samp{ssmul@var{m}3}, @samp{usmul@var{m}3}
+@itemx @samp{div@var{m}3}, @samp{ssdiv@var{m}3}
+@itemx @samp{udiv@var{m}3}, @samp{usdiv@var{m}3}
 @itemx @samp{mod@var{m}3}, @samp{umod@var{m}3}
 @itemx @samp{umin@var{m}3}, @samp{umax@var{m}3}
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
@@ -3772,7 +3783,7 @@ Similar, but the multiplication is unsigned.
 Multiply operands 1 and 2, sign-extend them to mode @var{n}, add
 operand 3, and store the result in operand 0.  Operands 1 and 2
 have mode @var{m} and operands 0 and 3 have mode @var{n}.
-Both modes must be integer modes and @var{n} must be twice
+Both modes must be integer or fixed-point modes and @var{n} must be twice
 the size of @var{m}.
 
 In other words, @code{madd@var{m}@var{n}4} is like
@@ -3785,12 +3796,22 @@ These instructions are not allowed to @code{FAIL}.
 Like @code{madd@var{m}@var{n}4}, but zero-extend the multiplication
 operands instead of sign-extending them.
 
+@cindex @code{ssmadd@var{m}@var{n}4} instruction pattern
+@item @samp{ssmadd@var{m}@var{n}4}
+Like @code{madd@var{m}@var{n}4}, but all involved operations must be
+signed-saturating.
+
+@cindex @code{usmadd@var{m}@var{n}4} instruction pattern
+@item @samp{usmadd@var{m}@var{n}4}
+Like @code{umadd@var{m}@var{n}4}, but all involved operations must be
+unsigned-saturating.
+
 @cindex @code{msub@var{m}@var{n}4} instruction pattern
 @item @samp{msub@var{m}@var{n}4}
 Multiply operands 1 and 2, sign-extend them to mode @var{n}, subtract the
 result from operand 3, and store the result in operand 0.  Operands 1 and 2
 have mode @var{m} and operands 0 and 3 have mode @var{n}.
-Both modes must be integer modes and @var{n} must be twice
+Both modes must be integer or fixed-point modes and @var{n} must be twice
 the size of @var{m}.
 
 In other words, @code{msub@var{m}@var{n}4} is like
@@ -3803,6 +3824,16 @@ These instructions are not allowed to @code{FAIL}.
 @item @samp{umsub@var{m}@var{n}4}
 Like @code{msub@var{m}@var{n}4}, but zero-extend the multiplication
 operands instead of sign-extending them.
+
+@cindex @code{ssmsub@var{m}@var{n}4} instruction pattern
+@item @samp{ssmsub@var{m}@var{n}4}
+Like @code{msub@var{m}@var{n}4}, but all involved operations must be
+signed-saturating.
+
+@cindex @code{usmsub@var{m}@var{n}4} instruction pattern
+@item @samp{usmsub@var{m}@var{n}4}
+Like @code{umsub@var{m}@var{n}4}, but all involved operations must be
+unsigned-saturating.
 
 @cindex @code{divmod@var{m}4} instruction pattern
 @item @samp{divmod@var{m}4}
@@ -3828,7 +3859,9 @@ Similar, but does unsigned division.
 
 @anchor{shift patterns}
 @cindex @code{ashl@var{m}3} instruction pattern
-@item @samp{ashl@var{m}3}
+@cindex @code{ssashl@var{m}3} instruction pattern
+@cindex @code{usashl@var{m}3} instruction pattern
+@item @samp{ashl@var{m}3}, @samp{ssashl@var{m}3}, @samp{usashl@var{m}3}
 Arithmetic-shift operand 1 left by a number of bits specified by operand
 2, and store the result in operand 0.  Here @var{m} is the mode of
 operand 0 and operand 1; operand 2's mode is specified by the
@@ -3846,7 +3879,9 @@ Other shift and rotate instructions, analogous to the
 @code{ashl@var{m}3} instructions.
 
 @cindex @code{neg@var{m}2} instruction pattern
-@item @samp{neg@var{m}2}
+@cindex @code{ssneg@var{m}2} instruction pattern
+@cindex @code{usneg@var{m}2} instruction pattern
+@item @samp{neg@var{m}2}, @samp{ssneg@var{m}2}, @samp{usneg@var{m}2}
 Negate operand 1 and store the result in operand 0.
 
 @cindex @code{abs@var{m}2} instruction pattern
@@ -4273,6 +4308,39 @@ point or both floating point.
 Zero-extend operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point.
+
+@cindex @code{fract@var{mn}2} instruction pattern
+@item @samp{fract@var{m}@var{n}2}
+Convert operand 1 of mode @var{m} to mode @var{n} and store in
+operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
+could be fixed-point to fixed-point, signed integer to fixed-point,
+fixed-point to signed integer, floating-point to fixed-point,
+or fixed-point to floating-point.
+When overflows or underflows happen, the results are undefined.
+
+@cindex @code{satfract@var{mn}2} instruction pattern
+@item @samp{satfract@var{m}@var{n}2}
+Convert operand 1 of mode @var{m} to mode @var{n} and store in
+operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
+could be fixed-point to fixed-point, signed integer to fixed-point,
+or floating-point to fixed-point.
+When overflows or underflows happen, the instruction saturates the
+results to the maximum or the minimum.
+
+@cindex @code{fractuns@var{mn}2} instruction pattern
+@item @samp{fractuns@var{m}@var{n}2}
+Convert operand 1 of mode @var{m} to mode @var{n} and store in
+operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
+could be unsigned integer to fixed-point, or
+fixed-point to unsigned integer.
+When overflows or underflows happen, the results are undefined.
+
+@cindex @code{satfractuns@var{mn}2} instruction pattern
+@item @samp{satfractuns@var{m}@var{n}2}
+Convert unsigned integer operand 1 of mode @var{m} to fixed-point mode
+@var{n} and store in operand 0 (which has mode @var{n}).
+When overflows or underflows happen, the instruction saturates the
+results to the maximum or the minimum.
 
 @cindex @code{extv} instruction pattern
 @item @samp{extv}

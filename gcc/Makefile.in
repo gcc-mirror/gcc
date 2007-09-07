@@ -302,6 +302,7 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdbool.h \
 	 $(srcdir)/ginclude/stddef.h \
 	 $(srcdir)/ginclude/varargs.h \
+	 $(srcdir)/ginclude/stdfix.h \
 	 $(EXTRA_HEADERS)
 
 UNWIND_H = $(srcdir)/unwind-generic.h
@@ -1942,7 +1943,7 @@ prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) prefix.h \
 	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(FLAGS_H) convert.h toplev.h langhooks.h $(REAL_H)
+   $(FLAGS_H) convert.h toplev.h langhooks.h $(REAL_H) fixed-value.h
 
 double-int.o: double-int.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H)
 

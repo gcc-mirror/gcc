@@ -105,6 +105,8 @@ convert (tree type, tree expr)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)
     return fold (convert_to_real (type, e));
+  if (code == FIXED_POINT_TYPE)
+    return fold (convert_to_fixed (type, e));
   if (code == COMPLEX_TYPE)
     return fold (convert_to_complex (type, e));
   if (code == VECTOR_TYPE)

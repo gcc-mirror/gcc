@@ -1,3 +1,85 @@
+2007-09-06  Chao-ying Fu  <fu@mips.com>
+
+	* ginclude/stdfix.h: New file.
+	* Makefile.in (USER_H): Add $(srcdir)/ginclude/stdfix.h.
+	(convert.o): Add dependence on fixed-value.h.
+	* c-convert.c (convert): Support FIXED_POINT_TYPE.
+	* c-cppbuiltin.c (builtin_define_fixed_point_constants): New function
+	to define fixed-point constants.
+	(c_cpp_builtins): Define fixed-point constants.
+	* convert.c (fixed-value.h): New include.
+	(convert_to_real): Update comment to include fixed-point.
+	Support FIXED_POINT_TYPE.
+	(convert_to_integer): Update comment to include fixed-point.
+	Support FIXED_POINT_TYPE.
+	(convert_to_complex): Support FIXED_POINT_TYPE.
+	(convert_to_fixed): New function.
+	* convert.h (convert_to_fixed): Declare.
+	* genopinit.c: Add comment about $Q for only fixed-point modes.
+	(optabs): Add fract_optab, fractuns_optab, satfract_optab,
+	satfractuns_optab, add_optab, ssadd_optab, usadd_optab, sub_optab,
+	sssub_optab, ussub_optab, smul_optab, ssmul_optab, usmul_optab,
+	ssmadd_widen_optab, usmadd_widen_optab, ssdiv_optab, udiv_optab,
+	usdiv_optab, ssashl_optab, usashl_optab, neg_optab, ssneg_optab,
+	usneg_optab for fixed-point modes.
+	(gen_insn): Add force_fixed to track the $Q format for all fixed-point
+	modes.
+	* optabs.c (optab_for_tree_code): For *DIV_EXPR, LSHIFT_EXPR,
+	PLUS_EXPR, MINUS_EXPR, MULT_EXPR, NEGATE_EXPR, return signed or
+	unsigned saturation optabs, when type is saturating.
+	(shift_optab_p): Return true for SS_ASHIFT or US_ASHIFT.
+	(expand_fixed_convert): New function.
+	(gen_fixed_libfunc, gen_signed_fixed_libfunc,
+	gen_unsigned_fixed_libfunc, gen_int_fp_fixed_libfunc,
+	gen_int_fp_signed_fixed_libfunc, gen_int_fixed_libfunc,
+	gen_int_signed_fixed_libfunc, gen_int_unsigned_fixed_libfunc,
+	gen_fract_conv_libfunc, gen_fractuns_conv_libfunc,
+	gen_satfract_conv_libfunc, gen_satfractuns_conv_libfunc): New
+	functions.
+	(init_optabs): Initialize ssadd_optab, usadd_optab, sssub_optab,
+	ussub_optab, ssmul_optab, usmul_optab, ssmadd_widen_optab,
+	usmadd_widen_optab, ssmsub_widen_optab, usmsub_widen_optab,
+	ssdiv_optab, usdiv_optab, ssashl_optab, usashl_optab, ssneg_optab,
+	usneg_optab, fract_optab, fractuns_optab, satfract_optab,
+	satfractuns_optab.
+	Initialize fixed-point libraries, including add, ssadd, usadd, sub,
+	sssub, ussub, mul, ssmul, usmul, div, ssdiv, udiv, usdiv, ashl,
+	ssashl, usashl, ashr, lshr, neg, ssneg, usneg, cmp, fract, satfract,
+	fractuns, satfractuns.
+	* optabs.h (enum optab_index): Add OTI_ssadd, OTI_usadd, OTI_sssub,
+	OTI_ussub, OTI_ssmul, OTI_usmul, OTI_ssdiv, OTI_usdiv, OTI_ssneg,
+	OTI_usneg, OTI_ssashl, OTI_usashl, OTI_ssmadd_widen, OTI_usmadd_widen,
+	OTI_ssmsub_widen,  OTI_usmsub_widen.
+	(ssadd_optab, usadd_optab, sssub_optab, ussub_optab, ssmul_optab,
+	usmul_optab, ssdiv_optab, usdiv_optab, ssneg_optab, usneg_optab,
+	ssashl_optab, usashl_optab, ssmadd_widen_optab, usmadd_widen_optab,
+	umsub_widen_optab, usmsub_widen_optab): Define.
+	(enum convert_optab_index): Add COI_fract, COI_fractuns, COI_satfract,
+	COI_satfractuns.
+	(fract_optab, fractuns_optab, satfract_optab, satfractuns_optab):
+	Define.
+	(expand_fixed_convert): Declare.
+	* expr.c (convert_move): Support the move of fixed-point modes.
+	(emit_move_insn_1): Handle fixed-point mode to move via integer.
+	(categorize_ctor_elements_1): Handle FIXED_CST.
+	(count_type_elements): Handle FIXED_POINT_TYPE.
+	(expand_expr_real_1): For VECTOR_CST, check MODE_VECTOR_FRACT,
+	MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM, MODE_VECTOR_UACCUM.
+	Support FIXED_CST.
+	For PLUS_EXPR and MINUS_EXPR, support saturating and non-saturating
+	multiply and add/subtract for fixed-point types.
+	For MULT_EXPR, *DIV_EXPR, *SHIFT_EXPR, if the mode if a fixed-point
+	mode, we jump to binop directly.
+	Support FIXED_CONVERT_EXPR.
+	(do_store_flag): Check FIXED_CST to put a constant second.
+	(vector_mode_valid_p): Handle MODE_VECTOR_FRACT,
+	MODE_VECTOR_UFRACT, MODE_VECTOR_ACCUM, MODE_VECTOR_UACCUM.
+	(const_vector_from_tree): Support FIXED_CST.
+	* doc/extend.texi (Fixed-Point): New node.
+	* doc/md.texi (ssadd, usadd, sssub, ussub, ssmul, usmul, ssdiv, usdiv,
+	ssmadd, usmadd, ssmsub, usmsub, ssashl, usashl, ssneg, usneg, fract,
+	satfract, fractuns, satfractuns): Document them.
+
 2007-09-07  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (PREFERRED_RELOAD_CLASS): Don't reload autoinc

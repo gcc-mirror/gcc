@@ -36,6 +36,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Floating Types::      Additional Floating Types.
 * Decimal Float::       Decimal Floating Types. 
 * Hex Floats::          Hexadecimal floating-point constants.
+* Fixed-Point::         Fixed-Point Types.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
 * Empty Structures::    Structures with no members.
@@ -948,6 +949,134 @@ is always required in the hexadecimal notation.  Otherwise the compiler
 would not be able to resolve the ambiguity of, e.g., @code{0x1.f}.  This
 could mean @code{1.0f} or @code{1.9375} since @samp{f} is also the
 extension for floating-point constants of type @code{float}.
+
+@node Fixed-Point
+@section Fixed-Point Types
+@cindex fixed-point types
+@cindex @code{_Fract} data type
+@cindex @code{_Accum} data type
+@cindex @code{_Sat} data type
+@cindex @code{hr} fixed-suffix
+@cindex @code{r} fixed-suffix
+@cindex @code{lr} fixed-suffix
+@cindex @code{llr} fixed-suffix
+@cindex @code{uhr} fixed-suffix
+@cindex @code{ur} fixed-suffix
+@cindex @code{ulr} fixed-suffix
+@cindex @code{ullr} fixed-suffix
+@cindex @code{hk} fixed-suffix
+@cindex @code{k} fixed-suffix
+@cindex @code{lk} fixed-suffix
+@cindex @code{llk} fixed-suffix
+@cindex @code{uhk} fixed-suffix
+@cindex @code{uk} fixed-suffix
+@cindex @code{ulk} fixed-suffix
+@cindex @code{ullk} fixed-suffix
+@cindex @code{HR} fixed-suffix
+@cindex @code{R} fixed-suffix
+@cindex @code{LR} fixed-suffix
+@cindex @code{LLR} fixed-suffix
+@cindex @code{UHR} fixed-suffix
+@cindex @code{UR} fixed-suffix
+@cindex @code{ULR} fixed-suffix
+@cindex @code{ULLR} fixed-suffix
+@cindex @code{HK} fixed-suffix
+@cindex @code{K} fixed-suffix
+@cindex @code{LK} fixed-suffix
+@cindex @code{LLK} fixed-suffix
+@cindex @code{UHK} fixed-suffix
+@cindex @code{UK} fixed-suffix
+@cindex @code{ULK} fixed-suffix
+@cindex @code{ULLK} fixed-suffix
+
+As an extension, the GNU C compiler supports fixed-point types as
+defined in the N1169 draft of ISO/IEC DTR 18037.  Support for fixed-point
+types in GCC will evolve as the draft technical report changes.
+Calling conventions for any target might also change.  Not all targets
+support fixed-point types.
+
+The fixed-point types are
+@code{short _Fract},
+@code{_Fract},
+@code{long _Fract},
+@code{long long _Fract},
+@code{unsigned short _Fract},
+@code{unsigned _Fract},
+@code{unsigned long _Fract},
+@code{unsigned long long _Fract},
+@code{_Sat short _Fract},
+@code{_Sat _Fract},
+@code{_Sat long _Fract},
+@code{_Sat long long _Fract},
+@code{_Sat unsigned short _Fract},
+@code{_Sat unsigned _Fract},
+@code{_Sat unsigned long _Fract},
+@code{_Sat unsigned long long _Fract},
+@code{short _Accum},
+@code{_Accum},
+@code{long _Accum},
+@code{long long _Accum},
+@code{unsigned short _Accum},
+@code{unsigned _Accum},
+@code{unsigned long _Accum},
+@code{unsigned long long _Accum},
+@code{_Sat short _Accum},
+@code{_Sat _Accum},
+@code{_Sat long _Accum},
+@code{_Sat long long _Accum},
+@code{_Sat unsigned short _Accum},
+@code{_Sat unsigned _Accum},
+@code{_Sat unsigned long _Accum},
+@code{_Sat unsigned long long _Accum}.
+Fixed-point data values contain fractional and optional integral parts.
+The format of fixed-point data varies and depends on the target machine.
+
+Support for fixed-point types includes prefix and postfix increment
+and decrement operators (@code{++}, @code{--}); unary arithmetic operators
+(@code{+}, @code{-}, @code{!}); binary arithmetic operators (@code{+},
+@code{-}, @code{*}, @code{/}); binary shift operators (@code{<<}, @code{>>});
+relational operators (@code{<}, @code{<=}, @code{>=}, @code{>});
+equality operators (@code{==}, @code{!=}); assignment operators
+(@code{+=}, @code{-=}, @code{*=}, @code{/=}, @code{<<=}, @code{>>=});
+and conversions to and from integer, floating-point, or fixed-point types.
+
+Use a suffix @samp{hr} or @samp{HR} in a literal constant of type
+@code{short _Fract} and @code{_Sat short _Fract},
+@samp{r} or @samp{R} for @code{_Fract} and @code{_Sat _Fract},
+@samp{lr} or @samp{LR} for @code{long _Fract} and @code{_Sat long _Fract},
+@samp{llr} or @samp{LLR} for @code{long long _Fract} and
+@code{_Sat long long _Fract},
+@samp{uhr} or @samp{UHR} for @code{unsigned short _Fract} and
+@code{_Sat unsigned short _Fract},
+@samp{ur} or @samp{UR} for @code{unsigned _Fract} and
+@code{_Sat unsigned _Fract},
+@samp{ulr} or @samp{ULR} for @code{unsigned long _Fract} and
+@code{_Sat unsigned long _Fract},
+@samp{ullr} or @samp{ULLR} for @code{unsigned long long _Fract}
+and @code{_Sat unsigned long long _Fract},
+@samp{hk} or @samp{HK} for @code{short _Accum} and @code{_Sat short _Accum},
+@samp{k} or @samp{K} for @code{_Accum} and @code{_Sat _Accum},
+@samp{lk} or @samp{LK} for @code{long _Accum} and @code{_Sat long _Accum},
+@samp{llk} or @samp{LLK} for @code{long long _Accum} and
+@code{_Sat long long _Accum},
+@samp{uhk} or @samp{UHK} for @code{unsigned short _Accum} and
+@code{_Sat unsigned short _Accum},
+@samp{uk} or @samp{UK} for @code{unsigned _Accum} and
+@code{_Sat unsigned _Accum},
+@samp{ulk} or @samp{ULK} for @code{unsigned long _Accum} and
+@code{_Sat unsigned long _Accum},
+and @samp{ullk} or @samp{ULLK} for @code{unsigned long long _Accum}
+and @code{_Sat unsigned long long _Accum}.
+
+GCC support of fixed-point types as specified by the draft technical report
+is incomplete:
+
+@itemize @bullet
+@item
+Pragmas to control overflow and rounding behaviors are not implemented.
+@end itemize
+
+Fixed-point types are supported by the DWARF2 debug information format.
 
 @node Zero Length
 @section Arrays of Length Zero
