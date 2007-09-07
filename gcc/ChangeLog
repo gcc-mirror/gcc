@@ -1,3 +1,14 @@
+2007-09-07  Roman Zippel <zippel@linux-m68k.org>
+
+	* function.h (struct function): Rename calls_unwind_init
+	to saves_all_registers.
+	(current_function_saves_all_registers): Renamed from
+	current_function_calls_unwind_init.
+	* reload1.c (reload): Set current_function_saves_all_registers.
+	* except.c (expand_builtin_unwind_init): Likewise.
+	* config/m68k/m68k.c (m68k_save_reg): Use
+	current_function_saves_all_registers to save pic register.
+
 2007-09-07  Janis Johnson  <janis187@us.ibm.com>
 
 	config/m68k/m68k.c (floating_exact_log2): Update call to real_2expN.
