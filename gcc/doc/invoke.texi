@@ -2854,7 +2854,7 @@ undefined signed overflow when estimating how many iterations a loop
 will require, in particular when determining whether a loop will be
 executed at all.
 
-@table @option
+@table @gcctabopt
 @item -Wstrict-overflow=1
 Warn about cases which are both questionable and easy to avoid.  For
 example: @code{x + 1 > x}; with @option{-fstrict-overflow}, the

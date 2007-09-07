@@ -1,3 +1,8 @@
+2007-09-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/33321
+	* doc/invoke.texi: Fix -Wstrict-overflow= table.
+
 2007-09-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/33256
