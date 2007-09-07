@@ -125,7 +125,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
 
       _Tp*
       _M_allocate(size_t __n)
-      { return _M_impl.allocate(__n); }
+      { return __n != 0 ? _M_impl.allocate(__n) : 0; }
 
       void
       _M_deallocate(_Tp* __p, size_t __n)

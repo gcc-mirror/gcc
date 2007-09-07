@@ -1,3 +1,9 @@
+2007-09-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_vector.h (_Vector_base<>::_M_allocate):
+	Do not call _M_impl.allocate when __n == 0.
+	* testsuite/23_containers/vector/zero_sized_allocations.cc: New.
+
 2007-09-06  Matthias Klose  <doko@debian.org>
 
 	* testsuite/27_io/headers/cstdlib: Remove empty directory.
