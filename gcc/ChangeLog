@@ -1,4 +1,16 @@
 2007-09-07  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2007-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32586
+	* tree-ssa-sccvn.c (simplify_binary_expression): Avoid
+	folding if nothing changed.
+	(simplify_unary_expression): New function.  Do tree combining
+	on conversion like codes.
+	(try_to_simplify): Call it.
+
+2007-09-07  Richard Guenther  <rguenther@suse.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/32821

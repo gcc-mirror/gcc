@@ -1,3 +1,16 @@
+2007-09-07  Richard Guenther  <rguenther@suse.de>
+
+	Revert
+	2007-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/32586
+	* g++.dg/tree-ssa/pr27090.C: Remove XFAILs.
+	* gcc.dg/tree-ssa/ssa-fre-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-4.c: Likewise, remove scan for
+	now obsolete simplification.
+
 2007-09-07 Uros Bizjak <ubizjak@gmail.com>
 
 	PR tree-optimization/32821

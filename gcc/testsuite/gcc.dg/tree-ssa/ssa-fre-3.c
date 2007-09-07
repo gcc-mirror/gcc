@@ -11,5 +11,5 @@ foo (int a, int b)
   return aa + bb;
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) aa_.*with a_" "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) aa_.*with a_" "fre" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
