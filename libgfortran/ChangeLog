@@ -1,3 +1,8 @@
+2007-09-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h: Include cpuid.h.
+	(set_fpu): Use __get_cpuid to check for SSE.
+
 2007-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/33298
@@ -15,9 +20,9 @@
 2007-09-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253
-	* io/write.c (nml_write_obj): Set the delimiter correctly before calling
-	write_character. (namelist_write): Clean up the code a little and add
-	comments to clarify what its doing.
+	* io/write.c (nml_write_obj): Set the delimiter correctly before
+	calling write_character. (namelist_write): Clean up the code a little
+	and add comments to clarify what its doing.
 
 2007-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -29,8 +34,8 @@
 	(output_float): Delete. (write_float): Delete.
 	* io/write_float.def (calculate_sign): Added.
 	(output_float): Refactored to be independent of kind and added to this
-	file for inclusion. (write_infnan): New function to write "Infinite" or
-	"NaN" depending on flags passed, independent of kind.
+	file for inclusion. (write_infnan): New function to write "Infinite"
+	or "NaN" depending on flags passed, independent of kind.
 	(CALCULATE_EXP): New macro to build kind specific functions. Use it.
 	(OUTPUT_FLOAT_FMT_G): New macro, likewise. Use it.
 	(DTOA, DTOAL): Macros to implement "decimal to ascii".
@@ -41,8 +46,8 @@
 2007-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253
-	* io/list_read.c (read_character): Use DELIM_APOSTROPHE and DELIM_QUOTE
-	in check of first character in string. 
+	* io/list_read.c (read_character): Use DELIM_APOSTROPHE and
+	DELIM_QUOTE in check of first character in string. 
 
 2007-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
@@ -503,8 +508,8 @@
 	(output_float): Delete. (write_float): Delete.
 	* io/write_float.def (calculate_sign): Added.
 	(output_float): Refactored to be independent of kind and added to this
-	file for inclusion. (write_infnan): New function to write "Infinite" or
-	"NaN" depending on flags passed, independent of kind.
+	file for inclusion. (write_infnan): New function to write "Infinite"
+	or "NaN" depending on flags passed, independent of kind.
 	(CALCULATE_EXP): New macro to build kind specific functions. Use it.
 	(OUTPUT_FLOAT_FMT_G): New macro, likewise. Use it.
 	(DTOA, DTOAL): Macros to implement "decimal to ascii".
@@ -934,7 +939,8 @@
 2007-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/32752
-	* io/unix.c (unix_stream): Move buffer pointer adjacent to small_buffer.
+	* io/unix.c (unix_stream): Move buffer pointer adjacent to
+	small_buffer.
 	* io/transfer.c (formatted_transfer_scalar): If stream I/O, set
 	bytes_used to zero. Fix off by one error in calculation of pos and
 	skips. Eliminate duplicate pending_spaces check.
@@ -950,8 +956,8 @@
 	PR libgfortran/32702
 	* io/unix.c (unix_stream): Restore buffer pointer and small_buffer.
 	(fd_alloc): If the number of bytes needed is greater than the default
-	BUFFER_SIZE, allocate a new buffer large enough.  Free the old buffer if
-	necessary. (fd_sfree): Restore use of buffer pointer.
+	BUFFER_SIZE, allocate a new buffer large enough.  Free the old buffer
+	if necessary. (fd_sfree): Restore use of buffer pointer.
 	(fd_close): Likewise. (fd_open): Likewise.
 	(init_error_stream): Likewise.
 	
@@ -973,8 +979,8 @@
 2007-07-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/32678
-	* io/transfer.c (formatted_transfer_scalar): Don't allow pending_spaces
-	to go negative.
+	* io/transfer.c (formatted_transfer_scalar): Don't allow
+	pending_spaces to go negative.
 
 2007-07-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
@@ -1149,8 +1155,9 @@
 	
 2007-05-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
-	* io/transfer.c (unformatted_read): Use size from front end eliminating
-	use of size_from_real_kind. (unformatted_write): Ditto.
+	* io/transfer.c (unformatted_read): Use size from front end
+	eliminating use of size_from_real_kind.
+	(unformatted_write): Ditto.
 
 2007-05-23  Steve Ellcey  <sje@cup.hp.com>
 
@@ -1227,8 +1234,8 @@
 	_gfortran_runtime_error_at.
 	* libgfortran.h: Add comment to reference error codes in front end.
 	(library_start): Locate prototype with library_end macro and add
-	a new comment.  Add prototype for runtime_error_at. Export prototype for
-	generate_error.
+	a new comment.  Add prototype for runtime_error_at. Export prototype
+	for generate_error.
 	* io/lock.c (library_start): Fix check for error condition.
 	* io/transfer.c (data_transfer_init): Add library check.
 
@@ -1569,15 +1576,16 @@
 2007-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31052
-	* io/transfer.c (next_record_r): Do not call test_endfile if in namelist
-	mode.
+	* io/transfer.c (next_record_r): Do not call test_endfile if in
+	namelist mode.
 
 2007-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31199
 	* io/io.h: Add saved_pos to gfc_unit structure.
 	* io/open.c (new_unit): Initialize saved_pos.
-	* io/transfer.c (data_transfer_init): Set max_pos to value in saved_pos.
+	* io/transfer.c (data_transfer_init): Set max_pos to value in
+	saved_pos.
 	(next_record_w): Fix whitespace.
 	(finalze_transfer): Calculate max_pos for ADVANCE="no" and save it for
 	later use.  If not ADVANCE="no" set saved_pos to zero.
@@ -1592,8 +1600,8 @@
 
 	PR libfortran/31052
 	* file_pos.c: Update Copyright year.
-	* io/open.c (test_endfile): Restore test_endfile to fix SPEC regression.
-	Update Copyright year.
+	* io/open.c (test_endfile): Restore test_endfile to fix SPEC
+	regression.  Update Copyright year.
 	* io/io.h: Same.
 	* io/unix.c (is_special): Add missing type for this function.
 	Update Copyright year.
@@ -1649,8 +1657,8 @@
 2007-03-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/31051
-	* io/transfer.c (formatted_transfer_scalar): Adjust position for pending
-	spaces when in writing mode.  Clean up some formatting.
+	* io/transfer.c (formatted_transfer_scalar): Adjust position for
+	pending spaces when in writing mode.  Clean up some formatting.
 
 2007-03-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
@@ -2126,8 +2134,8 @@
 	s->file_length == -1.
 	(fd_alloc_w_at): Do not adjust file_length if file is not seekable.
 	(fd_seek): If not seekable, just return success.
-	(fd_truncate): If not seekable, no need to truncate.  Return failure if
-	seek fails and the stream is not a pipe.
+	(fd_truncate): If not seekable, no need to truncate.  Return failure
+	if seek fails and the stream is not a pipe.
 	(fd_to_stream): Make test for non-seekable file more robust.
 
 2007-01-01  Steven G. Kargl  <kargls@comcast.net>
