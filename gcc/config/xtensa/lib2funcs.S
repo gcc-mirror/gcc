@@ -184,7 +184,7 @@ __xtensa_sync_caches:
 	addi	a2, a2, (1 << XCHAL_ICACHE_LINEWIDTH)
 	addi	a4, a4, -1
 	bnez	a4, .Licache_loop
-	isync
 #endif
+	isync
 	retw
 	.size	__xtensa_sync_caches, .-__xtensa_sync_caches
