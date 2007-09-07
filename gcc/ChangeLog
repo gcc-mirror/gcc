@@ -1,3 +1,39 @@
+2007-09-06  Zdenek Dvorak  <ook@ucw.cz>
+
+	* cgraphbuild.c (rebuild_cgraph_edges): Export.
+	* cgraph.h (rebuild_cgraph_edges): Declare.
+	* tree-pass.h (pass_expand_omp_ssa): New.
+	* omp-low.c (find_omp_clause): Export.
+	(copy_var_decl): Split from omp_copy_decl_2.
+	(build_omp_barrier): Return the call to emit instead of emitting
+	it directly.
+	(lower_rec_input_clauses, expand_omp_single): Gimplify the result of
+	build_omp_barrier.
+	(extract_omp_for_data, expand_parallel_call, expand_omp_parallel,
+	expand_omp_for_generic, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk, expand_omp_for, expand_omp_sections):
+	Adapted to work on SSA form.
+	(execute_expand_omp): Do not invalidate dominance information.
+	(gate_expand_omp): Do not run with -fopenmp-ssa flag.
+	(gate_expand_omp_ssa, pass_expand_omp_ssa): New.
+	* gimplify.c (gimplify_omp_for): Ensure that the control variable is
+	a gimple_reg.
+	(force_gimple_operand): Allow gimplifying code expressions without
+	value.
+	* tree-predcom.c (mark_virtual_ops_for_renaming): Handle phi nodes.
+	* common.opt (fopenmp-ssa): New.
+	* tree-flow.h (find_omp_clause, copy_var_decl): Declare.
+	* Makefile.in (tree-cfg.o): Add TREE_INLINE_H dependency.
+	* tree-cfg.c: Include tree-inline.h.
+	(struct move_stmt_d): Replace vars_to_remove by vars_map field.
+	(replace_by_duplicate_decl, replace_ssa_name,
+	mark_virtual_ops_in_region): New functions.
+	(move_stmt_r, move_block_to_fn, move_sese_region_to_fn): Adapted
+	to work on SSA form.
+	* passes.c (init_optimization_passes): Add pass_expand_omp_ssa pass.
+	* tree-ssa-operands.c (get_expr_operands): Handle operands of OMP
+	constructs.
+
 2007-09-06  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* tree-loop-linear.c: Include obstack.h.

@@ -711,6 +711,8 @@ extern struct omp_region *root_omp_region;
 extern struct omp_region *new_omp_region (basic_block, enum tree_code,
 					  struct omp_region *);
 extern void free_omp_regions (void);
+extern tree find_omp_clause (tree, enum tree_code);
+tree copy_var_decl (tree, tree, tree);
 
 /*---------------------------------------------------------------------------
 			      Function prototypes

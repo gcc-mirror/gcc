@@ -344,6 +344,9 @@ struct cgraph_node *save_inline_function_body (struct cgraph_node *);
 void record_references_in_initializer (tree);
 bool cgraph_process_new_functions (void);
 
+/* In cgraphbuild.c  */
+unsigned int rebuild_cgraph_edges (void);
+
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);
 int cgraph_postorder (struct cgraph_node **);
