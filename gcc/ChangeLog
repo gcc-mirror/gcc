@@ -1,3 +1,13 @@
+2007-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (init_optimization_passes): Add simple dce and addressable
+	passes.
+	* tree-ssa.c (execute_update_addresses_taken): New function.
+	(pass_update_address_taken): New.
+	* tree-ssa-dse.c (execute_simple_dse): New function.
+	(pass_simple_dse): New.
+	* tree-pass.h (pass_simple_dse, pass_update_address_taken): Declare.
+
 2007-09-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR middle-end/33321

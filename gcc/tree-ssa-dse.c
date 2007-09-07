@@ -918,3 +918,137 @@ struct tree_opt_pass pass_dse = {
     | TODO_verify_ssa,		/* todo_flags_finish */
   0				/* letter */
 };
+
+/* A very simple dead store pass eliminating write only local variables.
+   The pass does not require alias information and thus can be run before
+   inlining to quickly eliminate artifacts of some common C++ constructs.  */
+
+static unsigned int
+execute_simple_dse (void)
+{
+  block_stmt_iterator bsi;
+  basic_block bb;
+  bitmap variables_loaded = BITMAP_ALLOC (NULL);
+  unsigned int todo = 0;
+
+  /* Collect into VARIABLES LOADED all variables that are read in function
+     body.  */
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      if (LOADED_SYMS (bsi_stmt (bsi)))
+	bitmap_ior_into (variables_loaded,
+			 LOADED_SYMS (bsi_stmt (bsi)));
+
+  /* Look for statements writting into the write only variables.
+     And try to remove them.  */
+
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi);)
+      {
+	tree stmt = bsi_stmt (bsi), op;
+	bool removed = false;
+        ssa_op_iter iter;
+
+	if (STORED_SYMS (stmt) && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	    && TREE_CODE (stmt) != RETURN_EXPR
+	    && !bitmap_intersect_p (STORED_SYMS (stmt), variables_loaded))
+	  {
+	    unsigned int i;
+	    bitmap_iterator bi;
+	    bool dead = true;
+
+
+
+	    /* See if STMT only stores to write-only variables and
+	       verify that there are no volatile operands.  tree-ssa-operands
+	       sets has_volatile_ops flag for all statements involving
+	       reads and writes when aliases are not built to prevent passes
+	       from removing them as dead.  The flag thus has no use for us
+	       and we need to look into all operands.  */
+	      
+	    EXECUTE_IF_SET_IN_BITMAP (STORED_SYMS (stmt), 0, i, bi)
+	      {
+		tree var = referenced_var_lookup (i);
+		if (TREE_ADDRESSABLE (var)
+		    || is_global_var (var)
+		    || TREE_THIS_VOLATILE (var))
+		  dead = false;
+	      }
+
+	    if (dead && LOADED_SYMS (stmt))
+	      EXECUTE_IF_SET_IN_BITMAP (LOADED_SYMS (stmt), 0, i, bi)
+		if (TREE_THIS_VOLATILE (referenced_var_lookup (i)))
+		  dead = false;
+
+	    if (dead)
+	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_OPERANDS)
+		if (TREE_THIS_VOLATILE (op))
+		  dead = false;
+
+	    /* Look for possible occurence var = indirect_ref (...) where
+	       indirect_ref itself is volatile.  */
+
+	    if (dead && TREE_THIS_VOLATILE (GIMPLE_STMT_OPERAND (stmt, 1)))
+	      dead = false;
+
+	    if (dead)
+	      {
+		tree call = get_call_expr_in (stmt);
+
+		/* When LHS of var = call (); is dead, simplify it into
+		   call (); saving one operand.  */
+		if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+		    && call
+		    && TREE_SIDE_EFFECTS (call))
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "Deleted LHS of call: ");
+			print_generic_stmt (dump_file, stmt, TDF_SLIM);
+			fprintf (dump_file, "\n");
+		      }
+		    push_stmt_changes (bsi_stmt_ptr (bsi));
+		    TREE_BLOCK (call) = TREE_BLOCK (stmt);
+		    bsi_replace (&bsi, call, false);
+		    maybe_clean_or_replace_eh_stmt (stmt, call);
+		    mark_symbols_for_renaming (call);
+		    pop_stmt_changes (bsi_stmt_ptr (bsi));
+		  }
+		else
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "  Deleted dead store '");
+			print_generic_expr (dump_file, stmt, dump_flags);
+			fprintf (dump_file, "'\n");
+		      }
+		    removed = true;
+		    bsi_remove (&bsi, true);
+		    todo |= TODO_cleanup_cfg;
+		  }
+		todo |= TODO_remove_unused_locals | TODO_ggc_collect;
+	      }
+	  }
+	if (!removed)
+	  bsi_next (&bsi);
+      }
+  BITMAP_FREE (variables_loaded);
+  return todo;
+}
+
+struct tree_opt_pass pass_simple_dse =
+{
+  "sdse",				/* name */
+  NULL,					/* gate */
+  execute_simple_dse,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,          	        /* todo_flags_finish */
+  0				        /* letter */
+};
