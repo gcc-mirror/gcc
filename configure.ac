@@ -517,8 +517,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     ;;
   arm*-*-linux-gnueabi)
-    noconfigdirs="$noconfigdirs target-libffi target-qthreads"
-    noconfigdirs="$noconfigdirs target-libjava target-libobjc"
+    noconfigdirs="$noconfigdirs target-qthreads"
+    noconfigdirs="$noconfigdirs target-libobjc"
     case ${with_newlib} in
       no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     esac
