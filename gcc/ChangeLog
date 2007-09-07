@@ -1,5 +1,12 @@
 2007-09-07  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_base_move_loop_invariants): New variable.
+	(mips_set_mips16_mode): Restore flag_move_loop_invariants, then set
+	to 0 for MIPS16.
+	(override_options): Set mips_base_move_loop_invariants.
+
+2007-09-07  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.opt (mcode-readable=): Move to keep list
 	alphabetical.
 

@@ -626,6 +626,7 @@ static bool mips_base_mips16;
 /* Similar copies of option settings.  */
 static int mips_base_schedule_insns; /* flag_schedule_insns */
 static int mips_base_reorder_blocks_and_partition; /* flag_reorder... */
+static int mips_base_move_loop_invariants; /* flag_move_loop_invariants */
 static int mips_base_align_loops; /* align_loops */
 static int mips_base_align_jumps; /* align_jumps */
 static int mips_base_align_functions; /* align_functions */
@@ -5273,6 +5274,7 @@ mips_set_mips16_mode (int mips16_p)
   align_functions = mips_base_align_functions;
   flag_schedule_insns = mips_base_schedule_insns;
   flag_reorder_blocks_and_partition = mips_base_reorder_blocks_and_partition;
+  flag_move_loop_invariants = mips_base_move_loop_invariants;
   flag_delayed_branch = mips_flag_delayed_branch;
   
   if (mips16_p) 
@@ -5285,8 +5287,15 @@ mips_set_mips16_mode (int mips16_p)
       flag_schedule_insns = 0;
 
       /* Don't do hot/cold partitioning.  The constant layout code expects
-       the whole function to be in a single section.  */
+	 the whole function to be in a single section.  */
       flag_reorder_blocks_and_partition = 0;
+
+      /* Don't move loop invariants, because it tends to increase
+	 register pressure.  It also introduces an extra move in cases
+	 where the constant is the first operand in a two-operand binary
+	 instruction, or when it forms a register argument to a functon
+	 call.  */
+      flag_move_loop_invariants = 0;
 
       /* Silently disable -mexplicit-relocs since it doesn't apply
 	 to mips16 code.  Even so, it would overly pedantic to warn
@@ -5804,6 +5813,7 @@ override_options (void)
   mips_base_target_flags = target_flags;
   mips_base_schedule_insns = flag_schedule_insns;
   mips_base_reorder_blocks_and_partition = flag_reorder_blocks_and_partition;
+  mips_base_move_loop_invariants = flag_move_loop_invariants;
   mips_base_align_loops = align_loops;
   mips_base_align_jumps = align_jumps;
   mips_base_align_functions = align_functions;
