@@ -42,6 +42,10 @@
 #   cpu_defines_dir        location of cpu_defines.h
 #                          defaults to generic.
 #
+#
+#   error_constants_dir    location of error_constants.h
+#                          defaults to os/generic.
+#
 # It possibly modifies the following variables:
 #
 #   OPT_LDFLAGS            extra flags to pass when linking the library, of
@@ -71,6 +75,7 @@ atomicity_dir="cpu/generic"
 cpu_defines_dir="cpu/generic"
 try_cpu=generic
 abi_tweaks_dir="cpu/generic"
+error_constants_dir="os/generic"
 
 # HOST-SPECIFIC OVERRIDES
 # Set any CPU-dependent bits.
@@ -161,6 +166,7 @@ fi
 
 # Set any OS-dependent bits.
 # Set the os_include_dir.
+# Set the error_costants_dir.
 # Set c_model, c_compatibility here.
 # If atomic ops and/or numeric limits are OS-specific rather than
 # CPU-specifc, set those here too.
@@ -238,6 +244,7 @@ case "${host_os}" in
     ;;
   mingw32*)
     os_include_dir="os/mingw32"
+    error_constants_dir="os/mingw32"
     ;;
   netbsd*)
     os_include_dir="os/bsd/netbsd"
