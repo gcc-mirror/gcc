@@ -1,3 +1,54 @@
+2007-09-06  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* tree-loop-linear.c: Include obstack.h.
+	(linear_transform_loops): New obstack lambda_obstack.
+	Initialize it, pass it to gcc_loopnest_to_lambda_loopnest,
+	lambda_loopnest_transform, lambda_loopnest_to_gcc_loopnest calls
+	and free afterwards.
+	* lambda.h (struct obstack): New forward declaration.
+	(lambda_linear_expression_new): New parameter of type struct
+	obstack *.
+	(lambda_loopnest_new): Likewise.
+	(lambda_loopnest_transform): Likewise.
+	(lambda_body_vector_new): Likewise.
+	(lambda_body_vector_compute_new): Likewise.
+	(gcc_loopnest_to_lambda_loopnest): Likewise.
+	(lambda_loopnest_to_gcc_loopnest): Likewise.
+	* lambda-code.c: Include obstack.h.
+	(lambda_lattice_new): New parameter lambda_obstack.  Use it for
+	allocation of ret.
+	(lambda_body_vector_new): Likewise.
+	(lambda_linear_expression_new): Likewise.
+	(lambda_lattice_new): Likewise.
+	(lambda_loopnest_new): Likewise.  Additionally use obstack to
+	allocate LN_LOOPS(ret).
+	(lambda_lattice_compute_base): New parameter lambda_obstack.  Pass
+	it to lambda_lattice_new.
+	(lambda_body_vector_compute_new): New parameter lambda_obstack.
+	Pass it to lambda_body_vector_new.
+	(lambda_lattice_compute_base): New paramater lambda_obstack.  Pass
+	it to lambda_lattice_new.
+	(compute_nest_using_fourier_motzkin): New parameter lambda_obstack.
+	Pass it to lambda_loopnest_new, lambda_linear_expression_new.
+	(lambda_compute_target_space): Likewise.
+	(lambda_compute_auxillary_space): New parameter lambda_obstack.
+	Pass it to lambda_lattice_compute_base and
+	compute_nest_using_fourieer_motzkin.
+	(lambda_loopnest_transform): New parameter lambda_obstack.  Pass
+	it to lambda_lattice_compute_base, lambda_lattice_auxillary_space
+	and lambda_lattice_compute_target_space.
+	(gcc_tree_to_linear_expression): Nex parameter lambda_obstack.
+	Pass it to lambda_linear_expression_new.
+	(gcc_loop_to_lambda_loop): New parameter lambda_obstack.  Pass it
+	to gcc_tree_to_linear_expression.
+	(gcc_loopnest_to_lambda_loopnest): New parameter lambda_obstack.
+	Pass it to gcc_loop_to_lambda_loop and lambda_loopnest_new.
+	(lambda_loopnest_to_gcc_loopnest): New parameter lambda_obstack.
+	Pass it to lambda_body_vector_new and
+	lambda_body_vector_compute_new.
+	* Makefile.in (tree-loop-linear.o): Add $(OBSTACK_H) dependency.
+	(lambda-code.o): Likewise.
+
 2007-09-06  Chao-ying Fu  <fu@mips.com>
 
 	* ginclude/stdfix.h: New file.
