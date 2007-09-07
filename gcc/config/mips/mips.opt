@@ -50,6 +50,10 @@ mcheck-zero-division
 Target Report Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero
 
+mcode-readable=
+Target RejectNegative Joined
+-mcode-readable=SETTING	Specify when instructions are allowed to access code
+
 mdivide-breaks
 Target Report RejectNegative Mask(DIVIDE_BREAKS)
 Use branch-and-break sequences to check for integer divide by zero
@@ -243,10 +247,6 @@ Optimize lui/addiu address loads
 msym32
 Target Report Var(TARGET_SYM32)
 Assume all symbols have 32-bit values
-
-mcode-readable=
-Target RejectNegative Joined
--mcode-readable=SETTING	Specify when instructions are allowed to access code
 
 mtune=
 Target RejectNegative Joined Var(mips_tune_string)

@@ -1,5 +1,10 @@
 2007-09-07  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.opt (mcode-readable=): Move to keep list
+	alphabetical.
+
+2007-09-07  Richard Sandiford  <richard@codesourcery.com>
+
 	* doc/invoke.texi: Document the MIPS -mlocal-sdata, -mextern-sdata
 	and -mgpopt options.  Adjust the -G documentation to match.
 	* config/mips/mips.opt (mextern-data, mgpopt, mlocal-data): New.
