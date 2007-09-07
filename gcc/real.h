@@ -248,7 +248,7 @@ extern bool real_nan (REAL_VALUE_TYPE *, const char *, int, enum machine_mode);
 
 extern void real_maxval (REAL_VALUE_TYPE *, int, enum machine_mode);
 
-extern void real_2expN (REAL_VALUE_TYPE *, int);
+extern void real_2expN (REAL_VALUE_TYPE *, int, enum machine_mode);
 
 extern unsigned int real_hash (const REAL_VALUE_TYPE *);
 

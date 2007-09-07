@@ -1,3 +1,11 @@
+2007-09-07  Janis Johnson  <janis187@us.ibm.com>
+
+	Reapply reverted change:
+
+        2007-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * trans.c (convert_with_check): Update call to real_2expN.
+
 2007-09-06  Janis Johnson  <janis187@us.ibm.com>
 
 	Revert:

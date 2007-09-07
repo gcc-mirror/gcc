@@ -3571,7 +3571,7 @@ floating_exact_log2 (rtx x)
     return 0;
 
   exp = real_exponent (&r);
-  real_2expN (&r1, exp);
+  real_2expN (&r1, exp, DFmode);
   if (REAL_VALUES_EQUAL (r1, r))
     return exp;
 

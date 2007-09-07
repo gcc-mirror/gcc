@@ -64,8 +64,8 @@ check_real_for_fixed_mode (REAL_VALUE_TYPE *real_value, enum machine_mode mode)
 {
   REAL_VALUE_TYPE max_value, min_value, epsilon_value;
 
-  real_2expN (&max_value, GET_MODE_IBIT (mode));
-  real_2expN (&epsilon_value, -GET_MODE_FBIT (mode));
+  real_2expN (&max_value, GET_MODE_IBIT (mode), mode);
+  real_2expN (&epsilon_value, -GET_MODE_FBIT (mode), mode);
 
   if (SIGNED_FIXED_POINT_MODE_P (mode))
     min_value = REAL_VALUE_NEGATE (max_value);
@@ -102,7 +102,7 @@ fixed_from_string (FIXED_VALUE_TYPE *f, const char *str, enum machine_mode mode)
       || (temp == FIXED_MAX_EPS && ALL_ACCUM_MODE_P (f->mode)))
     warning (OPT_Woverflow,
 	     "large fixed-point constant implicitly truncated to fixed-point type");
-  real_2expN (&base_value, fbit);
+  real_2expN (&base_value, fbit, mode);
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
   real_to_integer2 ((HOST_WIDE_INT *)&f->data.low, &f->data.high,
 		    &fixed_value);
@@ -132,7 +132,7 @@ fixed_to_decimal (char *str, const FIXED_VALUE_TYPE *f_orig,
 {
   REAL_VALUE_TYPE real_value, base_value, fixed_value;
 
-  real_2expN (&base_value, GET_MODE_FBIT (f_orig->mode));
+  real_2expN (&base_value, GET_MODE_FBIT (f_orig->mode), f_orig->mode);
   real_from_integer (&real_value, VOIDmode, f_orig->data.low, f_orig->data.high,
 		     UNSIGNED_FIXED_POINT_MODE_P (f_orig->mode));
   real_arithmetic (&fixed_value, RDIV_EXPR, &real_value, &base_value);
@@ -1067,7 +1067,7 @@ fixed_convert_from_real (FIXED_VALUE_TYPE *f, enum machine_mode mode,
 
   real_value = *a;
   f->mode = mode;
-  real_2expN (&base_value, fbit);
+  real_2expN (&base_value, fbit, mode);
   real_arithmetic (&fixed_value, MULT_EXPR, &real_value, &base_value);
   real_to_integer2 ((HOST_WIDE_INT *)&f->data.low, &f->data.high, &fixed_value);
   temp = check_real_for_fixed_mode (&real_value, mode);
@@ -1116,7 +1116,7 @@ real_convert_from_fixed (REAL_VALUE_TYPE *r, enum machine_mode mode,
 {
   REAL_VALUE_TYPE base_value, fixed_value, real_value;
 
-  real_2expN (&base_value, GET_MODE_FBIT (f->mode));
+  real_2expN (&base_value, GET_MODE_FBIT (f->mode), f->mode);
   real_from_integer (&fixed_value, VOIDmode, f->data.low, f->data.high,
 		     UNSIGNED_FIXED_POINT_MODE_P (f->mode));
   real_arithmetic (&real_value, RDIV_EXPR, &fixed_value, &base_value);
