@@ -300,7 +300,7 @@ INTERNAL_DOCS          = NO
 # in case and if your file system supports case sensitive file names. Windows 
 # and Mac users are advised to set this option to NO.
 
-CASE_SENSE_NAMES       = NO#
+CASE_SENSE_NAMES       = NO
 
 # If the HIDE_SCOPE_NAMES tag is set to NO (the default) then Doxygen 
 # will show members with their full class and namespace scopes in the 
@@ -480,6 +480,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/debug \
                          include/ext \
                          include/tr1 \
+                         include/tr1_impl \
                          include/algorithm \
                          include/array \
                          include/bitset \
@@ -580,7 +581,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/tr1/cwchar \
                          include/tr1/cwctype \
                          include/tr1/functional \
-                         include/tr1/hashtable \
+                         include/tr1/hashtable.h \
                          include/tr1/memory \
                          include/tr1/random \
                          include/tr1/regex \
@@ -588,7 +589,26 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/tr1/type_traits \
                          include/tr1/unordered_map \
                          include/tr1/unordered_set \
-                         include/tr1/utility
+                         include/tr1_impl/utility \
+                         include/tr1_impl/array \
+                         include/tr1_impl/cctype \
+                         include/tr1_impl/cfenv \
+                         include/tr1_impl/cinttypes \
+                         include/tr1_impl/cmath \
+                         include/tr1_impl/complex \
+                         include/tr1_impl/cstdint \
+                         include/tr1_impl/cstdio \
+                         include/tr1_impl/cstdlib \
+                         include/tr1_impl/cwchar \
+                         include/tr1_impl/cwctype \
+                         include/tr1_impl/functional \
+                         include/tr1_impl/random \
+                         include/tr1_impl/regex \
+                         include/tr1_impl/tuple \
+                         include/tr1_impl/type_traits \
+                         include/tr1_impl/unordered_map \
+                         include/tr1_impl/unordered_set \
+                         include/tr1_impl/utility
 
 # If the value of the INPUT tag contains directories, you can use the
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like
@@ -1284,8 +1304,7 @@ UML_LOOK               = NO
 # If set to YES, the inheritance and collaboration graphs will show the 
 # relations between templates and their instances.
 
-#TEMPLATE_RELATIONS     = YES
-TEMPLATE_RELATIONS     = NO
+TEMPLATE_RELATIONS     = YES
 
 # If the ENABLE_PREPROCESSING, SEARCH_INCLUDES, INCLUDE_GRAPH, and HAVE_DOT 
 # tags are set to YES then doxygen will generate a graph for each documented 

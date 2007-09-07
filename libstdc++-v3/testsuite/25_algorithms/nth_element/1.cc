@@ -25,6 +25,7 @@
 using __gnu_test::test_container;
 using __gnu_test::random_access_iterator_wrapper;
 using std::nth_element;
+using std::partial_sort;
 
 typedef test_container<int, random_access_iterator_wrapper> Container;
 

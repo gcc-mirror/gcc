@@ -54,10 +54,9 @@ case ${query} in
       echo ${CC}
       ;;
     --cxxflags)
-      CXXFLAGS_save="-g -O2 -D_GLIBCXX_ASSERT"
-      CXXFLAGS_config='@SECTION_FLAGS@ -fmessage-length=0 
- 		      @CXXFLAGS@ @EXTRA_CXX_FLAGS@ '
-      echo ${CXXFLAGS_save} ${CXXFLAGS_config}
+      CXXFLAGS_default="-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0"
+      CXXFLAGS_config="@SECTION_FLAGS@ @CXXFLAGS@ @EXTRA_CXX_FLAGS@"
+      echo ${CXXFLAGS_default} ${CXXFLAGS_config}
       ;;
     --cxxpchflags)
       PCHFLAGS="@glibcxx_PCHFLAGS@"

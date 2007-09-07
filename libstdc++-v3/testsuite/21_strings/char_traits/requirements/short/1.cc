@@ -31,6 +31,7 @@
 
 void test02(void)
 {
+  typedef short char_type;
   bool test __attribute__((unused)) = true;
  
   // 21.1.1 character traits requirements
@@ -45,67 +46,67 @@ void test02(void)
   // pos      == X::pos_type
   // state    == X::state_type
 
-  // void X::assign(short c, short d)
+  // void X::assign(char_type c, char_type d)
   // assigns c = d;
-  short c1 = 'z';
-  short c2 = 'u';
+  char_type c1 = 'z';
+  char_type c2 = 'u';
   VERIFY( c1 != c2 );
-  std::char_traits<short>::assign(c1,c2);
+  std::char_traits<char_type>::assign(c1,c2);
   VERIFY( c1 == 'u' );
 
-  // bool X::eq(short c, short d)
+  // bool X::eq(char_type c, char_type d)
   c1 = 'z';
   c2 = 'u';
-  VERIFY ( !std::char_traits<short>::eq(c1, c2) );
-  VERIFY ( std::char_traits<short>::eq(c1, c1) );
-  VERIFY ( std::char_traits<short>::eq(c2, c2) );
+  VERIFY ( !std::char_traits<char_type>::eq(c1, c2) );
+  VERIFY ( std::char_traits<char_type>::eq(c1, c1) );
+  VERIFY ( std::char_traits<char_type>::eq(c2, c2) );
 
-  // bool X::lt(short c, short d)
+  // bool X::lt(char_type c, char_type d)
   c1 = 'z';
   c2 = 'u';
-  VERIFY ( std::char_traits<short>::lt(c2, c1) );
-  VERIFY ( !std::char_traits<short>::lt(c1, c2) );
-  VERIFY ( !std::char_traits<short>::lt(c1, c1) );
-  VERIFY ( !std::char_traits<short>::lt(c2, c2) );
+  VERIFY ( std::char_traits<char_type>::lt(c2, c1) );
+  VERIFY ( !std::char_traits<char_type>::lt(c1, c2) );
+  VERIFY ( !std::char_traits<char_type>::lt(c1, c1) );
+  VERIFY ( !std::char_traits<char_type>::lt(c2, c2) );
 
-  // short* X::move(short* s, const short* p, size_t n)
+  // char_type* X::move(char_type* s, const char_type* p, size_t n)
   // for each i in [0,n) performs X::assign(s[i], p[i]). Copies
   // correctly even where p is in [s, s + n), and yields s.   
-  short array1[] = {'z', 'u', 'm', 'a', ' ', 'b', 'e', 'a', 'c', 'h',  0};
-  const std::basic_string<short> str_01(array1 + 0, array1 + 10);
+  char_type array1[] = {'z', 'u', 'm', 'a', ' ', 'b', 'e', 'a', 'c', 'h',  0};
+  const std::basic_string<char_type> str_01(array1 + 0, array1 + 10);
 
-  const short str_lit1[] = {'m', 'o', 'n', 't', 'a', 'r', 'a', ' ', 'a', 'n', 'd', ' ', 'o', 'c', 'e', 'a', 'n', ' ', 'b', 'e', 'a', 'c', 'h', 0};
+  const char_type str_lit1[] = {'m', 'o', 'n', 't', 'a', 'r', 'a', ' ', 'a', 'n', 'd', ' ', 'o', 'c', 'e', 'a', 'n', ' ', 'b', 'e', 'a', 'c', 'h', 0};
 
-  int len = sizeof(str_lit1)/sizeof(short) + sizeof(array1)/sizeof(short) - 1;
+  int len = sizeof(str_lit1)/sizeof(char_type) + sizeof(array1)/sizeof(char_type) - 1;
   // two terminating chars
-  short array3[] = {'b', 'o', 'r', 'a', 'c', 'a', 'y', ',', ' ', 'p', 'h', 'i', 'l', 'i', 'p', 'p', 'i', 'n', 'e', 's', 0};
-  short array2[len];
-  std::char_traits<short>::copy(array2, array3, len);
+  char_type array3[] = {'b', 'o', 'r', 'a', 'c', 'a', 'y', ',', ' ', 'p', 'h', 'i', 'l', 'i', 'p', 'p', 'i', 'n', 'e', 's', 0};
+  char_type array2[len];
+  std::char_traits<char_type>::copy(array2, array3, len);
 
   VERIFY( str_lit1[0] == 'm' );
   c1 = array2[0];
   c2 = str_lit1[0];
-  short c3 = array2[1];
-  short c4 = str_lit1[1];
-  std::char_traits<short>::move(array2, str_lit1, 0);
+  char_type c3 = array2[1];
+  char_type c4 = str_lit1[1];
+  std::char_traits<char_type>::move(array2, str_lit1, 0);
   VERIFY( array2[0] == c1 );
   VERIFY( str_lit1[0] == c2 );
-  std::char_traits<short>::move(array2, str_lit1, 1);
+  std::char_traits<char_type>::move(array2, str_lit1, 1);
   VERIFY( array2[0] == c2 );
   VERIFY( str_lit1[0] == c2 );
   VERIFY( array2[1] == c3 );
   VERIFY( str_lit1[1] == c4 );
-  std::char_traits<short>::move(array2, str_lit1, 2);
+  std::char_traits<char_type>::move(array2, str_lit1, 2);
   VERIFY( array2[0] == c2 );
   VERIFY( str_lit1[0] == c2 );
   VERIFY( array2[1] == c4 );
   VERIFY( str_lit1[1] == c4 );
  
-  short* pc1 = array1 + 1;
+  char_type* pc1 = array1 + 1;
   c1 = pc1[0];
   c2 = array1[0];
   VERIFY( c1 != c2 );
-  short* pc2 = std::char_traits<short>::move(array1, pc1, 0);
+  char_type* pc2 = std::char_traits<char_type>::move(array1, pc1, 0);
   c3 = pc1[0];
   c4 = array1[0];
   VERIFY( c1 == c3 );
@@ -114,11 +115,11 @@ void test02(void)
 
   c1 = pc1[0];
   c2 = array1[0];
-  short* pc3 = pc1;
-  pc2 = std::char_traits<short>::move(array1, pc1, 10);
+  char_type* pc3 = pc1;
+  pc2 = std::char_traits<char_type>::move(array1, pc1, 10);
   c3 = pc1[0];
   c4 = array1[0];
-  VERIFY( c1 != c3 ); // underlying short array changed.
+  VERIFY( c1 != c3 ); // underlying char_type array changed.
   VERIFY( c4 != c3 );
   VERIFY( pc2 == array1 );
   VERIFY( pc3 == pc1 ); // but pointers o-tay
@@ -126,48 +127,46 @@ void test02(void)
   c2 = array1[0];
   VERIFY( c1 != c2 );
 
-  // size_t X::length(const short* p)
-  len = std::char_traits<short>::length(str_lit1);
-  VERIFY( len == sizeof(str_lit1) / sizeof(short) - 1 );
+  // size_t X::length(const char_type* p)
+  len = std::char_traits<char_type>::length(str_lit1);
+  VERIFY( len == sizeof(str_lit1) / sizeof(char_type) - 1 );
 
-  // const short* X::find(const short* s, size_t n, short c)
-  const int N4 = sizeof(str_lit1) / sizeof(short);
-  const short* pc4 = std::char_traits<short>::find(str_lit1, N4, 'a');
+  // const char_type* X::find(const char_type* s, size_t n, char_type c)
+  const int N4 = sizeof(str_lit1) / sizeof(char_type);
+  const char_type* pc4 = std::char_traits<char_type>::find(str_lit1, N4, 'a');
   VERIFY( pc4 != 0 );
   VERIFY( *pc4 == 'a' );
 
-  pc4 = std::char_traits<short>::find(str_lit1, N4, 0x0a73);
+  pc4 = std::char_traits<char_type>::find(str_lit1, N4, 0x0a73);
   VERIFY( pc4 == 0 );
 
-  // short* X::assign(short* s, size_t n, short c)
-  len = sizeof(array2) / sizeof(short);
-  std::memset(array2, 0xaf, len * sizeof(short));
+  // char_type* X::assign(char_type* s, size_t n, char_type c)
+  len = sizeof(array2) / sizeof(char_type);
+  std::memset(array2, 0xaf, len * sizeof(char_type));
   VERIFY( array2[0] != 0x15a8 );
 
-  pc1 = std::char_traits<short>::assign (array2, len, 0x15a8);
+  pc1 = std::char_traits<char_type>::assign (array2, len, 0x15a8);
   VERIFY( pc1 == array2 );
   for (int i = 0; i < len; ++i)
     VERIFY( array2[i] == 0x15a8 );
 
-  // short* X::copy(short* s, const short* p, size_t n)
-  int n1 = sizeof(str_lit1) / sizeof(short);
-  pc1 = std::char_traits<short>::copy(array2, str_lit1, n1);
-  len = std::char_traits<short>::length(array2);
+  // char_type* X::copy(char_type* s, const char_type* p, size_t n)
+  int n1 = sizeof(str_lit1) / sizeof(char_type);
+  pc1 = std::char_traits<char_type>::copy(array2, str_lit1, n1);
+  len = std::char_traits<char_type>::length(array2);
   VERIFY( len == n1 - 1 );
   for (int i = 0; i < len; ++i)
     VERIFY( str_lit1[i] == array2[i] );
 
-  // int X::compare(const short* p, const short* q, size_t n)
-  const short* pconst1 = str_01.data();
-  const short* pconst2 = str_lit1;
+  // int X::compare(const char_type* p, const char_type* q, size_t n)
+  const char_type* pconst1 = str_01.data();
+  const char_type* pconst2 = str_lit1;
 
-  VERIFY( std::char_traits<short>::compare(pconst1, pconst2, 10) > 0 );
-  VERIFY( std::char_traits<short>::compare(pconst2, pconst1, 10) < 0 );
-  VERIFY( std::char_traits<short>::compare(pconst1, pconst1, 10) == 0 );
-  VERIFY( std::char_traits<short>::compare(pconst2, pconst2, 10) == 0 );
+  VERIFY( std::char_traits<char_type>::compare(pconst1, pconst2, 10) > 0 );
+  VERIFY( std::char_traits<char_type>::compare(pconst2, pconst1, 10) < 0 );
+  VERIFY( std::char_traits<char_type>::compare(pconst1, pconst1, 10) == 0 );
+  VERIFY( std::char_traits<char_type>::compare(pconst2, pconst2, 10) == 0 );
 }
-
-
 
 int main()
 { 

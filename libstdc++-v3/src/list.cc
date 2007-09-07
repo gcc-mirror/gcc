@@ -115,7 +115,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
     do
     {
       std::swap(__tmp->_M_next, __tmp->_M_prev);
-      __tmp = __tmp->_M_prev;     // Old next node is now prev.
+
+      // Old next node is now prev.
+      __tmp = __tmp->_M_prev;     
     } 
     while (__tmp != this);
   }

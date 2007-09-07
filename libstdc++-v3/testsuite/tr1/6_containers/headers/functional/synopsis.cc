@@ -29,24 +29,5 @@ namespace tr1 {
   // [6.3.3] Hash function base template
   template <class T> struct hash;
 
-  // Hash function specializations
-  template <> struct hash<bool>;
-  template <> struct hash<char>;
-  template <> struct hash<signed char>;
-  template <> struct hash<unsigned char>;
-  template <> struct hash<wchar_t>;
-  template <> struct hash<short>;
-  template <> struct hash<unsigned short>;
-  template <> struct hash<int>;
-  template <> struct hash<unsigned int>;
-  template <> struct hash<long>;
-  template <> struct hash<unsigned long>;
-  template <> struct hash<float>;
-  template <> struct hash<double>;
-  template <> struct hash<long double>;
-  template<class T> struct hash<T*>;
-  template <> struct hash<std::string>;
-  template <> struct hash<std::wstring>;
-
 } // namespace tr1
 } // namespace std
