@@ -68,7 +68,7 @@ find_ins_pos(const_key_reference r_key, false_type)
         case empty_entry_status:
 	  {
             resize_base::notify_insert_search_end();
-            _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+            _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
 	    return (ins_pos == m_num_e) ? pos : ins_pos;
 	  }
 	  break;
@@ -80,7 +80,7 @@ find_ins_pos(const_key_reference r_key, false_type)
 	  if (hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
             {
 	      resize_base::notify_insert_search_end();
-	      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+	      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
                 return pos;
             }
 	  break;
@@ -107,11 +107,11 @@ insert_imp(const_reference r_val, false_type)
 
   if (m_entries[pos].m_stat == valid_entry_status)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
       return std::make_pair(&(m_entries + pos)->m_value, false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
   return std::make_pair(insert_new_imp(r_val, pos), true);
 }
 

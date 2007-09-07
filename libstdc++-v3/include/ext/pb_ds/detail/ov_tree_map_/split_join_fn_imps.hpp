@@ -83,7 +83,7 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
       return;
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
   iterator it = upper_bound(r_key);
   PB_DS_CLASS_C_DEC new_other(other, other);
   new_other.copy_from_ordered_range(it, end());
@@ -91,7 +91,7 @@ split(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
   new_this.copy_from_ordered_range(begin(), it);
 
   // No exceptions from this point.
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::split(r_key,(Cmp_Fn& )(*this), other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::split(r_key,(Cmp_Fn& )(*this), other);)
   other.update(other.node_begin(), (node_update* )(&other));
   update(node_begin(), (node_update* )this);
   other.value_swap(new_other);
@@ -135,7 +135,7 @@ join(PB_DS_CLASS_C_DEC& other)
 				     begin(), end());
 
   // No exceptions from this point.
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
   value_swap(new_this);
   other.clear();
   _GLIBCXX_DEBUG_ONLY(assert_valid();)

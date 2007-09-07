@@ -98,7 +98,7 @@ join_prep(PB_DS_CLASS_C_DEC& other, split_join_branch_bag& r_bag)
     __throw_join_error();
 
   rec_join_prep(m_p_head->m_p_parent, other.m_p_head->m_p_parent, r_bag);
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
   return true;
 }
 
@@ -387,12 +387,12 @@ insert(const_reference r_val)
   if (p_lf != NULL && p_lf->m_type == pat_trie_leaf_node_type && 
       synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<leaf_pointer>(p_lf)->value()), PB_DS_V2F(r_val)))
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(PB_DS_V2F(r_val)));
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(r_val)));
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       return std::make_pair(iterator(p_lf), false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(PB_DS_V2F(r_val)));
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(PB_DS_V2F(r_val)));
 
   leaf_pointer p_new_lf = s_leaf_allocator.allocate(1);
   cond_dealtor cond(p_new_lf);
@@ -407,7 +407,7 @@ insert(const_reference r_val)
   cond.set_no_action_dtor();
   ++m_size;
   update_min_max_for_inserted_leaf(p_new_lf);
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)   
+  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)   
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   return std::make_pair(point_iterator(p_new_lf), true);
 }

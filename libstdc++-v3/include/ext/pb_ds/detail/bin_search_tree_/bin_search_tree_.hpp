@@ -51,7 +51,7 @@
 #include <ext/pb_ds/exception.hpp>
 #include <ext/pb_ds/detail/eq_fn/eq_by_less.hpp>
 #include <ext/pb_ds/detail/types_traits.hpp>
-#include <ext/pb_ds/detail/map_debug_base.hpp>
+#include <ext/pb_ds/detail/debug_map_base.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
 #include <ext/pb_ds/detail/cond_dealtor.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
@@ -95,8 +95,8 @@ namespace pb_ds
 						false>
 
 #ifdef _GLIBCXX_DEBUG
-#define PB_DS_MAP_DEBUG_BASE_C_DEC					\
-    map_debug_base<Key,	eq_by_less<Key, Cmp_Fn>, \
+#define PB_DS_DEBUG_MAP_BASE_C_DEC					\
+    debug_map_base<Key,	eq_by_less<Key, Cmp_Fn>, \
 	      typename Allocator::template rebind<Key>::other::const_reference>
 #endif 
 
@@ -132,7 +132,7 @@ namespace pb_ds
 	     class Allocator>
     class PB_DS_CLASS_NAME :
 #ifdef _GLIBCXX_DEBUG
-      public PB_DS_MAP_DEBUG_BASE_C_DEC,
+      public PB_DS_DEBUG_MAP_BASE_C_DEC,
 #endif 
 #ifdef PB_DS_TREE_TRACE
       public PB_DS_TREE_TRACE_BASE_C_DEC,
@@ -162,7 +162,7 @@ namespace pb_ds
       typedef cond_dealtor< node, Allocator> cond_dealtor_t;
 
 #ifdef _GLIBCXX_DEBUG
-      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
+      typedef PB_DS_DEBUG_MAP_BASE_C_DEC debug_base;
 #endif 
 
     public:
@@ -489,7 +489,7 @@ namespace pb_ds
 
 #undef PB_DS_TYPES_TRAITS_C_DEC
 
-#undef PB_DS_MAP_DEBUG_BASE_C_DEC
+#undef PB_DS_DEBUG_MAP_BASE_C_DEC
 
 #ifdef PB_DS_TREE_TRACE
 #undef PB_DS_TREE_TRACE_BASE_C_DEC

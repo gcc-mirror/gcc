@@ -175,7 +175,7 @@ notify_externally_resized(size_type new_size)
 {
   m_resize_needed = false;
   size_type new_grow_size = size_type(m_load_max * new_size - 1);
-  size_type new_shrink_size = size_type(m_load_min * new_size );
+  size_type new_shrink_size = size_type(m_load_min * new_size);
   if (new_grow_size >= m_next_grow_size)
     {
       _GLIBCXX_DEBUG_ASSERT(new_shrink_size > m_next_shrink_size);

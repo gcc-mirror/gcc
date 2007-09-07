@@ -54,10 +54,10 @@ assert_valid() const
   size_type calc_size = 0;
   for (const_iterator it = begin(); it != end(); ++it)
     {
-      map_debug_base::check_key_exists(PB_DS_V2F(*it));
+      debug_base::check_key_exists(PB_DS_V2F(*it));
       ++calc_size;
     }
-  map_debug_base::check_size(calc_size);
+  debug_base::check_size(calc_size);
 }
 
 #endif 

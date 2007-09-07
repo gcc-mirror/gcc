@@ -64,7 +64,7 @@ assert_entry_array_valid(const entry_array a_entries, true_type) const
         case valid_entry_status:
 	  {
 	    const_key_reference r_key = PB_DS_V2F(p_e->m_value);
-	    map_debug_base::check_key_exists(r_key);
+	    debug_base::check_key_exists(r_key);
 
 	    const comp_hash pos_hash_pair = ranged_probe_fn_base::operator()(r_key);
 

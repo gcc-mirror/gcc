@@ -86,7 +86,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_OV_TREE_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
-  map_debug_base(other),
+  debug_base(other),
 #endif 
 #ifdef PB_DS_TREE_TRACE
   PB_DS_TREE_TRACE_BASE_C_DEC(other),
@@ -166,7 +166,7 @@ copy_from_ordered_range(It first_it, It last_it)
   const_iterator dbg_it = m_a_values;
   while (dbg_it != m_end_it)
     {
-      map_debug_base::insert_new(PB_DS_V2F(*dbg_it));
+      debug_base::insert_new(PB_DS_V2F(*dbg_it));
       dbg_it++;
     }
   PB_DS_CLASS_C_DEC::assert_valid();
@@ -219,7 +219,7 @@ copy_from_ordered_range(It first_it, It last_it, It other_first_it,
   const_iterator dbg_it = m_a_values;
   while (dbg_it != m_end_it)
     {
-      map_debug_base::insert_new(PB_DS_V2F(*dbg_it));
+      debug_base::insert_new(PB_DS_V2F(*dbg_it));
       dbg_it++;
     }
   PB_DS_CLASS_C_DEC::assert_valid();
@@ -246,7 +246,7 @@ value_swap(PB_DS_CLASS_C_DEC& other)
   std::swap(m_a_metadata, other.m_a_metadata);
   std::swap(m_size, other.m_size);
   std::swap(m_end_it, other.m_end_it);
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::swap(other);)
 }
 
 PB_DS_CLASS_T_DEC

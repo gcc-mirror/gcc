@@ -616,7 +616,7 @@ pb_headers4 = \
 	${pb_srcdir}/detail/list_update_policy/counter_lu_policy_imp.hpp \
 	${pb_srcdir}/detail/list_update_policy/mtf_lu_policy_imp.hpp \
 	${pb_srcdir}/detail/list_update_policy/sample_update_policy.hpp \
-	${pb_srcdir}/detail/map_debug_base.hpp \
+	${pb_srcdir}/detail/debug_map_base.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/cond_dtor.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp \
 	${pb_srcdir}/detail/ov_tree_map_/debug_fn_imps.hpp \

@@ -52,18 +52,18 @@ erase(const_key_reference r_key)
   node_pointer p_nd = find_imp(r_key);
   if (p_nd == NULL || p_nd->m_type == pat_trie_internal_node_type)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
       return false;
     }
 
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_type == pat_trie_leaf_node_type);
   if (!synth_e_access_traits::equal_keys(PB_DS_V2F(reinterpret_cast<leaf_pointer>(p_nd)->value()), r_key))
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key));
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
       return false;
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
   erase_leaf(static_cast<leaf_pointer>(p_nd));
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   return true;
@@ -141,7 +141,7 @@ clear()
   clear_imp(m_p_head->m_p_parent);
   m_size = 0;
   initialize();
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
 }
 

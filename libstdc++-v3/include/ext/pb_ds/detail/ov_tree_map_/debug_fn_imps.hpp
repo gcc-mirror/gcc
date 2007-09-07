@@ -66,14 +66,14 @@ void
 PB_DS_CLASS_C_DEC::
 assert_iterators() const
 {
-  map_debug_base::check_size(m_size);
+  debug_base::check_size(m_size);
   size_type iterated_num = 0;
   const_iterator prev_it = end();
   _GLIBCXX_DEBUG_ASSERT( m_end_it == m_a_values + m_size);
   for (const_iterator it = begin(); it != end(); ++it)
     {
       ++iterated_num;
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(PB_DS_V2F(*it));)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(*it));)
       _GLIBCXX_DEBUG_ASSERT(lower_bound(PB_DS_V2F(*it)) == it);
       const_iterator upper_bound_it = upper_bound(PB_DS_V2F(*it));
       --upper_bound_it;

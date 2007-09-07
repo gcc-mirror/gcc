@@ -50,7 +50,7 @@ PB_DS_CLASS_C_DEC::
 erase_entry(entry_pointer p_e)
 {
   _GLIBCXX_DEBUG_ASSERT(p_e->m_stat = valid_entry_status);
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(PB_DS_V2F(p_e->m_value));)
+  _GLIBCXX_DEBUG_ONLY(debug_base::erase_existing(PB_DS_V2F(p_e->m_value));)
   p_e->m_value.~value_type();
   p_e->m_stat = erased_entry_status;
   _GLIBCXX_DEBUG_ASSERT(m_num_used_e > 0);

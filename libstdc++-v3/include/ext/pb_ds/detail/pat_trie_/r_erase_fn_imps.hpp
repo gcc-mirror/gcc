@@ -90,7 +90,7 @@ clear()
   clear_imp(m_p_head->m_p_parent);
   m_size = 0;
   initialize();
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
   _GLIBCXX_DEBUG_ONLY(assert_valid(true, true);)
 }
 

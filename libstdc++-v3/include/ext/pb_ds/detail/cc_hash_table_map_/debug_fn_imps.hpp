@@ -51,7 +51,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  map_debug_base::check_size(m_num_used_e);
+  debug_base::check_size(m_num_used_e);
   assert_entry_pointer_array_valid(m_entries);
 }
 
@@ -67,7 +67,7 @@ assert_entry_pointer_array_valid(const entry_pointer_array a_p_entries) const
       while (p_e != NULL)
         {
 	  ++iterated_num_used_e;
-	  assert_entry_pointer_valid(p_e, traits_base::m_store_hash_indicator);
+	  assert_entry_pointer_valid(p_e, traits_base::m_store_extra_indicator);
 	  p_e = p_e->m_p_next;
         }
     }

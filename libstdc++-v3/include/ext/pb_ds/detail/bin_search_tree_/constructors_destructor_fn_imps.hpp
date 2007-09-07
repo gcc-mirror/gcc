@@ -81,7 +81,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
-  map_debug_base(other),
+  debug_base(other),
 #endif 
 #ifdef PB_DS_TREE_TRACE
   PB_DS_TREE_TRACE_BASE_C_DEC(other),
@@ -105,7 +105,7 @@ PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
       }
     catch(...)
       {
-        _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
+        _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
 	s_node_allocator.deallocate(m_p_head, 1);
         __throw_exception_again;
       }
@@ -130,7 +130,7 @@ void
 PB_DS_CLASS_C_DEC::
 value_swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::swap(other);)
   std::swap(m_p_head, other.m_p_head);
   std::swap(m_size, other.m_size);
 }

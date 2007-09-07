@@ -65,7 +65,7 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
   if (p_e == NULL)
     {
       resize_base::notify_erase_search_end();
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       return false;
     }
@@ -73,7 +73,7 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
   if (hash_eq_fn_base::operator()(PB_DS_V2F(p_e->m_value), r_key))
     {
       resize_base::notify_erase_search_end();
-      _GLIBCXX_DEBUG_ONLY(map_debug_base:: check_key_exists(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base:: check_key_exists(r_key);)
       erase_entry_pointer(m_entries[pos]);
       do_resize_if_needed_no_throw();
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -86,7 +86,7 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
       if (p_next_e == NULL)
         {
 	  resize_base::notify_erase_search_end();
-	  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+	  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
           _GLIBCXX_DEBUG_ONLY(assert_valid();)
           return false;
         }
@@ -94,7 +94,7 @@ erase_in_pos_imp(const_key_reference r_key, size_type pos)
       if (hash_eq_fn_base::operator()(PB_DS_V2F(p_next_e->m_value), r_key))
         {
 	  resize_base::notify_erase_search_end();
-	  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+	  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
           erase_entry_pointer(p_e->m_p_next);
 	  do_resize_if_needed_no_throw();
 	  _GLIBCXX_DEBUG_ONLY(assert_valid();)

@@ -54,7 +54,7 @@ find_imp(const_key_reference r_key) const
   if (s_eq_fn(r_key, PB_DS_V2F(m_p_l->m_value)))
     {
       apply_update(m_p_l, s_metadata_type_indicator);
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
       return m_p_l;
     }
 
@@ -77,7 +77,7 @@ find_imp(const_key_reference r_key) const
 	p_l = p_next;
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
   return NULL;
 }
 

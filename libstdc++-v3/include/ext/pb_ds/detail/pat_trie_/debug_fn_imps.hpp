@@ -77,7 +77,7 @@ assert_iterators() const
   for (const_iterator it = begin(); it != end(); ++it)
     {
       ++calc_size;
-      map_debug_base::check_key_exists(PB_DS_V2F(*it));
+      debug_base::check_key_exists(PB_DS_V2F(*it));
       _GLIBCXX_DEBUG_ASSERT(lower_bound(PB_DS_V2F(*it)) == it);
       _GLIBCXX_DEBUG_ASSERT(--upper_bound(PB_DS_V2F(*it)) == it);
     }
