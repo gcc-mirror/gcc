@@ -9,6 +9,5 @@ char bar(char f)
         return wrap(f);
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\(char\\\) .*with " "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "Replaced \\\(int\\\) .*with " "fre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(char\\\) .*with " "fre" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

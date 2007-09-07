@@ -1411,6 +1411,11 @@ simplify_binary_expression (tree rhs)
 	op1 = SSA_VAL (op1);
     }
 
+  /* Avoid folding if nothing changed.  */
+  if (op0 == TREE_OPERAND (rhs, 0)
+      && op1 == TREE_OPERAND (rhs, 1))
+    return NULL_TREE;
+
   result = fold_binary (TREE_CODE (rhs), TREE_TYPE (rhs), op0, op1);
 
   /* Make sure result is not a complex expression consisting
@@ -1421,6 +1426,50 @@ simplify_binary_expression (tree rhs)
     return result;
 
   return NULL_TREE;
+}
+
+/* Simplify the unary expression RHS, and return the result if
+   simplified. */
+
+static tree
+simplify_unary_expression (tree rhs)
+{
+  tree result = NULL_TREE;
+  tree op0 = TREE_OPERAND (rhs, 0);
+
+  if (TREE_CODE (op0) != SSA_NAME)
+    return NULL_TREE;
+
+  if (VN_INFO (op0)->has_constants)
+    op0 = valueize_expr (VN_INFO (op0)->expr);
+  else if (TREE_CODE (rhs) == NOP_EXPR
+	   || TREE_CODE (rhs) == CONVERT_EXPR
+	   || TREE_CODE (rhs) == REALPART_EXPR
+	   || TREE_CODE (rhs) == IMAGPART_EXPR)
+    {
+      /* We want to do tree-combining on conversion-like expressions.
+         Make sure we feed only SSA_NAMEs or constants to fold though.  */
+      tree tem = valueize_expr (VN_INFO (op0)->expr);
+      if (UNARY_CLASS_P (tem)
+	  || BINARY_CLASS_P (tem)
+	  || TREE_CODE (tem) == SSA_NAME
+	  || is_gimple_min_invariant (tem))
+	op0 = tem;
+    }
+
+  /* Avoid folding if nothing changed, but remember the expression.  */
+  if (op0 == TREE_OPERAND (rhs, 0))
+    return rhs;
+
+  result = fold_unary (TREE_CODE (rhs), TREE_TYPE (rhs), op0);
+  if (result)
+    {
+      STRIP_USELESS_TYPE_CONVERSION (result);
+      if (valid_gimple_expression_p (result))
+        return result;
+    }
+
+  return rhs;
 }
 
 /* Try to simplify RHS using equivalences and constant folding.  */
@@ -1457,21 +1506,14 @@ try_to_simplify (tree stmt, tree rhs)
 	    if (result)
 	      return result;
 	  }
-	  break;
+	  /* Fallthrough for some codes.  */
+	  if (!(TREE_CODE (rhs) == REALPART_EXPR
+	        || TREE_CODE (rhs) == IMAGPART_EXPR))
+	    break;
 	  /* We could do a little more with unary ops, if they expand
 	     into binary ops, but it's debatable whether it is worth it. */
 	case tcc_unary:
-	  {
-	    tree result = NULL_TREE;
-	    tree op0 = TREE_OPERAND (rhs, 0);
-	    if (TREE_CODE (op0) == SSA_NAME && VN_INFO (op0)->has_constants)
-	      op0 = VN_INFO (op0)->expr;
-	    else if (TREE_CODE (op0) == SSA_NAME && SSA_VAL (op0) != op0)
-	      op0 = SSA_VAL (op0);
-	    result = fold_unary (TREE_CODE (rhs), TREE_TYPE (rhs), op0);
-	    if (result)
-	      return result;
-	  }
+	  return simplify_unary_expression (rhs);
 	  break;
 	case tcc_comparison:
 	case tcc_binary:

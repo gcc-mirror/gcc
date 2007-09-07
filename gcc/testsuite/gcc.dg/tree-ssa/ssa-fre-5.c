@@ -10,5 +10,5 @@ bar (unsigned int t)
   return a == t;
 }
 
-/* { dg-final { scan-tree-dump "Replaced \\\(unsigned int\\\) a_.*with t_" "fre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "Replaced \\\(unsigned int\\\) a_.*with t_" "fre" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
