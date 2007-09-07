@@ -1,3 +1,7 @@
+2007-09-06  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (get_guard): Copy visibility from the guarded variable.
+
 2007-09-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32674

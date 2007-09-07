@@ -2224,6 +2224,8 @@ get_guard (tree decl)
       DECL_ONE_ONLY (guard) = DECL_ONE_ONLY (decl);
       if (TREE_PUBLIC (decl))
 	DECL_WEAK (guard) = DECL_WEAK (decl);
+      DECL_VISIBILITY (guard) = DECL_VISIBILITY (decl);
+      DECL_VISIBILITY_SPECIFIED (guard) = DECL_VISIBILITY_SPECIFIED (decl);
 
       DECL_ARTIFICIAL (guard) = 1;
       DECL_IGNORED_P (guard) = 1;
