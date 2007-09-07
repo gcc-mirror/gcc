@@ -61,7 +61,7 @@ clear()
       cond_dtor<size_type> cd(m_a_values, m_end_it, m_size);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
   m_a_values = NULL;
   m_size = 0;
   m_end_it = m_a_values;
@@ -98,7 +98,7 @@ erase_if(Pred pred)
   value_vector a_new_values = s_value_alloc.allocate(new_size);
   iterator target_it = a_new_values;
   cond_dtor<size_type> cd(a_new_values, target_it, new_size);
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear());
+  _GLIBCXX_DEBUG_ONLY(debug_base::clear());
   for (source_it = begin(); source_it != m_end_it; ++source_it)
     {
       if (!pred(*source_it))
@@ -106,7 +106,7 @@ erase_if(Pred pred)
 	  new (const_cast<void*>(static_cast<const void* >(target_it)))
 	    value_type(*source_it);
 
-	  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(*source_it)));
+	  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(*source_it)));
 	  ++target_it;
         }
     }

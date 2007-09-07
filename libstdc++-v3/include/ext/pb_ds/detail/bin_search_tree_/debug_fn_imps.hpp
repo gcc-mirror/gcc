@@ -251,7 +251,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_consistent_with_debug_base() const
 {
-  map_debug_base::check_size(m_size);
+  debug_base::check_size(m_size);
   assert_consistent_with_debug_base(m_p_head->m_p_parent);
 }
 
@@ -262,7 +262,7 @@ assert_consistent_with_debug_base(const node_pointer p_nd) const
 {
   if (p_nd == NULL)
     return;
-  map_debug_base::check_key_exists(PB_DS_V2F(p_nd->m_value));
+  debug_base::check_key_exists(PB_DS_V2F(p_nd->m_value));
   assert_consistent_with_debug_base(p_nd->m_p_left);
   assert_consistent_with_debug_base(p_nd->m_p_right);
 }

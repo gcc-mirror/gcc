@@ -130,7 +130,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
-  map_debug_base(other),
+  debug_base(other),
 #endif 
   PB_DS_HASH_EQ_FN_C_DEC(other),
   resize_base(other), ranged_hash_fn_base(other),
@@ -171,7 +171,7 @@ swap(PB_DS_CLASS_C_DEC& other)
   hash_eq_fn_base::swap(other);
   resize_base::swap(other);
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other));
+  _GLIBCXX_DEBUG_ONLY(debug_base::swap(other));
   _GLIBCXX_DEBUG_ONLY(assert_valid());
   _GLIBCXX_DEBUG_ONLY(other.assert_valid());
 }

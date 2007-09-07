@@ -56,5 +56,5 @@ constructor_insert_new_imp(const_mapped_reference r_val, size_type pos,
   new (&p_e->m_value) mapped_value_type(r_val);
   p_e->m_hash = ranged_probe_fn_base::operator()(PB_DS_V2F(r_val)).second;
   p_e->m_stat = valid_entry_status;
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(p_e->m_value.first);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(p_e->m_value.first);)
 }

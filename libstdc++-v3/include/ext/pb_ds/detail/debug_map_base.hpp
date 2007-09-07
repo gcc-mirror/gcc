@@ -40,12 +40,12 @@
 // warranty.
  
 /**
- * @file map_debug_base.hpp
+ * @file debug_map_base.hpp
  * Contains a debug-mode base for all maps.
  */
 
-#ifndef PB_DS_MAP_DEBUG_BASE_HPP
-#define PB_DS_MAP_DEBUG_BASE_HPP
+#ifndef PB_DS_DEBUG_MAP_BASE_HPP
+#define PB_DS_DEBUG_MAP_BASE_HPP
 
 #ifdef _GLIBCXX_DEBUG
 
@@ -59,15 +59,21 @@ namespace pb_ds
 {
   namespace detail
   {
+    // Need std::pair ostream extractor.
+    template<typename _CharT, typename _Traits, typename _Tp1, typename _Tp2>
+    inline std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>& __out, 
+	       const std::pair<_Tp1, _Tp2>& p)
+    { return (__out << '(' << p.first << ',' << p.second << ')'); }
 
 #define PB_DS_CLASS_T_DEC \
     template<typename Key, class Eq_Fn, typename Const_Key_Reference>
 
 #define PB_DS_CLASS_C_DEC \
-    map_debug_base<Key, Eq_Fn, Const_Key_Reference>
+    debug_map_base<Key, Eq_Fn, Const_Key_Reference>
 
     template<typename Key, class Eq_Fn, typename Const_Key_Reference>
-    class map_debug_base
+    class debug_map_base
     {
     private:
       typedef typename std::allocator< Key> key_allocator;
@@ -77,11 +83,11 @@ namespace pb_ds
       typedef Const_Key_Reference const_key_reference;
 
     protected:
-      map_debug_base();
+      debug_map_base();
 
-      map_debug_base(const PB_DS_CLASS_C_DEC& other);
+      debug_map_base(const PB_DS_CLASS_C_DEC& other);
 
-      ~map_debug_base();
+      ~debug_map_base();
 
       inline void
       insert_new(const_key_reference r_key);
@@ -133,17 +139,17 @@ namespace pb_ds
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    map_debug_base()
+    debug_map_base()
     { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    map_debug_base(const PB_DS_CLASS_C_DEC& other) : m_key_set(other.m_key_set)
+    debug_map_base(const PB_DS_CLASS_C_DEC& other) : m_key_set(other.m_key_set)
     { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
     PB_DS_CLASS_T_DEC
     PB_DS_CLASS_C_DEC::
-    ~map_debug_base()
+    ~debug_map_base()
     { _GLIBCXX_DEBUG_ONLY(assert_valid();) }
 
     PB_DS_CLASS_T_DEC
@@ -157,7 +163,7 @@ namespace pb_ds
       alloc.set_throw_prob(0);
       if (find(r_key) != m_key_set.end())
 	{
-	  std::cerr << "insert_new " << r_key << std::endl;
+	  std::cerr << "insert_new" << r_key << std::endl;
 	  std::abort();
 	}
 
@@ -167,7 +173,7 @@ namespace pb_ds
 	}
       catch(...)
 	{
-	  std::cerr << "insert_new 1" << r_key << std::endl;
+	  std::cerr << "insert_new" << r_key << std::endl;
 	  std::abort();
 	}
       alloc.set_throw_prob(orig_throw_prob);
@@ -183,7 +189,7 @@ namespace pb_ds
       key_set_iterator it = find(r_key);
       if (it == m_key_set.end())
 	{
-	  std::cerr << "erase_existing " << r_key << std::endl;
+	  std::cerr << "erase_existing" << r_key << std::endl;
 	  std::abort();
 	}
       m_key_set.erase(it);
@@ -208,7 +214,7 @@ namespace pb_ds
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       if (find(r_key) == m_key_set.end())
         {
-          std::cerr << "check_key_exists " << r_key << std::endl;
+          std::cerr << "check_key_exists" << r_key << std::endl;
           std::abort();
         }
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -222,7 +228,9 @@ namespace pb_ds
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       if (find(r_key) != m_key_set.end())
         {
-	  std::cerr << "check_key_does_not_exist " << r_key << std::endl;
+	  using std::cerr;
+	  using std::endl;
+	  cerr << "check_key_does_not_exist" << r_key << endl;
           std::abort();
         }
     }

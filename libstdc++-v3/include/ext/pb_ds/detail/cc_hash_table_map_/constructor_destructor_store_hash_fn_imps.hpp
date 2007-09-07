@@ -58,5 +58,5 @@ constructor_insert_new_imp(const_reference r_val, size_type pos, true_type)
   p->m_hash = ranged_hash_fn_base::operator()((const_key_reference)(PB_DS_V2F(p->m_value))).second;
 
   m_entries[pos] = p;
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(r_key);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(r_key);)
 }

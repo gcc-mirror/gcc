@@ -71,7 +71,7 @@ join_prep(PB_DS_CLASS_C_DEC& other)
     value_swap(other);
 
   m_size += other.m_size;
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::join(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::join(other);)
   return true;
 }
 
@@ -123,7 +123,7 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other)
       return false;
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::split(r_key,(Cmp_Fn& )(*this), other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::split(r_key,(Cmp_Fn& )(*this), other);)
   return true;
 }
 

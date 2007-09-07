@@ -85,7 +85,7 @@ cmp_with_other(const Other_Map_Type& other) const
       const_key_reference r_key =(const_key_reference)PB_DS_V2F(*it);
       const_mapped_pointer p_mapped_value =
 	const_cast<PB_DS_CLASS_C_DEC& >(*this).
-	find_key_pointer(r_key, traits_base::m_store_hash_indicator);
+	find_key_pointer(r_key, traits_base::m_store_extra_indicator);
 
       if (p_mapped_value == NULL)
 	return false;

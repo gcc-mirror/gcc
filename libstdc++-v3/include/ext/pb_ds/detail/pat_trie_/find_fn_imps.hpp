@@ -54,17 +54,17 @@ find(const_key_reference r_key)
 
   if (p_nd == NULL || p_nd->m_type != pat_trie_leaf_node_type)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
       return end();
     }
 
   if (synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<leaf_pointer>(p_nd)->value()), r_key))
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
       return iterator(p_nd);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
   return end();
 }
 
@@ -79,17 +79,17 @@ find(const_key_reference r_key) const
 
   if (p_nd == NULL || p_nd->m_type != pat_trie_leaf_node_type)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
       return end();
     }
 
   if (synth_e_access_traits::equal_keys(PB_DS_V2F(static_cast<const_leaf_pointer>(p_nd)->value()), r_key))
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key));
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key));
       return const_iterator(const_cast<node_pointer>(p_nd));
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
   return end();
 }
 

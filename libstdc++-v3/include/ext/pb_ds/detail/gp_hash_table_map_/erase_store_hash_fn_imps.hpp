@@ -63,7 +63,7 @@ erase_imp(const_key_reference r_key, true_type)
         case empty_entry_status:
 	  {
 	    resize_base::notify_erase_search_end();
-	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(
+	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(
 								    r_key));
 	    return false;
 	  }

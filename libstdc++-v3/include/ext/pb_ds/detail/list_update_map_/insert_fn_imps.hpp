@@ -56,11 +56,11 @@ insert(const_reference r_val)
 
   if (p_l != NULL)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(PB_DS_V2F(r_val));)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(r_val));)
       return std::make_pair(point_iterator(&p_l->m_value), false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(PB_DS_V2F(r_val));)
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(PB_DS_V2F(r_val));)
 
   p_l = allocate_new_entry(r_val, traits_base::m_no_throw_copies_indicator);
   p_l->m_p_next = m_p_l;
@@ -80,7 +80,7 @@ allocate_new_entry(const_reference r_val, false_type)
     value_type(r_val);
 
   cond.set_no_action();
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)
   init_entry_metadata(p_l, s_metadata_type_indicator);
   return p_l;
 }
@@ -92,7 +92,7 @@ allocate_new_entry(const_reference    r_val, true_type)
 {
   entry_pointer p_l = s_entry_allocator.allocate(1);
   new (&p_l->m_value) value_type(r_val);
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)
   init_entry_metadata(p_l, s_metadata_type_indicator);
   return p_l;
 }

@@ -50,6 +50,11 @@
 
 #include <ext/pb_ds/detail/type_utils.hpp>
 
+/**
+ * @namespace pb_ds
+ * @brief GNU extension policy-based data structures for public use.
+ */
+
 namespace pb_ds
 {
   // A trivial iterator tag. Signifies that the iterators has none of

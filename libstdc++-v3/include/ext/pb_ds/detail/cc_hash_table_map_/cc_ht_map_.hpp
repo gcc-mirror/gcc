@@ -53,7 +53,7 @@
 #include <ext/pb_ds/exception.hpp>
 #include <ext/pb_ds/detail/eq_fn/hash_eq_fn.hpp>
 #ifdef _GLIBCXX_DEBUG
-#include <ext/pb_ds/detail/map_debug_base.hpp>
+#include <ext/pb_ds/detail/debug_map_base.hpp>
 #endif 
 #ifdef PB_DS_HT_MAP_TRACE_
 #include <iostream>
@@ -92,8 +92,8 @@ namespace pb_ds
     types_traits<Key, Mapped, Allocator, Store_Hash>
 
 #ifdef _GLIBCXX_DEBUG
-#define PB_DS_MAP_DEBUG_BASE_C_DEC \
-    map_debug_base<Key,	Eq_Fn, typename Allocator::template rebind<Key>::other::const_reference>
+#define PB_DS_DEBUG_MAP_BASE_C_DEC \
+    debug_map_base<Key,	Eq_Fn, typename Allocator::template rebind<Key>::other::const_reference>
 #endif 
 
 #ifdef PB_DS_DATA_TRUE_INDICATOR
@@ -117,7 +117,7 @@ namespace pb_ds
 	     typename Resize_Policy >
     class PB_DS_CLASS_NAME:
 #ifdef _GLIBCXX_DEBUG
-      protected PB_DS_MAP_DEBUG_BASE_C_DEC,
+      protected PB_DS_DEBUG_MAP_BASE_C_DEC,
 #endif 
       public PB_DS_HASH_EQ_FN_C_DEC,
       public Resize_Policy,
@@ -154,7 +154,7 @@ namespace pb_ds
       typedef Resize_Policy resize_base;
 
 #ifdef _GLIBCXX_DEBUG
-      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
+      typedef PB_DS_DEBUG_MAP_BASE_C_DEC debug_base;
 #endif 
 
 #define PB_DS_GEN_POS std::pair<entry_pointer, typename Allocator::size_type>
@@ -390,11 +390,11 @@ namespace pb_ds
 	resize_base::notify_insert_search_end();
 	if (p_e != NULL)
 	  {
-	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
 	    return (p_e->m_value.second);
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
 	return insert_new_imp(value_type(r_key, mapped_type()), pos)->second;
       }
 
@@ -415,11 +415,11 @@ namespace pb_ds
 	resize_base::notify_insert_search_end();
 	if (p_e != NULL)
 	  {
-	    _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+	    _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
 	    return p_e->m_value.second;
 	  }
 
-	_GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
 	return insert_new_imp(value_type(r_key, mapped_type()), 
 			      pos_hash_pair)->second;
       }
@@ -445,7 +445,7 @@ namespace pb_ds
 	m_entries[pos] = p_e;
 	resize_base::notify_inserted(++m_num_used_e);
 
-	_GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	return &p_e->m_value;
       }
@@ -464,7 +464,7 @@ namespace pb_ds
 	p_e->m_p_next = m_entries[r_pos_hash_pair.first];
 	m_entries[r_pos_hash_pair.first] = p_e;
 	resize_base::notify_inserted(++m_num_used_e);
-	_GLIBCXX_DEBUG_ONLY(map_debug_base::insert_new(PB_DS_V2F(r_val));)
+	_GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(r_val));)
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 	return &p_e->m_value;
       }
@@ -485,9 +485,9 @@ namespace pb_ds
 
 #ifdef _GLIBCXX_DEBUG
 	if (p_e == NULL)
-	  map_debug_base::check_key_does_not_exist(r_key);
+	  debug_base::check_key_does_not_exist(r_key);
 	else
-	  map_debug_base::check_key_exists(r_key);
+	  debug_base::check_key_exists(r_key);
 #endif 
 	return &p_e->m_value;
       }
@@ -511,9 +511,9 @@ namespace pb_ds
 
 #ifdef _GLIBCXX_DEBUG
 	if (p_e == NULL)
-	  map_debug_base::check_key_does_not_exist(r_key);
+	  debug_base::check_key_does_not_exist(r_key);
 	else
-	  map_debug_base::check_key_exists(r_key);
+	  debug_base::check_key_exists(r_key);
 #endif 
 	return &p_e->m_value;
       }
@@ -632,7 +632,7 @@ namespace pb_ds
 #undef PB_DS_HASH_EQ_FN_C_DEC
 #undef PB_DS_RANGED_HASH_FN_C_DEC
 #undef PB_DS_TYPES_TRAITS_C_DEC
-#undef PB_DS_MAP_DEBUG_BASE_C_DEC
+#undef PB_DS_DEBUG_MAP_BASE_C_DEC
 #undef PB_DS_CLASS_NAME
 #undef PB_DS_V2F
 #undef PB_DS_V2S

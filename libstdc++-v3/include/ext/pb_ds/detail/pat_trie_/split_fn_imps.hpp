@@ -128,7 +128,7 @@ split_prep(const_key_reference r_key, PB_DS_CLASS_C_DEC& other, split_join_branc
       r_bag.add_branch();
       p_nd = p_nd->m_p_parent;
     }
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::split(r_key,(synth_e_access_traits& )(*this), other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::split(r_key,(synth_e_access_traits& )(*this), other);)
 
   return (p_ret_l);
 }

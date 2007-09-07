@@ -134,7 +134,7 @@ void
 PB_DS_CLASS_C_DEC::
 actual_erase_entry(entry_pointer p_l)
 {
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(PB_DS_V2F(p_l->m_value));)
+  _GLIBCXX_DEBUG_ONLY(debug_base::erase_existing(PB_DS_V2F(p_l->m_value));)
   p_l->~entry();
   s_entry_allocator.deallocate(p_l, 1);
 }

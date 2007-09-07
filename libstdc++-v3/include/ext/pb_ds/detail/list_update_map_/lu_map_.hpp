@@ -52,7 +52,7 @@
 #include <ext/pb_ds/detail/list_update_map_/entry_metadata_base.hpp>
 #include <ext/pb_ds/exception.hpp>
 #ifdef _GLIBCXX_DEBUG
-#include <ext/pb_ds/detail/map_debug_base.hpp>
+#include <ext/pb_ds/detail/debug_map_base.hpp>
 #endif 
 #ifdef PB_DS_LU_MAP_TRACE_
 #include <iostream>
@@ -82,8 +82,8 @@ namespace pb_ds
     types_traits<Key, Mapped, Allocator, false>
 
 #ifdef _GLIBCXX_DEBUG
-#define PB_DS_MAP_DEBUG_BASE_C_DEC \
-    map_debug_base<Key, Eq_Fn, \
+#define PB_DS_DEBUG_MAP_BASE_C_DEC \
+    debug_map_base<Key, Eq_Fn, \
 	      typename Allocator::template rebind<Key>::other::const_reference>
 #endif 
 
@@ -108,7 +108,7 @@ namespace pb_ds
 	     class Update_Policy>
     class PB_DS_CLASS_NAME :
 #ifdef _GLIBCXX_DEBUG
-      protected PB_DS_MAP_DEBUG_BASE_C_DEC,
+      protected PB_DS_DEBUG_MAP_BASE_C_DEC,
 #endif 
       public PB_DS_TYPES_TRAITS_C_DEC
     {
@@ -148,7 +148,7 @@ namespace pb_ds
 
 
 #ifdef _GLIBCXX_DEBUG
-      typedef PB_DS_MAP_DEBUG_BASE_C_DEC map_debug_base;
+      typedef PB_DS_DEBUG_MAP_BASE_C_DEC debug_base;
 #endif 
 
       typedef cond_dealtor<entry, Allocator> cond_dealtor_t;
@@ -355,7 +355,7 @@ namespace pb_ds
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 #undef  PB_DS_TYPES_TRAITS_C_DEC
-#undef PB_DS_MAP_DEBUG_BASE_C_DEC
+#undef PB_DS_DEBUG_MAP_BASE_C_DEC
 #undef PB_DS_CLASS_NAME
 #undef PB_DS_V2F
 #undef PB_DS_EP2VP

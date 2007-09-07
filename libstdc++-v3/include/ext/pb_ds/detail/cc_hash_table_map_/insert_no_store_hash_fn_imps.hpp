@@ -66,11 +66,11 @@ insert_imp(const_reference r_val, false_type)
   resize_base::notify_insert_search_end();
   if (p_e != NULL)
     {
-      _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_exists(r_key);)
+      _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(r_key);)
       return std::make_pair(&p_e->m_value, false);
     }
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::check_key_does_not_exist(r_key);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key);)
   return std::make_pair(insert_new_imp(r_val, pos), true);
 }
 

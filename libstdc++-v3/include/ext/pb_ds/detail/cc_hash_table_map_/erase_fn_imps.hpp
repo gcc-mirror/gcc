@@ -49,7 +49,7 @@ inline void
 PB_DS_CLASS_C_DEC::
 erase_entry_pointer(entry_pointer& r_p_e)
 {
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::erase_existing(PB_DS_V2F(r_p_e->m_value)));
+  _GLIBCXX_DEBUG_ONLY(debug_base::erase_existing(PB_DS_V2F(r_p_e->m_value)));
 
   entry_pointer p_e = r_p_e;
   r_p_e = r_p_e->m_p_next;

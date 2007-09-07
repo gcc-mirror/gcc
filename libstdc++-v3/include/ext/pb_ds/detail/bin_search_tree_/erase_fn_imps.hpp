@@ -102,7 +102,7 @@ clear()
 
   initialize();
 
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::clear();)
+  _GLIBCXX_DEBUG_ONLY(debug_base::clear();)
 
     _GLIBCXX_DEBUG_ONLY(structure_only_assert_valid();)
     }

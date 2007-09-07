@@ -81,7 +81,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 PB_DS_CLASS_NAME(const PB_DS_CLASS_C_DEC& other) :
 #ifdef _GLIBCXX_DEBUG
-  map_debug_base(other),
+  debug_base(other),
 #endif 
   synth_e_access_traits(other),
   node_update(other),
@@ -130,7 +130,7 @@ void
 PB_DS_CLASS_C_DEC::
 value_swap(PB_DS_CLASS_C_DEC& other)
 {
-  _GLIBCXX_DEBUG_ONLY(map_debug_base::swap(other);)
+  _GLIBCXX_DEBUG_ONLY(debug_base::swap(other);)
   std::swap(m_p_head, other.m_p_head);
   std::swap(m_size, other.m_size);
 }
