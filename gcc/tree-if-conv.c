@@ -985,7 +985,7 @@ combine_blocks (struct loop *loop)
       /* Update stmt list.  */
       last = tsi_last (bb_stmt_list (merge_target_bb));
       tsi_link_after (&last, bb_stmt_list (bb), TSI_NEW_STMT);
-      set_bb_stmt_list (bb, NULL);
+      set_bb_stmt_list (bb, alloc_stmt_list());
 
       delete_basic_block (bb);
     }
