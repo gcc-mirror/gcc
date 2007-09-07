@@ -6018,12 +6018,12 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
   for (path_entry = 0; path_entry < path_size; path_entry++)
     {
       basic_block bb;
-      rtx insn;
+      rtx insn, next;
       rtx libcall_insn = NULL_RTX;
       int no_conflict = 0;
 
       bb = ebb_data->path[path_entry].bb;
-      FOR_BB_INSNS (bb, insn)
+      FOR_BB_INSNS_SAFE (bb, insn, next)
 	{
 	  /* If we have processed 1,000 insns, flush the hash table to
 	     avoid extreme quadratic behavior.  We must not include NOTEs

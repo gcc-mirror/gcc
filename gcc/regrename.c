@@ -1567,9 +1567,9 @@ static bool
 copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 {
   bool changed = false;
-  rtx insn;
+  rtx insn, next;
 
-  for (insn = BB_HEAD (bb); ; insn = NEXT_INSN (insn))
+  FOR_BB_INSNS_SAFE (bb, insn, next)
     {
       int n_ops, i, alt, predicated;
       bool is_asm, any_replacements;
