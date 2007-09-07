@@ -347,7 +347,8 @@ init_expr (void)
 }
 
 /* Copy data from FROM to TO, where the machine modes are not the same.
-   Both modes may be integer, or both may be floating.
+   Both modes may be integer, or both may be floating, or both may be
+   fixed-point.
    UNSIGNEDP should be nonzero if FROM is an unsigned type.
    This causes zero-extension instead of sign-extension.  */
 
@@ -500,6 +501,22 @@ convert_move (rtx to, rtx from, int unsignedp)
       /* else proceed to integer conversions below.  */
       from_mode = full_mode;
       from = new_from;
+    }
+
+   /* Make sure both are fixed-point modes or both are not.  */
+   gcc_assert (ALL_SCALAR_FIXED_POINT_MODE_P (from_mode) ==
+	       ALL_SCALAR_FIXED_POINT_MODE_P (to_mode));
+   if (ALL_SCALAR_FIXED_POINT_MODE_P (from_mode))
+    {
+      /* If we widen from_mode to to_mode and they are in the same class,
+	 we won't saturate the result.
+	 Otherwise, always saturate the result to play safe.  */
+      if (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode)
+	  && GET_MODE_SIZE (from_mode) < GET_MODE_SIZE (to_mode))
+	expand_fixed_convert (to, from, 0, 0);
+      else
+	expand_fixed_convert (to, from, 0, 1);
+      return;
     }
 
   /* Now both modes are integers.  */
@@ -3284,7 +3301,8 @@ emit_move_insn_1 (rtx x, rtx y)
   if (COMPLEX_MODE_P (mode))
     return emit_move_complex (mode, x, y);
 
-  if (GET_MODE_CLASS (mode) == MODE_DECIMAL_FLOAT)
+  if (GET_MODE_CLASS (mode) == MODE_DECIMAL_FLOAT
+      || ALL_FIXED_POINT_MODE_P (mode))
     {
       rtx result = emit_move_via_integer (mode, x, y, true);
 
@@ -4763,6 +4781,7 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
 	case INTEGER_CST:
 	case REAL_CST:
+	case FIXED_CST:
 	  if (!initializer_zerop (value))
 	    nz_elts += mult;
 	  elt_count += mult;
@@ -4945,6 +4964,7 @@ count_type_elements (const_tree type, bool allow_flexarr)
 
     case INTEGER_TYPE:
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case POINTER_TYPE:
@@ -7231,7 +7251,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	tree tmp = NULL_TREE;
 	if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FRACT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_UFRACT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_ACCUM
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_UACCUM)
 	  return const_vector_from_tree (exp);
 	if (GET_MODE_CLASS (mode) == MODE_INT)
 	  {
@@ -7261,6 +7285,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	 Now, we do the copying in expand_binop, if appropriate.  */
       return CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (exp),
+					   TYPE_MODE (TREE_TYPE (exp)));
+
+    case FIXED_CST:
+      return CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (exp),
 					   TYPE_MODE (TREE_TYPE (exp)));
 
     case COMPLEX_CST:
@@ -8152,18 +8180,21 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case PLUS_EXPR:
 
       /* Check if this is a case for multiplication and addition.  */
-      if (TREE_CODE (type) == INTEGER_TYPE
+      if ((TREE_CODE (type) == INTEGER_TYPE
+	   || TREE_CODE (type) == FIXED_POINT_TYPE)
 	  && TREE_CODE (TREE_OPERAND (exp, 0)) == MULT_EXPR)
 	{
 	  tree subsubexp0, subsubexp1;
-	  enum tree_code code0, code1;
+	  enum tree_code code0, code1, this_code;
 
 	  subexp0 = TREE_OPERAND (exp, 0);
 	  subsubexp0 = TREE_OPERAND (subexp0, 0);
 	  subsubexp1 = TREE_OPERAND (subexp0, 1);
 	  code0 = TREE_CODE (subsubexp0);
 	  code1 = TREE_CODE (subsubexp1);
-	  if (code0 == NOP_EXPR && code1 == NOP_EXPR
+	  this_code = TREE_CODE (type) == INTEGER_TYPE ? NOP_EXPR
+						       : FIXED_CONVERT_EXPR;
+	  if (code0 == this_code && code1 == this_code
 	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
 		  < TYPE_PRECISION (TREE_TYPE (subsubexp0)))
 	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
@@ -8174,7 +8205,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      tree op0type = TREE_TYPE (TREE_OPERAND (subsubexp0, 0));
 	      enum machine_mode innermode = TYPE_MODE (op0type);
 	      bool zextend_p = TYPE_UNSIGNED (op0type);
-	      this_optab = zextend_p ? umadd_widen_optab : smadd_widen_optab;
+	      bool sat_p = TYPE_SATURATING (TREE_TYPE (subsubexp0));
+	      if (sat_p == 0)
+		this_optab = zextend_p ? umadd_widen_optab : smadd_widen_optab;
+	      else
+		this_optab = zextend_p ? usmadd_widen_optab
+				       : ssmadd_widen_optab;
 	      if (mode == GET_MODE_2XWIDER_MODE (innermode)
 		  && (optab_handler (this_optab, mode)->insn_code
 		      != CODE_FOR_nothing))
@@ -8307,18 +8343,21 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
     case MINUS_EXPR:
       /* Check if this is a case for multiplication and subtraction.  */
-      if (TREE_CODE (type) == INTEGER_TYPE
+      if ((TREE_CODE (type) == INTEGER_TYPE
+	   || TREE_CODE (type) == FIXED_POINT_TYPE)
 	  && TREE_CODE (TREE_OPERAND (exp, 1)) == MULT_EXPR)
 	{
 	  tree subsubexp0, subsubexp1;
-	  enum tree_code code0, code1;
+	  enum tree_code code0, code1, this_code;
 
 	  subexp1 = TREE_OPERAND (exp, 1);
 	  subsubexp0 = TREE_OPERAND (subexp1, 0);
 	  subsubexp1 = TREE_OPERAND (subexp1, 1);
 	  code0 = TREE_CODE (subsubexp0);
 	  code1 = TREE_CODE (subsubexp1);
-	  if (code0 == NOP_EXPR && code1 == NOP_EXPR
+	  this_code = TREE_CODE (type) == INTEGER_TYPE ? NOP_EXPR
+						       : FIXED_CONVERT_EXPR;
+	  if (code0 == this_code && code1 == this_code
 	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
 		  < TYPE_PRECISION (TREE_TYPE (subsubexp0)))
 	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (subsubexp0, 0)))
@@ -8329,7 +8368,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      tree op0type = TREE_TYPE (TREE_OPERAND (subsubexp0, 0));
 	      enum machine_mode innermode = TYPE_MODE (op0type);
 	      bool zextend_p = TYPE_UNSIGNED (op0type);
-	      this_optab = zextend_p ? umsub_widen_optab : smsub_widen_optab;
+	      bool sat_p = TYPE_SATURATING (TREE_TYPE (subsubexp0));
+	      if (sat_p == 0)
+		this_optab = zextend_p ? umsub_widen_optab : smsub_widen_optab;
+	      else
+		this_optab = zextend_p ? usmsub_widen_optab
+				       : ssmsub_widen_optab;
 	      if (mode == GET_MODE_2XWIDER_MODE (innermode)
 		  && (optab_handler (this_optab, mode)->insn_code
 		      != CODE_FOR_nothing))
@@ -8388,6 +8432,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       goto binop2;
 
     case MULT_EXPR:
+      /* If this is a fixed-point operation, then we cannot use the code
+	 below because "expand_mult" doesn't support sat/no-sat fixed-point
+         multiplications.   */
+      if (ALL_FIXED_POINT_MODE_P (mode))
+	goto binop;
+
       /* If first operand is constant, swap them.
 	 Thus the following special case checks need only
 	 check the second operand.  */
@@ -8540,6 +8590,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
+      /* If this is a fixed-point operation, then we cannot use the code
+	 below because "expand_divmod" doesn't support sat/no-sat fixed-point
+         divisions.   */
+      if (ALL_FIXED_POINT_MODE_P (mode))
+	goto binop;
+
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
       /* Possible optimization: compute the dividend with EXPAND_SUM
@@ -8561,6 +8617,19 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       expand_operands (TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
 		       subtarget, &op0, &op1, 0);
       return expand_divmod (1, code, mode, op0, op1, target, unsignedp);
+
+    case FIXED_CONVERT_EXPR:
+      op0 = expand_normal (TREE_OPERAND (exp, 0));
+      if (target == 0 || modifier == EXPAND_STACK_PARM)
+	target = gen_reg_rtx (mode);
+
+      if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == INTEGER_TYPE
+	   && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
+          || (TREE_CODE (type) == INTEGER_TYPE && TYPE_UNSIGNED (type)))
+	expand_fixed_convert (target, op0, 1, TYPE_SATURATING (type));
+      else
+	expand_fixed_convert (target, op0, 0, TYPE_SATURATING (type));
+      return target;
 
     case FIX_TRUNC_EXPR:
       op0 = expand_normal (TREE_OPERAND (exp, 0));
@@ -8767,6 +8836,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case RSHIFT_EXPR:
     case LROTATE_EXPR:
     case RROTATE_EXPR:
+      /* If this is a fixed-point operation, then we cannot use the code
+	 below because "expand_shift" doesn't support sat/no-sat fixed-point
+         shifts.   */
+      if (ALL_FIXED_POINT_MODE_P (mode))
+	goto binop;
+
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       if (modifier == EXPAND_STACK_PARM)
@@ -9583,7 +9658,8 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
     }
 
   /* Put a constant second.  */
-  if (TREE_CODE (arg0) == REAL_CST || TREE_CODE (arg0) == INTEGER_CST)
+  if (TREE_CODE (arg0) == REAL_CST || TREE_CODE (arg0) == INTEGER_CST
+      || TREE_CODE (arg0) == FIXED_CST)
     {
       tem = arg0; arg0 = arg1; arg1 = tem;
       code = swap_condition (code);
@@ -9887,7 +9963,11 @@ vector_mode_valid_p (enum machine_mode mode)
 
   /* Doh!  What's going on?  */
   if (class != MODE_VECTOR_INT
-      && class != MODE_VECTOR_FLOAT)
+      && class != MODE_VECTOR_FLOAT
+      && class != MODE_VECTOR_FRACT
+      && class != MODE_VECTOR_UFRACT
+      && class != MODE_VECTOR_ACCUM
+      && class != MODE_VECTOR_UACCUM)
     return 0;
 
   /* Hardware support.  Woo hoo!  */
@@ -9930,6 +10010,9 @@ const_vector_from_tree (tree exp)
 
       if (TREE_CODE (elt) == REAL_CST)
 	RTVEC_ELT (v, i) = CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (elt),
+							 inner);
+      else if (TREE_CODE (elt) == FIXED_CST)
+	RTVEC_ELT (v, i) = CONST_FIXED_FROM_FIXED_VALUE (TREE_FIXED_CST (elt),
 							 inner);
       else
 	RTVEC_ELT (v, i) = immed_double_const (TREE_INT_CST_LOW (elt),

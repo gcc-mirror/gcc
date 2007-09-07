@@ -75,6 +75,20 @@ typedef struct convert_optab *convert_optab;
 /* Enumeration of valid indexes into optab_table.  */
 enum optab_index
 {
+  /* Fixed-point operators with signed/unsigned saturation */
+  OTI_ssadd,
+  OTI_usadd,
+  OTI_sssub,
+  OTI_ussub,
+  OTI_ssmul,
+  OTI_usmul,
+  OTI_ssdiv,
+  OTI_usdiv,
+  OTI_ssneg,
+  OTI_usneg,
+  OTI_ssashl,
+  OTI_usashl,
+
   OTI_add,
   OTI_addv,
   OTI_sub,
@@ -97,12 +111,28 @@ enum optab_index
   /* Unsigned multiply and add with the result and addend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_umadd_widen,
+  /* Signed multiply and add with the result and addend one machine mode
+     wider than the multiplicand and multiplier.
+     All involved operations are saturating.  */
+  OTI_ssmadd_widen,
+  /* Unigned multiply and add with the result and addend one machine mode
+     wider than the multiplicand and multiplier.
+     All involved operations are saturating.  */
+  OTI_usmadd_widen,
   /* Signed multiply and subtract the result and minuend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_smsub_widen,
   /* Unsigned multiply and subtract the result and minuend one machine mode
      wider than the multiplicand and multiplier.  */
   OTI_umsub_widen,
+  /* Signed multiply and subtract the result and minuend one machine mode
+     wider than the multiplicand and multiplier.
+     All involved operations are saturating.  */
+  OTI_ssmsub_widen,
+  /* Unigned multiply and subtract the result and minuend one machine mode
+     wider than the multiplicand and multiplier.
+     All involved operations are saturating.  */
+  OTI_usmsub_widen,
 
   /* Signed divide */
   OTI_sdiv,
@@ -332,6 +362,19 @@ enum optab_index
 
 extern optab optab_table[OTI_MAX];
 
+#define ssadd_optab (optab_table[OTI_ssadd])
+#define usadd_optab (optab_table[OTI_usadd])
+#define sssub_optab (optab_table[OTI_sssub])
+#define ussub_optab (optab_table[OTI_ussub])
+#define ssmul_optab (optab_table[OTI_ssmul])
+#define usmul_optab (optab_table[OTI_usmul])
+#define ssdiv_optab (optab_table[OTI_ssdiv])
+#define usdiv_optab (optab_table[OTI_usdiv])
+#define ssneg_optab (optab_table[OTI_ssneg])
+#define usneg_optab (optab_table[OTI_usneg])
+#define ssashl_optab (optab_table[OTI_ssashl])
+#define usashl_optab (optab_table[OTI_usashl])
+
 #define add_optab (optab_table[OTI_add])
 #define sub_optab (optab_table[OTI_sub])
 #define smul_optab (optab_table[OTI_smul])
@@ -344,8 +387,12 @@ extern optab optab_table[OTI_MAX];
 #define usmul_widen_optab (optab_table[OTI_usmul_widen])
 #define smadd_widen_optab (optab_table[OTI_smadd_widen])
 #define umadd_widen_optab (optab_table[OTI_umadd_widen])
+#define ssmadd_widen_optab (optab_table[OTI_ssmadd_widen])
+#define usmadd_widen_optab (optab_table[OTI_usmadd_widen])
 #define smsub_widen_optab (optab_table[OTI_smsub_widen])
 #define umsub_widen_optab (optab_table[OTI_umsub_widen])
+#define ssmsub_widen_optab (optab_table[OTI_ssmsub_widen])
+#define usmsub_widen_optab (optab_table[OTI_usmsub_widen])
 #define sdiv_optab (optab_table[OTI_sdiv])
 #define smulv_optab (optab_table[OTI_smulv])
 #define sdivv_optab (optab_table[OTI_sdivv])
@@ -501,6 +548,11 @@ enum convert_optab_index
   COI_lfloor,
   COI_lceil,
 
+  COI_fract,
+  COI_fractuns,
+  COI_satfract,
+  COI_satfractuns,
+
   COI_MAX
 };
 
@@ -519,6 +571,10 @@ extern convert_optab convert_optab_table[COI_MAX];
 #define lround_optab (convert_optab_table[COI_lround])
 #define lfloor_optab (convert_optab_table[COI_lfloor])
 #define lceil_optab (convert_optab_table[COI_lceil])
+#define fract_optab (convert_optab_table[COI_fract])
+#define fractuns_optab (convert_optab_table[COI_fractuns])
+#define satfract_optab (convert_optab_table[COI_satfract])
+#define satfractuns_optab (convert_optab_table[COI_satfractuns])
 
 /* These arrays record the insn_code of insns that may be needed to
    perform input and output reloads of special objects.  They provide a
@@ -692,6 +748,9 @@ extern rtx gen_extend_insn (rtx, rtx, enum machine_mode,
 extern void set_optab_libfunc (optab, enum machine_mode, const char *);
 extern void set_conv_libfunc (convert_optab, enum machine_mode,
 			      enum machine_mode, const char *);
+
+/* Generate code for a FIXED_CONVERT_EXPR.  */
+extern void expand_fixed_convert (rtx, rtx, int, int);
 
 /* Generate code for a FLOAT_EXPR.  */
 extern void expand_float (rtx, rtx, int);

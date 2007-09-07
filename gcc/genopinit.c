@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
    only full integer modes should be considered for the next mode, and $F
    means that only float modes should be considered.
    $P means that both full and partial integer modes should be considered.
+   $Q means that only fixed-point modes should be considered.
 
    $V means to emit 'v' if the first mode is a MODE_FLOAT mode.
 
@@ -67,14 +68,28 @@ static const char * const optabs[] =
   "convert_optab_handler (sfloat_optab, $B, $A)->insn_code = CODE_FOR_$(float$I$a$F$b2$)",
   "convert_optab_handler (ufloat_optab, $B, $A)->insn_code = CODE_FOR_$(floatuns$I$a$F$b2$)",
   "convert_optab_handler (trunc_optab, $B, $A)->insn_code = CODE_FOR_$(trunc$a$b2$)",
+  "convert_optab_handler (fract_optab, $B, $A)->insn_code = CODE_FOR_$(fract$a$b2$)",
+  "convert_optab_handler (fractuns_optab, $B, $A)->insn_code = CODE_FOR_$(fractuns$I$a$Q$b2$)",
+  "convert_optab_handler (fractuns_optab, $B, $A)->insn_code = CODE_FOR_$(fractuns$Q$a$I$b2$)",
+  "convert_optab_handler (satfract_optab, $B, $A)->insn_code = CODE_FOR_$(satfract$a$Q$b2$)",
+  "convert_optab_handler (satfractuns_optab, $B, $A)->insn_code = CODE_FOR_$(satfractuns$I$a$Q$b2$)",
   "optab_handler (add_optab, $A)->insn_code = CODE_FOR_$(add$P$a3$)",
   "optab_handler (addv_optab, $A)->insn_code =\n\
     optab_handler (add_optab, $A)->insn_code = CODE_FOR_$(add$F$a3$)",
   "optab_handler (addv_optab, $A)->insn_code = CODE_FOR_$(addv$I$a3$)",
+  "optab_handler (add_optab, $A)->insn_code = CODE_FOR_$(add$Q$a3$)",
+  "optab_handler (ssadd_optab, $A)->insn_code = CODE_FOR_$(ssadd$Q$a3$)",
+  "optab_handler (usadd_optab, $A)->insn_code = CODE_FOR_$(usadd$Q$a3$)",
   "optab_handler (sub_optab, $A)->insn_code = CODE_FOR_$(sub$P$a3$)",
   "optab_handler (subv_optab, $A)->insn_code =\n\
     optab_handler (sub_optab, $A)->insn_code = CODE_FOR_$(sub$F$a3$)",
   "optab_handler (subv_optab, $A)->insn_code = CODE_FOR_$(subv$I$a3$)",
+  "optab_handler (sub_optab, $A)->insn_code = CODE_FOR_$(sub$Q$a3$)",
+  "optab_handler (sssub_optab, $A)->insn_code = CODE_FOR_$(sssub$Q$a3$)",
+  "optab_handler (ussub_optab, $A)->insn_code = CODE_FOR_$(ussub$Q$a3$)",
+  "optab_handler (smul_optab, $A)->insn_code = CODE_FOR_$(mul$Q$a3$)",
+  "optab_handler (ssmul_optab, $A)->insn_code = CODE_FOR_$(ssmul$Q$a3$)",
+  "optab_handler (usmul_optab, $A)->insn_code = CODE_FOR_$(usmul$Q$a3$)",
   "optab_handler (smul_optab, $A)->insn_code = CODE_FOR_$(mul$P$a3$)",
   "optab_handler (smulv_optab, $A)->insn_code =\n\
     optab_handler (smul_optab, $A)->insn_code = CODE_FOR_$(mul$F$a3$)",
@@ -86,11 +101,18 @@ static const char * const optabs[] =
   "optab_handler (usmul_widen_optab, $B)->insn_code = CODE_FOR_$(usmul$a$b3$)$N",
   "optab_handler (smadd_widen_optab, $B)->insn_code = CODE_FOR_$(madd$a$b4$)$N",
   "optab_handler (umadd_widen_optab, $B)->insn_code = CODE_FOR_$(umadd$a$b4$)$N",
+  "optab_handler (ssmadd_widen_optab, $B)->insn_code = CODE_FOR_$(ssmadd$a$b4$)$N",
+  "optab_handler (usmadd_widen_optab, $B)->insn_code = CODE_FOR_$(usmadd$a$b4$)$N",
   "optab_handler (smsub_widen_optab, $B)->insn_code = CODE_FOR_$(msub$a$b4$)$N",
   "optab_handler (umsub_widen_optab, $B)->insn_code = CODE_FOR_$(umsub$a$b4$)$N",
+  "optab_handler (ssmsub_widen_optab, $B)->insn_code = CODE_FOR_$(ssmsub$a$b4$)$N",
+  "optab_handler (usmsub_widen_optab, $B)->insn_code = CODE_FOR_$(usmsub$a$b4$)$N",
   "optab_handler (sdiv_optab, $A)->insn_code = CODE_FOR_$(div$a3$)",
+  "optab_handler (ssdiv_optab, $A)->insn_code = CODE_FOR_$(ssdiv$Q$a3$)",
   "optab_handler (sdivv_optab, $A)->insn_code = CODE_FOR_$(div$V$I$a3$)",
   "optab_handler (udiv_optab, $A)->insn_code = CODE_FOR_$(udiv$I$a3$)",
+  "optab_handler (udiv_optab, $A)->insn_code = CODE_FOR_$(udiv$Q$a3$)",
+  "optab_handler (usdiv_optab, $A)->insn_code = CODE_FOR_$(usdiv$Q$a3$)",
   "optab_handler (sdivmod_optab, $A)->insn_code = CODE_FOR_$(divmod$a4$)",
   "optab_handler (udivmod_optab, $A)->insn_code = CODE_FOR_$(udivmod$a4$)",
   "optab_handler (smod_optab, $A)->insn_code = CODE_FOR_$(mod$a3$)",
@@ -102,6 +124,8 @@ static const char * const optabs[] =
   "optab_handler (ior_optab, $A)->insn_code = CODE_FOR_$(ior$a3$)",
   "optab_handler (xor_optab, $A)->insn_code = CODE_FOR_$(xor$a3$)",
   "optab_handler (ashl_optab, $A)->insn_code = CODE_FOR_$(ashl$a3$)",
+  "optab_handler (ssashl_optab, $A)->insn_code = CODE_FOR_$(ssashl$Q$a3$)",
+  "optab_handler (usashl_optab, $A)->insn_code = CODE_FOR_$(usashl$Q$a3$)",
   "optab_handler (ashr_optab, $A)->insn_code = CODE_FOR_$(ashr$a3$)",
   "optab_handler (lshr_optab, $A)->insn_code = CODE_FOR_$(lshr$a3$)",
   "optab_handler (rotl_optab, $A)->insn_code = CODE_FOR_$(rotl$a3$)",
@@ -116,6 +140,9 @@ static const char * const optabs[] =
   "optab_handler (negv_optab, $A)->insn_code =\n\
     optab_handler (neg_optab, $A)->insn_code = CODE_FOR_$(neg$F$a2$)",
   "optab_handler (negv_optab, $A)->insn_code = CODE_FOR_$(negv$I$a2$)",
+  "optab_handler (neg_optab, $A)->insn_code = CODE_FOR_$(neg$Q$a2$)",
+  "optab_handler (ssneg_optab, $A)->insn_code = CODE_FOR_$(ssneg$Q$a2$)",
+  "optab_handler (usneg_optab, $A)->insn_code = CODE_FOR_$(usneg$Q$a2$)",
   "optab_handler (abs_optab, $A)->insn_code = CODE_FOR_$(abs$P$a2$)",
   "optab_handler (absv_optab, $A)->insn_code =\n\
     optab_handler (abs_optab, $A)->insn_code = CODE_FOR_$(abs$F$a2$)",
@@ -267,6 +294,7 @@ gen_insn (rtx insn)
   for (pindex = 0; pindex < ARRAY_SIZE (optabs); pindex++)
     {
       int force_float = 0, force_int = 0, force_partial_int = 0;
+      int force_fixed = 0;
       int force_consec = 0;
       int matches = 1;
 
@@ -295,6 +323,9 @@ gen_insn (rtx insn)
                 break;
 	      case 'F':
 		force_float = 1;
+		break;
+	      case 'Q':
+		force_fixed = 1;
 		break;
 	      case 'V':
                 break;
@@ -342,7 +373,16 @@ gen_insn (rtx insn)
 			    || mode_class[i] == MODE_FLOAT 
 			    || mode_class[i] == MODE_DECIMAL_FLOAT
 			    || mode_class[i] == MODE_COMPLEX_FLOAT
-			    || mode_class[i] == MODE_VECTOR_FLOAT))
+			    || mode_class[i] == MODE_VECTOR_FLOAT)
+			&& (! force_fixed
+			    || mode_class[i] == MODE_FRACT
+			    || mode_class[i] == MODE_UFRACT
+			    || mode_class[i] == MODE_ACCUM
+			    || mode_class[i] == MODE_UACCUM
+			    || mode_class[i] == MODE_VECTOR_FRACT
+			    || mode_class[i] == MODE_VECTOR_UFRACT
+			    || mode_class[i] == MODE_VECTOR_ACCUM
+			    || mode_class[i] == MODE_VECTOR_UACCUM))
 		      break;
 		  }
 
@@ -353,7 +393,7 @@ gen_insn (rtx insn)
 		else
 		  m2 = i, np += strlen (GET_MODE_NAME(i));
 
-		force_int = force_partial_int = force_float = 0;
+		force_int = force_partial_int = force_float = force_fixed = 0;
 		break;
 
 	      default:

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "langhooks.h"
 #include "real.h"
+#include "fixed-value.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
    EXPR must be pointer, reference, integer, enumeral, or literal zero;
@@ -117,7 +118,7 @@ strip_float_extensions (tree exp)
 
 /* Convert EXPR to some floating-point type TYPE.
 
-   EXPR must be float, integer, or enumeral;
+   EXPR must be float, fixed-point, integer, or enumeral;
    in other cases error is called.  */
 
 tree
@@ -319,6 +320,9 @@ convert_to_real (tree type, tree expr)
     case BOOLEAN_TYPE:
       return build1 (FLOAT_EXPR, type, expr);
 
+    case FIXED_POINT_TYPE:
+      return build1 (FIXED_CONVERT_EXPR, type, expr);
+
     case COMPLEX_TYPE:
       return convert (type,
 		      fold_build1 (REALPART_EXPR,
@@ -337,8 +341,8 @@ convert_to_real (tree type, tree expr)
 
 /* Convert EXPR to some integer (or enum) type TYPE.
 
-   EXPR must be pointer, integer, discrete (enum, char, or bool), float, or
-   vector; in other cases error is called.
+   EXPR must be pointer, integer, discrete (enum, char, or bool), float,
+   fixed-point or vector; in other cases error is called.
 
    The result of this is always supposed to be a newly created tree node
    not in use in any existing structure.  */
@@ -713,6 +717,9 @@ convert_to_integer (tree type, tree expr)
     case REAL_TYPE:
       return build1 (FIX_TRUNC_EXPR, type, expr);
 
+    case FIXED_POINT_TYPE:
+      return build1 (FIXED_CONVERT_EXPR, type, expr);
+
     case COMPLEX_TYPE:
       return convert (type,
 		      fold_build1 (REALPART_EXPR,
@@ -742,6 +749,7 @@ convert_to_complex (tree type, tree expr)
   switch (TREE_CODE (TREE_TYPE (expr)))
     {
     case REAL_TYPE:
+    case FIXED_POINT_TYPE:
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -803,6 +811,45 @@ convert_to_vector (tree type, tree expr)
 
     default:
       error ("can't convert value to a vector");
+      return error_mark_node;
+    }
+}
+
+/* Convert EXPR to some fixed-point type TYPE.
+
+   EXPR must be fixed-point, float, integer, or enumeral;
+   in other cases error is called.  */
+
+tree
+convert_to_fixed (tree type, tree expr)
+{
+  if (integer_zerop (expr))
+    {
+      tree fixed_zero_node = build_fixed (type, FCONST0 (TYPE_MODE (type)));
+      return fixed_zero_node;
+    }
+  else if (integer_onep (expr) && ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)))
+    {
+      tree fixed_one_node = build_fixed (type, FCONST1 (TYPE_MODE (type)));
+      return fixed_one_node;
+    }
+
+  switch (TREE_CODE (TREE_TYPE (expr)))
+    {
+    case FIXED_POINT_TYPE:
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case REAL_TYPE:
+      return build1 (FIXED_CONVERT_EXPR, type, expr);
+
+    case COMPLEX_TYPE:
+      return convert (type,
+		      fold_build1 (REALPART_EXPR,
+				   TREE_TYPE (TREE_TYPE (expr)), expr));
+
+    default:
+      error ("aggregate value used where a fixed-point was expected");
       return error_mark_node;
     }
 }
