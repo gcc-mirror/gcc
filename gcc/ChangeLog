@@ -1,5 +1,13 @@
 2007-09-07  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (build_mips16_call_stub): Emit all direct
+	float calls here, rather than leaving some to the caller.
+	Use call_internal_direct and call_value_internal_direct.
+	* config/mips/mips.md (call_internal_direct): New pattern.
+	(call_value_internal_direct): Likewise.
+
+2007-09-07  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.c (mips_base_move_loop_invariants): New variable.
 	(mips_set_mips16_mode): Restore flag_move_loop_invariants, then set
 	to 0 for MIPS16.

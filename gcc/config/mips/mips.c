@@ -9339,6 +9339,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
   tree stubid, stubdecl;
   int need_comma;
   unsigned int f;
+  rtx insn;
 
   /* We don't need to do anything if we aren't in mips16 mode, or if
      we were invoked with the -msoft-float option.  */
@@ -9604,34 +9605,26 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
   if (fpret && ! l->fpret)
     error ("cannot handle inconsistent calls to %qs", fnname);
 
+  if (retval == NULL_RTX)
+    insn = gen_call_internal_direct (fn, arg_size);
+  else
+    insn = gen_call_value_internal_direct (retval, fn, arg_size);
+  insn = emit_call_insn (insn);
+
   /* If we are calling a stub which handles a floating point return
      value, we need to arrange to save $18 in the prologue.  We do
      this by marking the function call as using the register.  The
      prologue will later see that it is used, and emit code to save
      it.  */
-
   if (l->fpret)
-    {
-      rtx insn;
+    CALL_INSN_FUNCTION_USAGE (insn) =
+      gen_rtx_EXPR_LIST (VOIDmode,
+			 gen_rtx_USE (VOIDmode, gen_rtx_REG (word_mode, 18)),
+			 CALL_INSN_FUNCTION_USAGE (insn));
 
-      if (retval == NULL_RTX)
-	insn = gen_call_internal (fn, arg_size);
-      else
-	insn = gen_call_value_internal (retval, fn, arg_size);
-      insn = emit_call_insn (insn);
-
-      CALL_INSN_FUNCTION_USAGE (insn) =
-	gen_rtx_EXPR_LIST (VOIDmode,
-			   gen_rtx_USE (VOIDmode, gen_rtx_REG (word_mode, 18)),
-			   CALL_INSN_FUNCTION_USAGE (insn));
-
-      /* Return 1 to tell the caller that we've generated the call
-         insn.  */
-      return 1;
-    }
-
-  /* Return 0 to let the caller generate the call insn.  */
-  return 0;
+  /* Return 1 to tell the caller that we've generated the call
+     insn.  */
+  return 1;
 }
 
 /* An entry in the mips16 constant pool.  VALUE is the pool constant,

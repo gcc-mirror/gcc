@@ -5666,6 +5666,18 @@
   [(set_attr "jal" "indirect,direct")
    (set_attr "extended_mips16" "no,yes")])
 
+;; A pattern for calls that must be made directly.  It is used for
+;; MIPS16 calls that the linker may need to redirect to a hard-float
+;; stub; the linker relies on the call relocation type to detect when
+;; such redirection is needed.
+(define_insn "call_internal_direct"
+  [(call (mem:SI (match_operand 0 "const_call_insn_operand"))
+	 (match_operand 1))
+   (const_int 1)
+   (clobber (reg:SI 31))]
+  ""
+  { return MIPS_CALL ("jal", operands, 0); })
+
 (define_insn "call_split"
   [(call (mem:SI (match_operand 0 "call_insn_operand" "cS"))
 	 (match_operand 1 "" ""))
@@ -5716,6 +5728,16 @@
   "TARGET_SPLIT_CALLS"
   { return MIPS_CALL ("jal", operands, 1); }
   [(set_attr "type" "call")])
+
+;; See call_internal_direct.
+(define_insn "call_value_internal_direct"
+  [(set (match_operand 0 "register_operand")
+        (call (mem:SI (match_operand 1 "const_call_insn_operand"))
+              (match_operand 2)))
+   (const_int 1)
+   (clobber (reg:SI 31))]
+  ""
+  { return MIPS_CALL ("jal", operands, 1); })
 
 ;; See comment for call_internal.
 (define_insn_and_split "call_value_multiple_internal"
