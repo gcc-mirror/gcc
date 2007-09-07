@@ -1964,6 +1964,8 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt,
   tree operation = GIMPLE_STMT_OPERAND (stmt, 1);
   bool nested_in_vect_loop = false;
   int op_type;
+  VEC(tree,heap) *phis = NULL;
+  int i;
   
   if (nested_in_vect_loop_p (loop, stmt))
     {
@@ -2260,11 +2262,7 @@ vect_finalize_reduction:
       epilog_stmt = build_gimple_modify_stmt (new_dest, expr);
       new_temp = make_ssa_name (new_dest, epilog_stmt);
       GIMPLE_STMT_OPERAND (epilog_stmt, 0) = new_temp;
-#if 0
-      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-#else
       bsi_insert_before (&exit_bsi, epilog_stmt, BSI_SAME_STMT);
-#endif
     }
 
 
@@ -2274,45 +2272,43 @@ vect_finalize_reduction:
      Find the loop-closed-use at the loop exit of the original scalar result.
      (The reduction result is expected to have two immediate uses - one at the 
      latch block, and one at the loop exit).  */
-  exit_phi = NULL;
+  phis = VEC_alloc (tree, heap, 10);
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
     {
       if (!flow_bb_inside_loop_p (loop, bb_for_stmt (USE_STMT (use_p))))
 	{
 	  exit_phi = USE_STMT (use_p);
-	  break;
+	  VEC_quick_push (tree, phis, exit_phi);
 	}
     }
   /* We expect to have found an exit_phi because of loop-closed-ssa form.  */
-  gcc_assert (exit_phi);
+  gcc_assert (!VEC_empty (tree, phis));
 
-  if (nested_in_vect_loop)
+  for (i = 0; VEC_iterate (tree, phis, i, exit_phi); i++)
     {
-      stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
+      if (nested_in_vect_loop)
+	{
+	  stmt_vec_info stmt_vinfo = vinfo_for_stmt (exit_phi);
 
-      /* FORNOW. Currently not supporting the case that an inner-loop reduction
-	 is not used in the outer-loop (but only outside the outer-loop).  */
-      gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo) 
-		  && !STMT_VINFO_LIVE_P (stmt_vinfo));
+	  /* FORNOW. Currently not supporting the case that an inner-loop reduction
+	     is not used in the outer-loop (but only outside the outer-loop).  */
+	  gcc_assert (STMT_VINFO_RELEVANT_P (stmt_vinfo) 
+		      && !STMT_VINFO_LIVE_P (stmt_vinfo));
 
-      epilog_stmt = adjustment_def ? epilog_stmt :  new_phi;
-      STMT_VINFO_VEC_STMT (stmt_vinfo) = epilog_stmt;
-      set_stmt_info (get_stmt_ann (epilog_stmt),
-                     new_stmt_vec_info (epilog_stmt, loop_vinfo));
+	  epilog_stmt = adjustment_def ? epilog_stmt :  new_phi;
+	  STMT_VINFO_VEC_STMT (stmt_vinfo) = epilog_stmt;
+	  set_stmt_info (get_stmt_ann (epilog_stmt),
+	  new_stmt_vec_info (epilog_stmt, loop_vinfo));
+	  continue;
+	}
 
-      if (vect_print_dump_info (REPORT_DETAILS))
-        {
-          fprintf (vect_dump, "vector of partial results after inner-loop:");
-          print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
-        }
-      return;
+      /* Replace the uses:  */
+      orig_name = PHI_RESULT (exit_phi);
+      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
+	FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	  SET_USE (use_p, new_temp);
     }
-
-  /* Replace the uses:  */
-  orig_name = PHI_RESULT (exit_phi);
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, orig_name)
-    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-      SET_USE (use_p, new_temp);
+  VEC_free (tree, heap, phis);
 } 
 
 

@@ -1,3 +1,9 @@
+2007-09-07  Dorit Nuzman  <dorit@il.ibm.com>
+	
+	PR tree-optimization/33299
+	* gfortran.dg/vect/vect.exp: Compile some tests with -ffast-math.
+	* gfortran.dg/vect/fast-math-pr33299.f90: New test.
+
 2007-09-07  Richard Guenther  <rguenther@suse.de>
 
 	Revert
