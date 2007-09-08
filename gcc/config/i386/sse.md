@@ -2899,11 +2899,15 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_expand "mulv16qi3"
+(define_insn_and_split "mulv16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "")
 	(mult:V16QI (match_operand:V16QI 1 "register_operand" "")
 		    (match_operand:V16QI 2 "register_operand" "")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2
+   && !(reload_completed || reload_in_progress)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   rtx t[12], op0;
   int i;
@@ -3097,50 +3101,6 @@
 {
   if (TARGET_SSE4_1)
     ix86_fixup_binary_operands_no_copy (MULT, V4SImode, operands);
- else
-   {
-     rtx t1, t2, t3, t4, t5, t6, thirtytwo;
-     rtx op0, op1, op2;
-
-     op0 = operands[0];
-     op1 = operands[1];
-     op2 = operands[2];
-     t1 = gen_reg_rtx (V4SImode);
-     t2 = gen_reg_rtx (V4SImode);
-     t3 = gen_reg_rtx (V4SImode);
-     t4 = gen_reg_rtx (V4SImode);
-     t5 = gen_reg_rtx (V4SImode);
-     t6 = gen_reg_rtx (V4SImode);
-     thirtytwo = GEN_INT (32);
-
-     /* Multiply elements 2 and 0.  */
-     emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, t1),
-					op1, op2));
-
-     /* Shift both input vectors down one element, so that elements 3
-	and 1 are now in the slots for elements 2 and 0.  For K8, at
-	least, this is faster than using a shuffle.  */
-     emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t2),
-				  gen_lowpart (TImode, op1),
-				  thirtytwo));
-     emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t3),
-				  gen_lowpart (TImode, op2),
-				  thirtytwo)); 
-     /* Multiply elements 3 and 1.  */
-     emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, t4),
-					t2, t3));
-
-     /* Move the results in element 2 down to element 1; we don't care
-	what goes in elements 2 and 3.  */
-     emit_insn (gen_sse2_pshufd_1 (t5, t1, const0_rtx, const2_rtx,
-				const0_rtx, const0_rtx));
-     emit_insn (gen_sse2_pshufd_1 (t6, t4, const0_rtx, const2_rtx,
-				   const0_rtx, const0_rtx));
-
-    /* Merge the parts back together.  */
-     emit_insn (gen_sse2_punpckldq (op0, t5, t6));
-     DONE;
-   }
 })
 
 (define_insn "*sse4_1_mulv4si3"
@@ -3153,11 +3113,68 @@
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "TI")])
 
-(define_expand "mulv2di3"
+(define_insn_and_split "*sse2_mulv4si3"
+  [(set (match_operand:V4SI 0 "register_operand" "")
+	(mult:V4SI (match_operand:V4SI 1 "register_operand" "")
+		   (match_operand:V4SI 2 "register_operand" "")))]
+  "TARGET_SSE2 && !TARGET_SSE4_1
+   && !(reload_completed || reload_in_progress)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx t1, t2, t3, t4, t5, t6, thirtytwo;
+  rtx op0, op1, op2;
+
+  op0 = operands[0];
+  op1 = operands[1];
+  op2 = operands[2];
+  t1 = gen_reg_rtx (V4SImode);
+  t2 = gen_reg_rtx (V4SImode);
+  t3 = gen_reg_rtx (V4SImode);
+  t4 = gen_reg_rtx (V4SImode);
+  t5 = gen_reg_rtx (V4SImode);
+  t6 = gen_reg_rtx (V4SImode);
+  thirtytwo = GEN_INT (32);
+
+  /* Multiply elements 2 and 0.  */
+  emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, t1),
+				     op1, op2));
+
+  /* Shift both input vectors down one element, so that elements 3
+     and 1 are now in the slots for elements 2 and 0.  For K8, at
+     least, this is faster than using a shuffle.  */
+  emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t2),
+			       gen_lowpart (TImode, op1),
+			       thirtytwo));
+  emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t3),
+			       gen_lowpart (TImode, op2),
+			       thirtytwo)); 
+  /* Multiply elements 3 and 1.  */
+  emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, t4),
+				     t2, t3));
+
+  /* Move the results in element 2 down to element 1; we don't care
+     what goes in elements 2 and 3.  */
+  emit_insn (gen_sse2_pshufd_1 (t5, t1, const0_rtx, const2_rtx,
+				const0_rtx, const0_rtx));
+  emit_insn (gen_sse2_pshufd_1 (t6, t4, const0_rtx, const2_rtx,
+				const0_rtx, const0_rtx));
+
+  /* Merge the parts back together.  */
+  emit_insn (gen_sse2_punpckldq (op0, t5, t6));
+  DONE;
+})
+
+(define_insn_and_split "mulv2di3"
   [(set (match_operand:V2DI 0 "register_operand" "")
 	(mult:V2DI (match_operand:V2DI 1 "register_operand" "")
 		   (match_operand:V2DI 2 "register_operand" "")))]
-  "TARGET_SSE2"
+  "TARGET_SSE2
+   && !(reload_completed || reload_in_progress)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
 {
   rtx t1, t2, t3, t4, t5, t6, thirtytwo;
   rtx op0, op1, op2;
