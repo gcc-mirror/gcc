@@ -1,3 +1,19 @@
+2007-09-07  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/32183
+	* Makefile.in (tree-ssa-reassoc.o): Also depend on $(CFGLOOP_H).
+
+	* tree-ssa-reassoc.c: Include cfgloop.h.
+	(is_reassociable_op): Add a loop argument and return true only
+	for inside loop.
+	(linearize_expr): Updated.
+	(should_break_up_subtract): Likewise.
+	(linearize_expr_tree): Likewise.
+	(init_reassoc): Call loop_optimizer_init with
+	AVOID_CFG_MODIFICATIONS.  Remove calculate_dominance_info call
+	with CDI_DOMINATORS.
+	(fini_reassoc): Call loop_optimizer_finalize.
+
 2007-09-07  Sterling Augustine  <sterling@tensilica.com>
 
 	* config/xtensa/lib2funcs.S (__xtensa_sync_caches): Use an ISYNC even
