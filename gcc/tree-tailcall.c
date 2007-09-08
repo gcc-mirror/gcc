@@ -414,7 +414,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       /* If the statement has virtual or volatile operands, fail.  */
       ann = stmt_ann (stmt);
       if (!ZERO_SSA_OPERANDS (stmt, (SSA_OP_VUSE | SSA_OP_VIRTUAL_DEFS))
-	  || ann->has_volatile_ops)
+	  || ann->has_volatile_ops
+	  || (!gimple_aliases_computed_p (cfun) && ann->references_memory))
 	return;
     }
 
