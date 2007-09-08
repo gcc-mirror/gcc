@@ -216,20 +216,37 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	    }
 	  else
 	    {
+	      tree operation;
+
 	      gcc_assert (! STMT_VINFO_DATA_REF (stmt_info)
 			  && !is_pattern_stmt_p (stmt_info));
 
-	      /* We set the vectype according to the type of the result (lhs).
+	      /* We generally set the vectype according to the type of the 
+		 result (lhs).
 		 For stmts whose result-type is different than the type of the
 		 arguments (e.g. demotion, promotion), vectype will be reset 
 		 appropriately (later).  Note that we have to visit the smallest 
 		 datatype in this function, because that determines the VF.  
 		 If the smallest datatype in the loop is present only as the 
 		 rhs of a promotion operation - we'd miss it here.
-		 However, in such a case, that a variable of this datatype
-		 does not appear in the lhs anywhere in the loop, it shouldn't
-		 affect the vectorization factor.   */
+		 Such a case, where a variable of this datatype does not appear 
+		 in the lhs anywhere in the loop, can only occur if it's an
+		 invariant: e.g.: 'int_x = (int) short_inv', which we'd expect
+		 to have been optimized away by invariant motion. However, we 
+		 cannot rely on invariant motion to always take invariants out
+		 of the loop, and so in the case of promotion we also have to 
+		 check the rhs.  */
 	      scalar_type = TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0));
+
+	      operation = GIMPLE_STMT_OPERAND (stmt, 1);
+	      if (TREE_CODE (operation) == NOP_EXPR
+		  || TREE_CODE (operation) == CONVERT_EXPR
+		  || TREE_CODE (operation) ==  WIDEN_MULT_EXPR)
+		{
+		  tree rhs_type = TREE_TYPE (TREE_OPERAND (operation, 0));
+		  if (TYPE_SIZE_UNIT (rhs_type) < TYPE_SIZE_UNIT (scalar_type))
+		    scalar_type = TREE_TYPE (TREE_OPERAND (operation, 0));
+		}
 
 	      if (vect_print_dump_info (REPORT_DETAILS))
 		{

@@ -1,3 +1,9 @@
+2007-09-08  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33301
+	* tree-vect-analyze (analyze_operations): Look at the type of the rhs
+	when relevant.
+
 2007-09-07  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/32183
