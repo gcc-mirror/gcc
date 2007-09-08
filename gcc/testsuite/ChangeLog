@@ -1,3 +1,7 @@
+2007-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unaligned_rep_clause.adb: New testcase.
+
 2007-09-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/33301
