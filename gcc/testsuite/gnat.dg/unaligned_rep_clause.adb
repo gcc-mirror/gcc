@@ -1,3 +1,5 @@
+-- { dg-do compile }
+
 procedure Unaligned_Rep_Clause is
 
    type One_Bit_Record is
