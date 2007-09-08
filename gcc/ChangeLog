@@ -1,4 +1,10 @@
-2007-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+2007-09-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-tailcall.c (find_tail_calls): If we don't have aliases
+	computed check stmt_ann->references_memory instead of counting
+	virtual operands.
+ 
+2007-09-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* cse.c (fold_rtx): Use validate_unshare_change() instead of
 	validate_change() in one more case.
