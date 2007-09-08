@@ -3770,22 +3770,23 @@ verify_gimple_expr (tree expr)
     case ADDR_EXPR:
       {
 	tree op = TREE_OPERAND (expr, 0);
-	tree ptr_type;
 	if (!is_gimple_addressable (op))
 	  {
 	    error ("invalid operand in unary expression");
 	    return true;
 	  }
-	ptr_type = build_pointer_type (TREE_TYPE (op));
-	if (!useless_type_conversion_p (type, ptr_type)
+	if (TYPE_POINTER_TO (TREE_TYPE (op))
+	    && !useless_type_conversion_p (type,
+					   TYPE_POINTER_TO (TREE_TYPE (op)))
 	    /* FIXME: a longstanding wart, &a == &a[0].  */
 	    && (TREE_CODE (TREE_TYPE (op)) != ARRAY_TYPE
-		|| !useless_type_conversion_p (type,
-			build_pointer_type (TREE_TYPE (TREE_TYPE (op))))))
+		|| (TYPE_POINTER_TO (TREE_TYPE (TREE_TYPE (op)))
+		    && !useless_type_conversion_p (type,
+			  TYPE_POINTER_TO (TREE_TYPE (TREE_TYPE (op)))))))
 	  {
 	    error ("type mismatch in address expression");
 	    debug_generic_stmt (TREE_TYPE (expr));
-	    debug_generic_stmt (ptr_type);
+	    debug_generic_stmt (TYPE_POINTER_TO (TREE_TYPE (op)));
 	    return true;
 	  }
 
