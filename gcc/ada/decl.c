@@ -5218,6 +5218,13 @@ make_packable_type (tree type)
 
   finish_record_type (new_type, nreverse (field_list), 1, true);
   copy_alias_set (new_type, type);
+
+  /* Try harder to get a packable type if necessary, for example
+     in case the record itself contains a BLKmode field.  */
+  if (TYPE_MODE (new_type) == BLKmode)
+    TYPE_MODE (new_type)
+      = mode_for_size_tree (TYPE_SIZE (new_type), MODE_INT, 1);
+
   return TYPE_MODE (new_type) == BLKmode ? type : new_type;
 }
 
