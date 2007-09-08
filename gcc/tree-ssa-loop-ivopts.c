@@ -3623,11 +3623,11 @@ may_eliminate_iv (struct ivopts_data *data,
 {
   basic_block ex_bb;
   edge exit;
-  tree nit, nit_type;
-  tree wider_type, period, per_type;
+  tree nit, period;
   struct loop *loop = data->current_loop;
   aff_tree bnd;
-  
+  double_int period_value, max_niter;
+
   if (TREE_CODE (cand->iv->step) != INTEGER_CST)
     return false;
 
@@ -3650,25 +3650,19 @@ may_eliminate_iv (struct ivopts_data *data,
   if (!nit)
     return false;
 
-  nit_type = TREE_TYPE (nit);
-
   /* Determine whether we may use the variable to test whether niter iterations
      elapsed.  This is the case iff the period of the induction variable is
      greater than the number of iterations.  */
   period = iv_period (cand->iv);
   if (!period)
     return false;
-  per_type = TREE_TYPE (period);
 
-  wider_type = TREE_TYPE (period);
-  if (TYPE_PRECISION (nit_type) < TYPE_PRECISION (per_type))
-    wider_type = per_type;
-  else
-    wider_type = nit_type;
-
-  if (!integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node,
-				      fold_convert (wider_type, period),
-				      fold_convert (wider_type, nit))))
+  /* Compare the period with the estimate on the number of iterations of the
+     loop.  */
+  if (!estimated_loop_iterations (loop, true, &max_niter))
+    return false;
+  period_value = tree_to_double_int (period);
+  if (double_int_ucmp (period_value, max_niter) <= 0)
     return false;
 
   cand_value_at (loop, cand, use->stmt, nit, &bnd);
@@ -3697,7 +3691,12 @@ determine_use_iv_cost_condition (struct ivopts_data *data,
 
   /* Try iv elimination.  */
   if (may_eliminate_iv (data, use, cand, &bound))
-    elim_cost = force_var_cost (data, bound, &depends_on_elim);
+    {
+      elim_cost = force_var_cost (data, bound, &depends_on_elim);
+      /* The bound is a loop invariant, so it will be only computed
+	 once.  */
+      elim_cost /= AVG_LOOP_NITER (data->current_loop);
+    }
   else
     elim_cost = INFTY;
 
