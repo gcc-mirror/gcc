@@ -3102,7 +3102,7 @@ fold_rtx (rtx x, rtx insn)
 	if (insn == NULL_RTX && !changed)
 	  x = copy_rtx (x);
 	changed = 1;
-	validate_change (insn, &XEXP (x, i), folded_arg, 1);
+	validate_unshare_change (insn, &XEXP (x, i), folded_arg, 1);
       }
 
   if (changed)

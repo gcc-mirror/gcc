@@ -1,3 +1,8 @@
+2007-09-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* cse.c (fold_rtx): Use validate_unshare_change() instead of
+	validate_change() in one more case.
+
 2007-09-08  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/32283
