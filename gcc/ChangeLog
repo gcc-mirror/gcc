@@ -1,3 +1,8 @@
+2007-09-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_expr): Avoid building new
+	pointer types, use TYPE_POINTER_TO if available instead.
+
 2007-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33329
