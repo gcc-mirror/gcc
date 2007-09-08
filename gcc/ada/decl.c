@@ -815,10 +815,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		/* Case 3: If this is a constant renaming and creating a
 		   new object is allowed and cheap, treat it as a normal
 		   object whose initial value is what is being renamed.  */
-		if (const_flag
-		    && Ekind (Etype (gnat_entity)) != E_Class_Wide_Type
-		    && TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE
-		    && TYPE_MODE (gnu_type) != BLKmode)
+		if (const_flag && Is_Elementary_Type (Etype (gnat_entity)))
 		  ;
 
 		/* Case 4: Make this into a constant pointer to the object we

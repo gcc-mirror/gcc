@@ -1,5 +1,14 @@
 2007-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (gnat_to_gnu_entity) <Object>: Simplify the condition under
+	which a constant renaming is treated as a normal object declaration.
+	* trans.c (lvalue_required_p) <N_Slice>: New case, extracted from
+	the N_Indexed_Component case.
+	<N_Indexed_Component>: Fall through to above case.
+	<N_Object_Renaming_Declaration>: Return true for all composite types.
+
+2007-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (make_packable_type): If the new type has been given BLKmode,
 	try again to get an integral mode for it.
 

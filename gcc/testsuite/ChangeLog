@@ -1,5 +1,9 @@
 2007-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/renaming3.adb, renaming4.ads: New test.
+
+2007-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/unaligned_rep_clause.adb: New testcase.
 
 2007-09-08  Dorit Nuzman  <dorit@il.ibm.com>
