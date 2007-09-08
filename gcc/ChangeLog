@@ -1,3 +1,7 @@
+2007-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa/constraints.md: Remove 'X' from unused letters comment.
+
 2007-09-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-tailcall.c (find_tail_calls): If we don't have aliases
