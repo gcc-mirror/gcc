@@ -1,7 +1,12 @@
 2007-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR rtl-optimization/26449
+	* gcc.target/i386/pr26449-1.c: New file.
+
+2007-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/33329
-	PR target/26449
+	PR rtl-optimization/26449
 	* gcc.target/i386/pr33329.c: New file.
 
 2007-09-08  Eric Botcazou  <ebotcazou@adacore.com>
