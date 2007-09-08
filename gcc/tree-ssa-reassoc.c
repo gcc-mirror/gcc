@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "langhooks.h"
 #include "pointer-set.h"
+#include "cfgloop.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -344,13 +345,21 @@ add_to_ops_vec (VEC(operand_entry_t, heap) **ops, tree op)
 }
 
 /* Return true if STMT is reassociable operation containing a binary
-   operation with tree code CODE.  */
+   operation with tree code CODE, and is inside LOOP.  */
 
 static bool
-is_reassociable_op (tree stmt, enum tree_code code)
+is_reassociable_op (tree stmt, enum tree_code code, struct loop *loop)
 {
-  if (!IS_EMPTY_STMT (stmt)
-      && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+  basic_block bb;
+
+  if (IS_EMPTY_STMT (stmt))
+    return false;
+
+  bb = bb_for_stmt (stmt);
+  if (!flow_bb_inside_loop_p (loop, bb))
+    return false;
+
+  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
       && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 1)) == code
       && has_single_use (GIMPLE_STMT_OPERAND (stmt, 0)))
     return true;
@@ -929,9 +938,10 @@ linearize_expr (tree stmt)
   tree binrhs = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 1));
   tree binlhs = SSA_NAME_DEF_STMT (TREE_OPERAND (rhs, 0));
   tree newbinrhs = NULL_TREE;
+  struct loop *loop = loop_containing_stmt (stmt);
 
-  gcc_assert (is_reassociable_op (binlhs, TREE_CODE (rhs))
-	      && is_reassociable_op (binrhs, TREE_CODE (rhs)));
+  gcc_assert (is_reassociable_op (binlhs, TREE_CODE (rhs), loop)
+	      && is_reassociable_op (binrhs, TREE_CODE (rhs), loop));
 
   bsinow = bsi_for_stmt (stmt);
   bsirhs = bsi_for_stmt (binrhs);
@@ -959,9 +969,8 @@ linearize_expr (tree stmt)
   TREE_VISITED (stmt) = 1;
 
   /* Tail recurse on the new rhs if it still needs reassociation.  */
-  if (newbinrhs && is_reassociable_op (newbinrhs, rhscode))
+  if (newbinrhs && is_reassociable_op (newbinrhs, rhscode, loop))
     linearize_expr (stmt);
-
 }
 
 /* If LHS has a single immediate use that is a GIMPLE_MODIFY_STMT, return
@@ -1046,13 +1055,14 @@ should_break_up_subtract (tree stmt)
   tree binlhs = TREE_OPERAND (rhs, 0);
   tree binrhs = TREE_OPERAND (rhs, 1);
   tree immusestmt;
+  struct loop *loop = loop_containing_stmt (stmt);
 
   if (TREE_CODE (binlhs) == SSA_NAME
-      && is_reassociable_op (SSA_NAME_DEF_STMT (binlhs), PLUS_EXPR))
+      && is_reassociable_op (SSA_NAME_DEF_STMT (binlhs), PLUS_EXPR, loop))
     return true;
 
   if (TREE_CODE (binrhs) == SSA_NAME
-      && is_reassociable_op (SSA_NAME_DEF_STMT (binrhs), PLUS_EXPR))
+      && is_reassociable_op (SSA_NAME_DEF_STMT (binrhs), PLUS_EXPR, loop))
     return true;
 
   if (TREE_CODE (lhs) == SSA_NAME
@@ -1096,19 +1106,20 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, tree stmt)
   bool binlhsisreassoc = false;
   bool binrhsisreassoc = false;
   enum tree_code rhscode = TREE_CODE (rhs);
+  struct loop *loop = loop_containing_stmt (stmt);
 
   TREE_VISITED (stmt) = 1;
 
   if (TREE_CODE (binlhs) == SSA_NAME)
     {
       binlhsdef = SSA_NAME_DEF_STMT (binlhs);
-      binlhsisreassoc = is_reassociable_op (binlhsdef, rhscode);
+      binlhsisreassoc = is_reassociable_op (binlhsdef, rhscode, loop);
     }
 
   if (TREE_CODE (binrhs) == SSA_NAME)
     {
       binrhsdef = SSA_NAME_DEF_STMT (binrhs);
-      binrhsisreassoc = is_reassociable_op (binrhsdef, rhscode);
+      binrhsisreassoc = is_reassociable_op (binrhsdef, rhscode, loop);
     }
 
   /* If the LHS is not reassociable, but the RHS is, we need to swap
@@ -1159,7 +1170,8 @@ linearize_expr_tree (VEC(operand_entry_t, heap) **ops, tree stmt)
     }
 
   gcc_assert (TREE_CODE (binrhs) != SSA_NAME
-	      || !is_reassociable_op (SSA_NAME_DEF_STMT (binrhs), rhscode));
+	      || !is_reassociable_op (SSA_NAME_DEF_STMT (binrhs),
+				      rhscode, loop));
   bsinow = bsi_for_stmt (stmt);
   bsilhs = bsi_for_stmt (SSA_NAME_DEF_STMT (binlhs));
   bsi_move_before (&bsilhs, &bsinow);
@@ -1399,6 +1411,10 @@ init_reassoc (void)
   tree param;
   int *bbs = XNEWVEC (int, last_basic_block + 1);
 
+  /* Find the loops, so that we can prevent moving calculations in
+     them.  */
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+
   memset (&reassociate_stats, 0, sizeof (reassociate_stats));
 
   operand_entry_pool = create_alloc_pool ("operand entry pool",
@@ -1435,7 +1451,6 @@ init_reassoc (void)
     bb_rank[bbs[i]] = ++rank  << 16;
 
   free (bbs);
-  calculate_dominance_info (CDI_DOMINATORS);
   calculate_dominance_info (CDI_POST_DOMINATORS);
   broken_up_subtracts = NULL;
 }
@@ -1446,7 +1461,6 @@ init_reassoc (void)
 static void
 fini_reassoc (void)
 {
-
   if (dump_file && (dump_flags & TDF_STATS))
     {
       fprintf (dump_file, "Reassociation stats:\n");
@@ -1465,6 +1479,7 @@ fini_reassoc (void)
   free (bb_rank);
   VEC_free (tree, heap, broken_up_subtracts);
   free_dominance_info (CDI_POST_DOMINATORS);
+  loop_optimizer_finalize ();
 }
 
 /* Gate and execute functions for Reassociation.  */
