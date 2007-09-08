@@ -1,3 +1,14 @@
+2007-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33329
+	PR target/26449
+	* config/i386/sse.md (mulv4si3): Do not expand sse2 sequence.
+	(*sse2_mulv4si3): New define_insn_and_split pattern. Split insn in
+	split1 pass.
+	(mulv16qi3): Implement as define_insn_and_split pattern instead of
+	define_expand, to split insn in split1 pass.
+	(mulv2di3): Ditto.
+
 2007-09-08  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/33301
