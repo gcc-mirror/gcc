@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;    ABCDEF H             V XY 
+;;;    ABCDEF H             V  Y 
 ;;;     bcde ghijklmnop  stuvw  z
 
 ;; Register constraints.
