@@ -1,5 +1,6 @@
 // { dg-do link  }
 // { dg-options "-frepo" }
+// { dg-require-host-local "" }
 // Test that collect2 isn't confused by GNU ld's "In function `foo':" message.
 // Contributed by Jason Merrill <jason@cygnus.com>
 

@@ -1,5 +1,6 @@
 // { dg-do link }
 // { dg-options "-frepo" }
+// { dg-require-host-local "" }
 // Build then link:
 
 template <class T>

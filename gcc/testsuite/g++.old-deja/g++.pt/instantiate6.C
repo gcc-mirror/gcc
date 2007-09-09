@@ -1,5 +1,6 @@
 // { dg-do link }
 // { dg-options "-frepo" }
+// { dg-require-host-local "" }
 // Build then link:
 
 // Simplified from testcase by Erez Louidor Lior <s3824888@techst02.technion.ac.il>

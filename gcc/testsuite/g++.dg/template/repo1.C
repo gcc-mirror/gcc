@@ -1,4 +1,5 @@
 // { dg-options "-frepo" }
+// { dg-require-host-local "" }
 
 struct A {
   A();

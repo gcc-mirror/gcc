@@ -36,15 +36,15 @@ proc check_for_options {language gcc_options compiler_pattern as_pattern ld_patt
     set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
     remote_file build delete $filename.c $filename.x $filename.gcno
 
-    if {![regexp -- "/$compiler -quiet.*$compiler_pattern" $gcc_output]} {
+    if {![regexp -- "/${compiler}(\\.exe)? -quiet.*$compiler_pattern" $gcc_output]} {
 	fail "$test (compiler options)"
 	return
     }
-    if {![regexp -- " *as .*$as_pattern" $gcc_output]} {
+    if {![regexp -- " *as(\\.exe)? .*$as_pattern" $gcc_output]} {
 	fail "$test (assembler options)"
 	return
     }
-    if {![regexp -- "/collect2 .*$ld_pattern" $gcc_output]} {
+    if {![regexp -- "/collect2(\\.exe)? .*$ld_pattern" $gcc_output]} {
 	fail "$test (linker options)"
 	return
     }

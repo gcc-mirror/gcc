@@ -452,12 +452,15 @@ proc v3-build_support { } {
     set libtest_objs ""
 
     set config_src "config.cc"
+    set config_out "config.ii"
     set f [open $config_src "w"]
     puts $f "#include <bits/c++config.h>"
     puts $f "#include <bits/gthr.h>"
     close $f
-    set preprocessed [v3_target_compile $config_src "" \
-	    	       preprocess "additional_flags=-dN"]
+    v3_target_compile $config_src $config_out preprocess "additional_flags=-dN"
+    set file [open $config_out r]
+    set preprocessed [read $file]
+    close $file
     if { [string first "_GLIBCXX_USE_WCHAR_T" $preprocessed] != -1 } {
 	verbose -log "wchar_t support detected"
 	set v3-wchar_t 1
@@ -509,9 +512,9 @@ proc v3-build_support { } {
     } else {
 	set ar [transform "ar"]
     }
-    set arcommand "$ar -rc ./libtestc++.a ${libtest_objs}"
-    verbose -log "$arcommand"
-    set result [lindex [local_exec "$arcommand" "" "" 300] 0]
+    set arargs "-rc ./libtestc++.a ${libtest_objs}"
+    verbose -log "$ar $arargs"
+    set result [lindex [remote_exec host "$ar" "$arargs"] 0]
     verbose "link result is $result"
     if { $result == 0 } {
 	if  [info exists env(RANLIB)] {
@@ -519,9 +522,9 @@ proc v3-build_support { } {
 	} else {
 	    set ranlib [transform "ranlib"]
 	}
-	set ranlibcommand "$ranlib ./libtestc++.a"
-	verbose -log "$ranlibcommand"
-	set result [lindex [local_exec "$ranlibcommand" "" "" 300] 0]
+	set ranlibargs "./libtestc++.a"
+	verbose -log "$ranlib $ranlibargs"
+	set result [lindex [remote_exec host "$ranlib" "$ranlibargs"] 0]
 	if { $result != 0 } {
 	    error "could not link libtestc++.a"
 	}
