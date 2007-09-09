@@ -561,6 +561,27 @@ is_loop_header_bb_p (basic_block bb)
   return false;
 }
 
+static inline void 
+stmt_vinfo_set_inside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node, 
+				    int cost)
+{
+  if (slp_node)
+    SLP_TREE_INSIDE_OF_LOOP_COST (slp_node) = cost;
+  else
+    STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) = cost;
+}     
+
+static inline void 
+stmt_vinfo_set_outside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node, 
+				     int cost)
+{
+  if (slp_node)
+    SLP_TREE_OUTSIDE_OF_LOOP_COST (slp_node) = cost;
+  else
+    STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info) = cost;
+}     
+
+
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
