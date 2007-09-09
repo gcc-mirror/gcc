@@ -45,6 +45,7 @@ static const char *const known_suffixes[] =
 {
   ".c",  ".C",   ".S",   ".m",
   ".cc", ".cxx", ".cpp", ".cp",  ".c++",
+  ".sx",
   NULL
 };
 

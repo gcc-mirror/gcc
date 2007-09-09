@@ -1023,6 +1023,7 @@ static const struct compiler default_compilers[] =
   {".s", "@assembler", 0, 1, 0},
   {"@assembler",
    "%{!M:%{!MM:%{!E:%{!S:as %(asm_debug) %(asm_options) %i %A }}}}", 0, 1, 0},
+  {".sx", "@assembler-with-cpp", 0, 1, 0},
   {".S", "@assembler-with-cpp", 0, 1, 0},
   {"@assembler-with-cpp",
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
