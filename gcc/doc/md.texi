@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+@c 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -5512,6 +5512,11 @@ such an instruction.
 An operand of @code{neg}, @code{not}, @code{mult}, @code{plus}, or
 @code{minus} is made the first operand under the same conditions as
 above.
+
+@item
+@code{(ltu (plus @var{a} @var{b}) @var{b})} is converted to
+@code{(ltu (plus @var{a} @var{b}) @var{a})}. Likewise with @code{geu} instead
+of @code{ltu}.
 
 @item
 @code{(minus @var{x} (const_int @var{n}))} is converted to
