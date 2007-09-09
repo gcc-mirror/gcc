@@ -4,9 +4,8 @@
 	Substitute all uses with ...
 	(MODEF): New mode iterator.
 
-	(*cmpfp_<mode>_cc): Remove operand constraints from pre-regalloc
-	define_insn_and_split splitter pattern.
-	(fix_trunc<mode>_fisttp_i387_1): Ditto.
+	(fix_trunc<mode>_fisttp_i387_1): Remove operand constraints
+	from pre-regalloc define_insn_and_split splitter pattern.
 	(*fix_trunc<mode>_i387_1): Ditto.
 	(*fistdi2_1): Ditto.
 	(*fist<mode>2_1): Ditto.
