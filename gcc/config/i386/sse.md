@@ -315,29 +315,29 @@
 ; define patterns for other modes that would expand to several insns.
 
 (define_expand "storentv4sf"
-  [(set (match_operand:V4SF 0 "memory_operand" "=m")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "x")]
+  [(set (match_operand:V4SF 0 "memory_operand" "")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "")]
 		     UNSPEC_MOVNT))]
   "TARGET_SSE"
   "")
 
 (define_expand "storentv2df"
-  [(set (match_operand:V2DF 0 "memory_operand" "=m")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "x")]
+  [(set (match_operand:V2DF 0 "memory_operand" "")
+	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "")]
 		     UNSPEC_MOVNT))]
   "TARGET_SSE2"
   "")
 
 (define_expand "storentv2di"
-  [(set (match_operand:V2DI 0 "memory_operand" "=m")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "x")]
+  [(set (match_operand:V2DI 0 "memory_operand" "")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "")]
 		     UNSPEC_MOVNT))]
   "TARGET_SSE2"
   "")
 
 (define_expand "storentsi"
-  [(set (match_operand:SI 0 "memory_operand" "=m")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "r")]
+  [(set (match_operand:SI 0 "memory_operand" "")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "")]
 		   UNSPEC_MOVNT))]
   "TARGET_SSE2"
   "")
@@ -2282,7 +2282,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "")
 	(vec_concat:V4SF
 	  (float_truncate:V2SF
-	    (match_operand:V2DF 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V2DF 1 "nonimmediate_operand" ""))
 	  (match_dup 2)))]
   "TARGET_SSE2"
   "operands[2] = CONST0_RTX (V2SFmode);")
@@ -4075,11 +4075,11 @@
 })
 
 (define_expand "vec_interleave_highv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=x")
+  [(set (match_operand:V16QI 0 "register_operand" "")
         (vec_select:V16QI
           (vec_concat:V32QI
-            (match_operand:V16QI 1 "register_operand" "0")
-            (match_operand:V16QI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V16QI 1 "register_operand" "")
+            (match_operand:V16QI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 8)  (const_int 24)
                      (const_int 9)  (const_int 25)
                      (const_int 10) (const_int 26)
@@ -4095,11 +4095,11 @@
 })
 
 (define_expand "vec_interleave_lowv16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=x")
+  [(set (match_operand:V16QI 0 "register_operand" "")
         (vec_select:V16QI
           (vec_concat:V32QI
-            (match_operand:V16QI 1 "register_operand" "0")
-            (match_operand:V16QI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V16QI 1 "register_operand" "")
+            (match_operand:V16QI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 0) (const_int 16)
                      (const_int 1) (const_int 17)
                      (const_int 2) (const_int 18)
@@ -4115,11 +4115,11 @@
 })
 
 (define_expand "vec_interleave_highv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
+  [(set (match_operand:V8HI 0 "register_operand" "=")
         (vec_select:V8HI
           (vec_concat:V16HI
-            (match_operand:V8HI 1 "register_operand" "0")
-            (match_operand:V8HI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V8HI 1 "register_operand" "")
+            (match_operand:V8HI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 4) (const_int 12)
                      (const_int 5) (const_int 13)
                      (const_int 6) (const_int 14)
@@ -4131,11 +4131,11 @@
 })
 
 (define_expand "vec_interleave_lowv8hi"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
+  [(set (match_operand:V8HI 0 "register_operand" "")
         (vec_select:V8HI
           (vec_concat:V16HI
-            (match_operand:V8HI 1 "register_operand" "0")
-            (match_operand:V8HI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V8HI 1 "register_operand" "")
+            (match_operand:V8HI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 0) (const_int 8)
                      (const_int 1) (const_int 9)
                      (const_int 2) (const_int 10)
@@ -4147,11 +4147,11 @@
 })
 
 (define_expand "vec_interleave_highv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
+  [(set (match_operand:V4SI 0 "register_operand" "")
         (vec_select:V4SI
           (vec_concat:V8SI
-            (match_operand:V4SI 1 "register_operand" "0")
-            (match_operand:V4SI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V4SI 1 "register_operand" "")
+            (match_operand:V4SI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 2) (const_int 6)
                      (const_int 3) (const_int 7)])))]
   "TARGET_SSE2"
@@ -4161,11 +4161,11 @@
 })
 
 (define_expand "vec_interleave_lowv4si"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
+  [(set (match_operand:V4SI 0 "register_operand" "")
         (vec_select:V4SI
           (vec_concat:V8SI
-            (match_operand:V4SI 1 "register_operand" "0")
-            (match_operand:V4SI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V4SI 1 "register_operand" "")
+            (match_operand:V4SI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 0) (const_int 4)
                      (const_int 1) (const_int 5)])))]
   "TARGET_SSE2"
@@ -4175,11 +4175,11 @@
 })
 
 (define_expand "vec_interleave_highv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
+  [(set (match_operand:V2DI 0 "register_operand" "")
         (vec_select:V2DI
           (vec_concat:V4DI
-            (match_operand:V2DI 1 "register_operand" "0")
-            (match_operand:V2DI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V2DI 1 "register_operand" "")
+            (match_operand:V2DI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 1)
                      (const_int 3)])))]
   "TARGET_SSE2"
@@ -4189,11 +4189,11 @@
 })
 
 (define_expand "vec_interleave_lowv2di"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
+  [(set (match_operand:V2DI 0 "register_operand" "")
         (vec_select:V2DI
           (vec_concat:V4DI
-            (match_operand:V2DI 1 "register_operand" "0")
-            (match_operand:V2DI 2 "nonimmediate_operand" "xm"))
+            (match_operand:V2DI 1 "register_operand" "")
+            (match_operand:V2DI 2 "nonimmediate_operand" ""))
           (parallel [(const_int 0)
                      (const_int 2)])))]
   "TARGET_SSE2"
@@ -5234,8 +5234,8 @@
 
 (define_expand "sse2_maskmovdqu"
   [(set (match_operand:V16QI 0 "memory_operand" "")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "x")
-		       (match_operand:V16QI 2 "register_operand" "x")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "")
+		       (match_operand:V16QI 2 "register_operand" "")
 		       (match_dup 0)]
 		      UNSPEC_MASKMOV))]
   "TARGET_SSE2"

@@ -1354,8 +1354,8 @@
 
 (define_expand "mmx_maskmovq"
   [(set (match_operand:V8QI 0 "memory_operand" "")
-	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "y")
-		      (match_operand:V8QI 2 "register_operand" "y")
+	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "")
+		      (match_operand:V8QI 2 "register_operand" "")
 		      (match_dup 0)]
 		     UNSPEC_MASKMOV))]
   "TARGET_SSE || TARGET_3DNOW_A"
