@@ -2249,6 +2249,9 @@ sign_expand_binop (enum machine_mode mode, optab uoptab, optab soptab,
      hides any signed insn for direct use.  */
   wide_soptab = *soptab;
   optab_handler (&wide_soptab, mode)->insn_code = CODE_FOR_nothing;
+  /* We don't want to generate new hash table entries from this fake
+     optab.  */
+  wide_soptab.libcall_gen = NULL;
 
   temp = expand_binop (mode, &wide_soptab, op0, op1, target,
 		       unsignedp, OPTAB_WIDEN);

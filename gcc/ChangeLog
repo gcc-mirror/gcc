@@ -1,3 +1,8 @@
+2007-09-09  Andrew Haley  <aph@redhat.com>
+
+        * optabs.c (sign_expand_binop): Set libcall_gen = NULL in the
+        fake signed optab.
+
 2007-09-09  Hans-Peter Nilsson  <hp@axis.com>
 
 	Divide REG_LABEL notes into REG_LABEL_OPERAND and REG_LABEL_TARGET.
