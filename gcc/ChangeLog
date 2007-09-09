@@ -1,3 +1,69 @@
+2007-09-09  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (enum vect_def_type): Start enumeration from 1.
+	(struct _slp_tree, struct _slp_instance): Define new data structures
+	along macros for their access.
+	(struct _loop_vec_info): Define new fields: strided_stores,
+	slp_instances, and slp_unrolling_factor along macros for their access.
+	(enum slp_vect_type): New.
+	(struct _stmt_vec_info): Define new field, slp_type, and macros for its
+	access.
+	(STMT_VINFO_STRIDED_ACCESS): New macro.
+	(vect_free_slp_tree): Declare.
+	(vectorizable_load): Add an argument of type slp_tree.
+	(vectorizable_store, vectorizable_operation, vectorizable_conversion,
+	vectorizable_assignment): Likewise.
+	(vect_model_simple_cost, vect_model_store_cost, vect_model_load_cost):
+	Declare (make extern).
+	* tree-vectorizer.c (new_stmt_vec_info): Initiliaze the new field.
+	(new_loop_vec_info): Likewise.
+	(destroy_loop_vec_info): Free memory allocated for SLP structures.
+	* tree-vect-analyze.c: Include recog.h.
+	(vect_update_slp_costs_according_to_vf): New.
+	(vect_analyze_operations): Add argument for calls to vectorizable_ ()
+	functions. For not pure SLP stmts with strided access check that the
+	group size is power of 2. Update the vectorization factor according to
+	SLP. Call vect_update_slp_costs_according_to_vf.
+	(vect_analyze_group_access): New.
+	(vect_analyze_data_ref_access): Call vect_analyze_group_access.
+	(vect_free_slp_tree): New functions.
+	(vect_get_and_check_slp_defs, vect_build_slp_tree, vect_print_slp_tree,
+	vect_mark_slp_stmts, vect_analyze_slp_instance, vect_analyze_slp,
+	vect_make_slp_decision, vect_detect_hybrid_slp_stmts,
+	vect_detect_hybrid_slp): Likewise.
+	(vect_analyze_loop): Call vect_analyze_slp, vect_make_slp_decision
+	and vect_detect_hybrid_slp.
+	* tree-vect-transform.c (vect_estimate_min_profitable_iters): Take
+	SLP costs into account.
+	(vect_get_cost_fields): New function.
+	(vect_model_simple_cost): Make extern, add SLP parameter and handle
+	SLP.
+	(vect_model_store_cost, vect_model_load_cost): Likewise.
+	(vect_get_constant_vectors): New function.
+	(vect_get_slp_vect_defs, vect_get_slp_defs,
+	vect_get_vec_defs_for_stmt_copy, vect_get_vec_defs_for_stmt_copy,
+	vect_get_vec_defs): Likewise.
+	(vectorizable_reduction): Don't handle SLP for now.
+	(vectorizable_call): Don't handle SLP for now. Add argument to
+	vect_model_simple_cost.
+	(vectorizable_conversion): Handle SLP (call vect_get_vec_defs to
+	get SLPed and vectorized defs). Fix indentation and spacing.
+	(vectorizable_assignment): Handle SLP.
+	(vectorizable_induction): Don't handle SLP for now.
+	(vectorizable_operation): Likewise.
+	(vectorizable_type_demotion): Add argument to
+	vect_model_simple_cost.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_store, vectorizable_load): Handle SLP.
+	(vectorizable_condition): Don't handle SLP for now.
+	(vect_transform_stmt): Add a new argument for SLP. Check that there is
+	no SLP transformation required for unsupported cases. Add SLP
+	argument for supported cases.
+	(vect_remove_stores): New function.
+	(vect_schedule_slp_instance, vect_schedule_slp): Likewise.
+	(vect_transform_loop): Schedule SLP instances.
+	* Makefile.in: (tree-vect-analyze.o): Depend on recog.h.
+
 2007-09-09  Andrew Haley  <aph@redhat.com>
 
         * optabs.c (sign_expand_binop): Set libcall_gen = NULL in the
