@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-options "-gnatws" }
 
 with System;
 with System.Storage_Elements;

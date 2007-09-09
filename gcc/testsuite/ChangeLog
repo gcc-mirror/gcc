@@ -1,5 +1,9 @@
 2007-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/uc1.ads: Compile with -gnatws.
+
+2007-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/addr2_p.ads: Bump size of array to 9.
 
 2007-09-09  Ira Rosen  <irar@il.ibm.com>
