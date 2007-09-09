@@ -269,6 +269,9 @@ Ben Elliston for his work to move the Objective-C runtime into its
 own subdirectory and for his work on autoconf.
 
 @item
+Revital Eres for work on the PowerPC 750CL port.
+
+@item
 Marc Espie for OpenBSD support.
 
 @item
