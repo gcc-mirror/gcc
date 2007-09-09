@@ -1,3 +1,12 @@
+2007-09-09  Revital Eres  <eres@il.ibm.com>
+
+	* dbgcnt.def (sms_sched_loop): New counter.
+	* modulo-sched.c: Use sms_sched_loop instead of
+	MAX_SMS_LOOP_NUMBER to determine the maximum number of loops to
+	perform swing modulo scheduling on.  Include dbgcnt.h.
+	* Makefile.in: Add DBGCNT_H to modulo-sched.o.
+	* params.def: Remove PARAM_MAX_SMS_LOOP_NUMBER.
+
 2007-09-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (X87MODEF12, SSEMODEF): Remove mode iterators.

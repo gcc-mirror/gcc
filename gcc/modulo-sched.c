@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ddg.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "dbgcnt.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -862,7 +863,6 @@ canon_loop (struct loop *loop)
 static void
 sms_schedule (void)
 {
-  static int passes = 0;
   rtx insn;
   ddg_ptr *g_arr, g;
   int * node_order;
@@ -919,10 +919,10 @@ sms_schedule (void)
       rtx count_reg;
 
       /* For debugging.  */
-      if ((passes++ > MAX_SMS_LOOP_NUMBER) && (MAX_SMS_LOOP_NUMBER != -1))
+      if (dbg_cnt (sms_sched_loop) == false)
         {
           if (dump_file)
-            fprintf (dump_file, "SMS reached MAX_PASSES... \n");
+            fprintf (dump_file, "SMS reached max limit... \n");
 
           break;
         }
