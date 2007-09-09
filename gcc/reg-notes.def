@@ -91,10 +91,16 @@ REG_NOTE (UNUSED)
 REG_NOTE (CC_SETTER)
 REG_NOTE (CC_USER)
 
-/* Points to a CODE_LABEL.  Used by non-JUMP_INSNs to say that the
-   CODE_LABEL contained in the REG_LABEL note is used by the insn.
-   This note is an INSN_LIST.  */
-REG_NOTE (LABEL)
+/* Points to a CODE_LABEL.  Used by JUMP_INSNs to say that the CODE_LABEL
+   contained in the REG_LABEL_TARGET note is a possible jump target of
+   this insn.  This note is an INSN_LIST.  */
+REG_NOTE (LABEL_TARGET)
+
+/* Points to a CODE_LABEL.  Used by any insn to say that the CODE_LABEL
+   contained in the REG_LABEL_OPERAND note is used by the insn, but as an
+   operand, not as a jump target (though it may indirectly be a jump
+   target for a later jump insn).  This note is an INSN_LIST.  */
+REG_NOTE (LABEL_OPERAND)
 
 /* REG_DEP_OUTPUT and REG_DEP_ANTI are used in scheduler dependencies lists
    to represent write-after-write and write-after-read dependencies

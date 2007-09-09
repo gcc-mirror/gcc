@@ -12408,7 +12408,8 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	    }
 	  break;
 
-	case REG_LABEL:
+	case REG_LABEL_TARGET:
+	case REG_LABEL_OPERAND:
 	  /* This can show up in several ways -- either directly in the
 	     pattern, or hidden off in the constant pool with (or without?)
 	     a REG_EQUAL note.  */
@@ -12431,34 +12432,33 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 		place = i2;
 	    }
 
-	  /* Don't attach REG_LABEL note to a JUMP_INSN.  Add
-	     a JUMP_LABEL instead or decrement LABEL_NUSES.  */
-	  if (place && JUMP_P (place))
+	  /* For REG_LABEL_TARGET on a JUMP_P, we prefer to put the note
+	     as a JUMP_LABEL or decrement LABEL_NUSES if it's already
+	     there.  */
+	  if (place && JUMP_P (place)
+	      && REG_NOTE_KIND (note) == REG_LABEL_TARGET
+	      && (JUMP_LABEL (place) == NULL
+		  || JUMP_LABEL (place) == XEXP (note, 0)))
 	    {
 	      rtx label = JUMP_LABEL (place);
 
 	      if (!label)
 		JUMP_LABEL (place) = XEXP (note, 0);
-	      else
-		{
-		  gcc_assert (label == XEXP (note, 0));
-		  if (LABEL_P (label))
-		    LABEL_NUSES (label)--;
-		}
-	      place = 0;
+	      else if (LABEL_P (label))
+		LABEL_NUSES (label)--;
 	    }
-	  if (place2 && JUMP_P (place2))
+
+	  if (place2 && JUMP_P (place2)
+	      && REG_NOTE_KIND (note) == REG_LABEL_TARGET
+	      && (JUMP_LABEL (place2) == NULL
+		  || JUMP_LABEL (place2) == XEXP (note, 0)))
 	    {
 	      rtx label = JUMP_LABEL (place2);
 
 	      if (!label)
 		JUMP_LABEL (place2) = XEXP (note, 0);
-	      else
-		{
-		  gcc_assert (label == XEXP (note, 0));
-		  if (LABEL_P (label))
-		    LABEL_NUSES (label)--;
-		}
+	      else if (LABEL_P (label))
+		LABEL_NUSES (label)--;
 	      place2 = 0;
 	    }
 	  break;

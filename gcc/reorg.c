@@ -541,7 +541,8 @@ emit_delay_sequence (rtx insn, rtx list, int length)
 	      remove_note (tem, note);
 	      break;
 
-	    case REG_LABEL:
+	    case REG_LABEL_OPERAND:
+	    case REG_LABEL_TARGET:
 	      /* Keep the label reference count up to date.  */
 	      if (LABEL_P (XEXP (note, 0)))
 		LABEL_NUSES (XEXP (note, 0)) ++;
@@ -2736,14 +2737,40 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 		      /* We are moving this insn, not deleting it.  We must
 			 temporarily increment the use count on any referenced
 			 label lest it be deleted by delete_related_insns.  */
-		      note = find_reg_note (trial, REG_LABEL, 0);
-		      /* REG_LABEL could be NOTE_INSN_DELETED_LABEL too.  */
-		      if (note && LABEL_P (XEXP (note, 0)))
+		      for (note = REG_NOTES (trial);
+			   note != NULL;
+			   note = XEXP (note, 1))
+			if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
+			    || REG_NOTE_KIND (note) == REG_LABEL_TARGET)
+			  {
+			    /* REG_LABEL_OPERAND could be
+			       NOTE_INSN_DELETED_LABEL too.  */
+			    if (LABEL_P (XEXP (note, 0)))
+			      LABEL_NUSES (XEXP (note, 0))++;
+			    else
+			      gcc_assert (REG_NOTE_KIND (note)
+					  == REG_LABEL_OPERAND);
+			  }
+		      if (JUMP_P (trial) && JUMP_LABEL (trial))
 			LABEL_NUSES (XEXP (note, 0))++;
 
 		      delete_related_insns (trial);
 
-		      if (note && LABEL_P (XEXP (note, 0)))
+		      for (note = REG_NOTES (trial);
+			   note != NULL;
+			   note = XEXP (note, 1))
+			if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
+			    || REG_NOTE_KIND (note) == REG_LABEL_TARGET)
+			  {
+			    /* REG_LABEL_OPERAND could be
+			       NOTE_INSN_DELETED_LABEL too.  */
+			    if (LABEL_P (XEXP (note, 0)))
+			      LABEL_NUSES (XEXP (note, 0))--;
+			    else
+			      gcc_assert (REG_NOTE_KIND (note)
+					  == REG_LABEL_OPERAND);
+			  }
+		      if (JUMP_P (trial) && JUMP_LABEL (trial))
 			LABEL_NUSES (XEXP (note, 0))--;
 		    }
 		  else

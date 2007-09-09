@@ -4103,13 +4103,18 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	  *recog_data.operand_loc[i] = substitution;
 
-	  /* If we're replacing an operand with a LABEL_REF, we need
-	     to make sure that there's a REG_LABEL note attached to
+	  /* If we're replacing an operand with a LABEL_REF, we need to
+	     make sure that there's a REG_LABEL_OPERAND note attached to
 	     this instruction.  */
-	  if (!JUMP_P (insn)
-	      && GET_CODE (substitution) == LABEL_REF
-	      && !find_reg_note (insn, REG_LABEL, XEXP (substitution, 0)))
-	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
+	  if (GET_CODE (substitution) == LABEL_REF
+	      && !find_reg_note (insn, REG_LABEL_OPERAND,
+				 XEXP (substitution, 0))
+	      /* For a JUMP_P, if it was a branch target it must have
+		 already been recorded as such.  */
+	      && (!JUMP_P (insn)
+		  || !label_is_jump_target_p (XEXP (substitution, 0),
+					      insn)))
+	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL_OPERAND,
 						  XEXP (substitution, 0),
 						  REG_NOTES (insn));
 	}
@@ -6123,17 +6128,15 @@ subst_reloads (rtx insn)
 	    }
 #endif /* DEBUG_RELOAD */
 
-	  /* If we're replacing a LABEL_REF with a register, add a
-	     REG_LABEL note to indicate to flow which label this
+	  /* If we're replacing a LABEL_REF with a register, there must
+	     already be an indication (to e.g. flow) which label this
 	     register refers to.  */
-	  if (GET_CODE (*r->where) == LABEL_REF
-	      && JUMP_P (insn))
-	    {
-	      REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
-						    XEXP (*r->where, 0),
-						    REG_NOTES (insn));
-	      JUMP_LABEL (insn) = XEXP (*r->where, 0);
-	   }
+	  gcc_assert (GET_CODE (*r->where) != LABEL_REF
+		      || !JUMP_P (insn)
+		      || find_reg_note (insn,
+					REG_LABEL_OPERAND,
+					XEXP (*r->where, 0))
+		      || label_is_jump_target_p (XEXP (*r->where, 0), insn));
 
 	  /* Encapsulate RELOADREG so its machine mode matches what
 	     used to be there.  Note that gen_lowpart_common will

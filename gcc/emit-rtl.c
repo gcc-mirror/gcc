@@ -3355,11 +3355,12 @@ try_split (rtx pat, rtx trial, int last)
 
   /* If there are LABELS inside the split insns increment the
      usage count so we don't delete the label.  */
-  if (NONJUMP_INSN_P (trial))
+  if (INSN_P (trial))
     {
       insn = insn_last;
       while (insn != NULL_RTX)
 	{
+	  /* JUMP_P insns have already been "marked" above.  */
 	  if (NONJUMP_INSN_P (insn))
 	    mark_label_nuses (PATTERN (insn));
 
@@ -5529,10 +5530,11 @@ emit_copy_of_insn_after (rtx insn, rtx after)
      which may be duplicated by the basic block reordering code.  */
   RTX_FRAME_RELATED_P (new) = RTX_FRAME_RELATED_P (insn);
 
-  /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
-     make them.  */
+  /* Copy all REG_NOTES except REG_LABEL_OPERAND since mark_jump_label
+     will make them.  REG_LABEL_TARGETs are created there too, but are
+     supposed to be sticky, so we copy them.  */
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
-    if (REG_NOTE_KIND (link) != REG_LABEL)
+    if (REG_NOTE_KIND (link) != REG_LABEL_OPERAND)
       {
 	if (GET_CODE (link) == EXPR_LIST)
 	  REG_NOTES (new)

@@ -265,7 +265,8 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a REG expression if corresponds to a variable declared by the user,
      0 for an internally generated temporary.
      1 in a SUBREG with a negative value.
-     1 in a LABEL_REF or in a REG_LABEL note for a non-local label.
+     1 in a LABEL_REF, REG_LABEL_TARGET or REG_LABEL_OPERAND note for a
+     non-local label.
      In a SYMBOL_REF, this flag is used for machine-specific purposes.  */
   unsigned int volatil : 1;
   /* 1 in a MEM referring to a field of an aggregate.
@@ -1224,10 +1225,11 @@ do {						\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
 /* 1 if RTX is a label_ref for a nonlocal label.  */
-/* Likewise in an expr_list for a reg_label note.  */
+/* Likewise in an expr_list for a REG_LABEL_OPERAND or
+   REG_LABEL_TARGET note.  */
 #define LABEL_REF_NONLOCAL_P(RTX)					\
-  (RTL_FLAG_CHECK2("LABEL_REF_NONLOCAL_P", (RTX), LABEL_REF,		\
-		   REG_LABEL)->volatil)
+  (RTL_FLAG_CHECK3("LABEL_REF_NONLOCAL_P", (RTX), LABEL_REF,		\
+		   REG_LABEL_OPERAND, REG_LABEL_TARGET)->volatil)
 
 /* 1 if RTX is a code_label that should always be considered to be needed.  */
 #define LABEL_PRESERVE_P(RTX)						\
