@@ -141,10 +141,7 @@ delete_insn (rtx insn)
   if (JUMP_P (insn)
       && JUMP_LABEL (insn)
       && LABEL_P (JUMP_LABEL (insn)))
-    {
-      LABEL_NUSES (JUMP_LABEL (insn))--;
-      JUMP_LABEL (insn) = NULL;
-    }
+    LABEL_NUSES (JUMP_LABEL (insn))--;
 
   /* Also if deleting an insn that references a label.  */
   else
@@ -793,7 +790,6 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
     {
       rtx target_label = block_label (target);
       rtx barrier, label, table;
-      bool jump_p;
 
       emit_jump_insn_after_noloc (gen_jump (target_label), insn);
       JUMP_LABEL (BB_END (src)) = target_label;
@@ -803,14 +799,13 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 		 INSN_UID (insn), INSN_UID (BB_END (src)));
 
 
+      delete_insn_chain (kill_from, insn, false);
+
       /* Recognize a tablejump that we are converting to a
 	 simple jump and remove its associated CODE_LABEL
 	 and ADDR_VEC or ADDR_DIFF_VEC.  */
-      jump_p = tablejump_p (insn, &label, &table);
-
-      delete_insn_chain (kill_from, insn, false);
-      if (jump_p)
-        delete_insn_chain (label, table, false);
+      if (tablejump_p (insn, &label, &table))
+	delete_insn_chain (label, table, false);
 
       barrier = next_nonnote_insn (BB_END (src));
       if (!barrier || !BARRIER_P (barrier))

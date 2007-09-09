@@ -586,7 +586,7 @@ move_libcall_note (rtx old_start, rtx new_start)
 static void
 remove_retval_note (rtx insn1)
 {
-  rtx note0, insn0, note1, insn, next;
+  rtx note0, insn0, note1, insn;
 
   note1 = find_reg_note (insn1, REG_RETVAL, NULL);
   if (note1 == NULL_RTX)
@@ -598,9 +598,8 @@ remove_retval_note (rtx insn1)
   remove_note (insn0, note0);
   remove_note (insn1, note1);
 
-  for (insn = insn0; (insn != insn1) && insn; insn = next)
+  for (insn = insn0; insn != insn1; insn = NEXT_INSN (insn))
     {
-      next = NEXT_INSN (insn);
       while (1)
 	{
 	  rtx note;
@@ -1255,9 +1254,9 @@ decompose_multiword_subregs (void)
 
       FOR_EACH_BB (bb)
 	{
-          rtx insn, next;
+	  rtx insn;
 
-          FOR_BB_INSNS_SAFE (bb, insn, next)
+	  FOR_BB_INSNS (bb, insn)
 	    {
 	      rtx next, pat;
 

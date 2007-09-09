@@ -702,7 +702,7 @@ int
 reload (rtx first, int global)
 {
   int i;
-  rtx insn, next;
+  rtx insn;
   struct elim_table *ep;
   basic_block bb;
 
@@ -1227,91 +1227,87 @@ reload (rtx first, int global)
      are no longer useful or accurate.  Strip and regenerate REG_INC notes
      that may have been moved around.  */
 
-  for (insn = first; insn; insn = next)
-    {
-      next = NEXT_INSN (insn);
-      if (INSN_P (insn))
-        {
-          rtx *pnote;
+  for (insn = first; insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      {
+	rtx *pnote;
 
-          if (CALL_P (insn))
-            replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
-                                VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
+	if (CALL_P (insn))
+	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
+			      VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
 
-          if ((GET_CODE (PATTERN (insn)) == USE
-               /* We mark with QImode USEs introduced by reload itself.  */
-               && (GET_MODE (insn) == QImode
-                   || find_reg_note (insn, REG_EQUAL, NULL_RTX)))
-              || (GET_CODE (PATTERN (insn)) == CLOBBER
-                  && (!MEM_P (XEXP (PATTERN (insn), 0))
-                      || GET_MODE (XEXP (PATTERN (insn), 0)) != BLKmode
-                      || (GET_CODE (XEXP (XEXP (PATTERN (insn), 0), 0))
-                          != SCRATCH
-                          && XEXP (XEXP (PATTERN (insn), 0), 0)
-                          != stack_pointer_rtx))
-                  && (!REG_P (XEXP (PATTERN (insn), 0))
-                      || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
-            {
-              delete_insn (insn);
-              continue;
-            }
+	if ((GET_CODE (PATTERN (insn)) == USE
+	     /* We mark with QImode USEs introduced by reload itself.  */
+	     && (GET_MODE (insn) == QImode
+		 || find_reg_note (insn, REG_EQUAL, NULL_RTX)))
+	    || (GET_CODE (PATTERN (insn)) == CLOBBER
+		&& (!MEM_P (XEXP (PATTERN (insn), 0))
+		    || GET_MODE (XEXP (PATTERN (insn), 0)) != BLKmode
+		    || (GET_CODE (XEXP (XEXP (PATTERN (insn), 0), 0)) != SCRATCH
+			&& XEXP (XEXP (PATTERN (insn), 0), 0)
+				!= stack_pointer_rtx))
+		&& (!REG_P (XEXP (PATTERN (insn), 0))
+		    || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
+	  {
+	    delete_insn (insn);
+	    continue;
+	  }
 
-          /* Some CLOBBERs may survive until here and still reference
-             unassigned pseudos with const equivalent, which may in turn cause
-             ICE in later passes if the reference remains in place.  */
-          if (GET_CODE (PATTERN (insn)) == CLOBBER)
-            replace_pseudos_in (& XEXP (PATTERN (insn), 0),
-                                VOIDmode, PATTERN (insn));
+	/* Some CLOBBERs may survive until here and still reference unassigned
+	   pseudos with const equivalent, which may in turn cause ICE in later
+	   passes if the reference remains in place.  */
+	if (GET_CODE (PATTERN (insn)) == CLOBBER)
+	  replace_pseudos_in (& XEXP (PATTERN (insn), 0),
+			      VOIDmode, PATTERN (insn));
 
-          /* Discard obvious no-ops, even without -O.  This optimization
-             is fast and doesn't interfere with debugging.  */
-          if (NONJUMP_INSN_P (insn)
-              && GET_CODE (PATTERN (insn)) == SET
-              && REG_P (SET_SRC (PATTERN (insn)))
-              && REG_P (SET_DEST (PATTERN (insn)))
-              && (REGNO (SET_SRC (PATTERN (insn)))
-                  == REGNO (SET_DEST (PATTERN (insn)))))
-            {
-              delete_insn (insn);
-              continue;
-            }
+	/* Discard obvious no-ops, even without -O.  This optimization
+	   is fast and doesn't interfere with debugging.  */
+	if (NONJUMP_INSN_P (insn)
+	    && GET_CODE (PATTERN (insn)) == SET
+	    && REG_P (SET_SRC (PATTERN (insn)))
+	    && REG_P (SET_DEST (PATTERN (insn)))
+	    && (REGNO (SET_SRC (PATTERN (insn)))
+		== REGNO (SET_DEST (PATTERN (insn)))))
+	  {
+	    delete_insn (insn);
+	    continue;
+	  }
 
-          pnote = &REG_NOTES (insn);
-          while (*pnote != 0)
-            {
-              if (REG_NOTE_KIND (*pnote) == REG_DEAD
-                  || REG_NOTE_KIND (*pnote) == REG_UNUSED
-                  || REG_NOTE_KIND (*pnote) == REG_INC
-                  || REG_NOTE_KIND (*pnote) == REG_RETVAL
-                  || REG_NOTE_KIND (*pnote) == REG_LIBCALL_ID
-                  || REG_NOTE_KIND (*pnote) == REG_LIBCALL)
-                *pnote = XEXP (*pnote, 1);
-              else
-                pnote = &XEXP (*pnote, 1);
-            }
+	pnote = &REG_NOTES (insn);
+	while (*pnote != 0)
+	  {
+	    if (REG_NOTE_KIND (*pnote) == REG_DEAD
+		|| REG_NOTE_KIND (*pnote) == REG_UNUSED
+		|| REG_NOTE_KIND (*pnote) == REG_INC
+		|| REG_NOTE_KIND (*pnote) == REG_RETVAL
+		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL_ID
+		|| REG_NOTE_KIND (*pnote) == REG_LIBCALL)
+	      *pnote = XEXP (*pnote, 1);
+	    else
+	      pnote = &XEXP (*pnote, 1);
+	  }
 
 #ifdef AUTO_INC_DEC
-          add_auto_inc_notes (insn, PATTERN (insn));
+	add_auto_inc_notes (insn, PATTERN (insn));
 #endif
 
-          /* Simplify (subreg (reg)) if it appears as an operand.  */
-          cleanup_subreg_operands (insn);
+	/* Simplify (subreg (reg)) if it appears as an operand.  */
+	cleanup_subreg_operands (insn);
 
-          /* Clean up invalid ASMs so that they don't confuse later passes.
-             See PR 21299.  */
-          if (asm_noperands (PATTERN (insn)) >= 0)
-            {
-              extract_insn (insn);
-              if (!constrain_operands (1))
-	        {
-                  error_for_asm (insn,
-                                 "%<asm%> operand has impossible constraints");
-                  delete_insn (insn);
-                  continue;
-                }
-            }
-        }
-    }
+	/* Clean up invalid ASMs so that they don't confuse later passes.
+	   See PR 21299.  */
+	if (asm_noperands (PATTERN (insn)) >= 0)
+	  {
+	    extract_insn (insn);
+	    if (!constrain_operands (1))
+	      {
+		error_for_asm (insn,
+			       "%<asm%> operand has impossible constraints");
+		delete_insn (insn);
+		continue;
+	      }
+	  }
+      }
 
   /* If we are doing stack checking, give a warning if this function's
      frame size is larger than we expect.  */
@@ -4020,7 +4016,7 @@ fixup_eh_region_note (rtx insn, rtx prev, rtx next)
       trap_count = 0;
     }
 
-  for (i = NEXT_INSN (prev); i && (i != next); i = NEXT_INSN (i))
+  for (i = NEXT_INSN (prev); i != next; i = NEXT_INSN (i))
     if (INSN_P (i) && i != insn && may_trap_p (PATTERN (i)))
       {
 	trap_count++;
@@ -8192,18 +8188,15 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
       && REG_BASIC_BLOCK (REGNO (reg)) >= NUM_FIXED_BLOCKS
       && find_regno_note (insn, REG_DEAD, REGNO (reg)))
     {
-      rtx i2, prev;
+      rtx i2;
 
       /* We know that it was used only between here and the beginning of
 	 the current basic block.  (We also know that the last use before
 	 INSN was the output reload we are thinking of deleting, but never
 	 mind that.)  Search that range; see if any ref remains.  */
-      for (i2 = PREV_INSN (insn); i2; i2 = prev)
+      for (i2 = PREV_INSN (insn); i2; i2 = PREV_INSN (i2))
 	{
-          rtx set;
-
-          prev = PREV_INSN (i2);
-          set = single_set (i2);
+	  rtx set = single_set (i2);
 
 	  /* Uses which just store in the pseudo don't count,
 	     since if they are the only uses, they are dead.  */
@@ -8225,11 +8218,9 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
 
       /* Delete the now-dead stores into this pseudo.  Note that this
 	 loop also takes care of deleting output_reload_insn.  */
-      for (i2 = PREV_INSN (insn); i2; i2 = prev)
+      for (i2 = PREV_INSN (insn); i2; i2 = PREV_INSN (i2))
 	{
-          rtx set;
-          prev = PREV_INSN (i2);
-          set = single_set (i2);
+	  rtx set = single_set (i2);
 
 	  if (set != 0 && SET_DEST (set) == reg)
 	    {

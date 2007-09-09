@@ -195,15 +195,14 @@ reload_cse_simplify (rtx insn, rtx testreg)
 static void
 reload_cse_regs_1 (rtx first)
 {
-  rtx insn, next;
+  rtx insn;
   rtx testreg = gen_rtx_REG (VOIDmode, -1);
 
   cselib_init (true);
   init_alias_analysis ();
 
-  for (insn = first; insn; insn = next)
+  for (insn = first; insn; insn = NEXT_INSN (insn))
     {
-      next = NEXT_INSN (insn);
       if (INSN_P (insn))
 	reload_cse_simplify (insn, testreg);
 

@@ -3688,8 +3688,6 @@ remove_insn (rtx insn)
       if (BB_END (bb) == insn)
 	BB_END (bb) = prev;
     }
-  NEXT_INSN (insn) = NULL;
-  PREV_INSN (insn) = NULL;
 }
 
 /* Append CALL_FUSAGE to the CALL_INSN_FUNCTION_USAGE for CALL_INSN.  */
