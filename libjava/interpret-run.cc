@@ -563,6 +563,7 @@ details.  */
 	  }
 	else
 	  {
+	    NULLCHECK (sp[0].o);
 	    jobject rcv = sp[0].o;
 	    _Jv_VTable *table = *(_Jv_VTable**) rcv;
 	    fun = (void (*)()) table->get_method (rmeth->method->index);
