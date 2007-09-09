@@ -1,3 +1,7 @@
+2007-09-09  Revital Eres  <eres@il.ibm.com>
+
+	* doc/contrib.texi: Add myself.
+
 2007-09-09  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (stmt_vinfo_set_inside_of_loop_cost,
