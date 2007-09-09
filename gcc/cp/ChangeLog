@@ -1,3 +1,9 @@
+2007-09-09  David Daney  <ddaney@avtrex.com>
+
+	PR c++/33324
+	* init.c (build_new_1):  Use POINTER_PLUS_EXPR instead of MINUS_EXPR
+	to calculate cookie_ptr.
+
 2007-09-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33342
