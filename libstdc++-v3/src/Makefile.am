@@ -139,6 +139,8 @@ sources = \
 	debug.cc \
 	debug_list.cc \
 	functexcept.cc \
+	hash.cc \
+	hash_c++0x.cc \
 	globals_io.cc \
 	ios.cc \
 	ios_failure.cc \
@@ -211,6 +213,11 @@ system_error.lo: system_error.cc
 system_error.o: system_error.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
+hash_c++0x.lo: hash_c++0x.cc
+	$(LTCXXCOMPILE) -std=gnu++0x -c $<
+hash_c++0x.o: hash_c++0x.cc
+	$(CXXCOMPILE) -std=gnu++0x -c $<
+
 if GLIBCXX_LDBL_COMPAT
 # Use special rules for compatibility-ldbl.cc compilation, as we need to
 # pass -mlong-double-64.
@@ -276,7 +283,7 @@ endif
 
 debugdir = debug
 
-# Build parallel set of debug objects here.
+# Build a set of debug objects here.
 stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \

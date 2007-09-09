@@ -1,3 +1,24 @@
+2007-09-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/functional_hash.h: Add ext/numeric_traits.h.
+	* include/tr1/functional_hash.h Same.
+	* include/tr1/functional: Remove string, ext/type_traits.h includes.
+	* include/tr1_impl/functional_hash.h: Move string, wstring
+	definitions for std::<hash>::operator into separate file.
+	* include/std/functional
+	* src/hash.cc: New, move definitions here.
+	* src/hash_c++0x.cc: Same.
+	* src/Makefile.am: Add new source files.
+	* configure: Regenerate.
+	* Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	* libmath/Makefile.in: Same.
+	* libsupc++/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+	* config/abi/pre/gnu.ver: Add symbols.
+	* config/abi/pre/gnu-versioned-namespace.ver: Same, fix.
+	
 2007-09-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc:

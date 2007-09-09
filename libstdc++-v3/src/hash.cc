@@ -1,4 +1,4 @@
-// functional_hash.h header -*- C++ -*-
+//  std::hash and std::tr1::hash definitions -*- C++ -*-
 
 // Copyright (C) 2007 Free Software Foundation, Inc.
 //
@@ -27,49 +27,51 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file bits/functional_hash.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
+#include <cstddef>
+#include <string>
 
-#ifndef _FUNCTIONAL_HASH_H
-#define _FUNCTIONAL_HASH_H 1
-
-#pragma GCC system_header
-
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
-# include <c++0x_warning.h>
-#endif
-
-#if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  error C++0x header cannot be included from TR1 header
-#endif
-
-#include <ext/numeric_traits.h>
-
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  include <tr1_impl/functional_hash.h>
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <functional>
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 
+#  define _GLIBCXX_END_NAMESPACE_TR1 
 #else
-#  define _GLIBCXX_INCLUDE_AS_CXX0X
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  define _GLIBCXX_END_NAMESPACE_TR1
-#  define _GLIBCXX_TR1
-#  include <tr1_impl/functional_hash.h>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_END_NAMESPACE_TR1
-#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#include <tr1/functional>
+#  define _GLIBCXX_INCLUDE_AS_TR1
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
+#  define _GLIBCXX_END_NAMESPACE_TR1 }
 #endif
-
 
 namespace std
 {
-  struct error_code;
+_GLIBCXX_BEGIN_NAMESPACE_TR1
 
   template<>
     size_t
-    hash<error_code>::operator()(error_code) const;
+    hash<string>::operator()(string __s) const
+    { return _Fnv_hash<>::hash(__s.data(), __s.length()); }
+
+  template<>
+    size_t
+    hash<const string&>::operator()(const string& __s) const
+    { return _Fnv_hash<>::hash(__s.data(), __s.length()); }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    size_t
+    hash<wstring>::operator()(wstring __s) const
+    {
+      const char* __p = reinterpret_cast<const char*>(__s.data());
+      return _Fnv_hash<>::hash(__p, __s.length() * sizeof(wchar_t));
+    }
+
+  template<>
+    size_t
+    hash<const wstring&>::operator()(const wstring& __s) const
+    {
+      const char* __p = reinterpret_cast<const char*>(__s.data());
+      return _Fnv_hash<>::hash(__p, __s.length() * sizeof(wchar_t));
+    }
+#endif
+
+_GLIBCXX_END_NAMESPACE_TR1
 }
-
-#endif // _FUNCTIONAL_HASH_H
-

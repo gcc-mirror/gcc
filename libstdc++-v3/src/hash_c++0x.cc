@@ -1,6 +1,6 @@
-// TR1 functional header -*- C++ -*-
+// std::hash definitions -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,41 +27,16 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file tr1/functional
- *  This is a TR1 C++ Library header.
- */
+#include "hash.cc"
+#include <system_error>
 
-#ifndef _GLIBCXX_TR1_FUNCTIONAL
-#define _GLIBCXX_TR1_FUNCTIONAL 1
-
-#pragma GCC system_header
-
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  error TR1 header cannot be included from C++0x header
-#endif
-
-#include <bits/c++config.h>
-#include <bits/stl_function.h>
-
-#include <cmath>
-#include <typeinfo>
-#include <tr1/tuple>
-#include <tr1/type_traits>
-#include <bits/stringfwd.h>
-#include <tr1/functional_hash.h>
-
-#if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  include <tr1_impl/functional>
-#else
-#  define _GLIBCXX_INCLUDE_AS_TR1
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace tr1 {
-#  define _GLIBCXX_END_NAMESPACE_TR1 }
-#  define _GLIBCXX_TR1 tr1::
-#  include <tr1_impl/functional>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_END_NAMESPACE_TR1
-#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  undef _GLIBCXX_INCLUDE_AS_TR1
-#endif
-
-#endif // _GLIBCXX_TR1_FUNCTIONAL
+namespace std
+{
+  template<>
+    size_t
+    hash<error_code>::operator()(error_code __e) const
+    { 
+      const char* __p = reinterpret_cast<const char*>(&__e);
+      return _Fnv_hash<>::hash(__p, sizeof(__e));
+    }
+}

@@ -41,6 +41,8 @@
 #  error TR1 header cannot be included from C++0x header
 #endif
 
+#include <ext/numeric_traits.h>
+
 #if defined(_GLIBCXX_INCLUDE_AS_TR1)
 #  include <tr1_impl/functional_hash.h>
 #else
