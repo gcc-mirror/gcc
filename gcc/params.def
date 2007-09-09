@@ -311,11 +311,6 @@ DEFPARAM(PARAM_MAX_ITERATIONS_COMPUTATION_COST,
 	"Bound on the cost of an expression to compute the number of iterations",
 	10, 0, 0)
 
-DEFPARAM(PARAM_MAX_SMS_LOOP_NUMBER,
-	 "max-sms-loop-number",
-	 "Maximum number of loops to perform swing modulo scheduling on (mainly for debugging)",
-	 -1, -1, -1)
-  
 /* This parameter is used to tune SMS MAX II calculations.  */
 DEFPARAM(PARAM_SMS_MAX_II_FACTOR,
 	 "sms-max-ii-factor",
