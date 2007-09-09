@@ -64,6 +64,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-pr*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-vect-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-slp-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS

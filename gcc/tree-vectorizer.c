@@ -1359,6 +1359,7 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
   STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
+  STMT_SLP_TYPE (res) = 0;
   DR_GROUP_FIRST_DR (res) = NULL_TREE;
   DR_GROUP_NEXT_DR (res) = NULL_TREE;
   DR_GROUP_SIZE (res) = 0;
@@ -1478,7 +1479,9 @@ new_loop_vec_info (struct loop *loop)
     VEC_alloc (tree, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIGNMENT_CHECKS));
   LOOP_VINFO_MAY_ALIAS_DDRS (res) =
     VEC_alloc (ddr_p, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
-
+  LOOP_VINFO_STRIDED_STORES (res) = VEC_alloc (tree, heap, 10);
+  LOOP_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 10);
+  LOOP_VINFO_SLP_UNROLLING_FACTOR (res) = 1;
 
   return res;
 }
@@ -1497,6 +1500,8 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   int nbbs;
   block_stmt_iterator si;
   int j;
+  VEC (slp_instance, heap) *slp_instances;
+  slp_instance instance;
 
   if (!loop_vinfo)
     return;
@@ -1571,6 +1576,10 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
   VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
   VEC_free (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
+  slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
+  for (j = 0; VEC_iterate (slp_instance, slp_instances, j, instance); j++)
+    vect_free_slp_tree (SLP_INSTANCE_TREE (instance));
+  VEC_free (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo));
 
   free (loop_vinfo);
   loop->aux = NULL;

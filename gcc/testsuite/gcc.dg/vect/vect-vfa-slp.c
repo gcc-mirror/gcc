@@ -10,9 +10,9 @@ struct S
   unsigned short b;
 };
 
-struct S result[N] = {20, 13, 22, 14, 24, 15, 26, 16, 28, 17, 30, 18,
-                      32, 19, 34, 20, 36, 21, 38, 22, 40, 23, 42, 24,
-		      44, 25, 46, 26, 48, 27, 50, 28};
+struct S result[N] = {12, 13, 13, 14, 14, 15, 15, 16, 16, 17, 17, 18,
+                      18, 19, 19, 20, 20, 21, 21, 22, 22, 23, 23, 24,
+		      24, 25, 25, 26, 26, 27, 27, 28};
 struct S X[N] = {10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16,
                  16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22,
 		 23, 23, 24, 24, 25, 25};
@@ -25,7 +25,7 @@ foo (struct S * in, struct S * out)
 
   for (i = 0; i < N; i++)
     {
-      out[i].a = in[i].a * 2;
+      out[i].a = in[i].a + 2;
       out[i].b = in[i].b + 3;
     }
 }
@@ -42,17 +42,15 @@ main (void)
   /* check results:  */
   for (i = 0; i < N; i++)
     {
-      if (Y[i].a != result[i].a)  
+      if (Y[i].a != result[i].a)
 	abort ();
 
-      if (Y[i].b != result[i].b) 
+      if (Y[i].b != result[i].b)
 	abort ();
 
     }
   return 0;
 } 
 
-/* Needs interleaving support.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_interleave && vect_extract_even_odd } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { xfail  { vect_interleave && vect_extract_even_odd } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
