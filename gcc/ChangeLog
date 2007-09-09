@@ -1,5 +1,11 @@
 2007-09-09  Revital Eres  <eres@il.ibm.com>
 
+	* config/rs6000/rs6000.c (paired_init_builtins): Add const
+	declaration to bdesc_paired_preds variable.
+	(paired_expand_builtin): Likewise.
+
+2007-09-09  Revital Eres  <eres@il.ibm.com>
+
 	* dbgcnt.def (sms_sched_loop): New counter.
 	* modulo-sched.c: Use sms_sched_loop instead of
 	MAX_SMS_LOOP_NUMBER to determine the maximum number of loops to
