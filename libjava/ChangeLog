@@ -1,3 +1,9 @@
+2007-09-09  Andreas Tobler  <a.tobler@schweiz.org>
+
+	PR libgcj/33326
+	* testsuite/lib/libjava.exp (libjava_arguments): Append the test spec
+	only for linux targets.
+
 2007-09-09  Andrew Haley  <aph@redhat.com>
 
 	* interpret-run.cc (invokevirtual_resolved): Nullcheck object on
