@@ -1,3 +1,28 @@
+2007-09-09  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	Revert:
+	2007-09-05  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+	* regrename.c (copyprop_hardreg_forward_1): New variable next. Use
+	FOR_BB_INSNS_SAFE instead of for loop.
+	* cse.c (cse_extended_basic_block): Likewise.
+	* postreload.c (reload_cse_regs_1): New variable next. Make sure
+	that the for loop does not invoke NEXT_INSN on a deleted insn.
+	* function.c (instantiate_virtual_regs): Likewise.
+	* lower-subreg.c (remove_retval_note): Likewise.
+	(decompose_multiword_subregs): Use FOR_BB_INSNS_SAFE instead of
+	FOR_BB_INSNS.
+	* emit-rtl.c (remove_insn): Set NEXT_INSN and PREV_INSN to NULL on
+	a deleted insn.
+	* cfgrtl.c (delete_insn): Set JUMP_LABEL to NULL on a deleted
+	insn, if it's a jump.
+	(try_redirect_by_replacing_jump): New variable jump_p. Call
+	tablejump_p before delete_insn_chain.
+	* reload1.c (reload): New variable next. Make sure that the for
+	loop does not invoke NEXT_INSN on a deleted insn.
+	(fixup_eh_region_note): Make the loop terminate if i becomes NULL.
+	(delete_output_reload): New variable prev. Make sure the the for
+	loops do not invoke PREV_INSN on a deleted insn.
+
 2007-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa/constraints.md: Remove 'X' from unused letters comment.
