@@ -60,7 +60,8 @@ GLIBCXX_3.4 {
 #     std::c[i-z]*;
       std::c[i-s]*;
       std::c[u-z]*;
-      std::[d-h]*;
+      std::[d-g]*;
+      std::h[^a]*;
       std::i[a-n]*;
       std::ios_base::[A-Ha-z]*;
       std::ios_base::_M_grow_words*;
@@ -107,7 +108,10 @@ GLIBCXX_3.4 {
 #     std::string
       std::strstream*;
       std::strstreambuf*;
-      std::[A-Zt-z]*;
+      std::t[a-q]*;
+      std::tr1::h[^a]*;
+      std::t[s-z]*;
+      std::[A-Zu-z]*;
       std::_List_node_base::hook*;
       std::_List_node_base::swap*;
       std::_List_node_base::unhook*;
@@ -753,6 +757,18 @@ GLIBCXX_3.4.10 {
     _ZTISt12system_error;
     _ZTVSt12system_error;
     _ZNSt12system_errorD*Ev;
+    _ZNSt12system_errorC*;
+
+    _ZNKSt3tr14hashIRKSbIwSt11char_traitsIwESaIwEEEclES6_;
+    _ZNKSt3tr14hashIRKSsEclES2_;
+    _ZNKSt3tr14hashISbIwSt11char_traitsIwESaIwEEEclES4_;
+    _ZNKSt3tr14hashISsEclESs;
+
+    _ZNKSt4hashIRKSbIwSt11char_traitsIwESaIwEEEclES5_;
+    _ZNKSt4hashIRKSsEclES1_;
+    _ZNKSt4hashISbIwSt11char_traitsIwESaIwEEEclES3_;
+    _ZNKSt4hashISsEclESs;
+    _ZNKSt4hashISt10error_codeEclES0_;
 
 } GLIBCXX_3.4.9;
 
