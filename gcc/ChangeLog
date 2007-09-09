@@ -1,5 +1,12 @@
+2007-09-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.h (ix86_tune_indices): Rename
+	X86_USE_VECTOR_CONVERTS to X86_TUNE_USE_VECTOR_CONVERTS.
+	(TARGET_USE_VECTOR_CONVERTS): Updated.
+	* config/i386/i386.c: Likewise.
+
 2007-09-09  Sandra Loosemore  <sandra@codesourcery.com>
-            Nigel Stephens <nigel@mips.com>
+	    Nigel Stephens <nigel@mips.com>
 
 	* doc/invoke.texi (Overall Options):  Add .sx file extension
 	as a synonym for .S.
@@ -15,7 +22,7 @@
 	* doc/md.texi (Canonicalization of Instructions): Document it.
 
 2007-09-09  Jan Hubicka  <jh@suse.cz>
-            Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+	    Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
 	* i386.h (ix86_tune_indices): Add X86_USE_VECTOR_CONVERTS.
 	(TARGET_USE_VECTOR_CONVERTS): New.

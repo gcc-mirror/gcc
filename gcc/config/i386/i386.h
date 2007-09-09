@@ -257,7 +257,7 @@ enum ix86_tune_indices {
   X86_TUNE_MOVE_M1_VIA_OR,
   X86_TUNE_NOT_UNPAIRABLE,
   X86_TUNE_NOT_VECTORMODE,
-  X86_USE_VECTOR_CONVERTS,
+  X86_TUNE_USE_VECTOR_CONVERTS,
 
   X86_TUNE_LAST
 };
@@ -338,7 +338,7 @@ extern unsigned int ix86_tune_features[X86_TUNE_LAST];
 #define	TARGET_MOVE_M1_VIA_OR	ix86_tune_features[X86_TUNE_MOVE_M1_VIA_OR]
 #define TARGET_NOT_UNPAIRABLE	ix86_tune_features[X86_TUNE_NOT_UNPAIRABLE]
 #define TARGET_NOT_VECTORMODE	ix86_tune_features[X86_TUNE_NOT_VECTORMODE]
-#define TARGET_USE_VECTOR_CONVERTS ix86_tune_features[X86_USE_VECTOR_CONVERTS]
+#define TARGET_USE_VECTOR_CONVERTS ix86_tune_features[X86_TUNE_USE_VECTOR_CONVERTS]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
