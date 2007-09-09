@@ -371,11 +371,11 @@ _Jv_FormatInt (jchar* bufend, jint num)
   if (num < 0)
     {
       isNeg = true;
-      num = -(num);
-      if (num < 0)
+      if (num != (jint) -2147483648U)
+	num = -(num);
+      else
 	{
-	  // Must be MIN_VALUE, so handle this special case.
-	  // FIXME use 'unsigned jint' for num.
+	  // Handle special case of MIN_VALUE.
 	  *--ptr = '8';
 	  num = 214748364;
 	}
