@@ -105,7 +105,11 @@ namespace gnu
   using std::not_connected; 
   using std::not_enough_memory;
   using std::not_supported;
+
+#ifdef _GLIBCXX_HAVE_ECANCELED
   using std::operation_canceled;
+#endif
+
   using std::operation_in_progress;
   using std::operation_not_permitted;
   using std::operation_not_supported;

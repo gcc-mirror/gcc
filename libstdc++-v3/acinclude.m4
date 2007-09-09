@@ -1361,6 +1361,16 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
   if test x"$ac_system_error_10" = x"yes"; then
     AC_DEFINE(HAVE_EBADMSG, 1, [Define if EBADMSG exists.])
   fi
+
+  AC_MSG_CHECKING([for ECANCELED])
+  AC_CACHE_VAL(ac_system_error_11, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = ECANCELED; ],
+             [ac_system_error_11=yes], [ac_system_error_11=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_11)
+  if test x"$ac_system_error_11" = x"yes"; then
+    AC_DEFINE(HAVE_ECANCELED, 1, [Define if ECANCELED exists.])
+  fi
 ])
 
 dnl
