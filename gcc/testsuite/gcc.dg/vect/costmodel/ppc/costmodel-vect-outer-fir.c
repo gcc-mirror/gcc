@@ -15,7 +15,7 @@ float fir_out[N];
    because the compiler doesn't realize that the inner-loop executes at
    least once (cause k<4), and so there's no need to create a guard code
    to skip the inner-loop in case it doesn't execute.  */
-void foo (){
+__attribute__ ((noinline)) void foo (){
  int i,j,k;
  float diff;
 
@@ -35,7 +35,7 @@ void foo (){
 }
 
 /* Vectorized. Changing misalignment in the inner-loop.  */
-void fir (){
+__attribute__ ((noinline)) void fir (){
   int i,j,k;
   float diff;
 
