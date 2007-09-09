@@ -116,7 +116,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
       not_supported = 				ENOTSUP,
+
+#ifdef _GLIBCXX_HAVE_ECANCELED
       operation_canceled = 			ECANCELED,
+#endif
+
       operation_in_progress = 			EINPROGRESS,
       operation_not_permitted = 		EPERM,
       operation_not_supported = 		EOPNOTSUPP,
