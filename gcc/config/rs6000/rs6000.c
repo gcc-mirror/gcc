@@ -8213,7 +8213,7 @@ paired_expand_builtin (tree exp, rtx target, bool * expandedp)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
 
   *expandedp = true;
@@ -8230,7 +8230,7 @@ paired_expand_builtin (tree exp, rtx target, bool * expandedp)
     }
 
   /* Expand the paired predicates.  */
-  d = (struct builtin_description *) bdesc_paired_preds;
+  d = bdesc_paired_preds;
   for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); i++, d++)
     if (d->code == fcode)
       return paired_expand_predicate_builtin (d->icode, exp, target);
@@ -9116,7 +9116,7 @@ spe_init_builtins (void)
 static void
 paired_init_builtins (void)
 {
-  struct builtin_description *d;
+  const struct builtin_description *d;
   size_t i;
   tree endlink = void_list_node;
 
@@ -9151,7 +9151,7 @@ paired_init_builtins (void)
 	       PAIRED_BUILTIN_STX);
 
   /* Predicates.  */
-  d = (struct builtin_description *) bdesc_paired_preds;
+  d = bdesc_paired_preds;
   for (i = 0; i < ARRAY_SIZE (bdesc_paired_preds); ++i, d++)
     {
       tree type;
