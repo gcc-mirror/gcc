@@ -1,3 +1,20 @@
+2007-09-09  Jan Hubicka  <jh@suse.cz>
+            Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
+
+	* i386.h (ix86_tune_indices): Add X86_USE_VECTOR_CONVERTS.
+	(TARGET_USE_VECTOR_CONVERTS): New.
+	* i386.md: New post-reload splitters for converting SF to DF and DF to
+	SF.
+	(floatsi* expander): Special case vector conversions.
+	(floatsisf2_mixed_vector, floatsisf2_sse_vector_nointernunit,
+	floatsisf2_sse_vector_internunit, floatsisf2_sse_vector,
+	floatsidf2_mixed_vector, floatsidf2_sse_vector): New.
+	(floatsisf2_mixed, floatsisf2_sse, floatsidf2_mixed, floatsidf2_sse):
+	Disable when doing vector converts.
+	(floatsi<mode>2_i387): Disable when
+	* sse.md (vec_dupv2df): Export.
+	* i386.c (ix86_tune_features): Enable SSE conversions.
+
 2007-09-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (add_virtual_operand): Only mark

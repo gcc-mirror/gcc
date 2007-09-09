@@ -2740,7 +2740,7 @@
   [(set_attr "type" "sselog1")
    (set_attr "mode" "DF")])
 
-(define_insn "*vec_dupv2df"
+(define_insn "vec_dupv2df"
   [(set (match_operand:V2DF 0 "register_operand" "=x")
 	(vec_duplicate:V2DF
 	  (match_operand:DF 1 "register_operand" "0")))]

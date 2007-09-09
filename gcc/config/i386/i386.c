@@ -1258,6 +1258,10 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
      operand that cannot be represented using a modRM byte.  The XOR
      replacement is long decoded, so this split helps here as well.  */
   m_K6,
+
+  /* X86_USE_VECTOR_CONVERTS: Preffer vector packed SSE conversion from
+  integer to FP. */
+  m_AMDFAM10,
 };
 
 /* Feature tests against the various architecture variations.  */
