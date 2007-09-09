@@ -1,3 +1,21 @@
+2007-09-09  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/25_algorithms/binary_search.cc: Move...
+	* testsuite/25_algorithms/binary_search/2.cc: ...here.
+
+	* testsuite/25_algorithms/sort.cc: Move...	
+	* testsuite/25_algorithms/sort/1.cc: ...here.
+	* testsuite/25_algorithms/partial_sort_copy/2.cc: ...here.
+	* testsuite/25_algorithms/nth_element/3.cc: ...here.
+	* testsuite/25_algorithms/partial_sort/2.cc: ...here.
+	* testsuite/25_algorithms/stable_sort/2.cc: ...here.
+
+	* testsuite/25_algorithms/min_max.cc: Move...
+	* testsuite/25_algorithms/min/1.cc: ...here.
+	* testsuite/25_algorithms/min/2.cc: ...here.
+	* testsuite/25_algorithms/max/1.cc: ...here.
+	* testsuite/25_algorithms/max/2.cc: ...here.
+
 2007-09-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (v3-build-support): Specify output
