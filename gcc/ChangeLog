@@ -1,3 +1,75 @@
+2007-09-09  Hans-Peter Nilsson  <hp@axis.com>
+
+	Divide REG_LABEL notes into REG_LABEL_OPERAND and REG_LABEL_TARGET.
+	* doc/rtl.texi (Insns): Specify when a label_ref makes a jump_insn.
+	Similar for what label_refs can go in the JUMP_TARGET field.  Split
+	REG_LABEL documentation into REG_LABEL_TARGET and REG_LABEL_OPERAND.
+	* reload.c (find_reloads): Generate REG_LABEL_OPERAND, not
+	REG_LABEL when replacing an operand with a LABEL_REF for a
+	non-jump insn.
+	(subst_reloads): When replacing a LABEL_REG with a register,
+	instead of generating a REG_LABEL note, assert that there already
+	is one or that the label is a known target for the insn.
+	* rtlanal.c (computed_jump_p): Instead of looking for a REG_LABEL
+	note, check the JUMP_LABEL field.  Remove "else" after return.
+	* reorg.c (emit_delay_sequence): Replace case for REG_LABEL with
+	cases for REG_LABEL_OPERAND and REG_LABEL_TARGET.
+	(fill_slots_from_thread): Handle both REG_LABEL_OPERAND and
+	REG_LABEL_TARGET notes, including the JUMP_TARGET field on JUMP_P
+	insns.  Iterate over all notes; don't assume there's only one.
+	* cse.c (recorded_label_ref): Adjust comment to refer to
+	REG_LABEL_OPERAND.
+	(cse_extended_basic_block): Do LABEL_REF check for all INSN_P
+	insns, not just NONJUMP_INSN_P.
+	(check_for_label_ref): For JUMP_P insns, check that the LABEL_REF
+	isn't a jump target.
+	* jump.c (rebuild_jump_labels): Adjust head comment.
+	(init_label_info): Ditto.  Remove REG_LABEL_OPERAND notes only;
+	don't reset REG_LABEL_TARGET notes, including the JUMP_LABEL field.
+	(mark_all_labels): For JUMP_P insns without a target, check if the
+	the target is noted on the previous nonjump insn.
+	(mark_jump_label_1): New function, guts from mark_jump_label.
+	<case IF_THEN_ELSE>: Handle first operand as a non-target when
+	marking jump target labels.
+	<case LABEL_REF>: Adjust for whether to generate a
+	REG_LABEL_TARGET or a REG_LABEL_OPERAND note.
+	For 'E' format rtl, iterate in descending element order.
+	(delete_related_insns): Handle both REG_LABEL_TARGET and
+	REG_LABEL_OPERAND notes.  For JUMP_P insns with labels with zero
+	reference count, delete and fallthrough.  Move finding-next-
+	non-deleted insn last in the function.  Look at all INSN_P insns
+	for REG_LABEL_OPERAND notes.
+	(redirect_jump_2): Assert that OLABEL equals the old JUMP_LABEL of
+	JUMP.
+	* print-rtl.c (print_rtx): For JUMP_P insns and a non-NULL
+	JUMP_LABEL, output the INSN_UID of it.
+	* gcse.c: Adjust comments as appropriate to say REG_LABEL_OPERAND
+	and/or REG_LABEL_TARGET.
+	(add_label_notes): Only add REG_LABEL_OPERAND notes.  Put in line
+	with jump.c copy by only adding notes for labels actually
+	referenced in the insn.
+	* emit-rtl.c (try_split): Don't assume only NONJUMP_INSN_P need
+	usage count increment; handle all INSN_P trial insns.
+	(emit_copy_of_insn_after): Change to not copy REG_LABEL_OPERAND
+	notes.
+	* rtl.h (struct rtx_def) <volatil>: Adjust to mention
+	REG_LABEL_TARGET and REG_LABEL_OPERAND.
+	(LABEL_REF_NONLOCAL_P): Allow REG_LABEL_TARGET and
+	REG_LABEL_OPERAND.
+	* combine.c (distribute_notes): Adjust for REG_LABEL_TARGET on
+	JUMP_P insns and REG_LABEL_OPERAND everywhere.
+	* sched-rgn.c (is_cfg_nonregular): Check for REG_LABEL_OPERANDS
+	on all INSN_P insns.
+	* reg-notes.def (LABEL_TARGET, LABEL_OPERAND): Split from LABEL.
+	* cfgrtl.c (delete_insn): Adjust to handle REG_LABEL_TARGET and
+	REG_LABEL_OPERAND notes.
+	* reload1.c (calculate_needs_all_insns): Adjust comments.
+	(set_label_offsets): Adjust to look for REG_LABEL_OPERAND notes.
+	* config/alpha/alpha.md (split for load of an address into a
+	four-insn sequence on Unicos/Mk): Adjust to use
+	REG_LABEL_OPERAND.
+	* config/sh/sh.md (sh_reorg, final_prescan_insn): Ditto.
+
 2007-09-09  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	Revert:

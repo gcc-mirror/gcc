@@ -138,20 +138,28 @@ delete_insn (rtx insn)
 
   /* If deleting a jump, decrement the use count of the label.  Deleting
      the label itself should happen in the normal course of block merging.  */
-  if (JUMP_P (insn)
-      && JUMP_LABEL (insn)
-      && LABEL_P (JUMP_LABEL (insn)))
-    LABEL_NUSES (JUMP_LABEL (insn))--;
-
-  /* Also if deleting an insn that references a label.  */
-  else
+  if (JUMP_P (insn))
     {
-      while ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX
+      if (JUMP_LABEL (insn)
+	  && LABEL_P (JUMP_LABEL (insn)))
+	LABEL_NUSES (JUMP_LABEL (insn))--;
+
+      /* If there are more targets, remove them too.  */
+      while ((note
+	      = find_reg_note (insn, REG_LABEL_TARGET, NULL_RTX)) != NULL_RTX
 	     && LABEL_P (XEXP (note, 0)))
 	{
 	  LABEL_NUSES (XEXP (note, 0))--;
 	  remove_note (insn, note);
 	}
+    }
+
+  /* Also if deleting any insn that references a label as an operand.  */
+  while ((note = find_reg_note (insn, REG_LABEL_OPERAND, NULL_RTX)) != NULL_RTX
+	 && LABEL_P (XEXP (note, 0)))
+    {
+      LABEL_NUSES (XEXP (note, 0))--;
+      remove_note (insn, note);
     }
 
   if (JUMP_P (insn)

@@ -3201,9 +3201,10 @@ mandatory ones listed above.  These four are described in a table below.
 @findex jump_insn
 @item jump_insn
 The expression code @code{jump_insn} is used for instructions that may
-jump (or, more generally, may contain @code{label_ref} expressions).  If
-there is an instruction to return from the current function, it is
-recorded as a @code{jump_insn}.
+jump (or, more generally, may contain @code{label_ref} expressions to
+which @code{pc} can be set in that instruction).  If there is an
+instruction to return from the current function, it is recorded as a
+@code{jump_insn}.
 
 @findex JUMP_LABEL
 @code{jump_insn} insns have the same extra fields as @code{insn} insns,
@@ -3213,9 +3214,11 @@ accessed in the same way and in addition contain a field
 For simple conditional and unconditional jumps, this field contains
 the @code{code_label} to which this insn will (possibly conditionally)
 branch.  In a more complex jump, @code{JUMP_LABEL} records one of the
-labels that the insn refers to; the only way to find the others is to
-scan the entire body of the insn.  In an @code{addr_vec},
-@code{JUMP_LABEL} is @code{NULL_RTX}.
+labels that the insn refers to; other jump target labels are recorded
+as @code{REG_LABEL_TARGET} notes.  The exception is @code{addr_vec}
+and @code{addr_diff_vec}, where @code{JUMP_LABEL} is @code{NULL_RTX}
+and the only way to find the labels is to scan the entire body of the
+insn.
 
 Return insns count as jumps, but since they do not refer to any
 labels, their @code{JUMP_LABEL} is @code{NULL_RTX}.
@@ -3531,14 +3534,25 @@ note giving the expression being computed.  This block is encapsulated
 with @code{REG_LIBCALL} and @code{REG_RETVAL} notes on the first and
 last insns, respectively.
 
-@findex REG_LABEL
-@item REG_LABEL
+@findex REG_LABEL_OPERAND
+@item REG_LABEL_OPERAND
 This insn uses @var{op}, a @code{code_label} or a @code{note} of type
-@code{NOTE_INSN_DELETED_LABEL}, but is not a
-@code{jump_insn}, or it is a @code{jump_insn} that required the label to
-be held in a register.  The presence of this note allows jump
-optimization to be aware that @var{op} is, in fact, being used, and flow
-optimization to build an accurate flow graph.
+@code{NOTE_INSN_DELETED_LABEL}, but is not a @code{jump_insn}, or it
+is a @code{jump_insn} that refers to the operand as an ordinary
+operand.  The label may still eventually be a jump target, but if so
+in an indirect jump in a subsequent insn.  The presence of this note
+allows jump optimization to be aware that @var{op} is, in fact, being
+used, and flow optimization to build an accurate flow graph.
+
+@findex REG_LABEL_TARGET
+@item REG_LABEL_TARGET
+This insn is a @code{jump_insn} but not a @code{addr_vec} or
+@code{addr_diff_vec}.  It uses @var{op}, a @code{code_label} as a
+direct or indirect jump target.  Its purpose is similar to that of
+@code{REG_LABEL_OPERAND}.  This note is only present if the insn has
+multiple targets; the last label in the insn (in the highest numbered
+insn-field) goes into the @code{JUMP_LABEL} field and does not have a
+@code{REG_LABEL_TARGET} note.  @xref{Insns, JUMP_LABEL}.
 
 @findex REG_CROSSING_JUMP
 @item REG_CROSSING_JUMP

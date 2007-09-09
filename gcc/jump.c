@@ -67,13 +67,15 @@ along with GCC; see the file COPYING3.  If not see
 
 static void init_label_info (rtx);
 static void mark_all_labels (rtx);
+static void mark_jump_label_1 (rtx, rtx, bool, bool);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
 static int invert_exp_1 (rtx, rtx);
 static int returnjump_p_1 (rtx *, void *);
 
-/* Alternate entry into the jump optimizer.  This entry point only rebuilds
-   the JUMP_LABEL field in jumping insns and REG_LABEL notes in non-jumping
-   instructions.  */
+/* This function rebuilds the JUMP_LABEL field and REG_LABEL_TARGET
+   notes in jumping insns and REG_LABEL_OPERAND notes in non-jumping
+   instructions and jumping insns that have labels as operands
+   (e.g. cbranchsi4).  */
 void
 rebuild_jump_labels (rtx f)
 {
@@ -138,31 +140,43 @@ struct tree_opt_pass pass_cleanup_barriers =
 };
 
 
-/* Initialize LABEL_NUSES and JUMP_LABEL fields.  Delete any REG_LABEL
-   notes whose labels don't occur in the insn any more.  Returns the
-   largest INSN_UID found.  */
+/* Initialize LABEL_NUSES and JUMP_LABEL fields, add REG_LABEL_TARGET
+   for remaining targets for JUMP_P.  Delete any REG_LABEL_OPERAND
+   notes whose labels don't occur in the insn any more.  */
+
 static void
 init_label_info (rtx f)
 {
   rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (LABEL_P (insn))
-      LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
-    else if (JUMP_P (insn))
-      JUMP_LABEL (insn) = 0;
-    else if (NONJUMP_INSN_P (insn) || CALL_P (insn))
-      {
-	rtx note, next;
+    {
+      if (LABEL_P (insn))
+	LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
 
-	for (note = REG_NOTES (insn); note; note = next)
-	  {
-	    next = XEXP (note, 1);
-	    if (REG_NOTE_KIND (note) == REG_LABEL
-		&& ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
-	      remove_note (insn, note);
-	  }
-      }
+      /* REG_LABEL_TARGET notes (including the JUMP_LABEL field) are
+	 sticky and not reset here; that way we won't lose association
+	 with a label when e.g. the source for a target register
+	 disappears out of reach for targets that may use jump-target
+	 registers.  Jump transformations are supposed to transform
+	 any REG_LABEL_TARGET notes.  The target label reference in a
+	 branch may disappear from the branch (and from the
+	 instruction before it) for other reasons, like register
+	 allocation.  */
+
+      if (INSN_P (insn))
+	{
+	  rtx note, next;
+
+	  for (note = REG_NOTES (insn); note; note = next)
+	    {
+	      next = XEXP (note, 1);
+	      if (REG_NOTE_KIND (note) == REG_LABEL_OPERAND
+		  && ! reg_mentioned_p (XEXP (note, 0), PATTERN (insn)))
+		remove_note (insn, note);
+	    }
+	}
+    }
 }
 
 /* Mark the label each jump jumps to.
@@ -172,34 +186,69 @@ static void
 mark_all_labels (rtx f)
 {
   rtx insn;
+  rtx prev_nonjump_insn = NULL;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       {
 	mark_jump_label (PATTERN (insn), insn, 0);
-	if (! INSN_DELETED_P (insn) && JUMP_P (insn))
-	  {
-	    /* When we know the LABEL_REF contained in a REG used in
-	       an indirect jump, we'll have a REG_LABEL note so that
-	       flow can tell where it's going.  */
-	    if (JUMP_LABEL (insn) == 0)
-	      {
-		rtx label_note = find_reg_note (insn, REG_LABEL, NULL_RTX);
-		if (label_note)
-		  {
-		    /* But a LABEL_REF around the REG_LABEL note, so
-		       that we can canonicalize it.  */
-		    rtx label_ref = gen_rtx_LABEL_REF (Pmode,
-						       XEXP (label_note, 0));
 
-		    mark_jump_label (label_ref, insn, 0);
-		    XEXP (label_note, 0) = XEXP (label_ref, 0);
-		    JUMP_LABEL (insn) = XEXP (label_note, 0);
+	/* If the previous non-jump insn sets something to a label,
+	   something that this jump insn uses, make that label the primary
+	   target of this insn if we don't yet have any.  That previous
+	   insn must be a single_set and not refer to more than one label.
+	   The jump insn must not refer to other labels as jump targets
+	   and must be a plain (set (pc) ...), maybe in a parallel, and
+	   may refer to the item being set only directly or as one of the
+	   arms in an IF_THEN_ELSE.  */
+	if (! INSN_DELETED_P (insn)
+	    && JUMP_P (insn)
+	    && JUMP_LABEL (insn) == NULL)
+	  {
+	    rtx label_note = NULL;
+	    rtx pc = pc_set (insn);
+	    rtx pc_src = pc != NULL ? SET_SRC (pc) : NULL;
+
+	    if (prev_nonjump_insn != NULL)
+	      label_note
+		= find_reg_note (prev_nonjump_insn, REG_LABEL_OPERAND, NULL);
+
+	    if (label_note != NULL && pc_src != NULL)
+	      {
+		rtx label_set = single_set (prev_nonjump_insn);
+		rtx label_dest
+		  = label_set != NULL ? SET_DEST (label_set) : NULL;
+
+		if (label_set != NULL
+		    /* The source must be the direct LABEL_REF, not a
+		       PLUS, UNSPEC, IF_THEN_ELSE etc.  */
+		    && GET_CODE (SET_SRC (label_set)) == LABEL_REF
+		    && (rtx_equal_p (label_dest, pc_src)
+			|| (GET_CODE (pc_src) == IF_THEN_ELSE
+			    && (rtx_equal_p (label_dest, XEXP (pc_src, 1))
+				|| rtx_equal_p (label_dest,
+						XEXP (pc_src, 2))))))
+				
+		  {
+		    /* The CODE_LABEL referred to in the note must be the
+		       CODE_LABEL in the LABEL_REF of the "set".  We can
+		       conveniently use it for the marker function, which
+		       requires a LABEL_REF wrapping.  */
+		    gcc_assert (XEXP (label_note, 0)
+				== XEXP (SET_SRC (label_set), 0));
+
+		    mark_jump_label_1 (label_set, insn, false, true);
+		    gcc_assert (JUMP_LABEL (insn)
+				== XEXP (SET_SRC (label_set), 0));
 		  }
 	      }
 	  }
+	else if (! INSN_DELETED_P (insn))
+	  prev_nonjump_insn = insn;
       }
-  
+    else if (LABEL_P (insn))
+      prev_nonjump_insn = NULL;
+
   /* If we are in cfglayout mode, there may be non-insns between the
      basic blocks.  If those non-insns represent tablejump data, they
      contain label references that we must record.  */
@@ -904,12 +953,14 @@ sets_cc0_p (const_rtx x)
 }
 #endif
 
-/* Find all CODE_LABELs referred to in X, and increment their use counts.
-   If INSN is a JUMP_INSN and there is at least one CODE_LABEL referenced
-   in INSN, then store one of them in JUMP_LABEL (INSN).
-   If INSN is an INSN or a CALL_INSN and there is at least one CODE_LABEL
-   referenced in INSN, add a REG_LABEL note containing that label to INSN.
-   Also, when there are consecutive labels, canonicalize on the last of them.
+/* Find all CODE_LABELs referred to in X, and increment their use
+   counts.  If INSN is a JUMP_INSN and there is at least one
+   CODE_LABEL referenced in INSN as a jump target, then store the last
+   one in JUMP_LABEL (INSN).  For a tablejump, this must be the label
+   for the ADDR_VEC.  Store any other jump targets as REG_LABEL_TARGET
+   notes.  If INSN is an INSN or a CALL_INSN or non-target operands of
+   a JUMP_INSN, and there is at least one CODE_LABEL referenced in
+   INSN, add a REG_LABEL_OPERAND note containing that label to INSN.
 
    Note that two labels separated by a loop-beginning note
    must be kept distinct if we have not yet done loop-optimization,
@@ -919,6 +970,19 @@ sets_cc0_p (const_rtx x)
 
 void
 mark_jump_label (rtx x, rtx insn, int in_mem)
+{
+  mark_jump_label_1 (x, insn, in_mem != 0,
+		     (insn != NULL && x == PATTERN (insn) && JUMP_P (insn)));
+}
+
+/* Worker function for mark_jump_label.  IN_MEM is TRUE when X occurrs
+   within a (MEM ...).  IS_TARGET is TRUE when X is to be treated as a
+   jump-target; when the JUMP_LABEL field of INSN should be set or a
+   REG_LABEL_TARGET note should be added, not a REG_LABEL_OPERAND
+   note.  */
+
+static void
+mark_jump_label_1 (rtx x, rtx insn, bool in_mem, bool is_target)
 {
   RTX_CODE code = GET_CODE (x);
   int i;
@@ -936,7 +1000,7 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
       return;
 
     case MEM:
-      in_mem = 1;
+      in_mem = true;
       break;
 
     case SEQUENCE:
@@ -951,8 +1015,18 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 
       /* If this is a constant-pool reference, see if it is a label.  */
       if (CONSTANT_POOL_ADDRESS_P (x))
-	mark_jump_label (get_pool_constant (x), insn, in_mem);
+	mark_jump_label_1 (get_pool_constant (x), insn, in_mem, is_target);
       break;
+
+      /* Handle operands in the condition of an if-then-else as for a
+	 non-jump insn.  */
+    case IF_THEN_ELSE:
+      if (!is_target)
+	break;
+      mark_jump_label_1 (XEXP (x, 0), insn, in_mem, false);
+      mark_jump_label_1 (XEXP (x, 1), insn, in_mem, true);
+      mark_jump_label_1 (XEXP (x, 2), insn, in_mem, true);
+      return;
 
     case LABEL_REF:
       {
@@ -976,17 +1050,21 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 
 	if (insn)
 	  {
-	    if (JUMP_P (insn))
+	    if (is_target
+		&& (JUMP_LABEL (insn) == NULL || JUMP_LABEL (insn) == label))
 	      JUMP_LABEL (insn) = label;
 	    else
 	      {
-		/* Add a REG_LABEL note for LABEL unless there already
-		   is one.  All uses of a label, except for labels
-		   that are the targets of jumps, must have a
-		   REG_LABEL note.  */
-		if (! find_reg_note (insn, REG_LABEL, label))
-		  REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, label,
-							REG_NOTES (insn));
+		enum reg_note kind
+		  = is_target ? REG_LABEL_TARGET : REG_LABEL_OPERAND;
+
+		/* Add a REG_LABEL_OPERAND or REG_LABEL_TARGET note
+		   for LABEL unless there already is one.  All uses of
+		   a label, except for the primary target of a jump,
+		   must have such a note.  */
+		if (! find_reg_note (insn, kind, label))
+		  REG_NOTES (insn)
+		    = gen_rtx_INSN_LIST (kind, label, REG_NOTES (insn));
 	      }
 	  }
 	return;
@@ -1001,7 +1079,8 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 	  int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
 
 	  for (i = 0; i < XVECLEN (x, eltnum); i++)
-	    mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, in_mem);
+	    mark_jump_label_1 (XVECEXP (x, eltnum, i), NULL_RTX, in_mem,
+			       is_target);
 	}
       return;
 
@@ -1010,15 +1089,21 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
     }
 
   fmt = GET_RTX_FORMAT (code);
+
+  /* The primary target of a tablejump is the label of the ADDR_VEC,
+     which is canonically mentioned *last* in the insn.  To get it
+     marked as JUMP_LABEL, we iterate over items in reverse order.  */
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	mark_jump_label (XEXP (x, i), insn, in_mem);
+	mark_jump_label_1 (XEXP (x, i), insn, in_mem, is_target);
       else if (fmt[i] == 'E')
 	{
 	  int j;
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    mark_jump_label (XVECEXP (x, i, j), insn, in_mem);
+
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    mark_jump_label_1 (XVECEXP (x, i, j), insn, in_mem,
+			       is_target);
 	}
     }
 }
@@ -1062,20 +1147,10 @@ delete_related_insns (rtx insn)
       rtx lab = JUMP_LABEL (insn), lab_next;
 
       if (LABEL_NUSES (lab) == 0)
-	{
-	  /* This can delete NEXT or PREV,
-	     either directly if NEXT is JUMP_LABEL (INSN),
-	     or indirectly through more levels of jumps.  */
-	  delete_related_insns (lab);
-
-	  /* I feel a little doubtful about this loop,
-	     but I see no clean and sure alternative way
-	     to find the first insn after INSN that is not now deleted.
-	     I hope this works.  */
-	  while (next && INSN_DELETED_P (next))
-	    next = NEXT_INSN (next);
-	  return next;
-	}
+	/* This can delete NEXT or PREV,
+	   either directly if NEXT is JUMP_LABEL (INSN),
+	   or indirectly through more levels of jumps.  */
+	delete_related_insns (lab);
       else if (tablejump_p (insn, NULL, &lab_next))
 	{
 	  /* If we're deleting the tablejump, delete the dispatch table.
@@ -1104,10 +1179,12 @@ delete_related_insns (rtx insn)
       return next;
     }
 
-  /* Likewise for an ordinary INSN / CALL_INSN with a REG_LABEL note.  */
-  if (NONJUMP_INSN_P (insn) || CALL_P (insn))
+  /* Likewise for any JUMP_P / INSN / CALL_INSN with a
+     REG_LABEL_OPERAND or REG_LABEL_TARGET note.  */
+  if (INSN_P (insn))
     for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-      if (REG_NOTE_KIND (note) == REG_LABEL
+      if ((REG_NOTE_KIND (note) == REG_LABEL_OPERAND
+	   || REG_NOTE_KIND (note) == REG_LABEL_TARGET)
 	  /* This could also be a NOTE_INSN_DELETED_LABEL note.  */
 	  && LABEL_P (XEXP (note, 0)))
 	if (LABEL_NUSES (XEXP (note, 0)) == 0)
@@ -1151,6 +1228,12 @@ delete_related_insns (rtx insn)
 	}
     }
 
+  /* I feel a little doubtful about this loop,
+     but I see no clean and sure alternative way
+     to find the first insn after INSN that is not now deleted.
+     I hope this works.  */
+  while (next && INSN_DELETED_P (next))
+    next = NEXT_INSN (next);
   return next;
 }
 
@@ -1306,6 +1389,8 @@ redirect_jump_2 (rtx jump, rtx olabel, rtx nlabel, int delete_unused,
 		 int invert)
 {
   rtx note;
+
+  gcc_assert (JUMP_LABEL (jump) == olabel);
 
   /* Negative DELETE_UNUSED used to be used to signalize behavior on
      moving FUNCTION_END note.  Just sanity check that no user still worry

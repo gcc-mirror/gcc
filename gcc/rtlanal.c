@@ -2703,9 +2703,11 @@ computed_jump_p (const_rtx insn)
     {
       rtx pat = PATTERN (insn);
 
-      if (find_reg_note (insn, REG_LABEL, NULL_RTX))
+      /* If we have a JUMP_LABEL set, we're not a computed jump.  */
+      if (JUMP_LABEL (insn) != NULL)
 	return 0;
-      else if (GET_CODE (pat) == PARALLEL)
+
+      if (GET_CODE (pat) == PARALLEL)
 	{
 	  int len = XVECLEN (pat, 0);
 	  int has_use_labelref = 0;

@@ -353,8 +353,9 @@ static HARD_REG_SET hard_regs_in_table;
 
 static int cse_jumps_altered;
 
-/* Nonzero if we put a LABEL_REF into the hash table for an INSN without a
-   REG_LABEL, we have to rerun jump after CSE to put in the note.  */
+/* Nonzero if we put a LABEL_REF into the hash table for an INSN
+   without a REG_LABEL_OPERAND, we have to rerun jump after CSE to put
+   in the note.  */
 static int recorded_label_ref;
 
 /* canon_hash stores 1 in do_not_record
@@ -6091,7 +6092,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	    
 	      /* If we haven't already found an insn where we added a LABEL_REF,
 		 check this one.  */
-	      if (NONJUMP_INSN_P (insn) && ! recorded_label_ref
+	      if (INSN_P (insn) && ! recorded_label_ref
 		  && for_each_rtx (&PATTERN (insn), check_for_label_ref,
 				   (void *) insn))
 		recorded_label_ref = 1;
@@ -6277,23 +6278,26 @@ cse_main (rtx f ATTRIBUTE_UNUSED, int nregs)
   return cse_jumps_altered || recorded_label_ref;
 }
 
-/* Called via for_each_rtx to see if an insn is using a LABEL_REF for which
-   there isn't a REG_LABEL note.  Return one if so.  DATA is the insn.  */
+/* Called via for_each_rtx to see if an insn is using a LABEL_REF for
+   which there isn't a REG_LABEL_OPERAND note.
+   Return one if so.  DATA is the insn.  */
 
 static int
 check_for_label_ref (rtx *rtl, void *data)
 {
   rtx insn = (rtx) data;
 
-  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL note for it,
-     we must rerun jump since it needs to place the note.  If this is a
-     LABEL_REF for a CODE_LABEL that isn't in the insn chain, don't do this
-     since no REG_LABEL will be added.  */
+  /* If this insn uses a LABEL_REF and there isn't a REG_LABEL_OPERAND
+     note for it, we must rerun jump since it needs to place the note.  If
+     this is a LABEL_REF for a CODE_LABEL that isn't in the insn chain,
+     don't do this since no REG_LABEL_OPERAND will be added.  */
   return (GET_CODE (*rtl) == LABEL_REF
 	  && ! LABEL_REF_NONLOCAL_P (*rtl)
+	  && (!JUMP_P (insn)
+	      || !label_is_jump_target_p (XEXP (*rtl, 0), insn))
 	  && LABEL_P (XEXP (*rtl, 0))
 	  && INSN_UID (XEXP (*rtl, 0)) != 0
-	  && ! find_reg_note (insn, REG_LABEL, XEXP (*rtl, 0)));
+	  && ! find_reg_note (insn, REG_LABEL_OPERAND, XEXP (*rtl, 0)));
 }
 
 /* Count the number of times registers are used (not set) in X.

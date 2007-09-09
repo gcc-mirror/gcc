@@ -4584,14 +4584,15 @@ one_pre_gcse_pass (int pass)
   return changed;
 }
 
-/* If X contains any LABEL_REF's, add REG_LABEL notes for them to INSN.
-   If notes are added to an insn which references a CODE_LABEL, the
-   LABEL_NUSES count is incremented.  We have to add REG_LABEL notes,
-   because the following loop optimization pass requires them.  */
+/* If X contains any LABEL_REF's, add REG_LABEL_OPERAND notes for them
+   to INSN.  If such notes are added to an insn which references a
+   CODE_LABEL, the LABEL_NUSES count is incremented.  We have to add
+   that note, because the following loop optimization pass requires
+   them.  */
 
 /* ??? If there was a jump optimization pass after gcse and before loop,
    then we would not need to do this here, because jump would add the
-   necessary REG_LABEL notes.  */
+   necessary REG_LABEL_OPERAND and REG_LABEL_TARGET notes.  */
 
 static void
 add_label_notes (rtx x, rtx insn)
@@ -4608,10 +4609,18 @@ add_label_notes (rtx x, rtx insn)
 	 We no longer ignore such label references (see LABEL_REF handling in
 	 mark_jump_label for additional information).  */
 
-      REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, XEXP (x, 0),
-					    REG_NOTES (insn));
-      if (LABEL_P (XEXP (x, 0)))
-	LABEL_NUSES (XEXP (x, 0))++;
+	if (reg_mentioned_p (XEXP (x, 0), insn))
+	  {
+	    /* There's no reason for current users to emit jump-insns
+	       with such a LABEL_REF, so we don't have to handle
+	       REG_LABEL_TARGET notes.  */
+	    gcc_assert (!JUMP_P (insn));
+	    REG_NOTES (insn)
+	      = gen_rtx_INSN_LIST (REG_LABEL_OPERAND, XEXP (x, 0),
+				   REG_NOTES (insn));
+	    if (LABEL_P (XEXP (x, 0)))
+	      LABEL_NUSES (XEXP (x, 0))++;
+	  }
       return;
     }
 
