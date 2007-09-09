@@ -1,3 +1,8 @@
+2007-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (add_virtual_operand): Only mark
+	stores as has_volatile_ops if alias information is not available.
+
 2007-09-09  Revital Eres  <eres@il.ibm.com>
 
 	* doc/contrib.texi: Add myself.
