@@ -1,5 +1,6 @@
 // { dg-do link }
 // { dg-options "-frepo -Werror" }
+// { dg-require-host-local "" }
 // Build then link:
 
 

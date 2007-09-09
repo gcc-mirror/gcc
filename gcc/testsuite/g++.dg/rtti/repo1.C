@@ -1,5 +1,6 @@
 // PR c++/22204
 // { dg-options "-frepo" }
+// { dg-require-host-local "" }
 
 #include <typeinfo>
 template<int>

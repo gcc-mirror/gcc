@@ -1,3 +1,26 @@
+2007-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* lib/file-format.exp (gcc_target_object_format): Use remote_exec
+	to call objdump.
+	* lib/scanasm.exp (scan-assembler-dem, scan-assembler-dem-not):
+	Use remote_exec to call c++filt.
+	* lib/target-supports-dg.exp (dg-require-host-local): New.
+	* gcc.misc-tests/options.exp: Allow .exe in command paths.
+	* g++.dg/parse/repo1.C: Use dg-require-host-local.
+	* g++.dg/rtti/repo1.C: Likewise.
+	* g++.dg/template/repo1.C: Likewise.
+	* g++.dg/template/repo2.C: Likewise.
+	* g++.dg/template/repo3.C: Likewise.
+	* g++.dg/template/repo4.C: Likewise.
+	* g++.dg/template/repo5.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate4.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate6.C: Likewise.
+	* g++.old-deja/g++.pt/repo1.C: Likewise.
+	* g++.old-deja/g++.pt/repo2.C: Likewise.
+	* g++.old-deja/g++.pt/repo3.C: Likewise.
+	* g++.old-deja/g++.pt/repo4.C: Likewise.
+	* gcc.dg/cpp/trad/builtins.c: Likewise.
+
 2007-09-08  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/32283

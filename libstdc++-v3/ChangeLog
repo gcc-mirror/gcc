@@ -1,3 +1,8 @@
+2007-09-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (v3-build-support): Specify output
+	file for preprocessing.  Use remote_exec to call ar and ranlib.
+
 2007-09-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/functional_hash.h: Add ext/numeric_traits.h.

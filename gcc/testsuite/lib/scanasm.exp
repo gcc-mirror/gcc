@@ -217,9 +217,8 @@ proc scan-assembler-dem { args } {
     upvar 2 name testcase
     set output_file "[file rootname [file tail $testcase]].s"
 
-    set fd [open "| $cxxfilt < $output_file" r]
-    set text [read $fd]
-    close $fd
+    set output [remote_exec host "$cxxfilt" "" "$output_file"]
+    set text [lindex $output 1]
 
     if [regexp -- [lindex $args 0] $text] {
 	pass "$testcase scan-assembler-dem [lindex $args 0]"
@@ -263,9 +262,8 @@ proc scan-assembler-dem-not { args } {
     upvar 2 name testcase
     set output_file "[file rootname [file tail $testcase]].s"
 
-    set fd [open "| $cxxfilt < $output_file" r]
-    set text [read $fd]
-    close $fd
+    set output [remote_exec host "$cxxfilt" "" "$output_file"]
+    set text [lindex $output 1]
 
     if ![regexp -- [lindex $args 0] $text] {
 	pass "$testcase scan-assembler-dem-not [lindex $args 0]"
