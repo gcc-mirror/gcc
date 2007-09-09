@@ -1,3 +1,7 @@
+2007-09-09  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/compile/20070906-1.c: New testcase.
+
 2007-09-09  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/costmodel/ppc/costmodel-vect-outer-fir.c: Add
