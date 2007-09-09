@@ -1930,8 +1930,10 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       if (targetm.cxx.cookie_has_size ())
 	{
 	  /* Also store the element size.  */
-	  cookie_ptr = build2 (MINUS_EXPR, build_pointer_type (sizetype),
-			       cookie_ptr, size_in_bytes (sizetype));
+	  cookie_ptr = build2 (POINTER_PLUS_EXPR, size_ptr_type, cookie_ptr,
+			       fold_build1 (NEGATE_EXPR, sizetype,
+					    size_in_bytes (sizetype)));
+
 	  cookie = build_indirect_ref (cookie_ptr, NULL);
 	  cookie = build2 (MODIFY_EXPR, sizetype, cookie,
 			   size_in_bytes(elt_type));
