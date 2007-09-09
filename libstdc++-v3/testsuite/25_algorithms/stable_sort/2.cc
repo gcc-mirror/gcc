@@ -33,9 +33,9 @@ const int P = 7;
 // comparison predicate for stable_sort: order by rightmost digit
 struct CompLast
 {
-    bool
-    operator()(const int x, const int y)
-    { return x % 10 < y % 10; }
+  bool
+  operator()(const int x, const int y)
+  { return x % 10 < y % 10; }
 };
 
 // This functor has the equivalent functionality of std::geater<>,
@@ -44,39 +44,21 @@ struct CompLast
 class Gt
 {
 public:
-    static int count() { return itsCount; }
-    static void reset() { itsCount = 0; }
-
-    bool
-    operator()(const int& x, const int& y)
-    {
-        ++itsCount;
-        return x > y; 
-    }
+  static int count() { return itsCount; }
+  static void reset() { itsCount = 0; }
+  
+  bool
+  operator()(const int& x, const int& y)
+  {
+    ++itsCount;
+    return x > y; 
+  }
 
 private:
     static int itsCount;
 };
 
 int Gt::itsCount = 0;
-
-
-// 25.3.1.1 sort()
-void
-test01()
-{
-    int s1[N];
-    std::copy(B, B + N, s1);
-    VERIFY(std::equal(s1, s1 + N, B));
-
-    std::sort(s1, s1 + N);
-    VERIFY(std::equal(s1, s1 + N, A));
-
-    Gt gt;
-    gt.reset();
-    std::sort(s1, s1 + N, gt);
-    VERIFY(std::equal(s1, s1 + N, C));
-}
 
 // 25.3.1.2 stable_sort()
 void
@@ -99,73 +81,9 @@ test02()
     VERIFY(gt.count() <= N * logN * logN);
 }
 
-// 25.3.1.3 partial_sort()
-void
-test03()
-{
-    int s1[N];
-    std::copy(B, B + N, s1);
-    VERIFY(std::equal(s1, s1 + N, B));
-
-    std::partial_sort(s1, s1 + P, s1 + N);
-    VERIFY(std::equal(s1, s1 + P, A));
-
-    Gt gt;
-    gt.reset();
-    std::partial_sort(s1, s1 + P, s1 + N, gt);
-    VERIFY(std::equal(s1, s1 + P, C));
-}
-
-// 25.3.1.4 partial_sort_copy()
-void
-test04()
-{
-    using std::partial_sort_copy;
-
-    int s1[N];
-    std::copy(B, B + N, s1);
-    VERIFY(std::equal(s1, s1 + N, B));
-
-    int s2[2*N];
-
-    partial_sort_copy(s1, s1 + N, s2, s2 + P);
-    VERIFY(std::equal(s2, s2 + P, A));
-
-    Gt gt;
-    gt.reset();
-    partial_sort_copy(s1, s1 + N, s2, s2 + P, gt);
-    VERIFY(std::equal(s2, s2 + P, C));
-
-    VERIFY(std::equal(s2, partial_sort_copy(s1, s1 + N, s2, s2 + 2*N), A));
-}
-
-// 25.3.2 nth_element()
-void
-test05()
-{
-    using std::nth_element;
-
-    int s1[N];
-    std::copy(B, B + N, s1);
-    VERIFY(std::equal(s1, s1 + N, B));
-
-    int* pn = s1 + (N / 2) - 1;
-    nth_element(s1, pn, s1 + N);
-    for (const int* i = pn; i < s1 + N; ++i) VERIFY(!(*i < *pn));
-
-    CompLast pred;
-    nth_element(s1, pn, s1 + N, pred);
-    for (const int* i = pn; i < s1 + N; ++i) VERIFY(!pred(*i, *pn));
-}
-
 int
 main()
 {
-  test01();
   test02();
-  test03();
-  test04();
-  test05();
-  
   return 0;
 }

@@ -29,7 +29,6 @@ const int N = sizeof(A) / sizeof(int);
 
 // A comparison, equalivalent to std::greater<int> without the
 // dependency on <functional>.
-
 struct gt
 {
     bool
