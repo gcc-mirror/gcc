@@ -1,3 +1,9 @@
+2007-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33342
+	* pt.c (most_specialized_class): Set processing_template_decl
+	while tsubsting partial spec args.
+
 2007-09-06  Jason Merrill  <jason@redhat.com>
 
 	* decl2.c (get_guard): Copy visibility from the guarded variable.

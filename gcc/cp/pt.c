@@ -11576,6 +11576,8 @@ most_specialized_class (tree type, tree tmpl)
 	{
 	  int i;
 
+	  ++processing_template_decl;
+
 	  /* Discard the outer levels of args, and then substitute in the
 	     template args from the enclosing class.  */
 	  partial_spec_args = INNERMOST_TEMPLATE_ARGS (partial_spec_args);
@@ -11591,6 +11593,8 @@ most_specialized_class (tree type, tree tmpl)
 	  for (i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
 	    TREE_VEC_ELT (parms, i) =
 	      tsubst (TREE_VEC_ELT (parms, i), outer_args, tf_none, NULL_TREE);
+
+	  --processing_template_decl;
 	}
       spec_args = get_class_bindings (parms,
 				      partial_spec_args,
