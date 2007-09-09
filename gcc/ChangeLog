@@ -1,3 +1,58 @@
+2007-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (X87MODEF12, SSEMODEF): Remove mode iterators.
+	Substitute all uses with ...
+	(MODEF): New mode iterator.
+
+	(*cmpfp_<mode>_cc): Remove operand constraints from pre-regalloc
+	define_insn_and_split splitter pattern.
+	(fix_trunc<mode>_fisttp_i387_1): Ditto.
+	(*fix_trunc<mode>_i387_1): Ditto.
+	(*fistdi2_1): Ditto.
+	(*fist<mode>2_1): Ditto.
+	(frndintxf2_floor): Ditto.
+	(*fist<mode>2_floor_1): Ditto.
+	(frndintxf2_ceil): Ditto.
+	(*fist<mode>2_ceil_1): Ditto.
+	(frndintxf2_trunc): Ditto.
+	(frndintxf2_mask_pm): Ditto.
+
+	(prologue): Use (const_int 0) as never generated filler insn.
+	(epilogue): Ditto.
+	(sibcall_epilogue): Ditto.
+	(eh_return_si): Ditto.
+	(eh_return_di): Ditto.
+
+	(add<mode>3): Rename from adddf3 and addsf3.  Macroize expander
+	using MODEF mode iterator.
+	(sub<mode>3): Rename from subdf3 and subsf3.  Macroize expander
+	using MODEF mode iterator.
+	(mul<mode>3): Rename from muldf3 and mulsf3.  Macroize expander
+	using MODEF mode iterator.
+	(nearbyint<mode>2): Rename from nearbyintdf2 and nearbyintsf2.
+	Macroize expander using MODEF mode iterator.
+
+	(zero_extendsidi2): Remove operand constraints from expander.
+	(smuldi3_highpart): Ditto.
+	(indirect_jump): Ditto.
+	(tablejump): Ditto.
+	(rsqrtsf2): Ditto.
+	* config/i386/sse.md (storentv4sf): Ditto.
+	(storentv2df): Ditto.
+	(storentv2di): Ditto.
+	(storentsi): Ditto.
+	(sse2_cvtpd2ps): Ditto.
+	(vec_interleave_highv16qi): Ditto.
+	(vec_interleave_lowv16qi): Ditto.
+	(vec_interleave_highv8hi): Ditto.
+	(vec_interleave_lowv8hi): Ditto.
+	(vec_interleave_highv4si): Ditto.
+	(vec_interleave_lowv4si): Ditto.
+	(vec_interleave_highv2di): Ditto.
+	(vec_interleave_lowv2di): Ditto.
+	(sse2_maskmovdqu): Ditto.
+	* config/i386/mmx.md (mmx_maskmovq): Ditto.
+
 2007-09-09  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (enum vect_def_type): Start enumeration from 1.
@@ -197,12 +252,12 @@
 2007-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33329
-	PR target/26449
+	PR rtl-optimization/26449
 	* config/i386/sse.md (mulv4si3): Do not expand sse2 sequence.
 	(*sse2_mulv4si3): New define_insn_and_split pattern. Split insn in
 	split1 pass.
 	(mulv16qi3): Implement as define_insn_and_split pattern instead of
-	define_expand, to split insn in split1 pass.
+	define_expand.  Split insn in split1 pass.
 	(mulv2di3): Ditto.
 
 2007-09-08  Dorit Nuzman  <dorit@il.ibm.com>
@@ -320,8 +375,8 @@
 2007-09-07  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/33299
-	* tree-vect-transform.c (vect_create_epilog_for_reduction): Update uses 
-	for all relevant loop-exit phis, not just the first.
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Update
+	uses for all relevant loop-exit phis, not just the first.
 
 2007-09-07  Richard Guenther  <rguenther@suse.de>
 
