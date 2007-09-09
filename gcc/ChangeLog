@@ -1,3 +1,11 @@
+2007-09-09  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/30315
+	* config/i386/i386.h (CANONICALIZE_COMPARISON): Delete.
+	* simplify-rtx.c (simplify_relational_operation_1): Add the
+	canonicalization from i386.h.
+	* doc/md.texi (Canonicalization of Instructions): Document it.
+
 2007-09-09  Jan Hubicka  <jh@suse.cz>
             Dwarakanath Rajagopal <dwarak.rajagopal@amd.com>
 
