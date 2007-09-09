@@ -1,3 +1,13 @@
+2007-09-09  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (stmt_vinfo_set_inside_of_loop_cost,
+	stmt_vinfo_set_outside_of_loop_cost): New functions.
+	* tree-vect-transform.c (vect_get_cost_fields): Remove.
+	(vect_model_simple_cost): Call
+	stmt_vinfo_set_inside/outside_of_loop_cost to set the relevant cost
+	field instead of calling vect_get_cost_fields.
+	(vect_model_store_cost, vect_model_load_cost): Likewise.
+
 2007-09-09  Revital Eres  <eres@il.ibm.com>
 
 	* config/rs6000/rs6000.c (paired_init_builtins): Add const

@@ -462,26 +462,6 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
 }
 
 
-/* Return addresses of the cost fields of SLP_NODE if it's not NULL, and of
-   the stmt otherwise.  */
-
-static inline void
-vect_get_cost_fields (stmt_vec_info stmt_info, slp_tree slp_node, 
-		      int **inside_cost_field, int **outside_cost_field)
-{
-  if (slp_node)
-    {
-      *inside_cost_field = &(SLP_TREE_INSIDE_OF_LOOP_COST (slp_node));
-      *outside_cost_field = &(SLP_TREE_OUTSIDE_OF_LOOP_COST (slp_node));
-    }
-  else
-    {
-      *inside_cost_field = &(STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info));
-      *outside_cost_field = &(STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info));
-    }
-}
-
-
 /* Function vect_model_simple_cost.  
 
    Models cost for simple operations, i.e. those that only emit ncopies of a 
@@ -493,24 +473,24 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
 			enum vect_def_type *dt, slp_tree slp_node)
 {
   int i;
-  int *inside_cost_field, *outside_cost_field;
+  int inside_cost = 0, outside_cost = 0;
 
-  /* Take addresses of relevant fields to update in the function.  */
-  vect_get_cost_fields (stmt_info, slp_node, &inside_cost_field, 
-			&outside_cost_field);
-
-  *inside_cost_field = ncopies * TARG_VEC_STMT_COST;
+  inside_cost = ncopies * TARG_VEC_STMT_COST;
 
   /* FORNOW: Assuming maximum 2 args per stmts.  */
   for (i = 0; i < 2; i++)
     {
       if (dt[i] == vect_constant_def || dt[i] == vect_invariant_def)
-	*outside_cost_field += TARG_SCALAR_TO_VEC_COST; 
+	outside_cost += TARG_SCALAR_TO_VEC_COST; 
     }
   
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "vect_model_simple_cost: inside_cost = %d, "
-             "outside_cost = %d .", *inside_cost_field, *outside_cost_field);
+             "outside_cost = %d .", inside_cost, outside_cost);
+
+  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
+  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
+  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
 
@@ -541,16 +521,11 @@ void
 vect_model_store_cost (stmt_vec_info stmt_info, int ncopies, 
 		       enum vect_def_type dt, slp_tree slp_node)
 {
-  int cost = 0;
   int group_size;
-  int *inside_cost_field, *outside_cost_field;
-
-  /* Take addresses of relevant fields to update in the function.  */
-  vect_get_cost_fields (stmt_info, slp_node, &inside_cost_field, 
-			&outside_cost_field);
+  int inside_cost = 0, outside_cost = 0;
 
   if (dt == vect_constant_def || dt == vect_invariant_def)
-    *outside_cost_field = TARG_SCALAR_TO_VEC_COST;
+    outside_cost = TARG_SCALAR_TO_VEC_COST;
 
   /* Strided access?  */
   if (DR_GROUP_FIRST_DR (stmt_info)) 
@@ -564,7 +539,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   if (group_size > 1) 
     {
       /* Uses a high and low interleave operation for each needed permute.  */
-      cost = ncopies * exact_log2(group_size) * group_size 
+      inside_cost = ncopies * exact_log2(group_size) * group_size 
              * TARG_VEC_STMT_COST;
 
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -574,13 +549,15 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
     }
 
   /* Costs of the stores.  */
-  cost += ncopies * TARG_VEC_STORE_COST;
-
-  *inside_cost_field = cost;
+  inside_cost += ncopies * TARG_VEC_STORE_COST;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "vect_model_store_cost: inside_cost = %d, "
-             "outside_cost = %d .", *inside_cost_field, *outside_cost_field);
+             "outside_cost = %d .", inside_cost, outside_cost);
+
+  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
+  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
+  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
 
@@ -595,16 +572,11 @@ void
 vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
 		 
 {
-  int inner_cost = 0;
   int group_size;
   int alignment_support_cheme;
   tree first_stmt;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr;
-  int *inside_cost_field, *outside_cost_field;
-
-  /* Take addresses of relevant fields to update in the function.  */
-  vect_get_cost_fields (stmt_info, slp_node, &inside_cost_field, 
-			&outside_cost_field);
+  int inside_cost = 0, outside_cost = 0;
 
   /* Strided accesses?  */
   first_stmt = DR_GROUP_FIRST_DR (stmt_info);
@@ -627,8 +599,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
   if (group_size > 1) 
     {
       /* Uses an even and odd extract operations for each needed permute.  */
-      inner_cost = ncopies * exact_log2(group_size) * group_size
-                   * TARG_VEC_STMT_COST;
+      inside_cost = ncopies * exact_log2(group_size) * group_size
+	* TARG_VEC_STMT_COST;
 
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "vect_model_load_cost: strided group_size = %d .",
@@ -641,7 +613,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
     {
     case dr_aligned:
       {
-        inner_cost += ncopies * TARG_VEC_LOAD_COST;
+        inside_cost += ncopies * TARG_VEC_LOAD_COST;
 
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "vect_model_load_cost: aligned.");
@@ -651,7 +623,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
     case dr_unaligned_supported:
       {
         /* Here, we assign an additional cost for the unaligned load.  */
-        inner_cost += ncopies * TARG_VEC_UNALIGNED_LOAD_COST;
+        inside_cost += ncopies * TARG_VEC_UNALIGNED_LOAD_COST;
 
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "vect_model_load_cost: unaligned supported by "
@@ -661,20 +633,18 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
       }
     case dr_explicit_realign:
       {
-        inner_cost += ncopies * (2*TARG_VEC_LOAD_COST + TARG_VEC_STMT_COST);
+        inside_cost += ncopies * (2*TARG_VEC_LOAD_COST + TARG_VEC_STMT_COST);
 
         /* FIXME: If the misalignment remains fixed across the iterations of
            the containing loop, the following cost should be added to the
            outside costs.  */
         if (targetm.vectorize.builtin_mask_for_load)
-          inner_cost += TARG_VEC_STMT_COST;
+          inside_cost += TARG_VEC_STMT_COST;
 
         break;
       }
     case dr_explicit_realign_optimized:
       {
-        int outer_cost = 0;
-
         if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "vect_model_load_cost: unaligned software "
                    "pipelined.");
@@ -688,14 +658,12 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
 
         if ((!DR_GROUP_FIRST_DR (stmt_info)) || group_size > 1 || slp_node)
           {
-            outer_cost = 2*TARG_VEC_STMT_COST;
+            outside_cost = 2*TARG_VEC_STMT_COST;
             if (targetm.vectorize.builtin_mask_for_load)
-              outer_cost += TARG_VEC_STMT_COST;
+              outside_cost += TARG_VEC_STMT_COST;
           }
-        
-        *outside_cost_field = outer_cost;
 
-        inner_cost += ncopies * (TARG_VEC_LOAD_COST + TARG_VEC_STMT_COST);
+        inside_cost += ncopies * (TARG_VEC_LOAD_COST + TARG_VEC_STMT_COST);
 
         break;
       }
@@ -703,13 +671,14 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies, slp_tree slp_node)
     default:
       gcc_unreachable ();
     }
-
-  *inside_cost_field = inner_cost;
-
+  
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "vect_model_load_cost: inside_cost = %d, "
-             "outside_cost = %d .", *inside_cost_field, *outside_cost_field);
+             "outside_cost = %d .", inside_cost, outside_cost);
 
+  /* Set the costs either in STMT_INFO or SLP_NODE (if exists).  */
+  stmt_vinfo_set_inside_of_loop_cost (stmt_info, slp_node, inside_cost);
+  stmt_vinfo_set_outside_of_loop_cost (stmt_info, slp_node, outside_cost);
 }
 
 
