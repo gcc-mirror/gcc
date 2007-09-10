@@ -1,3 +1,7 @@
+2007-09-10  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/mingw32/proc.c: New file.
+
 2007-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libgomp.c/atomic-1.c: Include cpuid.h for i386 targets.
