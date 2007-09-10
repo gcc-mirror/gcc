@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define DEFAULT_VR_ARCH "mfix-vr4130"
 #define MIPS_ABI_DEFAULT ABI_EABI
-#define MIPS_MARCH_CONTROLS_SOFT_FLOAT 1
 #define MULTILIB_DEFAULTS \
 	{ MULTILIB_ENDIAN_DEFAULT,		\
 	  MULTILIB_ABI_DEFAULT,			\
@@ -40,6 +39,9 @@ along with GCC; see the file COPYING3.  If not see
 									\
 	/* Same idea for -mfix-vr4130.  */				\
 	"%{mfix-vr4130:%{!march=*:-march=vr4130}}",			\
+									\
+	/* Infer the default float setting from -march.  */		\
+	MIPS_ARCH_FLOAT_SPEC,						\
 									\
 	/* Make -mabi=eabi -mlong32 the default.  */			\
 	"%{!mabi=*:-mabi=eabi %{!mlong*:-mlong32}}",			\

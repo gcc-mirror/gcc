@@ -740,9 +740,10 @@ const struct attribute_spec mips_attribute_table[] =
    matched in the order listed.  The first mention of an ISA level is
    taken as the canonical name for that ISA.
 
-   To ease comparison, please keep this table in the same order as
-   gas's mips_cpu_info_table[].  Please also make sure that
-   MIPS_ISA_LEVEL_SPEC handles all -march options correctly.  */
+   To ease comparison, please keep this table in the same order
+   as gas's mips_cpu_info_table[].  Please also make sure that
+   MIPS_ISA_LEVEL_SPEC and MIPS_ARCH_FLOAT_SPEC handle all -march
+   options correctly.  */
 const struct mips_cpu_info mips_cpu_info_table[] = {
   /* Entries for generic ISAs */
   { "mips1", PROCESSOR_R3000, 1 },
@@ -1215,12 +1216,6 @@ static const unsigned char mips16e_a0_a3_regs[] = {
 static const unsigned char mips16e_save_restore_regs[] = {
   31, 30, 23, 22, 21, 20, 19, 18, 17, 16, 7, 6, 5, 4
 };
-
-/* Nonzero if -march should decide the default value of
-   MASK_SOFT_FLOAT_ABI.  */
-#ifndef MIPS_MARCH_CONTROLS_SOFT_FLOAT
-#define MIPS_MARCH_CONTROLS_SOFT_FLOAT 0
-#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -5515,26 +5510,6 @@ override_options (void)
 	target_flags |= MASK_LONG64;
       else
 	target_flags &= ~MASK_LONG64;
-    }
-
-  if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
-      && (target_flags_explicit & MASK_SOFT_FLOAT_ABI) == 0)
-    {
-      /* For some configurations, it is useful to have -march control
-	 the default setting of MASK_SOFT_FLOAT_ABI.  */
-      switch ((int) mips_arch)
-	{
-	case PROCESSOR_R4100:
-	case PROCESSOR_R4111:
-	case PROCESSOR_R4120:
-	case PROCESSOR_R4130:
-	  target_flags |= MASK_SOFT_FLOAT_ABI;
-	  break;
-
-	default:
-	  target_flags &= ~MASK_SOFT_FLOAT_ABI;
-	  break;
-	}
     }
 
   if (!TARGET_OLDABI)
