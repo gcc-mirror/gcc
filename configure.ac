@@ -398,6 +398,8 @@ if test x$enable_libgomp = x ; then
     esac
 fi
 
+# Default libgloss CPU subdirectory.
+libgloss_dir="$target_cpu"
 
 case "${target}" in
   *-*-chorusos)
@@ -504,6 +506,7 @@ case "${target}" in
       *) noconfigdirs="$noconfigdirs gdb readline"
 	 ;;
     esac
+    libgloss_dir=wince
     ;;
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -512,9 +515,11 @@ case "${target}" in
     ;;
   arm-*-coff | strongarm-*-coff | xscale-*-coff)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    libgloss_dir=arm
     ;;
   arm-*-elf* | strongarm-*-elf* | xscale-*-elf* | arm*-*-eabi* )
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
+    libgloss_dir=arm
     ;;
   arm*-*-linux-gnueabi)
     noconfigdirs="$noconfigdirs target-qthreads"
@@ -522,9 +527,11 @@ case "${target}" in
     case ${with_newlib} in
       no) noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     esac
+    libgloss_dir=arm
     ;;
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs ${libgcj} target-libiberty"
+    libgloss_dir=arm
     ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -571,6 +578,7 @@ case "${target}" in
 	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss";;
     esac
+    libgloss_dir=cris
     ;;
   crx-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-mudflap ${libgcj}"
@@ -580,6 +588,9 @@ case "${target}" in
     ;;
   d30v-*-*)
     noconfigdirs="$noconfigdirs ${libgcj} gdb"
+    ;;
+  ep9312-*-elf | ep9312-*-coff)
+    libgloss_dir=arm
     ;;
   fr30-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj} gdb"
@@ -612,6 +623,9 @@ case "${target}" in
   hppa*-hp-hpux11*)
     noconfigdirs="$noconfigdirs ld shellutils"
     ;;
+  hppa*-*-pro*)
+    libgloss_dir=pa
+    ;;
   hppa*-*-*)
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
     # build on HP-UX 10.20.
@@ -632,6 +646,7 @@ case "${target}" in
     ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    libgloss_dir=i386
     ;;
   i[[3456789]]86-*-linux*)
     # The GCC port for glibc1 has no MD_FALLBACK_FRAME_STATE_FOR, so let's
@@ -701,12 +716,16 @@ case "${target}" in
     ;;
   m68hc11-*-*|m6811-*-*|m68hc12-*-*|m6812-*-*)
     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
+    libgloss_dir=m68hc11
     ;;
   m68k-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   m68k-*-coff*)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
+  m68*-*-* | fido-*-*)
+    libgloss_dir=m68k
     ;;
   mcore-*-pe*)
   # The EPOC C++ environment does not support exceptions or rtti,
@@ -739,14 +758,17 @@ case "${target}" in
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
     noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl gnuserv ${libgcj}"
+    libgloss_dir=rs6000
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   powerpc-*-eabi)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    libgloss_dir=rs6000
     ;;
   powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems* )
+    libgloss_dir=rs6000
     ;;
   rs6000-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib gprof ${libgcj}"
@@ -781,6 +803,7 @@ case "${target}" in
     ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof ${libgcj}"
+    libgloss_dir=mips
     ;;
   romp-*-*)
     noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes target-libgloss ${libgcj}"
@@ -794,14 +817,19 @@ case "${target}" in
     esac
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
+  sparclet-*-aout* | sparc86x-*-*)
+    libgloss_dir=sparc
+    ;;
   sparc-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc64-*-elf*)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    libgloss_dir=sparc
     ;;
   sparclite-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
+    libgloss_dir=sparc
     ;;
   sparc-*-sunos4*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -2301,6 +2329,19 @@ case " $target_configdirs " in
       # for any libc-related directories first (so make it the last -B
       # switch).
       FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/ -isystem $$r/$(TARGET_SUBDIR)/newlib/targ-include -isystem $$s/newlib/libc/include'
+
+      # If we're building libgloss, find the startup file, simulator library
+      # and linker script.
+      case " $target_configdirs " in
+	*" libgloss "*)
+	# Look for startup file, simulator library and maybe linker script.
+	FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/libgloss/'"$libgloss_dir"
+	# Look for libnosys.a in case the target needs it.
+	FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/libnosys'
+	# Most targets have the linker script in the source directory.
+	FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$s/libgloss/'"$libgloss_dir"
+	;;
+      esac
       ;;
    esac
    ;;
@@ -2334,16 +2375,6 @@ fi
 
 # Search for other target-specific linker scripts and such.
 case "${target}" in
-  m32c-*-* )
-    if test -d ${srcdir}/libgloss/m32c; then
-      # This is for crt0.o
-      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/libgloss/m32c'
-      # This is for r8c.ld
-      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/m32c'
-      # This is for libnosys.a
-      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -L$$r/$(TARGET_SUBDIR)/libgloss/libnosys'
-    fi
-    ;;
   mep*)
     FLAGS_FOR_TARGET="$FLAGS_FOR_TARGET -mlibrary"
     ;;
