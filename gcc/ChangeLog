@@ -1,3 +1,22 @@
+2007-09-10  Michael Matz  <matz@suse.de>
+
+	* tree-pass.h (pass_cselim): Declare new pass.
+	* passes.c (init_optimization_passes): Link in pass_cselim.
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Renamed from
+	tree_ssa_phiopt; add do_store_elim parameter, handle it by calling
+	cond_store_replacement.
+	(condstoretemp): New static variable.
+	(cond_store_replacement): New function.
+	(tree_ssa_phiopt, tree_ssa_cs_elim): New wrappers around
+	tree_ssa_phiopt_worker.
+	(struct name_to_bb): New.
+	(get_non_trapping, name_to_bb_hash, name_to_bb_eq, add_or_mark_expr,
+	nt_init_block, nt_fini_block): New static functions.
+	(seen_ssa_names, nontrap_set): New static variables.
+	(gate_cselim, pass_cselim): Define new pass.
+	* common.opt (ftree-cselim): New flag.
+	* toplev.c (process_options): Set flag_tree_cselim if required.
+
 2007-09-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	* simplify-rtx.c (simplify_relational_operation_1): For recent
