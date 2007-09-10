@@ -523,6 +523,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Get the type after elaborating the renamed object.  */
 	gnu_type = gnat_to_gnu_type (Etype (gnat_entity));
 
+	/* For a debug renaming declaration, build a pure debug entity.  */
+	if (Present (Debug_Renaming_Link (gnat_entity)))
+	  {
+	    rtx addr;
+	    gnu_decl = build_decl (VAR_DECL, gnu_entity_id, gnu_type);
+	    /* The (MEM (CONST (0))) pattern is prescribed by STABS.  */
+	    if (global_bindings_p ())
+	      addr = gen_rtx_CONST (VOIDmode, const0_rtx);
+	    else
+	      addr = stack_pointer_rtx;
+	    SET_DECL_RTL (gnu_decl, gen_rtx_MEM (Pmode, addr));
+	    gnat_pushdecl (gnu_decl, gnat_entity);
+	    break;
+	  }
+
 	/* If this is a loop variable, its type should be the base type.
 	   This is because the code for processing a loop determines whether
 	   a normal loop end test can be done by comparing the bounds of the
