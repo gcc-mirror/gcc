@@ -1,3 +1,16 @@
+2007-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33369
+	* gcc/config/i386/sse.md (ashr<mode>3): Change op2 mode to SImode.
+	Use 'N' operand constraint for op2.
+	(lshr<mode>3): Ditto.
+	(ashl<mode>3): Ditto.
+	(vec_shl_<mode>): Use const_0_to_255_mul_8_operand predicate for op2.
+	(vec_shr_<mode>): Use const_0_to_255_mul_8_operand predicate for op2.
+
+	* gcc/config/i386/i386.c (ix86_expand_builtin) [IX86_BUILTIN_PSLL?128,
+	IX86_BUILTIN_PSRA*?128, IX86_BUILTIN_PSRL?128]: Convert op1 to SImode.
+
 2007-09-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("fixuns_trunc<BFP:mode><GPR:mode>2"):

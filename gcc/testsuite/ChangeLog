@@ -1,3 +1,8 @@
+2007-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33369
+	* gcc.dg/vect/pr33369.c: New test.
+
 2007-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33370
