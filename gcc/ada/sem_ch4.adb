@@ -10,14 +10,13 @@
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -2001,6 +2000,19 @@ package body Sem_Ch4 is
       Subp_Type  : constant Entity_Id := Etype (Nam);
       Norm_OK    : Boolean;
 
+      function Operator_Hidden_By (Fun : Entity_Id) return Boolean;
+      --  There may be a user-defined operator that hides the current
+      --  interpretation. We must check for this independently of the
+      --  analysis of the call with the user-defined operation, because
+      --  the parameter names may be wrong and yet the hiding takes place.
+      --  This fixes a problem with ACATS test B34014O.
+      --
+      --  When the type Address is a visible integer type, and the DEC
+      --  system extension is visible, the predefined operator may be
+      --  hidden as well, by one of the address operations in auxdec.
+      --  Finally, The abstract operations on address do not hide the
+      --  predefined operator (this is the purpose of making them abstract).
+
       procedure Indicate_Name_And_Type;
       --  If candidate interpretation matches, indicate name and type of
       --  result on call node.
@@ -2040,17 +2052,60 @@ package body Sem_Ch4 is
          end if;
       end Indicate_Name_And_Type;
 
+      ------------------------
+      -- Operator_Hidden_By --
+      ------------------------
+
+      function Operator_Hidden_By (Fun : Entity_Id) return Boolean is
+         Act1  : constant Node_Id   := First_Actual (N);
+         Act2  : constant Node_Id   := Next_Actual (Act1);
+         Form1 : constant Entity_Id := First_Formal (Fun);
+         Form2 : constant Entity_Id := Next_Formal (Form1);
+
+      begin
+         if Ekind (Fun) /= E_Function
+           or else Is_Abstract_Subprogram (Fun)
+         then
+            return False;
+
+         elsif not Has_Compatible_Type (Act1, Etype (Form1)) then
+            return False;
+
+         elsif Present (Form2) then
+            if
+              No (Act2) or else not Has_Compatible_Type (Act2, Etype (Form2))
+            then
+               return False;
+            end if;
+
+         elsif Present (Act2) then
+            return False;
+         end if;
+
+         --  Now we know that the arity of the operator matches the function,
+         --  and the function call is a valid interpretation. The function
+         --  hides the operator if it has the right signature, or if one of
+         --  its operands is a non-abstract operation on Address when this is
+         --  a visible integer type.
+
+         return Hides_Op (Fun, Nam)
+           or else Is_Descendent_Of_Address (Etype (Form1))
+           or else
+             (Present (Form2)
+               and then Is_Descendent_Of_Address (Etype (Form2)));
+      end Operator_Hidden_By;
+
    --  Start of processing for Analyze_One_Call
 
    begin
       Success := False;
 
-      --  If the subprogram has no formals, or if all the formals have
-      --  defaults, and the return type is an array type, the node may
-      --  denote an indexing of the result of a parameterless call.
-      --  In Ada 2005, the subprogram may have one non-defaulted formal,
-      --  and the call may have been written in prefix notation, so that
-      --  the rebuilt parameter list has more than one actual.
+      --  If the subprogram has no formals or if all the formals have defaults,
+      --  and the return type is an array type, the node may denote an indexing
+      --  of the result of a parameterless call. In Ada 2005, the subprogram
+      --  may have one non-defaulted formal, and the call may have been written
+      --  in prefix notation, so that the rebuilt parameter list has more than
+      --  one actual.
 
       if Present (Actuals)
         and then
@@ -2131,13 +2186,7 @@ package body Sem_Ch4 is
 
          if Etype (N) /= Prev_T then
 
-            --  There may be a user-defined operator that hides the
-            --  current interpretation. We must check for this independently
-            --  of the analysis of the call with the user-defined operation,
-            --  because the parameter names may be wrong and yet the hiding
-            --  takes place. Fixes b34014o.
-            --  The abstract operations on address do not hide the predefined
-            --  operator (this is the purpose of making them abstract).
+            --  Check that operator is not hidden by a function interpretation
 
             if Is_Overloaded (Name (N)) then
                declare
@@ -2147,21 +2196,7 @@ package body Sem_Ch4 is
                begin
                   Get_First_Interp (Name (N), I, It);
                   while Present (It.Nam) loop
-                     if Ekind (It.Nam) /= E_Operator
-                        and then not
-                          (Is_Abstract_Subprogram (It.Nam)
-                            and then
-                              Is_Descendent_Of_Address
-                                 (Etype (First_Formal (It.Nam))))
-                        and then Hides_Op (It.Nam, Nam)
-                        and then
-                          Has_Compatible_Type
-                            (First_Actual (N), Etype (First_Formal (It.Nam)))
-                        and then (No (Next_Actual (First_Actual (N)))
-                           or else Has_Compatible_Type
-                            (Next_Actual (First_Actual (N)),
-                             Etype (Next_Formal (First_Formal (It.Nam)))))
-                     then
+                     if Operator_Hidden_By (It.Nam) then
                         Set_Etype (N, Prev_T);
                         return;
                      end if;
@@ -5926,11 +5961,13 @@ package body Sem_Ch4 is
                                              (Alias (Prim_Op)), Corr_Type))
                  or else
 
-               --  Do not consider hidden primitives unless they belong to a
-               --  generic private type with a tagged parent.
+               --  Do not consider hidden primitives unless the type is
+               --  in an open scope or we are within an instance, where
+               --  visibility is known to be correct.
 
                   (Is_Hidden (Prim_Op)
-                     and then not Is_Immediately_Visible (Obj_Type))
+                     and then not Is_Immediately_Visible (Obj_Type)
+                     and then not In_Instance)
                then
                   goto Continue;
                end if;
