@@ -1,3 +1,163 @@
+2007-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_atag.ads, exp_atag.adb, mlib-tgt-tru64.adb, mlib-tgt-aix.adb,
+	mlib-tgt-irix.adb, mlib-tgt-hpux.adb, mlib-tgt-linux.adb,
+	mlib-tgt-solaris.adb, mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb,
+	mlib-tgt-mingw.adb, mlib-tgt-vxworks.adb, ali.adb, ali.ads,
+	ali-util.adb, ali-util.ads, atree.h, back_end.adb, back_end.ads,
+	bcheck.adb, bcheck.ads, binde.adb, binde.ads, binderr.adb, binderr.ads,
+	bindgen.adb, bindgen.ads, bindusg.adb, bindusg.ads, butil.adb,
+	butil.ads, checks.adb, checks.ads, clean.adb, clean.ads, comperr.adb,
+	comperr.ads, cstand.adb, cstand.ads, debug_a.adb, debug_a.ads,
+	elists.h, errout.adb, erroutc.ads, errutil.adb, errutil.ads,
+	err_vars.ads, eval_fat.adb, eval_fat.ads, exp_sel.ads, exp_sel.adb,
+	exp_aggr.adb, exp_aggr.ads, expander.adb, expander.ads, exp_attr.ads,
+	exp_ch10.ads, exp_ch11.adb, exp_ch12.adb, exp_ch12.ads, exp_ch13.adb,
+	exp_ch13.ads, exp_ch2.adb, exp_ch2.ads, exp_ch3.ads, exp_ch4.adb,
+	exp_ch4.ads, exp_ch5.adb, exp_ch5.ads, exp_ch6.adb, exp_ch6.ads,
+	exp_ch7.adb, exp_ch7.ads, exp_ch8.adb, exp_ch8.ads, exp_ch9.adb,
+	exp_ch9.ads, exp_code.adb, exp_code.ads, exp_dbug.adb, exp_dbug.ads,
+	exp_disp.ads, exp_dist.adb, exp_dist.ads, exp_fixd.adb, exp_fixd.ads,
+	exp_imgv.adb, exp_imgv.ads, exp_intr.adb, exp_intr.ads, exp_pakd.adb,
+	exp_pakd.ads, exp_prag.adb, exp_prag.ads, exp_smem.adb, exp_strm.adb,
+	exp_strm.ads, exp_tss.adb, exp_tss.ads, exp_util.adb, exp_util.ads,
+	exp_vfpt.adb, exp_vfpt.ads, fmap.adb, fmap.ads, fname-sf.adb,
+	fname-sf.ads, fname-uf.adb, fname-uf.ads, frontend.adb, frontend.ads,
+	get_targ.adb, get_targ.ads, gnat1drv.adb, gnat1drv.ads, gnatbind.adb,
+	gnatbind.ads, gnatbl.c, gnatchop.adb, gnatclean.adb, gnatcmd.adb,
+	gnatcmd.ads, gnatdll.adb, gnatfind.adb, gnatkr.adb, gnatkr.ads,
+	gnatlbr.adb, gnatlink.adb, gnatlink.ads, gnatls.adb, gnatls.ads,
+	gnatmake.adb, gnatmake.ads, gnatmem.adb, gnatname.adb, gnatname.ads,
+	gnatprep.adb, gnatprep.ads, gnatsym.adb, gnatxref.adb,
+	gprep.adb, gprep.ads, hlo.adb, hlo.ads, impunit.adb, impunit.ads,
+	inline.adb, inline.ads, itypes.adb, itypes.ads, layout.adb, layout.ads,
+	lib-load.adb, lib-load.ads, lib-util.adb, lib-util.ads, lib-writ.adb,
+	lib-writ.ads, lib-xref.adb, lib-xref.ads, live.adb, live.ads,
+	make.adb, make.ads, makeutl.ads, makeutl.adb, makeusg.adb, makeusg.ads,
+	mdll.adb, mdll.ads, mdll-fil.adb, mdll-fil.ads, mdll-utl.adb,
+	mdll-utl.ads, memroot.adb, memroot.ads, mlib.adb, mlib.ads,
+	mlib-fil.adb, mlib-fil.ads, mlib-prj.adb, mlib-prj.ads, mlib-tgt.adb,
+	mlib-tgt.ads, mlib-utl.adb, mlib-utl.ads, namet.h, nmake.adt,
+	osint.adb, osint.ads, osint-b.adb, osint-b.ads, osint-c.adb,
+	osint-c.ads, osint-l.adb, osint-l.ads, osint-m.adb, osint-m.ads,
+	par.adb, par.ads, par-ch10.adb, par-ch11.adb, par-ch12.adb,
+	par-ch13.adb, par-ch2.adb, par-ch3.adb, par-ch4.adb, par-ch5.adb,
+	par-ch6.adb, par-ch7.adb, par-ch8.adb, par-ch9.adb, par-endh.adb,
+	par-labl.adb, par-load.adb, par-prag.adb, par-sync.adb, par-tchk.adb,
+	par-util.adb, prep.adb, prep.ads, prepcomp.adb, prepcomp.ads,
+	prj.adb, prj.ads, prj-attr.adb, prj-attr.ads, prj-com.ads,
+	prj-dect.adb, prj-dect.ads, prj-err.adb, prj-err.ads, prj-ext.adb,
+	prj-ext.ads, prj-makr.adb, prj-makr.ads, prj-nmsc.adb, prj-nmsc.ads,
+	prj-pars.adb, prj-pars.ads, prj-part.adb, prj-part.ads,
+	prj-pp.adb, prj-pp.ads, prj-proc.adb, prj-proc.ads,
+	prj-strt.adb, prj-strt.ads, prj-tree.adb, prj-tree.ads,
+	prj-util.adb, prj-util.ads, restrict.adb, restrict.ads,
+	rtsfind.adb, rtsfind.ads, scn.adb, scn.ads,
+	scng.adb, scng.ads, sdefault.ads, sem.ads, sem_aggr.ads, sem_attr.adb,
+	sem_case.adb, sem_case.ads, sem_cat.adb, sem_cat.ads, sem_ch10.adb,
+	sem_ch10.ads, sem_ch11.adb, sem_ch11.ads, sem_ch12.ads, sem_ch13.adb,
+	sem_ch13.ads, sem_ch2.adb, sem_ch2.ads, sem_ch3.adb, sem_ch3.ads,
+	sem_ch4.ads, sem_ch5.adb, sem_ch5.ads, sem_ch6.adb, sem_ch6.ads,
+	sem_ch7.adb, sem_ch7.ads, sem_ch8.adb, sem_ch8.ads, sem_ch9.adb,
+	sem_ch9.ads, sem_disp.adb, sem_disp.ads, sem_dist.adb, sem_dist.ads,
+	sem_elab.adb, sem_elab.ads, sem_elim.adb, sem_elim.ads, sem_eval.adb,
+	sem_eval.ads, sem_intr.adb, sem_intr.ads, sem_maps.adb, sem_maps.ads,
+	sem_mech.adb, sem_mech.ads, sem_prag.adb, sem_prag.ads, sem_res.adb,
+	sem_res.ads, sem_smem.adb, sem_smem.ads, sem_type.adb, sem_type.ads,
+	sem_util.adb, sem_util.ads, sem_vfpt.adb, sem_vfpt.ads, sem_warn.adb,
+	sem_warn.ads, sfn_scan.ads, sinfo-cn.adb, sinfo-cn.ads, sinput-c.adb,
+	sinput-c.ads, sinput-d.adb, sinput-d.ads, sinput-l.adb, sinput-l.ads,
+	sinput-p.adb, sinput-p.ads, snames.h, sprint.adb, sprint.ads,
+	stringt.h, style.ads, styleg.adb, styleg.ads, styleg-c.adb,
+	styleg-c.ads, stylesw.adb, stylesw.ads, switch.adb, switch.ads,
+	switch-b.adb, switch-b.ads, switch-c.adb, switch-c.ads, switch-m.adb,
+	switch-m.ads, symbols.adb, symbols.ads, targparm.adb, tbuild.adb,
+	tbuild.ads, tempdir.adb, tempdir.ads, tree_gen.adb, tree_gen.ads,
+	treepr.adb, treepr.ads, treeprs.adt, ttypef.ads, ttypes.ads,
+	types.h, uintp.h, urealp.h, usage.adb, usage.ads,
+	validsw.adb, validsw.ads, vxaddr2line.adb, xeinfo.adb, xnmake.adb,
+	xref_lib.adb, xref_lib.ads, xr_tabls.adb, xr_tabls.ads, xsinfo.adb,
+	xtreeprs.adb, xsnames.adb, vms_conv.ads, vms_conv.adb, xgnatugn.adb,
+	gprmake.adb, makegpr.ads, makegpr.adb, prj-attr-pm.ads, prj-attr-pm.adb,
+	mlib-tgt-lynxos.adb, mlib-tgt-darwin.adb, symbols-vms.adb,
+	symbols-processing-vms-alpha.adb, symbols-processing-vms-ia64.adb,
+	mlib-tgt-specific.adb, mlib-tgt-specific.ads, mlib-tgt-vms.adb,
+	mlib-tgt-vms.ads: Replace headers with GPL v3 headers.
+
+2007-09-10  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regpat.adb (Parse_Character_Class): Fix handling of empty character
+	classes ("[]").
+
+2007-09-10  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* adaint.c (__gnat_translate_vms): new function.
+
+2007-09-10  Gary Dismukes  <dismukes@adacore.com>
+	    Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb (Predef_Spec_Or_Body): When the type is abstract, only
+	create an abstract subprogram in the case of 'Input. For 'Output we now
+	create a real spec/body when the type is abstract, since it can
+	potentially be called.
+	(Predefined_Primitive_Bodies): Now allow the creation of a predefined
+	body for 'Output when the type is abstract (only the creation of the
+	body for 'Input is excluded when the type is abstract).
+	(Stream_Operation_OK): Add an additional condition in the return
+	statement, so that False will be returned for TTS_Stream_Input if the
+	associated tagged type is an abstract extension. Add comments for
+	return statement.
+	(Expand_N_Object_Declaration): For the case of a shared passive
+	variable, insert init proc call only after the shared variable
+	procedures have been processed, because the IP call needs to undergo
+	shared passive variable reference expansion, which requires these
+	procedures to be available (and elaborated).
+
+2007-09-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-env.ads, prj-env.adb (Create_Mapping_File (Language)): Remove
+	parameter Runtime_Project.
+
+2007-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Build_Record_Aggr_Code): If an aggregate component is
+	given a box association, the type of the component is discriminated,
+	and the value of the discriminant is the discriminant of the enclosing
+	type, retrieve its value from the aggregate itself, where it must have
+	been supplied.
+
+	* sem_ch4.adb (Analyze_One_Call): Further refinement to previous fix,
+	to remove other spurious ambiguities on arithmetic operations involving
+	literals and addresses, on systems where Address is a visible integer
+	type, when the operator is called in functional notation.
+	(Try_Primitive_Operation): Within an instance, a call in prefixed form
+	is legal when the types match, even if the operation is currently
+	hidden.
+
+2007-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Local_Package): A formal package with no
+	associations is legal if all formals have defaults. It is not
+	equivalent to a formal declared with a box.
+
+2007-09-10  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add qualifier for the new gnatmetric '-lratio' option
+
+2007-09-10  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Add description of the new '-lratio' option
+	Update 7.3.1 section about availability of the feature.
+
+2007-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_smem.ads, exp_smem.adb (Make_Shared_Var_Procs): Return last
+	inserted node.
+
+2007-09-10  Olivier Hainque  <hainque@adacore.com>
+
+	* Makefile.in: (mips-irix section): Activate build of libgmem.
+
 2007-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* a-numaux-x86.adb (Logarithmic_Pow): Do not silently clobber
