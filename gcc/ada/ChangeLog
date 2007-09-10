@@ -1,5 +1,10 @@
 2007-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* a-numaux-x86.adb (Logarithmic_Pow): Do not silently clobber
+	x87 registers.
+
+2007-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* decl.c (gnat_to_gnu_entity) <object>: Deal with variable built for
 	a debug renaming declaration specially.
 
