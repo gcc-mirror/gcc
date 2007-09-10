@@ -3816,7 +3816,9 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
   /* Canonicalize (LTU/GEU (PLUS a b) b) as (LTU/GEU (PLUS a b) a).  */
   if ((code == LTU || code == GEU)
       && GET_CODE (op0) == PLUS
-      && rtx_equal_p (op1, XEXP (op0, 1)))
+      && rtx_equal_p (op1, XEXP (op0, 1))
+      /* Don't recurse "infinitely" for (LTU/GEU (PLUS b b) b).  */
+      && !rtx_equal_p (op1, XEXP (op0, 0)))
     return simplify_gen_relational (code, mode, cmp_mode, op0, XEXP (op0, 0));
 
   if (op1 == const0_rtx)
