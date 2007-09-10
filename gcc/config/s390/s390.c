@@ -5600,7 +5600,7 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
     for (c = pool->constants[i]; c; c = c->next)
       {
 	/* Convert UNSPEC_LTREL_OFFSET unspecs to pool-relative references.  */
-	rtx value = c->value;
+	rtx value = copy_rtx (c->value);
 	if (GET_CODE (value) == CONST
 	    && GET_CODE (XEXP (value, 0)) == UNSPEC
 	    && XINT (XEXP (value, 0), 1) == UNSPEC_LTREL_OFFSET
