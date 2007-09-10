@@ -1052,6 +1052,10 @@ ftree-store-copy-prop
 Common Report Var(flag_tree_store_copy_prop) Optimization
 Enable copy propagation for stores and loads
 
+ftree-cselim
+Common Report Var(flag_tree_cselim) Init(2) Optimization
+Transform condition stores into unconditional ones
+
 ftree-dce
 Common Report Var(flag_tree_dce) Optimization
 Enable SSA dead code elimination optimization on trees

@@ -569,6 +569,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_vrp);
       NEXT_PASS (pass_dce);
+      NEXT_PASS (pass_cselim);
       NEXT_PASS (pass_dominator);
       /* The only const/copy propagation opportunities left after
 	 DOM should be due to degenerate PHI nodes.  So rather than

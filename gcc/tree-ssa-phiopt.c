@@ -33,8 +33,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-dump.h"
 #include "langhooks.h"
+#include "pointer-set.h"
+#include "domwalk.h"
 
-static unsigned int tree_ssa_phiopt (void);
+static unsigned int tree_ssa_phiopt_worker (bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, tree, tree, tree);
 static bool value_replacement (basic_block, basic_block,
@@ -43,6 +45,9 @@ static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, tree, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
 			     edge, edge, tree, tree, tree);
+static bool cond_store_replacement (basic_block, basic_block, edge, edge,
+				    struct pointer_set_t *);
+static struct pointer_set_t * get_non_trapping (void);
 static void replace_phi_edge_with_variable (basic_block, edge, tree, tree);
 
 /* This pass tries to replaces an if-then-else block with an
@@ -134,10 +139,61 @@ static void replace_phi_edge_with_variable (basic_block, edge, tree, tree);
 static unsigned int
 tree_ssa_phiopt (void)
 {
+  return tree_ssa_phiopt_worker (false);
+}
+
+/* This pass tries to transform conditional stores into unconditional
+   ones, enabling further simplifications with the simpler then and else
+   blocks.  In particular it replaces this:
+
+     bb0:
+       if (cond) goto bb2; else goto bb1;
+     bb1:
+       *p = RHS
+     bb2:
+
+   with
+
+     bb0:
+       if (cond) goto bb1; else goto bb2;
+     bb1:
+       condtmp' = *p;
+     bb2:
+       condtmp = PHI <RHS, condtmp'>
+       *p = condtmp
+
+   This transformation can only be done under several constraints,
+   documented below.  */
+
+static unsigned int
+tree_ssa_cs_elim (void)
+{
+  return tree_ssa_phiopt_worker (true);
+}
+
+/* For conditional store replacement we need a temporary to
+   put the old contents of the memory in.  */
+static tree condstoretemp;
+
+/* The core routine of conditional store replacement and normal
+   phi optimizations.  Both share much of the infrastructure in how
+   to match applicable basic block patterns.  DO_STORE_ELIM is true
+   when we want to do conditional store replacement, false otherwise.  */
+static unsigned int
+tree_ssa_phiopt_worker (bool do_store_elim)
+{
   basic_block bb;
   basic_block *bb_order;
   unsigned n, i;
   bool cfgchanged = false;
+  struct pointer_set_t *nontrap = 0;
+
+  if (do_store_elim)
+    {
+      condstoretemp = NULL_TREE;
+      /* Calculate the set of non-trapping memory accesses.  */
+      nontrap = get_non_trapping ();
+    }
 
   /* Search every basic block for COND_EXPR we may be able to optimize.
 
@@ -209,36 +265,60 @@ tree_ssa_phiopt (void)
           || single_pred (bb1) != bb)
 	continue;
 
-      phi = phi_nodes (bb2);
+      if (do_store_elim)
+	{
+	  /* bb1 is the middle block, bb2 the join block, bb the split block,
+	     e1 the fallthrough edge from bb1 to bb2.  We can't do the
+	     optimization if the join block has more than two predecessors.  */
+	  if (EDGE_COUNT (bb2->preds) > 2)
+	    continue;
+	  if (cond_store_replacement (bb1, bb2, e1, e2, nontrap))
+	    cfgchanged = true;
+	}
+      else
+	{
+	  phi = phi_nodes (bb2);
 
-      /* Check to make sure that there is only one PHI node.
-         TODO: we could do it with more than one iff the other PHI nodes
-	 have the same elements for these two edges.  */
-      if (!phi || PHI_CHAIN (phi) != NULL)
-	continue;
+	  /* Check to make sure that there is only one PHI node.
+	     TODO: we could do it with more than one iff the other PHI nodes
+	     have the same elements for these two edges.  */
+	  if (!phi || PHI_CHAIN (phi) != NULL)
+	    continue;
 
-      arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
-      arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
+	  arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
+	  arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
 
-      /* Something is wrong if we cannot find the arguments in the PHI
-	 node.  */
-      gcc_assert (arg0 != NULL && arg1 != NULL);
+	  /* Something is wrong if we cannot find the arguments in the PHI
+	     node.  */
+	  gcc_assert (arg0 != NULL && arg1 != NULL);
 
-      /* Do the replacement of conditional if it can be done.  */
-      if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	cfgchanged = true;
-      else if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	cfgchanged = true;
-      else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	cfgchanged = true;
-      else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
-	cfgchanged = true;
+	  /* Do the replacement of conditional if it can be done.  */
+	  if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	  else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	    cfgchanged = true;
+	}
     }
 
   free (bb_order);
   
-  /* If the CFG has changed, we should cleanup the CFG. */
-  return cfgchanged ? TODO_cleanup_cfg : 0;
+  if (do_store_elim)
+    pointer_set_destroy (nontrap);
+  /* If the CFG has changed, we should cleanup the CFG.  */
+  if (cfgchanged && do_store_elim)
+    {
+      /* In cond-store replacement we have added some loads on edges
+         and new VOPS (as we moved the store, and created a load).  */
+      bsi_commit_edge_inserts ();
+      return TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
+    }
+  else if (cfgchanged)
+    return TODO_cleanup_cfg;
+  return 0;
 }
 
 /* Returns the list of basic blocks in the function in an order that guarantees
@@ -991,6 +1071,259 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   return true;
 }
 
+/* Auxiliary functions to determine the set of memory accesses which
+   can't trap because they are preceded by accesses to the same memory
+   portion.  We do that for INDIRECT_REFs, so we only need to track
+   the SSA_NAME of the pointer indirectly referenced.  The algorithm
+   simply is a walk over all instructions in dominator order.  When
+   we see an INDIRECT_REF we determine if we've already seen a same
+   ref anywhere up to the root of the dominator tree.  If we do the
+   current access can't trap.  If we don't see any dominator access
+   the current access might trap, but might also make later accesses
+   non-trapping, so we remember it.  */
+
+/* A hash-table of SSA_NAMEs, and in which basic block an INDIRECT_REF
+   through it was seen, which would constitute a no-trap region for
+   same accesses.  */
+struct name_to_bb
+{
+  tree ssa_name;
+  basic_block bb;
+};
+
+/* The hash table for remembering what we've seen.  */
+static htab_t seen_ssa_names;
+
+/* The set of INDIRECT_REFs which can't trap.  */
+static struct pointer_set_t *nontrap_set;
+
+/* The hash function, based on the pointer to the pointer SSA_NAME.  */
+static hashval_t
+name_to_bb_hash (const void *p)
+{
+  tree n = ((struct name_to_bb *)p)->ssa_name;
+  return htab_hash_pointer (n);
+}
+
+/* The equality function of *P1 and *P2.  SSA_NAMEs are shared, so
+   it's enough to simply compare them for equality.  */
+static int
+name_to_bb_eq (const void *p1, const void *p2)
+{
+  tree n1 = ((struct name_to_bb *)p1)->ssa_name;
+  tree n2 = ((struct name_to_bb *)p2)->ssa_name;
+
+  return n1 == n2;
+}
+
+/* We see a the expression EXP in basic block BB.  If it's an interesting
+   expression (an INDIRECT_REF through an SSA_NAME) possibly insert the
+   expression into the set NONTRAP or the hash table of seen expressions.  */
+static void
+add_or_mark_expr (basic_block bb, tree exp, struct pointer_set_t *nontrap)
+{
+  if (INDIRECT_REF_P (exp)
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME)
+    {
+      tree name = TREE_OPERAND (exp, 0);
+      struct name_to_bb map;
+      void **slot;
+      basic_block found_bb = 0;
+
+      /* Try to find the last seen INDIRECT_REF through the same
+         SSA_NAME, which can trap.  */
+      map.ssa_name = name;
+      map.bb = 0;
+      slot = htab_find_slot (seen_ssa_names, &map, INSERT);
+      if (*slot)
+        found_bb = ((struct name_to_bb *)*slot)->bb;
+
+      /* If we've found a trapping INDIRECT_REF, _and_ it dominates EXP
+         (it's in a basic block on the path from us to the dominator root)
+	 then we can't trap.  */
+      if (found_bb && found_bb->aux == (void *)1)
+	{
+	  pointer_set_insert (nontrap, exp);
+	}
+      else
+        {
+	  /* EXP might trap, so insert it into the hash table.  */
+	  if (*slot)
+	    {
+              ((struct name_to_bb *)*slot)->bb = bb;
+	    }
+	  else
+	    {
+	      struct name_to_bb *nmap = XNEW (struct name_to_bb);
+	      nmap->ssa_name = name;
+	      nmap->bb = bb;
+	      *slot = nmap;
+	    }
+	}
+    }
+}
+
+/* Called by walk_dominator_tree, when entering the block BB.  */
+static void
+nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
+{
+  block_stmt_iterator bsi;
+  /* Mark this BB as being on the path to dominator root.  */
+  bb->aux = (void*)1;
+
+  /* And walk the statements in order.  */
+  for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+    {
+      tree stmt = bsi_stmt (bsi);
+
+      if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+	{
+	  tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+	  tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+	  add_or_mark_expr (bb, rhs, nontrap_set);
+	  add_or_mark_expr (bb, lhs, nontrap_set);
+	}
+    }
+}
+
+/* Called by walk_dominator_tree, when basic block BB is exited.  */
+static void
+nt_fini_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
+{
+  /* This BB isn't on the path to dominator root anymore.  */
+  bb->aux = NULL;
+}
+
+/* This is the entry point of gathering non trapping memory accesses.
+   It will do a dominator walk over the whole function, and it will
+   make use of the bb->aux pointers.  It returns a set of trees
+   (the INDIRECT_REFs itself) which can't trap.  */
+static struct pointer_set_t *
+get_non_trapping (void)
+{
+  struct pointer_set_t *nontrap;
+  struct dom_walk_data walk_data;
+
+  nontrap = pointer_set_create ();
+  seen_ssa_names = htab_create (128, name_to_bb_hash, name_to_bb_eq,
+				free);
+  /* We're going to do a dominator walk, so ensure that we have
+     dominance information.  */
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Setup callbacks for the generic dominator tree walker.  */
+  nontrap_set = nontrap;
+  walk_data.walk_stmts_backward = false;
+  walk_data.dom_direction = CDI_DOMINATORS;
+  walk_data.initialize_block_local_data = NULL;
+  walk_data.before_dom_children_before_stmts = nt_init_block;
+  walk_data.before_dom_children_walk_stmts = NULL;
+  walk_data.before_dom_children_after_stmts = NULL;
+  walk_data.after_dom_children_before_stmts = NULL;
+  walk_data.after_dom_children_walk_stmts = NULL;
+  walk_data.after_dom_children_after_stmts = nt_fini_block;
+  walk_data.global_data = NULL;
+  walk_data.block_local_data_size = 0;
+  walk_data.interesting_blocks = NULL;
+
+  init_walk_dominator_tree (&walk_data);
+  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
+  fini_walk_dominator_tree (&walk_data);
+  htab_delete (seen_ssa_names);
+
+  return nontrap;
+}
+
+/* Do the main work of conditional store replacement.  We already know
+   that the recognized pattern looks like so:
+
+   split:
+     if (cond) goto MIDDLE_BB; else goto JOIN_BB (edge E1)
+   MIDDLE_BB:
+     something
+     fallthrough (edge E0)
+   JOIN_BB:
+     some more
+
+   We check that MIDDLE_BB contains only one store, that that store
+   doesn't trap (not via NOTRAP, but via checking if an access to the same
+   memory location dominates us) and that the store has a "simple" RHS.  */
+
+static bool
+cond_store_replacement (basic_block middle_bb, basic_block join_bb,
+			edge e0, edge e1, struct pointer_set_t *nontrap)
+{
+  tree assign = last_and_only_stmt (middle_bb);
+  tree lhs, rhs, newexpr, name;
+  tree newphi;
+  block_stmt_iterator bsi;
+
+  /* Check if middle_bb contains of only one store.  */
+  if (!assign
+      || TREE_CODE (assign) != GIMPLE_MODIFY_STMT)
+    return false;
+
+  lhs = GIMPLE_STMT_OPERAND (assign, 0);
+  if (!INDIRECT_REF_P (lhs))
+    return false;
+  rhs = GIMPLE_STMT_OPERAND (assign, 1);
+  if (TREE_CODE (rhs) != SSA_NAME && !is_gimple_min_invariant (rhs))
+    return false;
+  /* Prove that we can move the store down.  We could also check
+     TREE_THIS_NOTRAP here, but in that case we also could move stores,
+     whose value is not available readily, which we want to avoid.  */
+  if (!pointer_set_contains (nontrap, lhs))
+    return false;
+
+  /* Now we've checked the constraints, so do the transformation:
+     1) Remove the single store.  */
+  mark_symbols_for_renaming (assign);
+  bsi = bsi_for_stmt (assign);
+  bsi_remove (&bsi, true);
+
+  /* 2) Create a temporary where we can store the old content
+        of the memory touched by the store, if we need to.  */
+  if (!condstoretemp || TREE_TYPE (lhs) != TREE_TYPE (condstoretemp))
+    {
+      condstoretemp = create_tmp_var (TREE_TYPE (lhs), "cstore");
+      get_var_ann (condstoretemp);
+    }
+  add_referenced_var (condstoretemp);
+
+  /* 3) Insert a load from the memory of the store to the temporary
+        on the edge which did not contain the store.  */
+  lhs = unshare_expr (lhs);
+  newexpr = build_gimple_modify_stmt (condstoretemp, lhs);
+  name = make_ssa_name (condstoretemp, newexpr);
+  GIMPLE_STMT_OPERAND (newexpr, 0) = name;
+  mark_symbols_for_renaming (newexpr);
+  bsi_insert_on_edge (e1, newexpr);
+
+  /* 4) Create a PHI node at the join block, with one argument
+        holding the old RHS, and the other holding the temporary
+        where we stored the old memory contents.  */
+  newphi = create_phi_node (condstoretemp, join_bb);
+  add_phi_arg (newphi, rhs, e0);
+  add_phi_arg (newphi, name, e1);
+
+  lhs = unshare_expr (lhs);
+  newexpr = build_gimple_modify_stmt (lhs, PHI_RESULT (newphi));
+  mark_symbols_for_renaming (newexpr);
+
+  /* 5) Insert that PHI node.  */
+  bsi = bsi_start (join_bb);
+  while (!bsi_end_p (bsi) && TREE_CODE (bsi_stmt (bsi)) == LABEL_EXPR)
+    bsi_next (&bsi);
+  if (bsi_end_p (bsi))
+    {
+      bsi = bsi_last (join_bb);
+      bsi_insert_after (&bsi, newexpr, BSI_NEW_STMT);
+    }
+  else
+    bsi_insert_before (&bsi, newexpr, BSI_NEW_STMT);
+
+  return true;
+}
 
 /* Always do these optimizations if we have SSA
    trees to work on.  */
@@ -1005,6 +1338,33 @@ struct tree_opt_pass pass_phiopt =
   "phiopt",				/* name */
   gate_phiopt,				/* gate */
   tree_ssa_phiopt,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_PHIOPT,			/* tv_id */
+  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func
+    | TODO_ggc_collect
+    | TODO_verify_ssa
+    | TODO_verify_flow
+    | TODO_verify_stmts,		/* todo_flags_finish */
+  0					/* letter */
+};
+
+static bool
+gate_cselim (void)
+{
+  return flag_tree_cselim;
+}
+
+struct tree_opt_pass pass_cselim =
+{
+  "cselim",				/* name */
+  gate_cselim,				/* gate */
+  tree_ssa_cs_elim,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
