@@ -10143,8 +10143,9 @@ never used by this executable.
 This feature will allow you to eliminate such unused code from your
 executable, making it smaller (in disk and in memory).
 
-This functionality is available on all platforms using elf binary format and
-having GNU binutils version 2.16.1.
+This functionality is available on all Linux platforms except for the IA-64
+architecture and on all cross platforms using the ELF binary file format.
+In both cases GNU binutils version 2.16 or later are required to enable it.
 
 @node Compilation options
 @subsection Compilation options
@@ -16435,6 +16436,10 @@ the number of comment lines
 the number of code lines containing end-of-line comments;
 
 @item
+the ratio between the number of lines that contain comments and the number of all
+the non-blank lines expressed in percentages (the comment percentage);
+
+@item
 the number of empty lines and lines containing only space characters and/or
 format effectors (blank lines)
 
@@ -16466,6 +16471,10 @@ The number of comment lines
 @item ^-leol^/MIXED_CODE_COMMENTS^
 The number of code lines containing
 end-of-line comments
+
+@cindex @option{^-ratio^/COMMENT_PERCENTAGE^} (@command{gnatmetric})
+@item ^-ratio^/COMMENT_PERCENTAGE^
+The comment percentage in the program text
 
 @cindex @option{^-lb^/BLANK_LINES^} (@command{gnatmetric})
 @item ^-lb^/BLANK_LINES^
