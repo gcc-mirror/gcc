@@ -6852,7 +6852,7 @@ mips_global_pointer (void)
   if (TARGET_CALL_SAVED_GP && current_function_is_leaf)
     for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
       if (!df_regs_ever_live_p (regno)
-	  && call_used_regs[regno]
+	  && call_really_used_regs[regno]
 	  && !fixed_regs[regno]
 	  && regno != PIC_FUNCTION_ADDR_REGNUM)
 	return regno;
@@ -6918,42 +6918,32 @@ mips_save_reg_p (unsigned int regno)
     return TARGET_CALL_SAVED_GP && cfun->machine->global_pointer == regno;
 
   /* Check call-saved registers.  */
-  if (df_regs_ever_live_p (regno) && !call_used_regs[regno])
+  if ((current_function_saves_all_registers || df_regs_ever_live_p (regno))
+      && !call_really_used_regs[regno])
     return true;
 
- /* Save both registers in an FPR pair if either one is used.  This is
-    needed for the case when MIN_FPRS_PER_FMT == 1, which allows the odd
-    register to be used without the even register.  */
- if (FP_REG_P (regno)
-     && MAX_FPRS_PER_FMT == 2
-     && df_regs_ever_live_p (regno + 1)
-     && !call_used_regs[regno + 1])
-   return true;
+  /* Save both registers in an FPR pair if either one is used.  This is
+     needed for the case when MIN_FPRS_PER_FMT == 1, which allows the odd
+     register to be used without the even register.  */
+  if (FP_REG_P (regno)
+      && MAX_FPRS_PER_FMT == 2
+      && df_regs_ever_live_p (regno + 1)
+      && !call_really_used_regs[regno + 1])
+    return true;
 
   /* We need to save the old frame pointer before setting up a new one.  */
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
     return true;
 
   /* We need to save the incoming return address if it is ever clobbered
-     within the function.  */
-  if (regno == GP_REG_FIRST + 31 && df_regs_ever_live_p (regno))
+     within the function, if __builtin_eh_return is being used to set a
+     different return address, or if a stub is being used to return a
+     value in FPRs.  */
+  if (regno == GP_REG_FIRST + 31
+      && (df_regs_ever_live_p (regno)
+	  || current_function_calls_eh_return
+	  || mips16_cfun_returns_in_fpr_p ()))
     return true;
-
-  if (TARGET_MIPS16)
-    {
-      /* $18 is a special case in mips16 code.  It may be used to call
-	 a function which returns a floating point value, but it is
-	 marked in call_used_regs.  */
-      if (regno == GP_REG_FIRST + 18 && df_regs_ever_live_p (regno))
-	return true;
-
-      /* $31 is also a special case.  It will be used to copy a return
-	 value into the floating point registers if the return value is
-	 floating point.  */
-      if (regno == GP_REG_FIRST + 31
-	  && mips16_cfun_returns_in_fpr_p ())
-	return true;
-    }
 
   return false;
 }
@@ -7124,16 +7114,15 @@ compute_frame_size (HOST_WIDE_INT size)
 
   /* This loop must iterate over the same space as its companion in
      mips_for_each_saved_reg.  */
-  for (regno = (FP_REG_LAST - MAX_FPRS_PER_FMT + 1);
-       regno >= FP_REG_FIRST;
-       regno -= MAX_FPRS_PER_FMT)
-    {
+  if (TARGET_HARD_FLOAT)
+    for (regno = (FP_REG_LAST - MAX_FPRS_PER_FMT + 1);
+	 regno >= FP_REG_FIRST;
+	 regno -= MAX_FPRS_PER_FMT)
       if (mips_save_reg_p (regno))
 	{
 	  fp_reg_size += MAX_FPRS_PER_FMT * UNITS_PER_FPREG;
 	  fmask |= ((1 << MAX_FPRS_PER_FMT) - 1) << (regno - FP_REG_FIRST);
 	}
-    }
 
   gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
   total_size += gp_reg_rounded + MIPS_STACK_ALIGN (fp_reg_size);
