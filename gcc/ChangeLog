@@ -1,3 +1,9 @@
+2007-09-10  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/mips.md (UNSPEC_MEMORY_BARRIER): New entry in
+	define_constants.
+	(memory_barrier): Rewrote as an insn that clobbers memory.
+
 2007-09-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/mips/mips.c (mips_global_pointer): Check

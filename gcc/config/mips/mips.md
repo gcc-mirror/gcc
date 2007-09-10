@@ -57,6 +57,7 @@
    (UNSPEC_SYNC_OLD_OP		38)
    (UNSPEC_SYNC_NEW_OP		39)
    (UNSPEC_SYNC_EXCHANGE	40)
+   (UNSPEC_MEMORY_BARRIER	41)
    
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -4304,10 +4305,11 @@
 
 ;; Atomic memory operations.
 
-(define_expand "memory_barrier"
-  [(unspec_volatile [(const_int 0)] UNSPEC_SYNC)]
+(define_insn "memory_barrier"
+  [(set (mem:BLK (scratch))
+        (unspec:BLK [(const_int 0)] UNSPEC_MEMORY_BARRIER))]
   "ISA_HAS_SYNC"
-  "")
+  "sync")
 
 (define_insn "sync_compare_and_swap<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,d")
