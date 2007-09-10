@@ -488,7 +488,7 @@ dfp-filenames += decimal_globals decimal_data binarydecimal \
 		 bid128_to_int32 bid128_to_int64 \
 		 bid128_to_uint32 bid128_to_uint64
 else
-dfp-filenames += decContext decNumber decExcept decRound decLibrary decUtility
+dfp-filenames += decContext decNumber decExcept decRound decLibrary decDouble decPacked decQuad decSingle
 endif
 endif
 

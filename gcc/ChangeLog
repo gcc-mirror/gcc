@@ -1,3 +1,18 @@
+2007-09-10  Janis Johnson  <janis187@us.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* dfp.c: Include decimal128Local.h; 
+	(dfp_byte_swap): Remove.
+	(encode_decimal32, decode_decimal32): Don't handle endianness.
+	(encode_decimal64, decode_decimal64): Ditto.
+	(encode_decimal128, decode_decimal128): Ditto.
+	* config/dfp-bit.c (host_to_ieee32, ieee_to_host_32): Ditto.
+	(__swap64): Remove.
+	(host_to_ieee_64, ieee_to_host_64): Don't handle endianness.
+         (__swap128): Remove
+	(host_to_ieee_128, ieee_to_host_128): Don't handle endianness.
+	* Makefile.in (DECNUM_H): Add decimal128Local.h.
+
 2007-09-10  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (UNSPEC_MEMORY_BARRIER): New entry in

@@ -815,7 +815,8 @@ PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
-	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h $(DECNUMFMT)/decimal128.h
+	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h \
+	$(DECNUMFMT)/decimal128.h $(DECNUMFMT)/decimal128Local.h
 MKDEPS_H = $(srcdir)/../libcpp/include/mkdeps.h
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h
 CPP_ID_DATA_H = $(CPPLIB_H) $(srcdir)/../libcpp/include/cpp-id-data.h

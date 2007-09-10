@@ -37,50 +37,21 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* The intended way to use this file is to make two copies, add `#define '
    to one copy, then compile both copies and add them to libgcc.a.  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-
-#include "config.h"
-#include "gstdint.h"
 #include "bid-dpd.h"
 #include "decimal64.h"
 
-uint32_t __dec_byte_swap (uint32_t);
 void __host_to_ieee_64 (_Decimal64 in, decimal64 *out);
 void __ieee_to_host_64 (decimal64 in, _Decimal64 *out);
-
-#ifndef WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN 0
-#endif
-
-static void
-__swap64 (char *src, char *dst)
-{
-  uint32_t t1, t2;
-
-  if (!WORDS_BIGENDIAN) 
-    {
-      memcpy (&t1, src, 4);
-      memcpy (&t2, src + 4, 4);
-      t1 = __dec_byte_swap (t1);
-      t2 = __dec_byte_swap (t2);
-      memcpy (dst, &t2, 4);
-      memcpy (dst + 4, &t1, 4);
-    }
-  else
-    memcpy (dst, src, 8);
-}
 
 void
 __host_to_ieee_64 (_Decimal64 in, decimal64 *out)
 {
-  __swap64 ((char *) &in, (char *) out);
+  memcpy ((char *) out, (char *) &in, 8);
 }
 
 void
 __ieee_to_host_64 (decimal64 in, _Decimal64 *out)
 {
-  __swap64 ((char *) &in, (char *) out);
+  memcpy ((char *) out, (char *) &in, 8);
 }

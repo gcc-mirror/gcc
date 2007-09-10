@@ -1,0 +1,82 @@
+#if !defined(DECQUADSYMBOLS)
+#define DECQUADSYMBOLS
+
+#ifdef IN_LIBGCC2
+#define decQuadAbs __decQuadAbs
+#define decQuadAdd __decQuadAdd
+#define decQuadAnd __decQuadAnd
+#define decQuadCanonical __decQuadCanonical
+#define decQuadClass __decQuadClass
+#define decQuadClassString __decQuadClassString
+#define decQuadCompare __decQuadCompare
+#define decQuadCompareSignal __decQuadCompareSignal
+#define decQuadCompareTotal __decQuadCompareTotal
+#define decQuadCompareTotalMag __decQuadCompareTotalMag
+#define decQuadCopy __decQuadCopy
+#define decQuadCopyAbs __decQuadCopyAbs
+#define decQuadCopyNegate __decQuadCopyNegate
+#define decQuadCopySign __decQuadCopySign
+#define decQuadDigits __decQuadDigits
+#define decQuadDivide __decQuadDivide
+#define decQuadDivideInteger __decQuadDivideInteger
+#define decQuadFMA __decQuadFMA
+#define decQuadFromBCD __decQuadFromBCD
+#define decQuadFromInt32 __decQuadFromInt32
+#define decQuadFromPacked __decQuadFromPacked
+#define decQuadFromString __decQuadFromString
+#define decQuadFromUInt32 __decQuadFromUInt32
+#define decQuadGetCoefficient __decQuadGetCoefficient
+#define decQuadGetExponent __decQuadGetExponent
+#define decQuadInvert __decQuadInvert
+#define decQuadIsCanonical __decQuadIsCanonical
+#define decQuadIsFinite __decQuadIsFinite
+#define decQuadIsInfinite __decQuadIsInfinite
+#define decQuadIsInteger __decQuadIsInteger
+#define decQuadIsNaN __decQuadIsNaN
+#define decQuadIsNormal __decQuadIsNormal
+#define decQuadIsSignaling __decQuadIsSignaling
+#define decQuadIsSignalling __decQuadIsSignalling
+#define decQuadIsSigned __decQuadIsSigned
+#define decQuadIsSubnormal __decQuadIsSubnormal
+#define decQuadIsZero __decQuadIsZero
+#define decQuadLogB __decQuadLogB
+#define decQuadMax __decQuadMax
+#define decQuadMaxMag __decQuadMaxMag
+#define decQuadMin __decQuadMin
+#define decQuadMinMag __decQuadMinMag
+#define decQuadMinus __decQuadMinus
+#define decQuadMultiply __decQuadMultiply
+#define decQuadNextMinus __decQuadNextMinus
+#define decQuadNextPlus __decQuadNextPlus
+#define decQuadNextToward __decQuadNextToward
+#define decQuadOr __decQuadOr
+#define decQuadPlus __decQuadPlus
+#define decQuadQuantize __decQuadQuantize
+#define decQuadRadix __decQuadRadix
+#define decQuadReduce __decQuadReduce
+#define decQuadRemainder __decQuadRemainder
+#define decQuadRemainderNear __decQuadRemainderNear
+#define decQuadRotate __decQuadRotate
+#define decQuadSameQuantum __decQuadSameQuantum
+#define decQuadScaleB __decQuadScaleB
+#define decQuadSetCoefficient __decQuadSetCoefficient
+#define decQuadSetExponent __decQuadSetExponent
+#define decQuadShift __decQuadShift
+#define decQuadShow __decQuadShow
+#define decQuadSubtract __decQuadSubtract
+#define decQuadToBCD __decQuadToBCD
+#define decQuadToEngString __decQuadToEngString
+#define decQuadToInt32 __decQuadToInt32
+#define decQuadToInt32Exact __decQuadToInt32Exact
+#define decQuadToIntegralExact __decQuadToIntegralExact
+#define decQuadToIntegralValue __decQuadToIntegralValue
+#define decQuadToPacked __decQuadToPacked
+#define decQuadToString __decQuadToString
+#define decQuadToUInt32 __decQuadToUInt32
+#define decQuadToUInt32Exact __decQuadToUInt32Exact
+#define decQuadVersion __decQuadVersion
+#define decQuadXor __decQuadXor
+#define decQuadZero __decQuadZero
+#endif
+
+#endif

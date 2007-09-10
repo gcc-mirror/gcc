@@ -1,3 +1,54 @@
+2007-09-10  Janis Johnson  <janis187@us.ibm.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* Makefile.in (libdecnumber_a_OBJS): Remove decUtility.o
+	(dependencies): Add Symbols headers.
+	* decContext.c: Upgrade to decNumber 3.53.
+	* decContext.h: Ditto.
+	* decDPD.h: Ditto.
+	* decNumber.c: Ditto.
+	* decNumber.h: Ditto.
+	* decNumberLocal.h: Ditto.
+	* decBasic.c: New file from decNumber 3.53.
+	* decCommon.c: Ditto.
+	* decDouble.c: Ditto.
+	* decDouble.h: Ditto.
+	* decQuad.c: Ditto.
+	* decQuad.h: Ditto.
+	* decSingle.c: Ditto.
+	* decSingle.h: Ditto.
+	* decPacked.c: Ditto.
+	* decPacked.h: Ditto.
+	* dpd/decimal128.c: Upgrade to decNumber 3.53.
+	* dpd/decimal128.h: Ditto.
+	* dpd/decimal32.c: Ditto.
+	* dpd/decimal32.h: Ditto.
+	* dpd/decimal64.c: Ditto.
+	* dpd/decimal64.h: Ditto.
+	* decLibrary.c (__dec_byte_swap): Remove.
+	* decContextSymbols.h: New file.
+	* decDoubleSymbols.h: New file.
+	* decNumberSymbols.h: New file.
+	* decPackedSymbols.h: New file.
+	* decQuadSymbols.h: New file.
+	* decSingleSymbols.h: New file.
+	* decUtility.c: Delete file.
+	* decUtility.h: Delete file.
+	* bid/decimal128Symbols.h: New file.
+	* bid/decimal128Local.h: New file.
+	* bid/decimal32Symbols.h: New file.
+	* bid/decimal64Symbols.h: New file.
+	* bid/host-ieee128.c (__swap128): Remove.
+	(__host_to_ieee_128, __ieee_to_host_128): Don't handle endianness.
+	* bid/host-ieee32.c (__dec_type_swap): Remove.
+	(__host_to_ieee_32, __ieee_to_host_32): Don't handle endianness.
+	* bid/host-ieee64.c (__swap64): Remove.
+	(__host_to_ieee_64, __ieee_to_host_64): Don't handle endianness.
+	* dpd/decimal32Symbols.h: New file.
+	* dpd/decimal64Symbols.h: New file.
+	* dpd/decimal128Symbols.h: New file.
+	* dpd/decimal128Local.h: New file.
+
 2007-06-18  Martin Michlmayr  <tbm@cyrius.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 

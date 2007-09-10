@@ -70,8 +70,6 @@ typedef decNumber* (*dfp_unary_func)
 /* A pointer to a binary decNumber operation.  */
 typedef decNumber* (*dfp_binary_func)
      (decNumber *, const decNumber *, const decNumber *, decContext *);
-
-extern uint32_t __dec_byte_swap (uint32_t);
 
 /* Unary operations.  */
 
@@ -190,101 +188,41 @@ dfp_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 void
 __host_to_ieee_32 (_Decimal32 in, decimal32 *out)
 {
-  uint32_t t;
-
-  if (!LIBGCC2_FLOAT_WORDS_BIG_ENDIAN)
-    {
-      memcpy (&t, &in, 4);
-      t = __dec_byte_swap (t);
-      memcpy (out, &t, 4);
-    }
-  else
-    memcpy (out, &in, 4);
+  memcpy (out, &in, 4);
 }
 
 void
 __ieee_to_host_32 (decimal32 in, _Decimal32 *out)
 {
-  uint32_t t;
-
-  if (!LIBGCC2_FLOAT_WORDS_BIG_ENDIAN)
-    {
-      memcpy (&t, &in, 4);
-      t = __dec_byte_swap (t);
-      memcpy (out, &t, 4);
-    }
-  else
-    memcpy (out, &in, 4);
+  memcpy (out, &in, 4);
 }
 #endif /* L_conv_sd */
 
 #if defined(L_conv_dd)
-static void
-__swap64 (char *src, char *dst)
-{
-  uint32_t t1, t2;
-
-  if (!LIBGCC2_FLOAT_WORDS_BIG_ENDIAN) 
-    {
-      memcpy (&t1, src, 4);
-      memcpy (&t2, src + 4, 4);
-      t1 = __dec_byte_swap (t1);
-      t2 = __dec_byte_swap (t2);
-      memcpy (dst, &t2, 4);
-      memcpy (dst + 4, &t1, 4);
-    }
-  else
-    memcpy (dst, src, 8);
-}
-
 void
 __host_to_ieee_64 (_Decimal64 in, decimal64 *out)
 {
-  __swap64 ((char *) &in, (char *) out);
+  memcpy (out, &in, 8);
 }
 
 void
 __ieee_to_host_64 (decimal64 in, _Decimal64 *out)
 {
-  __swap64 ((char *) &in, (char *) out);
+  memcpy (out, &in, 8);
 }
 #endif /* L_conv_dd */
 
 #if defined(L_conv_td)
-static void
-__swap128 (char *src, char *dst)
-{
-  uint32_t t1, t2, t3, t4;
-
-  if (!LIBGCC2_FLOAT_WORDS_BIG_ENDIAN)
-    {
-      memcpy (&t1, src, 4);
-      memcpy (&t2, src + 4, 4);
-      memcpy (&t3, src + 8, 4);
-      memcpy (&t4, src + 12, 4);
-      t1 = __dec_byte_swap (t1);
-      t2 = __dec_byte_swap (t2);
-      t3 = __dec_byte_swap (t3);
-      t4 = __dec_byte_swap (t4);
-      memcpy (dst, &t4, 4);
-      memcpy (dst + 4, &t3, 4);
-      memcpy (dst + 8, &t2, 4);
-      memcpy (dst + 12, &t1, 4);
-    }
-  else
-    memcpy (dst, src, 16);
-}
-
 void
 __host_to_ieee_128 (_Decimal128 in, decimal128 *out)
 {
-  __swap128 ((char *) &in, (char *) out);
+  memcpy (out, &in, 16);
 }
 
 void
 __ieee_to_host_128 (decimal128 in, _Decimal128 *out)
 {
-  __swap128 ((char *) &in, (char *) out);
+  memcpy (out, &in, 16);
 }
 #endif /* L_conv_td */
 

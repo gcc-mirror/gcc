@@ -1,6 +1,5 @@
-/* Utility functions for decimal floating point support via decNumber.
-   Copyright (C) 2005 Free Software Foundation, Inc.
-   Contributed by IBM Corporation.  Author Mike Cowlishaw.
+/* Local definitions for use with the decNumber C Library.
+   Copyright (C) 2007 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,10 +27,21 @@
    Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
-#ifdef IN_LIBGCC2
-#define decDensePackCoeff __decDensePackCoeff
-#define decDenseUnpackCoeff __decDenseUnpackCoeff
-#endif
+#if !defined(DECIMAL128LOCAL)
 
-extern void decDensePackCoeff (const decNumber *, uByte *, Int, Int);
-extern void decDenseUnpackCoeff (const uByte *, Int, decNumber *, Int, Int);
+/* The compiler needs sign manipulation functions for decimal128 which
+   are not part of the decNumber package.  */
+
+/* Set sign; this assumes the sign was previously zero.  */
+#define decimal128SetSign(d,b) \
+  { (d)->bytes[FLOAT_WORDS_BIG_ENDIAN ? 0 : 15] |= ((unsigned) (b) << 7); }
+
+/* Clear sign.  */
+#define decimal128ClearSign(d) \
+  { (d)->bytes[FLOAT_WORDS_BIG_ENDIAN ? 0 : 15] &= ~0x80; }
+
+/* Flip sign.  */
+#define decimal128FlipSign(d) \
+  { (d)->bytes[FLOAT_WORDS_BIG_ENDIAN ? 0 : 15] ^= 0x80; }
+
+#endif
