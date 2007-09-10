@@ -53,6 +53,7 @@
 #include "tree-gimple.h"
 #include "tm-constrs.h"
 #include "spu-builtins.h"
+#include "ddg.h"
 
 /* Builtin types, data and prototypes. */
 struct spu_builtin_range
@@ -136,6 +137,7 @@ static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
 static int spu_builtin_vectorization_cost (bool);
 static bool spu_vector_alignment_reachable (const_tree, bool);
+static int spu_sms_res_mii (struct ddg *g);
 
 extern const char *reg_names[];
 rtx spu_compare_op0, spu_compare_op1;
@@ -286,6 +288,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_LIBGCC_SHIFT_COUNT_MODE
 #define TARGET_LIBGCC_SHIFT_COUNT_MODE spu_libgcc_shift_count_mode
+
+#undef TARGET_SCHED_SMS_RES_MII
+#define TARGET_SCHED_SMS_RES_MII spu_sms_res_mii
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5505,6 +5510,38 @@ spu_vector_alignment_reachable (const_tree type ATTRIBUTE_UNUSED, bool is_packed
   /* All other types are naturally aligned.  */
   return true;
 }
+
+/* Count the total number of instructions in each pipe and return the
+   maximum, which is used as the Minimum Iteration Interval (MII)
+   in the modulo scheduler.  get_pipe() will return -2, -1, 0, or 1.
+   -2 are instructions that can go in pipe0 or pipe1.  */
+static int
+spu_sms_res_mii (struct ddg *g)
+{
+  int i;
+  unsigned t[4] = {0, 0, 0, 0};
+
+  for (i = 0; i < g->num_nodes; i++)
+    {
+      rtx insn = g->nodes[i].insn;
+      int p = get_pipe (insn) + 2;
+
+      assert (p >= 0);
+      assert (p < 4);
+
+      t[p]++;
+      if (dump_file && INSN_P (insn))
+            fprintf (dump_file, "i%d %s %d %d\n",
+                     INSN_UID (insn),
+                     insn_data[INSN_CODE(insn)].name,
+                     p, t[p]);
+    }
+  if (dump_file)
+    fprintf (dump_file, "%d %d %d %d\n", t[0], t[1], t[2], t[3]);
+
+  return MAX ((t[0] + t[2] + t[3] + 1) / 2, MAX (t[2], t[3]));
+}
+
 
 void
 spu_init_expanders (void)

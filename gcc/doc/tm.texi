@@ -6342,6 +6342,15 @@ an additional structure @var{spec_info} should be filled by the target.
 The structure describes speculation types that can be used in the scheduler.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_SCHED_SMS_RES_MII (struct ddg *@var{g})
+This hook is called by the swing modulo scheduler to calculate a
+resource-based lower bound which is based on the resources available in
+the machine and the resources required by each instruction.  The target
+backend can use @var{g} to calculate such bound.  A very simple lower
+bound will be used in case this hook is not implemented: the total number
+of instructions divided by the issue rate.
+@end deftypefn
+
 @node Sections
 @section Dividing the Output into Sections (Texts, Data, @dots{})
 @c the above section title is WAY too long.  maybe cut the part between

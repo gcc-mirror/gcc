@@ -1,3 +1,16 @@
+2007-09-10  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	* target.h (struct gcc_target.sched): New field: sms_res_mii.
+	(struct ddg): Define.
+	* target-def.h (TARGET_SCHED_SMS_RES_MII): Define.
+	(TARGET_SCHED): Add TARGET_SCHED_SMS_RES_MII.
+	* config/spu/spu.c: Include ddg.h.
+	(TARGET_SCHED_SMS_RES_MII): Define.
+	(spu_sms_res_mii): New function to calculate mii.
+	* modulo-sched (res_MII): Use it.
+	* doc/tm.texi: Document TARGET_SCHED_SMS_RES_MII.
+
 2007-09-10  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_dump_pool): Create copy of constant
