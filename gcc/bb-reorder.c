@@ -2198,18 +2198,11 @@ rest_of_handle_reorder_blocks (void)
      splitting possibly introduced more crossjumping opportunities.  */
   cfg_layout_initialize (CLEANUP_EXPENSIVE);
 
-  if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
-    {
-      timevar_push (TV_TRACER);
-      tracer ();
-      timevar_pop (TV_TRACER);
-    }
-
   if (flag_reorder_blocks || flag_reorder_blocks_and_partition)
-    reorder_basic_blocks ();
-  if (flag_reorder_blocks || flag_reorder_blocks_and_partition
-      || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
-    cleanup_cfg (CLEANUP_EXPENSIVE);
+    {
+      reorder_basic_blocks ();
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+    }
 
   FOR_EACH_BB (bb)
     if (bb->next_bb != EXIT_BLOCK_PTR)

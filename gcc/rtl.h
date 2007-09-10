@@ -2269,8 +2269,6 @@ extern void invert_br_probabilities (rtx);
 extern bool expensive_function_p (int);
 /* In cfgexpand.c */
 extern void add_reg_br_prob_note (rtx last, int probability);
-/* In tracer.c */
-extern void tracer (void);
 
 /* In var-tracking.c */
 extern unsigned int variable_tracking_main (void);
