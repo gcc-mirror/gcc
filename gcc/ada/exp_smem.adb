@@ -6,18 +6,17 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -296,12 +295,16 @@ package body Exp_Smem is
    -- Make_Shared_Var_Procs --
    ---------------------------
 
-   procedure Make_Shared_Var_Procs (N : Node_Id) is
+   function Make_Shared_Var_Procs (N : Node_Id) return Node_Id is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Entity_Id  := Defining_Identifier (N);
       Typ : constant Entity_Id  := Etype (Ent);
       Vnm : String_Id;
       Atr : Node_Id;
+
+      After : constant Node_Id := Next (N);
+      --  Node located right after N originally (after insertion of the SV
+      --  procs this node is right after the last inserted node).
 
       Assign_Proc : constant Entity_Id :=
                       Make_Defining_Identifier (Loc,
@@ -462,6 +465,19 @@ package body Exp_Smem is
       Set_Is_Shared_Passive      (Ent, True);
       Set_Shared_Var_Assign_Proc (Ent, Assign_Proc);
       Set_Shared_Var_Read_Proc   (Ent, Read_Proc);
+
+      --  Return last node before After
+
+      declare
+         Nod : Node_Id := Next (N);
+
+      begin
+         while Next (Nod) /= After loop
+            Nod := Next (Nod);
+         end loop;
+
+         return Nod;
+      end;
    end Make_Shared_Var_Procs;
 
    --------------------------
