@@ -10,14 +10,13 @@
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -2013,8 +2012,13 @@ package body Sem_Ch12 is
          --  create corresponding declarations for all entities in the formal
          --  part, so that names with the proper types are available in the
          --  specification of the formal package.
+         --  On the other hand, if there are no associations, then all the
+         --  formals must have defaults, and this will be checked by the
+         --  call to Analyze_Associations.
 
-         if No_Associations then
+         if Box_Present (N)
+           or else Nkind (First (Generic_Associations (N))) = N_Others_Choice
+         then
             declare
                Formal_Decl : Node_Id;
 
