@@ -10,14 +10,13 @@
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -1169,7 +1168,6 @@ package body Prj.Env is
    procedure Create_Mapping_File
      (Project  : Project_Id;
       Language : Name_Id;
-      Runtime  : Project_Id;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type)
    is
@@ -1221,10 +1219,10 @@ package body Prj.Env is
          Proj     : Project_Id;
 
       begin
-         --  Nothing to do for non existent or runtime project or project
-         --  that has already been flagged.
+         --  Nothing to do for non existent project or project that has already
+         --  been flagged.
 
-         if Prj = No_Project or else Prj = Runtime or else Present (Prj) then
+         if Prj = No_Project or else Present (Prj) then
             return;
          end if;
 
