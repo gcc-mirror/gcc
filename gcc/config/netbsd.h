@@ -224,3 +224,6 @@ __enable_execute_stack (void *addr)					\
   /* 7 == PROT_READ | PROT_WRITE | PROT_EXEC */				\
   (void) mprotect (page, end - page, 7);				\
 }
+
+/* Define this so we can compile MS code for use with WINE.  */
+#define HANDLE_PRAGMA_PACK_PUSH_POP 1
