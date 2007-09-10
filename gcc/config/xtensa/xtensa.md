@@ -95,55 +95,6 @@
 
 ;; Addition.
 
-(define_expand "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(plus:DI (match_operand:DI 1 "register_operand" "")
-		 (match_operand:DI 2 "register_operand" "")))]
-  ""
-{
-  rtx srclo;
-  rtx dstlo = gen_lowpart (SImode, operands[0]);
-  rtx src1lo = gen_lowpart (SImode, operands[1]);
-  rtx src2lo = gen_lowpart (SImode, operands[2]);
-
-  rtx dsthi = gen_highpart (SImode, operands[0]);
-  rtx src1hi = gen_highpart (SImode, operands[1]);
-  rtx src2hi = gen_highpart (SImode, operands[2]);
-
-  /* Either source can be used for overflow checking, as long as it's
-     not clobbered by the first addition.  */
-  if (!rtx_equal_p (dstlo, src1lo))
-    srclo = src1lo;
-  else if (!rtx_equal_p (dstlo, src2lo))
-    srclo = src2lo;
-  else
-    {
-      srclo = gen_reg_rtx (SImode);
-      emit_move_insn (srclo, src1lo);
-    }
-
-  emit_insn (gen_addsi3 (dstlo, src1lo, src2lo));
-  emit_insn (gen_addsi3 (dsthi, src1hi, src2hi));
-  emit_insn (gen_adddi_carry (dsthi, dstlo, srclo));
-  DONE;
-})
-
-;; Represent the add-carry operation as an atomic operation instead of
-;; expanding it to a conditional branch.  Otherwise, the edge
-;; profiling code breaks because inserting the count increment code
-;; causes a new jump insn to be added.
-
-(define_insn "adddi_carry"
-  [(set (match_operand:SI 0 "register_operand" "+a")
-	(plus:SI (ltu:SI (match_operand:SI 1 "register_operand" "r")
-			 (match_operand:SI 2 "register_operand" "r"))
-		 (match_dup 0)))]
-  ""
-  "bgeu\t%1, %2, 0f\;addi\t%0, %0, 1\;0:"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"6")])
-
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=D,D,a,a,a")
 	(plus:SI (match_operand:SI 1 "register_operand" "%d,d,r,r,r")
@@ -204,37 +155,6 @@
 
 
 ;; Subtraction.
-
-(define_expand "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "")
-	(minus:DI (match_operand:DI 1 "register_operand" "")
-		  (match_operand:DI 2 "register_operand" "")))]
-  ""
-{
-  rtx dstlo = gen_lowpart (SImode, operands[0]);
-  rtx src1lo = gen_lowpart (SImode, operands[1]);
-  rtx src2lo = gen_lowpart (SImode, operands[2]);
-
-  rtx dsthi = gen_highpart (SImode, operands[0]);
-  rtx src1hi = gen_highpart (SImode, operands[1]);
-  rtx src2hi = gen_highpart (SImode, operands[2]);
-
-  emit_insn (gen_subsi3 (dsthi, src1hi, src2hi));
-  emit_insn (gen_subdi_carry (dsthi, src1lo, src2lo));
-  emit_insn (gen_subsi3 (dstlo, src1lo, src2lo));
-  DONE;
-})
-
-(define_insn "subdi_carry"
-  [(set (match_operand:SI 0 "register_operand" "+a")
-	(minus:SI (match_dup 0)
-		  (ltu:SI (match_operand:SI 1 "register_operand" "r")
-			  (match_operand:SI 2 "register_operand" "r"))))]
-  ""
-  "bgeu\t%1, %2, 0f\;addi\t%0, %0, -1\;0:"
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"6")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=a")
