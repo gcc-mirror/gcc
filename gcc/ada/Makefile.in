@@ -990,6 +990,7 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
   MISCLIB = -lexc
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   LIBRARY_VERSION := $(LIB_VERSION)
+  GMEM_LIB = gmemlib
 endif
 
 ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
