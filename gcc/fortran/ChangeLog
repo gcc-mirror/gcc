@@ -1,3 +1,12 @@
+2007-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33370
+	* trans-expr.c (copyable_array_p):  Add tests that expression
+	is a variable, that it has no subreferences and that it is a
+	full array.
+	(gfc_trans_assignment): Change conditions to suit modifications
+	to copyable_array_p.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* scanner.c (get_file): Update.
