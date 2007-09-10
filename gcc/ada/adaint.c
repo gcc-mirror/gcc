@@ -2356,6 +2356,132 @@ __gnat_to_canonical_file_list_free ()
   new_canonical_filelist = 0;
 }
 
+/* The functional equivalent of decc$translate_vms routine.
+   Designed to produce the same output, but is protected against
+   malformed paths (original version ACCVIOs in this case) and
+   does not require VMS-specific DECC RTL */
+
+#define NAM$C_MAXRSS 1024
+
+char *
+__gnat_translate_vms (char *src)
+{
+  static char retbuf [NAM$C_MAXRSS+1];
+  char *srcendpos, *pos1, *pos2, *retpos;
+  int disp, path_present = 0;
+
+  if (!src) return NULL;
+
+  srcendpos = strchr (src, '\0');
+  retpos = retbuf;
+
+  /* Look for the node and/or device in front of the path */
+  pos1 = src;
+  pos2 = strchr (pos1, ':');
+
+  if (pos2 && (pos2 < srcendpos) && (*(pos2 + 1) == ':')) {
+    /* There is a node name. "node_name::" becomes "node_name!" */
+    disp = pos2 - pos1;
+    strncpy (retbuf, pos1, disp);
+    retpos [disp] = '!';
+    retpos = retpos + disp + 1;
+    pos1 = pos2 + 2;
+    pos2 = strchr (pos1, ':');
+  }
+
+  if (pos2) {
+    /* There is a device name. "dev_name:" becomes "/dev_name/" */
+    *(retpos++) = '/';
+    disp = pos2 - pos1;
+    strncpy (retpos, pos1, disp);
+    retpos = retpos + disp;
+    pos1 = pos2 + 1;
+    *(retpos++) = '/';
+  }
+  else
+    /* No explicit device; we must look ahead and prepend /sys$disk/ if
+       the path is absolute */
+    if ((*pos1 == '[' || *pos1 == '<') && (pos1 < srcendpos)
+        && !strchr (".-]>", *(pos1 + 1))) {
+      strncpy (retpos, "/sys$disk/", 10);
+      retpos += 10;
+    }
+
+  /* Process the path part */
+  while (*pos1 == '[' || *pos1 == '<') {
+    path_present++;
+    pos1++;
+    if (*pos1 == ']' || *pos1 == '>') {
+      /* Special case, [] translates to '.' */
+      *(retpos++) = '.';
+      pos1++;
+    }
+    else {
+      /* '[000000' means root dir. It can be present in the middle of
+         the path due to expansion of logical devices, in which case
+         we skip it */
+      if (!strncmp (pos1, "000000", 6) && path_present > 1 &&
+         (*(pos1 + 6) == ']' || *(pos1 + 6) == '>' || *(pos1 + 6) == '.')) {
+          pos1 += 6;
+          if (*pos1 == '.') pos1++;
+        }
+      else if (*pos1 == '.') {
+        /* Relative path */
+        *(retpos++) = '.';
+      }
+
+      /* There is qualified path */
+      while (*pos1 != ']' && *pos1 != '>') {
+        switch (*pos1) {
+          case '.':
+            /* '.' is used to separate directories. Replace it with '/' but
+               only if there isn't already '/' just before */
+            if (*(retpos - 1) != '/') *(retpos++) = '/';
+            pos1++;
+            if (pos1 + 1 < srcendpos && *pos1 == '.' && *(pos1 + 1) == '.') {
+              /* ellipsis refers to entire subtree; replace with '**' */
+              *(retpos++) = '*'; *(retpos++) = '*'; *(retpos++) = '/';
+              pos1 += 2;
+            }
+            break;
+          case '-' :
+            /* Equivalent to Unix .. but there may be several in a row */
+            while (*pos1 == '-') {
+              pos1++;
+              *(retpos++) = '.'; *(retpos++) = '.'; *(retpos++) = '/';
+            }
+            retpos--;
+            break;
+          default:
+            *(retpos++) = *(pos1++);
+        }
+      }
+      pos1++;
+    }
+  }
+
+  if (pos1 < srcendpos) {
+    /* Now add the actual file name, until the version suffix if any */
+    if (path_present) *(retpos++) = '/';
+    pos2 = strchr (pos1, ';');
+    disp = pos2? (pos2 - pos1) : (srcendpos - pos1);
+    strncpy (retpos, pos1, disp);
+    retpos += disp;
+    if (pos2 && pos2 < srcendpos) {
+      /* There is a non-empty version suffix. ";<ver>" becomes ".<ver>" */
+      *retpos++ = '.';
+      disp = srcendpos - pos2 - 1;
+      strncpy (retpos, pos2 + 1, disp);
+      retpos += disp;
+    }
+  }
+
+  *retpos = '\0';
+
+  return retbuf;
+
+}
+
 /* Translate a VMS syntax directory specification in to Unix syntax.  If
    PREFIXFLAG is set, append an underscore "/". If no indicators of VMS syntax
    found, return input string. Also translate a dirname that contains no
@@ -2374,13 +2500,13 @@ __gnat_to_canonical_dir_spec (char *dirspec, int prefixflag)
       if (strchr (dirspec, ']') || strchr (dirspec, ':'))
 	{
 	  strncpy (new_canonical_dirspec,
-		   (char *) decc$translate_vms (dirspec),
+		   __gnat_translate_vms (dirspec),
 		   MAXPATH);
 	}
       else if (!strchr (dirspec, '/') && (dirspec1 = getenv (dirspec)) != 0)
 	{
 	  strncpy (new_canonical_dirspec,
-		  (char *) decc$translate_vms (dirspec1),
+		  __gnat_translate_vms (dirspec1),
 		  MAXPATH);
 	}
       else
