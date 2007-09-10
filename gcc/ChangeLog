@@ -1,3 +1,9 @@
+2007-09-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* i386.md (*floatsisf2_mixed_vector): Use cvtdq2ps instead
+	of cvtpq2ps.
+	(*floatsisf2_sse_vector): Likewise.
+
 2007-09-09  Krister Walfridsson  <cato@df.lth.se>
 
 	* config/netbsd.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define to 1.
