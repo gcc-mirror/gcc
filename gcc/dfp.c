@@ -31,28 +31,10 @@ along with GCC; see the file COPYING3.  If not see
    decNumber structure is large enough to hold decimal128 digits.  */
 
 #include "decimal128.h"
+#include "decimal128Local.h"
 #include "decimal64.h"
 #include "decimal32.h"
 #include "decNumber.h"
-
-static uint32_t
-dfp_byte_swap (uint32_t in)
-{
-  uint32_t out = 0;
-  unsigned char *p = (unsigned char *) &out;
-  union {
-    uint32_t i;
-    unsigned char b[4];
-  } u;
-
-  u.i = in;
-  p[0] = u.b[3];
-  p[1] = u.b[2];
-  p[2] = u.b[1];
-  p[3] = u.b[0];
-
-  return out;
-}
 
 /* Initialize R (a real with the decimal flag set) from DN.  Can
    utilize status passed in via CONTEXT, if a previous operation had
@@ -155,10 +137,7 @@ encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decimal_to_decnumber (r, &dn); 
   decimal32FromNumber (&d32, &dn, &set);
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    buf[0] = *(uint32_t *) d32.bytes;
-  else
-    buf[0] = dfp_byte_swap (*(uint32_t *) d32.bytes);
+  buf[0] = *(uint32_t *) d32.bytes;
 }
 
 /* Decode an IEEE 754R decimal32 type into a real.  */
@@ -174,10 +153,7 @@ decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    *((uint32_t *) d32.bytes) = (uint32_t) buf[0];
-  else
-    *((uint32_t *) d32.bytes) = dfp_byte_swap ((uint32_t) buf[0]);
+  *((uint32_t *) d32.bytes) = (uint32_t) buf[0];
 
   decimal32ToNumber (&d32, &dn);
   decimal_from_decnumber (r, &dn, &set); 
@@ -199,16 +175,8 @@ encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decimal_to_decnumber (r, &dn);
   decimal64FromNumber (&d64, &dn, &set);
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    {
-      buf[0] = *(uint32_t *) &d64.bytes[0];
-      buf[1] = *(uint32_t *) &d64.bytes[4];
-    }
-  else
-    {
-      buf[1] = dfp_byte_swap (*(uint32_t *) &d64.bytes[0]);
-      buf[0] = dfp_byte_swap (*(uint32_t *) &d64.bytes[4]);
-    }
+  buf[0] = *(uint32_t *) &d64.bytes[0];
+  buf[1] = *(uint32_t *) &d64.bytes[4];
 }
 
 /* Decode an IEEE 754R decimal64 type into a real.  */
@@ -224,16 +192,8 @@ decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    {
-      *((uint32_t *) &d64.bytes[0]) = (uint32_t) buf[0];
-      *((uint32_t *) &d64.bytes[4]) = (uint32_t) buf[1];
-    }
-  else
-    {
-      *((uint32_t *) &d64.bytes[0]) = dfp_byte_swap ((uint32_t) buf[1]);
-      *((uint32_t *) &d64.bytes[4]) = dfp_byte_swap ((uint32_t) buf[0]); 
-    }
+  *((uint32_t *) &d64.bytes[0]) = (uint32_t) buf[0];
+  *((uint32_t *) &d64.bytes[4]) = (uint32_t) buf[1];
 
   decimal64ToNumber (&d64, &dn);
   decimal_from_decnumber (r, &dn, &set); 
@@ -255,20 +215,10 @@ encode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decimal_to_decnumber (r, &dn);
   decimal128FromNumber (&d128, &dn, &set);
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    {
-      buf[0] = *(uint32_t *) &d128.bytes[0];
-      buf[1] = *(uint32_t *) &d128.bytes[4];
-      buf[2] = *(uint32_t *) &d128.bytes[8];
-      buf[3] = *(uint32_t *) &d128.bytes[12];
-    }
-  else
-    {
-      buf[0] = dfp_byte_swap (*(uint32_t *) &d128.bytes[12]);
-      buf[1] = dfp_byte_swap (*(uint32_t *) &d128.bytes[8]);
-      buf[2] = dfp_byte_swap (*(uint32_t *) &d128.bytes[4]);
-      buf[3] = dfp_byte_swap (*(uint32_t *) &d128.bytes[0]);
-    }
+  buf[0] = *(uint32_t *) &d128.bytes[0];
+  buf[1] = *(uint32_t *) &d128.bytes[4];
+  buf[2] = *(uint32_t *) &d128.bytes[8];
+  buf[3] = *(uint32_t *) &d128.bytes[12];
 }
 
 /* Decode an IEEE 754R decimal128 type into a real.  */
@@ -284,20 +234,10 @@ decode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
 
-  if (FLOAT_WORDS_BIG_ENDIAN)
-    {
-      *((uint32_t *) &d128.bytes[0])  = (uint32_t) buf[0];
-      *((uint32_t *) &d128.bytes[4])  = (uint32_t) buf[1];
-      *((uint32_t *) &d128.bytes[8])  = (uint32_t) buf[2];
-      *((uint32_t *) &d128.bytes[12]) = (uint32_t) buf[3];
-    }
-  else
-    {
-      *((uint32_t *) &d128.bytes[0])  = dfp_byte_swap ((uint32_t) buf[3]);
-      *((uint32_t *) &d128.bytes[4])  = dfp_byte_swap ((uint32_t) buf[2]);
-      *((uint32_t *) &d128.bytes[8])  = dfp_byte_swap ((uint32_t) buf[1]);
-      *((uint32_t *) &d128.bytes[12]) = dfp_byte_swap ((uint32_t) buf[0]);
-    }
+  *((uint32_t *) &d128.bytes[0])  = (uint32_t) buf[0];
+  *((uint32_t *) &d128.bytes[4])  = (uint32_t) buf[1];
+  *((uint32_t *) &d128.bytes[8])  = (uint32_t) buf[2];
+  *((uint32_t *) &d128.bytes[12]) = (uint32_t) buf[3];
 
   decimal128ToNumber (&d128, &dn);
   decimal_from_decnumber (r, &dn, &set); 
