@@ -7242,7 +7242,7 @@ expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
 
     case MINUS:
       icode = sync_sub_optab[mode];
-      if (icode == CODE_FOR_nothing)
+      if (icode == CODE_FOR_nothing || CONST_INT_P (val))
 	{
 	  icode = sync_add_optab[mode];
 	  if (icode != CODE_FOR_nothing)
@@ -7342,7 +7342,8 @@ expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
     case MINUS:
       old_code = sync_old_sub_optab[mode];
       new_code = sync_new_sub_optab[mode];
-      if (old_code == CODE_FOR_nothing && new_code == CODE_FOR_nothing)
+      if ((old_code == CODE_FOR_nothing && new_code == CODE_FOR_nothing)
+          || CONST_INT_P (val))
 	{
 	  old_code = sync_old_add_optab[mode];
 	  new_code = sync_new_add_optab[mode];
