@@ -4062,13 +4062,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
 }
 
 
-/* Check whether EXPR, which is an EXPR_VARIABLE, is a copyable array.  */
+/* Check whether EXPR is a copyable array.  */
 
 static bool
 copyable_array_p (gfc_expr * expr)
 {
+  if (expr->expr_type != EXPR_VARIABLE)
+    return false;
+
   /* First check it's an array.  */
-  if (expr->rank < 1 || !expr->ref)
+  if (expr->rank < 1 || !expr->ref || expr->ref->next)
+    return false;
+
+  if (!gfc_full_array_ref_p (expr->ref))
     return false;
 
   /* Next check that it's of a simple enough type.  */
@@ -4109,11 +4115,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
     }
 
   /* Special case assigning an array to zero.  */
-  if (expr1->expr_type == EXPR_VARIABLE
-      && expr1->rank > 0
-      && expr1->ref
-      && expr1->ref->next == NULL
-      && gfc_full_array_ref_p (expr1->ref)
+  if (copyable_array_p (expr1)
       && is_zero_initializer_p (expr2))
     {
       tmp = gfc_trans_zero_assign (expr1);
@@ -4122,12 +4124,8 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
     }
 
   /* Special case copying one array to another.  */
-  if (expr1->expr_type == EXPR_VARIABLE
-      && copyable_array_p (expr1)
-      && gfc_full_array_ref_p (expr1->ref)
-      && expr2->expr_type == EXPR_VARIABLE
+  if (copyable_array_p (expr1)
       && copyable_array_p (expr2)
-      && gfc_full_array_ref_p (expr2->ref)
       && gfc_compare_types (&expr1->ts, &expr2->ts)
       && !gfc_check_dependency (expr1, expr2, 0))
     {
@@ -4137,9 +4135,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
     }
 
   /* Special case initializing an array from a constant array constructor.  */
-  if (expr1->expr_type == EXPR_VARIABLE
-      && copyable_array_p (expr1)
-      && gfc_full_array_ref_p (expr1->ref)
+  if (copyable_array_p (expr1)
       && expr2->expr_type == EXPR_ARRAY
       && gfc_compare_types (&expr1->ts, &expr2->ts))
     {
