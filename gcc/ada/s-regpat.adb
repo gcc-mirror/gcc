@@ -1457,6 +1457,10 @@ package body System.Regpat is
             elsif not In_Range then
                Last_Value := Value;
 
+               if Parse_Pos > Expression'Last then
+                  Fail ("Empty character class []");
+               end if;
+
                if Expression (Parse_Pos) = '-'
                  and then Parse_Pos < Parse_End
                  and then Expression (Parse_Pos + 1) /= ']'
