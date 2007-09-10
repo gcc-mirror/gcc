@@ -648,6 +648,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_phi_only_cprop);
 
       NEXT_PASS (pass_cd_dce);
+      NEXT_PASS (pass_tracer);
 
       /* FIXME: If DCE is not run before checking for uninitialized uses,
 	 we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
@@ -692,7 +693,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rtl_fwprop);
       NEXT_PASS (pass_gcse);
       NEXT_PASS (pass_rtl_ifcvt);
-      NEXT_PASS (pass_tracer);
       /* Perform loop optimizations.  It might be better to do them a bit
 	 sooner, but we want the profile feedback to work more
 	 efficiently.  */
