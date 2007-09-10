@@ -1,4 +1,10 @@
 2007-09-10  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/xtensa.c (xtensa_output_literal): Mask out high bits
+	for floating-point values if HOST_BITS_PER_LONG > 32.  Use
+	split_double instead of operand_subword.
+	
+2007-09-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.md (adddi3, adddi_carry): Delete.
 	(subdi3, subdi_carry): Delete.
