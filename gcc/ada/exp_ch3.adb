@@ -10,14 +10,13 @@
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
--- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- ware  Foundation;  either version 3,  or (at your option) any later ver- --
 -- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
 -- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
 -- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
 -- for  more details.  You should have  received  a copy of the GNU General --
--- Public License  distributed with GNAT;  see file COPYING.  If not, write --
--- to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, --
--- Boston, MA 02110-1301, USA.                                              --
+-- Public License  distributed with GNAT; see file COPYING3.  If not, go to --
+-- http://www.gnu.org/licenses for a complete copy of the license.          --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
@@ -4041,6 +4040,12 @@ package body Exp_Ch3 is
       New_Ref  : Node_Id;
       BIP_Call : Boolean := False;
 
+      Init_After : Node_Id := N;
+      --  Node after which the init proc call is to be inserted. This is
+      --  normally N, except for the case of a shared passive variable, in
+      --  which case the init proc call must be inserted only after the bodies
+      --  of the shared variable procedures have been seen.
+
    begin
       --  Don't do anything for deferred constants. All proper actions will
       --  be expanded during the full declaration.
@@ -4079,7 +4084,7 @@ package body Exp_Ch3 is
       --  Make shared memory routines for shared passive variable
 
       if Is_Shared_Passive (Def_Id) then
-         Make_Shared_Var_Procs (N);
+         Init_After := Make_Shared_Var_Procs (N);
       end if;
 
       --  If tasks being declared, make sure we have an activation chain
@@ -4127,7 +4132,7 @@ package body Exp_Ch3 is
          elsif not Abort_Allowed
            or else not Comes_From_Source (N)
          then
-            Insert_Actions_After (N,
+            Insert_Actions_After (Init_After,
               Make_Init_Call (
                 Ref         => New_Occurrence_Of (Def_Id, Loc),
                 Typ         => Base_Type (Typ),
@@ -4168,7 +4173,7 @@ package body Exp_Ch3 is
                Prepend_To (L, Build_Runtime_Call (Loc, RE_Abort_Defer));
                Set_At_End_Proc (Handled_Statement_Sequence (Blk),
                  New_Occurrence_Of (RTE (RE_Abort_Undefer_Direct), Loc));
-               Insert_Actions_After (N, New_List (Blk));
+               Insert_Actions_After (Init_After, New_List (Blk));
                Expand_At_End_Handler
                  (Handled_Statement_Sequence (Blk), Entity (Identifier (Blk)));
             end;
@@ -4220,7 +4225,7 @@ package body Exp_Ch3 is
                else
                   Initialization_Warning (Id_Ref);
 
-                  Insert_Actions_After (N,
+                  Insert_Actions_After (Init_After,
                     Build_Initialization_Call (Loc, Id_Ref, Typ));
                end if;
             end;
@@ -4441,7 +4446,7 @@ package body Exp_Ch3 is
               and then not Is_Limited_Type (Typ)
               and then not BIP_Call
             then
-               Insert_Actions_After (N,
+               Insert_Actions_After (Init_After,
                  Make_Adjust_Call (
                    Ref          => New_Reference_To (Def_Id, Loc),
                    Typ          => Base_Type (Typ),
@@ -4475,7 +4480,7 @@ package body Exp_Ch3 is
 
                Set_Assignment_OK (New_Ref);
 
-               Insert_After (N,
+               Insert_After (Init_After,
                  Make_Assignment_Statement (Loc,
                    Name => New_Ref,
                    Expression =>
@@ -4544,8 +4549,7 @@ package body Exp_Ch3 is
                Set_No_Initialization (N);
                Set_Assignment_OK (Name (Stat));
                Set_No_Ctrl_Actions (Stat);
-               Insert_After (N, Stat);
-               Analyze (Stat);
+               Insert_After_And_Analyze (Init_After, Stat);
             end;
          end if;
       end if;
@@ -7685,14 +7689,12 @@ package body Exp_Ch3 is
       if For_Body then
          return Make_Subprogram_Body (Loc, Spec, Empty_List, Empty);
 
-      --  For the case of Input/Output attributes applied to an abstract type,
-      --  generate abstract specifications. These will never be called, but we
-      --  need the slots allocated in the dispatching table so that attributes
+      --  For the case of an Input attribute predefined for an abstract type,
+      --  generate an abstract specification. This will never be called, but we
+      --  need the slot allocated in the dispatching table so that attributes
       --  typ'Class'Input and typ'Class'Output will work properly.
 
-      elsif (Is_TSS (Name, TSS_Stream_Input)
-              or else
-             Is_TSS (Name, TSS_Stream_Output))
+      elsif Is_TSS (Name, TSS_Stream_Input)
         and then Is_Abstract_Type (Tag_Typ)
       then
          return Make_Abstract_Subprogram_Declaration (Loc, Spec);
@@ -7835,25 +7837,24 @@ package body Exp_Ch3 is
          Append_To (Res, Decl);
       end if;
 
-      --  Skip bodies of _Input and _Output for the abstract case, since the
-      --  corresponding specs are abstract (see Predef_Spec_Or_Body).
+      --  Skip body of _Input for the abstract case, since the corresponding
+      --  spec is abstract (see Predef_Spec_Or_Body).
 
-      if not Is_Abstract_Type (Tag_Typ) then
-         if Stream_Operation_OK (Tag_Typ, TSS_Stream_Input)
-           and then No (TSS (Tag_Typ, TSS_Stream_Input))
-         then
-            Build_Record_Or_Elementary_Input_Function
-              (Loc, Tag_Typ, Decl, Ent);
-            Append_To (Res, Decl);
-         end if;
+      if not Is_Abstract_Type (Tag_Typ)
+        and then Stream_Operation_OK (Tag_Typ, TSS_Stream_Input)
+        and then No (TSS (Tag_Typ, TSS_Stream_Input))
+      then
+         Build_Record_Or_Elementary_Input_Function
+           (Loc, Tag_Typ, Decl, Ent);
+         Append_To (Res, Decl);
+      end if;
 
-         if Stream_Operation_OK (Tag_Typ, TSS_Stream_Output)
-           and then No (TSS (Tag_Typ, TSS_Stream_Output))
-         then
-            Build_Record_Or_Elementary_Output_Procedure
-              (Loc, Tag_Typ, Decl, Ent);
-            Append_To (Res, Decl);
-         end if;
+      if Stream_Operation_OK (Tag_Typ, TSS_Stream_Output)
+        and then No (TSS (Tag_Typ, TSS_Stream_Output))
+      then
+         Build_Record_Or_Elementary_Output_Procedure
+           (Loc, Tag_Typ, Decl, Ent);
+         Append_To (Res, Decl);
       end if;
 
       --  Ada 2005: Generate bodies for the following primitive operations for
@@ -8137,8 +8138,27 @@ package body Exp_Ch3 is
          end if;
       end if;
 
+      --  If the type is not limited, or else is limited but the attribute is
+      --  explicitly specified or is predefined for the type, then return True,
+      --  unless other conditions prevail, such as restrictions prohibiting
+      --  streams or dispatching operations.
+
+      --  We exclude the Input operation from being a predefined subprogram in
+      --  the case where the associated type is an abstract extension, because
+      --  the attribute is not callable in that case, per 13.13.2(49/2). Also,
+      --  we don't want an abstract version created because types derived from
+      --  the abstract type may not even have Input available (for example if
+      --  derived from a private view of the abstract type that doesn't have
+      --  a visible Input), but a VM such as .NET or the Java VM can treat the
+      --  operation as inherited anyway, and we don't want an abstract function
+      --  to be (implicitly) inherited in that case because it can lead to a VM
+      --  exception.
+
       return (not Is_Limited_Type (Typ)
                or else Has_Predefined_Or_Specified_Stream_Attribute)
+        and then (Operation /= TSS_Stream_Input
+                   or else not Is_Abstract_Type (Typ)
+                   or else not Is_Derived_Type (Typ))
         and then not Has_Unknown_Discriminants (Typ)
         and then not (Is_Interface (Typ)
                        and then (Is_Task_Interface (Typ)
