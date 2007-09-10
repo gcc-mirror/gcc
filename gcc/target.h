@@ -88,6 +88,9 @@ typedef struct secondary_reload_info
 /* This is defined in sched-int.h .  */
 struct _dep;
 
+/* This is defined in ddg.h .  */
+struct ddg;
+
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -397,6 +400,12 @@ struct gcc_target
        information about the speculation capabilities of the target.
        The parameter is a pointer to spec_info variable.  */
     void (* set_sched_flags) (struct spec_info_def *);
+
+    /* The following member value is a pointer to a function that provides
+       information about the target resource-based lower bound which is
+       used by the swing modulo scheduler.  The parameter is a pointer
+       to ddg variable.  */
+    int (* sms_res_mii) (struct ddg *);
   } sched;
 
   /* Functions relating to vectorization.  */

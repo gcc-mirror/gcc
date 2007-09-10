@@ -374,6 +374,9 @@ const_iteration_count (rtx count_reg, basic_block pre_header,
 static int
 res_MII (ddg_ptr g)
 {
+  if (targetm.sched.sms_res_mii)
+    return targetm.sched.sms_res_mii (g); 
+  
   return (g->num_nodes / issue_rate);
 }
 
