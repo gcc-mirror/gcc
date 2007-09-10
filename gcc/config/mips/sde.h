@@ -20,14 +20,14 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Let the -march option set soft-float.  */
-#define MIPS_MARCH_CONTROLS_SOFT_FLOAT 1
-
 #define DRIVER_SELF_SPECS						\
   /* Make sure a -mips option is present.  This helps us to pick	\
      the right multilib, and also makes the later specs easier		\
      to write.  */							\
   MIPS_ISA_LEVEL_SPEC,							\
+									\
+  /* Infer the default float setting from -march.  */			\
+  MIPS_ARCH_FLOAT_SPEC,							\
 									\
   /* If no ABI option is specified, infer one from the ISA level	\
      or -mgp setting.  */						\

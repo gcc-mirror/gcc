@@ -658,6 +658,16 @@ extern enum mips_code_readable_setting mips_code_readable;
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000: -mips64} \
      %{!march=*: -" MULTILIB_ISA_DEFAULT "}}"
 
+/* A spec that infers a -mhard-float or -msoft-float setting from an
+   -march argument.  Note that soft-float and hard-float code are not
+   link-compatible.  */
+
+#define MIPS_ARCH_FLOAT_SPEC \
+  "%{mhard-float|msoft-float|march=mips*:; \
+     march=vr41*|march=m4k|march=4k*|march=24kc|march=24kec \
+     |march=34kc|march=74kc|march=5kc: -msoft-float; \
+     march=*: -mhard-float}"
+
 /* A spec condition that matches 32-bit options.  It only works if
    MIPS_ISA_LEVEL_SPEC has been applied.  */
 

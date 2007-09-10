@@ -1,3 +1,14 @@
+2007-09-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): New macro.
+	* config/mips/mips.c (mips_cpu_info_table): Mention it in the
+	the introductory comment.
+	(MIPS_MARCH_CONTROLS_SOFT_FLOAT): Delete.
+	(override_options): Don't test for it.
+	* config/mips/sde.h (MIPS_MARCH_CONTROLS_SOFT_FLOAT): Delete.
+	(DRIVER_SELF_SPECS): Add MIPS_ARCH_FLOAT_SPEC.
+	* config/mips/vr.h: As for config/mips/sde.h.
+
 2007-09-10  Trevor Smigiel  <trevor_smigiel@playstation.sony.com>
 	    Revital Eres  <eres@il.ibm.com>
 
