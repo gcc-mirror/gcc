@@ -1,3 +1,13 @@
+2007-09-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/call-saved-1.c: New test.
+	* gcc.target/mips/call-saved-2.c: Likewise.
+	* gcc.target/mips/call-saved-3.c: Likewise.
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_gp64
+	instead of mips_mips64.  Set mips_fp64 too.
+	(is_gp32_flag): Return true for -mips1 and -mips2.
+	(dg-mips-options): Use mips_gp64 instead of mips_mips64.
+
 2007-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ext/va-arg-pack-1.C: New test.

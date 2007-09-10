@@ -1,5 +1,14 @@
 2007-09-10  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_global_pointer): Check
+	call_really_used_regs instead of call_used_regs.
+	(mips_save_reg_p): Likewise.  Save all call-saved registers
+	if current_function_saves_all_registers.  Fix indentation.
+	No longer treat $18 as a special case.
+	(compute_frame_size): Guard FPR loop with TARGET_HARD_FLOAT.
+
+2007-09-10  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.h (MIPS_ARCH_FLOAT_SPEC): New macro.
 	* config/mips/mips.c (mips_cpu_info_table): Mention it in the
 	the introductory comment.

@@ -1,0 +1,21 @@
+/* Check that we save all call-saved GPRs in a MIPS16 __builtin_setjmp
+   function.  */
+/* { dg-mips-options "-mips2 -mips16 -mno-abicalls -O2" } */
+
+void bar (void);
+extern int buf[];
+void
+foo (int x)
+{
+  if (__builtin_setjmp (buf) == 0)
+    bar();
+}
+/* { dg-final { scan-assembler "\\\$16" } } */
+/* { dg-final { scan-assembler "\\\$17" } } */
+/* { dg-final { scan-assembler "\\\$18" } } */
+/* { dg-final { scan-assembler "\\\$19" } } */
+/* { dg-final { scan-assembler "\\\$20" } } */
+/* { dg-final { scan-assembler "\\\$21" } } */
+/* { dg-final { scan-assembler "\\\$22" } } */
+/* { dg-final { scan-assembler "\\\$23" } } */
+/* { dg-final { scan-assembler "\\\$(30|fp)" } } */
