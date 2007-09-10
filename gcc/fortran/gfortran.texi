@@ -225,6 +225,7 @@ or alternative to, the unix @command{f95} command;
 @menu
 * About GNU Fortran::    What you should know about the GNU Fortran compiler.
 * GNU Fortran and GCC::  You can compile Fortran, C, or other programs.
+* Preprocessing and conditional compilation:: The Fortran preprocessor
 * GNU Fortran and G77::  Why we chose to start from scratch.
 * Project Status::       Status of GNU Fortran, roadmap, proposed extensions.
 * Standards::	         Standards supported by GNU Fortran.
@@ -379,6 +380,39 @@ are documented in the GCC manual; see
 @ref{Top,,Introduction,gcc,Using the GNU Compiler Collection (GCC)}.
 The two manuals together provide a complete reference for the GNU
 Fortran compiler.
+
+
+@c ---------------------------------------------------------------------
+@c Preprocessing and conditional compilation
+@c ---------------------------------------------------------------------
+
+@node Preprocessing and conditional compilation
+@section Preprocessing and conditional compilation
+@cindex CPP
+@cindex FPP
+@cindex Conditional compilation
+@cindex Preprocessing
+
+Many Fortran compilers including GNU Fortran allow to pass the source code
+through a C preprocessor (CPP; sometimes also called Fortran preprocessor,
+FPP) to allow for conditional compilation. In case of GNU Fortran
+this is the GNU C Preprocessor in the traditional mode. On systems with
+case-preserving file names, the preprocessor is automatically invoked if the
+file extension is @code{.F}, @code{.F90}, @code{.F95} or @code{.F03};
+otherwise use for fixed-format code the option @code{-x f77-cpp-input}
+and for free-format code @code{-x f95-cpp-input}. Invocation of the
+preprocessor can be suppressed using @code{-x f77} or @code{-x f95}.
+
+If the GNU Fortran invoked the preprocessor, @code{__GFORTRAN__}
+is defined and @code{__GNUC__}, @code{__GNUC_MINOR__} and
+@code{__GNUC_PATCHLEVEL__} can be used to determine the version of the
+compiler. See @ref{Top,,Overview,cpp,The C Preprocessor} for details.
+
+While CPP is the de-facto standard for preprocessing Fortran code,
+Part 3 of the Fortran 95 standard (ISO/IEC 1539-3:1998) defines
+Conditional Compilation, which is not widely used and not directly
+supported by the GNU Fortran compiler. You can use the program coco
+to preprocess such files (@uref{http://users.erols.com/dnagle/coco.html}).
 
 
 @c ---------------------------------------------------------------------

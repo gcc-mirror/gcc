@@ -5799,7 +5799,7 @@ The return value is a @code{INTEGER(8)} variable.
 
 @table @asis
 @item @emph{Description}:
-@code{IEOR} returns the bitwise boolean OR of @var{I} and
+@code{IOR} returns the bitwise boolean inclusive-OR of @var{I} and
 @var{J}.
 
 @item @emph{Standard}:
@@ -5809,7 +5809,7 @@ F95 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = IEOR(I, J)}
+@code{RESULT = IOR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
