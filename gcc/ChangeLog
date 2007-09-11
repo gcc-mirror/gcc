@@ -1,5 +1,19 @@
 2007-09-11  Jan Hubicka <jh@suse.cz>
 
+	* i386.h (ix86_tune_indices): Add X86_TUNE_INTER_UNIT_CONVERSIONS.
+	(TARGET_INTER_UNIT_CONVERSIONS): New.
+	* i386.md (floatsi expanders): Remove redundant check for SImode
+	source; offload to memory when asked for.
+	(floatsisf2_mixed, floatsisf2_sse, floatsidf2_mixed, floatsidf2_sse
+	floatdisf2_mixed, floatsisf2_sse, floatsidf2_mixed, floatsidf2_sse):
+	Update conditions;
+	(floatsisf2_mixed_memory, floatsisf2_sse_memory,
+	floatsidf2_mixed_memory, floatsidf2_sse_memory
+	floatdisf2_mixed_memory, floatsisf2_sse_memory,
+	floatsidf2_mixed_memory, floatsidf2_sse_memory): New.
+
+2007-09-11  Jan Hubicka <jh@suse.cz>
+
 	* toplev.c (process_options): all frontends now do unit-at-a-time.
 	* cgraphunit.c: update comments.
 	(cgraph_expand_function): call passmanager dirrectly; emit thunks.
