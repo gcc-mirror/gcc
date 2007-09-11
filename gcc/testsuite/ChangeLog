@@ -1,3 +1,7 @@
+2007-09-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/cpp/trad/include.c: Don't run for newlib targets.
+
 2007-09-11  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33040
