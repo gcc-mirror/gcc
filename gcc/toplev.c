@@ -1785,11 +1785,6 @@ process_options (void)
   if (flag_asynchronous_unwind_tables)
     flag_unwind_tables = 1;
 
-  /* Disable unit-at-a-time mode for frontends not supporting callgraph
-     interface.  */
-  if (flag_unit_at_a_time && ! lang_hooks.callgraph.expand_function)
-    flag_unit_at_a_time = 0;
-
   if (!flag_unit_at_a_time)
     flag_section_anchors = 0;
 

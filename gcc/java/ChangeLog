@@ -1,3 +1,8 @@
+2007-09-11  Jan Hubicka <jh@suse.cz>
+
+	* decl.c (java_expand_body): Kill.
+	(LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* jcf-parse.c (parse_class_file): Re-enter the current file.

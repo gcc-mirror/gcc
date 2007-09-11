@@ -44,8 +44,8 @@ struct lang_hooks_for_callgraph
      are relevant to use of other declarations, mark them.  */
   tree (*analyze_expr) (tree *, int *, tree);
 
-  /* Produce RTL for function passed as argument.  */
-  void (*expand_function) (tree);
+  /* Emmit thunks associated to function.  */
+  void (*emit_associated_thunks) (tree);
 };
 
 /* Lang hooks for management of language-specific data or status

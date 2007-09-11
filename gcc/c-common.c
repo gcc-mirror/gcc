@@ -4577,15 +4577,6 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
     }
 }
 
-
-/* Generate the RTL for the body of FNDECL.  */
-
-void
-c_expand_body (tree fndecl)
-{
-  tree_rest_of_compilation (fndecl);
-}
-
 /* Hook used by staticp to handle language-specific tree codes.  */
 
 tree

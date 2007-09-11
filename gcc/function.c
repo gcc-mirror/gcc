@@ -4404,13 +4404,6 @@ expand_function_end (void)
 	  }
     }
 
-  /* Possibly warn about unused parameters.
-     When frontend does unit-at-a-time, the warning is already
-     issued at finalization time.  */
-  if (warn_unused_parameter
-      && !lang_hooks.callgraph.expand_function)
-    do_warn_unused_parameter (current_function_decl);
-
   /* End any sequences that failed to be closed due to syntax errors.  */
   while (in_sequence_p ())
     end_sequence ();

@@ -461,8 +461,7 @@ next_pass_1 (struct tree_opt_pass **list, struct tree_opt_pass *pass)
        cgraph_expand_all_functions ()
            for each node N in the cgraph
 	       cgraph_expand_function (N)
-		   lang_hooks.callgraph.expand_function (DECL (N))
-		   	tree_rest_of_compilation (DECL (N))  -> all_passes
+		  tree_rest_of_compilation (DECL (N))  -> all_passes
 */
 
 void

@@ -115,8 +115,8 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 
 #undef LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR
 #define LANG_HOOKS_CALLGRAPH_ANALYZE_EXPR cxx_callgraph_analyze_expr
-#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
-#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION expand_body
+#undef LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS
+#define LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS emit_associated_thunks
 
 #undef LANG_HOOKS_MAKE_TYPE
 #define LANG_HOOKS_MAKE_TYPE cxx_make_type

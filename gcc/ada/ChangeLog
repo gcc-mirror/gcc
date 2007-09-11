@@ -1,3 +1,8 @@
+2007-09-11  Jan Hubicka <jh@suse.cz>
+
+	* misc.c (gnat_expand_body): Kill.
+	(LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
+
 2007-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* exp_atag.ads, exp_atag.adb, mlib-tgt-tru64.adb, mlib-tgt-aix.adb,

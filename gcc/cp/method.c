@@ -523,7 +523,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
       thunk_fndecl = finish_function (0);
       tree_lowering_passes (thunk_fndecl);
-      expand_body (thunk_fndecl);
+      tree_rest_of_compilation (thunk_fndecl);
     }
 
   pop_from_top_level ();

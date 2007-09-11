@@ -192,9 +192,6 @@ struct language_function GTY(())
 #undef LANG_HOOKS_GET_CALLEE_FNDECL
 #define LANG_HOOKS_GET_CALLEE_FNDECL java_get_callee_fndecl
 
-#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
-#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION java_expand_body
-
 #undef LANG_HOOKS_CLEAR_BINDING_STACK
 #define LANG_HOOKS_CLEAR_BINDING_STACK java_clear_binding_stack
 

@@ -76,15 +76,6 @@ along with GCC; see the file COPYING3.  If not see
       ??? On the tree-ssa genericizing should take place here and we will avoid
       need for these hooks (replacing them by genericizing hook)
 
-    - expand_function callback
-
-      This function is used to expand function and pass it into RTL back-end.
-      Front-end should not make any assumptions about when this function can be
-      called.  In particular cgraph_assemble_pending_functions,
-      varpool_assemble_pending_variables, cgraph_finalize_function,
-      varpool_finalize_function, cgraph_optimize can cause arbitrarily
-      previously finalized functions to be expanded.
-
     We implement two compilation modes.
 
       - unit-at-a-time:  In this mode analyzing of all functions is deferred
@@ -1074,7 +1065,9 @@ cgraph_expand_function (struct cgraph_node *node)
     }
 
   /* Generate RTL for the body of DECL.  */
-  lang_hooks.callgraph.expand_function (decl);
+  if (lang_hooks.callgraph.emit_associated_thunks)
+    lang_hooks.callgraph.emit_associated_thunks (decl);
+  tree_rest_of_compilation (decl);
 
   /* Make sure that BE didn't give up on compiling.  */
   /* ??? Can happen with nested function of extern inline.  */

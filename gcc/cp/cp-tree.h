@@ -4639,7 +4639,7 @@ extern tree finish_typeof			(tree);
 extern tree finish_offsetof			(tree);
 extern void finish_decl_cleanup			(tree, tree);
 extern void finish_eh_cleanup			(tree);
-extern void expand_body				(tree);
+extern void emit_associated_thunks		(tree);
 extern void finish_mem_initializers		(tree);
 extern tree check_template_template_default_arg (tree);
 extern void expand_or_defer_fn			(tree);
