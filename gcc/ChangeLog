@@ -1,3 +1,7 @@
+2007-09-11  Ben Elliston  <bje@au.ibm.com>
+
+	* config/spu/spu.md: Formatting fixes.
+
 2007-09-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (dfp_unary_func): Delete.
@@ -328,7 +332,7 @@
 	vectorizable_assignment): Likewise.
 	(vect_model_simple_cost, vect_model_store_cost, vect_model_load_cost):
 	Declare (make extern).
-	* tree-vectorizer.c (new_stmt_vec_info): Initiliaze the new field.
+	* tree-vectorizer.c (new_stmt_vec_info): Initialize the new field.
 	(new_loop_vec_info): Likewise.
 	(destroy_loop_vec_info): Free memory allocated for SLP structures.
 	* tree-vect-analyze.c: Include recog.h.
