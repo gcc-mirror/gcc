@@ -1,3 +1,14 @@
+2007-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (array_type_has_nonaliased_component): New predicate.
+	(gnat_to_gnu_field) <E_Array_Type>: Invoke the above predicate to
+	set the TYPE_NONALIASED_COMPONENT flag on the type.
+	<E_Array_Subtype>: Likewise.
+	* gigi.h (type_for_nonaliased_component_p): Declare.
+	* utils.c (type_for_nonaliased_component_p): New predicate.
+	(create_field_decl): Invoke the above predicate to set the
+	DECL_NONADDRESSABLE_P flag on the field.
+
 2007-09-11  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads, einfo.adb (Dispatch_Table_Wrapper): New attribute. Present

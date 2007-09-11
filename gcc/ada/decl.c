@@ -103,6 +103,7 @@ static tree gnat_to_gnu_field (Entity_Id, tree, int, bool);
 static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 			       bool *);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
+static bool array_type_has_nonaliased_component (Entity_Id, tree);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
 				  bool, bool, bool, bool);
 static Uint annotate_value (tree);
@@ -1788,16 +1789,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  {
 	    tem = build_array_type (tem, gnu_index_types[index]);
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
-
-	    /* If the type below this is a multi-array type, then this
-	       does not have aliased components.  But we have to make
-	       them addressable if it must be passed by reference or
-	       if that is the default.  */
-	    if ((TREE_CODE (TREE_TYPE (tem)) == ARRAY_TYPE
-		 && TYPE_MULTI_ARRAY_P (TREE_TYPE (tem)))
-		|| (!Has_Aliased_Components (gnat_entity)
-		    && !must_pass_by_ref (TREE_TYPE (tem))
-		    && !default_pass_by_ref (TREE_TYPE (tem))))
+	    if (array_type_has_nonaliased_component (gnat_entity, tem))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
 	  }
 
@@ -2123,16 +2115,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      gnu_type = build_array_type (gnu_type, gnu_index_type[index]);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
-
-	      /* If the type below this is a multi-array type, then this
-		 does not have aliased components.  But we have to make
-		 them addressable if it must be passed by reference or
-		 if that is the default.  */
-	      if ((TREE_CODE (TREE_TYPE (gnu_type)) == ARRAY_TYPE
-		   && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type)))
-		  || (!Has_Aliased_Components (gnat_entity)
-		      && !must_pass_by_ref (TREE_TYPE (gnu_type))
-		      && !default_pass_by_ref (TREE_TYPE (gnu_type))))
+	      if (array_type_has_nonaliased_component (gnat_entity, gnu_type))
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
 	    }
 
@@ -4624,6 +4607,24 @@ same_discriminant_p (Entity_Id discr1, Entity_Id discr2)
 
   return
     Original_Record_Component (discr1) == Original_Record_Component (discr2);
+}
+
+/* Return true if the array type specified by GNAT_TYPE and GNU_TYPE has
+   a non-aliased component in the back-end sense.  */
+
+static bool
+array_type_has_nonaliased_component (Entity_Id gnat_type, tree gnu_type)
+{
+  /* If the type below this is a multi-array type, then
+     this does not have aliased components.  */
+  if (TREE_CODE (TREE_TYPE (gnu_type)) == ARRAY_TYPE
+      && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type)))
+    return true;
+
+  if (Has_Aliased_Components (gnat_type))
+    return false;
+
+  return type_for_nonaliased_component_p (TREE_TYPE (gnu_type));
 }
 
 /* Given GNAT_ENTITY, elaborate all expressions that are required to

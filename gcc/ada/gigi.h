@@ -704,6 +704,10 @@ extern tree unchecked_convert (tree type, tree expr, bool notrunc_p);
    the latter being a record type as predicated by Is_Record_Type.  */
 extern enum tree_code tree_code_for_record_type (Entity_Id);
 
+/* Return true if GNU_TYPE is suitable as the type of a non-aliased
+   component of an aggregate type.  */
+extern bool type_for_nonaliased_component_p (tree);
+
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR or other logical
    operation.
 
