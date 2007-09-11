@@ -1,3 +1,25 @@
+2007-09-10  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/30013
+	* config/dfp-bit.c: Don't skip TFmode conversions; move strto*
+	declarations to top.
+	(DFP_TO_BFP): Use for either XFmode or TFmode.
+	(BFP_TO_DFP): Use for either XFmode or TFmode; always use cast
+	of BFP_VIA_TYPE.
+	* config/dfp-bit.h: Include float.h.
+	(LONG_DOUBLE_HAS_XF_MODE, LONG_DOUBLE_HAS_TF_MODE): Define if long
+	double is one of these modes, rather than using LIBGCC_HAS_*F_MODE
+	which doesn't mean the same thing.
+	(BFP_KIND): Use 4 to mean TFmode.
+	(BFP_FMT): Specify the number of decimal digits based on the
+	number of mantissa digits.
+	(BFP_VIA_TYPE): Binary float type to use as cast for sprintf.
+	(BFP_TO_DFP, DFP_TO_BFP): Define names for TFmode variants.
+	(STR_TO_BFP): Use strtold for XFmode or TFmode.
+	(TFtype): Define if TFmode is supported.
+	* doc/libgcc.texi (Decimal float library routines): Document
+	TF conversion functions.
+
 2007-09-10  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips.c (mips_scalar_mode_supported_p): Declare.
