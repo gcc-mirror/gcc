@@ -1,3 +1,8 @@
+2007-09-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/33386
+	* runtime/select.c (select_string): Initialize default_jump.
+
 2007-09-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33307
