@@ -176,6 +176,10 @@ mips3d
 Target Report RejectNegative Mask(MIPS3D)
 Use MIPS-3D instructions
 
+mllsc
+Target Report
+Use ll, sc and sync instructions
+
 mlocal-sdata
 Target Report Var(TARGET_LOCAL_SDATA) Init(1)
 Use -G for object-local data

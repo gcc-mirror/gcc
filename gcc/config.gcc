@@ -1663,6 +1663,7 @@ mips64*-*-linux*)
 	tm_defines="${tm_defines} MIPS_ABI_DEFAULT=ABI_N32"
 	gnu_ld=yes
 	gas=yes
+	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h"
@@ -1672,6 +1673,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
                 ;;
         esac
+	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-*-openbsd*)
 	tm_defines="${tm_defines} OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
@@ -3008,7 +3010,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch float tune divide"
+		supported_defaults="abi arch float tune divide llsc"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -3037,6 +3039,23 @@ case "${target}" in
 		*)
 			echo "Unknown division check type use in --with-divide=$with_divide" 1>&2
 			exit 1
+			;;
+		esac
+
+		case ${with_llsc} in
+		yes)
+			with_llsc=llsc
+			;;
+		no)
+			with_llsc="no-llsc"
+			;;
+		"")
+			# OK
+			;;
+		*)
+			echo "Unknown llsc type used in --with-llsc" 1>&2
+			exit 1
+			;;
 		esac
 		;;
 
@@ -3301,7 +3320,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu arch tune schedule float mode fpu divide"
+all_defaults="abi cpu arch tune schedule float mode fpu divide llsc"
 for option in $all_defaults
 do
 	eval "val=\$with_$option"

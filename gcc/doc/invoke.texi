@@ -627,7 +627,7 @@ Objective-C and Objective-C++ Dialects}.
 -msingle-float  -mdouble-float  -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
--mips3d  -mno-mips3d  -mmt  -mno-mt @gol
+-mips3d  -mno-mips3d  -mmt  -mno-mt  -mllsc  -mno-llsc @gol
 -mlong64  -mlong32  -msym32  -mno-sym32 @gol
 -G@var{num}  -mlocal-sdata  -mno-local-sdata @gol
 -mextern-sdata  -mno-extern-sdata  -mgpopt  -mno-gopt @gol
@@ -11771,6 +11771,22 @@ operations.
 @opindex mdouble-float
 Assume that the floating-point coprocessor supports double-precision
 operations.  This is the default.
+
+@item -mllsc
+@itemx -mno-llsc
+@opindex mllsc
+@opindex mno-llsc
+Use (do not use) @samp{ll}, @samp{sc}, and @samp{sync} instructions to
+implement atomic memory built-in functions.  When neither option is
+specified, GCC will use the instructions if the target architecture
+supports them.
+
+@option{-mllsc} is useful if the runtime environment can emulate the
+instructions and @option{-mno-llsc} can be useful when compiling for
+nonstandard ISAs.  You can make either option the default by
+configuring GCC with @option{--with-llsc} and @option{--without-llsc}
+respectively.  @option{--with-llsc} is the default for some
+configurations; see the installation documentation for details.
 
 @item -mdsp
 @itemx -mno-dsp
