@@ -1,3 +1,19 @@
+2007-09-11  Richard Sandiford  <richard@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+	    David Ung  <davidu@mips.com>
+
+	* config/mips/mips.h (CONSTANT_POOL_COST): Move to...
+	* config/mips/mips.c: ...here and set to 4 for TARGET_MIPS16.
+	(mips16_constant_cost, mips_immediate_operand_p, mips_binary_cost)
+	(mips_fp_mult_cost, mips_fp_div_cost, mips_sign_extend_cost)
+	(mips_zero_extend_cost): New functions.
+	(mips_rtx_costs): Treat COMPARE constants as having zero cost.
+	Use the new functions.  Tweak many cost estimates, both here
+	and in the new subroutines.  Return false when the cost of the
+	operands has not been calculated.  Check for *clear_upper32.
+	Check for floating-point multiply-add, reciprocal and rsqrt
+	patterns.  Handle comparison and rotation codes.
+
 2007-09-11  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (TARGET_STRIP_NAME_ENCODING): Don't
