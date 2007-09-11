@@ -5,10 +5,10 @@
    C99 6.3.1.5(4) Conversions, arithmetic operands, real floating types.  */
 
 /* Long double isn't supported yet at runtime, so disable those checks.  */
-#define SKIP_LONG_DOUBLE
 
 extern void abort (void);
 static int failcnt;
+static int skip_long_double;
 
 /* Support compiling the test to report individual failures; default is
    to abort as soon as a check fails.  */
@@ -24,14 +24,15 @@ volatile _Decimal64 d64;
 volatile _Decimal128 d128;
 volatile float sf;
 volatile double df;
-#ifndef SKIP_LONG_DOUBLE
 volatile long double tf;
-#endif
 
 int
 main ()
 {
   /* Conversions from decimal float to binary float. */
+
+  if (sizeof (long double) == sizeof (double))
+    skip_long_double = 1;
 
   /* Conversions from _Decimal32. */
   d32 = 2.0df;
@@ -43,11 +44,12 @@ main ()
   if (df != 2.0)
     FAILURE
 
-#ifndef SKIP_LONG_DOUBLE
-  tf = d32;
-  if (tf != 2.0l)
-    FAILURE
-#endif
+  if (skip_long_double == 0)
+    {
+      tf = d32;
+      if (tf != 2.0l)
+	FAILURE
+    }
 
   /* Conversions from _Decimal64. */
   d64 = -7.0dd;
@@ -59,11 +61,12 @@ main ()
   if (df != -7.0)
     FAILURE
 
-#ifndef SKIP_LONG_DOUBLE
-  tf = d64;
-  if (tf != -7.0l)
-    FAILURE
-#endif
+  if (skip_long_double == 0)
+    {
+      tf = d64;
+      if (tf != -7.0l)
+	FAILURE
+    }
 
   /* Conversions from _Decimal128. */
   d128 = 30.0dl;
@@ -107,20 +110,21 @@ main ()
   if (d128 != 30.0dl)
     FAILURE
 
-#ifndef SKIP_LONG_DOUBLE
-  tf = -22.0l;
-  d32 = tf;
-  if (d32 != -22.0df)
-    FAILURE
+  if (skip_long_double == 0)
+    {
+      tf = -22.0l;
+      d32 = tf;
+      if (d32 != -22.0df)
+	FAILURE
 
-  d64 = tf;
-  if (d64 != -22.0dd)
-    FAILURE
+      d64 = tf;
+      if (d64 != -22.0dd)
+	FAILURE
 
-  d128 = tf;
-  if (d128 != -22.0dl)
-    FAILURE
-#endif
+      d128 = tf;
+      if (d128 != -22.0dl)
+	FAILURE
+     }
 
   /* 2**(-11) = 0.00048828125. */
   d128 = 0.000488281251dl;

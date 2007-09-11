@@ -1,3 +1,18 @@
+2007-09-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/dfp/convert-bfp.c: Replace SKIP_LONG_DOUBLE with runtime
+	checks for size of long double.
+	* gcc.dg/dfp/convert.h: New file.
+	* gcc.dg/dfp/convert-bfp-2.c: New test.
+	* gcc.dg/dfp/convert-bfp-3.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-4.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-5.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-6.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-7.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-8.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-9.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-10.c: Ditto.
+	* gcc.dg/dfp/convert-bfp-11.c: Ditto.
 2007-09-10  Harsha Jagasia <harsha.jagasia@amd.com>
 
         * gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: 

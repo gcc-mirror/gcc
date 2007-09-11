@@ -34,16 +34,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    Contributed by Ben Elliston  <bje@au.ibm.com>.  */
 
-/* The intended way to use this file is to make two copies, add `#define '
-   to one copy, then compile both copies and add them to libgcc.a.  */
-
-/* FIXME: This implementation doesn't support TFmode conversions.  */
-#if !(defined (L_sd_to_tf) || defined (L_dd_to_tf) \
-      || defined (L_td_to_tf) || defined (L_tf_to_sd) \
-      || defined (L_tf_to_dd) || defined (L_tf_to_td))
-
 #include <stdio.h>
 #include <stdlib.h>
+/* FIXME: compile with -std=gnu99 to get these from stdlib.h */
+extern float strtof (const char *, char **);
+extern long double strtold (const char *, char **);
 #include <string.h>
 #include <limits.h>
 
@@ -471,7 +466,9 @@ INT_TO_DFP (INT_TYPE i)
 #if defined (L_sd_to_sf) || defined (L_dd_to_sf) || defined (L_td_to_sf) \
  || defined (L_sd_to_df) || defined (L_dd_to_df) || defined (L_td_to_df) \
  || ((defined (L_sd_to_xf) || defined (L_dd_to_xf) || defined (L_td_to_xf)) \
-     && LIBGCC2_HAS_XF_MODE)
+     && LONG_DOUBLE_HAS_XF_MODE) \
+ || ((defined (L_sd_to_tf) || defined (L_dd_to_tf) || defined (L_td_to_tf)) \
+     && LONG_DOUBLE_HAS_TF_MODE)
 BFP_TYPE
 DFP_TO_BFP (DFP_C_TYPE f)
 {
@@ -489,7 +486,9 @@ DFP_TO_BFP (DFP_C_TYPE f)
 #if defined (L_sf_to_sd) || defined (L_sf_to_dd) || defined (L_sf_to_td) \
  || defined (L_df_to_sd) || defined (L_df_to_dd) || defined (L_df_to_td) \
  || ((defined (L_xf_to_sd) || defined (L_xf_to_dd) || defined (L_xf_to_td)) \
-     && LIBGCC2_HAS_XF_MODE)
+     && LONG_DOUBLE_HAS_XF_MODE) \
+ || ((defined (L_tf_to_sd) || defined (L_tf_to_dd) || defined (L_tf_to_td)) \
+     && LONG_DOUBLE_HAS_TF_MODE)
 DFP_C_TYPE
 BFP_TO_DFP (BFP_TYPE x)
 {
@@ -502,12 +501,7 @@ BFP_TO_DFP (BFP_TYPE x)
   DFP_INIT_ROUNDMODE (context.round);
 
   /* Use a C library function to write the floating point value to a string.  */
-#ifdef BFP_VIA_TYPE
-  /* FIXME: Is there a better way to output an XFmode variable in C?  */
   sprintf (buf, BFP_FMT, (BFP_VIA_TYPE) x);
-#else
-  sprintf (buf, BFP_FMT, x);
-#endif
 
   /* Convert from the floating point string to a decimal* type.  */
   FROM_STRING (&s, buf, &context);
@@ -543,7 +537,3 @@ DFP_UNORD (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
   return (decNumberIsNaN (&arg1) || decNumberIsNaN (&arg2));
 }
 #endif /* L_unord_sd || L_unord_dd || L_unord_td */
-
-/* !(L_sd_to_tf || L_dd_to_tf || L_td_to_tf \
-     || L_tf_to_sd || L_tf_to_dd || L_tf_to_td)  */
-#endif
