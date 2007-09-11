@@ -6276,6 +6276,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       error ("invalid use of %<__builtin_va_arg_pack ()%>");
       return const0_rtx;
 
+    case BUILT_IN_VA_ARG_PACK_LEN:
+      /* All valid uses of __builtin_va_arg_pack_len () are removed during
+	 inlining.  */
+      error ("invalid use of %<__builtin_va_arg_pack_len ()%>");
+      return const0_rtx;
+
       /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
       if (fold_builtin_next_arg (exp, false))

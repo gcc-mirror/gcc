@@ -867,6 +867,33 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 		  stmt = *stmtp;
 		  update_stmt (stmt);
 		}
+	      else if (call
+		       && id->call_expr
+		       && (decl = get_callee_fndecl (call))
+		       && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+		       && DECL_FUNCTION_CODE (decl)
+			  == BUILT_IN_VA_ARG_PACK_LEN)
+		{
+		  /* __builtin_va_arg_pack_len () should be replaced by
+		     the number of anonymous arguments.  */
+		  int nargs = call_expr_nargs (id->call_expr);
+		  tree count, *call_ptr, p;
+
+		  for (p = DECL_ARGUMENTS (id->src_fn); p; p = TREE_CHAIN (p))
+		    nargs--;
+
+		  count = build_int_cst (integer_type_node, nargs);
+		  call_ptr = stmtp;
+		  if (TREE_CODE (*call_ptr) == GIMPLE_MODIFY_STMT)
+		    call_ptr = &GIMPLE_STMT_OPERAND (*call_ptr, 1);
+		  if (TREE_CODE (*call_ptr) == WITH_SIZE_EXPR)
+		    call_ptr = &TREE_OPERAND (*call_ptr, 0);
+		  gcc_assert (*call_ptr == call && call_ptr != stmtp);
+		  *call_ptr = count;
+		  stmt = *stmtp;
+		  update_stmt (stmt);
+		  call = NULL_TREE;
+		}
 
 	      /* Statements produced by inlining can be unfolded, especially
 		 when we constant propagated some operands.  We can't fold
