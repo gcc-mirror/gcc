@@ -1125,3 +1125,27 @@ extern enum fpu_type m68k_fpu;
 extern unsigned int m68k_cpu_flags;
 extern const char *m68k_symbolic_call;
 extern const char *m68k_symbolic_jump;
+
+enum M68K_SYMBOLIC_CALL { M68K_SYMBOLIC_CALL_NONE, M68K_SYMBOLIC_CALL_JSR,
+			  M68K_SYMBOLIC_CALL_BSR_C, M68K_SYMBOLIC_CALL_BSR_P };
+
+extern enum M68K_SYMBOLIC_CALL m68k_symbolic_call_var;
+
+/* ??? HOST_WIDE_INT is not being defined for auto-generated files.
+   Workaround that.  */
+#ifdef HOST_WIDE_INT
+typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ, MVS, MVZ }
+  M68K_CONST_METHOD;
+
+extern M68K_CONST_METHOD m68k_const_method (HOST_WIDE_INT);
+#endif
+
+extern void m68k_emit_move_double (rtx [2]);
+
+extern enum attr_cpu m68k_sched_cpu;
+
+extern enum attr_opx_type m68k_sched_attr_opx_type (rtx, int);
+extern enum attr_opy_type m68k_sched_attr_opy_type (rtx, int);
+extern int m68k_sched_attr_size (rtx);
+extern enum attr_op_mem m68k_sched_attr_op_mem (rtx);
+extern enum attr_type m68k_sched_branch_type (rtx);

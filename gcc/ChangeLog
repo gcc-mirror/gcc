@@ -1,3 +1,105 @@
+2007-09-11  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/predicates.md (movsi_const0_operand,
+	non_symbolic_call_operand): New predicates.
+
+	* config/m68k/constraints.md: (Cs, Ci, C0, Cj, CQ, CW, CZ, CS, Ap, Ac):
+	New constraints.
+	* doc/md.texi (Constraints for Particular Machines: Motorola 680x0):
+	Document constraints N, O, P, R, S, T, Q, U, W, Cs, Ci, C0, Cj, CQ,
+	CW, CZ, CS, Ap and Ac.
+
+	* config/m68k/m68k.md (UNSPEC_IB): New constant.
+	(constraints.md): New include.
+	(cpu, type, type1, opx, opy, opx_type, opy_type, size, opx_access,
+	opx_mem, opy_mem, op_mem, guess, split): New attributes.
+	(movdf_internal): Name pattern.  Fix to use alternatives.  Add split.
+	Specify attributes.
+	(pushdi): Add split.
+	(tstsi_internal): Name pattern.  Fix to use alternatives.  Specify
+	attributes.  Split tstsi_internal_68020_cf from it.
+	(tstsi_internal_68020_cf): New pattern.
+	(tsthi_internal, tstqi_internal): Name pattern.  Specify attributes.
+	(tst<mode>_cf): Specify attributea.
+	(cmpsi_cf): Name pattern.  Specify attributes.
+	(cmp<mode>_68881, cmp<mode>_cf): Specify type attribute.
+	(pushexthisi_const): Fix to use alternatives.  Specify
+	attributes.
+	(movsi_const0): Split movsi_const0_68000_10 and movsi_const0_68040_60
+	from it.  Fix to use alternatives.  Specify attributes.
+	(movsi_const0_68040_10, movsi_const0_68040_60): New patterns.
+	(movsi_cf, movstrictqi_cf): Fix to use alternatives.  Specify
+	attributes.
+	(movsf_cf_soft): Specify attributes.
+	(movdf_cf_soft): Add split.
+	(pushasi, zero_extendhisi2_cf, zero_extendqisi2_cfv4,
+	cfv4_extendhisi2, 68k_extendhisi2, extendqihi2, cfv4_extendqisi2,
+	68k_extendqisi2, truncdfsf2_cf): Specify attributes.
+	(truncdfsf2_68881): Name pattern.  Specify attributes.
+	(floatsi<mode>2_cf, floathi<mode>2_68881, floathi<mode>2_cf,
+	floatqi<mode>2_68881, floatqi<mode>2_cf, ftrunc<mode>2_cf,
+	fix<mode>qi2_cf, fix<mode>hi2_cf, fix<mode>si2_cf, adddi_dishl32):
+	Specify attributes.
+	(addsi3_5200): Fix to use alternatives.  Specify attributes.
+	Add splits.
+	(add<mode>3_cf, subdi_dishl32): Specify attributes.
+	(subsi3): Add alternative for subq.l.  Specify attributes.
+	(sub<mode>3_cf, mulhi3, mulhisi3): Specify attributes.
+	(mulhisisi3_s, mulsi3_68020, mulsi3_cf): Name pattern.  Specify
+	attributes.
+	(umulhisi3): Specify attributes.
+	(mulhisisi3_z): Name pattern.  Specify attributes.
+	(fmul<mode>3_cf, div<mode>3_cf, negsi2_internal, negsi2_5200,
+	sqrt<mode>2_68881, clzsi2, one_cmplsi2_5200, subreghi1ashrdi_const32,
+	subregsi1ashrdi_const32, ashrsi3, subreg1lshrdi_const32, lshrsi3,
+	bsetmemqi): Specify attributes.
+	(bsetmemqi_ext): Name pattern.  Specify attributes.
+	(bclrmemqi): Specify attributes.
+	(bclrmemqi_ext, scc, sls): Name pattern.  Specify attributes.
+	(beq, bne, bgt, bgtu, blt, bltu, bge, bgeu, ble, bleu): Specify
+	attributes.
+	(beq2, bne2, bgt2, bgtu2, blt2, bltu2, bge2, bgeu2, ble2, bleu2): Name
+	pattern.  Specify attributes.
+	(jump): Specify attributes.
+	(tablejump_internal): Name pattern.  Specify attributes.
+	(call_value): Split into non_symbolic_call_value,
+	symbolic_call_value_jsr, symbolic_call_value_bsr.  Fix to use
+	alternatives.  Specify attributes.
+	(non_symbolic_call_value, symbolic_call_value_jsr,
+	symbolic_call_value_bsr): New patterns.
+	(nop, return, unlink, indirect_jump): Specify attributes.
+	(trap): Fix condition.  Specify attributes.
+	(ib): New pattern.
+
+	* config/m68k/m68k.c (m68k_symbolic_call_var): New variable.
+	(override_options): Initialize it.  Initialize m68k_sched_cpu.
+	(CONST_METHOD): Rename to M68K_CONST_METHOD, move to m68k.h.
+	(const_method): Make global, rename to m68k_const_method.
+	(const_int_cost, output_move_const_into_data_reg): Update.
+	(output_move_double): Parametrize to emit rtl code, rename to
+	handle_move_double.
+	(output_reg_adjust, emit_reg_adjust, output_compadr, output_movsi,
+	emit_movsi): New static functions.
+	(output_move_double): New function with semantics of old
+	output_move_double.
+	(m68k_emit_move_double): New function.
+	(m68k_sched_cpu): New variable.
+	(attr_op_type): New enum.
+	(sched_guess_p): New variable.
+	(sched_address_type, sched_operand_type, sched_attr_op_type):
+	New static functions.
+	(m68k_sched_attr_opx_type, m68k_sched_attr_opy_type,
+	m68k_sched_attr_size, m68k_sched_attr_op_mem): New functions.
+	(sched_branch_type): New static variable.
+	(m68k_sched_branch_type): New function.
+	* config/m68k/m68k.h (M68K_SYMBOLIC_CALL): New enum.
+	(m68k_symbolic_call_var): Declare.
+	(M68K_CONST_METHOD): Rename from CONST_METHOD.  Move here from m68k.c.
+	(m68k_const_method, m68k_emit_move_double, m68k_sched_cpu,
+	m68k_sched_attr_opx_type, m68k_sched_attr_opy_type,
+	m68k_sched_attr_size, m68k_sched_attr_op_mem, m68k_sched_branch_type):
+	Declare.
+
 2007-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.def (BUILT_IN_VA_ARG_PACK_LEN): New builtin.
