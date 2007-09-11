@@ -1908,6 +1908,11 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
       return 0;
 
     case SYMBOL_FORCE_TO_MEM:
+      /* LEAs will be converted into constant-pool references by
+	 mips_reorg.  */
+      if (mode == MAX_MACHINE_MODE)
+	return 1;
+
       /* The constant must be loaded from the constant pool.  */
       return 0;
 
@@ -3140,6 +3145,11 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
+      if (force_to_mem_operand (x, VOIDmode))
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
       cost = mips_const_insns (x);
       if (cost > 0)
 	{
@@ -10099,19 +10109,13 @@ mips16_insn_length (rtx insn)
   return get_attr_length (insn);
 }
 
-/* Rewrite *X so that constant pool references refer to the constant's
-   label instead.  DATA points to the constant pool structure.  */
+/* If *X is a symbolic constant that refers to the constant pool, add
+   the constant to POOL and rewrite *X to use the constant's label.  */
 
-static int
-mips16_rewrite_pool_refs (rtx *x, void *data)
+static void
+mips16_rewrite_pool_constant (struct mips16_constant_pool *pool, rtx *x)
 {
-  struct mips16_constant_pool *pool = data;
   rtx base, offset, label;
-
-  if (MEM_P (*x))
-    x = &XEXP (*x, 0);
-  else if (!TARGET_MIPS16_TEXT_LOADS)
-    return 0;
 
   split_const (*x, &base, &offset);
   if (GET_CODE (base) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (base))
@@ -10120,8 +10124,41 @@ mips16_rewrite_pool_refs (rtx *x, void *data)
 			    get_pool_mode (base));
       base = gen_rtx_LABEL_REF (Pmode, label);
       *x = mips_unspec_address_offset (base, offset, SYMBOL_PC_RELATIVE);
+    }
+}
+
+/* This structure is used to communicate with mips16_rewrite_pool_refs.
+   INSN is the instruction we're rewriting and POOL points to the current
+   constant pool.  */
+struct mips16_rewrite_pool_refs_info {
+  rtx insn;
+  struct mips16_constant_pool *pool;
+};
+
+/* Rewrite *X so that constant pool references refer to the constant's
+   label instead.  DATA points to a mips16_rewrite_pool_refs_info
+   structure.  */
+
+static int
+mips16_rewrite_pool_refs (rtx *x, void *data)
+{
+  struct mips16_rewrite_pool_refs_info *info = data;
+
+  if (force_to_mem_operand (*x, Pmode))
+    {
+      rtx mem = force_const_mem (GET_MODE (*x), *x);
+      validate_change (info->insn, x, mem, false);
+    }
+
+  if (MEM_P (*x))
+    {
+      mips16_rewrite_pool_constant (info->pool, &XEXP (*x, 0));
       return -1;
     }
+
+  if (TARGET_MIPS16_TEXT_LOADS)
+    mips16_rewrite_pool_constant (info->pool, x);
+
   return GET_CODE (*x) == CONST ? -1 : 0;
 }
 
@@ -10131,6 +10168,7 @@ static void
 mips16_lay_out_constants (void)
 {
   struct mips16_constant_pool pool;
+  struct mips16_rewrite_pool_refs_info info;
   rtx insn, barrier;
 
   if (!TARGET_MIPS16_PCREL_LOADS)
@@ -10142,7 +10180,11 @@ mips16_lay_out_constants (void)
     {
       /* Rewrite constant pool references in INSN.  */
       if (INSN_P (insn))
-	for_each_rtx (&PATTERN (insn), mips16_rewrite_pool_refs, &pool);
+	{
+	  info.insn = insn;
+	  info.pool = &pool;
+	  for_each_rtx (&PATTERN (insn), mips16_rewrite_pool_refs, &info);
+	}
 
       pool.insn_address += mips16_insn_length (insn);
 

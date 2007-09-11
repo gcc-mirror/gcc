@@ -1,4 +1,20 @@
 2007-09-11  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/mips/mips.c (mips_symbol_insns_1): Allow LEAs of
+	SYMBOL_FORCE_TO_MEM constants.
+	(mips_rtx_costs): Give a cost of 1 to force_to_mem_operands.
+	(mips16_rewrite_pool_refs_info): New structure.
+	(mips16_rewrite_pool_constant): New function, split out from...
+	(mips16_rewrite_pool_refs): ...here.  Take a pointer to a
+	mips16_rewrite_pool_refs_info structure rather than a pointer
+	to a constant pool.  Force force_to_mem_operands into memory.
+	(mips16_lay_out_constants): Update call to mips16_rewrite_pool_refs.
+	* config/mips/predicates.md (force_to_mem_operand): New predicate.
+	* config/mips/constraints.md (kf): New constraint.
+	* config/mips/mips.md (*movdi_64bit_mips16): Add a d <- kf alternative.
+	(*movsi_mips16): Likewise.
+
+2007-09-11  Richard Sandiford  <richard@codesourcery.com>
 	    Nigel Stephens  <nigel@mips.com>
 	    David Ung  <davidu@mips.com>
 
