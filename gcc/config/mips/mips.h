@@ -1189,6 +1189,19 @@ extern enum mips_code_readable_setting mips_code_readable;
 #define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_NEWABI ? 128 : 64)
 
+/* Define the sizes of fixed-point types.  */
+#define SHORT_FRACT_TYPE_SIZE 8
+#define FRACT_TYPE_SIZE 16
+#define LONG_FRACT_TYPE_SIZE 32
+#define LONG_LONG_FRACT_TYPE_SIZE 64
+
+#define SHORT_ACCUM_TYPE_SIZE 16
+#define ACCUM_TYPE_SIZE 32
+#define LONG_ACCUM_TYPE_SIZE 64
+/* FIXME.  LONG_LONG_ACCUM_TYPE_SIZE should be 128 bits, but GCC
+   doesn't support 128-bit integers for MIPS32 currently.  */
+#define LONG_LONG_ACCUM_TYPE_SIZE (TARGET_64BIT ? 128 : 64)
+
 /* long double is not a fixed mode, but the idea is that, if we
    support long double, we also want a 128-bit integer type.  */
 #define MAX_FIXED_MODE_SIZE LONG_DOUBLE_TYPE_SIZE

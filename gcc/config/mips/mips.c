@@ -408,6 +408,7 @@ static bool mips_callee_copies (CUMULATIVE_ARGS *, enum machine_mode mode,
 static int mips_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode mode,
 				   tree, bool);
 static bool mips_valid_pointer_mode (enum machine_mode);
+static bool mips_scalar_mode_supported_p (enum machine_mode);
 static bool mips_vector_mode_supported_p (enum machine_mode);
 static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree, unsigned int);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
@@ -1328,6 +1329,9 @@ static const unsigned char mips16e_save_restore_regs[] = {
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P mips_vector_mode_supported_p
+
+#undef TARGET_SCALAR_MODE_SUPPORTED_P
+#define TARGET_SCALAR_MODE_SUPPORTED_P mips_scalar_mode_supported_p
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS mips_init_builtins
@@ -3626,6 +3630,13 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 	  *code = (invert ? EQ : NE);
 	}
     }
+  else if (ALL_FIXED_POINT_MODE_P (GET_MODE (cmp_operands[0])))
+    {
+      *op0 = gen_rtx_REG (CCDSPmode, CCDSP_CC_REGNUM);
+      mips_emit_binary (*code, *op0, cmp_operands[0], cmp_operands[1]);
+      *code = NE;
+      *op1 = const0_rtx;
+    }
   else
     {
       enum rtx_code cmp_code;
@@ -4470,8 +4481,11 @@ mips_pad_arg_upward (enum machine_mode mode, const_tree type)
   /* Otherwise, integral types are padded downward: the last byte of a
      stack argument is passed in the last byte of the stack slot.  */
   if (type != 0
-      ? INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)
-      : GET_MODE_CLASS (mode) == MODE_INT)
+      ? (INTEGRAL_TYPE_P (type)
+	 || POINTER_TYPE_P (type)
+	 || FIXED_POINT_TYPE_P (type))
+      : (GET_MODE_CLASS (mode) == MODE_INT
+	 || ALL_SCALAR_FIXED_POINT_MODE_P (mode)))
     return false;
 
   /* Big-endian o64 pads floating-point arguments downward.  */
@@ -5737,7 +5751,7 @@ override_options (void)
 			|| (ISA_HAS_8CC && mode == TFmode)));
 
           else if (ACC_REG_P (regno))
-	    temp = (INTEGRAL_MODE_P (mode)
+	    temp = ((INTEGRAL_MODE_P (mode) || ALL_FIXED_POINT_MODE_P (mode))
 		    && size <= UNITS_PER_WORD * 2
 		    && (size <= UNITS_PER_WORD
 			|| regno == MD_REG_FIRST
@@ -8749,7 +8763,9 @@ mips_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
       int size;
 
       /* ??? How should SCmode be handled?  */
-      if (mode == DImode || mode == DFmode)
+      if (mode == DImode || mode == DFmode
+	  || mode == DQmode || mode == UDQmode
+	  || mode == DAmode || mode == UDAmode)
 	return 0;
 
       size = type ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
@@ -9011,11 +9027,29 @@ mips_vector_mode_supported_p (enum machine_mode mode)
 
     case V2HImode:
     case V4QImode:
+    case V2HQmode:
+    case V2UHQmode:
+    case V2HAmode:
+    case V2UHAmode:
+    case V4QQmode:
+    case V4UQQmode:
       return TARGET_DSP;
 
     default:
       return false;
     }
+}
+
+/* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
+
+static bool
+mips_scalar_mode_supported_p (enum machine_mode mode)
+{
+  if (ALL_FIXED_POINT_MODE_P (mode)
+      && GET_MODE_PRECISION (mode) <= 2 * BITS_PER_WORD)
+    return true;
+
+  return default_scalar_mode_supported_p (mode);
 }
 
 /* If we can access small data directly (using gp-relative relocation
