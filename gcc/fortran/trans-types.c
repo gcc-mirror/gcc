@@ -1688,16 +1688,29 @@ gfc_get_derived_type (gfc_symbol * derived)
   /* See if it's one of the iso_c_binding derived types.  */
   if (derived->attr.is_iso_c == 1)
     {
+      if (derived->backend_decl)
+	return derived->backend_decl;
+
       if (derived->intmod_sym_id == ISOCBINDING_PTR)
 	derived->backend_decl = ptr_type_node;
       else
 	derived->backend_decl = pfunc_type_node;
+
+      /* Create a backend_decl for the __c_ptr_c_address field.  */
+      derived->components->backend_decl =
+	gfc_add_field_to_struct (&(derived->backend_decl->type.values),
+				 derived->backend_decl,
+				 get_identifier (derived->components->name),
+				 gfc_typenode_for_spec (
+				   &(derived->components->ts)));
+
       derived->ts.kind = gfc_index_integer_kind;
       derived->ts.type = BT_INTEGER;
       /* Set the f90_type to BT_VOID as a way to recognize something of type
          BT_INTEGER that needs to fit a void * for the purpose of the
          iso_c_binding derived types.  */
       derived->ts.f90_type = BT_VOID;
+      
       return derived->backend_decl;
     }
   
@@ -1742,6 +1755,13 @@ gfc_get_derived_type (gfc_symbol * derived)
           c->ts.type = c->ts.derived->ts.type;
           c->ts.kind = c->ts.derived->ts.kind;
           c->ts.f90_type = c->ts.derived->ts.f90_type;
+	  if (c->initializer)
+	    {
+	      c->initializer->ts.type = c->ts.type;
+	      c->initializer->ts.kind = c->ts.kind;
+	      c->initializer->ts.f90_type = c->ts.f90_type;
+	      c->initializer->expr_type = EXPR_NULL;
+	    }
         }
     }
 
