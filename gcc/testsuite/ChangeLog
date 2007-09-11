@@ -1,3 +1,8 @@
+2007-09-11  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33040
+	* gfortran.dg/c_ptr_tests_11.f03: New test case. 
+
 2007-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/va-arg-pack-len-1.c: New test.
@@ -25,15 +30,15 @@
 
 2007-09-10  Harsha Jagasia <harsha.jagasia@amd.com>
 
-        * gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: 
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: 
 	Change dg-final to expect 1 non-profitable loop and
 	3 profitable loops.
-        * gcc.dg/vect/costmodel/x86-64/costmodel-vect-31.c:
+	* gcc.dg/vect/costmodel/x86-64/costmodel-vect-31.c:
 	Change dg-final to expect 1 non-profitable loop and
 	3 profitable loops.
-        * gcc.dg/vect/costmodel/x86-64/costmodel-fast-math-vect-pr29925.c:
+	* gcc.dg/vect/costmodel/x86-64/costmodel-fast-math-vect-pr29925.c:
 	Change dg-final to expect 1 profitable loop.
-        * gcc.dg/vect/costmodel/i386/costmodel-fast-math-vect-pr29925.c:
+	* gcc.dg/vect/costmodel/i386/costmodel-fast-math-vect-pr29925.c:
 	Change dg-final to expect 1 profitable loop.	
 	
 2007-09-10  Richard Sandiford  <richard@codesourcery.com>
@@ -345,7 +350,7 @@
 
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
-            Nigel Stephens <nigel@mips.com>
+	    Nigel Stephens <nigel@mips.com>
 
 	* gcc.c-torture/compile/mipscop-1.c: Add nomips16 attributes.
 	* gcc.c-torture/compile/mipscop-2.c: Likewise.
@@ -378,7 +383,7 @@
 
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
-            Nigel Stephens <nigel@mips.com>
+	    Nigel Stephens <nigel@mips.com>
 
 	* gcc.target/mips/mips16-attributes.c: New.
 

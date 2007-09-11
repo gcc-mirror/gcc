@@ -1,3 +1,12 @@
+2007-09-11  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33040
+	* trans-expr.c (gfc_trans_structure_assign): Convert component
+	C_NULL_PTR and C_NULL_FUNPTR component initializers to (void *).
+	* trans-types.c (gfc_get_derived_type): Create a backend_decl for
+	the c_address field of C_PTR and C_FUNPTR and ensure initializer
+	is of proper type/kind for (void *).
+
 2007-09-11  Jan Hubicka <jh@suse.cz>
 
 	* f95-lang.c (gfc_expand_function): Kill.

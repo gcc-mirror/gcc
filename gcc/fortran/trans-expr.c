@@ -3155,6 +3155,19 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr)
       if (!c->expr)
         continue;
 
+      /* Update the type/kind of the expression if it represents either
+	 C_NULL_PTR or C_NULL_FUNPTR.  This is done here because this may
+	 be the first place reached for initializing output variables that
+	 have components of type C_PTR/C_FUNPTR that are initialized.  */
+      if (c->expr->ts.type == BT_DERIVED && c->expr->ts.derived
+	  && c->expr->ts.derived->attr.is_iso_c)
+        {
+	  c->expr->expr_type = EXPR_NULL;
+	  c->expr->ts.type = c->expr->ts.derived->ts.type;
+	  c->expr->ts.f90_type = c->expr->ts.derived->ts.f90_type;
+	  c->expr->ts.kind = c->expr->ts.derived->ts.kind;
+	}
+      
       field = cm->backend_decl;
       tmp = build3 (COMPONENT_REF, TREE_TYPE (field), dest, field, NULL_TREE);
       tmp = gfc_trans_subcomponent_assign (tmp, cm, c->expr);
