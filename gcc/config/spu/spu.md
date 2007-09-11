@@ -997,7 +997,7 @@
   {
     rtx zero = gen_reg_rtx(DImode);
     emit_move_insn(zero, GEN_INT(0));
-    emit_insn(gen_subdi3(operands[0], zero, operands[1]));
+    emit_insn (gen_subdi3(operands[0], zero, operands[1]));
     DONE;
   })
 
@@ -1008,7 +1008,7 @@
   {
     rtx zero = gen_reg_rtx(TImode);
     emit_move_insn(zero, GEN_INT(0));
-    emit_insn(gen_subti3(operands[0], zero, operands[1]));
+    emit_insn (gen_subti3(operands[0], zero, operands[1]));
     DONE;
   })
 
@@ -1159,22 +1159,22 @@
       }
     if (val && (val & 0xffff) == 0)
       {
-	emit_insn(gen_mpyh_si(operands[0], operands[2], operands[1]));
+	emit_insn (gen_mpyh_si(operands[0], operands[2], operands[1]));
       }
     else if (val > 0 && val < 0x10000)
       {
 	rtx cst = satisfies_constraint_K (GEN_INT (val)) ? GEN_INT(val) : d;
-	emit_insn(gen_mpyh_si(a, operands[1], operands[2]));
-	emit_insn(gen_mpyu_si(c, operands[1], cst));
-	emit_insn(gen_addsi3(operands[0], a, c));
+	emit_insn (gen_mpyh_si(a, operands[1], operands[2]));
+	emit_insn (gen_mpyu_si(c, operands[1], cst));
+	emit_insn (gen_addsi3(operands[0], a, c));
       }
     else
       {
-	emit_insn(gen_mpyh_si(a, operands[1], operands[2]));
-	emit_insn(gen_mpyh_si(b, operands[2], operands[1]));
-	emit_insn(gen_mpyu_si(c, operands[1], operands[2]));
-	emit_insn(gen_addsi3(d, a, b));
-	emit_insn(gen_addsi3(operands[0], d, c));
+	emit_insn (gen_mpyh_si(a, operands[1], operands[2]));
+	emit_insn (gen_mpyh_si(b, operands[2], operands[1]));
+	emit_insn (gen_mpyu_si(c, operands[1], operands[2]));
+	emit_insn (gen_addsi3(d, a, b));
+	emit_insn (gen_addsi3(operands[0], d, c));
       }
     DONE;
    })
@@ -1200,11 +1200,11 @@
     rtx d = operands[6];
     rtx op1 = simplify_gen_subreg (V8HImode, operands[1], V4SImode, 0);
     rtx op2 = simplify_gen_subreg (V8HImode, operands[2], V4SImode, 0);
-    emit_insn(gen_spu_mpyh(a, op1, op2));
-    emit_insn(gen_spu_mpyh(b, op2, op1));
-    emit_insn(gen_spu_mpyu(c, op1, op2));
-    emit_insn(gen_addv4si3(d, a, b));
-    emit_insn(gen_addv4si3(operands[0], d, c));
+    emit_insn (gen_spu_mpyh(a, op1, op2));
+    emit_insn (gen_spu_mpyh(b, op2, op1));
+    emit_insn (gen_spu_mpyu(c, op1, op2));
+    emit_insn (gen_addv4si3(d, a, b));
+    emit_insn (gen_addv4si3(operands[0], d, c));
     DONE;
    })
 
@@ -1620,11 +1620,11 @@
    (clobber (match_dup:VSF 3))
    (clobber (match_dup:VSF 4))]
   {
-    emit_insn(gen_frest_<mode>(operands[3], operands[2]));
-    emit_insn(gen_fi_<mode>(operands[3], operands[2], operands[3]));
-    emit_insn(gen_mul<mode>3(operands[4], operands[1], operands[3]));
-    emit_insn(gen_fnms_<mode>(operands[0], operands[4], operands[2], operands[1]));
-    emit_insn(gen_fma_<mode>(operands[0], operands[0], operands[3], operands[4]));
+    emit_insn (gen_frest_<mode>(operands[3], operands[2]));
+    emit_insn (gen_fi_<mode>(operands[3], operands[2], operands[3]));
+    emit_insn (gen_mul<mode>3(operands[4], operands[1], operands[3]));
+    emit_insn (gen_fnms_<mode>(operands[0], operands[4], operands[2], operands[1]));
+    emit_insn (gen_fma_<mode>(operands[0], operands[0], operands[3], operands[4]));
     DONE;
   })
 
@@ -1650,12 +1650,12 @@
   {
     emit_move_insn (operands[3],spu_float_const(\"0.5\",SFmode));
     emit_move_insn (operands[4],spu_float_const(\"1.00000011920928955078125\",SFmode));
-    emit_insn(gen_frsqest_sf(operands[2],operands[1]));
-    emit_insn(gen_fi_sf(operands[2],operands[1],operands[2]));
-    emit_insn(gen_mulsf3(operands[5],operands[2],operands[1]));
-    emit_insn(gen_mulsf3(operands[3],operands[5],operands[3]));
-    emit_insn(gen_fnms_sf(operands[4],operands[2],operands[5],operands[4]));
-    emit_insn(gen_fma_sf(operands[0],operands[4],operands[3],operands[5]));
+    emit_insn (gen_frsqest_sf(operands[2],operands[1]));
+    emit_insn (gen_fi_sf(operands[2],operands[1],operands[2]));
+    emit_insn (gen_mulsf3(operands[5],operands[2],operands[1]));
+    emit_insn (gen_mulsf3(operands[3],operands[5],operands[3]));
+    emit_insn (gen_fnms_sf(operands[4],operands[2],operands[5],operands[4]));
+    emit_insn (gen_fma_sf(operands[0],operands[4],operands[3],operands[5]));
     DONE;
   })
 
@@ -1990,7 +1990,7 @@
   ""
   "if (GET_CODE (operands[2]) == CONST_INT)
     {
-      emit_insn(gen_ashlti3_imm(operands[0], operands[1], operands[2]));
+      emit_insn (gen_ashlti3_imm(operands[0], operands[1], operands[2]));
       DONE;
     }
    operands[3] = gen_reg_rtx (TImode);")
@@ -2110,7 +2110,7 @@
   ""
   "if (GET_CODE (operands[2]) == CONST_INT)
     {
-      emit_insn(gen_lshr<mode>3_imm(operands[0], operands[1], operands[2]));
+      emit_insn (gen_lshr<mode>3_imm(operands[0], operands[1], operands[2]));
       DONE;
     }
    operands[3] = gen_reg_rtx (<MODE>mode);
@@ -2159,8 +2159,8 @@
 					     (const_int -8)))
 			     (const_int -8))))]
   {
-    emit_insn(gen_subsi3(operands[4], GEN_INT(0), operands[2]));
-    emit_insn(gen_subsi3(operands[5], GEN_INT(7), operands[2]));
+    emit_insn (gen_subsi3(operands[4], GEN_INT(0), operands[2]));
+    emit_insn (gen_subsi3(operands[5], GEN_INT(7), operands[2]));
   })
 
 (define_insn "rotqmbybi_<mode>"
@@ -2643,7 +2643,7 @@
                  (abs:V2DF (match_operand:V2DF 2 "spu_reg_operand" "r"))))]
   ""
 {
-  if(spu_arch == PROCESSOR_CELL)
+  if (spu_arch == PROCESSOR_CELL)
     {
       rtx ra = spu_gen_subreg (V4SImode, operands[1]);
       rtx rb = spu_gen_subreg (V4SImode, operands[2]);
@@ -2819,7 +2819,7 @@ selb\t%0,%5,%0,%3"
                  (match_operand:V2DF 2 "spu_reg_operand" "r")))]
   ""
 {
-  if(spu_arch == PROCESSOR_CELL)
+  if (spu_arch == PROCESSOR_CELL)
     {
       rtx ra = spu_gen_subreg (V4SImode, operands[1]);
       rtx rb = spu_gen_subreg (V4SImode, operands[2]);
@@ -2908,7 +2908,7 @@ selb\t%0,%5,%0,%3"
                  (abs:V2DF (match_operand:V2DF 2 "spu_reg_operand" "r"))))]
   ""
 {
-  if(spu_arch == PROCESSOR_CELL)
+  if (spu_arch == PROCESSOR_CELL)
     {
       rtx ra = spu_gen_subreg (V4SImode, operands[1]);
       rtx rb = spu_gen_subreg (V4SImode, operands[2]);
@@ -3043,7 +3043,7 @@ selb\t%0,%4,%0,%3"
 		      UNSPEC_DFTSV))]
   ""
 {
-  if(spu_arch == PROCESSOR_CELL)
+  if (spu_arch == PROCESSOR_CELL)
     {
       rtx result = gen_reg_rtx (V4SImode);
       emit_move_insn (result, CONST0_RTX (V4SImode));
