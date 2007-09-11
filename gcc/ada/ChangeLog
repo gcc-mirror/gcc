@@ -1,3 +1,24 @@
+2007-09-11  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Dispatch_Table_Wrapper): New attribute. Present
+	in library level record type entities if we are generating statically
+	allocated dispatch tables.
+
+	* exp_disp.adb (Make_Tags/Make_DT): Replace previous code
+	importing/exporting the _tag declaration by new code
+	importing/exporting the dispatch table wrapper. This change allows us
+	to statically allocate of the TSD.
+	(Make_DT.Export_DT): New procedure.
+	(Build_Static_DT): New function.
+	(Has_DT): New function.
+
+	* freeze.adb (Freeze_Static_Object): Code cleanup: Do not reset flags
+	True_Constant and Current_Value. Required to statically
+	allocate the dispatch tables.
+	(Check_Allocator): Make function iterative instead of recursive.
+ 	Also return inner allocator node, when present, so that we do not have
+ 	to look for that node again in the caller.
+
 2007-09-11  Jan Hubicka <jh@suse.cz>
 
 	* misc.c (gnat_expand_body): Kill.
