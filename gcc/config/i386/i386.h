@@ -138,6 +138,22 @@ struct processor_costs {
 				/* Specify what algorithm
 				   to use for stringops on unknown size.  */
   struct stringop_algs memcpy[2], memset[2];
+  const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
+				   load and store.  */
+  const int scalar_load_cost;   /* Cost of scalar load.  */
+  const int scalar_store_cost;  /* Cost of scalar store.  */
+  const int vec_stmt_cost;      /* Cost of any vector operation, excluding
+                                   load, store, vector-to-scalar and
+                                   scalar-to-vector operation.  */
+  const int vec_to_scalar_cost;    /* Cost of vect-to-scalar operation.  */
+  const int scalar_to_vec_cost;    /* Cost of scalar-to-vector operation.  */
+  const int vec_align_load_cost;   /* Cost of aligned vector load.  */ 
+  const int vec_unalign_load_cost; /* Cost of unaligned vector load.  */
+  const int vec_store_cost;        /* Cost of vector store.  */
+  const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
+					  cost model.  */
+  const int cond_not_taken_branch_cost;/* Cost of not taken branch for
+					  vectorizer cost model.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -2459,6 +2475,57 @@ struct machine_function GTY(())
 #define SYMBOL_FLAG_DLLEXPORT		(SYMBOL_FLAG_MACH_DEP << 2)
 #define SYMBOL_REF_DLLEXPORT_P(X) \
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_DLLEXPORT) != 0)
+
+/* Model costs for vectorizer.  */
+
+/* Cost of conditional branch.  */
+#undef TARG_COND_BRANCH_COST
+#define TARG_COND_BRANCH_COST           ix86_cost->branch_cost
+
+/* Cost of any scalar operation, excluding load and store.  */
+#undef TARG_SCALAR_STMT_COST
+#define TARG_SCALAR_STMT_COST           ix86_cost->scalar_stmt_cost
+
+/* Cost of scalar load.  */
+#undef TARG_SCALAR_LOAD_COST
+#define TARG_SCALAR_LOAD_COST           ix86_cost->scalar_load_cost
+
+/* Cost of scalar store.  */
+#undef TARG_SCALAR_STORE_COST
+#define TARG_SCALAR_STORE_COST          ix86_cost->scalar_store_cost
+
+/* Cost of any vector operation, excluding load, store or vector to scalar
+   operation.  */ 
+#undef TARG_VEC_STMT_COST
+#define TARG_VEC_STMT_COST              ix86_cost->vec_stmt_cost
+
+/* Cost of vector to scalar operation.  */
+#undef TARG_VEC_TO_SCALAR_COST
+#define TARG_VEC_TO_SCALAR_COST         ix86_cost->vec_to_scalar_cost
+
+/* Cost of scalar to vector operation.  */
+#undef TARG_SCALAR_TO_VEC_COST
+#define TARG_SCALAR_TO_VEC_COST         ix86_cost->scalar_to_vec_cost
+
+/* Cost of aligned vector load.  */
+#undef TARG_VEC_LOAD_COST
+#define TARG_VEC_LOAD_COST              ix86_cost->vec_align_load_cost
+
+/* Cost of misaligned vector load.  */
+#undef TARG_VEC_UNALIGNED_LOAD_COST
+#define TARG_VEC_UNALIGNED_LOAD_COST    ix86_cost->vec_unalign_load_cost
+
+/* Cost of vector store.  */
+#undef TARG_VEC_STORE_COST
+#define TARG_VEC_STORE_COST             ix86_cost->vec_store_cost
+
+/* Cost of conditional taken branch for vectorizer cost model.  */
+#undef TARG_COND_TAKEN_BRANCH_COST
+#define TARG_COND_TAKEN_BRANCH_COST     ix86_cost->cond_taken_branch_cost
+
+/* Cost of conditional not taken branch for vectorizer cost model.  */
+#undef TARG_COND_NOT_TAKEN_BRANCH_COST
+#define TARG_COND_NOT_TAKEN_BRANCH_COST ix86_cost->cond_not_taken_branch_cost
 
 /*
 Local variables:

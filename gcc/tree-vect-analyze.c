@@ -596,8 +596,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
       return false;
     }
 
-  min_scalar_loop_bound = (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND))
-                          * vectorization_factor;
+  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+			    * vectorization_factor) - 1);
 
   /* Use the cost model only if it is more conservative than user specified
      threshold.  */
@@ -609,7 +609,7 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
     th = (unsigned) min_profitable_iters;
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && LOOP_VINFO_INT_NITERS (loop_vinfo) < th)
+      && LOOP_VINFO_INT_NITERS (loop_vinfo) <= th)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))	      
         fprintf (vect_dump, "not vectorized: vectorization not "

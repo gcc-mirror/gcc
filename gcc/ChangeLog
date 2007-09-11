@@ -1,3 +1,47 @@
+2007-09-10  Harsha Jagasia <harsha.jagasia@amd.com>
+            Jan Sjodin <jan.sjodin@amd.com>
+	
+	* tree-vect-analyze.c (vect_analyze_operations): Change
+	comparison of loop iterations with threshold to less than
+	or equal to instead of less than. Reduce
+	min_scalar_loop_bound by one.
+	* tree-vect-transform.c (vect_estimate_min_profitable_iters): 
+	Change prologue and epilogue iterations estimate to vf/2,
+	when unknown at compile-time. Change versioning guard
+	cost to taken_branch_cost. If peeling for alignment is
+	unknown at compile-time, change peel guard costs to one
+	taken branch and one not-taken branch per peeled loop.
+	If peeling for alignment is known but number of scalar loop
+	iterations is unknown at compile-time, change peel guard
+	costs to one taken branch per peeled loop. Change the cost
+	model equation to consider vector iterations as the loop
+	iterations less the prologue and epilogue iterations.
+	Change outside vector cost check to less than or equal to
+	zero instead of equal to zero.
+	(vect_do_peeling_for_loop_bound): Reduce
+	min_scalar_loop_bound by one.
+	* tree-vectorizer.h: Add TARG_COND_TAKEN_BRANCH_COST and
+	TARG_COND_NOT_TAKEN_BRANCH_COST.	
+	* config/i386/i386.h (processor_costs): Add
+	scalar_stmt_cost, scalar_load_cost, scalar_store_cost,
+	vec_stmt_cost, vec_to_scalar_cost, scalar_to_vec_cost,
+	vec_align_load_cost, vect_unalign_load_cost,
+	vec_store_cost, cond_taken_branch_cost,
+	cond_not_taken_branch_cost.
+	Define macros for x86 costs.
+	* config/i386/i386.c:
+	(size_cost): Set scalar_stmt_cost, scalar_load_cost,
+	scalar_store_cost, vec_stmt_cost, vec_to_scalar_cost,
+	scalar_to_vec_cost, vec_align_load_cost, 
+	vect_unalign_load_cost, vec_store_cost,
+	cond_taken_branch_cost, cond_not_taken_branch_cost to one. 
+	(i386_cost, i486_cost, pentium_cost, pentiumpro_cost,
+	geode_cost, k6_cost, athlon_cost, pentium4_cost, nocona_cost, 
+	core2_cost, generic64_cost, generic32_cost): Set to default
+	untuned costs.
+	(k8_cost, amdfam10_cost): Costs for vectorization tuned.
+	(x86_builtin_vectorization_cost): New.
+
 2007-09-10  Janis Johnson  <janis187@us.ibm.com>
 	    Ben Elliston  <bje@au.ibm.com>
 

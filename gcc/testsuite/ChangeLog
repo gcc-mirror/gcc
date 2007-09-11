@@ -1,3 +1,16 @@
+2007-09-10  Harsha Jagasia <harsha.jagasia@amd.com>
+
+        * gcc.dg/vect/costmodel/i386/costmodel-vect-31.c: 
+	Change dg-final to expect 1 non-profitable loop and
+	3 profitable loops.
+        * gcc.dg/vect/costmodel/x86-64/costmodel-vect-31.c:
+	Change dg-final to expect 1 non-profitable loop and
+	3 profitable loops.
+        * gcc.dg/vect/costmodel/x86-64/costmodel-fast-math-vect-pr29925.c:
+	Change dg-final to expect 1 profitable loop.
+        * gcc.dg/vect/costmodel/i386/costmodel-fast-math-vect-pr29925.c:
+	Change dg-final to expect 1 profitable loop.	
+	
 2007-09-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/call-saved-1.c: New test.
