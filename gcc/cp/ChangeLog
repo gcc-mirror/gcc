@@ -1,3 +1,15 @@
+2007-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/15745
+	* except.c (prepare_eh_type): Use type_decays_to.
+
+	* except.c (initialize_handler_parm): Use
+	fold_build_cleanup_point_expr.
+
+	PR c++/31411
+	* except.c (initialize_handler_parm): Put a CLEANUP_POINT_EXPR inside
+	the MUST_NOT_THROW_EXPR.
+
 2007-09-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33342
