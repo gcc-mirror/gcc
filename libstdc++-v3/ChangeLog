@@ -1,3 +1,134 @@
+2007-09-11  Johannes Singler  <singler@ira.uka.de>
+	    Leonor Frias Moya  <lfrias@lsi.upc.edu>
+            Felix Putze  <kontakt@felix-putze.de>
+            Marius Elvert  <marius.elvert@ira.uka.de>
+	    Felix Bondarenko  <f.bondarenko@web.de>
+	    Robert Geisberger  <robert.geisberger@stud.uni-karlsruhe.de>
+	    Robin Dapp  <r.dapp@freenet.de>
+  	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	Add parallel mode.
+	* include/parallel: New.
+	* include/parallel/iterator.h: New.
+	* include/parallel/multiway_merge.h: New.
+	* include/parallel/parallel.h: New.
+	* include/parallel/algorithm
+	* include/parallel/find_selectors.h: New.
+	* include/parallel/losertree.h: New.
+	* include/parallel/list_partition.h: New.
+	* include/parallel/types.h: New.
+	* include/parallel/for_each.h: New.
+	* include/parallel/multiseq_selection.h: New.
+	* include/parallel/workstealing.h: New.
+	* include/parallel/base.h: New.
+	* include/parallel/par_loop.h: New.
+	* include/parallel/numeric
+	* include/parallel/features.h: New.
+	* include/parallel/quicksort.h: New.
+	* include/parallel/algorithmfwd.h: New.
+	* include/parallel/equally_split.h: New.
+	* include/parallel/compiletime_settings.h: New.
+	* include/parallel/for_each_selectors.h: New.
+	* include/parallel/basic_iterator.h: New.
+	* include/parallel/omp_loop_static.h: New.
+	* include/parallel/random_shuffle.h: New.
+	* include/parallel/balanced_quicksort.h: New.
+	* include/parallel/set_operations.h: New.
+	* include/parallel/tags.h: New.
+	* include/parallel/merge.h: New.
+	* include/parallel/tree.h: New.
+	* include/parallel/settings.h: New.
+	* include/parallel/unique_copy.h: New.
+	* include/parallel/multiway_mergesort.h: New.
+	* include/parallel/numericfwd.h: New.
+	* include/parallel/search.h: New.
+	* include/parallel/partition.h: New.
+	* include/parallel/compatibility.h: New.
+	* include/parallel/algobase.h: New.
+	* include/parallel/find.h: New.
+	* include/parallel/partial_sum.h: New.
+	* include/parallel/algo.h: New.
+	* include/parallel/omp_loop.h: New.
+	* include/parallel/queue.h: New.
+	* include/parallel/timing.h: New.
+	* include/parallel/sort.h: New.
+	* include/parallel/checkers.h: New.
+	* include/parallel/random_number.h: New.
+	* include/bits/algorithmfwd.h: New.
+
+	* acinclude.m4 (GLIBCXX_ENABLE_PARALLEL): New.
+	* configure.host: Add atomic_flags.
+	* configure.ac: Export ATOMIC_FLAGS, call GLIBCXX_ENABLE_PARALLEL.
+	* src/Makefile.am: Add parallel_list rules.
+	* include/Makefile.am: Add parallel files.
+	* testsuite/Makefile.am (check-parallel): Add.
+	(check-performance-parallel): Add.
+	* config.h.in: Regenerate.
+	* configure: Same.
+	* libsupc++/Makefile.in: Same.
+	* testsuite/Makefile.in: Same.
+	* Makefile.in: Same.
+	* libmath/Makefile.in: Same.
+	* include/Makefile.in: Same.
+	* src/Makefile.in: Same.
+	* po/Makefile.in: Same.
+	
+	* config/abi/pre/gnu.ver: Export parallel list bits.
+
+	* docs/html/parallel_mode.html: New.
+	* docs/html/documentation.html: Add link.
+	* docs/doxygen/user.cfg.in: Adjust for new files and directory.
+	* docs/doxygen/doxygroups.cc: Adjust namespace markup.
+
+	* include/debug/set.h: Adjust for _GLIBCXX_STD_D or _P change.
+	* include/debug/bitset: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/vector: Same.
+	* include/debug/map.h: Same.
+	* include/debug/deque: Same.
+	* include/debug/list: Same.
+	* include/debug/debug.h: Same.
+	* include/debug/multimap.h: Same.
+	* include/std/algorithm: Same.
+	* include/std/numeric: Same.
+	* include/std/bitset: Same.
+	* include/std/string: Same.
+	* include/ext/hash_map: Same.
+	* include/ext/hash_set: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_map.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/bits/stl_numeric.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/stl_algo.h: Same.
+	* include/bits/c++config: Same.
+	* include/bits/vector.tcc: Same.
+	* include/bits/deque.tcc: Same.
+	* include/bits/stl_bvector.h: Same.
+	* include/bits/list.tcc: Same.
+	* src/list.cc: Same.
+	* src/parallel_list.cc: New.
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_parallel_mode): New.
+	* testsuite/lib/dg-options.exp (dg-require-parallel-mode): New.
+	* scripts/testsuite_flags.in (--cxxparallelflags): New.
+	* scripts/check_performance: Adjust.
+	* testsuite/25_algorithms/headers/parallel_algorithm.cc: New.
+	* testsuite/25_algorithms/headers/algorithm_parallel_mode.cc: New.
+	* testsuite/25_algorithms/headers/parallel_algorithm_mixed1.cc: New.
+	* testsuite/25_algorithms/headers/parallel_algorithm_mixed2.cc: New.
+	* testsuite/26_numerics/headers/numeric/parallel_numeric.cc: New.
+	* testsuite/26_numerics/headers/numeric/numeric_parallel_mode.cc: New.
+	* testsuite/26_numerics/headers/numeric/
+	parallel_numeric_mixed1.cc: New.
+	* testsuite/26_numerics/headers/numeric/
+	parallel_numeric_mixed2.cc: New.
+	
 2007-09-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Revert part of

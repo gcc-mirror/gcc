@@ -69,9 +69,9 @@ toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__libstdc___la_SOURCES_DIST = bitmap_allocator.cc pool_allocator.cc \
 	mt_allocator.cc codecvt.cc compatibility.cc complex_io.cc \
-	ctype.cc debug.cc debug_list.cc functexcept.cc hash.cc \
-	hash_c++0x.cc globals_io.cc ios.cc ios_failure.cc ios_init.cc \
-	ios_locale.cc limits.cc list.cc locale.cc locale_init.cc \
+	ctype.cc debug.cc functexcept.cc hash.cc hash_c++0x.cc \
+	globals_io.cc ios.cc ios_failure.cc ios_init.cc ios_locale.cc \
+	limits.cc list.cc debug_list.cc locale.cc locale_init.cc \
 	locale_facets.cc localename.cc stdexcept.cc strstream.cc \
 	system_error.cc tree.cc allocator-inst.cc concept-inst.cc \
 	fstream-inst.cc ext-inst.cc ios-inst.cc iostream-inst.cc \
@@ -81,25 +81,28 @@ am__libstdc___la_SOURCES_DIST = bitmap_allocator.cc pool_allocator.cc \
 	wstring-inst.cc atomicity.cc codecvt_members.cc \
 	collate_members.cc ctype_members.cc messages_members.cc \
 	monetary_members.cc numeric_members.cc time_members.cc \
-	basic_file.cc c++locale.cc compatibility-ldbl.cc
+	basic_file.cc c++locale.cc compatibility-ldbl.cc \
+	parallel_list.cc
 am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	ctype_members.lo messages_members.lo monetary_members.lo \
 	numeric_members.lo time_members.lo
-am__objects_2 = basic_file.lo c++locale.lo
-@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_3 = compatibility-ldbl.lo
-am__objects_4 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
+@GLIBCXX_LDBL_COMPAT_TRUE@am__objects_2 = compatibility-ldbl.lo
+@ENABLE_PARALLEL_TRUE@am__objects_3 = parallel_list.lo
+am__objects_4 = basic_file.lo c++locale.lo $(am__objects_2) \
+	$(am__objects_3)
+am__objects_5 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	codecvt.lo compatibility.lo complex_io.lo ctype.lo debug.lo \
-	debug_list.lo functexcept.lo hash.lo hash_c++0x.lo \
-	globals_io.lo ios.lo ios_failure.lo ios_init.lo ios_locale.lo \
-	limits.lo list.lo locale.lo locale_init.lo locale_facets.lo \
+	functexcept.lo hash.lo hash_c++0x.lo globals_io.lo ios.lo \
+	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
+	debug_list.lo locale.lo locale_init.lo locale_facets.lo \
 	localename.lo stdexcept.lo strstream.lo system_error.lo \
 	tree.lo allocator-inst.lo concept-inst.lo fstream-inst.lo \
 	ext-inst.lo ios-inst.lo iostream-inst.lo istream-inst.lo \
 	istream.lo locale-inst.lo misc-inst.lo ostream-inst.lo \
 	sstream-inst.lo streambuf-inst.lo streambuf.lo string-inst.lo \
 	valarray-inst.lo wlocale-inst.lo wstring-inst.lo \
-	$(am__objects_1) $(am__objects_2) $(am__objects_3)
-am_libstdc___la_OBJECTS = $(am__objects_4)
+	$(am__objects_1) $(am__objects_4)
+am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp =
@@ -121,6 +124,7 @@ AMTAR = @AMTAR@
 AR = @AR@
 AS = @AS@
 ATOMICITY_SRCDIR = @ATOMICITY_SRCDIR@
+ATOMIC_FLAGS = @ATOMIC_FLAGS@
 ATOMIC_WORD_SRCDIR = @ATOMIC_WORD_SRCDIR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -158,6 +162,8 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ENABLE_PARALLEL_FALSE = @ENABLE_PARALLEL_FALSE@
+ENABLE_PARALLEL_TRUE = @ENABLE_PARALLEL_TRUE@
 ENABLE_SYMVERS_DARWIN_FALSE = @ENABLE_SYMVERS_DARWIN_FALSE@
 ENABLE_SYMVERS_DARWIN_TRUE = @ENABLE_SYMVERS_DARWIN_TRUE@
 ENABLE_SYMVERS_FALSE = @ENABLE_SYMVERS_FALSE@
@@ -348,9 +354,10 @@ atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
-	basic_file.cc \
-	c++locale.cc
+	basic_file.cc c++locale.cc ${ldbl_compat_sources} ${parallel_sources}
 
+@ENABLE_PARALLEL_FALSE@parallel_sources = 
+@ENABLE_PARALLEL_TRUE@parallel_sources = parallel_list.cc 
 @GLIBCXX_LDBL_COMPAT_FALSE@ldbl_compat_sources = 
 @GLIBCXX_LDBL_COMPAT_TRUE@ldbl_compat_sources = compatibility-ldbl.cc
 
@@ -364,7 +371,6 @@ sources = \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \
-	debug_list.cc \
 	functexcept.cc \
 	hash.cc \
 	hash_c++0x.cc \
@@ -375,6 +381,7 @@ sources = \
 	ios_locale.cc \
 	limits.cc \
 	list.cc \
+	debug_list.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \
@@ -402,8 +409,7 @@ sources = \
 	wlocale-inst.cc \
 	wstring-inst.cc \
 	${host_sources} \
-	${host_sources_extra} \
-	${ldbl_compat_sources}
+	${host_sources_extra} 
 
 libstdc___la_SOURCES = $(sources)
 libstdc___la_LIBADD = \
@@ -789,6 +795,12 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+# Use special rules for parallel_list.cc compile.
+parallel_list.lo: parallel_list.cc
+	$(LTCXXCOMPILE) -I$(glibcxx_builddir)/../libgomp -c $<
+parallel_list.o: parallel_list.cc
+	$(CXXCOMPILE) -I$(glibcxx_builddir)/../libgomp -c $<
 
 # Use special rules for the C++0x sources so that the proper flags are passed.
 system_error.lo: system_error.cc

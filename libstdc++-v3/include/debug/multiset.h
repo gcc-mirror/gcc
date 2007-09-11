@@ -46,10 +46,10 @@ namespace __debug
   template<typename _Key, typename _Compare = std::less<_Key>,
 	   typename _Allocator = std::allocator<_Key> >
     class multiset
-    : public _GLIBCXX_STD::multiset<_Key, _Compare, _Allocator>,
+    : public _GLIBCXX_STD_D::multiset<_Key, _Compare, _Allocator>,
       public __gnu_debug::_Safe_sequence<multiset<_Key, _Compare, _Allocator> >
     {
-      typedef _GLIBCXX_STD::multiset<_Key, _Compare, _Allocator> _Base;
+      typedef _GLIBCXX_STD_D::multiset<_Key, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<multiset> _Safe_base;
 
     public:

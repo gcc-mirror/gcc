@@ -1725,6 +1725,23 @@ AC_DEFUN([GLIBCXX_ENABLE_CONCEPT_CHECKS], [
   fi
 ])
 
+dnl
+dnl Check for parallel mode pre-requisites, including OpenMP support.
+dnl
+dnl  +  Usage:  GLIBCXX_ENABLE_PARALLEL
+dnl
+AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
+
+  enable_parallel=no;
+  if test -f "${glibcxx_builddir}/../libgomp/omp.h"; then
+    enable_parallel=yes;
+  fi
+
+  AC_MSG_CHECKING([for parallel mode support])
+  AC_MSG_RESULT([$enable_parallel])
+  GLIBCXX_CONDITIONAL(ENABLE_PARALLEL, test $enable_parallel = yes)
+])
+
 
 dnl
 dnl Check for which I/O library to use:  stdio, or something specific.
@@ -2072,7 +2089,7 @@ AC_DEFUN([GLIBCXX_ENABLE_PCH], [
 
   GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_PCH, test $enable_libstdcxx_pch = yes)
   if test $enable_libstdcxx_pch = yes; then
-    glibcxx_PCHFLAGS="-include bits/stdtr1c++.h"
+    glibcxx_PCHFLAGS="-include bits/stdc++.h"
   else
     glibcxx_PCHFLAGS=""
   fi

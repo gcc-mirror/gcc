@@ -458,7 +458,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP LIBTOOL SED FGREP GREP LD DUMPBIN ac_ct_DUMPBIN NM lt_ECHO LDFLAGS CXXCPP enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_C_GLOBAL_TRUE GLIBCXX_C_HEADERS_C_GLOBAL_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE GLIBCXX_C_HEADERS_EXTRA_TRUE GLIBCXX_C_HEADERS_EXTRA_FALSE DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS glibcxx_thread_h WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV LTLIBICONV SYMVER_FILE port_specific_symbol_files ENABLE_SYMVERS_TRUE ENABLE_SYMVERS_FALSE ENABLE_SYMVERS_GNU_TRUE ENABLE_SYMVERS_GNU_FALSE ENABLE_SYMVERS_GNU_NAMESPACE_TRUE ENABLE_SYMVERS_GNU_NAMESPACE_FALSE ENABLE_SYMVERS_DARWIN_TRUE ENABLE_SYMVERS_DARWIN_FALSE ENABLE_VISIBILITY_TRUE ENABLE_VISIBILITY_FALSE GLIBCXX_LDBL_COMPAT_TRUE GLIBCXX_LDBL_COMPAT_FALSE baseline_dir ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR CPU_DEFINES_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR ERROR_CONSTANTS_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CPP CPPFLAGS EGREP LIBTOOL SED FGREP GREP LD DUMPBIN ac_ct_DUMPBIN NM lt_ECHO LDFLAGS CXXCPP enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_C_GLOBAL_TRUE GLIBCXX_C_HEADERS_C_GLOBAL_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE GLIBCXX_C_HEADERS_EXTRA_TRUE GLIBCXX_C_HEADERS_EXTRA_FALSE DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE ENABLE_PARALLEL_TRUE ENABLE_PARALLEL_FALSE EXTRA_CXX_FLAGS glibcxx_thread_h WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV LTLIBICONV SYMVER_FILE port_specific_symbol_files ENABLE_SYMVERS_TRUE ENABLE_SYMVERS_FALSE ENABLE_SYMVERS_GNU_TRUE ENABLE_SYMVERS_GNU_FALSE ENABLE_SYMVERS_GNU_NAMESPACE_TRUE ENABLE_SYMVERS_GNU_NAMESPACE_FALSE ENABLE_SYMVERS_DARWIN_TRUE ENABLE_SYMVERS_DARWIN_FALSE ENABLE_VISIBILITY_TRUE ENABLE_VISIBILITY_FALSE GLIBCXX_LDBL_COMPAT_TRUE GLIBCXX_LDBL_COMPAT_FALSE baseline_dir ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ATOMIC_FLAGS CPU_DEFINES_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR ERROR_CONSTANTS_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -13949,7 +13949,7 @@ echo "${ECHO_T}$enable_libstdcxx_pch" >&6
 
 
   if test $enable_libstdcxx_pch = yes; then
-    glibcxx_PCHFLAGS="-include bits/stdtr1c++.h"
+    glibcxx_PCHFLAGS="-include bits/stdc++.h"
   else
     glibcxx_PCHFLAGS=""
   fi
@@ -16468,6 +16468,19 @@ fi;
 echo "${ECHO_T}$enable_libstdcxx_debug" >&6
 
 
+
+
+  enable_parallel=no;
+  if test -f "${glibcxx_builddir}/../libgomp/omp.h"; then
+    enable_parallel=yes;
+  fi
+
+  echo "$as_me:$LINENO: checking for parallel mode support" >&5
+echo $ECHO_N "checking for parallel mode support... $ECHO_C" >&6
+  echo "$as_me:$LINENO: result: $enable_parallel" >&5
+echo "${ECHO_T}$enable_parallel" >&6
+
+
   echo "$as_me:$LINENO: checking for extra compiler flags for building" >&5
 echo $ECHO_N "checking for extra compiler flags for building... $ECHO_C" >&6
    # Check whether --enable-cxx-flags or --disable-cxx-flags was given.
@@ -17279,7 +17292,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 17282 "configure"
+#line 17295 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -93897,10 +93910,12 @@ done
 # Propagate the target-specific source directories through the build chain.
 ATOMICITY_SRCDIR=config/${atomicity_dir}
 ATOMIC_WORD_SRCDIR=config/${atomic_word_dir}
+ATOMIC_FLAGS=${atomic_flags}
 CPU_DEFINES_SRCDIR=config/${cpu_defines_dir}
 OS_INC_SRCDIR=config/${os_include_dir}
 ERROR_CONSTANTS_SRCDIR=config/${error_constants_dir}
 ABI_TWEAKS_SRCDIR=config/${abi_tweaks_dir}
+
 
 
 
@@ -93999,6 +94014,17 @@ if test $enable_libstdcxx_debug = yes; then
 else
   GLIBCXX_BUILD_DEBUG_TRUE='#'
   GLIBCXX_BUILD_DEBUG_FALSE=
+fi
+
+
+
+
+if test $enable_parallel = yes; then
+  ENABLE_PARALLEL_TRUE=
+  ENABLE_PARALLEL_FALSE='#'
+else
+  ENABLE_PARALLEL_TRUE='#'
+  ENABLE_PARALLEL_FALSE=
 fi
 
 
@@ -94426,6 +94452,13 @@ if test -z "${GLIBCXX_BUILD_DEBUG_TRUE}" && test -z "${GLIBCXX_BUILD_DEBUG_FALSE
   { { echo "$as_me:$LINENO: error: conditional \"GLIBCXX_BUILD_DEBUG\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"GLIBCXX_BUILD_DEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${ENABLE_PARALLEL_TRUE}" && test -z "${ENABLE_PARALLEL_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ENABLE_PARALLEL\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"ENABLE_PARALLEL\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -95474,6 +95507,8 @@ s,@GLIBCXX_C_HEADERS_EXTRA_FALSE@,$GLIBCXX_C_HEADERS_EXTRA_FALSE,;t t
 s,@DEBUG_FLAGS@,$DEBUG_FLAGS,;t t
 s,@GLIBCXX_BUILD_DEBUG_TRUE@,$GLIBCXX_BUILD_DEBUG_TRUE,;t t
 s,@GLIBCXX_BUILD_DEBUG_FALSE@,$GLIBCXX_BUILD_DEBUG_FALSE,;t t
+s,@ENABLE_PARALLEL_TRUE@,$ENABLE_PARALLEL_TRUE,;t t
+s,@ENABLE_PARALLEL_FALSE@,$ENABLE_PARALLEL_FALSE,;t t
 s,@EXTRA_CXX_FLAGS@,$EXTRA_CXX_FLAGS,;t t
 s,@glibcxx_thread_h@,$glibcxx_thread_h,;t t
 s,@WERROR@,$WERROR,;t t
@@ -95500,6 +95535,7 @@ s,@GLIBCXX_LDBL_COMPAT_FALSE@,$GLIBCXX_LDBL_COMPAT_FALSE,;t t
 s,@baseline_dir@,$baseline_dir,;t t
 s,@ATOMICITY_SRCDIR@,$ATOMICITY_SRCDIR,;t t
 s,@ATOMIC_WORD_SRCDIR@,$ATOMIC_WORD_SRCDIR,;t t
+s,@ATOMIC_FLAGS@,$ATOMIC_FLAGS,;t t
 s,@CPU_DEFINES_SRCDIR@,$CPU_DEFINES_SRCDIR,;t t
 s,@ABI_TWEAKS_SRCDIR@,$ABI_TWEAKS_SRCDIR,;t t
 s,@OS_INC_SRCDIR@,$OS_INC_SRCDIR,;t t

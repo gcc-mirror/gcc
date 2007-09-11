@@ -58,6 +58,13 @@ case ${query} in
       CXXFLAGS_config="@SECTION_FLAGS@ @CXXFLAGS@ @EXTRA_CXX_FLAGS@"
       echo ${CXXFLAGS_default} ${CXXFLAGS_config}
       ;;
+    --cxxparallelflags)
+      CXXFLAGS_parallel="-D_GLIBCXX_PARALLEL -fopenmp
+			 -B${BUILD_DIR}/../libgomp 
+                         -I${BUILD_DIR}/../libgomp 
+			 -L${BUILD_DIR}/../libgomp/.libs -lgomp"
+      echo ${CXXFLAGS_parallel}
+      ;;
     --cxxpchflags)
       PCHFLAGS="@glibcxx_PCHFLAGS@"
       echo ${PCHFLAGS}

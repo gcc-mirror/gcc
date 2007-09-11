@@ -62,7 +62,7 @@
 #ifndef _LIST_TCC
 #define _LIST_TCC 1
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   template<typename _Tp, typename _Alloc>
     void

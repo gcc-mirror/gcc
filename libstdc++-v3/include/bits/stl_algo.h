@@ -62,9 +62,10 @@
 #ifndef _STL_ALGO_H
 #define _STL_ALGO_H 1
 
+#include <cstdlib>             // for rand
 #include <bits/stl_heap.h>
 #include <bits/stl_tempbuf.h>  // for _Temporary_buffer
-#include <cstdlib>             // for rand
+#include <bits/algorithmfwd.h>
 #include <debug/debug.h>
 
 // See concept_check.h for the __glibcxx_*_requires macros.
@@ -138,28 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return __b;
     }
 
-  /**
-   *  @brief Apply a function to every element of a sequence.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  f      A unary function object.
-   *  @return   @p f.
-   *
-   *  Applies the function object @p f to each element in the range
-   *  @p [first,last).  @p f must not modify the order of the sequence.
-   *  If @p f has a return value it is ignored.
-  */
-  template<typename _InputIterator, typename _Function>
-    _Function
-    for_each(_InputIterator __first, _InputIterator __last, _Function __f)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_requires_valid_range(__first, __last);
-      for (; __first != __last; ++__first)
-	__f(*__first);
-      return __f;
-    }
+  // for_each
 
   /**
    *  @if maint
@@ -295,450 +275,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
-  /**
-   *  @brief Find the first occurrence of a value in a sequence.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  val    The value to find.
-   *  @return   The first iterator @c i in the range @p [first,last)
-   *  such that @c *i == @p val, or @p last if no such iterator exists.
-  */
-  template<typename _InputIterator, typename _Tp>
-    inline _InputIterator
-    find(_InputIterator __first, _InputIterator __last,
-	 const _Tp& __val)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_EqualOpConcept<
-		typename iterator_traits<_InputIterator>::value_type, _Tp>)
-      __glibcxx_requires_valid_range(__first, __last);
-      return std::__find(__first, __last, __val,
-		         std::__iterator_category(__first));
-    }
-
-  /**
-   *  @brief Find the first element in a sequence for which a predicate is true.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  pred   A predicate.
-   *  @return   The first iterator @c i in the range @p [first,last)
-   *  such that @p pred(*i) is true, or @p last if no such iterator exists.
-  */
-  template<typename _InputIterator, typename _Predicate>
-    inline _InputIterator
-    find_if(_InputIterator __first, _InputIterator __last,
-	    _Predicate __pred)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
-	      typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-      return std::__find_if(__first, __last, __pred,
-			    std::__iterator_category(__first));
-    }
-
-  /**
-   *  @brief  Find element from a set in a sequence.
-   *  @param  first1  Start of range to search.
-   *  @param  last1   End of range to search.
-   *  @param  first2  Start of match candidates.
-   *  @param  last2   End of match candidates.
-   *  @return   The first iterator @c i in the range
-   *  @p [first1,last1) such that @c *i == @p *(i2) such that i2 is an
-   *  interator in [first2,last2), or @p last1 if no such iterator exists.
-   *
-   *  Searches the range @p [first1,last1) for an element that is equal to
-   *  some element in the range [first2,last2).  If found, returns an iterator
-   *  in the range [first1,last1), otherwise returns @p last1.
-  */
-  template<typename _InputIterator, typename _ForwardIterator>
-    _InputIterator
-    find_first_of(_InputIterator __first1, _InputIterator __last1,
-		  _ForwardIterator __first2, _ForwardIterator __last2)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	    typename iterator_traits<_InputIterator>::value_type,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_valid_range(__first2, __last2);
-
-      for (; __first1 != __last1; ++__first1)
-	for (_ForwardIterator __iter = __first2; __iter != __last2; ++__iter)
-	  if (*__first1 == *__iter)
-	    return __first1;
-      return __last1;
-    }
-
-  /**
-   *  @brief  Find element from a set in a sequence using a predicate.
-   *  @param  first1  Start of range to search.
-   *  @param  last1   End of range to search.
-   *  @param  first2  Start of match candidates.
-   *  @param  last2   End of match candidates.
-   *  @param  comp    Predicate to use.
-   *  @return   The first iterator @c i in the range
-   *  @p [first1,last1) such that @c comp(*i, @p *(i2)) is true and i2 is an
-   *  interator in [first2,last2), or @p last1 if no such iterator exists.
-   *
-   *  Searches the range @p [first1,last1) for an element that is equal to
-   *  some element in the range [first2,last2).  If found, returns an iterator in
-   *  the range [first1,last1), otherwise returns @p last1.
-  */
-  template<typename _InputIterator, typename _ForwardIterator,
-	   typename _BinaryPredicate>
-    _InputIterator
-    find_first_of(_InputIterator __first1, _InputIterator __last1,
-		  _ForwardIterator __first2, _ForwardIterator __last2,
-		  _BinaryPredicate __comp)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	    typename iterator_traits<_InputIterator>::value_type,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_valid_range(__first2, __last2);
-
-      for (; __first1 != __last1; ++__first1)
-	for (_ForwardIterator __iter = __first2; __iter != __last2; ++__iter)
-	  if (__comp(*__first1, *__iter))
-	    return __first1;
-      return __last1;
-    }
-
-  /**
-   *  @brief Find two adjacent values in a sequence that are equal.
-   *  @param  first  A forward iterator.
-   *  @param  last   A forward iterator.
-   *  @return   The first iterator @c i such that @c i and @c i+1 are both
-   *  valid iterators in @p [first,last) and such that @c *i == @c *(i+1),
-   *  or @p last if no such iterator exists.
-  */
-  template<typename _ForwardIterator>
-    _ForwardIterator
-    adjacent_find(_ForwardIterator __first, _ForwardIterator __last)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_EqualityComparableConcept<
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-      if (__first == __last)
-	return __last;
-      _ForwardIterator __next = __first;
-      while(++__next != __last)
-	{
-	  if (*__first == *__next)
-	    return __first;
-	  __first = __next;
-	}
-      return __last;
-    }
-
-  /**
-   *  @brief Find two adjacent values in a sequence using a predicate.
-   *  @param  first         A forward iterator.
-   *  @param  last          A forward iterator.
-   *  @param  binary_pred   A binary predicate.
-   *  @return   The first iterator @c i such that @c i and @c i+1 are both
-   *  valid iterators in @p [first,last) and such that
-   *  @p binary_pred(*i,*(i+1)) is true, or @p last if no such iterator
-   *  exists.
-  */
-  template<typename _ForwardIterator, typename _BinaryPredicate>
-    _ForwardIterator
-    adjacent_find(_ForwardIterator __first, _ForwardIterator __last,
-		  _BinaryPredicate __binary_pred)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	    typename iterator_traits<_ForwardIterator>::value_type,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-      if (__first == __last)
-	return __last;
-      _ForwardIterator __next = __first;
-      while(++__next != __last)
-	{
-	  if (__binary_pred(*__first, *__next))
-	    return __first;
-	  __first = __next;
-	}
-      return __last;
-    }
-
-  /**
-   *  @brief Count the number of copies of a value in a sequence.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  value  The value to be counted.
-   *  @return   The number of iterators @c i in the range @p [first,last)
-   *  for which @c *i == @p value
-  */
-  template<typename _InputIterator, typename _Tp>
-    typename iterator_traits<_InputIterator>::difference_type
-    count(_InputIterator __first, _InputIterator __last, const _Tp& __value)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	typename iterator_traits<_InputIterator>::value_type, _Tp>)
-      __glibcxx_requires_valid_range(__first, __last);
-      typename iterator_traits<_InputIterator>::difference_type __n = 0;
-      for (; __first != __last; ++__first)
-	if (*__first == __value)
-	  ++__n;
-      return __n;
-    }
-
-  /**
-   *  @brief Count the elements of a sequence for which a predicate is true.
-   *  @param  first  An input iterator.
-   *  @param  last   An input iterator.
-   *  @param  pred   A predicate.
-   *  @return   The number of iterators @c i in the range @p [first,last)
-   *  for which @p pred(*i) is true.
-  */
-  template<typename _InputIterator, typename _Predicate>
-    typename iterator_traits<_InputIterator>::difference_type
-    count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-      typename iterator_traits<_InputIterator>::difference_type __n = 0;
-      for (; __first != __last; ++__first)
-	if (__pred(*__first))
-	  ++__n;
-      return __n;
-    }
-
-  /**
-   *  @brief Finds the places in ranges which don't match.
-   *  @param  first1  An input iterator.
-   *  @param  last1   An input iterator.
-   *  @param  first2  An input iterator.
-   *  @return   A pair of iterators pointing to the first mismatch.
-   *
-   *  This compares the elements of two ranges using @c == and returns a pair
-   *  of iterators.  The first iterator points into the first range, the
-   *  second iterator points into the second range, and the elements pointed
-   *  to by the iterators are not equal.
-  */
-  template<typename _InputIterator1, typename _InputIterator2>
-    pair<_InputIterator1, _InputIterator2>
-    mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
-	     _InputIterator2 __first2)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	    typename iterator_traits<_InputIterator1>::value_type,
-	    typename iterator_traits<_InputIterator2>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-
-      while (__first1 != __last1 && *__first1 == *__first2)
-        {
-	  ++__first1;
-	  ++__first2;
-        }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
-    }
-
-  /**
-   *  @brief Finds the places in ranges which don't match.
-   *  @param  first1  An input iterator.
-   *  @param  last1   An input iterator.
-   *  @param  first2  An input iterator.
-   *  @param  binary_pred  A binary predicate @link s20_3_1_base functor@endlink.
-   *  @return   A pair of iterators pointing to the first mismatch.
-   *
-   *  This compares the elements of two ranges using the binary_pred
-   *  parameter, and returns a pair
-   *  of iterators.  The first iterator points into the first range, the
-   *  second iterator points into the second range, and the elements pointed
-   *  to by the iterators are not equal.
-  */
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _BinaryPredicate>
-    pair<_InputIterator1, _InputIterator2>
-    mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
-	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-
-      while (__first1 != __last1 && bool(__binary_pred(*__first1, *__first2)))
-        {
-	  ++__first1;
-	  ++__first2;
-        }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
-    }
-
-  /**
-   *  @brief Search a sequence for a matching sub-sequence.
-   *  @param  first1  A forward iterator.
-   *  @param  last1   A forward iterator.
-   *  @param  first2  A forward iterator.
-   *  @param  last2   A forward iterator.
-   *  @return   The first iterator @c i in the range
-   *  @p [first1,last1-(last2-first2)) such that @c *(i+N) == @p *(first2+N)
-   *  for each @c N in the range @p [0,last2-first2), or @p last1 if no
-   *  such iterator exists.
-   *
-   *  Searches the range @p [first1,last1) for a sub-sequence that compares
-   *  equal value-by-value with the sequence given by @p [first2,last2) and
-   *  returns an iterator to the first element of the sub-sequence, or
-   *  @p last1 if the sub-sequence is not found.
-   *
-   *  Because the sub-sequence must lie completely within the range
-   *  @p [first1,last1) it must start at a position less than
-   *  @p last1-(last2-first2) where @p last2-first2 is the length of the
-   *  sub-sequence.
-   *  This means that the returned iterator @c i will be in the range
-   *  @p [first1,last1-(last2-first2))
-  */
-  template<typename _ForwardIterator1, typename _ForwardIterator2>
-    _ForwardIterator1
-    search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-	   _ForwardIterator2 __first2, _ForwardIterator2 __last2)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator1>)
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator2>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	    typename iterator_traits<_ForwardIterator1>::value_type,
-	    typename iterator_traits<_ForwardIterator2>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_valid_range(__first2, __last2);
-
-      // Test for empty ranges
-      if (__first1 == __last1 || __first2 == __last2)
-	return __first1;
-
-      // Test for a pattern of length 1.
-      _ForwardIterator2 __p1(__first2);
-      if (++__p1 == __last2)
-	return std::find(__first1, __last1, *__first2);
-
-      // General case.
-      _ForwardIterator2 __p;
-      _ForwardIterator1 __current = __first1;
-
-      for (;;)
-	{
-	  __first1 = std::find(__first1, __last1, *__first2);
-	  if (__first1 == __last1)
-	    return __last1;
-
-	  __p = __p1;
-	  __current = __first1;
-	  if (++__current == __last1)
-	    return __last1;
-
-	  while (*__current == *__p)
-	    {
-	      if (++__p == __last2)
-		return __first1;
-	      if (++__current == __last1)
-		return __last1;
-	    }
-	  ++__first1;
-	}
-      return __first1;
-    }
-
-  /**
-   *  @brief Search a sequence for a matching sub-sequence using a predicate.
-   *  @param  first1     A forward iterator.
-   *  @param  last1      A forward iterator.
-   *  @param  first2     A forward iterator.
-   *  @param  last2      A forward iterator.
-   *  @param  predicate  A binary predicate.
-   *  @return   The first iterator @c i in the range
-   *  @p [first1,last1-(last2-first2)) such that
-   *  @p predicate(*(i+N),*(first2+N)) is true for each @c N in the range
-   *  @p [0,last2-first2), or @p last1 if no such iterator exists.
-   *
-   *  Searches the range @p [first1,last1) for a sub-sequence that compares
-   *  equal value-by-value with the sequence given by @p [first2,last2),
-   *  using @p predicate to determine equality, and returns an iterator
-   *  to the first element of the sub-sequence, or @p last1 if no such
-   *  iterator exists.
-   *
-   *  @see search(_ForwardIter1, _ForwardIter1, _ForwardIter2, _ForwardIter2)
-  */
-  template<typename _ForwardIterator1, typename _ForwardIterator2,
-	   typename _BinaryPredicate>
-    _ForwardIterator1
-    search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
-	   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
-	   _BinaryPredicate  __predicate)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator1>)
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator2>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	    typename iterator_traits<_ForwardIterator1>::value_type,
-	    typename iterator_traits<_ForwardIterator2>::value_type>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-      __glibcxx_requires_valid_range(__first2, __last2);
-
-      // Test for empty ranges
-      if (__first1 == __last1 || __first2 == __last2)
-	return __first1;
-
-      // Test for a pattern of length 1.
-      _ForwardIterator2 __p1(__first2);
-      if (++__p1 == __last2)
-	{
-	  while (__first1 != __last1
-		 && !bool(__predicate(*__first1, *__first2)))
-	    ++__first1;
-	  return __first1;
-	}
-
-      // General case.
-      _ForwardIterator2 __p;
-      _ForwardIterator1 __current = __first1;
-
-      for (;;)
-	{
-	  while (__first1 != __last1
-		 && !bool(__predicate(*__first1, *__first2)))
-	    ++__first1;
-	  if (__first1 == __last1)
-	    return __last1;
-
-	  __p = __p1;
-	  __current = __first1;
-	  if (++__current == __last1)
-	    return __last1;
-
-	  while (__predicate(*__current, *__p))
-	    {
-	      if (++__p == __last2)
-		return __first1;
-	      if (++__current == __last1)
-		return __last1;
-	    }
-	  ++__first1;
-	}
-      return __first1;
-    }
+  // set_difference
+  // set_intersection
+  // set_symmetric_difference
+  // set_union
+  // for_each
+  // find
+  // find_if
+  // find_first_of
+  // adjacent_find
+  // count
+  // count_if
+  // search
 
   /**
    *  @if maint
@@ -753,7 +301,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       _Integer __count, const _Tp& __val,
 	       std::forward_iterator_tag)
     {
-      __first = std::find(__first, __last, __val);
+      __first = _GLIBCXX_STD_P::find(__first, __last, __val);
       while (__first != __last)
 	{
 	  typename iterator_traits<_ForwardIterator>::difference_type
@@ -769,7 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    return __first;
 	  if (__i == __last)
 	    return __last;
-	  __first = std::find(++__i, __last, __val);
+	  __first = _GLIBCXX_STD_P::find(++__i, __last, __val);
 	}
       return __last;
     }
@@ -826,37 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
-  /**
-   *  @brief Search a sequence for a number of consecutive values.
-   *  @param  first  A forward iterator.
-   *  @param  last   A forward iterator.
-   *  @param  count  The number of consecutive values.
-   *  @param  val    The value to find.
-   *  @return   The first iterator @c i in the range @p [first,last-count)
-   *  such that @c *(i+N) == @p val for each @c N in the range @p [0,count),
-   *  or @p last if no such iterator exists.
-   *
-   *  Searches the range @p [first,last) for @p count consecutive elements
-   *  equal to @p val.
-  */
-  template<typename _ForwardIterator, typename _Integer, typename _Tp>
-    _ForwardIterator
-    search_n(_ForwardIterator __first, _ForwardIterator __last,
-	     _Integer __count, const _Tp& __val)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__count <= 0)
-	return __first;
-      if (__count == 1)
-	return std::find(__first, __last, __val);
-      return std::__search_n(__first, __last, __count, __val,
-			     std::__iterator_category(__first));
-    }
+  // search_n
 
   /**
    *  @if maint
@@ -953,46 +471,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
-  /**
-   *  @brief Search a sequence for a number of consecutive values using a
-   *         predicate.
-   *  @param  first        A forward iterator.
-   *  @param  last         A forward iterator.
-   *  @param  count        The number of consecutive values.
-   *  @param  val          The value to find.
-   *  @param  binary_pred  A binary predicate.
-   *  @return   The first iterator @c i in the range @p [first,last-count)
-   *  such that @p binary_pred(*(i+N),val) is true for each @c N in the
-   *  range @p [0,count), or @p last if no such iterator exists.
-   *
-   *  Searches the range @p [first,last) for @p count consecutive elements
-   *  for which the predicate returns true.
-  */
-  template<typename _ForwardIterator, typename _Integer, typename _Tp,
-           typename _BinaryPredicate>
-    _ForwardIterator
-    search_n(_ForwardIterator __first, _ForwardIterator __last,
-	     _Integer __count, const _Tp& __val,
-	     _BinaryPredicate __binary_pred)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
-	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__count <= 0)
-	return __first;
-      if (__count == 1)
-	{
-	  while (__first != __last && !bool(__binary_pred(*__first, __val)))
-	    ++__first;
-	  return __first;
-	}
-      return std::__search_n(__first, __last, __count, __val, __binary_pred,
-			     std::__iterator_category(__first));
-    }
-
   // find_end for forward iterators.
   template<typename _ForwardIterator1, typename _ForwardIterator2>
     _ForwardIterator1
@@ -1008,7 +486,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  while (1)
 	    {
 	      _ForwardIterator1 __new_result
-		= std::search(__first1, __last1, __first2, __last2);
+		= _GLIBCXX_STD_P::search(__first1, __last1, __first2, __last2);
 	      if (__new_result == __last1)
 		return __result;
 	      else
@@ -1037,7 +515,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  while (1)
 	    {
 	      _ForwardIterator1 __new_result
-		= std::search(__first1, __last1, __first2, __last2, __comp);
+		= _GLIBCXX_STD_P::search(__first1, __last1, __first2, __last2, __comp);
 	      if (__new_result == __last1)
 		return __result;
 	      else
@@ -1070,8 +548,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       _RevIterator1 __rlast1(__first1);
       _RevIterator2 __rlast2(__first2);
-      _RevIterator1 __rresult = std::search(_RevIterator1(__last1), __rlast1,
-					    _RevIterator2(__last2), __rlast2);
+      _RevIterator1 __rresult = _GLIBCXX_STD_P::search(_RevIterator1(__last1), __rlast1, _RevIterator2(__last2), __rlast2);
 
       if (__rresult == __rlast1)
 	return __last1;
@@ -1209,261 +686,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 			     __comp);
     }
 
-  /**
-   *  @brief Perform an operation on a sequence.
-   *  @param  first     An input iterator.
-   *  @param  last      An input iterator.
-   *  @param  result    An output iterator.
-   *  @param  unary_op  A unary operator.
-   *  @return   An output iterator equal to @p result+(last-first).
-   *
-   *  Applies the operator to each element in the input range and assigns
-   *  the results to successive elements of the output sequence.
-   *  Evaluates @p *(result+N)=unary_op(*(first+N)) for each @c N in the
-   *  range @p [0,last-first).
-   *
-   *  @p unary_op must not alter its argument.
-  */
-  template<typename _InputIterator, typename _OutputIterator,
-	   typename _UnaryOperation>
-    _OutputIterator
-    transform(_InputIterator __first, _InputIterator __last,
-	      _OutputIterator __result, _UnaryOperation __unary_op)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-            // "the type returned by a _UnaryOperation"
-            __typeof__(__unary_op(*__first))>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      for (; __first != __last; ++__first, ++__result)
-	*__result = __unary_op(*__first);
-      return __result;
-    }
-
-  /**
-   *  @brief Perform an operation on corresponding elements of two sequences.
-   *  @param  first1     An input iterator.
-   *  @param  last1      An input iterator.
-   *  @param  first2     An input iterator.
-   *  @param  result     An output iterator.
-   *  @param  binary_op  A binary operator.
-   *  @return   An output iterator equal to @p result+(last-first).
-   *
-   *  Applies the operator to the corresponding elements in the two
-   *  input ranges and assigns the results to successive elements of the
-   *  output sequence.
-   *  Evaluates @p *(result+N)=binary_op(*(first1+N),*(first2+N)) for each
-   *  @c N in the range @p [0,last1-first1).
-   *
-   *  @p binary_op must not alter either of its arguments.
-  */
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _OutputIterator, typename _BinaryOperation>
-    _OutputIterator
-    transform(_InputIterator1 __first1, _InputIterator1 __last1,
-	      _InputIterator2 __first2, _OutputIterator __result,
-	      _BinaryOperation __binary_op)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-            // "the type returned by a _BinaryOperation"
-            __typeof__(__binary_op(*__first1,*__first2))>)
-      __glibcxx_requires_valid_range(__first1, __last1);
-
-      for (; __first1 != __last1; ++__first1, ++__first2, ++__result)
-	*__result = __binary_op(*__first1, *__first2);
-      return __result;
-    }
-
-  /**
-   *  @brief Replace each occurrence of one value in a sequence with another
-   *         value.
-   *  @param  first      A forward iterator.
-   *  @param  last       A forward iterator.
-   *  @param  old_value  The value to be replaced.
-   *  @param  new_value  The replacement value.
-   *  @return   replace() returns no value.
-   *
-   *  For each iterator @c i in the range @p [first,last) if @c *i ==
-   *  @p old_value then the assignment @c *i = @p new_value is performed.
-  */
-  template<typename _ForwardIterator, typename _Tp>
-    void
-    replace(_ForwardIterator __first, _ForwardIterator __last,
-	    const _Tp& __old_value, const _Tp& __new_value)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
-				  _ForwardIterator>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
-      __glibcxx_function_requires(_ConvertibleConcept<_Tp,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      for (; __first != __last; ++__first)
-	if (*__first == __old_value)
-	  *__first = __new_value;
-    }
-
-  /**
-   *  @brief Replace each value in a sequence for which a predicate returns
-   *         true with another value.
-   *  @param  first      A forward iterator.
-   *  @param  last       A forward iterator.
-   *  @param  pred       A predicate.
-   *  @param  new_value  The replacement value.
-   *  @return   replace_if() returns no value.
-   *
-   *  For each iterator @c i in the range @p [first,last) if @p pred(*i)
-   *  is true then the assignment @c *i = @p new_value is performed.
-  */
-  template<typename _ForwardIterator, typename _Predicate, typename _Tp>
-    void
-    replace_if(_ForwardIterator __first, _ForwardIterator __last,
-	       _Predicate __pred, const _Tp& __new_value)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
-				  _ForwardIterator>)
-      __glibcxx_function_requires(_ConvertibleConcept<_Tp,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      for (; __first != __last; ++__first)
-	if (__pred(*__first))
-	  *__first = __new_value;
-    }
-
-  /**
-   *  @brief Copy a sequence, replacing each element of one value with another
-   *         value.
-   *  @param  first      An input iterator.
-   *  @param  last       An input iterator.
-   *  @param  result     An output iterator.
-   *  @param  old_value  The value to be replaced.
-   *  @param  new_value  The replacement value.
-   *  @return   The end of the output sequence, @p result+(last-first).
-   *
-   *  Copies each element in the input range @p [first,last) to the
-   *  output range @p [result,result+(last-first)) replacing elements
-   *  equal to @p old_value with @p new_value.
-  */
-  template<typename _InputIterator, typename _OutputIterator, typename _Tp>
-    _OutputIterator
-    replace_copy(_InputIterator __first, _InputIterator __last,
-		 _OutputIterator __result,
-		 const _Tp& __old_value, const _Tp& __new_value)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_function_requires(_EqualOpConcept<
-	    typename iterator_traits<_InputIterator>::value_type, _Tp>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      for (; __first != __last; ++__first, ++__result)
-	if (*__first == __old_value)
-	  *__result = __new_value;
-	else
-	  *__result = *__first;
-      return __result;
-    }
-
-  /**
-   *  @brief Copy a sequence, replacing each value for which a predicate
-   *         returns true with another value.
-   *  @param  first      An input iterator.
-   *  @param  last       An input iterator.
-   *  @param  result     An output iterator.
-   *  @param  pred       A predicate.
-   *  @param  new_value  The replacement value.
-   *  @return   The end of the output sequence, @p result+(last-first).
-   *
-   *  Copies each element in the range @p [first,last) to the range
-   *  @p [result,result+(last-first)) replacing elements for which
-   *  @p pred returns true with @p new_value.
-  */
-  template<typename _InputIterator, typename _OutputIterator,
-	   typename _Predicate, typename _Tp>
-    _OutputIterator
-    replace_copy_if(_InputIterator __first, _InputIterator __last,
-		    _OutputIterator __result,
-		    _Predicate __pred, const _Tp& __new_value)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      for (; __first != __last; ++__first, ++__result)
-	if (__pred(*__first))
-	  *__result = __new_value;
-	else
-	  *__result = *__first;
-      return __result;
-    }
-
-  /**
-   *  @brief Assign the result of a function object to each value in a
-   *         sequence.
-   *  @param  first  A forward iterator.
-   *  @param  last   A forward iterator.
-   *  @param  gen    A function object taking no arguments.
-   *  @return   generate() returns no value.
-   *
-   *  Performs the assignment @c *i = @p gen() for each @c i in the range
-   *  @p [first,last).
-  */
-  template<typename _ForwardIterator, typename _Generator>
-    void
-    generate(_ForwardIterator __first, _ForwardIterator __last,
-	     _Generator __gen)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
-      __glibcxx_function_requires(_GeneratorConcept<_Generator,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      for (; __first != __last; ++__first)
-	*__first = __gen();
-    }
-
-  /**
-   *  @brief Assign the result of a function object to each value in a
-   *         sequence.
-   *  @param  first  A forward iterator.
-   *  @param  n      The length of the sequence.
-   *  @param  gen    A function object taking no arguments.
-   *  @return   The end of the sequence, @p first+n
-   *
-   *  Performs the assignment @c *i = @p gen() for each @c i in the range
-   *  @p [first,first+n).
-  */
-  template<typename _OutputIterator, typename _Size, typename _Generator>
-    _OutputIterator
-    generate_n(_OutputIterator __first, _Size __n, _Generator __gen)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-            // "the type returned by a _Generator"
-            __typeof__(__gen())>)
-
-      for (; __n > 0; --__n, ++__first)
-	*__first = __gen();
-      return __first;
-    }
 
   /**
    *  @brief Copy a sequence, removing elements of a given value.
@@ -1565,11 +787,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      __first = std::find(__first, __last, __value);
+      __first = _GLIBCXX_STD_P::find(__first, __last, __value);
       _ForwardIterator __i = __first;
       return __first == __last ? __first
-			       : std::remove_copy(++__i, __last,
-						  __first, __value);
+		        : std::remove_copy(++__i, __last, __first, __value);
     }
 
   /**
@@ -1600,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_ForwardIterator>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      __first = std::find_if(__first, __last, __pred);
+      __first = _GLIBCXX_STD_P::find_if(__first, __last, __pred);
       _ForwardIterator __i = __first;
       return __first == __last ? __first
 			       : std::remove_copy_if(++__i, __last,
@@ -1632,7 +853,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
 
       // Skip the beginning, if already unique.
-      __first = std::adjacent_find(__first, __last);
+      __first = _GLIBCXX_STD_P::adjacent_find(__first, __last);
       if (__first == __last)
 	return __last;
 
@@ -1673,7 +894,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
 
       // Skip the beginning, if already unique.
-      __first = std::adjacent_find(__first, __last, __binary_pred);
+      __first = _GLIBCXX_STD_P::adjacent_find(__first, __last, __binary_pred);
       if (__first == __last)
 	return __last;
 
@@ -1844,88 +1065,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	if (!bool(__binary_pred(*__result, *__first)))
 	  *++__result = *__first;
       return ++__result;
-    }
-
-  /**
-   *  @brief Copy a sequence, removing consecutive duplicate values.
-   *  @param  first   An input iterator.
-   *  @param  last    An input iterator.
-   *  @param  result  An output iterator.
-   *  @return   An iterator designating the end of the resulting sequence.
-   *
-   *  Copies each element in the range @p [first,last) to the range
-   *  beginning at @p result, except that only the first element is copied
-   *  from groups of consecutive elements that compare equal.
-   *  unique_copy() is stable, so the relative order of elements that are
-   *  copied is unchanged.
-   *
-   *  @if maint
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
-   *  
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 538. 241 again: Does unique_copy() require CopyConstructible and 
-   *  Assignable?
-   *  @endif
-  */
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    unique_copy(_InputIterator __first, _InputIterator __last,
-		_OutputIterator __result)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_function_requires(_EqualityComparableConcept<
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return __result;
-      return std::__unique_copy(__first, __last, __result,
-				std::__iterator_category(__first),
-				std::__iterator_category(__result));
-    }
-
-  /**
-   *  @brief Copy a sequence, removing consecutive values using a predicate.
-   *  @param  first        An input iterator.
-   *  @param  last         An input iterator.
-   *  @param  result       An output iterator.
-   *  @param  binary_pred  A binary predicate.
-   *  @return   An iterator designating the end of the resulting sequence.
-   *
-   *  Copies each element in the range @p [first,last) to the range
-   *  beginning at @p result, except that only the first element is copied
-   *  from groups of consecutive elements for which @p binary_pred returns
-   *  true.
-   *  unique_copy() is stable, so the relative order of elements that are
-   *  copied is unchanged.
-   *
-   *  @if maint
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
-   *  @endif
-  */
-  template<typename _InputIterator, typename _OutputIterator,
-	   typename _BinaryPredicate>
-    inline _OutputIterator
-    unique_copy(_InputIterator __first, _InputIterator __last,
-		_OutputIterator __result,
-		_BinaryPredicate __binary_pred)
-    {
-      // concept requirements -- predicates checked later
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-	    typename iterator_traits<_InputIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return __result;
-      return std::__unique_copy(__first, __last, __result, __binary_pred,
-				std::__iterator_category(__first),
-				std::__iterator_category(__result));
     }
 
   /**
@@ -2266,60 +1405,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
   /**
-   *  @brief Randomly shuffle the elements of a sequence.
-   *  @param  first   A forward iterator.
-   *  @param  last    A forward iterator.
-   *  @return  Nothing.
-   *
-   *  Reorder the elements in the range @p [first,last) using a random
-   *  distribution, so that every possible ordering of the sequence is
-   *  equally likely.
-  */
-  template<typename _RandomAccessIterator>
-    inline void
-    random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first != __last)
-	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	  std::iter_swap(__i, __first + (std::rand() % ((__i - __first) + 1)));
-    }
-
-  /**
-   *  @brief Shuffle the elements of a sequence using a random number
-   *         generator.
-   *  @param  first   A forward iterator.
-   *  @param  last    A forward iterator.
-   *  @param  rand    The RNG functor or function.
-   *  @return  Nothing.
-   *
-   *  Reorders the elements in the range @p [first,last) using @p rand to
-   *  provide a random distribution. Calling @p rand(N) for a positive
-   *  integer @p N should return a randomly chosen integer from the
-   *  range [0,N).
-  */
-  template<typename _RandomAccessIterator, typename _RandomNumberGenerator>
-    void
-    random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last,
-		   _RandomNumberGenerator& __rand)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return;
-      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	std::iter_swap(__i, __first + __rand((__i - __first) + 1));
-    }
-
-
-  /**
    *  @if maint
    *  This is a helper function...
    *  @endif
@@ -2382,36 +1467,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     }
 
-  /**
-   *  @brief Move elements for which a predicate is true to the beginning
-   *         of a sequence.
-   *  @param  first   A forward iterator.
-   *  @param  last    A forward iterator.
-   *  @param  pred    A predicate functor.
-   *  @return  An iterator @p middle such that @p pred(i) is true for each
-   *  iterator @p i in the range @p [first,middle) and false for each @p i
-   *  in the range @p [middle,last).
-   *
-   *  @p pred must not modify its operand. @p partition() does not preserve
-   *  the relative ordering of elements in each group, use
-   *  @p stable_partition() if this is needed.
-  */
-  template<typename _ForwardIterator, typename _Predicate>
-    inline _ForwardIterator
-    partition(_ForwardIterator __first, _ForwardIterator __last,
-	      _Predicate   __pred)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
-				  _ForwardIterator>)
-      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename iterator_traits<_ForwardIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      return std::__partition(__first, __last, __pred,
-			      std::__iterator_category(__first));
-    }
-
+  // partition
 
   /**
    *  @if maint
@@ -2583,80 +1639,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i), __comp);
     }
 
-  /**
-   *  @brief Sort the smallest elements of a sequence.
-   *  @param  first   An iterator.
-   *  @param  middle  Another iterator.
-   *  @param  last    Another iterator.
-   *  @return  Nothing.
-   *
-   *  Sorts the smallest @p (middle-first) elements in the range
-   *  @p [first,last) and moves them to the range @p [first,middle). The
-   *  order of the remaining elements in the range @p [middle,last) is
-   *  undefined.
-   *  After the sort if @p i and @j are iterators in the range
-   *  @p [first,middle) such that @i precedes @j and @k is an iterator in
-   *  the range @p [middle,last) then @p *j<*i and @p *k<*i are both false.
-  */
-  template<typename _RandomAccessIterator>
-    inline void
-    partial_sort(_RandomAccessIterator __first,
-		 _RandomAccessIterator __middle,
-		 _RandomAccessIterator __last)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
-      __glibcxx_requires_valid_range(__first, __middle);
-      __glibcxx_requires_valid_range(__middle, __last);
-
-      std::__heap_select(__first, __middle, __last);
-      std::sort_heap(__first, __middle);
-    }
-
-  /**
-   *  @brief Sort the smallest elements of a sequence using a predicate
-   *         for comparison.
-   *  @param  first   An iterator.
-   *  @param  middle  Another iterator.
-   *  @param  last    Another iterator.
-   *  @param  comp    A comparison functor.
-   *  @return  Nothing.
-   *
-   *  Sorts the smallest @p (middle-first) elements in the range
-   *  @p [first,last) and moves them to the range @p [first,middle). The
-   *  order of the remaining elements in the range @p [middle,last) is
-   *  undefined.
-   *  After the sort if @p i and @j are iterators in the range
-   *  @p [first,middle) such that @i precedes @j and @k is an iterator in
-   *  the range @p [middle,last) then @p *comp(j,*i) and @p comp(*k,*i)
-   *  are both false.
-  */
-  template<typename _RandomAccessIterator, typename _Compare>
-    inline void
-    partial_sort(_RandomAccessIterator __first,
-		 _RandomAccessIterator __middle,
-		 _RandomAccessIterator __last,
-		 _Compare __comp)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _ValueType, _ValueType>)
-      __glibcxx_requires_valid_range(__first, __middle);
-      __glibcxx_requires_valid_range(__middle, __last);
-
-      std::__heap_select(__first, __middle, __last, __comp);
-      std::sort_heap(__first, __middle, __comp);
-    }
+  // partial_sort
 
   /**
    *  @brief Copy the smallest elements of a sequence.
@@ -3033,7 +2016,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (__depth_limit == 0)
 	    {
-	      std::partial_sort(__first, __last, __last);
+	      _GLIBCXX_STD_P:partial_sort(__first, __last, __last);
 	      return;
 	    }
 	  --__depth_limit;
@@ -3069,7 +2052,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	{
 	  if (__depth_limit == 0)
 	    {
-	      std::partial_sort(__first, __last, __last, __comp);
+	      _GLIBCXX_STD_P::partial_sort(__first, __last, __last, __comp);
 	      return;
 	    }
 	  --__depth_limit;
@@ -3103,76 +2086,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __k;
     }
 
-  /**
-   *  @brief Sort the elements of a sequence.
-   *  @param  first   An iterator.
-   *  @param  last    Another iterator.
-   *  @return  Nothing.
-   *
-   *  Sorts the elements in the range @p [first,last) in ascending order,
-   *  such that @p *(i+1)<*i is false for each iterator @p i in the range
-   *  @p [first,last-1).
-   *
-   *  The relative ordering of equivalent elements is not preserved, use
-   *  @p stable_sort() if this is needed.
-  */
-  template<typename _RandomAccessIterator>
-    inline void
-    sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first != __last)
-	{
-	  std::__introsort_loop(__first, __last,
-				std::__lg(__last - __first) * 2);
-	  std::__final_insertion_sort(__first, __last);
-	}
-    }
-
-  /**
-   *  @brief Sort the elements of a sequence using a predicate for comparison.
-   *  @param  first   An iterator.
-   *  @param  last    Another iterator.
-   *  @param  comp    A comparison functor.
-   *  @return  Nothing.
-   *
-   *  Sorts the elements in the range @p [first,last) in ascending order,
-   *  such that @p comp(*(i+1),*i) is false for every iterator @p i in the
-   *  range @p [first,last-1).
-   *
-   *  The relative ordering of equivalent elements is not preserved, use
-   *  @p stable_sort() if this is needed.
-  */
-  template<typename _RandomAccessIterator, typename _Compare>
-    inline void
-    sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	 _Compare __comp)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _ValueType,
-				  _ValueType>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first != __last)
-	{
-	  std::__introsort_loop(__first, __last,
-				std::__lg(__last - __first) * 2, __comp);
-	  std::__final_insertion_sort(__first, __last, __comp);
-	}
-    }
+  // sort
 
   template<typename _RandomAccessIterator, typename _Size>
     void
@@ -3246,81 +2160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       std::__insertion_sort(__first, __last, __comp);
     }
 
-  /**
-   *  @brief Sort a sequence just enough to find a particular position.
-   *  @param  first   An iterator.
-   *  @param  nth     Another iterator.
-   *  @param  last    Another iterator.
-   *  @return  Nothing.
-   *
-   *  Rearranges the elements in the range @p [first,last) so that @p *nth
-   *  is the same element that would have been in that position had the
-   *  whole sequence been sorted.
-   *  whole sequence been sorted. The elements either side of @p *nth are
-   *  not completely sorted, but for any iterator @i in the range
-   *  @p [first,nth) and any iterator @j in the range @p [nth,last) it
-   *  holds that @p *j<*i is false.
-  */
-  template<typename _RandomAccessIterator>
-    inline void
-    nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
-		_RandomAccessIterator __last)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-				  _RandomAccessIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
-      __glibcxx_requires_valid_range(__first, __nth);
-      __glibcxx_requires_valid_range(__nth, __last);
-
-      if (__first == __last || __nth == __last)
-	return;
-
-      std::__introselect(__first, __nth, __last,
-			 std::__lg(__last - __first) * 2);
-    }
-
-  /**
-   *  @brief Sort a sequence just enough to find a particular position
-   *         using a predicate for comparison.
-   *  @param  first   An iterator.
-   *  @param  nth     Another iterator.
-   *  @param  last    Another iterator.
-   *  @param  comp    A comparison functor.
-   *  @return  Nothing.
-   *
-   *  Rearranges the elements in the range @p [first,last) so that @p *nth
-   *  is the same element that would have been in that position had the
-   *  whole sequence been sorted. The elements either side of @p *nth are
-   *  not completely sorted, but for any iterator @i in the range
-   *  @p [first,nth) and any iterator @j in the range @p [nth,last) it
-   *  holds that @p comp(*j,*i) is false.
-  */
-  template<typename _RandomAccessIterator, typename _Compare>
-    inline void
-    nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
-		_RandomAccessIterator __last, _Compare __comp)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-				  _RandomAccessIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _ValueType, _ValueType>)
-      __glibcxx_requires_valid_range(__first, __nth);
-      __glibcxx_requires_valid_range(__nth, __last);
-
-      if (__first == __last || __nth == __last)
-	return;
-
-      std::__introselect(__first, __nth, __last,
-			 std::__lg(__last - __first) * 2, __comp);
-    }
+  // nth_element
 
   /**
    *  @brief Finds the first position in which @a val could be inserted
@@ -3328,8 +2168,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  first   An iterator.
    *  @param  last    Another iterator.
    *  @param  val     The search term.
-   *  @return  An iterator pointing to the first element "not less than" @a val,
-   *           or end() if every element is less than @a val.
+   *  @return         An iterator pointing to the first element "not less
+   *                  than" @a val, or end() if every element is less than 
+   *                  @a val.
    *  @ingroup binarysearch
   */
   template<typename _ForwardIterator, typename _Tp>
@@ -3701,124 +2542,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __i != __last && !bool(__comp(__val, *__i));
     }
 
-  /**
-   *  @brief Merges two sorted ranges.
-   *  @param  first1  An iterator.
-   *  @param  first2  Another iterator.
-   *  @param  last1   Another iterator.
-   *  @param  last2   Another iterator.
-   *  @param  result  An iterator pointing to the end of the merged range.
-   *  @return  An iterator pointing to the first element "not less than" @a val.
-   *
-   *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
-   *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges
-   *  must be sorted, and the output range must not overlap with either of
-   *  the input ranges.  The sort is @e stable, that is, for equivalent
-   *  elements in the two ranges, elements from the first range will always
-   *  come before elements from the second.
-  */
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _OutputIterator>
-    _OutputIterator
-    merge(_InputIterator1 __first1, _InputIterator1 __last1,
-	  _InputIterator2 __first2, _InputIterator2 __last2,
-	  _OutputIterator __result)
-    {
-      typedef typename iterator_traits<_InputIterator1>::value_type
-	_ValueType1;
-      typedef typename iterator_traits<_InputIterator2>::value_type
-	_ValueType2;
-
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-				  _ValueType1>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-				  _ValueType2>)
-      __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)	
-      __glibcxx_requires_sorted(__first1, __last1);
-      __glibcxx_requires_sorted(__first2, __last2);
-
-      while (__first1 != __last1 && __first2 != __last2)
-	{
-	  if (*__first2 < *__first1)
-	    {
-	      *__result = *__first2;
-	      ++__first2;
-	    }
-	  else
-	    {
-	      *__result = *__first1;
-	      ++__first1;
-	    }
-	  ++__result;
-	}
-      return std::copy(__first2, __last2, std::copy(__first1, __last1,
-						    __result));
-    }
-
-  /**
-   *  @brief Merges two sorted ranges.
-   *  @param  first1  An iterator.
-   *  @param  first2  Another iterator.
-   *  @param  last1   Another iterator.
-   *  @param  last2   Another iterator.
-   *  @param  result  An iterator pointing to the end of the merged range.
-   *  @param  comp    A functor to use for comparisons.
-   *  @return  An iterator pointing to the first element "not less than" @a val.
-   *
-   *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
-   *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges
-   *  must be sorted, and the output range must not overlap with either of
-   *  the input ranges.  The sort is @e stable, that is, for equivalent
-   *  elements in the two ranges, elements from the first range will always
-   *  come before elements from the second.
-   *
-   *  The comparison function should have the same effects on ordering as
-   *  the function used for the initial sort.
-  */
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _OutputIterator, typename _Compare>
-    _OutputIterator
-    merge(_InputIterator1 __first1, _InputIterator1 __last1,
-	  _InputIterator2 __first2, _InputIterator2 __last2,
-	  _OutputIterator __result, _Compare __comp)
-    {
-      typedef typename iterator_traits<_InputIterator1>::value_type
-	_ValueType1;
-      typedef typename iterator_traits<_InputIterator2>::value_type
-	_ValueType2;
-
-      // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-				  _ValueType1>)
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
-				  _ValueType2>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _ValueType2, _ValueType1>)
-      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
-      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
-
-      while (__first1 != __last1 && __first2 != __last2)
-	{
-	  if (__comp(*__first2, *__first1))
-	    {
-	      *__result = *__first2;
-	      ++__first2;
-	    }
-	  else
-	    {
-	      *__result = *__first1;
-	      ++__first1;
-	    }
-	  ++__result;
-	}
-      return std::copy(__first2, __last2, std::copy(__first1, __last1,
-						    __result));
-    }
+  // merge
 
   /**
    *  @if maint
@@ -3952,7 +2676,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__len1 <= __len2 && __len1 <= __buffer_size)
 	{
 	  _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
-	  std::merge(__buffer, __buffer_end, __middle, __last, __first);
+	  _GLIBCXX_STD_P::merge(__buffer, __buffer_end, __middle, __last, 
+				__first);
 	}
       else if (__len2 <= __buffer_size)
 	{
@@ -3999,8 +2724,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  This is a helper function for the merge routines.
    *  @endif
   */
-  template<typename _BidirectionalIterator, typename _Distance, typename _Pointer,
-	   typename _Compare>
+  template<typename _BidirectionalIterator, typename _Distance, 
+	   typename _Pointer, typename _Compare>
     void
     __merge_adaptive(_BidirectionalIterator __first,
                      _BidirectionalIterator __middle,
@@ -4012,7 +2737,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__len1 <= __len2 && __len1 <= __buffer_size)
 	{
 	  _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
-	  std::merge(__buffer, __buffer_end, __middle, __last, __first, __comp);
+	  _GLIBCXX_STD_P::merge(__buffer, __buffer_end, __middle, __last, __first, __comp);
 	}
       else if (__len2 <= __buffer_size)
 	{
@@ -4273,14 +2998,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       while (__last - __first >= __two_step)
 	{
-	  __result = std::merge(__first, __first + __step_size,
+	  __result = _GLIBCXX_STD_P::merge(__first, __first + __step_size,
 				__first + __step_size, __first + __two_step,
 				__result);
 	  __first += __two_step;
 	}
 
       __step_size = std::min(_Distance(__last - __first), __step_size);
-      std::merge(__first, __first + __step_size, __first + __step_size, __last,
+      _GLIBCXX_STD_P::merge(__first, __first + __step_size, 
+			    __first + __step_size, __last,
 		 __result);
     }
 
@@ -4296,7 +3022,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       while (__last - __first >= __two_step)
 	{
-	  __result = std::merge(__first, __first + __step_size,
+	  __result = _GLIBCXX_STD_P::merge(__first, __first + __step_size,
 				__first + __step_size, __first + __two_step,
 				__result,
 				__comp);
@@ -4304,10 +3030,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
       __step_size = std::min(_Distance(__last - __first), __step_size);
 
-      std::merge(__first, __first + __step_size,
-		 __first + __step_size, __last,
-		 __result,
-		 __comp);
+      _GLIBCXX_STD_P::merge(__first, __first + __step_size,
+			    __first + __step_size, __last, __result, __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Distance>
@@ -4493,89 +3217,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  __comp);
     }
 
-  /**
-   *  @brief Sort the elements of a sequence, preserving the relative order
-   *         of equivalent elements.
-   *  @param  first   An iterator.
-   *  @param  last    Another iterator.
-   *  @return  Nothing.
-   *
-   *  Sorts the elements in the range @p [first,last) in ascending order,
-   *  such that @p *(i+1)<*i is false for each iterator @p i in the range
-   *  @p [first,last-1).
-   *
-   *  The relative ordering of equivalent elements is preserved, so any two
-   *  elements @p x and @p y in the range @p [first,last) such that
-   *  @p x<y is false and @p y<x is false will have the same relative
-   *  ordering after calling @p stable_sort().
-  */
-  template<typename _RandomAccessIterator>
-    inline void
-    stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-	_DistanceType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      _Temporary_buffer<_RandomAccessIterator, _ValueType> __buf(__first,
-								 __last);
-      if (__buf.begin() == 0)
-	std::__inplace_stable_sort(__first, __last);
-      else
-	std::__stable_sort_adaptive(__first, __last, __buf.begin(),
-				    _DistanceType(__buf.size()));
-    }
-
-  /**
-   *  @brief Sort the elements of a sequence using a predicate for comparison,
-   *         preserving the relative order of equivalent elements.
-   *  @param  first   An iterator.
-   *  @param  last    Another iterator.
-   *  @param  comp    A comparison functor.
-   *  @return  Nothing.
-   *
-   *  Sorts the elements in the range @p [first,last) in ascending order,
-   *  such that @p comp(*(i+1),*i) is false for each iterator @p i in the
-   *  range @p [first,last-1).
-   *
-   *  The relative ordering of equivalent elements is preserved, so any two
-   *  elements @p x and @p y in the range @p [first,last) such that
-   *  @p comp(x,y) is false and @p comp(y,x) is false will have the same
-   *  relative ordering after calling @p stable_sort().
-  */
-  template<typename _RandomAccessIterator, typename _Compare>
-    inline void
-    stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
-		_Compare __comp)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-	_DistanceType;
-
-      // concept requirements
-      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
-	    _RandomAccessIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-				  _ValueType,
-				  _ValueType>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      _Temporary_buffer<_RandomAccessIterator, _ValueType> __buf(__first,
-								 __last);
-      if (__buf.begin() == 0)
-	std::__inplace_stable_sort(__first, __last, __comp);
-      else
-	std::__stable_sort_adaptive(__first, __last, __buf.begin(),
-				    _DistanceType(__buf.size()), __comp);
-    }
+  // stable_sort
 
   // Set algorithms: includes, set_union, set_intersection, set_difference,
   // set_symmetric_difference.  All of these algorithms have the precondition
@@ -4677,6 +3319,1580 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       return __first2 == __last2;
     }
+
+  // nth_element
+  // merge
+  // set_difference
+  // set_intersection
+  // set_union
+  // stable_sort
+  // set_symmetric_difference
+  // min_element
+  // max_element
+
+  /**
+   *  @brief  Permute range into the next "dictionary" ordering.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  False if wrapped to first permutation, true otherwise.
+   *
+   *  Treats all permutations of the range as a set of "dictionary" sorted
+   *  sequences.  Permutes the current sequence into the next one of this set.
+   *  Returns true if there are more sequences to generate.  If the sequence
+   *  is the largest of the set, the smallest is generated and false returned.
+  */
+  template<typename _BidirectionalIterator>
+    bool
+    next_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_BidirectionalIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return false;
+      _BidirectionalIterator __i = __first;
+      ++__i;
+      if (__i == __last)
+	return false;
+      __i = __last;
+      --__i;
+
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (*__i < *__ii)
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!(*__i < *--__j))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
+	}
+    }
+
+  /**
+   *  @brief  Permute range into the next "dictionary" ordering using
+   *  comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp
+   *  @return  False if wrapped to first permutation, true otherwise.
+   *
+   *  Treats all permutations of the range [first,last) as a set of
+   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
+   *  sequence into the next one of this set.  Returns true if there are more
+   *  sequences to generate.  If the sequence is the largest of the set, the
+   *  smallest is generated and false returned.
+  */
+  template<typename _BidirectionalIterator, typename _Compare>
+    bool
+    next_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last, _Compare __comp)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+	    typename iterator_traits<_BidirectionalIterator>::value_type,
+	    typename iterator_traits<_BidirectionalIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return false;
+      _BidirectionalIterator __i = __first;
+      ++__i;
+      if (__i == __last)
+	return false;
+      __i = __last;
+      --__i;
+
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (__comp(*__i, *__ii))
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!bool(__comp(*__i, *--__j)))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
+	}
+    }
+
+  /**
+   *  @brief  Permute range into the previous "dictionary" ordering.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @return  False if wrapped to last permutation, true otherwise.
+   *
+   *  Treats all permutations of the range as a set of "dictionary" sorted
+   *  sequences.  Permutes the current sequence into the previous one of this
+   *  set.  Returns true if there are more sequences to generate.  If the
+   *  sequence is the smallest of the set, the largest is generated and false
+   *  returned.
+  */
+  template<typename _BidirectionalIterator>
+    bool
+    prev_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_BidirectionalIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return false;
+      _BidirectionalIterator __i = __first;
+      ++__i;
+      if (__i == __last)
+	return false;
+      __i = __last;
+      --__i;
+
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (*__ii < *__i)
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!(*--__j < *__i))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
+	}
+    }
+
+  /**
+   *  @brief  Permute range into the previous "dictionary" ordering using
+   *  comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp
+   *  @return  False if wrapped to last permutation, true otherwise.
+   *
+   *  Treats all permutations of the range [first,last) as a set of
+   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
+   *  sequence into the previous one of this set.  Returns true if there are
+   *  more sequences to generate.  If the sequence is the smallest of the set,
+   *  the largest is generated and false returned.
+  */
+  template<typename _BidirectionalIterator, typename _Compare>
+    bool
+    prev_permutation(_BidirectionalIterator __first,
+		     _BidirectionalIterator __last, _Compare __comp)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<
+				  _BidirectionalIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+	    typename iterator_traits<_BidirectionalIterator>::value_type,
+	    typename iterator_traits<_BidirectionalIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return false;
+      _BidirectionalIterator __i = __first;
+      ++__i;
+      if (__i == __last)
+	return false;
+      __i = __last;
+      --__i;
+
+      for(;;)
+	{
+	  _BidirectionalIterator __ii = __i;
+	  --__i;
+	  if (__comp(*__ii, *__i))
+	    {
+	      _BidirectionalIterator __j = __last;
+	      while (!bool(__comp(*--__j, *__i)))
+		{}
+	      std::iter_swap(__i, __j);
+	      std::reverse(__ii, __last);
+	      return true;
+	    }
+	  if (__i == __first)
+	    {
+	      std::reverse(__first, __last);
+	      return false;
+	    }
+	}
+    }
+
+  // replace
+  // replace_if
+
+  /**
+   *  @brief Copy a sequence, replacing each element of one value with another
+   *         value.
+   *  @param  first      An input iterator.
+   *  @param  last       An input iterator.
+   *  @param  result     An output iterator.
+   *  @param  old_value  The value to be replaced.
+   *  @param  new_value  The replacement value.
+   *  @return   The end of the output sequence, @p result+(last-first).
+   *
+   *  Copies each element in the input range @p [first,last) to the
+   *  output range @p [result,result+(last-first)) replacing elements
+   *  equal to @p old_value with @p new_value.
+  */
+  template<typename _InputIterator, typename _OutputIterator, typename _Tp>
+    _OutputIterator
+    replace_copy(_InputIterator __first, _InputIterator __last,
+		 _OutputIterator __result,
+		 const _Tp& __old_value, const _Tp& __new_value)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	    typename iterator_traits<_InputIterator>::value_type, _Tp>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first, ++__result)
+	if (*__first == __old_value)
+	  *__result = __new_value;
+	else
+	  *__result = *__first;
+      return __result;
+    }
+
+  /**
+   *  @brief Copy a sequence, replacing each value for which a predicate
+   *         returns true with another value.
+   *  @param  first      An input iterator.
+   *  @param  last       An input iterator.
+   *  @param  result     An output iterator.
+   *  @param  pred       A predicate.
+   *  @param  new_value  The replacement value.
+   *  @return   The end of the output sequence, @p result+(last-first).
+   *
+   *  Copies each element in the range @p [first,last) to the range
+   *  @p [result,result+(last-first)) replacing elements for which
+   *  @p pred returns true with @p new_value.
+  */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _Predicate, typename _Tp>
+    _OutputIterator
+    replace_copy_if(_InputIterator __first, _InputIterator __last,
+		    _OutputIterator __result,
+		    _Predicate __pred, const _Tp& __new_value)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first, ++__result)
+	if (__pred(*__first))
+	  *__result = __new_value;
+	else
+	  *__result = *__first;
+      return __result;
+    }
+
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
+
+  /**
+   *  @brief Apply a function to every element of a sequence.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  f      A unary function object.
+   *  @return   @p f.
+   *
+   *  Applies the function object @p f to each element in the range
+   *  @p [first,last).  @p f must not modify the order of the sequence.
+   *  If @p f has a return value it is ignored.
+  */
+  template<typename _InputIterator, typename _Function>
+    _Function
+    for_each(_InputIterator __first, _InputIterator __last, _Function __f)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+      for (; __first != __last; ++__first)
+	__f(*__first);
+      return __f;
+    }
+
+  /**
+   *  @brief Find the first occurrence of a value in a sequence.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  val    The value to find.
+   *  @return   The first iterator @c i in the range @p [first,last)
+   *  such that @c *i == @p val, or @p last if no such iterator exists.
+  */
+  template<typename _InputIterator, typename _Tp>
+    inline _InputIterator
+    find(_InputIterator __first, _InputIterator __last,
+	 const _Tp& __val)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_EqualOpConcept<
+		typename iterator_traits<_InputIterator>::value_type, _Tp>)
+      __glibcxx_requires_valid_range(__first, __last);
+      return std::__find(__first, __last, __val,
+		         std::__iterator_category(__first));
+    }
+
+  /**
+   *  @brief Find the first element in a sequence for which a
+   *         predicate is true.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  pred   A predicate.
+   *  @return   The first iterator @c i in the range @p [first,last)
+   *  such that @p pred(*i) is true, or @p last if no such iterator exists.
+  */
+  template<typename _InputIterator, typename _Predicate>
+    inline _InputIterator
+    find_if(_InputIterator __first, _InputIterator __last,
+	    _Predicate __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	      typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      return std::__find_if(__first, __last, __pred,
+			    std::__iterator_category(__first));
+    }
+
+  /**
+   *  @brief  Find element from a set in a sequence.
+   *  @param  first1  Start of range to search.
+   *  @param  last1   End of range to search.
+   *  @param  first2  Start of match candidates.
+   *  @param  last2   End of match candidates.
+   *  @return   The first iterator @c i in the range
+   *  @p [first1,last1) such that @c *i == @p *(i2) such that i2 is an
+   *  interator in [first2,last2), or @p last1 if no such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for an element that is equal to
+   *  some element in the range [first2,last2).  If found, returns an iterator
+   *  in the range [first1,last1), otherwise returns @p last1.
+  */
+  template<typename _InputIterator, typename _ForwardIterator>
+    _InputIterator
+    find_first_of(_InputIterator __first1, _InputIterator __last1,
+		  _ForwardIterator __first2, _ForwardIterator __last2)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	    typename iterator_traits<_InputIterator>::value_type,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
+
+      for (; __first1 != __last1; ++__first1)
+	for (_ForwardIterator __iter = __first2; __iter != __last2; ++__iter)
+	  if (*__first1 == *__iter)
+	    return __first1;
+      return __last1;
+    }
+
+  /**
+   *  @brief  Find element from a set in a sequence using a predicate.
+   *  @param  first1  Start of range to search.
+   *  @param  last1   End of range to search.
+   *  @param  first2  Start of match candidates.
+   *  @param  last2   End of match candidates.
+   *  @param  comp    Predicate to use.
+   *  @return   The first iterator @c i in the range
+   *  @p [first1,last1) such that @c comp(*i, @p *(i2)) is true and i2 is an
+   *  interator in [first2,last2), or @p last1 if no such iterator exists.
+   *
+
+   *  Searches the range @p [first1,last1) for an element that is
+   *  equal to some element in the range [first2,last2).  If found,
+   *  returns an iterator in the range [first1,last1), otherwise
+   *  returns @p last1.
+  */
+  template<typename _InputIterator, typename _ForwardIterator,
+	   typename _BinaryPredicate>
+    _InputIterator
+    find_first_of(_InputIterator __first1, _InputIterator __last1,
+		  _ForwardIterator __first2, _ForwardIterator __last2,
+		  _BinaryPredicate __comp)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
+	    typename iterator_traits<_InputIterator>::value_type,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
+
+      for (; __first1 != __last1; ++__first1)
+	for (_ForwardIterator __iter = __first2; __iter != __last2; ++__iter)
+	  if (__comp(*__first1, *__iter))
+	    return __first1;
+      return __last1;
+    }
+
+  /**
+   *  @brief Find two adjacent values in a sequence that are equal.
+   *  @param  first  A forward iterator.
+   *  @param  last   A forward iterator.
+   *  @return   The first iterator @c i such that @c i and @c i+1 are both
+   *  valid iterators in @p [first,last) and such that @c *i == @c *(i+1),
+   *  or @p last if no such iterator exists.
+  */
+  template<typename _ForwardIterator>
+    _ForwardIterator
+    adjacent_find(_ForwardIterator __first, _ForwardIterator __last)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_EqualityComparableConcept<
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      if (__first == __last)
+	return __last;
+      _ForwardIterator __next = __first;
+      while(++__next != __last)
+	{
+	  if (*__first == *__next)
+	    return __first;
+	  __first = __next;
+	}
+      return __last;
+    }
+
+  /**
+   *  @brief Find two adjacent values in a sequence using a predicate.
+   *  @param  first         A forward iterator.
+   *  @param  last          A forward iterator.
+   *  @param  binary_pred   A binary predicate.
+   *  @return   The first iterator @c i such that @c i and @c i+1 are both
+   *  valid iterators in @p [first,last) and such that
+   *  @p binary_pred(*i,*(i+1)) is true, or @p last if no such iterator
+   *  exists.
+  */
+  template<typename _ForwardIterator, typename _BinaryPredicate>
+    _ForwardIterator
+    adjacent_find(_ForwardIterator __first, _ForwardIterator __last,
+		  _BinaryPredicate __binary_pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
+	    typename iterator_traits<_ForwardIterator>::value_type,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      if (__first == __last)
+	return __last;
+      _ForwardIterator __next = __first;
+      while(++__next != __last)
+	{
+	  if (__binary_pred(*__first, *__next))
+	    return __first;
+	  __first = __next;
+	}
+      return __last;
+    }
+
+  /**
+   *  @brief Count the number of copies of a value in a sequence.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  value  The value to be counted.
+   *  @return   The number of iterators @c i in the range @p [first,last)
+   *  for which @c *i == @p value
+  */
+  template<typename _InputIterator, typename _Tp>
+    typename iterator_traits<_InputIterator>::difference_type
+    count(_InputIterator __first, _InputIterator __last, const _Tp& __value)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	typename iterator_traits<_InputIterator>::value_type, _Tp>)
+      __glibcxx_requires_valid_range(__first, __last);
+      typename iterator_traits<_InputIterator>::difference_type __n = 0;
+      for (; __first != __last; ++__first)
+	if (*__first == __value)
+	  ++__n;
+      return __n;
+    }
+
+  /**
+   *  @brief Count the elements of a sequence for which a predicate is true.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  pred   A predicate.
+   *  @return   The number of iterators @c i in the range @p [first,last)
+   *  for which @p pred(*i) is true.
+  */
+  template<typename _InputIterator, typename _Predicate>
+    typename iterator_traits<_InputIterator>::difference_type
+    count_if(_InputIterator __first, _InputIterator __last, _Predicate __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+      typename iterator_traits<_InputIterator>::difference_type __n = 0;
+      for (; __first != __last; ++__first)
+	if (__pred(*__first))
+	  ++__n;
+      return __n;
+    }
+
+  /**
+   *  @brief Search a sequence for a matching sub-sequence.
+   *  @param  first1  A forward iterator.
+   *  @param  last1   A forward iterator.
+   *  @param  first2  A forward iterator.
+   *  @param  last2   A forward iterator.
+   *  @return   The first iterator @c i in the range
+   *  @p [first1,last1-(last2-first2)) such that @c *(i+N) == @p *(first2+N)
+   *  for each @c N in the range @p [0,last2-first2), or @p last1 if no
+   *  such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for a sub-sequence that compares
+   *  equal value-by-value with the sequence given by @p [first2,last2) and
+   *  returns an iterator to the first element of the sub-sequence, or
+   *  @p last1 if the sub-sequence is not found.
+   *
+   *  Because the sub-sequence must lie completely within the range
+   *  @p [first1,last1) it must start at a position less than
+   *  @p last1-(last2-first2) where @p last2-first2 is the length of the
+   *  sub-sequence.
+   *  This means that the returned iterator @c i will be in the range
+   *  @p [first1,last1-(last2-first2))
+  */
+  template<typename _ForwardIterator1, typename _ForwardIterator2>
+    _ForwardIterator1
+    search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+	   _ForwardIterator2 __first2, _ForwardIterator2 __last2)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator1>)
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator2>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	    typename iterator_traits<_ForwardIterator1>::value_type,
+	    typename iterator_traits<_ForwardIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
+
+      // Test for empty ranges
+      if (__first1 == __last1 || __first2 == __last2)
+	return __first1;
+
+      // Test for a pattern of length 1.
+      _ForwardIterator2 __p1(__first2);
+      if (++__p1 == __last2)
+	return _GLIBCXX_STD_P::find(__first1, __last1, *__first2);
+
+      // General case.
+      _ForwardIterator2 __p;
+      _ForwardIterator1 __current = __first1;
+
+      for (;;)
+	{
+	  __first1 = _GLIBCXX_STD_P::find(__first1, __last1, *__first2);
+	  if (__first1 == __last1)
+	    return __last1;
+
+	  __p = __p1;
+	  __current = __first1;
+	  if (++__current == __last1)
+	    return __last1;
+
+	  while (*__current == *__p)
+	    {
+	      if (++__p == __last2)
+		return __first1;
+	      if (++__current == __last1)
+		return __last1;
+	    }
+	  ++__first1;
+	}
+      return __first1;
+    }
+
+  /**
+   *  @brief Search a sequence for a matching sub-sequence using a predicate.
+   *  @param  first1     A forward iterator.
+   *  @param  last1      A forward iterator.
+   *  @param  first2     A forward iterator.
+   *  @param  last2      A forward iterator.
+   *  @param  predicate  A binary predicate.
+   *  @return   The first iterator @c i in the range
+   *  @p [first1,last1-(last2-first2)) such that
+   *  @p predicate(*(i+N),*(first2+N)) is true for each @c N in the range
+   *  @p [0,last2-first2), or @p last1 if no such iterator exists.
+   *
+   *  Searches the range @p [first1,last1) for a sub-sequence that compares
+   *  equal value-by-value with the sequence given by @p [first2,last2),
+   *  using @p predicate to determine equality, and returns an iterator
+   *  to the first element of the sub-sequence, or @p last1 if no such
+   *  iterator exists.
+   *
+   *  @see search(_ForwardIter1, _ForwardIter1, _ForwardIter2, _ForwardIter2)
+  */
+  template<typename _ForwardIterator1, typename _ForwardIterator2,
+	   typename _BinaryPredicate>
+    _ForwardIterator1
+    search(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+	   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
+	   _BinaryPredicate  __predicate)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator1>)
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator2>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
+	    typename iterator_traits<_ForwardIterator1>::value_type,
+	    typename iterator_traits<_ForwardIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+      __glibcxx_requires_valid_range(__first2, __last2);
+
+      // Test for empty ranges
+      if (__first1 == __last1 || __first2 == __last2)
+	return __first1;
+
+      // Test for a pattern of length 1.
+      _ForwardIterator2 __p1(__first2);
+      if (++__p1 == __last2)
+	{
+	  while (__first1 != __last1
+		 && !bool(__predicate(*__first1, *__first2)))
+	    ++__first1;
+	  return __first1;
+	}
+
+      // General case.
+      _ForwardIterator2 __p;
+      _ForwardIterator1 __current = __first1;
+
+      for (;;)
+	{
+	  while (__first1 != __last1
+		 && !bool(__predicate(*__first1, *__first2)))
+	    ++__first1;
+	  if (__first1 == __last1)
+	    return __last1;
+
+	  __p = __p1;
+	  __current = __first1;
+	  if (++__current == __last1)
+	    return __last1;
+
+	  while (__predicate(*__current, *__p))
+	    {
+	      if (++__p == __last2)
+		return __first1;
+	      if (++__current == __last1)
+		return __last1;
+	    }
+	  ++__first1;
+	}
+      return __first1;
+    }
+
+
+  /**
+   *  @brief Search a sequence for a number of consecutive values.
+   *  @param  first  A forward iterator.
+   *  @param  last   A forward iterator.
+   *  @param  count  The number of consecutive values.
+   *  @param  val    The value to find.
+   *  @return   The first iterator @c i in the range @p [first,last-count)
+   *  such that @c *(i+N) == @p val for each @c N in the range @p [0,count),
+   *  or @p last if no such iterator exists.
+   *
+   *  Searches the range @p [first,last) for @p count consecutive elements
+   *  equal to @p val.
+  */
+  template<typename _ForwardIterator, typename _Integer, typename _Tp>
+    _ForwardIterator
+    search_n(_ForwardIterator __first, _ForwardIterator __last,
+	     _Integer __count, const _Tp& __val)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__count <= 0)
+	return __first;
+      if (__count == 1)
+	return _GLIBCXX_STD_P::find(__first, __last, __val);
+      return std::__search_n(__first, __last, __count, __val,
+			     std::__iterator_category(__first));
+    }
+
+
+  /**
+   *  @brief Search a sequence for a number of consecutive values using a
+   *         predicate.
+   *  @param  first        A forward iterator.
+   *  @param  last         A forward iterator.
+   *  @param  count        The number of consecutive values.
+   *  @param  val          The value to find.
+   *  @param  binary_pred  A binary predicate.
+   *  @return   The first iterator @c i in the range @p [first,last-count)
+   *  such that @p binary_pred(*(i+N),val) is true for each @c N in the
+   *  range @p [0,count), or @p last if no such iterator exists.
+   *
+   *  Searches the range @p [first,last) for @p count consecutive elements
+   *  for which the predicate returns true.
+  */
+  template<typename _ForwardIterator, typename _Integer, typename _Tp,
+           typename _BinaryPredicate>
+    _ForwardIterator
+    search_n(_ForwardIterator __first, _ForwardIterator __last,
+	     _Integer __count, const _Tp& __val,
+	     _BinaryPredicate __binary_pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_BinaryPredicate,
+	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__count <= 0)
+	return __first;
+      if (__count == 1)
+	{
+	  while (__first != __last && !bool(__binary_pred(*__first, __val)))
+	    ++__first;
+	  return __first;
+	}
+      return std::__search_n(__first, __last, __count, __val, __binary_pred,
+			     std::__iterator_category(__first));
+    }
+
+
+  /**
+   *  @brief Perform an operation on a sequence.
+   *  @param  first     An input iterator.
+   *  @param  last      An input iterator.
+   *  @param  result    An output iterator.
+   *  @param  unary_op  A unary operator.
+   *  @return   An output iterator equal to @p result+(last-first).
+   *
+   *  Applies the operator to each element in the input range and assigns
+   *  the results to successive elements of the output sequence.
+   *  Evaluates @p *(result+N)=unary_op(*(first+N)) for each @c N in the
+   *  range @p [0,last-first).
+   *
+   *  @p unary_op must not alter its argument.
+  */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _UnaryOperation>
+    _OutputIterator
+    transform(_InputIterator __first, _InputIterator __last,
+	      _OutputIterator __result, _UnaryOperation __unary_op)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+            // "the type returned by a _UnaryOperation"
+            __typeof__(__unary_op(*__first))>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first, ++__result)
+	*__result = __unary_op(*__first);
+      return __result;
+    }
+
+  /**
+   *  @brief Perform an operation on corresponding elements of two sequences.
+   *  @param  first1     An input iterator.
+   *  @param  last1      An input iterator.
+   *  @param  first2     An input iterator.
+   *  @param  result     An output iterator.
+   *  @param  binary_op  A binary operator.
+   *  @return   An output iterator equal to @p result+(last-first).
+   *
+   *  Applies the operator to the corresponding elements in the two
+   *  input ranges and assigns the results to successive elements of the
+   *  output sequence.
+   *  Evaluates @p *(result+N)=binary_op(*(first1+N),*(first2+N)) for each
+   *  @c N in the range @p [0,last1-first1).
+   *
+   *  @p binary_op must not alter either of its arguments.
+  */
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _BinaryOperation>
+    _OutputIterator
+    transform(_InputIterator1 __first1, _InputIterator1 __last1,
+	      _InputIterator2 __first2, _OutputIterator __result,
+	      _BinaryOperation __binary_op)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+            // "the type returned by a _BinaryOperation"
+            __typeof__(__binary_op(*__first1,*__first2))>)
+      __glibcxx_requires_valid_range(__first1, __last1);
+
+      for (; __first1 != __last1; ++__first1, ++__first2, ++__result)
+	*__result = __binary_op(*__first1, *__first2);
+      return __result;
+    }
+
+  /**
+   *  @brief Replace each occurrence of one value in a sequence with another
+   *         value.
+   *  @param  first      A forward iterator.
+   *  @param  last       A forward iterator.
+   *  @param  old_value  The value to be replaced.
+   *  @param  new_value  The replacement value.
+   *  @return   replace() returns no value.
+   *
+   *  For each iterator @c i in the range @p [first,last) if @c *i ==
+   *  @p old_value then the assignment @c *i = @p new_value is performed.
+  */
+  template<typename _ForwardIterator, typename _Tp>
+    void
+    replace(_ForwardIterator __first, _ForwardIterator __last,
+	    const _Tp& __old_value, const _Tp& __new_value)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	    typename iterator_traits<_ForwardIterator>::value_type, _Tp>)
+      __glibcxx_function_requires(_ConvertibleConcept<_Tp,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first)
+	if (*__first == __old_value)
+	  *__first = __new_value;
+    }
+
+  /**
+   *  @brief Replace each value in a sequence for which a predicate returns
+   *         true with another value.
+   *  @param  first      A forward iterator.
+   *  @param  last       A forward iterator.
+   *  @param  pred       A predicate.
+   *  @param  new_value  The replacement value.
+   *  @return   replace_if() returns no value.
+   *
+   *  For each iterator @c i in the range @p [first,last) if @p pred(*i)
+   *  is true then the assignment @c *i = @p new_value is performed.
+  */
+  template<typename _ForwardIterator, typename _Predicate, typename _Tp>
+    void
+    replace_if(_ForwardIterator __first, _ForwardIterator __last,
+	       _Predicate __pred, const _Tp& __new_value)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
+      __glibcxx_function_requires(_ConvertibleConcept<_Tp,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first)
+	if (__pred(*__first))
+	  *__first = __new_value;
+    }
+
+  /**
+   *  @brief Assign the result of a function object to each value in a
+   *         sequence.
+   *  @param  first  A forward iterator.
+   *  @param  last   A forward iterator.
+   *  @param  gen    A function object taking no arguments.
+   *  @return   generate() returns no value.
+   *
+   *  Performs the assignment @c *i = @p gen() for each @c i in the range
+   *  @p [first,last).
+  */
+  template<typename _ForwardIterator, typename _Generator>
+    void
+    generate(_ForwardIterator __first, _ForwardIterator __last,
+	     _Generator __gen)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_GeneratorConcept<_Generator,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first)
+	*__first = __gen();
+    }
+
+  /**
+   *  @brief Assign the result of a function object to each value in a
+   *         sequence.
+   *  @param  first  A forward iterator.
+   *  @param  n      The length of the sequence.
+   *  @param  gen    A function object taking no arguments.
+   *  @return   The end of the sequence, @p first+n
+   *
+   *  Performs the assignment @c *i = @p gen() for each @c i in the range
+   *  @p [first,first+n).
+  */
+  template<typename _OutputIterator, typename _Size, typename _Generator>
+    _OutputIterator
+    generate_n(_OutputIterator __first, _Size __n, _Generator __gen)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+            // "the type returned by a _Generator"
+            __typeof__(__gen())>)
+
+      for (; __n > 0; --__n, ++__first)
+	*__first = __gen();
+      return __first;
+    }
+
+
+  /**
+   *  @brief Copy a sequence, removing consecutive duplicate values.
+   *  @param  first   An input iterator.
+   *  @param  last    An input iterator.
+   *  @param  result  An output iterator.
+   *  @return   An iterator designating the end of the resulting sequence.
+   *
+   *  Copies each element in the range @p [first,last) to the range
+   *  beginning at @p result, except that only the first element is copied
+   *  from groups of consecutive elements that compare equal.
+   *  unique_copy() is stable, so the relative order of elements that are
+   *  copied is unchanged.
+   *
+   *  @if maint
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
+   *  
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 538. 241 again: Does unique_copy() require CopyConstructible and 
+   *  Assignable?
+   *  @endif
+  */
+  template<typename _InputIterator, typename _OutputIterator>
+    inline _OutputIterator
+    unique_copy(_InputIterator __first, _InputIterator __last,
+		_OutputIterator __result)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_function_requires(_EqualityComparableConcept<
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return __result;
+      return std::__unique_copy(__first, __last, __result,
+				std::__iterator_category(__first),
+				std::__iterator_category(__result));
+    }
+
+  /**
+   *  @brief Copy a sequence, removing consecutive values using a predicate.
+   *  @param  first        An input iterator.
+   *  @param  last         An input iterator.
+   *  @param  result       An output iterator.
+   *  @param  binary_pred  A binary predicate.
+   *  @return   An iterator designating the end of the resulting sequence.
+   *
+   *  Copies each element in the range @p [first,last) to the range
+   *  beginning at @p result, except that only the first element is copied
+   *  from groups of consecutive elements for which @p binary_pred returns
+   *  true.
+   *  unique_copy() is stable, so the relative order of elements that are
+   *  copied is unchanged.
+   *
+   *  @if maint
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 241. Does unique_copy() require CopyConstructible and Assignable?
+   *  @endif
+  */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryPredicate>
+    inline _OutputIterator
+    unique_copy(_InputIterator __first, _InputIterator __last,
+		_OutputIterator __result,
+		_BinaryPredicate __binary_pred)
+    {
+      // concept requirements -- predicates checked later
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+	    typename iterator_traits<_InputIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return __result;
+      return std::__unique_copy(__first, __last, __result, __binary_pred,
+				std::__iterator_category(__first),
+				std::__iterator_category(__result));
+    }
+
+
+  /**
+   *  @brief Randomly shuffle the elements of a sequence.
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @return  Nothing.
+   *
+   *  Reorder the elements in the range @p [first,last) using a random
+   *  distribution, so that every possible ordering of the sequence is
+   *  equally likely.
+  */
+  template<typename _RandomAccessIterator>
+    inline void
+    random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first != __last)
+	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	  std::iter_swap(__i, __first + (std::rand() % ((__i - __first) + 1)));
+    }
+
+  /**
+   *  @brief Shuffle the elements of a sequence using a random number
+   *         generator.
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @param  rand    The RNG functor or function.
+   *  @return  Nothing.
+   *
+   *  Reorders the elements in the range @p [first,last) using @p rand to
+   *  provide a random distribution. Calling @p rand(N) for a positive
+   *  integer @p N should return a randomly chosen integer from the
+   *  range [0,N).
+  */
+  template<typename _RandomAccessIterator, typename _RandomNumberGenerator>
+    void
+    random_shuffle(_RandomAccessIterator __first, _RandomAccessIterator __last,
+		   _RandomNumberGenerator& __rand)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return;
+      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	std::iter_swap(__i, __first + __rand((__i - __first) + 1));
+    }
+
+
+  /**
+   *  @brief Move elements for which a predicate is true to the beginning
+   *         of a sequence.
+   *  @param  first   A forward iterator.
+   *  @param  last    A forward iterator.
+   *  @param  pred    A predicate functor.
+   *  @return  An iterator @p middle such that @p pred(i) is true for each
+   *  iterator @p i in the range @p [first,middle) and false for each @p i
+   *  in the range @p [middle,last).
+   *
+   *  @p pred must not modify its operand. @p partition() does not preserve
+   *  the relative ordering of elements in each group, use
+   *  @p stable_partition() if this is needed.
+  */
+  template<typename _ForwardIterator, typename _Predicate>
+    inline _ForwardIterator
+    partition(_ForwardIterator __first, _ForwardIterator __last,
+	      _Predicate   __pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_ForwardIteratorConcept<
+				  _ForwardIterator>)
+      __glibcxx_function_requires(_UnaryPredicateConcept<_Predicate,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      return std::__partition(__first, __last, __pred,
+			      std::__iterator_category(__first));
+    }
+
+
+
+  /**
+   *  @brief Sort the smallest elements of a sequence.
+   *  @param  first   An iterator.
+   *  @param  middle  Another iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  Sorts the smallest @p (middle-first) elements in the range
+   *  @p [first,last) and moves them to the range @p [first,middle). The
+   *  order of the remaining elements in the range @p [middle,last) is
+   *  undefined.
+   *  After the sort if @p i and @j are iterators in the range
+   *  @p [first,middle) such that @i precedes @j and @k is an iterator in
+   *  the range @p [middle,last) then @p *j<*i and @p *k<*i are both false.
+  */
+  template<typename _RandomAccessIterator>
+    inline void
+    partial_sort(_RandomAccessIterator __first,
+		 _RandomAccessIterator __middle,
+		 _RandomAccessIterator __last)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __middle);
+      __glibcxx_requires_valid_range(__middle, __last);
+
+      std::__heap_select(__first, __middle, __last);
+      std::sort_heap(__first, __middle);
+    }
+
+  /**
+   *  @brief Sort the smallest elements of a sequence using a predicate
+   *         for comparison.
+   *  @param  first   An iterator.
+   *  @param  middle  Another iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  Sorts the smallest @p (middle-first) elements in the range
+   *  @p [first,last) and moves them to the range @p [first,middle). The
+   *  order of the remaining elements in the range @p [middle,last) is
+   *  undefined.
+   *  After the sort if @p i and @j are iterators in the range
+   *  @p [first,middle) such that @i precedes @j and @k is an iterator in
+   *  the range @p [middle,last) then @p *comp(j,*i) and @p comp(*k,*i)
+   *  are both false.
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline void
+    partial_sort(_RandomAccessIterator __first,
+		 _RandomAccessIterator __middle,
+		 _RandomAccessIterator __last,
+		 _Compare __comp)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _ValueType, _ValueType>)
+      __glibcxx_requires_valid_range(__first, __middle);
+      __glibcxx_requires_valid_range(__middle, __last);
+
+      std::__heap_select(__first, __middle, __last, __comp);
+      std::sort_heap(__first, __middle, __comp);
+    }
+
+  /**
+   *  @brief Sort a sequence just enough to find a particular position.
+   *  @param  first   An iterator.
+   *  @param  nth     Another iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  Rearranges the elements in the range @p [first,last) so that @p *nth
+   *  is the same element that would have been in that position had the
+   *  whole sequence been sorted.
+   *  whole sequence been sorted. The elements either side of @p *nth are
+   *  not completely sorted, but for any iterator @i in the range
+   *  @p [first,nth) and any iterator @j in the range @p [nth,last) it
+   *  holds that @p *j<*i is false.
+  */
+  template<typename _RandomAccessIterator>
+    inline void
+    nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
+		_RandomAccessIterator __last)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+				  _RandomAccessIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __nth);
+      __glibcxx_requires_valid_range(__nth, __last);
+
+      if (__first == __last || __nth == __last)
+	return;
+
+      std::__introselect(__first, __nth, __last,
+			 std::__lg(__last - __first) * 2);
+    }
+
+  /**
+   *  @brief Sort a sequence just enough to find a particular position
+   *         using a predicate for comparison.
+   *  @param  first   An iterator.
+   *  @param  nth     Another iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  Rearranges the elements in the range @p [first,last) so that @p *nth
+   *  is the same element that would have been in that position had the
+   *  whole sequence been sorted. The elements either side of @p *nth are
+   *  not completely sorted, but for any iterator @i in the range
+   *  @p [first,nth) and any iterator @j in the range @p [nth,last) it
+   *  holds that @p comp(*j,*i) is false.
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline void
+    nth_element(_RandomAccessIterator __first, _RandomAccessIterator __nth,
+		_RandomAccessIterator __last, _Compare __comp)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+				  _RandomAccessIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _ValueType, _ValueType>)
+      __glibcxx_requires_valid_range(__first, __nth);
+      __glibcxx_requires_valid_range(__nth, __last);
+
+      if (__first == __last || __nth == __last)
+	return;
+
+      std::__introselect(__first, __nth, __last,
+			 std::__lg(__last - __first) * 2, __comp);
+    }
+
+
+  /**
+   *  @brief Sort the elements of a sequence.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  Sorts the elements in the range @p [first,last) in ascending order,
+   *  such that @p *(i+1)<*i is false for each iterator @p i in the range
+   *  @p [first,last-1).
+   *
+   *  The relative ordering of equivalent elements is not preserved, use
+   *  @p stable_sort() if this is needed.
+  */
+  template<typename _RandomAccessIterator>
+    inline void
+    sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first != __last)
+	{
+	  std::__introsort_loop(__first, __last,
+				std::__lg(__last - __first) * 2);
+	  std::__final_insertion_sort(__first, __last);
+	}
+    }
+
+  /**
+   *  @brief Sort the elements of a sequence using a predicate for comparison.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  Sorts the elements in the range @p [first,last) in ascending order,
+   *  such that @p comp(*(i+1),*i) is false for every iterator @p i in the
+   *  range @p [first,last-1).
+   *
+   *  The relative ordering of equivalent elements is not preserved, use
+   *  @p stable_sort() if this is needed.
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline void
+    sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	 _Compare __comp)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare, _ValueType,
+				  _ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first != __last)
+	{
+	  std::__introsort_loop(__first, __last,
+				std::__lg(__last - __first) * 2, __comp);
+	  std::__final_insertion_sort(__first, __last, __comp);
+	}
+    }
+
+  /**
+   *  @brief Merges two sorted ranges.
+   *  @param  first1  An iterator.
+   *  @param  first2  Another iterator.
+   *  @param  last1   Another iterator.
+   *  @param  last2   Another iterator.
+   *  @param  result  An iterator pointing to the end of the merged range.
+   *  @return         An iterator pointing to the first element "not less
+   *                  than" @a val.
+   *
+   *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
+   *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges
+   *  must be sorted, and the output range must not overlap with either of
+   *  the input ranges.  The sort is @e stable, that is, for equivalent
+   *  elements in the two ranges, elements from the first range will always
+   *  come before elements from the second.
+  */
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator>
+    _OutputIterator
+    merge(_InputIterator1 __first1, _InputIterator1 __last1,
+	  _InputIterator2 __first2, _InputIterator2 __last2,
+	  _OutputIterator __result)
+    {
+      typedef typename iterator_traits<_InputIterator1>::value_type
+	_ValueType1;
+      typedef typename iterator_traits<_InputIterator2>::value_type
+	_ValueType2;
+
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				  _ValueType1>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				  _ValueType2>)
+      __glibcxx_function_requires(_LessThanOpConcept<_ValueType2, _ValueType1>)	
+      __glibcxx_requires_sorted(__first1, __last1);
+      __glibcxx_requires_sorted(__first2, __last2);
+
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (*__first2 < *__first1)
+	    {
+	      *__result = *__first2;
+	      ++__first2;
+	    }
+	  else
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	    }
+	  ++__result;
+	}
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
+						    __result));
+    }
+
+  /**
+   *  @brief Merges two sorted ranges.
+   *  @param  first1  An iterator.
+   *  @param  first2  Another iterator.
+   *  @param  last1   Another iterator.
+   *  @param  last2   Another iterator.
+   *  @param  result  An iterator pointing to the end of the merged range.
+   *  @param  comp    A functor to use for comparisons.
+   *  @return         An iterator pointing to the first element "not less
+   *                  than" @a val.
+   *
+   *  Merges the ranges [first1,last1) and [first2,last2) into the sorted range
+   *  [result, result + (last1-first1) + (last2-first2)).  Both input ranges
+   *  must be sorted, and the output range must not overlap with either of
+   *  the input ranges.  The sort is @e stable, that is, for equivalent
+   *  elements in the two ranges, elements from the first range will always
+   *  come before elements from the second.
+   *
+   *  The comparison function should have the same effects on ordering as
+   *  the function used for the initial sort.
+  */
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _OutputIterator, typename _Compare>
+    _OutputIterator
+    merge(_InputIterator1 __first1, _InputIterator1 __last1,
+	  _InputIterator2 __first2, _InputIterator2 __last2,
+	  _OutputIterator __result, _Compare __comp)
+    {
+      typedef typename iterator_traits<_InputIterator1>::value_type
+	_ValueType1;
+      typedef typename iterator_traits<_InputIterator2>::value_type
+	_ValueType2;
+
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				  _ValueType1>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
+				  _ValueType2>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _ValueType2, _ValueType1>)
+      __glibcxx_requires_sorted_pred(__first1, __last1, __comp);
+      __glibcxx_requires_sorted_pred(__first2, __last2, __comp);
+
+      while (__first1 != __last1 && __first2 != __last2)
+	{
+	  if (__comp(*__first2, *__first1))
+	    {
+	      *__result = *__first2;
+	      ++__first2;
+	    }
+	  else
+	    {
+	      *__result = *__first1;
+	      ++__first1;
+	    }
+	  ++__result;
+	}
+      return std::copy(__first2, __last2, std::copy(__first1, __last1,
+						    __result));
+    }
+
+
+  /**
+   *  @brief Sort the elements of a sequence, preserving the relative order
+   *         of equivalent elements.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @return  Nothing.
+   *
+   *  Sorts the elements in the range @p [first,last) in ascending order,
+   *  such that @p *(i+1)<*i is false for each iterator @p i in the range
+   *  @p [first,last-1).
+   *
+   *  The relative ordering of equivalent elements is preserved, so any two
+   *  elements @p x and @p y in the range @p [first,last) such that
+   *  @p x<y is false and @p y<x is false will have the same relative
+   *  ordering after calling @p stable_sort().
+  */
+  template<typename _RandomAccessIterator>
+    inline void
+    stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<_ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      _Temporary_buffer<_RandomAccessIterator, _ValueType> __buf(__first,
+								 __last);
+      if (__buf.begin() == 0)
+	std::__inplace_stable_sort(__first, __last);
+      else
+	std::__stable_sort_adaptive(__first, __last, __buf.begin(),
+				    _DistanceType(__buf.size()));
+    }
+
+  /**
+   *  @brief Sort the elements of a sequence using a predicate for comparison,
+   *         preserving the relative order of equivalent elements.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  Nothing.
+   *
+   *  Sorts the elements in the range @p [first,last) in ascending order,
+   *  such that @p comp(*(i+1),*i) is false for each iterator @p i in the
+   *  range @p [first,last-1).
+   *
+   *  The relative ordering of equivalent elements is preserved, so any two
+   *  elements @p x and @p y in the range @p [first,last) such that
+   *  @p comp(x,y) is false and @p comp(y,x) is false will have the same
+   *  relative ordering after calling @p stable_sort().
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline void
+    stable_sort(_RandomAccessIterator __first, _RandomAccessIterator __last,
+		_Compare __comp)
+    {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
+	_DistanceType;
+
+      // concept requirements
+      __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+				  _ValueType,
+				  _ValueType>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      _Temporary_buffer<_RandomAccessIterator, _ValueType> __buf(__first,
+								 __last);
+      if (__buf.begin() == 0)
+	std::__inplace_stable_sort(__first, __last, __comp);
+      else
+	std::__stable_sort_adaptive(__first, __last, __buf.begin(),
+				    _DistanceType(__buf.size()), __comp);
+    }
+
 
   /**
    *  @brief Return the union of two sorted ranges.
@@ -5167,12 +5383,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    ++__first1;
 	    ++__first2;
 	  }
-      return std::copy(__first2, __last2, std::copy(__first1,
-						    __last1, __result));
+      return std::copy(__first2, __last2, 
+		       std::copy(__first1, __last1, __result));
     }
 
-  // min_element and max_element, with and without an explicitly supplied
-  // comparison function.
 
   /**
    *  @brief  Return the minimum element in a range.
@@ -5281,230 +5495,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __result;
     }
 
-  // next_permutation and prev_permutation, with and without an explicitly
-  // supplied comparison function.
-
-  /**
-   *  @brief  Permute range into the next "dictionary" ordering.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @return  False if wrapped to first permutation, true otherwise.
-   *
-   *  Treats all permutations of the range as a set of "dictionary" sorted
-   *  sequences.  Permutes the current sequence into the next one of this set.
-   *  Returns true if there are more sequences to generate.  If the sequence
-   *  is the largest of the set, the smallest is generated and false returned.
-  */
-  template<typename _BidirectionalIterator>
-    bool
-    next_permutation(_BidirectionalIterator __first,
-		     _BidirectionalIterator __last)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<
-				  _BidirectionalIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_BidirectionalIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return false;
-      _BidirectionalIterator __i = __first;
-      ++__i;
-      if (__i == __last)
-	return false;
-      __i = __last;
-      --__i;
-
-      for(;;)
-	{
-	  _BidirectionalIterator __ii = __i;
-	  --__i;
-	  if (*__i < *__ii)
-	    {
-	      _BidirectionalIterator __j = __last;
-	      while (!(*__i < *--__j))
-		{}
-	      std::iter_swap(__i, __j);
-	      std::reverse(__ii, __last);
-	      return true;
-	    }
-	  if (__i == __first)
-	    {
-	      std::reverse(__first, __last);
-	      return false;
-	    }
-	}
-    }
-
-  /**
-   *  @brief  Permute range into the next "dictionary" ordering using
-   *  comparison functor.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @param  comp
-   *  @return  False if wrapped to first permutation, true otherwise.
-   *
-   *  Treats all permutations of the range [first,last) as a set of
-   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
-   *  sequence into the next one of this set.  Returns true if there are more
-   *  sequences to generate.  If the sequence is the largest of the set, the
-   *  smallest is generated and false returned.
-  */
-  template<typename _BidirectionalIterator, typename _Compare>
-    bool
-    next_permutation(_BidirectionalIterator __first,
-		     _BidirectionalIterator __last, _Compare __comp)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<
-				  _BidirectionalIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-	    typename iterator_traits<_BidirectionalIterator>::value_type,
-	    typename iterator_traits<_BidirectionalIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return false;
-      _BidirectionalIterator __i = __first;
-      ++__i;
-      if (__i == __last)
-	return false;
-      __i = __last;
-      --__i;
-
-      for(;;)
-	{
-	  _BidirectionalIterator __ii = __i;
-	  --__i;
-	  if (__comp(*__i, *__ii))
-	    {
-	      _BidirectionalIterator __j = __last;
-	      while (!bool(__comp(*__i, *--__j)))
-		{}
-	      std::iter_swap(__i, __j);
-	      std::reverse(__ii, __last);
-	      return true;
-	    }
-	  if (__i == __first)
-	    {
-	      std::reverse(__first, __last);
-	      return false;
-	    }
-	}
-    }
-
-  /**
-   *  @brief  Permute range into the previous "dictionary" ordering.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @return  False if wrapped to last permutation, true otherwise.
-   *
-   *  Treats all permutations of the range as a set of "dictionary" sorted
-   *  sequences.  Permutes the current sequence into the previous one of this
-   *  set.  Returns true if there are more sequences to generate.  If the
-   *  sequence is the smallest of the set, the largest is generated and false
-   *  returned.
-  */
-  template<typename _BidirectionalIterator>
-    bool
-    prev_permutation(_BidirectionalIterator __first,
-		     _BidirectionalIterator __last)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<
-				  _BidirectionalIterator>)
-      __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_BidirectionalIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return false;
-      _BidirectionalIterator __i = __first;
-      ++__i;
-      if (__i == __last)
-	return false;
-      __i = __last;
-      --__i;
-
-      for(;;)
-	{
-	  _BidirectionalIterator __ii = __i;
-	  --__i;
-	  if (*__ii < *__i)
-	    {
-	      _BidirectionalIterator __j = __last;
-	      while (!(*--__j < *__i))
-		{}
-	      std::iter_swap(__i, __j);
-	      std::reverse(__ii, __last);
-	      return true;
-	    }
-	  if (__i == __first)
-	    {
-	      std::reverse(__first, __last);
-	      return false;
-	    }
-	}
-    }
-
-  /**
-   *  @brief  Permute range into the previous "dictionary" ordering using
-   *  comparison functor.
-   *  @param  first  Start of range.
-   *  @param  last   End of range.
-   *  @param  comp
-   *  @return  False if wrapped to last permutation, true otherwise.
-   *
-   *  Treats all permutations of the range [first,last) as a set of
-   *  "dictionary" sorted sequences ordered by @a comp.  Permutes the current
-   *  sequence into the previous one of this set.  Returns true if there are
-   *  more sequences to generate.  If the sequence is the smallest of the set,
-   *  the largest is generated and false returned.
-  */
-  template<typename _BidirectionalIterator, typename _Compare>
-    bool
-    prev_permutation(_BidirectionalIterator __first,
-		     _BidirectionalIterator __last, _Compare __comp)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_BidirectionalIteratorConcept<
-				  _BidirectionalIterator>)
-      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
-	    typename iterator_traits<_BidirectionalIterator>::value_type,
-	    typename iterator_traits<_BidirectionalIterator>::value_type>)
-      __glibcxx_requires_valid_range(__first, __last);
-
-      if (__first == __last)
-	return false;
-      _BidirectionalIterator __i = __first;
-      ++__i;
-      if (__i == __last)
-	return false;
-      __i = __last;
-      --__i;
-
-      for(;;)
-	{
-	  _BidirectionalIterator __ii = __i;
-	  --__i;
-	  if (__comp(*__ii, *__i))
-	    {
-	      _BidirectionalIterator __j = __last;
-	      while (!bool(__comp(*--__j, *__i)))
-		{}
-	      std::iter_swap(__i, __j);
-	      std::reverse(__ii, __last);
-	      return true;
-	    }
-	  if (__i == __first)
-	    {
-	      std::reverse(__first, __last);
-	      return false;
-	    }
-	}
-    }
-
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _STL_ALGO_H */

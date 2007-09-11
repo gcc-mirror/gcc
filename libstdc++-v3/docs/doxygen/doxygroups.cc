@@ -45,7 +45,7 @@
  *  export. Used only when anonymous namespaces cannot be substituted.
 */
 /** @namespace __gnu_debug
- *  @brief GNU debug mode classes for public use.
+ *  @brief GNU debug classes for public use.
 */
 // // // // // // // // // // // // // // // // // // // // // // // //
 /** @addtogroup SGIextensions STL extensions from SGI

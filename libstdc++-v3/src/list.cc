@@ -55,7 +55,7 @@
 
 #include <list>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   void
   _List_node_base::swap(_List_node_base& __x, _List_node_base& __y)

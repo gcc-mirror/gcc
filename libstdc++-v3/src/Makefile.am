@@ -112,14 +112,19 @@ atomicity.cc: ${atomicity_file}
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
-	basic_file.cc \
-	c++locale.cc
+	basic_file.cc c++locale.cc ${ldbl_compat_sources} ${parallel_sources}
 
 c++locale.cc: ${glibcxx_srcdir}/$(CLOCALE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CLOCALE_CC) ./$@ || true
 
 basic_file.cc: ${glibcxx_srcdir}/$(BASIC_FILE_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_CC) ./$@ || true
+
+if ENABLE_PARALLEL
+parallel_sources = parallel_list.cc 
+else
+parallel_sources =
+endif
 
 if GLIBCXX_LDBL_COMPAT
 ldbl_compat_sources = compatibility-ldbl.cc
@@ -137,7 +142,6 @@ sources = \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \
-	debug_list.cc \
 	functexcept.cc \
 	hash.cc \
 	hash_c++0x.cc \
@@ -148,6 +152,7 @@ sources = \
 	ios_locale.cc \
 	limits.cc \
 	list.cc \
+	debug_list.cc \
 	locale.cc \
 	locale_init.cc \
 	locale_facets.cc \
@@ -175,8 +180,7 @@ sources = \
 	wlocale-inst.cc \
 	wstring-inst.cc \
 	${host_sources} \
-	${host_sources_extra} \
-	${ldbl_compat_sources}
+	${host_sources_extra} 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 
@@ -206,6 +210,12 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCXX_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+# Use special rules for parallel_list.cc compile.
+parallel_list.lo: parallel_list.cc
+	$(LTCXXCOMPILE) -I$(glibcxx_builddir)/../libgomp -c $<
+parallel_list.o: parallel_list.cc
+	$(CXXCOMPILE) -I$(glibcxx_builddir)/../libgomp -c $<
 
 # Use special rules for the C++0x sources so that the proper flags are passed.
 system_error.lo: system_error.cc

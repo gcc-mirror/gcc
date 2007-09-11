@@ -70,6 +70,7 @@ std_headers = \
 bits_srcdir = ${glibcxx_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
+        ${bits_srcdir}/algorithmfwd.h \
 	${bits_srcdir}/allocator.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
@@ -730,6 +731,58 @@ debug_headers = \
 	${debug_srcdir}/string \
 	${debug_srcdir}/vector
 
+# Parallel mode headers
+parallel_srcdir = ${glibcxx_srcdir}/include/parallel
+parallel_builddir = ./parallel
+parallel_headers = \
+        ${parallel_srcdir}/algorithm \
+        ${parallel_srcdir}/algobase.h \
+        ${parallel_srcdir}/algo.h \
+        ${parallel_srcdir}/algorithm \
+        ${parallel_srcdir}/algorithmfwd.h \
+        ${parallel_srcdir}/balanced_quicksort.h \
+        ${parallel_srcdir}/base.h \
+        ${parallel_srcdir}/basic_iterator.h \
+        ${parallel_srcdir}/checkers.h \
+        ${parallel_srcdir}/compatibility.h \
+        ${parallel_srcdir}/compiletime_settings.h \
+        ${parallel_srcdir}/equally_split.h \
+        ${parallel_srcdir}/features.h \
+        ${parallel_srcdir}/find.h \
+        ${parallel_srcdir}/find_selectors.h \
+        ${parallel_srcdir}/for_each.h \
+        ${parallel_srcdir}/for_each_selectors.h \
+        ${parallel_srcdir}/iterator.h \
+        ${parallel_srcdir}/list_partition.h \
+        ${parallel_srcdir}/losertree.h \
+        ${parallel_srcdir}/merge.h \
+        ${parallel_srcdir}/multiseq_selection.h \
+        ${parallel_srcdir}/multiway_merge.h \
+        ${parallel_srcdir}/multiway_mergesort.h \
+        ${parallel_srcdir}/numeric \
+        ${parallel_srcdir}/numericfwd.h \
+        ${parallel_srcdir}/omp_loop.h \
+        ${parallel_srcdir}/omp_loop_static.h \
+        ${parallel_srcdir}/parallel.h \
+        ${parallel_srcdir}/par_loop.h \
+        ${parallel_srcdir}/partial_sum.h \
+        ${parallel_srcdir}/partition.h \
+        ${parallel_srcdir}/queue.h \
+        ${parallel_srcdir}/quicksort.h \
+        ${parallel_srcdir}/random_number.h \
+        ${parallel_srcdir}/random_shuffle.h \
+        ${parallel_srcdir}/search.h \
+        ${parallel_srcdir}/set_operations.h \
+        ${parallel_srcdir}/settings.h \
+        ${parallel_srcdir}/sort.h \
+        ${parallel_srcdir}/tags.h \
+        ${parallel_srcdir}/timing.h \
+        ${parallel_srcdir}/tree.h \
+        ${parallel_srcdir}/types.h \
+        ${parallel_srcdir}/unique_copy.h \
+        ${parallel_srcdir}/workstealing.h 
+
+
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
@@ -791,7 +844,8 @@ pch1_output_anchor = ${host_builddir}/stdc++.h
 pch1_output_installdir = ${host_installdir}/stdc++.h.gch
 pch1a_output = ${pch1_output_builddir}/O0g.gch
 pch1b_output = ${pch1_output_builddir}/O2g.gch
-pch1_output = ${pch1a_output} ${pch1b_output}
+pch1c_output = ${pch1_output_builddir}/O2gp.gch
+pch1_output = ${pch1a_output} ${pch1b_output} ${pch1c_output}
 
 pch2_source = ${glibcxx_srcdir}/include/precompiled/stdtr1c++.h
 pch2_output_builddir = ${host_builddir}/stdtr1c++.h.gch
@@ -823,7 +877,7 @@ endif
 allstamped = \
 	stamp-std stamp-bits stamp-c_base stamp-c_base_extra \
 	stamp-c_compatibility  stamp-backward stamp-ext stamp-pb \
-	stamp-tr1 stamp-tr1-impl stamp-debug stamp-host
+	stamp-tr1 stamp-tr1-impl stamp-debug stamp-parallel stamp-host
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
@@ -980,6 +1034,15 @@ stamp-debug: ${debug_headers}
 	fi ;\
 	$(STAMP) stamp-debug
 
+stamp-parallel: ${parallel_headers}
+	@if [ ! -d "${parallel_builddir}" ]; then \
+	  mkdir -p ${parallel_builddir} ;\
+	fi ;\
+	if [ ! -f stamp-parallel ]; then \
+	  (cd ${parallel_builddir} && @LN_S@ $? . || true) ;\
+	fi ;\
+	$(STAMP) stamp-parallel
+
 stamp-${host_alias}:
 	@if [ ! -d ${host_builddir} ]; then \
 	  mkdir -p ${host_builddir} ;\
@@ -1091,7 +1154,7 @@ ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
 
-# Build two precompiled C++ includes, stdc++.h.gch/*.gch
+# Build three precompiled C++ includes, stdc++.h.gch/*.gch
 ${pch1a_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	if [ ! -d "${pch1_output_builddir}" ]; then \
 	  mkdir -p ${pch1_output_builddir}; \
@@ -1104,6 +1167,14 @@ ${pch1b_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	  mkdir -p ${pch1_output_builddir}; \
 	fi; \
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch1_source} -o $@
+	touch ${pch1_output_anchor}
+
+${pch1c_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
+	if [ ! -d "${pch1_output_builddir}" ]; then \
+	  mkdir -p ${pch1_output_builddir}; \
+	fi; \
+	CXX_PARALLEL_FLAGS="-fgomp -march=native";
+	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g $(CXX_PARALLEL_FLAGS) ${pch1_source} -o $@
 	touch ${pch1_output_anchor}
 
 # Build a precompiled TR1 include, stdtr1c++.h.gch/O2.gch
@@ -1217,6 +1288,9 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${debug_builddir}
 	for file in ${debug_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${debug_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${parallel_builddir}
+	for file in ${parallel_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${parallel_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
 	for file in ${host_headers} ${host_headers_extra} \
 	 ${thread_host_headers}; do \

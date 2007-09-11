@@ -770,6 +770,13 @@ GLIBCXX_3.4.10 {
     _ZNKSt4hashISsEclESs;
     _ZNKSt4hashISt10error_codeEclES0_;
 
+    # for parallel mode
+    _ZNSt9__cxx199815_List_node_base4hook*;
+    _ZNSt9__cxx199815_List_node_base4swap*;
+    _ZNSt9__cxx199815_List_node_base6unhookEv;
+    _ZNSt9__cxx199815_List_node_base7reverseEv;
+    _ZNSt9__cxx199815_List_node_base8transfer*;
+
 } GLIBCXX_3.4.9;
 
 # Symbols in the support library (libsupc++) have their own tag.

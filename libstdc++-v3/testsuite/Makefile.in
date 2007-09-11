@@ -75,6 +75,7 @@ AMTAR = @AMTAR@
 AR = @AR@
 AS = @AS@
 ATOMICITY_SRCDIR = @ATOMICITY_SRCDIR@
+ATOMIC_FLAGS = @ATOMIC_FLAGS@
 ATOMIC_WORD_SRCDIR = @ATOMIC_WORD_SRCDIR@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
@@ -112,6 +113,8 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ENABLE_PARALLEL_FALSE = @ENABLE_PARALLEL_FALSE@
+ENABLE_PARALLEL_TRUE = @ENABLE_PARALLEL_TRUE@
 ENABLE_SYMVERS_DARWIN_FALSE = @ENABLE_SYMVERS_DARWIN_FALSE@
 ENABLE_SYMVERS_DARWIN_TRUE = @ENABLE_SYMVERS_DARWIN_TRUE@
 ENABLE_SYMVERS_FALSE = @ENABLE_SYMVERS_FALSE@
@@ -303,10 +306,19 @@ check_performance_script = ${glibcxx_srcdir}/scripts/check_performance
 # Generates the plots and graphs for performance testing.
 doc_performance_script = ${glibcxx_srcdir}/scripts/make_graphs.py
 
+# Runs the testsuite in parallel mode.
+libgomp_dir = ${glibcxx_builddir}/../libgomp
+libgomp_flags = -B${glibcxx_builddir}/../libgomp \
+              -I${glibcxx_builddir}/../libgomp \
+	      -L${glibcxx_builddir}/../libgomp/.libs -lgomp
+
+atomic_flags = $(ATOMIC_FLAGS)
+parallel_flags = "unix/-D_GLIBCXX_PARALLEL/-fopenmp"
+
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
-	     *.o *.cc *.a *.so *.xml
+	     *.s *.o *.cc *.a *.so *.xml 
 
 all: all-am
 
@@ -434,7 +446,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -480,14 +492,15 @@ ps-am:
 uninstall-am: uninstall-info-am
 
 .PHONY: all all-am check check-DEJAGNU check-am clean clean-generic \
-	clean-libtool distclean distclean-DEJAGNU distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-info-am
+	clean-libtool clean-local distclean distclean-DEJAGNU \
+	distclean-generic distclean-libtool distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-man install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
+	uninstall-info-am
 
 
 # This rule generates all of the testsuite_files* lists at once.
@@ -557,8 +570,30 @@ doc-performance:
 	${glibcxx_srcdir}/testsuite/data/make_graph_htmls.xml \
 	${glibcxx_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
 
+check-parallel: site.exp
+	-@(if test ! -d $${libgomp_dir}; then \
+	  echo "Testing parallel mode failed as libgomp not present."; \
+	  exit 1; \
+	fi; \
+	outputdir=parallel; export outputdir; \
+	if test ! -d $${outputdir}; then \
+	  mkdir $${outputdir}; \
+	fi; \
+	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
+	EXPECT=$(EXPECT); export EXPECT; \
+	$(MAKE) CXXFLAGS="$(atomic_flags) $(libgomp_flags)" $(AM_MAKEFLAGS) RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(parallel_flags)" check-DEJAGNU; )
+
+check-performance-parallel: testsuite_files_performance ${performance_script}
+	-@(chmod + ${check_performance_script}; \
+	CXXFLAGS="-D_GLIBCXX_PARALLEL -fopenmp $(atomic_flags) $(libgomp_flags)"; export CXXFLAGS; \
+	${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
+
 .PHONY: baseline_symbols new-abi-baseline \
-	check-abi check-compile check-performance
+	check-abi check-compile check-performance check-parallel
+
+# To remove directories.
+clean-local:
+	rm -rf parallel
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

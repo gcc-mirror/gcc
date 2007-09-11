@@ -67,4 +67,8 @@
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_numeric.h>
 
+#ifdef _GLIBCXX_PARALLEL
+# include <parallel/numeric>
+#endif
+
 #endif /* _GLIBCXX_NUMERIC */

@@ -45,10 +45,10 @@ namespace __debug
 {
   template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
     class deque
-    : public _GLIBCXX_STD::deque<_Tp, _Allocator>,
+    : public _GLIBCXX_STD_D::deque<_Tp, _Allocator>,
       public __gnu_debug::_Safe_sequence<deque<_Tp, _Allocator> >
     {
-      typedef  _GLIBCXX_STD::deque<_Tp, _Allocator> _Base;
+      typedef  _GLIBCXX_STD_D::deque<_Tp, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<deque> _Safe_base;
 
     public:

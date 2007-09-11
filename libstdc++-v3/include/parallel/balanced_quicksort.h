@@ -1,0 +1,451 @@
+// -*- C++ -*-
+
+// Copyright (C) 2007 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the terms
+// of the GNU General Public License as published by the Free Software
+// Foundation; either version 2, or (at your option) any later
+// version.
+
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this library; see the file COPYING.  If not, write to
+// the Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+// MA 02111-1307, USA.
+
+// As a special exception, you may use this file as part of a free
+// software library without restriction.  Specifically, if other files
+// instantiate templates or use macros or inline functions from this
+// file, or you compile this file and link it with other files to
+// produce an executable, this file does not by itself cause the
+// resulting executable to be covered by the GNU General Public
+// License.  This exception does not however invalidate any other
+// reasons why the executable file might be covered by the GNU General
+// Public License.
+
+/** @file parallel/balanced_quicksort.h
+ *  @brief Implementation of a dynamically load-balanced parallel quicksort.
+ *
+ *  It works in-place and needs only logarithmic extra memory.
+ *  This file is a GNU parallel extension to the Standard C++ Library.
+ */
+
+// Written by Johannes Singler.
+
+#ifndef _GLIBCXX_PARALLEL_BAL_QUICKSORT_H
+#define _GLIBCXX_PARALLEL_BAL_QUICKSORT_H 1
+
+#include <parallel/basic_iterator.h>
+#include <bits/stl_algo.h>
+
+#include <parallel/settings.h>
+#include <parallel/partition.h>
+#include <parallel/random_number.h>
+#include <parallel/queue.h>
+#include <functional>
+
+#if _GLIBCXX_ASSERTIONS
+#include <parallel/checkers.h>
+#endif
+
+namespace __gnu_parallel
+{
+  /** @brief Information local to one thread in the parallel quicksort run. */
+  template<typename RandomAccessIterator>
+  struct QSBThreadLocal
+  {
+    typedef std::iterator_traits<RandomAccessIterator> traits_type;
+    typedef typename traits_type::difference_type difference_type;
+
+    /** @brief Continuous part of the sequence, described by an
+	iterator pair. */
+    typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
+
+    /** @brief Initial piece to work on. */
+    Piece initial;
+
+    /** @brief Work-stealing queue. */
+    RestrictedBoundedConcurrentQueue<Piece> leftover_parts;
+
+    /** @brief Number of threads involved in this algorithm. */
+    thread_index_t num_threads;
+
+    /** @brief Pointer to a counter of elements left over to sort. */
+    volatile difference_type* elements_leftover;
+
+    /** @brief The complete sequence to sort. */
+    Piece global;
+
+    /** @brief Constructor.
+     *  @param queue_size Size of the work-stealing queue. */
+    QSBThreadLocal(int queue_size) : leftover_parts(queue_size) { }
+  };
+
+  /** @brief Initialize the thread local storage.
+   *  @param tls Array of thread-local storages.
+   *  @param queue_size Size of the work-stealing queue. */
+  template<typename RandomAccessIterator>
+  inline void
+  qsb_initialize(QSBThreadLocal<RandomAccessIterator>** tls, int queue_size)
+  {
+    int iam = omp_get_thread_num();
+    tls[iam] = new QSBThreadLocal<RandomAccessIterator>(queue_size);
+  }
+
+
+  /** @brief Balanced quicksort divide step.
+   *  @param begin Begin iterator of subsequence.
+   *  @param end End iterator of subsequence.
+   *  @param comp Comparator.
+   *  @param num_threads Number of threads that are allowed to work on
+   *  this part.
+   *  @pre @c (end-begin)>=1 */
+  template<typename RandomAccessIterator, typename Comparator>
+  inline typename std::iterator_traits<RandomAccessIterator>::difference_type
+  qsb_divide(RandomAccessIterator begin, RandomAccessIterator end,
+	     Comparator comp, int num_threads)
+  {
+    _GLIBCXX_PARALLEL_ASSERT(num_threads > 0);
+
+    typedef std::iterator_traits<RandomAccessIterator> traits_type;
+    typedef typename traits_type::value_type value_type;
+    typedef typename traits_type::difference_type difference_type;
+
+    RandomAccessIterator pivot_pos = median_of_three_iterators(begin, begin + (end - begin) / 2, end  - 1, comp);
+
+#if defined(_GLIBCXX_ASSERTIONS)
+    // Must be in between somewhere.
+    difference_type n = end - begin;
+
+    _GLIBCXX_PARALLEL_ASSERT((!comp(*pivot_pos, *begin) && !comp(*(begin + n / 2), *pivot_pos))
+	   || (!comp(*pivot_pos, *begin) && !comp(*end, *pivot_pos))
+	   || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*begin, *pivot_pos))
+	   || (!comp(*pivot_pos, *(begin + n / 2)) && !comp(*end, *pivot_pos))
+	   || (!comp(*pivot_pos, *end) && !comp(*begin, *pivot_pos))
+	   || (!comp(*pivot_pos, *end) && !comp(*(begin + n / 2), *pivot_pos)));
+#endif
+
+    // Swap pivot value to end.
+    if (pivot_pos != (end - 1))
+      std::swap(*pivot_pos, *(end - 1));
+    pivot_pos = end - 1;
+
+    __gnu_parallel::binder2nd<Comparator, value_type, value_type, bool> pred(comp, *pivot_pos);
+
+    // Divide, returning end - begin - 1 in the worst case.
+    difference_type split_pos = parallel_partition(begin, end - 1, pred, num_threads);
+
+    // Swap back pivot to middle.
+    std::swap(*(begin + split_pos), *pivot_pos);
+    pivot_pos = begin + split_pos;
+
+#if _GLIBCXX_ASSERTIONS
+    RandomAccessIterator r;
+    for (r = begin; r != pivot_pos; r++)
+      _GLIBCXX_PARALLEL_ASSERT(comp(*r, *pivot_pos));
+    for (; r != end; r++)
+      _GLIBCXX_PARALLEL_ASSERT(!comp(*r, *pivot_pos));
+#endif
+
+    return split_pos;
+  }
+
+  /** @brief Quicksort conquer step.
+   *  @param tls Array of thread-local storages.
+   *  @param begin Begin iterator of subsequence.
+   *  @param end End iterator of subsequence.
+   *  @param comp Comparator.
+   *  @param iam Number of the thread processing this function.
+   *  @param num_threads Number of threads that are allowed to work on this part. */
+  template<typename RandomAccessIterator, typename Comparator>
+  inline void
+  qsb_conquer(QSBThreadLocal<RandomAccessIterator>** tls,
+	      RandomAccessIterator begin, RandomAccessIterator end,
+	      Comparator comp, thread_index_t iam, thread_index_t num_threads)
+  {
+    typedef std::iterator_traits<RandomAccessIterator> traits_type;
+    typedef typename traits_type::value_type value_type;
+    typedef typename traits_type::difference_type difference_type;
+
+    difference_type n = end - begin;
+
+    if (num_threads <= 1 || n < 2)
+      {
+	tls[iam]->initial.first  = begin;
+	tls[iam]->initial.second = end;
+
+	qsb_local_sort_with_helping(tls, comp, iam);
+
+	return;
+      }
+
+    // Divide step.
+    difference_type split_pos = qsb_divide(begin, end, comp, num_threads);
+
+#if _GLIBCXX_ASSERTIONS
+    _GLIBCXX_PARALLEL_ASSERT(0 <= split_pos && split_pos < (end - begin));
+#endif
+
+    thread_index_t num_threads_leftside = std::max<thread_index_t>(1, std::min<thread_index_t>(num_threads - 1, split_pos * num_threads / n));
+
+#pragma omp atomic
+    *tls[iam]->elements_leftover -= (difference_type)1;
+
+    // Conquer step.
+#pragma omp parallel sections num_threads(2)
+    {
+#pragma omp section
+      qsb_conquer(tls, begin, begin + split_pos, comp, iam, num_threads_leftside);
+      // The pivot_pos is left in place, to ensure termination.
+#pragma omp section
+      qsb_conquer(tls, begin + split_pos + 1, end, comp,
+		  iam + num_threads_leftside, num_threads - num_threads_leftside);
+    }
+  }
+
+  /** 
+   *  @brief Quicksort step doing load-balanced local sort.
+   *  @param tls Array of thread-local storages.
+   *  @param comp Comparator.
+   *  @param iam Number of the thread processing this function. 
+   */
+  template<typename RandomAccessIterator, typename Comparator>
+  inline void
+  qsb_local_sort_with_helping(QSBThreadLocal<RandomAccessIterator>** tls,
+			      Comparator& comp, int iam)
+  {
+    typedef std::iterator_traits<RandomAccessIterator> traits_type;
+    typedef typename traits_type::value_type value_type;
+    typedef typename traits_type::difference_type difference_type;
+    typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
+
+    QSBThreadLocal<RandomAccessIterator>& tl = *tls[iam];
+
+    difference_type base_case_n = Settings::sort_qsb_base_case_maximal_n;
+    if (base_case_n < 2)
+      base_case_n = 2;
+    thread_index_t num_threads = tl.num_threads;
+
+    // Every thread has its own random number generator.
+    random_number rng(iam + 1);
+
+    Piece current = tl.initial;
+
+    difference_type elements_done = 0;
+#if _GLIBCXX_ASSERTIONS
+    difference_type total_elements_done = 0;
+#endif
+
+    for (;;)
+      {
+	// Invariant: current must be a valid (maybe empty) range.
+	RandomAccessIterator begin = current.first, end = current.second;
+	difference_type n = end - begin;
+
+	if (n > base_case_n)
+	  {
+	    // Divide.
+	    RandomAccessIterator pivot_pos = begin +  rng(n);
+
+	    // Swap pivot_pos value to end.
+	    if (pivot_pos != (end - 1))
+	      std::swap(*pivot_pos, *(end - 1));
+	    pivot_pos = end - 1;
+
+	    __gnu_parallel::binder2nd<Comparator, value_type, value_type, bool> pred(comp, *pivot_pos);
+
+	    // Divide, leave pivot unchanged in last place.
+	    RandomAccessIterator split_pos1, split_pos2;
+	    split_pos1 = __gnu_sequential::partition(begin, end - 1, pred);
+
+	    // Left side: < pivot_pos; right side: >= pivot_pos.
+#if _GLIBCXX_ASSERTIONS
+	    _GLIBCXX_PARALLEL_ASSERT(begin <= split_pos1 && split_pos1 < end);
+#endif
+	    // Swap pivot back to middle.
+	    if (split_pos1 != pivot_pos)
+	      std::swap(*split_pos1, *pivot_pos);
+	    pivot_pos = split_pos1;
+
+	    // In case all elements are equal, split_pos1 == 0.
+	    if ((split_pos1 + 1 - begin) < (n >> 7)
+		|| (end - split_pos1) < (n >> 7))
+	      {
+		// Very unequal split, one part smaller than one 128th
+		// elements not stricly larger than the pivot.
+		__gnu_parallel::unary_negate<__gnu_parallel::binder1st<Comparator, value_type, value_type, bool>, value_type> pred(__gnu_parallel::binder1st<Comparator, value_type, value_type, bool>(comp, *pivot_pos));
+
+		// Find other end of pivot-equal range.
+		split_pos2 = __gnu_sequential::partition(split_pos1 + 1, end, pred);
+	      }
+	    else
+	      {
+		// Only skip the pivot.
+		split_pos2 = split_pos1 + 1;
+	      }
+
+	    // Elements equal to pivot are done.
+	    elements_done += (split_pos2 - split_pos1);
+#if _GLIBCXX_ASSERTIONS
+	    total_elements_done += (split_pos2 - split_pos1);
+#endif
+	    // Always push larger part onto stack.
+	    if (((split_pos1 + 1) - begin) < (end - (split_pos2)))
+	      {
+		// Right side larger.
+		if ((split_pos2) != end)
+		  tl.leftover_parts.push_front(std::make_pair(split_pos2, end));
+
+		//current.first = begin;	//already set anyway
+		current.second = split_pos1;
+		continue;
+	      }
+	    else
+	      {
+		// Left side larger.
+		if (begin != split_pos1)
+		  tl.leftover_parts.push_front(std::make_pair(begin, split_pos1));
+
+		current.first = split_pos2;
+		//current.second = end;	//already set anyway
+		continue;
+	      }
+	  }
+	else
+	  {
+	    __gnu_sequential::sort(begin, end, comp);
+	    elements_done += n;
+#if _GLIBCXX_ASSERTIONS
+	    total_elements_done += n;
+#endif
+
+	    // Prefer own stack, small pieces.
+	    if (tl.leftover_parts.pop_front(current))
+	      continue;
+
+#pragma omp atomic
+	    *tl.elements_leftover -= elements_done;
+	    elements_done = 0;
+
+#if _GLIBCXX_ASSERTIONS
+	    double search_start = omp_get_wtime();
+#endif
+
+	    // Look for new work.
+	    bool success = false;
+	    while (*tl.elements_leftover > 0 && !success
+#if _GLIBCXX_ASSERTIONS
+		   // Possible dead-lock.
+		   && (omp_get_wtime() < (search_start + 1.0))
+#endif
+		   )
+	      {
+		thread_index_t victim;
+		victim = rng(num_threads);
+
+		// Large pieces.
+		success = (victim != iam) && tls[victim]->leftover_parts.pop_back(current);
+		if (!success)
+		  yield();
+#if !defined(__ICC) && !defined(__ECC)
+#pragma omp flush
+#endif
+	      }
+
+#if _GLIBCXX_ASSERTIONS
+	    if (omp_get_wtime() >= (search_start + 1.0))
+	      {
+		sleep(1);
+		_GLIBCXX_PARALLEL_ASSERT(omp_get_wtime() < (search_start + 1.0));
+	      }
+#endif
+	    if (!success)
+	      {
+#if _GLIBCXX_ASSERTIONS
+		_GLIBCXX_PARALLEL_ASSERT(*tl.elements_leftover == 0);
+#endif
+		return;
+	      }
+	  }
+      }
+  }
+
+  /** @brief Top-level quicksort routine.
+   *  @param begin Begin iterator of sequence.
+   *  @param end End iterator of sequence.
+   *  @param comp Comparator.
+   *  @param n Length of the sequence to sort.
+   *  @param num_threads Number of threads that are allowed to work on
+   *  this part.
+   */
+  template<typename RandomAccessIterator, typename Comparator>
+  inline void
+  parallel_sort_qsb(RandomAccessIterator begin, RandomAccessIterator end,
+		    Comparator comp,
+		    typename std::iterator_traits<RandomAccessIterator>::difference_type n, int num_threads)
+  {
+    _GLIBCXX_CALL(end - begin)
+
+    typedef std::iterator_traits<RandomAccessIterator> traits_type;
+    typedef typename traits_type::value_type value_type;
+    typedef typename traits_type::difference_type difference_type;
+    typedef std::pair<RandomAccessIterator, RandomAccessIterator> Piece;
+
+    typedef QSBThreadLocal<RandomAccessIterator> tls_type;
+
+    if (n <= 1)
+      return;
+
+    // At least one element per processor.
+    if (num_threads > n)
+      num_threads = static_cast<thread_index_t>(n);
+
+    tls_type** tls = new tls_type*[num_threads];
+
+#pragma omp parallel num_threads(num_threads)
+    // Initialize variables per processor.
+    qsb_initialize(tls, num_threads * (thread_index_t)(log2(n) + 1));
+
+    // There can never be more than ceil(log2(n)) ranges on the stack, because
+    // 1. Only one processor pushes onto the stack
+    // 2. The largest range has at most length n
+    // 3. Each range is larger than half of the range remaining
+    volatile difference_type elements_leftover = n;
+    for (int i = 0; i < num_threads; i++)
+      {
+	tls[i]->elements_leftover = &elements_leftover;
+	tls[i]->num_threads = num_threads;
+	tls[i]->global = std::make_pair(begin, end);
+
+	// Just in case nothing is left to assign.
+	tls[i]->initial = std::make_pair(end, end);
+      }
+
+    // Initial splitting, recursively.
+    int old_nested = omp_get_nested();
+    omp_set_nested(true);
+
+    // Main recursion call.
+    qsb_conquer(tls, begin, begin + n, comp, 0, num_threads);
+
+    omp_set_nested(old_nested);
+
+#if _GLIBCXX_ASSERTIONS
+    // All stack must be empty.
+    Piece dummy;
+    for (int i = 1; i < num_threads; i++)
+      _GLIBCXX_PARALLEL_ASSERT(!tls[i]->leftover_parts.pop_back(dummy));
+#endif
+
+    for (int i = 0; i < num_threads; i++)
+      delete tls[i];
+    delete[] tls;
+  }
+} // namespace __gnu_parallel
+
+#endif
