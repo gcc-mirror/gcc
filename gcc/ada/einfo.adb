@@ -217,6 +217,7 @@ package body Einfo is
    --    DT_Offset_To_Top_Func           Node25
    --    Task_Body_Procedure             Node25
 
+   --    Dispatch_Table_Wrapper          Node16
    --    Overridden_Operation            Node26
    --    Package_Instantiation           Node26
    --    Related_Interface               Node26
@@ -841,6 +842,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Discriminant);
       return Uint15 (Id);
    end Discriminant_Number;
+
+   function Dispatch_Table_Wrapper (Id : E) return E is
+   begin
+      pragma Assert (Is_Tagged_Type (Id));
+      return Node26 (Implementation_Base_Type (Id));
+   end Dispatch_Table_Wrapper;
 
    function DT_Entry_Count (Id : E) return U is
    begin
@@ -3115,6 +3122,12 @@ package body Einfo is
    begin
       Set_Uint15 (Id, V);
    end Set_Discriminant_Number;
+
+   procedure Set_Dispatch_Table_Wrapper (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Tagged_Type (Id) and then Id = Base_Type (Id));
+      Set_Node26 (Id, V);
+   end Set_Dispatch_Table_Wrapper;
 
    procedure Set_DT_Entry_Count (Id : E; V : U) is
    begin
@@ -8252,6 +8265,10 @@ package body Einfo is
             else
                Write_Str ("Static_Initialization");
             end if;
+
+         when E_Record_Type                                |
+              E_Record_Type_With_Private                   =>
+            Write_Str ("Dispatch_Table_Wrapper");
 
          when others                                       =>
             Write_Str ("Field26??");
