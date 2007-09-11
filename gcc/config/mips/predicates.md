@@ -227,6 +227,14 @@
 	  && type == SYMBOL_ABSOLUTE);
 })
 
+(define_predicate "force_to_mem_operand"
+  (match_code "const,symbol_ref,label_ref")
+{
+  enum mips_symbol_type symbol_type;
+  return (mips_symbolic_constant_p (op, SYMBOL_CONTEXT_LEA, &symbol_type)
+	  && symbol_type == SYMBOL_FORCE_TO_MEM);
+})
+
 (define_predicate "got_disp_operand"
   (match_code "const,symbol_ref,label_ref")
 {

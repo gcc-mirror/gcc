@@ -82,6 +82,10 @@
 ;; but the DSPr2 version allows any accumulator target.
 (define_register_constraint "ka" "TARGET_DSPR2 ? ACC_REGS : MD_REGS")
 
+(define_constraint "kf"
+  "@internal"
+  (match_operand 0 "force_to_mem_operand"))
+
 ;; This is a normal rather than a register constraint because we can
 ;; never use the stack pointer as a reload register.
 (define_constraint "ks"

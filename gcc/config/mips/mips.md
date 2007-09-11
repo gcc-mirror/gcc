@@ -3428,13 +3428,13 @@
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,8,*,8,*")])
 
 (define_insn "*movdi_64bit_mips16"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,m")
-	(match_operand:DI 1 "move_operand" "d,d,y,K,N,U,m,d"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,d,m")
+	(match_operand:DI 1 "move_operand" "d,d,y,K,N,kf,U,m,d"))]
   "TARGET_64BIT && TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,move,move,arith,arith,const,load,store")
+  [(set_attr "type"	"move,move,move,arith,arith,load,const,load,store")
    (set_attr "mode"	"DI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -3446,6 +3446,7 @@
 		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1")
 			       (const_int 8)
 			       (const_int 12))
+		 (const_int 8)
 		 (const_string "*")
 		 (const_string "*")
 		 (const_string "*")])])
@@ -3524,13 +3525,13 @@
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,4,*,4,*")])
 
 (define_insn "*movsi_mips16"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,m")
-	(match_operand:SI 1 "move_operand" "d,d,y,K,N,U,m,d"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,d,m")
+	(match_operand:SI 1 "move_operand" "d,d,y,K,N,kf,U,m,d"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"move,move,move,arith,arith,const,load,store")
+  [(set_attr "type"	"move,move,move,arith,arith,load,const,load,store")
    (set_attr "mode"	"SI")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -3542,6 +3543,7 @@
 		 (if_then_else (match_operand:VOID 1 "m16_nuimm8_1")
 			       (const_int 8)
 			       (const_int 12))
+		 (const_int 8)
 		 (const_string "*")
 		 (const_string "*")
 		 (const_string "*")])])
