@@ -1,3 +1,12 @@
+2007-09-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (enum reg_class, REG_CLASS_CONTENTS,
+	REG_CLASS_NAMES): Add P0REGS.
+	(REGNO_REG_CLASS): Return it where appropriate.
+	(REG_CLASS_FROM_CONSTRAINT): Add 'qA'.
+	(CLASS_LIKELY_SPILLED_P): P0REGS is likely_spilled.
+	* doc/md.texi (Blackfin family): Document 'q' constraints.
+
 2007-09-11  Steve Kenton  <skenton@ou.edu
 
 	* pa/linux-unwind.h: Guard with inhibit_libc.

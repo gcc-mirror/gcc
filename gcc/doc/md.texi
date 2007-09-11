@@ -2250,6 +2250,10 @@ D register
 @item z
 A call clobbered P register.
 
+@item q@var{n}
+A single register.  If @var{n} is in the range 0 to 7, the corresponding D
+register.  If it is @code{A}, then the register P0.
+
 @item D
 Even-numbered D register
 
