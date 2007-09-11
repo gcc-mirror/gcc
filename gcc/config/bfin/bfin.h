@@ -464,6 +464,7 @@ enum reg_class
   D6REGS,
   D7REGS,
   DREGS,
+  P0REGS,
   FDPIC_REGS,
   FDPIC_FPTR_REGS,
   PREGS_CLOBBERED,
@@ -508,6 +509,7 @@ enum reg_class
    "D6REGS",		\
    "D7REGS",		\
    "DREGS",		\
+   "P0REGS",		\
    "FDPIC_REGS",	\
    "FDPIC_FPTR_REGS",	\
    "PREGS_CLOBBERED",	\
@@ -560,6 +562,7 @@ enum reg_class
     { 0x00000040,    0 },		/* D6REGS */   \
     { 0x00000080,    0 },		/* D7REGS */   \
     { 0x000000ff,    0 },		/* DREGS */   \
+    { 0x00000100,    0x000 },		/* P0REGS */   \
     { 0x00000800,    0x000 },		/* FDPIC_REGS */   \
     { 0x00000200,    0x000 },		/* FDPIC_FPTR_REGS */   \
     { 0x00004700,    0x800 },		/* PREGS_CLOBBERED */   \
@@ -636,6 +639,7 @@ enum reg_class
        : (STR)[1] == '5' ? D5REGS \
        : (STR)[1] == '6' ? D6REGS \
        : (STR)[1] == '7' ? D7REGS \
+       : (STR)[1] == 'A' ? P0REGS \
        : NO_REGS) : \
    NO_REGS)
 
@@ -653,6 +657,7 @@ enum reg_class
  : (REGNO) == REG_R5 ? D5REGS				\
  : (REGNO) == REG_R6 ? D6REGS				\
  : (REGNO) == REG_R7 ? D7REGS				\
+ : (REGNO) == REG_P0 ? P0REGS				\
  : (REGNO) < REG_I0 ? PREGS				\
  : (REGNO) == REG_ARGP ? PREGS				\
  : (REGNO) >= REG_I0 && (REGNO) <= REG_I3 ? IREGS	\
@@ -675,6 +680,7 @@ enum reg_class
 #define CLASS_LIKELY_SPILLED_P(CLASS) \
     ((CLASS) == PREGS_CLOBBERED \
      || (CLASS) == PROLOGUE_REGS \
+     || (CLASS) == P0REGS \
      || (CLASS) == D0REGS \
      || (CLASS) == D1REGS \
      || (CLASS) == D2REGS \
