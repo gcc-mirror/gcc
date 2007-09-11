@@ -29,6 +29,9 @@ Boston, MA 02110-1301, USA.  */
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 
+/* Don't use this if inhibit_libc is set.
+   The build for this target will fail trying to include missing headers. */
+#ifndef inhibit_libc
 #include <signal.h>
 #include <sys/ucontext.h>
 
@@ -137,3 +140,4 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
   fs->retaddr_column = DWARF_ALT_FRAME_RETURN_COLUMN;
   return _URC_NO_REASON;
 }
+#endif /* inhibit_libc */

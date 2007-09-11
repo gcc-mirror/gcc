@@ -1,3 +1,8 @@
+2007-09-11  Steve Kenton  <skenton@ou.edu
+
+	* pa/linux-unwind.h: Guard with inhibit_libc.
+	* pa/hpux-unwind.h: Likewise.
+
 2007-09-11  David Daney  <ddaney@avtrex.com>
 
 	* doc/invoke.texi: Document new MIPS -mllsc and -mno-llsc options.
