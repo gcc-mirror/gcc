@@ -2542,7 +2542,7 @@ Floating-point zero.
 An address that can be used in a non-macro load or store.
 @end table
 
-@item Motorola 680x0---@file{config/m68k/m68k.h}
+@item Motorola 680x0---@file{config/m68k/constraints.md}
 @table @code
 @item a
 Address register
@@ -2568,8 +2568,66 @@ Integer in the range @minus{}8 to @minus{}1
 @item M
 Signed number whose magnitude is greater than 0x100
 
+@item N
+Range 24 to 31, rotatert:SI 8 to 1 expressed as rotate
+
+@item O
+16 (for rotate using swap)
+
+@item P
+Range 8 to 15, rotatert:HI 8 to 1 expressed as rotate
+
+@item R
+Numbers that mov3q can handle
+
 @item G
 Floating point constant that is not a 68881 constant
+
+@item S
+Operands that satisfy 'm' when -mpcrel is in effect
+
+@item T
+Operands that satisfy 's' when -mpcrel is not in effect
+
+@item Q
+Address register indirect addressing mode
+
+@item U
+Register offset addressing
+
+@item W
+const_call_operand
+
+@item Cs
+symbol_ref or const
+
+@item Ci
+const_int
+
+@item C0
+const_int 0
+
+@item Cj
+Range of signed numbers that don't fit in 16 bits
+
+@item Cmvq
+Integers valid for mvq
+
+@item Capsw
+Integers valid for a moveq followed by a swap
+
+@item Cmvz
+Integers valid for mvz
+
+@item Cmvs
+Integers valid for mvs
+
+@item Ap
+push_operand
+
+@item Ac
+Non-register operands allowed in clr
+
 @end table
 
 @item Motorola 68HC11 & 68HC12 families---@file{config/m68hc11/m68hc11.h}

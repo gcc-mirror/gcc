@@ -104,3 +104,51 @@
 (define_constraint "W"
   "Used for const_call_operands."
   (match_operand 0 "const_call_operand"))
+
+(define_constraint "Cs"
+  "symbol_ref or const."
+  (match_code "symbol_ref,const"))
+
+(define_constraint "Ci"
+  "const_int."
+  (and (match_code "const_int")
+       (match_test "true")))
+
+(define_constraint "C0"
+  "const_int 0."
+  (and (match_code "const_int")
+       (match_test "ival == 0")))
+
+(define_constraint "Cj"
+  "Range of signed numbers that don't fit in 16 bits."
+  (and (match_code "const_int")
+       (match_test "ival < -0x8000 || ival > 0x7FFF")))
+
+(define_constraint "CQ"
+  "Integers valid for mvq."
+  (and (match_code "const_int")
+       (match_test "m68k_const_method (ival) == MOVQ")))
+
+(define_constraint "CW"
+  "Integers valid for a moveq followed by a swap."
+  (and (match_code "const_int")
+       (match_test "m68k_const_method (ival) == SWAP")))
+
+(define_constraint "CZ"
+  "Integers valid for mvz."
+  (and (match_code "const_int")
+       (match_test "m68k_const_method (ival) == MVZ")))
+
+(define_constraint "CS"
+  "Integers valid for mvs."
+  (and (match_code "const_int")
+       (match_test "m68k_const_method (ival) == MVS")))
+
+(define_constraint "Ap"
+  "push_operand."
+  (match_operand 0 "push_operand"))
+
+(define_constraint "Ac"
+  "Non-register operands allowed in clr."
+  (and (match_operand 0 "movsi_const0_operand")
+       (match_test "!REG_P (op)")))

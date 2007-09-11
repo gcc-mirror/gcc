@@ -353,6 +353,10 @@ unsigned int m68k_cpu_flags;
    in operand 0.  */
 const char *m68k_symbolic_call;
 const char *m68k_symbolic_jump;
+
+/* Enum variable that corresponds to m68k_symbolic_call values.  */
+enum M68K_SYMBOLIC_CALL m68k_symbolic_call_var;
+
 
 /* See whether TABLE has an entry with name NAME.  Return true and
    store the entry in *ENTRY if so, otherwise return false and
@@ -563,11 +567,11 @@ override_options (void)
 
   if (!flag_pic)
     {
+      m68k_symbolic_call_var = M68K_SYMBOLIC_CALL_JSR;
+
 #if MOTOROLA && !defined (USE_GAS)
-      m68k_symbolic_call = "jsr %a0";
       m68k_symbolic_jump = "jmp %a0";
 #else
-      m68k_symbolic_call = "jbsr %a0";
       m68k_symbolic_jump = "jra %a0";
 #endif
     }
@@ -577,15 +581,10 @@ override_options (void)
   else if (TARGET_68020 || TARGET_ISAB || TARGET_ISAC)
     {
       if (TARGET_PCREL)
-	m68k_symbolic_call = "bsr.l %c0";
+	m68k_symbolic_call_var = M68K_SYMBOLIC_CALL_BSR_C;
       else
-	{
-#if defined(USE_GAS)
-	  m68k_symbolic_call = "bsr.l %p0";
-#else
-	  m68k_symbolic_call = "bsr %p0";
-#endif
-	}
+	m68k_symbolic_call_var = M68K_SYMBOLIC_CALL_BSR_P;
+
       if (TARGET_ISAC)
 	/* No unconditional long branch */;
       else if (TARGET_PCREL)
@@ -605,7 +604,48 @@ override_options (void)
       flag_no_function_cse = 1;
     }
 
+  switch (m68k_symbolic_call_var)
+    {
+    case M68K_SYMBOLIC_CALL_JSR:
+#if MOTOROLA && !defined (USE_GAS)
+      m68k_symbolic_call = "jsr %a0";
+#else
+      m68k_symbolic_call = "jbsr %a0";
+#endif
+      break;
+
+    case M68K_SYMBOLIC_CALL_BSR_C:
+      m68k_symbolic_call = "bsr.l %c0";
+      break;
+
+    case M68K_SYMBOLIC_CALL_BSR_P:
+#if defined(USE_GAS)
+      m68k_symbolic_call = "bsr.l %p0";
+#else
+      m68k_symbolic_call = "bsr %p0";
+#endif
+      break;
+
+    case M68K_SYMBOLIC_CALL_NONE:
+      gcc_assert (m68k_symbolic_call == NULL);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
   SUBTARGET_OVERRIDE_OPTIONS;
+
+  /* Setup scheduling options.  */
+  if (TUNE_CFV2)
+    m68k_sched_cpu = CPU_CF_V2;
+  else
+    {
+      m68k_sched_cpu = CPU_UNKNOWN;
+      flag_schedule_insns = 0;
+      flag_schedule_insns_after_reload = 0;
+      flag_modulo_sched = 0;
+    }
 }
 
 /* Generate a macro of the form __mPREFIX_cpu_NAME, where PREFIX is the
@@ -2037,14 +2077,13 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 }
 
 
-typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ, MVS, MVZ } CONST_METHOD;
 
 #define USE_MOVQ(i)	((unsigned) ((i) + 128) <= 255)
 
 /* Return the type of move that should be used for integer I.  */
 
-static CONST_METHOD
-const_method (HOST_WIDE_INT i)
+M68K_CONST_METHOD
+m68k_const_method (HOST_WIDE_INT i)
 {
   unsigned u;
 
@@ -2090,7 +2129,7 @@ const_method (HOST_WIDE_INT i)
 static int
 const_int_cost (HOST_WIDE_INT i)
 {
-  switch (const_method (i))
+  switch (m68k_const_method (i))
     {
     case MOVQ:
       /* Constants between -128 and 127 are cheap due to moveq.  */
@@ -2254,7 +2293,7 @@ output_move_const_into_data_reg (rtx *operands)
   HOST_WIDE_INT i;
 
   i = INTVAL (operands[1]);
-  switch (const_method (i))
+  switch (m68k_const_method (i))
     {
     case MVZ:
       return "mvzw %1,%0";
@@ -2478,11 +2517,18 @@ singlemove_string (rtx *operands)
 }
 
 
-/* Output assembler code to perform a doubleword move insn
-   with operands OPERANDS.  */
+/* Output assembler or rtl code to perform a doubleword move insn
+   with operands OPERANDS.
+   Pointers to 3 helper functions should be specified:
+   HANDLE_REG_ADJUST to adjust a register by a small value,
+   HANDLE_COMPADR to compute an address and
+   HANDLE_MOVSI to move 4 bytes.  */
 
-const char *
-output_move_double (rtx *operands)
+static void
+handle_move_double (rtx operands[2],
+		    void (*handle_reg_adjust) (rtx, int),
+		    void (*handle_compadr) (rtx [2]),
+		    void (*handle_movsi) (rtx [2]))
 {
   enum
     {
@@ -2540,10 +2586,9 @@ output_move_double (rtx *operands)
   if (optype0 == PUSHOP && optype1 == POPOP)
     {
       operands[0] = XEXP (XEXP (operands[0], 0), 0);
-      if (size == 12)
-        output_asm_insn ("sub%.l #12,%0", operands);
-      else
-        output_asm_insn ("subq%.l #8,%0", operands);
+
+      handle_reg_adjust (operands[0], -size);
+
       if (GET_MODE (operands[1]) == XFmode)
 	operands[0] = gen_rtx_MEM (XFmode, operands[0]);
       else if (GET_MODE (operands[0]) == DFmode)
@@ -2555,10 +2600,9 @@ output_move_double (rtx *operands)
   if (optype0 == POPOP && optype1 == PUSHOP)
     {
       operands[1] = XEXP (XEXP (operands[1], 0), 0);
-      if (size == 12)
-        output_asm_insn ("sub%.l #12,%1", operands);
-      else
-        output_asm_insn ("subq%.l #8,%1", operands);
+
+      handle_reg_adjust (operands[1], -size);
+
       if (GET_MODE (operands[1]) == XFmode)
 	operands[1] = gen_rtx_MEM (XFmode, operands[1]);
       else if (GET_MODE (operands[1]) == DFmode)
@@ -2600,8 +2644,8 @@ output_move_double (rtx *operands)
 	}
       else
 	{
-	  middlehalf[0] = operands[0];
-	  latehalf[0] = operands[0];
+	  middlehalf[0] = adjust_address (operands[0], SImode, 0);
+	  latehalf[0] = adjust_address (operands[0], SImode, 0);
 	}
 
       if (optype1 == REGOP)
@@ -2636,8 +2680,8 @@ output_move_double (rtx *operands)
 	}
       else
 	{
-	  middlehalf[1] = operands[1];
-	  latehalf[1] = operands[1];
+	  middlehalf[1] = adjust_address (operands[1], SImode, 0);
+	  latehalf[1] = adjust_address (operands[1], SImode, 0);
 	}
     }
   else
@@ -2648,7 +2692,7 @@ output_move_double (rtx *operands)
       else if (optype0 == OFFSOP)
 	latehalf[0] = adjust_address (operands[0], SImode, size - 4);
       else
-	latehalf[0] = operands[0];
+	latehalf[0] = adjust_address (operands[0], SImode, 0);
 
       if (optype1 == REGOP)
 	latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
@@ -2657,7 +2701,7 @@ output_move_double (rtx *operands)
       else if (optype1 == CNSTOP)
 	split_double (operands[1], &operands[1], &latehalf[1]);
       else
-	latehalf[1] = operands[1];
+	latehalf[1] = adjust_address (operands[1], SImode, 0);
     }
 
   /* If insn is effectively movd N(sp),-(sp) then we will do the
@@ -2687,8 +2731,9 @@ output_move_double (rtx *operands)
 	compadr:
 	  xops[0] = latehalf[0];
 	  xops[1] = XEXP (operands[1], 0);
-	  output_asm_insn ("lea %a1,%0", xops);
-	  if (GET_MODE (operands[1]) == XFmode )
+
+	  handle_compadr (xops);
+	  if (GET_MODE (operands[1]) == XFmode)
 	    {
 	      operands[1] = gen_rtx_MEM (XFmode, latehalf[0]);
 	      middlehalf[1] = adjust_address (operands[1], DImode, size - 8);
@@ -2718,10 +2763,11 @@ output_move_double (rtx *operands)
 	  gcc_assert (!addreg0 && !addreg1);
 
 	  /* Only the middle reg conflicts; simply put it last.  */
-	  output_asm_insn (singlemove_string (operands), operands);
-	  output_asm_insn (singlemove_string (latehalf), latehalf);
-	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
-	  return "";
+	  handle_movsi (operands);
+	  handle_movsi (latehalf);
+	  handle_movsi (middlehalf);
+
+	  return;
 	}
       else if (reg_overlap_mentioned_p (testlow, XEXP (operands[1], 0)))
 	/* If the low half of dest is mentioned in the source memory
@@ -2745,85 +2791,194 @@ output_move_double (rtx *operands)
     {
       /* Make any unoffsettable addresses point at high-numbered word.  */
       if (addreg0)
-	{
-	  if (size == 12)
-	    output_asm_insn ("addq%.l #8,%0", &addreg0);
-	  else
-	    output_asm_insn ("addq%.l #4,%0", &addreg0);
-	}
+	handle_reg_adjust (addreg0, size - 4);
       if (addreg1)
-	{
-	  if (size == 12)
-	    output_asm_insn ("addq%.l #8,%0", &addreg1);
-	  else
-	    output_asm_insn ("addq%.l #4,%0", &addreg1);
-	}
+	handle_reg_adjust (addreg1, size - 4);
 
       /* Do that word.  */
-      output_asm_insn (singlemove_string (latehalf), latehalf);
+      handle_movsi (latehalf);
 
       /* Undo the adds we just did.  */
       if (addreg0)
-	output_asm_insn ("subq%.l #4,%0", &addreg0);
+	handle_reg_adjust (addreg0, -4);
       if (addreg1)
-	output_asm_insn ("subq%.l #4,%0", &addreg1);
+	handle_reg_adjust (addreg1, -4);
 
       if (size == 12)
 	{
-	  output_asm_insn (singlemove_string (middlehalf), middlehalf);
+	  handle_movsi (middlehalf);
+
 	  if (addreg0)
-	    output_asm_insn ("subq%.l #4,%0", &addreg0);
+	    handle_reg_adjust (addreg0, -4);
 	  if (addreg1)
-	    output_asm_insn ("subq%.l #4,%0", &addreg1);
+	    handle_reg_adjust (addreg1, -4);
 	}
 
       /* Do low-numbered word.  */
-      return singlemove_string (operands);
+
+      handle_movsi (operands);
+      return;
     }
 
   /* Normal case: do the two words, low-numbered first.  */
 
-  output_asm_insn (singlemove_string (operands), operands);
+  handle_movsi (operands);
 
   /* Do the middle one of the three words for long double */
   if (size == 12)
     {
       if (addreg0)
-	output_asm_insn ("addq%.l #4,%0", &addreg0);
+	handle_reg_adjust (addreg0, 4);
       if (addreg1)
-	output_asm_insn ("addq%.l #4,%0", &addreg1);
+	handle_reg_adjust (addreg1, 4);
 
-      output_asm_insn (singlemove_string (middlehalf), middlehalf);
+      handle_movsi (middlehalf);
     }
 
   /* Make any unoffsettable addresses point at high-numbered word.  */
   if (addreg0)
-    output_asm_insn ("addq%.l #4,%0", &addreg0);
+    handle_reg_adjust (addreg0, 4);
   if (addreg1)
-    output_asm_insn ("addq%.l #4,%0", &addreg1);
+    handle_reg_adjust (addreg1, 4);
 
   /* Do that word.  */
-  output_asm_insn (singlemove_string (latehalf), latehalf);
+  handle_movsi (latehalf);
 
   /* Undo the adds we just did.  */
   if (addreg0)
-    {
-      if (size == 12)
-        output_asm_insn ("subq%.l #8,%0", &addreg0);
-      else
-        output_asm_insn ("subq%.l #4,%0", &addreg0);
-    }
+    handle_reg_adjust (addreg0, -(size - 4));
   if (addreg1)
+    handle_reg_adjust (addreg1, -(size - 4));
+
+  return;
+}
+
+/* Output assembler code to adjust REG by N.  */
+static void
+output_reg_adjust (rtx reg, int n)
+{
+  const char *s;
+
+  gcc_assert (GET_MODE (reg) == SImode
+	      && -12 <= n && n != 0 && n <= 12);
+
+  switch (n)
     {
-      if (size == 12)
-        output_asm_insn ("subq%.l #8,%0", &addreg1);
-      else
-        output_asm_insn ("subq%.l #4,%0", &addreg1);
+    case 12:
+      s = "add%.l #12,%0";
+      break;
+
+    case 8:
+      s = "addq%.l #8,%0";
+      break;
+
+    case 4:
+      s = "addq%.l #4,%0";
+      break;
+
+    case -12:
+      s = "sub%.l #12,%0";
+      break;
+
+    case -8:
+      s = "subq%.l #8,%0";
+      break;
+
+    case -4:
+      s = "subq%.l #4,%0";
+      break;
+
+    default:
+      gcc_unreachable ();
+      s = NULL;
     }
+
+  output_asm_insn (s, &reg);
+}
+
+/* Emit rtl code to adjust REG by N.  */
+static void
+emit_reg_adjust (rtx reg1, int n)
+{
+  rtx reg2;
+
+  gcc_assert (GET_MODE (reg1) == SImode
+	      && -12 <= n && n != 0 && n <= 12);
+
+  reg1 = copy_rtx (reg1);
+  reg2 = copy_rtx (reg1);
+
+  if (n < 0)
+    emit_insn (gen_subsi3 (reg1, reg2, GEN_INT (-n)));
+  else if (n > 0)
+    emit_insn (gen_addsi3 (reg1, reg2, GEN_INT (n)));
+  else
+    gcc_unreachable ();
+}
+
+/* Output assembler to load address OPERANDS[0] to register OPERANDS[1].  */
+static void
+output_compadr (rtx operands[2])
+{
+  output_asm_insn ("lea %a1,%0", operands);
+}
+
+/* Output the best assembler insn for moving operands[1] into operands[0]
+   as a fullword.  */
+static void
+output_movsi (rtx operands[2])
+{
+  output_asm_insn (singlemove_string (operands), operands);
+}
+
+/* Copy OP and change its mode to MODE.  */
+static rtx
+copy_operand (rtx op, enum machine_mode mode)
+{
+  /* ??? This looks really ugly.  There must be a better way
+     to change a mode on the operand.  */
+  if (GET_MODE (op) != VOIDmode)
+    {
+      if (REG_P (op))
+	op = gen_rtx_REG (mode, REGNO (op));
+      else
+	{
+	  op = copy_rtx (op);
+	  PUT_MODE (op, mode);
+	}
+    }
+
+  return op;
+}
+
+/* Emit rtl code for moving operands[1] into operands[0] as a fullword.  */
+static void
+emit_movsi (rtx operands[2])
+{
+  operands[0] = copy_operand (operands[0], SImode);
+  operands[1] = copy_operand (operands[1], SImode);
+
+  emit_insn (gen_movsi (operands[0], operands[1]));
+}
+
+/* Output assembler code to perform a doubleword move insn
+   with operands OPERANDS.  */
+const char *
+output_move_double (rtx *operands)
+{
+  handle_move_double (operands,
+		      output_reg_adjust, output_compadr, output_movsi);
 
   return "";
 }
 
+/* Output rtl code to perform a doubleword move insn
+   with operands OPERANDS.  */
+void
+m68k_emit_move_double (rtx operands[2])
+{
+  handle_move_double (operands, emit_reg_adjust, emit_movsi, emit_movsi);
+}
 
 /* Ensure mode of ORIG, a REG rtx, is MODE.  Returns either ORIG or a
    new rtx with the correct mode.  */
@@ -4432,3 +4587,455 @@ m68k_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
   return false;
 }
 #endif
+
+/* CPU to schedule the program for.  */
+enum attr_cpu m68k_sched_cpu;
+
+/* Operand type.  */
+enum attr_op_type
+  {
+    /* No operand.  */
+    OP_TYPE_NONE,
+
+    /* Register.  */
+    OP_TYPE_REG,
+
+    /* Implicit mem reference (e.g. stack).  */
+    OP_TYPE_MEM1,
+
+    /* Memory without offset or indexing.  EA modes 2, 3 and 4.  */
+    OP_TYPE_MEM234,
+
+    /* Memory with offset but without indexing.  EA mode 5.  */
+    OP_TYPE_MEM5,
+
+    /* Memory with indexing.  EA mode 6.  */
+    OP_TYPE_MEM6,
+
+    /* Memory referenced by absolute address.  EA mode 7.  */
+    OP_TYPE_MEM7,
+
+    /* Immediate operand that doesn't require extension word.  */
+    OP_TYPE_IMM_Q,
+
+    /* Immediate 16 bit operand.  */
+    OP_TYPE_IMM_W,
+
+    /* Immediate 32 bit operand.  */
+    OP_TYPE_IMM_L
+  };
+
+/* True if current insn doesn't have complete pipeline description.  */
+static bool sched_guess_p;
+
+/* Return type of memory ADDR_RTX refers to.  */
+static enum attr_op_type
+sched_address_type (enum machine_mode mode, rtx addr_rtx)
+{
+  struct m68k_address address;
+
+  if (!m68k_decompose_address (mode, addr_rtx,
+			       reload_completed, &address))
+    {
+      gcc_assert (sched_guess_p);
+      /* Reload will likely fix the address to be in the register.  */
+      return OP_TYPE_MEM234;
+    }
+
+  if (address.scale != 0)
+    return OP_TYPE_MEM6;
+
+  if (address.base != NULL_RTX)
+    {
+      if (address.offset == NULL_RTX)
+	return OP_TYPE_MEM234;
+
+      return OP_TYPE_MEM5;
+    }
+
+  gcc_assert (address.offset != NULL_RTX);
+
+  return OP_TYPE_MEM7;
+}
+
+/* Return type of the operand OP.
+   If ADDRESS_P is true, return type of memory location OP refers to.  */
+static enum attr_op_type
+sched_operand_type (rtx op, bool address_p)
+{
+  gcc_assert (op != NULL_RTX);
+
+  if (address_p)
+    return sched_address_type (QImode, op);
+
+  if (memory_operand (op, VOIDmode))
+    return sched_address_type (GET_MODE (op), XEXP (op, 0));
+
+  if (register_operand (op, VOIDmode))
+    return OP_TYPE_REG;
+
+  if (GET_CODE (op) == CONST_INT)
+    {
+      /* ??? Below condition should probably check if the operation is
+	 signed or unsigned.  */
+      if (IN_RANGE (INTVAL (op), -0x8000, 0x7fff))
+	return OP_TYPE_IMM_W;
+
+      return OP_TYPE_IMM_L;
+    }
+
+  if (GET_CODE (op) == CONST_DOUBLE)
+    {
+      switch (GET_MODE (op))
+	{
+	case SFmode:
+	  return OP_TYPE_IMM_W;
+
+	case VOIDmode:
+	case DFmode:
+	  return OP_TYPE_IMM_L;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  if (symbolic_operand (op, VOIDmode)
+      || LABEL_P (op))
+    {
+      switch (GET_MODE (op))
+	{
+	case QImode:
+	  return OP_TYPE_IMM_Q;
+
+	case HImode:
+	  return OP_TYPE_IMM_W;
+
+	case SImode:
+	  return OP_TYPE_IMM_L;
+
+	default:
+	  if (GET_CODE (op) == SYMBOL_REF)
+	    /* ??? Just a guess.  Probably we can guess better using length
+	       attribute of the instructions.  */
+	    return OP_TYPE_IMM_W;
+
+	  return OP_TYPE_IMM_L;
+	}
+    }
+
+  gcc_assert (sched_guess_p);
+
+  return OP_TYPE_REG;
+}
+
+/* Return type of INSN's operand X (if OPX_P) or operand Y (if !OPX_P).
+   If ADDRESS_P is true, return type of memory location operand refers to.  */
+static enum attr_op_type
+sched_attr_op_type (rtx insn, bool opx_p, bool address_p)
+{
+  int i;
+
+  extract_constrain_insn_cached (insn);
+
+  if (opx_p)
+    i = get_attr_opx (insn);
+  else
+    i = get_attr_opy (insn);
+
+  if (i >= recog_data.n_operands)
+    {
+      gcc_assert (sched_guess_p);
+      return OP_TYPE_REG;
+    }
+
+  return sched_operand_type (recog_data.operand[i], address_p);
+}
+
+/* Implement opx_type attribute.
+   Return type of INSN's operand X.
+   If ADDRESS_P is true, return type of memory location operand refers to.  */
+enum attr_opx_type
+m68k_sched_attr_opx_type (rtx insn, int address_p)
+{
+  sched_guess_p = (get_attr_guess (insn) == GUESS_YES);
+
+  switch (sched_attr_op_type (insn, true, address_p != 0))
+    {
+    case OP_TYPE_REG:
+      return OPX_TYPE_REG;
+
+    case OP_TYPE_MEM1:
+      return OPX_TYPE_MEM1;
+
+    case OP_TYPE_MEM234:
+      return OPX_TYPE_MEM234;
+
+    case OP_TYPE_MEM5:
+      return OPX_TYPE_MEM5;
+
+    case OP_TYPE_MEM6:
+      return OPX_TYPE_MEM6;
+
+    case OP_TYPE_MEM7:
+      return OPX_TYPE_MEM7;
+
+    case OP_TYPE_IMM_Q:
+      return OPX_TYPE_IMM_Q;
+
+    case OP_TYPE_IMM_W:
+      return OPX_TYPE_IMM_W;
+
+    case OP_TYPE_IMM_L:
+      return OPX_TYPE_IMM_L;
+
+    default:
+      gcc_unreachable ();
+      return 0;
+    }
+}
+
+/* Implement opy_type attribute.
+   Return type of INSN's operand Y.
+   If ADDRESS_P is true, return type of memory location operand refers to.  */
+enum attr_opy_type
+m68k_sched_attr_opy_type (rtx insn, int address_p)
+{
+  sched_guess_p = (get_attr_guess (insn) == GUESS_YES);
+
+  switch (sched_attr_op_type (insn, false, address_p != 0))
+    {
+    case OP_TYPE_REG:
+      return OPY_TYPE_REG;
+
+    case OP_TYPE_MEM1:
+      return OPY_TYPE_MEM1;
+
+    case OP_TYPE_MEM234:
+      return OPY_TYPE_MEM234;
+
+    case OP_TYPE_MEM5:
+      return OPY_TYPE_MEM5;
+
+    case OP_TYPE_MEM6:
+      return OPY_TYPE_MEM6;
+
+    case OP_TYPE_MEM7:
+      return OPY_TYPE_MEM7;
+
+    case OP_TYPE_IMM_Q:
+      return OPY_TYPE_IMM_Q;
+
+    case OP_TYPE_IMM_W:
+      return OPY_TYPE_IMM_W;
+
+    case OP_TYPE_IMM_L:
+      return OPY_TYPE_IMM_L;
+
+    default:
+      gcc_unreachable ();
+      return 0;
+    }
+}
+
+/* Return the size of INSN.  */
+int
+m68k_sched_attr_size (rtx insn)
+{
+  int size;
+
+  sched_guess_p = (get_attr_guess (insn) == GUESS_YES);
+
+  switch (get_attr_type1 (insn))
+    {
+    case TYPE1_MUL_L:
+      size = 2;
+      break;
+
+    default:
+      size = 1;
+      break;
+    }
+
+  switch (get_attr_opx_type (insn))
+    {
+    case OPX_TYPE_NONE:
+    case OPX_TYPE_REG:
+    case OPX_TYPE_MEM1:
+    case OPX_TYPE_MEM234:
+    case OPY_TYPE_IMM_Q:
+      break;
+
+    case OPX_TYPE_MEM5:
+    case OPX_TYPE_MEM6:
+      /* Here we assume that most absolute references are short.  */
+    case OPX_TYPE_MEM7:
+    case OPY_TYPE_IMM_W:
+      ++size;
+      break;
+
+    case OPY_TYPE_IMM_L:
+      size += 2;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  switch (get_attr_opy_type (insn))
+    {
+    case OPY_TYPE_NONE:
+    case OPY_TYPE_REG:
+    case OPY_TYPE_MEM1:
+    case OPY_TYPE_MEM234:
+    case OPY_TYPE_IMM_Q:
+      break;
+
+    case OPY_TYPE_MEM5:
+    case OPY_TYPE_MEM6:
+      /* Here we assume that most absolute references are short.  */
+    case OPY_TYPE_MEM7:
+    case OPY_TYPE_IMM_W:
+      ++size;
+      break;
+
+    case OPY_TYPE_IMM_L:
+      size += 2;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (size > 3)
+    {
+      gcc_assert (sched_guess_p);
+
+      size = 3;
+    }
+
+  return size;
+}
+
+/* Implement op_mem attribute.  */
+enum attr_op_mem
+m68k_sched_attr_op_mem (rtx insn)
+{
+  enum attr_opy_mem opy;
+  enum attr_opx_mem opx;
+
+  sched_guess_p = (get_attr_guess (insn) == GUESS_YES);
+
+  opy = get_attr_opy_mem (insn);
+  opx = get_attr_opx_mem (insn);
+
+  if (opy == OPY_MEM_R && opx == OPX_MEM_R)
+    return OP_MEM_00;
+
+  if (opy == OPY_MEM_R && opx == OPX_MEM_M)
+    {
+      switch (get_attr_opx_access (insn))
+	{
+	case OPX_ACCESS_R:
+	  return OP_MEM_10;
+
+	case OPX_ACCESS_W:
+	  return OP_MEM_01;
+
+	case OPX_ACCESS_RW:
+	  return OP_MEM_11;
+
+	default:
+	  gcc_assert (sched_guess_p);
+	  return OP_MEM_UNKNOWN;
+	}
+    }
+
+  if (opy == OPY_MEM_R && opx == OPX_MEM_I)
+    {
+      switch (get_attr_opx_access (insn))
+	{
+	case OPX_ACCESS_R:
+	  return OP_MEM_I0;
+
+	case OPX_ACCESS_W:
+	  return OP_MEM_0I;
+
+	case OPX_ACCESS_RW:
+	  return OP_MEM_I1;
+
+	default:
+	  gcc_assert (sched_guess_p);
+	  return OP_MEM_UNKNOWN;
+	}
+    }
+
+  if (opy == OPY_MEM_M && opx == OPX_MEM_R)
+    return OP_MEM_10;
+
+  if (opy == OPY_MEM_M && opx == OPX_MEM_M)
+    {
+      switch (get_attr_opx_access (insn))
+	{
+	case OPX_ACCESS_W:
+	  return OP_MEM_11;
+
+	default:
+	  gcc_assert (sched_guess_p);
+	  return OP_MEM_UNKNOWN;
+	}
+    }
+
+  if (opy == OPY_MEM_M && opx == OPX_MEM_I)
+    {
+      switch (get_attr_opx_access (insn))
+	{
+	case OPX_ACCESS_W:
+	  return OP_MEM_1I;
+
+	default:
+	  gcc_assert (sched_guess_p);
+	  return OP_MEM_UNKNOWN;
+	}
+    }
+
+  if (opy == OPY_MEM_I && opx == OPX_MEM_R)
+    return OP_MEM_I0;
+
+
+  if (opy == OPY_MEM_I && opx == OPX_MEM_M)
+    {
+      switch (get_attr_opx_access (insn))
+	{
+	case OPX_ACCESS_W:
+	  return OP_MEM_I1;
+
+	default:
+	  gcc_assert (sched_guess_p);
+	  return OP_MEM_UNKNOWN;
+	}
+    }
+
+  gcc_assert (sched_guess_p);
+  return OP_MEM_UNKNOWN;
+}
+
+/* Jump instructions types.  Indexed by INSN_UID.
+   The same rtl insn can be expanded into different asm instructions
+   depending on the cc0_status.  To properly determine type of jump
+   instructions we scan instruction stream and map jumps types to this
+   array.  */
+static enum attr_type *sched_branch_type;
+
+/* Return the type of the jump insn.  */
+enum attr_type
+m68k_sched_branch_type (rtx insn)
+{
+  enum attr_type type;
+
+  type = sched_branch_type[INSN_UID (insn)];
+
+  gcc_assert (type != 0);
+
+  return type;
+}
