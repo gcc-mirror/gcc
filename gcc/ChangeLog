@@ -1,3 +1,27 @@
+2007-09-10  Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips.c (mips_scalar_mode_supported_p): Declare.
+	(TARGET_SCALAR_MODE_SUPPORTED_P): Define.
+	(mips_emit_compare): Process fixed-point modes.
+	(mips_pad_arg_upward): Support fixed-point types.
+	(override_options): Allow fixed-point modes in accumulators.
+	(mips_pass_by_reference): Pass DQ, UDQ, DA, and UDA modes in registers.
+	(mips_vector_mode_supported_p): Support V2HQmode, V2UHQmode, V2HAmode,
+	V2UHAmode, V4QQmode, and V4UQQmode when TARGET_DSP.
+	(mips_scalar_mode_supported_p): New function to accept fixed-point
+	modes if the width is not greater than two BITS_PER_WORD.
+	* config/mips/mips.h (SHORT_FRACT_TYPE_SIZE, FRACT_TYPE_SIZE,
+	LONG_FRACT_TYPE_SIZE, LONG_LONG_FRACT_TYPE_SIZE,
+	SHORT_ACCUM_TYPE_SIZE, ACCUM_TYPE_SIZE, LONG_ACCUM_TYPE_SIZE,
+	LONG_LONG_ACCUM_TYPE_SIZE): Define.
+	* config/mips/mips.md ("d"): Update mode attribute for fixed-point
+	modes.
+	("IMODE"): New mode attribute.
+	(mips-fixed.md): Include.
+	* config/mips/mips-modes.def: Create VECTOR_MODES for FRACT, UFRACT,
+	ACCUM, UACCUM.
+	* config/mips/mips-fixed.md: New file.
+
 2007-09-11  Ben Elliston  <bje@au.ibm.com>
 
 	* config/spu/spu.md: Formatting fixes.

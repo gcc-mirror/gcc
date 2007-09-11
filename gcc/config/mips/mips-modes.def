@@ -29,6 +29,11 @@ FLOAT_MODE (TF, 16, mips_quad_format);
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
 VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
 
+VECTOR_MODES (FRACT, 4);	/* V4QQ  V2HQ */
+VECTOR_MODES (UFRACT, 4);	/* V4UQQ V2UHQ */
+VECTOR_MODES (ACCUM, 4);	/*       V2HA */
+VECTOR_MODES (UACCUM, 4);	/*       V2UHA */
+
 /* Paired single comparison instructions use 2 or 4 CC.  */
 CC_MODE (CCV2);
 ADJUST_BYTESIZE (CCV2, 8);
