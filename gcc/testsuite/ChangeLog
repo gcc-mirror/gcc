@@ -1,3 +1,7 @@
+2007-09-11  Michael Matz  <matz@suse.de>
+
+	* gcc.dg/tree-ssa/loadpre11.c: Add -fno-tree-cselim to flags.
+
 2007-09-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/dfp/convert-bfp.c: Replace SKIP_LONG_DOUBLE with runtime
