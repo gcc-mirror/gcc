@@ -469,9 +469,14 @@ typedef struct _stmt_vec_info {
 /* These are some defines for the initial implementation of the vectorizer's
    cost model.  These will later be target specific hooks.  */
 
-/* Cost of conditional branch.  */
-#ifndef TARG_COND_BRANCH_COST
-#define TARG_COND_BRANCH_COST        3
+/* Cost of conditional taken branch.  */
+#ifndef TARG_COND_TAKEN_BRANCH_COST
+#define TARG_COND_TAKEN_BRANCH_COST        3
+#endif
+
+/* Cost of conditional not taken branch.  */
+#ifndef TARG_COND_NOT_TAKEN_BRANCH_COST
+#define TARG_COND_NOT_TAKEN_BRANCH_COST        1
 #endif
 
 /* Cost of any scalar operation, excluding load and store.  */

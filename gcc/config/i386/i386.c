@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "params.h"
 
+static int x86_builtin_vectorization_cost (bool);
+
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
 #endif
@@ -126,7 +128,18 @@ struct processor_costs size_cost = {	/* costs for tuning for size */
   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
-   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}}
+   {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  1,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  1,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 /* Processor costs (relative to an add) */
@@ -187,6 +200,17 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
    DUMMY_STRINGOP_ALGS},
   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -247,7 +271,18 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
   {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
-   DUMMY_STRINGOP_ALGS}
+   DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -306,7 +341,18 @@ struct processor_costs pentium_cost = {
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{-1, rep_prefix_4_byte}}},
-   DUMMY_STRINGOP_ALGS}
+   DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -372,7 +418,18 @@ struct processor_costs pentiumpro_cost = {
    DUMMY_STRINGOP_ALGS},
   {{rep_prefix_4_byte, {{1024, unrolled_loop},
   		        {8192, rep_prefix_4_byte}, {-1, libcall}}},
-   DUMMY_STRINGOP_ALGS}
+   DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -432,7 +489,18 @@ struct processor_costs geode_cost = {
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
-   DUMMY_STRINGOP_ALGS}
+   DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -494,7 +562,18 @@ struct processor_costs k6_cost = {
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
-   DUMMY_STRINGOP_ALGS}
+   DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -556,7 +635,18 @@ struct processor_costs athlon_cost = {
   {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
-   DUMMY_STRINGOP_ALGS}
+   DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -624,7 +714,18 @@ struct processor_costs k8_cost = {
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  4,                                    /* scalar_stmt_cost.  */
+  2,                                    /* scalar load_cost.  */
+  2,                                    /* scalar_store_cost.  */
+  5,                                    /* vec_stmt_cost.  */
+  0,                                    /* vec_to_scalar_cost.  */
+  2,                                    /* scalar_to_vec_cost.  */
+  2,                                    /* vec_align_load_cost.  */
+  3,                                    /* vec_unalign_load_cost.  */
+  3,                                    /* vec_store_cost.  */
+  6,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 struct processor_costs amdfam10_cost = {
@@ -700,7 +801,18 @@ struct processor_costs amdfam10_cost = {
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
-   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}
+   {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  4,                                    /* scalar_stmt_cost.  */
+  2,                                    /* scalar load_cost.  */
+  2,                                    /* scalar_store_cost.  */
+  6,                                    /* vec_stmt_cost.  */
+  0,                                    /* vec_to_scalar_cost.  */
+  2,                                    /* scalar_to_vec_cost.  */
+  2,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  2,                                    /* vec_store_cost.  */
+  6,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -761,6 +873,17 @@ struct processor_costs pentium4_cost = {
   {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
    {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -822,7 +945,18 @@ struct processor_costs nocona_cost = {
   {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
    {-1, libcall}}},
    {libcall, {{24, loop}, {64, unrolled_loop},
-	      {8192, rep_prefix_8_byte}, {-1, libcall}}}}
+	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -883,7 +1017,18 @@ struct processor_costs core2_cost = {
   {{libcall, {{8, loop}, {15, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{24, loop}, {32, unrolled_loop},
-	      {8192, rep_prefix_8_byte}, {-1, libcall}}}}
+	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 /* Generic64 should produce code tuned for Nocona and K8.  */
@@ -949,7 +1094,18 @@ struct processor_costs generic64_cost = {
   {DUMMY_STRINGOP_ALGS,
    {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {DUMMY_STRINGOP_ALGS,
-   {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}}
+   {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 /* Generic32 should produce code tuned for Athlon, PPro, Pentium4, Nocona and K8.  */
@@ -1010,6 +1166,17 @@ struct processor_costs generic32_cost = {
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
+  1,                                    /* scalar_stmt_cost.  */
+  1,                                    /* scalar load_cost.  */
+  1,                                    /* scalar_store_cost.  */
+  1,                                    /* vec_stmt_cost.  */
+  1,                                    /* vec_to_scalar_cost.  */
+  1,                                    /* scalar_to_vec_cost.  */
+  1,                                    /* vec_align_load_cost.  */
+  2,                                    /* vec_unalign_load_cost.  */
+  1,                                    /* vec_store_cost.  */
+  3,                                    /* cond_taken_branch_cost.  */
+  1,                                    /* cond_not_taken_branch_cost.  */
 };
 
 const struct processor_costs *ix86_cost = &pentium_cost;
@@ -23615,6 +23782,30 @@ static const struct attribute_spec ix86_attribute_table[] =
   { NULL,        0, 0, false, false, false, NULL }
 };
 
+/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+static int 
+x86_builtin_vectorization_cost (bool runtime_test)
+{
+  /* If the branch of the runtime test is taken - i.e. - the vectorized
+     version is skipped - this incurs a misprediction cost (because the
+     vectorized version is expected to be the fall-through).  So we subtract
+     the latency of a mispredicted branch from the costs that are incured
+     when the vectorized version is executed.
+
+     TODO: The values in individual target tables have to be tuned or new
+     fields may be needed. For eg. on K8, the default branch path is the
+     not-taken path. If the taken path is predicted correctly, the minimum
+     penalty of going down the taken-path is 1 cycle. If the taken-path is
+     not predicted correctly, then the minimum penalty is 10 cycles.  */
+
+  if (runtime_test)
+    {
+      return (-(ix86_cost->cond_taken_branch_cost));
+    }
+  else
+    return 0;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ix86_attribute_table
@@ -23790,6 +23981,9 @@ static const struct attribute_spec ix86_attribute_table[] =
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE ix86_function_value
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST x86_builtin_vectorization_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

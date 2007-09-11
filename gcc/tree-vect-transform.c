@@ -124,6 +124,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int byte_misalign;
+  int peel_guard_costs = 0;
   int innerloop_iters = 0, factor;
   VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
@@ -141,7 +142,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
     {
-      vec_outside_cost += TARG_COND_BRANCH_COST;
+      vec_outside_cost += TARG_COND_TAKEN_BRANCH_COST;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: Adding cost of checks for loop "
                  "versioning.\n");
@@ -188,7 +189,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      loop.
 
      FORNOW: If we dont know the value of peel_iters for prologue or epilogue
-     at compile-time - we assume it's (vf-1)/2 (the worst would be vf-1).
+     at compile-time - we assume it's vf/2 (the worst would be vf-1).
 
      TODO: Build an expression that represents peel_iters for prologue and
      epilogue to be used in a run-time test.  */
@@ -197,18 +198,26 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   if (byte_misalign < 0)
     {
-      peel_iters_prologue = (vf - 1)/2;
+      peel_iters_prologue = vf/2;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: "
-                 "prologue peel iters set to (vf-1)/2.");
+                 "prologue peel iters set to vf/2.");
 
       /* If peeling for alignment is unknown, loop bound of main loop becomes
          unknown.  */
-      peel_iters_epilogue = (vf - 1)/2;
+      peel_iters_epilogue = vf/2;
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: "
-                 "epilogue peel iters set to (vf-1)/2 because "
+                 "epilogue peel iters set to vf/2 because "
                  "peeling for alignment is unknown .");
+
+      /* If peeled iterations are unknown, count a taken branch and a not taken
+	 branch per peeled loop. Even if scalar loop iterations are known, 
+	 vector iterations are not known since peeled prologue iterations are
+	 not known. Hence guards remain the same.  */
+      peel_guard_costs +=  2 * (TARG_COND_TAKEN_BRANCH_COST
+			       + TARG_COND_NOT_TAKEN_BRANCH_COST);
+
     }
   else 
     {
@@ -226,11 +235,16 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
       if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
         {
-          peel_iters_epilogue = (vf - 1)/2;
+          peel_iters_epilogue = vf/2;
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "cost model: "
-                     "epilogue peel iters set to (vf-1)/2 because "
+                     "epilogue peel iters set to vf/2 because "
                      "loop iterations are unknown .");
+
+	  /* If peeled iterations are known but number of scalar loop
+	     iterations are unknown, count a taken branch per peeled loop.  */
+	  peel_guard_costs +=  2 * TARG_COND_TAKEN_BRANCH_COST;
+
         }
       else      
 	{
@@ -241,33 +255,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 	}
     }
 
-  /* Requires a prologue loop when peeling to handle misalignment. Add cost of
-     two guards, one for the peeled loop and one for the vector loop.  */
-
-  if (peel_iters_prologue)
-    {
-      vec_outside_cost += 2 * TARG_COND_BRANCH_COST;
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "cost model: Adding cost of checks for "
-                 "prologue.\n");
-    }
-
- /* Requires an epilogue loop to finish up remaining iterations after vector
-    loop. Add cost of two guards, one for the peeled loop and one for the
-    vector loop.  */
-
-  if (peel_iters_epilogue
-      || !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      || LOOP_VINFO_INT_NITERS (loop_vinfo) % vf)
-    {
-      vec_outside_cost += 2 * TARG_COND_BRANCH_COST;
-      if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "cost model : Adding cost of checks for "
-                 "epilogue.\n");
-    }
-
   vec_outside_cost += (peel_iters_prologue * scalar_single_iter_cost)
-                      + (peel_iters_epilogue * scalar_single_iter_cost);
+                      + (peel_iters_epilogue * scalar_single_iter_cost)
+                      + peel_guard_costs;
 
   /* Allow targets add additional (outside-of-loop) costs. FORNOW, the only
      information we provide for the target is whether testing against the
@@ -305,11 +295,13 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
 
   if ((scalar_single_iter_cost * vf) > vec_inside_cost)
     {
-      if (vec_outside_cost == 0)
+      if (vec_outside_cost <= 0)
         min_profitable_iters = 1;
       else
         {
-          min_profitable_iters = (vec_outside_cost * vf)
+          min_profitable_iters = (vec_outside_cost * vf 
+                                  - vec_inside_cost * peel_iters_prologue
+                                  - vec_inside_cost * peel_iters_epilogue)
                                  / ((scalar_single_iter_cost * vf)
                                     - vec_inside_cost);
 
@@ -344,8 +336,6 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                peel_iters_epilogue);
       fprintf (vect_dump, "  Calculated minimum iters for profitability: %d\n",
 	       min_profitable_iters);
-      fprintf (vect_dump, "  Actual minimum iters for profitability: %d\n",
-	       min_profitable_iters < vf ? vf : min_profitable_iters);
     }
 
   min_profitable_iters = 
@@ -355,6 +345,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      if (niters <= min_profitable_iters)
        then skip the vectorized loop.  */
   min_profitable_iters--;
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "  Profitability threshold = %d\n",
+	     min_profitable_iters);
+    
   return min_profitable_iters;
 }
 
@@ -6452,8 +6447,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
 
   /* Analyze cost to set threshhold for vectorized loop.  */
   min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
-  min_scalar_loop_bound = (PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND))
-                          * LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+			    * LOOP_VINFO_VECT_FACTOR (loop_vinfo)) - 1);
 
   /* Use the cost model only if it is more conservative than user specified
      threshold.  */
@@ -6464,8 +6459,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
           || min_profitable_iters > min_scalar_loop_bound))
     th = (unsigned) min_profitable_iters;
 
-  if (min_profitable_iters
-      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+  if (((LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) < 0)
+      || !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
       && vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "vectorization may not be profitable.");
 
