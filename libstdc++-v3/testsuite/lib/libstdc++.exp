@@ -171,6 +171,13 @@ proc libstdc++_init { testfile } {
 	set compiler [transform "g++"]
     }
 
+    # Default settings.
+    set cxx [transform "g++"]
+    set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0"
+    set cxxldflags ""
+    set cc [transform "gcc"]
+    # Locate testsuite_hooks.h and other testsuite headers.
+    set includes "-I${srcdir}/util"
     # Adapt the defaults for special circumstances.
     if [is_remote host] {
 	# A remote host does not, in general, have access to the
@@ -199,12 +206,6 @@ proc libstdc++_init { testfile } {
 		return "untested"
 	    }
 	}
-	# Default settings.
-	set cxx [transform "g++"]
-	set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0 " 
-	set cxxldflags ""
-	set cc [transform "gcc"]
-	# Locate testsuite_hooks.h and other testsuite headers.	
 	set includes "-Iutil"
     } elseif { [file exists $flags_file] } {
         # If we find a testsuite_flags file, we're testing in the build dir.
