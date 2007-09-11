@@ -4114,7 +4114,9 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	  else if (!(pushed = push_fields_onto_fieldstack
 		     (TREE_TYPE (type), fieldstack,
 		      offset + i * TREE_INT_CST_LOW (elsz), has_union,
-		      TREE_TYPE (type))))
+		      (TYPE_NONALIASED_COMPONENT (type)
+		       ? addressable_type
+		       : TREE_TYPE (type)))))
 	    /* Empty structures may have actual size, like in C++. So
 	       see if we didn't push any subfields and the size is
 	       nonzero, push the field onto the stack */
@@ -4129,7 +4131,10 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	      pair->size = elsz;
 	      pair->decl = NULL_TREE;
 	      pair->offset = offset + i * TREE_INT_CST_LOW (elsz);
-	      pair->alias_set = -1;
+	      if (TYPE_NONALIASED_COMPONENT (type))
+		pair->alias_set = get_alias_set (addressable_type);
+	      else
+		pair->alias_set = -1;
 	      count++;
 	    }
 	  else

@@ -1,3 +1,8 @@
+2007-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Deal with
+	TYPE_NONALIASED_COMPONENT like with DECL_NONADDRESSABLE_P.
+
 2007-09-11  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/27945

@@ -1625,21 +1625,14 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
     }
 
   /* In addition to what our caller says, claim the field is addressable if we
-     know we might ever attempt to take its address, then mark the decl as
-     nonaddressable accordingly.
+     know that its type is not suitable.
 
      The field may also be "technically" nonaddressable, meaning that even if
      we attempt to take the field's address we will actually get the address
      of a copy.  This is the case for true bitfields, but the DECL_BIT_FIELD
      value we have at this point is not accurate enough, so we don't account
      for this here and let finish_record_type decide.  */
-
-  /* We will take the address in any argument passing sequence if the field
-     type is passed by reference, and we might need the address for any array
-     type, even if normally passed by-copy, to construct a fat pointer if the
-     field is used as an actual for an unconstrained formal.  */
-  if (TREE_CODE (field_type) == ARRAY_TYPE
-      || must_pass_by_ref (field_type) || default_pass_by_ref (field_type))
+  if (!type_for_nonaliased_component_p (field_type))
     addressable = 1;
 
   DECL_NONADDRESSABLE_P (field_decl) = !addressable;
@@ -4002,6 +3995,26 @@ tree_code_for_record_type (Entity_Id gnat_type)
       return RECORD_TYPE;
 
   return UNION_TYPE;
+}
+
+/* Return true if GNU_TYPE is suitable as the type of a non-aliased
+   component of an aggregate type.  */
+
+bool
+type_for_nonaliased_component_p (tree gnu_type)
+{
+  /* If the type is passed by reference, we may have pointers to the
+     component so it cannot be made non-aliased. */
+  if (must_pass_by_ref (gnu_type) || default_pass_by_ref (gnu_type))
+    return false;
+
+  /* We might need the address for any array type, even if normally
+     passed by copy, to construct a fat pointer if the component is
+     used as an actual for an unconstrained formal.  */
+  if (TREE_CODE (gnu_type) == ARRAY_TYPE)
+    return false;
+
+  return true;
 }
 
 /* Perform final processing on global variables.  */
