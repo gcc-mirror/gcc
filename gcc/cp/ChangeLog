@@ -1,5 +1,9 @@
 2007-09-11  Jason Merrill  <jason@redhat.com>
 
+	PR c++/31419
+	* call.c (reference_binding): Don't look for user-defined conversions
+	to the same type.
+
 	PR c++/15745
 	* except.c (prepare_eh_type): Use type_decays_to.
 

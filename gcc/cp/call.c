@@ -1153,7 +1153,12 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags)
 
       return conv;
     }
-  else if (CLASS_TYPE_P (from) && !(flags & LOOKUP_NO_CONVERSION))
+  /* [class.conv.fct] A conversion function is never used to convert a
+     (possibly cv-qualified) object to the (possibly cv-qualified) same
+     object type (or a reference to it), to a (possibly cv-qualified) base
+     class of that type (or a reference to it).... */
+  else if (CLASS_TYPE_P (from) && !related_p
+	   && !(flags & LOOKUP_NO_CONVERSION))
     {
       /* [dcl.init.ref]
 
