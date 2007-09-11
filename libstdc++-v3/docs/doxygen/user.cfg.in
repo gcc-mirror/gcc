@@ -478,6 +478,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/@host_alias@/bits \
                          include/bits \
                          include/debug \
+                         include/parallel \
                          include/ext \
                          include/tr1 \
                          include/tr1_impl \
@@ -562,6 +563,8 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/ext/slist \
                          include/ext/pb_ds \
                          include/ext/pb_ds/detail \
+                         include/parallel/algorithm \
+                         include/parallel/numeric \
                          include/tr1/array \
                          include/tr1/ccomplex \
                          include/tr1/cctype \

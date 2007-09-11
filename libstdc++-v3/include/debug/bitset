@@ -45,10 +45,10 @@ namespace __debug
 {
   template<size_t _Nb>
     class bitset
-    : public _GLIBCXX_STD::bitset<_Nb>, 
+    : public _GLIBCXX_STD_D::bitset<_Nb>, 
       public __gnu_debug::_Safe_sequence_base
     {
-      typedef _GLIBCXX_STD::bitset<_Nb> _Base;
+      typedef _GLIBCXX_STD_D::bitset<_Nb> _Base;
       typedef __gnu_debug::_Safe_sequence_base  _Safe_base;
 
     public:

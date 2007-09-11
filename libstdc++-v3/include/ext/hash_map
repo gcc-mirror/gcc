@@ -65,7 +65,7 @@
 #include <ext/hashtable.h>
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
 
   using std::equal_to;
   using std::allocator;

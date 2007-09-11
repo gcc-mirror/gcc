@@ -64,7 +64,7 @@
 
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   /**
    *  @brief A standard container made up of (key,value) pairs, which can be

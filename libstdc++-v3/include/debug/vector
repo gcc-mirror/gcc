@@ -47,10 +47,10 @@ namespace __debug
   template<typename _Tp,
 	   typename _Allocator = std::allocator<_Tp> >
     class vector
-    : public _GLIBCXX_STD::vector<_Tp, _Allocator>,
+    : public _GLIBCXX_STD_D::vector<_Tp, _Allocator>,
       public __gnu_debug::_Safe_sequence<vector<_Tp, _Allocator> >
     {
-      typedef _GLIBCXX_STD::vector<_Tp, _Allocator> _Base;
+      typedef _GLIBCXX_STD_D::vector<_Tp, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<vector>              _Safe_base;
 
       typedef typename _Base::const_iterator _Base_const_iterator;

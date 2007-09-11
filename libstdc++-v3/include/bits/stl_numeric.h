@@ -65,7 +65,7 @@
 #include <bits/concept_check.h>
 #include <debug/debug.h>
 
-_GLIBCXX_BEGIN_NAMESPACE(std)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 
   /**
    *  @brief  Accumulate values in a range.
@@ -336,6 +336,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return ++__result;
     }
 
-_GLIBCXX_END_NAMESPACE
+_GLIBCXX_END_NESTED_NAMESPACE
 
 #endif /* _STL_NUMERIC_H */

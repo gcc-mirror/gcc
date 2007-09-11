@@ -65,11 +65,10 @@
 #include <bits/c++config.h>
 #include <cstddef>
 #include <bits/functexcept.h>
-#include <bits/stl_pair.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 #include <ext/numeric_traits.h>
-#include <bits/stl_iterator_base_types.h>
+#include <bits/algorithmfwd.h>
 #include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_iterator.h>
 #include <bits/concept_check.h>
@@ -596,7 +595,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		      __niter_base<_ForwardIterator>::__b(__last), __value);
     }
 
-
   template<bool>
     struct __fill_n
     {
@@ -678,7 +676,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				   __value));
     }
 
-
   template<bool _BoolType>
     struct __equal
     {
@@ -719,6 +716,90 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
     }
 
+
+  template<typename, typename>
+    struct __lc_rai
+    {
+      template<typename _II1, typename _II2>
+        static _II1
+        __newlast1(_II1, _II1 __last1, _II2, _II2)
+        { return __last1; }
+
+      template<typename _II>
+        static bool
+        __cnd2(_II __first, _II __last)
+        { return __first != __last; }
+    };
+
+  template<>
+    struct __lc_rai<random_access_iterator_tag, random_access_iterator_tag>
+    {
+      template<typename _RAI1, typename _RAI2>
+        static _RAI1
+        __newlast1(_RAI1 __first1, _RAI1 __last1,
+		   _RAI2 __first2, _RAI2 __last2)
+        {
+	  const typename iterator_traits<_RAI1>::difference_type
+	    __diff1 = __last1 - __first1;
+	  const typename iterator_traits<_RAI2>::difference_type
+	    __diff2 = __last2 - __first2;
+	  return __diff2 < __diff1 ? __first1 + __diff2 : __last1;
+	}
+
+      template<typename _RAI>
+        static bool
+        __cnd2(_RAI, _RAI)
+        { return true; }
+    };
+
+  // XXX should these be enabled-if'd for signed/unsigned types instead?
+  inline bool
+  lexicographical_compare(const unsigned char* __first1,
+			  const unsigned char* __last1,
+			  const unsigned char* __first2,
+			  const unsigned char* __last2)
+  {
+    __glibcxx_requires_valid_range(__first1, __last1);
+    __glibcxx_requires_valid_range(__first2, __last2);
+
+    const size_t __len1 = __last1 - __first1;
+    const size_t __len2 = __last2 - __first2;
+    const int __result = __builtin_memcmp(__first1, __first2,
+					  std::min(__len1, __len2));
+    return __result != 0 ? __result < 0 : __len1 < __len2;
+  }
+
+  inline bool
+  lexicographical_compare(const char* __first1, const char* __last1,
+			  const char* __first2, const char* __last2)
+  {
+    __glibcxx_requires_valid_range(__first1, __last1);
+    __glibcxx_requires_valid_range(__first2, __last2);
+
+    if (__gnu_cxx::__numeric_traits<char>::__is_signed)
+      {
+	typedef const signed char* value_type;
+	value_type __f1 = reinterpret_cast<value_type>(__first1);
+	value_type __l1 = reinterpret_cast<value_type>(__last1);
+	value_type __f2 = reinterpret_cast<value_type>(__first2);
+	value_type __l2 = reinterpret_cast<value_type>(__last2);	
+	return _GLIBCXX_STD_P::lexicographical_compare(__f1, __l1, __f2, __l2);
+      }
+    else
+      {
+	typedef const unsigned char* value_type;
+	value_type __f1 = reinterpret_cast<value_type>(__first1);
+	value_type __l1 = reinterpret_cast<value_type>(__last1);
+	value_type __f2 = reinterpret_cast<value_type>(__first2);
+	value_type __l2 = reinterpret_cast<value_type>(__last2);	
+	return _GLIBCXX_STD_P::lexicographical_compare(__f1, __l1, __f2, __l2);
+      }
+  }
+
+_GLIBCXX_END_NAMESPACE
+
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
+
   /**
    *  @brief Tests a range for element-wise equality.
    *  @param  first1  An input iterator.
@@ -752,24 +833,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
    *  @param  first2  An input iterator.
-   *  @param  binary_pred  A binary predicate @link s20_3_1_base functor@endlink.
-   *  @return   A boolean true or false.
+   *  @param binary_pred A binary predicate @link s20_3_1_base
+   *                  functor@endlink.
+   *  @return         A boolean true or false.
    *
    *  This compares the elements of two ranges using the binary_pred
    *  parameter, and returns true or
    *  false depending on whether all of the corresponding elements of the
    *  ranges are equal.
   */
-  template<typename _InputIterator1, typename _InputIterator2,
-	   typename _BinaryPredicate>
+  template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
     inline bool
-    equal(_InputIterator1 __first1, _InputIterator1 __last1,
-	  _InputIterator2 __first2,
-	  _BinaryPredicate __binary_pred)
+    equal(_IIter1 __first1, _IIter1 __last1,
+	  _IIter2 __first2, _BinaryPredicate __binary_pred)
     {
       // concept requirements
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
-      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_InputIteratorConcept<_IIter1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_IIter2>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
       for (; __first1 != __last1; ++__first1, ++__first2)
@@ -777,43 +857,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return false;
       return true;
     }
-
-
-  template<typename, typename>
-    struct __lc_rai
-    {
-      template<typename _II1, typename _II2>
-        static _II1
-        __newlast1(_II1, _II1 __last1, _II2, _II2)
-        { return __last1; }
-
-      template<typename _II>
-        static bool
-        __cnd2(_II __first, _II __last)
-        { return __first != __last; }
-    };
-
-  template<>
-    struct __lc_rai<random_access_iterator_tag,
-		    random_access_iterator_tag>
-    {
-      template<typename _RAI1, typename _RAI2>
-        static _RAI1
-        __newlast1(_RAI1 __first1, _RAI1 __last1,
-		   _RAI2 __first2, _RAI2 __last2)
-        {
-	  const typename iterator_traits<_RAI1>::difference_type
-	    __diff1 = __last1 - __first1;
-	  const typename iterator_traits<_RAI2>::difference_type
-	    __diff2 = __last2 - __first2;
-	  return __diff2 < __diff1 ? __first1 + __diff2 : __last1;
-	}
-
-      template<typename _RAI>
-        static bool
-        __cnd2(_RAI, _RAI)
-        { return true; }
-    };
 
   /**
    *  @brief Performs "dictionary" comparison on ranges.
@@ -831,7 +874,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   */
   template<typename _II1, typename _II2>
     bool
-    lexicographical_compare(_II1 __first1, _II1 __last1,
+    lexicographical_compare(_II1 __first1, _II1 __last1, 
 			    _II2 __first2, _II2 __last2)
     {
       typedef typename iterator_traits<_II1>::iterator_category _Category1;
@@ -882,6 +925,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       typedef typename iterator_traits<_II1>::iterator_category _Category1;
       typedef typename iterator_traits<_II2>::iterator_category _Category2;
+      typedef __lc_rai<_Category1, _Category2> 	__rai_type;
 
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_II1>)
@@ -889,12 +933,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      __last1 = __lc_rai<_Category1, _Category2>::__newlast1(__first1,
-							     __last1,
-							     __first2,
-							     __last2);
-      for (; __first1 != __last1
-	     && __lc_rai<_Category1, _Category2>::__cnd2(__first2, __last2);
+      __last1 = __rai_type::__newlast1(__first1, __last1, __first2, __last2);
+      for (; __first1 != __last1 && __rai_type::__cnd2(__first2, __last2);
 	   ++__first1, ++__first2)
 	{
 	  if (__comp(*__first1, *__first2))
@@ -905,41 +945,82 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __first1 == __last1 && __first2 != __last2;
     }
 
-  inline bool
-  lexicographical_compare(const unsigned char* __first1,
-			  const unsigned char* __last1,
-			  const unsigned char* __first2,
-			  const unsigned char* __last2)
-  {
-    __glibcxx_requires_valid_range(__first1, __last1);
-    __glibcxx_requires_valid_range(__first2, __last2);
 
-    const size_t __len1 = __last1 - __first1;
-    const size_t __len2 = __last2 - __first2;
-    const int __result = __builtin_memcmp(__first1, __first2,
-					  std::min(__len1, __len2));
-    return __result != 0 ? __result < 0 : __len1 < __len2;
-  }
+  /**
+   *  @brief Finds the places in ranges which don't match.
+   *  @param  first1  An input iterator.
+   *  @param  last1   An input iterator.
+   *  @param  first2  An input iterator.
+   *  @return   A pair of iterators pointing to the first mismatch.
+   *
+   *  This compares the elements of two ranges using @c == and returns a pair
+   *  of iterators.  The first iterator points into the first range, the
+   *  second iterator points into the second range, and the elements pointed
+   *  to by the iterators are not equal.
+  */
+  template<typename _InputIterator1, typename _InputIterator2>
+    pair<_InputIterator1, _InputIterator2>
+    mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
+	     _InputIterator2 __first2)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_function_requires(_EqualOpConcept<
+	    typename iterator_traits<_InputIterator1>::value_type,
+	    typename iterator_traits<_InputIterator2>::value_type>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
-  inline bool
-  lexicographical_compare(const char* __first1, const char* __last1,
-			  const char* __first2, const char* __last2)
-  {
-    __glibcxx_requires_valid_range(__first1, __last1);
-    __glibcxx_requires_valid_range(__first2, __last2);
+      while (__first1 != __last1 && *__first1 == *__first2)
+        {
+	  ++__first1;
+	  ++__first2;
+        }
+      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+    }
 
-    if (__gnu_cxx::__numeric_traits<char>::__is_signed)
-      return std::lexicographical_compare((const signed char*) __first1,
-					  (const signed char*) __last1,
-					  (const signed char*) __first2,
-					  (const signed char*) __last2);
-    else
-      return std::lexicographical_compare((const unsigned char*) __first1,
-					  (const unsigned char*) __last1,
-					  (const unsigned char*) __first2,
-					  (const unsigned char*) __last2);
-  }
+  /**
+   *  @brief Finds the places in ranges which don't match.
+   *  @param  first1  An input iterator.
+   *  @param  last1   An input iterator.
+   *  @param  first2  An input iterator.
+   *  @param binary_pred A binary predicate @link s20_3_1_base
+   *         functor@endlink.
+   *  @return   A pair of iterators pointing to the first mismatch.
+   *
+   *  This compares the elements of two ranges using the binary_pred
+   *  parameter, and returns a pair
+   *  of iterators.  The first iterator points into the first range, the
+   *  second iterator points into the second range, and the elements pointed
+   *  to by the iterators are not equal.
+  */
+  template<typename _InputIterator1, typename _InputIterator2,
+	   typename _BinaryPredicate>
+    pair<_InputIterator1, _InputIterator2>
+    mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
+	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
+      __glibcxx_requires_valid_range(__first1, __last1);
 
-_GLIBCXX_END_NAMESPACE
+      while (__first1 != __last1 && bool(__binary_pred(*__first1, *__first2)))
+        {
+	  ++__first1;
+	  ++__first2;
+        }
+      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+    }
+
+_GLIBCXX_END_NESTED_NAMESPACE
+
+// NB: This file is included within many other C++ includes, as a way
+// of getting the base algorithms. So, make sure that parallel bits
+// come in too if requested. 
+#ifdef _GLIBCXX_PARALLEL
+//# include <parallel/algorithm>
+# include <parallel/algobase.h>
+#endif
 
 #endif

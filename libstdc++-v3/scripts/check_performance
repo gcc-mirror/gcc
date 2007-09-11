@@ -32,9 +32,11 @@ SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc \
          -Wl,--rpath -Wl,$BUILD_DIR/src/.libs"
 ST_FLAG="-static"
 LINK=$SH_FLAG
-CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $LINK"
+CXX="$COMPILER $INCLUDES $FLAGS $CXXFLAGS $LINK"
 LIBS="./libtestc++.a"
 TESTS_FILE="testsuite_files_performance"
+
+echo CXX is $CXX
 
 for NAME in `cat $TESTS_FILE`
 do
@@ -79,7 +81,7 @@ do
     EXE_NAME="`echo $FILE_NAME.exe`"
     $CXX $TESTNAME $LIBS -o $EXE_NAME
     if [ -f $EXE_NAME ]; then
-	./$EXE_NAME >& tmp.$FILE_NAME
+      ./$EXE_NAME >& tmp.$FILE_NAME
     else
       echo "compile error:"
       echo "$CXX $TESTNAME $LIBS -o $EXE_NAME"

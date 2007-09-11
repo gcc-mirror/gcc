@@ -62,7 +62,7 @@
 #ifndef _VECTOR_TCC
 #define _VECTOR_TCC 1
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   template<typename _Tp, typename _Alloc>
     void

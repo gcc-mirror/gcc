@@ -39,6 +39,9 @@
 #   atomic_word_dir        location of atomic_word.h
 #                          defaults to generic.
 #
+#   atomic_flags           extra flags to pass to use atomic instructions
+#                          defaults to nothing.
+#
 #   cpu_defines_dir        location of cpu_defines.h
 #                          defaults to generic.
 #
@@ -71,6 +74,7 @@
 c_model=c_global
 c_compatibility=no
 atomic_word_dir=cpu/generic
+atomic_flags=""
 atomicity_dir="cpu/generic"
 cpu_defines_dir="cpu/generic"
 try_cpu=generic
@@ -130,7 +134,8 @@ case "${host_cpu}" in
 esac
 
 
-# Set specific CPU overrides for atomic_word_dir. Most can just use generic.
+# Set specific CPU overrides for atomic_word_dir and atomic_flags. 
+# Most can just use generic.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_cpu}" in
   alpha*)
@@ -142,11 +147,15 @@ case "${host_cpu}" in
   ia64)
     atomic_word_dir=cpu/ia64
     ;;
+  i[567]86 | x86_64)
+    atomic_flags="-march=native"
+    ;;
   powerpc* | rs6000)
     atomic_word_dir=cpu/powerpc
     ;;
   sparc* | ultrasparc)
     atomic_word_dir=cpu/sparc
+    atomic_flags="-mcpu=v9"
     ;;
 esac
 

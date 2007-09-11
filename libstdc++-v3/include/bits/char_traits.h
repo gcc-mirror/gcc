@@ -43,7 +43,7 @@
 
 #pragma GCC system_header
 
-#include <bits/stl_algobase.h>  // For copy, fill_n
+#include <bits/algorithmfwd.h>   // std::copy, std::fill_n
 #include <bits/postypes.h>      // For streampos
 #include <cstdio>               // For EOF
 #include <cwchar>               // For WEOF, wmemmove, wmemset, etc.
@@ -194,6 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     char_traits<_CharT>::
     copy(char_type* __s1, const char_type* __s2, std::size_t __n)
     {
+      // NB: Inline std::copy so no recursive dependencies.
       std::copy(__s2, __s2 + __n, __s1);
       return __s1;
     }
@@ -203,6 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     char_traits<_CharT>::
     assign(char_type* __s, std::size_t __n, char_type __a)
     {
+      // NB: Inline std::fill_n so no recursive dependencies.
       std::fill_n(__s, __n, __a);
       return __s;
     }

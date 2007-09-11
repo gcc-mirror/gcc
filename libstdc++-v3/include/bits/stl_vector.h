@@ -66,7 +66,7 @@
 #include <bits/functexcept.h>
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   /**
    *  @if maint

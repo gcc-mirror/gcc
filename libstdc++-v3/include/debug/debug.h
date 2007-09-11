@@ -113,6 +113,7 @@ namespace std
 #else
 # define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
 #endif
+
 # define _GLIBCXX_DEBUG_ONLY(_Statement) _Statement
 
 # define __glibcxx_requires_cond(_Cond,_Msg) _GLIBCXX_DEBUG_VERIFY(_Cond,_Msg)

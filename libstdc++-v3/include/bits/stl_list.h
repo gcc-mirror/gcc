@@ -64,7 +64,7 @@
 
 #include <bits/concept_check.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   // Supporting structures are split into common and templated types; the
   // latter publicly inherits from the former in an effort to reduce code

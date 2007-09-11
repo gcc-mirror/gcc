@@ -123,11 +123,41 @@ doc-performance:
 	${glibcxx_srcdir}/testsuite/data/make_graph_htmls.xml \
 	${glibcxx_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
 
+# Runs the testsuite in parallel mode.
+libgomp_dir=${glibcxx_builddir}/../libgomp
+libgomp_flags=-B${glibcxx_builddir}/../libgomp \
+              -I${glibcxx_builddir}/../libgomp \
+	      -L${glibcxx_builddir}/../libgomp/.libs -lgomp
+
+atomic_flags=$(ATOMIC_FLAGS)
+parallel_flags="unix/-D_GLIBCXX_PARALLEL/-fopenmp"
+
+check-parallel: site.exp
+	-@(if test ! -d $${libgomp_dir}; then \
+	  echo "Testing parallel mode failed as libgomp not present."; \
+	  exit 1; \
+	fi; \
+	outputdir=parallel; export outputdir; \
+	if test ! -d $${outputdir}; then \
+	  mkdir $${outputdir}; \
+	fi; \
+	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
+	EXPECT=$(EXPECT); export EXPECT; \
+	$(MAKE) CXXFLAGS="$(atomic_flags) $(libgomp_flags)" $(AM_MAKEFLAGS) RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(parallel_flags)" check-DEJAGNU; )
+
+check-performance-parallel: testsuite_files_performance ${performance_script}
+	-@(chmod + ${check_performance_script}; \
+	CXXFLAGS="-D_GLIBCXX_PARALLEL -fopenmp $(atomic_flags) $(libgomp_flags)"; export CXXFLAGS; \
+	${check_performance_script} ${glibcxx_srcdir} ${glibcxx_builddir})
 
 .PHONY: baseline_symbols new-abi-baseline \
-	check-abi check-compile check-performance
+	check-abi check-compile check-performance check-parallel
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
-	     *.o *.cc *.a *.so *.xml
+	     *.s *.o *.cc *.a *.so *.xml 
+
+# To remove directories.
+clean-local:
+	rm -rf parallel

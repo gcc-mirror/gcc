@@ -383,6 +383,7 @@ proc v3_target_compile_as_c { source dest type options } {
     global flags_file
     global blddir
     global cc
+    global cxxflags
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -393,6 +394,7 @@ proc v3_target_compile_as_c { source dest type options } {
     set cc_final $cc
     set cxxlibglossflags [libgloss_link_flags]
     set cc_final [concat $cc_final $cxxlibglossflags]
+    set cc_final [concat $cc_final $cxxflags]
     set cc_final [concat $cc_final $includes]
     regsub -all {\s[-]nostdinc[+][+]} $cc_final "" cc_final
 
@@ -883,4 +885,60 @@ proc check_v3_target_debug_mode { } {
     }
     verbose "check_v3_target_debug_mode: $et_debug_mode" 2
     return $et_debug_mode
+}
+
+proc check_v3_target_parallel_mode { } {
+    global cxxflags
+    global DEFAULT_CXXFLAGS
+    global et_parallel_mode
+
+    global tool	
+
+    if { ![info exists et_parallel_mode_target_name] } {
+	set et_parallel_mode_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_parallel_mode_target_name } {
+	verbose "check_v3_target_parallel_mode: `$et_parallel_mode_target_name'" 2
+	set et_parallel_mode_target_name $current_target
+	if [info exists et_parallel_mode] {
+	    verbose "check_v3_target_parallel_mode: removing cached result" 2
+	    unset et_parallel_mode
+	}
+    }
+
+    if [info exists et_parallel_mode] {
+	verbose "check_v3_target_parallel_mode: using cached result" 2
+    } else {
+	set et_parallel_mode 0
+
+	# Set up, compile, and execute a C++ test program that depends
+	# on parallel mode working.
+	set src parallel_mode[pid].cc
+	set exe parallel_mode[pid].exe
+
+	set f [open $src "w"]
+	puts $f "#include <omp.h>"
+	puts $f "int main()"
+	puts $f "{ return 0; }"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
+
+	set lines [v3_target_compile $src $exe executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set et_parallel_mode 1
+	} else {
+	    verbose "check_v3_target_parallel_mode: compilation failed" 2
+	}
+    }
+    verbose "check_v3_target_parallel_mode: $et_parallel_mode" 2
+    return $et_parallel_mode
 }

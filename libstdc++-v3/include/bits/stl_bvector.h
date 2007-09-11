@@ -62,7 +62,7 @@
 #ifndef _STL_BVECTOR_H
 #define _STL_BVECTOR_H 1
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   typedef unsigned long _Bit_type;
   enum { _S_word_bit = int(__CHAR_BIT__ * sizeof(_Bit_type)) };
@@ -432,7 +432,7 @@ _GLIBCXX_END_NESTED_NAMESPACE
 // Declare a partial specialization of vector<T, Alloc>.
 #include <bits/stl_vector.h>
 
-_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD)
+_GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 
   /**
    *  @brief  A specialization of vector for booleans which offers fixed time

@@ -66,4 +66,8 @@
 #include <bits/stl_algobase.h>
 #include <bits/stl_algo.h>
 
+#ifdef _GLIBCXX_PARALLEL
+# include <parallel/algorithm>
+#endif
+
 #endif /* _GLIBCXX_ALGORITHM */
