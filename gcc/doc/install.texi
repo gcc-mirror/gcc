@@ -1062,6 +1062,19 @@ systems that support conditional traps).
 Division by zero checks use the break instruction.
 @end table
 
+@c If you make --with-llsc the default for additional targets,
+@c update the --with-llsc description in the MIPS section below.
+
+@item --with-llsc
+On MIPS targets, make @option{-mllsc} the default when no
+@option{-mno-lsc} option is passed.  This is the default for
+Linux-based targets, as the kernel will emulate them if the ISA does
+not provide them.
+
+@item --without-llsc
+On MIPS targets, make @option{-mno-llsc} the default when no
+@option{-mllsc} option is passed.
+
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.
@@ -3609,6 +3622,20 @@ make @samp{mips*-*-*} use the generic implementation instead.  You can also
 configure for @samp{mipsel-elf} as a workaround.  The
 @samp{mips*-*-linux*} target continues to use the MIPS II routines.  More
 work on this is expected in future releases.
+
+@c If you make --with-llsc the default for another target, please also
+@c update the description of the --with-llsc option.
+
+The built-in @code{__sync_*} functions are available on MIPS II and
+later systems and others that support the @samp{ll}, @samp{sc} and
+@samp{sync} instructions.  This can be overridden by passing
+@option{--with-llsc} or @option{--without-llsc} when configuring GCC.
+Since the Linux kernel emulates these instructions if they are
+missing, the default for @samp{mips*-*-linux*} targets is
+@option{--with-llsc}.  The @option{--with-llsc} and
+@option{--without-llsc} configure options may be overridden at compile
+time by passing the @option{-mllsc} or @option{-mno-llsc} options to
+the compiler.
 
 MIPS systems check for division by zero (unless
 @option{-mno-check-zero-division} is passed to the compiler) by

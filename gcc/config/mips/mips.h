@@ -121,6 +121,14 @@ enum mips_code_readable_setting {
   CODE_READABLE_YES
 };
 
+
+/* Enumerates the setting of the -mllsc option.  */
+enum mips_llsc_setting {
+  LLSC_DEFAULT,
+  LLSC_NO,
+  LLSC_YES
+};
+
 #ifndef USED_FOR_TARGET
 extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
 extern const char *current_function_file; /* filename current function is in */
@@ -145,6 +153,7 @@ extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
 extern const struct mips_rtx_cost_data *mips_cost;
 extern enum mips_code_readable_setting mips_code_readable;
+extern enum mips_llsc_setting mips_llsc;
 #endif
 
 /* Macros to silence warnings about numbers being signed in traditional
@@ -688,7 +697,8 @@ extern enum mips_code_readable_setting mips_code_readable;
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }, \
-  {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }
+  {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }, \
+  {"llsc", "%{!mllsc:%{!mno-llsc:-m%(VALUE)}}" }
 
 
 #define GENERATE_DIVIDE_TRAPS (TARGET_DIVIDE_TRAPS \
@@ -893,11 +903,15 @@ extern enum mips_code_readable_setting mips_code_readable;
 
 /* ISA includes sync.  */
 #define ISA_HAS_SYNC ((mips_isa >= 2 || TARGET_MIPS3900) && !TARGET_MIPS16)
+#define GENERATE_SYNC (mips_llsc == LLSC_YES \
+		       || (mips_llsc == LLSC_DEFAULT && ISA_HAS_SYNC))
 
 /* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
    because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
    instructions.  */
 #define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS16)
+#define GENERATE_LL_SC (mips_llsc == LLSC_YES \
+			|| (mips_llsc == LLSC_DEFAULT && ISA_HAS_LL_SC))
 
 /* Add -G xx support.  */
 
@@ -2913,11 +2927,12 @@ while (0)
    and OP is the instruction that should be used to load %3 into a
    register.  */
 #define MIPS_COMPARE_AND_SWAP(SUFFIX, OP)	\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\tbne\t%0,%2,2f\n"				\
   "\t" OP "\t%@,%3\n"				\
-  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%1"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
   "2:%]%>%)"
@@ -2929,10 +2944,11 @@ while (0)
    SUFFIX is the suffix that should be added to "ll" and "sc"
    instructions.  */
 #define MIPS_SYNC_OP(SUFFIX, INSN)		\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%@,%0\n"			\
   "\t" INSN "\t%@,%@,%1\n"			\
-  "\tsc" SUFFIX "\t%@,%0\n"			\
+  "\tsc" SUFFIX "\t%@,%0"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop%]%>%)"
 
@@ -2945,10 +2961,11 @@ while (0)
    SUFFIX is the suffix that should be added to "ll" and "sc"
    instructions.  */
 #define MIPS_SYNC_OLD_OP(SUFFIX, INSN)		\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" INSN "\t%@,%0,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%1"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop%]%>%)"
 
@@ -2961,10 +2978,11 @@ while (0)
    SUFFIX is the suffix that should be added to "ll" and "sc"
    instructions.  */
 #define MIPS_SYNC_NEW_OP(SUFFIX, INSN)		\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" INSN "\t%@,%0,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%1"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\t" INSN "\t%0,%0,%2%]%>%)"
 
@@ -2976,11 +2994,12 @@ while (0)
    instructions.  INSN is the and instruction needed to and a register
    with %2.  */
 #define MIPS_SYNC_NAND(SUFFIX, INSN)		\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%@,%0\n"			\
   "\tnor\t%@,%@,%.\n"				\
   "\t" INSN "\t%@,%@,%1\n"			\
-  "\tsc" SUFFIX "\t%@,%0\n"			\
+  "\tsc" SUFFIX "\t%@,%0"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop%]%>%)"
 
@@ -2994,11 +3013,12 @@ while (0)
    instructions.  INSN is the and instruction needed to and a register
    with %2.  */
 #define MIPS_SYNC_OLD_NAND(SUFFIX, INSN)	\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\tnor\t%@,%0,%.\n"				\
   "\t" INSN "\t%@,%@,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%1"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop%]%>%)"
 
@@ -3012,11 +3032,12 @@ while (0)
    instructions.  INSN is the and instruction needed to and a register
    with %2.  */
 #define MIPS_SYNC_NEW_NAND(SUFFIX, INSN)	\
-  "%(%<%[sync\n"				\
+  "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\tnor\t%0,%0,%.\n"				\
   "\t" INSN "\t%@,%0,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1\n"			\
+  "\tsc" SUFFIX "\t%@,%1"			\
+  "%-\n"					\
   "\tbeq\t%@,%.,1b\n"				\
   "\t" INSN "\t%0,%0,%2%]%>%)"
 
@@ -3030,11 +3051,11 @@ while (0)
    instructions.  OP is the and instruction that should be used to
    load %2 into a register.  */
 #define MIPS_SYNC_EXCHANGE(SUFFIX, OP)		\
-  "%(%<%[\n"					\
+  "%(%<%[%|\n"					\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" OP "\t%@,%2\n"				\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
-  "\tsync%]%>%)"
+  "\tsync%-%]%>%)"
 

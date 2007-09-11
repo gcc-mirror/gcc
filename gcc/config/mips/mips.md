@@ -4285,8 +4285,8 @@
 
 (define_insn "sync"
   [(unspec_volatile [(const_int 0)] UNSPEC_SYNC)]
-  "ISA_HAS_SYNC"
-  "sync")
+  "GENERATE_SYNC"
+  "%|sync%-")
 
 (define_insn "synci"
   [(unspec_volatile [(match_operand 0 "pmode_register_operand" "d")]
@@ -4323,8 +4323,8 @@
 (define_insn "memory_barrier"
   [(set (mem:BLK (scratch))
         (unspec:BLK [(const_int 0)] UNSPEC_MEMORY_BARRIER))]
-  "ISA_HAS_SYNC"
-  "sync")
+  "GENERATE_SYNC"
+  "%|sync%-")
 
 (define_insn "sync_compare_and_swap<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d,d")
@@ -4333,7 +4333,7 @@
 	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "d,d")
 			      (match_operand:GPR 3 "arith_operand" "I,d")]
 	 UNSPEC_COMPARE_AND_SWAP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_COMPARE_AND_SWAP ("<d>", "li");
@@ -4348,7 +4348,7 @@
           [(plus:GPR (match_dup 0)
 			      (match_operand:GPR 1 "arith_operand" "I,d"))]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_OP ("<d>", "<d>addiu");	
@@ -4363,7 +4363,7 @@
           [(minus:GPR (match_dup 0)
 			      (match_operand:GPR 1 "register_operand" "d"))]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
     return MIPS_SYNC_OP ("<d>", "<d>subu");	
 }
@@ -4377,7 +4377,7 @@
           [(plus:GPR (match_dup 1)
 		     (match_operand:GPR 2 "arith_operand" "I,d"))]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_OLD_OP ("<d>", "<d>addiu");	
@@ -4394,7 +4394,7 @@
           [(minus:GPR (match_dup 1)
 		      (match_operand:GPR 2 "register_operand" "d"))]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   return MIPS_SYNC_OLD_OP ("<d>", "<d>subu");	
 }
@@ -4408,7 +4408,7 @@
 	(unspec_volatile:GPR
 	  [(plus:GPR (match_dup 1) (match_dup 2))]
 	 UNSPEC_SYNC_NEW_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_NEW_OP ("<d>", "<d>addiu");	
@@ -4425,7 +4425,7 @@
 	(unspec_volatile:GPR
 	  [(minus:GPR (match_dup 1) (match_dup 2))]
 	 UNSPEC_SYNC_NEW_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   return MIPS_SYNC_NEW_OP ("<d>", "<d>subu");	
 }
@@ -4437,7 +4437,7 @@
           [(fetchop_bit:GPR (match_operand:GPR 1 "uns_arith_operand" "K,d")
 			      (match_dup 0))]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_OP ("<d>", "<immediate_insn>");	
@@ -4454,7 +4454,7 @@
           [(fetchop_bit:GPR (match_operand:GPR 2 "uns_arith_operand" "K,d")
 			    (match_dup 1))]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_OLD_OP ("<d>", "<immediate_insn>");	
@@ -4471,7 +4471,7 @@
           [(fetchop_bit:GPR (match_operand:GPR 2 "uns_arith_operand" "K,d")
 			    (match_dup 1))]
 	 UNSPEC_SYNC_NEW_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_NEW_OP ("<d>", "<immediate_insn>");	
@@ -4484,7 +4484,7 @@
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")
 	(unspec_volatile:GPR [(match_operand:GPR 1 "uns_arith_operand" "K,d")]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_NAND ("<d>", "andi");	
@@ -4499,7 +4499,7 @@
    (set (match_dup 1)
         (unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
 	 UNSPEC_SYNC_OLD_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_OLD_NAND ("<d>", "andi");	
@@ -4514,7 +4514,7 @@
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
 	 UNSPEC_SYNC_NEW_OP))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_NEW_NAND ("<d>", "andi");	
@@ -4529,7 +4529,7 @@
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]
 	 UNSPEC_SYNC_EXCHANGE))]
-  "ISA_HAS_LL_SC"
+  "GENERATE_LL_SC"
 {
   if (which_alternative == 0)
     return MIPS_SYNC_EXCHANGE ("<d>", "li");

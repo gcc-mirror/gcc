@@ -636,6 +636,9 @@ static GTY(()) int mips16_flipper;
 /* The -mtext-loads setting.  */
 enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
 
+/* The -mllsc setting.  */
+enum mips_llsc_setting mips_llsc = LLSC_DEFAULT;
+
 /* The architecture selected by -mipsN.  */
 static const struct mips_cpu_info *mips_isa_info;
 
@@ -5711,7 +5714,7 @@ mips_set_current_function (tree fndecl ATTRIBUTE_UNUSED)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+mips_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
@@ -5751,6 +5754,10 @@ mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 	mips_code_readable = CODE_READABLE_NO;
       else
 	return false;
+      return true;
+
+    case OPT_mllsc:
+      mips_llsc = value ? LLSC_YES : LLSC_NO;
       return true;
 
     default:
@@ -6015,6 +6022,8 @@ override_options (void)
   mips_print_operand_punct['$'] = 1;
   mips_print_operand_punct['+'] = 1;
   mips_print_operand_punct['~'] = 1;
+  mips_print_operand_punct['|'] = 1;
+  mips_print_operand_punct['-'] = 1;
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
@@ -6377,7 +6386,10 @@ mips_strip_unspec_address (rtx op)
    '^'	Print the name of the pic call-through register (t9 or $25).
    '$'	Print the name of the stack pointer register (sp or $29).
    '+'	Print the name of the gp register (usually gp or $28).
-   '~'	Output a branch alignment to LABEL_ALIGN(NULL).  */
+   '~'	Output a branch alignment to LABEL_ALIGN(NULL).
+   '|'  Print .set push; .set mips2 if mips_llsc == LLSC_YES
+        && !ISA_HAS_LL_SC.
+   '-'  Print .set pop under the same conditions for '|'.  */
 
 void
 print_operand (FILE *file, rtx op, int letter)
@@ -6505,6 +6517,16 @@ print_operand (FILE *file, rtx op, int letter)
 	    if (align_labels_log > 0)
 	      ASM_OUTPUT_ALIGN (file, align_labels_log);
 	  }
+	  break;
+
+	case '|':
+	  if (!ISA_HAS_LL_SC)
+	    fputs (".set\tpush\n\t.set\tmips2\n\t", file);
+	  break;
+
+	case '-':
+	  if (!ISA_HAS_LL_SC)
+	    fputs ("\n\t.set\tpop", file);
 	  break;
 
 	default:

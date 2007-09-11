@@ -1,3 +1,33 @@
+2007-09-11  David Daney  <ddaney@avtrex.com>
+
+	* doc/invoke.texi: Document new MIPS -mllsc and -mno-llsc options.
+	* doc/install.texi: Document new --with-llsc and --without-llsc
+	options.
+	* config.gcc: Handle --with-llsc and --without-llsc configure options.
+	* config/mips/mips.md (sync, memory_barrier): Wrap sync instrunction
+	in %| and %- operand codes.  Depend on GENERATE_SYNC instead of
+	ISA_HAS_SYNC.
+	(sync_compare_and_swap<mode>, sync_add<mode>, sync_sub<mode>,
+	sync_old_add<mode>, sync_old_sub<mode>, sync_new_add<mode>,
+	sync_new_sub<mode>, sync_<optab><mode>, sync_old_<optab><mode>,
+	sync_new_<optab><mode>, sync_nand<mode>, sync_old_nand<mode>,
+	sync_new_nand<mode>, sync_lock_test_and_set<mode>): Depend on
+	GENERATE_LL_SC instead of ISA_HAS_LL_SC.
+	* config/mips/mips.opt (mllsc): New option.
+	* config/mips/mips.c (mips_llsc): Define variable.
+	(mips_handle_option): Handle mllsc option.
+	(override_options): Set mips_print_operand_punct for '|' and '-'.
+	(print_operand): Add new %| and %- operand codes.
+	* config/mips/mips.h (mips_llsc_setting): New enum type.
+	(mips_llsc): Declare.
+	(OPTION_DEFAULT_SPECS): Add llsc handling.
+	(GENERATE_SYNC): New macro.
+	(GENERATE_LL_SC): New macro.
+	(MIPS_COMPARE_AND_SWAP, MIPS_SYNC_OP, MIPS_SYNC_OLD_OP,
+	MIPS_SYNC_NEW_OP, MIPS_SYNC_NAND, MIPS_SYNC_OLD_NAND,
+	MIPS_SYNC_NEW_NAND, MIPS_SYNC_EXCHANGE): Wrap instructions
+	in %| and %- operand codes.
+
 2007-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-structalias.c (push_fields_onto_fieldstack): Deal with
