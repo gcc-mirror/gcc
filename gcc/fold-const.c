@@ -6273,7 +6273,8 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
-		  && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR)))
+		  && code != FLOOR_MOD_EXPR && code != ROUND_MOD_EXPR
+		  && code != MULT_EXPR)))
 	{
 	  if (integer_zerop (const_binop (TRUNC_MOD_EXPR, op1, c, 0)))
 	    {
