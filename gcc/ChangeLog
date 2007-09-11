@@ -1,3 +1,27 @@
+2007-09-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/dfp-bit.c (dfp_unary_func): Delete.
+	(dfp_unary_op): Delete.
+	(dfp_binary_op): Use decFloat functions instead of decNumber
+	functions for binary operations.
+	(d32_binary_op): Convert 32-bit operands to 64 bits for evaluation.
+	(dnn_binary_op): Call dfp_binary_op with decFloat rather than
+	DFP_C_TYPE.
+	(dfp_compare_op): Use decFloat functions insteadof decNumber
+	functions for comparisons.
+	(d32_compare_op): Convert 32-bit operands to 64 bits for evaluation.
+	(dnn_binary_op): Call dfp_compare_op with decFloat rather than
+	DFP_C_TYPE.
+	(DFP_ADD, DFP_SUB, DFP_MULTIPLE, DFP_DIVIDE): Use macros for
+	call to dxx_binary_op and decFloat function.
+	(DFP_EQ, DFP_NE, DFP_LT, DFP_GT, DFP_LE, DFP_GE): Use macros for
+	calls to dxx_binary_op and decFloat function.
+	* config/dfp-bit.h: Include decFloat header files.
+	(decFloat, DFP_BINARY_OP, DFP_COMPARE_OP, DEC_FLOAT_ADD,
+	DEC_FLOAT_SUBTRACT, DEC_FLOAT_MULTIPLY, DEC_FLOAT_DIVIDE,
+	DEC_FLOAT_COMPARE, DEC_FLOAT_IS_ZERO, DEC_FLOAT_IS_NAN,
+	DEC_FLOAT_IS_SIGNED: Define for each of 3 operand widths.
+
 2007-09-10  Harsha Jagasia <harsha.jagasia@amd.com>
             Jan Sjodin <jan.sjodin@amd.com>
 	

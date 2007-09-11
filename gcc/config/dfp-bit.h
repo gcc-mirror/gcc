@@ -277,12 +277,15 @@ extern float strtof (const char *, char **);
 
 #if WIDTH == 128 || WIDTH_TO == 128
 #include "decimal128.h"
+#include "decQuad.h"
 #endif
 #if WIDTH == 64 || WIDTH_TO == 64
 #include "decimal64.h"
+#include "decDouble.h"
 #endif
 #if WIDTH == 32 || WIDTH_TO == 32
 #include "decimal32.h"
+#include "decSingle.h"
 #endif
 #include "decNumber.h"
 
@@ -330,6 +333,46 @@ extern float strtof (const char *, char **);
 #define DFP_LE		DPD_BID_NAME(__dpd_letd2,__bid_letd2)
 #define DFP_GE		DPD_BID_NAME(__dpd_getd2,__bid_getd2)
 #define DFP_UNORD	DPD_BID_NAME(__dpd_unordtd2,__bid_unordtd2)
+#endif
+
+/* Names of decNumber functions for DPD arithmetic.  */
+
+#if WIDTH == 32
+#define decFloat		decDouble
+#define DFP_BINARY_OP		d32_binary_op
+#define DFP_COMPARE_OP		d32_compare_op
+#define DEC_FLOAT_ADD		decDoubleAdd
+#define DEC_FLOAT_SUBTRACT	decDoubleSubtract
+#define DEC_FLOAT_MULTIPLY	decDoubleMultiply
+#define DEC_FLOAT_DIVIDE	decDoubleDivide
+#define DEC_FLOAT_COMPARE	decDoubleCompare
+#define DEC_FLOAT_IS_ZERO	decDoubleIsZero
+#define DEC_FLOAT_IS_NAN	decDoubleIsNaN
+#define DEC_FLOAT_IS_SIGNED	decDoubleIsSigned
+#elif WIDTH == 64
+#define DFP_BINARY_OP		dnn_binary_op
+#define DFP_COMPARE_OP		dnn_compare_op
+#define decFloat		decDouble
+#define DEC_FLOAT_ADD		decDoubleAdd
+#define DEC_FLOAT_SUBTRACT	decDoubleSubtract
+#define DEC_FLOAT_MULTIPLY	decDoubleMultiply
+#define DEC_FLOAT_DIVIDE	decDoubleDivide
+#define DEC_FLOAT_COMPARE	decDoubleCompare
+#define DEC_FLOAT_IS_ZERO	decDoubleIsZero
+#define DEC_FLOAT_IS_NAN	decDoubleIsNaN
+#define DEC_FLOAT_IS_SIGNED	decDoubleIsSigned
+#elif WIDTH == 128
+#define DFP_BINARY_OP		dnn_binary_op
+#define DFP_COMPARE_OP		dnn_compare_op
+#define decFloat		decQuad
+#define DEC_FLOAT_ADD		decQuadAdd
+#define DEC_FLOAT_SUBTRACT	decQuadSubtract
+#define DEC_FLOAT_MULTIPLY	decQuadMultiply
+#define DEC_FLOAT_DIVIDE	decQuadDivide
+#define DEC_FLOAT_COMPARE	decQuadCompare
+#define DEC_FLOAT_IS_ZERO	decQuadIsZero
+#define DEC_FLOAT_IS_NAN	decQuadIsNaN
+#define DEC_FLOAT_IS_SIGNED	decQuadIsSigned
 #endif
 
 /* Names of functions to convert between different decimal float types.  */

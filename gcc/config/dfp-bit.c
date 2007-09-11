@@ -63,73 +63,25 @@ void __host_to_ieee_128 (_Decimal128 in, decimal128 *out);
 void __ieee_to_host_128 (decimal128 in, _Decimal128 *out);
 #endif
 
-/* A pointer to a unary decNumber operation.  */
-typedef decNumber* (*dfp_unary_func)
-     (decNumber *, decNumber *, decContext *);
-
-/* A pointer to a binary decNumber operation.  */
-typedef decNumber* (*dfp_binary_func)
-     (decNumber *, const decNumber *, const decNumber *, decContext *);
+/* A pointer to a binary decFloat operation.  */
+typedef decFloat* (*dfp_binary_func)
+     (decFloat *, const decFloat *, const decFloat *, decContext *);
 
-/* Unary operations.  */
-
-static inline DFP_C_TYPE
-dfp_unary_op (dfp_unary_func op, DFP_C_TYPE arg)
-{
-  DFP_C_TYPE result;
-  decContext context;
-  decNumber arg1, res;
-  IEEE_TYPE a, encoded_result;
-
-  HOST_TO_IEEE (arg, &a);
-
-  decContextDefault (&context, CONTEXT_INIT);
-  DFP_INIT_ROUNDMODE (context.round);
-
-  TO_INTERNAL (&a, &arg1);
-
-  /* Perform the operation.  */
-  op (&res, &arg1, &context);
-
-  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
-    {
-      /* decNumber exception flags we care about here.  */
-      int ieee_flags;
-      int dec_flags = DEC_IEEE_854_Division_by_zero | DEC_IEEE_854_Inexact
-		      | DEC_IEEE_854_Invalid_operation | DEC_IEEE_854_Overflow
-		      | DEC_IEEE_854_Underflow;
-      dec_flags &= context.status;
-      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
-      if (ieee_flags != 0)
-        DFP_HANDLE_EXCEPTIONS (ieee_flags);
-    }
-
-  TO_ENCODED (&encoded_result, &res, &context);
-  IEEE_TO_HOST (encoded_result, &result);
-  return result;
-}
-
 /* Binary operations.  */
 
-static inline DFP_C_TYPE
-dfp_binary_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
+/* Use a decFloat (decDouble or decQuad) function to perform a DFP
+   binary operation.  */
+static inline decFloat
+dfp_binary_op (dfp_binary_func op, decFloat arg_a, decFloat arg_b)
 {
-  DFP_C_TYPE result;
+  decFloat result;
   decContext context;
-  decNumber arg1, arg2, res;
-  IEEE_TYPE a, b, encoded_result;
-
-  HOST_TO_IEEE (arg_a, &a);
-  HOST_TO_IEEE (arg_b, &b);
 
   decContextDefault (&context, CONTEXT_INIT);
   DFP_INIT_ROUNDMODE (context.round);
 
-  TO_INTERNAL (&a, &arg1);
-  TO_INTERNAL (&b, &arg2);
-
   /* Perform the operation.  */
-  op (&res, &arg1, &arg2, &context);
+  op (&result, &arg_a, &arg_b, &context);
 
   if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
     {
@@ -144,45 +96,116 @@ dfp_binary_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
         DFP_HANDLE_EXCEPTIONS (ieee_flags);
     }
 
-  TO_ENCODED (&encoded_result, &res, &context);
-  IEEE_TO_HOST (encoded_result, &result);
   return result;
 }
+
+#if WIDTH == 32
+/* The decNumber package doesn't provide arithmetic for decSingle (32 bits);
+   convert to decDouble, use the operation for that, and convert back.  */
+static inline _Decimal32
+d32_binary_op (dfp_binary_func op, _Decimal32 arg_a, _Decimal32 arg_b)
+{
+  union { _Decimal32 c; decSingle f; } a32, b32, res32;
+  decDouble a, b, res;
+  decContext context;
+
+  /* Widen the operands and perform the operation.  */
+  a32.c = arg_a;
+  b32.c = arg_b;
+  decSingleToWider (&a32.f, &a);
+  decSingleToWider (&b32.f, &b);
+  res = dfp_binary_op (op, a, b);
+
+  /* Narrow the result, which might result in an underflow or overflow.  */
+  decContextDefault (&context, CONTEXT_INIT);
+  DFP_INIT_ROUNDMODE (context.round);
+  decSingleFromWider (&res32.f, &res, &context);
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    {
+      /* decNumber exception flags we care about here.  */
+      int ieee_flags;
+      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Overflow
+		      | DEC_IEEE_854_Underflow;
+      dec_flags &= context.status;
+      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+      if (ieee_flags != 0)
+        DFP_HANDLE_EXCEPTIONS (ieee_flags);
+    }
+
+  return res32.c;
+}
+#else
+/* decFloat operations are supported for decDouble (64 bits) and
+   decQuad (128 bits).  The bit patterns for the types are the same.  */
+static inline DFP_C_TYPE
+dnn_binary_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
+{
+  union { DFP_C_TYPE c; decFloat f; } a, b, result;
+
+  a.c = arg_a;
+  b.c = arg_b;
+  result.f = dfp_binary_op (op, a.f, b.f);
+  return result.c;
+}
+#endif
 
 /* Comparison operations.  */
 
-static inline int
-dfp_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
+/* Use a decFloat (decDouble or decQuad) function to perform a DFP
+   comparison.  */
+static inline CMPtype
+dfp_compare_op (dfp_binary_func op, decFloat arg_a, decFloat arg_b)
 {
-  IEEE_TYPE a, b;
   decContext context;
-  decNumber arg1, arg2, res;
+  decFloat res;
   int result;
-
-  HOST_TO_IEEE (arg_a, &a);
-  HOST_TO_IEEE (arg_b, &b);
 
   decContextDefault (&context, CONTEXT_INIT);
   DFP_INIT_ROUNDMODE (context.round);
 
-  TO_INTERNAL (&a, &arg1);
-  TO_INTERNAL (&b, &arg2);
-
   /* Perform the comparison.  */
-  op (&res, &arg1, &arg2, &context);
+  op (&res, &arg_a, &arg_b, &context);
 
-  if (decNumberIsNegative (&res))
+  if (DEC_FLOAT_IS_SIGNED (&res))
     result = -1;
-  else if (decNumberIsZero (&res))
+  else if (DEC_FLOAT_IS_ZERO (&res))
     result = 0;
-  else if (decNumberIsNaN (&res))
+  else if (DEC_FLOAT_IS_NAN (&res))
     result = -2;
   else
     result = 1;
 
-  return result;
+  return (CMPtype) result;
 }
 
+#if WIDTH == 32
+/* The decNumber package doesn't provide comparisons for decSingle (32 bits);
+   convert to decDouble, use the operation for that, and convert back.  */
+static inline CMPtype
+d32_compare_op (dfp_binary_func op, _Decimal32 arg_a, _Decimal32 arg_b)
+{
+  union { _Decimal32 c; decSingle f; } a32, b32;
+  decDouble a, b;
+
+  a32.c = arg_a;
+  b32.c = arg_b;
+  decSingleToWider (&a32.f, &a);
+  decSingleToWider (&b32.f, &b);
+  return dfp_compare_op (op, a, b);  
+}
+#else
+/* decFloat comparisons are supported for decDouble (64 bits) and
+   decQuad (128 bits).  The bit patterns for the types are the same.  */
+static inline CMPtype
+dnn_compare_op (dfp_binary_func op, DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
+{
+  union { DFP_C_TYPE c; decFloat f; } a, b;
+
+  a.c = arg_a;
+  b.c = arg_b;
+  return dfp_compare_op (op, a.f, b.f);  
+}
+#endif
 
 #if defined(L_conv_sd)
 void
@@ -230,13 +253,13 @@ __ieee_to_host_128 (decimal128 in, _Decimal128 *out)
 DFP_C_TYPE
 DFP_ADD (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
-  return dfp_binary_op (decNumberAdd, arg_a, arg_b);
+  return DFP_BINARY_OP (DEC_FLOAT_ADD, arg_a, arg_b);
 }
 
 DFP_C_TYPE
 DFP_SUB (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
-  return dfp_binary_op (decNumberSubtract, arg_a, arg_b);
+  return DFP_BINARY_OP (DEC_FLOAT_SUBTRACT, arg_a, arg_b);
 }
 #endif /* L_addsub */
 
@@ -244,7 +267,7 @@ DFP_SUB (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 DFP_C_TYPE
 DFP_MULTIPLY (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
-  return dfp_binary_op (decNumberMultiply, arg_a, arg_b);
+  return DFP_BINARY_OP (DEC_FLOAT_MULTIPLY, arg_a, arg_b);
 }
 #endif /* L_mul */
 
@@ -252,7 +275,7 @@ DFP_MULTIPLY (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 DFP_C_TYPE
 DFP_DIVIDE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
-  return dfp_binary_op (decNumberDivide, arg_a, arg_b);
+  return DFP_BINARY_OP (DEC_FLOAT_DIVIDE, arg_a, arg_b);
 }
 #endif /* L_div */
 
@@ -260,8 +283,8 @@ DFP_DIVIDE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 CMPtype
 DFP_EQ (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
-  int stat;
-  stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
+  CMPtype stat;
+  stat = DFP_COMPARE_OP (DEC_FLOAT_COMPARE, arg_a, arg_b);
   /* For EQ return zero for true, nonzero for false.  */
   return stat != 0;
 }
@@ -272,7 +295,7 @@ CMPtype
 DFP_NE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
   int stat;
-  stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
+  stat = DFP_COMPARE_OP (DEC_FLOAT_COMPARE, arg_a, arg_b);
   /* For NE return zero for true, nonzero for false.  */
   if (__builtin_expect (stat == -2, 0))  /* An operand is NaN.  */
     return 1;
@@ -285,7 +308,7 @@ CMPtype
 DFP_LT (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
   int stat;
-  stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
+  stat = DFP_COMPARE_OP (DEC_FLOAT_COMPARE, arg_a, arg_b);
   /* For LT return -1 (<0) for true, 1 for false.  */
   return (stat == -1) ? -1 : 1;
 }
@@ -296,7 +319,7 @@ CMPtype
 DFP_GT (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
   int stat;
-  stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
+  stat = DFP_COMPARE_OP (DEC_FLOAT_COMPARE, arg_a, arg_b);
   /* For GT return 1 (>0) for true, -1 for false.  */
   return (stat == 1) ? 1 : -1;
 }
@@ -307,7 +330,7 @@ CMPtype
 DFP_LE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
   int stat;
-  stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
+  stat = DFP_COMPARE_OP (DEC_FLOAT_COMPARE, arg_a, arg_b);
   /* For LE return 0 (<= 0) for true, 1 for false.  */
   if (__builtin_expect (stat == -2, 0))  /* An operand is NaN.  */
     return 1;
@@ -320,7 +343,7 @@ CMPtype
 DFP_GE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 {
   int stat;
-  stat = dfp_compare_op (decNumberCompare, arg_a, arg_b);
+  stat = DFP_COMPARE_OP (DEC_FLOAT_COMPARE, arg_a, arg_b);
   /* For GE return 1 (>=0) for true, -1 for false.  */
   if (__builtin_expect (stat == -2, 0))  /* An operand is NaN.  */
     return -1;
