@@ -7,7 +7,7 @@
 	(CLASS_LIKELY_SPILLED_P): P0REGS is likely_spilled.
 	* doc/md.texi (Blackfin family): Document 'q' constraints.
 
-2007-09-11  Steve Kenton  <skenton@ou.edu
+2007-09-11  Steve Kenton  <skenton@ou.edu>
 
 	* pa/linux-unwind.h: Guard with inhibit_libc.
 	* pa/hpux-unwind.h: Likewise.
