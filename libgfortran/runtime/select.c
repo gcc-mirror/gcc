@@ -53,7 +53,7 @@ select_string (select_struct *table, int table_len, const char *selector,
 {
   select_struct *t;
   int i, low, high, mid;
-  int default_jump;
+  int default_jump = -1;
 
   if (table_len == 0)
     return -1;
