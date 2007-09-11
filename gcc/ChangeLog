@@ -1,3 +1,8 @@
+2007-09-11  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/27945
+	* stor-layout.c (layout_decl): Do pack variable size fields.	
+
 2007-09-11  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/predicates.md (movsi_const0_operand,

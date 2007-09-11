@@ -414,18 +414,11 @@ layout_decl (tree decl, unsigned int known_align)
       else
 	do_type_align (type, decl);
 
-      /* If the field is of variable size, we can't misalign it since we
-	 have no way to make a temporary to align the result.  But this
-	 isn't an issue if the decl is not addressable.  Likewise if it
-	 is of unknown size.
-
-	 Note that do_type_align may set DECL_USER_ALIGN, so we need to
-	 check old_user_align instead.  */
+      /* If the field is packed and not explicitly aligned, give it the
+	 minimum alignment.  Note that do_type_align may set
+	 DECL_USER_ALIGN, so we need to check old_user_align instead.  */
       if (packed_p
-	  && !old_user_align
-	  && (DECL_NONADDRESSABLE_P (decl)
-	      || DECL_SIZE_UNIT (decl) == 0
-	      || TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST))
+	  && !old_user_align)
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
 
       if (! packed_p && ! DECL_USER_ALIGN (decl))
