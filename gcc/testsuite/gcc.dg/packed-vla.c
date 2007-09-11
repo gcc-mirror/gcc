@@ -1,3 +1,4 @@
+/* PR middle-end/27945 */
 /* { dg-do run } */
 /* { dg-options "" } */
 
