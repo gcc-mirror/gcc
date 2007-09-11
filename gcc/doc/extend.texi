@@ -583,6 +583,41 @@ myprintf (FILE *f, const char *format, ...)
 @end smallexample
 @end deftypefn
 
+@deftypefn {Built-in Function} __builtin_va_arg_pack_len ()
+This built-in function returns the number of anonymous arguments of
+an inline function.  It can be used only in inline functions which
+will be always inlined, never compiled as a separate function, such
+as those using @code{__attribute__ ((__always_inline__))} or
+@code{__attribute__ ((__gnu_inline__))} extern inline functions.
+For example following will do link or runtime checking of open
+arguments for optimized code:
+@smallexample
+#ifdef __OPTIMIZE__
+extern inline __attribute__((__gnu_inline__)) int
+myopen (const char *path, int oflag, ...)
+@{
+  if (__builtin_va_arg_pack_len () > 1)
+    warn_open_too_many_arguments ();
+
+  if (__builtin_constant_p (oflag))
+    @{
+      if ((oflag & O_CREAT) != 0 && __builtin_va_arg_pack_len () < 1)
+        @{
+          warn_open_missing_mode ();
+          return __open_2 (path, oflag);
+        @}
+      return open (path, oflag, __builtin_va_arg_pack ());
+    @}
+    
+  if (__builtin_va_arg_pack_len () < 1)
+    return __open_2 (path, oflag);
+
+  return open (path, oflag, __builtin_va_arg_pack ());
+@}
+#endif
+@end smallexample
+@end deftypefn
+
 @node Typeof
 @section Referring to a Type with @code{typeof}
 @findex typeof

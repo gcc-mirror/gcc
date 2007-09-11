@@ -1,3 +1,8 @@
+2007-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/va-arg-pack-len-1.c: New test.
+	* g++.dg/va-arg-pack-len-1.C: New test.
+
 2007-09-11  Michael Matz  <matz@suse.de>
 
 	* gcc.dg/tree-ssa/loadpre11.c: Add -fno-tree-cselim to flags.

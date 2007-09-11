@@ -1,3 +1,13 @@
+2007-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_VA_ARG_PACK_LEN): New builtin.
+	* builtins.c (expand_builtin) <case BUILT_IN_VA_ARG_PACK_LEN>: Issue
+	error if __builtin_va_arg_pack_len () wasn't optimized out during
+	inlining.
+	* tree-inline.c (copy_bb): Replace __builtin_va_arg_pack_len ()
+	with the number of inline's anonymous arguments.
+	* doc/extend.texi: Document __builtin_va_arg_pack_len ().
+
 2007-09-11  Zdenek Dvorak  <ook@ucw.cz>
 
 	* fold-const.c (extract_muldiv_1): Do not simplify
