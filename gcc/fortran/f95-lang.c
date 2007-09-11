@@ -98,7 +98,6 @@ int global_bindings_p (void);
 void insert_block (tree);
 static void gfc_clear_binding_stack (void);
 static void gfc_be_parse_file (int);
-static void gfc_expand_function (tree);
 static alias_set_type gfc_get_alias_set (tree);
 
 #undef LANG_HOOKS_NAME
@@ -135,7 +134,6 @@ static alias_set_type gfc_get_alias_set (tree);
 #define LANG_HOOKS_MARK_ADDRESSABLE        gfc_mark_addressable
 #define LANG_HOOKS_TYPE_FOR_MODE           gfc_type_for_mode
 #define LANG_HOOKS_TYPE_FOR_SIZE           gfc_type_for_size
-#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gfc_expand_function
 #define LANG_HOOKS_CLEAR_BINDING_STACK     gfc_clear_binding_stack
 #define LANG_HOOKS_GET_ALIAS_SET	   gfc_get_alias_set
 #define LANG_HOOKS_OMP_PRIVATIZE_BY_REFERENCE	gfc_omp_privatize_by_reference
@@ -193,45 +191,6 @@ static GTY(()) struct binding_level *free_binding_level;
    for the reserved type names and storage classes.
    It is indexed by a RID_... value.  */
 tree *ridpointers = NULL;
-
-/* language-specific flags.  */
-
-static void
-gfc_expand_function (tree fndecl)
-{
-  tree t;
-
-  if (DECL_INITIAL (fndecl)
-      && BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl)))
-    {
-      /* Local static equivalenced variables are never seen by
-	 check_global_declarations, so we need to output debug
-	 info by hand.  */
-
-      t = BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl));
-      for (t = BLOCK_VARS (t); t; t = TREE_CHAIN (t))
-	if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t)
-	    && TREE_STATIC (t))
-	  {
-	    tree expr = DECL_VALUE_EXPR (t);
-
-	    if (TREE_CODE (expr) == COMPONENT_REF
-		&& TREE_CODE (TREE_OPERAND (expr, 0)) == VAR_DECL
-		&& TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
-		   == UNION_TYPE
-		&& varpool_node (TREE_OPERAND (expr, 0))->needed
-		&& errorcount == 0 && sorrycount == 0)
-	      {
-		timevar_push (TV_SYMOUT);
-		(*debug_hooks->global_decl) (t);
-		timevar_pop (TV_SYMOUT);
-	      }
-	  }
-    }
-
-  tree_rest_of_compilation (fndecl);
-}
-
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for an `if' or `while' statement or ?..: exp.

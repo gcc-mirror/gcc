@@ -1862,14 +1862,6 @@ finish_method (tree fndecl)
   cgraph_finalize_function (fndecl, false);
 }
 
-/* Optimize and expand a function's entire body.  */
-
-void
-java_expand_body (tree fndecl)
-{
-  tree_rest_of_compilation (fndecl);
-}
-
 /* We pessimistically marked all methods and fields external until we
    knew what set of classes we were planning to compile.  Now mark those
    associated with CLASS to be generated locally as not external.  */

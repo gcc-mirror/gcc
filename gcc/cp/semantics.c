@@ -54,7 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static tree maybe_convert_cond (tree);
 static tree simplify_aggr_init_exprs_r (tree *, int *, void *);
-static void emit_associated_thunks (tree);
 static tree finalize_nrv_r (tree *, int *, void *);
 
 
@@ -3094,7 +3093,7 @@ simplify_aggr_init_expr (tree *tp)
 
 /* Emit all thunks to FN that should be emitted when FN is emitted.  */
 
-static void
+void
 emit_associated_thunks (tree fn)
 {
   /* When we use vcall offsets, we emit thunks with the virtual
@@ -3124,22 +3123,6 @@ emit_associated_thunks (tree fn)
 	    gcc_assert (!DECL_THUNKS (thunk));
 	}
     }
-}
-
-/* Generate RTL for FN.  */
-
-void
-expand_body (tree fn)
-{
-  /* Emit any thunks that should be emitted at the same time as FN.  */
-  emit_associated_thunks (fn);
-
-  /* This function is only called from cgraph, or recursively from
-     emit_associated_thunks.  In neither case should we be currently
-     generating trees for a function.  */
-  gcc_assert (function_depth == 0);
-
-  c_expand_body (fn);
 }
 
 /* Generate RTL for FN.  */

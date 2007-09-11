@@ -100,7 +100,6 @@ static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
 static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
 					 rtx *);
-static void gnat_expand_body		(tree);
 static void internal_error_function	(const char *, va_list *);
 static void gnat_adjust_rli		(record_layout_info);
 static tree gnat_type_max_size		(const_tree);
@@ -149,8 +148,6 @@ static tree gnat_type_max_size		(const_tree);
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	gnat_printable_name
 #undef  LANG_HOOKS_DWARF_NAME
 #define LANG_HOOKS_DWARF_NAME		gnat_dwarf_name
-#undef  LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
-#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION gnat_expand_body
 #undef  LANG_HOOKS_GIMPLIFY_EXPR
 #define LANG_HOOKS_GIMPLIFY_EXPR	gnat_gimplify_expr
 #undef  LANG_HOOKS_TYPE_FOR_MODE
@@ -676,14 +673,6 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
     }
 
   return expand_expr_real (new, target, tmode, modifier, alt_rtl);
-}
-
-/* Generate the RTL for the body of GNU_DECL.  */
-
-static void
-gnat_expand_body (tree gnu_decl)
-{
-  tree_rest_of_compilation (gnu_decl);
 }
 
 /* Adjusts the RLI used to layout a record after all the fields have been

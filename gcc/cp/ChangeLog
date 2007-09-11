@@ -1,3 +1,13 @@
+2007-09-11  Jan Hubicka <jh@suse.cz>
+
+	* method.c (use_thunk): Use tree_rest_of_compilation
+	* cp-objecp-common.h (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
+	(LANG_HOOKS_CALLGRAPH_EMIT_ASSOCIATED_THUNKS): Define.
+	* cp-tree.h (expand_body): Kill.
+	(emit_associated_thunks): Declare.
+	* semantics.c (emit_associated_thunks): Export.
+	(expand_body): Kill.
+
 2007-09-09  David Daney  <ddaney@avtrex.com>
 
 	PR c++/33324

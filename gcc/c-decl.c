@@ -6799,7 +6799,7 @@ finish_function (void)
 	     This should be cleaned up later and this conditional removed.  */
 	  if (cgraph_global_info_ready)
 	    {
-	      c_expand_body (fndecl);
+	      cgraph_add_new_function (fndecl, false);
 	      return;
 	    }
 
