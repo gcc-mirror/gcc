@@ -1,5 +1,11 @@
 2007-09-11  Richard Sandiford  <richard@codesourcery.com>
 
+	* config/mips/mips.c (mips_set_mips16_mode): Use separate anchor
+	settings for MIPS16.
+	(mips_use_anchors_for_symbol_p): Use default_use_anchors_for_symbol_p.
+
+2007-09-11  Richard Sandiford  <richard@codesourcery.com>
+
 	* config/mips/mips.c (mips_symbol_insns_1): Allow LEAs of
 	SYMBOL_FORCE_TO_MEM constants.
 	(mips_rtx_costs): Give a cost of 1 to force_to_mem_operands.

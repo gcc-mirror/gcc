@@ -5655,6 +5655,14 @@ mips_set_mips16_mode (int mips16_p)
       /* Silently disable DSP extensions.  */
       target_flags &= ~MASK_DSP;
       target_flags &= ~MASK_DSPR2;
+
+      /* Experiments suggest we get the best overall results from using
+	 the range of an unextended lw or sw.  Code that makes heavy use
+	 of byte or short accesses can do better with ranges of 0...31
+	 and 0...63 respectively, but most code is sensitive to the range
+	 of lw and sw instead.  */
+      targetm.min_anchor_offset = 0;
+      targetm.max_anchor_offset = 127;
     }
   else 
     {
@@ -5676,6 +5684,9 @@ mips_set_mips16_mode (int mips16_p)
 	  if (align_functions == 0)
 	    align_functions = 8;
 	}
+
+      targetm.min_anchor_offset = TARGET_MIN_ANCHOR_OFFSET;
+      targetm.max_anchor_offset = TARGET_MAX_ANCHOR_OFFSET;
     }
 
   /* (Re)initialize mips target internals for new ISA.  */
@@ -8920,7 +8931,7 @@ mips_use_anchors_for_symbol_p (const_rtx symbol)
       return false;
 
     default:
-      return true;
+      return default_use_anchors_for_symbol_p (symbol);
     }
 }
 
