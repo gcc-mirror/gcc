@@ -1,3 +1,8 @@
+2007-09-11  Zdenek Dvorak  <ook@ucw.cz>
+
+	* fold-const.c (extract_muldiv_1): Do not simplify
+	var * c * c to var.
+
 2007-09-11  Jan Hubicka <jh@suse.cz>
 
 	* i386.h (ix86_tune_indices): Add X86_TUNE_INTER_UNIT_CONVERSIONS.
