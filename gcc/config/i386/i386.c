@@ -1376,6 +1376,9 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_INTER_UNIT_MOVES */
   ~(m_ATHLON_K8_AMDFAM10 | m_GENERIC),
 
+  /* X86_TUNE_INTER_UNIT_CONVERSIONS */
+  ~(m_AMDFAM10),
+
   /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
      than 4 branch instructions in the 16 byte window.  */
   m_PPRO | m_ATHLON_K8_AMDFAM10 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
