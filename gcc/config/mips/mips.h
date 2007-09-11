@@ -2389,11 +2389,6 @@ typedef struct mips_args {
 #define FUNCTION_MODE SImode
 
 
-/* The cost of loading values from the constant pool.  It should be
-   larger than the cost of any constant we want to synthesize in-line.  */
-
-#define CONSTANT_POOL_COST COSTS_N_INSNS (8)
-
 /* A C expression for the cost of moving data from a register in
    class FROM to one in class TO.  The classes are expressed using
    the enumeration values such as `GENERAL_REGS'.  A value of 2 is

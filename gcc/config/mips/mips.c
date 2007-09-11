@@ -2863,247 +2863,577 @@ mips_lwxs_address_p (rtx addr)
   return false;
 }
 
+/* The cost of loading values from the constant pool.  It should be
+   larger than the cost of any constant we want to synthesize inline.  */
+
+#define CONSTANT_POOL_COST COSTS_N_INSNS (TARGET_MIPS16 ? 4 : 8)
+
+/* Return the cost of X when used as an operand to the MIPS16 instruction
+   that implements CODE.  Return -1 if there is no such instruction, or if
+   X is not a valid immediate operand for it.  */
+
+static int
+mips16_constant_cost (int code, HOST_WIDE_INT x)
+{
+  switch (code)
+    {
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      /* Shifts by between 1 and 8 bits (inclusive) are unextended,
+	 other shifts are extended.  The shift patterns truncate the shift
+	 count to the right size, so there are no out-of-range values.  */
+      if (IN_RANGE (x, 1, 8))
+	return 0;
+      return COSTS_N_INSNS (1);
+
+    case PLUS:
+      if (IN_RANGE (x, -128, 127))
+	return 0;
+      if (SMALL_OPERAND (x))
+	return COSTS_N_INSNS (1);
+      return -1;
+
+    case LEU:
+      /* Like LE, but reject the always-true case.  */
+      if (x == -1)
+	return -1;
+    case LE:
+      /* We add 1 to the immediate and use SLT.  */
+      x += 1;
+    case XOR:
+      /* We can use CMPI for an xor with an unsigned 16-bit X.  */
+    case LT:
+    case LTU:
+      if (IN_RANGE (x, 0, 255))
+	return 0;
+      if (SMALL_OPERAND_UNSIGNED (x))
+	return COSTS_N_INSNS (1);
+      return -1;
+
+    case EQ:
+    case NE:
+      /* Equality comparisons with 0 are cheap.  */
+      if (x == 0)
+	return 0;
+      return -1;
+
+    default:
+      return -1;
+    }
+}
+
+/* Return true if there is a non-MIPS16 instruction that implements CODE
+   and if that instruction accepts X as an immediate operand.  */
+
+static int
+mips_immediate_operand_p (int code, HOST_WIDE_INT x)
+{
+  switch (code)
+    {
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      /* All shift counts are truncated to a valid constant.  */
+      return true;
+
+    case ROTATE:
+    case ROTATERT:
+      /* Likewise rotates, if the target supports rotates at all.  */
+      return ISA_HAS_ROR;
+
+    case AND:
+    case IOR:
+    case XOR:
+      /* These instructions take 16-bit unsigned immediates.  */
+      return SMALL_OPERAND_UNSIGNED (x);
+
+    case PLUS:
+    case LT:
+    case LTU:
+      /* These instructions take 16-bit signed immediates.  */
+      return SMALL_OPERAND (x);
+
+    case EQ:
+    case NE:
+    case GT:
+    case GTU:
+      /* The "immediate" forms of these instructions are really
+	 implemented as comparisons with register 0.  */
+      return x == 0;
+
+    case GE:
+    case GEU:
+      /* Likewise, meaning that the only valid immediate operand is 1.  */
+      return x == 1;
+
+    case LE:
+      /* We add 1 to the immediate and use SLT.  */
+      return SMALL_OPERAND (x + 1);
+
+    case LEU:
+      /* Likewise SLTU, but reject the always-true case.  */
+      return SMALL_OPERAND (x + 1) && x + 1 != 0;
+
+    case SIGN_EXTRACT:
+    case ZERO_EXTRACT:
+      /* The bit position and size are immediate operands.  */
+      return ISA_HAS_EXT_INS;
+
+    default:
+      /* By default assume that $0 can be used for 0.  */
+      return x == 0;
+    }
+}
+
+/* Return the cost of binary operation X, given that the instruction
+   sequence for a word-sized or smaller operation has cost SINGLE_COST
+   and that the sequence of a double-word operation has cost DOUBLE_COST.  */
+
+static int
+mips_binary_cost (rtx x, int single_cost, int double_cost)
+{
+  int cost;
+
+  if (GET_MODE_SIZE (GET_MODE (x)) == UNITS_PER_WORD * 2)
+    cost = double_cost;
+  else
+    cost = single_cost;
+  return (cost
+	  + rtx_cost (XEXP (x, 0), 0)
+	  + rtx_cost (XEXP (x, 1), GET_CODE (x)));
+}
+
+/* Return the cost of floating-point multiplications of mode MODE.  */
+
+static int
+mips_fp_mult_cost (enum machine_mode mode)
+{
+  return mode == DFmode ? mips_cost->fp_mult_df : mips_cost->fp_mult_sf;
+}
+
+/* Return the cost of floating-point divisions of mode MODE.  */
+
+static int
+mips_fp_div_cost (enum machine_mode mode)
+{
+  return mode == DFmode ? mips_cost->fp_div_df : mips_cost->fp_div_sf;
+}
+
+/* Return the cost of sign-extending OP to mode MODE, not including the
+   cost of OP itself.  */
+
+static int
+mips_sign_extend_cost (enum machine_mode mode, rtx op)
+{
+  if (MEM_P (op))
+    /* Extended loads are as cheap as unextended ones.  */
+    return 0;
+
+  if (TARGET_64BIT && mode == DImode && GET_MODE (op) == SImode)
+    /* A sign extension from SImode to DImode in 64-bit mode is free.  */
+    return 0;
+
+  if (ISA_HAS_SEB_SEH || GENERATE_MIPS16E)
+    /* We can use SEB or SEH.  */
+    return COSTS_N_INSNS (1);
+
+  /* We need to use a shift left and a shift right.  */
+  return COSTS_N_INSNS (TARGET_MIPS16 ? 4 : 2);
+}
+
+/* Return the cost of zero-extending OP to mode MODE, not including the
+   cost of OP itself.  */
+
+static int
+mips_zero_extend_cost (enum machine_mode mode, rtx op)
+{
+  if (MEM_P (op))
+    /* Extended loads are as cheap as unextended ones.  */
+    return 0;
+
+  if (TARGET_64BIT && mode == DImode && GET_MODE (op) == SImode)
+    /* We need a shift left by 32 bits and a shift right by 32 bits.  */
+    return COSTS_N_INSNS (TARGET_MIPS16 ? 4 : 2);
+
+  if (GENERATE_MIPS16E)
+    /* We can use ZEB or ZEH.  */
+    return COSTS_N_INSNS (1);
+
+  if (TARGET_MIPS16)
+    /* We need to load 0xff or 0xffff into a register and use AND.  */
+    return COSTS_N_INSNS (GET_MODE (op) == QImode ? 2 : 3);
+
+  /* We can use ANDI.  */
+  return COSTS_N_INSNS (1);
+}
+
+/* Implement TARGET_RTX_COSTS.  */
+
 static bool
 mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
+  int cost;
+  rtx addr;
+
+  /* The cost of a COMPARE is hard to define for MIPS.  COMPAREs don't
+     appear in the instruction stream, and the cost of a comparison is
+     really the cost of the branch or scc condition.  At the time of
+     writing, gcc only uses an explicit outer COMPARE code when optabs
+     is testing whether a constant is expensive enough to force into a
+     register.  We want optabs to pass such constants through the MIPS
+     expanders instead, so make all constants very cheap here.  */
+  if (outer_code == COMPARE)
+    {
+      gcc_assert (CONSTANT_P (x));
+      *total = 0;
+      return true;
+    }
 
   switch (code)
     {
     case CONST_INT:
+      /* Treat *clear_upper32-style ANDs as having zero cost in the
+	 second operand.  The cost is entirely in the first operand.
+
+	 ??? This is needed because we would otherwise try to CSE
+	 the constant operand.  Although that's the right thing for
+	 instructions that continue to be a register operation throughout
+	 compilation, it is disastrous for instructions that could
+	 later be converted into a memory operation.  */
+      if (TARGET_64BIT
+	  && outer_code == AND
+	  && UINTVAL (x) == 0xffffffff)
+	{
+	  *total = 0;
+	  return true;
+	}
+
       if (TARGET_MIPS16)
-        {
-	  /* A number between 1 and 8 inclusive is efficient for a shift.
-	     Otherwise, we will need an extended instruction.  */
-	  if ((outer_code) == ASHIFT || (outer_code) == ASHIFTRT
-	      || (outer_code) == LSHIFTRT)
+	{
+	  cost = mips16_constant_cost (outer_code, INTVAL (x));
+	  if (cost >= 0)
 	    {
-	      if (INTVAL (x) >= 1 && INTVAL (x) <= 8)
-		*total = 0;
-	      else
-		*total = COSTS_N_INSNS (1);
-	      return true;
-	    }
-
-	  /* We can use cmpi for an xor with an unsigned 16-bit value.  */
-	  if ((outer_code) == XOR
-	      && INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
-	    {
-	      *total = 0;
-	      return true;
-	    }
-
-	  /* We may be able to use slt or sltu for a comparison with a
-	     signed 16-bit value.  (The boundary conditions aren't quite
-	     right, but this is just a heuristic anyhow.)  */
-	  if (((outer_code) == LT || (outer_code) == LE
-	       || (outer_code) == GE || (outer_code) == GT
-	       || (outer_code) == LTU || (outer_code) == LEU
-	       || (outer_code) == GEU || (outer_code) == GTU)
-	      && INTVAL (x) >= -0x8000 && INTVAL (x) < 0x8000)
-	    {
-	      *total = 0;
-	      return true;
-	    }
-
-	  /* Equality comparisons with 0 are cheap.  */
-	  if (((outer_code) == EQ || (outer_code) == NE)
-	      && INTVAL (x) == 0)
-	    {
-	      *total = 0;
-	      return true;
-	    }
-
-	  /* Constants in the range 0...255 can be loaded with an unextended
-	     instruction.  They are therefore as cheap as a register move.
-
-	     Given the choice between "li R1,0...255" and "move R1,R2"
-	     (where R2 is a known constant), it is usually better to use "li",
-	     since we do not want to unnecessarily extend the lifetime
-	     of R2.  */
-	  if (outer_code == SET
-	      && INTVAL (x) >= 0
-	      && INTVAL (x) < 256)
-	    {
-	      *total = 0;
+	      *total = cost;
 	      return true;
 	    }
 	}
       else
 	{
-	  /* These can be used anywhere. */
-	  *total = 0;
-	  return true;
+	  /* When not optimizing for size, we care more about the cost
+	     of hot code, and hot code is often in a loop.  If a constant
+	     operand needs to be forced into a register, we will often be
+	     able to hoist the constant load out of the loop, so the load
+	     should not contribute to the cost.  */
+	  if (!optimize_size
+	      || mips_immediate_operand_p (outer_code, INTVAL (x)))
+	    {
+	      *total = 0;
+	      return true;
+	    }
 	}
-
-      /* Otherwise fall through to the handling below because
-	 we'll need to construct the constant.  */
+      /* Fall through.  */
 
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
     case CONST_DOUBLE:
-      if (LEGITIMATE_CONSTANT_P (x))
+      cost = mips_const_insns (x);
+      if (cost > 0)
 	{
-	  *total = COSTS_N_INSNS (1);
+	  /* If the constant is likely to be stored in a GPR, SETs of
+	     single-insn constants are as cheap as register sets; we
+	     never want to CSE them.
+
+	     Don't reduce the cost of storing a floating-point zero in
+	     FPRs.  If we have a zero in an FPR for other reasons, we
+	     can get better cfg-cleanup and delayed-branch results by
+	     using it consistently, rather than using $0 sometimes and
+	     an FPR at other times.  Also, moves between floating-point
+	     registers are sometimes cheaper than (D)MTC1 $0.  */
+	  if (cost == 1
+	      && outer_code == SET
+	      && !(float_mode_p && TARGET_HARD_FLOAT))
+	    cost = 0;
+	  /* When non-MIPS16 code loads a constant N>1 times, we rarely
+	     want to CSE the constant itself.  It is usually better to
+	     have N copies of the last operation in the sequence and one
+	     shared copy of the other operations.  (Note that this is
+	     not true for MIPS16 code, where the final operation in the
+	     sequence is often an extended instruction.)
+
+	     Also, if we have a CONST_INT, we don't know whether it is
+	     for a word or doubleword operation, so we cannot rely on
+	     the result of mips_build_integer.  */
+	  else if (!TARGET_MIPS16
+		   && (outer_code == SET || mode == VOIDmode))
+	    cost = 1;
+	  *total = COSTS_N_INSNS (cost);
 	  return true;
 	}
-      else
-	{
-	  /* The value will need to be fetched from the constant pool.  */
-	  *total = CONSTANT_POOL_COST;
-	  return true;
-	}
+      /* The value will need to be fetched from the constant pool.  */
+      *total = CONSTANT_POOL_COST;
+      return true;
 
     case MEM:
-      {
-	/* If the address is legitimate, return the number of
-	   instructions it needs.  */
-	rtx addr = XEXP (x, 0);
-	int n = mips_address_insns (addr, GET_MODE (x), true);
-	if (n > 0)
-	  {
-	    *total = COSTS_N_INSNS (n + 1);
-	    return true;
-	  }
-	/* Check for scaled indexed address.  */
-	if (mips_lwxs_address_p (addr))
-	  {
-	    *total = COSTS_N_INSNS (2);
-	    return true;
-	  }
-	/* Otherwise use the default handling.  */
-	return false;
-      }
+      /* If the address is legitimate, return the number of
+	 instructions it needs.  */
+      addr = XEXP (x, 0);
+      cost = mips_address_insns (addr, mode, true);
+      if (cost > 0)
+	{
+	  *total = COSTS_N_INSNS (cost + 1);
+	  return true;
+	}
+      /* Check for a scaled indexed address.  */
+      if (mips_lwxs_address_p (addr))
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      /* Otherwise use the default handling.  */
+      return false;
 
     case FFS:
       *total = COSTS_N_INSNS (6);
-      return true;
+      return false;
 
     case NOT:
-      *total = COSTS_N_INSNS ((mode == DImode && !TARGET_64BIT) ? 2 : 1);
-      return true;
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) > UNITS_PER_WORD ? 2 : 1);
+      return false;
 
     case AND:
+      /* Check for a *clear_upper32 pattern and treat it like a zero
+	 extension.  See the pattern's comment for details.  */
+      if (TARGET_64BIT
+	  && mode == DImode
+	  && CONST_INT_P (XEXP (x, 1))
+	  && UINTVAL (XEXP (x, 1)) == 0xffffffff)
+	{
+	  *total = (mips_zero_extend_cost (mode, XEXP (x, 0))
+		    + rtx_cost (XEXP (x, 0), 0));
+	  return true;
+	}
+      /* Fall through.  */
+
     case IOR:
     case XOR:
-      if (mode == DImode && !TARGET_64BIT)
-        {
-          *total = COSTS_N_INSNS (2);
-          return true;
-        }
-      return false;
+      /* Double-word operations use two single-word operations.  */
+      *total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2));
+      return true;
 
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
-      if (mode == DImode && !TARGET_64BIT)
-        {
-          *total = COSTS_N_INSNS ((GET_CODE (XEXP (x, 1)) == CONST_INT)
-                                  ? 4 : 12);
-          return true;
-        }
-      return false;
+    case ROTATE:
+    case ROTATERT:
+      if (CONSTANT_P (XEXP (x, 1)))
+	*total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4));
+      else
+	*total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (12));
+      return true;
 
     case ABS:
       if (float_mode_p)
-        *total = COSTS_N_INSNS (1);
+        *total = mips_cost->fp_add;
       else
         *total = COSTS_N_INSNS (4);
-      return true;
-
-    case LO_SUM:
-      *total = COSTS_N_INSNS (1);
-      return true;
-
-    case PLUS:
-    case MINUS:
-      if (float_mode_p)
-	{
-	  *total = mips_cost->fp_add;
-	  return true;
-	}
-
-      else if (mode == DImode && !TARGET_64BIT)
-        {
-          *total = COSTS_N_INSNS (4);
-          return true;
-        }
       return false;
 
+    case LO_SUM:
+      /* Low-part immediates need an extended MIPS16 instruction.  */
+      *total = (COSTS_N_INSNS (TARGET_MIPS16 ? 2 : 1)
+		+ rtx_cost (XEXP (x, 0), 0));
+      return true;
+
+    case LT:
+    case LTU:
+    case LE:
+    case LEU:
+    case GT:
+    case GTU:
+    case GE:
+    case GEU:
+    case EQ:
+    case NE:
+    case UNORDERED:
+    case LTGT:
+      /* Branch comparisons have VOIDmode, so use the first operand's
+	 mode instead.  */
+      mode = GET_MODE (XEXP (x, 0));
+      if (FLOAT_MODE_P (mode))
+	{
+	  *total = mips_cost->fp_add;
+	  return false;
+	}
+      *total = mips_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (4));
+      return true;
+
+    case MINUS:
+      if (float_mode_p
+	  && ISA_HAS_NMADD_NMSUB
+	  && TARGET_FUSED_MADD
+	  && !HONOR_NANS (mode)
+	  && !HONOR_SIGNED_ZEROS (mode))
+	{
+	  /* See if we can use NMADD or NMSUB.  See mips.md for the
+	     associated patterns.  */
+	  rtx op0 = XEXP (x, 0);
+	  rtx op1 = XEXP (x, 1);
+	  if (GET_CODE (op0) == MULT && GET_CODE (XEXP (op0, 0)) == NEG)
+	    {
+	      *total = (mips_fp_mult_cost (mode)
+			+ rtx_cost (XEXP (XEXP (op0, 0), 0), 0)
+			+ rtx_cost (XEXP (op0, 1), 0)
+			+ rtx_cost (op1, 0));
+	      return true;
+	    }
+	  if (GET_CODE (op1) == MULT)
+	    {
+	      *total = (mips_fp_mult_cost (mode)
+			+ rtx_cost (op0, 0)
+			+ rtx_cost (XEXP (op1, 0), 0)
+			+ rtx_cost (XEXP (op1, 1), 0));
+	      return true;
+	    }
+	}
+      /* Fall through.  */
+
+    case PLUS:
+      if (float_mode_p)
+	{
+	  if (ISA_HAS_FP4
+	      && TARGET_FUSED_MADD
+	      && GET_CODE (XEXP (x, 0)) == MULT)
+	    *total = 0;
+	  else
+	    *total = mips_cost->fp_add;
+	  return false;
+	}
+
+      /* Double-word operations require three single-word operations and
+	 an SLTU.  The MIPS16 version then needs to move the result of
+	 the SLTU from $24 to a MIPS16 register.  */
+      *total = mips_binary_cost (x, COSTS_N_INSNS (1),
+				 COSTS_N_INSNS (TARGET_MIPS16 ? 5 : 4));
+      return true;
+
     case NEG:
-      if (mode == DImode && !TARGET_64BIT)
-        {
-          *total = COSTS_N_INSNS (4);
-          return true;
-        }
+      if (float_mode_p
+	  && ISA_HAS_NMADD_NMSUB
+	  && TARGET_FUSED_MADD
+	  && !HONOR_NANS (mode)
+	  && HONOR_SIGNED_ZEROS (mode))
+	{
+	  /* See if we can use NMADD or NMSUB.  See mips.md for the
+	     associated patterns.  */
+	  rtx op = XEXP (x, 0);
+	  if ((GET_CODE (op) == PLUS || GET_CODE (op) == MINUS)
+	      && GET_CODE (XEXP (op, 0)) == MULT)
+	    {
+	      *total = (mips_fp_mult_cost (mode)
+			+ rtx_cost (XEXP (XEXP (op, 0), 0), 0)
+			+ rtx_cost (XEXP (XEXP (op, 0), 1), 0)
+			+ rtx_cost (XEXP (op, 1), 0));
+	      return true;
+	    }
+	}
+
+      if (float_mode_p)
+	*total = mips_cost->fp_add;
+      else
+	*total = COSTS_N_INSNS (GET_MODE_SIZE (mode) > UNITS_PER_WORD ? 4 : 1);
       return false;
 
     case MULT:
-      if (mode == SFmode)
-	*total = mips_cost->fp_mult_sf;
-
-      else if (mode == DFmode)
-	*total = mips_cost->fp_mult_df;
-
-      else if (mode == SImode)
-	*total = mips_cost->int_mult_si;
-
-      else
+      if (float_mode_p)
+	*total = mips_fp_mult_cost (mode);
+      else if (mode == DImode && !TARGET_64BIT)
+	/* Synthesized from 2 mulsi3s, 1 mulsidi3 and two additions,
+	   where the mulsidi3 always includes an MFHI and an MFLO.  */
+	*total = (optimize_size
+		  ? COSTS_N_INSNS (ISA_HAS_MUL3 ? 7 : 9)
+		  : mips_cost->int_mult_si * 3 + 6);
+      else if (optimize_size)
+	*total = (ISA_HAS_MUL3 ? 1 : 2);
+      else if (mode == DImode)
 	*total = mips_cost->int_mult_di;
-
-      return true;
+      else
+	*total = mips_cost->int_mult_si;
+      return false;
 
     case DIV:
+      /* Check for a reciprocal.  */
+      if (float_mode_p && XEXP (x, 0) == CONST1_RTX (mode))
+	{
+	  if (ISA_HAS_FP4
+	      && flag_unsafe_math_optimizations
+	      && (outer_code == SQRT || GET_CODE (XEXP (x, 1)) == SQRT))
+	    {
+	      /* An rsqrt<mode>a or rsqrt<mode>b pattern.  Count the
+		 division as being free.  */
+	      *total = rtx_cost (XEXP (x, 1), 0);
+	      return true;
+	    }
+	  if (!ISA_MIPS1)
+	    {
+	      *total = mips_fp_div_cost (mode) + rtx_cost (XEXP (x, 1), 0);
+	      return true;
+	    }
+	}
+      /* Fall through.  */
+
+    case SQRT:
     case MOD:
       if (float_mode_p)
 	{
-	  if (mode == SFmode)
-	    *total = mips_cost->fp_div_sf;
-	  else
-	    *total = mips_cost->fp_div_df;
-
-	  return true;
+	  *total = mips_fp_div_cost (mode);
+	  return false;
 	}
       /* Fall through.  */
 
     case UDIV:
     case UMOD:
-      if (mode == DImode)
+      if (optimize_size)
+	{
+	  /* It is our responsibility to make division by a power of 2
+	     as cheap as 2 register additions if we want the division
+	     expanders to be used for such operations; see the setting
+	     of sdiv_pow2_cheap in optabs.c.  Using (D)DIV for MIPS16
+	     should always produce shorter code than using
+	     expand_sdiv2_pow2.  */
+	  if (TARGET_MIPS16
+	      && CONST_INT_P (XEXP (x, 1))
+	      && exact_log2 (INTVAL (XEXP (x, 1))) >= 0)
+	    {
+	      *total = COSTS_N_INSNS (2) + rtx_cost (XEXP (x, 0), 0);
+	      return true;
+	    }
+	  *total = COSTS_N_INSNS (mips_idiv_insns ());
+	}
+      else if (mode == DImode)
         *total = mips_cost->int_div_di;
       else
 	*total = mips_cost->int_div_si;
-
-      return true;
+      return false;
 
     case SIGN_EXTEND:
-      /* A sign extend from SImode to DImode in 64-bit mode is often
-         zero instructions, because the result can often be used
-         directly by another instruction; we'll call it one.  */
-      if (TARGET_64BIT && mode == DImode
-          && GET_MODE (XEXP (x, 0)) == SImode)
-        *total = COSTS_N_INSNS (1);
-      else
-        *total = COSTS_N_INSNS (2);
-      return true;
+      *total = mips_sign_extend_cost (mode, XEXP (x, 0));
+      return false;
 
     case ZERO_EXTEND:
-      if (TARGET_64BIT && mode == DImode
-          && GET_MODE (XEXP (x, 0)) == SImode)
-        *total = COSTS_N_INSNS (2);
-      else
-        *total = COSTS_N_INSNS (1);
-      return true;
+      *total = mips_zero_extend_cost (mode, XEXP (x, 0));
+      return false;
 
     case FLOAT:
     case UNSIGNED_FLOAT:
     case FIX:
     case FLOAT_EXTEND:
     case FLOAT_TRUNCATE:
-    case SQRT:
       *total = mips_cost->fp_add;
-      return true;
+      return false;
 
     default:
       return false;
