@@ -1,3 +1,8 @@
+2007-09-11  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Revert part of
+	2007-09-06 change.
+
 2007-09-09  Roger Sayle  <roger@eyesopen.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add ECANCELED for cygwin.
