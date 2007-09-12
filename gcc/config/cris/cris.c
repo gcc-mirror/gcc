@@ -3176,7 +3176,7 @@ cris_expand_pic_call_address (rtx *opp)
   /* It might be that code can be generated that jumps to 0 (or to a
      specific address).  Don't die on that.  (There is a
      testcase.)  */
-  if (CONSTANT_ADDRESS_P (op) && CONST_INT_P (op))
+  if (CONSTANT_ADDRESS_P (op) && !CONST_INT_P (op))
     {
       enum cris_pic_symbol_type t = cris_pic_symbol_type_of (op);
 
