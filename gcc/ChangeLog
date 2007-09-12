@@ -1,3 +1,10 @@
+2007-09-11  James E. Wilson  <wilson@specifix.com>
+
+	* defaults.h (DWARF2_UNWIND_INFO): Don't define if
+	TARGET_UNWIND_INFO is defined.
+	* config/ia64/ia64.h (INCOMING_RETURN_ADDR_RTX): Delete undef
+	after definition.
+
 2007-09-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (calc_live_regs): Use
