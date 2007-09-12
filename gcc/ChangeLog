@@ -11,6 +11,7 @@
 	!SSE_MATH
 
 2007-09-12  Christian Bruel  <christian.bruel@st.com>
+
 	* sh.h (SH_DBX_REGISTER_NUMBER): Added fpscr, fixed sr/gbr regs.
 	* linux-unwind.h (SH_DWARF_FRAME_GBR): fixed. 
 	
