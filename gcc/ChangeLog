@@ -1,5 +1,12 @@
 2007-09-12  Ira Rosen  <irar@il.ibm.com>
 
+	* tree-vect-transform.c (vect_get_slp_defs): Don't build a vector
+	for oprnd1 if not required.
+	(vectorizable_operation): Use scalar operand in SLP in case of 
+	shift with scalar argument.
+
+2007-09-12  Ira Rosen  <irar@il.ibm.com>
+
 	* params.def (PARAM_MIN_VECT_LOOP_BOUND): Change default and minimum 
 	to 1.
 

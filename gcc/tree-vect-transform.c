@@ -1392,7 +1392,9 @@ vect_get_slp_vect_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds)
    call vect_get_constant_vectors() to create vector stmts.
    Otherwise, the def-stmts must be already vectorized and the vectorized stmts
    must be stored in the LEFT/RIGHT node of SLP_NODE, and we call
-   vect_get_slp_vect_defs() to retrieve them.  */
+   vect_get_slp_vect_defs() to retrieve them.  
+   If VEC_OPRNDS1 is NULL, don't get vector defs for the second operand (from
+   the right node. This is used when the second operand must remain scalar.  */
  
 static void
 vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
@@ -1420,7 +1422,7 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
     return;
 
   operation = GIMPLE_STMT_OPERAND (first_stmt, 1);
-  if (TREE_OPERAND_LENGTH (operation) == unary_op)
+  if (TREE_OPERAND_LENGTH (operation) == unary_op || !vec_oprnds1)
     return;
 
   *vec_oprnds1 = VEC_alloc (tree, heap, 
@@ -3891,11 +3893,9 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   if (!slp_node)
-    {
-      vec_oprnds0 = VEC_alloc (tree, heap, 1);
-      if (op_type == binary_op)
-	vec_oprnds1 = VEC_alloc (tree, heap, 1);
-    }
+    vec_oprnds0 = VEC_alloc (tree, heap, 1);
+  if (op_type == binary_op)
+    vec_oprnds1 = VEC_alloc (tree, heap, 1);
 
   /* In case the vectorization factor (VF) is bigger than the number
      of elements that we can fit in a vectype (nunits), we have to generate
@@ -3957,8 +3957,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
       if (j == 0)
 	{
 	  if (op_type == binary_op
-	      && (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
-              && !slp_node)
+	      && (code == LSHIFT_EXPR || code == RSHIFT_EXPR))
 	    {
 	      /* Vector shl and shr insn patterns can be defined with scalar 
 		 operand 2 (shift operand). In this case, use constant or loop 
@@ -3974,11 +3973,14 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt,
 		}
 	    }
 	 
+          /* vec_oprnd is available if operand 1 should be of a scalar-type 
+             (a special case for certain kind of vector shifts); otherwise, 
+             operand 1 should be of a vector type (the usual case).  */
 	  if (op_type == binary_op && !vec_oprnd1)
 	    vect_get_vec_defs (op0, op1, stmt, &vec_oprnds0, &vec_oprnds1, 
 			       slp_node);
 	  else
-	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, &vec_oprnds1, 
+	    vect_get_vec_defs (op0, NULL_TREE, stmt, &vec_oprnds0, NULL, 
 			       slp_node);
 	}
       else
