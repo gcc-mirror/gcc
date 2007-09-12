@@ -1,3 +1,7 @@
+2007-09-12  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/packed_subtype.adb: New test.
+
 2007-09-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33297
