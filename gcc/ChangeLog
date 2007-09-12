@@ -1,3 +1,16 @@
+2007-09-12  Richard Sandiford  <richard@codesourcery.com>
+
+	* c-tree.h (grokfield): Add a "tree *" argument.
+	* c-decl.c (grokdeclarator): Take a pointer to the decl's attributes.
+	Chain nested decl attributes to it.  Don't call decl_attributes here.
+	(groktypename): Pass grokdeclarator a pointer to the attribute list.
+	(start_decl, grokparm, push_parm_decl, start_function): Likewise.
+	(grokfield): Take a pointer to the decl's attributes and pass
+	it to grokdeclarator.
+	* c-parser.c (c_parser_struct_declaration): Update the calls to
+	grokfield.  Call decl_attributes for anonymous struct and union
+	fields.
+
 2007-09-12  Jan Hubicka  <jh@suse.cz>
 
 	* c-objc-common.h (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
