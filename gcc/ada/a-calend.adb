@@ -1385,5 +1385,4 @@ begin
          end loop;
       end;
    end if;
-
 end Ada.Calendar;
