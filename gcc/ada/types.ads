@@ -31,8 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains host independent type definitions which are used in
---  more than one unit in the compiler. They are gathered here for easy
+--  This package contains host independent type definitions which are used
+--  in more than one unit in the compiler. They are gathered here for easy
 --  reference, though in some cases the full description is found in the
 --  relevant module which implements the definition. The main reason that they
 --  are not in their "natural" specs is that this would cause a lot of inter-
