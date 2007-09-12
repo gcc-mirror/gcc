@@ -1,3 +1,7 @@
+2007-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* io/io.h: Include libgfortran.h first.
+
 2007-09-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/33386
