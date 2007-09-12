@@ -1,5 +1,10 @@
 2007-09-12  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/33297
+	* gfortran.dg/intrinsic_size.f90: New.
+
+2007-09-12  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/33284
 	PR fortran/33310
 	* gfortran.dg/conflicts_2.f90: New.
