@@ -2665,6 +2665,13 @@ package body Sem_Aggr is
                      Error_Msg_N ("OTHERS must appear last in an aggregate",
                                   Selector_Name);
                      return;
+
+                  --  (Ada2005): If this is an association with a box,
+                  --  indicate that the association need not represent
+                  --  any component.
+
+                  elsif Box_Present (Assoc) then
+                     Others_Box := True;
                   end if;
 
                else
