@@ -1,3 +1,9 @@
+2007-09-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33382
+	* gcc.c-torture/compile/pr33382.c: New testcase.
+	* gcc.c-torture/execute/pr33382.c: Likewise.
+
 2007-09-12  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33395
