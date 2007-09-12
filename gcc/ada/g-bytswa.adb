@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2006, AdaCore                         --
+--                     Copyright (C) 2006-2007, AdaCore                     --     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,7 +51,7 @@ package body GNAT.Byte_Swapping is
       function As_Item is new Ada.Unchecked_Conversion
          (Source => Unsigned_16, Target => Item);
 
-      X : Unsigned_16 renames As_U16 (Input);
+      X : constant Unsigned_16 := As_U16 (Input);
 
    begin
       return As_Item ((Shift_Left (X, 8)  and 16#FF00#) or
@@ -70,7 +70,7 @@ package body GNAT.Byte_Swapping is
       function As_Item is new Ada.Unchecked_Conversion
          (Source => Unsigned_32, Target => Item);
 
-      X : Unsigned_32 renames As_U32 (Input);
+      X : constant Unsigned_32 := As_U32 (Input);
 
    begin
       return As_Item ((Shift_Right (X, 24) and 16#0000_00FF#) or
@@ -91,7 +91,7 @@ package body GNAT.Byte_Swapping is
       function As_Item is new Ada.Unchecked_Conversion
          (Source => Unsigned_64, Target => Item);
 
-      X : Unsigned_64 renames As_U64 (Input);
+      X : constant Unsigned_64 := As_U64 (Input);
 
       Low, High : aliased Unsigned_32;
 
@@ -109,10 +109,8 @@ package body GNAT.Byte_Swapping is
    -----------
 
    procedure Swap2 (Location : System.Address) is
-
       X : Unsigned_16;
       for X'Address use Location;
-
    begin
       X := (Shift_Left (X, 8)  and 16#FF00#) or
            (Shift_Right (X, 8) and 16#00FF#);
@@ -123,10 +121,8 @@ package body GNAT.Byte_Swapping is
    -----------
 
    procedure Swap4 (Location : System.Address) is
-
       X : Unsigned_32;
       for X'Address use Location;
-
    begin
       X := (Shift_Right (X, 24) and 16#0000_00FF#) or
            (Shift_Right (X, 8)  and 16#0000_FF00#) or
@@ -139,7 +135,6 @@ package body GNAT.Byte_Swapping is
    -----------
 
    procedure Swap8 (Location : System.Address) is
-
       X : Unsigned_64;
       for X'Address use Location;
 
