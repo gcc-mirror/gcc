@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains generic subprograms used for converting between
---  sequences of Character and Wide_Character. All access to wide character
---  sequences is isolated in this unit.
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 with Interfaces;     use Interfaces;
 with System.WCh_Con; use System.WCh_Con;

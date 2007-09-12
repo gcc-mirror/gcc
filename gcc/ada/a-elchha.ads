@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,10 @@
 ------------------------------------------------------------------------------
 
 --  Last chance handler. Unhandled exceptions are passed to this routine
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except :  Exception_Occurrence);

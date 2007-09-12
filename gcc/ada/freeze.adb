@@ -1484,14 +1484,11 @@ package body Freeze is
             Inner : Node_Id;
          begin
             Inner := N;
-
             loop
                if Nkind (Inner) = N_Allocator then
                   return Inner;
-
                elsif Nkind (Inner) = N_Qualified_Expression then
                   Inner := Expression (Inner);
-
                else
                   return Empty;
                end if;

@@ -31,6 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 package body System.Strings is
 
    ----------

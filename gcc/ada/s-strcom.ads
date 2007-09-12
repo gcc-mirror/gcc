@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,14 +33,17 @@
 
 --  This package contains functions for runtime comparisons on strings
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 package System.String_Compare is
 
    function Str_Compare
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer;
+      Right_Len : Natural) return Integer;
    --  Compare the string starting at address Left of length Left_Len
    --  with the string starting at address Right of length Right_Len.
    --  The comparison is in the normal Ada semantic sense of string
@@ -52,8 +55,7 @@ package System.String_Compare is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer;
+      Right_Len : Natural) return Integer;
    --  Same functionality as Str_Compare but always proceeds by bytes.
    --  Used when the caller knows that the operands are unaligned, or
    --  short enough that it makes no sense to go by words.

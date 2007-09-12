@@ -206,24 +206,25 @@ package body Lib.Load is
       Unum := Units.Last;
 
       Units.Table (Unum) := (
-        Cunit           => Cunit,
-        Cunit_Entity    => Cunit_Entity,
-        Dependency_Num  => 0,
-        Dynamic_Elab    => False,
-        Error_Location  => Sloc (With_Node),
-        Expected_Unit   => Spec_Name,
-        Fatal_Error     => True,
-        Generate_Code   => False,
-        Has_RACW        => False,
-        Ident_String    => Empty,
-        Loading         => False,
-        Main_Priority   => Default_Main_Priority,
-        Munit_Index     => 0,
-        Serial_Number   => 0,
-        Source_Index    => No_Source_File,
-        Unit_File_Name  => Get_File_Name (Spec_Name, Subunit => False),
-        Unit_Name       => Spec_Name,
-        Version         => 0);
+        Cunit            => Cunit,
+        Cunit_Entity     => Cunit_Entity,
+        Dependency_Num   => 0,
+        Dynamic_Elab     => False,
+        Error_Location   => Sloc (With_Node),
+        Expected_Unit    => Spec_Name,
+        Fatal_Error      => True,
+        Generate_Code    => False,
+        Has_RACW         => False,
+        Is_Compiler_Unit => False,
+        Ident_String     => Empty,
+        Loading          => False,
+        Main_Priority    => Default_Main_Priority,
+        Munit_Index      => 0,
+        Serial_Number    => 0,
+        Source_Index     => No_Source_File,
+        Unit_File_Name   => Get_File_Name (Spec_Name, Subunit => False),
+        Unit_Name        => Spec_Name,
+        Version          => 0);
 
       Set_Comes_From_Source_Default (Save_CS);
       Set_Error_Posted (Cunit_Entity);
@@ -308,24 +309,25 @@ package body Lib.Load is
          end if;
 
          Units.Table (Main_Unit) := (
-           Cunit           => Empty,
-           Cunit_Entity    => Empty,
-           Dependency_Num  => 0,
-           Dynamic_Elab    => False,
-           Error_Location  => No_Location,
-           Expected_Unit   => No_Unit_Name,
-           Fatal_Error     => False,
-           Generate_Code   => False,
-           Has_RACW        => False,
-           Ident_String    => Empty,
-           Loading         => True,
-           Main_Priority   => Default_Main_Priority,
-           Munit_Index     => 0,
-           Serial_Number   => 0,
-           Source_Index    => Main_Source_File,
-           Unit_File_Name  => Fname,
-           Unit_Name       => No_Unit_Name,
-           Version         => Version);
+           Cunit            => Empty,
+           Cunit_Entity     => Empty,
+           Dependency_Num   => 0,
+           Dynamic_Elab     => False,
+           Error_Location   => No_Location,
+           Expected_Unit    => No_Unit_Name,
+           Fatal_Error      => False,
+           Generate_Code    => False,
+           Has_RACW         => False,
+           Is_Compiler_Unit => False,
+           Ident_String     => Empty,
+           Loading          => True,
+           Main_Priority    => Default_Main_Priority,
+           Munit_Index      => 0,
+           Serial_Number    => 0,
+           Source_Index     => Main_Source_File,
+           Unit_File_Name   => Fname,
+           Unit_Name        => No_Unit_Name,
+           Version          => Version);
       end if;
    end Load_Main_Source;
 
@@ -627,24 +629,25 @@ package body Lib.Load is
 
          if Src_Ind /= No_Source_File then
             Units.Table (Unum) := (
-              Cunit           => Empty,
-              Cunit_Entity    => Empty,
-              Dependency_Num  => 0,
-              Dynamic_Elab    => False,
-              Error_Location  => Sloc (Error_Node),
-              Expected_Unit   => Uname_Actual,
-              Fatal_Error     => False,
-              Generate_Code   => False,
-              Has_RACW        => False,
-              Ident_String    => Empty,
-              Loading         => True,
-              Main_Priority   => Default_Main_Priority,
-              Munit_Index     => 0,
-              Serial_Number   => 0,
-              Source_Index    => Src_Ind,
-              Unit_File_Name  => Fname,
-              Unit_Name       => Uname_Actual,
-              Version         => Source_Checksum (Src_Ind));
+              Cunit            => Empty,
+              Cunit_Entity     => Empty,
+              Dependency_Num   => 0,
+              Dynamic_Elab     => False,
+              Error_Location   => Sloc (Error_Node),
+              Expected_Unit    => Uname_Actual,
+              Fatal_Error      => False,
+              Generate_Code    => False,
+              Has_RACW         => False,
+              Is_Compiler_Unit => False,
+              Ident_String     => Empty,
+              Loading          => True,
+              Main_Priority    => Default_Main_Priority,
+              Munit_Index      => 0,
+              Serial_Number    => 0,
+              Source_Index     => Src_Ind,
+              Unit_File_Name   => Fname,
+              Unit_Name        => Uname_Actual,
+              Version          => Source_Checksum (Src_Ind));
 
             --  Parse the new unit
 

@@ -84,6 +84,17 @@ package body Restrict is
       end if;
    end Abort_Allowed;
 
+   -------------------------
+   -- Check_Compiler_Unit --
+   -------------------------
+
+   procedure Check_Compiler_Unit (N : Node_Id) is
+   begin
+      if Is_Compiler_Unit (Get_Source_Unit (N)) then
+         Error_Msg_N ("use of construct not allowed in compiler", N);
+      end if;
+   end Check_Compiler_Unit;
+
    ------------------------------------
    -- Check_Elaboration_Code_Allowed --
    ------------------------------------

@@ -39,6 +39,10 @@
 --  extra declarations that can be introduced into System using Extend_System.
 --  It is a good idea to avoid use clauses for this package!
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 package System.Storage_Elements is
    pragma Pure;
    --  Note that we take advantage of the implementation permission to make

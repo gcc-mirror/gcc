@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +33,10 @@
 
 --  This package contains functions for runtime comparisons on arrays whose
 --  elements are 8-bit discrete type values to be treated as unsigned.
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 package System.Compare_Array_Unsigned_8 is
 

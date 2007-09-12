@@ -527,7 +527,10 @@ package body Sem_Ch11 is
             Set_Is_Raised (Exception_Name);
          end if;
 
+         --  Deal with RAISE WITH case
+
          if Present (Expression (N)) then
+            Check_Compiler_Unit (Expression (N));
             Analyze_And_Resolve (Expression (N), Standard_String);
          end if;
       end if;

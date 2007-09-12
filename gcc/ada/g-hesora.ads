@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005, AdaCore                     --
+--                     Copyright (C) 1995-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,6 +41,10 @@
 --  This heapsort algorithm uses approximately N*log(N) compares in the
 --  worst case and is in place with no additional storage required. See
 --  the body for exact details of the algorithm used.
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 package GNAT.Heap_Sort_A is
    pragma Preelaborate;

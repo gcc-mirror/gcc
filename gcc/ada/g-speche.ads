@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2006, AdaCore                     --
+--                     Copyright (C) 1998-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,10 @@
 --  Spelling checker
 
 --  This package provides a utility routine for checking for bad spellings
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 package GNAT.Spelling_Checker is
    pragma Pure;

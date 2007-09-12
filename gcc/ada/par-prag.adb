@@ -1057,6 +1057,7 @@ begin
            Pragma_CIL_Constructor               |
            Pragma_Compile_Time_Error            |
            Pragma_Compile_Time_Warning          |
+           Pragma_Compiler_Unit                 |
            Pragma_Convention_Identifier         |
            Pragma_CPP_Class                     |
            Pragma_CPP_Constructor               |

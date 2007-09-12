@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,10 @@
 --  Standard (where we have no opportunity to build image tables), and in
 --  package System (where it is too early to start building image tables).
 --  Special routines exist for the enumeration routines in these packages.
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 package System.Img_Enum is
    pragma Pure;

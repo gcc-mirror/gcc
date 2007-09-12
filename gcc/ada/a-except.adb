@@ -42,6 +42,10 @@
 --  2005 functionality is required. in particular, it is used for building
 --  run times on all targets.
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 pragma Style_Checks (All_Checks);
 --  No subprogram ordering check, due to logical grouping
 
