@@ -13661,11 +13661,10 @@ between tasks is very rarely expected.
 @cindex Threads, foreign
 
 @noindent
-Provides facilities for creating and destroying threads with explicit calls.
-These threads are known to the GNAT run-time system.  These subprograms are
-exported C-convention procedures intended to be called from foreign code.
-By using these primitives rather than directly calling operating systems
-routines, compatibility with the Ada tasking run-time is provided.
+Provides facilities for dealing with foreign threads which need to be known
+by the GNAT run-time system. Consult the documentation of this package for
+further details if your program has threads that are created by a non-Ada
+environment which then accesses Ada code.
 
 @node GNAT.Traceback (g-traceb.ads)
 @section @code{GNAT.Traceback} (@file{g-traceb.ads})
