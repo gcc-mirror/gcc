@@ -1,3 +1,10 @@
+2007-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/26797
+	PR ada/32407
+	* utils.c (unchecked_convert): Use a subtype as the intermediate type
+	in the special VIEW_CONVERT_EXPR case.
+
 2007-09-12  Robert Dewar  <dewar@adacore.com>
 
 	* types.ads, a-charac.ads, freeze.adb: Minor reformatting.
