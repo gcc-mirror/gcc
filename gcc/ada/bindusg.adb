@@ -232,9 +232,13 @@ package body Bindusg is
       Write_Line ("  -x        Exclude source files (check object " &
                   "consistency only)");
 
-      --  Line for X switch
+      --  Line for -X switch
 
       Write_Line ("  -Xnnn     Default exit status value = nnn");
+
+      --  Line for -y switch
+
+      Write_Line ("  -y        Enable leap seconds");
 
       --  Line for -z switch
 
