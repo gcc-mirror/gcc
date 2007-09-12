@@ -720,13 +720,14 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
 {
   int reverse_compare = 0;
   int reverse_test = 0;
-  rtx compare_result;
-  rtx comp_rtx;
+  rtx compare_result, eq_result;
+  rtx comp_rtx, eq_rtx;
   rtx target = operands[0];
   enum machine_mode comp_mode;
   enum machine_mode op_mode;
-  enum spu_comp_code scode;
+  enum spu_comp_code scode, eq_code, ior_code;
   int index;
+  int eq_test = 0;
 
   /* When spu_compare_op1 is a CONST_INT change (X >= C) to (X > C-1),
      and so on, to keep the constant in operand 1. */
@@ -757,17 +758,40 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
 	  }
     }
 
+  comp_mode = SImode;
+  op_mode = GET_MODE (spu_compare_op0);
+
   switch (code)
     {
     case GE:
-      reverse_compare = 1;
-      reverse_test = 1;
       scode = SPU_GT;
+      if (HONOR_NANS (op_mode) && spu_arch == PROCESSOR_CELLEDP)
+	{
+	  reverse_compare = 0;
+	  reverse_test = 0;
+	  eq_test = 1;
+	  eq_code = SPU_EQ;
+	}
+      else
+	{
+	  reverse_compare = 1;
+	  reverse_test = 1;
+	}
       break;
     case LE:
-      reverse_compare = 0;
-      reverse_test = 1;
       scode = SPU_GT;
+      if (HONOR_NANS (op_mode) && spu_arch == PROCESSOR_CELLEDP)
+	{
+	  reverse_compare = 1;
+	  reverse_test = 0;
+	  eq_test = 1;
+	  eq_code = SPU_EQ;
+	}
+      else
+	{
+	  reverse_compare = 0;
+	  reverse_test = 1;
+	}
       break;
     case LT:
       reverse_compare = 1;
@@ -808,9 +832,6 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
       scode = SPU_EQ;
       break;
     }
-
-  comp_mode = SImode;
-  op_mode = GET_MODE (spu_compare_op0);
 
   switch (op_mode)
     {
@@ -916,6 +937,20 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
 	abort ();
       emit_insn (comp_rtx);
 
+      if (eq_test)
+        {
+          eq_result = gen_reg_rtx (comp_mode);
+          eq_rtx = GEN_FCN (spu_comp_icode[index][eq_code]) (eq_result,
+							     spu_compare_op0,
+							     spu_compare_op1);
+          if (eq_rtx == 0)
+	    abort ();
+          emit_insn (eq_rtx);
+          ior_code = ior_optab->handlers[(int)comp_mode].insn_code;
+          gcc_assert (ior_code != CODE_FOR_nothing);
+          emit_insn (GEN_FCN (ior_code)
+		     (compare_result, compare_result, eq_result));
+        }
     }
 
   if (is_set == 0)
