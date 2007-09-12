@@ -1,3 +1,11 @@
+2007-09-12  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (machine_function): Add vararg_a7_copy.
+	(xtensa_copy_incoming_a7): Use start_sequence instead of
+	push_to_sequence.  Stash insns in vararg_a7_copy for builtin_saveregs.
+	(xtensa_builtin_saveregs): Place code from vararg_a7_copy at the start
+	of the saveregs sequence.
+
 2007-09-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33382
