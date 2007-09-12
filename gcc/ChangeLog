@@ -1,3 +1,8 @@
+2007-09-12  Sa Liu  <saliu@de.ibm.com>
+
+	* config/spu/spu.c (spu_emit_branch_or_set): Handle NaN values as
+	operands to DFmode GE or LE compares.
+
 2007-09-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (enum reg_class, REG_CLASS_CONTENTS,
