@@ -1,3 +1,9 @@
+2007-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/32338
+	* gcc.dg/pr32338-1.c: New test.
+	* gcc.dg/pr32338-2.c: New test.
+
 2007-09-12  Bob Wilson  <bob.wilson@acm.org>
 	
 	* lib/target-supports.exp (check_effective_target_sync_int_long):

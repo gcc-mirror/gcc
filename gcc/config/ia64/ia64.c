@@ -3437,7 +3437,9 @@ ia64_expand_epilogue (int sibcall_p)
 
   finish_spill_pointers ();
 
-  if (current_frame_info.total_size || cfun->machine->ia64_eh_epilogue_sp)
+  if (current_frame_info.total_size
+      || cfun->machine->ia64_eh_epilogue_sp
+      || frame_pointer_needed)
     {
       /* ??? At this point we must generate a magic insn that appears to
          modify the spill iterators, the stack pointer, and the frame

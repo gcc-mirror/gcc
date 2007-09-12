@@ -1,3 +1,10 @@
+2007-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/32338
+	* config/ia64/ia64.c (ia64_expand_epilogue): Emit blockage
+	before sp restoration even when total_size is 0, but
+	frame_pointer_needed.
+
 2007-09-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (machine_function): Add vararg_a7_copy.
