@@ -437,6 +437,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (external, dimension);   /* See Fortran 95's R504.  */
 
   conf (external, intrinsic);
+  conf (entry, intrinsic);
 
   if ((attr->if_source && !attr->procedure) || attr->contained)
     {
@@ -673,8 +674,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (value);
       conf2 (volatile_);
       conf2 (threadprivate);
-      /* TODO: hmm, double check this.  */
       conf2 (value);
+      conf2 (is_bind_c);
       break;
 
     default:
