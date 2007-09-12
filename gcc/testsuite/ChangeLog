@@ -1,3 +1,9 @@
+2007-09-12  Bob Wilson  <bob.wilson@acm.org>
+	
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Revert change to add xtensa.
+	(check_effective_target_sync_char_short): Likewise.
+	
 2007-09-12  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/packed_subtype.adb: New test.
