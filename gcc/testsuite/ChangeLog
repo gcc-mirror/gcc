@@ -1,3 +1,9 @@
+2007-09-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33382
+	* gcc.c-torture/compile/pr33382.c: New testcase.
+	* gcc.c-torture/execute/pr33382.c: Likewise.
+
 2007-09-06  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/32674

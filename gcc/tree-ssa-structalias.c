@@ -2451,7 +2451,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results)
 	     accessing *only* padding.  */
 	  /* Still the user could access one past the end of an array
 	     embedded in a struct resulting in accessing *only* padding.  */
-	  gcc_assert (curr || ref_contains_array_ref (orig_t));
+	  gcc_assert (curr || TREE_CODE (TREE_TYPE (orig_t)) == ARRAY_TYPE
+		      || ref_contains_array_ref (orig_t));
 	}
       else if (bitmaxsize == 0)
 	{
