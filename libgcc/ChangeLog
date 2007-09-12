@@ -1,3 +1,7 @@
+2007-09-11  Janis Johnson  <janis187@us.ibm.com
+
+	* Makefile.in (dfp-filenames): Add bid128_noncomp.
+
 2007-09-10  Janis Johnson  <janis187@us.ibm.com>
 
 	* Makefile.in (dfp-filenames): Remove decUtility, add
