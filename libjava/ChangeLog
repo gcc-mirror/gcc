@@ -1,3 +1,12 @@
+2007-09-12  David Daney  <ddaney@avtrex.com>
+
+	* configure.host: Enable interpreter for mips64.  Enable hash
+	synchronization for all mips*-*-linux* targets.
+	* sysdep/mips/locks.h (compare_and_swap, compare_and_swap_release) Use
+	__sync_bool_compare_and_swap instead of in-line asm.
+	(release_set, read_barrier, write_barrier): Use __sync_synchronize
+	instead of in-line asm.
+
 2007-09-09  Andreas Tobler  <a.tobler@schweiz.org>
 
 	PR libgcj/33326

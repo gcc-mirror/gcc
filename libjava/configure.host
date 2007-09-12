@@ -98,7 +98,7 @@ case "${host}" in
  	enable_java_net_default=no
  	enable_getenv_properties_default=no
 	;;
-  mipsel-*|mips-*)
+  mips*-*)
 	libgcj_interpreter=yes
 	;;
   i686-*|i586-*|i486-*|i386-*)
@@ -283,11 +283,7 @@ EOF
   	sysdeps_dir=mips
   	can_unwind_signal=yes
 	DIVIDESPEC=-fno-use-divide-subroutine
-	case "${host}" in
-	    mipsel*-linux* | mipsisa32el*-linux*)
-		enable_hash_synchronization_default=yes
-	    ;;
-	esac
+	enable_hash_synchronization_default=yes
 	;;
   powerpc*-*-darwin*)
 	enable_hash_synchronization_default=yes

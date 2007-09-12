@@ -22,29 +22,9 @@ typedef unsigned obj_addr_t __attribute__((__mode__(__pointer__)));
 inline static bool
 compare_and_swap(volatile obj_addr_t *addr,
                  obj_addr_t old,
-                 obj_addr_t new_val) 
+                 obj_addr_t new_val)
 {
-  long result;
-  __asm__ __volatile__(".set\tpush\n\t"
-                       ".set\tnoreorder\n\t"
-                       ".set\tnomacro\n\t"
-                       "1:\n\t"
-#if _MIPS_SIM == _ABIO32
-                       ".set\tmips2\n\t"
-#endif
-                       "ll\t%[result],0(%[addr])\n\t"
-                       "bne\t%[result],%[old],2f\n\t"
-                       "move\t%[result],$0\n\t"        // delay slot
-                       "move\t%[result],%[new_val]\n\t"
-                       "sc\t%[result],0(%[addr])\n\t"
-                       "beq\t%[result],$0,1b\n\t"
-                       "nop\n\t"                       // delay slot
-                       "2:\n\t"
-                       ".set\tpop"
-          : [result] "=&r" (result)
-          : [addr] "r" (addr), [new_val] "r" (new_val), [old] "r"(old)
-          : "memory");
-  return (bool) result;
+  return __sync_bool_compare_and_swap(addr, old, new_val);
 }
 
 // Set *addr to new_val with release semantics, i.e. making sure
@@ -53,12 +33,7 @@ compare_and_swap(volatile obj_addr_t *addr,
 inline static void
 release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
 {
-  __asm__ __volatile__(".set\tpush\n\t"
-#if _MIPS_SIM == _ABIO32
-                       ".set\tmips2\n\t"
-#endif
-                       "sync\n\t"
-                       ".set\tpop" : : : "memory");
+  __sync_synchronize();
   *(addr) = new_val;
 }
 
@@ -67,16 +42,10 @@ release_set(volatile obj_addr_t *addr, obj_addr_t new_val)
 // implementation can be the same.
 inline static bool
 compare_and_swap_release(volatile obj_addr_t *addr,
-		  				     obj_addr_t old,
-						     obj_addr_t new_val)
+			 obj_addr_t old,
+			 obj_addr_t new_val)
 {
-  __asm__ __volatile__(".set\tpush\n\t"
-#if _MIPS_SIM == _ABIO32
-                       ".set\tmips2\n\t"
-#endif
-                       "sync\n\t"
-                       ".set\tpop" : : : "memory");
-  return compare_and_swap(addr, old, new_val);
+  return __sync_bool_compare_and_swap(addr, old, new_val);
 }
 
 // Ensure that subsequent instructions do not execute on stale
@@ -85,12 +54,7 @@ compare_and_swap_release(volatile obj_addr_t *addr,
 inline static void
 read_barrier()
 {
-  __asm__ __volatile__(".set\tpush\n\t"
-#if _MIPS_SIM == _ABIO32
-                       ".set\tmips2\n\t"
-#endif
-                       "sync\n\t"
-                       ".set\tpop" : : : "memory");
+  __sync_synchronize();
 }
 
 // Ensure that prior stores to memory are completed with respect to other
@@ -98,12 +62,7 @@ read_barrier()
 inline static void
 write_barrier()
 {
-  __asm__ __volatile__(".set\tpush\n\t"
-#if _MIPS_SIM == _ABIO32
-                       ".set\tmips2\n\t"
-#endif
-                       "sync\n\t"
-                       ".set\tpop" : : : "memory");
+  __sync_synchronize();
 }
 
 #endif   // __SYSDEP_LOCKS_H__
