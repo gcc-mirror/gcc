@@ -242,11 +242,12 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      operation = GIMPLE_STMT_OPERAND (stmt, 1);
 	      if (TREE_CODE (operation) == NOP_EXPR
 		  || TREE_CODE (operation) == CONVERT_EXPR
-		  || TREE_CODE (operation) ==  WIDEN_MULT_EXPR)
+		  || TREE_CODE (operation) == WIDEN_MULT_EXPR)
 		{
 		  tree rhs_type = TREE_TYPE (TREE_OPERAND (operation, 0));
-		  if (TYPE_SIZE_UNIT (rhs_type) < TYPE_SIZE_UNIT (scalar_type))
-		    scalar_type = TREE_TYPE (TREE_OPERAND (operation, 0));
+		  if (TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type)) < 
+		      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type)))
+		    scalar_type = rhs_type;
 		}
 
 	      if (vect_print_dump_info (REPORT_DETAILS))

@@ -1,3 +1,8 @@
+2007-09-12  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33373
+	* gcc.dg/vect/pr33373.c: New test.
+
 2007-09-12  Ben Elliston  <bje@au.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_no_double):

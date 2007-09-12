@@ -1,3 +1,9 @@
+2007-09-12  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/33373
+	* tree-vect-analyze (vect_determine_vectorization_factor): Call 
+	TREE_INT_CST_LOW when comparing TYPE_SIZE_UNIT.	
+
 2007-09-12  Jan Hubicka  <jh@suse.cz>
 
 	PR target/33393
