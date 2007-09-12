@@ -631,6 +631,11 @@ package Opt is
    --  When True the temporary files created by the GNAT driver are not
    --  deleted. Set by switch -dn or qualifier /KEEP_TEMPORARY_FILES.
 
+   Leap_Seconds_Support : Boolean := False;
+   --  GNATBIND
+   --  Set to True to enable leap seconds support in Ada.Calendar and its
+   --  children.
+
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRMAKE
    --  Set to True to skip compile and bind steps

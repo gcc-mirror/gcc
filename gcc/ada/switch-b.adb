@@ -456,6 +456,12 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Scan_Pos (Switch_Chars, Max, Ptr, Default_Exit_Status, C);
 
+         --  Processing for y switch
+
+         when 'y' =>
+            Ptr := Ptr + 1;
+            Leap_Seconds_Support := True;
+
          --  Processing for z switch
 
          when 'z' =>
