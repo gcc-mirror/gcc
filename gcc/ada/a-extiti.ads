@@ -28,11 +28,10 @@ package Ada.Execution_Time.Timers is
 
    pragma Unimplemented_Unit;
 
-   type Timer (T : access Ada.Task_Identification.Task_Id) is
+   type Timer (T : not null access constant Ada.Task_Identification.Task_Id) is
       tagged limited private;
 
-   type Timer_Handler is
-      access protected procedure (TM : in out Timer);
+   type Timer_Handler is access protected procedure (TM : in out Timer);
 
    Min_Handler_Ceiling : constant System.Any_Priority := System.Priority'Last;
 
@@ -50,7 +49,7 @@ package Ada.Execution_Time.Timers is
 
    procedure Cancel_Handler
      (TM        : in out Timer;
-      Cancelled : in out Boolean);
+      Cancelled : out Boolean);
 
    function Time_Remaining (TM : Timer) return Ada.Real_Time.Time_Span;
 

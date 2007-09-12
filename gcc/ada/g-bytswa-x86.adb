@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2006, AdaCore                         --
+--                     Copyright (C) 2006-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -98,7 +98,7 @@ package body GNAT.Byte_Swapping is
       function As_U64 is new Ada.Unchecked_Conversion
          (Source => Item, Target => Unsigned_64);
 
-      X : Unsigned_64 renames As_U64 (Input);
+      X : constant Unsigned_64 := As_U64 (Input);
 
       type Two_Words is array (0 .. 1) of Unsigned_32;
       for Two_Words'Component_Size use Unsigned_32'Size;
@@ -125,7 +125,7 @@ package body GNAT.Byte_Swapping is
    -- Swap2 --
    -----------
 
-   procedure Swap2 (Location : in System.Address) is
+   procedure Swap2 (Location : System.Address) is
 
       X : Unsigned_16;
       for X'Address use Location;
@@ -140,7 +140,7 @@ package body GNAT.Byte_Swapping is
    -- Swap4 --
    -----------
 
-   procedure Swap4 (Location : in System.Address) is
+   procedure Swap4 (Location : System.Address) is
 
       X : Unsigned_32;
       for X'Address use Location;
@@ -168,7 +168,7 @@ package body GNAT.Byte_Swapping is
    -- Swap8 --
    -----------
 
-   procedure Swap8 (Location : in System.Address) is
+   procedure Swap8 (Location : System.Address) is
 
       X : Unsigned_64;
       for X'Address use Location;

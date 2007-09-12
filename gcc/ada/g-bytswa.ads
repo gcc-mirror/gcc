@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                      Copyright (C) 2006, AdaCore                         --
+--                     Copyright (C) 2006-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Simple routines for swapping the bytes of 16-, 32-, and 64-bit objects.
+--  Simple routines for swapping the bytes of 16-, 32-, and 64-bit objects
 
---  The generic functions should be instantiated with types that
---  are of a size in bytes corresponding to the name of the generic. For
---  example, a 2-byte integer type would be compatible with Swapped2, 4-byte
---  integer with Swapped4, and so on. Failure to do so will result in a
---  warning when compiling the instantiation; this warning should be heeded.
---  Ignoring this warning can result in unexpected results.
+--  The generic functions should be instantiated with types that are of a size
+--  in bytes corresponding to the name of the generic. For example, a 2-byte
+--  integer type would be compatible with Swapped2, 4-byte integer with
+--  Swapped4, and so on. Failure to do so will result in a warning when
+--  compiling the instantiation; this warning should be heeded. Ignoring this
+--  warning can result in unexpected results.
 
 --  An example of proper usage follows:
 
@@ -85,12 +85,12 @@
 --        ...
 --     end;
 
---  A properly-sized record type will also be acceptable, and so forth.
+--  A properly-sized record type will also be acceptable, and so forth
 
---  However, as described, a size mismatch must be avoided. In the following
---  we instantiate one of the generics with a type that is too large. The
---  result of the function call is undefined, such that assignment to an
---  object can result in garbage values.
+--  However, as described, a size mismatch must be avoided. In the following we
+--  instantiate one of the generics with a type that is too large. The result
+--  of the function call is undefined, such that assignment to an object can
+--  result in garbage values.
 
 --     Wrong: declare
 --        subtype String16 is String (1 .. 16);
@@ -114,8 +114,8 @@
 --        Put_Line (S);
 --     end Wrong;
 
---  When the size of the type is larger than 8 bytes, the use of the
---  non-generic procedures is an alternative because no function result is
+--  When the size of the type is larger than 8 bytes, the use of the non-
+--  generic procedures is an alternative because no function result is
 --  involved; manipulation of the object is direct.
 
 --  The procedures are passed the address of an object to manipulate. They will
@@ -141,8 +141,8 @@
 --        Put_Line (S8);
 --     end;
 
---  If an object of a type larger than N is passed, the remaining
---  bytes of the object are undisturbed.  For example:
+--  If an object of a type larger than N is passed, the remaining bytes of the
+--  object are undisturbed. For example:
 
 --     declare
 --        subtype String16 is String (1 .. 16);
