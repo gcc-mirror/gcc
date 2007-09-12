@@ -1,3 +1,13 @@
+2007-09-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (calc_live_regs): Use
+	current_function_saves_all_registers instead of
+	current_function_has_nonlocal_label.
+	(sh_allocate_initial_value): Likewise.
+	(sh_get_pr_initial_val): Likewise.
+	* config/sh/sh.h (SHMEDIA_REGS_STACK_ADJUST): Likewise.
+	* config/sh/sh.md (load_ra): Likewise.
+
 2007-09-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/t-linux (LIMITS_H_TEST): Only define if not inhibit_libc.
