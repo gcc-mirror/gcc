@@ -1,3 +1,9 @@
+2007-09-12  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/32377
+	* tree-vect-analyze.c (vect_analyze_data_ref_dependence): Distinguish
+	between positive and negative dependence distance using DDR_REVERSED_P.
+
 2007-09-12  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/33373

@@ -1,5 +1,6 @@
 /* { dg-require-effective-target vect_int } */
 
+#include <stdio.h>
 #include <stdarg.h>
 #include <signal.h>
 #include "tree-vect.h"
@@ -16,6 +17,7 @@ int main1 ()
   float B[N] __attribute__ ((__aligned__(16)));
   float C[N] __attribute__ ((__aligned__(16)));
   float D[N] __attribute__ ((__aligned__(16)));
+  float E[4] = {0,1,2,480};
   float s;
 
   int i, j;
@@ -53,16 +55,13 @@ int main1 ()
       s = 0;
       for (j=0; j<N; j+=4)
 	s += C[j];
-      B[i] = B[i+3] + s;
+      B[i+3] = B[i] + s;
     }
 
   /* check results:  */
   for (i = 0; i < 4; i++)
     {
-      s = 0;
-      for (j=0; j<N; j+=4)
-	s += C[j];
-      if (B[i] != D[i+3] + s)
+      if (B[i] != E[i])
 	abort ();
     }
 
