@@ -2851,11 +2851,21 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
   if (!(expr || pointer))
     return NULL_TREE;
 
-  if (expr != NULL && expr->ts.type == BT_DERIVED
-      && expr->ts.is_iso_c && expr->ts.derived
-      && (expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_PTR
-	  || expr->symtree->n.sym->intmod_sym_id == ISOCBINDING_NULL_FUNPTR))
+  /* Check if we have ISOCBINDING_NULL_PTR or ISOCBINDING_NULL_FUNPTR
+     (these are the only two iso_c_binding derived types that can be
+     used as initialization expressions).  If so, we need to modify
+     the 'expr' to be that for a (void *).  */
+  if (expr->ts.type == BT_DERIVED && expr->ts.is_iso_c && expr->ts.derived)
+    {
+      gfc_symbol *derived = expr->ts.derived;
+
       expr = gfc_int_expr (0);
+
+      /* The derived symbol has already been converted to a (void *).  Use
+	 its kind.  */
+      expr->ts.f90_type = derived->ts.f90_type;
+      expr->ts.kind = derived->ts.kind;
+    }
   
   if (array)
     {

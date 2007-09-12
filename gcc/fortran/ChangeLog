@@ -1,3 +1,10 @@
+2007-09-12  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33395
+	* trans-expr.c (gfc_conv_initializer): Remove unnecessary test for
+	intmod_sym_id and use derived symbol to set new kind of C_NULL_PTR
+	and C_NULL_FUNPTR expressions.
+
 2007-09-11  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33040
