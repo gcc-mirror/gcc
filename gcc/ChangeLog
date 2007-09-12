@@ -1,3 +1,8 @@
+2007-09-12  Ira Rosen  <irar@il.ibm.com>
+
+	* params.def (PARAM_MIN_VECT_LOOP_BOUND): Change default and minimum 
+	to 1.
+
 2007-09-11  James E. Wilson  <wilson@specifix.com>
 
 	* defaults.h (DWARF2_UNWIND_INFO): Don't define if
