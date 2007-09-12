@@ -109,7 +109,7 @@ split_join()
       {
         done = false;
 
-        PB_DS_THROW_IF_FAILED(            pb_ds::container_traits<cntnr>::split_join_can_throw, pb_ds::container_traits<cntnr>::split_join_can_throw, m_p_c, & m_native_c);
+        PB_DS_THROW_IF_FAILED(            __gnu_pbds::container_traits<cntnr>::split_join_can_throw, __gnu_pbds::container_traits<cntnr>::split_join_can_throw, m_p_c, & m_native_c);
       }
 
   PB_DS_COND_COMPARE(*m_p_c, m_native_c);

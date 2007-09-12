@@ -54,7 +54,7 @@
 #include <iterator>
 #include <cstdlib>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -73,7 +73,7 @@ namespace pb_ds
 	  enum
 	    {
 	      support_detected =
-	      pb_ds::test::detail::tree_supports_order_statistics<Cntnr>::value
+	      __gnu_pbds::test::detail::tree_supports_order_statistics<Cntnr>::value
 	    };
 
 	  PB_DS_STATIC_ASSERT(correct_type, support_detected);
@@ -126,7 +126,7 @@ namespace pb_ds
 
     template<bool Support_Order_Statistics>
     class tree_order_statistics_test 
-    : private pb_ds::test::detail::timing_test_base
+    : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       tree_order_statistics_test(size_t vn, size_t vs, size_t vm)
@@ -142,11 +142,11 @@ namespace pb_ds
 
       template<typename Cntnr>
       void
-      order_statistics(Cntnr& r_container, pb_ds::detail::true_type);
+      order_statistics(Cntnr& r_container, __gnu_pbds::detail::true_type);
 
       template<typename Cntnr>
       void
-      order_statistics(Cntnr& r_container, pb_ds::detail::false_type);
+      order_statistics(Cntnr& r_container, __gnu_pbds::detail::false_type);
 
     private:
       const size_t m_vn;
@@ -170,17 +170,17 @@ namespace pb_ds
 	  for (size_t ins = 0; ins < v; ++ ins)
             cntnr.insert((typename Cntnr::value_type)ins);
 
-	  pb_ds::test::detail::order_statistics_functor<Cntnr, Support_Order_Statistics>
+	  __gnu_pbds::test::detail::order_statistics_functor<Cntnr, Support_Order_Statistics>
             fn(cntnr);
 
 	  const double res =
-            pb_ds::test::detail::timing_test_base::operator()(fn);
+            __gnu_pbds::test::detail::timing_test_base::operator()(fn);
 
 	  res_set_fmt.add_res(v, res / v);
 	}
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

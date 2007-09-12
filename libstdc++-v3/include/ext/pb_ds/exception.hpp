@@ -50,13 +50,13 @@
 #include <stdexcept>
 #include <cstdlib>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   // Base class for exceptions.
   struct container_error : public std::logic_error
   {
     container_error() 
-    : std::logic_error(__N("pb_ds::container_error")) { }
+    : std::logic_error(__N("__gnu_pbds::container_error")) { }
   };
 
   // An entry cannot be inserted into a container object for logical
@@ -104,6 +104,6 @@ namespace pb_ds
   __throw_resize_error(void)
   { std::abort(); }
 #endif
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

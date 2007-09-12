@@ -54,13 +54,12 @@
 #include <ext/pb_ds/priority_queue.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 int
 main()
 {
-  pb_ds::priority_queue<int> p;
+  __gnu_pbds::priority_queue<int> p;
 
   // First we insert some values into the container.
   for (int i = 0; i < 1000; ++i)

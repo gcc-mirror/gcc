@@ -50,7 +50,7 @@
 #include <cstdlib>
 #include <ext/pb_ds/detail/list_update_policy/counter_lu_metadata.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   // A null type that means that each link in a list-based container
   // does not actually need metadata.
@@ -137,6 +137,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

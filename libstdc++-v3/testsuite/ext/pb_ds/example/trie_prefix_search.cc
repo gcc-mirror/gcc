@@ -57,8 +57,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // A PATRICIA trie with a prefix-search node-updator type. Note that
 // since the node updator is trie_prefix_search_node_update, then the

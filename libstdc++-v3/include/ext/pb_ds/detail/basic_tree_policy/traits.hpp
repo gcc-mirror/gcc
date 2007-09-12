@@ -52,7 +52,7 @@
 #include <ext/pb_ds/detail/tree_policy/node_metadata_selector.hpp>
 #include <ext/pb_ds/detail/trie_policy/node_metadata_selector.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {    
@@ -81,7 +81,7 @@ namespace pb_ds
     struct trie_traits;
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #include <ext/pb_ds/detail/rb_tree_map_/traits.hpp>
 #include <ext/pb_ds/detail/splay_tree_/traits.hpp>

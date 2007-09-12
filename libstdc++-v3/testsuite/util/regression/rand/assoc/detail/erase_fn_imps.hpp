@@ -166,13 +166,13 @@ erase_it()
       container_traits::order_preserving
     };
 
-  return (erase_it_imp(pb_ds::detail::integral_constant<int,erase_iterators>()));
+  return (erase_it_imp(__gnu_pbds::detail::integral_constant<int,erase_iterators>()));
 }
 
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-erase_it_imp(pb_ds::detail::false_type)
+erase_it_imp(__gnu_pbds::detail::false_type)
 {
   return (true);
 }
@@ -180,7 +180,7 @@ erase_it_imp(pb_ds::detail::false_type)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-erase_it_imp(pb_ds::detail::true_type)
+erase_it_imp(__gnu_pbds::detail::true_type)
 {
   PB_DS_TRACE("erase_it");
 
@@ -222,9 +222,9 @@ erase_it_imp(pb_ds::detail::true_type)
 	  m_native_c.erase(native_it);
 
         bool range_guarantee =
-	  pb_ds::detail::is_same<
+	  __gnu_pbds::detail::is_same<
 	  typename container_traits::invalidation_guarantee,
-	  pb_ds::range_invalidation_guarantee>::value ;
+	  __gnu_pbds::range_invalidation_guarantee>::value ;
 
         if (range_guarantee)
 	  PB_DS_THROW_IF_FAILED(                next_ers_it == next_it,  "",  m_p_c, & m_native_c);
@@ -255,13 +255,13 @@ erase_rev_it()
       container_traits::reverse_iteration
     };
 
-  return (erase_rev_it_imp(pb_ds::detail::integral_constant<int,erase_iterators>()));
+  return (erase_rev_it_imp(__gnu_pbds::detail::integral_constant<int,erase_iterators>()));
 }
 
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-erase_rev_it_imp(pb_ds::detail::false_type)
+erase_rev_it_imp(__gnu_pbds::detail::false_type)
 {
   return (true);
 }
@@ -269,7 +269,7 @@ erase_rev_it_imp(pb_ds::detail::false_type)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-erase_rev_it_imp(pb_ds::detail::true_type)
+erase_rev_it_imp(__gnu_pbds::detail::true_type)
 {
   PB_DS_TRACE("erase_rev_it");
 

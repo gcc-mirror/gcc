@@ -55,7 +55,7 @@
 #include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 int main()
 {

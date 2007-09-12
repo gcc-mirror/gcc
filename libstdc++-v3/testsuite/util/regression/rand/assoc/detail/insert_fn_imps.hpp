@@ -77,7 +77,7 @@ insert()
       {
         done = false;
       }
-    catch(pb_ds::insert_error&)
+    catch(__gnu_pbds::insert_error&)
       {
         PB_DS_THROW_IF_FAILED(false, "", m_p_c, &m_native_c);
       }

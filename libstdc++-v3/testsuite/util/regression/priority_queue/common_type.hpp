@@ -50,7 +50,7 @@
 #include <regression/basic_type.hpp>
 #include <common_type/priority_queue/common_type.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 namespace test
 {
@@ -60,6 +60,6 @@ namespace test
 
   typedef pq_tl_t min_pq_tl_t;
 } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

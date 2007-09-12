@@ -58,8 +58,7 @@
 #include <ext/pb_ds/tree_policy.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // A red-black tree table storing ints and their order
 // statistics. Note that since the tree uses

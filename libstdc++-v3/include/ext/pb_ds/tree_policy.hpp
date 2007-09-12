@@ -51,7 +51,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/basic_tree_policy/basic_tree_policy_base.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   // A null node updator, indicating that no node updates are required.
   template<typename Const_Node_Iterator,
@@ -163,6 +163,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 #undef PB_DS_BASE_C_DEC
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

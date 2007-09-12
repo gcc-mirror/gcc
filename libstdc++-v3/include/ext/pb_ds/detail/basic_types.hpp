@@ -52,7 +52,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/pb_ds/detail/type_utils.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -211,7 +211,7 @@ namespace pb_ds
       typedef integral_constant<int, is_simple<Key>::value> indicator;
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

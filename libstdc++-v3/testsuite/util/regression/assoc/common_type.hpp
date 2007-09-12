@@ -50,7 +50,7 @@
 #include <regression/basic_type.hpp>
 #include <common_type/assoc/common_type.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 namespace test
 {
@@ -72,15 +72,15 @@ namespace test
     }
   };
 
-  typedef pb_ds::string_trie_e_access_traits<basic_type, 'a', 'a' + basic_type::distinct_chars - 1, false, alloc_type> e_access_traits_t;
+  typedef __gnu_pbds::string_trie_e_access_traits<basic_type, 'a', 'a' + basic_type::distinct_chars - 1, false, alloc_type> e_access_traits_t;
 
   template<typename Data_Type>
   struct tree_types
   {
   private:
-    typedef typename tree_common_types<basic_type, Data_Type, std::less<basic_type>, pb_ds::null_tree_node_update, alloc_type>::regression_tl no_order_statistics_tl_t;
+    typedef typename tree_common_types<basic_type, Data_Type, std::less<basic_type>, __gnu_pbds::null_tree_node_update, alloc_type>::regression_tl no_order_statistics_tl_t;
 
-    typedef typename tree_common_types<basic_type, Data_Type, std::less<basic_type>, pb_ds::tree_order_statistics_node_update, alloc_type>::regression_tl order_statistics_tl_t;
+    typedef typename tree_common_types<basic_type, Data_Type, std::less<basic_type>, __gnu_pbds::tree_order_statistics_node_update, alloc_type>::regression_tl order_statistics_tl_t;
 
   public:
     typedef typename __gnu_cxx::typelist::append<no_order_statistics_tl_t, order_statistics_tl_t>::type tl_t;
@@ -92,11 +92,11 @@ namespace test
   struct trie_types
   {
   private:
-    typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, pb_ds::pat_trie_tag, pb_ds::null_trie_node_update, alloc_type>::regression_tl no_updates_tl_t;
+    typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, __gnu_pbds::pat_trie_tag, __gnu_pbds::null_trie_node_update, alloc_type>::regression_tl no_updates_tl_t;
 
-    typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, pb_ds::pat_trie_tag, pb_ds::trie_order_statistics_node_update, alloc_type>::regression_tl order_statistics_tl_t;
+    typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, __gnu_pbds::pat_trie_tag, __gnu_pbds::trie_order_statistics_node_update, alloc_type>::regression_tl order_statistics_tl_t;
 
-    typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, pb_ds::pat_trie_tag, pb_ds::trie_prefix_search_node_update, alloc_type>::regression_tl prefix_search_tl_t;
+    typedef typename trie_common_types<basic_type, Data_Type, e_access_traits_t, __gnu_pbds::pat_trie_tag, __gnu_pbds::trie_prefix_search_node_update, alloc_type>::regression_tl prefix_search_tl_t;
 
   public:
     typedef typename __gnu_cxx::typelist::append<no_updates_tl_t, typename __gnu_cxx::typelist::append<prefix_search_tl_t, order_statistics_tl_t>::type>::type tl_t;
@@ -140,6 +140,6 @@ namespace test
   typedef trie_types<basic_type>::tl_t 			trie_map_tl_t;
   typedef trie_types<basic_type>::min_tl_t 		min_trie_map_tl_t;
 } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

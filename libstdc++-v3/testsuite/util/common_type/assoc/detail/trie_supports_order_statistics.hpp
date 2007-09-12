@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/trie_policy.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -63,9 +63,9 @@ namespace pb_ds
       {
 	enum
 	  {
-	    value = pb_ds::detail::is_same<
+	    value = __gnu_pbds::detail::is_same<
             typename Tree_Cntnr::node_update,
-            pb_ds::trie_order_statistics_node_update<
+            __gnu_pbds::trie_order_statistics_node_update<
             typename Tree_Cntnr::const_node_iterator,
             typename Tree_Cntnr::node_iterator,
             typename Tree_Cntnr::e_access_traits,
@@ -77,7 +77,7 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_TRIE_SUPPORTS_ORDER_STATISTICS_HPP
 

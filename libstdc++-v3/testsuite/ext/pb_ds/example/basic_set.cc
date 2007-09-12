@@ -56,8 +56,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // The following function performs a sequence of operations on an
 // associative container object storing integers.

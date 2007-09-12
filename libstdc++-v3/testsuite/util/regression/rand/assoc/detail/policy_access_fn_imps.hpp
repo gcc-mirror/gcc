@@ -55,7 +55,7 @@ policy_access()
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_access(pb_ds::basic_hash_tag)
+policy_access(__gnu_pbds::basic_hash_tag)
 {
   {
     typename Cntnr::hash_fn& r_t =
@@ -97,9 +97,9 @@ policy_access(pb_ds::basic_hash_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_access(pb_ds::cc_hash_tag)
+policy_access(__gnu_pbds::cc_hash_tag)
 {
-  policy_access(pb_ds::basic_hash_tag());
+  policy_access(__gnu_pbds::basic_hash_tag());
 
   {
     typename Cntnr::comb_hash_fn& r_t =
@@ -117,9 +117,9 @@ policy_access(pb_ds::cc_hash_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_access(pb_ds::gp_hash_tag)
+policy_access(__gnu_pbds::gp_hash_tag)
 {
-  policy_access(pb_ds::basic_hash_tag());
+  policy_access(__gnu_pbds::basic_hash_tag());
 
   {
     typename Cntnr::comb_probe_fn& r_t =
@@ -149,7 +149,7 @@ policy_access(pb_ds::gp_hash_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_access(pb_ds::tree_tag)
+policy_access(__gnu_pbds::tree_tag)
 {
   {
     typename Cntnr::cmp_fn& r_t =
@@ -168,13 +168,13 @@ policy_access(pb_ds::tree_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_access(pb_ds::list_update_tag)
+policy_access(__gnu_pbds::list_update_tag)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_access(pb_ds::pat_trie_tag)
+policy_access(__gnu_pbds::pat_trie_tag)
 {
   typename Cntnr::e_access_traits& r_t =
     m_p_c->get_e_access_traits();

@@ -50,7 +50,7 @@
 #include <stdlib.h>
 #include <bits/functexcept.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -113,4 +113,4 @@ namespace pb_ds
       return false;
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds

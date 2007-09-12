@@ -55,7 +55,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/binomial_heap_base_/binomial_heap_base_.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -119,4 +119,4 @@ namespace pb_ds
 
 #undef PB_DS_BASE_C_DEC
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds

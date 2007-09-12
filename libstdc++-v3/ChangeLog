@@ -1,5 +1,13 @@
 2007-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/ext/pb_ds/*: Change namespace pb_ds to __gnu_pbds.
+	* docs/html/ext/pb_ds/*: Same.
+	* testsuite/ext/pb_ds/*: Same.
+	* testsuite/performance/ext/pb_ds/*: Same.
+	* testsuite/util/*: Same.
+	
+2007-09-12  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/parallel/find.h: Doxygen fixups.
 	* include/bits/hashtable.h: Same.
 

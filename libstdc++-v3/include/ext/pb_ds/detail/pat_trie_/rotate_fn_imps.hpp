@@ -119,7 +119,7 @@ rotate_parent(node_pointer p_nd)
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-apply_update(node_pointer /*p_nd*/, pb_ds::null_node_update*  /*p_update*/)
+apply_update(node_pointer /*p_nd*/, __gnu_pbds::null_node_update*  /*p_update*/)
 { }
 
 PB_DS_CLASS_T_DEC
@@ -151,6 +151,6 @@ update_to_top(node_pointer p_nd, Node_Update_* p_update)
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
-update_to_top(node_pointer /*p_nd*/, pb_ds::null_node_update*  /*p_update*/)
+update_to_top(node_pointer /*p_nd*/, __gnu_pbds::null_node_update*  /*p_update*/)
 { }
 

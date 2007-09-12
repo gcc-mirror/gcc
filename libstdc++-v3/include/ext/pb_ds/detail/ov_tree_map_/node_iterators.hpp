@@ -51,7 +51,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -293,6 +293,6 @@ namespace pb_ds
 #undef PB_DS_OV_TREE_CONST_NODE_ITERATOR_C_DEC
 
 } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

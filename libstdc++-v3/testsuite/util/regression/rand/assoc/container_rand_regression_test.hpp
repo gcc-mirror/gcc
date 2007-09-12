@@ -58,7 +58,7 @@
 #include <common_type/assoc/string_form.hpp>
 #include <regression/rand/io/assoc/xml_formatter.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 namespace test
 {
@@ -137,7 +137,7 @@ namespace detail
     typedef typename test_traits::value_type 		value_type;
     typedef typename test_traits::native_type 		native_type;
     typedef twister_rand_gen 				gen;
-    typedef pb_ds::container_traits<Cntnr> 		container_traits;
+    typedef __gnu_pbds::container_traits<Cntnr> 		container_traits;
     typedef __gnu_cxx::throw_allocator<char> 		alloc_t;
 
     enum op
@@ -173,52 +173,52 @@ namespace detail
     iterator_defs();
 
     static void
-    node_iterator_defs(pb_ds::detail::false_type);
+    node_iterator_defs(__gnu_pbds::detail::false_type);
 
     static void
-    node_iterator_defs(pb_ds::detail::true_type);
+    node_iterator_defs(__gnu_pbds::detail::true_type);
 
     static void
     policy_defs();
 
     static void
-    policy_defs(pb_ds::basic_hash_tag);
+    policy_defs(__gnu_pbds::basic_hash_tag);
 
     static void
-    policy_defs(pb_ds::cc_hash_tag);
+    policy_defs(__gnu_pbds::cc_hash_tag);
 
     static void
-    policy_defs(pb_ds::gp_hash_tag);
+    policy_defs(__gnu_pbds::gp_hash_tag);
 
     static void
-    policy_defs(pb_ds::tree_tag);
+    policy_defs(__gnu_pbds::tree_tag);
 
     static void
-    policy_defs(pb_ds::list_update_tag);
+    policy_defs(__gnu_pbds::list_update_tag);
 
     static void
-    policy_defs(pb_ds::pat_trie_tag);
+    policy_defs(__gnu_pbds::pat_trie_tag);
 
     void
     policy_access();
 
     void
-    policy_access(pb_ds::basic_hash_tag);
+    policy_access(__gnu_pbds::basic_hash_tag);
 
     void
-    policy_access(pb_ds::cc_hash_tag);
+    policy_access(__gnu_pbds::cc_hash_tag);
 
     void
-    policy_access(pb_ds::gp_hash_tag);
+    policy_access(__gnu_pbds::gp_hash_tag);
 
     void
-    policy_access(pb_ds::tree_tag);
+    policy_access(__gnu_pbds::tree_tag);
 
     void
-    policy_access(pb_ds::list_update_tag);
+    policy_access(__gnu_pbds::list_update_tag);
 
     void
-    policy_access(pb_ds::pat_trie_tag);
+    policy_access(__gnu_pbds::pat_trie_tag);
 
     void
     it_copy();
@@ -233,16 +233,16 @@ namespace detail
     rev_it_assign();
 
     void
-    rev_it_copy_imp(pb_ds::detail::false_type);
+    rev_it_copy_imp(__gnu_pbds::detail::false_type);
 
     void
-    rev_it_copy_imp(pb_ds::detail::true_type);
+    rev_it_copy_imp(__gnu_pbds::detail::true_type);
 
     void
-    rev_it_assign_imp(pb_ds::detail::false_type);
+    rev_it_assign_imp(__gnu_pbds::detail::false_type);
 
     void
-    rev_it_assign_imp(pb_ds::detail::true_type);
+    rev_it_assign_imp(__gnu_pbds::detail::true_type);
 
     bool
     default_constructor();
@@ -260,19 +260,19 @@ namespace detail
     it_constructor();
 
     bool
-    it_constructor_imp(pb_ds::cc_hash_tag);
+    it_constructor_imp(__gnu_pbds::cc_hash_tag);
 
     bool
-    it_constructor_imp(pb_ds::gp_hash_tag);
+    it_constructor_imp(__gnu_pbds::gp_hash_tag);
 
     bool
-    it_constructor_imp(pb_ds::tree_tag);
+    it_constructor_imp(__gnu_pbds::tree_tag);
 
     bool
-    it_constructor_imp(pb_ds::list_update_tag);
+    it_constructor_imp(__gnu_pbds::list_update_tag);
 
     bool
-    it_constructor_imp(pb_ds::pat_trie_tag);
+    it_constructor_imp(__gnu_pbds::pat_trie_tag);
 
     bool
     insert();
@@ -284,19 +284,19 @@ namespace detail
     erase_it();
 
     bool
-    erase_it_imp(pb_ds::detail::false_type);
+    erase_it_imp(__gnu_pbds::detail::false_type);
 
     bool
-    erase_it_imp(pb_ds::detail::true_type);
+    erase_it_imp(__gnu_pbds::detail::true_type);
 
     bool
     erase_rev_it();
 
     bool
-    erase_rev_it_imp(pb_ds::detail::false_type);
+    erase_rev_it_imp(__gnu_pbds::detail::false_type);
 
     bool
-    erase_rev_it_imp(pb_ds::detail::true_type);
+    erase_rev_it_imp(__gnu_pbds::detail::true_type);
 
     bool
     erase_if();
@@ -308,46 +308,46 @@ namespace detail
     resize();
 
     bool
-    resize_imp(pb_ds::detail::true_type);
+    resize_imp(__gnu_pbds::detail::true_type);
 
     bool
-    resize_imp(pb_ds::detail::false_type);
+    resize_imp(__gnu_pbds::detail::false_type);
 
     bool
     get_set_loads();
 
     bool
-    get_set_loads_imp(pb_ds::detail::true_type);
+    get_set_loads_imp(__gnu_pbds::detail::true_type);
 
     bool
-    get_set_loads_imp(pb_ds::detail::false_type);
+    get_set_loads_imp(__gnu_pbds::detail::false_type);
 
     void
     get_set_load();
 
     void
-    get_set_load_imp(pb_ds::detail::true_type);
+    get_set_load_imp(__gnu_pbds::detail::true_type);
 
     void
-    get_set_load_imp(pb_ds::detail::false_type);
+    get_set_load_imp(__gnu_pbds::detail::false_type);
 
     bool
     subscript();
 
     bool
-    subscript_imp(pb_ds::detail::false_type);
+    subscript_imp(__gnu_pbds::detail::false_type);
 
     bool
-    subscript_imp(pb_ds::detail::true_type);
+    subscript_imp(__gnu_pbds::detail::true_type);
 
     bool
     split_join();
 
     bool
-    split_join_imp(pb_ds::detail::false_type);
+    split_join_imp(__gnu_pbds::detail::false_type);
 
     bool
-    split_join_imp(pb_ds::detail::true_type);
+    split_join_imp(__gnu_pbds::detail::true_type);
 
     void
     cmp(const Cntnr&, const native_type&, const std::string&);
@@ -360,43 +360,43 @@ namespace detail
 
     void
     order_preserving_cmp_imp(const Cntnr&, const native_type&, 
-			     pb_ds::detail::false_type);
+			     __gnu_pbds::detail::false_type);
 
     void
     order_preserving_cmp_imp(const Cntnr&, const native_type&, 
-			     pb_ds::detail::true_type);
+			     __gnu_pbds::detail::true_type);
 
     void
     back_order_preserving_cmp_imp(const Cntnr&, const native_type&, 
-				  pb_ds::detail::false_type);
+				  __gnu_pbds::detail::false_type);
 
     void
     back_order_preserving_cmp_imp(const Cntnr&, const native_type&, 
-				  pb_ds::detail::true_type);
+				  __gnu_pbds::detail::true_type);
 
     void
     reverse_iteration_cmp_imp(const Cntnr&, const native_type&, 
-			      pb_ds::detail::false_type);
+			      __gnu_pbds::detail::false_type);
 
     void
     reverse_iteration_cmp_imp(const Cntnr&, const native_type&, 
-			      pb_ds::detail::true_type);
+			      __gnu_pbds::detail::true_type);
 
     void
     order_statistics_cmp_imp(const Cntnr&, const native_type&, 
-			     pb_ds::detail::false_type);
+			     __gnu_pbds::detail::false_type);
 
     void
     order_statistics_cmp_imp(const Cntnr&, const native_type&, 
-			     pb_ds::detail::true_type);
+			     __gnu_pbds::detail::true_type);
 
     void
     prefix_search_cmp_imp(const Cntnr&, const native_type&, 
-			  pb_ds::detail::false_type);
+			  __gnu_pbds::detail::false_type);
 
     void
     prefix_search_cmp_imp(const Cntnr&, const native_type&, 
-			  pb_ds::detail::true_type);
+			  __gnu_pbds::detail::true_type);
 
     template<typename Const_It, class Const_Native_It>
     void
@@ -408,19 +408,19 @@ namespace detail
 
     void
     lower_bound_cmp_imp(const Cntnr&, const native_type&, 
-			pb_ds::detail::false_type);
+			__gnu_pbds::detail::false_type);
 
     void
     lower_bound_cmp_imp(const Cntnr&, const native_type&, 
-			pb_ds::detail::true_type);
+			__gnu_pbds::detail::true_type);
 
     void
     upper_bound_cmp_imp(const Cntnr&, const native_type&, 
-			pb_ds::detail::false_type);
+			__gnu_pbds::detail::false_type);
 
     void
     upper_bound_cmp_imp(const Cntnr&, const native_type&, 
-			pb_ds::detail::true_type);
+			__gnu_pbds::detail::true_type);
 
     void
     print_container(const native_type&, std::ostream& r_os = std::cerr) const;
@@ -495,6 +495,6 @@ namespace detail
 
 } // namespace detail
 } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

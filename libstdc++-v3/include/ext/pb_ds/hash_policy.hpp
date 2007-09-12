@@ -56,7 +56,7 @@
 #include <ext/pb_ds/detail/hash_fn/mod_based_range_hashing.hpp>
 #include <ext/pb_ds/detail/resize_policy/hash_load_check_resize_trigger_size_base.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   // A null hash function, indicating that the combining hash function
   // is actually a ranged hash function.
@@ -605,6 +605,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

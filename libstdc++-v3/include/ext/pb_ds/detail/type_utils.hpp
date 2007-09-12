@@ -54,7 +54,7 @@
 #include <ext/type_traits.h>
 #include <ext/numeric_traits.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -158,7 +158,7 @@ namespace pb_ds
     };
 
 #define PB_DS_STATIC_ASSERT(UNIQUE, E)  \
-    typedef pb_ds::detail::__static_assert_dumclass<sizeof(pb_ds::detail::__static_assert<bool(E)>)> UNIQUE##__static_assert_type
+    typedef __gnu_pbds::detail::__static_assert_dumclass<sizeof(__gnu_pbds::detail::__static_assert<bool(E)>)> UNIQUE##__static_assert_type
 
 #endif
 
@@ -168,6 +168,6 @@ namespace pb_ds
       typedef Type type;
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

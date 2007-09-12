@@ -61,7 +61,7 @@
 #include <regression/basic_type.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -119,11 +119,11 @@ namespace pb_ds
 	  { return (""); }
 
 	  static std::string
-	  name(pb_ds::null_mapped_type)
+	  name(__gnu_pbds::null_mapped_type)
 	  { return ("set"); }
 
 	  static std::string
-	  desc(pb_ds::null_mapped_type)
+	  desc(__gnu_pbds::null_mapped_type)
 	  { return (""); }
 
 	public:
@@ -183,7 +183,7 @@ namespace pb_ds
 					    typename Cntnr::container_category>
     { };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif
 

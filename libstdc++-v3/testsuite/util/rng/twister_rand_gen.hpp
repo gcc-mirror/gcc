@@ -50,7 +50,7 @@
 #include <limits.h>
 #include <tr1/random>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -81,6 +81,6 @@ namespace pb_ds
       base_generator_t m_base_generator;
     };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_TWISTER_RAND_GEN_HPP

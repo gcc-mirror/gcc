@@ -67,7 +67,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -81,7 +81,7 @@ namespace pb_ds
     entry_cmp<Value_Type, Cmp_Fn, is_simple<Value_Type>::value, Allocator>::type
 
 #define PB_DS_RESIZE_POLICY_DEC	\
-    pb_ds::detail::resize_policy<typename Allocator::size_type>
+    __gnu_pbds::detail::resize_policy<typename Allocator::size_type>
 
     /**
      * class description = "Base class for some types of h3ap$">
@@ -358,6 +358,6 @@ namespace pb_ds
 #undef PB_DS_RESIZE_POLICY_DEC
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

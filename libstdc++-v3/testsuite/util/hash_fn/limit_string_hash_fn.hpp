@@ -49,7 +49,7 @@
 
 #include <string>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -77,6 +77,6 @@ namespace pb_ds
     size_t limit_string_hash_fn::_S_max;
 
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

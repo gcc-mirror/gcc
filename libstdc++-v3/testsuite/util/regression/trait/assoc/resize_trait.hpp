@@ -50,7 +50,7 @@
 
 #include <ext/pb_ds/assoc_container.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -80,14 +80,14 @@ namespace pb_ds
       template<typename Cntnr>
       struct regression_test_resize_traits<
         Cntnr,
-        pb_ds::cc_hash_tag> : public regression_test_hash_resize_traits<
+        __gnu_pbds::cc_hash_tag> : public regression_test_hash_resize_traits<
         Cntnr>
       { };
 
       template<typename Cntnr>
       struct regression_test_resize_traits<
         Cntnr,
-        pb_ds::gp_hash_tag> : public regression_test_hash_resize_traits<
+        __gnu_pbds::gp_hash_tag> : public regression_test_hash_resize_traits<
         Cntnr>
       { };
 
@@ -95,6 +95,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_REGRESSION_TEST_RESIZE_TRAIT_HPP

@@ -47,13 +47,13 @@
 #ifndef PB_DS_NATIVE_TREE_DS_TAG_HPP
 #define PB_DS_NATIVE_TREE_DS_TAG_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
     struct native_tree_tag
     { };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

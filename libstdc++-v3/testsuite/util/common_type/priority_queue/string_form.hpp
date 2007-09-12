@@ -54,7 +54,7 @@
 #include <common_type/priority_queue/detail/ds_string_form.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -103,7 +103,7 @@ namespace pb_ds
       : public detail::tag_select_string_form<Cntnr, typename Cntnr::container_category>
     { };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_STRING_FORM_HPP
 

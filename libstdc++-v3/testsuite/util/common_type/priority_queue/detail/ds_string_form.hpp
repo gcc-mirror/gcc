@@ -51,7 +51,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -61,7 +61,7 @@ namespace pb_ds
       struct ds_string_form;
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, pb_ds::pairing_heap_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::pairing_heap_tag>
       {
 	static std::string
         name()
@@ -73,7 +73,7 @@ namespace pb_ds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, pb_ds::thin_heap_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::thin_heap_tag>
       {
 	static std::string
         name()
@@ -85,7 +85,7 @@ namespace pb_ds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, pb_ds::binomial_heap_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::binomial_heap_tag>
       {
 	static std::string
         name()
@@ -97,7 +97,7 @@ namespace pb_ds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, pb_ds::rc_binomial_heap_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::rc_binomial_heap_tag>
       {
 	static std::string
         name()
@@ -109,7 +109,7 @@ namespace pb_ds
       };
 
       template<typename Cntnr>
-      struct ds_string_form<Cntnr, pb_ds::binary_heap_tag>
+      struct ds_string_form<Cntnr, __gnu_pbds::binary_heap_tag>
       {
 	static std::string
         name()
@@ -122,7 +122,7 @@ namespace pb_ds
 
     } // namespace detail
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_DS_STRING_FORM_HPP
 

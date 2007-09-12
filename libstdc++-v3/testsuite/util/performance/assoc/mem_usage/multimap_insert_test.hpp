@@ -53,7 +53,7 @@
 #include <performance/io/xml_formatter.hpp>
 #include <common_type/assoc/string_form.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -74,11 +74,11 @@ namespace pb_ds
 
       template<typename Cntnr>
       size_t
-      insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::true_type);
+      insert(Cntnr, It ins_it_b, It ins_it_e, __gnu_pbds::detail::true_type);
 
       template<typename Cntnr>
       size_t
-      insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::false_type);
+      insert(Cntnr, It ins_it_b, It ins_it_e, __gnu_pbds::detail::false_type);
 
       const It m_ins_b;
       const size_t m_ins_vn;
@@ -104,7 +104,7 @@ namespace pb_ds
 	  std::advance(ins_it_e, ins_size);
 
 	  const size_t delta_mem = insert(Cntnr(), ins_it_b, ins_it_e,
-					  pb_ds::detail::integral_constant<int,Native>());
+					  __gnu_pbds::detail::integral_constant<int,Native>());
 
 	  res_set_fmt.add_res(ins_size, static_cast<double>(delta_mem));
 	}
@@ -114,7 +114,7 @@ namespace pb_ds
     template<typename Cntnr>
     size_t
     multimap_insert_test<It, Native>::
-    insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::true_type)
+    insert(Cntnr, It ins_it_b, It ins_it_e, __gnu_pbds::detail::true_type)
     {
       typedef __gnu_test::tracker_allocator_counter counter_type;
       __gnu_test::tracker_allocator<char> alloc;
@@ -133,7 +133,7 @@ namespace pb_ds
     template<typename Cntnr>
     size_t
     multimap_insert_test<It, Native>::
-    insert(Cntnr, It ins_it_b, It ins_it_e, pb_ds::detail::false_type)
+    insert(Cntnr, It ins_it_b, It ins_it_e, __gnu_pbds::detail::false_type)
     {
       typedef __gnu_test::tracker_allocator_counter counter_type;
       __gnu_test::tracker_allocator<char> alloc;
@@ -148,7 +148,7 @@ namespace pb_ds
       return (final_mem - init_mem);
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

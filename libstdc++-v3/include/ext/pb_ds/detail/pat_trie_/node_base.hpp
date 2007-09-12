@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/pat_trie_/node_metadata_base.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -129,6 +129,6 @@ namespace pb_ds
 #undef PB_DS_PAT_TRIE_SUBTREE_DEBUG_INFO_C_DEC
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

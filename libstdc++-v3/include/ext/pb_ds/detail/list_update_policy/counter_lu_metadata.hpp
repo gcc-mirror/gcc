@@ -44,7 +44,7 @@
  * Contains implementation of a lu counter policy's metadata.
  */
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -89,4 +89,4 @@ namespace pb_ds
       }
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds

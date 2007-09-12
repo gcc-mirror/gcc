@@ -63,7 +63,7 @@ defs()
 
   iterator_defs();
 
-  node_iterator_defs(pb_ds::detail::integral_constant<int,
+  node_iterator_defs(__gnu_pbds::detail::integral_constant<int,
 		     container_traits::order_preserving>());
 
   policy_defs();
@@ -124,7 +124,7 @@ void
 PB_DS_CLASS_C_DEC::
 ds_defs()
 {
-  typedef pb_ds::container_traits< Cntnr> test_container_traits;
+  typedef __gnu_pbds::container_traits< Cntnr> test_container_traits;
 
   typedef typename test_container_traits::container_category test_container_category;
 
@@ -162,13 +162,13 @@ iterator_defs()
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-node_iterator_defs(pb_ds::detail::false_type)
+node_iterator_defs(__gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-node_iterator_defs(pb_ds::detail::true_type)
+node_iterator_defs(__gnu_pbds::detail::true_type)
 {
   typedef typename Cntnr::node_iterator test_node_iterator;
 
@@ -188,7 +188,7 @@ policy_defs()
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_defs(pb_ds::basic_hash_tag)
+policy_defs(__gnu_pbds::basic_hash_tag)
 {
   typedef typename Cntnr::hash_fn test_hash_fn;
 
@@ -200,9 +200,9 @@ policy_defs(pb_ds::basic_hash_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_defs(pb_ds::cc_hash_tag)
+policy_defs(__gnu_pbds::cc_hash_tag)
 {
-  policy_defs(pb_ds::basic_hash_tag());
+  policy_defs(__gnu_pbds::basic_hash_tag());
 
   typedef typename Cntnr::comb_hash_fn test_comb_hash_fn;
 }
@@ -210,9 +210,9 @@ policy_defs(pb_ds::cc_hash_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_defs(pb_ds::gp_hash_tag)
+policy_defs(__gnu_pbds::gp_hash_tag)
 {
-  policy_defs(pb_ds::basic_hash_tag());
+  policy_defs(__gnu_pbds::basic_hash_tag());
 
   typedef typename Cntnr::comb_probe_fn test_comb_probe_fn;
 
@@ -222,7 +222,7 @@ policy_defs(pb_ds::gp_hash_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_defs(pb_ds::tree_tag)
+policy_defs(__gnu_pbds::tree_tag)
 {
   typedef typename Cntnr::cmp_fn test_cmp_fn;
 
@@ -232,7 +232,7 @@ policy_defs(pb_ds::tree_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_defs(pb_ds::list_update_tag)
+policy_defs(__gnu_pbds::list_update_tag)
 {
   typedef typename Cntnr::eq_fn test_eq_fn;
 
@@ -242,7 +242,7 @@ policy_defs(pb_ds::list_update_tag)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-policy_defs(pb_ds::pat_trie_tag)
+policy_defs(__gnu_pbds::pat_trie_tag)
 {
   typedef typename Cntnr::e_access_traits e_access_traits;
 }

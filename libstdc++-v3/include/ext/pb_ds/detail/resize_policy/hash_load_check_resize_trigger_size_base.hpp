@@ -47,7 +47,7 @@
 #ifndef PB_DS_HASH_LOAD_CHECK_RESIZE_TRIGGER_SIZE_BASE_HPP
 #define PB_DS_HASH_LOAD_CHECK_RESIZE_TRIGGER_SIZE_BASE_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -95,6 +95,6 @@ namespace pb_ds
       set_size(size_type size) { }
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

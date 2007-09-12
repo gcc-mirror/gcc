@@ -55,7 +55,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -229,6 +229,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

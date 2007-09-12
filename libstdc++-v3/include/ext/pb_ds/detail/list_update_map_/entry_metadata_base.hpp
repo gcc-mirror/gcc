@@ -47,7 +47,7 @@
 #ifndef PB_DS_LU_MAP_ENTRY_METADATA_BASE_HPP
 #define PB_DS_LU_MAP_ENTRY_METADATA_BASE_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -61,6 +61,6 @@ namespace pb_ds
     struct lu_map_entry_metadata_base<null_lu_metadata>
     { };  
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

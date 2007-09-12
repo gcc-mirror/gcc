@@ -57,7 +57,7 @@
 #include <cassert>
 
 using namespace std;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // A simple hash functor.
 // hash could serve instead of this functor, but it is not yet
@@ -115,7 +115,7 @@ int main()
     {
       g.resize(200);
     }
-  catch(pb_ds::resize_error& )
+  catch(__gnu_pbds::resize_error& )
     {
       ex_thrown = true;
     }

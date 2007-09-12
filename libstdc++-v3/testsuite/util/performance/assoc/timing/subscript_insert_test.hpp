@@ -52,7 +52,7 @@
 #include <common_type/assoc/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -85,7 +85,7 @@ namespace pb_ds
     } // namespace detail
 
     template<typename It>
-    class subscript_insert_test : private pb_ds::test::detail::timing_test_base
+    class subscript_insert_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       subscript_insert_test(It ins_b, It b, size_t ins_vn, size_t ins_vs, 
@@ -128,17 +128,17 @@ namespace pb_ds
 	  It ins_it_b = m_ins_b;
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, v);
-	  pb_ds::test::detail::subscript_insert_functor<It, Cntnr>
+	  __gnu_pbds::test::detail::subscript_insert_functor<It, Cntnr>
             fn(ins_it_b, ins_it_e);
 
 	  const double res =
-            pb_ds::test::detail::timing_test_base::operator()(fn);
+            __gnu_pbds::test::detail::timing_test_base::operator()(fn);
 
 	  res_set_fmt.add_res(v, res / v);
 	}
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

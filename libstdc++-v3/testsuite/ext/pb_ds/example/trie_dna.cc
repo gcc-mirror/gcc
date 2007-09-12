@@ -57,7 +57,7 @@
 #include <ext/pb_ds/trie_policy.hpp>
 
 using namespace std;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // DNA is represented by a string.
 typedef string dna_t;

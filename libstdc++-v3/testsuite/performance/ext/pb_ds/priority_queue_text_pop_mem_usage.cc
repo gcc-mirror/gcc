@@ -61,7 +61,7 @@ usage();
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
   std::string f_name = "thirty_years_among_the_dead_preproc.txt";
 
   size_t vn = 200;

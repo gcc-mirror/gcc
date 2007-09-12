@@ -50,7 +50,7 @@
 #include <string>
 #include <hash_fn/dna_str_limit.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -104,6 +104,6 @@ namespace pb_ds
       { return ("string ranged-hash using" + string_form<comb_fn>::desc()); }
     };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

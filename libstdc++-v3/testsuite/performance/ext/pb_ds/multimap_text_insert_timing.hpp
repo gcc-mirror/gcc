@@ -67,7 +67,7 @@ set_test_parameters(size_t& n, size_t&s, size_t& m, size_t& prm);
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
 
   std::string f_name = "thirty_years_among_the_dead_preproc.txt";
   size_t prm;

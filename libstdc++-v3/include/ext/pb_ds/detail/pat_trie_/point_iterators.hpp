@@ -49,7 +49,7 @@
 
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -484,7 +484,7 @@ namespace pb_ds
 #undef PB_DS_ODIR_IT_C_DEC
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

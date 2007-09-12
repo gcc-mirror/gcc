@@ -66,8 +66,7 @@
 #include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // A priority queue of integers, which supports fast pushes,
 // duplicated-int avoidance, and arbitrary-int erases.
@@ -107,7 +106,7 @@ public:
 
 private:
   // A priority queue of strings.
-  typedef pb_ds::priority_queue< int> pq_t;
+  typedef __gnu_pbds::priority_queue< int> pq_t;
 
   // A hash-table mapping strings to point_iterators inside the
   // priority queue.

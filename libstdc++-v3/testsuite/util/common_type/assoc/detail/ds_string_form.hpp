@@ -59,7 +59,7 @@
 #include <common_type/assoc/detail/store_hash_string_form.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -74,7 +74,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
 	Cntnr,
-	pb_ds::cc_hash_tag>
+	__gnu_pbds::cc_hash_tag>
       {
 	static std::string
         name()
@@ -104,7 +104,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
 	Cntnr,
-	pb_ds::gp_hash_tag>
+	__gnu_pbds::gp_hash_tag>
       {
 	static std::string
         name()
@@ -166,7 +166,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
         Cntnr,
-        pb_ds::rb_tree_tag> : private tree_ds_string_form<
+        __gnu_pbds::rb_tree_tag> : private tree_ds_string_form<
         Cntnr>
       {
       private:
@@ -189,7 +189,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
         Cntnr,
-        pb_ds::splay_tree_tag> : private tree_ds_string_form<
+        __gnu_pbds::splay_tree_tag> : private tree_ds_string_form<
         Cntnr>
       {
       private:
@@ -212,7 +212,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
         Cntnr,
-        pb_ds::ov_tree_tag> : private tree_ds_string_form<
+        __gnu_pbds::ov_tree_tag> : private tree_ds_string_form<
         Cntnr>
       {
       private:
@@ -235,7 +235,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
 	Cntnr,
-	pb_ds::list_update_tag>
+	__gnu_pbds::list_update_tag>
       {
 	static std::string
         name()
@@ -258,7 +258,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct ds_string_form<
 	Cntnr,
-	pb_ds::pat_trie_tag>
+	__gnu_pbds::pat_trie_tag>
       {
 	static std::string
         name()
@@ -298,7 +298,7 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_DS_STRING_FORM_HPP
 

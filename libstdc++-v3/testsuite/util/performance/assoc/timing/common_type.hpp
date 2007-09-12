@@ -49,25 +49,25 @@
 
 #include <common_type/assoc/common_type.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
   {
 
     typedef
-    pb_ds::test::hash_common_types<
+    __gnu_pbds::test::hash_common_types<
       int,
-      pb_ds::null_mapped_type>::tl
+      __gnu_pbds::null_mapped_type>::tl
     hash_set_tl_t;
 
     template<typename Cntnr_T>
     struct hash_mmap_transform
     {
       typedef
-      typename pb_ds::test::hash_common_types<
+      typename __gnu_pbds::test::hash_common_types<
 	int,
-	pb_ds::compound_data_type<
+	__gnu_pbds::compound_data_type<
 	Cntnr_T> >::tl
       type;
     };
@@ -80,18 +80,18 @@ namespace pb_ds
     hash_mmap_tl_t;
 
     typedef
-    pb_ds::test::tree_common_types<
+    __gnu_pbds::test::tree_common_types<
       int,
-      pb_ds::null_mapped_type>::tl
+      __gnu_pbds::null_mapped_type>::tl
     tree_set_tl_t;
 
     template<typename Cntnr_T>
     struct tree_mmap_transform
     {
       typedef
-      typename pb_ds::test::tree_common_types<
+      typename __gnu_pbds::test::tree_common_types<
 	int,
-	pb_ds::compound_data_type<
+	__gnu_pbds::compound_data_type<
 	Cntnr_T> >::tl
       type;
     };
@@ -107,7 +107,7 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_MULTIMAP_RANDOM_INT_INSERT_TEST_COMMON_TYPE_HPP
 

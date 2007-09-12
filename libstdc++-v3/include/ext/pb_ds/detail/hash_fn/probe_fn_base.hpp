@@ -49,7 +49,7 @@
 
 #include <functional>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -60,6 +60,6 @@ namespace pb_ds
       ~probe_fn_base() { }
     };
 } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

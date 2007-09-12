@@ -56,8 +56,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 template<class DS_Category>
 void
@@ -147,7 +146,7 @@ int main()
   {
     // Print the attributes of a binary heap.
     typedef
-      pb_ds::priority_queue<
+      __gnu_pbds::priority_queue<
       int,
       std::less<int>,
       binary_heap_tag>
@@ -159,7 +158,7 @@ int main()
   {
     // Print the attributes of a binomial heap.
     typedef
-      pb_ds::priority_queue<
+      __gnu_pbds::priority_queue<
       int,
       std::less<int>,
       binomial_heap_tag>
@@ -171,7 +170,7 @@ int main()
   {
     // Print the attributes of a redundant-counter binomial heap.
     typedef
-      pb_ds::priority_queue<
+      __gnu_pbds::priority_queue<
       int,
       std::less<int>,
       rc_binomial_heap_tag>
@@ -183,7 +182,7 @@ int main()
   {
     // Print the attributes of a pairing heap.
     typedef
-      pb_ds::priority_queue<
+      __gnu_pbds::priority_queue<
       int,
       std::less<int>,
       pairing_heap_tag>
@@ -198,7 +197,7 @@ int main()
      */
 
     typedef
-      pb_ds::priority_queue<
+      __gnu_pbds::priority_queue<
       int,
       std::less<int>,
       thin_heap_tag>

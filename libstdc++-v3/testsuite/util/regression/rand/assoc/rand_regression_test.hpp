@@ -55,7 +55,7 @@
 #include <regression/basic_type.hpp>
 #include <regression/assoc/common_type.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 namespace test
 {
@@ -123,7 +123,7 @@ namespace detail
       {
 	detail::verify_params(sd, n, m, tp, ip, ep, cp, mp, disp);
       }
-    catch (pb_ds::test::illegal_input_error&)
+    catch (__gnu_pbds::test::illegal_input_error&)
       {
 	detail::usage(name);
 	return -1;
@@ -205,6 +205,6 @@ namespace detail
   }
 } // namespace detail
 } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

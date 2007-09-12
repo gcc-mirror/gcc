@@ -47,7 +47,7 @@
 #ifndef PB_DS_RC_HPP
 #define PB_DS_RC_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -263,6 +263,6 @@ namespace pb_ds
 #undef PB_DS_CLASS_C_DEC
 
 } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

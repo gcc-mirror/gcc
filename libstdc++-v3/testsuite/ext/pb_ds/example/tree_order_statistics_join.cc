@@ -55,18 +55,14 @@
 #include <ext/pb_ds/tree_policy.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // A splay tree table mapping ints to chars and storing the ints order
 // statistics.
 typedef
-tree<
-  int,
-  char,
-  less<int>,
-  splay_tree_tag,
-  tree_order_statistics_node_update>
+tree<int, char, less<int>,
+     splay_tree_tag,
+     tree_order_statistics_node_update>
 tree_map_t;
 
 int main()

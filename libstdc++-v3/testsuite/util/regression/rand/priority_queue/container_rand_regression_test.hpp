@@ -60,7 +60,7 @@
 #include <regression/rand/io/priority_queue/xml_formatter.hpp>
 #include <regression/trait/priority_queue/trait.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -329,6 +329,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_CONTAINER_RAND_REGRESSION_TEST_HPP

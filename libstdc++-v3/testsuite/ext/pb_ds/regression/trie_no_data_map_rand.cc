@@ -61,7 +61,7 @@
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
   typedef trie_set_tl_t map_tl_t;
 
   return rand_regression_test(ITERATIONS, KEYS,

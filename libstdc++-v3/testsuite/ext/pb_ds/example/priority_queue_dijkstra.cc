@@ -64,8 +64,7 @@
 #include <ext/pb_ds/priority_queue.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // The value type of the priority queue.
 // The first entry is the node's id, and the second is the distance.
@@ -108,7 +107,7 @@ int main()
     };
 
   // The priority queue type.
-  typedef pb_ds::priority_queue< pq_value, pq_value_cmp> pq_t;
+  typedef __gnu_pbds::priority_queue< pq_value, pq_value_cmp> pq_t;
 
   // The priority queue object.
   pq_t p;

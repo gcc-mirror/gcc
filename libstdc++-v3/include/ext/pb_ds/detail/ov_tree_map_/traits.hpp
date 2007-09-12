@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -113,7 +113,7 @@ namespace pb_ds
       node_update;
 
       typedef
-      pb_ds::null_tree_node_update<
+      __gnu_pbds::null_tree_node_update<
 	const_node_iterator,
 	node_iterator,
 	Cmp_Fn,
@@ -174,7 +174,7 @@ namespace pb_ds
       node_update;
 
       typedef
-      pb_ds::null_tree_node_update<
+      __gnu_pbds::null_tree_node_update<
 	const_node_iterator,
 	node_iterator,
 	Cmp_Fn,
@@ -183,7 +183,7 @@ namespace pb_ds
     };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_OV_TREE_NODE_AND_IT_TRAITS_HPP
 

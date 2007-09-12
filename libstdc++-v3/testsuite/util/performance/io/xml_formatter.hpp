@@ -51,7 +51,7 @@
 #include <iostream>
 #include <io/xml_test_formatter.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -83,6 +83,6 @@ namespace pb_ds
       }
     };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_XML_TEST_PERFORMANCE_FORMATTER_HPP

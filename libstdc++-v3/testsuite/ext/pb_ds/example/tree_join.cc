@@ -59,8 +59,8 @@
 #include <cassert>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
+using namespace __gnu_pbds;
 
 int main()
 {
@@ -68,14 +68,7 @@ int main()
    *  
    */
   // A splay tree table mapping ints to chars.
-  typedef
-    tree<
-    int,
-    char,
-    less<
-    int>,
-    splay_tree_tag>
-    map_t;
+  typedef tree<int, char, less<int>, splay_tree_tag> map_t;
 
   // Two map_t object.
   map_t h0, h1;
@@ -114,7 +107,7 @@ int main()
     {
       h2.join(h3);
     }
-  catch (pb_ds::join_error& )
+  catch (__gnu_pbds::join_error& )
     {
       exception_thrown = true;
     }

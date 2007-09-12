@@ -50,7 +50,7 @@
 #include <hash_fn/string_hash_fn.hpp>
 #include <common_type/assoc/common_type.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -67,9 +67,9 @@ namespace pb_ds
       struct hash_set_tl_t
       {
 	typedef
-        typename pb_ds::test::hash_common_types<
+        typename __gnu_pbds::test::hash_common_types<
 	  Key,
-	  pb_ds::null_mapped_type,
+	  __gnu_pbds::null_mapped_type,
 	  int_hash,
 	  std::equal_to<Key>,
 	  Allocator>::performance_min_tl
@@ -80,9 +80,9 @@ namespace pb_ds
       struct lu_set_tl_t
       {
 	typedef
-        typename pb_ds::test::lu_common_types<
+        typename __gnu_pbds::test::lu_common_types<
 	  Key,
-	  pb_ds::null_mapped_type,
+	  __gnu_pbds::null_mapped_type,
 	  std::equal_to<
 	  Key>,
 	  Allocator>::performance_min_tl
@@ -96,8 +96,8 @@ namespace pb_ds
       {
       private:
 	typedef
-        typename pb_ds::detail::__conditional_type<
-	pb_ds::detail::is_same<
+        typename __gnu_pbds::detail::__conditional_type<
+	__gnu_pbds::detail::is_same<
 	int,
 	Key>::value,
 	int_hash,
@@ -108,7 +108,7 @@ namespace pb_ds
 	struct hash_mmap_transform
 	{
 	  typedef
-	  typename pb_ds::test::hash_common_types<
+	  typename __gnu_pbds::test::hash_common_types<
 	    Key,
 	    Cntnr_T,
 	    hash_fn_t,
@@ -137,12 +137,12 @@ namespace pb_ds
 	struct tree_mmap_transform
 	{
 	  typedef
-	  typename pb_ds::test::tree_common_types<
+	  typename __gnu_pbds::test::tree_common_types<
 	    Key,
 	    Cntnr_T,
 	    std::less<
 	    Key>,
-	    pb_ds::null_tree_node_update,
+	    __gnu_pbds::null_tree_node_update,
 	    Allocator>::performance_min_tl
 	  type;
 	};
@@ -227,7 +227,7 @@ namespace pb_ds
     };
 
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif
 

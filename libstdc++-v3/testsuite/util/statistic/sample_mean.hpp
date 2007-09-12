@@ -52,7 +52,7 @@
 #include <math.h>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -73,7 +73,7 @@ namespace pb_ds
 
     } // namespace detail
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

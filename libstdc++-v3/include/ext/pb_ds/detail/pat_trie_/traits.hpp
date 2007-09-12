@@ -55,7 +55,7 @@
 #include <ext/pb_ds/detail/pat_trie_/node_iterators.hpp>
 #include <ext/pb_ds/detail/pat_trie_/synth_e_access_traits.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -93,7 +93,7 @@ namespace pb_ds
       typedef E_Access_Traits e_access_traits;
 
       typedef
-      pb_ds::detail::synth_e_access_traits<
+      __gnu_pbds::detail::synth_e_access_traits<
 	type_traits,
 	false,
 	e_access_traits>
@@ -208,7 +208,7 @@ namespace pb_ds
       node_update;
 
       typedef
-      pb_ds::null_trie_node_update<
+      __gnu_pbds::null_trie_node_update<
 	const_node_iterator,
 	node_iterator,
 	E_Access_Traits,
@@ -254,7 +254,7 @@ namespace pb_ds
       typedef E_Access_Traits e_access_traits;
 
       typedef
-      pb_ds::detail::synth_e_access_traits<
+      __gnu_pbds::detail::synth_e_access_traits<
 	type_traits,
 	true,
 	e_access_traits>
@@ -341,7 +341,7 @@ namespace pb_ds
       node_update;
 
       typedef
-      pb_ds::null_trie_node_update<
+      __gnu_pbds::null_trie_node_update<
 	const_node_iterator,
 	const_node_iterator,
 	E_Access_Traits,
@@ -350,7 +350,7 @@ namespace pb_ds
     };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_PAT_TRIE_NODE_AND_IT_TRAITS_HPP
 
