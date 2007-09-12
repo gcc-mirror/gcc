@@ -94,6 +94,7 @@ struct machine_function GTY(())
   int accesses_prev_frame;
   bool need_a7_copy;
   bool vararg_a7;
+  rtx vararg_a7_copy;
   rtx set_frame_ptr_insn;
 };
 
@@ -1004,7 +1005,7 @@ xtensa_copy_incoming_a7 (rtx opnd)
   /* Copy a7 to a new pseudo at the function entry.  Use gen_raw_REG to
      create the REG for a7 so that hard_frame_pointer_rtx is not used.  */
 
-  push_to_sequence (entry_insns);
+  start_sequence ();
   tmp = gen_reg_rtx (mode);
 
   switch (mode)
@@ -1038,10 +1039,11 @@ xtensa_copy_incoming_a7 (rtx opnd)
 
   if (cfun->machine->vararg_a7)
     {
-      /* This is called from within builtin_savereg, so we're already
-	 inside a start_sequence that will be placed at the start of
-	 the function.  */
-      emit_insn (entry_insns);
+      /* This is called from within builtin_saveregs, which will insert the
+	 saveregs code at the function entry, ahead of anything placed at
+	 the function entry now.  Instead, save the sequence to be inserted
+	 at the beginning of the saveregs code.  */
+      cfun->machine->vararg_a7_copy = entry_insns;
     }
   else
     {
@@ -1050,6 +1052,8 @@ xtensa_copy_incoming_a7 (rtx opnd)
 	 chain current, so the code is placed at the start of the
 	 function.  */
       push_topmost_sequence ();
+      /* Do not use entry_of_function() here.  This is called from within
+	 expand_function_start, when the CFG still holds GIMPLE.  */
       emit_insn_after (entry_insns, get_insns ());
       pop_topmost_sequence ();
     }
@@ -2454,6 +2458,8 @@ xtensa_builtin_saveregs (void)
 		       adjust_address (gp_regs, BLKmode,
 				       arg_words * UNITS_PER_WORD),
 		       gp_left);
+  gcc_assert (cfun->machine->vararg_a7_copy != 0);
+  emit_insn_before (cfun->machine->vararg_a7_copy, get_insns ());
 
   return XEXP (gp_regs, 0);
 }
