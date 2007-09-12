@@ -1,3 +1,9 @@
+2007-09-12  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: For a subtype
+	with discriminant constraints, generalize the code for BIT_FIELDs
+	to PACKED fields of constant size and propagate DECL_PACKED.
+
 2007-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* decl.c (array_type_has_nonaliased_component): New predicate.

@@ -2762,9 +2762,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			gnu_field_type = TREE_TYPE (gnu_old_field);
 		      }
 
-		    /* If this was a bitfield, get the size from the old field.
-		       Also ensure the type can be placed into a bitfield.  */
-		    else if (DECL_BIT_FIELD (gnu_old_field))
+		    /* If the old field was packed and of constant size, we
+		       have to get the old size here, as it might differ from
+		       what the Etype conveys and the latter might overlap
+		       onto the following field.  Try to arrange the type for
+		       possible better packing along the way.  */
+		    else if (DECL_PACKED (gnu_old_field)
+			     && TREE_CODE (DECL_SIZE (gnu_old_field))
+			        == INTEGER_CST)
 		      {
 			gnu_size = DECL_SIZE (gnu_old_field);
 			if (TYPE_MODE (gnu_field_type) == BLKmode
@@ -2789,7 +2794,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gnu_field
 		      = create_field_decl
 			(DECL_NAME (gnu_old_field), gnu_field_type, gnu_type,
-			 0, gnu_size, gnu_new_pos,
+			 DECL_PACKED (gnu_old_field), gnu_size, gnu_new_pos,
 			 !DECL_NONADDRESSABLE_P (gnu_old_field));
 
 		    if (!TREE_CONSTANT (gnu_pos))
