@@ -31,6 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 with System.Soft_Links;
 with System.Parameters;
 with Ada.Unchecked_Conversion;

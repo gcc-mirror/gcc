@@ -13,6 +13,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 package Ada.Characters.Latin_1 is
    pragma Pure;
 

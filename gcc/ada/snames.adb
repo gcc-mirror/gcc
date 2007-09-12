@@ -183,6 +183,7 @@ package body Snames is
      "check_name#" &
      "compile_time_error#" &
      "compile_time_warning#" &
+     "compiler_unit#" &
      "component_alignment#" &
      "convention_identifier#" &
      "debug_policy#" &

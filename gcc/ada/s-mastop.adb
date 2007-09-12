@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                             (Dummy version)                              --
 --                                                                          --
---          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,10 @@
 
 --  This dummy version of System.Machine_State_Operations is used
 --  on targets for which zero cost exception handling is not implemented.
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 package body System.Machine_State_Operations is
 

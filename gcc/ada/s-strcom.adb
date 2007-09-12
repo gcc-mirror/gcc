@@ -31,6 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 with Ada.Unchecked_Conversion;
 
 package body System.String_Compare is
@@ -63,8 +67,7 @@ package body System.String_Compare is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer
+      Right_Len : Natural) return Integer
    is
       Compare_Len : constant Natural := Natural'Min (Left_Len, Right_Len);
 
@@ -109,8 +112,7 @@ package body System.String_Compare is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer
+      Right_Len : Natural) return Integer
    is
       Compare_Len : constant Natural := Natural'Min (Left_Len, Right_Len);
 

@@ -37,6 +37,10 @@
 --  This package defines basic types and objects. Operations related to
 --  stack checking can be found in package System.Stack_Checking.Operations.
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 with System.Storage_Elements;
 
 package System.Stack_Checking is

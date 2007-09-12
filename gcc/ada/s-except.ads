@@ -35,6 +35,10 @@
 --  It should be compiled without optimization to let debuggers inspect
 --  parameter values reliably from breakpoints on the routines.
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 with System.Standard_Library;
 
 package System.Exceptions is

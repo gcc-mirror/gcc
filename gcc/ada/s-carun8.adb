@@ -31,6 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 with System.Address_Operations; use System.Address_Operations;
 
 with Ada.Unchecked_Conversion;

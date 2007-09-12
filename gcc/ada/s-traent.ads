@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,6 +39,10 @@
 --  for call-chain computation purposes. By default, as defined in this
 --  version of the package, an entry is a mere code location representing the
 --  address of a call instruction part of the call-chain.
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 package System.Traceback_Entries is
    pragma Preelaborate;

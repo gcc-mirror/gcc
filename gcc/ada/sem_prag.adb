@@ -5310,6 +5310,15 @@ package body Sem_Prag is
          when Pragma_Compile_Time_Warning =>
             Process_Compile_Time_Warning_Or_Error;
 
+         -------------------
+         -- Compiler_Unit --
+         -------------------
+
+         when Pragma_Compiler_Unit =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Set_Is_Compiler_Unit (Get_Source_Unit (N));
+
          -----------------------------
          -- Complete_Representation --
          -----------------------------
@@ -11235,6 +11244,7 @@ package body Sem_Prag is
       Pragma_Common_Object                 => -1,
       Pragma_Compile_Time_Error            => -1,
       Pragma_Compile_Time_Warning          => -1,
+      Pragma_Compiler_Unit                 =>  0,
       Pragma_Complete_Representation       =>  0,
       Pragma_Complex_Representation        =>  0,
       Pragma_Component_Alignment           => -1,

@@ -69,24 +69,25 @@ package body Lib.Writ is
    begin
       Units.Increment_Last;
       Units.Table (Units.Last) :=
-        (Unit_File_Name  => File_Name (S),
-         Unit_Name       => No_Unit_Name,
-         Expected_Unit   => No_Unit_Name,
-         Source_Index    => S,
-         Cunit           => Empty,
-         Cunit_Entity    => Empty,
-         Dependency_Num  => 0,
-         Dynamic_Elab    => False,
-         Fatal_Error     => False,
-         Generate_Code   => False,
-         Has_RACW        => False,
-         Ident_String    => Empty,
-         Loading         => False,
-         Main_Priority   => -1,
-         Munit_Index     => 0,
-         Serial_Number   => 0,
-         Version         => 0,
-         Error_Location  => No_Location);
+        (Unit_File_Name   => File_Name (S),
+         Unit_Name        => No_Unit_Name,
+         Expected_Unit    => No_Unit_Name,
+         Source_Index     => S,
+         Cunit            => Empty,
+         Cunit_Entity     => Empty,
+         Dependency_Num   => 0,
+         Dynamic_Elab     => False,
+         Fatal_Error      => False,
+         Generate_Code    => False,
+         Has_RACW         => False,
+         Is_Compiler_Unit => False,
+         Ident_String     => Empty,
+         Loading          => False,
+         Main_Priority    => -1,
+         Munit_Index      => 0,
+         Serial_Number    => 0,
+         Version          => 0,
+         Error_Location   => No_Location);
    end Add_Preprocessing_Dependency;
 
    ------------------------------
@@ -122,24 +123,25 @@ package body Lib.Writ is
 
       Units.Increment_Last;
       Units.Table (Units.Last) := (
-        Unit_File_Name  => System_Fname,
-        Unit_Name       => System_Uname,
-        Expected_Unit   => System_Uname,
-        Source_Index    => System_Source_File_Index,
-        Cunit           => Empty,
-        Cunit_Entity    => Empty,
-        Dependency_Num  => 0,
-        Dynamic_Elab    => False,
-        Fatal_Error     => False,
-        Generate_Code   => False,
-        Has_RACW        => False,
-        Ident_String    => Empty,
-        Loading         => False,
-        Main_Priority   => -1,
-        Munit_Index     => 0,
-        Serial_Number   => 0,
-        Version         => 0,
-        Error_Location  => No_Location);
+        Unit_File_Name   => System_Fname,
+        Unit_Name        => System_Uname,
+        Expected_Unit    => System_Uname,
+        Source_Index     => System_Source_File_Index,
+        Cunit            => Empty,
+        Cunit_Entity     => Empty,
+        Dependency_Num   => 0,
+        Dynamic_Elab     => False,
+        Fatal_Error      => False,
+        Generate_Code    => False,
+        Has_RACW         => False,
+        Is_Compiler_Unit => False,
+        Ident_String     => Empty,
+        Loading          => False,
+        Main_Priority    => -1,
+        Munit_Index      => 0,
+        Serial_Number    => 0,
+        Version          => 0,
+        Error_Location   => No_Location);
 
       --  Parse system.ads so that the checksum is set right
       --  Style checks are not applied.

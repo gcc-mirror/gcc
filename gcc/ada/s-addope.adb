@@ -31,6 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 with Ada.Unchecked_Conversion;
 
 package body System.Address_Operations is

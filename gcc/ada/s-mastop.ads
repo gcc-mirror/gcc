@@ -31,6 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
+
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with System.Exception_Tables.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,10 @@
 --  This package implements the interface used to maintain a table of
 --  registered exception names, for the implementation of the mapping
 --  of names to exceptions (used for exception streams and attributes)
+
+pragma Warnings (Off);
+pragma Compiler_Unit;
+pragma Warnings (On);
 
 with System.Standard_Library;
 
