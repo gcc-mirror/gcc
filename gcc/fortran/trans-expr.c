@@ -2855,7 +2855,8 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
      (these are the only two iso_c_binding derived types that can be
      used as initialization expressions).  If so, we need to modify
      the 'expr' to be that for a (void *).  */
-  if (expr->ts.type == BT_DERIVED && expr->ts.is_iso_c && expr->ts.derived)
+  if (expr != NULL && expr->ts.type == BT_DERIVED
+      && expr->ts.is_iso_c && expr->ts.derived)
     {
       gfc_symbol *derived = expr->ts.derived;
 
