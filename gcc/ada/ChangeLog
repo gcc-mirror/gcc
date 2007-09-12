@@ -1,3 +1,86 @@
+2007-09-12  Robert Dewar  <dewar@adacore.com>
+
+	* types.ads, a-charac.ads, freeze.adb: Minor reformatting.
+
+	* a-except.adb, g-hesora.adb, g-speche.adb, lib.adb, lib.ads,
+	lib-load.adb, lib-writ.adb, s-assert.adb, s-carun8.adb,
+	s-casuti.adb, s-crc32.adb, s-exctab.adb, s-htable.adb, s-imgenu.adb,
+	s-mastop.adb, s-memory.adb, s-memory.ads, s-secsta.adb, s-soflin.adb,
+	s-sopco3.adb, s-sopco4.adb, s-sopco5.adb, s-stache.adb, s-stalib.adb,
+	s-stoele.adb, s-strcom.adb, s-strops.adb, s-traceb.adb, s-traent.adb,
+	s-wchcnv.adb, s-wchcon.adb, s-wchjis.adb, s-addope.adb, s-except.adb,
+	s-os_lib.adb, s-string.adb, s-utf_32.adb,
+	a-chlat1.ads, a-elchha.ads, a-except.ads, g-hesora.ads, g-htable.ads, 
+	g-speche.ads, par-prag.adb, restrict.adb, restrict.ads, s-assert.ads, 
+	s-carun8.ads, s-casuti.ads, s-crc32.ads, sem_ch11.adb, sem_prag.adb, 
+	s-exctab.ads, s-htable.ads, s-imgenu.ads, s-mastop.ads, snames.adb, 
+	snames.ads, snames.h, s-purexc.ads, s-secsta.ads, s-soflin.ads, 
+	s-sopco3.ads, s-sopco4.ads, s-sopco5.ads, s-stache.ads, s-stalib.ads, 
+	s-stoele.ads, s-strcom.ads, s-strops.ads, s-traceb.ads, s-traent.ads, 
+	s-unstyp.ads, s-wchcnv.ads, s-wchcon.ads, s-wchjis.ads, s-addope.ads, 
+	s-except.ads, s-os_lib.ads, s-string.ads, s-utf_32.ads: Implement
+	pragma Compiler_Unit and adds it to relevant library units.
+
+2007-09-12  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): An others association with
+	a box need not correspond to any component.
+
+2007-09-12  Robert Dewar  <dewar@adacore.com>
+
+	* g-thread.ads: Document use of "with GNAT.Threads" to ensure loading
+	the tasking version of the Ada run time when foreign threads are
+	present and there are no explicit Ada tasks or tasking constructs.
+
+	* gnat_rm.texi: Clarify documentation of GNAT.Threads.
+
+2007-09-12  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindusg.adb (Display): Correct comment for switch -X. Add a line for
+	the usage of switch -y.
+
+	* switch-b.adb (Scan_Binder_Switches): Set flag Leap_Seconds_Support
+	when switch -y is present.
+
+	* opt.ads: Add binder flag Leap_Seconds_Support used to enable/disable
+	leap seconds in Ada.Calendar and its children.
+
+2007-09-12  Jose Ruiz  <ruiz@adacore.com>
+
+	* a-extiti.ads (Timer): The discriminant is a "not null access
+	constant" in the Reference Manual.
+	(Cancel_Handler): Cancelled is an out parameter in the Reference Manual.
+
+2007-09-12  Robert Dewar  <dewar@adacore.com>
+
+	* a-swuwha.adb: Remove junk RM header
+
+2007-09-12  Vincent Celier  <celier@adacore.com>
+
+	* g-bytswa-x86.adb (Swap2, Swap4, Swap8): Remove explicit "in" mode
+	indicator
+
+	* g-bytswa.ads: Minor reformatting
+
+2007-09-12  Thomas Quinot  <quinot@adacore.com>
+
+	* g-soccon-solaris-64.ads, g-soccon-hpux-ia64.ads: 
+	Add new constant Thread_Blocking_IO, always True by default, set False
+	on a per-runtime basis.
+	(Need_Netdb_Buffer): New constant.
+
+2007-09-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-dsaser.ads (Get_Local_Partition_Id, Get_Passive_Partition_Id):
+	Added renames for corresponding functions in System.Partition_Interface.
+
+2007-09-12  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.in: Remove VMS specific System.CRTL packages which are no
+	longer needed.
+
+	* s-crtl-vms64.ads: Removed.
+
 2007-09-12  Olivier Hainque  <hainque@adacore.com>
 
 	* decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: For a subtype
