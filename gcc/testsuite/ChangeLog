@@ -1,4 +1,9 @@
 2007-09-12  Ben Elliston  <bje@au.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_no_double):
+	Remove unused proc.
+
+2007-09-12  Ben Elliston  <bje@au.ibm.com>
 	    Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.target/spu/dfcgt-nan.c: New test.
