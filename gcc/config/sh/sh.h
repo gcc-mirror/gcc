@@ -2973,16 +2973,18 @@ struct sh_args {
    ? (TARGET_SH5 ? 18 : 17) \
    : (REGNO) == PR_MEDIA_REG \
    ? (TARGET_SH5 ? 18 : (unsigned) -1) \
-   : (REGNO) == T_REG \
-   ? (TARGET_SH5 ? 242 : 18) \
    : (REGNO) == GBR_REG \
-   ? (TARGET_SH5 ? 238 : 19) \
+   ? (TARGET_SH5 ? 238 : 18) \
    : (REGNO) == MACH_REG \
    ? (TARGET_SH5 ? 239 : 20) \
    : (REGNO) == MACL_REG \
    ? (TARGET_SH5 ? 240 : 21) \
+   : (REGNO) == T_REG \
+   ? (TARGET_SH5 ? 242 : 22) \
    : (REGNO) == FPUL_REG \
    ? (TARGET_SH5 ? 244 : 23) \
+   : (REGNO) == FPSCR_REG \
+   ? (TARGET_SH5 ? 243 : 24) \
    : (unsigned) -1)
 
 /* This is how to output a reference to a symbol_ref.  On SH5,
