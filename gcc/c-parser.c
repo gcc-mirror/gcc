@@ -2030,7 +2030,10 @@ c_parser_struct_declaration (c_parser *parser)
 	  /* Support for unnamed structs or unions as members of
 	     structs or unions (which is [a] useful and [b] supports
 	     MS P-SDK).  */
-	  ret = grokfield (build_id_declarator (NULL_TREE), specs, NULL_TREE);
+	  tree attrs = NULL;
+	  ret = grokfield (build_id_declarator (NULL_TREE), specs,
+			   NULL_TREE, &attrs);
+	  decl_attributes (&ret, attrs, 0);
 	}
       return ret;
     }
@@ -2070,7 +2073,7 @@ c_parser_struct_declaration (c_parser *parser)
 	    }
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	    postfix_attrs = c_parser_attributes (parser);
-	  d = grokfield (declarator, specs, width);
+	  d = grokfield (declarator, specs, width, &all_prefix_attrs);
 	  decl_attributes (&d, chainon (postfix_attrs,
 					all_prefix_attrs), 0);
 	  TREE_CHAIN (d) = decls;

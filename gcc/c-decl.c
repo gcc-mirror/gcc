@@ -407,7 +407,7 @@ static tree lookup_name_in_scope (tree, struct c_scope *);
 static tree c_make_fname_decl (tree, int);
 static tree grokdeclarator (const struct c_declarator *,
 			    struct c_declspecs *,
-			    enum decl_context, bool, tree *,
+			    enum decl_context, bool, tree *, tree *,
 			    enum deprecated_states);
 static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
@@ -3141,7 +3141,7 @@ groktypename (struct c_type_name *type_name)
   type_name->specs->attrs = NULL_TREE;
 
   type = grokdeclarator (type_name->declarator, type_name->specs, TYPENAME,
-			 false, NULL, DEPRECATED_NORMAL);
+			 false, NULL, &attrs, DEPRECATED_NORMAL);
 
   /* Apply attributes.  */
   decl_attributes (&type, attrs, 0);
@@ -3178,7 +3178,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     deprecated_state = DEPRECATED_SUPPRESS;
 
   decl = grokdeclarator (declarator, declspecs,
-			 NORMAL, initialized, NULL,
+			 NORMAL, initialized, NULL, &attributes,
 			 deprecated_state);
   if (!decl)
     return 0;
@@ -3667,10 +3667,11 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 tree
 grokparm (const struct c_parm *parm)
 {
+  tree attrs = parm->attrs;
   tree decl = grokdeclarator (parm->declarator, parm->specs, PARM, false,
-			      NULL, DEPRECATED_NORMAL);
+			      NULL, &attrs, DEPRECATED_NORMAL);
 
-  decl_attributes (&decl, parm->attrs, 0);
+  decl_attributes (&decl, attrs, 0);
 
   return decl;
 }
@@ -3681,11 +3682,12 @@ grokparm (const struct c_parm *parm)
 void
 push_parm_decl (const struct c_parm *parm)
 {
+  tree attrs = parm->attrs;
   tree decl;
 
   decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL,
-			 DEPRECATED_NORMAL);
-  decl_attributes (&decl, parm->attrs, 0);
+			 &attrs, DEPRECATED_NORMAL);
+  decl_attributes (&decl, attrs, 0);
 
   decl = pushdecl (decl);
 
@@ -3957,6 +3959,9 @@ warn_variable_length_array (const char *name, tree size)
    INITIALIZED is true if the decl has an initializer.
    WIDTH is non-NULL for bit-fields, and is a pointer to an INTEGER_CST node
    representing the width of the bit-field.
+   DECL_ATTRS points to the list of attributes that should be added to this
+     decl.  Any nested attributes that belong on the decl itself will be
+     added to this list.
    DEPRECATED_STATE is a deprecated_states value indicating whether
    deprecation warnings should be suppressed.
 
@@ -3971,7 +3976,7 @@ static tree
 grokdeclarator (const struct c_declarator *declarator,
 		struct c_declspecs *declspecs,
 		enum decl_context decl_context, bool initialized, tree *width,
-		enum deprecated_states deprecated_state)
+		tree *decl_attrs, enum deprecated_states deprecated_state)
 {
   tree type = declspecs->type;
   bool threadp = declspecs->thread_p;
@@ -4615,6 +4620,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	  gcc_unreachable ();
 	}
     }
+  *decl_attrs = chainon (returned_attrs, *decl_attrs);
 
   /* Now TYPE has the actual type, apart from any qualifiers in
      TYPE_QUALS.  */
@@ -4649,7 +4655,6 @@ grokdeclarator (const struct c_declarator *declarator,
       decl = build_decl (TYPE_DECL, declarator->u.id, type);
       if (declspecs->explicit_signed_p)
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
-      decl_attributes (&decl, returned_attrs, 0);
       if (declspecs->inline_p)
 	pedwarn ("typedef %q+D declared %<inline%>", decl);
       return decl;
@@ -4669,7 +4674,6 @@ grokdeclarator (const struct c_declarator *declarator,
 	pedwarn ("ISO C forbids const or volatile function types");
       if (type_quals)
 	type = c_build_qualified_type (type, type_quals);
-      decl_attributes (&type, returned_attrs, 0);
       return type;
     }
 
@@ -4986,8 +4990,6 @@ grokdeclarator (const struct c_declarator *declarator,
   /* This is the earliest point at which we might know the assembler
      name of a variable.  Thus, if it's known before this, die horribly.  */
     gcc_assert (!DECL_ASSEMBLER_NAME_SET_P (decl));
-
-    decl_attributes (&decl, returned_attrs, 0);
 
     return decl;
   }
@@ -5390,6 +5392,7 @@ start_struct (enum tree_code code, tree name)
 /* Process the specs, declarator and width (NULL if omitted)
    of a structure component, returning a FIELD_DECL node.
    WIDTH is non-NULL for bit-fields only, and is an INTEGER_CST node.
+   DECL_ATTRS is as for grokdeclarator.
 
    This is done during the parsing of the struct declaration.
    The FIELD_DECL nodes are chained together and the lot of them
@@ -5397,7 +5400,7 @@ start_struct (enum tree_code code, tree name)
 
 tree
 grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
-	   tree width)
+	   tree width, tree *decl_attrs)
 {
   tree value;
 
@@ -5450,7 +5453,8 @@ grokfield (struct c_declarator *declarator, struct c_declspecs *declspecs,
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
-			  width ? &width : NULL, DEPRECATED_NORMAL);
+			  width ? &width : NULL, decl_attrs,
+			  DEPRECATED_NORMAL);
 
   finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
@@ -6091,7 +6095,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   c_break_label = c_cont_label = size_zero_node;
 
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, true, NULL,
-			  DEPRECATED_NORMAL);
+			  &attributes, DEPRECATED_NORMAL);
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
