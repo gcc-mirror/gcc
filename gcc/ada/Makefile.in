@@ -1172,7 +1172,6 @@ ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
   g-enblsp.adb<g-enblsp-vms-ia64.adb \
   g-trasym.adb<g-trasym-vms-ia64.adb \
   s-auxdec.ads<s-auxdec-vms_64.ads \
-  s-crtl.ads<s-crtl-vms64.ads \
   s-osinte.adb<s-osinte-vms-ia64.adb \
   s-osinte.ads<s-osinte-vms-ia64.ads \
   s-vaflop.adb<s-vaflop-vms-ia64.adb \
@@ -1187,7 +1186,6 @@ ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
   g-trasym.adb<g-trasym-vms-alpha.adb \
   s-asthan.adb<s-asthan-vms-alpha.adb \
   s-auxdec.ads<s-auxdec-vms_64.ads \
-  s-crtl.ads<s-crtl-vms64.ads \
   s-osinte.adb<s-osinte-vms.adb \
   s-osinte.ads<s-osinte-vms.ads \
   s-vaflop.adb<s-vaflop-vms-alpha.adb \
