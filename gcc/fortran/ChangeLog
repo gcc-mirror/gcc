@@ -1,3 +1,7 @@
+2007-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* f95-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
+
 2007-09-12  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33395

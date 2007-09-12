@@ -1,3 +1,7 @@
+2007-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* c-objc-common.h (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
+
 2007-09-12  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/32377

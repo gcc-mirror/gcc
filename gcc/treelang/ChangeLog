@@ -1,3 +1,8 @@
+2007-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* treetree.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Kill.
+	(treelang_expand_function): Kill.
+
 2007-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* tree1.c (treelang_init): Update.

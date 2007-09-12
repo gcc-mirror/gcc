@@ -141,7 +141,6 @@ static int global_bindings_p (void);
 static void insert_block (tree);
 
 static void tree_push_type_decl (tree id, tree type_node);
-static void treelang_expand_function (tree fndecl);
 
 /* The front end language hooks (addresses of code for this front
    end).  These are not really very language-dependent, i.e.
@@ -157,9 +156,6 @@ static void treelang_expand_function (tree fndecl);
 #define LANG_HOOKS_PARSE_FILE treelang_parse_file
 #undef LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE treelang_attribute_table
-
-#undef LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION
-#define LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION treelang_expand_function
 
 /* #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P hook_bool_tree_tree_true
@@ -1183,15 +1179,6 @@ const struct attribute_spec treelang_attribute_table[] =
   { "nothrow", 0, 0, true, false, false, handle_attribute },
   { NULL, 0, 0, false, false, false, NULL },
 };
-
-/* Treelang expand function langhook.  */
-
-static void
-treelang_expand_function (tree fndecl)
-{
-  /* We have nothing special to do while expanding functions for treelang.  */
-  tree_rest_of_compilation (fndecl);
-}
 
 #include "debug.h" /* for debug_hooks, needed by gt-treelang-treetree.h */
 #include "gt-treelang-treetree.h"
