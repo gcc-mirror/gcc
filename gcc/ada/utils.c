@@ -3808,7 +3808,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  TYPE_MAIN_VARIANT (rtype) = rtype;
 	}
 
-      /* We have another special case.  If we are unchecked converting subtype
+      /* We have another special case: if we are unchecked converting subtype
 	 into a base type, we need to ensure that VRP doesn't propagate range
 	 information since this conversion may be done precisely to validate
 	 that the object is within the range it is supposed to have.  */
@@ -3818,21 +3818,18 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 		   || TREE_CODE (etype) == ENUMERAL_TYPE
 		   || TREE_CODE (etype) == BOOLEAN_TYPE))
 	{
-	  /* ??? The pattern to be "preserved" by the middle-end and the
-	     optimizers is a VIEW_CONVERT_EXPR between a pair of different
-	     "base" types (integer types without TREE_TYPE).  But this may
-	     raise addressability/aliasing issues because VIEW_CONVERT_EXPR
-	     gets gimplified as an lvalue, thus causing the address of its
-	     operand to be taken if it is deemed addressable and not already
-	     in GIMPLE form.  */
+	  /* The optimization barrier is a VIEW_CONVERT_EXPR node; moreover,
+	     in order not to be deemed an useless type conversion, it must
+	     be from subtype to base type.
+
+	     ??? This may raise addressability and/or aliasing issues because
+	     VIEW_CONVERT_EXPR gets gimplified as an lvalue, thus causing the
+	     address of its operand to be taken if it is deemed addressable
+	     and not already in GIMPLE form.  */
 	  rtype = gnat_type_for_mode (TYPE_MODE (type), TYPE_UNSIGNED (type));
-
-	  if (rtype == type)
-	    {
-	      rtype = copy_type (rtype);
-	      TYPE_MAIN_VARIANT (rtype) = rtype;
-	    }
-
+	  rtype = copy_type (rtype);
+	  TYPE_MAIN_VARIANT (rtype) = rtype;
+	  TREE_TYPE (rtype) = type;
 	  final_unchecked = true;
 	}
 
