@@ -15,6 +15,7 @@ int main ()
   int B[N];
   int C[N];
   int D[N];
+  int E[N] = {0,1,2,0};
 
   int i, j;
 
@@ -57,13 +58,13 @@ int main ()
   /* Not vectorizable */
   for (i = 0; i < 4; i++)
     {
-      C[i] = C[i+3];
+      C[i+3] = C[i];
     }
 
   /* check results:  */
   for (i = 0; i < 4; i++)
     {
-      if (C[i] != D[i+3])
+      if (C[i] != E[i])
 	abort ();
     }
 

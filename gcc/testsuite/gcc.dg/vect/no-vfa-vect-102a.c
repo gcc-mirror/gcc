@@ -32,13 +32,13 @@ int main1 (int x, int y) {
   /* Not vectorizable: distance 1.  */
   for (i = 0; i < N - 1; i++)
     {
-       p->a[x + i] = p->a[x + i + 1];
+       p->a[x + i + 1] = p->a[x + i];
     }
 
   /* check results: */
   for (i = 0; i < N; i++)
     {
-       if (p->a[i] != b[i])
+       if (p->a[i] != 1)
          abort();
     }
   return 0;

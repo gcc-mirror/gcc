@@ -1212,12 +1212,15 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
           continue;
 	}
 
-      if (abs (dist) >= vectorization_factor)
+      if (abs (dist) >= vectorization_factor 
+          || (dist > 0 && DDR_REVERSED_P (ddr)))
 	{
-	  /* Dependence distance does not create dependence, as far as vectorization
-	     is concerned, in this case.  */
+	  /* Dependence distance does not create dependence, as far as 
+	     vectorization is concerned, in this case. If DDR_REVERSED_P the 
+	     order of the data-refs in DDR was reversed (to make distance
+	     vector positive), and the actual distance is negative.  */
 	  if (vect_print_dump_info (REPORT_DR_DETAILS))
-	    fprintf (vect_dump, "dependence distance >= VF.");
+	    fprintf (vect_dump, "dependence distance >= VF or negative.");
 	  continue;
 	}
 
