@@ -1,5 +1,7 @@
 2007-09-12  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/t-linux (LIMITS_H_TEST): Only define if not inhibit_libc.
+
 	PR target/33360
 	* config/cris/cris.c (cris_expand_pic_call_address): Fix typo in
 	GET_CODE (x) == CONST_INT to CONST_INT_P (x) transformation.
