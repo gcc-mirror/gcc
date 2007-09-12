@@ -31,9 +31,9 @@ Boston, MA 02110-1301, USA.  */
 
 /* IO library include.  */
 
-#include <setjmp.h>
 #include "libgfortran.h"
 
+#include <setjmp.h>
 #include <gthr.h>
 
 /* Basic types used in data transfers.  */
