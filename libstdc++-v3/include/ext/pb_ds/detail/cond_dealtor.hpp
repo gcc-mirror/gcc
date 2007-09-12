@@ -47,7 +47,7 @@
 #ifndef PB_DS_COND_DEALTOR_HPP
 #define PB_DS_COND_DEALTOR_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace detail
@@ -125,7 +125,7 @@ namespace pb_ds
 
   } // namespace detail
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_COND_DEALTOR_HPP
 

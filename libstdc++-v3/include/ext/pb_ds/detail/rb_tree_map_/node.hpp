@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/basic_tree_policy/null_node_metadata.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -139,6 +139,6 @@ namespace pb_ds
       bool m_red;
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

@@ -50,7 +50,7 @@
 #include <ext/pb_ds/detail/basic_tree_policy/null_node_metadata.hpp>
 #include <ext/pb_ds/detail/types_traits.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -117,6 +117,6 @@ namespace pb_ds
     };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_TREE_NODE_METADATA_SELECTOR_HPP

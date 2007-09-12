@@ -52,7 +52,7 @@
 #include <common_type/assoc/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -128,7 +128,7 @@ namespace pb_ds
 
 
     template<typename It, bool Native>
-    class multimap_find_test : private pb_ds::test::detail::timing_test_base
+    class multimap_find_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       multimap_find_test(It ins_b, size_t ins_vn, size_t vs, size_t ins_vm)
@@ -144,12 +144,12 @@ namespace pb_ds
 
       template<typename Cntnr>
       Cntnr
-      init(It ins_b, It ins_e, Cntnr, pb_ds::detail::true_type)
+      init(It ins_b, It ins_e, Cntnr, __gnu_pbds::detail::true_type)
       { return Cntnr(ins_b, ins_e); }
 
       template<typename Cntnr>
       Cntnr
-      init(It ins_b, It ins_e, Cntnr, pb_ds::detail::false_type)
+      init(It ins_b, It ins_e, Cntnr, __gnu_pbds::detail::false_type)
       {
 	Cntnr ret;
 	for (It it = ins_b; it != ins_e; ++it)
@@ -182,19 +182,19 @@ namespace pb_ds
 	  std::advance(ins_it_e, v);
 
 	  Cntnr c = init(ins_it_b, ins_it_e, Cntnr(),
-			 pb_ds::detail::integral_constant<int,Native>());
+			 __gnu_pbds::detail::integral_constant<int,Native>());
 
-	  pb_ds::test::detail::multimap_find_functor<It, Cntnr, Native>
+	  __gnu_pbds::test::detail::multimap_find_functor<It, Cntnr, Native>
             fn(c, ins_it_b, ins_it_e);
 
 	  const double res =
-            pb_ds::test::detail::timing_test_base::operator()(fn);
+            __gnu_pbds::test::detail::timing_test_base::operator()(fn);
 
 	  res_set_fmt.add_res(v, res / v);
 	}
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

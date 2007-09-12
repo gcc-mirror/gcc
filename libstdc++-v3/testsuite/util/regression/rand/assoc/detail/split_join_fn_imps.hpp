@@ -54,13 +54,13 @@ split_join()
       split_join = container_traits::order_preserving
     };
 
-  return (split_join_imp(pb_ds::detail::integral_constant<int,split_join>()));
+  return (split_join_imp(__gnu_pbds::detail::integral_constant<int,split_join>()));
 }
 
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-split_join_imp(pb_ds::detail::false_type)
+split_join_imp(__gnu_pbds::detail::false_type)
 {
   return (true);
 }
@@ -68,7 +68,7 @@ split_join_imp(pb_ds::detail::false_type)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-split_join_imp(pb_ds::detail::true_type)
+split_join_imp(__gnu_pbds::detail::true_type)
 {
   PB_DS_TRACE("split_join");
 

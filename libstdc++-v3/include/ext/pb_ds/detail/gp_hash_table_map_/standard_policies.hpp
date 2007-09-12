@@ -52,7 +52,7 @@
 #include <ext/pb_ds/linear_probe_fn.hpp>
 #include <ext/pb_ds/quadratic_probe_fn.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -66,15 +66,15 @@ namespace pb_ds
       typedef
       typename __conditional_type<
       is_same<
-      pb_ds::direct_mask_range_hashing<size_t>,
+      __gnu_pbds::direct_mask_range_hashing<size_t>,
       Comb_Probe_Fn>::value,
-      pb_ds::linear_probe_fn<size_type>,
-      pb_ds::quadratic_probe_fn<size_type> >::__type
+      __gnu_pbds::linear_probe_fn<size_type>,
+      __gnu_pbds::quadratic_probe_fn<size_type> >::__type
       type;
     };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

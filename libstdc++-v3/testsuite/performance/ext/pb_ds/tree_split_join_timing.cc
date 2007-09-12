@@ -59,7 +59,7 @@ usage();
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
   size_t vn = 200;
   size_t vs = 200;
   size_t vm = 2100;
@@ -72,7 +72,7 @@ main(int argc, char* a_p_argv[])
 	typedef tree_split_join_test<true> test_t;
 	test_t tst(vn, vs, vm);
 
-	typedef tree_common_types<int, pb_ds::null_mapped_type>::performance_tl tl_t;
+	typedef tree_common_types<int, __gnu_pbds::null_mapped_type>::performance_tl tl_t;
 	tl_t tl;
 	__gnu_cxx::typelist::apply(tst, tl);
       }

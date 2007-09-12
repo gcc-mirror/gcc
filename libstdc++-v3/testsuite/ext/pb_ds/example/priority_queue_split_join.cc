@@ -54,14 +54,13 @@
 #include <ext/pb_ds/priority_queue.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 int
 main()
 {
   // Two priority queue objects.
-  pb_ds::priority_queue<int> even_p, odd_p;
+  __gnu_pbds::priority_queue<int> even_p, odd_p;
 
   // First we insert some values: even ones into even_p, and odd ones
   // into odd_p.
@@ -77,7 +76,7 @@ main()
 
   // Print out the values.
   cout << "Initial values in even priority queue:" << endl;
-  pb_ds::priority_queue<int>::const_iterator it;
+  __gnu_pbds::priority_queue<int>::const_iterator it;
   for (it = even_p.begin(); it != even_p.end(); ++it)
     cout <<* it << endl;
 

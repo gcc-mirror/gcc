@@ -60,7 +60,7 @@ usage();
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
 
   size_t vn = 200;
   size_t vs = 200;

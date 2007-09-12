@@ -51,7 +51,7 @@
 #include <common_type/assoc/template_policy.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -70,7 +70,7 @@ namespace pb_ds
 	       typename Allocator::size_type Max_Load_Denom,
 	       bool External_Access>
       struct trigger_policy_string_form<
-	pb_ds::test::hash_load_check_resize_trigger_t_<
+	__gnu_pbds::test::hash_load_check_resize_trigger_t_<
         Allocator,
         Min_Load_Nom,
         Min_Load_Denom,
@@ -111,7 +111,7 @@ namespace pb_ds
 	       typename Allocator::size_type Load_Denom,
 	       bool External_Access>
       struct trigger_policy_string_form<
-	pb_ds::test::cc_hash_max_collision_check_resize_trigger_t_<
+	__gnu_pbds::test::cc_hash_max_collision_check_resize_trigger_t_<
         Allocator,
         Load_Nom,
         Load_Denom,
@@ -147,7 +147,7 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_TRIGGER_POLICY_STRING_FORM_HPP
 

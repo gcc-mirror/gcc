@@ -53,18 +53,18 @@ subscript()
 
   enum
     {
-      no_data = pb_ds::detail::is_same<
+      no_data = __gnu_pbds::detail::is_same<
       typename Cntnr::const_key_reference,
       typename Cntnr::const_reference>::value
     };
 
-  return (subscript_imp(pb_ds::detail::integral_constant<int,no_data>()));
+  return (subscript_imp(__gnu_pbds::detail::integral_constant<int,no_data>()));
 }
 
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-subscript_imp(pb_ds::detail::false_type)
+subscript_imp(__gnu_pbds::detail::false_type)
 {
   bool done = true;
 
@@ -97,7 +97,7 @@ subscript_imp(pb_ds::detail::false_type)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-subscript_imp(pb_ds::detail::true_type)
+subscript_imp(__gnu_pbds::detail::true_type)
 {
   bool done = true;
 
@@ -110,7 +110,7 @@ subscript_imp(pb_ds::detail::true_type)
         value_type v = test_traits::generate_value(m_g, m_m);
 
         m_alloc.set_throw_prob(m_tp);
-	(*m_p_c)[v] = pb_ds::null_mapped_type();
+	(*m_p_c)[v] = __gnu_pbds::null_mapped_type();
 
         m_native_c.insert(test_traits::native_value(v));
       }

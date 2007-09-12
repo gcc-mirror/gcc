@@ -51,7 +51,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -145,6 +145,6 @@ namespace pb_ds
       entry_pointer m_p_e;
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/tag_and_trait.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -237,7 +237,7 @@ namespace pb_ds
 #undef PB_DS_TREE_NODE_ITERATOR_CLASS_C_DEC
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_BIN_SEARCH_TREE_NODE_ITERATORS_HPP
 

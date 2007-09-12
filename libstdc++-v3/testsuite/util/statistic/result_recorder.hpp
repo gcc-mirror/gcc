@@ -51,7 +51,7 @@
 #include <statistic/sample_variance.hpp>
 #include <statistic/sample_mean_confidence_checker.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -102,7 +102,7 @@ namespace pb_ds
       }
     } // namespace detail
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

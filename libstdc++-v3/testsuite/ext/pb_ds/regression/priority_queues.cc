@@ -50,8 +50,8 @@
 #include <cassert>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
+using namespace __gnu_pbds;
 
 template<typename Cntnr>
 void
@@ -94,7 +94,7 @@ priority_queue_link_regression_test_0()
      *  Perform operations on a pairing-heap queue.
      */
     cout << "Pairing heap" << endl;
-    pb_ds::priority_queue<int, less<int>, pairing_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, pairing_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -103,7 +103,7 @@ priority_queue_link_regression_test_0()
      *  Perform operations on a binomial-heap queue.
      */
     cout << "Binomial heap" << endl;
-    pb_ds::priority_queue<int, less<int>, binomial_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, binomial_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -112,7 +112,7 @@ priority_queue_link_regression_test_0()
      *  Perform operations on a binomial-heap queue.
      */
     cout << "Redundant-counter binomial heap" << endl;
-    pb_ds::priority_queue<int, less<int>, rc_binomial_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, rc_binomial_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -121,7 +121,7 @@ priority_queue_link_regression_test_0()
      *  Perform operations on a binomial-heap queue.
      */
     cout << "Binary heap" << endl;
-    pb_ds::priority_queue<int, less<int>, binary_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, binary_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -130,7 +130,7 @@ priority_queue_link_regression_test_0()
      *  Perform operations on a thin-heap queue.
      */
     cout << "Thin heap" << endl;
-    pb_ds::priority_queue<int, less<int>, thin_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, thin_heap_tag> c;
     some_op_sequence(c);
   }
 }
@@ -144,7 +144,7 @@ priority_queue_link_regression_test_1()
      *  Perform operations on a pairing-heap queue.
      */
     cout << "Pairing heap" << endl;
-    pb_ds::priority_queue<int, less<int>, pairing_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, pairing_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -153,7 +153,7 @@ priority_queue_link_regression_test_1()
      *  Perform operations on a binomial-heap queue.
      */
     cout << "Binomial heap" << endl;
-    pb_ds::priority_queue<int, less<int>, binomial_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, binomial_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -162,7 +162,7 @@ priority_queue_link_regression_test_1()
      *  Perform operations on a binomial-heap queue.
      */
     cout << "Redundant-counter binomial heap" << endl;
-    pb_ds::priority_queue<int, less<int>, rc_binomial_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, rc_binomial_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -171,7 +171,7 @@ priority_queue_link_regression_test_1()
      *  Perform operations on a binomial-heap queue.
      */
     cout << "Binary heap" << endl;
-    pb_ds::priority_queue<int, less<int>, binary_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, binary_heap_tag> c;
     some_op_sequence(c);
   }
 
@@ -180,7 +180,7 @@ priority_queue_link_regression_test_1()
      *  Perform operations on a thin-heap queue.
      */
     cout << "Thin heap" << endl;
-    pb_ds::priority_queue<int, less<int>, thin_heap_tag> c;
+    __gnu_pbds::priority_queue<int, less<int>, thin_heap_tag> c;
     some_op_sequence(c);
   }
 }

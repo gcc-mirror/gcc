@@ -50,7 +50,7 @@
 #include <io/illegal_input_error.hpp>
 #include <string>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -72,6 +72,6 @@ namespace pb_ds
     bool
     get_cmd_line_bool(int argc, char* a_p_argv[], int argn);
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_VERIFIED_CMD_LINE_INPUT_HPP

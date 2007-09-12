@@ -53,7 +53,7 @@
 #include <common_type/priority_queue/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -126,7 +126,7 @@ namespace pb_ds
 
       // Specializations.
       template<typename It, class Cntnr>
-      class push_functor<It, Cntnr, pb_ds::binary_heap_tag>
+      class push_functor<It, Cntnr, __gnu_pbds::binary_heap_tag>
       {
       public:
         push_functor(It ins_it_b,  It ins_it_e) 
@@ -151,7 +151,7 @@ namespace pb_ds
       };
 
       template<typename It, class Cntnr>
-      class push_functor<It, Cntnr, pb_ds::test::native_pq_tag>
+      class push_functor<It, Cntnr, __gnu_pbds::test::native_pq_tag>
       {
       public:
         push_functor(It ins_it_b,  It ins_it_e) 
@@ -178,7 +178,7 @@ namespace pb_ds
 
 
       template<typename It, class Cntnr>
-      class push_modify_functor<It, Cntnr, pb_ds::binary_heap_tag>
+      class push_modify_functor<It, Cntnr, __gnu_pbds::binary_heap_tag>
       {
       private:
 	typedef typename Cntnr::iterator iterator;
@@ -220,7 +220,7 @@ namespace pb_ds
       };
 
       template<typename It, class Cntnr>
-      class push_modify_functor<It, Cntnr, pb_ds::test::native_pq_tag>
+      class push_modify_functor<It, Cntnr, __gnu_pbds::test::native_pq_tag>
       {
       private:
 	typedef typename Cntnr::value_type value_type;
@@ -253,7 +253,7 @@ namespace pb_ds
     } // namespace detail
 
     template<typename It>
-    class modify_test : private pb_ds::test::detail::timing_test_base
+    class modify_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       modify_test(It b, size_t vn, size_t vs, size_t vm, bool modify_up)
@@ -333,7 +333,7 @@ namespace pb_ds
 	}
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif
 

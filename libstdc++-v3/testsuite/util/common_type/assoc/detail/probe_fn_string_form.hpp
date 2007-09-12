@@ -51,7 +51,7 @@
 #include <common_type/assoc/template_policy.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -103,7 +103,7 @@ namespace pb_ds
 
       template<>
       struct probe_fn_string_form<
-	pb_ds::null_probe_fn>
+	__gnu_pbds::null_probe_fn>
       {
 	static std::string
         name()
@@ -122,7 +122,7 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_PROBE_FN_STRING_FORM_HPP
 

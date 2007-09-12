@@ -61,8 +61,7 @@
 #include <ext/pb_ds/hash_policy.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 /**
  * A (somewhat simplistic) ranged-hash function for strings.

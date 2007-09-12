@@ -53,7 +53,7 @@
 #include <assert.h>
 #include <ext/pb_ds/detail/types_traits.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -69,6 +69,6 @@ namespace pb_ds
       }
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_EQ_BY_LESS_HPP

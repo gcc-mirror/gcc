@@ -50,7 +50,7 @@
 #include <regression/basic_type.hpp>
 #include <string>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -86,6 +86,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_REGRESSION_TEST_TO_STRING_HPP

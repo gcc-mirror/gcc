@@ -53,7 +53,7 @@
 #include <ext/pb_ds/detail/binary_heap_/binary_heap_.hpp>
 #include <ext/pb_ds/detail/thin_heap_/thin_heap_.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
     namespace detail
     {
@@ -92,6 +92,6 @@ namespace pb_ds
       };
 
     } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_PRIORITY_QUEUE_BASE_DS_DISPATCHER_HPP

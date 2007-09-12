@@ -47,7 +47,7 @@
 #include <debug/debug.h>
 #include <util/rng/twister_rand_gen.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -92,4 +92,4 @@ namespace pb_ds
       return ret;
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds

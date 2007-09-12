@@ -105,7 +105,7 @@
 #include <ext/pb_ds/detail/pat_trie_/pat_trie_.hpp>
 #undef PB_DS_DATA_FALSE_INDICATOR
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 namespace detail
 {
@@ -333,6 +333,6 @@ namespace detail
 				 at3t::value, at4t, at5t, at2t>	type;
   };
 } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

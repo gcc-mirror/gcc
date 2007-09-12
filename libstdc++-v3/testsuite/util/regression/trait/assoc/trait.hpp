@@ -57,7 +57,7 @@
 #include <regression/trait/assoc/node_update_trait.hpp>
 #include <regression/trait/erase_if_fn.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 namespace test
 {
@@ -214,6 +214,6 @@ namespace detail
 
 } // namespace detail
 } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

@@ -56,7 +56,7 @@
 #include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // A simple hash functor.
 // hash could serve instead of this functor, but it is not yet

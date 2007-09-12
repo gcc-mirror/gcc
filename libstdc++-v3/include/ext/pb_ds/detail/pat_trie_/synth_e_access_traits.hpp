@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/type_utils.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -230,6 +230,6 @@ namespace pb_ds
 #undef PB_DS_SYNTH_E_ACCESS_TRAITS_C_DEC
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

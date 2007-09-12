@@ -140,6 +140,6 @@ private:
   do_resize(size_type new_size);
 };
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

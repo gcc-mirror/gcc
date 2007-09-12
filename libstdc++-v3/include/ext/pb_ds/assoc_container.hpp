@@ -53,7 +53,7 @@
 #include <ext/pb_ds/detail/container_base_dispatch.hpp>
 #include <ext/pb_ds/detail/basic_tree_policy/traits.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 #define PB_DS_BASE_C_DEC \
   detail::container_base_dispatch<Key, Mapped, Tag, Policy_Tl, Allocator>::type
@@ -495,7 +495,7 @@ namespace pb_ds
   template<typename Key, typename Mapped, typename Cmp_Fn = std::less<Key>,
 	   typename Tag = rb_tree_tag,
 	   template<typename Const_Node_Iterator, typename Node_Iterator, typename Cmp_Fn_, typename Allocator_>
-  class Node_Update = pb_ds::null_tree_node_update,
+  class Node_Update = __gnu_pbds::null_tree_node_update,
 	   typename Allocator = std::allocator<char> >
   class tree : public PB_DS_BASE_C_DEC
   {
@@ -684,6 +684,6 @@ namespace pb_ds
 
 #undef PB_DS_BASE_C_DEC
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

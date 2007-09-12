@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/types_traits.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -68,6 +68,6 @@ namespace pb_ds
     struct null_node_metadata
     { };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

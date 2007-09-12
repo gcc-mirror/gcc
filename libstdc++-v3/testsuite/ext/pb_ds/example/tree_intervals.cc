@@ -68,8 +68,7 @@
 #include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // Following are definitions of line intervals and functors operating
 // on them. As the purpose of this example is node invariants, and not

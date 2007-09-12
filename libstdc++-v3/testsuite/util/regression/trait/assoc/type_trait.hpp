@@ -50,7 +50,7 @@
 
 #include <regression/basic_type.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -92,7 +92,7 @@ namespace pb_ds
 
 	template<typename Gen>
 	static value_type
-        generate_value(Gen& r_gen, size_t max, pb_ds::null_mapped_type)
+        generate_value(Gen& r_gen, size_t max, __gnu_pbds::null_mapped_type)
 	{ return basic_type(r_gen, max); }
 
 	template<typename Gen>
@@ -116,6 +116,6 @@ namespace pb_ds
       };
     } // namespace detail
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

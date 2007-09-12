@@ -195,7 +195,7 @@ rev_it_copy()
       reverse_iteration = container_traits::reverse_iteration
     };
 
-  rev_it_copy_imp(pb_ds::detail::integral_constant<int,reverse_iteration>());
+  rev_it_copy_imp(__gnu_pbds::detail::integral_constant<int,reverse_iteration>());
 }
 
 PB_DS_CLASS_T_DEC
@@ -208,19 +208,19 @@ rev_it_assign()
       reverse_iteration = container_traits::reverse_iteration
     };
 
-  rev_it_assign_imp(pb_ds::detail::integral_constant<int,reverse_iteration>());
+  rev_it_assign_imp(__gnu_pbds::detail::integral_constant<int,reverse_iteration>());
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-rev_it_copy_imp(pb_ds::detail::false_type)
+rev_it_copy_imp(__gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-rev_it_copy_imp(pb_ds::detail::true_type)
+rev_it_copy_imp(__gnu_pbds::detail::true_type)
 {
   {
     typename cntnr::iterator it = m_p_c->end();
@@ -260,13 +260,13 @@ rev_it_copy_imp(pb_ds::detail::true_type)
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-rev_it_assign_imp(pb_ds::detail::false_type)
+rev_it_assign_imp(__gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-rev_it_assign_imp(pb_ds::detail::true_type)
+rev_it_assign_imp(__gnu_pbds::detail::true_type)
 {
   {
     typename cntnr::iterator it = m_p_c->end();

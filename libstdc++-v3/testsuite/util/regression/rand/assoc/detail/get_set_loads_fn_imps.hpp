@@ -50,7 +50,7 @@ PB_DS_CLASS_C_DEC::
 get_set_loads()
 {
   typedef
-    pb_ds::detail::integral_constant<int,
+    __gnu_pbds::detail::integral_constant<int,
     test_traits::get_set_loads>
     get_set_loads_ind;
 
@@ -60,7 +60,7 @@ get_set_loads()
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-get_set_loads_imp(pb_ds::detail::false_type)
+get_set_loads_imp(__gnu_pbds::detail::false_type)
 {
   return (true);
 }
@@ -68,7 +68,7 @@ get_set_loads_imp(pb_ds::detail::false_type)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-get_set_loads_imp(pb_ds::detail::true_type)
+get_set_loads_imp(__gnu_pbds::detail::true_type)
 {
   PB_DS_TRACE("get_set_loads");
 

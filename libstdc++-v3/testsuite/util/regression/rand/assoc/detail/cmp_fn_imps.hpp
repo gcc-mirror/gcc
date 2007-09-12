@@ -140,50 +140,50 @@ cmp_(const Cntnr& r_c, const native_type& r_native_c)
       container_traits::order_preserving,
       back_order_preserving =
       container_traits::order_preserving&& 
-      !pb_ds::detail::is_same<
+      !__gnu_pbds::detail::is_same<
       typename std::iterator_traits<
       typename cntnr::const_iterator>::iterator_category,
       std::forward_iterator_tag>::value,
       reverse_iteration = container_traits::reverse_iteration,
       order_statistics = test_traits::order_statistics,
       prefix_search = test_traits::prefix_search,
-      has_mapped = !pb_ds::detail::is_same<
+      has_mapped = !__gnu_pbds::detail::is_same<
       typename Cntnr::mapped_type,
-      pb_ds::null_mapped_type>::value
+      __gnu_pbds::null_mapped_type>::value
     };
 
   order_preserving_cmp_imp(r_c, r_native_c,
-			   pb_ds::detail::integral_constant<int,order_preserving>());
+			   __gnu_pbds::detail::integral_constant<int,order_preserving>());
 
   back_order_preserving_cmp_imp(r_c, r_native_c,
-				pb_ds::detail::integral_constant<int,back_order_preserving>());
+				__gnu_pbds::detail::integral_constant<int,back_order_preserving>());
 
   order_statistics_cmp_imp(r_c, r_native_c,
-			   pb_ds::detail::integral_constant<int,order_statistics>());
+			   __gnu_pbds::detail::integral_constant<int,order_statistics>());
 
   prefix_search_cmp_imp(r_c, r_native_c,
-			pb_ds::detail::integral_constant<int,prefix_search>());
+			__gnu_pbds::detail::integral_constant<int,prefix_search>());
 
   reverse_iteration_cmp_imp(r_c, r_native_c,
-			    pb_ds::detail::integral_constant<int,reverse_iteration>());
+			    __gnu_pbds::detail::integral_constant<int,reverse_iteration>());
 
   lower_bound_cmp_imp(r_c, r_native_c,
-		      pb_ds::detail::integral_constant<int,order_preserving>());
+		      __gnu_pbds::detail::integral_constant<int,order_preserving>());
 
   upper_bound_cmp_imp(r_c, r_native_c,
-		      pb_ds::detail::integral_constant<int,order_preserving>());
+		      __gnu_pbds::detail::integral_constant<int,order_preserving>());
 }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-order_preserving_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+order_preserving_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-order_preserving_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+order_preserving_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   PB_DS_SET_DESTRUCT_PRINT
 
@@ -217,13 +217,13 @@ order_preserving_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds:
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-back_order_preserving_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+back_order_preserving_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-back_order_preserving_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+back_order_preserving_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   PB_DS_SET_DESTRUCT_PRINT
 
@@ -241,13 +241,13 @@ back_order_preserving_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, p
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-reverse_iteration_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+reverse_iteration_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-reverse_iteration_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+reverse_iteration_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   PB_DS_SET_DESTRUCT_PRINT
 
@@ -281,13 +281,13 @@ reverse_iteration_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-order_statistics_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+order_statistics_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-order_statistics_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+order_statistics_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   {
     m_alloc.set_throw_prob(0);
@@ -350,13 +350,13 @@ order_statistics_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds:
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-prefix_search_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+prefix_search_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-prefix_search_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+prefix_search_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   PB_DS_SET_DESTRUCT_PRINT
 
@@ -495,13 +495,13 @@ back_it_cmp_imp(Const_It b, Const_It e, Const_Native_It native_b, Const_Native_I
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-lower_bound_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+lower_bound_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-lower_bound_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+lower_bound_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   PB_DS_SET_DESTRUCT_PRINT
 
@@ -548,13 +548,13 @@ lower_bound_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::deta
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-upper_bound_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, pb_ds::detail::false_type)
+upper_bound_cmp_imp(const Cntnr& /*r_c*/, const native_type& /*r_native_c*/, __gnu_pbds::detail::false_type)
 { }
 
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
-upper_bound_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, pb_ds::detail::true_type)
+upper_bound_cmp_imp(const Cntnr& r_c, const native_type& r_native_c, __gnu_pbds::detail::true_type)
 {
   PB_DS_SET_DESTRUCT_PRINT
 

@@ -49,7 +49,7 @@ bool
 PB_DS_CLASS_C_DEC::
 resize()
 {
-  typedef pb_ds::detail::integral_constant<int, test_traits::resize> resize_ind;
+  typedef __gnu_pbds::detail::integral_constant<int, test_traits::resize> resize_ind;
 
   return (resize_imp(resize_ind()));
 }
@@ -57,7 +57,7 @@ resize()
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-resize_imp(pb_ds::detail::false_type)
+resize_imp(__gnu_pbds::detail::false_type)
 {
   return (true);
 }
@@ -65,7 +65,7 @@ resize_imp(pb_ds::detail::false_type)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-resize_imp(pb_ds::detail::true_type)
+resize_imp(__gnu_pbds::detail::true_type)
 {
   PB_DS_TRACE("resize");
 

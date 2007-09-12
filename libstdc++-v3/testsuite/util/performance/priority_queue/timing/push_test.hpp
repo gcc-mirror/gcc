@@ -53,7 +53,7 @@
 #include <common_type/priority_queue/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -85,7 +85,7 @@ namespace pb_ds
     } // namespace detail
 
     template<typename It>
-    class push_test : private pb_ds::test::detail::timing_test_base
+    class push_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       push_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm)
@@ -127,11 +127,11 @@ namespace pb_ds
 	  It ins_it_e = m_ins_b;
 	  std::advance(ins_it_e, v);
 
-	  pb_ds::test::detail::push_push_functor<It, Cntnr>
+	  __gnu_pbds::test::detail::push_push_functor<It, Cntnr>
             fn(ins_it_b, ins_it_e);
 
 	  const double res =
-            pb_ds::test::detail::timing_test_base::operator()(fn);
+            __gnu_pbds::test::detail::timing_test_base::operator()(fn);
 
 	  res_set_fmt.add_res(v, res / v);
 	}
@@ -148,7 +148,7 @@ namespace pb_ds
         cntnr.push((typename Cntnr::const_reference)(*ins_it));
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

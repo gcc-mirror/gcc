@@ -48,7 +48,7 @@
 #ifndef PB_DS_REGRESSION_TEST_NATIVE_TYPE_TRAIT_HPP
 #define PB_DS_REGRESSION_TEST_NATIVE_TYPE_TRAIT_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -133,7 +133,7 @@ namespace pb_ds
       struct native_type_traits_base<
 	Native_Key_Type,
 	Key_Type,
-	pb_ds::null_mapped_type,
+	__gnu_pbds::null_mapped_type,
 	Allocator>
       {
       public:
@@ -190,6 +190,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_REGRESSION_TEST_NATIVE_TYPE_TRAIT_HPP

@@ -67,13 +67,13 @@
     <p>As mentioned in <a href=
     "tutorial.html#pq">Tutorial::Priority Queues</a>, 
     <a href=
-    "priority_queue.html"><tt>pb_ds::priority_queue</tt></a>
+    "priority_queue.html"><tt>__gnu_pbds::priority_queue</tt></a>
     shares most of the same interface with <tt>std::priority_queue</tt>.
     <i>E.g.</i> if <tt>q</tt> is a priority queue of type
     <tt>Q</tt>, then <tt>q.top()</tt> will return the "largest"
     value in the container (according to <tt><b>typename</b>
     Q::cmp_fn</tt>). <a href=
-    "priority_queue.html"><tt>pb_ds::priority_queue</tt></a>
+    "priority_queue.html"><tt>__gnu_pbds::priority_queue</tt></a>
     has a larger (and very slightly different) interface than
     <tt>std::priority_queue</tt>, however, since typically
     <tt>push</tt> and <tt>pop</tt> are deemed insufficient for
@@ -309,7 +309,7 @@ assert(p.top() == 3);
 
     <p>Tags and traits are very useful for manipulating generic
     types. <a href=
-    "priority_queue.html"><tt>pb_ds::priority_queue</tt></a>
+    "priority_queue.html"><tt>__gnu_pbds::priority_queue</tt></a>
     publicly defines <tt>container_category</tt> as one of the tags
     discussed in <a href="#pq_imp">Implementations</a>. Given any
     container <tt>Cntnr</tt>, the tag of the underlying
@@ -327,7 +327,7 @@ assert(p.top() == 3);
     <p>Additionally, a traits mechanism can be used to query a
     container type for its attributes. Given any container
     <tt>Cntnr</tt>, then <tt><a href=
-    "assoc_container_traits.html">pb_ds::container_traits</a>&lt;Cntnr&gt;</tt>
+    "assoc_container_traits.html">__gnu_pbds::container_traits</a>&lt;Cntnr&gt;</tt>
     is a traits class identifying the properties of the
     container.</p>
 

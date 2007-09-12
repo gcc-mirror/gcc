@@ -53,7 +53,7 @@
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
   typedef lu_map_tl_t map_tl_t;
 
   return rand_regression_test(50, 10, 

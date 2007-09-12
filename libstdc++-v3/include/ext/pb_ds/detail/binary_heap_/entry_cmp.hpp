@@ -47,7 +47,7 @@
 #ifndef PB_DS_BINARY_HEAP_ENTRY_CMP_HPP
 #define PB_DS_BINARY_HEAP_ENTRY_CMP_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -94,6 +94,6 @@ namespace pb_ds
     };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_BINARY_HEAP_ENTRY_CMP_HPP

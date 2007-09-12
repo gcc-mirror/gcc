@@ -52,7 +52,7 @@
 #include <common_type/assoc/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -111,7 +111,7 @@ namespace pb_ds
     } // namespace detail
 
     template<typename It, bool LOR = false>
-    class find_test : private pb_ds::test::detail::timing_test_base
+    class find_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       find_test(It ins_b, It fnd_it_b, size_t ins_vn, size_t ins_vs, 
@@ -161,16 +161,16 @@ namespace pb_ds
 	  It fnd_it_e = m_fnd_it_b;
 	  std::advance(fnd_it_e, fnd_size);
 
-	  pb_ds::test::detail::find_find_functor<It, Cntnr, LOR>
+	  __gnu_pbds::test::detail::find_find_functor<It, Cntnr, LOR>
             fn(test_container, fnd_it_b, fnd_it_e);
 
 	  const double res =
-            pb_ds::test::detail::timing_test_base::operator()(fn);
+            __gnu_pbds::test::detail::timing_test_base::operator()(fn);
 	  res_set_fmt.add_res(v, res / fnd_size);
 	}
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

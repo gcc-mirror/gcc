@@ -60,7 +60,7 @@
 #include <functional>
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -500,4 +500,4 @@ namespace pb_ds
 #undef PB_DS_V2S
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds

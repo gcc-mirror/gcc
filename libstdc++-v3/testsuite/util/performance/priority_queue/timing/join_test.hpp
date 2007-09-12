@@ -53,7 +53,7 @@
 #include <common_type/priority_queue/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -114,7 +114,7 @@ namespace pb_ds
     } // namespace detail
 
     template<typename It>
-    class join_test : private pb_ds::test::detail::timing_test_base
+    class join_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       join_test(It ins_b, size_t ins_vn, size_t ins_vs, size_t ins_vm)
@@ -125,9 +125,9 @@ namespace pb_ds
       void
       operator()(Cntnr)
       {
-	using pb_ds::test::detail::double_push_functor;
-	using pb_ds::test::detail::double_push_join_functor;
-	typedef pb_ds::test::detail::timing_test_base base_type;
+	using __gnu_pbds::test::detail::double_push_functor;
+	using __gnu_pbds::test::detail::double_push_join_functor;
+	typedef __gnu_pbds::test::detail::timing_test_base base_type;
 	typedef double_push_functor<It, Cntnr> psh_fnct;
 	typedef double_push_join_functor<It, Cntnr> psh_jn_fnct;
 
@@ -171,7 +171,7 @@ namespace pb_ds
       const size_t 	m_ins_vm;
     };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

@@ -54,7 +54,7 @@
 #include <native_type/assoc/native_tree_tag.hpp>
 #include <io/xml.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -92,6 +92,6 @@ typename Allocator::template rebind<std::pair<const Key, Data > >::other >
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_NATIVE_MAP_HPP

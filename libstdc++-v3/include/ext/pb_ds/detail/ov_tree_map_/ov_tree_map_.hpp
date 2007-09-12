@@ -60,7 +60,7 @@
 #include <assert.h>
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -525,4 +525,4 @@ namespace pb_ds
 #undef PB_DS_CONST_NODE_ITERATOR_NAME
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds

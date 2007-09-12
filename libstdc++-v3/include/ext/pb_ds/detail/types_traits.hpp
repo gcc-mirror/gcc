@@ -51,7 +51,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <utility>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -83,6 +83,6 @@ namespace pb_ds
       no_throw_copies 	m_no_throw_copies_indicator;
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

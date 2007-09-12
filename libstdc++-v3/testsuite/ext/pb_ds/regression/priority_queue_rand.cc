@@ -61,7 +61,7 @@
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
   return rand_regression_test(ITERATIONS, KEYS,
 			      "tree_no_data_map_rand_regression_test", 
 			      pq_tl_t());

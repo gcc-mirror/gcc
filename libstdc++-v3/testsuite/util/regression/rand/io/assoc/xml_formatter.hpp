@@ -49,7 +49,7 @@
 
 #include <regression/rand/io/xml_formatter.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -76,6 +76,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_XML_TEST_REGRESSION_FORMATTER_HPP

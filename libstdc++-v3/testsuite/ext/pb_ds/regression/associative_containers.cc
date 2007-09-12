@@ -50,7 +50,7 @@
 #include <cassert>
 
 using namespace std;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 /**
  * The following function performs a sequence of operations on an

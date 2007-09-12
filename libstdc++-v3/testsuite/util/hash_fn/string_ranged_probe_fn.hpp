@@ -49,7 +49,7 @@
 
 #include <string>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -108,6 +108,6 @@ namespace pb_ds
       { return ("string ranged-probe using" + string_form<comb_fn>::desc());}
     };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif

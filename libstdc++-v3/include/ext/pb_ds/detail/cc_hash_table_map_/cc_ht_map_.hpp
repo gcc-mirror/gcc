@@ -60,7 +60,7 @@
 #endif 
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -609,7 +609,7 @@ namespace pb_ds
       enum
 	{
 	  store_hash_ok = !Store_Hash 
-	                  || !is_same<Hash_Fn, pb_ds::null_hash_fn>::value
+	                  || !is_same<Hash_Fn, __gnu_pbds::null_hash_fn>::value
 	};
 
       PB_DS_STATIC_ASSERT(sth, store_hash_ok);
@@ -638,5 +638,5 @@ namespace pb_ds
 #undef PB_DS_V2S
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 

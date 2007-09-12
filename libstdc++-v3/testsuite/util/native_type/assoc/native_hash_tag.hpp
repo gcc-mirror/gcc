@@ -47,12 +47,12 @@
 #ifndef PB_DS_NATIVE_HASH_DS_TAG_HPP
 #define PB_DS_NATIVE_HASH_DS_TAG_HPP
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
     struct native_hash_tag { };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

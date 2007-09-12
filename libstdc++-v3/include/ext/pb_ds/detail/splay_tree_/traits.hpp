@@ -49,7 +49,7 @@
 
 #include <ext/pb_ds/detail/splay_tree_/node.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -114,6 +114,6 @@ namespace pb_ds
     { };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_SPLAY_TREE_NODE_AND_IT_TRAITS_HPP

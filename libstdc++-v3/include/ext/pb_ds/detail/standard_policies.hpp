@@ -56,7 +56,7 @@
 #include <ext/pb_ds/tag_and_trait.hpp>
 #include <ext/hash_map>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -79,7 +79,7 @@ namespace pb_ds
 
     struct default_comb_hash_fn
     {
-      typedef pb_ds::direct_mask_range_hashing<> type;
+      typedef __gnu_pbds::direct_mask_range_hashing<> type;
     };
 
     template<typename Comb_Hash_Fn>
@@ -91,19 +91,19 @@ namespace pb_ds
       typedef
       typename __conditional_type<
 	is_same<
-	pb_ds::direct_mask_range_hashing<
+	__gnu_pbds::direct_mask_range_hashing<
 	size_type>,
 	Comb_Hash_Fn>::value,
-	pb_ds::hash_exponential_size_policy<
+	__gnu_pbds::hash_exponential_size_policy<
 	size_type>,
-	pb_ds::hash_prime_size_policy>::__type
+	__gnu_pbds::hash_prime_size_policy>::__type
       size_policy_type;
 
     public:
       typedef
-      pb_ds::hash_standard_resize_policy<
+      __gnu_pbds::hash_standard_resize_policy<
       size_policy_type,
-      pb_ds::hash_load_check_resize_trigger<
+      __gnu_pbds::hash_load_check_resize_trigger<
       false,
       size_type>,
       false,
@@ -113,7 +113,7 @@ namespace pb_ds
 
     struct default_update_policy
     {
-      typedef pb_ds::move_to_front_lu_policy<> type;
+      typedef __gnu_pbds::move_to_front_lu_policy<> type;
     };
 
     template<typename Comb_Probe_Fn>
@@ -126,11 +126,11 @@ namespace pb_ds
       typedef
       typename __conditional_type<
       is_same<
-      pb_ds::direct_mask_range_hashing<size_t>,
+      __gnu_pbds::direct_mask_range_hashing<size_t>,
       Comb_Probe_Fn>::value,
-      pb_ds::linear_probe_fn<
+      __gnu_pbds::linear_probe_fn<
       size_type>,
-      pb_ds::quadratic_probe_fn<
+      __gnu_pbds::quadratic_probe_fn<
       size_type> >::__type
       type;
     };
@@ -147,7 +147,7 @@ namespace pb_ds
       char> > >
     {
       typedef
-      pb_ds::string_trie_e_access_traits<
+      __gnu_pbds::string_trie_e_access_traits<
 	std::basic_string<
 	Char,
 	Char_Traits,
@@ -157,7 +157,7 @@ namespace pb_ds
     };
 
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_STANDARD_POLICIES_HPP
 

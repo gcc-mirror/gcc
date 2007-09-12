@@ -50,7 +50,7 @@
 #include <performance/time/elapsed_timer.hpp>
 #include <statistic/result_recorder.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -81,7 +81,7 @@ namespace pb_ds
       timing_test_base::operator()(Functor& fn)
       {
 	const std::size_t resolution = get_min_resolution(fn);
-	pb_ds::test::detail::result_recorder<double> rec;
+	__gnu_pbds::test::detail::result_recorder<double> rec;
 	double res;
 	do
 	  res = run_at_resolution(fn, resolution);
@@ -121,7 +121,7 @@ namespace pb_ds
 
     } // namespace detail
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

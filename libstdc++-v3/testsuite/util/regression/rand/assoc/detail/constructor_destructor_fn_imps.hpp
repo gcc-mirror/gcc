@@ -162,7 +162,7 @@ it_constructor()
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-it_constructor_imp(pb_ds::cc_hash_tag)
+it_constructor_imp(__gnu_pbds::cc_hash_tag)
 {
   bool done = true;
   Cntnr* p_c = NULL;
@@ -229,7 +229,7 @@ it_constructor_imp(pb_ds::cc_hash_tag)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-it_constructor_imp(pb_ds::gp_hash_tag)
+it_constructor_imp(__gnu_pbds::gp_hash_tag)
 {
   bool done = true;
   Cntnr* p_c = NULL;
@@ -312,7 +312,7 @@ it_constructor_imp(pb_ds::gp_hash_tag)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-it_constructor_imp(pb_ds::tree_tag)
+it_constructor_imp(__gnu_pbds::tree_tag)
 {
   bool done = true;
   Cntnr* p_c = NULL;
@@ -348,7 +348,7 @@ it_constructor_imp(pb_ds::tree_tag)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-it_constructor_imp(pb_ds::list_update_tag)
+it_constructor_imp(__gnu_pbds::list_update_tag)
 {
   bool done = true;
   Cntnr* p_c = NULL;
@@ -373,7 +373,7 @@ it_constructor_imp(pb_ds::list_update_tag)
 PB_DS_CLASS_T_DEC
 bool
 PB_DS_CLASS_C_DEC::
-it_constructor_imp(pb_ds::pat_trie_tag)
+it_constructor_imp(__gnu_pbds::pat_trie_tag)
 {
   bool done = true;
   Cntnr* p_c = NULL;

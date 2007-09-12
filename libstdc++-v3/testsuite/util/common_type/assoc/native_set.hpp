@@ -52,7 +52,7 @@
 #include <io/xml.hpp>
 #include <string>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -88,7 +88,7 @@ namespace pb_ds
       { return (make_xml_tag("type", "value", "std_set")); }
     };
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif
 

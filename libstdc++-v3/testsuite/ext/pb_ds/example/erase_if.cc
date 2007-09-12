@@ -54,8 +54,7 @@
 #include <ext/pb_ds/assoc_container.hpp>
 
 using namespace std;
-using namespace pb_ds;
-using namespace pb_ds;
+using namespace __gnu_pbds;
 
 // The following functor takes a map's value-type object and returns
 // whether its key is between two numbers.

@@ -53,7 +53,7 @@
 #include <common_type/assoc/detail/trie_supports_order_statistics.hpp>
 #include <common_type/assoc/detail/trie_supports_prefix_search.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -75,7 +75,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct regression_test_node_update_traits<
 	Cntnr,
-	pb_ds::pat_trie_tag>
+	__gnu_pbds::pat_trie_tag>
       {
 	enum
 	  {
@@ -89,7 +89,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct regression_test_node_update_traits<
 	Cntnr,
-	pb_ds::rb_tree_tag>
+	__gnu_pbds::rb_tree_tag>
       {
 	enum
 	  {
@@ -102,7 +102,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct regression_test_node_update_traits<
 	Cntnr,
-	pb_ds::splay_tree_tag>
+	__gnu_pbds::splay_tree_tag>
       {
 	enum
 	  {
@@ -115,7 +115,7 @@ namespace pb_ds
       template<typename Cntnr>
       struct regression_test_node_update_traits<
 	Cntnr,
-	pb_ds::ov_tree_tag>
+	__gnu_pbds::ov_tree_tag>
       {
 	enum
 	  {
@@ -129,6 +129,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_REGRESSION_TEST_NODE_UPDATOR_TRAIT_HPP

@@ -49,7 +49,7 @@
 
 #include <exception>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -67,6 +67,6 @@ namespace pb_ds
 #endif
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_ILLEGAL_INPUT_EX_HPP

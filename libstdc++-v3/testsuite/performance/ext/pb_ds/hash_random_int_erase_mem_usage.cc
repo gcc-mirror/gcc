@@ -68,7 +68,7 @@ usage();
 int
 main(int argc, char* a_p_argv[])
 {
-  using namespace pb_ds::test;
+  using namespace __gnu_pbds::test;
 
   size_t vn = 200;
   size_t vs = 200;
@@ -87,7 +87,7 @@ main(int argc, char* a_p_argv[])
       erase_test<vec_t::const_iterator> tst(b,  vn, vs, vm);
       typedef __gnu_test::tracker_allocator<char> alloc_t;
       {
-	typedef hash_common_types<int, pb_ds::null_mapped_type, int_hash, std::equal_to<int>, alloc_t>::performance_tl tl_t;
+	typedef hash_common_types<int, __gnu_pbds::null_mapped_type, int_hash, std::equal_to<int>, alloc_t>::performance_tl tl_t;
 
 	tl_t tl;
 	__gnu_cxx::typelist::apply(tst, tl);

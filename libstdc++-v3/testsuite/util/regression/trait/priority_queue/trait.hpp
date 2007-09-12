@@ -50,7 +50,7 @@
 
 #include <regression/trait/erase_if_fn.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -61,7 +61,7 @@ namespace pb_ds
       {
 	typedef typename Cntnr::value_type value_type;
 	typedef typename Cntnr::const_reference const_reference;
-	typedef pb_ds::test::native_priority_queue<std::string, true> native_type;
+	typedef __gnu_pbds::test::native_priority_queue<std::string, true> native_type;
 	typedef typename native_type::value_type native_value_type;
 
 	template<typename T>
@@ -87,6 +87,6 @@ namespace pb_ds
       };
     } // namespace detail
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

@@ -51,7 +51,7 @@
 #include <ext/pb_ds/detail/priority_queue_base_dispatch.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   // A priority queue.
   template<typename Value_Type, 
@@ -126,6 +126,6 @@ namespace pb_ds
     swap(priority_queue& other)
     { base_type::swap(other); }
   };
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 

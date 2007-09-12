@@ -51,7 +51,7 @@
 #include <iostream>
 #include <string>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -91,6 +91,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_PROG_BAR_HPP

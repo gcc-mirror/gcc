@@ -52,7 +52,7 @@
 #include <common_type/assoc/string_form.hpp>
 #include <iterator>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -111,7 +111,7 @@ namespace pb_ds
     } // namespace detail
 
     template<bool Support_Split_Join>
-    class tree_split_join_test : private pb_ds::test::detail::timing_test_base
+    class tree_split_join_test : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       tree_split_join_test(size_t vn, size_t vs, size_t vm);
@@ -153,16 +153,16 @@ namespace pb_ds
 	  for (size_t ins = 0; ins < v; ++ ins)
             cntnr.insert((typename Cntnr::value_type)ins);
 
-	  pb_ds::test::detail::split_join_functor<Cntnr, Support_Split_Join>
+	  __gnu_pbds::test::detail::split_join_functor<Cntnr, Support_Split_Join>
             fn(cntnr);
 
 	  const double res =
-            pb_ds::test::detail::timing_test_base::operator()(fn);
+            __gnu_pbds::test::detail::timing_test_base::operator()(fn);
 	  res_set_fmt.add_res(v, res);
 	}
     }
   } // namespace test
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif 
 

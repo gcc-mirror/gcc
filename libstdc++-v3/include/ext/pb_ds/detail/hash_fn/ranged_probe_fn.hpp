@@ -52,7 +52,7 @@
 #include <utility>
 #include <debug/debug.h>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace detail
   {
@@ -327,7 +327,7 @@ namespace pb_ds
       { comb_probe_fn_base::swap(other); }
     };
   } // namespace detail
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif
 

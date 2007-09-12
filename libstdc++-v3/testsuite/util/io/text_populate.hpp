@@ -54,7 +54,7 @@
 #include <string>
 #include <iostream>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
 
   namespace test
@@ -75,7 +75,7 @@ namespace pb_ds
 	      std::cerr << "Cannot open file " << r_f_name.c_str() <<
                 std::endl;
 
-	      throw pb_ds::test::illegal_input_error();
+	      throw __gnu_pbds::test::illegal_input_error();
 	    }
 
 	  size_t i = 0;
@@ -93,7 +93,7 @@ namespace pb_ds
 	      std::cerr << "Read only " << static_cast<unsigned long>(i) <<
                 " words" << std::endl;
 
-	      throw pb_ds::test::illegal_input_error();
+	      throw __gnu_pbds::test::illegal_input_error();
 	    }
 	}
       catch(...)
@@ -119,7 +119,7 @@ namespace pb_ds
 	      std::cerr << "Cannot open file " << r_f_name.c_str() <<
                 std::endl;
 
-	      throw pb_ds::test::illegal_input_error();
+	      throw __gnu_pbds::test::illegal_input_error();
 	    }
 
 	  typedef std::set< typename Vec::value_type::first_type> set_t;
@@ -145,7 +145,7 @@ namespace pb_ds
 	      std::cerr << "Read only " << static_cast<unsigned long>(s.size()) <<
                 " words" << std::endl;
 
-	      throw pb_ds::test::illegal_input_error();
+	      throw __gnu_pbds::test::illegal_input_error();
 	    }
 	}
       catch(...)
@@ -158,6 +158,6 @@ namespace pb_ds
 
   } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_TEXT_POPULATE_HPP

@@ -52,7 +52,7 @@
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <native_type/assoc/native_tree_tag.hpp>
 
-namespace pb_ds
+namespace __gnu_pbds
 {
   namespace test
   {
@@ -147,6 +147,6 @@ namespace pb_ds
 #undef PB_DS_BASE_C_DEC
 } // namespace test
 
-} // namespace pb_ds
+} // namespace __gnu_pbds
 
 #endif // #ifndef PB_DS_NATIVE_MULTIMAP_HPP
