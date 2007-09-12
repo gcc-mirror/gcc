@@ -1,5 +1,12 @@
 2007-09-12  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/33284
+	PR fortran/33310
+	* symbol.c (check_conflict): Add conflict between INTRINSIC and ENTRY
+	and between BIND(C) and PARAMETER.
+
+2007-09-12  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-expr.c (gfc_conv_initializer): Fix expr == NULL check.
 
 2007-09-12  Jan Hubicka  <jh@suse.cz>
