@@ -1,5 +1,9 @@
 2007-09-13  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/recursive_check_3.f90: New.
+
+2007-09-13  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/33412
 	* gfortran.dg/elemental_bind_c.f90: New.
 
