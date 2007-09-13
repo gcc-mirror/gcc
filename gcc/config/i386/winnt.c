@@ -165,40 +165,38 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
   HOST_WIDE_INT total = 0;
   const char *old_str = IDENTIFIER_POINTER (id != NULL_TREE ? id : DECL_NAME (decl));
   char *new_str, *p;
-  tree formal_type;
+  tree type = TREE_TYPE (decl);
+  tree arg;
+  function_args_iterator args_iter;
 
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);  
 
-  formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-  if (formal_type != NULL_TREE)
-    while (1)
-      {
-	HOST_WIDE_INT parm_size;
-	HOST_WIDE_INT parm_boundary_bytes = PARM_BOUNDARY / BITS_PER_UNIT;
+  if (prototype_p (type))
+    {
+      /* This attribute is ignored for variadic functions.  */ 
+      if (stdarg_p (type))
+	return NULL_TREE;
 
-	/* We got to the end of the list without seeing void_list_node,
-	   which means the function is variadic.  The suffix is to be
-	   ignored in that case.  */
-	if (formal_type == NULL_TREE)
-	  return NULL_TREE;
+      /* Quit if we hit an incomplete type.  Error is reported
+	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
+      FOREACH_FUNCTION_ARGS(type, arg, args_iter)
+	{
+	  HOST_WIDE_INT parm_size;
+	  HOST_WIDE_INT parm_boundary_bytes = PARM_BOUNDARY / BITS_PER_UNIT;
 
-	/* End of arguments, non-varargs marker.  */
-        if (formal_type == void_list_node)
-	  break;
+	  if (! COMPLETE_TYPE_P (arg))
+	    break;
 
-        /* Quit if we hit an incomplete type.  Error is reported
-	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
-	parm_size = int_size_in_bytes (TREE_VALUE (formal_type));
-	if (parm_size < 0)
-	  break;
+	  parm_size = int_size_in_bytes (arg);
+	  if (parm_size < 0)
+	    break;
 
-	/* Must round up to include padding.  This is done the same
-	   way as in store_one_arg.  */
-	parm_size = ((parm_size + parm_boundary_bytes - 1)
-		     / parm_boundary_bytes * parm_boundary_bytes);
-	total += parm_size;
-
-	formal_type = TREE_CHAIN (formal_type);
+	  /* Must round up to include padding.  This is done the same
+	     way as in store_one_arg.  */
+	  parm_size = ((parm_size + parm_boundary_bytes - 1)
+		       / parm_boundary_bytes * parm_boundary_bytes);
+	  total += parm_size;
+	}
       }
   /* Assume max of 8 base 10 digits in the suffix.  */
   p = new_str = alloca (1 + strlen (old_str) + 1 + 8 + 1);

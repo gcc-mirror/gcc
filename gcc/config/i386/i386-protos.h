@@ -112,6 +112,8 @@ extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_sse_unpack (rtx[], bool, bool);
 extern void ix86_expand_sse4_unpack (rtx[], bool, bool);
+extern void ix86_expand_sse5_unpack (rtx[], bool, bool);
+extern void ix86_expand_sse5_pack (rtx[]);
 extern int ix86_expand_int_addcc (rtx[]);
 extern void ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
@@ -204,6 +206,9 @@ extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);
 extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
 extern void ix86_expand_reduc_v4sf (rtx (*)(rtx, rtx, rtx), rtx, rtx);
+
+extern bool ix86_sse5_valid_op_p (rtx [], rtx, int, bool, int);
+extern void ix86_expand_sse5_multiple_memory (rtx [], int, enum machine_mode);
 
 /* In winnt.c  */
 extern void i386_pe_unique_section (tree, int);

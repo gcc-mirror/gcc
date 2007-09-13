@@ -45,30 +45,36 @@ gen_stdcall_or_fastcall_decoration (tree decl, char prefix)
      of DECL_ASSEMBLER_NAME.  */
   const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
-  tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tree type = TREE_TYPE (decl);
+  tree arg;
+  function_args_iterator args_iter;
 
-  if (formal_type != NULL_TREE)
+  if (prototype_p (type))
     {
       /* These attributes are ignored for variadic functions in
 	 i386.c:ix86_return_pops_args. For compatibility with MS
 	 compiler do not add @0 suffix here.  */ 
-      if (TREE_VALUE (tree_last (formal_type)) != void_type_node)
+      if (stdarg_p (type))
 	return NULL_TREE;
 
       /* Quit if we hit an incomplete type.  Error is reported
 	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
-      while (TREE_VALUE (formal_type) != void_type_node
-	     && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
+      FOREACH_FUNCTION_ARGS(type, arg, args_iter)
 	{
-	  unsigned parm_size
-	    = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
+	  unsigned parm_size;
+
+	  if (! COMPLETE_TYPE_P (arg))
+	    break;
+
+	  parm_size = int_size_in_bytes (TYPE_SIZE (arg));
+	  if (parm_size < 0)
+	    break;
 
 	  /* Must round up to include padding.  This is done the same
 	     way as in store_one_arg.  */
 	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
 		       / PARM_BOUNDARY * PARM_BOUNDARY);
 	  total += parm_size;
-	  formal_type = TREE_CHAIN (formal_type);
 	}
     }
 
@@ -93,28 +99,32 @@ gen_regparm_prefix (tree decl, unsigned nregs)
      of DECL_ASSEMBLER_NAME.  */
   const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
-  tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tree type = TREE_TYPE (decl);
+  tree arg;
+  function_args_iterator args_iter;
 
-  if (formal_type != NULL_TREE)
+  if (prototype_p (type))
     {
       /* This attribute is ignored for variadic functions.  */ 
-      if (TREE_VALUE (tree_last (formal_type)) != void_type_node)
+      if (stdarg_p (type))
 	return NULL_TREE;
 
       /* Quit if we hit an incomplete type.  Error is reported
 	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
-      while (TREE_VALUE (formal_type) != void_type_node
-	     && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
+      FOREACH_FUNCTION_ARGS(type, arg, args_iter)
 	{
-	  unsigned parm_size
-	    = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
+	  unsigned parm_size;
 
-	  /* Must round up to include padding.  This is done the same
-	     way as in store_one_arg.  */
+	  if (! COMPLETE_TYPE_P (arg))
+	    break;
+
+	  parm_size = int_size_in_bytes (arg);
+	  if (parm_size < 0)
+	    break;
+
 	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
 		       / PARM_BOUNDARY * PARM_BOUNDARY);
 	  total += parm_size;
-	  formal_type = TREE_CHAIN (formal_type);
 	}
     }
 

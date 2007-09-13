@@ -47,6 +47,12 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_SSE4_1	OPTION_ISA_SSE4_1
 #define TARGET_SSE4_2	OPTION_ISA_SSE4_2
 #define TARGET_SSE4A	OPTION_ISA_SSE4A
+#define TARGET_SSE5	OPTION_ISA_SSE5
+#define TARGET_ROUND	OPTION_ISA_ROUND
+
+/* SSE5 and SSE4.1 define the same round instructions */
+#define	OPTION_MASK_ISA_ROUND	(OPTION_MASK_ISA_SSE4_1 | OPTION_MASK_ISA_SSE5)
+#define	OPTION_ISA_ROUND	((ix86_isa_flags & OPTION_MASK_ISA_ROUND) != 0)
 
 #include "config/vxworks-dummy.h"
 
@@ -388,6 +394,7 @@ extern int x86_prefetch_sse;
 #define TARGET_PREFETCH_SSE	x86_prefetch_sse
 #define TARGET_SAHF		x86_sahf
 #define TARGET_RECIP		x86_recip
+#define TARGET_FUSED_MADD	x86_fused_muladd
 
 #define ASSEMBLER_DIALECT	(ix86_asm_dialect)
 
@@ -601,6 +608,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 	builtin_define ("__SSE4_2__");				\
       if (TARGET_SSE4A)						\
  	builtin_define ("__SSE4A__");		                \
+      if (TARGET_SSE5)						\
+	builtin_define ("__SSE5__");				\
       if (TARGET_SSE_MATH && TARGET_SSE)			\
 	builtin_define ("__SSE_MATH__");			\
       if (TARGET_SSE_MATH && TARGET_SSE2)			\
