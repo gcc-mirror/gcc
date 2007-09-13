@@ -1,3 +1,9 @@
+2007-09-12  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+	PR testsuite/33153
+	* gcc.dg/pr32912-1.c: Add -fno-common to options on hppa*-*-hpux*.
+	* gcc.dg/pr32912-2.c: Delete declaration of a, b, c, d, e and f.
+
 2007-09-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33382
