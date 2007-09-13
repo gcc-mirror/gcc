@@ -100,7 +100,6 @@ VEC(tree,gc) *unemitted_tinfo_decls;
    and are generated as needed. */
 static GTY (()) VEC(tinfo_s,gc) *tinfo_descs;
 
-static tree build_headof (tree);
 static tree ifnonnull (tree, tree);
 static tree tinfo_name (tree);
 static tree build_dynamic_cast_1 (tree, tree);
@@ -154,7 +153,7 @@ init_rtti_processing (void)
    virtual functions (TYPE_POLYMORPHIC_P), else just return the
    expression.  */
 
-static tree
+tree
 build_headof (tree exp)
 {
   tree type = TREE_TYPE (exp);

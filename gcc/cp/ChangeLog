@@ -1,3 +1,11 @@
+2007-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/15097
+	* init.c (build_delete): Use build_headof to get the address of the
+	complete object if we aren't using the deleting destructor.
+	* rtti.c (build_headof): No longer static.
+	* cp-tree.h: Declare it.
+
 2007-09-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/31419

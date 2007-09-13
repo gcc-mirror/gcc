@@ -4178,6 +4178,7 @@ extern void init_rtti_processing		(void);
 extern tree build_typeid			(tree);
 extern tree get_tinfo_decl			(tree);
 extern tree get_typeid				(tree);
+extern tree build_headof			(tree);
 extern tree build_dynamic_cast			(tree, tree);
 extern void emit_support_tinfos			(void);
 extern bool emit_tinfo_decl			(tree);

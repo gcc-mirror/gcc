@@ -2788,6 +2788,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
     }
   else
     {
+      tree head = NULL_TREE;
       tree do_delete = NULL_TREE;
       tree ifexp;
 
@@ -2801,8 +2802,9 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 	{
 	  /* We will use ADDR multiple times so we must save it.  */
 	  addr = save_expr (addr);
+	  head = get_target_expr (build_headof (addr));
 	  /* Delete the object.  */
-	  do_delete = build_builtin_delete_call (addr);
+	  do_delete = build_builtin_delete_call (head);
 	  /* Otherwise, treat this like a complete object destructor
 	     call.  */
 	  auto_delete = sfk_complete_destructor;
@@ -2840,6 +2842,10 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
 			      auto_delete, flags);
       if (do_delete)
 	expr = build2 (COMPOUND_EXPR, void_type_node, expr, do_delete);
+
+      /* We need to calculate this before the dtor changes the vptr.  */
+      if (head)
+	expr = build2 (COMPOUND_EXPR, void_type_node, head, expr);
 
       if (flags & LOOKUP_DESTRUCTOR)
 	/* Explicit destructor call; don't check for null pointer.  */
