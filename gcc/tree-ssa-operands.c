@@ -1164,8 +1164,15 @@ append_vuse (tree var)
 
       /* Don't allow duplicate entries.  */
       ann = get_var_ann (var);
-      if (ann->in_vuse_list || ann->in_vdef_list)
+      if (ann->in_vuse_list)
 	return;
+      else if (ann->in_vdef_list)
+       {
+         /* We don't want a vuse if we already have a vdef, but we must
+            still put this in build_loads.  */
+         bitmap_set_bit (build_loads, DECL_UID (var));
+         return;
+       }
 
       ann->in_vuse_list = true;
       sym = var;
