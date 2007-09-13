@@ -600,6 +600,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
 
+;; Match 0 to 31.
+(define_predicate "const_0_to_31_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
+
 ;; Match 0 to 63.
 (define_predicate "const_0_to_63_operand"
   (and (match_code "const_int")
@@ -902,6 +907,18 @@
 
 (define_special_predicate "sse_comparison_operator"
   (match_code "eq,lt,le,unordered,ne,unge,ungt,ordered"))
+
+;; Return 1 if OP is a comparison operator that can be issued by sse predicate
+;; generation instructions
+(define_predicate "sse5_comparison_float_operator"
+  (and (match_test "TARGET_SSE5")
+       (match_code "ne,eq,ge,gt,le,lt,unordered,ordered,uneq,unge,ungt,unle,unlt,ltgt")))
+
+(define_predicate "ix86_comparison_int_operator"
+  (match_code "ne,eq,ge,gt,le,lt"))
+
+(define_predicate "ix86_comparison_uns_operator"
+  (match_code "ne,eq,geu,gtu,leu,ltu"))
 
 ;; Return 1 if OP is a valid comparison operator in valid mode.
 (define_predicate "ix86_comparison_operator"

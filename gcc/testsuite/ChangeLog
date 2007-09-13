@@ -1,3 +1,41 @@
+2007-09-12  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	    Michael Meissner  <michael.meissner@amd.com>
+
+	* gcc.target/i386/sse5-hadduX.c: Add support for SSE5 tests.
+	* gcc.target/i386/sse5-hsubX.c: Ditto.
+	* gcc.target/i386/sse5-permpX.c: Ditto.
+	* gcc.target/i386/sse5-haddX.c: Ditto.
+	* gcc.target/i386/sse5-maccXX.c: Ditto.
+	* gcc.target/i386/sse5-msubXX.c: Ditto.
+	* gcc.target/i386/sse5-nmaccXX.c: Ditto.
+	* gcc.target/i386/sse5-nmsubXX.c: Ditto.
+
+	* gcc.target/i386/sse5-pcmov.c: New file to make sure the compiler
+	optimizes floating point conditional moves into the pcmov
+	instruction on SSE5.
+	* gcc.target/i386/sse5-pcmov2.c: Ditto.
+
+	* gcc.target/i386/sse5-ima-vector.c: New file to make sure the
+	compiler optimizes vector 32-bit int (a*b)+c into pmacsdd on
+	SSE5.
+
+	* gcc.target/i386/sse5-fma-vector.c: New file to make sure the
+	compiler optimizes vector (a*b)+c into fmadd on SSE5.
+
+	* gcc.target/i386/sse5-fma.c: New file to make sure the compiler
+	optimizes (a*b)+c into fmadd on SSE5.
+
+	* gcc.target/i386/i386.exp (check_effective_target_sse5): Check
+	whether the SSE5 instructions can be generated.
+
+	* gcc.target/i386/sse5-check.h: New. Add support for 
+	SSE5 tests.
+
+	* gcc.target/i386/sse-12.c: Include bmmintrin.h instead of
+	ammintrin.h, and turn on -msse5 option instead of -msse4a.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+
 2007-09-12  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	PR testsuite/33153

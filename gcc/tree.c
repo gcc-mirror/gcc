@@ -8700,4 +8700,56 @@ call_expr_arglist (tree exp)
   return arglist;
 }
 
+/* Return true if TYPE has a variable argument list.  */
+
+bool
+stdarg_p (tree fntype)
+{
+  function_args_iterator args_iter;
+  tree n = NULL_TREE, t;
+
+  if (!fntype)
+    return false;
+
+  FOREACH_FUNCTION_ARGS(fntype, t, args_iter)
+    {
+      n = t;
+    }
+
+  return n != NULL_TREE && n != void_type_node;
+}
+
+/* Return true if TYPE has a prototype.  */
+
+bool
+prototype_p (tree fntype)
+{
+  tree t;
+
+  gcc_assert (fntype != NULL_TREE);
+
+  t = TYPE_ARG_TYPES (fntype);
+  return (t != NULL_TREE);
+}
+
+/* Return the number of arguments that a function has.  */
+
+int
+function_args_count (tree fntype)
+{
+  function_args_iterator args_iter;
+  tree t;
+  int num = 0;
+
+  if (fntype)
+    {
+      FOREACH_FUNCTION_ARGS(fntype, t, args_iter)
+	{
+	  num++;
+	}
+    }
+
+  return num;
+}
+
 #include "gt-tree.h"

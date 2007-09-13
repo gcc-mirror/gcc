@@ -1,5 +1,5 @@
-/* { dg-do compile } */
-/* { dg-options "-O0 -msse4.1 -msse4a" } */
+/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-options "-O0 -msse4.1 -msse5" } */
 
 /* Test that the intrinsics compile without optimization.  All of them are
    defined as inline functions in {,x,e,p,t,s,a}mmintrin.h that reference
@@ -9,5 +9,5 @@
 #define static
 #define __inline
 
-#include <ammintrin.h>
+#include <bmmintrin.h>
 #include <smmintrin.h>

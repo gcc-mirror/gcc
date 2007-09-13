@@ -4611,6 +4611,65 @@ extern GTY(()) tree current_function_decl;
 /* Nonzero means a FUNC_BEGIN label was emitted.  */
 extern GTY(()) const char * current_function_func_begin_label;
 
+/* Iterator for going through the function arguments.  */
+typedef struct {
+  tree fntype;			/* function type declaration */
+  tree next;			/* TREE_LIST pointing to the next argument */
+} function_args_iterator;
+
+/* Initialize the iterator I with arguments from function FNDECL  */
+
+static inline void
+function_args_iter_init (function_args_iterator *i, tree fntype)
+{
+  i->fntype = fntype;
+  i->next = TYPE_ARG_TYPES (fntype);
+}
+
+/* Return a pointer that holds the next argument if there are more arguments to
+   handle, otherwise return NULL.  */
+
+static inline tree *
+function_args_iter_cond_ptr (function_args_iterator *i)
+{
+  return (i->next) ? &TREE_VALUE (i->next) : NULL;
+}
+
+/* Return the next argument if there are more arguments to handle, otherwise
+   return NULL.  */
+
+static inline tree
+function_args_iter_cond (function_args_iterator *i)
+{
+  return (i->next) ? TREE_VALUE (i->next) : NULL_TREE;
+}
+
+/* Advance to the next argument.  */
+static inline void
+function_args_iter_next (function_args_iterator *i)
+{
+  gcc_assert (i->next != NULL_TREE);
+  i->next = TREE_CHAIN (i->next);
+}
+
+/* Loop over all function arguments of FNTYPE.  In each iteration, PTR is set
+   to point to the next tree element.  ITER is an instance of
+   function_args_iterator used to iterate the arguments.  */
+#define FOREACH_FUNCTION_ARGS_PTR(FNTYPE, PTR, ITER)			\
+  for (function_args_iter_init (&(ITER), (FNTYPE));			\
+       (PTR = function_args_iter_cond_ptr (&(ITER))) != NULL;		\
+       function_args_iter_next (&(ITER)))
+
+/* Loop over all function arguments of FNTYPE.  In each iteration, TREE is set
+   to the next tree element.  ITER is an instance of function_args_iterator
+   used to iterate the arguments.  */
+#define FOREACH_FUNCTION_ARGS(FNTYPE, TREE, ITER)			\
+  for (function_args_iter_init (&(ITER), (FNTYPE));			\
+       (TREE = function_args_iter_cond (&(ITER))) != NULL_TREE;		\
+       function_args_iter_next (&(ITER)))
+
+
+
 /* In tree.c */
 extern unsigned crc32_string (unsigned, const char *);
 extern void clean_symbol_name (char *);
@@ -4627,6 +4686,9 @@ extern bool empty_body_p (tree);
 extern tree call_expr_arg (tree, int);
 extern tree *call_expr_argp (tree, int);
 extern tree call_expr_arglist (tree);
+extern bool stdarg_p (tree);
+extern bool prototype_p (tree);
+extern int function_args_count (tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
 
 /* In stmt.c */
