@@ -2033,7 +2033,8 @@ c_parser_struct_declaration (c_parser *parser)
 	  tree attrs = NULL;
 	  ret = grokfield (build_id_declarator (NULL_TREE), specs,
 			   NULL_TREE, &attrs);
-	  decl_attributes (&ret, attrs, 0);
+	  if (ret)
+	    decl_attributes (&ret, attrs, 0);
 	}
       return ret;
     }
