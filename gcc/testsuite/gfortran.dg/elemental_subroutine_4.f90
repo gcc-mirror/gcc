@@ -24,10 +24,10 @@ end module elem_assign
    integer :: I(2,2),J(2)
    type (mytype) :: w(2,2), x(4), y(5), z(4)
 ! The original PR
-   CALL S(I,J) ! { dg-error "Incompatible ranks in elemental subroutine" }
+   CALL S(I,J) ! { dg-error "Incompatible ranks in elemental procedure" }
 ! Check interface assignments
-   x = w       ! { dg-error "Incompatible ranks in elemental subroutine" }
-   x = y       ! { dg-error "different shape for elemental subroutine" }
+   x = w       ! { dg-error "Incompatible ranks in elemental procedure" }
+   x = y       ! { dg-error "different shape for elemental procedure" }
    x = z
 CONTAINS
    ELEMENTAL SUBROUTINE S(I,J)

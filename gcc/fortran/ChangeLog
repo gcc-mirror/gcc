@@ -1,5 +1,12 @@
 2007-09-13  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/33343
+	* expr.c (gfc_check_conformance): Print ranks in the error message.
+	* resolve.c (resolve_elemental_actual): Check also conformance of
+	the actual arguments for elemental functions.
+
+2007-09-13  Tobias Burnus  <burnus@net-b.de>
+
 	* symbol.c (gfc_add_elemental,gfc_add_pure,gfc_add_recursive):
 	Allow prefixes only to be specified once.
 
