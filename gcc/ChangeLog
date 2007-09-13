@@ -1,3 +1,10 @@
+2007-09-13  Sandra Loosemore  <sandra@codesourcery.com>
+	    David Ung  <davidu@mips.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_REG_PUSH): Replace {d}subu with
+	{d}addiu and a negative	immediate such that it works with MIPS16
+	instructions.
+	
 2007-09-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/33418
