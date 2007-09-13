@@ -431,40 +431,54 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #if INT_KIND == 1
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatsisd,__bid_floatsisd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixsdsi,__bid_fixsdsi)
+#define DEC_FLOAT_FROM_INT decDoubleFromInt32
+#define DEC_FLOAT_TO_INT   decDoubleToInt32
 #elif INT_KIND == 2
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatdisd,__bid_floatdisd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixsddi,__bid_fixsddi)
 #elif INT_KIND == 3
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunssisd,__bid_floatunssisd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunssdsi,__bid_fixunssdsi)
+#define DEC_FLOAT_FROM_INT decDoubleFromUInt32
+#define DEC_FLOAT_TO_INT   decDoubleToUInt32
 #elif INT_KIND == 4
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunsdisd,__bid_floatunsdisd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunssddi,__bid_fixunssddi)
 #endif
 #elif WIDTH == 64
+#define decFloat	decDouble
 #if INT_KIND == 1
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatsidd,__bid_floatsidd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixddsi,__bid_fixddsi)
+#define DEC_FLOAT_FROM_INT decDoubleFromInt32
+#define DEC_FLOAT_TO_INT   decDoubleToInt32
 #elif INT_KIND == 2
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatdidd,__bid_floatdidd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixdddi,__bid_fixdddi)
 #elif INT_KIND == 3
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunssidd,__bid_floatunssidd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunsddsi,__bid_fixunsddsi)
+#define DEC_FLOAT_FROM_INT decDoubleFromUInt32
+#define DEC_FLOAT_TO_INT   decDoubleToUInt32
 #elif INT_KIND == 4
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunsdidd,__bid_floatunsdidd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunsdddi,__bid_fixunsdddi)
 #endif
 #elif WIDTH == 128
+#define decFloat	decQuad
 #if INT_KIND == 1
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatsitd,__bid_floatsitd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixtdsi,__bid_fixtdsi)
+#define DEC_FLOAT_FROM_INT decQuadFromInt32
+#define DEC_FLOAT_TO_INT   decQuadToInt32
 #elif INT_KIND == 2
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatditd,__bid_floatditd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixtddi,__bid_fixtddi)
 #elif INT_KIND == 3
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunssitd,__bid_floatunssitd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunstdsi,__bid_fixunstdsi)
+#define DEC_FLOAT_FROM_INT decQuadFromUInt32
+#define DEC_FLOAT_TO_INT   decQuadToUInt32
 #elif INT_KIND == 4
 #define INT_TO_DFP	DPD_BID_NAME(__dpd_floatunsditd,__bid_floatunsditd)
 #define DFP_TO_INT	DPD_BID_NAME(__dpd_fixunstddi,__bid_fixunstddi)

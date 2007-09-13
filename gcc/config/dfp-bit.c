@@ -348,45 +348,169 @@ DFP_GE (DFP_C_TYPE arg_a, DFP_C_TYPE arg_b)
 
 #define BUFMAX 128
 
-#if defined (L_sd_to_dd) || defined (L_sd_to_td) || defined (L_dd_to_sd) \
- || defined (L_dd_to_td) || defined (L_td_to_sd) || defined (L_td_to_dd)
-DFP_C_TYPE_TO
-DFP_TO_DFP (DFP_C_TYPE f_from)
+/* Check for floating point exceptions that are relevant for conversions
+   between decimal float values and handle them.  */
+static inline void
+dfp_conversion_exceptions (const int status)
 {
-  DFP_C_TYPE_TO f_to;
-  IEEE_TYPE s_from;
-  IEEE_TYPE_TO s_to;
-  decNumber d;
+  /* decNumber exception flags we care about here.  */
+  int ieee_flags;
+  int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation
+		  | DEC_IEEE_854_Overflow;
+  dec_flags &= status;
+  ieee_flags = DFP_IEEE_FLAGS (dec_flags);
+  if (ieee_flags != 0)
+    DFP_HANDLE_EXCEPTIONS (ieee_flags);
+}
+
+#if defined (L_sd_to_dd)
+/* Use decNumber to convert directly from _Decimal32 to _Decimal64.  */
+_Decimal64
+DFP_TO_DFP (_Decimal32 f_from)
+{
+  union { _Decimal32 c; decSingle f; } from;
+  union { _Decimal64 c; decDouble f; } to;
+
+  from.c = f_from;
+  to.f = *decSingleToWider (&from.f, &to.f);
+  return to.c;
+}
+#endif
+
+#if defined (L_sd_to_td)
+/* Use decNumber to convert directly from _Decimal32 to _Decimal128.  */
+_Decimal128
+DFP_TO_DFP (_Decimal32 f_from)
+{
+  union { _Decimal32 c; decSingle f; } from;
+  union { _Decimal128 c; decQuad f; } to;
+  decDouble temp;
+
+  from.c = f_from;
+  temp = *decSingleToWider (&from.f, &temp);
+  to.f = *decDoubleToWider (&temp, &to.f);
+  return to.c;
+}
+#endif
+
+#if defined (L_dd_to_td)
+/* Use decNumber to convert directly from _Decimal64 to _Decimal128.  */
+_Decimal128
+DFP_TO_DFP (_Decimal64 f_from)
+{
+  union { _Decimal64 c; decDouble f; } from;
+  union { _Decimal128 c; decQuad f; } to;
+
+  from.c = f_from;
+  to.f = *decDoubleToWider (&from.f, &to.f);
+  return to.c;
+}
+#endif
+
+#if defined (L_dd_to_sd)
+/* Use decNumber to convert directly from _Decimal64 to _Decimal32.  */
+_Decimal32
+DFP_TO_DFP (_Decimal64 f_from)
+{
+  union { _Decimal32 c; decSingle f; } to;
+  union { _Decimal64 c; decDouble f; } from;
   decContext context;
 
   decContextDefault (&context, CONTEXT_INIT);
   DFP_INIT_ROUNDMODE (context.round);
-
-  HOST_TO_IEEE (f_from, &s_from);
-  TO_INTERNAL (&s_from, &d);
-  TO_ENCODED_TO (&s_to, &d, &context);
-
+  from.c = f_from;
+  to.f = *decSingleFromWider (&to.f, &from.f, &context);
   if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
-    {
-      /* decNumber exception flags we care about here.  */
-      int ieee_flags;
-      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation
-		      | DEC_IEEE_854_Overflow;
-      dec_flags &= context.status;
-      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
-      if (ieee_flags != 0)
-        DFP_HANDLE_EXCEPTIONS (ieee_flags);
-    }
-
-  IEEE_TO_HOST_TO (s_to, &f_to);
-  return f_to;
+    dfp_conversion_exceptions (context.status);
+  return to.c;
 }
 #endif
 
-#if defined (L_sd_to_si) || defined (L_dd_to_si) || defined (L_td_to_si) \
-  || defined (L_sd_to_di) || defined (L_dd_to_di) || defined (L_td_to_di) \
-  || defined (L_sd_to_usi) || defined (L_dd_to_usi) || defined (L_td_to_usi) \
+#if defined (L_td_to_sd)
+/* Use decNumber to convert directly from _Decimal128 to _Decimal32.  */
+_Decimal32
+DFP_TO_DFP (_Decimal128 f_from)
+{
+  union { _Decimal32 c; decSingle f; } to;
+  union { _Decimal128 c; decQuad f; } from;
+  decDouble temp;
+  decContext context;
+
+  decContextDefault (&context, CONTEXT_INIT);
+  DFP_INIT_ROUNDMODE (context.round);
+  from.c = f_from;
+  temp = *decDoubleFromWider (&temp, &from.f, &context);
+  to.f = *decSingleFromWider (&to.f, &temp, &context);
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    dfp_conversion_exceptions (context.status);
+  return to.c;
+}
+#endif
+
+#if defined (L_td_to_dd)
+/* Use decNumber to convert directly from _Decimal128 to _Decimal64.  */
+_Decimal64
+DFP_TO_DFP (_Decimal128 f_from)
+{
+  union { _Decimal64 c; decDouble f; } to;
+  union { _Decimal128 c; decQuad f; } from;
+  decContext context;
+
+  decContextDefault (&context, CONTEXT_INIT);
+  DFP_INIT_ROUNDMODE (context.round);
+  from.c = f_from;
+  to.f = *decDoubleFromWider (&to.f, &from.f, &context);
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    dfp_conversion_exceptions (context.status);
+  return to.c;
+}
+#endif
+
+#if defined (L_dd_to_si) || defined (L_td_to_si) \
+  || defined (L_dd_to_usi) || defined (L_td_to_usi)
+/* Use decNumber to convert directly from decimal float to integer types.  */
+INT_TYPE
+DFP_TO_INT (DFP_C_TYPE x)
+{
+  union { DFP_C_TYPE c; decFloat f; } u;
+  decContext context;
+  INT_TYPE i;
+
+  decContextDefault (&context, DEC_INIT_DECIMAL128);
+  context.round = DEC_ROUND_DOWN;
+  u.c = x;
+  i = DEC_FLOAT_TO_INT (&u.f, &context, context.round);
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    dfp_conversion_exceptions (context.status);
+  return i;
+}
+#endif
+
+#if defined (L_sd_to_si) || (L_sd_to_usi)
+/* Use decNumber to convert directly from decimal float to integer types.  */
+INT_TYPE
+DFP_TO_INT (_Decimal32 x)
+{
+  union { _Decimal32 c; decSingle f; } u32;
+  decDouble f64;
+  decContext context;
+  INT_TYPE i;
+
+  decContextDefault (&context, DEC_INIT_DECIMAL128);
+  context.round = DEC_ROUND_DOWN;
+  u32.c = x;
+  f64 = *decSingleToWider (&u32.f, &f64);
+  i = DEC_FLOAT_TO_INT (&f64, &context, context.round);
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    dfp_conversion_exceptions (context.status);
+  return i;
+}
+#endif
+
+#if defined (L_sd_to_di) || defined (L_dd_to_di) || defined (L_td_to_di) \
   || defined (L_sd_to_udi) || defined (L_dd_to_udi) || defined (L_td_to_udi)
+/* decNumber doesn't provide support for conversions to 64-bit integer
+   types, so do it the hard way.  */
 INT_TYPE
 DFP_TO_INT (DFP_C_TYPE x)
 {
@@ -426,10 +550,42 @@ DFP_TO_INT (DFP_C_TYPE x)
 }
 #endif
 
-#if defined (L_si_to_sd) || defined (L_si_to_dd) || defined (L_si_to_td) \
-  || defined (L_di_to_sd) || defined (L_di_to_dd) || defined (L_di_to_td) \
-  || defined (L_usi_to_sd) || defined (L_usi_to_dd) || defined (L_usi_to_td) \
+#if defined (L_si_to_dd) || defined (L_si_to_td) \
+  || defined (L_usi_to_dd) || defined (L_usi_to_td)
+/* Use decNumber to convert directly from integer to decimal float types.  */
+DFP_C_TYPE
+INT_TO_DFP (INT_TYPE i)
+{
+  union { DFP_C_TYPE c; decFloat f; } u;
+
+  u.f = *DEC_FLOAT_FROM_INT (&u.f, i);
+  return u.c;
+}
+#endif
+
+#if defined (L_si_to_sd) || defined (L_usi_to_sd)
+_Decimal32
+/* Use decNumber to convert directly from integer to decimal float types.  */
+INT_TO_DFP (INT_TYPE i)
+{
+  union { _Decimal32 c; decSingle f; } u32;
+  decDouble f64;
+  decContext context;
+
+  decContextDefault (&context, DEC_INIT_DECIMAL128);
+  context.round = DEC_ROUND_DOWN;
+  f64 = *DEC_FLOAT_FROM_INT (&f64, i);
+  u32.f = *decSingleFromWider (&u32.f, &f64, &context);
+  if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
+    dfp_conversion_exceptions (context.status);
+  return u32.c;
+}
+#endif
+
+#if defined (L_di_to_sd) || defined (L_di_to_dd) || defined (L_di_to_td) \
   || defined (L_udi_to_sd) || defined (L_udi_to_dd) || defined (L_udi_to_td)
+/* decNumber doesn't provide support for conversions from 64-bit integer
+   types, so do it the hard way.  */
 DFP_C_TYPE
 INT_TO_DFP (INT_TYPE i)
 {
@@ -448,16 +604,7 @@ INT_TO_DFP (INT_TYPE i)
   IEEE_TO_HOST (s, &f);
 
   if (DFP_EXCEPTIONS_ENABLED && context.status != 0)
-    {
-      /* decNumber exception flags we care about here.  */
-      int ieee_flags;
-      int dec_flags = DEC_IEEE_854_Inexact | DEC_IEEE_854_Invalid_operation
-		      | DEC_IEEE_854_Overflow;
-      dec_flags &= context.status;
-      ieee_flags = DFP_IEEE_FLAGS (dec_flags);
-      if (ieee_flags != 0)
-        DFP_HANDLE_EXCEPTIONS (ieee_flags);
-    }
+    dfp_conversion_exceptions (context.status);
 
   return f;
 }

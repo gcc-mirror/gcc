@@ -1,3 +1,11 @@
+2007-09-12  Janis Johnson  <janis187@us.ibm.com
+
+	* config/dfp-bit.c (dfp_conversion_exception): New function.
+	(DFP_TO_DFP) Add new variants to use direct conversions in decNumber.
+	(DFP_TO_INT): Ditto.
+	(INT_TO_DFP): Ditto.
+	* config/dfp-bit.h (DEC_FLOAT_FROM_INT, DEC_FLOAT_TO_INT): New.
+
 2007-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/32338
