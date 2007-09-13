@@ -1,3 +1,9 @@
+2007-09-13  James E. Wilson  <wilson@specifix.com>
+
+	PR tree-optimization/33389
+	* tree-ssa-operands.c (append_vuse): If ann->in_vdef_list true,
+	then set build_loads before returning.
+
 2007-09-13  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
 
