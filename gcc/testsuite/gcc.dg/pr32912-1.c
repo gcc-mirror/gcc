@@ -1,6 +1,7 @@
 /* PR middle-end/32912 */
 /* { dg-do run } */
 /* { dg-options "-O2 -w" } */
+/* { dg-options "-O2 -w -fno-common" { target hppa*-*-hpux* } } */
 
 extern void abort (void);
 

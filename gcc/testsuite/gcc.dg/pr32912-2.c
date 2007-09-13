@@ -5,8 +5,6 @@ extern void abort (void);
 
 typedef int __m128i __attribute__ ((__vector_size__ (16)));
 
-__m128i a, b, c, d, e, f;
-
 __m128i
 foo (void)
 {
