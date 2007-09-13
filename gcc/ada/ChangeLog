@@ -16,7 +16,7 @@
 	s-sopco3.adb, s-sopco4.adb, s-sopco5.adb, s-stache.adb, s-stalib.adb,
 	s-stoele.adb, s-strcom.adb, s-strops.adb, s-traceb.adb, s-traent.adb,
 	s-wchcnv.adb, s-wchcon.adb, s-wchjis.adb, s-addope.adb, s-except.adb,
-	s-os_lib.adb, s-string.adb, s-utf_32.adb,
+	s-os_lib.adb, s-string.adb, s-utf_32.adb, a-elchha.adb,
 	a-chlat1.ads, a-elchha.ads, a-except.ads, g-hesora.ads, g-htable.ads, 
 	g-speche.ads, par-prag.adb, restrict.adb, restrict.ads, s-assert.ads, 
 	s-carun8.ads, s-casuti.ads, s-crc32.ads, sem_ch11.adb, sem_prag.adb, 
