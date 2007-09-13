@@ -1,3 +1,25 @@
+2007-09-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	From Jie Zhang:
+	* config/bfin/bfin.c (enum bfin_builtins): Add BFIN_BUILTIN_ONES,
+	BFIN_BUILTIN_CPLX_MUL_16_S40, BFIN_BUILTIN_CPLX_MAC_16_S40,
+	BFIN_BUILTIN_CPLX_MSU_16_S40, and BFIN_BUILTIN_CPLX_SQU.
+	(bfin_init_builtins): Initialize __builtin_bfin_ones,
+	__builtin_bfin_min_fr1x16, __builtin_bfin_max_fr1x16,
+	__builtin_bfin_min_fr1x32, __builtin_bfin_max_fr1x32,
+	__builtin_bfin_cmplx_add, __builtin_bfin_cmplx_sub,
+	__builtin_bfin_cmplx_mul_s40, __builtin_bfin_cmplx_mac_s40,
+	__builtin_bfin_cmplx_msu_s40 and __builtin_bfin_csqu_fr16.
+	(bdesc_1arg): Add __builtin_bfin_ones.
+	(bfin_expand_builtin): Expand __builtin_bfin_cmplx_mul_s40,
+	__builtin_bfin_cmplx_mac_s40, __builtin_bfin_cmplx_msu_s40,
+	and __builtin_bfin_csqu_fr16.
+	* config/bfin/bfin.md (UNSPEC_ONES): New constant.
+	(ones): New define_insn.
+	(ssaddhi3_parts): New define_insn.
+	(sssubhi3_parts): New define_insn.
+	(flag_mulhi_parts): New define_insn.
+
 2007-09-13  Seongbae Park <seongbae.park@gmail.com>
 
 	* common.opt (femit-class-debug-always): Turn off by default.

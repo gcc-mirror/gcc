@@ -137,7 +137,8 @@
    (UNSPEC_LSETUP_END 10)
    ;; Distinguish a 32-bit version of an insn from a 16-bit version.
    (UNSPEC_32BIT 11)
-   (UNSPEC_NOP 12)])
+   (UNSPEC_NOP 12)
+   (UNSPEC_ONES 12)])
 
 (define_constants
   [(UNSPEC_VOLATILE_EH_RETURN 0)
@@ -1312,6 +1313,14 @@
   "@
    BITTGL (%0, %X2);
    %0 = %1 ^ %2;"
+  [(set_attr "type" "alu0")])
+
+(define_insn "ones"
+  [(set (match_operand:HI 0 "register_operand" "=d")
+	(unspec:HI [(match_operand:SI 1 "register_operand" "d")]
+		UNSPEC_ONES))]
+  ""
+  "%h0 = ONES %1;"
   [(set_attr "type" "alu0")])
 
 (define_insn "smaxsi3"
@@ -2943,6 +2952,60 @@
   "%h0 = %h1 + %h2 (S)%!"
   [(set_attr "type" "dsp32")])
 
+(define_insn "ssaddhi3_parts"
+  [(set (vec_select:HI
+	 (match_operand:V2HI 0 "register_operand" "d")
+	 (parallel [(match_operand 3 "const01_operand" "P0P1")]))
+	(ss_plus:HI (vec_select:HI
+		     (match_operand:V2HI 1 "register_operand" "d")
+		     (parallel [(match_operand 4 "const01_operand" "P0P1")]))
+		    (vec_select:HI
+		     (match_operand:V2HI 2 "register_operand" "d")
+		     (parallel [(match_operand 5 "const01_operand" "P0P1")]))))]
+  ""
+{
+  const char *templates[] = {
+    "%h0 = %h1 + %h2 (S)%!",
+    "%d0 = %h1 + %h2 (S)%!",
+    "%h0 = %d1 + %h2 (S)%!",
+    "%d0 = %d1 + %h2 (S)%!",
+    "%h0 = %h1 + %d2 (S)%!",
+    "%d0 = %h1 + %d2 (S)%!",
+    "%h0 = %d1 + %d2 (S)%!",
+    "%d0 = %d1 + %d2 (S)%!" };
+  int alt = INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
+	    + (INTVAL (operands[5]) << 2);
+  return templates[alt];
+}
+  [(set_attr "type" "dsp32")])
+
+(define_insn "sssubhi3_parts"
+  [(set (vec_select:HI
+	 (match_operand:V2HI 0 "register_operand" "d")
+	 (parallel [(match_operand 3 "const01_operand" "P0P1")]))
+	(ss_minus:HI (vec_select:HI
+		      (match_operand:V2HI 1 "register_operand" "d")
+		      (parallel [(match_operand 4 "const01_operand" "P0P1")]))
+		     (vec_select:HI
+		      (match_operand:V2HI 2 "register_operand" "d")
+		      (parallel [(match_operand 5 "const01_operand" "P0P1")]))))]
+  ""
+{
+  const char *templates[] = {
+    "%h0 = %h1 - %h2 (S)%!",
+    "%d0 = %h1 - %h2 (S)%!",
+    "%h0 = %d1 - %h2 (S)%!",
+    "%d0 = %d1 - %h2 (S)%!",
+    "%h0 = %h1 - %d2 (S)%!",
+    "%d0 = %h1 - %d2 (S)%!",
+    "%h0 = %d1 - %d2 (S)%!",
+    "%d0 = %d1 - %d2 (S)%!" };
+  int alt = INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
+	    + (INTVAL (operands[5]) << 2);
+  return templates[alt];
+}
+  [(set_attr "type" "dsp32")])
+
 (define_insn "sssubhi3"
   [(set (match_operand:HI 0 "register_operand" "=d")
 	(ss_minus:HI (match_operand:HI 1 "register_operand" "d")
@@ -3155,6 +3218,35 @@
 		   UNSPEC_MUL_WITH_FLAG))]
   ""
   "%h0 = %h1 * %h2 %M3%!"
+  [(set_attr "type" "dsp32")])
+
+(define_insn "flag_mulhi_parts"
+  [(set (vec_select:HI
+	 (match_operand:V2HI 0 "register_operand" "d")
+	 (parallel [(match_operand 3 "const01_operand" "P0P1")]))
+	(unspec:HI [(vec_select:HI
+		     (match_operand:V2HI 1 "register_operand" "d")
+		     (parallel [(match_operand 4 "const01_operand" "P0P1")]))
+		    (vec_select:HI
+		     (match_operand:V2HI 2 "register_operand" "d")
+		     (parallel [(match_operand 5 "const01_operand" "P0P1")]))
+		    (match_operand 6 "const_int_operand" "n")]
+		   UNSPEC_MUL_WITH_FLAG))]
+  ""
+{
+  const char *templates[] = {
+    "%h0 = %h1 * %h2 %M6%!",
+    "%d0 = %h1 * %h2 %M6%!",
+    "%h0 = %d1 * %h2 %M6%!",
+    "%d0 = %d1 * %h2 %M6%!",
+    "%h0 = %h1 * %d2 %M6%!",
+    "%d0 = %h1 * %d2 %M6%!",
+    "%h0 = %d1 * %d2 %M6%!",
+    "%d0 = %d1 * %d2 %M6%!" };
+  int alt = INTVAL (operands[3]) + (INTVAL (operands[4]) << 1)
+	    + (INTVAL (operands[5]) << 2);
+  return templates[alt];
+}
   [(set_attr "type" "dsp32")])
 
 (define_insn "flag_mulhisi"
