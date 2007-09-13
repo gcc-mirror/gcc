@@ -1,3 +1,8 @@
+2007-09-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* iresolve.c (resolve_mask_arg): If a mask is an array
+	expression, convert it to kind=1.
+
 2007-09-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33343
