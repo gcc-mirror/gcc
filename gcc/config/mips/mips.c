@@ -426,6 +426,8 @@ static void mips_encode_section_info (tree, rtx, int);
 static void mips_extra_live_on_entry (bitmap);
 static int mips_comp_type_attributes (const_tree, const_tree);
 static void mips_set_mips16_mode (int);
+static void mips_insert_attributes (tree, tree *);
+static tree mips_merge_decl_attributes (tree, tree);
 static void mips_set_current_function (tree);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
@@ -734,9 +736,13 @@ const struct attribute_spec mips_attribute_table[] =
   { "long_call",   0, 0, false, true,  true,  NULL },
   { "far",     	   0, 0, false, true,  true,  NULL },
   { "near",        0, 0, false, true,  true,  NULL },
-  /* Switch MIPS16 ASE on and off per-function.  */
-  { "mips16", 	   0, 0, false, true,  true,  NULL },
-  { "nomips16",    0, 0, false, true,  true,  NULL },
+  /* Switch MIPS16 ASE on and off per-function.  We would really like
+     to make these type attributes, but GCC doesn't provide the hooks
+     we need to support the right conversion rules.  As declaration
+     attributes, they affect code generation but don't carry other
+     semantics.  */
+  { "mips16", 	   0, 0, true,  false, false, NULL },
+  { "nomips16",    0, 0, true,  false, false, NULL },
   { NULL,	   0, 0, false, false, false, NULL }
 };
 
@@ -1268,6 +1274,10 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL mips_function_ok_for_sibcall
 
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES mips_insert_attributes
+#undef TARGET_MERGE_DECL_ATTRIBUTES
+#define TARGET_MERGE_DECL_ATTRIBUTES mips_merge_decl_attributes
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION mips_set_current_function
 
@@ -1352,6 +1362,10 @@ static const unsigned char mips16e_save_restore_regs[] = {
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE mips_attribute_table
+/* All our function attributes are related to how out-of-line copies should
+   be compiled or called.  They don't in themselves prevent inlining.  */
+#undef TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
+#define TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P hook_bool_const_tree_true
 
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY mips_extra_live_on_entry
@@ -1395,15 +1409,15 @@ mips_far_type_p (const_tree type)
 /* Similar predicates for "mips16"/"nomips16" attributes.  */
 
 static bool
-mips_mips16_type_p (const_tree type)
+mips_mips16_decl_p (const_tree decl)
 {
-  return lookup_attribute ("mips16", TYPE_ATTRIBUTES (type)) != NULL;
+  return lookup_attribute ("mips16", DECL_ATTRIBUTES (decl)) != NULL;
 }
 
 static bool
-mips_nomips16_type_p (const_tree type)
+mips_nomips16_decl_p (const_tree decl)
 {
-  return lookup_attribute ("nomips16", TYPE_ATTRIBUTES (type)) != NULL;
+  return lookup_attribute ("nomips16", DECL_ATTRIBUTES (decl)) != NULL;
 }
 
 /* Return 0 if the attributes for two types are incompatible, 1 if they
@@ -1421,11 +1435,6 @@ mips_comp_type_attributes (const_tree type1, const_tree type2)
   if (mips_far_type_p (type1) && mips_near_type_p (type2))
     return 0;
   if (mips_near_type_p (type1) && mips_far_type_p (type2))
-    return 0;
-
-  /* Mips16/nomips16 attributes must match exactly.  */
-  if (mips_nomips16_type_p (type1) != mips_nomips16_type_p (type2)
-      || mips_mips16_type_p (type1) != mips_mips16_type_p (type2))
     return 0;
 
   return 1;
@@ -4120,6 +4129,27 @@ mips_gen_conditional_trap (rtx *operands)
 			      operands[1]));
 }
 
+/* Return true if function DECL is a MIPS16 function.  Return the ambient
+   setting if DECL is null.  */
+
+static bool
+mips_use_mips16_mode_p (tree decl)
+{
+  if (decl)
+    {
+      /* Nested functions must use the same frame pointer as their
+	 parent and must therefore use the same ISA mode.  */
+      tree parent = decl_function_context (decl);
+      if (parent)
+	decl = parent;
+      if (mips_mips16_decl_p (decl))
+	return true;
+      if (mips_nomips16_decl_p (decl))
+	return false;
+    }
+  return mips_base_mips16;
+}
+
 /* Return true if calls to X can use R_MIPS_CALL* relocations.  */
 
 static bool
@@ -4223,7 +4253,7 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   /* We can't do a sibcall if the called function is a MIPS16 function
      because there is no direct "jx" instruction equivalent to "jalx" to
      switch the ISA mode.  */
-  if (decl && SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (decl), 0)))
+  if (mips_use_mips16_mode_p (decl))
     return false;
 
   /* Otherwise OK.  */
@@ -5666,6 +5696,9 @@ mips_set_mips16_mode (int mips16_p)
 	 of lw and sw instead.  */
       targetm.min_anchor_offset = 0;
       targetm.max_anchor_offset = 127;
+
+      if (flag_pic || TARGET_ABICALLS)
+	sorry ("MIPS16 PIC");
     }
   else 
     {
@@ -5703,12 +5736,130 @@ mips_set_mips16_mode (int mips16_p)
   was_mips16_p = TARGET_MIPS16;
 }
 
+/* Use a hash table to keep track of implicit mips16/nomips16 attributes
+   for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
+
+struct mflip_mips16_entry GTY (()) {
+  const char *name;
+  bool mips16_p;
+};
+static GTY ((param_is (struct mflip_mips16_entry))) htab_t mflip_mips16_htab;
+
+/* Hash table callbacks for mflip_mips16_htab.  */
+
+static hashval_t
+mflip_mips16_htab_hash (const void *entry)
+{
+  return htab_hash_string (((const struct mflip_mips16_entry *) entry)->name);
+}
+
+static int
+mflip_mips16_htab_eq (const void *entry, const void *name)
+{
+  return strcmp (((const struct mflip_mips16_entry *) entry)->name,
+		 (const char *) name) == 0;
+}
+
+/* DECL is a function that needs a default "mips16" or "nomips16" attribute
+   for -mflip-mips16.  Return true if it should use "mips16" and false if
+   it should use "nomips16".  */
+
+static bool
+mflip_mips16_use_mips16_p (tree decl)
+{
+  struct mflip_mips16_entry *entry;
+  const char *name;
+  hashval_t hash;
+  void **slot;
+
+  /* Use the opposite of the command-line setting for anonymous decls.  */
+  if (!DECL_NAME (decl))
+    return !mips_base_mips16;
+
+  if (!mflip_mips16_htab)
+    mflip_mips16_htab = htab_create_ggc (37, mflip_mips16_htab_hash,
+					 mflip_mips16_htab_eq, NULL);
+
+  name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  hash = htab_hash_string (name);
+  slot = htab_find_slot_with_hash (mflip_mips16_htab, name, hash, INSERT);
+  entry = (struct mflip_mips16_entry *) *slot;
+  if (!entry)
+    {
+      mips16_flipper = !mips16_flipper;
+      entry = GGC_NEW (struct mflip_mips16_entry);
+      entry->name = name;
+      entry->mips16_p = mips16_flipper ? !mips_base_mips16 : mips_base_mips16;
+      *slot = entry;
+    }
+  return entry->mips16_p;
+}
+
+/* Implement TARGET_INSERT_ATTRIBUTES.  */
+
+static void
+mips_insert_attributes (tree decl, tree *attributes)
+{
+  const char *name;
+  bool mips16_p, nomips16_p;
+
+  /* Check for "mips16" and "nomips16" attributes.  */
+  mips16_p = lookup_attribute ("mips16", *attributes) != NULL;
+  nomips16_p = lookup_attribute ("nomips16", *attributes) != NULL;
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    {
+      if (mips16_p)
+	error ("%qs attribute only applies to functions", "mips16");
+      if (nomips16_p)
+	error ("%qs attribute only applies to functions", "nomips16");
+    }
+  else
+    {
+      mips16_p |= mips_mips16_decl_p (decl);
+      nomips16_p |= mips_nomips16_decl_p (decl);
+      if (mips16_p || nomips16_p)
+	{
+	  /* DECL cannot be simultaneously mips16 and nomips16.  */
+	  if (mips16_p && nomips16_p)
+	    error ("%qs cannot have both %<mips16%> and "
+		   "%<nomips16%> attributes",
+		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	}
+      else if (TARGET_FLIP_MIPS16 && !DECL_ARTIFICIAL (decl))
+	{
+	  /* Implement -mflip-mips16.  If DECL has neither a "nomips16" nor a
+	     "mips16" attribute, arbitrarily pick one.  We must pick the same
+	     setting for duplicate declarations of a function.  */
+	  name = mflip_mips16_use_mips16_p (decl) ? "mips16" : "nomips16";
+	  *attributes = tree_cons (get_identifier (name), NULL, *attributes);
+	}
+    }
+}
+
+/* Implement TARGET_MERGE_DECL_ATTRIBUTES.  */
+
+static tree
+mips_merge_decl_attributes (tree olddecl, tree newdecl)
+{
+  /* The decls' "mips16" and "nomips16" attributes must match exactly.  */
+  if (mips_mips16_decl_p (olddecl) != mips_mips16_decl_p (newdecl))
+    error ("%qs redeclared with conflicting %qs attributes",
+	   IDENTIFIER_POINTER (DECL_NAME (newdecl)), "mips16");
+  if (mips_nomips16_decl_p (olddecl) != mips_nomips16_decl_p (newdecl))
+    error ("%qs redeclared with conflicting %qs attributes",
+	   IDENTIFIER_POINTER (DECL_NAME (newdecl)), "nomips16");
+
+  return merge_attributes (DECL_ATTRIBUTES (olddecl),
+			   DECL_ATTRIBUTES (newdecl));
+}
+
 /* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current 
    function should use the MIPS16 ISA and switch modes accordingly.  */
 
 static void
-mips_set_current_function (tree fndecl ATTRIBUTE_UNUSED)
+mips_set_current_function (tree fndecl)
 {
+  mips_set_mips16_mode (mips_use_mips16_mode_p (fndecl));
 }
 
 /* Implement TARGET_HANDLE_OPTION.  */
@@ -8783,7 +8934,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      allowed, otherwise load the address into a register first.  */
   fnaddr = XEXP (DECL_RTL (function), 0);
   if (TARGET_MIPS16 || TARGET_USE_GOT || SYMBOL_REF_LONG_CALL_P (fnaddr)
-      || SYMBOL_REF_MIPS16_FUNC_P (fnaddr))
+      || mips_use_mips16_mode_p (function))
     {
       /* This is messy.  gas treats "la $25,foo" as part of a call
 	 sequence and may allow a global "foo" to be lazily bound.
@@ -12724,43 +12875,6 @@ mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
 				       const1_rtx, const0_rtx);
 }
 
-/* Return true if we should force MIPS16 mode for the function named by
-   the SYMBOL_REF SYMBOL, which belongs to DECL and has type TYPE.
-   FIRST is true if this is the first time handling this decl.  */
-
-static bool
-mips_use_mips16_mode_p (rtx symbol, tree decl, int first, tree type)
-{
-  tree parent;
-
-  /* Explicit function attributes take precedence.  */
-  if (mips_mips16_type_p (type))
-    return true;
-  if (mips_nomips16_type_p (type))
-    return false;
-
-  /* A nested function should inherit the MIPS16 setting from its parent.  */
-  parent = decl_function_context (decl);
-  if (parent)
-    return SYMBOL_REF_MIPS16_FUNC_P (XEXP (DECL_RTL (parent), 0));
-
-  /* Handle -mflip-mips16.  */
-  if (TARGET_FLIP_MIPS16
-      && !DECL_BUILT_IN (decl)
-      && !DECL_ARTIFICIAL (decl))
-    {
-      if (!first)
-	/* Use the setting we picked first time around.  */
-	return SYMBOL_REF_MIPS16_FUNC_P (symbol);
-
-      mips16_flipper = !mips16_flipper;
-      if (mips16_flipper)
-	return !mips_base_mips16;
-    }
-
-  return mips_base_mips16;
-}
-
 /* Set SYMBOL_REF_FLAGS for the SYMBOL_REF inside RTL, which belongs to DECL.
    FIRST is true if this is the first time handling this decl.  */
 
@@ -12777,14 +12891,6 @@ mips_encode_section_info (tree decl, rtx rtl, int first)
       if ((TARGET_LONG_CALLS && !mips_near_type_p (type))
 	  || mips_far_type_p (type))
 	SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LONG_CALL;
-
-      if (mips_use_mips16_mode_p (symbol, decl, first, type))
-	{
-	  if (flag_pic || TARGET_ABICALLS)
-	    sorry ("MIPS16 PIC");
-	  else
-	    SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_MIPS16_FUNC;
-	}
     }
 }
 

@@ -1,4 +1,8 @@
 /* { dg-do link } */
+/* MIPS only supports these built-in functions for non-MIPS16 mode, and
+   -mflip-mips16 will change the mode of some functions to be different
+   from the command-line setting.  */
+/* { dg-skip-if "" { mips*-*-* } { "-mflip-mips16" } { "" } } */
 
 void f1()
 {

@@ -3,7 +3,9 @@
 /* { dg-final { scan-assembler "addiu" } } */
 /* { dg-final { scan-assembler-not "subu" } } */
 
-unsigned long
+#define NOMIPS16 __attribute__ ((nomips16))
+
+NOMIPS16 unsigned long
 f(unsigned long *p)
 {
     return __sync_fetch_and_sub (p, 5);

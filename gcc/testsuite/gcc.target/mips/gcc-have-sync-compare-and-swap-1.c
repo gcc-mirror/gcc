@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-mips32 -mabi=32" } */
+/* { dg-mips-options "-mips2" } */
 
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_1
 #error nonono

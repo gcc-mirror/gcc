@@ -103,6 +103,7 @@ proc is_gp32_flag {flag} {
     switch -glob -- $flag {
 	-msmartmips -
 	-mips[12] -
+	-mips32* -
 	-march=mips32* -
 	-mgp32 { return 1 }
 	default { return 0 }
