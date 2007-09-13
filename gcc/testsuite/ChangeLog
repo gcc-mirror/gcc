@@ -1,3 +1,23 @@
+2007-09-13  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/gcc-have-sync-compare-and-swap.c: Skip for -mflip-mips16.
+	* gcc.target/mips/mips16-attributes-2.c: New test.
+	* gcc.target/mips/mips16-attributes-3.c: Likewise.
+	* gcc.target/mips/args-3.c: Skip for -mflip-mips16.  Do not use the
+	hard-float asm when __mips16 is defined.
+	* gcc.target/mips/atomic-memory-1.c (main): Add a nomips16 attribute.
+	* gcc.target/mips/atomic-memory-2.c (main): Likewise.
+	* gcc.target/mips/fpcmp-1.c (f1, f2): Likewise.
+	* gcc.target/mips/fpcmp-2.c (f1, f2): Likewise.
+	* gcc.target/mips/neg-abs-1.c (f1, f2, d1, f2): Likewise.
+	* gcc.target/mips/pr26765.c (foo): Likewise.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Run for all
+	targets, use dg-mips-options instead of dg-options, and use -mgp32
+	to force 32-bit mode.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-2.c: Likewise -mgp64
+	and 64-bit mode.
+	* gcc.target/mips/mips.exp (is_gp32_flag): Return true for -mips32*.
+
 2007-09-12  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 	    Michael Meissner  <michael.meissner@amd.com>
 

@@ -1,6 +1,7 @@
 /* __mips, and related defines, guarantee that certain assembly
    instructions can be used.  Check a few examples.  */
 /* { dg-do run } */
+/* { dg-skip-if "" { *-*-* } { "-mflip-mips16" } { "" } } */
 extern void abort (void);
 extern void exit (int);
 
@@ -11,7 +12,7 @@ int foo (float inf, int64 in64, int32 in32)
   int64 res64;
   int32 res32;
 
-#if __mips != 1 && defined (__mips_hard_float)
+#if __mips != 1 && defined (__mips_hard_float) && !defined (__mips16)
   __asm__ ("trunc.w.s %0, %1" : "=f" (res32) : "f" (inf));
   if (res32 != 11)
     abort ();

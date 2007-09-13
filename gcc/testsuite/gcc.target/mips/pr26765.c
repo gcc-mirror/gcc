@@ -6,7 +6,9 @@
 
 __thread int *a = 0;
 
-void foo (void)
+#define NOMIPS16 __attribute__ ((nomips16))
+
+NOMIPS16 void foo (void)
 {
   extern int *b;
   b = (int *) ((*a));

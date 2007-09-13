@@ -1,4 +1,35 @@
 2007-09-13  Richard Sandiford  <richard@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* config/mips/mips.h (SYMBOL_FLAG_MIPS16_FUNC): Delete.
+	(SYMBOL_REF_MIPS16_FUNC_P): Delete.
+	* config/mips/mips.c (mips_attribute_table): Turn mips16 and
+	nomips16 into decl attributes.
+	(TARGET_INSERT_ATTRIBUTES): Override.
+	(TARGET_MERGE_DECL_ATTRIBUTES): Likewise.
+	(TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P): Always return true.
+	(mips_mips16_type_p, mips_nomips16_type_p): Delete in favor of...
+	(mips_mips16_decl_p, mips_nomips16_decl_p): ...these new functions.
+	(mips_comp_type_attributes): Remove mips16 and nomips16 handling.
+	(mips_use_mips16_mode_p): Reimplement as a function that takes
+	a decl and considers only decl attributes.  If the decl is nested
+	function, use its parent attributes.
+	(mips_function_ok_for_sibcall): Use mips_use_mips16_mode_p
+	instead of SYMBOL_REF_MIPS16_FUNC_P.
+	(mips_set_mips16_mode): Move call to sorry here from old
+	mips_use_mips16_mode_p.
+	(mflip_mips16_entry): New structure.
+	(mflip_mips16_htab): New variable.
+	(mflip_mips16_htab_hash, mflip_mips16_htab_eq): New functions.
+	(mflip_mips16_use_mips16_p, mips_insert_attributes): Likewise.
+	(mips_merge_decl_attributes): New function.
+	(mips_set_current_function): Reinstate call to mips_set_mips16_mode.
+	Use mips_use_mips16_mode_p.
+	(mips_output_mi_thunk): Use mips_use_mips16_mode_p instead of
+	SYMBOL_REF_MIPS16_FUNC_P.
+	(mips_encode_section_info): Don't set SYMBOL_FLAG_MIPS16_FUNC.
+
+2007-09-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* c-parser.c (c_parser_struct_declaration): Check for a null return.
 
