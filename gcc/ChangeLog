@@ -1,3 +1,8 @@
+2007-09-13  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (reload_outpdi, reload_inpdi): New patterns.
+	* config/bfin/bfin.c (bfin_secondary_reload): Make sure we use them.
+
 2007-09-13  James E. Wilson  <wilson@specifix.com>
 
 	PR tree-optimization/33389
