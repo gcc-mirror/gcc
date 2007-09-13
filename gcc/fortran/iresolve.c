@@ -78,18 +78,32 @@ static void
 resolve_mask_arg (gfc_expr *mask)
 {
 
-  /* The mask can be any kind for an array.
-     For the scalar case, coerce it to kind=4 unconditionally
-     (because this is the only kind we have a library function
-     for).  */
+  gfc_typespec ts;
 
-  if (mask->rank == 0 && mask->ts.kind != 4)
+  if (mask->rank == 0)
     {
-      gfc_typespec ts;
+      /* For the scalar case, coerce the mask to kind=4 unconditionally
+	 (because this is the only kind we have a library function
+	 for).  */
 
-      ts.type = BT_LOGICAL;
-      ts.kind = 4;
-      gfc_convert_type (mask, &ts, 2);
+      if (mask->ts.kind != 4)
+	{
+	  ts.type = BT_LOGICAL;
+	  ts.kind = 4;
+	  gfc_convert_type (mask, &ts, 2);
+	}
+    }
+  else
+    {
+      /* In the library, we access the mask with a GFC_LOGICAL_1
+	 argument.  No need to waste memory if we are about to create
+	 a temporary array.  */
+      if (mask->expr_type == EXPR_OP)
+	{
+	  ts.type = BT_LOGICAL;
+	  ts.kind = 1;
+	  gfc_convert_type (mask, &ts, 2);
+	}
     }
 }
 
