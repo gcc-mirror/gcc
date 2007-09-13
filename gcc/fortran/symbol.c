@@ -1144,6 +1144,12 @@ gfc_add_elemental (symbol_attribute *attr, locus *where)
   if (check_used (attr, NULL, where))
     return FAILURE;
 
+  if (attr->elemental)
+    {
+      duplicate_attr ("ELEMENTAL", where);
+      return FAILURE;
+    }
+
   attr->elemental = 1;
   return check_conflict (attr, NULL, where);
 }
@@ -1156,6 +1162,12 @@ gfc_add_pure (symbol_attribute *attr, locus *where)
   if (check_used (attr, NULL, where))
     return FAILURE;
 
+  if (attr->pure)
+    {
+      duplicate_attr ("PURE", where);
+      return FAILURE;
+    }
+
   attr->pure = 1;
   return check_conflict (attr, NULL, where);
 }
@@ -1167,6 +1179,12 @@ gfc_add_recursive (symbol_attribute *attr, locus *where)
 
   if (check_used (attr, NULL, where))
     return FAILURE;
+
+  if (attr->recursive)
+    {
+      duplicate_attr ("RECURSIVE", where);
+      return FAILURE;
+    }
 
   attr->recursive = 1;
   return check_conflict (attr, NULL, where);
