@@ -2513,8 +2513,8 @@ gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
 
   if (op1->rank != op2->rank)
     {
-      gfc_error ("Incompatible ranks in %s at %L", _(optype_msgid),
-		 &op1->where);
+      gfc_error ("Incompatible ranks in %s (%d and %d) at %L", _(optype_msgid),
+		 op1->rank, op2->rank, &op1->where);
       return FAILURE;
     }
 
@@ -2527,7 +2527,7 @@ gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
 
       if (op1_flag && op2_flag && mpz_cmp (op1_size, op2_size) != 0)
 	{
-	  gfc_error ("different shape for %s at %L on dimension %d (%d/%d)",
+	  gfc_error ("different shape for %s at %L on dimension %d (%d and %d)",
 		     _(optype_msgid), &op1->where, d + 1,
 		     (int) mpz_get_si (op1_size),
 		     (int) mpz_get_si (op2_size));
