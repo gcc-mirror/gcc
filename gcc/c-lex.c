@@ -49,16 +49,6 @@ static splay_tree file_info_tree;
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
 
-/* If we need to translate characters received.  This is tri-state:
-   0 means use only the untranslated string; 1 means use only
-   the translated string; -1 means chain the translated string
-   to the untranslated one.  */
-int c_lex_string_translate = 1;
-
-/* True if strings should be passed to the caller of c_lex completely
-   unmolested (no concatenation, no translation).  */
-bool c_lex_return_raw_strings = false;
-
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
 static tree interpret_fixed (const cpp_token *, unsigned int);
@@ -66,7 +56,7 @@ static enum integer_type_kind narrowest_unsigned_type
 	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
 static enum integer_type_kind narrowest_signed_type
 	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
-static enum cpp_ttype lex_string (const cpp_token *, tree *, bool);
+static enum cpp_ttype lex_string (const cpp_token *, tree *, bool, bool);
 static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
 static int dump_one_header (splay_tree_node, void *);
@@ -329,7 +319,8 @@ cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
    non-NULL.  */
 
 enum cpp_ttype
-c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
+c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
+		  int lex_flags)
 {
   static bool no_more_pch;
   const cpp_token *tok;
@@ -411,7 +402,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 
 	    case CPP_STRING:
 	    case CPP_WSTRING:
-	      type = lex_string (tok, value, true);
+	      type = lex_string (tok, value, true, true);
 	      break;
 
 	    case CPP_NAME:
@@ -467,9 +458,10 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      if (!c_lex_return_raw_strings)
+      if ((lex_flags & C_LEX_RAW_STRINGS) == 0)
 	{
-	  type = lex_string (tok, value, false);
+	  type = lex_string (tok, value, false,
+			     (lex_flags & C_LEX_STRING_NO_TRANSLATE) == 0);
 	  break;
 	}
       *value = build_string (tok->val.str.len, (const char *) tok->val.str.text);
@@ -890,7 +882,7 @@ interpret_fixed (const cpp_token *token, unsigned int flags)
    we must arrange to provide.  */
 
 static enum cpp_ttype
-lex_string (const cpp_token *tok, tree *valp, bool objc_string)
+lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
 {
   tree value;
   bool wide = false;
@@ -948,34 +940,12 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string)
     warning (OPT_Wtraditional,
 	     "traditional C rejects string constant concatenation");
 
-  if ((c_lex_string_translate
+  if ((translate
        ? cpp_interpret_string : cpp_interpret_string_notranslate)
       (parse_in, strs, concats + 1, &istr, wide))
     {
       value = build_string (istr.len, (const char *) istr.text);
       free (CONST_CAST (unsigned char *, istr.text));
-
-      if (c_lex_string_translate == -1)
-	{
-	  int xlated = cpp_interpret_string_notranslate (parse_in, strs,
-							 concats + 1,
-							 &istr, wide);
-	  /* Assume that, if we managed to translate the string above,
-	     then the untranslated parsing will always succeed.  */
-	  gcc_assert (xlated);
-
-	  if (TREE_STRING_LENGTH (value) != (int) istr.len
-	      || 0 != strncmp (TREE_STRING_POINTER (value),
-			       (const char *) istr.text, istr.len))
-	    {
-	      /* Arrange for us to return the untranslated string in
-		 *valp, but to set up the C type of the translated
-		 one.  */
-	      *valp = build_string (istr.len, (const char *) istr.text);
-	      valp = &TREE_CHAIN (*valp);
-	    }
-	  free (CONST_CAST (unsigned char *, istr.text));
-	}
     }
   else
     {

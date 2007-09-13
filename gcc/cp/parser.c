@@ -277,9 +277,6 @@ cp_lexer_new_main (void)
      allocating any memory.  */
   cp_parser_initial_pragma (&first_token);
 
-  /* Tell c_lex_with_flags not to merge string constants.  */
-  c_lex_return_raw_strings = true;
-
   c_common_no_more_pch ();
 
   /* Allocate the memory.  */
@@ -402,17 +399,19 @@ cp_lexer_saving_tokens (const cp_lexer* lexer)
 }
 
 /* Store the next token from the preprocessor in *TOKEN.  Return true
-   if we reach EOF.  */
+   if we reach EOF.  If LEXER is NULL, assume we are handling an
+   initial #pragma pch_preprocess, and thus want the lexer to return
+   processed strings.  */
 
 static void
-cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
-				 cp_token *token)
+cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
 {
   static int is_extern_c = 0;
 
    /* Get a new token from the preprocessor.  */
   token->type
-    = c_lex_with_flags (&token->u.value, &token->location, &token->flags);
+    = c_lex_with_flags (&token->u.value, &token->location, &token->flags,
+			lexer == NULL ? 0 : C_LEX_RAW_STRINGS);
   token->input_file_stack_index = input_file_stack_tick;
   token->keyword = RID_MAX;
   token->pragma_kind = PRAGMA_NONE;
