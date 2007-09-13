@@ -480,6 +480,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (is_bind_c, cray_pointer);
   conf (is_bind_c, cray_pointee);
   conf (is_bind_c, allocatable);
+  conf (is_bind_c, elemental);
 
   /* Need to also get volatile attr, according to 5.1 of F2003 draft.
      Parameter conflict caught below.  Also, value cannot be specified

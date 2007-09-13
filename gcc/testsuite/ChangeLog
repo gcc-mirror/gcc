@@ -1,3 +1,8 @@
+2007-09-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33412
+	* gfortran.dg/elemental_bind_c.f90: New.
+
 2007-09-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.dg/gcc-have-sync-compare-and-swap.c: Skip for -mflip-mips16.
