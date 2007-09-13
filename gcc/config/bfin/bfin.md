@@ -1746,6 +1746,46 @@
   DONE;
 })
 
+(define_insn "reload_inpdi"
+  [(set (match_operand:PDI 0 "register_operand" "=e")
+	(match_operand:PDI 1 "memory_operand" "m"))
+   (clobber (match_operand:SI 2 "register_operand" "=d"))]
+  ""
+{
+  rtx xops[4];
+  xops[0] = operands[0];
+  xops[1] = operands[2];
+  split_di (operands + 1, 1, xops + 2, xops + 3);
+  output_asm_insn ("%1 = %2;", xops);
+  output_asm_insn ("%w0 = %1;", xops);
+  output_asm_insn ("%1 = %3;", xops);
+  output_asm_insn ("%x0 = %1;", xops);
+  return "";
+}
+ [(set_attr "seq_insns" "multi")
+  (set_attr "type" "mcld")
+  (set_attr "length" "12")])
+
+(define_insn "reload_outpdi"
+  [(set (match_operand:PDI 0 "memory_operand" "=m")
+	(match_operand:PDI 1 "register_operand" "e"))
+   (clobber (match_operand:SI 2 "register_operand" "=d"))]
+  ""
+{
+  rtx xops[4];
+  xops[0] = operands[1];
+  xops[1] = operands[2];
+  split_di (operands, 1, xops + 2, xops + 3);
+  output_asm_insn ("%1 = %w0;", xops);
+  output_asm_insn ("%2 = %1;", xops);
+  output_asm_insn ("%1 = %x0;", xops);
+  output_asm_insn ("%3 = %1;", xops);
+  return "";
+}
+ [(set_attr "seq_insns" "multi")
+  (set_attr "type" "mcld")
+  (set_attr "length" "12")])
+
 ;; Jump instructions
 
 (define_insn "jump"

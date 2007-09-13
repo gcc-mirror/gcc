@@ -2045,8 +2045,8 @@ bfin_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    scratch register.  */
 
 static enum reg_class
-bfin_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x, enum reg_class class,
-		     enum machine_mode mode, secondary_reload_info *sri)
+bfin_secondary_reload (bool in_p, rtx x, enum reg_class class,
+		       enum machine_mode mode, secondary_reload_info *sri)
 {
   /* If we have HImode or QImode, we can only use DREGS as secondary registers;
      in most other cases we can also use PREGS.  */
@@ -2099,8 +2099,16 @@ bfin_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x, enum reg_class class,
 
   if (class == AREGS || class == EVEN_AREGS || class == ODD_AREGS)
     {
+      if (code == MEM)
+	{
+	  sri->icode = in_p ? CODE_FOR_reload_inpdi : CODE_FOR_reload_outpdi;
+	  return NO_REGS;
+	}
+
       if (x != const0_rtx && x_class != DREGS)
-	return DREGS;
+	{
+	  return DREGS;
+	}
       else
 	return NO_REGS;
     }
@@ -2116,6 +2124,7 @@ bfin_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x, enum reg_class class,
   if (code == MEM)
     if (! reg_class_subset_p (class, default_class))
       return default_class;
+
   return NO_REGS;
 }
 
