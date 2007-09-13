@@ -1,3 +1,8 @@
+2007-09-13  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR driver/33309
+	* gcc.c (xputenv): Make argument const, and use CONST_CAST.
+
 2007-09-12  Michael Meissner  <michael.meissner@amd.com>
 	    Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 	    Tony Linthicum  <tony.linthicum@amd.com>
@@ -463,7 +468,7 @@
 	FOREACH_FUNCTION_ARGS to iterate over the argument list.  Use
 	prototype_p to determine if a function is prototyped.
 
-2007-09-12  Janis Johnson  <janis187@us.ibm.com
+2007-09-12  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/dfp-bit.c (dfp_conversion_exception): New function.
 	(DFP_TO_DFP) Add new variants to use direct conversions in decNumber.

@@ -297,7 +297,7 @@ static void set_spec (const char *, const char *);
 static struct compiler *lookup_compiler (const char *, size_t, const char *);
 static char *build_search_list (const struct path_prefix *, const char *,
 				bool, bool);
-static void xputenv (char *);
+static void xputenv (const char *);
 static void putenv_from_prefixes (const struct path_prefix *, const char *,
 				  bool);
 static int access_check (const char *, int);
@@ -2603,11 +2603,11 @@ add_to_obstack (char *path, void *data)
 /* Add or change the value of an environment variable, outputting the
    change to standard error if in verbose mode.  */
 static void
-xputenv (char *string)
+xputenv (const char *string)
 {
   if (verbose_flag)
     notice ("%s\n", string);
-  putenv (string);
+  putenv (CONST_CAST (char *, string));
 }
 
 /* Build a list of search directories from PATHS.
