@@ -405,7 +405,7 @@ Common Report Var(flag_eliminate_unused_debug_types) Init(1)
 Perform unused type elimination in debug info
 
 femit-class-debug-always
-Common Report Var(flag_emit_class_debug_always) Init(1)
+Common Report Var(flag_emit_class_debug_always) Init(0)
 Do not suppress C++ class debug information.
 
 fexceptions
