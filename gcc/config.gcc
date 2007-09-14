@@ -1688,6 +1688,22 @@ mips*-*-openbsd*)
 mips*-sde-elf*)
 	tm_file="elfos.h ${tm_file} mips/elf.h mips/sde.h"
 	tmake_file="mips/t-sde mips/t-libgcc-mips16"
+	case "${with_newlib}" in
+	  yes)
+	    # newlib / libgloss.
+	    ;;
+	  *)
+	    # MIPS toolkit libraries.
+	    tm_file="$tm_file mips/sdemtk.h"
+	    tmake_file="$tmake_file mips/t-sdemtk"
+	    extra_options="$extra_options mips/sdemtk.opt"
+	    case ${enable_threads} in
+	      "" | yes | mipssde)
+		thread_file='mipssde'
+		;;
+	    esac
+	    ;;
+	esac
 	case ${target} in
 	  mipsisa32r2*)
 	    tm_defines="MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"

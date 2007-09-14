@@ -1,3 +1,8 @@
+2007-09-14  Thiemo Seufer  <ths@mips.com>
+
+	* crossconfig.m4 (mips*-sde-elf*): New stanza.
+	* configure: Regenerate.
+
 2007-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/pb_ds/*: Change namespace pb_ds to __gnu_pbds.

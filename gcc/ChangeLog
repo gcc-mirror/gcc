@@ -1,3 +1,24 @@
+2007-09-14  Nigel Stephens  <nigel@mips.com>
+	    David Ung  <davidu@mips.com>
+	    Thiemo Seufer  <ths@mips.com>
+	    Richard Sandiford  <richard@codesourcery.com>
+
+	* config.gcc (mips*-sde-elf*): Add support for the SDE C libraries.
+	* configure.ac: Add a mipssde threading type.
+	* configure: Regenerate.
+	* config/mips/sdemtk.h: New file.
+	* config/mips/t-sdemtk: Likewise.
+	* config/mips/sdemtk.opt: Likewise.
+	* gthr-mipssde.h: Likewise.
+	* config/mips/sde.h (FUNCTION_PROFILER): Move to config/mips/sdemtk.h.
+	* config/mips/mips.h (MIPS_SAVE_REG_FOR_PROFILING_P): New macro.
+	(MIPS_ICACHE_SYNC): New macro, split from ...
+	* config/mips/mips.md (clear_cache): ...here.
+	* config/mips/mips.c (mips_save_reg_p): Check
+	MIPS_SAVE_REG_FOR_PROFILING_P on profiled functions.
+	(build_mips16_function_stub): Use targetm.strip_name_encoding.
+	(build_mips16_call_stub): Likewise.
+
 2007-09-14  Richard Sandiford  <richard@codesourcery.com>
 
 	* Makefile.in (stmp-int-hdrs): Depend on fixinc_list.

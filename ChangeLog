@@ -1,3 +1,10 @@
+2007-09-14  Richard Sandiford  <richard@codesourcery.com>
+
+	* configure.ac (mips*-sde-elf*): New stanza.  Add target-libiberty
+	to $skipdirs and only disable gprof for newlib.  Use the normal
+	mips*-elf* handling in other respects.
+	* configure: Regnerate.
+
 2007-09-12  David Daney  <ddaney@avtrex.com>
 
 	* configure.ac: Remove mips64*-*-linux* noconfigdirs section, thus
