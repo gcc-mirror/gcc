@@ -1,3 +1,8 @@
+2007-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.md (*floatdi<mode>2_i387): Guard against
+	TARGET_64BIT.
+
 2007-09-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33438
