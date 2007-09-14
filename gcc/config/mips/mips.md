@@ -4274,12 +4274,8 @@
     {
       rtx len = gen_reg_rtx (Pmode);
       emit_insn (gen_sub3_insn (len, operands[1], operands[0]));
-      /* Flush both caches.  We need to flush the data cache in case
-         the system has a write-back cache.  */
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),
-                         0, VOIDmode, 3, operands[0], Pmode, len, Pmode,
-                         GEN_INT (3), TYPE_MODE (integer_type_node));
-   }
+      MIPS_ICACHE_SYNC (operands[0], len);
+    }
   DONE;
 }")
 

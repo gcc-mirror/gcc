@@ -1,0 +1,26 @@
+# Override newlib settings in t-sde and set up for building
+# against SDE header files and libraries.
+
+MULTILIB_OPTIONS = EL/EB mips32/mips32r2/mips64 mips16 msoft-float/mno-float/mfp64
+MULTILIB_DIRNAMES = el eb mips32 mips32r2 mips64 mips16 sof nof f64
+
+# Remove stdarg.h and stddef.h from USER_H.
+USER_H = $(srcdir)/ginclude/float.h \
+         $(srcdir)/ginclude/iso646.h \
+         $(srcdir)/ginclude/stdbool.h \
+         $(srcdir)/ginclude/varargs.h \
+         $(EXTRA_HEADERS)
+
+# Don't run fixinclude
+STMP_FIXINC = stmp-sdefixinc
+stmp-sdefixinc: gsyslimits.h
+	rm -rf include; mkdir include
+	chmod a+rx include
+	rm -f include/syslimits.h
+	cp $(srcdir)/gsyslimits.h include/syslimits.h
+	chmod a+r include/syslimits.h
+	$(STAMP) stmp-sdefixinc
+
+# Don't build FPBIT and DPBIT; we'll be using the SDE soft-float library.
+FPBIT =
+DPBIT =

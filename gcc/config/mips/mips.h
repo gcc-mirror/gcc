@@ -2152,6 +2152,9 @@ typedef struct mips_args {
   fprintf (FILE, "\t.set\tat\n");					\
 }
 
+/* The profiler preserves all interesting registers, including $31.  */
+#define MIPS_SAVE_REG_FOR_PROFILING_P(REGNO) false
+
 /* No mips port has ever used the profiler counter word, so don't emit it
    or the label for it.  */
 
@@ -2226,6 +2229,13 @@ typedef struct mips_args {
 #ifndef CACHE_FLUSH_FUNC
 #define CACHE_FLUSH_FUNC "_flush_cache"
 #endif
+
+#define MIPS_ICACHE_SYNC(ADDR, SIZE)					\
+  /* Flush both caches.  We need to flush the data cache in case	\
+     the system has a write-back cache.  */				\
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),	\
+		     0, VOIDmode, 3, ADDR, Pmode, SIZE, Pmode,		\
+		     GEN_INT (3), TYPE_MODE (integer_type_node))
 
 /* A C statement to initialize the variable parts of a trampoline.
    ADDR is an RTX for the address of the trampoline; FNADDR is an

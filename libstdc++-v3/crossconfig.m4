@@ -9,6 +9,38 @@ case "${host}" in
     # This is a freestanding configuration; there is nothing to do here.
     ;;
 
+  mips*-sde-elf*)
+    # These definitions are for the SDE C library rather than newlib.
+    AC_CHECK_HEADERS([float.h inttypes.h locale.h \
+      stdint.h stdlib.h string.h unistd.h wchar.h \
+      machine/endian.h sys/ioctl.h sys/resource.h \
+      sys/stat.h sys/time.h sys/types.h sys/uio.h])
+    SECTION_FLAGS='-ffunction-sections -fdata-sections'
+    AC_SUBST(SECTION_FLAGS)
+    GLIBCXX_CHECK_COMPILER_FEATURES
+    GLIBCXX_CHECK_LINKER_FEATURES
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+    GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
+    GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+    AC_DEFINE(HAVE_SIGSETJMP)
+    AC_DEFINE(HAVE_GETPAGESIZE)
+    AC_DEFINE(HAVE_WRITEV)
+    AC_DEFINE(HAVE_INT64_T)
+
+    AC_DEFINE(HAVE_LIBM)
+    AC_DEFINE(HAVE_COPYSIGN)
+    AC_DEFINE(HAVE_FINITE)
+    AC_DEFINE(HAVE_HYPOT)
+    AC_DEFINE(HAVE_ISNAN)
+    AC_DEFINE(HAVE_ISINF)
+
+    AC_DEFINE(HAVE_LDEXPF)
+    AC_DEFINE(HAVE_MODF)
+    AC_DEFINE(HAVE_SQRTF)
+    ;;
+
   *-darwin*)
     # Darwin versions vary, but the linker should work in a cross environment,
     # so we just check for all the features here.

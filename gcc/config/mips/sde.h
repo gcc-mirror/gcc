@@ -130,19 +130,6 @@ Boston, MA 02111-1307, USA.  */
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 #endif
 
-/* This version of _mcount does not pop 2 words from the stack.  */
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)				\
-  {									\
-    fprintf (FILE, "\t.set\tnoat\n");					\
-    /* MIPS16 code passes saved $ra in $v1 instead of $at.  */		\
-    fprintf (FILE, "\tmove\t%s,%s\n",					\
-	     reg_names[GP_REG_FIRST + (TARGET_MIPS16 ? 3 : 1)],		\
-	     reg_names[GP_REG_FIRST + 31]);				\
-    fprintf (FILE, "\tjal\t_mcount\n");					\
-    fprintf (FILE, "\t.set\tat\n");					\
-  }
-
 /* Force all .init and .fini entries to be 32-bit, not mips16, so that
    in a mixed environment they are all the same mode. The crti.asm and
    crtn.asm files will also be compiled as 32-bit due to the

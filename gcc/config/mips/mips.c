@@ -7473,6 +7473,10 @@ mips_save_reg_p (unsigned int regno)
   if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
     return true;
 
+  /* Check for registers that must be saved for FUNCTION_PROFILER.  */
+  if (current_function_profile && MIPS_SAVE_REG_FOR_PROFILING_P (regno))
+    return true;
+
   /* We need to save the incoming return address if it is ever clobbered
      within the function, if __builtin_eh_return is being used to set a
      different return address, or if a stub is being used to return a
@@ -9701,6 +9705,7 @@ build_mips16_function_stub (FILE *file)
   unsigned int f;
 
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  fnname = targetm.strip_name_encoding (fnname);
   secname = (char *) alloca (strlen (fnname) + 20);
   sprintf (secname, ".mips16.fn.%s", fnname);
   stubname = (char *) alloca (strlen (fnname) + 20);
@@ -9937,7 +9942,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
   /* We know the function we are going to call.  If we have already
      built a stub, we don't need to do anything further.  */
 
-  fnname = XSTR (fn, 0);
+  fnname = targetm.strip_name_encoding (XSTR (fn, 0));
   for (l = mips16_stubs; l != NULL; l = l->next)
     if (strcmp (l->name, fnname) == 0)
       break;
