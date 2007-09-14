@@ -1668,10 +1668,11 @@ mips64*-*-linux*)
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h"
 	case ${target} in
-        mipsisa32*-*)
-                target_cpu_default="MASK_SOFT_FLOAT"
-		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
+        mipsisa32r2*)
+		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33"
                 ;;
+        mipsisa32*)
+		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
         esac
 	test x$with_llsc != x || with_llsc=yes
 	;;
