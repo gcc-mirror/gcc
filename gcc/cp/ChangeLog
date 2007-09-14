@@ -1,3 +1,13 @@
+2007-09-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/17743, c++/19163
+	* decl2.c (is_late_template_attribute): New fn.
+	(splice_template_attributes, save_template_attributes): New fns.
+	(cplus_decl_attributes): Call save_template_attributes.
+	* pt.c (apply_late_template_attributes): New fn.
+	(instantiate_class_template, tsubst_decl): Use it.
+	* cp-tree.h: Declare is_late_template_attribute.
+
 2007-09-13  Tom Tromey  <tromey@redhat.com>
 
 	* parser.c (cp_lexer_new_main): Don't use
