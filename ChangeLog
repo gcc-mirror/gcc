@@ -1,3 +1,7 @@
+2007-09-14  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* MAINTAINERS: Update my email address.
+
 2007-09-14  Richard Sandiford  <richard@codesourcery.com>
 
 	* configure.ac (mips*-sde-elf*): New stanza.  Add target-libiberty
