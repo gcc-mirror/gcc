@@ -1,3 +1,12 @@
+2007-09-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/tr1_impl/boost_shared_ptr.h: (__weak_ptr::lock()): Add
+	missing template argument.
+	* testsuite/tr1/2_general_utilities/shared_ptr/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/tr1/2_general_utilities/weak_ptr/requirements/
+	explicit_instantiation/2.cc: New.
+
 2007-09-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/17_intro/headers/all_pedantic_errors.cc: New.
