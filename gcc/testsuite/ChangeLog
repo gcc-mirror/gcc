@@ -1,5 +1,9 @@
 2007-09-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.dg/nint_2.f90: Revert previous commit.
+
+2007-09-14  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.dg/nint_2.f90: Do not xfail on powerpc64-linux.
 
 2007-09-14  Hans-Peter Nilsson  <hp@axis.com>
