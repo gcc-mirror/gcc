@@ -6384,7 +6384,7 @@ ix86_expand_prologue (void)
         insn = emit_insn (gen_set_got (pic_offset_table_rtx));
     }
 
-  /* Prevent function calls from be scheduled before the call to mcount.
+  /* Prevent function calls from being scheduled before the call to mcount.
      In the pic_reg_used case, make sure that the got load isn't deleted.  */
   if (current_function_profile)
     {

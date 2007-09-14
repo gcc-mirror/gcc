@@ -1,3 +1,10 @@
+2007-09-13  Eric Christopher  <echristo@apple.com>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* dse.c (find_shift_sequence): New function.
+	(replace_read): Add case to remove read if it requires shift.
+	* config/i386/i386.c (ix86_expand_prologue): Fixed typo in comment.
+	
 2007-09-13  Tom Tromey  <tromey@redhat.com>
 
 	* c-common.c (fname_as_string): Update.
