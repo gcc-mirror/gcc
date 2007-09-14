@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -3439,6 +3439,548 @@ static inline int vec_any_out(vec_float4 a, vec_float4 b)
 {
   return (spu_extract(spu_gather(spu_nor(spu_cmpabsgt(a, b), (vec_uint4)(spu_rlmaska((vec_int4)(b), -31)))), 0) != 0xF);
 }
+
+
+/* CBE Language Extension Intrinsics
+ */
+
+/* vec_extract (extract element from vector)
+ * ===========
+ */
+#define vec_extract(_a, _element)	spu_extract(_a, _element)
+
+
+/* vec_insert (insert scalar into specified vector element)
+ * ==========
+ */
+#define vec_insert(_a, _b, _element)	spu_insert(_a, _b, _element)
+
+/* vec_lvlx (load vector left indexed)
+ * ========
+ */
+static inline vec_uchar16 vec_lvlx(int a, unsigned char *b)
+{
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_uchar16 vec_lvlx(int a, vec_uchar16 *b)
+{
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_char16 vec_lvlx(int a, signed char *b)
+{
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_char16 vec_lvlx(int a, vec_char16 *b)
+{
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_ushort8 vec_lvlx(int a, unsigned short *b)
+{
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_ushort8 vec_lvlx(int a, vec_ushort8 *b)
+{
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_short8 vec_lvlx(int a, signed short *b)
+{
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_short8 vec_lvlx(int a, vec_short8 *b)
+{
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_uint4 vec_lvlx(int a, unsigned int *b)
+{
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_uint4 vec_lvlx(int a, vec_uint4 *b)
+{
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_int4 vec_lvlx(int a, signed int *b)
+{
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_int4 vec_lvlx(int a, vec_int4 *b)
+{
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_float4 vec_lvlx(int a, float *b)
+{
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+static inline vec_float4 vec_lvlx(int a, vec_float4 *b)
+{
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(b) + a);
+  return(spu_slqwbyte(*p, (unsigned int)p & 0xF));
+}
+
+
+/* vec_lvlxl (load vector left indexed last)
+ * =========
+ */
+#define vec_lvlxl(_a, _b)	vec_lvlx(_a, _b)
+
+
+/* vec_lvrx (load vector right indexed)
+ * ========
+ */
+static inline vec_uchar16 vec_lvrx(int a, unsigned char *b)
+{
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_uchar16 vec_lvrx(int a, vec_uchar16 *b)
+{
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_char16 vec_lvrx(int a, signed char *b)
+{
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_char16 vec_lvrx(int a, vec_char16 *b)
+{
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_ushort8 vec_lvrx(int a, unsigned short *b)
+{
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_ushort8 vec_lvrx(int a, vec_ushort8 *b)
+{
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_short8 vec_lvrx(int a, signed short *b)
+{
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_short8 vec_lvrx(int a, vec_short8 *b)
+{
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_uint4 vec_lvrx(int a, unsigned int *b)
+{
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_uint4 vec_lvrx(int a, vec_uint4 *b)
+{
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_int4 vec_lvrx(int a, signed int *b)
+{
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_int4 vec_lvrx(int a, vec_int4 *b)
+{
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_float4 vec_lvrx(int a, float *b)
+{
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+static inline vec_float4 vec_lvrx(int a, vec_float4 *b)
+{
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(b) + a);
+  return(spu_rlmaskqwbyte(*p, ((int)p & 0xF)-16));
+}
+
+
+
+/* vec_lvrxl (load vector right indexed last)
+ * =========
+ */
+#define vec_lvrxl(_a, _b)	vec_lvrx(_a, _b)
+
+
+/* vec_promote (promote scalar to a vector)
+ * ===========
+ */
+#define vec_promote(_a, _element)	spu_promote(_a, _element)
+
+
+/* vec_splats (splat scalar to a vector)
+ * ==========
+ */
+#define vec_splats(_a)	spu_splats(_a)
+
+
+/* vec_stvlx (store vector left indexed)
+ * =========
+ */
+static inline void vec_stvlx(vec_uchar16 a, int b, unsigned char *c)
+{
+  int shift;
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvlx(vec_uchar16 a, int b, vec_uchar16 *c)
+{
+  int shift;
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvlx(vec_char16 a, int b, signed char *c)
+{
+  int shift;
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvlx(vec_char16 a, int b, vec_char16 *c)
+{
+  int shift;
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvlx(vec_ushort8 a, int b, unsigned short *c)
+{
+  int shift;
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_ushort8 a, int b, vec_ushort8 *c)
+{
+  int shift;
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_short8 a, int b, signed short *c)
+{
+  int shift;
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_short8 a, int b, vec_short8 *c)
+{
+  int shift;
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_uint4 a, int b, unsigned int *c)
+{
+  int shift;
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_uint4 a, int b, vec_uint4 *c)
+{
+  int shift;
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_int4 a, int b, signed int *c)
+{
+  int shift;
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_int4 a, int b, vec_int4 *c)
+{
+  int shift;
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_float4 a, int b, float *c)
+{
+  int shift;
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvlx(vec_float4 a, int b, vec_float4 *c)
+{
+  int shift;
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(c) + b);
+
+  shift = -((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_rlmaskqwbyte(a, shift),
+	       spu_rlmaskqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+/* vec_stvlxl (store vector left indexed last)
+ * ==========
+ */
+#define vec_stvlxl(_a, _b, _c)	vec_stvlx(_a, _b, _c)
+
+
+/* vec_stvrx (store vector right indexed)
+ * =========
+ */
+static inline void vec_stvrx(vec_uchar16 a, int b, unsigned char *c)
+{
+  int shift;
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvrx(vec_uchar16 a, int b, vec_uchar16 *c)
+{
+  int shift;
+  vec_uchar16 *p = (vec_uchar16 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvrx(vec_char16 a, int b, signed char *c)
+{
+  int shift;
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvrx(vec_char16 a, int b, vec_char16 *c)
+{
+  int shift;
+  vec_char16 *p = (vec_char16 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned char)0xFF), shift));
+}
+
+static inline void vec_stvrx(vec_ushort8 a, int b, unsigned short *c)
+{
+  int shift;
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_ushort8 a, int b, vec_ushort8 *c)
+{
+  int shift;
+  vec_ushort8 *p = (vec_ushort8 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_short8 a, int b, signed short *c)
+{
+  int shift;
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_short8 a, int b, vec_short8 *c)
+{
+  int shift;
+  vec_short8 *p = (vec_short8 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned short)0xFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_uint4 a, int b, unsigned int *c)
+{
+  int shift;
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_uint4 a, int b, vec_uint4 *c)
+{
+  int shift;
+  vec_uint4 *p = (vec_uint4 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_int4 a, int b, signed int *c)
+{
+  int shift;
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_int4 a, int b, vec_int4 *c)
+{
+  int shift;
+  vec_int4 *p = (vec_int4 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_float4 a, int b, float *c)
+{
+  int shift;
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+static inline void vec_stvrx(vec_float4 a, int b, vec_float4 *c)
+{
+  int shift;
+  vec_float4 *p = (vec_float4 *)((unsigned char *)(c) + b);
+
+  shift = 16-((int)p & 0xF);
+  *p = spu_sel(*p,
+	       spu_slqwbyte(a, shift),
+	       spu_slqwbyte(spu_splats((unsigned int)0xFFFFFFFF), shift));
+}
+
+/* vec_stvrxl (store vector right indexed last)
+ * ==========
+ */
+#define vec_stvrxl(_a, _b, _c)	vec_stvrx(_a, _b, _c)
+
 
 #endif /* __SPU__ */
 #endif /* __cplusplus */

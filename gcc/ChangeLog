@@ -1,3 +1,9 @@
+2007-09-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/vmx2spu.h (vec_extract, vec_insert, vec_lvlx,
+	vec_lvlxl, vec_lvrx, vec_lvrxl, vec_promote, vec_splats,
+	vec_stvlx, vec_stvlxl, vec_stvrx, vec_stvrxl): New intrinsics.
+
 2007-09-13  Eric Christopher  <echristo@apple.com>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 
