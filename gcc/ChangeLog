@@ -1,3 +1,7 @@
+2007-09-14  Richard Sandiford  <richard@codesourcery.com>
+
+	* Makefile.in (stmp-int-hdrs): Depend on fixinc_list.
+
 2007-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/32337
