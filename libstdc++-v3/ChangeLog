@@ -1,3 +1,15 @@
+2007-09-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/17_intro/headers/all_pedantic_errors.cc: New.
+	* include/tr1_impl/cinttypes: Add pragma GCC system_header.
+	* include/tr1_impl/cfenv: Same.
+	* include/tr1_impl/cstdint: Same.
+	* include/tr1/cstdbool: Same.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Same.
+	* include/parallel/partial_sum.h: Avoid VLA error with
+	__builtin_alloca.
+
 2007-09-14  Thiemo Seufer  <ths@mips.com>
 
 	* crossconfig.m4 (mips*-sde-elf*): New stanza.
