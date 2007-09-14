@@ -1,4 +1,10 @@
 2007-09-14  Nigel Stephens  <nigel@mips.com>
+
+	* config.gcc (mips*-*-linux*): Recognise mipsisa32r2 and set
+	MIPS_ISA_DEFAULT appropriately.  Don't make soft-float the default
+	for mipsisa32-*-linux*.
+
+2007-09-14  Nigel Stephens  <nigel@mips.com>
 	    David Ung  <davidu@mips.com>
 	    Thiemo Seufer  <ths@mips.com>
 	    Richard Sandiford  <richard@codesourcery.com>
