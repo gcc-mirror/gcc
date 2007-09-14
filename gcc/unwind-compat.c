@@ -38,7 +38,7 @@
 extern _Unwind_Reason_Code __libunwind_Unwind_Backtrace
   (_Unwind_Trace_Fn, void *);
 
-_Unwind_Reason_Code
+_Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_Backtrace (_Unwind_Trace_Fn trace, void *trace_argument)
 {
   return __libunwind_Unwind_Backtrace (trace, trace_argument);
@@ -67,7 +67,7 @@ symver (_Unwind_FindEnclosingFunction, GCC_3.3);
 extern _Unwind_Reason_Code __libunwind_Unwind_ForcedUnwind
   (struct _Unwind_Exception *, _Unwind_Stop_Fn, void *);
 
-_Unwind_Reason_Code
+_Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_ForcedUnwind (struct _Unwind_Exception *exc,
 		      _Unwind_Stop_Fn stop, void * stop_argument)
 {
@@ -166,7 +166,7 @@ symver (_Unwind_GetRegionStart, GCC_3.0);
 extern _Unwind_Reason_Code __libunwind_Unwind_RaiseException
   (struct _Unwind_Exception *);
 
-_Unwind_Reason_Code
+_Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_RaiseException(struct _Unwind_Exception *exc)
 {
   return __libunwind_Unwind_RaiseException (exc);
@@ -175,7 +175,7 @@ symver (_Unwind_RaiseException, GCC_3.0);
 
 extern void __libunwind_Unwind_Resume (struct _Unwind_Exception *);
 
-void
+void LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_Resume (struct _Unwind_Exception *exc)
 {
   __libunwind_Unwind_Resume (exc);
@@ -185,7 +185,7 @@ symver (_Unwind_Resume, GCC_3.0);
 extern _Unwind_Reason_Code __libunwind_Unwind_Resume_or_Rethrow
    (struct _Unwind_Exception *);
 
-_Unwind_Reason_Code
+_Unwind_Reason_Code LIBGCC2_UNWIND_ATTRIBUTE
 _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc)
 {
   return __libunwind_Unwind_Resume_or_Rethrow (exc);

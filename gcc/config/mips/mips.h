@@ -582,6 +582,17 @@ extern enum mips_llsc_setting mips_llsc;
 #endif
 #endif /* IN_LIBGCC2 */
 
+/* Force the call stack unwinders in unwind.inc not to be MIPS16 code
+   when compiled with hardware floating point.  This is because MIPS16
+   code cannot save and restore the floating-point registers, which is
+   important if in a mixed MIPS16/non-MIPS16 environment.  */
+
+#ifdef IN_LIBGCC2
+#if __mips_hard_float
+#define LIBGCC2_UNWIND_ATTRIBUTE __attribute__((__nomips16__))
+#endif
+#endif /* IN_LIBGCC2 */
+
 #define TARGET_LIBGCC_SDATA_SECTION ".sdata"
 
 #ifndef MULTILIB_ENDIAN_DEFAULT

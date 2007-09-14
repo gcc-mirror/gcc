@@ -1,3 +1,33 @@
+2007-09-14  Sandra Loosemore  <sandra@codesourcery.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* doc/tm.texi (LIBGCC2_UNWIND_ATTRIBUTE): Document.
+	* unwind-generic.h (LIBGCC2_UNWIND_ATTRIBUTE): Define.
+	(_Unwind_RaiseException): Add LIBGCC2_UNWIND_ATTRIBUTE to
+	declaration.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+	(_Unwind_Backtrace): Likewise.
+	(_Unwind_SjLj_RaiseException): Likewise.
+	(_Unwind_SjLj_ForcedUnwind): Likewise.
+	(_Unwind_SjLj_Resume): Likewise.
+	(_Unwind_SjLj_Resume_or_Rethrow): Likewise.
+	* unwind.inc (_Unwind_RaiseException): Add LIBGCC2_UNWIND_ATTRIBUTE
+	to definition.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+	(_Unwind_Backtrace): Likewise.
+	* unwind-compat.c (_Unwind_Backtrace): Likewise.
+	(_Unwind_ForcedUnwind): Likewise.
+	(_Unwind_RaiseException): Likewise.
+	(_Unwind_Resume): Likewise.
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+	* config/mips/mips.h (LIBGCC2_UNWIND_ATTRIBUTE): Define to force
+	nomips16 mode when IN_LIBGCC2 with hard float.
+
 2007-09-14  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/sdemtk.opt: Update to GPLv3.
