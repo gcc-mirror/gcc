@@ -1,3 +1,8 @@
+2007-09-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR debug/33429
+	* g++.dg/other/unused1.C: XFAIL class2 scan.
+
 2007-09-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33343

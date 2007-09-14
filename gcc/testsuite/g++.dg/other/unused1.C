@@ -44,5 +44,6 @@ int bar5 (void)
 /* { dg-final { scan-assembler "foo" } } */
 /* { dg-final { scan-assembler "boo" } } */
 /* { dg-final { scan-assembler "cue" } } */
-/* { dg-final { scan-assembler "(string|ascii?)z?\[\t \]\"class2(\"|\\\\0)" } } */
+/* The xfail below is for PR33429.  */
+/* { dg-final { scan-assembler "(string|ascii?)z?\[\t \]\"class2(\"|\\\\0)" { xfail *-*-* } } } */
 /* { dg-final { scan-assembler "(string|ascii?)z?\[\t \]\"printer(\"|\\\\0)" } } */
