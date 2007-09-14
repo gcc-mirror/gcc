@@ -44,6 +44,8 @@
  * Contains a resize size policy implementation.
  */
 
+#pragma GCC system_header
+
 namespace detail
 {
   enum
