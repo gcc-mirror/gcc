@@ -2207,7 +2207,8 @@ find_gr_spill (enum ia64_frame_regs r, int try_locals)
   if (emitted_frame_related_regs[r] != 0)
     {
       regno = emitted_frame_related_regs[r];
-      if (regno >= LOC_REG (0) && regno < LOC_REG (80 - frame_pointer_needed))
+      if (regno >= LOC_REG (0) && regno < LOC_REG (80 - frame_pointer_needed)
+	  && current_frame_info.n_local_regs < regno - LOC_REG (0) + 1)
         current_frame_info.n_local_regs = regno - LOC_REG (0) + 1;
       else if (current_function_is_leaf 
                && regno >= GR_REG (1) && regno <= GR_REG (31))
@@ -2239,11 +2240,12 @@ find_gr_spill (enum ia64_frame_regs r, int try_locals)
       /* If there is a frame pointer, then we can't use loc79, because
 	 that is HARD_FRAME_POINTER_REGNUM.  In particular, see the
 	 reg_name switching code in ia64_expand_prologue.  */
-      if (regno < (80 - frame_pointer_needed))
-	{
-	  current_frame_info.n_local_regs = regno + 1;
-	  return LOC_REG (0) + regno;
-	}
+      while (regno < (80 - frame_pointer_needed))
+	if (! is_emitted (LOC_REG (regno++)))
+	  {
+	    current_frame_info.n_local_regs = regno;
+	    return LOC_REG (regno - 1);
+	  }
     }
 
   /* Failed to find a general register to spill to.  Must use stack.  */
@@ -2315,6 +2317,8 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
   int spilled_gr_p = 0;
   int spilled_fr_p = 0;
   unsigned int regno;
+  int min_regno;
+  int max_regno;
   int i;
 
   if (current_frame_info.initialized)
@@ -2490,16 +2494,27 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
      
      If we have already emitted code for any of those registers,
      then it's already too late to change.  */
-  if (current_frame_info.r[reg_fp] != 0
-      && current_frame_info.r[reg_save_b0] == current_frame_info.r[reg_fp] + 1
-      && current_frame_info.r[reg_save_ar_pfs] == current_frame_info.r[reg_fp] + 2
-      && emitted_frame_related_regs[reg_save_b0] == 0
-      && emitted_frame_related_regs[reg_save_ar_pfs] == 0
-      && emitted_frame_related_regs[reg_fp] == 0)
+  min_regno = MIN (current_frame_info.r[reg_fp],
+		   MIN (current_frame_info.r[reg_save_b0],
+			current_frame_info.r[reg_save_ar_pfs]));
+  max_regno = MAX (current_frame_info.r[reg_fp],
+		   MAX (current_frame_info.r[reg_save_b0],
+			current_frame_info.r[reg_save_ar_pfs]));
+  if (min_regno > 0
+      && min_regno + 2 == max_regno
+      && (current_frame_info.r[reg_fp] == min_regno + 1
+	  || current_frame_info.r[reg_save_b0] == min_regno + 1
+	  || current_frame_info.r[reg_save_ar_pfs] == min_regno + 1)
+      && (emitted_frame_related_regs[reg_save_b0] == 0
+	  || emitted_frame_related_regs[reg_save_b0] == min_regno)
+      && (emitted_frame_related_regs[reg_save_ar_pfs] == 0
+	  || emitted_frame_related_regs[reg_save_ar_pfs] == min_regno + 1)
+      && (emitted_frame_related_regs[reg_fp] == 0
+	  || emitted_frame_related_regs[reg_fp] == min_regno + 2))
     {
-      current_frame_info.r[reg_save_b0] = current_frame_info.r[reg_fp];
-      current_frame_info.r[reg_save_ar_pfs] = current_frame_info.r[reg_fp] + 1;
-      current_frame_info.r[reg_fp] = current_frame_info.r[reg_fp] + 2;
+      current_frame_info.r[reg_save_b0] = min_regno;
+      current_frame_info.r[reg_save_ar_pfs] = min_regno + 1;
+      current_frame_info.r[reg_fp] = min_regno + 2;
     }
 
   /* See if we need to store the predicate register block.  */

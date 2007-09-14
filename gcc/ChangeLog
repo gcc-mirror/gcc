@@ -1,3 +1,14 @@
+2007-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/32337
+	* config/ia64/ia64.c (find_gr_spill): Don't decrement
+	current_frame_info.n_local_regs.  Don't return emitted local
+	regs.
+	(ia64_compute_frame_size): Improve unwind hack to put
+	RP, PFS, FP in that order by allowing some of the registers
+	been already emitted, as long as they are emitted to the
+	desired register.
+
 2007-09-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/vmx2spu.h (vec_extract, vec_insert, vec_lvlx,
