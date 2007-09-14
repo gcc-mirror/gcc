@@ -1,4 +1,14 @@
-2007-09-10  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2007-09-14  Benjamin Kosnik  <bkoz@redhat.com>
+        
+	* include/parallel/base.h (__gnu_parallel::less<Tp>): Add partial
+        specialization for one argument. 
+	(__gnu_parallel::less): Add operator.
+
+	* include/parallel/multiway_merge.h: Use __builtin_alloca. 
+	* include/parallel/partial_sum.h: Same.
+	* include/parallel/find.h: Same.	
+	
+2007-09-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/tr1_impl/boost_shared_ptr.h: (__weak_ptr::lock()): Add
 	missing template argument.

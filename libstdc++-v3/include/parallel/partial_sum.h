@@ -103,7 +103,7 @@ namespace __gnu_parallel
 	return parallel_partial_sum_basecase(begin + 1, end, result + 1, bin_op, *begin);
       }
 
-    difference_type* borders = __builtin_alloca(sizeof(difference_type) * (num_threads + 2));
+    difference_type* borders = static_cast<difference_type*>(__builtin_alloca(sizeof(difference_type) * (num_threads + 2)));
 
     if (Settings::partial_sum_dilatation == 1.0f)
       equally_split(n, num_threads + 1, borders);

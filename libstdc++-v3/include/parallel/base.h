@@ -163,7 +163,10 @@ namespace __gnu_parallel
       { return op(value, __x); }
     };
 
-  /** @brief Similar to std::binder2nd, but giving the argument types explicitly. */
+  /** 
+   *  @brief Similar to std::binder2nd, but giving the argument types
+   *  explicitly. 
+   */
   template<typename _Operation, typename first_argument_type, typename second_argument_type, typename result_type>
     class binder2nd
     : public std::unary_function<first_argument_type, result_type>
@@ -192,10 +195,23 @@ namespace __gnu_parallel
   template<typename T1, typename T2>
   struct less : std::binary_function<T1, T2, bool>
   {
-    bool operator()(const T1& t1, const T2& t2) const
+    bool 
+    operator()(const T1& t1, const T2& t2) const
     { return t1 < t2; }
+
+    bool 
+    operator()(const T2& t2, const T1& t1) const
+    { return t2 < t1; }
   };
 
+  // Partial specialization for one type. Same as std::less.
+  template<typename _Tp>
+  struct less<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, bool>
+    {
+      bool
+      operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x < __y; }
+    };
 
   template<typename T, typename _DifferenceTp>
   class pseudo_sequence;
@@ -268,7 +284,9 @@ namespace __gnu_parallel
 
   public:
     typedef _DifferenceTp difference_type;
-    typedef pseudo_sequence_iterator<T, uint64> iterator;	//better case down to uint64, than up to _DifferenceTp
+
+    // Better case down to uint64, than up to _DifferenceTp.
+    typedef pseudo_sequence_iterator<T, uint64> iterator;
 
     /** @brief Constructor.
      *  @param val Element of the sequence.
