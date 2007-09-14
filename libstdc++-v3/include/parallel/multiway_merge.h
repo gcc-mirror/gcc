@@ -1457,7 +1457,7 @@ namespace __gnu_parallel
 
 	copy(seqs_begin, seqs_end, se.begin());
 
-	difference_type borders[num_threads + 1];
+	difference_type* borders = static_cast<difference_type*>(__builtin_alloca(sizeof(difference_type) * (num_threads + 1)));
 	equally_split(length, num_threads, borders);
 
 	for (int s = 0; s < (num_threads - 1); s++)
@@ -1470,7 +1470,8 @@ namespace __gnu_parallel
 	    if (!tight)
 	      {
 		offsets[num_threads - 1].resize(k);
-		multiseq_partition(se.begin(), se.end(), (difference_type)length,
+		multiseq_partition(se.begin(), se.end(), 
+				   difference_type(length), 
 				   offsets[num_threads - 1].begin(),  comp);
 	      }
 	  }

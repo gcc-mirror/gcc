@@ -105,8 +105,8 @@ namespace __gnu_parallel
 
     const thread_index_t num_threads = get_max_threads();
 
-    // XXX VLA error.
-    difference_type borders[num_threads + 1];
+    difference_type* borders = static_cast<difference_type*>(__builtin_alloca(sizeof(difference_type) * (num_threads + 1)));
+
     equally_split(length, num_threads, borders);
 
 #pragma omp parallel shared(result) num_threads(num_threads)
