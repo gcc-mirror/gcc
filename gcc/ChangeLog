@@ -1,3 +1,8 @@
+2007-09-14  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/sdemtk.opt: Update to GPLv3.
+	* config/mips/sdemtk.h: Likewise.
+
 2007-09-14  Nigel Stephens  <nigel@mips.com>
 
 	* config.gcc (mips*-*-linux*): Recognise mipsisa32r2 and set
