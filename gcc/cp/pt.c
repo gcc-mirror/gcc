@@ -6477,6 +6477,33 @@ can_complete_type_without_circularity (tree type)
     return 1;
 }
 
+/* Apply any attributes which had to be deferred until instantiation
+   time.  DECL_P, ATTRIBUTES and ATTR_FLAGS are as cplus_decl_attributes;
+   ARGS, COMPLAIN, IN_DECL are as tsubst.  */
+
+static void
+apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
+				tree args, tsubst_flags_t complain, tree in_decl)
+{
+  tree late_attrs = NULL_TREE;
+  tree t;
+
+  if (DECL_P (*decl_p))
+    DECL_ATTRIBUTES (*decl_p) = attributes;
+  else
+    TYPE_ATTRIBUTES (*decl_p) = attributes;
+
+  for (t = attributes; t; t = TREE_CHAIN (t))
+    if (is_late_template_attribute (t))
+      late_attrs = tree_cons
+	(TREE_PURPOSE (t),
+	 tsubst_expr (TREE_VALUE (t), args, complain, in_decl,
+		      /*integral_constant_expression_p=*/false),
+	 late_attrs);
+
+  cplus_decl_attributes (decl_p, late_attrs, attr_flags);
+}
+
 tree
 instantiate_class_template (tree type)
 {
@@ -6647,6 +6674,9 @@ instantiate_class_template (tree type)
      information.  */
   xref_basetypes (type, base_list);
 
+  apply_late_template_attributes (&type, TYPE_ATTRIBUTES (pattern),
+				  (int) ATTR_FLAG_TYPE_IN_PLACE,
+				  args, tf_error, NULL_TREE);
 
   /* Now that our base classes are set up, enter the scope of the
      class, so that name lookups into base classes, etc. will work
@@ -7872,6 +7902,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      = remove_attribute ("visibility", DECL_ATTRIBUTES (r));
 	  }
 	determine_visibility (r);
+
+	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
+					args, complain, in_decl);
       }
       break;
 
@@ -7965,6 +7998,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
             if (!DECL_TEMPLATE_PARM_P (r))
               DECL_ARG_TYPE (r) = type_passed_as (type);
 
+	    apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
+					    args, complain, in_decl);
+
             /* Keep track of the first new parameter we
                generate. That's what will be returned to the
                caller.  */
@@ -8007,6 +8043,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	TREE_CHAIN (r) = NULL_TREE;
 	if (VOID_TYPE_P (type))
 	  error ("instantiation of %q+D as type %qT", r, type);
+
+	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
+					args, complain, in_decl);
       }
       break;
 
@@ -8201,6 +8240,9 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  register_local_specialization (r, t);
 
 	TREE_CHAIN (r) = NULL_TREE;
+
+	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
+					args, complain, in_decl);
 	layout_decl (r, 0);
       }
       break;
