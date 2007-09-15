@@ -836,8 +836,6 @@ java_dump_tree (void *dump_info, tree t)
 	dump_string (di, "extern");
       else
 	dump_string (di, "static");
-      if (DECL_LANG_SPECIFIC (t))
-	dump_child ("body", DECL_FUNCTION_BODY (t));
       if (DECL_LANG_SPECIFIC (t) && !dump_flag (di, TDF_SLIM, t))
 	dump_child ("inline body", DECL_SAVED_TREE (t));
       return true;
