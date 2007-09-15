@@ -1,3 +1,11 @@
+2007-09-15  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (vect_get_vec_defs_for_stmt_copy): check if 
+	the VEC is not NULL.
+	(vectorizable_type_demotion, vectorizable_type_promotion): Check that 
+	get_vectype_for_scalar_type succeeded.
+	(vectorizable_conversion): Likewise.
+
 2007-09-14  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.md (*floatdi<mode>2_i387): Guard against

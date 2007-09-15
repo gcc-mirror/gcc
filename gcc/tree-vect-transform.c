@@ -1938,7 +1938,7 @@ vect_get_vec_defs_for_stmt_copy (enum vect_def_type *dt,
   vec_oprnd = vect_get_vec_def_for_stmt_copy (dt[0], vec_oprnd);
   VEC_quick_push (tree, *vec_oprnds0, vec_oprnd);
 
-  if (vec_oprnds1)
+  if (vec_oprnds1 && *vec_oprnds1)
     {
       vec_oprnd = VEC_pop (tree, *vec_oprnds1);
       vec_oprnd = vect_get_vec_def_for_stmt_copy (dt[1], vec_oprnd);
@@ -3309,11 +3309,15 @@ vectorizable_conversion (tree stmt, block_stmt_iterator *bsi,
   op0 = TREE_OPERAND (operation, 0);
   rhs_type = TREE_TYPE (op0);
   vectype_in = get_vectype_for_scalar_type (rhs_type);
+  if (!vectype_in)
+    return false;
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   lhs_type = TREE_TYPE (scalar_dest);
   vectype_out = get_vectype_for_scalar_type (lhs_type);
+  if (!vectype_out)
+    return false;
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
 
   /* FORNOW */
@@ -4083,10 +4087,14 @@ vectorizable_type_demotion (tree stmt, block_stmt_iterator *bsi,
 
   op0 = TREE_OPERAND (operation, 0);
   vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op0));
+  if (!vectype_in)
+    return false;
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
+  if (!vectype_out)
+    return false;
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_in != nunits_out / 2) /* FORNOW */
     return false;
@@ -4241,10 +4249,14 @@ vectorizable_type_promotion (tree stmt, block_stmt_iterator *bsi,
 
   op0 = TREE_OPERAND (operation, 0);
   vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op0));
+  if (!vectype_in)
+    return false;
   nunits_in = TYPE_VECTOR_SUBPARTS (vectype_in);
 
   scalar_dest = GIMPLE_STMT_OPERAND (stmt, 0);
   vectype_out = get_vectype_for_scalar_type (TREE_TYPE (scalar_dest));
+  if (!vectype_out)
+    return false;
   nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
   if (nunits_out != nunits_in / 2) /* FORNOW */
     return false;
