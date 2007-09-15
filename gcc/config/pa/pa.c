@@ -9075,7 +9075,7 @@ function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
     }
 
   if ((INTEGRAL_TYPE_P (valtype)
-       && TYPE_PRECISION (valtype) < BITS_PER_WORD)
+       && GET_MODE_BITSIZE (TYPE_MODE (valtype)) < BITS_PER_WORD)
       || POINTER_TYPE_P (valtype))
     valmode = word_mode;
   else

@@ -1,3 +1,8 @@
+2007-09-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/33062
+	* pa.c (function_value): Use GET_MODE_BITSIZE instead of TYPE_PRECISION.
+
 2007-09-15  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-vect-transform.c (vect_get_vec_defs_for_stmt_copy): check if 
