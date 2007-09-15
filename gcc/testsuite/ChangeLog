@@ -1,3 +1,7 @@
+2007-09-15  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/pr33373b.c: New test.
+
 2007-09-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33438
