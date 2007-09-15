@@ -1,3 +1,11 @@
+2007-09-15  Tom Tromey  <tromey@redhat.com>
+
+	* java-tree.h (struct lang_decl_func) <function_decl_body>:
+	Remove.
+	<init_final>: Likewise.
+	* lang.c (java_dump_tree): Update.
+	* java-tree.h (DECL_FUNCTION_BODY): Remove.
+
 2007-09-11  Jan Hubicka <jh@suse.cz>
 
 	* decl.c (java_expand_body): Kill.

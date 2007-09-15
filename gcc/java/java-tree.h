@@ -722,10 +722,6 @@ union lang_tree_node
 /* List of checked thrown exceptions, as specified with the `throws'
    keyword */
 #define DECL_FUNCTION_THROWS(DECL) (DECL_LANG_SPECIFIC(DECL)->u.f.throws_list)
-/* Pointer to the function's current's COMPOUND_EXPR tree (while
-   completing its body) or the function's block */
-#define DECL_FUNCTION_BODY(DECL) \
-  (DECL_LANG_SPECIFIC(DECL)->u.f.function_decl_body)
 /* For each function decl, init_test_table contains a hash table whose
    entries are keyed on class names, and whose values are local
    boolean decls.  The variables are intended to be TRUE when the
@@ -801,7 +797,6 @@ struct lang_decl_func GTY(())
      only a source_location if USE_MAPPED_LOCATION.  FIXME.  */
   source_location last_line;	/* End line number for a function decl */
   tree throws_list;		/* Exception specified by `throws' */
-  tree function_decl_body;	/* Hold all function's statements */
 
   /* Class initialization test variables  */
   htab_t GTY ((param_is (struct treetreehash_entry))) init_test_table;
@@ -810,7 +805,6 @@ struct lang_decl_func GTY(())
   htab_t GTY ((param_is (union tree_node))) ict;
 
   unsigned int native : 1;	/* Nonzero if this is a native method  */
-  unsigned int init_final : 1;	/* Nonzero all finals are initialized */
   unsigned int strictfp : 1;
   unsigned int invisible : 1;	/* Set for methods we generate
 				   internally but which shouldn't be
