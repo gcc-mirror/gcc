@@ -704,6 +704,7 @@ extern struct omp_region *root_omp_region;
 extern struct omp_region *new_omp_region (basic_block, enum tree_code,
 					  struct omp_region *);
 extern void free_omp_regions (void);
+void omp_expand_local (basic_block);
 extern tree find_omp_clause (tree, enum tree_code);
 tree copy_var_decl (tree, tree, tree);
 
@@ -753,8 +754,10 @@ extern tree tree_block_label (basic_block);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern bool tree_duplicate_sese_region (edge, edge, basic_block *, unsigned,
 					basic_block *);
+extern bool tree_duplicate_sese_tail (edge, edge, basic_block *, unsigned,
+				      basic_block *);
 extern void add_phi_args_after_copy_bb (basic_block);
-extern void add_phi_args_after_copy (basic_block *, unsigned);
+extern void add_phi_args_after_copy (basic_block *, unsigned, edge);
 extern bool tree_purge_dead_abnormal_call_edges (basic_block);
 extern bool tree_purge_dead_eh_edges (basic_block);
 extern bool tree_purge_all_dead_eh_edges (const_bitmap);
@@ -971,6 +974,7 @@ unsigned int tree_ssa_prefetch_arrays (void);
 unsigned int remove_empty_loops (void);
 void tree_ssa_iv_optimize (void);
 unsigned tree_predictive_commoning (void);
+bool parallelize_loops (void);
 
 bool number_of_iterations_exit (struct loop *, edge,
 				struct tree_niter_desc *niter, bool);
@@ -992,7 +996,7 @@ void verify_loop_closed_ssa (void);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 void create_iv (tree, tree, tree, struct loop *, block_stmt_iterator *, bool,
 		tree *, tree *);
-void split_loop_exit_edge (edge);
+basic_block split_loop_exit_edge (edge);
 unsigned force_expr_to_var_cost (tree);
 void standard_iv_increment_position (struct loop *, block_stmt_iterator *,
 				     bool *);

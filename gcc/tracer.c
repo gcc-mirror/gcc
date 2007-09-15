@@ -310,7 +310,7 @@ tail_duplicate (void)
 	      copy = duplicate_block (bb2, e, bb);
 	      flush_pending_stmts (e);
 
-	      add_phi_args_after_copy (&copy, 1);
+	      add_phi_args_after_copy (&copy, 1, NULL);
 
 	      /* Reconsider the original copy of block we've duplicated.
 	         Removing the most common predecessor may make it to be

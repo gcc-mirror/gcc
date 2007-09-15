@@ -1153,6 +1153,7 @@ OBJS-common = \
 	tree-object-size.o \
 	tree-optimize.o \
 	tree-outof-ssa.o \
+	tree-parloops.o \
 	tree-phinodes.o \
 	tree-predcom.o \
 	tree-pretty-print.o \
@@ -2270,6 +2271,9 @@ tree-loop-linear.o: tree-loop-linear.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) \
    tree-pass.h $(TREE_DATA_REF_H) $(SCEV_H) $(EXPR_H) $(LAMBDA_H) \
    $(TARGET_H) tree-chrec.h $(OBSTACK_H)
+tree-parloops.o: tree-parloops.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+   $(TREE_FLOW_H) $(TREE_H) $(RTL_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(GGC_H) \
+   $(DIAGNOSTIC_H) tree-pass.h $(SCEV_H) langhooks.h gt-tree-parloops.h
 tree-stdarg.o: tree-stdarg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(FUNCTION_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-pass.h \
    tree-stdarg.h $(TARGET_H) langhooks.h
@@ -3091,7 +3095,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/ipa-reference.c $(srcdir)/tree-ssa-structalias.h \
-  $(srcdir)/tree-ssa-structalias.c \
+  $(srcdir)/tree-ssa-structalias.c $(srcdir)/tree-parloops.c \
   $(srcdir)/omp-low.c $(srcdir)/varpool.c \
   $(srcdir)/targhooks.c $(out_file) $(srcdir)/passes.c $(srcdir)/cgraphunit.c \
   @all_gtfiles@

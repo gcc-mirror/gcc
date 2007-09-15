@@ -438,6 +438,9 @@ The pass is implemented in @file{tree-vectorizer.c} (the main driver and general
 utilities), @file{tree-vect-analyze.c} and @file{tree-vect-transform.c}.
 Analysis of data references is in @file{tree-data-ref.c}.
 
+Autoparallelization.  This pass splits the loop iteration space to run
+into several threads.  The pass is implemented in @file{tree-parloops.c}.
+
 @item Tree level if-conversion for vectorizer
 
 This pass applies if-conversion to simple loops to help vectorizer.

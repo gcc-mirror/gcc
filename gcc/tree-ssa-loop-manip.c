@@ -454,9 +454,9 @@ verify_loop_closed_ssa (void)
 }
 
 /* Split loop exit edge EXIT.  The things are a bit complicated by a need to
-   preserve the loop closed ssa form.  */
+   preserve the loop closed ssa form.  The newly created block is returned.  */
 
-void
+basic_block
 split_loop_exit_edge (edge exit)
 {
   basic_block dest = exit->dest;
@@ -483,6 +483,8 @@ split_loop_exit_edge (edge exit)
       add_phi_arg (new_phi, name, exit);
       SET_USE (op_p, new_name);
     }
+
+  return bb;
 }
 
 /* Returns the basic block in that statements should be emitted for induction

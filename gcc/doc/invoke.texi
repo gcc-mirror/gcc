@@ -358,7 +358,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvariable-expansion-in-unroller -ftree-reassoc @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
--fcheck-data-deps @gol
+-fcheck-data-deps -ftree-parallelize-loops @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-fre -ftree-vectorize @gol
 -ftree-vect-loop-version -fvect-cost-model -ftree-salias -fipa-pta -fweb @gol
@@ -5743,6 +5743,14 @@ in connection with unrolling.
 @item -fivopts
 Perform induction variable optimizations (strength reduction, induction
 variable merging and induction variable elimination) on trees.
+
+@item -ftree-parallelize-loops=n
+@opindex ftree-parallelize-loops=n
+Parallelize loops, i.e., split their iteration space to run in n threads.
+This is only possible for loops whose iterations are independent
+and can be arbitrarily reordered.  The optimization is only
+profitable on multiprocessor machines, for loops that are CPU-intensive,
+rather than constrained e.g. by memory bandwidth.
 
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
