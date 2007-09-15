@@ -2450,6 +2450,56 @@ build_ssa_operands (tree stmt)
     ann->references_memory = true;
 }
 
+/* Releases the operands of STMT back to their freelists, and clears
+   the stmt operand lists.  */
+
+void
+free_stmt_operands (tree stmt)
+{
+  def_optype_p defs = DEF_OPS (stmt), last_def;
+  use_optype_p uses = USE_OPS (stmt), last_use;
+  voptype_p vuses = VUSE_OPS (stmt);
+  voptype_p vdefs = VDEF_OPS (stmt), vdef, next_vdef;
+  unsigned i;
+
+  if (defs)
+    {
+      for (last_def = defs; last_def->next; last_def = last_def->next)
+	continue;
+      last_def->next = gimple_ssa_operands (cfun)->free_defs;
+      gimple_ssa_operands (cfun)->free_defs = defs;
+      DEF_OPS (stmt) = NULL;
+    }
+
+  if (uses)
+    {
+      for (last_use = uses; last_use->next; last_use = last_use->next)
+	delink_imm_use (USE_OP_PTR (last_use));
+      delink_imm_use (USE_OP_PTR (last_use));
+      last_use->next = gimple_ssa_operands (cfun)->free_uses;
+      gimple_ssa_operands (cfun)->free_uses = uses;
+      USE_OPS (stmt) = NULL;
+    }
+
+  if (vuses)
+    {
+      for (i = 0; i < VUSE_NUM (vuses); i++)
+	delink_imm_use (VUSE_OP_PTR (vuses, i));
+      add_vop_to_freelist (vuses);
+      VUSE_OPS (stmt) = NULL;
+    }
+
+  if (vdefs)
+    {
+      for (vdef = vdefs; vdef; vdef = next_vdef)
+	{
+	  next_vdef = vdef->next;
+	  delink_imm_use (VDEF_OP_PTR (vdef, 0));
+	  add_vop_to_freelist (vdef);
+	}
+      VDEF_OPS (stmt) = NULL;
+    }
+}
 
 /* Free any operands vectors in OPS.  */
 

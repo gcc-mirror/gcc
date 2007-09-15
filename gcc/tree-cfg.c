@@ -5009,6 +5009,52 @@ tree_duplicate_bb (basic_block bb)
   return new_bb;
 }
 
+/* Adds phi node arguments for edge E_COPY after basic block duplication.  */
+
+static void
+add_phi_args_after_copy_edge (edge e_copy)
+{
+  basic_block bb, bb_copy = e_copy->src, dest;
+  edge e;
+  edge_iterator ei;
+  tree phi, phi_copy, phi_next, def;
+
+  if (!phi_nodes (e_copy->dest))
+    return;
+
+  bb = bb_copy->flags & BB_DUPLICATED ? get_bb_original (bb_copy) : bb_copy;
+
+  if (e_copy->dest->flags & BB_DUPLICATED)
+    dest = get_bb_original (e_copy->dest);
+  else
+    dest = e_copy->dest;
+
+  e = find_edge (bb, dest);
+  if (!e)
+    {
+      /* During loop unrolling the target of the latch edge is copied.
+	 In this case we are not looking for edge to dest, but to
+	 duplicated block whose original was dest.  */
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if ((e->dest->flags & BB_DUPLICATED)
+	      && get_bb_original (e->dest) == dest)
+	    break;
+	}
+
+      gcc_assert (e != NULL);
+    }
+
+  for (phi = phi_nodes (e->dest), phi_copy = phi_nodes (e_copy->dest);
+       phi;
+       phi = phi_next, phi_copy = PHI_CHAIN (phi_copy))
+    {
+      phi_next = PHI_CHAIN (phi);
+      def = PHI_ARG_DEF_FROM_EDGE (phi, e);
+      add_phi_arg (phi_copy, def, e_copy);
+    }
+}
+
 
 /* Basic block BB_COPY was created by code duplication.  Add phi node
    arguments for edges going out of BB_COPY.  The blocks that were
@@ -5017,54 +5063,23 @@ tree_duplicate_bb (basic_block bb)
 void
 add_phi_args_after_copy_bb (basic_block bb_copy)
 {
-  basic_block bb, dest;
-  edge e, e_copy;
   edge_iterator ei;
-  tree phi, phi_copy, phi_next, def;
-
-  bb = get_bb_original (bb_copy);
+  edge e_copy;
 
   FOR_EACH_EDGE (e_copy, ei, bb_copy->succs)
     {
-      if (!phi_nodes (e_copy->dest))
-	continue;
-
-      if (e_copy->dest->flags & BB_DUPLICATED)
-	dest = get_bb_original (e_copy->dest);
-      else
-	dest = e_copy->dest;
-
-      e = find_edge (bb, dest);
-      if (!e)
-	{
-	  /* During loop unrolling the target of the latch edge is copied.
-	     In this case we are not looking for edge to dest, but to
-	     duplicated block whose original was dest.  */
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if ((e->dest->flags & BB_DUPLICATED)
-		&& get_bb_original (e->dest) == dest)
-	      break;
-
-	  gcc_assert (e != NULL);
-	}
-
-      for (phi = phi_nodes (e->dest), phi_copy = phi_nodes (e_copy->dest);
-	   phi;
-	   phi = phi_next, phi_copy = PHI_CHAIN (phi_copy))
-	{
-	  phi_next = PHI_CHAIN (phi);
-	  def = PHI_ARG_DEF_FROM_EDGE (phi, e);
-	  add_phi_arg (phi_copy, def, e_copy);
-	}
+      add_phi_args_after_copy_edge (e_copy);
     }
 }
 
 /* Blocks in REGION_COPY array of length N_REGION were created by
    duplication of basic blocks.  Add phi node arguments for edges
-   going from these blocks.  */
+   going from these blocks.  If E_COPY is not NULL, also add
+   phi node arguments for its destination.*/
 
 void
-add_phi_args_after_copy (basic_block *region_copy, unsigned n_region)
+add_phi_args_after_copy (basic_block *region_copy, unsigned n_region,
+			 edge e_copy)
 {
   unsigned i;
 
@@ -5073,6 +5088,8 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region)
 
   for (i = 0; i < n_region; i++)
     add_phi_args_after_copy_bb (region_copy[i]);
+  if (e_copy)
+    add_phi_args_after_copy_edge (e_copy);
 
   for (i = 0; i < n_region; i++)
     region_copy[i]->flags &= ~BB_DUPLICATED;
@@ -5210,10 +5227,180 @@ tree_duplicate_sese_region (edge entry, edge exit,
   set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
   VEC_safe_push (basic_block, heap, doms, get_bb_original (entry->dest));
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  free (doms);
+  VEC_free (basic_block, heap, doms);
 
   /* Add the other PHI node arguments.  */
-  add_phi_args_after_copy (region_copy, n_region);
+  add_phi_args_after_copy (region_copy, n_region, NULL);
+
+  /* Update the SSA web.  */
+  update_ssa (TODO_update_ssa);
+
+  if (free_region_copy)
+    free (region_copy);
+
+  free_original_copy_tables ();
+  return true;
+}
+
+/* Duplicates REGION consisting of N_REGION blocks.  The new blocks
+   are stored to REGION_COPY in the same order in that they appear
+   in REGION, if REGION_COPY is not NULL.  ENTRY is the entry to
+   the region, EXIT an exit from it.  The condition guarding EXIT
+   is moved to ENTRY.  Returns true if duplication succeeds, false
+   otherwise.
+
+   For example, 
+ 
+   some_code;
+   if (cond)
+     A;
+   else
+     B;
+
+   is transformed to
+
+   if (cond)
+     {
+       some_code;
+       A;
+     }
+   else
+     {
+       some_code;
+       B;
+     }
+*/
+
+bool
+tree_duplicate_sese_tail (edge entry, edge exit,
+			  basic_block *region, unsigned n_region,
+			  basic_block *region_copy)
+{
+  unsigned i;
+  bool free_region_copy = false;
+  struct loop *loop = exit->dest->loop_father;
+  struct loop *orig_loop = entry->dest->loop_father;
+  basic_block switch_bb, entry_bb, nentry_bb;
+  VEC (basic_block, heap) *doms;
+  int total_freq = 0, exit_freq = 0;
+  gcov_type total_count = 0, exit_count = 0;
+  edge exits[2], nexits[2], e;
+  block_stmt_iterator bsi;
+  tree cond;
+  edge sorig, snew;
+
+  gcc_assert (EDGE_COUNT (exit->src->succs) == 2);
+  exits[0] = exit;
+  exits[1] = EDGE_SUCC (exit->src, EDGE_SUCC (exit->src, 0) == exit);
+
+  if (!can_copy_bbs_p (region, n_region))
+    return false;
+
+  /* Some sanity checking.  Note that we do not check for all possible
+     missuses of the functions.  I.e. if you ask to copy something weird
+     (e.g., in the example, if there is a jump from inside to the middle
+     of some_code, or come_code defines some of the values used in cond)
+     it will work, but the resulting code will not be correct.  */
+  for (i = 0; i < n_region; i++)
+    {
+      /* We do not handle subloops, i.e. all the blocks must belong to the
+	 same loop.  */
+      if (region[i]->loop_father != orig_loop)
+	return false;
+
+      if (region[i] == orig_loop->latch)
+	return false;
+    }
+
+  initialize_original_copy_tables ();
+  set_loop_copy (orig_loop, loop);
+
+  if (!region_copy)
+    {
+      region_copy = XNEWVEC (basic_block, n_region);
+      free_region_copy = true;
+    }
+
+  gcc_assert (!need_ssa_update_p ());
+
+  /* Record blocks outside the region that are dominated by something
+     inside.  */
+  doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
+
+  if (exit->src->count)
+    {
+      total_count = exit->src->count;
+      exit_count = exit->count;
+      /* Fix up corner cases, to avoid division by zero or creation of negative
+	 frequencies.  */
+      if (exit_count > total_count)
+	exit_count = total_count;
+    }
+  else
+    {
+      total_freq = exit->src->frequency;
+      exit_freq = EDGE_FREQUENCY (exit);
+      /* Fix up corner cases, to avoid division by zero or creation of negative
+	 frequencies.  */
+      if (total_freq == 0)
+	total_freq = 1;
+      if (exit_freq > total_freq)
+	exit_freq = total_freq;
+    }
+
+  copy_bbs (region, n_region, region_copy, exits, 2, nexits, orig_loop,
+	    split_edge_bb_loc (exit));
+  if (total_count)
+    {
+      scale_bbs_frequencies_gcov_type (region, n_region,
+				       total_count - exit_count,
+				       total_count);
+      scale_bbs_frequencies_gcov_type (region_copy, n_region, exit_count,
+				       total_count);
+    }
+  else
+    {
+      scale_bbs_frequencies_int (region, n_region, total_freq - exit_freq,
+				 total_freq);
+      scale_bbs_frequencies_int (region_copy, n_region, exit_freq, total_freq);
+    }
+
+  /* Create the switch block, and put the exit condition to it.  */
+  entry_bb = entry->dest;
+  nentry_bb = get_bb_copy (entry_bb);
+  if (!last_stmt (entry->src)
+      || !stmt_ends_bb_p (last_stmt (entry->src)))
+    switch_bb = entry->src;
+  else
+    switch_bb = split_edge (entry);
+  set_immediate_dominator (CDI_DOMINATORS, nentry_bb, switch_bb);
+
+  bsi = bsi_last (switch_bb);
+  cond = last_stmt (exit->src);
+  gcc_assert (TREE_CODE (cond) == COND_EXPR);
+  bsi_insert_after (&bsi, unshare_expr (cond), BSI_NEW_STMT);
+
+  sorig = single_succ_edge (switch_bb);
+  sorig->flags = exits[1]->flags;
+  snew = make_edge (switch_bb, nentry_bb, exits[0]->flags);
+
+  /* Register the new edge from SWITCH_BB in loop exit lists.  */
+  rescan_loop_exit (snew, true, false);
+
+  /* Add the PHI node arguments.  */
+  add_phi_args_after_copy (region_copy, n_region, snew);
+
+  /* Get rid of now superfluous conditions and associated edges (and phi node
+     arguments).  */
+  e = redirect_edge_and_branch (exits[0], exits[1]->dest);
+  PENDING_STMT (e) = NULL_TREE;
+  e = redirect_edge_and_branch (nexits[1], nexits[0]->dest);
+  PENDING_STMT (e) = NULL_TREE;
+
+  /* Anything that is outside of the region, but was dominated by something
+     inside needs to update dominance info.  */
+  iterate_fix_dominators (CDI_DOMINATORS, doms, false);
+  VEC_free (basic_block, heap, doms);
 
   /* Update the SSA web.  */
   update_ssa (TODO_update_ssa);
@@ -5456,10 +5643,12 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   block_stmt_iterator si;
   struct move_stmt_d d;
   unsigned old_len, new_len;
-  tree phi;
+  tree phi, next_phi;
 
   /* Remove BB from dominance structures.  */
   delete_from_dominance_info (CDI_DOMINATORS, bb);
+  if (current_loops)
+    remove_bb_from_loops (bb);
 
   /* Link BB to the new linked list.  */
   move_block_after (bb, after);
@@ -5494,14 +5683,20 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
                bb->index, bb);
 
   /* Remap the variables in phi nodes.  */
-  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = next_phi)
     {
       use_operand_p use;
       tree op = PHI_RESULT (phi);
       ssa_op_iter oi;
 
+      next_phi = PHI_CHAIN (phi);
       if (!is_gimple_reg (op))
-	continue;
+	{
+	  /* Remove the phi nodes for virtual operands (alias analysis will be
+	     run for the new function, anyway).  */
+          remove_phi_node (phi, NULL, true);
+	  continue;
+	}
 
       SET_PHI_RESULT (phi, replace_ssa_name (op, vars_map, dest_cfun->decl));
       FOR_EACH_PHI_ARG (use, phi, oi, SSA_OP_USE)
@@ -5569,7 +5764,12 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
           gimple_remove_stmt_histograms (cfun, stmt);
 	}
 
+      /* We cannot leave any operands allocated from the operand caches of
+	 the current function.  */
+      free_stmt_operands (stmt);
+      push_cfun (dest_cfun);
       update_stmt (stmt);
+      pop_cfun ();
     }
 }
 
@@ -5658,6 +5858,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   edge_iterator ei;
   htab_t new_label_map;
   struct pointer_map_t *vars_map;
+  struct loop *loop = entry_bb->loop_father;
 
   /* If ENTRY does not strictly dominate EXIT, this cannot be an SESE
      region.  */
@@ -5786,6 +5987,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   /* Back in the original function, the SESE region has disappeared,
      create a new basic block in its place.  */
   bb = create_empty_bb (entry_pred[0]);
+  if (current_loops)
+    add_bb_to_loop (bb, loop);
   for (i = 0; i < num_entry_edges; i++)
     {
       e = make_edge (entry_pred[i], bb, entry_flag[i]);

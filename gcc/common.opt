@@ -1088,6 +1088,10 @@ ftree-loop-optimize
 Common Report Var(flag_tree_loop_optimize) Init(1) Optimization
 Enable loop optimizations on tree level
 
+ftree-parallelize-loops=
+Common Report Joined UInteger Var(flag_tree_parallelize_loops) Init(1)
+Enable automatic parallelization of loops
+
 ftree-pre
 Common Report Var(flag_tree_pre) Optimization
 Enable SSA-PRE optimization on trees

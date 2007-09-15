@@ -1,3 +1,42 @@
+2007-09-15  Zdenek Dvorak  <ook@ucw.cz>
+
+	* tree-parloops.c: New file.
+	* tree-ssa-operands.h (free_stmt_operands): Declare.
+	* tree-ssa-loop-manip.c (split_loop_exit_edge): Return the new basic
+	block.
+	* tree-pass.h (pass_parallelize_loops): Declare.
+	* omp-low.c (expand_omp_parallel, expand_omp_for): Update SSA form for
+	virtual operands.
+	(build_omp_regions_1): Allow analysing just a single OMP region and
+	its subregions.
+	( build_omp_regions_root, omp_expand_local): New functions.
+	(build_omp_regions): Add argument to build_omp_regions_1 call.
+	* builtins.def (DEF_GOMP_BUILTIN): Initialize OMP builtins when
+	autoparallelization is run.
+	* timevar.def (TV_TREE_PARALLELIZE_LOOPS): New.
+	* tree-ssa-loop.c (gate_tree_parallelize_loops, tree_parallelize_loops,
+	pass_parallelize_loops): New.
+	* common.opt (ftree-parallelize-loops): New.
+	* tree-flow.h (omp_expand_local, tree_duplicate_sese_tail,
+	parallelize_loops): Declare.
+	(add_phi_args_after_copy, split_loop_exit_edge): Declaration changed.
+	* Makefile.in (tree-parloops.o): Added.
+	* tree-cfg.c (add_phi_args_after_copy_edge, tree_duplicate_sese_tail):
+	New functions.
+	(add_phi_args_after_copy_bb): Use add_phi_args_after_copy_edge.
+	(add_phi_args_after_copy): Call add_phi_args_after_copy_edge for
+	one extra edge as well.
+	(tree_duplicate_sese_region): Add argument to add_phi_args_after_copy.
+	Use VEC_free to free doms vector.
+	(move_block_to_fn): Update loop info. Remove phi nodes for virtual
+	operands.  Recompute operand caches in the new function.
+	(move_sese_region_to_fn): Update loop info.
+	* passes.c (init_optimization_passes): Add pass_parallelize_loops.
+	* tree-ssa-operands.c (free_stmt_operands): New function.
+
+	* doc/passes.texi: Document autoparallelization.
+	* doc/invoke.texi (-ftree-parallelize-loops): New option.
+
 2007-09-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/33062
