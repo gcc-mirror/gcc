@@ -211,13 +211,13 @@ move_pos_offset (stream* st, int pos_off)
 static int
 fix_fd (int fd)
 {
+#ifdef HAVE_DUP
   int input, output, error;
 
   input = output = error = 0;
 
   /* Unix allocates the lowest descriptors first, so a loop is not
      required, but this order is. */
-
   if (fd == STDIN_FILENO)
     {
       fd = dup (fd);
@@ -240,6 +240,7 @@ fix_fd (int fd)
     close (STDOUT_FILENO);
   if (error)
     close (STDERR_FILENO);
+#endif
 
   return fd;
 }
@@ -1773,6 +1774,36 @@ inquire_unformatted (const char *string, int len)
 {
   return inquire_formatted (string, len);
 }
+
+
+#ifndef HAVE_ACCESS
+
+#ifndef W_OK
+#define W_OK 2
+#endif
+
+#ifndef R_OK
+#define R_OK 4
+#endif
+
+/* Fallback implementation of access() on systems that don't have it.
+   Only modes R_OK and W_OK are used in this file.  */
+
+static int
+fallback_access (const char *path, int mode)
+{
+  if ((mode & R_OK) && open (path, O_RDONLY) < 0)
+    return -1;
+
+  if ((mode & W_OK) && open (path, O_WRONLY) < 0)
+    return -1;
+
+  return 0;
+}
+
+#undef access
+#define access fallback_access
+#endif
 
 
 /* inquire_access()-- Given a fortran string, determine if the file is

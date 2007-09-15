@@ -1,3 +1,16 @@
+2007-09-15  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/21185
+	* runtime/compile_options.c (set_options): Fix typo.
+	* runtime/main.c (store_exe_path): If getcwd is not available,
+	don't use it.
+	* intrinsics/getcwd.c: Same thing here.
+	* io/unix.c (fallback_access): New fallback function for access.
+	(fix_fd): Don't use dup if it's not available.
+	* configure.ac: Check for dup and getcwd.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2007-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* io/io.h: Include libgfortran.h first.
