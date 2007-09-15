@@ -37,6 +37,8 @@ Boston, MA 02110-1301, USA.  */
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_GETCWD
+
 extern void getcwd_i4_sub (char *, GFC_INTEGER_4 *, gfc_charlen_type);
 iexport_proto(getcwd_i4_sub);
 
@@ -82,3 +84,5 @@ PREFIX(getcwd) (char *cwd, gfc_charlen_type cwd_len)
   getcwd_i4_sub (cwd, &status, cwd_len);
   return status;
 }
+
+#endif

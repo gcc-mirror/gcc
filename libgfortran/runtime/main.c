@@ -120,7 +120,11 @@ store_exe_path (const char * argv0)
     }
 
   memset (buf, 0, sizeof (buf));
+#ifdef HAVE_GETCWD
   cwd = getcwd (buf, sizeof (buf));
+#else
+  cwd = "";
+#endif
 
   /* exe_path will be cwd + "/" + argv[0] + "\0" */
   path = malloc (strlen (cwd) + 1 + strlen (argv0) + 1);
