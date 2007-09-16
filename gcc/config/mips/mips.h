@@ -1350,6 +1350,10 @@ extern enum mips_llsc_setting mips_llsc;
       (MODE) = Pmode;                           \
     }
 
+/* Pmode is always the same as ptr_mode, but not always the same as word_mode.
+   Extensions of pointers to word_mode must be signed.  */
+#define POINTERS_EXTEND_UNSIGNED false
+
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
