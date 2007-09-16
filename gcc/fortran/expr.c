@@ -792,6 +792,35 @@ gfc_is_constant_expr (gfc_expr *e)
 }
 
 
+/* Is true if an array reference is followed by a component or substring
+   reference.  */
+bool
+is_subref_array (gfc_expr * e)
+{
+  gfc_ref * ref;
+  bool seen_array;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  if (e->symtree->n.sym->attr.subref_array_pointer)
+    return true;
+
+  seen_array = false;
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY
+	    && ref->u.ar.type != AR_ELEMENT)
+	seen_array = true;
+
+      if (seen_array
+	    && ref->type != REF_ARRAY)
+	return seen_array;
+    }
+  return false;
+}
+
+
 /* Try to collapse intrinsic expressions.  */
 
 static try
@@ -2801,6 +2830,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 		 "assignment at %L", &lvalue->where);
       return FAILURE;
     }
+
+  if (rvalue->expr_type == EXPR_VARIABLE && is_subref_array (rvalue))
+    lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
 
   attr = gfc_expr_attr (rvalue);
   if (!attr.target && !attr.pointer)

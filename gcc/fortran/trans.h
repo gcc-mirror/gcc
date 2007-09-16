@@ -316,8 +316,7 @@ tree gfc_conv_operator_assign (gfc_se *, gfc_se *, gfc_symbol *);
 int gfc_conv_function_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
 			    tree);
 
-void gfc_conv_aliased_arg (gfc_se *, gfc_expr *, int, sym_intent);
-bool is_aliased_array (gfc_expr *);
+void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent);
 
 /* gfc_trans_* shouldn't call push/poplevel, use gfc_push/pop_scope */
 
@@ -379,7 +378,7 @@ tree gfc_get_function_decl (gfc_symbol *);
 tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
-tree gfc_build_array_ref (tree, tree);
+tree gfc_build_array_ref (tree, tree, tree);
 
 /* Creates a label.  Decl is artificial if label_id == NULL_TREE.  */
 tree gfc_build_label_decl (tree);
@@ -593,11 +592,13 @@ struct lang_decl		GTY(())
      address of target label.  */
   tree stringlen;
   tree addr;
+  tree span;
 };
 
 
 #define GFC_DECL_ASSIGN_ADDR(node) DECL_LANG_SPECIFIC(node)->addr
 #define GFC_DECL_STRING_LEN(node) DECL_LANG_SPECIFIC(node)->stringlen
+#define GFC_DECL_SPAN(node) DECL_LANG_SPECIFIC(node)->span
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
   (DECL_LANG_SPECIFIC(node)->saved_descriptor)
 #define GFC_DECL_PACKED_ARRAY(node) DECL_LANG_FLAG_0(node)
@@ -606,6 +607,7 @@ struct lang_decl		GTY(())
 #define GFC_DECL_COMMON_OR_EQUIV(node) DECL_LANG_FLAG_3(node)
 #define GFC_DECL_CRAY_POINTEE(node) DECL_LANG_FLAG_4(node)
 #define GFC_DECL_RESULT(node) DECL_LANG_FLAG_5(node)
+#define GFC_DECL_SUBREF_ARRAY_P(node) DECL_LANG_FLAG_6(node)
 
 /* An array descriptor.  */
 #define GFC_DESCRIPTOR_TYPE_P(node) TYPE_LANG_FLAG_1(node)

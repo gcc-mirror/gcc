@@ -1650,7 +1650,7 @@ gfc_trans_nested_forall_loop (forall_info * nested_forall_info, tree body,
           /* If a mask was specified make the assignment conditional.  */
           if (mask)
             {
-              tmp = gfc_build_array_ref (mask, maskindex);
+              tmp = gfc_build_array_ref (mask, maskindex, NULL);
               body = build3_v (COND_EXPR, tmp, body, build_empty_stmt ());
             }
         }
@@ -1729,7 +1729,7 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
       gfc_conv_expr (&lse, expr);
 
       /* Form the expression for the temporary.  */
-      tmp = gfc_build_array_ref (tmp1, count1);
+      tmp = gfc_build_array_ref (tmp1, count1, NULL);
 
       /* Use the scalar assignment as is.  */
       gfc_add_block_to_block (&block, &lse.pre);
@@ -1770,7 +1770,7 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
 
       /* Form the expression of the temporary.  */
       if (lss != gfc_ss_terminator)
-	rse.expr = gfc_build_array_ref (tmp1, count1);
+	rse.expr = gfc_build_array_ref (tmp1, count1, NULL);
       /* Translate expr.  */
       gfc_conv_expr (&lse, expr);
 
@@ -1781,7 +1781,7 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree count3,
       /* Form the mask expression according to the mask tree list.  */
       if (wheremask)
 	{
-	  wheremaskexpr = gfc_build_array_ref (wheremask, count3);
+	  wheremaskexpr = gfc_build_array_ref (wheremask, count3, NULL);
 	  if (invert)
 	    wheremaskexpr = fold_build1 (TRUTH_NOT_EXPR,
 					 TREE_TYPE (wheremaskexpr),
@@ -1843,7 +1843,7 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree count3,
     {
       gfc_init_block (&body1);
       gfc_conv_expr (&rse, expr2);
-      lse.expr = gfc_build_array_ref (tmp1, count1);
+      lse.expr = gfc_build_array_ref (tmp1, count1, NULL);
     }
   else
     {
@@ -1867,7 +1867,7 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree count3,
       gfc_conv_expr (&rse, expr2);
 
       /* Form the expression of the temporary.  */
-      lse.expr = gfc_build_array_ref (tmp1, count1);
+      lse.expr = gfc_build_array_ref (tmp1, count1, NULL);
     }
 
   /* Use the scalar assignment.  */
@@ -1878,7 +1878,7 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree count3,
   /* Form the mask expression according to the mask tree list.  */
   if (wheremask)
     {
-      wheremaskexpr = gfc_build_array_ref (wheremask, count3);
+      wheremaskexpr = gfc_build_array_ref (wheremask, count3, NULL);
       if (invert)
 	wheremaskexpr = fold_build1 (TRUTH_NOT_EXPR,
 				     TREE_TYPE (wheremaskexpr),
@@ -2251,7 +2251,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
 					    inner_size, NULL, block, &ptemp1);
       gfc_start_block (&body);
       gfc_init_se (&lse, NULL);
-      lse.expr = gfc_build_array_ref (tmp1, count);
+      lse.expr = gfc_build_array_ref (tmp1, count, NULL);
       gfc_init_se (&rse, NULL);
       rse.want_pointer = 1;
       gfc_conv_expr (&rse, expr2);
@@ -2278,7 +2278,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
       gfc_start_block (&body);
       gfc_init_se (&lse, NULL);
       gfc_init_se (&rse, NULL);
-      rse.expr = gfc_build_array_ref (tmp1, count);
+      rse.expr = gfc_build_array_ref (tmp1, count, NULL);
       lse.want_pointer = 1;
       gfc_conv_expr (&lse, expr1);
       gfc_add_block_to_block (&body, &lse.pre);
@@ -2320,7 +2320,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
 					    inner_size, NULL, block, &ptemp1);
       gfc_start_block (&body);
       gfc_init_se (&lse, NULL);
-      lse.expr = gfc_build_array_ref (tmp1, count);
+      lse.expr = gfc_build_array_ref (tmp1, count, NULL);
       lse.direct_byref = 1;
       rss = gfc_walk_expr (expr2);
       gfc_conv_expr_descriptor (&lse, expr2, rss);
@@ -2343,7 +2343,7 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
       /* Reset count.  */
       gfc_add_modify_expr (block, count, gfc_index_zero_node);
 
-      parm = gfc_build_array_ref (tmp1, count);
+      parm = gfc_build_array_ref (tmp1, count, NULL);
       lss = gfc_walk_expr (expr1);
       gfc_init_se (&lse, NULL);
       gfc_conv_expr_descriptor (&lse, expr1, lss);
@@ -2596,7 +2596,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       /* Store the mask.  */
       se.expr = convert (mask_type, se.expr);
 
-      tmp = gfc_build_array_ref (mask, maskindex);
+      tmp = gfc_build_array_ref (mask, maskindex, NULL);
       gfc_add_modify_expr (&body, tmp, se.expr);
 
       /* Advance to the next mask element.  */
@@ -2795,7 +2795,7 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
 
   if (mask && (cmask || pmask))
     {
-      tmp = gfc_build_array_ref (mask, count);
+      tmp = gfc_build_array_ref (mask, count, NULL);
       if (invert)
 	tmp = fold_build1 (TRUTH_NOT_EXPR, mask_type, tmp);
       gfc_add_modify_expr (&body1, mtmp, tmp);
@@ -2803,7 +2803,7 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
 
   if (cmask)
     {
-      tmp1 = gfc_build_array_ref (cmask, count);
+      tmp1 = gfc_build_array_ref (cmask, count, NULL);
       tmp = cond;
       if (mask)
 	tmp = build2 (TRUTH_AND_EXPR, mask_type, mtmp, tmp);
@@ -2812,7 +2812,7 @@ gfc_evaluate_where_mask (gfc_expr * me, forall_info * nested_forall_info,
 
   if (pmask)
     {
-      tmp1 = gfc_build_array_ref (pmask, count);
+      tmp1 = gfc_build_array_ref (pmask, count, NULL);
       tmp = build1 (TRUTH_NOT_EXPR, mask_type, cond);
       if (mask)
 	tmp = build2 (TRUTH_AND_EXPR, mask_type, mtmp, tmp);
@@ -2971,7 +2971,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 
   /* Form the mask expression according to the mask.  */
   index = count1;
-  maskexpr = gfc_build_array_ref (mask, index);
+  maskexpr = gfc_build_array_ref (mask, index, NULL);
   if (invert)
     maskexpr = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (maskexpr), maskexpr);
 
@@ -3028,7 +3028,7 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 
           /* Form the mask expression according to the mask tree list.  */
           index = count2;
-          maskexpr = gfc_build_array_ref (mask, index);
+          maskexpr = gfc_build_array_ref (mask, index, NULL);
 	  if (invert)
 	    maskexpr = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (maskexpr),
 				    maskexpr);

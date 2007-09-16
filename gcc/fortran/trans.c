@@ -309,9 +309,11 @@ gfc_build_addr_expr (tree type, tree t)
 /* Build an ARRAY_REF with its natural type.  */
 
 tree
-gfc_build_array_ref (tree base, tree offset)
+gfc_build_array_ref (tree base, tree offset, tree decl)
 {
   tree type = TREE_TYPE (base);
+  tree tmp;
+
   gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
   type = TREE_TYPE (type);
 
@@ -321,7 +323,28 @@ gfc_build_array_ref (tree base, tree offset)
   /* Strip NON_LVALUE_EXPR nodes.  */
   STRIP_TYPE_NOPS (offset);
 
-  return build4 (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
+  /* If the array reference is to a pointer, whose target contains a
+     subreference, use the span that is stored with the backend decl
+     and reference the element with pointer arithmetic.  */
+  if (decl && (TREE_CODE (decl) == FIELD_DECL
+		 || TREE_CODE (decl) == VAR_DECL
+		 || TREE_CODE (decl) == PARM_DECL)
+	&& GFC_DECL_SUBREF_ARRAY_P (decl)
+	&& !integer_zerop (GFC_DECL_SPAN(decl)))
+    {
+      offset = fold_build2 (MULT_EXPR, gfc_array_index_type,
+			    offset, GFC_DECL_SPAN(decl));
+      tmp = gfc_build_addr_expr (pvoid_type_node, base);
+      tmp = fold_build2 (POINTER_PLUS_EXPR, pvoid_type_node,
+			 tmp, fold_convert (sizetype, offset));
+      tmp = fold_convert (build_pointer_type (type), tmp);
+      if (!TYPE_STRING_FLAG (type))
+	tmp = build_fold_indirect_ref (tmp);
+      return tmp;
+    }
+  else
+    /* Otherwise use a straightforward array reference.  */
+    return build4 (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
 }
 
 

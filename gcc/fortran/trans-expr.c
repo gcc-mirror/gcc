@@ -183,6 +183,15 @@ gfc_get_expr_charlen (gfc_expr *e)
   
   length = NULL; /* To silence compiler warning.  */
 
+  if (is_subref_array (e) && e->ts.cl->length)
+    {
+      gfc_se tmpse;
+      gfc_init_se (&tmpse, NULL);
+      gfc_conv_expr_type (&tmpse, e->ts.cl->length, gfc_charlen_type_node);
+      e->ts.cl->backend_decl = tmpse.expr;
+      return tmpse.expr;
+    }
+
   /* First candidate: if the variable is of type CHARACTER, the
      expression's length could be the length of the character
      variable.  */
@@ -207,6 +216,7 @@ gfc_get_expr_charlen (gfc_expr *e)
 	  /* We should never got substring references here.  These will be
 	     broken down by the scalarizer.  */
 	  gcc_unreachable ();
+	  break;
 	}
     }
 
@@ -270,7 +280,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 	tmp = se->expr;
       else
 	tmp = build_fold_indirect_ref (se->expr);
-      tmp = gfc_build_array_ref (tmp, start.expr);
+      tmp = gfc_build_array_ref (tmp, start.expr, NULL);
       se->expr = gfc_build_addr_expr (type, tmp);
     }
 
@@ -1782,15 +1792,13 @@ gfc_apply_interface_mapping (gfc_interface_mapping * mapping,
   gfc_free_expr (expr);
 }
 
+
 /* Returns a reference to a temporary array into which a component of
    an actual argument derived type array is copied and then returned
-   after the function call.
-   TODO Get rid of this kludge, when array descriptors are capable of
-   handling arrays with a bigger stride in bytes than size.  */
-
+   after the function call.  */
 void
-gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
-		      int g77, sym_intent intent)
+gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr,
+			   int g77, sym_intent intent)
 {
   gfc_se lse;
   gfc_se rse;
@@ -1962,7 +1970,7 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
 
   /* Now use the offset for the reference.  */
   tmp = build_fold_indirect_ref (info->data);
-  rse.expr = gfc_build_array_ref (tmp, tmp_index);
+  rse.expr = gfc_build_array_ref (tmp, tmp_index, NULL);
 
   if (expr->ts.type == BT_CHARACTER)
     rse.string_length = expr->ts.cl->backend_decl;
@@ -2005,28 +2013,6 @@ gfc_conv_aliased_arg (gfc_se * parmse, gfc_expr * expr,
   return;
 }
 
-/* Is true if an array reference is followed by a component or substring
-   reference.  */
-
-bool
-is_aliased_array (gfc_expr * e)
-{
-  gfc_ref * ref;
-  bool seen_array;
-
-  seen_array = false;	
-  for (ref = e->ref; ref; ref = ref->next)
-    {
-      if (ref->type == REF_ARRAY
-	    && ref->u.ar.type != AR_ELEMENT)
-	seen_array = true;
-
-      if (seen_array
-	    && ref->type != REF_ARRAY)
-	return seen_array;
-    }
-  return false;
-}
 
 /* Generate the code for argument list functions.  */
 
@@ -2256,12 +2242,12 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      f = f || !sym->attr.always_explicit;
 
 	      if (e->expr_type == EXPR_VARIABLE
-		    && is_aliased_array (e))
+		    && is_subref_array (e))
 		/* The actual argument is a component reference to an
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
 		   written back after the procedure call.  */
-		gfc_conv_aliased_arg (&parmse, e, f,
+		gfc_conv_subref_array_arg (&parmse, e, f,
 			fsym ? fsym->attr.intent : INTENT_INOUT);
 	      else
 	        gfc_conv_array_parameter (&parmse, e, argss, f);
@@ -3471,6 +3457,8 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   stmtblock_t block;
   tree desc;
   tree tmp;
+  tree decl;
+
 
   gfc_start_block (&block);
 
@@ -3509,6 +3497,19 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  /* Assign directly to the pointer's descriptor.  */
           lse.direct_byref = 1;
 	  gfc_conv_expr_descriptor (&lse, expr2, rss);
+
+	  /* If this is a subreference array pointer assignment, use the rhs
+	     element size for the lhs span.  */
+	  if (expr1->symtree->n.sym->attr.subref_array_pointer)
+	    {
+	      decl = expr1->symtree->n.sym->backend_decl;
+	      tmp = rss->data.info.descriptor;
+	      tmp = gfc_get_element_type (TREE_TYPE (tmp));
+	      tmp = size_in_bytes (tmp);
+	      tmp = fold_convert (gfc_array_index_type, tmp);
+	      gfc_add_modify_expr (&lse.post, GFC_DECL_SPAN(decl), tmp);
+	    }
+
 	  break;
 
 	default:
