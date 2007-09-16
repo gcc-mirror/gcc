@@ -1,3 +1,9 @@
+2007-09-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33124
+	* init.c (build_new): Remove warning for zero-element
+	allocations.
+
 2007-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	cp/
