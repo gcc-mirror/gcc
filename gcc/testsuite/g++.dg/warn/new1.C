@@ -1,3 +1,3 @@
 void f() {
-  new int[0]; // { dg-warning "zero" }
+  new int[0]; // { dg-bogus "zero" }
 }
