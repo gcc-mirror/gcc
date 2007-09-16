@@ -724,11 +724,11 @@ set_internal_unit (stmtblock_t * block, stmtblock_t * post_block,
     {
       se.ss = gfc_walk_expr (e);
 
-      if (is_aliased_array (e))
+      if (is_subref_array (e))
 	{
 	  /* Use a temporary for components of arrays of derived types
 	     or substring array references.  */
-	  gfc_conv_aliased_arg (&se, e, 0,
+	  gfc_conv_subref_array_arg (&se, e, 0,
 		last_dt == READ ? INTENT_IN : INTENT_OUT);
 	  tmp = build_fold_indirect_ref (se.expr);
 	  se.expr = gfc_build_addr_expr (pchar_type_node, tmp);
@@ -1330,7 +1330,7 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
      a RECORD_TYPE.  */
 
   if (array_flagged)
-    tmp = gfc_build_array_ref (tmp, gfc_index_zero_node);
+    tmp = gfc_build_array_ref (tmp, gfc_index_zero_node, NULL);
 
   /* Now build the address expression.  */
 
@@ -1964,7 +1964,9 @@ gfc_trans_transfer (gfc_code * code)
 	  gcc_assert (ref->type == REF_ARRAY);
 	}
 
-      if (expr->ts.type != BT_DERIVED && ref && ref->next == NULL)
+      if (expr->ts.type != BT_DERIVED
+	    && ref && ref->next == NULL
+	    && !is_subref_array (expr))
 	{
 	  /* Get the descriptor.  */
 	  gfc_conv_expr_descriptor (&se, expr, ss);

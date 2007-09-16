@@ -1016,6 +1016,25 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  gcc_assert (!sym->value);
 	}
     }
+  else if (sym->attr.subref_array_pointer)
+    {
+      /* We need the span for these beasts.  */
+      gfc_allocate_lang_decl (decl);
+    }
+
+  if (sym->attr.subref_array_pointer)
+    {
+      tree span;
+      GFC_DECL_SUBREF_ARRAY_P (decl) = 1;
+      span = build_decl (VAR_DECL, create_tmp_var_name ("span"),
+			 gfc_array_index_type);
+      gfc_finish_var_decl (span, sym);
+      TREE_STATIC (span) = 1;
+      DECL_INITIAL (span) = build_int_cst (NULL_TREE, 0);
+
+      GFC_DECL_SPAN (decl) = span;
+    }
+
   sym->backend_decl = decl;
 
   if (sym->attr.assign)

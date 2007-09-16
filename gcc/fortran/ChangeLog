@@ -1,3 +1,60 @@
+2007-09-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/29396
+	PR fortran/29606
+	PR fortran/30625
+	PR fortran/30871
+	* trans.h : Add extra argument to gfc_build_array_ref. Rename
+	gfc_conv_aliased_arg to gfc_conv_subref_array_arg.  Move
+	prototype of is_aliased_array to gfortran.h and rename it
+	gfc_is_subref_array.  Add field span to lang_decl, add a new
+	decl lang specific flag accessed by GFC_DECL_SUBREF_ARRAY_P
+	and a new type flag GFC_DECL_SUBREF_ARRAY_P.
+	* trans.c (gfc_build_array_ref): Add the new argument, decl.
+	If this is a subreference array pointer, use the lang_decl
+	field 'span' to calculate the offset in bytes and use pointer
+	arithmetic to address the element.
+	* trans-array.c (gfc_conv_scalarized_array_ref,
+	gfc_conv_array_ref): Add the backend declaration as the third
+	field, if it is likely to be a subreference array pointer.
+	(gfc_conv_descriptor_dimension, gfc_trans_array_ctor_element,
+	gfc_trans_array_constructor_element, structure_alloc_comps,
+	gfc_conv_array_index_offset): For all other references to
+	gfc_build_array_ref, set the third argument to NULL.
+	(gfc_get_dataptr_offset): New function.
+	(gfc_conv_expr_descriptor): If the rhs of a pointer assignment
+	is a subreference array, then calculate the offset to the
+	subreference of the first element and set the descriptor data
+	pointer to this, using gfc_get_dataptr_offset.
+	trans-expr.c (gfc_get_expr_charlen): Use the expression for the
+	character length for a character subreference.
+	(gfc_conv_substring, gfc_conv_subref_array_arg): Add NULL for
+	third argument in call to gfc_build_array_ref.
+	(gfc_conv_aliased_arg): Rename to gfc_conv_subref_array_arg.
+	(is_aliased_array): Remove.
+	(gfc_conv_function_call): Change reference to is_aliased_array
+	to gfc_is_subref_array and reference to gfc_conv_aliased_arg to
+	gfc_conv_subref_array_arg.
+	(gfc_trans_pointer_assignment): Add the array element length to
+	the lang_decl 'span' field.
+	* gfortran.h : Add subref_array_pointer to symbol_attribute and
+	add the prototype for gfc_is_subref_array.
+	* trans-stmt.c : Add NULL for third argument in all references
+	to gfc_build_array_ref.
+	* expr.c (gfc_is_subref_array): Renamed is_aliased_array.
+	If this is a subreference array pointer, return true.
+	(gfc_check_pointer_assign): If the rhs is a subreference array,
+	set the lhs subreference_array_pointer attribute.
+	* trans-decl.c (gfc_get_symbol_decl): Allocate the lang_decl
+	field if the symbol is a subreference array pointer and set an
+	initial value of zero for the 'span' field.
+	* trans-io.c (set_internal_unit): Refer to is_subref_array and
+	gfc_conv_subref_array_arg.
+	(nml_get_addr_expr): Add NULL third argument to
+	gfc_build_array_ref. 
+	(gfc_trans_transfer): Use the scalarizer for a subreference
+	array.
+
 2007-09-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* iresolve.c (resolve_mask_arg): If a mask is an array
