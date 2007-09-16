@@ -5767,7 +5767,8 @@ maybe_handle_implicit_object (conversion **ics)
 	t = t->u.next;
       t = build_identity_conv (TREE_TYPE (t->type), NULL_TREE);
       t = direct_reference_binding (reference_type, t);
-      t->rvaluedness_matches_p = 1;
+      t->this_p = 1;
+      t->rvaluedness_matches_p = 0;
       *ics = t;
     }
 }
@@ -6126,18 +6127,21 @@ compare_ics (conversion *ics1, conversion *ics2)
      initialized by S2 refers is more cv-qualified than the type to
      which the reference initialized by S1 refers */
 
-  if (ref_conv1 && ref_conv2
-      && same_type_ignoring_top_level_qualifiers_p (to_type1, to_type2))
+  if (ref_conv1 && ref_conv2)
     {
-      if (ref_conv1->rvaluedness_matches_p
-	  && !ref_conv2->rvaluedness_matches_p)
-	return 1;
-      else if (!ref_conv1->rvaluedness_matches_p
-	  && ref_conv2->rvaluedness_matches_p)
-	return -1;
+      if (!ref_conv1->this_p && !ref_conv2->this_p
+	  && (TYPE_REF_IS_RVALUE (ref_conv1->type)
+	      != TYPE_REF_IS_RVALUE (ref_conv2->type)))
+	{
+	  if (ref_conv1->rvaluedness_matches_p)
+	    return 1;
+	  if (ref_conv2->rvaluedness_matches_p)
+	    return -1;
+	}
 
-      return comp_cv_qualification (TREE_TYPE (ref_conv2->type),
-				    TREE_TYPE (ref_conv1->type));
+      if (same_type_ignoring_top_level_qualifiers_p (to_type1, to_type2))
+	return comp_cv_qualification (TREE_TYPE (ref_conv2->type),
+				      TREE_TYPE (ref_conv1->type));
     }
 
   /* Neither conversion sequence is better than the other.  */

@@ -1,3 +1,8 @@
+2007-09-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/32756
+	* g++.dg/overload/operator3.C: New.
+
 2007-09-16  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.target/mips/truncate-1.c: New test.
