@@ -1,5 +1,15 @@
 2007-09-16  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* dse.c (find_shift_sequence): Allow word as well as subword shifts.
+	Do the tentative shift expansion with the DF_NO_INSN_RESCAN flag set.
+	Fix the call to insn_rtx_cost.  Skip access sizes that require a
+	real truncation of the store register.  Use convert_move instead
+	of gen_lowpart when narrowing the result.
+	(replace_read): Use convert_move instead of gen_lowpart when
+	narrowing the store rhs.
+
+2007-09-16  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.md (SHORT): Fix long line.
 	(SUBDI): New mode iterator.  Extend the shift-and-truncate insns
 	to QImode and HImode.

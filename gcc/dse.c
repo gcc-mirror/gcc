@@ -1407,21 +1407,31 @@ find_shift_sequence (rtx read_reg,
      justify the value we want to read but is available in one insn on
      the machine.  */
 
-  while (access_size < UNITS_PER_WORD)
+  for (; access_size <= UNITS_PER_WORD; access_size *= 2)
     {
-      rtx target;
-      enum machine_mode new_mode
-	= smallest_mode_for_size (access_size * BITS_PER_UNIT,
-				  GET_MODE_CLASS (read_mode));
-      rtx new_reg = gen_reg_rtx (new_mode);
+      rtx target, new_reg;
+      enum machine_mode new_mode;
+
+      /* Try a wider mode if truncating the store mode to ACCESS_SIZE
+	 bytes requires a real instruction.  */
+      if (access_size < GET_MODE_SIZE (store_mode)
+	  && !TRULY_NOOP_TRUNCATION (access_size * BITS_PER_UNIT,
+				     GET_MODE_BITSIZE (store_mode)))
+	continue;
+
+      new_mode = smallest_mode_for_size (access_size * BITS_PER_UNIT,
+					 GET_MODE_CLASS (read_mode));
+      new_reg = gen_reg_rtx (new_mode);
 
       start_sequence ();
 
       /* In theory we could also check for an ashr.  Ian Taylor knows
 	 of one dsp where the cost of these two was not the same.  But
 	 this really is a rare case anyway.  */
+      df_set_flags (DF_NO_INSN_RESCAN);
       target = expand_binop (new_mode, lshr_optab, new_reg,
 			     GEN_INT (shift), new_reg, 1, OPTAB_DIRECT);
+      df_clear_flags (DF_NO_INSN_RESCAN);
 
       if (target == new_reg)
 	{
@@ -1436,7 +1446,8 @@ find_shift_sequence (rtx read_reg,
 	      rtx insn;
 
 	      for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
-		cost += insn_rtx_cost (insn);
+		if (INSN_P (insn))
+		  cost += insn_rtx_cost (PATTERN (insn));
 
 	      /* The computation up to here is essentially independent
 		 of the arguments and could be precomputed.  It may
@@ -1455,7 +1466,7 @@ find_shift_sequence (rtx read_reg,
 		  start_sequence ();
 		  emit_move_insn (new_reg, gen_lowpart (new_mode, store_info->rhs));
 		  emit_insn (shift_seq);
-		  emit_move_insn (read_reg,  gen_lowpart (read_mode, new_reg));
+		  convert_move (read_reg, new_reg, 1);
 		  
 		  if (dump_file)
 		    {
@@ -1480,8 +1491,6 @@ find_shift_sequence (rtx read_reg,
       else
 	/* End the sequence.  */
 	end_sequence ();
-
-      access_size = access_size * 2;
     }
 
   return NULL;
@@ -1595,7 +1604,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 	     place, we need to extract the value in the right from the
 	     rhs of the store.  */
 	  start_sequence ();
-	  emit_move_insn (read_reg, gen_lowpart (read_mode, store_info->rhs));
+	  convert_move (read_reg, store_info->rhs, 1);
 	  
 	  if (dump_file)
 	    fprintf (dump_file, " -- adding extract insn r%d:%s = r%d:%s\n",
