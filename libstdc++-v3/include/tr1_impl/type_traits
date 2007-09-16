@@ -375,75 +375,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     { typedef typename remove_reference<_Tp>::type*     type; };
 
   /// @brief  other transformations [4.8].
-  
-  // Due to c++/19163 and c++/17743, for the time being we cannot use
-  // the correct, neat implementation :-(
-  // 
-  // template<std::size_t _Len, std::size_t _Align>
-  //   struct aligned_storage
-  //   { typedef char type[_Len] __attribute__((__aligned__(_Align))); }
-  //
-  // Temporary workaround, useful for Align up to 32:
-  template<std::size_t, std::size_t>
-    struct aligned_storage { };
-
-  template<std::size_t _Len>
-    struct aligned_storage<_Len, 1>
-    {
+  template<std::size_t _Len, std::size_t _Align>
+    struct aligned_storage
+    { 
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((__aligned__(1)));
-      };
-    };
-
-  template<std::size_t _Len>
-    struct aligned_storage<_Len, 2>
-    {
-      union type
-      {
-	unsigned char __data[_Len];
-	char __align __attribute__((__aligned__(2)));
-      };
-    };
-
-  template<std::size_t _Len>
-    struct aligned_storage<_Len, 4>
-    {
-      union type
-      {
-	unsigned char __data[_Len];
-	char __align __attribute__((__aligned__(4)));
-      };
-    };
-
-  template<std::size_t _Len>
-    struct aligned_storage<_Len, 8>
-    {
-      union type
-      {
-	unsigned char __data[_Len];
-	char __align __attribute__((__aligned__(8)));
-      };
-    };
-
-  template<std::size_t _Len>
-    struct aligned_storage<_Len, 16>
-    {
-      union type
-      {
-	unsigned char __data[_Len];
-	char __align __attribute__((__aligned__(16)));
-      };
-    };
-  
-  template<std::size_t _Len>
-    struct aligned_storage<_Len, 32>
-    {
-      union type
-      {
-	unsigned char __data[_Len];
-	char __align __attribute__((__aligned__(32)));
+	struct __attribute__((__aligned__((_Align)))) { } __aligner; 
       };
     };
 
