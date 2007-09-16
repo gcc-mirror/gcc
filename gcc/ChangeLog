@@ -1,5 +1,11 @@
 2007-09-16  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.md (SHORT): Fix long line.
+	(SUBDI): New mode iterator.  Extend the shift-and-truncate insns
+	to QImode and HImoe.
+
+2007-09-16  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.h (POINTERS_EXTEND_UNSIGNED): Define.
 
 2007-09-15  Zdenek Dvorak  <ook@ucw.cz>

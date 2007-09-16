@@ -481,9 +481,12 @@
 ;; conditional-move-type condition is needed.
 (define_mode_iterator MOVECC [SI (DI "TARGET_64BIT") (CC "TARGET_HARD_FLOAT")])
 
-;; This mode iterator allows the QI and HI extension patterns to be defined from
-;; the same template.
+;; This mode iterator allows the QI and HI extension patterns to be
+;; defined from the same template.
 (define_mode_iterator SHORT [QI HI])
+
+;; Likewise the 64-bit truncate-and-shift patterns.
+(define_mode_iterator SUBDI [QI HI SI])
 
 ;; This mode iterator allows :ANYF to be used wherever a scalar or vector
 ;; floating-point mode is allowed.
@@ -2314,19 +2317,20 @@
 ;; Combiner patterns to optimize shift/truncate combinations.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (truncate:SI
+  [(set (match_operand:SUBDI 0 "register_operand" "=d")
+        (truncate:SUBDI
 	  (ashiftrt:DI (match_operand:DI 1 "register_operand" "d")
-                       (match_operand:DI 2 "const_arith_operand" ""))))]
+		       (match_operand:DI 2 "const_arith_operand" ""))))]
   "TARGET_64BIT && !TARGET_MIPS16 && INTVAL (operands[2]) >= 32"
   "dsra\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (truncate:SI (lshiftrt:DI (match_operand:DI 1 "register_operand" "d")
-                                  (const_int 32))))]
+  [(set (match_operand:SUBDI 0 "register_operand" "=d")
+        (truncate:SUBDI
+	  (lshiftrt:DI (match_operand:DI 1 "register_operand" "d")
+		       (const_int 32))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "dsra\t%0,%1,32"
   [(set_attr "type" "shift")
