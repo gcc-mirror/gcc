@@ -1,5 +1,4 @@
 -- { dg-do compile }
--- { dg-options "-cargs -S -margs" }
 
 package static_initializer is
 
