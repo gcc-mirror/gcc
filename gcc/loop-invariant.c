@@ -1243,6 +1243,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	  if (op != reg)
 	    emit_move_insn (reg, op);
 	  seq = get_insns ();
+	  unshare_all_rtl_in_chain (seq);
 	  end_sequence ();
 
 	  if (!seq_insns_valid_p (seq))
