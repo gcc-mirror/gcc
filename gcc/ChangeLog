@@ -1,3 +1,28 @@
+2007-09-17  Victor Kaplansky  <victork@il.ibm.com>
+
+	PR tree-optimization/33319
+	* tree-vect-analyze.c (vect_same_range_drs): New.
+	(vect_vfa_range_equal): New.
+	(vect_is_duplicate_ddr): Removed.
+	(vect_mark_for_runtime_alias_test): Do not perform marking when
+	optimizing for size or max_param for alias checking is zero.
+	Move the function before vect_analyze_data_ref_dependence.
+	(vect_analyze_data_ref_dependence): Add call to
+	vect_mark_for_runtime_alias_test in two cases when dependence
+	is not clear.
+	(vect_analyze_data_ref_dependences): Do not call to
+	vect_mark_for_runtime_alias_test.
+	(vect_prune_runtime_alias_test_list): New.
+	(vect_analyze_loop): Add call to vect_prune_runtime_alias_test_list.
+	* tree-vect-transform.c (vect_estimate_min_profitable_iters):
+	Update vec_outside_cost.
+	(vect_vfa_segment_size): More compact code, use TYPE_SIZE_UNIT.
+	(vect_create_cond_for_alias_checks): Build the base address of data
+	reference from DR_GROUP_FIRST_DR.
+	(vect_loop_versioning): New.
+	(vect_transform_loop): Add a call to vect_loop_versioning.
+	Remove factored out code.
+
 2007-09-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/33273
