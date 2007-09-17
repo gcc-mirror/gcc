@@ -374,17 +374,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     struct add_pointer
     { typedef typename remove_reference<_Tp>::type*     type; };
 
-  /// @brief  other transformations [4.8].
-  template<std::size_t _Len, std::size_t _Align>
-    struct aligned_storage
-    { 
-      union type
-      {
-	unsigned char __data[_Len];
-	struct __attribute__((__aligned__((_Align)))) { } __aligner; 
-      };
-    };
-
 #undef _DEFINE_SPEC_0_HELPER
 #undef _DEFINE_SPEC_1_HELPER
 #undef _DEFINE_SPEC_2_HELPER

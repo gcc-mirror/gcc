@@ -230,6 +230,17 @@ namespace tr1
     : public __add_reference_helper<_Tp>
     { };
 
+  /// @brief  other transformations [4.8].
+  template<std::size_t _Len, std::size_t _Align>
+    struct aligned_storage
+    { 
+      union type
+      {
+	unsigned char __data[_Len];
+	struct __attribute__((__aligned__((_Align)))) { } __align; 
+      };
+    };
+
 #undef _DEFINE_SPEC_0_HELPER
 #undef _DEFINE_SPEC
 #undef _DEFINE_SPEC_BODY

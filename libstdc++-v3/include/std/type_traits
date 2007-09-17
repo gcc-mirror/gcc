@@ -258,6 +258,27 @@ namespace std
 			       __is_convertible_helper<_From, _To>::__value>
     { };
 
+  template<std::size_t _Len>
+    struct __aligned_storage_msa
+    { 
+      union __type
+      {
+	unsigned char __data[_Len];
+	struct __attribute__((__aligned__)) { } __align; 
+      };
+    };
+
+  template<std::size_t _Len, std::size_t _Align =
+	   __alignof__(typename __aligned_storage_msa<_Len>::__type)>
+    struct aligned_storage
+    { 
+      union type
+      {
+	unsigned char __data[_Len];
+	struct __attribute__((__aligned__((_Align)))) { } __align; 
+      };
+    };
+
 
   // Define a nested type if some predicate holds.
   template<bool, typename _Tp = void>
