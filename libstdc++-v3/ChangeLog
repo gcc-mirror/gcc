@@ -1,3 +1,18 @@
+2007-09-17  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/for_each.h: Fixed comment/doxygen markup typos.
+        * include/parallel/base.h: Same.
+        * include/parallel/numeric: Same.
+        * include/parallel/quicksort.h: Same.
+        * include/parallel/compiletime_settings.h: Same.
+        * include/parallel/random_shuffle.h: Same.
+        * include/parallel/balanced_quicksort.h: Same.
+        * include/parallel/tree.h: Same.
+        * include/parallel/settings.h: Same.
+        * include/parallel/search.h: Same.
+        * include/parallel/partition.h: Same.
+        * include/parallel/partial_sum.h: Same.
+
 2007-09-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/type_traitsfwd.h (aligned_storage): Remove

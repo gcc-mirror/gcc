@@ -102,7 +102,7 @@ namespace __gnu_parallel
 	  difference_type thread_left, thread_left_border, thread_right, thread_right_border;
 	  thread_left = left + 1;
 
-	  // Just to satify the condition below.
+	  // Just to satisfy the condition below.
 	  thread_left_border = thread_left - 1;
 	  thread_right = n - 1;
 	  thread_right_border = thread_right + 1;

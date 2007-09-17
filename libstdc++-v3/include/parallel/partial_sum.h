@@ -75,7 +75,7 @@ namespace __gnu_parallel
     return result;
   }
 
-  /** @brief Parallel partial sum implmenetation, two-phase approach,
+  /** @brief Parallel partial sum implementation, two-phase approach,
       no recursion.
       *  @param begin Begin iterator of input sequence.
       *  @param end End iterator of input sequence.

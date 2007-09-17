@@ -49,7 +49,7 @@ namespace __gnu_parallel
   // XXX remove std::duplicates from here if possible,
   // XXX but keep minimal dependencies.
 
-  /** @brief Calculates the rounded-down logrithm of @c n for base 2.
+  /** @brief Calculates the rounded-down logarithm of @c n for base 2.
    *  @param n Argument.
    *  @return Returns 0 for argument 0.
    */
@@ -107,7 +107,6 @@ namespace __gnu_parallel
 
     bool operator()(const T1& a, const T2& b)
     {
-      // FIXME: wrong in general (T1 != T2)
       return !comp(a, b) && !comp(b, a);
     }
   };

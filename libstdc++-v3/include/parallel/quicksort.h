@@ -48,7 +48,7 @@ namespace __gnu_parallel
    *  @param end End iterator of subsequence.
    *  @param comp Comparator.
    *  @param pivot_rank Desired rank of the pivot.
-   *  @param num_samples Chosse pivot from that many samples.
+   *  @param num_samples Choose pivot from that many samples.
    *  @param num_threads Number of threads that are allowed to work on
    *  this part.
    */

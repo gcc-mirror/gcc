@@ -152,7 +152,7 @@ namespace
     static volatile bool force_sequential;
 
     /** @brief Force all algorithms to be executed in parallel.
-     * This setting can be overriden by __gnu_parallel::sequential_tag
+     * This setting can be overridden by __gnu_parallel::sequential_tag
      * (compile-time), and force_sequential (run-time). */
     static volatile bool force_parallel;
 
@@ -171,7 +171,7 @@ namespace
 	(quicksort). */
     static volatile unsigned int sort_qs_num_samples_preset;
 
-    /** @brief Maximal subsequence length to swtich to unbalanced
+    /** @brief Maximal subsequence length to switch to unbalanced
      * base case.  Applies to std::sort with dynamically
      * load-balanced quicksort. */
     static volatile sequence_index_t sort_qsb_base_case_maximal_n;

@@ -131,7 +131,7 @@ namespace __gnu_parallel
   }
 
   /** @brief Random shuffle code executed by each thread.
-   *  @param pus Arary of thread-local data records. */
+   *  @param pus Array of thread-local data records. */
   template<typename RandomAccessIterator, typename RandomNumberGenerator>
   inline void parallel_random_shuffle_drs_pu(DRSSorterPU<RandomAccessIterator, RandomNumberGenerator>* pus)
   {
