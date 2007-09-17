@@ -7581,6 +7581,22 @@ resolve_symbol (gfc_symbol *sym)
       return;
     }
 
+  /* Unless the derived-type declaration is use associated, Fortran 95
+     does not allow public entries of private derived types.
+     See 4.4.1 (F95) and 4.5.1.1 (F2003); and related interpretation
+     161 in 95-006r3.  */
+  if (sym->ts.type == BT_DERIVED
+      && gfc_check_access (sym->attr.access, sym->ns->default_access)
+      && !gfc_check_access (sym->ts.derived->attr.access,
+			    sym->ts.derived->ns->default_access)
+      && !sym->ts.derived->attr.use_assoc
+      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: PUBLIC %s '%s' at %L "
+		         "of PRIVATE derived type '%s'",
+			 (sym->attr.flavor == FL_PARAMETER) ? "parameter"
+			 : "variable", sym->name, &sym->declared_at,
+			 sym->ts.derived->name) == FAILURE)
+    return;
+
   /* An assumed-size array with INTENT(OUT) shall not be of a type for which
      default initialization is defined (5.1.2.4.4).  */
   if (sym->ts.type == BT_DERIVED
