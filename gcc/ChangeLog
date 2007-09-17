@@ -1,5 +1,16 @@
 2007-09-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-format.h (format_kind_info): Add alloc_char field.
+	* c-format.c (scanf_flag_specs): Add 'm'.
+	(scanf_flag_pairs): Add 'a', 'm' pair.
+	(scan_char_table): Allow 'm' modifier for c, s, [, C and S.
+	(format_types_orig): Add alloc_char fields.
+	(check_format_info_main): Rename aflag to alloc_flag.
+	Handle fki->alloc_char. modifier after width and before length
+	modifiers.  Move FMT_FLAG_SCANF_A_KLUDGE handling before
+	length modifiers as well.
+	* config/sol2-c.c (solaris_format_types): Add alloc_char field.
+
 	PR middle-end/33423
 	* builtins.c (expand_builtin_memory_chk): Handle COMPOUND_EXPRs
 	returned by build_call_expr.
