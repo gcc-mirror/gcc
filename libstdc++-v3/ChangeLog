@@ -1,3 +1,19 @@
+2007-09-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/type_traitsfwd.h (aligned_storage): Remove
+	declaration.
+	* include/tr1_impl/type_traits (aligned_storage): Remove.
+	* include/std/type_traits (aligned_storage, __aligned_storage_msa):
+	Add.
+	* include/tr1/type_traits (aligned_storage): Add.
+	* testsuite/20_util/aligned_storage/value.cc: New.
+	* testsuite/20_util/aligned_storage/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error lines.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2007-09-16  Paolo Carlini  <pcarlini@suse.de>
 	    Douglas Gregor  <doug.gregor@gmail.com>
 

@@ -170,9 +170,5 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp>
     struct add_pointer;
 
-  /// @brief  other transformations [4.8].
-  template<std::size_t _Len, std::size_t _Align>
-    struct aligned_storage;
-
 _GLIBCXX_END_NAMESPACE_TR1
 }
