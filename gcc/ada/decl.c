@@ -728,12 +728,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	gnu_type = maybe_pad_type (gnu_type, gnu_size, align, gnat_entity,
 				   "PAD", false, definition, true);
 
-	/* Make a volatile version of this object's type if we are to
-	   make the object volatile.  Note that 13.3(19) says that we
-	   should treat other types of objects as volatile as well.  */
+	/* Make a volatile version of this object's type if we are to make
+	   the object volatile.  We also interpret 13.3(19) conservatively
+	   and disallow any optimizations for an object covered by it.  */
 	if ((Treat_As_Volatile (gnat_entity)
 	     || Is_Exported (gnat_entity)
-	     || Is_Imported (gnat_entity))
+	     || Is_Imported (gnat_entity)
+	     || Present (Address_Clause (gnat_entity)))
 	    && !TYPE_VOLATILE (gnu_type))
 	  gnu_type = build_qualified_type (gnu_type,
 					   (TYPE_QUALS (gnu_type)

@@ -1,3 +1,8 @@
+2007-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <object>: Make again the type of an
+	object covered by 13.3(19) volatile.
+
 2007-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/26797
