@@ -1154,20 +1154,6 @@ find_invariants_to_move (void)
     }
 }
 
-/* Returns true if all insns in SEQ are valid.  */
-
-static bool
-seq_insns_valid_p (rtx seq)
-{
-  rtx x;
-
-  for (x = seq; x; x = NEXT_INSN (x))
-    if (insn_invalid_p (x))
-      return false;
-
-  return true;
-}
-
 /* Move invariant INVNO out of the LOOP.  Returns true if this succeeds, false
    otherwise.  */
 
@@ -1178,7 +1164,7 @@ move_invariant_reg (struct loop *loop, unsigned invno)
   struct invariant *repr = VEC_index (invariant_p, invariants, inv->eqto);
   unsigned i;
   basic_block preheader = loop_preheader_edge (loop)->src;
-  rtx reg, set, dest, seq, op;
+  rtx reg, set, dest, note;
   struct use *use;
   bitmap_iterator bi;
 
@@ -1209,50 +1195,23 @@ move_invariant_reg (struct loop *loop, unsigned invno)
       dest = SET_DEST (set);
       reg = gen_reg_rtx (GET_MODE (dest));
 
-      /* If the SET_DEST of the invariant insn is a pseudo, we can just move
-	 the insn out of the loop.  Otherwise, we have to use gen_move_insn
-	 to let emit_move_insn produce a valid instruction stream.  */
-      if (REG_P (dest) && !HARD_REGISTER_P (dest))
-	{
-	  rtx note;
+      /* Try replacing the destination by a new pseudoregister.  */
+      if (!validate_change (inv->insn, &SET_DEST (set), reg, false))
+	goto fail;
+      df_insn_rescan (inv->insn);
 
-	  emit_insn_after (gen_move_insn (dest, reg), inv->insn);
-	  SET_DEST (set) = reg;
-	  df_insn_rescan (inv->insn);
-	  reorder_insns (inv->insn, inv->insn, BB_END (preheader));
+      emit_insn_after (gen_move_insn (dest, reg), inv->insn);
+      reorder_insns (inv->insn, inv->insn, BB_END (preheader));
 
-	  /* If there is a REG_EQUAL note on the insn we just moved, and
-	     insn is in a basic block that is not always executed, the note
-	     may no longer be valid after we move the insn.
-	     Note that uses in REG_EQUAL notes are taken into account in
-	     the computation of invariants.  Hence it is safe to retain the
-	     note even if the note contains register references.  */
-	  if (! inv->always_executed
-	      && (note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX)))
-	    remove_note (inv->insn, note);
-	}
-      else
-	{
-	  start_sequence ();
-	  op = force_operand (SET_SRC (set), reg);
-	  if (!op)
-	    {
-	      end_sequence ();
-	      goto fail;
-	    }
-	  if (op != reg)
-	    emit_move_insn (reg, op);
-	  seq = get_insns ();
-	  unshare_all_rtl_in_chain (seq);
-	  end_sequence ();
-
-	  if (!seq_insns_valid_p (seq))
-	    goto fail;
-	  emit_insn_after (seq, BB_END (preheader));
-      
-	  emit_insn_after (gen_move_insn (dest, reg), inv->insn);
-	  delete_insn (inv->insn);
-	}
+      /* If there is a REG_EQUAL note on the insn we just moved, and
+	 insn is in a basic block that is not always executed, the note
+	 may no longer be valid after we move the insn.
+	 Note that uses in REG_EQUAL notes are taken into account in
+	 the computation of invariants.  Hence it is safe to retain the
+	 note even if the note contains register references.  */
+      if (! inv->always_executed
+	  && (note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX)))
+	remove_note (inv->insn, note);
     }
   else
     {
