@@ -1,5 +1,5 @@
 /* Solaris support needed only by C/C++ frontends.
-   Copyright (C) 2004, 2005 , 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -73,7 +73,7 @@ const format_kind_info solaris_format_types[] = {
   { "cmn_err",  cmn_err_length_specs,  cmn_err_char_table, "", NULL,
     cmn_err_flag_specs, cmn_err_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK,
-    'w', 0, 0, 0, 'L',
+    'w', 0, 0, 0, 'L', 0,
     &integer_type_node, &integer_type_node
   }
 };

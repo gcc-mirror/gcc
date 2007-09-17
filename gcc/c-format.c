@@ -437,6 +437,7 @@ static const format_flag_spec scanf_flag_specs[] =
 {
   { '*',  0, 0, N_("assignment suppression"), N_("the assignment suppression scanf feature"), STD_C89 },
   { 'a',  0, 0, N_("'a' flag"),               N_("the 'a' scanf flag"),                       STD_EXT },
+  { 'm',  0, 0, N_("'m' flag"),               N_("the 'm' scanf flag"),                       STD_EXT },
   { 'w',  0, 0, N_("field width"),            N_("field width in scanf format"),              STD_C89 },
   { 'L',  0, 0, N_("length modifier"),        N_("length modifier in scanf format"),          STD_C89 },
   { '\'', 0, 0, N_("''' flag"),               N_("the ''' scanf flag"),                       STD_EXT },
@@ -448,6 +449,7 @@ static const format_flag_spec scanf_flag_specs[] =
 static const format_flag_pair scanf_flag_pairs[] =
 {
   { '*', 'L', 0, 0 },
+  { 'a', 'm', 0, 0 },
   { 0, 0, 0, 0 }
 };
 
@@ -663,17 +665,17 @@ static const format_char_info scan_char_table[] =
   { "u",     1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN }, "*w'I", "W",   NULL },
   { "oxX",   1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM, BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
   { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN,  TEX_D32, TEX_D64, TEX_D128 }, "*w'",  "W",   NULL },
-  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*w",   "cW",  NULL },
-  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*aw",  "cW",  NULL },
-  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*aw",  "cW[", NULL },
+  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*mw",   "cW",  NULL },
+  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "cW",  NULL },
+  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "cW[", NULL },
   { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
   { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM,  BADLEN,  BADLEN,  BADLEN }, "",     "W",   NULL },
   /* C99 conversion specifiers.  */
   { "F",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  TEX_D32, TEX_D64, TEX_D128 }, "*w'",  "W",   NULL },
   { "aA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*w'",  "W",   NULL },
   /* X/Open conversion specifiers.  */
-  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*w",   "W",   NULL },
-  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*aw",  "W",   NULL },
+  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*mw",   "W",   NULL },
+  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN }, "*amw",  "W",   NULL },
   { NULL, 0, 0, NOLENGTHS, NULL, NULL, NULL }
 };
 
@@ -716,59 +718,59 @@ static const format_kind_info format_types_orig[] =
   { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL,
     printf_flag_specs, printf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
-    'w', 0, 'p', 0, 'L',
+    'w', 0, 'p', 0, 'L', 0,
     &integer_type_node, &integer_type_node
   },
   { "asm_fprintf",   asm_fprintf_length_specs,  asm_fprintf_char_table, " +#0-", NULL,
     asm_fprintf_flag_specs, asm_fprintf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK,
-    'w', 0, 'p', 0, 'L',
+    'w', 0, 'p', 0, 'L', 0,
     NULL, NULL
   },
   { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+", NULL,
     gcc_diag_flag_specs, gcc_diag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
-    0, 0, 'p', 0, 'L',
+    0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
   { "gcc_tdiag",   gcc_tdiag_length_specs,  gcc_tdiag_char_table, "q+", NULL,
     gcc_tdiag_flag_specs, gcc_tdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
-    0, 0, 'p', 0, 'L',
+    0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
   { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "q+", NULL,
     gcc_cdiag_flag_specs, gcc_cdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
-    0, 0, 'p', 0, 'L',
+    0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
   { "gcc_cxxdiag",   gcc_cxxdiag_length_specs,  gcc_cxxdiag_char_table, "q+#", NULL,
     gcc_cxxdiag_flag_specs, gcc_cxxdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
-    0, 0, 'p', 0, 'L',
+    0, 0, 'p', 0, 'L', 0,
     NULL, &integer_type_node
   },
   { "gcc_gfc", gcc_gfc_length_specs, gcc_gfc_char_table, "", NULL,
     NULL, gcc_gfc_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
-    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
     NULL, NULL
   },
   { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL,
     scanf_flag_specs, scanf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_SCANF_A_KLUDGE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_ZERO_WIDTH_BAD|FMT_FLAG_DOLLAR_GAP_POINTER_OK,
-    'w', 0, 0, '*', 'L',
+    'w', 0, 0, '*', 'L', 'm',
     NULL, NULL
   },
   { "strftime", NULL,                 time_char_table,  "_-0^#", "EO",
     strftime_flag_specs, strftime_flag_pairs,
-    FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0, 0,
+    FMT_FLAG_FANCY_PERCENT_OK, 'w', 0, 0, 0, 0, 0,
     NULL, NULL
   },
   { "strfmon",  strfmon_length_specs, monetary_char_table, "=^+(!-", NULL,
     strfmon_flag_specs, strfmon_flag_pairs,
-    FMT_FLAG_ARG_CONVERT, 'w', '#', 'p', 0, 'L',
+    FMT_FLAG_ARG_CONVERT, 'w', '#', 'p', 0, 'L', 0,
     NULL, NULL
   }
 };
@@ -1482,7 +1484,7 @@ check_format_info_main (format_check_results *res,
       const format_length_info *fli = NULL;
       const format_char_info *fci = NULL;
       char flag_chars[256];
-      int aflag = 0;
+      int alloc_flag = 0;
       const char *format_start = format_chars;
       if (*format_chars == 0)
 	{
@@ -1741,6 +1743,31 @@ check_format_info_main (format_check_results *res,
 	    }
 	}
 
+      if (fki->alloc_char && fki->alloc_char == *format_chars)
+	{
+	  i = strlen (flag_chars);
+	  flag_chars[i++] = fki->alloc_char;
+	  flag_chars[i] = 0;
+	  format_chars++;
+	}
+
+      /* Handle the scanf allocation kludge.  */
+      if (fki->flags & (int) FMT_FLAG_SCANF_A_KLUDGE)
+	{
+	  if (*format_chars == 'a' && !flag_isoc99)
+	    {
+	      if (format_chars[1] == 's' || format_chars[1] == 'S'
+		  || format_chars[1] == '[')
+		{
+		  /* 'a' is used as a flag.  */
+		  i = strlen (flag_chars);
+		  flag_chars[i++] = 'a';
+		  flag_chars[i] = 0;
+		  format_chars++;
+		}
+	    }
+	}
+
       /* Read any length modifier, if this kind of format has them.  */
       fli = fki->length_char_specs;
       length_chars = NULL;
@@ -1800,23 +1827,6 @@ check_format_info_main (format_check_results *res,
 		  flag_chars[i] = 0;
 		}
 	      ++format_chars;
-	    }
-	}
-
-      /* Handle the scanf allocation kludge.  */
-      if (fki->flags & (int) FMT_FLAG_SCANF_A_KLUDGE)
-	{
-	  if (*format_chars == 'a' && !flag_isoc99)
-	    {
-	      if (format_chars[1] == 's' || format_chars[1] == 'S'
-		  || format_chars[1] == '[')
-		{
-		  /* 'a' is used as a flag.  */
-		  i = strlen (flag_chars);
-		  flag_chars[i++] = 'a';
-		  flag_chars[i] = 0;
-		  format_chars++;
-		}
 	    }
 	}
 
@@ -1892,7 +1902,9 @@ check_format_info_main (format_check_results *res,
 
       if ((fki->flags & (int) FMT_FLAG_SCANF_A_KLUDGE)
 	  && strchr (flag_chars, 'a') != 0)
-	aflag = 1;
+	alloc_flag = 1;
+      if (fki->alloc_char && strchr (flag_chars, fki->alloc_char) != 0)
+	alloc_flag = 1;
 
       if (fki->suppression_char
 	  && strchr (flag_chars, fki->suppression_char) != 0)
@@ -2064,13 +2076,13 @@ check_format_info_main (format_check_results *res,
 
 	      wanted_type_ptr->wanted_type = wanted_type;
 	      wanted_type_ptr->wanted_type_name = wanted_type_name;
-	      wanted_type_ptr->pointer_count = fci->pointer_count + aflag;
+	      wanted_type_ptr->pointer_count = fci->pointer_count + alloc_flag;
 	      wanted_type_ptr->char_lenient_flag = 0;
 	      if (strchr (fci->flags2, 'c') != 0)
 		wanted_type_ptr->char_lenient_flag = 1;
 	      wanted_type_ptr->writing_in_flag = 0;
 	      wanted_type_ptr->reading_from_flag = 0;
-	      if (aflag)
+	      if (alloc_flag)
 		wanted_type_ptr->writing_in_flag = 1;
 	      else
 		{

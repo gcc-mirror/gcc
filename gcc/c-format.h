@@ -236,6 +236,8 @@ typedef struct
      specifiers, but is used to check for bad combinations such as length
      modifier with assignment suppression in scanf.  */
   int length_code_char;
+  /* Assignment-allocation flag character ('m' in scanf), otherwise 0.  */
+  int alloc_char;
   /* Pointer to type of argument expected if '*' is used for a width,
      or NULL if '*' not used for widths.  */
   tree *width_type;
