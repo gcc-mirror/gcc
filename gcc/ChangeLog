@@ -1,3 +1,9 @@
+2007-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33423
+	* builtins.c (expand_builtin_memory_chk): Handle COMPOUND_EXPRs
+	returned by build_call_expr.
+
 2007-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (maybe_lookup_element_for_expr) <COMPONENT_REF>: Return

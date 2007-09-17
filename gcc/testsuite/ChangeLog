@@ -1,3 +1,8 @@
+2007-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/33423
+	* gcc.c-torture/compile/20070915-1.c: New test.
+
 2007-09-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33106
