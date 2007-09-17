@@ -1,3 +1,10 @@
+2007-09-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/interface_15.f90: Compile with -std=f95.
+	* gfortran.dg/private_type_1.f90: Ditto
+	* gfortran.dg/interface_18.f90: New.
+	* gfortran.dg/private_type_8.f90: New.
+
 2007-09-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33124

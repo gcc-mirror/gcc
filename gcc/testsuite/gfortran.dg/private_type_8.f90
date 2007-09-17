@@ -1,12 +1,12 @@
 ! { dg-do compile }
-! { dg-options "-std=f95" }
-! PR21986 - test based on original example.
-! A public subroutine must not have private-type, dummy arguments.
-! Contributed by Paul Thomas <pault@gcc.gnu.org>
+! A public subroutine can have private-type, dummy arguments
+! in Fortran 2003 (but not in Fortran 95).
+! See private_type_1.f90 for the F95 test.
+!
 module modboom
   implicit none
   private
-  public:: dummysub ! { dg-error "PRIVATE type and cannot be a dummy argument" }
+  public:: dummysub
   type:: intwrapper
     integer n
   end type intwrapper
