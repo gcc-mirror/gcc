@@ -1,3 +1,8 @@
+2007-09-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/33449
+	* gfortran.dg/pr33449.f90: New test.
+
 2007-09-17  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/interface_15.f90: Compile with -std=f95.
