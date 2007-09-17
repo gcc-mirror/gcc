@@ -38,6 +38,7 @@ SHELL = @SHELL@
 enable_shared = @enable_shared@
 decimal_float = @decimal_float@
 enable_decimal_float = @enable_decimal_float@
+fixed_point = @fixed_point@
 
 host_noncanonical = @host_noncanonical@
 
@@ -571,6 +572,48 @@ $(d128pbit-o): %$(objext): $(gcc_srcdir)/config/dfp-bit.c
 endif
 	$(gcc_compile) -DFINE_GRAINED_LIBRARIES -DL$* -DWIDTH=128 -c $<
 libgcc-objects += $(d128pbit-o)
+endif
+
+endif
+
+# Build fixed-point support.
+ifeq ($(fixed_point),yes)
+
+# Generate permutations of function name and mode
+fixed-labels := $(shell $(SHELL) $(srcdir)/gen-fixed.sh arith labels)
+fixed-funcs := $(shell $(SHELL) $(srcdir)/gen-fixed.sh arith funcs)
+fixed-modes := $(shell $(SHELL) $(srcdir)/gen-fixed.sh arith modes)
+
+# Generate the rules for each arithmetic function
+iter-items := $(fixed-funcs)
+iter-labels := $(fixed-labels)
+iter-from := $(fixed-modes)
+iter-to := $(fixed-modes)
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
+
+# Add arithmetic functions to list of objects to be built
+libgcc-objects += $(patsubst %,%$(objext),$(fixed-funcs))
+ifeq ($(enable_shared),yes)
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(fixed-funcs))
+endif
+
+# Convert from or to fractional
+fixed-conv-funcs := $(shell $(SHELL) $(srcdir)/gen-fixed.sh conv funcs)
+fixed-conv-labels := $(shell $(SHELL) $(srcdir)/gen-fixed.sh conv labels)
+fixed-conv-from := $(shell $(SHELL) $(srcdir)/gen-fixed.sh conv from)
+fixed-conv-to :=  $(shell $(SHELL) $(srcdir)/gen-fixed.sh conv to)
+
+# Generate the make rules for each conversion function
+iter-items := $(fixed-conv-funcs)
+iter-labels := $(fixed-conv-labels)
+iter-from := $(fixed-conv-from)
+iter-to := $(fixed-conv-to)
+include $(srcdir)/empty.mk $(patsubst %,$(srcdir)/fixed-obj.mk,$(iter-items))
+
+# Add conversion functions to list of objects to be built
+libgcc-objects += $(patsubst %,%$(objext),$(fixed-conv-funcs))
+ifeq ($(enable_shared),yes)
+libgcc-s-objects += $(patsubst %,%_s$(objext),$(fixed-conv-funcs))
 endif
 
 endif
