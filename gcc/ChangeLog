@@ -1,3 +1,9 @@
+2007-09-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/33273
+	* expr.c (store_expr): Call adjust_address to change mode of dest_mem
+	to BLKmode.
+
 2007-09-16  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* dse.c (find_shift_sequence): Allow word as well as subword shifts.

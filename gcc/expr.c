@@ -4541,7 +4541,8 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
 				  MEM_ALIGN (target), false,
 				  exp_len > str_copy_len ? 1 : 0);
       if (exp_len > str_copy_len)
-	clear_storage (dest_mem, GEN_INT (exp_len - str_copy_len),
+	clear_storage (adjust_address (dest_mem, BLKmode, 0),
+		       GEN_INT (exp_len - str_copy_len),
 		       BLOCK_OP_NORMAL);
       return NULL_RTX;
     }
