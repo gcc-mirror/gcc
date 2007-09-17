@@ -1,3 +1,8 @@
+2007-09-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (check_profiling_available): Extend
+	mips*-*-elf check to mips*-*-elf*.
+
 2007-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/format/c90-scanf-5.c: New test.
