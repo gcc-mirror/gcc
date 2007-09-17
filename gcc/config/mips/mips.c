@@ -8872,6 +8872,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		      tree function)
 {
   rtx this, temp1, temp2, insn, fnaddr;
+  bool use_sibcall_p;
 
   /* Pretend to be a post-reload pass while generating rtl.  */
   reload_completed = 1;
@@ -8879,22 +8880,30 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   /* Mark the end of the (empty) prologue.  */
   emit_note (NOTE_INSN_PROLOGUE_END);
 
-  /* Pick a global pointer.  Use a call-clobbered register if
-     TARGET_CALL_SAVED_GP, so that we can use a sibcall.  */
-  if (TARGET_USE_GOT)
-    {
-      cfun->machine->global_pointer =
-	TARGET_CALL_SAVED_GP ? 15 : GLOBAL_POINTER_REGNUM;
+  /* Determine if we can use a sibcall to call FUNCTION directly.  */
+  fnaddr = XEXP (DECL_RTL (function), 0);
+  use_sibcall_p = (mips_function_ok_for_sibcall (function, NULL)
+		   && const_call_insn_operand (fnaddr, Pmode));
 
-      SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
-    }
+  /* Determine if we need to load FNADDR from the GOT.  */
+  if (!use_sibcall_p)
+    switch (mips_classify_symbol (fnaddr, SYMBOL_CONTEXT_LEA))
+      {
+      case SYMBOL_GOT_PAGE_OFST:
+      case SYMBOL_GOT_DISP:
+	/* Pick a global pointer.  Use a call-clobbered register if
+	   TARGET_CALL_SAVED_GP.  */
+	cfun->machine->global_pointer =
+	  TARGET_CALL_SAVED_GP ? 15 : GLOBAL_POINTER_REGNUM;
+	SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
 
-  /* Set up the global pointer for n32 or n64 abicalls.  If
-     LOADGP_ABSOLUTE then the thunk does not use the gp and there is
-     no need to load it.*/
-  if (mips_current_loadgp_style () != LOADGP_ABSOLUTE
-      || !targetm.binds_local_p (function))
-    mips_emit_loadgp ();
+	/* Set up the global pointer for n32 or n64 abicalls.  */
+	mips_emit_loadgp ();
+	break;
+
+      default:
+	break;
+      }
 
   /* We need two temporary registers in some cases.  */
   temp1 = gen_rtx_REG (Pmode, 2);
@@ -8936,9 +8945,12 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Jump to the target function.  Use a sibcall if direct jumps are
      allowed, otherwise load the address into a register first.  */
-  fnaddr = XEXP (DECL_RTL (function), 0);
-  if (TARGET_MIPS16 || TARGET_USE_GOT || SYMBOL_REF_LONG_CALL_P (fnaddr)
-      || mips_use_mips16_mode_p (function))
+  if (use_sibcall_p)
+    {
+      insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
+      SIBLING_CALL_P (insn) = 1;
+    }
+  else
     {
       /* This is messy.  gas treats "la $25,foo" as part of a call
 	 sequence and may allow a global "foo" to be lazily bound.
@@ -8961,11 +8973,6 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  && REGNO (temp1) != PIC_FUNCTION_ADDR_REGNUM)
 	mips_emit_move (gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM), temp1);
       emit_jump_insn (gen_indirect_jump (temp1));
-    }
-  else
-    {
-      insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
-      SIBLING_CALL_P (insn) = 1;
     }
 
   /* Run just enough of rest_of_compilation.  This sequence was
