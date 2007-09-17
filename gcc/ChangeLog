@@ -1,3 +1,9 @@
+2007-09-17  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR rtl-optimization/26449
+	* loop-invariant.c (move_invariant_reg): Do not use force_operand.
+	(seq_insns_valid_p): Removed.
+
 2007-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nomudflap.c (gate_mudflap): New static function.
