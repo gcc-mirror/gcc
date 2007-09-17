@@ -1,5 +1,11 @@
 2007-09-17  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/33106
+	* resolve.c (resolve_symbol): Reject public variable of
+	private derived-types for Fortran 95.
+
+2007-09-17  Tobias Burnus  <burnus@net-b.de>
+
 	* resolve.c (resolve_fl_procedure): Allow private dummies
 	for Fortran 2003.
 
