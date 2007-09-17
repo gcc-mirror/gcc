@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-c" }
+! { dg-options "-c -std=f95" }
 ! Testcase from PR fortran/25094
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
 

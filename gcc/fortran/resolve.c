@@ -6885,12 +6885,13 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	      && arg->sym->ts.type == BT_DERIVED
 	      && !arg->sym->ts.derived->attr.use_assoc
 	      && !gfc_check_access (arg->sym->ts.derived->attr.access,
-				    arg->sym->ts.derived->ns->default_access))
+				    arg->sym->ts.derived->ns->default_access)
+	      && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: '%s' is of a "
+				 "PRIVATE type and cannot be a dummy argument"
+				 " of '%s', which is PUBLIC at %L",
+				 arg->sym->name, sym->name, &sym->declared_at)
+		 == FAILURE)
 	    {
-	      gfc_error_now ("'%s' is of a PRIVATE type and cannot be "
-			     "a dummy argument of '%s', which is "
-			     "PUBLIC at %L", arg->sym->name, sym->name,
-			     &sym->declared_at);
 	      /* Stop this message from recurring.  */
 	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
 	      return FAILURE;
@@ -6907,12 +6908,14 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		  && arg->sym->ts.type == BT_DERIVED
 		  && !arg->sym->ts.derived->attr.use_assoc
 		  && !gfc_check_access (arg->sym->ts.derived->attr.access,
-					arg->sym->ts.derived->ns->default_access))
+					arg->sym->ts.derived->ns->default_access)
+		  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure "
+				     "'%s' in PUBLIC interface '%s' at %L "
+				     "takes dummy arguments of '%s' which is "
+				     "PRIVATE", iface->sym->name, sym->name,
+				     &iface->sym->declared_at,
+				     gfc_typename (&arg->sym->ts)) == FAILURE)
 		{
-		  gfc_error_now ("Procedure '%s' in PUBLIC interface '%s' at %L takes "
-				 "dummy arguments of '%s' which is PRIVATE",
-				 iface->sym->name, sym->name, &iface->sym->declared_at,
-				 gfc_typename(&arg->sym->ts));
 		  /* Stop this message from recurring.  */
 		  arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
 		  return FAILURE;
@@ -6930,12 +6933,14 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 		  && arg->sym->ts.type == BT_DERIVED
 		  && !arg->sym->ts.derived->attr.use_assoc
 		  && !gfc_check_access (arg->sym->ts.derived->attr.access,
-					arg->sym->ts.derived->ns->default_access))
+					arg->sym->ts.derived->ns->default_access)
+		  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: Procedure "
+				     "'%s' in PUBLIC interface '%s' at %L "
+				     "takes dummy arguments of '%s' which is "
+				     "PRIVATE", iface->sym->name, sym->name,
+				     &iface->sym->declared_at,
+				     gfc_typename (&arg->sym->ts)) == FAILURE)
 		{
-		  gfc_error_now ("Procedure '%s' in PUBLIC interface '%s' at %L takes "
-				 "dummy arguments of '%s' which is PRIVATE",
-				 iface->sym->name, sym->name, &iface->sym->declared_at,
-				 gfc_typename(&arg->sym->ts));
 		  /* Stop this message from recurring.  */
 		  arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
 		  return FAILURE;
