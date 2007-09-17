@@ -2431,7 +2431,7 @@
 
 (define_insn_and_split "*clear_upper32"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
-        (and:DI (match_operand:DI 1 "nonimmediate_operand" "d,o")
+        (and:DI (match_operand:DI 1 "nonimmediate_operand" "d,W")
 		(const_int 4294967295)))]
   "TARGET_64BIT"
 {
