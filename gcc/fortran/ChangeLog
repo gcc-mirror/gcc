@@ -1,3 +1,12 @@
+2007-09-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans-types.c (gfc_get_desc_dim_type): Do not to try
+	emit debug info.
+	(gfc_get_array_descriptor_base): Likewise.
+	(gfc_get_mixed_entry_union): Likewise
+	(gfc_get_derived_type): Set decl location for fields and
+	derived type itself.
+
 2007-09-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/29396
