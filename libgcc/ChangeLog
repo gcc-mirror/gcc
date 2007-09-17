@@ -1,3 +1,14 @@
+2007-09-17  Chao-ying Fu  <fu@mips.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* fixed-obj.mk: New file to support fine-grain fixed-point functions.
+	* Makefile.in (fixed_point): Define.
+	Check if fixed_point is yes to build support functions.
+	* configure.ac: Check for fixed_point support.
+	* configure: Regenerated.
+	* gen-fixed.sh: New file to generate lists of fixed-point labels,
+	funcs, modes, from, to.
+
 2007-09-11  Janis Johnson  <janis187@us.ibm.com
 
 	* Makefile.in (dfp-filenames): Add bid128_noncomp.
