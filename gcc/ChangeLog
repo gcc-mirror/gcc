@@ -1,5 +1,11 @@
 2007-09-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* df-scan.c (df_notes_rescan): Do nothing if the instruction does
+	not yet have a basic block.
+	* dse.c (find_shift_sequence): Don't set DF_NO_INSN_RESCAN.
+
+2007-09-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_file_start): Add ".previous" directives
 	to both ".section"s.
 

@@ -2004,6 +2004,10 @@ df_notes_rescan (rtx insn)
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     return;
 
+  /* Do nothing if the insn hasn't been emitted yet.  */
+  if (!BLOCK_FOR_INSN (insn))
+    return;
+
   df_grow_bb_info (df_scan);
   df_grow_reg_info ();
 

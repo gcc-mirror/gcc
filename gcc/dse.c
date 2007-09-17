@@ -1428,10 +1428,8 @@ find_shift_sequence (rtx read_reg,
       /* In theory we could also check for an ashr.  Ian Taylor knows
 	 of one dsp where the cost of these two was not the same.  But
 	 this really is a rare case anyway.  */
-      df_set_flags (DF_NO_INSN_RESCAN);
       target = expand_binop (new_mode, lshr_optab, new_reg,
 			     GEN_INT (shift), new_reg, 1, OPTAB_DIRECT);
-      df_clear_flags (DF_NO_INSN_RESCAN);
 
       if (target == new_reg)
 	{
