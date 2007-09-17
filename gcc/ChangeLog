@@ -1,5 +1,12 @@
 2007-09-17  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_output_mi_thunk): Use
+	mips_function_ok_for_sibcall and const_call_insn_operand
+	to determine if a direct sibcall is allowed.  Use
+	mips_classify_symbol to determine a global pointer is needed.
+
+2007-09-17  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.md (*clear_upper32): Use "W" as the memory operand.
 
 2007-09-17  Chao-ying Fu  <fu@mips.com>
