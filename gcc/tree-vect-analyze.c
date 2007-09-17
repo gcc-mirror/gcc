@@ -1118,11 +1118,85 @@ vect_check_interleaving (struct data_reference *dra,
     }
 }
 
+/* Check if data references pointed by DR_I and DR_J are same or
+   belong to same interleaving group.  Return FALSE if drs are
+   different, otherwise return TRUE.  */
+
+static bool
+vect_same_range_drs (data_reference_p dr_i, data_reference_p dr_j)
+{
+  tree stmt_i = DR_STMT (dr_i);
+  tree stmt_j = DR_STMT (dr_j);
+
+  if (operand_equal_p (DR_REF (dr_i), DR_REF (dr_j), 0)
+      || (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_i))
+	    && DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_j))
+	    && (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_i))
+		== DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_j)))))
+    return true;
+  else
+    return false;
+}
+
+/* If address ranges represented by DDR_I and DDR_J are equal,
+   return TRUE, otherwise return FALSE.  */
+
+static bool
+vect_vfa_range_equal (ddr_p ddr_i, ddr_p ddr_j)
+{
+  if ((vect_same_range_drs (DDR_A (ddr_i), DDR_A (ddr_j))
+       && vect_same_range_drs (DDR_B (ddr_i), DDR_B (ddr_j)))
+      || (vect_same_range_drs (DDR_A (ddr_i), DDR_B (ddr_j))
+	  && vect_same_range_drs (DDR_B (ddr_i), DDR_A (ddr_j))))
+    return true;
+  else
+    return false;
+}
+
+/* Insert DDR into LOOP_VINFO list of ddrs that may alias and need to be
+   tested at run-time.  Return TRUE if DDR was successfully inserted.
+   Return false if versioning is not supported.  */
+
+static bool
+vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+
+  if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
+    return false;
+
+  if (vect_print_dump_info (REPORT_DR_DETAILS))
+    {
+      fprintf (vect_dump, "mark for run-time aliasing test between ");
+      print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
+      fprintf (vect_dump, " and ");
+      print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
+    }
+
+  if (optimize_size)
+    {
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	fprintf (vect_dump, "versioning not supported when optimizing for size.");
+      return false;
+    }
+
+  /* FORNOW: We don't support versioning with outer-loop vectorization.  */
+  if (loop->inner)
+    {
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	fprintf (vect_dump, "versioning not yet supported for outer-loops.");
+      return false;
+    }
+
+  VEC_safe_push (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), ddr);
+  return true;
+}
 
 /* Function vect_analyze_data_ref_dependence.
 
    Return TRUE if there (might) exist a dependence between a memory-reference
-   DRA and a memory-reference DRB.  */
+   DRA and a memory-reference DRB.  When versioning for alias may check a
+   dependence at run-time, return FALSE.  */
       
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
@@ -1160,7 +1234,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
           fprintf (vect_dump, " and ");
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
         }
-      return true;
+      /* Add to list of ddrs that need to be tested at run-time.  */
+      return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
     }
 
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
@@ -1172,7 +1247,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
           fprintf (vect_dump, " and ");
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
         }
-      return true;
+      /* Add to list of ddrs that need to be tested at run-time.  */
+      return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
     }    
 
   loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
@@ -1224,10 +1300,10 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  continue;
 	}
 
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
 	{
 	  fprintf (vect_dump,
-		   "versioning for alias required: possible dependence "
+		   "not vectorized, possible dependence "
 		   "between data-refs ");
 	  print_generic_expr (vect_dump, DR_REF (dra), TDF_SLIM);
 	  fprintf (vect_dump, " and ");
@@ -1238,88 +1314,6 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
     }
 
   return false;
-}
-
-/* Return TRUE if DDR_NEW is already found in MAY_ALIAS_DDRS list.  */
-
-static bool
-vect_is_duplicate_ddr (VEC (ddr_p, heap) * may_alias_ddrs, ddr_p ddr_new)
-{
-  unsigned i;
-  ddr_p ddr;
-
-  for (i = 0; VEC_iterate (ddr_p, may_alias_ddrs, i, ddr); i++)
-    {
-      tree dref_A_i, dref_B_i, dref_A_j, dref_B_j;
-
-      dref_A_i = DR_REF (DDR_A (ddr));
-      dref_B_i = DR_REF (DDR_B (ddr));
-      dref_A_j = DR_REF (DDR_A (ddr_new));
-      dref_B_j = DR_REF (DDR_B (ddr_new));
-
-      if ((operand_equal_p (dref_A_i, dref_A_j, 0)
-	   && operand_equal_p (dref_B_i, dref_B_j, 0))
-	  || (operand_equal_p (dref_A_i, dref_B_j, 0)
-	      && operand_equal_p (dref_B_i, dref_A_j, 0)))
-	{
-	  if (vect_print_dump_info (REPORT_DR_DETAILS))
-	    {
-	      fprintf (vect_dump, "found same pair of data references ");
-	      print_generic_expr (vect_dump, dref_A_i, TDF_SLIM);
-	      fprintf (vect_dump, " and ");
-	      print_generic_expr (vect_dump, dref_B_i, TDF_SLIM);
-	    }
-	  return true;
-	}
-    }
-  return false;
-}
-
-/* Save DDR in LOOP_VINFO list of ddrs that may alias and need to be
-   tested at run-time.  Returns false if number of run-time checks
-   inserted by vectorizer is greater than maximum defined by
-   PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS.  */
-static bool
-vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
-{
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-
-  if (vect_print_dump_info (REPORT_DR_DETAILS))
-    {
-      fprintf (vect_dump, "mark for run-time aliasing test between ");
-      print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
-      fprintf (vect_dump, " and ");
-      print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
-    }
-
-  /* FORNOW: We don't support versioning with outer-loop vectorization.  */
-  if (loop->inner)
-    {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	fprintf (vect_dump, "versioning not yet supported for outer-loops.");
-      return false;
-    }
-
-  /* Do not add to the list duplicate ddrs.  */
-  if (vect_is_duplicate_ddr (LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), ddr))
-    return true;
-
-  if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo))
-      >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
-    {
-      if (vect_print_dump_info (REPORT_DR_DETAILS))
-	{
-	  fprintf (vect_dump,
-		   "disable versioning for alias - max number of generated "
-		   "checks exceeded.");
-	}
-
-      VEC_truncate (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), 0);
-
-      return false;
-    }
-  VEC_safe_push (ddr_p, heap, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), ddr);
-  return true;
 }
 
 /* Function vect_analyze_data_ref_dependences.
@@ -1339,11 +1333,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo)
      
   for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
     if (vect_analyze_data_ref_dependence (ddr, loop_vinfo))
-      {
-	/* Add to list of ddrs that need to be tested at run-time.  */
-	if (!vect_mark_for_runtime_alias_test (ddr, loop_vinfo))
       return false;
-      }
 
   return true;
 }
@@ -2381,6 +2371,77 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo)
   return true;
 }
 
+/* Function vect_prune_runtime_alias_test_list.
+
+   Prune a list of ddrs to be tested at run-time by versioning for alias.
+   Return FALSE if resulting list of ddrs is longer then allowed by
+   PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS, otherwise return TRUE.  */
+
+static bool
+vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
+{
+  VEC (ddr_p, heap) * ddrs =
+    LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
+  unsigned i, j;
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "=== vect_prune_runtime_alias_test_list ===");
+
+  for (i = 0; i < VEC_length (ddr_p, ddrs); )
+    {
+      bool found;
+      ddr_p ddr_i;
+
+      ddr_i = VEC_index (ddr_p, ddrs, i);
+      found = false;
+
+      for (j = 0; j < i; j++)
+        {
+	  ddr_p ddr_j = VEC_index (ddr_p, ddrs, j);
+
+	  if (vect_vfa_range_equal (ddr_i, ddr_j))
+	    {
+	      if (vect_print_dump_info (REPORT_DR_DETAILS))
+		{
+		  fprintf (vect_dump, "found equal ranges ");
+		  print_generic_expr (vect_dump, DR_REF (DDR_A (ddr_i)), TDF_SLIM);
+		  fprintf (vect_dump, ", ");
+		  print_generic_expr (vect_dump, DR_REF (DDR_B (ddr_i)), TDF_SLIM);
+		  fprintf (vect_dump, " and ");
+		  print_generic_expr (vect_dump, DR_REF (DDR_A (ddr_j)), TDF_SLIM);
+		  fprintf (vect_dump, ", ");
+		  print_generic_expr (vect_dump, DR_REF (DDR_B (ddr_j)), TDF_SLIM);
+		}
+	      found = true;
+	      break;
+	    }
+	}
+      
+      if (found)
+      {
+	VEC_ordered_remove (ddr_p, ddrs, i);
+	continue;
+      }
+      i++;
+    }
+
+  if (VEC_length (ddr_p, ddrs) >
+       (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
+    {
+      if (vect_print_dump_info (REPORT_DR_DETAILS))
+	{
+	  fprintf (vect_dump,
+		   "disable versioning for alias - max number of generated "
+		   "checks exceeded.");
+	}
+
+      VEC_truncate (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo), 0);
+
+      return false;
+    }
+
+  return true;
+}
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
 
@@ -4227,6 +4288,19 @@ vect_analyze_loop (struct loop *loop)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "bad data access.");
+      destroy_loop_vec_info (loop_vinfo, true);
+      return NULL;
+    }
+
+  /* Prune the list of ddrs to be tested at run-time by versioning for alias.
+     It is important to call pruning after vect_analyze_data_ref_accesses,
+     since we use grouping information gathered by interleaving analysis.  */
+  ok = vect_prune_runtime_alias_test_list (loop_vinfo);
+  if (!ok)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "too long list of versioning for alias "
+			    "run-time tests.");
       destroy_loop_vec_info (loop_vinfo, true);
       return NULL;
     }

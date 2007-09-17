@@ -137,15 +137,32 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
       return 0;
     }
 
-  /* Requires loop versioning tests to handle misalignment.
-     FIXME: Make cost depend on number of stmts in may_misalign list.  */
+  /* Requires loop versioning tests to handle misalignment.  */
 
   if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
     {
-      vec_outside_cost += TARG_COND_TAKEN_BRANCH_COST;
+      /*  FIXME: Make cost depend on complexity of individual check.  */
+      vec_outside_cost +=
+        VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "cost model: Adding cost of checks for loop "
-                 "versioning.\n");
+                 "versioning to treat misalignment.\n");
+    }
+
+  if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    {
+      /*  FIXME: Make cost depend on complexity of individual check.  */
+      vec_outside_cost +=
+        VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo));
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "cost model: Adding cost of checks for loop "
+                 "versioning aliasing.\n");
+    }
+
+  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    {
+      vec_outside_cost += TARG_COND_TAKEN_BRANCH_COST;
     }
 
   /* Count statements in scalar loop.  Using this as scalar cost for a single
@@ -6864,31 +6881,18 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
 static tree
 vect_vfa_segment_size (struct data_reference *dr, tree vect_factor)
 {
-  tree segment_length;
+  tree segment_length = fold_build2 (MULT_EXPR, integer_type_node,
+			             DR_STEP (dr), vect_factor);
 
   if (vect_supportable_dr_alignment (dr) == dr_explicit_realign_optimized)
     {
-      tree vector_size =
-        build_int_cst (integer_type_node,
-          GET_MODE_SIZE (TYPE_MODE (STMT_VINFO_VECTYPE
-	    (vinfo_for_stmt (DR_STMT (dr))))));
+      tree vector_size = TYPE_SIZE_UNIT
+			  (STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr))));
 
-      segment_length =
-	fold_convert (sizetype,
-	  fold_build2 (PLUS_EXPR, integer_type_node,
-	    fold_build2 (MULT_EXPR, integer_type_node, DR_STEP (dr),
-			 vect_factor),
-	    vector_size));
+      segment_length = fold_build2 (PLUS_EXPR, integer_type_node,
+				    segment_length, vector_size);
     }
-  else
-    {
-      segment_length =
-	fold_convert (sizetype,
-	  fold_build2 (MULT_EXPR, integer_type_node, DR_STEP (dr),
-		       vect_factor));
-    }
-
-    return segment_length;
+  return fold_convert (sizetype, segment_length);
 }
 
 /* Function vect_create_cond_for_alias_checks.
@@ -6907,6 +6911,8 @@ vect_vfa_segment_size (struct data_reference *dr, tree vect_factor)
    COND_EXPR - conditional expression.
    COND_EXPR_STMT_LIST - statements needed to construct the conditional
                          expression.
+
+
    The returned value is the conditional expression to be used in the if
    statement that controls which version of the loop gets executed at runtime.
 */
@@ -6940,26 +6946,47 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
 
   for (i = 0; VEC_iterate (ddr_p, may_alias_ddrs, i, ddr); i++)
     {
-      tree stmt_a = DR_STMT (DDR_A (ddr));
-      tree stmt_b = DR_STMT (DDR_B (ddr));
+      struct data_reference *dr_a, *dr_b;
+      tree dr_group_first_a, dr_group_first_b;
+      tree addr_base_a, addr_base_b;
+      tree segment_length_a, segment_length_b;
+      tree stmt_a, stmt_b;
 
-      tree addr_base_a =
+      dr_a = DDR_A (ddr);
+      stmt_a = DR_STMT (DDR_A (ddr));
+      dr_group_first_a = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_a));
+      if (dr_group_first_a)
+        {
+	  stmt_a = dr_group_first_a;
+	  dr_a = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt_a));
+	}
+
+      dr_b = DDR_B (ddr);
+      stmt_b = DR_STMT (DDR_B (ddr));
+      dr_group_first_b = DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt_b));
+      if (dr_group_first_b)
+        {
+	  stmt_b = dr_group_first_b;
+	  dr_b = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt_b));
+	}
+
+      addr_base_a =
         vect_create_addr_base_for_vector_ref (stmt_a, cond_expr_stmt_list,
 					      NULL_TREE, loop);
-      tree addr_base_b =
+      addr_base_b =
         vect_create_addr_base_for_vector_ref (stmt_b, cond_expr_stmt_list,
 					      NULL_TREE, loop);
 
-      tree segment_length_a = vect_vfa_segment_size (DDR_A (ddr), vect_factor);
-      tree segment_length_b = vect_vfa_segment_size (DDR_B (ddr), vect_factor);
+      segment_length_a = vect_vfa_segment_size (dr_a, vect_factor);
+      segment_length_b = vect_vfa_segment_size (dr_b, vect_factor);
 
       if (vect_print_dump_info (REPORT_DR_DETAILS))
 	{
 	  fprintf (vect_dump,
 		   "create runtime check for data references ");
-	  print_generic_expr (vect_dump, DR_REF (DDR_A (ddr)), TDF_SLIM);
+	  print_generic_expr (vect_dump, DR_REF (dr_a), TDF_SLIM);
 	  fprintf (vect_dump, " and ");
-	  print_generic_expr (vect_dump, DR_REF (DDR_B (ddr)), TDF_SLIM);
+	  print_generic_expr (vect_dump, DR_REF (dr_b), TDF_SLIM);
 	}
 
 
@@ -6986,6 +7013,91 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
       fprintf (vect_dump, "created %u versioning for alias checks.\n",
                VEC_length (ddr_p, may_alias_ddrs));
 
+}
+
+/* Function vect_loop_versioning.
+ 
+   If the loop has data references that may or may not be aligned or/and
+   has data reference relations whose independence was not proven then
+   two versions of the loop need to be generated, one which is vectorized
+   and one which isn't.  A test is then generated to control which of the
+   loops is executed.  The test checks for the alignment of all of the
+   data references that may or may not be aligned.  An additional
+   sequence of runtime tests is generated for each pairs of DDRs whose
+   independence was not proven.  The vectorized version of loop is 
+   executed only if both alias and alignment tests are passed.  */
+
+static void
+vect_loop_versioning (loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  struct loop *nloop;
+  tree cond_expr = NULL_TREE;
+  tree cond_expr_stmt_list = NULL_TREE;
+  basic_block condition_bb;
+  block_stmt_iterator cond_exp_bsi;
+  basic_block merge_bb;
+  basic_block new_exit_bb;
+  edge new_exit_e, e;
+  tree orig_phi, new_phi, arg;
+  unsigned prob = 4 * REG_BR_PROB_BASE / 5;
+  tree gimplify_stmt_list;
+
+  if (!VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    return;
+
+  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
+    cond_expr =
+      vect_create_cond_for_align_checks (loop_vinfo, &cond_expr_stmt_list);
+
+  if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr, &cond_expr_stmt_list);
+
+  cond_expr =
+    fold_build2 (NE_EXPR, boolean_type_node, cond_expr, integer_zero_node);
+  cond_expr =
+    force_gimple_operand (cond_expr, &gimplify_stmt_list, true,
+			  NULL_TREE);
+  append_to_statement_list (gimplify_stmt_list, &cond_expr_stmt_list);
+
+  initialize_original_copy_tables ();
+  nloop = loop_version (loop, cond_expr, &condition_bb,
+			prob, prob, REG_BR_PROB_BASE - prob, true);
+  free_original_copy_tables();
+
+  /* Loop versioning violates an assumption we try to maintain during 
+     vectorization - that the loop exit block has a single predecessor.
+     After versioning, the exit block of both loop versions is the same
+     basic block (i.e. it has two predecessors). Just in order to simplify
+     following transformations in the vectorizer, we fix this situation
+     here by adding a new (empty) block on the exit-edge of the loop,
+     with the proper loop-exit phis to maintain loop-closed-form.  */
+  
+  merge_bb = single_exit (loop)->dest;
+  gcc_assert (EDGE_COUNT (merge_bb->preds) == 2);
+  new_exit_bb = split_edge (single_exit (loop));
+  new_exit_e = single_exit (loop);
+  e = EDGE_SUCC (new_exit_bb, 0);
+
+  for (orig_phi = phi_nodes (merge_bb); orig_phi; 
+	orig_phi = PHI_CHAIN (orig_phi))
+    {
+      new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
+				  new_exit_bb);
+      arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
+      add_phi_arg (new_phi, arg, new_exit_e);
+      SET_PHI_ARG_DEF (orig_phi, e->dest_idx, PHI_RESULT (new_phi));
+    } 
+
+  /* End loop-exit-fixes after versioning.  */
+
+  update_ssa (TODO_update_ssa);
+  if (cond_expr_stmt_list)
+    {
+      cond_exp_bsi = bsi_last (condition_bb);
+      bsi_insert_before (&cond_exp_bsi, cond_expr_stmt_list, BSI_SAME_STMT);
+    }
 }
 
 /* Remove a group of stores (for SLP or interleaving), free their 
@@ -7096,7 +7208,6 @@ vect_schedule_slp (loop_vec_info loop_vinfo, unsigned int nunits)
   return is_store;
 }
 
-
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -7119,82 +7230,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
-
-  /* If the loop has data references that may or may not be aligned or/and
-     has data reference relations whose independence was not proven then
-     two versions of the loop need to be generated, one which is vectorized
-     and one which isn't.  A test is then generated to control which of the
-     loops is executed.  The test checks for the alignment of all of the
-     data references that may or may not be aligned.  An additional
-     sequence of runtime tests is generated for each pairs of DDRs whose
-     independence was not proven.  The vectorized version of loop is 
-     executed only if both alias and alignment tests are passed.  */
-
-  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    {
-      struct loop *nloop;
-      tree cond_expr = NULL_TREE;
-      tree cond_expr_stmt_list = NULL_TREE;
-      basic_block condition_bb;
-      block_stmt_iterator cond_exp_bsi;
-      basic_block merge_bb;
-      basic_block new_exit_bb;
-      edge new_exit_e, e;
-      tree orig_phi, new_phi, arg;
-      unsigned prob = 4 * REG_BR_PROB_BASE / 5;
-      tree gimplify_stmt_list;
-
-      if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
-	cond_expr =
-	  vect_create_cond_for_align_checks (loop_vinfo, &cond_expr_stmt_list);
-
-      if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-	vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr,
-                                                     &cond_expr_stmt_list);
-
-      cond_expr =
-        fold_build2 (NE_EXPR, boolean_type_node, cond_expr, integer_zero_node);
-      cond_expr =
-        force_gimple_operand (cond_expr, &gimplify_stmt_list, true,
-                              NULL_TREE);
-      append_to_statement_list (gimplify_stmt_list, &cond_expr_stmt_list);
-
-      initialize_original_copy_tables ();
-      nloop = loop_version (loop, cond_expr, &condition_bb,
-			    prob, prob, REG_BR_PROB_BASE - prob, true);
-      free_original_copy_tables();
-
-      /** Loop versioning violates an assumption we try to maintain during 
-	 vectorization - that the loop exit block has a single predecessor.
-	 After versioning, the exit block of both loop versions is the same
-	 basic block (i.e. it has two predecessors). Just in order to simplify
-	 following transformations in the vectorizer, we fix this situation
-	 here by adding a new (empty) block on the exit-edge of the loop,
-	 with the proper loop-exit phis to maintain loop-closed-form.  **/
-      
-      merge_bb = single_exit (loop)->dest;
-      gcc_assert (EDGE_COUNT (merge_bb->preds) == 2);
-      new_exit_bb = split_edge (single_exit (loop));
-      new_exit_e = single_exit (loop);
-      e = EDGE_SUCC (new_exit_bb, 0);
-
-      for (orig_phi = phi_nodes (merge_bb); orig_phi; 
-	   orig_phi = PHI_CHAIN (orig_phi))
-	{
-          new_phi = create_phi_node (SSA_NAME_VAR (PHI_RESULT (orig_phi)),
-				     new_exit_bb);
-          arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
-          add_phi_arg (new_phi, arg, new_exit_e);
-	  SET_PHI_ARG_DEF (orig_phi, e->dest_idx, PHI_RESULT (new_phi));
-	} 
-
-      /** end loop-exit-fixes after versioning  **/
-
-      update_ssa (TODO_update_ssa);
-      cond_exp_bsi = bsi_last (condition_bb);
-      bsi_insert_before (&cond_exp_bsi, cond_expr_stmt_list, BSI_SAME_STMT);
-    }
+  vect_loop_versioning (loop_vinfo);
 
   /* CHECKME: we wouldn't need this if we called update_ssa once
      for all loops.  */
