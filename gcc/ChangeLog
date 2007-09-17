@@ -1,3 +1,9 @@
+2007-09-17  Tom Tromey  <tromey@redhat.com>
+
+	* c-decl.c (pushdecl): Don't set DECL_LANG_SPECIFIC.
+	(c_builtin_function): Likewise.
+	(grokdeclarator): Likewise.
+
 2007-09-17  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR rtl-optimization/26449

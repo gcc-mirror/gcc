@@ -2071,10 +2071,6 @@ pushdecl (tree x)
   struct c_binding *b;
   bool nested = false;
 
-  /* Functions need the lang_decl data.  */
-  if (TREE_CODE (x) == FUNCTION_DECL && !DECL_LANG_SPECIFIC (x))
-    DECL_LANG_SPECIFIC (x) = GGC_CNEW (struct lang_decl);
-
   /* Must set DECL_CONTEXT for everything not at file scope or
      DECL_FILE_SCOPE_P won't work.  Local externs don't count
      unless they have initializers (which generate code).  */
@@ -2846,7 +2842,6 @@ c_builtin_function (tree decl)
   tree   id = DECL_NAME (decl);
 
   const char *name = IDENTIFIER_POINTER (id);
-  DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
   C_DECL_BUILTIN_PROTOTYPE (decl) = (TYPE_ARG_TYPES (type) != 0);
 
   /* Should never be called on a symbol with a preexisting meaning.  */
@@ -4824,8 +4819,6 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	decl = build_decl (FUNCTION_DECL, declarator->u.id, type);
 	decl = build_decl_attribute_variant (decl, decl_attr);
-
-	DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
 
 	if (pedantic && type_quals && !DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");
