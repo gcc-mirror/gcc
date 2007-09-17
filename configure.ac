@@ -2459,10 +2459,10 @@ case " $build_configdirs " in
   *" texinfo "*) MAKEINFO='$$r/$(BUILD_SUBDIR)/texinfo/makeinfo/makeinfo' ;;
   *)
 changequote(,)
-    # For an installed makeinfo, we require it to be from texinfo 4.4 or
+    # For an installed makeinfo, we require it to be from texinfo 4.6 or
     # higher, else we use the "missing" dummy.
     if ${MAKEINFO} --version \
-       | egrep 'texinfo[^0-9]*(4\.([4-9]|[1-9][0-9])|[5-9]|[1-9][0-9])' >/dev/null 2>&1; then
+       | egrep 'texinfo[^0-9]*(4\.([6-9]|[1-9][0-9])|[5-9]|[1-9][0-9])' >/dev/null 2>&1; then
       :
     else
       MAKEINFO="$MISSING makeinfo"
