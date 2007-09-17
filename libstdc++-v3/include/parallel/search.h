@@ -100,7 +100,7 @@ namespace __gnu_parallel
     // Last point to start search.
     difference_type input_length = (end1 - begin1) - pattern_length;
 
-    // Where is first occurence of pattern? defaults to end.
+    // Where is first occurrence of pattern? defaults to end.
     difference_type res = (end1 - begin1);
 
     // Pattern too long.
@@ -128,7 +128,7 @@ namespace __gnu_parallel
 	{
 	  // Get new value of res.
 #pragma omp flush(res)
-	  // No chance for this thread to find first occurence.
+	  // No chance for this thread to find first occurrence.
 	  if (res < start)
 	    break;
 	  while (pred(begin1[start + pos_in_pattern], begin2[pos_in_pattern]))

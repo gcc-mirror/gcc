@@ -31,7 +31,7 @@
 /**
  * @file parallel/numeric
 *
- * @brief Parallel STL fucntion calls corresponding to stl_numeric.h.
+ * @brief Parallel STL function calls corresponding to stl_numeric.h.
  * The functions defined here mainly do case switches and
  * call the actual parallelized versions in other files.
  * Inlining policy: Functions that basically only contain one function call,

@@ -29,7 +29,7 @@
 // Public License.
 
 /** @file parallel/for_each.h
- *  @brief Main interface for embarassingly parallel functions.
+ *  @brief Main interface for embarrassingly parallel functions.
  *
  *  The explicit implementation are in other header files, like
  *  workstealing.h, par_loop.h, omp_loop.h, and omp_loop_static.h.

@@ -69,7 +69,7 @@
 #define _GLIBCXX_RANDOM_SHUFFLE_CONSIDER_TLB 0
 
 /** @brief First copy the data, sort it locally, and merge it back
- * (0); or copy it back after everyting is done (1).
+ * (0); or copy it back after everything is done (1).
  *
  *  Recommendation: 0 */
 #define _GLIBCXX_MULTIWAY_MERGESORT_COPY_LAST 0

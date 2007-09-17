@@ -396,9 +396,9 @@ namespace __gnu_parallel
 	// 1. Convert n to n', where n' will be its rank if the tree
 	//    was complete
 	// 2. Calculate neighbours for n'
-	// 3. Convert the neighbours n1', n2' and n3' to their
-	//    appropiate values n1, n2, n3. Note that it must be
-	//    checked that this neighbours reallly exist.
+	// 3. Convert the neighbors n1', n2' and n3' to their
+	//    appropriate values n1, n2, n3. Note that it must be
+	//    checked that these neighbors actually exist.
 	calculate_shifts_pos_level(mod_pos, zero, l_s, r_s, p_s);
 	if (l_s > splitting_point)
 	  {
@@ -534,7 +534,7 @@ namespace __gnu_parallel
       /** @brief Search for the first 0 bit (growing the weight) using
        * binary search
        *
-       * Binary search can be used instead of a naïve loop using the
+       * Binary search can be used instead of a naive loop using the
        * masks in mask array
        * @param x Binary number (corresponding to a rank in the tree)
        * whose first 0 bit must be calculated
@@ -638,7 +638,7 @@ namespace __gnu_parallel
 	  considering valid nodes and gaps
        * @param pos Rank in the array of nodes considering only valid nodes
        * @param index Partition which the rank is most likely to
-       * belong to (ie. the corresponding if there were no gaps)
+       * belong to (i. e. the corresponding if there were no gaps)
        * @pre 0 <= @c pos <= number_of_distinct_elements
        * @return Rank in the array of nodes considering valid nodes and gaps
        * @post 0 <= @c return <= number_of_elements
@@ -746,14 +746,14 @@ namespace __gnu_parallel
     /** @brief Helper comparator class: Passed as a parameter of
 	list_partition to check that a sequence is sorted
      * @param _InputIterator Iterator to the elements to compare
-     * @param _CompIsSorted  Comparator to check for sortedness */
+     * @param _CompIsSorted  Comparator to check for sortednesss */
     template<typename _InputIterator, typename _CompIsSorted>
     class is_sorted_functor
     {
       /** @brief Element to compare with (first parameter of comp) */
       _InputIterator prev;
 
-      /** @brief Comparator to check for sortedness */
+      /** @brief Comparator to check for sortednesss */
       const _CompIsSorted comp;
 
       /** @brief Sum up the history of the operator() of this
@@ -767,7 +767,7 @@ namespace __gnu_parallel
        * Sorted is set to true
        * @param first Element to compare with the first time the
        * operator() is called
-       * @param c  Comparator to check for sortednes */
+       * @param c  Comparator to check for sortedness */
       is_sorted_functor(const _InputIterator first, const _CompIsSorted c)
       : prev(first), comp(c), sorted(true) { }
 
@@ -891,7 +891,7 @@ namespace __gnu_parallel
     template<typename S>
     struct Opposite
     {
-      /** @brief Obtain the conceptual left child of a node, inversing
+      /** @brief Obtain the conceptual left child of a node, inverting
 	  the symmetry
        * @param parent Node whose child must be obtained
        * @return Reference to the child node */
@@ -899,7 +899,7 @@ namespace __gnu_parallel
       { return S::right(parent);}
 
       /** @brief Obtain the conceptual right child of a node,
-	  inversing the symmetry
+	  inverting the symmetry
        * @param parent Node whose child must be obtained
        * @return Reference to the child node */
       static _Rb_tree_node_base*& right(_Rb_tree_node_base* parent)
@@ -1140,7 +1140,7 @@ namespace __gnu_parallel
 	  be inserted into @c t */
       size_type pos_beg;
 
-      /** @brief Positition of the first node in the array of nodes
+      /** @brief Position of the first node in the array of nodes
 	  that won't be inserted into @c t */
       size_type pos_end;
 
@@ -1189,7 +1189,7 @@ namespace __gnu_parallel
      * The input sequence is preprocessed so that the bulk
      * construction or insertion can be performed
      * efficiently. Essentially, the sequence is checked for
-     * sortedness and iterators to the middle of the structure are
+     * sortednesss and iterators to the middle of the structure are
      * saved so that afterwards the sequence can be processed
      * effectively in parallel. */
     template<typename _InputIterator, typename StrictlyLessOrLessEqual>
@@ -1249,7 +1249,7 @@ namespace __gnu_parallel
      * The elements are copied, according to the copy policy, in order
      * to be sorted. Then the
      * _M_not_sorted_bulk_insertion_construction() method is called
-     * appropiately
+     * appropriately
      * @param access Array of iterators of size @c num_threads +
      * 1. Each position contains the first element in each subsequence
      * to be added into the tree.
@@ -1401,7 +1401,7 @@ namespace __gnu_parallel
     }
 
 
-    /** @brief Allocation of an array of nodes and initilization of
+    /** @brief Allocation of an array of nodes and initialization of
 	their value fields from an input sequence. Done in parallel.
      * @param access Array of iterators of size @c num_threads +
      * 1. Each position contains the first value in the subsequence to
@@ -1442,7 +1442,7 @@ namespace __gnu_parallel
     }
 
 
-    /** @brief Allocation of an array of nodes and initilization of
+    /** @brief Allocation of an array of nodes and initialization of
      * their value fields from an input sequence. Done in
      * parallel. Besides, the sequence is checked for uniqueness while
      * copying the elements, and if there are repetitions, gaps within
@@ -1570,7 +1570,7 @@ namespace __gnu_parallel
 
     }
 
-    /** @brief Allocation of an array of nodes and initilization of
+    /** @brief Allocation of an array of nodes and initialization of
      * their value fields from an input sequence.
      *
      * The allocation and initialization is done in parallel. Besides,
@@ -1734,7 +1734,7 @@ namespace __gnu_parallel
 
       t.tic("bulk allocation and initialization");
 
-      // Link the tree appropiately.
+      // Link the tree appropriately.
       // Dealing with repetitions (EFFICIENCY ISSUE).
       ranker_gaps rank(beg_partition, rank_shift, num_threads);
       nodes_initializer<ranker_gaps> nodes_init(r, n - rank_shift[num_threads], num_threads, rank);
@@ -1772,7 +1772,7 @@ namespace __gnu_parallel
 	      }
 	  }
       }
-      // If the execution reachs this point, there has been no
+      // If the execution reaches this point, there has been no
       // exception, and so the structure can be initialized.
 
       // Join the tree laid on the array of ptrs with the header node.
@@ -1870,7 +1870,7 @@ namespace __gnu_parallel
 
       //2. Split the tree according to access in num_threads parts
       //Initialize upper concat_problems
-      //Allocate them dinamically because they are afterwards so erased
+      //Allocate them dynamically because they are afterwards so erased
       for (int i=0; i < (2*num_threads-1); ++i)
 	{
 	  conc[i] = new concat_problem ();
@@ -2048,13 +2048,13 @@ namespace __gnu_parallel
     /** @brief Divide a tree according to the splitter elements of a
      * given sequence.
      *
-     * The tree of the intial recursive call is divided in exactly
+     * The tree of the initial recursive call is divided in exactly
      * num_threads partitions, some of which may be empty. Besides,
      * some nodes may be extracted from it to afterwards concatenate
      * the subtrees resulting from inserting the elements into it.
      * This is done sequentially. It could be done in parallel but the
      * performance is much worse.
-     * @param t Root of the tree to be splitted
+     * @param t Root of the tree to be split
      * @param r Array of nodes to be inserted into the tree (here only
      * used to look up its elements)
      * @param access Array of iterators of size @c num_threads +
@@ -2184,7 +2184,7 @@ namespace __gnu_parallel
      *  sequentially.
      * @param r Array of nodes containing the nodes to added into the tree
      * @param ins_problems Pointer to a queue of insertion
-     * problems. The calling thread owns this queue, i.e. it is the
+     * problems. The calling thread owns this queue, i. e. it is the
      * only one to push elements, but other threads could pop elements
      * from it in other methods.
      * @param ip Current insertion problem to be solved
@@ -2475,7 +2475,7 @@ namespace __gnu_parallel
       is_sorted_functor<_InputIterator, _Compare> sorted(__first, base_type::_M_impl._M_key_compare);
       dist = list_partition(__first, __last, access,  (beg_partition+1),  num_pieces, sorted,  0);
 
-      // Calculate the rank of the begining each partition from the
+      // Calculate the rank of the beginning each partition from the
       // sequence sizes (what is stored at this point in beg_partition
       // array).
       beg_partition[0] = 0;
@@ -2489,7 +2489,7 @@ namespace __gnu_parallel
 
     /** @brief Make a full copy of the elements of a sequence
      *
-     *  The unitialized_copy method from the stl is called in parallel
+     *  The uninitialized_copy method from the STL is called in parallel
      *  using the access array to point to the beginning of each
      *  partition
      *  @param access Array of size @c num_threads + 1 that defines @c
@@ -2551,7 +2551,7 @@ namespace __gnu_parallel
      *  @param pos_beg_right Position of the first node in the
      *  resulting right partition (out)
      *  @param existing Number of existing elements before dividing
-     *  (in) and after (out). Specificically, the counter is
+     *  (in) and after (out). Specifically, the counter is
      *  incremented by one for unique containers if the splitting key
      *  was already in the array of nodes.
      *  @param strictly_less_or_less_equal Comparator to deal
@@ -2866,10 +2866,10 @@ namespace __gnu_parallel
     }
 
     /** @brief Split a tree according to key in three parts: a left
-     * child, a right child and an intermediate node.
+     *  child, a right child and an intermediate node.
      *
      *  Trees are concatenated once the recursive call returns. That
-     *  is, from bottom to top (ie. smaller to larger), so the cost
+     *  is, from bottom to top (i. e. smaller to larger), so the cost
      *  bounds for split hold.
      *  @param t Root of the tree to split.
      *  @param key Key to split according to.
@@ -3032,7 +3032,7 @@ namespace __gnu_parallel
     }
 
     /** @brief Split the tree in two parts: the minimum element from a
-	tree (i.e. leftmost) and the rest (right subtree)
+	tree (i. e. leftmost) and the rest (right subtree)
      *  @param t Root of the tree
      *  @param root Minimum element (out)
      *  @param r Right subtree: @c t - {@c root}
@@ -3080,7 +3080,7 @@ namespace __gnu_parallel
 
 
     /** @brief Split the tree in two parts: the greatest element from
-	a tree (i.e. rightmost) and the rest (left subtree)
+	a tree (i. e. rightmost) and the rest (left subtree)
      *  @param t Root of the tree
      *  @param root Maximum element (out)
      *  @param l Left subtree: @c t - {@c root}
@@ -3128,7 +3128,7 @@ namespace __gnu_parallel
      * and a right subtree
      *
      *  Trees are concatenated once the recursive call returns. That
-     *  is, from bottom to top (ie. smaller to larger), so the cost
+     *  is, from bottom to top (i. e. smaller to larger), so the cost
      *  bounds for split hold.
      *  @param t Root of the tree to split.
      *  @param key Key to split according to.
