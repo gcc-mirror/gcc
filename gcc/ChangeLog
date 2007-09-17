@@ -1,3 +1,10 @@
+2007-09-17  Chao-ying Fu  <fu@mips.com>
+	    Nigel Stephens  <nigel@mips.com>
+
+	* config/fixed-bit.h: New file.
+	* config/fixed-bit.c: New file.
+	* doc/libgcc.texi (Fixed-point fractional library routines): New node.
+
 2007-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-format.h (format_kind_info): Add alloc_char field.
