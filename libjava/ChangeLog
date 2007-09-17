@@ -1,3 +1,9 @@
+2007-09-17  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (MAJOR_1_6): New define.
+	(MINOR_1_6): Likewise.
+	(_Jv_ClassReader::parse): Handle 1.6 bytecode.
+
 2007-09-12  David Daney  <ddaney@avtrex.com>
 
 	* configure.host: Enable interpreter for mips64.  Enable hash
