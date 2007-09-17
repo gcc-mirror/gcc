@@ -1,3 +1,9 @@
+2007-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nomudflap.c (gate_mudflap): New static function.
+	(pass_mudflap_1): Use it as gate function.
+	(pass_mudflap_2): Likewise.
+
 2007-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/33348

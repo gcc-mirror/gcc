@@ -84,10 +84,16 @@ mf_mark (tree t ATTRIBUTE_UNUSED)
 
 /* The pass structures must exist, but need not do anything.  */
 
+static bool
+gate_mudflap (void)
+{
+  return flag_mudflap != 0;
+}
+
 struct tree_opt_pass pass_mudflap_1 = 
 {
   "mudflap1",				/* name */
-  NULL,					/* gate */
+  gate_mudflap,                         /* gate */
   NULL,					/* execute */
   NULL,					/* sub */
   NULL,					/* next */
@@ -104,7 +110,7 @@ struct tree_opt_pass pass_mudflap_1 =
 struct tree_opt_pass pass_mudflap_2 = 
 {
   "mudflap2",				/* name */
-  NULL,					/* gate */
+  gate_mudflap,                         /* gate */
   NULL,					/* execute */
   NULL,					/* sub */
   NULL,					/* next */
