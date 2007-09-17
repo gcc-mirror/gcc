@@ -1,3 +1,9 @@
+2007-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (maybe_lookup_element_for_expr) <COMPONENT_REF>: Return
+	NULL for variable-sized records too.
+	(sra_walk_expr) <COMPONENT_REF>: Stop at variable-sized records too.
+
 2007-09-17  Tom Tromey  <tromey@redhat.com>
 
 	* c-decl.c (pushdecl): Don't set DECL_LANG_SPECIFIC.

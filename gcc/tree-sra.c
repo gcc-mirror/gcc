@@ -636,10 +636,17 @@ maybe_lookup_element_for_expr (tree expr)
       break;
 
     case COMPONENT_REF:
-      /* Don't look through unions.  */
-      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) != RECORD_TYPE)
-	return NULL;
-      child = TREE_OPERAND (expr, 1);
+      {
+	tree type = TREE_TYPE (TREE_OPERAND (expr, 0));
+	/* Don't look through unions.  */
+	if (TREE_CODE (type) != RECORD_TYPE)
+	  return NULL;
+	/* Neither through variable-sized records.  */
+	if (TYPE_SIZE (type) == NULL_TREE
+	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	  return NULL;
+	child = TREE_OPERAND (expr, 1);
+      }
       break;
 
     case REALPART_EXPR:
@@ -789,14 +796,17 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	break;
 
       case COMPONENT_REF:
-	/* A reference to a union member constitutes a reference to the
-	   entire union.  */
-	if (TREE_CODE (TREE_TYPE (TREE_OPERAND (inner, 0))) != RECORD_TYPE)
-	  goto use_all;
-	/* ??? See above re non-constant stride.  */
-	if (TREE_OPERAND (inner, 2))
-	  goto use_all;
-	inner = TREE_OPERAND (inner, 0);
+	{
+	  tree type = TREE_TYPE (TREE_OPERAND (inner, 0));
+	  /* Don't look through unions.  */
+	  if (TREE_CODE (type) != RECORD_TYPE)
+	    goto use_all;
+	  /* Neither through variable-sized records.  */
+	  if (TYPE_SIZE (type) == NULL_TREE
+	      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	    goto use_all;
+	  inner = TREE_OPERAND (inner, 0);
+	}
 	break;
 
       case REALPART_EXPR:
