@@ -864,6 +864,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_inline_functions = 1;
       flag_unswitch_loops = 1;
       flag_gcse_after_reload = 1;
+      flag_tree_vectorize = 1;
 
       /* Allow even more virtual operators.  */
       set_param_value ("max-aliased-vops", 1000);
