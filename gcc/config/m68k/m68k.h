@@ -108,6 +108,10 @@ along with GCC; see the file COPYING3.  If not see
 	  builtin_define_std ("mc68020");				\
 	  break;							\
 									\
+	case ucfv1:							\
+	  builtin_define ("__mcfv1__");					\
+	  break;							\
+									\
 	case ucfv2:							\
 	  builtin_define ("__mcfv2__");					\
 	  break;							\
@@ -260,6 +264,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TUNE_68060	(m68k_tune == u68060 || m68k_tune == u68020_60)
 #define TUNE_68040_60	(TUNE_68040 || TUNE_68060)
 #define TUNE_CPU32	(m68k_tune == ucpu32)
+#define TUNE_CFV1       (m68k_tune == ucfv1)
 #define TUNE_CFV2	(m68k_tune == ucfv2)
 
 #define OVERRIDE_OPTIONS   override_options()
@@ -1084,6 +1089,7 @@ enum uarch_type
   u68040,
   u68060,
   ucpu32,
+  ucfv1,
   ucfv2,
   ucfv3,
   ucfv4,

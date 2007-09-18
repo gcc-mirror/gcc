@@ -11096,6 +11096,7 @@ below, which also classifies the CPUs into families:
 
 @multitable @columnfractions 0.20 0.80
 @item @strong{Family} @tab @strong{@samp{-mcpu} arguments}
+@item @samp{51qe} @tab @samp{51qe}
 @item @samp{5206} @tab @samp{5202} @samp{5204} @samp{5206}
 @item @samp{5206e} @tab @samp{5206e}
 @item @samp{5208} @tab @samp{5207} @samp{5208}
@@ -11133,7 +11134,7 @@ constraints set by @option{-march} and @option{-mcpu}.
 The M680x0 microarchitectures are: @samp{68000}, @samp{68010},
 @samp{68020}, @samp{68030}, @samp{68040}, @samp{68060}
 and @samp{cpu32}.  The ColdFire microarchitectures
-are: @samp{cfv2}, @samp{cfv3}, @samp{cfv4} and @samp{cfv4e}.
+are: @samp{cfv1}, @samp{cfv2}, @samp{cfv3}, @samp{cfv4} and @samp{cfv4e}.
 
 You can also use @option{-mtune=68020-40} for code that needs
 to run relatively well on 68020, 68030 and 68040 targets.
