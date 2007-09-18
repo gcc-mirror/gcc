@@ -1,3 +1,7 @@
+2007-09-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* opts.c (decode_options): Enable vectorization under -O3.
+
 2007-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33340
