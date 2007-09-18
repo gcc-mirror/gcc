@@ -1,6 +1,8 @@
 2007-09-17  Benjamin Kosnik  <bkoz@redhat.com>
 	    Chalathip Thumkanon  <chalathip@gmail.com>
 
+	PR libstdc++/32819
+	PR libstdc++/32822
 	* docs/html/ext/pb_ds/hash_based_containers.html: Correct.
 	
 2007-09-17  Benjamin Kosnik  <bkoz@redhat.com>
