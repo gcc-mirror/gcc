@@ -1,3 +1,10 @@
+2007-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree-cfg.c (is_ctrl_altering_stmt, tree_block_ends_with_call_p):
+	Don't use const_get_call_expr_in.
+	* tree-gimple.c (const_get_call_expr_in): Delete.
+	* tree-gimple.h (const_get_call_expr_in): Likewise.
+
 2007-09-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* df-scan.c (df_notes_rescan): Do nothing if the instruction does

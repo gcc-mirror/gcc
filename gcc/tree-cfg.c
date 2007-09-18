@@ -2459,7 +2459,7 @@ is_ctrl_altering_stmt (const_tree t)
   const_tree call;
 
   gcc_assert (t);
-  call = const_get_call_expr_in (t);
+  call = get_call_expr_in (CONST_CAST_TREE (t));
   if (call)
     {
       /* A non-pure/const CALL_EXPR alters flow control if the current
@@ -6244,7 +6244,7 @@ static bool
 tree_block_ends_with_call_p (basic_block bb)
 {
   block_stmt_iterator bsi = bsi_last (bb);
-  return const_get_call_expr_in (bsi_stmt (bsi)) != NULL;
+  return get_call_expr_in (bsi_stmt (bsi)) != NULL;
 }
 
 
