@@ -1,5 +1,10 @@
 2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/33463
+	* g++.dg/rtti/typeid6.C: New.
+
+2007-09-18  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/33464
 	* g++.dg/ext/is_class_error.C: Rename to is_class_error1.C.
 	* g++.dg/ext/is_class_error2.C: New.

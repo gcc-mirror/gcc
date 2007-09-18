@@ -1,5 +1,15 @@
 2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/33463
+	* cxx-pretty-print.c (pp_cxx_postfix_expression): Split
+	out case TYPEID_EXPR to...
+	(pp_cxx_typeid_expression): ... here; use pp_cxx_left_paren
+	and pp_cxx_right_paren.
+	* cxx-pretty-print.h (pp_cxx_typeid_expression): Declare.
+	* error.c (dump_expr): Use it.
+
+2007-09-18  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/33464
 	* cxx-pretty-print.c (pp_cxx_trait_expression): Add.
 	(pp_cxx_primary_expression): Use it.
