@@ -1,3 +1,19 @@
+2007-09-18  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/33388
+	PR target/33397
+	* config/fr30/fr30.md (addsi3): Check REG_P() before calling REGNO().
+	(addsi_small_int): Likewise.
+	(addsi_big_int): Use rtx_equal_p() instead of REGNO() comparison.
+	(one_cmplsi2): Likewise.
+	(negsi2): Delete.
+	(enter_func): Expand insn using hard_frame_pointer_rtx and
+	stack_pointer_rtx.
+	(*enter_func): New.
+	* config/fr30/fr30.c (fr30_expand_prologue): Check for
+	hard_frame_pointer_rtx instead of using REGNO() check.
+	Properly sign extend GEN_INT() argument.
+
 2007-09-18  Roman Zippel <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.c (override_options): Remove USE_GAS,
