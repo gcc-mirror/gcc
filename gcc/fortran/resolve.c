@@ -1286,6 +1286,22 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	e = arg->expr;
     }
 
+  /* INTENT(OUT) is only allowed for subroutines; if any actual argument
+     is an array, the intent inout/out variable needs to be also an array.  */
+  if (rank > 0 && esym && expr == NULL)
+    for (eformal = esym->formal, arg = arg0; arg && eformal;
+	 arg = arg->next, eformal = eformal->next)
+      if ((eformal->sym->attr.intent == INTENT_OUT
+	   || eformal->sym->attr.intent == INTENT_INOUT)
+	  && arg->expr && arg->expr->rank == 0)
+	{
+	  gfc_error ("Actual argument at %L for INTENT(%s) dummy '%s' of "
+		     "ELEMENTAL subroutine '%s' is a scalar, but another "
+		     "actual argument is an array", &arg->expr->where,
+		     (eformal->sym->attr.intent == INTENT_OUT) ? "OUT"
+		     : "INOUT", eformal->sym->name, esym->name);
+	  return FAILURE;
+	}
   return SUCCESS;
 }
 

@@ -11,7 +11,7 @@
   CALL T1(1,2)
 CONTAINS
   SUBROUTINE T1(A1,A2,A3)
-    INTEGER           :: A1,A2, A4(2)
+    INTEGER           :: A1,A2, A4(2), A5(2)
     INTEGER, OPTIONAL :: A3(2)
     interface
       elemental function efoo (B1,B2,B3) result(bar)
@@ -34,9 +34,9 @@ CONTAINS
     write(6,*) efoo(A1,A3,A2)
     write(6,*) efoo(A1,A4,A3)
 ! check an elemental subroutine
-    call foobar (A1,A2,A3) ! { dg-warning "array and OPTIONAL" } 
-    call foobar (A1,A2,A4)
-    call foobar (A1,A4,A4)
+    call foobar (A5,A2,A3) ! { dg-warning "array and OPTIONAL" } 
+    call foobar (A5,A2,A4)
+    call foobar (A5,A4,A4)
   END SUBROUTINE
   elemental function foo (B1,B2,B3) result(bar)
     INTEGER, intent(in)           :: B1, B2

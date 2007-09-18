@@ -41,10 +41,12 @@ end module pr22146
   call foobar (u, v)
   if (v.ne.-42.0) call abort ()
 
-  call foobar (x, v)
-  if (v.ne.-2.0) call abort ()
+  v = 2.0
+  call foobar (v, x)
+  if (any(x /= -2.0)) call abort ()
 
 ! Test an expression in the INTENT(IN) argument
+  x = (/1.0, 2.0/)
   call foobar (cos (x) + u, y)
   if (any(abs (y + cos (x) + u) .gt. 2.0e-6)) call abort ()
 
