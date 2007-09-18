@@ -2161,7 +2161,7 @@ pp_cxx_typeid_expression (cxx_pretty_printer *pp, tree t)
 void
 pp_cxx_va_arg_expression (cxx_pretty_printer *pp, tree t)
 {
-  pp_cxx_identifier (pp, "__builtin_va_arg");
+  pp_cxx_identifier (pp, "va_arg");
   pp_cxx_left_paren (pp);
   pp_cxx_assignment_expression (pp, TREE_OPERAND (t, 0));
   pp_cxx_separate_with (pp, ',');
