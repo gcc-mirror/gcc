@@ -2993,8 +2993,22 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	         others against this.  */
 	      if (size[n])
 		{
-		  tree tmp3
-		    = fold_build2 (NE_EXPR, boolean_type_node, tmp, size[n]);
+		  tree tmp3;
+
+		  tmp3 = fold_build2 (NE_EXPR, boolean_type_node, tmp, size[n]);
+
+		  /* For optional arguments, only check bounds if the
+		     argument is present.  */
+		  if (ss->expr->symtree->n.sym->attr.optional
+		      || ss->expr->symtree->n.sym->attr.not_always_present)
+		    {
+		      tree cond;
+
+		      cond = gfc_conv_expr_present (ss->expr->symtree->n.sym);
+		      tmp3 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+					  cond, tmp3);
+		    }
+
 		  asprintf (&msg, "%s, size mismatch for dimension %d "
 			    "of array '%s' (%%ld/%%ld)", gfc_msg_bounds,
 			    info->dim[n]+1, ss->expr->symtree->name);

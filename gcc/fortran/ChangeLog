@@ -1,3 +1,9 @@
+2007-09-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31119
+	* trans-array.c (gfc_conv_ss_startstride): Only perform bounds
+	checking for optional args when they are present.
+
 2007-09-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33231
