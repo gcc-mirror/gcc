@@ -239,7 +239,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 /* Note ISA_B doesn't necessarily include USP (user stack pointer) support.  */
 #define FL_FOR_isa_b     (FL_FOR_isa_a | FL_ISA_B | FL_CF_HWDIV)
 /* ISA_C is not upwardly compatible with ISA_B.  */
-#define FL_FOR_isa_c     (FL_FOR_isa_a | FL_ISA_C | FL_CF_HWDIV | FL_CF_USP)
+#define FL_FOR_isa_c     (FL_FOR_isa_a | FL_ISA_C | FL_CF_USP)
 
 enum m68k_isa
 {
@@ -302,7 +302,8 @@ static const struct m68k_target_selection all_isas[] =
   { "isaaplus", mcf5271,    NULL,  ucfv2,    isa_aplus, (FL_FOR_isa_aplus
 							 | FL_CF_HWDIV) },
   { "isab",     mcf5407,    NULL,  ucfv4,    isa_b,     FL_FOR_isa_b },
-  { "isac",     unk_device, NULL,  ucfv4,    isa_c,     FL_FOR_isa_c },
+  { "isac",     unk_device, NULL,  ucfv4,    isa_c,     (FL_FOR_isa_c
+							 | FL_CF_HWDIV) },
   { NULL,       unk_device, NULL,  unk_arch, isa_max,   0 }
 };
 
@@ -319,6 +320,7 @@ static const struct m68k_target_selection all_microarchs[] =
   { "68040",    m68040,     NULL,  u68040,    isa_40,  FL_FOR_isa_40 },
   { "68060",    m68060,     NULL,  u68060,    isa_40,  FL_FOR_isa_40 },
   { "cpu32",    cpu32,      NULL,  ucpu32,    isa_20,  FL_FOR_isa_cpu32 },
+  { "cfv1",     mcf51qe,    NULL,  ucfv1,     isa_c,   FL_FOR_isa_c },
   { "cfv2",     mcf5206,    NULL,  ucfv2,     isa_a,   FL_FOR_isa_a },
   { "cfv3",     mcf5307,    NULL,  ucfv3,     isa_a,   (FL_FOR_isa_a
 							| FL_CF_HWDIV) },

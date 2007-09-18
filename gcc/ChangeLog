@@ -1,3 +1,15 @@
+2007-09-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k-devices.def (51qe): New device.
+	* config/m68k/m68k.c (FL_FOR_isa_c): Remove division unit.  Add it
+	to all uses of FL_FOR_isa_c for compatibility.
+	(all_microarchs): Add cfv1 microarchitecture.
+	(m68k_handle_option): Handle m51qe option.
+	* config/m68k/m68k.h (TARGET_CPU_CPP_BUILTINS): Handle 51QE.
+	(TUNE_CFV1): New macro.
+	(enum uarch_type): Add ucfv1.
+	* doc/invoke.texi: Document 51qe device and cfv1 microarchitecture.
+	
 2007-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/31863
