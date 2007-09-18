@@ -351,6 +351,8 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
      id-expression   
 
    GNU Extensions:
+     __builtin_va_arg ( assignment-expression , type-id )
+
      __has_nothrow_assign ( type-id )   
      __has_nothrow_constructor ( type-id )
      __has_nothrow_copy ( type-id )
@@ -408,6 +410,10 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
 
     case TRAIT_EXPR:
       pp_cxx_trait_expression (pp, t);
+      break;
+
+    case VA_ARG_EXPR:
+      pp_cxx_va_arg_expression (pp, t);
       break;
 
     default:
@@ -2149,6 +2155,17 @@ pp_cxx_typeid_expression (cxx_pretty_printer *pp, tree t)
     pp_cxx_type_id (pp, t);
   else
     pp_cxx_expression (pp, t);
+  pp_cxx_right_paren (pp);
+}
+
+void
+pp_cxx_va_arg_expression (cxx_pretty_printer *pp, tree t)
+{
+  pp_cxx_identifier (pp, "__builtin_va_arg");
+  pp_cxx_left_paren (pp);
+  pp_cxx_assignment_expression (pp, TREE_OPERAND (t, 0));
+  pp_cxx_separate_with (pp, ',');
+  pp_cxx_type_id (pp, TREE_TYPE (t));
   pp_cxx_right_paren (pp);
 }
 
