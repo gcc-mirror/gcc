@@ -1,3 +1,9 @@
+2007-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/31863
+	* tree-ssa-structalias.c (create_variable_info_for): Always
+	free the fieldstack.
+
 2007-09-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* opts.c (decode_options): Enable vectorization under -O3.
