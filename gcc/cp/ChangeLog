@@ -1,3 +1,11 @@
+2007-09-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33464
+	* cxx-pretty-print.c (pp_cxx_trait_expression): Add.
+	(pp_cxx_primary_expression): Use it.
+	* cxx-pretty-print.h (pp_cxx_trait_expression): Declare.
+	* error.c (dump_expr): Use it.
+
 2007-09-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33124
