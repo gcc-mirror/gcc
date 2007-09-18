@@ -1,3 +1,9 @@
+2007-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33231
+	* resolve.c (resolve_elemental_actual): Check for conformance
+	of intent out/inout dummies.
+
 2007-09-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33106
