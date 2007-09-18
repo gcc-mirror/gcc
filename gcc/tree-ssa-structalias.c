@@ -4500,8 +4500,10 @@ create_variable_info_for (tree decl, const char *name)
 
 	  stats.total_vars++;
 	}
-      VEC_free (fieldoff_s, heap, fieldstack);
     }
+
+  VEC_free (fieldoff_s, heap, fieldstack);
+
   return index;
 }
 
