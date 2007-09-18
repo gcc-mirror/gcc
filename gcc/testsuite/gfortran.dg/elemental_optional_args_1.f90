@@ -34,7 +34,6 @@ CONTAINS
     write(6,*) efoo(A1,A3,A2)
     write(6,*) efoo(A1,A4,A3)
 ! check an elemental subroutine
-    call foobar (A5,A2,A3) ! { dg-warning "array and OPTIONAL" } 
     call foobar (A5,A2,A4)
     call foobar (A5,A4,A4)
   END SUBROUTINE
