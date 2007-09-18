@@ -1,3 +1,8 @@
+2007-09-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* dse.c (find_shift_sequence): Temporarily revert to forbidding
+	word shifts.
+
 2007-09-18  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/33388

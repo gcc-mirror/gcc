@@ -1407,7 +1407,7 @@ find_shift_sequence (rtx read_reg,
      justify the value we want to read but is available in one insn on
      the machine.  */
 
-  for (; access_size <= UNITS_PER_WORD; access_size *= 2)
+  for (; access_size < UNITS_PER_WORD; access_size *= 2)
     {
       rtx target, new_reg;
       enum machine_mode new_mode;
