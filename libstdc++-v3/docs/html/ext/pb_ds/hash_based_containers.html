@@ -279,7 +279,7 @@
     prohibitively expensive. A possible alternative might be to use
     only the first <i>k</i> characters of the string, where</p>
 
-    <p>k <sup>|S|</sup> &ge; m ,</p>
+    <p>|S|<sup>k</sup> &ge; m ,</p>
 
     <p><i>i.e.</i>, using the hash function</p>
 
@@ -379,8 +379,8 @@
     <p><a href=
     "gp_hash_table.html"></a><tt>gp_hash_table</tt> is
     parametrized by <tt>Hash_Fn</tt>, <tt>Probe_Fn</tt>, and
-    <tt>Comb_Probe_Fn</tt>. As before, if <tt>Probe_Fn</tt> and
-    <tt>Comb_Probe_Fn</tt> are, respectively, <a href=
+    <tt>Comb_Probe_Fn</tt>. As before, if <tt>Hash_Fn</tt> and
+    <tt>Probe_Fn</tt> are, respectively, <a href=
     "null_hash_fn.html"><tt>null_hash_fn</tt></a> and <a href=
     "null_probe_fn.html"><tt>null_probe_fn</tt></a>, then
     <tt>Comb_Probe_Fn</tt> is a ranged-probe functor. Otherwise,

@@ -1,4 +1,9 @@
 2007-09-17  Benjamin Kosnik  <bkoz@redhat.com>
+	    Chalathip Thumkanon  <chalathip@gmail.com>
+
+	* docs/html/ext/pb_ds/hash_based_containers.html: Correct.
+	
+2007-09-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.host: Set atomic_flags on i486.
 
