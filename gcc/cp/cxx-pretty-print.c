@@ -348,7 +348,26 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
      :: operator-function-id
      :: qualifier-id
      ( expression )
-     id-expression   */
+     id-expression   
+
+   GNU Extensions:
+     __has_nothrow_assign ( type-id )   
+     __has_nothrow_constructor ( type-id )
+     __has_nothrow_copy ( type-id )
+     __has_trivial_assign ( type-id )   
+     __has_trivial_constructor ( type-id )
+     __has_trivial_copy ( type-id )
+     __has_trivial_destructor ( type-id )
+     __has_virtual_destructor ( type-id )     
+     __is_abstract ( type-id )
+     __is_base_of ( type-id , type-id )
+     __is_class ( type-id )
+     __is_convertible_to ( type-id , type-id )     
+     __is_empty ( type-id )
+     __is_enum ( type-id )
+     __is_pod ( type-id )
+     __is_polymorphic ( type-id )
+     __is_union ( type-id )  */
 
 static void
 pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
@@ -385,6 +404,10 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
       pp_cxx_left_paren (pp);
       pp_cxx_statement (pp, STMT_EXPR_STMT (t));
       pp_cxx_right_paren (pp);
+      break;
+
+    case TRAIT_EXPR:
+      pp_cxx_trait_expression (pp, t);
       break;
 
     default:
@@ -2123,6 +2146,80 @@ pp_cxx_declaration (cxx_pretty_printer *pp, tree t)
     }
 }
 
+void
+pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
+{
+  cp_trait_kind kind = TRAIT_EXPR_KIND (t);
+
+  switch (kind)
+    {
+    case CPTK_HAS_NOTHROW_ASSIGN:
+      pp_cxx_identifier (pp, "__has_nothrow_assign");
+      break;
+    case CPTK_HAS_TRIVIAL_ASSIGN:
+      pp_cxx_identifier (pp, "__has_trivial_assign");
+      break;
+    case CPTK_HAS_NOTHROW_CONSTRUCTOR:
+      pp_cxx_identifier (pp, "__has_nothrow_constructor");
+      break;
+    case CPTK_HAS_TRIVIAL_CONSTRUCTOR:
+      pp_cxx_identifier (pp, "__has_trivial_constructor");
+      break;
+    case CPTK_HAS_NOTHROW_COPY:
+      pp_cxx_identifier (pp, "__has_nothrow_copy");
+      break;
+    case CPTK_HAS_TRIVIAL_COPY:
+      pp_cxx_identifier (pp, "__has_trivial_copy");
+      break;
+    case CPTK_HAS_TRIVIAL_DESTRUCTOR:
+      pp_cxx_identifier (pp, "__has_trivial_destructor");
+      break;
+    case CPTK_HAS_VIRTUAL_DESTRUCTOR:
+      pp_cxx_identifier (pp, "__has_virtual_destructor");
+      break;
+    case CPTK_IS_ABSTRACT:
+      pp_cxx_identifier (pp, "__is_abstract");
+      break;
+    case CPTK_IS_BASE_OF:
+      pp_cxx_identifier (pp, "__is_base_of");
+      break;
+    case CPTK_IS_CLASS:
+      pp_cxx_identifier (pp, "__is_class");
+      break;
+    case CPTK_IS_CONVERTIBLE_TO:
+      pp_cxx_identifier (pp, "__is_convertible_to");
+      break;
+    case CPTK_IS_EMPTY:
+      pp_cxx_identifier (pp, "__is_empty");
+      break;
+    case CPTK_IS_ENUM:
+      pp_cxx_identifier (pp, "__is_enum");
+      break;
+    case CPTK_IS_POD:
+      pp_cxx_identifier (pp, "__is_pod");
+      break;
+    case CPTK_IS_POLYMORPHIC:
+      pp_cxx_identifier (pp, "__is_polymorphic");
+      break;
+    case CPTK_IS_UNION:
+      pp_cxx_identifier (pp, "__is_union");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  pp_cxx_left_paren (pp);
+  pp_cxx_type_id (pp, TRAIT_EXPR_TYPE1 (t));
+
+  if (kind == CPTK_IS_BASE_OF || kind == CPTK_IS_CONVERTIBLE_TO)
+    {
+      pp_cxx_separate_with (pp, ',');
+      pp_cxx_type_id (pp, TRAIT_EXPR_TYPE2 (t));
+    }
+
+  pp_cxx_right_paren (pp);
+}
 
 typedef c_pretty_print_fn pp_fun;
 
