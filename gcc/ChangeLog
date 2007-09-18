@@ -1,5 +1,16 @@
 2007-09-18  Roman Zippel <zippel@linux-m68k.org>
 
+	* config/m68k/m68k.c (override_options): Remove USE_GAS,
+	use %. syntax.
+	(output_dbcc_and_branch, output_scc_di): Replace all jbcc
+	alternatives with just jcc.
+	* config/m68k/m68k.md (addsi_lshrsi_31, beq0_di, bne0_di,
+	bge0_di, blt0_di, bgtu, bltu, bgeu, bleu, bgtu_rev,
+	bltu_rev, bgeu_rev, bleu_rev, jump, dbne_hi, dbne_si,
+	dbge_hi, dbge_si): Likewise.
+
+2007-09-18  Roman Zippel <zippel@linux-m68k.org>
+
 	* config/m68k/m68k.md (beq, bne, bgt, blt, bge, ble, bordered,
 	bunordered, buneq, bunge, bungt, bunle, bunlt, bltgt, beq_rev,
 	bne_rev, bgt_rev, blt_rev, bge_rev, ble_rev, bordered_rev,

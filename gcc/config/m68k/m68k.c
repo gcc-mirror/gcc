@@ -571,11 +571,7 @@ override_options (void)
     {
       m68k_symbolic_call_var = M68K_SYMBOLIC_CALL_JSR;
 
-#if MOTOROLA && !defined (USE_GAS)
-      m68k_symbolic_jump = "jmp %a0";
-#else
       m68k_symbolic_jump = "jra %a0";
-#endif
     }
   else if (TARGET_ID_SHARED_LIBRARY)
     /* All addresses must be loaded from the GOT.  */
@@ -590,15 +586,9 @@ override_options (void)
       if (TARGET_ISAC)
 	/* No unconditional long branch */;
       else if (TARGET_PCREL)
-	m68k_symbolic_jump = "bra.l %c0";
+	m68k_symbolic_jump = "bra%.l %c0";
       else
-	{
-#if defined(USE_GAS)
-	  m68k_symbolic_jump = "bra.l %p0";
-#else
-	  m68k_symbolic_jump = "bra %p0";
-#endif
-	}
+	m68k_symbolic_jump = "bra%.l %p0";
       /* Turn off function cse if we are doing PIC.  We always want
 	 function call to be done as `bsr foo@PLTPC'.  */
       /* ??? It's traditional to do this for -mpcrel too, but it isn't
@@ -609,23 +599,15 @@ override_options (void)
   switch (m68k_symbolic_call_var)
     {
     case M68K_SYMBOLIC_CALL_JSR:
-#if MOTOROLA && !defined (USE_GAS)
       m68k_symbolic_call = "jsr %a0";
-#else
-      m68k_symbolic_call = "jbsr %a0";
-#endif
       break;
 
     case M68K_SYMBOLIC_CALL_BSR_C:
-      m68k_symbolic_call = "bsr.l %c0";
+      m68k_symbolic_call = "bsr%.l %c0";
       break;
 
     case M68K_SYMBOLIC_CALL_BSR_P:
-#if defined(USE_GAS)
-      m68k_symbolic_call = "bsr.l %p0";
-#else
-      m68k_symbolic_call = "bsr %p0";
-#endif
+      m68k_symbolic_call = "bsr%.l %p0";
       break;
 
     case M68K_SYMBOLIC_CALL_NONE:
@@ -1363,73 +1345,43 @@ output_dbcc_and_branch (rtx *operands)
   switch (GET_CODE (operands[3]))
     {
       case EQ:
-	output_asm_insn (MOTOROLA
-			 ? "dbeq %0,%l1\n\tjbeq %l2"
-			 : "dbeq %0,%l1\n\tjeq %l2",
-			 operands);
+	output_asm_insn ("dbeq %0,%l1\n\tjeq %l2", operands);
 	break;
 
       case NE:
-	output_asm_insn (MOTOROLA
-			 ? "dbne %0,%l1\n\tjbne %l2"
-			 : "dbne %0,%l1\n\tjne %l2",
-			 operands);
+	output_asm_insn ("dbne %0,%l1\n\tjne %l2", operands);
 	break;
 
       case GT:
-	output_asm_insn (MOTOROLA
-			 ? "dbgt %0,%l1\n\tjbgt %l2"
-			 : "dbgt %0,%l1\n\tjgt %l2",
-			 operands);
+	output_asm_insn ("dbgt %0,%l1\n\tjgt %l2", operands);
 	break;
 
       case GTU:
-	output_asm_insn (MOTOROLA
-			 ? "dbhi %0,%l1\n\tjbhi %l2"
-			 : "dbhi %0,%l1\n\tjhi %l2",
-			 operands);
+	output_asm_insn ("dbhi %0,%l1\n\tjhi %l2", operands);
 	break;
 
       case LT:
-	output_asm_insn (MOTOROLA
-			 ? "dblt %0,%l1\n\tjblt %l2"
-			 : "dblt %0,%l1\n\tjlt %l2",
-			 operands);
+	output_asm_insn ("dblt %0,%l1\n\tjlt %l2", operands);
 	break;
 
       case LTU:
-	output_asm_insn (MOTOROLA
-			 ? "dbcs %0,%l1\n\tjbcs %l2"
-			 : "dbcs %0,%l1\n\tjcs %l2",
-			 operands);
+	output_asm_insn ("dbcs %0,%l1\n\tjcs %l2", operands);
 	break;
 
       case GE:
-	output_asm_insn (MOTOROLA
-			 ? "dbge %0,%l1\n\tjbge %l2"
-			 : "dbge %0,%l1\n\tjge %l2",
-			 operands);
+	output_asm_insn ("dbge %0,%l1\n\tjge %l2", operands);
 	break;
 
       case GEU:
-	output_asm_insn (MOTOROLA
-			 ? "dbcc %0,%l1\n\tjbcc %l2"
-			 : "dbcc %0,%l1\n\tjcc %l2",
-			 operands);
+	output_asm_insn ("dbcc %0,%l1\n\tjcc %l2", operands);
 	break;
 
       case LE:
-	output_asm_insn (MOTOROLA
-			 ? "dble %0,%l1\n\tjble %l2"
-			 : "dble %0,%l1\n\tjle %l2",
-			 operands);
+	output_asm_insn ("dble %0,%l1\n\tjle %l2", operands);
 	break;
 
       case LEU:
-	output_asm_insn (MOTOROLA
-			 ? "dbls %0,%l1\n\tjbls %l2"
-			 : "dbls %0,%l1\n\tjls %l2",
-			 operands);
+	output_asm_insn ("dbls %0,%l1\n\tjls %l2", operands);
 	break;
 
       default:
@@ -1441,10 +1393,7 @@ output_dbcc_and_branch (rtx *operands)
   switch (GET_MODE (operands[0]))
     {
       case SImode:
-        output_asm_insn (MOTOROLA
-			 ? "clr%.w %0\n\tsubq%.l #1,%0\n\tjbpl %l1"
-			 : "clr%.w %0\n\tsubq%.l #1,%0\n\tjpl %l1",
-			 operands);
+        output_asm_insn ("clr%.w %0\n\tsubq%.l #1,%0\n\tjpl %l1", operands);
         break;
 
       case HImode:
@@ -1490,12 +1439,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
     }
   loperands[4] = gen_label_rtx ();
   if (operand2 != const0_rtx)
-    {
-      output_asm_insn (MOTOROLA
-		       ? "cmp%.l %2,%0\n\tjbne %l4\n\tcmp%.l %3,%1"
-		       : "cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1",
-		       loperands);
-    }
+    output_asm_insn ("cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1", loperands);
   else
     {
       if (TARGET_68020 || TARGET_COLDFIRE || ! ADDRESS_REG_P (loperands[0]))
@@ -1503,7 +1447,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
       else
 	output_asm_insn ("cmp%.w #0,%0", loperands);
 
-      output_asm_insn (MOTOROLA ? "jbne %l4" : "jne %l4", loperands);
+      output_asm_insn ("jne %l4", loperands);
 
       if (TARGET_68020 || TARGET_COLDFIRE || ! ADDRESS_REG_P (loperands[1]))
 	output_asm_insn ("tst%.l %1", loperands);
@@ -1529,8 +1473,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 
       case GT:
         loperands[6] = gen_label_rtx ();
-        output_asm_insn (MOTOROLA ? "shi %5\n\tjbra %l6" : "shi %5\n\tjra %l6",
-			 loperands);
+        output_asm_insn ("shi %5\n\tjra %l6", loperands);
         (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					   CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sgt %5", loperands);
@@ -1546,8 +1489,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 
       case LT:
         loperands[6] = gen_label_rtx ();
-        output_asm_insn (MOTOROLA ? "scs %5\n\tjbra %l6" : "scs %5\n\tjra %l6",
-			 loperands);
+        output_asm_insn ("scs %5\n\tjra %l6", loperands);
         (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					   CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("slt %5", loperands);
@@ -1563,8 +1505,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 
       case GE:
         loperands[6] = gen_label_rtx ();
-        output_asm_insn (MOTOROLA ? "scc %5\n\tjbra %l6" : "scc %5\n\tjra %l6",
-			 loperands);
+        output_asm_insn ("scc %5\n\tjra %l6", loperands);
         (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					   CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sge %5", loperands);
@@ -1580,8 +1521,7 @@ output_scc_di (rtx op, rtx operand1, rtx operand2, rtx dest)
 
       case LE:
         loperands[6] = gen_label_rtx ();
-        output_asm_insn (MOTOROLA ? "sls %5\n\tjbra %l6" : "sls %5\n\tjra %l6",
-			 loperands);
+        output_asm_insn ("sls %5\n\tjra %l6", loperands);
         (*targetm.asm_out.internal_label) (asm_out_file, "L",
 					   CODE_LABEL_NUMBER (loperands[4]));
         output_asm_insn ("sle %5", loperands);
