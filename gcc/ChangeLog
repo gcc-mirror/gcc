@@ -1,3 +1,9 @@
+2007-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33340
+	* tree-ssa-sccvn.c (set_ssa_val_to): Do not set values to
+	SSA_NAMEs that occur in abnormal PHI nodes.
+
 2007-09-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree-cfg.c (is_ctrl_altering_stmt, tree_block_ends_with_call_p):

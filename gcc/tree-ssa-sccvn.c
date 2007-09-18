@@ -1022,6 +1022,11 @@ set_ssa_val_to (tree from, tree to)
 {
   tree currval;
 
+  if (from != to
+      && TREE_CODE (to) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (to))
+    to = from;
+
   /* The only thing we allow as value numbers are VN_TOP, ssa_names
      and invariants.  So assert that here.  */
   gcc_assert (to != NULL_TREE
