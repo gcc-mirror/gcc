@@ -844,8 +844,7 @@ pch1_output_anchor = ${host_builddir}/stdc++.h
 pch1_output_installdir = ${host_installdir}/stdc++.h.gch
 pch1a_output = ${pch1_output_builddir}/O0g.gch
 pch1b_output = ${pch1_output_builddir}/O2g.gch
-pch1c_output = ${pch1_output_builddir}/O2gp.gch
-pch1_output = ${pch1a_output} ${pch1b_output} ${pch1c_output}
+pch1_output = ${pch1a_output} ${pch1b_output}
 
 pch2_source = ${glibcxx_srcdir}/include/precompiled/stdtr1c++.h
 pch2_output_builddir = ${host_builddir}/stdtr1c++.h.gch
@@ -1154,7 +1153,7 @@ ${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcxx_thread_h} \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/${glibcxx_thread_h} > $@
 
-# Build three precompiled C++ includes, stdc++.h.gch/*.gch
+# Build two precompiled C++ includes, stdc++.h.gch/*.gch
 ${pch1a_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	if [ ! -d "${pch1_output_builddir}" ]; then \
 	  mkdir -p ${pch1_output_builddir}; \
@@ -1167,14 +1166,6 @@ ${pch1b_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
 	  mkdir -p ${pch1_output_builddir}; \
 	fi; \
 	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g ${pch1_source} -o $@
-	touch ${pch1_output_anchor}
-
-${pch1c_output}: ${allstamped} ${host_builddir}/c++config.h ${pch1_source}
-	if [ ! -d "${pch1_output_builddir}" ]; then \
-	  mkdir -p ${pch1_output_builddir}; \
-	fi; \
-	CXX_PARALLEL_FLAGS="-fgomp -march=native";
-	$(CXX) $(PCHFLAGS) $(AM_CPPFLAGS) -O2 -g $(CXX_PARALLEL_FLAGS) ${pch1_source} -o $@
 	touch ${pch1_output_anchor}
 
 # Build a precompiled TR1 include, stdtr1c++.h.gch/O2.gch

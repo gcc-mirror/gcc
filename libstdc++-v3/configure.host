@@ -147,7 +147,7 @@ case "${host_cpu}" in
   ia64)
     atomic_word_dir=cpu/ia64
     ;;
-  i[567]86 | x86_64)
+  i[4567]86 | x86_64)
     atomic_flags="-march=native"
     ;;
   powerpc* | rs6000)
