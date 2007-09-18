@@ -6493,6 +6493,10 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
   else
     TYPE_ATTRIBUTES (*decl_p) = attributes;
 
+  /* Set processing_template_decl so we can check for dependent
+     expressions.  */
+  ++processing_template_decl;
+
   for (t = attributes; t; t = TREE_CHAIN (t))
     if (is_late_template_attribute (t))
       late_attrs = tree_cons
@@ -6500,6 +6504,8 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	 tsubst_expr (TREE_VALUE (t), args, complain, in_decl,
 		      /*integral_constant_expression_p=*/false),
 	 late_attrs);
+
+  --processing_template_decl;
 
   cplus_decl_attributes (decl_p, late_attrs, attr_flags);
 }
@@ -8223,6 +8229,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      }
 	    determine_visibility (r);
 	  }
+	/* Preserve a typedef that names a type.  */
+	else if (TREE_CODE (r) == TYPE_DECL
+		 && DECL_ORIGINAL_TYPE (t)
+		 && type != error_mark_node)
+	  {
+	    DECL_ORIGINAL_TYPE (r) = tsubst (DECL_ORIGINAL_TYPE (t),
+					     args, complain, in_decl);
+	    TREE_TYPE (r) = type = build_variant_type_copy (type);
+	    TYPE_NAME (type) = r;
+	  }
 
 	if (!local_p)
 	  {
@@ -8241,7 +8257,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	TREE_CHAIN (r) = NULL_TREE;
 
-	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
+	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r),
+					(int) ATTR_FLAG_TYPE_IN_PLACE,
 					args, complain, in_decl);
 	layout_decl (r, 0);
       }
@@ -8533,6 +8550,43 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     type = TREE_TYPE (t);
 
   gcc_assert (type != unknown_type_node);
+
+  /* Reuse typedefs.  This is a rather complicated way to check whether the
+     type is a typedef from the same class template as the current scope,
+     but I can't think of a better one.
+
+     We need to do this to handle dependent attributes, specifically
+     attribute aligned.  */
+  if (TYPE_P (t)
+      && TYPE_NAME (t)
+      && !IS_AGGR_TYPE (t)
+      && current_class_type
+      && CLASSTYPE_TEMPLATE_INFO (current_class_type))
+    {
+      tree decl = TYPE_NAME (t);
+      tree context = DECL_CONTEXT (decl);
+      if (context
+	  && CLASS_TYPE_P (context)
+	  && CLASSTYPE_TEMPLATE_INFO (context)
+	  && (CLASSTYPE_TI_TEMPLATE (context)
+	      == CLASSTYPE_TI_TEMPLATE (current_class_type))
+	  && (tsubst_aggr_type (context, args, complain, in_decl,
+				/*entering_scope=*/0)
+	      == current_class_type))
+	    {
+	      r = lookup_name (DECL_NAME (decl));
+	      if (r && TREE_CODE (r) == TYPE_DECL
+		  && DECL_CONTEXT (r) == current_class_type)
+		{
+		  r = TREE_TYPE (r);
+		  r = cp_build_qualified_type_real
+		    (r, cp_type_quals (t) | cp_type_quals (r),
+		     complain | tf_ignore_bad_quals);
+		  return r;
+		  /* Else we're instantiating the typedef, so fall through.  */
+		}
+	    }
+    }
 
   if (type
       && TREE_CODE (t) != TYPENAME_TYPE
@@ -9013,6 +9067,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  }
 
 	r = build_cplus_array_type (type, domain);
+
+	if (TYPE_USER_ALIGN (t))
+	  {
+	    TYPE_ALIGN (r) = TYPE_ALIGN (t);
+	    TYPE_USER_ALIGN (r) = 1;
+	  }
+
 	return r;
       }
 
