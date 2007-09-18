@@ -1,3 +1,16 @@
+2007-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/17743
+	* pt.c (apply_late_template_attributes): Set processing_template_decl.
+	(tsubst_decl) [TYPE_DECL]: Preserve naming typedef, pass
+	ATTR_FLAG_TYPE_IN_PLACE.
+	(tsubst): Do unqualified lookup to find typedefs from current class.
+	[ARRAY_TYPE]: Propagate alignment info.
+	* decl2.c (is_late_template_attribute): Only defer handling of
+	attribute aligned if the expression is dependent.
+	(save_template_attributes): If we're deferring any attributes,
+	make this a naming typedef.
+
 2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33462 (again)
@@ -38,16 +51,11 @@
 
 2007-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
-	cp/
 	PR c++/32756
 	* call.c (maybe_handle_implicit_object): Set this_p, clear
 	rvaluedness_matches_p.
 	(compare_ics): Do not compare rvaluedness matching when one of the
 	operands is an implicit object.
-
-	testsuite/
-	PR c++/32756
-	* g++.dg/overload/operator3.C: New.
 
 2007-09-14  Jason Merrill  <jason@redhat.com>
 
