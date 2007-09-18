@@ -1,3 +1,7 @@
+2007-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/elemental_optional_args_1.f90: Fix test.
+
 2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33463
