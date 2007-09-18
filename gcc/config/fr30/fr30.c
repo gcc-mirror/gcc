@@ -308,7 +308,7 @@ fr30_expand_prologue (void)
 		     G++ testsuite.  */
 		  if (! frame_pointer_needed
 		      && GET_CODE (part) == SET
-		      && REGNO (SET_DEST (part)) == HARD_FRAME_POINTER_REGNUM)
+		      && SET_DEST (part) == hard_frame_pointer_rtx)
 		    RTX_FRAME_RELATED_P (part) = 0;
 		  else
 		    RTX_FRAME_RELATED_P (part) = 1;
@@ -336,7 +336,8 @@ fr30_expand_prologue (void)
     ; /* Nothing to do.  */
   else if (current_frame_info.frame_size <= 512)
     {
-      insn = emit_insn (gen_add_to_stack (GEN_INT (- current_frame_info.frame_size)));
+      insn = emit_insn (gen_add_to_stack
+			 (GEN_INT (- (signed) current_frame_info.frame_size)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
