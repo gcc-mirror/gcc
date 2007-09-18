@@ -1,5 +1,11 @@
 2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/33462 (again)
+	* cxx-pretty-print.c (pp_cxx_va_arg_expression): Print
+	va_arg instead of __builtin_va_arg.
+
+2007-09-18  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/33462
 	* cxx-pretty-print.c (pp_cxx_va_arg_expression): Add.
 	(pp_cxx_primary_expression): Use it.

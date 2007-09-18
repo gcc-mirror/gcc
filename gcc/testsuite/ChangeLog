@@ -1,5 +1,10 @@
 2007-09-18  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/33462 (again)
+	* g++.dg/ext/va-arg1.C: Adjust.
+
+2007-09-18  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/33462
 	* g++.dg/ext/va-arg1.C: New.
 
