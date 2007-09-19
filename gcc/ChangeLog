@@ -1,3 +1,8 @@
+2007-09-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* cfgexpand.c (dump_stack_var_partition): Use the correct
+	index for the offset.
+
 2007-09-19  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/sde.h: Switch to GPLv3.
