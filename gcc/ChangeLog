@@ -1,3 +1,7 @@
+2007-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (decide_block_copy): Decide if there are groups.
+
 2007-09-19  Roman Zippel <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.c (output_move_himode): Remove jump table

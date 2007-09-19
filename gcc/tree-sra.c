@@ -1491,8 +1491,8 @@ decide_block_copy (struct sra_elt *elt)
       return false;
     }
 
-  /* Don't decide if we've no uses.  */
-  if (elt->n_uses == 0 && elt->n_copies == 0)
+  /* Don't decide if we've no uses and no groups.  */
+  if (elt->n_uses == 0 && elt->n_copies == 0 && elt->groups == NULL)
     ;
 
   else if (!elt->is_scalar)
