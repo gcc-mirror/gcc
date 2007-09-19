@@ -209,7 +209,7 @@
 # error
 #endif
 
-#if defined __h8300__ 
+#if defined __H8300__ 
 # if !#cpu(h8300) || !#machine(h8300) \
   || (defined __H8300__ && (!#cpu(h8300) || !#machine(h8300))) \
   || (defined __H8300H__ && (!#cpu(h8300h) || !#machine(h8300h))) \
