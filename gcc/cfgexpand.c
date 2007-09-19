@@ -512,7 +512,7 @@ dump_stack_var_partition (void)
 	  fputc ('\t', dump_file);
 	  print_generic_expr (dump_file, stack_vars[j].decl, dump_flags);
 	  fprintf (dump_file, ", offset " HOST_WIDE_INT_PRINT_DEC "\n",
-		   stack_vars[i].offset);
+		   stack_vars[j].offset);
 	}
     }
 }
