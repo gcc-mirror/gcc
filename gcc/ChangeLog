@@ -12,6 +12,8 @@
 	(sh_insn_length_adjustment): Pass template as second argument to it.
 	* config/bfin/bfin.h (IS_ASM_LOGICAL_LINE_SEPARATOR): New macro.
 
+	* config/bfin/bfin.md (define_asm_attributes): New.
+
 2007-09-19  Jie Zhang  <jie.zhang@analog.com>
 
 	* config.gcc (bfin*-linux-uclibc*): Add ./linux-sysroot-suffix.h
