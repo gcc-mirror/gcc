@@ -632,7 +632,7 @@ do {							\
 
 /* Output of Data.  */
 
-#define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '|')
+#define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) ((C) == '|')
 
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
   xstormy16_asm_output_aligned_common (STREAM, DECL, NAME, SIZE, ALIGNMENT, 1)
