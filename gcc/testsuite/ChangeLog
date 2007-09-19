@@ -1,3 +1,15 @@
+2007-09-19  Jie Zhang  <jie.zhang@analog.com>
+
+	* gcc.target/bfin/bfin.exp: New.
+	* gcc.target/bfin/{workarounds-any.c, workarounds-none.c,
+	workarounds-1.c, workarounds-2.c, workarounds-3.c, workarounds-4.c,
+	mcpu-bf522.c, mcpu-bf525.c, mcpu-bf527.c,
+	mcpu-bf531.c, mcpu-bf532.c, mcpu-bf533.c,
+	mcpu-bf534.c, mcpu-bf536.c, mcpu-bf537.c,
+	mcpu-bf538.c, mcpu-bf539.c, mcpu-bf542.c,
+	mcpu-bf544.c, mcpu-bf548.c, mcpu-bf549.c,
+	mcpu-bf561.c, mcpu-default.c}: New tests.
+
 2007-09-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	Restore detection of unsupported TLS.

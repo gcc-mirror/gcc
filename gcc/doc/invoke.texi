@@ -444,13 +444,14 @@ Objective-C and Objective-C++ Dialects}.
 -mcall-prologues  -mno-tablejump  -mtiny-stack  -mint8}
 
 @emph{Blackfin Options}
-@gccoptlist{-mcpu=@var{cpu}  -msim  -momit-leaf-frame-pointer @gol
--mno-omit-leaf-frame-pointer  -mspecld-anomaly  -mno-specld-anomaly @gol
--mcsync-anomaly  -mno-csync-anomaly  -mlow-64k  -mno-low64k @gol
--mstack-check-l1  -mid-shared-library  -mno-id-shared-library @gol
--mshared-library-id=@var{n}  -mleaf-id-shared-library @gol
--mno-leaf-id-shared-library  -msep-data  -mno-sep-data  -mlong-calls @gol
--mno-long-calls -mfast-fp -minline-plt}
+@gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
+-msim -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer @gol
+-mspecld-anomaly  -mno-specld-anomaly  -mcsync-anomaly  -mno-csync-anomaly @gol
+-mlow-64k -mno-low64k  -mstack-check-l1  -mid-shared-library @gol
+-mno-id-shared-library  -mshared-library-id=@var{n} @gol
+-mleaf-id-shared-library  -mno-leaf-id-shared-library @gol
+-msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls @gol
+-mfast-fp -minline-plt}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -8556,16 +8557,32 @@ size.
 @cindex Blackfin Options
 
 @table @gcctabopt
-@item -mcpu=@var{cpu}
+@item -mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]}
 @opindex mcpu=
-Specifies the name of the target Blackfin processor. Currently, @var{cpu}
-can be one of @samp{bf531}, @samp{bf532}, @samp{bf533},
-@samp{bf534}, @samp{bf536}, @samp{bf537}, @samp{bf561}.
+Specifies the name of the target Blackfin processor.  Currently, @var{cpu}
+can be one of @samp{bf522}, @samp{bf525}, @samp{bf527},
+@samp{bf531}, @samp{bf532}, @samp{bf533}, @samp{bf534},
+@samp{bf536}, @samp{bf537}, @samp{bf538}, @samp{bf539},
+@samp{bf542}, @samp{bf544}, @samp{bf548}, @samp{bf549},
+@samp{bf561}.
+The optional @var{sirevision} specifies the silicon revision of the target
+Blackfin processor.  Any workarounds available for the targeted silicon revision
+will be enabled.  If @var{sirevision} is @samp{none}, no workarounds are enabled.
+If @var{sirevision} is @samp{any}, all workarounds for the targeted processor
+will be enabled.  The @code{__SILICON_REVISION__} macro is defined to two
+hexadecimal digits representing the major and minor numbers in the silicon
+revision.  If @var{sirevision} is @samp{none}, the @code{__SILICON_REVISION__}
+is not defined.  If @var{sirevision} is @samp{any}, the
+@code{__SILICON_REVISION__} is defined to be @code{0xffff}.
+If this optional @var{sirevision} is not used, GCC assumes the latest known
+silicon revision of the targeted Blackfin processor.
+
+Support for @samp{bf561} is incomplete.  For @samp{bf561},
+Only the processor macro is defined.
 Without this option, @samp{bf532} is used as the processor by default.
 The corresponding predefined processor macros for @var{cpu} is to
-be defined.  For the @samp{bfin-elf} toolchain, this causes the hardware
-BSP provided by libgloss to be linked in if @samp{-msim} is not given.
-Support for @samp{bf561} is incomplete; only the processor macro is defined.
+be defined.  And for @samp{bfin-elf} toolchain, this causes the hardware BSP
+provided by libgloss to be linked in if @option{-msim} is not given.
 
 @item -msim
 @opindex msim
@@ -8584,8 +8601,8 @@ which might make debugging harder.
 @item -mspecld-anomaly
 @opindex mspecld-anomaly
 When enabled, the compiler will ensure that the generated code does not
-contain speculative loads after jump instructions.  This option is enabled
-by default.
+contain speculative loads after jump instructions. If this option is used,
+@code{__WORKAROUND_SPECULATIVE_LOADS} is defined.
 
 @item -mno-specld-anomaly
 @opindex mno-specld-anomaly
@@ -8595,7 +8612,7 @@ Don't generate extra code to prevent speculative loads from occurring.
 @opindex mcsync-anomaly
 When enabled, the compiler will ensure that the generated code does not
 contain CSYNC or SSYNC instructions too soon after conditional branches.
-This option is enabled by default.
+If this option is used, @code{__WORKAROUND_SPECULATIVE_SYNCS} is defined.
 
 @item -mno-csync-anomaly
 @opindex mno-csync-anomaly
