@@ -39,16 +39,28 @@ extern int target_flags;
 
 /* Predefinition in the preprocessor for this target machine */
 #ifndef TARGET_CPU_CPP_BUILTINS
-#define TARGET_CPU_CPP_BUILTINS()               \
-  do                                            \
-    {                                           \
-      builtin_define_std ("bfin");              \
-      builtin_define_std ("BFIN");              \
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("bfin");		\
+      builtin_define_std ("BFIN");		\
       builtin_define ("__ADSPBLACKFIN__");	\
       builtin_define ("__ADSPLPBLACKFIN__");	\
 						\
       switch (bfin_cpu_type)			\
 	{					\
+	case BFIN_CPU_BF522:			\
+	  builtin_define ("__ADSPBF522__");	\
+	  builtin_define ("__ADSPBF52x__");	\
+	  break;				\
+	case BFIN_CPU_BF525:			\
+	  builtin_define ("__ADSPBF525__");	\
+	  builtin_define ("__ADSPBF52x__");	\
+	  break;				\
+	case BFIN_CPU_BF527:			\
+	  builtin_define ("__ADSPBF527__");	\
+	  builtin_define ("__ADSPBF52x__");	\
+	  break;				\
 	case BFIN_CPU_BF531:			\
 	  builtin_define ("__ADSPBF531__");	\
 	  break;				\
@@ -67,22 +79,62 @@ extern int target_flags;
 	case BFIN_CPU_BF537:			\
 	  builtin_define ("__ADSPBF537__");	\
 	  break;				\
+	case BFIN_CPU_BF538:			\
+	  builtin_define ("__ADSPBF538__");	\
+	  break;				\
+	case BFIN_CPU_BF539:			\
+	  builtin_define ("__ADSPBF539__");	\
+	  break;				\
+	case BFIN_CPU_BF542:			\
+	  builtin_define ("__ADSPBF542__");	\
+	  builtin_define ("__ADSPBF54x__");	\
+	  break;				\
+	case BFIN_CPU_BF544:			\
+	  builtin_define ("__ADSPBF544__");	\
+	  builtin_define ("__ADSPBF54x__");	\
+	  break;				\
+	case BFIN_CPU_BF548:			\
+	  builtin_define ("__ADSPBF548__");	\
+	  builtin_define ("__ADSPBF54x__");	\
+	  break;				\
+	case BFIN_CPU_BF549:			\
+	  builtin_define ("__ADSPBF549__");	\
+	  builtin_define ("__ADSPBF54x__");	\
+	  break;				\
 	case BFIN_CPU_BF561:			\
 	  builtin_define ("__ADSPBF561__");	\
 	  break;				\
 	}					\
 						\
+      if (bfin_si_revision != -1)		\
+	{					\
+	  /* space of 0xnnnn and a NUL */	\
+	  char *buf = alloca (7);		\
+						\
+	  sprintf (buf, "0x%04x", bfin_si_revision);			\
+	  builtin_define_with_value ("__SILICON_REVISION__", buf, 0);	\
+	}								\
+									\
+      if (bfin_workarounds)						\
+	builtin_define ("__WORKAROUNDS_ENABLED");			\
+      if (ENABLE_WA_SPECULATIVE_LOADS)					\
+	builtin_define ("__WORKAROUND_SPECULATIVE_LOADS");		\
+      if (ENABLE_WA_SPECULATIVE_SYNCS)					\
+	builtin_define ("__WORKAROUND_SPECULATIVE_SYNCS");		\
+						\
       if (TARGET_FDPIC)				\
 	builtin_define ("__BFIN_FDPIC__");	\
-      if (TARGET_ID_SHARED_LIBRARY)		\
+      if (TARGET_ID_SHARED_LIBRARY		\
+	  && !TARGET_SEP_DATA)			\
 	builtin_define ("__ID_SHARED_LIB__");	\
       if (flag_no_builtin)			\
 	builtin_define ("__NO_BUILTIN");	\
-    }                                           \
+    }						\
   while (0)
 #endif
 
 #define DRIVER_SELF_SPECS SUBTARGET_DRIVER_SELF_SPECS	"\
+ %{!mcpu=*:-mcpu=bf532} \
  %{mleaf-id-shared-library:%{!mid-shared-library:-mid-shared-library}} \
  %{mfdpic:%{!fpic:%{!fpie:%{!fPIC:%{!fPIE:\
    	    %{!fno-pic:%{!fno-pie:%{!fno-PIC:%{!fno-PIE:-fpie}}}}}}}}} \
@@ -123,7 +175,7 @@ extern int target_flags;
 /* Generate DSP instructions, like DSP halfword loads */
 #define TARGET_DSP			(1)
 
-#define TARGET_DEFAULT (MASK_SPECLD_ANOMALY | MASK_CSYNC_ANOMALY)
+#define TARGET_DEFAULT 0
 
 /* Maximum number of library ids we permit */
 #define MAX_LIBRARY_ID 255

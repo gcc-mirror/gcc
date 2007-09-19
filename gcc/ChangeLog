@@ -1,3 +1,55 @@
+2007-09-19  Jie Zhang  <jie.zhang@analog.com>
+
+	* config.gcc (bfin*-linux-uclibc*): Add ./linux-sysroot-suffix.h
+	to tm_file.
+	* config/bfin/print-sysroot-suffix.sh: New.
+	* config/bfin/t-bfin-elf (EXTRA_PARTS): Remove.
+	(MULTILIB_OPTIONS, MULTILIB_DIRNAMES, MULTILIB_MATCHES,
+	MULTILIB_EXCEPTIONS): Redefine with new multilibs.
+	* config/bfin/t-bfin-uclinux (EXTRA_PARTS): Remove.
+	(MULTILIB_OPTIONS, MULTILIB_DIRNAMES, MULTILIB_MATCHES,
+	MULTILIB_EXCEPTIONS): Redefine with new multilibs.
+	* config/bfin/t-bfin-linux (EXTRA_PARTS): Remove.
+	(MULTILIB_OPTIONS, MULTILIB_DIRNAMES, MULTILIB_MATCHES,
+	MULTILIB_EXCEPTIONS): Redefine with new multilibs.
+	(linux-sysroot-suffix.h): New target.
+	* config/bfin/bfin.opt (mcsync-anomaly): Use Var instead of Mask.
+	(mspecld-anomaly): Likewise.
+	* config/bfin/bfin-protos.h (enum bfin_cpu_type): Renamed from
+	(enum bfin_cpu): ... this. Add BFIN_CPU_BF522, BFIN_CPU_BF525,
+	BFIN_CPU_BF527, BFIN_CPU_BF538, BFIN_CPU_BF539, BFIN_CPU_BF542,
+	BFIN_CPU_BF544, BFIN_CPU_BF548, and BFIN_CPU_BF549.
+	(bfin_si_revision): Declare.
+	(bfin_workarounds): Declare.
+	(WA_SPECULATIVE_LOADS): Define.
+	(ENABLE_WA_SPECULATIVE_LOADS): Define.
+	(WA_SPECULATIVE_SYNCS): Define.
+	(ENABLE_WA_SPECULATIVE_SYNCS): Define.
+	* config/bfin/elf.h (STARTFILE_SPEC): Rename crt532.o to basiccrt.o.
+	(LIB_SPEC): Add %s to the linker scripts.
+	Use proper linker script for bf522, bf525, bf527,
+	bf538, bf539, bf542, bf544, bf548, and bf549.
+	* config/bfin/bfin.c (bfin_si_revision): Define.
+	(bfin_workarounds): Define.
+	(struct bfin_cpu): New.
+	(bfin_cpus): New.
+	(bfin_handle_option): Handle silicon revision part of -mcpu option.
+	(override_options): Set bfin_workarounds.
+	(length_for_loop): Replace TARGET_CSYNC_ANOMALY with
+	ENABLE_WA_SPECULATIVE_SYNCS, TARGET_SPECLD_ANOMALY with
+	ENABLE_WA_SPECULATIVE_LOADS.
+	(bfin_reorg): Likewise.
+	* config/bfin/bfin.h (TARGET_CPU_CPP_BUILTINS): Define
+	macros for bf522, bf525, bf527, bf538, bf539,
+	bf542, bf544, bf548, and bf549.
+	Define __SILICON_REVISION__ and __WORKAROUND_* macros if needed.
+	Don't define __ID_SHARED_LIB__ when -msep-data.
+	(TARGET_DEFAULT): Define as 0.
+	(DRIVER_SELF_SPECS): Add -mcpu=bf532 if no -mcpu option.
+	* doc/invoke.texi (Blackfin Options): Document silicon
+	revision part of -mcpu option and it now accepts bf522, bf525,
+	bf527, bf538, bf539, bf542, bf544, bf548, and bf549.
+
 2007-09-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alias.c (memory_modified_1): Deconstify.

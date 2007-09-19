@@ -4,8 +4,6 @@ LIB1ASMSRC = bfin/lib1funcs.asm
 LIB1ASMFUNCS = _divsi3 _udivsi3 _umodsi3 _modsi3 _umulsi3_highpart
 LIB1ASMFUNCS += _smulsi3_highpart
 
-EXTRA_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o
-
 FPBIT = fp-bit.c
 DPBIT = dp-bit.c
 
@@ -19,6 +17,12 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 CRTSTUFF_T_CFLAGS = -fpic
 TARGET_LIBGCC2_CFLAGS = -fpic
 
+MULTILIB_OPTIONS=mcpu=bf532-none/mcpu=bf532-0.3
+MULTILIB_DIRNAMES=bf532-none bf532-0.3
+MULTILIB_MATCHES=mcpu?bf532-none=mcpu?bf561
+MULTILIB_MATCHES+=mcpu?bf532-none=mcpu?bf531-none mcpu?bf532-none=mcpu?bf533-none mcpu?bf532-none=mcpu?bf534-none mcpu?bf532-none=mcpu?bf536-none mcpu?bf532-none=mcpu?bf537-none mcpu?bf532-none=mcpu?bf561-none mcpu?bf532-none=mcpu?bf561-0.5
+MULTILIB_MATCHES+=mcpu?bf532-0.3=mcpu?bf531-0.4 mcpu?bf532-0.3=mcpu?bf531-0.3 mcpu?bf532-0.3=mcpu?bf532-0.4 mcpu?bf532-0.3=mcpu?bf533-0.4 mcpu?bf532-0.3=mcpu?bf533-0.3 mcpu?bf532-0.3=mcpu?bf534-0.2 mcpu?bf532-0.3=mcpu?bf534-0.1 mcpu?bf532-0.3=mcpu?bf536-0.2 mcpu?bf532-0.3=mcpu?bf536-0.1 mcpu?bf532-0.3=mcpu?bf537-0.2 mcpu?bf532-0.3=mcpu?bf537-0.1 mcpu?bf532-0.3=mcpu?bf561-0.3 mcpu?bf532-0.3=mcpu?bf561-0.2 mcpu?bf532-0.3=mcpu?bf531-any mcpu?bf532-0.3=mcpu?bf532-any mcpu?bf532-0.3=mcpu?bf533-any mcpu?bf532-0.3=mcpu?bf534-any mcpu?bf532-0.3=mcpu?bf536-any mcpu?bf532-0.3=mcpu?bf537-any mcpu?bf532-0.3=mcpu?bf561-any
+
 # Assemble startup files.
 $(T)crti.o: $(srcdir)/config/bfin/crti.s $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
@@ -28,7 +32,13 @@ $(T)crtn.o: $(srcdir)/config/bfin/crtn.s $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/bfin/crtn.s
 
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o
-
 SHLIB_MAPFILES=$(srcdir)/config/bfin/libgcc-bfin.ver
 
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crti.o crtn.o
+
+# This rule uses MULTILIB_MATCHES to generate a definition of
+# SYSROOT_SUFFIX_SPEC.
+linux-sysroot-suffix.h: $(srcdir)/config/bfin/print-sysroot-suffix.sh
+	$(SHELL) $(srcdir)/config/bfin/print-sysroot-suffix.sh \
+	  "$(SYSTEM_HEADER_DIR)/../.." "$(MULTILIB_MATCHES)" \
+	  "$(MULTILIB_OPTIONS)" > $@

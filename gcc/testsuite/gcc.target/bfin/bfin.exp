@@ -1,23 +1,63 @@
-# Tests for the Blackfin
+# Copyright (C) 2007 Free Software Foundation, Inc.
 
-if {![istarget bfin-*]} {
-    return 0
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an BFIN target.
+if ![istarget bfin-*-*] then {
+  return
 }
 
+# Load support procs.
 load_lib gcc-dg.exp
 
-# If a testcase doesn't have special options, use these.
-global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+# Like dg-options, but treats certain Blackfin-specific options specially:
+#
+#    -mcpu=*
+#	Select the target cpu. Skip the test if the multilib flags force
+#	a different cpu.
+proc dg-bfin-options {args} {
+    upvar dg-extra-tool-flags extra_tool_flags
+    upvar dg-do-what do_what
+
+    set multilib_cpu ""
+    set cpu ""
+
+    foreach flag [target_info multilib_flags] {
+	regexp "^-mcpu=(.*)" $flag dummy multilib_cpu
+    }
+
+    set flags [lindex $args 1]
+
+    foreach flag $flags {
+	regexp "^-mcpu=(.*)" $flag dummy cpu
+    }
+
+    if {$multilib_cpu == "" || $multilib_cpu == $cpu} {
+	set extra_tool_flags $flags
+    } else {
+	set do_what [list [lindex $do_what 0] "N" "P"]
+    }
 }
 
 # Initialize `dg'.
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]] \
-	"" $DEFAULT_CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]]	"" ""
 
 # All done.
 dg-finish
