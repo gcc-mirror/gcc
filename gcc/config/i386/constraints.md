@@ -18,7 +18,7 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;;; Unused letters:
-;;;     B     H           TU W   
+;;;     B     H           TU W
 ;;;           h jk          vw  z
 
 ;; Integer register constraints.
@@ -129,7 +129,7 @@
        (match_test "IN_RANGE (ival, 0, 3)")))
 
 (define_constraint "N"
-  "Unsigned 8-bit integer constant (for @code{in} and @code{out} 
+  "Unsigned 8-bit integer constant (for @code{in} and @code{out}
    instructions)."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, 255)")))

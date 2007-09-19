@@ -2011,7 +2011,7 @@ override_options (void)
       {"pentium4", PROCESSOR_PENTIUM4, PTA_MMX |PTA_SSE | PTA_SSE2},
       {"pentium4m", PROCESSOR_PENTIUM4, PTA_MMX | PTA_SSE | PTA_SSE2},
       {"prescott", PROCESSOR_NOCONA, PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3},
-      {"nocona", PROCESSOR_NOCONA, (PTA_64BIT 
+      {"nocona", PROCESSOR_NOCONA, (PTA_64BIT
 				    | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 				    | PTA_CX16 | PTA_NO_SAHF)},
       {"core2", PROCESSOR_CORE2, (PTA_64BIT
@@ -2181,7 +2181,7 @@ override_options (void)
     ix86_arch_string = TARGET_64BIT ? "x86-64" : "i386";
   else
     ix86_arch_specified = 1;
-  
+
   if (!strcmp (ix86_arch_string, "generic"))
     error ("generic CPU can be used only for -mtune= switch");
   if (!strncmp (ix86_arch_string, "generic", 7))
@@ -4558,7 +4558,7 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
   else
     /* Most things go in %eax.  */
     regno = 0;
-  
+
   /* Override FP return register with %xmm0 for local functions when
      SSE math is enabled or for functions with sseregparm attribute.  */
   if ((fn || fntype) && (mode == SFmode || mode == DFmode))
@@ -4746,7 +4746,7 @@ ix86_return_in_memory (const_tree type)
    but differs notably in that when MMX is available, 8-byte vectors
    are returned in memory, rather than in MMX registers.  */
 
-int 
+int
 ix86_sol10_return_in_memory (const_tree type)
 {
   int size;
@@ -4889,7 +4889,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
   ix86_save_varrargs_registers = 1;
   /* We need 16-byte stack alignment to save SSE registers.  If user
      asked for lower preferred_stack_boundary, lets just hope that he knows
-     what he is doing and won't varargs SSE values.  
+     what he is doing and won't varargs SSE values.
 
      We also may end up assuming that only 64bit values are stored in SSE
      register let some floating point program work.  */
@@ -19794,7 +19794,7 @@ ix86_expand_multi_arg_builtin (enum insn_code icode, tree exp, rtx target,
 
 	  gcc_assert (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode);
 
-	  if (optimize 
+	  if (optimize
 	      || ! (*insn_data[icode].operand[i+adjust+1].predicate) (op, mode)
 	      || num_memory > 1)
 	    op = force_reg (mode, op);
@@ -21295,7 +21295,7 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
 	  || n != 4)
 	return NULL_TREE;
       break;
-    
+
     default:
       return NULL_TREE;
     }
@@ -24944,7 +24944,7 @@ bool ix86_sse5_valid_op_p (rtx operands[], rtx insn, int num, bool uses_oc0, int
 
       /* format, example pmacsdd:
 	 xmm1, xmm2, xmm3/mem, xmm1
-      
+
          For the integer multiply/add instructions be more restrictive and
          require operands[2] and operands[3] to be the memory operands.  */
       else
@@ -25044,7 +25044,7 @@ static const struct attribute_spec ix86_attribute_table[] =
 };
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
-static int 
+static int
 x86_builtin_vectorization_cost (bool runtime_test)
 {
   /* If the branch of the runtime test is taken - i.e. - the vectorized

@@ -22,7 +22,7 @@
 ;; the same register file, and 3dNOW! adds a number of extensions to
 ;; the base integer MMX isa.
 
-;; Note!  Except for the basic move instructions, *all* of these 
+;; Note!  Except for the basic move instructions, *all* of these
 ;; patterns are outside the normal optabs namespace.  This is because
 ;; use of these registers requires the insertion of emms or femms
 ;; instructions to return to normal fpu mode.  The compiler doesn't
@@ -301,7 +301,7 @@
   "pfrsqrt\\t{%1, %0|%0, %1}"
   [(set_attr "type" "mmx")
    (set_attr "mode" "V2SF")])
-		
+
 (define_insn "mmx_rsqit1v2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y")
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "0")
@@ -1429,4 +1429,4 @@
   "TARGET_3DNOW"
   "femms"
   [(set_attr "type" "mmx")
-   (set_attr "memory" "none")]) 
+   (set_attr "memory" "none")])

@@ -75,9 +75,9 @@ enum stringop_alg
    When size is unknown, the UNKNOWN_SIZE alg is used.  When size is
    known at compile time or estimated via feedback, the SIZE array
    is walked in order until MAX is greater then the estimate (or -1
-   means infinity).  Corresponding ALG is used then.  
+   means infinity).  Corresponding ALG is used then.
    For example initializer:
-    {{256, loop}, {-1, rep_prefix_4_byte}}		
+    {{256, loop}, {-1, rep_prefix_4_byte}}
    will use loop for blocks smaller or equal to 256 bytes, rep prefix will
    be used otherwise.  */
 struct stringop_algs
@@ -153,7 +153,7 @@ struct processor_costs {
                                    scalar-to-vector operation.  */
   const int vec_to_scalar_cost;    /* Cost of vect-to-scalar operation.  */
   const int scalar_to_vec_cost;    /* Cost of scalar-to-vector operation.  */
-  const int vec_align_load_cost;   /* Cost of aligned vector load.  */ 
+  const int vec_align_load_cost;   /* Cost of aligned vector load.  */
   const int vec_unalign_load_cost; /* Cost of unaligned vector load.  */
   const int vec_store_cost;        /* Cost of vector store.  */
   const int cond_taken_branch_cost;    /* Cost of taken branch for vectorizer
@@ -375,7 +375,7 @@ enum ix86_arch_indices {
 
   X86_ARCH_LAST
 };
-  
+
 extern unsigned int ix86_arch_features[X86_ARCH_LAST];
 
 #define TARGET_CMOVE		ix86_arch_features[X86_ARCH_CMOVE]
@@ -2507,7 +2507,7 @@ struct machine_function GTY(())
 #define TARG_SCALAR_STORE_COST          ix86_cost->scalar_store_cost
 
 /* Cost of any vector operation, excluding load, store or vector to scalar
-   operation.  */ 
+   operation.  */
 #undef TARG_VEC_STMT_COST
 #define TARG_VEC_STMT_COST              ix86_cost->vec_stmt_cost
 

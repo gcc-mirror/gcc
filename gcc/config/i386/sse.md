@@ -602,7 +602,7 @@
    (set_attr "mode" "SF")])
 
 ;; ??? For !flag_finite_math_only, the representation with SMIN/SMAX
-;; isn't really correct, as those rtl operators aren't defined when 
+;; isn't really correct, as those rtl operators aren't defined when
 ;; applied to NaNs.  Hopefully the optimizers won't get too smart on us.
 
 (define_expand "smaxv4sf3"
@@ -754,7 +754,7 @@
 	(vec_concat:V4SF
 	  (vec_concat:V2SF
 	    (plus:SF
-	      (vec_select:SF 
+	      (vec_select:SF
 		(match_operand:V4SF 1 "register_operand" "0")
 		(parallel [(const_int 0)]))
 	      (vec_select:SF (match_dup 1) (parallel [(const_int 1)])))
@@ -781,7 +781,7 @@
 	(vec_concat:V4SF
 	  (vec_concat:V2SF
 	    (minus:SF
-	      (vec_select:SF 
+	      (vec_select:SF
 		(match_operand:V4SF 1 "register_operand" "0")
 		(parallel [(const_int 0)]))
 	      (vec_select:SF (match_dup 1) (parallel [(const_int 1)])))
@@ -2290,7 +2290,7 @@
    (set_attr "mode" "DF")])
 
 ;; ??? For !flag_finite_math_only, the representation with SMIN/SMAX
-;; isn't really correct, as those rtl operators aren't defined when 
+;; isn't really correct, as those rtl operators aren't defined when
 ;; applied to NaNs.  Hopefully the optimizers won't get too smart on us.
 
 (define_expand "smaxv2df3"
@@ -3527,7 +3527,7 @@
   emit_insn (gen_sse2_punpcklbw (t[3], operands[2], operands[2]));
 
   /* Multiply words.  The end-of-line annotations here give a picture of what
-     the output of that instruction looks like.  Dot means don't care; the 
+     the output of that instruction looks like.  Dot means don't care; the
      letters are the bytes of the result with A being the most significant.  */
   emit_insn (gen_mulv8hi3 (gen_lowpart (V8HImode, t[4]), /* .A.B.C.D.E.F.G.H */
 			   gen_lowpart (V8HImode, t[0]),
@@ -3569,8 +3569,8 @@
 (define_expand "smulv8hi3_highpart"
   [(set (match_operand:V8HI 0 "register_operand" "")
         (truncate:V8HI
-          (lshiftrt:V8SI 
-            (mult:V8SI 
+          (lshiftrt:V8SI
+            (mult:V8SI
               (sign_extend:V8SI
                 (match_operand:V8HI 1 "nonimmediate_operand" ""))
               (sign_extend:V8SI
@@ -3578,7 +3578,7 @@
             (const_int 16))))]
   "TARGET_SSE2"
   "ix86_fixup_binary_operands_no_copy (MULT, V8HImode, operands);")
-  
+
 (define_insn "*smulv8hi3_highpart"
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(truncate:V8HI
@@ -3776,7 +3776,7 @@
 			       thirtytwo));
   emit_insn (gen_sse2_lshrti3 (gen_lowpart (TImode, t3),
 			       gen_lowpart (TImode, op2),
-			       thirtytwo)); 
+			       thirtytwo));
   /* Multiply elements 3 and 1.  */
   emit_insn (gen_sse2_umulv2siv2di3 (gen_lowpart (V2DImode, t4),
 				     t2, t3));
@@ -4011,8 +4011,8 @@
 })
 
 (define_expand "udot_prodv4si"
-  [(match_operand:V2DI 0 "register_operand" "") 
-   (match_operand:V4SI 1 "register_operand" "") 
+  [(match_operand:V2DI 0 "register_operand" "")
+   (match_operand:V4SI 1 "register_operand" "")
    (match_operand:V4SI 2 "register_operand" "")
    (match_operand:V2DI 3 "register_operand" "")]
   "TARGET_SSE2"
@@ -4875,7 +4875,7 @@
 		     (const_int 9)  (const_int 25)
 		     (const_int 10) (const_int 26)
 		     (const_int 11) (const_int 27)
-		     (const_int 12) (const_int 28) 
+		     (const_int 12) (const_int 28)
 		     (const_int 13) (const_int 29)
 		     (const_int 14) (const_int 30)
 		     (const_int 15) (const_int 31)])))]
@@ -5283,7 +5283,7 @@
   "TARGET_SSE"
   "#"
   "&& reload_completed
-   && (TARGET_INTER_UNIT_MOVES 
+   && (TARGET_INTER_UNIT_MOVES
        || MEM_P (operands [0])
        || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
@@ -5343,7 +5343,7 @@
 	  (parallel [(const_int 0)])))]
   "TARGET_SSE
    && reload_completed
-   && (TARGET_INTER_UNIT_MOVES 
+   && (TARGET_INTER_UNIT_MOVES
        || MEM_P (operands [0])
        || !GENERAL_REGNO_P (true_regnum (operands [0])))"
   [(set (match_dup 0) (match_dup 1))]
@@ -5839,7 +5839,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-;; The correct representation for this is absolutely enormous, and 
+;; The correct representation for this is absolutely enormous, and
 ;; surely not generally useful.
 (define_insn "sse2_psadbw"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
@@ -6641,7 +6641,7 @@
 
 (define_insn "sse4a_vmmovntv2df"
   [(set (match_operand:DF 0 "memory_operand" "=m")
-        (unspec:DF [(vec_select:DF 
+        (unspec:DF [(vec_select:DF
                       (match_operand:V2DF 1 "register_operand" "x")
                       (parallel [(const_int 0)]))]
                    UNSPEC_MOVNT))]
@@ -6661,7 +6661,7 @@
 
 (define_insn "sse4a_vmmovntv4sf"
   [(set (match_operand:SF 0 "memory_operand" "=m")
-	(unspec:SF [(vec_select:SF 
+	(unspec:SF [(vec_select:SF
 	              (match_operand:V4SF 1 "register_operand" "x")
 		      (parallel [(const_int 0)]))]
 		   UNSPEC_MOVNT))]
@@ -7893,7 +7893,7 @@
 ;; SSE5 parallel XMM conditional moves
 (define_insn "sse5_pcmov_<mode>"
   [(set (match_operand:SSEMODE 0 "register_operand" "=x,x,x,x,x,x")
-	(if_then_else:SSEMODE 
+	(if_then_else:SSEMODE
 	  (match_operand:SSEMODE 3 "nonimmediate_operand" "0,0,xm,xm,0,0")
 	  (match_operand:SSEMODE 1 "vector_move_operand" "x,xm,0,x,C,x")
 	  (match_operand:SSEMODE 2 "vector_move_operand" "xm,x,x,0,x,C")))]
