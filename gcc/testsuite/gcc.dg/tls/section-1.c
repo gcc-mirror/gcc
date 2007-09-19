@@ -1,6 +1,6 @@
 /* Verify that we get errors for trying to put TLS data in 
    sections which can't work.  */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_native } */
 
 #define A(X)	__attribute__((section(X)))
 

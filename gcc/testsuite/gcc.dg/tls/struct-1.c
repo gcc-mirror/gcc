@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fpic" } */
+/* { dg-require-effective-target tls } */
 
 struct S {
   int s0, s1, s2, s3;

@@ -1,4 +1,4 @@
-! { dg-require-effective-target tls }
+! { dg-require-effective-target tls_native }
       module omp_threadprivate1
 	common /T/ a
       end module omp_threadprivate1

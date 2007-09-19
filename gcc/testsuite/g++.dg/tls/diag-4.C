@@ -1,5 +1,5 @@
 /* Invalid __thread specifiers.  */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_native } */
 
 __thread typedef int g4;	/* { dg-error "multiple storage classes" } */
 
