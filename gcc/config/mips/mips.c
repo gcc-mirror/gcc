@@ -10045,50 +10045,30 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	  fprintf (asm_out_file, "\tjal\t%s\n", fnname);
 	  /* As above, we can't fill the delay slot.  */
 	  fprintf (asm_out_file, "\tnop\n");
-	  if (GET_MODE (retval) == SFmode)
-	    fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-		     reg_names[GP_REG_FIRST + 2], reg_names[FP_REG_FIRST + 0]);
- 	  else if (GET_MODE (retval) == SCmode)
- 	    {
- 	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
- 		       reg_names[GP_REG_FIRST + 2],
-		       reg_names[FP_REG_FIRST + 0]);
+	  switch (GET_MODE (retval))
+	    {
+	    case SCmode:
  	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
  		       reg_names[GP_REG_FIRST + 3],
 		       reg_names[FP_REG_FIRST + MAX_FPRS_PER_FMT]);
- 	    }
- 	  else if (GET_MODE (retval) == DFmode
-		   || GET_MODE (retval) == V2SFmode)
- 	    {
- 	      mips16_fpret_double (GP_REG_FIRST + 2, FP_REG_FIRST + 0);
- 	    }
- 	  else if (GET_MODE (retval) == DCmode)
-	    {
- 	      mips16_fpret_double (GP_REG_FIRST + 2,
-				   FP_REG_FIRST + 0);
- 	      mips16_fpret_double (GP_REG_FIRST + 4,
+	      /* Fall though.  */
+	    case SFmode:
+	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
+		       reg_names[GP_REG_FIRST + 2],
+		       reg_names[FP_REG_FIRST + 0]);
+	      break;
+
+	    case DCmode:
+ 	      mips16_fpret_double (GP_REG_FIRST + 2 + (8 / UNITS_PER_WORD),
 				   FP_REG_FIRST + MAX_FPRS_PER_FMT);
- 	    }
-	  else
-	    {
-	      if (TARGET_BIG_ENDIAN)
-		{
-		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-			   reg_names[GP_REG_FIRST + 2],
-			   reg_names[FP_REG_FIRST + 1]);
-		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-			   reg_names[GP_REG_FIRST + 3],
-			   reg_names[FP_REG_FIRST + 0]);
-		}
-	      else
-		{
-		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-			   reg_names[GP_REG_FIRST + 2],
-			   reg_names[FP_REG_FIRST + 0]);
-		  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-			   reg_names[GP_REG_FIRST + 3],
-			   reg_names[FP_REG_FIRST + 1]);
-		}
+	      /* Fall though.  */
+ 	    case DFmode:
+	    case V2SFmode:
+ 	      mips16_fpret_double (GP_REG_FIRST + 2, FP_REG_FIRST + 0);
+	      break;
+
+	    default:
+	      gcc_unreachable ();
 	    }
 	  fprintf (asm_out_file, "\tj\t%s\n", reg_names[GP_REG_FIRST + 18]);
 	  /* As above, we can't fill the delay slot.  */

@@ -1,3 +1,8 @@
+2007-09-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (build_mips16_call_stub): Tidy.  Fix second
+	GPR for DCmode on 64-bit targets.  Remove redundant fallback.
+
 2007-09-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* cfgexpand.c (dump_stack_var_partition): Use the correct
