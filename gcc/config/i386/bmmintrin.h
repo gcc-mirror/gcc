@@ -154,7 +154,7 @@ _mm_maccsd_epi16(__m128i __A, __m128i __B, __m128i __C)
 static __inline __m128i __attribute__((__always_inline__))
 _mm_maccd_epi16(__m128i __A, __m128i __B, __m128i __C)
 {
-  return  (__m128i) __builtin_ia32_pmacswd ((__v8hi)__A, (__v8hi)__B, (__v4si)__C); 
+  return  (__m128i) __builtin_ia32_pmacswd ((__v8hi)__A, (__v8hi)__B, (__v4si)__C);
 }
 
 static __inline __m128i __attribute__((__always_inline__))
@@ -178,19 +178,19 @@ _mm_maccslo_epi32(__m128i __A, __m128i __B, __m128i __C)
 static __inline __m128i __attribute__((__always_inline__))
 _mm_macclo_epi32(__m128i __A, __m128i __B, __m128i __C)
 {
-  return  (__m128i) __builtin_ia32_pmacsdql ((__v4si)__A, (__v4si)__B, (__v2di)__C); 
+  return  (__m128i) __builtin_ia32_pmacsdql ((__v4si)__A, (__v4si)__B, (__v2di)__C);
 }
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_maccshi_epi32(__m128i __A, __m128i __B, __m128i __C)
 {
-  return  (__m128i) __builtin_ia32_pmacssdqh ((__v4si)__A, (__v4si)__B, (__v2di)__C); 
+  return  (__m128i) __builtin_ia32_pmacssdqh ((__v4si)__A, (__v4si)__B, (__v2di)__C);
 }
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_macchi_epi32(__m128i __A, __m128i __B, __m128i __C)
 {
-  return  (__m128i) __builtin_ia32_pmacsdqh ((__v4si)__A, (__v4si)__B, (__v2di)__C); 
+  return  (__m128i) __builtin_ia32_pmacsdqh ((__v4si)__A, (__v4si)__B, (__v2di)__C);
 }
 
 static __inline __m128i __attribute__((__always_inline__))
@@ -324,25 +324,25 @@ _mm_perm_pd(__m128d __A, __m128d __B, __m128i __C)
 /* Packed Integer Rotates and Shifts */
 
 /* Rotates - Non-Immediate form */
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_rot_epi8(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_protb ((__v16qi)__A, (__v16qi)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_rot_epi16(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_protw ((__v8hi)__A, (__v8hi)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_rot_epi32(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_protd ((__v4si)__A, (__v4si)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_rot_epi64(__m128i __A,  __m128i __B)
 {
   return (__m128i)  __builtin_ia32_protq ((__v2di)__A, (__v2di)__B);
@@ -351,25 +351,25 @@ _mm_rot_epi64(__m128i __A,  __m128i __B)
 
 /* Rotates - Immediate form */
 #ifdef __OPTIMIZE__
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_roti_epi8(__m128i __A,  int __B)
 {
   return  (__m128i) __builtin_ia32_protbi ((__v16qi)__A, __B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_roti_epi16(__m128i __A, int __B)
 {
   return  (__m128i) __builtin_ia32_protwi ((__v8hi)__A, __B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_roti_epi32(__m128i __A, int __B)
 {
   return  (__m128i) __builtin_ia32_protdi ((__v4si)__A, __B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_roti_epi64(__m128i __A, int __B)
 {
   return  (__m128i) __builtin_ia32_protqi ((__v2di)__A, __B);
@@ -383,50 +383,50 @@ _mm_roti_epi64(__m128i __A, int __B)
 
 /* pshl */
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_shl_epi8(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshlb ((__v16qi)__A, (__v16qi)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_shl_epi16(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshlw ((__v8hi)__A, (__v8hi)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_shl_epi32(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshld ((__v4si)__A, (__v4si)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_shl_epi64(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshlq ((__v2di)__A, (__v2di)__B);
 }
 
 /* psha */
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_sha_epi8(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshab ((__v16qi)__A, (__v16qi)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_sha_epi16(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshaw ((__v8hi)__A, (__v8hi)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_sha_epi32(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshad ((__v4si)__A, (__v4si)__B);
 }
 
-static __inline __m128i __attribute__((__always_inline__)) 
+static __inline __m128i __attribute__((__always_inline__))
 _mm_sha_epi64(__m128i __A,  __m128i __B)
 {
   return  (__m128i) __builtin_ia32_pshaq ((__v2di)__A, (__v2di)__B);
@@ -465,14 +465,14 @@ _mm_comneq_ps(__m128 __A, __m128 __B)
   return (__m128) __builtin_ia32_comuneqps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comnlt_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comunltps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
-_mm_comnle_ps(__m128 __A, __m128 __B) 
+static __inline __m128 __attribute__((__always_inline__))
+_mm_comnle_ps(__m128 __A, __m128 __B)
 {
   return (__m128)  __builtin_ia32_comunleps ((__v4sf)__A, (__v4sf)__B);
 }
@@ -491,43 +491,43 @@ _mm_comueq_ps(__m128 __A, __m128 __B)
   return (__m128) __builtin_ia32_comueqps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comnge_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comungeps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comngt_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comungtps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comfalse_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comfalseps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comoneq_ps(__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_comneqps ((__v4sf)__A, (__v4sf)__B); 
+  return (__m128) __builtin_ia32_comneqps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comge_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comgeps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comgt_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comgtps ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comtrue_ps(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comtrueps ((__v4sf)__A, (__v4sf)__B);
@@ -565,14 +565,14 @@ _mm_comneq_pd(__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_comuneqpd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comnlt_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comunltpd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
-_mm_comnle_pd(__m128d __A, __m128d __B) 
+static __inline __m128d __attribute__((__always_inline__))
+_mm_comnle_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comunlepd ((__v2df)__A, (__v2df)__B);
 }
@@ -590,19 +590,19 @@ _mm_comueq_pd(__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_comueqpd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comnge_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comungepd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comngt_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comungtpd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comfalse_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comfalsepd ((__v2df)__A, (__v2df)__B);
@@ -614,19 +614,19 @@ _mm_comoneq_pd(__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_comneqpd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comge_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comgepd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comgt_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comgtpd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comtrue_pd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comtruepd ((__v2df)__A, (__v2df)__B);
@@ -663,14 +663,14 @@ _mm_comneq_ss(__m128 __A, __m128 __B)
   return (__m128) __builtin_ia32_comuneqss ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comnlt_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comunltss ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
-_mm_comnle_ss(__m128 __A, __m128 __B) 
+static __inline __m128 __attribute__((__always_inline__))
+_mm_comnle_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comunless ((__v4sf)__A, (__v4sf)__B);
 }
@@ -688,43 +688,43 @@ _mm_comueq_ss(__m128 __A, __m128 __B)
   return (__m128) __builtin_ia32_comueqss ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comnge_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comungess ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comngt_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comungtss ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comfalse_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comfalsess ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comoneq_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comneqss ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comge_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comgess ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comgt_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comgtss ((__v4sf)__A, (__v4sf)__B);
 }
 
-static __inline __m128 __attribute__((__always_inline__)) 
+static __inline __m128 __attribute__((__always_inline__))
 _mm_comtrue_ss(__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_comtruess ((__v4sf)__A, (__v4sf)__B);
@@ -762,14 +762,14 @@ _mm_comneq_sd(__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_comuneqsd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comnlt_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comunltsd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
-_mm_comnle_sd(__m128d __A, __m128d __B) 
+static __inline __m128d __attribute__((__always_inline__))
+_mm_comnle_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comunlesd ((__v2df)__A, (__v2df)__B);
 }
@@ -787,19 +787,19 @@ _mm_comueq_sd(__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_comueqsd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comnge_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comungesd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comngt_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comungtsd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comfalse_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comfalsesd ((__v2df)__A, (__v2df)__B);
@@ -811,19 +811,19 @@ _mm_comoneq_sd(__m128d __A, __m128d __B)
   return (__m128d) __builtin_ia32_comneqsd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comge_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comgesd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comgt_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comgtsd ((__v2df)__A, (__v2df)__B);
 }
 
-static __inline __m128d __attribute__((__always_inline__)) 
+static __inline __m128d __attribute__((__always_inline__))
 _mm_comtrue_sd(__m128d __A, __m128d __B)
 {
   return (__m128d) __builtin_ia32_comtruesd ((__v2df)__A, (__v2df)__B);
@@ -836,49 +836,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltub ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomleub ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtub ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgeub ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomequb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomnequb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalseub ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epu8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrueub ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 /*pcom (integer, unsinged words) */
 
@@ -886,49 +886,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltuw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomleuw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtuw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgeuw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomequw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomnequw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalseuw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epu16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrueuw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 /*pcom (integer, unsinged double words) */
 
@@ -936,49 +936,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltud ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomleud ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtud ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgeud ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomequd ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomnequd ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalseud ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epu32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrueud ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 /*pcom (integer, unsinged quad words) */
 
@@ -986,49 +986,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltuq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomleuq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtuq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgeuq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomequq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomnequq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalseuq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epu64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrueuq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 /*pcom (integer, signed bytes) */
 
@@ -1036,49 +1036,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomleb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgeb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomeqb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomneqb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalseb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epi8(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrueb ((__v16qi)__A, (__v16qi)__B);
-} 
+}
 
 /*pcom (integer, signed words) */
 
@@ -1086,49 +1086,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomlew ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgew ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomeqw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomneqw ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalsew ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epi16(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtruew ((__v8hi)__A, (__v8hi)__B);
-} 
+}
 
 /*pcom (integer, signed double words) */
 
@@ -1136,49 +1136,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltd ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomled ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtd ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomged ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomeqd ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomneqd ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalsed ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epi32(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrued ((__v4si)__A, (__v4si)__B);
-} 
+}
 
 /*pcom (integer, signed quad words) */
 
@@ -1186,49 +1186,49 @@ static __inline __m128i __attribute__((__always_inline__))
 _mm_comlt_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomltq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comle_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomleq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comgt_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgtq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comge_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomgeq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comeq_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomeqq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comneq_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomneqq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comfalse_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomfalseq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 static __inline __m128i __attribute__((__always_inline__))
 _mm_comtrue_epi64(__m128i __A, __m128i __B)
 {
   return (__m128i) __builtin_ia32_pcomtrueq ((__v2di)__A, (__v2di)__B);
-} 
+}
 
 /* FRCZ */
 static __inline __m128 __attribute__((__always_inline__))

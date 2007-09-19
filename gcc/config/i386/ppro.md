@@ -78,7 +78,7 @@
 ;;    but still in only one cycle.
 ;;  - a complex (microcode) instruction can also only be decoded by
 ;;    decoder 0, and this takes an unspecified number of cycles.
-;;    
+;;
 ;; The goal is to schedule such that we have a few-one-one uops sequence
 ;; in each cycle, to decode as many instructions per cycle as possible.
 (define_cpu_unit "decoder0" "ppro_decoder")

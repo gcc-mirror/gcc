@@ -34,7 +34,7 @@
 ;; ??? It would be possible to use cmpxchg8b on pentium for DImode
 ;; changes.  It's complicated because the insn uses ecx:ebx as the
 ;; new value; note that the registers are reversed from the order
-;; that they'd be in with (reg:DI 2 ecx).  Similarly for TImode 
+;; that they'd be in with (reg:DI 2 ecx).  Similarly for TImode
 ;; data in 64-bit mode.
 
 (define_expand "sync_compare_and_swap<mode>"

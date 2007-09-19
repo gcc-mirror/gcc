@@ -1,7 +1,7 @@
 ;; AMD Athlon Scheduling
 ;;
 ;; The Athlon does contain three pipelined FP units, three integer units and
-;; three address generation units. 
+;; three address generation units.
 ;;
 ;; The predecode logic is determining boundaries of instructions in the 64
 ;; byte cache line. So the cache line straddling problem of K6 might be issue
@@ -206,7 +206,7 @@
 			      (and (eq_attr "type" "imul")
 				   (and (eq_attr "mode" "HI")
 					(eq_attr "memory" "none,unknown"))))
-			 "athlon-vector,athlon-ieu0,athlon-mult,nothing,athlon-ieu0")			 
+			 "athlon-vector,athlon-ieu0,athlon-mult,nothing,athlon-ieu0")
 (define_insn_reservation "athlon_imul_mem" 8
 			 (and (eq_attr "cpu" "athlon")
 			      (and (eq_attr "type" "imul")
@@ -328,7 +328,7 @@
 					(eq_attr "memory" "both"))))
 			 "athlon-direct,athlon-load,
 			  athlon-ieu,athlon-store,
-			  athlon-store")			  
+			  athlon-store")
 
 (define_insn_reservation "athlon_ivector_both" 6
 			 (and (eq_attr "cpu" "athlon,k8,generic64")
@@ -617,7 +617,7 @@
 			 (and (eq_attr "cpu" "amdfam10")
 			      (and (eq_attr "type" "mmxmov")
 				   (eq_attr "memory" "load")))
-			 "athlon-direct,athlon-fploadk8, athlon-fany")			 
+			 "athlon-direct,athlon-fploadk8, athlon-fany")
 (define_insn_reservation "athlon_mmxssest" 3
 			 (and (eq_attr "cpu" "k8,generic64")
 			      (and (eq_attr "type" "mmxmov,ssemov")
@@ -926,7 +926,7 @@
 				   (and (eq_attr "amdfam10_decode" "double")
 					(and (eq_attr "mode" "SF,DF")
 					     (eq_attr "memory" "load")))))
-			 "athlon-double,athlon-fploadk8,(athlon-faddmul+athlon-fstore)")			 
+			 "athlon-double,athlon-fploadk8,(athlon-faddmul+athlon-fstore)")
 ;; cvtsi2sd reg,reg is double decoded (vector on Athlon)
 (define_insn_reservation "athlon_sseicvt_cvtsi2sd_k8" 11
 			 (and (eq_attr "cpu" "k8,athlon,generic64")
@@ -1115,7 +1115,7 @@
 (define_insn_reservation "athlon_ssemulvector_amdfam10" 4
 			 (and (eq_attr "cpu" "amdfam10")
 			      (eq_attr "type" "ssemul"))
-			 "athlon-direct,athlon-fpsched,athlon-fmul")			 
+			 "athlon-direct,athlon-fpsched,athlon-fmul")
 ;; divsd timings.  divss is faster
 (define_insn_reservation "athlon_ssediv_load" 20
 			 (and (eq_attr "cpu" "athlon")
@@ -1148,7 +1148,7 @@
 			 (and (eq_attr "cpu" "amdfam10")
 			      (and (eq_attr "type" "ssediv")
 				   (eq_attr "memory" "load")))
-			 "athlon-direct,athlon-fploadk8,athlon-fmul*17")			 
+			 "athlon-direct,athlon-fploadk8,athlon-fmul*17")
 (define_insn_reservation "athlon_ssedivvector" 39
 			 (and (eq_attr "cpu" "athlon")
 			      (eq_attr "type" "ssediv"))
