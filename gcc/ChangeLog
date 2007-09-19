@@ -1,3 +1,11 @@
+2007-09-19  Roman Zippel <zippel@linux-m68k.org>
+
+	* config/m68k/m68k.c (output_move_himode): Remove jump table
+	recognition.
+	config/m68k/m68k.md (lea): Likewise.
+	* config/m68k/m68k.c (print_operand_address): Use simple pc
+	relative addressing.
+
 2007-09-19  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* doc/tm.texi (IS_ASM_LOGICAL_LINE_SEPARATOR): Document new argument.
