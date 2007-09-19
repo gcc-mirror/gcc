@@ -1,3 +1,10 @@
+2007-09-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (memory_modified_1): Deconstify.
+	(memory_modified_in_insn_p): Don't use const_note_stores.
+	* rtl.h (const_note_stores): Delete.
+	* rtlanal.c (const_note_stores): Likewise.
+
 2007-09-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* dse.c (find_shift_sequence): Temporarily revert to forbidding

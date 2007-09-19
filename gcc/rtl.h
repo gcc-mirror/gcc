@@ -1723,7 +1723,6 @@ extern int refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);
 extern int reg_overlap_mentioned_p (const_rtx, const_rtx);
 extern const_rtx set_of (const_rtx, const_rtx);
 extern void note_stores (const_rtx, void (*) (rtx, const_rtx, void *), void *);
-extern void const_note_stores (const_rtx, void (*) (const_rtx, const_rtx, const void *), const void *);
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
 extern int dead_or_set_p (const_rtx, const_rtx);
 extern int dead_or_set_regno_p (const_rtx, unsigned int);
