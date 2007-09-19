@@ -1,5 +1,5 @@
 /* Invalid initializations.  */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_native } */
 
 extern __thread int i;
 __thread int *p = &i;	/* { dg-error "dynamically initialized" } */

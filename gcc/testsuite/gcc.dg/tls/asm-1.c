@@ -1,4 +1,5 @@
 /* { dg-options "-Werror" } */
+/* { dg-require-effective-target tls } */
 __thread int i;
 
 int foo ()

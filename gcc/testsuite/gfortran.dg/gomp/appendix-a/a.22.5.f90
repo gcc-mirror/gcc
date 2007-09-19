@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-require-effective-target tls }
+! { dg-require-effective-target tls_native }
 
       SUBROUTINE A22_5_WRONG()
         COMMON /T/ A

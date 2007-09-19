@@ -1,3 +1,74 @@
+2007-09-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	Restore detection of unsupported TLS.
+
+	Revert this patch:
+	2007-02-10  Richard Henderson  <rth@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_tls): Redefine
+	to mean non-emulated tls.
+	* gcc.dg/tls/alias-1.c: Remove tls requirement.
+	* gcc.dg/tls/asm-1.c, gcc.dg/tls/debug-1.c, gcc.dg/tls/diag-1.c,
+	gcc.dg/tls/diag-2.c, gcc.dg/tls/diag-3.c, gcc.dg/tls/diag-4.c,
+	gcc.dg/tls/diag-5.c, gcc.dg/tls/init-1.c, gcc.dg/tls/nonpic-1.c,
+	gcc.dg/tls/opt-10.c, gcc.dg/tls/opt-5.c, gcc.dg/tls/opt-6.c,
+	gcc.dg/tls/opt-8.c, gcc.dg/tls/opt-9.c, gcc.dg/tls/pic-1.c,
+	gcc.dg/tls/struct-1.c, gcc.dg/tls/trivial.c: Likewise.
+
+	And then:
+	* lib/target-supports.exp (check_effective_target_tls): Use
+	stronger test for compiler support for TLS.
+	(check_effective_target_tls_native): New, to test for non-emulated
+	TLS support.
+	* g++.dg/gomp/clause-3.C: Use dg-require-effective-target tls_native
+	instead of dg-require-effective-target tls.
+	* g++.dg/gomp/copyin-1.C: Likewise.
+	* g++.dg/gomp/sharing-1.C: Likewise.
+	* g++.dg/gomp/tls-1.C: Likewise.
+	* g++.dg/gomp/tls-2.C: Likewise.
+	* g++.dg/gomp/tls-3.C: Likewise.
+	* g++.dg/tls/diag-1.C: Likewise.
+	* g++.dg/tls/diag-2.C: Likewise.
+	* g++.dg/tls/diag-3.C: Likewise.
+	* g++.dg/tls/diag-4.C: Likewise.
+	* g++.dg/tls/diag-5.C: Likewise.
+	* g++.dg/tls/init-1.C: Likewise.
+	* g++.dg/tls/init-2.C: Likewise.
+	* g++.dg/tls/trivial.C: Likewise.
+	* gcc.dg/gomp/appendix-a/a.22.1.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.22.2.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.24.1.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.32.1.c: Likewise.
+	* gcc.dg/gomp/appendix-a/a.33.1.c: Likewise.
+	* gcc.dg/gomp/clause-1.c: Likewise.
+	* gcc.dg/gomp/copyin-1.c: Likewise.
+	* gcc.dg/gomp/sharing-1.c: Likewise.
+	* gcc.dg/gomp/tls-1.c: Likewise.
+	* gcc.dg/gomp/tls-2.c: Likewise.
+	* gcc.dg/tls/alpha-1.c: Likewise.
+	* gcc.dg/tls/opt-1.c: Likewise.
+	* gcc.dg/tls/opt-13.c: Likewise.
+	* gcc.dg/tls/opt-14.c: Likewise.
+	* gcc.dg/tls/opt-2.c: Likewise.
+	* gcc.dg/tls/opt-3.c: Likewise.
+	* gcc.dg/tls/opt-4.c: Likewise.
+	* gcc.dg/tls/opt-7.c: Likewise.
+	* gcc.dg/tls/section-1.c: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.22.1.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.22.4.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.22.5.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.22.6.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.24.1.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.32.1.f90: Likewise.
+	* gfortran.dg/gomp/appendix-a/a.33.1.f90: Likewise.
+	* gfortran.dg/gomp/crayptr2.f90: Likewise.
+	* gfortran.dg/gomp/fixed-1.f: Likewise.
+	* gfortran.dg/gomp/free-1.f90: Likewise.
+	* gfortran.dg/gomp/omp_threadprivate1.f90: Likewise.
+	* gfortran.dg/gomp/omp_threadprivate2.f90: Likewise.
+	* gfortran.dg/gomp/reduction1.f90: Likewise.
+	* gfortran.dg/gomp/sharing-1.f90: Likewise.
+
 2007-09-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31119

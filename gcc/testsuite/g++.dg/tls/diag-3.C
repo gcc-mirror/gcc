@@ -1,5 +1,5 @@
 // Report invalid extern and __thread combinations.
-// { dg-require-effective-target tls }
+// { dg-require-effective-target tls_native }
 
 extern int j;		// { dg-error "previously declared here" }
 __thread int j;		// { dg-error "follows non-thread-local" }

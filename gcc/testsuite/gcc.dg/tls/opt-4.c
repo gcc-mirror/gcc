@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_native } */
 
 struct A
 {

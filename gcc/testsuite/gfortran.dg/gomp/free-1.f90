@@ -1,4 +1,4 @@
-! { dg-require-effective-target tls }
+! { dg-require-effective-target tls_native }
 
 subroutine foo
 integer, save :: i ! Some comment

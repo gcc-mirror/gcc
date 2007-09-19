@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target tls } */
+/* { dg-require-effective-target tls_native } */
 
 extern int omp_get_num_threads (void);
 int x, y, t, z[1000];
