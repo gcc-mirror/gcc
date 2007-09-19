@@ -7047,9 +7047,11 @@ If no constant-pool epilogue is required, the usual case, you need not
 define this macro.
 @end defmac
 
-@defmac IS_ASM_LOGICAL_LINE_SEPARATOR (@var{C})
+@defmac IS_ASM_LOGICAL_LINE_SEPARATOR (@var{C}, @var{STR})
 Define this macro as a C expression which is nonzero if @var{C} is
-used as a logical line separator by the assembler.
+used as a logical line separator by the assembler.  @var{STR} points
+to the position in the string where @var{C} was found; this can be used if
+a line separator uses multiple characters.
 
 If you do not define this macro, the default is that only
 the character @samp{;} is treated as a logical line separator.

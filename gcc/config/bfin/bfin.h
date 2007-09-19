@@ -1294,6 +1294,10 @@ typedef enum directives {
     LAST_DIR_NM
 } DIR_ENUM_T;
 
+#define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR)	\
+  ((C) == ';'					\
+   || ((C) == '|' && (STR)[1] == '|'))
+
 #define TEXT_SECTION_ASM_OP ".text;"
 #define DATA_SECTION_ASM_OP ".data;"
 

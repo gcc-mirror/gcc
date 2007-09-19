@@ -1,3 +1,17 @@
+2007-09-19  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* doc/tm.texi (IS_ASM_LOGICAL_LINE_SEPARATOR): Document new argument.
+	* final.c (IS_ASM_LOGICAL_LINE_SEPARATOR): Provide two-argument default
+	definition.
+	(asm_insn_count): Pass template as second argument to it.
+	* config/avr/avr.h (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
+	* config/pa/pa.h (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
+	* config/stormy16/stormy16.h (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
+	* config/cris/cris.h (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
+	* config/sh/sh.c (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
+	(sh_insn_length_adjustment): Pass template as second argument to it.
+	* config/bfin/bfin.h (IS_ASM_LOGICAL_LINE_SEPARATOR): New macro.
+
 2007-09-19  Jie Zhang  <jie.zhang@analog.com>
 
 	* config.gcc (bfin*-linux-uclibc*): Add ./linux-sysroot-suffix.h
