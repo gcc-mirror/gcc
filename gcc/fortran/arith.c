@@ -1288,7 +1288,8 @@ reduce_unary (arith (*eval) (gfc_expr *, gfc_expr **), gfc_expr *op,
 
   for (c = head; c; c = c->next)
     {
-      rc = eval (c->expr, &r);
+      rc = reduce_unary (eval, c->expr, &r);
+
       if (rc != ARITH_OK)
 	break;
 
@@ -1328,7 +1329,11 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 
   for (c = head; c; c = c->next)
     {
-      rc = eval (c->expr, op2, &r);
+      if (c->expr->expr_type == EXPR_CONSTANT)
+        rc = eval (c->expr, op2, &r);
+      else
+	rc = reduce_binary_ac (eval, c->expr, op2, &r);
+
       if (rc != ARITH_OK)
 	break;
 
@@ -1368,7 +1373,11 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 
   for (c = head; c; c = c->next)
     {
-      rc = eval (op1, c->expr, &r);
+      if (c->expr->expr_type == EXPR_CONSTANT)
+	rc = eval (op1, c->expr, &r);
+      else
+	rc = reduce_binary_ca (eval, op1, c->expr, &r);
+
       if (rc != ARITH_OK)
 	break;
 
@@ -1393,6 +1402,11 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 
   return rc;
 }
+
+
+/* We need a forward declaration of reduce_binary.  */
+static arith reduce_binary (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
+			    gfc_expr *op1, gfc_expr *op2, gfc_expr **result);
 
 
 static arith
@@ -1421,7 +1435,7 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	      break;
 	    }
 
-	  rc = eval (c->expr, d->expr, &r);
+	  rc = reduce_binary (eval, c->expr, d->expr, &r);
 	  if (rc != ARITH_OK)
 	    break;
 
