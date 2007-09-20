@@ -1798,6 +1798,9 @@ case "${target}" in
   mips*-sde-elf*)
     target_makefile_frag="config/mt-sde"
     ;;
+  mipsisa*-*-elfoabi*)
+    target_makefile_frag="config/mt-mips-elfoabi"
+    ;;
   *-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;

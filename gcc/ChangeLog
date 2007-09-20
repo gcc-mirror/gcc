@@ -1,3 +1,10 @@
+2007-09-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* doc/invoke.texi (-minterlink-mips16): Document.
+	* config/mips/mips.opt (minterlink-mips16): New option.
+	* config/mips/mips.c (mips_function_ok_for_sibcall): Handle
+	-minterlink-mips16
+
 2007-09-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/extend.texi (Attribute Syntax): Remove old speculative

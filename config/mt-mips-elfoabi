@@ -1,0 +1,6 @@
+# The *-elfoabi configurations are intended to be usable for both
+# MIPS16 and non-MIPS16 code, but the libraries are all non-MIPS16.
+# Add -minterlink-mips16 so that the libraries can be used with both
+# ISA modes.
+CFLAGS_FOR_TARGET = -minterlink-mips16
+CXXFLAGS_FOR_TARGET = -minterlink-mips16
