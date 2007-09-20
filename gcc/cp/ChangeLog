@@ -1,3 +1,9 @@
+2007-09-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33459
+	* init.c (build_zero_init): If, recursively, build_zero_init
+	returns a NULL_TREE, do not append it to the VEC of constructors.
+
 2007-09-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15097

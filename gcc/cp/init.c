@@ -136,11 +136,12 @@ initialize_vtbl_ptrs (tree addr)
 /* Return an expression for the zero-initialization of an object with
    type T.  This expression will either be a constant (in the case
    that T is a scalar), or a CONSTRUCTOR (in the case that T is an
-   aggregate).  In either case, the value can be used as DECL_INITIAL
-   for a decl of the indicated TYPE; it is a valid static initializer.
-   If NELTS is non-NULL, and TYPE is an ARRAY_TYPE, NELTS is the
-   number of elements in the array.  If STATIC_STORAGE_P is TRUE,
-   initializers are only generated for entities for which
+   aggregate), or NULL (in the case that T does not require
+   initialization).  In either case, the value can be used as
+   DECL_INITIAL for a decl of the indicated TYPE; it is a valid static
+   initializer. If NELTS is non-NULL, and TYPE is an ARRAY_TYPE, NELTS
+   is the number of elements in the array.  If STATIC_STORAGE_P is
+   TRUE, initializers are only generated for entities for which
    zero-initialization does not simply mean filling the storage with
    zero bytes.  */
 
@@ -199,7 +200,8 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	      tree value = build_zero_init (TREE_TYPE (field),
 					    /*nelts=*/NULL_TREE,
 					    static_storage_p);
-	      CONSTRUCTOR_APPEND_ELT(v, field, value);
+	      if (value)
+		CONSTRUCTOR_APPEND_ELT(v, field, value);
 	    }
 
 	  /* For unions, only the first field is initialized.  */
