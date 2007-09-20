@@ -42,6 +42,59 @@ Boston, MA 02110-1301, USA.  */
 #include <string.h>
 #include <errno.h>
 
+
+/* For mingw, we don't identify files by their inode number, but by a
+   64-bit identifier created from a BY_HANDLE_FILE_INFORMATION. */
+#if defined(__MINGW32__) && !HAVE_WORKING_STAT
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+static uint64_t
+id_from_handle (HANDLE hFile)
+{
+  BY_HANDLE_FILE_INFORMATION FileInformation;
+
+  if (hFile == INVALID_HANDLE_VALUE)
+      return 0;
+
+  memset (&FileInformation, 0, sizeof(FileInformation));
+  if (!GetFileInformationByHandle (hFile, &FileInformation))
+    return 0;
+
+  return ((uint64_t) FileInformation.nFileIndexLow)
+	 | (((uint64_t) FileInformation.nFileIndexHigh) << 32);
+}
+
+
+static uint64_t
+id_from_path (const char *path)
+{
+  HANDLE hFile;
+  uint64_t res;
+
+  if (!path || !*path || access (path, F_OK))
+    return (uint64_t) -1;
+
+  hFile = CreateFile (path, 0, 0, NULL, OPEN_EXISTING,
+		      FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_READONLY,
+		      NULL);
+  res = id_from_handle (hFile);
+  CloseHandle (hFile);
+  return res;
+}
+
+
+static uint64_t
+id_from_fd (const int fd)
+{
+  return id_from_handle ((HANDLE) _get_osfhandle (fd));
+}
+
+#endif
+
+
+
 #ifndef SSIZE_MAX
 #define SSIZE_MAX SHRT_MAX
 #endif
@@ -1444,6 +1497,10 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
   struct stat st1;
 #ifdef HAVE_WORKING_STAT
   struct stat st2;
+#else
+# ifdef __MINGW32__
+  uint64_t id1, id2;
+# endif
 #endif
 
   if (unpack_filename (path, name, len))
@@ -1459,6 +1516,17 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
   fstat (((unix_stream *) (u->s))->fd, &st2);
   return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
 #else
+
+# ifdef __MINGW32__
+  /* We try to match files by a unique ID.  On some filesystems (network
+     fs and FAT), we can't generate this unique ID, and will simply compare
+     filenames.  */
+  id1 = id_from_path (path);
+  id2 = id_from_fd (((unix_stream *) (u->s))->fd);
+  if (id1 || id2)
+    return (id1 == id2);
+# endif
+
   if (len != u->file_len)
     return 0;
   return (memcmp(path, u->file, len) == 0);
@@ -1470,8 +1538,8 @@ compare_file_filename (gfc_unit *u, const char *name, int len)
 # define FIND_FILE0_DECL struct stat *st
 # define FIND_FILE0_ARGS st
 #else
-# define FIND_FILE0_DECL const char *file, gfc_charlen_type file_len
-# define FIND_FILE0_ARGS file, file_len
+# define FIND_FILE0_DECL uint64_t id, const char *file, gfc_charlen_type file_len
+# define FIND_FILE0_ARGS id, file, file_len
 #endif
 
 /* find_file0()-- Recursive work function for find_file() */
@@ -1480,6 +1548,9 @@ static gfc_unit *
 find_file0 (gfc_unit *u, FIND_FILE0_DECL)
 {
   gfc_unit *v;
+#if defined(__MINGW32__) && !HAVE_WORKING_STAT
+  uint64_t id1;
+#endif
 
   if (u == NULL)
     return NULL;
@@ -1490,8 +1561,16 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
       st[0].st_dev == st[1].st_dev && st[0].st_ino == st[1].st_ino)
     return u;
 #else
-  if (compare_string (u->file_len, u->file, file_len, file) == 0)
-    return u;
+# ifdef __MINGW32__ 
+  if (u->s && ((id1 = id_from_fd (((unix_stream *) u->s)->fd)) || id1))
+    {
+      if (id == id1)
+	return u;
+    }
+  else
+# endif
+    if (compare_string (u->file_len, u->file, file_len, file) == 0)
+      return u;
 #endif
 
   v = find_file0 (u->left, FIND_FILE0_ARGS);
@@ -1515,12 +1594,19 @@ find_file (const char *file, gfc_charlen_type file_len)
   char path[PATH_MAX + 1];
   struct stat st[2];
   gfc_unit *u;
+  uint64_t id;
 
   if (unpack_filename (path, file, file_len))
     return NULL;
 
   if (stat (path, &st[0]) < 0)
     return NULL;
+
+#if defined(__MINGW32__) && !HAVE_WORKING_STAT
+  id = id_from_path (path);
+#else
+  id = 0;
+#endif
 
   __gthread_mutex_lock (&unit_lock);
 retry:
