@@ -3136,25 +3136,11 @@ declared; the @code{format} attribute only applies to @code{d1}.
 
 An attribute specifier list may appear immediately before the comma,
 @code{=} or semicolon terminating the declaration of an identifier other
-than a function definition.  At present, such attribute specifiers apply
-to the declared object or function, but in future they may attach to the
-outermost adjacent declarator.  In simple cases there is no difference,
-but, for example, in
-
-@smallexample
-void (****f)(void) __attribute__((noreturn));
-@end smallexample
-
-@noindent
-at present the @code{noreturn} attribute applies to @code{f}, which
-causes a warning since @code{f} is not a function, but in future it may
-apply to the function @code{****f}.  The precise semantics of what
-attributes in such cases will apply to are not yet specified.  Where an
+than a function definition.  Such attribute specifiers apply
+to the declared object or function.  Where an
 assembler name for an object or function is specified (@pxref{Asm
-Labels}), at present the attribute must follow the @code{asm}
-specification; in future, attributes before the @code{asm} specification
-may apply to the adjacent declarator, and those after it to the declared
-object or function.
+Labels}), the attribute must follow the @code{asm}
+specification.
 
 An attribute specifier list may, in future, be permitted to appear after
 the declarator in a function definition (before any old-style parameter
