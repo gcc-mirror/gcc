@@ -930,7 +930,8 @@ retrieve_specialization (tree tmpl, tree args,
 	 DECL_TEMPLATE_INSTANTIATIONS list; other templates use the
 	 DECL_TEMPLATE_SPECIALIZATIONS list.  */
       if (!class_specializations_p
-	  && TREE_CODE (DECL_TEMPLATE_RESULT (tmpl)) == TYPE_DECL)
+	  && TREE_CODE (DECL_TEMPLATE_RESULT (tmpl)) == TYPE_DECL
+	  && TAGGED_TYPE_P (TREE_TYPE (tmpl)))
 	sp = &DECL_TEMPLATE_INSTANTIATIONS (tmpl);
       else
 	sp = &DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
@@ -6688,8 +6689,8 @@ instantiate_class_template (tree type)
      class, so that name lookups into base classes, etc. will work
      correctly.  This is precisely analogous to what we do in
      begin_class_definition when defining an ordinary non-template
-     class.  */
-  pushclass (type);
+     class, except we also need to push the enclosing classes.  */
+  push_nested_class (type);
 
   /* Now members are processed in the order of declaration.  */
   for (member = CLASSTYPE_DECL_LIST (pattern);
@@ -6986,7 +6987,7 @@ instantiate_class_template (tree type)
 	  && DECL_TEMPLATE_INFO (t))
 	tsubst_default_arguments (t);
 
-  popclass ();
+  pop_nested_class ();
   pop_from_top_level ();
   pop_deferring_access_checks ();
   pop_tinst_level ();
@@ -8083,7 +8084,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	tree type = NULL_TREE;
 	bool local_p;
 
-	if (TREE_CODE (t) == TYPE_DECL)
+	if (TREE_CODE (t) == TYPE_DECL
+	    && MAYBE_TAGGED_TYPE_P (TREE_TYPE (t)))
 	  {
 	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
@@ -8158,6 +8160,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	/* Create a new node for the specialization we need.  */
 	r = copy_decl (t);
+	if (type == NULL_TREE)
+	  type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
 	    /* Even if the original location is out of scope, the
@@ -8165,7 +8169,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_DEAD_FOR_LOCAL (r) = 0;
 	    DECL_INITIALIZED_P (r) = 0;
 	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
-	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (type == error_mark_node)
 	      return error_mark_node;
 	    if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -8551,41 +8554,36 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   gcc_assert (type != unknown_type_node);
 
-  /* Reuse typedefs.  This is a rather complicated way to check whether the
-     type is a typedef from the same class template as the current scope,
-     but I can't think of a better one.
-
-     We need to do this to handle dependent attributes, specifically
-     attribute aligned.  */
+  /* Reuse typedefs.  We need to do this to handle dependent attributes,
+     specifically attribute aligned.  */
   if (TYPE_P (t)
       && TYPE_NAME (t)
-      && !IS_AGGR_TYPE (t)
-      && current_class_type
-      && CLASSTYPE_TEMPLATE_INFO (current_class_type))
+      && !MAYBE_TAGGED_TYPE_P (t)
+      && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM
+      && TREE_CODE (t) != UNBOUND_CLASS_TEMPLATE)
     {
       tree decl = TYPE_NAME (t);
-      tree context = DECL_CONTEXT (decl);
-      if (context
-	  && CLASS_TYPE_P (context)
-	  && CLASSTYPE_TEMPLATE_INFO (context)
-	  && (CLASSTYPE_TI_TEMPLATE (context)
-	      == CLASSTYPE_TI_TEMPLATE (current_class_type))
-	  && (tsubst_aggr_type (context, args, complain, in_decl,
-				/*entering_scope=*/0)
-	      == current_class_type))
-	    {
-	      r = lookup_name (DECL_NAME (decl));
-	      if (r && TREE_CODE (r) == TYPE_DECL
-		  && DECL_CONTEXT (r) == current_class_type)
-		{
-		  r = TREE_TYPE (r);
-		  r = cp_build_qualified_type_real
-		    (r, cp_type_quals (t) | cp_type_quals (r),
-		     complain | tf_ignore_bad_quals);
-		  return r;
-		  /* Else we're instantiating the typedef, so fall through.  */
-		}
-	    }
+      
+      if (DECL_CLASS_SCOPE_P (decl))
+	{
+	  tree tmpl = most_general_template (DECL_TI_TEMPLATE (decl));
+	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
+	  r = retrieve_specialization (tmpl, gen_args, false);
+	}
+      else if (DECL_FUNCTION_SCOPE_P (decl))
+	r = retrieve_local_specialization (decl);
+      else
+	r = NULL_TREE;
+	
+      if (r)
+	{
+	  r = TREE_TYPE (r);
+	  r = cp_build_qualified_type_real
+	    (r, cp_type_quals (t) | cp_type_quals (r),
+	     complain | tf_ignore_bad_quals);
+	  return r;
+	}
+      /* Else we must be instantiating the typedef, so fall through.  */
     }
 
   if (type
