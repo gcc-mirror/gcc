@@ -1,3 +1,9 @@
+2007-09-20  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33497
+	* resolve.c (gfc_iso_c_func_interface): Use information from
+	subcomponent if applicable.
+
 2007-09-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33325

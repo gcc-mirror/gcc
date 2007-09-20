@@ -1,3 +1,8 @@
+2007-09-20  Christopher D. Rickett  <crickett@lanl.gov>
+
+	PR fortran/33497
+	* gfortran.dg/c_loc_tests_11.f03: New test case.
+
 2007-09-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33459

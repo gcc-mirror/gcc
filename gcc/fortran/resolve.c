@@ -1754,6 +1754,9 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
   int optional_arg = 0;
   try retval = SUCCESS;
   gfc_symbol *args_sym;
+  gfc_typespec *arg_ts;
+  gfc_ref *parent_ref;
+  gfc_ref *curr_ref;
 
   if (args->expr->expr_type == EXPR_CONSTANT
       || args->expr->expr_type == EXPR_OP
@@ -1765,7 +1768,38 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
     }
 
   args_sym = args->expr->symtree->n.sym;
-   
+
+  /* The typespec for the actual arg should be that stored in the expr
+     and not necessarily that of the expr symbol (args_sym), because
+     the actual expression could be a part-ref of the expr symbol.  */
+  arg_ts = &(args->expr->ts);
+
+  /* Get the parent reference (if any) for the expression.  This happens for
+     cases such as a%b%c.  */
+  parent_ref = args->expr->ref;
+  curr_ref = NULL;
+  if (parent_ref != NULL)
+    {
+      curr_ref = parent_ref->next;
+      while (curr_ref != NULL && curr_ref->next != NULL)
+        {
+	  parent_ref = curr_ref;
+	  curr_ref = curr_ref->next;
+	}
+    }
+
+  /* If curr_ref is non-NULL, we had a part-ref expression.  If the curr_ref
+     is for a REF_COMPONENT, then we need to use it as the parent_ref for
+     the name, etc.  Otherwise, the current parent_ref should be correct.  */
+  if (curr_ref != NULL && curr_ref->type == REF_COMPONENT)
+    parent_ref = curr_ref;
+
+  if (parent_ref == args->expr->ref)
+    parent_ref = NULL;
+  else if (parent_ref != NULL && parent_ref->type != REF_COMPONENT)
+    gfc_internal_error ("Unexpected expression reference type in "
+			"gfc_iso_c_func_interface");
+
   if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
     {
       /* If the user gave two args then they are providing something for
@@ -1807,21 +1841,24 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
       else if (sym->intmod_sym_id == ISOCBINDING_LOC)
         {
           /* Make sure we have either the target or pointer attribute.  */
-          if (!(args->expr->symtree->n.sym->attr.target)
-	      && !(args->expr->symtree->n.sym->attr.pointer))
+	  if (!(args_sym->attr.target)
+	      && !(args_sym->attr.pointer)
+	      && (parent_ref == NULL ||
+		  !parent_ref->u.c.component->pointer))
             {
               gfc_error_now ("Parameter '%s' to '%s' at %L must be either "
                              "a TARGET or an associated pointer",
-                             args->expr->symtree->n.sym->name,
+                             args_sym->name,
                              sym->name, &(args->expr->where));
               retval = FAILURE;
             }
 
           /* See if we have interoperable type and type param.  */
-          if (verify_c_interop (&(args->expr->symtree->n.sym->ts),
-                                args->expr->symtree->n.sym->name,
+          if (verify_c_interop (arg_ts,
+				(parent_ref ? parent_ref->u.c.component->name 
+				 : args_sym->name), 
                                 &(args->expr->where)) == SUCCESS
-              || gfc_check_any_c_kind (&(args_sym->ts)) == SUCCESS)
+              || gfc_check_any_c_kind (arg_ts) == SUCCESS)
             {
               if (args_sym->attr.target == 1)
                 {
@@ -1875,13 +1912,13 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                       /* Make sure it's not a character string.  Arrays of
                          any type should be ok if the variable is of a C
                          interoperable type.  */
-		      if (args_sym->ts.type == BT_CHARACTER)
-			if (args_sym->ts.cl != NULL
-			    && (args_sym->ts.cl->length == NULL
-				|| args_sym->ts.cl->length->expr_type
+		      if (arg_ts->type == BT_CHARACTER)
+			if (arg_ts->cl != NULL
+			    && (arg_ts->cl->length == NULL
+				|| arg_ts->cl->length->expr_type
 				   != EXPR_CONSTANT
 				|| mpz_cmp_si
-				    (args_sym->ts.cl->length->value.integer, 1)
+				    (arg_ts->cl->length->value.integer, 1)
 				   != 0)
 			    && is_scalar_expr_ptr (args->expr) != SUCCESS)
 			  {
@@ -1893,8 +1930,10 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 			  }
                     }
                 }
-              else if (args_sym->attr.pointer == 1
-                       && is_scalar_expr_ptr (args->expr) != SUCCESS)
+              else if ((args_sym->attr.pointer == 1 ||
+			(parent_ref != NULL 
+			 && parent_ref->u.c.component->pointer))
+		       && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
                   /* Case 1c, section 15.1.2.5, J3/04-007: an associated
                      scalar pointer.  */
@@ -1911,7 +1950,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                  with no length type parameters.  It still must have either
                  the pointer or target attribute, and it can be
                  allocatable (but must be allocated when c_loc is called).  */
-              if (args_sym->attr.dimension != 0
+              if (args->expr->rank != 0 
                   && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
                   gfc_error_now ("Parameter '%s' to '%s' at %L must be a "
@@ -1919,7 +1958,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                                  &(args->expr->where));
                   retval = FAILURE;
                 }
-              else if (args_sym->ts.type == BT_CHARACTER 
+              else if (arg_ts->type == BT_CHARACTER 
                        && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
                   gfc_error_now ("CHARACTER argument '%s' to '%s' at "
@@ -1932,21 +1971,21 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
         }
       else if (sym->intmod_sym_id == ISOCBINDING_FUNLOC)
         {
-          if (args->expr->symtree->n.sym->attr.flavor != FL_PROCEDURE)
+          if (args_sym->attr.flavor != FL_PROCEDURE)
             {
               /* TODO: Update this error message to allow for procedure
                  pointers once they are implemented.  */
               gfc_error_now ("Parameter '%s' to '%s' at %L must be a "
                              "procedure",
-                             args->expr->symtree->n.sym->name, sym->name,
+                             args_sym->name, sym->name,
                              &(args->expr->where));
               retval = FAILURE;
             }
-	  else if (args->expr->symtree->n.sym->attr.is_bind_c != 1)
+	  else if (args_sym->attr.is_bind_c != 1)
 	    {
 	      gfc_error_now ("Parameter '%s' to '%s' at %L must be "
 			     "BIND(C)",
-			     args->expr->symtree->n.sym->name, sym->name,
+			     args_sym->name, sym->name,
 			     &(args->expr->where));
 	      retval = FAILURE;
 	    }
