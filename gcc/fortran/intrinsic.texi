@@ -10862,3 +10862,150 @@ F95 elemental function: @ref{IEOR}
 @end table
 
 
+
+@node Intrinsic Modules
+@chapter Intrinsic Modules
+@cindex intrinsic Modules
+
+@c @node ISO_FORTRAN_ENV
+@section @code{ISO_FORTRAN_ENV}
+@table @asis
+@item @emph{Standard}:
+Fortran 2003
+@end table
+
+The @code{ISO_FORTRAN_ENV} module provides the following scalar default-integer
+named constants:
+
+@table @asis
+@item @code{CHARACTER_STORAGE_SIZE}:
+Size in bits of the character storage unit.
+
+@item @code{ERROR_UNIT}:
+Indentifies the preconnected unit used for error reporting.
+
+@item @code{FILE_STORAGE_SIZE}:
+Size in bits of the file-storage unit.
+
+@item @code{INPUT_UNIT}:
+Indentifies the preconnected unit indentified by the asterisk
+(@code{*}) in @code{READ} statement.
+
+@item @code{IOSTAT_END}:
+The value assigned to the variable passed to the IOSTAT= specifier of
+an input/output statement if an end-of-file condition occurred.
+
+@item @code{IOSTAT_EOR}:
+The value assigned to the variable passed to the IOSTAT= specifier of
+an input/output statement if an end-of-record condition occurred.
+
+@item @code{NUMERIC_STORAGE_SIZE}:
+The size in bits of the numeric storage unit.
+
+@item @code{OUTPUT_UNIT}:
+Indentifies the preconnected unit indentified by the asterisk
+(@code{*}) in @code{WRITE} statement.
+@end table
+
+@c @node ISO_C_BINDING
+@section @code{ISO_C_BINDING}
+@table @asis
+@item @emph{Standard}:
+Fortran 2003
+@end table
+
+The following intrinsic procedures are provided by the module; their
+definition can be found in the section Intrinsic Procedures of this
+manual.
+
+@table @asis
+@item @code{C_ASSOCIATED}
+@item @code{C_F_POINTER}
+@item @code{C_F_PROCPOINTER}
+@item @code{C_FUNLOC}
+@item @code{C_LOC}
+@end table
+
+The @code{ISO_C_BINDING} module provides the following named constants of the
+type integer, which can be used as KIND type parameter. Note that GNU
+Fortran currently does not support the @code{C_INT_FAST...} KIND type
+parameters (marked by an asterix (@code{*}) in the list below).
+The @code{C_INT_FAST...} parameters have therefore the value @math{-2}
+and cannot be used as KIND type parameter of the @code{INTEGER} type.
+
+@multitable @columnfractions .15 .35 .35
+@item Fortran Type  @tab Named constant         @tab C type
+@item @code{INTEGER}@tab @code{C_INT}           @tab @code{int}
+@item @code{INTEGER}@tab @code{C_SHORT}         @tab @code{short int}
+@item @code{INTEGER}@tab @code{C_LONG}          @tab @code{long int}
+@item @code{INTEGER}@tab @code{C_LONG_LONG}     @tab @code{long long int}
+@item @code{INTEGER}@tab @code{C_SIGNED_CHAR}   @tab @code{signed char}/@code{unsigned char}
+@item @code{INTEGER}@tab @code{C_SIZE_T}        @tab @code{size_t}
+@item @code{INTEGER}@tab @code{C_INT8_T}        @tab @code{int8_t}
+@item @code{INTEGER}@tab @code{C_INT16_T}       @tab @code{int16_t}
+@item @code{INTEGER}@tab @code{C_INT32_T}       @tab @code{int32_t}
+@item @code{INTEGER}@tab @code{C_INT64_T}       @tab @code{int64_t}
+@item @code{INTEGER}@tab @code{C_INT_LEAST8_T}  @tab @code{int_least8_t}
+@item @code{INTEGER}@tab @code{C_INT_LEAST16_T} @tab @code{int_least16_t}
+@item @code{INTEGER}@tab @code{C_INT_LEAST32_T} @tab @code{int_least32_t}
+@item @code{INTEGER}@tab @code{C_INT_LEAST64_T} @tab @code{int_least64_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST8_T}*  @tab @code{int_fast8_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST16_T}* @tab @code{int_fast16_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST32_T}* @tab @code{int_fast32_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST64_T}* @tab @code{int_fast64_t}
+@item @code{INTEGER}@tab @code{C_INTMAX_T}      @tab @code{intmax_t}
+@item @code{INTEGER}@tab @code{C_INTPTR_T}      @tab @code{intptr_t}
+@item @code{REAL}   @tab @code{C_FLOAT}         @tab @code{float}
+@item @code{REAL}   @tab @code{C_DOUBLE}        @tab @code{double}
+@item @code{REAL}   @tab @code{C_LONG_DOUBLE}   @tab @code{long double}
+@item @code{COMPLEX}@tab @code{C_FLOAT_COMPLEX} @tab @code{float _Complex}
+@item @code{COMPLEX}@tab @code{C_DOUBLE_COMPLEX}@tab @code{double _Complex}
+@item @code{COMPLEX}@tab @code{C_LONG_DOUBLE_COMPLEX}@tab @code{long double _Complex}
+@item @code{LOGICAL}@tab @code{C_BOOL}          @tab @code{_Bool}
+@item @code{CHARACTER}@tab @code{C_CHAR}        @tab @code{char}
+@end multitable
+
+Additionally, the following @code{(CHARACTER(KIND=C_CHAR)} are
+defined.
+
+@multitable @columnfractions .20 .45 .15
+@item Name                     @tab C definition    @tab Value
+@item @code{C_NULL_CHAR}       @tab null character  @tab @code{'\0'}
+@item @code{C_ALERT}           @tab alert           @tab @code{'\a'}
+@item @code{C_BACKSPACE}       @tab backspace       @tab @code{'\b'}
+@item @code{C_FORM_FEED}       @tab form feed       @tab @code{'\f'}
+@item @code{C_NEW_LINE}        @tab new line        @tab @code{'\n'}
+@item @code{C_CARRIAGE_RETURN} @tab carriage return @tab @code{'\r'}
+@item @code{C_HORIZONTAL_TAB}  @tab horizontal tab  @tab @code{'\t'}
+@item @code{C_VERTICAL_TAB}    @tab vertical tab    @tab @code{'\v'}
+@end multitable
+
+@c @node OpenMP Modules OMP_LIB and OMP_LIB_KINDS
+@section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
+@table @asis
+@item @emph{Standard}:
+OpenMP Application Program Interface v2.5
+@end table
+
+
+The OpenMP Fortran runtime library routines are provided both in
+a form of two Fortran 90 modules, named @code{OMP_LIB} and 
+@code{OMP_LIB_KINDS}, and in a form of a Fortran @code{include} file named
+@file{omp_lib.h}. The procedures provided by @code{OMP_LIB} can be found
+in the @ref{Top,,Introduction,libgomp,GNU OpenMP runtime library} manual,
+the named constants defined in the @code{OMP_LIB_KINDS} module are listed
+below.
+
+For details refer to the actual
+@uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
+OpenMP Application Program Interface v2.5}.
+
+@code{OMP_LIB_KINDS} provides the following scalar default-integer
+named constants:
+
+@table @asis
+@item @code{omp_integer_kind}
+@item @code{omp_logical_kind}
+@item @code{omp_lock_kind}
+@item @code{omp_nest_lock_kind}
+@end table

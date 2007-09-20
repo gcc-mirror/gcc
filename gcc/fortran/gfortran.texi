@@ -184,6 +184,7 @@ Part II: Language Reference
 * Fortran 2003 status::  Fortran 2003 features supported by GNU Fortran.
 * Extensions::           Language extensions implemented by GNU Fortran.
 * Intrinsic Procedures:: Intrinsic procedures supported by GNU Fortran.
+* Intrinsic Modules::    Intrinsic modules supported by GNU Fortran.
 
 * Contributing::         How you can help.
 * Copying::              GNU General Public License says
@@ -1370,7 +1371,8 @@ routines are provided both in a form of a Fortran 90 module named
 
 For details refer to the actual
 @uref{http://www.openmp.org/drupal/mp-documents/spec25.pdf,
-OpenMP Application Program Interface v2.5} specification.
+OpenMP Application Program Interface v2.5} specification and to the
+@ref{Top,,Introduction,libgomp,GNU OpenMP runtime library}.
 
 @node Argument list functions
 @section Argument list functions %VAL, %REF and %LOC

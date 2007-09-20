@@ -1,3 +1,10 @@
+2007-09-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33325
+	* intrinsic.text: Add documentation of the intrinsic modules.
+	* gfortran.texi: Link to intrinsic-modules section and to
+	the GOMP manual.
+
 2007-09-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/31119
