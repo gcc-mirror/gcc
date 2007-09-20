@@ -2926,13 +2926,15 @@ finish_id_expression (tree id_expression,
       else
 	{
 	  if (DECL_P (decl) && DECL_NONLOCAL (decl)
-	      && DECL_CLASS_SCOPE_P (decl)
-	      && context_for_name_lookup (decl) != current_class_type)
+	      && DECL_CLASS_SCOPE_P (decl))
 	    {
-	      tree path;
-
-	      path = currently_open_derived_class (DECL_CONTEXT (decl));
-	      perform_or_defer_access_check (TYPE_BINFO (path), decl, decl);
+	      tree context = context_for_name_lookup (decl); 
+	      if (context != current_class_type)
+		{
+		  tree path = currently_open_derived_class (context);
+		  perform_or_defer_access_check (TYPE_BINFO (path),
+						 decl, decl);
+		}
 	    }
 
 	  decl = convert_from_reference (decl);

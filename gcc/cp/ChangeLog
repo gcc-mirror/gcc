@@ -1,3 +1,11 @@
+2007-09-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33460
+	* semantics.c (finish_id_expression): Use consistently
+	context_for_name_lookup.
+	* decl.c (fixup_anonymous_aggr): Fix error message for
+	anonymous struct (vs union).
+
 2007-09-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/7586

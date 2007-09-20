@@ -3704,8 +3704,14 @@ fixup_anonymous_aggr (tree t)
 
   /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
   if (TYPE_METHODS (t))
-    error ("%Jan anonymous union cannot have function members",
-	   TYPE_MAIN_DECL (t));
+    {
+      tree decl = TYPE_MAIN_DECL (t);
+
+      if (TREE_CODE (t) != UNION_TYPE)
+	error ("%Jan anonymous struct cannot have function members", decl);
+      else
+	error ("%Jan anonymous union cannot have function members", decl);
+    }
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).
