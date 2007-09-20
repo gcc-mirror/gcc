@@ -1,3 +1,12 @@
+2007-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/33238
+	PR c/27301
+	* gimplify.c (gimplify_vla_decl): New function.
+	(gimplify_decl_expr): Move VLA decl handling to gimplify_vla_decl.
+	Call it.
+	(gimplify_target_expr): Handle variable length TARGET_EXPRs.
+
 2007-09-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* doc/invoke.texi (-minterlink-mips16): Document.
