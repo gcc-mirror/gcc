@@ -1399,6 +1399,7 @@ find_shift_sequence (rtx read_reg,
 {
   enum machine_mode store_mode = GET_MODE (store_info->mem);
   enum machine_mode read_mode = GET_MODE (read_info->mem);
+  rtx chosen_seq = NULL;
 
   /* Some machines like the x86 have shift insns for each size of
      operand.  Other machines like the ppc or the ia-64 may only have
@@ -1409,8 +1410,9 @@ find_shift_sequence (rtx read_reg,
 
   for (; access_size < UNITS_PER_WORD; access_size *= 2)
     {
-      rtx target, new_reg;
+      rtx target, new_reg, shift_seq, insn;
       enum machine_mode new_mode;
+      int cost;
 
       /* Try a wider mode if truncating the store mode to ACCESS_SIZE
 	 bytes requires a real instruction.  */
@@ -1431,67 +1433,57 @@ find_shift_sequence (rtx read_reg,
       target = expand_binop (new_mode, lshr_optab, new_reg,
 			     GEN_INT (shift), new_reg, 1, OPTAB_DIRECT);
 
-      if (target == new_reg)
+      shift_seq = get_insns ();
+      end_sequence ();
+
+      if (target != new_reg || shift_seq == NULL)
+	continue;
+
+      cost = 0;
+      for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
+	if (INSN_P (insn))
+	  cost += insn_rtx_cost (PATTERN (insn));
+
+      /* The computation up to here is essentially independent
+	 of the arguments and could be precomputed.  It may
+	 not be worth doing so.  We could precompute if
+	 worthwhile or at least cache the results.  The result
+	 technically depends on SHIFT, ACCESS_SIZE, and
+	 GET_MODE_CLASS (READ_MODE).  But in practice the
+	 answer will depend only on ACCESS_SIZE.  */
+
+      if (cost > COSTS_N_INSNS (1))
+	continue;
+
+      /* We found an acceptable shift.  Generate a move to
+	 take the value from the store and put it into the
+	 shift pseudo, then shift it, then generate another
+	 move to put in into the target of the read.  */
+      start_sequence ();
+      emit_move_insn (new_reg, gen_lowpart (new_mode, store_info->rhs));
+      emit_insn (shift_seq);
+      convert_move (read_reg, new_reg, 1);
+		  
+      if (dump_file)
 	{
-	  rtx shift_seq = get_insns ();
-	  end_sequence ();
-
-	  /* If cost is too great, set target to NULL and
-	     let the iteration happen. */
-	  if (shift_seq != NULL)
-	    {
-	      int cost = 0;
-	      rtx insn;
-
-	      for (insn = shift_seq; insn != NULL_RTX; insn = NEXT_INSN (insn))
-		if (INSN_P (insn))
-		  cost += insn_rtx_cost (PATTERN (insn));
-
-	      /* The computation up to here is essentially independent
-		 of the arguments and could be precomputed.  It may
-		 not be worth doing so.  We could precompute if
-		 worthwhile or at least cache the results.  The result
-		 technically depends on SHIFT, ACCESS_SIZE, and
-		 GET_MODE_CLASS (READ_MODE).  But in practice the
-		 answer will depend only on ACCESS_SIZE.  */
-
-	      if (cost <= COSTS_N_INSNS (1))
-		{
-		  /* We found an acceptable shift.  Generate a move to
-		     take the value from the store and put it into the
-		     shift pseudo, then shift it, then generate another
-		     move to put in into the target of the read.  */
-		  start_sequence ();
-		  emit_move_insn (new_reg, gen_lowpart (new_mode, store_info->rhs));
-		  emit_insn (shift_seq);
-		  convert_move (read_reg, new_reg, 1);
-		  
-		  if (dump_file)
-		    {
-		      fprintf (dump_file, " -- adding extract insn r%d:%s = r%d:%s\n",
-			       REGNO (new_reg), GET_MODE_NAME (new_mode),
-			       REGNO (store_info->rhs), GET_MODE_NAME (store_mode));
+	  fprintf (dump_file, " -- adding extract insn r%d:%s = r%d:%s\n",
+		   REGNO (new_reg), GET_MODE_NAME (new_mode),
+		   REGNO (store_info->rhs), GET_MODE_NAME (store_mode));
 		      
-		      fprintf (dump_file, " -- with shift of r%d by %d\n",
-			       REGNO(new_reg), shift);
-		      fprintf (dump_file, " -- and second extract insn r%d:%s = r%d:%s\n",
-			       REGNO (read_reg), GET_MODE_NAME (read_mode),
-			       REGNO (new_reg), GET_MODE_NAME (new_mode));
-		    }
-		  
-		  /* Get the three insn sequence and return it.  */
-		  shift_seq = get_insns ();
-		  end_sequence ();
-		  return shift_seq;
-		}
-	    }
+	  fprintf (dump_file, " -- with shift of r%d by %d\n",
+		   REGNO(new_reg), shift);
+	  fprintf (dump_file, " -- and second extract insn r%d:%s = r%d:%s\n",
+		   REGNO (read_reg), GET_MODE_NAME (read_mode),
+		   REGNO (new_reg), GET_MODE_NAME (new_mode));
 	}
-      else
-	/* End the sequence.  */
-	end_sequence ();
+		  
+      /* Get the three insn sequence and return it.  */
+      chosen_seq = get_insns ();
+      end_sequence ();
+      break;
     }
 
-  return NULL;
+  return chosen_seq;
 }
 
 
