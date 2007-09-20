@@ -1,3 +1,8 @@
+2007-09-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33288
+	* gfortran.dg/array_constructor_19.f90: New test.
+
 2007-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/33316
