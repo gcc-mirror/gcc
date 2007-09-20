@@ -3853,10 +3853,7 @@ check_bitfield_type_and_width (tree *type, tree *width, const char *orig_name)
       && type_mv != boolean_type_node)
     pedwarn ("type of bit-field %qs is a GCC extension", name);
 
-  if (type_mv == boolean_type_node)
-    max_width = CHAR_TYPE_SIZE;
-  else
-    max_width = TYPE_PRECISION (*type);
+  max_width = TYPE_PRECISION (*type);
 
   if (0 < compare_tree_int (*width, max_width))
     {
