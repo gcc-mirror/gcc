@@ -176,6 +176,7 @@ target_libraries="target-libgcc \
 		target-libiberty \
 		target-libgloss \
 		target-newlib \
+		target-libgomp \
 		target-libstdc++-v3 \
 		target-libmudflap \
 		target-libssp \
@@ -183,8 +184,7 @@ target_libraries="target-libgcc \
 		target-boehm-gc \
 		${libgcj} \
 		target-libobjc \
-		target-libada \
-		target-libgomp"
+		target-libada"
 
 # these tools are built using the target libraries, and are intended to
 # run only in the target environment
