@@ -1211,6 +1211,41 @@ gimplify_return_expr (tree stmt, tree *pre_p)
   return GS_ALL_DONE;
 }
 
+static void
+gimplify_vla_decl (tree decl, tree *stmt_p)
+{
+  /* This is a variable-sized decl.  Simplify its size and mark it
+     for deferred expansion.  Note that mudflap depends on the format
+     of the emitted code: see mx_register_decls().  */
+  tree t, addr, ptr_type;
+
+  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
+  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
+
+  /* All occurrences of this decl in final gimplified code will be
+     replaced by indirection.  Setting DECL_VALUE_EXPR does two
+     things: First, it lets the rest of the gimplifier know what
+     replacement to use.  Second, it lets the debug info know
+     where to find the value.  */
+  ptr_type = build_pointer_type (TREE_TYPE (decl));
+  addr = create_tmp_var (ptr_type, get_name (decl));
+  DECL_IGNORED_P (addr) = 0;
+  t = build_fold_indirect_ref (addr);
+  SET_DECL_VALUE_EXPR (decl, t);
+  DECL_HAS_VALUE_EXPR_P (decl) = 1;
+
+  t = built_in_decls[BUILT_IN_ALLOCA];
+  t = build_call_expr (t, 1, DECL_SIZE_UNIT (decl));
+  t = fold_convert (ptr_type, t);
+  t = build_gimple_modify_stmt (addr, t);
+
+  gimplify_and_add (t, stmt_p);
+
+  /* Indicate that we need to restore the stack level when the
+     enclosing BIND_EXPR is exited.  */
+  gimplify_ctxp->save_stack = true;
+}
+
 /* Gimplifies a DECL_EXPR node *STMT_P by making any necessary allocation
    and initialization explicit.  */
 
@@ -1235,38 +1270,7 @@ gimplify_decl_expr (tree *stmt_p)
       tree init = DECL_INITIAL (decl);
 
       if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
-	{
-	  /* This is a variable-sized decl.  Simplify its size and mark it
-	     for deferred expansion.  Note that mudflap depends on the format
-	     of the emitted code: see mx_register_decls().  */
-	  tree t, addr, ptr_type;
-
-	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
-	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
-
-	  /* All occurrences of this decl in final gimplified code will be
-	     replaced by indirection.  Setting DECL_VALUE_EXPR does two
-	     things: First, it lets the rest of the gimplifier know what
-	     replacement to use.  Second, it lets the debug info know
-	     where to find the value.  */
-	  ptr_type = build_pointer_type (TREE_TYPE (decl));
-	  addr = create_tmp_var (ptr_type, get_name (decl));
-	  DECL_IGNORED_P (addr) = 0;
-	  t = build_fold_indirect_ref (addr);
-	  SET_DECL_VALUE_EXPR (decl, t);
-	  DECL_HAS_VALUE_EXPR_P (decl) = 1;
-
-	  t = built_in_decls[BUILT_IN_ALLOCA];
-	  t = build_call_expr (t, 1, DECL_SIZE_UNIT (decl));
-	  t = fold_convert (ptr_type, t);
-	  t = build_gimple_modify_stmt (addr, t);
-
-	  gimplify_and_add (t, stmt_p);
-
-	  /* Indicate that we need to restore the stack level when the
-	     enclosing BIND_EXPR is exited.  */
-	  gimplify_ctxp->save_stack = true;
-	}
+	gimplify_vla_decl (decl, stmt_p);
 
       if (init && init != error_mark_node)
 	{
@@ -4411,8 +4415,15 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
   if (init)
     {
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
-	 to the temps list.  */
-      gimple_add_tmp_var (temp);
+	 to the temps list.  Handle also variable length TARGET_EXPRs.  */
+      if (TREE_CODE (DECL_SIZE (temp)) != INTEGER_CST)
+	{
+	  if (!TYPE_SIZES_GIMPLIFIED (TREE_TYPE (temp)))
+	    gimplify_type_sizes (TREE_TYPE (temp), pre_p);
+	  gimplify_vla_decl (temp, pre_p);
+	}
+      else
+	gimple_add_tmp_var (temp);
 
       /* If TARGET_EXPR_INITIAL is void, then the mere evaluation of the
 	 expression is supposed to initialize the slot.  */
