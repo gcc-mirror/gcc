@@ -988,6 +988,10 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   ((T) == RECORD_TYPE || (T) == UNION_TYPE)
 #define TAGGED_TYPE_P(T) \
   (CLASS_TYPE_P (T) || TREE_CODE (T) == ENUMERAL_TYPE)
+/* A tagged type or a dependent type that might be a tagged type when
+   instantiated.  Like IS_AGGR_TYPE, but include enums as well.  */
+#define MAYBE_TAGGED_TYPE_P(T) \
+  (IS_AGGR_TYPE(T) || TREE_CODE (T) == ENUMERAL_TYPE)
 #define IS_OVERLOAD_TYPE(T) TAGGED_TYPE_P (T)
 
 /* True if this a "Java" type, defined in 'extern "Java"'.  */

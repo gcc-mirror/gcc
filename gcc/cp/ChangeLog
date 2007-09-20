@@ -1,3 +1,16 @@
+2007-09-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/7586
+	* pt.c (tsubst): Handle typedefs by looking for the specialization.
+	(retrieve_specialization): Only tagged types use 
+	DECL_TEMPLATE_INSTANTIATIONS.
+	(instantiate_class_template): Push nested classes too.
+	(tsubst_decl) [TYPE_DECL]: Only check for canonical decl for
+	tagged types.
+	* cp-tree.h (MAYBE_TAGGED_TYPE_P): New macro.
+	* init.c (is_aggr_type): Remove redundant tests.
+	* class.c (push_nested_class): Use CLASS_TYPE_P.
+
 2007-09-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33459

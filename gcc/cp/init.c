@@ -1281,9 +1281,7 @@ is_aggr_type (tree type, int or_else)
   if (type == error_mark_node)
     return 0;
 
-  if (! IS_AGGR_TYPE (type)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
-      && TREE_CODE (type) != BOUND_TEMPLATE_TEMPLATE_PARM)
+  if (! IS_AGGR_TYPE (type))
     {
       if (or_else)
 	error ("%qT is not an aggregate type", type);
