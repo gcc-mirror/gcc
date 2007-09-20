@@ -1,5 +1,13 @@
 2007-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR libfortran/23272
+	* io/unix.c (id_from_handle, id_from_path, id_from_fd): New
+	functions.
+	(compare_file_filename, find_file, find_file0): Use the new
+	functions above.
+
+2007-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* acinclude.m4 (LIBGFOR_TARGET_ILP32): Remove test.
 	* configure.ac: Don't call LIBGFOR_TARGET_ILP32.
 	* configure: Regenerate.
