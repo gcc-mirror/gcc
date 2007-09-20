@@ -808,9 +808,6 @@
 /* Define to 1 if the target supports #pragma weak */
 #undef SUPPORTS_WEAK
 
-/* Define to 1 if the target is ILP32. */
-#undef TARGET_ILP32
-
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 

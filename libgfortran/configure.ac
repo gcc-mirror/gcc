@@ -404,10 +404,6 @@ AC_MSG_NOTICE([FPU dependent file will be ${fpu_host}.h])
 FPU_HOST_HEADER=config/${fpu_host}.h
 AC_SUBST(FPU_HOST_HEADER)
 
-# Attempt to assert that the target is of common type in case we don't
-# have C99 integer types at all.
-LIBGFOR_TARGET_ILP32
-
 # Check out attribute support.
 LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY
 LIBGFOR_CHECK_ATTRIBUTE_DLLEXPORT
