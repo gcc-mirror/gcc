@@ -1703,7 +1703,7 @@ gfc_use_derived (gfc_symbol *sym)
   gfc_symtree *st;
   int i;
 
-  if (sym->components != NULL)
+  if (sym->components != NULL || sym->attr.zero_comp)
     return sym;               /* Already defined.  */
 
   if (sym->ns->parent == NULL)

@@ -1651,6 +1651,9 @@ parse_derived (void)
 	}
     }
 
+  if (!seen_component)
+    sym->attr.zero_comp = 1;
+
   pop_state ();
 }
 

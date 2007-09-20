@@ -650,8 +650,9 @@ typedef struct
   unsigned cray_pointer:1, cray_pointee:1;
 
   /* The symbol is a derived type with allocatable components, pointer 
-     components or private components, possibly nested.  */
-  unsigned alloc_comp:1, pointer_comp:1, private_comp:1;
+     components or private components, possibly nested.  zer_comp
+     is true if the derived type has no component at all.  */
+  unsigned alloc_comp:1, pointer_comp:1, private_comp:1, zero_comp:1;
 
   /* The namespace where the VOLATILE attribute has been set.  */
   struct gfc_namespace *volatile_ns;

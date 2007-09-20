@@ -1,5 +1,17 @@
 2007-09-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/33221
+	* gfortran.h (symbol_attribute): Add zero_comp field.
+	* symbol.c (gfc_use_derived): Handle case of emtpy derived types.
+	* decl.c (gfc_match_data_decl): Likewise.
+	(gfc_match_derived_decl): Likewise.
+	* module.c (ab_attribute, attr_bits): Add AB_ZERO_COMP member.
+	(mio_symbol_attribute): Write and read AB_ZERO_COMP.
+	* resolve.c (resolve_symbol): Handle case of emtpy derived types.
+	* parse.c (parse_derived): Likewise.
+
+2007-09-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/33288
 	* arith.c (reduce_unary, reduce_binary_ac, reduce_binary_ca,
 	reduce_binary_aa): Call ourselves recursively if an element of
