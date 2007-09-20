@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-std=f95" }
 ! Testcase for PR libfortran/25068
   real :: u
   integer(kind=8) :: i

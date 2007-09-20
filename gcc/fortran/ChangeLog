@@ -1,3 +1,10 @@
+2007-09-20  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* io.c (resolve_tag_format): New function using code split out
+	and simplified from ...
+	(resolve_tag): ... this function.  Simplify logic.  Unify
+	IOSTAT, IOLENGTH and SIZE handling.
+
 2007-09-20  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33497

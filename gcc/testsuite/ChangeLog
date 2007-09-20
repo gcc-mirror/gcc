@@ -1,3 +1,10 @@
+2007-09-20  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* gfortran.dg/g77/19981216-0.f: Remove dg-warning annotation.
+	* gfortran.dg/io_constraints_1.f90: Make a -std=f95 test.  Add
+	warning annotation.
+	* gfortran.dg/iostat_3.f90: Make a -std=f95 test.
+
 2007-09-20  Christopher D. Rickett  <crickett@lanl.gov>
 
 	PR fortran/33497
