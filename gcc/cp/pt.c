@@ -9584,6 +9584,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
           /* We only want to compute the number of arguments.  */
           tree expanded = tsubst_pack_expansion (TREE_OPERAND (t, 0), args,
                                                 complain, in_decl);
+	  if (expanded == error_mark_node)
+	    return error_mark_node;
           return build_int_cst (size_type_node, TREE_VEC_LENGTH (expanded));
         }
       /* Fall through */
@@ -10584,6 +10586,8 @@ tsubst_copy_and_build (tree t,
           /* We only want to compute the number of arguments.  */
           tree expanded = tsubst_pack_expansion (TREE_OPERAND (t, 0), args,
                                                 complain, in_decl);
+	  if (expanded == error_mark_node)
+	    return error_mark_node;
           return build_int_cst (size_type_node, TREE_VEC_LENGTH (expanded));
         }
       /* Fall through */
@@ -10976,7 +10980,9 @@ tsubst_copy_and_build (tree t,
                 ce->value = tsubst_pack_expansion (ce->value, args, complain,
                                                   in_decl);
 
-                if (TREE_VEC_LENGTH (ce->value) == 1)
+		if (ce->value == error_mark_node)
+		  ;
+		else if (TREE_VEC_LENGTH (ce->value) == 1)
                   /* Just move the argument into place.  */
                   ce->value = TREE_VEC_ELT (ce->value, 0);
                 else

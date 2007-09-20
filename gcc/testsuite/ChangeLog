@@ -1,5 +1,10 @@
 2007-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/33496
+	* g++.dg/cpp0x/variadic76.C: New test.
+	* g++.dg/cpp0x/variadic77.C: New test.
+	* g++.dg/cpp0x/variadic78.C: New test.
+
 	PR c/33238
 	PR c/27301
 	* gcc.c-torture/execute/20070919-1.c: New test.
