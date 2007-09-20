@@ -7627,7 +7627,8 @@ resolve_symbol (gfc_symbol *sym)
      the type is not declared in the scope of the implicit
      statement. Change the type to BT_UNKNOWN, both because it is so
      and to prevent an ICE.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.derived->components == NULL)
+  if (sym->ts.type == BT_DERIVED && sym->ts.derived->components == NULL
+      && !sym->ts.derived->attr.zero_comp)
     {
       gfc_error ("The derived type '%s' at %L is of type '%s', "
 		 "which has not been defined", sym->name,

@@ -3414,7 +3414,8 @@ gfc_match_data_decl (void)
       goto cleanup;
     }
 
-  if (current_ts.type == BT_DERIVED && current_ts.derived->components == NULL)
+  if (current_ts.type == BT_DERIVED && current_ts.derived->components == NULL
+      && !current_ts.derived->attr.zero_comp)
     {
 
       if (current_attr.pointer && gfc_current_state () == COMP_DERIVED)
@@ -3426,7 +3427,8 @@ gfc_match_data_decl (void)
       /* Any symbol that we find had better be a type definition
 	 which has its components defined.  */
       if (sym != NULL && sym->attr.flavor == FL_DERIVED
-	  && current_ts.derived->components != NULL)
+	  && (current_ts.derived->components != NULL
+	      || current_ts.derived->attr.zero_comp))
 	goto ok;
 
       /* Now we have an error, which we signal, and then fix up
@@ -5884,7 +5886,7 @@ gfc_match_derived_decl (void)
       && gfc_add_flavor (&sym->attr, FL_DERIVED, sym->name, NULL) == FAILURE)
     return MATCH_ERROR;
 
-  if (sym->components != NULL)
+  if (sym->components != NULL || sym->attr.zero_comp)
     {
       gfc_error ("Derived type definition of '%s' at %C has already been "
 		 "defined", sym->name);

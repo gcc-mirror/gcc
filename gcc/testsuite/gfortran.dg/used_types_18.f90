@@ -9,4 +9,7 @@
 !
 type t
 end type
+
+type(t) :: a
+print *, a
 end
