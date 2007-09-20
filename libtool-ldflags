@@ -31,6 +31,7 @@
 # The output of the script.  This string is built up as we process the
 # arguments.
 result=
+prev_arg=
 
 for arg
 do
@@ -43,13 +44,21 @@ do
 	    # options.  So, we prefix these options with -Xcompiler to
 	    # make clear to libtool that they are in fact compiler
 	    # options.
-	    result="$result -Xcompiler" 
+	    case $prev_arg in
+		-Xpreprocessor|-Xcompiler|-Xlinker)
+		    # This option is already prefixed; don't prefix it again.
+		    ;;
+		*)
+		    result="$result -Xcompiler"
+		    ;;
+	    esac
 	    ;;
 	*)
 	    # We do not want to add -Xcompiler to other options because
 	    # that would prevent libtool itself from recognizing them.
 	    ;;
     esac
+    prev_arg=$arg
 
     # If $(LDFLAGS) is (say):
     #   a "b'c d" e

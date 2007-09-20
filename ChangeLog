@@ -1,3 +1,9 @@
+2007-09-20  Paul Jarc  <prj-bugzilla-gcc@multivac.cwru.edu>
+
+	PR bootstrap/31906
+	* libtool-ldflags: Don't prefix arguments with -Xcompiler if
+        they're already prefixed.
+
 2007-09-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (TOPLEVEL_CONFIGURE_ARGUMENTS): Move libgomp before
