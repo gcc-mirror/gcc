@@ -104,6 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
+#include "cgraph.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -1320,6 +1321,7 @@ static void
 setup_incoming_promotions (rtx first)
 {
   tree arg;
+  bool strictly_local = false;
 
   if (!targetm.calls.promote_function_args (TREE_TYPE (cfun->decl)))
     return;
@@ -1328,27 +1330,62 @@ setup_incoming_promotions (rtx first)
        arg = TREE_CHAIN (arg))
     {
       rtx reg = DECL_INCOMING_RTL (arg);
+      int uns1, uns3;
+      enum machine_mode mode1, mode2, mode3, mode4;
 
+      /* Only continue if the incoming argument is in a register.  */
       if (!REG_P (reg))
 	continue;
 
-      if (TYPE_MODE (DECL_ARG_TYPE (arg)) == TYPE_MODE (TREE_TYPE (arg)))
-	{
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
-	  int uns = TYPE_UNSIGNED (TREE_TYPE (arg));
+      /* Determine, if possible, whether all call sites of the current
+         function lie within the current compilation unit.  (This does
+	 take into account the exporting of a function via taking its
+	 address, and so forth.)  */
+      if (flag_unit_at_a_time)
+	strictly_local = cgraph_local_info (current_function_decl)->local;
 
-	  mode = promote_mode (TREE_TYPE (arg), mode, &uns, 1);
-	  if (mode == GET_MODE (reg) && mode != DECL_MODE (arg))
-	    {
-	      rtx x;
-	      x = gen_rtx_CLOBBER (DECL_MODE (arg), const0_rtx);
-	      x = gen_rtx_fmt_e ((uns ? ZERO_EXTEND : SIGN_EXTEND), mode, x);
-	      record_value_for_reg (reg, first, x);
-	    }
+      /* The mode and signedness of the argument before any promotions happen
+         (equal to the mode of the pseudo holding it at that stage).  */
+      mode1 = TYPE_MODE (TREE_TYPE (arg));
+      uns1 = TYPE_UNSIGNED (TREE_TYPE (arg));
+
+      /* The mode and signedness of the argument after any source language and
+         TARGET_PROMOTE_PROTOTYPES-driven promotions.  */
+      mode2 = TYPE_MODE (DECL_ARG_TYPE (arg));
+      uns3 = TYPE_UNSIGNED (DECL_ARG_TYPE (arg));
+
+      /* The mode and signedness of the argument as it is actually passed, 
+         after any TARGET_PROMOTE_FUNCTION_ARGS-driven ABI promotions.  */
+      mode3 = promote_mode (DECL_ARG_TYPE (arg), mode2, &uns3, 1);
+
+      /* The mode of the register in which the argument is being passed.  */
+      mode4 = GET_MODE (reg);
+
+      /* Eliminate sign extensions in the callee when possible.  Only
+         do this when:
+	 (a) the mode of the register is the same as the mode of
+	     the argument as it is passed; and
+	 (b) the signedness does not change across any of the promotions; and
+	 (c) when no language-level promotions (which we cannot guarantee
+	     will have been done by an external caller) are necessary,
+	     unless we know that this function is only ever called from
+	     the current compilation unit -- all of whose call sites will
+	     do the mode1 --> mode2 promotion.  */
+      if (mode3 == mode4
+          && uns1 == uns3
+	  && (mode1 == mode2 || strictly_local))
+        {
+	  /* Record that the value was promoted from mode1 to mode3,
+	     so that any sign extension at the head of the current
+	     function may be eliminated.  */
+	  rtx x;
+	  x = gen_rtx_CLOBBER (mode1, const0_rtx);
+	  x = gen_rtx_fmt_e ((uns3 ? ZERO_EXTEND : SIGN_EXTEND), mode3, x);
+	  record_value_for_reg (reg, first, x);
 	}
     }
 }
-
+
 /* Called via note_stores.  If X is a pseudo that is narrower than
    HOST_BITS_PER_WIDE_INT and is being set, record what bits are known zero.
 
