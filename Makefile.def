@@ -486,6 +486,7 @@ dependencies = { module=configure-target-libobjc; on=configure-target-boehm-gc; 
 dependencies = { module=all-target-libobjc; on=all-target-libiberty; };
 dependencies = { module=all-target-libobjc; on=all-target-boehm-gc; };
 dependencies = { module=all-target-libstdc++-v3; on=all-target-libiberty; };
+dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=examples; };
