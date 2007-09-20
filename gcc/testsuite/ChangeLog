@@ -1,3 +1,8 @@
+2007-09-20  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33459
+	* g++.dg/init/ref14.C: New.
+
 2007-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/slice2.ad[sb]: New testcase.
