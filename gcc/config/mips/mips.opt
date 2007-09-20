@@ -164,6 +164,10 @@ mhard-float
 Target Report RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
 Allow the use of hardware floating-point ABI and instructions
 
+minterlink-mips16
+Target Report Var(TARGET_INTERLINK_MIPS16) Init(0)
+Generate code that can be safely linked with MIPS16 code.
+
 mips
 Target RejectNegative Joined
 -mipsN	Generate code for ISA level N

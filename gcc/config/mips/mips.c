@@ -4256,6 +4256,17 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
   if (mips_use_mips16_mode_p (decl))
     return false;
 
+  /* ...and when -minterlink-mips16 is in effect, assume that external
+     functions could be MIPS16 ones unless an attribute explicitly
+     tells us otherwise.  We only care about cases where the sibling
+     and normal calls would both be direct.  */
+  if (TARGET_INTERLINK_MIPS16
+      && decl
+      && DECL_EXTERNAL (decl)
+      && !mips_nomips16_decl_p (decl)
+      && const_call_insn_operand (XEXP (DECL_RTL (decl), 0), VOIDmode))
+    return false;
+
   /* Otherwise OK.  */
   return true;
 }

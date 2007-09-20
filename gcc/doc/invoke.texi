@@ -623,6 +623,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips64 @gol
 -mips16  -mno-mips16  -mflip-mips16 @gol
+-minterlink-mips16  -mno-interlink-mips16 @gol
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mxgot  -mno-xgot  -mgp32  -mgp64 @gol
 -mfp32  -mfp64  -mhard-float  -msoft-float @gol
@@ -11683,6 +11684,18 @@ by means of @code{mips16} and @code{nomips16} attributes.
 Generate MIPS16 code on alternating functions.  This option is provided
 for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
 not intended for ordinary use in compiling user code.
+
+@item -minterlink-mips16
+@itemx -mno-interlink-mips16
+@opindex minterlink-mips16
+@opindex mno-interlink-mips16
+Require (do not require) that non-MIPS16 code be link-compatible with
+MIPS16 code.
+
+For example, non-MIPS16 code cannot jump directly to MIPS16 code;
+it must either use a call or an indirect jump.  @option{-minterlink-mips16}
+therefore disables direct jumps unless GCC knows that the target of the
+jump is not MIPS16.
 
 @item -mabi=32
 @itemx -mabi=o64
