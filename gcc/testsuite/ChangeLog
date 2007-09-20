@@ -1,3 +1,13 @@
+2007-09-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (check_effective_target_mips64): New
+	procedure.
+	* gcc.dg/lower-subreg-1.c: Require !mips64.
+	* gcc.dg/sibcall-3.c (ATTR): New macro.
+	(recurser_void1, recurser_void2): Use it.
+	* gcc.dg/sibcall-4.c: As for gcc.dg/sibcall-3.c.
+	* gcc.dg/tree-ssa/ssa-fre-3.c: Require !mips64.
+
 2007-09-20  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/g77/19981216-0.f: Remove dg-warning annotation.
