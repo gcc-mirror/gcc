@@ -1,3 +1,7 @@
+2007-09-20  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* dse.c (find_shift_sequence): No-op rework of control flow.
+
 2007-09-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (build_mips16_call_stub): Tidy.  Fix second
