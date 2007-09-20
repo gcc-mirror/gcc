@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! mips64 } } } */
 /* { dg-options "-O -fdump-rtl-subreg" } */
 /* { dg-require-effective-target ilp32 } */
 

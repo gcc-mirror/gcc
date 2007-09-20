@@ -617,6 +617,16 @@ proc check_effective_target_mpaired_single { } {
     } "-mpaired-single"]
 }
 
+# Return true if the target is a 64-bit MIPS target.
+
+proc check_effective_target_mips64 { } {
+    return [check_no_compiler_messages mips64 assembly {
+	#ifndef __mips64
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if the current multilib does not generate PIC by default.
 
 proc check_effective_target_nonpic { } {

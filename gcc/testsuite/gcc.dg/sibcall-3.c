@@ -18,8 +18,16 @@
 extern void abort (void);
 extern void exit (int);
 
-static void recurser_void1 (int);
-static void recurser_void2 (int);
+/* Sibcalls are not supported in MIPS16 mode, which has direct calls but
+   not direct jumps.  */
+#ifdef __mips
+#define ATTR __attribute__((nomips16))
+#else
+#define ATTR
+#endif
+
+static ATTR void recurser_void1 (int);
+static ATTR void recurser_void2 (int);
 extern void track (int);
 
 int main ()
@@ -32,7 +40,7 @@ int main ()
    reasonably sure is to make them have the same contents (regarding the
    n tests).  */
 
-static void __attribute__((noinline))
+static void __attribute__((noinline)) ATTR
 recurser_void1 (int n)
 {
   if (n == 0 || n == 7 || n == 8)
@@ -44,7 +52,7 @@ recurser_void1 (int n)
   recurser_void2 (n + 1);
 }
 
-static void __attribute__((noinline))
+static void __attribute__((noinline)) ATTR
 recurser_void2 (int n)
 {
   if (n == 0 || n == 7 || n == 8)
