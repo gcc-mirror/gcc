@@ -1,3 +1,9 @@
+2007-09-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* mt-sde (CFLAGS_FOR_TARGET): Replace -fno-optimize-sibling-calls
+	with -minterlink-mips16.
+	(CXXFLAGS_FOR_TARGET): Likewise.
+
 2007-09-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* mt-mips-elfoabi: New file.
