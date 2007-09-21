@@ -1,3 +1,11 @@
+2007-09-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33508
+	* tree-ssa-alias.c (mark_aliases_call_clobbered): Avoid
+	quadratic loop by keeping a bitmap of variables we have
+	to clobber all subvariables for.
+	(set_initial_properties): Likewise.
+
 2007-09-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/t-sde (TARGET_LIBGCC2_CFLAGS): Delete.

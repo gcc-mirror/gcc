@@ -364,7 +364,7 @@ add_to_worklist (tree alias, VEC (tree, heap) **worklist,
 static void
 mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
 			     VEC (int, heap) **worklist2,
-			     bitmap on_worklist)
+			     bitmap on_worklist, bitmap queued)
 {
   bitmap aliases;
   bitmap_iterator bi;
@@ -387,19 +387,25 @@ mark_aliases_call_clobbered (tree tag, VEC (tree, heap) **worklist,
 	 in order to allow C/C++ tricks that involve
 	 pointer arithmetic to work.  */
       if (TREE_CODE (entry) == STRUCT_FIELD_TAG)
-	{
-	  subvar_t svars;
-	  svars = get_subvars_for_var (SFT_PARENT_VAR (entry));
-	  for (; svars; svars = svars->next)
-	    if (!unmodifiable_var_p (entry))
-	      mark_call_clobbered (svars->var, ta->escape_mask);
-	}
+	bitmap_set_bit (queued, DECL_UID (SFT_PARENT_VAR (entry)));
       else if (!unmodifiable_var_p (entry))
 	{
 	  add_to_worklist (entry, worklist, worklist2, ta->escape_mask,
 			   on_worklist);
 	  mark_call_clobbered (entry, ta->escape_mask);
 	}
+    }
+  if (!bitmap_empty_p (queued))
+    {
+      EXECUTE_IF_SET_IN_BITMAP (queued, 0, i, bi)
+	{
+	  subvar_t svars;
+	  svars = get_subvars_for_var (referenced_var (i));
+	  for (; svars; svars = svars->next)
+	    if (!unmodifiable_var_p (svars->var))
+	       mark_call_clobbered (svars->var, ta->escape_mask);
+	}
+      bitmap_clear (queued);
     }
 }
 
@@ -508,6 +514,11 @@ set_initial_properties (struct alias_info *ai)
   referenced_var_iterator rvi;
   tree var;
   tree ptr;
+  bitmap queued;
+
+  /* Temporary bitmap to avoid quadratic behavior in marking
+     call clobbers.  */
+  queued = BITMAP_ALLOC (&alias_bitmap_obstack);
 
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
@@ -557,15 +568,22 @@ set_initial_properties (struct alias_info *ai)
 		     in order to allow C/C++ tricks that involve
 		     pointer arithmetic to work.  */
 		  if (TREE_CODE (alias) == STRUCT_FIELD_TAG)
-		    {
-		      subvar_t svars;
-		      svars = get_subvars_for_var (SFT_PARENT_VAR (alias));
-		      for (; svars; svars = svars->next)
-			if (!unmodifiable_var_p (alias))
-			  mark_call_clobbered (svars->var, pi->escape_mask);
-		    }
+		    bitmap_set_bit (queued, DECL_UID (SFT_PARENT_VAR (alias)));
 		  else if (!unmodifiable_var_p (alias))
 		    mark_call_clobbered (alias, pi->escape_mask);
+		}
+	      /* Process variables we need to clobber all parts of.  */
+	      if (!bitmap_empty_p (queued))
+		{
+		  EXECUTE_IF_SET_IN_BITMAP (queued, 0, j, bi)
+		    {
+		      subvar_t svars;
+		      svars = get_subvars_for_var (referenced_var (j));
+		      for (; svars; svars = svars->next)
+			if (!unmodifiable_var_p (svars->var))
+			  mark_call_clobbered (svars->var, pi->escape_mask);
+		    }
+		  bitmap_clear (queued);
 		}
 	    }
 	}
@@ -600,6 +618,8 @@ set_initial_properties (struct alias_info *ai)
 	  MTAG_GLOBAL (tag) = true;
 	}
     }
+
+  BITMAP_FREE (queued);
 }
 
 /* Compute which variables need to be marked call clobbered because
@@ -611,10 +631,11 @@ compute_call_clobbered (struct alias_info *ai)
 {
   VEC (tree, heap) *worklist = NULL;
   VEC (int,heap) *worklist2 = NULL;
-  bitmap on_worklist;
+  bitmap on_worklist, queued;
 
   timevar_push (TV_CALL_CLOBBER);
   on_worklist = BITMAP_ALLOC (NULL);
+  queued = BITMAP_ALLOC (NULL);
     
   set_initial_properties (ai);
   init_transitive_clobber_worklist (&worklist, &worklist2, on_worklist);
@@ -626,11 +647,12 @@ compute_call_clobbered (struct alias_info *ai)
       bitmap_clear_bit (on_worklist, DECL_UID (curr));
       mark_call_clobbered (curr, reason);
       mark_aliases_call_clobbered (curr, &worklist, &worklist2,
-				   on_worklist);
+				   on_worklist, queued);
     }
   VEC_free (tree, heap, worklist);
   VEC_free (int, heap, worklist2);
   BITMAP_FREE (on_worklist);
+  BITMAP_FREE (queued);
   compute_tag_properties ();
   timevar_pop (TV_CALL_CLOBBER);
 }
