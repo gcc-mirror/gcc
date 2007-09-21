@@ -1,3 +1,16 @@
+2007-09-19  Michael Meissner  <michael.meissner@amd.com>
+
+	* gcc/config/i386/i386.c: Delete trailing whitespace.
+	* gcc/config/i386/i386.h: Ditto.
+	* gcc/config/i386/bmmintrin.h: Ditto.
+	* gcc/config/i386/sync.md: Ditto.
+	* gcc/config/i386/ppro.md: Ditto.
+	* gcc/config/i386/mmx.md: Ditto.
+	* gcc/config/i386/constraints.md: Ditto.
+	* gcc/config/i386/sse.md: Ditto.
+	* gcc/config/i386/athlon.md: Ditto.
+	* gcc/config/i386/i386.md: Ditto.
+
 2007-09-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33508
