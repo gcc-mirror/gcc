@@ -400,6 +400,42 @@ identical_dimen_shape (gfc_expr *a, int ai, gfc_expr *b, int bi)
 }
 
 
+/* Check whether two character expressions have the same length;
+   returns SUCCESS if they have or if the length cannot be determined.  */
+
+static try
+check_same_strlen (const gfc_expr *a, const gfc_expr *b, const char *name)
+{
+   long len_a, len_b;
+   len_a = len_b = -1;
+
+   if (a->ts.cl && a->ts.cl->length
+       && a->ts.cl->length->expr_type == EXPR_CONSTANT)
+     len_a = mpz_get_si (a->ts.cl->length->value.integer);
+   else if (a->expr_type == EXPR_CONSTANT
+	    && (a->ts.cl == NULL || a->ts.cl->length == NULL))
+     len_a = a->value.character.length;
+   else
+     return SUCCESS;
+
+   if (b->ts.cl && b->ts.cl->length
+       && b->ts.cl->length->expr_type == EXPR_CONSTANT)
+     len_b = mpz_get_si (b->ts.cl->length->value.integer);
+   else if (b->expr_type == EXPR_CONSTANT
+	    && (b->ts.cl == NULL || b->ts.cl->length == NULL))
+     len_b = b->value.character.length;
+   else
+     return SUCCESS;
+
+   if (len_a == len_b)
+     return SUCCESS;
+
+   gfc_error ("Unequal character lengths (%ld and %ld) in %s intrinsic "
+	      "at %L", len_a, len_b, name, &a->where);
+   return FAILURE;
+}
+
+
 /***** Check functions *****/
 
 /* Check subroutine suitable for intrinsics taking a real argument and
@@ -1823,8 +1859,12 @@ gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
   if (type_check (mask, 2, BT_LOGICAL) == FAILURE)
     return FAILURE;
 
+  if (tsource->ts.type == BT_CHARACTER)
+    return check_same_strlen (tsource, fsource, "MERGE");
+
   return SUCCESS;
 }
+
 
 try
 gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
