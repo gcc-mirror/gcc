@@ -1,5 +1,10 @@
 2007-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR libfortran/26253
+	* intrinsics/c99_functions.c (scalbn): Use ldexp if appopriate.
+
+2007-09-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR libfortran/23272
 	* io/unix.c (id_from_handle, id_from_path, id_from_fd): New
 	functions.
