@@ -3499,14 +3499,17 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  gfc_conv_expr_descriptor (&lse, expr2, rss);
 
 	  /* If this is a subreference array pointer assignment, use the rhs
-	     element size for the lhs span.  */
+	     descriptor element size for the lhs span.  */
 	  if (expr1->symtree->n.sym->attr.subref_array_pointer)
 	    {
 	      decl = expr1->symtree->n.sym->backend_decl;
-	      tmp = rss->data.info.descriptor;
-	      tmp = gfc_get_element_type (TREE_TYPE (tmp));
-	      tmp = size_in_bytes (tmp);
-	      tmp = fold_convert (gfc_array_index_type, tmp);
+	      gfc_init_se (&rse, NULL);
+	      rse.descriptor_only = 1;
+	      gfc_conv_expr (&rse, expr2);
+	      tmp = gfc_get_element_type (TREE_TYPE (rse.expr));
+	      tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
+	      if (!INTEGER_CST_P (tmp))
+	        gfc_add_block_to_block (&lse.post, &rse.pre);
 	      gfc_add_modify_expr (&lse.post, GFC_DECL_SPAN(decl), tmp);
 	    }
 
