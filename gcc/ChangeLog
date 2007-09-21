@@ -1,3 +1,7 @@
+2007-09-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/t-sde (TARGET_LIBGCC2_CFLAGS): Delete.
+
 2007-09-20  Nigel Stephens  <nigel@mips.com>
 	    Chao-ying Fu  <fu@mips.com>
 
