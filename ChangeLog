@@ -1,3 +1,7 @@
+2007-09-21  Seongbae Park  <seongbae.park@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Fix typo.
+
 2007-09-20  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* configure.ac (mipsisa*-*-elfoabi*): New stanza.
