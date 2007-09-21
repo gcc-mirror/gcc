@@ -7767,9 +7767,12 @@ finish_declspecs (struct c_declspecs *specs)
   if (specs->typespec_word == cts_none)
     {
       if (specs->saturating_p)
-	error ("%<_Sat%> is used without %<_Fract%> or %<_Accum%>");
-      if (specs->long_p || specs->short_p
-	  || specs->signed_p || specs->unsigned_p)
+	{
+	  error ("%<_Sat%> is used without %<_Fract%> or %<_Accum%>");
+	  specs->typespec_word = cts_fract;
+	}
+      else if (specs->long_p || specs->short_p
+	       || specs->signed_p || specs->unsigned_p)
 	{
 	  specs->typespec_word = cts_int;
 	}

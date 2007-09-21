@@ -1,3 +1,10 @@
+2007-09-20  Nigel Stephens  <nigel@mips.com>
+	    Chao-ying Fu  <fu@mips.com>
+
+	* c-decl.c (finish_declspecs): When _Sat is used without
+	_Fract or _Accum, set the default type to cts_fract.
+	This avoids a warning of "type defaults to int".
+
 2007-09-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (check_bitfield_type_and_width): Don't allow _Bool
