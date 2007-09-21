@@ -1,3 +1,8 @@
+2007-09-21  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/nested_subtype_byref.ad[bs]: Part of new test.
+	* gnat.dg/test_nested_subtype_byref.adb: New test.
+
 2007-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/33439

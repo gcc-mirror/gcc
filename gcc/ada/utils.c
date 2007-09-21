@@ -4005,10 +4005,22 @@ type_for_nonaliased_component_p (tree gnu_type)
   if (must_pass_by_ref (gnu_type) || default_pass_by_ref (gnu_type))
     return false;
 
-  /* We might need the address for any array type, even if normally
-     passed by copy, to construct a fat pointer if the component is
-     used as an actual for an unconstrained formal.  */
-  if (TREE_CODE (gnu_type) == ARRAY_TYPE)
+  /* We used to say that any component of aggregate type is aliased
+     because the front-end may take 'Reference of it.  The front-end
+     has been enhanced in the meantime so as to use a renaming instead
+     in most cases, but the back-end can probably take the address of
+     such a component too so we go for the conservative stance.
+
+     For instance, we might need the address of any array type, even
+     if normally passed by copy, to construct a fat pointer if the
+     component is used as an actual for an unconstrained formal.
+
+     Likewise for record types: even if a specific record subtype is
+     passed by copy, the parent type might be passed by ref (e.g. if
+     it's of variable size) and we might take the address of a child
+     component to pass to a parent formal.  We have no way to check
+     for such conditions here.  */
+  if (AGGREGATE_TYPE_P (gnu_type))
     return false;
 
   return true;
