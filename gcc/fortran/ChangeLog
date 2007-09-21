@@ -1,7 +1,13 @@
+2007-09-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33037
+	* simplify.c (gfc_simplify_transfer): Warn if source size
+	is smaller than result size.
+
 2007-09-20  Asher Langton  <langton2@llnl.gov>
 
 	PR fortran/20441
-        * gfortran.h : Add init_local_* enums and init_flag_* flags to
+	* gfortran.h : Add init_local_* enums and init_flag_* flags to
 	gfc_option_t.
 	* lang.opt: Add -finit-local-zero, -finit-real, -finit-integer,
 	-finit-character, and -finit-logical flags.
