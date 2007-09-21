@@ -645,8 +645,40 @@ selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-unders
 
 BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
     $(gfor_built_specific2_src) $(gfor_misc_specifics)
-libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
+
+prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
+
+if onestep
+# dummy sources for libtool
+BUILT_SOURCES+=libgfortran_c.c libgfortran_f.f90
+libgfortran_c.c libgfortran_f.f90 libgfortran_F.F90:
+	echo > $@
+# overrides for libtool perusing the dummy sources
+libgfortran_c.o: $(filter %.c,$(prereq_SRC))
+	$(COMPILE) -c $^ -o $@ -combine
+
+libgfortran_c.lo: $(filter %.c,$(prereq_SRC))
+	$(LTCOMPILE) -c -o $@ $^ -combine
+
+#libgfortran_f.o: $(filter %.f %.f90,$(prereq_SRC))
+#	$(FCCOMPILE) -c $^ -o $@ -combine
+
+#libgfortran_f.lo: $(filter %.f %.f90,$(prereq_SRC))
+#	$(LTFCCOMPILE) -c -o $@ $^ -combine
+# not currently used:
+#libgfortran_F.o: $(filter %.F %.F90,$(prereq_SRC))
+#	$(PPFCCOMPILE) -c $^ -o $@ -combine
+#
+#libgfortran_F.lo: 
+#	$(LTPPFCCOMPILE) -c -o $@ $^ -combine
+
+libgfortran_la_SOURCES = libgfortran_c.c $(filter-out %.c,$(prereq_SRC))
+
+else
+libgfortran_la_SOURCES = $(prereq_SRC)
+
+endif
 
 I_M4_DEPS=m4/iparm.m4
 I_M4_DEPS0=$(I_M4_DEPS) m4/iforeach.m4
