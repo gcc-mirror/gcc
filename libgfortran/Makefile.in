@@ -37,6 +37,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+
+# dummy sources for libtool
+@onestep_TRUE@am__append_1 = libgfortran_c.c libgfortran_f.f90
 DIST_COMMON = $(am__configure_deps) $(srcdir)/../config.guess \
 	$(srcdir)/../config.sub $(srcdir)/../depcomp \
 	$(srcdir)/../install-sh $(srcdir)/../ltmain.sh \
@@ -73,6 +76,451 @@ myexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(myexeclib_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
+am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
+	runtime/compile_options.c runtime/environ.c runtime/error.c \
+	runtime/fpu.c runtime/main.c runtime/memory.c runtime/pause.c \
+	runtime/stop.c runtime/string.c runtime/select.c \
+	$(srcdir)/generated/all_l4.c $(srcdir)/generated/all_l8.c \
+	$(srcdir)/generated/all_l16.c $(srcdir)/generated/any_l4.c \
+	$(srcdir)/generated/any_l8.c $(srcdir)/generated/any_l16.c \
+	$(srcdir)/generated/count_4_l4.c \
+	$(srcdir)/generated/count_8_l4.c \
+	$(srcdir)/generated/count_16_l4.c \
+	$(srcdir)/generated/count_4_l8.c \
+	$(srcdir)/generated/count_8_l8.c \
+	$(srcdir)/generated/count_16_l8.c \
+	$(srcdir)/generated/count_4_l16.c \
+	$(srcdir)/generated/count_8_l16.c \
+	$(srcdir)/generated/count_16_l16.c \
+	$(srcdir)/generated/maxloc0_4_i1.c \
+	$(srcdir)/generated/maxloc0_8_i1.c \
+	$(srcdir)/generated/maxloc0_16_i1.c \
+	$(srcdir)/generated/maxloc0_4_i2.c \
+	$(srcdir)/generated/maxloc0_8_i2.c \
+	$(srcdir)/generated/maxloc0_16_i2.c \
+	$(srcdir)/generated/maxloc0_4_i4.c \
+	$(srcdir)/generated/maxloc0_8_i4.c \
+	$(srcdir)/generated/maxloc0_16_i4.c \
+	$(srcdir)/generated/maxloc0_4_i8.c \
+	$(srcdir)/generated/maxloc0_8_i8.c \
+	$(srcdir)/generated/maxloc0_16_i8.c \
+	$(srcdir)/generated/maxloc0_4_i16.c \
+	$(srcdir)/generated/maxloc0_8_i16.c \
+	$(srcdir)/generated/maxloc0_16_i16.c \
+	$(srcdir)/generated/maxloc0_4_r4.c \
+	$(srcdir)/generated/maxloc0_8_r4.c \
+	$(srcdir)/generated/maxloc0_16_r4.c \
+	$(srcdir)/generated/maxloc0_4_r8.c \
+	$(srcdir)/generated/maxloc0_8_r8.c \
+	$(srcdir)/generated/maxloc0_16_r8.c \
+	$(srcdir)/generated/maxloc0_4_r10.c \
+	$(srcdir)/generated/maxloc0_8_r10.c \
+	$(srcdir)/generated/maxloc0_16_r10.c \
+	$(srcdir)/generated/maxloc0_4_r16.c \
+	$(srcdir)/generated/maxloc0_8_r16.c \
+	$(srcdir)/generated/maxloc0_16_r16.c \
+	$(srcdir)/generated/maxloc1_4_i1.c \
+	$(srcdir)/generated/maxloc1_8_i1.c \
+	$(srcdir)/generated/maxloc1_16_i1.c \
+	$(srcdir)/generated/maxloc1_4_i2.c \
+	$(srcdir)/generated/maxloc1_8_i2.c \
+	$(srcdir)/generated/maxloc1_16_i2.c \
+	$(srcdir)/generated/maxloc1_4_i4.c \
+	$(srcdir)/generated/maxloc1_8_i4.c \
+	$(srcdir)/generated/maxloc1_16_i4.c \
+	$(srcdir)/generated/maxloc1_4_i8.c \
+	$(srcdir)/generated/maxloc1_8_i8.c \
+	$(srcdir)/generated/maxloc1_16_i8.c \
+	$(srcdir)/generated/maxloc1_4_i16.c \
+	$(srcdir)/generated/maxloc1_8_i16.c \
+	$(srcdir)/generated/maxloc1_16_i16.c \
+	$(srcdir)/generated/maxloc1_4_r4.c \
+	$(srcdir)/generated/maxloc1_8_r4.c \
+	$(srcdir)/generated/maxloc1_16_r4.c \
+	$(srcdir)/generated/maxloc1_4_r8.c \
+	$(srcdir)/generated/maxloc1_8_r8.c \
+	$(srcdir)/generated/maxloc1_16_r8.c \
+	$(srcdir)/generated/maxloc1_4_r10.c \
+	$(srcdir)/generated/maxloc1_8_r10.c \
+	$(srcdir)/generated/maxloc1_16_r10.c \
+	$(srcdir)/generated/maxloc1_4_r16.c \
+	$(srcdir)/generated/maxloc1_8_r16.c \
+	$(srcdir)/generated/maxloc1_16_r16.c \
+	$(srcdir)/generated/maxval_i1.c \
+	$(srcdir)/generated/maxval_i2.c \
+	$(srcdir)/generated/maxval_i4.c \
+	$(srcdir)/generated/maxval_i8.c \
+	$(srcdir)/generated/maxval_i16.c \
+	$(srcdir)/generated/maxval_r4.c \
+	$(srcdir)/generated/maxval_r8.c \
+	$(srcdir)/generated/maxval_r10.c \
+	$(srcdir)/generated/maxval_r16.c \
+	$(srcdir)/generated/minloc0_4_i1.c \
+	$(srcdir)/generated/minloc0_8_i1.c \
+	$(srcdir)/generated/minloc0_16_i1.c \
+	$(srcdir)/generated/minloc0_4_i2.c \
+	$(srcdir)/generated/minloc0_8_i2.c \
+	$(srcdir)/generated/minloc0_16_i2.c \
+	$(srcdir)/generated/minloc0_4_i4.c \
+	$(srcdir)/generated/minloc0_8_i4.c \
+	$(srcdir)/generated/minloc0_16_i4.c \
+	$(srcdir)/generated/minloc0_4_i8.c \
+	$(srcdir)/generated/minloc0_8_i8.c \
+	$(srcdir)/generated/minloc0_16_i8.c \
+	$(srcdir)/generated/minloc0_4_i16.c \
+	$(srcdir)/generated/minloc0_8_i16.c \
+	$(srcdir)/generated/minloc0_16_i16.c \
+	$(srcdir)/generated/minloc0_4_r4.c \
+	$(srcdir)/generated/minloc0_8_r4.c \
+	$(srcdir)/generated/minloc0_16_r4.c \
+	$(srcdir)/generated/minloc0_4_r8.c \
+	$(srcdir)/generated/minloc0_8_r8.c \
+	$(srcdir)/generated/minloc0_16_r8.c \
+	$(srcdir)/generated/minloc0_4_r10.c \
+	$(srcdir)/generated/minloc0_8_r10.c \
+	$(srcdir)/generated/minloc0_16_r10.c \
+	$(srcdir)/generated/minloc0_4_r16.c \
+	$(srcdir)/generated/minloc0_8_r16.c \
+	$(srcdir)/generated/minloc0_16_r16.c \
+	$(srcdir)/generated/minloc1_4_i1.c \
+	$(srcdir)/generated/minloc1_8_i1.c \
+	$(srcdir)/generated/minloc1_16_i1.c \
+	$(srcdir)/generated/minloc1_4_i2.c \
+	$(srcdir)/generated/minloc1_8_i2.c \
+	$(srcdir)/generated/minloc1_16_i2.c \
+	$(srcdir)/generated/minloc1_4_i4.c \
+	$(srcdir)/generated/minloc1_8_i4.c \
+	$(srcdir)/generated/minloc1_16_i4.c \
+	$(srcdir)/generated/minloc1_4_i8.c \
+	$(srcdir)/generated/minloc1_8_i8.c \
+	$(srcdir)/generated/minloc1_16_i8.c \
+	$(srcdir)/generated/minloc1_4_i16.c \
+	$(srcdir)/generated/minloc1_8_i16.c \
+	$(srcdir)/generated/minloc1_16_i16.c \
+	$(srcdir)/generated/minloc1_4_r4.c \
+	$(srcdir)/generated/minloc1_8_r4.c \
+	$(srcdir)/generated/minloc1_16_r4.c \
+	$(srcdir)/generated/minloc1_4_r8.c \
+	$(srcdir)/generated/minloc1_8_r8.c \
+	$(srcdir)/generated/minloc1_16_r8.c \
+	$(srcdir)/generated/minloc1_4_r10.c \
+	$(srcdir)/generated/minloc1_8_r10.c \
+	$(srcdir)/generated/minloc1_16_r10.c \
+	$(srcdir)/generated/minloc1_4_r16.c \
+	$(srcdir)/generated/minloc1_8_r16.c \
+	$(srcdir)/generated/minloc1_16_r16.c \
+	$(srcdir)/generated/minval_i1.c \
+	$(srcdir)/generated/minval_i2.c \
+	$(srcdir)/generated/minval_i4.c \
+	$(srcdir)/generated/minval_i8.c \
+	$(srcdir)/generated/minval_i16.c \
+	$(srcdir)/generated/minval_r4.c \
+	$(srcdir)/generated/minval_r8.c \
+	$(srcdir)/generated/minval_r10.c \
+	$(srcdir)/generated/minval_r16.c \
+	$(srcdir)/generated/product_i1.c \
+	$(srcdir)/generated/product_i2.c \
+	$(srcdir)/generated/product_i4.c \
+	$(srcdir)/generated/product_i8.c \
+	$(srcdir)/generated/product_i16.c \
+	$(srcdir)/generated/product_r4.c \
+	$(srcdir)/generated/product_r8.c \
+	$(srcdir)/generated/product_r10.c \
+	$(srcdir)/generated/product_r16.c \
+	$(srcdir)/generated/product_c4.c \
+	$(srcdir)/generated/product_c8.c \
+	$(srcdir)/generated/product_c10.c \
+	$(srcdir)/generated/product_c16.c $(srcdir)/generated/sum_i1.c \
+	$(srcdir)/generated/sum_i2.c $(srcdir)/generated/sum_i4.c \
+	$(srcdir)/generated/sum_i8.c $(srcdir)/generated/sum_i16.c \
+	$(srcdir)/generated/sum_r4.c $(srcdir)/generated/sum_r8.c \
+	$(srcdir)/generated/sum_r10.c $(srcdir)/generated/sum_r16.c \
+	$(srcdir)/generated/sum_c4.c $(srcdir)/generated/sum_c8.c \
+	$(srcdir)/generated/sum_c10.c $(srcdir)/generated/sum_c16.c \
+	$(srcdir)/generated/matmul_i1.c \
+	$(srcdir)/generated/matmul_i2.c \
+	$(srcdir)/generated/matmul_i4.c \
+	$(srcdir)/generated/matmul_i8.c \
+	$(srcdir)/generated/matmul_i16.c \
+	$(srcdir)/generated/matmul_r4.c \
+	$(srcdir)/generated/matmul_r8.c \
+	$(srcdir)/generated/matmul_r10.c \
+	$(srcdir)/generated/matmul_r16.c \
+	$(srcdir)/generated/matmul_c4.c \
+	$(srcdir)/generated/matmul_c8.c \
+	$(srcdir)/generated/matmul_c10.c \
+	$(srcdir)/generated/matmul_c16.c \
+	$(srcdir)/generated/matmul_l4.c \
+	$(srcdir)/generated/matmul_l8.c \
+	$(srcdir)/generated/matmul_l16.c \
+	$(srcdir)/generated/transpose_i4.c \
+	$(srcdir)/generated/transpose_i8.c \
+	$(srcdir)/generated/transpose_i16.c \
+	$(srcdir)/generated/transpose_r4.c \
+	$(srcdir)/generated/transpose_r8.c \
+	$(srcdir)/generated/transpose_r10.c \
+	$(srcdir)/generated/transpose_r16.c \
+	$(srcdir)/generated/transpose_c4.c \
+	$(srcdir)/generated/transpose_c8.c \
+	$(srcdir)/generated/transpose_c10.c \
+	$(srcdir)/generated/transpose_c16.c \
+	$(srcdir)/generated/shape_i4.c $(srcdir)/generated/shape_i8.c \
+	$(srcdir)/generated/shape_i16.c \
+	$(srcdir)/generated/eoshift1_4.c \
+	$(srcdir)/generated/eoshift1_8.c \
+	$(srcdir)/generated/eoshift1_16.c \
+	$(srcdir)/generated/eoshift3_4.c \
+	$(srcdir)/generated/eoshift3_8.c \
+	$(srcdir)/generated/eoshift3_16.c \
+	$(srcdir)/generated/cshift1_4.c \
+	$(srcdir)/generated/cshift1_8.c \
+	$(srcdir)/generated/cshift1_16.c \
+	$(srcdir)/generated/reshape_i4.c \
+	$(srcdir)/generated/reshape_i8.c \
+	$(srcdir)/generated/reshape_i16.c \
+	$(srcdir)/generated/reshape_r4.c \
+	$(srcdir)/generated/reshape_r8.c \
+	$(srcdir)/generated/reshape_r10.c \
+	$(srcdir)/generated/reshape_r16.c \
+	$(srcdir)/generated/reshape_c4.c \
+	$(srcdir)/generated/reshape_c8.c \
+	$(srcdir)/generated/reshape_c10.c \
+	$(srcdir)/generated/reshape_c16.c \
+	$(srcdir)/generated/in_pack_i4.c \
+	$(srcdir)/generated/in_pack_i8.c \
+	$(srcdir)/generated/in_pack_i16.c \
+	$(srcdir)/generated/in_pack_c4.c \
+	$(srcdir)/generated/in_pack_c8.c \
+	$(srcdir)/generated/in_pack_c10.c \
+	$(srcdir)/generated/in_pack_c16.c \
+	$(srcdir)/generated/in_unpack_i4.c \
+	$(srcdir)/generated/in_unpack_i8.c \
+	$(srcdir)/generated/in_unpack_i16.c \
+	$(srcdir)/generated/in_unpack_c4.c \
+	$(srcdir)/generated/in_unpack_c8.c \
+	$(srcdir)/generated/in_unpack_c10.c \
+	$(srcdir)/generated/in_unpack_c16.c \
+	$(srcdir)/generated/exponent_r4.c \
+	$(srcdir)/generated/exponent_r8.c \
+	$(srcdir)/generated/exponent_r10.c \
+	$(srcdir)/generated/exponent_r16.c \
+	$(srcdir)/generated/fraction_r4.c \
+	$(srcdir)/generated/fraction_r8.c \
+	$(srcdir)/generated/fraction_r10.c \
+	$(srcdir)/generated/fraction_r16.c \
+	$(srcdir)/generated/nearest_r4.c \
+	$(srcdir)/generated/nearest_r8.c \
+	$(srcdir)/generated/nearest_r10.c \
+	$(srcdir)/generated/nearest_r16.c \
+	$(srcdir)/generated/set_exponent_r4.c \
+	$(srcdir)/generated/set_exponent_r8.c \
+	$(srcdir)/generated/set_exponent_r10.c \
+	$(srcdir)/generated/set_exponent_r16.c \
+	$(srcdir)/generated/pow_i4_i4.c \
+	$(srcdir)/generated/pow_i8_i4.c \
+	$(srcdir)/generated/pow_i16_i4.c \
+	$(srcdir)/generated/pow_c4_i4.c \
+	$(srcdir)/generated/pow_c8_i4.c \
+	$(srcdir)/generated/pow_c10_i4.c \
+	$(srcdir)/generated/pow_c16_i4.c \
+	$(srcdir)/generated/pow_i4_i8.c \
+	$(srcdir)/generated/pow_i8_i8.c \
+	$(srcdir)/generated/pow_i16_i8.c \
+	$(srcdir)/generated/pow_r4_i8.c \
+	$(srcdir)/generated/pow_r8_i8.c \
+	$(srcdir)/generated/pow_r10_i8.c \
+	$(srcdir)/generated/pow_r16_i8.c \
+	$(srcdir)/generated/pow_c4_i8.c \
+	$(srcdir)/generated/pow_c8_i8.c \
+	$(srcdir)/generated/pow_c10_i8.c \
+	$(srcdir)/generated/pow_c16_i8.c \
+	$(srcdir)/generated/pow_i4_i16.c \
+	$(srcdir)/generated/pow_i8_i16.c \
+	$(srcdir)/generated/pow_i16_i16.c \
+	$(srcdir)/generated/pow_r4_i16.c \
+	$(srcdir)/generated/pow_r8_i16.c \
+	$(srcdir)/generated/pow_r10_i16.c \
+	$(srcdir)/generated/pow_r16_i16.c \
+	$(srcdir)/generated/pow_c4_i16.c \
+	$(srcdir)/generated/pow_c8_i16.c \
+	$(srcdir)/generated/pow_c10_i16.c \
+	$(srcdir)/generated/pow_c16_i16.c \
+	$(srcdir)/generated/rrspacing_r4.c \
+	$(srcdir)/generated/rrspacing_r8.c \
+	$(srcdir)/generated/rrspacing_r10.c \
+	$(srcdir)/generated/rrspacing_r16.c \
+	$(srcdir)/generated/spacing_r4.c \
+	$(srcdir)/generated/spacing_r8.c \
+	$(srcdir)/generated/spacing_r10.c \
+	$(srcdir)/generated/spacing_r16.c selected_int_kind.inc \
+	selected_real_kind.inc kinds.h kinds.inc c99_protos.inc \
+	fpu-target.h io/close.c io/file_pos.c io/format.c io/inquire.c \
+	io/intrinsics.c io/list_read.c io/lock.c io/open.c io/read.c \
+	io/size_from_kind.c io/transfer.c io/unit.c io/unix.c \
+	io/write.c intrinsics/associated.c intrinsics/abort.c \
+	intrinsics/access.c intrinsics/args.c \
+	intrinsics/c99_functions.c intrinsics/chdir.c \
+	intrinsics/chmod.c intrinsics/clock.c intrinsics/cpu_time.c \
+	intrinsics/cshift0.c intrinsics/ctime.c \
+	intrinsics/date_and_time.c intrinsics/env.c \
+	intrinsics/eoshift0.c intrinsics/eoshift2.c intrinsics/etime.c \
+	intrinsics/exit.c intrinsics/fnum.c intrinsics/gerror.c \
+	intrinsics/getcwd.c intrinsics/getlog.c intrinsics/getXid.c \
+	intrinsics/hostnm.c intrinsics/ierrno.c intrinsics/ishftc.c \
+	intrinsics/iso_c_generated_procs.c intrinsics/iso_c_binding.c \
+	intrinsics/kill.c intrinsics/link.c intrinsics/malloc.c \
+	intrinsics/mvbits.c intrinsics/move_alloc.c \
+	intrinsics/pack_generic.c intrinsics/perror.c \
+	intrinsics/signal.c intrinsics/size.c intrinsics/sleep.c \
+	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
+	intrinsics/system.c intrinsics/rand.c intrinsics/random.c \
+	intrinsics/rename.c intrinsics/reshape_generic.c \
+	intrinsics/reshape_packed.c intrinsics/selected_int_kind.f90 \
+	intrinsics/selected_real_kind.f90 intrinsics/stat.c \
+	intrinsics/symlnk.c intrinsics/system_clock.c \
+	intrinsics/time.c intrinsics/transpose_generic.c \
+	intrinsics/umask.c intrinsics/unlink.c \
+	intrinsics/unpack_generic.c runtime/in_pack_generic.c \
+	runtime/in_unpack_generic.c io/io.h \
+	$(srcdir)/generated/_abs_c4.F90 \
+	$(srcdir)/generated/_abs_c8.F90 \
+	$(srcdir)/generated/_abs_c10.F90 \
+	$(srcdir)/generated/_abs_c16.F90 \
+	$(srcdir)/generated/_abs_i4.F90 \
+	$(srcdir)/generated/_abs_i8.F90 \
+	$(srcdir)/generated/_abs_i16.F90 \
+	$(srcdir)/generated/_abs_r4.F90 \
+	$(srcdir)/generated/_abs_r8.F90 \
+	$(srcdir)/generated/_abs_r10.F90 \
+	$(srcdir)/generated/_abs_r16.F90 \
+	$(srcdir)/generated/_aimag_c4.F90 \
+	$(srcdir)/generated/_aimag_c8.F90 \
+	$(srcdir)/generated/_aimag_c10.F90 \
+	$(srcdir)/generated/_aimag_c16.F90 \
+	$(srcdir)/generated/_exp_r4.F90 \
+	$(srcdir)/generated/_exp_r8.F90 \
+	$(srcdir)/generated/_exp_r10.F90 \
+	$(srcdir)/generated/_exp_r16.F90 \
+	$(srcdir)/generated/_exp_c4.F90 \
+	$(srcdir)/generated/_exp_c8.F90 \
+	$(srcdir)/generated/_exp_c10.F90 \
+	$(srcdir)/generated/_exp_c16.F90 \
+	$(srcdir)/generated/_log_r4.F90 \
+	$(srcdir)/generated/_log_r8.F90 \
+	$(srcdir)/generated/_log_r10.F90 \
+	$(srcdir)/generated/_log_r16.F90 \
+	$(srcdir)/generated/_log_c4.F90 \
+	$(srcdir)/generated/_log_c8.F90 \
+	$(srcdir)/generated/_log_c10.F90 \
+	$(srcdir)/generated/_log_c16.F90 \
+	$(srcdir)/generated/_log10_r4.F90 \
+	$(srcdir)/generated/_log10_r8.F90 \
+	$(srcdir)/generated/_log10_r10.F90 \
+	$(srcdir)/generated/_log10_r16.F90 \
+	$(srcdir)/generated/_sqrt_r4.F90 \
+	$(srcdir)/generated/_sqrt_r8.F90 \
+	$(srcdir)/generated/_sqrt_r10.F90 \
+	$(srcdir)/generated/_sqrt_r16.F90 \
+	$(srcdir)/generated/_sqrt_c4.F90 \
+	$(srcdir)/generated/_sqrt_c8.F90 \
+	$(srcdir)/generated/_sqrt_c10.F90 \
+	$(srcdir)/generated/_sqrt_c16.F90 \
+	$(srcdir)/generated/_asin_r4.F90 \
+	$(srcdir)/generated/_asin_r8.F90 \
+	$(srcdir)/generated/_asin_r10.F90 \
+	$(srcdir)/generated/_asin_r16.F90 \
+	$(srcdir)/generated/_asinh_r4.F90 \
+	$(srcdir)/generated/_asinh_r8.F90 \
+	$(srcdir)/generated/_asinh_r10.F90 \
+	$(srcdir)/generated/_asinh_r16.F90 \
+	$(srcdir)/generated/_acos_r4.F90 \
+	$(srcdir)/generated/_acos_r8.F90 \
+	$(srcdir)/generated/_acos_r10.F90 \
+	$(srcdir)/generated/_acos_r16.F90 \
+	$(srcdir)/generated/_acosh_r4.F90 \
+	$(srcdir)/generated/_acosh_r8.F90 \
+	$(srcdir)/generated/_acosh_r10.F90 \
+	$(srcdir)/generated/_acosh_r16.F90 \
+	$(srcdir)/generated/_atan_r4.F90 \
+	$(srcdir)/generated/_atan_r8.F90 \
+	$(srcdir)/generated/_atan_r10.F90 \
+	$(srcdir)/generated/_atan_r16.F90 \
+	$(srcdir)/generated/_atanh_r4.F90 \
+	$(srcdir)/generated/_atanh_r8.F90 \
+	$(srcdir)/generated/_atanh_r10.F90 \
+	$(srcdir)/generated/_atanh_r16.F90 \
+	$(srcdir)/generated/_sin_r4.F90 \
+	$(srcdir)/generated/_sin_r8.F90 \
+	$(srcdir)/generated/_sin_r10.F90 \
+	$(srcdir)/generated/_sin_r16.F90 \
+	$(srcdir)/generated/_sin_c4.F90 \
+	$(srcdir)/generated/_sin_c8.F90 \
+	$(srcdir)/generated/_sin_c10.F90 \
+	$(srcdir)/generated/_sin_c16.F90 \
+	$(srcdir)/generated/_cos_r4.F90 \
+	$(srcdir)/generated/_cos_r8.F90 \
+	$(srcdir)/generated/_cos_r10.F90 \
+	$(srcdir)/generated/_cos_r16.F90 \
+	$(srcdir)/generated/_cos_c4.F90 \
+	$(srcdir)/generated/_cos_c8.F90 \
+	$(srcdir)/generated/_cos_c10.F90 \
+	$(srcdir)/generated/_cos_c16.F90 \
+	$(srcdir)/generated/_tan_r4.F90 \
+	$(srcdir)/generated/_tan_r8.F90 \
+	$(srcdir)/generated/_tan_r10.F90 \
+	$(srcdir)/generated/_tan_r16.F90 \
+	$(srcdir)/generated/_sinh_r4.F90 \
+	$(srcdir)/generated/_sinh_r8.F90 \
+	$(srcdir)/generated/_sinh_r10.F90 \
+	$(srcdir)/generated/_sinh_r16.F90 \
+	$(srcdir)/generated/_cosh_r4.F90 \
+	$(srcdir)/generated/_cosh_r8.F90 \
+	$(srcdir)/generated/_cosh_r10.F90 \
+	$(srcdir)/generated/_cosh_r16.F90 \
+	$(srcdir)/generated/_tanh_r4.F90 \
+	$(srcdir)/generated/_tanh_r8.F90 \
+	$(srcdir)/generated/_tanh_r10.F90 \
+	$(srcdir)/generated/_tanh_r16.F90 \
+	$(srcdir)/generated/_conjg_c4.F90 \
+	$(srcdir)/generated/_conjg_c8.F90 \
+	$(srcdir)/generated/_conjg_c10.F90 \
+	$(srcdir)/generated/_conjg_c16.F90 \
+	$(srcdir)/generated/_aint_r4.F90 \
+	$(srcdir)/generated/_aint_r8.F90 \
+	$(srcdir)/generated/_aint_r10.F90 \
+	$(srcdir)/generated/_aint_r16.F90 \
+	$(srcdir)/generated/_anint_r4.F90 \
+	$(srcdir)/generated/_anint_r8.F90 \
+	$(srcdir)/generated/_anint_r10.F90 \
+	$(srcdir)/generated/_anint_r16.F90 \
+	$(srcdir)/generated/_sign_i4.F90 \
+	$(srcdir)/generated/_sign_i8.F90 \
+	$(srcdir)/generated/_sign_i16.F90 \
+	$(srcdir)/generated/_sign_r4.F90 \
+	$(srcdir)/generated/_sign_r8.F90 \
+	$(srcdir)/generated/_sign_r10.F90 \
+	$(srcdir)/generated/_sign_r16.F90 \
+	$(srcdir)/generated/_dim_i4.F90 \
+	$(srcdir)/generated/_dim_i8.F90 \
+	$(srcdir)/generated/_dim_i16.F90 \
+	$(srcdir)/generated/_dim_r4.F90 \
+	$(srcdir)/generated/_dim_r8.F90 \
+	$(srcdir)/generated/_dim_r10.F90 \
+	$(srcdir)/generated/_dim_r16.F90 \
+	$(srcdir)/generated/_atan2_r4.F90 \
+	$(srcdir)/generated/_atan2_r8.F90 \
+	$(srcdir)/generated/_atan2_r10.F90 \
+	$(srcdir)/generated/_atan2_r16.F90 \
+	$(srcdir)/generated/_mod_i4.F90 \
+	$(srcdir)/generated/_mod_i8.F90 \
+	$(srcdir)/generated/_mod_i16.F90 \
+	$(srcdir)/generated/_mod_r4.F90 \
+	$(srcdir)/generated/_mod_r8.F90 \
+	$(srcdir)/generated/_mod_r10.F90 \
+	$(srcdir)/generated/_mod_r16.F90 \
+	$(srcdir)/generated/misc_specifics.F90 intrinsics/dprod_r8.f90 \
+	intrinsics/f2c_specifics.F90 libgfortran_c.c $(filter-out \
+	%.c,$(prereq_SRC))
 am__objects_1 = backtrace.lo compile_options.lo environ.lo error.lo \
 	fpu.lo main.lo memory.lo pause.lo stop.lo string.lo select.lo
 am__objects_2 = all_l4.lo all_l8.lo all_l16.lo
@@ -230,9 +678,10 @@ am__objects_35 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 am__objects_36 = misc_specifics.lo
 am__objects_37 = $(am__objects_34) $(am__objects_35) $(am__objects_36) \
 	dprod_r8.lo f2c_specifics.lo
-am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_30) \
-	$(am__objects_31) $(am__objects_32) $(am__objects_33) \
-	$(am__objects_37)
+am__objects_38 = $(am__objects_1) $(am__objects_30) $(am__objects_31) \
+	$(am__objects_32) $(am__objects_33) $(am__objects_37)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_38)
+@onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
 am_libgfortranbegin_la_OBJECTS = fmain.lo
@@ -259,7 +708,7 @@ LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 FCCOMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LTFCCOMPILE = $(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 SOURCES = $(libgfortran_la_SOURCES) $(libgfortranbegin_la_SOURCES)
-DIST_SOURCES = $(libgfortran_la_SOURCES) \
+DIST_SOURCES = $(am__libgfortran_la_SOURCES_DIST) \
 	$(libgfortranbegin_la_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
@@ -387,6 +836,9 @@ mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
+onestep = @onestep@
+onestep_FALSE = @onestep_FALSE@
+onestep_TRUE = @onestep_TRUE@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 sbindir = @sbindir@
@@ -1017,11 +1469,25 @@ intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
 BUILT_SOURCES = $(gfor_built_src) $(gfor_built_specific_src) \
-    $(gfor_built_specific2_src) $(gfor_misc_specifics)
-
-libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
+	$(gfor_built_specific2_src) $(gfor_misc_specifics) \
+	$(am__append_1)
+prereq_SRC = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
 
+@onestep_FALSE@libgfortran_la_SOURCES = $(prereq_SRC)
+
+#libgfortran_f.o: $(filter %.f %.f90,$(prereq_SRC))
+#	$(FCCOMPILE) -c $^ -o $@ -combine
+
+#libgfortran_f.lo: $(filter %.f %.f90,$(prereq_SRC))
+#	$(LTFCCOMPILE) -c -o $@ $^ -combine
+# not currently used:
+#libgfortran_F.o: $(filter %.F %.F90,$(prereq_SRC))
+#	$(PPFCCOMPILE) -c $^ -o $@ -combine
+#
+#libgfortran_F.lo: 
+#	$(LTPPFCCOMPILE) -c -o $@ $^ -combine
+@onestep_TRUE@libgfortran_la_SOURCES = libgfortran_c.c $(filter-out %.c,$(prereq_SRC))
 I_M4_DEPS = m4/iparm.m4
 I_M4_DEPS0 = $(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1 = $(I_M4_DEPS) m4/ifunction.m4
@@ -1233,6 +1699,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iso_c_binding.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iso_c_generated_procs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kill.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgfortran_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list_read.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lock.Plo@am__quote@
@@ -4847,6 +5314,14 @@ $(patsubst %.c,%.lo,$(notdir $(i_matmull_c))): AM_CFLAGS += -funroll-loops
 # Add the -fallow-leading-underscore option when needed
 $(patsubst %.F90,%.lo,$(patsubst %.f90,%.lo,$(notdir $(gfor_specific_src)))): AM_FCFLAGS += -fallow-leading-underscore
 selected_real_kind.lo selected_int_kind.lo: AM_FCFLAGS += -fallow-leading-underscore
+@onestep_TRUE@libgfortran_c.c libgfortran_f.f90 libgfortran_F.F90:
+@onestep_TRUE@	echo > $@
+# overrides for libtool perusing the dummy sources
+@onestep_TRUE@libgfortran_c.o: $(filter %.c,$(prereq_SRC))
+@onestep_TRUE@	$(COMPILE) -c $^ -o $@ -combine
+
+@onestep_TRUE@libgfortran_c.lo: $(filter %.c,$(prereq_SRC))
+@onestep_TRUE@	$(LTCOMPILE) -c -o $@ $^ -combine
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '$(FCCOMPILE)' > $@ || rm $@
