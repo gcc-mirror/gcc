@@ -1,3 +1,9 @@
+2007-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	*trans-expr.c (gfc_trans_pointer_assignment): Convert array
+	descriptor for subref pointer assignements, rather than using
+	the loop info version.
+
 2007-09-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33037
