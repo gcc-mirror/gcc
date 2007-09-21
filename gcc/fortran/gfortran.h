@@ -510,6 +510,38 @@ enum gfc_isym_id
 typedef enum gfc_isym_id gfc_isym_id;
 
 
+typedef enum
+{
+  GFC_INIT_REAL_OFF = 0,
+  GFC_INIT_REAL_ZERO,
+  GFC_INIT_REAL_NAN,
+  GFC_INIT_REAL_INF,
+  GFC_INIT_REAL_NEG_INF
+}
+init_local_real;
+
+typedef enum
+{
+  GFC_INIT_LOGICAL_OFF = 0,
+  GFC_INIT_LOGICAL_FALSE,
+  GFC_INIT_LOGICAL_TRUE
+}
+init_local_logical;
+
+typedef enum
+{
+  GFC_INIT_CHARACTER_OFF = 0,
+  GFC_INIT_CHARACTER_ON
+}
+init_local_character;
+
+typedef enum
+{
+  GFC_INIT_INTEGER_OFF = 0,
+  GFC_INIT_INTEGER_ON
+}
+init_local_integer;
+
 /************************* Structures *****************************/
 
 /* Used for keeping things in balanced binary trees.  */
@@ -1823,6 +1855,13 @@ typedef struct
   int flag_sign_zero;
   int flag_module_private;
   int flag_recursive;
+  int flag_init_local_zero;
+  int flag_init_integer;
+  int flag_init_integer_value;
+  int flag_init_real;
+  int flag_init_logical;
+  int flag_init_character;
+  char flag_init_character_value;
 
   int fpe;
 

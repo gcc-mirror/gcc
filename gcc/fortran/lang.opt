@@ -196,6 +196,26 @@ fimplicit-none
 Fortran
 Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
+finit-character=
+Fortran RejectNegative Joined UInteger
+-finit-character=<n> Initialize local character variables to ASCII value n
+
+finit-integer=
+Fortran RejectNegative Joined
+-finit-integer=<n> Initialize local integer variables to n
+
+finit-local-zero
+Fortran
+Initialize local variables to zero (from g77)
+
+finit-logical=
+Fortran RejectNegative Joined
+-finit-logical=<true|false> Initialize local logical variables
+
+finit-real=
+Fortran RejectNegative Joined
+-finit-real=<zero|nan|inf|-inf> Initialize local real variables
+
 fmax-errors=
 Fortran RejectNegative Joined UInteger
 -fmax-errors=<n>	Maximum number of errors to report

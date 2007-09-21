@@ -156,7 +156,9 @@ and warnings}.
 -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
--fblas-matmul-limit=@var{n} -frecursive}
+-fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
+-finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan>} @gol
+-finit-logical=@var{<true|false>} -finit-character=@var{n}}
 @end table
 
 @menu
@@ -931,6 +933,33 @@ Allow indirect recursion by forcing all local arrays to be allocated
 on the stack. This flag cannot be used together with
 @option{-fmax-stack-var-size=} or @option{-fno-automatic}.
 
+@item -finit-local-zero
+@item -finit-integer=@var{n}
+@item -finit-real=@var{<zero|inf|-inf|nan>} 
+@item -finit-logical=@var{<true|false>}
+@item -finit-character=@var{n}
+@opindex @code{finit-local-zero}
+@opindex @code{finit-integer}
+@opindex @code{finit-real}
+@opindex @code{finit-logical}
+@opindex @code{finit-character}
+The @option{-finit-local-zero} option instructs the compiler to
+initialize local @code{INTEGER}, @code{REAL}, and @code{COMPLEX}
+variables to zero, @code{LOGICAL} variables to false, and
+@code{CHARACTER} variables to a string of null bytes.  Finer-grained
+initialization options are provided by the
+@option{-finit-integer=@var{n}},
+@option{-finit-real=@var{<zero|inf|-inf|nan>}} (which also initializes
+the real and imaginary parts of local @code{COMPLEX} variables),
+@option{-finit-logical=@var{<true|false>}}, and
+@option{-finit-character=@var{n}} (where @var{n} is an ASCII character
+value) options.  These options do not initialize components of derived
+type variables, nor do they initialize variables that appear in an
+@code{EQUIVALENCE} statement.  (This limitation may be removed in
+future releases).
+
+Note that the @option{-finit-real=nan} option initializes @code{REAL}
+and @code{COMPLEX} variables with a quiet NaN.
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,

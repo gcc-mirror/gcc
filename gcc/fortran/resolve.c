@@ -6605,25 +6605,14 @@ is_non_constant_shape_array (gfc_symbol *sym)
   return not_constant;
 }
 
-
-/* Assign the default initializer to a derived type variable or result.  */
-
+/* Given a symbol and an initialization expression, add code to initialize
+   the symbol to the function entry.  */
 static void
-apply_default_init (gfc_symbol *sym)
+build_init_assign (gfc_symbol *sym, gfc_expr *init)
 {
   gfc_expr *lval;
-  gfc_expr *init = NULL;
   gfc_code *init_st;
   gfc_namespace *ns = sym->ns;
-
-  if (sym->attr.flavor != FL_VARIABLE && !sym->attr.function)
-    return;
-
-  if (sym->ts.type == BT_DERIVED && sym->ts.derived)
-    init = gfc_default_initializer (&sym->ts);
-
-  if (init == NULL)
-    return;
 
   /* Search for the function namespace if this is a contained
      function without an explicit result.  */
@@ -6657,6 +6646,201 @@ apply_default_init (gfc_symbol *sym)
   init_st->expr2 = init;
 }
 
+/* Assign the default initializer to a derived type variable or result.  */
+
+static void
+apply_default_init (gfc_symbol *sym)
+{
+  gfc_expr *init = NULL;
+
+  if (sym->attr.flavor != FL_VARIABLE && !sym->attr.function)
+    return;
+
+  if (sym->ts.type == BT_DERIVED && sym->ts.derived)
+    init = gfc_default_initializer (&sym->ts);
+
+  if (init == NULL)
+    return;
+
+  build_init_assign (sym, init);
+}
+
+/* Build an initializer for a local integer, real, complex, logical, or
+   character variable, based on the command line flags finit-local-zero,
+   finit-integer=, finit-real=, finit-logical=, and finit-runtime.  Returns 
+   null if the symbol should not have a default initialization.  */
+static gfc_expr *
+build_default_init_expr (gfc_symbol *sym)
+{
+  int char_len;
+  gfc_expr *init_expr;
+  int i;
+  char *ch;
+
+  /* These symbols should never have a default initialization.  */
+  if ((sym->attr.dimension && !gfc_is_compile_time_shape (sym->as))
+      || sym->attr.external
+      || sym->attr.dummy
+      || sym->attr.pointer
+      || sym->attr.in_equivalence
+      || sym->attr.in_common
+      || sym->attr.data
+      || sym->module
+      || sym->attr.cray_pointee
+      || sym->attr.cray_pointer)
+    return NULL;
+
+  /* Now we'll try to build an initializer expression.  */
+  init_expr = gfc_get_expr ();
+  init_expr->expr_type = EXPR_CONSTANT;
+  init_expr->ts.type = sym->ts.type;
+  init_expr->ts.kind = sym->ts.kind;
+  init_expr->where = sym->declared_at;
+  
+  /* We will only initialize integers, reals, complex, logicals, and
+     characters, and only if the corresponding command-line flags
+     were set.  Otherwise, we free init_expr and return null.  */
+  switch (sym->ts.type)
+    {    
+    case BT_INTEGER:
+      if (gfc_option.flag_init_integer != GFC_INIT_INTEGER_OFF)
+	mpz_init_set_si (init_expr->value.integer, 
+			 gfc_option.flag_init_integer_value);
+      else
+	{
+	  gfc_free_expr (init_expr);
+	  init_expr = NULL;
+	}
+      break;
+
+    case BT_REAL:
+      mpfr_init (init_expr->value.real);
+      switch (gfc_option.flag_init_real)
+	{
+	case GFC_INIT_REAL_NAN:
+	  mpfr_set_nan (init_expr->value.real);
+	  break;
+
+	case GFC_INIT_REAL_INF:
+	  mpfr_set_inf (init_expr->value.real, 1);
+	  break;
+
+	case GFC_INIT_REAL_NEG_INF:
+	  mpfr_set_inf (init_expr->value.real, -1);
+	  break;
+
+	case GFC_INIT_REAL_ZERO:
+	  mpfr_set_ui (init_expr->value.real, 0.0, GFC_RND_MODE);
+	  break;
+
+	default:
+	  gfc_free_expr (init_expr);
+	  init_expr = NULL;
+	  break;
+	}
+      break;
+	  
+    case BT_COMPLEX:
+      mpfr_init (init_expr->value.complex.r);
+      mpfr_init (init_expr->value.complex.i);
+      switch (gfc_option.flag_init_real)
+	{
+	case GFC_INIT_REAL_NAN:
+	  mpfr_set_nan (init_expr->value.complex.r);
+	  mpfr_set_nan (init_expr->value.complex.i);
+	  break;
+
+	case GFC_INIT_REAL_INF:
+	  mpfr_set_inf (init_expr->value.complex.r, 1);
+	  mpfr_set_inf (init_expr->value.complex.i, 1);
+	  break;
+
+	case GFC_INIT_REAL_NEG_INF:
+	  mpfr_set_inf (init_expr->value.complex.r, -1);
+	  mpfr_set_inf (init_expr->value.complex.i, -1);
+	  break;
+
+	case GFC_INIT_REAL_ZERO:
+	  mpfr_set_ui (init_expr->value.complex.r, 0.0, GFC_RND_MODE);
+	  mpfr_set_ui (init_expr->value.complex.i, 0.0, GFC_RND_MODE);
+	  break;
+
+	default:
+	  gfc_free_expr (init_expr);
+	  init_expr = NULL;
+	  break;
+	}
+      break;
+	  
+    case BT_LOGICAL:
+      if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_FALSE)
+	init_expr->value.logical = 0;
+      else if (gfc_option.flag_init_logical == GFC_INIT_LOGICAL_TRUE)
+	init_expr->value.logical = 1;
+      else
+	{
+	  gfc_free_expr (init_expr);
+	  init_expr = NULL;
+	}
+      break;
+	  
+    case BT_CHARACTER:
+      /* For characters, the length must be constant in order to 
+	 create a default initializer.  */
+      if (gfc_option.flag_init_character == GFC_INIT_CHARACTER_ON
+	  && sym->ts.cl->length
+	  && sym->ts.cl->length->expr_type == EXPR_CONSTANT)
+	{
+	  char_len = mpz_get_si (sym->ts.cl->length->value.integer);
+	  init_expr->value.character.length = char_len;
+	  init_expr->value.character.string = gfc_getmem (char_len+1);
+	  ch = init_expr->value.character.string;
+	  for (i = 0; i < char_len; i++)
+	    *(ch++) = gfc_option.flag_init_character_value;
+	}
+      else
+	{
+	  gfc_free_expr (init_expr);
+	  init_expr = NULL;
+	}
+      break;
+	  
+    default:
+     gfc_free_expr (init_expr);
+     init_expr = NULL;
+    }
+  return init_expr;
+}
+
+/* Add an initialization expression to a local variable.  */
+static void
+apply_default_init_local (gfc_symbol *sym)
+{
+  gfc_expr *init = NULL;
+
+  /* The symbol should be a variable or a function return value.  */
+  if ((sym->attr.flavor != FL_VARIABLE && !sym->attr.function)
+      || (sym->attr.function && sym->result != sym))
+    return;
+
+  /* Try to build the initializer expression.  If we can't initialize
+     this symbol, then init will be NULL.  */
+  init = build_default_init_expr (sym);
+  if (init == NULL)
+    return;
+
+  /* For saved variables, we don't want to add an initializer at 
+     function entry, so we just add a static initializer.  */
+  if (sym->attr.save || sym->ns->save_all)
+    {
+      /* Don't clobber an existing initializer!  */
+      gcc_assert (sym->value == NULL);
+      sym->value = init;
+      return;
+    }
+
+  build_init_assign (sym, init);
+}
 
 /* Resolution of common features of flavors variable and procedure.  */
 
@@ -6770,6 +6954,9 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	  return FAILURE;
 	}
     }
+
+  if (sym->value == NULL && sym->attr.referenced)
+    apply_default_init_local (sym); /* Try to apply a default initialization.  */
 
   /* Can the symbol have an initializer?  */
   flag = 0;
