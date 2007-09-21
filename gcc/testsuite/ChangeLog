@@ -1,3 +1,14 @@
+2007-09-20  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/20441
+	* gfortran.dg/init_flag_1.f90: New.
+	* gfortran.dg/init_flag_2.f90: New.
+	* gfortran.dg/init_flag_3.f90: New.
+	* gfortran.dg/init_flag_4.f90: New.
+	* gfortran.dg/init_flag_5.f90: New.
+	* gfortran.dg/init_flag_6.f90: New.
+	* gfortran.dg/init_flag_7.f90: New.
+
 2007-09-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33460

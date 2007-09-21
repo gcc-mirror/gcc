@@ -1,3 +1,20 @@
+2007-09-20  Asher Langton  <langton2@llnl.gov>
+
+	PR fortran/20441
+        * gfortran.h : Add init_local_* enums and init_flag_* flags to
+	gfc_option_t.
+	* lang.opt: Add -finit-local-zero, -finit-real, -finit-integer,
+	-finit-character, and -finit-logical flags.
+	* invoke.texi: Document new options.
+	* resolve.c (build_init_assign): New function.
+	(apply_init_assign): Move part of function into build_init_assign.
+	(build_default_init_expr): Build local initializer (-finit-*).
+	(apply_default_init_local): Apply local initializer (-finit-*).
+	(resolve_fl_variable): Try to add local initializer (-finit-*).
+	* options.c (gfc_init_options, gfc_handle_option,
+	gfc_post_options): Handle -finit-local-zero, -finit-real,
+	-finit-integer, -finit-character, and -finit-logical flags.
+
 2007-09-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33221
