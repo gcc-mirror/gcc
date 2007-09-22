@@ -1,3 +1,11 @@
+2007-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/32325
+	* except.c (finish_eh_generation): Call commit_edge_insertions if
+	there are insns queued on the entry edge.
+	* config/alpha/alpha.c (alpha_gp_save_rtx): Insert the insns on
+	the entry edge.
+
 2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* doc/sourcebuild.texi (dg-add-c99-runtime-options): Document.
