@@ -1,14 +1,15 @@
-/* { dg-do compile } */
-/* { dg-mips-options "-Os -march=mips32 -mips16" } */
+/* { dg-do compile { target mips16_attribute } } */
+/* { dg-mips-options "-Os -march=mips32" } */
+/* { dg-add-options mips16_attribute } */
 
-short cksum16 (unsigned long n)
+MIPS16 short cksum16 (unsigned long n)
 {
   unsigned long l;
   l = validate (n, (n >> 16) + (n & 0xffff));
   return l;
 }
 
-signed char cksum8 (unsigned long n)
+MIPS16 signed char cksum8 (unsigned long n)
 {
   unsigned long l;
   l = validate (n, (n >> 8) + (n & 0xff));

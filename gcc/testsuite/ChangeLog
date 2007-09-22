@@ -1,3 +1,67 @@
+2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (add_options_for_mips16_attribute)
+	(check_effective_target_mips16_attribute): New functions.
+	* gcc.target/mips/mips.exp: Define MIPS16 and NOMIPS16 on the
+	command line.
+	(dg-mips-options) Remove -mno-mips16 handling.  Add options to
+	extra_test_flags.
+	* gcc.target/mips/asm-1.c (NOMIPS16): Delete.
+	* gcc.target/mips/atomic-memory-1.c (NOMIPS16): Likewise.
+	* gcc.target/mips/atomic-memory-2.c (NOMIPS16): Likewise.
+	* gcc.target/mips/branch-1.c (NOMIPS16): Likewise.
+	* gcc.target/mips/dspr2-MULT.c (NOMIPS16): Likewise.
+	* gcc.target/mips/dspr2-MULTU.c (NOMIPS16): Likewise.
+	* gcc.target/mips/fpcmp-1.c (NOMIPS16): Likewise.
+	* gcc.target/mips/fpcmp-2.c (NOMIPS16): Likewise.
+	* gcc.target/mips/ins-1.c (NOMIPS16): Likewise.
+	* gcc.target/mips/madd-3.c (NOMIPS16): Likewise.
+	* gcc.target/mips/maddu-3.c (NOMIPS16): Likewise.
+	* gcc.target/mips/mips32-dsp-run.c (NOMIPS16): Likewise.
+	* gcc.target/mips/mips32-dspr2-type.c (NOMIPS16): Likewise.
+	* gcc.target/mips/msub-3.c (NOMIPS16): Likewise.
+	* gcc.target/mips/msubu-3.c (NOMIPS16): Likewise.
+	* gcc.target/mips/near-far-3.c (NOMIPS16): Likewise.
+	* gcc.target/mips/near-far-4.c (NOMIPS16): Likewise.
+	* gcc.target/mips/neg-abs-1.c (NOMIPS16): Likewise.
+	* gcc.target/mips/smartmips-lwxs.c (NOMIPS16): Likewise.
+	* gcc.target/mips/smartmips-ror-1.c (NOMIPS16): Likewise.
+	* gcc.target/mips/smartmips-ror-2.c (NOMIPS16): Likewise.
+	* gcc.target/mips/smartmips-ror-3.c (NOMIPS16): Likewise.
+	* gcc.target/mips/smartmips-ror-4.c (NOMIPS16): Likewise.
+	* gcc.target/mips/pr26765.c: Use dg-mips-options instead of dg-options.
+	(NOMIPS16): Delete.
+	* gcc.target/mips/20020620-1.c: Use dg-mips-options instead
+	of dg-options.
+	* gcc.target/mips/call-saved-1.c: Remove -mips16 and -mno-abicalls
+	options.  Require { target mips16_attribute } and use dg-add-options
+	to add the associated options.
+	(foo): Use MIPS16.
+	* gcc.target/mips/call-saved-2.c: As for call-saved-1.c.
+	* gcc.target/mips/call-saved-3.c: Likewise.
+	* gcc.target/mips/code-readable-1.c: Require { target
+	mips16_attribute } and use dg-add-options to add the associated
+	options.  Remove trailing whitespace.
+	(NOMIPS16): Delete.
+	* gcc.target/mips/code-readable-2.c: Likewise.
+	* gcc.target/mips/code-readable-3.c: Likewise.
+	* gcc.target/mips/mips16-attributes-2.c: Likewise.
+	* gcc.target/mips/mips16e-extends.c: Remove -mips16 option.
+	Require { target mips16_attribute } and use dg-add-options to
+	add the associated options.
+	(cksum16, cksum8): Use MIPS16.
+	* gcc.target/mips/save-restore-1.c: Remove -mips16 option.
+	Require { target mips16_attribute } and use dg-add-options to
+	add the associated options.
+	(foo): Use MIPS16.
+	* gcc.target/mips/save-restore-2.c: Likewise.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+	* gcc.target/mips/save-restore-5.c: Likewise.  Also remove
+	-mno-abicalls.
+	* gcc.target/mips/mips-sched-madd.c: Remove -mno-mips16.
+	(foo): Use NOMIPS16.
+
 2007-09-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33337

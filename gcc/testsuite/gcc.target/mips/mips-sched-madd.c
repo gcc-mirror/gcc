@@ -1,9 +1,9 @@
 /* Test for case where another independent multiply insn may interfere
    with a macc chain.  */
 /* { dg-do compile } */
-/* { dg-mips-options "-Os -march=24kf -mno-mips16" } */
+/* { dg-mips-options "-Os -march=24kf" } */
 
-int foo (int a, int b, int c, int d, int e, int f, int g)
+NOMIPS16 int foo (int a, int b, int c, int d, int e, int f, int g)
 {
   int temp;
   int acc;

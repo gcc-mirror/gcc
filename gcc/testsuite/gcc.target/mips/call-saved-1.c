@@ -1,9 +1,12 @@
 /* Check that we save all call-saved GPRs in a MIPS16 __builtin_eh_return
    function.  */
-/* { dg-mips-options "-mips2 -mips16 -mno-abicalls" } */
+/* { dg-do compile { target mips16_attribute } } */
+/* { dg-mips-options "-mips2" } */
+/* { dg-add-options mips16_attribute } */
 
 void bar (void);
-void
+
+MIPS16 void
 foo (int x)
 {
   __builtin_unwind_init ();

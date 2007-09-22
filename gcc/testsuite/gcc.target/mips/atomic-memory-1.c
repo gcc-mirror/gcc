@@ -2,8 +2,6 @@
 extern void abort (void);
 extern void exit (int);
 
-#define NOMIPS16 __attribute__ ((nomips16))
-
 NOMIPS16 int main ()
 {
 #ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4

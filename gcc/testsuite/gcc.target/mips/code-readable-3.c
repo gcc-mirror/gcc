@@ -1,6 +1,6 @@
+/* { dg-do compile { target mips16_attribute } } */
 /* { dg-mips-options "-mcode-readable=no -mgp32" } */
-
-#define MIPS16 __attribute__ ((mips16))
+/* { dg-add-options mips16_attribute } */
 
 MIPS16 int
 foo (int i)

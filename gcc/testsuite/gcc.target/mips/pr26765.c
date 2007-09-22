@@ -2,11 +2,9 @@
    This testcase used to trigger an unrecognizable insn.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -w" } */
+/* { dg-mips-options "-O2 -w" } */
 
 __thread int *a = 0;
-
-#define NOMIPS16 __attribute__ ((nomips16))
 
 NOMIPS16 void foo (void)
 {

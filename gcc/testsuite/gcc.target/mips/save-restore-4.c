@@ -1,7 +1,11 @@
 /* Check that we can use the save instruction to save $16, $17 and $31.  */
-/* { dg-mips-options "-mips32r2 -mgp32 -mips16 -O2" } */
+/* { dg-do compile { target mips16_attribute } } */
+/* { dg-mips-options "-mips32r2 -mgp32 -O2" } */
+/* { dg-add-options mips16_attribute } */
+
 void bar (void);
-void
+
+MIPS16 void
 foo (void)
 {
   bar ();

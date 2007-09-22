@@ -2,8 +2,6 @@
 /* { dg-mips-options "-O2 -mips32 -mgp32" } */
 /* { dg-final { scan-assembler-times "\tmaddu\t" 3 } } */
 
-#define NOMIPS16 __attribute__ ((nomips16)) 
-
 typedef unsigned int ui;
 typedef unsigned long long ull;
 
