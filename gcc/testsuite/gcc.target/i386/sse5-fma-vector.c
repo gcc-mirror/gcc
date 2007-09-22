@@ -1,7 +1,8 @@
 /* Test that the compiler properly optimizes floating point multiply and add
    instructions vector into fmaddps on SSE5 systems.  */
 
-/* { dg-do compile { target x86_64-*-*} } */
+/* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -msse5 -mfused-madd -ftree-vectorize" } */
 
 extern void exit (int);

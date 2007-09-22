@@ -1,3 +1,20 @@
+2007-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse5-hadduX.c: Remove target selector.
+	* gcc.target/i386/sse5-haddX.c: Ditto.
+	* gcc.target/i386/sse5-hsubX.c: Ditto.
+	* gcc.target/i386/sse5-maccXX.c: Ditto.
+	* gcc.target/i386/sse5-msubXX.c: Ditto.
+	* gcc.target/i386/sse5-nmaccXX.c: Ditto.
+	* gcc.target/i386/sse5-nmsubXX.c: Ditto.
+	* gcc.target/i386/sse5-permpX.c: Ditto.
+	* gcc.target/i386/sse5-fma.c: Remove target selector. Require lp64
+	effective target.
+	* gcc.target/i386/sse5-fma-vector.c: Ditto.
+	* gcc.target/i386/sse5-ima-vector.c: Ditto.
+	* gcc.target/i386/sse5-pcmov.c: Ditto.
+	* gcc.target/i386/sse5-pcmov2.c: Ditto.
+
 2007-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33146
