@@ -1019,7 +1019,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
 	 && (TYPE_UNSIGNED (TREE_TYPE (EXP))			\
-	     == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
+	     == TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0)))) \
+	 && (POINTER_TYPE_P (TREE_TYPE (EXP))			\
+	     == POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
     (EXP) = TREE_OPERAND (EXP, 0)
 
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
