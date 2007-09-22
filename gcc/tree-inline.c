@@ -322,7 +322,7 @@ remap_type_1 (tree type, copy_body_data *id)
     {
       t = remap_type (t, id);
       TYPE_MAIN_VARIANT (new) = t;
-      TYPE_NEXT_VARIANT (new) = TYPE_MAIN_VARIANT (t);
+      TYPE_NEXT_VARIANT (new) = TYPE_NEXT_VARIANT (t);
       TYPE_NEXT_VARIANT (t) = new;
     }
   else
