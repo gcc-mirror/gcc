@@ -1,3 +1,8 @@
+2007-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils2.c (build_unary_op) <ADDR_EXPR> [INDIRECT_REF]: Propagate
+	the TYPE_REF_CAN_ALIAS_ALL flag to the result.
+
 2007-09-21  Olivier Hainque  <hainque@adacore.com>
 
 	* utils.c (type_for_nonaliased_component_p): Return false for

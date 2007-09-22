@@ -1078,6 +1078,25 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	     GCC wants pointer types for function addresses.  */
 	  if (!result_type)
 	    result_type = build_pointer_type (type);
+
+	  /* If the underlying object can alias everything, propagate the
+	     property since we are effectively retrieving the object.  */
+	  if (POINTER_TYPE_P (TREE_TYPE (result))
+	      && TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (result)))
+	    {
+	      if (TREE_CODE (result_type) == POINTER_TYPE
+		  && !TYPE_REF_CAN_ALIAS_ALL (result_type))
+		result_type
+		  = build_pointer_type_for_mode (TREE_TYPE (result_type),
+						 TYPE_MODE (result_type),
+						 true);
+	      else if (TREE_CODE (result_type) == REFERENCE_TYPE
+		       && !TYPE_REF_CAN_ALIAS_ALL (result_type))
+	        result_type
+		  = build_reference_type_for_mode (TREE_TYPE (result_type),
+						   TYPE_MODE (result_type),
+						   true);
+	    }
 	  break;
 
 	case NULL_EXPR:
