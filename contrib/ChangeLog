@@ -1,3 +1,8 @@
+2007-09-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* warn_summary (srcdirFilter): Add fixincludes, sim,
+	newlib and mpfr.
+
 2007-08-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc_update: Handle different URL paths and tags.
