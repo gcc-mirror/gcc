@@ -1,5 +1,17 @@
 2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* lib/target-supports.exp (check_cached_effective_target): New
+	procedure.
+	(check_no_compiler_messages, check_no_messages_and_pattern): Use it.
+	(check_effective_target_c99_runtime): New procedure.
+	* gcc.dg/builtins-20.c (test3f): Wrap cargf check in HAVE_C99_RUNTIME.
+	(test3l): Likewise cargl.
+	* gcc.dg/builtins-59.c: Require c99_runtime.
+	* gcc.dg/builtins-61.c: Likewise.
+	* gcc.dg/builtins-62.c: Likewise.
+
+2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* lib/target-supports.exp (add_options_for_c99_runtime): New procedure.
 	* lib/target-supports-dg.exp (dg-add-options): Likewise.
 	* gcc.dg/builtins-18.c: Use { dg-add-options c99_runtime } instead of

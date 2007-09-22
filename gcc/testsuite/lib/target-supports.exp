@@ -87,43 +87,41 @@ proc current_target_name { } {
 }
 
 # Implement an effective-target check for property PROP by invoking
-# the compiler and seeing if it prints any messages.  Assume that the
-# property holds if the compiler doesn't print anything.  The other
-# arguments are as for get_compiler_messages, starting with TYPE.
-proc check_no_compiler_messages {prop args} {
+# the Tcl command ARGS and seeing if it returns true.
+
+proc check_cached_effective_target { prop args } {
     global et_cache
 
     set target [current_target_name]
     if {![info exists et_cache($prop,target)]
 	|| $et_cache($prop,target) != $target} {
-	verbose "check_no_compiler_messages $prop: compiling source for $target" 2
+	verbose "check_cached_effective_target $prop: checking $target" 2
 	set et_cache($prop,target) $target
-	set et_cache($prop,value) \
-	    [string match "" [eval get_compiler_messages $prop 0 $args]]
+	set et_cache($prop,value) [uplevel eval $args]
     }
     set value $et_cache($prop,value)
-    verbose "check_no_compiler_messages $prop: returning $value for $target" 2
+    verbose "check_cached_effective_target $prop: returning $value for $target" 2
     return $value
+}
+
+# Implement an effective-target check for property PROP by invoking
+# the compiler and seeing if it prints any messages.  Assume that the
+# property holds if the compiler doesn't print anything.  The other
+# arguments are as for get_compiler_messages, starting with TYPE.
+proc check_no_compiler_messages {prop args} {
+    return [check_cached_effective_target $prop {
+	string match "" [eval get_compiler_messages $prop 0 $args]
+    }]
 }
 
 # Similar to check_no_compiler_messages, but also verify that the regular
 # expression PATTERN matches the compiler's output.
 proc check_no_messages_and_pattern {prop pattern args} {
-    global et_cache
-
-    set target [current_target_name]
-    if {![info exists et_cache($prop,target)]
-	|| $et_cache($prop,target) != $target} {
-	verbose "check_no_messages_and_pattern $prop: compiling source for $target" 2
-	set et_cache($prop,target) $target
+    return [check_cached_effective_target $prop {
 	set results [eval get_compiler_messages $prop 1 $args]
-	set et_cache($prop,value) \
-	    [expr [string match "" [lindex $results 0]] \
-		 && [regexp $pattern [lindex $results 1]]]
-    }
-    set value $et_cache($prop,value)
-    verbose "check_no_messages_and_pattern $prop: returning $value for $target" 2
-    return $value
+	expr { [string match "" [lindex $results 0]]
+	       && [regexp $pattern [lindex $results 1]] }
+    }]
 }
 
 ###############################
@@ -2573,4 +2571,23 @@ proc add_options_for_c99_runtime { flags } {
 	return "$flags -mmacosx-version-min=10.3"
     }
     return $flags
+}
+
+# Return 1 if the target provides a full C99 runtime.
+
+proc check_effective_target_c99_runtime { } {
+    return [check_cached_effective_target c99_runtime {
+	global srcdir
+
+	set file [open "$srcdir/gcc.dg/builtins-config.h"]
+	set contents [read $file]
+	close $file
+	append contents {
+	    #ifndef HAVE_C99_RUNTIME
+	    #error FOO
+	    #endif
+	}
+	string match "" [get_compiler_messages c99_runtime 0 assembly \
+			     $contents [add_options_for_c99_runtime ""]]
+    }]
 }
