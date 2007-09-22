@@ -1,3 +1,7 @@
+2007-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (remap_type_1): Correctly chain variants.
+
 2007-09-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33146
