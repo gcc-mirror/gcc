@@ -1,3 +1,10 @@
+2007-09-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33522
+	* trans-types.c (gfc_get_desc_dim_type): Mark artificial
+	variables with TREE_NO_WARNING.
+	(gfc_get_array_descriptor_base): Likewise.
+
 2007-09-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33337

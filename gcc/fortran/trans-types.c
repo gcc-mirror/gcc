@@ -1088,16 +1088,19 @@ gfc_get_desc_dim_type (void)
   decl = build_decl (FIELD_DECL,
 		     get_identifier ("stride"), gfc_array_index_type);
   DECL_CONTEXT (decl) = type;
+  TREE_NO_WARNING (decl) = 1;
   fieldlist = decl;
 
   decl = build_decl (FIELD_DECL,
 		     get_identifier ("lbound"), gfc_array_index_type);
   DECL_CONTEXT (decl) = type;
+  TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
   decl = build_decl (FIELD_DECL,
 		     get_identifier ("ubound"), gfc_array_index_type);
   DECL_CONTEXT (decl) = type;
+  TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
   /* Finish off the type.  */
@@ -1389,12 +1392,14 @@ gfc_get_array_descriptor_base (int dimen)
   decl = build_decl (FIELD_DECL, get_identifier ("offset"),
 		     gfc_array_index_type);
   DECL_CONTEXT (decl) = fat_type;
+  TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
   /* Add the dtype component.  */
   decl = build_decl (FIELD_DECL, get_identifier ("dtype"),
 		     gfc_array_index_type);
   DECL_CONTEXT (decl) = fat_type;
+  TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
   /* Build the array type for the stride and bound components.  */
@@ -1406,6 +1411,7 @@ gfc_get_array_descriptor_base (int dimen)
 
   decl = build_decl (FIELD_DECL, get_identifier ("dim"), arraytype);
   DECL_CONTEXT (decl) = fat_type;
+  TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
   /* Finish off the type.  */
