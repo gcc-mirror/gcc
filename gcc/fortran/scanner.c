@@ -417,18 +417,25 @@ skip_free_comments (void)
 		  if (c == 'o' || c == 'O')
 		    {
 		      if (((c = next_char ()) == 'm' || c == 'M')
-			  && ((c = next_char ()) == 'p' || c == 'P')
-			  && ((c = next_char ()) == ' ' || continue_flag))
+			  && ((c = next_char ()) == 'p' || c == 'P'))
 			{
-			  while (gfc_is_whitespace (c))
-			    c = next_char ();
-			  if (c != '\n' && c != '!')
+			  if ((c = next_char ()) == ' ' || continue_flag)
 			    {
-			      openmp_flag = 1;
-			      openmp_locus = old_loc;
-			      gfc_current_locus = start;
-			      return false;
+			      while (gfc_is_whitespace (c))
+				c = next_char ();
+			      if (c != '\n' && c != '!')
+				{
+				  openmp_flag = 1;
+				  openmp_locus = old_loc;
+				  gfc_current_locus = start;
+				  return false;
+				}
 			    }
+			  else
+			    gfc_warning_now ("!$OMP at %C starts a commented "
+					     "line as it neither is followed "
+					     "by a space nor is a "
+					     "continuation line");
 			}
 		      gfc_current_locus = old_loc;
 		      next_char ();

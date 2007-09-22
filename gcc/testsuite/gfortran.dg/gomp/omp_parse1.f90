@@ -17,7 +17,7 @@ call bar
 ! Non-continuation !$omp must be followed by space, and my reading
 ! doesn't seem to allow tab there.  So such lines should be completely
 ! ignored.
-!$omp	strange
+!$omp	strange  !  { dg-warning "starts a commented line" }
 end
 
 ! { dg-final { scan-tree-dump-times "pragma omp parallel" 3 "omplower" } }
