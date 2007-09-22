@@ -983,6 +983,10 @@ The supported values of @var{feature} are:
 @table @code
 @item c99_runtime
 The target's C99 runtime (both headers and libraries).
+
+@item mips16_attribute
+@code{mips16} function attributes.  Only MIPS targets support this feature,
+and only then in certain modes.
 @end table
 
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}

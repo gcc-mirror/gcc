@@ -625,6 +625,23 @@ proc check_effective_target_mips64 { } {
     }]
 }
 
+# Add the options needed for MIPS16 function attributes.  At the moment,
+# we don't support MIPS16 PIC.
+
+proc add_options_for_mips16_attribute { flags } {
+    return "$flags -mno-abicalls -fno-pic"
+}
+
+# Return true if we can force a mode that allows MIPS16 code generation.
+
+proc check_effective_target_mips16_attribute { } {
+    return [check_no_compiler_messages mips16_attribute assembly {
+	#if __PIC__
+	#error FOO
+	#endif
+    } [add_options_for_mips16_attribute ""]]
+}
+
 # Return 1 if the current multilib does not generate PIC by default.
 
 proc check_effective_target_nonpic { } {

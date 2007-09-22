@@ -122,9 +122,6 @@ proc is_gp32_flag {flag} {
 #	if the other flags don't do so.  Skip the test if the multilib
 #	flags force a 32-bit ABI or a 32-bit architecture.
 #
-#    -mno-mips16
-#	Skip the test for MIPS16 targets.
-#
 #    -march=*
 #    -mips*
 #	Select the target architecture.  Skip the test for MIPS16 targets
@@ -194,11 +191,7 @@ proc dg-mips-options {args} {
     }
     # Handle the other options.
     foreach flag $flags {
-	if {$flag == "-mno-mips16"} {
-	    if {$mips_mips16} {
-		set matches 0
-	    }
-	} elseif {$flag == "-mfp64"} {
+	if {$flag == "-mfp64"} {
 	    if {$mips_isa < 33 || $mips_float != "hard"} {
 		set matches 0
 	    }
@@ -230,7 +223,7 @@ proc dg-mips-options {args} {
 	}
     }
     if {$matches} {
-	set extra_tool_flags $flags
+	append extra_tool_flags " " $flags
     } else {
 	set do_what [list [lindex $do_what 0] "N" "P"]
     }
@@ -239,5 +232,6 @@ proc dg-mips-options {args} {
 setup_mips_tests
 
 dg-init
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" ""
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] "" \
+    "-DMIPS16=__attribute__((mips16)) -DNOMIPS16=__attribute__((nomips16))"
 dg-finish

@@ -1,6 +1,9 @@
 /* Check that we can use the save instruction to save spilled arguments.  */
-/* { dg-mips-options "-mips32r2 -mgp32 -mips16 -O2" } */
-void
+/* { dg-do compile { target mips16_attribute } } */
+/* { dg-mips-options "-mips32r2 -mgp32 -O2" } */
+/* { dg-add-options mips16_attribute } */
+
+MIPS16 void
 foo (int *a, int b, int c)
 {
   asm volatile ("" ::: "$2", "$3", "$4", "$5", "$6", "$7", "$8",

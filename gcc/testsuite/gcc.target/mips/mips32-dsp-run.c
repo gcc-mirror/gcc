@@ -2,8 +2,6 @@
 /* { dg-do run { target mipsisa32r2*-*-* } } */
 /* { dg-mips-options "-march=mips32r2 -mdsp -O2" } */
 
-#define NOMIPS16 __attribute__ ((nomips16)) 
-
 #include <stdlib.h>
 #include <stdio.h>
 

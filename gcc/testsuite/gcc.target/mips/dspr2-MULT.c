@@ -7,8 +7,6 @@
 /* { dg-final { scan-assembler "ac2" } } */
 /* { dg-final { scan-assembler "ac3" } } */
 
-#define NOMIPS16 __attribute__ ((nomips16)) 
-
 typedef long long a64;
 a64 a[4];
 int b[4], c[4];

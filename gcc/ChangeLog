@@ -1,3 +1,7 @@
+2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* doc/sourcebuild.texi: Document dg-add-options mips16_attribute.
+
 2007-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.c (remap_type_1): Correctly chain variants.

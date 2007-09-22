@@ -1,10 +1,13 @@
 /* Check that we save all call-saved GPRs in a MIPS16 __builtin_setjmp
    function.  */
-/* { dg-mips-options "-mips2 -mips16 -mno-abicalls -O2" } */
+/* { dg-do compile { target mips16_attribute } } */
+/* { dg-mips-options "-mips2 -O2" } */
+/* { dg-add-options mips16_attribute } */
 
 void bar (void);
 extern int buf[];
-void
+
+MIPS16 void
 foo (int x)
 {
   if (__builtin_setjmp (buf) == 0)

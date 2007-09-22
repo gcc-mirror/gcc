@@ -3,8 +3,6 @@
 /* { dg-do assemble } */
 /* { dg-mips-options "-O" } */
 
-#define NOMIPS16 __attribute__ ((nomips16)) 
-
 NOMIPS16 int foo (int n)
 {
   register int k asm ("$16") = n;

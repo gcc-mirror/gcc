@@ -2,8 +2,6 @@
 /* { dg-mips-options "-O2 -mips32 -mgp32" } */
 /* { dg-final { scan-assembler-times "\tmadd\t" 3 } } */
 
-#define NOMIPS16 __attribute__ ((nomips16)) 
-
 NOMIPS16 long long
 f1 (int x, int y, long long z)
 {
