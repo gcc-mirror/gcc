@@ -1,7 +1,8 @@
 /* Test that the compiler properly optimizes vector 32-bit integer point
    multiply and add instructions vector into pmacsdd on SSE5 systems.  */
 
-/* { dg-do compile { target x86_64-*-*} } */
+/* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -msse5 -ftree-vectorize" } */
 
 extern void exit (int);
