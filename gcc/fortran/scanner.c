@@ -1341,7 +1341,12 @@ preprocessor_line (char *c)
 	    gfc_free (filename);
 	  return;
 	}
+
       current_file = current_file->up;
+#ifdef USE_MAPPED_LOCATION
+      linemap_add (line_table, LC_RENAME, false, current_file->filename,
+		   current_file->line);
+#endif
     }
 
   /* The name of the file can be a temporary file produced by
@@ -1620,10 +1625,12 @@ gfc_new_file (void)
 
 #if 0 /* Debugging aid.  */
   for (; line_head; line_head = line_head->next)
-    gfc_status ("%s:%3d %s\n", line_head->file->filename, 
+    gfc_status ("%s:%3d %s\n",
 #ifdef USE_MAPPED_LOCATION
+		LOCATION_FILE (line_head->location),
 		LOCATION_LINE (line_head->location),
 #else
+		line_head->file->filename, 
 		line_head->linenum,
 #endif
 		line_head->line);
