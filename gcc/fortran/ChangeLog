@@ -1,3 +1,15 @@
+2007-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33337
+	PR fortran/33376
+	* trans-decl.c (gfc_create_module_variable): Output
+	derived type parameters.
+	* arith.c (gfc_parentheses): Return the argument if
+	it is a constant expression.
+	* primary.c (gfc_match_rvalue): Remove the clearing of
+	the module name and the use_assoc attribute for derived
+	type parameter expressions.
+
 2007-09-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33502

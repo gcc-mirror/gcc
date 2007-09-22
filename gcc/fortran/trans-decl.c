@@ -2764,9 +2764,11 @@ gfc_create_module_variable (gfc_symbol * sym)
       && sym->ts.type == BT_DERIVED)
     sym->backend_decl = gfc_typenode_for_spec (&(sym->ts));
 
-  /* Only output variables and array valued parameters.  */
+  /* Only output variables and array valued, or derived type,
+     parameters.  */
   if (sym->attr.flavor != FL_VARIABLE
-      && (sym->attr.flavor != FL_PARAMETER || sym->attr.dimension == 0))
+	&& !(sym->attr.flavor == FL_PARAMETER
+	       && (sym->attr.dimension || sym->ts.type == BT_DERIVED)))
     return;
 
   /* Don't generate variables from other modules. Variables from

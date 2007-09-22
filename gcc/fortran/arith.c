@@ -1793,6 +1793,9 @@ eval_intrinsic_f3 (gfc_intrinsic_op operator,
 gfc_expr *
 gfc_parentheses (gfc_expr *op)
 {
+  if (gfc_is_constant_expr (op))
+    return op;
+
   return eval_intrinsic_f2 (INTRINSIC_PARENTHESES, gfc_arith_identity,
 			    op, NULL);
 }
