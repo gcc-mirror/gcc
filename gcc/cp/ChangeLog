@@ -1,3 +1,11 @@
+2007-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33496
+	* pt.c (tsubst_copy) <case SIZEOF_EXPR>: Handle error_mark_node
+	returned from tsubst_pack_expansion.
+	(tsubst_copy_and_build) <case SIZEOF_EXPR>: Likewise.
+	(tsubst_copy_and_build) <case CONSTRUCTOR>: Likewise.
+
 2007-09-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33460
