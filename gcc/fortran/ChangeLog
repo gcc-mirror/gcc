@@ -1,3 +1,10 @@
+2007-09-23  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33528
+	* scanner.c (preprocessor_line): Call linemap_add when exiting
+	a file.
+	(gfc_new_file): Adjust debug code for USE_MAPPED_LOCATION.
+
 2007-09-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33522
