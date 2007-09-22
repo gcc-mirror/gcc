@@ -4,8 +4,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-fsingle-precision-constant" } */
-/* { dg-options "-fsingle-precision-constant -mmacosx-version-min=10.3" { target powerpc-*-darwin* } } */
-/* { dg-options "-fsingle-precision-constant -std=c99" { target *-*-solaris2* } } */
+/* { dg-add-options c99_runtime } */
 
 #include <math.h>
 #include <float.h>

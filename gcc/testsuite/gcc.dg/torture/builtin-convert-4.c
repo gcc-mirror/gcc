@@ -7,8 +7,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-ftrapping-math -fdump-tree-original" } */
-/* { dg-options "-ftrapping-math -fdump-tree-original -mmacosx-version-min=10.3" { target powerpc-*-darwin* } } */
-/* { dg-options "-ftrapping-math -fdump-tree-original -std=c99" { target *-*-solaris2* } } */
+/* { dg-add-options c99_runtime } */
 
 #include "../builtins-config.h"
 
