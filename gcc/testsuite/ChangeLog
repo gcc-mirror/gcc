@@ -1,3 +1,8 @@
+2007-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33146
+	* gcc.c-torture/compile/pr33146.c: New testcase.
+
 2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* lib/target-supports.exp (check_cached_effective_target): New

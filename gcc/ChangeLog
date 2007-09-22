@@ -1,3 +1,11 @@
+2007-09-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33146
+	* fold-const.c (fold_binary): Use the original tree
+	for negating.
+	* tree.h (STRIP_SIGN_NOPS): Converting from or to pointer
+	also changes "sign".
+
 2007-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/32325
