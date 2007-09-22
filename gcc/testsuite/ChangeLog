@@ -1,3 +1,10 @@
+2007-09-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33445
+	* gfortran.dg/gomp/free-2.f90: New.
+	* gfortran.dg/gomp/appendix-a/a.31.1.f90: Add missing &.
+	* gfortran.dg/gomp/omp_parse1.f90: Add dg-warning.
+
 2007-09-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/sse5-hadduX.c: Remove target selector.

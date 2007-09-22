@@ -3,7 +3,7 @@
       SUBROUTINE A31_1(A, B, X, Y, N)
         INTEGER N
         REAL X(*), Y(*), A, B
-!$OMP PARALLEL DO PRIVATE(I) SHARED(X, N) REDUCTION(+:A)
+!$OMP PARALLEL DO PRIVATE(I) SHARED(X, N) REDUCTION(+:A) &
 !$OMP& REDUCTION(MIN:B)
         DO I=1,N
            A = A + X(I)

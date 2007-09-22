@@ -1,3 +1,9 @@
+2007-09-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33445
+	* scanner.c (skip_free_comments): Warn if !$OMP& is used
+	if no OpenMP directive is to be continued.
+
 2007-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	*trans-expr.c (gfc_trans_pointer_assignment): Convert array
