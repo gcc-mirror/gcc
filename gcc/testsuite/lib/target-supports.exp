@@ -1271,6 +1271,14 @@ proc check_effective_target_large_long_double { } {
     }]
 }
 
+# Return 1 if the target supports compiling fixed-point,
+# 0 otherwise.
+
+proc check_effective_target_fixed_point { } {
+    return [check_no_compiler_messages fixed_point object {
+        _Sat _Fract x; _Sat _Accum y;
+    }]
+}
 
 # Return 1 if the target supports compiling decimal floating point,
 # 0 otherwise.
