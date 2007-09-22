@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fdump-tree-gimple" } */
+/* { dg-require-effective-target c99_runtime } */
 
 double test (double x)
 {
