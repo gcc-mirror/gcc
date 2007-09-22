@@ -1,3 +1,19 @@
+2007-09-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33502
+	* scanner.c (gfc_advance_line): Call debug_hooks->start_source_file
+	and debug_hooks->end_source_file when entering and exiting
+	included files.
+	(gfc_define_undef_line): New function.
+	(load_file): Ignore #define and #undef preprocessor lines
+	while reading source files.
+	* parse.c (next_statement): Handle #define and #undef
+	preprocessor lines.
+	(gfc_parse_file): Call debug_hooks->start_source_file and
+	debug_hooks->end_source_file for the main source file if
+	requested by the debug format.
+	* gfortran.h (gfc_define_undef_line): Add prototype.
+
 2007-09-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33445
