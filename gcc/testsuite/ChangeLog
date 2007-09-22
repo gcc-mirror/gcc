@@ -1,3 +1,11 @@
+2007-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33337
+	* gfortran.dg/derived_comp_array_ref_3.f90: New test.
+
+	PR fortran/33376
+	* gfortran.dg/derived_comp_array_ref_4.f90: New test.
+
 2007-09-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33445

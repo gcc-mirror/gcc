@@ -2148,11 +2148,12 @@ gfc_match_rvalue (gfc_expr **result)
       if (sym->ts.is_c_interop || sym->ts.is_iso_c)
 	break;
 
-      /* Variable array references to derived type parameters cause
-	 all sorts of headaches in simplification.  Make them variable
-	 and scrub any module identity because they do not appear to
-	 be referencable from the module.  */  
-      if (sym->value && sym->ts.type == BT_DERIVED && e->ref)
+      /* Variable array references to use associated derived type
+	 parameters cause all sorts of headaches in simplification.
+	 For this reason, we write the parameter to the module and
+	 treat them as variable references.  */  
+      if (sym->value && sym->ts.type == BT_DERIVED
+	    && sym->attr.use_assoc && e->ref)
 	{
 	  for (ref = e->ref; ref; ref = ref->next)
 	    if (ref->type == REF_ARRAY)
@@ -2168,8 +2169,6 @@ gfc_match_rvalue (gfc_expr **result)
 	  e->expr_type = EXPR_VARIABLE;
 	  e->symtree = symtree;
 	  e->ref = ref;
-	  sym->attr.use_assoc = 0;
-	  sym->module = NULL;
 	}
 
       break;
