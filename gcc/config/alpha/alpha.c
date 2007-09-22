@@ -4780,7 +4780,14 @@ alpha_gp_save_rtx (void)
 
       seq = get_insns ();
       end_sequence ();
-      emit_insn_at_entry (seq);
+
+      /* We used to simply emit the sequence after entry_of_function.
+	 However this breaks the CFG if the first instruction in the
+	 first block is not the NOTE_INSN_BASIC_BLOCK, for example a
+	 label.  Emit the sequence properly on the edge.  We are only
+	 invoked from dw2_build_landing_pads and finish_eh_generation
+	 will call commit_edge_insertions thanks to a kludge.  */
+      insert_insn_on_edge (seq, single_succ_edge (ENTRY_BLOCK_PTR));
 
       cfun->machine->gp_save_rtx = m;
     }
