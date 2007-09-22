@@ -1,3 +1,7 @@
+2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* doc/sourcebuild.texi (dg-add-c99-runtime-options): Document.
+
 2007-09-19  Michael Meissner  <michael.meissner@amd.com>
 
 	* gcc/config/i386/i386.c: Delete trailing whitespace.

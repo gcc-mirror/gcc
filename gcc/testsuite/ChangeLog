@@ -1,3 +1,19 @@
+2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (add_options_for_c99_runtime): New procedure.
+	* lib/target-supports-dg.exp (dg-add-options): Likewise.
+	* gcc.dg/builtins-18.c: Use { dg-add-options c99_runtime } instead of
+	target-specific dg-options.
+	* gcc.dg/builtins-20.c: Likewise.
+	* gcc.dg/builtins-53.c: Likewise.
+	* gcc.dg/builtins-55.c: Likewise.
+	* gcc.dg/single-precision-constant.c: Likewise.
+	* gcc.dg/torture/builtin-convert-1.c: Likewise.
+	* gcc.dg/torture/builtin-convert-2.c: Likewise.
+	* gcc.dg/torture/builtin-convert-3.c: Likewise.
+	* gcc.dg/torture/builtin-convert-4.c: Likewise.
+	* gcc.dg/torture/builtin-power-1.c: Likewise.
+
 2007-09-21  Chao-ying Fu  <fu@mips.com>
 
 	* lib/target-supports.exp (check_effective_target_fixed_point): New to

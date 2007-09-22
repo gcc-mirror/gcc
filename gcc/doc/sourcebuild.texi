@@ -973,6 +973,18 @@ This DejaGnu directive provides a list of compiler options, to be used
 if the target system matches @var{selector}, that replace the default
 options used for this set of tests.
 
+@item @{ dg-add-options @var{feature} ... @}
+Add any compiler options that are needed to access certain features.
+This directive does nothing on targets that enable the features by
+default, or that don't provide them at all.  It must come after
+all @code{dg-options} directives.
+
+The supported values of @var{feature} are:
+@table @code
+@item c99_runtime
+The target's C99 runtime (both headers and libraries).
+@end table
+
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} @{ @var{include-opts} @} @{ @var{exclude-opts} @} @}
 Skip the test if the test system is included in @var{selector} and if
 each of the options in @var{include-opts} is in the set of options with

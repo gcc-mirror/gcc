@@ -2562,3 +2562,15 @@ proc check_effective_target_wchar { } {
 	#include <wchar.h>
     }]
 }
+
+# Add to FLAGS all the target-specific flags needed to access the c99 runtime.
+
+proc add_options_for_c99_runtime { flags } {
+    if { [istarget *-*-solaris2*] } {
+	return "$flags -std=c99"
+    }
+    if { [istarget powerpc-*-darwin*] } {
+	return "$flags -mmacosx-version-min=10.3"
+    }
+    return $flags
+}
