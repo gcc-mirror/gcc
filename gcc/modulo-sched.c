@@ -286,8 +286,7 @@ static rtx
 doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_doloop_end
-  rtx reg, condition, insn;
-  bool found = false;
+  rtx reg, condition, insn, first_insn_not_to_check;
 
   if (!JUMP_P (tail))
     return NULL_RTX;
@@ -309,25 +308,23 @@ doloop_register_get (rtx head ATTRIBUTE_UNUSED, rtx tail ATTRIBUTE_UNUSED)
      until the decrement.  We assume the control part consists of
      either a single (parallel) branch-on-count or a (non-parallel)
      branch immediately preceded by a single (decrement) insn.  */
-  for (insn = head; insn != PREV_INSN (tail); insn = NEXT_INSN (insn))
-    if ((found = reg_mentioned_p (reg, insn)) == true)
-      break;
-  if (found)
-    {
-      if (dump_file)
-        fprintf (dump_file, "SMS count_reg found outside control\n");
+  first_insn_not_to_check = (GET_CODE (PATTERN (tail)) == PARALLEL ? tail
+                             : PREV_INSN (tail));
 
-      return NULL_RTX;
-    }
-  /* One last check in case the do-loop pattern is parallel.  */
-  if (GET_CODE (PATTERN (tail)) == PARALLEL)
-    if (reg_mentioned_p (reg, PREV_INSN (tail)))
+  for (insn = head; insn != first_insn_not_to_check; insn = NEXT_INSN (insn))
+    if (reg_mentioned_p (reg, insn))
       {
         if (dump_file)
-          fprintf (dump_file, "SMS count_reg found outside control\n");
+        {
+          fprintf (dump_file, "SMS count_reg found ");
+          print_rtl_single (dump_file, reg);
+          fprintf (dump_file, " outside control in insn:\n");
+          print_rtl_single (dump_file, insn);
+        }
 
         return NULL_RTX;
       }
+
   return reg;
 #else
   return NULL_RTX;
