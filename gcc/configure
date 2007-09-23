@@ -7654,7 +7654,7 @@ else
   echo "configure:7654: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
-    4.[4-9]*)
+    4.[4-9]*|4.[1-9][0-9]*|[5-9]*|[1-9][0-9]*)
             gcc_cv_prog_makeinfo_modern=yes;;
     *)      gcc_cv_prog_makeinfo_modern=no;;
   esac
