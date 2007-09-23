@@ -30,7 +30,6 @@ load_lib gcc-dg.exp
 #
 #    $mips_isa:		 the ISA level specified by __mips
 #    $mips_arch:	 the architecture specified by _MIPS_ARCH
-#    $mips_mips16:	 true if MIPS16 mode is selected
 #    $mips_gp64:	 true if 64-bit output is selected
 #    $mips_fp64:	 true if 64-bit FPRs are selected
 #    $mips_float:	 "hard" or "soft"
@@ -44,7 +43,6 @@ load_lib gcc-dg.exp
 proc setup_mips_tests {} {
     global mips_isa
     global mips_arch
-    global mips_mips16
     global mips_gp64
     global mips_fp64
     global mips_float
@@ -64,9 +62,6 @@ proc setup_mips_tests {} {
     puts $f {
 	int isa = __mips;
 	const char *arch = _MIPS_ARCH;
-	#ifdef __mips16
-	int mips16 = 1;
-	#endif
 	#ifdef __mips64
 	int gp64 = 1;
 	#endif
@@ -85,12 +80,11 @@ proc setup_mips_tests {} {
 
     regexp {isa = ([^;]*)} $output dummy mips_isa
     regexp {arch = "([^"]*)} $output dummy mips_arch
-    set mips_mips16 [regexp {mips16 = 1} $output]
     set mips_gp64 [regexp {gp64 = 1} $output]
     set mips_fp64 [regexp {fp64 = 1} $output]
     regexp {float = "([^"]*)} $output dummy mips_float
 
-    set mips_forced_isa [regexp -- {(-mips|-march)} $compiler_flags]
+    set mips_forced_isa [regexp -- {(-mips[1-5][[:>:]]|-mips32*|-mips64*|-march)} $compiler_flags]
     set mips_forced_abi [regexp -- {(-mgp|-mfp|-mabi)} $compiler_flags]
     set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
     set mips_forced_le [regexp -- {-(EL|mel)[[:>:]]} $compiler_flags]
@@ -124,8 +118,8 @@ proc is_gp32_flag {flag} {
 #
 #    -march=*
 #    -mips*
-#	Select the target architecture.  Skip the test for MIPS16 targets
-#	or if the multilib flags force a different architecture.
+#	Select the target architecture.  Skip the test if the multilib
+#	flags force a different architecture.
 #
 #    -msoft-float
 #    -mhard-float
@@ -153,7 +147,6 @@ proc dg-mips-options {args} {
 
     global mips_isa
     global mips_arch
-    global mips_mips16
     global mips_gp64
     global mips_fp64
     global mips_float
@@ -196,11 +189,11 @@ proc dg-mips-options {args} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-march=(.*)} $flag dummy arch]} {
-	    if {$mips_mips16 || ($arch != $mips_arch && $mips_forced_isa)} {
+	    if {$arch != $mips_arch && $mips_forced_isa} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-mips(.*)} $flag dummy isa] && $isa != 16} {
-	    if {$mips_mips16 || ($isa != $mips_isa && $mips_forced_isa)} {
+	    if {$isa != $mips_isa && $mips_forced_isa} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-m(hard|soft)-float} $flag dummy float]} {

@@ -83,7 +83,7 @@ long _Fract non_sat_test13 (long _Fract a, long _Fract b)
 }
 
 unsigned short _Fract non_sat_test14 (unsigned short _Fract a,
-				     unsigned short _Fract b)
+				      unsigned short _Fract b)
 {
   return a - b;
 }
@@ -94,7 +94,7 @@ unsigned _Fract non_sat_test15 (unsigned _Fract a, unsigned _Fract b)
 }
 
 unsigned long _Fract non_sat_test16 (unsigned long _Fract a,
-				    unsigned long _Fract b)
+				     unsigned long _Fract b)
 {
   return a - b;
 }
@@ -110,7 +110,7 @@ _Accum non_sat_test18 (_Accum a, _Accum b)
 }
 
 unsigned short _Accum non_sat_test19 (unsigned short _Accum a,
-				     unsigned short _Accum b)
+				      unsigned short _Accum b)
 {
   return a - b;
 }
@@ -120,96 +120,98 @@ unsigned _Accum non_sat_test20 (unsigned _Accum a, unsigned _Accum b)
   return a - b;
 }
 
-_Sat unsigned short _Fract test1 (_Sat unsigned short _Fract a,
-				  _Sat unsigned short _Fract b)
+NOMIPS16 _Sat unsigned short _Fract test1 (_Sat unsigned short _Fract a,
+					   _Sat unsigned short _Fract b)
 {
   return a + b;
 }
 
-_Sat unsigned _Fract test2 (_Sat unsigned  _Fract a, _Sat unsigned _Fract b)
+NOMIPS16 _Sat unsigned _Fract test2 (_Sat unsigned  _Fract a,
+				     _Sat unsigned _Fract b)
 {
   return a + b;
 }
 
-_Sat unsigned short _Accum test3 (_Sat unsigned short _Accum a,
-				  _Sat unsigned short _Accum b)
+NOMIPS16 _Sat unsigned short _Accum test3 (_Sat unsigned short _Accum a,
+					   _Sat unsigned short _Accum b)
 {
   return a + b;
 }
 
-_Sat _Fract test4 (_Sat _Fract a, _Sat _Fract b)
+NOMIPS16 _Sat _Fract test4 (_Sat _Fract a, _Sat _Fract b)
 {
   return a + b;
 }
 
-_Sat long _Fract test5 (_Sat long _Fract a, _Sat long _Fract b)
+NOMIPS16 _Sat long _Fract test5 (_Sat long _Fract a, _Sat long _Fract b)
 {
   return a + b;
 }
 
-_Sat short _Accum test6 (_Sat short _Accum a, _Sat short _Accum b)
+NOMIPS16 _Sat short _Accum test6 (_Sat short _Accum a, _Sat short _Accum b)
 {
   return a + b;
 }
 
-_Sat _Accum test7 (_Sat _Accum a, _Sat _Accum b)
+NOMIPS16 _Sat _Accum test7 (_Sat _Accum a, _Sat _Accum b)
 {
   return a + b;
 }
 
-_Sat unsigned short _Fract test8 (_Sat unsigned short _Fract a,
-				  _Sat unsigned short _Fract b)
+NOMIPS16 _Sat unsigned short _Fract test8 (_Sat unsigned short _Fract a,
+					   _Sat unsigned short _Fract b)
 {
   return a - b;
 }
 
-_Sat unsigned _Fract test9 (_Sat unsigned  _Fract a, _Sat unsigned _Fract b)
+NOMIPS16 _Sat unsigned _Fract test9 (_Sat unsigned  _Fract a,
+				     _Sat unsigned _Fract b)
 {
   return a - b;
 }
 
-_Sat unsigned short _Accum test10 (_Sat unsigned short _Accum a,
-				  _Sat unsigned short _Accum b)
+NOMIPS16 _Sat unsigned short _Accum test10 (_Sat unsigned short _Accum a,
+					    _Sat unsigned short _Accum b)
 {
   return a - b;
 }
 
-_Sat _Fract test11 (_Sat _Fract a, _Sat _Fract b)
+NOMIPS16 _Sat _Fract test11 (_Sat _Fract a, _Sat _Fract b)
 {
   return a - b;
 }
 
-_Sat long _Fract test12 (_Sat long _Fract a, _Sat long _Fract b)
+NOMIPS16 _Sat long _Fract test12 (_Sat long _Fract a, _Sat long _Fract b)
 {
   return a - b;
 }
 
-_Sat short _Accum test13 (_Sat short _Accum a, _Sat short _Accum b)
+NOMIPS16 _Sat short _Accum test13 (_Sat short _Accum a, _Sat short _Accum b)
 {
   return a - b;
 }
 
-_Sat _Accum test14 (_Sat _Accum a, _Sat _Accum b)
+NOMIPS16 _Sat _Accum test14 (_Sat _Accum a, _Sat _Accum b)
 {
   return a - b;
 }
 
-_Sat _Fract test15 (_Sat _Fract a, _Sat _Fract b)
+NOMIPS16 _Sat _Fract test15 (_Sat _Fract a, _Sat _Fract b)
 {
   return a * b;
 }
 
-_Sat long _Fract test16 (_Sat long _Fract a, _Sat long _Fract b)
+NOMIPS16 _Sat long _Fract test16 (_Sat long _Fract a, _Sat long _Fract b)
 {
   return a * b;
 }
 
-_Fract test17 (_Fract a, _Fract b)
+NOMIPS16 _Fract test17 (_Fract a, _Fract b)
 {
   return a * b;
 }
 
-long _Fract test18 (long _Fract a, long _Fract b)
+NOMIPS16 long _Fract test18 (long _Fract a, long _Fract b)
 {
   return a * b;
 }

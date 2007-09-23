@@ -7,42 +7,42 @@
 
 typedef float v2sf __attribute__((vector_size(8)));
 
-v2sf test0 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test1 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test2 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test3 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test4 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test5 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test6 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test7 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test8 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test9 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test10 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test11 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test12 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test13 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test14 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test15 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test16 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test17 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test18 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test19 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test20 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test21 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test22 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test23 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test24 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test25 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test26 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test27 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test28 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test29 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test30 (v2sf a, v2sf b, v2sf c, v2sf d);
-v2sf test31 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test0 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test1 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test2 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test3 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test4 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test5 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test6 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test7 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test8 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test9 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test10 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test11 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test12 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test13 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test14 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test15 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test16 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test17 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test18 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test19 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test20 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test21 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test22 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test23 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test24 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test25 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test26 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test27 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test28 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test29 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test30 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 v2sf test31 (v2sf a, v2sf b, v2sf c, v2sf d);
 
 float qnan = 1.0f/0.0f - 1.0f/0.0f;
 
-int main ()
+NOMIPS16 int main ()
 {
   v2sf a, b, c, d, e, f;
 
@@ -469,162 +469,162 @@ int main ()
   exit (0);
 }
 
-v2sf test0 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test0 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_f_ps (a, b, c, d);
 }
 
-v2sf test1 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test1 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_f_ps (a, b, c, d);
 }
 
-v2sf test2 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test2 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_un_ps (a, b, c, d);
 }
 
-v2sf test3 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test3 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_un_ps (a, b, c, d);
 }
 
-v2sf test4 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test4 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_eq_ps (a, b, c, d);
 }
 
-v2sf test5 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test5 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_eq_ps (a, b, c, d);
 }
 
-v2sf test6 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test6 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ueq_ps (a, b, c, d);
 }
 
-v2sf test7 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test7 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ueq_ps (a, b, c, d);
 }
 
-v2sf test8 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test8 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_olt_ps (a, b, c, d);
 }
 
-v2sf test9 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test9 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_olt_ps (a, b, c, d);
 }
 
-v2sf test10 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test10 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ult_ps (a, b, c, d);
 }
 
-v2sf test11 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test11 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ult_ps (a, b, c, d);
 }
 
-v2sf test12 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test12 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ole_ps (a, b, c, d);
 }
 
-v2sf test13 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test13 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ole_ps (a, b, c, d);
 }
 
-v2sf test14 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test14 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ule_ps (a, b, c, d);
 }
 
-v2sf test15 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test15 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ule_ps (a, b, c, d);
 }
 
-v2sf test16 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test16 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_sf_ps (a, b, c, d);
 }
 
-v2sf test17 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test17 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_sf_ps (a, b, c, d);
 }
 
-v2sf test18 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test18 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ngle_ps (a, b, c, d);
 }
 
-v2sf test19 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test19 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ngle_ps (a, b, c, d);
 }
 
-v2sf test20 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test20 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_seq_ps (a, b, c, d);
 }
 
-v2sf test21 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test21 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_seq_ps (a, b, c, d);
 }
 
-v2sf test22 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test22 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ngl_ps (a, b, c, d);
 }
 
-v2sf test23 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test23 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ngl_ps (a, b, c, d);
 }
 
-v2sf test24 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test24 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_lt_ps (a, b, c, d);
 }
 
-v2sf test25 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test25 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_lt_ps (a, b, c, d);
 }
 
-v2sf test26 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test26 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_nge_ps (a, b, c, d);
 }
 
-v2sf test27 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test27 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_nge_ps (a, b, c, d);
 }
 
-v2sf test28 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test28 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_le_ps (a, b, c, d);
 }
 
-v2sf test29 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test29 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_le_ps (a, b, c, d);
 }
 
-v2sf test30 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test30 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movt_cabs_ngt_ps (a, b, c, d);
 }
 
-v2sf test31 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 v2sf test31 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return  __builtin_mips_movf_cabs_ngt_ps (a, b, c, d);
 }

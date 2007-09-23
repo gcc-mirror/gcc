@@ -13,15 +13,15 @@
 			     (V2HQ "ph") (V2HA "ph")])
 
 ;; For unsigned add/sub with saturation
-(define_mode_iterator UADDSUB [(UQQ "TARGET_DSP") (UHQ "TARGET_DSPR2")
-			       (UHA "TARGET_DSPR2") (V4UQQ "TARGET_DSP")
-			       (V2UHQ "TARGET_DSPR2") (V2UHA "TARGET_DSPR2")])
+(define_mode_iterator UADDSUB [(UQQ "ISA_HAS_DSP") (UHQ "ISA_HAS_DSPR2")
+			       (UHA "ISA_HAS_DSPR2") (V4UQQ "ISA_HAS_DSP")
+			       (V2UHQ "ISA_HAS_DSPR2") (V2UHA "ISA_HAS_DSPR2")])
 (define_mode_attr uaddsubfmt [(UQQ "qb") (UHQ "ph") (UHA "ph")
 			      (V4UQQ "qb") (V2UHQ "ph") (V2UHA "ph")])
 
 ;; For signed multiplication with saturation
-(define_mode_iterator MULQ [(V2HQ "TARGET_DSP") (HQ "TARGET_DSP")
-			    (SQ "TARGET_DSPR2")])
+(define_mode_iterator MULQ [(V2HQ "ISA_HAS_DSP") (HQ "ISA_HAS_DSP")
+			    (SQ "ISA_HAS_DSPR2")])
 (define_mode_attr mulqfmt [(V2HQ "ph") (HQ "ph") (SQ "w")])
 
 (define_insn "add<mode>3"
@@ -52,7 +52,7 @@
 			  (match_operand:ADDSUB 2 "register_operand" "d")))
      (set (reg:CCDSP CCDSP_OU_REGNUM)
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))])]
-  "TARGET_DSP"
+  "ISA_HAS_DSP"
   "addq_s.<addsubfmt>\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<IMODE>")])
@@ -85,7 +85,7 @@
 			   (match_operand:ADDSUB 2 "register_operand" "d")))
      (set (reg:CCDSP CCDSP_OU_REGNUM)
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_SUBQ_S))])]
-  "TARGET_DSP"
+  "ISA_HAS_DSP"
   "subq_s.<addsubfmt>\t%0,%1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "<IMODE>")])
@@ -115,7 +115,7 @@
      (set (reg:CCDSP CCDSP_OU_REGNUM)
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
 			UNSPEC_DPAQ_SA_L_W))])]
-  "TARGET_DSP && !TARGET_64BIT"
+  "ISA_HAS_DSP && !TARGET_64BIT"
   "dpaq_sa.l.w\t%q0,%1,%2"
   [(set_attr "type" "imadd")
    (set_attr "mode" "SI")])
@@ -132,7 +132,7 @@
      (set (reg:CCDSP CCDSP_OU_REGNUM)
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2) (match_dup 3)]
 			UNSPEC_DPSQ_SA_L_W))])]
-  "TARGET_DSP && !TARGET_64BIT"
+  "ISA_HAS_DSP && !TARGET_64BIT"
   "dpsq_sa.l.w\t%q0,%1,%2"
   [(set_attr "type" "imadd")
    (set_attr "mode" "SI")])

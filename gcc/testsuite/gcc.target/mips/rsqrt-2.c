@@ -6,12 +6,12 @@
 extern double sqrt(double);
 extern float sqrtf(float);
 
-double foo(double x)
+NOMIPS16 double foo(double x)
 {
   return sqrt(1.0/x);
 }
 
-float bar(float x)
+NOMIPS16 float bar(float x)
 {
   return sqrtf(1.0f/x);
 }

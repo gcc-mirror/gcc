@@ -7,42 +7,42 @@
 
 typedef float v2sf __attribute__ ((vector_size(8)));
 
-int test0 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test1 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test2 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test3 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test4 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test5 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test6 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test7 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test8 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test9 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test10 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test11 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test12 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test13 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test14 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test15 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test16 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test17 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test18 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test19 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test20 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test21 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test22 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test23 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test24 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test25 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test26 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test27 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test28 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test29 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test30 (v2sf a, v2sf b, v2sf c, v2sf d);
-int test31 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test0 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test1 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test2 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test3 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test4 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test5 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test6 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test7 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test8 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test9 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test10 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test11 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test12 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test13 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test14 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test15 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test16 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test17 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test18 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test19 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test20 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test21 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test22 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test23 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test24 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test25 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test26 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test27 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test28 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test29 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test30 (v2sf a, v2sf b, v2sf c, v2sf d);
+NOMIPS16 int test31 (v2sf a, v2sf b, v2sf c, v2sf d);
 
 float qnan = 1.0f/0.0f - 1.0f/0.0f;
 
-int main ()
+NOMIPS16 int main ()
 {
   v2sf a, b, c, d;
   int i, j;
@@ -429,162 +429,162 @@ int main ()
   exit (0);
 }
 
-int test0 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test0 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_f_4s (a, b, c, d);
 }
 
-int test1 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test1 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_f_4s (a, b, c, d);
 }
 
-int test2 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test2 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_un_4s (a, b, c, d);
 }
 
-int test3 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test3 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_un_4s (a, b, c, d);
 }
 
-int test4 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test4 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_eq_4s (a, b, c, d);
 }
 
-int test5 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test5 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_eq_4s (a, b, c, d);
 }
 
-int test6 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test6 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ueq_4s (a, b, c, d);
 }
 
-int test7 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test7 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ueq_4s (a, b, c, d);
 }
 
-int test8 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test8 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_olt_4s (a, b, c, d);
 }
 
-int test9 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test9 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_olt_4s (a, b, c, d);
 }
 
-int test10 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test10 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ult_4s (a, b, c, d);
 }
 
-int test11 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test11 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ult_4s (a, b, c, d);
 }
 
-int test12 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test12 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ole_4s (a, b, c, d);
 }
 
-int test13 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test13 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ole_4s (a, b, c, d);
 }
 
-int test14 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test14 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ule_4s (a, b, c, d);
 }
 
-int test15 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test15 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ule_4s (a, b, c, d);
 }
 
-int test16 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test16 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_sf_4s (a, b, c, d);
 }
 
-int test17 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test17 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_sf_4s (a, b, c, d);
 }
 
-int test18 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test18 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ngle_4s (a, b, c, d);
 }
 
-int test19 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test19 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ngle_4s (a, b, c, d);
 }
 
-int test20 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test20 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_seq_4s (a, b, c, d);
 }
 
-int test21 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test21 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_seq_4s (a, b, c, d);
 }
 
-int test22 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test22 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ngl_4s (a, b, c, d);
 }
 
-int test23 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test23 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ngl_4s (a, b, c, d);
 }
 
-int test24 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test24 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_lt_4s (a, b, c, d);
 }
 
-int test25 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test25 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_lt_4s (a, b, c, d);
 }
 
-int test26 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test26 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_nge_4s (a, b, c, d);
 }
 
-int test27 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test27 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_nge_4s (a, b, c, d);
 }
 
-int test28 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test28 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_le_4s (a, b, c, d);
 }
 
-int test29 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test29 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_le_4s (a, b, c, d);
 }
 
-int test30 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test30 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_any_c_ngt_4s (a, b, c, d);
 }
 
-int test31 (v2sf a, v2sf b, v2sf c, v2sf d)
+NOMIPS16 int test31 (v2sf a, v2sf b, v2sf c, v2sf d)
 {
   return __builtin_mips_all_c_ngt_4s (a, b, c, d);
 }

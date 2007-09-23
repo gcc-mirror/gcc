@@ -1,3 +1,112 @@
+2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* lib/target-supports.exp (check_effective_target_nomips16): New
+	procedure.
+	* lib/fortran-torture.exp: Check nomips16 as well as mpaired_single
+	for mipsisa64*-*-*.
+	* gcc.dg/vect/vect.exp: Likewise.
+	* g++.dg/vect/vect.exp: Likewise.
+	* gcc.target/mips/mips.exp (setup_mips_tests): Don't set mips_mips16.
+	(dg-mips-options): Don't skip -march* and -mips* tests for -mips16.
+	* gcc.target/mips/branch-cost-1.c (foo): Add NOMIPS16.
+	* gcc.target/mips/branch-cost-2.c (foo): Likewise.
+	* gcc.target/mips/clear-cache-1.c (f): Likewise.
+	* gcc.target/mips/dpaq_sa_l_w.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/dpsq_sa_l_w.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/fix-vr4130-1.c (foo): Likewise.
+	* gcc.target/mips/fix-vr4130-2.c (foo): Likewise.
+	* gcc.target/mips/fix-vr4130-3.c (foo): Likewise.
+	* gcc.target/mips/fix-vr4130-4.c (foo): Likewise.
+	* gcc.target/mips/fixed-scalar-type.c (test1, test2, test3, test4)
+	(test5, test6, test7, test8, test9, test10, test11, test12, test13)
+	(test14, test15, test16, test17, test18): Likewise.
+	* gcc.target/mips/fixed-vector-type.c (test1, test2, test3, test4)
+	(test5, test6, test7, test8, test9, test10, test11, test12, test13)
+	(test14, test15, test16, test17, test18, test19, test20, test21)
+	(test22): Likewise.
+	* gcc.target/mips/madd-1.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/madd-2.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/madd-4.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/maddu-1.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/maddu-2.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/maddu-4.c (f1, f2, f3): Likewise.
+	* gcc.target/mips/mips-3d-1.c (main): Likewise.
+	* gcc.target/mips/mips-3d-2.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31): Likewise.
+	* gcc.target/mips/mips-3d-3.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31, test32, test33, test34, test35, test36)
+	(test37, test38, test39, test40, test41, test42, test43, test44)
+	(test45, test46, test47, test48, test49, test50, test51, test52)
+	(test53, test54, test55, test56, test57, test58, test59, test60)
+	(test61, test62, test63): Likewise.
+	* gcc.target/mips/mips-3d-4.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31): Likewise.
+	* gcc.target/mips/mips-3d-5.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31): Likewise.
+	* gcc.target/mips/mips-3d-6.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15): Likewise.
+	* gcc.target/mips/mips-3d-7.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15): Likewise.
+	* gcc.target/mips/mips-3d-8.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31): Likewise.
+	* gcc.target/mips/mips-3d-9.c (matrix_multiply2, matrix_multiply3)
+	(matrix_multiply4: Likewise.
+	* gcc.target/mips/mips-ps-1.c (main): Likewise.
+	* gcc.target/mips/mips-ps-2.c (main): Likewise.
+	* gcc.target/mips/mips-ps-3.c (main): Likewise.
+	* gcc.target/mips/mips-ps-4.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31): Likewise.
+	* gcc.target/mips/mips-ps-5.c (main, test0, test1, test2, test3)
+	(test4, test5, test6, test7, test8, test9, test10, test11, test12)
+	(test13, test14, test15, test16, test17, test18, test19, test20)
+	(test21, test22, test23, test24, test25, test26, test27, test28)
+	(test29, test30, test31): Likewise.
+	* gcc.target/mips/mips-ps-5.c (main): Likewise.
+	* gcc.target/mips/mips-ps-6.c (main): Likewise.
+	* gcc.target/mips/mips-ps-type.c (init, move, load, store, add, sub)
+	(neg, mul, madd, msub, nmadd, nmsub, cond_move1, cond_move2): Likewise.
+	* gcc.target/mips/mips32-dsp-type.c (add_v2hi,add_v4qi, sub_v2hi)
+	(sub_v4qi): Likewise.
+	* gcc.target/mips/mips32-dsp.c (test_MIPS_DSP, add_v2q15, add_v4i8)
+	(sub_v2q15, sub_v4i8, test_MIPS_DSP): Likewise.
+	* gcc.target/mips/movcc-1.c (sub1, sub2): Likewise.
+	* gcc.target/mips/movcc-2.c (sub4, sub5): Likewise.
+	* gcc.target/mips/movcc-3.c (sub3, sub6, sub7, sub8, sub9, suba)
+	(subb, subc): Likewise.
+	* gcc.target/mips/msub-1.c (f1, f2): Likewise.
+	* gcc.target/mips/msub-2.c (f1, f2): Likewise.
+	* gcc.target/mips/msub-4.c (f1, f2): Likewise.
+	* gcc.target/mips/msubu-1.c (f1, f2): Likewise.
+	* gcc.target/mips/msubu-2.c (f1, f2): Likewise.
+	* gcc.target/mips/msubu-4.c (f1, f2): Likewise.
+	* gcc.target/mips/nmadd-1.c (sub1, sub2, sub3, sub4): Likewise.
+	* gcc.target/mips/nmadd-2.c (sub1, sub2, sub3, sub4): Likewise.
+	* gcc.target/mips/rsqrt-1.c (foo, bar): Likewise.
+	* gcc.target/mips/rsqrt-2.c (foo, bar): Likewise.
+	* gcc.target/mips/sb1-1.c (divide, recip, squareroot, rsqrt): Likewise.
+	* gcc.target/mips/vr-mult-1.c (f1, f2): Likewise.
+	* gcc.target/mips/vr-mult-2.c (f1, f2): Likewise.
+
 2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* lib/target-supports.exp (add_options_for_mips16_attribute)

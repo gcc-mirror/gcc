@@ -3,7 +3,7 @@
 
 extern float a[], b[], c[];
 
-void
+NOMIPS16 void
 foo (void)
 {
   int i;

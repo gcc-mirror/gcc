@@ -492,7 +492,7 @@
 ;; floating-point mode is allowed.
 (define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
 			    (DF "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT")
-			    (V2SF "TARGET_PAIRED_SINGLE_FLOAT")])
+			    (V2SF "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT")])
 
 ;; Like ANYF, but only applies to scalar modes.
 (define_mode_iterator SCALARF [(SF "TARGET_HARD_FLOAT")
@@ -1035,7 +1035,7 @@
   [(set (match_operand:V2SF 0 "register_operand" "=f")
 	(mult:V2SF (match_operand:V2SF 1 "register_operand" "f")
 		   (match_operand:V2SF 2 "register_operand" "f")))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
   "mul.ps\t%0,%1,%2"
   [(set_attr "type" "fmul")
    (set_attr "mode" "SF")])
@@ -1581,7 +1581,7 @@
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (any_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
-  "!TARGET_64BIT && !TARGET_FIX_R4000 && !TARGET_DSPR2"
+  "!TARGET_64BIT && !TARGET_FIX_R4000 && !ISA_HAS_DSPR2"
   "mult<u>\t%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")])
@@ -1678,9 +1678,9 @@
 	   (mult:DI
 	      (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 	      (any_extend:DI (match_operand:SI 2 "register_operand" "d")))))]
-  "!TARGET_64BIT && (ISA_HAS_MSAC || GENERATE_MADD_MSUB || TARGET_DSPR2)"
+  "!TARGET_64BIT && (ISA_HAS_MSAC || GENERATE_MADD_MSUB || ISA_HAS_DSPR2)"
 {
-  if (TARGET_DSPR2)
+  if (ISA_HAS_DSPR2)
     return "msub<u>\t%q0,%1,%2";
   else if (TARGET_MIPS5500 || GENERATE_MADD_MSUB)
     return "msub<u>\t%1,%2";
@@ -1797,12 +1797,12 @@
 	 (mult:DI (any_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		  (any_extend:DI (match_operand:SI 2 "register_operand" "d")))
 	 (match_operand:DI 3 "register_operand" "0")))]
-  "(TARGET_MAD || ISA_HAS_MACC || GENERATE_MADD_MSUB || TARGET_DSPR2)
+  "(TARGET_MAD || ISA_HAS_MACC || GENERATE_MADD_MSUB || ISA_HAS_DSPR2)
    && !TARGET_64BIT"
 {
   if (TARGET_MAD)
     return "mad<u>\t%1,%2";
-  else if (TARGET_DSPR2)
+  else if (ISA_HAS_DSPR2)
     return "madd<u>\t%q0,%1,%2";
   else if (GENERATE_MADD_MSUB || TARGET_MIPS5500)
     return "madd<u>\t%1,%2";
@@ -4043,7 +4043,7 @@
 (define_expand "movv2sf"
   [(set (match_operand:V2SF 0)
 	(match_operand:V2SF 1))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
+  "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
 {
   if (mips_legitimize_move (V2SFmode, operands[0], operands[1]))
     DONE;
@@ -4052,8 +4052,9 @@
 (define_insn "movv2sf_hardfloat_64bit"
   [(set (match_operand:V2SF 0 "nonimmediate_operand" "=f,f,f,m,m,*f,*d,*d,*d,*m")
 	(match_operand:V2SF 1 "move_operand" "f,YG,m,f,YG,*d,*f,*d*YG,*m,*d"))]
-  "TARGET_PAIRED_SINGLE_FLOAT
+  "TARGET_HARD_FLOAT
    && TARGET_64BIT
+   && TARGET_PAIRED_SINGLE_FLOAT
    && (register_operand (operands[0], V2SFmode)
        || reg_or_0_operand (operands[1], V2SFmode))"
   { return mips_output_move (operands[0], operands[1]); }

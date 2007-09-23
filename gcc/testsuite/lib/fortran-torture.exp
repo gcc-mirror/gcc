@@ -42,7 +42,8 @@ if ![info exists TORTURE_OPTIONS] {
 	lappend vectorizer_options "-msse2"
 	set test_tree_vectorize 1
     } elseif { [istarget "mipsisa64*-*-*"]
-	       && [check_effective_target_mpaired_single] } {
+	       && [check_effective_target_mpaired_single]
+	       && [check_effective_target_nomips16] } {
 	lappend vectorizer_options "-mpaired-single"
 	set test_tree_vectorize 1
     } elseif [istarget "sparc*-*-*"] {

@@ -21,112 +21,112 @@ typedef unsigned short _Accum v2uha __attribute__ ((vector_size(4)));
 typedef _Fract v2hq __attribute__ ((vector_size(4)));
 typedef short _Accum v2ha __attribute__ ((vector_size(4)));
 
-sat_v2hq test1 (sat_v2hq a, sat_v2hq b)
+NOMIPS16 sat_v2hq test1 (sat_v2hq a, sat_v2hq b)
 {
   return a + b;
 }
 
-sat_v2ha test2 (sat_v2ha a, sat_v2ha b)
+NOMIPS16 sat_v2ha test2 (sat_v2ha a, sat_v2ha b)
 {
   return a + b;
 }
 
-sat_v2hq test3 (sat_v2hq a, sat_v2hq b)
+NOMIPS16 sat_v2hq test3 (sat_v2hq a, sat_v2hq b)
 {
   return a - b;
 }
 
-sat_v2ha test4 (sat_v2ha a, sat_v2ha b)
+NOMIPS16 sat_v2ha test4 (sat_v2ha a, sat_v2ha b)
 {
   return a - b;
 }
 
-sat_v4uqq test5 (sat_v4uqq a, sat_v4uqq b)
+NOMIPS16 sat_v4uqq test5 (sat_v4uqq a, sat_v4uqq b)
 {
   return a + b;
 }
 
-sat_v2uhq test6 (sat_v2uhq a, sat_v2uhq b)
+NOMIPS16 sat_v2uhq test6 (sat_v2uhq a, sat_v2uhq b)
 {
   return a + b;
 }
 
-sat_v2uha test7 (sat_v2uha a, sat_v2uha b)
+NOMIPS16 sat_v2uha test7 (sat_v2uha a, sat_v2uha b)
 {
   return a + b;
 }
 
-sat_v4uqq test8 (sat_v4uqq a, sat_v4uqq b)
+NOMIPS16 sat_v4uqq test8 (sat_v4uqq a, sat_v4uqq b)
 {
   return a - b;
 }
 
-sat_v2uhq test9 (sat_v2uhq a, sat_v2uhq b)
+NOMIPS16 sat_v2uhq test9 (sat_v2uhq a, sat_v2uhq b)
 {
   return a - b;
 }
 
-sat_v2uha test10 (sat_v2uha a, sat_v2uha b)
+NOMIPS16 sat_v2uha test10 (sat_v2uha a, sat_v2uha b)
 {
   return a - b;
 }
 
-sat_v2hq test11 (sat_v2hq a, sat_v2hq b)
+NOMIPS16 sat_v2hq test11 (sat_v2hq a, sat_v2hq b)
 {
   return a * b;
 }
 
-v2hq test12 (v2hq a, v2hq b)
+NOMIPS16 v2hq test12 (v2hq a, v2hq b)
 {
   return a + b;
 }
 
-v2hq test13 (v2hq a, v2hq b)
+NOMIPS16 v2hq test13 (v2hq a, v2hq b)
 {
   return a - b;
 }
 
-v2hq test14 (v2hq a, v2hq b)
+NOMIPS16 v2hq test14 (v2hq a, v2hq b)
 {
   return a * b;
 }
 
-v2ha test15 (v2ha a, v2ha b)
+NOMIPS16 v2ha test15 (v2ha a, v2ha b)
 {
   return a + b;
 }
 
-v2ha test16 (v2ha a, v2ha b)
+NOMIPS16 v2ha test16 (v2ha a, v2ha b)
 {
   return a - b;
 }
 
-v4uqq test17 (v4uqq a, v4uqq b)
+NOMIPS16 v4uqq test17 (v4uqq a, v4uqq b)
 {
   return a + b;
 }
 
-v4uqq test18 (v4uqq a, v4uqq b)
+NOMIPS16 v4uqq test18 (v4uqq a, v4uqq b)
 {
   return a - b;
 }
 
-v2uhq test19 (v2uhq a, v2uhq b)
+NOMIPS16 v2uhq test19 (v2uhq a, v2uhq b)
 {
   return a + b;
 }
 
-v2uhq test20 (v2uhq a, v2uhq b)
+NOMIPS16 v2uhq test20 (v2uhq a, v2uhq b)
 {
   return a - b;
 }
 
-v2uha test21 (v2uha a, v2uha b)
+NOMIPS16 v2uha test21 (v2uha a, v2uha b)
 {
   return a + b;
 }
 
-v2uha test22 (v2uha a, v2uha b)
+NOMIPS16 v2uha test22 (v2uha a, v2uha b)
 {
   return a - b;
 }

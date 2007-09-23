@@ -5,13 +5,13 @@
 
 void ext_int (int);
 
-int
+NOMIPS16 int
 sub1 (int i, int j, int k)
 {
   ext_int (k ? i : j);
 }
 
-int
+NOMIPS16 int
 sub2 (int i, int j, long l)
 {
   ext_int (!l ? i : j);

@@ -5,13 +5,13 @@
 
 void ext_long (long);
 
-long
+NOMIPS16 long
 sub4 (long i, long j, long k)
 {
   ext_long (k ? i : j);
 }
 
-long
+NOMIPS16 long
 sub5 (long i, long j, int k)
 {
   ext_long (!k ? i : j);

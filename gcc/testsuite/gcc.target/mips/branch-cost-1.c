@@ -1,5 +1,5 @@
 /* { dg-mips-options "-mbranch-cost=1 -mips64 -O2" } */
-int
+NOMIPS16 int
 foo (int x, int y, int z, int k)
 {
   return x == k ? x + y : z - x;

@@ -2,13 +2,13 @@
 /* { dg-mips-options "-O2 -mips32r2 -mdspr2 -mgp32" } */
 /* { dg-final { scan-assembler-times "\tmsub\t\\\$ac" 2 } } */
 
-long long
+NOMIPS16 long long
 f1 (int x, int y, long long z)
 {
   return z - (long long) y * x;
 }
 
-long long
+NOMIPS16 long long
 f2 (int x, int y, long long z)
 {
   long long t = (long long) x * y;

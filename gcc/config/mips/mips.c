@@ -5696,10 +5696,6 @@ mips_set_mips16_mode (int mips16_p)
 	 we use a %gprel() operator.  */
       target_flags &= ~MASK_EXPLICIT_RELOCS;
 
-      /* Silently disable DSP extensions.  */
-      target_flags &= ~MASK_DSP;
-      target_flags &= ~MASK_DSPR2;
-
       /* Experiments suggest we get the best overall results from using
 	 the range of an unextended lw or sw.  Code that makes heavy use
 	 of byte or short accesses can do better with ranges of 0...31
@@ -6151,8 +6147,8 @@ override_options (void)
     target_flags |= MASK_PAIRED_SINGLE_FLOAT;
 
   /* Make sure that when TARGET_PAIRED_SINGLE_FLOAT is true, TARGET_FLOAT64
-     and TARGET_HARD_FLOAT are both true.  */
-  if (TARGET_PAIRED_SINGLE_FLOAT && !(TARGET_FLOAT64 && TARGET_HARD_FLOAT))
+     and TARGET_HARD_FLOAT_ABI are both true.  */
+  if (TARGET_PAIRED_SINGLE_FLOAT && !(TARGET_FLOAT64 && TARGET_HARD_FLOAT_ABI))
     error ("-mips3d/-mpaired-single must be used with -mfp64 -mhard-float");
 
   /* Make sure that the ISA supports TARGET_PAIRED_SINGLE_FLOAT when it is
@@ -6351,7 +6347,7 @@ mips_swap_registers (unsigned int i)
 void
 mips_conditional_register_usage (void)
 {
-  if (!TARGET_DSP)
+  if (!ISA_HAS_DSP)
     {
       int regno;
 
