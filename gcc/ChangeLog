@@ -1,3 +1,8 @@
+2007-09-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac (ld_vers): Support GNU linker version xx.xx.*
+	* configure: Regenerated.
+
 2007-09-23  Ollie Wild  <aaw@google.com>
 
 	fold-const.c (fold_binary): Fold BIT_AND_EXPR's with a pointer operand.
