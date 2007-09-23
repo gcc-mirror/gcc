@@ -1,5 +1,18 @@
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* opth-gen.awk (target_flags_explicit): Declare.
+	* toplev.h (target_flags_explicit): Delete declaration.
+	* toplev.c (target_flags): Likewise.
+	* config/mips/mips.h (mips_llsc_setting, mips_llsc): Delete.
+	(GENERATE_SYNC, GENERATE_LL_SC): Redefine using target_explicit_flags.
+	Never return true for TARGET_MIPS16.
+	* config/mips/mips.c (mips_llsc): Delete.
+	(mips_handle_option): Remove -mllsc handling.
+	(mips_strip_unspec_address): Tweak comment.
+	* config/mips/mips.opt (mllsc): Use a target mask.
+
+2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* doc/tm.texi (POINTERS_EXTEND_UNSIGNED): Document extensions to
 	word_mode as well as Pmode.
 

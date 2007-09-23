@@ -121,14 +121,6 @@ enum mips_code_readable_setting {
   CODE_READABLE_YES
 };
 
-
-/* Enumerates the setting of the -mllsc option.  */
-enum mips_llsc_setting {
-  LLSC_DEFAULT,
-  LLSC_NO,
-  LLSC_YES
-};
-
 #ifndef USED_FOR_TARGET
 extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
 extern const char *current_function_file; /* filename current function is in */
@@ -153,7 +145,6 @@ extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
 extern const struct mips_rtx_cost_data *mips_cost;
 extern enum mips_code_readable_setting mips_code_readable;
-extern enum mips_llsc_setting mips_llsc;
 #endif
 
 /* Macros to silence warnings about numbers being signed in traditional
@@ -920,15 +911,19 @@ extern enum mips_llsc_setting mips_llsc;
 
 /* ISA includes sync.  */
 #define ISA_HAS_SYNC ((mips_isa >= 2 || TARGET_MIPS3900) && !TARGET_MIPS16)
-#define GENERATE_SYNC (mips_llsc == LLSC_YES \
-		       || (mips_llsc == LLSC_DEFAULT && ISA_HAS_SYNC))
+#define GENERATE_SYNC			\
+  (target_flags_explicit & MASK_LLSC	\
+   ? TARGET_LLSC && !TARGET_MIPS16	\
+   : ISA_HAS_SYNC)
 
 /* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
    because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
    instructions.  */
 #define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS16)
-#define GENERATE_LL_SC (mips_llsc == LLSC_YES \
-			|| (mips_llsc == LLSC_DEFAULT && ISA_HAS_LL_SC))
+#define GENERATE_LL_SC			\
+  (target_flags_explicit & MASK_LLSC	\
+   ? TARGET_LLSC && !TARGET_MIPS16	\
+   : ISA_HAS_LL_SC)
 
 /* Add -G xx support.  */
 

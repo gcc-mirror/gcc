@@ -113,8 +113,6 @@ extern const char *aux_info_file_name;
 extern const char *asm_file_name;
 extern bool exit_after_options;
 
-extern int target_flags_explicit;
-
 /* True if the user has tagged the function with the 'section'
    attribute.  */
 
