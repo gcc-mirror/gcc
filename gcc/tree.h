@@ -4918,6 +4918,7 @@ extern int expr_lineno (const_tree);
 extern tree *tree_block (tree);
 extern tree *generic_tree_operand (tree, int);
 extern tree *generic_tree_type (tree);
+extern location_t *block_nonartificial_location (tree);
 
 /* In function.c */
 extern void expand_main_function (void);

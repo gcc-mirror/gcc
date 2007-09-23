@@ -12190,6 +12190,10 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_not_inlined);
 	}
 
+      if (DECL_DECLARED_INLINE_P (decl)
+	  && lookup_attribute ("artificial", DECL_ATTRIBUTES (decl)))
+	add_AT_flag (subr_die, DW_AT_artificial, 1);
+
       equate_decl_number_to_die (decl, subr_die);
     }
   else if (!DECL_EXTERNAL (decl))
