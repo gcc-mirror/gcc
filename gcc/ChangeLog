@@ -1,3 +1,9 @@
+2007-09-23  Ayal Zaks  <zaks@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	* modulo-sched.c (doloop_register_get): Rewrite the loop which
+	checks whether the count_reg is found outside the control part.
+
 2007-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (expand_expr_real_1) <case CALL_EXPR>: Use get_callee_fndecl
