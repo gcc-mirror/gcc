@@ -1802,8 +1802,8 @@ attributes are currently defined for functions on all targets:
 @code{no_instrument_function}, @code{section}, @code{constructor},
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
 @code{weak}, @code{malloc}, @code{alias}, @code{warn_unused_result},
-@code{nonnull}, @code{gnu_inline} and @code{externally_visible},
-@code{hot}, @code{cold}.
+@code{nonnull}, @code{gnu_inline}, @code{externally_visible},
+@code{hot}, @code{cold} and @code{artificial}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
 supported for variables declarations (@pxref{Variable Attributes}) and
@@ -1924,6 +1924,14 @@ Function is As Fast As a Macro}.
 In C++, this attribute does not depend on @code{extern} in any way,
 but it still requires the @code{inline} keyword to enable its special
 behavior.
+
+@cindex @code{artificial} function attribute
+@item artificial
+This attribute is useful for small inline wrappers which if possible
+should appear during debugging as a unit, depending on the debug
+info format it will either mean marking the function as artificial
+or using the caller location for all instructions within the inlined
+body.
 
 @cindex @code{flatten} function attribute
 @item flatten

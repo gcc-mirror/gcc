@@ -1,5 +1,29 @@
 2007-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.h (block_nonartificial_location): New prototype.
+	* tree.c (block_nonartificial_location): New function.
+	* dwarf2out.c (gen_subprogram_die): Add DW_AT_artificial
+	if artificial attribute is present on abstract inline decl.
+	* c-common.c (handle_artificial_attribute): New function.
+	(c_common_attribute_table): Add artificial attribute.
+	* final.c (override_filename, override_linenum): New variables.
+	(final_scan_insn): For DBX_DEBUG or SDB_DEBUG, set override_filename
+	and override_linenum if inside of a block inlined from
+	__attribute__((__artificial__)) function.
+	(notice_source_line): Honor override_filename and override_linenum.
+	* doc/extend.texi: Document __attribute__((__artificial__)).
+	* config/i386/emmintrin.h: Add __artificial__ attribute to
+	all __always_inline__ functions.
+	* config/i386/mmintrin.h: Likewise.
+	* config/i386/tmmintrin.h: Likewise.
+	* config/i386/mm3dnow.h: Likewise.
+	* config/i386/pmmintrin.h: Likewise.
+	* config/i386/ammintrin.h: Likewise.
+	* config/i386/xmmintrin.h: Likewise.
+	* config/i386/smmintrin.h: Likewise.
+	* config/i386/bmmintrin.h: Likewise.
+	* config/i386/mmintrin-common.h: Likewise.
+
 	PR middle-end/28755
 	* expr.c (expand_constructor): New function.
 	(expand_expr_real_1) <case CONSTRUCTOR>: Call it.

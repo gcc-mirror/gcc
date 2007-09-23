@@ -137,6 +137,10 @@ static int high_function_linenum;
 /* Filename of last NOTE.  */
 static const char *last_filename;
 
+/* Override filename and line number.  */
+static const char *override_filename;
+static int override_linenum;
+
 /* Whether to force emission of a line note before the next insn.  */
 static bool force_source_line = false;
 
@@ -1814,6 +1818,18 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	      /* Mark this block as output.  */
 	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
 	    }
+	  if (write_symbols == DBX_DEBUG
+	      || write_symbols == SDB_DEBUG)
+	    {
+	      location_t *locus_ptr
+		= block_nonartificial_location (NOTE_BLOCK (insn));
+
+	      if (locus_ptr != NULL)
+		{
+		  override_filename = LOCATION_FILE (*locus_ptr);
+		  override_linenum = LOCATION_LINE (*locus_ptr);
+		}
+	    }
 	  break;
 
 	case NOTE_INSN_BLOCK_END:
@@ -1832,6 +1848,24 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	      gcc_assert (block_depth >= 0);
 
 	      (*debug_hooks->end_block) (high_block_linenum, n);
+	    }
+	  if (write_symbols == DBX_DEBUG
+	      || write_symbols == SDB_DEBUG)
+	    {
+	      tree outer_block = BLOCK_SUPERCONTEXT (NOTE_BLOCK (insn));
+	      location_t *locus_ptr
+		= block_nonartificial_location (outer_block);
+
+	      if (locus_ptr != NULL)
+		{
+		  override_filename = LOCATION_FILE (*locus_ptr);
+		  override_linenum = LOCATION_LINE (*locus_ptr);
+		}
+	      else
+		{
+		  override_filename = NULL;
+		  override_linenum = 0;
+		}
 	    }
 	  break;
 
@@ -2609,8 +2643,19 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 static bool
 notice_source_line (rtx insn)
 {
-  const char *filename = insn_file (insn);
-  int linenum = insn_line (insn);
+  const char *filename;
+  int linenum;
+
+  if (override_filename)
+    {
+      filename = override_filename;
+      linenum = override_linenum;
+    }
+  else
+    {
+      filename = insn_file (insn);
+      linenum = insn_line (insn);
+    }
 
   if (filename
       && (force_source_line
