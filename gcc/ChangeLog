@@ -1,3 +1,10 @@
+2007-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/19407
+	* attribs.c (lookup_attribute_spec): Split out...
+	(decl_attributes): From here.
+	* tree.h: Declare it.
+
 2007-09-22  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* doc/sourcebuild.texi: Document dg-add-options mips16_attribute.

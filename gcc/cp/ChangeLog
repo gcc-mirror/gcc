@@ -1,3 +1,19 @@
+2007-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/19407
+	* cp-tree.h (ATTR_IS_DEPENDENT): New macro.
+	(MAYBE_TAGGED_TYPE_P): Remove.
+	* pt.c (apply_late_template_attributes): Check ATTR_IS_DEPENDENT
+	instead of calling is_late_template_attribute again.
+	(tsubst_decl) [TYPE_DECL]: Just check if the name is the tag.
+	(tsubst): A typedef is a TYPE_NAME != TYPE_MAIN_DECL.
+	Don't crash on typedefs from non-template classes.
+	* decl2.c (grokfield): Don't sorry about attrs on template parms.
+	(is_late_template_attribute): All attributes applied to template
+	parms or typename types are dependent.  Static.
+	(splice_template_attributes): Pass decl through.
+	(save_template_attributes): Likewise.
+
 2007-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33496

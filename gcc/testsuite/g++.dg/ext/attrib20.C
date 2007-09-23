@@ -7,8 +7,8 @@ template <typename T>
 struct BVector
 {
   typedef T T2;
-  typedef T value_type __attribute__ ((aligned(8)));    // { dg-bogus "attribute" "attribute" { xfail *-*-* } }
-  typedef T2 value_type2 __attribute__ ((aligned(8)));  // { dg-bogus "attribute" "attribute" { xfail *-*-* } }
+  typedef T value_type __attribute__ ((aligned(8)));    // { dg-bogus "attribute" "attribute" }
+  typedef T2 value_type2 __attribute__ ((aligned(8)));  // { dg-bogus "attribute" "attribute" }
   value_type v;
 };
 BVector<int> m;
@@ -16,7 +16,7 @@ BVector<int> m;
 template <template <class> class T>
 struct BV2
 {
-  typedef T<float> value_type __attribute__((aligned(8))); // { dg-bogus "attribute" "attribute" { xfail *-*-* } }
+  typedef T<float> value_type __attribute__((aligned(8))); // { dg-bogus "attribute" "attribute" }
   value_type v;
 };
 BV2<BVector> m2;

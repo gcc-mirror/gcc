@@ -195,6 +195,20 @@ init_attributes (void)
       }
   attributes_initialized = true;
 }
+
+/* Return the spec for the attribute named NAME.  */
+
+const struct attribute_spec *
+lookup_attribute_spec (tree name)
+{
+  struct substring attr;
+
+  attr.str = IDENTIFIER_POINTER (name);
+  attr.length = IDENTIFIER_LENGTH (name);
+  extract_attribute_substring (&attr);
+  return htab_find_with_hash (attribute_hash, &attr,
+			      substring_hash (attr.str, attr.length));
+}
 
 /* Process the attributes listed in ATTRIBUTES and install them in *NODE,
    which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
@@ -221,16 +235,9 @@ decl_attributes (tree *node, tree attributes, int flags)
       tree name = TREE_PURPOSE (a);
       tree args = TREE_VALUE (a);
       tree *anode = node;
-      const struct attribute_spec *spec = NULL;
+      const struct attribute_spec *spec = lookup_attribute_spec (name);
       bool no_add_attrs = 0;
       tree fn_ptr_tmp = NULL_TREE;
-      struct substring attr;
-
-      attr.str = IDENTIFIER_POINTER (name);
-      attr.length = IDENTIFIER_LENGTH (name);
-      extract_attribute_substring (&attr);
-      spec = htab_find_with_hash (attribute_hash, &attr,
-				  substring_hash (attr.str, attr.length));
 
       if (spec == NULL)
 	{

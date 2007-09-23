@@ -800,16 +800,7 @@ grokfield (const cp_declarator *declarator,
 	value = push_template_decl (value);
 
       if (attrlist)
-	{
-	  /* Avoid storing attributes in template parameters:
-	     tsubst is not ready to handle them.  */
-	  tree type = TREE_TYPE (value);
-	  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-	      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-	    sorry ("applying attributes to template parameters is not implemented");
-	  else
-	    cplus_decl_attributes (&value, attrlist, 0);
-	}
+	cplus_decl_attributes (&value, attrlist, 0);
 
       return value;
     }
@@ -988,24 +979,43 @@ grokbitfield (const cp_declarator *declarator,
 /* Returns true iff ATTR is an attribute which needs to be applied at
    instantiation time rather than template definition time.  */
 
-bool
-is_late_template_attribute (tree attr)
+static bool
+is_late_template_attribute (tree attr, tree decl)
 {
   tree name = TREE_PURPOSE (attr);
   tree args = TREE_VALUE (attr);
+  const struct attribute_spec *spec = lookup_attribute_spec (name);
+
   if (is_attribute_p ("aligned", name)
       && args
       && value_dependent_expression_p (TREE_VALUE (args)))
+    /* Can't apply this until we know the desired alignment.  */
     return true;
+  else if (TREE_CODE (decl) == TYPE_DECL || spec->type_required)
+    {
+      tree type = TYPE_P (decl) ? decl : TREE_TYPE (decl);
+
+      /* We can't apply any attributes to a completely unknown type until
+	 instantiation time.  */
+      enum tree_code code = TREE_CODE (type);
+      if (code == TEMPLATE_TYPE_PARM
+	  || code == BOUND_TEMPLATE_TEMPLATE_PARM
+	  || code == TYPENAME_TYPE)
+	return true;
+      else
+	return false;
+    }
   else
     return false;
 }
 
 /* ATTR_P is a list of attributes.  Remove any attributes which need to be
-   applied at instantiation time and return them.  */
+   applied at instantiation time and return them.  If IS_DEPENDENT is true,
+   the declaration itself is dependent, so all attributes should be applied
+   at instantiation time.  */
 
 static tree
-splice_template_attributes (tree *attr_p)
+splice_template_attributes (tree *attr_p, tree decl)
 {
   tree *p = attr_p;
   tree late_attrs = NULL_TREE;
@@ -1016,8 +1026,9 @@ splice_template_attributes (tree *attr_p)
 
   for (; *p; )
     {
-      if (is_late_template_attribute (*p))
+      if (is_late_template_attribute (*p, decl))
 	{
+	  ATTR_IS_DEPENDENT (*p) = 1;
 	  *q = *p;
 	  *p = TREE_CHAIN (*p);
 	  q = &TREE_CHAIN (*q);
@@ -1036,7 +1047,7 @@ splice_template_attributes (tree *attr_p)
 static void
 save_template_attributes (tree *attr_p, tree *decl_p)
 {
-  tree late_attrs = splice_template_attributes (attr_p);
+  tree late_attrs = splice_template_attributes (attr_p, *decl_p);
   tree *q;
 
   if (!late_attrs)

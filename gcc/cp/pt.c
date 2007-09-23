@@ -6494,19 +6494,13 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
   else
     TYPE_ATTRIBUTES (*decl_p) = attributes;
 
-  /* Set processing_template_decl so we can check for dependent
-     expressions.  */
-  ++processing_template_decl;
-
   for (t = attributes; t; t = TREE_CHAIN (t))
-    if (is_late_template_attribute (t))
+    if (ATTR_IS_DEPENDENT (t))
       late_attrs = tree_cons
 	(TREE_PURPOSE (t),
 	 tsubst_expr (TREE_VALUE (t), args, complain, in_decl,
 		      /*integral_constant_expression_p=*/false),
 	 late_attrs);
-
-  --processing_template_decl;
 
   cplus_decl_attributes (decl_p, late_attrs, attr_flags);
 }
@@ -8085,20 +8079,16 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	bool local_p;
 
 	if (TREE_CODE (t) == TYPE_DECL
-	    && MAYBE_TAGGED_TYPE_P (TREE_TYPE (t)))
+	    && t == TYPE_MAIN_DECL (TREE_TYPE (t)))
 	  {
+	    /* If this is the canonical decl, we don't have to
+	       mess with instantiations, and often we can't (for
+	       typename, template type parms and such).  Note that
+	       TYPE_NAME is not correct for the above test if
+	       we've copied the type for a typedef.  */
 	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	    if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-		|| t == TYPE_MAIN_DECL (TREE_TYPE (t)))
-	      {
-		/* If this is the canonical decl, we don't have to
-		   mess with instantiations, and often we can't (for
-		   typename, template type parms and such).  Note that
-		   TYPE_NAME is not correct for the above test if
-		   we've copied the type for a typedef.  */
-		r = TYPE_NAME (type);
-		break;
-	      }
+	    r = TYPE_NAME (type);
+	    break;
 	  }
 
 	/* Check to see if we already have the specialization we
@@ -8555,16 +8545,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   gcc_assert (type != unknown_type_node);
 
   /* Reuse typedefs.  We need to do this to handle dependent attributes,
-     specifically attribute aligned.  */
+     such as attribute aligned.  */
   if (TYPE_P (t)
       && TYPE_NAME (t)
-      && !MAYBE_TAGGED_TYPE_P (t)
-      && TREE_CODE (t) != TEMPLATE_TEMPLATE_PARM
-      && TREE_CODE (t) != UNBOUND_CLASS_TEMPLATE)
+      && TYPE_NAME (t) != TYPE_MAIN_DECL (t))
     {
       tree decl = TYPE_NAME (t);
       
-      if (DECL_CLASS_SCOPE_P (decl))
+      if (DECL_CLASS_SCOPE_P (decl)
+	  && CLASSTYPE_TEMPLATE_INFO (DECL_CONTEXT (decl)))
 	{
 	  tree tmpl = most_general_template (DECL_TI_TEMPLATE (decl));
 	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
