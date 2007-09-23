@@ -7,6 +7,12 @@
 	attributes.
 	* g++.dg/ext/va-arg-pack-len-2.C: New test.
 
+	PR tree-optimization/32772
+	* gcc.c-torture/compile/20070905-1.c: New test.
+
+	PR tree-optimization/32975
+	* gcc.dg/pr32975.c: New test.
+
 	PR middle-end/28755
 	* gcc.dg/pr28755.c: New test.
 
