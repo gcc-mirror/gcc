@@ -98,11 +98,11 @@ class T {
     int x;
 } __attribute__ ((deprecated));
 
-T *p3;
+T *p3;				// { dg-warning "'T' is deprecated" }
 
 inline void T::member1(int) {}
 
-int T::member3(T *p)
+int T::member3(T *p)		// { dg-warning "'T' is deprecated" }
 {
   p->member1(1);			/* { dg-warning "'void T::member1\\(int\\)' is deprecated" "" } */
   (*p).member1(2);			/* { dg-warning "'void T::member1\\(int\\)' is deprecated" "" } */

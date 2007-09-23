@@ -1,3 +1,9 @@
+2007-09-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16370
+	* decl.c (grokdeclarator): Look through implicit TYPE_DECLs
+	for deprecation warnings.
+
 2007-09-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15269
