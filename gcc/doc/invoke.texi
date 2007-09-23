@@ -6720,7 +6720,7 @@ functions and at the same time increases size of leaf function that is believed 
 reduce function size by being inlined.  In effect it increases amount of
 inlining for code having large abstraction penalty (many functions that just
 pass the arguments to other functions) and decrease inlining for code with low
-abstraction penalty.  The default value is 16.
+abstraction penalty.  The default value is 12.
 
 @item min-vect-loop-bound
 The minimum number of iterations under which a loop will not get vectorized

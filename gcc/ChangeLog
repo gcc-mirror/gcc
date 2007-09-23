@@ -1,3 +1,8 @@
+2007-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* params.def (INLINE_CALL_COST): Set to 12.
+	* invoke.texi (inline-call-cost): Update default value.
+
 2007-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.md (movti): Use operand_subword for the split.
