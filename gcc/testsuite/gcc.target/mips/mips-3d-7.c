@@ -5,24 +5,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int test0 (double a, double b);
-int test1 (double a, double b);
-int test2 (double a, double b);
-int test3 (double a, double b);
-int test4 (double a, double b);
-int test5 (double a, double b);
-int test6 (double a, double b);
-int test7 (double a, double b);
-int test8 (double a, double b);
-int test9 (double a, double b);
-int test10 (double a, double b);
-int test11 (double a, double b);
-int test12 (double a, double b);
-int test13 (double a, double b);
-int test14 (double a, double b);
-int test15 (double a, double b);
+NOMIPS16 int test0 (double a, double b);
+NOMIPS16 int test1 (double a, double b);
+NOMIPS16 int test2 (double a, double b);
+NOMIPS16 int test3 (double a, double b);
+NOMIPS16 int test4 (double a, double b);
+NOMIPS16 int test5 (double a, double b);
+NOMIPS16 int test6 (double a, double b);
+NOMIPS16 int test7 (double a, double b);
+NOMIPS16 int test8 (double a, double b);
+NOMIPS16 int test9 (double a, double b);
+NOMIPS16 int test10 (double a, double b);
+NOMIPS16 int test11 (double a, double b);
+NOMIPS16 int test12 (double a, double b);
+NOMIPS16 int test13 (double a, double b);
+NOMIPS16 int test14 (double a, double b);
+NOMIPS16 int test15 (double a, double b);
 
-int main ()
+NOMIPS16 int main ()
 {
   double a, b;
   int i;
@@ -203,82 +203,82 @@ int main ()
   exit (0);
 }
 
-int test0 (double a, double b)
+NOMIPS16 int test0 (double a, double b)
 {
   return __builtin_mips_cabs_f_d (a, b);
 }
 
-int test1 (double a, double b)
+NOMIPS16 int test1 (double a, double b)
 {
   return __builtin_mips_cabs_un_d (a, b);
 }
 
-int test2 (double a, double b)
+NOMIPS16 int test2 (double a, double b)
 {
   return __builtin_mips_cabs_eq_d (a, b);
 }
 
-int test3 (double a, double b)
+NOMIPS16 int test3 (double a, double b)
 {
   return __builtin_mips_cabs_ueq_d (a, b);
 }
 
-int test4 (double a, double b)
+NOMIPS16 int test4 (double a, double b)
 {
   return __builtin_mips_cabs_olt_d (a, b);
 }
 
-int test5 (double a, double b)
+NOMIPS16 int test5 (double a, double b)
 {
   return __builtin_mips_cabs_ult_d (a, b);
 }
 
-int test6 (double a, double b)
+NOMIPS16 int test6 (double a, double b)
 {
   return __builtin_mips_cabs_ole_d (a, b);
 }
 
-int test7 (double a, double b)
+NOMIPS16 int test7 (double a, double b)
 {
   return __builtin_mips_cabs_ule_d (a, b);
 }
 
-int test8 (double a, double b)
+NOMIPS16 int test8 (double a, double b)
 {
   return __builtin_mips_cabs_sf_d (a, b);
 }
 
-int test9 (double a, double b)
+NOMIPS16 int test9 (double a, double b)
 {
   return __builtin_mips_cabs_ngle_d (a, b);
 }
 
-int test10 (double a, double b)
+NOMIPS16 int test10 (double a, double b)
 {
   return __builtin_mips_cabs_seq_d (a, b);
 }
 
-int test11 (double a, double b)
+NOMIPS16 int test11 (double a, double b)
 {
   return __builtin_mips_cabs_ngl_d (a, b);
 }
 
-int test12 (double a, double b)
+NOMIPS16 int test12 (double a, double b)
 {
   return __builtin_mips_cabs_lt_d (a, b);
 }
 
-int test13 (double a, double b)
+NOMIPS16 int test13 (double a, double b)
 {
   return __builtin_mips_cabs_nge_d (a, b);
 }
 
-int test14 (double a, double b)
+NOMIPS16 int test14 (double a, double b)
 {
   return __builtin_mips_cabs_le_d (a, b);
 }
 
-int test15 (double a, double b)
+NOMIPS16 int test15 (double a, double b)
 {
   return __builtin_mips_cabs_ngt_d (a, b);
 }

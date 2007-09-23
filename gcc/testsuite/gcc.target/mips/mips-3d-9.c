@@ -19,9 +19,9 @@ float e[4]; /* Result for matrix_multiply3() */
 float f[4]; /* Result for matrix_multiply4() */
 
 void matrix_multiply1();
-void matrix_multiply2();
-void matrix_multiply3();
-void matrix_multiply4();
+NOMIPS16 void matrix_multiply2();
+NOMIPS16 void matrix_multiply3();
+NOMIPS16 void matrix_multiply4();
 
 int main ()
 {
@@ -65,7 +65,7 @@ void matrix_multiply1()
    }
 }
 
-void matrix_multiply2()
+NOMIPS16 void matrix_multiply2()
 {
   int i, j;
   v2sf m1, m2;
@@ -91,7 +91,7 @@ void matrix_multiply2()
    }
 }
 
-void matrix_multiply3()
+NOMIPS16 void matrix_multiply3()
 {
   int i;
   v2sf m1, m2, n1, n2;
@@ -114,7 +114,7 @@ void matrix_multiply3()
    }
 }
 
-void matrix_multiply4()
+NOMIPS16 void matrix_multiply4()
 {
   v2sf m1, m2;
   v2sf n1, n2, n3, n4, n5, n6, n7, n8;

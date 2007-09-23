@@ -879,6 +879,12 @@ extern enum mips_llsc_setting mips_llsc;
 /* ISA has lwxs instruction (load w/scaled index address.  */
 #define ISA_HAS_LWXS		(TARGET_SMARTMIPS && !TARGET_MIPS16)
 
+/* The DSP ASE is available.  */
+#define ISA_HAS_DSP		(TARGET_DSP && !TARGET_MIPS16)
+
+/* Revision 2 of the DSP ASE is available.  */
+#define ISA_HAS_DSPR2		(TARGET_DSPR2 && !TARGET_MIPS16)
+
 /* True if the result of a load is not available to the next instruction.
    A nop will then be needed between instructions like "lw $4,..."
    and "addiu $4,$4,1".  */

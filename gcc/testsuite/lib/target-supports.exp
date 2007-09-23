@@ -625,6 +625,21 @@ proc check_effective_target_mips64 { } {
     }]
 }
 
+# Return true if the target is a MIPS target that does not produce
+# MIPS16 code.
+
+proc check_effective_target_nomips16 { } {
+    return [check_no_compiler_messages nomips16 object {
+	#ifndef __mips
+	#error FOO
+	#else
+	/* A cheap way of testing for -mflip-mips16.  */
+	void foo (void) { asm ("addiu $20,$20,1"); }
+	void bar (void) { asm ("addiu $20,$20,1"); }
+	#endif
+    }]
+}
+
 # Add the options needed for MIPS16 function attributes.  At the moment,
 # we don't support MIPS16 PIC.
 

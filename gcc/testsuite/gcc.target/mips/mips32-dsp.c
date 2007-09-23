@@ -103,7 +103,7 @@ typedef int q31;
 typedef int i32;
 typedef long long a64;
 
-void test_MIPS_DSP (void);
+NOMIPS16 void test_MIPS_DSP (void);
 
 char array[100];
 int little_endian;
@@ -124,27 +124,27 @@ int main ()
   exit (0);
 }
 
-v2q15 add_v2q15 (v2q15 a, v2q15 b)
+NOMIPS16 v2q15 add_v2q15 (v2q15 a, v2q15 b)
 {
   return __builtin_mips_addq_ph (a, b);
 }
 
-v4i8 add_v4i8 (v4i8 a, v4i8 b)
+NOMIPS16 v4i8 add_v4i8 (v4i8 a, v4i8 b)
 {
   return __builtin_mips_addu_qb (a, b);
 }
 
-v2q15 sub_v2q15 (v2q15 a, v2q15 b)
+NOMIPS16 v2q15 sub_v2q15 (v2q15 a, v2q15 b)
 {
   return __builtin_mips_subq_ph (a, b);
 }
 
-v4i8 sub_v4i8 (v4i8 a, v4i8 b)
+NOMIPS16 v4i8 sub_v4i8 (v4i8 a, v4i8 b)
 {
   return __builtin_mips_subu_qb (a, b);
 }
 
-void test_MIPS_DSP ()
+NOMIPS16 void test_MIPS_DSP ()
 {
   v4i8 v4i8_a,v4i8_b,v4i8_c,v4i8_r,v4i8_s;
   v2q15 v2q15_a,v2q15_b,v2q15_c,v2q15_r,v2q15_s;
