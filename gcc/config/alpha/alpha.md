@@ -5784,8 +5784,8 @@
       else
 	target = operands[0];
 
-      emit_insn (gen_movdi (gen_rtx_SUBREG (DImode, target, 0), out[0]));
-      emit_insn (gen_movdi (gen_rtx_SUBREG (DImode, target, 8), out[1]));
+      emit_insn (gen_movdi (operand_subword (target, 0, 0, TImode), out[0]));
+      emit_insn (gen_movdi (operand_subword (target, 1, 0, TImode), out[1]));
 
       if (target != operands[0])
 	emit_insn (gen_rtx_SET (VOIDmode, operands[0], target));
