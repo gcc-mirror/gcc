@@ -3,8 +3,10 @@
 
 #include <stdarg.h>
 
-extern "C" int warn_open_missing_mode (void);
-extern "C" int warn_open_too_many_arguments (void);
+extern "C" int error_open_missing_mode (void)
+  __attribute__((__error__ ("open with O_CREAT needs 3 arguments, only 2 were given")));
+extern "C" int warn_open_too_many_arguments (void)
+  __attribute__((__warning__ ("open called with more than 3 arguments")));
 extern "C" void abort (void);
 
 char expected_char;
@@ -83,7 +85,7 @@ myopen (const char *path, int oflag, ...)
     {
       if ((oflag & 0x40) != 0 && __builtin_va_arg_pack_len () < 1)
 	{
-	  warn_open_missing_mode ();
+	  error_open_missing_mode ();
 	  return myopen2 (path, oflag);
 	}
       return myopenva (path, oflag, __builtin_va_arg_pack ());

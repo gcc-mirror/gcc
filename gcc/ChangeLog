@@ -1,5 +1,14 @@
 2007-09-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* expr.c (expand_expr_real_1) <case CALL_EXPR>: Use get_callee_fndecl
+	instead of checking CALL_EXPR_FN directly to test for builtins.
+	If error or warning attributes are present, print
+	error resp. warning.
+	* c-common.c (handle_error_attribute): New function.
+	(c_common_attribute_table): Add error and warning
+	attributes.
+	* doc/extend.texi: Document error and warning attributes.
+
 	* tree.h (block_nonartificial_location): New prototype.
 	* tree.c (block_nonartificial_location): New function.
 	* dwarf2out.c (gen_subprogram_die): Add DW_AT_artificial
