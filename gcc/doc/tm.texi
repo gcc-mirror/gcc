@@ -1004,14 +1004,15 @@ a value the default is @code{BITS_PER_WORD}.
 @end defmac
 
 @defmac POINTERS_EXTEND_UNSIGNED
-A C expression whose value is greater than zero if pointers that need to be
-extended from being @code{POINTER_SIZE} bits wide to @code{Pmode} are to
-be zero-extended and zero if they are to be sign-extended.  If the value
-is less then zero then there must be an "ptr_extend" instruction that
-extends a pointer from @code{POINTER_SIZE} to @code{Pmode}.
+A C expression that determines how pointers should be extended from
+@code{ptr_mode} to either @code{Pmode} or @code{word_mode}.  It is
+greater than zero if pointers should be zero-extended, zero if they
+should be sign-extended, and negative if some other sort of conversion
+is needed.  In the last case, the extension is done by the target's
+@code{ptr_extend} instruction.
 
-You need not define this macro if the @code{POINTER_SIZE} is equal
-to the width of @code{Pmode}.
+You need not define this macro if the @code{ptr_mode}, @code{Pmode}
+and @code{word_mode} are all the same width.
 @end defmac
 
 @defmac PROMOTE_MODE (@var{m}, @var{unsignedp}, @var{type})

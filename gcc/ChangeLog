@@ -1,5 +1,10 @@
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* doc/tm.texi (POINTERS_EXTEND_UNSIGNED): Document extensions to
+	word_mode as well as Pmode.
+
+2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* function.c (assign_parm_setup_block): Explicitly convert BLKmode
 	parameters from word_mode to the subword type if such a truncation
 	is not a no-op.
