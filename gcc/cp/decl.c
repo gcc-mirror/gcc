@@ -7512,6 +7512,10 @@ grokdeclarator (const cp_declarator *declarator,
     {
       typedef_decl = type;
       type = TREE_TYPE (typedef_decl);
+      if (TREE_DEPRECATED (type)
+	  && DECL_ARTIFICIAL (typedef_decl)
+	  && deprecated_state != DEPRECATED_SUPPRESS)
+	warn_deprecated_use (type);
     }
   /* No type at all: default to `int', and set DEFAULTED_INT
      because it was not a user-defined typedef.  */
