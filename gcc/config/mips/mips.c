@@ -10218,30 +10218,28 @@ add_constant (struct mips16_constant_pool *pool,
 static rtx
 dump_constants_1 (enum machine_mode mode, rtx value, rtx insn)
 {
-  switch (GET_MODE_CLASS (mode))
+  if (SCALAR_INT_MODE_P (mode)
+      || ALL_SCALAR_FRACT_MODE_P (mode)
+      || ALL_SCALAR_ACCUM_MODE_P (mode))
     {
-    case MODE_INT:
-      {
-	rtx size = GEN_INT (GET_MODE_SIZE (mode));
-	return emit_insn_after (gen_consttable_int (value, size), insn);
-      }
-
-    case MODE_FLOAT:
-      return emit_insn_after (gen_consttable_float (value), insn);
-
-    case MODE_VECTOR_FLOAT:
-    case MODE_VECTOR_INT:
-      {
-	int i;
-	for (i = 0; i < CONST_VECTOR_NUNITS (value); i++)
-	  insn = dump_constants_1 (GET_MODE_INNER (mode),
-				   CONST_VECTOR_ELT (value, i), insn);
-	return insn;
-      }
-
-    default:
-      gcc_unreachable ();
+      rtx size = GEN_INT (GET_MODE_SIZE (mode));
+      return emit_insn_after (gen_consttable_int (value, size), insn);
     }
+
+  if (SCALAR_FLOAT_MODE_P (mode))
+    return emit_insn_after (gen_consttable_float (value), insn);
+
+  if (VECTOR_MODE_P (mode))
+    {
+      int i;
+
+      for (i = 0; i < CONST_VECTOR_NUNITS (value); i++)
+	insn = dump_constants_1 (GET_MODE_INNER (mode),
+				 CONST_VECTOR_ELT (value, i), insn);
+      return insn;
+    }
+
+  gcc_unreachable ();
 }
 
 
