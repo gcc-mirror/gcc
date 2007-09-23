@@ -1,5 +1,11 @@
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-1.c: Don't expect
+	any of the macros to be defined for __mips16.
+	* gcc.target/mips/gcc-have-sync-compare-and-swap-2.c: Likewise.
+
+2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* gcc.dg/vect/pr21591.c: Require vect_int.
 	* gcc.dg/vect/vect-outer-2.c: Require vect_intfloat_cvt.
 	* gcc.dg/vect/vect-outer-2a.c: Likewise.

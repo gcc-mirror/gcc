@@ -9,11 +9,11 @@
 #error nonono
 #endif
 
-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4) == defined (__mips16)
 #error nonono
 #endif
 
-#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
+#if defined (__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8) == defined (__mips16)
 #error nonono
 #endif
 

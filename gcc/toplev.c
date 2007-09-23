@@ -173,12 +173,6 @@ const char *dump_base_name;
 
 const char *aux_base_name;
 
-/* Bit flags that specify the machine subtype we are compiling for.
-   Bits are tested using macros TARGET_... defined in the tm.h file
-   and set by `-m...' switches.  Must be defined in rtlanal.c.  */
-
-extern int target_flags;
-
 /* A mask of target_flags that includes bit X if X was set or cleared
    on the command line.  */
 

@@ -61,6 +61,7 @@ print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
 print "extern int target_flags;"
+print "extern int target_flags_explicit;"
 print ""
 
 for (i = 0; i < n_opts; i++) {

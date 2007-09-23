@@ -181,7 +181,7 @@ Target Report RejectNegative Mask(MIPS3D)
 Use MIPS-3D instructions
 
 mllsc
-Target Report
+Target Report Mask(LLSC)
 Use ll, sc and sync instructions
 
 mlocal-sdata

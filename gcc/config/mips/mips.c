@@ -638,9 +638,6 @@ static GTY(()) int mips16_flipper;
 /* The -mtext-loads setting.  */
 enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
 
-/* The -mllsc setting.  */
-enum mips_llsc_setting mips_llsc = LLSC_DEFAULT;
-
 /* The architecture selected by -mipsN.  */
 static const struct mips_cpu_info *mips_isa_info;
 
@@ -5872,7 +5869,7 @@ mips_set_current_function (tree fndecl)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-mips_handle_option (size_t code, const char *arg, int value)
+mips_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 {
   switch (code)
     {
@@ -5912,10 +5909,6 @@ mips_handle_option (size_t code, const char *arg, int value)
 	mips_code_readable = CODE_READABLE_NO;
       else
 	return false;
-      return true;
-
-    case OPT_mllsc:
-      mips_llsc = value ? LLSC_YES : LLSC_NO;
       return true;
 
     default:
@@ -6545,8 +6538,7 @@ mips_strip_unspec_address (rtx op)
    '$'	Print the name of the stack pointer register (sp or $29).
    '+'	Print the name of the gp register (usually gp or $28).
    '~'	Output a branch alignment to LABEL_ALIGN(NULL).
-   '|'  Print .set push; .set mips2 if mips_llsc == LLSC_YES
-        && !ISA_HAS_LL_SC.
+   '|'  Print .set push; .set mips2 if !ISA_HAS_LL_SC.
    '-'  Print .set pop under the same conditions for '|'.  */
 
 void
