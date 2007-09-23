@@ -1,3 +1,11 @@
+2007-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/28755
+	* expr.c (expand_constructor): New function.
+	(expand_expr_real_1) <case CONSTRUCTOR>: Call it.
+	(expand_expr_real_1) <case ARRAY_REF>: Call it if VALUE is
+	CONSTRUCTOR.
+
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (dump_constants_1): Generalize to include
