@@ -10055,6 +10055,19 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
 		       reg_names[GP_REG_FIRST + 2],
 		       reg_names[FP_REG_FIRST + 0]);
+	      if (GET_MODE (retval) == SCmode && TARGET_64BIT)
+		{
+		  /* On 64-bit targets, complex floats are returned in
+		     a single GPR, such that "sd" on a suitably-aligned
+		     target would store the value correctly.  */
+		  fprintf (asm_out_file, "\tdsll\t%s,%s,32\n",
+			   reg_names[GP_REG_FIRST + 2 + TARGET_LITTLE_ENDIAN],
+			   reg_names[GP_REG_FIRST + 2 + TARGET_LITTLE_ENDIAN]);
+		  fprintf (asm_out_file, "\tor\t%s,%s,%s\n",
+			   reg_names[GP_REG_FIRST + 2],
+			   reg_names[GP_REG_FIRST + 2],
+			   reg_names[GP_REG_FIRST + 3]);
+		}
 	      break;
 
 	    case DCmode:
