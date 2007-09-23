@@ -1,5 +1,10 @@
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (dump_constants_1): Generalize to include
+	fractional and accumulator modes.
+
+2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.h (ISA_HAS_DSP, ISA_HAS_DSPR2): New macros.
 	* config/mips/mips.c (mips_set_mips16_mode): Don't clear the DSP
 	flags for MIPS16.
