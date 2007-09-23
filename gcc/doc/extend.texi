@@ -1803,7 +1803,8 @@ attributes are currently defined for functions on all targets:
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
 @code{weak}, @code{malloc}, @code{alias}, @code{warn_unused_result},
 @code{nonnull}, @code{gnu_inline}, @code{externally_visible},
-@code{hot}, @code{cold} and @code{artificial}.
+@code{hot}, @code{cold}, @code{artificial}, @code{error}
+and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
 supported for variables declarations (@pxref{Variable Attributes}) and
@@ -1940,6 +1941,30 @@ this attribute, every call inside this function will be inlined, if possible.
 Whether the function itself is considered for inlining depends on its size and
 the current inlining parameters.  The @code{flatten} attribute only works
 reliably in unit-at-a-time mode.
+
+@item error ("@var{message}")
+@cindex @code{error} function attribute
+If this attribute is used on a function declaration and a call to such a function
+is not eliminated through dead code elimination or other optimizations, an error
+which will include @var{message} will be diagnosed.  This is useful
+for compile time checking, especially together with @code{__builtin_constant_p}
+and inline functions where checking the inline function arguments is not
+possible through @code{extern char [(condition) ? 1 : -1];} tricks.
+While it is possible to leave the function undefined and thus invoke
+a link failure, when using this attribute the problem will be diagnosed
+earlier and with exact location of the call even in presence of inline
+functions or when not emitting debugging information.
+
+@item warning ("@var{message}")
+@cindex @code{warning} function attribute
+If this attribute is used on a function declaration and a call to such a function
+is not eliminated through dead code elimination or other optimizations, a warning
+which will include @var{message} will be diagnosed.  This is useful
+for compile time checking, especially together with @code{__builtin_constant_p}
+and inline functions.  While it is possible to define the function with
+a message in @code{.gnu.warning*} section, when using this attribute the problem
+will be diagnosed earlier and with exact location of the call even in presence
+of inline functions or when not emitting debugging information.
 
 @item cdecl
 @cindex functions that do pop the argument stack on the 386
