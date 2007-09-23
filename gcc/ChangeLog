@@ -1,3 +1,8 @@
+2007-09-23  Ollie Wild  <aaw@google.com>
+
+	fold-const.c (fold_binary): Fold BIT_AND_EXPR's with a pointer operand.
+	(get_pointer_modulus_and_residue): New function.
+
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (build_mips16_call_stub): On 64-bit targets,
