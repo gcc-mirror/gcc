@@ -5128,6 +5128,11 @@ build_over_call (struct z_candidate *cand, int flags)
 				ba_any, NULL);
       gcc_assert (binfo && binfo != error_mark_node);
 
+      /* Warn about deprecated virtual functions now, since we're about
+	 to throw away the decl.  */
+      if (TREE_DEPRECATED (fn))
+	warn_deprecated_use (fn);
+
       argarray[0] = build_base_path (PLUS_EXPR, argarray[0], binfo, 1);
       if (TREE_SIDE_EFFECTS (argarray[0]))
 	argarray[0] = save_expr (argarray[0]);

@@ -1,5 +1,8 @@
 2007-09-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/15269
+	* call.c (build_over_call): Warn about deprecated virtuals.
+
 	PR c++/19407
 	* cp-tree.h (ATTR_IS_DEPENDENT): New macro.
 	(MAYBE_TAGGED_TYPE_P): Remove.
