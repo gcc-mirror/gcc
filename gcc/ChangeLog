@@ -1,5 +1,10 @@
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (build_mips16_call_stub): On 64-bit targets,
+	combine an SC return value into a single register.
+
+2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* opth-gen.awk (target_flags_explicit): Declare.
 	* toplev.h (target_flags_explicit): Delete declaration.
 	* toplev.c (target_flags): Likewise.
