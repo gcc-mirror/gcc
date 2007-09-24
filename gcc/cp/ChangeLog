@@ -1,3 +1,15 @@
+2007-09-24  Douglas Gregor  <doug.gregor@gmail.com>
+
+	PR c++/33112
+	PR c++/33185	
+	* tree.c (cplus_array_compare): Compare pointers, not types.
+	(build_cplus_array_type_1): Store new array type into the hash
+	table before building the canonical type; build the canonical type
+	correctly.
+	(cp_build_qualified_type_real): Put all of the array types with
+	cv-qualified element types into the C++ array hash table, built as 
+	variants of the unqualified versions.
+	
 2007-09-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16370
