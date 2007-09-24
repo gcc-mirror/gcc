@@ -1,3 +1,24 @@
+2007-09-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000-protos.h (rs6000_emit_swrsqrtsf): Declare.
+	* config/rs6000/rs6000.opt (swdiv): Change option to ...
+	(recip): this.
+	* config/rs6000/rs6000.c (rs6000_builtin_reciprocal): New
+	function.
+	(TARGET_BUILTIN_RECIPROCAL): Use it.
+	(rs6000_builtin_expand): Expand recip, recipf, and rsqrtf.
+	(rs6000_init_builtins): Initialize recip, recipf, and rsqrtf.
+	(rs6000_emit_swrsqrtsf): New.
+	* config/rs6000/rs6000.h (rs6000_builtins): Add recip, recipf, and
+	rsqrtf. 
+	* config/rs6000/rs6000.md (UNSPEC_RSQRT): Define.
+	(divsf3): Remove swdiv support.
+	(recipsf3): New.
+	(rsqrtsf2): New.
+	(rsqrt_internal1): New.
+	(divdf3): Remove swdiv support.
+	(reciptdf3): New.
+
 2007-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33506

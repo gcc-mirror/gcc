@@ -89,6 +89,7 @@ extern void rs6000_split_compare_and_swapqhi (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_split_lock_test_and_set (rtx, rtx, rtx, rtx);
 extern void rs6000_emit_swdivsf (rtx, rtx, rtx);
 extern void rs6000_emit_swdivdf (rtx, rtx, rtx);
+extern void rs6000_emit_swrsqrtsf (rtx, rtx);
 extern void output_toc (FILE *, rtx, int, enum machine_mode);
 extern void rs6000_initialize_trampoline (rtx, rtx, rtx);
 extern rtx rs6000_longcall_ref (rtx);
