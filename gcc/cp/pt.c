@@ -15732,9 +15732,16 @@ resolve_typename_type (tree type, bool only_current_p)
      to look inside it.  */
   if (only_current_p && !currently_open_class (scope))
     return type;
-  /* If SCOPE is a partial instantiation, it will not have a valid
-     TYPE_FIELDS list, so use the original template.  */
-  scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
+  /* If SCOPE isn't the template itself, it will not have a valid
+     TYPE_FIELDS list.  */
+  if (same_type_p (scope, CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope)))
+    /* scope is either the template itself or a compatible instantiation
+       like X<T>, so look up the name in the original template.  */
+    scope = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (scope);
+  else
+    /* scope is a partial instantiation, so we can't do the lookup or we
+       will lose the template arguments.  */
+    return type;
   /* Enter the SCOPE so that name lookup will be resolved as if we
      were in the class definition.  In particular, SCOPE will no
      longer be considered a dependent type.  */
