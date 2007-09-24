@@ -738,7 +738,8 @@ cp_build_qualified_type_real (tree type,
 	    SET_TYPE_STRUCTURAL_EQUALITY (t);
 	  else if (TYPE_CANONICAL (element_type) != element_type
 		   || (index_type 
-		       && TYPE_CANONICAL (index_type) != index_type))
+		       && TYPE_CANONICAL (index_type) != index_type)
+		   || TYPE_CANONICAL (type) != type)
 	    TYPE_CANONICAL (t)
 	      = build_cplus_array_type
 	         (TYPE_CANONICAL (element_type),
