@@ -4721,11 +4721,12 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
   HOST_WIDE_INT size = int_size_in_bytes (type);
 
   /* __m128 and friends are returned in xmm0.  */
-  if (size == 16 && VECTOR_MODE_P (mode))
+  if (!COMPLEX_MODE_P (mode) && size == 16 && VECTOR_MODE_P (mode))
     return 0;
 
-  /* Otherwise, the size must be exactly in [1248].  */
-  return (size != 1 && size != 2 && size != 4 && size != 8);
+  /* Otherwise, the size must be exactly in [1248]. But not for complex. */
+  return (size != 1 && size != 2 && size != 4 && size != 8)
+         || COMPLEX_MODE_P (mode);
 }
 
 int

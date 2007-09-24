@@ -1,3 +1,7 @@
+2007-09-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	* i386.c:  (return_in_memory_ms_64): Handle return types for complex types.
+
 2007-09-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac (ld_vers): Support GNU linker version xx.xx.*
