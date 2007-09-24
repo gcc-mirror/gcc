@@ -6,6 +6,13 @@ if { ![istarget mipsisa*-*-elf*] && ![istarget mips64vr*-*-elf*] } {
     return
 }
 
+load_lib gcc-dg.exp
+
+# Check whether the flags are compatible with MIPS16 code generation.
+if { ![check_effective_target_mips16_attribute] } {
+    return
+}
+
 # Save the old value of CFLAGS_FOR_TARGET, if any.
 global saved_CFLAGS_FOR_TARGET
 if { [info exists CFLAGS_FOR_TARGET] } {
@@ -36,7 +43,6 @@ proc compat-use-tst-compiler { } {
     }
 }
 
-load_lib gcc.exp
 load_lib compat.exp
 
 gcc_init
