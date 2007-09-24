@@ -648,10 +648,17 @@ proc add_options_for_mips16_attribute { flags } {
 }
 
 # Return true if we can force a mode that allows MIPS16 code generation.
+# We don't support MIPS16 PIC, and only support MIPS16 -mhard-float
+# for o32 and o64.
 
 proc check_effective_target_mips16_attribute { } {
     return [check_no_compiler_messages mips16_attribute assembly {
-	#if __PIC__
+	#ifdef PIC
+	#error FOO
+	#endif
+	#if defined __mips_hard_float \
+	    && (!defined _ABIO32 || _MIPS_SIM != _ABIO32) \
+	    && (!defined _ABIO64 || _MIPS_SIM != _ABIO64)
 	#error FOO
 	#endif
     } [add_options_for_mips16_attribute ""]]
