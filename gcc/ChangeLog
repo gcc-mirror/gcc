@@ -1,3 +1,8 @@
+2007-09-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config.gcc (powerpc*-*-*): --with-cpu=cell is a 64bit CPU.
+	Allow --with-tune=cell and --with-cpu=cell.
+
 2007-09-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000-protos.h (rs6000_emit_swrsqrtsf): Declare.
