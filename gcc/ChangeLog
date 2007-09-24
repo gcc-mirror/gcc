@@ -1,4 +1,12 @@
 2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
+ 
+	* config/m68k/m68k.c (strict_low_part_peephole_ok): Don't leave
+	the basic block.
+	* config/m68k/m68k.md (movsi_m68k): Allow certain constant when
+	reload is completed.
+	(peephole pattern): Convert most of them to RTL peephole pattern.
+
+2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
 
 	* config/m68k/m68k.c (notice_update_cc): Recognize fp compare
 	(moved from fp compare patterns).

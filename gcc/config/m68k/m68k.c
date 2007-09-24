@@ -3963,14 +3963,18 @@ bool
 strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
                              rtx target)
 {
-  rtx p;
+  rtx p = first_insn;
 
-  p = prev_nonnote_insn (first_insn);
-
-  while (p)
+  while ((p = PREV_INSN (p)))
     {
+      if (NOTE_INSN_BASIC_BLOCK_P (p))
+	return false;
+
+      if (NOTE_P (p))
+	continue;
+
       /* If it isn't an insn, then give up.  */
-      if (GET_CODE (p) != INSN)
+      if (!INSN_P (p))
 	return false;
 
       if (reg_set_p (target, p))
@@ -4000,8 +4004,6 @@ strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
 	  else
 	    return false;
 	}
-
-      p = prev_nonnote_insn (p);
     }
 
   return false;
