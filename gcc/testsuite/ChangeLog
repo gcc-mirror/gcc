@@ -1,3 +1,8 @@
+2007-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/33316
+	* gcc.dg/debug/pr33316.c: New test.
+
 2007-09-20  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33459

@@ -1,3 +1,10 @@
+2007-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/33316
+	* dwarf2out.c (modified_type_die): Handle TYPE_DECL with NULL
+	DECL_NAME.
+	* dbxout.c (dbxout_type): Likewise.
+
 2007-09-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac (ld_vers): Support GNU linker version xx.xx.*

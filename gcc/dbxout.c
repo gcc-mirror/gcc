@@ -2023,7 +2023,11 @@ dbxout_type (tree type, int full)
 	       another type's definition; instead, output an xref
 	       and let the definition come when the name is defined.  */
 	    stabstr_S ((TREE_CODE (type) == RECORD_TYPE) ? "xs" : "xu");
-	    if (TYPE_NAME (type) != 0)
+	    if (TYPE_NAME (type) != 0
+		/* The C frontend creates for anonymous variable length
+		   records/unions TYPE_NAME with DECL_NAME NULL.  */
+		&& (TREE_CODE (TYPE_NAME (type)) != TYPE_DECL
+		    || DECL_NAME (TYPE_NAME (type))))
 	      dbxout_type_name (type);
 	    else
 	      {

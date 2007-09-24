@@ -8518,7 +8518,8 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
      don't output a DW_TAG_typedef, since there isn't one in the
      user's program; just attach a DW_AT_name to the type.  */
   if (name
-      && (TREE_CODE (name) != TYPE_DECL || TREE_TYPE (name) == qualified_type))
+      && (TREE_CODE (name) != TYPE_DECL
+	  || (TREE_TYPE (name) == qualified_type && DECL_NAME (name))))
     {
       if (TREE_CODE (name) == TYPE_DECL)
 	/* Could just call add_name_and_src_coords_attributes here,
