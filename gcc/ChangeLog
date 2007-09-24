@@ -1,3 +1,13 @@
+2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
+
+	* config/m68k/m68k.c (notice_update_cc): Recognize fp compare
+	(moved from fp compare patterns).
+	* config/m68k/m68k.md (cmp<mode>, cmp<mode>_68881, cmp<mode>_cf):
+	Cleanup predicates to relieve reload.
+	(conditional_trap): Reject conditional trap with fp condition.
+	* gcc/config/m68k/predicates.md (fp_src_operand): New, reject
+	certain constants early.
+
 2007-09-24  Roman Zippel <zippel@linux-m68k.org>
 
 	* gcc/final.c (final_scan_insn): Remove accidentally duplicated code.

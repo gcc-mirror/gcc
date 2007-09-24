@@ -206,3 +206,16 @@
        (ior (and (match_code "const_int")
  		 (match_test "!symbolic_operand (op, mode)"))
  	    (match_test "!symbolic_operand (op,mode)"))))
+
+;; Special case of general_src_operand, which rejects a few fp
+;; constants (which we prefer in registers) before reload.
+
+(define_predicate "fp_src_operand"
+  (match_operand 0 "general_src_operand")
+{
+  return !CONSTANT_P (op)
+	 || (TARGET_68881
+	     && (!standard_68881_constant_p (op)
+		 || reload_in_progress
+		 || reload_completed));
+})
