@@ -1,3 +1,13 @@
+2007-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33506
+	* langhooks.h (struct lang_hooks_for_types): Add type_hash_eq
+	field.
+	* langhooks-def.h (LANG_HOOKS_TYPE_HASH_EQ): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add LANG_HOOKS_TYPE_HASH_EQ.
+	* tree.c (type_hash_eq): For FUNCTION_TYPE use
+	lang_hooks.type.type_hash_eq in addition to generic tests.
+
 2007-09-24  Pranav Bhandarkar  <pranav.bhandarkar@celunite.com>
 	Ramana Radhakrishnan  <ramana@hercules.pun.celunite.com>
 

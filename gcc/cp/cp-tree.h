@@ -4752,6 +4752,7 @@ extern tree rvalue				(tree);
 extern tree convert_bitfield_to_declared_type   (tree);
 extern tree cp_save_expr			(tree);
 extern bool cast_valid_in_integral_constant_expression_p (tree);
+extern bool cxx_type_hash_eq			(const_tree, const_tree);
 
 /* in typeck.c */
 extern int string_conv_p			(const_tree, const_tree, int);

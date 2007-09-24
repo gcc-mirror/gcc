@@ -129,6 +129,12 @@ struct lang_hooks_for_types
      firstprivate variables.  */
   void (*omp_firstprivatize_type_sizes) (struct gimplify_omp_ctx *, tree);
 
+  /* Return TRUE if TYPE1 and TYPE2 are identical for type hashing purposes.
+     Called only after doing all language independent checks.
+     At present, this function is only called when both TYPE1 and TYPE2 are
+     FUNCTION_TYPEs.  */
+  bool (*type_hash_eq) (const_tree, const_tree);
+
   /* Nonzero if types that are identical are to be hashed so that only
      one copy is kept.  If a language requires unique types for each
      user-specified type, such as Ada, this should be set to TRUE.  */
