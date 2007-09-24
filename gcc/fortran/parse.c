@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
-#include "debug.h"
 
 /* Current statement label.  Zero means no statement label.  Because new_st
    can get wiped during statement matching, we have to keep it separate.  */
@@ -673,9 +672,6 @@ next_statement (void)
 	  st = ST_NONE;
 	  break;
 	}
-
-      if (gfc_define_undef_line ())
-	continue;
 
       st = (gfc_current_form == FORM_FIXED) ? next_fixed () : next_free ();
 
@@ -3223,11 +3219,6 @@ gfc_parse_file (void)
   gfc_statement st;
   locus prog_locus;
 
-  /* If the debugger wants the name of the main source file,
-     we give it.  */
-  if (debug_hooks->start_end_main_source_file)
-    (*debug_hooks->start_source_file) (0, gfc_source_file);
-
   top.state = COMP_NONE;
   top.sym = NULL;
   top.previous = NULL;
@@ -3338,9 +3329,6 @@ loop:
   goto loop;
 
 done:
-  if (debug_hooks->start_end_main_source_file)
-    (*debug_hooks->end_source_file) (0);
-
   return SUCCESS;
 
 duplicate_main:
