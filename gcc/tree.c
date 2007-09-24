@@ -4608,17 +4608,24 @@ type_hash_eq (const void *va, const void *vb)
 				      TYPE_FIELDS (b->type))));
 
     case FUNCTION_TYPE:
-      return (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
-	      || (TYPE_ARG_TYPES (a->type)
-		  && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
-		  && TYPE_ARG_TYPES (b->type)
-		  && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
-		  && type_list_equal (TYPE_ARG_TYPES (a->type),
-				      TYPE_ARG_TYPES (b->type))));
+      if (TYPE_ARG_TYPES (a->type) == TYPE_ARG_TYPES (b->type)
+	  || (TYPE_ARG_TYPES (a->type)
+	      && TREE_CODE (TYPE_ARG_TYPES (a->type)) == TREE_LIST
+	      && TYPE_ARG_TYPES (b->type)
+	      && TREE_CODE (TYPE_ARG_TYPES (b->type)) == TREE_LIST
+	      && type_list_equal (TYPE_ARG_TYPES (a->type),
+				  TYPE_ARG_TYPES (b->type))))
+	break;
+      return 0;
 
     default:
       return 0;
     }
+
+  if (lang_hooks.types.type_hash_eq != NULL)
+    return lang_hooks.types.type_hash_eq (a->type, b->type);
+
+  return 1;
 }
 
 /* Return the cached hash value.  */

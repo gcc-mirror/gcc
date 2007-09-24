@@ -2261,6 +2261,20 @@ cp_build_type_attribute_variant (tree type, tree attributes)
   return new_type;
 }
 
+/* Return TRUE if TYPE1 and TYPE2 are identical for type hashing purposes.
+   Called only after doing all language independent checks.  Only
+   to check TYPE_RAISES_EXCEPTIONS for FUNCTION_TYPE, the rest is already
+   compared in type_hash_eq.  */
+
+bool
+cxx_type_hash_eq (const_tree typea, const_tree typeb)
+{
+  gcc_assert (TREE_CODE (typea) == FUNCTION_TYPE);
+
+  return comp_except_specs (TYPE_RAISES_EXCEPTIONS (typea),
+			    TYPE_RAISES_EXCEPTIONS (typeb), 1);
+}
+
 /* Apply FUNC to all language-specific sub-trees of TP in a pre-order
    traversal.  Called from walk_tree.  */
 

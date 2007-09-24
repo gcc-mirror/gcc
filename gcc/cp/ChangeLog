@@ -1,3 +1,10 @@
+2007-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33506
+	* cp-tree.h (cxx_type_hash_eq): New prototype.
+	* cp-objcp-common.h (LANG_HOOKS_TYPE_HASH_EQ): Redefine.
+	* tree.c (cxx_type_hash_eq): New function.
+
 2007-09-24  Douglas Gregor  <doug.gregor@gmail.com>
 
 	PR c++/33185	

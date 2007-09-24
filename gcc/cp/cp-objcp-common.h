@@ -88,6 +88,8 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #define LANG_HOOKS_COMDAT_GROUP cxx_comdat_group
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
 #define LANG_HOOKS_BUILTIN_FUNCTION cxx_builtin_function
+#undef	LANG_HOOKS_TYPE_HASH_EQ
+#define LANG_HOOKS_TYPE_HASH_EQ	cxx_type_hash_eq
 
 #undef LANG_HOOKS_FUNCTION_INIT
 #define LANG_HOOKS_FUNCTION_INIT cxx_push_function_context
