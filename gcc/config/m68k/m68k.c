@@ -618,6 +618,19 @@ override_options (void)
       gcc_unreachable ();
     }
 
+#ifndef ASM_OUTPUT_ALIGN_WITH_NOP
+  if (align_labels > 2)
+    {
+      warning (0, "-falign-labels=%d is not supported", align_labels);
+      align_labels = 0;
+    }
+  if (align_loops > 2)
+    {
+      warning (0, "-falign-loops=%d is not supported", align_loops);
+      align_loops = 0;
+    }
+#endif
+
   SUBTARGET_OVERRIDE_OPTIONS;
 
   /* Setup scheduling options.  */
