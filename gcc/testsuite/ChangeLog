@@ -1,3 +1,8 @@
+2007-09-24  Roman Zippel <zippel@linux-m68k.org>
+
+	* gcc.c-torture/execute/loop-2f.x: New. Disable test for m68k-linux.
+	* gcc.c-torture/execute/loop-2g.x: Likewise.
+
 2007-09-24  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* lib/target-supports.exp (check_effective_target_mips16_attribute):
