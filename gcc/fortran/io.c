@@ -919,6 +919,9 @@ finished:
 static try
 check_format_string (gfc_expr *e, bool is_input)
 {
+  if (!e || e->expr_type != EXPR_CONSTANT)
+    return SUCCESS;
+
   mode = MODE_STRING;
   format_string = e->value.character.string;
   return check_format (is_input);
@@ -2786,8 +2789,8 @@ if (condition) \
     }
 
   expr = dt->format_expr;
-  if (expr != NULL && expr->expr_type == EXPR_CONSTANT
-      && check_format_string (expr, k == M_READ) == FAILURE)
+  if (gfc_simplify_expr (expr, 0) == FAILURE
+      || check_format_string (expr, k == M_READ) == FAILURE)
     return MATCH_ERROR;
 
   return m;

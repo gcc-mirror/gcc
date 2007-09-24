@@ -1,3 +1,11 @@
+2007-09-23  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/33269
+	* io.c (check_format_string): Move NULL and constant checks into
+	this function.
+	(check_io_constraints): Call gfc_simplify_expr() before calling
+	check_format_string().  Remove NULL and constant checks.
+
 2007-09-24  Roman Zippel <zippel@linux-m68k.org>
 
 	* gcc.c-torture/execute/loop-2f.x: New. Disable test for m68k-linux.
