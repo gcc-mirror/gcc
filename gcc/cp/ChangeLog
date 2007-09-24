@@ -1,3 +1,9 @@
+2007-09-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33239
+	* pt.c (resolve_typename_type): Don't look things up in the original
+	template if it would mean losing template arguments.	
+
 2007-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/33506
