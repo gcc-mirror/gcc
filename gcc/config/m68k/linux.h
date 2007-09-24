@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC "%(asm_cpu_spec) %(asm_pcrel_spec) \
   %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*}"
 
+#undef PREFERRED_STACK_BOUNDARY
+#define PREFERRED_STACK_BOUNDARY 32
+
 /* for 68k machines this only needs to be TRUE for the 68000 */
 
 #undef STRICT_ALIGNMENT
