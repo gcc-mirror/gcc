@@ -3513,6 +3513,13 @@ notice_update_cc (rtx exp, rtx insn)
   if (((cc_status.value1 && FP_REG_P (cc_status.value1))
        || (cc_status.value2 && FP_REG_P (cc_status.value2))))
     cc_status.flags = CC_IN_68881;
+  if (cc_status.value2 && GET_CODE (cc_status.value2) == COMPARE
+      && GET_MODE_CLASS (GET_MODE (XEXP (cc_status.value2, 0))) == MODE_FLOAT)
+    {
+      cc_status.flags = CC_IN_68881;
+      if (!FP_REG_P (XEXP (cc_status.value2, 0)))
+	cc_status.flags |= CC_REVERSED;
+    }
 }
 
 const char *
