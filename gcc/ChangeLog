@@ -1,6 +1,8 @@
 2007-09-24  Kai Tietz  <kai.tietz@onevision.com>
 
-	* i386.c:  (return_in_memory_ms_64): Handle return types for complex types.
+	PR middle-end/33472
+	* config/i386/i386.c (return_in_memory_ms_64): Handle return types for
+	complex types.
 
 2007-09-23  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -9,7 +11,8 @@
 
 2007-09-23  Ollie Wild  <aaw@google.com>
 
-	fold-const.c (fold_binary): Fold BIT_AND_EXPR's with a pointer operand.
+	* fold-const.c (fold_binary): Fold BIT_AND_EXPR's with a pointer
+	operand.
 	(get_pointer_modulus_and_residue): New function.
 
 2007-09-23  Richard Sandiford  <rsandifo@nildram.co.uk>
@@ -270,8 +273,8 @@
 2007-09-19  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* doc/tm.texi (IS_ASM_LOGICAL_LINE_SEPARATOR): Document new argument.
-	* final.c (IS_ASM_LOGICAL_LINE_SEPARATOR): Provide two-argument default
-	definition.
+	* final.c (IS_ASM_LOGICAL_LINE_SEPARATOR): Provide two-argument
+	default definition.
 	(asm_insn_count): Pass template as second argument to it.
 	* config/avr/avr.h (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
 	* config/pa/pa.h (IS_ASM_LOGICAL_LINE_SEPARATOR): Likewise.
@@ -586,7 +589,8 @@
 2007-09-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/33062
-	* pa.c (function_value): Use GET_MODE_BITSIZE instead of TYPE_PRECISION.
+	* pa.c (function_value): Use GET_MODE_BITSIZE instead of
+	TYPE_PRECISION.
 
 2007-09-15  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -604,8 +608,8 @@
 2007-09-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/33438
-	* config/i386/i386.md (fmodxf3): Copy operands[2] to temporary register
-	when operands[2] equals operands[1].
+	* config/i386/i386.md (fmodxf3): Copy operands[2] to temporary
+	register when operands[2] equals operands[1].
 	(remainderxf3): Ditto.
 
 2007-09-14  Sandra Loosemore  <sandra@codesourcery.com>
@@ -1328,8 +1332,8 @@
 2007-09-12  Jan Hubicka  <jh@suse.cz>
 
 	PR target/33393
-	* i386.md (floatsisf2_mixed_memory, floatsisf2_sse_memory): Disable for
-	!SSE_MATH
+	* i386.md (floatsisf2_mixed_memory, floatsisf2_sse_memory): Disable
+	for !SSE_MATH
 
 2007-09-12  Christian Bruel  <christian.bruel@st.com>
 
@@ -1437,7 +1441,7 @@
 	* config/m68k/predicates.md (movsi_const0_operand,
 	non_symbolic_call_operand): New predicates.
 
-	* config/m68k/constraints.md: (Cs, Ci, C0, Cj, CQ, CW, CZ, CS, Ap, Ac):
+	* config/m68k/constraints.md (Cs, Ci, C0, Cj, CQ, CW, CZ, CS, Ap, Ac):
 	New constraints.
 	* doc/md.texi (Constraints for Particular Machines: Motorola 680x0):
 	Document constraints N, O, P, R, S, T, Q, U, W, Cs, Ci, C0, Cj, CQ,
@@ -1691,8 +1695,8 @@
 	DEC_FLOAT_IS_SIGNED: Define for each of 3 operand widths.
 
 2007-09-10  Harsha Jagasia <harsha.jagasia@amd.com>
-            Jan Sjodin <jan.sjodin@amd.com>
-	
+	    Jan Sjodin <jan.sjodin@amd.com>
+
 	* tree-vect-analyze.c (vect_analyze_operations): Change
 	comparison of loop iterations with threshold to less than
 	or equal to instead of less than. Reduce
@@ -1745,7 +1749,7 @@
 	* config/dfp-bit.c (host_to_ieee32, ieee_to_host_32): Ditto.
 	(__swap64): Remove.
 	(host_to_ieee_64, ieee_to_host_64): Don't handle endianness.
-         (__swap128): Remove
+	(__swap128): Remove
 	(host_to_ieee_128, ieee_to_host_128): Don't handle endianness.
 	* Makefile.in (DECNUM_H): Add decimal128Local.h.
 
@@ -1986,8 +1990,8 @@
 	(struct _loop_vec_info): Define new fields: strided_stores,
 	slp_instances, and slp_unrolling_factor along macros for their access.
 	(enum slp_vect_type): New.
-	(struct _stmt_vec_info): Define new field, slp_type, and macros for its
-	access.
+	(struct _stmt_vec_info): Define new field, slp_type, and macros for
+	its access.
 	(STMT_VINFO_STRIDED_ACCESS): New macro.
 	(vect_free_slp_tree): Declare.
 	(vectorizable_load): Add an argument of type slp_tree.
@@ -2046,8 +2050,8 @@
 
 2007-09-09  Andrew Haley  <aph@redhat.com>
 
-        * optabs.c (sign_expand_binop): Set libcall_gen = NULL in the
-        fake signed optab.
+	* optabs.c (sign_expand_binop): Set libcall_gen = NULL in the fake
+	signed optab.
 
 2007-09-09  Hans-Peter Nilsson  <hp@axis.com>
 
@@ -2251,8 +2255,8 @@
 
  	2007-09-06  Jan Hubicka  <jh@suse.cz>
  
-	* config/i386.c (ix86_expand_lround, ix86_expand_round): Update call of
-	real_2expN.
+	* config/i386.c (ix86_expand_lround, ix86_expand_round): Update call
+	of real_2expN.
 
 	2007-09-06  Richard Sandiford  <richard@codesourcery.com>
 
@@ -2592,7 +2596,7 @@
 	(machopic_legitimize_pic_address): Likewise.
 
 2007-09-06  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-            Jan Hubicka  <jh@suse.cz>
+	    Jan Hubicka  <jh@suse.cz>
 
 	* config/spu/spu.md (floatsidf2): Use convert_optab_libfunc
 	instead of ufloat_optab->handlers directly.
@@ -2922,7 +2926,7 @@
 
 2007-09-05  Sandra Loosemore  <sandra@codesourcery.com>
 	    David Ung  <davidu@mips.com>
-            Nigel Stephens <nigel@mips.com>
+	    Nigel Stephens <nigel@mips.com>
 
 	Add mips16/nomips16 function attributes and -mflip-mips16 option
 	for testing mixed-mode compilation.
@@ -3200,7 +3204,7 @@
 
 2007-09-04  Andrew Haley  <aph@redhat.com>
 
-        * config/arm/libgcc-bpabi.ver: Add _Unwind_Backtrace as GCC_4.3.0.
+	* config/arm/libgcc-bpabi.ver: Add _Unwind_Backtrace as GCC_4.3.0.
 
 2007-09-04  Andrew Haley  <aph@redhat.com>
 
@@ -3448,8 +3452,8 @@
 	Documentation.
 
 2007-09-03  Vladimir Yanovsky  <yanov@il.ibm.com>
-            Ayal Zaks  <zaks@il.ibm.com>
-            Revital Eres  <eres@il.ibm.com>
+	    Ayal Zaks  <zaks@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
 	* modulo-sched.c (ps_insert_empty_row, verify_partial_schedule,
 	compute_split_row): New functions.
@@ -3661,40 +3665,40 @@
 	helpers.
 
 2007-08-31  David Edelsohn  <edelsohn@gnu.org>
-            Revital Eres  <eres@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
 
-        * doc/invoke.texi (-mpaired): Document flag.
-        * config.gcc: Include paired.h in powerpc extra_headers and
-        750cl.h in powerpc-*-linux*paired*.
-        * config/rs6000/rs6000.opt (-mpaired): New flag.
-        * config/rs6000/rs6000.c (paired_init_builtins,
-        paired_expand_builtin, paired_expand_lv_builtin,
-        paired_expand_stv_builtin, paired_expand_predicate_builtin):
-        New functions to support the paired single builtin functions.
-        (rs6000_hard_regno_mode_ok): Handle PAIRED_VECTOR_MODE.
-        (def_builtin, bdesc_3arg, bdesc_2arg, bdesc_1arg): Add paired
-        single builtins.
-        (bdesc_paired_preds): New structure for paired predicate
-        instructions.
-        (rs6000_expand_builtin): Expand paired single builtins.
-        (rs6000_init_builtins): Init paired single builtins.
-        (rs6000_common_init_builtins): Add v2sf_ftype_v2sf_v2sf_v2sf.
-        Rename v2sf_ftype_v2sf_v2sf to v2sf_ftype_v2sf_v2sf_spe
-        and v2sf_ftype_v2sf_spe to v2sf_ftype_v2sf.  Add new types
-        v2sf_ftype_v2sf_v2sf and v2sf_ftype_v2sf.
-        (rs6000_vector_mode_supported_p): Support paired vector mode.
-        * config/rs6000/rs6000.h: (UNITS_PER_PAIRED_WORD,
-        PAIRED_VECTOR_MODE, PAIRED_SIMD_REGNO_P, TARGET_PAIRED_FLOAT):
-        New.
-        (LOCAL_ALIGNMENT): Handle PAIRED_VECTOR_MODE.
-        (DATA_ALIGNMENT): Likewise.
-        (UNITS_PER_SIMD_WORD): Handle PAIRED_VECTOR_MODE.
-        (rs6000_builtins): Add PAIRED builtins.
-        * config/rs6000/rs6000.md: Include paired.md.
-        * config/rs6000/paired.h: New.
-        * config/rs6000/paired.md: New.
-        * config/rs6000/750cl.h: New.
-        * config/rs6000/spe.md: Recognize movv2sf instruction for 750cl.
+	* doc/invoke.texi (-mpaired): Document flag.
+	* config.gcc: Include paired.h in powerpc extra_headers and
+	750cl.h in powerpc-*-linux*paired*.
+	* config/rs6000/rs6000.opt (-mpaired): New flag.
+	* config/rs6000/rs6000.c (paired_init_builtins,
+	paired_expand_builtin, paired_expand_lv_builtin,
+	paired_expand_stv_builtin, paired_expand_predicate_builtin):
+	New functions to support the paired single builtin functions.
+	(rs6000_hard_regno_mode_ok): Handle PAIRED_VECTOR_MODE.
+	(def_builtin, bdesc_3arg, bdesc_2arg, bdesc_1arg): Add paired
+	single builtins.
+	(bdesc_paired_preds): New structure for paired predicate
+	instructions.
+	(rs6000_expand_builtin): Expand paired single builtins.
+	(rs6000_init_builtins): Init paired single builtins.
+	(rs6000_common_init_builtins): Add v2sf_ftype_v2sf_v2sf_v2sf.
+	Rename v2sf_ftype_v2sf_v2sf to v2sf_ftype_v2sf_v2sf_spe
+	and v2sf_ftype_v2sf_spe to v2sf_ftype_v2sf.  Add new types
+	v2sf_ftype_v2sf_v2sf and v2sf_ftype_v2sf.
+	(rs6000_vector_mode_supported_p): Support paired vector mode.
+	* config/rs6000/rs6000.h: (UNITS_PER_PAIRED_WORD,
+	PAIRED_VECTOR_MODE, PAIRED_SIMD_REGNO_P, TARGET_PAIRED_FLOAT):
+	New.
+	(LOCAL_ALIGNMENT): Handle PAIRED_VECTOR_MODE.
+	(DATA_ALIGNMENT): Likewise.
+	(UNITS_PER_SIMD_WORD): Handle PAIRED_VECTOR_MODE.
+	(rs6000_builtins): Add PAIRED builtins.
+	* config/rs6000/rs6000.md: Include paired.md.
+	* config/rs6000/paired.h: New.
+	* config/rs6000/paired.md: New.
+	* config/rs6000/750cl.h: New.
+	* config/rs6000/spe.md: Recognize movv2sf instruction for 750cl.
 
 2007-08-30  Ollie Wild  <aaw@google.com>
 
@@ -3971,9 +3975,9 @@
 	fits in the bitfield.
 
 2007-08-28  Mircea Namolaru  <namolaru@il.ibm.com>
-            Vladimir Yanovsky  <yanov@il.ibm.com>
-            Revital Eres  <eres@il.ibm.com>
-            Andrey Belevantsev  <abel@ispras.ru>
+	    Vladimir Yanovsky  <yanov@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+	    Andrey Belevantsev  <abel@ispras.ru>
 
 	* config/spu/spu.md: Recognize doloop pattern when -fmodulo-sched
 	is set.
@@ -4072,7 +4076,7 @@
 	(init_regs): Update comments.
 	(fix_register): Update initial_fixed_regs, initial_call_used_regs,
 	and initial_call_really_used_regs, instead of the non-initial 
-        variables.  This allows us to save the command-line register settings
+	variables.  This allows us to save the command-line register settings
 	after target reinitialization.
 	(init_reg_autoinc): Zero forbidden_inc_dec_classes.
 	* rtl.h (init_emit_regs): Declare.
@@ -4272,7 +4276,7 @@
 	* expr.c (store_expr): Fix order of store_by_pieces arguments.
 
 2007-08-24  Sandra Loosemore  <sandra@codesourcery.com>
-            Nigel Stephens <nigel@mips.com>
+	    Nigel Stephens <nigel@mips.com>
 
 	PR target/11787
 
@@ -4976,7 +4980,7 @@
 	insn_has_dfa_reservation_p ().
 
 2007-08-22  Christian Bruel  <christian.bruel@st.com>	
-            Richard Guenther <rguenther@suse.de>
+	    Richard Guenther <rguenther@suse.de>
 	
 	* fold-const.c (fold_binary): Optimize A-A if -ffinite-math-only.
 	* simplify_rtx (simplify_binary_operation_1): Likewise.
@@ -5156,7 +5160,7 @@
 
 2007-08-20  Pawel Sikora  <pluto@pld-linux.org>
 
-        * doc/invoke.texi (-Wnon-virtual-dtor): Update documentation.
+	* doc/invoke.texi (-Wnon-virtual-dtor): Update documentation.
 
 2007-08-20  David Edelsohn  <edelsohn@gnu.org>
 
@@ -5167,8 +5171,8 @@
 
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
-        * c-typeck.c (convert_for_assignment): Use the type of
-        the member for the initialization.
+	* c-typeck.c (convert_for_assignment): Use the type of
+	the member for the initialization.
 
 2007-08-20  Richard Guenther  <rguenther@suse.de>
 
@@ -5240,7 +5244,7 @@
 	and compacting of basic blocks.
 
 2007-08-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
-           Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+	   Serge Belyshev  <belyshev@depni.sinp.msu.ru>
 
 	PR target/32522
 	* config/alpha/alpha.c (va_list_skip_additions): Check for
@@ -5543,7 +5547,7 @@
 	(debug_aff): Likewise.
 
 2007-08-18  Paul Brook  <paul@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (-fdebug-prefix-map=): New option.
 	* opts.c: Include debug.h.
