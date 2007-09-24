@@ -1,5 +1,12 @@
 2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
 
+	* config/m68k/m68k.h (ASM_OUTPUT_ALIGN_WITH_NOP): New, use
+	"move.l %a4,%a4" to produce nops.
+	* config/m68k/m68k.c (override_options): Reset align options,
+	if neccessary align macro isn't avaible.
+
+2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
+
 	config/m68k/linux.h (PREFERRED_STACK_BOUNDARY): New.
 
 2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
