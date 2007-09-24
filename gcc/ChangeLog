@@ -1,3 +1,12 @@
+2007-09-24  Pranav Bhandarkar  <pranav.bhandarkar@celunite.com>
+	Ramana Radhakrishnan  <ramana@hercules.pun.celunite.com>
+
+	* tree-inline.h (eni_weights): Add field target_builtin_cost to
+	reflect the cost per call to a target specific builtin.
+	* tree-inline.c (estimate_num_insns_1): If it is a CALL_EXPR for a
+	call to a target specific builtin, then use target_builtin_call_cost.
+	(init_inline_once): Initialize target_builtin_call_cost field.
+
 2007-09-24  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR middle-end/33472
