@@ -1,5 +1,11 @@
 2007-09-24  Douglas Gregor  <doug.gregor@gmail.com>
 
+	PR c++/33185	
+	* tree.c (cp_build_qualified_type_real): Build a canonical
+	ARRAY_TYPE if the original ARRAY_TYPE was not a canonical type.
+	
+2007-09-24  Douglas Gregor  <doug.gregor@gmail.com>
+
 	PR c++/33112
 	PR c++/33185	
 	* tree.c (cplus_array_compare): Compare pointers, not types.
