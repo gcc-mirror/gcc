@@ -1,3 +1,7 @@
+2007-09-24  Roman Zippel <zippel@linux-m68k.org>
+
+	* gcc/final.c (final_scan_insn): Remove accidentally duplicated code.
+
 2007-09-24  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config.gcc (powerpc*-*-*): --with-cpu=cell is a 64bit CPU.
