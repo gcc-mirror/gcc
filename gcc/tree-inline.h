@@ -103,6 +103,9 @@ typedef struct eni_weights_d
   /* Cost per call.  */
   unsigned call_cost;
 
+  /* Cost per call to a target specific builtin */
+  unsigned target_builtin_call_cost;
+
   /* Cost of "expensive" div and mod operations.  */
   unsigned div_mod_cost;
 
