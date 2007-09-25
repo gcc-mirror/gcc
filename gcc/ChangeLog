@@ -1,3 +1,8 @@
+2007-09-25  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("*cmpcc_folded"): In condition, gate
+	with REG_P tests before REGNO access.
+
 2007-09-24  DJ Delorie  <dj@redhat.com>
 
 	PR target/31482

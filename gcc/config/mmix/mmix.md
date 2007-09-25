@@ -481,7 +481,8 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 	 (const_int 0)))]
   ;; FIXME: Can we test equivalence any other way?
   ;; FIXME: Can we fold any other way?
-  "REGNO (operands[1]) == REGNO (operands[0])"
+  "REG_P (operands[0]) && REG_P (operands[1])
+   && REGNO (operands[1]) == REGNO (operands[0])"
   "%% folded: cmp %0,%1,0")
 
 (define_insn "*cmpcc"
