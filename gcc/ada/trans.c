@@ -57,6 +57,11 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
+/* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca,
+   for fear of running out of stack space.  If we need more, we use xmalloc
+   instead.  */
+#define ALLOCA_THRESHOLD 1000
+
 /* Let code below know whether we are targetting VMS without need of
    intrusive preprocessor directives.  */
 #ifndef TARGET_ABI_OPEN_VMS
@@ -101,11 +106,6 @@ DEF_VEC_ALLOC_P(parm_attr,gc);
 
 struct language_function GTY(())
 {
-/* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca, for
-   fear of running out of stack space. If we need more, we use xmalloc/free
-   instead. */
-#define ALLOCA_THRESHOLD 1000
-
   VEC(parm_attr,gc) *parm_attr_cache;
 };
 
