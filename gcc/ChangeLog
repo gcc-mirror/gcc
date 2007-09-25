@@ -1,3 +1,11 @@
+2007-09-25  Michael Meissner  <michael.meissner@amd.com>
+
+	PR c/33524
+	* config/i386/i386.c (ix86_expand_sse5_unpack): Change to call
+	gen_sse5_pperm_sign_v4si_v2di and gen_sse5_pperm_zero_v4si_v2di
+	for vector int32 -> int64 conversions.  Don't write beyond the end
+	of the allocated vector for int32 -> int64 conversions.
+
 2007-09-25  Revital Eres  <eres@il.ibm.com>
 
 	* config/rs6000/paired.h (paired_sel): New.

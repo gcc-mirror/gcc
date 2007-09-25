@@ -13542,15 +13542,15 @@ ix86_expand_sse5_unpack (rtx operands[2], bool unsigned_p, bool high_p)
       for (i = 0; i < 16; i++)
 	RTVEC_ELT (v, i) = GEN_INT (pperm_bytes[i]);
 
-      for (i = 0; i < 4; i++)
+      for (i = 0; i < 2; i++)
 	RTVEC_ELT (vs, i) = GEN_INT (i + h2);
 
       p = gen_rtx_PARALLEL (VOIDmode, vs);
       x = force_reg (V16QImode, gen_rtx_CONST_VECTOR (V16QImode, v));
       if (unsigned_p)
-	emit_insn (gen_sse5_pperm_zero_v8hi_v4si (op0, op1, p, x));
+	emit_insn (gen_sse5_pperm_zero_v4si_v2di (op0, op1, p, x));
       else
-	emit_insn (gen_sse5_pperm_sign_v8hi_v4si (op0, op1, p, x));
+	emit_insn (gen_sse5_pperm_sign_v4si_v2di (op0, op1, p, x));
       break;
 
     default:
