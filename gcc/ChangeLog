@@ -1,3 +1,9 @@
+2007-09-24  Rask Ingemann Lambertsen  <rask@sygehus.dk>
+
+	PR target/33184
+	* config/m32c/m32c.c (m32c_eh_return_data_regno): Leave an address
+	register for reload.
+
 2007-09-24  Danny Smith  <dannysmith@user.sourceforge.net>
 
 	PR c++/14688

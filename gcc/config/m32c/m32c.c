@@ -1127,7 +1127,10 @@ m32c_eh_return_data_regno (int n)
     case 0:
       return A0_REGNO;
     case 1:
-      return A1_REGNO;
+      if (TARGET_A16)
+	return R3_REGNO;
+      else
+	return R1_REGNO;
     default:
       return INVALID_REGNUM;
     }
