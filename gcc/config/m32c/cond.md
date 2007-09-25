@@ -90,7 +90,7 @@
   [(set_attr "flags" "n,n,n")])
 
 (define_insn_and_split "stzx_reversed_<mode>"
-  [(set (match_operand:QHI 0 "m32c_r0_operand" "")
+  [(set (match_operand:QHI 0 "m32c_r0_operand" "=R0w")
 	(if_then_else:QHI (ne (reg:CC FLG_REGNO) (const_int 0))
 			 (match_operand:QHI 1 "const_int_operand" "")
 			 (match_operand:QHI 2 "const_int_operand" "")))]
@@ -201,7 +201,7 @@
 )
 
 (define_insn_and_split "movqicc_<code>_<mode>"
-  [(set (match_operand:QI 0 "register_operand" "")
+  [(set (match_operand:QI 0 "register_operand" "=R0w")
         (if_then_else:QI (eqne_cond:QI (match_operand:QHPSI 1 "mra_operand" "RraSd")
 				       (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
 			  (match_operand:QI 3 "const_int_operand" "")
@@ -221,7 +221,7 @@
   )
 
 (define_insn_and_split "movhicc_<code>_<mode>"
-  [(set (match_operand:HI 0 "register_operand" "")
+  [(set (match_operand:HI 0 "register_operand" "=R0w")
         (if_then_else:HI (eqne_cond:HI (match_operand:QHPSI 1 "mra_operand" "RraSd")
 				       (match_operand:QHPSI 2 "mrai_operand" "RraSdi"))
 			  (match_operand:QI 3 "const_int_operand" "")
