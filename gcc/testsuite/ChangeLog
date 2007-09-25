@@ -1,3 +1,7 @@
+2007-09-25  Revital Eres  <eres@il.ibm.com>
+
+	* testsuite/gcc.target/powerpc/ppc-paired.c (paired_sel): Add.
+
 2007-09-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32295

@@ -33,6 +33,7 @@ test_api ()
   b = paired_nabs (a);
   b = paired_sqrt (a);
   b = paired_res (a);
+  b = paired_sel (a, b, c);
 }
 
 int
