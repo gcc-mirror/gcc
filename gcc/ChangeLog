@@ -1,3 +1,9 @@
+2007-09-24  Danny Smith  <dannysmith@user.sourceforge.net>
+
+	PR c++/14688
+	* config/i386/i386.c (ix86_comp_type_attributes): Check
+	METHOD_TYPE too.
+
 2007-09-24  Roman Zippel <zippel@linux-m68k.org> 
 
 	* config/m68k/m68k.h (ASM_OUTPUT_ALIGN_WITH_NOP): New, use
