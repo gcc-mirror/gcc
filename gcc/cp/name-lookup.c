@@ -4944,9 +4944,6 @@ pushtag (tree name, tree type, tag_scope scope)
       if (decl == error_mark_node)
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
 
-      if (! in_class)
-	set_identifier_type_value_with_scope (name, tdef, b);
-
       if (b->kind == sk_class)
 	{
 	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
@@ -4964,6 +4961,9 @@ pushtag (tree name, tree type, tag_scope scope)
 	  if (decl == error_mark_node)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
 	}
+
+      if (! in_class)
+	set_identifier_type_value_with_scope (name, tdef, b);
 
       TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
 

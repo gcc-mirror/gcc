@@ -1,3 +1,8 @@
+2007-09-25  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/33207
+	* g++.dg/parse/crash38.C: New test.
+
 2007-09-25  Michael Meissner  <michael.meissner@amd.com>
 
 	PR c/33524
