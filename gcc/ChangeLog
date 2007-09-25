@@ -1,3 +1,11 @@
+2007-09-24  DJ Delorie  <dj@redhat.com>
+
+	PR target/31482
+	* config/m32c/cond.md (stzx_reversed_<mode>): Add an output
+	constraint.
+	(movqicc_<code>_<mode>): Likewise.
+	(movhicc_<code>_<mode>): Likewise.
+
 2007-09-24  Rask Ingemann Lambertsen  <rask@sygehus.dk>
 
 	PR target/33184
