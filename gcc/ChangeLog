@@ -1,3 +1,14 @@
+2007-09-25  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (expand_prologue_reg_save,
+	expand_epilogue_reg_restore): Code to save and restore I/M/B/L regs and
+	ASTAT moved here...
+	(expand_interrupt_handler_prologue, expand_interrupt_handler_epilogue):
+	... from here.  New argument ALL; callers changed.
+	(n_regs_saved_by_prologue): Count ASTAT for plain saveall functions.
+	(bfin_expand_prologue, bfin_expand_epilogue): Deal with functions that
+	have the "saveall" attribute.
+
 2007-09-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.h (FUNCTION_INCOMING_ARG_REGNO_P): Don't define
