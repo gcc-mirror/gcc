@@ -1,3 +1,7 @@
+2007-09-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gfortran.dg/init_flag_3.f90: Add -mieee for sh.
+
 2007-09-24  Danny Smith  <dannysmith@user.sourceforge.net>
 
 	PR c++/14688
