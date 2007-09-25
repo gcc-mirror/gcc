@@ -319,13 +319,9 @@ extern int target_flags;
 
 #define CONDITIONAL_REGISTER_USAGE mmix_conditional_register_usage ()
 
-/* No INCOMING_REGNO or OUTGOING_REGNO, since those macros are not usable
-   for MMIX: it doesn't have a fixed register window size.  FIXME: Perhaps
-   we should say something about $0..$15 may sometimes be the incoming
-   $16..$31.  Those macros need better documentation; it looks like
-   they're just bogus and that FUNCTION_INCOMING_ARG_REGNO_P and
-   FUNCTION_OUTGOING_VALUE should be used where they're used.  For the
-   moment, do nothing; things seem to work anyway.  */
+#define INCOMING_REGNO(OUT) mmix_opposite_regno (OUT, 0)
+
+#define OUTGOING_REGNO(IN) mmix_opposite_regno (IN, 1)
 
 /* Defining LOCAL_REGNO is necessary in presence of prologue/epilogue,
    else GCC will be confused that those registers aren't saved and
@@ -643,9 +639,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define FUNCTION_ARG_REGNO_P(REGNO)		\
  mmix_function_arg_regno_p (REGNO, 0)
-
-#define FUNCTION_INCOMING_ARG_REGNO_P(REGNO)		\
- mmix_function_arg_regno_p (REGNO, 1)
 
 
 /* Node: Register Arguments */
