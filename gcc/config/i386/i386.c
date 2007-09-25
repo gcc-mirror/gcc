@@ -3118,7 +3118,8 @@ ix86_comp_type_attributes (const_tree type1, const_tree type2)
   /* Check for mismatch of non-default calling convention.  */
   const char *const rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
 
-  if (TREE_CODE (type1) != FUNCTION_TYPE)
+  if (TREE_CODE (type1) != FUNCTION_TYPE
+      && TREE_CODE (type1) != METHOD_TYPE)
     return 1;
 
   /* Check for mismatched fastcall/regparm types.  */
@@ -7839,6 +7840,7 @@ get_dllimport_decl (tree decl)
   set_mem_alias_set (rtl, ix86_GOT_alias_set ());
 
   SET_DECL_RTL (to, rtl);
+  SET_DECL_ASSEMBLER_NAME (to, get_identifier (name));
 
   return to;
 }

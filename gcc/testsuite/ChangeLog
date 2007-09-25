@@ -1,3 +1,8 @@
+2007-09-24  Danny Smith  <dannysmith@user.sourceforge.net>
+
+	PR c++/14688
+	* g++.dg/inherit/override_attribs.C: New file.
+
 2007-09-23  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33269

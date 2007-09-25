@@ -1,3 +1,10 @@
+2007-09-24  Danny Smith  <dannysmith@user.sourceforge.net>
+
+	PR c++/14688
+        * search.c (check_final_overrider): Fail if
+	targetm.comp_type_attributes returns 0.
+
+
 2007-09-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33239
