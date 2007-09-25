@@ -1,5 +1,11 @@
 2007-09-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/mmix/mmix.h (FUNCTION_INCOMING_ARG_REGNO_P): Don't define
+	bogus target macro.
+	(INCOMING_REGNO, OUTGOING_REGNO): Define.
+	* config/mmix/mmix.c (mmix_opposite_regno): New function.
+	* config/mmix/mmix-protos.h (mmix_opposite_regno): Prototype.
+
 	* config/mmix/mmix.md ("*cmpcc_folded"): In condition, gate
 	with REG_P tests before REGNO access.
 
