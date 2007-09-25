@@ -1155,7 +1155,7 @@ build_overload (tree decl, tree chain)
 const char *
 cxx_printable_name (tree decl, int v)
 {
-  static tree decl_ring[PRINT_RING_SIZE];
+  static unsigned int uid_ring[PRINT_RING_SIZE];
   static char *print_ring[PRINT_RING_SIZE];
   static int ring_counter;
   int i;
@@ -1168,7 +1168,7 @@ cxx_printable_name (tree decl, int v)
 
   /* See if this print name is lying around.  */
   for (i = 0; i < PRINT_RING_SIZE; i++)
-    if (decl_ring[i] == decl)
+    if (uid_ring[i] == DECL_UID (decl))
       /* yes, so return it.  */
       return print_ring[i];
 
@@ -1177,18 +1177,18 @@ cxx_printable_name (tree decl, int v)
 
   if (current_function_decl != NULL_TREE)
     {
-      if (decl_ring[ring_counter] == current_function_decl)
+      if (uid_ring[ring_counter] == DECL_UID (current_function_decl))
 	ring_counter += 1;
       if (ring_counter == PRINT_RING_SIZE)
 	ring_counter = 0;
-      gcc_assert (decl_ring[ring_counter] != current_function_decl);
+      gcc_assert (uid_ring[ring_counter] != DECL_UID (current_function_decl));
     }
 
   if (print_ring[ring_counter])
     free (print_ring[ring_counter]);
 
   print_ring[ring_counter] = xstrdup (lang_decl_name (decl, v));
-  decl_ring[ring_counter] = decl;
+  uid_ring[ring_counter] = DECL_UID (decl);
   return print_ring[ring_counter];
 }
 

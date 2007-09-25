@@ -1,9 +1,13 @@
+2007-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.c (cxx_printable_name): Compare FUNCTION_DECL uids
+	rather than pointers.
+
 2007-09-24  Danny Smith  <dannysmith@user.sourceforge.net>
 
 	PR c++/14688
         * search.c (check_final_overrider): Fail if
 	targetm.comp_type_attributes returns 0.
-
 
 2007-09-24  Jason Merrill  <jason@redhat.com>
 
