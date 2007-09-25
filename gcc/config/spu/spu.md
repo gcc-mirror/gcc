@@ -3930,7 +3930,8 @@ selb\t%0,%4,%0,%3"
                                                         loc_ref, pc_rtx)));
 
      DONE;
-   }
+   }else
+      FAIL;
  }")
 
 ;; convert between any two modes, avoiding any GCC assumptions
