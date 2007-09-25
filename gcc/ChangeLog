@@ -1,3 +1,7 @@
+2007-09-25  Revital Eres  <eres@il.ibm.com>
+
+	* config/spu/spu.md: Fix doloop pattern.
+
 2007-09-25  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (expand_prologue_reg_save,
