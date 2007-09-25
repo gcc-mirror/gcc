@@ -1,3 +1,12 @@
+2007-09-25  Revital Eres  <eres@il.ibm.com>
+
+	* config/rs6000/paired.h (paired_sel): New.
+	* config/rs6000/rs6000.c (bdesc_3arg): Add selv2sf4.
+	(rs6000_expand_ternop_builtin): Pass zero const_double operand
+	when expanding selv2sf.
+	* config/rs6000/rs6000.h (rs6000_builtins): Add
+	PAIRED_BUILTIN_SELV2SF4.
+
 2007-09-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/32295

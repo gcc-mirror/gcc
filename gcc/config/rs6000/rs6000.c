@@ -6674,6 +6674,7 @@ static const struct builtin_description bdesc_3arg[] =
   { 0, CODE_FOR_paired_nmadd, "__builtin_paired_nmadd", PAIRED_BUILTIN_NMADD },
   { 0, CODE_FOR_paired_sum0, "__builtin_paired_sum0", PAIRED_BUILTIN_SUM0 },
   { 0, CODE_FOR_paired_sum1, "__builtin_paired_sum1", PAIRED_BUILTIN_SUM1 },
+  { 0, CODE_FOR_selv2sf4, "__builtin_paired_selv2sf4", PAIRED_BUILTIN_SELV2SF4 },
 };
 
 /* DST operations: void foo (void *, const int, const char).  */
@@ -7755,7 +7756,10 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
   if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
     op2 = copy_to_mode_reg (mode2, op2);
 
-  pat = GEN_FCN (icode) (target, op0, op1, op2);
+  if (TARGET_PAIRED_FLOAT && icode == CODE_FOR_selv2sf4)
+    pat = GEN_FCN (icode) (target, op0, op1, op2, CONST0_RTX (SFmode));
+  else 
+    pat = GEN_FCN (icode) (target, op0, op1, op2);
   if (! pat)
     return 0;
   emit_insn (pat);

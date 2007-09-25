@@ -58,6 +58,7 @@
 #define paired_lx __builtin_paired_lx
 #define paired_cmpu0 __builtin_paired_cmpu0
 #define paired_cmpu1 __builtin_paired_cmpu1
+#define paired_sel __builtin_paired_selv2sf4
 
 /* Condition register codes for Paired predicates. */
 #define LT            0
