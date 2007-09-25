@@ -1,3 +1,9 @@
+2007-09-25  Michael Meissner  <michael.meissner@amd.com>
+
+	PR c/33524
+	* gcc.target/i386/sse5-convert.c: New file, test int->long
+	vectorized conversions.
+
 2007-09-25  Revital Eres  <eres@il.ibm.com>
 
 	* testsuite/gcc.target/powerpc/ppc-paired.c (paired_sel): Add.
