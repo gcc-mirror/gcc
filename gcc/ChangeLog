@@ -1,3 +1,12 @@
+2007-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/32694
+	2006-11-08  Roger Sayle  <roger@eyesopen.com>
+	* tree-ssa-propagate.c (set_rhs): Verify tcc_comparison the same way
+	as tcc_binary.
+	* tree-ssa-ccp.c (fold_stmt_r) <COND_EXPR>: Use set_rhs to modify
+	the condition after calling fold_binary.
+
 2007-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/33316
