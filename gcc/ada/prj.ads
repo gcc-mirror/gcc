@@ -298,8 +298,6 @@ package Prj is
       Next : Name_List_Index := No_Name_List;
    end record;
 
-   function Default_Language (In_Tree : Project_Tree_Ref) return Name_Id;
-
    package Name_List_Table is new GNAT.Dynamic_Tables
      (Table_Component_Type => Name_Node,
       Table_Index_Type     => Name_List_Index,
@@ -363,12 +361,9 @@ package Prj is
       Compiler_Driver_Path : String_Access := null;
       --  The path name of the executable for the compiler of the language
 
-      Compiler_Min_Options : Name_List_Index := No_Name_List;
-      --  The minimum options for the compiler of the language. Specified
-      --  in the configuration as Compiler'Switches (<language>).
-
-      Min_Compiler_Options : String_List_Access := null;
-      --  The minimum options as an argument list
+      Compiler_Required_Switches : Name_List_Index := No_Name_List;
+      --  The list of switches that are required as a minimum to invoke the
+      --  compiler driver.
 
       Compilation_PIC_Option : Name_List_Index := No_Name_List;
       --  The option(s) to compile a source in Position Independent Code for
@@ -407,7 +402,7 @@ package Prj is
       Runtime_Project       : Path_Name_Type  := No_Path;
       Binder_Driver         : File_Name_Type  := No_File;
       Binder_Driver_Path    : Path_Name_Type  := No_Path;
-      Binder_Min_Options    : Name_List_Index := No_Name_List;
+      Binder_Required_Switches : Name_List_Index      := No_Name_List;
       Binder_Prefix         : Name_Id         := No_Name;
       Toolchain_Version     : Name_Id         := No_Name;
       Toolchain_Description : Name_Id         := No_Name;
@@ -416,39 +411,38 @@ package Prj is
    end record;
 
    No_Language_Config : constant Language_Config :=
-                          (Kind                    => File_Based,
-                           Naming_Data             => No_Lang_Naming_Data,
-                           Compiler_Driver         => No_File,
-                           Compiler_Driver_Path    => null,
-                           Compiler_Min_Options    => No_Name_List,
-                           Min_Compiler_Options    => null,
-                           Compilation_PIC_Option  => No_Name_List,
-                           Mapping_File_Switches   => No_Name_List,
-                           Mapping_Spec_Suffix     => No_File,
-                           Mapping_Body_Suffix     => No_File,
-                           Config_File_Switches    => No_Name_List,
-                           Dependency_Kind         => Makefile,
-                           Dependency_Option       => No_Name_List,
-                           Compute_Dependency      => No_Name_List,
-                           Include_Option          => No_Name_List,
-                           Include_Path            => No_Name,
-                           Include_Path_File       => No_Name,
-                           Objects_Path            => No_Name,
-                           Objects_Path_File       => No_Name,
-                           Config_Body             => No_Name,
-                           Config_Spec             => No_Name,
-                           Config_Body_Pattern     => No_Name,
-                           Config_Spec_Pattern     => No_Name,
-                           Config_File_Unique      => False,
-                           Runtime_Project         => No_Path,
-                           Binder_Driver           => No_File,
-                           Binder_Driver_Path      => No_Path,
-                           Binder_Min_Options      => No_Name_List,
-                           Binder_Prefix           => No_Name,
-                           Toolchain_Version       => No_Name,
-                           Toolchain_Description   => No_Name,
-                           PIC_Option              => No_Name,
-                           Objects_Generated       => True);
+                          (Kind                       => File_Based,
+                           Naming_Data                => No_Lang_Naming_Data,
+                           Compiler_Driver            => No_File,
+                           Compiler_Driver_Path       => null,
+                           Compiler_Required_Switches => No_Name_List,
+                           Compilation_PIC_Option     => No_Name_List,
+                           Mapping_File_Switches      => No_Name_List,
+                           Mapping_Spec_Suffix        => No_File,
+                           Mapping_Body_Suffix        => No_File,
+                           Config_File_Switches       => No_Name_List,
+                           Dependency_Kind            => Makefile,
+                           Dependency_Option          => No_Name_List,
+                           Compute_Dependency         => No_Name_List,
+                           Include_Option             => No_Name_List,
+                           Include_Path               => No_Name,
+                           Include_Path_File          => No_Name,
+                           Objects_Path               => No_Name,
+                           Objects_Path_File          => No_Name,
+                           Config_Body                => No_Name,
+                           Config_Spec                => No_Name,
+                           Config_Body_Pattern        => No_Name,
+                           Config_Spec_Pattern        => No_Name,
+                           Config_File_Unique         => False,
+                           Runtime_Project            => No_Path,
+                           Binder_Driver              => No_File,
+                           Binder_Driver_Path         => No_Path,
+                           Binder_Required_Switches   => No_Name_List,
+                           Binder_Prefix              => No_Name,
+                           Toolchain_Version          => No_Name,
+                           Toolchain_Description      => No_Name,
+                           PIC_Option                 => No_Name,
+                           Objects_Generated          => True);
 
    type Language_Data is record
       Name          : Name_Id         := No_Name;
@@ -1390,14 +1384,6 @@ package Prj is
 
    type Project_Tree_Data is
       record
-         --  General
-
-         Default_Language         : Name_Id         := No_Name;
-         --  The name of the language of the sources of a project, when
-         --  attribute Languages is not specified.
-
-         Config                   : Project_Configuration;
-
          --  Languages and sources of the project
 
          First_Language           : Language_Index  := No_Language_Index;

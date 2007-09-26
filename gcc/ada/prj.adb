@@ -358,15 +358,6 @@ package body Prj is
       return Default_Ada_Spec_Suffix_Id;
    end Default_Ada_Spec_Suffix;
 
-   ----------------------
-   -- Default_Language --
-   ----------------------
-
-   function Default_Language (In_Tree : Project_Tree_Ref) return Name_Id is
-   begin
-      return In_Tree.Default_Language;
-   end Default_Language;
-
    ---------------------------
    -- Delete_All_Temp_Files --
    ---------------------------
@@ -453,10 +444,6 @@ package body Prj is
       Prj.Initialize (Tree => No_Project_Tree);
       Value := Project_Empty;
       Value.Naming := Tree.Private_Part.Default_Naming;
-
-      if Current_Mode = Multi_Language then
-         Value.Config := Tree.Config;
-      end if;
 
       return Value;
    end Empty_Project;

@@ -43,9 +43,6 @@ package Makeutl is
    Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
    --  The project tree
 
-   Main_Config_Project : Project_Id;
-   --  The project id of the main configuration project
-
    procedure Add
      (Option : String_Access;
       To     : in out String_List_Access;
