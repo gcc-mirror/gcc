@@ -1,3 +1,9 @@
+2007-09-25  DJ Delorie  <dj@redhat.com>
+
+	PR target/33551
+	* config/m32c/m32c.c (m32c_immd_dbl_mov): Use INTVAL instead of
+	XINT.
+
 2007-09-25  Michael Meissner  <michael.meissner@amd.com>
 
 	PR c/33524
