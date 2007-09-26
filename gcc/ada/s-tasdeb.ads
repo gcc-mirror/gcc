@@ -95,15 +95,18 @@ package System.Tasking.Debug is
    --  Thread_Self by traversing All_Tasks_Lists and calling
    --  System.Task_Primitives.Operations.Continue_Task.
 
+   procedure Stop_All_Tasks_Handler;
+   --  Stop all the tasks by traversing All_Tasks_Lists and calling
+   --  System.Task_Primitives.Operations.Stop_All_Task. This function
+   --  can be used in a interrupt handler.
+
    procedure Stop_All_Tasks;
    --  Stop all the tasks by traversing All_Tasks_Lists and calling
-   --  System.Task_Primitives.Operations.Stop_Task. This function
-   --  can be used in a interrupt handler.
+   --  System.Task_Primitives.Operations.Stop_Task.
 
    procedure Continue_All_Tasks;
    --  Continue all the tasks by traversing All_Tasks_Lists and calling
-   --  System.Task_Primitives.Operations.Continue_Task. This function
-   --  can be used in a interrupt handler.
+   --  System.Task_Primitives.Operations.Continue_Task.
 
    -------------------------------
    -- Run-time tracing routines --

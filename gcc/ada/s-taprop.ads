@@ -520,10 +520,11 @@ package System.Task_Primitives.Operations is
    function Suspend_Task
      (T           : ST.Task_Id;
       Thread_Self : OSI.Thread_Id) return Boolean;
-   --  Suspend a specific task when the underlying thread library provides
-   --  such functionality, unless the thread associated with T is Thread_Self.
-   --  Such functionality is needed by gdb on some targets (e.g VxWorks)
-   --  Return True is the operation is successful
+   --  Suspend a specific task when the underlying thread library provides this
+   --  functionality, unless the thread associated with T is Thread_Self. Such
+   --  functionality is needed by gdb on some targets (e.g VxWorks) Return True
+   --  is the operation is successful. On targets where this operation is not
+   --  available, a dummy body is present which always returns False.
 
    function Resume_Task
      (T           : ST.Task_Id;
@@ -538,6 +539,11 @@ package System.Task_Primitives.Operations is
    --  functionality. Such functionality is needed by gdb on some targets (e.g
    --  VxWorks) This function can be run from an interrupt handler. Return True
    --  is the operation is successful
+
+   function Stop_Task (T : ST.Task_Id) return Boolean;
+   --  Stop a specific task when the underlying thread library provides
+   --  such functionality. Such functionality is needed by gdb on some targets
+   --  (e.g VxWorks). Return True is the operation is successful.
 
    function Continue_Task (T : ST.Task_Id) return Boolean;
    --  Continue a specific task when the underlying thread library provides
