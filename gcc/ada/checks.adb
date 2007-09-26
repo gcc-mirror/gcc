@@ -543,6 +543,7 @@ package body Checks is
             Error_Msg_FE
               ("\?program execution may be erroneous (RM 13.3(27))",
                Aexp, E);
+            Set_Address_Warning_Posted (AC);
          end if;
       end Compile_Time_Bad_Alignment;
 
@@ -626,6 +627,7 @@ package body Checks is
                   Error_Msg_FE
                     ("\?program execution may be erroneous", Aexp, E);
                   Size_Warning_Output := True;
+                  Set_Address_Warning_Posted (AC);
                end if;
             end if;
          end;

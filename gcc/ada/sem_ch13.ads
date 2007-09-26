@@ -161,4 +161,10 @@ package Sem_Ch13 is
    --  The reason it is called that late is to take advantage of any
    --  back-annotation of size and alignment performed by the backend.
 
+   procedure Validate_Address_Clauses;
+   --  This is called after the back end has been called (and thus after the
+   --  alignments of objects have been back annotated). It goes through the
+   --  table of saved address clauses checking for suspicious alignments and
+   --  if necessary issuing warnings.
+
 end Sem_Ch13;
