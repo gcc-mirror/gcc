@@ -305,6 +305,13 @@ package VMS_Data is
    --      LOW          Initialize with the lowest valid value of the subtype.
    --      HIGH         Initialize with the highest valid value of the subtype.
 
+   S_Bind_Leap    : aliased constant S := "/ENABLE_LEAP_SECONDS "          &
+                                            "-y";
+   --      /ENABLE_LEAP_SECONDS
+   --      /NOENABLE_LEAP_SECONDS (D)
+   --
+   --   Enable leap seconds support in Ada.Calendar and its children.
+
    S_Bind_Library : aliased constant S := "/LIBRARY_SEARCH=*"              &
                                             "-aO*";
    --        /LIBRARY_SEARCH=(direc[,...])
@@ -638,6 +645,7 @@ package VMS_Data is
                       S_Bind_Force   'Access,
                       S_Bind_Help    'Access,
                       S_Bind_Init    'Access,
+                      S_Bind_Leap    'Access,
                       S_Bind_Library 'Access,
                       S_Bind_Linker  'Access,
                       S_Bind_Main    'Access,
@@ -4486,25 +4494,81 @@ package VMS_Data is
                                               "-enu "                       &
                                              "CONSTRUCT_NESTING_MAX "       &
                                               "-ec";
-   --       /ELEMENT_METRICS=(option, option ...)
+   --  NODOC  (see /SYNTAX_METRICS)
+
+   S_Metric_Syntax : aliased constant S := "/SYNTAX_METRICS="             &
+                                             "ALL_ON "                    &
+                                             "--syntax-all "              &
+                                             "ALL_OFF "                   &
+                                             "--no-syntax-all "           &
+                                             "DECLARATIONS_ON "           &
+                                             "--declarations "            &
+                                             "DECLARATIONS_OFF "          &
+                                             "--no-declarations "         &
+                                             "STATEMENTS_ON "             &
+                                             "--statements "              &
+                                             "STATEMENTS_OFF "            &
+                                             "--no-statements "           &
+                                             "PUBLIC_SUBPROGRAMS_ON "     &
+                                             "--public-subprograms "      &
+                                             "PUBLIC_SUBPROGRAMS_OFF "    &
+                                             "--no-public-subprograms "   &
+                                             "ALL_SUBPROGRAMS_ON "        &
+                                             "--all-subprograms "         &
+                                             "ALL_SUBPROGRAMS_OFF "       &
+                                             "--no-all-subprograms "      &
+                                             "PUBLIC_TYPES_ON "           &
+                                             "--public-types "            &
+                                             "PUBLIC_TYPES_OFF "          &
+                                             "--no-public-types "         &
+                                             "ALL_TYPES_ON "              &
+                                             "--all-types "               &
+                                             "ALL_TYPES_OFF "             &
+                                             "--no-all-types "            &
+                                             "UNIT_NESTING_ON "           &
+                                             "--unit-nesting "            &
+                                             "UNIT_NESTING_OFF "          &
+                                             "--no-unit-nesting "         &
+                                             "CONSTRUCT_NESTING_ON "      &
+                                             "--construct-nesting "       &
+                                             "CONSTRUCT_NESTING_OFF "     &
+                                             "--no-construct-nesting";
+   --       /SYNTAX_METRICS(option, option ...)
    --
-   --   Specifies the element metrics to be computed (if not set, all the
-   --   element metrics are set on, otherwise only specified metrics are
-   --   computed and reported)
+   --   Specifies the syntax element metrics to be computed (if at least one
+   --   positive syntax element metric, line metric or complexity metric is
+   --   specified then only explicitly specified specified syntax element
+   --   metrics are computed and reported)
    --
    --   option may be one of the following:
    --
-   --     ALL (D)               All the element metrics are computed
-   --     DECLARATION_TOTAL     Compute the total number of declarations
-   --     STATEMENT_TOTAL       Compute the total number of statements
-   --     LOOP_NESTING_MAX      Compute the maximal loop nesting level
-   --     INT_SUBPROGRAMS       Compute the number of interface subprograms
-   --     SUBPROGRAMS_ALL       Compute the number of all the subprograms
-   --     INT_TYPES             Compute the number of interface types
-   --     TYPES_ALL             Compute the number of all the types
-   --     PROGRAM_NESTING_MAX   Compute the maximal program unit nesting level
+   --     ALL_ON (D)               All the syntax element metrics are computed
+   --     ALL_OFF                  None of syntax element metrics is computed
+   --     DECLARATIONS_ON          Compute the total number of declarations
+   --     DECLARATIONS_OFF         Do not compute the total number of
+   --                              declarations
+   --     STATEMENTS_ON            Compute the total number of statements
+   --     STATEMENTS_OFF           Do not compute the total number of
+   --                              statements
+   --     PUBLIC_SUBPROGRAMS_ON    Compute the number of public subprograms
+   --     PUBLIC_SUBPROGRAMS_OFF   Do not compute the number of public
+   --                              subprograms
+   --     ALL_SUBPROGRAMS_ON       Compute the number of all the subprograms
+   --     ALL_SUBPROGRAMS_OFF      Do not compute the number of all the
+   --                              subprograms
+   --     PUBLIC_TYPES_ON          Compute the number of public types
+   --     PUBLIC_TYPES_OFF         Do not compute the number of public types
+   --     ALL_TYPES_ON             Compute the number of all the types
+   --     ALL_TYPES_OFF            Do not compute the number of all the types
+   --     UNIT_NESTING_ON          Compute the maximal program unit nesting
+   --                              level
+   --     UNIT_NESTING_OFF         Do not compute the maximal program unit
+   --                              nesting level
+   --     CONSTRUCT_NESTING_ON     Compute the maximal construct nesting level
+   --     CONSTRUCT_NESTING_OFF    Do not compute the maximal construct nesting
+   --                              level
    --
-   --   All combinations of element metrics options are allowed.
+   --   All combinations of syntax element metrics options are allowed.
 
    S_Metric_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'    &
                                              "-X" & '"';
@@ -4565,26 +4629,138 @@ package VMS_Data is
                                                 "COMMENT_PERCENTAGE "       &
                                                  "-lratio "                 &
                                                 "BLANK_LINES "              &
-                                                 "-lb ";
-   --      /LINE_METRICS=(option, option ...)
+                                                 "-lb "                     &
+                                                "AVERAGE_LINES_IN_BODIES "  &
+                                                 "-lav ";
+   --  NODOC  (see /LINE_COUNT_METRICS)
 
-   --   Specifies the line metrics to be computed (if not set, all the line
-   --   metrics are set on, otherwise only specified metrics are computed and
+   S_Metric_Lines : aliased constant S := "/LINE_COUNT_METRICS="            &
+                                           "ALL_ON "                        &
+                                           "--lines-all "                   &
+                                           "ALL_OFF "                       &
+                                           "--no-lines-all "                &
+                                           "ALL_LINES_ON "                  &
+                                           "--lines "                       &
+                                           "ALL_LINES_OFF "                 &
+                                           "--no-lines "                    &
+                                           "CODE_LINES_ON "                 &
+                                           "--lines-code "                  &
+                                           "CODE_LINES_OFF "                &
+                                           "--no-lines-code "               &
+                                           "COMMENT_LINES_ON "              &
+                                           "--lines-comment "               &
+                                           "COMMENT_LINES_OFF "             &
+                                           "--no-lines-comment "            &
+                                           "CODE_COMMENT_LINES_ON "         &
+                                           "--lines-eol-comment "           &
+                                           "CODE_COMMENT_LINES_OFF "        &
+                                           "--no-lines-eol-comment "        &
+                                           "COMMENT_PERCENTAGE_ON "         &
+                                           "--lines-ratio "                 &
+                                           "COMMENT_PERCENTAGE_OFF "        &
+                                           "--no-lines-ratio "              &
+                                           "BLANK_LINES_ON "                &
+                                           "--lines-blank "                 &
+                                           "BLANK_LINES_OFF "               &
+                                           "--no-lines-blank "              &
+                                           "AVERAGE_BODY_LINES_ON "         &
+                                           "--lines-average "               &
+                                           "AVERAGE_BODY_LINES_OFF "        &
+                                           "--no-lines-average";
+   --      /LINE_COUNT_METRICS=(option, option ...)
+
+   --   Specifies the line metrics to be computed (if at least one positive
+   --   syntax element metric, line metric or complexity metric is specified
+   --   then only explicitly specified specified line metrics are computed and
    --   reported)
    --
    --   option may be one of the following:
    --
-   --     ALL (D)              All the line metrics are computed
-   --     LINES_ALL            All lines are computed
-   --     CODE_LINES           Lines with Ada code are computed
-   --     COMENT_LINES         All comment lines are computed
-   --     MIXED_CODE_COMMENTS  All lines containing both code and comment are
-   --                          computed
-   --     COMMENT_PERCENTAGE   Ratio between comment lines and all the lines
-   --                          containing comments and program code
-   --     BLANK_LINES          Blank lines are computed
+   --     ALL_ON (D)               All the line metrics are computed
+   --     ALL_OFF                  None of line metrics is computed
+   --     ALL_LINES_ON             All lines are computed
+   --     ALL_LINES_OFF            All lines are not computed
+   --     CODE_LINES_ON            Lines with Ada code are computed
+   --     CODE_LINES_OFF           Lines with Ada code are not computed
+   --     COMMENT_LINES_ON         Comment lines are computed
+   --     COMMENT_LINES_OFF        Comment lines are not computed
+   --     COMMENT_PERCENTAGE_ON    Ratio between comment lines and all the
+   --                              lines containing comments and program code
+   --                              is computed
+   --     COMMENT_PERCENTAGE_OFF    Ratio between comment lines and all the
+   --                              lines containing comments and program code
+   --                              is not computed
+   --     BLANK_LINES_ON           Blank lines are computed
+   --     BLANK_LINES_OFF          Blank lines are not computed
+   --     AVERAGE_BODY_LINES_ON    Average number of code lines in subprogram,
+   --                              task and entry bodies and statement
+   --                              sequences of package bodies is computed
+   --     AVERAGE_BODY_LINES_OFF   Average number of code lines in subprogram,
+   --                              task and entry bodies and statement
+   --                              sequences of package bodies is not computed
    --
    --   All combinations of line metrics options are allowed.
+
+   S_Metric_Complexity : aliased constant S := "/COMPLEXITY_METRICS="       &
+                                               "ALL_ON "                    &
+                                               "--complexity-all "          &
+                                              "ALL_OFF "                    &
+                                              "--no-complexity-all "        &
+                                              "CYCLOMATIC_ON "              &
+                                              "--complexity-cyclomatic "    &
+                                              "CYCLOMATIC_OFF "             &
+                                              "--no-complexity-cyclomatic " &
+                                              "ESSENTIAL_ON "               &
+                                              "--complexity-essential "     &
+                                              "ESSENTIAL_OFF "              &
+                                              "--no-complexity-essential "  &
+                                              "LOOP_NESTING_ON "            &
+                                              "--loop-nesting "             &
+                                              "LOOP_NESTING_OFF "           &
+                                              "--no-loop-nesting "          &
+                                              "AVERAGE_COMPLEXITY_ON "      &
+                                              "--complexity-average "       &
+                                              "AVERAGE_COMPLEXITY_OFF "     &
+                                              "--no-complexity-average";
+   --      /COMPLEXITY_METRICS=(option, option ...)
+
+   --   Specifies the complexity metrics to be computed (if at least one
+   --   positive syntax element metric, line metric or complexity metric is
+   --   specified then only explicitly specified specified line metrics are
+   --   computed and reported)
+   --
+   --   option may be one of the following:
+   --
+   --     ALL_ON (D)               All the complexity metrics are computed
+   --     ALL_OFF                  None of complexity metrics is computed
+   --     CYCLOMATIC_ON            Compute the McCabe Cyclomatic Complexity
+   --     CYCLOMATIC_OFF           Do not compute the McCabe Cyclomatic
+   --                              Complexity
+   --     ESSENTIAL_ON             Compute the Essential Complexity
+   --     ESSENTIAL_OFF            Do not ompute the Essential Complexity
+   --     LOOP_NESTIMG_ON          Compute the maximal loop nesting
+   --     LOOP_NESTIMG_OFF         Do not compute the maximal loop nesting
+   --     AVERAGE_COMPLEXITY_ON    Compute the average complexity for
+   --                              executable bodies
+   --     AVERAGE_COMPLEXITY_OFF   Do not compute the average complexity for
+   --                              executable bodies
+   --
+   --   All combinations of line metrics options are allowed.
+
+   S_Metric_No_Local : aliased constant S := "/NO_LOCAL_DETAILS "          &
+                                             "-nolocal";
+   --        /LOCAL_DETAILS (D)
+   --        /NO_LOCAL_DETAILS
+   --
+   --   Do not compute the detailed metrics for local program units.
+
+   S_Metric_No_Exits_As_Gotos : aliased constant S := "/NO_EXITS_AS_GOTOS " &
+                                                      "-ne";
+   --        /EXITS_AS_GOTOS (D)
+   --        /NO_EXITS_AS_GOTOS
+   --
+   --   Do not count EXIT statements as GOTOs when computing the Essential
+   --   Complexity.
 
    S_Metric_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="       &
                                              "DEFAULT "                     &
@@ -4643,22 +4819,7 @@ package VMS_Data is
                                                 "-ne "                      &
                                                "LOCAL_DETAILS "             &
                                                 "-nolocal ";
-   --      /SUPPRESS=(option, option ...)
-   --
-   --   Specifies the metric that should not be computed
-   --
-   --   option may be one of the following:
-   --
-   --     NOTHING (D)             Do not suppress computation of any metric
-   --     CYCLOMATIC_COMPLEXITY   Do not compute the Cyclomatic Complexity
-   --     ESSENTIAL_COMPLEXITY    Do not compute the Essential Complexity
-   --     MAXIMAL_LOOP_NESTING    Do not compute the maximal loop nesting
-   --     EXITS_AS_GOTOS          Do not count EXIT statements as GOTOs when
-   --                             computing the  Essential Complexity
-   --     LOCAL_DETAILS           Do not compute the detailed metrics for local
-   --                             program units
-   --
-   --   All combinations of options are allowed.
+   --  NODOC  (see /COMPLEXITY_METRICS /NO_LOCAL_DETAILS /NO_EXITS_AS_GOTOS)
 
    S_Metric_Verbose  : aliased constant S := "/VERBOSE "                    &
                                              "-v";
@@ -4674,23 +4835,28 @@ package VMS_Data is
    --   Place the XML output into the specified file
 
    Metric_Switches : aliased constant Switches :=
-                       (S_Metric_Add      'Access,
-                        S_Metric_All_Prjs 'Access,
-                        S_Metric_Debug    'Access,
-                        S_Metric_Direct   'Access,
-                        S_Metric_Element  'Access,
-                        S_Metric_Ext      'Access,
-                        S_Metric_Files    'Access,
-                        S_Metric_Format   'Access,
-                        S_Metric_Globout  'Access,
-                        S_Metric_Line     'Access,
-                        S_Metric_Mess     'Access,
-                        S_Metric_Project  'Access,
-                        S_Metric_Quiet    'Access,
-                        S_Metric_Suffix   'Access,
-                        S_Metric_Suppress 'Access,
-                        S_Metric_Verbose  'Access,
-                        S_Metric_XMLout   'Access);
+                       (S_Metric_Add              'Access,
+                        S_Metric_All_Prjs         'Access,
+                        S_Metric_Complexity       'Access,
+                        S_Metric_Debug            'Access,
+                        S_Metric_Direct           'Access,
+                        S_Metric_Element          'Access,
+                        S_Metric_Ext              'Access,
+                        S_Metric_Files            'Access,
+                        S_Metric_Format           'Access,
+                        S_Metric_Globout          'Access,
+                        S_Metric_Line             'Access,
+                        S_Metric_Lines            'Access,
+                        S_Metric_Mess             'Access,
+                        S_Metric_No_Exits_As_Gotos'Access,
+                        S_Metric_No_Local         'Access,
+                        S_Metric_Project          'Access,
+                        S_Metric_Quiet            'Access,
+                        S_Metric_Suffix           'Access,
+                        S_Metric_Syntax           'Access,
+                        S_Metric_Suppress         'Access,
+                        S_Metric_Verbose          'Access,
+                        S_Metric_XMLout           'Access);
 
    ----------------------------
    -- Switches for GNAT NAME --
