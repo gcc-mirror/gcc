@@ -111,7 +111,7 @@ package body Debug is
    --  d.p
    --  d.q
    --  d.r
-   --  d.s
+   --  d.s  Disable expansion of slice move, use memmove
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u
    --  d.v
@@ -513,6 +513,11 @@ package body Debug is
    --       debug switch is used, then the full listing is given only for the
    --       main source (this corresponds to a previous behavior of -gnatl and
    --       is used for running the ACATS tests).
+
+   --  d.s  Normally the compiler expands slice moves into loops if overlap
+   --       might be possible. This debug flag inhibits that expansion, and
+   --       the back end is expected to use an appropriate routine to handle
+   --       overlap, based on Forward_OK and Backwards_OK flags.
 
    --  d.t  The compiler has been modified (a fairly extensive modification)
    --       to generate static dispatch tables for library level tagged types.

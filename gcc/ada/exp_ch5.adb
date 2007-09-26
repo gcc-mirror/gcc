@@ -387,7 +387,7 @@ package body Exp_Ch5 is
          --       File.Storage := Contents;
          --    end Write_All;
 
-         --  We expand to a loop in either of these two cases.
+         --  We expand to a loop in either of these two cases
 
          --  Question for future thought. Another potentially more efficient
          --  approach would be to create the actual subtype, and then do an
@@ -636,11 +636,18 @@ package body Exp_Ch5 is
          --  gigi handle it.
 
          if not Loop_Required then
+
+            --  Assume gigi can handle it if Forwards_OK is set
+
             if Forwards_OK (N) then
                return;
-            else
-               null;
-               --  Here is where a memmove would be appropriate ???
+
+            --  If Forwards_OK is not set, the back end will need something
+            --  like memmove to handle the move. For now, this processing is
+            --  activated using the .s debug flag (-gnatd.s).
+
+            elsif Debug_Flag_Dot_S then
+               return;
             end if;
          end if;
 
