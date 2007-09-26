@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2006, AdaCore                     --
+--                     Copyright (C) 1999-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,10 +45,8 @@ package body GNAT.Calendar is
       Month    : Month_Number;
       Day      : Day_Number;
       Day_Secs : Day_Duration;
-
    begin
       Split (Date, Year, Month, Day, Day_Secs);
-
       return Julian_Day (Year, Month, Day) - Julian_Day (Year, 1, 1) + 1;
    end Day_In_Year;
 
@@ -61,10 +59,8 @@ package body GNAT.Calendar is
       Month    : Month_Number;
       Day      : Day_Number;
       Day_Secs : Day_Duration;
-
    begin
       Split (Date, Year, Month, Day, Day_Secs);
-
       return Day_Name'Val ((Julian_Day (Year, Month, Day)) mod 7);
    end Day_Of_Week;
 
@@ -80,7 +76,6 @@ package body GNAT.Calendar is
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Second_Duration;
-
    begin
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
       return Hour;
@@ -140,7 +135,6 @@ package body GNAT.Calendar is
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Second_Duration;
-
    begin
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
       return Minute;
@@ -158,7 +152,6 @@ package body GNAT.Calendar is
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Second_Duration;
-
    begin
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
       return Second;
@@ -209,7 +202,6 @@ package body GNAT.Calendar is
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Second_Duration;
-
    begin
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
       return Sub_Second;
@@ -301,16 +293,246 @@ package body GNAT.Calendar is
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Second_Duration;
-      Offset     : Natural;
+      Jan_1      : Day_Name;
+      Shift      : Week_In_Year_Number;
+      Start_Week : Week_In_Year_Number;
+
+      function Is_Leap (Year : Year_Number) return Boolean;
+      --  Return True if Year denotes a leap year. Leap centential years are
+      --  properly handled.
+
+      function Jan_1_Day_Of_Week
+        (Jan_1     : Day_Name;
+         Year      : Year_Number;
+         Last_Year : Boolean := False;
+         Next_Year : Boolean := False) return Day_Name;
+      --  Given the weekday of January 1 in Year, determine the weekday on
+      --  which January 1 fell last year or will fall next year as set by
+      --  the two flags. This routine does not call Time_Of or Split.
+
+      function Last_Year_Has_53_Weeks
+        (Jan_1 : Day_Name;
+         Year  : Year_Number) return Boolean;
+      --  Given the weekday of January 1 in Year, determine whether last year
+      --  has 53 weeks. A False value implies that the year has 52 weeks.
+
+      -------------
+      -- Is_Leap --
+      -------------
+
+      function Is_Leap (Year : Year_Number) return Boolean is
+      begin
+         if Year mod 400 = 0 then
+            return True;
+         elsif Year mod 100 = 0 then
+            return False;
+         else
+            return Year mod 4 = 0;
+         end if;
+      end Is_Leap;
+
+      -----------------------
+      -- Jan_1_Day_Of_Week --
+      -----------------------
+
+      function Jan_1_Day_Of_Week
+        (Jan_1     : Day_Name;
+         Year      : Year_Number;
+         Last_Year : Boolean := False;
+         Next_Year : Boolean := False) return Day_Name
+      is
+         Shift : Integer := 0;
+
+      begin
+         if Last_Year then
+            if Is_Leap (Year - 1) then
+               Shift := -2;
+            else
+               Shift := -1;
+            end if;
+
+         elsif Next_Year then
+            if Is_Leap (Year) then
+               Shift := 2;
+            else
+               Shift := 1;
+            end if;
+         end if;
+
+         return Day_Name'Val ((Day_Name'Pos (Jan_1) + Shift) mod 7);
+      end Jan_1_Day_Of_Week;
+
+      ----------------------------
+      -- Last_Year_Has_53_Weeks --
+      ----------------------------
+
+      function Last_Year_Has_53_Weeks
+        (Jan_1 : Day_Name;
+         Year  : Year_Number) return Boolean
+      is
+         Last_Jan_1 : constant Day_Name :=
+                        Jan_1_Day_Of_Week (Jan_1, Year, Last_Year => True);
+      begin
+         --  These two cases are illustrated in the table below
+
+         return
+           Last_Jan_1 = Thursday
+             or else
+               (Last_Jan_1 = Wednesday
+                  and then Is_Leap (Year - 1));
+      end Last_Year_Has_53_Weeks;
+
+   --  Start of processing for Week_In_Year
 
    begin
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
 
-      --  Day offset number for the first week of the year
+      --  According to ISO 8601, the first week of year Y is the week that
+      --  contains the first Thursday in year Y. The following table contains
+      --  all possible combinations of years and weekdays along with examples.
 
-      Offset := Julian_Day (Year, 1, 1) mod 7;
+      --    +-------+------+-------+---------+
+      --    | Jan 1 | Leap | Weeks | Example |
+      --    +-------+------+-------+---------+
+      --    |  Mon  |  No  |  52   |  2007   |
+      --    +-------+------+-------+---------+
+      --    |  Mon  | Yes  |  52   |  1996   |
+      --    +-------+------+-------+---------+
+      --    |  Tue  |  No  |  52   |  2002   |
+      --    +-------+------+-------+---------+
+      --    |  Tue  | Yes  |  52   |  1980   |
+      --    +-------+------+-------+---------+
+      --    |  Wed  |  No  |  52   |  2003   |
+      --    +-------+------#########---------+
+      --    |  Wed  | Yes  #  53   #  1992   |
+      --    +-------+------#-------#---------+
+      --    |  Thu  |  No  #  53   #  1998   |
+      --    +-------+------#-------#---------+
+      --    |  Thu  | Yes  #  53   #  2004   |
+      --    +-------+------#########---------+
+      --    |  Fri  |  No  |  52   |  1999   |
+      --    +-------+------+-------+---------+
+      --    |  Fri  | Yes  |  52   |  1988   |
+      --    +-------+------+-------+---------+
+      --    |  Sat  |  No  |  52   |  1994   |
+      --    +-------+------+-------+---------+
+      --    |  Sat  | Yes  |  52   |  1972   |
+      --    +-------+------+-------+---------+
+      --    |  Sun  |  No  |  52   |  1995   |
+      --    +-------+------+-------+---------+
+      --    |  Sun  | Yes  |  52   |  1956   |
+      --    +-------+------+-------+---------+
 
-      return 1 + ((Day_In_Year (Date) - 1) + Offset) / 7;
+      --  A small optimization, the input date is January 1. Note that this
+      --  is a key day since it determines the number of weeks and is used
+      --  when special casing the first week of January and the last week of
+      --  December.
+
+      if Day = 1
+        and then Month = 1
+      then
+         Jan_1 := Day_Of_Week (Date);
+      else
+         Jan_1 := Day_Of_Week (Time_Of (Year, 1, 1, 0.0));
+      end if;
+
+      if Month = 1 then
+
+         --  Special case 1: January 1, 2 and 3. These three days may belong
+         --  to last year's last week which can be week number 52 or 53.
+
+         --    +-----+-----+-----+=====+-----+-----+-----+
+         --    | Mon | Tue | Wed # Thu # Fri | Sat | Sun |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+         --    | 26  | 27  | 28  # 29  # 30  | 31  |  1  |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+         --    | 27  | 28  | 29  # 30  # 31  |  1  |  2  |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+         --    | 28  | 29  | 30  # 31  #  1  |  2  |  3  |
+         --    +-----+-----+-----+=====+-----+-----+-----+
+
+         if (Day = 1 and then Jan_1 in Friday .. Sunday)
+           or else
+            (Day = 2 and then Jan_1 in Friday .. Saturday)
+           or else
+            (Day = 3 and then Jan_1 = Friday)
+         then
+            if Last_Year_Has_53_Weeks (Jan_1, Year) then
+               return 53;
+            else
+               return 52;
+            end if;
+
+         --  Special case 2: January 1, 2, 3, 4, 5 and 6 of the first week. In
+         --  this scenario January 1 does not fall on a Monday.
+
+         --    +-----+-----+-----+=====+-----+-----+-----+
+         --    | Mon | Tue | Wed # Thu # Fri | Sat | Sun |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+         --    | 29  | 30  | 31  #  1  #  2  |  3  |  4  |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+         --    | 30  | 31  |  1  #  2  #  3  |  4  |  5  |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+         --    | 31  |  1  |  2  #  3  #  4  |  5  |  6  |
+         --    +-----+-----+-----+-----+-----+-----+-----+
+
+         elsif (Day <= 4 and then Jan_1 in Tuesday .. Thursday)
+           or else
+               (Day = 5  and then Jan_1 in Tuesday .. Wednesday)
+           or else
+               (Day = 6  and then Jan_1 = Tuesday)
+         then
+            return 1;
+         end if;
+
+      --  Special case 3: December 29, 30 and 31. These days may belong to
+      --  next year's first week.
+
+      --    +-----+-----+-----+=====+-----+-----+-----+
+      --    | Mon | Tue | Wed # Thu # Fri | Sat | Sun |
+      --    +-----+-----+-----+-----+-----+-----+-----+
+      --    | 29  | 30  | 31  #  1  #  2  |  3  |  4  |
+      --    +-----+-----+-----+-----+-----+-----+-----+
+      --    | 30  | 31  |  1  #  2  #  3  |  4  |  5  |
+      --    +-----+-----+-----+-----+-----+-----+-----+
+      --    | 31  |  1  |  2  #  3  #  4  |  5  |  6  |
+      --    +-----+-----+-----+=====+-----+-----+-----+
+
+      elsif Month = 12
+        and then Day > 28
+      then
+         declare
+            Next_Jan_1 : constant Day_Name :=
+                           Jan_1_Day_Of_Week (Jan_1, Year, Next_Year => True);
+         begin
+            if (Day = 29 and then Next_Jan_1 = Thursday)
+              or else
+               (Day = 30 and then Next_Jan_1 in Wednesday .. Thursday)
+              or else
+               (Day = 31 and then Next_Jan_1 in Tuesday .. Thursday)
+            then
+               return 1;
+            end if;
+         end;
+      end if;
+
+      --  Determine the week from which to start counting. If January 1 does
+      --  not belong to the first week of the input year, then the next week
+      --  is the first week.
+
+      if Jan_1 in Friday .. Sunday then
+         Start_Week := 1;
+      else
+         Start_Week := 2;
+      end if;
+
+      --  At this point all special combinations have been accounted for and
+      --  the proper start week has been found. Since January 1 may not fall
+      --  on a Monday, shift 7 - Day_Name'Pos (Jan_1). This action ensures an
+      --  origin which falls on Monday.
+
+      Shift := 7 - Day_Name'Pos (Jan_1);
+      return Start_Week + (Day_In_Year (Date) - Shift - 1) / 7;
    end Week_In_Year;
 
 end GNAT.Calendar;
