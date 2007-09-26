@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2001-2005, AdaCore                     *
+ *                     Copyright (C) 2001-2007, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -51,6 +51,10 @@
 #endif
 #elif defined (__vxworks) && defined (__RTP__)
 #include <wait.h>
+#elif defined (__Lynx__)
+/* ??? See comment in adaint.c.  */
+#define GCC_RESOURCE_H
+#include <sys/wait.h>
 #else
 #include <sys/wait.h>
 #endif
