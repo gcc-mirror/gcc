@@ -30,9 +30,9 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Dist; use Exp_Dist;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
-with Gnatvsn;  use Gnatvsn;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Namet;    use Namet;
@@ -921,7 +921,7 @@ package body Rtsfind is
             if Get_PCS_Name = Name_No_DSA then
                Check_RPC_Failure ("distribution feature not supported");
 
-            elsif Get_PCS_Version /= Gnatvsn.PCS_Version_Number then
+            elsif Get_PCS_Version /= Exp_Dist.PCS_Version_Number then
                Check_RPC_Failure ("PCS version mismatch");
 
             end if;

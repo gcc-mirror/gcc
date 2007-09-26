@@ -90,20 +90,6 @@ package Gnatvsn is
    Verbose_Library_Version : constant String := "GNAT Lib v" & Library_Version;
    --  Version string stored in e.g. ALI files.
 
-   ASIS_Version_Number : constant := 6;
-   --  ASIS Version. This is used to check for consistency between the compiler
-   --  used to generate trees, and an ASIS application that is reading the
-   --  trees. It must be updated (incremented) whenever a change is made to
-   --  the tree format that would result in a compiler being incompatible with
-   --  an older version of ASIS, or vice versa.
-
-   PCS_Version_Number : constant := 1;
-   --  PCS interface version. This is used to check for consistency between the
-   --  compiler used to generate distribution stubs and the PCS implementation.
-   --  It must be incremented whenever a change is made to the generated code
-   --  for distribution stubs that would result in the compiler being
-   --  incompatible with an older version of the PCS, or vice versa.
-
    Current_Year : constant String := "2007";
    --  Used in printing copyright messages
 

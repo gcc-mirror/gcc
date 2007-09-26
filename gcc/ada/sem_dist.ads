@@ -37,7 +37,7 @@ package Sem_Dist is
    function Get_PCS_Version return Int;
    --  Return the version number of the PCS API implemented by the PCS.
    --  The consistency of this version with the one expected by Exp_Dist
-   --  (Gnatvsn.PCS_Version_Number) in Rtsfind.Check_RPC.
+   --  (Exp_Dist.PCS_Version_Number) in Rtsfind.RTE.Check_RPC.
    --  If no PCS version information is available, 0 is returned.
 
    procedure Add_Stub_Constructs (N : Node_Id);

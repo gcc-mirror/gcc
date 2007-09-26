@@ -1451,7 +1451,8 @@ package Opt is
    --  They are set by Tree_Read procedure, so they represent the version
    --  number (and the version string) of the compiler which has created the
    --  tree, and they are supposed to be compared with the corresponding values
-   --  from the Gnatvsn package which is a part of ASIS implementation.
+   --  from the Tree_IO and Gnatvsn packages which also are a part of ASIS
+   --  implementation.
 
    Tree_Version_String : String_Access;
    --  Used to store the compiler version string read from a tree file to check
@@ -1464,7 +1465,7 @@ package Opt is
 
    Tree_ASIS_Version_Number : Int;
    --  Used to store the ASIS version number read from a tree file to check if
-   --  it is the same as stored in the ASIS version number in Gnatvsn.
+   --  it is the same as stored in the ASIS version number in Tree_IO.
 
 private
 

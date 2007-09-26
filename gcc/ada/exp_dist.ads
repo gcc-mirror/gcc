@@ -31,6 +31,13 @@ with Types; use Types;
 
 package Exp_Dist is
 
+   PCS_Version_Number : constant := 1;
+   --  PCS interface version. This is used to check for consistency between the
+   --  compiler used to generate distribution stubs and the PCS implementation.
+   --  It must be incremented whenever a change is made to the generated code
+   --  for distribution stubs that would result in the compiler being
+   --  incompatible with an older version of the PCS, or vice versa.
+
    procedure Add_RAST_Features (Vis_Decl : Node_Id);
    --  Build and add bodies for dereference and 'Access subprograms for a
    --  remote access to subprogram type. Vis_Decl is the declaration node for
