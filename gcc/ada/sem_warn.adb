@@ -1140,14 +1140,21 @@ package body Sem_Warn is
                          Ekind (E1) = E_Named_Real
                            or else
                          Is_Overloadable (E1)
+
+                           --  Package case, if the main unit is a package
+                           --  spec or generic package spec, then there may
+                           --  be a corresponding body that references this
+                           --  package in some other file. Otherwise we can
+                           --  be sure that there is no other reference.
+
                            or else
                              (Ekind (E1) = E_Package
-                               and then
-                                (Ekind (E) = E_Function
-                                  or else Ekind (E) = E_Package_Body
-                                  or else Ekind (E) = E_Procedure
-                                  or else Ekind (E) = E_Subprogram_Body
-                                  or else Ekind (E) = E_Block)))
+                                and then
+                                  Ekind (Cunit_Entity (Current_Sem_Unit)) /=
+                                                          E_Package
+                                and then
+                                  Ekind (Cunit_Entity (Current_Sem_Unit)) /=
+                                                          E_Generic_Package))
 
                --  Exclude instantiations, since there is no reason why every
                --  entity in an instantiation should be referenced.
