@@ -210,62 +210,62 @@ memory_address_same (tree store1, tree store2)
 	  == NULL);
 }
 
-/* Return the use stmt for the lhs of STMT following the virtual
-   def-use chains.  Returns the MODIFY_EXPR stmt which lhs is equal to
-   the lhs of STMT or NULL_TREE if no such stmt can be found.  */
-static tree 
-get_use_of_stmt_lhs (tree stmt,
-		     use_operand_p * first_use_p,
-		     use_operand_p * use_p, tree * use_stmt)
-{
-  tree usevar, lhs;
-  def_operand_p def_p;
+/* Return true if there is a stmt that kills the lhs of STMT and is in the
+   virtual def-use chain of STMT without a use inbetween the kill and STMT.
+   Returns false if no such stmt is found.
+   *FIRST_USE_P is set to the first use of the single virtual def of
+   STMT.  *USE_P is set to the vop killed by *USE_STMT.  */
 
-  if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
-    return NULL_TREE;
+static bool
+get_kill_of_stmt_lhs (tree stmt,
+		      use_operand_p * first_use_p,
+ 		      use_operand_p * use_p, tree * use_stmt)
+{
+  tree lhs;
+
+  gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
 
   lhs = GIMPLE_STMT_OPERAND (stmt, 0);
 
-  /* The stmt must have a single VDEF.  */
-  def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_VDEF);
-  if (def_p == NULL_DEF_OPERAND_P)
-    return NULL_TREE;
-
-  if (!has_single_use (DEF_FROM_PTR (def_p)))
-    return NULL_TREE;
-  /* Get the immediate use of the def.  */
-  single_imm_use (DEF_FROM_PTR (def_p), use_p, use_stmt);
-  gcc_assert (*use_p != NULL_USE_OPERAND_P);
-  first_use_p = use_p;
-
-  /* If the use is not simple, give up.  */
-  if (TREE_CODE (*use_stmt) != GIMPLE_MODIFY_STMT
-      || get_call_expr_in (*use_stmt))
-    return NULL_TREE;
-
+  /* We now walk the chain of single uses of the single VDEFs.
+     We succeeded finding a kill if the lhs of the use stmt is
+     equal to the original lhs.  We can keep walking to the next
+     use if there are no possible uses of the original lhs in
+     the stmt.  */
   do
     {
-      /* Look at the use stmt and see if it's LHS matches
-         stmt's lhs SSA_NAME.  */
-      def_p = SINGLE_SSA_DEF_OPERAND (*use_stmt, SSA_OP_VDEF);
+      tree use_lhs, use_rhs;
+      def_operand_p def_p;
+
+      /* The stmt must have a single VDEF.  */
+      def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_VDEF);
       if (def_p == NULL_DEF_OPERAND_P)
-	return NULL_TREE;
+	return false;
 
-      usevar = GIMPLE_STMT_OPERAND (*use_stmt, 0);
-      if (operand_equal_p (usevar, lhs, 0))
-	return *use_stmt;
+      /* Get the single immediate use of the def.  */
+      if (!single_imm_use (DEF_FROM_PTR (def_p), first_use_p, &stmt))
+	return false;
+      first_use_p = use_p;
 
-      if (!has_single_use (DEF_FROM_PTR (def_p)))
-	return NULL_TREE;
-      single_imm_use (DEF_FROM_PTR (def_p), use_p, use_stmt);
-      gcc_assert (*use_p != NULL_USE_OPERAND_P);
-      if (TREE_CODE (*use_stmt) != GIMPLE_MODIFY_STMT
-	  || get_call_expr_in (*use_stmt))
-	return NULL_TREE;
+      /* If there are possible hidden uses, give up.  */
+      if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
+	return false;
+      use_rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+      if (TREE_CODE (use_rhs) == CALL_EXPR
+	  || (!is_gimple_min_invariant (use_rhs)
+	      && TREE_CODE (use_rhs) != SSA_NAME))
+	return false;
+
+      /* If the use stmts lhs matches the original lhs we have
+	 found the kill, otherwise continue walking.  */
+      use_lhs = GIMPLE_STMT_OPERAND (stmt, 0);
+      if (operand_equal_p (use_lhs, lhs, 0))
+	{
+	  *use_stmt = stmt;
+	  return true;
+	}
     }
   while (1);
-
-  return NULL_TREE;
 }
 
 /* A helper of dse_optimize_stmt.
@@ -448,8 +448,7 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
              the stores are not to the same memory location then walk the
              virtual def-use chain to get the stmt which stores to that same
              memory location.  */
-          if (get_use_of_stmt_lhs (stmt, &first_use_p, &use_p, &use_stmt) ==
-              NULL_TREE)
+          if (!get_kill_of_stmt_lhs (stmt, &first_use_p, &use_p, &use_stmt))
             {
               record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
               return;
