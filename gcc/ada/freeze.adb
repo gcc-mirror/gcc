@@ -2542,15 +2542,13 @@ package body Freeze is
       --  Case of a type or subtype being frozen
 
       else
-         --  Check preelaborable initialization for full type completing a
-         --  private type for which pragma Preelaborable_Initialization given.
-
-         if Must_Have_Preelab_Init (E)
-           and then not Has_Preelaborable_Initialization (E)
-         then
-            Error_Msg_N
-              ("full view of & does not have preelaborable initialization", E);
-         end if;
+         --  We used to check here that a full type must have preelaborable
+         --  initialization if it completes a private type specified with
+         --  pragma Preelaborable_Intialization, but that missed cases where
+         --  the types occur within a generic package, since the freezing
+         --  that occurs within a containing scope generally skips traversal
+         --  of a generic unit's declarations (those will be frozen within
+         --  instances). This check was moved to Analyze_Package_Specification.
 
          --  The type may be defined in a generic unit. This can occur when
          --  freezing a generic function that returns the type (which is

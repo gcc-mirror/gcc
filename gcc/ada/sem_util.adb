@@ -110,15 +110,14 @@ package body Sem_Util is
             if Present (Full_View (Typ)) then
                Nod := Type_Definition (Parent (Full_View (Typ)));
 
-            --  If the full-view is not available we cannot do anything
-            --  else here (the source has errors)
+            --  If the full-view is not available we cannot do anything else
+            --  here (the source has errors).
 
             else
                return Empty_List;
             end if;
 
-         --  The support for generic formals with interfaces is still
-         --  missing???
+         --  Support for generic formals with interfaces is still missing ???
 
          elsif Nkind (Parent (Typ)) = N_Formal_Type_Declaration then
             return Empty_List;
@@ -2677,6 +2676,64 @@ package body Sem_Util is
       raise Program_Error;
    end Find_Corresponding_Discriminant;
 
+   --------------------------
+   -- Find_Overlaid_Object --
+   --------------------------
+
+   function Find_Overlaid_Object (N : Node_Id) return Entity_Id is
+      Expr  : Node_Id;
+
+   begin
+      --  We are looking for one of the two following forms:
+
+      --    for X'Address use Y'Address
+
+      --  or
+
+      --    Const : constant Address := expr;
+      --    ...
+      --    for X'Address use Const;
+
+      --  In the second case, the expr is either Y'Address, or recursively a
+      --  constant that eventually references Y'Address.
+
+      if Nkind (N) = N_Attribute_Definition_Clause
+        and then Chars (N) = Name_Address
+      then
+         --  This loop checks the form of the expression for Y'Address where Y
+         --  is an object entity name. The first loop checks the original
+         --  expression in the attribute definition clause. Subsequent loops
+         --  check referenced constants.
+
+         Expr := Expression (N);
+         loop
+            --  Check for Y'Address where Y is an object entity
+
+            if Nkind (Expr) = N_Attribute_Reference
+              and then Attribute_Name (Expr) = Name_Address
+              and then Is_Entity_Name (Prefix (Expr))
+              and then Is_Object (Entity (Prefix (Expr)))
+            then
+               return Entity (Prefix (Expr));
+
+               --  Check for Const where Const is a constant entity
+
+            elsif Is_Entity_Name (Expr)
+              and then Ekind (Entity (Expr)) = E_Constant
+            then
+               Expr := Constant_Value (Entity (Expr));
+
+            --  Anything else does not need checking
+
+            else
+               exit;
+            end if;
+         end loop;
+      end if;
+
+      return Empty;
+   end Find_Overlaid_Object;
+
    --------------------------------------------
    -- Find_Overridden_Synchronized_Primitive --
    --------------------------------------------
@@ -4386,6 +4443,151 @@ package body Sem_Util is
          Ent : Entity_Id;
          Exp : Node_Id;
 
+         function Is_Preelaborable_Expression (N : Node_Id) return Boolean;
+         --  Returns True if and only if the expression denoted by N does not
+         --  violate restrictions on preelaborable constructs (RM-10.2.1(5-9)).
+
+         ---------------------------------
+         -- Is_Preelaborable_Expression --
+         ---------------------------------
+
+         function Is_Preelaborable_Expression (N : Node_Id) return Boolean is
+            Exp           : Node_Id;
+            Assn          : Node_Id;
+            Choice        : Node_Id;
+            Comp_Type     : Entity_Id;
+            Is_Array_Aggr : Boolean;
+
+         begin
+            if Is_Static_Expression (N) then
+               return True;
+
+            elsif Nkind (N) = N_Null then
+               return True;
+
+            elsif Nkind (N) = N_Attribute_Reference
+              and then
+                (Attribute_Name (N) = Name_Access
+                   or else
+                 Attribute_Name (N) = Name_Unchecked_Access
+                   or else
+                 Attribute_Name (N) = Name_Unrestricted_Access)
+            then
+               return True;
+
+            elsif Nkind (N) = N_Qualified_Expression then
+               return Is_Preelaborable_Expression (Expression (N));
+
+            --  For aggregates we have to check that each of the associations
+            --  is preelaborable.
+
+            elsif Nkind (N) = N_Aggregate
+              or else Nkind (N) = N_Extension_Aggregate
+            then
+               Is_Array_Aggr := Is_Array_Type (Etype (N));
+
+               if Is_Array_Aggr then
+                  Comp_Type := Component_Type (Etype (N));
+               end if;
+
+               --  Check the ancestor part of extension aggregates, which must
+               --  be either the name of a type that has preelaborable init or
+               --  an expression that is preelaborable.
+
+               if Nkind (N) = N_Extension_Aggregate then
+                  declare
+                     Anc_Part : constant Node_Id := Ancestor_Part (N);
+
+                  begin
+                     if Is_Entity_Name (Anc_Part)
+                       and then Is_Type (Entity (Anc_Part))
+                     then
+                        if not Has_Preelaborable_Initialization
+                                 (Entity (Anc_Part))
+                        then
+                           return False;
+                        end if;
+
+                     elsif not Is_Preelaborable_Expression (Anc_Part) then
+                        return False;
+                     end if;
+                  end;
+               end if;
+
+               --  Check positional associations
+
+               Exp := First (Expressions (N));
+               while Present (Exp) loop
+                  if not Is_Preelaborable_Expression (Exp) then
+                     return False;
+                  end if;
+
+                  Next (Exp);
+               end loop;
+
+               --  Check named associations
+
+               Assn := First (Component_Associations (N));
+               while Present (Assn) loop
+                  Choice := First (Choices (Assn));
+                  while Present (Choice) loop
+                     if Is_Array_Aggr then
+                        if Nkind (Choice) = N_Others_Choice then
+                           null;
+
+                        elsif Nkind (Choice) = N_Range then
+                           if not Is_Static_Range (Choice) then
+                              return False;
+                           end if;
+
+                        elsif not Is_Static_Expression (Choice) then
+                           return False;
+                        end if;
+
+                     else
+                        Comp_Type := Etype (Choice);
+                     end if;
+
+                     Next (Choice);
+                  end loop;
+
+                  --  If the association has a <> at this point, then we have
+                  --  to check whether the component's type has preelaborable
+                  --  initialization. Note that this only occurs when the
+                  --  association's corresponding component does not have a
+                  --  default expression, the latter case having already been
+                  --  expanded as an expression for the association.
+
+                  if Box_Present (Assn) then
+                     if not Has_Preelaborable_Initialization (Comp_Type) then
+                        return False;
+                     end if;
+
+                  --  In the expression case we check whether the expression
+                  --  is preelaborable.
+
+                  elsif
+                    not Is_Preelaborable_Expression (Expression (Assn))
+                  then
+                     return False;
+                  end if;
+
+                  Next (Assn);
+               end loop;
+
+               --  If we get here then aggregate as a whole is preelaborable
+
+               return True;
+
+            --  All other cases are not preelaborable
+
+            else
+               return False;
+            end if;
+         end Is_Preelaborable_Expression;
+
+      --  Start of processing for Check_Components
+
       begin
          --  Loop through entities of record or protected type
 
@@ -4400,8 +4602,8 @@ package body Sem_Util is
             then
                --  Get default expression if any. If there is no declaration
                --  node, it means we have an internal entity. The parent and
-               --  tag fields are examples of such entitires. For these
-               --  cases, we just test the type of the entity.
+               --  tag fields are examples of such entitires. For these cases,
+               --  we just test the type of the entity.
 
                if Present (Declaration_Node (Ent)) then
                   Exp := Expression (Declaration_Node (Ent));
@@ -4409,8 +4611,8 @@ package body Sem_Util is
                   Exp := Empty;
                end if;
 
-               --  A component has PI if it has no default expression and
-               --  the component type has PI.
+               --  A component has PI if it has no default expression and the
+               --  component type has PI.
 
                if No (Exp) then
                   if not Has_Preelaborable_Initialization (Etype (Ent)) then
@@ -4418,29 +4620,9 @@ package body Sem_Util is
                      exit;
                   end if;
 
-                  --  Or if expression obeys rules for preelaboration. For
-                  --  now we approximate this by testing if the default
-                  --  expression is a static expression or if it is an
-                  --  access attribute reference, or the literal null.
+               --  Require the default expression to be preelaborable
 
-                  --  This is an approximation, it is probably incomplete???
-
-               elsif Is_Static_Expression (Exp) then
-                  null;
-
-               elsif Nkind (Exp) = N_Attribute_Reference
-                 and then (Attribute_Name (Exp) = Name_Access
-                           or else
-                           Attribute_Name (Exp) = Name_Unchecked_Access
-                           or else
-                           Attribute_Name (Exp) = Name_Unrestricted_Access)
-               then
-                  null;
-
-               elsif Nkind (Exp) = N_Null then
-                  null;
-
-               else
+               elsif not Is_Preelaborable_Expression (Exp) then
                   Has_PE := False;
                   exit;
                end if;
@@ -4460,6 +4642,15 @@ package body Sem_Util is
 
       if Known_To_Have_Preelab_Init (E) then
          return True;
+      end if;
+
+      --  If the type is a subtype representing a generic actual type, then
+      --  test whether its base type has preelaborable initialization since
+      --  the subtype representing the actual does not inherit this attribute
+      --  from the actual or formal. (but maybe it should???)
+
+      if Is_Generic_Actual_Type (E) then
+         return Has_Preelaborable_Initialization (Base_Type (E));
       end if;
 
       --  Other private types never have preelaborable initialization
@@ -4586,24 +4777,21 @@ package body Sem_Util is
             UT : constant Entity_Id := Underlying_Type (Btype);
          begin
             if No (UT) then
-
                if No (Full_View (Btype)) then
                   return not Is_Generic_Type (Btype)
                     and then not Is_Generic_Type (Root_Type (Btype));
-
                else
                   return not Is_Generic_Type (Root_Type (Full_View (Btype)));
                end if;
-
             else
                return not Is_Frozen (UT) and then Has_Private_Component (UT);
             end if;
          end;
+
       elsif Is_Array_Type (Btype) then
          return Has_Private_Component (Component_Type (Btype));
 
       elsif Is_Record_Type (Btype) then
-
          Component := First_Component (Btype);
          while Present (Component) loop
             if Has_Private_Component (Etype (Component)) then
@@ -4716,7 +4904,6 @@ package body Sem_Util is
               or else Ekind (S) = E_Procedure)
            and then Is_Generic_Instance (S)
          then
-
             --  A child instance is always compiled in the context of a parent
             --  instance. Nevertheless, the actuals are not analyzed in an
             --  instance context. We detect this case by examining the current
@@ -4910,7 +5097,8 @@ package body Sem_Util is
    begin
       Save_Interps (N, New_Prefix);
       Rewrite (N,
-        Make_Explicit_Dereference (Sloc (N), Prefix => New_Prefix));
+        Make_Explicit_Dereference (Sloc (N),
+          Prefix => New_Prefix));
 
       Set_Etype (N, Designated_Type (Etype (New_Prefix)));
 
@@ -4973,9 +5161,8 @@ package body Sem_Util is
    -------------------
 
    function Is_AAMP_Float (E : Entity_Id) return Boolean is
-   begin
       pragma Assert (Is_Type (E));
-
+   begin
       return AAMP_On_Target
          and then Is_Floating_Point_Type (E)
          and then E = Base_Type (E);
@@ -5072,8 +5259,8 @@ package body Sem_Util is
    -------------------------
 
    function Is_Ancestor_Package
-     (E1  : Entity_Id;
-      E2  : Entity_Id) return Boolean
+     (E1 : Entity_Id;
+      E2 : Entity_Id) return Boolean
    is
       Par : Entity_Id;
 
@@ -5104,6 +5291,10 @@ package body Sem_Util is
       function Is_Atomic_Prefix (N : Node_Id) return Boolean;
       --  If prefix is an implicit dereference, examine designated type
 
+      ----------------------
+      -- Is_Atomic_Prefix --
+      ----------------------
+
       function Is_Atomic_Prefix (N : Node_Id) return Boolean is
       begin
          if Is_Access_Type (Etype (N)) then
@@ -5113,6 +5304,10 @@ package body Sem_Util is
             return Object_Has_Atomic_Components (N);
          end if;
       end Is_Atomic_Prefix;
+
+      ----------------------------------
+      -- Object_Has_Atomic_Components --
+      ----------------------------------
 
       function Object_Has_Atomic_Components (N : Node_Id) return Boolean is
       begin
