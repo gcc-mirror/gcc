@@ -466,6 +466,11 @@ package body Exp_Dbug is
 
       Set_Needs_Debug_Info (Obj);
 
+      --  Mark the object as internal so that it won't be initialized when
+      --  pragma Initialize_Scalars or Normalize_Scalars is in use.
+
+      Set_Is_Internal (Obj);
+
       return Res;
 
    --  If we get an exception, just figure it is a case that we cannot
