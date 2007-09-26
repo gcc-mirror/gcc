@@ -354,11 +354,15 @@ package body Sem_Ch4 is
          Set_Etype (Acc_Type, Acc_Type);
          Init_Size_Align (Acc_Type);
          Find_Type (Subtype_Mark (E));
-         Type_Id := Entity (Subtype_Mark (E));
-         Check_Fully_Declared (Type_Id, N);
+
+         --  Analyze the qualified expression, and apply the name resolution
+         --  rule given in  4.7 (3).
+
+         Analyze (E);
+         Type_Id := Etype (E);
          Set_Directly_Designated_Type (Acc_Type, Type_Id);
 
-         Analyze_And_Resolve (Expression (E), Type_Id);
+         Resolve (Expression (E), Type_Id);
 
          if Is_Limited_Type (Type_Id)
            and then Comes_From_Source (N)
@@ -373,11 +377,12 @@ package body Sem_Ch4 is
          --  A qualified expression requires an exact match of the type,
          --  class-wide matching is not allowed.
 
-         if Is_Class_Wide_Type (Type_Id)
-           and then Base_Type (Etype (Expression (E))) /= Base_Type (Type_Id)
-         then
-            Wrong_Type (Expression (E), Type_Id);
-         end if;
+         --  if Is_Class_Wide_Type (Type_Id)
+         --    and then Base_Type
+         --       (Etype (Expression (E))) /= Base_Type (Type_Id)
+         --  then
+         --     Wrong_Type (Expression (E), Type_Id);
+         --  end if;
 
          Check_Non_Static_Context (Expression (E));
 
@@ -924,6 +929,8 @@ package body Sem_Ch4 is
       --  Check for not-yet-implemented cases of AI-318. We only need to check
       --  for inherently limited types, because other limited types will be
       --  returned by copy, which works just fine.
+      --  If the context is an attribute reference 'Class, this is really a
+      --  type conversion, which is illegal, and will be caught elsewhere.
 
       if Ada_Version >= Ada_05
         and then not Debug_Flag_Dot_L
@@ -931,7 +938,9 @@ package body Sem_Ch4 is
         and then (Nkind (Parent (N)) = N_Selected_Component
                    or else Nkind (Parent (N)) = N_Indexed_Component
                    or else Nkind (Parent (N)) = N_Slice
-                   or else Nkind (Parent (N)) = N_Attribute_Reference)
+                   or else
+                    (Nkind (Parent (N)) = N_Attribute_Reference
+                       and then Attribute_Name (Parent (N)) /= Name_Class))
       then
          Error_Msg_N ("(Ada 2005) limited function call in this context" &
                       " is not yet implemented", N);
@@ -2520,19 +2529,54 @@ package body Sem_Ch4 is
 
    procedure Analyze_Qualified_Expression (N : Node_Id) is
       Mark : constant Entity_Id := Subtype_Mark (N);
+      Expr : constant Node_Id   := Expression (N);
+      I    : Interp_Index;
+      It   : Interp;
       T    : Entity_Id;
 
    begin
+      Analyze_Expression (Expr);
+
       Set_Etype (N, Any_Type);
       Find_Type (Mark);
       T := Entity (Mark);
+      Set_Etype (N, T);
 
       if T = Any_Type then
          return;
       end if;
 
       Check_Fully_Declared (T, N);
-      Analyze_Expression (Expression (N));
+
+      --  If expected type is class-wide, check for exact match before
+      --  expansion, because if the expression is a dispatching call it
+      --  may be rewritten as explicit dereference with class-wide result.
+      --  If expression is overloaded, retain only interpretations that
+      --  will yield exact matches.
+
+      if Is_Class_Wide_Type (T) then
+         if not Is_Overloaded (Expr) then
+            if  Base_Type (Etype (Expr)) /= Base_Type (T) then
+               if Nkind (Expr) = N_Aggregate then
+                  Error_Msg_N ("type of aggregate cannot be class-wide", Expr);
+               else
+                  Wrong_Type (Expr, T);
+               end if;
+            end if;
+
+         else
+            Get_First_Interp (Expr, I, It);
+
+            while Present (It.Nam) loop
+               if Base_Type (It.Typ) /= Base_Type (T) then
+                  Remove_Interp (I);
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end if;
+      end if;
+
       Set_Etype  (N, T);
    end Analyze_Qualified_Expression;
 
