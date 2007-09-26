@@ -1,3 +1,8 @@
+2007-09-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/30780
+	* invoke.texi: Add note to -ffpe-trap option. Fix typos.
+
 2007-09-23  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33269
