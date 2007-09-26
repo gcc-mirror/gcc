@@ -30,8 +30,8 @@
 
 #include <testsuite_hooks.h>
 
-#ifndef _TESTSUITE_EH
-#define _TESTSUITE_EH 1
+#ifndef _TESTSUITE_API
+#define _TESTSUITE_API 1
 
 namespace __gnu_test
 {
@@ -77,5 +77,64 @@ namespace __gnu_test
 	  { VERIFY( false ); }
       }
     };
+
+  // Testing type requirements for template arguments.
+  struct NonDefaultConstructible
+  {
+    NonDefaultConstructible(int) { }
+    NonDefaultConstructible(const NonDefaultConstructible&) { }
+  };
+ 
+  // See: 20.1.1 Template argument requirements.
+  inline bool
+  operator==(const NonDefaultConstructible&, const NonDefaultConstructible&)
+  { return false; }
+
+  inline bool
+  operator<(const NonDefaultConstructible&, const NonDefaultConstructible&)
+  { return false; }
+
+  // For 26 numeric algorithms requirements, need addable,
+  // subtractable, multiplicable.
+  inline NonDefaultConstructible
+  operator+(const NonDefaultConstructible& lhs, 
+	    const NonDefaultConstructible& rhs)
+  { return NonDefaultConstructible(1); }
+
+  inline NonDefaultConstructible
+  operator-(const NonDefaultConstructible& lhs, 
+	    const NonDefaultConstructible& rhs)
+  { return NonDefaultConstructible(1); }
+
+  inline NonDefaultConstructible
+  operator*(const NonDefaultConstructible& lhs, 
+	    const NonDefaultConstructible& rhs)
+  { return NonDefaultConstructible(1); }
+
+  // Like unary_function, but takes no argument. (ie, void).
+  // Used for generator template parameter.
+  template<typename _Result>
+    struct void_function
+    {
+      typedef _Result result_type; 
+      
+      result_type
+      operator()() const
+      { 
+	result_type r;
+	return r;
+      }
+    };
+
+  template<>
+    struct void_function<NonDefaultConstructible>
+    {
+      typedef NonDefaultConstructible result_type; 
+      
+      result_type
+      operator()() const
+      { return result_type(2); }
+    };
+
 }
 #endif
