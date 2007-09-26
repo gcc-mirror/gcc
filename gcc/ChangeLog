@@ -1,3 +1,12 @@
+2007-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33563
+	* tree-ssa-dse.c (get_use_of_stmt_lhs): Rename to ...
+	(get_kill_of_stmt_lhs): ... this.  Re-structure.  Handle
+	aggregate stores.
+	(dse_optimize_stmt): Call get_kill_of_stmt_lhs instead of
+	get_use_of_stmt_lhs.
+
 2007-09-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/25309
