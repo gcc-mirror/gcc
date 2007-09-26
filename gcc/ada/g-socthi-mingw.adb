@@ -464,7 +464,6 @@ package body GNAT.Sockets.Thin is
    ----------------
 
    procedure Initialize is
-      use type Interfaces.C.int;
       Return_Value : Interfaces.C.int;
    begin
       if not Initialized then

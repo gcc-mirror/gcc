@@ -943,7 +943,6 @@ package body System.Tasking.Stages is
    --  an at-end handler that the compiler generates.
 
    procedure Task_Wrapper (Self_ID : Task_Id) is
-      use type System.Parameters.Size_Type;
       use type SSE.Storage_Offset;
       use System.Standard_Library;
       use System.Stack_Usage;

@@ -265,8 +265,6 @@ package body Ada.Task_Attributes is
        System.Tasking.Task_Attributes,
        Ada.Exceptions;
 
-   use type System.Tasking.Access_Address;
-
    package POP renames System.Task_Primitives.Operations;
 
    ---------------------------
