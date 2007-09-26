@@ -550,6 +550,11 @@ zero), @samp{overflow} (overflow in a floating point operation),
 @samp{precision} (loss of precision during operation) and @samp{denormal}
 (operation produced a denormal value).
 
+Some of the routines in the Fortran runtime library, like
+@samp{CPU_TIME}, are likely to to trigger floating point exceptions when
+@code{ffpe-trap=precision} is used. For this reason, the use of 
+@code{ffpe-trap=precision} is not recommended.
+
 @item -fbacktrace
 @opindex @code{fbacktrace}
 @cindex backtrace
@@ -775,8 +780,8 @@ tools.
 
 Use of @option{-fno-underscoring} is not recommended unless you are
 experimenting with issues such as integration of GNU Fortran into
-existing system environments (vis-a-vis existing libraries, tools, and
-so on).
+existing system environments (vis-@`{a}-vis existing libraries, tools,
+and so on).
 
 For example, with @option{-funderscoring}, and assuming other defaults like
 @option{-fcase-lower} and that @code{j()} and @code{max_count()} are
@@ -862,7 +867,7 @@ checks array indices for assumed and deferred
 shape arrays against the actual allocated bounds.
 
 Some checks require that @option{-fbounds-check} is set for
-the compilation of the main probram.
+the compilation of the main program.
 
 In the future this may also include other forms of checking, e.g., checking
 substring references.
