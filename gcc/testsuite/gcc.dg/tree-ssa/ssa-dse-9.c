@@ -10,5 +10,5 @@ foo ()
 }
 
 /* We should eliminate the first assignment.  */
-/* { dg-final { scan-tree-dump-times "VDEF" 2 "dse1"} } */
+/* { dg-final { scan-tree-dump-times "VDEF" 2 "dse1" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "dse1" } } */

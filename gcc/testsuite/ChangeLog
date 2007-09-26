@@ -1,3 +1,14 @@
+2007-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30375
+	PR tree-optimization/33560
+	* gcc.dg/tree-ssa/complex-4.c: XFAIL.
+	* gcc.dg/tree-ssa/complex-5.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-9.c: Likewise.
+	* gcc.dg/torture/pr30375.c: New testcase.
+	* gcc.dg/torture/pr33560.c: New testcase.
+	* gcc.dg/tree-ssa/pr30375.c: Likewise.
+
 2007-09-25  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/33207
