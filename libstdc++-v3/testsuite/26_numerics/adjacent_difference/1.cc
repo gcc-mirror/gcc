@@ -36,9 +36,6 @@ test01()
 
   std::adjacent_difference(A, A + N, D);
   VERIFY( std::equal(D, D + N, B) );
-  
-  std::partial_sum(D, D + N, D);
-  VERIFY( std::equal(D, D + N, A) );
 }
 
 int

@@ -1,8 +1,31 @@
+2007-09-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_algo.h: Add return type information to comments.
+	* include/bits/algorithmfwd.h: Formatting.
+	* testsuite/util/testsuite_hooks.h (NonDefaultConstructible): Move..
+	* testsuite/util/testsuite_api.h: ...here. Add necessary operators
+	for use in testing chapters 25 and 26.
+	* testsuite/util/testsuite_character.h: Same.
+
+	* testsuite/25_algorithms/*/requirements/explicit_instantiation/
+	2.cc, pod.cc: New.
+
+	* testsuite/26_numerics/accumulate, adjacent_difference, inner_product,
+	partial_sum/requirements/explicit_instantiation/2.cc, pod.cc: New.
+	
+	* testsuite/26_numerics/numeric_arrays/*: Move contents into
+	testsuite/26_numerics.
+
+	* testsuite/26_numerics/numeric_operations: Same.
+	
+	* testsuite/23_containers/*/requirements/explicit_instantiation/2.cc:
+	Adjust includes from testsuite_eh.h to testsuite_api.h.
+
 2007-09-25  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* testsuite/lib/libstdc++.exp (check_v3_target_fileio): Test lseek.
 
-2007-09-17  Benjamin Kosnik  <bkoz@redhat.com>
+2007-09-18  Benjamin Kosnik  <bkoz@redhat.com>
 	    Chalathip Thumkanon  <chalathip@gmail.com>
 
 	PR libstdc++/32819

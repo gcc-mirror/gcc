@@ -23,7 +23,6 @@
  *  You should not attempt to use it directly.
  */
 
-
 /*
   adjacent_find
   binary_search
@@ -85,7 +84,6 @@
   sort_heap
   stable_partition
   stable_sort
-  stable_sort
   swap
   swap_ranges
   transform
@@ -121,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _BIter1, typename _BIter2>
     _BIter2
-    copy_backward (_BIter1, _BIter1, _BIter2);
+    copy_backward(_BIter1, _BIter1, _BIter2);
 
   // count
   // count_if
@@ -310,7 +308,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _FIter, typename _OIter>
     _OIter 
-    rotate_copy (_FIter, _FIter, _FIter, _OIter);
+    rotate_copy(_FIter, _FIter, _FIter, _OIter);
 
   // search
   // search_n
@@ -333,11 +331,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<typename _Tp> 
     void 
-    swap(_Tp&, _Tp& b);
+    swap(_Tp&, _Tp&);
 
   template<typename _FIter1, typename _FIter2>
     _FIter2 
-    swap_ranges(_FIter1 first1, _FIter1, _FIter2);
+    swap_ranges(_FIter1, _FIter1, _FIter2);
 
   // transform
 
@@ -419,8 +417,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
     void 
     generate(_FIter, _FIter, _Generator);
 
+/*
+  XXX NB: return type different from ISO C++.
+  template<typename _OIter, typename _Size, typename _Tp>
+    void
+    generate_n(_OIter, _Size, _Generator);
+*/
+
   template<typename _OIter, typename _Size, typename _Generator>
-    void 
+    _OIter
     generate_n(_OIter, _Size, _Generator);
 
   template<typename _IIter1, typename _IIter2>

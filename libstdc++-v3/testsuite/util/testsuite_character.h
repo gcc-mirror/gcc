@@ -46,6 +46,8 @@ namespace __gnu_test
     int value;
   };
   
+  // For 20.1 requirements for instantiable type: equality comparable
+  // and less than comparable.
   inline bool
   operator==(const pod_int& lhs, const pod_int& rhs)
   { return lhs.value == rhs.value; }
@@ -53,6 +55,29 @@ namespace __gnu_test
   inline bool
   operator<(const pod_int& lhs, const pod_int& rhs)
   { return lhs.value < rhs.value; }
+
+  // For 26 numeric algorithms requirements, need addable,
+  // subtractable, multiplicable.
+  inline pod_int
+  operator+(const pod_int& lhs, const pod_int& rhs)
+  {
+    pod_int ret = { lhs.value + rhs.value };
+    return ret;
+  }
+
+  inline pod_int
+  operator-(const pod_int& lhs, const pod_int& rhs)
+  { 
+    pod_int ret = { lhs.value - rhs.value };
+    return ret;
+  }
+
+  inline pod_int
+  operator*(const pod_int& lhs, const pod_int& rhs)
+  { 
+    pod_int ret = { lhs.value * rhs.value };
+    return ret;
+  }
 
   struct pod_state
   {

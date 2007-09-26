@@ -4248,7 +4248,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *         sequence.
    *  @param  first  A forward iterator.
    *  @param  last   A forward iterator.
-   *  @param  gen    A function object taking no arguments.
+   *  @param  gen    A function object taking no arguments and returning
+   *                 std::iterator_traits<_ForwardIterator>::value_type
    *  @return   generate() returns no value.
    *
    *  Performs the assignment @c *i = @p gen() for each @c i in the range
@@ -4274,7 +4275,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
    *         sequence.
    *  @param  first  A forward iterator.
    *  @param  n      The length of the sequence.
-   *  @param  gen    A function object taking no arguments.
+   *  @param  gen    A function object taking no arguments and returning
+   *                 std::iterator_traits<_ForwardIterator>::value_type
    *  @return   The end of the sequence, @p first+n
    *
    *  Performs the assignment @c *i = @p gen() for each @c i in the range

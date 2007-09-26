@@ -29,6 +29,7 @@
 
 #include <set>
 #include <testsuite_hooks.h>
+#include <testsuite_api.h>
 
 // { dg-do compile }
 
