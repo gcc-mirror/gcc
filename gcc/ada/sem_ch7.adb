@@ -1168,13 +1168,25 @@ package body Sem_Ch7 is
          Set_First_Private_Entity (Id, Next_Entity (L));
       end if;
 
-      --  Check rule of 3.6(11), which in general requires waiting till all
-      --  full types have been seen.
-
       E := First_Entity (Id);
       while Present (E) loop
+
+         --  Check rule of 3.6(11), which in general requires waiting till all
+         --  full types have been seen.
+
          if Ekind (E) = E_Record_Type or else Ekind (E) = E_Array_Type then
             Check_Aliased_Component_Types (E);
+         end if;
+
+         --  Check preelaborable initialization for full type completing a
+         --  private type for which pragma Preelaborable_Initialization given.
+
+         if Is_Type (E)
+           and then Must_Have_Preelab_Init (E)
+           and then not Has_Preelaborable_Initialization (E)
+         then
+            Error_Msg_N
+              ("full view of & does not have preelaborable initialization", E);
          end if;
 
          Next_Entity (E);
@@ -2024,8 +2036,24 @@ package body Sem_Ch7 is
                            Type_In_Use
                              (Etype (Next_Formal (First_Formal (Id))))));
          else
-            Set_Is_Potentially_Use_Visible (Id,
-              In_Use (P) and not Is_Hidden (Id));
+            if In_Use (P) and then not Is_Hidden (Id) then
+
+               --  A child unit of a use-visible package remains use-visible
+               --  only if it is itself a visible child unit. Otherwise it
+               --  would remain visible in other contexts where P is use-
+               --  visible, because once compiled it stays in the entity list
+               --  of its parent unit.
+
+               if Is_Child_Unit (Id) then
+                  Set_Is_Potentially_Use_Visible (Id,
+                    Is_Visible_Child_Unit (Id));
+               else
+                  Set_Is_Potentially_Use_Visible (Id);
+               end if;
+
+            else
+               Set_Is_Potentially_Use_Visible (Id, False);
+            end if;
          end if;
 
          --  Local entities are not immediately visible outside of the package
