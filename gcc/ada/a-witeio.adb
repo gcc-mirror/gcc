@@ -1134,6 +1134,7 @@ package body Ada.Wide_Text_IO is
       --  Procedure to output one character of a wide character sequence
 
       procedure WC_Out is new Wide_Char_To_Char_Sequence (Out_Char);
+
       --------------
       -- Out_Char --
       --------------
