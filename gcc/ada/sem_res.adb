@@ -2843,6 +2843,8 @@ package body Sem_Res is
             return;
          end if;
 
+         --  Case where actual is present
+
          if Present (A)
            and then (Nkind (Parent (A)) /= N_Parameter_Association
                        or else
@@ -4331,7 +4333,6 @@ package body Sem_Res is
       elsif not (Is_Type (Entity (Subp))) then
          Nam := Entity (Subp);
          Set_Entity_With_Style_Check (Subp, Nam);
-         Generate_Reference (Nam, Subp);
 
       --  Otherwise we must have the case of an overloaded call
 
@@ -4344,7 +4345,6 @@ package body Sem_Res is
             if Covers (Typ, It.Typ) then
                Nam := It.Nam;
                Set_Entity_With_Style_Check (Subp, Nam);
-               Generate_Reference (Nam, Subp);
                exit;
             end if;
 
@@ -4378,7 +4378,7 @@ package body Sem_Res is
                     Make_Raise_Program_Error (Loc,
                       Reason => PE_Current_Task_In_Entry_Body));
                   Set_Etype (N, Rtype);
-                  exit;
+                  return;
                end if;
             end loop;
          end;
@@ -4744,6 +4744,7 @@ package body Sem_Res is
 
          --  Avoid validation, since it is a static function call
 
+         Generate_Reference (Nam, Subp);
          return;
       end if;
 
@@ -4786,6 +4787,17 @@ package body Sem_Res is
         and then not In_Instance
       then
          Error_Msg_NE ("cannot call abstract subprogram &!", N, Nam);
+      end if;
+
+      --  If this is a dispatching call, generate the appropriate reference,
+      --  for better source navigation in GPS.
+
+      if Is_Overloadable (Nam)
+        and then Present (Controlling_Argument (N))
+      then
+         Generate_Reference (Nam, Subp, 'R');
+      else
+         Generate_Reference (Nam, Subp);
       end if;
 
       if Is_Intrinsic_Subprogram (Nam) then
@@ -8677,7 +8689,8 @@ package body Sem_Res is
             return Valid_Array_Conversion;
          end if;
 
-      --  Anonymous access types where target references an interface
+      --  Ada 2005 (AI-251): Anonymous access types where target references an
+      --  interface type.
 
       elsif (Ekind (Target_Type) = E_General_Access_Type
               or else
@@ -9020,9 +9033,11 @@ package body Sem_Res is
               N);
          return True;
 
-      --  Tagged types
+      --  If both are tagged types, check legality of view conversions
 
-      elsif Is_Tagged_Type (Target_Type) then
+      elsif Is_Tagged_Type (Target_Type)
+        and then Is_Tagged_Type (Opnd_Type)
+      then
          return Valid_Tagged_Conversion (Target_Type, Opnd_Type);
 
       --  Types derived from the same root type are convertible
