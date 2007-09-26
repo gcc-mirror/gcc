@@ -124,6 +124,7 @@ package body Bindgen is
    --     Zero_Cost_Exceptions          : Integer;
    --     Detect_Blocking               : Integer;
    --     Default_Stack_Size            : Integer;
+   --     Leap_Seconds_Support          : Integer;
 
    --  Main_Priority is the priority value set by pragma Priority in the
    --  main program. If no such pragma is present, the value is -1.
@@ -206,6 +207,10 @@ package body Bindgen is
 
    --  Default_Stack_Size is the default stack size used when creating an
    --  Ada task with no explicit Storize_Size clause.
+
+   --  Leap_Seconds_Support denotes whether leap seconds have been enabled or
+   --  disabled. A value of zero indicates that leap seconds are turned "off",
+   --  while a value of one signifies "on" status.
 
    -----------------------
    -- Local Subprograms --
@@ -575,6 +580,9 @@ package body Bindgen is
          WBI ("      Default_Stack_Size : Integer;");
          WBI ("      pragma Import (C, Default_Stack_Size, " &
               """__gl_default_stack_size"");");
+         WBI ("      Leap_Seconds_Support : Integer;");
+         WBI ("      pragma Import (C, Leap_Seconds_Support, " &
+              """__gl_leap_seconds_support"");");
 
          --  Import entry point for elaboration time signal handler
          --  installation, and indication of if it's been called previously.
@@ -683,6 +691,17 @@ package body Bindgen is
 
          Set_String ("      Default_Stack_Size := ");
          Set_Int (Default_Stack_Size);
+         Set_String (";");
+         Write_Statement_Buffer;
+
+         Set_String ("      Leap_Seconds_Support := ");
+
+         if Leap_Seconds_Support then
+            Set_Int (1);
+         else
+            Set_Int (0);
+         end if;
+
          Set_String (";");
          Write_Statement_Buffer;
 
@@ -922,6 +941,18 @@ package body Bindgen is
          WBI ("   extern int __gl_default_stack_size;");
          Set_String ("   __gl_default_stack_size = ");
          Set_Int    (Default_Stack_Size);
+         Set_String (";");
+         Write_Statement_Buffer;
+
+         WBI ("   extern int __gl_leap_seconds_support;");
+         Set_String ("   __gl_leap_seconds_support = ");
+
+         if Leap_Seconds_Support then
+            Set_Int (1);
+         else
+            Set_Int (0);
+         end if;
+
          Set_String (";");
          Write_Statement_Buffer;
 

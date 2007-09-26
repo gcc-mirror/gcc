@@ -112,16 +112,26 @@ package body Ada.Calendar is
    --  Unchecked_Conversion was employed, the resulting values would be off
    --  by 100.
 
+   --------------------------
+   -- Leap seconds control --
+   --------------------------
+
+   Flag : Integer;
+   pragma Import (C, Flag, "__gl_leap_seconds_support");
+   --  This imported value is used to determine whether the compilation had
+   --  binder flag "-y" present which enables leap seconds. A value of zero
+   --  signifies no leap seconds support while a value of one enables the
+   --  support.
+
+   Leap_Support : constant Boolean := Flag = 1;
+   --  The above flag controls the usage of leap seconds in all Ada.Calendar
+   --  routines.
+
+   Leap_Seconds_Count : constant Natural := 23;
+
    ---------------------
    -- Local Constants --
    ---------------------
-
-   --  Currently none of the GNAT targets support leap seconds. At some point
-   --  it might be necessary to query a C function to determine if the target
-   --  supports leap seconds, but for now this is deemed unnecessary.
-
-   Leap_Support       : constant Boolean := False;
-   Leap_Seconds_Count : constant Natural := 23;
 
    --  The range of Ada time expressed as milis since the VMS Epoch
 
@@ -141,14 +151,33 @@ package body Ada.Calendar is
    End_Of_Time   : constant Time := Ada_High + Time (3) * Milis_In_Day;
    Start_Of_Time : constant Time := Ada_Low  - Time (3) * Milis_In_Day;
 
-   Cumulative_Days_Before_Month :
-     constant array (Month_Number) of Natural :=
-       (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
+   --  The following table contains the hard time values of all existing leap
+   --  seconds. The values are produced by the utility program xleaps.adb.
 
-   Leap_Second_Times : array (1 .. Leap_Seconds_Count) of Time;
-   --  Each value represents a time value which is one second before a leap
-   --  second occurence. This table is populated during the elaboration of
-   --  Ada.Calendar.
+   Leap_Second_Times : constant array (1 .. Leap_Seconds_Count) of Time :=
+     (35855136000000000,
+      36014112010000000,
+      36329472020000000,
+      36644832030000000,
+      36960192040000000,
+      37276416050000000,
+      37591776060000000,
+      37907136070000000,
+      38222496080000000,
+      38695104090000000,
+      39010464100000000,
+      39325824110000000,
+      39957408120000000,
+      40747104130000000,
+      41378688140000000,
+      41694048150000000,
+      42166656160000000,
+      42482016170000000,
+      42797376180000000,
+      43271712190000000,
+      43744320200000000,
+      44218656210000000,
+      46427904220000000);
 
    ---------
    -- "+" --
@@ -1062,78 +1091,4 @@ package body Ada.Calendar is
          return get_gmtoff;
       end UTC_Time_Offset;
    end Time_Zones_Operations;
-
---  Start of elaboration code for Ada.Calendar
-
-begin
-   --  Population of the leap seconds table
-
-   if Leap_Support then
-      declare
-         type Leap_Second_Date is record
-            Year  : Year_Number;
-            Month : Month_Number;
-            Day   : Day_Number;
-         end record;
-
-         Leap_Second_Dates :
-           constant array (1 .. Leap_Seconds_Count) of Leap_Second_Date :=
-             ((1972,  6, 30), (1972, 12, 31), (1973, 12, 31), (1974, 12, 31),
-              (1975, 12, 31), (1976, 12, 31), (1977, 12, 31), (1978, 12, 31),
-              (1979, 12, 31), (1981,  6, 30), (1982,  6, 30), (1983,  6, 30),
-              (1985,  6, 30), (1987, 12, 31), (1989, 12, 31), (1990, 12, 31),
-              (1992,  6, 30), (1993,  6, 30), (1994,  6, 30), (1995, 12, 31),
-              (1997,  6, 30), (1998, 12, 31), (2005, 12, 31));
-
-         Ada_Min_Year       : constant Year_Number := Year_Number'First;
-         Days_In_Four_Years : constant := 365 * 3 + 366;
-         VMS_Days           : constant := 10 * 366 + 32 * 365 + 45;
-
-         Days  : Natural;
-         Leap  : Leap_Second_Date;
-         Years : Natural;
-
-      begin
-         for Index in 1 .. Leap_Seconds_Count loop
-            Leap := Leap_Second_Dates (Index);
-
-            --  Calculate the number of days from the start of Ada time until
-            --  the current leap second occurence. Non-leap centenial years
-            --  are not accounted for in these calculations since there are
-            --  no leap seconds after 2100 yet.
-
-            Years := Leap.Year - Ada_Min_Year;
-            Days  := (Years / 4) * Days_In_Four_Years;
-            Years := Years mod 4;
-
-            if Years = 1 then
-               Days := Days + 365;
-
-            elsif Years = 2 then
-               Days := Days + 365 * 2;
-
-            elsif Years = 3 then
-               Days := Days + 365 * 3;
-            end if;
-
-            Days := Days + Cumulative_Days_Before_Month (Leap.Month);
-
-            if Is_Leap (Leap.Year)
-              and then Leap.Month > 2
-            then
-               Days := Days + 1;
-            end if;
-
-            --  Add the number of days since the start of VMS time till the
-            --  start of Ada time.
-
-            Days := Days + Leap.Day + VMS_Days;
-
-            --  Index - 1 previous leap seconds are added to Time (Index)
-
-            Leap_Second_Times (Index) :=
-              (Time (Days) * Secs_In_Day + Time (Index - 1)) * Mili;
-         end loop;
-      end;
-   end if;
 end Ada.Calendar;
