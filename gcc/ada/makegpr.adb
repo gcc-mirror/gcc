@@ -3804,8 +3804,9 @@ package body Makegpr is
 
          --  Only Ada sources in the main project, and even maybe not
 
-         if not Data.Langs (Ada_Language_Index) then
-
+         if Data.Extends = No_Project and then
+           not Data.Langs (Ada_Language_Index)
+         then
             --  Fail if the main project has no source of any language
 
             Osint.Fail
