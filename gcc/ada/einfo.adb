@@ -483,7 +483,8 @@ package body Einfo is
    --    Used_As_Generic_Actual          Flag222
    --    Is_Descendent_Of_Address        Flag223
    --    Is_Raised                       Flag224
-   --    (unused)                        Flag225
+   --    Is_Thunk                        Flag225
+   --
    --    (unused)                        Flag226
    --    (unused)                        Flag227
    --    (unused)                        Flag228
@@ -1965,6 +1966,12 @@ package body Einfo is
       pragma Assert (Is_Interface (Id));
       return Flag200 (Id);
    end Is_Task_Interface;
+
+   function Is_Thunk (Id : E) return B is
+   begin
+      pragma Assert (Is_Subprogram (Id));
+      return Flag225 (Id);
+   end Is_Thunk;
 
    function Is_True_Constant (Id : E) return B is
    begin
@@ -4290,6 +4297,11 @@ package body Einfo is
       pragma Assert (Is_Interface (Id));
       Set_Flag200 (Id, V);
    end Set_Is_Task_Interface;
+
+   procedure Set_Is_Thunk (Id : E; V : B := True) is
+   begin
+      Set_Flag225 (Id, V);
+   end Set_Is_Thunk;
 
    procedure Set_Is_True_Constant (Id : E; V : B := True) is
    begin
@@ -7264,6 +7276,7 @@ package body Einfo is
       W ("Is_Tag",                          Flag78  (Id));
       W ("Is_Tagged_Type",                  Flag55  (Id));
       W ("Is_Task_Interface",               Flag200 (Id));
+      W ("Is_Thunk",                        Flag225 (Id));
       W ("Is_True_Constant",                Flag163 (Id));
       W ("Is_Unchecked_Union",              Flag117 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));

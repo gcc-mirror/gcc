@@ -1961,6 +1961,37 @@ package body Sem_Ch6 is
 
       Check_Anonymous_Return;
 
+      --  Set the Protected_Formal field of each extra formal of the protected
+      --  subprogram to reference the corresponding extra formal of the
+      --  subprogram that implements it. For regular formals this occurs when
+      --  the protected subprogram's declaration is expanded, but the extra
+      --  formals don't get created until the subprogram is frozen. We need to
+      --  do this before analyzing the protected subprogram's body so that any
+      --  references to the original subprogram's extra formals will be changed
+      --  refer to the implementing subprogram's formals (see Expand_Formal).
+
+      if Present (Spec_Id)
+        and then Is_Protected_Type (Scope (Spec_Id))
+        and then Present (Protected_Body_Subprogram (Spec_Id))
+      then
+         declare
+            Impl_Subp       : constant Entity_Id :=
+                                Protected_Body_Subprogram (Spec_Id);
+            Prot_Ext_Formal : Entity_Id := Extra_Formals (Spec_Id);
+            Impl_Ext_Formal : Entity_Id := Extra_Formals (Impl_Subp);
+
+         begin
+            while Present (Prot_Ext_Formal) loop
+               pragma Assert (Present (Impl_Ext_Formal));
+
+               Set_Protected_Formal (Prot_Ext_Formal, Impl_Ext_Formal);
+
+               Next_Formal_With_Extras (Prot_Ext_Formal);
+               Next_Formal_With_Extras (Impl_Ext_Formal);
+            end loop;
+         end;
+      end if;
+
       --  Now we can go on to analyze the body
 
       HSS := Handled_Statement_Sequence (N);

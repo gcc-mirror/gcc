@@ -1679,25 +1679,8 @@ package body Exp_Ch6 is
 
    procedure Expand_Call (N : Node_Id) is
       Loc           : constant Source_Ptr := Sloc (N);
-      Remote        : constant Boolean    := Is_Remote_Call (N);
-      Subp          : Entity_Id;
-      Orig_Subp     : Entity_Id := Empty;
-      Parent_Subp   : Entity_Id;
-      Parent_Formal : Entity_Id;
-      Actual        : Node_Id;
-      Formal        : Entity_Id;
-      Prev          : Node_Id := Empty;
-
-      Prev_Orig : Node_Id;
-      --  Original node for an actual, which may have been rewritten. If the
-      --  actual is a function call that has been transformed from a selected
-      --  component, the original node is unanalyzed. Otherwise, it carries
-      --  semantic information used to generate additional actuals.
-
-      Scop          : Entity_Id;
       Extra_Actuals : List_Id := No_List;
-
-      CW_Interface_Formals_Present : Boolean := False;
+      Prev          : Node_Id := Empty;
 
       procedure Add_Actual_Parameter (Insert_Param : Node_Id);
       --  Adds one entry to the end of the actual parameter list. Used for
@@ -1878,6 +1861,26 @@ package body Exp_Ch6 is
          raise Program_Error;
       end Inherited_From_Formal;
 
+      --  Local variables
+
+      Remote        : constant Boolean := Is_Remote_Call (N);
+      Actual        : Node_Id;
+      Formal        : Entity_Id;
+      Orig_Subp     : Entity_Id := Empty;
+      Param_Count   : Natural := 0;
+      Parent_Formal : Entity_Id;
+      Parent_Subp   : Entity_Id;
+      Scop          : Entity_Id;
+      Subp          : Entity_Id;
+
+      Prev_Orig     : Node_Id;
+      --  Original node for an actual, which may have been rewritten. If the
+      --  actual is a function call that has been transformed from a selected
+      --  component, the original node is unanalyzed. Otherwise, it carries
+      --  semantic information used to generate additional actuals.
+
+      CW_Interface_Formals_Present : Boolean := False;
+
    --  Start of processing for Expand_Call
 
    begin
@@ -1998,8 +2001,9 @@ package body Exp_Ch6 is
       --  We also generate any required range checks for actuals as we go
       --  through the loop, since this is a convenient place to do this.
 
-      Formal := First_Formal (Subp);
-      Actual := First_Actual (N);
+      Formal      := First_Formal (Subp);
+      Actual      := First_Actual (N);
+      Param_Count := 1;
       while Present (Formal) loop
 
          --  Generate range check if required (not activated yet ???)
@@ -2136,7 +2140,35 @@ package body Exp_Ch6 is
                Prev_Orig := Prev;
             end if;
 
-            if Is_Entity_Name (Prev_Orig) then
+            --  Ada 2005 (AI-251): Thunks must propagate the extra actuals
+            --  of accessibility levels.
+
+            if Ekind (Current_Scope) in Subprogram_Kind
+              and then Is_Thunk (Current_Scope)
+            then
+               declare
+                  Parm_Ent : Entity_Id;
+
+               begin
+                  if Is_Controlling_Actual (Actual) then
+
+                     --  Find the corresponding actual of the thunk
+
+                     Parm_Ent := First_Entity (Current_Scope);
+                     for J in 2 .. Param_Count loop
+                        Next_Entity (Parm_Ent);
+                     end loop;
+
+                  else pragma Assert (Is_Entity_Name (Actual));
+                     Parm_Ent := Entity (Actual);
+                  end if;
+
+                  Add_Extra_Actual
+                    (New_Occurrence_Of (Extra_Accessibility (Parm_Ent), Loc),
+                     Extra_Accessibility (Formal));
+               end;
+
+            elsif Is_Entity_Name (Prev_Orig) then
 
                --  When passing an access parameter, or a renaming of an access
                --  parameter, as the actual to another access parameter we need
@@ -2191,11 +2223,12 @@ package body Exp_Ch6 is
                      Extra_Accessibility (Formal));
                end if;
 
+            --  All cases other than thunks
+
             else
                case Nkind (Prev_Orig) is
 
                   when N_Attribute_Reference =>
-
                      case Get_Attribute_Id (Attribute_Name (Prev_Orig)) is
 
                         --  For X'Access, pass on the level of the prefix X
@@ -2411,6 +2444,7 @@ package body Exp_Ch6 is
 
          <<Skip_Extra_Actual_Generation>>
 
+         Param_Count := Param_Count + 1;
          Next_Actual (Actual);
          Next_Formal (Formal);
       end loop;
@@ -5038,6 +5072,18 @@ package body Exp_Ch6 is
          Func_Call := Expression (Func_Call);
       end if;
 
+      --  If the call has already been processed to add build-in-place actuals
+      --  then return. This should not normally occur in an allocator context,
+      --  but we add the protection as a defensive measure.
+
+      if Is_Expanded_Build_In_Place_Call (Func_Call) then
+         return;
+      end if;
+
+      --  Mark the call as processed as a build-in-place call
+
+      Set_Is_Expanded_Build_In_Place_Call (Func_Call);
+
       Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
@@ -5179,6 +5225,20 @@ package body Exp_Ch6 is
          Func_Call := Expression (Func_Call);
       end if;
 
+      --  If the call has already been processed to add build-in-place actuals
+      --  then return. One place this can occur is for calls to build-in-place
+      --  functions that occur within a call to a protected operation, where
+      --  due to rewriting and expansion of the protected call there can be
+      --  more than one call to Expand_Actuals for the same set of actuals.
+
+      if Is_Expanded_Build_In_Place_Call (Func_Call) then
+         return;
+      end if;
+
+      --  Mark the call as processed as a build-in-place call
+
+      Set_Is_Expanded_Build_In_Place_Call (Func_Call);
+
       Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
@@ -5293,6 +5353,18 @@ package body Exp_Ch6 is
          Func_Call := Expression (Func_Call);
       end if;
 
+      --  If the call has already been processed to add build-in-place actuals
+      --  then return. This should not normally occur in an assignment context,
+      --  but we add the protection as a defensive measure.
+
+      if Is_Expanded_Build_In_Place_Call (Func_Call) then
+         return;
+      end if;
+
+      --  Mark the call as processed as a build-in-place call
+
+      Set_Is_Expanded_Build_In_Place_Call (Func_Call);
+
       Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
@@ -5402,6 +5474,18 @@ package body Exp_Ch6 is
       then
          Func_Call := Expression (Func_Call);
       end if;
+
+      --  If the call has already been processed to add build-in-place actuals
+      --  then return. This should not normally occur in an object declaration,
+      --  but we add the protection as a defensive measure.
+
+      if Is_Expanded_Build_In_Place_Call (Func_Call) then
+         return;
+      end if;
+
+      --  Mark the call as processed as a build-in-place call
+
+      Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
       Loc := Sloc (Function_Call);
 
