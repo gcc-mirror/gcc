@@ -279,7 +279,7 @@ package body Ada.Tags is
          TSD     : constant Type_Specific_Data_Ptr :=
                      To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       begin
-         return TSD.HT_Link;
+         return TSD.HT_Link.all;
       end Get_HT_Link;
 
       ----------
@@ -304,7 +304,7 @@ package body Ada.Tags is
          TSD     : constant Type_Specific_Data_Ptr :=
                      To_Type_Specific_Data_Ptr (TSD_Ptr.all);
       begin
-         TSD.HT_Link := Next;
+         TSD.HT_Link.all := Next;
       end Set_HT_Link;
 
    end HTable_Subprograms;

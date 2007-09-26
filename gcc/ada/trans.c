@@ -626,7 +626,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 			       Is_Aliased (gnat_temp));
 
       if (!object || !parent_requires_lvalue)
-	gnu_result = DECL_INITIAL (gnu_result);
+	gnu_result = unshare_expr (DECL_INITIAL (gnu_result));
     }
 
   *gnu_result_type_p = gnu_result_type;
