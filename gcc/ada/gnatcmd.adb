@@ -394,6 +394,8 @@ procedure GNATCmd is
                if The_Command = List then
                   if
                     Unit_Data.File_Names (Body_Part).Name /= No_File
+                      and then
+                    Unit_Data.File_Names (Body_Part).Path /= Slash
                   then
                      --  There is a body, check if it is for this project
 
@@ -404,6 +406,8 @@ procedure GNATCmd is
 
                         if
                           Unit_Data.File_Names (Specification).Name = No_File
+                            or else
+                          Unit_Data.File_Names (Specification).Path = Slash
                         then
                            --  We have a body with no spec: we need to check if
                            --  this is a subunit, because gnatls will complain
@@ -436,6 +440,8 @@ procedure GNATCmd is
 
                   elsif
                     Unit_Data.File_Names (Specification).Name /= No_File
+                      and then
+                    Unit_Data.File_Names (Specification).Path /= Slash
                   then
                      --  We have a spec with no body; check if it is for this
                      --  project.
@@ -460,6 +466,8 @@ procedure GNATCmd is
                elsif The_Command = Stack then
                   if
                     Unit_Data.File_Names (Body_Part).Name /= No_File
+                      and then
+                    Unit_Data.File_Names (Body_Part).Path /= Slash
                   then
                      --  There is a body. Check if .ci files for this project
                      --  must be added.
@@ -472,6 +480,8 @@ procedure GNATCmd is
 
                         if
                           Unit_Data.File_Names (Specification).Name = No_File
+                            or else
+                          Unit_Data.File_Names (Specification).Path = Slash
                         then
                            --  We have a body with no spec: we need to check
                            --  if this is a subunit, because .ci files are not
@@ -510,6 +520,8 @@ procedure GNATCmd is
 
                   elsif
                     Unit_Data.File_Names (Specification).Name /= No_File
+                    and then
+                    Unit_Data.File_Names (Specification).Path /= Slash
                   then
                      --  We have a spec with no body. Check if it is for this
                      --  project.
@@ -541,18 +553,17 @@ procedure GNATCmd is
                   --  of the project, or of all projects if -U was specified.
 
                   for Kind in Spec_Or_Body loop
-
-                     --  Put only sources that belong to the main project
-
                      if Check_Project
                           (Unit_Data.File_Names (Kind).Project, Project)
+                       and then Unit_Data.File_Names (Kind).Name /= No_File
+                       and then Unit_Data.File_Names (Kind).Path /= Slash
                      then
                         Last_Switches.Increment_Last;
                         Last_Switches.Table (Last_Switches.Last) :=
                           new String'
                             (Get_Name_String
-                                 (Unit_Data.File_Names
-                                      (Kind).Display_Path));
+                               (Unit_Data.File_Names
+                                  (Kind).Display_Path));
                      end if;
                   end loop;
                end if;
