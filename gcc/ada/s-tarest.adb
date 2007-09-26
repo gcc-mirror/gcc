@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1999-2006, Free Software Foundation, Inc.          --
+--         Copyright (C) 1999-2007, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -195,7 +195,6 @@ package body System.Tasking.Restricted.Stages is
       --
       --  DO NOT delete ID. As noted, it is needed on some targets.
 
-      use type System.Parameters.Size_Type;
       use type SSE.Storage_Offset;
 
       Secondary_Stack : aliased SSE.Storage_Array

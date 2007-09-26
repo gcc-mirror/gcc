@@ -2180,6 +2180,7 @@ package body Sem_Ch8 is
    ----------------------
 
    procedure Analyze_Use_Type (N : Node_Id) is
+      E  : Entity_Id;
       Id : Entity_Id;
 
    begin
@@ -2194,16 +2195,17 @@ package body Sem_Ch8 is
       Id := First (Subtype_Marks (N));
       while Present (Id) loop
          Find_Type (Id);
+         E := Entity (Id);
 
-         if Entity (Id) /= Any_Type then
+         if E /= Any_Type then
             Use_One_Type (Id);
 
             if Nkind (Parent (N)) = N_Compilation_Unit then
                if Nkind (Id) = N_Identifier then
                   Error_Msg_N ("type is not directly visible", Id);
 
-               elsif Is_Child_Unit (Scope (Entity (Id)))
-                 and then Scope (Entity (Id)) /= System_Aux_Id
+               elsif Is_Child_Unit (Scope (E))
+                 and then Scope (E) /= System_Aux_Id
                then
                   Check_In_Previous_With_Clause (N, Prefix (Id));
                end if;
@@ -2223,6 +2225,13 @@ package body Sem_Ch8 is
 
    begin
       if In_Open_Scopes (Pack) then
+         if Warn_On_Redundant_Constructs
+           and then Pack = Current_Scope
+         then
+            Error_Msg_NE
+              ("& is already use-visible within itself?", Pack_Name, Pack);
+         end if;
+
          return False;
 
       elsif In_Use (Pack) then
@@ -2844,7 +2853,7 @@ package body Sem_Ch8 is
                while Present (Id) loop
 
                   --  Preserve use-visibility of operators that are primitive
-                  --  operators of a type that is use_visible through an active
+                  --  operators of a type that is use-visible through an active
                   --  use_type clause.
 
                   if Nkind (Id) = N_Defining_Operator_Symbol
@@ -5861,9 +5870,9 @@ package body Sem_Ch8 is
 
       if Present (Redundant) then
          Error_Msg_Sloc := Sloc (Prev_Use);
-         Error_Msg_NE (
-           "& is already use_visible through declaration #?",
-              Redundant, Pack_Name);
+         Error_Msg_NE
+           ("& is already use-visible through previous use clause #?",
+            Redundant, Pack_Name);
       end if;
    end Note_Redundant_Use;
 
@@ -6596,9 +6605,38 @@ package body Sem_Ch8 is
    ------------------
 
    procedure Use_One_Type (Id : Node_Id) is
-      T       : Entity_Id;
-      Op_List : Elist_Id;
-      Elmt    : Elmt_Id;
+      Elmt          : Elmt_Id;
+      Is_Known_Used : Boolean;
+      Op_List       : Elist_Id;
+      T             : Entity_Id;
+
+      function Spec_Reloaded_For_Body return Boolean;
+      --  Determine whether the compilation unit is a package body and the use
+      --  type clause is in the spec of the same package. Even though the spec
+      --  was analyzed first, its context is reloaded when analysing the body.
+
+      ----------------------------
+      -- Spec_Reloaded_For_Body --
+      ----------------------------
+
+      function Spec_Reloaded_For_Body return Boolean is
+      begin
+         if Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body then
+            declare
+               Spec : constant Node_Id :=
+                        Parent (List_Containing (Parent (Id)));
+            begin
+               return
+                 Nkind (Spec) = N_Package_Specification
+                   and then Corresponding_Body (Parent (Spec)) =
+                              Cunit_Entity (Current_Sem_Unit);
+            end;
+         end if;
+
+         return False;
+      end Spec_Reloaded_For_Body;
+
+   --  Start of processing for Use_One_Type;
 
    begin
       --  It is the type determined by the subtype mark (8.4(8)) whose
@@ -6606,11 +6644,17 @@ package body Sem_Ch8 is
 
       T := Base_Type (Entity (Id));
 
-      Set_Redundant_Use
-        (Id,
-           In_Use (T)
-             or else Is_Potentially_Use_Visible (T)
-             or else In_Use (Scope (T)));
+      --  Either the type itself is used, the package where it is declared
+      --  is in use or the entity is declared in the current package, thus
+      --  use-visible.
+
+      Is_Known_Used :=
+        In_Use (T)
+          or else In_Use (Scope (T))
+          or else Scope (T) = Current_Scope;
+
+      Set_Redundant_Use (Id,
+        Is_Known_Used or else Is_Potentially_Use_Visible (T));
 
       if In_Open_Scopes (Scope (T)) then
          null;
@@ -6639,6 +6683,47 @@ package body Sem_Ch8 is
 
             Next_Elmt (Elmt);
          end loop;
+      end if;
+
+      --  If warning on redundant constructs, check for unnecessary WITH
+
+      if Warn_On_Redundant_Constructs
+        and then Is_Known_Used
+
+         --                     with P;         with P; use P;
+         --    package P is     package X is    package body X is
+         --       type T ...       use P.T;
+
+         --  The compilation unit is the body of X. GNAT first compiles the
+         --  spec of X, then procedes to the body. At that point P is marked
+         --  as use visible. The analysis then reinstalls the spec along with
+         --  its context. The use clause P.T is now recognized as redundant,
+         --  but in the wrong context. Do not emit a warning in such cases.
+
+        and then not Spec_Reloaded_For_Body
+      then
+         --  The type already has a use clause
+
+         if In_Use (T) then
+            Error_Msg_NE
+              ("& is already use-visible through previous use type clause?",
+               Id, Id);
+
+         --  The package where T is declared is already used
+
+         elsif In_Use (Scope (T)) then
+            Error_Msg_Sloc := Sloc (Current_Use_Clause (Scope (T)));
+            Error_Msg_NE
+              ("& is already use-visible through package use clause #?",
+               Id, Id);
+
+         --  The current scope is the package where T is declared
+
+         else
+            Error_Msg_Node_2 := Scope (T);
+            Error_Msg_NE
+              ("& is already use-visible inside package &?", Id, Id);
+         end if;
       end if;
    end Use_One_Type;
 

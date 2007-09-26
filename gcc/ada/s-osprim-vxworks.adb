@@ -96,9 +96,6 @@ package body System.OS_Primitives is
    function Clock return Duration is
       TS     : aliased timespec;
       Result : int;
-
-      use type Interfaces.C.int;
-
    begin
       Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
       pragma Assert (Result = 0);

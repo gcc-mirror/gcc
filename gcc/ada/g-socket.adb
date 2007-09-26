@@ -48,7 +48,7 @@ with System; use System;
 
 package body GNAT.Sockets is
 
-   use type C.int, System.Address;
+   use type C.int;
 
    Finalized   : Boolean := False;
    Initialized : Boolean := False;
@@ -1404,8 +1404,6 @@ package body GNAT.Sockets is
       Last   : out Ada.Streams.Stream_Element_Offset;
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      use type Ada.Streams.Stream_Element_Offset;
-
       Res : C.int;
 
    begin
@@ -1430,8 +1428,6 @@ package body GNAT.Sockets is
       From   : out Sock_Addr_Type;
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      use type Ada.Streams.Stream_Element_Offset;
-
       Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : aliased C.int := Sin'Size / 8;
@@ -1604,8 +1600,6 @@ package body GNAT.Sockets is
       Last   : out Ada.Streams.Stream_Element_Offset;
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      use type Ada.Streams.Stream_Element_Offset;
-
       Res : C.int;
 
    begin
@@ -1634,8 +1628,6 @@ package body GNAT.Sockets is
       To     : Sock_Addr_Type;
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      use type Ada.Streams.Stream_Element_Offset;
-
       Res : C.int;
       Sin : aliased Sockaddr_In;
       Len : constant C.int := Sin'Size / 8;

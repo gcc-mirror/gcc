@@ -43,7 +43,6 @@ package body System.Interrupt_Management is
 
    procedure Initialize is
       use System.OS_Interface;
-      use type unsigned_long;
       Status : Cond_Value_Type;
 
    begin
