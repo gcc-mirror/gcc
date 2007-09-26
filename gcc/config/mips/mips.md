@@ -4328,7 +4328,7 @@
   "%|sync%-")
 
 (define_insn "sync_compare_and_swap<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "d,d")
@@ -4341,7 +4341,7 @@
   else
     return MIPS_COMPARE_AND_SWAP ("<d>", "move");
 }
-  [(set_attr "length" "28")])
+  [(set_attr "length" "32")])
 
 (define_insn "sync_add<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")
@@ -4356,7 +4356,7 @@
   else
     return MIPS_SYNC_OP ("<d>", "<d>addu");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_sub<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R")
@@ -4366,12 +4366,12 @@
 	 UNSPEC_SYNC_OLD_OP))]
   "GENERATE_LL_SC"
 {
-    return MIPS_SYNC_OP ("<d>", "<d>subu");	
+  return MIPS_SYNC_OP ("<d>", "<d>subu");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_old_add<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4385,7 +4385,7 @@
   else
     return MIPS_SYNC_OLD_OP ("<d>", "<d>addu");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_old_sub<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d")
@@ -4399,10 +4399,10 @@
 {
   return MIPS_SYNC_OLD_OP ("<d>", "<d>subu");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_new_add<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
         (plus:GPR (match_operand:GPR 1 "memory_operand" "+R,R")
 		  (match_operand:GPR 2 "arith_operand" "I,d")))
    (set (match_dup 1)
@@ -4416,7 +4416,7 @@
   else
     return MIPS_SYNC_NEW_OP ("<d>", "<d>addu");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_new_sub<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&d")
@@ -4430,7 +4430,7 @@
 {
   return MIPS_SYNC_NEW_OP ("<d>", "<d>subu");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_<optab><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")
@@ -4445,10 +4445,10 @@
   else
     return MIPS_SYNC_OP ("<d>", "<insn>");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_old_<optab><mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4462,10 +4462,10 @@
   else
     return MIPS_SYNC_OLD_OP ("<d>", "<insn>");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_new_<optab><mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
@@ -4479,7 +4479,7 @@
   else
     return MIPS_SYNC_NEW_OP ("<d>", "<insn>");	
 }
-  [(set_attr "length" "24")])
+  [(set_attr "length" "28")])
 
 (define_insn "sync_nand<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+R,R")
@@ -4492,10 +4492,10 @@
   else
     return MIPS_SYNC_NAND ("<d>", "and");	
 }
-  [(set_attr "length" "28")])
+  [(set_attr "length" "32")])
 
 (define_insn "sync_old_nand<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
         (unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
@@ -4507,10 +4507,10 @@
   else
     return MIPS_SYNC_OLD_NAND ("<d>", "and");	
 }
-  [(set_attr "length" "28")])
+  [(set_attr "length" "32")])
 
 (define_insn "sync_new_nand<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "uns_arith_operand" "K,d")]
@@ -4522,10 +4522,10 @@
   else
     return MIPS_SYNC_NEW_NAND ("<d>", "and");	
 }
-  [(set_attr "length" "28")])
+  [(set_attr "length" "32")])
 
 (define_insn "sync_lock_test_and_set<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&d,d")
+  [(set (match_operand:GPR 0 "register_operand" "=d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
 	(unspec_volatile:GPR [(match_operand:GPR 2 "arith_operand" "I,d")]
