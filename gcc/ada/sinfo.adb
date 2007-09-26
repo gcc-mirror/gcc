@@ -185,6 +185,14 @@ package body Sinfo is
       return Node4 (N);
    end Actual_Designated_Subtype;
 
+   function Address_Warning_Posted
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Definition_Clause);
+      return Flag18 (N);
+   end Address_Warning_Posted;
+
    function Aggregate_Bounds
       (N : Node_Id) return Node_Id is
    begin
@@ -1590,6 +1598,14 @@ package body Sinfo is
       return Flag8 (N);
    end Is_Entry_Barrier_Function;
 
+   function Is_Expanded_Build_In_Place_Call
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call);
+      return Flag11 (N);
+   end Is_Expanded_Build_In_Place_Call;
+
    function Is_Folded_In_Parser
       (N : Node_Id) return Boolean is
    begin
@@ -2900,6 +2916,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Free_Statement);
       Set_Node4 (N, Val);
    end Set_Actual_Designated_Subtype;
+
+   procedure Set_Address_Warning_Posted
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Attribute_Definition_Clause);
+      Set_Flag18 (N, Val);
+   end Set_Address_Warning_Posted;
 
    procedure Set_Aggregate_Bounds
       (N : Node_Id; Val : Node_Id) is
@@ -4296,6 +4320,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subprogram_Body);
       Set_Flag8 (N, Val);
    end Set_Is_Entry_Barrier_Function;
+
+   procedure Set_Is_Expanded_Build_In_Place_Call
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Function_Call);
+      Set_Flag11 (N, Val);
+   end Set_Is_Expanded_Build_In_Place_Call;
 
    procedure Set_Is_Folded_In_Parser
       (N : Node_Id; Val : Boolean := True) is

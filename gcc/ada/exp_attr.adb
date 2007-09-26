@@ -637,11 +637,9 @@ package body Exp_Attr is
                   pragma Assert (Present (Formal));
 
                   Rewrite (N,
-                    Unchecked_Convert_To
-                      (Typ, New_Occurrence_Of (Formal, Loc)));
+                    Unchecked_Convert_To (Typ,
+                      New_Occurrence_Of (Formal, Loc)));
                   Set_Etype (N, Typ);
-
-                  return;
 
                --  The expression must appear in a default expression, (which
                --  in the initialization procedure is the right-hand side of an
@@ -667,8 +665,6 @@ package body Exp_Attr is
 
                      Analyze_And_Resolve (N, Typ);
                   end if;
-
-                  return;
                end if;
             end;
 
@@ -702,8 +698,8 @@ package body Exp_Attr is
                --  Note: Limit the expansion of an attribute applied to a
                --  dereference of an access parameter so that it's only done
                --  for 'Access. This fixes a problem with 'Unrestricted_Access
-               --  that leads to errors in the case where the attribute
-               --  type is access-to-variable and the access parameter is
+               --  that leads to errors in the case where the attribute type
+               --  is access-to-variable and the access parameter is
                --  access-to-constant. The conversion is only done to get
                --  accessibility checks, so it makes sense to limit it to
                --  'Access (and consistent with existing comment).
