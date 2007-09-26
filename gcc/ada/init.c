@@ -101,6 +101,7 @@ int   __gl_exception_tracebacks          = 0;
 int   __gl_zero_cost_exceptions          = 0;
 int   __gl_detect_blocking               = 0;
 int   __gl_default_stack_size            = -1;
+int   __gl_leap_seconds_support          = 0;
 
 /* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit */
@@ -443,7 +444,6 @@ __gnat_set_code_loc (struct sigcontext *context, char *pc)
 {
   context->sc_pc = (long) pc;
 }
-
 
 size_t
 __gnat_machine_state_length (void)
