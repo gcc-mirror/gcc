@@ -1,3 +1,35 @@
+2007-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/30375
+	PR tree-optimization/33560
+	* tree-ssa-dse.c (get_use_of_stmt_lhs): Give up on uses
+	with calls.
+
+	Revert
+	2006-05-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dse.c (aggregate_vardecl_d): New.
+	(dse_global_data): Add aggregate_vardecl field.
+	(dse_possible_dead_store_p): New.
+	Add prev_defvar variable.
+	Allow immediate uses and previous immediate uses to differ
+	if they are setting different parts of the whole.
+	(get_aggregate_vardecl): New.
+	(dse_record_partial_aggregate_store): New.
+	(dse_whole_aggregate_clobbered_p): New.
+	(dse_partial_kill_p): New.
+	Call dse_maybe_record_aggregate_store().
+	When checking whether a STMT and its USE_STMT refer to the
+	same memory address, check also for partial kills that clobber
+	the whole.
+	Move some variable definitions to the block where they are used.
+	(aggregate_vardecl_hash): New.
+	(aggregate_vardecl_eq): New.
+	(aggregate_vardecl_free): New.
+	(aggregate_whole_store_p): New.
+	(tree_ssa_dse): Initialize and free aggregate_vardecl.
+	Mark which aggregate stores we care about.
+
 2007-09-25  DJ Delorie  <dj@redhat.com>
 
 	PR target/33551

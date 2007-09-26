@@ -33,8 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "domwalk.h"
 #include "flags.h"
-#include "hashtab.h"
-#include "sbitmap.h"
 
 /* This file implements dead store elimination.
 
@@ -66,26 +64,6 @@ along with GCC; see the file COPYING3.  If not see
    the CFG.  */
    
 
-/* Given an aggregate, this records the parts of it which have been
-   stored into.  */
-struct aggregate_vardecl_d
-{
-  /* The aggregate.  */
-  tree decl;
-
-  /* Some aggregates are too big for us to handle or never get stored
-     to as a whole.  If this field is TRUE, we don't care about this
-     aggregate.  */
-  bool ignore;
-
-  /* Number of parts in the whole.  */
-  unsigned nparts;
-  
-  /* A bitmap of parts of the aggregate that have been set.  If part N
-     of an aggregate has been stored to, bit N should be on.  */
-  sbitmap parts_set;
-};
-
 struct dse_global_data
 {
   /* This is the global bitmap for store statements.
@@ -94,10 +72,6 @@ struct dse_global_data
      that we want to record, set the bit corresponding to the statement's
      unique ID in this bitmap.  */
   bitmap stores;
-
-  /* A hash table containing the parts of an aggregate which have been
-     stored to.  */
-  htab_t aggregate_vardecl;
 };
 
 /* We allocate a bitmap-per-block for stores which are encountered
@@ -126,7 +100,6 @@ static void dse_optimize_stmt (struct dom_walk_data *,
 static void dse_record_phis (struct dom_walk_data *, basic_block);
 static void dse_finalize_block (struct dom_walk_data *, basic_block);
 static void record_voperand_set (bitmap, bitmap *, unsigned int);
-static void dse_record_partial_aggregate_store (tree, struct dse_global_data *);
 
 static unsigned max_stmt_uid;	/* Maximal uid of a statement.  Uids to phi
 				   nodes are assigned using the versions of
@@ -264,7 +237,10 @@ get_use_of_stmt_lhs (tree stmt,
   single_imm_use (DEF_FROM_PTR (def_p), use_p, use_stmt);
   gcc_assert (*use_p != NULL_USE_OPERAND_P);
   first_use_p = use_p;
-  if (TREE_CODE (*use_stmt) != GIMPLE_MODIFY_STMT)
+
+  /* If the use is not simple, give up.  */
+  if (TREE_CODE (*use_stmt) != GIMPLE_MODIFY_STMT
+      || get_call_expr_in (*use_stmt))
     return NULL_TREE;
 
   do
@@ -283,7 +259,8 @@ get_use_of_stmt_lhs (tree stmt,
 	return NULL_TREE;
       single_imm_use (DEF_FROM_PTR (def_p), use_p, use_stmt);
       gcc_assert (*use_p != NULL_USE_OPERAND_P);
-      if (TREE_CODE (*use_stmt) != GIMPLE_MODIFY_STMT)
+      if (TREE_CODE (*use_stmt) != GIMPLE_MODIFY_STMT
+	  || get_call_expr_in (*use_stmt))
 	return NULL_TREE;
     }
   while (1);
@@ -372,28 +349,14 @@ dse_possible_dead_store_p (tree stmt,
 	}
       else if (temp != *use_stmt)
 	{
-	  /* The immediate use and the previously found immediate use
-	     must be the same, except... if they're uses of different
-	     parts of the whole.  */
-	  if (TREE_CODE (defvar) == SSA_NAME
-	      && TREE_CODE (SSA_NAME_VAR (defvar)) == STRUCT_FIELD_TAG
-	      && TREE_CODE (prev_defvar) == SSA_NAME
-	      && TREE_CODE (SSA_NAME_VAR (prev_defvar)) == STRUCT_FIELD_TAG
-	      && (SFT_PARENT_VAR (SSA_NAME_VAR (defvar))
-		  == SFT_PARENT_VAR (SSA_NAME_VAR (prev_defvar))))
-	    ;
-	  else
-	    {
-	      fail = true;
-	      break;
-	    }
+	  fail = true;
+	  break;
 	}
     }
 
   if (fail)
     {
       record_voperand_set (dse_gd->stores, &bd->stores, ann->uid);
-      dse_record_partial_aggregate_store (stmt, dse_gd);
       return false;
     }
 
@@ -421,180 +384,6 @@ dse_possible_dead_store_p (tree stmt,
     }
 
   return true;
-}
-
-
-/* Given a DECL, return its AGGREGATE_VARDECL_D entry.  If no entry is
-   found and INSERT is TRUE, add a new entry.  */
-
-static struct aggregate_vardecl_d *
-get_aggregate_vardecl (tree decl, struct dse_global_data *dse_gd, bool insert)
-{
-  struct aggregate_vardecl_d av, *av_p;
-  void **slot;
-
-  av.decl = decl;
-  slot = htab_find_slot (dse_gd->aggregate_vardecl, &av, insert ? INSERT : NO_INSERT);
-
-
-  /* Not found, and we don't want to insert.  */
-  if (slot == NULL)
-    return NULL;
-
-  /* Create new entry.  */
-  if (*slot == NULL)
-    {
-      av_p = XNEW (struct aggregate_vardecl_d);
-      av_p->decl = decl;
-
-      /* Record how many parts the whole has.  */
-      if (TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
-	av_p->nparts = 2;
-      else if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
-	{
-	  tree fields;
-
-	  /* Count the number of fields.  */
-	  fields = TYPE_FIELDS (TREE_TYPE (decl));
-	  av_p->nparts = 0;
-	  while (fields)
-	    {
-	      av_p->nparts++;
-	      fields = TREE_CHAIN (fields);
-	    }
-	}
-      else
-	abort ();
-
-      av_p->ignore = true;
-      av_p->parts_set = sbitmap_alloc (HOST_BITS_PER_LONG);
-      sbitmap_zero (av_p->parts_set);
-      *slot = av_p;
-    }
-  else
-    av_p = (struct aggregate_vardecl_d *) *slot;
-
-  return av_p;
-}
-
-
-/* If STMT is a partial store into an aggregate, record which part got set.  */
-
-static void
-dse_record_partial_aggregate_store (tree stmt, struct dse_global_data *dse_gd)
-{
-  tree lhs, decl;
-  enum tree_code code;
-  struct aggregate_vardecl_d *av_p;
-  int part;
-
-  gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
-
-  lhs = GIMPLE_STMT_OPERAND (stmt, 0);
-  code = TREE_CODE (lhs);
-  if (code != IMAGPART_EXPR
-      && code != REALPART_EXPR
-      && code != COMPONENT_REF)
-    return;
-  decl = TREE_OPERAND (lhs, 0);
-  /* Early bail on things like nested COMPONENT_REFs.  */
-  if (TREE_CODE (decl) != VAR_DECL)
-    return;
-  /* Early bail on unions.  */
-  if (code == COMPONENT_REF
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (lhs, 0))) != RECORD_TYPE)
-    return;
-  
-  av_p = get_aggregate_vardecl (decl, dse_gd, /*insert=*/false);
-  /* Run away, this isn't an aggregate we care about.  */
-  if (!av_p || av_p->ignore)
-    return;
-
-  switch (code)
-    {
-    case IMAGPART_EXPR:
-      part = 0;
-      break;
-    case REALPART_EXPR:
-      part = 1;
-      break;
-    case COMPONENT_REF:
-      {
-	tree orig_field, fields;
-	tree record_type = TREE_TYPE (TREE_OPERAND (lhs, 0));
-
-	/* Get FIELD_DECL.  */
-	orig_field = TREE_OPERAND (lhs, 1);
-
-	/* FIXME: Eeech, do this more efficiently.  Perhaps
-	   calculate bit/byte offsets.  */
-	part = -1;
-	fields = TYPE_FIELDS (record_type);
-	while (fields)
-	  {
-	    ++part;
-	    if (fields == orig_field)
-	      break;
-	    fields = TREE_CHAIN (fields);
-	  }
-	gcc_assert (part >= 0);
-      }
-      break;
-    default:
-      return;
-    }
-
-  /* Record which part was set.  */
-  SET_BIT (av_p->parts_set, part);
-}
-
-
-/* Return TRUE if all parts in an AGGREGATE_VARDECL have been set.  */
-
-static inline bool
-dse_whole_aggregate_clobbered_p (struct aggregate_vardecl_d *av_p)
-{
-  unsigned int i;
-  sbitmap_iterator sbi;
-  int nbits_set = 0;
-
-  /* Count the number of partial stores (bits set).  */
-  EXECUTE_IF_SET_IN_SBITMAP (av_p->parts_set, 0, i, sbi)
-    nbits_set++;
-  return ((unsigned) nbits_set == av_p->nparts);
-}
-
-
-/* Return TRUE if STMT is a store into a whole aggregate whose parts we
-   have already seen and recorded.  */
-
-static bool
-dse_partial_kill_p (tree stmt, struct dse_global_data *dse_gd)
-{
-  tree decl;
-  struct aggregate_vardecl_d *av_p;
-
-  /* Make sure this is a store into the whole.  */
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-    {
-      enum tree_code code;
-
-      decl = GIMPLE_STMT_OPERAND (stmt, 0);
-      code = TREE_CODE (TREE_TYPE (decl));
-
-      if (code != COMPLEX_TYPE && code != RECORD_TYPE)
-	return false;
-
-      if (TREE_CODE (decl) != VAR_DECL)
-	return false;
-    }
-  else
-    return false;
-
-  av_p = get_aggregate_vardecl (decl, dse_gd, /*insert=*/false);
-  gcc_assert (av_p != NULL);
-
-  return dse_whole_aggregate_clobbered_p (av_p);
 }
 
 
@@ -645,14 +434,14 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 				      dse_gd, bd))
 	return;
 
-      /* If this is a partial store into an aggregate, record it.  */
-      dse_record_partial_aggregate_store (stmt, dse_gd);
-
+      /* If we have precisely one immediate use at this point, then we may
+	 have found redundant store.  Make sure that the stores are to
+	 the same memory location.  This includes checking that any
+	 SSA-form variables in the address will have the same values.  */
       if (use_p != NULL_USE_OPERAND_P
           && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-          && (!operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
-                                GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
-              && !dse_partial_kill_p (stmt, dse_gd))
+          && !operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
+                               GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
           && memory_address_same (stmt, use_stmt))
         {
           /* If we have precisely one immediate use at this point, but
@@ -673,9 +462,8 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	 memory location, then we may have found redundant store.  */
       if (use_p != NULL_USE_OPERAND_P
 	  && bitmap_bit_p (dse_gd->stores, get_stmt_uid (use_stmt))
-	  && (operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
-			       GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
-	      || dse_partial_kill_p (stmt, dse_gd))
+	  && operand_equal_p (GIMPLE_STMT_OPERAND (stmt, 0),
+			      GIMPLE_STMT_OPERAND (use_stmt, 0), 0)
 	  && memory_address_same (stmt, use_stmt))
 	{
 	  ssa_op_iter op_iter;
@@ -758,52 +546,6 @@ dse_finalize_block (struct dom_walk_data *walk_data,
       }
 }
 
-
-/* Hashing and equality functions for AGGREGATE_VARDECL.  */
-
-static hashval_t
-aggregate_vardecl_hash (const void *p)
-{
-  return htab_hash_pointer
-    ((const void *)((const struct aggregate_vardecl_d *)p)->decl);
-}
-
-static int
-aggregate_vardecl_eq (const void *p1, const void *p2)
-{
-  return ((const struct aggregate_vardecl_d *)p1)->decl
-    == ((const struct aggregate_vardecl_d *)p2)->decl;
-}
-
-
-/* Free memory allocated by one entry in AGGREGATE_VARDECL.  */
-
-static void
-aggregate_vardecl_free (void *p)
-{
-  struct aggregate_vardecl_d *entry = (struct aggregate_vardecl_d *) p;
-  sbitmap_free (entry->parts_set);
-  free (entry);
-}
-
-
-/* Return true if STMT is a store into an entire aggregate.  */
-
-static bool
-aggregate_whole_store_p (tree stmt)
-{
-  if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
-    {
-      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
-      enum tree_code code = TREE_CODE (TREE_TYPE (lhs));
-
-      if (code == COMPLEX_TYPE || code == RECORD_TYPE)
-	return true;
-    }
-  return false;
-}
-
-
 /* Main entry point.  */
 
 static unsigned int
@@ -813,40 +555,15 @@ tree_ssa_dse (void)
   struct dse_global_data dse_gd;
   basic_block bb;
 
-  dse_gd.aggregate_vardecl = 
-    htab_create (37, aggregate_vardecl_hash,
-		 aggregate_vardecl_eq, aggregate_vardecl_free);
-
+  /* Create a UID for each statement in the function.  Ordering of the
+     UIDs is not important for this pass.  */
   max_stmt_uid = 0;
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator bsi;
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	{
-	  tree stmt = bsi_stmt (bsi);
-
-	  /* Record aggregates which have been stored into as a whole.  */
-	  if (aggregate_whole_store_p (stmt))
-	    {
-	      tree lhs = GIMPLE_STMT_OPERAND (stmt, 0);
-	      if (TREE_CODE (lhs) == VAR_DECL)
-		{
-		  struct aggregate_vardecl_d *av_p;
-
-		  av_p = get_aggregate_vardecl (lhs, &dse_gd, /*insert=*/true);
-		  av_p->ignore = false;
-
-		  /* Ignore aggregates with too many parts.  */
-		  if (av_p->nparts > HOST_BITS_PER_LONG)
-		    av_p->ignore = true;
-		}
-	    }
-
-	  /* Create a UID for each statement in the function.
-	     Ordering of the UIDs is not important for this pass.  */
-	  stmt_ann (stmt)->uid = max_stmt_uid++;
-	}
+	stmt_ann (bsi_stmt (bsi))->uid = max_stmt_uid++;
     }
 
   /* We might consider making this a property of each pass so that it
@@ -872,7 +589,6 @@ tree_ssa_dse (void)
 
   /* This is the main hash table for the dead store elimination pass.  */
   dse_gd.stores = BITMAP_ALLOC (NULL);
-
   walk_data.global_data = &dse_gd;
 
   /* Initialize the dominator walker.  */
@@ -884,9 +600,8 @@ tree_ssa_dse (void)
   /* Finalize the dominator walker.  */
   fini_walk_dominator_tree (&walk_data);
 
-  /* Release unneeded data.  */
+  /* Release the main bitmap.  */
   BITMAP_FREE (dse_gd.stores);
-  htab_delete (dse_gd.aggregate_vardecl);
 
   /* For now, just wipe the post-dominator information.  */
   free_dominance_info (CDI_POST_DOMINATORS);
