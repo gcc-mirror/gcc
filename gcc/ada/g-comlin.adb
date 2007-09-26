@@ -31,73 +31,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Command_Line;
+with Ada.Unchecked_Deallocation;
 with GNAT.OS_Lib;      use GNAT.OS_Lib;
 
 package body GNAT.Command_Line is
 
    package CL renames Ada.Command_Line;
 
-   type Section_Number is new Natural range 0 .. 65534;
-   for Section_Number'Size use 16;
-
-   type Parameter_Type is record
-      Arg_Num : Positive;
-      First   : Positive;
-      Last    : Positive;
-   end record;
-   The_Parameter : Parameter_Type;
-   The_Switch    : Parameter_Type;
-   --  This type and this variable are provided to store the current switch
-   --  and parameter.
-
-   type Is_Switch_Type is array (1 .. CL.Argument_Count) of Boolean;
-   pragma Pack (Is_Switch_Type);
-
-   Is_Switch : Is_Switch_Type := (others => False);
-   --  Indicates wich arguments on the command line are considered not be
-   --  switches or parameters to switches (this leaves e.g. the filenames...).
-
-   type Section_Type is array (1 .. CL.Argument_Count + 1) of Section_Number;
-   pragma Pack (Section_Type);
-   Section : Section_Type := (others => 1);
-   --  Contains the number of the section associated with the current switch.
-   --  If this number is 0, then it is a section delimiter, which is never
-   --  returns by GetOpt. The last element of this array is set to 0 to avoid
-   --  the need to test for reaching the end of the command line in loops.
-
-   Current_Argument : Natural := 1;
-   --  Number of the current argument parsed on the command line
-
-   Current_Index : Natural := 1;
-   --  Index in the current argument of the character to be processed
-
-   Current_Section : Section_Number := 1;
-
-   Expansion_It : aliased Expansion_Iterator;
-   --  When Get_Argument is expanding a file name, this is the iterator used
-
-   In_Expansion : Boolean := False;
-   --  True if we are expanding a file
-
-   Switch_Character : Character := '-';
-   --  The character at the beginning of the command line arguments, indicating
-   --  the beginning of a switch.
-
-   Stop_At_First : Boolean := False;
-   --  If it is True then Getopt stops at the first non-switch argument
+   type Switch_Parameter_Type is
+     (Parameter_None,
+      Parameter_With_Optional_Space,  --  ':' in getopt
+      Parameter_With_Space_Or_Equal,  --  '=' in getopt
+      Parameter_No_Space,             --  '!' in getopt
+      Parameter_Optional);            --  '?' in getop
 
    procedure Set_Parameter
      (Variable : out Parameter_Type;
       Arg_Num  : Positive;
       First    : Positive;
-      Last     : Positive);
+      Last     : Positive;
+      Extra    : Character := ASCII.NUL);
    pragma Inline (Set_Parameter);
    --  Set the parameter that will be returned by Parameter below
+   --  Parameters need to be defined ???
 
-   function Goto_Next_Argument_In_Section return Boolean;
-   --  Go to the next argument on the command line. If we are at the end of the
-   --  current section, we want to make sure there is no other identical
+   function Goto_Next_Argument_In_Section (Parser : Opt_Parser) return Boolean;
+   --  Go to the next argument on the command line. If we are at the end of
+   --  the current section, we want to make sure there is no other identical
    --  section on the command line (there might be multiple instances of
    --  -largs). Returns True iff there is another argument.
 
@@ -116,6 +76,87 @@ package body GNAT.Command_Line is
    --  converts the given string to canonical all lower case form, so that two
    --  file names compare equal if they refer to the same file.
 
+   procedure Internal_Initialize_Option_Scan
+     (Parser                   : Opt_Parser;
+      Switch_Char              : Character;
+      Stop_At_First_Non_Switch : Boolean;
+      Section_Delimiters       : String);
+   --  Initialize Parser, which must have been allocated already
+
+   function Argument (Parser : Opt_Parser; Index : Integer) return String;
+   --  Return the index-th command line argument
+
+   procedure Find_Longest_Matching_Switch
+     (Switches          : String;
+      Arg               : String;
+      Index_In_Switches : out Integer;
+      Switch_Length     : out Integer;
+      Param             : out Switch_Parameter_Type);
+   --  return the Longest switch from Switches that matches at least
+   --  partially Arg. Index_In_Switches is set to 0 if none matches
+
+   procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+     (Argument_List, Argument_List_Access);
+
+   procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+     (Command_Line_Configuration_Record, Command_Line_Configuration);
+
+   type Boolean_Chars is array (Character) of Boolean;
+
+   procedure Remove (Line : in out Argument_List_Access; Index : Integer);
+   --  Remove a specific element from Line
+
+   procedure Append
+     (Line : in out Argument_List_Access;
+      Str  : String_Access);
+   --  Append a new element to Line
+
+   function Args_From_Expanded (Args : Boolean_Chars) return String;
+   --  Return the string made of all characters with True in Args
+
+   type Callback_Procedure is access procedure (Simple_Switch : String);
+   procedure For_Each_Simple_Switch
+     (Cmd      : Command_Line;
+      Switch   : String;
+      Callback : Callback_Procedure);
+   --  Breaks Switch into as simple switches as possible (expanding aliases and
+   --  ungrouping common prefixes when possible), and call Callback for each of
+   --  these.
+
+   procedure Group_Switches
+     (Cmd    : Command_Line;
+      Result : Argument_List_Access;
+      Params : Argument_List_Access);
+   --  Group switches with common prefixes whenever possible.
+   --  Once they have been grouped, we also check items for possible aliasing
+
+   procedure Alias_Switches
+     (Cmd    : Command_Line;
+      Result : Argument_List_Access;
+      Params : Argument_List_Access);
+   --  When possible, replace or more switches by an alias, ie a shorter
+   --  version.
+
+   function Looking_At
+     (Type_Str  : String;
+      Index     : Natural;
+      Substring : String) return Boolean;
+   --  Return True if the characters starting at Index in Type_Str are
+   --  equivalent to Substring.
+
+   --------------
+   -- Argument --
+   --------------
+
+   function Argument (Parser : Opt_Parser; Index : Integer) return String is
+   begin
+      if Parser.Arguments /= null then
+         return Parser.Arguments (Index + Parser.Arguments'First - 1).all;
+      else
+         return CL.Argument (Index);
+      end if;
+   end Argument;
+
    ------------------------------
    -- Canonical_Case_File_Name --
    ------------------------------
@@ -125,8 +166,8 @@ package body GNAT.Command_Line is
       if not File_Names_Case_Sensitive then
          for J in S'Range loop
             if S (J) in 'A' .. 'Z' then
-               S (J) := Character'Val (
-                          Character'Pos (S (J)) +
+               S (J) := Character'Val
+                         (Character'Pos (S (J)) +
                           Character'Pos ('a')   -
                           Character'Pos ('A'));
             end if;
@@ -167,7 +208,7 @@ package body GNAT.Command_Line is
             if Current = 1 then
                return String'(1 .. 0 => ' ');
             else
-               --  Otherwise, continue with the directory at the previous level
+               --  Otherwise continue with the directory at the previous level
 
                Current := Current - 1;
                It.Current_Depth := Current;
@@ -210,19 +251,18 @@ package body GNAT.Command_Line is
          else
             declare
                Name : String :=
-                 It.Dir_Name (It.Start .. It.Levels (Current).Name_Last) &
-                 S (1 .. Last);
+                        It.Dir_Name (It.Start .. It.Levels (Current).Name_Last)
+                          & S (1 .. Last);
             begin
                Canonical_Case_File_Name (Name);
 
-               --  If it matches, return the relative path
+               --  If it matches return the relative path
 
                if GNAT.Regexp.Match (Name, Iterator.Regexp) then
                   return Name;
                end if;
             end;
          end if;
-
       end loop;
 
       return String'(1 .. 0 => ' ');
@@ -232,90 +272,99 @@ package body GNAT.Command_Line is
    -- Full_Switch --
    -----------------
 
-   function Full_Switch return String is
+   function Full_Switch
+     (Parser : Opt_Parser := Command_Line_Parser) return String
+   is
    begin
-      return CL.Argument (The_Switch.Arg_Num)
-        (The_Switch.First .. The_Switch.Last);
+      if Parser.The_Switch.Extra = ASCII.NUL then
+         return Argument (Parser, Parser.The_Switch.Arg_Num)
+           (Parser.The_Switch.First .. Parser.The_Switch.Last);
+      else
+         return Parser.The_Switch.Extra
+           & Argument (Parser, Parser.The_Switch.Arg_Num)
+           (Parser.The_Switch.First .. Parser.The_Switch.Last);
+      end if;
    end Full_Switch;
 
    ------------------
    -- Get_Argument --
    ------------------
 
-   function Get_Argument (Do_Expansion : Boolean := False) return String is
-      Total : constant Natural := CL.Argument_Count;
-
+   function Get_Argument
+     (Do_Expansion : Boolean    := False;
+      Parser       : Opt_Parser := Command_Line_Parser) return String
+   is
    begin
-      if In_Expansion then
+      if Parser.In_Expansion then
          declare
-            S : constant String := Expansion (Expansion_It);
-
+            S : constant String := Expansion (Parser.Expansion_It);
          begin
             if S'Length /= 0 then
                return S;
             else
-               In_Expansion := False;
+               Parser.In_Expansion := False;
             end if;
          end;
       end if;
 
-      if Current_Argument > Total then
+      if Parser.Current_Argument > Parser.Arg_Count then
 
          --  If this is the first time this function is called
 
-         if Current_Index = 1 then
-            Current_Argument := 1;
-            while Current_Argument <= CL.Argument_Count
-              and then Section (Current_Argument) /= Current_Section
+         if Parser.Current_Index = 1 then
+            Parser.Current_Argument := 1;
+            while Parser.Current_Argument <= Parser.Arg_Count
+              and then Parser.Section (Parser.Current_Argument) /=
+                Parser.Current_Section
             loop
-               Current_Argument := Current_Argument + 1;
+               Parser.Current_Argument := Parser.Current_Argument + 1;
             end loop;
          else
             return String'(1 .. 0 => ' ');
          end if;
 
-      elsif Section (Current_Argument) = 0 then
-         while Current_Argument <= CL.Argument_Count
-           and then Section (Current_Argument) /= Current_Section
+      elsif Parser.Section (Parser.Current_Argument) = 0 then
+         while Parser.Current_Argument <= Parser.Arg_Count
+           and then Parser.Section (Parser.Current_Argument) /=
+             Parser.Current_Section
          loop
-            Current_Argument := Current_Argument + 1;
+            Parser.Current_Argument := Parser.Current_Argument + 1;
          end loop;
       end if;
 
-      Current_Index := 2;
+      Parser.Current_Index := Integer'Last;
 
-      while Current_Argument <= Total
-        and then Is_Switch (Current_Argument)
+      while Parser.Current_Argument <= Parser.Arg_Count
+        and then Parser.Is_Switch (Parser.Current_Argument)
       loop
-         Current_Argument := Current_Argument + 1;
+         Parser.Current_Argument := Parser.Current_Argument + 1;
       end loop;
 
-      if Current_Argument > Total then
+      if Parser.Current_Argument > Parser.Arg_Count then
          return String'(1 .. 0 => ' ');
-      end if;
-
-      if Section (Current_Argument) = 0 then
+      elsif Parser.Section (Parser.Current_Argument) = 0 then
          return Get_Argument (Do_Expansion);
       end if;
 
-      Current_Argument := Current_Argument + 1;
+      Parser.Current_Argument := Parser.Current_Argument + 1;
 
       --  Could it be a file name with wild cards to expand?
 
       if Do_Expansion then
          declare
-            Arg   : constant String := CL.Argument (Current_Argument - 1);
-            Index : Positive := Arg'First;
+            Arg   : constant String :=
+                      Argument (Parser, Parser.Current_Argument - 1);
+            Index : Positive;
 
          begin
+            Index := Arg'First;
             while Index <= Arg'Last loop
-
                if Arg (Index) = '*'
                  or else Arg (Index) = '?'
                  or else Arg (Index) = '['
                then
-                  In_Expansion := True;
-                  Start_Expansion (Expansion_It, Arg);
+                  Parser.In_Expansion := True;
+                  Start_Expansion (Parser.Expansion_It, Arg);
                   return Get_Argument (Do_Expansion);
                end if;
 
@@ -324,8 +373,91 @@ package body GNAT.Command_Line is
          end;
       end if;
 
-      return CL.Argument (Current_Argument - 1);
+      return Argument (Parser, Parser.Current_Argument - 1);
    end Get_Argument;
+
+   ----------------------------------
+   -- Find_Longest_Matching_Switch --
+   ----------------------------------
+
+   procedure Find_Longest_Matching_Switch
+     (Switches          : String;
+      Arg               : String;
+      Index_In_Switches : out Integer;
+      Switch_Length     : out Integer;
+      Param             : out Switch_Parameter_Type)
+   is
+      Index  : Natural;
+      Length : Natural := 1;
+      P      : Switch_Parameter_Type;
+
+   begin
+      Index_In_Switches := 0;
+      Switch_Length     := 0;
+
+      --  Remove all leading spaces first to make sure that Index points
+      --  at the start of the first switch.
+
+      Index := Switches'First;
+      while Index <= Switches'Last and then Switches (Index) = ' ' loop
+         Index := Index + 1;
+      end loop;
+
+      while Index <= Switches'Last loop
+
+         --  Search the length of the parameter at this position in Switches
+
+         Length := Index;
+         while Length <= Switches'Last
+           and then Switches (Length) /= ' '
+         loop
+            Length := Length + 1;
+         end loop;
+
+         if Length = Index + 1 then
+            P := Parameter_None;
+         else
+            case Switches (Length - 1) is
+               when ':'    =>
+                  P      := Parameter_With_Optional_Space;
+                  Length := Length - 1;
+               when '='    =>
+                  P      := Parameter_With_Space_Or_Equal;
+                  Length := Length - 1;
+               when '!'    =>
+                  P      := Parameter_No_Space;
+                  Length := Length - 1;
+               when '?'    =>
+                  P      := Parameter_Optional;
+                  Length := Length - 1;
+               when others =>
+                  P      := Parameter_None;
+            end case;
+         end if;
+
+         --  If it is the one we searched, it may be a candidate
+
+         if Arg'First + Length - 1 - Index <= Arg'Last
+           and then Switches (Index .. Length - 1) =
+                      Arg (Arg'First .. Arg'First + Length - 1 - Index)
+           and then Length - Index > Switch_Length
+         then
+            Param             := P;
+            Index_In_Switches := Index;
+            Switch_Length     := Length - Index;
+         end if;
+
+         --  Look for the next switch in Switches
+
+         while Index <= Switches'Last
+           and then Switches (Index) /= ' '
+         loop
+            Index := Index + 1;
+         end loop;
+
+         Index := Index + 1;
+      end loop;
+   end Find_Longest_Matching_Switch;
 
    ------------
    -- Getopt --
@@ -333,299 +465,262 @@ package body GNAT.Command_Line is
 
    function Getopt
      (Switches    : String;
-      Concatenate : Boolean := True) return Character
+      Concatenate : Boolean := True;
+      Parser      : Opt_Parser := Command_Line_Parser) return Character
    is
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
 
    begin
+      <<Restart>>
+
       --  If we have finished parsing the current command line item (there
       --  might be multiple switches in a single item), then go to the next
       --  element
 
-      if Current_Argument > CL.Argument_Count
-        or else (Current_Index > CL.Argument (Current_Argument)'Last
-                   and then not Goto_Next_Argument_In_Section)
+      if Parser.Current_Argument > Parser.Arg_Count
+        or else (Parser.Current_Index >
+                   Argument (Parser, Parser.Current_Argument)'Last
+                 and then not Goto_Next_Argument_In_Section (Parser))
       then
          return ASCII.NUL;
       end if;
 
-      --  If we are on a new item, test if this might be a switch
+      --  By default, the switch will not have a parameter
 
-      if Current_Index = 1 then
-         if CL.Argument (Current_Argument)(1) /= Switch_Character then
-            if Switches (Switches'First) = '*' then
-               Set_Parameter (The_Switch,
-                              Arg_Num => Current_Argument,
-                              First   => 1,
-                              Last    => CL.Argument (Current_Argument)'Last);
-               Is_Switch (Current_Argument) := True;
-               Dummy := Goto_Next_Argument_In_Section;
-               return '*';
-            end if;
-
-            if Stop_At_First then
-               Current_Argument := Positive'Last;
-               return ASCII.NUL;
-
-            elsif not Goto_Next_Argument_In_Section then
-               return ASCII.NUL;
-
-            else
-               return Getopt (Switches);
-            end if;
-         end if;
-
-         Current_Index := 2;
-         Is_Switch (Current_Argument) := True;
-      end if;
+      Parser.The_Parameter :=
+        (Integer'Last, Integer'Last, Integer'Last - 1, ASCII.NUL);
+      Parser.The_Separator := ASCII.NUL;
 
       declare
-         Arg            : constant String := CL.Argument (Current_Argument);
+         Arg            : constant String :=
+                            Argument (Parser, Parser.Current_Argument);
          Index_Switches : Natural := 0;
          Max_Length     : Natural := 0;
-         Index          : Natural;
-         Length         : Natural := 1;
          End_Index      : Natural;
-
+         Param          : Switch_Parameter_Type;
       begin
-         --  Remove all leading spaces first to make sure that Index points
-         --  at the start of the first switch.
+         --  If we are on a new item, test if this might be a switch
 
-         Index := Switches'First;
-         while Index <= Switches'Last and then Switches (Index) = ' ' loop
-            Index := Index + 1;
-         end loop;
+         if Parser.Current_Index = Arg'First then
+            if Arg (Arg'First) /= Parser.Switch_Character then
 
-         while Index <= Switches'Last loop
+               --  If it isn't a switch, return it immediately. We also know it
+               --  isn't the parameter to a previous switch, since that has
+               --  already been handled
 
-            --  Search the length of the parameter at this position in Switches
+               if Switches (Switches'First) = '*' then
+                  Set_Parameter
+                    (Parser.The_Switch,
+                     Arg_Num => Parser.Current_Argument,
+                     First   => Arg'First,
+                     Last    => Arg'Last);
+                  Parser.Is_Switch (Parser.Current_Argument) := True;
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+                  return '*';
+               end if;
 
-            Length := Index;
-            while Length <= Switches'Last
-              and then Switches (Length) /= ' '
-            loop
-               Length := Length + 1;
-            end loop;
+               if Parser.Stop_At_First then
+                  Parser.Current_Argument := Positive'Last;
+                  return ASCII.NUL;
 
-            if (Switches (Length - 1) = ':'  or else
-                Switches (Length - 1) = '='  or else
-                Switches (Length - 1) = '?'  or else
-                Switches (Length - 1) = '!')
-              and then Length > Index + 1
-            then
-               Length := Length - 1;
+               elsif not Goto_Next_Argument_In_Section (Parser) then
+                  return ASCII.NUL;
+
+               else
+                  --  Recurse to get the next switch on the command line
+
+                  goto Restart;
+               end if;
             end if;
 
-            --  If it is the one we searched, it may be a candidate
+            --  We are on the first character of a new command line argument,
+            --  which starts with Switch_Character. Further analysis is needed.
 
-            if Current_Index + Length - 1 - Index <= Arg'Last
-              and then
-                Switches (Index .. Length - 1) =
-                  Arg (Current_Index .. Current_Index + Length - 1 - Index)
-              and then Length - Index > Max_Length
-            then
-               Index_Switches := Index;
-               Max_Length     := Length - Index;
-            end if;
+            Parser.Current_Index := Parser.Current_Index + 1;
+            Parser.Is_Switch (Parser.Current_Argument) := True;
+         end if;
 
-            --  Look for the next switch in Switches
+         Find_Longest_Matching_Switch
+           (Switches          => Switches,
+            Arg               => Arg (Parser.Current_Index .. Arg'Last),
+            Index_In_Switches => Index_Switches,
+            Switch_Length     => Max_Length,
+            Param             => Param);
 
-            while Index <= Switches'Last
-              and then Switches (Index) /= ' ' loop
-               Index := Index + 1;
-            end loop;
-
-            Index := Index + 1;
-         end loop;
-
-         End_Index := Current_Index + Max_Length - 1;
-
-         --  If switch is not accepted, skip it, unless we had '*' in Switches
+         --  If switch is not accepted, it is either invalid or is returned
+         --  in the context of '*'.
 
          if Index_Switches = 0 then
-            if Switches (Switches'First) = '*' then
-               Set_Parameter (The_Switch,
-                              Arg_Num => Current_Argument,
-                              First   => 1,
-                              Last    => CL.Argument (Current_Argument)'Last);
-               Is_Switch (Current_Argument) := True;
-               Dummy := Goto_Next_Argument_In_Section;
-               return '*';
-            end if;
 
             --  Depending on the value of Concatenate, the full switch is
-            --  a single character (True) or the rest of the argument (False).
+            --  a single character or the rest of the argument.
 
             if Concatenate then
-               End_Index := Current_Index;
+               End_Index := Parser.Current_Index;
             else
                End_Index := Arg'Last;
             end if;
 
-            Set_Parameter (The_Switch,
-                           Arg_Num => Current_Argument,
-                           First   => Current_Index,
-                           Last    => End_Index);
-            Current_Index := End_Index + 1;
-            raise Invalid_Switch;
-         end if;
-
-         Set_Parameter (The_Switch,
-                        Arg_Num => Current_Argument,
-                        First   => Current_Index,
-                        Last    => End_Index);
-
-         --  Case of switch needs an argument
-
-         if Index_Switches + Max_Length <= Switches'Last then
-
-            case Switches (Index_Switches + Max_Length) is
-
-               when ':' =>
-
-                  if End_Index < Arg'Last then
-                     Set_Parameter (The_Parameter,
-                                    Arg_Num => Current_Argument,
-                                    First   => End_Index + 1,
-                                    Last    => Arg'Last);
-                     Dummy := Goto_Next_Argument_In_Section;
-
-                  elsif Section (Current_Argument + 1) /= 0 then
-                     Set_Parameter
-                       (The_Parameter,
-                        Arg_Num => Current_Argument + 1,
-                        First   => 1,
-                        Last    => CL.Argument (Current_Argument + 1)'Last);
-                     Current_Argument := Current_Argument + 1;
-                     Is_Switch (Current_Argument) := True;
-                     Dummy := Goto_Next_Argument_In_Section;
-
-                  else
-                     Current_Index := End_Index + 1;
-                     raise Invalid_Parameter;
-                  end if;
-
-               when '=' =>
-
-                  --  If the switch is of the form <switch>=xxx
-
-                  if End_Index < Arg'Last then
-
-                     if Arg (End_Index + 1) = '='
-                       and then End_Index + 1 < Arg'Last
-                     then
-                        Set_Parameter (The_Parameter,
-                                       Arg_Num => Current_Argument,
-                                       First   => End_Index + 2,
-                                       Last    => Arg'Last);
-                        Dummy := Goto_Next_Argument_In_Section;
-
-                     else
-                        Current_Index := End_Index + 1;
-                        raise Invalid_Parameter;
-                     end if;
-
-                  --  If the switch is of the form <switch> xxx
-
-                  elsif Section (Current_Argument + 1) /= 0 then
-                     Set_Parameter
-                       (The_Parameter,
-                        Arg_Num => Current_Argument + 1,
-                        First   => 1,
-                        Last    => CL.Argument (Current_Argument + 1)'Last);
-                     Current_Argument := Current_Argument + 1;
-                     Is_Switch (Current_Argument) := True;
-                     Dummy := Goto_Next_Argument_In_Section;
-
-                  else
-                     Current_Index := End_Index + 1;
-                     raise Invalid_Parameter;
-                  end if;
-
-               when '!' =>
-
-                  if End_Index < Arg'Last then
-                     Set_Parameter (The_Parameter,
-                                    Arg_Num => Current_Argument,
-                                    First   => End_Index + 1,
-                                    Last    => Arg'Last);
-                     Dummy := Goto_Next_Argument_In_Section;
-
-                  else
-                     Current_Index := End_Index + 1;
-                     raise Invalid_Parameter;
-                  end if;
-
-               when '?' =>
-
-                  if End_Index < Arg'Last then
-                     Set_Parameter (The_Parameter,
-                                    Arg_Num => Current_Argument,
-                                    First   => End_Index + 1,
-                                    Last    => Arg'Last);
-
-                  else
-                     Set_Parameter (The_Parameter,
-                                    Arg_Num => Current_Argument,
-                                    First   => 2,
-                                    Last    => 1);
-                  end if;
-                  Dummy := Goto_Next_Argument_In_Section;
-
-               when others =>
-                  if Concatenate or else End_Index = Arg'Last then
-                     Current_Index := End_Index + 1;
-
-                  else
-                     --  If Concatenate is False and the full argument is not
-                     --  recognized as a switch, this is an invalid switch.
-
-                     if Switches (Switches'First) = '*' then
-                        Set_Parameter
-                           (The_Switch,
-                            Arg_Num => Current_Argument,
-                            First   => 1,
-                            Last    => CL.Argument (Current_Argument)'Last);
-                        Is_Switch (Current_Argument) := True;
-                        Dummy := Goto_Next_Argument_In_Section;
-                        return '*';
-                     end if;
-
-                     Set_Parameter (The_Switch,
-                                    Arg_Num => Current_Argument,
-                                    First   => Current_Index,
-                                    Last    => Arg'Last);
-                     Current_Index := Arg'Last + 1;
-                     raise Invalid_Switch;
-                  end if;
-            end case;
-
-         elsif Concatenate or else End_Index = Arg'Last then
-            Current_Index := End_Index + 1;
-
-         else
-            --  If Concatenate is False and the full argument is not
-            --  recognized as a switch, this is an invalid switch.
-
             if Switches (Switches'First) = '*' then
+
+               --  Always prepend the switch character, so that users know that
+               --  this comes from a switch on the command line. This is
+               --  especially important when Concatenate is False, since
+               --  otherwise the currrent argument first character is lost.
+
                Set_Parameter
-                  (The_Switch,
-                   Arg_Num => Current_Argument,
-                   First   => 1,
-                   Last    => CL.Argument (Current_Argument)'Last);
-               Is_Switch (Current_Argument) := True;
-               Dummy := Goto_Next_Argument_In_Section;
+                 (Parser.The_Switch,
+                  Arg_Num => Parser.Current_Argument,
+                  First   => Parser.Current_Index,
+                  Last    => Arg'Last,
+                  Extra   => Parser.Switch_Character);
+               Parser.Is_Switch (Parser.Current_Argument) := True;
+               Dummy := Goto_Next_Argument_In_Section (Parser);
                return '*';
             end if;
 
-            Set_Parameter (The_Switch,
-                           Arg_Num => Current_Argument,
-                           First   => Current_Index,
-                           Last    => Arg'Last);
-            Current_Index := Arg'Last + 1;
+            Set_Parameter
+              (Parser.The_Switch,
+               Arg_Num => Parser.Current_Argument,
+               First   => Parser.Current_Index,
+               Last    => End_Index);
+            Parser.Current_Index := End_Index + 1;
             raise Invalid_Switch;
          end if;
+
+         End_Index := Parser.Current_Index + Max_Length - 1;
+         Set_Parameter
+           (Parser.The_Switch,
+            Arg_Num => Parser.Current_Argument,
+            First   => Parser.Current_Index,
+            Last    => End_Index);
+
+         case Param is
+            when Parameter_With_Optional_Space =>
+               if End_Index < Arg'Last then
+                  Set_Parameter
+                    (Parser.The_Parameter,
+                     Arg_Num => Parser.Current_Argument,
+                     First   => End_Index + 1,
+                     Last    => Arg'Last);
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+
+               elsif Parser.Current_Argument < Parser.Arg_Count
+                 and then Parser.Section (Parser.Current_Argument + 1) /= 0
+               then
+                  Parser.Current_Argument := Parser.Current_Argument + 1;
+                  Parser.The_Separator := ' ';
+                  Set_Parameter
+                    (Parser.The_Parameter,
+                     Arg_Num => Parser.Current_Argument,
+                     First => Argument (Parser, Parser.Current_Argument)'First,
+                     Last  => Argument (Parser, Parser.Current_Argument)'Last);
+                  Parser.Is_Switch (Parser.Current_Argument) := True;
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+
+               else
+                  Parser.Current_Index := End_Index + 1;
+                  raise Invalid_Parameter;
+               end if;
+
+            when Parameter_With_Space_Or_Equal =>
+
+               --  If the switch is of the form <switch>=xxx
+
+               if End_Index < Arg'Last then
+
+                  if Arg (End_Index + 1) = '='
+                    and then End_Index + 1 < Arg'Last
+                  then
+                     Parser.The_Separator := '=';
+                     Set_Parameter
+                       (Parser.The_Parameter,
+                        Arg_Num => Parser.Current_Argument,
+                        First   => End_Index + 2,
+                        Last    => Arg'Last);
+                     Dummy := Goto_Next_Argument_In_Section (Parser);
+                  else
+                     Parser.Current_Index := End_Index + 1;
+                     raise Invalid_Parameter;
+                  end if;
+
+               --  If the switch is of the form <switch> xxx
+
+               elsif Parser.Current_Argument < Parser.Arg_Count
+                 and then Parser.Section (Parser.Current_Argument + 1) /= 0
+               then
+                  Parser.Current_Argument := Parser.Current_Argument + 1;
+                  Parser.The_Separator := ' ';
+                  Set_Parameter
+                    (Parser.The_Parameter,
+                     Arg_Num => Parser.Current_Argument,
+                     First => Argument (Parser, Parser.Current_Argument)'First,
+                     Last  => Argument (Parser, Parser.Current_Argument)'Last);
+                  Parser.Is_Switch (Parser.Current_Argument) := True;
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+
+               else
+                  Parser.Current_Index := End_Index + 1;
+                  raise Invalid_Parameter;
+               end if;
+
+            when Parameter_No_Space =>
+
+               if End_Index < Arg'Last then
+                  Set_Parameter
+                    (Parser.The_Parameter,
+                     Arg_Num => Parser.Current_Argument,
+                     First   => End_Index + 1,
+                     Last    => Arg'Last);
+                  Dummy := Goto_Next_Argument_In_Section (Parser);
+
+               else
+                  Parser.Current_Index := End_Index + 1;
+                  raise Invalid_Parameter;
+               end if;
+
+            when Parameter_Optional =>
+
+               if End_Index < Arg'Last then
+                  Set_Parameter
+                    (Parser.The_Parameter,
+                     Arg_Num => Parser.Current_Argument,
+                     First   => End_Index + 1,
+                     Last    => Arg'Last);
+               end if;
+
+               Dummy := Goto_Next_Argument_In_Section (Parser);
+
+            when Parameter_None =>
+
+               if Concatenate or else End_Index = Arg'Last then
+                  Parser.Current_Index := End_Index + 1;
+
+               else
+                  --  If Concatenate is False and the full argument is not
+                  --  recognized as a switch, this is an invalid switch.
+
+                  if Switches (Switches'First) = '*' then
+                     Set_Parameter
+                       (Parser.The_Switch,
+                        Arg_Num => Parser.Current_Argument,
+                        First   => Arg'First,
+                        Last    => Arg'Last);
+                     Parser.Is_Switch (Parser.Current_Argument) := True;
+                     Dummy := Goto_Next_Argument_In_Section (Parser);
+                     return '*';
+                  end if;
+
+                  Set_Parameter
+                    (Parser.The_Switch,
+                     Arg_Num => Parser.Current_Argument,
+                     First   => Parser.Current_Index,
+                     Last    => Arg'Last);
+                  Parser.Current_Index := Arg'Last + 1;
+                  raise Invalid_Switch;
+               end if;
+         end case;
 
          return Switches (Index_Switches);
       end;
@@ -635,21 +730,31 @@ package body GNAT.Command_Line is
    -- Goto_Next_Argument_In_Section --
    -----------------------------------
 
-   function Goto_Next_Argument_In_Section return Boolean is
+   function Goto_Next_Argument_In_Section
+     (Parser : Opt_Parser) return Boolean
+   is
    begin
-      Current_Index := 1;
-      Current_Argument := Current_Argument + 1;
+      Parser.Current_Argument := Parser.Current_Argument + 1;
 
-      if Section (Current_Argument) = 0 then
+      if Parser.Current_Argument > Parser.Arg_Count
+        or else Parser.Section (Parser.Current_Argument) = 0
+      then
          loop
-            if Current_Argument > CL.Argument_Count then
+            Parser.Current_Argument := Parser.Current_Argument + 1;
+
+            if Parser.Current_Argument > Parser.Arg_Count then
+               Parser.Current_Index := 1;
                return False;
             end if;
 
-            Current_Argument := Current_Argument + 1;
-            exit when Section (Current_Argument) = Current_Section;
+            exit when Parser.Section (Parser.Current_Argument) =
+                                                  Parser.Current_Section;
          end loop;
       end if;
+
+      Parser.Current_Index :=
+        Argument (Parser, Parser.Current_Argument)'First;
+
       return True;
    end Goto_Next_Argument_In_Section;
 
@@ -657,29 +762,33 @@ package body GNAT.Command_Line is
    -- Goto_Section --
    ------------------
 
-   procedure Goto_Section (Name : String := "") is
-      Index : Integer := 1;
+   procedure Goto_Section
+     (Name   : String := "";
+      Parser : Opt_Parser := Command_Line_Parser)
+   is
+      Index : Integer;
 
    begin
-      In_Expansion := False;
+      Parser.In_Expansion := False;
 
       if Name = "" then
-         Current_Argument := 1;
-         Current_Index    := 1;
-         Current_Section  := 1;
+         Parser.Current_Argument := 1;
+         Parser.Current_Index    := 1;
+         Parser.Current_Section  := 1;
          return;
       end if;
 
-      while Index <= CL.Argument_Count loop
-
-         if Section (Index) = 0
-           and then CL.Argument (Index) = Switch_Character & Name
+      Index := 1;
+      while Index <= Parser.Arg_Count loop
+         if Parser.Section (Index) = 0
+           and then Argument (Parser, Index) = Parser.Switch_Character & Name
          then
-            Current_Argument := Index + 1;
-            Current_Index    := 1;
+            Parser.Current_Argument := Index + 1;
+            Parser.Current_Index    := 1;
 
-            if Current_Argument <= CL.Argument_Count then
-               Current_Section := Section (Current_Argument);
+            if Parser.Current_Argument <= Parser.Arg_Count then
+               Parser.Current_Section :=
+                 Parser.Section (Parser.Current_Argument);
             end if;
             return;
          end if;
@@ -687,8 +796,8 @@ package body GNAT.Command_Line is
          Index := Index + 1;
       end loop;
 
-      Current_Argument := Positive'Last;
-      Current_Index := 2;   --  so that Get_Argument returns nothing
+      Parser.Current_Argument := Positive'Last;
+      Parser.Current_Index := 2;   --  so that Get_Argument returns nothing
    end Goto_Section;
 
    ----------------------------
@@ -697,11 +806,60 @@ package body GNAT.Command_Line is
 
    procedure Initialize_Option_Scan
      (Switch_Char              : Character := '-';
+      Stop_At_First_Non_Switch : Boolean   := False;
+      Section_Delimiters       : String    := "")
+   is
+   begin
+      Internal_Initialize_Option_Scan
+        (Parser                   => Command_Line_Parser,
+         Switch_Char              => Switch_Char,
+         Stop_At_First_Non_Switch => Stop_At_First_Non_Switch,
+         Section_Delimiters       => Section_Delimiters);
+   end Initialize_Option_Scan;
+
+   ----------------------------
+   -- Initialize_Option_Scan --
+   ----------------------------
+
+   procedure Initialize_Option_Scan
+     (Parser                   : out Opt_Parser;
+      Command_Line             : GNAT.OS_Lib.Argument_List_Access;
+      Switch_Char              : Character := '-';
       Stop_At_First_Non_Switch : Boolean := False;
       Section_Delimiters       : String := "")
    is
-      Section_Num     : Section_Number := 1;
-      Section_Index   : Integer        := Section_Delimiters'First;
+   begin
+      Free (Parser);
+
+      if Command_Line = null then
+         Parser := new Opt_Parser_Data (CL.Argument_Count);
+         Initialize_Option_Scan
+           (Switch_Char              => Switch_Char,
+            Stop_At_First_Non_Switch => Stop_At_First_Non_Switch,
+            Section_Delimiters       => Section_Delimiters);
+      else
+         Parser := new Opt_Parser_Data (Command_Line'Length);
+         Parser.Arguments := Command_Line;
+         Internal_Initialize_Option_Scan
+           (Parser                   => Parser,
+            Switch_Char              => Switch_Char,
+            Stop_At_First_Non_Switch => Stop_At_First_Non_Switch,
+            Section_Delimiters       => Section_Delimiters);
+      end if;
+   end Initialize_Option_Scan;
+
+   -------------------------------------
+   -- Internal_Initialize_Option_Scan --
+   -------------------------------------
+
+   procedure Internal_Initialize_Option_Scan
+     (Parser                   : Opt_Parser;
+      Switch_Char              : Character;
+      Stop_At_First_Non_Switch : Boolean;
+      Section_Delimiters       : String)
+   is
+      Section_Num     : Section_Number;
+      Section_Index   : Integer;
       Last            : Integer;
       Delimiter_Found : Boolean;
 
@@ -709,18 +867,19 @@ package body GNAT.Command_Line is
       pragma Warnings (Off, Discard);
 
    begin
-      Current_Argument := 0;
-      Current_Index := 0;
-      In_Expansion := False;
-      Switch_Character := Switch_Char;
-      Stop_At_First := Stop_At_First_Non_Switch;
+      Parser.Current_Argument := 0;
+      Parser.Current_Index    := 0;
+      Parser.In_Expansion     := False;
+      Parser.Switch_Character := Switch_Char;
+      Parser.Stop_At_First    := Stop_At_First_Non_Switch;
 
       --  If we are using sections, we have to preprocess the command line
       --  to delimit them. A section can be repeated, so we just give each
       --  item on the command line a section number
 
+      Section_Num   := 1;
+      Section_Index := Section_Delimiters'First;
       while Section_Index <= Section_Delimiters'Last loop
-
          Last := Section_Index;
          while Last <= Section_Delimiters'Last
            and then Section_Delimiters (Last) /= ' '
@@ -731,21 +890,21 @@ package body GNAT.Command_Line is
          Delimiter_Found := False;
          Section_Num := Section_Num + 1;
 
-         for Index in 1 .. CL.Argument_Count loop
-            if CL.Argument (Index)(1) = Switch_Character
+         for Index in 1 .. Parser.Arg_Count loop
+            if Argument (Parser, Index)(1) = Parser.Switch_Character
               and then
-                CL.Argument (Index) = Switch_Character &
+                Argument (Parser, Index) = Parser.Switch_Character &
                                         Section_Delimiters
                                           (Section_Index .. Last - 1)
             then
-               Section (Index) := 0;
+               Parser.Section (Index) := 0;
                Delimiter_Found := True;
 
-            elsif Section (Index) = 0 then
+            elsif Parser.Section (Index) = 0 then
                Delimiter_Found := False;
 
             elsif Delimiter_Found then
-               Section (Index) := Section_Num;
+               Parser.Section (Index) := Section_Num;
             end if;
          end loop;
 
@@ -757,22 +916,35 @@ package body GNAT.Command_Line is
          end loop;
       end loop;
 
-      Discard := Goto_Next_Argument_In_Section;
-   end Initialize_Option_Scan;
+      Discard := Goto_Next_Argument_In_Section (Parser);
+   end Internal_Initialize_Option_Scan;
 
    ---------------
    -- Parameter --
    ---------------
 
-   function Parameter return String is
+   function Parameter
+     (Parser : Opt_Parser := Command_Line_Parser) return String
+   is
    begin
-      if The_Parameter.First > The_Parameter.Last then
+      if Parser.The_Parameter.First > Parser.The_Parameter.Last then
          return String'(1 .. 0 => ' ');
       else
-         return CL.Argument (The_Parameter.Arg_Num)
-           (The_Parameter.First .. The_Parameter.Last);
+         return Argument (Parser, Parser.The_Parameter.Arg_Num)
+           (Parser.The_Parameter.First .. Parser.The_Parameter.Last);
       end if;
    end Parameter;
+
+   ---------------
+   -- Separator --
+   ---------------
+
+   function Separator
+     (Parser : Opt_Parser := Command_Line_Parser) return Character
+   is
+   begin
+      return Parser.The_Separator;
+   end Separator;
 
    -------------------
    -- Set_Parameter --
@@ -782,12 +954,14 @@ package body GNAT.Command_Line is
      (Variable : out Parameter_Type;
       Arg_Num  : Positive;
       First    : Positive;
-      Last     : Positive)
+      Last     : Positive;
+      Extra    : Character := ASCII.NUL)
    is
    begin
       Variable.Arg_Num := Arg_Num;
       Variable.First   := First;
       Variable.Last    := Last;
+      Variable.Extra   := Extra;
    end Set_Parameter;
 
    ---------------------
@@ -862,6 +1036,718 @@ package body GNAT.Command_Line is
       end loop;
    end Start_Expansion;
 
-begin
-   Section (CL.Argument_Count + 1) := 0;
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Parser : in out Opt_Parser) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Opt_Parser_Data, Opt_Parser);
+   begin
+      if Parser /= null
+        and then Parser /= Command_Line_Parser
+      then
+         Free (Parser.Arguments);
+         Unchecked_Free (Parser);
+      end if;
+   end Free;
+
+   ------------------------
+   -- Args_From_Expanded --
+   ------------------------
+
+   function Args_From_Expanded (Args : Boolean_Chars) return String is
+      Result : String (1 .. Args'Length);
+      Index  : Natural := Result'First;
+
+   begin
+      for A in Args'Range loop
+         if Args (A) then
+            Result (Index) := A;
+            Index := Index + 1;
+         end if;
+      end loop;
+
+      return Result (1 .. Index - 1);
+   end Args_From_Expanded;
+
+   ------------------
+   -- Define_Alias --
+   ------------------
+
+   procedure Define_Alias
+     (Config   : in out Command_Line_Configuration;
+      Switch   : String;
+      Expanded : String)
+   is
+   begin
+      if Config = null then
+         Config := new Command_Line_Configuration_Record;
+      end if;
+
+      Append (Config.Aliases,    new String'(Switch));
+      Append (Config.Expansions, new String'(Expanded));
+   end Define_Alias;
+
+   -------------------
+   -- Define_Prefix --
+   -------------------
+
+   procedure Define_Prefix
+     (Config : in out Command_Line_Configuration;
+      Prefix : String)
+   is
+   begin
+      if Config = null then
+         Config := new Command_Line_Configuration_Record;
+      end if;
+
+      Append (Config.Prefixes, new String'(Prefix));
+   end Define_Prefix;
+
+   -----------------------
+   -- Set_Configuration --
+   -----------------------
+
+   procedure Set_Configuration
+     (Cmd      : in out Command_Line;
+      Config   : Command_Line_Configuration)
+   is
+   begin
+      Cmd.Config := Config;
+   end Set_Configuration;
+
+   ----------------------
+   -- Set_Command_Line --
+   ----------------------
+
+   procedure Set_Command_Line
+     (Cmd                : in out Command_Line;
+      Switches           : String;
+      Getopt_Description : String := "";
+      Switch_Char        : Character := '-')
+   is
+      Tmp    : Argument_List_Access;
+      Parser : Opt_Parser;
+      S      : Character;
+
+   begin
+      Free (Cmd.Expanded);
+      Free (Cmd.Params);
+
+      if Switches /= "" then
+         Tmp := Argument_String_To_List (Switches);
+         Initialize_Option_Scan (Parser, Tmp, Switch_Char);
+
+         loop
+            begin
+               S := Getopt (Switches    => "* " & Getopt_Description,
+                            Concatenate => False,
+                            Parser      => Parser);
+               exit when S = ASCII.NUL;
+
+               if S = '*' then
+                  Add_Switch (Cmd, Full_Switch (Parser), Parameter (Parser),
+                              Separator (Parser));
+               else
+                  Add_Switch
+                    (Cmd, Switch_Char & Full_Switch (Parser),
+                     Parameter (Parser), Separator (Parser));
+               end if;
+
+            exception
+               when Invalid_Parameter =>
+                  --  Add it with no parameter, if that's the way the user
+                  --  wants it
+                  Add_Switch (Cmd, Switch_Char & Full_Switch (Parser));
+            end;
+         end loop;
+
+         Free (Parser);
+      end if;
+   end Set_Command_Line;
+
+   ----------------
+   -- Looking_At --
+   ----------------
+
+   function Looking_At
+     (Type_Str  : String;
+      Index     : Natural;
+      Substring : String) return Boolean is
+   begin
+      return Index + Substring'Length - 1 <= Type_Str'Last
+        and then Type_Str (Index .. Index + Substring'Length - 1) = Substring;
+   end Looking_At;
+
+   ----------------------------
+   -- For_Each_Simple_Switch --
+   ----------------------------
+
+   procedure For_Each_Simple_Switch
+     (Cmd      : Command_Line;
+      Switch   : String;
+      Callback : Callback_Procedure)
+   is
+   begin
+      --  Are we adding a switch that can in fact be expanded through aliases ?
+      --  If yes, we add separately each of its expansion.
+
+      --  This takes care of expansions like "-T" -> "-gnatwrs", where the
+      --  alias and its expansion do not have the same prefix. Given the order
+      --  in which we do things here, the expansion of the alias will itself
+      --  be checked for a common prefix and further split into simple switches
+
+      if Cmd.Config /= null
+        and then Cmd.Config.Aliases /= null
+      then
+         for A in Cmd.Config.Aliases'Range loop
+            if Cmd.Config.Aliases (A).all = Switch then
+               For_Each_Simple_Switch
+                 (Cmd, Cmd.Config.Expansions (A).all, Callback);
+               return;
+            end if;
+         end loop;
+      end if;
+
+      --  Are we adding a switch grouping several switches ? If yes, add each
+      --  of the simple switches instead.
+
+      if Cmd.Config /= null
+        and then Cmd.Config.Prefixes /= null
+      then
+         for P in Cmd.Config.Prefixes'Range loop
+            if Switch'Length > Cmd.Config.Prefixes (P)'Length + 1
+              and then Looking_At
+                (Switch, Switch'First, Cmd.Config.Prefixes (P).all)
+            then
+               --  Alias expansion will be done recursively
+
+               for S in Switch'First + Cmd.Config.Prefixes (P)'Length
+                          .. Switch'Last
+               loop
+                  For_Each_Simple_Switch
+                    (Cmd, Cmd.Config.Prefixes (P).all & Switch (S), Callback);
+               end loop;
+               return;
+            end if;
+         end loop;
+      end if;
+
+      Callback (Switch);
+   end For_Each_Simple_Switch;
+
+   ----------------
+   -- Add_Switch --
+   ----------------
+
+   procedure Add_Switch
+     (Cmd       : in out Command_Line;
+      Switch    : String;
+      Parameter : String := "";
+      Separator : Character := ' ')
+   is
+      procedure Add_Simple_Switch (Simple : String);
+      --  Add a new switch that has had all its aliases expanded, and switches
+      --  ungrouped. We know there is no more aliases in Switches
+
+      -----------------------
+      -- Add_Simple_Switch --
+      -----------------------
+
+      procedure Add_Simple_Switch (Simple : String) is
+      begin
+         if Cmd.Expanded = null then
+            Cmd.Expanded := new Argument_List'(1 .. 1 => new String'(Simple));
+            if Parameter = "" then
+               Cmd.Params := new Argument_List'(1 .. 1 => null);
+            else
+               Cmd.Params := new Argument_List'
+                 (1 .. 1 => new String'(Separator & Parameter));
+            end if;
+
+         else
+            --  Do we already have this switch ?
+
+            for C in Cmd.Expanded'Range loop
+               if Cmd.Expanded (C).all = Simple
+                 and then
+                   ((Cmd.Params (C) = null and then Parameter = "")
+                    or else
+                      (Cmd.Params (C) /= null
+                       and then Cmd.Params (C).all = Separator & Parameter))
+               then
+                  return;
+               end if;
+            end loop;
+
+            Append (Cmd.Expanded, new String'(Simple));
+
+            if Parameter = "" then
+               Append (Cmd.Params, null);
+            else
+               Append (Cmd.Params, new String'(Separator & Parameter));
+            end if;
+         end if;
+      end Add_Simple_Switch;
+
+   --  Start of processing for Add_Switch
+
+   begin
+      For_Each_Simple_Switch
+        (Cmd, Switch, Add_Simple_Switch'Unrestricted_Access);
+      Free (Cmd.Coalesce);
+   end Add_Switch;
+
+   ------------
+   -- Remove --
+   ------------
+
+   procedure Remove (Line : in out Argument_List_Access; Index : Integer) is
+      Tmp : Argument_List_Access := Line;
+
+   begin
+      Line := new Argument_List (Tmp'First .. Tmp'Last - 1);
+
+      if Index /= Tmp'First then
+         Line (Tmp'First .. Index - 1) := Tmp (Tmp'First .. Index - 1);
+      end if;
+
+      Free (Tmp (Index));
+
+      if Index /= Tmp'Last then
+         Line (Index .. Tmp'Last - 1) := Tmp (Index + 1 .. Tmp'Last);
+      end if;
+
+      Unchecked_Free (Tmp);
+   end Remove;
+
+   ------------
+   -- Append --
+   ------------
+
+   procedure Append
+     (Line : in out Argument_List_Access;
+      Str  : String_Access)
+   is
+      Tmp : Argument_List_Access := Line;
+   begin
+      if Tmp /= null then
+         Line := new Argument_List (Tmp'First .. Tmp'Last + 1);
+         Line (Tmp'Range) := Tmp.all;
+         Unchecked_Free (Tmp);
+      else
+         Line := new Argument_List (1 .. 1);
+      end if;
+
+      Line (Line'Last) := Str;
+   end Append;
+
+   -------------------
+   -- Remove_Switch --
+   -------------------
+
+   procedure Remove_Switch
+     (Cmd        : in out Command_Line;
+      Switch     : String;
+      Remove_All : Boolean := False)
+   is
+      procedure Remove_Simple_Switch (Simple : String);
+      --  Removes a simple switch, with no aliasing or grouping
+
+      --------------------------
+      -- Remove_Simple_Switch --
+      --------------------------
+
+      procedure Remove_Simple_Switch (Simple : String) is
+         C : Integer;
+
+      begin
+         if Cmd.Expanded /= null then
+            C := Cmd.Expanded'First;
+            while C <= Cmd.Expanded'Last loop
+               if Cmd.Expanded (C).all = Simple then
+                  Remove (Cmd.Expanded, C);
+                  Remove (Cmd.Params, C);
+
+                  if not Remove_All then
+                     return;
+                  end if;
+
+               else
+                  C := C + 1;
+               end if;
+            end loop;
+         end if;
+      end Remove_Simple_Switch;
+
+   --  Start of processing for Remove_Switch
+
+   begin
+      For_Each_Simple_Switch
+        (Cmd, Switch, Remove_Simple_Switch'Unrestricted_Access);
+      Free (Cmd.Coalesce);
+   end Remove_Switch;
+
+   -------------------
+   -- Remove_Switch --
+   -------------------
+
+   procedure Remove_Switch
+     (Cmd       : in out Command_Line;
+      Switch    : String;
+      Parameter : String)
+   is
+      procedure Remove_Simple_Switch (Simple : String);
+      --  Removes a simple switch, with no aliasing or grouping
+
+      --------------------------
+      -- Remove_Simple_Switch --
+      --------------------------
+
+      procedure Remove_Simple_Switch (Simple : String) is
+         C : Integer;
+
+      begin
+         if Cmd.Expanded /= null then
+            C := Cmd.Expanded'First;
+            while C <= Cmd.Expanded'Last loop
+               if Cmd.Expanded (C).all = Simple
+                 and then
+                   ((Cmd.Params (C) = null and then Parameter = "")
+                      or else
+                        (Cmd.Params (C) /= null
+                           and then
+
+                           --  Ignore the separator stored in Parameter
+
+                             Cmd.Params (C) (Cmd.Params (C)'First + 1
+                                             .. Cmd.Params (C)'Last) =
+                         Parameter))
+               then
+                  Remove (Cmd.Expanded, C);
+                  Remove (Cmd.Params, C);
+
+                  --  The switch is necessarily unique by construction of
+                  --  Add_Switch
+
+                  return;
+
+               else
+                  C := C + 1;
+               end if;
+            end loop;
+         end if;
+      end Remove_Simple_Switch;
+
+   --  Start of processing for Remove_Switch
+
+   begin
+      For_Each_Simple_Switch
+        (Cmd, Switch, Remove_Simple_Switch'Unrestricted_Access);
+      Free (Cmd.Coalesce);
+   end Remove_Switch;
+
+   --------------------
+   -- Group_Switches --
+   --------------------
+
+   procedure Group_Switches
+     (Cmd    : Command_Line;
+      Result : Argument_List_Access;
+      Params : Argument_List_Access)
+   is
+      type Boolean_Array is array (Result'Range) of Boolean;
+
+      Matched   : Boolean_Array;
+      Count     : Natural;
+      First     : Natural;
+      From_Args : Boolean_Chars;
+
+   begin
+      if Cmd.Config = null
+        or else Cmd.Config.Prefixes = null
+      then
+         return;
+      end if;
+
+      for P in Cmd.Config.Prefixes'Range loop
+         Matched := (others => False);
+         Count   := 0;
+
+         for C in Result'Range loop
+            if Result (C) /= null
+              and then Params (C) = null  --  ignored if has a parameter
+              and then Looking_At
+                (Result (C).all, Result (C)'First, Cmd.Config.Prefixes (P).all)
+            then
+               Matched (C) := True;
+               Count := Count + 1;
+            end if;
+         end loop;
+
+         if Count > 1 then
+            From_Args := (others => False);
+            First   := 0;
+
+            for M in Matched'Range loop
+               if Matched (M) then
+                  if First = 0 then
+                     First := M;
+                  end if;
+
+                  for A in Result (M)'First + Cmd.Config.Prefixes (P)'Length
+                    .. Result (M)'Last
+                  loop
+                     From_Args (Result (M)(A)) := True;
+                  end loop;
+                  Free (Result (M));
+               end if;
+            end loop;
+
+            Result (First) := new String'
+              (Cmd.Config.Prefixes (P).all & Args_From_Expanded (From_Args));
+         end if;
+      end loop;
+   end Group_Switches;
+
+   --------------------
+   -- Alias_Switches --
+   --------------------
+
+   procedure Alias_Switches
+     (Cmd    : Command_Line;
+      Result : Argument_List_Access;
+      Params : Argument_List_Access)
+   is
+      Found : Boolean;
+      First : Natural;
+
+      procedure Check_Cb (Switch : String);
+      --  Comment required ???
+
+      procedure Remove_Cb (Switch : String);
+      --  Comment required ???
+
+      --------------
+      -- Check_Cb --
+      --------------
+
+      procedure Check_Cb (Switch : String) is
+      begin
+         if Found then
+            for E in Result'Range loop
+               if Result (E) /= null
+                 and then Params (E) = null    --  Ignore if has a param
+                 and then Result (E).all = Switch
+               then
+                  return;
+               end if;
+            end loop;
+
+            Found := False;
+         end if;
+      end Check_Cb;
+
+      ---------------
+      -- Remove_Cb --
+      ---------------
+
+      procedure Remove_Cb (Switch : String) is
+      begin
+         for E in Result'Range loop
+            if Result (E) /= null and then Result (E).all = Switch then
+               if First > E then
+                  First := E;
+               end if;
+               Free (Result (E));
+               return;
+            end if;
+         end loop;
+      end Remove_Cb;
+
+   --  Start of processing for Alias_Switches
+
+   begin
+      if Cmd.Config = null
+        or else Cmd.Config.Aliases = null
+      then
+         return;
+      end if;
+
+      for A in Cmd.Config.Aliases'Range loop
+
+         --  Compute the various simple switches that make up the alias. We
+         --  split the expansion into as many simple switches as possible, and
+         --  then check whether the expanded command line has all of them.
+
+         Found := True;
+         For_Each_Simple_Switch
+           (Cmd, Cmd.Config.Expansions (A).all,
+            Check_Cb'Unrestricted_Access);
+
+         if Found then
+            First := Integer'Last;
+            For_Each_Simple_Switch
+              (Cmd, Cmd.Config.Expansions (A).all,
+               Remove_Cb'Unrestricted_Access);
+            Result (First) := new String'(Cmd.Config.Aliases (A).all);
+         end if;
+      end loop;
+   end Alias_Switches;
+
+   -----------
+   -- Start --
+   -----------
+
+   procedure Start
+     (Cmd      : in out Command_Line;
+      Iter     : in out Command_Line_Iterator;
+      Expanded : Boolean)
+   is
+   begin
+      --  Coalesce the switches as much as possible
+
+      if not Expanded
+        and then Cmd.Coalesce = null
+      then
+         Cmd.Coalesce := new Argument_List (Cmd.Expanded'Range);
+         for E in Cmd.Expanded'Range loop
+            Cmd.Coalesce (E) := new String'(Cmd.Expanded (E).all);
+         end loop;
+
+         --  Not a clone, since we will not modify the parameters anyway
+
+         Cmd.Coalesce_Params := Cmd.Params;
+         Alias_Switches (Cmd, Cmd.Coalesce, Cmd.Params);
+         Group_Switches (Cmd, Cmd.Coalesce, Cmd.Params);
+      end if;
+
+      if Expanded then
+         Iter.List   := Cmd.Expanded;
+         Iter.Params := Cmd.Params;
+      else
+         Iter.List   := Cmd.Coalesce;
+         Iter.Params := Cmd.Coalesce_Params;
+      end if;
+
+      if Iter.List = null then
+         Iter.Current := Integer'Last;
+      else
+         Iter.Current := Iter.List'First;
+         while Iter.Current <= Iter.List'Last
+           and then Iter.List (Iter.Current) = null
+         loop
+            Iter.Current := Iter.Current + 1;
+         end loop;
+      end if;
+   end Start;
+
+   --------------------
+   -- Current_Switch --
+   --------------------
+
+   function Current_Switch (Iter : Command_Line_Iterator) return String is
+   begin
+      return Iter.List (Iter.Current).all;
+   end Current_Switch;
+
+   -----------------------
+   -- Current_Separator --
+   -----------------------
+
+   function Current_Separator (Iter : Command_Line_Iterator) return String is
+   begin
+      if Iter.Params = null
+        or else Iter.Current > Iter.Params'Last
+        or else Iter.Params (Iter.Current) = null
+      then
+         return "";
+
+      else
+         declare
+            Sep : constant Character :=
+              Iter.Params (Iter.Current) (Iter.Params (Iter.Current)'First);
+         begin
+            if Sep = ASCII.NUL then
+               return "";
+            else
+               return "" & Sep;
+            end if;
+         end;
+      end if;
+   end Current_Separator;
+
+   -----------------------
+   -- Current_Parameter --
+   -----------------------
+
+   function Current_Parameter (Iter : Command_Line_Iterator) return String is
+   begin
+      if Iter.Params = null
+        or else Iter.Current > Iter.Params'Last
+        or else Iter.Params (Iter.Current) = null
+      then
+         return "";
+
+      else
+         declare
+            P : constant String := Iter.Params (Iter.Current).all;
+
+         begin
+            --  Skip separator
+
+            return P (P'First + 1 .. P'Last);
+         end;
+      end if;
+   end Current_Parameter;
+
+   --------------
+   -- Has_More --
+   --------------
+
+   function Has_More (Iter : Command_Line_Iterator) return Boolean is
+   begin
+      return Iter.List /= null and then Iter.Current <= Iter.List'Last;
+   end Has_More;
+
+   ----------
+   -- Next --
+   ----------
+
+   procedure Next (Iter : in out Command_Line_Iterator) is
+   begin
+      Iter.Current := Iter.Current + 1;
+      while Iter.Current <= Iter.List'Last
+        and then Iter.List (Iter.Current) = null
+      loop
+         Iter.Current := Iter.Current + 1;
+      end loop;
+   end Next;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Config : in out Command_Line_Configuration) is
+   begin
+      if Config /= null then
+         Free (Config.Aliases);
+         Free (Config.Expansions);
+         Free (Config.Prefixes);
+         Unchecked_Free (Config);
+      end if;
+   end Free;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Cmd : in out Command_Line) is
+   begin
+      Free (Cmd.Expanded);
+      Free (Cmd.Coalesce);
+      Free (Cmd.Params);
+   end Free;
+
 end GNAT.Command_Line;
