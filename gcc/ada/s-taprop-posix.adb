@@ -1357,6 +1357,16 @@ package body System.Task_Primitives.Operations is
       null;
    end Stop_All_Tasks;
 
+   ---------------
+   -- Stop_Task --
+   ---------------
+
+   function Stop_Task (T : ST.Task_Id) return Boolean is
+      pragma Unreferenced (T);
+   begin
+      return False;
+   end Stop_Task;
+
    -------------------
    -- Continue_Task --
    -------------------

@@ -252,9 +252,31 @@ package body System.Tasking.Debug is
    --------------------
 
    procedure Stop_All_Tasks is
+      C : Task_Id;
+
+      Dummy : Boolean;
+      pragma Unreferenced (Dummy);
+
+   begin
+      STPO.Lock_RTS;
+
+      C := All_Tasks_List;
+      while C /= null loop
+         Dummy := STPO.Stop_Task (C);
+         C := C.Common.All_Tasks_Link;
+      end loop;
+
+      STPO.Unlock_RTS;
+   end Stop_All_Tasks;
+
+   ----------------------------
+   -- Stop_All_Tasks_Handler --
+   ----------------------------
+
+   procedure Stop_All_Tasks_Handler is
    begin
       STPO.Stop_All_Tasks;
-   end Stop_All_Tasks;
+   end Stop_All_Tasks_Handler;
 
    -----------------------
    -- Suspend_All_Tasks --
