@@ -64,6 +64,10 @@ procedure Gnatbind is
    Main_Lib_File : File_Name_Type;
    --  Current main library file
 
+   First_Main_Lib_File : File_Name_Type := No_File;
+   --  The first library file, that should be a main subprogram if neither -n
+   --  nor -z are used.
+
    Std_Lib_File : File_Name_Type;
    --  Standard library
 
@@ -593,6 +597,10 @@ begin
       while More_Lib_Files loop
          Main_Lib_File := Next_Main_Lib_File;
 
+         if First_Main_Lib_File = No_File then
+            First_Main_Lib_File := Main_Lib_File;
+         end if;
+
          if Verbose_Mode then
             if Check_Only then
                Write_Str ("Checking: ");
@@ -683,6 +691,15 @@ begin
 
       Set_Source_Table;
 
+      --  If there is main program to bind, set Main_Lib_File to the first
+      --  library file, and the name from which to derive the binder generate
+      --  file to the first ALI file.
+
+      if Bind_Main_Program then
+         Main_Lib_File := First_Main_Lib_File;
+         Set_Current_File_Name_Index (To => 1);
+      end if;
+
       --  Check that main library file is a suitable main program
 
       if Bind_Main_Program
@@ -690,7 +707,7 @@ begin
         and then not No_Main_Subprogram
       then
          Error_Msg_File_1 := Main_Lib_File;
-         Error_Msg ("% does not contain a unit that can be a main program");
+         Error_Msg ("{ does not contain a unit that can be a main program");
       end if;
 
       --  Perform consistency and correctness checks
