@@ -30,6 +30,7 @@ with Errout;   use Errout;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
+with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -88,11 +89,6 @@ package body Sem_Ch13 is
    function Address_Aliased_Entity (N : Node_Id) return Entity_Id;
    --  If expression N is of the form E'Address, return E
 
-   procedure Mark_Aliased_Address_As_Volatile (N : Node_Id);
-   --  This is used for processing of an address representation clause. If
-   --  the expression N is of the form of K'Address, then the entity that
-   --  is associated with K is marked as volatile.
-
    procedure New_Stream_Subprogram
      (N    : Node_Id;
       Ent  : Entity_Id;
@@ -137,6 +133,41 @@ package body Sem_Ch13 is
      Table_Initial        => 50,
      Table_Increment      => 200,
      Table_Name           => "Unchecked_Conversions");
+
+   ----------------------------------------
+   -- Table for Validate_Address_Clauses --
+   ----------------------------------------
+
+   --  If an address clause has the form
+
+   --    for X'Address use Expr
+
+   --  where Expr is of the form Y'Address or recursively is a reference
+   --  to a constant of either of these forms, and X and Y are entities of
+   --  objects, then if Y has a smaller alignment than X, that merits a
+   --  warning about possible bad alignment. The following table collects
+   --  address clauses of this kind. We put these in a table so that they
+   --  can be checked after the back end has completed annotation of the
+   --  alignments of objects, since we can catch more cases that way.
+
+   type Address_Clause_Check_Record is record
+      N : Node_Id;
+      --  The address clause
+
+      X : Entity_Id;
+      --  The entity of the object overlaying Y
+
+      Y : Entity_Id;
+      --  The entity of the object being overlaid
+   end record;
+
+   package Address_Clause_Checks is new Table.Table (
+     Table_Component_Type => Address_Clause_Check_Record,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 20,
+     Table_Increment      => 200,
+     Table_Name           => "Address_Clause_Checks");
 
    ----------------------------
    -- Address_Aliased_Entity --
@@ -259,7 +290,7 @@ package body Sem_Ch13 is
       end loop;
 
       --  We need to sort the component clauses on the basis of the Position
-      --  values in the clause, so we can group clauses with the same Position
+      --  values in the clause, so we can group clauses with the same Position.
       --  together to determine the relevant machine scalar size.
 
       declare
@@ -601,7 +632,6 @@ package body Sem_Ch13 is
 
             else
                Get_First_Interp (Expr, I, It);
-
                while Present (It.Nam) loop
                   if Has_Good_Profile (It.Nam) then
                      Subp := It.Nam;
@@ -720,11 +750,12 @@ package body Sem_Ch13 is
                     ("address clause cannot be given " &
                      "for overloaded subprogram",
                      Nam);
+                  return;
                end if;
 
-               --  For subprograms, all address clauses are permitted,
-               --  and we mark the subprogram as having a deferred freeze
-               --  so that Gigi will not elaborate it too soon.
+               --  For subprograms, all address clauses are permitted, and we
+               --  mark the subprogram as having a deferred freeze so that Gigi
+               --  will not elaborate it too soon.
 
                --  Above needs more comments, what is too soon about???
 
@@ -736,11 +767,14 @@ package body Sem_Ch13 is
                if Nkind (Parent (N)) = N_Task_Body then
                   Error_Msg_N
                     ("entry address must be specified in task spec", Nam);
+                  return;
                end if;
 
                --  For entries, we require a constant address
 
                Check_Constant_Address_Clause (Expr, U_Ent);
+
+               --  Special checks for task types
 
                if Is_Task_Type (Scope (U_Ent))
                  and then Comes_From_Source (Scope (U_Ent))
@@ -750,6 +784,8 @@ package body Sem_Ch13 is
                   Error_Msg_N
                     ("\?only one task can be declared of this type", N);
                end if;
+
+               --  Entry address clauses are obsolescent
 
                Check_Restriction (No_Obsolescent_Features, N);
 
@@ -761,10 +797,12 @@ package body Sem_Ch13 is
                     ("\use interrupt procedure instead?", N);
                end if;
 
-            --  Case of an address clause for a controlled object:
-            --  erroneous execution.
+            --  Case of an address clause for a controlled object which we
+            --  consider to be erroneous.
 
-            elsif Is_Controlled (Etype (U_Ent)) then
+            elsif Is_Controlled (Etype (U_Ent))
+              or else Has_Controlled_Component (Etype (U_Ent))
+            then
                Error_Msg_NE
                  ("?controlled object& must not be overlaid", Nam, U_Ent);
                Error_Msg_N
@@ -772,6 +810,7 @@ package body Sem_Ch13 is
                Insert_Action (Declaration_Node (U_Ent),
                  Make_Raise_Program_Error (Loc,
                    Reason => PE_Overlaid_Controlled_Object));
+               return;
 
             --  Case of address clause for a (non-controlled) object
 
@@ -781,8 +820,9 @@ package body Sem_Ch13 is
               Ekind (U_Ent) = E_Constant
             then
                declare
-                  Expr : constant Node_Id   := Expression (N);
-                  Aent : constant Entity_Id := Address_Aliased_Entity (Expr);
+                  Expr  : constant Node_Id   := Expression (N);
+                  Aent  : constant Entity_Id := Address_Aliased_Entity (Expr);
+                  Ent_Y : constant Entity_Id := Find_Overlaid_Object (N);
 
                begin
                   --  Exported variables cannot have an address clause,
@@ -791,19 +831,22 @@ package body Sem_Ch13 is
                   if Is_Exported (U_Ent) then
                      Error_Msg_N
                        ("cannot export object with address clause", Nam);
+                     return;
 
                   --  Overlaying controlled objects is erroneous
 
                   elsif Present (Aent)
-                    and then Is_Controlled (Etype (Aent))
+                    and then (Has_Controlled_Component (Etype (Aent))
+                                or else Is_Controlled (Etype (Aent)))
                   then
                      Error_Msg_N
-                       ("?controlled object must not be overlaid", Expr);
+                       ("?cannot overlay with controlled object", Expr);
                      Error_Msg_N
                        ("\?Program_Error will be raised at run time", Expr);
                      Insert_Action (Declaration_Node (U_Ent),
                        Make_Raise_Program_Error (Loc,
                          Reason => PE_Overlaid_Controlled_Object));
+                     return;
 
                   elsif Present (Aent)
                     and then Ekind (U_Ent) = E_Constant
@@ -815,6 +858,7 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("address clause not allowed"
                           & " for a renaming declaration (RM 13.1(6))", Nam);
+                     return;
 
                   --  Imported variables can have an address clause, but then
                   --  the import is pretty meaningless except to suppress
@@ -831,41 +875,13 @@ package body Sem_Ch13 is
 
                   Note_Possible_Modification (Nam);
 
-                  --  Here we are checking for explicit overlap of one
-                  --  variable by another, and if we find this, then we
-                  --  mark the overlapped variable as also being aliased.
+                  --  Here we are checking for explicit overlap of one variable
+                  --  by another, and if we find this then mark the overlapped
+                  --  variable as also being volatile to prevent unwanted
+                  --  optimizations.
 
-                  --  First case is where we have an explicit
-
-                  --    for J'Address use K'Address;
-
-                  --  In this case, we mark K as volatile
-
-                  Mark_Aliased_Address_As_Volatile (Expr);
-
-                  --  Second case is where we have a constant whose
-                  --  definition is of the form of an address as in:
-
-                  --     A : constant Address := K'Address;
-                  --     ...
-                  --     for B'Address use A;
-
-                  --  In this case we also mark K as volatile
-
-                  if Is_Entity_Name (Expr) then
-                     declare
-                        Ent  : constant Entity_Id := Entity (Expr);
-                        Decl : constant Node_Id   := Declaration_Node (Ent);
-
-                     begin
-                        if Ekind (Ent) = E_Constant
-                          and then Nkind (Decl) = N_Object_Declaration
-                          and then Present (Expression (Decl))
-                        then
-                           Mark_Aliased_Address_As_Volatile
-                             (Expression (Decl));
-                        end if;
-                     end;
+                  if Present (Ent_Y) then
+                     Set_Treat_As_Volatile (Ent_Y);
                   end if;
 
                   --  Legality checks on the address clause for initialized
@@ -899,6 +915,38 @@ package body Sem_Ch13 is
 
                   Kill_Size_Check_Code (U_Ent);
                end;
+
+               --  If the address clause is of the form:
+
+               --    for X'Address use Y'Address
+
+               --  or
+
+               --    Const : constant Address := Y'Address;
+               --    ...
+               --    for X'Address use Const;
+
+               --  then we make an entry in the table for checking the size and
+               --  alignment of the overlaying variable. We defer this check
+               --  till after code generation to take full advantage of the
+               --  annotation done by the back end. This entry is only made if
+               --  we have not already posted a warning about size/alignment
+               --  (some warnings of this type are posted in Checks).
+
+               if Address_Clause_Overlay_Warnings then
+                  declare
+                     Ent_X : Entity_Id := Empty;
+                     Ent_Y : Entity_Id := Empty;
+
+                  begin
+                     Ent_Y := Find_Overlaid_Object (N);
+
+                     if Present (Ent_Y) and then Is_Entity_Name (Name (N)) then
+                        Ent_X := Entity (Name (N));
+                           Address_Clause_Checks.Append ((N, Ent_X, Ent_Y));
+                     end if;
+                  end;
+               end if;
 
             --  Not a valid entity for an address clause
 
@@ -2137,7 +2185,7 @@ package body Sem_Ch13 is
       end if;
 
       --  Clear any existing component clauses for the type (this happens with
-      --  derived types, where we are now overriding the original)
+      --  derived types, where we are now overriding the original).
 
       Comp := First_Component_Or_Discriminant (Rectype);
       while Present (Comp) loop
@@ -2274,6 +2322,13 @@ package body Sem_Ch13 is
                        ("component clause previously given#", CC);
 
                   else
+                     --  Make reference for field in record rep clause and set
+                     --  appropriate entity field in the field identifier.
+
+                     Generate_Reference
+                       (Comp, Component_Name (CC), Set_Ref => False);
+                     Set_Entity (Component_Name (CC), Comp);
+
                      --  Update Fbit and Lbit to the actual bit number
 
                      Fbit := Fbit + UI_From_Int (SSU) * Posit;
@@ -2641,7 +2696,11 @@ package body Sem_Ch13 is
             then
                Comp := First_Component_Or_Discriminant (Rectype);
                while Present (Comp) loop
-                  if No (Component_Clause (Comp)) then
+                  if No (Component_Clause (Comp))
+                    and then (Is_Scalar_Type (Underlying_Type (Etype (Comp)))
+                                or else Size_Known_At_Compile_Time
+                                             (Underlying_Type (Etype (Comp))))
+                  then
                      Error_Msg_Sloc := Sloc (Comp);
                      Error_Msg_NE
                        ("?no component clause given for & declared #",
@@ -3235,19 +3294,6 @@ package body Sem_Ch13 is
          end;
       end if;
    end Is_Operational_Item;
-
-   --------------------------------------
-   -- Mark_Aliased_Address_As_Volatile --
-   --------------------------------------
-
-   procedure Mark_Aliased_Address_As_Volatile (N : Node_Id) is
-      Ent : constant Entity_Id := Address_Aliased_Entity (N);
-
-   begin
-      if Present (Ent) then
-         Set_Treat_As_Volatile (Ent);
-      end if;
-   end Mark_Aliased_Address_As_Volatile;
 
    ------------------
    -- Minimum_Size --
@@ -3965,11 +4011,109 @@ package body Sem_Ch13 is
         and then Esize (T) < Standard_Integer_Size
       then
          Init_Esize (T, Standard_Integer_Size);
-
       else
          Init_Esize (T, Sz);
       end if;
    end Set_Enum_Esize;
+
+   ------------------------------
+   -- Validate_Address_Clauses --
+   ------------------------------
+
+   procedure Validate_Address_Clauses is
+   begin
+      for J in Address_Clause_Checks.First .. Address_Clause_Checks.Last loop
+         declare
+            ACCR : Address_Clause_Check_Record
+                     renames Address_Clause_Checks.Table (J);
+
+            X_Alignment : Uint;
+            Y_Alignment : Uint;
+
+            X_Size : Uint;
+            Y_Size : Uint;
+
+         begin
+            --  Skip processing of this entry if warning already posted
+
+            if not Address_Warning_Posted (ACCR.N) then
+
+               --  Get alignments. Really we should always have the alignment
+               --  of the objects properly back annotated, but right now the
+               --  back end fails to back annotate for address clauses???
+
+               if Known_Alignment (ACCR.X) then
+                  X_Alignment := Alignment (ACCR.X);
+               else
+                  X_Alignment := Alignment (Etype (ACCR.X));
+               end if;
+
+               if Known_Alignment (ACCR.Y) then
+                  Y_Alignment := Alignment (ACCR.Y);
+               else
+                  Y_Alignment := Alignment (Etype (ACCR.Y));
+               end if;
+
+               --  Similarly obtain sizes
+
+               if Known_Esize (ACCR.X) then
+                  X_Size := Esize (ACCR.X);
+               else
+                  X_Size := Esize (Etype (ACCR.X));
+               end if;
+
+               if Known_Esize (ACCR.Y) then
+                  Y_Size := Esize (ACCR.Y);
+               else
+                  Y_Size := Esize (Etype (ACCR.Y));
+               end if;
+
+               --  Check for large object overlaying smaller one
+
+               if Y_Size > Uint_0
+                 and then X_Size > Uint_0
+                 and then X_Size > Y_Size
+               then
+                  Error_Msg_N
+                    ("?size for overlaid object is too small", ACCR.N);
+                  Error_Msg_Uint_1 := X_Size;
+                  Error_Msg_NE
+                    ("\?size of & is ^", ACCR.N, ACCR.X);
+                  Error_Msg_Uint_1 := Y_Size;
+                  Error_Msg_NE
+                    ("\?size of & is ^", ACCR.N, ACCR.Y);
+
+                  --  Check for inadequate alignment. Again the defensive check
+                  --  on Y_Alignment should not be needed, but because of the
+                  --  failure in back end annotation, we can have an alignment
+                  --  of 0 here???
+
+                  --  Note: we do not check alignments if we gave a size
+                  --  warning, since it would likely be redundant.
+
+               elsif Y_Alignment /= Uint_0
+                 and then Y_Alignment < X_Alignment
+               then
+                  Error_Msg_NE
+                    ("?specified address for& may be inconsistent "
+                       & "with alignment",
+                     ACCR.N, ACCR.X);
+                  Error_Msg_N
+                    ("\?program execution may be erroneous (RM 13.3(27))",
+                     ACCR.N);
+                  Error_Msg_Uint_1 := X_Alignment;
+                  Error_Msg_NE
+                    ("\?alignment of & is ^",
+                     ACCR.N, ACCR.X);
+                  Error_Msg_Uint_1 := Y_Alignment;
+                  Error_Msg_NE
+                    ("\?alignment of & is ^",
+                     ACCR.N, ACCR.Y);
+               end if;
+            end if;
+         end;
+      end loop;
+   end Validate_Address_Clauses;
 
    -----------------------------------
    -- Validate_Unchecked_Conversion --

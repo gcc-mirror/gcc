@@ -442,6 +442,7 @@ begin
       if Compilation_Errors then
          Treepr.Tree_Dump;
          Sem_Ch13.Validate_Unchecked_Conversions;
+         Sem_Ch13.Validate_Address_Clauses;
          Errout.Output_Messages;
          Namet.Finalize;
 
@@ -622,6 +623,7 @@ begin
          Write_Eol;
 
          Sem_Ch13.Validate_Unchecked_Conversions;
+         Sem_Ch13.Validate_Address_Clauses;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Treepr.Tree_Dump;
@@ -654,6 +656,7 @@ begin
                    or else Targparm.VM_Target /= No_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
+         Sem_Ch13.Validate_Address_Clauses;
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Write_ALI (Object => False);
@@ -703,6 +706,11 @@ begin
       --  alignment annotated by the backend where possible).
 
       Sem_Ch13.Validate_Unchecked_Conversions;
+
+      --  Validate address clauses (again using alignment values annotated
+      --  by the backend where possible).
+
+      Sem_Ch13.Validate_Address_Clauses;
 
       --  Now we complete output of errors, rep info and the tree info. These
       --  are delayed till now, since it is perfectly possible for gigi to
