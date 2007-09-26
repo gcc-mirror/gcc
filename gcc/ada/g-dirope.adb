@@ -743,32 +743,52 @@ package body GNAT.Directory_Operations is
       --  Remove directory and all files and directories that it may contain
 
       else
-         Change_Dir (Dir_Name);
-         Open (Working_Dir, ".");
+         --  Substantial comments needed. See RH for revision 1.50 ???
 
-         loop
-            Read (Working_Dir, Str, Last);
-            exit when Last = 0;
+         begin
+            Change_Dir (Dir_Name);
+            Open (Working_Dir, ".");
 
-            if GNAT.OS_Lib.Is_Directory (Str (1 .. Last)) then
-               if Str (1 .. Last) /= "." and then Str (1 .. Last) /= ".." then
-                  Remove_Dir (Str (1 .. Last), True);
-                  Remove_Dir (Str (1 .. Last));
+            loop
+               Read (Working_Dir, Str, Last);
+               exit when Last = 0;
+
+               if GNAT.OS_Lib.Is_Directory (Str (1 .. Last)) then
+                  if Str (1 .. Last) /= "."
+                       and then
+                     Str (1 .. Last) /= ".."
+                  then
+                     Remove_Dir (Str (1 .. Last), True);
+                     Remove_Dir (Str (1 .. Last));
+                  end if;
+
+               else
+                  GNAT.OS_Lib.Delete_File (Str (1 .. Last), Success);
+
+                  if not Success then
+                     Change_Dir (Current_Dir);
+                     raise Directory_Error;
+                  end if;
                end if;
+            end loop;
 
-            else
-               GNAT.OS_Lib.Delete_File (Str (1 .. Last), Success);
+            Change_Dir (Current_Dir);
+            Close (Working_Dir);
+            Remove_Dir (Dir_Name);
 
-               if not Success then
-                  Change_Dir (Current_Dir);
-                  raise Directory_Error;
-               end if;
-            end if;
-         end loop;
+         exception
+            when others =>
 
-         Change_Dir (Current_Dir);
-         Close (Working_Dir);
-         Remove_Dir (Dir_Name);
+               --  An exception occurred. We must make sure the current working
+               --  directory is unchanged.
+
+               Change_Dir (Current_Dir);
+
+               --  What if the Change_Dir raises an exception itself, shouldn't
+               --  that be protected? ???
+
+               raise;
+         end;
       end if;
    end Remove_Dir;
 
