@@ -119,7 +119,7 @@ package body Osint is
    --  End of line character
 
    Number_File_Names : Int := 0;
-   --  Number of file names founde on command line and placed in File_Names
+   --  Number of file names found on command line and placed in File_Names
 
    Look_In_Primary_Directory_For_Current_Main : Boolean := False;
    --  When this variable is True, Find_File only looks in Primary_Directory

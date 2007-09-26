@@ -590,7 +590,7 @@ private
    type File_Name_Array_Ptr is access File_Name_Array;
    File_Names : File_Name_Array_Ptr :=
                   new File_Name_Array (1 .. Int (Argument_Count) + 2);
-   --  As arguments are scanned, file names are stored in this array The
+   --  As arguments are scanned, file names are stored in this array. The
    --  strings do not have terminating NUL files. The array is extensible,
    --  because when using project files, there may be more files than
    --  arguments on the command line.

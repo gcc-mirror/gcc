@@ -167,6 +167,15 @@ package body Osint.B is
 
    function Next_Main_Lib_File return File_Name_Type renames Next_Main_File;
 
+   ---------------------------------
+   -- Set_Current_File_Name_Index --
+   ---------------------------------
+
+   procedure Set_Current_File_Name_Index (To : Int) is
+   begin
+      Current_File_Name_Index := To;
+   end Set_Current_File_Name_Index;
+
    -----------------------
    -- Write_Binder_Info --
    -----------------------
