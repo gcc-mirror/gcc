@@ -1027,7 +1027,7 @@ package Snames is
    Name_Implementation                 : constant Name_Id := N + 650;
    Name_Implementation_Exceptions      : constant Name_Id := N + 651;
    Name_Implementation_Suffix          : constant Name_Id := N + 652;
-   Name_Include_Option                 : constant Name_Id := N + 653;
+   Name_Include_Switches               : constant Name_Id := N + 653;
    Name_Include_Path                   : constant Name_Id := N + 654;
    Name_Include_Path_File              : constant Name_Id := N + 655;
    Name_Language_Kind                  : constant Name_Id := N + 656;

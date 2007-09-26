@@ -711,7 +711,7 @@ package body Snames is
      "implementation#" &
      "implementation_exceptions#" &
      "implementation_suffix#" &
-     "include_option#" &
+     "include_switches#" &
      "include_path#" &
      "include_path_file#" &
      "language_kind#" &
