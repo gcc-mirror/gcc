@@ -8304,16 +8304,35 @@ package body Sem_Ch3 is
         and then not In_Inlined_Body
       then
          if not OK_For_Limited_Init (Exp) then
-            --  In GNAT mode, this is just a warning, to allow it to be
-            --  evilly turned off. Otherwise it is a real error.
+
+            --  In GNAT mode, this is just a warning, to allow it to be evilly
+            --  turned off. Otherwise it is a real error.
 
             if GNAT_Mode then
                Error_Msg_N
-                 ("cannot initialize entities of limited type?", Exp);
-            else
+                 ("?cannot initialize entities of limited type!", Exp);
+
+            elsif Ada_Version < Ada_05 then
                Error_Msg_N
                  ("cannot initialize entities of limited type", Exp);
                Explain_Limited_Type (T, Exp);
+
+            else
+               --  Specialize error message according to kind of illegal
+               --  initial expression.
+
+               if Nkind (Exp) = N_Type_Conversion
+                 and then Nkind (Expression (Exp)) = N_Function_Call
+               then
+                  Error_Msg_N
+                    ("illegal context for call"
+                      & " to function with limited result", Exp);
+
+               else
+                  Error_Msg_N
+                    ("initialization of limited object requires agggregate "
+                      & "or function call",  Exp);
+               end if;
             end if;
          end if;
       end if;
@@ -11621,15 +11640,15 @@ package body Sem_Ch3 is
                end if;
 
             else
-
                --  If the generic parent type is present, the derived type
                --  is an instance of a formal derived type, and within the
                --  instance its operations are those of the actual. We derive
                --  from the formal type but make the inherited operations
                --  aliases of the corresponding operations of the actual.
 
-               if Is_Interface (Parent_Type) then
-
+               if Is_Interface (Parent_Type)
+                 and then Root_Type (Derived_Type) /= Parent_Type
+               then
                   --  Find the corresponding operation in the generic actual.
                   --  Given that the actual is not a direct descendant of the
                   --  parent, as in Ada 95, the primitives are not necessarily
@@ -11637,8 +11656,12 @@ package body Sem_Ch3 is
                   --  primitive operations of the actual to find the one that
                   --  implements the interface operation.
 
-                  Act_Elmt := First_Elmt (Act_List);
+                  --  Note that if the parent type is the direct ancestor of
+                  --  the derived type, then even if it is an interface the
+                  --  operations are inherited from the primary dispatch table
+                  --  and are in the proper order.
 
+                  Act_Elmt := First_Elmt (Act_List);
                   while Present (Act_Elmt) loop
                      exit when
                        Abstract_Interface_Alias (Node (Act_Elmt)) = Subp;
@@ -11683,9 +11706,9 @@ package body Sem_Ch3 is
    --------------------------------
 
    procedure Derived_Standard_Character
-     (N             : Node_Id;
-      Parent_Type   : Entity_Id;
-      Derived_Type  : Entity_Id)
+     (N            : Node_Id;
+      Parent_Type  : Entity_Id;
+      Derived_Type : Entity_Id)
    is
       Loc           : constant Source_Ptr := Sloc (N);
       Def           : constant Node_Id    := Type_Definition (N);
@@ -14232,14 +14255,6 @@ package body Sem_Ch3 is
 
    function OK_For_Limited_Init_In_05 (Exp : Node_Id) return Boolean is
    begin
-      --  ???Expand_N_Extended_Return_Statement generates code that would
-      --  violate the rules in some cases. Once we have build-in-place
-      --  function returns working, we can probably remove the following
-      --  check.
-
-      if not Comes_From_Source (Exp) then
-         return True;
-      end if;
 
       --  Ada 2005 (AI-287, AI-318): Relax the strictness of the front end in
       --  case of limited aggregates (including extension aggregates), and
@@ -14250,14 +14265,20 @@ package body Sem_Ch3 is
          when N_Aggregate | N_Extension_Aggregate | N_Function_Call | N_Op =>
             return True;
 
+         when N_Qualified_Expression =>
+            return
+              OK_For_Limited_Init_In_05 (Expression (Original_Node (Exp)));
+
          --  Ada 2005 (AI-251): If a class-wide interface object is initialized
          --  with a function call, the expander has rewritten the call into an
          --  N_Type_Conversion node to force displacement of the pointer to
          --  reference the component containing the secondary dispatch table.
+         --  Otherwise a type conversion is not a legal context.
 
-         when N_Qualified_Expression | N_Type_Conversion =>
-            return OK_For_Limited_Init_In_05
-                     (Expression (Original_Node (Exp)));
+         when N_Type_Conversion =>
+            return not Comes_From_Source (Exp)
+              and then
+                OK_For_Limited_Init_In_05 (Expression (Original_Node (Exp)));
 
          when N_Indexed_Component | N_Selected_Component  =>
             return Nkind (Exp) = N_Function_Call;
