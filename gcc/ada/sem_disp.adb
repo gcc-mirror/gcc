@@ -740,9 +740,27 @@ package body Sem_Disp is
                         Set_DT_Position (Subp, DT_Position (Old_Subp));
 
                         if not Restriction_Active (No_Dispatching_Calls) then
-                           Register_Primitive (Sloc (Subp_Body),
-                             Prim    => Subp,
-                             Ins_Nod => Subp_Body);
+                           if Building_Static_DT (Tagged_Type) then
+
+                              --  If the static dispatch table has not been
+                              --  built then there is nothing else to do now;
+                              --  otherwise we notify that we cannot build the
+                              --  static dispatch table.
+
+                              if Has_Dispatch_Table (Tagged_Type) then
+                                 Error_Msg_N
+                                   ("overriding of& is too late for building" &
+                                    " static dispatch tables!", Subp);
+                                 Error_Msg_N
+                                   ("\spec should appear immediately after" &
+                                    " the type!", Subp);
+                              end if;
+
+                           else
+                              Register_Primitive (Sloc (Subp_Body),
+                                Prim    => Subp,
+                                Ins_Nod => Subp_Body);
+                           end if;
                         end if;
                      end if;
                   end if;
@@ -789,6 +807,7 @@ package body Sem_Disp is
 
       if Present (Old_Subp) then
          Check_Subtype_Conformant (Subp, Old_Subp);
+
          if (Chars (Subp) = Name_Initialize
            or else Chars (Subp) = Name_Adjust
            or else Chars (Subp) = Name_Finalize)

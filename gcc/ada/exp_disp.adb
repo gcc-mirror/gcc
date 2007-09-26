@@ -66,10 +66,6 @@ package body Exp_Disp is
    -- Local Subprograms --
    -----------------------
 
-   function Building_Static_DT (Typ : Entity_Id) return Boolean;
-   pragma Inline (Building_Static_DT);
-   --  Returns true when building statically allocated dispatch tables
-
    function Default_Prim_Op_Position (E : Entity_Id) return Uint;
    --  Ada 2005 (AI-251): Returns the fixed position in the dispatch table
    --  of the default primitive operations.
@@ -104,7 +100,13 @@ package body Exp_Disp is
    function Building_Static_DT (Typ : Entity_Id) return Boolean is
    begin
       return Static_Dispatch_Tables
-               and then Is_Library_Level_Tagged_Type (Typ);
+        and then Is_Library_Level_Tagged_Type (Typ)
+
+         --  If the type is derived from a CPP class we cannot statically
+         --  build the dispatch tables because we must inherit primitives
+         --  from the CPP side.
+
+        and then not Is_CPP_Class (Root_Type (Typ));
    end Building_Static_DT;
 
    ----------------------------------
@@ -742,7 +744,7 @@ package body Exp_Disp is
          Operand_Typ := Base_Type (Corresponding_Record_Type (Operand_Typ));
       end if;
 
-      --  Handle access types to interfaces
+      --  Handle access to class-wide interface types
 
       if Is_Access_Type (Iface_Typ) then
          Iface_Typ := Etype (Directly_Designated_Type (Iface_Typ));
@@ -881,11 +883,9 @@ package body Exp_Disp is
          --     end Func;
 
          declare
-            Decls        : List_Id;
             Desig_Typ    : Entity_Id;
             Fent         : Entity_Id;
             New_Typ_Decl : Node_Id;
-            New_Obj_Decl : Node_Id;
             Stats        : List_Id;
 
          begin
@@ -893,6 +893,10 @@ package body Exp_Disp is
 
             if Is_Access_Type (Desig_Typ) then
                Desig_Typ := Directly_Designated_Type (Desig_Typ);
+            end if;
+
+            if Is_Concurrent_Type (Desig_Typ) then
+               Desig_Typ := Base_Type (Corresponding_Record_Type (Desig_Typ));
             end if;
 
             New_Typ_Decl :=
@@ -907,22 +911,6 @@ package body Exp_Disp is
                     Subtype_Indication     =>
                       New_Reference_To (Desig_Typ, Loc)));
 
-            New_Obj_Decl :=
-              Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,
-                    New_Internal_Name ('S')),
-                Constant_Present => True,
-                Object_Definition =>
-                  New_Reference_To (Defining_Identifier (New_Typ_Decl), Loc),
-                Expression =>
-                  Unchecked_Convert_To (Defining_Identifier (New_Typ_Decl),
-                    Make_Identifier (Loc, Name_uO)));
-
-            Decls := New_List (
-              New_Typ_Decl,
-              New_Obj_Decl);
-
             Stats := New_List (
               Make_Simple_Return_Statement (Loc,
                 Unchecked_Convert_To (Etype (N),
@@ -930,9 +918,9 @@ package body Exp_Disp is
                     Prefix =>
                       Make_Selected_Component (Loc,
                         Prefix =>
-                          New_Reference_To
-                            (Defining_Identifier (New_Obj_Decl),
-                             Loc),
+                          Unchecked_Convert_To
+                            (Defining_Identifier (New_Typ_Decl),
+                             Make_Identifier (Loc, Name_uO)),
                         Selector_Name =>
                           New_Occurrence_Of (Iface_Tag, Loc)),
                     Attribute_Name => Name_Address))));
@@ -975,7 +963,7 @@ package body Exp_Disp is
                     Result_Definition =>
                       New_Reference_To (Etype (N), Loc)),
 
-                Declarations => Decls,
+                Declarations => New_List (New_Typ_Decl),
 
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc, Stats));
@@ -991,20 +979,17 @@ package body Exp_Disp is
 
             if Is_Access_Type (Etype (Expression (N))) then
 
-               --  Generate: Operand_Typ!(Expression.all)'Address
+               --  Generate: Func (Address!(Expression))
 
                Rewrite (N,
                  Make_Function_Call (Loc,
                    Name => New_Reference_To (Fent, Loc),
                    Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix  => Unchecked_Convert_To (Operand_Typ,
-                                    Make_Explicit_Dereference (Loc,
-                                      Relocate_Node (Expression (N)))),
-                       Attribute_Name => Name_Address))));
+                     Unchecked_Convert_To (RTE (RE_Address),
+                       Relocate_Node (Expression (N))))));
 
             else
-               --  Generate: Operand_Typ!(Expression)'Address
+               --  Generate: Func (Operand_Typ!(Expression)'Address)
 
                Rewrite (N,
                  Make_Function_Call (Loc,
@@ -1408,6 +1393,8 @@ package body Exp_Disp is
       Thunk_Id :=
         Make_Defining_Identifier (Loc,
           Chars => New_Internal_Name ('T'));
+
+      Set_Is_Thunk (Thunk_Id);
 
       if Ekind (Target) = E_Procedure then
          Thunk_Code :=
@@ -3064,6 +3051,8 @@ package body Exp_Disp is
                             New_External_Name (Tname, 'T', Suffix_Index => -1);
       Name_Exname       : constant Name_Id :=
                             New_External_Name (Tname, 'E', Suffix_Index => -1);
+      Name_HT_Link      : constant Name_Id :=
+                            New_External_Name (Tname, 'H', Suffix_Index => -1);
       Name_Predef_Prims : constant Name_Id :=
                             New_External_Name (Tname, 'R', Suffix_Index => -1);
       Name_SSD          : constant Name_Id :=
@@ -3077,6 +3066,8 @@ package body Exp_Disp is
                        Make_Defining_Identifier (Loc, Name_DT);
       Exname       : constant Entity_Id :=
                        Make_Defining_Identifier (Loc, Name_Exname);
+      HT_Link      : constant Entity_Id :=
+                       Make_Defining_Identifier (Loc, Name_HT_Link);
       Predef_Prims : constant Entity_Id :=
                        Make_Defining_Identifier (Loc, Name_Predef_Prims);
       SSD          : constant Entity_Id :=
@@ -3213,6 +3204,7 @@ package body Exp_Disp is
       Set_Is_Statically_Allocated (DT);
       Set_Is_Statically_Allocated (SSD);
       Set_Is_Statically_Allocated (TSD);
+      Set_Is_Statically_Allocated (Predef_Prims);
 
       --  Generate code to define the boolean that controls registration, in
       --  order to avoid multiple registrations for tagged types defined in
@@ -3353,6 +3345,15 @@ package body Exp_Disp is
       Set_Is_Statically_Allocated (Exname);
       Set_Is_True_Constant (Exname);
 
+      --  Declare the object used by Ada.Tags.Register_Tag
+
+      if RTE_Available (RE_Register_Tag) then
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => HT_Link,
+             Object_Definition   => New_Reference_To (RTE (RE_Tag), Loc)));
+      end if;
+
       --  Generate code to create the storage for the type specific data object
       --  with enough space to store the tags of the ancestors plus the tags
       --  of all the implemented interfaces (as described in a-tags.adb).
@@ -3362,7 +3363,7 @@ package body Exp_Disp is
       --            Access_Level       => Type_Access_Level (Typ),
       --            Expanded_Name      => Cstring_Ptr!(Exname'Address))
       --            External_Tag       => Cstring_Ptr!(Exname'Address))
-      --            HT_Link            => null,
+      --            HT_Link            => HT_Link'Address,
       --            Transportable      => <<boolean-value>>,
       --            RC_Offset          => <<integer-value>>,
       --            [ Interfaces_Table  => <<access-value>> ]
@@ -3590,9 +3591,17 @@ package body Exp_Disp is
 
       --  HT_Link
 
-      Append_To (TSD_Aggr_List,
-        Unchecked_Convert_To (RTE (RE_Tag),
-          New_Reference_To (RTE (RE_Null_Address), Loc)));
+      if RTE_Available (RE_Register_Tag) then
+         Append_To (TSD_Aggr_List,
+           Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+             Make_Attribute_Reference (Loc,
+               Prefix => New_Reference_To (HT_Link, Loc),
+               Attribute_Name => Name_Address)));
+      else
+         Append_To (TSD_Aggr_List,
+           Unchecked_Convert_To (RTE (RE_Tag_Ptr),
+             New_Reference_To (RTE (RE_Null_Address), Loc)));
+      end if;
 
       --  Transportable: Set for types that can be used in remote calls
       --  with respect to E.4(18) legality rules.
@@ -4734,9 +4743,7 @@ package body Exp_Disp is
       --  Import the forward declaration of the Dispatch Table wrapper record
       --  (Make_DT will take care of its exportation)
 
-      if Building_Static_DT (Typ)
-        and then not Is_CPP_Class (Typ)
-      then
+      if Building_Static_DT (Typ) then
          DT := Make_Defining_Identifier (Loc,
                  New_External_Name (Tname, 'T'));
 
@@ -4745,9 +4752,6 @@ package body Exp_Disp is
          --    $pragma import (ada, DT);
 
          Set_Is_Imported (DT);
-
-         --  Set_Is_True_Constant (DT);
-         --  Why is the above commented out???
 
          --  The scope must be set now to call Get_External_Name
 
@@ -4840,6 +4844,7 @@ package body Exp_Disp is
          end if;
 
          Set_Is_True_Constant (DT_Ptr);
+         Set_Is_Statically_Allocated (DT_Ptr);
       end if;
 
       pragma Assert (No (Access_Disp_Table (Typ)));

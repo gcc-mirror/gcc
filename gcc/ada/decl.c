@@ -500,7 +500,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool used_by_ref = false;
 	bool const_flag
 	  = ((kind == E_Constant || kind == E_Variable)
-	     && !Is_Statically_Allocated (gnat_entity)
 	     && Is_True_Constant (gnat_entity)
 	     && (((Nkind (Declaration_Node (gnat_entity))
 		   == N_Object_Declaration)
@@ -732,7 +731,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   the object volatile.  We also interpret 13.3(19) conservatively
 	   and disallow any optimizations for an object covered by it.  */
 	if ((Treat_As_Volatile (gnat_entity)
-	     || Is_Exported (gnat_entity)
+	     || (Is_Exported (gnat_entity)
+		 /* Exclude exported constants created by the compiler,
+		    which should boil down to static dispatch tables and
+		    make it possible to put them in read-only memory.  */
+		 && (Comes_From_Source (gnat_entity) || !const_flag))
 	     || Is_Imported (gnat_entity)
 	     || Present (Address_Clause (gnat_entity)))
 	    && !TYPE_VOLATILE (gnu_type))
@@ -4447,6 +4450,8 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   tree gnu_param_name = get_entity_name (gnat_param);
   tree gnu_param_type = gnat_to_gnu_type (Etype (gnat_param));
   bool in_param = (Ekind (gnat_param) == E_In_Parameter);
+  /* The parameter can be indirectly modified if its address is taken.  */
+  bool ro_param = in_param && !Address_Taken (gnat_param);
   bool by_return = false, by_component_ptr = false, by_ref = false;
   tree gnu_param;
 
@@ -4473,11 +4478,11 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 	gnu_param_type = unpadded_type;
     }
 
-  /* If this is an IN parameter, it is read-only, so make a variant of the
-     type that is read-only.  ??? However, if this is an unconstrained array,
-     that type can be very complex, so skip it for now.  Likewise for any
-     other self-referential type.  */
-  if (in_param
+  /* If this is a read-only parameter, make a variant of the type that is
+     read-only.  ??? However, if this is an unconstrained array, that type
+     can be very complex, so skip it for now.  Likewise for any other
+     self-referential type.  */
+  if (ro_param
       && TREE_CODE (gnu_param_type) != UNCONSTRAINED_ARRAY_TYPE
       && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_param_type)))
     gnu_param_type = build_qualified_type (gnu_param_type,
@@ -4511,7 +4516,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
       by_component_ptr = true;
       gnu_param_type = TREE_TYPE (gnu_param_type);
 
-      if (in_param)
+      if (ro_param)
 	gnu_param_type = build_qualified_type (gnu_param_type,
 					       (TYPE_QUALS (gnu_param_type)
 						| TYPE_QUAL_CONST));
@@ -4584,12 +4589,12 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
     return gnu_param_type;
 
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type,
-				 by_ref || by_component_ptr || in_param);
+				 ro_param || by_ref || by_component_ptr);
   DECL_BY_REF_P (gnu_param) = by_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
   DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor);
   DECL_POINTS_TO_READONLY_P (gnu_param)
-    = (in_param && (by_ref || by_component_ptr));
+    = (ro_param && (by_ref || by_component_ptr));
 
   /* If no Mechanism was specified, indicate what we're using, then
      back-annotate it.  */

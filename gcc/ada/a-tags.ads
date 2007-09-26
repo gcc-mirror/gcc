@@ -218,6 +218,26 @@ private
    --  type. This construct is used in the handling of dispatching triggers
    --  in select statements.
 
+   type Address_Array is array (Positive range <>) of System.Address;
+
+   subtype Dispatch_Table is Address_Array (1 .. 1);
+   --  Used by GDB to identify the _tags and traverse the run-time structure
+   --  associated with tagged types. For compatibility with older versions of
+   --  gdb, its name must not be changed.
+
+   type Tag is access all Dispatch_Table;
+   pragma No_Strict_Aliasing (Tag);
+
+   type Interface_Tag is access all Dispatch_Table;
+
+   No_Tag : constant Tag := null;
+
+   --  The expander ensures that Tag objects reference the Prims_Ptr component
+   --  of the wrapper.
+
+   type Tag_Ptr is access all Tag;
+   pragma No_Strict_Aliasing (Tag_Ptr);
+
    type Tag_Table is array (Natural range <>) of Tag;
 
    type Type_Specific_Data (Idepth : Natural) is record
@@ -237,7 +257,7 @@ private
 
       Expanded_Name : Cstring_Ptr;
       External_Tag  : Cstring_Ptr;
-      HT_Link       : Tag;
+      HT_Link       : Tag_Ptr;
       --  Components used to support to the Ada.Tags subprograms in RM 3.9
 
       --  Note: Expanded_Name is referenced by GDB to determine the actual name
@@ -291,8 +311,6 @@ private
       TK_Tagged,
       TK_Task);
 
-   type Address_Array is array (Positive range <>) of System.Address;
-
    type Dispatch_Table_Wrapper (Num_Prims : Natural) is record
       Signature     : Signature_Kind;
       Tag_Kind      : Tagged_Kind;
@@ -314,24 +332,6 @@ private
       --  to which it applies. For each tagged type, the expander computes the
       --  actual array size, allocates the Dispatch_Table record accordingly.
    end record;
-
-   subtype Dispatch_Table is Address_Array (1 .. 1);
-   --  Used by GDB to identify the _tags and traverse the run-time structure
-   --  associated with tagged types. For compatibility with older versions of
-   --  gdb, its name must not be changed.
-
-   type Tag is access all Dispatch_Table;
-   pragma No_Strict_Aliasing (Tag);
-
-   type Interface_Tag is access all Dispatch_Table;
-
-   No_Tag : constant Tag := null;
-
-   --  The expander ensures that Tag objects reference the Prims_Ptr component
-   --  of the wrapper.
-
-   type Tag_Ptr is access all Tag;
-   pragma No_Strict_Aliasing (Tag_Ptr);
 
    type Dispatch_Table_Ptr is access all Dispatch_Table_Wrapper;
    pragma No_Strict_Aliasing (Dispatch_Table_Ptr);

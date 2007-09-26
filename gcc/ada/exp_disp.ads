@@ -164,6 +164,10 @@ package Exp_Disp is
    --    Exp_Disp.Default_Prim_Op_Position - indirect use
    --    Exp_Disp.Set_All_DT_Position      - direct   use
 
+   function Building_Static_DT (Typ : Entity_Id) return Boolean;
+   pragma Inline (Building_Static_DT);
+   --  Returns true when building statically allocated dispatch tables
+
    procedure Build_Static_Dispatch_Tables (N : Node_Id);
    --  N is a library level package declaration or package body. Build the
    --  static dispatch table of the tagged types defined at library level. In
