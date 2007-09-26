@@ -145,7 +145,8 @@ package body Prj.Util is
    begin
       if Builder_Package /= No_Package then
          if Get_Mode = Multi_Language then
-            Executable_Suffix_Name := In_Tree.Config.Executable_Suffix;
+            Executable_Suffix_Name :=
+              In_Tree.Projects.Table (Project).Config.Executable_Suffix;
 
          else
             Executable_Suffix := Prj.Util.Value_Of
@@ -283,7 +284,8 @@ package body Prj.Util is
             Result     : File_Name_Type;
 
          begin
-            Executable_Extension_On_Target := In_Tree.Config.Executable_Suffix;
+            Executable_Extension_On_Target :=
+              In_Tree.Projects.Table (Project).Config.Executable_Suffix;
             Result := Executable_Name (Name_Find);
             Executable_Extension_On_Target := Saved_EEOT;
             return Result;

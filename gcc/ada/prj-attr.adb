@@ -156,6 +156,7 @@ package body Prj.Attr is
    --  Configuration - Compiling
 
    "Sadriver#" &
+   "Larequired_switches#" &
    "Lapic_option#" &
 
    --  Configuration - Mapping files
@@ -208,6 +209,7 @@ package body Prj.Attr is
    --  Configuration - Binding
 
    "Sadriver#" &
+   "Larequired_switches#" &
    "Saprefix#" &
    "Saobjects_path#" &
    "Saobjects_path_file#" &
