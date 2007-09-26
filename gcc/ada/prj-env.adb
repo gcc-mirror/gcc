@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Fmap;
 with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -981,6 +982,56 @@ package body Prj.Env is
            True;
       end if;
    end Create_Config_Pragmas_File;
+
+   --------------------
+   -- Create_Mapping --
+   --------------------
+
+   procedure Create_Mapping (In_Tree : Project_Tree_Ref) is
+      The_Unit_Data : Unit_Data;
+      Data          : File_Name_Data;
+
+   begin
+      Fmap.Reset_Tables;
+
+      for Unit in 1 .. Unit_Table.Last (In_Tree.Units) loop
+         The_Unit_Data := In_Tree.Units.Table (Unit);
+
+         --  Process only if the unit has a valid name
+
+         if The_Unit_Data.Name /= No_Name then
+            Data := The_Unit_Data.File_Names (Specification);
+
+            --  If there is a spec, put it in the mapping
+
+            if Data.Name /= No_File then
+               if Data.Path = Slash then
+                  Fmap.Add_Forbidden_File_Name (Data.Name);
+               else
+                  Fmap.Add_To_File_Map
+                    (Unit_Name => Unit_Name_Type (The_Unit_Data.Name),
+                     File_Name => Data.Name,
+                     Path_Name => File_Name_Type (Data.Path));
+               end if;
+            end if;
+
+            Data := The_Unit_Data.File_Names (Body_Part);
+
+            --  If there is a body (or subunit) put it in the mapping
+
+            if Data.Name /= No_File then
+               if Data.Path = Slash then
+                  Fmap.Add_Forbidden_File_Name (Data.Name);
+               else
+                  Fmap.Add_To_File_Map
+                    (Unit_Name => Unit_Name_Type (The_Unit_Data.Name),
+                     File_Name => Data.Name,
+                     Path_Name => File_Name_Type (Data.Path));
+               end if;
+            end if;
+         end if;
+      end loop;
+   end Create_Mapping;
 
    -------------------------
    -- Create_Mapping_File --

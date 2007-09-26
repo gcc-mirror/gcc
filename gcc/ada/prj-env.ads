@@ -35,6 +35,11 @@ package Prj.Env is
    procedure Print_Sources (In_Tree : Project_Tree_Ref);
    --  Output the list of sources, after Project files have been scanned
 
+   procedure Create_Mapping (In_Tree : Project_Tree_Ref);
+   --  Create in memory mapping from the sources of all the projects (in body
+   --  of package Fmap), so that Osint.Find_File will find the correct path
+   --  corresponding to a source.
+
    procedure Create_Mapping_File
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref;
