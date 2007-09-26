@@ -117,6 +117,10 @@ package Lib.Xref is
    --          entry of the form  LR=<> for each of the interfaces appearing
    --          in the type declaration.
 
+   --          For an array type, there is an entry of the form LR=<> for
+   --          each of the index types appearing in the type declaration.
+   --          The index types follow the entry for the component type.
+
    --          In the above list LR shows the brackets used in the output,
    --          which has one of the two following forms:
 
@@ -169,6 +173,7 @@ package Lib.Xref is
    --              p = primitive operation
    --              P = overriding primitive operation
    --              r = reference
+   --              R = subprogram reference in dispatching call
    --              t = end of body
    --              w = WITH line
    --              x = type extension
@@ -248,6 +253,10 @@ package Lib.Xref is
    --           If the primitive operation overrides an inherited primitive
    --           operation of the parent type, the letter 'P' is used in the
    --           corresponding entry.
+
+   --           R is used to mark a dispatching call. The reference is to
+   --           the specification of the primitive operation of the root
+   --           type when the call has a controlling argument in its class.
 
    --           t is similar to e. It identifies the end of a corresponding
    --           body (such a reference always links up with a b reference)
