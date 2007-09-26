@@ -62,10 +62,10 @@ package body Lib.Xref is
       --  Entity referenced (E parameter to Generate_Reference)
 
       Def : Source_Ptr;
-      --  Original source location for entity being referenced. Note that
-      --  these values are used only during the output process, they are
-      --  not set when the entries are originally built. This is because
-      --  private entities can be swapped when the initial call is made.
+      --  Original source location for entity being referenced. Note that these
+      --  values are used only during the output process, they are not set when
+      --  the entries are originally built. This is because private entities
+      --  can be swapped when the initial call is made.
 
       Loc : Source_Ptr;
       --  Location of reference (Original_Location (Sloc field of N parameter
@@ -103,17 +103,17 @@ package body Lib.Xref is
    begin
       pragma Assert (Nkind (E) in N_Entity);
 
-      --  Note that we do not test Xref_Entity_Letters here. It is too
-      --  early to do so, since we are often called before the entity
-      --  is fully constructed, so that the Ekind is still E_Void.
+      --  Note that we do not test Xref_Entity_Letters here. It is too early
+      --  to do so, since we are often called before the entity is fully
+      --  constructed, so that the Ekind is still E_Void.
 
       if Opt.Xref_Active
 
          --  Definition must come from source
 
-         --  We make an exception for subprogram child units that have no
-         --  spec. For these we generate a subprogram declaration for library
-         --  use, and the corresponding entity does not come from source.
+         --  We make an exception for subprogram child units that have no spec.
+         --  For these we generate a subprogram declaration for library use,
+         --  and the corresponding entity does not come from source.
          --  Nevertheless, all references will be attached to it and we have
          --  to treat is as coming from user code.
 
@@ -161,8 +161,8 @@ package body Lib.Xref is
          return;
       end if;
 
-      --  If the operator is not a Standard operator, then we generate
-      --  a real reference to the user defined operator.
+      --  If the operator is not a Standard operator, then we generate a real
+      --  reference to the user defined operator.
 
       if Sloc (Entity (N)) /= Standard_Location then
          Generate_Reference (Entity (N), N);
@@ -177,19 +177,18 @@ package body Lib.Xref is
             Generate_Reference (Corresponding_Equality (Entity (N)), N);
          end if;
 
-      --  For the case of Standard operators, we mark the result type
-      --  as referenced. This ensures that in the case where we are
-      --  using a derived operator, we mark an entity of the unit that
-      --  implicitly defines this operator as used. Otherwise we may
-      --  think that no entity of the unit is used. The actual entity
-      --  marked as referenced is the first subtype, which is the user
-      --  defined entity that is relevant.
+      --  For the case of Standard operators, we mark the result type as
+      --  referenced. This ensures that in the case where we are using a
+      --  derived operator, we mark an entity of the unit that implicitly
+      --  defines this operator as used. Otherwise we may think that no entity
+      --  of the unit is used. The actual entity marked as referenced is the
+      --  first subtype, which is the relevant user defined entity.
 
-      --  Note: we only do this for operators that come from source.
-      --  The generated code sometimes reaches for entities that do
-      --  not need to be explicitly visible (for example, when we
-      --  expand the code for comparing two record types, the fields
-      --  of the record may not be visible).
+      --  Note: we only do this for operators that come from source. The
+      --  generated code sometimes reaches for entities that do not need to be
+      --  explicitly visible (for example, when we expand the code for
+      --  comparing two record objects, the fields of the record may not be
+      --  visible).
 
       elsif Comes_From_Source (N) then
          Set_Referenced (First_Subtype (T));
@@ -370,7 +369,7 @@ package body Lib.Xref is
       end if;
 
       --  Unless the reference is forced, we ignore references where the
-      --  reference itself does not come from Source.
+      --  reference itself does not come from source.
 
       if not Force and then not Comes_From_Source (N) then
          return;
@@ -445,13 +444,13 @@ package body Lib.Xref is
          end if;
 
          --  Check for pragma Unreferenced given and reference is within
-         --  this source unit (occasion for possible warning to be issued)
+         --  this source unit (occasion for possible warning to be issued).
 
          if Has_Pragma_Unreferenced (E)
            and then In_Same_Extended_Unit (E, N)
          then
             --  A reference as a named parameter in a call does not count
-            --  as a violation of pragma Unreferenced for this purpose.
+            --  as a violation of pragma Unreferenced for this purpose...
 
             if Nkind (N) = N_Identifier
               and then Nkind (Parent (N)) = N_Parameter_Association
@@ -459,7 +458,7 @@ package body Lib.Xref is
             then
                null;
 
-            --  Neither does a reference to a variable on the left side
+            --  ... Neither does a reference to a variable on the left side
             --  of an assignment.
 
             elsif Is_On_LHS (N) then
@@ -564,8 +563,8 @@ package body Lib.Xref is
          if Comes_From_Source (E) then
             Ent := E;
 
-         --  Entity does not come from source, but is a derived subprogram
-         --  and the derived subprogram comes from source (after one or more
+         --  Entity does not come from source, but is a derived subprogram and
+         --  the derived subprogram comes from source (after one or more
          --  derivations) in which case the reference is to parent subprogram.
 
          elsif Is_Overloadable (E)
@@ -588,8 +587,8 @@ package body Lib.Xref is
          then
             Ent := E;
 
-         --  Record components of discriminated subtypes or derived types
-         --  must be treated as references to the original component.
+         --  Record components of discriminated subtypes or derived types must
+         --  be treated as references to the original component.
 
          elsif Ekind (E) = E_Component
            and then Comes_From_Source (Original_Record_Component (E))
@@ -711,11 +710,11 @@ package body Lib.Xref is
          Tref  : out Entity_Id;
          Left  : out Character;
          Right : out Character);
-      --  Given an entity id Ent, determines whether a type reference is
+      --  Given an Entity_Id Ent, determines whether a type reference is
       --  required. If so, Tref is set to the entity for the type reference
-      --  and Left and Right are set to the left/right brackets to be
-      --  output for the reference. If no type reference is required, then
-      --  Tref is set to Empty, and Left/Right are set to space.
+      --  and Left and Right are set to the left/right brackets to be output
+      --  for the reference. If no type reference is required, then Tref is
+      --  set to Empty, and Left/Right are set to space.
 
       procedure Output_Import_Export_Info (Ent : Entity_Id);
       --  Ouput language and external name information for an interfaced
@@ -756,9 +755,9 @@ package body Lib.Xref is
                   if Tref /= Etype (Tref) then
                      Tref := First_Subtype (Etype (Tref));
 
-                     --  Set brackets for derived type, but don't
-                     --  override pointer case since the fact that
-                     --  something is a pointer is more important
+                     --  Set brackets for derived type, but don't override
+                     --  pointer case since the fact that something is a
+                     --  pointer is more important.
 
                      if Left /= '(' then
                         Left := '<';
@@ -766,8 +765,8 @@ package body Lib.Xref is
                      end if;
 
                   --  If non-derived ptr, get directly designated type.
-                  --  If the type has a full view, all references are
-                  --  on the partial view, that is seen first.
+                  --  If the type has a full view, all references are on the
+                  --  partial view, that is seen first.
 
                   elsif Is_Access_Type (Tref) then
                      Tref := Directly_Designated_Type (Tref);
@@ -822,8 +821,8 @@ package body Lib.Xref is
                   end if;
                end if;
 
-            --  For objects, functions, enum literals,
-            --  just get type from Etype field.
+            --  For objects, functions, enum literals, just get type from
+            --  Etype field.
 
             elsif Is_Object (Tref)
               or else Ekind (Tref) = E_Enumeration_Literal
@@ -838,26 +837,24 @@ package body Lib.Xref is
                exit;
             end if;
 
-            --  Exit if no type reference, or we are stuck in
-            --  some loop trying to find the type reference, or
-            --  if the type is standard void type (the latter is
-            --  an implementation artifact that should not show
-            --  up in the generated cross-references).
+            --  Exit if no type reference, or we are stuck in some loop trying
+            --  to find the type reference, or if the type is standard void
+            --  type (the latter is an implementation artifact that should not
+            --  show up in the generated cross-references).
 
             exit when No (Tref)
               or else Tref = Sav
               or else Tref = Standard_Void_Type;
 
-            --  If we have a usable type reference, return, otherwise
-            --  keep looking for something useful (we are looking for
-            --  something that either comes from source or standard)
+            --  If we have a usable type reference, return, otherwise keep
+            --  looking for something useful (we are looking for something
+            --  that either comes from source or standard)
 
             if Sloc (Tref) = Standard_Location
               or else Comes_From_Source (Tref)
             then
-               --  If the reference is a subtype created for a generic
-               --  actual, go to actual directly, the inner subtype is
-               --  not user visible.
+               --  If the reference is a subtype created for a generic actual,
+               --  go actual directly, the inner subtype is not user visible.
 
                if Nkind (Parent (Tref)) = N_Subtype_Declaration
                  and then not Comes_From_Source (Parent (Tref))
@@ -964,7 +961,7 @@ package body Lib.Xref is
 
          procedure New_Entry (E : Entity_Id);
          --  Make an additional entry into the Xref table for a type entity
-         --  that is related to the current entity (parent, type. ancestor,
+         --  that is related to the current entity (parent, type ancestor,
          --  progenitor, etc.).
 
          ----------------
@@ -993,7 +990,7 @@ package body Lib.Xref is
       begin
          --  Note that this is not a for loop for a very good reason. The
          --  processing of items in the table can add new items to the table,
-         --  and they must be processed as well
+         --  and they must be processed as well.
 
          J := 1;
          while J <= Xrefs.Last loop
@@ -1040,8 +1037,8 @@ package body Lib.Xref is
                   Prim    : Entity_Id;
 
                   function Parent_Op (E : Entity_Id) return Entity_Id;
-                  --  Find original operation, which may be inherited
-                  --  through several derivations.
+                  --  Find original operation, which may be inherited through
+                  --  several derivations.
 
                   function Parent_Op (E : Entity_Id) return Entity_Id is
                      Orig_Op : constant Entity_Id := Alias (E);
@@ -1090,8 +1087,8 @@ package body Lib.Xref is
       Output_Refs : declare
 
          Nrefs : Nat := Xrefs.Last;
-         --  Number of references in table. This value may get reset
-         --  (reduced) when we eliminate duplicate reference entries.
+         --  Number of references in table. This value may get reset (reduced)
+         --  when we eliminate duplicate reference entries.
 
          Rnums : array (0 .. Nrefs) of Nat;
          --  This array contains numbers of references in the Xrefs table.
@@ -1152,17 +1149,17 @@ package body Lib.Xref is
             T2 : Xref_Entry renames Xrefs.Table (Rnums (Nat (Op2)));
 
          begin
-            --  First test. If entity is in different unit, sort by unit
+            --  First test: if entity is in different unit, sort by unit
 
             if T1.Eun /= T2.Eun then
                return Dependency_Num (T1.Eun) < Dependency_Num (T2.Eun);
 
-            --  Second test, within same unit, sort by entity Sloc
+            --  Second test: within same unit, sort by entity Sloc
 
             elsif T1.Def /= T2.Def then
                return T1.Def < T2.Def;
 
-            --  Third test, sort definitions ahead of references
+            --  Third test: sort definitions ahead of references
 
             elsif T1.Loc = No_Location then
                return True;
@@ -1170,12 +1167,12 @@ package body Lib.Xref is
             elsif T2.Loc = No_Location then
                return False;
 
-            --  Fourth test, for same entity, sort by reference location unit
+            --  Fourth test: for same entity, sort by reference location unit
 
             elsif T1.Lun /= T2.Lun then
                return Dependency_Num (T1.Lun) < Dependency_Num (T2.Lun);
 
-            --  Fifth test order of location within referencing unit
+            --  Fifth test: order of location within referencing unit
 
             elsif T1.Loc /= T2.Loc then
                return T1.Loc < T2.Loc;
@@ -1318,8 +1315,8 @@ package body Lib.Xref is
                begin
                   if List_Interface then
 
-                     --  This is a progenitor interface of the type for
-                     --  which xref information is being generated.
+                     --  This is a progenitor interface of the type for which
+                     --  xref information is being generated.
 
                      Tref  := Ent;
                      Left  := '<';
@@ -1374,8 +1371,8 @@ package body Lib.Xref is
                         Write_Info_Nat
                           (Int (Get_Column_Number (Sloc (Tref))));
 
-                        --  If the type comes from an instantiation,
-                        --  add the corresponding info.
+                        --  If the type comes from an instantiation, add the
+                        --  corresponding info.
 
                         Output_Instantiation_Refs (Sloc (Tref));
                         Write_Info_Char (Right);
@@ -1459,9 +1456,9 @@ package body Lib.Xref is
                Ctyp := Xref_Entity_Letters (Ekind (Ent));
 
                --  Skip reference if it is the only reference to an entity,
-               --  and it is an end-line reference, and the entity is not in
+               --  and it is an END line reference, and the entity is not in
                --  the current extended source. This prevents junk entries
-               --  consisting only of packages with end lines, where no
+               --  consisting only of packages with END lines, where no
                --  entity from the package is actually referenced.
 
                if XE.Typ = 'e'
@@ -1511,7 +1508,7 @@ package body Lib.Xref is
 
                   elsif Is_Generic_Type (Ent) then
 
-                     --  If the type of the entity is a  generic private type
+                     --  If the type of the entity is a generic private type,
                      --  there is no usable full view, so retain the indication
                      --  that this is an object.
 
@@ -1547,10 +1544,10 @@ package body Lib.Xref is
                  and then Is_Abstract_Subprogram (XE.Ent)
                then
                   if Ctyp = 'U' then
-                     Ctyp := 'x';            --  abstract procedure
+                     Ctyp := 'x';            --  Abstract procedure
 
                   elsif Ctyp = 'V' then
-                     Ctyp := 'y';            --  abstract function
+                     Ctyp := 'y';            --  Abstract function
                   end if;
 
                elsif Is_Type (XE.Ent)
@@ -1560,7 +1557,7 @@ package body Lib.Xref is
                      Ctyp := 'h';
 
                   elsif Ctyp = 'R' then
-                     Ctyp := 'H';            --  abstract type
+                     Ctyp := 'H';            --  Abstract type
                   end if;
                end if;
 
@@ -1717,7 +1714,7 @@ package body Lib.Xref is
                      end Write_Level_Info;
 
                      --  Output entity name. We use the occurrence from the
-                     --  actual source program at the definition point
+                     --  actual source program at the definition point.
 
                      P := Original_Location (Sloc (XE.Ent));
 
@@ -1828,7 +1825,7 @@ package body Lib.Xref is
                      end if;
 
                      --  Indicate that the entity is in the unit of the current
-                     --  xref xection.
+                     --  xref section.
 
                      Curru := Curxu;
 
@@ -1862,6 +1859,8 @@ package body Lib.Xref is
 
                      Check_Type_Reference (XE.Ent, False);
 
+                     --  Additional information for types with progenitors
+
                      if Is_Record_Type (XE.Ent)
                        and then Present (Abstract_Interfaces (XE.Ent))
                      then
@@ -1875,10 +1874,25 @@ package body Lib.Xref is
                               Next_Elmt (Elmt);
                            end loop;
                         end;
+
+                     --  For array types, list index types as well.
+                     --  (This is not C, indices have distinct types).
+
+                     elsif Is_Array_Type (XE.Ent) then
+                        declare
+                           Indx : Node_Id;
+                        begin
+                           Indx := First_Index (XE.Ent);
+                           while Present (Indx) loop
+                              Check_Type_Reference
+                                (First_Subtype (Etype (Indx)), True);
+                              Next_Index (Indx);
+                           end loop;
+                        end;
                      end if;
 
-                     --  If the entity is an overriding operation, write
-                     --  info on operation that was overridden.
+                     --  If the entity is an overriding operation, write info
+                     --  on operation that was overridden.
 
                      if Is_Subprogram (XE.Ent)
                        and then Is_Overriding_Operation (XE.Ent)
