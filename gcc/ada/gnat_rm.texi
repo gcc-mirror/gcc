@@ -4957,7 +4957,7 @@ a generic unit that can be instantiated with either enumeration types
 or integer types.  Note that if @code{Enum_Rep} is used on a modular
 type whose upper bound exceeds the upper bound of the largest signed
 integer type, and the argument is a variable, so that the universal
-integer calculation is done at run-time, then the call to @code{Enum_Rep}
+integer calculation is done at run time, then the call to @code{Enum_Rep}
 may raise @code{Constraint_Error}.
 
 @node Epsilon
@@ -10551,6 +10551,11 @@ check is suppressed if range checks are suppressed, or if the special GNAT
 check Alignment_Check is suppressed, or if
 @code{pragma Restrictions (No_Elaboration_Code)} is in effect.
 
+Finally, GNAT does not permit overlaying of objects of controlled types or
+composite types containing a controlled component. In most cases, the compiler
+can detect an attempt at such overlays and will generate a warning at compile
+time and a Program_Error exception at run time.
+
 @findex Export
 An address clause cannot be given for an exported object.  More
 understandably the real restriction is that objects with an address
@@ -13868,7 +13873,7 @@ with @code{GLADE}.
 @cindex Run-time restrictions access
 
 @noindent
-This package provides facilities for accessing at run-time
+This package provides facilities for accessing at run time
 the status of restrictions specified at compile time for
 the partition. Information is available both with regard
 to actual restrictions specified, and with regard to
