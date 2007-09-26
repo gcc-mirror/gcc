@@ -3,7 +3,6 @@
 
 with Text_IO;
 use Text_IO;
-use type Text_IO.File_Access;
 package body renaming1 is
    procedure Fo (A : Text_IO.File_Access) is
    begin
