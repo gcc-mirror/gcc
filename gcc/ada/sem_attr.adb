@@ -707,23 +707,42 @@ package body Sem_Attr is
             end;
          end if;
 
-         --  Special cases when prefix is entity name
+         --  Special cases when we can find a prefix that is an entity name
 
-         if Is_Entity_Name (P) then
+         declare
+            PP  : Node_Id;
+            Ent : Entity_Id;
 
-            --  If we have an access to an object, and the attribute comes from
-            --  source, then set the object as potentially source modified. We
-            --  do this because the resulting access pointer can be used to
-            --  modify the variable, and we might not detect this, leading to
-            --  some junk warnings.
+         begin
+            PP := P;
+            loop
+               if Is_Entity_Name (PP) then
+                  Ent := Entity (PP);
 
-            Set_Never_Set_In_Source (Entity (P), False);
+                  --  If we have an access to an object, and the attribute
+                  --  comes from source, then set the object as potentially
+                  --  source modified. We do this because the resulting access
+                  --  pointer can be used to modify the variable, and we might
+                  --  not detect this, leading to some junk warnings.
 
-            --  Mark entity as address taken, and kill current values
+                  Set_Never_Set_In_Source (Ent, False);
 
-            Set_Address_Taken (Entity (P));
-            Kill_Current_Values (Entity (P));
-         end if;
+                  --  Mark entity as address taken, and kill current values
+
+                  Set_Address_Taken (Ent);
+                  Kill_Current_Values (Ent);
+                  exit;
+
+               elsif Nkind (PP) = N_Selected_Component
+                 or else Nkind (PP) = N_Indexed_Component
+               then
+                  PP := Prefix (PP);
+
+               else
+                  exit;
+               end if;
+            end loop;
+         end;
 
          --  Check for aliased view unless unrestricted case. We allow a
          --  nonaliased prefix when within an instance because the prefix may
