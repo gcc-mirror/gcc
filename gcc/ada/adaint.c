@@ -76,14 +76,22 @@
 #include "version.h"
 #endif
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__)
+
 #include "mingw32.h"
 #include <sys/utime.h>
 #include <ctype.h>
-#else
-#ifndef VMS
+
+#elif defined (__Lynx__)
+
+/* Lynx utime.h only defines the entities of interest to us if
+   defined (VMOS_DEV), so ... */
+#define VMOS_DEV
 #include <utime.h>
-#endif
+#undef VMOS_DEV
+
+#elif !defined (VMS)
+#include <utime.h>
 #endif
 
 #ifdef __MINGW32__
@@ -92,6 +100,14 @@
 #endif
 #elif defined (__vxworks) && defined (__RTP__)
 #include <wait.h>
+#elif defined (__Lynx__)
+/* ??? We really need wait.h and it includes resource.h on Lynx.  GCC
+   has a resource.h header as well, included instead of the lynx
+   version in our setup, causing lots of errors.  We don't really need
+   the lynx contents of this file, so just workaround the issue by
+   preventing the inclusion of the GCC header from doing anything.  */
+#define GCC_RESOURCE_H
+#include <sys/wait.h>
 #else
 #include <sys/wait.h>
 #endif
@@ -2430,8 +2446,8 @@ __gnat_translate_vms (char *src)
         *(retpos++) = '.';
       }
 
-      /* There is qualified path */
-      while (*pos1 != ']' && *pos1 != '>') {
+      /* There is a qualified path */
+      while (*pos1 && *pos1 != ']' && *pos1 != '>') {
         switch (*pos1) {
           case '.':
             /* '.' is used to separate directories. Replace it with '/' but
@@ -2445,13 +2461,18 @@ __gnat_translate_vms (char *src)
             }
             break;
           case '-' :
-            /* Equivalent to Unix .. but there may be several in a row */
-            while (*pos1 == '-') {
-              pos1++;
-              *(retpos++) = '.'; *(retpos++) = '.'; *(retpos++) = '/';
+            /* When after '.' '[' '<' is equivalent to Unix ".." but there
+            may be several in a row */
+            if (*(pos1 - 1) == '.' || *(pos1 - 1) == '[' ||
+                *(pos1 - 1) == '<') {
+              while (*pos1 == '-') {
+                pos1++;
+                *(retpos++) = '.'; *(retpos++) = '.'; *(retpos++) = '/';
+              }
+              retpos--;
+              break;
             }
-            retpos--;
-            break;
+            /* otherwise fall through to default */
           default:
             *(retpos++) = *(pos1++);
         }
@@ -2540,7 +2561,7 @@ __gnat_to_canonical_file_spec (char *filespec)
 
   if (strchr (filespec, ']') || strchr (filespec, ':'))
     {
-      char *tspec = (char *) decc$translate_vms (filespec);
+      char *tspec = (char *) __gnat_translate_vms (filespec);
 
       if (tspec != (char *) -1)
 	strncpy (new_canonical_filespec, tspec, MAXPATH);
@@ -2549,7 +2570,7 @@ __gnat_to_canonical_file_spec (char *filespec)
 	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"))
 	&& (filespec1 = getenv (filespec)))
     {
-      char *tspec = (char *) decc$translate_vms (filespec1);
+      char *tspec = (char *) __gnat_translate_vms (filespec1);
 
       if (tspec != (char *) -1)
 	strncpy (new_canonical_filespec, tspec, MAXPATH);
