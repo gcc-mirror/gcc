@@ -2952,11 +2952,10 @@ while (0)
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\tbne\t%0,%2,2f\n"				\
   "\t" OP "\t%@,%3\n"				\
-  "\tsc" SUFFIX "\t%@,%1"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
   "\tnop\n"					\
-  "2:%]%>%)"
+  "2:\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -2968,10 +2967,10 @@ while (0)
   "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%@,%0\n"			\
   "\t" INSN "\t%@,%@,%1\n"			\
-  "\tsc" SUFFIX "\t%@,%0"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%0\n"			\
   "\tbeq\t%@,%.,1b\n"				\
-  "\tnop%]%>%)"
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -2985,10 +2984,10 @@ while (0)
   "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" INSN "\t%@,%0,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
-  "\tnop%]%>%)"
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3002,10 +3001,10 @@ while (0)
   "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\t" INSN "\t%@,%0,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
-  "\t" INSN "\t%0,%0,%2%]%>%)"
+  "\t" INSN "\t%0,%0,%2\n"			\
+  "\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3019,10 +3018,10 @@ while (0)
   "1:\tll" SUFFIX "\t%@,%0\n"			\
   "\tnor\t%@,%@,%.\n"				\
   "\t" INSN "\t%@,%@,%1\n"			\
-  "\tsc" SUFFIX "\t%@,%0"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%0\n"			\
   "\tbeq\t%@,%.,1b\n"				\
-  "\tnop%]%>%)"
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3038,10 +3037,10 @@ while (0)
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\tnor\t%@,%0,%.\n"				\
   "\t" INSN "\t%@,%@,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
-  "\tnop%]%>%)"
+  "\tnop\n"					\
+  "\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 
@@ -3057,10 +3056,10 @@ while (0)
   "1:\tll" SUFFIX "\t%0,%1\n"			\
   "\tnor\t%0,%0,%.\n"				\
   "\t" INSN "\t%@,%0,%2\n"			\
-  "\tsc" SUFFIX "\t%@,%1"			\
-  "%-\n"					\
+  "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
-  "\t" INSN "\t%0,%0,%2%]%>%)"
+  "\t" INSN "\t%0,%0,%2\n"			\
+  "\tsync%-%]%>%)"
 
 /* Return an asm string that atomically:
 

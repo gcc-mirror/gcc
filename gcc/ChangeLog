@@ -1,3 +1,19 @@
+2007-09-26  David Daney  <ddaney@avtrex.com>
+
+	PR target/33479
+	* config/mips/mips.md (sync_compare_and_swap<mode>, sync_old_add<mode>,
+	sync_new_add<mode>, sync_old_<optab><mode>, sync_new_<optab><mode>,
+	sync_old_nand<mode>, sync_new_nand<mode>,
+	sync_lock_test_and_set<mode>): Fix '&' constraint modifiers.
+	Update length attributes.
+	(sync_add<mode>, sync_sub<mode>, sync_old_sub<mode>,
+	sync_new_sub<mode>, sync_<optab><mode>, sync_nand<mode>): Update
+	length attributes.
+	* config/mips/mips.h (MIPS_COMPARE_AND_SWAP, MIPS_SYNC_OP,
+	MIPS_SYNC_OLD_OP, MIPS_SYNC_NEW_OP, MIPS_SYNC_NAND,
+	MIPS_SYNC_OLD_NAND, MIPS_SYNC_NEW_NAND, MIPS_SYNC_EXCHANGE): Add
+	post-loop sync.
+
 2007-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33563
