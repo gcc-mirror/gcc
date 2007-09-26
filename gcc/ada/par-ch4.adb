@@ -1436,11 +1436,11 @@ package body Ch4 is
       if Token = Tok_Box then
 
          --  Ada 2005(AI-287): The box notation is used to indicate the
-         --  default initialization of limited aggregate components
+         --  default initialization of aggregate components
 
          if Ada_Version < Ada_05 then
             Error_Msg_SP
-              ("limited aggregate is an Ada 2005 extension");
+              ("component association with '<'> is an Ada 2005 extension");
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
          end if;
 
