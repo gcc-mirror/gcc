@@ -1,3 +1,11 @@
+2007-09-27  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.dg/c99-tgmath-1.c: Require c99_runtime and add the associated
+	options.
+	* gcc.dg/c99-tgmath-2.c: Likewise.
+	* gcc.dg/c99-tgmath-3.c: Likewise.
+	* gcc.dg/c99-tgmath-4.c: Likewise.
+
 2007-09-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33568
