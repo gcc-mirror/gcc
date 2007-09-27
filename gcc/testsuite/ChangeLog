@@ -1,3 +1,8 @@
+2007-09-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33493
+	* g++.dg/template/error31.C: New.
+
 2007-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/prune.exp: Prune also "^In function .*$" lines and
