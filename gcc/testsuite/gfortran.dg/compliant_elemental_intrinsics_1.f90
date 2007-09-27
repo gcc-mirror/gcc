@@ -12,15 +12,15 @@ character(26) :: ch
 pi = acos(-1.0)
 b = pi
 
-a = cos(b) ! { dg-error "different shape for Array assignment" }
+a = cos(b) ! { dg-error "Different shape for array assignment" }
 
 a = -pi
-b = cos(a) ! { dg-error "different shape for Array assignment" }
+b = cos(a) ! { dg-error "Different shape for array assignment" }
 
 ch = "abcdefghijklmnopqrstuvwxyz"
-a = transfer (ch, pi, 3) ! { dg-error "different shape for Array assignment" }
+a = transfer (ch, pi, 3) ! { dg-error "Different shape for array assignment" }
 
 ! This already generated an error
-b = reshape ((/1.0/),(/1/)) ! { dg-error "different shape for Array assignment" }
+b = reshape ((/1.0/),(/1/)) ! { dg-error "Different shape for array assignment" }
 
 end

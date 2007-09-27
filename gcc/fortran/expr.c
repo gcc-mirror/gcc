@@ -2556,8 +2556,8 @@ gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
 
       if (op1_flag && op2_flag && mpz_cmp (op1_size, op2_size) != 0)
 	{
-	  gfc_error ("different shape for %s at %L on dimension %d (%d and %d)",
-		     _(optype_msgid), &op1->where, d + 1,
+	  gfc_error ("Different shape for %s at %L on dimension %d "
+		     "(%d and %d)", _(optype_msgid), &op1->where, d + 1,
 		     (int) mpz_get_si (op1_size),
 		     (int) mpz_get_si (op2_size));
 
@@ -2696,7 +2696,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 
   /* Check size of array assignments.  */
   if (lvalue->rank != 0 && rvalue->rank != 0
-      && gfc_check_conformance ("Array assignment", lvalue, rvalue) != SUCCESS)
+      && gfc_check_conformance ("array assignment", lvalue, rvalue) != SUCCESS)
     return FAILURE;
 
   if (gfc_compare_types (&lvalue->ts, &rvalue->ts))
@@ -2905,22 +2905,20 @@ gfc_default_initializer (gfc_typespec *ts)
   gfc_expr *init;
   gfc_component *c;
 
-  init = NULL;
-
   /* See if we have a default initializer.  */
   for (c = ts->derived->components; c; c = c->next)
-    {
-      if ((c->initializer || c->allocatable) && init == NULL)
-	init = gfc_get_expr ();
-    }
+    if (c->initializer || c->allocatable)
+      break;
 
-  if (init == NULL)
+  if (!c)
     return NULL;
 
   /* Build the constructor.  */
+  init = gfc_get_expr ();
   init->expr_type = EXPR_STRUCTURE;
   init->ts = *ts;
   init->where = ts->derived->declared_at;
+
   tail = NULL;
   for (c = ts->derived->components; c; c = c->next)
     {

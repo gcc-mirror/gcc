@@ -8,7 +8,7 @@
   integer, dimension(0:1,0:1) :: n
   integer, dimension(1) :: i
   n = reshape((/1, 2, 3, 4/), shape(n))
-  i = maxloc(n) ! { dg-error "different shape for Array assignment" }
-  i = maxloc(n,dim=1) ! { dg-error "different shape for Array assignment" }
+  i = maxloc(n) ! { dg-error "Different shape for array assignment" }
+  i = maxloc(n,dim=1) ! { dg-error "Different shape for array assignment" }
 !  print *,i
 end program

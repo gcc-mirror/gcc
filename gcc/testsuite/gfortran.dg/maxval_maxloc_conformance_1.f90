@@ -20,16 +20,16 @@ program main
   print *,sum(a,1,mask=lo) ! { dg-error "Incompatible ranks" }
   print *,product(a,1,mask=lo) ! { dg-error "Incompatible ranks" }
 
-  print *,minloc(a,mask=lo2) ! { dg-error "different shape" }
-  print *,maxloc(a,mask=lo2) ! { dg-error "different shape" }
-  print *,minval(a,mask=lo2) ! { dg-error "different shape" }
-  print *,maxval(a,mask=lo2) ! { dg-error "different shape" }
-  print *,sum(a,mask=lo2) ! { dg-error "different shape" }
-  print *,product(a,mask=lo2) ! { dg-error "different shape" }
-  print *,minloc(a,1,mask=lo2) ! { dg-error "different shape" }
-  print *,maxloc(a,1,mask=lo2) ! { dg-error "different shape" }
-  print *,minval(a,1,mask=lo2) ! { dg-error "different shape" }
-  print *,maxval(a,1,mask=lo2) ! { dg-error "different shape" }
-  print *,sum(a,1,mask=lo2) ! { dg-error "different shape" }
-  print *,product(a,1,mask=lo2) ! { dg-error "different shape" }
+  print *,minloc(a,mask=lo2) ! { dg-error "Different shape" }
+  print *,maxloc(a,mask=lo2) ! { dg-error "Different shape" }
+  print *,minval(a,mask=lo2) ! { dg-error "Different shape" }
+  print *,maxval(a,mask=lo2) ! { dg-error "Different shape" }
+  print *,sum(a,mask=lo2) ! { dg-error "Different shape" }
+  print *,product(a,mask=lo2) ! { dg-error "Different shape" }
+  print *,minloc(a,1,mask=lo2) ! { dg-error "Different shape" }
+  print *,maxloc(a,1,mask=lo2) ! { dg-error "Different shape" }
+  print *,minval(a,1,mask=lo2) ! { dg-error "Different shape" }
+  print *,maxval(a,1,mask=lo2) ! { dg-error "Different shape" }
+  print *,sum(a,1,mask=lo2) ! { dg-error "Different shape" }
+  print *,product(a,1,mask=lo2) ! { dg-error "Different shape" }
 end program main

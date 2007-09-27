@@ -20,32 +20,32 @@ program pr31919
   r4a = amin1(r4a, r4b)          ! { dg-error "Incompatible ranks" }
   r8a = dmin1(r8a, r8b)          ! { dg-error "Incompatible ranks" }
 
-  i4a = max(i4b, i4c)            ! { dg-error "different shape for arguments" }
-  i4a = max0(i4b, i4c)           ! { dg-error "different shape for arguments" }
-  r4a = amax0(i4b, i4c)          ! { dg-error "different shape for arguments" }
-  i4a = max1(r4b, r4c)           ! { dg-error "different shape for arguments" }
-  r4a = amax1(r4b, r4c)          ! { dg-error "different shape for arguments" }
-  r8a = dmax1(r8B, r8c)          ! { dg-error "different shape for arguments" }
+  i4a = max(i4b, i4c)            ! { dg-error "Different shape for arguments" }
+  i4a = max0(i4b, i4c)           ! { dg-error "Different shape for arguments" }
+  r4a = amax0(i4b, i4c)          ! { dg-error "Different shape for arguments" }
+  i4a = max1(r4b, r4c)           ! { dg-error "Different shape for arguments" }
+  r4a = amax1(r4b, r4c)          ! { dg-error "Different shape for arguments" }
+  r8a = dmax1(r8B, r8c)          ! { dg-error "Different shape for arguments" }
 
-  i4a = min(i4b, i4c)            ! { dg-error "different shape for arguments" }
-  i4a = min0(i4b, i4c)           ! { dg-error "different shape for arguments" }
-  i4a = amin0(i4b, i4c)          ! { dg-error "different shape for arguments" }
-  r4a = min1(r4b, r4c)           ! { dg-error "different shape for arguments" }
-  r4a = amin1(r4b, r4c)          ! { dg-error "different shape for arguments" }
-  r8a = dmin1(r8b, r8c)          ! { dg-error "different shape for arguments" }
+  i4a = min(i4b, i4c)            ! { dg-error "Different shape for arguments" }
+  i4a = min0(i4b, i4c)           ! { dg-error "Different shape for arguments" }
+  i4a = amin0(i4b, i4c)          ! { dg-error "Different shape for arguments" }
+  r4a = min1(r4b, r4c)           ! { dg-error "Different shape for arguments" }
+  r4a = amin1(r4b, r4c)          ! { dg-error "Different shape for arguments" }
+  r8a = dmin1(r8b, r8c)          ! { dg-error "Different shape for arguments" }
 
   ! checking needs to be position independent
   i4a = min(i4, i4a, i4, i4b)    ! { dg-error "Incompatible ranks" }
   r4a = min(r4, r4a, r4, r4b)    ! { dg-error "Incompatible ranks" }
   r8a = min(r8, r8a, r8, r8b)    ! { dg-error "Incompatible ranks" }
-  i4a = min(i4, i4b, i4, i4c)    ! { dg-error "different shape for arguments" }
-  r4a = min(r4, r4b, r4, r4c)    ! { dg-error "different shape for arguments" }
-  r8a = min(r8, r8b, r8, r8c)    ! { dg-error "different shape for arguments" }
+  i4a = min(i4, i4b, i4, i4c)    ! { dg-error "Different shape for arguments" }
+  r4a = min(r4, r4b, r4, r4c)    ! { dg-error "Different shape for arguments" }
+  r8a = min(r8, r8b, r8, r8c)    ! { dg-error "Different shape for arguments" }
 
   i4a = max(i4, i4a, i4, i4b)    ! { dg-error "Incompatible ranks" }
   r4a = max(r4, r4a, r4, r4b)    ! { dg-error "Incompatible ranks" }
   r8a = max(r8, r8a, r8, r8b)    ! { dg-error "Incompatible ranks" }
-  i4a = max(i4, i4b, i4, i4c)    ! { dg-error "different shape for arguments" }
-  r4a = max(r4, r4b, r4, r4c)    ! { dg-error "different shape for arguments" }
-  r8a = max(r8, r8b, r8, r8c)    ! { dg-error "different shape for arguments" }
+  i4a = max(i4, i4b, i4, i4c)    ! { dg-error "Different shape for arguments" }
+  r4a = max(r4, r4b, r4, r4c)    ! { dg-error "Different shape for arguments" }
+  r8a = max(r8, r8b, r8, r8c)    ! { dg-error "Different shape for arguments" }
 end program
