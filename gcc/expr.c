@@ -8001,21 +8001,21 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* All valid uses of __builtin_va_arg_pack () are removed during
 	 inlining.  */
       if (CALL_EXPR_VA_ARG_PACK (exp))
-	error ("invalid use of %<__builtin_va_arg_pack ()%>");
+	error ("%Kinvalid use of %<__builtin_va_arg_pack ()%>", exp);
       {
 	tree fndecl = get_callee_fndecl (exp), attr;
 
 	if (fndecl
 	    && (attr = lookup_attribute ("error",
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
-	  error ("call to %qs declared with attribute error: %s",
-		 lang_hooks.decl_printable_name (fndecl, 1),
+	  error ("%Kcall to %qs declared with attribute error: %s",
+		 exp, lang_hooks.decl_printable_name (fndecl, 1),
 		 TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 	if (fndecl
 	    && (attr = lookup_attribute ("warning",
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
-	  warning (0, "call to %qs declared with attribute warning: %s",
-		   lang_hooks.decl_printable_name (fndecl, 1),
+	  warning (0, "%Kcall to %qs declared with attribute warning: %s",
+		   exp, lang_hooks.decl_printable_name (fndecl, 1),
 		   TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 
 	/* Check for a built-in function.  */

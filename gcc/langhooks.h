@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be #include-d after tree.h.  */
 
 struct diagnostic_context;
+struct diagnostic_info;
 
 struct gimplify_omp_ctx;
 
@@ -367,7 +368,8 @@ struct lang_hooks
   tree (*lang_get_callee_fndecl) (const_tree);
 
   /* Called by report_error_function to print out function name.  */
-  void (*print_error_function) (struct diagnostic_context *, const char *);
+  void (*print_error_function) (struct diagnostic_context *, const char *,
+				struct diagnostic_info *);
 
   /* Called from expr_size to calculate the size of the value of an
      expression in a language-dependent way.  Returns a tree for the size

@@ -1,3 +1,12 @@
+2007-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* error.c (cxx_print_error_function): Add third argument, pass
+	it over to lhd_print_error_function.
+	(cp_print_error_function): If diagnostic->abstract_origin, print
+	virtual backtrace.
+	* cp-tree.h (struct diagnostic_info): New forward decl.
+	(cxx_print_error_function): Add third argument.
+
 2007-09-25  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/33207

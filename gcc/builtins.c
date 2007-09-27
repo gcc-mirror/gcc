@@ -6273,13 +6273,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_VA_ARG_PACK:
       /* All valid uses of __builtin_va_arg_pack () are removed during
 	 inlining.  */
-      error ("invalid use of %<__builtin_va_arg_pack ()%>");
+      error ("%Kinvalid use of %<__builtin_va_arg_pack ()%>", exp);
       return const0_rtx;
 
     case BUILT_IN_VA_ARG_PACK_LEN:
       /* All valid uses of __builtin_va_arg_pack_len () are removed during
 	 inlining.  */
-      error ("invalid use of %<__builtin_va_arg_pack_len ()%>");
+      error ("%Kinvalid use of %<__builtin_va_arg_pack_len ()%>", exp);
       return const0_rtx;
 
       /* Return the address of the first anonymous stack arg.  */
@@ -11466,12 +11466,11 @@ expand_builtin_object_size (tree exp)
   tree ost;
   int object_size_type;
   tree fndecl = get_callee_fndecl (exp);
-  location_t locus = EXPR_LOCATION (exp);
 
   if (!validate_arglist (exp, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     {
-      error ("%Hfirst argument of %D must be a pointer, second integer constant",
-	     &locus, fndecl);
+      error ("%Kfirst argument of %D must be a pointer, second integer constant",
+	     exp, fndecl);
       expand_builtin_trap ();
       return const0_rtx;
     }
@@ -11483,8 +11482,8 @@ expand_builtin_object_size (tree exp)
       || tree_int_cst_sgn (ost) < 0
       || compare_tree_int (ost, 3) > 0)
     {
-      error ("%Hlast argument of %D is not integer constant between 0 and 3",
-	     &locus, fndecl);
+      error ("%Klast argument of %D is not integer constant between 0 and 3",
+	     exp, fndecl);
       expand_builtin_trap ();
       return const0_rtx;
     }
@@ -11527,9 +11526,8 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
 
       if (! integer_all_onesp (size) && tree_int_cst_lt (size, len))
 	{
-	  location_t locus = EXPR_LOCATION (exp);
-	  warning (0, "%Hcall to %D will always overflow destination buffer",
-		   &locus, get_callee_fndecl (exp));
+	  warning (0, "%Kcall to %D will always overflow destination buffer",
+		   exp, get_callee_fndecl (exp));
 	  return NULL_RTX;
 	}
 
@@ -11636,7 +11634,6 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
 {
   int is_strlen = 0;
   tree len, size;
-  location_t locus;
 
   switch (fcode)
     {
@@ -11683,9 +11680,8 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
       src = c_strlen (src, 1);
       if (! src || ! host_integerp (src, 1))
 	{
-	  locus = EXPR_LOCATION (exp);
-	  warning (0, "%Hcall to %D might overflow destination buffer",
-		   &locus, get_callee_fndecl (exp));
+	  warning (0, "%Kcall to %D might overflow destination buffer",
+		   exp, get_callee_fndecl (exp));
 	  return;
 	}
       else if (tree_int_cst_lt (src, size))
@@ -11694,9 +11690,8 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
   else if (! host_integerp (len, 1) || ! tree_int_cst_lt (size, len))
     return;
 
-  locus = EXPR_LOCATION (exp);
-  warning (0, "%Hcall to %D will always overflow destination buffer",
-	   &locus, get_callee_fndecl (exp));
+  warning (0, "%Kcall to %D will always overflow destination buffer",
+	   exp, get_callee_fndecl (exp));
 }
 
 /* Emit warning if a buffer overflow is detected at compile time
@@ -11754,9 +11749,8 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 
   if (! tree_int_cst_lt (len, size))
     {
-      location_t locus = EXPR_LOCATION (exp);
-      warning (0, "%Hcall to %D will always overflow destination buffer",
-	       &locus, get_callee_fndecl (exp));
+      warning (0, "%Kcall to %D will always overflow destination buffer",
+	       exp, get_callee_fndecl (exp));
     }
 }
 

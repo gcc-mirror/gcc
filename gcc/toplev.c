@@ -434,7 +434,7 @@ announce_function (tree decl)
 	fprintf (stderr, " %s", lang_hooks.decl_printable_name (decl, 2));
       fflush (stderr);
       pp_needs_newline (global_dc->printer) = true;
-      diagnostic_set_last_function (global_dc);
+      diagnostic_set_last_function (global_dc, (diagnostic_info *) NULL);
     }
 }
 

@@ -1,3 +1,7 @@
+2007-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.c (java_print_error_function): Add third argument.
+
 2007-09-15  Tom Tromey  <tromey@redhat.com>
 
 	* java-tree.h (struct lang_decl_func) <function_decl_body>:

@@ -54,7 +54,8 @@ static bool java_post_options (const char **);
 static int java_handle_option (size_t scode, const char *arg, int value);
 static void put_decl_string (const char *, int);
 static void put_decl_node (tree);
-static void java_print_error_function (diagnostic_context *, const char *);
+static void java_print_error_function (diagnostic_context *, const char *,
+				       diagnostic_info *);
 static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
 static bool java_dump_tree (void *, tree);
@@ -489,7 +490,8 @@ static GTY(()) tree last_error_function_context;
 static GTY(()) tree last_error_function;
 static void
 java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
-			   const char *file)
+			   const char *file,
+			   diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {
   /* Don't print error messages with bogus function prototypes.  */
   if (inhibit_error_function_printing)

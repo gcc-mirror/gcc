@@ -1,3 +1,35 @@
+2007-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin, expand_builtin_object_size,
+	expand_builtin_memory_chk, maybe_emit_chk_warning,
+	maybe_emit_sprintf_chk_warning): Use new %K format string specifier
+	for diagnostics.
+	* expr.c (expand_expr_real_1): Likewise.
+	* langhooks-def.h (struct diagnostic_info): Add forward decl.
+	(lhd_print_error_function): Add third argument.
+	* langhooks.h (struct diagnostic_info): Add forward decl.
+	(struct lang_hooks): Add third argument to print_error_function.
+	* diagnostic.h (diagnostic_info): Add abstract_origin field.
+	(diagnostic_last_function_changed, diagnostic_set_last_function): Add
+	second argument.
+	(diagnostic_report_current_function): Likewise.
+	* toplev.c (announce_function): Pass NULL as second argument to
+	diagnostic_set_last_function.
+	* diagnostic.c (diagnostic_report_current_function): Add second
+	argument, pass it as third argument to lang_hooks.print_error_function.
+	(default_diagnostic_starter): Pass DIAGNOSTIC as second argument
+	to diagnostic_report_current_function.
+	(diagnostic_report_diagnostic): Initialize diagnostic->abstract_origin
+	and message.abstract_origin.
+	(verbatim): Initialize abstract_origin.
+	* pretty-print.h (text_info): Add abstract_origin field.
+	* pretty-print.c (pp_base_format): Handle %K.
+	* langhooks.c (lhd_print_error_function): Add third argument.  If
+	diagnostic->abstract_origin, print virtual backtrace.
+	* c-format.c (gcc_diag_char_table, gcc_tdiag_char_table,
+	gcc_cdiag_char_table, gcc_cxxdiag_char_table): Support %K.
+	(init_dynamic_diag_info): Likewise.
+
 2007-09-26  David Daney  <ddaney@avtrex.com>
 
 	PR target/33479

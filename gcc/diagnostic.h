@@ -37,10 +37,13 @@ typedef enum
 /* A diagnostic is described by the MESSAGE to send, the FILE and LINE of
    its context and its KIND (ice, error, warning, note, ...)  See complete
    list in diagnostic.def.  */
-typedef struct
+typedef struct diagnostic_info
 {
   text_info message;
   location_t location;
+  /* TREE_BLOCK if the diagnostic is to be reported in some inline
+     function inlined into other function, otherwise NULL.  */
+  tree abstract_origin;
   /* The kind of diagnostic it is about.  */
   diagnostic_t kind;
   /* Which OPT_* directly controls this diagnostic.  */
@@ -137,13 +140,15 @@ struct diagnostic_context
 
 /* True if the last function in which a diagnostic was reported is
    different from the current one.  */
-#define diagnostic_last_function_changed(DC) \
-  ((DC)->last_function != current_function_decl)
+#define diagnostic_last_function_changed(DC, DI) \
+  ((DC)->last_function != ((DI)->abstract_origin \
+			   ? (DI)->abstract_origin : current_function_decl))
 
 /* Remember the current function as being the last one in which we report
    a diagnostic.  */
-#define diagnostic_set_last_function(DC) \
-  (DC)->last_function = current_function_decl
+#define diagnostic_set_last_function(DC, DI) \
+  (DC)->last_function = (((DI) && (DI)->abstract_origin) \
+			 ? (DI)->abstract_origin : current_function_decl)
 
 /* True if the last module or file in which a diagnostic was reported is
    different from the current one.  */
@@ -185,7 +190,8 @@ extern diagnostic_context *global_dc;
 /* Diagnostic related functions.  */
 extern void diagnostic_initialize (diagnostic_context *);
 extern void diagnostic_report_current_module (diagnostic_context *);
-extern void diagnostic_report_current_function (diagnostic_context *);
+extern void diagnostic_report_current_function (diagnostic_context *,
+						diagnostic_info *);
 
 /* Force diagnostics controlled by OPTIDX to be kind KIND.  */
 extern diagnostic_t diagnostic_classify_diagnostic (diagnostic_context *,

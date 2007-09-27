@@ -1,3 +1,8 @@
+2007-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/prune.exp: Prune also "^In function .*$" lines and
+	"^    inlined from .*$" lines.
+
 2007-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33563

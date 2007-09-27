@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hooks.h"
 
 struct diagnostic_context;
+struct diagnostic_info;
 
 /* Note to creators of new hooks:
 
@@ -53,7 +54,7 @@ extern int lhd_types_compatible_p (tree, tree);
 extern rtx lhd_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 extern int lhd_expand_decl (tree);
 extern void lhd_print_error_function (struct diagnostic_context *,
-				      const char *);
+				      const char *, struct diagnostic_info *);
 extern void lhd_set_decl_assembler_name (tree);
 extern bool lhd_warn_unused_global_decl (const_tree);
 extern void lhd_incomplete_type_error (const_tree, const_tree);

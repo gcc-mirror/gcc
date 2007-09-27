@@ -561,7 +561,7 @@ static const format_char_info gcc_diag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   /* These will require a "tree" at runtime.  */
-  { "J", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    "",   NULL },
+  { "JK", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    "",   NULL },
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
@@ -584,7 +584,7 @@ static const format_char_info gcc_tdiag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   /* These will require a "tree" at runtime.  */
-  { "DFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "DFJKT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
@@ -607,7 +607,7 @@ static const format_char_info gcc_cdiag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   /* These will require a "tree" at runtime.  */
-  { "DEFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+  { "DEFJKT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
 
   { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
@@ -630,7 +630,7 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
 
   /* These will require a "tree" at runtime.  */
-  { "ADEFJTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
+  { "ADEFJKTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
@@ -2611,6 +2611,9 @@ init_dynamic_diag_info (void)
 	  i = find_char_info_specifier_index (diag_fci, 'J');
 	  diag_fci[i].types[0].type = &t;
 	  diag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (diag_fci, 'K');
+	  diag_fci[i].types[0].type = &t;
+	  diag_fci[i].pointer_count = 1;
 	}
 
       /* Handle the __gcc_tdiag__ format specifics.  */
@@ -2633,6 +2636,9 @@ init_dynamic_diag_info (void)
 	  tdiag_fci[i].types[0].type = &t;
 	  tdiag_fci[i].pointer_count = 1;
 	  i = find_char_info_specifier_index (tdiag_fci, 'J');
+	  tdiag_fci[i].types[0].type = &t;
+	  tdiag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (tdiag_fci, 'K');
 	  tdiag_fci[i].types[0].type = &t;
 	  tdiag_fci[i].pointer_count = 1;
 	}
@@ -2659,6 +2665,9 @@ init_dynamic_diag_info (void)
 	  i = find_char_info_specifier_index (cdiag_fci, 'J');
 	  cdiag_fci[i].types[0].type = &t;
 	  cdiag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (cdiag_fci, 'K');
+	  cdiag_fci[i].types[0].type = &t;
+	  cdiag_fci[i].pointer_count = 1;
 	}
 
       /* Handle the __gcc_cxxdiag__ format specifics.  */
@@ -2681,6 +2690,9 @@ init_dynamic_diag_info (void)
 	  cxxdiag_fci[i].types[0].type = &t;
 	  cxxdiag_fci[i].pointer_count = 1;
 	  i = find_char_info_specifier_index (cxxdiag_fci, 'J');
+	  cxxdiag_fci[i].types[0].type = &t;
+	  cxxdiag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (cxxdiag_fci, 'K');
 	  cxxdiag_fci[i].types[0].type = &t;
 	  cxxdiag_fci[i].pointer_count = 1;
 	}
