@@ -1,3 +1,18 @@
+2007-09-27  Ian Lance Taylor  <iant@google.com>
+
+	PR tree-optimization/33565
+	* tree-ssa-loop-ch.c (copy_loop_headers): Set TREE_NO_WARNING on
+	assignments of comparisons.
+	* tree-ssa-sccvn.c (simplify_binary_expression): Add stmt
+	parameter.  Change caller.  Defer overflow warnings around call to
+	fold_binary.
+	* fold-const.c (fold_undefer_overflow_warnings): Don't warn if
+	TREE_NO_WARNING is set on the statement.
+	* tree-ssa-forwprop.c
+	(tree_ssa_forward_propagate_single_use_vars): Don't test
+	TREE_NO_WARNING when calling fold_undefer_overflow_warnings.
+	* tree-cfg.c (fold_cond_expr_cond): Likewise.
+
 2007-09-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_address): Do not
