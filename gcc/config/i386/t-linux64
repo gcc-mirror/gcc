@@ -4,7 +4,7 @@
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
 		 $(srcdir)/config/i386/libgcc-x86_64-glibc.ver
 
-# On Debian, Ubuntu and other derivitive distributions, the 32bit libraries
+# On Debian, Ubuntu and other derivative distributions, the 32bit libraries
 # are found in /lib32 and /usr/lib32, /lib64 and /usr/lib64 are symlinks to
 # /lib and /usr/lib, while other distributions install libraries into /lib64
 # and /usr/lib64.  The LSB does not enforce the use of /lib64 and /usr/lib64,
