@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "bid_conf.h"
 #include "bid_functions.h"
+#include "bid_gcc_intrinsics.h"
 
 CMPtype
 __bid_eqtd2 (_Decimal128 x, _Decimal128 y) {

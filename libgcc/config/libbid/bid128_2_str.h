@@ -26,13 +26,13 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-extern UINT64 __bid_Twoto60_m_10to18;
-extern UINT64 __bid_Twoto60;
-extern UINT64 __bid_Inv_Tento9;
-extern UINT32 __bid_Twoto30_m_10to9;
-extern UINT32 __bid_Tento9;
-extern UINT32 __bid_Tento6;
-extern UINT32 __bid_Tento3;
+extern UINT64 Twoto60_m_10to18;
+extern UINT64 Twoto60;
+extern UINT64 Inv_Tento9;
+extern UINT32 Twoto30_m_10to9;
+extern UINT32 Tento9;
+extern UINT32 Tento6;
+extern UINT32 Tento3;
 
-extern char __bid_midi_tbl[1000][3];
-extern UINT64 __bid_mod10_18_tbl[9][128];
+extern char midi_tbl[1000][3];
+extern UINT64 mod10_18_tbl[9][128];

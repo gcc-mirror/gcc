@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "bid_conf.h"
 #include "bid_functions.h"
+#include "bid_gcc_intrinsics.h"
 
 _Decimal32
 __bid_mulsd3 (_Decimal32 x, _Decimal32 y) {

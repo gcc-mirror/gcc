@@ -50,7 +50,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #if DECIMAL_CALL_BY_REFERENCE
 
 void
-__bid64_mul (UINT64 * pres, UINT64 * px,
+bid64_mul (UINT64 * pres, UINT64 * px,
 	   UINT64 *
 	   py _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
 	   _EXC_INFO_PARAM) {
@@ -58,7 +58,7 @@ __bid64_mul (UINT64 * pres, UINT64 * px,
 #else
 
 UINT64
-__bid64_mul (UINT64 x,
+bid64_mul (UINT64 x,
 	   UINT64 y _RND_MODE_PARAM _EXC_FLAGS_PARAM
 	   _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
@@ -67,7 +67,7 @@ __bid64_mul (UINT64 x,
   UINT64 C64, remainder_h, carry, CY, res;
   UINT64 valid_x, valid_y;
   int_double tempx, tempy;
-  int extra_digits, exponent_x = 0, exponent_y = 0, bin_expon_cx, bin_expon_cy,
+  int extra_digits, exponent_x, exponent_y, bin_expon_cx, bin_expon_cy,
     bin_expon_product;
   int rmode, digits_p, bp, amount, amount2, final_exponent, round_up;
   unsigned status, uf_status;
@@ -98,13 +98,13 @@ __bid64_mul (UINT64 x,
       if ((x & SNAN_MASK64) == SNAN_MASK64)	// sNaN
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
-      BID_RETURN (x & QUIET_MASK64);
+      BID_RETURN (coefficient_x & QUIET_MASK64);
     }
     // x is Infinity?
     if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
       // check if y is 0
-      if (((y & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64)
-	  && !(y << (64 - 53))) {
+      if (((y & INFINITY_MASK64) != INFINITY_MASK64)
+	  && !coefficient_y) {
 #ifdef SET_STATUS_FLAGS
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
@@ -114,7 +114,7 @@ __bid64_mul (UINT64 x,
       // check if y is NaN
       if ((y & NAN_MASK64) == NAN_MASK64)
 	// y==NaN , return NaN
-	BID_RETURN (y & QUIET_MASK64);
+	BID_RETURN (coefficient_y & QUIET_MASK64);
       // otherwise return +/-Inf
       BID_RETURN (((x ^ y) & 0x8000000000000000ull) | INFINITY_MASK64);
     }
@@ -143,13 +143,12 @@ __bid64_mul (UINT64 x,
       if ((y & SNAN_MASK64) == SNAN_MASK64)	// sNaN
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
-      BID_RETURN (y & QUIET_MASK64);
+      BID_RETURN (coefficient_y & QUIET_MASK64);
     }
     // y is Infinity?
     if ((y & INFINITY_MASK64) == INFINITY_MASK64) {
       // check if x is 0
-      if (((x & SPECIAL_ENCODING_MASK64) != SPECIAL_ENCODING_MASK64)
-	  && !(x << (64 - 53))) {
+      if (!coefficient_x) {
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 	// x==0, return NaN
 	BID_RETURN (NAN_MASK64);
@@ -200,9 +199,9 @@ __bid64_mul (UINT64 x,
     __tight_bin_range_128 (bp, P, bin_expon_product);
 
     // get number of decimal digits in the product
-    digits_p = __bid_estimate_decimal_digits[bp];
-    if (!(__unsigned_compare_gt_128 (__bid_power10_table_128[digits_p], P)))
-      digits_p++;	// if __bid_power10_table_128[digits_p] <= P
+    digits_p = estimate_decimal_digits[bp];
+    if (!(__unsigned_compare_gt_128 (power10_table_128[digits_p], P)))
+      digits_p++;	// if power10_table_128[digits_p] <= P
 
     // determine number of decimal digits to be rounded out
     extra_digits = digits_p - MAX_FORMAT_DIGITS;
@@ -236,18 +235,18 @@ __bid64_mul (UINT64 x,
 
 	uf_status = UNDERFLOW_EXCEPTION;
 	if (final_exponent == -1) {
-	  __add_128_64 (PU, P, __bid_round_const_table[rmode][extra_digits]);
+	  __add_128_64 (PU, P, round_const_table[rmode][extra_digits]);
 	  if (__unsigned_compare_ge_128
-	      (PU, __bid_power10_table_128[extra_digits + 16]))
+	      (PU, power10_table_128[extra_digits + 16]))
 	    uf_status = 0;
 	}
 	extra_digits -= final_exponent;
 	final_exponent = 0;
 
 	if (extra_digits > 17) {
-	  __mul_128x128_full (Q_high, Q_low, P, __bid_reciprocals10_128[16]);
+	  __mul_128x128_full (Q_high, Q_low, P, reciprocals10_128[16]);
 
-	  amount = __bid_recip_scale[16];
+	  amount = recip_scale[16];
 	  __shr_128 (P, Q_high, amount);
 
 	  // get sticky bits
@@ -258,11 +257,11 @@ __bid64_mul (UINT64 x,
 	  remainder_h = remainder_h & Q_high.w[0];
 
 	  extra_digits -= 16;
-	  if (remainder_h || (Q_low.w[1] > __bid_reciprocals10_128[16].w[1]
+	  if (remainder_h || (Q_low.w[1] > reciprocals10_128[16].w[1]
 			      || (Q_low.w[1] ==
-				  __bid_reciprocals10_128[16].w[1]
+				  reciprocals10_128[16].w[1]
 				  && Q_low.w[0] >=
-				  __bid_reciprocals10_128[16].w[0]))) {
+				  reciprocals10_128[16].w[0]))) {
 	    round_up = 1;
 	    __set_status_flags (pfpsf,
 				UNDERFLOW_EXCEPTION |
@@ -287,14 +286,14 @@ __bid64_mul (UINT64 x,
 
       // add a constant to P, depending on rounding mode
       // 0.5*10^(digits_p - 16) for round-to-nearest
-      __add_128_64 (P, P, __bid_round_const_table[rmode][extra_digits]);
+      __add_128_64 (P, P, round_const_table[rmode][extra_digits]);
 
       // get P*(2^M[extra_digits])/10^extra_digits
       __mul_128x128_full (Q_high, Q_low, P,
-			  __bid_reciprocals10_128[extra_digits]);
+			  reciprocals10_128[extra_digits]);
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
-      amount = __bid_recip_scale[extra_digits];
+      amount = recip_scale[extra_digits];
       __shr_128 (C128, Q_high, amount);
 
       C64 = __low_64 (C128);
@@ -305,7 +304,7 @@ __bid64_mul (UINT64 x,
 #endif
 	if ((C64 & 1) && !round_up) {
 	  // check whether fractional part of initial_P/10^extra_digits 
-          // is exactly .5
+	  // is exactly .5
 	  // this is the same as fractional part of 
 	  // (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
@@ -314,10 +313,10 @@ __bid64_mul (UINT64 x,
 
 	  // test whether fractional part is 0
 	  if (!remainder_h
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0]))) {
+		      reciprocals10_128[extra_digits].w[0]))) {
 	    C64--;
 	  }
 	}
@@ -334,27 +333,27 @@ __bid64_mul (UINT64 x,
       case ROUNDING_TIES_AWAY:
 	// test whether fractional part is 0
 	if (remainder_h == 0x8000000000000000ull
-	    && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		|| (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	    && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		|| (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		    && Q_low.w[0] <
-		    __bid_reciprocals10_128[extra_digits].w[0])))
+		    reciprocals10_128[extra_digits].w[0])))
 	  status = EXACT_STATUS;
 	break;
       case ROUNDING_DOWN:
       case ROUNDING_TO_ZERO:
 	if (!remainder_h
-	    && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		|| (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	    && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		|| (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		    && Q_low.w[0] <
-		    __bid_reciprocals10_128[extra_digits].w[0])))
+		    reciprocals10_128[extra_digits].w[0])))
 	  status = EXACT_STATUS;
 	break;
       default:
 	// round up
 	__add_carry_out (Stemp.w[0], CY, Q_low.w[0],
-			 __bid_reciprocals10_128[extra_digits].w[0]);
+			 reciprocals10_128[extra_digits].w[0]);
 	__add_carry_in_out (Stemp.w[1], carry, Q_low.w[1],
-			    __bid_reciprocals10_128[extra_digits].w[1], CY);
+			    reciprocals10_128[extra_digits].w[1], CY);
 	if ((remainder_h >> (64 - amount)) + carry >=
 	    (((UINT64) 1) << amount))
 	  status = EXACT_STATUS;

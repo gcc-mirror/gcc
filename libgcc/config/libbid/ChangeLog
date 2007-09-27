@@ -1,3 +1,200 @@
+2007-09-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* bid128_fromstring.c: Removed.
+
+	* bid_dpd.c: New from libbid 2007-09-26.
+	* bid128_to_int16.c: Likewise.
+	* bid128_to_int8.c: Likewise.
+	* bid128_to_uint8.c: Likewise.
+	* bid128_to_uint16.c: Likewise.
+	* bid64_to_int16.c: Likewise.
+	* bid64_to_int8.c: Likewise.
+	* bid64_to_uint16.c: Likewise.
+	* bid64_to_uint8.c: Likewise.
+
+	* bid128_2_str.h: Updated from libbid 2007-09-26.
+	* bid128_2_str_macros.h: Likewise.
+	* bid128_2_str_tables.c: Likewise.
+	* bid128_add.c: Likewise.
+	* bid128.c: Likewise.
+	* bid128_compare.c: Likewise.
+	* bid128_div.c: Likewise.
+	* bid128_fma.c: Likewise.
+	* bid128_logb.c: Likewise.
+	* bid128_minmax.c: Likewise.
+	* bid128_mul.c: Likewise.
+	* bid128_next.c: Likewise.
+	* bid128_noncomp.c: Likewise.
+	* bid128_quantize.c: Likewise.
+	* bid128_rem.c: Likewise.
+	* bid128_round_integral.c: Likewise.
+	* bid128_scalb.c: Likewise.
+	* bid128_sqrt.c: Likewise.
+	* bid128_string.c: Likewise.
+	* bid128_to_int32.c: Likewise.
+	* bid128_to_int64.c: Likewise.
+	* bid128_to_uint32.c: Likewise.
+	* bid128_to_uint64.c: Likewise.
+	* bid32_to_bid128.c: Likewise.
+	* bid32_to_bid64.c: Likewise.
+	* bid64_add.c: Likewise.
+	* bid64_compare.c: Likewise.
+	* bid64_div.c: Likewise.
+	* bid64_fma.c: Likewise.
+	* bid64_logb.c: Likewise.
+	* bid64_minmax.c: Likewise.
+	* bid64_mul.c: Likewise.
+	* bid64_next.c: Likewise.
+	* bid64_noncomp.c: Likewise.
+	* bid64_quantize.c: Likewise.
+	* bid64_rem.c: Likewise.
+	* bid64_round_integral.c: Likewise.
+	* bid64_scalb.c: Likewise.
+	* bid64_sqrt.c: Likewise.
+	* bid64_string.c: Likewise.
+	* bid64_to_bid128.c: Likewise.
+	* bid64_to_int32.c: Likewise.
+	* bid64_to_int64.c: Likewise.
+	* bid64_to_uint32.c: Likewise.
+	* bid64_to_uint64.c: Likewise.
+	* bid_b2d.h: Likewise.
+	* bid_binarydecimal.c: Likewise.
+	* bid_conf.h: Likewise.
+	* bid_convert_data.c: Likewise.
+	* bid_decimal_data.c: Likewise.
+	* bid_decimal_globals.c: Likewise.
+	* bid_div_macros.h: Likewise.
+	* bid_flag_operations.c: Likewise.
+	* bid_from_int.c: Likewise.
+	* bid_functions.h: Likewise.
+	* bid_gcc_intrinsics.h: Likewise.
+	* bid_inline_add.h: Likewise.
+	* bid_internal.h: Likewise.
+	* bid_round.c: Likewise.
+	* bid_sqrt_macros.h: Likewise.
+	* _addsub_dd.c: Likewise.
+	* _addsub_sd.c: Likewise.
+	* _addsub_td.c: Likewise.
+	* _dd_to_df.c: Likewise.
+	* _dd_to_di.c: Likewise.
+	* _dd_to_sd.c: Likewise.
+	* _dd_to_sf.c: Likewise.
+	* _dd_to_si.c: Likewise.
+	* _dd_to_td.c: Likewise.
+	* _dd_to_tf.c: Likewise.
+	* _dd_to_udi.c: Likewise.
+	* _dd_to_usi.c: Likewise.
+	* _dd_to_xf.c: Likewise.
+	* _df_to_dd.c: Likewise.
+	* _df_to_sd.c: Likewise.
+	* _df_to_td.c: Likewise.
+	* _di_to_dd.c: Likewise.
+	* _di_to_sd.c: Likewise.
+	* _di_to_td.c: Likewise.
+	* _div_dd.c: Likewise.
+	* _div_sd.c: Likewise.
+	* _div_td.c: Likewise.
+	* _eq_dd.c: Likewise.
+	* _eq_sd.c: Likewise.
+	* _eq_td.c: Likewise.
+	* _ge_dd.c: Likewise.
+	* _ge_sd.c: Likewise.
+	* _ge_td.c: Likewise.
+	* _gt_dd.c: Likewise.
+	* _gt_sd.c: Likewise.
+	* _gt_td.c: Likewise.
+	* _isinfd128.c: Likewise.
+	* _isinfd32.c: Likewise.
+	* _isinfd64.c: Likewise.
+	* _le_dd.c: Likewise.
+	* _le_sd.c: Likewise.
+	* _le_td.c: Likewise.
+	* _lt_dd.c: Likewise.
+	* _lt_sd.c: Likewise.
+	* _lt_td.c: Likewise.
+	* _mul_dd.c: Likewise.
+	* _mul_sd.c: Likewise.
+	* _mul_td.c: Likewise.
+	* _ne_dd.c: Likewise.
+	* _ne_sd.c: Likewise.
+	* _ne_td.c: Likewise.
+	* _sd_to_dd.c: Likewise.
+	* _sd_to_df.c: Likewise.
+	* _sd_to_di.c: Likewise.
+	* _sd_to_sf.c: Likewise.
+	* _sd_to_si.c: Likewise.
+	* _sd_to_td.c: Likewise.
+	* _sd_to_tf.c: Likewise.
+	* _sd_to_udi.c: Likewise.
+	* _sd_to_usi.c: Likewise.
+	* _sd_to_xf.c: Likewise.
+	* _sf_to_dd.c: Likewise.
+	* _sf_to_sd.c: Likewise.
+	* _sf_to_td.c: Likewise.
+	* _si_to_dd.c: Likewise.
+	* _si_to_sd.c: Likewise.
+	* _si_to_td.c: Likewise.
+	* _td_to_dd.c: Likewise.
+	* _td_to_df.c: Likewise.
+	* _td_to_di.c: Likewise.
+	* _td_to_sd.c: Likewise.
+	* _td_to_sf.c: Likewise.
+	* _td_to_si.c: Likewise.
+	* _td_to_tf.c: Likewise.
+	* _td_to_udi.c: Likewise.
+	* _td_to_usi.c: Likewise.
+	* _td_to_xf.c: Likewise.
+	* _tf_to_dd.c: Likewise.
+	* _tf_to_sd.c: Likewise.
+	* _tf_to_td.c: Likewise.
+	* _udi_to_dd.c: Likewise.
+	* _udi_to_sd.c: Likewise.
+	* _udi_to_td.c: Likewise.
+	* _unord_dd.c: Likewise.
+	* _unord_sd.c: Likewise.
+	* _unord_td.c: Likewise.
+	* _usi_to_dd.c: Likewise.
+	* _usi_to_sd.c: Likewise.
+	* _usi_to_td.c: Likewise.
+	* _xf_to_dd.c: Likewise.
+	* _xf_to_sd.c: Likewise.
+	* _xf_to_td.c: Likewise.
+
+2007-09-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* b2d.h: Renamed to ...
+	* bid_b2d.h: This.
+
+	* bid128_to_string.c: Renamed to ...
+	* bid128_string.c: This.
+
+	* bid_intrinsics.h: Renamed to ...
+	* bid_gcc_intrinsics.h: This.
+
+	* bid_string.c: Renamed to ...
+	* bid64_string.c: This.
+
+	* binarydecimal.c: Renamed to ...
+	* bid_decimal_globals.c: This.
+
+	* convert_data.c: Renamed to ...
+	* bid_convert_data.c: This.
+
+	* decimal_data.c: Renamed to ...
+	* bid_decimal_data.c: This.
+
+	* decimal_globals.c: Renamed to ...
+	* bid_decimal_globals.c: This.
+
+	* div_macros.h: Renamed to ...
+	* bid_div_macros.h: This.
+
+	* inline_bid_add.h: Renamed to ...
+	* bid_inline_add.h: This.
+
+	* sqrt_macros.h: Renamed to ...
+	* bid_sqrt_macros.h: This.
+
 2007-07-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Updated from Intel BID library:

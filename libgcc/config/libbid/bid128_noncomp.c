@@ -31,34 +31,34 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /*****************************************************************************
  *
  *    BID128 non-computational functions:
- *         - __bid128_isSigned
- *         - __bid128_isNormal
- *         - __bid128_isSubnormal
- *         - __bid128_isFinite
- *         - __bid128_isZero
- *         - __bid128_isInf
- *         - __bid128_isSignaling
- *         - __bid128_isCanonical
- *         - __bid128_isNaN
- *         - __bid128_copy
- *         - __bid128_negate
- *         - __bid128_abs
- *         - __bid128_copySign
- *         - __bid128_class
- *         - __bid128_totalOrder
- *         - __bid128_totalOrderMag
- *         - __bid128_sameQuantum
- *         - __bid128_radix
+ *         - bid128_isSigned
+ *         - bid128_isNormal
+ *         - bid128_isSubnormal
+ *         - bid128_isFinite
+ *         - bid128_isZero
+ *         - bid128_isInf
+ *         - bid128_isSignaling
+ *         - bid128_isCanonical
+ *         - bid128_isNaN
+ *         - bid128_copy
+ *         - bid128_negate
+ *         - bid128_abs
+ *         - bid128_copySign
+ *         - bid128_class
+ *         - bid128_totalOrder
+ *         - bid128_totalOrderMag
+ *         - bid128_sameQuantum
+ *         - bid128_radix
  ****************************************************************************/
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isSigned (int *pres,
-                 UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isSigned (int *pres,
+		 UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isSigned (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isSigned (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -69,19 +69,19 @@ __bid128_isSigned (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // return 1 iff x is not zero, nor NaN nor subnormal nor infinity
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isNormal (int *pres,
-                 UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isNormal (int *pres,
+		 UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT64 x_exp, C1_hi, C1_lo;
   BID_UI64DOUBLE tmp1;
   int exp, q, x_nr_bits;
 
-  BID_SWAP128(x);
+  BID_SWAP128 (x);
   // test for special values - infinity or NaN
   if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
@@ -89,7 +89,7 @@ __bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
     BID_RETURN (res);
   }
   // unpack x 
-  x_exp = x.w[1] & MASK_EXP; // biased and shifted left 49 bit positions
+  x_exp = x.w[1] & MASK_EXP;	// biased and shifted left 49 bit positions
   C1_hi = x.w[1] & MASK_COEFF;
   C1_lo = x.w[0];
   // test for zero
@@ -99,9 +99,9 @@ __bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   }
   // test for non-canonical values of the argument x
   if ((((C1_hi > 0x0001ed09bead87c0ull)
-       || ((C1_hi == 0x0001ed09bead87c0ull)
-           && (C1_lo > 0x378d8e63ffffffffull)))
-      && ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull))
+	|| ((C1_hi == 0x0001ed09bead87c0ull)
+	    && (C1_lo > 0x378d8e63ffffffffull)))
+       && ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull))
       || ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull)) {
     res = 0;
     BID_RETURN (res);
@@ -111,33 +111,33 @@ __bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   // q = nr. of decimal digits in x
   // determine first the nr. of bits in x
   if (C1_hi == 0) {
-    if (C1_lo >= 0x0020000000000000ull) { // x >= 2^53
+    if (C1_lo >= 0x0020000000000000ull) {	// x >= 2^53
       // split the 64-bit value in two 32-bit halves to avoid rounding errors
-      if (C1_lo >= 0x0000000100000000ull) { // x >= 2^32
-        tmp1.d = (double) (C1_lo >> 32); // exact conversion
-        x_nr_bits =
-          33 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
-      } else { // x < 2^32
-        tmp1.d = (double) (C1_lo); // exact conversion
-        x_nr_bits =
-          1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
+      if (C1_lo >= 0x0000000100000000ull) {	// x >= 2^32
+	tmp1.d = (double) (C1_lo >> 32);	// exact conversion
+	x_nr_bits =
+	  33 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
+      } else {	// x < 2^32
+	tmp1.d = (double) (C1_lo);	// exact conversion
+	x_nr_bits =
+	  1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
       }
-    } else { // if x < 2^53
-      tmp1.d = (double) C1_lo; // exact conversion
+    } else {	// if x < 2^53
+      tmp1.d = (double) C1_lo;	// exact conversion
       x_nr_bits =
-        1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
+	1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
     }
-  } else { // C1_hi != 0 => nr. bits = 64 + nr_bits (C1_hi)
-    tmp1.d = (double) C1_hi; // exact conversion
+  } else {	// C1_hi != 0 => nr. bits = 64 + nr_bits (C1_hi)
+    tmp1.d = (double) C1_hi;	// exact conversion
     x_nr_bits =
       65 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
   }
-  q = __bid_nr_digits[x_nr_bits - 1].digits;
+  q = nr_digits[x_nr_bits - 1].digits;
   if (q == 0) {
-    q = __bid_nr_digits[x_nr_bits - 1].digits1;
-    if (C1_hi > __bid_nr_digits[x_nr_bits - 1].threshold_hi
-        || (C1_hi == __bid_nr_digits[x_nr_bits - 1].threshold_hi
-        && C1_lo >= __bid_nr_digits[x_nr_bits - 1].threshold_lo))
+    q = nr_digits[x_nr_bits - 1].digits1;
+    if (C1_hi > nr_digits[x_nr_bits - 1].threshold_hi ||
+	(C1_hi == nr_digits[x_nr_bits - 1].threshold_hi &&
+	 C1_lo >= nr_digits[x_nr_bits - 1].threshold_lo))
       q++;
   }
   exp = (int) (x_exp >> 49) - 6176;
@@ -154,19 +154,19 @@ __bid128_isNormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // return 1 iff x is not zero, nor NaN nor normal nor infinity
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isSubnormal (int *pres,
-                    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isSubnormal (int *pres,
+		    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT64 x_exp, C1_hi, C1_lo;
   BID_UI64DOUBLE tmp1;
   int exp, q, x_nr_bits;
 
-  BID_SWAP128(x);
+  BID_SWAP128 (x);
   // test for special values - infinity or NaN
   if ((x.w[1] & MASK_SPECIAL) == MASK_SPECIAL) {
     // x is special
@@ -174,7 +174,7 @@ __bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
     BID_RETURN (res);
   }
   // unpack x 
-  x_exp = x.w[1] & MASK_EXP; // biased and shifted left 49 bit positions
+  x_exp = x.w[1] & MASK_EXP;	// biased and shifted left 49 bit positions
   C1_hi = x.w[1] & MASK_COEFF;
   C1_lo = x.w[0];
   // test for zero
@@ -184,9 +184,9 @@ __bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   }
   // test for non-canonical values of the argument x
   if ((((C1_hi > 0x0001ed09bead87c0ull)
-       || ((C1_hi == 0x0001ed09bead87c0ull)
-           && (C1_lo > 0x378d8e63ffffffffull)))
-      && ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull))
+	|| ((C1_hi == 0x0001ed09bead87c0ull)
+	    && (C1_lo > 0x378d8e63ffffffffull)))
+       && ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull))
       || ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull)) {
     res = 0;
     BID_RETURN (res);
@@ -196,33 +196,33 @@ __bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   // q = nr. of decimal digits in x
   // determine first the nr. of bits in x
   if (C1_hi == 0) {
-    if (C1_lo >= 0x0020000000000000ull) { // x >= 2^53
+    if (C1_lo >= 0x0020000000000000ull) {	// x >= 2^53
       // split the 64-bit value in two 32-bit halves to avoid rounding errors
-      if (C1_lo >= 0x0000000100000000ull) { // x >= 2^32
-        tmp1.d = (double) (C1_lo >> 32); // exact conversion
-        x_nr_bits =
-          33 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
-      } else { // x < 2^32
-        tmp1.d = (double) (C1_lo); // exact conversion
-        x_nr_bits =
-          1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
+      if (C1_lo >= 0x0000000100000000ull) {	// x >= 2^32
+	tmp1.d = (double) (C1_lo >> 32);	// exact conversion
+	x_nr_bits =
+	  33 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
+      } else {	// x < 2^32
+	tmp1.d = (double) (C1_lo);	// exact conversion
+	x_nr_bits =
+	  1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
       }
-    } else { // if x < 2^53
-      tmp1.d = (double) C1_lo; // exact conversion
+    } else {	// if x < 2^53
+      tmp1.d = (double) C1_lo;	// exact conversion
       x_nr_bits =
-        1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
+	1 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
     }
-  } else { // C1_hi != 0 => nr. bits = 64 + nr_bits (C1_hi)
-    tmp1.d = (double) C1_hi; // exact conversion
+  } else {	// C1_hi != 0 => nr. bits = 64 + nr_bits (C1_hi)
+    tmp1.d = (double) C1_hi;	// exact conversion
     x_nr_bits =
       65 + ((((unsigned int) (tmp1.ui64 >> 52)) & 0x7ff) - 0x3ff);
   }
-  q = __bid_nr_digits[x_nr_bits - 1].digits;
+  q = nr_digits[x_nr_bits - 1].digits;
   if (q == 0) {
-    q = __bid_nr_digits[x_nr_bits - 1].digits1;
-    if (C1_hi > __bid_nr_digits[x_nr_bits - 1].threshold_hi
-        || (C1_hi == __bid_nr_digits[x_nr_bits - 1].threshold_hi
-        && C1_lo >= __bid_nr_digits[x_nr_bits - 1].threshold_lo))
+    q = nr_digits[x_nr_bits - 1].digits1;
+    if (C1_hi > nr_digits[x_nr_bits - 1].threshold_hi ||
+	(C1_hi == nr_digits[x_nr_bits - 1].threshold_hi &&
+	 C1_lo >= nr_digits[x_nr_bits - 1].threshold_lo))
       q++;
   }
   exp = (int) (x_exp >> 49) - 6176;
@@ -237,11 +237,12 @@ __bid128_isSubnormal (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isFinite (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isFinite (int *pres,
+		 UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isFinite (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isFinite (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   res = ((x.w[HIGH_128W] & MASK_INF) != MASK_INF);
@@ -250,28 +251,26 @@ __bid128_isFinite (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isZero (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isZero (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isZero (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isZero (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT128 sig_x;
 
-  BID_SWAP128(x);
+  BID_SWAP128 (x);
   if ((x.w[1] & MASK_INF) == MASK_INF) {
     res = 0;
     BID_RETURN (res);
   }
   sig_x.w[1] = x.w[1] & 0x0001ffffffffffffull;
   sig_x.w[0] = x.w[0];
-  if ((sig_x.w[1] > 0x0001ed09bead87c0ull) || // significand is non-canonical
-      ((sig_x.w[1] == 0x0001ed09bead87c0ull) && 
-      (sig_x.w[0] > 0x378d8e63ffffffffull)) || // significand is non-canonical
-      ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull && 
-      (x.w[1] & MASK_INF) != MASK_INF) || // significand is non-canonical
-      (sig_x.w[1] == 0 && sig_x.w[0] == 0)) { // significand is 0
+  if ((sig_x.w[1] > 0x0001ed09bead87c0ull) ||	// significand is non-canonical
+      ((sig_x.w[1] == 0x0001ed09bead87c0ull) && (sig_x.w[0] > 0x378d8e63ffffffffull)) ||	// significand is non-canonical
+      ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull && (x.w[1] & MASK_INF) != MASK_INF) ||	// significand is non-canonical
+      (sig_x.w[1] == 0 && sig_x.w[0] == 0)) {	// significand is 0
     res = 1;
     BID_RETURN (res);
   }
@@ -281,11 +280,11 @@ __bid128_isZero (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isInf (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isInf (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isInf (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isInf (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   res = ((x.w[HIGH_128W] & MASK_INF) == MASK_INF)
@@ -295,12 +294,12 @@ __bid128_isInf (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isSignaling (int *pres,
-                    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isSignaling (int *pres,
+		    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isSignaling (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isSignaling (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -311,34 +310,34 @@ __bid128_isSignaling (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // return 1 iff x is a canonical number ,infinity, or NaN.
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isCanonical (int *pres,
-                    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isCanonical (int *pres,
+		    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isCanonical (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isCanonical (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT128 sig_x;
 
-  BID_SWAP128(x);
-  if ((x.w[1] & MASK_NAN) == MASK_NAN) { // NaN
+  BID_SWAP128 (x);
+  if ((x.w[1] & MASK_NAN) == MASK_NAN) {	// NaN
     if (x.w[1] & 0x01ffc00000000000ull) {
       res = 0;
       BID_RETURN (res);
     }
-    sig_x.w[1] = x.w[1] & 0x00003fffffffffffull; // 46 bits
-    sig_x.w[0] = x.w[0]; // 64 bits
+    sig_x.w[1] = x.w[1] & 0x00003fffffffffffull;	// 46 bits
+    sig_x.w[0] = x.w[0];	// 64 bits
     // payload must be < 10^33 = 0x0000314dc6448d93_38c15b0a00000000
     if (sig_x.w[1] < 0x0000314dc6448d93ull
-        || (sig_x.w[1] == 0x0000314dc6448d93ull
-        && sig_x.w[0] < 0x38c15b0a00000000ull)) {
+	|| (sig_x.w[1] == 0x0000314dc6448d93ull
+	    && sig_x.w[0] < 0x38c15b0a00000000ull)) {
       res = 1;
     } else {
       res = 0;
     }
     BID_RETURN (res);
-  } else if ((x.w[1] & MASK_INF) == MASK_INF) { // infinity
+  } else if ((x.w[1] & MASK_INF) == MASK_INF) {	// infinity
     if ((x.w[1] & 0x03ffffffffffffffull) || x.w[0]) {
       res = 0;
     } else {
@@ -351,8 +350,8 @@ __bid128_isCanonical (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   sig_x.w[0] = x.w[0];
   // a canonical number has a coefficient < 10^34 
   //    (0x0001ed09_bead87c0_378d8e64_00000000)
-  if ((sig_x.w[1] > 0x0001ed09bead87c0ull) || // significand is non-canonical
-      ((sig_x.w[1] == 0x0001ed09bead87c0ull) && (sig_x.w[0] > 0x378d8e63ffffffffull)) ||        // significand is non-canonical
+  if ((sig_x.w[1] > 0x0001ed09bead87c0ull) ||	// significand is non-canonical
+      ((sig_x.w[1] == 0x0001ed09bead87c0ull) && (sig_x.w[0] > 0x378d8e63ffffffffull)) ||	// significand is non-canonical
       ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull)) {
     res = 0;
   } else {
@@ -363,11 +362,11 @@ __bid128_isCanonical (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_isNaN (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isNaN (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_isNaN (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_isNaN (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -378,12 +377,12 @@ __bid128_isNaN (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies a floating-point operand x to destination y, with no change
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_copy (UINT128 * pres,
-             UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_copy (UINT128 * pres,
+	     UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 UINT128
-__bid128_copy (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_copy (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT128 res;
 
@@ -394,12 +393,12 @@ __bid128_copy (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies a floating-point operand x to destination y, reversing the sign
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_negate (UINT128 * pres,
-               UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_negate (UINT128 * pres,
+	       UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 UINT128
-__bid128_negate (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_negate (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT128 res;
 
@@ -411,12 +410,12 @@ __bid128_negate (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies a floating-point operand x to destination y, changing the sign to positive
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_abs (UINT128 * pres,
-            UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_abs (UINT128 * pres,
+	    UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 UINT128
-__bid128_abs (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_abs (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT128 res;
 
@@ -428,28 +427,29 @@ __bid128_abs (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies operand x to destination in the same format as x, but with the sign of y
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_copySign (UINT128 * pres, UINT128 * px,
-                 UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_copySign (UINT128 * pres, UINT128 * px,
+		 UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
   UINT128 y = *py;
 #else
 UINT128
-__bid128_copySign (UINT128 x, UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_copySign (UINT128 x, UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT128 res;
 
-  x.w[HIGH_128W] = (x.w[HIGH_128W] & ~MASK_SIGN) | (y.w[HIGH_128W] & MASK_SIGN);
+  x.w[HIGH_128W] =
+    (x.w[HIGH_128W] & ~MASK_SIGN) | (y.w[HIGH_128W] & MASK_SIGN);
   res = x;
   BID_RETURN (res);
 }
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_class (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_class (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT256 sig_x_prime256;
@@ -457,7 +457,7 @@ __bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 sig_x;
   int exp_x;
 
-  BID_SWAP128(x);
+  BID_SWAP128 (x);
   if ((x.w[1] & MASK_NAN) == MASK_NAN) {
     if ((x.w[1] & MASK_SNAN) == MASK_SNAN) {
       res = signalingNaN;
@@ -480,7 +480,7 @@ __bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   // check for zero or non-canonical
   if ((sig_x.w[1] > 0x0001ed09bead87c0ull)
       || ((sig_x.w[1] == 0x0001ed09bead87c0ull)
-          && (sig_x.w[0] > 0x378d8e63ffffffffull))
+	  && (sig_x.w[0] > 0x378d8e63ffffffffull))
       || ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull)
       || ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
     if ((x.w[1] & MASK_SIGN) == MASK_SIGN) {
@@ -495,31 +495,29 @@ __bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   // (less than the smallest normal value)
   //  the smallest normal value is 1 x 10^-6143 = 10^33 x 10^-6176
   //  if (exp_x - 6176 < -6143)
-  if (exp_x < 33) { // sig_x * 10^exp_x
+  if (exp_x < 33) {	// sig_x * 10^exp_x
     if (exp_x > 19) {
       __mul_128x128_to_256 (sig_x_prime256, sig_x,
-                            __bid_ten2k128[exp_x - 20]);
+			    ten2k128[exp_x - 20]);
       // 10^33 = 0x0000314dc6448d93_38c15b0a00000000
       if ((sig_x_prime256.w[3] == 0) && (sig_x_prime256.w[2] == 0)
-          && ((sig_x_prime256.w[1] < 0x0000314dc6448d93ull)
-              || ((sig_x_prime256.w[1] == 0x0000314dc6448d93ull)
-              && (sig_x_prime256.w[0] < 0x38c15b0a00000000ull)))) {
-        res =
-          ((x.w[1] & MASK_SIGN) ==
-           MASK_SIGN) ? negativeSubnormal : positiveSubnormal;
-        BID_RETURN (res);
+	  && ((sig_x_prime256.w[1] < 0x0000314dc6448d93ull)
+	      || ((sig_x_prime256.w[1] == 0x0000314dc6448d93ull)
+		  && (sig_x_prime256.w[0] < 0x38c15b0a00000000ull)))) {
+	res = ((x.w[1] & MASK_SIGN) == MASK_SIGN) ? negativeSubnormal :
+	  positiveSubnormal;
+	BID_RETURN (res);
       }
     } else {
-      __mul_64x128_to_192 (sig_x_prime192, __bid_ten2k64[exp_x], sig_x);
+      __mul_64x128_to_192 (sig_x_prime192, ten2k64[exp_x], sig_x);
       // 10^33 = 0x0000314dc6448d93_38c15b0a00000000
       if ((sig_x_prime192.w[2] == 0)
-          && ((sig_x_prime192.w[1] < 0x0000314dc6448d93ull)
-              || ((sig_x_prime192.w[1] == 0x0000314dc6448d93ull)
-              && (sig_x_prime192.w[0] < 0x38c15b0a00000000ull)))) {
-        res =
-          ((x.w[1] & MASK_SIGN) ==
-           MASK_SIGN) ? negativeSubnormal : positiveSubnormal;
-        BID_RETURN (res);
+	  && ((sig_x_prime192.w[1] < 0x0000314dc6448d93ull)
+	      || ((sig_x_prime192.w[1] == 0x0000314dc6448d93ull)
+		  && (sig_x_prime192.w[0] < 0x38c15b0a00000000ull)))) {
+	res = ((x.w[1] & MASK_SIGN) == MASK_SIGN) ? negativeSubnormal :
+	  positiveSubnormal;
+	BID_RETURN (res);
       }
     }
   }
@@ -535,24 +533,25 @@ __bid128_class (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // If exactly one operand is infinite or exactly one operand is NaN, then false
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_sameQuantum (int *pres, UINT128 * px,
-                    UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_sameQuantum (int *pres, UINT128 * px,
+		    UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
   UINT128 y = *py;
 #else
 int
-__bid128_sameQuantum (UINT128 x,
-                    UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_sameQuantum (UINT128 x,
+		    UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
+  UINT64 x_exp, y_exp;
 
-  BID_SWAP128(x);
-  BID_SWAP128(y);
+  BID_SWAP128 (x);
+  BID_SWAP128 (y);
   // if both operands are NaN, return true
   if ((x.w[1] & MASK_NAN) == MASK_NAN
       || ((y.w[1] & MASK_NAN) == MASK_NAN)) {
     res = ((x.w[1] & MASK_NAN) == MASK_NAN
-           && (y.w[1] & MASK_NAN) == MASK_NAN);
+	   && (y.w[1] & MASK_NAN) == MASK_NAN);
     BID_RETURN (res);
   }
   // if both operands are INF, return true
@@ -563,22 +562,30 @@ __bid128_sameQuantum (UINT128 x,
     BID_RETURN (res);
   }
   // decode exponents for both numbers, and return true if they match
-  res =
-    ((x.w[1] >> 49) & 0x0000000000003fffull) ==
-    ((y.w[1] >> 49) & 0x0000000000003fffull);
+  if ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) {	// G0_G1=11
+    x_exp = (x.w[1] << 2) & MASK_EXP;	// biased and shifted left 49 bits
+  } else {	// G0_G1 != 11
+    x_exp = x.w[1] & MASK_EXP;	// biased and shifted left 49 bits
+  }
+  if ((y.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) {	// G0_G1=11
+    y_exp = (y.w[1] << 2) & MASK_EXP;	// biased and shifted left 49 bits
+  } else {	// G0_G1 != 11
+    y_exp = y.w[1] & MASK_EXP;	// biased and shifted left 49 bits
+  }
+  res = (x_exp == y_exp);
   BID_RETURN (res);
 }
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_totalOrder (int *pres, UINT128 * px,
-                   UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_totalOrder (int *pres, UINT128 * px,
+		   UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
   UINT128 y = *py;
 #else
 int
-__bid128_totalOrder (UINT128 x,
-                   UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_totalOrder (UINT128 x,
+		   UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   int exp_x, exp_y;
@@ -587,112 +594,109 @@ __bid128_totalOrder (UINT128 x,
   UINT256 sig_n_prime256;
   char x_is_zero = 0, y_is_zero = 0;
 
-  BID_SWAP128(x);
-  BID_SWAP128(y);
+  BID_SWAP128 (x);
+  BID_SWAP128 (y);
   // NaN (CASE 1)
   // if x and y are unordered numerically because either operand is NaN
   //    (1) totalOrder(-NaN, number) is true
   //    (2) totalOrder(number, +NaN) is true
   //    (3) if x and y are both NaN:
   //       i) negative sign bit < positive sign bit
-  //       ii) signaling < quiet fir +NaN, reverse for -NaN
+  //       ii) signaling < quiet for +NaN, reverse for -NaN
   //       iii) lesser payload < greater payload for +NaN (reverse for -NaN)
+  //       iv) else if bitwise identical (in canonical form), return 1
   if ((x.w[1] & MASK_NAN) == MASK_NAN) {
     // if x is -NaN
     if ((x.w[1] & MASK_SIGN) == MASK_SIGN) {
       // return true, unless y is -NaN also
       if ((y.w[1] & MASK_NAN) != MASK_NAN
-          || (y.w[1] & MASK_SIGN) != MASK_SIGN) {
-        res = 1; // y is a number, return 1
-        BID_RETURN (res);
-      } else { // if y and x are both -NaN
-        // if x and y are both -SNaN or both -QNaN, we have to compare payloads
-        // this statement evaluates to true if both are SNaN or QNaN
-        if (!
-            (((y.w[1] & MASK_SNAN) ==
-              MASK_SNAN) ^ ((x.w[1] & MASK_SNAN) == MASK_SNAN))) {
-          // it comes down to the payload.  we want to return true if x has a
-          // larger payload, but first we must calculate the payload.
-          pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
-          pyld_y.w[0] = y.w[0];
-          pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
-          pyld_x.w[0] = x.w[0];
-          if ((pyld_y.w[1] > 0x0000314dc6448d93ull)
-              || ((pyld_y.w[1] == 0x0000314dc6448d93ull)
-                  && (pyld_y.w[0] > 0x38c15b09ffffffffull))
-              || (pyld_y.w[1] == 0 && pyld_y.w[0] == 0)) {
-            // if y is zero, x must be less than or numerically equal
-            // y's payload is 0
-            res = 1;
-            BID_RETURN (res);
-          }
-          // if x is zero and y isn't, x has the smaller payload
-          // definitely (since we know y isn't 0 at this point)
-          if ((pyld_x.w[1] > 0x0000314dc6448d93ull)
-              || ((pyld_x.w[1] == 0x0000314dc6448d93ull)
-                  && (pyld_x.w[0] > 0x38c15b09ffffffffull))
-              || (pyld_x.w[0] == 0 && pyld_x.w[1] == 0)) {
-            // x's payload is 0
-            res = 0;
-            BID_RETURN (res);
-          }
-          res = ((pyld_x.w[1] > pyld_y.w[1])
-                 || (pyld_x.w[1] == pyld_y.w[1]
-                     && pyld_x.w[0] >= pyld_y.w[0]));
-          BID_RETURN (res);
-        } else {
-          // either x = -SNaN and y = -QNaN or x = -QNaN and y = -SNaN
-          res = (y.w[1] & MASK_SNAN) == MASK_SNAN;
-          // totalOrder (-QNaN, -SNaN) == 1
-          BID_RETURN (res);
-        }
+	  || (y.w[1] & MASK_SIGN) != MASK_SIGN) {
+	res = 1;	// y is a number, return 1
+	BID_RETURN (res);
+      } else {	// if y and x are both -NaN
+	pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
+	pyld_x.w[0] = x.w[0];
+	pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
+	pyld_y.w[0] = y.w[0];
+	if ((pyld_x.w[1] > 0x0000314dc6448d93ull)
+	    || ((pyld_x.w[1] == 0x0000314dc6448d93ull)
+		&& (pyld_x.w[0] > 0x38c15b09ffffffffull))) {
+	  pyld_x.w[1] = 0;
+	  pyld_x.w[0] = 0;
+	}
+	if ((pyld_y.w[1] > 0x0000314dc6448d93ull)
+	    || ((pyld_y.w[1] == 0x0000314dc6448d93ull)
+		&& (pyld_y.w[0] > 0x38c15b09ffffffffull))) {
+	  pyld_y.w[1] = 0;
+	  pyld_y.w[0] = 0;
+	}
+	// if x and y are both -SNaN or both -QNaN, we have to compare payloads
+	// this statement evaluates to true if both are SNaN or QNaN
+	if (!
+	    (((y.w[1] & MASK_SNAN) == MASK_SNAN) ^
+	     ((x.w[1] & MASK_SNAN) == MASK_SNAN))) {
+	  // it comes down to the payload.  we want to return true if x has a
+	  // larger payload, or if the payloads are equal (canonical forms
+	  // are bitwise identical)
+	  if ((pyld_x.w[1] > pyld_y.w[1]) ||
+	      ((pyld_x.w[1] == pyld_y.w[1])
+	       && (pyld_x.w[0] >= pyld_y.w[0])))
+	    res = 1;
+	  else
+	    res = 0;
+	  BID_RETURN (res);
+	} else {
+	  // either x = -SNaN and y = -QNaN or x = -QNaN and y = -SNaN
+	  res = ((y.w[1] & MASK_SNAN) == MASK_SNAN);
+	  // totalOrder (-QNaN, -SNaN) == 1
+	  BID_RETURN (res);
+	}
       }
-    } else { // x is +NaN
+    } else {	// x is +NaN
       // return false, unless y is +NaN also
       if ((y.w[1] & MASK_NAN) != MASK_NAN
-          || (y.w[1] & MASK_SIGN) == MASK_SIGN) {
-        res = 0; // y is a number, return 1
-        BID_RETURN (res);
+	  || (y.w[1] & MASK_SIGN) == MASK_SIGN) {
+	res = 0;	// y is a number, return 1
+	BID_RETURN (res);
       } else {
-        // x and y are both +NaN; 
-        // must investigate payload if both quiet or both signaling
-        // this xnor statement will be true if both x and y are +QNaN or +SNaN
-        if (!
-            (((y.w[1] & MASK_SNAN) ==
-              MASK_SNAN) ^ ((x.w[1] & MASK_SNAN) == MASK_SNAN))) {
-          // it comes down to the payload.  we want to return true if x has a
-          // smaller payload, but first we must calculate the payload.
-          pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
-          pyld_y.w[0] = y.w[0];
-          pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
-          pyld_x.w[0] = x.w[0];
-          // if x is zero and y isn't, x has the smaller payload definitely 
-          // (since we know y isn't 0 at this point)
-          if ((pyld_x.w[1] > 0x0000314dc6448d93ull)
-              || ((pyld_x.w[1] == 0x0000314dc6448d93ull)
-                  && (pyld_x.w[0] > 0x38c15b09ffffffffull))
-              || (pyld_x.w[1] == 0 && pyld_x.w[0] == 0)) {
-            res = 1;
-            BID_RETURN (res);
-          }
-          if ((pyld_y.w[1] > 0x0000314dc6448d93ull)
-              || ((pyld_y.w[1] == 0x0000314dc6448d93ull)
-                  && (pyld_y.w[0] > 0x38c15b09ffffffffull))
-              || (pyld_y.w[1] == 0 && pyld_y.w[0] == 0)) {
-            // if y is zero, x must be less than or numerically equal
-            res = 0;
-            BID_RETURN (res);
-          }
-          res = ((pyld_x.w[1] < pyld_y.w[1])
-                 || (pyld_x.w[1] == pyld_y.w[1]
-                     && pyld_x.w[0] <= pyld_y.w[0]));
-          BID_RETURN (res);
-        } else {
-          // return true if y is +QNaN and x is +SNaN 
-          // (we know they're different bc of xor if_stmt above)
-          res = ((x.w[1] & MASK_SNAN) == MASK_SNAN);
-          BID_RETURN (res);
-        }
+	// x and y are both +NaN; 
+	pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
+	pyld_x.w[0] = x.w[0];
+	pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
+	pyld_y.w[0] = y.w[0];
+	if ((pyld_x.w[1] > 0x0000314dc6448d93ull)
+	    || ((pyld_x.w[1] == 0x0000314dc6448d93ull)
+		&& (pyld_x.w[0] > 0x38c15b09ffffffffull))) {
+	  pyld_x.w[1] = 0;
+	  pyld_x.w[0] = 0;
+	}
+	if ((pyld_y.w[1] > 0x0000314dc6448d93ull)
+	    || ((pyld_y.w[1] == 0x0000314dc6448d93ull)
+		&& (pyld_y.w[0] > 0x38c15b09ffffffffull))) {
+	  pyld_y.w[1] = 0;
+	  pyld_y.w[0] = 0;
+	}
+	// if x and y are both +SNaN or both +QNaN, we have to compare payloads
+	// this statement evaluates to true if both are SNaN or QNaN
+	if (!
+	    (((y.w[1] & MASK_SNAN) == MASK_SNAN) ^
+	     ((x.w[1] & MASK_SNAN) == MASK_SNAN))) {
+	  // it comes down to the payload.  we want to return true if x has a
+	  // smaller payload, or if the payloads are equal (canonical forms
+	  // are bitwise identical)
+	  if ((pyld_x.w[1] < pyld_y.w[1]) ||
+	      ((pyld_x.w[1] == pyld_y.w[1])
+	       && (pyld_x.w[0] <= pyld_y.w[0])))
+	    res = 1;
+	  else
+	    res = 0;
+	  BID_RETURN (res);
+	} else {
+	  // either x = SNaN and y = QNaN or x = QNaN and y = SNaN
+	  res = ((x.w[1] & MASK_SNAN) == MASK_SNAN);
+	  // totalOrder (-QNaN, -SNaN) == 1
+	  BID_RETURN (res);
+	}
       }
     }
   } else if ((y.w[1] & MASK_NAN) == MASK_NAN) {
@@ -710,8 +714,8 @@ __bid128_totalOrder (UINT128 x,
   // OPPOSITE SIGNS (CASE 3)
   // if signs are opposite, return 1 if x is negative 
   // (if x < y, totalOrder is true)
-  if (((x.w[1] & MASK_SIGN) == MASK_SIGN) ^ 
-      ((y.w[1] & MASK_SIGN) == MASK_SIGN)) {
+  if (((x.w[1] & MASK_SIGN) == MASK_SIGN) ^ ((y.w[1] & MASK_SIGN) ==
+					     MASK_SIGN)) {
     res = ((x.w[1] & MASK_SIGN) == MASK_SIGN);
     BID_RETURN (res);
   }
@@ -744,11 +748,11 @@ __bid128_totalOrder (UINT128 x,
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
   // [0, 10^34) is the 754r supported canonical range.  
   // If the value exceeds that, it is interpreted as 0.
-  if ((((sig_x.w[1] > 0x0001ed09bead87c0ull) || 
-      ((sig_x.w[1] == 0x0001ed09bead87c0ull) && 
-      (sig_x.w[0] > 0x378d8e63ffffffffull))) && 
-      ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) || 
-      ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) || 
+  if ((((sig_x.w[1] > 0x0001ed09bead87c0ull) ||
+	((sig_x.w[1] == 0x0001ed09bead87c0ull) &&
+	 (sig_x.w[0] > 0x378d8e63ffffffffull))) &&
+       ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) ||
+      ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) ||
       ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
     x_is_zero = 1;
     // check for the case where the exponent is shifted right by 2 bits!
@@ -766,11 +770,11 @@ __bid128_totalOrder (UINT128 x,
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
   // [0, 10^34) is the 754r supported canonical range.  
   // If the value exceeds that, it is interpreted as 0.
-  if ((((sig_y.w[1] > 0x0001ed09bead87c0ull) || 
-      ((sig_y.w[1] == 0x0001ed09bead87c0ull) && 
-      (sig_y.w[0] > 0x378d8e63ffffffffull))) && 
-      ((y.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) || 
-      ((y.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) || 
+  if ((((sig_y.w[1] > 0x0001ed09bead87c0ull) ||
+	((sig_y.w[1] == 0x0001ed09bead87c0ull) &&
+	 (sig_y.w[0] > 0x378d8e63ffffffffull))) &&
+       ((y.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) ||
+      ((y.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) ||
       ((sig_y.w[1] == 0) && (sig_y.w[0] == 0))) {
     y_is_zero = 1;
     // check for the case where the exponent is shifted right by 2 bits!
@@ -829,41 +833,41 @@ __bid128_totalOrder (UINT128 x,
     // otherwise adjust the x significand upwards
     if (exp_x - exp_y > 19) {
       __mul_128x128_to_256 (sig_n_prime256, sig_x,
-                            __bid_ten2k128[exp_x - exp_y - 20]);
+			    ten2k128[exp_x - exp_y - 20]);
       // the compensated significands are equal (ie "x and y represent the same
       // entities") return 1 if (negative && expx > expy) || 
       // (positive && expx < expy)
       if ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
-          && (sig_n_prime256.w[1] == sig_y.w[1])
-          && (sig_n_prime256.w[0] == sig_y.w[0])) {
-        // the case exp_x == exp_y  cannot occur, because all bits must be 
-        // the same - would have been caught if (x == y)
-        res = ((exp_x <= exp_y) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
-        BID_RETURN (res);
+	  && (sig_n_prime256.w[1] == sig_y.w[1])
+	  && (sig_n_prime256.w[0] == sig_y.w[0])) {
+	// the case exp_x == exp_y  cannot occur, because all bits must be 
+	// the same - would have been caught if (x == y)
+	res = ((exp_x <= exp_y) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
+	BID_RETURN (res);
       }
       // if positive, return 1 if adjusted x is smaller than y
       res = (((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
-              && ((sig_n_prime256.w[1] < sig_y.w[1])
-                  || (sig_n_prime256.w[1] == sig_y.w[1]
-                      && sig_n_prime256.w[0] <
-                      sig_y.w[0]))) ^ ((x.w[1] & MASK_SIGN) ==
-                                       MASK_SIGN));
+	      && ((sig_n_prime256.w[1] < sig_y.w[1])
+		  || (sig_n_prime256.w[1] == sig_y.w[1]
+		      && sig_n_prime256.w[0] <
+		      sig_y.w[0]))) ^ ((x.w[1] & MASK_SIGN) ==
+				       MASK_SIGN));
       BID_RETURN (res);
     }
-    __mul_64x128_to_192 (sig_n_prime192, __bid_ten2k64[exp_x - exp_y], sig_x);
+    __mul_64x128_to_192 (sig_n_prime192, ten2k64[exp_x - exp_y], sig_x);
     // if positive, return whichever significand is larger 
     // (converse if negative)
     if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
-        && (sig_n_prime192.w[0] == sig_y.w[0])) {
+	&& (sig_n_prime192.w[0] == sig_y.w[0])) {
       res = ((exp_x <= exp_y) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
       BID_RETURN (res);
     }
     res = (((sig_n_prime192.w[2] == 0)
-            && ((sig_n_prime192.w[1] < sig_y.w[1])
-                || (sig_n_prime192.w[1] == sig_y.w[1]
-                    && sig_n_prime192.w[0] <
-                    sig_y.w[0]))) ^ ((x.w[1] & MASK_SIGN) ==
-                                     MASK_SIGN));
+	    && ((sig_n_prime192.w[1] < sig_y.w[1])
+		|| (sig_n_prime192.w[1] == sig_y.w[1]
+		    && sig_n_prime192.w[0] <
+		    sig_y.w[0]))) ^ ((x.w[1] & MASK_SIGN) ==
+				     MASK_SIGN));
     BID_RETURN (res);
   }
   // if exp_x is 33 less than exp_y, it is definitely smaller, 
@@ -875,54 +879,54 @@ __bid128_totalOrder (UINT128 x,
   if (exp_y - exp_x > 19) {
     // adjust the y significand upwards
     __mul_128x128_to_256 (sig_n_prime256, sig_y,
-                          __bid_ten2k128[exp_y - exp_x - 20]);
+			  ten2k128[exp_y - exp_x - 20]);
     // if x and y represent the same entities and both are negative
     // return true iff exp_x <= exp_y
     if ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
-        && (sig_n_prime256.w[1] == sig_x.w[1])
-        && (sig_n_prime256.w[0] == sig_x.w[0])) {
+	&& (sig_n_prime256.w[1] == sig_x.w[1])
+	&& (sig_n_prime256.w[0] == sig_x.w[0])) {
       res = (exp_x <= exp_y) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN);
       BID_RETURN (res);
     }
     // values are not equal, for positive numbers return 1 if x is less than y
     // and 0 otherwise
     res = (((sig_n_prime256.w[3] != 0) ||
-            // if upper128 bits of compensated y are non-zero, y is bigger
-            (sig_n_prime256.w[2] != 0) ||
-            // if upper128 bits of compensated y are non-zero, y is bigger
-            (sig_n_prime256.w[1] > sig_x.w[1]) ||
-            // if compensated y is bigger, y is bigger
-            (sig_n_prime256.w[1] == sig_x.w[1]
-             && sig_n_prime256.w[0] >
-             sig_x.w[0])) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
+	    // if upper128 bits of compensated y are non-zero, y is bigger
+	    (sig_n_prime256.w[2] != 0) ||
+	    // if upper128 bits of compensated y are non-zero, y is bigger
+	    (sig_n_prime256.w[1] > sig_x.w[1]) ||
+	    // if compensated y is bigger, y is bigger
+	    (sig_n_prime256.w[1] == sig_x.w[1]
+	     && sig_n_prime256.w[0] >
+	     sig_x.w[0])) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
     BID_RETURN (res);
   }
-  __mul_64x128_to_192 (sig_n_prime192, __bid_ten2k64[exp_y - exp_x], sig_y);
+  __mul_64x128_to_192 (sig_n_prime192, ten2k64[exp_y - exp_x], sig_y);
   if ((sig_n_prime192.w[2] == 0) && (sig_n_prime192.w[1] == sig_x.w[1])
       && (sig_n_prime192.w[0] == sig_x.w[0])) {
     res = (exp_x <= exp_y) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN);
     BID_RETURN (res);
   }
   res = (((sig_n_prime192.w[2] != 0) ||
-          // if upper128 bits of compensated y are non-zero, y is bigger
-          (sig_n_prime192.w[1] > sig_x.w[1]) ||
-          // if compensated y is bigger, y is bigger
-          (sig_n_prime192.w[1] == sig_x.w[1]
-           && sig_n_prime192.w[0] >
-           sig_x.w[0])) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
+	  // if upper128 bits of compensated y are non-zero, y is bigger
+	  (sig_n_prime192.w[1] > sig_x.w[1]) ||
+	  // if compensated y is bigger, y is bigger
+	  (sig_n_prime192.w[1] == sig_x.w[1]
+	   && sig_n_prime192.w[0] >
+	   sig_x.w[0])) ^ ((x.w[1] & MASK_SIGN) == MASK_SIGN));
   BID_RETURN (res);
 }
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_totalOrderMag (int *pres, UINT128 * px,
-                      UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_totalOrderMag (int *pres, UINT128 * px,
+		      UINT128 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
   UINT128 y = *py;
 #else
 int
-__bid128_totalOrderMag (UINT128 x,
-                      UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_totalOrderMag (UINT128 x,
+		      UINT128 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   int exp_x, exp_y;
@@ -931,8 +935,8 @@ __bid128_totalOrderMag (UINT128 x,
   UINT256 sig_n_prime256;
   char x_is_zero = 0, y_is_zero = 0;
 
-  BID_SWAP128(x);
-  BID_SWAP128(y);
+  BID_SWAP128 (x);
+  BID_SWAP128 (y);
   x.w[1] = x.w[1] & 0x7fffffffffffffffull;
   y.w[1] = y.w[1] & 0x7fffffffffffffffull;
 
@@ -940,53 +944,54 @@ __bid128_totalOrderMag (UINT128 x,
   // if x and y are unordered numerically because either operand is NaN
   //    (1) totalOrder(number, +NaN) is true
   //    (2) if x and y are both NaN:
-  //       i) signaling < quiet fir +NaN
+  //       i) signaling < quiet for +NaN
   //       ii) lesser payload < greater payload for +NaN
+  //       iii) else if bitwise identical (in canonical form), return 1
   if ((x.w[1] & MASK_NAN) == MASK_NAN) {
     // x is +NaN
     // return false, unless y is +NaN also
     if ((y.w[1] & MASK_NAN) != MASK_NAN) {
-      res = 0; // y is a number, return 0
+      res = 0;	// y is a number, return 0
       BID_RETURN (res);
     } else {
       // x and y are both +NaN; 
-      // must investigate payload if both quiet or both signaling
-      // this xnor statement will be true if both x and y are +QNaN or +SNaN
+      pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
+      pyld_x.w[0] = x.w[0];
+      pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
+      pyld_y.w[0] = y.w[0];
+      if ((pyld_x.w[1] > 0x0000314dc6448d93ull)
+	  || ((pyld_x.w[1] == 0x0000314dc6448d93ull)
+	      && (pyld_x.w[0] > 0x38c15b09ffffffffull))) {
+	pyld_x.w[1] = 0;
+	pyld_x.w[0] = 0;
+      }
+      if ((pyld_y.w[1] > 0x0000314dc6448d93ull)
+	  || ((pyld_y.w[1] == 0x0000314dc6448d93ull)
+	      && (pyld_y.w[0] > 0x38c15b09ffffffffull))) {
+	pyld_y.w[1] = 0;
+	pyld_y.w[0] = 0;
+      }
+      // if x and y are both +SNaN or both +QNaN, we have to compare payloads
+      // this statement evaluates to true if both are SNaN or QNaN
       if (!
-          (((y.w[1] & MASK_SNAN) ==
-            MASK_SNAN) ^ ((x.w[1] & MASK_SNAN) == MASK_SNAN))) {
-        // it comes down to the payload.  we want to return true if x has a
-        // smaller payload, but first we must calculate the payload.
-        pyld_y.w[1] = y.w[1] & 0x00003fffffffffffull;
-        pyld_y.w[0] = y.w[0];
-        pyld_x.w[1] = x.w[1] & 0x00003fffffffffffull;
-        pyld_x.w[0] = x.w[0];
-        // if x is zero and y isn't, x has the smaller payload definitely 
-        // (since we know y isn't 0 at this point)
-        if ((pyld_x.w[1] > 0x0000314dc6448d93ull)
-            || ((pyld_x.w[1] == 0x0000314dc6448d93ull)
-                && (pyld_x.w[0] > 0x38c15b09ffffffffull))
-            || (pyld_x.w[1] == 0 && pyld_x.w[0] == 0)) {
-          res = 1;
-          BID_RETURN (res);
-        }
-        if ((pyld_y.w[1] > 0x0000314dc6448d93ull)
-            || ((pyld_y.w[1] == 0x0000314dc6448d93ull)
-                && (pyld_y.w[0] > 0x38c15b09ffffffffull))
-            || (pyld_y.w[1] == 0 && pyld_y.w[0] == 0)) {
-          // if y is zero, x must be less than or numerically equal
-          res = 0;
-          BID_RETURN (res);
-        }
-        res = ((pyld_x.w[1] < pyld_y.w[1])
-               || (pyld_x.w[1] == pyld_y.w[1]
-                   && pyld_x.w[0] <= pyld_y.w[0]));
-        BID_RETURN (res);
+	  (((y.w[1] & MASK_SNAN) == MASK_SNAN) ^
+	   ((x.w[1] & MASK_SNAN) == MASK_SNAN))) {
+	// it comes down to the payload.  we want to return true if x has a
+	// smaller payload, or if the payloads are equal (canonical forms
+	// are bitwise identical)
+	if ((pyld_x.w[1] < pyld_y.w[1]) ||
+	    ((pyld_x.w[1] == pyld_y.w[1])
+	     && (pyld_x.w[0] <= pyld_y.w[0]))) {
+	  res = 1;
+	} else {
+	  res = 0;
+	}
+	BID_RETURN (res);
       } else {
-        // return true if y is +QNaN and x is +SNaN 
-        // (we know they're different bc of xor if_stmt above)
-        res = ((x.w[1] & MASK_SNAN) == MASK_SNAN);
-        BID_RETURN (res);
+	// either x = SNaN and y = QNaN or x = QNaN and y = SNaN
+	res = ((x.w[1] & MASK_SNAN) == MASK_SNAN);
+	// totalOrder (-QNaN, -SNaN) == 1
+	BID_RETURN (res);
       }
     }
   } else if ((y.w[1] & MASK_NAN) == MASK_NAN) {
@@ -1013,7 +1018,7 @@ __bid128_totalOrderMag (UINT128 x,
     res = 1;
     BID_RETURN (res);
   } else {
-    ; // continue
+    ;	// continue
   }
 
   // CONVERT x
@@ -1026,11 +1031,11 @@ __bid128_totalOrderMag (UINT128 x,
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
   // [0, 10^34) is the 754r supported canonical range.  
   // If the value exceeds that, it is interpreted as 0.
-  if ((((sig_x.w[1] > 0x0001ed09bead87c0ull) || 
-      ((sig_x.w[1] == 0x0001ed09bead87c0ull) && 
-      (sig_x.w[0] > 0x378d8e63ffffffffull))) && 
-      ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) || 
-      ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) || 
+  if ((((sig_x.w[1] > 0x0001ed09bead87c0ull) ||
+	((sig_x.w[1] == 0x0001ed09bead87c0ull) &&
+	 (sig_x.w[0] > 0x378d8e63ffffffffull))) &&
+       ((x.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) ||
+      ((x.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) ||
       ((sig_x.w[1] == 0) && (sig_x.w[0] == 0))) {
     x_is_zero = 1;
     // check for the case where the exponent is shifted right by 2 bits!
@@ -1048,11 +1053,11 @@ __bid128_totalOrderMag (UINT128 x,
   //     1ed09_bead87c0_378d8e63_ffffffff(hexadecimal)
   // [0, 10^34) is the 754r supported canonical range.  
   // If the value exceeds that, it is interpreted as 0.
-  if ((((sig_y.w[1] > 0x0001ed09bead87c0ull) || 
-      ((sig_y.w[1] == 0x0001ed09bead87c0ull) && 
-      (sig_y.w[0] > 0x378d8e63ffffffffull))) && 
-      ((y.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) || 
-      ((y.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) || 
+  if ((((sig_y.w[1] > 0x0001ed09bead87c0ull) ||
+	((sig_y.w[1] == 0x0001ed09bead87c0ull) &&
+	 (sig_y.w[0] > 0x378d8e63ffffffffull))) &&
+       ((y.w[1] & 0x6000000000000000ull) != 0x6000000000000000ull)) ||
+      ((y.w[1] & 0x6000000000000000ull) == 0x6000000000000000ull) ||
       ((sig_y.w[1] == 0) && (sig_y.w[0] == 0))) {
     y_is_zero = 1;
     // check for the case where the exponent is shifted right by 2 bits!
@@ -1101,43 +1106,43 @@ __bid128_totalOrderMag (UINT128 x,
     // if exp_x is 33 greater than exp_y, it is definitely larger, 
     // so no need for compensation
     if (exp_x - exp_y > 33) {
-      res = 0; // difference cannot be greater than 10^33
+      res = 0;	// difference cannot be greater than 10^33
       BID_RETURN (res);
     }
     // otherwise adjust the x significand upwards
     if (exp_x - exp_y > 19) {
       __mul_128x128_to_256 (sig_n_prime256, sig_x,
-                            __bid_ten2k128[exp_x - exp_y - 20]);
+			    ten2k128[exp_x - exp_y - 20]);
       // the compensated significands are equal (ie "x and y represent the same
       // entities") return 1 if (negative && expx > expy) || 
       // (positive && expx < expy)
       if ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
-          && (sig_n_prime256.w[1] == sig_y.w[1])
-          && (sig_n_prime256.w[0] == sig_y.w[0])) {
-        // the case (exp_x == exp_y) cannot occur, because all bits must be 
-        // the same - would have been caught if (x == y)
-        res = (exp_x <= exp_y);
-        BID_RETURN (res);
+	  && (sig_n_prime256.w[1] == sig_y.w[1])
+	  && (sig_n_prime256.w[0] == sig_y.w[0])) {
+	// the case (exp_x == exp_y) cannot occur, because all bits must be 
+	// the same - would have been caught if (x == y)
+	res = (exp_x <= exp_y);
+	BID_RETURN (res);
       }
       // since positive, return 1 if adjusted x is smaller than y
       res = ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
-             && ((sig_n_prime256.w[1] < sig_y.w[1])
-                 || (sig_n_prime256.w[1] == sig_y.w[1]
-                     && sig_n_prime256.w[0] < sig_y.w[0])));
+	     && ((sig_n_prime256.w[1] < sig_y.w[1])
+		 || (sig_n_prime256.w[1] == sig_y.w[1]
+		     && sig_n_prime256.w[0] < sig_y.w[0])));
       BID_RETURN (res);
     }
-    __mul_64x128_to_192 (sig_n_prime192, __bid_ten2k64[exp_x - exp_y], sig_x);
+    __mul_64x128_to_192 (sig_n_prime192, ten2k64[exp_x - exp_y], sig_x);
     // if positive, return whichever significand is larger 
     // (converse if negative)
     if ((sig_n_prime192.w[2] == 0) && sig_n_prime192.w[1] == sig_y.w[1]
-        && (sig_n_prime192.w[0] == sig_y.w[0])) {
+	&& (sig_n_prime192.w[0] == sig_y.w[0])) {
       res = (exp_x <= exp_y);
       BID_RETURN (res);
     }
     res = ((sig_n_prime192.w[2] == 0)
-           && ((sig_n_prime192.w[1] < sig_y.w[1])
-               || (sig_n_prime192.w[1] == sig_y.w[1]
-                   && sig_n_prime192.w[0] < sig_y.w[0])));
+	   && ((sig_n_prime192.w[1] < sig_y.w[1])
+	       || (sig_n_prime192.w[1] == sig_y.w[1]
+		   && sig_n_prime192.w[0] < sig_y.w[0])));
     BID_RETURN (res);
   }
   // if exp_x is 33 less than exp_y, it is definitely smaller, 
@@ -1149,50 +1154,50 @@ __bid128_totalOrderMag (UINT128 x,
   if (exp_y - exp_x > 19) {
     // adjust the y significand upwards
     __mul_128x128_to_256 (sig_n_prime256, sig_y,
-                          __bid_ten2k128[exp_y - exp_x - 20]);
+			  ten2k128[exp_y - exp_x - 20]);
     if ((sig_n_prime256.w[3] == 0) && (sig_n_prime256.w[2] == 0)
-        && (sig_n_prime256.w[1] == sig_x.w[1])
-        && (sig_n_prime256.w[0] == sig_x.w[0])) {
+	&& (sig_n_prime256.w[1] == sig_x.w[1])
+	&& (sig_n_prime256.w[0] == sig_x.w[0])) {
       res = (exp_x <= exp_y);
       BID_RETURN (res);
     }
     // values are not equal, for positive numbers return 1 if x is less than y
     // and 0 otherwise
     res = ((sig_n_prime256.w[3] != 0) ||
-           // if upper128 bits of compensated y are non-zero, y is bigger
-           (sig_n_prime256.w[2] != 0) ||
-           // if upper128 bits of compensated y are non-zero, y is bigger
-           (sig_n_prime256.w[1] > sig_x.w[1]) ||
-           // if compensated y is bigger, y is bigger
-           (sig_n_prime256.w[1] == sig_x.w[1]
-            && sig_n_prime256.w[0] > sig_x.w[0]));
+	   // if upper128 bits of compensated y are non-zero, y is bigger
+	   (sig_n_prime256.w[2] != 0) ||
+	   // if upper128 bits of compensated y are non-zero, y is bigger
+	   (sig_n_prime256.w[1] > sig_x.w[1]) ||
+	   // if compensated y is bigger, y is bigger
+	   (sig_n_prime256.w[1] == sig_x.w[1]
+	    && sig_n_prime256.w[0] > sig_x.w[0]));
     BID_RETURN (res);
   }
-  __mul_64x128_to_192 (sig_n_prime192, __bid_ten2k64[exp_y - exp_x], sig_y);
+  __mul_64x128_to_192 (sig_n_prime192, ten2k64[exp_y - exp_x], sig_y);
   if ((sig_n_prime192.w[2] == 0) && (sig_n_prime192.w[1] == sig_x.w[1])
       && (sig_n_prime192.w[0] == sig_x.w[0])) {
     res = (exp_x <= exp_y);
     BID_RETURN (res);
   }
   res = ((sig_n_prime192.w[2] != 0) ||
-         // if upper128 bits of compensated y are non-zero, y is bigger
-         (sig_n_prime192.w[1] > sig_x.w[1]) ||
-         // if compensated y is bigger, y is bigger
-         (sig_n_prime192.w[1] == sig_x.w[1]
-          && sig_n_prime192.w[0] > sig_x.w[0]));
+	 // if upper128 bits of compensated y are non-zero, y is bigger
+	 (sig_n_prime192.w[1] > sig_x.w[1]) ||
+	 // if compensated y is bigger, y is bigger
+	 (sig_n_prime192.w[1] == sig_x.w[1]
+	  && sig_n_prime192.w[0] > sig_x.w[0]));
   BID_RETURN (res);
 }
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid128_radix (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_radix (int *pres, UINT128 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT128 x = *px;
 #else
 int
-__bid128_radix (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid128_radix (UINT128 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
-  if (x.w[LOW_128W])        // dummy test
+  if (x.w[LOW_128W])	// dummy test
     res = 10;
   else
     res = 10;

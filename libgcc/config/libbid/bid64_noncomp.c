@@ -38,33 +38,33 @@ static const UINT64 mult_factor[16] = {
 
 /*****************************************************************************
  *    BID64 non-computational functions:
- *         - __bid64_isSigned
- *         - __bid64_isNormal
- *         - __bid64_isSubnormal
- *         - __bid64_isFinite
- *         - __bid64_isZero
- *         - __bid64_isInf
- *         - __bid64_isSignaling
- *         - __bid64_isCanonical
- *         - __bid64_isNaN
- *         - __bid64_copy
- *         - __bid64_negate
- *         - __bid64_abs
- *         - __bid64_copySign
- *         - __bid64_class
- *         - __bid64_sameQuantum
- *         - __bid64_totalOrder
- *         - __bid64_totalOrderMag
- *         - __bid64_radix
+ *         - bid64_isSigned
+ *         - bid64_isNormal
+ *         - bid64_isSubnormal
+ *         - bid64_isFinite
+ *         - bid64_isZero
+ *         - bid64_isInf
+ *         - bid64_isSignaling
+ *         - bid64_isCanonical
+ *         - bid64_isNaN
+ *         - bid64_copy
+ *         - bid64_negate
+ *         - bid64_abs
+ *         - bid64_copySign
+ *         - bid64_class
+ *         - bid64_sameQuantum
+ *         - bid64_totalOrder
+ *         - bid64_totalOrderMag
+ *         - bid64_radix
  ****************************************************************************/
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isSigned (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isSigned (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isSigned (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isSigned (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -75,18 +75,18 @@ __bid64_isSigned (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // return 1 iff x is not zero, nor NaN nor subnormal nor infinity
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isNormal (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isNormal (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isNormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isNormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT128 sig_x_prime;
   UINT64 sig_x;
   unsigned int exp_x;
 
-  if ((x & MASK_INF) == MASK_INF) { // x is either INF or NaN
+  if ((x & MASK_INF) == MASK_INF) {	// x is either INF or NaN
     res = 0;
   } else {
     // decode number into exponent and significand
@@ -94,14 +94,14 @@ __bid64_isNormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
       sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
       // check for zero or non-canonical
       if (sig_x > 9999999999999999ull || sig_x == 0) {
-	res = 0; // zero or non-canonical
+	res = 0;	// zero or non-canonical
 	BID_RETURN (res);
       }
       exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
     } else {
       sig_x = (x & MASK_BINARY_SIG1);
       if (sig_x == 0) {
-	res = 0; // zero
+	res = 0;	// zero
 	BID_RETURN (res);
       }
       exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
@@ -112,12 +112,12 @@ __bid64_isNormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
       __mul_64x64_to_128MACH (sig_x_prime, sig_x, mult_factor[exp_x]);
       if (sig_x_prime.w[1] == 0
 	  && sig_x_prime.w[0] < 1000000000000000ull) {
-	res = 0; // subnormal
+	res = 0;	// subnormal
       } else {
-	res = 1; // normal
+	res = 1;	// normal
       }
     } else {
-      res = 1; // normal
+      res = 1;	// normal
     }
   }
   BID_RETURN (res);
@@ -126,19 +126,19 @@ __bid64_isNormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // return 1 iff x is not zero, nor NaN nor normal nor infinity
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isSubnormal (int *pres,
+bid64_isSubnormal (int *pres,
 		   UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isSubnormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isSubnormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT128 sig_x_prime;
   UINT64 sig_x;
   unsigned int exp_x;
 
-  if ((x & MASK_INF) == MASK_INF) { // x is either INF or NaN
+  if ((x & MASK_INF) == MASK_INF) {	// x is either INF or NaN
     res = 0;
   } else {
     // decode number into exponent and significand
@@ -146,14 +146,14 @@ __bid64_isSubnormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
       sig_x = (x & MASK_BINARY_SIG2) | MASK_BINARY_OR2;
       // check for zero or non-canonical
       if (sig_x > 9999999999999999ull || sig_x == 0) {
-	res = 0; // zero or non-canonical
+	res = 0;	// zero or non-canonical
 	BID_RETURN (res);
       }
       exp_x = (x & MASK_BINARY_EXPONENT2) >> 51;
     } else {
       sig_x = (x & MASK_BINARY_SIG1);
       if (sig_x == 0) {
-	res = 0; // zero
+	res = 0;	// zero
 	BID_RETURN (res);
       }
       exp_x = (x & MASK_BINARY_EXPONENT1) >> 53;
@@ -164,12 +164,12 @@ __bid64_isSubnormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
       __mul_64x64_to_128MACH (sig_x_prime, sig_x, mult_factor[exp_x]);
       if (sig_x_prime.w[1] == 0
 	  && sig_x_prime.w[0] < 1000000000000000ull) {
-	res = 1; // subnormal
+	res = 1;	// subnormal
       } else {
-	res = 0; // normal
+	res = 0;	// normal
       }
     } else {
-      res = 0; // normal
+      res = 0;	// normal
     }
   }
   BID_RETURN (res);
@@ -178,11 +178,11 @@ __bid64_isSubnormal (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 //iff x is zero, subnormal or normal (not infinity or NaN)
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isFinite (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isFinite (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isFinite (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isFinite (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -192,11 +192,11 @@ __bid64_isFinite (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isZero (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isZero (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isZero (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isZero (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -218,11 +218,11 @@ __bid64_isZero (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isInf (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isInf (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isInf (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isInf (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -232,12 +232,12 @@ __bid64_isInf (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isSignaling (int *pres,
+bid64_isSignaling (int *pres,
 		   UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isSignaling (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isSignaling (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -247,19 +247,19 @@ __bid64_isSignaling (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isCanonical (int *pres,
+bid64_isCanonical (int *pres,
 		   UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isCanonical (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isCanonical (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
-  if ((x & MASK_NAN) == MASK_NAN) { // NaN
+  if ((x & MASK_NAN) == MASK_NAN) {	// NaN
     if (x & 0x01fc000000000000ull) {
       res = 0;
-    } else if ((x & 0x0003ffffffffffffull) > 999999999999999ull) { // payload
+    } else if ((x & 0x0003ffffffffffffull) > 999999999999999ull) {	// payload
       res = 0;
     } else {
       res = 1;
@@ -270,11 +270,11 @@ __bid64_isCanonical (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
     } else {
       res = 1;
     }
-  } else if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) { // 54-bit coeff.
+  } else if ((x & MASK_STEERING_BITS) == MASK_STEERING_BITS) {	// 54-bit coeff.
     res =
       (((x & MASK_BINARY_SIG2) | MASK_BINARY_OR2) <=
        9999999999999999ull);
-  } else { // 53-bit coeff.
+  } else {	// 53-bit coeff.
     res = 1;
   }
   BID_RETURN (res);
@@ -282,11 +282,11 @@ __bid64_isCanonical (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_isNaN (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isNaN (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_isNaN (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_isNaN (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
 
@@ -297,11 +297,11 @@ __bid64_isNaN (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies a floating-point operand x to destination y, with no change
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_copy (UINT64 * pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_copy (UINT64 * pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 UINT64
-__bid64_copy (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_copy (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT64 res;
 
@@ -312,12 +312,12 @@ __bid64_copy (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies a floating-point operand x to destination y, reversing the sign
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_negate (UINT64 * pres,
+bid64_negate (UINT64 * pres,
 	      UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 UINT64
-__bid64_negate (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_negate (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT64 res;
 
@@ -328,11 +328,11 @@ __bid64_negate (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // copies a floating-point operand x to destination y, changing the sign to positive
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_abs (UINT64 * pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_abs (UINT64 * pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 UINT64
-__bid64_abs (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_abs (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT64 res;
 
@@ -344,13 +344,13 @@ __bid64_abs (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // with the sign of y
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_copySign (UINT64 * pres, UINT64 * px,
+bid64_copySign (UINT64 * pres, UINT64 * px,
 		UINT64 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
   UINT64 y = *py;
 #else
 UINT64
-__bid64_copySign (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_copySign (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT64 res;
 
@@ -360,11 +360,11 @@ __bid64_copySign (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_class (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_class (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   UINT128 sig_x_prime;
@@ -413,7 +413,7 @@ __bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   }
   // if exponent is less than -383, number may be subnormal
   //  if (exp_x - 398 < -383)
-  if (exp_x < 15) { // sig_x *10^exp_x
+  if (exp_x < 15) {	// sig_x *10^exp_x
     __mul_64x64_to_128MACH (sig_x_prime, sig_x, mult_factor[exp_x]);
     if (sig_x_prime.w[1] == 0
 	&& (sig_x_prime.w[0] < 1000000000000000ull)) {
@@ -435,13 +435,13 @@ __bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 // If exactly one operand is infinite or exactly one operand is NaN, then false
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_sameQuantum (int *pres, UINT64 * px,
+bid64_sameQuantum (int *pres, UINT64 * px,
 		   UINT64 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
   UINT64 y = *py;
 #else
 int
-__bid64_sameQuantum (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_sameQuantum (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   unsigned int exp_x, exp_y;
@@ -473,13 +473,13 @@ __bid64_sameQuantum (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_totalOrder (int *pres, UINT64 * px,
+bid64_totalOrder (int *pres, UINT64 * px,
 		  UINT64 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
   UINT64 y = *py;
 #else
 int
-__bid64_totalOrder (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_totalOrder (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   int exp_x, exp_y;
@@ -493,23 +493,25 @@ __bid64_totalOrder (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   //    (2) totalOrder(number, +NaN) is true
   //    (3) if x and y are both NaN:
   //           i) negative sign bit < positive sign bit
-  //           ii) signaling < quiet fir +NaN, reverse for -NaN
+  //           ii) signaling < quiet for +NaN, reverse for -NaN
   //           iii) lesser payload < greater payload for +NaN (reverse for -NaN)
+  //           iv) else if bitwise identical (in canonical form), return 1
   if ((x & MASK_NAN) == MASK_NAN) {
     // if x is -NaN
     if ((x & MASK_SIGN) == MASK_SIGN) {
       // return true, unless y is -NaN also
       if ((y & MASK_NAN) != MASK_NAN || (y & MASK_SIGN) != MASK_SIGN) {
-	res = 1; // y is a number, return 1
+	res = 1;	// y is a number, return 1
 	BID_RETURN (res);
-      } else { // if y and x are both -NaN
+      } else {	// if y and x are both -NaN
 	// if x and y are both -sNaN or both -qNaN, we have to compare payloads
 	// this xnor statement evaluates to true if both are sNaN or qNaN
 	if (!
 	    (((y & MASK_SNAN) == MASK_SNAN) ^ ((x & MASK_SNAN) ==
 					       MASK_SNAN))) {
 	  // it comes down to the payload.  we want to return true if x has a
-	  // larger payload, but first we must calculate the payload.
+	  // larger payload, or if the payloads are equal (canonical forms
+	  // are bitwise identical)
 	  pyld_y = y & 0x0003ffffffffffffull;
 	  pyld_x = x & 0x0003ffffffffffffull;
 	  if (pyld_y > 999999999999999ull || pyld_y == 0) {
@@ -529,14 +531,14 @@ __bid64_totalOrder (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 	  BID_RETURN (res);
 	} else {
 	  // either x = -sNaN and y = -qNaN or x = -qNaN and y = -sNaN
-	  res = (y & MASK_SNAN) == MASK_SNAN; // totalOrder(-qNaN, -sNaN) == 1
+	  res = (y & MASK_SNAN) == MASK_SNAN;	// totalOrder(-qNaN, -sNaN) == 1
 	  BID_RETURN (res);
 	}
       }
-    } else { // x is +NaN
+    } else {	// x is +NaN
       // return false, unless y is +NaN also
       if ((y & MASK_NAN) != MASK_NAN || (y & MASK_SIGN) == MASK_SIGN) {
-	res = 0; // y is a number, return 1
+	res = 0;	// y is a number, return 1
 	BID_RETURN (res);
       } else {
 	// x and y are both +NaN; 
@@ -546,7 +548,8 @@ __bid64_totalOrder (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 	    (((y & MASK_SNAN) == MASK_SNAN) ^ ((x & MASK_SNAN) ==
 					       MASK_SNAN))) {
 	  // it comes down to the payload.  we want to return true if x has a
-	  // smaller payload, but first we must calculate the payload.
+	  // smaller payload, or if the payloads are equal (canonical forms
+	  // are bitwise identical)
 	  pyld_y = y & 0x0003ffffffffffffull;
 	  pyld_x = x & 0x0003ffffffffffffull;
 	  // if x is zero and y isn't, x has the smaller 
@@ -736,16 +739,16 @@ __bid64_totalOrder (UINT64 x, UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   BID_RETURN (res);
 }
 
-//totalOrderMag is TotalOrder(abs(x), abs(y))
+// totalOrderMag is TotalOrder(abs(x), abs(y))
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_totalOrderMag (int *pres, UINT64 * px,
+bid64_totalOrderMag (int *pres, UINT64 * px,
 		     UINT64 * py _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
   UINT64 y = *py;
 #else
 int
-__bid64_totalOrderMag (UINT64 x,
+bid64_totalOrderMag (UINT64 x,
 		     UINT64 y _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
@@ -754,20 +757,19 @@ __bid64_totalOrderMag (UINT64 x,
   UINT128 sig_n_prime;
   char x_is_zero = 0, y_is_zero = 0;
 
-  // NaN (CASE1)
+  // NaN (CASE 1)
   // if x and y are unordered numerically because either operand is NaN
-  //    (1) totalOrder(-NaN, number) is true
-  //    (2) totalOrder(number, +NaN) is true
-  //    (3) if x and y are both NaN:
-  //           i) negative sign bit < positive sign bit
-  //           ii) signaling < quiet fir +NaN, reverse for -NaN
-  //           iii) lesser payload < greater payload for +NaN (reverse for -NaN)
+  //    (1) totalOrder(number, +NaN) is true
+  //    (2) if x and y are both NaN:
+  //       i) signaling < quiet for +NaN
+  //       ii) lesser payload < greater payload for +NaN
+  //       iii) else if bitwise identical (in canonical form), return 1
   if ((x & MASK_NAN) == MASK_NAN) {
     // x is +NaN
 
     // return false, unless y is +NaN also
     if ((y & MASK_NAN) != MASK_NAN) {
-      res = 0; // y is a number, return 1
+      res = 0;	// y is a number, return 1
       BID_RETURN (res);
 
     } else {
@@ -779,7 +781,8 @@ __bid64_totalOrderMag (UINT64 x,
 	  (((y & MASK_SNAN) == MASK_SNAN) ^ ((x & MASK_SNAN) ==
 					     MASK_SNAN))) {
 	// it comes down to the payload.  we want to return true if x has a
-	// smaller payload, but first we must calculate the payload.
+	// smaller payload, or if the payloads are equal (canonical forms
+	// are bitwise identical)
 	pyld_y = y & 0x0003ffffffffffffull;
 	pyld_x = x & 0x0003ffffffffffffull;
 	// if x is zero and y isn't, x has the smaller 
@@ -893,7 +896,7 @@ __bid64_totalOrderMag (UINT64 x,
   // if exp_x is 15 greater than exp_y, it is definitely 
   // larger, so no need for compensation
   if (exp_x - exp_y > 15) {
-    res = 0; // difference cannot be greater than 10^15
+    res = 0;	// difference cannot be greater than 10^15
     BID_RETURN (res);
   }
   // if exp_x is 15 less than exp_y, it is definitely 
@@ -941,11 +944,11 @@ __bid64_totalOrderMag (UINT64 x,
 
 #if DECIMAL_CALL_BY_REFERENCE
 void
-__bid64_radix (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_radix (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
 int
-__bid64_radix (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
+bid64_radix (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;
   if (x)	// dummy test

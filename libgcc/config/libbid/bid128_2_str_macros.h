@@ -29,8 +29,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #define __L0_Normalize_10to18( X_hi, X_lo )            \
 {                                                      \
 UINT64 L0_tmp;                                         \
-L0_tmp = (X_lo) + __bid_Twoto60_m_10to18;                    \
-if (L0_tmp & __bid_Twoto60)                                  \
+L0_tmp = (X_lo) + Twoto60_m_10to18;                    \
+if (L0_tmp & Twoto60)                                  \
  {(X_hi)=(X_hi)+1;(X_lo)=((L0_tmp<<4)>>4);}            \
 }
 
@@ -38,7 +38,7 @@ if (L0_tmp & __bid_Twoto60)                                  \
 #define __L0_Normalize_10to9( X_hi, X_lo )             \
 {                                                      \
 UINT32 L0_tmp;                                         \
-L0_tmp = (X_lo) + __bid_Twoto30_m_10to9;                     \
+L0_tmp = (X_lo) + Twoto30_m_10to9;                     \
 if (L0_tmp & 0x40000000)                               \
  {(X_hi)=(X_hi)+1;(X_lo)=((L0_tmp<<2)>>2);}            \
 }
@@ -76,10 +76,10 @@ UINT32 L0_X, L0_head, L0_mid, L0_tail, L0_tmp;         \
 {                                                      \
 UINT32 L1_X_hi, L1_X_lo;                               \
 UINT64 L1_Xhi_64, L1_Xlo_64;                           \
-L1_Xhi_64 = ( ((X)>>28)*__bid_Inv_Tento9 ) >> 33;            \
-L1_Xlo_64 = (X) - L1_Xhi_64*(UINT64)__bid_Tento9;            \
-if (L1_Xlo_64 >= (UINT64)__bid_Tento9)                       \
- {L1_Xlo_64-=(UINT64)__bid_Tento9;L1_Xhi_64+=1;}             \
+L1_Xhi_64 = ( ((X)>>28)*Inv_Tento9 ) >> 33;            \
+L1_Xlo_64 = (X) - L1_Xhi_64*(UINT64)Tento9;            \
+if (L1_Xlo_64 >= (UINT64)Tento9)                       \
+ {L1_Xlo_64-=(UINT64)Tento9;L1_Xhi_64+=1;}             \
 L1_X_hi=(UINT32)L1_Xhi_64; L1_X_lo=(UINT32)L1_Xlo_64;  \
 __L0_Split_MiDi_3(L1_X_hi,(ptr));                      \
 __L0_Split_MiDi_3(L1_X_lo,(ptr));                      \
@@ -89,18 +89,18 @@ __L0_Split_MiDi_3(L1_X_lo,(ptr));                      \
 {                                                      \
 UINT32 L1_X_hi, L1_X_lo;                               \
 UINT64 L1_Xhi_64, L1_Xlo_64;                           \
-if ((X)>=(UINT64)__bid_Tento9){                              \
-  L1_Xhi_64 = ( ((X)>>28)*__bid_Inv_Tento9 ) >> 33;          \
-  L1_Xlo_64 = (X) - L1_Xhi_64*(UINT64)__bid_Tento9;          \
-  if (L1_Xlo_64 >= (UINT64)__bid_Tento9)                     \
-   {L1_Xlo_64-=(UINT64)__bid_Tento9;L1_Xhi_64+=1;}           \
+if ((X)>=(UINT64)Tento9){                              \
+  L1_Xhi_64 = ( ((X)>>28)*Inv_Tento9 ) >> 33;          \
+  L1_Xlo_64 = (X) - L1_Xhi_64*(UINT64)Tento9;          \
+  if (L1_Xlo_64 >= (UINT64)Tento9)                     \
+   {L1_Xlo_64-=(UINT64)Tento9;L1_Xhi_64+=1;}           \
   L1_X_hi=(UINT32)L1_Xhi_64;                           \
   L1_X_lo=(UINT32)L1_Xlo_64;                           \
-  if (L1_X_hi>=__bid_Tento6){                                \
+  if (L1_X_hi>=Tento6){                                \
      __L0_Split_MiDi_3(L1_X_hi,(ptr));                 \
      __L0_Split_MiDi_3(L1_X_lo,(ptr));                 \
   }                                                    \
-  else if (L1_X_hi>=__bid_Tento3){                           \
+  else if (L1_X_hi>=Tento3){                           \
      __L0_Split_MiDi_2(L1_X_hi,(ptr));                 \
      __L0_Split_MiDi_3(L1_X_lo,(ptr));                 \
   }                                                    \
@@ -111,10 +111,10 @@ if ((X)>=(UINT64)__bid_Tento9){                              \
 }                                                      \
 else {                                                 \
   L1_X_lo = (UINT32)(X);                               \
-  if (L1_X_lo>=__bid_Tento6){                                \
+  if (L1_X_lo>=Tento6){                                \
      __L0_Split_MiDi_3(L1_X_lo,(ptr));                 \
   }                                                    \
-  else if (L1_X_lo>=__bid_Tento3){                           \
+  else if (L1_X_lo>=Tento3){                           \
      __L0_Split_MiDi_2(L1_X_lo,(ptr));                 \
   }                                                    \
   else {                                               \
@@ -127,7 +127,7 @@ else {                                                 \
 #define __L0_MiDi2Str( X, c_ptr )              \
 {                                              \
 char *L0_src;                                  \
- L0_src = __bid_midi_tbl[(X)];                       \
+ L0_src = midi_tbl[(X)];                       \
  *((c_ptr)++) = *(L0_src++);                   \
  *((c_ptr)++) = *(L0_src++);                   \
  *((c_ptr)++) = *(L0_src);                     \
@@ -136,7 +136,7 @@ char *L0_src;                                  \
 #define __L0_MiDi2Str_Lead( X, c_ptr )         \
 {                                              \
 char *L0_src;                                  \
- L0_src = __bid_midi_tbl[(X)];                       \
+ L0_src = midi_tbl[(X)];                       \
  if ((X)>=100){                                \
  *((c_ptr)++) = *(L0_src++);                   \
  *((c_ptr)++) = *(L0_src++);                   \

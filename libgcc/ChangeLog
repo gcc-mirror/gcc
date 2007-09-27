@@ -1,3 +1,10 @@
+2007-09-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* Makefile.in (dfp-filenames): Replace decimal_globals,
+	decimal_data, binarydecimal and convert_data with
+	bid_decimal_globals, bid_decimal_data, bid_binarydecimal
+	and bid_convert_data, respectively.
+
 2007-09-17  Chao-ying Fu  <fu@mips.com>
 	    Nigel Stephens  <nigel@mips.com>
 

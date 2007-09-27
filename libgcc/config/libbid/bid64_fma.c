@@ -33,7 +33,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
  *  Algorithm description:
  *
  *  if multiplication is guranteed exact (short coefficients)
- *     call the unpacked arg. equivalent of __bid64_add(x*y, z)
+ *     call the unpacked arg. equivalent of bid64_add(x*y, z)
  *  else 
  *     get full coefficient_x*coefficient_y product
  *     call subroutine to perform addition of 64-bit argument 
@@ -41,121 +41,25 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
  *
  ****************************************************************************/
 
-#include "inline_bid_add.h"
-
-//////////////////////////////////////////////////////////////////////////
-//
-//  If coefficient_z is less than 16 digits long, normalize to 16 digits
-//
-/////////////////////////////////////////////////////////////////////////
-
-#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
-  #ifndef IEEE_ROUND_NEAREST
-static UINT64
-__bid_normalize (UINT64 sign_z, int exponent_z,
-               UINT64 coefficient_z, UINT64 round_dir, int round_flag,
-               int rounding_mode, unsigned *fpsc) {
-  #else
-static UINT64
-__bid_normalize (UINT64 z, UINT64 sign_z, int exponent_z,
-               UINT64 coefficient_z, UINT64 round_dir, int round_flag,
-               int rounding_mode, unsigned *fpsc) {
-  #endif
-#else
-static UINT64
-__bid_normalize (UINT64 z, UINT64 sign_z, int exponent_z,
-               UINT64 coefficient_z, UINT64 round_dir, int round_flag,
-               int rounding_mode, unsigned *fpsc) {
-#endif
-  SINT64 D;
-  int_double tempx;
-  int digits_z, bin_expon, scale, rmode;
-
-#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
-#ifndef IEEE_ROUND_NEAREST
-  rmode = rounding_mode;
-  if (sign_z && (unsigned) (rmode - 1) < 2)
-    rmode = 3 - rmode;
-#else
-  if (coefficient_z >= __bid_power10_table_128[15].w[0])
-    return z;
-#endif
-#endif
-#ifdef IEEE_ROUND_NEAREST_TIES_AWAY
-  if (coefficient_z >= __bid_power10_table_128[15].w[0])
-    return z;
-#endif
-
-  //--- get number of bits in the coefficients of x and y ---
-  tempx.d = (double) coefficient_z;
-  bin_expon = ((tempx.i & MASK_BINARY_EXPONENT) >> 52) - 0x3ff;
-  // get number of decimal digits in the coeff_x
-  digits_z = __bid_estimate_decimal_digits[bin_expon];
-  if (coefficient_z >= __bid_power10_table_128[digits_z].w[0])
-    digits_z++;
-
-  scale = 16 - digits_z;
-  exponent_z -= scale;
-  if (exponent_z < 0) {
-    scale += exponent_z;
-    exponent_z = 0;
-  }
-  coefficient_z *= __bid_power10_table_128[scale].w[0];
-
-#ifdef SET_STATUS_FLAGS
-  if (round_flag) {
-    __set_status_flags (fpsc, INEXACT_EXCEPTION);
-    if (coefficient_z < 1000000000000000ull)
-      __set_status_flags (fpsc, UNDERFLOW_EXCEPTION);
-    else if ((coefficient_z == 1000000000000000ull) && !exponent_z
-	     && ((SINT64) (round_dir ^ sign_z) < 0) && round_flag
-	     && (rmode == ROUNDING_DOWN || rmode == ROUNDING_TO_ZERO))
-      __set_status_flags (fpsc, UNDERFLOW_EXCEPTION);
-  }
-#endif
-
-#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
-#ifndef IEEE_ROUND_NEAREST
-  if (round_flag && (rmode & 3)) {
-    D = round_dir ^ sign_z;
-
-    if (rmode == ROUNDING_UP) {
-      if (D >= 0)
-	coefficient_z++;
-    } else {
-      if (D < 0)
-	coefficient_z--;
-      if (coefficient_z < 1000000000000000ull && exponent_z) {
-	coefficient_z = 9999999999999999ull;
-	exponent_z--;
-      }
-    }
-  }
-#endif
-#endif
-
-  return get_BID64 (sign_z, exponent_z, coefficient_z, rounding_mode,
-		    fpsc);
-}
-
+#include "bid_inline_add.h"
 
 #if DECIMAL_CALL_BY_REFERENCE
-extern void __bid64_mul (UINT64 * pres, UINT64 * px,
+extern void bid64_mul (UINT64 * pres, UINT64 * px,
 		       UINT64 *
 		       py _RND_MODE_PARAM _EXC_FLAGS_PARAM
 		       _EXC_MASKS_PARAM _EXC_INFO_PARAM);
 #else
 
-extern UINT64 __bid64_mul (UINT64 x,
-			     UINT64 y _RND_MODE_PARAM
-			     _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
-			     _EXC_INFO_PARAM);
+extern UINT64 bid64_mul (UINT64 x,
+			 UINT64 y _RND_MODE_PARAM
+			 _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
+			 _EXC_INFO_PARAM);
 #endif
 
 #if DECIMAL_CALL_BY_REFERENCE
 
 void
-__bid64_fma (UINT64 * pres, UINT64 * px, UINT64 * py,
+bid64_fma (UINT64 * pres, UINT64 * px, UINT64 * py,
 	   UINT64 *
 	   pz _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
 	   _EXC_INFO_PARAM) {
@@ -163,7 +67,7 @@ __bid64_fma (UINT64 * pres, UINT64 * px, UINT64 * py,
 #else
 
 UINT64
-__bid64_fma (UINT64 x, UINT64 y,
+bid64_fma (UINT64 x, UINT64 y,
 	   UINT64 z _RND_MODE_PARAM _EXC_FLAGS_PARAM
 	   _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
@@ -171,9 +75,9 @@ __bid64_fma (UINT64 x, UINT64 y,
   UINT64 sign_x, sign_y, coefficient_x, coefficient_y, sign_z,
     coefficient_z;
   UINT64 C64, remainder_y, res;
-  UINT64 CYh, CY0L, T;
+  UINT64 CYh, CY0L, T, valid_x, valid_y, valid_z;
   int_double tempx, tempy;
-  int extra_digits, exponent_x = 0, exponent_y = 0, bin_expon_cx, bin_expon_cy,
+  int extra_digits, exponent_x, exponent_y, bin_expon_cx, bin_expon_cy,
     bin_expon_product, rmode;
   int digits_p, bp, final_exponent, exponent_z, digits_z, ez, ey,
     scale_z, uf_status;
@@ -187,200 +91,197 @@ __bid64_fma (UINT64 x, UINT64 y,
   z = *pz;
 #endif
 
-  // unpack arguments, check for NaN or Infinity
-  if (!unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x)) {
-    // x is Inf. or NaN
+  valid_x = unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x);
+  valid_y = unpack_BID64 (&sign_y, &exponent_y, &coefficient_y, y);
+  valid_z = unpack_BID64 (&sign_z, &exponent_z, &coefficient_z, z);
 
-    // test if x is NaN
-    if ((x & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
-#ifdef SET_STATUS_FLAGS
-      if (((x & 0x7e00000000000000ull) == 0x7e00000000000000ull) ||	// sNaN
-	  ((y & 0x7e00000000000000ull) == 0x7e00000000000000ull) ||	// sNaN
-	  ((z & 0x7e00000000000000ull) == 0x7e00000000000000ull))	// sNaN
-	__set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-      BID_RETURN (x & QUIET_MASK64);
-    }
-    // x is Infinity?
-    if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
-      // check if y is 0
-      if (((y & 0x6000000000000000ull) != 0x6000000000000000ull)
-	  && !(y << (64 - 53))) {
-	// y==0, return NaN
-#ifdef SET_STATUS_FLAGS
-	if ((z & 0x7e00000000000000ull) != 0x7c00000000000000ull)
-	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	BID_RETURN (0x7c00000000000000ull);
-      }
-      // test if z is Inf of oposite sign
-      if (((z & 0x7c00000000000000ull) == 0x7800000000000000ull)
-	  && (((x ^ y) ^ z) & 0x8000000000000000ull)) {
-	// return NaN 
-#ifdef SET_STATUS_FLAGS
-	if (((y & 0x7e00000000000000ull) != 0x7c00000000000000ull) ||	// qNaN
-	    ((z & 0x7e00000000000000ull) == 0x7e00000000000000ull))	// sNaN
-	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	BID_RETURN (0x7c00000000000000ull);
-      }
-      if ((y & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
-#ifdef SET_STATUS_FLAGS
-	if (((y & 0x7e00000000000000ull) == 0x7e00000000000000ull) ||	// sNaN
-	    ((z & 0x7e00000000000000ull) == 0x7e00000000000000ull))	// sNaN
-	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	BID_RETURN (y & QUIET_MASK64);
-      }
-      if ((z & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
-#ifdef SET_STATUS_FLAGS
-	if (((z & 0x7e00000000000000ull) == 0x7e00000000000000ull))	// sNaN
-	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	BID_RETURN (z & QUIET_MASK64);
-      }
-      // otherwise return +/-Inf
-      BID_RETURN (((x ^ y) & 0x8000000000000000ull) |
-		  0x7800000000000000ull);
-    }
-    // x is 0
-    if (((y & 0x7800000000000000ull) != 0x7800000000000000ull)
-	&& ((z & 0x7800000000000000ull) != 0x7800000000000000ull)) {
-      if ((z & 0x6000000000000000ull) == 0x6000000000000000ull) {
-	exponent_z = ((UINT32) (z >> 51)) & 0x3ff;
-	coefficient_z =
-	  (z & 0x0007ffffffffffffull) | 0x0020000000000000ull;
-      } else {
-	exponent_z = ((UINT32) (z >> 53)) & 0x3ff;
-	coefficient_z = z & 0x001fffffffffffffull;
-      }
+  // unpack arguments, check for NaN, Infinity, or 0
+  if (!valid_x || !valid_y || !valid_z) {
 
-      if (coefficient_z) {
-	if ((y & 0x6000000000000000ull) == 0x6000000000000000ull)
-	  exponent_y =
-	    exponent_x - DECIMAL_EXPONENT_BIAS +
-	    (((UINT32) (y >> 51)) & 0x3ff);
+    if ((y & MASK_NAN) == MASK_NAN) {	// y is NAN
+      // if x = {0, f, inf, NaN}, y = NaN, z = {0, f, inf, NaN} then res = Q (y)
+      // check first for non-canonical NaN payload
+      y = y & 0xfe03ffffffffffffull;	// clear G6-G12
+      if ((y & 0x0003ffffffffffffull) > 999999999999999ull) {
+	y = y & 0xfe00000000000000ull;	// clear G6-G12 and the payload bits
+      }
+      if ((y & MASK_SNAN) == MASK_SNAN) {	// y is SNAN
+	// set invalid flag
+	*pfpsf |= INVALID_EXCEPTION;
+	// return quiet (y)
+	res = y & 0xfdffffffffffffffull;
+      } else {	// y is QNaN
+	// return y
+	res = y;
+	// if z = SNaN or x = SNaN signal invalid exception
+	if ((z & MASK_SNAN) == MASK_SNAN
+	    || (x & MASK_SNAN) == MASK_SNAN) {
+	  // set invalid flag
+	  *pfpsf |= INVALID_EXCEPTION;
+	}
+      }
+      BID_RETURN (res)
+    } else if ((z & MASK_NAN) == MASK_NAN) {	// z is NAN
+      // if x = {0, f, inf, NaN}, y = {0, f, inf}, z = NaN then res = Q (z)
+      // check first for non-canonical NaN payload
+      z = z & 0xfe03ffffffffffffull;	// clear G6-G12
+      if ((z & 0x0003ffffffffffffull) > 999999999999999ull) {
+	z = z & 0xfe00000000000000ull;	// clear G6-G12 and the payload bits
+      }
+      if ((z & MASK_SNAN) == MASK_SNAN) {	// z is SNAN
+	// set invalid flag
+	*pfpsf |= INVALID_EXCEPTION;
+	// return quiet (z)
+	res = z & 0xfdffffffffffffffull;
+      } else {	// z is QNaN
+	// return z
+	res = z;
+	// if x = SNaN signal invalid exception
+	if ((x & MASK_SNAN) == MASK_SNAN) {
+	  // set invalid flag
+	  *pfpsf |= INVALID_EXCEPTION;
+	}
+      }
+      BID_RETURN (res)
+    } else if ((x & MASK_NAN) == MASK_NAN) {	// x is NAN
+      // if x = NaN, y = {0, f, inf}, z = {0, f, inf} then res = Q (x)
+      // check first for non-canonical NaN payload
+      x = x & 0xfe03ffffffffffffull;	// clear G6-G12
+      if ((x & 0x0003ffffffffffffull) > 999999999999999ull) {
+	x = x & 0xfe00000000000000ull;	// clear G6-G12 and the payload bits
+      }
+      if ((x & MASK_SNAN) == MASK_SNAN) {	// x is SNAN
+	// set invalid flag
+	*pfpsf |= INVALID_EXCEPTION;
+	// return quiet (x)
+	res = x & 0xfdffffffffffffffull;
+      } else {	// x is QNaN
+	// return x
+	res = x;	// clear out G[6]-G[16]
+      }
+      BID_RETURN (res)
+    }
+
+    if (!valid_x) {
+      // x is Inf. or 0
+
+      // x is Infinity?
+      if ((x & 0x7800000000000000ull) == 0x7800000000000000ull) {
+	// check if y is 0
+	if (!coefficient_y) {
+	  // y==0, return NaN
+#ifdef SET_STATUS_FLAGS
+	  if ((z & 0x7e00000000000000ull) != 0x7c00000000000000ull)
+	    __set_status_flags (pfpsf, INVALID_EXCEPTION);
+#endif
+	  BID_RETURN (0x7c00000000000000ull);
+	}
+	// test if z is Inf of oposite sign
+	if (((z & 0x7c00000000000000ull) == 0x7800000000000000ull)
+	    && (((x ^ y) ^ z) & 0x8000000000000000ull)) {
+	  // return NaN 
+#ifdef SET_STATUS_FLAGS
+	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
+#endif
+	  BID_RETURN (0x7c00000000000000ull);
+	}
+	// otherwise return +/-Inf
+	BID_RETURN (((x ^ y) & 0x8000000000000000ull) |
+		    0x7800000000000000ull);
+      }
+      // x is 0
+      if (((y & 0x7800000000000000ull) != 0x7800000000000000ull)
+	  && ((z & 0x7800000000000000ull) != 0x7800000000000000ull)) {
+
+	if (coefficient_z) {
+	  exponent_y = exponent_x - DECIMAL_EXPONENT_BIAS + exponent_y;
+
+	  sign_z = z & 0x8000000000000000ull;
+
+	  if (exponent_y >= exponent_z)
+	    BID_RETURN (z);
+	  res =
+	    add_zero64 (exponent_y, sign_z, exponent_z, coefficient_z,
+			&rnd_mode, pfpsf);
+	  BID_RETURN (res);
+	}
+      }
+    }
+    if (!valid_y) {
+      // y is Inf. or 0
+
+      // y is Infinity?
+      if ((y & 0x7800000000000000ull) == 0x7800000000000000ull) {
+	// check if x is 0
+	if (!coefficient_x) {
+	  // y==0, return NaN
+#ifdef SET_STATUS_FLAGS
+	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
+#endif
+	  BID_RETURN (0x7c00000000000000ull);
+	}
+	// test if z is Inf of oposite sign
+	if (((z & 0x7c00000000000000ull) == 0x7800000000000000ull)
+	    && (((x ^ y) ^ z) & 0x8000000000000000ull)) {
+#ifdef SET_STATUS_FLAGS
+	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
+#endif
+	  // return NaN
+	  BID_RETURN (0x7c00000000000000ull);
+	}
+	// otherwise return +/-Inf
+	BID_RETURN (((x ^ y) & 0x8000000000000000ull) |
+		    0x7800000000000000ull);
+      }
+      // y is 0 
+      if (((z & 0x7800000000000000ull) != 0x7800000000000000ull)) {
+
+	if (coefficient_z) {
+	  exponent_y += exponent_x - DECIMAL_EXPONENT_BIAS;
+
+	  sign_z = z & 0x8000000000000000ull;
+
+	  if (exponent_y >= exponent_z)
+	    BID_RETURN (z);
+	  res =
+	    add_zero64 (exponent_y, sign_z, exponent_z, coefficient_z,
+			&rnd_mode, pfpsf);
+	  BID_RETURN (res);
+	}
+      }
+    }
+
+    if (!valid_z) {
+      // y is Inf. or 0
+
+      // test if y is NaN/Inf
+      if ((z & 0x7800000000000000ull) == 0x7800000000000000ull) {
+	BID_RETURN (coefficient_z & QUIET_MASK64);
+      }
+      // z is 0, return x*y
+      if ((!coefficient_x) || (!coefficient_y)) {
+	//0+/-0
+	exponent_x += exponent_y - DECIMAL_EXPONENT_BIAS;
+	if (exponent_x > DECIMAL_MAX_EXPON_64)
+	  exponent_x = DECIMAL_MAX_EXPON_64;
+	else if (exponent_x < 0)
+	  exponent_x = 0;
+	if (exponent_x <= exponent_z)
+	  res = ((UINT64) exponent_x) << 53;
 	else
-	  exponent_y =
-	    exponent_x - DECIMAL_EXPONENT_BIAS +
-	    (((UINT32) (y >> 53)) & 0x3ff);
-
-	sign_z = z & 0x8000000000000000ull;
-
-	if (exponent_y >= exponent_z)
-	  BID_RETURN (z);
-	res =
-	  add_zero64 (exponent_y, sign_z, exponent_z, coefficient_z,
-		      &rnd_mode, pfpsf);
-	BID_RETURN (res);
-      }
-    }
-  }
-  if (!unpack_BID64 (&sign_y, &exponent_y, &coefficient_y, y)) {
-    // y is Inf. or NaN
-
-    // test if y is NaN
-    if ((y & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
-#ifdef SET_STATUS_FLAGS
-      if (((y & 0x7e00000000000000ull) == 0x7e00000000000000ull) ||	// sNaN
-	  ((z & 0x7e00000000000000ull) == 0x7e00000000000000ull))	// sNaN
-	__set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-      BID_RETURN (y & QUIET_MASK64);
-    }
-    // y is Infinity?
-    if ((y & 0x7800000000000000ull) == 0x7800000000000000ull) {
-      // check if x is 0
-      if (((x & 0x6000000000000000ull) != 0x6000000000000000ull)
-	  && !(x << (64 - 53))) {
-	// y==0, return NaN
-#ifdef SET_STATUS_FLAGS
-	if ((z & 0x7e00000000000000ull) != 0x7c00000000000000ull)
-	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	BID_RETURN (0x7c00000000000000ull);
-      }
-      // test if z is Inf of oposite sign
-      if (((z & 0x7c00000000000000ull) == 0x7800000000000000ull)
-	  && (((x ^ y) ^ z) & 0x8000000000000000ull)) {
-#ifdef SET_STATUS_FLAGS
-	__set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	// return NaN
-	BID_RETURN (0x7c00000000000000ull);
-      }
-      if ((z & 0x7c00000000000000ull) == 0x7c00000000000000ull) {
-#ifdef SET_STATUS_FLAGS
-	if (((z & 0x7e00000000000000ull) == 0x7e00000000000000ull))	// sNaN
-	  __set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-	BID_RETURN (z & QUIET_MASK64);
-      }
-      // otherwise return +/-Inf
-      BID_RETURN (((x ^ y) & 0x8000000000000000ull) |
-		  0x7800000000000000ull);
-    }
-    // y is 0 
-    if (((z & 0x7800000000000000ull) != 0x7800000000000000ull)) {
-      if ((z & 0x6000000000000000ull) == 0x6000000000000000ull) {
-	exponent_z = ((UINT32) (z >> 51)) & 0x3ff;
-	coefficient_z =
-	  (z & 0x0007ffffffffffffull) | 0x0020000000000000ull;
-      } else {
-	exponent_z = ((UINT32) (z >> 53)) & 0x3ff;
-	coefficient_z = z & 0x001fffffffffffffull;
-      }
-
-      if (coefficient_z) {
-	exponent_y += exponent_x - DECIMAL_EXPONENT_BIAS;
-
-	sign_z = z & 0x8000000000000000ull;
-
-	if (exponent_y >= exponent_z)
-	  BID_RETURN (z);
-	res =
-	  add_zero64 (exponent_y, sign_z, exponent_z, coefficient_z,
-		      &rnd_mode, pfpsf);
-	BID_RETURN (res);
-      }
-    }
-  }
-
-  if (!unpack_BID64 (&sign_z, &exponent_z, &coefficient_z, z)) {
-    // y is Inf. or NaN or 0
-
-    // test if y is NaN/Inf
-    if ((z & 0x7800000000000000ull) == 0x7800000000000000ull) {
-#ifdef SET_STATUS_FLAGS
-      if ((z & 0x7e00000000000000ull) == 0x7e00000000000000ull)	// sNaN
-	__set_status_flags (pfpsf, INVALID_EXCEPTION);
-#endif
-      BID_RETURN (z & QUIET_MASK64);
-    }
-    // z is 0, return x*y
-    if ((!coefficient_x) || (!coefficient_y)) {
-      //0+/-0
-      exponent_x += exponent_y - DECIMAL_EXPONENT_BIAS;
-      if (exponent_x > DECIMAL_MAX_EXPON_64)
-	exponent_x = DECIMAL_MAX_EXPON_64;
-      else if (exponent_x < 0)
-	exponent_x = 0;
-      if (exponent_x <= exponent_z)
-	res = ((UINT64) exponent_x) << 53;
-      else
-	res = ((z << 1) >> 1);
-      if ((sign_x ^ sign_y) == sign_z)
-	res |= sign_z;
+	  res = ((UINT64) exponent_z) << 53;
+	if ((sign_x ^ sign_y) == sign_z)
+	  res |= sign_z;
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
-      else if (rnd_mode == ROUNDING_DOWN)
-	res |= 0x8000000000000000ull;
+	else if (rnd_mode == ROUNDING_DOWN)
+	  res |= 0x8000000000000000ull;
 #endif
 #endif
-      BID_RETURN (res);
+	BID_RETURN (res);
+      }
     }
   }
-
 
   /* get binary coefficients of x and y */
 
@@ -404,8 +305,8 @@ __bid64_fma (UINT64 x, UINT64 y,
     final_exponent = exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS;
     if ((final_exponent > 0) || (!coefficient_z)) {
       res =
-	get_add64 (sign_z, exponent_z, coefficient_z, sign_x ^ sign_y,
-		   final_exponent, C64, rnd_mode, pfpsf);
+	get_add64 (sign_x ^ sign_y,
+		   final_exponent, C64, sign_z, exponent_z, coefficient_z, rnd_mode, pfpsf);
       BID_RETURN (res);
     } else {
       P.w[0] = C64;
@@ -415,12 +316,12 @@ __bid64_fma (UINT64 x, UINT64 y,
   } else {
     if (!coefficient_z) {
 #if DECIMAL_CALL_BY_REFERENCE
-      __bid64_mul (&res, px,
+      bid64_mul (&res, px,
 		 py _RND_MODE_ARG _EXC_FLAGS_ARG _EXC_MASKS_ARG
 		 _EXC_INFO_ARG);
 #else
       res =
-	__bid64_mul (x,
+	bid64_mul (x,
 		   y _RND_MODE_ARG _EXC_FLAGS_ARG _EXC_MASKS_ARG
 		   _EXC_INFO_ARG);
 #endif
@@ -435,9 +336,9 @@ __bid64_fma (UINT64 x, UINT64 y,
     __tight_bin_range_128 (bp, P, bin_expon_product);
 
     // get number of decimal digits in the product
-    digits_p = __bid_estimate_decimal_digits[bp];
-    if (!(__unsigned_compare_gt_128 (__bid_power10_table_128[digits_p], P)))
-      digits_p++;	// if __bid_power10_table_128[digits_p] <= P
+    digits_p = estimate_decimal_digits[bp];
+    if (!(__unsigned_compare_gt_128 (power10_table_128[digits_p], P)))
+      digits_p++;	// if power10_table_128[digits_p] <= P
 
     // determine number of decimal digits to be rounded out
     extra_digits = digits_p - MAX_FORMAT_DIGITS;
@@ -451,24 +352,15 @@ __bid64_fma (UINT64 x, UINT64 y,
       tempx.d = (double) coefficient_z;
       bin_expon_cx = ((tempx.i & MASK_BINARY_EXPONENT) >> 52) - 0x3ff;
       // get number of decimal digits in the coeff_x
-      digits_z = __bid_estimate_decimal_digits[bin_expon_cx];
-      if (coefficient_z >= __bid_power10_table_128[digits_z].w[0])
+      digits_z = estimate_decimal_digits[bin_expon_cx];
+      if (coefficient_z >= power10_table_128[digits_z].w[0])
 	digits_z++;
       // underflow
       if ((final_exponent + 16 < 0)
 	  || (exponent_z + digits_z > 33 + final_exponent)) {
-#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
-  #ifndef IEEE_ROUND_NEAREST
-        res = __bid_normalize (sign_z, exponent_z, coefficient_z,
-                         sign_x ^ sign_y, 1, rnd_mode, pfpsf);
-  #else
-        res = __bid_normalize (z, sign_z, exponent_z, coefficient_z,
-                         sign_x ^ sign_y, 1, rnd_mode, pfpsf);
-  #endif
-#else
-        res = __bid_normalize (z, sign_z, exponent_z, coefficient_z,
-                         sign_x ^ sign_y, 1, rnd_mode, pfpsf);
-#endif
+	res =
+	  BID_normalize (sign_z, exponent_z, coefficient_z,
+			 sign_x ^ sign_y, 1, rnd_mode, pfpsf);
 	BID_RETURN (res);
       }
 
@@ -476,23 +368,13 @@ __bid64_fma (UINT64 x, UINT64 y,
       if (ez < 0)
 	ez = 0;
       scale_z = exponent_z - ez;
-      coefficient_z *= __bid_power10_table_128[scale_z].w[0];
+      coefficient_z *= power10_table_128[scale_z].w[0];
       ey = final_exponent - extra_digits;
       extra_digits = ez - ey;
       if (extra_digits > 33) {
-#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
-  #ifndef IEEE_ROUND_NEAREST
-	res = __bid_normalize (sign_z, exponent_z, coefficient_z,
-                         sign_x ^ sign_y, 1, rnd_mode, pfpsf);
-  #else
-        res = __bid_normalize (z, sign_z, exponent_z, coefficient_z,
-                         sign_x ^ sign_y, 1, rnd_mode, pfpsf);
-
-  #endif
-#else
-	res = __bid_normalize (z, sign_z, exponent_z, coefficient_z,
+	res =
+	  BID_normalize (sign_z, exponent_z, coefficient_z,
 			 sign_x ^ sign_y, 1, rnd_mode, pfpsf);
-#endif
 	BID_RETURN (res);
       }
       //else  // extra_digits<=32
@@ -500,7 +382,7 @@ __bid64_fma (UINT64 x, UINT64 y,
       if (extra_digits > 17) {
 	CYh = __truncate (P, 16);
 	// get remainder
-	T = __bid_power10_table_128[16].w[0];
+	T = power10_table_128[16].w[0];
 	__mul_64x64_to_64 (CY0L, CYh, T);
 	remainder_y = P.w[0] - CY0L;
 
@@ -512,12 +394,12 @@ __bid64_fma (UINT64 x, UINT64 y,
 
       // align coeff_x, CYh
       __mul_64x64_to_128 (CZ, coefficient_z,
-			  __bid_power10_table_128[extra_digits].w[0]);
+			  power10_table_128[extra_digits].w[0]);
 
       if (sign_z == (sign_y ^ sign_x)) {
 	__add_128_128 (CT, CZ, P);
 	if (__unsigned_compare_ge_128
-	    (CT, __bid_power10_table_128[16 + extra_digits])) {
+	    (CT, power10_table_128[16 + extra_digits])) {
 	  extra_digits++;
 	  ez++;
 	}
@@ -534,11 +416,12 @@ __bid64_fma (UINT64 x, UINT64 y,
 	  CT.w[1] = 0 - CT.w[1];
 	  if (CT.w[0])
 	    CT.w[1]--;
-	}
+	} else if(!(CT.w[1]|CT.w[0]))
+		sign_z = (rnd_mode!=ROUNDING_DOWN)? 0: 0x8000000000000000ull;
 	if (ez
 	    &&
 	    (__unsigned_compare_gt_128
-	     (__bid_power10_table_128[15 + extra_digits], CT))) {
+	     (power10_table_128[15 + extra_digits], CT))) {
 	  extra_digits--;
 	  ez--;
 	}
@@ -548,13 +431,13 @@ __bid64_fma (UINT64 x, UINT64 y,
       uf_status = 0;
       if ((!ez)
 	  &&
-	  __unsigned_compare_gt_128 (__bid_power10_table_128
+	  __unsigned_compare_gt_128 (power10_table_128
 				     [extra_digits + 15], CT)) {
 	rmode = rnd_mode;
 	if (sign_z && (unsigned) (rmode - 1) < 2)
 	  rmode = 3 - rmode;
-	//__add_128_64(PU, CT, __bid_round_const_table[rmode][extra_digits]);
-	PU = __bid_power10_table_128[extra_digits + 15];
+	//__add_128_64(PU, CT, round_const_table[rmode][extra_digits]);
+	PU = power10_table_128[extra_digits + 15];
 	PU.w[0]--;
 	if (__unsigned_compare_gt_128 (PU, CT)
 	    || (rmode == ROUNDING_DOWN)
@@ -566,22 +449,22 @@ __bid64_fma (UINT64 x, UINT64 y,
 	      uf_status = UNDERFLOW_EXCEPTION;
 	    else {
 	      if (remainder_y && (sign_z != (sign_y ^ sign_x)))
-		remainder_y = __bid_power10_table_128[16].w[0] - remainder_y;
+		remainder_y = power10_table_128[16].w[0] - remainder_y;
 
-	      if (__bid_power10_table_128[15].w[0] > remainder_y)
+	      if (power10_table_128[15].w[0] > remainder_y)
 		uf_status = UNDERFLOW_EXCEPTION;
 	    }
 	  } else	// RN or RN_away
 	  {
 	    if (remainder_y && (sign_z != (sign_y ^ sign_x)))
-	      remainder_y = __bid_power10_table_128[16].w[0] - remainder_y;
+	      remainder_y = power10_table_128[16].w[0] - remainder_y;
 
 	    if (!extra_digits) {
-	      remainder_y += __bid_round_const_table[rmode][15];
-	      if (remainder_y < __bid_power10_table_128[16].w[0])
+	      remainder_y += round_const_table[rmode][15];
+	      if (remainder_y < power10_table_128[16].w[0])
 		uf_status = UNDERFLOW_EXCEPTION;
 	    } else {
-	      if (remainder_y < __bid_round_const_table[rmode][16])
+	      if (remainder_y < round_const_table[rmode][16])
 		uf_status = UNDERFLOW_EXCEPTION;
 	    }
 	  }
@@ -619,8 +502,9 @@ __bid64_fma (UINT64 x, UINT64 y,
     C64 = __low_64 (P);
 
     res =
-      get_add64 (sign_z, exponent_z, coefficient_z, sign_x ^ sign_y,
-		 exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64,
+      get_add64 (sign_x ^ sign_y,
+		 exponent_x + exponent_y - DECIMAL_EXPONENT_BIAS, C64, 
+		 sign_z, exponent_z, coefficient_z, 
 		 rnd_mode, pfpsf);
     BID_RETURN (res);
   }
