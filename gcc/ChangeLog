@@ -1,3 +1,18 @@
+2007-09-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* simplify-rtx.c (comparison_result): New.
+	(simplify_const_relational_operation): Use it instead of the five
+	"equal|op[01]ltu?" variables; consequently remove redundant "else"s.
+	Improve bounds-checking optimizations; remove subsumed POPCOUNT
+	optimizations.  Extract nonzero_address_p optimizations into a
+	separate "if" together with optimizations where op1 is const0_rtx.
+	Optimize comparing an IOR with zero.  Simplify op0 RELOP op0 for
+	floating-point arguments too when appropriate.  Hoist test for ABS
+	outside the final switch statement.
+	* cse.c (fold_rtx): Don't look for an IOR equivalent of
+	folded_arg0 if we found a constant equivalent.	Remove
+	transformations done in simplify-rtx.c for "op0 RELOP op0".
+
 2007-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (expand_builtin, expand_builtin_object_size,

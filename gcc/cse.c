@@ -3252,24 +3252,12 @@ fold_rtx (rtx x, rtx insn)
 		    }
 		}
 
-	      /* Some addresses are known to be nonzero.  We don't know
-		 their sign, but equality comparisons are known.  */
-	      if (const_arg1 == const0_rtx
-		  && nonzero_address_p (folded_arg0))
-		{
-		  if (code == EQ)
-		    return false_rtx;
-		  else if (code == NE)
-		    return true_rtx;
-		}
-
 	      /* See if the two operands are the same.  */
 
-	      if (folded_arg0 == folded_arg1
-		  || (REG_P (folded_arg0)
-		      && REG_P (folded_arg1)
-		      && (REG_QTY (REGNO (folded_arg0))
-			  == REG_QTY (REGNO (folded_arg1))))
+	      if ((REG_P (folded_arg0)
+		   && REG_P (folded_arg1)
+		   && (REG_QTY (REGNO (folded_arg0))
+		       == REG_QTY (REGNO (folded_arg1))))
 		  || ((p0 = lookup (folded_arg0,
 				    SAFE_HASH (folded_arg0, mode_arg0),
 				    mode_arg0))
@@ -3277,20 +3265,7 @@ fold_rtx (rtx x, rtx insn)
 				       SAFE_HASH (folded_arg1, mode_arg0),
 				       mode_arg0))
 		      && p0->first_same_value == p1->first_same_value))
-		{
-		  /* Sadly two equal NaNs are not equivalent.  */
-		  if (!HONOR_NANS (mode_arg0))
-		    return ((code == EQ || code == LE || code == GE
-			     || code == LEU || code == GEU || code == UNEQ
-			     || code == UNLE || code == UNGE
-			     || code == ORDERED)
-			    ? true_rtx : false_rtx);
-		  /* Take care for the FP compares we can resolve.  */
-		  if (code == UNEQ || code == UNLE || code == UNGE)
-		    return true_rtx;
-		  if (code == LTGT || code == LT || code == GT)
-		    return false_rtx;
-		}
+		folded_arg1 = folded_arg0;
 
 	      /* If FOLDED_ARG0 is a register, see if the comparison we are
 		 doing now is either the same as we did before or the reverse
@@ -3323,8 +3298,7 @@ fold_rtx (rtx x, rtx insn)
       /* If we are comparing against zero, see if the first operand is
 	 equivalent to an IOR with a constant.  If so, we may be able to
 	 determine the result of this comparison.  */
-
-      if (const_arg1 == const0_rtx)
+      if (const_arg1 == const0_rtx && !const_arg0)
 	{
 	  rtx y = lookup_as_function (folded_arg0, IOR);
 	  rtx inner_const;
@@ -3333,40 +3307,7 @@ fold_rtx (rtx x, rtx insn)
 	      && (inner_const = equiv_constant (XEXP (y, 1))) != 0
 	      && GET_CODE (inner_const) == CONST_INT
 	      && INTVAL (inner_const) != 0)
-	    {
-	      int sign_bitnum = GET_MODE_BITSIZE (mode_arg0) - 1;
-	      int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
-			      && (INTVAL (inner_const)
-				  & ((HOST_WIDE_INT) 1 << sign_bitnum)));
-	      rtx true_rtx = const_true_rtx, false_rtx = const0_rtx;
-
-#ifdef FLOAT_STORE_FLAG_VALUE
-	      if (SCALAR_FLOAT_MODE_P (mode))
-		{
-		  true_rtx = (CONST_DOUBLE_FROM_REAL_VALUE
-			  (FLOAT_STORE_FLAG_VALUE (mode), mode));
-		  false_rtx = CONST0_RTX (mode);
-		}
-#endif
-
-	      switch (code)
-		{
-		case EQ:
-		  return false_rtx;
-		case NE:
-		  return true_rtx;
-		case LT:  case LE:
-		  if (has_sign)
-		    return true_rtx;
-		  break;
-		case GT:  case GE:
-		  if (has_sign)
-		    return false_rtx;
-		  break;
-		default:
-		  break;
-		}
-	    }
+	    folded_arg0 = gen_rtx_IOR (mode_arg0, XEXP (y, 0), inner_const);
 	}
 
       {
