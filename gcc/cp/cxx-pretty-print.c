@@ -662,7 +662,7 @@ pp_cxx_new_expression (cxx_pretty_printer *pp, tree t)
       ::(opt) delete cast-expression
       ::(opt) delete [ ] cast-expression   */
 
-static void
+void
 pp_cxx_delete_expression (cxx_pretty_printer *pp, tree t)
 {
   enum tree_code code = TREE_CODE (t);
@@ -673,10 +673,13 @@ pp_cxx_delete_expression (cxx_pretty_printer *pp, tree t)
       if (DELETE_EXPR_USE_GLOBAL (t))
 	pp_cxx_colon_colon (pp);
       pp_cxx_identifier (pp, "delete");
-      if (code == VEC_DELETE_EXPR)
+      pp_space (pp);
+      if (code == VEC_DELETE_EXPR
+	  || DELETE_EXPR_USE_VEC (t))
 	{
 	  pp_left_bracket (pp);
 	  pp_right_bracket (pp);
+	  pp_space (pp);
 	}
       pp_c_cast_expression (pp_c_base (pp), TREE_OPERAND (t, 0));
       break;
