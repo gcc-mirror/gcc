@@ -1,3 +1,15 @@
+2007-09-27  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.h (PTF_AVOID_BRANCHLIKELY): New macro.
+	(mips_cpu_info): Add tune_flags.
+	(GENERATE_BRANCHLIKELY): Remove TARGET_SR71K check.
+	* config/mips/mips.c (mips_cpu_info_table): Add tune_flags fields.
+	Remove end marker.
+	(override_options): Remove deprecation code.  Use branch-likely
+	instructions for optimize_size or if the tuning flags do not
+	suggest otherwise.  Tweak warning.
+	(mips_matching_cpu_name_p, mips_parse_cpu): Use ARRAY_SIZE.
+
 2007-09-27  Matthias Klose  <doko@ubuntu.com>
 
 	* config/i386/t-linux64 (MULTILIB_OSDIRNAMES): Use ../lib32 as the
