@@ -1,3 +1,8 @@
+2007-09-27  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (is_late_template_attribute): Don't crash on unknown
+	attribute.
+
 2007-09-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33493
