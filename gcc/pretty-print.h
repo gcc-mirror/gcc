@@ -35,6 +35,7 @@ typedef struct
   va_list *args_ptr;
   int err_no;  /* for %m */
   location_t *locus;
+  tree *abstract_origin;
 } text_info;
 
 /* How often diagnostics are prefixed by their locations:

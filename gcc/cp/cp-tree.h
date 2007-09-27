@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "name-lookup.h"
 struct diagnostic_context;
+struct diagnostic_info;
 
 /* Usage of TREE_LANG_FLAG_?:
    0: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
@@ -4138,7 +4139,8 @@ extern void cxx_print_decl			(FILE *, tree, int);
 extern void cxx_print_type			(FILE *, tree, int);
 extern void cxx_print_identifier		(FILE *, tree, int);
 extern void cxx_print_error_function	(struct diagnostic_context *,
-						 const char *);
+						 const char *,
+						 struct diagnostic_info *);
 extern void build_self_reference		(void);
 extern int same_signature_p			(const_tree, const_tree);
 extern void maybe_add_class_template_decl_list	(tree, tree, int);
