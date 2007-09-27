@@ -1390,7 +1390,7 @@ valueize_expr (tree expr)
    simplified. */
 
 static tree
-simplify_binary_expression (tree rhs)
+simplify_binary_expression (tree stmt, tree rhs)
 {
   tree result = NULL_TREE;
   tree op0 = TREE_OPERAND (rhs, 0);
@@ -1421,7 +1421,12 @@ simplify_binary_expression (tree rhs)
       && op1 == TREE_OPERAND (rhs, 1))
     return NULL_TREE;
 
+  fold_defer_overflow_warnings ();
+
   result = fold_binary (TREE_CODE (rhs), TREE_TYPE (rhs), op0, op1);
+
+  fold_undefer_overflow_warnings (result && valid_gimple_expression_p (result),
+				  stmt, 0);
 
   /* Make sure result is not a complex expression consisting
      of operators of operators (IE (a + b) + (a + c))
@@ -1522,7 +1527,7 @@ try_to_simplify (tree stmt, tree rhs)
 	  break;
 	case tcc_comparison:
 	case tcc_binary:
-	  return simplify_binary_expression (rhs);
+	  return simplify_binary_expression (stmt, rhs);
 	  break;
 	default:
 	  break;

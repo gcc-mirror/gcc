@@ -215,11 +215,22 @@ copy_loop_headers (void)
 
 	  for (i = 0; i < n_bbs; ++i)
 	    {
-	      tree last;
+	      block_stmt_iterator bsi;
 
-	      last = last_stmt (copied_bbs[i]);
-	      if (TREE_CODE (last) == COND_EXPR)
-		TREE_NO_WARNING (last) = 1;
+	      for (bsi = bsi_start (copied_bbs[i]);
+		   !bsi_end_p (bsi);
+		   bsi_next (&bsi))
+		{
+		  tree stmt = bsi_stmt (bsi);
+		  if (TREE_CODE (stmt) == COND_EXPR)
+		    TREE_NO_WARNING (stmt) = 1;
+		  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT)
+		    {
+		      tree rhs = GIMPLE_STMT_OPERAND (stmt, 1);
+		      if (COMPARISON_CLASS_P (rhs))
+			TREE_NO_WARNING (stmt) = 1;
+		    }
+		}
 	    }
 	}
 

@@ -417,8 +417,7 @@ fold_cond_expr_cond (void)
 	  cond = fold (COND_EXPR_COND (stmt));
 	  zerop = integer_zerop (cond);
 	  onep = integer_onep (cond);
-	  fold_undefer_overflow_warnings (((zerop || onep)
-					   && !TREE_NO_WARNING (stmt)),
+	  fold_undefer_overflow_warnings (zerop || onep,
 					  stmt,
 					  WARN_STRICT_OVERFLOW_CONDITIONAL);
 	  if (zerop)

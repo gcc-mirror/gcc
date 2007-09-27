@@ -974,6 +974,9 @@ fold_undefer_overflow_warnings (bool issue, const_tree stmt, int code)
   if (!issue || warnmsg == NULL)
     return;
 
+  if (stmt != NULL_TREE && TREE_NO_WARNING (stmt))
+    return;
+
   /* Use the smallest code level when deciding to issue the
      warning.  */
   if (code == 0 || code > (int) fold_deferred_overflow_code)

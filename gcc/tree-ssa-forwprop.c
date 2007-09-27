@@ -1021,8 +1021,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 	      did_something = forward_propagate_into_cond (stmt, stmt);
 	      if (did_something == 2)
 		cfg_changed = true;
-	      fold_undefer_overflow_warnings (!TREE_NO_WARNING (stmt)
-					      && did_something, stmt,
+	      fold_undefer_overflow_warnings (did_something, stmt,
 					      WARN_STRICT_OVERFLOW_CONDITIONAL);
 	      bsi_next (&bsi);
 	    }
