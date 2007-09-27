@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! { dg-options "-fopenmp" }
 program openmp_stack
   implicit none
