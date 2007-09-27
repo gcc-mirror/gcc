@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! { dg-options "-frecursive" }
 program recursive_stack
   call foo (.true.)

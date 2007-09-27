@@ -1,3 +1,8 @@
+2007-09-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/openmp_stack.f90: Fix typo.
+	* gfortran.dg/recursive_stack.f90: Fix typo.
+
 2007-09-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33493
