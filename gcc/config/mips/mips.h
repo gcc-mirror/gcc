@@ -97,6 +97,14 @@ struct mips_rtx_cost_data
 #define ABI_EABI 3
 #define ABI_O64  4
 
+/* Masks that affect tuning.
+
+   PTF_AVOID_BRANCHLIKELY
+	Set if it is usually not profitable to use branch-likely instructions
+	for this target, typically because the branches are always predicted
+	taken and so incur a large overhead when not taken.  */
+#define PTF_AVOID_BRANCHLIKELY 0x1
+
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
 struct mips_cpu_info {
@@ -112,6 +120,9 @@ struct mips_cpu_info {
 
   /* The ISA level that the processor implements.  */
   int isa;
+
+  /* A mask of PTF_* values.  */
+  unsigned int tune_flags;
 };
 
 /* Enumerates the setting of the -mcode-readable option.  */
@@ -706,9 +717,7 @@ extern enum mips_code_readable_setting mips_code_readable;
 #define GENERATE_DIVIDE_TRAPS (TARGET_DIVIDE_TRAPS \
                                && ISA_HAS_COND_TRAP)
 
-#define GENERATE_BRANCHLIKELY   (TARGET_BRANCHLIKELY                    \
-				 && !TARGET_SR71K                       \
-				 && !TARGET_MIPS16)
+#define GENERATE_BRANCHLIKELY   (TARGET_BRANCHLIKELY && !TARGET_MIPS16)
 
 /* True if the ABI can only work with 64-bit integer registers.  We
    generally allow ad-hoc variations for TARGET_SINGLE_FLOAT, but
