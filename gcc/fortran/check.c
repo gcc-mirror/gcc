@@ -957,7 +957,7 @@ gfc_check_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
 
   if (! identical_dimen_shape (vector_a, 0, vector_b, 0))
     {
-      gfc_error ("different shape for arguments '%s' and '%s' at %L for "
+      gfc_error ("Different shape for arguments '%s' and '%s' at %L for "
 		 "intrinsic 'dot_product'", gfc_current_intrinsic_arg[0],
 		 gfc_current_intrinsic_arg[1], &vector_a->where);
       return FAILURE;
@@ -1676,7 +1676,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       /* Check for case matrix_a has shape(m), matrix_b has shape (m, k).  */
       if (!identical_dimen_shape (matrix_a, 0, matrix_b, 0))
 	{
-	  gfc_error ("different shape on dimension 1 for arguments '%s' "
+	  gfc_error ("Different shape on dimension 1 for arguments '%s' "
 		     "and '%s' at %L for intrinsic matmul",
 		     gfc_current_intrinsic_arg[0],
 		     gfc_current_intrinsic_arg[1], &matrix_a->where);
@@ -1695,7 +1695,7 @@ gfc_check_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 	 - matrix_a has shape (n,m) and matrix_b has shape (m).  */
       if (!identical_dimen_shape (matrix_a, 1, matrix_b, 0))
 	{
-	  gfc_error ("different shape on dimension 2 for argument '%s' and "
+	  gfc_error ("Different shape on dimension 2 for argument '%s' and "
 		     "dimension 1 for argument '%s' at %L for intrinsic "
 		     "matmul", gfc_current_intrinsic_arg[0],
 		     gfc_current_intrinsic_arg[1], &matrix_a->where);

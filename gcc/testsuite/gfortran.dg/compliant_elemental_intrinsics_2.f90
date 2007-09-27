@@ -24,7 +24,7 @@ CONTAINS
 
   SUBROUTINE test_2()
     INTEGER :: a(2) = 0, b(3) = 0
-    a = f(b)                          ! { dg-error "different shape" }
+    a = f(b)                          ! { dg-error "Different shape" }
     a = f(b(1:2))                     ! ok, slice, stride 1
     a = f(b(1:3:2))                   ! ok, slice, stride 2
   END SUBROUTINE
@@ -37,8 +37,8 @@ CONTAINS
 
   SUBROUTINE test_4()
     INTEGER :: a(2,2) = 0, b(3,3) = 0
-    a = f(b)                          ! { dg-error "different shape" }
-    a = f(b(1:3, 1:2))                ! { dg-error "different shape" }
+    a = f(b)                          ! { dg-error "Different shape" }
+    a = f(b(1:3, 1:2))                ! { dg-error "Different shape" }
     a = f(b(1:3:2, 1:3:2))            ! ok, same shape
   END SUBROUTINE
 END PROGRAM

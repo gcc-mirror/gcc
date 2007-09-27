@@ -27,7 +27,7 @@ end module elem_assign
    CALL S(I,J) ! { dg-error "Incompatible ranks in elemental procedure" }
 ! Check interface assignments
    x = w       ! { dg-error "Incompatible ranks in elemental procedure" }
-   x = y       ! { dg-error "different shape for elemental procedure" }
+   x = y       ! { dg-error "Different shape for elemental procedure" }
    x = z
 CONTAINS
    ELEMENTAL SUBROUTINE S(I,J)

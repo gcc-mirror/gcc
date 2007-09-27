@@ -1,3 +1,16 @@
+2007-09-27  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* arith.c (reduce_binary_aa): Fix capitalization.
+	* check.c (gfc_check_dot_product): Likewise.
+	(gfc_check_matmul): Likewise.
+	* expr.c (gfc_check_conformance): Likewise.
+	(gfc_check_assign): Likewise.
+	(gfc_default_initializer): Simplify logic.
+	* trans.c (gfc_msg_bounds): Make const.
+	(gfc_msg_fault): Likewise.
+	(gfc_msg_wrong_return): Likewise.
+	* trans.h: Add const to corresponding extern declarations.
+
 2007-09-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33568

@@ -46,9 +46,9 @@ along with GCC; see the file COPYING3.  If not see
 
 static gfc_file *gfc_current_backend_file;
 
-char gfc_msg_bounds[] = N_("Array bound mismatch");
-char gfc_msg_fault[] = N_("Array reference out of bounds");
-char gfc_msg_wrong_return[] = N_("Incorrect function return value");
+const char gfc_msg_bounds[] = N_("Array bound mismatch");
+const char gfc_msg_fault[] = N_("Array reference out of bounds");
+const char gfc_msg_wrong_return[] = N_("Incorrect function return value");
 
 
 /* Advance along TREE_CHAIN n times.  */

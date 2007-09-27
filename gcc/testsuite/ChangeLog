@@ -1,3 +1,15 @@
+2007-09-27  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	* gfortran.dg/array_initializer_3.f90: Adapt error annotations for
+	fixed capitalizations.
+	* gfortran.dg/compliant_elemental_intrinsics_1.f90: Likewise.
+	* gfortran.dg/compliant_elemental_intrinsics_2.f90: Likewise.
+	* gfortran.dg/elemental_subroutine_4.f90: Likewise.
+	* gfortran.dg/intrinsic_argument_conformance_1.f90: Likewise.
+	* gfortran.dg/maxloc_shape_1.f90: Likewise.
+	* gfortran.dg/maxval_maxloc_conformance_1.f90: Likewise.
+	* gfortran.dg/min_max_conformance.f90: Likewise.
+
 2007-09-27  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.dg/c99-tgmath-1.c: Require c99_runtime and add the associated
