@@ -3381,7 +3381,10 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000) >= 0x10000)
+      && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (x, 1)) + 0x8000) >= 0x10000
+      && !(SPE_VECTOR_MODE (mode)
+	   || (TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
+				      || mode == DImode))))
     {
       HOST_WIDE_INT high_int, low_int;
       rtx sum;
