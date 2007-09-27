@@ -3952,6 +3952,69 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
   return NULL_RTX;
 }
 
+enum 
+{
+  CR_EQ = 1,
+  CR_LT = 2,
+  CR_GT = 4,
+  CR_LTU = 8,
+  CR_GTU = 16
+};
+
+
+/* Convert the known results for EQ, LT, GT, LTU, GTU contained in
+   KNOWN_RESULT to a CONST_INT, based on the requested comparison CODE
+   For KNOWN_RESULT to make sense it should be either CR_EQ, or the 
+   logical OR of one of (CR_LT, CR_GT) and one of (CR_LTU, CR_GTU).
+   For floating-point comparisons, assume that the operands were ordered.  */
+
+static rtx
+comparison_result (enum rtx_code code, int known_results)
+{
+  /* If we reach here, EQUAL, OP0LT, OP0LTU, OP1LT, and OP1LTU are set
+     as appropriate.  */
+  switch (code)
+    {
+    case EQ:
+    case UNEQ:
+      return (known_results & CR_EQ) ? const_true_rtx : const0_rtx;
+    case NE:
+    case LTGT:
+      return (known_results & CR_EQ) ? const0_rtx : const_true_rtx;
+
+    case LT:
+    case UNLT:
+      return (known_results & CR_LT) ? const_true_rtx : const0_rtx;
+    case GE:
+    case UNGE:
+      return (known_results & CR_LT) ? const0_rtx : const_true_rtx;
+
+    case GT:
+    case UNGT:
+      return (known_results & CR_GT) ? const_true_rtx : const0_rtx;
+    case LE:
+    case UNLE:
+      return (known_results & CR_GT) ? const0_rtx : const_true_rtx;
+
+    case LTU:
+      return (known_results & CR_LTU) ? const_true_rtx : const0_rtx;
+    case GEU:
+      return (known_results & CR_LTU) ? const0_rtx : const_true_rtx;
+
+    case GTU:
+      return (known_results & CR_GTU) ? const_true_rtx : const0_rtx;
+    case LEU:
+      return (known_results & CR_GTU) ? const0_rtx : const_true_rtx;
+
+    case ORDERED:
+      return const_true_rtx;
+    case UNORDERED:
+      return const0_rtx;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Check if the given comparison (done in the given MODE) is actually a
    tautology or a contradiction.
    If no simplification is possible, this function returns zero.
@@ -3962,7 +4025,6 @@ simplify_const_relational_operation (enum rtx_code code,
 				     enum machine_mode mode,
 				     rtx op0, rtx op1)
 {
-  int equal, op0lt, op0ltu, op1lt, op1ltu;
   rtx tem;
   rtx trueop0;
   rtx trueop1;
@@ -4027,17 +4089,22 @@ simplify_const_relational_operation (enum rtx_code code,
     return const0_rtx;
 
   /* For modes without NaNs, if the two operands are equal, we know the
-     result except if they have side-effects.  */
-  if (! HONOR_NANS (GET_MODE (trueop0))
+     result except if they have side-effects.  Even with NaNs we know
+     the result of unordered comparisons and, if signaling NaNs are
+     irrelevant, also the result of LT/GT/LTGT.  */
+  if ((! HONOR_NANS (GET_MODE (trueop0))
+       || code == UNEQ || code == UNLE || code == UNGE
+       || ((code == LT || code == GT || code == LTGT)
+	   && ! HONOR_SNANS (GET_MODE (trueop0))))
       && rtx_equal_p (trueop0, trueop1)
       && ! side_effects_p (trueop0))
-    equal = 1, op0lt = 0, op0ltu = 0, op1lt = 0, op1ltu = 0;
+    return comparison_result (code, CR_EQ);
 
   /* If the operands are floating-point constants, see if we can fold
      the result.  */
-  else if (GET_CODE (trueop0) == CONST_DOUBLE
-	   && GET_CODE (trueop1) == CONST_DOUBLE
-	   && SCALAR_FLOAT_MODE_P (GET_MODE (trueop0)))
+  if (GET_CODE (trueop0) == CONST_DOUBLE
+      && GET_CODE (trueop1) == CONST_DOUBLE
+      && SCALAR_FLOAT_MODE_P (GET_MODE (trueop0)))
     {
       REAL_VALUE_TYPE d0, d1;
 
@@ -4068,17 +4135,17 @@ simplify_const_relational_operation (enum rtx_code code,
 	    return 0;
 	  }
 
-      equal = REAL_VALUES_EQUAL (d0, d1);
-      op0lt = op0ltu = REAL_VALUES_LESS (d0, d1);
-      op1lt = op1ltu = REAL_VALUES_LESS (d1, d0);
+      return comparison_result (code,
+				(REAL_VALUES_EQUAL (d0, d1) ? CR_EQ :
+				 REAL_VALUES_LESS (d0, d1) ? CR_LT : CR_GT));
     }
 
   /* Otherwise, see if the operands are both integers.  */
-  else if ((GET_MODE_CLASS (mode) == MODE_INT || mode == VOIDmode)
-	   && (GET_CODE (trueop0) == CONST_DOUBLE
-	       || GET_CODE (trueop0) == CONST_INT)
-	   && (GET_CODE (trueop1) == CONST_DOUBLE
-	       || GET_CODE (trueop1) == CONST_INT))
+  if ((GET_MODE_CLASS (mode) == MODE_INT || mode == VOIDmode)
+       && (GET_CODE (trueop0) == CONST_DOUBLE
+	   || GET_CODE (trueop0) == CONST_INT)
+       && (GET_CODE (trueop1) == CONST_DOUBLE
+	   || GET_CODE (trueop1) == CONST_INT))
     {
       int width = GET_MODE_BITSIZE (mode);
       HOST_WIDE_INT l0s, h0s, l1s, h1s;
@@ -4123,192 +4190,230 @@ simplify_const_relational_operation (enum rtx_code code,
       if (width != 0 && width <= HOST_BITS_PER_WIDE_INT)
 	h0u = h1u = 0, h0s = HWI_SIGN_EXTEND (l0s), h1s = HWI_SIGN_EXTEND (l1s);
 
-      equal = (h0u == h1u && l0u == l1u);
-      op0lt = (h0s < h1s || (h0s == h1s && l0u < l1u));
-      op1lt = (h1s < h0s || (h1s == h0s && l1u < l0u));
-      op0ltu = (h0u < h1u || (h0u == h1u && l0u < l1u));
-      op1ltu = (h1u < h0u || (h1u == h0u && l1u < l0u));
+      if (h0u == h1u && l0u == l1u)
+        return comparison_result (code, CR_EQ);
+      else
+	{
+	  int cr;
+          cr = (h0s < h1s || (h0s == h1s && l0u < l1u)) ? CR_LT : CR_GT;
+          cr |= (h0u < h1u || (h0u == h1u && l0u < l1u)) ? CR_LTU : CR_GTU;
+          return comparison_result (code, cr);
+	}
     }
 
-  /* Otherwise, there are some code-specific tests we can make.  */
-  else
+  /* Optimize comparisons with upper and lower bounds.  */
+  if (SCALAR_INT_MODE_P (mode)
+      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+      && GET_CODE (trueop1) == CONST_INT)
     {
-      /* Optimize comparisons with upper and lower bounds.  */
-      if (SCALAR_INT_MODE_P (mode)
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+      int sign;
+      unsigned HOST_WIDE_INT nonzero = nonzero_bits (trueop0, mode);
+      HOST_WIDE_INT val = INTVAL (trueop1);
+      HOST_WIDE_INT mmin, mmax;
+
+      if (code == GEU
+	  || code == LEU
+	  || code == GTU
+	  || code == LTU)
+	sign = 0;
+      else
+	sign = 1;
+
+      /* Get a reduced range if the sign bit is zero.  */
+      if (nonzero <= (GET_MODE_MASK (mode) >> 1))
 	{
-	  rtx mmin, mmax;
-	  int sign;
+	  mmin = 0;
+	  mmax = nonzero;
+	}
+      else
+	{
+	  rtx mmin_rtx, mmax_rtx;
+          unsigned int sign_copies = num_sign_bit_copies (trueop0, mode);
+          get_mode_bounds (mode, sign, mode, &mmin_rtx, &mmax_rtx);
 
-	  if (code == GEU
-	      || code == LEU
-	      || code == GTU
-	      || code == LTU)
-	    sign = 0;
-	  else
-	    sign = 1;
-
-	  get_mode_bounds (mode, sign, mode, &mmin, &mmax);
-
-	  tem = NULL_RTX;
-	  switch (code)
-	    {
-	    case GEU:
-	    case GE:
-	      /* x >= min is always true.  */
-	      if (rtx_equal_p (trueop1, mmin))
-		tem = const_true_rtx;
-	      else 
-	      break;
-
-	    case LEU:
-	    case LE:
-	      /* x <= max is always true.  */
-	      if (rtx_equal_p (trueop1, mmax))
-		tem = const_true_rtx;
-	      break;
-
-	    case GTU:
-	    case GT:
-	      /* x > max is always false.  */
-	      if (rtx_equal_p (trueop1, mmax))
-		tem = const0_rtx;
-	      break;
-
-	    case LTU:
-	    case LT:
-	      /* x < min is always false.  */
-	      if (rtx_equal_p (trueop1, mmin))
-		tem = const0_rtx;
-	      break;
-
-	    default:
-	      break;
-	    }
-	  if (tem == const0_rtx
-	      || tem == const_true_rtx)
-	    return tem;
+	  /* Since unsigned mmin will never be interpreted as negative, use
+	     INTVAL (and an arithmetic right shift).  */
+	  mmin = INTVAL (mmin_rtx) >> (sign_copies - 1);
+	  /* Since signed mmax will always be positive, use UINTVAL (and
+	     a logical right shift).  */
+	  mmax = UINTVAL (mmax_rtx) >> (sign_copies - 1);
 	}
 
       switch (code)
 	{
-	case EQ:
-	  if (trueop1 == const0_rtx && nonzero_address_p (op0))
+	/* x >= y is always true for y <= mmin, always false for y > mmax.  */
+	case GEU:
+	  if ((unsigned HOST_WIDE_INT) val <= (unsigned HOST_WIDE_INT) mmin)
+	    return const_true_rtx;
+	  if ((unsigned HOST_WIDE_INT) val > (unsigned HOST_WIDE_INT) mmax)
+	    return const0_rtx;
+	  break;
+	case GE:
+	  if (val <= mmin)
+	    return const_true_rtx;
+	  if (val > mmax)
 	    return const0_rtx;
 	  break;
 
-	case NE:
-	  if (trueop1 == const0_rtx && nonzero_address_p (op0))
+	/* x <= y is always true for y >= mmax, always false for y < mmin.  */
+	case LEU:
+	  if ((unsigned HOST_WIDE_INT) val >= (unsigned HOST_WIDE_INT) mmax)
+	    return const_true_rtx;
+	  if ((unsigned HOST_WIDE_INT) val < (unsigned HOST_WIDE_INT) mmin)
+	    return const0_rtx;
+	  break;
+	case LE:
+	  if (val >= mmax)
+	    return const_true_rtx;
+	  if (val < mmin)
+	    return const0_rtx;
+	  break;
+
+	case EQ:
+	  /* x == y is always false for y out of range.  */
+	  if (val < mmin || val > mmax)
+	    return const0_rtx;
+	  break;
+
+	/* x > y is always false for y >= mmax, always true for y < mmin.  */
+	case GTU:
+	  if ((unsigned HOST_WIDE_INT) val >= (unsigned HOST_WIDE_INT) mmax)
+	    return const0_rtx;
+	  if ((unsigned HOST_WIDE_INT) val < (unsigned HOST_WIDE_INT) mmin)
+	    return const_true_rtx;
+	  break;
+	case GT:
+	  if (val >= mmax)
+	    return const0_rtx;
+	  if (val < mmin)
 	    return const_true_rtx;
 	  break;
 
+	/* x < y is always false for y <= mmin, always true for y > mmax.  */
+	case LTU:
+	  if ((unsigned HOST_WIDE_INT) val <= (unsigned HOST_WIDE_INT) mmin)
+	    return const0_rtx;
+	  if ((unsigned HOST_WIDE_INT) val > (unsigned HOST_WIDE_INT) mmax)
+	    return const_true_rtx;
+	  break;
 	case LT:
-	  /* Optimize abs(x) < 0.0.  */
-	  if (trueop1 == CONST0_RTX (mode)
-	      && !HONOR_SNANS (mode)
-	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
-	    {
-	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
-						       : trueop0;
-	      if (GET_CODE (tem) == ABS)
-		{
-		  if (INTEGRAL_MODE_P (mode)
-		      && (issue_strict_overflow_warning
-			  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
-		    warning (OPT_Wstrict_overflow,
-			     ("assuming signed overflow does not occur when "
-			      "assuming abs (x) < 0 is false"));
-		  return const0_rtx;
-		}
-	    }
-
-	  /* Optimize popcount (x) < 0.  */
-	  if (GET_CODE (trueop0) == POPCOUNT && trueop1 == const0_rtx)
+	  if (val <= mmin)
+	    return const0_rtx;
+	  if (val > mmax)
 	    return const_true_rtx;
 	  break;
 
-	case GE:
-	  /* Optimize abs(x) >= 0.0.  */
-	  if (trueop1 == CONST0_RTX (mode)
-	      && !HONOR_NANS (mode)
-	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
-	    {
-	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
-						       : trueop0;
-	      if (GET_CODE (tem) == ABS)
-		{
-		  if (INTEGRAL_MODE_P (mode)
-		      && (issue_strict_overflow_warning
-			  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
-		    warning (OPT_Wstrict_overflow,
-			     ("assuming signed overflow does not occur when "
-			      "assuming abs (x) >= 0 is true"));
-		  return const_true_rtx;
-		}
-	    }
-
-	  /* Optimize popcount (x) >= 0.  */
-	  if (GET_CODE (trueop0) == POPCOUNT && trueop1 == const0_rtx)
+	case NE:
+	  /* x != y is always true for y out of range.  */
+	  if (val < mmin || val > mmax)
 	    return const_true_rtx;
-	  break;
-
-	case UNGE:
-	  /* Optimize ! (abs(x) < 0.0).  */
-	  if (trueop1 == CONST0_RTX (mode))
-	    {
-	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
-						       : trueop0;
-	      if (GET_CODE (tem) == ABS)
-		return const_true_rtx;
-	    }
 	  break;
 
 	default:
 	  break;
 	}
-
-      return 0;
     }
 
-  /* If we reach here, EQUAL, OP0LT, OP0LTU, OP1LT, and OP1LTU are set
-     as appropriate.  */
-  switch (code)
+  /* Optimize integer comparisons with zero.  */
+  if (trueop1 == const0_rtx)
     {
-    case EQ:
-    case UNEQ:
-      return equal ? const_true_rtx : const0_rtx;
-    case NE:
-    case LTGT:
-      return ! equal ? const_true_rtx : const0_rtx;
-    case LT:
-    case UNLT:
-      return op0lt ? const_true_rtx : const0_rtx;
-    case GT:
-    case UNGT:
-      return op1lt ? const_true_rtx : const0_rtx;
-    case LTU:
-      return op0ltu ? const_true_rtx : const0_rtx;
-    case GTU:
-      return op1ltu ? const_true_rtx : const0_rtx;
-    case LE:
-    case UNLE:
-      return equal || op0lt ? const_true_rtx : const0_rtx;
-    case GE:
-    case UNGE:
-      return equal || op1lt ? const_true_rtx : const0_rtx;
-    case LEU:
-      return equal || op0ltu ? const_true_rtx : const0_rtx;
-    case GEU:
-      return equal || op1ltu ? const_true_rtx : const0_rtx;
-    case ORDERED:
-      return const_true_rtx;
-    case UNORDERED:
-      return const0_rtx;
-    default:
-      gcc_unreachable ();
+      /* Some addresses are known to be nonzero.  We don't know
+         their sign, but equality comparisons are known.  */
+      if (nonzero_address_p (trueop0))
+        {
+	  if (code == EQ || code == LEU)
+	    return const0_rtx;
+	  if (code == NE || code == GTU)
+	    return const_true_rtx;
+        }
+
+      /* See if the first operand is an IOR with a constant.  If so, we
+	 may be able to determine the result of this comparison.  */
+      if (GET_CODE (op0) == IOR)
+        {
+	  rtx inner_const = avoid_constant_pool_reference (XEXP (op0, 1));
+	  if (GET_CODE (inner_const) == CONST_INT && inner_const != const0_rtx)
+	    {
+              int sign_bitnum = GET_MODE_BITSIZE (mode) - 1;
+              int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
+                              && (INTVAL (inner_const)
+                                  & ((HOST_WIDE_INT) 1 << sign_bitnum)));
+
+              switch (code)
+                {
+                case EQ:
+		case LEU:
+                  return const0_rtx;
+                case NE:
+		case GTU:
+                  return const_true_rtx;
+                case LT:
+	        case LE:
+                  if (has_sign)
+                    return const_true_rtx;
+                  break;
+                case GT:
+		case GE:
+                  if (has_sign)
+                    return const0_rtx;
+                  break;
+                default:
+                  break;
+                }
+            }
+	}
     }
+
+  /* Optimize comparison of ABS with zero.  */
+  if (trueop1 == CONST0_RTX (mode)
+      && (GET_CODE (trueop0) == ABS
+	  || (GET_CODE (trueop0) == FLOAT_EXTEND
+	      && GET_CODE (XEXP (trueop0, 0)) == ABS)))
+    {
+      switch (code)
+	{
+	case LT:
+	  /* Optimize abs(x) < 0.0.  */
+	  if (!HONOR_SNANS (mode)
+	      && (!INTEGRAL_MODE_P (mode)
+		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
+	    {
+	      if (INTEGRAL_MODE_P (mode)
+		  && (issue_strict_overflow_warning
+		      (WARN_STRICT_OVERFLOW_CONDITIONAL)))
+		warning (OPT_Wstrict_overflow,
+			 ("assuming signed overflow does not occur when "
+			  "assuming abs (x) < 0 is false"));
+	       return const0_rtx;
+	    }
+	  break;
+
+	case GE:
+	  /* Optimize abs(x) >= 0.0.  */
+	  if (!HONOR_NANS (mode)
+	      && (!INTEGRAL_MODE_P (mode)
+		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
+	    {
+	      if (INTEGRAL_MODE_P (mode)
+	          && (issue_strict_overflow_warning
+	    	  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
+	        warning (OPT_Wstrict_overflow,
+			 ("assuming signed overflow does not occur when "
+			  "assuming abs (x) >= 0 is true"));
+	      return const_true_rtx;
+	    }
+	  break;
+
+	case UNGE:
+	  /* Optimize ! (abs(x) < 0.0).  */
+	  return const_true_rtx;
+
+	default:
+	  break;
+	}
+    }
+
+  return 0;
 }
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
