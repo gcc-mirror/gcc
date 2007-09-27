@@ -68,8 +68,11 @@
 #define TARGET_ABI_OPEN_VMS 0
 #endif
 
+extern char *__gnat_to_canonical_file_spec (char *);
+
 int max_gnat_nodes;
 int number_names;
+int number_files;
 struct Node *Nodes_Ptr;
 Node_Id *Next_Node_Ptr;
 Node_Id *Prev_Node_Ptr;
@@ -205,7 +208,7 @@ static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static tree gnat_stabilize_reference (tree, bool);
 static tree gnat_stabilize_reference_1 (tree, bool);
-static void annotate_with_node (tree, Node_Id);
+static void set_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, int);
 
 /* This is the main program of the back-end.  It sets up all the table
@@ -216,17 +219,19 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       struct Node *nodes_ptr, Node_Id *next_node_ptr, Node_Id *prev_node_ptr,
       struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
       struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
-      struct List_Header *list_headers_ptr, Int number_units ATTRIBUTE_UNUSED,
-      char *file_info_ptr ATTRIBUTE_UNUSED, Entity_Id standard_integer,
-      Entity_Id standard_long_long_float, Entity_Id standard_exception_type,
-      Int gigi_operating_mode)
+      struct List_Header *list_headers_ptr, Nat number_file,
+      struct File_Info_Type *file_info_ptr ATTRIBUTE_UNUSED,
+      Entity_Id standard_integer, Entity_Id standard_long_long_float,
+      Entity_Id standard_exception_type, Int gigi_operating_mode)
 {
   tree gnu_standard_long_long_float;
   tree gnu_standard_exception_type;
   struct elab_info *info;
+  int i ATTRIBUTE_UNUSED;
 
   max_gnat_nodes = max_gnat_node;
   number_names = number_name;
+  number_files = number_file;
   Nodes_Ptr = nodes_ptr;
   Next_Node_Ptr = next_node_ptr;
   Prev_Node_Ptr = prev_node_ptr;
@@ -237,6 +242,32 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   List_Headers_Ptr = list_headers_ptr;
 
   type_annotate_only = (gigi_operating_mode == 1);
+
+#ifdef USE_MAPPED_LOCATION
+  for (i = 0; i < number_files; i++)
+    {
+      /* Use the identifier table to make a permanent copy of the filename as
+	 the name table gets reallocated after Gigi returns but before all the
+	 debugging information is output.  The __gnat_to_canonical_file_spec
+	 call translates filenames from pragmas Source_Reference that contain
+	 host style syntax not understood by gdb. */
+      const char *filename
+	= IDENTIFIER_POINTER
+	   (get_identifier
+	    (__gnat_to_canonical_file_spec
+	     (Get_Name_String (file_info_ptr[i].File_Name))));
+
+      /* We rely on the order isomorphism between files and line maps.  */
+      gcc_assert ((int) line_table->used == i);
+
+      /* We create the line map for a source file at once, with a fixed number
+	 of columns chosen to avoid jumping over the next power of 2.  */
+      linemap_add (line_table, LC_ENTER, 0, filename, 1);
+      linemap_line_start (line_table, file_info_ptr[i].Num_Source_Lines, 252);
+      linemap_position_for_column (line_table, 252 - 1);
+      linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
+    }
+#endif
 
   init_gnat_to_gnu ();
   gnat_compute_largest_alignment ();
@@ -699,7 +730,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 			      gnu_expr, NULL_TREE),
 			     NULL_TREE);
 	  ASM_VOLATILE_P (gnu_expr) = 1;
-	  annotate_with_node (gnu_expr, gnat_node);
+	  set_expr_location_from_node (gnu_expr, gnat_node);
 	  append_to_statement_list (gnu_expr, &gnu_result);
 	}
       break;
@@ -1517,7 +1548,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
   TREE_TYPE (gnu_loop_stmt) = void_type_node;
   TREE_SIDE_EFFECTS (gnu_loop_stmt) = 1;
   LOOP_STMT_LABEL (gnu_loop_stmt) = create_artificial_label ();
-  annotate_with_node (gnu_loop_stmt, gnat_node);
+  set_expr_location_from_node (gnu_loop_stmt, gnat_node);
 
   /* Save the end label of this LOOP_STMT in a stack so that the corresponding
      N_Exit_Statement can find it.  */
@@ -1562,7 +1593,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 		      build_binary_op (LE_EXPR, integer_type_node,
 				       gnu_low, gnu_high),
 		      NULL_TREE, alloc_stmt_list ());
-	  annotate_with_node (gnu_cond_expr, gnat_loop_spec);
+	  set_expr_location_from_node (gnu_cond_expr, gnat_loop_spec);
 	}
 
       /* Open a new nesting level that will surround the loop to declare the
@@ -1597,7 +1628,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 			   gnu_loop_var,
 			   convert (TREE_TYPE (gnu_loop_var),
 				    integer_one_node));
-      annotate_with_node (LOOP_STMT_UPDATE (gnu_loop_stmt),
+      set_expr_location_from_node (LOOP_STMT_UPDATE (gnu_loop_stmt),
 			  gnat_iter_scheme);
     }
 
@@ -2091,7 +2122,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	      /* Set up to move the copy back to the original.  */
 	      gnu_temp = build_binary_op (MODIFY_EXPR, NULL_TREE,
 					  gnu_copy, gnu_actual);
-	      annotate_with_node (gnu_temp, gnat_actual);
+	      set_expr_location_from_node (gnu_temp, gnat_actual);
 	      append_to_statement_list (gnu_temp, &gnu_after_list);
 
 	      /* Account for next statement just below.  */
@@ -2453,7 +2484,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 
 	    gnu_result = build_binary_op (MODIFY_EXPR, NULL_TREE,
 					  gnu_actual, gnu_result);
-	    annotate_with_node (gnu_result, gnat_actual);
+	    set_expr_location_from_node (gnu_result, gnat_actual);
 	    append_to_statement_list (gnu_result, &gnu_before_list);
 	    scalar_return_list = TREE_CHAIN (scalar_return_list);
 	    gnu_name_list = TREE_CHAIN (gnu_name_list);
@@ -2461,7 +2492,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	}
   else
     {
-      annotate_with_node (gnu_subprog_call, gnat_node);
+      set_expr_location_from_node (gnu_subprog_call, gnat_node);
       append_to_statement_list (gnu_subprog_call, &gnu_before_list);
     }
 
@@ -2611,7 +2642,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	 defer abortion.  */
       gnu_expr = build_call_1_expr (raise_nodefer_decl,
 				    TREE_VALUE (gnu_except_ptr_stack));
-      annotate_with_node (gnu_expr, gnat_node);
+      set_expr_location_from_node (gnu_expr, gnat_node);
 
       if (gnu_else_ptr)
 	*gnu_else_ptr = gnu_expr;
@@ -3977,7 +4008,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      COND_EXPR_THEN (gnu_expr)
 		= build_stmt_group (Then_Statements (gnat_temp), false);
 	      TREE_SIDE_EFFECTS (gnu_expr) = 1;
-	      annotate_with_node (gnu_expr, gnat_temp);
+	      set_expr_location_from_node (gnu_expr, gnat_temp);
 	      *gnu_else_ptr = gnu_expr;
 	      gnu_else_ptr = &COND_EXPR_ELSE (gnu_expr);
 	    }
@@ -4617,7 +4648,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	 is one.  */
       if (TREE_CODE (gnu_result_type) == VOID_TYPE)
 	{
-	  annotate_with_node (gnu_result, gnat_node);
+	  set_expr_location_from_node (gnu_result, gnat_node);
 
 	  if (Present (Condition (gnat_node)))
 	    gnu_result = build3 (COND_EXPR, void_type_node,
@@ -4708,7 +4739,7 @@ gnat_to_gnu (Node_Id gnat_node)
      no result if we tried to build a CALL_EXPR node to a procedure with
      no side-effects and optimization is enabled.  */
   if (gnu_result && EXPR_P (gnu_result) && !REFERENCE_CLASS_P (gnu_result))
-    annotate_with_node (gnu_result, gnat_node);
+    set_expr_location_from_node (gnu_result, gnat_node);
 
   /* If we're supposed to return something of void_type, it means we have
      something we're elaborating for effect, so just return.  */
@@ -4895,7 +4926,7 @@ void
 add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
   if (Present (gnat_node))
-    annotate_with_node (gnu_stmt, gnat_node);
+    set_expr_location_from_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
 
@@ -5011,7 +5042,7 @@ static void
 add_cleanup (tree gnu_cleanup, Node_Id gnat_node)
 {
   if (Present (gnat_node))
-    annotate_with_node (gnu_cleanup, gnat_node);
+    set_expr_location_from_node (gnu_cleanup, gnat_node);
   append_to_statement_list (gnu_cleanup, &current_stmt_group->cleanups);
 }
 
@@ -6518,20 +6549,36 @@ gnat_stabilize_reference_1 (tree e, bool force)
   return result;
 }
 
-extern char *__gnat_to_canonical_file_spec (char *);
-
-/* Convert Sloc into *LOCUS (a location_t).  Return true if this Sloc
-   corresponds to a source code location and false if it doesn't.  In the
-   latter case, we don't update *LOCUS.  We also set the Gigi global variable
-   REF_FILENAME to the reference file name as given by sinput (i.e no
-   directory).  */
+/* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a source code
+   location and false if it doesn't.  In the former case, set the Gigi global
+   variable REF_FILENAME to the simple debug file name as given by sinput.  */
 
 bool
 Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
 {
-  /* If node not from source code, ignore.  */
-  if (Sloc < 0)
+  if (Sloc == No_Location)
     return false;
+
+  if (Sloc <= Standard_Location)
+#ifdef USE_MAPPED_LOCATION
+    {
+      *locus = BUILTINS_LOCATION;
+      return false;
+    }
+  else
+    {
+      Source_File_Index file = Get_Source_File_Index (Sloc);
+      Logical_Line_Number line = Get_Logical_Line_Number (Sloc);
+      Column_Number column = Get_Column_Number (Sloc);
+      struct line_map *map = &line_table->maps[file - 1];
+
+      /* Translate the location according to the line-map.h formula.  */
+      *locus = map->start_location
+		+ ((line - map->to_line) << map->column_bits)
+		+ (column & ((1 << map->column_bits) - 1));
+    }
+#else
+  return false;
 
   /* Use the identifier table to make a hashed, permanent copy of the filename,
      since the name table gets reallocated after Gigi returns but before all
@@ -6545,6 +6592,7 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
 	(Get_Name_String (Full_Debug_Name (Get_Source_File_Index (Sloc))))));
 
   locus->line = Get_Logical_Line_Number (Sloc);
+#endif
 
   ref_filename
     = IDENTIFIER_POINTER
@@ -6554,18 +6602,18 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
   return true;
 }
 
-/* Similar to annotate_with_locus, but start with the Sloc of GNAT_NODE and
+/* Similar to set_expr_location, but start with the Sloc of GNAT_NODE and
    don't do anything if it doesn't correspond to a source location.  */
 
 static void
-annotate_with_node (tree node, Node_Id gnat_node)
+set_expr_location_from_node (tree node, Node_Id gnat_node)
 {
   location_t locus;
 
   if (!Sloc_to_locus (Sloc (gnat_node), &locus))
     return;
 
-  annotate_with_locus (node, locus);
+  set_expr_location (node, locus);
 }
 
 /* Post an error message.  MSG is the error message, properly annotated.
@@ -6714,7 +6762,6 @@ init_code_table (void)
   gnu_codes[N_Op_Shift_Right_Arithmetic] = RSHIFT_EXPR;
 }
 
-#include "gt-ada-trans.h"
 /* Return a label to branch to for the exception type in KIND or NULL_TREE
    if none.  */
 
@@ -6730,3 +6777,5 @@ get_exception_label (char kind)
   else
     return NULL_TREE;
 }
+
+#include "gt-ada-trans.h"

@@ -478,8 +478,6 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 void
 gnat_init_decl_processing (void)
 {
-  input_line = 0;
-
   /* Make the binding_level structure for global names.  */
   current_function_decl = 0;
   current_binding_level = 0;

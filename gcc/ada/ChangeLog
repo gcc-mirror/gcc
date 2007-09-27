@@ -1,3 +1,29 @@
+2007-09-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Mapped location support
+	* back_end.adb (Call_Back_End): Pass information about source
+	files instead of units to gigi.
+	* gigi.h (struct File_Info_Type): New.
+	(gigi): Rename and change type of number_units parameter, change
+	type of file_info_ptr parameter.
+	* trans.c (number_files): New global variable.
+	(gigi): Rename and change type of number_units parameter, change
+	type of file_info_ptr parameter.
+	If mapped location support is enabled, create the isomorphic mapping
+	between source files and line maps.
+	(Sloc_to_locus): If mapped location support is enabled, translate
+	source location into mapped location.
+	(annotate_with_node): Rename into set_expr_location_from_node.
+	Call set_expr_location instead of annotate_with_locus.
+	(Pragma_to_gnu): Adjust for above change.
+	(Loop_Statement_to_gnu): Likewise.
+	(call_to_gnu): Likewise.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	(add_stmt_with_node): Likewise.
+	(add_cleanup): Likewise.
+	* utils.c (gnat_init_decl_processing): Do not set input_line.
+
 2007-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch8.adb (Analyze_Use_Type): Code cleanup.
