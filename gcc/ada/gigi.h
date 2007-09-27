@@ -192,6 +192,13 @@ extern bool type_annotate_only;
 /* Current file name without path */
 extern const char *ref_filename;
 
+/* This structure must be kept synchronized with Call_Back_End.  */
+struct File_Info_Type
+{
+  File_Name_Type File_Name;
+  Nat Num_Source_Lines;
+};
+
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.
 
@@ -204,8 +211,8 @@ extern void gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
                   struct String_Entry *strings_ptr,
                   Char_Code *strings_chars_ptr,
                   struct List_Header *list_headers_ptr,
-		  Int number_units ATTRIBUTE_UNUSED,
-                  char *file_info_ptr ATTRIBUTE_UNUSED,
+                  Nat number_file,
+                  struct File_Info_Type *file_info_ptr ATTRIBUTE_UNUSED,
                   Entity_Id standard_integer,
                   Entity_Id standard_long_long_float,
                   Entity_Id standard_exception_type,
@@ -229,11 +236,9 @@ extern int gnat_gimplify_expr (tree *expr_p, tree *pre_p,
    make a GCC type for GNAT_ENTITY and set up the correspondence.  */
 extern void process_type (Entity_Id gnat_entity);
 
-/* Convert Sloc into *LOCUS (a location_t).  Return true if this Sloc
-   corresponds to a source code location and false if it doesn't.  In the
-   latter case, we don't update *LOCUS.  We also set the Gigi global variable
-   REF_FILENAME to the reference file name as given by sinput (i.e no
-   directory).  */
+/* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a source code
+   location and false if it doesn't.  In the former case, set the Gigi global
+   variable REF_FILENAME to the simple debug file name as given by sinput.  */
 extern bool Sloc_to_locus (Source_Ptr Sloc, location_t *locus);
 
 /* Post an error message.  MSG is the error message, properly annotated.

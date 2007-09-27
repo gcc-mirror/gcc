@@ -48,19 +48,16 @@ package body Back_End is
 
    procedure Call_Back_End (Mode : Back_End_Mode_Type) is
 
-      --  The File_Record type has a lot of components that are meaningless
-      --  to the back end, so a new record is created here to contain the
-      --  needed information for each file.
+      --  The Source_File_Record type has a lot of components that are
+      --  meaningless to the back end, so a new record type is created
+      --  here to contain the needed information for each file.
 
-      type Needed_File_Info_Type is record
+      type File_Info_Type is record
          File_Name        : File_Name_Type;
-         First_Sloc       : Source_Ptr;
-         Last_Sloc        : Source_Ptr;
          Num_Source_Lines : Nat;
       end record;
 
-      File_Info_Array :
-        array (Main_Unit .. Last_Unit) of Needed_File_Info_Type;
+      File_Info_Array : array (1 .. Last_Source_File) of File_Info_Type;
 
       procedure gigi (
          gnat_root                     : Int;
@@ -76,7 +73,7 @@ package body Back_End is
          strings_ptr                   : Address;
          string_chars_ptr              : Address;
          list_headers_ptr              : Address;
-         number_units                  : Int;
+         number_file                   : Nat;
 
          file_info_ptr                 : Address;
          gigi_standard_integer         : Entity_Id;
@@ -86,8 +83,6 @@ package body Back_End is
 
       pragma Import (C, gigi);
 
-      S : Source_File_Index;
-
    begin
       --  Skip call if in -gnatdH mode
 
@@ -95,12 +90,9 @@ package body Back_End is
          return;
       end if;
 
-      for J in Main_Unit .. Last_Unit loop
-         S := Source_Index (J);
-         File_Info_Array (J).File_Name        := File_Name (S);
-         File_Info_Array (J).First_Sloc       := Source_Text (S)'First;
-         File_Info_Array (J).Last_Sloc        := Source_Text (S)'Last;
-         File_Info_Array (J).Num_Source_Lines := Num_Source_Lines (S);
+      for I in 1 .. Last_Source_File loop
+         File_Info_Array (I).File_Name        := Full_Debug_Name (I);
+         File_Info_Array (I).Num_Source_Lines := Num_Source_Lines (I);
       end loop;
 
       gigi (
@@ -117,7 +109,7 @@ package body Back_End is
          strings_ptr        => Strings_Address,
          string_chars_ptr   => String_Chars_Address,
          list_headers_ptr   => Lists_Address,
-         number_units       => Num_Units,
+         number_file        => Num_Source_Files,
 
          file_info_ptr                 => File_Info_Array'Address,
          gigi_standard_integer         => Standard_Integer,
