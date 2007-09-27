@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "bid_conf.h"
 #include "bid_functions.h"
+#include "bid_gcc_intrinsics.h"
  
 _Decimal128
 __bid_extendddtd2 (_Decimal64 x) {

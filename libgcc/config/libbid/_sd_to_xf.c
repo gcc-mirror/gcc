@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "bid_conf.h"
 #include "bid_functions.h"
+#include "bid_gcc_intrinsics.h"
 
 XFtype
 __bid_extendsdxf (_Decimal32 x) {

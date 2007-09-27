@@ -32,7 +32,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "bid_conf.h"
 #include "bid_functions.h"
 
-
 #define __BID_INLINE__ static __inline
 
 /*********************************************************************
@@ -210,7 +209,7 @@ UINT64 X1, X0=X;                              \
     C_128.w[0] = 0x378d8e63ffffffffull;                                 \
   }                                                                     \
 }
-  
+
  /*********************************************************************
  *
  *      Multiply Macros
@@ -739,6 +738,8 @@ UINT128 _TMP2,_TMP8;                                     \
 ///////////////////////////////////////
 #define SPECIAL_ENCODING_MASK64 0x6000000000000000ull
 #define INFINITY_MASK64         0x7800000000000000ull
+#define SINFINITY_MASK64        0xf800000000000000ull
+#define SSNAN_MASK64            0xfc00000000000000ull
 #define NAN_MASK64              0x7c00000000000000ull
 #define SNAN_MASK64             0x7e00000000000000ull
 #define QUIET_MASK64            0xfdffffffffffffffull
@@ -762,21 +763,23 @@ UINT128 _TMP2,_TMP8;                                     \
 #define SMALL_COEFF_MASK32      0x001ffffful
 #define EXPONENT_MASK32         0xff
 #define LARGEST_BID32           0x77f8967f
+#define NAN_MASK32              0x7c000000
+#define SNAN_MASK32             0x7e000000
 #define MASK_BINARY_EXPONENT  0x7ff0000000000000ull
 #define BINARY_EXPONENT_BIAS  0x3ff
 #define UPPER_EXPON_LIMIT     51
 // data needed for BID pack/unpack macros
-extern UINT64 __bid_round_const_table[][19];
-extern UINT128 __bid_reciprocals10_128[];
-extern int __bid_recip_scale[];
-extern UINT128 __bid_power10_table_128[];
-extern int __bid_estimate_decimal_digits[];
-extern int __bid_estimate_bin_expon[];
-extern UINT64 __bid_power10_index_binexp[];
-extern int __bid_short_recip_scale[];
-extern UINT64 __bid_reciprocals10_64[];
-extern UINT128 __bid_power10_index_binexp_128[];
-extern UINT128 __bid_round_const_table_128[][36];
+extern UINT64 round_const_table[][19];
+extern UINT128 reciprocals10_128[];
+extern int recip_scale[];
+extern UINT128 power10_table_128[];
+extern int estimate_decimal_digits[];
+extern int estimate_bin_expon[];
+extern UINT64 power10_index_binexp[];
+extern int short_recip_scale[];
+extern UINT64 reciprocals10_64[];
+extern UINT128 power10_index_binexp_128[];
+extern UINT128 round_const_table_128[][36];
 
 
 //////////////////////////////////////////////
@@ -798,10 +801,12 @@ unpack_BID64 (UINT64 * psign_x, int *pexponent_x,
     coeff = (x & LARGE_COEFF_MASK64) | LARGE_COEFF_HIGH_BIT64;
 
     if ((x & INFINITY_MASK64) == INFINITY_MASK64) {
-      *pcoefficient_x = x;
-      // check for non-canonical values
-      if ((x & LARGE_COEFF_MASK64) >= 1000000000000000ull)
-	*pcoefficient_x = x & (~LARGE_COEFF_MASK64);
+      *pexponent_x = 0;
+      *pcoefficient_x = x & 0xfe03ffffffffffffull;
+      if ((x & 0x0003ffffffffffffull) >= 1000000000000000ull)
+	*pcoefficient_x = x & 0xfe00000000000000ull;
+      if ((x & NAN_MASK64) == INFINITY_MASK64)
+	*pcoefficient_x = x & SINFINITY_MASK64;
       return 0;	// NaN or Infinity
     }
     // check for non-canonical values
@@ -811,7 +816,7 @@ unpack_BID64 (UINT64 * psign_x, int *pexponent_x,
     // get exponent
     tmp = x >> EXPONENT_SHIFT_LARGE64;
     *pexponent_x = (int) (tmp & EXPONENT_MASK64);
-    return 1;
+    return coeff;
   }
   // exponent
   tmp = x >> EXPONENT_SHIFT_SMALL64;
@@ -865,20 +870,20 @@ get_BID64 (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 #endif
       // get digits to be shifted out
       extra_digits = -expon;
-      coeff += __bid_round_const_table[rmode][extra_digits];
+      coeff += round_const_table[rmode][extra_digits];
 
       // get coeff*(2^M[extra_digits])/10^extra_digits
       __mul_64x128_full (QH, Q_low, coeff,
-			 __bid_reciprocals10_128[extra_digits]);
+			 reciprocals10_128[extra_digits]);
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
-      amount = __bid_recip_scale[extra_digits];
+      amount = recip_scale[extra_digits];
 
       C64 = QH >> amount;
 
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
-      if (rmode == 0) //ROUNDING_TO_NEAREST
+      if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
 	if (C64 & 1) {
 	  // check whether fractional part of initial_P/10^extra_digits is exactly .5
@@ -891,10 +896,10 @@ get_BID64 (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 	  remainder_h = remainder_h & QH;
 
 	  if (!remainder_h
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0]))) {
+		      reciprocals10_128[extra_digits].w[0]))) {
 	    C64--;
 	  }
 	}
@@ -914,27 +919,27 @@ get_BID64 (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 	case ROUNDING_TIES_AWAY:
 	  // test whether fractional part is 0
 	  if (remainder_h == 0x8000000000000000ull
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0])))
+		      reciprocals10_128[extra_digits].w[0])))
 	    status = EXACT_STATUS;
 	  break;
 	case ROUNDING_DOWN:
 	case ROUNDING_TO_ZERO:
 	  if (!remainder_h
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0])))
+		      reciprocals10_128[extra_digits].w[0])))
 	    status = EXACT_STATUS;
 	  break;
 	default:
 	  // round up
 	  __add_carry_out (Stemp.w[0], CY, Q_low.w[0],
-			   __bid_reciprocals10_128[extra_digits].w[0]);
+			   reciprocals10_128[extra_digits].w[0]);
 	  __add_carry_in_out (Stemp.w[1], carry, Q_low.w[1],
-			      __bid_reciprocals10_128[extra_digits].w[1], CY);
+			      reciprocals10_128[extra_digits].w[1], CY);
 	  if ((remainder_h >> (64 - amount)) + carry >=
 	      (((UINT64) 1) << amount))
 	    status = EXACT_STATUS;
@@ -1208,21 +1213,21 @@ get_BID64_UF (UINT64 sgn, int expon, UINT64 coeff, UINT64 R, int rmode,
     coeff |= 1;
   // get digits to be shifted out
   extra_digits = 1 - expon;
-  C128.w[0] = coeff + __bid_round_const_table[rmode][extra_digits];
+  C128.w[0] = coeff + round_const_table[rmode][extra_digits];
 
   // get coeff*(2^M[extra_digits])/10^extra_digits
   __mul_64x128_full (QH, Q_low, C128.w[0],
-		     __bid_reciprocals10_128[extra_digits]);
+		     reciprocals10_128[extra_digits]);
 
   // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
-  amount = __bid_recip_scale[extra_digits];
+  amount = recip_scale[extra_digits];
 
   C64 = QH >> amount;
   //__shr_128(C128, Q_high, amount); 
 
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
-  if (rmode == 0) //ROUNDING_TO_NEAREST
+  if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
     if (C64 & 1) {
       // check whether fractional part of initial_P/10^extra_digits is exactly .5
@@ -1235,10 +1240,10 @@ get_BID64_UF (UINT64 sgn, int expon, UINT64 coeff, UINT64 R, int rmode,
       remainder_h = remainder_h & QH;
 
       if (!remainder_h
-	  && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-	      || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	  && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+	      || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		  && Q_low.w[0] <
-		  __bid_reciprocals10_128[extra_digits].w[0]))) {
+		  reciprocals10_128[extra_digits].w[0]))) {
 	C64--;
       }
     }
@@ -1258,27 +1263,27 @@ get_BID64_UF (UINT64 sgn, int expon, UINT64 coeff, UINT64 R, int rmode,
     case ROUNDING_TIES_AWAY:
       // test whether fractional part is 0
       if (remainder_h == 0x8000000000000000ull
-	  && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-	      || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	  && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+	      || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		  && Q_low.w[0] <
-		  __bid_reciprocals10_128[extra_digits].w[0])))
+		  reciprocals10_128[extra_digits].w[0])))
 	status = EXACT_STATUS;
       break;
     case ROUNDING_DOWN:
     case ROUNDING_TO_ZERO:
       if (!remainder_h
-	  && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-	      || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	  && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+	      || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		  && Q_low.w[0] <
-		  __bid_reciprocals10_128[extra_digits].w[0])))
+		  reciprocals10_128[extra_digits].w[0])))
 	status = EXACT_STATUS;
       break;
     default:
       // round up
       __add_carry_out (Stemp.w[0], CY, Q_low.w[0],
-		       __bid_reciprocals10_128[extra_digits].w[0]);
+		       reciprocals10_128[extra_digits].w[0]);
       __add_carry_in_out (Stemp.w[1], carry, Q_low.w[1],
-			  __bid_reciprocals10_128[extra_digits].w[1], CY);
+			  reciprocals10_128[extra_digits].w[1], CY);
       if ((remainder_h >> (64 - amount)) + carry >=
 	  (((UINT64) 1) << amount))
 	status = EXACT_STATUS;
@@ -1335,20 +1340,20 @@ get_BID64_small_mantissa (UINT64 sgn, int expon, UINT64 coeff,
 #endif
       // get digits to be shifted out
       extra_digits = -expon;
-      C128.w[0] = coeff + __bid_round_const_table[rmode][extra_digits];
+      C128.w[0] = coeff + round_const_table[rmode][extra_digits];
 
       // get coeff*(2^M[extra_digits])/10^extra_digits
       __mul_64x128_full (QH, Q_low, C128.w[0],
-			 __bid_reciprocals10_128[extra_digits]);
+			 reciprocals10_128[extra_digits]);
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
-      amount = __bid_recip_scale[extra_digits];
+      amount = recip_scale[extra_digits];
 
       C64 = QH >> amount;
 
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
-      if (rmode == 0) //ROUNDING_TO_NEAREST
+      if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
 	if (C64 & 1) {
 	  // check whether fractional part of initial_P/10^extra_digits is exactly .5
@@ -1361,10 +1366,10 @@ get_BID64_small_mantissa (UINT64 sgn, int expon, UINT64 coeff,
 	  remainder_h = remainder_h & QH;
 
 	  if (!remainder_h
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0]))) {
+		      reciprocals10_128[extra_digits].w[0]))) {
 	    C64--;
 	  }
 	}
@@ -1384,27 +1389,27 @@ get_BID64_small_mantissa (UINT64 sgn, int expon, UINT64 coeff,
 	case ROUNDING_TIES_AWAY:
 	  // test whether fractional part is 0
 	  if (remainder_h == 0x8000000000000000ull
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0])))
+		      reciprocals10_128[extra_digits].w[0])))
 	    status = EXACT_STATUS;
 	  break;
 	case ROUNDING_DOWN:
 	case ROUNDING_TO_ZERO:
 	  if (!remainder_h
-	      && (Q_low.w[1] < __bid_reciprocals10_128[extra_digits].w[1]
-		  || (Q_low.w[1] == __bid_reciprocals10_128[extra_digits].w[1]
+	      && (Q_low.w[1] < reciprocals10_128[extra_digits].w[1]
+		  || (Q_low.w[1] == reciprocals10_128[extra_digits].w[1]
 		      && Q_low.w[0] <
-		      __bid_reciprocals10_128[extra_digits].w[0])))
+		      reciprocals10_128[extra_digits].w[0])))
 	    status = EXACT_STATUS;
 	  break;
 	default:
 	  // round up
 	  __add_carry_out (Stemp.w[0], CY, Q_low.w[0],
-			   __bid_reciprocals10_128[extra_digits].w[0]);
+			   reciprocals10_128[extra_digits].w[0]);
 	  __add_carry_in_out (Stemp.w[1], carry, Q_low.w[1],
-			      __bid_reciprocals10_128[extra_digits].w[1], CY);
+			      reciprocals10_128[extra_digits].w[1], CY);
 	  if ((remainder_h >> (64 - amount)) + carry >=
 	      (((UINT64) 1) << amount))
 	    status = EXACT_STATUS;
@@ -1525,13 +1530,13 @@ handle_UF_128_rem (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
 #else
   rmode = 0;
 #endif
-  T128 = __bid_round_const_table_128[rmode][ed2];
+  T128 = round_const_table_128[rmode][ed2];
   __add_carry_out (CQ.w[0], carry, T128.w[0], CQ.w[0]);
   CQ.w[1] = CQ.w[1] + T128.w[1] + carry;
 
-  TP128 = __bid_reciprocals10_128[ed2];
+  TP128 = reciprocals10_128[ed2];
   __mul_128x128_full (Qh, Ql, CQ, TP128);
-  amount = __bid_recip_scale[ed2];
+  amount = recip_scale[ed2];
 
   if (amount >= 64) {
     CQ.w[0] = Qh.w[1] >> (amount - 64);
@@ -1553,9 +1558,9 @@ handle_UF_128_rem (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
       __shl_128_long (Qh1, Qh, (128 - amount));
 
       if (!Qh1.w[1] && !Qh1.w[0]
-	  && (Ql.w[1] < __bid_reciprocals10_128[ed2].w[1]
-	      || (Ql.w[1] == __bid_reciprocals10_128[ed2].w[1]
-		  && Ql.w[0] < __bid_reciprocals10_128[ed2].w[0]))) {
+	  && (Ql.w[1] < reciprocals10_128[ed2].w[1]
+	      || (Ql.w[1] == reciprocals10_128[ed2].w[1]
+		  && Ql.w[0] < reciprocals10_128[ed2].w[0]))) {
 	CQ.w[0]--;
       }
     }
@@ -1575,25 +1580,25 @@ handle_UF_128_rem (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
     case ROUNDING_TIES_AWAY:
       // test whether fractional part is 0
       if (Qh1.w[1] == 0x8000000000000000ull && (!Qh1.w[0])
-	  && (Ql.w[1] < __bid_reciprocals10_128[ed2].w[1]
-	      || (Ql.w[1] == __bid_reciprocals10_128[ed2].w[1]
-		  && Ql.w[0] < __bid_reciprocals10_128[ed2].w[0])))
+	  && (Ql.w[1] < reciprocals10_128[ed2].w[1]
+	      || (Ql.w[1] == reciprocals10_128[ed2].w[1]
+		  && Ql.w[0] < reciprocals10_128[ed2].w[0])))
 	status = EXACT_STATUS;
       break;
     case ROUNDING_DOWN:
     case ROUNDING_TO_ZERO:
       if ((!Qh1.w[1]) && (!Qh1.w[0])
-	  && (Ql.w[1] < __bid_reciprocals10_128[ed2].w[1]
-	      || (Ql.w[1] == __bid_reciprocals10_128[ed2].w[1]
-		  && Ql.w[0] < __bid_reciprocals10_128[ed2].w[0])))
+	  && (Ql.w[1] < reciprocals10_128[ed2].w[1]
+	      || (Ql.w[1] == reciprocals10_128[ed2].w[1]
+		  && Ql.w[0] < reciprocals10_128[ed2].w[0])))
 	status = EXACT_STATUS;
       break;
     default:
       // round up
       __add_carry_out (Stemp.w[0], CY, Ql.w[0],
-		       __bid_reciprocals10_128[ed2].w[0]);
+		       reciprocals10_128[ed2].w[0]);
       __add_carry_in_out (Stemp.w[1], carry, Ql.w[1],
-			  __bid_reciprocals10_128[ed2].w[1], CY);
+			  reciprocals10_128[ed2].w[1], CY);
       __shr_128_long (Qh, Qh1, (128 - amount));
       Tmp.w[0] = 1;
       Tmp.w[1] = 0;
@@ -1661,13 +1666,13 @@ handle_UF_128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
   rmode = 0;
 #endif
 
-  T128 = __bid_round_const_table_128[rmode][ed2];
+  T128 = round_const_table_128[rmode][ed2];
   __add_carry_out (CQ.w[0], carry, T128.w[0], CQ.w[0]);
   CQ.w[1] = CQ.w[1] + T128.w[1] + carry;
 
-  TP128 = __bid_reciprocals10_128[ed2];
+  TP128 = reciprocals10_128[ed2];
   __mul_128x128_full (Qh, Ql, CQ, TP128);
-  amount = __bid_recip_scale[ed2];
+  amount = recip_scale[ed2];
 
   if (amount >= 64) {
     CQ.w[0] = Qh.w[1] >> (amount - 64);
@@ -1689,9 +1694,9 @@ handle_UF_128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
       __shl_128_long (Qh1, Qh, (128 - amount));
 
       if (!Qh1.w[1] && !Qh1.w[0]
-	  && (Ql.w[1] < __bid_reciprocals10_128[ed2].w[1]
-	      || (Ql.w[1] == __bid_reciprocals10_128[ed2].w[1]
-		  && Ql.w[0] < __bid_reciprocals10_128[ed2].w[0]))) {
+	  && (Ql.w[1] < reciprocals10_128[ed2].w[1]
+	      || (Ql.w[1] == reciprocals10_128[ed2].w[1]
+		  && Ql.w[0] < reciprocals10_128[ed2].w[0]))) {
 	CQ.w[0]--;
       }
     }
@@ -1711,25 +1716,25 @@ handle_UF_128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
     case ROUNDING_TIES_AWAY:
       // test whether fractional part is 0
       if (Qh1.w[1] == 0x8000000000000000ull && (!Qh1.w[0])
-	  && (Ql.w[1] < __bid_reciprocals10_128[ed2].w[1]
-	      || (Ql.w[1] == __bid_reciprocals10_128[ed2].w[1]
-		  && Ql.w[0] < __bid_reciprocals10_128[ed2].w[0])))
+	  && (Ql.w[1] < reciprocals10_128[ed2].w[1]
+	      || (Ql.w[1] == reciprocals10_128[ed2].w[1]
+		  && Ql.w[0] < reciprocals10_128[ed2].w[0])))
 	status = EXACT_STATUS;
       break;
     case ROUNDING_DOWN:
     case ROUNDING_TO_ZERO:
       if ((!Qh1.w[1]) && (!Qh1.w[0])
-	  && (Ql.w[1] < __bid_reciprocals10_128[ed2].w[1]
-	      || (Ql.w[1] == __bid_reciprocals10_128[ed2].w[1]
-		  && Ql.w[0] < __bid_reciprocals10_128[ed2].w[0])))
+	  && (Ql.w[1] < reciprocals10_128[ed2].w[1]
+	      || (Ql.w[1] == reciprocals10_128[ed2].w[1]
+		  && Ql.w[0] < reciprocals10_128[ed2].w[0])))
 	status = EXACT_STATUS;
       break;
     default:
       // round up
       __add_carry_out (Stemp.w[0], CY, Ql.w[0],
-		       __bid_reciprocals10_128[ed2].w[0]);
+		       reciprocals10_128[ed2].w[0]);
       __add_carry_in_out (Stemp.w[1], carry, Ql.w[1],
-			  __bid_reciprocals10_128[ed2].w[1], CY);
+			  reciprocals10_128[ed2].w[1], CY);
       __shr_128_long (Qh, Qh1, (128 - amount));
       Tmp.w[0] = 1;
       Tmp.w[1] = 0;
@@ -1761,7 +1766,7 @@ handle_UF_128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 CQ,
 //
 __BID_INLINE__ UINT64
 unpack_BID128_value (UINT64 * psign_x, int *pexponent_x,
-	       UINT128 * pcoefficient_x, UINT128 x) {
+		     UINT128 * pcoefficient_x, UINT128 x) {
   UINT128 coeff, T33, T34;
   UINT64 ex;
 
@@ -1778,21 +1783,35 @@ unpack_BID128_value (UINT64 * psign_x, int *pexponent_x,
       return 0;
     }
     // 10^33
-    T33 = __bid_power10_table_128[33];
-    coeff.w[0] = x.w[0];
-    coeff.w[1] = (x.w[1]) & LARGE_COEFF_MASK128;
+    T33 = power10_table_128[33];
+    /*coeff.w[0] = x.w[0];
+       coeff.w[1] = (x.w[1]) & LARGE_COEFF_MASK128;
+       pcoefficient_x->w[0] = x.w[0];
+       pcoefficient_x->w[1] = x.w[1];
+       if (__unsigned_compare_ge_128 (coeff, T33)) // non-canonical
+       pcoefficient_x->w[1] &= (~LARGE_COEFF_MASK128); */
+
     pcoefficient_x->w[0] = x.w[0];
-    pcoefficient_x->w[1] = x.w[1];
-    if (__unsigned_compare_ge_128 (coeff, T33)) // non-canonical
-      pcoefficient_x->w[1] &= (~LARGE_COEFF_MASK128);
-    return 0; // NaN or Infinity 
+    pcoefficient_x->w[1] = (x.w[1]) & 0x00003fffffffffffull;
+    if (__unsigned_compare_ge_128 ((*pcoefficient_x), T33))	// non-canonical
+    {
+      pcoefficient_x->w[1] = (x.w[1]) & 0xfe00000000000000ull;
+      pcoefficient_x->w[0] = 0;
+    } else
+      pcoefficient_x->w[1] = (x.w[1]) & 0xfe003fffffffffffull;
+    if ((x.w[1] & NAN_MASK64) == INFINITY_MASK64) {
+      pcoefficient_x->w[0] = 0;
+      pcoefficient_x->w[1] = x.w[1] & SINFINITY_MASK64;
+    }
+    *pexponent_x = 0;
+    return 0;	// NaN or Infinity 
   }
 
   coeff.w[0] = x.w[0];
   coeff.w[1] = (x.w[1]) & SMALL_COEFF_MASK128;
 
   // 10^34
-  T34 = __bid_power10_table_128[34];
+  T34 = power10_table_128[34];
   // check for non-canonical values
   if (__unsigned_compare_ge_128 (coeff, T34))
     coeff.w[0] = coeff.w[1] = 0;
@@ -1829,21 +1848,24 @@ unpack_BID128 (UINT64 * psign_x, int *pexponent_x,
       return 0;
     }
     // 10^33
-    T33 = __bid_power10_table_128[33];
+    T33 = power10_table_128[33];
     coeff.w[0] = px->w[0];
     coeff.w[1] = (px->w[1]) & LARGE_COEFF_MASK128;
     pcoefficient_x->w[0] = px->w[0];
     pcoefficient_x->w[1] = px->w[1];
-    if (__unsigned_compare_ge_128 (coeff, T33)) // non-canonical
+    if (__unsigned_compare_ge_128 (coeff, T33)) {	// non-canonical
       pcoefficient_x->w[1] &= (~LARGE_COEFF_MASK128);
-    return 0; // NaN or Infinity 
+      pcoefficient_x->w[0] = 0;
+    }
+    *pexponent_x = 0;
+    return 0;	// NaN or Infinity 
   }
 
   coeff.w[0] = px->w[0];
   coeff.w[1] = (px->w[1]) & SMALL_COEFF_MASK128;
 
   // 10^34
-  T34 = __bid_power10_table_128[34];
+  T34 = power10_table_128[34];
   // check for non-canonical values
   if (__unsigned_compare_ge_128 (coeff, T34))
     coeff.w[0] = coeff.w[1] = 0;
@@ -1870,7 +1892,7 @@ get_BID128_very_fast_OF (UINT128 * pres, UINT64 sgn, int expon,
   if ((unsigned) expon > DECIMAL_MAX_EXPON_128) {
 
     if (expon - MAX_FORMAT_DIGITS_128 <= DECIMAL_MAX_EXPON_128) {
-      T = __bid_power10_table_128[MAX_FORMAT_DIGITS_128 - 1];
+      T = power10_table_128[MAX_FORMAT_DIGITS_128 - 1];
       while (__unsigned_compare_gt_128 (T, coeff)
 	     && expon > DECIMAL_MAX_EXPON_128) {
 	coeff.w[1] =
@@ -1979,14 +2001,15 @@ get_BID128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 coeff,
     coeff.w[0] = 0x38c15b0a00000000ull;
   }
   // check OF, UF
-  if ((unsigned) expon > DECIMAL_MAX_EXPON_128) {
+  if (expon < 0 || expon > DECIMAL_MAX_EXPON_128) {
     // check UF
-    if (expon < 0)
+    if (expon < 0) {
       return handle_UF_128 (pres, sgn, expon, coeff, prounding_mode,
 			    fpsc);
+    }
 
     if (expon - MAX_FORMAT_DIGITS_128 <= DECIMAL_MAX_EXPON_128) {
-      T = __bid_power10_table_128[MAX_FORMAT_DIGITS_128 - 1];
+      T = power10_table_128[MAX_FORMAT_DIGITS_128 - 1];
       while (__unsigned_compare_gt_128 (T, coeff)
 	     && expon > DECIMAL_MAX_EXPON_128) {
 	coeff.w[1] =
@@ -2000,7 +2023,12 @@ get_BID128 (UINT128 * pres, UINT64 sgn, int expon, UINT128 coeff,
 	expon--;
       }
     }
-    if ((unsigned) expon > DECIMAL_MAX_EXPON_128) {
+    if (expon > DECIMAL_MAX_EXPON_128) {
+      if (!(coeff.w[1] | coeff.w[0])) {
+	pres->w[1] = sgn | (((UINT64) DECIMAL_MAX_EXPON_128) << 49);
+	pres->w[0] = 0;
+	return pres;
+      }
       // OF
 #ifdef SET_STATUS_FLAGS
       __set_status_flags (fpsc, OVERFLOW_EXCEPTION | INEXACT_EXCEPTION);
@@ -2064,9 +2092,9 @@ get_BID128_string (UINT128 * pres, UINT64 sgn, int expon, UINT128 coeff) {
 
     if (expon < DECIMAL_MAX_EXPON_128 + 34) {
       while (expon > DECIMAL_MAX_EXPON_128 &&
-	     (coeff.w[1] < __bid_power10_table_128[33].w[1] ||
-	      (coeff.w[1] == __bid_power10_table_128[33].w[1]
-	      && coeff.w[0] < __bid_power10_table_128[33].w[0]))) {
+	     (coeff.w[1] < power10_table_128[33].w[1] ||
+	      (coeff.w[1] == power10_table_128[33].w[1]
+	       && coeff.w[0] < power10_table_128[33].w[0]))) {
 	D2.w[1] = (coeff.w[1] << 1) | (coeff.w[0] >> 63);
 	D2.w[0] = coeff.w[0] << 1;
 	D8.w[1] = (coeff.w[1] << 3) | (coeff.w[0] >> 61);
@@ -2131,9 +2159,15 @@ unpack_BID32 (UINT32 * psign_x, int *pexponent_x,
 
   if ((x & SPECIAL_ENCODING_MASK32) == SPECIAL_ENCODING_MASK32) {
     // special encodings
-    if ((x & INFINITY_MASK32) == INFINITY_MASK32)
+    if ((x & INFINITY_MASK32) == INFINITY_MASK32) {
+      *pcoefficient_x = x & 0xfe0fffff;
+      if ((x & 0x000fffff) >= 1000000)
+	*pcoefficient_x = x & 0xfe000000;
+      if ((x & NAN_MASK32) == INFINITY_MASK32)
+	*pcoefficient_x = x & 0xf8000000;
+      *pexponent_x = 0;
       return 0;	// NaN or Infinity
-
+    }
     // coefficient
     *pcoefficient_x = (x & SMALL_COEFF_MASK32) | LARGE_COEFF_HIGH_BIT32;
     // check for non-canonical value
@@ -2196,21 +2230,27 @@ get_BID32 (UINT32 sgn, int expon, UINT64 coeff, int rmode,
 #ifdef IEEE_ROUND_NEAREST
       rmode = 0;
 #endif
+#ifndef IEEE_ROUND_NEAREST_TIES_AWAY
+#ifndef IEEE_ROUND_NEAREST
+      if (sgn && (unsigned) (rmode - 1) < 2)
+	rmode = 3 - rmode;
+#endif
+#endif
 
       extra_digits = -expon;
-      coeff += __bid_round_const_table[rmode][extra_digits];
+      coeff += round_const_table[rmode][extra_digits];
 
       // get coeff*(2^M[extra_digits])/10^extra_digits
-      __mul_64x64_to_128 (Q, coeff, __bid_reciprocals10_64[extra_digits]);
+      __mul_64x64_to_128 (Q, coeff, reciprocals10_64[extra_digits]);
 
       // now get P/10^extra_digits: shift Q_high right by M[extra_digits]-128
-      amount = __bid_short_recip_scale[extra_digits];
+      amount = short_recip_scale[extra_digits];
 
       C64 = Q.w[1] >> amount;
 
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
-      if (rmode == 0) //ROUNDING_TO_NEAREST
+      if (rmode == 0)	//ROUNDING_TO_NEAREST
 #endif
 	if (C64 & 1) {
 	  // check whether fractional part of initial_P/10^extra_digits is exactly .5
@@ -2222,7 +2262,7 @@ get_BID32 (UINT32 sgn, int expon, UINT64 coeff, int rmode,
 	  remainder_h >>= amount2;
 	  remainder_h = remainder_h & Q.w[1];
 
-	  if (!remainder_h && (Q.w[0] < __bid_reciprocals10_64[extra_digits])) {
+	  if (!remainder_h && (Q.w[0] < reciprocals10_64[extra_digits])) {
 	    C64--;
 	  }
 	}
@@ -2242,18 +2282,18 @@ get_BID32 (UINT32 sgn, int expon, UINT64 coeff, int rmode,
 	case ROUNDING_TIES_AWAY:
 	  // test whether fractional part is 0
 	  if (remainder_h == 0x8000000000000000ull
-	      && (Q.w[0] < __bid_reciprocals10_64[extra_digits]))
+	      && (Q.w[0] < reciprocals10_64[extra_digits]))
 	    status = EXACT_STATUS;
 	  break;
 	case ROUNDING_DOWN:
 	case ROUNDING_TO_ZERO:
-	  if (!remainder_h && (Q.w[0] < __bid_reciprocals10_64[extra_digits]))
+	  if (!remainder_h && (Q.w[0] < reciprocals10_64[extra_digits]))
 	    status = EXACT_STATUS;
 	  break;
 	default:
 	  // round up
 	  __add_carry_out (Stemp, carry, Q.w[0],
-			   __bid_reciprocals10_64[extra_digits]);
+			   reciprocals10_64[extra_digits]);
 	  if ((remainder_h >> (64 - amount)) + carry >=
 	      (((UINT64) 1) << amount))
 	    status = EXACT_STATUS;
@@ -2444,42 +2484,42 @@ ALIGN (16)
        unsigned int digits1;
      } DEC_DIGITS;
 
-     extern DEC_DIGITS __bid_nr_digits[];
-     extern UINT64 __bid_midpoint64[];
-     extern UINT128 __bid_midpoint128[];
-     extern UINT192 __bid_midpoint192[];
-     extern UINT256 __bid_midpoint256[];
-     extern UINT64 __bid_ten2k64[];
-     extern UINT128 __bid_ten2k128[];
-     extern UINT256 __bid_ten2k256[];
-     extern UINT128 __bid_ten2mk128[];
-     extern UINT64 __bid_ten2mk64[];
-     extern UINT128 __bid_ten2mk128trunc[];
-     extern int __bid_shiftright128[];
-     extern UINT64 __bid_maskhigh128[];
-     extern UINT64 __bid_maskhigh128M[];
-     extern UINT64 __bid_maskhigh192M[];
-     extern UINT64 __bid_maskhigh256M[];
-     extern UINT64 __bid_one_half128[];
-     extern UINT64 __bid_one_half128M[];
-     extern UINT64 __bid_one_half192M[];
-     extern UINT64 __bid_one_half256M[];
-     extern UINT128 __bid_ten2mk128M[];
-     extern UINT128 __bid_ten2mk128truncM[];
-     extern UINT192 __bid_ten2mk192truncM[];
-     extern UINT256 __bid_ten2mk256truncM[];
-     extern int __bid_shiftright128M[];
-     extern int __bid_shiftright192M[];
-     extern int __bid_shiftright256M[];
-     extern UINT192 __bid_ten2mk192M[];
-     extern UINT256 __bid_ten2mk256M[];
-     extern unsigned char __bid_char_table2[];
-     extern unsigned char __bid_char_table3[];
+     extern DEC_DIGITS nr_digits[];
+     extern UINT64 midpoint64[];
+     extern UINT128 midpoint128[];
+     extern UINT192 midpoint192[];
+     extern UINT256 midpoint256[];
+     extern UINT64 ten2k64[];
+     extern UINT128 ten2k128[];
+     extern UINT256 ten2k256[];
+     extern UINT128 ten2mk128[];
+     extern UINT64 ten2mk64[];
+     extern UINT128 ten2mk128trunc[];
+     extern int shiftright128[];
+     extern UINT64 maskhigh128[];
+     extern UINT64 maskhigh128M[];
+     extern UINT64 maskhigh192M[];
+     extern UINT64 maskhigh256M[];
+     extern UINT64 onehalf128[];
+     extern UINT64 onehalf128M[];
+     extern UINT64 onehalf192M[];
+     extern UINT64 onehalf256M[];
+     extern UINT128 ten2mk128M[];
+     extern UINT128 ten2mk128truncM[];
+     extern UINT192 ten2mk192truncM[];
+     extern UINT256 ten2mk256truncM[];
+     extern int shiftright128M[];
+     extern int shiftright192M[];
+     extern int shiftright256M[];
+     extern UINT192 ten2mk192M[];
+     extern UINT256 ten2mk256M[];
+     extern unsigned char char_table2[];
+     extern unsigned char char_table3[];
 
-     extern UINT64 __bid_ten2m3k64[];
-     extern unsigned int __bid_shift_ten2m3k64[];
-     extern UINT128 __bid_ten2m3k128[];
-     extern unsigned int __bid_shift_ten2m3k128[];
+     extern UINT64 ten2m3k64[];
+     extern unsigned int shift_ten2m3k64[];
+     extern UINT128 ten2m3k128[];
+     extern unsigned int shift_ten2m3k128[];
 
 
 
@@ -2487,29 +2527,29 @@ ALIGN (16)
  *************** TABLES FOR GENERAL ROUNDING FUNCTIONS *********************
  ***************************************************************************/
 
-     extern UINT64 __bid_Kx64[];
-     extern unsigned int __bid_Ex64m64[];
-     extern UINT64 __bid_half64[];
-     extern UINT64 __bid_mask64[];
-     extern UINT64 __bid_ten2mxtrunc64[];
+     extern UINT64 Kx64[];
+     extern unsigned int Ex64m64[];
+     extern UINT64 half64[];
+     extern UINT64 mask64[];
+     extern UINT64 ten2mxtrunc64[];
 
-     extern UINT128 __bid_Kx128[];
-     extern unsigned int __bid_Ex128m128[];
-     extern UINT64 __bid_half128[];
-     extern UINT64 __bid_mask128[];
-     extern UINT128 __bid_ten2mxtrunc128[];
+     extern UINT128 Kx128[];
+     extern unsigned int Ex128m128[];
+     extern UINT64 half128[];
+     extern UINT64 mask128[];
+     extern UINT128 ten2mxtrunc128[];
 
-     extern UINT192 __bid_Kx192[];
-     extern unsigned int __bid_Ex192m192[];
-     extern UINT64 __bid_half192[];
-     extern UINT64 __bid_mask192[];
-     extern UINT192 __bid_ten2mxtrunc192[];
+     extern UINT192 Kx192[];
+     extern unsigned int Ex192m192[];
+     extern UINT64 half192[];
+     extern UINT64 mask192[];
+     extern UINT192 ten2mxtrunc192[];
 
-     extern UINT256 __bid_Kx256[];
-     extern unsigned int __bid_Ex256m256[];
-     extern UINT64 __bid_half256[];
-     extern UINT64 __bid_mask256[];
-     extern UINT256 __bid_ten2mxtrunc256[];
+     extern UINT256 Kx256[];
+     extern unsigned int Ex256m256[];
+     extern UINT64 half256[];
+     extern UINT64 mask256[];
+     extern UINT256 ten2mxtrunc256[];
 
      typedef union __bid64_128 {
        UINT64 b64;
@@ -2564,9 +2604,9 @@ ALIGN (16)
        positiveInfinity
      };
 
+     typedef union {
+       UINT64 ui64;
+       double d;
+     } BID_UI64DOUBLE;
+
 #endif
-
-typedef union { UINT32 ui32; float f; } BID_UI32FLOAT;
-typedef union { UINT64 ui64; double d; } BID_UI64DOUBLE;
-typedef union { UINT128 ui128; long double ld; } BID_UI128LONGDOUBLE;
-

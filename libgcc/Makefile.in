@@ -478,9 +478,10 @@ endif
 dfp-filenames =
 ifneq ($(D32PBIT)$(D64PBIT)$(D128PBIT),)
 ifeq ($(enable_decimal_float),bid)
-dfp-filenames += decimal_globals decimal_data binarydecimal \
-		 _isinfd32 _isinfd64 _isinfd128 bid64_noncomp bid128_noncomp \
-		 bid128_fma bid_round bid_from_int convert_data \
+dfp-filenames += bid_decimal_globals bid_decimal_data \
+		 bid_binarydecimal bid_convert_data \
+		 _isinfd32 _isinfd64 _isinfd128 bid64_noncomp \
+		 bid128_noncomp bid128_fma bid_round bid_from_int \
 		 bid64_add bid128_add bid64_div bid128_div \
 		 bid64_mul bid128_mul bid64_compare bid128_compare \
 		 bid128 bid32_to_bid64 bid32_to_bid128 bid64_to_bid128 \

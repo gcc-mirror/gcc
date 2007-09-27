@@ -35,7 +35,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #if DECIMAL_CALL_BY_REFERENCE
 
 void
-__bid64_quantize (UINT64 * pres, UINT64 * px,
+bid64_quantize (UINT64 * pres, UINT64 * px,
 		UINT64 *
 		py _RND_MODE_PARAM _EXC_FLAGS_PARAM _EXC_MASKS_PARAM
 		_EXC_INFO_PARAM) {
@@ -43,15 +43,16 @@ __bid64_quantize (UINT64 * pres, UINT64 * px,
 #else
 
 UINT64
-__bid64_quantize (UINT64 x,
+bid64_quantize (UINT64 x,
 		UINT64 y _RND_MODE_PARAM _EXC_FLAGS_PARAM
 		_EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   UINT128 CT;
-  UINT64 sign_x, sign_y, coefficient_x, coefficient_y, remainder_h, C64;
+  UINT64 sign_x, sign_y, coefficient_x, coefficient_y, remainder_h, C64,
+    valid_x;
   UINT64 tmp, carry, res;
   int_float tempx;
-  int exponent_x, exponent_y = 0, digits_x, extra_digits, amount, amount2;
+  int exponent_x, exponent_y, digits_x, extra_digits, amount, amount2;
   int expon_diff, total_digits, bin_expon_cx;
   unsigned rmode, status;
 
@@ -63,6 +64,7 @@ __bid64_quantize (UINT64 x,
   y = *py;
 #endif
 
+  valid_x = unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x);
   // unpack arguments, check for NaN or Infinity
   if (!unpack_BID64 (&sign_y, &exponent_y, &coefficient_y, y)) {
     // Inf. or NaN or 0
@@ -72,9 +74,9 @@ __bid64_quantize (UINT64 x,
 #endif
 
     // x=Inf, y=Inf?
-    if (((x << 1) == 0xf000000000000000ull)
-	&& ((y << 1) == 0xf000000000000000ull)) {
-      res = x;
+    if (((coefficient_x << 1) == 0xf000000000000000ull)
+	&& ((coefficient_y << 1) == 0xf000000000000000ull)) {
+      res = coefficient_x;
       BID_RETURN (res);
     }
     // Inf or NaN?
@@ -85,12 +87,18 @@ __bid64_quantize (UINT64 x,
 	      ((x & 0x7c00000000000000ull) < 0x7800000000000000ull)))
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
-      res = 0x7c00000000000000ull;
-      BID_RETURN (res);
+      if ((y & NAN_MASK64) != NAN_MASK64)
+	coefficient_y = 0;
+      if ((x & NAN_MASK64) != NAN_MASK64) {
+	res = 0x7c00000000000000ull | (coefficient_y & QUIET_MASK64);
+	if (((y & NAN_MASK64) != NAN_MASK64) && ((x & NAN_MASK64) == 0x7800000000000000ull))
+		res = x;
+	BID_RETURN (res);
+      }
     }
   }
   // unpack arguments, check for NaN or Infinity
-  if (!unpack_BID64 (&sign_x, &exponent_x, &coefficient_x, x)) {
+  if (!valid_x) {
     // x is Inf. or NaN or 0
 
     // Inf or NaN?
@@ -100,7 +108,9 @@ __bid64_quantize (UINT64 x,
 	  || ((x & 0x7c00000000000000ull) == 0x7800000000000000ull))	//Inf 
 	__set_status_flags (pfpsf, INVALID_EXCEPTION);
 #endif
-      res = 0x7c00000000000000ull;
+      if ((x & NAN_MASK64) != NAN_MASK64)
+	coefficient_x = 0;
+      res = 0x7c00000000000000ull | (coefficient_x & QUIET_MASK64);
       BID_RETURN (res);
     }
 
@@ -110,8 +120,8 @@ __bid64_quantize (UINT64 x,
   // get number of decimal digits in coefficient_x
   tempx.d = (float) coefficient_x;
   bin_expon_cx = ((tempx.i >> 23) & 0xff) - 0x7f;
-  digits_x = __bid_estimate_decimal_digits[bin_expon_cx];
-  if (coefficient_x >= __bid_power10_table_128[digits_x].w[0])
+  digits_x = estimate_decimal_digits[bin_expon_cx];
+  if (coefficient_x >= power10_table_128[digits_x].w[0])
     digits_x++;
 
   expon_diff = exponent_x - exponent_y;
@@ -120,7 +130,7 @@ __bid64_quantize (UINT64 x,
   // check range of scaled coefficient
   if ((UINT32) (total_digits + 1) <= 17) {
     if (expon_diff >= 0) {
-      coefficient_x *= __bid_power10_table_128[expon_diff].w[0];
+      coefficient_x *= power10_table_128[expon_diff].w[0];
       res = very_fast_get_BID64 (sign_x, exponent_y, coefficient_x);
       BID_RETURN (res);
     }
@@ -137,14 +147,14 @@ __bid64_quantize (UINT64 x,
 #else
     rmode = 0;
 #endif
-    coefficient_x += __bid_round_const_table[rmode][extra_digits];
+    coefficient_x += round_const_table[rmode][extra_digits];
 
     // get P*(2^M[extra_digits])/10^extra_digits
     __mul_64x64_to_128 (CT, coefficient_x,
-			__bid_reciprocals10_64[extra_digits]);
+			reciprocals10_64[extra_digits]);
 
     // now get P/10^extra_digits: shift C64 right by M[extra_digits]-128
-    amount = __bid_short_recip_scale[extra_digits];
+    amount = short_recip_scale[extra_digits];
     C64 = CT.w[1] >> amount;
 #ifndef IEEE_ROUND_NEAREST_TIES_AWAY
 #ifndef IEEE_ROUND_NEAREST
@@ -152,7 +162,7 @@ __bid64_quantize (UINT64 x,
 #endif
       if (C64 & 1) {
 	// check whether fractional part of initial_P/10^extra_digits 
-        // is exactly .5
+	// is exactly .5
 	// this is the same as fractional part of 
 	//   (initial_P + 0.5*10^extra_digits)/10^extra_digits is exactly zero
 
@@ -164,7 +174,7 @@ __bid64_quantize (UINT64 x,
 	remainder_h = remainder_h & CT.w[1];
 
 	// test whether fractional part is 0
-	if (!remainder_h && (CT.w[0] < __bid_reciprocals10_64[extra_digits])) {
+	if (!remainder_h && (CT.w[0] < reciprocals10_64[extra_digits])) {
 	  C64--;
 	}
       }
@@ -179,19 +189,19 @@ __bid64_quantize (UINT64 x,
     case ROUNDING_TIES_AWAY:
       // test whether fractional part is 0
       if ((remainder_h == 0x8000000000000000ull)
-	  && (CT.w[0] < __bid_reciprocals10_64[extra_digits]))
+	  && (CT.w[0] < reciprocals10_64[extra_digits]))
 	status = EXACT_STATUS;
       break;
     case ROUNDING_DOWN:
     case ROUNDING_TO_ZERO:
-      if (!remainder_h && (CT.w[0] < __bid_reciprocals10_64[extra_digits]))
+      if (!remainder_h && (CT.w[0] < reciprocals10_64[extra_digits]))
 	status = EXACT_STATUS;
       //if(!C64 && rmode==ROUNDING_DOWN) sign_s=sign_y;
       break;
     default:
       // round up
       __add_carry_out (tmp, carry, CT.w[0],
-		       __bid_reciprocals10_64[extra_digits]);
+		       reciprocals10_64[extra_digits]);
       if ((remainder_h >> (64 - amount)) + carry >=
 	  (((UINT64) 1) << amount))
 	status = EXACT_STATUS;

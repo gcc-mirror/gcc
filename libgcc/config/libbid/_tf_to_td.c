@@ -28,6 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "bid_conf.h"
 #include "bid_functions.h"
+#include "bid_gcc_intrinsics.h"
 
 #if LIBGCC2_HAS_TF_MODE || BID_HAS_TF_MODE
 _Decimal128
