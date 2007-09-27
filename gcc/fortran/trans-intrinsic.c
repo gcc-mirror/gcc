@@ -393,14 +393,15 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
 {
   tree type;
   tree itype;
-  tree arg;
+  tree arg[2];
   tree tmp;
   tree cond;
   mpfr_t huge;
-  int n;
+  int n, nargs;
   int kind;
 
   kind = expr->ts.kind;
+  nargs =  gfc_intrinsic_argument_list_length (expr);
 
   n = END_BUILTINS;
   /* We have builtin functions for some cases.  */
@@ -448,20 +449,20 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
 
   /* Evaluate the argument.  */
   gcc_assert (expr->value.function.actual->expr);
-  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  gfc_conv_intrinsic_function_args (se, expr, arg, nargs);
 
   /* Use a builtin function if one exists.  */
   if (n != END_BUILTINS)
     {
       tmp = built_in_decls[n];
-      se->expr = build_call_expr (tmp, 1, arg);
+      se->expr = build_call_expr (tmp, 1, arg[0]);
       return;
     }
 
   /* This code is probably redundant, but we'll keep it lying around just
      in case.  */
   type = gfc_typenode_for_spec (&expr->ts);
-  arg = gfc_evaluate_now (arg, &se->pre);
+  arg[0] = gfc_evaluate_now (arg[0], &se->pre);
 
   /* Test if the value is too large to handle sensibly.  */
   gfc_set_model_kind (kind);
@@ -469,17 +470,17 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
   n = gfc_validate_kind (BT_INTEGER, kind, false);
   mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
   tmp = gfc_conv_mpfr_to_tree (huge, kind);
-  cond = build2 (LT_EXPR, boolean_type_node, arg, tmp);
+  cond = build2 (LT_EXPR, boolean_type_node, arg[0], tmp);
 
   mpfr_neg (huge, huge, GFC_RND_MODE);
   tmp = gfc_conv_mpfr_to_tree (huge, kind);
-  tmp = build2 (GT_EXPR, boolean_type_node, arg, tmp);
+  tmp = build2 (GT_EXPR, boolean_type_node, arg[0], tmp);
   cond = build2 (TRUTH_AND_EXPR, boolean_type_node, cond, tmp);
   itype = gfc_get_int_type (kind);
 
-  tmp = build_fix_expr (&se->pre, arg, itype, op);
+  tmp = build_fix_expr (&se->pre, arg[0], itype, op);
   tmp = convert (type, tmp);
-  se->expr = build3 (COND_EXPR, type, cond, tmp, arg);
+  se->expr = build3 (COND_EXPR, type, cond, tmp, arg[0]);
   mpfr_clear (huge);
 }
 

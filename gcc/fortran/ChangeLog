@@ -1,3 +1,10 @@
+2007-09-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33568
+	* trans-intrinsic.c (gfc_conv_intrinsic_aint): Allow for the 
+	possibility of the optional KIND argument by making arg
+	an array, counting the number of arguments and using arg[0].
+
 2007-09-26  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/30780
