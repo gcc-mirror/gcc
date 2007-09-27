@@ -1,3 +1,9 @@
+2007-09-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Do not
+	reduce offset by units of 0x10000 for SPE vector modes or modes
+	used with E500 double instructions.
+
 2007-09-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* simplify-rtx.c (comparison_result): New.
