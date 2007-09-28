@@ -50,8 +50,6 @@ extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET cxx_get_alias_set
-#undef LANG_HOOKS_EXPAND_CONSTANT
-#define LANG_HOOKS_EXPAND_CONSTANT cplus_expand_constant
 #undef LANG_HOOKS_EXPAND_EXPR
 #define LANG_HOOKS_EXPAND_EXPR cxx_expand_expr
 #undef LANG_HOOKS_EXPAND_DECL
