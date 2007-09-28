@@ -2819,7 +2819,7 @@ mio_expr (gfc_expr **ep)
 
     case EXPR_SUBSTRING:
       e->value.character.string
-	= (char *) mio_allocated_string (e->value.character.string);
+	= CONST_CAST (char *, mio_allocated_string (e->value.character.string));
       mio_ref_list (&e->ref);
       break;
 
@@ -2854,7 +2854,7 @@ mio_expr (gfc_expr **ep)
 	case BT_CHARACTER:
 	  mio_integer (&e->value.character.length);
 	  e->value.character.string
-	    = (char *) mio_allocated_string (e->value.character.string);
+	    = CONST_CAST (char *, mio_allocated_string (e->value.character.string));
 	  break;
 
 	default:

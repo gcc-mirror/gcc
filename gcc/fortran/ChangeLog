@@ -1,3 +1,7 @@
+2007-09-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* module.c (mio_expr): Avoid -Wcast-qual warning.
+
 2007-09-27  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* arith.c (reduce_binary_aa): Fix capitalization.
