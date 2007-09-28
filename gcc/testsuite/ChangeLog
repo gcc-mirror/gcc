@@ -1,5 +1,7 @@
 2007-09-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.dg/openmp_stack.f90: Removed.
+
 	PR c++/31434
 	* g++.dg/cpp0x/variadic80.C: New test.
 
