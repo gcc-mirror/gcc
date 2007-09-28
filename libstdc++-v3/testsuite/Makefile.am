@@ -1,6 +1,6 @@
 ## Makefile for the testsuite subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -24,9 +24,6 @@
 AUTOMAKE_OPTIONS = dejagnu nostdinc
 
 include $(top_srcdir)/fragment.am
-
-AM_MAKEFLAGS = -j1
-AM_RUNTESTFLAGS =
 
 # Generated lists of files to run.  All of these names are valid make
 # targets, if you wish to generate a list manually.
@@ -143,7 +140,7 @@ check-parallel: site.exp
 	fi; \
 	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
 	EXPECT=$(EXPECT); export EXPECT; \
-	$(MAKE) CXXFLAGS="$(atomic_flags) $(libgomp_flags)" $(AM_MAKEFLAGS) RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(parallel_flags)" check-DEJAGNU; )
+	$(MAKE) CXXFLAGS="$(atomic_flags) $(libgomp_flags)" RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(parallel_flags)" check-DEJAGNU; )
 
 check-performance-parallel: testsuite_files_performance ${performance_script}
 	-@(chmod + ${check_performance_script}; \

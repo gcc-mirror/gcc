@@ -121,4 +121,4 @@ namespace __gnu_parallel
   struct equal_split_tag { };
 }
 
-#endif /* _GLIBCXX_TAGS_H */
+#endif /* _GLIBCXX_PARALLEL_TAGS_H */

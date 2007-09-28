@@ -149,7 +149,7 @@ namespace __parallel
 
   template<typename _IIter, typename Predicate>
   inline _IIter
-  find_if (_IIter, _IIter, Predicate);
+  find_if(_IIter, _IIter, Predicate);
 
   template<typename _IIter, typename Predicate, typename IteratorTag>
   inline _IIter
