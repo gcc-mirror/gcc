@@ -5663,7 +5663,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
       rtx input, output, insns;
       const char *constraint = ASM_OPERANDS_INPUT_CONSTRAINT (op, i);
       char *end;
-      int match;
+      int match, j;
 
       match = strtoul (constraint, &end, 10);
       if (end == constraint)
@@ -5672,18 +5672,59 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
       gcc_assert (match < noutputs);
       output = SET_DEST (p_sets[match]);
       input = RTVEC_ELT (inputs, i);
-      if (rtx_equal_p (output, input)
+      /* Only do the transformation for pseudos.  */
+      if (! REG_P (output)
+	  || rtx_equal_p (output, input)
 	  || (GET_MODE (input) != VOIDmode
 	      && GET_MODE (input) != GET_MODE (output)))
 	continue;
 
+      /* We can't do anything if the output is also used as input,
+	 as we're going to overwrite it.  */
+      for (j = 0; j < ninputs; j++)
+        if (reg_overlap_mentioned_p (output, RTVEC_ELT (inputs, j)))
+	  break;
+      if (j != ninputs)
+	continue;
+
       start_sequence ();
-      emit_move_insn (copy_rtx (output), input);
-      RTVEC_ELT (inputs, i) = copy_rtx (output);
+      emit_move_insn (output, input);
       insns = get_insns ();
       end_sequence ();
-
       emit_insn_before (insns, insn);
+
+      /* Now replace all mentions of the input with output.  We can't
+	 just replace the occurence in inputs[i], as the register might
+	 also be used in some other input (or even in an address of an
+	 output), which would mean possibly increasing the number of
+	 inputs by one (namely 'output' in addition), which might pose
+	 a too complicated problem for reload to solve.  E.g. this situation:
+
+	   asm ("" : "=r" (output), "=m" (input) : "0" (input))
+
+	 Here 'input' is used in two occurences as input (once for the
+	 input operand, once for the address in the second output operand).
+	 If we would replace only the occurence of the input operand (to
+	 make the matching) we would be left with this:
+
+	   output = input
+	   asm ("" : "=r" (output), "=m" (input) : "0" (output))
+
+	 Now we suddenly have two different input values (containing the same
+	 value, but different pseudos) where we formerly had only one.
+	 With more complicated asms this might lead to reload failures
+	 which wouldn't have happen without this pass.  So, iterate over
+	 all operands and replace all occurences of the register used.  */
+      for (j = 0; j < noutputs; j++)
+	if (!rtx_equal_p (SET_DEST (p_sets[j]), output)
+	    && reg_overlap_mentioned_p (input, SET_DEST (p_sets[j])))
+	  SET_DEST (p_sets[j]) = replace_rtx (SET_DEST (p_sets[j]),
+					      input, output);
+      for (j = 0; j < ninputs; j++)
+	if (reg_overlap_mentioned_p (input, RTVEC_ELT (inputs, j)))
+	  RTVEC_ELT (inputs, j) = replace_rtx (RTVEC_ELT (inputs, j),
+					       input, output);
+
       changed = true;
     }
 
