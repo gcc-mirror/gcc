@@ -396,16 +396,7 @@ dump_type (tree t, int flags)
       break;
 
     case TYPE_ARGUMENT_PACK:
-      {
-        tree args = ARGUMENT_PACK_ARGS (t);
-        int i;
-        for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-          {
-            if (i)
-              pp_separate_with_comma (cxx_pp);
-            dump_type (TREE_VEC_ELT (args, i), flags);
-          }
-      }
+      dump_template_argument (t, flags);
       break;
 
     case DECLTYPE_TYPE:
@@ -1168,22 +1159,8 @@ dump_parameters (tree parmtypes, int flags)
 	  pp_cxx_identifier (cxx_pp, "...");
 	  break;
 	}
-      if (ARGUMENT_PACK_P (TREE_VALUE (parmtypes)))
-        {
-          tree types = ARGUMENT_PACK_ARGS (TREE_VALUE (parmtypes));
-          int i, len = TREE_VEC_LENGTH (types);
-	  first = 1;
-          for (i = 0; i < len; ++i)
-            {
-              if (!first)
-                pp_separate_with_comma (cxx_pp);
-              first = 0;
-              
-              dump_type (TREE_VEC_ELT (types, i), flags);
-            }
-        }
-      else
-        dump_type (TREE_VALUE (parmtypes), flags);
+
+      dump_type (TREE_VALUE (parmtypes), flags);
 
       if ((flags & TFF_FUNCTION_DEFAULT_ARGUMENTS) && TREE_PURPOSE (parmtypes))
 	{
@@ -2029,6 +2006,10 @@ dump_expr (tree t, int flags)
     case EXPR_PACK_EXPANSION:
       dump_expr (PACK_EXPANSION_PATTERN (t), flags);
       pp_cxx_identifier (cxx_pp, "...");
+      break;
+
+    case ARGUMENT_PACK_SELECT:
+      dump_template_argument (ARGUMENT_PACK_SELECT_FROM_PACK (t), flags);
       break;
 
     case RECORD_TYPE:

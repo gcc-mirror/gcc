@@ -1,3 +1,10 @@
+2007-09-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33118
+	* error.c (dump_expr): Deal with ARGUMENT_PACK_SELECT.
+	(dump_type): Use dump_template_argument for TYPE_ARGUMENT_PACK.
+	(dump_parameters): Just call dump_type for argument packs too.
+
 2007-09-27  Ollie Wild  <aaw@google.com>
 
 	* typeck2.c (digest_init): Call cplus_expand_constant after
