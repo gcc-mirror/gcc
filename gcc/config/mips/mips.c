@@ -6045,7 +6045,7 @@ override_options (void)
       /* If neither -mbranch-likely nor -mno-branch-likely was given
 	 on the command line, set MASK_BRANCHLIKELY based on the target
 	 architecture and tuning flags.  Annulled delay slots are a
-	 size win, so we only consider the process-specific tuning
+	 size win, so we only consider the processor-specific tuning
 	 for !optimize_size.  */
       if (ISA_HAS_BRANCHLIKELY
 	  && (optimize_size
