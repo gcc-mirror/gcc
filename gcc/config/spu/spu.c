@@ -637,7 +637,7 @@ spu_expand_insv (rtx ops[])
 	}
     }
   else
-    emit_insn (gen_selb (dst, dst, shift_reg, mask));
+    emit_insn (gen_selb (dst, copy_rtx (dst), shift_reg, mask));
 }
 
 

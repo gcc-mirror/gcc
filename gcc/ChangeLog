@@ -1,3 +1,9 @@
+2007-09-28  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR target/33347
+	* config/spu/spu.c (spu_expand_insv): Call copy_rtx on the second
+	argument to gen_selb.
+
 2007-09-28  Chao-ying Fu  <fu@mips.com>
 
 	* libgcc-std.ver: Add fixed-point routines to GCC_4.3.0 section.
