@@ -287,11 +287,6 @@ struct lang_hooks
      Returns -1 if the language does nothing special for it.  */
   alias_set_type (*get_alias_set) (tree);
 
-  /* Called with an expression that is to be processed as a constant.
-     Returns either the same expression or a language-independent
-     constant equivalent to its input.  */
-  tree (*expand_constant) (tree);
-
   /* Called by expand_expr for language-specific tree codes.
      Fourth argument is actually an enum expand_modifier.  */
   rtx (*expand_expr) (tree, rtx, enum machine_mode, int, rtx *);

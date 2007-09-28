@@ -2985,15 +2985,7 @@ compare_constant (const tree t1, const tree t2)
       return compare_constant (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
 
     default:
-      {
-	tree nt1, nt2;
-	nt1 = lang_hooks.expand_constant (t1);
-	nt2 = lang_hooks.expand_constant (t2);
-	if (nt1 != t1 || nt2 != t2)
-	  return compare_constant (nt1, nt2);
-	else
-	  return 0;
-      }
+      return 0;
     }
 
   gcc_unreachable ();
@@ -3061,12 +3053,7 @@ copy_constant (tree exp)
       }
 
     default:
-      {
-	tree t = lang_hooks.expand_constant (exp);
-
-	gcc_assert (t != exp);
-	return copy_constant (t);
-      }
+      gcc_unreachable ();
     }
 }
 
@@ -3910,10 +3897,6 @@ compute_reloc_for_constant (tree exp)
   int reloc = 0, reloc2;
   tree tem;
 
-  /* Give the front-end a chance to convert VALUE to something that
-     looks more like a constant to the back-end.  */
-  exp = lang_hooks.expand_constant (exp);
-
   switch (TREE_CODE (exp))
     {
     case ADDR_EXPR:
@@ -3977,10 +3960,6 @@ static void
 output_addressed_constants (tree exp)
 {
   tree tem;
-
-  /* Give the front-end a chance to convert VALUE to something that
-     looks more like a constant to the back-end.  */
-  exp = lang_hooks.expand_constant (exp);
 
   switch (TREE_CODE (exp))
     {
@@ -4055,10 +4034,6 @@ constructor_static_from_elts_p (const_tree ctor)
 tree
 initializer_constant_valid_p (tree value, tree endtype)
 {
-  /* Give the front-end a chance to convert VALUE to something that
-     looks more like a constant to the back-end.  */
-  value = lang_hooks.expand_constant (value);
-
   switch (TREE_CODE (value))
     {
     case CONSTRUCTOR:
@@ -4317,11 +4292,6 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   enum tree_code code;
   unsigned HOST_WIDE_INT thissize;
 
-  /* Some front-ends use constants other than the standard language-independent
-     varieties, but which may still be output directly.  Give the front-end a
-     chance to convert EXP to a language-independent representation.  */
-  exp = lang_hooks.expand_constant (exp);
-
   if (size == 0 || flag_syntax_only)
     return;
 
@@ -4377,9 +4347,6 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 
   code = TREE_CODE (TREE_TYPE (exp));
   thissize = int_size_in_bytes (TREE_TYPE (exp));
-
-  /* Give the front end another chance to expand constants.  */
-  exp = lang_hooks.expand_constant (exp);
 
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
