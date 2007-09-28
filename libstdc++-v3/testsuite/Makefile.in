@@ -277,8 +277,6 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
-AM_MAKEFLAGS = -j1
-AM_RUNTESTFLAGS = 
 
 # Generated lists of files to run.  All of these names are valid make
 # targets, if you wish to generate a list manually.
@@ -581,7 +579,7 @@ check-parallel: site.exp
 	fi; \
 	srcdir=`$(am__cd) $(srcdir) && pwd`; export srcdir; \
 	EXPECT=$(EXPECT); export EXPECT; \
-	$(MAKE) CXXFLAGS="$(atomic_flags) $(libgomp_flags)" $(AM_MAKEFLAGS) RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(parallel_flags)" check-DEJAGNU; )
+	$(MAKE) CXXFLAGS="$(atomic_flags) $(libgomp_flags)" RUNTESTFLAGS="$(RUNTESTFLAGS) conformance.exp --outdir $${outputdir} --objdir $${outputdir} --target_board=$(parallel_flags)" check-DEJAGNU; )
 
 check-performance-parallel: testsuite_files_performance ${performance_script}
 	-@(chmod + ${check_performance_script}; \

@@ -1,3 +1,11 @@
+2007-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/parallel/algorithmfwd.h: Spacing.
+	* include/parallel/tags.h: Correct comment.
+	
+	* testsuite/Makefile.am (AM_MAKEFLAGS, AM_RUNTESTFLAGS): Remove.
+	* testsuite/Makefile.in: Regenerate.
+	
 2007-09-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_hooks.cc (set_memory_limits): Adjust
