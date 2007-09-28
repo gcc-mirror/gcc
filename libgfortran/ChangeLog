@@ -1,3 +1,8 @@
+2007-09-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33421
+	* io/list_read.c (read_character): Revert r128057.
+
 2007-09-21  Bernhard Fischer  <aldot>
 
 	PR fortran/31546
