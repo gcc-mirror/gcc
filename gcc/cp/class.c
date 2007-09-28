@@ -179,7 +179,7 @@ static void initialize_vtable (tree, tree);
 static void layout_nonempty_base_or_field (record_layout_info,
 					   tree, tree, splay_tree);
 static tree end_of_class (tree, int);
-static bool layout_empty_base (tree, tree, splay_tree);
+static bool layout_empty_base (record_layout_info, tree, tree, splay_tree);
 static void accumulate_vtbl_inits (tree, tree, tree, tree, tree);
 static tree dfs_accumulate_vtbl_inits (tree, tree, tree, tree,
 					       tree);
@@ -3517,7 +3517,8 @@ empty_base_at_nonzero_offset_p (tree type,
    type.  Return nonzero iff we added it at the end.  */
 
 static bool
-layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
+layout_empty_base (record_layout_info rli, tree binfo,
+		   tree eoc, splay_tree offsets)
 {
   tree alignment;
   tree basetype = BINFO_TYPE (binfo);
@@ -3563,6 +3564,15 @@ layout_empty_base (tree binfo, tree eoc, splay_tree offsets)
 	  propagate_binfo_offsets (binfo, alignment);
 	}
     }
+
+  if (CLASSTYPE_USER_ALIGN (basetype))
+    {
+      rli->record_align = MAX (rli->record_align, CLASSTYPE_ALIGN (basetype));
+      if (warn_packed)
+	rli->unpacked_align = MAX (rli->unpacked_align, CLASSTYPE_ALIGN (basetype));
+      TYPE_USER_ALIGN (rli->t) = 1;
+    }
+
   return atend;
 }
 
@@ -3626,7 +3636,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 byte-aligned.  */
       eoc = round_up (rli_size_unit_so_far (rli),
 		      CLASSTYPE_ALIGN_UNIT (basetype));
-      atend = layout_empty_base (binfo, eoc, offsets);
+      atend = layout_empty_base (rli, binfo, eoc, offsets);
       /* A nearly-empty class "has no proper base class that is empty,
 	 not morally virtual, and at an offset other than zero."  */
       if (!BINFO_VIRTUAL_P (binfo) && CLASSTYPE_NEARLY_EMPTY_P (t))

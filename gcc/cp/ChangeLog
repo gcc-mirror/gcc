@@ -1,3 +1,10 @@
+2007-09-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/10179
+	* class.c (layout_empty_base): Take rli parameter, update
+	rli->record_align if empty base has user-specified alignment.
+	(build_base_field): Pass rli to it.
+
 2007-09-28  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33213
@@ -26,6 +33,7 @@
 
 2007-09-27  Jason Merrill  <jason@redhat.com>
 
+	PR c++/33571
 	* decl2.c (is_late_template_attribute): Don't crash on unknown
 	attribute.
 
