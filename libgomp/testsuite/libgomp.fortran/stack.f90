@@ -1,6 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fopenmp" }
-program openmp_stack
+program stack
   implicit none
   integer id
   integer ilocs(2)
@@ -13,7 +12,7 @@ program openmp_stack
   ! Check that the two threads are not sharing a location for
   ! the array x in foo()
   if (ilocs(1) .eq. ilocs(2)) call abort
-end program openmp_stack
+end program stack
 
 integer function foo ()
   implicit none
