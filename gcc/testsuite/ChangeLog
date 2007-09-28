@@ -1,3 +1,8 @@
+2007-09-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR middle-end/7003
+	* gcc.target/powerpc/gcse-1.c: New test.
+
 2007-09-27  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* gfortran.dg/array_initializer_3.f90: Adapt error annotations for
