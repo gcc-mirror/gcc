@@ -1,3 +1,10 @@
+2007-09-28  Michael Matz  <matz@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/33552
+	* gcc.target/i386/pr33552.c: New runtime test.
+	* gcc.target/i386/strinline.c: New compile time test.
+
 2007-09-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/openmp_stack.f90: Removed.
