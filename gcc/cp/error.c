@@ -955,6 +955,7 @@ dump_decl (tree t, int flags)
       break;
 
     case UNBOUND_CLASS_TEMPLATE:
+    case TYPE_PACK_EXPANSION:
       dump_type (t, flags);
       break;
 

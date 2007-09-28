@@ -1,5 +1,10 @@
 2007-09-28  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/33213
+	* error.c (dump_decl): Deal with TYPE_PACK_EXPANSION.
+
+2007-09-28  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/33118
 	* error.c (dump_expr): Deal with ARGUMENT_PACK_SELECT.
 	(dump_type): Use dump_template_argument for TYPE_ARGUMENT_PACK.

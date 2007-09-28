@@ -1,3 +1,8 @@
+2007-09-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33213
+	* g++.dg/cpp0x/variadic79.C: New.
+
 2007-09-28  Michael Matz  <matz@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
 
