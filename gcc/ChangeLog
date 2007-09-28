@@ -1,3 +1,9 @@
+2007-09-28  Chao-ying Fu  <fu@mips.com>
+
+	* libgcc-std.ver: Add fixed-point routines to GCC_4.3.0 section.
+	* doc/libgcc.texi (Fixed-point fractional library routines):
+	Fix typos for neg and cmp functions.
+
 2007-09-28  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/33552
