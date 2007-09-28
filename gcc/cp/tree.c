@@ -773,6 +773,13 @@ cp_build_qualified_type_real (tree type,
       t = cp_build_qualified_type_real (t, type_quals, complain);
       return build_ptrmemfunc_type (t);
     }
+  else if (TREE_CODE (type) == TYPE_PACK_EXPANSION)
+    {
+      tree t = PACK_EXPANSION_PATTERN (type);
+
+      t = cp_build_qualified_type_real (t, type_quals, complain);
+      return make_pack_expansion (t);
+    }
 
   /* A reference or method type shall not be cv qualified.
      [dcl.ref], [dct.fct]  */
