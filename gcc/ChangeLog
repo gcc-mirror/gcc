@@ -1,3 +1,14 @@
+2007-09-28  Jie Zhang  <jie.zhang@analog.com>
+
+	* config.gcc (bfin*-linux-uclibc*): Set extra_parts
+	to "crtbegin.o crtbeginS.o crtend.o crtendS.o".
+	* config/bfin/t-bfin-linux (crti.o): Don't build.
+	(crtn.o): Likewise.
+	(EXTRA_MULTILIB_PARTS): Remove crti.o and crtn.o.
+	* config/bfin/t-bfin-uclinux (crti.o): Don't build.
+	(crtn.o): Likewise.
+	(EXTRA_MULTILIB_PARTS): Remove crti.o and crtn.o.
+
 2007-09-27  Ollie Wild  <aaw@google.com>
 
 	* varasm.c (compare_constant): Removed call to

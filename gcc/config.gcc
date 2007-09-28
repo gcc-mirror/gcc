@@ -813,30 +813,31 @@ avr-*-*)
 	;;
 bfin*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h"
-        tmake_file=bfin/t-bfin-elf
-        use_collect2=no
-        ;;
+	tmake_file=bfin/t-bfin-elf
+	use_collect2=no
+	;;
 bfin*-uclinux*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h bfin/uclinux.h"
-        tmake_file=bfin/t-bfin-uclinux
- 	tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
+	tmake_file=bfin/t-bfin-uclinux
+	tm_defines="${tm_defines} UCLIBC_DEFAULT=1"
 	extra_options="${extra_options} linux.opt"
-        use_collect2=no
-        ;;
+	use_collect2=no
+	;;
 bfin*-linux-uclibc*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h linux.h bfin/linux.h ./linux-sysroot-suffix.h"
-        tmake_file="t-slibgcc-elf-ver bfin/t-bfin-linux"
-        use_collect2=no
-        ;;
+	tmake_file="t-slibgcc-elf-ver bfin/t-bfin-linux"
+	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+	use_collect2=no
+	;;
 bfin*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h bfin/rtems.h rtems.h"
 	tmake_file="bfin/t-bfin t-rtems bfin/t-rtems"
-        ;;
+	;;
 bfin*-*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h"
-        tmake_file=bfin/t-bfin
-        use_collect2=no
-        ;;
+	tmake_file=bfin/t-bfin
+	use_collect2=no
+	;;
 c4x-*-rtems* | tic4x-*-rtems*)
 	tmake_file="c4x/t-c4x t-rtems c4x/t-rtems"
 	tm_file="c4x/c4x.h c4x/rtems.h rtems.h"
