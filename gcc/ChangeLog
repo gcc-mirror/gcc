@@ -8,13 +8,6 @@
 
 	* config/mips/mips.c (override_options): Fix comment typo.
 
-2007-09-28  Jakub Jelinek  <jakub@redhat.com>
-
-	PR c++/31434
-	* tree.c (cp_build_qualified_type_real): Handle TYPE_PACK_EXPANSION
-	qualification by creating qualified PACK_EXPANSION_PATTERN and
-	then calling make_pack_expansion on it.
-
 2007-09-28  Jie Zhang  <jie.zhang@analog.com>
 
 	* config.gcc (bfin*-linux-uclibc*): Set extra_parts
