@@ -29,17 +29,9 @@ MULTILIB_EXCEPTIONS+=mcpu=bf532-none/mleaf-id-shared-library*
 MULTILIB_EXCEPTIONS+=*msep-data/mleaf-id-shared-library*
 
 # Assemble startup files.
-$(T)crti.o: $(srcdir)/config/bfin/crti.s $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crti.o -x assembler-with-cpp $(srcdir)/config/bfin/crti.s
-
-$(T)crtn.o: $(srcdir)/config/bfin/crtn.s $(GCC_PASSES)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
-	-c -o $(T)crtn.o -x assembler-with-cpp $(srcdir)/config/bfin/crtn.s
-
 $(T)crtlibid.o: $(srcdir)/config/bfin/crtlibid.s $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $(T)crtlibid.o -x assembler-with-cpp \
 	$(srcdir)/config/bfin/crtlibid.s
 
-EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crti.o crtn.o crtlibid.o
+EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crtbeginS.o crtendS.o crtlibid.o
