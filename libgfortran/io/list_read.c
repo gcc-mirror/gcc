@@ -232,8 +232,14 @@ next_char (st_parameter_dt *dtp)
 	  return '\0';
 	}
       if (length == 0)
-	longjmp (*dtp->u.p.eof_jump, 1);
-      c = *p;
+	{
+	  if (dtp->u.p.current_unit->endfile == AT_ENDFILE)
+	    longjmp (*dtp->u.p.eof_jump, 1);
+	  dtp->u.p.current_unit->endfile = AT_ENDFILE;
+	  c = '\n';
+	}
+      else
+	c = *p;
     }
 done:
   dtp->u.p.at_eol = (c == '\n' || c == '\r');

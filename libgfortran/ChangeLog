@@ -1,3 +1,9 @@
+2007-09-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33400
+	* io/list_read.c (next_char): Interpret encountering the end of file the
+	first time as an end of line.  Subsequent reads give EOF error.
+
 2007-09-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33421
