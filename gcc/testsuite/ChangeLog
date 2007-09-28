@@ -1,3 +1,8 @@
+2007-09-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/namelist_38.f90: Delete test for revertion of
+	r128057.
+
 2007-09-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/7003
