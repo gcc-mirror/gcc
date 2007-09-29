@@ -1,3 +1,8 @@
+2007-09-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse5-convert.c: Fix target selector and rename to...
+	* gcc.target/i386/pr33524.c: ...this.
+
 2007-09-28  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33354
@@ -116,7 +121,7 @@
 
 2007-09-25  Michael Meissner  <michael.meissner@amd.com>
 
-	PR c/33524
+	PR target/33524
 	* gcc.target/i386/sse5-convert.c: New file, test int->long
 	vectorized conversions.
 
