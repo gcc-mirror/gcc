@@ -1,3 +1,7 @@
+2007-09-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/fold-bitand-4.c: Add -fno-common to options on hppa*-*-hpux*.
+
 2007-09-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/array-init-1.c: Add -mtune=i686 for 32bit x86 targets.
