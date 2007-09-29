@@ -1,10 +1,9 @@
 /* Test that the compiler properly optimizes vector SI->DI conversions.  This
    was a bug in the initial SSE5 code.  */
 
-/* { dg-do compile { target x86_64-*-*} } */
+/* { dg-do compile } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -msse5 -ftree-vectorize" } */
-
-/* This is PR c/33524 */
 
 typedef long long __m128i  __attribute__ ((__vector_size__ (16), __may_alias__));
 
