@@ -1,3 +1,8 @@
+2007-09-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/33354
+	* gfortran.dg/minmaxloc_4.f90: New.
+
 2007-09-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/fold-bitand-4.c: Add -fno-common to options on hppa*-*-hpux*.
