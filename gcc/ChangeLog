@@ -1,3 +1,9 @@
+2007-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_move): Use can_create_pseudo_p ()
+	instead of variants of (!reload_in_progress && !reload_completed).
+	(x86_expand_vector_move): Ditto.
+
 2007-09-28  Ollie Wild  <aaw@google.com>
 
 	Revert

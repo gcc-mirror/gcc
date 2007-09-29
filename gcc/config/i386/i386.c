@@ -10031,7 +10031,6 @@ maybe_get_pool_constant (rtx x)
 void
 ix86_expand_move (enum machine_mode mode, rtx operands[])
 {
-  int strict = (reload_in_progress || reload_completed);
   rtx op0, op1;
   enum tls_model model;
 
@@ -10125,31 +10124,29 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 
       /* Force large constants in 64bit compilation into register
 	 to get them CSEed.  */
-      if (TARGET_64BIT && mode == DImode
+      if (can_create_pseudo_p ()
+	  && (mode == DImode) && TARGET_64BIT
 	  && immediate_operand (op1, mode)
 	  && !x86_64_zext_immediate_operand (op1, VOIDmode)
 	  && !register_operand (op0, mode)
-	  && optimize && !reload_completed && !reload_in_progress)
+	  && optimize)
 	op1 = copy_to_mode_reg (mode, op1);
 
-      if (FLOAT_MODE_P (mode))
+      if (can_create_pseudo_p ()
+	  && FLOAT_MODE_P (mode)
+	  && GET_CODE (op1) == CONST_DOUBLE)
 	{
 	  /* If we are loading a floating point constant to a register,
 	     force the value to memory now, since we'll get better code
 	     out the back end.  */
 
-	  if (strict)
-	    ;
-	  else if (GET_CODE (op1) == CONST_DOUBLE)
+	  op1 = validize_mem (force_const_mem (mode, op1));
+	  if (!register_operand (op0, mode))
 	    {
-	      op1 = validize_mem (force_const_mem (mode, op1));
-	      if (!register_operand (op0, mode))
-		{
-		  rtx temp = gen_reg_rtx (mode);
-		  emit_insn (gen_rtx_SET (VOIDmode, temp, op1));
-		  emit_move_insn (op0, temp);
-		  return;
-		}
+	      rtx temp = gen_reg_rtx (mode);
+	      emit_insn (gen_rtx_SET (VOIDmode, temp, op1));
+	      emit_move_insn (op0, temp);
+	      return;
 	    }
 	}
     }
@@ -10167,7 +10164,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
      the instructions used to build constants modify the upper 64 bits
      of the register, once we have that information we may be able
      to handle some of them more efficiently.  */
-  if ((reload_in_progress | reload_completed) == 0
+  if (can_create_pseudo_p ()
       && register_operand (op0, mode)
       && (CONSTANT_P (op1)
 	  || (GET_CODE (op1) == SUBREG
@@ -10175,7 +10172,7 @@ ix86_expand_vector_move (enum machine_mode mode, rtx operands[])
       && standard_sse_constant_p (op1) <= 0)
     op1 = validize_mem (force_const_mem (mode, op1));
 
-  /* TDmode values are passed as TImode on the stack.  Timode values
+  /* TDmode values are passed as TImode on the stack.  TImode values
      are moved via xmm registers, and moving them to stack can result in
      unaligned memory access.  Use ix86_expand_vector_move_misalign()
      if memory operand is not aligned correctly.  */
