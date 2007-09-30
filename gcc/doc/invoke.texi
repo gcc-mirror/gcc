@@ -2592,6 +2592,45 @@ warnings.
 @opindex w
 Inhibit all warning messages.
 
+@item -Wall
+@opindex Wall
+This enables all the warnings about constructions that some users
+consider questionable, and that are easy to avoid (or modify to
+prevent the warning), even in conjunction with macros.  This also
+enables some language-specific warnings described in @ref{C++ Dialect
+Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
+
+@option{-Wall} turns on the following warning flags:
+@gccoptlist{ 
+-Waddress @gol
+-Warray-bounds (only with @option{-O2}) @gol
+-Wc++0x-compat @gol
+-Wchar-subscripts @gol
+-Wimplicit-int @gol
+-Wimplicit-function-declaration @gol
+-Wcomment @gol
+-Wformat  @gol
+-Wmain (only for C/ObjC and unless @option{-ffreestanding}) @gol
+-Wmissing-braces @gol
+-Wnonnull @gol
+-Wparentheses @gol
+-Wpointer-sign
+-Wreorder  @gol
+-Wreturn-type @gol
+-Wsequence-point @gol
+-Wsign-compare (only in C++) @gol
+-Wstrict-aliasing @gol
+-Wstrict-overflow @gol
+-Wswitch @gol
+-Wtrigraphs @gol
+-Wuninitialized (only with @option{-O1}, @option{-O2} or @option{-O3}) @gol
+-Wunknown-pragmas @gol
+-Wunused-function @gol
+-Wunused-label    @gol
+-Wunused-value    @gol
+-Wunused-variable @gol
+}
+
 @item -Wno-import
 @opindex Wno-import
 Inhibit warning messages about the use of @samp{#import}.
@@ -3073,7 +3112,7 @@ It warns about code which might break the strict aliasing rules that the
 compiler is using for optimization.  The warning does not catch all
 cases, but does attempt to catch the more common pitfalls.  It is
 included in @option{-Wall}.
-It is equivalent to -Wstrict-aliasing=3
+It is equivalent to @option{-Wstrict-aliasing=3}
 
 @item -Wstrict-aliasing=n
 @opindex Wstrict-aliasing=n
@@ -3168,14 +3207,6 @@ This option is only active when @option{-ftree-vrp} is active
 (default for -O2 and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
 
-@item -Wall
-@opindex Wall
-All of the above @samp{-W} options combined.  This enables all the
-warnings about constructions that some users consider questionable, and
-that are easy to avoid (or modify to prevent the warning), even in
-conjunction with macros.  This also enables some language-specific
-warnings described in @ref{C++ Dialect Options} and
-@ref{Objective-C and Objective-C++ Dialect Options}.
 @end table
 
 The following @option{-W@dots{}} options are not implied by @option{-Wall}.
