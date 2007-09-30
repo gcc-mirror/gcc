@@ -3225,7 +3225,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* DECL_EXTERNAL must be set on a decl until the decl is actually emitted,
    so that assemble_external will work properly.  So we have this flag to
-   tell us whether the decl is really not external.  */
+   tell us whether the decl is really not external.
+
+   This flag does not indicate whether or not the decl is defined in the
+   current translation unit; it indicates whether or not we should emit the
+   decl at the end of compilation if it is defined and needed.  */
 #define DECL_NOT_REALLY_EXTERN(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.not_really_extern)
 
