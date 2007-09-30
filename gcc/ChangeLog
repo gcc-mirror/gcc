@@ -1,3 +1,22 @@
+2007-09-30  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (mips_split_64bit_move): Use gen_rtx_REG_offset
+	rather than gen_lowpart to change a register from DImode to DFmode.
+	(mips_cannot_change_mode_class): Only allow FPRs to change mode if
+	both FROM and TO are integer modes that are no bigger than 4 bytes.
+	(mips_mode_ok_for_mov_fmt_p): New function.
+	(mips_preferred_reload_class): Use it instead of FLOAT_MODE_P.
+	(mips_secondary_reload_class): Tweak formatting and comments.
+	Use reg_class_subset_p instead of direct comparisons with
+	classes.  Only allow direct FPR<->FPR moves for modes that
+	satisfy mips_mode_ok_for_mov_fmt_p.  Only allow loads and stores
+	for 4- and 8-byte types.  Handle reloads in which X is an FPR.
+	* config/mips/mips.md (*movdi_gp32_fp64): Remove f<-f alternative.
+	(*movdi_64bit): Likewise.
+	(*movsi_internal): Likewise.
+	(*movhi_internal): Likewise.
+	(*movqi_internal): Likewise.
+
 2007-09-30  Diego Novillo  <dnovillo@google.com>
 
 	PR 33593
