@@ -1,3 +1,8 @@
+2007-09-30  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Wall): List the options enabled by Wall.
+	(Wstrict-aliasing): Add missing @option.
+	
 2007-09-30  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (mips_split_64bit_move): Use gen_rtx_REG_offset
