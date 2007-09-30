@@ -1,3 +1,9 @@
+2007-09-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/33094
+	* decl.c (make_rtl_for_nonlocal_decl): It's ok for a member 
+	constant to not have DECL_EXTERNAL if it's file-local.
+
 2007-09-28  Ollie Wild  <aaw@google.com>
 
 	Revert
