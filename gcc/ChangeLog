@@ -1,3 +1,9 @@
+2007-09-30  Diego Novillo  <dnovillo@google.com>
+
+	PR 33593
+	* tree-ssa-ter.c (is_replaceable_p): Return false if STMT may
+	throw an exception.
+
 2007-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/33597
