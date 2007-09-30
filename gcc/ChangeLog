@@ -1,3 +1,9 @@
+2007-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/33597
+	* tree-vect-analyze.c (vect_build_slp_tree): Check if optab handler
+	for LSHIFT_EXPR and RSHIFT_EXPR is available for vec_mode.
+
 2007-09-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_move): Use can_create_pseudo_p ()
