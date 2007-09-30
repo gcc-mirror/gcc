@@ -366,6 +366,10 @@ is_replaceable_p (tree stmt)
   if (TREE_CODE (stmt) != GIMPLE_MODIFY_STMT)
     return false;
 
+  /* If the statement may throw an exception, it cannot be replaced.  */
+  if (tree_could_throw_p (stmt))
+    return false;
+
   /* Punt if there is more than 1 def.  */
   def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF);
   if (!def)

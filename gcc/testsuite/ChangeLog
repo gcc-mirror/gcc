@@ -1,3 +1,8 @@
+2007-09-30  Diego Novillo  <dnovillo@google.com>
+
+	PR 33593
+	* g++.dg/tree-ssa/pr33593.C: New test.
+
 2007-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33400
