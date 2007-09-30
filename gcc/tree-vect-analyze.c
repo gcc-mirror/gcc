@@ -2696,6 +2696,13 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 		  return false;
 		}
 	      icode = (int) optab->handlers[(int) vec_mode].insn_code;
+	      if (icode == CODE_FOR_nothing)
+		{
+		  if (vect_print_dump_info (REPORT_SLP))
+		    fprintf (vect_dump,
+			     "Build SLP failed: op not supported by target.");
+		  return false;
+		}
 	      optab_op2_mode = insn_data[icode].operand[2].mode;
 	      if (!VECTOR_MODE_P (optab_op2_mode))
 		{
