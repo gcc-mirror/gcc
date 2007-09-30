@@ -11,10 +11,10 @@
       close(1)
       open(1,form='FORMATTED')
       read(1,*)i
-      if(i(1).ne.9.and.i(2).ne.8.and.i(3).ne.7.and.i(4).ne.9)call abort
-      read(1,*,end=200)i
+      if(i(1).ne.9.or.i(2).ne.8.or.i(3).ne.7.or.i(4).ne.6)call abort
+      read(1,*, end=200)i
 ! should only be able to read one line from the file
       call abort
  200  continue
-      close(1,STATUS='DELETE')
+      close(1,STATUS='delete')
       end
