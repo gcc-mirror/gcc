@@ -3547,7 +3547,8 @@ mips_split_64bit_move (rtx dest, rtx src)
       /* Loading an FPR from memory or from GPRs.  */
       if (ISA_HAS_MXHC1)
 	{
-	  dest = gen_lowpart (DFmode, dest);
+	  if (GET_MODE (dest) != DFmode)
+	    dest = gen_rtx_REG_offset (dest, DFmode, REGNO (dest), 0);
 	  emit_insn (gen_load_df_low (dest, mips_subword (src, 0)));
 	  emit_insn (gen_mthc1 (dest, mips_subword (src, 1),
 				copy_rtx (dest)));
@@ -3565,7 +3566,8 @@ mips_split_64bit_move (rtx dest, rtx src)
       /* Storing an FPR into memory or GPRs.  */
       if (ISA_HAS_MXHC1)
 	{
-	  src = gen_lowpart (DFmode, src);
+	  if (GET_MODE (src) != DFmode)
+	    src = gen_rtx_REG_offset (src, DFmode, REGNO (src), 0);
 	  mips_emit_move (mips_subword (dest, 0), mips_subword (src, 0));
 	  emit_insn (gen_mfhc1 (mips_subword (dest, 1), src));
 	}
@@ -9314,44 +9316,38 @@ mips_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
    to mode TO.  */
 
 bool
-mips_cannot_change_mode_class (enum machine_mode from,
-			       enum machine_mode to, enum reg_class class)
+mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
+			       enum machine_mode to ATTRIBUTE_UNUSED,
+			       enum reg_class class)
 {
-  if (MIN (GET_MODE_SIZE (from), GET_MODE_SIZE (to)) <= UNITS_PER_WORD
-      && MAX (GET_MODE_SIZE (from), GET_MODE_SIZE (to)) > UNITS_PER_WORD)
-    {
-      if (TARGET_BIG_ENDIAN)
-	{
-	  /* When a multi-word value is stored in paired floating-point
-	     registers, the first register always holds the low word.
-	     We therefore can't allow FPRs to change between single-word
-	     and multi-word modes.  */
-	  if (MAX_FPRS_PER_FMT > 1 && reg_classes_intersect_p (FP_REGS, class))
-	    return true;
-	}
-    }
+  /* There are several problems with changing the modes of values
+     in floating-point registers:
 
-  /* gcc assumes that each word of a multiword register can be accessed
-     individually using SUBREGs.  This is not true for floating-point
-     registers if they are bigger than a word.  */
-  if (UNITS_PER_FPREG > UNITS_PER_WORD
-      && GET_MODE_SIZE (from) > UNITS_PER_WORD
-      && GET_MODE_SIZE (to) < UNITS_PER_FPREG
-      && reg_classes_intersect_p (FP_REGS, class))
-    return true;
+     - When a multi-word value is stored in paired floating-point
+       registers, the first register always holds the low word.
+       We therefore can't allow FPRs to change between single-word
+       and multi-word modes on big-endian targets.
 
-  /* Loading a 32-bit value into a 64-bit floating-point register
-     will not sign-extend the value, despite what LOAD_EXTEND_OP says.
-     We can't allow 64-bit float registers to change from SImode to
-     to a wider mode.  */
-  if (TARGET_64BIT
-      && TARGET_FLOAT64
-      && from == SImode
-      && GET_MODE_SIZE (to) >= UNITS_PER_WORD
-      && reg_classes_intersect_p (FP_REGS, class))
-    return true;
+     - GCC assumes that each word of a multiword register can be accessed
+       individually using SUBREGs.  This is not true for floating-point
+       registers if they are bigger than a word.
 
-  return false;
+     - Loading a 32-bit value into a 64-bit floating-point register
+       will not sign-extend the value, despite what LOAD_EXTEND_OP says.
+       We can't allow FPRs to change from SImode to to a wider mode on
+       64-bit targets.
+
+     - If the FPU has already interpreted a value in one format, we must
+       not ask it to treat the value as having a different format.
+
+     We therefore only allow changes between 4-byte and smaller integer
+     values, all of which have the "W" format as far as the FPU is
+     concerned.  */
+  return (reg_classes_intersect_p (FP_REGS, class)
+	  && (GET_MODE_CLASS (from) != MODE_INT
+	      || GET_MODE_CLASS (to) != MODE_INT
+	      || GET_MODE_SIZE (from) > 4
+	      || GET_MODE_SIZE (to) > 4));
 }
 
 /* Return true if X should not be moved directly into register $25.
@@ -9367,6 +9363,27 @@ mips_dangerous_for_la25_p (rtx x)
 	  && mips_global_symbol_p (x));
 }
 
+/* Return true if moves in mode MODE can use the FPU's mov.fmt instruction.  */
+
+static bool
+mips_mode_ok_for_mov_fmt_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case SFmode:
+      return TARGET_HARD_FLOAT;
+
+    case DFmode:
+      return TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT;
+
+    case V2SFmode:
+      return TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT;
+
+    default:
+      return false;
+    }
+}
+
 /* Implement PREFERRED_RELOAD_CLASS.  */
 
 enum reg_class
@@ -9375,9 +9392,8 @@ mips_preferred_reload_class (rtx x, enum reg_class class)
   if (mips_dangerous_for_la25_p (x) && reg_class_subset_p (LEA_REGS, class))
     return LEA_REGS;
 
-  if (TARGET_HARD_FLOAT
-      && FLOAT_MODE_P (GET_MODE (x))
-      && reg_class_subset_p (FP_REGS, class))
+  if (reg_class_subset_p (FP_REGS, class)
+      && mips_mode_ok_for_mov_fmt_p (GET_MODE (x)))
     return FP_REGS;
 
   if (reg_class_subset_p (GR_REGS, class))
@@ -9399,110 +9415,81 @@ enum reg_class
 mips_secondary_reload_class (enum reg_class class,
 			     enum machine_mode mode, rtx x, int in_p)
 {
-  enum reg_class gr_regs = TARGET_MIPS16 ? M16_REGS : GR_REGS;
-  int regno = -1;
-  int gp_reg_p;
+  int regno;
 
-  if (REG_P (x)|| GET_CODE (x) == SUBREG)
-    regno = true_regnum (x);
-
-  gp_reg_p = TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
-
+  /* If X is a constant that cannot be loaded into $25, it must be loaded
+     into some other GPR.  No other register class allows a direct move.  */
   if (mips_dangerous_for_la25_p (x))
+    return reg_class_subset_p (class, LEA_REGS) ? NO_REGS : LEA_REGS;
+
+  regno = true_regnum (x);
+  if (TARGET_MIPS16)
     {
-      gr_regs = LEA_REGS;
-      if (TEST_HARD_REG_BIT (reg_class_contents[(int) class], 25))
-	return gr_regs;
+      /* In MIPS16 mode, every move must involve a member of M16_REGS.  */
+      if (!reg_class_subset_p (class, M16_REGS) && !M16_REG_P (regno))
+	return M16_REGS;
+
+      /* We can't really copy to HI or LO at all in MIPS16 mode.  */
+      if (in_p ? reg_classes_intersect_p (class, ACC_REGS) : ACC_REG_P (regno))
+	return M16_REGS;
+
+      return NO_REGS;
     }
 
-  /* Copying from HI or LO to anywhere other than a general register
-     requires a general register.
-     This rule applies to both the original HI/LO pair and the new
-     DSP accumulators.  */
+  /* Copying from accumulator registers to anywhere other than a general
+     register requires a temporary general register.  */
   if (reg_class_subset_p (class, ACC_REGS))
-    {
-      if (TARGET_MIPS16 && in_p)
-	{
-	  /* We can't really copy to HI or LO at all in mips16 mode.  */
-	  return M16_REGS;
-	}
-      return gp_reg_p ? NO_REGS : gr_regs;
-    }
+    return GP_REG_P (regno) ? NO_REGS : GR_REGS;
   if (ACC_REG_P (regno))
-    {
-      if (TARGET_MIPS16 && ! in_p)
-	{
-	  /* We can't really copy to HI or LO at all in mips16 mode.  */
-	  return M16_REGS;
-	}
-      return class == gr_regs ? NO_REGS : gr_regs;
-    }
+    return reg_class_subset_p (class, GR_REGS) ? NO_REGS : GR_REGS;
 
   /* We can only copy a value to a condition code register from a
      floating point register, and even then we require a scratch
      floating point register.  We can only copy a value out of a
      condition code register into a general register.  */
-  if (class == ST_REGS)
+  if (reg_class_subset_p (class, ST_REGS))
     {
       if (in_p)
 	return FP_REGS;
-      return gp_reg_p ? NO_REGS : gr_regs;
+      return GP_REG_P (regno) ? NO_REGS : GR_REGS;
     }
   if (ST_REG_P (regno))
     {
-      if (! in_p)
+      if (!in_p)
 	return FP_REGS;
-      return class == gr_regs ? NO_REGS : gr_regs;
+      return reg_class_subset_p (class, GR_REGS) ? NO_REGS : GR_REGS;
     }
 
-  if (class == FP_REGS)
+  if (reg_class_subset_p (class, FP_REGS))
     {
-      if (MEM_P (x))
-	{
-	  /* In this case we can use lwc1, swc1, ldc1 or sdc1.  */
-	  return NO_REGS;
-	}
-      else if (CONSTANT_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT)
-	{
-	  /* We can use the l.s and l.d macros to load floating-point
-	     constants.  ??? For l.s, we could probably get better
-	     code by returning GR_REGS here.  */
-	  return NO_REGS;
-	}
-      else if (gp_reg_p || x == CONST0_RTX (mode))
-	{
-	  /* In this case we can use mtc1, mfc1, dmtc1 or dmfc1.  */
-	  return NO_REGS;
-	}
-      else if (FP_REG_P (regno))
-	{
-	  /* In this case we can use mov.s or mov.d.  */
-	  return NO_REGS;
-	}
-      else
-	{
-	  /* Otherwise, we need to reload through an integer register.  */
-	  return gr_regs;
-	}
-    }
+      if (MEM_P (x)
+	  && (GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8))
+	/* In this case we can use lwc1, swc1, ldc1 or sdc1.  We'll use
+	   pairs of lwc1s and swc1s if ldc1 and sdc1 are not supported.  */
+	return NO_REGS;
 
-  /* In mips16 mode, going between memory and anything but M16_REGS
-     requires an M16_REG.  */
-  if (TARGET_MIPS16)
-    {
-      if (class != M16_REGS && class != M16_NA_REGS)
+      if (GP_REG_P (regno) || x == CONST0_RTX (mode))
+	/* In this case we can use mtc1, mfc1, dmtc1 or dmfc1.  */
+	return NO_REGS;
+
+      if (mips_mode_ok_for_mov_fmt_p (mode))
 	{
-	  if (gp_reg_p)
+	  if (CONSTANT_P (x))
+	    /* We can force the constants to memory and use lwc1
+	       and ldc1.  As above, we will use pairs of lwc1s if
+	       ldc1 is not supported.  */
 	    return NO_REGS;
-	  return M16_REGS;
-	}
-      if (! gp_reg_p)
-	{
-	  if (class == M16_REGS || class == M16_NA_REGS)
+
+	  if (FP_REG_P (regno))
+	    /* In this case we can use mov.fmt.  */
 	    return NO_REGS;
-	  return M16_REGS;
 	}
+
+      /* Otherwise, we need to reload through an integer register.  */
+      return GR_REGS;
     }
+  if (FP_REG_P (regno))
+    return reg_class_subset_p (class, GR_REGS) ? NO_REGS : GR_REGS;
 
   return NO_REGS;
 }
