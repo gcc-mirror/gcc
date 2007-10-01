@@ -41,6 +41,7 @@ AC_CANONICAL_SYSTEM
 AC_ARG_PROGRAM
 
 m4_pattern_allow([^AS_FOR_TARGET$])dnl
+m4_pattern_allow([^AS_FOR_BUILD$])dnl
 
 # Get 'install' or 'install-sh' and its variants.
 AC_PROG_INSTALL
@@ -1082,9 +1083,31 @@ if test -z "${CC}" && test "${build}" = "${host}" ; then
 fi
 
 if test "${build}" != "${host}" ; then
+  AR_FOR_BUILD=${AR_FOR_BUILD-ar}
+  AS_FOR_BUILD=${AS_FOR_BUILD-as}
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
+  CXX_FOR_BUILD=${CXX_FOR_BUILD-g++}
+  GCJ_FOR_BUILD=${GCJ_FOR_BUILD-gcj}
+  GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
+  DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
+  LD_FOR_BUILD=${LD_FOR_BUILD-ld}
+  NM_FOR_BUILD=${NM_FOR_BUILD-nm}
+  RANLIB_FOR_BUILD=${RANLIB_FOR_BUILD-ranlib}
+  WINDRES_FOR_BUILD=${WINDRES_FOR_BUILD-windres}
+  WINDMC_FOR_BUILD=${WINDMC_FOR_BUILD-windmc}
 else
+  AR_FOR_BUILD="\$(AR)"
+  AS_FOR_BUILD="\$(AS)"
   CC_FOR_BUILD="\$(CC)"
+  CXX_FOR_BUILD="\$(CXX)"
+  GCJ_FOR_BUILD="\$(GCJ)"
+  GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
+  DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
+  LD_FOR_BUILD="\$(LD)"
+  NM_FOR_BUILD="\$(NM)"
+  RANLIB_FOR_BUILD="\$(RANLIB)"
+  WINDRES_FOR_BUILD="\$(WINDRES)"
+  WINDMC_FOR_BUILD="\$(WINDMC)"
 fi
 
 AC_PROG_CC
@@ -2365,6 +2388,8 @@ esac
 # Allow the user to override the flags for
 # our build compiler if desired.
 CFLAGS_FOR_BUILD=${CFLAGS_FOR_BUILD-${CFLAGS}}
+CXXFLAGS_FOR_BUILD=${CXXFLAGS_FOR_BUILD-${CFLAGS}}
+LDFLAGS_FOR_BUILD=${LDFLAGS_FOR_BUILD-${CFLAGS}}
 
 # On Canadian crosses, we'll be searching the right directories for
 # the previously-installed cross compiler, so don't bother to add
@@ -2422,7 +2447,21 @@ AC_SUBST(target_configargs)
 
 
 # Build tools.
+AC_SUBST(AR_FOR_BUILD)
+AC_SUBST(AS_FOR_BUILD)
 AC_SUBST(CC_FOR_BUILD)
+AC_SUBST(CFLAGS_FOR_BUILD)
+AC_SUBST(CXXFLAGS_FOR_BUILD)
+AC_SUBST(CXX_FOR_BUILD)
+AC_SUBST(DLLTOOL_FOR_BUILD)
+AC_SUBST(GCJ_FOR_BUILD)
+AC_SUBST(GFORTRAN_FOR_BUILD)
+AC_SUBST(LDFLAGS_FOR_BUILD)
+AC_SUBST(LD_FOR_BUILD)
+AC_SUBST(NM_FOR_BUILD)
+AC_SUBST(RANLIB_FOR_BUILD)
+AC_SUBST(WINDMC_FOR_BUILD)
+AC_SUBST(WINDRES_FOR_BUILD)
 AC_SUBST(config_shell)
 
 # Generate default definitions for YACC, M4, LEX and other programs that run
@@ -2507,7 +2546,6 @@ NCN_STRICT_CHECK_TOOLS(OBJDUMP, objdump)
 AC_SUBST(CC)
 AC_SUBST(CXX)
 AC_SUBST(CFLAGS)
-AC_SUBST(CFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS)
 
 # Target tools.
