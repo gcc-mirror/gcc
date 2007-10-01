@@ -193,26 +193,6 @@ EOF
   contrib/gcc_update --touch
   echo "Obtained from SVN: ${SVNBRANCH} revision ${SVNREV}" > LAST_UPDATED
 
-  # Obtain some documentation files from the wwwdocs module.
-  inform "Retrieving HTML documentation"
-  changedir "${WORKING_DIRECTORY}"
-  for x in faq; do
-    (${CVS} export -r HEAD wwwdocs/htdocs/${x}.html && \
-     cp ${WORKING_DIRECTORY}/wwwdocs/htdocs/${x}.html \
-        ${SOURCE_DIRECTORY}) || \
-      error "Could not retrieve ${x}.html"
-  done
-
-  inform "Generating plain-text documentation from HTML"
-  changedir "${SOURCE_DIRECTORY}"
-  for file in *.html; do
-    newfile=`echo $file | sed -e 's/.html//' | tr "[:lower:]" "[:upper:]"`
-    (${ENV} TERM=vt100 lynx -dump $file \
-       | sed -e "s#file://localhost`/bin/pwd`\(.*\)#http://gcc.gnu.org\1#g" \
-       > $newfile) || \
-     error "Could not generate text-only version of ${file}"
-  done
-
   # For a prerelease or real release, we need to generate additional
   # files not present in SVN.
   changedir "${SOURCE_DIRECTORY}"
