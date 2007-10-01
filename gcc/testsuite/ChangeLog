@@ -1,3 +1,8 @@
+2007-10-01  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/20060102-1.c (f): Fix computation to work
+	for 16-bit targets.
+
 2007-09-30  Diego Novillo  <dnovillo@google.com>
 
 	PR 33593

@@ -2,7 +2,7 @@ extern void abort ();
 
 int f(int x)
 {
-  return (x >> 31) ? -1 : 1;
+  return (x >> (sizeof (x) * __CHAR_BIT__ - 1)) ? -1 : 1;
 }
 
 volatile int one = 1;
