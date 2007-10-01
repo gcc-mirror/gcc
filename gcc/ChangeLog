@@ -1,3 +1,53 @@
+2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/22156
+	* tree-sra.c (struct sra_elt): Add in_bitfld_block.
+	(sra_hash_tree): Handle BIT_FIELD_REFs.
+	(sra_elt_hash): Don't hash bitfld blocks.
+	(sra_elt_eq): Skip them in parent compares as well.  Handle
+	BIT_FIELD_REFs.
+	(build_element_name_1): Handle BIT_FIELD_REFs.
+	(instantiate_element): Propagate nowarn from parents.  Create
+	BIT_FIELD_REF for variables that are widened by scalarization.
+	Gimple-zero-initialize all bit-field variables that are not
+	part of parameters that are going to be scalarized on entry.
+	(instantiate_missing_elements_1): Return the sra_elt.
+	(canon_type_for_field): New.
+	(try_instantiate_multiple_fields): New.  Infer widest possible
+	access mode from decl or member type, but clip it at word
+	size, and only widen it if a field crosses an alignment
+	boundary.
+	(instantiate_missing_elements): Use them.
+	(generate_one_element_ref): Handle BIT_FIELD_REFs.
+	(scalar_bitfield_p): New.
+	(sra_build_assignment): Optimize assignments from scalarizable
+	BIT_FIELD_REFs.  Use BITS_BIG_ENDIAN to determine shift
+	counts.
+	(REPLDUP): New.
+	(sra_build_bf_assignment): New.  Optimize assignments to
+	scalarizable BIT_FIELD_REFs.
+	(sra_build_elt_assignment): New.  Optimize BIT_FIELD_REF
+	assignments to full variables.
+	(generate_copy_inout): Use the new macros and functions.
+	(generate_element_copy): Likewise.  Handle bitfld differences.
+	(generate_element_zero): Don't recurse for blocks.  Use
+	sra_build_elt_assignment.
+	(generate_one_element_init): Take elt instead of var.  Use
+	sra_build_elt_assignment.
+	(generate_element_init_1): Adjust.
+	(bitfield_overlap_info): New struct.
+	(bitfield_overlaps_p): New.
+	(sra_explode_bitfield_assignment): New.  Adjust widened
+	variables to account for endianness.
+	(sra_sync_for_bitfield_assignment): New.
+	(scalarize_use): Re-expand assignment to/from scalarized
+	BIT_FIELD_REFs.  Explode or sync needed members for
+	BIT_FIELD_REFs accesses or assignments.  Use REPLDUP.
+	(scalarize_copy): Use REPLDUP.
+	(scalarize_ldst): Move assert before dereference.  Adjust EH
+	handling.
+	(dump_sra_elt_name): Handle BIT_FIELD_REFs.
+
 2007-10-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* simplify-rtx.c (comparison_result, simplify_relational_operation_1):

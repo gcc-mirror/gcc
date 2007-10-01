@@ -146,6 +146,10 @@ struct sra_elt
 
   /* True if there is BIT_FIELD_REF on the lhs with a vector. */
   bool is_vector_lhs;
+
+  /* 1 if the element is a field that is part of a block, 2 if the field
+     is the block itself, 0 if it's neither.  */
+  char in_bitfld_block;
 };
 
 #define IS_ELEMENT_FOR_GROUP(ELEMENT) (TREE_CODE (ELEMENT) == RANGE_EXPR)
@@ -204,6 +208,9 @@ extern void debug_sra_elt_name (struct sra_elt *);
 
 /* Forward declarations.  */
 static tree generate_element_ref (struct sra_elt *);
+static tree sra_build_assignment (tree dst, tree src);
+static void mark_all_v_defs (tree list);
+
 
 /* Return true if DECL is an SRA candidate.  */
 
@@ -461,6 +468,12 @@ sra_hash_tree (tree t)
       h = iterative_hash_expr (DECL_FIELD_BIT_OFFSET (t), h);
       break;
 
+    case BIT_FIELD_REF:
+      /* Don't take operand 0 into account, that's our parent.  */
+      h = iterative_hash_expr (TREE_OPERAND (t, 1), 0);
+      h = iterative_hash_expr (TREE_OPERAND (t, 2), h);
+      break;
+
     default:
       gcc_unreachable ();
     }
@@ -479,12 +492,14 @@ sra_elt_hash (const void *x)
 
   h = sra_hash_tree (e->element);
 
-  /* Take into account everything back up the chain.  Given that chain
-     lengths are rarely very long, this should be acceptable.  If we
-     truly identify this as a performance problem, it should work to
-     hash the pointer value "e->parent".  */
+  /* Take into account everything except bitfield blocks back up the
+     chain.  Given that chain lengths are rarely very long, this
+     should be acceptable.  If we truly identify this as a performance
+     problem, it should work to hash the pointer value
+     "e->parent".  */
   for (p = e->parent; p ; p = p->parent)
-    h = (h * 65521) ^ sra_hash_tree (p->element);
+    if (!p->in_bitfld_block)
+      h = (h * 65521) ^ sra_hash_tree (p->element);
 
   return h;
 }
@@ -497,8 +512,17 @@ sra_elt_eq (const void *x, const void *y)
   const struct sra_elt *a = x;
   const struct sra_elt *b = y;
   tree ae, be;
+  const struct sra_elt *ap = a->parent;
+  const struct sra_elt *bp = b->parent;
 
-  if (a->parent != b->parent)
+  if (ap)
+    while (ap->in_bitfld_block)
+      ap = ap->parent;
+  if (bp)
+    while (bp->in_bitfld_block)
+      bp = bp->parent;
+
+  if (ap != bp)
     return false;
 
   ae = a->element;
@@ -532,6 +556,11 @@ sra_elt_eq (const void *x, const void *y)
       if (DECL_FIELD_CONTEXT (ae) == DECL_FIELD_CONTEXT (be))
 	return false;
       return fields_compatible_p (ae, be);
+
+    case BIT_FIELD_REF:
+      return
+	tree_int_cst_equal (TREE_OPERAND (ae, 1), TREE_OPERAND (be, 1))
+	&& tree_int_cst_equal (TREE_OPERAND (ae, 2), TREE_OPERAND (be, 2));
 
     default:
       gcc_unreachable ();
@@ -898,7 +927,7 @@ sra_walk_asm_expr (tree expr, block_stmt_iterator *bsi,
 
 static void
 sra_walk_gimple_modify_stmt (tree expr, block_stmt_iterator *bsi,
-		      const struct sra_walk_fns *fns)
+			     const struct sra_walk_fns *fns)
 {
   struct sra_elt *lhs_elt, *rhs_elt;
   tree lhs, rhs;
@@ -1187,6 +1216,15 @@ build_element_name_1 (struct sra_elt *elt)
       sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, TREE_INT_CST_LOW (t));
       obstack_grow (&sra_obstack, buffer, strlen (buffer));
     }
+  else if (TREE_CODE (t) == BIT_FIELD_REF)
+    {
+      sprintf (buffer, "B" HOST_WIDE_INT_PRINT_DEC,
+	       tree_low_cst (TREE_OPERAND (t, 2), 1));
+      obstack_grow (&sra_obstack, buffer, strlen (buffer));
+      sprintf (buffer, "F" HOST_WIDE_INT_PRINT_DEC,
+	       tree_low_cst (TREE_OPERAND (t, 1), 1));
+      obstack_grow (&sra_obstack, buffer, strlen (buffer));
+    }
   else
     {
       tree name = DECL_NAME (t);
@@ -1219,12 +1257,33 @@ instantiate_element (struct sra_elt *elt)
 {
   struct sra_elt *base_elt;
   tree var, base;
+  bool nowarn = TREE_NO_WARNING (elt->element);
 
   for (base_elt = elt; base_elt->parent; base_elt = base_elt->parent)
-    continue;
+    if (!nowarn)
+      nowarn = TREE_NO_WARNING (base_elt->parent->element);
   base = base_elt->element;
 
   elt->replacement = var = make_rename_temp (elt->type, "SR");
+
+  if (DECL_P (elt->element)
+      && !tree_int_cst_equal (DECL_SIZE (var), DECL_SIZE (elt->element)))
+    {
+      DECL_SIZE (var) = DECL_SIZE (elt->element);
+      DECL_SIZE_UNIT (var) = DECL_SIZE_UNIT (elt->element);
+
+      elt->in_bitfld_block = 1;
+      elt->replacement = build3 (BIT_FIELD_REF, elt->type, var,
+				 DECL_SIZE (var),
+				 BITS_BIG_ENDIAN
+				 ? size_binop (MINUS_EXPR,
+					       TYPE_SIZE (elt->type),
+					       DECL_SIZE (var))
+				 : bitsize_int (0));
+      if (!INTEGRAL_TYPE_P (elt->type)
+	  || TYPE_UNSIGNED (elt->type))
+	BIT_FIELD_REF_UNSIGNED (elt->replacement) = 1;
+    }
 
   /* For vectors, if used on the left hand side with BIT_FIELD_REF,
      they are not a gimple register.  */
@@ -1250,15 +1309,25 @@ instantiate_element (struct sra_elt *elt)
       DECL_DEBUG_EXPR_IS_FROM (var) = 1;
       
       DECL_IGNORED_P (var) = 0;
-      TREE_NO_WARNING (var) = TREE_NO_WARNING (base);
-      if (elt->element && TREE_NO_WARNING (elt->element))
-	TREE_NO_WARNING (var) = 1;
+      TREE_NO_WARNING (var) = nowarn;
     }
   else
     {
       DECL_IGNORED_P (var) = 1;
       /* ??? We can't generate any warning that would be meaningful.  */
       TREE_NO_WARNING (var) = 1;
+    }
+
+  /* Zero-initialize bit-field scalarization variables, to avoid
+     triggering undefined behavior.  */
+  if (TREE_CODE (elt->element) == BIT_FIELD_REF
+      || (var != elt->replacement
+	  && TREE_CODE (elt->replacement) == BIT_FIELD_REF))
+    {
+      tree init = sra_build_assignment (var, fold_convert (TREE_TYPE (var),
+							   integer_zero_node));
+      insert_edge_copies (init, ENTRY_BLOCK_PTR);
+      mark_all_v_defs (init);
     }
 
   if (dump_file)
@@ -1347,7 +1416,7 @@ sum_instantiated_sizes (struct sra_elt *elt, unsigned HOST_WIDE_INT *sizep)
 
 static void instantiate_missing_elements (struct sra_elt *elt);
 
-static void
+static struct sra_elt *
 instantiate_missing_elements_1 (struct sra_elt *elt, tree child, tree type)
 {
   struct sra_elt *sub = lookup_element (elt, child, type, INSERT);
@@ -1358,6 +1427,303 @@ instantiate_missing_elements_1 (struct sra_elt *elt, tree child, tree type)
     }
   else
     instantiate_missing_elements (sub);
+  return sub;
+}
+
+/* Obtain the canonical type for field F of ELEMENT.  */
+
+static tree
+canon_type_for_field (tree f, tree element)
+{
+  tree field_type = TREE_TYPE (f);
+
+  /* canonicalize_component_ref() unwidens some bit-field types (not
+     marked as DECL_BIT_FIELD in C++), so we must do the same, lest we
+     may introduce type mismatches.  */
+  if (INTEGRAL_TYPE_P (field_type)
+      && DECL_MODE (f) != TYPE_MODE (field_type))
+    field_type = TREE_TYPE (get_unwidened (build3 (COMPONENT_REF,
+						   field_type,
+						   element,
+						   f, NULL_TREE),
+					   NULL_TREE));
+
+  return field_type;
+}
+
+/* Look for adjacent fields of ELT starting at F that we'd like to
+   scalarize as a single variable.  Return the last field of the
+   group.  */
+
+static tree
+try_instantiate_multiple_fields (struct sra_elt *elt, tree f)
+{
+  int count;
+  unsigned HOST_WIDE_INT align, bit, size, alchk;
+  enum machine_mode mode;
+  tree first = f, prev;
+  tree type, var;
+  struct sra_elt *block;
+
+  if (!is_sra_scalar_type (TREE_TYPE (f))
+      || !host_integerp (DECL_FIELD_OFFSET (f), 1)
+      || !host_integerp (DECL_FIELD_BIT_OFFSET (f), 1)
+      || !host_integerp (DECL_SIZE (f), 1)
+      || lookup_element (elt, f, NULL, NO_INSERT))
+    return f;
+
+  block = elt;
+
+  /* For complex and array objects, there are going to be integer
+     literals as child elements.  In this case, we can't just take the
+     alignment and mode of the decl, so we instead rely on the element
+     type.
+
+     ??? We could try to infer additional alignment from the full
+     object declaration and the location of the sub-elements we're
+     accessing.  */
+  for (count = 0; !DECL_P (block->element); count++)
+    block = block->parent;
+
+  align = DECL_ALIGN (block->element);
+  alchk = GET_MODE_BITSIZE (DECL_MODE (block->element));
+
+  if (count)
+    {
+      type = TREE_TYPE (block->element);
+      while (count--)
+	type = TREE_TYPE (type);
+
+      align = TYPE_ALIGN (type);
+      alchk = GET_MODE_BITSIZE (TYPE_MODE (type));
+    }
+
+  if (align < alchk)
+    align = alchk;
+
+  /* Coalescing wider fields is probably pointless and
+     inefficient.  */
+  if (align > BITS_PER_WORD)
+    align = BITS_PER_WORD;
+
+  bit = tree_low_cst (DECL_FIELD_OFFSET (f), 1) * BITS_PER_UNIT
+    + tree_low_cst (DECL_FIELD_BIT_OFFSET (f), 1);
+  size = tree_low_cst (DECL_SIZE (f), 1);
+
+  alchk = align - 1;
+  alchk = ~alchk;
+
+  if ((bit & alchk) != ((bit + size - 1) & alchk))
+    return f;
+
+  /* Find adjacent fields in the same alignment word.  */
+
+  for (prev = f, f = TREE_CHAIN (f);
+       f && TREE_CODE (f) == FIELD_DECL
+	 && is_sra_scalar_type (TREE_TYPE (f))
+	 && host_integerp (DECL_FIELD_OFFSET (f), 1)
+	 && host_integerp (DECL_FIELD_BIT_OFFSET (f), 1)
+	 && host_integerp (DECL_SIZE (f), 1)
+	 && !lookup_element (elt, f, NULL, NO_INSERT);
+       prev = f, f = TREE_CHAIN (f))
+    {
+      unsigned HOST_WIDE_INT nbit, nsize;
+
+      nbit = tree_low_cst (DECL_FIELD_OFFSET (f), 1) * BITS_PER_UNIT
+	+ tree_low_cst (DECL_FIELD_BIT_OFFSET (f), 1);
+      nsize = tree_low_cst (DECL_SIZE (f), 1);
+
+      if (bit + size == nbit)
+	{
+	  if ((bit & alchk) != ((nbit + nsize - 1) & alchk))
+	    {
+	      /* If we're at an alignment boundary, don't bother
+		 growing alignment such that we can include this next
+		 field.  */
+	      if ((nbit & alchk)
+		  || GET_MODE_BITSIZE (DECL_MODE (f)) <= align)
+		break;
+
+	      align = GET_MODE_BITSIZE (DECL_MODE (f));
+	      alchk = align - 1;
+	      alchk = ~alchk;
+
+	      if ((bit & alchk) != ((nbit + nsize - 1) & alchk))
+		break;
+	    }
+	  size += nsize;
+	}
+      else if (nbit + nsize == bit)
+	{
+	  if ((nbit & alchk) != ((bit + size - 1) & alchk))
+	    {
+	      if ((bit & alchk)
+		  || GET_MODE_BITSIZE (DECL_MODE (f)) <= align)
+		break;
+
+	      align = GET_MODE_BITSIZE (DECL_MODE (f));
+	      alchk = align - 1;
+	      alchk = ~alchk;
+
+	      if ((nbit & alchk) != ((bit + size - 1) & alchk))
+		break;
+	    }
+	  bit = nbit;
+	  size += nsize;
+	}
+      else
+	break;
+    }
+
+  f = prev;
+
+  if (f == first)
+    return f;
+
+  gcc_assert ((bit & alchk) == ((bit + size - 1) & alchk));
+
+  /* Try to widen the bit range so as to cover padding bits as well.  */
+
+  if ((bit & ~alchk) || size != align)
+    {
+      unsigned HOST_WIDE_INT mbit = bit & alchk;
+      unsigned HOST_WIDE_INT msize = align;
+
+      for (f = TYPE_FIELDS (elt->type);
+	   f; f = TREE_CHAIN (f))
+	{
+	  unsigned HOST_WIDE_INT fbit, fsize;
+
+	  /* Skip the fields from first to prev.  */
+	  if (f == first)
+	    {
+	      f = prev;
+	      continue;
+	    }
+
+	  if (!(TREE_CODE (f) == FIELD_DECL
+		&& host_integerp (DECL_FIELD_OFFSET (f), 1)
+		&& host_integerp (DECL_FIELD_BIT_OFFSET (f), 1)))
+	    continue;
+
+	  fbit = tree_low_cst (DECL_FIELD_OFFSET (f), 1) * BITS_PER_UNIT
+	    + tree_low_cst (DECL_FIELD_BIT_OFFSET (f), 1);
+
+	  /* If we're past the selected word, we're fine.  */
+	  if ((bit & alchk) < (fbit & alchk))
+	    continue;
+
+	  if (host_integerp (DECL_SIZE (f), 1))
+	    fsize = tree_low_cst (DECL_SIZE (f), 1);
+	  else
+	    /* Assume a variable-sized field takes up all space till
+	       the end of the word.  ??? Endianness issues?  */
+	    fsize = align - (fbit & alchk);
+
+	  if ((fbit & alchk) < (bit & alchk))
+	    {
+	      /* A large field might start at a previous word and
+		 extend into the selected word.  Exclude those
+		 bits.  ??? Endianness issues? */
+	      HOST_WIDE_INT diff = fbit + fsize - mbit;
+
+	      if (diff <= 0)
+		continue;
+
+	      mbit += diff;
+	      msize -= diff;
+	    }
+	  else
+	    {
+	      /* Non-overlapping, great.  */
+	      if (fbit + fsize <= mbit
+		  || mbit + msize <= fbit)
+		continue;
+
+	      if (fbit <= mbit)
+		{
+		  unsigned HOST_WIDE_INT diff = fbit + fsize - mbit;
+		  mbit += diff;
+		  msize -= diff;
+		}
+	      else if (fbit > mbit)
+		msize -= (mbit + msize - fbit);
+	      else
+		gcc_unreachable ();
+	    }
+	}
+
+      bit = mbit;
+      size = msize;
+    }
+
+  /* Now we know the bit range we're interested in.  Find the smallest
+     machine mode we can use to access it.  */
+
+  for (mode = smallest_mode_for_size (size, MODE_INT);
+       ;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      gcc_assert (mode != VOIDmode);
+
+      alchk = GET_MODE_PRECISION (mode) - 1;
+      alchk = ~alchk;
+
+      if ((bit & alchk) == ((bit + size - 1) & alchk))
+	break;
+    }
+
+  gcc_assert (~alchk < align);
+
+  /* Create the field group as a single variable.  */
+
+  type = lang_hooks.types.type_for_mode (mode, 1);
+  gcc_assert (type);
+  var = build3 (BIT_FIELD_REF, type, NULL_TREE,
+		bitsize_int (size),
+		bitsize_int (bit));
+  BIT_FIELD_REF_UNSIGNED (var) = 1;
+
+  block = instantiate_missing_elements_1 (elt, var, type);
+  gcc_assert (block && block->is_scalar);
+
+  var = block->replacement;
+
+  if ((bit & ~alchk)
+      || (HOST_WIDE_INT)size != tree_low_cst (DECL_SIZE (var), 1))
+    {
+      block->replacement = build3 (BIT_FIELD_REF,
+				   TREE_TYPE (block->element), var,
+				   bitsize_int (size),
+				   bitsize_int (bit & ~alchk));
+      BIT_FIELD_REF_UNSIGNED (block->replacement) = 1;
+    }
+
+  block->in_bitfld_block = 2;
+
+  /* Add the member fields to the group, such that they access
+     portions of the group variable.  */
+
+  for (f = first; f != TREE_CHAIN (prev); f = TREE_CHAIN (f))
+    {
+      tree field_type = canon_type_for_field (f, elt->element);
+      struct sra_elt *fld = lookup_element (block, f, field_type, INSERT);
+
+      gcc_assert (fld && fld->is_scalar && !fld->replacement);
+
+      fld->replacement = build3 (BIT_FIELD_REF, field_type, var,
+				 DECL_SIZE (f),
+				 bitsize_int
+				 ((TREE_INT_CST_LOW (DECL_FIELD_OFFSET (f))
+				   * BITS_PER_UNIT
+				   + (TREE_INT_CST_LOW
+				      (DECL_FIELD_BIT_OFFSET (f))))
+				  & ~alchk));
+      BIT_FIELD_REF_UNSIGNED (fld->replacement) = TYPE_UNSIGNED (field_type);
+      fld->in_bitfld_block = 1;
+    }
+
+  return prev;
 }
 
 static void
@@ -1373,21 +1739,17 @@ instantiate_missing_elements (struct sra_elt *elt)
 	for (f = TYPE_FIELDS (type); f ; f = TREE_CHAIN (f))
 	  if (TREE_CODE (f) == FIELD_DECL)
 	    {
-	      tree field_type = TREE_TYPE (f);
+	      tree last = try_instantiate_multiple_fields (elt, f);
 
-	      /* canonicalize_component_ref() unwidens some bit-field
-		 types (not marked as DECL_BIT_FIELD in C++), so we
-		 must do the same, lest we may introduce type
-		 mismatches.  */
-	      if (INTEGRAL_TYPE_P (field_type)
-		  && DECL_MODE (f) != TYPE_MODE (field_type))
-		field_type = TREE_TYPE (get_unwidened (build3 (COMPONENT_REF,
-							       field_type,
-							       elt->element,
-							       f, NULL_TREE),
-						       NULL_TREE));
+	      if (last != f)
+		{
+		  f = last;
+		  continue;
+		}
 
-	      instantiate_missing_elements_1 (elt, f, field_type);
+	      instantiate_missing_elements_1 (elt, f,
+					      canon_type_for_field
+					      (f, elt->element));
 	    }
 	break;
       }
@@ -1699,6 +2061,16 @@ generate_one_element_ref (struct sra_elt *elt, tree base)
       {
 	tree field = elt->element;
 
+	/* We can't test elt->in_bitfld_blk here because, when this is
+	   called from instantiate_element, we haven't set this field
+	   yet.  */
+	if (TREE_CODE (field) == BIT_FIELD_REF)
+	  {
+	    tree ret = unshare_expr (field);
+	    TREE_OPERAND (ret, 0) = base;
+	    return ret;
+	  }
+
 	/* Watch out for compatible records with differing field lists.  */
 	if (DECL_FIELD_CONTEXT (field) != TYPE_MAIN_VARIANT (TREE_TYPE (base)))
 	  field = find_compatible_field (TREE_TYPE (base), field);
@@ -1735,11 +2107,180 @@ generate_element_ref (struct sra_elt *elt)
     return elt->element;
 }
 
+/* Return true if BF is a bit-field that we can handle like a scalar.  */
+
+static bool
+scalar_bitfield_p (tree bf)
+{
+  return (TREE_CODE (bf) == BIT_FIELD_REF
+	  && (is_gimple_reg (TREE_OPERAND (bf, 0))
+	      || (TYPE_MODE (TREE_TYPE (TREE_OPERAND (bf, 0))) != BLKmode
+		  && (!TREE_SIDE_EFFECTS (TREE_OPERAND (bf, 0))
+		      || (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE
+						       (TREE_OPERAND (bf, 0))))
+			  <= BITS_PER_WORD)))));
+}
+
 /* Create an assignment statement from SRC to DST.  */
 
 static tree
 sra_build_assignment (tree dst, tree src)
 {
+  /* Turning BIT_FIELD_REFs into bit operations enables other passes
+     to do a much better job at optimizing the code.  */
+  if (scalar_bitfield_p (src))
+    {
+      tree cst, cst2, mask, minshift, maxshift;
+      tree tmp, var, utype, stype;
+      tree list, stmt;
+      bool unsignedp = BIT_FIELD_REF_UNSIGNED (src);
+
+      var = TREE_OPERAND (src, 0);
+      cst = TREE_OPERAND (src, 2);
+      cst2 = size_binop (PLUS_EXPR, TREE_OPERAND (src, 1),
+			 TREE_OPERAND (src, 2));
+
+      if (BITS_BIG_ENDIAN)
+	{
+	  maxshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst);
+	  minshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst2);
+	}
+      else
+	{
+	  maxshift = cst2;
+	  minshift = cst;
+	}
+
+      stype = TREE_TYPE (var);
+      if (!INTEGRAL_TYPE_P (stype))
+	stype = lang_hooks.types.type_for_size (TREE_INT_CST_LOW
+						(TYPE_SIZE (stype)), 1);
+      else if (!TYPE_UNSIGNED (stype))
+	stype = unsigned_type_for (stype);
+
+      utype = TREE_TYPE (dst);
+      if (!INTEGRAL_TYPE_P (utype))
+	utype = lang_hooks.types.type_for_size (TREE_INT_CST_LOW
+						(TYPE_SIZE (utype)), 1);
+      else if (!TYPE_UNSIGNED (utype))
+	utype = unsigned_type_for (utype);
+
+      list = NULL;
+
+      cst2 = size_binop (MINUS_EXPR, maxshift, minshift);
+      if (tree_int_cst_equal (cst2, TYPE_SIZE (utype)))
+	{
+	  unsignedp = true;
+	  mask = NULL_TREE;
+	}
+      else
+	{
+	  mask = build_int_cst_wide (utype, 1, 0);
+	  cst = int_const_binop (LSHIFT_EXPR, mask, cst2, true);
+	  mask = int_const_binop (MINUS_EXPR, cst, mask, true);
+	}
+
+      tmp = make_rename_temp (stype, "SR");
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (var)) != TYPE_MAIN_VARIANT (stype))
+	{
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
+	    stmt = build_gimple_modify_stmt (tmp,
+					     fold_convert (stype, var));
+	  else
+	    stmt = build_gimple_modify_stmt (tmp,
+					     fold_build1 (VIEW_CONVERT_EXPR,
+							  stype, var));
+	  append_to_statement_list (stmt, &list);
+
+	  var = tmp;
+	}
+
+      if (!integer_zerop (minshift))
+	{
+	  tmp = make_rename_temp (stype, "SR");
+	  stmt = build_gimple_modify_stmt (tmp,
+					   fold_build2 (RSHIFT_EXPR, stype,
+							var, minshift));
+	  append_to_statement_list (stmt, &list);
+
+	  var = tmp;
+	}
+
+      if (TYPE_MAIN_VARIANT (utype) != TYPE_MAIN_VARIANT (stype))
+	{
+	  if (!mask && unsignedp
+	      && (TYPE_MAIN_VARIANT (utype)
+		  == TYPE_MAIN_VARIANT (TREE_TYPE (dst))))
+	    tmp = dst;
+	  else
+	    tmp = make_rename_temp (utype, "SR");
+
+	  stmt = build_gimple_modify_stmt (tmp, fold_convert (utype, var));
+	  append_to_statement_list (stmt, &list);
+
+	  var = tmp;
+	}
+
+      if (mask)
+	{
+	  if (!unsignedp
+	      || (TYPE_MAIN_VARIANT (TREE_TYPE (dst))
+		  != TYPE_MAIN_VARIANT (utype)))
+	    tmp = make_rename_temp (utype, "SR");
+	  else
+	    tmp = dst;
+
+	  stmt = build_gimple_modify_stmt (tmp,
+					   fold_build2 (BIT_AND_EXPR, utype,
+							var, mask));
+	  append_to_statement_list (stmt, &list);
+
+	  var = tmp;
+	}
+
+      if (!unsignedp)
+	{
+	  tree signbit = int_const_binop (LSHIFT_EXPR,
+					  build_int_cst_wide (utype, 1, 0),
+					  size_binop (MINUS_EXPR, cst2,
+						      bitsize_int (1)),
+					  true);
+
+	  tmp = make_rename_temp (utype, "SR");
+	  stmt = build_gimple_modify_stmt (tmp,
+					   fold_build2 (BIT_XOR_EXPR, utype,
+							var, signbit));
+	  append_to_statement_list (stmt, &list);
+
+	  var = tmp;
+
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (dst)) != TYPE_MAIN_VARIANT (utype))
+	    tmp = make_rename_temp (utype, "SR");
+	  else
+	    tmp = dst;
+
+	  stmt = build_gimple_modify_stmt (tmp,
+					   fold_build2 (MINUS_EXPR, utype,
+							var, signbit));
+	  append_to_statement_list (stmt, &list);
+
+	  var = tmp;
+	}
+
+      if (var != dst)
+	{
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (dst)))
+	    var = fold_convert (TREE_TYPE (dst), var);
+	  else
+	    var = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dst), var);
+
+	  stmt = build_gimple_modify_stmt (dst, var);
+	  append_to_statement_list (stmt, &list);
+	}
+
+      return list;
+    }
+
   /* It was hoped that we could perform some type sanity checking
      here, but since front-ends can emit accesses of fields in types
      different from their nominal types and copy structures containing
@@ -1749,6 +2290,256 @@ sra_build_assignment (tree dst, tree src)
      conversions to ensure the types of src and dst are the same.
      So we just assume type differences at this point are ok.  */
   return build_gimple_modify_stmt (dst, src);
+}
+
+/* BIT_FIELD_REFs must not be shared.  sra_build_elt_assignment()
+   takes care of assignments, but we must create copies for uses.  */
+#define REPLDUP(t) (TREE_CODE (t) != BIT_FIELD_REF ? (t) : unshare_expr (t))
+
+/* Emit an assignment from SRC to DST, but if DST is a scalarizable
+   BIT_FIELD_REF, turn it into bit operations.  */
+
+static tree
+sra_build_bf_assignment (tree dst, tree src)
+{
+  tree var, type, utype, tmp, tmp2, tmp3;
+  tree list, stmt;
+  tree cst, cst2, mask;
+  tree minshift, maxshift;
+
+  if (TREE_CODE (dst) != BIT_FIELD_REF)
+    return sra_build_assignment (dst, src);
+
+  var = TREE_OPERAND (dst, 0);
+
+  if (!scalar_bitfield_p (dst))
+    return sra_build_assignment (REPLDUP (dst), src);
+
+  list = NULL;
+
+  cst = fold_convert (bitsizetype, TREE_OPERAND (dst, 2));
+  cst2 = size_binop (PLUS_EXPR,
+		     fold_convert (bitsizetype, TREE_OPERAND (dst, 1)),
+		     cst);
+
+  if (BITS_BIG_ENDIAN)
+    {
+      maxshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst);
+      minshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst2);
+    }
+  else
+    {
+      maxshift = cst2;
+      minshift = cst;
+    }
+
+  type = TREE_TYPE (var);
+  if (!INTEGRAL_TYPE_P (type))
+    type = lang_hooks.types.type_for_size
+      (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (var))), 1);
+  if (TYPE_UNSIGNED (type))
+    utype = type;
+  else
+    utype = unsigned_type_for (type);
+
+  mask = build_int_cst_wide (utype, 1, 0);
+  cst = int_const_binop (LSHIFT_EXPR, mask, maxshift, true);
+  cst2 = int_const_binop (LSHIFT_EXPR, mask, minshift, true);
+  mask = int_const_binop (MINUS_EXPR, cst, cst2, true);
+  mask = fold_build1 (BIT_NOT_EXPR, utype, mask);
+
+  if (TYPE_MAIN_VARIANT (utype) != TYPE_MAIN_VARIANT (TREE_TYPE (var))
+      && !integer_zerop (mask))
+    {
+      tmp = var;
+      if (!is_gimple_variable (tmp))
+	tmp = unshare_expr (var);
+
+      tmp2 = make_rename_temp (utype, "SR");
+
+      if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
+	stmt = build_gimple_modify_stmt (tmp2, fold_convert (utype, tmp));
+      else
+	stmt = build_gimple_modify_stmt (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
+							    utype, tmp));
+      append_to_statement_list (stmt, &list);
+    }
+  else
+    tmp2 = var;
+
+  if (!integer_zerop (mask))
+    {
+      tmp = make_rename_temp (utype, "SR");
+      stmt = build_gimple_modify_stmt (tmp,
+				       fold_build2 (BIT_AND_EXPR, utype,
+						    tmp2, mask));
+      append_to_statement_list (stmt, &list);
+    }
+  else
+    tmp = mask;
+
+  if (is_gimple_reg (src) && INTEGRAL_TYPE_P (TREE_TYPE (src)))
+    tmp2 = src;
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (src)))
+    {
+      tmp2 = make_rename_temp (TREE_TYPE (src), "SR");
+      stmt = sra_build_assignment (tmp2, src);
+      append_to_statement_list (stmt, &list);
+    }
+  else
+    {
+      tmp2 = make_rename_temp
+	(lang_hooks.types.type_for_size
+	 (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (src))),
+	  1), "SR");
+      stmt = sra_build_assignment (tmp2, fold_build1 (VIEW_CONVERT_EXPR,
+						      TREE_TYPE (tmp2), src));
+      append_to_statement_list (stmt, &list);
+    }
+
+  if (!TYPE_UNSIGNED (TREE_TYPE (tmp2)))
+    {
+      tree ut = unsigned_type_for (TREE_TYPE (tmp2));
+      tmp3 = make_rename_temp (ut, "SR");
+      tmp2 = fold_convert (ut, tmp2);
+      stmt = sra_build_assignment (tmp3, tmp2);
+      append_to_statement_list (stmt, &list);
+
+      tmp2 = fold_build1 (BIT_NOT_EXPR, utype, mask);
+      tmp2 = int_const_binop (RSHIFT_EXPR, tmp2, minshift, true);
+      tmp2 = fold_convert (ut, tmp2);
+      tmp2 = fold_build2 (BIT_AND_EXPR, utype, tmp3, tmp2);
+
+      if (tmp3 != tmp2)
+	{
+	  tmp3 = make_rename_temp (ut, "SR");
+	  stmt = sra_build_assignment (tmp3, tmp2);
+	  append_to_statement_list (stmt, &list);
+	}
+
+      tmp2 = tmp3;
+    }
+
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (tmp2)) != TYPE_MAIN_VARIANT (utype))
+    {
+      tmp3 = make_rename_temp (utype, "SR");
+      tmp2 = fold_convert (utype, tmp2);
+      stmt = sra_build_assignment (tmp3, tmp2);
+      append_to_statement_list (stmt, &list);
+      tmp2 = tmp3;
+    }
+
+  if (!integer_zerop (minshift))
+    {
+      tmp3 = make_rename_temp (utype, "SR");
+      stmt = build_gimple_modify_stmt (tmp3,
+				       fold_build2 (LSHIFT_EXPR, utype,
+						    tmp2, minshift));
+      append_to_statement_list (stmt, &list);
+      tmp2 = tmp3;
+    }
+
+  if (utype != TREE_TYPE (var))
+    tmp3 = make_rename_temp (utype, "SR");
+  else
+    tmp3 = var;
+  stmt = build_gimple_modify_stmt (tmp3,
+				   fold_build2 (BIT_IOR_EXPR, utype,
+						tmp, tmp2));
+  append_to_statement_list (stmt, &list);
+
+  if (tmp3 != var)
+    {
+      if (TREE_TYPE (var) == type)
+	stmt = build_gimple_modify_stmt (var,
+					 fold_convert (type, tmp3));
+      else
+	stmt = build_gimple_modify_stmt (var,
+					 fold_build1 (VIEW_CONVERT_EXPR,
+						      TREE_TYPE (var), tmp3));
+      append_to_statement_list (stmt, &list);
+    }
+
+  return list;
+}
+
+/* Expand an assignment of SRC to the scalarized representation of
+   ELT.  If it is a field group, try to widen the assignment to cover
+   the full variable.  */
+
+static tree
+sra_build_elt_assignment (struct sra_elt *elt, tree src)
+{
+  tree dst = elt->replacement;
+  tree var, tmp, cst, cst2, list, stmt;
+
+  if (TREE_CODE (dst) != BIT_FIELD_REF
+      || !elt->in_bitfld_block)
+    return sra_build_assignment (REPLDUP (dst), src);
+
+  var = TREE_OPERAND (dst, 0);
+
+  /* Try to widen the assignment to the entire variable.
+     We need the source to be a BIT_FIELD_REF as well, such that, for
+     BIT_FIELD_REF<d,sz,dp> = BIT_FIELD_REF<s,sz,sp>,
+     by design, conditions are met such that we can turn it into
+     d = BIT_FIELD_REF<s,dw,sp-dp>.  */
+  if (elt->in_bitfld_block == 2
+      && TREE_CODE (src) == BIT_FIELD_REF)
+    {
+      cst = TYPE_SIZE (TREE_TYPE (var));
+      cst2 = size_binop (MINUS_EXPR, TREE_OPERAND (src, 2),
+			 TREE_OPERAND (dst, 2));
+
+      src = TREE_OPERAND (src, 0);
+
+      /* Avoid full-width bit-fields.  */
+      if (integer_zerop (cst2)
+	  && tree_int_cst_equal (cst, TYPE_SIZE (TREE_TYPE (src))))
+	{
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (src))
+	      && !TYPE_UNSIGNED (TREE_TYPE (src)))
+	    src = fold_convert (unsigned_type_for (TREE_TYPE (src)), src);
+
+	  /* If a single conversion won't do, we'll need a statement
+	     list.  */
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (var))
+	      != TYPE_MAIN_VARIANT (TREE_TYPE (src)))
+	    {
+	      list = NULL;
+
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (src))
+		  || !TYPE_UNSIGNED (TREE_TYPE (src)))
+		src = fold_build1 (VIEW_CONVERT_EXPR,
+				   lang_hooks.types.type_for_size
+				   (TREE_INT_CST_LOW
+				    (TYPE_SIZE (TREE_TYPE (src))),
+				    1), src);
+
+	      tmp = make_rename_temp (TREE_TYPE (src), "SR");
+	      stmt = build_gimple_modify_stmt (tmp, src);
+	      append_to_statement_list (stmt, &list);
+
+	      stmt = sra_build_assignment (var,
+					   fold_convert (TREE_TYPE (var),
+							 tmp));
+	      append_to_statement_list (stmt, &list);
+
+	      return list;
+	    }
+
+	  src = fold_convert (TREE_TYPE (var), src);
+	}
+      else
+	{
+	  src = fold_build3 (BIT_FIELD_REF, TREE_TYPE (var), src, cst, cst2);
+	  BIT_FIELD_REF_UNSIGNED (src) = 1;
+	}
+
+      return sra_build_assignment (var, src);
+    }
+
+  return sra_build_bf_assignment (dst, src);
 }
 
 /* Generate a set of assignment statements in *LIST_P to copy all
@@ -1774,16 +2565,16 @@ generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
       i = c->replacement;
 
       t = build2 (COMPLEX_EXPR, elt->type, r, i);
-      t = sra_build_assignment (expr, t);
+      t = sra_build_bf_assignment (expr, t);
       SSA_NAME_DEF_STMT (expr) = t;
       append_to_statement_list (t, list_p);
     }
   else if (elt->replacement)
     {
       if (copy_out)
-	t = sra_build_assignment (elt->replacement, expr);
+	t = sra_build_elt_assignment (elt, expr);
       else
-	t = sra_build_assignment (expr, elt->replacement);
+	t = sra_build_bf_assignment (expr, REPLDUP (elt->replacement));
       append_to_statement_list (t, list_p);
     }
   else
@@ -1808,6 +2599,19 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
   FOR_EACH_ACTUAL_CHILD (dc, dst)
     {
       sc = lookup_element (src, dc->element, NULL, NO_INSERT);
+      if (!sc && dc->in_bitfld_block == 2)
+	{
+	  struct sra_elt *dcs;
+
+	  FOR_EACH_ACTUAL_CHILD (dcs, dc)
+	    {
+	      sc = lookup_element (src, dcs->element, NULL, NO_INSERT);
+	      gcc_assert (sc);
+	      generate_element_copy (dcs, sc, list_p);
+	    }
+
+	  continue;
+	}
       gcc_assert (sc);
       generate_element_copy (dc, sc, list_p);
     }
@@ -1818,7 +2622,7 @@ generate_element_copy (struct sra_elt *dst, struct sra_elt *src, tree *list_p)
 
       gcc_assert (src->replacement);
 
-      t = sra_build_assignment (dst->replacement, src->replacement);
+      t = sra_build_elt_assignment (dst, REPLDUP (src->replacement));
       append_to_statement_list (t, list_p);
     }
 }
@@ -1839,8 +2643,9 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
       return;
     }
 
-  FOR_EACH_ACTUAL_CHILD (c, elt)
-    generate_element_zero (c, list_p);
+  if (!elt->in_bitfld_block)
+    FOR_EACH_ACTUAL_CHILD (c, elt)
+      generate_element_zero (c, list_p);
 
   if (elt->replacement)
     {
@@ -1849,7 +2654,7 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
       gcc_assert (elt->is_scalar);
       t = fold_convert (elt->type, integer_zero_node);
 
-      t = sra_build_assignment (elt->replacement, t);
+      t = sra_build_elt_assignment (elt, t);
       append_to_statement_list (t, list_p);
     }
 }
@@ -1858,10 +2663,10 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
    Add the result to *LIST_P.  */
 
 static void
-generate_one_element_init (tree var, tree init, tree *list_p)
+generate_one_element_init (struct sra_elt *elt, tree init, tree *list_p)
 {
   /* The replacement can be almost arbitrarily complex.  Gimplify.  */
-  tree stmt = sra_build_assignment (var, init);
+  tree stmt = sra_build_elt_assignment (elt, init);
   gimplify_and_add (stmt, list_p);
 }
 
@@ -1890,7 +2695,7 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
     {
       if (elt->replacement)
 	{
-	  generate_one_element_init (elt->replacement, init, list_p);
+	  generate_one_element_init (elt, init, list_p);
 	  elt->visited = true;
 	}
       return result;
@@ -2043,6 +2848,220 @@ sra_replace (block_stmt_iterator *bsi, tree list)
     bsi_prev (bsi);
 }
 
+/* Data structure that bitfield_overlaps_p fills in with information
+   about the element passed in and how much of it overlaps with the
+   bit-range passed it to.  */
+
+struct bitfield_overlap_info
+{
+  /* The bit-length of an element.  */
+  tree field_len;
+
+  /* The bit-position of the element in its parent.  */
+  tree field_pos;
+
+  /* The number of bits of the element that overlap with the incoming
+     bit range.  */
+  tree overlap_len;
+
+  /* The first bit of the element that overlaps with the incoming bit
+     range.  */
+  tree overlap_pos;
+};
+
+/* Return true if a BIT_FIELD_REF<(FLD->parent), BLEN, BPOS>
+   expression (refereced as BF below) accesses any of the bits in FLD,
+   false if it doesn't.  If DATA is non-null, its field_len and
+   field_pos are filled in such that BIT_FIELD_REF<(FLD->parent),
+   field_len, field_pos> (referenced as BFLD below) represents the
+   entire field FLD->element, and BIT_FIELD_REF<BFLD, overlap_len,
+   overlap_pos> represents the portion of the entire field that
+   overlaps with BF.  */
+
+static bool
+bitfield_overlaps_p (tree blen, tree bpos, struct sra_elt *fld,
+		     struct bitfield_overlap_info *data)
+{
+  tree flen, fpos;
+  bool ret;
+
+  if (TREE_CODE (fld->element) == FIELD_DECL)
+    {
+      flen = fold_convert (bitsizetype, DECL_SIZE (fld->element));
+      fpos = fold_convert (bitsizetype, DECL_FIELD_OFFSET (fld->element));
+      fpos = size_binop (MULT_EXPR, fpos, bitsize_int (BITS_PER_UNIT));
+      fpos = size_binop (PLUS_EXPR, fpos, DECL_FIELD_BIT_OFFSET (fld->element));
+    }
+  else if (TREE_CODE (fld->element) == BIT_FIELD_REF)
+    {
+      flen = fold_convert (bitsizetype, TREE_OPERAND (fld->element, 1));
+      fpos = fold_convert (bitsizetype, TREE_OPERAND (fld->element, 2));
+    }
+  else
+    gcc_unreachable ();
+
+  gcc_assert (host_integerp (blen, 1)
+	      && host_integerp (bpos, 1)
+	      && host_integerp (flen, 1)
+	      && host_integerp (fpos, 1));
+
+  ret = ((!tree_int_cst_lt (fpos, bpos)
+	  && tree_int_cst_lt (size_binop (MINUS_EXPR, fpos, bpos),
+			      blen))
+	 || (!tree_int_cst_lt (bpos, fpos)
+	     && tree_int_cst_lt (size_binop (MINUS_EXPR, bpos, fpos),
+				 flen)));
+
+  if (!ret)
+    return ret;
+
+  if (data)
+    {
+      tree bend, fend;
+
+      data->field_len = flen;
+      data->field_pos = fpos;
+
+      fend = size_binop (PLUS_EXPR, fpos, flen);
+      bend = size_binop (PLUS_EXPR, bpos, blen);
+
+      if (tree_int_cst_lt (bend, fend))
+	data->overlap_len = size_binop (MINUS_EXPR, bend, fpos);
+      else
+	data->overlap_len = NULL;
+
+      if (tree_int_cst_lt (fpos, bpos))
+	{
+	  data->overlap_pos = size_binop (MINUS_EXPR, bpos, fpos);
+	  data->overlap_len = size_binop (MINUS_EXPR,
+					  data->overlap_len
+					  ? data->overlap_len
+					  : data->field_len,
+					  data->overlap_pos);
+	}
+      else
+	data->overlap_pos = NULL;
+    }
+
+  return ret;
+}
+
+/* Add to LISTP a sequence of statements that copies BLEN bits between
+   VAR and the scalarized elements of ELT, starting a bit VPOS of VAR
+   and at bit BPOS of ELT.  The direction of the copy is given by
+   TO_VAR.  */
+
+static void
+sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
+				 tree *listp, tree blen, tree bpos,
+				 struct sra_elt *elt)
+{
+  struct sra_elt *fld;
+  struct bitfield_overlap_info flp;
+
+  FOR_EACH_ACTUAL_CHILD (fld, elt)
+    {
+      tree flen, fpos;
+
+      if (!bitfield_overlaps_p (blen, bpos, fld, &flp))
+	continue;
+
+      flen = flp.overlap_len ? flp.overlap_len : flp.field_len;
+      fpos = flp.overlap_pos ? flp.overlap_pos : bitsize_int (0);
+
+      if (fld->replacement)
+	{
+	  tree infld, invar, st;
+
+	  infld = fld->replacement;
+
+	  if (TREE_CODE (infld) == BIT_FIELD_REF)
+	    {
+	      fpos = size_binop (PLUS_EXPR, fpos, TREE_OPERAND (infld, 2));
+	      infld = TREE_OPERAND (infld, 0);
+	    }
+	  else if (BITS_BIG_ENDIAN && DECL_P (fld->element)
+		   && !tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (infld)),
+					   DECL_SIZE (fld->element)))
+	    {
+	      fpos = size_binop (PLUS_EXPR, fpos,
+				 TYPE_SIZE (TREE_TYPE (infld)));
+	      fpos = size_binop (MINUS_EXPR, fpos,
+				 DECL_SIZE (fld->element));
+	    }
+
+	  infld = fold_build3 (BIT_FIELD_REF,
+			       lang_hooks.types.type_for_size
+			       (TREE_INT_CST_LOW (flen), 1),
+			       infld, flen, fpos);
+	  BIT_FIELD_REF_UNSIGNED (infld) = 1;
+
+	  invar = size_binop (MINUS_EXPR, flp.field_pos, bpos);
+	  if (flp.overlap_pos)
+	    invar = size_binop (PLUS_EXPR, invar, flp.overlap_pos);
+	  invar = size_binop (PLUS_EXPR, invar, vpos);
+
+	  invar = fold_build3 (BIT_FIELD_REF, TREE_TYPE (infld),
+			       var, flen, invar);
+	  BIT_FIELD_REF_UNSIGNED (invar) = 1;
+
+	  if (to_var)
+	    st = sra_build_bf_assignment (invar, infld);
+	  else
+	    st = sra_build_bf_assignment (infld, invar);
+
+	  append_to_statement_list (st, listp);
+	}
+      else
+	{
+	  tree sub = size_binop (MINUS_EXPR, flp.field_pos, bpos);
+	  sub = size_binop (PLUS_EXPR, vpos, sub);
+	  if (flp.overlap_pos)
+	    sub = size_binop (PLUS_EXPR, sub, flp.overlap_pos);
+
+	  sra_explode_bitfield_assignment (var, sub, to_var, listp,
+					   flen, fpos, fld);
+	}
+    }
+}
+
+/* Add to LISTBEFOREP statements that copy scalarized members of ELT
+   that overlap with BIT_FIELD_REF<(ELT->element), BLEN, BPOS> back
+   into the full variable, and to LISTAFTERP, if non-NULL, statements
+   that copy the (presumably modified) overlapping portions of the
+   full variable back to the scalarized variables.  */
+
+static void
+sra_sync_for_bitfield_assignment (tree *listbeforep, tree *listafterp,
+				  tree blen, tree bpos,
+				  struct sra_elt *elt)
+{
+  struct sra_elt *fld;
+  struct bitfield_overlap_info flp;
+
+  FOR_EACH_ACTUAL_CHILD (fld, elt)
+    if (bitfield_overlaps_p (blen, bpos, fld, &flp))
+      {
+	if (fld->replacement || (!flp.overlap_len && !flp.overlap_pos))
+	  {
+	    generate_copy_inout (fld, false, generate_element_ref (fld),
+				 listbeforep);
+	    mark_no_warning (fld);
+	    if (listafterp)
+	      generate_copy_inout (fld, true, generate_element_ref (fld),
+				   listafterp);
+	  }
+	else
+	  {
+	    tree flen = flp.overlap_len ? flp.overlap_len : flp.field_len;
+	    tree fpos = flp.overlap_pos ? flp.overlap_pos : bitsize_int (0);
+
+	    sra_sync_for_bitfield_assignment (listbeforep, listafterp,
+					      flen, fpos, fld);
+	  }
+      }
+}
+
 /* Scalarize a USE.  To recap, this is either a simple reference to ELT,
    if elt is scalar, or some occurrence of ELT that requires a complete
    aggregate.  IS_OUTPUT is true if ELT is being modified.  */
@@ -2051,23 +3070,162 @@ static void
 scalarize_use (struct sra_elt *elt, tree *expr_p, block_stmt_iterator *bsi,
 	       bool is_output, bool use_all)
 {
-  tree list = NULL, stmt = bsi_stmt (*bsi);
+  tree stmt = bsi_stmt (*bsi);
+  tree bfexpr;
 
   if (elt->replacement)
     {
+      tree replacement = elt->replacement;
+
       /* If we have a replacement, then updating the reference is as
 	 simple as modifying the existing statement in place.  */
+      if (is_output
+	  && TREE_CODE (elt->replacement) == BIT_FIELD_REF
+	  && is_gimple_reg (TREE_OPERAND (elt->replacement, 0))
+	  && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	  && &GIMPLE_STMT_OPERAND (stmt, 0) == expr_p)
+	{
+	  tree newstmt = sra_build_elt_assignment
+	    (elt, GIMPLE_STMT_OPERAND (stmt, 1));
+	  if (TREE_CODE (newstmt) != STATEMENT_LIST)
+	    {
+	      tree list = NULL;
+	      append_to_statement_list (newstmt, &list);
+	      newstmt = list;
+	    }
+	  sra_replace (bsi, newstmt);
+	  return;
+	}
+      else if (!is_output
+	       && TREE_CODE (elt->replacement) == BIT_FIELD_REF
+	       && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	       && &GIMPLE_STMT_OPERAND (stmt, 1) == expr_p)
+	{
+	  tree tmp = make_rename_temp
+	    (TREE_TYPE (GIMPLE_STMT_OPERAND (stmt, 0)), "SR");
+	  tree newstmt = sra_build_assignment (tmp, REPLDUP (elt->replacement));
+
+	  if (TREE_CODE (newstmt) != STATEMENT_LIST)
+	    {
+	      tree list = NULL;
+	      append_to_statement_list (newstmt, &list);
+	      newstmt = list;
+	    }
+	  sra_insert_before (bsi, newstmt);
+	  replacement = tmp;
+	}
       if (is_output)
-	mark_all_v_defs (stmt);
-      *expr_p = elt->replacement;
+	  mark_all_v_defs (stmt);
+      *expr_p = REPLDUP (replacement);
       update_stmt (stmt);
+    }
+  else if (use_all && is_output
+	   && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	   && TREE_CODE (bfexpr
+			 = GIMPLE_STMT_OPERAND (stmt, 0)) == BIT_FIELD_REF
+	   && &TREE_OPERAND (bfexpr, 0) == expr_p
+	   && INTEGRAL_TYPE_P (TREE_TYPE (bfexpr))
+	   && TREE_CODE (TREE_TYPE (*expr_p)) == RECORD_TYPE)
+    {
+      tree listbefore = NULL, listafter = NULL;
+      tree blen = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 1));
+      tree bpos = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 2));
+      bool update = false;
+
+      if (!elt->use_block_copy)
+	{
+	  tree type = TREE_TYPE (bfexpr);
+	  tree var = make_rename_temp (type, "SR"), tmp, st;
+
+	  GIMPLE_STMT_OPERAND (stmt, 0) = var;
+	  update = true;
+
+	  if (!TYPE_UNSIGNED (type))
+	    {
+	      type = unsigned_type_for (type);
+	      tmp = make_rename_temp (type, "SR");
+	      st = build_gimple_modify_stmt (tmp,
+					     fold_convert (type, var));
+	      append_to_statement_list (st, &listafter);
+	      var = tmp;
+	    }
+
+	  sra_explode_bitfield_assignment
+	    (var, bitsize_int (0), false, &listafter, blen, bpos, elt);
+	}
+      else
+	sra_sync_for_bitfield_assignment
+	  (&listbefore, &listafter, blen, bpos, elt);
+
+      if (listbefore)
+	{
+	  mark_all_v_defs (listbefore);
+	  sra_insert_before (bsi, listbefore);
+	}
+      if (listafter)
+	{
+	  mark_all_v_defs (listafter);
+	  sra_insert_after (bsi, listafter);
+	}
+
+      if (update)
+	update_stmt (stmt);
+    }
+  else if (use_all && !is_output
+	   && TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
+	   && TREE_CODE (bfexpr
+			 = GIMPLE_STMT_OPERAND (stmt, 1)) == BIT_FIELD_REF
+	   && &TREE_OPERAND (GIMPLE_STMT_OPERAND (stmt, 1), 0) == expr_p
+	   && INTEGRAL_TYPE_P (TREE_TYPE (bfexpr))
+	   && TREE_CODE (TREE_TYPE (*expr_p)) == RECORD_TYPE)
+    {
+      tree list = NULL;
+      tree blen = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 1));
+      tree bpos = fold_convert (bitsizetype, TREE_OPERAND (bfexpr, 2));
+      bool update = false;
+
+      if (!elt->use_block_copy)
+	{
+	  tree type = TREE_TYPE (bfexpr);
+	  tree var;
+
+	  if (!TYPE_UNSIGNED (type))
+	    type = unsigned_type_for (type);
+
+	  var = make_rename_temp (type, "SR");
+
+	  append_to_statement_list (build_gimple_modify_stmt
+				    (var, build_int_cst_wide (type, 0, 0)),
+				    &list);
+
+	  sra_explode_bitfield_assignment
+	    (var, bitsize_int (0), true, &list, blen, bpos, elt);
+
+	  GIMPLE_STMT_OPERAND (stmt, 1) = var;
+	  update = true;
+	}
+      else
+	sra_sync_for_bitfield_assignment
+	  (&list, NULL, blen, bpos, elt);
+
+      if (list)
+	{
+	  mark_all_v_defs (list);
+	  sra_insert_before (bsi, list);
+	}
+
+      if (update)
+	update_stmt (stmt);
     }
   else
     {
-      /* Otherwise we need some copies.  If ELT is being read, then we want
-	 to store all (modified) sub-elements back into the structure before
-	 the reference takes place.  If ELT is being written, then we want to
-	 load the changed values back into our shadow variables.  */
+      tree list = NULL;
+
+      /* Otherwise we need some copies.  If ELT is being read, then we
+	 want to store all (modified) sub-elements back into the
+	 structure before the reference takes place.  If ELT is being
+	 written, then we want to load the changed values back into
+	 our shadow variables.  */
       /* ??? We don't check modified for reads, we just always write all of
 	 the values.  We should be able to record the SSA number of the VOP
 	 for which the values were last read.  If that number matches the
@@ -2111,7 +3269,7 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
       gcc_assert (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT);
 
       GIMPLE_STMT_OPERAND (stmt, 0) = lhs_elt->replacement;
-      GIMPLE_STMT_OPERAND (stmt, 1) = rhs_elt->replacement;
+      GIMPLE_STMT_OPERAND (stmt, 1) = REPLDUP (rhs_elt->replacement);
       update_stmt (stmt);
     }
   else if (lhs_elt->use_block_copy || rhs_elt->use_block_copy)
@@ -2265,19 +3423,40 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 
       mark_all_v_defs (stmt);
       generate_copy_inout (elt, is_output, other, &list);
-      mark_all_v_defs (list);
       gcc_assert (list);
+      mark_all_v_defs (list);
 
       /* Preserve EH semantics.  */
       if (stmt_ends_bb_p (stmt))
 	{
 	  tree_stmt_iterator tsi;
-	  tree first;
+	  tree first, blist = NULL;
+	  bool thr = (bsi->bb->flags & EDGE_COMPLEX) != 0;
 
-	  /* Extract the first statement from LIST.  */
+	  /* If the last statement of this BB created an EH edge
+	     before scalarization, we have to locate the first
+	     statement that can throw in the new statement list and
+	     use that as the last statement of this BB, such that EH
+	     semantics is preserved.  All statements up to this one
+	     are added to the same BB.  All other statements in the
+	     list will be added to normal outgoing edges of the same
+	     BB.  If they access any memory, it's the same memory, so
+	     we can assume they won't throw.  */
 	  tsi = tsi_start (list);
-	  first = tsi_stmt (tsi);
+	  for (first = tsi_stmt (tsi);
+	       thr && !tsi_end_p (tsi) && !tree_could_throw_p (first);
+	       first = tsi_stmt (tsi))
+	    {
+	      tsi_delink (&tsi);
+	      append_to_statement_list (first, &blist);
+	    }
+
+	  /* Extract the first remaining statement from LIST, this is
+	     the EH statement if there is one.  */
 	  tsi_delink (&tsi);
+
+	  if (blist)
+	    sra_insert_before (bsi, blist);
 
 	  /* Replace the old statement with this new representative.  */
 	  bsi_replace (bsi, first, true);
@@ -2362,6 +3541,10 @@ dump_sra_elt_name (FILE *f, struct sra_elt *elt)
 	    fputc ('.', f);
 	  print_generic_expr (f, elt->element, dump_flags);
 	}
+      else if (TREE_CODE (elt->element) == BIT_FIELD_REF)
+	fprintf (f, "$B" HOST_WIDE_INT_PRINT_DEC "F" HOST_WIDE_INT_PRINT_DEC,
+		 tree_low_cst (TREE_OPERAND (elt->element, 2), 1),
+		 tree_low_cst (TREE_OPERAND (elt->element, 1), 1));
       else if (TREE_CODE (elt->element) == RANGE_EXPR)
 	fprintf (f, "["HOST_WIDE_INT_PRINT_DEC".."HOST_WIDE_INT_PRINT_DEC"]",
 		 TREE_INT_CST_LOW (TREE_OPERAND (elt->element, 0)),
