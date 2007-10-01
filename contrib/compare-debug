@@ -36,31 +36,31 @@ if test ! -f "$2"; then
   exit 1
 fi
 
-if test -f "$1".stripped; then
-  echo "$1".stripped already exists, overwriting >&2
-  exit 1
-fi
+suf1=stripped
+while test -f "$1.$suf1"; do
+  suf1=$suf1.
+done
 
-if test -f "$2".stripped; then
-  echo "$2".stripped already exists, overwriting >&2
-  exit 1
-fi
+suf2=stripped
+while test -f "$2.$suf2"; do
+  suf2=$suf2.
+done
 
-trap 'rm -f "$1".stripped "$2".stripped' 0 1 2 15
+trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
 
-cp "$1" "$1".stripped
-strip "$1".stripped
+cp "$1" "$1.$suf1"
+strip "$1.$suf1"
 
-cp "$2" "$2".stripped
-strip "$2".stripped
+cp "$2" "$2.$suf2"
+strip "$2.$suf2"
 
-if cmp "$1".stripped "$2".stripped; then
+if cmp "$1.$suf1" "$2.$suf2"; then
   status=0
 else
   status=1
 fi
 
-rm -f "$1".stripped "$2".stripped
+rm -f "$1.$suf1" "$2.$suf2"
 
 trap "exit $status; exit" 0 1 2 15
 
