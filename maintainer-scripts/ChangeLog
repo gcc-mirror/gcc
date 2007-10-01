@@ -1,3 +1,8 @@
+2007-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release: Do not include copies of faq.html in releases,
+	and remove all the explicit support code to pull in web pages.
+
 2007-08-21  Paul Brook  <paul@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Mark Mitchell  <mark@codesourcery.com>
