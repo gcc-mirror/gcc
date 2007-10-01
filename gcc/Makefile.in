@@ -3726,7 +3726,9 @@ $(build_htmldir)/%/index.html: %.texi
 $(build_htmldir)/gccinstall/index.html: $(TEXI_GCCINSTALL_FILES)
 	$(mkinstalldirs) $(@D)
 	echo rm -f $(@D)/*
-	$(TEXI2HTML) -I $(abs_docdir) -I $(abs_docdir)/include -o $(@D) $<
+	SOURCEDIR=$(abs_docdir) \
+	DESTDIR=$(@D) \
+	$(SHELL) $(srcdir)/doc/install.texi2html
 
 MANFILES = doc/gcov.1 doc/cpp.1 doc/gcc.1 doc/gfdl.7 doc/gpl.7 doc/fsf-funding.7
 
