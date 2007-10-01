@@ -1,3 +1,8 @@
+2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* scripts/check_jni_methods.sh: Don't depend on diff -b ignoring
+	a single trailing whitespace.
+
 2007-08-22  Andrew John Hughes  <gnu_andrew@member.fsf.org>
 
 	* java/util/EnumSet.java:
