@@ -1,5 +1,12 @@
 2007-09-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* docs/html/test.html, docs/html/ext/mt_allocator.html,
+	docs/html/ext/tr1.html, docs/html/17_intro/contribute.html,
+	docs/html/documentation.html, docs/html/20_util/allocator.html:
+	Update docs to refer to Subversion not CVS. Fix markup.
+
+2007-09-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* docs/html/Makefile: Follow up to libstdc++/14991, remove target.
 
 2007-09-28  Benjamin Kosnik  <bkoz@redhat.com>

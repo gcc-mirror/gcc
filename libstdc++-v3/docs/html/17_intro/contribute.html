@@ -17,7 +17,7 @@
 <h2>How to contribute</h2>
 <p> The Standard C++ Library v3, follows an open development
 model. Active contributors are assigned maintainer-ship
-responsibility, and given write access to the CVS repository. First
+responsibility, and given write access to the SVN repository. First
 time contributors should follow this procedure:
 </p>
 
@@ -81,14 +81,15 @@ this question would be appreciated.
 
 <p>
 For more information about getting a copyright assignment, please see 
-<a href=http://www.gnu.org/prep/maintain_4.html#SEC4=> Legal Issues</a>
+<a href="http://www.gnu.org/prep/maintain/html_node/Legal-Matters.html">Legal
+Matters</a>.
 </p>
 
 <p>
 Please contact <a href="mailto:bkoz+assign@redhat.com">Benjamin
 Kosnik</a> if you are confused about the assignment or have general
 licensing questions. When requesting an assignment form from <a
-HREF="mailto:assign@gnu.org">assign@gnu.org</a>, please cc
+href="mailto:assign@gnu.org">assign@gnu.org</a>, please cc
 the above libstdc++ maintainer so that progress can be monitored.
 </p>
 
@@ -116,10 +117,12 @@ response from the maintainers) it would have all of these pieces:
  <li> A testsuite submission or sample program that will easily and
  simply show the existing error or test new functionality.  </li>
 
- <li> The patch itself. If you are accessing the CVS repository at
- Cygnus, use "cvs update; cvs diff -c3p NEW"; else, use "diff -c3p OLD
- NEW" ... If your version of diff does not support these options, then
- get the latest version of GNU diff. </li>
+ <li> The patch itself. If you are accessing the SVN repository
+ use "svn update; svn diff NEW"; else, use "diff -cp OLD NEW"
+ ... If your version of diff does not support these options, then
+ get the latest version of GNU diff. The <a
+ href="http://gcc.gnu.org/wiki/SvnTricks">SVN Tricks</a> wiki page
+ has information on customising the output of <code>svn diff</code>.</li>
 
  <li> When you have all these pieces, bundle them up in a mail message
 and send it to libstdc++@gcc.gnu.org. All patches and related
