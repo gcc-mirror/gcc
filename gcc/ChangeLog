@@ -1,5 +1,10 @@
 2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-ssa-sink.c (sink_code_in_bb): Don't stop sinking after
+	sinking the last stmt in a BB.
+
+2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR middle-end/22156
 	* tree-sra.c (struct sra_elt): Add in_bitfld_block.
 	(sra_hash_tree): Handle BIT_FIELD_REFs.
