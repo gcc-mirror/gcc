@@ -7,7 +7,7 @@ void f(int i) {
   try {
     int a[i];
     throw &a; // { dg-error "variable size" }
-  } catch (int (&)[i]) { // { dg-error "variable size" }
+  } catch (int (*)[i]) { // { dg-error "variable size" }
   }
 }
 
