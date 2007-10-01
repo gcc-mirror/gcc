@@ -1,3 +1,8 @@
+2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Avoid spurious errors when .stripped files
+	exist.
+
 2007-09-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* warn_summary (srcdirFilter): Add fixincludes, sim,
