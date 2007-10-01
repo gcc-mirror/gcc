@@ -3954,57 +3954,55 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
 
 enum 
 {
-  CR_EQ = 1,
-  CR_LT = 2,
-  CR_GT = 4,
-  CR_LTU = 8,
-  CR_GTU = 16
+  CMP_EQ = 1,
+  CMP_LT = 2,
+  CMP_GT = 4,
+  CMP_LTU = 8,
+  CMP_GTU = 16
 };
 
 
 /* Convert the known results for EQ, LT, GT, LTU, GTU contained in
    KNOWN_RESULT to a CONST_INT, based on the requested comparison CODE
-   For KNOWN_RESULT to make sense it should be either CR_EQ, or the 
-   logical OR of one of (CR_LT, CR_GT) and one of (CR_LTU, CR_GTU).
+   For KNOWN_RESULT to make sense it should be either CMP_EQ, or the 
+   logical OR of one of (CMP_LT, CMP_GT) and one of (CMP_LTU, CMP_GTU).
    For floating-point comparisons, assume that the operands were ordered.  */
 
 static rtx
 comparison_result (enum rtx_code code, int known_results)
 {
-  /* If we reach here, EQUAL, OP0LT, OP0LTU, OP1LT, and OP1LTU are set
-     as appropriate.  */
   switch (code)
     {
     case EQ:
     case UNEQ:
-      return (known_results & CR_EQ) ? const_true_rtx : const0_rtx;
+      return (known_results & CMP_EQ) ? const_true_rtx : const0_rtx;
     case NE:
     case LTGT:
-      return (known_results & CR_EQ) ? const0_rtx : const_true_rtx;
+      return (known_results & CMP_EQ) ? const0_rtx : const_true_rtx;
 
     case LT:
     case UNLT:
-      return (known_results & CR_LT) ? const_true_rtx : const0_rtx;
+      return (known_results & CMP_LT) ? const_true_rtx : const0_rtx;
     case GE:
     case UNGE:
-      return (known_results & CR_LT) ? const0_rtx : const_true_rtx;
+      return (known_results & CMP_LT) ? const0_rtx : const_true_rtx;
 
     case GT:
     case UNGT:
-      return (known_results & CR_GT) ? const_true_rtx : const0_rtx;
+      return (known_results & CMP_GT) ? const_true_rtx : const0_rtx;
     case LE:
     case UNLE:
-      return (known_results & CR_GT) ? const0_rtx : const_true_rtx;
+      return (known_results & CMP_GT) ? const0_rtx : const_true_rtx;
 
     case LTU:
-      return (known_results & CR_LTU) ? const_true_rtx : const0_rtx;
+      return (known_results & CMP_LTU) ? const_true_rtx : const0_rtx;
     case GEU:
-      return (known_results & CR_LTU) ? const0_rtx : const_true_rtx;
+      return (known_results & CMP_LTU) ? const0_rtx : const_true_rtx;
 
     case GTU:
-      return (known_results & CR_GTU) ? const_true_rtx : const0_rtx;
+      return (known_results & CMP_GTU) ? const_true_rtx : const0_rtx;
     case LEU:
-      return (known_results & CR_GTU) ? const0_rtx : const_true_rtx;
+      return (known_results & CMP_GTU) ? const0_rtx : const_true_rtx;
 
     case ORDERED:
       return const_true_rtx;
@@ -4098,7 +4096,7 @@ simplify_const_relational_operation (enum rtx_code code,
 	   && ! HONOR_SNANS (GET_MODE (trueop0))))
       && rtx_equal_p (trueop0, trueop1)
       && ! side_effects_p (trueop0))
-    return comparison_result (code, CR_EQ);
+    return comparison_result (code, CMP_EQ);
 
   /* If the operands are floating-point constants, see if we can fold
      the result.  */
@@ -4136,8 +4134,8 @@ simplify_const_relational_operation (enum rtx_code code,
 	  }
 
       return comparison_result (code,
-				(REAL_VALUES_EQUAL (d0, d1) ? CR_EQ :
-				 REAL_VALUES_LESS (d0, d1) ? CR_LT : CR_GT));
+				(REAL_VALUES_EQUAL (d0, d1) ? CMP_EQ :
+				 REAL_VALUES_LESS (d0, d1) ? CMP_LT : CMP_GT));
     }
 
   /* Otherwise, see if the operands are both integers.  */
@@ -4191,13 +4189,13 @@ simplify_const_relational_operation (enum rtx_code code,
 	h0u = h1u = 0, h0s = HWI_SIGN_EXTEND (l0s), h1s = HWI_SIGN_EXTEND (l1s);
 
       if (h0u == h1u && l0u == l1u)
-        return comparison_result (code, CR_EQ);
+	return comparison_result (code, CMP_EQ);
       else
 	{
 	  int cr;
-          cr = (h0s < h1s || (h0s == h1s && l0u < l1u)) ? CR_LT : CR_GT;
-          cr |= (h0u < h1u || (h0u == h1u && l0u < l1u)) ? CR_LTU : CR_GTU;
-          return comparison_result (code, cr);
+	  cr = (h0s < h1s || (h0s == h1s && l0u < l1u)) ? CMP_LT : CMP_GT;
+	  cr |= (h0u < h1u || (h0u == h1u && l0u < l1u)) ? CMP_LTU : CMP_GTU;
+	  return comparison_result (code, cr);
 	}
     }
 
@@ -4228,8 +4226,8 @@ simplify_const_relational_operation (enum rtx_code code,
       else
 	{
 	  rtx mmin_rtx, mmax_rtx;
-          unsigned int sign_copies = num_sign_bit_copies (trueop0, mode);
-          get_mode_bounds (mode, sign, mode, &mmin_rtx, &mmax_rtx);
+	  unsigned int sign_copies = num_sign_bit_copies (trueop0, mode);
+	  get_mode_bounds (mode, sign, mode, &mmin_rtx, &mmax_rtx);
 
 	  /* Since unsigned mmin will never be interpreted as negative, use
 	     INTVAL (and an arithmetic right shift).  */
@@ -4318,49 +4316,49 @@ simplify_const_relational_operation (enum rtx_code code,
   if (trueop1 == const0_rtx)
     {
       /* Some addresses are known to be nonzero.  We don't know
-         their sign, but equality comparisons are known.  */
+	 their sign, but equality comparisons are known.  */
       if (nonzero_address_p (trueop0))
-        {
+	{
 	  if (code == EQ || code == LEU)
 	    return const0_rtx;
 	  if (code == NE || code == GTU)
 	    return const_true_rtx;
-        }
+	}
 
       /* See if the first operand is an IOR with a constant.  If so, we
 	 may be able to determine the result of this comparison.  */
       if (GET_CODE (op0) == IOR)
-        {
+	{
 	  rtx inner_const = avoid_constant_pool_reference (XEXP (op0, 1));
 	  if (GET_CODE (inner_const) == CONST_INT && inner_const != const0_rtx)
 	    {
-              int sign_bitnum = GET_MODE_BITSIZE (mode) - 1;
-              int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
-                              && (INTVAL (inner_const)
-                                  & ((HOST_WIDE_INT) 1 << sign_bitnum)));
+	      int sign_bitnum = GET_MODE_BITSIZE (mode) - 1;
+	      int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
+			      && (INTVAL (inner_const)
+				  & ((HOST_WIDE_INT) 1 << sign_bitnum)));
 
-              switch (code)
-                {
-                case EQ:
+	      switch (code)
+		{
+		case EQ:
 		case LEU:
-                  return const0_rtx;
-                case NE:
+		  return const0_rtx;
+		case NE:
 		case GTU:
-                  return const_true_rtx;
-                case LT:
-	        case LE:
-                  if (has_sign)
-                    return const_true_rtx;
-                  break;
-                case GT:
+		  return const_true_rtx;
+		case LT:
+		case LE:
+		  if (has_sign)
+		    return const_true_rtx;
+		  break;
+		case GT:
 		case GE:
-                  if (has_sign)
-                    return const0_rtx;
-                  break;
-                default:
-                  break;
-                }
-            }
+		  if (has_sign)
+		    return const0_rtx;
+		  break;
+		default:
+		  break;
+		}
+	    }
 	}
     }
 

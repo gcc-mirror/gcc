@@ -1,3 +1,8 @@
+2007-10-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* simplify-rtx.c (comparison_result, simplify_relational_operation_1):
+	Rename CR_* constants to CMP_*.  Fix spacing.
+
 2007-10-01  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR other/33585
