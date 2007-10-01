@@ -1,3 +1,9 @@
+2007-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* src/valarray-inst.cc, include/ext/atomicity.h,
+	include/ext/concurrence.h, include/bits/basic_string.h,
+	include/bits/fstream.tcc, include/ext/vstring.h: Fix comment typos.
+
 2007-09-29  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* docs/html/test.html, docs/html/ext/mt_allocator.html,

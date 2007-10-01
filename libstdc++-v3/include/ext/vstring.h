@@ -1407,7 +1407,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find position of a character of C substring.
        *  @param s  String containing characters to locate.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param pos  Index of character to search from.
        *  @param n  Number of characters from s to search for.
        *  @return  Index of first occurrence.
        *
@@ -1468,7 +1468,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find last position of a character of C substring.
        *  @param s  C string containing characters to locate.
-       *  @param pos  Index of character to search back from (default end).
+       *  @param pos  Index of character to search back from.
        *  @param n  Number of characters from s to search for.
        *  @return  Index of last occurrence.
        *
@@ -1499,7 +1499,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find last position of a character.
        *  @param c  Character to locate.
-       *  @param pos  Index of character to search back from (default 0).
+       *  @param pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for @a c within this string.
@@ -1529,7 +1529,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find position of a character not in C substring.
        *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param pos  Index of character to search from.
        *  @param n  Number of characters from s to consider.
        *  @return  Index of first occurrence.
        *
@@ -1574,8 +1574,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find last position of a character not in string.
        *  @param str  String containing characters to avoid.
-       *  @param pos  Index of character to search from (default 0).
-       *  @return  Index of first occurrence.
+       *  @param pos  Index of character to search back from (default end).
+       *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for a character not
        *  contained in @a str within this string.  If found, returns the index
@@ -1589,9 +1589,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find last position of a character not in C substring.
        *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search from (default 0).
+       *  @param pos  Index of character to search back from.
        *  @param n  Number of characters from s to consider.
-       *  @return  Index of first occurrence.
+       *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for a character not
        *  contained in the first @a n characters of @a s within this string.
@@ -1602,10 +1602,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       find_last_not_of(const _CharT* __s, size_type __pos,
 		       size_type __n) const;
       /**
-       *  @brief  Find position of a character not in C string.
+       *  @brief  Find last position of a character not in C string.
        *  @param s  C string containing characters to avoid.
-       *  @param pos  Index of character to search from (default 0).
-       *  @return  Index of first occurrence.
+       *  @param pos  Index of character to search back from (default end).
+       *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for a character not
        *  contained in @a s within this string.  If found, returns the index
@@ -1621,8 +1621,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       /**
        *  @brief  Find last position of a different character.
        *  @param c  Character to avoid.
-       *  @param pos  Index of character to search from (default 0).
-       *  @return  Index of first occurrence.
+       *  @param pos  Index of character to search back from (default end).
+       *  @return  Index of last occurrence.
        *
        *  Starting from @a pos, searches backward for a character other than
        *  @a c within this string.  If found, returns the index where it was

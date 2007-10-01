@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   __gslice_to_index(size_t __o, const valarray<size_t>& __l,
                     const valarray<size_t>& __s, valarray<size_t>& __i)
   {
-    // There are as much as dimensions as there are strides.
+    // There are as many dimensions as there are strides.
     const size_t __n = __l.size();
 
     // Holds current multi-index as we go through the gslice for the
