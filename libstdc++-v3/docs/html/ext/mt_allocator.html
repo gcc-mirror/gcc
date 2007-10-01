@@ -51,7 +51,7 @@ high-performance.
 </p>
 
 <p>
-The aim of this document is to describe - from a application point of
+The aim of this document is to describe - from an application point of
 view - the "inner workings" of the allocator.
 </p>
 
@@ -67,11 +67,12 @@ the actual allocator.
 </p>
 
 <p>The datum describing pools characteristics is 
- <pre>
-   template&lt;bool _Thread&gt;
-     class __pool
- </pre>
-This class is parametrized on thread support, and is explicitly
+</p>
+<pre>
+  template&lt;bool _Thread&gt;
+    class __pool
+</pre>
+<p> This class is parametrized on thread support, and is explicitly
 specialized for both multiple threads (with <code>bool==true</code>)
 and single threads (via <code>bool==false</code>.) It is possible to
 use a custom pool datum instead of the default class that is provided.
@@ -102,11 +103,12 @@ tuning, for instance.
 </p>
 
 <p> Putting this all together, the actual allocator class is
+</p>
 <pre>
   template&lt;typename _Tp, typename _Poolp = __default_policy&gt;
     class __mt_alloc : public __mt_alloc_base&lt;_Tp&gt;,  _Poolp
 </pre>
-This class has the interface required for standard library allocator
+<p> This class has the interface required for standard library allocator
 classes, namely member functions <code>allocate</code> and
 <code>deallocate</code>, plus others.
 </p>
@@ -116,7 +118,7 @@ classes, namely member functions <code>allocate</code> and
 </h3>
 
 <p>Certain allocation parameters can be modified, or tuned. There
-exists a nested <pre>struct __pool_base::_Tune</pre> that contains all
+exists a nested <code>struct __pool_base::_Tune</code> that contains all
 these parameters, which include settings for
 </p>
    <ul>
@@ -301,7 +303,7 @@ containers, this works, as an instance of the allocator is constructed
 as part of a container's constructor. However, this assumption is
 implementation-specific, and subject to change. For an example of a
 pool that frees memory, see the following
-    <a href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/gcc/libstdc%2b%2b-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc"> 
+    <a href="http://gcc.gnu.org/viewcvs/trunk/libstdc%2B%2B-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc?view=markup">
     example.</a>
 </p>
 
