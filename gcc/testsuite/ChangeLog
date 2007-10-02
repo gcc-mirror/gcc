@@ -1,3 +1,8 @@
+2007-10-02  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR middle-end/33617
+	* gcc.c-torture/compile/pr33617.c: New test.
+
 2007-10-02  Andreas Tobler  <a.tobler@schweiz.org>
 
 	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Change options to use
