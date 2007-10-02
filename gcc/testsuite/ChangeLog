@@ -1,3 +1,8 @@
+2007-10-02  Andreas Tobler  <a.tobler@schweiz.org>
+
+	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Change options to use
+	-gstabs+ for extended options.
+
 2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33542

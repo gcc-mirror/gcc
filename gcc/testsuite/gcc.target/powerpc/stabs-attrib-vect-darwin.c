@@ -1,6 +1,6 @@
 /* Test Attribute Vector associated with vector type stabs.  */
 /* { dg-do compile { target powerpc*-*-darwin* } } */
-/* { dg-options "-gstabs -fno-eliminate-unused-debug-types -faltivec" } */
+/* { dg-options "-gstabs+ -fno-eliminate-unused-debug-types -faltivec" } */
 
 int main ()
 {
