@@ -1,3 +1,29 @@
+2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31154
+	PR fortran/31229
+	PR fortran/33334
+	* decl.c : Declare gfc_function_kind_locs and
+	gfc_function_type_locus.
+	(gfc_match_kind_spec): Add second argument kind_expr_only.
+	Store locus before trying to match the expression. If the
+	current state corresponds to a function declaration and there
+	is no match to the expression, read to the parenthesis, return
+	kind = -1, dump the expression and return.
+	(gfc_match_type_spec): Renamed from match_type_spec and all
+	references changed.  If an interface or an external function,
+	store the locus, set kind = -1 and return.  Otherwise, if kind
+	is already = -1, use gfc_find_symbol to try to find a use
+	associated or imported type.
+	match.h : Prototype for gfc_match_type_spec.
+	* parse.c (match_deferred_characteristics): New function.
+	(parse_spec): If in a function, statement is USE or IMPORT
+	or DERIVED_DECL and the function kind=-1, call
+	match_deferred_characteristics.  If kind=-1 at the end of the
+	specification expressions, this is an error.
+	* parse.h : Declare external gfc_function_kind_locs and
+	gfc_function_type_locus.
+
 2007-09-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* module.c (mio_expr): Avoid -Wcast-qual warning.

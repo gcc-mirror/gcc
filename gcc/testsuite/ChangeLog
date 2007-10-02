@@ -1,3 +1,13 @@
+2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/31154
+	PR fortran/31229
+	PR fortran/33334
+	* gfortran.dg/function_kinds_1.f90: New test.
+	* gfortran.dg/function_kinds_2.f90: New test.
+	* gfortran.dg/derived_function_interface_1.f90: Correct illegal
+	use association into interfaces.
+
 2007-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/31828
