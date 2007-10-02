@@ -1,3 +1,72 @@
+2007-09-02  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* ra-conflict.c: New file.
+	* ra.h: New file.
+	* reload.c (push_reload, find_dummy_reload): Change DF_RA_LIVE
+	usage to DF_LIVE usage.
+	* rtlanal.c (subreg_nregs_with_regno): New function.  
+	* df-scan.c (df_def_record_1, df_uses_record): Add code to set
+	DF_REF_EXTRACT, DF_REF_STRICT_LOWER_PART, and DF_REF_SUBREG flags.
+	(df_has_eh_preds): Removed.
+	(df_bb_refs_collect, df_bb_refs_collect, df_bb_refs_collect,
+	df_exit_block_uses_collect): Changed call from df_has_eh_preds to
+	bb_has_eh_pred.
+	* global.c (allocno, max_allocno, conflicts, allocno_row_words,
+	reg_allocno, EXECUTE_IF_SET_IN_ALLOCNO_SET): Moved to ra.h
+	(SET_ALLOCNO_LIVE, CLEAR_ALLOCNO_LIVE): Moved to ra-conflicts.c.
+	(regs_set, record_one_conflict, record_conflicts, mark_reg_store,
+	mark_reg_clobber, mark_reg_conflicts, mark_reg_death): Deleted.
+	(global_alloc): Turn off rescanning insns after call to
+	global_conflicts and added call to set_preferences.
+	(global_conflicts): Moved to ra-alloc.c.
+	(set_preferences_1, set_preferences): New function.
+	(mirror_conflicts): Changed types for various variables.
+	(mark_elimination): Change DF_RA_LIVE
+	usage to DF_LIVE usage.
+	(build_insn_chain): Rewritten from scratch and made local.
+	(print_insn_chain, print_insn_chains): New functions.
+	(dump_conflicts): Do not print conflicts for fixed_regs.
+	(rest_of_handle_global_alloc): Turn off insn rescanning.
+	* hard-reg-set.h: Fixed comment.
+	* local-alloc.c (update_equiv_regs): Change DF_RA_LIVE
+	usage to DF_LIVE usage and delete refs to TOP sets.
+	(block_alloc): Mark regs as live if they are in the artificial
+	defs at top of block.
+	(find_stack_regs): New function.
+	(rest_of_handle_local_alloc): Changed urec problem to live
+	problem and do not turn off df rescanning.
+	* df.h (DF_UREC, DF_UREC_BB_INFO, DF_LIVE_TOP, DF_RA_LIVE_IN,
+	DF_RA_LIVE_TOP, DF_RA_LIVE_OUT, df_urec_bb_info, df_urec,
+	df_urec_add_problem, df_urec_get_bb_info, df_has_eh_preds): Removed.
+	(DF_CHAIN, DF_NOTE, DF_CHAIN): Renumbered.
+	(DF_REF_EXTRACT, DF_REF_STRICT_LOWER_PART, DF_REF_SUBREG): New
+	fields in df_ref_flags.  The rest have been renumbered.  
+	* init-regs.c (initialize_uninitialized_regs): Enhanced debugging
+	at -O1.
+	* rtl.h (subreg_nregs_with_regno): New function.
+	* df-problems.c: (df_get_live_out, df_get_live_in,
+	df_get_live_top): Removed reference to DF_RA_LIVE.
+	(df_lr_reset, df_lr_transfer_function, df_live_free_bb_info,
+	df_live_alloc, df_live_reset, df_live_local_finalize,
+	df_live_free): Make top set only if different from in set.
+	(df_lr_top_dump, df_live_top_dump): Only print top set if
+	different from in set.
+	(df_lr_bb_local_compute): Removed unnecessary check.
+	(df_urec_problem_data, df_urec_set_bb_info, df_urec_free_bb_info, 
+	df_urec_alloc, df_urec_mark_reg_change, earlyclobber_regclass, 
+	df_urec_check_earlyclobber, df_urec_mark_reg_use_for_earlyclobber,
+	df_urec_mark_reg_use_for_earlyclobber_1, df_urec_bb_local_compute,
+	df_urec_local_compute, df_urec_init, df_urec_local_finalize, 
+	df_urec_confluence_n, df_urec_transfer_function, df_urec_free, 
+	df_urec_top_dump, df_urec_bottom_dump, problem_UREC,
+	df_urec_add_problem): Removed.
+	(df_simulate_fixup_sets): Changed call from df_has_eh_preds to
+	bb_has_eh_pred. 
+	* Makefile.in (ra-conflict.o, ra.h): New dependencies.
+	* basic_block.h (bb_has_abnormal_pred): New function.
+	* reload1.c (compute_use_by_pseudos): Change DF_RA_LIVE
+	usage to DF_LIVE usage.
+	
 2007-10-02  Revital Eres  <eres@il.ibm.com>
 
 	* config/rs6000/predicates.md (easy_vector_constant): Return false

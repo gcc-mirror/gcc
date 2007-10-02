@@ -117,7 +117,11 @@ initialize_uninitialized_regs (void)
     }
 
   if (optimize == 1)
-    df_remove_problem (df_live);
+    {
+      if (dump_file) 
+	df_dump (dump_file);
+      df_remove_problem (df_live);
+    }
 
   BITMAP_FREE (already_genned);
 }

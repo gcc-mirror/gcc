@@ -548,7 +548,7 @@ compute_use_by_pseudos (HARD_REG_SET *to, regset from)
       if (r < 0)
 	{
 	  /* reload_combine uses the information from
-	     DF_RA_LIVE_IN (BASIC_BLOCK), which might still
+	     DF_LIVE_IN (BASIC_BLOCK), which might still
 	     contain registers that have not actually been allocated
 	     since they have an equivalence.  */
 	  gcc_assert (reload_completed);
@@ -1158,10 +1158,7 @@ reload (rtx first, int global)
 
   if (! frame_pointer_needed)
     FOR_EACH_BB (bb)
-      {
-	bitmap_clear_bit (df_get_live_in (bb), HARD_FRAME_POINTER_REGNUM);
-	bitmap_clear_bit (df_get_live_top (bb), HARD_FRAME_POINTER_REGNUM);
-      }
+      bitmap_clear_bit (df_get_live_in (bb), HARD_FRAME_POINTER_REGNUM);
 	
   /* Come here (with failure set nonzero) if we can't get enough spill
      regs.  */

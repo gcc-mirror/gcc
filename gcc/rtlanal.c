@@ -3263,14 +3263,24 @@ subreg_regno (const_rtx x)
 unsigned int
 subreg_nregs (const_rtx x)
 {
+  return subreg_nregs_with_regno (REGNO (SUBREG_REG (x)), x);
+}
+
+/* Return the number of registers that a subreg REG with REGNO
+   expression refers to.  This is a copy of the rtlanal.c:subreg_nregs
+   changed so that the regno can be passed in. */
+
+unsigned int
+subreg_nregs_with_regno (unsigned int regno, const_rtx x)
+{
   struct subreg_info info;
   rtx subreg = SUBREG_REG (x);
-  int regno = REGNO (subreg);
 
   subreg_get_info (regno, GET_MODE (subreg), SUBREG_BYTE (x), GET_MODE (x),
 		   &info);
   return info.nregs;
 }
+
 
 struct parms_set_data
 {

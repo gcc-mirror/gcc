@@ -380,7 +380,7 @@ hard_reg_set_empty_p (const HARD_REG_SET x)
   return x[0] == 0 && x[1] == 0 && x[2] == 0 && x[3] == 0;
 }
 
-#else /* FIRST_PSEUDO_REGISTER > 3*HOST_BITS_PER_WIDEST_FAST_INT */
+#else /* FIRST_PSEUDO_REGISTER > 4*HOST_BITS_PER_WIDEST_FAST_INT */
 
 #define CLEAR_HARD_REG_SET(TO)  \
 do { HARD_REG_ELT_TYPE *scan_tp_ = (TO);			\
