@@ -33,9 +33,11 @@ load_lib gcc-dg.exp
 #    $mips_gp64:	 true if 64-bit output is selected
 #    $mips_fp64:	 true if 64-bit FPRs are selected
 #    $mips_float:	 "hard" or "soft"
+#    $mips_abi:		 the ABI specified by _MIPS_SIM
 #
 #    $mips_forced_isa:	 true if the command line uses -march=* or -mips*
-#    $mips_forced_abi:	 true if the command line uses -mabi=* or -mgp*
+#    $mips_forced_abi:	 true if the command line uses -mabi=*
+#    $mips_forced_regs:  true if the command line uses -mgp* or -mfp*
 #    $mips_forced_float: true if the command line uses -mhard/soft-float
 #    $mips_forced_le	 true if the command line uses -EL or -mel
 #    $mips_forced_gp	 true if the command line forces a particular GP mode
@@ -46,6 +48,7 @@ proc setup_mips_tests {} {
     global mips_gp64
     global mips_fp64
     global mips_float
+    global mips_abi
 
     global mips_forced_isa
     global mips_forced_abi
@@ -53,6 +56,7 @@ proc setup_mips_tests {} {
     global mips_forced_le
     global mips_forced_gp
     global mips_forced_no_er
+    global mips_forced_regs
 
     global compiler_flags
     global tool
@@ -73,6 +77,17 @@ proc setup_mips_tests {} {
 	#else
 	const char *float = "soft";
 	#endif
+	#if !defined _MIPS_SIM
+	const char *abi = "eabi";
+	#elif _MIPS_SIM=_ABIO32
+	const char *abi = "32";
+	#elif _MIPS_SIM=_ABIO64
+	const char *abi = "o64";
+	#elif _MIPS_SIM=_ABIN32
+	const char *abi = "n32";
+	#else
+	const char *abi = "64";
+	#endif
     }
     close $f
     set output [${tool}_target_compile $src "" preprocess ""]
@@ -83,9 +98,11 @@ proc setup_mips_tests {} {
     set mips_gp64 [regexp {gp64 = 1} $output]
     set mips_fp64 [regexp {fp64 = 1} $output]
     regexp {float = "([^"]*)} $output dummy mips_float
+    regexp {abi = "([^"]*)} $output dummy mips_abi
 
     set mips_forced_isa [regexp -- {(-mips[1-5][[:>:]]|-mips32*|-mips64*|-march)} $compiler_flags]
-    set mips_forced_abi [regexp -- {(-mgp|-mfp|-mabi)} $compiler_flags]
+    set mips_forced_abi [regexp -- {-mabi} $compiler_flags]
+    set mips_forced_regs [regexp -- {(-mgp|-mfp)} $compiler_flags]
     set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
     set mips_forced_le [regexp -- {-(EL|mel)[[:>:]]} $compiler_flags]
     set mips_forced_gp [regexp -- {-(G|m(|no-)((extern|local)-sdata|gpopt)|mabicalls|mrtp)} $compiler_flags]
@@ -99,7 +116,19 @@ proc is_gp32_flag {flag} {
 	-mips[12] -
 	-mips32* -
 	-march=mips32* -
+	-mabi=32 -
 	-mgp32 { return 1 }
+	default { return 0 }
+    }
+}
+
+# Return true if command-line option FLAG forces 64-bit code.
+proc is_gp64_flag {flag} {
+    switch -glob -- $flag {
+	-mabi=64 -
+	-mabi=o64 -
+	-mabi=n32 -
+	-mgp64 { return 1 }
 	default { return 0 }
     }
 }
@@ -115,6 +144,10 @@ proc is_gp32_flag {flag} {
 #	Force 64-bit code.  Also force a 64-bit target architecture
 #	if the other flags don't do so.  Skip the test if the multilib
 #	flags force a 32-bit ABI or a 32-bit architecture.
+#
+#    -mabi=*
+#	Force a particular ABI.  Skip the test if the multilib flags
+#	force a specific ABI or a different register size.
 #
 #    -march=*
 #    -mips*
@@ -150,9 +183,11 @@ proc dg-mips-options {args} {
     global mips_gp64
     global mips_fp64
     global mips_float
+    global mips_abi
 
     global mips_forced_isa
     global mips_forced_abi
+    global mips_forced_regs
     global mips_forced_float
     global mips_forced_le
     global mips_forced_gp
@@ -166,16 +201,18 @@ proc dg-mips-options {args} {
 	if {[is_gp32_flag $flag]
 	    && ($mips_gp64
 		|| ($mips_fp64 && [lsearch $flags -mfp64] < 0)) } {
-	    if {$mips_forced_abi} {
+	    if {$mips_forced_regs || $mips_forced_abi} {
 		set matches 0
-	    } else {
+	    } elseif {[lsearch $flags "-mabi=*"] < 0} {
 		append flags " -mabi=32"
 	    }
-	} elseif {$flag == "-mgp64" && !$mips_gp64} {
-	    if {$mips_forced_abi} {
+	} elseif {[is_gp64_flag $flag] && !$mips_gp64} {
+	    if {$mips_forced_regs || $mips_forced_abi} {
 		set matches 0
 	    } else {
-		append flags " -mabi=o64"
+	    	if {[lsearch $flags "-mabi=*"] < 0} {
+		    append flags " -mabi=o64"
+		}
 		if {[lsearch -regexp $flags {^(-mips|-march)}] < 0} {
 		    append flags " -mips3"
 		}
@@ -186,6 +223,10 @@ proc dg-mips-options {args} {
     foreach flag $flags {
 	if {$flag == "-mfp64"} {
 	    if {$mips_isa < 33 || $mips_float != "hard"} {
+		set matches 0
+	    }
+	} elseif {[regexp -- {^-mabi=(.*)} $flag dummy abi]} {
+	    if {$abi != $mips_abi && $mips_forced_abi} {
 		set matches 0
 	    }
 	} elseif {[regexp -- {^-march=(.*)} $flag dummy arch]} {
