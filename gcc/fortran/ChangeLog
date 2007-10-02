@@ -1,5 +1,11 @@
 2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33566
+	* primary.c (gfc_match_rvalue): Make all expressions with array
+	references to structure parameters into variable expressions.
+
+2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/33554
 	* trans-decl.c (init_intent_out_dt): New function.
 	(gfc_trans_deferred_vars): Remove the code for default
