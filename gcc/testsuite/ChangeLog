@@ -1,3 +1,11 @@
+2007-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/31828
+	gcc.dg/float-range-3.c (INFINITY): Define if not defined.
+	(overflow): Use INFINITY, not FP_INFINITE.
+	gcc.dg/float-range-4.c: Likewise.
+	gcc.dg/float-range-5.c: Likewise.
+
 2007-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* gcc.c-torture/execute/20060102-1.c (f): Fix computation to work
