@@ -1,3 +1,9 @@
+2007-10-02  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR middle-end/33617
+	* expr.c (expand_expr_addr_expr_1): Pass CONSTRUCTORs to
+	expand_expr.
+
 2007-10-02  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/mips.md (sync_compare_and_swap<mode>): Handle compare

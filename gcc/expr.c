@@ -6740,8 +6740,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
   /* ??? This should be considered a front-end bug.  We should not be
      generating ADDR_EXPR of something that isn't an LVALUE.  The only
      exception here is STRING_CST.  */
-  if (TREE_CODE (exp) == CONSTRUCTOR
-      || CONSTANT_CLASS_P (exp))
+  if (CONSTANT_CLASS_P (exp))
     return XEXP (expand_expr_constant (exp, 0, modifier), 0);
 
   /* Everything must be something allowed by is_gimple_addressable.  */
@@ -6788,9 +6787,12 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
     default:
       /* If the object is a DECL, then expand it for its rtl.  Don't bypass
 	 expand_expr, as that can have various side effects; LABEL_DECLs for
-	 example, may not have their DECL_RTL set yet.  Assume language
-	 specific tree nodes can be expanded in some interesting way.  */
+	 example, may not have their DECL_RTL set yet.  Expand the rtl of
+	 CONSTRUCTORs too, which should yield a memory reference for the
+	 constructor's contents.  Assume language specific tree nodes can
+	 be expanded in some interesting way.  */
       if (DECL_P (exp)
+	  || TREE_CODE (exp) == CONSTRUCTOR
 	  || TREE_CODE (exp) >= LAST_AND_UNUSED_TREE_CODE)
 	{
 	  result = expand_expr (exp, target, tmode,
