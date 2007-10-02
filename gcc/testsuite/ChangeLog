@@ -1,3 +1,9 @@
+2007-10-02  Revital Eres  <eres@il.ibm.com>
+
+	* gcc.target/powerpc/paired-8.c: New test.
+	* gcc.target/powerpc/paired-9.c: New test.
+	* gcc.target/powerpc/paired-10.c: New test.
+
 2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33566

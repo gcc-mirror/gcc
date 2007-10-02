@@ -1,3 +1,13 @@
+2007-10-02  Revital Eres  <eres@il.ibm.com>
+
+	* config/rs6000/predicates.md (easy_vector_constant): Return false
+	for 750CL paired vectors.
+	* config/rs6000/paired.md (movv2sf_paired): Fix move of easy
+	vector constant.
+	(vec_initv2sf): Add new description.
+	(vconcatsf): Likewise.
+	* config/rs6000/rs6000-protos.h: Declare paired_expand_vector_init.
+
 2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tree-ssa-sink.c (sink_code_in_bb): Don't stop sinking after
