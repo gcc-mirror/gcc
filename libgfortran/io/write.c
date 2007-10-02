@@ -698,18 +698,18 @@ write_real (st_parameter_dt *dtp, const char *source, int length)
   switch (length)
     {
     case 4:
-      f.u.real.w = 14;
-      f.u.real.d = 7;
+      f.u.real.w = 15;
+      f.u.real.d = 8;
       f.u.real.e = 2;
       break;
     case 8:
-      f.u.real.w = 23;
-      f.u.real.d = 15;
+      f.u.real.w = 25;
+      f.u.real.d = 17;
       f.u.real.e = 3;
       break;
     case 10:
-      f.u.real.w = 28;
-      f.u.real.d = 19;
+      f.u.real.w = 29;
+      f.u.real.d = 20;
       f.u.real.e = 4;
       break;
     case 16:
