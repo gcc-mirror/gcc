@@ -468,38 +468,9 @@ mark_scope_block_unused (tree scope)
 static bool
 remove_unused_scope_block_p (tree scope)
 {
-  tree *t, *next;
+  tree *t;
   bool unused = !TREE_USED (scope);
-  var_ann_t ann;
   int nsubblocks = 0;
-
-  for (t = &BLOCK_VARS (scope); *t; t = next)
-    {
-      next = &TREE_CHAIN (*t);
-
-      /* Debug info of nested function refers to the block of the
-	 function.  */
-      if (TREE_CODE (*t) == FUNCTION_DECL)
-	unused = false;
-
-      /* When we are outputting debug info, we usually want to output
-	 info about optimized-out variables in the scope blocks.
-	 Exception are the scope blocks not containing any instructions
-	 at all so user can't get into the scopes at first place.  */
-      else if ((ann = var_ann (*t)) != NULL
-		&& ann->used)
-	unused = false;
-
-      /* When we are not doing full debug info, we however can keep around
-	 only the used variables for cfgexpand's memory packing saving quite
-	 a lot of memory.  */
-      else if (debug_info_level != DINFO_LEVEL_NORMAL
-	       && debug_info_level != DINFO_LEVEL_VERBOSE)
-	{
-	  *t = TREE_CHAIN (*t);
-	  next = t;
-	}
-    }
 
   for (t = &BLOCK_SUBBLOCKS (scope); *t ;)
     if (remove_unused_scope_block_p (*t))
@@ -533,12 +504,10 @@ remove_unused_scope_block_p (tree scope)
    /* When there is only one subblock, see if it is just wrapper we can
       ignore.  Wrappers are not declaring any variables and not changing
       abstract origin.  */
-   else if (nsubblocks == 1
+   else if (nsubblocks <= 1
 	    && (BLOCK_VARS (scope)
-		|| ((debug_info_level == DINFO_LEVEL_NORMAL
-		     || debug_info_level == DINFO_LEVEL_VERBOSE)
-		    && ((BLOCK_ABSTRACT_ORIGIN (scope)
-			!= BLOCK_ABSTRACT_ORIGIN (BLOCK_SUPERCONTEXT (scope)))))))
+		|| (BLOCK_ABSTRACT_ORIGIN (scope)
+		    != BLOCK_ABSTRACT_ORIGIN (BLOCK_SUPERCONTEXT (scope)))))
      unused = false;
    return unused;
 }

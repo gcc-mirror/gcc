@@ -1,3 +1,9 @@
+2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't change
+	generated code depending on -g.  Reverts part of 2007-07-26's
+	patch.
+
 Local Variables:
 mode: change-log
 change-log-default-name: "ChangeLog.vta"
