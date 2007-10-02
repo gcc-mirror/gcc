@@ -7,6 +7,7 @@
 	(vec_initv2sf): Add new description.
 	(vconcatsf): Likewise.
 	* config/rs6000/rs6000-protos.h: Declare paired_expand_vector_init.
+	* config/rs6000/rs6000.c (paired_expand_vector_init): New function.
 
 2007-10-01  Alexandre Oliva  <aoliva@redhat.com>
 
