@@ -1,3 +1,7 @@
+2007-10-02  Richard Sandiford  <richard@codesourcery.com>
+
+	* no-executables.m4 (GCC_TRY_COMPILE_OR_LINK): New function.
+
 2007-09-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* mt-sde (CFLAGS_FOR_TARGET): Replace -fno-optimize-sibling-calls

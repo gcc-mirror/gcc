@@ -59,3 +59,11 @@ fi)
 
 m4_divert_pop()dnl
 ])# GCC_NO_EXECUTABLES
+
+# Use the strongest available test out of AC_TRY_COMPILE and AC_TRY_LINK.
+AC_DEFUN([GCC_TRY_COMPILE_OR_LINK],
+[if test x$gcc_no_link = xyes; then
+  AC_TRY_COMPILE([$1], [$2], [$3], [$4])
+else
+  AC_TRY_LINK([$1], [$2], [$3], [$4])
+fi])
