@@ -672,7 +672,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 {
   gfc_symtree *st;
   gfc_symbol *sym;
-  int rc;
+  int rc = 0;
 
   /* Module functions have to be left in their own namespace because
      they have potentially (almost certainly!) already been referenced.
@@ -708,6 +708,9 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
     }
   else
     rc = gfc_get_symbol (name, gfc_current_ns->parent, result);
+
+  if (rc)
+    return rc;
 
   sym = *result;
   gfc_current_ns->refs++;
