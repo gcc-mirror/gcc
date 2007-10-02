@@ -27,15 +27,15 @@ program main
 
 end program main
 !{ dg-output "      \\+Infinity(\n|\r\n|\r)" }
-!{ dg-output "   0.000000    (\n|\r\n|\r)" }
-!{ dg-output "      -Infinity(\n|\r\n|\r)" }
-!{ dg-output "            NaN(\n|\r\n|\r)" }
-!{ dg-output "            NaN(\n|\r\n|\r)" }
-!{ dg-output "      -Infinity(\n|\r\n|\r)" }
-!{ dg-output "      -Infinity(\n|\r\n|\r)" }
-!{ dg-output "      \\+Infinity(\n|\r\n|\r)" }
-!{ dg-output "            NaN(\n|\r\n|\r)" }
-!{ dg-output " \\(           NaN,           NaN\\)(\n|\r\n|\r)" }
-!{ dg-output " \\(           NaN,           NaN\\)(\n|\r\n|\r)" }
-!{ dg-output " \\(     \\+Infinity,     -Infinity\\)(\n|\r\n|\r)" }
-!{ dg-output " \\(  0.000000    , -0.000000    \\)(\n|\r\n|\r)" }
+!{ dg-output "   0.0000000    (\n|\r\n|\r)" }
+!{ dg-output "       -Infinity(\n|\r\n|\r)" }
+!{ dg-output "             NaN(\n|\r\n|\r)" }
+!{ dg-output "             NaN(\n|\r\n|\r)" }
+!{ dg-output "       -Infinity(\n|\r\n|\r)" }
+!{ dg-output "       -Infinity(\n|\r\n|\r)" }
+!{ dg-output "       \\+Infinity(\n|\r\n|\r)" }
+!{ dg-output "             NaN(\n|\r\n|\r)" }
+!{ dg-output " \\(            NaN,            NaN\\)(\n|\r\n|\r)" }
+!{ dg-output " \\(            NaN,            NaN\\)(\n|\r\n|\r)" }
+!{ dg-output " \\(      \\+Infinity,      -Infinity\\)(\n|\r\n|\r)" }
+!{ dg-output " \\(  0.0000000    , -0.0000000    \\)(\n|\r\n|\r)" }
