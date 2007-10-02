@@ -4329,7 +4329,7 @@
   [(set (match_operand:GPR 0 "register_operand" "=&d,&d")
 	(match_operand:GPR 1 "memory_operand" "+R,R"))
    (set (match_dup 1)
-	(unspec_volatile:GPR [(match_operand:GPR 2 "register_operand" "d,d")
+	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "dJ,dJ")
 			      (match_operand:GPR 3 "arith_operand" "I,d")]
 	 UNSPEC_COMPARE_AND_SWAP))]
   "GENERATE_LL_SC"
