@@ -1,5 +1,11 @@
 2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33542
+	* interface.c (check_interface1): Specific procedures are
+	always ambiguous if they have the same name.
+
+2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/33566
 	* primary.c (gfc_match_rvalue): Make all expressions with array
 	references to structure parameters into variable expressions.
