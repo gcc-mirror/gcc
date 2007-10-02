@@ -1866,6 +1866,35 @@ done:
 }
 
 
+/* Recover use associated or imported function characteristics.  */
+
+static try
+match_deferred_characteristics (gfc_typespec * ts)
+{
+  locus loc;
+  match m;
+
+  loc = gfc_current_locus;
+
+  if (gfc_current_block ()->ts.type != BT_UNKNOWN)
+    {
+      /* Kind expression for an intrinsic type.  */
+      gfc_current_locus = gfc_function_kind_locus;
+      m = gfc_match_kind_spec (ts, true);
+    }
+  else
+    {
+      /* A derived type.  */
+      gfc_current_locus = gfc_function_type_locus;
+      m = gfc_match_type_spec (ts, 0);
+    }
+
+  gfc_current_ns->proc_name->result->ts = *ts;
+  gfc_current_locus =loc;
+  return m;
+}
+
+
 /* Parse a set of specification statements.  Returns the statement
    that doesn't fit.  */
 
@@ -1951,6 +1980,15 @@ loop:
 	}
 
       accept_statement (st);
+
+      /* Look out for function kind/type information that used
+	 use associated or imported parameter.  This is signalled
+	 by kind = -1.  */
+      if (gfc_current_state () == COMP_FUNCTION
+	    && (st == ST_USE || st == ST_IMPORT || st == ST_DERIVED_DECL)
+	    && gfc_current_block ()->ts.kind == -1)
+	match_deferred_characteristics (&gfc_current_block ()->ts);
+
       st = next_statement ();
       goto loop;
 
@@ -1962,6 +2000,19 @@ loop:
 
     default:
       break;
+    }
+
+  /* If we still have kind = -1 at the end of the specification block,
+     then there is an error. */
+  if (gfc_current_state () == COMP_FUNCTION
+	&& gfc_current_block ()->ts.kind == -1)
+    {
+      if (gfc_current_block ()->ts.type != BT_UNKNOWN)
+	gfc_error ("Bad kind expression for function '%s' at %L",
+		   gfc_current_block ()->name, &gfc_function_kind_locus);
+      else
+	gfc_error ("The type for function '%s' at %L is not accessible",
+		   gfc_current_block ()->name, &gfc_function_type_locus);
     }
 
   return st;

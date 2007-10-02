@@ -78,6 +78,9 @@ static enumerator_history *max_enum = NULL;
 
 gfc_symbol *gfc_new_block;
 
+locus gfc_function_kind_locus;
+locus gfc_function_type_locus;
+
 
 /********************* DATA statement subroutines *********************/
 
@@ -1762,17 +1765,21 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
    string is found, then we know we have an error.  */
 
 match
-gfc_match_kind_spec (gfc_typespec *ts)
+gfc_match_kind_spec (gfc_typespec *ts, bool kind_expr_only)
 {
-  locus where;
+  locus where, loc;
   gfc_expr *e;
   match m, n;
   const char *msg;
 
   m = MATCH_NO;
+  n = MATCH_YES;
   e = NULL;
 
-  where = gfc_current_locus;
+  where = loc = gfc_current_locus;
+
+  if (kind_expr_only)
+    goto kind_expr;
 
   if (gfc_match_char ('(') == MATCH_NO)
     return MATCH_NO;
@@ -1781,11 +1788,42 @@ gfc_match_kind_spec (gfc_typespec *ts)
   if (gfc_match (" kind = ") == MATCH_YES)
     m = MATCH_ERROR;
 
+  loc = gfc_current_locus;
+
+kind_expr:
   n = gfc_match_init_expr (&e);
-  if (n == MATCH_NO)
-    gfc_error ("Expected initialization expression at %C");
+
   if (n != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      if (gfc_current_state () == COMP_INTERFACE
+            || gfc_current_state () == COMP_NONE
+            || gfc_current_state () == COMP_CONTAINS)
+	{
+	  /* Signal using kind = -1 that the expression might include
+	     use associated or imported parameters and try again after
+	     the specification expressions.....  */
+	  if (gfc_match_char (')') != MATCH_YES)
+	    {
+	      gfc_error ("Missing right parenthesis at %C");
+	      m = MATCH_ERROR;
+	      goto no_match;
+	    }
+
+	  gfc_free_expr (e);
+	  ts->kind = -1;
+	  gfc_function_kind_locus = loc;
+	  gfc_undo_symbols ();
+	  return MATCH_YES;
+	}
+      else
+	{
+	  /* ....or else, the match is real.  */
+	  if (n == MATCH_NO)
+	    gfc_error ("Expected initialization expression at %C");
+	  if (n != MATCH_YES)
+	    return MATCH_ERROR;
+	}
+    }
 
   if (e->rank != 0)
     {
@@ -1826,7 +1864,7 @@ gfc_match_kind_spec (gfc_typespec *ts)
   else if (gfc_match_char (')') != MATCH_YES)
     {
       gfc_error ("Missing right parenthesis at %C");
-     m = MATCH_ERROR;
+      m = MATCH_ERROR;
     }
   else
      /* All tests passed.  */
@@ -2033,13 +2071,14 @@ done:
    kind specification.  Not doing so is needed for matching an IMPLICIT
    statement correctly.  */
 
-static match
-match_type_spec (gfc_typespec *ts, int implicit_flag)
+match
+gfc_match_type_spec (gfc_typespec *ts, int implicit_flag)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symbol *sym;
   match m;
   int c;
+  locus loc = gfc_current_locus;
 
   gfc_clear_ts (ts);
 
@@ -2123,11 +2162,33 @@ match_type_spec (gfc_typespec *ts, int implicit_flag)
   if (m != MATCH_YES)
     return m;
 
-  /* Search for the name but allow the components to be defined later.  */
-  if (gfc_get_ha_symbol (name, &sym))
+  if (gfc_current_state () == COMP_INTERFACE
+	|| gfc_current_state () == COMP_NONE)
+    {
+      gfc_function_type_locus = loc;
+      ts->type = BT_UNKNOWN;
+      ts->kind = -1;
+      return MATCH_YES;
+    }
+
+  /* Search for the name but allow the components to be defined later.  If
+     type = -1, this typespec has been seen in a function declaration but
+     the type could not legally be accessed at that point.  */
+  if (ts->kind != -1 && gfc_get_ha_symbol (name, &sym))
     {
       gfc_error ("Type name '%s' at %C is ambiguous", name);
       return MATCH_ERROR;
+    }
+  else if (ts->kind == -1)
+    {
+      if (gfc_find_symbol (name, NULL, 0, &sym))
+	{       
+	  gfc_error ("Type name '%s' at %C is ambiguous", name);
+	  return MATCH_ERROR;
+	}
+
+      if (sym == NULL)
+	return MATCH_NO;
     }
 
   if (sym->attr.flavor != FL_DERIVED
@@ -2154,7 +2215,7 @@ get_kind:
        return MATCH_NO;
     }
 
-  m = gfc_match_kind_spec (ts);
+  m = gfc_match_kind_spec (ts, false);
   if (m == MATCH_NO && ts->type != BT_CHARACTER)
     m = gfc_match_old_kind_spec (ts);
 
@@ -2301,7 +2362,7 @@ gfc_match_implicit (void)
       gfc_clear_new_implicit ();
 
       /* A basic type is mandatory here.  */
-      m = match_type_spec (&ts, 1);
+      m = gfc_match_type_spec (&ts, 1);
       if (m == MATCH_ERROR)
 	goto error;
       if (m == MATCH_NO)
@@ -2344,7 +2405,7 @@ gfc_match_implicit (void)
 	m = match_char_spec (&ts);
       else
 	{
-	  m = gfc_match_kind_spec (&ts);
+	  m = gfc_match_kind_spec (&ts, false);
 	  if (m == MATCH_NO)
 	    {
 	      m = gfc_match_old_kind_spec (&ts);
@@ -3390,7 +3451,7 @@ gfc_match_data_decl (void)
 
   num_idents_on_line = 0;
   
-  m = match_type_spec (&current_ts, 0);
+  m = gfc_match_type_spec (&current_ts, 0);
   if (m != MATCH_YES)
     return m;
 
@@ -3492,7 +3553,7 @@ match_prefix (gfc_typespec *ts)
 
 loop:
   if (!seen_type && ts != NULL
-      && match_type_spec (ts, 0) == MATCH_YES
+      && gfc_match_type_spec (ts, 0) == MATCH_YES
       && gfc_match_space () == MATCH_YES)
     {
 
@@ -3798,7 +3859,7 @@ match_procedure_decl (void)
 
   /* Get the type spec. for the procedure interface.  */
   old_loc = gfc_current_locus;
-  m = match_type_spec (&current_ts, 0);
+  m = gfc_match_type_spec (&current_ts, 0);
   if (m == MATCH_YES || (m == MATCH_NO && gfc_peek_char () == ')'))
     goto got_ts;
 
