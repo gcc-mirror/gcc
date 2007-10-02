@@ -1,5 +1,21 @@
 2007-10-02  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_abi to the
+	default ABI.  Split mips_forced_abi into mips_forced_abi and
+	mips_forced_regs.
+	(is_gp32_flag): Return true for -mabi=32.
+	(is_gp64_flag): New function.  Handle 64-bit -mabi options.
+	(dg-mips-options): Use is_gp64_flag instead of checking specifically
+	for -mgp64.  Update after the mips_forced_abi split.  Handle -mabi=*.
+	Don't force an ABI for -mgp32 or -mfp32 if the flags contain -mabi=*.
+	* gcc.target/mips/pr33256.c: Remove -mips3 requirement.
+	* gcc.target/mips/save-restore-1.c: Use -mabi=32 instead of -mgp32.
+	* gcc.target/mips/save-restore-2.c: Likewise.
+	* gcc.target/mips/save-restore-3.c: Likewise.
+	* gcc.target/mips/save-restore-4.c: Likewise.
+
+2007-10-02  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	PR middle-end/33617
 	* gcc.c-torture/compile/pr33617.c: New test.
 

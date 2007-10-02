@@ -1,6 +1,6 @@
 /* Check that we can use the save instruction to save spilled arguments.  */
 /* { dg-do compile { target mips16_attribute } } */
-/* { dg-mips-options "-mips32r2 -mgp32 -O2" } */
+/* { dg-mips-options "-mips32r2 -mabi=32 -O2" } */
 /* { dg-add-options mips16_attribute } */
 
 MIPS16 void
