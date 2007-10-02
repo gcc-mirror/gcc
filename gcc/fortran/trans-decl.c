@@ -2558,6 +2558,44 @@ gfc_trans_vla_type_sizes (gfc_symbol *sym, stmtblock_t *body)
 }
 
 
+/* Initialize INTENT(OUT) derived type dummies.  */
+static tree
+init_intent_out_dt (gfc_symbol * proc_sym, tree body)
+{
+  stmtblock_t fnblock;
+  gfc_formal_arglist *f;
+  gfc_expr *tmpe;
+  tree tmp;
+  tree present;
+
+  gfc_init_block (&fnblock);
+
+  for (f = proc_sym->formal; f; f = f->next)
+    {
+      if (f->sym && f->sym->attr.intent == INTENT_OUT
+	    && f->sym->ts.type == BT_DERIVED
+	    && !f->sym->ts.derived->attr.alloc_comp
+	    && f->sym->value)
+	{
+	  gcc_assert (!f->sym->attr.allocatable);
+	  gfc_set_sym_referenced (f->sym);
+	  tmpe = gfc_lval_expr_from_sym (f->sym);
+	  tmp = gfc_trans_assignment (tmpe, f->sym->value, false);
+
+	  present = gfc_conv_expr_present (f->sym);
+	  tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
+			tmp, build_empty_stmt ());
+	  gfc_add_expr_to_block (&fnblock, tmp);
+	  gfc_free_expr (tmpe);
+	}
+    }
+
+  gfc_add_expr_to_block (&fnblock, body);
+  return gfc_finish_block (&fnblock);
+}
+
+
+
 /* Generate function entry and exit code, and add it to the function body.
    This includes:
     Allocation and initialization of array variables.
@@ -2611,6 +2649,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	gcc_assert (gfc_option.flag_f2c
 		    && proc_sym->ts.type == BT_COMPLEX);
     }
+
+  /* Initialize the INTENT(OUT) derived type dummy arguments.  This
+     should be done here so that the offsets and lbounds of arrays
+     are available.  */
+  fnbody = init_intent_out_dt (proc_sym, fnbody);
 
   for (sym = proc_sym->tlink; sym != proc_sym; sym = sym->tlink)
     {
@@ -2709,27 +2752,6 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	  gcc_assert (f->sym->ts.cl->backend_decl != NULL);
 	  if (TREE_CODE (f->sym->ts.cl->backend_decl) == PARM_DECL)
 	    gfc_trans_vla_type_sizes (f->sym, &body);
-	}
-
-      /* If an INTENT(OUT) dummy of derived type has a default
-	 initializer, it must be initialized here.  */
-      if (f->sym && f->sym->attr.intent == INTENT_OUT
-	    && f->sym->ts.type == BT_DERIVED
-	    && !f->sym->ts.derived->attr.alloc_comp
-	    && f->sym->value)
-	{
-	  gfc_expr *tmpe;
-	  tree tmp, present;
-	  gcc_assert (!f->sym->attr.allocatable);
-	  gfc_set_sym_referenced (f->sym);
-	  tmpe = gfc_lval_expr_from_sym (f->sym);
-	  tmp = gfc_trans_assignment (tmpe, f->sym->value, false);
-
-	  present = gfc_conv_expr_present (f->sym);
-	  tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
-			tmp, build_empty_stmt ());
-	  gfc_add_expr_to_block (&body, tmp);
-	  gfc_free_expr (tmpe);
 	}
     }
 

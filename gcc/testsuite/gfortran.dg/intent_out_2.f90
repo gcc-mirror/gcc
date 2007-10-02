@@ -1,4 +1,4 @@
-! { dg-do -run }
+! { dg-do run }
 ! Tests the fix for PR33554, in which the default initialization
 ! of temp, in construct_temp, caused a segfault because it was
 ! being done before the array offset and lower bound were
