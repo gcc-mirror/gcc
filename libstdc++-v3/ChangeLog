@@ -1,3 +1,12 @@
+2007-10-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/25_algorithms/binary_search/2.cc: Split into...
+	* testsuite/25_algorithms/upper_bound/2.cc: ... this.
+	* testsuite/25_algorithms/lower_bound/2.cc: ... this.
+	* testsuite/25_algorithms/equal_range/2.cc: ... and this.
+	* testsuite/25_algorithms/sort/vectorbool.cc: Add from
+	libstdcxx_so_7-branch.
+
 2007-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* src/valarray-inst.cc, include/ext/atomicity.h,

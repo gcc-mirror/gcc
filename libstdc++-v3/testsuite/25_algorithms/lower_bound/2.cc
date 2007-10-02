@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,29 +36,46 @@ struct gt
     { return x > y; }
 };
 
-// 25.3.3.4 binary_search, with and without comparison predicate
+// Each test performs general-case, bookend, not-found condition,
+// and predicate functional checks.
+
+// 25.3.3.1 lower_bound, with and without comparison predicate
 void
-test04()
+test01()
 {
-    using std::binary_search;
-    
+    using std::lower_bound;
+
     const int first = A[0];
     const int last = A[N - 1];
 
-    VERIFY(binary_search(A, A + N, 5));
-    VERIFY(binary_search(A, A + N, first));
-    VERIFY(binary_search(A, A + N, last));
-    VERIFY(!binary_search(A, A + N, 4));
+    const int* p = lower_bound(A, A + N, 3);
+    VERIFY(p == A + 2);
 
-    VERIFY(binary_search(C, C + N, 5, gt()));
-    VERIFY(binary_search(C, C + N, first, gt()));
-    VERIFY(binary_search(C, C + N, last, gt()));
-    VERIFY(!binary_search(C, C + N, 4, gt()));
+    const int* q = lower_bound(A, A + N, first);
+    VERIFY(q == A + 0);
+
+    const int* r = lower_bound(A, A + N, last);
+    VERIFY(r == A + N - 1);
+
+    const int* s = lower_bound(A, A + N, 4);
+    VERIFY(s == A + 5);
+
+    const int* t = lower_bound(C, C + N, 3, gt());
+    VERIFY(t == C + 2);
+
+    const int* u = lower_bound(C, C + N, first, gt());
+    VERIFY(u == C + N - 1);
+
+    const int* v = lower_bound(C, C + N, last, gt());
+    VERIFY(v == C + 0);
+
+    const int* w = lower_bound(C, C + N, 4, gt());
+    VERIFY(w == C + 2);
 }
 
 int
 main()
 {
-  test04();  
+  test01();
   return 0;
 }
