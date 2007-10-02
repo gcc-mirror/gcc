@@ -2716,6 +2716,59 @@ output_vec_const_move (rtx *operands)
     return "li %0,%1\n\tevmergelo %0,%0,%0\n\tli %0,%2";
 }
 
+/* Initialize TARGET of vector PAIRED to VALS.  */
+
+void
+paired_expand_vector_init (rtx target, rtx vals)
+{
+  enum machine_mode mode = GET_MODE (target);
+  int n_elts = GET_MODE_NUNITS (mode);
+  int n_var = 0;
+  rtx x, new, tmp, constant_op, op1, op2;
+  int i;
+
+  for (i = 0; i < n_elts; ++i)
+    {
+      x = XVECEXP (vals, 0, i);
+      if (!CONSTANT_P (x))
+	++n_var;
+    }
+  if (n_var == 0)
+    {
+      /* Load from constant pool.  */
+      emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
+      return;
+    }
+
+  if (n_var == 2)
+    {
+      /* The vector is initialized only with non-constants.  */
+      new = gen_rtx_VEC_CONCAT (V2SFmode, XVECEXP (vals, 0, 0),
+				XVECEXP (vals, 0, 1));
+
+      emit_move_insn (target, new);
+      return;
+    }
+  
+  /* One field is non-constant and the other one is a constant.  Load the
+     constant from the constant pool and use ps_merge instruction to
+     construct the whole vector.  */
+  op1 = XVECEXP (vals, 0, 0);
+  op2 = XVECEXP (vals, 0, 1);
+
+  constant_op = (CONSTANT_P (op1)) ? op1 : op2;
+
+  tmp = gen_reg_rtx (GET_MODE (constant_op));
+  emit_move_insn (tmp, constant_op);
+
+  if (CONSTANT_P (op1))
+    new = gen_rtx_VEC_CONCAT (V2SFmode, tmp, op2);
+  else
+    new = gen_rtx_VEC_CONCAT (V2SFmode, op1, tmp);
+
+  emit_move_insn (target, new);
+}
+
 /* Initialize vector TARGET to VALS.  */
 
 void

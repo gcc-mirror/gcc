@@ -188,7 +188,7 @@
   [(set_attr "type" "fp")])
 
 (define_insn "*movv2sf_paired"
-  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=Z,f,f,o,r,r,v")
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "=Z,f,f,o,r,r,f")
 		 (match_operand:V2SF 1 "input_operand" "f,Z,f,r,o,r,W"))]
   "TARGET_PAIRED_FLOAT
    && (register_operand (operands[0], V2SFmode) 
@@ -202,7 +202,7 @@
     case 3: return "#";
     case 4: return "#";
     case 5: return "#";
-    case 6: return output_vec_const_move (operands);
+    case 6: return "#"; 
     default: gcc_unreachable ();
     }
 }
@@ -352,4 +352,21 @@
   "ps_muls1 %0, %1, %2"
   [(set_attr "type" "fp")])
 
+(define_expand "vec_initv2sf"
+  [(match_operand:V2SF 0 "gpc_reg_operand" "=f")
+   (match_operand 1 "" "")]
+  "TARGET_PAIRED_FLOAT"
+{
+  paired_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})
+
+(define_insn "*vconcatsf"
+  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
+        (vec_concat:V2SF
+         (match_operand:SF 1 "gpc_reg_operand" "f")
+         (match_operand:SF 2 "gpc_reg_operand" "f")))]
+  "TARGET_PAIRED_FLOAT"
+  "ps_merge00 %0, %1, %2"
+  [(set_attr "type" "fp")])
 

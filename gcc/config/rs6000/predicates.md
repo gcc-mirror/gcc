@@ -275,6 +275,11 @@
 (define_predicate "easy_vector_constant"
   (match_code "const_vector")
 {
+  /* As the paired vectors are actually FPRs it seems that there is
+     no easy way to load a CONST_VECTOR without using memory.  */
+  if (TARGET_PAIRED_FLOAT)
+    return false;
+
   if (ALTIVEC_VECTOR_MODE (mode))
     {
       if (zero_constant (op, mode))
