@@ -2752,23 +2752,37 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
 	 || GET_CODE (dst) == ZERO_EXTRACT)
     {
       flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
+      if (GET_CODE (dst) == ZERO_EXTRACT)
+	flags |= DF_REF_EXTRACT;
+      else
+	flags |= DF_REF_STRICT_LOWER_PART;
+
       loc = &XEXP (dst, 0);
       dst = *loc;
     }
 
-  if (df_read_modify_subreg_p (dst))
-    flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
+  /* At this point if we do not have a reg or a subreg, just return.  */
+  if (REG_P (dst))
+    {
+      df_ref_record (collection_rec, 
+		     dst, loc, bb, insn, DF_REF_REG_DEF, flags);
 
-  if (REG_P (dst)
-      || (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst))))
-    df_ref_record (collection_rec, 
-                   dst, loc, bb, insn, DF_REF_REG_DEF, flags);
+      /* We want to keep sp alive everywhere - by making all
+	 writes to sp also use of sp. */
+      if (REGNO (dst) == STACK_POINTER_REGNUM)
+	df_ref_record (collection_rec,
+		       dst, NULL, bb, insn, DF_REF_REG_USE, flags);
+    }
+  else if (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst)))
+    {
+      if (df_read_modify_subreg_p (dst))
+	flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL;
 
-  /* We want to keep sp alive everywhere - by making all
-     writes to sp also use of sp. */
-  if (REG_P (dst) && REGNO (dst) == STACK_POINTER_REGNUM)
-    df_ref_record (collection_rec,
-               dst, NULL, bb, insn, DF_REF_REG_USE, flags);
+      flags |= DF_REF_SUBREG;
+
+      df_ref_record (collection_rec, 
+		     dst, loc, bb, insn, DF_REF_REG_DEF, flags);
+    }
 }
 
 
@@ -2880,7 +2894,8 @@ df_uses_record (struct df_collection_rec *collection_rec,
 	      if (df_read_modify_subreg_p (dst))
 		{
 		  df_uses_record (collection_rec, &SUBREG_REG (dst), 
-				  DF_REF_REG_USE, bb, insn, flags | DF_REF_READ_WRITE);
+				  DF_REF_REG_USE, bb, insn, 
+				  flags | DF_REF_READ_WRITE | DF_REF_SUBREG);
 		  break;
 		}
 	      /* Fall through.  */
@@ -2902,13 +2917,15 @@ df_uses_record (struct df_collection_rec *collection_rec,
 		dst = XEXP (dst, 0);
 		df_uses_record (collection_rec, 
 				(GET_CODE (dst) == SUBREG) ? &SUBREG_REG (dst) : temp, 
-				DF_REF_REG_USE, bb, insn, DF_REF_READ_WRITE);
+				DF_REF_REG_USE, bb, insn, 
+				DF_REF_READ_WRITE | DF_REF_STRICT_LOWER_PART);
 	      }
 	      break;
 	    case ZERO_EXTRACT:
 	    case SIGN_EXTRACT:
 	      df_uses_record (collection_rec, &XEXP (dst, 0), 
-			      DF_REF_REG_USE, bb, insn, DF_REF_READ_WRITE);
+			      DF_REF_REG_USE, bb, insn, 
+			      DF_REF_READ_WRITE | DF_REF_EXTRACT);
 	      df_uses_record (collection_rec, &XEXP (dst, 1), 
 			      DF_REF_REG_USE, bb, insn, flags);
 	      df_uses_record (collection_rec, &XEXP (dst, 2), 
@@ -3180,23 +3197,6 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
   df_canonize_collection_rec (collection_rec);
 }
 
-/* Return true if any pred of BB is an eh.  */
-
-bool
-df_has_eh_preds (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (e->flags & EDGE_EH)
-	return true;
-    }
-  return false;
-}
-
-
 /* Recompute the luids for the insns in BB.  */
 
 void
@@ -3261,7 +3261,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
     }
 
 #ifdef EH_RETURN_DATA_REGNO
-  if (df_has_eh_preds (bb))
+  if (bb_has_eh_pred (bb))
     {
       unsigned int i;
       /* Mark the registers that will contain data for the handler.  */
@@ -3278,7 +3278,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 
 
 #ifdef EH_USES
-  if (df_has_eh_preds (bb))
+  if (bb_has_eh_pred (bb))
     {
       unsigned int i;
       /* This code is putting in an artificial ref for the use at the
@@ -3310,7 +3310,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
     {
       bitmap_iterator bi;
       unsigned int regno;
-      bitmap au = df_has_eh_preds (bb) 
+      bitmap au = bb_has_eh_pred (bb) 
 	? df->eh_block_artificial_uses 
 	: df->regular_block_artificial_uses;
 
@@ -3479,8 +3479,6 @@ df_mark_reg (rtx reg, void *vset)
 	bitmap_set_bit  (set, regno + n);
     }
 }
-
-
 
 
 /* Set the bit for regs that are considered being defined at the entry. */
@@ -3780,7 +3778,7 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
      I do not know why.  */
   if (reload_completed 
       && !bitmap_bit_p (exit_block_uses, ARG_POINTER_REGNUM)
-      && df_has_eh_preds (EXIT_BLOCK_PTR)
+      && bb_has_eh_pred (EXIT_BLOCK_PTR)
       && fixed_regs[ARG_POINTER_REGNUM])
     df_ref_record (collection_rec, regno_reg_rtx[ARG_POINTER_REGNUM], NULL,
 		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0);

@@ -1211,13 +1211,9 @@ update_equiv_regs (void)
   if (!bitmap_empty_p (cleared_regs))
     FOR_EACH_BB (bb)
       {
-	bitmap_and_compl_into (DF_RA_LIVE_IN (bb), cleared_regs);
-	if (DF_RA_LIVE_TOP (bb))
-	  bitmap_and_compl_into (DF_RA_LIVE_TOP (bb), cleared_regs);
-	bitmap_and_compl_into (DF_RA_LIVE_OUT (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
+	bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
 	bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
-	if (DF_LR_TOP (bb))
-	  bitmap_and_compl_into (DF_LR_TOP (bb), cleared_regs);
 	bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
       }
 
@@ -1277,6 +1273,7 @@ block_alloc (int b)
   int max_uid = get_max_uid ();
   int *qty_order;
   int no_conflict_combined_regno = -1;
+  struct df_ref ** def_rec;
 
   /* Count the instructions in the basic block.  */
 
@@ -1299,7 +1296,19 @@ block_alloc (int b)
 
   /* Initialize table of hardware registers currently live.  */
 
-  REG_SET_TO_HARD_REG_SET (regs_live, DF_LR_TOP (BASIC_BLOCK (b)));
+  REG_SET_TO_HARD_REG_SET (regs_live, DF_LR_IN (BASIC_BLOCK (b)));
+
+  /* This is conservative, as this would include registers that are
+     artificial-def'ed-but-not-used.  However, artificial-defs are
+     rare, and such uninitialized use is rarer still, and the chance
+     of this having any performance impact is even less, while the
+     benefit is not having to compute and keep the TOP set around.  */
+  for (def_rec = df_get_artificial_defs (b); *def_rec; def_rec++)
+    {
+      int regno = DF_REF_REGNO (*def_rec);
+      if (regno < FIRST_PSEUDO_REGISTER)
+	SET_HARD_REG_BIT (regs_live, regno);
+    }
 
   /* This loop scans the instructions of the basic block
      and assigns quantities to registers.
@@ -2502,6 +2511,49 @@ dump_local_alloc (FILE *file)
       fprintf (file, ";; Register %d in %d.\n", i, reg_renumber[i]);
 }
 
+#ifdef STACK_REGS
+static void
+find_stack_regs (void)
+{
+  bitmap stack_regs = BITMAP_ALLOC (NULL);
+  int i;
+  HARD_REG_SET stack_hard_regs, used;
+  basic_block bb;
+  
+  /* Any register that MAY be allocated to a register stack (like the
+     387) is treated poorly.  Each such register is marked as being
+     live everywhere.  This keeps the register allocator and the
+     subsequent passes from doing anything useful with these values.
+
+     FIXME: This seems like an incredibly poor idea.  */
+
+  CLEAR_HARD_REG_SET (stack_hard_regs);
+  for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
+    SET_HARD_REG_BIT (stack_hard_regs, i);
+
+  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+    {
+      COPY_HARD_REG_SET (used, reg_class_contents[reg_preferred_class (i)]);
+      IOR_HARD_REG_SET (used, reg_class_contents[reg_alternate_class (i)]);
+      AND_HARD_REG_SET (used, stack_hard_regs);
+      if (!hard_reg_set_empty_p (used))
+	bitmap_set_bit (stack_regs, i);
+    }
+
+  if (dump_file)
+    bitmap_print (dump_file, stack_regs, "stack regs:", "\n");
+
+  FOR_EACH_BB (bb)
+    {
+      bitmap_ior_into (DF_LIVE_IN (bb), stack_regs);
+      bitmap_and_into (DF_LIVE_IN (bb), DF_LR_IN (bb));
+      bitmap_ior_into (DF_LIVE_OUT (bb), stack_regs);
+      bitmap_and_into (DF_LIVE_OUT (bb), DF_LR_OUT (bb));
+    }
+  BITMAP_FREE (stack_regs);
+}
+#endif
+
 /* Run old register allocator.  Return TRUE if we must exit
    rest_of_compilation upon return.  */
 static unsigned int
@@ -2512,25 +2564,21 @@ rest_of_handle_local_alloc (void)
 
   df_note_add_problem ();
 
-  if (optimize > 1)
-    df_remove_problem (df_live);
-  /* Create a new version of df that has the special version of UR if
-     we are doing optimization.  */
-  if (optimize)
-    df_urec_add_problem ();
+  if (optimize == 1)
+    {
+      df_live_add_problem ();
+      df_live_set_all_dirty ();
+    }
 #ifdef ENABLE_CHECKING
   df->changeable_flags |= DF_VERIFY_SCHEDULED;
 #endif
   df_analyze ();
+#ifdef STACK_REGS
+  if (optimize)
+    find_stack_regs ();
+#endif
   regstat_init_n_sets_and_refs ();
   regstat_compute_ri ();
-
-  /* There is just too much going on in the register allocators to
-     keep things up to date.  At the end we have to rescan anyway
-     because things change when the reload_completed flag is set.  
-     So we just turn off scanning and we will rescan by hand.  */
-  df_set_flags (DF_NO_INSN_RESCAN);
-
 
   /* If we are not optimizing, then this is the only place before
      register allocation where dataflow is done.  And that is needed

@@ -1135,6 +1135,21 @@ bb_has_eh_pred (basic_block bb)
   return false;
 }
 
+/* Return true when one of the predecessor edges of BB is marked with EDGE_ABNORMAL.  */
+static inline bool
+bb_has_abnormal_pred (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (e->flags & EDGE_ABNORMAL)
+	return true;
+    }
+  return false;
+}
+
 /* In cfgloopmanip.c.  */
 extern edge mfb_kj_edge;
 bool mfb_keep_just (edge);

@@ -573,8 +573,8 @@ dce_process_block (basic_block bb, bool redo_out)
   /* These regs are considered always live so if they end up dying
      because of some def, we need to bring the back again.
      Calling df_simulate_fixup_sets has the disadvantage of calling
-     df_has_eh_preds once per insn, so we cache the information here.  */
-  if (df_has_eh_preds (bb))
+     bb_has_eh_pred once per insn, so we cache the information here.  */
+  if (bb_has_eh_pred (bb))
     au = df->eh_block_artificial_uses;
   else
     au = df->regular_block_artificial_uses;

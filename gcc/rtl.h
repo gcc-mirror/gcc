@@ -1063,6 +1063,7 @@ extern bool subreg_offset_representable_p (unsigned int, enum machine_mode,
 					   unsigned int, enum machine_mode);
 extern unsigned int subreg_regno (const_rtx);
 extern unsigned int subreg_nregs (const_rtx);
+extern unsigned int subreg_nregs_with_regno (unsigned int, const_rtx);
 extern unsigned HOST_WIDE_INT nonzero_bits (const_rtx, enum machine_mode);
 extern unsigned int num_sign_bit_copies (const_rtx, enum machine_mode);
 extern bool constant_pool_constant_p (rtx);
@@ -2172,7 +2173,6 @@ extern void dump_global_regs (FILE *);
 /* Yes, this ifdef is silly, but HARD_REG_SET is not always defined.  */
 extern void retry_global_alloc (int, HARD_REG_SET);
 #endif
-extern void build_insn_chain (rtx);
 
 /* In regclass.c */
 extern int reg_classes_intersect_p (enum reg_class, enum reg_class);
