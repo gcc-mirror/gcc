@@ -2959,7 +2959,7 @@ while (0)
 #define MIPS_COMPARE_AND_SWAP(SUFFIX, OP)	\
   "%(%<%[%|sync\n"				\
   "1:\tll" SUFFIX "\t%0,%1\n"			\
-  "\tbne\t%0,%2,2f\n"				\
+  "\tbne\t%0,%z2,2f\n"				\
   "\t" OP "\t%@,%3\n"				\
   "\tsc" SUFFIX "\t%@,%1\n"			\
   "\tbeq\t%@,%.,1b\n"				\
