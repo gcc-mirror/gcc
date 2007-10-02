@@ -1,5 +1,11 @@
 2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33550
+	* decl.c (get_proc_name): Return rc if rc is non-zero; ie. if
+	the name is a reference to an ambiguous symbol.
+
+2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/31154
 	PR fortran/31229
 	PR fortran/33334
