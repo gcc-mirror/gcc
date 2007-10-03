@@ -763,24 +763,45 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
 
+  # Use -fno-exceptions so that the C driver can link these tests without
+  # hitting undefined references to personality routines.
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  ac_save_LIBS="$LIBS"
+  ac_save_gcc_no_link="$gcc_no_link"
+
+  if test x$gcc_no_link != xyes; then
+    # Use -fno-exceptions to that the C driver can link these tests without
+    # hitting undefined references to personality routines.
+    CXXFLAGS="$CXXFLAGS -fno-exceptions"
+    AC_CHECK_LIB(m, sin, [
+      LIBS="$LIBS -lm"
+    ], [
+      # Use the default compile-only tests in GCC_TRY_COMPILE_OR_LINK
+      gcc_no_link=yes
+    ])
+  fi
+
   # Check for the existence of <math.h> functions used if C99 is enabled.
   AC_MSG_CHECKING([for ISO C99 support in <math.h>])
   AC_CACHE_VAL(ac_c99_math, [
-  AC_TRY_COMPILE([#include <math.h>],
-	         [fpclassify(0.0);
-	          isfinite(0.0); 
-		  isinf(0.0);
-	          isnan(0.0);
-		  isnormal(0.0);
-	  	  signbit(0.0);
-	 	  isgreater(0.0,0.0);
-		  isgreaterequal(0.0,0.0);
-		  isless(0.0,0.0);
-		  islessequal(0.0,0.0);
-		  islessgreater(0.0,0.0);
-		  islessgreater(0.0,0.0);
-		  isunordered(0.0,0.0);
-		 ],[ac_c99_math=yes], [ac_c99_math=no])
+  GCC_TRY_COMPILE_OR_LINK(
+     [#include <math.h>
+      volatile double d1, d2;
+      volatile int i;],
+     [i = fpclassify(d1);
+      i = isfinite(d1);
+      i = isinf(d1);
+      i = isnan(d1);
+      i = isnormal(d1);
+      i = signbit(d1);
+      i = isgreater(d1, d2);
+      i = isgreaterequal(d1, d2);
+      i = isless(d1, d2);
+      i = islessequal(d1, d2);
+      i = islessgreater(d1, d2);
+      i = islessgreater(d1, d2);
+      i = isunordered(d1, d2);
+     ],[ac_c99_math=yes], [ac_c99_math=no])
   ])
   AC_MSG_RESULT($ac_c99_math)
   if test x"$ac_c99_math" = x"yes"; then
@@ -798,47 +819,54 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   ac_c99_complex=no;
   if test x"$ac_has_complex_h" = x"yes"; then
     AC_MSG_CHECKING([for ISO C99 support in <complex.h>])
-    AC_TRY_COMPILE([#include <complex.h>],
-	           [typedef __complex__ float float_type; float_type tmpf;
-	            cabsf(tmpf);
-		    cargf(tmpf);
-		    ccosf(tmpf);
-  		    ccoshf(tmpf);
-		    cexpf(tmpf);
-	            clogf(tmpf);
-		    csinf(tmpf);
-		    csinhf(tmpf);
-		    csqrtf(tmpf);
-		    ctanf(tmpf);
-		    ctanhf(tmpf);
-		    cpowf(tmpf, tmpf);
-		    typedef __complex__ double double_type; double_type tmpd;
-	            cabs(tmpd);
-		    carg(tmpd);
-		    ccos(tmpd);
-  		    ccosh(tmpd);
-		    cexp(tmpd);
-	            clog(tmpd);
-		    csin(tmpd);
-		    csinh(tmpd);
-		    csqrt(tmpd);
-		    ctan(tmpd);
-		    ctanh(tmpd);
-		    cpow(tmpd, tmpd);
-		    typedef __complex__ long double ld_type; ld_type tmpld;
-	            cabsl(tmpld);
-		    cargl(tmpld);
-		    ccosl(tmpld);
-  		    ccoshl(tmpld);
-		    cexpl(tmpld);
-	            clogl(tmpld);
-		    csinl(tmpld);
-		    csinhl(tmpld);
-		    csqrtl(tmpld);
-		    ctanl(tmpld);
-		    ctanhl(tmpld);
-		    cpowl(tmpld, tmpld);
-		   ],[ac_c99_complex=yes], [ac_c99_complex=no])
+    GCC_TRY_COMPILE_OR_LINK(
+       [#include <complex.h>
+	typedef __complex__ float float_type;
+	typedef __complex__ double double_type;
+	typedef __complex__ long double ld_type;
+	volatile float_type tmpf;
+	volatile double_type tmpd;
+	volatile ld_type tmpld;
+	volatile float f;
+	volatile double d;
+	volatile long double ld;],
+       [f = cabsf(tmpf);
+	f = cargf(tmpf);
+	tmpf = ccosf(tmpf);
+	tmpf = ccoshf(tmpf);
+	tmpf = cexpf(tmpf);
+	tmpf = clogf(tmpf);
+	tmpf = csinf(tmpf);
+	tmpf = csinhf(tmpf);
+	tmpf = csqrtf(tmpf);
+	tmpf = ctanf(tmpf);
+	tmpf = ctanhf(tmpf);
+	tmpf = cpowf(tmpf, tmpf);
+	d = cabs(tmpd);
+	d = carg(tmpd);
+	tmpd = ccos(tmpd);
+	tmpd = ccosh(tmpd);
+	tmpd = cexp(tmpd);
+	tmpd = clog(tmpd);
+	tmpd = csin(tmpd);
+	tmpd = csinh(tmpd);
+	tmpd = csqrt(tmpd);
+	tmpd = ctan(tmpd);
+	tmpd = ctanh(tmpd);
+	tmpd = cpow(tmpd, tmpd);
+	ld = cabsl(tmpld);
+	ld = cargl(tmpld);
+	tmpld = ccosl(tmpld);
+	tmpld = ccoshl(tmpld);
+	tmpld = cexpl(tmpld);
+	tmpld = clogl(tmpld);
+	tmpld = csinl(tmpld);
+	tmpld = csinhl(tmpld);
+	tmpld = csqrtl(tmpld);
+	tmpld = ctanl(tmpld);
+	tmpld = ctanhl(tmpld);
+	tmpld = cpowl(tmpld, tmpld);
+       ],[ac_c99_complex=yes], [ac_c99_complex=no])
   fi
   AC_MSG_RESULT($ac_c99_complex)
   if test x"$ac_c99_complex" = x"yes"; then
@@ -851,35 +879,43 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
   # Check for the existence in <stdio.h> of vscanf, et. al.
   AC_MSG_CHECKING([for ISO C99 support in <stdio.h>])
   AC_CACHE_VAL(ac_c99_stdio, [
-  AC_TRY_COMPILE([#include <stdio.h>
-		  #include <stdarg.h>
-                  void foo(char* fmt, ...)
-                  {
-	            va_list args; va_start(args, fmt);
-                    vfscanf(stderr, "%i", args); 
-		    vscanf("%i", args);
-                    vsnprintf(fmt, 0, "%i", args);
-                    vsscanf(fmt, "%i", args);
-		  }],
-                 [snprintf("12", 0, "%i");],
-		 [ac_c99_stdio=yes], [ac_c99_stdio=no])
+  GCC_TRY_COMPILE_OR_LINK(
+     [#include <stdio.h>
+      #include <stdarg.h>
+      void foo(char* fmt, ...)
+      {
+	va_list args; va_start(args, fmt);
+	vfscanf(stderr, "%i", args); 
+	vscanf("%i", args);
+	vsnprintf(fmt, 0, "%i", args);
+	vsscanf(fmt, "%i", args);
+      }],
+     [snprintf("12", 0, "%i");],
+     [ac_c99_stdio=yes], [ac_c99_stdio=no])
   ])
   AC_MSG_RESULT($ac_c99_stdio)
 
   # Check for the existence in <stdlib.h> of lldiv_t, et. al.
   AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
   AC_CACHE_VAL(ac_c99_stdlib, [
-  AC_TRY_COMPILE([#include <stdlib.h>],
-                 [char* tmp;
-	    	  strtof("gnu", &tmp);
-		  strtold("gnu", &tmp);
-	          strtoll("gnu", &tmp, 10);
-	          strtoull("gnu", &tmp, 10);
-	          llabs(10);
-		  lldiv(10,1);
-		  atoll("10");
-		  _Exit(0);
-		  lldiv_t mydivt;],[ac_c99_stdlib=yes], [ac_c99_stdlib=no])
+  GCC_TRY_COMPILE_OR_LINK(
+     [#include <stdlib.h>
+      volatile float f;
+      volatile long double ld;
+      volatile unsigned long long ll;
+      lldiv_t mydivt;],
+     [char* tmp;
+      f = strtof("gnu", &tmp);
+      ld = strtold("gnu", &tmp);
+      ll = strtoll("gnu", &tmp, 10);
+      ll = strtoull("gnu", &tmp, 10);
+      ll = llabs(10);
+      mydivt = lldiv(10,1);
+      ll = mydivt.quot;
+      ll = mydivt.rem;
+      ll = atoll("10");
+      _Exit(0);
+      ],[ac_c99_stdlib=yes], [ac_c99_stdlib=no])
   ])
   AC_MSG_RESULT($ac_c99_stdlib)
 
@@ -940,6 +976,9 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     <complex.h>, <stdio.h>, and <stdlib.h> can be used or exposed.])
   fi
 
+  gcc_no_link="$ac_save_gcc_no_link"
+  LIBS="$ac_save_LIBS"
+  CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
   fi	
 
