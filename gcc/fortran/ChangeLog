@@ -1,3 +1,13 @@
+2007-09-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/33198
+	* resolve.c (has_default_initializer): Move to top.  Make bool.
+	(resolve_common_blocks): Simplify logic.  Add case for derived
+	type initialization.
+	(resolve_fl_variable_derived): Split out from ...
+	(resolve_fl_variable): ... here, while adapting to new h_d_i
+	interface.
+
 2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/26682
