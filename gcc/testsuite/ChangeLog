@@ -1,3 +1,7 @@
+2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/ext/gnu-inline-global-redecl.C: New.
+
 2007-10-03  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR target/33635

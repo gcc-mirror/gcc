@@ -1846,24 +1846,24 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
   new_template = NULL_TREE;
   if (DECL_LANG_SPECIFIC (newdecl) && DECL_LANG_SPECIFIC (olddecl))
     {
-      bool old_decl_gnu_inline;
+      bool new_redefines_gnu_inline = false;
 
-      if ((DECL_INTERFACE_KNOWN (olddecl)
-	   && TREE_CODE (olddecl) == FUNCTION_DECL)
-	  || (TREE_CODE (olddecl) == TEMPLATE_DECL
-	      && TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)) == FUNCTION_DECL))
+      if (new_defines_function
+	  && ((DECL_INTERFACE_KNOWN (olddecl)
+	       && TREE_CODE (olddecl) == FUNCTION_DECL)
+	      || (TREE_CODE (olddecl) == TEMPLATE_DECL
+		  && (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl))
+		      == FUNCTION_DECL))))
 	{
 	  tree fn = olddecl;
 
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
 	    fn = DECL_TEMPLATE_RESULT (olddecl);
 
-	  old_decl_gnu_inline = GNU_INLINE_P (fn) && DECL_INITIAL (fn);
+	  new_redefines_gnu_inline = GNU_INLINE_P (fn) && DECL_INITIAL (fn);
 	}
-      else
-	old_decl_gnu_inline = false;
 
-      if (!old_decl_gnu_inline)
+      if (!new_redefines_gnu_inline)
 	{
 	  DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
 	  DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
