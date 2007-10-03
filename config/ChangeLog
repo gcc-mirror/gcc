@@ -1,7 +1,6 @@
 2007-10-03  Richard Sandiford  <richard@codesourcery.com>
 
 	* no-executables.m4 (GCC_TRY_COMPILE_OR_LINK): New function.
-	libstdc++-v3/
 
 2007-10-03  Kazu Hirata  <kazu@codesourcery.com>
 
