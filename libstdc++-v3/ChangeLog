@@ -1,3 +1,12 @@
+2007-10-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	Revert:
+	2007-10-02  Richard Sandiford  <richard@codesourcery.com>
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Temporarily add
+	-fno-exceptions to CXXFLAGS.  Use GCC_TRY_COMPILE_OR_LINK.
+	Make the tests assign results to volatile variables.
+	* configure: Regenerate.
+
 2007-10-02  Richard Sandiford  <richard@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_C99): Temporarily add

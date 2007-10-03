@@ -1,3 +1,9 @@
+2007-10-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	Revert:
+	2007-10-02  Richard Sandiford  <richard@codesourcery.com>
+	* no-executables.m4 (GCC_TRY_COMPILE_OR_LINK): New function.
+
 2007-10-02  Richard Sandiford  <richard@codesourcery.com>
 
 	* no-executables.m4 (GCC_TRY_COMPILE_OR_LINK): New function.
