@@ -1,3 +1,9 @@
+2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/26682
+	* options.c (gfc_post_options): Issue an error when
+	-fwhole-program is used.
+
 2007-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33542
