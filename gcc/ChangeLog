@@ -1,3 +1,8 @@
+2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcse.c (hash_scan_set): Insert set in insn before note at
+	the end of basic block.
+
 2007-10-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/33576
