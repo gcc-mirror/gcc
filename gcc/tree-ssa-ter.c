@@ -443,7 +443,7 @@ finished_with_expr (temp_expr_table_p tab, int version, bool free_expr)
 }
 
 
-/* Create an expression entry fora replaceable expression.  */
+/* Create an expression entry for a replaceable expression.  */
 
 static void 
 process_replaceable (temp_expr_table_p tab, tree stmt)
