@@ -314,10 +314,63 @@ identifier_subst (const tree old_id,
 tree
 mangled_classname (const char *prefix, tree type)
 {
+  tree result;
   tree ident = TYPE_NAME (type);
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     ident = DECL_NAME (ident);
-  return identifier_subst (ident, prefix, '.', '_', "");
+  result = identifier_subst (ident, prefix, '.', '_', "");
+
+  /* Replace any characters that aren't in the set [0-9a-zA-Z_$] with
+     "_0xXX".  Class names containing such chracters are uncommon, but
+     they do sometimes occur in class files.  Without this check,
+     these names cause assembly errors.
+
+     There is a possibility that a real class name could conflict with
+     the identifier we generate, but it is unlikely and will
+     immediately be detected as an assembler error.  At some point we
+     should do something more elaborate (perhaps using the full
+     unicode mangling scheme) in order to prevent such a conflict.  */
+  {
+    int i;
+    const int len = IDENTIFIER_LENGTH (result);
+    const char *p = IDENTIFIER_POINTER (result);
+    int illegal_chars = 0;
+
+    /* Make two passes over the identifier.  The first pass is merely
+       to count illegal characters; we need to do this in order to
+       allocate a buffer.  */
+    for (i = 0; i < len; i++)
+      {
+	char c = p[i];
+	illegal_chars += (! ISALNUM (c) && c != '_' && c != '$');
+      }
+
+    /* And the second pass, which is rarely executed, does the
+       rewriting.  */
+    if (illegal_chars != 0)
+      {
+	char *buffer = alloca (illegal_chars * 4 + len + 1);
+	int j;
+
+	for (i = 0, j = 0; i < len; i++)
+	  {
+	    char c = p[i];
+	    if (! ISALNUM (c) && c != '_' && c != '$')
+	      {
+		buffer[j++] = '_';
+		sprintf (&buffer[j], "0x%02x", c);
+		j += 4;
+	      }
+	    else
+	      buffer[j++] = c;
+	  }
+
+	buffer[j] = 0;
+	result = get_identifier (buffer);
+      }
+  }
+
+  return result;
 }
 
 tree
@@ -389,7 +442,7 @@ while (0)
 void
 gen_indirect_dispatch_tables (tree type)
 {
-  const char *typename = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+  const char *typename = IDENTIFIER_POINTER (mangled_classname ("", type));
   {  
     tree field = NULL;
     char *buf = alloca (strlen (typename) + strlen ("_catch_classes_") + 1);
