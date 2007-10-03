@@ -1321,6 +1321,12 @@ build_function_decl (gfc_symbol * sym)
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
+  /* For -fwhole-program to work well, MAIN__ needs to have the
+     "externally_visible" attribute.  */
+  if (attr.is_main_program)
+    DECL_ATTRIBUTES (fndecl)
+      = tree_cons (get_identifier("externally_visible"), NULL_TREE, NULL_TREE);
+
   /* Layout the function declaration and put it in the binding level
      of the current function.  */
   pushdecl (fndecl);

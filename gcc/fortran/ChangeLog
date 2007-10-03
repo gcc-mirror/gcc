@@ -1,3 +1,9 @@
+2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/26682
+	* trans-decl.c (build_function_decl): Set "externally_visible"
+	attribute on the MAIN program decl.
+
 2007-10-03  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33198
