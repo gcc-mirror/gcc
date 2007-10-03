@@ -1,3 +1,20 @@
+2007-10-03  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/33613
+	* include/debug/functions.h (__check_partitioned): Rename to...
+	(__check_partioned_lower): ... this.
+	(__check_partioned_upper): Add.
+	* include/debug/macros.h (__glibcxx_check_partitioned): Rename to...
+	(__glibcxx_check_partitioned_lower): ... this, adjust.
+	(__glibcxx_check_partitioned_upper): Add.
+	* include/debug/debug.h (__glibcxx_requires_partitioned): Rename to...
+	(__glibcxx_requires_partitioned_lower): ... this, adjust.
+	(__glibcxx_requires_partitioned_upper): Add.
+	* include/bits/stl_algo.h (lower_bound, upper_bound, equal_range,
+	binary search): Use the above.
+	* testsuite/25_algorithms/lower_bound/33613.cc: New.
+	* testsuite/25_algorithms/upper_bound/33613.cc: Likewise.
+
 2007-10-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	Revert:
