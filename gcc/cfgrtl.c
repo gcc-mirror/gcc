@@ -2702,7 +2702,8 @@ rtl_block_ends_with_call_p (basic_block bb)
 
   while (!CALL_P (insn)
 	 && insn != BB_HEAD (bb)
-	 && keep_with_call_p (insn))
+	 && (keep_with_call_p (insn)
+	     || NOTE_P (insn)))
     insn = PREV_INSN (insn);
   return (CALL_P (insn));
 }
