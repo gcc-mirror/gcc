@@ -25,14 +25,33 @@
 
 using __gnu_test::forward_iterator_wrapper;
 
-struct S1 { };
-struct S2 { };
+struct T1 { };
+struct T2 { };
+
+struct S1 
+{
+  S1(T1) { }
+};
+
+struct S2 {
+  S2(T2) { }
+};
 
 bool 
 operator==(const S1&, const S2&) {return true;}
 
-struct X1 { };
-struct X2 { };
+struct V1 { };
+struct V2 { };
+
+struct X1 
+{
+  X1(V1) { };
+};
+
+struct X2
+{
+  X2(V2) { };
+};
 
 bool 
 predicate(const X1&, const X2&) {return true;}
@@ -41,6 +60,14 @@ forward_iterator_wrapper<S1>
 test1(forward_iterator_wrapper<S1>& s1, forward_iterator_wrapper<S2>& s2)
 { return std::search(s1, s1, s2, s2); }
 
+forward_iterator_wrapper<T1>
+test2(forward_iterator_wrapper<T1>& s1, forward_iterator_wrapper<T2>& s2)
+{ return std::search(s1, s1, s2, s2); }
+
 forward_iterator_wrapper<X1>
-test2(forward_iterator_wrapper<X1>& x1, forward_iterator_wrapper<X2>& x2)
+test3(forward_iterator_wrapper<X1>& x1, forward_iterator_wrapper<X2>& x2)
+{ return std::search(x1, x1, x2, x2, predicate); }
+
+forward_iterator_wrapper<V1>
+test4(forward_iterator_wrapper<V1>& x1, forward_iterator_wrapper<V2>& x2)
 { return std::search(x1, x1, x2, x2, predicate); }

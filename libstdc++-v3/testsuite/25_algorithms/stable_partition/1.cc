@@ -35,21 +35,6 @@ struct Pred
     { return (x % 2) == 0; }
 };
 
-// 25.2.12 partition()
-void
-test01()
-{
-    using std::partition;
-
-    int s1[N];
-    std::copy(A, A + N, s1);
-
-    Pred pred;
-    int* m = partition(s1, s1 + N, pred);
-    for (const int* i = s1; i < m; ++i) VERIFY(pred(*i));
-    for (const int* i = m; i < s1 + N; ++i) VERIFY(!pred(*i));
-}
-
 // 25.2.12 stable_partition()
 void
 test02()
@@ -66,8 +51,6 @@ test02()
 int
 main()
 {
-  test01();
   test02();
-
   return 0;
 }

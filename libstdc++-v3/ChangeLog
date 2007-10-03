@@ -1,3 +1,50 @@
+2007-10-03  Chris Jefferson  <chris@bubblescope.net>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/pair/moveable.cc: New. Merge from 
+	libstdcxx_so_7-branch.
+	* testsuite/23_containers/deque/capacity/moveable.cc: Same.
+	* testsuite/23_containers/deque/cons/moveable.cc: Same.
+	* testsuite/23_containers/deque/modifiers/moveable.cc: Same.
+	* testsuite/23_containers/deque/moveable.cc: Same.
+	* testsuite/23_containers/list/moveable.cc: Same.
+	* testsuite/23_containers/map/moveable.cc: Same.
+	* testsuite/23_containers/multimap/moveable.cc: Same.
+	* testsuite/23_containers/multiset/moveable.cc: Same.
+	* testsuite/23_containers/set/moveable.cc: Same.
+	* testsuite/23_containers/vector/cons/moveable.cc: Same.
+	* testsuite/23_containers/vector/modifiers/moveable.cc: Same.
+	* testsuite/23_containers/vector/moveable.cc: Same.
+	* testsuite/23_containers/vector/resize/moveable.cc: Same.
+	* testsuite/25_algorithms/heap/moveable.cc: Same.
+	* testsuite/25_algorithms/nth_element/moveable.cc: Same.
+	* testsuite/25_algorithms/partial_sort/moveable.cc: Same.
+	* testsuite/25_algorithms/partition/moveable.cc: Same.
+	* testsuite/25_algorithms/remove_if/moveable.cc: Same.
+	* testsuite/25_algorithms/remove/moveable.cc: Same.
+	* testsuite/25_algorithms/reverse/moveable.cc: Same.
+	* testsuite/25_algorithms/rotate/moveable.cc: Same.
+	* testsuite/25_algorithms/sort/moveable.cc: Same.
+	* testsuite/25_algorithms/swap_ranges/moveable.cc: Same.
+	* testsuite/25_algorithms/unique/moveable.cc: Same.
+	* testsuite/util/testsuite_rvalref.h: New.
+
+	* testsuite/25_algorithms/equal/equal.cc: Move to...
+	* testsuite/25_algorithms/equal/no_operator_ne.cc: ...this.
+	* testsuite/25_algorithms/heap/heap.cc: Move to...
+	* testsuite/25_algorithms/heap/1.cc: ...this.
+	* testsuite/25_algorithms/lower_bound/lower_bound.cc: Move to...
+	* testsuite/25_algorithms/lower_bound/no_operator_ne.cc: ...this.
+	* testsuite/25_algorithms/partition/partition.cc: Move to...
+	* testsuite/25_algorithms/partition/1.cc: ...this.
+	* testsuite/25_algorithms/stable_partition/1.cc: ... and this.
+	
+	* testsuite/25_algorithms/search/1.cc: Update from merge.
+	* testsuite/25_algorithms/search/check_type.cc: Same.
+
+	* testsuite/lib/dg-options.exp (dg-require-rvalref): New.
+	* testsuite/lib/libstdc++.exp (check_v3_target_rvalref): New.
+	
 2007-10-03  Richard Sandiford  <richard@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_C99): Temporarily add
@@ -46,8 +93,13 @@
 	* testsuite/25_algorithms/upper_bound/2.cc: ... this.
 	* testsuite/25_algorithms/lower_bound/2.cc: ... this.
 	* testsuite/25_algorithms/equal_range/2.cc: ... and this.
-	* testsuite/25_algorithms/sort/vectorbool.cc: Add from
+
+2007-10-02  Chris Jefferson  <chris@bubblescope.net>
+
+	* testsuite/25_algorithms/search/1.cc: Merge from 
 	libstdcxx_so_7-branch.
+	* testsuite/25_algorithms/search/check_type.cc: Same.
+	* testsuite/25_algorithms/sort/vectorbool.cc: Same.
 
 2007-09-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
