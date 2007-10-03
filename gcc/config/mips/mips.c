@@ -3477,7 +3477,7 @@ mips_address_cost (rtx addr)
 rtx
 mips_subword (rtx op, int high_p)
 {
-  unsigned int byte;
+  unsigned int byte, offset;
   enum machine_mode mode;
 
   mode = GET_MODE (op);
@@ -3490,7 +3490,11 @@ mips_subword (rtx op, int high_p)
     byte = 0;
 
   if (FP_REG_RTX_P (op))
-    return gen_rtx_REG (word_mode, high_p ? REGNO (op) + 1 : REGNO (op));
+    {
+      /* Paired FPRs are always ordered little-endian.  */
+      offset = (UNITS_PER_WORD < UNITS_PER_HWFPVALUE ? high_p : byte != 0);
+      return gen_rtx_REG (word_mode, REGNO (op) + offset);
+    }
 
   if (MEM_P (op))
     return mips_rewrite_small_data (adjust_address (op, word_mode, byte));
@@ -3524,58 +3528,23 @@ mips_split_64bit_move_p (rtx dest, rtx src)
 }
 
 
-/* Split a 64-bit move from SRC to DEST assuming that
-   mips_split_64bit_move_p holds.
-
-   Moves into and out of FPRs cause some difficulty here.  Such moves
-   will always be DFmode, since paired FPRs are not allowed to store
-   DImode values.  The most natural representation would be two separate
-   32-bit moves, such as:
-
-	(set (reg:SI $f0) (mem:SI ...))
-	(set (reg:SI $f1) (mem:SI ...))
-
-   However, the second insn is invalid because odd-numbered FPRs are
-   not allowed to store independent values.  Use the patterns load_df_low,
-   load_df_high and store_df_high instead.  */
+/* Split a doubleword move from SRC to DEST.  On 32-bit targets,
+   this function handles 64-bit moves for which mips_split_64bit_move_p
+   holds.  For 64-bit targets, this function handles 128-bit moves.  */
 
 void
-mips_split_64bit_move (rtx dest, rtx src)
+mips_split_doubleword_move (rtx dest, rtx src)
 {
-  if (FP_REG_RTX_P (dest))
+  if (FP_REG_RTX_P (dest) || FP_REG_RTX_P (src))
     {
-      /* Loading an FPR from memory or from GPRs.  */
-      if (ISA_HAS_MXHC1)
-	{
-	  if (GET_MODE (dest) != DFmode)
-	    dest = gen_rtx_REG_offset (dest, DFmode, REGNO (dest), 0);
-	  emit_insn (gen_load_df_low (dest, mips_subword (src, 0)));
-	  emit_insn (gen_mthc1 (dest, mips_subword (src, 1),
-				copy_rtx (dest)));
-	}
+      if (!TARGET_64BIT && GET_MODE (dest) == DImode)
+	emit_insn (gen_move_doubleword_fprdi (dest, src));
+      else if (!TARGET_64BIT && GET_MODE (dest) == DFmode)
+	emit_insn (gen_move_doubleword_fprdf (dest, src));
+      else if (TARGET_64BIT && GET_MODE (dest) == TFmode)
+	emit_insn (gen_move_doubleword_fprtf (dest, src));
       else
-	{
-	  emit_insn (gen_load_df_low (copy_rtx (dest),
-				      mips_subword (src, 0)));
-	  emit_insn (gen_load_df_high (dest, mips_subword (src, 1),
-				       copy_rtx (dest)));
-	}
-    }
-  else if (FP_REG_RTX_P (src))
-    {
-      /* Storing an FPR into memory or GPRs.  */
-      if (ISA_HAS_MXHC1)
-	{
-	  if (GET_MODE (src) != DFmode)
-	    src = gen_rtx_REG_offset (src, DFmode, REGNO (src), 0);
-	  mips_emit_move (mips_subword (dest, 0), mips_subword (src, 0));
-	  emit_insn (gen_mfhc1 (mips_subword (dest, 1), src));
-	}
-      else
-	{
-	  mips_emit_move (mips_subword (dest, 0), mips_subword (src, 0));
-	  emit_insn (gen_store_df_high (mips_subword (dest, 1), src));
-	}
+	gcc_unreachable ();
     }
   else
     {
@@ -8042,7 +8011,7 @@ mips_save_reg (rtx reg, rtx mem)
       rtx x1, x2;
 
       if (mips_split_64bit_move_p (mem, reg))
-	mips_split_64bit_move (mem, reg);
+	mips_split_doubleword_move (mem, reg);
       else
 	mips_emit_move (mem, reg);
 
@@ -9472,18 +9441,15 @@ mips_secondary_reload_class (enum reg_class class,
 	/* In this case we can use mtc1, mfc1, dmtc1 or dmfc1.  */
 	return NO_REGS;
 
-      if (mips_mode_ok_for_mov_fmt_p (mode))
-	{
-	  if (CONSTANT_P (x))
-	    /* We can force the constants to memory and use lwc1
-	       and ldc1.  As above, we will use pairs of lwc1s if
-	       ldc1 is not supported.  */
-	    return NO_REGS;
+      if (CONSTANT_P (x) && !targetm.cannot_force_const_mem (x))
+	/* We can force the constant to memory and use lwc1
+	   and ldc1.  As above, we will use pairs of lwc1s if
+	   ldc1 is not supported.  */
+	return NO_REGS;
 
-	  if (FP_REG_P (regno))
-	    /* In this case we can use mov.fmt.  */
-	    return NO_REGS;
-	}
+      if (FP_REG_P (regno) && mips_mode_ok_for_mov_fmt_p (mode))
+	/* In this case we can use mov.fmt.  */
+	return NO_REGS;
 
       /* Otherwise, we need to reload through an integer register.  */
       return GR_REGS;

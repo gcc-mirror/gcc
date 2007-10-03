@@ -201,7 +201,7 @@ extern int m16_nsimm8_8 (rtx, enum machine_mode);
 
 extern rtx mips_subword (rtx, int);
 extern bool mips_split_64bit_move_p (rtx, rtx);
-extern void mips_split_64bit_move (rtx, rtx);
+extern void mips_split_doubleword_move (rtx, rtx);
 extern const char *mips_output_move (rtx, rtx);
 extern void mips_restore_gp (void);
 #ifdef RTX_CODE

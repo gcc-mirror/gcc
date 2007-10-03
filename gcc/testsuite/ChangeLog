@@ -1,3 +1,19 @@
+2007-10-03  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33635
+	* gcc.target/mips/mips.exp (setup_mips_tests): Set mips_isa_rev
+	and mips_forced_be.
+	(dg-mips-options): Handle -EL and -mel.  Make -mfp64 imply
+	-mhard-float and a suitable ISA.  Improve handling of -mipsXrY
+	options.
+	* gcc.target/mips/fpr-moves-1.c: New test.
+	* gcc.target/mips/fpr-moves-2.c: Likewise.
+	* gcc.target/mips/fpr-moves-3.c: Likewise.
+	* gcc.target/mips/fpr-moves-4.c: Likewise.
+	* gcc.target/mips/fpr-moves-5.c: Likewise.
+	* gcc.target/mips/fpr-moves-6.c: Likewise.
+	* gcc.target/mips/mips32r2-mxhc1.c: Remove -march=mips32r2
+
 2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/default_format_1.f90: XFAIL on all darwin targets.

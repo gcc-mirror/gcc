@@ -1,3 +1,34 @@
+2007-10-03  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33635
+	* config/mips/mips-protos.h (mips_split_64bit_move): Rename to...
+	(mips_split_doubleword_move): ...this.
+	* config/mips/mips.c (mips_subword): Extend to handle 64-bit words;
+	use natural endianness for multi-format FPR values.
+	(mips_split_64bit_move): Rename to...
+	(mips_split_doubleword_move): ...this and extend to 64-bit words.
+	Use move_doubleword_fpr* patterns for moves involving FPRs.
+	(mips_save_reg): Update the call to mips_split_64bit_move.
+	(mips_secondary_reload_class): Return NO_REGS for any reload of a
+	nonzero constant into an FPR if the constant can be forced to memory.
+	* config/mips/mips.md: Update the splitter calls to
+	mips_split_64bit_move.
+	(UNSPEC_LOAD_DF_LOW): Rename to...
+	(UNSPEC_LOAD_LOW): ...this.
+	(UNSPEC_LOAD_DF_HIGH): Rename to...
+	(UNSPEC_LOAD_HIGH): ...this.
+	(UNSPEC_STORE_DF_HIGH): Rename to...
+	(UNSPEC_STORE_WORD): ...this.
+	(SPLITF): New mode iterator.
+	(HALFMODE): New mode attribute.
+	(movtf): New expander.
+	(*movtf_internal): New define_insn_and_split.
+	(move_doubleword_fpr<mode>): New expander.
+	(load_df_low, load_df_high, store_df_high, mthc1, mfhc1): Replace
+	with...
+	(load_low<mode>, load_high<mode>, store_word<mode>, mthc1<mode>)
+	(mfhc1<mode>): ...these more general patterns.
+
 2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cfgrtl.c (rtl_block_ends_with_call_p): Skip notes at the end.

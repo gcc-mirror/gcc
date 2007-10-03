@@ -24,9 +24,9 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_constants
-  [(UNSPEC_LOAD_DF_LOW		 0)
-   (UNSPEC_LOAD_DF_HIGH		 1)
-   (UNSPEC_STORE_DF_HIGH	 2)
+  [(UNSPEC_LOAD_LOW		 0)
+   (UNSPEC_LOAD_HIGH		 1)
+   (UNSPEC_STORE_WORD		 2)
    (UNSPEC_GET_FNADDR		 3)
    (UNSPEC_BLOCKAGE		 4)
    (UNSPEC_CPRESTORE		 5)
@@ -498,6 +498,11 @@
 (define_mode_iterator SCALARF [(SF "TARGET_HARD_FLOAT")
 			       (DF "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT")])
 
+;; A floating-point mode for which moves involving FPRs may need to be split.
+(define_mode_iterator SPLITF [(DF "!TARGET_64BIT")
+			      (DI "!TARGET_64BIT")
+			      (TF "TARGET_64BIT")])
+
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
 ;; 32-bit version and "dsubu" in the 64-bit version.
 (define_mode_attr d [(SI "") (DI "d")
@@ -545,6 +550,10 @@
 			 (UHA "HI") (USA "SI") (UDA "DI")
 			 (V4UQQ "SI") (V2UHQ "SI") (V2UHA "SI")
 			 (V2HQ "SI") (V2HA "SI")])
+
+;; This attribute gives the integer mode that has half the size of
+;; the controlling mode.
+(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
 
 ;; This attribute works around the early SB-1 rev2 core "F2" erratum:
 ;;
@@ -3999,6 +4008,32 @@
    (set_attr "mode"	"DF")
    (set_attr "length"	"8,8,8,*,*")])
 
+;; 128-bit floating point moves
+
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "")
+	(match_operand:TF 1 ""))]
+  ""
+{
+  if (mips_legitimize_move (TFmode, operands[0], operands[1]))
+    DONE;
+})
+
+;; This pattern handles both hard- and soft-float cases.
+(define_insn_and_split "*movtf_internal"
+  [(set (match_operand:TF 0 "nonimmediate_operand" "=d,R,f,dR")
+	(match_operand:TF 1 "move_operand" "dGR,dG,dGR,f"))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  mips_split_doubleword_move (operands[0], operands[1]);
+  DONE;
+}
+  [(set_attr "type" "multi")
+   (set_attr "length" "16")])
+
 (define_split
   [(set (match_operand:DI 0 "nonimmediate_operand")
 	(match_operand:DI 1 "move_operand"))]
@@ -4006,7 +4041,7 @@
    && mips_split_64bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
 {
-  mips_split_64bit_move (operands[0], operands[1]);
+  mips_split_doubleword_move (operands[0], operands[1]);
   DONE;
 })
 
@@ -4017,7 +4052,7 @@
    && mips_split_64bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
 {
-  mips_split_64bit_move (operands[0], operands[1]);
+  mips_split_doubleword_move (operands[0], operands[1]);
   DONE;
 })
 
@@ -4099,74 +4134,105 @@
   [(set_attr "type" "mfhilo")
    (set_attr "mode" "<MODE>")])
 
-;; Patterns for loading or storing part of a paired floating point
-;; register.  We need them because odd-numbered floating-point registers
-;; are not fully independent: see mips_split_64bit_move.
+;; Emit a doubleword move in which exactly one of the operands is
+;; a floating-point register.  We can't just emit two normal moves
+;; because of the constraints imposed by the FPU register model;
+;; see mips_cannot_change_mode_class for details.  Instead, we keep
+;; the FPR whole and use special patterns to refer to each word of
+;; the other operand.
+
+(define_expand "move_doubleword_fpr<mode>"
+  [(set (match_operand:SPLITF 0)
+	(match_operand:SPLITF 1))]
+  ""
+{
+  if (FP_REG_RTX_P (operands[0]))
+    {
+      rtx low = mips_subword (operands[1], 0);
+      rtx high = mips_subword (operands[1], 1);
+      emit_insn (gen_load_low<mode> (operands[0], low));
+      if (ISA_HAS_MXHC1)
+ 	emit_insn (gen_mthc1<mode> (operands[0], high, operands[0]));
+      else
+	emit_insn (gen_load_high<mode> (operands[0], high, operands[0]));
+    }
+  else
+    {
+      rtx low = mips_subword (operands[0], 0);
+      rtx high = mips_subword (operands[0], 1);
+      emit_insn (gen_store_word<mode> (low, operands[1], const0_rtx));
+      if (ISA_HAS_MXHC1)
+	emit_insn (gen_mfhc1<mode> (high, operands[1]));
+      else
+	emit_insn (gen_store_word<mode> (high, operands[1], const1_rtx));
+    }
+  DONE;
+})
 
 ;; Load the low word of operand 0 with operand 1.
-(define_insn "load_df_low"
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(unspec:DF [(match_operand:SI 1 "general_operand" "dJ,m")]
-		   UNSPEC_LOAD_DF_LOW))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT"
+(define_insn "load_low<mode>"
+  [(set (match_operand:SPLITF 0 "register_operand" "=f,f")
+	(unspec:SPLITF [(match_operand:<HALFMODE> 1 "general_operand" "dJ,m")]
+		       UNSPEC_LOAD_LOW))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   operands[0] = mips_subword (operands[0], 0);
   return mips_output_move (operands[0], operands[1]);
 }
-  [(set_attr "type"	"mtc,fpload")
-   (set_attr "mode"	"SF")])
+  [(set_attr "type" "mtc,fpload")
+   (set_attr "mode" "<HALFMODE>")])
 
 ;; Load the high word of operand 0 from operand 1, preserving the value
 ;; in the low word.
-(define_insn "load_df_high"
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(unspec:DF [(match_operand:SI 1 "general_operand" "dJ,m")
-		    (match_operand:DF 2 "register_operand" "0,0")]
-		   UNSPEC_LOAD_DF_HIGH))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT"
+(define_insn "load_high<mode>"
+  [(set (match_operand:SPLITF 0 "register_operand" "=f,f")
+	(unspec:SPLITF [(match_operand:<HALFMODE> 1 "general_operand" "dJ,m")
+			(match_operand:SPLITF 2 "register_operand" "0,0")]
+		       UNSPEC_LOAD_HIGH))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
   operands[0] = mips_subword (operands[0], 1);
   return mips_output_move (operands[0], operands[1]);
 }
-  [(set_attr "type"	"mtc,fpload")
-   (set_attr "mode"	"SF")])
+  [(set_attr "type" "mtc,fpload")
+   (set_attr "mode" "<HALFMODE>")])
 
-;; Store the high word of operand 1 in operand 0.  The corresponding
-;; low-word move is done in the normal way.
-(define_insn "store_df_high"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,m")
-	(unspec:SI [(match_operand:DF 1 "register_operand" "f,f")]
-		   UNSPEC_STORE_DF_HIGH))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT"
+;; Store one word of operand 1 in operand 0.  Operand 2 is 1 to store the
+;; high word and 0 to store the low word.
+(define_insn "store_word<mode>"
+  [(set (match_operand:<HALFMODE> 0 "nonimmediate_operand" "=d,m")
+	(unspec:<HALFMODE> [(match_operand:SPLITF 1 "register_operand" "f,f")
+			    (match_operand 2 "const_int_operand")]
+			   UNSPEC_STORE_WORD))]
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
-  operands[1] = mips_subword (operands[1], 1);
+  operands[1] = mips_subword (operands[1], INTVAL (operands[2]));
   return mips_output_move (operands[0], operands[1]);
 }
-  [(set_attr "type"	"mfc,fpstore")
-   (set_attr "mode"	"SF")])
+  [(set_attr "type" "mfc,fpstore")
+   (set_attr "mode" "<HALFMODE>")])
 
 ;; Move operand 1 to the high word of operand 0 using mthc1, preserving the
 ;; value in the low word.
-(define_insn "mthc1"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:SI 1 "general_operand" "dJ")
-		    (match_operand:DF 2 "register_operand" "0")]
-		    UNSPEC_MTHC1))]
-  "TARGET_HARD_FLOAT && !TARGET_64BIT && ISA_HAS_MXHC1"
+(define_insn "mthc1<mode>"
+  [(set (match_operand:SPLITF 0 "register_operand" "=f")
+	(unspec:SPLITF [(match_operand:<HALFMODE> 1 "general_operand" "dJ")
+		        (match_operand:SPLITF 2 "register_operand" "0")]
+		       UNSPEC_MTHC1))]
+  "TARGET_HARD_FLOAT && ISA_HAS_MXHC1"
   "mthc1\t%z1,%0"
-  [(set_attr "type"	"mtc")
-   (set_attr "mode"	"SF")])
+  [(set_attr "type" "mtc")
+   (set_attr "mode" "<HALFMODE>")])
 
-;; Move high word of operand 1 to operand 0 using mfhc1.  The corresponding
-;; low-word move is done in the normal way.
-(define_insn "mfhc1"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec:SI [(match_operand:DF 1 "register_operand" "f")]
-		    UNSPEC_MFHC1))]
-  "TARGET_HARD_FLOAT && !TARGET_64BIT && ISA_HAS_MXHC1"
+;; Move high word of operand 1 to operand 0 using mfhc1.
+(define_insn "mfhc1<mode>"
+  [(set (match_operand:<HALFMODE> 0 "register_operand" "=d")
+	(unspec:<HALFMODE> [(match_operand:SPLITF 1 "register_operand" "f")]
+			    UNSPEC_MFHC1))]
+  "TARGET_HARD_FLOAT && ISA_HAS_MXHC1"
   "mfhc1\t%0,%1"
-  [(set_attr "type"	"mfc")
-   (set_attr "mode"	"SF")])
+  [(set_attr "type" "mfc")
+   (set_attr "mode" "<HALFMODE>")])
 
 ;; Move a constant that satisfies CONST_GP_P into operand 0.
 (define_expand "load_const_gp"
