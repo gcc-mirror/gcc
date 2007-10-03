@@ -1,5 +1,9 @@
 2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* gfortran.dg/default_format_1.f90: XFAIL on all darwin targets.
+
+2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* gfortran.dg/default_format_1.f90: XFAIL on ppc-darwin.
 	* gfortran.dg/default_format_2.f90: XFAIL on ppc-darwin.
 
