@@ -1,3 +1,9 @@
+2007-10-03  Doug Kwan  <dougkwan@google.com>
+	Richard Guenther  <rguenther@suse.de>
+
+	PR debug/31899
+	* g++.dg/debug/using3.C: New testcase.
+
 2007-10-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253

@@ -10344,9 +10344,12 @@ reference_to_unused (tree * tp, int * walk_subtrees,
     return *tp;
   else if (!flag_unit_at_a_time)
     return NULL_TREE;
+  /* ???  The C++ FE emits debug information for using decls, so
+     putting gcc_unreachable here falls over.  See PR31899.  For now
+     be conservative.  */
   else if (!cgraph_global_info_ready
 	   && (TREE_CODE (*tp) == VAR_DECL || TREE_CODE (*tp) == FUNCTION_DECL))
-    gcc_unreachable ();
+    return *tp;
   else if (DECL_P (*tp) && TREE_CODE (*tp) == VAR_DECL)
     {
       struct varpool_node *node = varpool_node (*tp);
