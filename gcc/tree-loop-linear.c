@@ -253,7 +253,10 @@ linear_transform_loops (void)
   loop_iterator li;
   VEC(tree,heap) *oldivs = NULL;
   VEC(tree,heap) *invariants = NULL;
+  VEC(tree,heap) *remove_ivs = VEC_alloc (tree, heap, 3);
   struct loop *loop_nest;
+  tree oldiv_stmt;
+  unsigned i;
 
   FOR_EACH_LOOP (li, loop_nest, 0)
     {
@@ -351,6 +354,7 @@ linear_transform_loops (void)
 	}
 
       lambda_loopnest_to_gcc_loopnest (loop_nest, oldivs, invariants,
+				       &remove_ivs,
                                        after, trans, &lambda_obstack);
       modified = true;
 
@@ -363,8 +367,12 @@ linear_transform_loops (void)
       free_data_refs (datarefs);
     }
 
+  for (i = 0; VEC_iterate (tree, remove_ivs, i, oldiv_stmt); i++)
+    remove_iv (oldiv_stmt);
+
   VEC_free (tree, heap, oldivs);
   VEC_free (tree, heap, invariants);
+  VEC_free (tree, heap, remove_ivs);
   scev_reset ();
 
   if (modified)

@@ -1,3 +1,14 @@
+2007-10-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/33576
+	* testsuite/gcc.dg/tree-ssa/pr33576.c: New.
+	* tree-loop-linear.c (linear_transform_loops): Call remove_iv.
+	* lambda.h (lambda_loopnest_to_gcc_loopnest): New parameter.
+	(remove_iv): Declared.
+	* lambda-code.c (remove_iv): Not static.
+	(lambda_loopnest_to_gcc_loopnest): New parameter remove_ivs.
+	Don't remove ivs there, save ivs in the buffer.
+
 2007-10-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15764
