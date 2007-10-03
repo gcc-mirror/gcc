@@ -1,4 +1,9 @@
-2007-09-28  Tobias Schlüter  <tobi@gcc.gnu.org>
+2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/default_format_1.f90: XFAIL on ppc-darwin.
+	* gfortran.dg/default_format_2.f90: XFAIL on ppc-darwin.
+
+2007-10-03  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33198
 	* gfortran.dg/common_errors_1.f90: New.

@@ -1,5 +1,7 @@
-! { dg-do run }
 ! { dg-require-effective-target fortran_large_real }
+! { dg-do run { xfail powerpc*-apple-darwin* } }
+! Test XFAILed on powerpc-darwin because the system's printf() lacks
+! proper support for long doubles.
 !
 ! This tests that the default formats for formatted I/O of reals are
 ! wide enough and have enough precision, by checking that values can

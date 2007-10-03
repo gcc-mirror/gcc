@@ -1,4 +1,6 @@
-! { dg-do run }
+! { dg-do run { xfail powerpc*-apple-darwin* } }
+! Test XFAILed on powerpc-darwin because the system's printf() lacks
+! proper support for denormals.
 !
 ! This tests that the default formats for formatted I/O of reals are
 ! wide enough and have enough precision, by checking that values can
