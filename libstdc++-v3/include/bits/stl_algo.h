@@ -2186,7 +2186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType, _Tp>)
-      __glibcxx_requires_partitioned(__first, __last, __val);
+      __glibcxx_requires_partitioned_lower(__first, __last, __val);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -2237,7 +2237,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _ValueType, _Tp>)
-      __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
+      __glibcxx_requires_partitioned_lower_pred(__first, __last,
+						__val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -2283,7 +2284,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
-      __glibcxx_requires_partitioned(__first, __last, __val);
+      __glibcxx_requires_partitioned_upper(__first, __last, __val);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -2334,7 +2335,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _Tp, _ValueType>)
-      __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
+      __glibcxx_requires_partitioned_upper_pred(__first, __last,
+						__val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -2387,7 +2389,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanOpConcept<_ValueType, _Tp>)
       __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)	
-      __glibcxx_requires_partitioned(__first, __last, __val);
+      __glibcxx_requires_partitioned_lower(__first, __last, __val);
+      __glibcxx_requires_partitioned_upper(__first, __last, __val);      
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -2451,7 +2454,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  _ValueType, _Tp>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _Tp, _ValueType>)
-      __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
+      __glibcxx_requires_partitioned_lower_pred(__first, __last,
+						__val, __comp);
+      __glibcxx_requires_partitioned_upper_pred(__first, __last,
+						__val, __comp);
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -2503,7 +2509,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // concept requirements
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_LessThanOpConcept<_Tp, _ValueType>)
-      __glibcxx_requires_partitioned(__first, __last, __val);
+      __glibcxx_requires_partitioned_lower(__first, __last, __val);
+      __glibcxx_requires_partitioned_upper(__first, __last, __val);
 
       _ForwardIterator __i = std::lower_bound(__first, __last, __val);
       return __i != __last && !(__val < *__i);
@@ -2536,7 +2543,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
       __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
 				  _Tp, _ValueType>)
-      __glibcxx_requires_partitioned_pred(__first, __last, __val, __comp);
+      __glibcxx_requires_partitioned_lower_pred(__first, __last,
+						__val, __comp);
+      __glibcxx_requires_partitioned_upper_pred(__first, __last,
+						__val, __comp);
 
       _ForwardIterator __i = std::lower_bound(__first, __last, __val, __comp);
       return __i != __last && !bool(__comp(__val, *__i));

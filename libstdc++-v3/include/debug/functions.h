@@ -266,8 +266,8 @@ namespace __gnu_debug
   // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp>
     inline bool
-    __check_partitioned(_ForwardIterator __first, _ForwardIterator __last,
-			const _Tp& __value)
+    __check_partitioned_lower(_ForwardIterator __first,
+			      _ForwardIterator __last, const _Tp& __value)
     {
       while (__first != __last && *__first < __value)
 	++__first;
@@ -276,15 +276,41 @@ namespace __gnu_debug
       return __first == __last;
     }
 
+  template<typename _ForwardIterator, typename _Tp>
+    inline bool
+    __check_partitioned_upper(_ForwardIterator __first,
+			      _ForwardIterator __last, const _Tp& __value)
+    {
+      while (__first != __last && !(__value < *__first))
+	++__first;
+      while (__first != __last && __value < *__first)
+	++__first;
+      return __first == __last;
+    }
+
   // Determine if a sequence is partitioned w.r.t. this element.
   template<typename _ForwardIterator, typename _Tp, typename _Pred>
     inline bool
-    __check_partitioned(_ForwardIterator __first, _ForwardIterator __last,
-			const _Tp& __value, _Pred __pred)
+    __check_partitioned_lower(_ForwardIterator __first,
+			      _ForwardIterator __last, const _Tp& __value,
+			      _Pred __pred)
     {
-      while (__first != __last && __pred(*__first, __value))
+      while (__first != __last && bool(__pred(*__first, __value)))
 	++__first;
-      while (__first != __last && !__pred(*__first, __value))
+      while (__first != __last && !bool(__pred(*__first, __value)))
+	++__first;
+      return __first == __last;
+    }
+
+  template<typename _ForwardIterator, typename _Tp, typename _Pred>
+    inline bool
+    __check_partitioned_upper(_ForwardIterator __first,
+			      _ForwardIterator __last, const _Tp& __value,
+			      _Pred __pred)
+    {
+      while (__first != __last && !bool(__pred(__value, *__first)))
+	++__first;
+      while (__first != __last && bool(__pred(__value, *__first)))
 	++__first;
       return __first == __last;
     }

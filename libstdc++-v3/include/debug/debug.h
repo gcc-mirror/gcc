@@ -69,8 +69,10 @@ namespace __gnu_debug
 # define __glibcxx_requires_valid_range(_First,_Last)
 # define __glibcxx_requires_sorted(_First,_Last)
 # define __glibcxx_requires_sorted_pred(_First,_Last,_Pred)
-# define __glibcxx_requires_partitioned(_First,_Last,_Value)
-# define __glibcxx_requires_partitioned_pred(_First,_Last,_Value,_Pred)
+# define __glibcxx_requires_partitioned_lower(_First,_Last,_Value)
+# define __glibcxx_requires_partitioned_upper(_First,_Last,_Value)
+# define __glibcxx_requires_partitioned_lower_pred(_First,_Last,_Value,_Pred)
+# define __glibcxx_requires_partitioned_upper_pred(_First,_Last,_Value,_Pred)
 # define __glibcxx_requires_heap(_First,_Last)
 # define __glibcxx_requires_heap_pred(_First,_Last,_Pred)
 # define __glibcxx_requires_nonempty()
@@ -123,10 +125,14 @@ namespace std
      __glibcxx_check_sorted(_First,_Last)
 # define __glibcxx_requires_sorted_pred(_First,_Last,_Pred) \
      __glibcxx_check_sorted_pred(_First,_Last,_Pred)
-# define __glibcxx_requires_partitioned(_First,_Last,_Value)	\
-     __glibcxx_check_partitioned(_First,_Last,_Value)
-# define __glibcxx_requires_partitioned_pred(_First,_Last,_Value,_Pred) \
-     __glibcxx_check_partitioned_pred(_First,_Last,_Value,_Pred)
+# define __glibcxx_requires_partitioned_lower(_First,_Last,_Value)	\
+     __glibcxx_check_partitioned_lower(_First,_Last,_Value)
+# define __glibcxx_requires_partitioned_upper(_First,_Last,_Value)	\
+     __glibcxx_check_partitioned_upper(_First,_Last,_Value)
+# define __glibcxx_requires_partitioned_lower_pred(_First,_Last,_Value,_Pred) \
+     __glibcxx_check_partitioned_lower_pred(_First,_Last,_Value,_Pred)
+# define __glibcxx_requires_partitioned_upper_pred(_First,_Last,_Value,_Pred) \
+     __glibcxx_check_partitioned_upper_pred(_First,_Last,_Value,_Pred)
 # define __glibcxx_requires_heap(_First,_Last) \
      __glibcxx_check_heap(_First,_Last)
 # define __glibcxx_requires_heap_pred(_First,_Last,_Pred) \
