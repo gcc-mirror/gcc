@@ -1,5 +1,9 @@
 2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
 
+	* cfgrtl.c (rtl_block_ends_with_call_p): Skip notes at the end.
+
+2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
+
 	* gcse.c (hash_scan_set): Insert set in insn before note at
 	the end of basic block.
 
