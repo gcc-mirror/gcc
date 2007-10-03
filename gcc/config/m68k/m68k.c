@@ -3318,16 +3318,16 @@ m68k_output_movem (rtx *operands, rtx pattern,
   if (FP_REGNO_P (REGNO (XEXP (XVECEXP (pattern, 0, first), store_p))))
     {
       if (store_p)
-	return MOTOROLA ? "fmovm %1,%a0" : "fmovem %1,%a0";
+	return "fmovem %1,%a0";
       else
-	return MOTOROLA ? "fmovm %a0,%1" : "fmovem %a0,%1";
+	return "fmovem %a0,%1";
     }
   else
     {
       if (store_p)
-	return MOTOROLA ? "movm.l %1,%a0" : "moveml %1,%a0";
+	return "movem%.l %1,%a0";
       else
-	return MOTOROLA ? "movm.l %a0,%1" : "moveml %a0,%1";
+	return "movem%.l %a0,%1";
     }
 }
 
