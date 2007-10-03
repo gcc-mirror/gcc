@@ -1760,8 +1760,8 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 		  modified.  Here we want to search from INSN+1 on, but
 		  oprs_available_p searches from INSN on.  */
 	       && (insn == BB_END (BLOCK_FOR_INSN (insn))
-		   || ((tmp = next_nonnote_insn (insn)) != NULL_RTX
-		       && oprs_available_p (pat, tmp))))
+		   || (tmp = next_nonnote_insn (insn)) == NULL_RTX
+		   || oprs_available_p (pat, tmp)))
 	insert_set_in_table (pat, insn, table);
     }
   /* In case of store we want to consider the memory value as available in
