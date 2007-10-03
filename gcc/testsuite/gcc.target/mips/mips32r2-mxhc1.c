@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-mips-options "-O -march=mips32r2 -mabi=32 -mfp64" } */
+/* { dg-mips-options "-O -mabi=32 -mfp64" } */
 /* { dg-final { scan-assembler "mthc1" } } */
 /* { dg-final { scan-assembler "mfhc1" } } */
 
