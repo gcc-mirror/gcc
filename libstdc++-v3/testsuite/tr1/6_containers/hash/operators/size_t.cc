@@ -46,25 +46,25 @@ template<typename T>
   
 void test01()
 {
-  //  do_test<bool>();
-  //  do_test<char>();
-  //  do_test<signed char>();
-  //  do_test<unsigned char>();
-  //  do_test<short>();
-  //  do_test<int>();
-  //  do_test<long>();
-  //  do_test<unsigned short>();
-  //  do_test<unsigned int>();
-  //  do_test<unsigned long>();
-  //  do_test<int*>();
-  //  do_test<std::string>();
-  //  do_test<float>();
-  //  do_test<double>();
+  do_test<bool>();
+  do_test<char>();
+  do_test<signed char>();
+  do_test<unsigned char>();
+  do_test<short>();
+  do_test<int>();
+  do_test<long>();
+  do_test<unsigned short>();
+  do_test<unsigned int>();
+  do_test<unsigned long>();
+  do_test<int*>();
+  do_test<std::string>();
+  do_test<float>();
+  do_test<double>();
   do_test<long double>();
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  //  do_test<wchar_t>();
-  //  do_test<std::wstring>();
+  do_test<wchar_t>();
+  do_test<std::wstring>();
 #endif
 }
 
