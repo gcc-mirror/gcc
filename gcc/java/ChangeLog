@@ -1,3 +1,11 @@
+2007-10-03  Andrew Haley  <aph@redhat.com>
+
+	PR java/33639
+	* class.c (mangled_classname): Detect and replace illegal
+	characters in assembly language symbols.
+	(gen_indirect_dispatch_tables): Call mangled_classname() on
+	the type.
+
 2007-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.c (java_print_error_function): Add third argument.
