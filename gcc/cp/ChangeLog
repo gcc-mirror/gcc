@@ -1,3 +1,10 @@
+2007-10-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/15764
+	* decl.c (wrap_cleanups_r): New fn.
+	(wrap_temporary_cleanups): New fn.
+	(initialize_local_var): Call it.
+
 2007-09-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/33094

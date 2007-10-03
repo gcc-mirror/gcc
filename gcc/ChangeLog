@@ -1,3 +1,14 @@
+2007-10-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/15764
+	* tree-eh.c (same_handler_p): New fn.
+	(optimize_double_finally): New fn.
+	(refactor_eh_r): New fn.
+	(refactor_eh): New fn.
+	(pass_refactor_eh): New pass.
+	* tree-pass.h: Declare it.
+	* passes.c (init_optimization_passes): Add it.
+
 2007-10-03  Doug Kwan  <dougkwan@google.com>
 	Richard Guenther  <rguenther@suse.de>
 
