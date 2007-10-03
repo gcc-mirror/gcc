@@ -246,6 +246,7 @@ extern struct tree_opt_pass pass_mudflap_1;
 extern struct tree_opt_pass pass_mudflap_2;
 extern struct tree_opt_pass pass_remove_useless_stmts;
 extern struct tree_opt_pass pass_lower_cf;
+extern struct tree_opt_pass pass_refactor_eh;
 extern struct tree_opt_pass pass_lower_eh;
 extern struct tree_opt_pass pass_build_cfg;
 extern struct tree_opt_pass pass_tree_profile;

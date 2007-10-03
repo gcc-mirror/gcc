@@ -5136,6 +5136,41 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
     rest_of_decl_compilation (decl, toplev, at_eof);
 }
 
+/* walk_tree helper for wrap_temporary_cleanups, below.  */
+
+static tree
+wrap_cleanups_r (tree *stmt_p, int *walk_subtrees, void *data)
+{
+  if (TYPE_P (*stmt_p))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*stmt_p) == TARGET_EXPR)
+    {
+      tree guard = (tree)data;
+      tree tcleanup = TARGET_EXPR_CLEANUP (*stmt_p);
+
+      tcleanup = build2 (TRY_CATCH_EXPR, void_type_node, tcleanup, guard);
+
+      TARGET_EXPR_CLEANUP (*stmt_p) = tcleanup;
+    }
+
+  return NULL_TREE;
+}
+
+/* We're initializing a local variable which has a cleanup GUARD.  If there
+   are any temporaries used in the initializer INIT of this variable, we
+   need to wrap their cleanups with TRY_CATCH_EXPR (, GUARD) so that the
+   variable will be cleaned up properly if one of them throws.  */
+
+static void
+wrap_temporary_cleanups (tree init, tree guard)
+{
+  cp_walk_tree_without_duplicates (&init, wrap_cleanups_r, (void *)guard);
+}
+
 /* Generate code to initialize DECL (a local variable).  */
 
 static void
@@ -5143,6 +5178,7 @@ initialize_local_var (tree decl, tree init)
 {
   tree type = TREE_TYPE (decl);
   tree cleanup;
+  int already_used;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == RESULT_DECL);
@@ -5153,46 +5189,53 @@ initialize_local_var (tree decl, tree init)
       /* If we used it already as memory, it must stay in memory.  */
       DECL_INITIAL (decl) = NULL_TREE;
       TREE_ADDRESSABLE (decl) = TREE_USED (decl);
+      return;
     }
 
-  if (DECL_SIZE (decl) && type != error_mark_node)
-    {
-      int already_used;
+  if (type == error_mark_node)
+    return;
 
-      /* Compute and store the initial value.  */
-      already_used = TREE_USED (decl) || TREE_USED (type);
-
-      /* Perform the initialization.  */
-      if (init)
-	{
-	  int saved_stmts_are_full_exprs_p;
-
-	  gcc_assert (building_stmt_tree ());
-	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
-	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  finish_expr_stmt (init);
-	  current_stmt_tree ()->stmts_are_full_exprs_p =
-	    saved_stmts_are_full_exprs_p;
-	}
-
-      /* Set this to 0 so we can tell whether an aggregate which was
-	 initialized was ever used.  Don't do this if it has a
-	 destructor, so we don't complain about the 'resource
-	 allocation is initialization' idiom.  Now set
-	 attribute((unused)) on types so decls of that type will be
-	 marked used. (see TREE_USED, above.)  */
-      if (TYPE_NEEDS_CONSTRUCTING (type)
-	  && ! already_used
-	  && TYPE_HAS_TRIVIAL_DESTRUCTOR (type)
-	  && DECL_NAME (decl))
-	TREE_USED (decl) = 0;
-      else if (already_used)
-	TREE_USED (decl) = 1;
-    }
+  /* Compute and store the initial value.  */
+  already_used = TREE_USED (decl) || TREE_USED (type);
 
   /* Generate a cleanup, if necessary.  */
   cleanup = cxx_maybe_build_cleanup (decl);
-  if (DECL_SIZE (decl) && cleanup)
+
+  /* Perform the initialization.  */
+  if (init)
+    {
+      int saved_stmts_are_full_exprs_p;
+
+      /* If we're only initializing a single object, guard the destructors
+	 of any temporaries used in its initializer with its destructor.
+	 This isn't right for arrays because each element initialization is
+	 a full-expression.  */
+      if (cleanup && TREE_CODE (type) != ARRAY_TYPE)
+	wrap_temporary_cleanups (init, cleanup);
+
+      gcc_assert (building_stmt_tree ());
+      saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+      current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+      finish_expr_stmt (init);
+      current_stmt_tree ()->stmts_are_full_exprs_p =
+	saved_stmts_are_full_exprs_p;
+    }
+
+  /* Set this to 0 so we can tell whether an aggregate which was
+     initialized was ever used.  Don't do this if it has a
+     destructor, so we don't complain about the 'resource
+     allocation is initialization' idiom.  Now set
+     attribute((unused)) on types so decls of that type will be
+     marked used. (see TREE_USED, above.)  */
+  if (TYPE_NEEDS_CONSTRUCTING (type)
+      && ! already_used
+      && TYPE_HAS_TRIVIAL_DESTRUCTOR (type)
+      && DECL_NAME (decl))
+    TREE_USED (decl) = 0;
+  else if (already_used)
+    TREE_USED (decl) = 1;
+
+  if (cleanup)
     finish_decl_cleanup (decl, cleanup);
 }
 

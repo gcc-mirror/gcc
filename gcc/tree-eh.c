@@ -2093,3 +2093,159 @@ maybe_clean_or_replace_eh_stmt (tree old_stmt, tree new_stmt)
 
   return false;
 }
+
+/* Returns TRUE if oneh and twoh are exception handlers (op 1 of
+   TRY_CATCH_EXPR or TRY_FINALLY_EXPR that are similar enough to be
+   considered the same.  Currently this only handles handlers consisting of
+   a single call, as that's the important case for C++: a destructor call
+   for a particular object showing up in multiple handlers.  */
+
+static bool
+same_handler_p (tree oneh, tree twoh)
+{
+  tree_stmt_iterator i;
+  tree ones, twos;
+  int ai;
+
+  i = tsi_start (oneh);
+  if (!tsi_one_before_end_p (i))
+    return false;
+  ones = tsi_stmt (i);
+
+  i = tsi_start (twoh);
+  if (!tsi_one_before_end_p (i))
+    return false;
+  twos = tsi_stmt (i);
+
+  if (TREE_CODE (ones) != CALL_EXPR
+      || TREE_CODE (twos) != CALL_EXPR
+      || !operand_equal_p (CALL_EXPR_FN (ones), CALL_EXPR_FN (twos), 0)
+      || call_expr_nargs (ones) != call_expr_nargs (twos))
+    return false;
+
+  for (ai = 0; ai < call_expr_nargs (ones); ++ai)
+    if (!operand_equal_p (CALL_EXPR_ARG (ones, ai),
+			  CALL_EXPR_ARG (twos, ai), 0))
+      return false;
+
+  return true;
+}
+
+/* Optimize
+    try { A() } finally { try { ~B() } catch { ~A() } }
+    try { ... } finally { ~A() }
+   into
+    try { A() } catch { ~B() }
+    try { ~B() ... } finally { ~A() }
+
+   This occurs frequently in C++, where A is a local variable and B is a
+   temporary used in the initializer for A.  */
+
+static void
+optimize_double_finally (tree one, tree two)
+{
+  tree oneh;
+  tree_stmt_iterator i;
+
+  i = tsi_start (TREE_OPERAND (one, 1));
+  if (!tsi_one_before_end_p (i))
+    return;
+
+  oneh = tsi_stmt (i);
+  if (TREE_CODE (oneh) != TRY_CATCH_EXPR)
+    return;
+
+  if (same_handler_p (TREE_OPERAND (oneh, 1), TREE_OPERAND (two, 1)))
+    {
+      tree twoh;
+
+      tree b = TREE_OPERAND (oneh, 0);
+      TREE_OPERAND (one, 1) = b;
+      TREE_SET_CODE (one, TRY_CATCH_EXPR);
+
+      b = tsi_stmt (tsi_start (b));
+      twoh = TREE_OPERAND (two, 0);
+      /* same_handler_p only handles single-statement handlers,
+	 so there must only be one statement.  */
+      i = tsi_start (twoh);
+      tsi_link_before (&i, unshare_expr (b), TSI_SAME_STMT);
+    }
+}
+
+/* Perform EH refactoring optimizations that are simpler to do when code
+   flow has been lowered but EH structurs haven't.  */
+
+static void
+refactor_eh_r (tree t)
+{
+ tailrecurse:
+  switch (TREE_CODE (t))
+    {
+    case TRY_FINALLY_EXPR:
+    case TRY_CATCH_EXPR:
+      refactor_eh_r (TREE_OPERAND (t, 0));
+      t = TREE_OPERAND (t, 1);
+      goto tailrecurse;
+
+    case CATCH_EXPR:
+      t = CATCH_BODY (t);
+      goto tailrecurse;
+
+    case EH_FILTER_EXPR:
+      t = EH_FILTER_FAILURE (t);
+      goto tailrecurse;
+
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	tree one = NULL_TREE, two = NULL_TREE;
+	/* Try to refactor double try/finally.  */
+	for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
+	  {
+	    one = two;
+	    two = tsi_stmt (i);
+	    if (one && two
+		&& TREE_CODE (one) == TRY_FINALLY_EXPR
+		&& TREE_CODE (two) == TRY_FINALLY_EXPR)
+	      optimize_double_finally (one, two);
+	    if (one)
+	      refactor_eh_r (one);
+	  }
+	if (two)
+	  {
+	    t = two;
+	    goto tailrecurse;
+	  }
+      }
+      break;
+
+    default:
+      /* A type, a decl, or some kind of statement that we're not
+	 interested in.  Don't walk them.  */
+      break;
+    }
+}
+
+static unsigned
+refactor_eh (void)
+{
+  refactor_eh_r (DECL_SAVED_TREE (current_function_decl));
+  return 0;
+}
+
+struct tree_opt_pass pass_refactor_eh =
+{
+  "ehopt",				/* name */
+  NULL,					/* gate */
+  refactor_eh,				/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_EH,				/* tv_id */
+  PROP_gimple_lcf,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,			/* todo_flags_finish */
+  0					/* letter */
+};
