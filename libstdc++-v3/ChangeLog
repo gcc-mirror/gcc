@@ -1,3 +1,12 @@
+2007-10-03  Richard Sandiford  <richard@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Temporarily add
+	-fno-exceptions to CXXFLAGS.  Use GCC_TRY_COMPILE_OR_LINK.
+	Make the tests assign results to volatile variables.  Use -lm
+	for link tests in GCC_TRY_COMPILE_OR_LINK.  Fall back to
+	compile-only tests if -lm is not available.
+	* configure: Regenerate.
+
 2007-10-03  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/33613
