@@ -602,6 +602,22 @@ resolve_entries (gfc_namespace *ns)
 }
 
 
+static bool
+has_default_initializer (gfc_symbol *der)
+{
+  gfc_component *c;
+
+  gcc_assert (der->attr.flavor == FL_DERIVED);
+  for (c = der->components; c; c = c->next)
+    if ((c->ts.type != BT_DERIVED && c->initializer)
+	|| (c->ts.type == BT_DERIVED
+	    && (!c->pointer && has_default_initializer (c->ts.derived))))
+      break;
+
+  return c != NULL;
+}
+
+
 /* Resolve common blocks.  */
 static void
 resolve_common_blocks (gfc_symtree *common_root)
@@ -618,23 +634,22 @@ resolve_common_blocks (gfc_symtree *common_root)
 
   for (csym = common_root->n.common->head; csym; csym = csym->common_next)
     {
-      if (csym->ts.type == BT_DERIVED
-	  && !(csym->ts.derived->attr.sequence
-	       || csym->ts.derived->attr.is_bind_c))
-	{
-	    gfc_error_now ("Derived type variable '%s' in COMMON at %L "
-			   "has neither the SEQUENCE nor the BIND(C) "
-			   "attribute", csym->name,
-			   &csym->declared_at);
-	}
-      else if (csym->ts.type == BT_DERIVED
-	       && csym->ts.derived->attr.alloc_comp)
-	{
-	    gfc_error_now ("Derived type variable '%s' in COMMON at %L "
-			   "has an ultimate component that is "
-			   "allocatable", csym->name,
-			   &csym->declared_at);
-	}
+      if (csym->ts.type != BT_DERIVED)
+	continue;
+
+      if (!(csym->ts.derived->attr.sequence
+	    || csym->ts.derived->attr.is_bind_c))
+	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+		       "has neither the SEQUENCE nor the BIND(C) "
+		       "attribute", csym->name, &csym->declared_at);
+      if (csym->ts.derived->attr.alloc_comp)
+	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+		       "has an ultimate component that is "
+		       "allocatable", csym->name, &csym->declared_at);
+      if (has_default_initializer (csym->ts.derived))
+	gfc_error_now ("Derived type variable '%s' in COMMON at %L "
+		       "may not have default initializer", csym->name,
+		       &csym->declared_at);
     }
 
   gfc_find_symbol (common_root->name, gfc_current_ns, 0, &sym);
@@ -5913,21 +5928,6 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 }
 
 
-static gfc_component *
-has_default_initializer (gfc_symbol *der)
-{
-  gfc_component *c;
-  for (c = der->components; c; c = c->next)
-    if ((c->ts.type != BT_DERIVED && c->initializer)
-        || (c->ts.type == BT_DERIVED
-              && !c->pointer
-              && has_default_initializer (c->ts.derived)))
-      break;
-
-  return c;
-}
-
-
 /* Given a block of code, recursively resolve everything pointed to by this
    code block.  */
 
@@ -6883,6 +6883,66 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 }
 
 
+/* Additional checks for symbols with flavor variable and derived
+   type.  To be called from resolve_fl_variable.  */
+
+static try
+resolve_fl_variable_derived (gfc_symbol *sym, int flag)
+{
+  gcc_assert (sym->ts.type == BT_DERIVED);
+
+  /* Check to see if a derived type is blocked from being host
+     associated by the presence of another class I symbol in the same
+     namespace.  14.6.1.3 of the standard and the discussion on
+     comp.lang.fortran.  */
+  if (sym->ns != sym->ts.derived->ns
+      && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)
+    {
+      gfc_symbol *s;
+      gfc_find_symbol (sym->ts.derived->name, sym->ns, 0, &s);
+      if (s && (s->attr.flavor != FL_DERIVED
+		|| !gfc_compare_derived_types (s, sym->ts.derived)))
+	{
+	  gfc_error ("The type '%s' cannot be host associated at %L "
+		     "because it is blocked by an incompatible object "
+		     "of the same name declared at %L",
+		     sym->ts.derived->name, &sym->declared_at,
+		     &s->declared_at);
+	  return FAILURE;
+	}
+    }
+
+  /* 4th constraint in section 11.3: "If an object of a type for which
+     component-initialization is specified (R429) appears in the
+     specification-part of a module and does not have the ALLOCATABLE
+     or POINTER attribute, the object shall have the SAVE attribute."
+
+     The check for initializers is performed with
+     has_default_initializer because gfc_default_initializer generates
+     a hidden default for allocatable components.  */
+  if (!(sym->value || flag) && sym->ns->proc_name
+      && sym->ns->proc_name->attr.flavor == FL_MODULE
+      && !sym->ns->save_all && !sym->attr.save
+      && !sym->attr.pointer && !sym->attr.allocatable
+      && has_default_initializer (sym->ts.derived))
+    {
+      gfc_error("Object '%s' at %L must have the SAVE attribute for "
+		"default initialization of a component",
+		sym->name, &sym->declared_at);
+      return FAILURE;
+    }
+
+  /* Assign default initializer.  */
+  if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
+      && (!flag || sym->attr.intent == INTENT_OUT))
+    {
+      sym->value = gfc_default_initializer (&sym->ts);
+    }
+
+  return SUCCESS;
+}
+
+
 /* Resolve symbols with flavor variable.  */
 
 static try
@@ -6891,7 +6951,6 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   int flag;
   int i;
   gfc_expr *e;
-  gfc_component *c;
   const char *auto_save_msg;
 
   auto_save_msg = "automatic object '%s' at %L cannot have the "
@@ -6985,7 +7044,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 	  gfc_error (auto_save_msg, sym->name, &sym->declared_at);
 	  return FAILURE;
 	}
-  }
+    }
 
   /* Reject illegal initializers.  */
   if (!sym->mark && sym->value && flag)
@@ -7015,54 +7074,8 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
 no_init_error:
-  /* Check to see if a derived type is blocked from being host associated
-     by the presence of another class I symbol in the same namespace.
-     14.6.1.3 of the standard and the discussion on comp.lang.fortran.  */
-  if (sym->ts.type == BT_DERIVED && sym->ns != sym->ts.derived->ns
-	&& sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)
-    {
-      gfc_symbol *s;
-      gfc_find_symbol (sym->ts.derived->name, sym->ns, 0, &s);
-      if (s && (s->attr.flavor != FL_DERIVED
-		|| !gfc_compare_derived_types (s, sym->ts.derived)))
-	{
-	  gfc_error ("The type %s cannot be host associated at %L because "
-		     "it is blocked by an incompatible object of the same "
-		     "name at %L", sym->ts.derived->name, &sym->declared_at,
-		     &s->declared_at);
-	  return FAILURE;
-	}
-    }
-
-  /* Do not use gfc_default_initializer to test for a default initializer
-     in the fortran because it generates a hidden default for allocatable
-     components.  */
-  c = NULL;
-  if (sym->ts.type == BT_DERIVED && !(sym->value || flag))
-    c = has_default_initializer (sym->ts.derived);
-
-  /* 4th constraint in section 11.3:  "If an object of a type for which
-     component-initialization is specified (R429) appears in the
-     specification-part of a module and does not have the ALLOCATABLE
-     or POINTER attribute, the object shall have the SAVE attribute."  */
-  if (c && sym->ns->proc_name
-      && sym->ns->proc_name->attr.flavor == FL_MODULE
-      && !sym->ns->save_all && !sym->attr.save
-      && !sym->attr.pointer && !sym->attr.allocatable)
-    {
-      gfc_error("Object '%s' at %L must have the SAVE attribute %s",
- 	 	sym->name, &sym->declared_at,
-		"for default initialization of a component");
-      return FAILURE;
-    }
-
-  /* Assign default initializer.  */
-  if (sym->ts.type == BT_DERIVED
-      && !sym->value
-      && !sym->attr.pointer
-      && !sym->attr.allocatable
-      && (!flag || sym->attr.intent == INTENT_OUT))
-    sym->value = gfc_default_initializer (&sym->ts);
+  if (sym->ts.type == BT_DERIVED)
+    return resolve_fl_variable_derived (sym, flag);
 
   return SUCCESS;
 }
