@@ -1,5 +1,14 @@
 2007-10-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/32470
+	* name-lookup.c (push_namespace_with_attrs): Fold back into...
+	(push_namespace): Here.
+	(handle_namespace_attrs): New fn for the attr code.
+	(leave_scope): Don't pop_visibility.
+	* name-lookup.h (struct cp_binding_level): Remove has_visibility.
+	* parser.c (cp_parser_namespace_definition): Call
+	handle_namespace_attrs and pop_visibility as appropriate. 
+
 	PR c++/11756
 	* mangle.c (write_type) [TYPEOF_TYPE]: Just sorry.
 
