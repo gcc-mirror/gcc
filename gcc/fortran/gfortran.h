@@ -723,6 +723,7 @@ typedef struct gfc_linebuf
   struct gfc_linebuf *next;
 
   int truncated;
+  bool dbg_emitted;
 
   char line[1];
 } gfc_linebuf;
@@ -1935,6 +1936,7 @@ int gfc_at_bol (void);
 int gfc_at_eol (void);
 void gfc_advance_line (void);
 int gfc_check_include (void);
+int gfc_define_undef_line (void);
 
 void gfc_skip_comments (void);
 int gfc_next_char_literal (int);
