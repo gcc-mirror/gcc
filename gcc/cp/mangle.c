@@ -1687,6 +1687,10 @@ write_type (tree type)
               write_char ('E');
               break;
 
+	    case TYPEOF_TYPE:
+	      sorry ("mangling typeof, use decltype instead");
+	      break;
+
 	    default:
 	      gcc_unreachable ();
 	    }
