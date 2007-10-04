@@ -1,3 +1,8 @@
+2007-10-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/11756
+	* mangle.c (write_type) [TYPEOF_TYPE]: Just sorry.
+
 2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* decl.c (duplicate_decls): Preserve linkage flags for mere
