@@ -1,3 +1,12 @@
+2007-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33641
+	* tree-cfg.c (verify_gimple_expr): Operand one of POINTER_PLUS_EXPR
+	does not need to be of INTEGER_TYPE.
+	(verify_gimple_2): New function split out from ...
+	(verify_gimple_1): ... here.  ICE if there was an error during
+	verification.
+
 2007-10-04  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/33653
