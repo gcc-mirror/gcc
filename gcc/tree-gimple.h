@@ -133,6 +133,7 @@ extern enum gimplify_status gimplify_va_arg_expr (tree *, tree *, tree *);
 struct gimplify_omp_ctx;
 extern void omp_firstprivatize_variable (struct gimplify_omp_ctx *, tree);
 extern tree gimple_boolify (tree);
+extern tree canonicalize_cond_expr_cond (tree);
 
 /* In omp-low.c.  */
 extern void diagnose_omp_structured_block_errors (tree);

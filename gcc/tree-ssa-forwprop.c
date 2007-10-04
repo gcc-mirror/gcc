@@ -326,46 +326,16 @@ combine_cond_expr_cond (enum tree_code code, tree type,
   /* Require that we got a boolean type out if we put one in.  */
   gcc_assert (TREE_CODE (TREE_TYPE (t)) == TREE_CODE (type));
 
-  /* For (bool)x use x != 0.  */
-  if (TREE_CODE (t) == NOP_EXPR
-      && TREE_TYPE (t) == boolean_type_node)
-    {
-      tree top0 = TREE_OPERAND (t, 0);
-      t = build2 (NE_EXPR, type,
-		  top0, build_int_cst (TREE_TYPE (top0), 0));
-    }
-  /* For !x use x == 0.  */
-  else if (TREE_CODE (t) == TRUTH_NOT_EXPR)
-    {
-      tree top0 = TREE_OPERAND (t, 0);
-      t = build2 (EQ_EXPR, type,
-		  top0, build_int_cst (TREE_TYPE (top0), 0));
-    }
-  /* For cmp ? 1 : 0 use cmp.  */
-  else if (TREE_CODE (t) == COND_EXPR
-	   && COMPARISON_CLASS_P (TREE_OPERAND (t, 0))
-	   && integer_onep (TREE_OPERAND (t, 1))
-	   && integer_zerop (TREE_OPERAND (t, 2)))
-    {
-      tree top0 = TREE_OPERAND (t, 0);
-      t = build2 (TREE_CODE (top0), type,
-		  TREE_OPERAND (top0, 0), TREE_OPERAND (top0, 1));
-    }
+  /* Canonicalize the combined condition for use in a COND_EXPR.  */
+  t = canonicalize_cond_expr_cond (t);
 
   /* Bail out if we required an invariant but didn't get one.  */
-  if (invariant_only
-      && !is_gimple_min_invariant (t))
+  if (!t
+      || (invariant_only
+	  && !is_gimple_min_invariant (t)))
     return NULL_TREE;
 
-  /* A valid conditional for a COND_EXPR is either a gimple value
-     or a comparison with two gimple value operands.  */
-  if (is_gimple_val (t)
-      || (COMPARISON_CLASS_P (t)
-	  && is_gimple_val (TREE_OPERAND (t, 0))
-	  && is_gimple_val (TREE_OPERAND (t, 1))))
-    return t;
-
-  return NULL_TREE;
+  return t;
 }
 
 /* Propagate from the ssa name definition statements of COND_EXPR

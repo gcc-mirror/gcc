@@ -483,6 +483,9 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       /* Do it.  */
       t = fold_build2 (code, boolean_type_node,
 		       TREE_OPERAND (ccond2, 0), TREE_OPERAND (ccond2, 1));
+      t = canonicalize_cond_expr_cond (t);
+      if (!t)
+	return false;
       COND_EXPR_COND (inner_cond) = t;
       update_stmt (inner_cond);
 
