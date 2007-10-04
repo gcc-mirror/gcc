@@ -1,3 +1,9 @@
+2007-10-04  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/33653
+	* dce.c (deletable_insn_p_1): Use volatile_refs_p().
+	* dse.c (scan_insn): Same.
+
 2007-10-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config.gcc: Remove USE_GAS for m68k targets.

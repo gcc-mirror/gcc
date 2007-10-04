@@ -78,7 +78,7 @@ deletable_insn_p_1 (rtx body)
       return false;
 
     default:
-      if (volatile_insn_p (body))
+      if (volatile_refs_p (body))
 	return false;
 
       if (flag_non_call_exceptions && may_trap_p (body))
