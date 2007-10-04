@@ -385,6 +385,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	_Bit_iterator 	_M_start;
 	_Bit_iterator 	_M_finish;
 	_Bit_type* 	_M_end_of_storage;
+
+	_Bvector_impl()
+	: _Bit_alloc_type(), _M_start(), _M_finish(), _M_end_of_storage(0)
+	{ }
+ 
 	_Bvector_impl(const _Bit_alloc_type& __a)
 	: _Bit_alloc_type(__a), _M_start(), _M_finish(), _M_end_of_storage(0)
 	{ }
@@ -405,7 +410,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       get_allocator() const
       { return allocator_type(_M_get_Bit_allocator()); }
 
-      _Bvector_base(const allocator_type& __a) : _M_impl(__a) { }
+      _Bvector_base()
+      : _M_impl() { }
+      
+      _Bvector_base(const allocator_type& __a)
+      : _M_impl(__a) { }
 
       ~_Bvector_base()
       { this->_M_deallocate(); }
@@ -480,8 +489,11 @@ template<typename _Alloc>
     using _Base::_M_get_Bit_allocator;
 
   public:
+    vector()
+    : _Base() { }
+
     explicit
-    vector(const allocator_type& __a = allocator_type())
+    vector(const allocator_type& __a)
     : _Base(__a) { }
 
     explicit
@@ -500,6 +512,12 @@ template<typename _Alloc>
       _M_initialize(__x.size());
       _M_copy_aligned(__x.begin(), __x.end(), this->_M_impl._M_start);
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    vector(vector&& __x)
+    : _Base(__x._M_get_Bit_allocator())
+    { this->swap(__x); }
+#endif
 
     template<typename _InputIterator>
       vector(_InputIterator __first, _InputIterator __last,
@@ -526,6 +544,15 @@ template<typename _Alloc>
 						begin());
       return *this;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    vector&
+    operator=(vector&& __x)
+    { 
+      this->swap(__x); 
+      return *this;
+    }
+#endif
 
     // assign(), a generalized assignment member function.  Two
     // versions: one that takes a count, and one that takes a range.
@@ -681,7 +708,11 @@ template<typename _Alloc>
     }
 
     void
-    swap(vector<bool, _Alloc>& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    swap(vector&& __x)
+#else
+    swap(vector& __x)
+#endif
     {
       std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
       std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);

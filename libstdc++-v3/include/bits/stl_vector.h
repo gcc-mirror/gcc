@@ -84,6 +84,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	_Tp*           _M_start;
 	_Tp*           _M_finish;
 	_Tp*           _M_end_of_storage;
+
+	_Vector_impl()
+	: _Tp_alloc_type(), _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	{ }
+
 	_Vector_impl(_Tp_alloc_type const& __a)
 	: _Tp_alloc_type(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
@@ -104,9 +109,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       get_allocator() const
       { return allocator_type(_M_get_Tp_allocator()); }
 
+      _Vector_base()
+      : _M_impl() { }
+
       _Vector_base(const allocator_type& __a)
-      : _M_impl(__a)
-      { }
+      : _M_impl(__a) { }
 
       _Vector_base(size_t __n, const allocator_type& __a)
       : _M_impl(__a)
@@ -194,15 +201,22 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       /**
        *  @brief  Default constructor creates no elements.
        */
-      explicit
-      vector(const allocator_type& __a = allocator_type())
-      : _Base(__a)
-      { }
+      vector()
+      : _Base() { }
 
       /**
-       *  @brief  Create a %vector with copies of an exemplar element.
+       *  @brief  Creates a %vector with no elements.
+       *  @param  a  An allocator object.
+       */
+      explicit
+      vector(const allocator_type& __a)
+      : _Base(__a) { }
+
+      /**
+       *  @brief  Creates a %vector with copies of an exemplar element.
        *  @param  n  The number of elements to initially create.
        *  @param  value  An element to copy.
+       *  @param  a  An allocator.
        *
        *  This constructor fills the %vector with @a n copies of @a value.
        */
@@ -229,10 +243,24 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 				      _M_get_Tp_allocator());
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  %Vector move constructor.
+       *  @param  x  A %vector of identical element and allocator types.
+       *
+       *  The newly-created %vector contains the exact contents of @a x.
+       *  The contents of @a x are a valid, but unspecified %vector.
+       */
+      vector(vector&& __x)
+      : _Base(__x._M_get_Tp_allocator())
+      { this->swap(__x); }
+#endif
+
       /**
        *  @brief  Builds a %vector from a range.
        *  @param  first  An input iterator.
        *  @param  last  An input iterator.
+       *  @param  a  An allocator.
        *
        *  Create a %vector consisting of copies of the elements from
        *  [first,last).
@@ -274,6 +302,22 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
       vector&
       operator=(const vector& __x);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  %Vector move assignment operator.
+       *  @param  x  A %vector of identical element and allocator types.
+       *
+       *  The contents of @a x are moved into this %vector (without copying).
+       *  @a x is a valid, but unspecified %vector.
+       */
+      vector&
+      operator=(vector&& __x)
+      { 
+	this->swap(__x); 
+	return *this;
+      }
+#endif
 
       /**
        *  @brief  Assigns a given value to a %vector.
@@ -721,7 +765,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  std::swap(v1,v2) will feed to this function.
        */
       void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(vector&& __x)
+#else
       swap(vector& __x)
+#endif
       {
 	std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
 	std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
@@ -1005,6 +1053,18 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     inline void
     swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>& __y)
     { __x.swap(__y); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    inline void
+    swap(vector<_Tp, _Alloc>&& __x, vector<_Tp, _Alloc>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Tp, typename _Alloc>
+    inline void
+    swap(vector<_Tp, _Alloc>& __x, vector<_Tp, _Alloc>&& __y)
+    { __x.swap(__y); }
+#endif
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

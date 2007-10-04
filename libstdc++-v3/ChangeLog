@@ -1,3 +1,93 @@
+2007-10-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2007-10-04  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_list.h (list<>::list(list&&),
+	list<>::operator=(list&&)): Add.
+	(list<>::swap): Adjust.
+	(swap(list&&, list& __y), swap(list&, list&& __y)): Add.
+	* include/bits/stl_vector.h (vector<>::vector(vector&&),
+	vector<>::operator=(vector&&)): Add.
+	(vector<>::swap): Adjust.
+	(swap(vector&&, vector& __y), swap(vector&, vector&& __y)): Add.
+	* include/bits/stl_bvector.h (vector<>::vector(vector&&),
+	vector<>::operator=(vector&&)): Add.
+	(vector<>::swap): Adjust.
+	* include/bits/stl_deque.h (deque<>::deque(deque&&),
+	deque<>::operator=(deque&&)): Add.
+	(deque<>::swap): Adjust.
+	(swap(deque&&, deque& __y), swap(deque&, deque&& __y)): Add.
+	* include/bits/stl_set.h (set<>::set(set&&),
+	set<>::operator=(set&&)): Add.
+	(set<>::swap): Adjust.
+	(swap(set&&, set& __y), swap(set&, set&& __y)): Add.
+	* include/bits/stl_map.h (map<>::map(map&&),
+	map<>::operator=(map&&)): Add.
+	(map<>::swap): Adjust.
+	(swap(map&&, map& __y), swap(map&, map&& __y)): Add.
+	* include/bits/stl_multiset.h (multiset<>::multiset(multiset&&),
+	multiset<>::operator=(multiset&&)): Add.
+	(smultiet<>::swap): Adjust.
+	(swap(multiset&&, multiset& __y),
+	swap(multiset&, multiset&& __y)): Add.
+	* include/bits/stl_multimap.h (multimap<>::multimap(multimap&&),
+	multimap<>::operator=(multimap&&)): Add.
+	(multimap<>::swap): Adjust.
+	(swap(multimap&&, multimap& __y),
+	swap(multimap&, multimap&& __y)): Add.
+
+2007-10-04  Paolo Carlini  <pcarlini@suse.de>
+
+	Avoid copying some allocator objects.
+	* include/bits/stl_list.h (_List_impl::_List_impl(),
+	_List_base::_List_base(), list<>::list()): Add.
+	* include/bits/stl_vector.h  (_Vector_impl::_Vector_impl(),
+	_Vector_base::_Vector_base(), vector<>::vector()): Add.
+	* include/bits/stl_bvector.h (_Bvector_impl::_Bvector_impl(),
+	_Bvector_base::_Bvector_base(), vector<>::vector()): Add.
+	* include/bits/stl_deque.h  (_Deque_impl::_Deque_impl(),
+	_Deque_base::_Deque_base(), deque<>::deque()): Add.
+	* include/bits/stl_tree.h (_Rb_tree_impl<>::_Rb_tree_impl(),
+	_Rb_tree_impl<>::_M_initialize): Add.
+	(_Rb_tree<>::_Rb_tree(const _Compare&, const allocator_type&),
+	_Rb_tree(const _Rb_tree&)): Adjust.
+	* include/bits/stl_set.h (set<>::set(),
+	set(_InputIterator, _InputIterator)): Use _M_t default constructor. 
+	* include/bits/stl_map.h (map<>::map(), set(_InputIterator,
+	_InputIterator)): Use _M_t default constructor. 
+	* include/bits/stl_multiset.h (multiset<>::multiset(),
+	multiset(_InputIterator, _InputIterator)): Use _M_t default
+	constructor. 
+	* include/bits/stl_multimap.h (multimap<>::multimap(),
+	multimap(_InputIterator, _InputIterator)): Use _M_t default
+	constructor.
+
 2007-10-03  Chris Jefferson  <chris@bubblescope.net>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
