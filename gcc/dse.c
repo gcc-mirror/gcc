@@ -1997,7 +1997,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
   /* Assuming that there are sets in these insns, we cannot delete
      them.  */
   if ((GET_CODE (PATTERN (insn)) == CLOBBER)
-      || volatile_insn_p (PATTERN (insn))
+      || volatile_refs_p (PATTERN (insn))
       || (flag_non_call_exceptions && may_trap_p (PATTERN (insn)))
       || (RTX_FRAME_RELATED_P (insn))
       || find_reg_note (insn, REG_FRAME_RELATED_EXPR, NULL_RTX))
