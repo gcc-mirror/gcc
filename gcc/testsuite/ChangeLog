@@ -1,3 +1,8 @@
+2007-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33542
+	* gfortran.dg/ambiguous_specific_1.f90: Remove.
+
 2007-10-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/ext/gnu-inline-global-redecl.C: New.
