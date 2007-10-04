@@ -344,19 +344,13 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_LOGICAL_16) gfc_array_l16;
 typedef struct
 {
   int stdin_unit, stdout_unit, stderr_unit, optional_plus;
-  int allocate_init_flag, allocate_init_value;
   int locus;
 
   int separator_len;
   const char *separator;
 
-  int mem_check;
   int use_stderr, all_unbuffered, default_recl;
-
-  int fpu_round, fpu_precision, fpe;
-
-  int sighup, sigint;
-  int dump_core, backtrace;
+  int fpe, dump_core, backtrace;
 }
 options_t;
 
