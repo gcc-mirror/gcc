@@ -3724,7 +3724,6 @@ verify_gimple_expr (tree expr)
 	    return true;
 	  }
 	if (!POINTER_TYPE_P (TREE_TYPE (op0))
-	    || TREE_CODE (TREE_TYPE (op1)) != INTEGER_TYPE
 	    || !useless_type_conversion_p (type, TREE_TYPE (op0))
 	    || !useless_type_conversion_p (sizetype, TREE_TYPE (op1)))
 	  {
@@ -4023,12 +4022,14 @@ verify_gimple_stmt (tree stmt)
     }
 }
 
-/* Verify the GIMPLE statements inside the statement list STMTS.  */
+/* Verify the GIMPLE statements inside the statement list STMTS.
+   Returns true if there were any errors.  */
 
-void
-verify_gimple_1 (tree stmts)
+static bool
+verify_gimple_2 (tree stmts)
 {
   tree_stmt_iterator tsi;
+  bool err = false;
 
   for (tsi = tsi_start (stmts); !tsi_end_p (tsi); tsi_next (&tsi))
     {
@@ -4037,28 +4038,44 @@ verify_gimple_1 (tree stmts)
       switch (TREE_CODE (stmt))
 	{
 	case BIND_EXPR:
-	  verify_gimple_1 (BIND_EXPR_BODY (stmt));
+	  err |= verify_gimple_2 (BIND_EXPR_BODY (stmt));
 	  break;
 
 	case TRY_CATCH_EXPR:
 	case TRY_FINALLY_EXPR:
-	  verify_gimple_1 (TREE_OPERAND (stmt, 0));
-	  verify_gimple_1 (TREE_OPERAND (stmt, 1));
+	  err |= verify_gimple_2 (TREE_OPERAND (stmt, 0));
+	  err |= verify_gimple_2 (TREE_OPERAND (stmt, 1));
 	  break;
 
 	case CATCH_EXPR:
-	  verify_gimple_1 (CATCH_BODY (stmt));
+	  err |= verify_gimple_2 (CATCH_BODY (stmt));
 	  break;
 
 	case EH_FILTER_EXPR:
-	  verify_gimple_1 (EH_FILTER_FAILURE (stmt));
+	  err |= verify_gimple_2 (EH_FILTER_FAILURE (stmt));
 	  break;
 
 	default:
-	  if (verify_gimple_stmt (stmt))
-	    debug_generic_expr (stmt);
+	  {
+	    bool err2 = verify_gimple_stmt (stmt);
+	    if (err2)
+	      debug_generic_expr (stmt);
+	    err |= err2;
+	  }
 	}
     }
+
+  return err;
+}
+
+
+/* Verify the GIMPLE statements inside the statement list STMTS.  */
+
+void
+verify_gimple_1 (tree stmts)
+{
+  if (verify_gimple_2 (stmts))
+    internal_error ("verify_gimple failed");
 }
 
 /* Verify the GIMPLE statements inside the current function.  */

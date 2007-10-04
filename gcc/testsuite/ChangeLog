@@ -1,3 +1,8 @@
+2007-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33641
+	* gcc.c-torture/compile/pr33641.c: New testcase.
+
 2007-10-04  Michael Matz  <matz@suse.de>
 
 	PR rtl-optimization/33653
