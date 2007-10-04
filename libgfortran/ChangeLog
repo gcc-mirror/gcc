@@ -1,8 +1,20 @@
+2007-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/32021
+	* runtime/environ.c (init_mem, show_mem, init_round, show_round,
+	init_precision, show_precision, init_signal, show_signal): Remove.
+	(variable_table): Remove GFORTRAN_MEM_INIT, GFORTRAN_MEM_CHECK,
+	GFORTRAN_SIGHUP, GFORTRAN_SIGINT, GFORTRAN_FPU_ROUND and
+	GFORTRAN_FPU_PRECISION.
+	* libgfortran.h (options_t): Remove mem_check, fpu_round,
+	fpu_precision, sighup, sigint, allocate_init_flag and
+	allocate_init_value.
+
 2007-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253
 	* io/list_read.c (read_character): Use DELIM_APOSTROPHE and DELIM_QUOTE
-        and quote value in check of first character in string.
+	and quote value in check of first character in string.
 
 2007-10-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 

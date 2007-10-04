@@ -201,78 +201,6 @@ show_boolean (variable * v)
 }
 
 
-/* init_mem()-- Initialize environment variables that have to do with
- * how memory from an ALLOCATE statement is filled.  A single flag
- * enables filling and a second variable gives the value that is used
- * to initialize the memory. */
-
-static void
-init_mem (variable * v)
-{
-  int offset, n;
-  char *p;
-
-  p = getenv (v->name);
-
-  options.allocate_init_flag = 0;	/* The default */
-
-  if (p == NULL)
-    return;
-
-  if (strcasecmp (p, "NONE") == 0)
-    return;
-
-  /* IEEE-754 Quiet Not-a-Number that will work for single and double
-   * precision.  Look for the 'f95' mantissa in debug dumps. */
-
-  if (strcasecmp (p, "NaN") == 0)
-    {
-      options.allocate_init_flag = 1;
-      options.allocate_init_value = 0xfff80f95;
-      return;
-    }
-
-  /* Interpret the string as a hexadecimal constant */
-
-  n = 0;
-  while (*p)
-    {
-      if (!isxdigit (*p))
-	{
-	  v->bad = 1;
-	  return;
-	}
-
-      offset = '0';
-      if (islower (*p))
-	offset = 'a';
-      if (isupper (*p))
-	offset = 'A';
-
-      n = (n << 4) | (*p++ - offset);
-    }
-
-  options.allocate_init_flag = 1;
-  options.allocate_init_value = n;
-}
-
-
-static void
-show_mem (variable * v)
-{
-  char *p;
-
-  p = getenv (v->name);
-
-  st_printf ("%s  ", var_source (v));
-
-  if (options.allocate_init_flag)
-    st_printf ("0x%x", options.allocate_init_value);
-
-  st_printf ("\n");
-}
-
-
 static void
 init_sep (variable * v)
 {
@@ -422,43 +350,6 @@ show_choice (variable * v, const choice * c)
 }
 
 
-static void
-init_round (variable * v)
-{
-  init_choice (v, rounding);
-}
-
-static void
-show_round (variable * v)
-{
-  show_choice (v, rounding);
-}
-
-static void
-init_precision (variable * v)
-{
-  init_choice (v, precision);
-}
-
-static void
-show_precision (variable * v)
-{
-  show_choice (v, precision);
-}
-
-static void
-init_signal (variable * v)
-{
-  init_choice (v, signal_choices);
-}
-
-static void
-show_signal (variable * v)
-{
-  show_choice (v, signal_choices);
-}
-
-
 static variable variable_table[] = {
   {"GFORTRAN_STDIN_UNIT", GFC_STDIN_UNIT_NUMBER, &options.stdin_unit,
    init_integer, show_integer,
@@ -503,34 +394,6 @@ static variable variable_table[] = {
   {"GFORTRAN_LIST_SEPARATOR", 0, NULL, init_sep, show_sep,
    "Separator to use when writing list output.  May contain any number of "
    "spaces\nand at most one comma.  Default is a single space.", 0},
-
-  /* Memory related controls */
-
-  {"GFORTRAN_MEM_INIT", 0, NULL, init_mem, show_mem,
-   "How to initialize allocated memory.  Default value is NONE for no "
-   "initialization\n(faster), NAN for a Not-a-Number with the mantissa "
-   "0x40f95 or a custom\nhexadecimal value", 0},
-
-  {"GFORTRAN_MEM_CHECK", 0, &options.mem_check, init_boolean, show_boolean,
-   "Whether memory still allocated will be reported when the program ends.",
-   0},
-
-  /* Signal handling (Unix).  */
-
-  {"GFORTRAN_SIGHUP", 0, &options.sighup, init_signal, show_signal,
-   "Whether the program will IGNORE or ABORT on SIGHUP.", 0},
-
-  {"GFORTRAN_SIGINT", 0, &options.sigint, init_signal, show_signal,
-   "Whether the program will IGNORE or ABORT on SIGINT.", 0},
-
-  /* Floating point control */
-
-  {"GFORTRAN_FPU_ROUND", 0, &options.fpu_round, init_round, show_round,
-   "Set floating point rounding.  Values are NEAREST, UP, DOWN, ZERO.", 0},
-
-  {"GFORTRAN_FPU_PRECISION", 0, &options.fpu_precision, init_precision,
-   show_precision,
-   "Precision of intermediate results.  Values are 24, 53 and 64.", 0},
 
   /* GFORTRAN_CONVERT_UNIT - Set the default data conversion for
    unformatted I/O.  */
