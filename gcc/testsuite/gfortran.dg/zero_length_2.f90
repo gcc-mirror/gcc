@@ -1,6 +1,6 @@
 ! { dg-do run }
   character(len=1) :: s
-  character(len=0) :: s0 ! { dg-warning "CHARACTER variable has zero length" }
+  character(len=0) :: s0
   s = " "
   s0 = ""
   call bar ("")
