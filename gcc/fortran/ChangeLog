@@ -1,3 +1,8 @@
+2007-10-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33542
+	* interface.c (check_interface1): Revert patch of 10-02.
+
 2007-10-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/26682
