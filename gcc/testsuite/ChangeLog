@@ -1,3 +1,8 @@
+2007-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33627
+	* g++.dg/torture/pr33627.C: New testcase.
+
 2007-10-04  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33626

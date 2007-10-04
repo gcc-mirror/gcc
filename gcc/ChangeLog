@@ -1,3 +1,12 @@
+2007-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33627
+	* tree-gimple.h (canonicalize_cond_expr_cond): Declare.
+	* tree-gimple.c (canonicalize_cond_expr_cond): New function,
+	split out from ...
+	* tree-ssa-forwprop.c (combine_cond_expr_cond): ... here.
+	* tree-ssa-ifcombine.c (ifcombine_iforif): Use it.
+
 2007-10-04  Anatoly Sokolov <aesok@post.ru>
 
  	* config/avr/avr.c (commands_in_file, commands_in_prologues, 
