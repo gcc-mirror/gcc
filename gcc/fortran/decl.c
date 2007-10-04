@@ -1886,20 +1886,80 @@ no_match:
 }
 
 
+static match
+match_char_kind (int * kind, int * is_iso_c)
+{
+  locus where;
+  gfc_expr *e;
+  match m, n;
+  const char *msg;
+
+  m = MATCH_NO;
+  e = NULL;
+  where = gfc_current_locus;
+
+  n = gfc_match_init_expr (&e);
+  if (n == MATCH_NO)
+    gfc_error ("Expected initialization expression at %C");
+  if (n != MATCH_YES)
+    return MATCH_ERROR;
+
+  if (e->rank != 0)
+    {
+      gfc_error ("Expected scalar initialization expression at %C");
+      m = MATCH_ERROR;
+      goto no_match;
+    }
+
+  msg = gfc_extract_int (e, kind);
+  *is_iso_c = e->ts.is_iso_c;
+  if (msg != NULL)
+    {
+      gfc_error (msg);
+      m = MATCH_ERROR;
+      goto no_match;
+    }
+
+  gfc_free_expr (e);
+
+  /* Ignore errors to this point, if we've gotten here.  This means
+     we ignore the m=MATCH_ERROR from above.  */
+  if (gfc_validate_kind (BT_CHARACTER, *kind, true) < 0)
+    {
+      gfc_error ("Kind %d is not supported for CHARACTER at %C", *kind);
+      m = MATCH_ERROR;
+    }
+  else
+     /* All tests passed.  */
+     m = MATCH_YES;
+
+  if (m == MATCH_ERROR)
+     gfc_current_locus = where;
+  
+  /* Return what we know from the test(s).  */
+  return m;
+
+no_match:
+  gfc_free_expr (e);
+  gfc_current_locus = where;
+  return m;
+}
+
 /* Match the various kind/length specifications in a CHARACTER
    declaration.  We don't return MATCH_NO.  */
 
 static match
 match_char_spec (gfc_typespec *ts)
 {
-  int kind, seen_length;
+  int kind, seen_length, is_iso_c;
   gfc_charlen *cl;
   gfc_expr *len;
   match m;
-  gfc_expr *kind_expr = NULL;
-  kind = gfc_default_character_kind;
+
   len = NULL;
   seen_length = 0;
+  kind = 0;
+  is_iso_c = 0;
 
   /* Try the old-style specification first.  */
   old_char_selector = 0;
@@ -1923,7 +1983,7 @@ match_char_spec (gfc_typespec *ts)
   /* Try the weird case:  ( KIND = <int> [ , LEN = <len-param> ] ).  */
   if (gfc_match (" kind =") == MATCH_YES)
     {
-      m = gfc_match_small_int_expr(&kind, &kind_expr);
+      m = match_char_kind (&kind, &is_iso_c);
        
       if (m == MATCH_ERROR)
 	goto done;
@@ -1959,13 +2019,8 @@ match_char_spec (gfc_typespec *ts)
       if (gfc_match (" , kind =") != MATCH_YES)
 	goto syntax;
 
-      gfc_match_small_int_expr(&kind, &kind_expr);
-
-      if (gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
-	{
-	  gfc_error ("Kind %d is not a CHARACTER kind at %C", kind);
-	  return MATCH_YES;
-	}
+      if (match_char_kind (&kind, &is_iso_c) == MATCH_ERROR)
+	goto done;
 
       goto rparen;
     }
@@ -1987,7 +2042,7 @@ match_char_spec (gfc_typespec *ts)
 
   gfc_match (" kind =");	/* Gobble optional text.  */
 
-  m = gfc_match_small_int_expr(&kind, &kind_expr);
+  m = match_char_kind (&kind, &is_iso_c);
   if (m == MATCH_ERROR)
     goto done;
   if (m == MATCH_NO)
@@ -2006,23 +2061,9 @@ syntax:
   return m;
 
 done:
-  if (gfc_validate_kind (BT_CHARACTER, kind, true) < 0)
-    {
-      gfc_error ("Kind %d is not a CHARACTER kind at %C", kind);
-      m = MATCH_ERROR;
-    }
-
-  if (seen_length == 1 && len != NULL
-      && len->ts.type != BT_INTEGER && len->ts.type != BT_UNKNOWN)
-    {
-      gfc_error ("Expression at %C must be of INTEGER type");
-      m = MATCH_ERROR;
-    }
-
   if (m != MATCH_YES)
     {
       gfc_free_expr (len);
-      gfc_free_expr (kind_expr);
       return m;
     }
 
@@ -2037,30 +2078,24 @@ done:
     cl->length = len;
 
   ts->cl = cl;
-  ts->kind = kind;
+  ts->kind = kind == 0 ? gfc_default_character_kind : kind;
 
   /* We have to know if it was a c interoperable kind so we can
      do accurate type checking of bind(c) procs, etc.  */
-  if (kind_expr != NULL)
-    {
-      /* Mark this as c interoperable if being declared with one
-	 of the named constants from iso_c_binding.  */
-      ts->is_c_interop = kind_expr->ts.is_iso_c;
-      gfc_free_expr (kind_expr);
-    }
+  if (kind != 0)
+    /* Mark this as c interoperable if being declared with one
+       of the named constants from iso_c_binding.  */
+    ts->is_c_interop = is_iso_c;
   else if (len != NULL)
-    {
-      /* Here, we might have parsed something such as:
-	 character(c_char)
-	 In this case, the parsing code above grabs the c_char when
-	 looking for the length (line 1690, roughly).  it's the last
-	 testcase for parsing the kind params of a character variable.
-	 However, it's not actually the length.	 this seems like it
-	 could be an error.  
-	 To see if the user used a C interop kind, test the expr
-	 of the so called length, and see if it's C interoperable.  */
-      ts->is_c_interop = len->ts.is_iso_c;
-    }
+    /* Here, we might have parsed something such as: character(c_char)
+       In this case, the parsing code above grabs the c_char when
+       looking for the length (line 1690, roughly).  it's the last
+       testcase for parsing the kind params of a character variable.
+       However, it's not actually the length.	 this seems like it
+       could be an error.  
+       To see if the user used a C interop kind, test the expr
+       of the so called length, and see if it's C interoperable.  */
+    ts->is_c_interop = len->ts.is_iso_c;
   
   return MATCH_YES;
 }

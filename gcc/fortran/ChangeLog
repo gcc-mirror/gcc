@@ -1,5 +1,11 @@
 2007-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/33529
+	* decl.c (match_char_kind): New function.
+	(match_char_spec): Use match_char_kind.
+
+2007-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/33502
 	* scanner.c (gfc_advance_line): Call debug_hooks->end_source_file
 	and debug_hooks->start_source_file when appropriate, and set
