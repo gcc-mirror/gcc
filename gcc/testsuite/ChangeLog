@@ -1,3 +1,8 @@
+2007-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33253
+	* gfortran.dg/namelist_39.f90: Revise to use long names.
+
 2007-10-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR fortran/33646
