@@ -1,3 +1,7 @@
+2007-10-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config.gcc: Remove USE_GAS for m68k targets.
+
 2007-10-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33627
