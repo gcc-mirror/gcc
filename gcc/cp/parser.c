@@ -11475,6 +11475,7 @@ static void
 cp_parser_namespace_definition (cp_parser* parser)
 {
   tree identifier, attribs;
+  bool has_visibility;
 
   /* Look for the `namespace' keyword.  */
   cp_parser_require_keyword (parser, RID_NAMESPACE, "`namespace'");
@@ -11494,9 +11495,18 @@ cp_parser_namespace_definition (cp_parser* parser)
   /* Look for the `{' to start the namespace.  */
   cp_parser_require (parser, CPP_OPEN_BRACE, "`{'");
   /* Start the namespace.  */
-  push_namespace_with_attribs (identifier, attribs);
+  push_namespace (identifier);
+
+  has_visibility = handle_namespace_attrs (current_namespace, attribs);
+
   /* Parse the body of the namespace.  */
   cp_parser_namespace_body (parser);
+
+#ifdef HANDLE_PRAGMA_VISIBILITY
+  if (has_visibility)
+    pop_visibility ();
+#endif
+
   /* Finish the namespace.  */
   pop_namespace ();
   /* Look for the final `}'.  */
