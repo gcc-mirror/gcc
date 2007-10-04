@@ -1,3 +1,9 @@
+2007-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/20416
+	* call.c (initialize_reference): Handle local static reference
+	temps properly.
+
 2007-10-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/32470

@@ -6824,7 +6824,11 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	      if (at_function_scope_p ())
 		{
 		  add_decl_expr (var);
-		  *cleanup = cxx_maybe_build_cleanup (var);
+
+		  if (TREE_STATIC (var))
+		    init = add_stmt_to_compound (init, register_dtor_fn (var));
+		  else
+		    *cleanup = cxx_maybe_build_cleanup (var);
 
 		  /* We must be careful to destroy the temporary only
 		     after its initialization has taken place.  If the
