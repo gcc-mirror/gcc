@@ -1,3 +1,8 @@
+2007-10-04  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/33626
+	* gfortran.dg/parens_6.f90: New.
+
 2007-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33542

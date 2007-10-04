@@ -2942,6 +2942,9 @@ resolve_operator (gfc_expr *e)
       goto bad_op;
 
     case INTRINSIC_PARENTHESES:
+      e->ts = op1->ts;
+      if (e->ts.type == BT_CHARACTER)
+	e->ts.cl = op1->ts.cl;
       break;
 
     default:
@@ -3026,14 +3029,6 @@ resolve_operator (gfc_expr *e)
       break;
 
     case INTRINSIC_PARENTHESES:
-
-      /*  This is always correct and sometimes necessary!  */
-      if (e->ts.type == BT_UNKNOWN)
-	e->ts = op1->ts;
-
-      if (e->ts.type == BT_CHARACTER && !e->ts.cl)
-	e->ts.cl = op1->ts.cl;
-
     case INTRINSIC_NOT:
     case INTRINSIC_UPLUS:
     case INTRINSIC_UMINUS:
