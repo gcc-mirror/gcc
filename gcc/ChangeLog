@@ -1,3 +1,11 @@
+2007-10-04  Anatoly Sokolov <aesok@post.ru>
+
+ 	* config/avr/avr.c (commands_in_file, commands_in_prologues, 
+	commands_in_epilogues): Remove variables.
+	(avr_file_start): Remove unneded initializations of commands_in_file,
+	commands_in_prologues and commands_in_epilogues variables.
+	(avr_file_end): Remove dead code.
+
 2007-10-04  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_output_movem): Use the MOTOROLA if
