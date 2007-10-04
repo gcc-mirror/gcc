@@ -1,3 +1,11 @@
+<<<<<<< .mine
+2007-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33253
+	* io/list_read.c (read_character): Use line_buffer to scan ahead for
+	object name or string when no delimiter is found.
+
+=======
 2007-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/32021
@@ -10,6 +18,7 @@
 	fpu_precision, sighup, sigint, allocate_init_flag and
 	allocate_init_value.
 
+>>>>>>> .r129015
 2007-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253
