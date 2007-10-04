@@ -3,7 +3,7 @@
 ! CHARACTER lengths weren't reduced early enough for all checks of
 ! them to be meaningful.  Furthermore negative string lengths weren't
 ! dealt with correctly.
-CHARACTER(len=0) :: c1  ! { dg-warning "CHARACTER variable has zero length" }
+CHARACTER(len=0) :: c1   ! This is OK.
 CHARACTER(len=-1) :: c2  ! { dg-warning "CHARACTER variable has zero length" }
 PARAMETER(I=-100)
 CHARACTER(len=I) :: c3   ! { dg-warning "CHARACTER variable has zero length" }
