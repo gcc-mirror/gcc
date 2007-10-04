@@ -95,15 +95,6 @@ static const char *const avr_regnames[] = REGISTER_NAMES;
 /* This holds the last insn address.  */
 static int last_insn_address = 0;
 
-/* Commands count in the compiled file */
-static int commands_in_file;
-
-/* Commands in the functions prologues in the compiled file */
-static int commands_in_prologues;
-
-/* Commands in the functions epilogues in the compiled file */
-static int commands_in_epilogues;
-
 /* Preprocessor macros to define depending on MCU type.  */
 const char *avr_base_arch_macro;
 const char *avr_extra_arch_macro;
@@ -4807,10 +4798,6 @@ avr_file_start (void)
      initialization code from libgcc if one or both sections are empty.  */
   fputs ("\t.global __do_copy_data\n", asm_out_file);
   fputs ("\t.global __do_clear_bss\n", asm_out_file);
-
-  commands_in_file = 0;
-  commands_in_prologues = 0;
-  commands_in_epilogues = 0;
 }
 
 /* Outputs to the stdio stream FILE some
@@ -4819,14 +4806,6 @@ avr_file_start (void)
 static void
 avr_file_end (void)
 {
-  fputs ("/* File ", asm_out_file);
-  output_quoted_string (asm_out_file, main_input_filename);
-  fprintf (asm_out_file,
-	   ": code %4d = 0x%04x (%4d), prologues %3d, epilogues %3d */\n",
-	   commands_in_file,
-	   commands_in_file,
-	   commands_in_file - commands_in_prologues - commands_in_epilogues,
-	   commands_in_prologues, commands_in_epilogues);
 }
 
 /* Choose the order in which to allocate hard registers for
