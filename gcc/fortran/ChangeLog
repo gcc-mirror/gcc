@@ -1,3 +1,9 @@
+2007-10-04  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/33626
+	* resolve.c (resolve_operator): Always copy the type for
+	expressions in parentheses.
+
 2007-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33542
