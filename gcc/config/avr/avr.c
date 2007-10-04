@@ -787,13 +787,11 @@ expand_epilogue (void)
   int live_seq;
   int minimize;
   HOST_WIDE_INT size = get_frame_size();
-  rtx insn;
   
   /* epilogue: naked  */
   if (cfun->machine->is_naked)
     {
-      insn = emit_jump_insn (gen_return ());
-      RTX_FRAME_RELATED_P (insn) = 1;
+      emit_jump_insn (gen_return ());
       return;
     }
 
@@ -806,29 +804,23 @@ expand_epilogue (void)
     {
       /* Return value from main() is already in the correct registers
          (r25:r24) as the exit() argument.  */
-      insn = emit_jump_insn (gen_return ());
-      RTX_FRAME_RELATED_P (insn) = 1;
+      emit_jump_insn (gen_return ());
     }
   else if (minimize && (frame_pointer_needed || live_seq > 4))
     {
       if (frame_pointer_needed)
 	{
           /*  Get rid of frame.  */
-          insn = 
-	    emit_move_insn(frame_pointer_rtx,
-                           gen_rtx_PLUS (HImode, frame_pointer_rtx, 
-                                         gen_int_mode (size, HImode)));
-          RTX_FRAME_RELATED_P (insn) = 1;
+	  emit_move_insn(frame_pointer_rtx,
+                         gen_rtx_PLUS (HImode, frame_pointer_rtx,
+                                       gen_int_mode (size, HImode)));
 	}
       else
 	{
-          insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
-          RTX_FRAME_RELATED_P (insn) = 1;
+          emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 	}
 	
-      insn = 
-        emit_insn (gen_epilogue_restores (gen_int_mode (live_seq, HImode)));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      emit_insn (gen_epilogue_restores (gen_int_mode (live_seq, HImode)));
     }
   else
     {
@@ -842,7 +834,7 @@ expand_epilogue (void)
               fp_plus_length = 
 	        get_attr_length (gen_move_insn (frame_pointer_rtx,
                                                 gen_rtx_PLUS (HImode, frame_pointer_rtx,
-                                                              gen_int_mode (size, 
+                                                              gen_int_mode (size,
 									    HImode))));
               /* Copy to stack pointer.  */
               fp_plus_length += 
@@ -855,32 +847,28 @@ expand_epilogue (void)
                   sp_plus_length = 
 		    get_attr_length (gen_move_insn (stack_pointer_rtx,
                                                     gen_rtx_PLUS (HImode, stack_pointer_rtx,
-                                                                  gen_int_mode (size, 
+                                                                  gen_int_mode (size,
 										HImode))));
                 }
               /* Use shortest method.  */
               if (size <= 5 && (sp_plus_length < fp_plus_length))
                 {
-                  insn = emit_move_insn (stack_pointer_rtx,
-                                         gen_rtx_PLUS (HImode, stack_pointer_rtx,
-                                                       gen_int_mode (size, HImode)));
-                  RTX_FRAME_RELATED_P (insn) = 1;
+                  emit_move_insn (stack_pointer_rtx,
+                                  gen_rtx_PLUS (HImode, stack_pointer_rtx,
+                                                gen_int_mode (size, HImode)));
                 }
               else
                 {
-                  insn = emit_move_insn (frame_pointer_rtx,
-                                         gen_rtx_PLUS (HImode, frame_pointer_rtx,
-                                                       gen_int_mode (size, HImode)));
-	          RTX_FRAME_RELATED_P (insn) = 1;	   
+                  emit_move_insn (frame_pointer_rtx,
+                                  gen_rtx_PLUS (HImode, frame_pointer_rtx,
+                                                gen_int_mode (size, HImode)));
                   /* Copy to stack pointer.  */
-                  insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
-	          RTX_FRAME_RELATED_P (insn) = 1;
+                  emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
                 }
             }
         
           /* Restore previous frame_pointer.  */
-	  insn = emit_insn (gen_pophi (frame_pointer_rtx));
-          RTX_FRAME_RELATED_P (insn) = 1;
+	  emit_insn (gen_pophi (frame_pointer_rtx));
 	}
       /* Restore used registers.  */
       HARD_REG_SET set;      
@@ -888,33 +876,25 @@ expand_epilogue (void)
       for (reg = 31; reg >= 0; --reg)
         {
           if (TEST_HARD_REG_BIT (set, reg))
-            {
-              insn = emit_insn (gen_popqi (gen_rtx_REG (QImode, reg)));
-              RTX_FRAME_RELATED_P (insn) = 1;
-            }
+              emit_insn (gen_popqi (gen_rtx_REG (QImode, reg)));
         }
       if (cfun->machine->is_interrupt || cfun->machine->is_signal)
         {
 
           /* Restore SREG using tmp reg as scratch.  */
-          insn = emit_insn (gen_popqi (tmp_reg_rtx));
-          RTX_FRAME_RELATED_P (insn) = 1;
+          emit_insn (gen_popqi (tmp_reg_rtx));
       
-          insn = emit_move_insn (gen_rtx_MEM(QImode, GEN_INT(SREG_ADDR)), 
-				 tmp_reg_rtx);
-          RTX_FRAME_RELATED_P (insn) = 1;
+          emit_move_insn (gen_rtx_MEM(QImode, GEN_INT(SREG_ADDR)), 
+			  tmp_reg_rtx);
 
           /* Restore tmp REG.  */
-          insn = emit_insn (gen_popqi (tmp_reg_rtx));
-          RTX_FRAME_RELATED_P (insn) = 1;
+          emit_insn (gen_popqi (tmp_reg_rtx));
 
           /* Restore zero REG.  */
-          insn = emit_insn (gen_popqi (zero_reg_rtx));
-	  RTX_FRAME_RELATED_P (insn) = 1;
+          emit_insn (gen_popqi (zero_reg_rtx));
         }
 
-      insn = emit_jump_insn (gen_return ());
-      RTX_FRAME_RELATED_P (insn) = 1;
+      emit_jump_insn (gen_return ());
     }
 }
 
