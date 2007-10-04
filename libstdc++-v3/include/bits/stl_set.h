@@ -89,8 +89,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  called (*_unique versus *_equal, same as the standard).
    *  @endif
   */
-  template<class _Key, class _Compare = std::less<_Key>,
-	   class _Alloc = std::allocator<_Key> >
+  template<typename _Key, typename _Compare = std::less<_Key>,
+	   typename _Alloc = std::allocator<_Key> >
     class set
     {
       // concept requirements
@@ -137,20 +137,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       //@}
 
       // allocation/deallocation
-      ///  Default constructor creates no elements.
-      set()
-      : _M_t(_Compare(), allocator_type()) {}
-
       /**
        *  @brief  Default constructor creates no elements.
-       *
+       */
+      set()
+      : _M_t() { }
+
+      /**
+       *  @brief  Creates a %set with no elements.
        *  @param  comp  Comparator to use.
-       *  @param  a  Allocator to use.
+       *  @param  a  An allocator object.
        */
       explicit
       set(const _Compare& __comp,
 	  const allocator_type& __a = allocator_type())
-      : _M_t(__comp, __a) {}
+      : _M_t(__comp, __a) { }
 
       /**
        *  @brief  Builds a %set from a range.
@@ -161,9 +162,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This is linear in N if the range is already sorted, and NlogN
        *  otherwise (where N is distance(first,last)).
        */
-      template<class _InputIterator>
+      template<typename _InputIterator>
         set(_InputIterator __first, _InputIterator __last)
-        : _M_t(_Compare(), allocator_type())
+	: _M_t()
         { _M_t._M_insert_unique(__first, __last); }
 
       /**
@@ -177,7 +178,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This is linear in N if the range is already sorted, and NlogN
        *  otherwise (where N is distance(first,last)).
        */
-      template<class _InputIterator>
+      template<typename _InputIterator>
         set(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp,
 	    const allocator_type& __a = allocator_type())
@@ -185,28 +186,58 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
         { _M_t._M_insert_unique(__first, __last); }
 
       /**
-       *  @brief  Set copy constructor.
+       *  @brief  %Set copy constructor.
        *  @param  x  A %set of identical element and allocator types.
        *
        *  The newly-created %set uses a copy of the allocation object used
        *  by @a x.
        */
-      set(const set<_Key,_Compare,_Alloc>& __x)
+      set(const set& __x)
       : _M_t(__x._M_t) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+     /**
+       *  @brief %Set move constructor
+       *  @param x  A %set of identical element and allocator types.
+       *
+       *  The newly-created %set contains the exact contents of @a x.
+       *  The contents of @a x are a valid, but unspecified %set.
+       */
+      set(set&& __x)
+      : _M_t(__x._M_t.key_comp(),
+	     __x._M_t._M_get_Node_allocator())
+      { this->swap(__x); }
+#endif
+
       /**
-       *  @brief  Set assignment operator.
+       *  @brief  %Set assignment operator.
        *  @param  x  A %set of identical element and allocator types.
        *
        *  All the elements of @a x are copied, but unlike the copy constructor,
        *  the allocator object is not copied.
        */
-      set<_Key,_Compare,_Alloc>&
-      operator=(const set<_Key, _Compare, _Alloc>& __x)
+      set&
+      operator=(const set& __x)
       {
 	_M_t = __x._M_t;
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief %Set move assignment operator.
+       *  @param x  A %set of identical element and allocator types.
+       *
+       *  The contents of @a x are moved into this %set (without copying).
+       *  @a x is a valid, but unspecified %set.
+       */
+      set&
+      operator=(set&& __x)
+      {
+	this->swap(__x); 
+	return *this;
+      }
+#endif
 
       // accessors:
 
@@ -284,7 +315,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  std::swap(s1,s2) will feed to this function.
        */
       void
-      swap(set<_Key,_Compare,_Alloc>& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(set&& __x)
+#else
+      swap(set& __x)	
+#endif
       { _M_t.swap(__x._M_t); }
 
       // insert/erase
@@ -301,7 +336,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        *  Insertion requires logarithmic time.
        */
-      std::pair<iterator,bool>
+      std::pair<iterator, bool>
       insert(const value_type& __x)
       {
 	std::pair<typename _Rep_type::iterator, bool> __p =
@@ -340,7 +375,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        *  Complexity similar to that of the range constructor.
        */
-      template<class _InputIterator>
+      template<typename _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last)
         { _M_t._M_insert_unique(__first, __last); }
@@ -497,13 +532,13 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_t.equal_range(__x); }
       //@}
 
-      template<class _K1, class _C1, class _A1>
+      template<typename _K1, typename _C1, typename _A1>
         friend bool
-        operator== (const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
+        operator==(const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
 
-      template<class _K1, class _C1, class _A1>
+      template<typename _K1, typename _C1, typename _A1>
         friend bool
-        operator< (const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
+        operator<(const set<_K1, _C1, _A1>&, const set<_K1, _C1, _A1>&);
     };
 
 
@@ -517,7 +552,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  Sets are considered equivalent if their sizes are equal, and if
    *  corresponding elements compare equal.
   */
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline bool
     operator==(const set<_Key, _Compare, _Alloc>& __x,
 	       const set<_Key, _Compare, _Alloc>& __y)
@@ -534,45 +569,57 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *
    *  See std::lexicographical_compare() for how the determination is made.
   */
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline bool
     operator<(const set<_Key, _Compare, _Alloc>& __x,
 	      const set<_Key, _Compare, _Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   ///  Returns !(x == y).
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline bool
     operator!=(const set<_Key, _Compare, _Alloc>& __x,
 	       const set<_Key, _Compare, _Alloc>& __y)
     { return !(__x == __y); }
 
   ///  Returns y < x.
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline bool
     operator>(const set<_Key, _Compare, _Alloc>& __x,
 	      const set<_Key, _Compare, _Alloc>& __y)
     { return __y < __x; }
 
   ///  Returns !(y < x)
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline bool
     operator<=(const set<_Key, _Compare, _Alloc>& __x,
 	       const set<_Key, _Compare, _Alloc>& __y)
     { return !(__y < __x); }
 
   ///  Returns !(x < y)
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline bool
     operator>=(const set<_Key, _Compare, _Alloc>& __x,
 	       const set<_Key, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::set::swap().
-  template<class _Key, class _Compare, class _Alloc>
+  template<typename _Key, typename _Compare, typename _Alloc>
     inline void
     swap(set<_Key, _Compare, _Alloc>& __x, set<_Key, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline void
+    swap(set<_Key, _Compare, _Alloc>&& __x, set<_Key, _Compare, _Alloc>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Key, typename _Compare, typename _Alloc>
+    inline void
+    swap(set<_Key, _Compare, _Alloc>& __x, set<_Key, _Compare, _Alloc>&& __y)
+    { __x.swap(__y); }
+#endif
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

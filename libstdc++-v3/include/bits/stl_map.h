@@ -155,25 +155,41 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  @brief  Default constructor creates no elements.
        */
       map()
-      : _M_t(_Compare(), allocator_type()) { }
+      : _M_t() { }
 
-      // for some reason this was made a separate function
       /**
-       *  @brief  Default constructor creates no elements.
+       *  @brief  Creates a %map with no elements.
+       *  @param  comp  A comparison object.
+       *  @param  a  An allocator object.
        */
       explicit
-      map(const _Compare& __comp, const allocator_type& __a = allocator_type())
+      map(const _Compare& __comp,
+	  const allocator_type& __a = allocator_type())
       : _M_t(__comp, __a) { }
 
       /**
-       *  @brief  Map copy constructor.
+       *  @brief  %Map copy constructor.
        *  @param  x  A %map of identical element and allocator types.
        *
-       *  The newly-created %map uses a copy of the allocation object used
-       *  by @a x.
+       *  The newly-created %map uses a copy of the allocation object
+       *  used by @a x.
        */
       map(const map& __x)
       : _M_t(__x._M_t) { }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  %Map move constructor.
+       *  @param  x  A %map of identical element and allocator types.
+       *
+       *  The newly-created %map contains the exact contents of @a x.
+       *  The contents of @a x are a valid, but unspecified %map.
+       */
+      map(map&& __x)
+      : _M_t(__x._M_t.key_comp(),
+	     __x._M_t._M_get_Node_allocator())
+      { this->swap(__x); }
+#endif
 
       /**
        *  @brief  Builds a %map from a range.
@@ -184,9 +200,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This is linear in N if the range is already sorted, and NlogN
        *  otherwise (where N is distance(first,last)).
        */
-      template <typename _InputIterator>
+      template<typename _InputIterator>
         map(_InputIterator __first, _InputIterator __last)
-	: _M_t(_Compare(), allocator_type())
+	: _M_t()
         { _M_t._M_insert_unique(__first, __last); }
 
       /**
@@ -200,9 +216,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  This is linear in N if the range is already sorted, and NlogN
        *  otherwise (where N is distance(first,last)).
        */
-      template <typename _InputIterator>
+      template<typename _InputIterator>
         map(_InputIterator __first, _InputIterator __last,
-	    const _Compare& __comp, const allocator_type& __a = allocator_type())
+	    const _Compare& __comp,
+	    const allocator_type& __a = allocator_type())
 	: _M_t(__comp, __a)
         { _M_t._M_insert_unique(__first, __last); }
 
@@ -216,7 +233,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        */
 
       /**
-       *  @brief  Map assignment operator.
+       *  @brief  %Map assignment operator.
        *  @param  x  A %map of identical element and allocator types.
        *
        *  All the elements of @a x are copied, but unlike the copy constructor,
@@ -228,6 +245,22 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	_M_t = __x._M_t;
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  %Map move assignment operator.
+       *  @param  x  A %map of identical element and allocator types.
+       *
+       *  The contents of @a x are moved into this map (without copying).
+       *  @a x is a valid, but unspecified %map.
+       */
+      map&
+      operator=(map&& __x)
+      {
+	this->swap(__x); 
+	return *this;
+      }
+#endif
 
       /// Get a copy of the memory allocation object.
       allocator_type
@@ -434,7 +467,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *
        *  Complexity similar to that of the range constructor.
        */
-      template <typename _InputIterator>
+      template<typename _InputIterator>
         void
         insert(_InputIterator __first, _InputIterator __last)
         { _M_t._M_insert_unique(__first, __last); }
@@ -495,7 +528,11 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  that std::swap(m1,m2) will feed to this function.
        */
       void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(map&& __x)
+#else
       swap(map& __x)
+#endif
       { _M_t.swap(__x._M_t); }
 
       /**
@@ -656,15 +693,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
 
-      template <typename _K1, typename _T1, typename _C1, typename _A1>
+      template<typename _K1, typename _T1, typename _C1, typename _A1>
         friend bool
-        operator== (const map<_K1, _T1, _C1, _A1>&,
-		    const map<_K1, _T1, _C1, _A1>&);
-
-      template <typename _K1, typename _T1, typename _C1, typename _A1>
-        friend bool
-        operator< (const map<_K1, _T1, _C1, _A1>&,
+        operator==(const map<_K1, _T1, _C1, _A1>&,
 		   const map<_K1, _T1, _C1, _A1>&);
+
+      template<typename _K1, typename _T1, typename _C1, typename _A1>
+        friend bool
+        operator<(const map<_K1, _T1, _C1, _A1>&,
+		  const map<_K1, _T1, _C1, _A1>&);
     };
 
   /**
@@ -677,7 +714,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *  maps.  Maps are considered equivalent if their sizes are equal,
    *  and if corresponding elements compare equal.
   */
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator==(const map<_Key, _Tp, _Compare, _Alloc>& __x,
                const map<_Key, _Tp, _Compare, _Alloc>& __y)
@@ -694,46 +731,60 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
    *
    *  See std::lexicographical_compare() for how the determination is made.
   */
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<(const map<_Key, _Tp, _Compare, _Alloc>& __x,
               const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __x._M_t < __y._M_t; }
 
   /// Based on operator==
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator!=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
                const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>(const map<_Key, _Tp, _Compare, _Alloc>& __x,
               const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator<=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
                const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline bool
     operator>=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
                const map<_Key, _Tp, _Compare, _Alloc>& __y)
     { return !(__x < __y); }
 
   /// See std::map::swap().
-  template <typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
     inline void
     swap(map<_Key, _Tp, _Compare, _Alloc>& __x,
 	 map<_Key, _Tp, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+    inline void
+    swap(map<_Key, _Tp, _Compare, _Alloc>&& __x,
+	 map<_Key, _Tp, _Compare, _Alloc>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
+    inline void
+    swap(map<_Key, _Tp, _Compare, _Alloc>& __x,
+	 map<_Key, _Tp, _Compare, _Alloc>&& __y)
+    { __x.swap(__y); }
+#endif
 
 _GLIBCXX_END_NESTED_NAMESPACE
 
