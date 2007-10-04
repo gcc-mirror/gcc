@@ -1,3 +1,7 @@
+2006-10-04  Seongbae Park <seongbae.park@gmail.com>
+
+	* MAINTAINERS (Register allocation reviewer): Add myself.
+
 2007-10-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (AR_FOR_BUILD, AS_FOR_BUILD, CXX_FOR_BUILD,
