@@ -1,3 +1,8 @@
+2007-10-04  Michael Matz  <matz@suse.de>
+
+	PR rtl-optimization/33653
+	* gcc.dg/pr33653.c: New.
+
 2007-10-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/33627
