@@ -6,6 +6,7 @@
 
 2007-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33646
 	PR fortran/33542
 	* interface.c (check_interface1): Revert patch of 10-02.
 
