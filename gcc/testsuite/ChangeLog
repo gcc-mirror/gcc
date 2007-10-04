@@ -15,6 +15,7 @@
 
 2007-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33646
 	PR fortran/33542
 	* gfortran.dg/ambiguous_specific_1.f90: Remove.
 
