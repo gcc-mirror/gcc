@@ -85,49 +85,139 @@ extern struct allocno *allocno;
 
 extern int max_allocno;
 
-/* max_allocno by max_allocno array of bits, recording whether two
-   allocno's conflict (can't go in the same hardware register).
+/* max_allocno by max_allocno compressed triangular bit matrix,
+   recording whether two allocnos conflict (can't go in the same
+   hardware register).  */
 
-   `conflicts' is symmetric after the call to mirror_conflicts.  */
-
-extern HOST_WIDE_INT *conflicts;
-
-/* Number of ints required to hold max_allocno bits.
-   This is the length of a row in `conflicts'.  */
-
-extern int allocno_row_words;
+extern HOST_WIDEST_FAST_INT *conflicts;
 
 /* Indexed by (pseudo) reg number, gives the allocno, or -1
    for pseudo registers which are not to be allocated.  */
 
 extern int *reg_allocno;
 
+/* Precalculated partial bit number in the compressed triangular bit matrix.
+   For two allocnos, the final bit number is: partial_bitnum[LOW] + HIGH.  */
+
+extern int *partial_bitnum;
+
+/* Size in bits of the compressed triangular bit matrix.  */
+
+extern int max_bitnum;
+
+/* The pool to allocate the adjacency list elements from.  */
+
+extern alloc_pool adjacency_pool;
+
+/* The maximum number of neighbors stored in the neighbors vector before
+   we have to chain in another vector.  */
+
+#define ADJACENCY_VEC_LENGTH 30
+
+/* Conflict graph adjacency list.  */
+
+typedef struct adjacency_list_d
+{
+  int neighbors[ADJACENCY_VEC_LENGTH];
+  unsigned int index;
+  struct adjacency_list_d *next;
+} adjacency_t;
+
+extern adjacency_t **adjacency;
+
+/* Add NEIGHBOR to ALLOC_NO's adjacency list.  It is assumed the caller
+   has already determined that NEIGHBOR is not already neighbor by
+   checking the conflict bit matrix.  */
+
+static inline void
+add_neighbor (int alloc_no, int neighbor)
+{
+  adjacency_t *adjlist = adjacency[alloc_no];
+
+  if (adjlist == NULL || adjlist->index == ADJACENCY_VEC_LENGTH)
+    {
+      adjacency_t *new = pool_alloc (adjacency_pool);
+      new->index = 0;
+      new->next = adjlist;
+      adjlist = new;
+      adjacency[alloc_no] = adjlist;
+    }
+
+  adjlist->neighbors[adjlist->index++] = neighbor;
+}
+
+/* Iterator for adjacency lists.  */
+
+typedef struct adjacency_iterator_d
+{
+  adjacency_t *vec;
+  unsigned int idx;
+} adjacency_iter;
+
+/* Initialize a single adjacency list iterator.  */
+
+static inline int
+adjacency_iter_init (adjacency_iter *ai, int allocno1)
+{
+  ai->vec = adjacency[allocno1];
+  ai->idx = 0;
+  return ai->vec != NULL;
+}
+
+/* Test whether we have visited all of the neighbors.  */
+
+static inline int
+adjacency_iter_done (adjacency_iter *ai)
+{
+  return ai->idx > ai->vec->index;
+}
+
+/* Advance to the next neighbor in AI.  */
+
+static inline int
+adjacency_iter_next (adjacency_iter *ai)
+{
+  unsigned int idx = ai->idx;
+  int neighbor = ai->vec->neighbors[idx++];
+  if (idx >= ai->vec->index && ai->vec->next != NULL)
+    {
+      ai->vec = ai->vec->next;
+      ai->idx = 0;
+    }
+  else
+    ai->idx = idx;
+  return neighbor;
+}
+
+/* Return the one basic block regno is used in.  If regno is used
+   in more than one basic block or if it is unknown which block it
+   is used in, return 0.  */
+
+static inline int
+regno_basic_block (int regno)
+{
+  int block = REG_BASIC_BLOCK (regno);
+  if (block < 0)
+    block = 0;
+  return block;
+}
+
 extern void global_conflicts (void);
 
 /* In global.c  */
 
-/* For any allocno set in ALLOCNO_SET, set ALLOCNO to that allocno,
-   and execute CODE.  */
-#define EXECUTE_IF_SET_IN_ALLOCNO_SET(ALLOCNO_SET, ALLOCNO, CODE)	\
-do {									\
-  int i_;								\
-  int allocno_;								\
-  HOST_WIDE_INT *p_ = (ALLOCNO_SET);					\
-									\
-  for (i_ = allocno_row_words - 1, allocno_ = 0; i_ >= 0;		\
-       i_--, allocno_ += HOST_BITS_PER_WIDE_INT)			\
-    {									\
-      unsigned HOST_WIDE_INT word_ = (unsigned HOST_WIDE_INT) *p_++;	\
-									\
-      for ((ALLOCNO) = allocno_; word_; word_ >>= 1, (ALLOCNO)++)	\
-	{								\
-	  if (word_ & 1)						\
-	    {CODE;}							\
-	}								\
-    }									\
-} while (0)
+/* Macro to visit all of IN_ALLOCNO's neighbors.  Neighbors are
+   returned in OUT_ALLOCNO for each iteration of the loop.  */
 
-extern void ra_init_live_subregs (bool, sbitmap *, int *, int, rtx reg);
+#define FOR_EACH_CONFLICT(IN_ALLOCNO, OUT_ALLOCNO, ITER)		\
+  if (!adjacency || !adjacency_iter_init (&(ITER), (IN_ALLOCNO)))	\
+    ;									\
+  else									\
+    for ((OUT_ALLOCNO) = adjacency_iter_next (&(ITER));			\
+	 !adjacency_iter_done (&(ITER));				\
+	 (OUT_ALLOCNO) = adjacency_iter_next (&(ITER)))
 
+extern void ra_init_live_subregs (bool, sbitmap *, int *, int, rtx);
+extern bool conflict_p (int, int);
 
 #endif /* GCC_RA_H */
