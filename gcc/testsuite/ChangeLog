@@ -1,3 +1,8 @@
+2007-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33666
+	* gcc.dg/pr33666.c: New testcase.
+
 2007-10-05  Michael Matz  <matz@suse.de>
 
 	PR inline-asm/33600

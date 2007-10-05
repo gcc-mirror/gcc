@@ -8128,7 +8128,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	     (for integers).  Avoid this if the final type is a pointer
 	     since then we sometimes need the inner conversion.  Likewise if
 	     the outer has a precision not equal to the size of its mode.  */
-	  if ((((inter_int || inter_ptr) && (inside_int || inside_ptr))
+	  if (((inter_int && inside_int)
 	       || (inter_float && inside_float)
 	       || (inter_vec && inside_vec))
 	      && inter_prec >= inside_prec
@@ -8158,7 +8158,6 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	       intermediate and final types differ, or
 	     - the final type is a pointer type and the precisions of the
 	       initial and intermediate types differ.
-	     - the final type is a pointer type and the initial type not
 	     - the initial type is a pointer to an array and the final type
 	       not.  */
 	  if (! inside_float && ! inter_float && ! final_float
@@ -8173,8 +8172,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	      && ! (final_ptr && inside_prec != inter_prec)
 	      && ! (final_prec != GET_MODE_BITSIZE (TYPE_MODE (type))
 		    && TYPE_MODE (type) == TYPE_MODE (inter_type))
-	      && final_ptr == inside_ptr
-	      && ! (inside_ptr
+	      && ! (inside_ptr && final_ptr
 		    && TREE_CODE (TREE_TYPE (inside_type)) == ARRAY_TYPE
 		    && TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
 	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
