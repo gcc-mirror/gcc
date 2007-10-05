@@ -3850,6 +3850,10 @@ verify_gimple_expr (tree expr)
 	 didn't see a function declaration before the call.  */
       return false;
 
+    case OBJ_TYPE_REF:
+      /* FIXME.  */
+      return false;
+
     default:;
     }
 
