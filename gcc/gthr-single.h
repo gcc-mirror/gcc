@@ -251,25 +251,6 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
   return __gthread_mutex_unlock (mutex);
 }
 
-static inline int
-__gthread_cond_broadcast (__gthread_cond_t cond)
-{
-  return 0;
-}
-
-static inline int
-__gthread_cond_wait (__gthread_cond_t cond, __gthread_mutex_t *mutex)
-{
-  return 0;
-}
-
-static inline int
-__gthread_cond_wait_recursive (__gthread_cond_t cond,
-			       __gthread_recursive_mutex_t *mutex)
-{
-  return 0;
-}
-
 #endif /* _LIBOBJC */
 
 #undef UNUSED

@@ -1,3 +1,7 @@
+2007-10-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gthr-single.h: Revert last change.
+
 2007-10-05  Michael Matz  <matz@suse.de>
 
 	PR middle-end/33667
