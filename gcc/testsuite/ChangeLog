@@ -1,3 +1,8 @@
+2007-10-05  Michael Matz  <matz@suse.de>
+
+	PR inline-asm/33600
+	* gcc.target/i386/pr33600.c: New testcase.
+
 2007-10-05  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/tree-ssa/obj-type-ref.C: New testcase.

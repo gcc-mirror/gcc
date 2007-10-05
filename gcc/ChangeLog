@@ -1,3 +1,9 @@
+2007-10-05  Michael Matz  <matz@suse.de>
+
+	PR inline-asm/33600
+	* function.c (match_asm_constraints_1): Check for input
+	being used in the outputs.
+
 2007-10-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_expr): Accept OBJ_TYPE_REF.

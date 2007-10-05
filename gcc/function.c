@@ -5716,7 +5716,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
 	 which wouldn't have happen without this pass.  So, iterate over
 	 all operands and replace all occurences of the register used.  */
       for (j = 0; j < noutputs; j++)
-	if (!rtx_equal_p (SET_DEST (p_sets[j]), output)
+	if (!rtx_equal_p (SET_DEST (p_sets[j]), input)
 	    && reg_overlap_mentioned_p (input, SET_DEST (p_sets[j])))
 	  SET_DEST (p_sets[j]) = replace_rtx (SET_DEST (p_sets[j]),
 					      input, output);
