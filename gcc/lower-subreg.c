@@ -1339,7 +1339,7 @@ decompose_multiword_subregs (void)
 			  int dup_num = recog_data.dup_num[i];
 			  rtx *px = recog_data.operand_loc[dup_num];
 
-			  validate_change (insn, pl, *px, 1);
+			  validate_unshare_change (insn, pl, *px, 1);
 			}
 
 		      i = apply_change_group ();
