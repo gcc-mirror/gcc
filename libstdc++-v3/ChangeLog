@@ -1,3 +1,23 @@
+2007-10-04  Doug Kwan  <dougkwan@google.com>
+
+	* include/ext/concurrent.h (class __mutex,
+	class __recursive_mutex): Add new method gthread_mutex to access
+	inner gthread mutex.
+	[__GTHREAD_HAS_COND] (class __concurrence_broadcast_error,
+	class __concurrence_wait_error, class __cond): Add.
+	* libsupc++/guard.cc (recursive_push, recursive_pop): Delete.
+	(init_in_progress_flag, set_init_in_progress_flag): Add to
+	replace recursive_push and recursive_pop.
+	(throw_recursive_init_exception): Add.
+	(acquire, __cxa_guard_acquire, __cxa_guard_abort and
+	__cxa_guard_release): [__GTHREAD_HAS_COND] Use a conditional
+	for synchronization of static variable initialization.
+	The global mutex is only held briefly when guards are
+	accessed. [!__GTHREAD_HAS_COND] Fall back to the old code,
+	which deadlocks.
+	* testsuite/thread/guard.cc: Add new test. It deadlocks with the
+	old locking code in libstdc++-v3/libsup++/guard.cc.
+
 2007-10-04  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
