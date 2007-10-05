@@ -1,3 +1,31 @@
+2007-10-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.h (gfc_get_data_variable, gfc_get_data_value,
+	gfc_get_data): Move to decl.c.
+	(global_used): Rename into gfc_global_used.
+	(gfc_formalize_init_value, gfc_get_section_index,
+	gfc_assign_data_value, gfc_assign_data_value_range,
+	gfc_advance_section): Move to data.h.
+	(gfc_set_in_match_data): Remove.
+	* decl.c (gfc_get_data_variable, gfc_get_data_value,
+	gfc_get_data): Move here.
+	(gfc_set_in_match_data): Rename into set_in_match_data.
+	(gfc_match_data): Likewise.
+	(add_global_entry): Rename global_used into gfc_global_used.
+	* data.c: Include data.h.
+	* trans.h (gfc_todo_error): Remove.
+	* trans-array.c (gfc_trans_array_constructor,
+	gfc_conv_ss_startstride, gfc_conv_loop_setup): Change
+	gfc_todo_error into assertions.
+	* resolve.c (resolve_global_procedure): Rename global_used into
+	gfc_global_used.
+	* parse.c (gfc_global_used, parse_module, add_global_procedure,
+	add_global_program): Likewise.
+	* trans-intrinsic.c (gfc_walk_intrinsic_function): Rename
+	global_used into gfc_global_used.
+	* Make-lang.in: Add dependencies on fortran/data.h.
+	* data.h: New file.
+
 2007-10-04  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33529

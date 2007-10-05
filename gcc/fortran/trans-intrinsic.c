@@ -4269,10 +4269,9 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
 
     default:
       /* This probably meant someone forgot to add an intrinsic to the above
-         list(s) when they implemented it, or something's gone horribly wrong.
-       */
-      gfc_todo_error ("Scalarization of non-elemental intrinsic: %s",
-		      expr->value.function.name);
+         list(s) when they implemented it, or something's gone horribly
+	 wrong.  */
+      gcc_unreachable ();
     }
 }
 

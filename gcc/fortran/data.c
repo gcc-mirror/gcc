@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "gfortran.h"
+#include "data.h"
 
 static void formalize_init_expr (gfc_expr *);
 
