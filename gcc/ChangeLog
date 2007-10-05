@@ -1,3 +1,10 @@
+2007-10-05  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR target/33635
+	* config/mips/mips.c (mips_register_move_cost): Rewrite to use
+	subset checks.  Make the cost of FPR -> FPR moves depend on
+	mips_mode_ok_for_mov_fmt_p.
+
 2007-10-04  Doug Kwan  <dougkwan@google.com>
 
 	* gthr-posix.h (__gthread_cond_broadcast, __gthread_cond_wait,

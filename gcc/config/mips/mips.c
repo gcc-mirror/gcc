@@ -10969,68 +10969,53 @@ mips_init_libfuncs (void)
    we need to use.  This gets pretty messy, but it is feasible.  */
 
 int
-mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+mips_register_move_cost (enum machine_mode mode,
 			 enum reg_class to, enum reg_class from)
 {
-  if (from == M16_REGS && reg_class_subset_p (to, GENERAL_REGS))
-    return 2;
-  else if (from == M16_NA_REGS && reg_class_subset_p (to, GENERAL_REGS))
-    return 2;
+  if (TARGET_MIPS16)
+    {
+      if (reg_class_subset_p (from, GENERAL_REGS)
+	  && reg_class_subset_p (to, GENERAL_REGS))
+	{
+	  if (reg_class_subset_p (from, M16_REGS)
+	      || reg_class_subset_p (to, M16_REGS))
+	    return 2;
+	  /* Two MOVEs.  */
+	  return 4;
+	}
+    }
   else if (reg_class_subset_p (from, GENERAL_REGS))
     {
-      if (to == M16_REGS)
-	return 2;
-      else if (to == M16_NA_REGS)
-	return 2;
-      else if (reg_class_subset_p (to, GENERAL_REGS))
-	{
-	  if (TARGET_MIPS16)
-	    return 4;
-	  else
-	    return 2;
-	}
-      else if (to == FP_REGS)
-	return 4;
-      else if (reg_class_subset_p (to, ACC_REGS))
-	{
-	  if (TARGET_MIPS16)
-	    return 12;
-	  else
-	    return 6;
-	}
-      else if (reg_class_subset_p (to, ALL_COP_REGS))
-	{
-	  return 5;
-	}
-    }
-  else if (from == FP_REGS)
-    {
       if (reg_class_subset_p (to, GENERAL_REGS))
-	return 4;
-      else if (to == FP_REGS)
 	return 2;
-      else if (to == ST_REGS)
+      if (reg_class_subset_p (to, FP_REGS))
+	return 4;
+      if (reg_class_subset_p (to, ALL_COP_AND_GR_REGS))
+	return 5;
+      if (reg_class_subset_p (to, ACC_REGS))
+	return 6;
+    }
+  else if (reg_class_subset_p (to, GENERAL_REGS))
+    {
+      if (reg_class_subset_p (from, FP_REGS))
+	return 4;
+      if (reg_class_subset_p (from, ST_REGS))
+	/* LUI followed by MOVF.  */
+	return 4;
+      if (reg_class_subset_p (from, ALL_COP_AND_GR_REGS))
+	return 5;
+      if (reg_class_subset_p (from, ACC_REGS))
+	return 6;
+    }
+  else if (reg_class_subset_p (from, FP_REGS))
+    {
+      if (reg_class_subset_p (to, FP_REGS)
+	  && mips_mode_ok_for_mov_fmt_p (mode))
+	return 4;
+      if (reg_class_subset_p (to, ST_REGS))
+	/* An expensive sequence.  */
 	return 8;
     }
-  else if (reg_class_subset_p (from, ACC_REGS))
-    {
-      if (reg_class_subset_p (to, GENERAL_REGS))
-	{
-	  if (TARGET_MIPS16)
-	    return 12;
-	  else
-	    return 6;
-	}
-    }
-  else if (from == ST_REGS && reg_class_subset_p (to, GENERAL_REGS))
-    return 4;
-  else if (reg_class_subset_p (from, ALL_COP_REGS))
-    {
-      return 5;
-    }
-
-  /* Fall through.
-     ??? What cases are these? Shouldn't we return 2 here?  */
 
   return 12;
 }
