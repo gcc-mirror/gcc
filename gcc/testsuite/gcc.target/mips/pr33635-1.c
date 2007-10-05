@@ -1,6 +1,6 @@
 /* { dg-mips-options "-mabi=64 -O2" } */
 
-long double __powitf2 (long double x, int m)
+NOMIPS16 long double __powitf2 (long double x, int m)
 {
   long double y = x;
   while (m >>= 1)
