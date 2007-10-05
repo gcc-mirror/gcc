@@ -1,3 +1,52 @@
+2007-10-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* ra-conflict.c: Include "sparseset.h".
+	(conflicts): Change to HOST_WIDEST_FAST_INT.
+	(allocnos_live): Redefine variable as a sparseset.
+	(SET_ALLOCNO_LIVE, CLEAR_ALLOCNO_LIVE, GET_ALLOCNO_LIVE): Delete macros.
+	(allocno_row_words): Removed global variable.
+	(partial_bitnum, max_bitnum, adjacency_pool, adjacency): New variables.
+	(CONFLICT_BITNUM, CONFLICT_BITNUM_FAST): New defines.
+	(conflict_p, set_conflict_p, set_conflicts_p): New functions.
+	(record_one_conflict_between_regnos): Cache allocno values and reuse.
+	Use set_conflict_p.
+	(record_one_conflict): Update uses of allocnos_live to use
+	the sparseset routines.  Use set_conflicts_p.
+	(mark_reg_store): Likewise.
+	(set_reg_in_live): Likewise.
+	(global_conflicts): Update uses of allocnos_live.
+	Use the new adjacency list to visit an allocno's neighbors
+	rather than iterating over all possible allocnos.
+	Call set_conflicts_p to setup conflicts rather than adding
+	them manually.
+	* global.c: Comments updated.  
+	(CONFLICTP): Delete define.
+	(regno_compare): New function.  Add prototype.
+	(global_alloc): Sort the allocno to regno mapping according to
+	which basic blocks the regnos are referenced in.  Modify the
+	conflict bit matrix to a compressed triangular bitmatrix.
+	Only allocate the conflict bit matrix and adjacency lists if
+	we are actually going to allocate something.
+	(expand_preferences): Use conflict_p.  Update uses of allocnos_live.
+	(prune_preferences): Use the FOR_EACH_CONFLICT macro to visit an
+	allocno's neighbors rather than iterating over all possible allocnos.
+	(mirror_conflicts): Removed function.
+	(dump_conflicts): Iterate over regnos rather than allocnos so
+	that all dump output will be sorted by regno number.
+	Use the FOR_EACH_CONFLICT macro.
+	* ra.h: Comments updated.
+	(conflicts): Update prototype to HOST_WIDEST_FAST_INT.
+	(partial_bitnum, max_bitnum, adjacency, adjacency_pool): Add prototypes.
+	(ADJACENCY_VEC_LENGTH, FOR_EACH_CONFLICT): New defines.
+	(adjacency_list_d, adjacency_iterator_d): New types.
+	(add_neighbor, adjacency_iter_init, adjacency_iter_done,
+	adjacency_iter_next, regno_basic_block): New static inline functions.
+	(EXECUTE_IF_SET_IN_ALLOCNO_SET): Removed define.
+	(conflict_p): Add function prototype.
+	* sparseset.h, sparseset.c: New files.
+	* Makefile.in (OBJS-common): Add sparseset.o.
+	(sparseset.o): New rule.
+
 2007-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33666

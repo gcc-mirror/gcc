@@ -1126,6 +1126,7 @@ OBJS-common = \
 	sdbout.o \
 	see.o \
 	simplify-rtx.o \
+	sparseset.o \
 	sreal.o \
 	stack-ptr-mod.o \
 	stmt.o \
@@ -1765,6 +1766,7 @@ sbitmap.o: sbitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(FLAGS_H) hard-reg-set.h $(BASIC_BLOCK_H) $(OBSTACK_H)
 ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(EBITMAP_H)
+sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h
 
 COLLECT2_OBJS = collect2.o tlink.o intl.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
