@@ -81,6 +81,24 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      int __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex);
      int __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex);
 
+   The following are supported in POSIX threads only. They are required to
+   fix a deadlock in static initialization inside libsupc++. The header file
+   gthr-posix.h defines a symbol __GTHREAD_HAS_COND to signify that these extra
+   features are supported.
+
+   Types:
+     __gthread_cond_t
+
+   Macros:
+     __GTHREAD_COND_INIT
+     __GTHREAD_COND_INIT_FUNCTION
+
+   Interface:
+     int __gthread_cond_broadcast (__gthread_cond_t *cond);
+     int __gthread_cond_wait (__gthread_cond_t *cond, __gthread_mutex_t *mutex);
+     int __gthread_cond_wait_recursive (__gthread_cond_t *cond,
+					__gthread_recursive_mutex_t *mutex);
+
    All functions returning int should return zero on success or the error
    number.  If the operation is not supported, -1 is returned.
 

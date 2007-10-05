@@ -45,6 +45,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 typedef pthread_key_t __gthread_key_t;
 typedef pthread_once_t __gthread_once_t;
 typedef pthread_mutex_t __gthread_mutex_t;
+typedef pthread_cond_t __gthread_cond_t;
+
+/* POSIX like conditional variables are supported.  Please look at comments
+   in gthr.h for details. */
+#define __GTHREAD_HAS_COND	1
 
 typedef struct {
   long depth;
@@ -55,6 +60,7 @@ typedef struct {
 #define __GTHREAD_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
 #define __GTHREAD_ONCE_INIT PTHREAD_ONCE_INIT
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
+#define __GTHREAD_COND_INIT PTHREAD_COND_INITIALIZER
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
 # define __gthrw(name) \
@@ -81,14 +87,14 @@ __gthrw(pthread_mutexattr_init)
 __gthrw(pthread_mutexattr_destroy)
 
 __gthrw(pthread_mutex_init)
+__gthrw(pthread_cond_broadcast)
+__gthrw(pthread_cond_wait)
 
 #if defined(_LIBOBJC) || defined(_LIBOBJC_WEAK)
 /* Objective-C.  */
-__gthrw(pthread_cond_broadcast)
 __gthrw(pthread_cond_destroy)
 __gthrw(pthread_cond_init)
 __gthrw(pthread_cond_signal)
-__gthrw(pthread_cond_wait)
 __gthrw(pthread_exit)
 __gthrw(pthread_mutex_destroy)
 #ifdef _POSIX_PRIORITY_SCHEDULING
@@ -717,6 +723,25 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 	}
     }
   return 0;
+}
+
+static inline int
+__gthread_cond_broadcast (__gthread_cond_t *cond)
+{
+  return __gthrw_(pthread_cond_broadcast) (cond);
+}
+
+static inline int
+__gthread_cond_wait (__gthread_cond_t *cond, __gthread_mutex_t *mutex)
+{
+  return __gthrw_(pthread_cond_wait) (cond, mutex);
+}
+
+static inline int
+__gthread_cond_wait_recursive (__gthread_cond_t *cond,
+			       __gthread_recursive_mutex_t *mutex)
+{
+  return __gthrw_(pthread_cond_wait) (cond, mutex->actual);
 }
 
 #endif /* _LIBOBJC */
