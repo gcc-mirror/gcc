@@ -1,3 +1,9 @@
+2007-10-05  Michael Matz  <matz@suse.de>
+
+	PR middle-end/33667
+	* lower-subreg.c (decompose_multiword_subregs): Use
+	validate_unshare_change().
+
 2007-10-05  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* ra-conflict.c: Include "sparseset.h".
