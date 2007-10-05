@@ -3088,7 +3088,7 @@ done:
    something else.  */
 
 void
-global_used (gfc_gsymbol *sym, locus *where)
+gfc_global_used (gfc_gsymbol *sym, locus *where)
 {
   const char *name;
 
@@ -3154,7 +3154,7 @@ parse_block_data (void)
       s = gfc_get_gsymbol (gfc_new_block->name);
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN && s->type != GSYM_BLOCK_DATA))
-       global_used(s, NULL);
+       gfc_global_used(s, NULL);
       else
        {
 	 s->type = GSYM_BLOCK_DATA;
@@ -3185,7 +3185,7 @@ parse_module (void)
 
   s = gfc_get_gsymbol (gfc_new_block->name);
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_MODULE))
-    global_used(s, NULL);
+    gfc_global_used(s, NULL);
   else
     {
       s->type = GSYM_MODULE;
@@ -3232,7 +3232,7 @@ add_global_procedure (int sub)
   if (s->defined
       || (s->type != GSYM_UNKNOWN
 	  && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
-    global_used(s, NULL);
+    gfc_global_used(s, NULL);
   else
     {
       s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
@@ -3254,7 +3254,7 @@ add_global_program (void)
   s = gfc_get_gsymbol (gfc_new_block->name);
 
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_PROGRAM))
-    global_used(s, NULL);
+    gfc_global_used(s, NULL);
   else
     {
       s->type = GSYM_PROGRAM;

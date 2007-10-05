@@ -1636,8 +1636,10 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   if (ss->expr->ts.type == BT_CHARACTER)
     {
       bool const_string = get_array_ctor_strlen (&loop->pre, c, &ss->string_length);
-      if (!ss->string_length)
-	gfc_todo_error ("complex character array constructors");
+
+      /* Complex character array constructors should have been taken care of
+	 and not end up here.  */
+      gcc_assert (ss->string_length);
 
       ss->expr->ts.cl->backend_decl = ss->string_length;
 
@@ -2787,9 +2789,9 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	}
     }
 
-  if (loop->dimen == 0)
-    gfc_todo_error ("Unable to determine rank of expression");
-
+  /* We should have determined the rank of the expression by now.  If
+     not, that's bad news.  */
+  gcc_assert (loop->dimen != 0);
 
   /* Loop over all the SS in the chain.  */
   for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
@@ -3280,8 +3282,9 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	     loopspec[n] = ss; */
 	}
 
-      if (!loopspec[n])
-	gfc_todo_error ("Unable to find scalarization loop specifier");
+      /* We should have found the scalarization loop specifier.  If not,
+	 that's bad news.  */
+      gcc_assert (loopspec[n]);
 
       info = &loopspec[n]->data.info;
 

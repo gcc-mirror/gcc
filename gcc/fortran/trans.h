@@ -632,10 +632,6 @@ struct lang_decl		GTY(())
 #define GFC_TYPE_ARRAY_DATAPTR_TYPE(node) \
   (TYPE_LANG_SPECIFIC(node)->dataptr_type)
 
-/* I changed this from sorry(...) because it should not return.  */
-/* TODO: Remove gfc_todo_error before releasing version 1.0.  */
-#define gfc_todo_error(args...) fatal_error("gfc_todo: Not Implemented: " args)
-
 /* Build an expression with void type.  */
 #define build1_v(code, arg) build1(code, void_type_node, arg)
 #define build2_v(code, arg1, arg2) build2(code, void_type_node, \

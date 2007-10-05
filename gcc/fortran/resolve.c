@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "arith.h"  /* For gfc_compare_expr().  */
 #include "dependency.h"
+#include "data.h"
 
 /* Types used in equivalence statements.  */
 
@@ -1359,7 +1360,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
   gsym = gfc_get_gsymbol (sym->name);
 
   if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
-    global_used (gsym, where);
+    gfc_global_used (gsym, where);
 
   if (gsym->type == GSYM_UNKNOWN)
     {

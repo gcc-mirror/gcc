@@ -25,6 +25,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 
+
+/* Macros to access allocate memory for gfc_data_variable,
+   gfc_data_value and gfc_data.  */
+#define gfc_get_data_variable() gfc_getmem (sizeof (gfc_data_variable))
+#define gfc_get_data_value() gfc_getmem (sizeof (gfc_data_value))
+#define gfc_get_data() gfc_getmem( sizeof (gfc_data))
+
+
 /* This flag is set if an old-style length selector is matched
    during a type-declaration statement.  */
 
@@ -92,8 +100,8 @@ gfc_in_match_data (void)
   return in_match_data;
 }
 
-void
-gfc_set_in_match_data (bool set_value)
+static void
+set_in_match_data (bool set_value)
 {
   in_match_data = set_value;
 }
@@ -496,7 +504,7 @@ gfc_match_data (void)
   gfc_data *new;
   match m;
 
-  gfc_set_in_match_data (true);
+  set_in_match_data (true);
 
   for (;;)
     {
@@ -520,7 +528,7 @@ gfc_match_data (void)
       gfc_match_char (',');	/* Optional comma */
     }
 
-  gfc_set_in_match_data (false);
+  set_in_match_data (false);
 
   if (gfc_pure (NULL))
     {
@@ -531,7 +539,7 @@ gfc_match_data (void)
   return MATCH_YES;
 
 cleanup:
-  gfc_set_in_match_data (false);
+  set_in_match_data (false);
   gfc_free_data (new);
   return MATCH_ERROR;
 }
@@ -4256,7 +4264,7 @@ add_global_entry (const char *name, int sub)
   if (s->defined
       || (s->type != GSYM_UNKNOWN
 	  && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
-    global_used(s, NULL);
+    gfc_global_used(s, NULL);
   else
     {
       s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;

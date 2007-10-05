@@ -324,5 +324,6 @@ fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-trans-intrinsic.h
 fortran/dependency.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
 fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS) $(TARGET_H) $(RTL_H)
-fortran/resolve.o: fortran/dependency.h
+fortran/resolve.o: fortran/dependency.h fortran/data.h
+fortran/data.o: fortran/data.h
 fortran/options.o: $(PARAMS_H) $(TARGET_H)
