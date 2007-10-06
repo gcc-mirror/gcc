@@ -1,3 +1,30 @@
+2007-10-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/33487
+	* include/parallel/algorithmfwd.h (for_each, generate, generate_n,
+	transform, replace, replace_if, max_element, min_element, count,
+	count_if): Consistently construct overloads.
+	* include/parallel/numericfwd.h (accumulate, adjacent_difference,
+	inner_product): Same.
+	* include/parallel/algobase.h: Same.
+	* include/parallel/algo.h: Same.
+	* include/parallel/numeric: Same.
+
+	* include/bits/algorithmfwd.h: Correct find_end placement.
+
+	* docs/html/parallel_mode.html: Document some of the interface
+	conventions.
+
+	* include/parallel/search.h (calc_borders): Only use operator ==.
+	
+	* include/parallel/algorithmfwd.h: Move __gnu_sequential bits to...
+	* include/parallel/tags.h: ...here, and use a using directive.
+
+	* include/parallel/random_shuffle.h: Include stl_numeric. Qualify
+	uses of partial_num with __gnu_sequential.
+
+	* include/parallel/tree.h: Formatting.
+	
 2007-10-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Fixes for --disable-libstdcxx-pch.

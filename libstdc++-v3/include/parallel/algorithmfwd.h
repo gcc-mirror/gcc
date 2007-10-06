@@ -45,216 +45,245 @@ namespace std
 namespace __parallel
 {
   template<typename _FIter>
-  inline _FIter
-  adjacent_find(_FIter, _FIter, __gnu_parallel::sequential_tag);
-
-  template<typename _FIter, typename BinaryPredicate>
-  inline _FIter
-  adjacent_find(_FIter, _FIter, BinaryPredicate, __gnu_parallel::sequential_tag);
+    _FIter
+    adjacent_find(_FIter, _FIter);
 
   template<typename _FIter>
-  inline _FIter
-  adjacent_find(_FIter, _FIter);
+    _FIter
+    adjacent_find(_FIter, _FIter, __gnu_parallel::sequential_tag);
 
-  template<typename _FIter, typename BinaryPredicate>
-  inline _FIter
-  adjacent_find(_FIter, _FIter, BinaryPredicate);
+  template<typename _FIter, typename _IterTag>
+    _FIter
+    adjacent_find_switch(_FIter, _FIter, _IterTag);
 
   template<typename _RAIter>
-  _RAIter
-  adjacent_find_switch(_RAIter, _RAIter, random_access_iterator_tag);
+    _RAIter
+    adjacent_find_switch(_RAIter, _RAIter, random_access_iterator_tag);
 
-  template<typename _FIter, typename IteratorTag>
-  inline _FIter
-  adjacent_find_switch(_FIter, _FIter, IteratorTag);
 
-  template<typename _FIter, typename BinaryPredicate, typename IteratorTag>
-  inline _FIter
-  adjacent_find_switch(_FIter, _FIter, BinaryPredicate, IteratorTag);
+  template<typename _FIter, typename _BiPredicate>
+    _FIter
+    adjacent_find(_FIter, _FIter, _BiPredicate);
 
-  template<typename _RAIter, typename BinaryPredicate>
-  _RAIter
-  adjacent_find_switch(_RAIter, _RAIter, BinaryPredicate, random_access_iterator_tag);
+  template<typename _FIter, typename _BiPredicate>
+    _FIter
+    adjacent_find(_FIter, _FIter, _BiPredicate,
+		  __gnu_parallel::sequential_tag);
 
+  template<typename _FIter, typename _BiPredicate, typename _IterTag>
+    _FIter
+    adjacent_find_switch(_FIter, _FIter, _BiPredicate, _IterTag);
+
+  template<typename _RAIter, typename _BiPredicate>
+    _RAIter
+    adjacent_find_switch(_RAIter, _RAIter, _BiPredicate, 
+			 random_access_iterator_tag);
+
+
+  template<typename _IIter, typename _Tp>
+    typename iterator_traits<_IIter>::difference_type
+    count(_IIter, _IIter, const _Tp&);
 
   template<typename _IIter, typename T>
-  inline typename iterator_traits<_IIter>::difference_type
-  count(_IIter, _IIter, const T& value, __gnu_parallel::sequential_tag);
+    typename iterator_traits<_IIter>::difference_type
+    count(_IIter, _IIter, const T&, __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename T>
-  inline typename iterator_traits<_IIter>::difference_type
-  count(_IIter, _IIter, const T& value, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_unbalanced);
+    typename iterator_traits<_IIter>::difference_type
+    count(_IIter, _IIter, const T&, __gnu_parallel::parallelism);
+
+  template<typename _IIter, typename T, typename _IterTag>
+    typename iterator_traits<_IIter>::difference_type
+    count_switch(_IIter, _IIter, const T&, _IterTag);
 
   template<typename _RAIter, typename T>
-  typename iterator_traits<_RAIter>::difference_type
-  count_switch(_RAIter, _RAIter, const T& value, random_access_iterator_tag, __gnu_parallel::parallelism);
-
-  template<typename _IIter, typename T, typename IteratorTag>
-  typename iterator_traits<_IIter>::difference_type
-  count_switch(_IIter, _IIter, const T& value, IteratorTag, __gnu_parallel::parallelism);
+    typename iterator_traits<_RAIter>::difference_type
+    count_switch(_RAIter, _RAIter, const T&, random_access_iterator_tag,
+		 __gnu_parallel::parallelism);
 
 
   template<typename _IIter, typename Predicate>
-  inline typename iterator_traits<_IIter>::difference_type
-  count_if(_IIter, _IIter, Predicate, __gnu_parallel::sequential_tag);
+    typename iterator_traits<_IIter>::difference_type
+    count_if(_IIter, _IIter, Predicate);
 
   template<typename _IIter, typename Predicate>
-  inline typename iterator_traits<_IIter>::difference_type
-  count_if(_IIter, _IIter, Predicate, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_unbalanced);
+    typename iterator_traits<_IIter>::difference_type
+    count_if(_IIter, _IIter, Predicate, __gnu_parallel::sequential_tag);
+
+  template<typename _IIter, typename Predicate>
+    typename iterator_traits<_IIter>::difference_type
+    count_if(_IIter, _IIter, Predicate, __gnu_parallel::parallelism);
+
+  template<typename _IIter, typename Predicate, typename _IterTag>
+    typename iterator_traits<_IIter>::difference_type
+    count_if_switch(_IIter, _IIter, Predicate, _IterTag);
 
   template<typename _RAIter, typename Predicate>
-  typename iterator_traits<_RAIter>::difference_type
-  count_if_switch(_RAIter, _RAIter, Predicate, random_access_iterator_tag, __gnu_parallel::parallelism);
-
-  template<typename _IIter, typename Predicate, typename IteratorTag>
-  typename iterator_traits<_IIter>::difference_type
-  count_if_switch(_IIter, _IIter, Predicate, IteratorTag, __gnu_parallel::parallelism);
+    typename iterator_traits<_RAIter>::difference_type
+    count_if_switch(_RAIter, _RAIter, Predicate, random_access_iterator_tag, 
+		    __gnu_parallel::parallelism);
 
   // algobase.h
   template<typename _IIter1, typename _IIter2>
-  inline bool
+  bool
   equal(_IIter1, _IIter1, _IIter2, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename Predicate>
-  inline bool
+  bool
   equal(_IIter1, _IIter1, _IIter2, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2>
-  inline bool
+  bool
   equal(_IIter1, _IIter1, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename Predicate>
-  inline bool
+  bool
   equal(_IIter1, _IIter1, _IIter2, Predicate);
 
   template<typename _IIter, typename T>
-  inline _IIter
+  _IIter
   find(_IIter, _IIter, const T&, __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename T>
-  inline _IIter
+  _IIter
   find(_IIter, _IIter, const T& val);
 
-  template<typename _IIter, typename T, typename IteratorTag>
-  inline _IIter
-  find_switch(_IIter, _IIter, const T&, IteratorTag);
+  template<typename _IIter, typename T, typename _IterTag>
+  _IIter
+  find_switch(_IIter, _IIter, const T&, _IterTag);
 
   template<typename _RAIter, typename T>
   _RAIter
   find_switch(_RAIter, _RAIter, const T&, random_access_iterator_tag);
 
   template<typename _IIter, typename Predicate>
-  inline _IIter
+  _IIter
   find_if(_IIter, _IIter, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename Predicate>
-  inline _IIter
+  _IIter
   find_if(_IIter, _IIter, Predicate);
 
-  template<typename _IIter, typename Predicate, typename IteratorTag>
-  inline _IIter
-  find_if_switch(_IIter, _IIter, Predicate, IteratorTag);
+  template<typename _IIter, typename Predicate, typename _IterTag>
+  _IIter
+  find_if_switch(_IIter, _IIter, Predicate, _IterTag);
 
   template<typename _RAIter, typename Predicate>
   _RAIter
   find_if_switch(_RAIter, _RAIter, Predicate, random_access_iterator_tag);
 
   template<typename _IIter, typename _FIter>
-  inline _IIter
+  _IIter
   find_first_of(_IIter, _IIter, _FIter, _FIter, __gnu_parallel::sequential_tag);
 
-  template<typename _IIter, typename _FIter, typename BinaryPredicate>
-  inline _IIter
-  find_first_of(_IIter, _IIter, _FIter, _FIter, BinaryPredicate, __gnu_parallel::sequential_tag);
+  template<typename _IIter, typename _FIter, typename _BiPredicate>
+  _IIter
+  find_first_of(_IIter, _IIter, _FIter, _FIter, _BiPredicate, __gnu_parallel::sequential_tag);
 
-  template<typename _IIter, typename _FIter, typename BinaryPredicate>
-  inline _IIter
-  find_first_of(_IIter, _IIter, _FIter, _FIter, BinaryPredicate);
+  template<typename _IIter, typename _FIter, typename _BiPredicate>
+  _IIter
+  find_first_of(_IIter, _IIter, _FIter, _FIter, _BiPredicate);
 
   template<typename _IIter, typename _FIter>
   _IIter
   find_first_of(_IIter, _IIter, _FIter, _FIter);
 
-  template<typename _IIter, typename _FIter, typename IteratorTag1, typename IteratorTag2>
-  inline _IIter
-  find_first_of_switch(_IIter, _IIter, _FIter, _FIter, IteratorTag1, IteratorTag2);
+  template<typename _IIter, typename _FIter, typename _IterTag1, typename _IterTag2>
+  _IIter
+  find_first_of_switch(_IIter, _IIter, _FIter, _FIter, _IterTag1, _IterTag2);
 
-  template<typename _RAIter, typename _FIter, typename BinaryPredicate, typename IteratorTag>
-  inline _RAIter
-  find_first_of_switch(_RAIter, _RAIter, _FIter, _FIter, BinaryPredicate, random_access_iterator_tag, IteratorTag);
+  template<typename _RAIter, typename _FIter, typename _BiPredicate, typename _IterTag>
+  _RAIter
+  find_first_of_switch(_RAIter, _RAIter, _FIter, _FIter, _BiPredicate, random_access_iterator_tag, _IterTag);
 
-  template<typename _IIter, typename _FIter, typename BinaryPredicate, typename IteratorTag1, typename IteratorTag2>
-  inline _IIter
-  find_first_of_switch(_IIter, _IIter, _FIter, _FIter, BinaryPredicate, IteratorTag1, IteratorTag2);
+  template<typename _IIter, typename _FIter, typename _BiPredicate, typename _IterTag1, typename _IterTag2>
+  _IIter
+  find_first_of_switch(_IIter, _IIter, _FIter, _FIter, _BiPredicate, _IterTag1, _IterTag2);
 
 
   template<typename _IIter, typename Function>
-  inline Function
-  for_each(_IIter, _IIter, Function f, __gnu_parallel::sequential_tag);
+    Function
+    for_each(_IIter, _IIter, Function);
+
+  template<typename _IIter, typename Function>
+    Function
+    for_each(_IIter, _IIter, Function, __gnu_parallel::sequential_tag);
 
   template<typename Iterator, typename Function>
-  inline Function
-  for_each(Iterator, Iterator, Function f, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    Function
+    for_each(Iterator, Iterator, Function, __gnu_parallel::parallelism);
 
-  template<typename _IIter, typename Function, typename IteratorTag>
-  Function
-  for_each_switch(_IIter, _IIter, Function f, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _IIter, typename Function, typename _IterTag>
+    Function
+    for_each_switch(_IIter, _IIter, Function, _IterTag);
 
   template<typename _RAIter, typename Function>
-  Function
-  for_each_switch(_RAIter, _RAIter, Function f, random_access_iterator_tag, __gnu_parallel::parallelism);
+    Function
+    for_each_switch(_RAIter, _RAIter, Function, random_access_iterator_tag, 
+		    __gnu_parallel::parallelism);
+
 
   template<typename _FIter, typename Generator>
-  inline void
-  generate(_FIter, _FIter, Generator, __gnu_parallel::sequential_tag);
+    void
+    generate(_FIter, _FIter, Generator);
 
   template<typename _FIter, typename Generator>
-  inline void
-  generate(_FIter, _FIter, Generator, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    void
+    generate(_FIter, _FIter, Generator, __gnu_parallel::sequential_tag);
 
-  template<typename _FIter, typename Generator, typename IteratorTag>
-  void
-  generate_switch(_FIter, _FIter, Generator, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _FIter, typename Generator>
+    void
+    generate(_FIter, _FIter, Generator, __gnu_parallel::parallelism);
+
+  template<typename _FIter, typename Generator, typename _IterTag>
+    void
+    generate_switch(_FIter, _FIter, Generator, _IterTag);
 
   template<typename _RAIter, typename Generator>
-  void
-  generate_switch(_RAIter, _RAIter, Generator, random_access_iterator_tag, __gnu_parallel::parallelism);
+    void
+    generate_switch(_RAIter, _RAIter, Generator, random_access_iterator_tag, 
+		    __gnu_parallel::parallelism);
 
   template<typename _OIter, typename Size, typename Generator>
-  inline _OIter
-  generate_n(_OIter, Size, Generator, __gnu_parallel::sequential_tag);
+    _OIter
+    generate_n(_OIter, Size, Generator);
 
   template<typename _OIter, typename Size, typename Generator>
-  inline _OIter
-  generate_n(_OIter, Size, Generator, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    _OIter
+    generate_n(_OIter, Size, Generator, __gnu_parallel::sequential_tag);
 
-  template<typename _OIter, typename Size, typename Generator, typename IteratorTag>
-  _OIter
-  generate_n_switch(_OIter, Size, Generator, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _OIter, typename Size, typename Generator>
+    _OIter
+    generate_n(_OIter, Size, Generator, __gnu_parallel::parallelism);
+
+  template<typename _OIter, typename Size, typename Generator, typename _IterTag>
+    _OIter
+    generate_n_switch(_OIter, Size, Generator, _IterTag);
 
   template<typename _RAIter, typename Size, typename Generator>
-  _RAIter
-  generate_n_switch(_RAIter, Size, Generator, random_access_iterator_tag, __gnu_parallel::parallelism);
+    _RAIter
+    generate_n_switch(_RAIter, Size, Generator, random_access_iterator_tag, 
+		      __gnu_parallel::parallelism);
 
   template<typename _IIter1, typename _IIter2>
-  inline bool
+  bool
   lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename Predicate>
-  inline bool
+  bool
   lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2>
-  inline bool
+  bool
   lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename Predicate>
-  inline bool
+  bool
   lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, Predicate);
 
-  template<typename _IIter1, typename _IIter2, typename Predicate, typename IteratorTag1, typename IteratorTag2>
-  inline bool
-  lexicographical_compare_switch(_IIter1, _IIter1, _IIter2, _IIter2, Predicate, IteratorTag1, IteratorTag2);
+  template<typename _IIter1, typename _IIter2, typename Predicate, typename _IterTag1, typename _IterTag2>
+  bool
+  lexicographical_compare_switch(_IIter1, _IIter1, _IIter2, _IIter2, Predicate, _IterTag1, _IterTag2);
 
   template<typename _RAIter1, typename _RAIter2, typename Predicate>
   bool
@@ -262,225 +291,286 @@ namespace __parallel
 
   // algo.h
   template<typename _IIter1, typename _IIter2>
-  inline pair<_IIter1, _IIter2>
+  pair<_IIter1, _IIter2>
   mismatch(_IIter1, _IIter1, _IIter2, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename Predicate>
-  inline pair<_IIter1, _IIter2>
+  pair<_IIter1, _IIter2>
   mismatch(_IIter1, _IIter1, _IIter2, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2>
-  inline pair<_IIter1, _IIter2>
+  pair<_IIter1, _IIter2>
   mismatch(_IIter1, _IIter1, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename Predicate>
-  inline pair<_IIter1, _IIter2>
+  pair<_IIter1, _IIter2>
   mismatch(_IIter1, _IIter1, _IIter2, Predicate);
 
-  template<typename _IIter1, typename _IIter2, typename Predicate, typename IteratorTag1, typename IteratorTag2>
-  inline pair<_IIter1, _IIter2>
-  mismatch_switch(_IIter1, _IIter1, _IIter2, Predicate, IteratorTag1, IteratorTag2);
+  template<typename _IIter1, typename _IIter2, typename Predicate, typename _IterTag1, typename _IterTag2>
+  pair<_IIter1, _IIter2>
+  mismatch_switch(_IIter1, _IIter1, _IIter2, Predicate, _IterTag1, _IterTag2);
 
   template<typename _RAIter1, typename _RAIter2, typename Predicate>
   pair<_RAIter1, _RAIter2>
   mismatch_switch(_RAIter1, _RAIter1, _RAIter2, Predicate, random_access_iterator_tag, random_access_iterator_tag);
 
   template<typename _FIter1, typename _FIter2>
-  inline _FIter1
+  _FIter1
   search(_FIter1, _FIter1, _FIter2, _FIter2, __gnu_parallel::sequential_tag);
 
   template<typename _FIter1, typename _FIter2>
-  inline _FIter1
+  _FIter1
   search(_FIter1, _FIter1, _FIter2, _FIter2);
 
-  template<typename _FIter1, typename _FIter2, typename BinaryPredicate>
-  inline _FIter1
-  search(_FIter1, _FIter1, _FIter2, _FIter2, BinaryPredicate, __gnu_parallel::sequential_tag);
+  template<typename _FIter1, typename _FIter2, typename _BiPredicate>
+  _FIter1
+  search(_FIter1, _FIter1, _FIter2, _FIter2, _BiPredicate, __gnu_parallel::sequential_tag);
 
-  template<typename _FIter1, typename _FIter2, typename BinaryPredicate>
-  inline _FIter1
-  search(_FIter1, _FIter1, _FIter2, _FIter2, BinaryPredicate);
+  template<typename _FIter1, typename _FIter2, typename _BiPredicate>
+  _FIter1
+  search(_FIter1, _FIter1, _FIter2, _FIter2, _BiPredicate);
 
   template<typename _RAIter1, typename _RAIter2>
   _RAIter1
   search_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter2, random_access_iterator_tag, random_access_iterator_tag);
 
-  template<typename _FIter1, typename _FIter2, typename IteratorTag1, typename IteratorTag2>
-  inline _FIter1
-  search_switch(_FIter1, _FIter1, _FIter2, _FIter2, IteratorTag1, IteratorTag2);
+  template<typename _FIter1, typename _FIter2, typename _IterTag1, typename _IterTag2>
+  _FIter1
+  search_switch(_FIter1, _FIter1, _FIter2, _FIter2, _IterTag1, _IterTag2);
 
-  template<typename _RAIter1, typename _RAIter2, typename BinaryPredicate>
+  template<typename _RAIter1, typename _RAIter2, typename _BiPredicate>
   _RAIter1
-  search_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter2, BinaryPredicate , random_access_iterator_tag, random_access_iterator_tag);
+  search_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter2, _BiPredicate , random_access_iterator_tag, random_access_iterator_tag);
 
-  template<typename _FIter1, typename _FIter2, typename BinaryPredicate, typename IteratorTag1, typename IteratorTag2>
-  inline _FIter1
-  search_switch(_FIter1, _FIter1, _FIter2, _FIter2, BinaryPredicate, IteratorTag1, IteratorTag2);
+  template<typename _FIter1, typename _FIter2, typename _BiPredicate, typename _IterTag1, typename _IterTag2>
+  _FIter1
+  search_switch(_FIter1, _FIter1, _FIter2, _FIter2, _BiPredicate, _IterTag1, _IterTag2);
 
   template<typename _FIter, typename Integer, typename T>
-  inline _FIter
+  _FIter
   search_n(_FIter, _FIter, Integer, const T&, __gnu_parallel::sequential_tag);
 
-  template<typename _FIter, typename Integer, typename T, typename BinaryPredicate>
-  inline _FIter
-  search_n(_FIter, _FIter, Integer, const T&, BinaryPredicate, __gnu_parallel::sequential_tag);
+  template<typename _FIter, typename Integer, typename T, typename _BiPredicate>
+  _FIter
+  search_n(_FIter, _FIter, Integer, const T&, _BiPredicate, __gnu_parallel::sequential_tag);
     
   template<typename _FIter, typename Integer, typename T>
-  inline _FIter
+  _FIter
   search_n(_FIter, _FIter, Integer, const T& val);
 
-  template<typename _FIter, typename Integer, typename T, typename BinaryPredicate>
-  inline _FIter
-  search_n(_FIter, _FIter, Integer, const T&, BinaryPredicate);
+  template<typename _FIter, typename Integer, typename T, typename _BiPredicate>
+  _FIter
+  search_n(_FIter, _FIter, Integer, const T&, _BiPredicate);
 
-  template<typename _RAIter, typename Integer, typename T, typename BinaryPredicate>
+  template<typename _RAIter, typename Integer, typename T, typename _BiPredicate>
   _RAIter
-  search_n_switch(_RAIter, _RAIter, Integer, const T&, BinaryPredicate, random_access_iterator_tag);
+  search_n_switch(_RAIter, _RAIter, Integer, const T&, _BiPredicate, random_access_iterator_tag);
 
-  template<typename _FIter, typename Integer, typename T, typename BinaryPredicate, typename IteratorTag>
-  inline _FIter
-  search_n_switch(_FIter, _FIter, Integer, const T&, BinaryPredicate, IteratorTag);
+  template<typename _FIter, typename Integer, typename T, typename _BiPredicate, typename _IterTag>
+  _FIter
+  search_n_switch(_FIter, _FIter, Integer, const T&, _BiPredicate, _IterTag);
 
-
-  template<typename _IIter, typename _OIter, typename UnaryOperation>
-  inline _OIter
-  transform(_IIter, _IIter, _OIter, UnaryOperation, __gnu_parallel::sequential_tag);
-
-  template<typename _IIter1, typename _IIter2, typename _OIter, typename BinaryOperation>
-  inline _OIter
-  transform(_IIter1, _IIter1, _IIter2, _OIter, BinaryOperation binary_op, __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename _OIter, typename UnaryOperation>
-  inline _OIter
-  transform(_IIter, _IIter, _OIter, UnaryOperation, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    _OIter
+    transform(_IIter, _IIter, _OIter, UnaryOperation);
 
-  template<typename _IIter1, typename _IIter2, typename _OIter, typename BinaryOperation>
-  inline _OIter
-  transform(_IIter1, _IIter1, _IIter2, _OIter, BinaryOperation binary_op, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+  template<typename _IIter, typename _OIter, typename UnaryOperation>
+    _OIter
+    transform(_IIter, _IIter, _OIter, UnaryOperation, 
+	      __gnu_parallel::sequential_tag);
 
-  template<typename _RAIter1, typename _RAIter3, typename UnaryOperation>
-  _RAIter3
-  transform1_switch(_RAIter1, _RAIter1, _RAIter3, UnaryOperation, random_access_iterator_tag, random_access_iterator_tag, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+  template<typename _IIter, typename _OIter, typename UnaryOperation>
+    _OIter
+    transform(_IIter, _IIter, _OIter, UnaryOperation, 
+	      __gnu_parallel::parallelism);
 
-  template<typename _RAIter1, typename _RAIter3, typename UnaryOperation, typename IteratorTag1, typename IteratorTag2>
-  inline _RAIter3
-  transform1_switch(_RAIter1, _RAIter1, _RAIter3, UnaryOperation, IteratorTag1, IteratorTag2, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+  template<typename _IIter, typename _OIter, typename UnaryOperation, typename _IterTag1, typename _IterTag2>
+    _OIter
+    transform1_switch(_IIter, _IIter, _OIter, UnaryOperation, 
+		      _IterTag1, _IterTag2);
     
-  template<typename _RAIter1, typename _RAIter2, typename _RAIter3, typename BinaryOperation>
-  _RAIter3
-  transform2_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter3, BinaryOperation binary_op, random_access_iterator_tag, random_access_iterator_tag, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
 
-  template<typename _RAIter1, typename _RAIter2, typename _RAIter3, typename BinaryOperation, typename tag1, typename tag2, typename tag3>
-  inline _RAIter3
-  transform2_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter3, BinaryOperation binary_op, tag1, tag2, tag3, __gnu_parallel::parallelism);
+  template<typename _RAIIter, typename _RAOIter, typename UnaryOperation>
+    _RAOIter
+    transform1_switch(_RAIIter, _RAIIter, _RAOIter, UnaryOperation, 
+		      random_access_iterator_tag, random_access_iterator_tag, 
+		      __gnu_parallel::parallelism);
+
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, typename _BiOperation>
+    _OIter
+    transform(_IIter1, _IIter1, _IIter2, _OIter, _BiOperation);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, typename _BiOperation>
+    _OIter
+    transform(_IIter1, _IIter1, _IIter2, _OIter, _BiOperation, 
+	      __gnu_parallel::sequential_tag);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, typename _BiOperation>
+    _OIter
+    transform(_IIter1, _IIter1, _IIter2, _OIter, _BiOperation, 
+	      __gnu_parallel::parallelism);
+
+  template<typename _RAIter1, typename _RAIter2, typename _RAIter3, typename _BiOperation>
+    _RAIter3
+    transform2_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter3, _BiOperation, 
+		      random_access_iterator_tag, random_access_iterator_tag, 
+		      random_access_iterator_tag, 
+		      __gnu_parallel::parallelism parallelism_tag);
+
+  template<typename _IIter1, typename _IIter2, typename _OIter, typename _BiOperation, typename tag1, typename tag2, typename tag3>
+    _OIter
+    transform2_switch(_IIter1, _IIter1, _IIter2, _OIter, _BiOperation, 
+		      tag1, tag2, tag3);
+
 
   template<typename _FIter, typename T>
-  inline void
-  replace(_FIter, _FIter, const T&, const T&, __gnu_parallel::sequential_tag);
+    void
+    replace(_FIter, _FIter, const T&, const T&);
 
   template<typename _FIter, typename T>
-  inline void
-  replace(_FIter, _FIter, const T&, const T&, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    void
+    replace(_FIter, _FIter, const T&, const T&, 
+	    __gnu_parallel::sequential_tag);
 
-  template<typename _FIter, typename T, typename IteratorTag>
-  void
-  replace_switch(_FIter, _FIter, const T&, const T&, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _FIter, typename T>
+    void
+    replace(_FIter, _FIter, const T&, const T&, __gnu_parallel::parallelism);
+
+  template<typename _FIter, typename T, typename _IterTag>
+    void
+    replace_switch(_FIter, _FIter, const T&, const T&, _IterTag);
 
   template<typename _RAIter, typename T>
-  void
-  replace_switch(_RAIter, _RAIter, const T&, const T&, random_access_iterator_tag, __gnu_parallel::parallelism);
+    void
+    replace_switch(_RAIter, _RAIter, const T&, const T&, 
+		   random_access_iterator_tag, __gnu_parallel::parallelism);
 
 
   template<typename _FIter, typename Predicate, typename T>
-  inline void
-  replace_if(_FIter, _FIter, Predicate, const T&, __gnu_parallel::sequential_tag);
+    void
+    replace_if(_FIter, _FIter, Predicate, const T&);
 
   template<typename _FIter, typename Predicate, typename T>
-  inline void
-  replace_if(_FIter, _FIter, Predicate, const T&, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    void
+    replace_if(_FIter, _FIter, Predicate, const T&, 
+	       __gnu_parallel::sequential_tag);
 
-  template<typename _FIter, typename Predicate, typename T, typename IteratorTag>
-  void
-  replace_if_switch(_FIter, _FIter, Predicate, const T&, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _FIter, typename Predicate, typename T>
+    void
+    replace_if(_FIter, _FIter, Predicate, const T&, 
+	       __gnu_parallel::parallelism);
 
+  template<typename _FIter, typename Predicate, typename T, typename _IterTag>
+    void
+    replace_if_switch(_FIter, _FIter, Predicate, const T&, _IterTag);
+ 
   template<typename _RAIter, typename Predicate, typename T>
-  void
-  replace_if_switch(_RAIter, _RAIter, Predicate, const T&, random_access_iterator_tag, __gnu_parallel::parallelism);
+    void
+    replace_if_switch(_RAIter, _RAIter, Predicate, const T&, 
+		      random_access_iterator_tag, __gnu_parallel::parallelism);
+
 
   template<typename _FIter>
-  inline _FIter
-  max_element(_FIter, _FIter, __gnu_parallel::sequential_tag);
-
-  template<typename _FIter, typename _Compare>
-  inline _FIter
-  max_element(_FIter, _FIter, _Compare, __gnu_parallel::sequential_tag);
+    _FIter
+    max_element(_FIter, _FIter);
 
   template<typename _FIter>
-  inline _FIter
-  max_element(_FIter, _FIter, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    _FIter
+    max_element(_FIter, _FIter, __gnu_parallel::sequential_tag);
+
+  template<typename _FIter>
+    _FIter
+    max_element(_FIter, _FIter, __gnu_parallel::parallelism parallelism_tag);
 
   template<typename _FIter, typename _Compare>
-  inline _FIter
-  max_element(_FIter, _FIter, _Compare, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    _FIter
+    max_element(_FIter, _FIter, _Compare);
 
-  template<typename _FIter, typename _Compare, typename IteratorTag>
-  _FIter
-  max_element_switch(_FIter, _FIter, _Compare, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _FIter, typename _Compare>
+    _FIter
+    max_element(_FIter, _FIter, _Compare, __gnu_parallel::sequential_tag);
+
+  template<typename _FIter, typename _Compare>
+    _FIter
+    max_element(_FIter, _FIter, _Compare, __gnu_parallel::parallelism);
+
+  template<typename _FIter, typename _Compare, typename _IterTag>
+    _FIter
+    max_element_switch(_FIter, _FIter, _Compare, _IterTag);
 
   template<typename _RAIter, typename _Compare>
-  _RAIter
-  max_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, __gnu_parallel::parallelism);
+    _RAIter
+    max_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, 
+		       __gnu_parallel::parallelism);
+
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
-  merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, __gnu_parallel::sequential_tag);
+    _OIter
+    merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, 
+	  __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename _Compare>
-  inline _OIter
-  merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare, __gnu_parallel::sequential_tag);
+    _OIter
+    merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare, 
+	  __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename _Compare>
-  inline _OIter
-  merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
+    _OIter
+    merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
-  merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
+    _OIter
+    merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
-  template<typename _IIter1, typename _IIter2, typename _OIter, typename _Compare, typename IteratorTag1, typename IteratorTag2, typename IteratorTag3>
-  inline _OIter
-  merge_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare, IteratorTag1, IteratorTag2, IteratorTag3);
+  template<typename _IIter1, typename _IIter2, typename _OIter, typename _Compare, typename _IterTag1, typename _IterTag2, typename _IterTag3>
+    _OIter
+    merge_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare, 
+		 _IterTag1, _IterTag2, _IterTag3);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename _Compare>
-  _OIter
-  merge_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare, random_access_iterator_tag, random_access_iterator_tag, random_access_iterator_tag);
+    _OIter
+    merge_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare, 
+		 random_access_iterator_tag, random_access_iterator_tag, 
+		 random_access_iterator_tag);
+
 
   template<typename _FIter>
-  inline _FIter
-  min_element(_FIter, _FIter, __gnu_parallel::sequential_tag);
-
-  template<typename _FIter, typename _Compare>
-  inline _FIter
-  min_element(_FIter, _FIter, _Compare, __gnu_parallel::sequential_tag);
+    _FIter
+    min_element(_FIter, _FIter);
 
   template<typename _FIter>
-  inline _FIter
-  min_element(_FIter, _FIter, __gnu_parallel::parallelism parallelism_tag  = __gnu_parallel::parallel_balanced);
+    _FIter
+    min_element(_FIter, _FIter, __gnu_parallel::sequential_tag);
+
+  template<typename _FIter>
+    _FIter
+    min_element(_FIter, _FIter, __gnu_parallel::parallelism parallelism_tag);
 
   template<typename _FIter, typename _Compare>
-  inline _FIter
-  min_element(_FIter, _FIter, _Compare, __gnu_parallel::parallelism parallelism_tag = __gnu_parallel::parallel_balanced);
+    _FIter
+    min_element(_FIter, _FIter, _Compare);
 
-  template<typename _FIter, typename _Compare, typename IteratorTag>
-  _FIter
-  min_element_switch(_FIter, _FIter, _Compare, IteratorTag, __gnu_parallel::parallelism);
+  template<typename _FIter, typename _Compare>
+    _FIter
+    min_element(_FIter, _FIter, _Compare, __gnu_parallel::sequential_tag);
+
+  template<typename _FIter, typename _Compare>
+    _FIter
+    min_element(_FIter, _FIter, _Compare, __gnu_parallel::parallelism);
+
+  template<typename _FIter, typename _Compare, typename _IterTag>
+    _FIter
+    min_element_switch(_FIter, _FIter, _Compare, _IterTag);
 
   template<typename _RAIter, typename _Compare>
-  _RAIter
-  min_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, __gnu_parallel::parallelism);
+    _RAIter
+    min_element_switch(_RAIter, _RAIter, _Compare, random_access_iterator_tag, 
+		       __gnu_parallel::parallelism);
 
   template<typename _RAIter>
-  inline void
+  void
   nth_element(_RAIter, _RAIter, _RAIter, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter, typename _Compare>
@@ -488,7 +578,7 @@ namespace __parallel
   nth_element(_RAIter, _RAIter, _RAIter, _Compare, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter, typename _Compare>
-  inline void
+  void
   nth_element(_RAIter, _RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
@@ -512,31 +602,31 @@ namespace __parallel
   partial_sort(_RAIter, _RAIter, _RAIter);
 
   template<typename _FIter, typename Predicate>
-  inline _FIter
+  _FIter
   partition(_FIter, _FIter, Predicate, __gnu_parallel::sequential_tag);
     
   template<typename _FIter, typename Predicate>
-  inline _FIter
+  _FIter
   partition(_FIter, _FIter, Predicate);
 
-  template<typename _FIter, typename Predicate, typename IteratorTag>
-  inline _FIter
-  partition_switch(_FIter, _FIter, Predicate, IteratorTag);
+  template<typename _FIter, typename Predicate, typename _IterTag>
+  _FIter
+  partition_switch(_FIter, _FIter, Predicate, _IterTag);
     
   template<typename _RAIter, typename Predicate>
   _RAIter
   partition_switch(_RAIter, _RAIter, Predicate, random_access_iterator_tag);
 
   template<typename _RAIter>
-  inline void
+  void
   random_shuffle(_RAIter, _RAIter, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter, typename RandomNumberGenerator>
-  inline void
+  void
   random_shuffle(_RAIter, _RAIter, RandomNumberGenerator& rand, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter>
-  inline void
+  void
   random_shuffle(_RAIter, _RAIter);
 
   template<typename _RAIter, typename RandomNumberGenerator>
@@ -544,72 +634,72 @@ namespace __parallel
   random_shuffle(_RAIter, _RAIter, RandomNumberGenerator& rand);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
+  _OIter
   set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter 
+  _OIter 
   set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter 
+  _OIter 
   set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate);
 
-  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename IteratorTag1, typename IteratorTag2, typename IteratorTag3>
-  inline _OIter 
-  set_union_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, IteratorTag1, IteratorTag2, IteratorTag3);
+  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename _IterTag1, typename _IterTag2, typename _IterTag3>
+  _OIter 
+  set_union_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, _IterTag1, _IterTag2, _IterTag3);
 
   template<typename _RAIter1, typename _RAIter2, typename Output_RAIter, typename Predicate>
   Output_RAIter 
   set_union_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter2, Output_RAIter, Predicate, random_access_iterator_tag, random_access_iterator_tag, random_access_iterator_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
+  _OIter
   set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter 
+  _OIter 
   set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter 
+  _OIter 
   set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate);
 
-  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename IteratorTag1, typename IteratorTag2, typename IteratorTag3>
-  inline _OIter 
-  set_intersection_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, IteratorTag1, IteratorTag2, IteratorTag3);
+  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename _IterTag1, typename _IterTag2, typename _IterTag3>
+  _OIter 
+  set_intersection_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, _IterTag1, _IterTag2, _IterTag3);
 
   template<typename _RAIter1, typename _RAIter2, typename Output_RAIter, typename Predicate>
   Output_RAIter 
   set_intersection_switch(_RAIter1, _RAIter1, _RAIter2, _RAIter2, Output_RAIter, Predicate, random_access_iterator_tag, random_access_iterator_tag, random_access_iterator_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
+  _OIter
   set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter 
+  _OIter 
   set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter 
+  _OIter 
   set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate);
 
-  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename IteratorTag1, typename IteratorTag2, typename IteratorTag3>
-  inline _OIter 
-  set_symmetric_difference_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, IteratorTag1, IteratorTag2, IteratorTag3);
+  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename _IterTag1, typename _IterTag2, typename _IterTag3>
+  _OIter 
+  set_symmetric_difference_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, _IterTag1, _IterTag2, _IterTag3);
 
   template<typename _RAIter1, typename _RAIter2, typename Output_RAIter, typename Predicate>
   Output_RAIter 
@@ -617,24 +707,24 @@ namespace __parallel
 
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
+  _OIter
   set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
-  inline _OIter
+  _OIter
   set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate);
 
-  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename IteratorTag1, typename IteratorTag2, typename IteratorTag3>
-  inline _OIter
-  set_difference_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, IteratorTag1, IteratorTag2, IteratorTag3);
+  template<typename _IIter1, typename _IIter2, typename Predicate, typename _OIter, typename _IterTag1, typename _IterTag2, typename _IterTag3>
+  _OIter
+  set_difference_switch(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, Predicate, _IterTag1, _IterTag2, _IterTag3);
 
   template<typename _RAIter1, typename _RAIter2, typename Output_RAIter, typename Predicate>
   Output_RAIter
@@ -642,15 +732,15 @@ namespace __parallel
 
 
   template<typename _RAIter>
-  inline void
+  void
   sort(_RAIter, _RAIter, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter, typename _Compare>
-  inline void
+  void
   sort(_RAIter, _RAIter, _Compare, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter>
-  inline void
+  void
   sort(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
@@ -658,11 +748,11 @@ namespace __parallel
   sort(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
-  inline void
+  void
   stable_sort(_RAIter, _RAIter, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter, typename _Compare>
-  inline void
+  void
   stable_sort(_RAIter, _RAIter, _Compare, __gnu_parallel::sequential_tag);
 
   template<typename _RAIter>
@@ -674,46 +764,30 @@ namespace __parallel
   stable_sort(_RAIter, _RAIter, _Compare);
 
   template<typename _IIter, typename _OIter>
-  inline _OIter
+  _OIter
   unique_copy(_IIter, _IIter, _OIter, __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   unique_copy(_IIter, _IIter, _OIter, Predicate, __gnu_parallel::sequential_tag);
 
   template<typename _IIter, typename _OIter>
-  inline _OIter
+  _OIter
   unique_copy(_IIter, _IIter, _OIter);
 
   template<typename _IIter, typename _OIter, typename Predicate>
-  inline _OIter
+  _OIter
   unique_copy(_IIter, _IIter, _OIter, Predicate);
 
-  template<typename _IIter, typename _OIter, typename Predicate, typename IteratorTag1, typename IteratorTag2>
-  inline _OIter
-  unique_copy_switch(_IIter, _IIter, _OIter, Predicate, IteratorTag1, IteratorTag2);
+  template<typename _IIter, typename _OIter, typename Predicate, typename _IterTag1, typename _IterTag2>
+  _OIter
+  unique_copy_switch(_IIter, _IIter, _OIter, Predicate, _IterTag1, _IterTag2);
 
   template<typename _RAIter, typename RandomAccess_OIter, typename Predicate>
   RandomAccess_OIter
-  unique_copy_switch(_RAIter, _RAIter, RandomAccess_OIter, Predicate, random_access_iterator_tag, random_access_iterator_tag);
+  unique_copy_switch(_RAIter, _RAIter, RandomAccess_OIter, Predicate, 
+		     random_access_iterator_tag, random_access_iterator_tag);
 } // end namespace __parallel
 } // end namespace std
-
-// NB: cannot use _GLIBCXX_STD_P directly here, as it is both scoped
-// (std::__norm) and unscoped (std::).
-namespace __gnu_sequential
-{
-#ifdef _GLIBCXX_PARALLEL
-  using std::__norm::partition;
-  using std::__norm::sort;
-  using std::__norm::stable_sort;
-  using std::__norm::random_shuffle;
-#else
-  using std::partition;
-  using std::sort;
-  using std::stable_sort;
-  using std::random_shuffle;    
-#endif    
-}
 
 #endif
