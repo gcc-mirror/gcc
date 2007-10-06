@@ -1044,8 +1044,6 @@ cgraph_mark_functions_to_output (void)
 static void
 cgraph_expand_function (struct cgraph_node *node)
 {
-  enum debug_info_type save_write_symbols = NO_DEBUG;
-  const struct gcc_debug_hooks *save_debug_hooks = NULL;
   tree decl = node->decl;
 
   /* We ought to not compile any inline clones.  */
@@ -1056,14 +1054,6 @@ cgraph_expand_function (struct cgraph_node *node)
 
   gcc_assert (node->lowered);
 
-  if (DECL_IGNORED_P (decl))
-    {
-      save_write_symbols = write_symbols;
-      write_symbols = NO_DEBUG;
-      save_debug_hooks = debug_hooks;
-      debug_hooks = &do_nothing_debug_hooks;
-    }
-
   /* Generate RTL for the body of DECL.  */
   if (lang_hooks.callgraph.emit_associated_thunks)
     lang_hooks.callgraph.emit_associated_thunks (decl);
@@ -1072,12 +1062,6 @@ cgraph_expand_function (struct cgraph_node *node)
   /* Make sure that BE didn't give up on compiling.  */
   /* ??? Can happen with nested function of extern inline.  */
   gcc_assert (TREE_ASM_WRITTEN (node->decl));
-
-  if (DECL_IGNORED_P (decl))
-    {
-      write_symbols = save_write_symbols;
-      debug_hooks = save_debug_hooks;
-    }
 
   current_function_decl = NULL;
   if (!cgraph_preserve_function_body_p (node->decl))
