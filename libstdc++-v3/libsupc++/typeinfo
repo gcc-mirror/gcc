@@ -99,7 +99,13 @@ namespace std
 #endif
     bool operator!=(const type_info& __arg) const
     { return !operator==(__arg); }
-    
+
+    // Return true if this is a pointer type of some kind
+    virtual bool __is_pointer_p() const;
+
+    // Return true if this is a function type
+    virtual bool __is_function_p() const;
+
     // Try and catch a thrown type. Store an adjusted pointer to the
     // caught type in THR_OBJ. If THR_TYPE is not a pointer type, then
     // THR_OBJ points to the thrown object. If THR_TYPE is a pointer
@@ -112,12 +118,6 @@ namespace std
     // Internally used during catch matching
     virtual bool __do_upcast(const __cxxabiv1::__class_type_info *__target,
 			     void **__obj_ptr) const;
-
-   // Return true if this is a pointer type of some kind
-    virtual bool __is_pointer_p() const;
-
-    // Return true if this is a function type
-    virtual bool __is_function_p() const;
 
   protected:
     const char *__name;
