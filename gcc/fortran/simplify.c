@@ -70,6 +70,9 @@ gfc_expr gfc_bad_expr;
 static gfc_expr *
 range_check (gfc_expr *result, const char *name)
 {
+  if (result == NULL)
+    return &gfc_bad_expr;
+
   switch (gfc_range_check (result))
     {
       case ARITH_OK:
