@@ -1,5 +1,10 @@
 2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR tree-optimization/33655
+	* gcc.dg/torture/pr33655.c: New.
+
+2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR tree-optimization/33572
 	* g++.dg/torture/pr33572.C: New.
 

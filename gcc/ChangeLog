@@ -1,5 +1,11 @@
 2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR tree-optimization/33655
+	* tree-sra.c (bitfield_overlaps_p): Handle array and complex
+	elements.
+
+2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR tree-optimization/33572
 	* tree-cfg.c (verify_stmts): Check for missing PHI defs.
 	* tree-inline.c (update_ssa_across_eh_edges): Renamed to...
