@@ -1,3 +1,8 @@
+2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/25076
+	* gfortran.dg/forall_11.f90: New.
+
 2007-10-05  Michael Matz  <matz@suse.de>
 
 	PR middle-end/33667

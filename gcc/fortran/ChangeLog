@@ -1,3 +1,13 @@
+2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/25076
+	* resolve.c (gfc_find_forall_index): Move towards top,
+	renaming to ...
+	(find_forall_index): ... this.  Add check for NULL expr.
+	(resolve_forall_iterators): Verify additional constraint.
+	(resolve_forall): Remove checks obsoleted by new code in
+	resolve_forall_iterators.
+
 2007-10-05  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.h (gfc_get_data_variable, gfc_get_data_value,
