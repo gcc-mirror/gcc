@@ -1,3 +1,20 @@
+2007-10-05  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/23_containers/map/moveable.cc: Remove dg-require-rvalref.
+	* testsuite/23_containers/multimap/moveable.cc: Likewise.
+	* testsuite/23_containers/set/moveable.cc: Likewise. 
+	* testsuite/23_containers/multiset/moveable.cc: Likewise.
+	* testsuite/23_containers/deque/moveable.cc: Likewise. 
+	* testsuite/23_containers/list/moveable.cc: Likewise. 
+	* testsuite/23_containers/vector/moveable.cc: Likewise. 
+	* include/std/utility: Use _GLIBCXX_BEGIN_NAMESPACE.
+
+2007-10-05  Paolo Carlini  <pcarlini@suse.de>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_iterator.h (class move_iterator,
+	make_move_iterator): Add.
+
 2007-10-04  Doug Kwan  <dougkwan@google.com>
 
 	* include/ext/concurrent.h (class __mutex,

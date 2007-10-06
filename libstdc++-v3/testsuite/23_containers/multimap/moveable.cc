@@ -1,4 +1,3 @@
-// { dg-require-rvalref "" }
 // { dg-options "-std=gnu++0x" }
 
 // Copyright (C) 2005, 2007 Free Software Foundation, Inc.
@@ -33,6 +32,7 @@
 // this test may begin to fail.
 
 #include <map>
+#include <utility>
 #include <testsuite_hooks.h>
 
 int main()

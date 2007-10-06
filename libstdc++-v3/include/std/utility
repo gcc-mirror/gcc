@@ -87,8 +87,8 @@
 
 #include <type_traits>
 
-namespace std
-{
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
   // 20.2.2, forward/move
   template<typename _Tp>
     struct identity
@@ -105,7 +105,8 @@ namespace std
     inline typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t)
     { return __t; }
-}
+
+_GLIBCXX_END_NAMESPACE
 
 #endif
 
