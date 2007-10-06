@@ -39,6 +39,5 @@ namespace std
   typedef pod_int 		value_type;
   typedef value_type* 		iterator_type;
 
-  template iterator_type remove(iterator_type, iterator_type, 
-				const value_type&);
+  template iterator_type remove<iterator_type, value_type>(iterator_type, iterator_type, const value_type&);
 } 
