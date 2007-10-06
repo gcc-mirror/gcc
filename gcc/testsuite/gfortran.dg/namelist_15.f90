@@ -24,15 +24,19 @@ program namelist_15
   write (10, '(A)') "&MYNML"
   write (10, '(A)') " x = 3, 4, 'dd', 'ee', 'ff', 'gg',"
   write (10, '(A)') "     4, 5, 'hh', 'ii', 'jj', 'kk',"
-  write (10, '(A)') " x%i = , ,-3, -4"
-  write (10, '(A)') " x(2)%m(1)%ch(2) ='q',"
-  write (10, '(A)') " x(2)%m(2)%ch(1)(1) ='w',"
-  write (10, '(A)') " x%m%ch(:)(2) = 'z','z','z','z','z','z','z','z',"
-  write (10, '(A)') "&end"
+  write (10, '(A)') " x(1)%i = , ,"
+  write (10, '(A)') " x(2)%i = -3, -4"
+  write (10, '(A)') " x(2)%m(1)%ch(2)(1:1) ='q',"
+  write (10, '(A)') " x(2)%m(2)%ch(1)(1:1) ='w',"
+  write (10, '(A)') " x(1)%m(1)%ch(1:2)(2:2) = 'z','z',"
+  write (10, '(A)') " x(2)%m(1)%ch(1:2)(2:2) = 'z','z',"
+  write (10, '(A)') " x(1)%m(2)%ch(1:2)(2:2) = 'z','z',"
+  write (10, '(A)') " x(2)%m(2)%ch(1:2)(2:2) = 'z','z',"
+  write (10, '(A)') "/"
    
   rewind (10)
   read (10, nml = mynml, iostat = ier)
-  if (ier .ne. 0) print *, 'First read.' !call abort () 
+  if (ier .ne. 0) call abort () 
   close (10)
 
   open (10, status = "scratch", delim='apostrophe')
@@ -40,7 +44,7 @@ program namelist_15
   rewind (10)
 
   read (10, nml = mynml, iostat = ier)
-  if (ier .ne. 0) print *, 'Second read.' !call abort () 
+  if (ier .ne. 0) call abort () 
   close(10)
 
   if (.not. ((x(1)%i(1) == 3)          .and. &

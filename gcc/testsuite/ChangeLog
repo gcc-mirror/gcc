@@ -1,3 +1,7 @@
+2007-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/namelist_15.f90: Revise test.
+
 2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/33655
