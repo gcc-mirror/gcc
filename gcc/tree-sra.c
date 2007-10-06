@@ -2897,6 +2897,11 @@ bitfield_overlaps_p (tree blen, tree bpos, struct sra_elt *fld,
       flen = fold_convert (bitsizetype, TREE_OPERAND (fld->element, 1));
       fpos = fold_convert (bitsizetype, TREE_OPERAND (fld->element, 2));
     }
+  else if (TREE_CODE (fld->element) == INTEGER_CST)
+    {
+      flen = fold_convert (bitsizetype, TYPE_SIZE (fld->type));
+      fpos = size_binop (MULT_EXPR, flen, fld->element);
+    }
   else
     gcc_unreachable ();
 
