@@ -44,6 +44,8 @@
 #include <bits/functexcept.h>
 #include <bits/localefwd.h>
 #include <bits/ostream_insert.h>
+#include <bits/stl_iterator.h>
+#include <ext/numeric_traits.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 

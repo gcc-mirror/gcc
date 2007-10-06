@@ -45,6 +45,7 @@
 
 #include <cmath>
 #include <typeinfo>
+#include <new>
 #include <tr1/tuple>
 #include <tr1/type_traits>
 #include <bits/stringfwd.h>

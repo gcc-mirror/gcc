@@ -30,6 +30,7 @@
 // the GNU General Public License.
 
 #include <algorithm>
+#include <functional>
 #include <testsuite_api.h>
 
 namespace std

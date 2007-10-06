@@ -83,7 +83,7 @@ proc libstdc++_init { testfile } {
     global env
     global v3-sharedlib 
     global srcdir blddir objdir tool_root_dir
-    global cc cxx cxxflags cxxldflags
+    global cc cxx cxxflags cxxpchflags cxxldflags
     global includes
     global gluefile wrap_flags
     global ld_library_path
@@ -184,6 +184,7 @@ proc libstdc++_init { testfile } {
     # Default settings.
     set cxx [transform "g++"]
     set cxxflags "-g -O2 -D_GLIBCXX_ASSERT -fmessage-length=0"
+    set cxxpchflags ""
     set cxxldflags ""
     set cc [transform "gcc"]
     # Locate testsuite_hooks.h and other testsuite headers.
@@ -221,6 +222,7 @@ proc libstdc++_init { testfile } {
         # If we find a testsuite_flags file, we're testing in the build dir.
 	set cxx [exec sh $flags_file --build-cxx]
 	set cxxflags [exec sh $flags_file --cxxflags]
+	set cxxpchflags [exec sh $flags_file --cxxpchflags]
 	set cxxldflags [exec sh $flags_file --cxxldflags]
 	set cc [exec sh $flags_file --build-cc]
 	set includes [exec sh $flags_file --build-includes]
@@ -237,23 +239,29 @@ proc libstdc++_init { testfile } {
     # this check until $cxx and such have been initialized because we
     # perform a test compilation.  (Ideally, gcc --print-file-name would
     # list PCH files, but it does not.)
-    global PCH_CXXFLAGS
-    if ![info exists PCH_CXXFLAGS] then {
+    if { $cxxpchflags != "" } {
 	set src "config[pid].cc"
 	set f [open $src "w"]
 	puts $f "int main () {}"
 	close $f
 
+	# Fixme: "additional_flags=$cxxpchflags" fails, but would be
+	# useful as then the requested variant of the pre-build PCH
+	# files could be tested to see if it works.
 	set lines [v3_target_compile $src "config[pid].o" object \
-	         "additional_flags=-include additional_flags=bits/stdtr1c++.h"]
-	if {$lines == "" } {
-#	    set PCH_CXXFLAGS "-include bits/extc++.h"
-#	    set PCH_CXXFLAGS "-include bits/stdtr1c++.h"
-	    set PCH_CXXFLAGS "-include bits/stdc++.h"
-	} else {
-	    set PCH_CXXFLAGS ""
-	}
+		   "additional_flags=-include additional_flags=bits/stdc++.h"]
+	if { $lines != "" } {
+	    verbose -log "Requested PCH file: $cxxpchflags"
+	    verbose -log "is not working, and will not be used."
+	    set cxxpchflags ""
+	} 
 	file delete $src
+     } 
+    v3track cxxpchflags 2
+
+    global PCH_CXXFLAGS
+    if ![info exists PCH_CXXFLAGS] then {
+	set PCH_CXXFLAGS $cxxpchflags
 	v3track PCH_CXXFLAGS 2
     }
 

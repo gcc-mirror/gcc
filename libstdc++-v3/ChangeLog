@@ -1,3 +1,106 @@
+2007-10-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Fixes for --disable-libstdcxx-pch.
+	* include/ext/rc_string_base.h: Include stl_iterator_base_funcs.h.
+	* include/ext/vstring_util.h: Include stl_iterator.h and
+	numeric_traits.h.
+	* include/tr1/functional: Include new.
+	* testsuite/util/testsuite_api.h: Include exception.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Set
+	PCH_CXXFLAGS via cxxpchflags.
+
+	* testsuite/25_algorithms/binary_search/requirements/
+	explicit_instantiation/2.cc: Same.: Fix includes.
+	* testsuite/25_algorithms/count_if/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/equal_range/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/find_end/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/find_first_of/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/find_if/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/for_each/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/includes/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/inplace_merge/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/lexicographical_compare/
+	requirements/explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/lower_bound/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/make_heap/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/max_element/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/max/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/merge/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/min_element/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/min/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/next_permutation/
+	requirements/explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/nth_element/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/partial_sort_copy/
+	requirements/explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/partial_sort/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/partition/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/pop_heap/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/prev_permutation/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/push_heap/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/random_shuffle/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/remove_copy_if/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/remove_if/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/replace_copy_if/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/replace_if/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/search_n/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/search/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/set_difference/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/set_intersection/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/set_symmetric_difference/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/set_union/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/sort_heap/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/sort/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/stable_partition/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/stable_sort/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/transform/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/unique_copy/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/unique/requirements/
+	explicit_instantiation/2.cc: Same.
+	* testsuite/25_algorithms/upper_bound/requirements/
+	explicit_instantiation/2.cc: Same.
+
+	* testsuite/25_algorithms/remove/requirements/
+	explicit_instantiation/pod.cc: Provide a hint to the compiler.
+
 2007-10-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/23_containers/map/moveable.cc: Remove dg-require-rvalref.

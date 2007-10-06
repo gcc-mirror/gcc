@@ -37,6 +37,7 @@
 #define _RC_STRING_BASE_H 1
 
 #include <ext/atomicity.h>
+#include <bits/stl_iterator_base_funcs.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
