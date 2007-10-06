@@ -1,5 +1,9 @@
 2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
 
+	* simplify.c (gfc_simplify_size): Fix typo.
+
+2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
+
 	PR fortran/25076
 	* resolve.c (gfc_find_forall_index): Move towards top,
 	renaming to ...
