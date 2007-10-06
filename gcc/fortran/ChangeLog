@@ -1,3 +1,9 @@
+2007-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33609
+	* simplify.c (range_check): Return gfc_bad_expr if incoming expression 
+	is NULL.
+
 2007-10-06  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	* simplify.c (gfc_simplify_size): Fix typo.
