@@ -1,5 +1,10 @@
 2007-10-06  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/33678	
+	* libsupc++/typeinfo (typeinfo): Revert ordering of virtual components.
+
+2007-10-06  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/33487
 	* include/parallel/algorithmfwd.h (for_each, generate, generate_n,
 	transform, replace, replace_if, max_element, min_element, count,
