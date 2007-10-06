@@ -1,7 +1,7 @@
 ! { dg-require-effective-target fortran_large_real }
 ! { dg-do run { xfail powerpc*-apple-darwin* } }
-! Test XFAILed on powerpc-darwin because the system's printf() lacks
-! proper support for long doubles.
+! Test XFAILed on these platforms because the system's printf() lacks
+! proper support for denormalized long doubles.
 !
 ! This tests that the default formats for formatted I/O of reals are
 ! wide enough and have enough precision, by checking that values can
@@ -12,12 +12,8 @@ include "default_format_2.inc"
 program main
   use test_default_format
 
-  if (test (1.0_kl, 0) /= 0) call abort
-  if (test (0.0_kl, 0) /= 0) call abort
-  if (test (tiny(0.0_kl), 1) /= 0) call abort
-  if (test (-tiny(0.0_kl), -1) /= 0) call abort
-  if (test (huge(0.0_kl), -1) /= 0) call abort
-  if (test (-huge(0.0_kl), 1) /= 0) call abort
+  if (test (tiny(0.0_kl), -1) /= 0) call abort
+  if (test (-tiny(0.0_kl), 1) /= 0) call abort
 end program main
 !
 ! { dg-final { cleanup-modules "test_default_format" } }
