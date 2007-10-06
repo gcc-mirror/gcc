@@ -159,7 +159,8 @@ namespace __gnu_parallel
    *  @param _Alloc Allocator for the elements */
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc = std::allocator<_Val> >
-  class _Rb_tree : public std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>
+  class _Rb_tree 
+  : public std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>
   {
   private:
     /** @brief Sequential tree */
@@ -214,7 +215,8 @@ namespace __gnu_parallel
      * @param a Allocator object with which to initialize the class comparator
      */
     _Rb_tree(const _Compare& c, const _Alloc& a)
-    : base_type(c, a), strictly_less(base_type::_M_impl._M_key_compare), less_equal(base_type::_M_impl._M_key_compare)
+    : base_type(c, a), strictly_less(base_type::_M_impl._M_key_compare), 
+      less_equal(base_type::_M_impl._M_key_compare)
     { }
 
     /** @brief Copy constructor.
@@ -224,7 +226,8 @@ namespace __gnu_parallel
      * @param __x Parallel red-black instance to copy
      */
     _Rb_tree(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x)
-    : base_type(__x), strictly_less(base_type::_M_impl._M_key_compare), less_equal(base_type::_M_impl._M_key_compare)
+    : base_type(__x), strictly_less(base_type::_M_impl._M_key_compare), 
+      less_equal(base_type::_M_impl._M_key_compare)
     { }
 
     /** @brief Parallel replacement of the sequential
@@ -244,12 +247,14 @@ namespace __gnu_parallel
       if (_GLIBCXX_PARALLEL_CONDITION(true))
 	if (base_type::_M_impl._M_node_count == 0)
 	  {
-	    _M_bulk_insertion_construction(__first, __last, true, strictly_less);
+	    _M_bulk_insertion_construction(__first, __last, true, 
+					   strictly_less);
 	    _GLIBCXX_PARALLEL_ASSERT(rb_verify());
 	  }
 	else
 	  {
-	    _M_bulk_insertion_construction(__first, __last, false, strictly_less);
+	    _M_bulk_insertion_construction(__first, __last, false, 
+					   strictly_less);
 	    _GLIBCXX_PARALLEL_ASSERT(rb_verify());
 	  }
       else
@@ -293,8 +298,9 @@ namespace __gnu_parallel
     class nodes_initializer
     {
       /** @brief Renaming of tree size_type */
-
-      typedef typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::size_type size_type;
+      
+      typedef _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc> tree_type;
+      typedef typename tree_type::size_type size_type;
     public:
 
       /** @brief mask[%i]= 0..01..1, where the number of 1s is %i+1 */
@@ -328,7 +334,8 @@ namespace __gnu_parallel
        * @param _n Total number of (used) nodes
        * @param _num_threads Number of threads into which divide the work
        * @param _rank Helper object to mind potential gaps in @c r_init */
-      nodes_initializer(const _Rb_tree_node_ptr* r, const size_type _n, const thread_index_t _num_threads, const ranker& _rank):
+      nodes_initializer(const _Rb_tree_node_ptr* r, const size_type _n, 
+			const thread_index_t _num_threads, const ranker& _rank):
 	r_init(r),
 	n(_n),
 	num_threads(_num_threads),
@@ -352,24 +359,21 @@ namespace __gnu_parallel
 
       /** @brief Query for tree height
        * @return Tree height */
-      int get_height() const
-      {
-	return height;
-      }
+      int 
+      get_height() const
+      { return height; }
 
       /** @brief Query for the splitting point
        * @return Splitting point */
-      size_type get_shifted_splitting_point() const
-      {
-	return rank.get_shifted_rank(splitting_point, 0);
-      }
+      size_type 
+      get_shifted_splitting_point() const
+      { return rank.get_shifted_rank(splitting_point, 0); }
 
       /** @brief Query for the tree root node
        * @return Tree root node */
-      _Rb_tree_node_ptr get_root() const
-      {
-	return  r_init[rank.get_shifted_rank(rank_root,num_threads/2)];
-      }
+      _Rb_tree_node_ptr 
+      get_root() const
+      { return  r_init[rank.get_shifted_rank(rank_root,num_threads/2)]; }
 
       /** @brief Calculation of the parent position in the array of nodes
        * @hideinitializer */
@@ -386,7 +390,8 @@ namespace __gnu_parallel
        * @param iam Partition of the array in which the node is, where
        * iam is in [0..num_threads)
        * @sa link_complete */
-      void link_incomplete(const _Rb_tree_node_ptr& r, const int iam) const
+      void 
+      link_incomplete(const _Rb_tree_node_ptr& r, const int iam) const
       {
 	size_type real_pos = rank.get_real_rank(&r-r_init, iam);
 	size_type l_s, r_s, p_s;
@@ -438,7 +443,8 @@ namespace __gnu_parallel
        * iam is in [0..@c num_threads)
        * @sa link_incomplete
        */
-      void link_complete(const _Rb_tree_node_ptr& r, const int iam) const
+      void 
+      link_complete(const _Rb_tree_node_ptr& r, const int iam) const
       {
 	size_type real_pos = rank.get_real_rank(&r-r_init, iam);
 	size_type p_s;
@@ -477,20 +483,18 @@ namespace __gnu_parallel
        * @param pos Rank in the actual incomplete tree
        * @return Rank in the corresponding complete tree
        * @sa complete_to_original  */
-      int original_to_complete(const int pos) const
-      {
-	return (pos << 1) - splitting_point;
-      }
+      int 
+      original_to_complete(const int pos) const
+      { return (pos << 1) - splitting_point; }
 
       /** @brief Change of "base": Convert the rank if the tree was
 	  complete into the corresponding rank in the actual tree
        * @param pos Rank in the complete tree
        * @return Rank in the actual incomplete tree
        * @sa original_to_complete */
-      int complete_to_original(const int pos) const
-      {
-	return (pos + splitting_point) >> 1;
-      }
+      int 
+      complete_to_original(const int pos) const
+      { return (pos + splitting_point) >> 1; }
 
 
       /** @brief Calculate the rank in the complete tree of the parent
@@ -506,7 +510,10 @@ namespace __gnu_parallel
        * @param parent_shift Rank in the complete tree of the parent
        * of pos (out parameter)
        */
-      void calculate_shifts_pos_level(const size_type pos, const int level, size_type& left_shift, size_type& right_shift, size_type& parent_shift) const
+      void 
+      calculate_shifts_pos_level(const size_type pos, const int level, 
+				 size_type& left_shift, size_type& right_shift,
+				 size_type& parent_shift) const
       {
 	int stride =  1 << (level -1);
 	left_shift = pos - stride;
@@ -523,7 +530,8 @@ namespace __gnu_parallel
        * @return Position of the first 0 bit in @c x (starting to
        * count with 1)
        */
-      int first_0_right(const size_type x) const
+      int 
+      first_0_right(const size_type x) const
       {
 	if ((x & 0x2) == 0)
 	  return 1;
@@ -540,7 +548,8 @@ namespace __gnu_parallel
        * whose first 0 bit must be calculated
        * @param k_beg Position in which to start searching. By default is 2.
        * @return Position of the first 0 bit in x (starting to count with 1) */
-      int first_0_right_bs(const size_type x, int k_beg=2) const
+      int 
+      first_0_right_bs(const size_type x, int k_beg=2) const
       {
 	int k_end = sizeof(size_type)*8;
 	size_type not_x = x ^ mask[k_end-1];
@@ -566,7 +575,8 @@ namespace __gnu_parallel
     class ranker_gaps
     {
       /** @brief Renaming of tree's size_type */
-      typedef typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::size_type size_type;
+      typedef _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc> tree_type;
+      typedef typename tree_type::size_type size_type;
 
       /** @brief Array containing the beginning ranks of all the
 	  num_threads partitions just considering the valid nodes, not
@@ -594,7 +604,8 @@ namespace __gnu_parallel
        * gaps at the beginning of each partition
        * @param _num_threads Number of partitions (and threads that
        * work on it) */
-      ranker_gaps(const size_type* size_p, const size_type* shift_r, const thread_index_t _num_threads) :
+      ranker_gaps(const size_type* size_p, const size_type* shift_r, 
+		  const thread_index_t _num_threads) :
 	beg_shift_partition(size_p),
 	rank_shift(shift_r),
 	num_threads(_num_threads)
@@ -616,9 +627,7 @@ namespace __gnu_parallel
        * been allocated for beg_partition array
        */
       ~ranker_gaps()
-      {
-	delete[] beg_partition;
-      }
+      { delete[] beg_partition; }
 
       /** @brief Convert a rank in the array of nodes considering
 	  valid nodes and gaps, to the corresponding considering only
@@ -628,10 +637,9 @@ namespace __gnu_parallel
        * @return Rank in the array of nodes considering only the valid nodes
        * @sa get_shifted_rank
        */
-      size_type get_real_rank(const size_type pos, const int index) const
-      {
-	return pos - rank_shift[index];
-      }
+      size_type 
+      get_real_rank(const size_type pos, const int index) const
+      { return pos - rank_shift[index]; }
 
       /** @brief Inverse of get_real_rank: Convert a rank in the array
 	  of nodes considering only valid nodes, to the corresponding
@@ -644,7 +652,8 @@ namespace __gnu_parallel
        * @post 0 <= @c return <= number_of_elements
        * @sa get_real_rank()
        */
-      size_type get_shifted_rank(const size_type pos, const int index) const
+      size_type 
+      get_shifted_rank(const size_type pos, const int index) const
       {
 	// Heuristic.
 	if (beg_partition[index] <= pos and pos < beg_partition[index+1])
@@ -662,7 +671,8 @@ namespace __gnu_parallel
        * if there were no gaps
        * @return Rank in the array of nodes considering valid nodes and gaps
        */
-      size_type get_shifted_rank_loop(const size_type pos, int index) const
+      size_type 
+      get_shifted_rank_loop(const size_type pos, int index) const
       {
 	while (pos >= beg_partition[index+1])
 	  ++index;
@@ -681,7 +691,8 @@ namespace __gnu_parallel
     class ranker_no_gaps
     {
       /** @brief Renaming of tree's size_type */
-      typedef typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::size_type size_type;
+      typedef _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc> tree_type;
+      typedef typename tree_type::size_type size_type;
 
     public:
       /** @brief Convert a rank in the array of nodes considering
@@ -693,10 +704,9 @@ namespace __gnu_parallel
        * @param pos Rank in the array of nodes considering valid nodes and gaps
        * @param index Partition which the rank belongs to, unused here
        * @return Rank in the array of nodes considering only the valid nodes */
-      size_type get_real_rank(const size_type pos, const int index) const
-      {
-	return pos;
-      }
+      size_type 
+      get_real_rank(const size_type pos, const int index) const
+      { return pos; }
 
       /** @brief Inverse of get_real_rank: Convert a rank in the array
        * of nodes considering only valid nodes, to the corresponding
@@ -708,10 +718,9 @@ namespace __gnu_parallel
        * @param index Partition which the rank belongs to, unused here
        * @return Rank in the array of nodes considering valid nodes and gaps
        */
-      size_type get_shifted_rank(const size_type pos, const int index) const
-      {
-	return pos;
-      }
+      size_type 
+      get_shifted_rank(const size_type pos, const int index) const
+      { return pos; }
     };
 
 
@@ -777,7 +786,8 @@ namespace __gnu_parallel
        * the element pointed by the the class member @c prev */
       void operator()(const _InputIterator it)
       {
-	if (sorted and it != prev and comp(_KeyOfValue()(*it),_KeyOfValue()(*prev)))
+	if (sorted and it != prev and comp(_KeyOfValue()(*it),
+					   _KeyOfValue()(*prev)))
 	  sorted = false;
 	prev = it;
       }
@@ -840,8 +850,10 @@ namespace __gnu_parallel
       { return c(k, base_type::_S_key(r)); }
     };
 
-    /** @brief Helper comparator: compare a key with the key of a value pointed by an iterator
-     * @param _Comparator Comparator for keys */
+    /** @brief Helper comparator: compare a key with the key of a
+	value pointed by an iterator
+     * @param _Comparator Comparator for keys 
+     */
     template<typename _Iterator, typename _Comparator>
     struct compare_value_key
     {
@@ -914,7 +926,8 @@ namespace __gnu_parallel
      * @param Comparator Comparator for values
      * @param _ValuePtr Pointer to values */
     template<typename Comparator, typename _ValuePtr>
-    class PtrComparator : public std::binary_function<_ValuePtr, _ValuePtr, bool>
+    class PtrComparator 
+    : public std::binary_function<_ValuePtr, _ValuePtr, bool>
     {
       /** @brief Comparator for values */
       Comparator comp;
@@ -1108,11 +1121,9 @@ namespace __gnu_parallel
        * @param _par_problem Parent concatenation problem to solve
        * when @c is_ready = READY_YES
        */
-      concat_problem(const _Rb_tree_node_ptr _t, const int _black_h, concat_problem* _par_problem):
-	t(_t),
-	black_h(_black_h),
-	is_ready(READY_NO),
-	par_problem(_par_problem)
+      concat_problem(const _Rb_tree_node_ptr _t, const int _black_h, 
+		     concat_problem* _par_problem)
+      : t(_t), black_h(_black_h), is_ready(READY_NO), par_problem(_par_problem)
       {
 	// The root of an insertion problem must be black.
 	if (t != NULL and t->_M_color == std::_S_red)
@@ -1131,7 +1142,8 @@ namespace __gnu_parallel
     struct insertion_problem
     {
       /** @brief Renaming of _Rb_tree @c size_type */
-      typedef typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::size_type size_type;
+      typedef _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc> tree_type;
+      typedef typename tree_type::size_type size_type;
 
       /** @brief Root of the tree where the elements are to be inserted */
       _Rb_tree_node_ptr t;
@@ -1166,8 +1178,10 @@ namespace __gnu_parallel
        * @param _conc Concatenation problem to solve once the
        * insertion problem is finished
        */
-      insertion_problem(const size_type b, const size_type e, const int array_p, concat_problem* _conc)
-      : t(_conc->t), pos_beg(b), pos_end(e), array_partition(array_p), conc(_conc)
+      insertion_problem(const size_type b, const size_type e, 
+			const int array_p, concat_problem* _conc)
+      : t(_conc->t), pos_beg(b), pos_end(e), array_partition(array_p), 
+	conc(_conc)
       {
 	_GLIBCXX_PARALLEL_ASSERT(pos_beg <= pos_end);
 
@@ -1233,9 +1247,11 @@ namespace __gnu_parallel
 	    }
 
 	  if (is_construction)
-	    _M_sorted_bulk_construction(access, beg_partition, n, num_threads, strictly_less_or_less_equal);
+	    _M_sorted_bulk_construction(access, beg_partition, n, num_threads, 
+					strictly_less_or_less_equal);
 	  else
-	    _M_sorted_bulk_insertion(access, beg_partition, n, num_threads, strictly_less_or_less_equal);
+	    _M_sorted_bulk_insertion(access, beg_partition, n, num_threads, 
+				     strictly_less_or_less_equal);
 	}
 
       t.tic("main work");
@@ -1262,7 +1278,10 @@ namespace __gnu_parallel
      * @param is_construction If true, the tree was empty and so, this
      * is constructed. Otherwise, the elements are added to an
      * existing tree.
-     * @param strictly_less_or_less_equal Comparator to deal transparently with repetitions with respect to the uniqueness of the wrapping container */
+     * @param strictly_less_or_less_equal Comparator to deal
+     * transparently with repetitions with respect to the uniqueness
+     * of the wrapping container 
+     */
     template<typename _InputIterator, typename StrictlyLessOrLessEqual>
     void
     _M_not_sorted_bulk_insertion_construction(_InputIterator* access,
@@ -1270,7 +1289,7 @@ namespace __gnu_parallel
 					      const size_type n,
 					      const thread_index_t num_threads,
 					      const bool is_construction,
-					      StrictlyLessOrLessEqual strictly_less_or_less_equal)
+			   StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       // Copy entire elements. In the case of a map, we would be
       // copying the pair. Therefore, the copy should be reconsidered
@@ -1360,7 +1379,8 @@ namespace __gnu_parallel
      * @param black_h Black height of the resulting tree (out)
      */
     static _Rb_tree_node_ptr
-    simple_tree_construct(_Rb_tree_node_ptr* r_array, const size_type pos_beg, const size_type pos_end, int& black_h)
+    simple_tree_construct(_Rb_tree_node_ptr* r_array, const size_type pos_beg, 
+			  const size_type pos_end, int& black_h)
     {
       if (pos_beg == pos_end)
 	{
@@ -1416,7 +1436,8 @@ namespace __gnu_parallel
      * going to be shared
      */
     template<typename _Iterator>
-    _Rb_tree_node_ptr* _M_unsorted_bulk_allocation_and_initialization(const _Iterator* access, const size_type* beg_partition, const size_type n, const thread_index_t num_threads)
+    _Rb_tree_node_ptr* 
+    _M_unsorted_bulk_allocation_and_initialization(const _Iterator* access, const size_type* beg_partition, const size_type n, const thread_index_t num_threads)
     {
       _Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*> (::operator new (sizeof(_Rb_tree_node_ptr)*(n+1)));
 
@@ -1471,7 +1492,8 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr* _M_sorted_bulk_allocation_and_initialization(_Iterator* access, size_type*  beg_partition, size_type* rank_shift, const size_type n, thread_index_t& num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
+    _Rb_tree_node_ptr* 
+    _M_sorted_bulk_allocation_and_initialization(_Iterator* access, size_type*  beg_partition, size_type* rank_shift, const size_type n, thread_index_t& num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       // Ghost node at the end to avoid extra comparisons in nodes_initializer.
       _Rb_tree_node_ptr* r = static_cast<_Rb_tree_node_ptr*> (::operator new (sizeof(_Rb_tree_node_ptr)*(n+1)));
@@ -1598,7 +1620,8 @@ namespace __gnu_parallel
      * of the wrapping container
      */
     template<typename _Iterator, typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr* _M_sorted_no_gapped_bulk_allocation_and_initialization(_Iterator* access, size_type* beg_partition, size_type& n, const thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
+    _Rb_tree_node_ptr* 
+    _M_sorted_no_gapped_bulk_allocation_and_initialization(_Iterator* access, size_type* beg_partition, size_type& n, const thread_index_t num_threads, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       size_type* sums = static_cast<size_type*> (::operator new (sizeof(size_type)*n));
       // Allocate and initialize the nodes
@@ -2260,7 +2283,8 @@ namespace __gnu_parallel
      *  @return Resulting tree after the elements have been inserted
      */
     template<typename StrictlyLessOrLessEqual>
-    _Rb_tree_node_ptr _M_bulk_insertion_merge(_Rb_tree_node_ptr* r_array, _Rb_tree_node_ptr t, const size_type pos_beg, const size_type pos_end,  size_type& existing, int& black_h, StrictlyLessOrLessEqual strictly_less_or_less_equal)
+    _Rb_tree_node_ptr 
+    _M_bulk_insertion_merge(_Rb_tree_node_ptr* r_array, _Rb_tree_node_ptr t, const size_type pos_beg, const size_type pos_end,  size_type& existing, int& black_h, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
 #ifndef NDEBUG
       int count;
@@ -2333,7 +2357,8 @@ namespace __gnu_parallel
      *  of the wrapping container
      */
     template<typename StrictlyLessOrLessEqual>
-    void _M_bulk_insertion_merge_concatenate(_Rb_tree_node_ptr* r, insertion_problem& ip, size_type& existing, StrictlyLessOrLessEqual strictly_less_or_less_equal)
+    void 
+    _M_bulk_insertion_merge_concatenate(_Rb_tree_node_ptr* r, insertion_problem& ip, size_type& existing, StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       concat_problem* conc = ip.conc;
       _GLIBCXX_PARALLEL_ASSERT(ip.pos_beg <= ip.pos_end);
@@ -2675,7 +2700,8 @@ namespace __gnu_parallel
     static int
     black_height(const _Rb_tree_node_ptr t)
     {
-      if (t == NULL) return 0;
+      if (t == NULL) 
+	return 0;
       int bh = black_height (static_cast<const _Rb_tree_node_ptr> (t->_M_left));
       if (t->_M_color == std::_S_black)
 	++bh;
@@ -2719,7 +2745,8 @@ namespace __gnu_parallel
      */
     template<typename S>
     static _Rb_tree_node_ptr
-    plant(const _Rb_tree_node_ptr root, const _Rb_tree_node_ptr l, const _Rb_tree_node_ptr r)
+    plant(const _Rb_tree_node_ptr root, const _Rb_tree_node_ptr l, 
+	  const _Rb_tree_node_ptr r)
     {
       S::left(root) = l;
       S::right(root) = r;
@@ -2744,7 +2771,9 @@ namespace __gnu_parallel
      *  @post @c t is correct red-black tree with height @c black_h.
      */
     void
-    concatenate(_Rb_tree_node_ptr root, _Rb_tree_node_ptr l, _Rb_tree_node_ptr r,  int black_h_l, int black_h_r, _Rb_tree_node_ptr& t, int& black_h) const
+    concatenate(_Rb_tree_node_ptr root, _Rb_tree_node_ptr l, 
+		_Rb_tree_node_ptr r,  int black_h_l, int black_h_r, 
+		_Rb_tree_node_ptr& t, int& black_h) const
     {
 #ifndef NDEBUG
       int count = 0, count1 = 0, count2 = 0;
@@ -2826,7 +2855,9 @@ namespace __gnu_parallel
      */
     template<typename S>
     static void
-    concatenate(const _Rb_tree_node_ptr rt, _Rb_tree_node_ptr l, _Rb_tree_node_ptr r, int black_h_l, int black_h_r, _Rb_tree_node_ptr& t, int& black_h)
+    concatenate(const _Rb_tree_node_ptr rt, _Rb_tree_node_ptr l, 
+		_Rb_tree_node_ptr r, int black_h_l, int black_h_r, 
+		_Rb_tree_node_ptr& t, int& black_h)
     {
       _Rb_tree_node_base* root = l;
       _Rb_tree_node_ptr parent = NULL;
@@ -2888,7 +2919,10 @@ namespace __gnu_parallel
      *  @return Black height of t */
     template<typename StrictlyLessOrEqual>
     int
-    split(_Rb_tree_node_ptr t, const key_type& key, const key_type& prev_k, _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& l,  _Rb_tree_node_ptr& r, int& black_h_l, int& black_h_r, StrictlyLessOrEqual strictly_less_or_less_equal) const
+    split(_Rb_tree_node_ptr t, const key_type& key, const key_type& prev_k, 
+	  _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, 
+	  int& black_h_l, int& black_h_r, 
+	  StrictlyLessOrEqual strictly_less_or_less_equal) const
     {
       if (t != NULL)
 	{
@@ -2936,7 +2970,11 @@ namespace __gnu_parallel
      *  @return Black height of t */
     template<typename StrictlyLessOrEqual>
     int
-    split_not_null(const _Rb_tree_node_ptr t, const key_type& key, const key_type& prev_k, _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, int& black_h_l, int& black_h_r, StrictlyLessOrEqual strictly_less_or_equal) const
+    split_not_null(const _Rb_tree_node_ptr t, const key_type& key, 
+		   const key_type& prev_k, _Rb_tree_node_ptr& root, 
+		   _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, int& black_h_l, 
+		   int& black_h_r, 
+		   StrictlyLessOrEqual strictly_less_or_equal) const
     {
       _GLIBCXX_PARALLEL_ASSERT (t != NULL);
       int black_h, b_h;
@@ -3039,7 +3077,8 @@ namespace __gnu_parallel
      *  @param black_h_r Black height of the right subtree.
      *  @return Black height of the original tree  */
     int
-    extract_min(const _Rb_tree_node_ptr t, _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& r, int& black_h_r) const
+    extract_min(const _Rb_tree_node_ptr t, _Rb_tree_node_ptr& root, 
+		_Rb_tree_node_ptr& r, int& black_h_r) const
     {
       _GLIBCXX_PARALLEL_ASSERT (t != NULL);
       int black_h, b_h;
@@ -3087,7 +3126,8 @@ namespace __gnu_parallel
      *  @param black_h_l Black height of the left subtree.
      *  @return Black height of the original tree  */
     int
-    extract_max(const _Rb_tree_node_ptr t, _Rb_tree_node_ptr& root, _Rb_tree_node_ptr& l, int& black_h_l) const
+    extract_max(const _Rb_tree_node_ptr t, _Rb_tree_node_ptr& root, 
+		_Rb_tree_node_ptr& l, int& black_h_l) const
     {
       _GLIBCXX_PARALLEL_ASSERT (t != NULL);
       int black_h, b_h;
@@ -3138,7 +3178,9 @@ namespace __gnu_parallel
      *  @param black_h_r Black height of the right subtree.
      *  @return Black height of the original tree */
     int
-    split(const _Rb_tree_node_ptr t, const key_type& key, _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, int& black_h_l, int& black_h_r) const
+    split(const _Rb_tree_node_ptr t, const key_type& key, 
+	  _Rb_tree_node_ptr& l, _Rb_tree_node_ptr& r, int& black_h_l, 
+	  int& black_h_r) const
     {
       if (t != NULL)
 	{
@@ -3197,7 +3239,9 @@ namespace __gnu_parallel
      *  @return Resulting tree after insertion */
     template<typename StrictlyLessOrLessEqual>
     _Rb_tree_node_ptr
-    _M_insert_local(_Rb_tree_node_base* t, const _Rb_tree_node_ptr new_t, size_type& existing, int& black_h, StrictlyLessOrLessEqual strictly_less_or_less_equal)
+    _M_insert_local(_Rb_tree_node_base* t, const _Rb_tree_node_ptr new_t, 
+		    size_type& existing, int& black_h, 
+		    StrictlyLessOrLessEqual strictly_less_or_less_equal)
     {
       _GLIBCXX_PARALLEL_ASSERT(t != NULL);
       if (_M_insert_local_top_down(t, new_t, NULL, NULL, true, strictly_less_or_less_equal))
@@ -3233,7 +3277,11 @@ namespace __gnu_parallel
      */
     template<typename StrictlyLessOrLessEqual>
     bool
-    _M_insert_local_top_down(_Rb_tree_node_base* t, const _Rb_tree_node_ptr new_t, _Rb_tree_node_base* eq_t, _Rb_tree_node_base* parent, const bool is_left, StrictlyLessOrLessEqual strictly_less_or_less_equal) const
+    _M_insert_local_top_down(_Rb_tree_node_base* t, 
+			     const _Rb_tree_node_ptr new_t, 
+			     _Rb_tree_node_base* eq_t, 
+			     _Rb_tree_node_base* parent, const bool is_left, 
+		    StrictlyLessOrLessEqual strictly_less_or_less_equal) const
     {
       if (t != NULL)
 	{
@@ -3398,7 +3446,8 @@ namespace __gnu_parallel
      *  @return Tree correct. 
      */
     static bool
-    rb_verify_tree(const typename base_type::_Const_Link_type __x, int& count, int& black_h)
+    rb_verify_tree(const typename base_type::_Const_Link_type __x, int& count, 
+		   int& black_h)
     {
       if (__x == NULL)
 	{

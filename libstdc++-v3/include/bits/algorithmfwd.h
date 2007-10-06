@@ -148,7 +148,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     fill_n(_OIter, _Size, const _Tp&);
 
   // find
-  // find_end
+
+  template<typename _FIter1, typename _FIter2>
+    _FIter1
+    find_end(_FIter1, _FIter1, _FIter2, _FIter2);
+
+  template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _FIter1
+    find_end(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
+
   // find_first_of
   // find_if
   // for_each
@@ -388,14 +396,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
   template<typename _IIter, typename _Tp>
     _IIter 
     find(_IIter, _IIter, const _Tp&);
-
-  template<typename _FIter1, typename _FIter2>
-    _FIter1
-    find_end(_FIter1, _FIter1, _FIter2, _FIter2);
-
-  template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
-    _FIter1
-    find_end(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
   template<typename _FIter1, typename _FIter2>
     _FIter1

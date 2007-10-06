@@ -49,7 +49,14 @@ namespace std
  * @namespace __gnu_sequential
  * @brief GNU sequential classes for public use.
  */
-namespace __gnu_sequential { }
+namespace __gnu_sequential 
+{ 
+#ifdef _GLIBCXX_PARALLEL
+  using namespace std::__norm;
+#else
+  using namespace std;
+#endif   
+}
 
 /**
  * @namespace __gnu_parallel

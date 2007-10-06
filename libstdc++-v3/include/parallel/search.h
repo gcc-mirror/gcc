@@ -55,7 +55,8 @@ namespace __gnu_parallel
    */
   template<typename RandomAccessIterator, typename _DifferenceTp>
   void
-  calc_borders(RandomAccessIterator elements, _DifferenceTp length, _DifferenceTp* off)
+  calc_borders(RandomAccessIterator elements, _DifferenceTp length, 
+	       _DifferenceTp* off)
   {
     typedef _DifferenceTp difference_type;
 
@@ -65,7 +66,7 @@ namespace __gnu_parallel
     difference_type k = 0;
     for (difference_type j = 2; j <= length; j++)
       {
-	while ((k >= 0) && (elements[k] != elements[j-1]))
+	while ((k >= 0) && !(elements[k] == elements[j-1]))
 	  k = off[k];
 	off[j] = ++k;
       }
