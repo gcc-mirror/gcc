@@ -4279,11 +4279,18 @@ verify_stmts (void)
 	      tree t = PHI_ARG_DEF (phi, i);
 	      tree addr;
 
+	      if (!t)
+		{
+		  error ("missing PHI def");
+		  debug_generic_stmt (phi);
+		  err |= true;
+		  continue;
+		}
 	      /* Addressable variables do have SSA_NAMEs but they
 		 are not considered gimple values.  */
-	      if (TREE_CODE (t) != SSA_NAME
-		  && TREE_CODE (t) != FUNCTION_DECL
-		  && !is_gimple_val (t))
+	      else if (TREE_CODE (t) != SSA_NAME
+		       && TREE_CODE (t) != FUNCTION_DECL
+		       && !is_gimple_val (t))
 		{
 		  error ("PHI def is not a GIMPLE value");
 		  debug_generic_stmt (phi);
