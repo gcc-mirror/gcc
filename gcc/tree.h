@@ -2656,8 +2656,7 @@ struct tree_memory_partition_tag GTY(())
   (DECL_COMMON_CHECK (NODE)->decl_common.debug_expr_is_from)
 
 /* Nonzero for a given ..._DECL node means that the name of this node should
-   be ignored for symbolic debug purposes.  Moreover, for a FUNCTION_DECL,
-   the body of the function should also be ignored.  */
+   be ignored for symbolic debug purposes.  */
 #define DECL_IGNORED_P(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.ignored_flag)
 
 /* Nonzero for a given ..._DECL node means that this node represents an
