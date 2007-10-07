@@ -6968,22 +6968,20 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
      is_non_constant_shape_array.  */
   specification_expr = 1;
 
-  if (!sym->attr.use_assoc
+  if (sym->ns->proc_name
+      && (sym->ns->proc_name->attr.flavor == FL_MODULE
+	  || sym->ns->proc_name->attr.is_main_program)
+      && !sym->attr.use_assoc
       && !sym->attr.allocatable
       && !sym->attr.pointer
       && is_non_constant_shape_array (sym))
     {
-	/* The shape of a main program or module array needs to be
-	   constant.  */
-	if (sym->ns->proc_name
-	    && (sym->ns->proc_name->attr.flavor == FL_MODULE
-		|| sym->ns->proc_name->attr.is_main_program))
-	  {
-	    gfc_error ("The module or main program array '%s' at %L must "
-		       "have constant shape", sym->name, &sym->declared_at);
-	    specification_expr = 0;
-	    return FAILURE;
-	  }
+      /* The shape of a main program or module array needs to be
+	 constant.  */
+      gfc_error ("The module or main program array '%s' at %L must "
+		 "have constant shape", sym->name, &sym->declared_at);
+      specification_expr = 0;
+      return FAILURE;
     }
 
   if (sym->ts.type == BT_CHARACTER)
