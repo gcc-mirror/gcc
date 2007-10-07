@@ -1,3 +1,8 @@
+2007-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/33683
+	* gfortran.dg/gamma_5.f90:  New test case
+
 2007-10-07  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/20851
