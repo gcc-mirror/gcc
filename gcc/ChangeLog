@@ -1,3 +1,9 @@
+2007-10-07  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/m68k/m68k.c, config/m68k/m68k.md: Use the assembly
+	syntax for ASSEMBLER_DIALECT.
+	* config/m68k/m68k.h (ASSEMBLER_DIALECT): New.
+
 2007-10-06  Eric Botcazou  <ebotcazou@adacore.com>
             Nathan Froyd  <froydnj@codesourcery.com>
 

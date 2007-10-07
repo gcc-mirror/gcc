@@ -29,6 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 # define TARGET_VERSION fprintf (stderr, " (68k, MIT syntax)")
 #endif
 
+/* Options 0 and 1 are the Motorola and MIT syntaxes,
+   respectively.  */
+#define ASSEMBLER_DIALECT	!MOTOROLA
+
 /* Handle --with-cpu default option from configure script.  */
 #define OPTION_DEFAULT_SPECS						\
   { "cpu",   "%{!mc68000:%{!m68000:%{!m68302:%{!m68010:%{!mc68020:%{!m68020:\
@@ -971,17 +975,11 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
-#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)			\
-  asm_fprintf (FILE, (MOTOROLA				\
-		      ? "\tmove.l %s,-(%Rsp)\n"		\
-		      : "\tmovel %s,%Rsp@-\n"),		\
-	       reg_names[REGNO])
+#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)					  \
+  asm_fprintf (FILE, "\tmove%.l %s,{-(%Rsp)|%Rsp@-}\n", reg_names[REGNO])
 
-#define ASM_OUTPUT_REG_POP(FILE,REGNO)			\
-  asm_fprintf (FILE, (MOTOROLA				\
-		      ? "\tmove.l (%Rsp)+,%s\n"		\
-		      : "\tmovel %Rsp@+,%s\n"),		\
-	       reg_names[REGNO])
+#define ASM_OUTPUT_REG_POP(FILE,REGNO)					     \
+  asm_fprintf (FILE, "\tmove%.l {(%Rsp)+|%Rsp@+},%s\n", reg_names[REGNO])
 
 /* The m68k does not use absolute case-vectors, but we must define this macro
    anyway.  */
