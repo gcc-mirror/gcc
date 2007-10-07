@@ -1,3 +1,30 @@
+2007-10-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (_GLIBCXX_MOVE): Add.
+	(swap, __iter_swap): Use it.
+	* testsuite/25_algorithms/rotate/moveable.cc: Remove dg-require-rvalref.
+	* testsuite/25_algorithms/remove/moveable.cc: Likewise.
+	* testsuite/25_algorithms/partition/moveable.cc: Likewise. 
+	* testsuite/25_algorithms/swap_ranges/moveable.cc: Likewise.
+	* testsuite/25_algorithms/reverse/moveable.cc: Likewise. 
+	* testsuite/25_algorithms/unique/moveable.cc: Likewise. 
+	* testsuite/25_algorithms/remove_if/moveable.cc: Likewise. 
+
+	* include/bits/stl_algobase.h (lexicographical_compare):
+	Clean up.
+
+2007-10-07  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (remove, remove_if, unique,
+	__rotate(_RandomAccessIterator, _RandomAccessIterator,
+	_RandomAccessIterator, random_access_iterator_tag)): Use _GLIBCXX_MOVE.
+	(__rotate(_ForwardIterator, _ForwardIterator, _ForwardIterator,
+	forward_iterator_tag), __rotate(_BidirectionalIterator,
+	_BidirectionalIterator, _BidirectionalIterator,
+	bidirectional_iterator_tag), __partition(_ForwardIterator,
+	_ForwardIterator, _Predicate, forward_iterator_tag)): Use iter_swap.
+
 2007-10-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/33678	
