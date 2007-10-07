@@ -2562,6 +2562,13 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && (unsigned HOST_WIDE_INT) INTVAL (trueop0) == GET_MODE_MASK (mode)
 	  && ! side_effects_p (op1))
 	return op0;
+    canonicalize_shift:
+      if (SHIFT_COUNT_TRUNCATED && GET_CODE (op1) == CONST_INT)
+	{
+	  val = INTVAL (op1) & (GET_MODE_BITSIZE (mode) - 1);
+	  if (val != INTVAL (op1))
+	    return simplify_gen_binary (code, mode, op0, GEN_INT (val));
+	}
       break;
 
     case ASHIFT:
@@ -2571,7 +2578,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	return op0;
       if (trueop0 == CONST0_RTX (mode) && ! side_effects_p (op1))
 	return op0;
-      break;
+      goto canonicalize_shift;
 
     case LSHIFTRT:
       if (trueop1 == CONST0_RTX (mode))
@@ -2593,7 +2600,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    return simplify_gen_relational (EQ, mode, imode,
 					    XEXP (op0, 0), const0_rtx);
 	}
-      break;
+      goto canonicalize_shift;
 
     case SMIN:
       if (width <= HOST_BITS_PER_WIDE_INT

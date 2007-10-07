@@ -1,3 +1,8 @@
+2007-10-07  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Canonicalize
+	truncated shift counts.
+
 2007-10-07  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/m68k/m68k.c, config/m68k/m68k.md: Use the assembly
