@@ -2662,7 +2662,7 @@ dwarf2out_frame_init (void)
   dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 
 #ifdef DWARF2_UNWIND_INFO
-  if (DWARF2_UNWIND_INFO)
+  if (DWARF2_UNWIND_INFO || DWARF2_FRAME_INFO)
     initial_return_save (INCOMING_RETURN_ADDR_RTX);
 #endif
 }
