@@ -1,4 +1,4 @@
-2007-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2007-10-06  Eric Botcazou  <ebotcazou@adacore.com>
             Nathan Froyd  <froydnj@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_frame_init): Check for DWARF2_FRAME_INFO
