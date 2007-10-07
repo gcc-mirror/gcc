@@ -1,3 +1,37 @@
+2007-10-07  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/debug/list (list<>::list(list&&),
+	list<>::operator=(list&&)): Add.
+	(list<>::swap): Adjust.
+	(swap(list&&, list& __y), swap(list&, list&& __y)): Add.
+	* include/debug/vector (vector<>::vector(vector&&),
+	vector<>::operator=(vector&&)): Add.
+	(vector<>::swap): Adjust.
+	(swap(vector&&, vector& __y), swap(vector&, vector&& __y)): Add.
+	* include/debug/deque (deque<>::deque(deque&&),
+	deque<>::operator=(deque&&)): Add.
+	(deque<>::swap): Adjust.
+	(swap(deque&&, deque& __y), swap(deque&, deque&& __y)): Add.
+	* include/debug/set.h (set<>::set(set&&),
+	set<>::operator=(set&&)): Add.
+	(set<>::swap): Adjust.
+	(swap(set&&, set& __y), swap(set&, set&& __y)): Add.
+	* include/debug/map.h (map<>::map(map&&),
+	map<>::operator=(map&&)): Add.
+	(map<>::swap): Adjust.
+	(swap(map&&, map& __y), swap(map&, map&& __y)): Add.
+	* include/debug/multiset.h (multiset<>::multiset(multiset&&),
+	multiset<>::operator=(multiset&&)): Add.
+	(smultiet<>::swap): Adjust.
+	(swap(multiset&&, multiset& __y),
+	swap(multiset&, multiset&& __y)): Add.
+	* include/debug/multimap.h (multimap<>::multimap(multimap&&),
+	multimap<>::operator=(multimap&&)): Add.
+	(multimap<>::swap): Adjust.
+	(swap(multimap&&, multimap& __y),
+	swap(multimap&, multimap&& __y)): Add.
+
 2007-10-07  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algobase.h (_GLIBCXX_MOVE): Add.

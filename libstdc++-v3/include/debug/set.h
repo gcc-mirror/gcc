@@ -1,6 +1,6 @@
 // Debugging set implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -49,7 +49,7 @@ namespace __debug
     : public _GLIBCXX_STD_D::set<_Key,_Compare,_Allocator>,
       public __gnu_debug::_Safe_sequence<set<_Key, _Compare, _Allocator> >
     {
-      typedef _GLIBCXX_STD_D::set<_Key,_Compare,_Allocator> _Base;
+      typedef _GLIBCXX_STD_D::set<_Key, _Compare, _Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<set> _Safe_base;
 
     public:
@@ -86,20 +86,36 @@ namespace __debug
 	: _Base(__gnu_debug::__check_valid_range(__first, __last), __last,
 		__comp, __a) { }
 
-      set(const set<_Key,_Compare,_Allocator>& __x)
+      set(const set& __x)
       : _Base(__x), _Safe_base() { }
 
-      set(const _Base& __x) : _Base(__x), _Safe_base() { }
+      set(const _Base& __x)
+      : _Base(__x), _Safe_base() { }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      set(set&& __x)
+      : _Base(__x), _Safe_base()
+      { this->_M_swap(__x); }
+#endif
 
       ~set() { }
 
-      set<_Key,_Compare,_Allocator>&
-      operator=(const set<_Key,_Compare,_Allocator>& __x)
+      set&
+      operator=(const set& __x)
       {
 	*static_cast<_Base*>(this) = __x;
 	this->_M_invalidate_all();
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      set&
+      operator=(set&& __x)
+      {
+	swap(__x);
+	return *this;
+      }
+#endif
 
       using _Base::get_allocator;
 
@@ -200,7 +216,11 @@ namespace __debug
       }
 
       void
-      swap(set<_Key,_Compare,_Allocator>& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(set&& __x)
+#else
+      swap(set& __x)
+#endif
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -287,45 +307,60 @@ namespace __debug
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
-    operator==(const set<_Key,_Compare,_Allocator>& __lhs,
-	       const set<_Key,_Compare,_Allocator>& __rhs)
+    operator==(const set<_Key, _Compare, _Allocator>& __lhs,
+	       const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
-    operator!=(const set<_Key,_Compare,_Allocator>& __lhs,
-	       const set<_Key,_Compare,_Allocator>& __rhs)
+    operator!=(const set<_Key, _Compare, _Allocator>& __lhs,
+	       const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() != __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
-    operator<(const set<_Key,_Compare,_Allocator>& __lhs,
-	      const set<_Key,_Compare,_Allocator>& __rhs)
+    operator<(const set<_Key, _Compare, _Allocator>& __lhs,
+	      const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() < __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
-    operator<=(const set<_Key,_Compare,_Allocator>& __lhs,
-	       const set<_Key,_Compare,_Allocator>& __rhs)
+    operator<=(const set<_Key, _Compare, _Allocator>& __lhs,
+	       const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() <= __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
-    operator>=(const set<_Key,_Compare,_Allocator>& __lhs,
-	       const set<_Key,_Compare,_Allocator>& __rhs)
+    operator>=(const set<_Key, _Compare, _Allocator>& __lhs,
+	       const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() >= __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     inline bool
-    operator>(const set<_Key,_Compare,_Allocator>& __lhs,
-	      const set<_Key,_Compare,_Allocator>& __rhs)
+    operator>(const set<_Key, _Compare, _Allocator>& __lhs,
+	      const set<_Key, _Compare, _Allocator>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     void
-    swap(set<_Key,_Compare,_Allocator>& __x,
-	 set<_Key,_Compare,_Allocator>& __y)
+    swap(set<_Key, _Compare, _Allocator>& __x,
+	 set<_Key, _Compare, _Allocator>& __y)
     { return __x.swap(__y); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Key, typename _Compare, typename _Allocator>
+    void
+    swap(set<_Key, _Compare, _Allocator>&& __x,
+	 set<_Key, _Compare, _Allocator>& __y)
+    { return __x.swap(__y); }
+
+  template<typename _Key, typename _Compare, typename _Allocator>
+    void
+    swap(set<_Key, _Compare, _Allocator>& __x,
+	 set<_Key, _Compare, _Allocator>&& __y)
+    { return __x.swap(__y); }
+#endif
+
 } // namespace __debug
 } // namespace std
 
