@@ -1,3 +1,13 @@
+2007-10-07  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/20851
+	* expr.c (check_inquiry): Typo fix in error message.
+	(check_init_expr): Same * 3.
+	(check_restricted): Verify that no dummy arguments appear in
+	restricted expressions in ELEMENTAL procedures.
+	* resolve.c (resolve_fl_variable): Exchange order of checks to
+	avoid side-effect.
+
 2007-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33609

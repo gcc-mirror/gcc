@@ -2012,7 +2012,7 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	    && ap->expr->symtree->n.sym->ts.type == BT_CHARACTER
 	    && ap->expr->symtree->n.sym->ts.cl->length == NULL)
 	  {
-	    gfc_error ("assumed character length variable '%s' in constant "
+	    gfc_error ("Assumed character length variable '%s' in constant "
 		       "expression at %L", e->symtree->n.sym->name, &e->where);
 	      return MATCH_ERROR;
 	  }
@@ -2204,19 +2204,19 @@ check_init_expr (gfc_expr *e)
 	  switch (e->symtree->n.sym->as->type)
 	    {
 	      case AS_ASSUMED_SIZE:
-		gfc_error ("assumed size array '%s' at %L is not permitted "
+		gfc_error ("Assumed size array '%s' at %L is not permitted "
 			   "in an initialization expression",
 			   e->symtree->n.sym->name, &e->where);
 		break;
 
 	      case AS_ASSUMED_SHAPE:
-		gfc_error ("assumed shape array '%s' at %L is not permitted "
+		gfc_error ("Assumed shape array '%s' at %L is not permitted "
 			   "in an initialization expression",
 			   e->symtree->n.sym->name, &e->where);
 		break;
 
 	      case AS_DEFERRED:
-		gfc_error ("deferred array '%s' at %L is not permitted "
+		gfc_error ("Deferred array '%s' at %L is not permitted "
 			   "in an initialization expression",
 			   e->symtree->n.sym->name, &e->where);
 		break;
@@ -2428,6 +2428,19 @@ check_restricted (gfc_expr *e)
     case EXPR_VARIABLE:
       sym = e->symtree->n.sym;
       t = FAILURE;
+
+      /* If a dummy argument appears in a context that is valid for a
+	 restricted expression in an elemental procedure, it will have
+	 already been simplified away once we get here.  Therefore we
+	 don't need to jump through hoops to distinguish valid from
+	 invalid cases.  */
+      if (sym->attr.dummy && sym->ns == gfc_current_ns
+	  && sym->ns->proc_name && sym->ns->proc_name->attr.elemental)
+	{
+	  gfc_error ("Dummy argument '%s' not allowed in expression at %L",
+		     sym->name, &e->where);
+	  break;
+	}
 
       if (sym->attr.optional)
 	{
