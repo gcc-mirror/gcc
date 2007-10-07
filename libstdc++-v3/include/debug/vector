@@ -1,6 +1,6 @@
 // Debugging vector implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -91,23 +91,41 @@ namespace __debug
 	  _M_guaranteed_capacity(0)
         { _M_update_guaranteed_capacity(); }
 
-      vector(const vector<_Tp,_Allocator>& __x)
+      vector(const vector& __x)
       : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
 
       /// Construction from a release-mode vector
       vector(const _Base& __x)
       : _Base(__x), _Safe_base(), _M_guaranteed_capacity(__x.size()) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      vector(vector&& __x)
+      : _Base(__x), _Safe_base(), _M_guaranteed_capacity(this->size())
+      { 
+	this->_M_swap(__x);
+	__x._M_guaranteed_capacity = 0;
+      }
+#endif
+
       ~vector() { }
 
-      vector<_Tp,_Allocator>&
-      operator=(const vector<_Tp,_Allocator>& __x)
+      vector&
+      operator=(const vector& __x)
       {
 	static_cast<_Base&>(*this) = __x;
 	this->_M_invalidate_all();
 	_M_update_guaranteed_capacity();
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      vector&
+      operator=(vector&& __x)
+      {
+	swap(__x);
+	return *this;
+      }
+#endif
 
       template<typename _InputIterator>
         void
@@ -335,7 +353,11 @@ namespace __debug
       }
 
       void
-      swap(vector<_Tp,_Allocator>& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(vector&& __x)
+#else
+      swap(vector& __x)
+#endif
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -417,6 +439,19 @@ namespace __debug
     inline void
     swap(vector<_Tp, _Alloc>& __lhs, vector<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    inline void
+    swap(vector<_Tp, _Alloc>&& __lhs, vector<_Tp, _Alloc>& __rhs)
+    { __lhs.swap(__rhs); }
+
+  template<typename _Tp, typename _Alloc>
+    inline void
+    swap(vector<_Tp, _Alloc>& __lhs, vector<_Tp, _Alloc>&& __rhs)
+    { __lhs.swap(__rhs); }
+#endif
+
 } // namespace __debug
 } // namespace std
 

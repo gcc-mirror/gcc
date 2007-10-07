@@ -1,6 +1,6 @@
 // Debugging deque implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005
+// Copyright (C) 2003, 2004, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -84,19 +84,36 @@ namespace __debug
 	: _Base(__gnu_debug::__check_valid_range(__first, __last), __last, __a)
         { }
 
-      deque(const deque<_Tp,_Allocator>& __x) : _Base(__x), _Safe_base() { }
+      deque(const deque& __x)
+      : _Base(__x), _Safe_base() { }
 
-      deque(const _Base& __x) : _Base(__x), _Safe_base() { }
+      deque(const _Base& __x)
+      : _Base(__x), _Safe_base() { }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      deque(deque&& __x)
+      : _Base(__x), _Safe_base()
+      { this->_M_swap(__x); }
+#endif
 
       ~deque() { }
 
-      deque<_Tp,_Allocator>&
-      operator=(const deque<_Tp,_Allocator>& __x)
+      deque&
+      operator=(const deque& __x)
       {
 	*static_cast<_Base*>(this) = __x;
 	this->_M_invalidate_all();
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      deque&
+      operator=(deque&& __x)
+      {
+	swap(__x);	  
+	return *this;
+      }
+#endif
 
       template<class _InputIterator>
         void
@@ -329,7 +346,11 @@ namespace __debug
       }
 
       void
-      swap(deque<_Tp,_Allocator>& __x)
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(deque&& __x)
+#else
+      swap(deque& __x)
+#endif
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -363,7 +384,8 @@ namespace __debug
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator<(const deque<_Tp, _Alloc>& __lhs, const deque<_Tp, _Alloc>& __rhs)
+    operator<(const deque<_Tp, _Alloc>& __lhs,
+	      const deque<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() < __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
@@ -380,13 +402,27 @@ namespace __debug
 
   template<typename _Tp, typename _Alloc>
     inline bool
-    operator>(const deque<_Tp, _Alloc>& __lhs, const deque<_Tp, _Alloc>& __rhs)
+    operator>(const deque<_Tp, _Alloc>& __lhs,
+	      const deque<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
     inline void
     swap(deque<_Tp, _Alloc>& __lhs, deque<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    inline void
+    swap(deque<_Tp, _Alloc>&& __lhs, deque<_Tp, _Alloc>& __rhs)
+    { __lhs.swap(__rhs); }
+
+  template<typename _Tp, typename _Alloc>
+    inline void
+    swap(deque<_Tp, _Alloc>& __lhs, deque<_Tp, _Alloc>&& __rhs)
+    { __lhs.swap(__rhs); }
+#endif
+
 } // namespace __debug
 } // namespace std
 
