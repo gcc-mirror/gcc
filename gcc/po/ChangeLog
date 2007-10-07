@@ -1,3 +1,7 @@
+2007-10-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2007-09-05  Philipp Thomas  <pth@suse.de>
 
 	* de.po, sr.po, sv.po: Update.
