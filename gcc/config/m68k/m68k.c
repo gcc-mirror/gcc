@@ -3375,8 +3375,8 @@ output_addsi3 (rtx *operands)
 	  && (INTVAL (operands[2]) < -32768 || INTVAL (operands[2]) > 32767))
         return "move%.l %2,%0\n\tadd%.l %1,%0";
       if (GET_CODE (operands[2]) == REG)
-	return MOTOROLA ? "lea (%1,%2.l),%0" : "lea %1@(0,%2:l),%0";
-      return MOTOROLA ? "lea (%c2,%1),%0" : "lea %1@(%c2),%0";
+	return "lea {(%1,%2.l)|%1@(0,%2:l)},%0";
+      return "lea {(%c2,%1)|%1@(%c2)},%0";
     }
   if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -3414,7 +3414,7 @@ output_addsi3 (rtx *operands)
 	  if (TUNE_68040)
 	    return "add%.w %2,%0";
 	  else
-	    return MOTOROLA ? "lea (%c2,%0),%0" : "lea %0@(%c2),%0";
+	    return "lea {(%c2,%0)|%0@(%c2)},%0";
 	}
     }
   return "add%.l %2,%0";
@@ -3730,11 +3730,11 @@ print_operand (FILE *file, rtx op, int letter)
   else if (letter == '#')
     asm_fprintf (file, "%I");
   else if (letter == '-')
-    asm_fprintf (file, MOTOROLA ? "-(%Rsp)" : "%Rsp@-");
+    asm_fprintf (file, "{-(%Rsp)|%Rsp@-}");
   else if (letter == '+')
-    asm_fprintf (file, MOTOROLA ? "(%Rsp)+" : "%Rsp@+");
+    asm_fprintf (file, "{(%Rsp)+|%Rsp@+}");
   else if (letter == '@')
-    asm_fprintf (file, MOTOROLA ? "(%Rsp)" : "%Rsp@");
+    asm_fprintf (file, "{(%Rsp)|%Rsp@}");
   else if (letter == '!')
     asm_fprintf (file, "%Rfpcr");
   else if (letter == '$')
@@ -3774,7 +3774,7 @@ print_operand (FILE *file, rtx op, int letter)
 	  && !(GET_CODE (XEXP (op, 0)) == CONST_INT
 	       && INTVAL (XEXP (op, 0)) < 0x8000
 	       && INTVAL (XEXP (op, 0)) >= -0x8000))
-	fprintf (file, MOTOROLA ? ".l" : ":l");
+	asm_fprintf (file, "{.|:}l");
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
@@ -3834,11 +3834,11 @@ print_operand_address (FILE *file, rtx addr)
     gcc_unreachable ();
 
   if (address.code == PRE_DEC)
-    fprintf (file, MOTOROLA ? "-(%s)" : "%s@-",
-	     M68K_REGNAME (REGNO (address.base)));
+    asm_fprintf (file, "{-(%s)|%s@-}",
+		 M68K_REGNAME (REGNO (address.base)));
   else if (address.code == POST_INC)
-    fprintf (file, MOTOROLA ? "(%s)+" : "%s@+",
-	     M68K_REGNAME (REGNO (address.base)));
+    asm_fprintf (file, "{(%s)+|%s@+}",
+		 M68K_REGNAME (REGNO (address.base)));
   else if (!address.base && !address.index)
     {
       /* A constant address.  */
@@ -3847,7 +3847,7 @@ print_operand_address (FILE *file, rtx addr)
 	{
 	  /* (xxx).w or (xxx).l.  */
 	  if (IN_RANGE (INTVAL (addr), -0x8000, 0x7fff))
-	    fprintf (file, MOTOROLA ? "%d.w" : "%d:w", (int) INTVAL (addr));
+	    asm_fprintf (file, "%d{.|:}w", (int) INTVAL (addr));
 	  else
 	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));
 	}
