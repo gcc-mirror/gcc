@@ -788,9 +788,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
 
       __first = _GLIBCXX_STD_P::find(__first, __last, __value);
-      _ForwardIterator __i = __first;
-      return __first == __last ? __first
-		        : std::remove_copy(++__i, __last, __first, __value);
+      if(__first == __last)
+        return __first;
+      _ForwardIterator __result = __first;
+      ++__first;
+      for(; __first != __last; ++__first)
+        if(!(*__first == __value))
+          {
+            *__result = _GLIBCXX_MOVE(*__first);
+            ++__result;
+          }
+      return __result;
     }
 
   /**
@@ -822,10 +830,17 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
 
       __first = _GLIBCXX_STD_P::find_if(__first, __last, __pred);
-      _ForwardIterator __i = __first;
-      return __first == __last ? __first
-			       : std::remove_copy_if(++__i, __last,
-						     __first, __pred);
+      if(__first == __last)
+        return __first;
+      _ForwardIterator __result = __first;
+      ++__first;
+      for(; __first != __last; ++__first)
+        if(!__pred(*__first))
+          {
+            *__result = _GLIBCXX_MOVE(*__first);
+            ++__result;
+          }
+      return __result;
     }
 
   /**
@@ -862,7 +877,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ++__first;
       while (++__first != __last)
 	if (!(*__dest == *__first))
-	  *++__dest = *__first;
+	  *++__dest = _GLIBCXX_MOVE(*__first);
       return ++__dest;
     }
 
@@ -903,7 +918,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       ++__first;
       while (++__first != __last)
 	if (!bool(__binary_pred(*__dest, *__first)))
-	  *++__dest = *__first;
+	  *++__dest = _GLIBCXX_MOVE(*__first);
       return ++__dest;
     }
 
@@ -1207,7 +1222,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _ForwardIterator __first2 = __middle;
       do
 	{
-	  swap(*__first, *__first2);
+	  std::iter_swap(__first, __first2);
 	  ++__first;
 	  ++__first2;
 	  if (__first == __middle)
@@ -1219,7 +1234,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       while (__first2 != __last)
 	{
-	  swap(*__first, *__first2);
+	  std::iter_swap(__first, __first2);
 	  ++__first;
 	  ++__first2;
 	  if (__first == __middle)
@@ -1253,7 +1268,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       while (__first != __middle && __middle != __last)
 	{
-	  swap(*__first, *--__last);
+	  std::iter_swap(__first, --__last);
 	  ++__first;
 	}
 
@@ -1301,7 +1316,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       for (_Distance __i = 0; __i < __d; __i++)
 	{
-	  _ValueType __tmp = *__first;
+	  _ValueType __tmp = _GLIBCXX_MOVE(*__first);
 	  _RandomAccessIterator __p = __first;
 
 	  if (__k < __l)
@@ -1310,11 +1325,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		{
 		  if (__p > __first + __l)
 		    {
-		      *__p = *(__p - __l);
+		      *__p = _GLIBCXX_MOVE(*(__p - __l));
 		      __p -= __l;
 		    }
 
-		  *__p = *(__p + __k);
+		  *__p = _GLIBCXX_MOVE(*(__p + __k));
 		  __p += __k;
 		}
 	    }
@@ -1324,15 +1339,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		{
 		  if (__p < __last - __k)
 		    {
-		      *__p = *(__p + __k);
+		      *__p = _GLIBCXX_MOVE(*(__p + __k));
 		      __p += __k;
 		    }
-		  *__p = * (__p - __l);
+		  *__p = _GLIBCXX_MOVE(*(__p - __l));
 		  __p -= __l;
 		}
 	    }
 
-	  *__p = __tmp;
+	  *__p = _GLIBCXX_MOVE(__tmp);
 	  ++__first;
 	}
     }
@@ -1412,8 +1427,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _ForwardIterator, typename _Predicate>
     _ForwardIterator
     __partition(_ForwardIterator __first, _ForwardIterator __last,
-		_Predicate __pred,
-		forward_iterator_tag)
+		_Predicate __pred, forward_iterator_tag)
     {
       if (__first == __last)
 	return __first;
@@ -1427,7 +1441,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       while (++__next != __last)
 	if (__pred(*__next))
 	  {
-	    swap(*__first, *__next);
+	    std::iter_swap(__first, __next);
 	    ++__first;
 	  }
 
@@ -1442,8 +1456,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _BidirectionalIterator, typename _Predicate>
     _BidirectionalIterator
     __partition(_BidirectionalIterator __first, _BidirectionalIterator __last,
-		_Predicate __pred,
-		bidirectional_iterator_tag)
+		_Predicate __pred, bidirectional_iterator_tag)
     {
       while (true)
 	{
