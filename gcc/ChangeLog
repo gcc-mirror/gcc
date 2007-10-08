@@ -1,3 +1,14 @@
+2007-10-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33691
+	PR middle-end/33694
+	PR middle-end/33696
+	* fold-const.c (fold_binary): Use the correct types when
+	folding (A | CST1) & CST2 to (A & CST2) | (CST1 & CST2).
+	(fold_binary): Use the correct types when folding
+	(-A) - B to (-B) - A.
+	(fold_unary): Use the correct types when folding ~(X).
+
 2007-10-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wall): fix formatting issues.

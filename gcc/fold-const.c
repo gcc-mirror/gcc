@@ -8374,10 +8374,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
       if (TREE_CODE (arg0) == INTEGER_CST)
         return fold_not_const (arg0, type);
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
-	return TREE_OPERAND (arg0, 0);
+	return TREE_OPERAND (op0, 0);
       /* Convert ~ (-A) to A - 1.  */
       else if (INTEGRAL_TYPE_P (type) && TREE_CODE (arg0) == NEGATE_EXPR)
-	return fold_build2 (MINUS_EXPR, type, TREE_OPERAND (arg0, 0),
+	return fold_build2 (MINUS_EXPR, type,
+			    fold_convert (type, TREE_OPERAND (arg0, 0)),
 			    build_int_cst (type, 1));
       /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
       else if (INTEGRAL_TYPE_P (type)
@@ -8385,7 +8386,8 @@ fold_unary (enum tree_code code, tree type, tree op0)
 		    && integer_onep (TREE_OPERAND (arg0, 1)))
 		   || (TREE_CODE (arg0) == PLUS_EXPR
 		       && integer_all_onesp (TREE_OPERAND (arg0, 1)))))
-	return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
+	return fold_build1 (NEGATE_EXPR, type,
+			    fold_convert (type, TREE_OPERAND (arg0, 0)));
       /* Convert ~(X ^ Y) to ~X ^ Y or X ^ ~Y if ~X or ~Y simplify.  */
       else if (TREE_CODE (arg0) == BIT_XOR_EXPR
 	       && (tem = fold_unary (BIT_NOT_EXPR, type,
@@ -10126,15 +10128,17 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	}
       /* A - (-B) -> A + B */
       if (TREE_CODE (arg1) == NEGATE_EXPR)
-	return fold_build2 (PLUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0));
+	return fold_build2 (PLUS_EXPR, type, op0,
+			    fold_convert (type, TREE_OPERAND (arg1, 0)));
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
 	  && (FLOAT_TYPE_P (type)
 	      || INTEGRAL_TYPE_P (type))
 	  && negate_expr_p (arg1)
 	  && reorder_operands_p (arg0, arg1))
-	return fold_build2 (MINUS_EXPR, type, negate_expr (arg1),
-			    TREE_OPERAND (arg0, 0));
+	return fold_build2 (MINUS_EXPR, type,
+			    fold_convert (type, negate_expr (arg1)),
+			    fold_convert (type, TREE_OPERAND (arg0, 0)));
       /* Convert -A - 1 to ~A.  */
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (arg0) == NEGATE_EXPR
@@ -10889,11 +10893,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       if (TREE_CODE (arg0) == BIT_IOR_EXPR
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	return fold_build2 (BIT_IOR_EXPR, type,
-			    fold_build2 (BIT_AND_EXPR, type,
-					 TREE_OPERAND (arg0, 0), arg1),
-			    fold_build2 (BIT_AND_EXPR, type,
-					 TREE_OPERAND (arg0, 1), arg1));
+	{
+	  tree tmp1 = fold_convert (TREE_TYPE (arg0), arg1);
+	  tree tmp2 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+				   TREE_OPERAND (arg0, 0), tmp1);
+	  tree tmp3 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg0),
+				   TREE_OPERAND (arg0, 1), tmp1);
+	  return fold_convert (type,
+			       fold_build2 (BIT_IOR_EXPR, TREE_TYPE (arg0),
+					    tmp2, tmp3));
+	}
 
       /* (X | Y) & Y is (X, Y).  */
       if (TREE_CODE (arg0) == BIT_IOR_EXPR
