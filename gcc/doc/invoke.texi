@@ -2601,34 +2601,34 @@ enables some language-specific warnings described in @ref{C++ Dialect
 Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 
 @option{-Wall} turns on the following warning flags:
-@gccoptlist{ 
--Waddress @gol
--Warray-bounds (only with @option{-O2}) @gol
--Wc++0x-compat @gol
--Wchar-subscripts @gol
--Wimplicit-int @gol
--Wimplicit-function-declaration @gol
--Wcomment @gol
--Wformat  @gol
--Wmain (only for C/ObjC and unless @option{-ffreestanding}) @gol
--Wmissing-braces @gol
--Wnonnull @gol
--Wparentheses @gol
--Wpointer-sign
--Wreorder  @gol
--Wreturn-type @gol
--Wsequence-point @gol
--Wsign-compare (only in C++) @gol
--Wstrict-aliasing @gol
--Wstrict-overflow @gol
--Wswitch @gol
--Wtrigraphs @gol
--Wuninitialized (only with @option{-O1}, @option{-O2} or @option{-O3}) @gol
--Wunknown-pragmas @gol
--Wunused-function @gol
--Wunused-label    @gol
--Wunused-value    @gol
--Wunused-variable @gol
+
+@gccoptlist{-Waddress   @gol
+-Warray-bounds @r{(only with} @option{-O2}@r{)}  @gol
+-Wc++0x-compat  @gol
+-Wchar-subscripts  @gol
+-Wimplicit-int  @gol
+-Wimplicit-function-declaration  @gol
+-Wcomment  @gol
+-Wformat   @gol
+-Wmain @r{(only for C/ObjC and unless} @option{-ffreestanding}@r{)}  @gol
+-Wmissing-braces  @gol
+-Wnonnull  @gol
+-Wparentheses  @gol
+-Wpointer-sign  @gol
+-Wreorder   @gol
+-Wreturn-type  @gol
+-Wsequence-point  @gol
+-Wsign-compare @r{(only in C++)}  @gol
+-Wstrict-aliasing  @gol
+-Wstrict-overflow  @gol
+-Wswitch  @gol
+-Wtrigraphs  @gol
+-Wuninitialized @r{(only with} @option{-O1}@r{,} @option{-O2} @r{or} @option{-O3}@r{)}  @gol
+-Wunknown-pragmas  @gol
+-Wunused-function  @gol
+-Wunused-label     @gol
+-Wunused-value     @gol
+-Wunused-variable  @gol
 }
 
 @item -Wno-import
