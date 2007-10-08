@@ -1,3 +1,11 @@
+2007-10-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_move.h (_GLIBCXX_MOVE): Add.
+	* include/bits/stl_algobase.h: Adjust.
+	* include/bits/stl_pair.h: Likewise.
+
+	* include/bits/stl_algo.h: Minor formatting fixes.
+
 2007-10-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/33489	

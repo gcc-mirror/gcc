@@ -123,7 +123,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     __median(const _Tp& __a, const _Tp& __b, const _Tp& __c, _Compare __comp)
     {
       // concept requirements
-      __glibcxx_function_requires(_BinaryFunctionConcept<_Compare,bool,_Tp,_Tp>)
+      __glibcxx_function_requires(_BinaryFunctionConcept<_Compare, bool,
+				                         _Tp, _Tp>)
       if (__comp(__a, __b))
 	if (__comp(__b, __c))
 	  return __b;
@@ -515,7 +516,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  while (1)
 	    {
 	      _ForwardIterator1 __new_result
-		= _GLIBCXX_STD_P::search(__first1, __last1, __first2, __last2, __comp);
+		= _GLIBCXX_STD_P::search(__first1, __last1, __first2,
+					 __last2, __comp);
 	      if (__new_result == __last1)
 		return __result;
 	      else
@@ -548,7 +550,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       _RevIterator1 __rlast1(__first1);
       _RevIterator2 __rlast2(__first2);
-      _RevIterator1 __rresult = _GLIBCXX_STD_P::search(_RevIterator1(__last1), __rlast1, _RevIterator2(__last2), __rlast2);
+      _RevIterator1 __rresult = _GLIBCXX_STD_P::search(_RevIterator1(__last1),
+						       __rlast1,
+						       _RevIterator2(__last2),
+						       __rlast2);
 
       if (__rresult == __rlast1)
 	return __last1;
@@ -2760,7 +2765,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__len1 <= __len2 && __len1 <= __buffer_size)
 	{
 	  _Pointer __buffer_end = std::copy(__first, __middle, __buffer);
-	  _GLIBCXX_STD_P::merge(__buffer, __buffer_end, __middle, __last, __first, __comp);
+	  _GLIBCXX_STD_P::merge(__buffer, __buffer_end, __middle, __last,
+				__first, __comp);
 	}
       else if (__len2 <= __buffer_size)
 	{
@@ -3071,7 +3077,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       std::__insertion_sort(__first, __last);
     }
 
-  template<typename _RandomAccessIterator, typename _Distance, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Distance,
+	   typename _Compare>
     void
     __chunk_insertion_sort(_RandomAccessIterator __first,
 			   _RandomAccessIterator __last,

@@ -62,9 +62,7 @@
 #ifndef _STL_PAIR_H
 #define _STL_PAIR_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <bits/stl_move.h>
-#endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
