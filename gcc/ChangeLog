@@ -1,3 +1,9 @@
+2007-10-08  Mark Shinwell  <shinwell@codesourcery.com>
+
+	* combine.c (setup_incoming_promotions): Ensure that
+	arguments that have not undergone mode promotions do not
+	incorrectly get marked as being sign- or zero-extended.
+
 2007-10-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33693
