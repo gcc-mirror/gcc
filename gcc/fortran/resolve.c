@@ -4138,7 +4138,7 @@ gfc_resolve_expr (gfc_expr *e)
 	}
 
       if (e->ts.type == BT_CHARACTER && e->ts.cl == NULL && e->ref
-	    && e->ref->type != REF_SUBSTRING)
+	  && e->ref->type != REF_SUBSTRING)
 	gfc_resolve_substring_charlen (e);
 
       break;
@@ -6891,7 +6891,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
    type.  To be called from resolve_fl_variable.  */
 
 static try
-resolve_fl_variable_derived (gfc_symbol *sym, int flag)
+resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
 {
   gcc_assert (sym->ts.type == BT_DERIVED);
 
@@ -6924,7 +6924,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int flag)
      The check for initializers is performed with
      has_default_initializer because gfc_default_initializer generates
      a hidden default for allocatable components.  */
-  if (!(sym->value || flag) && sym->ns->proc_name
+  if (!(sym->value || no_init_flag) && sym->ns->proc_name
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && !sym->ns->save_all && !sym->attr.save
       && !sym->attr.pointer && !sym->attr.allocatable
@@ -6938,7 +6938,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int flag)
 
   /* Assign default initializer.  */
   if (!(sym->value || sym->attr.pointer || sym->attr.allocatable)
-      && (!flag || sym->attr.intent == INTENT_OUT))
+      && (!no_init_flag || sym->attr.intent == INTENT_OUT))
     {
       sym->value = gfc_default_initializer (&sym->ts);
     }
@@ -6952,12 +6952,11 @@ resolve_fl_variable_derived (gfc_symbol *sym, int flag)
 static try
 resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 {
-  int flag;
-  int i;
+  int no_init_flag, automatic_flag;
   gfc_expr *e;
   const char *auto_save_msg;
 
-  auto_save_msg = "automatic object '%s' at %L cannot have the "
+  auto_save_msg = "Automatic object '%s' at %L cannot have the "
 		  "SAVE attribute";
 
   if (resolve_fl_var_and_proc (sym, mp_flag) == FAILURE)
@@ -7019,29 +7018,19 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
   if (sym->value == NULL && sym->attr.referenced)
     apply_default_init_local (sym); /* Try to apply a default initialization.  */
 
-  /* Can the symbol have an initializer?  */
-  flag = 0;
+  /* Determine if the symbol may not have an initializer.  */
+  no_init_flag = automatic_flag = 0;
   if (sym->attr.allocatable || sym->attr.external || sym->attr.dummy
-	|| sym->attr.intrinsic || sym->attr.result)
-    flag = 1;
-  else if (sym->attr.dimension && !sym->attr.pointer)
+      || sym->attr.intrinsic || sym->attr.result)
+    no_init_flag = 1;
+  else if (sym->attr.dimension && !sym->attr.pointer
+	   && is_non_constant_shape_array (sym))
     {
-      /* Don't allow initialization of automatic arrays.  */
-      for (i = 0; i < sym->as->rank; i++)
-	{
-	  if (sym->as->lower[i] == NULL
-	      || sym->as->lower[i]->expr_type != EXPR_CONSTANT
-	      || sym->as->upper[i] == NULL
-	      || sym->as->upper[i]->expr_type != EXPR_CONSTANT)
-	    {
-	      flag = 2;
-	      break;
-	    }
-	}
+      no_init_flag = automatic_flag = 1;
 
       /* Also, they must not have the SAVE attribute.
 	 SAVE_IMPLICIT is checked below.  */
-      if (flag && sym->attr.save == SAVE_EXPLICIT)
+      if (sym->attr.save == SAVE_EXPLICIT)
 	{
 	  gfc_error (auto_save_msg, sym->name, &sym->declared_at);
 	  return FAILURE;
@@ -7049,7 +7038,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
     }
 
   /* Reject illegal initializers.  */
-  if (!sym->mark && sym->value && flag)
+  if (!sym->mark && sym->value)
     {
       if (sym->attr.allocatable)
 	gfc_error ("Allocatable '%s' at %L cannot have an initializer",
@@ -7067,7 +7056,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
       else if (sym->attr.result)
 	gfc_error ("Function result '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
-      else if (flag == 2)
+      else if (automatic_flag)
 	gfc_error ("Automatic array '%s' at %L cannot have an initializer",
 		   sym->name, &sym->declared_at);
       else
@@ -7077,7 +7066,7 @@ resolve_fl_variable (gfc_symbol *sym, int mp_flag)
 
 no_init_error:
   if (sym->ts.type == BT_DERIVED)
-    return resolve_fl_variable_derived (sym, flag);
+    return resolve_fl_variable_derived (sym, no_init_flag);
 
   return SUCCESS;
 }
