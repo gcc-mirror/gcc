@@ -128,26 +128,34 @@ namespace __gnu_parallel
       if (id == 0)
 	{
 	  *result = *begin;
-	  parallel_partial_sum_basecase(begin + 1, begin + borders[1], result + 1, bin_op, *begin);
+	  parallel_partial_sum_basecase(begin + 1, begin + borders[1], 
+					result + 1, bin_op, *begin);
 	  sums[0] = *(result + borders[1] - 1);
 	}
       else
 	{
-	  sums[id] = std::accumulate(begin + borders[id] + 1, begin + borders[id + 1], *(begin + borders[id]), bin_op, __gnu_parallel::sequential_tag());
+	  sums[id] = std::accumulate(begin + borders[id] + 1, 
+				     begin + borders[id + 1], 
+				     *(begin + borders[id]), 
+				     bin_op, __gnu_parallel::sequential_tag());
 	}
 
 #pragma omp barrier
 
 #pragma omp single
-      parallel_partial_sum_basecase(sums + 1, sums + num_threads, sums + 1, bin_op, sums[0]);
+      parallel_partial_sum_basecase(sums + 1, sums + num_threads, sums + 1, 
+				    bin_op, sums[0]);
 
 #pragma omp barrier
 
       // Still same team.
-      parallel_partial_sum_basecase(begin + borders[id + 1], begin + borders[id + 2], result + borders[id + 1], bin_op, sums[id]);
+      parallel_partial_sum_basecase(begin + borders[id + 1], 
+				    begin + borders[id + 2], 
+				    result + borders[id + 1], bin_op, 
+				    sums[id]);
     }
 
-    delete[] sums;
+    delete [] sums;
 
     return result + n;
   }

@@ -70,7 +70,9 @@ namespace __gnu_parallel
 
     // Shared.
     _GLIBCXX_VOLATILE difference_type left = 0, right = n - 1;
-    _GLIBCXX_VOLATILE difference_type leftover_left, leftover_right, leftnew, rightnew;
+    _GLIBCXX_VOLATILE difference_type leftover_left, leftover_right;
+    _GLIBCXX_VOLATILE difference_type leftnew, rightnew;
+
     bool* reserved_left, * reserved_right;
 
     reserved_left = new bool[max_num_threads];
@@ -299,7 +301,8 @@ namespace __gnu_parallel
    */
   template<typename RandomAccessIterator, typename Comparator>
   void 
-  parallel_nth_element(RandomAccessIterator begin, RandomAccessIterator nth, RandomAccessIterator end, Comparator comp)
+  parallel_nth_element(RandomAccessIterator begin, RandomAccessIterator nth, 
+		       RandomAccessIterator end, Comparator comp)
   {
     typedef std::iterator_traits<RandomAccessIterator> traits_type;
     typedef typename traits_type::value_type value_type;
@@ -308,7 +311,6 @@ namespace __gnu_parallel
     _GLIBCXX_CALL(end - begin)
 
     RandomAccessIterator split;
-    value_type pivot;
     random_number rng;
 
     difference_type minimum_length = std::max<difference_type>(2, Settings::partition_minimal_n);
