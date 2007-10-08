@@ -1,5 +1,14 @@
 2007-10-08  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/33693
+	PR middle-end/33695
+	PR middle-end/33697
+	* fold-const.c (fold_binary): Use correct types in folding
+	of a * (1 << b) to (a << b).  Likewise for ~A & ~B to ~(A | B)
+	and building of RROTATE_EXPR.
+
+2007-10-08  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/33691
 	PR middle-end/33694
 	PR middle-end/33696
