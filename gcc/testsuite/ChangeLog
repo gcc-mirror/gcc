@@ -1,3 +1,12 @@
+2007-10-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33691
+	PR middle-end/33694
+	PR middle-end/33696
+	* gcc.dg/pr33691.c: New testcase.
+	* gcc.dg/pr33694.c: Likewise.
+	* gcc.dg/pr33696.c: Likewise.
+
 2007-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/33683
