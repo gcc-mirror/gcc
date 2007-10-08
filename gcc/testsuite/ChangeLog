@@ -1,5 +1,14 @@
 2007-10-08  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/33693
+	PR middle-end/33695
+	PR middle-end/33697
+	* gcc.dg/pr33693.c: New testcase.
+	* gcc.dg/pr33695.c: Likewise.
+	* gcc.dg/pr33697.c: Likewise.
+
+2007-10-08  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/33691
 	PR middle-end/33694
 	PR middle-end/33696

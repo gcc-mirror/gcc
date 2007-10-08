@@ -10348,16 +10348,16 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && (tem = negate_expr (arg1)) != arg1
 	      && !TREE_OVERFLOW (tem))
 	    return fold_build2 (MULT_EXPR, type,
-	    			negate_expr (arg0), tem);
+	    			fold_convert (type, negate_expr (arg0)), tem);
 
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg1, 0)))
-	    return fold_build2 (LSHIFT_EXPR, type, arg0,
+	    return fold_build2 (LSHIFT_EXPR, type, op0,
 				TREE_OPERAND (arg1, 1));
 	  if (TREE_CODE (arg0) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg0, 0)))
-	    return fold_build2 (LSHIFT_EXPR, type, arg1,
+	    return fold_build2 (LSHIFT_EXPR, type, op1,
 				TREE_OPERAND (arg0, 1));
 
 	  strict_overflow_p = false;
@@ -11012,8 +11012,10 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  return fold_build1 (BIT_NOT_EXPR, type,
 			      build2 (BIT_IOR_EXPR, type,
-				      TREE_OPERAND (arg0, 0),
-				      TREE_OPERAND (arg1, 0)));
+				      fold_convert (type,
+						    TREE_OPERAND (arg0, 0)),
+				      fold_convert (type,
+						    TREE_OPERAND (arg1, 0))));
 	}
 
       /* If arg0 is derived from the address of an object or function, we may
@@ -11549,7 +11551,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  tree tem = build_int_cst (TREE_TYPE (arg1),
 				    GET_MODE_BITSIZE (TYPE_MODE (type)));
 	  tem = const_binop (MINUS_EXPR, tem, arg1, 0);
-	  return fold_build2 (RROTATE_EXPR, type, arg0, tem);
+	  return fold_build2 (RROTATE_EXPR, type, op0, tem);
 	}
 
       /* If we have a rotate of a bit operation with the rotate count and
