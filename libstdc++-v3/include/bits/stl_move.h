@@ -59,6 +59,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 _GLIBCXX_END_NAMESPACE
 
+#define _GLIBCXX_MOVE(_Tp) std::move(_Tp)
+#else
+#define _GLIBCXX_MOVE(_Tp) _Tp
 #endif
 
 #endif /* _STL_MOVE_H */

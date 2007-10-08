@@ -73,13 +73,7 @@
 #include <bits/stl_iterator.h>
 #include <bits/concept_check.h>
 #include <debug/debug.h>
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <bits/stl_move.h>
-# define _GLIBCXX_MOVE(_Tp) std::move(_Tp)
-#else
-# define _GLIBCXX_MOVE(_Tp) _Tp
-#endif
+#include <bits/stl_move.h> // For _GLIBCXX_MOVE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
