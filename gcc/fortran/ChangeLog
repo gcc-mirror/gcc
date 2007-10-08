@@ -1,3 +1,11 @@
+2007-10-08  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/33689
+	* resolve.c (gfc_resolve_expr): Fix indentation.
+	(resolve_fl_variable_derived): Rename argument.
+	(resolve_fl_variable): Fix case in message.  Clarify logic.
+	Correctly simplify array bounds.
+
 2007-10-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/33683
