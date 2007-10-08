@@ -190,7 +190,7 @@ namespace __gnu_parallel
       default:
 	// Partial_sum algorithm not implemented.
 	_GLIBCXX_PARALLEL_ASSERT(0);
-	return end;
+	return result + n;
       }
   }
 }

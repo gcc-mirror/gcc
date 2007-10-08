@@ -335,8 +335,8 @@ namespace __gnu_parallel
 
     explicit accumulate_binop_reduct(BinOp& b) : binop(b) {}
 
-    template<typename T>
-    inline T operator()(T x, T y) { return binop(x, y); }
+    template<typename Result, typename Addend>
+    Result operator()(const Result& x, const Addend& y) { return binop(x, y); }
   };
 }
 

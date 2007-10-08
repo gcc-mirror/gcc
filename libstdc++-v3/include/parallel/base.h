@@ -112,14 +112,6 @@ namespace __gnu_parallel
   };
 
 
-  /** @brief Similar to std::equal_to, but allows two different types. */
-  template<typename T1, typename T2>
-  struct equal_to : std::binary_function<T1, T2, bool>
-  {
-    bool operator()(const T1& t1, const T2& t2) const
-    { return t1 == t2; }
-  };
-
   /** @brief Similar to std::binder1st, but giving the argument types explicitly. */
   template<typename _Predicate, typename argument_type>
     class unary_negate
@@ -190,6 +182,14 @@ namespace __gnu_parallel
       { return op(__x, value); }
     };
 
+  /** @brief Similar to std::equal_to, but allows two different types. */
+  template<typename T1, typename T2>
+  struct equal_to : std::binary_function<T1, T2, bool>
+  {
+    bool operator()(const T1& t1, const T2& t2) const
+    { return t1 == t2; }
+  };
+
   /** @brief Similar to std::less, but allows two different types. */
   template<typename T1, typename T2>
   struct less : std::binary_function<T1, T2, bool>
@@ -211,6 +211,53 @@ namespace __gnu_parallel
       operator()(const _Tp& __x, const _Tp& __y) const
       { return __x < __y; }
     };
+
+
+    /** @brief Similar to std::plus, but allows two different types. */
+  template<typename _Tp1, typename _Tp2>
+    struct plus : public std::binary_function<_Tp1, _Tp2, _Tp1>
+    {
+      typedef typeof(*static_cast<_Tp1*>(NULL) + *static_cast<_Tp2*>(NULL)) result;
+
+      result
+      operator()(const _Tp1& __x, const _Tp2& __y) const
+      { return __x + __y; }
+    };
+
+  // Partial specialization for one type. Same as std::plus.
+  template<typename _Tp>
+    struct plus<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
+    {
+      typedef typeof(*static_cast<_Tp*>(NULL) + *static_cast<_Tp*>(NULL)) result;
+
+      result
+      operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x + __y; }
+    };
+
+
+  /** @brief Similar to std::multiplies, but allows two different types. */
+  template<typename _Tp1, typename _Tp2>
+    struct multiplies : public std::binary_function<_Tp1, _Tp2, _Tp1>
+    {
+      typedef typeof(*static_cast<_Tp1*>(NULL) * *static_cast<_Tp2*>(NULL)) result;
+
+      result
+      operator()(const _Tp1& __x, const _Tp2& __y) const
+      { return __x * __y; }
+    };
+
+  // Partial specialization for one type. Same as std::multiplies.
+  template<typename _Tp>
+    struct multiplies<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
+    {
+      typedef typeof(*static_cast<_Tp*>(NULL) * *static_cast<_Tp*>(NULL)) result;
+
+      result
+      operator()(const _Tp& __x, const _Tp& __y) const
+      { return __x * __y; }
+    };
+
 
   template<typename T, typename _DifferenceTp>
   class pseudo_sequence;
