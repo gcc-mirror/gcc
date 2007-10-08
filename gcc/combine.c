@@ -1363,15 +1363,17 @@ setup_incoming_promotions (rtx first)
 
       /* Eliminate sign extensions in the callee when possible.  Only
          do this when:
-	 (a) the mode of the register is the same as the mode of
+	 (a) a mode promotion has occurred;
+	 (b) the mode of the register is the same as the mode of
 	     the argument as it is passed; and
-	 (b) the signedness does not change across any of the promotions; and
-	 (c) when no language-level promotions (which we cannot guarantee
+	 (c) the signedness does not change across any of the promotions; and
+	 (d) when no language-level promotions (which we cannot guarantee
 	     will have been done by an external caller) are necessary,
 	     unless we know that this function is only ever called from
 	     the current compilation unit -- all of whose call sites will
 	     do the mode1 --> mode2 promotion.  */
-      if (mode3 == mode4
+      if (mode1 != mode3
+          && mode3 == mode4
           && uns1 == uns3
 	  && (mode1 == mode2 || strictly_local))
         {
