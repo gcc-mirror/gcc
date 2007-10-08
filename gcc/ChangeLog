@@ -1,3 +1,8 @@
+2007-10-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (DARWIN_REGISTER_TARGET_PRAGMAS): Register
+	'#pragma mark' to be executed at preprocessing time.
+
 2007-10-08  Ollie Wild  <aaw@google.com>
 
 	* varasm.c (compare_constant): Removed call to
