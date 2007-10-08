@@ -1,3 +1,13 @@
+2007-10-08  Johannes Singler  <singler@ira.uka.de>
+
+	* include/parallel/base.h: Added plus and multiplies functor
+       for differently typed objects.
+	* include/parallel/numeric: Use it.
+	* include/parallel/for_each_selectors.h: Allowed different types.
+	* include/parallel/partial_sum.h: Fixed return value.
+	* testsuite/26_numerics/accumulate/1.cc: Tests for accumulate.
+	* testsuite/26_numerics/inner_product/1.cc: Tests for inner_product.
+
 2007-10-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_move.h (_GLIBCXX_MOVE): Add.

@@ -114,7 +114,7 @@ namespace __parallel
     typedef typename iterator_traits::value_type value_type;
     typedef typename iterator_traits::iterator_category iterator_category;
 
-    return accumulate_switch(begin, end, init, std::plus<value_type>(), 
+    return accumulate_switch(begin, end, init, __gnu_parallel::plus<T, value_type>(),
 			     iterator_category(), parallelism_tag);
   }
 
@@ -126,7 +126,7 @@ namespace __parallel
     typedef typename iterator_traits::value_type value_type;
     typedef typename iterator_traits::iterator_category iterator_category;
 
-    return accumulate_switch(begin, end, init, std::plus<value_type>(), 
+    return accumulate_switch(begin, end, init, __gnu_parallel::plus<T, value_type>(),
 			     iterator_category());
   }
 
@@ -241,10 +241,17 @@ namespace __parallel
 		InputIterator2 first2, T init, 
 		__gnu_parallel::parallelism parallelism_tag)
   {
-    typedef iterator_traits<InputIterator1> traits_type;
-    typedef typename traits_type::value_type value_type;
-    return inner_product(first1, last1, first2, init, std::plus<value_type>(), 
-			 std::multiplies<value_type>(), parallelism_tag);
+    typedef iterator_traits<InputIterator1> traits_type1;
+    typedef typename traits_type1::value_type value_type1;
+    typedef iterator_traits<InputIterator2> traits_type2;
+    typedef typename traits_type2::value_type value_type2;
+
+    typedef typename __gnu_parallel::multiplies<value_type1, value_type2>::result
+        multiplies_result_type;
+    return inner_product(first1, last1, first2, init,
+                           __gnu_parallel::plus<T, multiplies_result_type>(),
+                           __gnu_parallel::multiplies<value_type1, value_type2>(),
+                           parallelism_tag);
   }
 
   template<typename InputIterator1, typename InputIterator2, typename T>
@@ -252,10 +259,16 @@ namespace __parallel
   inner_product(InputIterator1 first1, InputIterator1 last1, 
 		InputIterator2 first2, T init)
   {
-    typedef iterator_traits<InputIterator1> traits_type;
-    typedef typename traits_type::value_type value_type;
-    return inner_product(first1, last1, first2, init, std::plus<value_type>(), 
-			 std::multiplies<value_type>());
+    typedef iterator_traits<InputIterator1> traits_type1;
+    typedef typename traits_type1::value_type value_type1;
+    typedef iterator_traits<InputIterator2> traits_type2;
+    typedef typename traits_type2::value_type value_type2;
+
+    typedef typename __gnu_parallel::multiplies<value_type1, value_type2>::result
+        multiplies_result_type;
+    return inner_product(first1, last1, first2, init,
+                           __gnu_parallel::plus<T, multiplies_result_type>(),
+                           __gnu_parallel::multiplies<value_type1, value_type2>());
   }
 
   // Sequential fallback.
