@@ -35,7 +35,7 @@ implementation of many algorithms the C++ Standard Library.
 
 <p>
 Several of the standard algorithms, for instance
-<code>std::search</code>, are made parallel using OpenMP
+<code>std::sort</code>, are made parallel using OpenMP
 annotations. These parallel mode constructs and can be invoked by
 explicit source declaration or by compiling existing sources with a
 specific compiler flag.
@@ -43,7 +43,7 @@ specific compiler flag.
 
 <h3 class="left"><a name="parallel">The libstdc++ parallel mode</a></h3>
 
-<p>The libstdc++ parallel mode performs parallization of algorithms,
+<p>The libstdc++ parallel mode performs parallelization of algorithms,
 function objects, classes, and functions in the C++ Standard.</p>
 
 <h4 class="left">Using the libstdc++ parallel mode</h4>
@@ -53,7 +53,7 @@ function objects, classes, and functions in the C++ Standard.</p>
   will link in <code>libgomp</code>, the GNU OpenMP <a
   href="http://gcc.gnu.org/onlinedocs/libgomp">implementation</a>,
   whose presence is mandatory. In addition, hardware capable of atomic
-  operations is de rigueur. Actually activating these atomic
+  operations is mandatory. Actually activating these atomic
   operations may require explicit compiler flags on some targets
   (like sparc and x86), such as <code>-march=i686</code>,
   <code>-march=native</code> or <code>-mcpu=v9</code>.
@@ -111,6 +111,13 @@ function objects, classes, and functions in the C++ Standard.</p>
   <li><code>std::sort</code></li>
   <li><code>std::stable_sort</code></li>
   <li><code>std::unique_copy</code></li>
+</ul>
+
+<p>The following library components in the includes
+<code>&lt;set&gt;</code> and <code>&lt;map&gt;</code> are included in the parallel mode:</p>
+<ul>
+  <li><code>std::(multi_)map/set&lt;T&gt;::(multi_)map/set(Iterator begin, Iterator end)</code> (bulk construction)</li>
+  <li><code>std::(multi_)map/set&lt;T&gt;::insert(Iterator begin, Iterator end)</code> (bulk insertion)</li>
 </ul>
 
 
@@ -380,13 +387,47 @@ function objects, classes, and functions in the C++ Standard.</p>
 
 
 <h4 class="left">Parallel mode semantics</h4>
-<p> Something about exception safety, interaction with threads,
-etc. Goal is to have the usual constraints of the STL with respect to
-exception safety and threads, but add in support for parallel
-computing.</p>
 
-<p> Something about compile-time settings and configuration, ie using
-<code>__gnu_parallel::Settings</code>. XXX Up in the air.</p>
+<p> The parallel mode STL algorithms are currently not exception-safe,
+i. e. user-defined functors must not throw exceptions.
+</p>
+
+<p> Since the current GCC OpenMP implementation does not support
+OpenMP parallel regions in concurrent threads,
+it is not possible to call parallel STL algorithm in
+concurrent threads, either.
+It might work with other compilers, though.</p>
+
+
+<h4 class="left">Configuration and Tuning</h4>
+
+<p> Some algorithm variants can be enabled/disabled/selected at compile-time.
+See <a href="latest-doxygen/compiletime__settings_8h.html">
+<code>&lt;compiletime_settings.h&gt;</code></a> and
+See <a href="latest-doxygen/compiletime__settings_8h.html">
+<code>&lt;features.h&gt;</code></a> for details.
+</p>
+
+<p>
+To specify the number of threads to be used for an algorithm,
+use <code>omp_set_num_threads</code>.
+To force a function to execute sequentially,
+even though parallelism is switched on in general,
+add <code>__gnu_parallel::sequential_tag()</code>
+to the end of the argument list.
+</p>
+
+<p>
+Parallelism always incurs some overhead. Thus, it is not
+helpful to parallelize operations on very small sets of data.
+There are measures to avoid parallelizing stuff that is not worth it.
+For each algorithm, a minimum problem size can be stated,
+usually using the variable
+<code>__gnu_parallel::Settings::[algorithm]_minimal_n</code>.
+Please see <a href="latest-doxygen/settings_8h.html">
+<code>&lt;settings.h&gt;</code><a> for details.</p>
+
+
 
 <h4 class="left">Interface basics and general design</h4>
 
@@ -485,7 +526,7 @@ std::__parallel</code>. For instance, <code>std::transform</code> from
 &lt;algorithm&gt; has a parallel counterpart in
 <code>std::__parallel::transform</code> from
 &lt;parallel/algorithm&gt;. In addition, these parallel
-implementatations are injected into <code>namespace
+implementations are injected into <code>namespace
 __gnu_parallel</code> with using declarations.
 </p>
 
@@ -525,6 +566,16 @@ testsuite's Makefile.</p>
    <a href="http://gcc.gnu.org/libstdc++/">to the libstdc++ homepage</a>.
 </p>
 
+
+<h4 class="left">References / Further Reading</h4>
+
+<p>
+Johannes Singler, Peter Sanders, Felix Putze. The Multi-Core Standard Template Library. Euro-Par 2007: Parallel Processing. (LNCS 4641)
+</p>
+
+<p>
+Leonor Frias, Johannes Singler: Parallelization of Bulk Operations for STL Dictionaries. Workshop on Highly Parallel Processing on a Chip (HPPC) 2007. (LNCS)
+</p>
 
 <!-- ####################################################### -->
 

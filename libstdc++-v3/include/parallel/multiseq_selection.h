@@ -32,6 +32,13 @@
  *  @brief Functions to find elements of a certain global rank in
  *  multiple sorted sequences.  Also serves for splitting such
  *  sequence sets.
+ *
+ *  The algorithm description can be found in 
+ *
+ *  P. J. Varman, S. D. Scheufler, B. R. Iyer, and G. R. Ricard.
+ *  Merging Multiple Lists on Hierarchical-Memory Multiprocessors.
+ *  Journal of Parallel and Distributed Computing, 12(2):171–177, 1991.
+ *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
 

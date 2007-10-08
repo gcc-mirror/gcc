@@ -1,3 +1,13 @@
+2007-10-08  Johannes Singler  <singler@ira.uka.de>
+
+        * include/parallel/multiway_merge.h: Added reference to paper.
+        * include/parallel/multiseq_selection.h: Added reference to paper.
+        * include/parallel/workstealing.h: Added reference to paper.
+        * include/parallel/balanced_quicksort.h: Added reference to paper.
+        * include/parallel/tree.h: Added reference to paper.
+        * docs/html/parallel_mode.html: Added reference to MCSTL.
+        More documentation on compile-time settings and tuning.
+
 2007-10-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/std/utility (identity, move, forward): Move to...
