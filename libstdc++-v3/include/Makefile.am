@@ -120,6 +120,7 @@ bits_headers = \
 	${bits_srcdir}/stl_list.h \
 	${bits_srcdir}/stl_map.h \
 	${bits_srcdir}/stl_auto_ptr.h \
+	${bits_srcdir}/stl_move.h \
 	${bits_srcdir}/stl_multimap.h \
 	${bits_srcdir}/stl_multiset.h \
 	${bits_srcdir}/stl_numeric.h \
