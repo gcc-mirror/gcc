@@ -30,6 +30,13 @@
 
 /** @file parallel/tree.h
  *  @brief Parallel red-black tree operations.
+ *
+ *  This implementation is described in
+ *
+ *  Leonor Frias, Johannes Singler.
+ *  Parallelization of Bulk Operations for STL Dictionaries.
+ *  Workshop on Highly Parallel Processing on a Chip (HPPC) 2007.
+ *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
 

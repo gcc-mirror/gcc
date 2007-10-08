@@ -30,6 +30,13 @@
 
 /** @file parallel/multiway_merge.h
  *  @brief Implementation of sequential and parallel multiway merge.
+ *
+ *  Explanations on the high-speed merging routines in the appendix of
+ *
+ *  P. Sanders.
+ *  Fast priority queues for cached memory.
+ *  ACM Journal of Experimental Algorithmics, 5, 2000.
+ *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
 

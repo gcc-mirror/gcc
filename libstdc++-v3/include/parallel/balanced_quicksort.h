@@ -32,6 +32,14 @@
  *  @brief Implementation of a dynamically load-balanced parallel quicksort.
  *
  *  It works in-place and needs only logarithmic extra memory.
+ *  The algorithm is similar to the one proposed in
+ *
+ *  P. Tsigas and Y. Zhang.
+ *  A simple, fast parallel implementation of quicksort and
+ *  its performance evaluation on SUN enterprise 10000.
+ *  In 11th Euromicro Conference on Parallel, Distributed and
+ *  Network-Based Processing, page 372, 2003.
+ *
  *  This file is a GNU parallel extension to the Standard C++ Library.
  */
 
