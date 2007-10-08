@@ -1,3 +1,8 @@
+2007-10-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* BASE-VER: Bump.
+	* DEV-PHASE: Mark as prerelease.
+
 2007-10-07  Release Manager
 
 	* GCC 4.2.2 released.
