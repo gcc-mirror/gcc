@@ -1,3 +1,7 @@
+2007-10-08  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Wall): fix formatting issues.
+	
 2007-10-07  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Canonicalize

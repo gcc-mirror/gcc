@@ -297,6 +297,7 @@ while(<$inf>) {
 	$ic =~ s/\@(?:code|kbd)/C/;
 	$ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
 	$ic =~ s/\@(?:file)/F/;
+	$ic =~ s/\@(?:asis)//;
 	$_ = "\n=over 4\n";
     };
 
@@ -319,8 +320,12 @@ while(<$inf>) {
 
     /^\@itemx?\s*(.+)?$/ and do {
 	if (defined $1) {
-	    # Entity escapes prevent munging by the <> processing below.
-	    $_ = "\n=item $ic\&LT;$1\&GT;\n";
+            if ($ic) {
+                # Entity escapes prevent munging by the <> processing below.
+                $_ = "\n=item $ic\&LT;$1\&GT;\n";
+            } else {
+                $_ = "\n=item $1\n";
+            }
 	} else {
 	    $_ = "\n=item $ic\n";
 	    $ic =~ y/A-Ya-y/B-Zb-z/;
@@ -376,7 +381,7 @@ sub postprocess
     s/\@r\{([^\}]*)\}/R<$1>/g;
     s/\@(?:dfn|var|emph|cite|i)\{([^\}]*)\}/I<$1>/g;
     s/\@(?:code|kbd)\{([^\}]*)\}/C<$1>/g;
-    s/\@(?:gccoptlist|samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
+    s/\@(?:samp|strong|key|option|env|command|b)\{([^\}]*)\}/B<$1>/g;
     s/\@sc\{([^\}]*)\}/\U$1/g;
     s/\@file\{([^\}]*)\}/F<$1>/g;
     s/\@w\{([^\}]*)\}/S<$1>/g;
@@ -411,6 +416,10 @@ sub postprocess
     s/\@(?:uref|url|email)\{([^\},]*)\}/&lt;B<$1>&gt;/g;
     s/\@uref\{([^\},]*),([^\},]*)\}/$2 (C<$1>)/g;
     s/\@uref\{([^\},]*),([^\},]*),([^\},]*)\}/$3/g;
+
+    # Handle gccoptlist here, so it can contain the above formatting
+    # commands.
+    s/\@gccoptlist\{([^\}]*)\}/B<$1>/g;
 
     # Un-escape <> at this point.
     s/&LT;/</g;
