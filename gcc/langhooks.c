@@ -76,14 +76,6 @@ lhd_do_nothing_f (struct function * ARG_UNUSED (f))
 {
 }
 
-/* Do nothing (return the tree node passed).  */
-
-tree
-lhd_return_tree (tree t)
-{
-  return t;
-}
-
 /* Do nothing (return NULL_TREE).  */
 
 tree

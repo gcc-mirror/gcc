@@ -1,3 +1,21 @@
+2007-10-08  Ollie Wild  <aaw@google.com>
+
+	* varasm.c (compare_constant): Removed call to
+	lang_hooks.expand_constant.
+	(copy_constants): Removed call to lang_hooks.expand_constant.
+	(compute_reloc_for_constant): Removed call to
+	lang_hooks.expand_constant.
+	(output_addressed_constants): Removed call to
+	lang_hooks.expand_constant.
+	(constructor_static_from_elts_p): Removed call to
+	lang_hooks.expand_constant.
+	(output_constant): Removed calls to lang_hooks.expand_constant.
+	* langhooks.h (struct lang_hooks): Removed field expand_constant.
+	* langhooks-def.h (lhd_return_tree): Removed.
+	(LANG_HOOKS_EXPAND_CONSTANT): Removed.
+	(LANG_HOOKS_INITIALIZER): Removed LANG_HOOKS_EXPAND_CONSTANT.
+	* langhooks.c (lhd_return_tree): Removed.
+
 2007-10-08  Mark Shinwell  <shinwell@codesourcery.com>
 
 	* combine.c (setup_incoming_promotions): Ensure that

@@ -41,7 +41,6 @@ extern void lhd_do_nothing_i (int);
 extern void lhd_do_nothing_f (struct function *);
 extern bool lhd_post_options (const char **);
 extern alias_set_type lhd_get_alias_set (tree);
-extern tree lhd_return_tree (tree);
 extern tree lhd_return_null_tree_v (void);
 extern tree lhd_return_null_tree (tree);
 extern tree lhd_return_null_const_tree (const_tree);
@@ -93,7 +92,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_MISSING_ARGUMENT	hook_bool_constcharptr_size_t_false
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
-#define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree
 #define LANG_HOOKS_EXPAND_EXPR		lhd_expand_expr
 #define LANG_HOOKS_EXPAND_DECL		lhd_expand_decl
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL lhd_do_nothing_t
@@ -250,7 +248,6 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_PARSE_FILE, \
   LANG_HOOKS_CLEAR_BINDING_STACK, \
   LANG_HOOKS_GET_ALIAS_SET, \
-  LANG_HOOKS_EXPAND_CONSTANT, \
   LANG_HOOKS_EXPAND_EXPR, \
   LANG_HOOKS_EXPAND_DECL, \
   LANG_HOOKS_FINISH_INCOMPLETE_DECL, \

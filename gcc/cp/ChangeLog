@@ -1,3 +1,10 @@
+2007-10-08  Ollie Wild  <aaw@google.com>
+
+	* typeck2.c (digest_init): Call cplus_expand_constant after
+	convert_for_initialization.
+	* cp-objcp-common.h (LANG_HOOKS_EXPAND_CONSTANT): Removed.
+	* expr.c (cplus_expand_constant): Updated function description.
+
 2007-10-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/20416

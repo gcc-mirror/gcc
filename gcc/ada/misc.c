@@ -95,7 +95,7 @@ static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
 static const char *gnat_printable_name	(tree, int);
 static const char *gnat_dwarf_name	(tree, int);
-static tree gnat_eh_runtime_type	(tree);
+static tree gnat_return_tree		(tree);
 static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
 static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
@@ -125,7 +125,7 @@ static tree gnat_type_max_size		(const_tree);
 #undef  LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
 #undef  LANG_HOOKS_PUSHDECL
-#define LANG_HOOKS_PUSHDECL		lhd_return_tree
+#define LANG_HOOKS_PUSHDECL		gnat_return_tree
 #undef  LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS      gnat_write_global_declarations
 #undef  LANG_HOOKS_FINISH_INCOMPLETE_DECL
@@ -512,7 +512,7 @@ gnat_init_gcc_eh (void)
 					     ? "__gnat_eh_personality_sj"
 					     : "__gnat_eh_personality");
   lang_eh_type_covers = gnat_eh_type_covers;
-  lang_eh_runtime_type = gnat_eh_runtime_type;
+  lang_eh_runtime_type = gnat_return_tree;
   default_init_unwind_resume_libfunc ();
 
   /* Turn on -fexceptions and -fnon-call-exceptions. The first one triggers
@@ -703,15 +703,13 @@ gnat_adjust_rli (record_layout_info rli ATTRIBUTE_UNUSED)
     rli->record_align = record_align;
 #endif
 }
-
-/* These routines are used in conjunction with GCC exception handling.  */
 
-/* Map compile-time to run-time tree for GCC exception handling scheme.  */
+/* Do nothing (return the tree node passed).  */
 
 static tree
-gnat_eh_runtime_type (tree type)
+gnat_return_tree (tree t)
 {
-  return type;
+  return t;
 }
 
 /* Return true if type A catches type B. Callback for flow analysis from
