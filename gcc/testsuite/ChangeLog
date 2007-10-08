@@ -1,3 +1,8 @@
+2007-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR tree-optimization/33572
+	* g++.dg/torture/pr33572.C: Replace with complete test.
+
 2007-10-08  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33689
