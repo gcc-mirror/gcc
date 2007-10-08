@@ -1,3 +1,11 @@
+2007-10-08  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.ac (CFLAGS_FOR_BUILD, CXXFLAGS_FOR_BUILD,
+	LDFLAGS_FOR_BUILD): Default them to host flags only for $host = $build.
+	Set default CXXFLAGS_FOR_BUILD to CXXFLAGS, not CFLAGS.  Set default
+	LDFLAGS_FOR_BUILD to LDFLAGS, not CFLAGS.
+	* configure: Regenerate.
+
 2006-10-04  Seongbae Park <seongbae.park@gmail.com>
 
 	* MAINTAINERS (Register allocation reviewer): Add myself.
