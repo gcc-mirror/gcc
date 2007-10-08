@@ -2408,7 +2408,7 @@ sra_build_bf_assignment (tree dst, tree src)
       tmp2 = fold_build1 (BIT_NOT_EXPR, utype, mask);
       tmp2 = int_const_binop (RSHIFT_EXPR, tmp2, minshift, true);
       tmp2 = fold_convert (ut, tmp2);
-      tmp2 = fold_build2 (BIT_AND_EXPR, utype, tmp3, tmp2);
+      tmp2 = fold_build2 (BIT_AND_EXPR, ut, tmp3, tmp2);
 
       if (tmp3 != tmp2)
 	{
@@ -3436,7 +3436,7 @@ scalarize_ldst (struct sra_elt *elt, tree other,
 	{
 	  tree_stmt_iterator tsi;
 	  tree first, blist = NULL;
-	  bool thr = (bsi->bb->flags & EDGE_COMPLEX) != 0;
+	  bool thr = tree_could_throw_p (stmt);
 
 	  /* If the last statement of this BB created an EH edge
 	     before scalarization, we have to locate the first

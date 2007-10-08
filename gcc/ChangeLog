@@ -1,3 +1,8 @@
+2007-10-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-sra.c (scalarize_lsdt): Fix thinko in testing whether
+	the original stmt can throw.
+
 2007-10-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.h (DARWIN_REGISTER_TARGET_PRAGMAS): Register
