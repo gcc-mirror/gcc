@@ -33,8 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "tm_p.h"
 
-/* Hook used by output_constant to expand language-specific
-   constants.  */
+/* Expand C++-specific constants.  Currently, this means PTRMEM_CST.  */
 
 tree
 cplus_expand_constant (tree cst)

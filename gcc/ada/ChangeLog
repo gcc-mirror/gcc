@@ -1,3 +1,12 @@
+2007-10-08  Ollie Wild  <aaw@google.com>
+
+	* misc.c (LANG_HOOKS_PUSHDECL): Replaced lhd_return_tree with
+	gnat_return_tree.
+	(gnat_init_gcc_eh): Replaced gnat_eh_runtime_type with
+	gnat_return_tree.
+	(gnat_eh_runtime_type): Removed.
+	(gnat_return_tree): New function.
+
 2007-10-08  Ben Elliston  <bje@au.ibm.com>
 
 	PR ada/33454
