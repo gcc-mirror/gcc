@@ -62,6 +62,10 @@
 #ifndef _STL_PAIR_H
 #define _STL_PAIR_H 1
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <bits/stl_move.h>
+#endif
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /// pair holds two objects of arbitrary type.
@@ -89,6 +93,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       template<class _U1, class _U2>
         pair(const pair<_U1, _U2>& __p)
 	: first(__p.first), second(__p.second) { }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      pair(pair&& __p)
+      : first(std::move(__p.first)),
+	second(std::move(__p.second)) { }
+
+      pair&
+      operator=(pair&& __p)
+      { 
+	first = std::move(__p.first);
+	second = std::move(__p.second);
+	return *this;
+      }
+#endif
     };
 
   /// Two pairs of the same type are equal iff their members are equal.

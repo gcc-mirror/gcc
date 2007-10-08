@@ -84,30 +84,7 @@
 #    undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #    undef _GLIBCXX_INCLUDE_AS_CXX0X
 #  endif
-
-#include <type_traits>
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
-  // 20.2.2, forward/move
-  template<typename _Tp>
-    struct identity
-    {
-      typedef _Tp type;
-    };
-
-  template<typename _Tp>
-    inline _Tp&&
-    forward(typename std::identity<_Tp>::type&& __t)
-    { return __t; }
-
-  template<typename _Tp>
-    inline typename std::remove_reference<_Tp>::type&&
-    move(_Tp&& __t)
-    { return __t; }
-
-_GLIBCXX_END_NAMESPACE
-
+#  include <bits/stl_move.h>
 #endif
 
 #endif /* _GLIBCXX_UTILITY */

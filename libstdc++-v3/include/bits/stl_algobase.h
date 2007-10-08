@@ -75,7 +75,7 @@
 #include <debug/debug.h>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <utility>
+# include <bits/stl_move.h>
 # define _GLIBCXX_MOVE(_Tp) std::move(_Tp)
 #else
 # define _GLIBCXX_MOVE(_Tp) _Tp

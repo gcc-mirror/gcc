@@ -1,3 +1,18 @@
+2007-10-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/utility (identity, move, forward): Move to...
+	* include/bits/stl_move.h: ... here.
+	* include/Makefile.am: Add.
+	* include/bits/stl_algobase.h: Include the latter.
+	* include/Makefile.in: Regenerate.
+	* testsuite/20_util/pair/moveable.cc: Remove dg-require-rvalref.
+
+2007-10-08  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_pair.h (pair<>:pair(pair&&),
+	pair<>::operator=(pair&&)): Add.
+
 2007-10-07  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 
