@@ -3555,10 +3555,11 @@ compute_avail (void)
 	    }
 
 	  else if (TREE_CODE (stmt) == GIMPLE_MODIFY_STMT
-	      && !ann->has_volatile_ops
-	      && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
-	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI
-		   (GIMPLE_STMT_OPERAND (stmt, 0)))
+		   && !ann->has_volatile_ops
+		   && TREE_CODE (GIMPLE_STMT_OPERAND (stmt, 0)) == SSA_NAME
+		   && (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI
+		       (GIMPLE_STMT_OPERAND (stmt, 0)))
+		   && !tree_could_throw_p (stmt))
 	    {
 	      if (make_values_for_stmt (stmt, block))
 		continue;
