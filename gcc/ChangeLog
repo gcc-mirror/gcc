@@ -1,3 +1,10 @@
+2007-10-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ra-conflict.c (record_one_conflict_between_regnos): Revert
+	the last change.
+	(set_conflicts_for_earlyclobber): Likewise.
+	(global_conflicts): Likewise.
+
 2007-10-09  Kazu Hirata  <kazu@codesourcery.com>
 
 	* longlong.h (count_leading_zeros): Replace '{' and '}' with '%{'
