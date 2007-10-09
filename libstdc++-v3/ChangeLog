@@ -1,3 +1,9 @@
+2007-10-09  Zhou Drangon  <drangon.mail@gmail.com>
+
+	PR libstdc++/33682
+        * libsupc++/guard.cc: Make single conditional variable
+        implementation dependent to __GTHREAD_HAS_COND.
+
 2007-10-09  Benjamin Kosnik  <bkoz@montsouris.artheist.org>
 
 	PR libstdc++/33489 continued.		

@@ -62,6 +62,7 @@ namespace
   }
 }
 
+#ifdef __GTHREAD_HAS_COND
 namespace
 {
   // A single conditional variable controlling all static initializations.
@@ -83,6 +84,7 @@ namespace
     return *static_cond;
   }
 }
+#endif
 
 #ifndef _GLIBCXX_GUARD_TEST_AND_ACQUIRE
 inline bool
