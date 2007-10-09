@@ -1275,7 +1275,7 @@ instantiate_element (struct sra_elt *elt)
       elt->in_bitfld_block = 1;
       elt->replacement = build3 (BIT_FIELD_REF, elt->type, var,
 				 DECL_SIZE (var),
-				 BITS_BIG_ENDIAN
+				 BYTES_BIG_ENDIAN
 				 ? size_binop (MINUS_EXPR,
 					       TYPE_SIZE (elt->type),
 					       DECL_SIZE (var))
@@ -2140,7 +2140,7 @@ sra_build_assignment (tree dst, tree src)
       cst2 = size_binop (PLUS_EXPR, TREE_OPERAND (src, 1),
 			 TREE_OPERAND (src, 2));
 
-      if (BITS_BIG_ENDIAN)
+      if (BYTES_BIG_ENDIAN)
 	{
 	  maxshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst);
 	  minshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst2);
@@ -2168,7 +2168,7 @@ sra_build_assignment (tree dst, tree src)
       list = NULL;
 
       cst2 = size_binop (MINUS_EXPR, maxshift, minshift);
-      if (tree_int_cst_equal (cst2, TYPE_SIZE (utype)))
+      if (TREE_INT_CST_LOW (cst2) == TYPE_PRECISION (utype))
 	{
 	  unsignedp = true;
 	  mask = NULL_TREE;
@@ -2322,7 +2322,7 @@ sra_build_bf_assignment (tree dst, tree src)
 		     fold_convert (bitsizetype, TREE_OPERAND (dst, 1)),
 		     cst);
 
-  if (BITS_BIG_ENDIAN)
+  if (BYTES_BIG_ENDIAN)
     {
       maxshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst);
       minshift = size_binop (MINUS_EXPR, TYPE_SIZE (TREE_TYPE (var)), cst2);
@@ -2343,8 +2343,14 @@ sra_build_bf_assignment (tree dst, tree src)
     utype = unsigned_type_for (type);
 
   mask = build_int_cst_wide (utype, 1, 0);
-  cst = int_const_binop (LSHIFT_EXPR, mask, maxshift, true);
-  cst2 = int_const_binop (LSHIFT_EXPR, mask, minshift, true);
+  if (TREE_INT_CST_LOW (maxshift) == TYPE_PRECISION (utype))
+    cst = build_int_cst_wide (utype, 0, 0);
+  else
+    cst = int_const_binop (LSHIFT_EXPR, mask, maxshift, true);
+  if (integer_zerop (minshift))
+    cst2 = mask;
+  else
+    cst2 = int_const_binop (LSHIFT_EXPR, mask, minshift, true);
   mask = int_const_binop (MINUS_EXPR, cst, cst2, true);
   mask = fold_build1 (BIT_NOT_EXPR, utype, mask);
 
@@ -2508,13 +2514,13 @@ sra_build_elt_assignment (struct sra_elt *elt, tree src)
 	    {
 	      list = NULL;
 
-	      if (!INTEGRAL_TYPE_P (TREE_TYPE (src))
-		  || !TYPE_UNSIGNED (TREE_TYPE (src)))
+	      if (!INTEGRAL_TYPE_P (TREE_TYPE (src)))
 		src = fold_build1 (VIEW_CONVERT_EXPR,
 				   lang_hooks.types.type_for_size
 				   (TREE_INT_CST_LOW
 				    (TYPE_SIZE (TREE_TYPE (src))),
 				    1), src);
+	      gcc_assert (TYPE_UNSIGNED (TREE_TYPE (src)));
 
 	      tmp = make_rename_temp (TREE_TYPE (src), "SR");
 	      stmt = build_gimple_modify_stmt (tmp, src);
@@ -2976,16 +2982,20 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 
       if (fld->replacement)
 	{
-	  tree infld, invar, st;
+	  tree infld, invar, st, type;
 
 	  infld = fld->replacement;
+
+	  type = TREE_TYPE (infld);
+	  if (TYPE_PRECISION (type) != TREE_INT_CST_LOW (flen))
+	    type = lang_hooks.types.type_for_size (TREE_INT_CST_LOW (flen), 1);
 
 	  if (TREE_CODE (infld) == BIT_FIELD_REF)
 	    {
 	      fpos = size_binop (PLUS_EXPR, fpos, TREE_OPERAND (infld, 2));
 	      infld = TREE_OPERAND (infld, 0);
 	    }
-	  else if (BITS_BIG_ENDIAN && DECL_P (fld->element)
+	  else if (BYTES_BIG_ENDIAN && DECL_P (fld->element)
 		   && !tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (infld)),
 					   DECL_SIZE (fld->element)))
 	    {
@@ -2995,10 +3005,7 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 				 DECL_SIZE (fld->element));
 	    }
 
-	  infld = fold_build3 (BIT_FIELD_REF,
-			       lang_hooks.types.type_for_size
-			       (TREE_INT_CST_LOW (flen), 1),
-			       infld, flen, fpos);
+	  infld = fold_build3 (BIT_FIELD_REF, type, infld, flen, fpos);
 	  BIT_FIELD_REF_UNSIGNED (infld) = 1;
 
 	  invar = size_binop (MINUS_EXPR, flp.field_pos, bpos);
@@ -3006,8 +3013,7 @@ sra_explode_bitfield_assignment (tree var, tree vpos, bool to_var,
 	    invar = size_binop (PLUS_EXPR, invar, flp.overlap_pos);
 	  invar = size_binop (PLUS_EXPR, invar, vpos);
 
-	  invar = fold_build3 (BIT_FIELD_REF, TREE_TYPE (infld),
-			       var, flen, invar);
+	  invar = fold_build3 (BIT_FIELD_REF, type, var, flen, invar);
 	  BIT_FIELD_REF_UNSIGNED (invar) = 1;
 
 	  if (to_var)

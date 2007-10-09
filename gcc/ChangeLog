@@ -1,3 +1,17 @@
+2007-10-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/22156
+	* tree-sra.c (instantiate_element): Use BYTES_BIG_ENDIAN for
+	bit-field layout.
+	(sra_build_assignment): Likewise.  Set up mask depending on
+	precision, not type.
+	(sra_build_bf_assignment): Use BYTES_BIG_ENDIAN.  Don't overflow
+	computing bit masks.
+	(sra_build_elt_assignment): Don't view-convert from signed to
+	unsigned.
+	(sra_explode_bitfield_assignment): Use bit-field type if
+	possible.  Use BYTES_BIG_ENDIAN.
+
 2007-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/22156
