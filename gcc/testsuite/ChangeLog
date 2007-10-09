@@ -1,3 +1,8 @@
+2007-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33692
+	* gcc.dg/pr33692.c: New testcase.
+
 2007-10-09  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33669

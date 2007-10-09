@@ -1555,17 +1555,31 @@ canonicalize_component_ref (tree *expr_p)
   else
     type = TREE_TYPE (TREE_OPERAND (expr, 1));
 
+  /* One could argue that all the stuff below is not necessary for
+     the non-bitfield case and declare it a FE error if type
+     adjustment would be needed.  */
   if (TREE_TYPE (expr) != type)
     {
+#ifdef ENABLE_TYPES_CHECKING
       tree old_type = TREE_TYPE (expr);
+#endif
+      int type_quals;
+
+      /* We need to preserve qualifiers and propagate them from
+	 operand 0.  */
+      type_quals = TYPE_QUALS (type)
+	| TYPE_QUALS (TREE_TYPE (TREE_OPERAND (expr, 0)));
+      if (TYPE_QUALS (type) != type_quals)
+	type = build_qualified_type (TYPE_MAIN_VARIANT (type), type_quals);
 
       /* Set the type of the COMPONENT_REF to the underlying type.  */
       TREE_TYPE (expr) = type;
 
-      /* And wrap the whole thing inside a NOP_EXPR.  */
-      expr = build1 (NOP_EXPR, old_type, expr);
-
-      *expr_p = expr;
+#ifdef ENABLE_TYPES_CHECKING
+      /* It is now a FE error, if the conversion from the canonical
+	 type to the original expression type is not useless.  */
+      gcc_assert (useless_type_conversion_p (old_type, type));
+#endif
     }
 }
 
