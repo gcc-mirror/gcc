@@ -1167,6 +1167,32 @@ fix = {
 
 
 /*
+ *  On darwin8 and earlier, mach-o/swap.h isn't properly guarded
+ *  by 'extern "C"'.  On darwin7 some mach/ headers aren't properly guarded.
+ */
+fix = {
+  hackname  = darwin_externc;
+  mach      = "*-*-darwin*";
+  files     = mach-o/swap.h;
+  files     = mach/mach_time.h;
+  files     = mach/mach_traps.h;
+  files     = mach/message.h;
+  files     = mach/mig.h;
+  files     = mach/semaphore.h;
+  bypass    = "extern \"C\"";
+  bypass    = "__BEGIN_DECLS";
+  c_fix     = wrap;
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "extern \"C\" {\n"
+              "#endif\n";
+  c_fix_arg = "#ifdef __cplusplus\n"
+              "}\n"
+              "#endif\n";
+  test_text = "extern void swap_fat_header();\n";
+};
+
+
+/*
  * AvailabilityMacros.h on Darwin breaks with GCC 4.0, because of
  * bad __GNUC__ tests.
  */
