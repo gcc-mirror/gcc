@@ -1,3 +1,9 @@
+2007-10-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* inclhack.def (darwin_externc): New.
+	* fixincl.x: Regenerate.
+	* tests/base/mach-o/swap.h: New.
+
 2007-08-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* inclhack.def (solaris_math_5, solaris_math_6, solaris_math_7):
