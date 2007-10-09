@@ -400,8 +400,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_parentheses = value;
       warn_return_type = value;
       warn_sequence_point = value;	/* Was C only.  */
-      if (c_dialect_cxx ())
-	warn_sign_compare = value;
       warn_switch = value;
       set_Wstrict_aliasing (value);
       warn_address = value;
@@ -425,17 +423,14 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       else
 	{
 	  /* C++-specific warnings.  */
+          warn_sign_compare = value;
 	  warn_reorder = value;
-	  warn_nontemplate_friend = value;
           warn_cxx0x_compat = value;
-          if (value > 0)
-            warn_write_strings = true;
 	}
 
       cpp_opts->warn_trigraphs = value;
       cpp_opts->warn_comments = value;
       cpp_opts->warn_num_sign_change = value;
-      cpp_opts->warn_multichar = value;	/* Was C++ only.  */
 
       if (warn_pointer_sign == -1)
 	warn_pointer_sign = 1;

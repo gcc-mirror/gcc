@@ -1,3 +1,10 @@
+2007-10-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* c-opts.c (c_common_handle_option): -Wnontemplate-friend,
+	-Wwrite-strings and -Wmultichar are enabled by default, so Wall
+	enabling them is redundant. Don't check two times for
+	c_dialect_cxx.
+	
 2007-10-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ra-conflict.c (record_one_conflict_between_regnos): Revert
