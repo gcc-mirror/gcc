@@ -1,7 +1,10 @@
 2007-10-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR middle-end/22156
 	* tree-sra.c (scalarize_lsdt): Fix thinko in testing whether
 	the original stmt can throw.
+	(sra_build_bf_assignment): Fix type mismatch when applying negated
+	mask.
 
 2007-10-08  Geoffrey Keating  <geoffk@apple.com>
 
@@ -85,6 +88,7 @@
 2007-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR tree-optimization/33655
+	PR middle-end/22156
 	* tree-sra.c (bitfield_overlaps_p): Handle array and complex
 	elements.
 
