@@ -6873,6 +6873,16 @@ with unknown.  We predict the known number of iterations correctly, while
 the unknown number of iterations average to roughly 10.  This means that the
 loop without bounds would appear artificially cold relative to the other one.
 
+@item align-threshold
+
+Select fraction of the maximal frequency of executions of basic block in
+function given basic block will get aligned.
+
+@item align-loop-iterations
+
+A loop expected to iterate at lest the selected number of iterations will get
+aligned.
+
 @item tracer-dynamic-coverage
 @itemx tracer-dynamic-coverage-feedback
 

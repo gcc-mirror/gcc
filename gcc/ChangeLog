@@ -1,3 +1,13 @@
+2007-10-09  Jan Hubicka  <jh@suse.cz>
+
+	* invoke.texi (align-threshold, align-loop-iterations): Document.
+	* final.c: Include cfgloop.h, params.h
+	(compute_alignments): Dump decisions and compare them with loop
+	structure; honor given parameters.
+	(pass_compute_alignments): New dump file.
+	* params.def (PARAM_ALIGN_THRESHOLD, PARAM_ALIGN_LOOP_ITERATIONS): New.
+	* Makefile.in (final.o): Add dependency on cfgloop.h and params.h
+
 2007-10-09  James E. Wilson  <wilson@specifix.com>
 
 	PR tree-optimization/33655
