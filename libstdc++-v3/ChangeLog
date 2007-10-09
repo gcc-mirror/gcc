@@ -1,3 +1,8 @@
+2007-10-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/boost_concept_check.h (*AssociativeContainerConcept):
+	Remove, unused.
+
 2007-10-08  Johannes Singler  <singler@ira.uka.de>
 
 	* include/parallel/base.h: Added plus and multiplies functor
