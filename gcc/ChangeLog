@@ -1,6 +1,12 @@
 2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/33615
+	* tree-ssa-pre.c (compute_avail): Don't call make_values_for_stmt
+	if the statement might throw.  Fix formatting.
+
+2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR tree-optimization/33615
 	* tree-ssa-loop-im.c (movement_possibility): Return MOVE_IMPOSSIBLE
 	if the rhs might throw.
 

@@ -1,6 +1,11 @@
 2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/33615
+	* g++.dg/tree-ssa/pr33615-2.C: New test.
+
+2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	PR tree-optimization/33615
 	* g++.dg/tree-ssa/pr33615.C: New test.
 
 2007-10-08  Alexandre Oliva  <aoliva@redhat.com>
