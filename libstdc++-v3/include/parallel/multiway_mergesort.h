@@ -160,7 +160,6 @@ namespace __gnu_parallel
     typedef typename traits_type::difference_type difference_type;
 
     Timing<sequential_tag> t;
-
     t.tic();
 
     PMWMSSortingData<RandomAccessIterator>* sd = d->sd;
@@ -178,7 +177,7 @@ namespace __gnu_parallel
     typedef value_type* SortingPlacesIterator;
 
     // Sort in temporary storage, leave space for sentinel.
-    sd->sorting_places[iam] = sd->temporaries[iam] = static_cast<value_type*>(::operator new(sizeof(value_type) *(length_local + 1)));
+    sd->sorting_places[iam] = sd->temporaries[iam] = static_cast<value_type*>(::operator new(sizeof(value_type) * (length_local + 1)));
 
     // Copy there.
     std::uninitialized_copy(sd->source + sd->starts[iam], sd->source + sd->starts[iam] + length_local, sd->sorting_places[iam]);
@@ -208,7 +207,9 @@ namespace __gnu_parallel
 	t.tic("sample/wait");
 
 #pragma omp single
-	__gnu_sequential::sort(sd->samples, sd->samples + (num_samples * d->num_threads), comp);
+	__gnu_sequential::sort(sd->samples, 
+			       sd->samples + (num_samples * d->num_threads), 
+			       comp);
 
 #pragma omp barrier
 
@@ -288,7 +289,7 @@ namespace __gnu_parallel
     // Merge to temporary storage, uninitialized creation not possible
     // since there is no multiway_merge calling the placement new
     // instead of the assignment operator.
-    sd->merging_places[iam] = sd->temporaries[iam] = new value_type[length_am];
+    sd->merging_places[iam] = sd->temporaries[iam] = static_cast<value_type*>(::operator new(sizeof(value_type) * length_am));
 #else
     // Merge directly to target.
     sd->merging_places[iam] = sd->source + offset;
@@ -337,7 +338,10 @@ namespace __gnu_parallel
    */
   template<typename RandomAccessIterator, typename Comparator>
   inline void
-  parallel_sort_mwms(RandomAccessIterator begin, RandomAccessIterator end, Comparator comp, typename std::iterator_traits<RandomAccessIterator>::difference_type n, int num_threads, bool stable)
+  parallel_sort_mwms(RandomAccessIterator begin, RandomAccessIterator end, 
+		     Comparator comp, 
+       typename std::iterator_traits<RandomAccessIterator>::difference_type n, 
+		     int num_threads, bool stable)
   {
     _GLIBCXX_CALL(n)
       
@@ -366,7 +370,14 @@ namespace __gnu_parallel
 #endif
 
     if (Settings::sort_splitting == Settings::SAMPLING)
-      sd.samples = new value_type[num_threads * (Settings::sort_mwms_oversampling * num_threads - 1)];
+      {
+	unsigned int sz = Settings::sort_mwms_oversampling * num_threads - 1;
+	sz *= num_threads;
+	
+	// Equivalent to value_type[sz], without need of default construction.
+	sz *= sizeof(value_type);
+	sd.samples = static_cast<value_type*>(::operator new(sz));
+      }
     else
       sd.samples = NULL;
 
@@ -377,7 +388,9 @@ namespace __gnu_parallel
     PMWMSSorterPU<RandomAccessIterator>* pus = new PMWMSSorterPU<RandomAccessIterator>[num_threads];
     difference_type* starts = sd.starts = new difference_type[num_threads + 1];
 
-    difference_type chunk_length = n / num_threads, split = n % num_threads, start = 0;
+    difference_type chunk_length = n / num_threads;
+    difference_type split = n % num_threads;
+    difference_type start = 0;
     for (int i = 0; i < num_threads; i++)
       {
 	starts[i] = start;

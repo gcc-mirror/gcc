@@ -165,8 +165,10 @@ namespace
 
     /** @brief Minimal input size for parallel sorting. */
     static volatile sequence_index_t sort_minimal_n;
+
     /** @brief Oversampling factor for parallel std::sort (MWMS). */
     static volatile unsigned int sort_mwms_oversampling;
+
     /** @brief Such many samples to take to find a good pivot
 	(quicksort). */
     static volatile unsigned int sort_qs_num_samples_preset;

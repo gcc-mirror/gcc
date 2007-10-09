@@ -113,15 +113,10 @@ namespace __gnu_parallel
 
     while (begin1 != end1 && begin2 != end2 && max_length > 0)
       {
-	value_type1 element1;
-	value_type2 element2;
-	RandomAccessIterator1 next1;
-	RandomAccessIterator2 next2;
-
-	next1 = begin1 + 1;
-	next2 = begin2 + 1;
-	element1 = *begin1;
-	element2 = *begin2;
+	RandomAccessIterator1 next1 = begin1 + 1;
+	RandomAccessIterator2 next2 = begin2 + 1;
+	value_type1 element1 = *begin1;
+	value_type2 element2 = *begin2;
 
 	if (comp(element2, element1))
 	  {

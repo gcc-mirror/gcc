@@ -203,7 +203,7 @@ namespace __gnu_parallel
 	offset = sd->dist[s + 1][d->num_threads];
       }
 
-    sd->temporaries[iam] = new value_type[offset];
+    sd->temporaries[iam] = static_cast<value_type*>(::operator new(sizeof(value_type) * offset));
 
     t.tic();
 
@@ -446,7 +446,7 @@ namespace __gnu_parallel
 
     if (num_bins > 1)
       {
-	value_type* target = new value_type[n];
+	value_type* target = static_cast<value_type*>(::operator new(sizeof(value_type) * n));
 	bin_index* oracles = new bin_index[n];
 	difference_type* dist0 = new difference_type[num_bins + 1], * dist1 = new difference_type[num_bins + 1];
 

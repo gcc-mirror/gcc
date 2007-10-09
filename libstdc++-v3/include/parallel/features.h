@@ -66,7 +66,7 @@
  *  @brief Include guarded (sequences may run empty) loser tree,
  *  moving objects.
  *  @see __gnu_parallel::Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE 1
+#define _GLIBCXX_LOSER_TREE 0
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_EXPLICIT
@@ -88,7 +88,7 @@
 /** @def _GLIBCXX_LOSER_TREE_POINTER
  *  @brief Include some loser tree variant.
  *  @see __gnu_parallel::Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_POINTER 0
+#define _GLIBCXX_LOSER_TREE_POINTER 1
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_UNGUARDED
@@ -96,14 +96,14 @@
  *  @brief Include unguarded (sequences must not run empty) loser
  *  tree, moving objects.
  *  @see __gnu_parallel::Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_UNGUARDED 1
+#define _GLIBCXX_LOSER_TREE_UNGUARDED 0
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
 /** @def _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
  *  @brief Include some loser tree variant.
  *  @see __gnu_parallel::Settings multiway_merge_algorithm */
-#define _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED 0
+#define _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED 1
 #endif
 
 #ifndef _GLIBCXX_LOSER_TREE_COMBINED

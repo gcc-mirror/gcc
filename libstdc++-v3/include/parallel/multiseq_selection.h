@@ -132,10 +132,10 @@ namespace __gnu_parallel
 
     typedef typename std::iterator_traits<RanSeqs>::value_type::first_type It;
     typedef typename std::iterator_traits<It>::difference_type difference_type;
-    typedef typename std::iterator_traits<It>::value_type T;
+    typedef typename std::iterator_traits<It>::value_type value_type;
 
-    lexicographic<T, int, Comparator> lcomp(comp);
-    lexicographic_reverse<T, int, Comparator> lrcomp(comp);
+    lexicographic<value_type, int, Comparator> lcomp(comp);
+    lexicographic_reverse<value_type, int, Comparator> lrcomp(comp);
 
     // Number of sequences, number of elements in total (possibly
     // including padding).
@@ -188,7 +188,7 @@ namespace __gnu_parallel
 #define S(i) (begin_seqs[i].first)
 
     // Initial partition.
-    std::vector<std::pair<T, int> > sample;
+    std::vector<std::pair<value_type, int> > sample;
 
     for (int i = 0; i < m; i++)
       if (n < ns[i])	//sequence long enough
@@ -213,7 +213,7 @@ namespace __gnu_parallel
 	n /= 2;
 
 	int lmax_seq = -1;	// to avoid warning
-	const T* lmax = NULL;	// impossible to avoid the warning?
+	const value_type* lmax = NULL;	// impossible to avoid the warning?
 	for (int i = 0; i < m; i++)
 	  {
 	    if (a[i] > 0)
@@ -258,7 +258,7 @@ namespace __gnu_parallel
 	if (skew > 0)
 	  {
 	    // Move to the left, find smallest.
-	    std::priority_queue<std::pair<T, int>, std::vector<std::pair<T, int> >, lexicographic_reverse<T, int, Comparator> > pq(lrcomp);
+	    std::priority_queue<std::pair<value_type, int>, std::vector<std::pair<value_type, int> >, lexicographic_reverse<value_type, int, Comparator> > pq(lrcomp);
 
 	    for (int i = 0; i < m; i++)
 	      if (b[i] < ns[i])
@@ -279,7 +279,7 @@ namespace __gnu_parallel
 	else if (skew < 0)
 	  {
 	    // Move to the right, find greatest.
-	    std::priority_queue<std::pair<T, int>, std::vector<std::pair<T, int> >, lexicographic<T, int, Comparator> > pq(lcomp);
+	    std::priority_queue<std::pair<value_type, int>, std::vector<std::pair<value_type, int> >, lexicographic<value_type, int, Comparator> > pq(lcomp);
 
 	    for (int i = 0; i < m; i++)
 	      if (a[i] > 0)
@@ -308,36 +308,30 @@ namespace __gnu_parallel
     // Compare the keys on both edges of the border.
 
     // Maximum of left edge, minimum of right edge.
-    bool maxleftset = false, minrightset = false;
-    T maxleft, minright;	// Impossible to avoid the warning?
+    value_type* maxleft = NULL;
+    value_type* minright = NULL;
     for (int i = 0; i < m; i++)
       {
 	if (a[i] > 0)
 	  {
-	    if (!maxleftset)
-	      {
-		maxleft = S(i)[a[i] - 1];
-		maxleftset = true;
-	      }
+	    if (!maxleft)
+	      maxleft = &(S(i)[a[i] - 1]);
 	    else
 	      {
 		// Max, favor rear sequences.
-		if (!comp(S(i)[a[i] - 1], maxleft))
-		  maxleft = S(i)[a[i] - 1];
+		if (!comp(S(i)[a[i] - 1], *maxleft))
+		  maxleft = &(S(i)[a[i] - 1]);
 	      }
 	  }
 	if (b[i] < ns[i])
 	  {
-	    if (!minrightset)
-	      {
-		minright = S(i)[b[i]];
-		minrightset = true;
-	      }
+	    if (!minright)
+	      minright = &(S(i)[b[i]]);
 	    else
 	      {
 		// Min, favor fore sequences.
-		if (comp(S(i)[b[i]], minright))
-		  minright = S(i)[b[i]];
+		if (comp(S(i)[b[i]], *minright))
+		  minright = &(S(i)[b[i]]);
 	      }
 	  }
       }
@@ -350,7 +344,6 @@ namespace __gnu_parallel
     delete[] a;
     delete[] b;
   }
-
 
 
   /** 
