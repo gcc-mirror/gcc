@@ -1149,7 +1149,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	    __base_type;
 
 	public:
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+	  typedef typename add_lvalue_reference<__base_type>::type type;
+#else
 	  typedef typename add_reference<__base_type>::type type;
+#endif
 	};
 
       template<typename _Tuple>
@@ -1177,7 +1181,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       template<typename _CVMu, typename _CVArg, typename _Tuple>
         struct result<_CVMu(_CVArg, _Tuple)>
         {
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+	  typedef typename add_lvalue_reference<_CVArg>::type type;
+#else
 	  typedef typename add_reference<_CVArg>::type type;
+#endif
 	};
 
       // Pick up the cv-qualifiers of the argument
