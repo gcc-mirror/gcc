@@ -12241,8 +12241,8 @@ future version.
 
 The G++ minimum and maximum operators (@samp{<?} and @samp{>?}) and
 their compound forms (@samp{<?=}) and @samp{>?=}) have been deprecated
-and will be removed in a future version.  Code using these operators
-should be modified to use @code{std::min} and @code{std::max} instead.
+and are now removed from G++.  Code using these operators should be
+modified to use @code{std::min} and @code{std::max} instead.
 
 The named return value extension has been deprecated, and is now
 removed from G++.
