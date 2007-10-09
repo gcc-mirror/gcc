@@ -2223,6 +2223,7 @@ output_call_frame_info (int for_eh)
      specialization doesn't.  */
   if (TARGET_USES_WEAK_UNWIND_INFO
       && ! flag_asynchronous_unwind_tables
+      && flag_exceptions
       && for_eh)
     for (i = 0; i < fde_table_in_use; i++)
       if ((fde_table[i].nothrow || fde_table[i].all_throwers_are_sibcalls)
