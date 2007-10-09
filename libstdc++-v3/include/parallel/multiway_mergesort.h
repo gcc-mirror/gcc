@@ -139,7 +139,8 @@ namespace __gnu_parallel
 
     num_samples = Settings::sort_mwms_oversampling * d->num_threads - 1;
 
-    difference_type es[num_samples + 2];
+    difference_type* es = static_cast<difference_type*>(__builtin_alloca(sizeof(difference_type) * (num_samples + 2)));
+
     equally_split(sd->starts[d->iam + 1] - sd->starts[d->iam], num_samples + 1, es);
 
     for (difference_type i = 0; i < num_samples; i++)
