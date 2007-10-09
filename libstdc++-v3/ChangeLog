@@ -1,3 +1,8 @@
+2007-10-09  Wolfgang Bangerth  <bangerth@dealii.org>
+
+	PR libstdc++/33485 continued.
+	* include/parallel/multiway_mergesort.h: Use __builtin_alloca.
+	
 2007-10-09  Zhou Drangon  <drangon.mail@gmail.com>
 
 	PR libstdc++/33682
