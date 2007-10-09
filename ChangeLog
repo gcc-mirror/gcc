@@ -1,3 +1,7 @@
+2007-10-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* MAINTAINERS (Register allocation reviewer): Add myself.
+
 2007-10-08  Mike Frysinger  <vapier@gentoo.org>
 
 	* configure.ac (CFLAGS_FOR_BUILD, CXXFLAGS_FOR_BUILD,
