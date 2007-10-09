@@ -1,3 +1,8 @@
+2007-10-09  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/extend.texi (Deprecated Features): Mention that <? and >? and
+	friends are removed from G++.
+
 2007-10-09  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* c-opts.c (c_common_handle_option): -Wnontemplate-friend,
