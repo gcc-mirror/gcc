@@ -1,3 +1,9 @@
+2007-10-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/33683
+	* gfortran.dg/gamma_5.f90:  Adjust tolerance to avoid
+	failure on some common systems.
+
 2007-10-09  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33692
