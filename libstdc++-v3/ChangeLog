@@ -1,3 +1,35 @@
+2007-10-09  Benjamin Kosnik  <bkoz@montsouris.artheist.org>
+
+	PR libstdc++/33489 continued.		
+	* include/parallel/features.h (_GLIBCXX_LOSER_TREE): Set to zero.
+	(_GLIBCXX_LOSER_TREE_POINTER): Set to one.
+	(_GLIBCXX_LOSER_TREE_UNGUARDED): Set to zero.
+	(_GLIBCXX_LOSER_TREE_POINTER_UNGUARDED): Set to one.
+	* include/parallel/multiway_merge.h (parallel_multiway_merge):
+	Change array of value_type to array of value_type pointers.
+ 	(multiway_merge_bubble): Same.
+	(multiway_merge_loser_tree): Same.
+	* include/parallel/merge.h (merge_advance_movc): Change to avoid
+	default construction.
+	* include/parallel/multiseq_selection.h (multiseq_partition):
+	Replace value_type, bool pair with value_type*, null-initialized.
+	* include/parallel/multiway_mergesort.h (parallel_sort_mwms):
+	Don't use array form of operator new for value_types.
+	(parallel_sort_mwms_pu): Same.
+	* include/parallel/quicksort.h (parallel_sort_qs_divide): Don't
+	use array form to construct pointer to value_type on stack,
+	instead use __builtin_alloca.	
+	* include/parallel/random_shuffle.h (sequential_random_shuffle): Same,
+	but use operator new.
+	(parallel_random_shuffle_drs_pu): Same.
+	* include/parallel/partial_sum.h ( parallel_partial_sum_linear): Same.
+
+	* include/parallel/losertree.h: Format.
+	* include/parallel/settings.h: Format.
+
+	* include/parallel/multiway_merge.h: Move traits to....
+	* include/parallel/losertree.h: ... here.	
+	
 2007-10-09  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1_impl/type_traitsfwd.h (add_reference): Remove.

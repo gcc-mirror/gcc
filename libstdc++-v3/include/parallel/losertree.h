@@ -36,7 +36,7 @@
 // Written by Johannes Singler.
 
 #ifndef _GLIBCXX_PARALLEL_LOSERTREE_H
-#define _GLIBCXX_PARALLEL_LOSERTREE_H
+#define _GLIBCXX_PARALLEL_LOSERTREE_H 1
 
 #include <functional>
 
@@ -133,7 +133,8 @@ namespace __gnu_parallel
       for (unsigned int pos = (offset + source) / 2; pos > 0; pos /= 2)
 	{
 	  // The smaller one gets promoted.
-	  if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup && comp(losers[pos].key, key))
+	  if ((!inf && !losers[pos].inf && !sup && !losers[pos].sup 
+	       && comp(losers[pos].key, key))
 	      || losers[pos].inf || sup)
 	    {
 	      // The other one is smaller.
@@ -251,7 +252,8 @@ namespace __gnu_parallel
     print()
     {
       for (unsigned int i = 0; i < (k * 2); i++)
-	printf("%d    %d from %d,  %d\n", i, losers[i].key, losers[i].source, losers[i].sup);
+	printf("%d    %d from %d,  %d\n", i, losers[i].key, 
+	       losers[i].source, losers[i].sup);
     }
 
     inline int
@@ -682,7 +684,8 @@ namespace __gnu_parallel
     init()
     { losers[0] = losers[init_winner(1)]; }
 
-    inline void delete_min_insert(const T& key, bool sup)
+    inline void 
+    delete_min_insert(const T& key, bool sup)
     {
       const T* keyp = &key;
       int source = losers[0].source;
@@ -708,7 +711,7 @@ namespace __gnu_parallel
     { return insert_start(key, source, sup); }
 
     unsigned int
-    init_winner_stable (unsigned int root)
+    init_winner_stable(unsigned int root)
     {
       if (root >= k)
 	{
@@ -719,7 +722,8 @@ namespace __gnu_parallel
 	  unsigned int left = init_winner (2 * root);
 	  unsigned int right = init_winner (2 * root + 1);
 	  if (losers[right].sup
-	      || (!losers[left].sup && !comp(*losers[right].keyp, *losers[left].keyp)))
+	      || (!losers[left].sup && !comp(*losers[right].keyp, 
+					     *losers[left].keyp)))
 	    {
 	      // Left one is less or equal.
 	      losers[root] = losers[right];
@@ -749,7 +753,8 @@ namespace __gnu_parallel
 	  if (	(sup && (!losers[pos].sup || losers[pos].source < source)) ||
 		(!sup && !losers[pos].sup &&
 		 ((comp(*losers[pos].keyp, *keyp)) ||
-		  (!comp(*keyp, *losers[pos].keyp) && losers[pos].source < source))))
+		  (!comp(*keyp, *losers[pos].keyp) 
+		   && losers[pos].source < source))))
 	    {
 	      // The other one is smaller.
 	      std::swap(losers[pos].sup, sup);
@@ -1061,7 +1066,8 @@ namespace __gnu_parallel
 	{
 	  // The smaller one gets promoted, ties are broken by source.
 	  if (comp(*losers[pos].keyp, *keyp)
-	      || (!comp(*keyp, *losers[pos].keyp) && losers[pos].source < source))
+	      || (!comp(*keyp, *losers[pos].keyp) 
+		  && losers[pos].source < source))
 	    {
 	      // The other one is smaller.
 	      std::swap(losers[pos].source, source);
@@ -1072,6 +1078,35 @@ namespace __gnu_parallel
     }
   };
 #endif
+
+  template<typename _ValueTp, class Comparator>
+  struct loser_tree_traits
+  {
+#if _GLIBCXX_LOSER_TREE
+    typedef LoserTree<_ValueTp, Comparator> LT;
+#else
+#  if _GLIBCXX_LOSER_TREE_POINTER
+    typedef LoserTreePointer<_ValueTp, Comparator> LT;
+#  else
+#    error Must define some type in losertree.h.
+#  endif
+#endif
+  };
+
+  template<typename _ValueTp, class Comparator>
+  struct loser_tree_traits_unguarded
+  {
+#if _GLIBCXX_LOSER_TREE_UNGUARDED
+    typedef LoserTreeUnguarded<_ValueTp, Comparator> LT;
+#else
+#  if _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
+    typedef LoserTreePointerUnguarded<_ValueTp, Comparator> LT;
+#  else
+#    error Must define some type in losertree.h.
+#  endif
+#endif
+  };
+
 }
 
 #endif

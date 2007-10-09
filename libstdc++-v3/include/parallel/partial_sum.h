@@ -119,7 +119,7 @@ namespace __gnu_parallel
 	borders[num_threads + 1] = n;
       }
 
-    value_type* sums = new value_type[num_threads];
+    value_type* sums = static_cast<value_type*>(::operator new(sizeof(value_type) * num_threads));
     OutputIterator target_end;
 
 #pragma omp parallel num_threads(num_threads)

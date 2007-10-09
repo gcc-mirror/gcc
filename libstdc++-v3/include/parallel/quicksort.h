@@ -65,10 +65,14 @@ namespace __gnu_parallel
 
     difference_type n = end - begin;
     num_samples = std::min(num_samples, n);
-    value_type samples[num_samples];
+    value_type* samples = static_cast<value_type*>(__builtin_alloca(sizeof(value_type) * num_samples));
 
     for (difference_type s = 0; s < num_samples; s++)
-      samples[s] = begin[(unsigned long long)s * n / num_samples];
+      {
+	const unsigned long long index = static_cast<unsigned long long>(s) 
+	  				 * n / num_samples;
+	samples[s] = begin[index];
+      }
 
     __gnu_sequential::sort(samples, samples + num_samples, comp);
 
