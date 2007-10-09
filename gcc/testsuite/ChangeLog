@@ -1,3 +1,8 @@
+2007-10-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/33669
+	* gcc.c-torture/execute/pr33669.c: New.
+
 2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/33615

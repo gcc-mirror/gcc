@@ -1,3 +1,11 @@
+2007-10-09  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	PR middle-end/33669
+	* ra-conflict.c (record_one_conflict_between_regnos,
+	set_conflicts_for_earlyclobber, global_conflicts): Improved
+	logging.
+	(global_conflicts): Removed incorrect check.
+
 2007-10-09  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	PR tree-optimization/33615
