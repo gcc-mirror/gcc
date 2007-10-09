@@ -1,5 +1,10 @@
 2007-10-09  Geoffrey Keating  <geoffk@apple.com>
 
+	* dwarf2out.c (output_call_frame_info): FDEs are always emitted
+	if flag_exceptions is not set.
+	* config/darwin.c (darwin_emit_unwind_label): Rewrite to use
+	assemble_name rather than incorrectly emulating it.
+
 	* doc/extend.texi (Deprecated Features): Mention that <? and >? and
 	friends are removed from G++.
 
