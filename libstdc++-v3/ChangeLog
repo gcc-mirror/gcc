@@ -1,5 +1,11 @@
 2007-10-09  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/tr1_impl/type_traitsfwd.h (add_reference): Remove.
+	* include/tr1/type_traits (add_reference): Add forward declaration.
+	* include/tr1_impl/functional (class _Mu<>): Fix.
+
+2007-10-09  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/boost_concept_check.h (*AssociativeContainerConcept):
 	Remove, unused.
 

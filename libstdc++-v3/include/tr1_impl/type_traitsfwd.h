@@ -153,9 +153,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Tp>
     struct remove_reference;
   
-  template<typename _Tp>
-    struct add_reference;
-
   /// @brief  array modifications [4.7.3].
   template<typename _Tp>
     struct remove_extent;

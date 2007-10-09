@@ -171,6 +171,9 @@ namespace tr1
     };
 
   template<typename _Tp>
+    struct add_reference;
+
+  template<typename _Tp>
     struct __is_int_or_cref
     {
       typedef typename remove_reference<_Tp>::type __rr_Tp;
