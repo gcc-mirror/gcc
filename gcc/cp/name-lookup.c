@@ -1348,11 +1348,6 @@ leave_scope (void)
       is_class_level = 0;
     }
 
-#ifdef HANDLE_PRAGMA_VISIBILITY
-  if (scope->has_visibility)
-    pop_visibility ();
-#endif
-
   /* Move one nesting level up.  */
   current_binding_level = scope->level_chain;
 
@@ -2982,20 +2977,59 @@ current_decl_namespace (void)
   return result;
 }
 
+/* Process any ATTRIBUTES on a namespace definition.  Currently only
+   attribute visibility is meaningful, which is a property of the syntactic
+   block rather than the namespace as a whole, so we don't touch the
+   NAMESPACE_DECL at all.  Returns true if attribute visibility is seen.  */
+
+bool
+handle_namespace_attrs (tree ns, tree attributes)
+{
+  tree d;
+  bool saw_vis = false;
+
+  for (d = attributes; d; d = TREE_CHAIN (d))
+    {
+      tree name = TREE_PURPOSE (d);
+      tree args = TREE_VALUE (d);
+
+#ifdef HANDLE_PRAGMA_VISIBILITY
+      if (is_attribute_p ("visibility", name))
+	{
+	  tree x = args ? TREE_VALUE (args) : NULL_TREE;
+	  if (x == NULL_TREE || TREE_CODE (x) != STRING_CST || TREE_CHAIN (args))
+	    {
+	      warning (OPT_Wattributes,
+		       "%qD attribute requires a single NTBS argument",
+		       name);
+	      continue;
+	    }
+
+	  if (!TREE_PUBLIC (ns))
+	    warning (OPT_Wattributes,
+		     "%qD attribute is meaningless since members of the "
+		     "anonymous namespace get local symbols", name);
+
+	  push_visibility (TREE_STRING_POINTER (x));
+	  saw_vis = true;
+	}
+      else
+#endif
+	{
+	  warning (OPT_Wattributes, "%qD attribute directive ignored",
+		   name);
+	  continue;
+	}
+    }
+
+  return saw_vis;
+}
+  
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
    select a name that is unique to this compilation unit.  */
 
 void
 push_namespace (tree name)
-{
-  push_namespace_with_attribs (name, NULL_TREE);
-}
-
-/* Same, but specify attributes to apply to the namespace.  The attributes
-   only apply to the current namespace-body, not to any later extensions. */
-
-void
-push_namespace_with_attribs (tree name, tree attributes)
 {
   tree d = NULL_TREE;
   int need_new = 1;
@@ -3065,38 +3099,6 @@ push_namespace_with_attribs (tree name, tree attributes)
     do_using_directive (d);
   /* Enter the name space.  */
   current_namespace = d;
-
-#ifdef HANDLE_PRAGMA_VISIBILITY
-  /* Clear has_visibility in case a previous namespace-definition had a
-     visibility attribute and this one doesn't.  */
-  current_binding_level->has_visibility = 0;
-  for (d = attributes; d; d = TREE_CHAIN (d))
-    {
-      tree name = TREE_PURPOSE (d);
-      tree args = TREE_VALUE (d);
-      tree x;
-
-      if (! is_attribute_p ("visibility", name))
-	{
-	  warning (OPT_Wattributes, "%qs attribute directive ignored",
-		   IDENTIFIER_POINTER (name));
-	  continue;
-	}
-
-      x = args ? TREE_VALUE (args) : NULL_TREE;
-      if (x == NULL_TREE || TREE_CODE (x) != STRING_CST || TREE_CHAIN (args))
-	{
-	  warning (OPT_Wattributes, "%qs attribute requires a single NTBS argument",
-		   IDENTIFIER_POINTER (name));
-	  continue;
-	}
-
-      current_binding_level->has_visibility = 1;
-      push_visibility (TREE_STRING_POINTER (x));
-      goto found;
-    }
- found:
-#endif
 
   timevar_pop (TV_NAME_LOOKUP);
 }

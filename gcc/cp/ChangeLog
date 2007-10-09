@@ -1,3 +1,18 @@
+2007-10-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/32470
+	* name-lookup.c (push_namespace_with_attrs): Fold back into...
+	(push_namespace): Here.
+	(handle_namespace_attrs): New fn for the attr code.
+	(leave_scope): Don't pop_visibility.
+	* name-lookup.h (struct cp_binding_level): Remove has_visibility.
+	* parser.c (cp_parser_namespace_definition): Call
+	handle_namespace_attrs and pop_visibility as appropriate. 
+
+	PR c++/33094
+	* decl.c (make_rtl_for_nonlocal_decl): It's ok for a member 
+	constant to not have DECL_EXTERNAL if it's file-local.
+
 2007-10-07  Release Manager
 
 	* GCC 4.2.2 released.
