@@ -3710,6 +3710,8 @@ floating_exact_log2 (rtx x)
    '&' for the letter `d' in an op code, but only on the 68040.
    '/' for register prefix needed by longlong.h.
    '?' for m68k_library_id_string
+   '{' for '{'
+   '}' for '}'
 
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
@@ -3727,6 +3729,10 @@ print_operand (FILE *file, rtx op, int letter)
       if (MOTOROLA)
 	fprintf (file, ".");
     }
+  else if (letter == '{')
+    fprintf (file, "{");
+  else if (letter == '}')
+    fprintf (file, "}");
   else if (letter == '#')
     asm_fprintf (file, "%I");
   else if (letter == '-')
