@@ -1,5 +1,10 @@
 2007-10-09  Kazu Hirata  <kazu@codesourcery.com>
 
+	* longlong.h (count_leading_zeros): Replace '{' and '}' with '%{'
+	and '%}', respectively.
+
+2007-10-09  Kazu Hirata  <kazu@codesourcery.com>
+
 	* config/m68k/m68k.c (print_operand): Handle '{' and '}'.
 	* config/m68k/m68k.h (PRINT_OPERAND_PUNCT_VALID_P): Accept '{'
 	and '}'.
