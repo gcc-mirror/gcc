@@ -553,7 +553,7 @@ UDItype __umulsidi3 (USItype, USItype);
    cpu32 disguises as a 68020, but lacks them.  */
 #if defined (__mc68020__) && !defined (__mcpu32__)
 #define count_leading_zeros(count, x) \
-  __asm__ ("bfffo %1{%b2:%b2},%0"					\
+  __asm__ ("bfffo %1%{%b2:%b2%},%0"					\
 	   : "=d" ((USItype) (count))					\
 	   : "od" ((USItype) (x)), "n" (0))
 /* Some ColdFire architectures have a ff1 instruction supported via
