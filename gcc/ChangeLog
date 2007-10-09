@@ -1,3 +1,9 @@
+2007-10-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33692
+	* gimplify.c (canonicalize_component_ref): Honor qualifiers
+	of referenced structure and component.
+
 2007-10-09  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33669
