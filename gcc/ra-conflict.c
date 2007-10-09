@@ -196,7 +196,7 @@ record_one_conflict_between_regnos (enum machine_mode mode1, int r1,
   int allocno2 = reg_allocno[r2];
 
   if (dump_file)
-    fprintf (dump_file, "  rocbr adding %d<=>%d\n", r1, r2);
+    fprintf (dump_file, "    rocbr adding %d<=>%d\n", r1, r2);
 
   if (allocno1 >= 0 && allocno2 >= 0)
     set_conflict (allocno1, allocno2);
@@ -401,9 +401,6 @@ set_conflicts_for_earlyclobber (rtx insn)
 						    recog_data.operand[use + 1]);
 		}
 	}
-
-  if (dump_file) 
-    fprintf (dump_file, "  finished early clobber conflicts.\n");
 }
 
 
@@ -983,8 +980,7 @@ global_conflicts (void)
 			set_renumbers_live (&renumbers_live, live_subregs, live_subregs_used, 
 					    allocnum, renumber);
 		    }
-		  
-		  else if (!sparseset_bit_p (allocnos_live, allocnum))
+		  else
 		    {
 		      if (dump_file)
 			fprintf (dump_file, "    dying pseudo\n");
@@ -1071,6 +1067,8 @@ global_conflicts (void)
 		 FIXME: We should consider either adding a new kind of
 		 clobber, or adding a flag to the clobber distinguish
 		 these two cases.  */
+	      if (dump_file && VEC_length (df_ref_t, clobbers))
+		fprintf (dump_file, "  clobber conflicts\n");
 	      for (k = VEC_length (df_ref_t, clobbers) - 1; k >= 0; k--)
 		{
 		  struct df_ref *def = VEC_index (df_ref_t, clobbers, k);
@@ -1132,6 +1130,8 @@ global_conflicts (void)
 	      if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
 		{ 
 		  int j;
+		  if (dump_file)
+		    fprintf (dump_file, "  multiple sets\n");
 		  for (j = VEC_length (df_ref_t, dying_regs) - 1; j >= 0; j--)
 		    {
 		      int used_in_output = 0;
