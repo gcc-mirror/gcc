@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,6 @@
 
 #include <cstddef>                // for ptrdiff_t, used next
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
-#include <utility>                           // for pair<>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -783,146 +782,6 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
     _BackInsertionSequence __c;
     typename _BackInsertionSequence::value_type __t;
   };
-
-  template <class _AssociativeContainer>
-  struct _AssociativeContainerConcept
-  {
-    void __constraints() {
-      __function_requires< _ForwardContainerConcept<_AssociativeContainer> >();
-      __function_requires<
-        _DefaultConstructibleConcept<_AssociativeContainer> >();
-
-      __i = __c.find(__k);
-      __r = __c.equal_range(__k);
-      __c.erase(__k);
-      __c.erase(__i);
-      __c.erase(__r.first, __r.second);
-      __const_constraints(__c);
-    }
-    void __const_constraints(const _AssociativeContainer& __c) {
-      __ci = __c.find(__k);
-      __n = __c.count(__k);
-      __cr = __c.equal_range(__k);
-    }
-    typedef typename _AssociativeContainer::iterator _Iterator;
-    typedef typename _AssociativeContainer::const_iterator _Const_iterator;
-
-    _AssociativeContainer __c;
-    _Iterator __i;
-    std::pair<_Iterator,_Iterator> __r;
-    _Const_iterator __ci;
-    std::pair<_Const_iterator,_Const_iterator> __cr;
-    typename _AssociativeContainer::key_type __k;
-    typename _AssociativeContainer::size_type __n;
-  };
-
-  template <class _UniqueAssociativeContainer>
-  struct _UniqueAssociativeContainerConcept
-  {
-    void __constraints() {
-      __function_requires<
-        _AssociativeContainerConcept<_UniqueAssociativeContainer> >();
-
-      _UniqueAssociativeContainer __c(__first, __last);
-
-      __pos_flag = __c.insert(__t);
-      __c.insert(__first, __last);
-    }
-    std::pair<typename _UniqueAssociativeContainer::iterator, bool> __pos_flag;
-    typename _UniqueAssociativeContainer::value_type __t;
-    typename _UniqueAssociativeContainer::value_type *__first, *__last;
-  };
-
-  template <class _MultipleAssociativeContainer>
-  struct _MultipleAssociativeContainerConcept
-  {
-    void __constraints() {
-      __function_requires<
-        _AssociativeContainerConcept<_MultipleAssociativeContainer> >();
-
-      _MultipleAssociativeContainer __c(__first, __last);
-
-      __pos = __c.insert(__t);
-      __c.insert(__first, __last);
-
-    }
-    typename _MultipleAssociativeContainer::iterator __pos;
-    typename _MultipleAssociativeContainer::value_type __t;
-    typename _MultipleAssociativeContainer::value_type *__first, *__last;
-  };
-
-  template <class _SimpleAssociativeContainer>
-  struct _SimpleAssociativeContainerConcept
-  {
-    void __constraints() {
-      __function_requires<
-        _AssociativeContainerConcept<_SimpleAssociativeContainer> >();
-      typedef typename _SimpleAssociativeContainer::key_type _Key_type;
-      typedef typename _SimpleAssociativeContainer::value_type _Value_type;
-      typedef typename _Aux_require_same<_Key_type, _Value_type>::_Type
-        _Required;
-    }
-  };
-
-  template <class _SimpleAssociativeContainer>
-  struct _PairAssociativeContainerConcept
-  {
-    void __constraints() {
-      __function_requires<
-        _AssociativeContainerConcept<_SimpleAssociativeContainer> >();
-      typedef typename _SimpleAssociativeContainer::key_type _Key_type;
-      typedef typename _SimpleAssociativeContainer::value_type _Value_type;
-      typedef typename _SimpleAssociativeContainer::mapped_type _Mapped_type;
-      typedef std::pair<const _Key_type, _Mapped_type> _Required_value_type;
-      typedef typename _Aux_require_same<_Value_type,
-        _Required_value_type>::_Type _Required;
-    }
-  };
-
-  template <class _SortedAssociativeContainer>
-  struct _SortedAssociativeContainerConcept
-  {
-    void __constraints() {
-      __function_requires<
-        _AssociativeContainerConcept<_SortedAssociativeContainer> >();
-      __function_requires<
-        _ReversibleContainerConcept<_SortedAssociativeContainer> >();
-
-      _SortedAssociativeContainer
-        __c _IsUnused(__kc),
-        __c2 _IsUnused(__first, __last),
-        __c3 _IsUnused(__first, __last, __kc);
-
-      __p = __c.upper_bound(__k);
-      __p = __c.lower_bound(__k);
-      __r = __c.equal_range(__k);
-
-      __c.insert(__p, __t);
-    }
-    void __const_constraints(const _SortedAssociativeContainer& __c) {
-      __kc = __c.key_comp();
-      __vc = __c.value_comp();
-
-      __cp = __c.upper_bound(__k);
-      __cp = __c.lower_bound(__k);
-      __cr = __c.equal_range(__k);
-    }
-    typename _SortedAssociativeContainer::key_compare __kc;
-    typename _SortedAssociativeContainer::value_compare __vc;
-    typename _SortedAssociativeContainer::value_type __t;
-    typename _SortedAssociativeContainer::key_type __k;
-    typedef typename _SortedAssociativeContainer::iterator _Iterator;
-    typedef typename _SortedAssociativeContainer::const_iterator
-      _Const_iterator;
-
-    _Iterator __p;
-    _Const_iterator __cp;
-    std::pair<_Iterator,_Iterator> __r;
-    std::pair<_Const_iterator,_Const_iterator> __cr;
-    typename _SortedAssociativeContainer::value_type *__first, *__last;
-  };
-
-  // HashedAssociativeContainer
 
 _GLIBCXX_END_NAMESPACE
 
