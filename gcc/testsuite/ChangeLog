@@ -1,5 +1,14 @@
 2007-10-10  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2007-10-03  Doug Kwan  <dougkwan@google.com>
+		Richard Guenther  <rguenther@suse.de>
+
+	PR debug/31899
+	* g++.dg/debug/using3.C: New testcase.
+
+2007-10-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/33099
 	PR tree-optimization/33381
 	* gcc.c-torture/execute/pr33099.c: New testcase.

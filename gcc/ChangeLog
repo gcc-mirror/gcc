@@ -1,5 +1,15 @@
 2007-10-10  Richard Guenther  <rguenther@suse.de>
 
+	Backport from mainline
+	2007-10-03  Doug Kwan  <dougkwan@google.com>
+		Richard Guenther  <rguenther@suse.de>
+
+	PR debug/31899
+	* dwarf2out.c (reference_to_unused): Disable sanity checking,
+	be conservative instead.
+
+2007-10-10  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/33099
 	PR tree-optimization/33381
 	* tree-vrp.c (adjust_range_with_scev): Do not adjust ranges
