@@ -1,3 +1,13 @@
+2007-10-10  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/32295
+	* c-typeck.c (default_conversion): Call require_complete_type
+	before perform_integral_promotions.
+	(build_unary_op): Call require_complete_type except for ADDR_EXPR.
+	(build_c_cast): Call require_complete_type except for casts to
+	void types.
+	(convert_for_assignment): Call require_complete_type.
+
 2007-10-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
