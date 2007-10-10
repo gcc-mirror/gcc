@@ -1,5 +1,13 @@
 2007-10-10  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/25309
+	* gcc.dg/large-size-array-2.c: Expect diagnostic for too-large
+	array.
+	* gcc.dg/large-size-array-4.c: New.  Copy of large-size-array-2.c
+	without -O2.
+
+2007-10-10  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/32295
 	* gcc.dg/enum-incomplete-1.c: New test.
 
