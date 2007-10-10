@@ -389,7 +389,7 @@ global_alloc (void)
       }
 
   allocno = XCNEWVEC (struct allocno, max_allocno);
-  partial_bitnum = XNEWVEC (int, max_allocno);
+  partial_bitnum = XNEWVEC (HOST_WIDE_INT, max_allocno);
   num_allocnos_per_blk = XCNEWVEC (int, max_blk + 1);
 
   /* ...so we can sort them in the order we want them to receive
@@ -432,12 +432,14 @@ global_alloc (void)
     }
 
 #ifdef ENABLE_CHECKING
-  gcc_assert (max_bitnum <= ((max_allocno * (max_allocno - 1)) / 2));
+  gcc_assert (max_bitnum <=
+	      (((HOST_WIDE_INT) max_allocno *
+		((HOST_WIDE_INT) max_allocno - 1)) / 2));
 #endif
 
   if (dump_file)
     {
-      int num_bits, num_bytes, actual_bytes;
+      HOST_WIDE_INT num_bits, num_bytes, actual_bytes;
 
       fprintf (dump_file, "## max_blk:     %d\n", max_blk);
       fprintf (dump_file, "## max_regno:   %d\n", max_regno);
@@ -447,21 +449,23 @@ global_alloc (void)
       num_bytes = CEIL (num_bits, 8);
       actual_bytes = num_bytes;
       fprintf (dump_file, "## Compressed triangular bitmatrix size: ");
-      fprintf (dump_file, "%d bits, %d bytes\n", num_bits, num_bytes);
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bits, ", num_bits);
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes\n", num_bytes);
 
-      num_bits = (max_allocno * (max_allocno - 1)) / 2;
+      num_bits = ((HOST_WIDE_INT) max_allocno *
+		  ((HOST_WIDE_INT) max_allocno - 1)) / 2;
       num_bytes = CEIL (num_bits, 8);
       fprintf (dump_file, "## Standard triangular bitmatrix size:   ");
-      fprintf (dump_file, "%d bits, %d bytes [%.2f%%]\n",
-	       num_bits, num_bytes,
-	       100.0 * ((double) actual_bytes / (double) num_bytes));
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bits, ", num_bits);
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes [%.2f%%]\n",
+	       num_bytes, 100.0 * ((double) actual_bytes / (double) num_bytes));
 
-      num_bits = max_allocno * max_allocno;
+      num_bits = (HOST_WIDE_INT) max_allocno * (HOST_WIDE_INT) max_allocno;
       num_bytes = CEIL (num_bits, 8);
       fprintf (dump_file, "## Square bitmatrix size:                ");
-      fprintf (dump_file, "%d bits, %d bytes [%.2f%%]\n",
-	       num_bits, num_bytes,
-	       100.0 * ((double) actual_bytes / (double) num_bytes));
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bits, ", num_bits);
+      fprintf (dump_file, HOST_WIDE_INT_PRINT_DEC " bytes [%.2f%%]\n",
+	       num_bytes, 100.0 * ((double) actual_bytes / (double) num_bytes));
     }
 
   /* Calculate amount of usage of each hard reg by pseudos

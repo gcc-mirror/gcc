@@ -49,8 +49,8 @@ int max_allocno;
 struct allocno *allocno;
 HOST_WIDEST_FAST_INT *conflicts;
 int *reg_allocno;
-int *partial_bitnum;
-int max_bitnum;
+HOST_WIDE_INT *partial_bitnum;
+HOST_WIDE_INT max_bitnum;
 alloc_pool adjacency_pool;
 adjacency_t **adjacency;
 
@@ -70,7 +70,7 @@ DEF_VEC_ALLOC_P(df_ref_t,heap);
 bool
 conflict_p (int allocno1, int allocno2)
 {
-  int bitnum;
+  HOST_WIDE_INT bitnum;
   HOST_WIDEST_FAST_INT word, mask;
 
 #ifdef ENABLE_CHECKING
@@ -104,7 +104,7 @@ conflict_p (int allocno1, int allocno2)
 static void
 set_conflict (int allocno1, int allocno2)
 {
-  int bitnum, index;
+  HOST_WIDE_INT bitnum, index;
   HOST_WIDEST_FAST_INT word, mask;
 
 #ifdef ENABLE_CHECKING
@@ -146,9 +146,9 @@ static void
 set_conflicts (int allocno1, sparseset live)
 {
   int i;
-  int bitnum, index;
+  HOST_WIDE_INT bitnum, index;
   HOST_WIDEST_FAST_INT word, mask;
-  int partial_bitnum_allocno1;
+  HOST_WIDE_INT partial_bitnum_allocno1;
 
 #ifdef ENABLE_CHECKING
   gcc_assert (allocno1 >= 0 && allocno1 < max_allocno);

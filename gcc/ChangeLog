@@ -1,3 +1,11 @@
+2007-10-10  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* ra-conflict.c (partial_bitnum, max_bitnum): Change type of variables
+	to HOST_WIDE_INT.
+	(conflict_p, set_conflict, set_conflicts): Likewise.
+	* global.c (global_alloc): Likewise.
+	* ra.h: Update prototypes.
+
 2007-10-10  Wolfgang Gellerich  <gellerich@de.ibm.com>
 
 	* opth-gen.awk: Fixed generation of comment stating the origin

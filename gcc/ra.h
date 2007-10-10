@@ -99,11 +99,11 @@ extern int *reg_allocno;
 /* Precalculated partial bit number in the compressed triangular bit matrix.
    For two allocnos, the final bit number is: partial_bitnum[LOW] + HIGH.  */
 
-extern int *partial_bitnum;
+extern HOST_WIDE_INT *partial_bitnum;
 
 /* Size in bits of the compressed triangular bit matrix.  */
 
-extern int max_bitnum;
+extern HOST_WIDE_INT max_bitnum;
 
 /* The pool to allocate the adjacency list elements from.  */
 
