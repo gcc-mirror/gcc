@@ -1165,7 +1165,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	{
 	  gcc_assert (begin);
 
-	  if (begin->expr_type != EXPR_ARRAY)
+	  if (begin->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (begin))
 	    {
 	      t = FAILURE;
 	      goto cleanup;
