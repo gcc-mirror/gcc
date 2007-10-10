@@ -94,7 +94,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       set(set&& __x)
-      : _Base(__x), _Safe_base()
+      : _Base(std::forward<set>(__x)), _Safe_base()
       { this->_M_swap(__x); }
 #endif
 

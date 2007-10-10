@@ -1,3 +1,13 @@
+2007-10-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/debug/list (list<>::list(list&&)): Fix.
+	* include/debug/vector (vector<>::vector(vector&&)): Likewise.
+	* include/debug/deque (deque<>::deque(deque&&)): Likewise.
+	* include/debug/set.h (set<>::set(set&&)): Likewise.
+	* include/debug/map.h (map<>::map(map&&)): Likewise.
+	* include/debug/multiset.h (multiset<>::multiset(multiset&&)):Likewise.
+	* include/debug/multimap.h (multimap<>::multimap(multimap&&)):Likewise.
+
 2007-10-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/33633

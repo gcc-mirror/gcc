@@ -96,7 +96,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
-      : _Base(__x), _Safe_base()
+      : _Base(std::forward<map>(__x)), _Safe_base()
       { this->_M_swap(__x); }
 #endif
 
