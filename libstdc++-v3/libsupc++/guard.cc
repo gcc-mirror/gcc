@@ -60,6 +60,20 @@ namespace
     __gthread_once(&once, init);
     return *static_mutex;
   }
+
+  // Simple wrapper for exception safety.
+  struct mutex_wrapper
+  {
+    bool unlock;
+    mutex_wrapper() : unlock(true)
+    { get_static_mutex().lock(); }
+
+    ~mutex_wrapper()
+    {
+      if (unlock)
+	static_mutex->unlock();
+    }
+  };
 }
 
 #ifdef __GTHREAD_HAS_COND
@@ -198,22 +212,6 @@ namespace __cxxabiv1
     set_init_in_progress_flag(g, 1);
     return 1;
   }
-
-  // Simple wrapper for exception safety.
-  struct mutex_wrapper
-  {
-#ifdef __GTHREADS
-    bool unlock;
-    mutex_wrapper() : unlock(true)
-    { get_static_mutex().lock(); }
-
-    ~mutex_wrapper()
-    {
-      if (unlock)
-	static_mutex->unlock();
-    }
-#endif
-  };
 
   extern "C"
   int __cxa_guard_acquire (__guard *g) 
