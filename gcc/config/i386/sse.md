@@ -2724,7 +2724,7 @@
   [(set (match_operand:SSEMODE24 0 "register_operand" "=x")
 	(ashiftrt:SSEMODE24
 	  (match_operand:SSEMODE24 1 "register_operand" "0")
-	  (match_operand:TI 2 "nonmemory_operand" "xn")))]
+	  (match_operand:SI 2 "nonmemory_operand" "xN")))]
   "TARGET_SSE2"
   "psra<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
@@ -2734,7 +2734,7 @@
   [(set (match_operand:SSEMODE248 0 "register_operand" "=x")
 	(lshiftrt:SSEMODE248
 	  (match_operand:SSEMODE248 1 "register_operand" "0")
-	  (match_operand:TI 2 "nonmemory_operand" "xn")))]
+	  (match_operand:SI 2 "nonmemory_operand" "xN")))]
   "TARGET_SSE2"
   "psrl<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
@@ -2744,7 +2744,7 @@
   [(set (match_operand:SSEMODE248 0 "register_operand" "=x")
 	(ashift:SSEMODE248
 	  (match_operand:SSEMODE248 1 "register_operand" "0")
-	  (match_operand:TI 2 "nonmemory_operand" "xn")))]
+	  (match_operand:SI 2 "nonmemory_operand" "xN")))]
   "TARGET_SSE2"
   "psll<ssevecsize>\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseishft")
@@ -2765,11 +2765,9 @@
 (define_expand "vec_shl_<mode>"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
         (ashift:TI (match_operand:SSEMODEI 1 "register_operand" "")
-		   (match_operand:SI 2 "general_operand" "")))]
+		   (match_operand:SI 2 "const_0_to_255_mul_8_operand" "")))]
   "TARGET_SSE2"
 {
-  if (!const_0_to_255_mul_8_operand (operands[2], SImode))
-    FAIL;
   operands[0] = gen_lowpart (TImode, operands[0]);
   operands[1] = gen_lowpart (TImode, operands[1]);
 })
@@ -2789,11 +2787,9 @@
 (define_expand "vec_shr_<mode>"
   [(set (match_operand:SSEMODEI 0 "register_operand" "")
         (lshiftrt:TI (match_operand:SSEMODEI 1 "register_operand" "")
-		     (match_operand:SI 2 "general_operand" "")))]
+		     (match_operand:SI 2 "const_0_to_255_mul_8_operand" "")))]
   "TARGET_SSE2"
 {
-  if (!const_0_to_255_mul_8_operand (operands[2], SImode))
-    FAIL;
   operands[0] = gen_lowpart (TImode, operands[0]);
   operands[1] = gen_lowpart (TImode, operands[1]);
 })

@@ -1,6 +1,29 @@
+2007-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2007-09-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33438
+	* config/i386/i386.md (fmodxf3): Copy operands[2] to temporary
+	register when operands[2] equals operands[1].
+	(dremxf3): Ditto.
+
+	2007-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33369
+	* gcc/config/i386/sse.md (ashr<mode>3): Change op2 mode to SImode.
+	Use 'N' operand constraint for op2.
+	(lshr<mode>3): Ditto.
+	(ashl<mode>3): Ditto.
+	(vec_shl_<mode>): Use const_0_to_255_mul_8_operand predicate for op2.
+	(vec_shr_<mode>): Use const_0_to_255_mul_8_operand predicate for op2.
+
+	* gcc/config/i386/i386.c (ix86_expand_builtin) [IX86_BUILTIN_PSLL?128,
+	IX86_BUILTIN_PSRA*?128, IX86_BUILTIN_PSRL?128]: Convert op1 to SImode.
+
 2007-10-10  Richard Guenther  <rguenther@suse.de>
 
-	Backport from mainline
+	Backport from mainline:
 	2007-10-03  Doug Kwan  <dougkwan@google.com>
 		Richard Guenther  <rguenther@suse.de>
 

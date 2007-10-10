@@ -1,6 +1,19 @@
+2007-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2007-09-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33438
+	* gcc.target/i386/pr33438.c: New test.
+
+	2007-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/33369
+	* gcc.dg/vect/pr33369.c: New test.
+
 2007-10-10  Richard Guenther  <rguenther@suse.de>
 
-	Backport from mainline
+	Backport from mainline:
 	2007-10-03  Doug Kwan  <dougkwan@google.com>
 		Richard Guenther  <rguenther@suse.de>
 

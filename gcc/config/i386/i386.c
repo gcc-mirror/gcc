@@ -16295,8 +16295,8 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
 	op0 = copy_to_reg (op0);
 
-      op1 = simplify_gen_subreg (TImode, op1, GET_MODE (op1), 0);
-      if (! (*insn_data[icode].operand[2].predicate) (op1, TImode))
+      op1 = simplify_gen_subreg (SImode, op1, GET_MODE (op1), 0);
+      if (! (*insn_data[icode].operand[2].predicate) (op1, SImode))
 	op1 = copy_to_reg (op1);
 
       target = gen_reg_rtx (tmode);
