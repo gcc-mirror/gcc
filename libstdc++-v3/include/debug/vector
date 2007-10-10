@@ -100,8 +100,9 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       vector(vector&& __x)
-      : _Base(__x), _Safe_base(), _M_guaranteed_capacity(this->size())
-      { 
+      : _Base(std::forward<vector>(__x)), _Safe_base(),
+	_M_guaranteed_capacity(this->size())
+      {
 	this->_M_swap(__x);
 	__x._M_guaranteed_capacity = 0;
       }
