@@ -45,7 +45,7 @@
 #include <sys/atomic.h>
 #endif
 
-#if !defined(_WIN32)
+#if !defined(_WIN32) || defined (__CYGWIN__)
 #include <sched.h>
 #endif
 
@@ -54,6 +54,14 @@
 #include <intrin.h>
 #undef max
 #undef min
+#endif
+
+#ifdef __MINGW32__
+// Including <windows.h> will drag in all the windows32 names.  Since
+// that can cause user code portability problems, we just declare the
+// one needed function here.
+extern "C"
+__attribute((dllimport)) void __attribute__((stdcall)) Sleep (unsigned long);
 #endif
 
 namespace __gnu_parallel
@@ -327,7 +335,7 @@ namespace __gnu_parallel
   inline void
   yield()
   {
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (__CYGWIN__)
     Sleep(0);
 #else
     sched_yield();

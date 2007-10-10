@@ -1,3 +1,10 @@
+2007-10-11  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR libstdc++/33578
+	* include/parallel/compatibility.h.  Use POSIX sched_yield on
+	__CYGWIN__ 
+	(Sleep): Add prototype for __MINGW32__.
+
 2007-10-10  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/guard.cc (struct mutex_wrapper): Move into
