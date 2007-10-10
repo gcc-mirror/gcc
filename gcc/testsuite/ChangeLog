@@ -1,3 +1,10 @@
+2007-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33099
+	PR tree-optimization/33381
+	* gcc.c-torture/execute/pr33099.c: New testcase.
+	* gcc.c-torture/execute/pr33381.c: Likewise.
+
 2007-10-07  Release Manager
 
 	* GCC 4.2.2 released.

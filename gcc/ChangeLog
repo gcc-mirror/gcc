@@ -1,3 +1,10 @@
+2007-10-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/33099
+	PR tree-optimization/33381
+	* tree-vrp.c (adjust_range_with_scev): Do not adjust ranges
+	from pointer typed chrecs.
+
 2007-10-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* BASE-VER: Bump.

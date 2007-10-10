@@ -2486,6 +2486,10 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
     return;
 
+  /* Don't adjust ranges from pointer CHRECs.  */
+  if (POINTER_TYPE_P (TREE_TYPE (chrec)))
+    return;
+
   init = initial_condition_in_loop_num (chrec, loop->num);
   step = evolution_part_in_loop_num (chrec, loop->num);
 
