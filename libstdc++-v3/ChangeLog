@@ -1,3 +1,17 @@
+2007-10-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/33633
+	* include/debug/hash_multimap.h: Change _GLIBCXX_EXT to _GLIBCXX_EXT_D.
+	* include/debug/hash_set.h: Same.
+	* include/debug/hash_multiset.h: Same.
+	* include/debug/hash_map.h: Same.
+
+2007-10-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/parallel/losertree.h (loser_tree_traits_unguarded): To 
+	loser_tree_unguarded_traits.
+	* include/parallel/multiway_merge.h (__gnu_parallel): Same.
+
 2007-10-10  Paolo Carlini  <pcarlini@suse.de>
 	    Chris Fairles  <chris.fairles@gmail.com>
 
@@ -20,7 +34,7 @@
         * libsupc++/guard.cc: Make single conditional variable
         implementation dependent to __GTHREAD_HAS_COND.
 
-2007-10-09  Benjamin Kosnik  <bkoz@montsouris.artheist.org>
+2007-10-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/33489 continued.		
 	* include/parallel/features.h (_GLIBCXX_LOSER_TREE): Set to zero.

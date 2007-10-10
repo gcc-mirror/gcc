@@ -1109,7 +1109,7 @@ namespace __gnu_parallel
       {
 	difference_type unguarded_length = std::min(length, total_length - overhang);
 	target_end = multiway_merge_loser_tree_unguarded
-	  <typename loser_tree_traits_unguarded<value_type, Comparator>::LT>
+	  <typename loser_tree_unguarded_traits<value_type, Comparator>::LT>
 	  (seqs_begin, seqs_end, target, comp, unguarded_length, stable);
 	overhang = length - unguarded_length;
       }
@@ -1166,7 +1166,7 @@ namespace __gnu_parallel
 
     difference_type unguarded_length = std::min(length, total_length - overhang);
     target_end = multiway_merge_loser_tree_unguarded
-      <typename loser_tree_traits_unguarded<value_type, Comparator>::LT>
+      <typename loser_tree_unguarded_traits<value_type, Comparator>::LT>
       (seqs_begin, seqs_end, target, comp, unguarded_length, stable);
     overhang = length - unguarded_length;
 

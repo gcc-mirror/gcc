@@ -47,11 +47,11 @@ namespace __debug
 	   typename _EqualKey = std::equal_to<_Value>,
 	   typename _Alloc =  std::allocator<_Value> >
     class hash_multimap
-    : public _GLIBCXX_EXT::hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>,
+    : public _GLIBCXX_EXT_D::hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>,
       public __gnu_debug::_Safe_sequence<hash_multimap<_Value, _Tp, _HashFcn,
 						       _EqualKey, _Alloc> >
     {
-      typedef _GLIBCXX_EXT::hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>
+      typedef _GLIBCXX_EXT_D::hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>
 							_Base;
       typedef __gnu_debug::_Safe_sequence<hash_multimap> _Safe_base;
 
