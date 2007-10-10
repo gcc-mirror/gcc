@@ -1331,21 +1331,27 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
               print_ddg_edge (dump_file, e);
 	      fprintf (dump_file,
 		       "\nScheduling %d (%d) in psp_not_empty,"
-		       " checking node %d (%d): ", u_node->cuid,
+		       " checking p %d (%d): ", u_node->cuid,
 		       INSN_UID (u_node->insn), v_node->cuid, INSN_UID
 		       (v_node->insn));
             }
 
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
-	      int node_st = SCHED_TIME (v_node)
-	      		    + e->latency - (e->distance * ii);
+              int p_st = SCHED_TIME (v_node);
 
-	      early_start = MAX (early_start, node_st);
+              early_start =
+                MAX (early_start, p_st + e->latency - (e->distance * ii));
+
+              if (dump_file)
+                fprintf (dump_file, "pred st = %d; early_start = %d; ", p_st,
+                         early_start);
 
 	      if (e->data_type == MEM_DEP)
 		end = MIN (end, SCHED_TIME (v_node) + ii - 1);
 	    }
+         else if (dump_file)
+            fprintf (dump_file, "the node is not scheduled\n");
 	}
       start = early_start;
       end = MIN (end, early_start + ii);
@@ -1372,18 +1378,21 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
               print_ddg_edge (dump_file, e);
               fprintf (dump_file,
                        "\nScheduling %d (%d) in pss_not_empty,"
-                       " checking node %d (%d): ", u_node->cuid,
+                       " checking s %d (%d): ", u_node->cuid,
                        INSN_UID (u_node->insn), v_node->cuid, INSN_UID
                        (v_node->insn));
             }
 
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
-	      late_start = MIN (late_start,
-				SCHED_TIME (v_node) - e->latency
-				+ (e->distance * ii));
-               if (dump_file)
-                 fprintf (dump_file, "late_start = %d;", late_start);
+              int s_st = SCHED_TIME (v_node);
+
+              late_start = MIN (late_start,
+                                s_st - e->latency + (e->distance * ii));
+
+              if (dump_file)
+                fprintf (dump_file, "succ st = %d; late_start = %d;", s_st,
+                         late_start);
 
 	      if (e->data_type == MEM_DEP)
 		end = MAX (end, SCHED_TIME (v_node) - ii + 1);
@@ -1430,12 +1439,22 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
 
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
+              int p_st = SCHED_TIME (v_node);
+
 	      early_start = MAX (early_start,
-				 SCHED_TIME (v_node) + e->latency
+				 p_st + e->latency
 				 - (e->distance * ii));
+
+              if (dump_file)
+                fprintf (dump_file, "pred st = %d; early_start = %d;", p_st,
+                         early_start);
+
 	      if (e->data_type == MEM_DEP)
 		end = MIN (end, SCHED_TIME (v_node) + ii - 1);
 	    }
+          else if (dump_file)
+            fprintf (dump_file, "the node is not scheduled\n");
+
 	}
       for (e = u_node->out; e != 0; e = e->next_out)
 	{
@@ -1454,12 +1473,22 @@ get_sched_window (partial_schedule_ptr ps, int *nodes_order, int i,
 
 	  if (TEST_BIT (sched_nodes, v_node->cuid))
 	    {
+              int s_st = SCHED_TIME (v_node);
+
 	      late_start = MIN (late_start,
-				SCHED_TIME (v_node) - e->latency
+				s_st - e->latency
 				+ (e->distance * ii));
+
+               if (dump_file)
+                 fprintf (dump_file, "succ st = %d; late_start = %d;", s_st,
+                          late_start);
+
 	      if (e->data_type == MEM_DEP)
 		start = MAX (start, SCHED_TIME (v_node) - ii + 1);
 	    }
+          else if (dump_file)
+            fprintf (dump_file, "the node is not scheduled\n");
+
 	}
       start = MAX (start, early_start);
       end = MIN (end, MIN (early_start + ii, late_start + 1));
@@ -1845,15 +1874,23 @@ check_nodes_order (int *node_order, int num_nodes)
 
   sbitmap_zero (tmp);
 
+  if (dump_file)
+    fprintf (dump_file, "SMS final nodes order: \n");
+
   for (i = 0; i < num_nodes; i++)
     {
       int u = node_order[i];
 
+      if (dump_file)
+        fprintf (dump_file, "%d ", u);
       gcc_assert (u < num_nodes && u >= 0 && !TEST_BIT (tmp, u));
 
       SET_BIT (tmp, u);
     }
-
+ 
+  if (dump_file)
+    fprintf (dump_file, "\n");
+ 
   sbitmap_free (tmp);
 }
 
@@ -1993,6 +2030,17 @@ calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED)
 				   HEIGHT (e->dest) + e->latency);
 	  }
     }
+  if (dump_file)
+  {
+    fprintf (dump_file, "\nOrder params\n");
+    for (u = 0; u < num_nodes; u++)
+      {
+        ddg_node_ptr u_node = &g->nodes[u];
+
+        fprintf (dump_file, "node %d, ASAP: %d, ALAP: %d, HEIGHT: %d\n", u,
+                 ASAP (u_node), ALAP (u_node), HEIGHT (u_node));
+      }
+  }
 
   return node_order_params_arr;
 }
