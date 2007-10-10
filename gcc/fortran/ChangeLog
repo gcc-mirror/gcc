@@ -1,3 +1,8 @@
+2007-10-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/33636
+	* expr.c (find_array_section): Check for constructor constantness.
+
 2007-10-08  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/33689
