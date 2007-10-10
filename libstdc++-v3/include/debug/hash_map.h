@@ -1,6 +1,6 @@
 // Debugging hash_map implementation -*- C++ -*-
 
-// Copyright (C) 2003, 2005, 2006
+// Copyright (C) 2003, 2005, 2006, 2007
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -47,11 +47,11 @@ namespace __debug
 	   typename _EqualKey = std::equal_to<_Value>,
 	   typename _Alloc = std::allocator<_Value> >
     class hash_map
-    : public _GLIBCXX_EXT::hash_map<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>,
+    : public _GLIBCXX_EXT_D::hash_map<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>,
       public __gnu_debug::_Safe_sequence<hash_map<_Value, _Tp, _HashFcn,
 						 _EqualKey, _Alloc> >
     {
-      typedef _GLIBCXX_EXT::hash_map<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>
+      typedef _GLIBCXX_EXT_D::hash_map<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>
       							_Base;
       typedef __gnu_debug::_Safe_sequence<hash_map> 	_Safe_base;
 

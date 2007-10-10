@@ -1094,7 +1094,7 @@ namespace __gnu_parallel
   };
 
   template<typename _ValueTp, class Comparator>
-  struct loser_tree_traits_unguarded
+  struct loser_tree_unguarded_traits
   {
 #if _GLIBCXX_LOSER_TREE_UNGUARDED
     typedef LoserTreeUnguarded<_ValueTp, Comparator> LT;
@@ -1102,7 +1102,7 @@ namespace __gnu_parallel
 #  if _GLIBCXX_LOSER_TREE_POINTER_UNGUARDED
     typedef LoserTreePointerUnguarded<_ValueTp, Comparator> LT;
 #  else
-#    error Must define some type in losertree.h.
+#    error Must define some unguarded type in losertree.h.
 #  endif
 #endif
   };
