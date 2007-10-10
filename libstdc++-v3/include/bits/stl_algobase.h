@@ -73,30 +73,9 @@
 #include <bits/stl_iterator.h>
 #include <bits/concept_check.h>
 #include <debug/debug.h>
-#include <bits/stl_move.h> // For _GLIBCXX_MOVE
+#include <bits/stl_move.h> // For std::swap and _GLIBCXX_MOVE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
-
-  /**
-   *  @brief Swaps two values.
-   *  @param  a  A thing of arbitrary type.
-   *  @param  b  Another thing of arbitrary type.
-   *  @return   Nothing.
-   *
-   *  This is the simple classic generic implementation.  It will work on
-   *  any type which has a copy constructor and an assignment operator.
-  */
-  template<typename _Tp>
-    inline void
-    swap(_Tp& __a, _Tp& __b)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
-
-      _Tp __tmp = _GLIBCXX_MOVE(__a);
-      __a = _GLIBCXX_MOVE(__b);
-      __b = _GLIBCXX_MOVE(__tmp);
-    }
 
   // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
   // nutshell, we are partially implementing the resolution of DR 187,

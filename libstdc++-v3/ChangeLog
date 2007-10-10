@@ -1,3 +1,14 @@
+2007-10-10  Paolo Carlini  <pcarlini@suse.de>
+	    Chris Fairles  <chris.fairles@gmail.com>
+
+	* include/bits/stl_algobase.h (swap): Move...
+	* include/bits/stl_move.h: ... here.
+	* include/bits/stl_pair.h (pair<>::pair(_U1&&, _U2&&),
+	pair<>::pair(pair<>&&), pair<>::operator=(pair<>&&),
+	pair<>::swap(pair&&), swap(&, &), swap(&&, &), swap(&, &&),
+	make_pair(_T1&&, _T2&&)): Add.
+	* testsuite/20_util/pair/swap.cc: Add.
+
 2007-10-09  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	PR libstdc++/33485 continued.
