@@ -1,3 +1,8 @@
+2007-10-10  Wolfgang Gellerich  <gellerich@de.ibm.com>
+
+	* opth-gen.awk: Fixed generation of comment stating the origin
+          of options.h
+
 2007-10-10  Kazu Hirata  <kazu@codesourcery.com>
 
 	Revert:
