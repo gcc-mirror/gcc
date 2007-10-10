@@ -1,3 +1,8 @@
+2007-10-10  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/guard.cc (struct mutex_wrapper): Move into
+	anonymous namespace.
+
 2007-10-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/debug/list (list<>::list(list&&)): Fix.
