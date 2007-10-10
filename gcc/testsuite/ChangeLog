@@ -1,3 +1,8 @@
+2007-10-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/33391
+	* gfortran.dg/do_3.F90: Run with -fwrapv.
+
 2007-10-09  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/unwind-1.c: New.
