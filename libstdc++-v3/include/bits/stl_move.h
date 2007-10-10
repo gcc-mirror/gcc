@@ -1,4 +1,4 @@
-// Move, forward and identity implementation for C++0x -*- C++ -*-
+// Move, forward and identity for C++0x + swap -*- C++ -*-
 
 // Copyright (C) 2007 Free Software Foundation, Inc.
 //
@@ -35,6 +35,9 @@
 #ifndef _STL_MOVE_H
 #define _STL_MOVE_H 1
 
+#include <bits/c++config.h>
+#include <bits/concept_check.h>
+
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <type_traits>
 
@@ -63,5 +66,27 @@ _GLIBCXX_END_NAMESPACE
 #else
 #define _GLIBCXX_MOVE(_Tp) _Tp
 #endif
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  /**
+   *  @brief Swaps two values.
+   *  @param  a  A thing of arbitrary type.
+   *  @param  b  Another thing of arbitrary type.
+   *  @return   Nothing.
+  */
+  template<typename _Tp>
+    inline void
+    swap(_Tp& __a, _Tp& __b)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_SGIAssignableConcept<_Tp>)
+
+      _Tp __tmp = _GLIBCXX_MOVE(__a);
+      __a = _GLIBCXX_MOVE(__b);
+      __b = _GLIBCXX_MOVE(__tmp);
+    }
+
+_GLIBCXX_END_NAMESPACE
 
 #endif /* _STL_MOVE_H */
