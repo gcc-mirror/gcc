@@ -1,3 +1,14 @@
+2007-10-11  Chris Jefferson  <chris@bubblescope.net>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_heap.h (__push_heap, push_heap, __adjust_heap,
+	make_heap): Use _GLIBCXX_MOVE.
+	(__pop_heap): Likewise, adjust signature.
+	(pop_heap): Adjust __pop_heap call.
+	* include/bits/stl_algo.h (__heap_select): Likewise.
+	* testsuite/25_algorithms/heap/moveable.cc: Remove dg-require-rvalref.
+	* testsuite/25_algorithms/partial_sort/moveable.cc: Likewise.
+
 2007-10-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/33734

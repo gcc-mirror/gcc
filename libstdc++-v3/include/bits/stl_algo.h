@@ -1628,13 +1628,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  _RandomAccessIterator __middle,
 		  _RandomAccessIterator __last)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
       std::make_heap(__first, __middle);
       for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
 	if (*__i < *__first)
-	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i));
+	  std::__pop_heap(__first, __middle, __i);
     }
 
   /**
@@ -1648,13 +1645,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		  _RandomAccessIterator __middle,
 		  _RandomAccessIterator __last, _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
       std::make_heap(__first, __middle, __comp);
       for (_RandomAccessIterator __i = __middle; __i < __last; ++__i)
 	if (__comp(*__i, *__first))
-	  std::__pop_heap(__first, __middle, __i, _ValueType(*__i), __comp);
+	  std::__pop_heap(__first, __middle, __i, __comp);
     }
 
   // partial_sort
