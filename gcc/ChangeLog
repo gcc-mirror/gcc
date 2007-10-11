@@ -1,5 +1,12 @@
 2007-10-11  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/33724
+	* tree-cfg.c (one_pointer_to_useless_type_conversion_p): New function.
+	(verify_gimple_expr): Use it to verify pointer-to types for
+	ADDR_EXPRs.
+
+2007-10-11  Richard Guenther  <rguenther@suse.de>
+
 	PR c/33726
 	* c-typeck.c (build_array_ref): Do not strip qualifiers from
 	the array element type.

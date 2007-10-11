@@ -1,5 +1,10 @@
 2007-10-11  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/33724
+	* gcc.dg/pr33724.c: New testcase.
+
+2007-10-11  Richard Guenther  <rguenther@suse.de>
+
 	PR c/33726
 	* gcc.dg/pr33726.c: New testcase.
 
