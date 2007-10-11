@@ -521,6 +521,7 @@
 	* ra.h: New file.
 	* reload.c (push_reload, find_dummy_reload): Change DF_RA_LIVE
 	usage to DF_LIVE usage.
+	(reload): Remove reference to df_get_live_top.
 	* rtlanal.c (subreg_nregs_with_regno): New function.  
 	* df-scan.c (df_def_record_1, df_uses_record): Add code to set
 	DF_REF_EXTRACT, DF_REF_STRICT_LOWER_PART, and DF_REF_SUBREG flags.
