@@ -1,5 +1,10 @@
 2007-10-11  Richard Guenther  <rguenther@suse.de>
 
+	* gcse.c (hash_scan_set): If the next nonnote insn is in
+	a different basic block insert the set.
+
+2007-10-11  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/33724
 	* tree-cfg.c (one_pointer_to_useless_type_conversion_p): New function.
 	(verify_gimple_expr): Use it to verify pointer-to types for

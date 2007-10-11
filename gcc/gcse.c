@@ -1761,6 +1761,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 		  oprs_available_p searches from INSN on.  */
 	       && (insn == BB_END (BLOCK_FOR_INSN (insn))
 		   || (tmp = next_nonnote_insn (insn)) == NULL_RTX
+		   || BLOCK_FOR_INSN (tmp) != BLOCK_FOR_INSN (insn)
 		   || oprs_available_p (pat, tmp)))
 	insert_set_in_table (pat, insn, table);
     }
