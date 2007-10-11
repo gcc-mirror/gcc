@@ -1,3 +1,13 @@
+2007-10-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33461
+	* pt.c (coerce_template_parameter_pack): Do not pass error_mark_node
+	to convert_template_argument.
+	(coerce_template_parms): Return error_mark_node after fixed-length
+	error.
+	(tsubst_decl): Check for error_mark_node the return value of the
+	first tsubst in 'case VAR_DECL'.
+
 2007-10-08  Ollie Wild  <aaw@google.com>
 
 	* typeck2.c (digest_init): Call cplus_expand_constant after

@@ -4933,9 +4933,10 @@ coerce_template_parameter_pack (tree parms,
             TREE_VEC_ELT (packed_types, arg_idx - parm_idx);
         }
 
-      arg = convert_template_argument (actual_parm, 
-                                       arg, new_args, complain, parm_idx,
-                                       in_decl);
+      if (arg != error_mark_node)
+	arg = convert_template_argument (actual_parm, 
+					 arg, new_args, complain, parm_idx,
+					 in_decl);
       if (arg == error_mark_node)
         (*lost)++;
       TREE_VEC_ELT (packed_args, arg_idx - parm_idx) = arg; 
@@ -5086,6 +5087,7 @@ coerce_template_parms (tree parms,
               else
                 error ("cannot expand %<%T%> into a fixed-length "
                        "argument list", arg);
+	      return error_mark_node;
             }
         }
       else if (require_all_args)
@@ -8087,6 +8089,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       TYPE_NAME is not correct for the above test if
 	       we've copied the type for a typedef.  */
 	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    if (type == error_mark_node)
+	      return error_mark_node;
 	    r = TYPE_NAME (type);
 	    break;
 	  }

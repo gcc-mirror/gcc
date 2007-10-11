@@ -1,3 +1,14 @@
+2007-10-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31441
+	* g++.dg/cpp0x/variadic83.C: New.
+
+2007-10-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/33461
+	* g++.dg/cpp0x/variadic81.C: New.
+	* g++.dg/cpp0x/variadic82.C: Likewise.
+
 2007-10-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33724
