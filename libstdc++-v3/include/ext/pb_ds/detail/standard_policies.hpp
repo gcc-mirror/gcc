@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -54,7 +54,7 @@
 #include <ext/pb_ds/detail/basic_tree_policy/null_node_metadata.hpp>
 #include <ext/pb_ds/trie_policy.hpp>
 #include <ext/pb_ds/tag_and_trait.hpp>
-#include <ext/hash_map>
+#include <tr1/functional>
 
 namespace __gnu_pbds
 {
@@ -63,13 +63,13 @@ namespace __gnu_pbds
     template<typename Key>
     struct default_hash_fn
     {
-      typedef __gnu_cxx::hash< Key> type;
+      typedef std::tr1::hash<Key> type;
     };
 
     template<typename Key>
     struct default_eq_fn
     {
-      typedef std::equal_to< Key> type;
+      typedef std::equal_to<Key> type;
     };
 
     enum
@@ -88,27 +88,17 @@ namespace __gnu_pbds
     private:
       typedef typename Comb_Hash_Fn::size_type size_type;
 
-      typedef
-      typename __conditional_type<
-	is_same<
-	__gnu_pbds::direct_mask_range_hashing<
-	size_type>,
-	Comb_Hash_Fn>::value,
-	__gnu_pbds::hash_exponential_size_policy<
-	size_type>,
-	__gnu_pbds::hash_prime_size_policy>::__type
-      size_policy_type;
+      typedef __gnu_pbds::direct_mask_range_hashing<size_type> default_fn;
+      typedef is_same<default_fn, Comb_Hash_Fn> same_type;
+      typedef __gnu_pbds::hash_exponential_size_policy<size_type> iftrue;
+      typedef __gnu_pbds::hash_prime_size_policy iffalse;
+      typedef __conditional_type<same_type::value, iftrue, iffalse> cond_type;
+      typedef typename cond_type::__type size_policy_type;
+
+      typedef __gnu_pbds::hash_load_check_resize_trigger<false, size_type> trigger;
 
     public:
-      typedef
-      __gnu_pbds::hash_standard_resize_policy<
-      size_policy_type,
-      __gnu_pbds::hash_load_check_resize_trigger<
-      false,
-      size_type>,
-      false,
-      size_type>
-      type;
+      typedef __gnu_pbds::hash_standard_resize_policy<size_policy_type, trigger, false, size_type> type;
     };
 
     struct default_update_policy
@@ -122,38 +112,27 @@ namespace __gnu_pbds
     private:
       typedef typename Comb_Probe_Fn::size_type size_type;
 
+      typedef __gnu_pbds::direct_mask_range_hashing<size_type> default_fn;
+      typedef is_same<default_fn, Comb_Probe_Fn> same_type;
+      typedef __gnu_pbds::linear_probe_fn<size_type> iftrue;
+      typedef __gnu_pbds::quadratic_probe_fn<size_type> iffalse;
+      typedef __conditional_type<same_type::value, iftrue, iffalse> cond_type;
+
     public:
-      typedef
-      typename __conditional_type<
-      is_same<
-      __gnu_pbds::direct_mask_range_hashing<size_t>,
-      Comb_Probe_Fn>::value,
-      __gnu_pbds::linear_probe_fn<
-      size_type>,
-      __gnu_pbds::quadratic_probe_fn<
-      size_type> >::__type
-      type;
+      typedef typename cond_type::__type type;
     };
 
     template<typename Key>
     struct default_trie_e_access_traits;
 
     template<typename Char, class Char_Traits>
-    struct default_trie_e_access_traits<
-      std::basic_string<
-      Char,
-      Char_Traits,
-      std::allocator<
-      char> > >
+    struct default_trie_e_access_traits<std::basic_string<Char, Char_Traits, std::allocator<char> > >
     {
-      typedef
-      __gnu_pbds::string_trie_e_access_traits<
-	std::basic_string<
-	Char,
-	Char_Traits,
-	std::allocator<
-	char> > >
-      type;
+    private:
+      typedef std::basic_string<Char, Char_Traits, std::allocator<char> > string_type;
+
+    public:
+      typedef __gnu_pbds::string_trie_e_access_traits<string_type> type;
     };
 
   } // namespace detail

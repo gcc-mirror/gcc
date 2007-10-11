@@ -41,7 +41,7 @@
 
 /**
  * @file native_multimap.hpp
- * Contains an adapter to Dinkumware/SGI tables
+ * Contains an adapter to std::multimap
  */
 
 #ifndef PB_DS_NATIVE_MULTIMAP_HPP

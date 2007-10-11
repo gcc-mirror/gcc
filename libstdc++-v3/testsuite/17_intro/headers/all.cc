@@ -117,8 +117,6 @@
 #include <ext/debug_allocator.h>
 #include <ext/enc_filebuf.h>
 #include <ext/functional>
-#include <ext/hash_map>
-#include <ext/hash_set>
 #include <ext/iterator>
 #include <ext/malloc_allocator.h>
 #include <ext/memory>

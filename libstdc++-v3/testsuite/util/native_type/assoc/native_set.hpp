@@ -41,7 +41,7 @@
 
 /**
  * @file native_set.hpp
- * Contains an adapter to Dinkumware/SGI tree tables
+ * Contains an adapter to std::set
  */
 
 #ifndef PB_DS_NATIVE_SET_HPP

@@ -40,8 +40,6 @@
 #include <ext/concurrence.h>
 #include <ext/debug_allocator.h>
 #include <ext/functional>
-#include <ext/hash_map>
-#include <ext/hash_set>
 #include <ext/iterator>
 #include <ext/malloc_allocator.h>
 #include <ext/memory>

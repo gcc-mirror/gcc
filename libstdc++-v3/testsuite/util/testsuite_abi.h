@@ -33,7 +33,7 @@
 #include <stdexcept>
 #include <deque>
 #include <locale>
-#include <ext/hash_map>
+#include <tr1/unordered_map>
 #include <cxxabi.h>
 
 // Encapsulates symbol characteristics.
@@ -75,7 +75,7 @@ struct symbol
   init(std::string& data);
 };
 
-typedef __gnu_cxx::hash_map<std::string, symbol> 	symbol_objects;
+typedef std::tr1::unordered_map<std::string, symbol> 	symbol_objects;
 
 typedef std::deque<std::string>				symbol_names;
 
@@ -110,20 +110,3 @@ create_symbols(const char* file);
 
 const char*
 demangle(const std::string& mangled);
-
-
-// Specialization.
-namespace __gnu_cxx
-{
-  using namespace std;
-
-  template<> 
-    struct hash<string>
-    {
-      size_t operator()(const string& s) const 
-      { 
-	const collate<char>& c = use_facet<collate<char> >(locale::classic());
-	return c.hash(s.c_str(), s.c_str() + s.size());
-      }
-    }; 
-}
