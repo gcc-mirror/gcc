@@ -2113,8 +2113,6 @@ build_array_ref (tree array, tree index)
 	}
 
       type = TREE_TYPE (TREE_TYPE (array));
-      if (TREE_CODE (type) != ARRAY_TYPE)
-	type = TYPE_MAIN_VARIANT (type);
       rval = build4 (ARRAY_REF, type, array, index, NULL_TREE, NULL_TREE);
       /* Array ref is const/volatile if the array elements are
 	 or if the array is.  */
