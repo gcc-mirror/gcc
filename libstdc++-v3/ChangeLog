@@ -1,3 +1,11 @@
+2007-10-11  Roger Sayle  <roger@eyesopen.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add EOVERFLOW for Tru64.
+	* configure: Regenerate.
+	* config/os/generic/error_constants.h: Guard.
+	* testsuite/19_diagnostics/headers/system_error/
+	types_std_c++0x.cc: Same.
+
 2007-10-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Convert ext/hash_map, set to tr1/functional, tr1/unordered_map, set.

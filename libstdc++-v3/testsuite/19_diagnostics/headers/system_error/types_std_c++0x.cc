@@ -145,6 +145,10 @@ namespace gnu
   using std::too_many_files_open; 
   using std::too_many_links; 	
   using std::too_many_synbolic_link_levels; 
+
+#ifdef _GLIBCXX_HAVE_EOVERFLOW
   using std::value_too_large; 
+#endif
+
   using std::wrong_protocol_type;
 }
