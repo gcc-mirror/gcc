@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     bool
     good() const throw()
     { 
-      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
+      const descriptor_type __err = (iconv_t)(-1);
       bool __test = _M_in_desc && _M_in_desc != __err; 
       __test &=  _M_out_desc && _M_out_desc != __err;
       return __test;
@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     void
     init()
     {
-      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
+      const descriptor_type __err = (iconv_t)(-1);
       const bool __have_encodings = _M_int_enc.size() && _M_ext_enc.size();
       if (!_M_in_desc && __have_encodings)
 	{
@@ -199,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     void
     destroy() throw()
     {
-      const descriptor_type __err = reinterpret_cast<iconv_t>(-1);
+      const descriptor_type __err = (iconv_t)(-1);
       if (_M_in_desc && _M_in_desc != __err) 
 	{
 	  iconv_close(_M_in_desc);
