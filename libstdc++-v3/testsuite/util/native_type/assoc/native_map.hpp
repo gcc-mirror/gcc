@@ -41,7 +41,7 @@
 
 /**
  * @file native_map.hpp
- * Contains an adapter to Dinkumware/SGI tree tables
+ * Contains an adapter to std::map
  */
 
 #ifndef PB_DS_NATIVE_MAP_HPP

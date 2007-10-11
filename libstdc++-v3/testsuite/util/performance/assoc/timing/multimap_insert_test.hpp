@@ -97,7 +97,7 @@ namespace __gnu_pbds
 	    {
 	      Cntnr cntnr;
 	      for (It ins_it = m_ins_it_b; ins_it != m_ins_it_e; ++ins_it)
-                cntnr.insert((typename Cntnr::const_reference)(*ins_it));
+		cntnr.insert((typename Cntnr::const_reference)(*ins_it));
 	    }
 	}
 
@@ -108,7 +108,8 @@ namespace __gnu_pbds
     } // namespace detail
 
     template<typename It, bool Native>
-    class multimap_insert_test : private __gnu_pbds::test::detail::timing_test_base
+    class multimap_insert_test 
+    : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       multimap_insert_test(It b, size_t ins_vn, size_t ins_vs, size_t ins_vm) 
@@ -122,7 +123,6 @@ namespace __gnu_pbds
     private:
       multimap_insert_test(const multimap_insert_test&);
 
-    private:
       const It m_ins_b;
       const size_t m_ins_vn;
       const size_t m_ins_vs;

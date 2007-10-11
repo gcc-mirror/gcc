@@ -1,3 +1,34 @@
+2007-10-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Convert ext/hash_map, set to tr1/functional, tr1/unordered_map, set.
+	* include/ext/rope: Use tr1/functional hash instead of ext/hash_fun.h.
+	* include/ext/pb_ds/detail/standard_policies.hpp: Same.
+	* include/precompiled/extc++.h: Remove hash_map, hash_set.
+	* testsuite/util/testsuite_abi.h (__gnu_cxx): Use unordered_map
+	instead of hash_map. Remove hash specialization for string.
+	* testsuite/util/testsuite_abi.cc: Include <vector>.
+	* testsuite/util/native_type/assoc/native_hash_set.hpp: Remove
+	hash_set code.
+	* testsuite/util/native_type/assoc/native_hash_map.hpp: Remove
+	hash_map code.
+	* testsuite/util/native_type/assoc/native_hash_multimap.hpp:
+	Change hash_multimap to unordered_multimap.
+	* testsuite/util/testsuite_common_types.h: Remove hash_map, hash_set.
+	* testsuite/ext/headers.cc: Same.
+	* testsuite/17_intro/headers/all_c++200x_compatibility.cc: Remove
+	hash_map.h, hash_set.h.
+	* testsuite/17_intro/headers/all.cc: Same.
+	* testsuite/17_intro/headers/all_pedantic_errors.cc: Same.
+
+	* include/ext/pb_ds/detail/standard_policies.hpp: Format.
+	* testsuite/util/native_type/assoc/native_set.hpp: Same, 
+	update comment.
+	* testsuite/util/native_type/assoc/native_map.hpp: Same.
+	* testsuite/util/native_type/assoc/native_multimap.hpp: Same.
+	* testsuite/util/performance/assoc/timing/
+	multimap_insert_test.hpp: Same.
+	* testsuite/util/performance/assoc/timing/multimap_find_test.hpp: Same.
+
 2007-10-11  Chris Jefferson  <chris@bubblescope.net>
 	    Paolo Carlini  <pcarlini@suse.de>
 

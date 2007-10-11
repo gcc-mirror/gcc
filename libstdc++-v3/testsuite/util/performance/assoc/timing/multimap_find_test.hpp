@@ -128,7 +128,8 @@ namespace __gnu_pbds
 
 
     template<typename It, bool Native>
-    class multimap_find_test : private __gnu_pbds::test::detail::timing_test_base
+    class multimap_find_test 
+    : private __gnu_pbds::test::detail::timing_test_base
     {
     public:
       multimap_find_test(It ins_b, size_t ins_vn, size_t vs, size_t ins_vm)

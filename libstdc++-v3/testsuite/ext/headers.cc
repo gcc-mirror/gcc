@@ -1,7 +1,7 @@
 // { dg-do compile }
 // 1999-06-23 bkoz 
 
-// Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2003, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,8 +33,6 @@
 #include <ext/debug_allocator.h>
 #include <ext/enc_filebuf.h>
 #include <ext/functional>
-#include <ext/hash_map>
-#include <ext/hash_set>
 #include <ext/iterator>
 #include <ext/malloc_allocator.h>
 #include <ext/memory>

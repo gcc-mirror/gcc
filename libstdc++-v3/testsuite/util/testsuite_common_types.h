@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // typelist for the C++ library testsuite. 
 //
-// Copyright (C) 2005 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,8 +47,7 @@
 
 #include <map>
 #include <set>
-#include <ext/hash_map>
-#include <ext/hash_set>
+#include <tr1/functional>
 #include <tr1/unordered_map>
 #include <tr1/unordered_set>
 
@@ -160,7 +159,7 @@ namespace __gnu_test
       typedef typename append<a1, a2>::type type;
     };
 
-  // Typelists for map, set, hash_map, hash_set, unordered_set, unordered_map.
+  // Typelists for map, set, unordered_set, unordered_map.
   template<typename Tp, bool Thread>
     struct maps
     {
@@ -177,26 +176,6 @@ namespace __gnu_test
 	};
 
       typedef allocator_policies<pair_type, Thread>	allocator_types;
-      typedef typename allocator_types::type 		allocator_typelist;
-      typedef typename transform<allocator_typelist, container>::type type;
-    };
-
-  template<typename Tp, bool Thread>
-    struct hash_maps
-    {
-      typedef Tp			    		value_type;
-      typedef Tp 					key_type;
-      typedef __gnu_cxx::hash<key_type>      		hash_function;
-      typedef std::equal_to<key_type>      		equality_function;
-
-      template<typename Tl>
-        struct container
-	{
-	  typedef Tl 					allocator_type;
-	  typedef __gnu_cxx::hash_map<key_type, value_type, hash_function, equality_function, allocator_type>	type;
-	};
-
-      typedef allocator_policies<value_type, Thread>	allocator_types;
       typedef typename allocator_types::type 		allocator_typelist;
       typedef typename transform<allocator_typelist, container>::type type;
     };
@@ -242,26 +221,6 @@ namespace __gnu_test
     };
 
   template<typename Tp, bool Thread>
-    struct hash_sets
-    {
-      typedef Tp			    		value_type;
-      typedef Tp 					key_type;
-      typedef __gnu_cxx::hash<key_type>      		hash_function;
-      typedef std::equal_to<key_type>      		equality_function;
-
-      template<typename Tl>
-        struct container
-	{
-	  typedef Tl 					allocator_type;
-	  typedef __gnu_cxx::hash_set<key_type, hash_function, equality_function, allocator_type>	type;
-	};
-
-      typedef allocator_policies<key_type, Thread>	allocator_types;
-      typedef typename allocator_types::type 		allocator_typelist;
-      typedef typename transform<allocator_typelist, container>::type type;
-    };
-
-  template<typename Tp, bool Thread>
     struct unordered_sets
     {
       typedef Tp			    		value_type;
@@ -291,16 +250,12 @@ namespace __gnu_test
 
       typedef typename maps<value_type, Thread>::type map_typelist;
       typedef typename sets<value_type, Thread>::type set_typelist;
-      typedef typename hash_maps<value_type, Thread>::type hash_map_typelist;
-      typedef typename hash_sets<value_type, Thread>::type hash_set_typelist;
       typedef typename unordered_maps<value_type, Thread>::type unordered_map_typelist;
       typedef typename unordered_sets<value_type, Thread>::type unordered_set_typelist;
 
-      typedef typename append<map_typelist, hash_map_typelist>::type a1;
-      typedef typename append<a1, unordered_map_typelist>::type a2;
-      typedef typename append<set_typelist, hash_set_typelist>::type a3;
-      typedef typename append<a3, unordered_set_typelist>::type a4;
-      typedef typename append<a2, a4>::type type;
+      typedef typename append<map_typelist, unordered_map_typelist>::type a1;
+      typedef typename append<set_typelist, unordered_set_typelist>::type a2;
+      typedef typename append<a1, a2>::type type;
     };
 
 } // namespace __gnu_test
