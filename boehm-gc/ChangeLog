@@ -1,3 +1,9 @@
+2007-10-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR boehm-gc/33442
+	* pthread_support.c (GC_PTR GC_get_thread_stack_base): If stack grows
+	up, return stack_addr instead of stack_addr - stack_size.
+
 2007-08-14  David Daney  <ddaney@avtrex.com>
 
 	* include/private/gcconfig.h: Handle mips64-linux n64 ABI.
