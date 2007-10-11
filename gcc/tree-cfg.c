@@ -3538,6 +3538,24 @@ verify_gimple_reference (tree expr)
   return verify_gimple_min_lval (expr);
 }
 
+/* Returns true if there is one pointer type in TYPE_POINTER_TO (SRC_OBJ)
+   list of pointer-to types that is trivially convertible to DEST.  */
+
+static bool
+one_pointer_to_useless_type_conversion_p (tree dest, tree src_obj)
+{
+  tree src;
+
+  if (!TYPE_POINTER_TO (src_obj))
+    return true;
+
+  for (src = TYPE_POINTER_TO (src_obj); src; src = TYPE_NEXT_PTR_TO (src))
+    if (useless_type_conversion_p (dest, src))
+      return true;
+
+  return false;
+}
+
 /* Verify the GIMPLE expression EXPR.  Returns true if there is an
    error, otherwise false.  */
 
@@ -3773,14 +3791,11 @@ verify_gimple_expr (tree expr)
 	    error ("invalid operand in unary expression");
 	    return true;
 	  }
-	if (TYPE_POINTER_TO (TREE_TYPE (op))
-	    && !useless_type_conversion_p (type,
-					   TYPE_POINTER_TO (TREE_TYPE (op)))
+	if (!one_pointer_to_useless_type_conversion_p (type, TREE_TYPE (op))
 	    /* FIXME: a longstanding wart, &a == &a[0].  */
 	    && (TREE_CODE (TREE_TYPE (op)) != ARRAY_TYPE
-		|| (TYPE_POINTER_TO (TREE_TYPE (TREE_TYPE (op)))
-		    && !useless_type_conversion_p (type,
-			  TYPE_POINTER_TO (TREE_TYPE (TREE_TYPE (op)))))))
+		|| !one_pointer_to_useless_type_conversion_p (type,
+		      TREE_TYPE (TREE_TYPE (op)))))
 	  {
 	    error ("type mismatch in address expression");
 	    debug_generic_stmt (TREE_TYPE (expr));
