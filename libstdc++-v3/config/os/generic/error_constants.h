@@ -151,7 +151,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       too_many_files_open = 			EMFILE,
       too_many_links = 				EMLINK,
       too_many_synbolic_link_levels = 		ELOOP,
+
+#ifdef _GLIBCXX_HAVE_EOVERFLOW
       value_too_large = 			EOVERFLOW,
+#endif
+
       wrong_protocol_type = 			EPROTOTYPE,
       no_posix_equivalent = 1L << 16
     };

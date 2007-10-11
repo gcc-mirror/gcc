@@ -1410,6 +1410,16 @@ AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
   if test x"$ac_system_error_11" = x"yes"; then
     AC_DEFINE(HAVE_ECANCELED, 1, [Define if ECANCELED exists.])
   fi
+
+  AC_MSG_CHECKING([for EOVERFLOW])
+  AC_CACHE_VAL(ac_system_error_12, [
+  AC_TRY_COMPILE([#include <errno.h>], [ int i = EOVERFLOW; ],
+             [ac_system_error_12=yes], [ac_system_error_12=no])
+  ])
+  AC_MSG_RESULT($ac_system_error_12)
+  if test x"$ac_system_error_12" = x"yes"; then
+    AC_DEFINE(HAVE_EOVERFLOW, 1, [Define if EOVERFLOW exists.])
+  fi
 ])
 
 dnl
