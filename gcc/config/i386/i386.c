@@ -3361,7 +3361,7 @@ ix86_function_arg_regno_p (int regno)
     }
 
   /* RAX is used as hidden argument to va_arg functions.  */
-  if (!TARGET_64BIT_MS_ABI && regno == 0)
+  if (!TARGET_64BIT_MS_ABI && regno == AX_REG)
     return true;
 
   if (TARGET_64BIT_MS_ABI)
@@ -4236,8 +4236,8 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	        break;
 
 	      /* ECX not EAX is the first allocated register.  */
-	      if (regno == 0)
-		regno = 2;
+	      if (regno == AX_REG)
+		regno = CX_REG;
 	    }
 	  return gen_rtx_REG (mode, regno);
 	}
@@ -4558,7 +4558,7 @@ function_value_32 (enum machine_mode orig_mode, enum machine_mode mode,
     regno = FIRST_FLOAT_REG;
   else
     /* Most things go in %eax.  */
-    regno = 0;
+    regno = AX_REG;
 
   /* Override FP return register with %xmm0 for local functions when
      SSE math is enabled or for functions with sseregparm attribute.  */
@@ -4599,7 +4599,7 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 	case TCmode:
 	  return NULL;
 	default:
-	  return gen_rtx_REG (mode, 0);
+	  return gen_rtx_REG (mode, AX_REG);
 	}
     }
 
@@ -4610,7 +4610,7 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
   /* For zero sized structures, construct_container returns NULL, but we
      need to keep rest of compiler happy by returning meaningful value.  */
   if (!ret)
-    ret = gen_rtx_REG (orig_mode, 0);
+    ret = gen_rtx_REG (orig_mode, AX_REG);
 
   return ret;
 }
@@ -4618,7 +4618,7 @@ function_value_64 (enum machine_mode orig_mode, enum machine_mode mode,
 static rtx
 function_value_ms_64 (enum machine_mode orig_mode, enum machine_mode mode)
 {
-  unsigned int regno = 0;
+  unsigned int regno = AX_REG;
 
   if (TARGET_SSE)
     {
@@ -4928,7 +4928,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
          label - 5*eax + nnamed_sse_arguments*5  */
       tmp_reg = gen_reg_rtx (Pmode);
       nsse_reg = gen_reg_rtx (Pmode);
-      emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, 0)));
+      emit_insn (gen_zero_extendqidi2 (nsse_reg, gen_rtx_REG (QImode, AX_REG)));
       emit_insn (gen_rtx_SET (VOIDmode, tmp_reg,
 			      gen_rtx_MULT (Pmode, nsse_reg,
 					    GEN_INT (4))));
@@ -6174,7 +6174,7 @@ ix86_internal_arg_pointer (void)
 		   ix86_force_align_arg_pointer_string);
 	  return virtual_incoming_args_rtx;
 	}
-      cfun->machine->force_align_arg_pointer = gen_rtx_REG (Pmode, 2);
+      cfun->machine->force_align_arg_pointer = gen_rtx_REG (Pmode, CX_REG);
       return copy_to_reg (cfun->machine->force_align_arg_pointer);
     }
   else
@@ -6297,7 +6297,7 @@ ix86_expand_prologue (void)
   else
     {
       /* Only valid for Win32.  */
-      rtx eax = gen_rtx_REG (Pmode, 0);
+      rtx eax = gen_rtx_REG (Pmode, AX_REG);
       bool eax_live;
       rtx t;
 
@@ -6368,8 +6368,7 @@ ix86_expand_prologue (void)
 	{
 	  if (ix86_cmodel == CM_LARGE_PIC)
 	    {
-              rtx tmp_reg = gen_rtx_REG (DImode,
-					 FIRST_REX_INT_REG + 3 /* R11 */);
+              rtx tmp_reg = gen_rtx_REG (DImode, R11_REG);
 	      rtx label = gen_label_rtx ();
 	      emit_label (label);
 	      LABEL_PRESERVE_P (label) = 1;
@@ -6582,7 +6581,7 @@ ix86_expand_epilogue (int style)
 
       if (current_function_pops_args >= 65536)
 	{
-	  rtx ecx = gen_rtx_REG (SImode, 2);
+	  rtx ecx = gen_rtx_REG (SImode, CX_REG);
 
 	  /* There is no "pascal" calling convention in any 64bit ABI.  */
 	  gcc_assert (!TARGET_64BIT);
@@ -7645,7 +7644,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 
       if (TARGET_64BIT && ! TARGET_GNU2_TLS)
 	{
-	  rtx rax = gen_rtx_REG (Pmode, 0), insns;
+	  rtx rax = gen_rtx_REG (Pmode, AX_REG), insns;
 
 	  start_sequence ();
 	  emit_call_insn (gen_tls_global_dynamic_64 (rax, x));
@@ -7674,7 +7673,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
 
       if (TARGET_64BIT && ! TARGET_GNU2_TLS)
 	{
-	  rtx rax = gen_rtx_REG (Pmode, 0), insns, note;
+	  rtx rax = gen_rtx_REG (Pmode, AX_REG), insns, note;
 
 	  start_sequence ();
 	  emit_call_insn (gen_tls_local_dynamic_base_64 (rax));
@@ -16057,7 +16056,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 
   if (TARGET_64BIT && INTVAL (callarg2) >= 0)
     {
-      rtx al = gen_rtx_REG (QImode, 0);
+      rtx al = gen_rtx_REG (QImode, AX_REG);
       emit_move_insn (al, callarg2);
       use_reg (&use, al);
     }
@@ -22545,9 +22544,9 @@ x86_this_parameter (tree function)
 
   if (ix86_function_regparm (type, function) > 0 && !stdarg_p (type))
     {
-      int regno = 0;
+      int regno = AX_REG;
       if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
-	regno = 2;
+	regno = CX_REG;
       return gen_rtx_REG (SImode, regno);
     }
 
@@ -22604,7 +22603,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
     {
       /* Put the this parameter into %eax.  */
       xops[0] = this_param;
-      xops[1] = this_reg = gen_rtx_REG (Pmode, 0);
+      xops[1] = this_reg = gen_rtx_REG (Pmode, AX_REG);
       output_asm_insn ("mov{l}\t{%0, %1|%1, %0}", xops);
     }
   else
@@ -22638,10 +22637,10 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	tmp = gen_rtx_REG (DImode, R10_REG);
       else
 	{
-	  int tmp_regno = 2 /* ECX */;
+	  int tmp_regno = CX_REG;
 	  if (lookup_attribute ("fastcall",
 				TYPE_ATTRIBUTES (TREE_TYPE (function))))
-	    tmp_regno = 0 /* EAX */;
+	    tmp_regno = AX_REG;
 	  tmp = gen_rtx_REG (SImode, tmp_regno);
 	}
 
@@ -22714,7 +22713,7 @@ x86_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
 	else
 #endif /* TARGET_MACHO */
 	{
-	  tmp = gen_rtx_REG (SImode, 2 /* ECX */);
+	  tmp = gen_rtx_REG (SImode, CX_REG);
 	  output_set_got (tmp, NULL_RTX);
 
 	  xops[1] = tmp;
