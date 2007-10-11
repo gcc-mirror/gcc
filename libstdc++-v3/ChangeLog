@@ -1,5 +1,11 @@
 2007-10-11  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/33734
+	* include/ext/codecvt_specializations.h (encoding_state::good,
+	init, destroy): Use cast notation instead of reinterpret_cast.
+
+2007-10-11  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/25_algorithms/heap/moveable.cc: Fix and extend.
 
 2007-10-11  Danny Smith  <dannysmith@users.sourceforge.net>
