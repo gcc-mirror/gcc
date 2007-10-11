@@ -1,3 +1,14 @@
+2007-10-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/33638
+	* dse.c (struct insn_info): Remove 'stack_read' field,
+	add 'stack_pointer_based' field.
+	(record_store): For a store with non-constant base, record
+	whether it is stack pointer based.
+	(scan_insn): For the call to a const function, remove stack
+	pointer based stores from the list of local active stores.
+	(scan_reads_nospill): Delete code dealing with const functions.
+
 2007-10-10  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* ra-conflict.c (partial_bitnum, max_bitnum): Change type of variables

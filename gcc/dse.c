@@ -284,12 +284,11 @@ struct insn_info
      contains a wild read, the use_rec will be null.  */
   bool wild_read;
 
-  /* This field is set for const function calls.  Const functions
-     cannot read memory, but they can read the stack because that is
-     where they may get their parms.  So having this set is less
-     severe than a wild read, it just means that all of the stores to
-     the stack are killed rather than all stores.  */
-  bool stack_read;
+  /* This field is only used for the processing of const functions.
+     These functions cannot read memory, but they can read the stack
+     because that is where they may get their parms.  It is set to
+     true if the insn may contain a stack pointer based store.  */
+  bool stack_pointer_based;
 
   /* This is true if any of the sets within the store contains a
      cselib base.  Such stores can only be deleted by the local
@@ -941,8 +940,9 @@ add_wild_read (bb_info_t bb_info)
 }
 
 
-/* Return true if X is a constant or one of the registers that behaves
-   as a constant over the life of a function.  */
+/* Return true if X is a constant or one of the registers that behave
+   as a constant over the life of a function.  This is equivalent to
+   !rtx_varies_p for memory addresses.  */
 
 static bool
 const_or_frame_p (rtx x)
@@ -1245,8 +1245,15 @@ record_store (rtx body, bb_info_t bb_info)
     }
   else
     {
-      store_info = pool_alloc (cse_store_info_pool);
+      rtx base_term = find_base_term (XEXP (mem, 0));
+      if (!base_term
+	  || (GET_CODE (base_term) == ADDRESS
+	      && GET_MODE (base_term) == Pmode
+	      && XEXP (base_term, 0) == stack_pointer_rtx))
+	insn_info->stack_pointer_based = true;
       insn_info->contains_cselib_groups = true;
+
+      store_info = pool_alloc (cse_store_info_pool);
       group_id = -1;
 
       if (dump_file)
@@ -1948,9 +1955,10 @@ scan_insn (bb_info_t bb_info, rtx insn)
   if (CALL_P (insn))
     {
       insn_info->cannot_delete = true;
+
       /* Const functions cannot do anything bad i.e. read memory,
-	 however, they can read their parameters which may have been
-	 pushed onto the stack.  */
+	 however, they can read their parameters which may have
+	 been pushed onto the stack.  */
       if (CONST_OR_PURE_CALL_P (insn) && !pure_call_p (insn))
 	{
 	  insn_info_t i_ptr = active_local_stores;
@@ -1961,15 +1969,8 @@ scan_insn (bb_info_t bb_info, rtx insn)
 
 	  while (i_ptr)
 	    {
-	      store_info_t store_info = i_ptr->store_rec;
-
-	      /* Skip the clobbers.  */
-	      while (!store_info->is_set)
-		store_info = store_info->next;
-
-	      /* Remove the frame related stores.  */
-	      if (store_info->group_id >= 0
-		  && VEC_index (group_info_t, rtx_group_vec, store_info->group_id)->frame_related)
+	      /* Remove the stack pointer based stores.  */
+	      if (i_ptr->stack_pointer_based)
 		{
 		  if (dump_file)
 		    dump_insn_info ("removing from active", i_ptr);
@@ -1983,14 +1984,12 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		last = i_ptr;
 	      i_ptr = i_ptr->next_local_store;
 	    }
-
-	  insn_info->stack_read = true;
-	  
-	  return;
 	}
 
-      /* Every other call, including pure functions may read memory.  */
-      add_wild_read (bb_info);
+      else
+	/* Every other call, including pure functions, may read memory.  */
+	add_wild_read (bb_info);
+
       return;
     }
 
@@ -2491,18 +2490,6 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
   read_info_t read_info = insn_info->read_rec;
   int i;
   group_info_t group;
-
-  /* For const function calls kill the stack related stores.  */
-  if (insn_info->stack_read)
-    {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
-	if (group->process_globally && group->frame_related)
-	  {
-	    if (kill)
-	      bitmap_ior_into (kill, group->group_kill);
-	    bitmap_and_compl_into (gen, group->group_kill); 
-	  }
-    }
 
   while (read_info)
     {
