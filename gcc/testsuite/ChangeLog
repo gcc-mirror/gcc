@@ -1,3 +1,8 @@
+2007-10-11  Richard Guenther  <rguenther@suse.de>
+
+	PR c/33726
+	* gcc.dg/pr33726.c: New testcase.
+
 2007-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR fortran/33500
