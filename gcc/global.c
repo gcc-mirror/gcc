@@ -1575,6 +1575,41 @@ build_insn_chain (void)
 		  }
 	    }
 	}
+
+      /* FIXME!! The following code is a disaster.  Reload needs to see the
+	 labels and jump tables that are just hanging out in between
+	 the basic blocks.  See pr33676.  */
+
+      insn = BB_HEAD (bb);
+
+      /* Skip over the barriers and cruft.  */
+      while (insn && (BARRIER_P (insn) || NOTE_P (insn) || BLOCK_FOR_INSN (insn) == bb))
+	insn = PREV_INSN (insn);
+	
+      /* While we add anything except barriers and notes, the focus is
+	 to get the labels and jump tables into the
+	 reload_insn_chain.  */
+      while (insn)
+	{
+	  if (!NOTE_P (insn) && !BARRIER_P (insn))
+	    {
+	      if (BLOCK_FOR_INSN (insn))
+		break;
+
+	      c = new_insn_chain ();
+	      c->next = next;
+	      next = c;
+	      *p = c;
+	      p = &c->prev;
+	      
+	      c->insn = insn;
+	      /* The block makes no sense here, but it is what the old
+		 code did.  */
+	      c->block = bb->index;
+	      bitmap_copy (&c->live_throughout, live_relevant_regs);
+	    }	  
+	  insn = PREV_INSN (insn);
+	}
     }
 
   for (i = 0; i < (unsigned int)max_regno; i++)
