@@ -62,6 +62,7 @@
 #define _STL_HEAP_H 1
 
 #include <debug/debug.h>
+#include <bits/stl_move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -121,11 +122,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _Distance __parent = (__holeIndex - 1) / 2;
       while (__holeIndex > __topIndex && *(__first + __parent) < __value)
 	{
-	  *(__first + __holeIndex) = *(__first + __parent);
+	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __parent));
 	  __holeIndex = __parent;
 	  __parent = (__holeIndex - 1) / 2;
 	}
-      *(__first + __holeIndex) = __value;
+      *(__first + __holeIndex) = _GLIBCXX_MOVE(__value);
     }
 
   /**
@@ -153,12 +154,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap(__first, __last - 1);
 
+      _ValueType __value = _GLIBCXX_MOVE(*(__last - 1));
       std::__push_heap(__first, _DistanceType((__last - __first) - 1),
-		       _DistanceType(0), _ValueType(*(__last - 1)));
+		       _DistanceType(0), _GLIBCXX_MOVE(__value));
     }
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp,
-	    typename _Compare>
+	   typename _Compare>
     void
     __push_heap(_RandomAccessIterator __first, _Distance __holeIndex,
 		_Distance __topIndex, _Tp __value, _Compare __comp)
@@ -167,11 +169,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       while (__holeIndex > __topIndex
 	     && __comp(*(__first + __parent), __value))
 	{
-	  *(__first + __holeIndex) = *(__first + __parent);
+	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __parent));
 	  __holeIndex = __parent;
 	  __parent = (__holeIndex - 1) / 2;
 	}
-      *(__first + __holeIndex) = __value;
+      *(__first + __holeIndex) = _GLIBCXX_MOVE(__value);
     }
 
   /**
@@ -201,8 +203,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap_pred(__first, __last - 1, __comp);
 
+      _ValueType __value = _GLIBCXX_MOVE(*(__last - 1));
       std::__push_heap(__first, _DistanceType((__last - __first) - 1),
-		       _DistanceType(0), _ValueType(*(__last - 1)), __comp);
+		       _DistanceType(0), _GLIBCXX_MOVE(__value), __comp);
     }
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
@@ -217,28 +220,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __secondChild = 2 * (__secondChild + 1);
 	  if (*(__first + __secondChild) < *(__first + (__secondChild - 1)))
 	    __secondChild--;
-	  *(__first + __holeIndex) = *(__first + __secondChild);
+	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __secondChild));
 	  __holeIndex = __secondChild;
 	}
       if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
 	{
 	  __secondChild = 2 * (__secondChild + 1);
-	  *(__first + __holeIndex) = *(__first + (__secondChild - 1));
+	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first
+						     + (__secondChild - 1)));
 	  __holeIndex = __secondChild - 1;
 	}
-      std::__push_heap(__first, __holeIndex, __topIndex, __value);
+      std::__push_heap(__first, __holeIndex, __topIndex,
+		       _GLIBCXX_MOVE(__value));
     }
 
-  template<typename _RandomAccessIterator, typename _Tp>
+  template<typename _RandomAccessIterator>
     inline void
     __pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	       _RandomAccessIterator __result, _Tp __value)
+	       _RandomAccessIterator __result)
     {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-	_Distance;
-      *__result = *__first;
-      std::__adjust_heap(__first, _Distance(0), _Distance(__last - __first),
-			 __value);
+	_DistanceType;
+
+      _ValueType __value = _GLIBCXX_MOVE(*__result);
+      *__result = _GLIBCXX_MOVE(*__first);
+      std::__adjust_heap(__first, _DistanceType(0),
+			 _DistanceType(__last - __first),
+			 _GLIBCXX_MOVE(__value));
     }
 
   /**
@@ -264,8 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap(__first, __last);
 
-      std::__pop_heap(__first, __last - 1, __last - 1,
-		      _ValueType(*(__last - 1)));
+      std::__pop_heap(__first, __last - 1, __last - 1);
     }
 
   template<typename _RandomAccessIterator, typename _Distance,
@@ -282,28 +291,35 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  if (__comp(*(__first + __secondChild),
 		     *(__first + (__secondChild - 1))))
 	    __secondChild--;
-	  *(__first + __holeIndex) = *(__first + __secondChild);
+	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __secondChild));
 	  __holeIndex = __secondChild;
 	}
       if ((__len & 1) == 0 && __secondChild == (__len - 2) / 2)
 	{
 	  __secondChild = 2 * (__secondChild + 1);
-	  *(__first + __holeIndex) = *(__first + (__secondChild - 1));
+	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first
+						     + (__secondChild - 1)));
 	  __holeIndex = __secondChild - 1;
 	}
-      std::__push_heap(__first, __holeIndex, __topIndex, __value, __comp);
+      std::__push_heap(__first, __holeIndex, __topIndex, 
+		       _GLIBCXX_MOVE(__value), __comp);      
     }
 
-  template<typename _RandomAccessIterator, typename _Tp, typename _Compare>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline void
     __pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	       _RandomAccessIterator __result, _Tp __value, _Compare __comp)
+	       _RandomAccessIterator __result, _Compare __comp)
     {
+      typedef typename iterator_traits<_RandomAccessIterator>::value_type
+	_ValueType;
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-	_Distance;
-      *__result = *__first;
-      std::__adjust_heap(__first, _Distance(0), _Distance(__last - __first),
-			 __value, __comp);
+	_DistanceType;
+
+      _ValueType __value = _GLIBCXX_MOVE(*__result);
+      *__result = _GLIBCXX_MOVE(*__first);
+      std::__adjust_heap(__first, _DistanceType(0),
+			 _DistanceType(__last - __first),
+			 _GLIBCXX_MOVE(__value), __comp);
     }
 
   /**
@@ -322,17 +338,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     pop_heap(_RandomAccessIterator __first,
 	     _RandomAccessIterator __last, _Compare __comp)
     {
-      typedef typename iterator_traits<_RandomAccessIterator>::value_type
-	_ValueType;
-
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
       __glibcxx_requires_heap_pred(__first, __last, __comp);
 
-      std::__pop_heap(__first, __last - 1, __last - 1,
-		      _ValueType(*(__last - 1)), __comp);
+      std::__pop_heap(__first, __last - 1, __last - 1, __comp);
     }
 
   /**
@@ -365,8 +377,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _DistanceType __parent = (__len - 2) / 2;
       while (true)
 	{
-	  std::__adjust_heap(__first, __parent, __len,
-			     _ValueType(*(__first + __parent)));
+	  _ValueType __value = _GLIBCXX_MOVE(*(__first + __parent));
+	  std::__adjust_heap(__first, __parent, __len, _GLIBCXX_MOVE(__value));
 	  if (__parent == 0)
 	    return;
 	  __parent--;
@@ -405,8 +417,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       _DistanceType __parent = (__len - 2) / 2;
       while (true)
 	{
-	  std::__adjust_heap(__first, __parent, __len,
-			     _ValueType(*(__first + __parent)), __comp);
+	  _ValueType __value = _GLIBCXX_MOVE(*(__first + __parent));
+	  std::__adjust_heap(__first, __parent, __len, _GLIBCXX_MOVE(__value),
+			     __comp);
 	  if (__parent == 0)
 	    return;
 	  __parent--;
