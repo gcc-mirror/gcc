@@ -1,3 +1,11 @@
+2007-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32121
+	* parser.c (cp_parser_compound_statement): Handle label-declarations
+	at the beginning of the compound statement.
+	(cp_parser_block_declaration): Issue diagnostics about __label__
+	not at the beginning of a block.
+
 2007-10-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/33461
