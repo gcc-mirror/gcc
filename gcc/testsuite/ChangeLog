@@ -1,3 +1,9 @@
+2007-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33664
+	* gfortran.dg/impure_spec_expr_1.f90: New test.
+	* gfortran.dg/char_result_7.f90: Remove illegal test.
+
 2007-10-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR 11001

@@ -2526,6 +2526,18 @@ gfc_specification_expr (gfc_expr *e)
       return FAILURE;
     }
 
+  if (e->expr_type == EXPR_FUNCTION
+	  && !e->value.function.isym
+	  && !e->value.function.esym
+	  && !gfc_pure (e->symtree->n.sym))
+    {
+      gfc_error ("Function '%s' at %L must be PURE",
+		 e->symtree->n.sym->name, &e->where);
+      /* Prevent repeat error messages.  */
+      e->symtree->n.sym->attr.pure = 1;
+      return FAILURE;
+    }
+
   if (e->rank != 0)
     {
       gfc_error ("Expression at %L must be scalar", &e->where);

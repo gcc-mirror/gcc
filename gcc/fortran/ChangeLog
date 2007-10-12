@@ -1,3 +1,10 @@
+2007-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33664
+	* expr.c (gfc_specification_expr): If a function is not
+	external, intrinsic or pure is an error.  Set the symbol pure
+	to prevent repeat errors.
+
 2007-10-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33636
