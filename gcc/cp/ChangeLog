@@ -1,3 +1,7 @@
+2007-10-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* pt.c (tsubst): Use template_parm_level_and_index.
+
 2007-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/32121
