@@ -1,3 +1,11 @@
+2007-10-12  Jesper Nilsson  <jesper.nilsson@axis.com>
+
+       * testsuite/tr1/5_numerical_facilities/special_functions/
+       20_riemann_zeta/check_value_neg.c (MAX_ITERATIONS): Add limit
+       when target is simulator.
+       * testsuite/tr1/5_numerical_facilities/special_functions/
+       20_riemann_zeta/check_value_pos.c (MAX_ITERATIONS): Likewise.
+
 2007-10-11  Roger Sayle  <roger@eyesopen.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Add EOVERFLOW for Tru64.
