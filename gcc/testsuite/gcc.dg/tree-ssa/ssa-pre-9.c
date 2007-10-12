@@ -9,5 +9,5 @@ foo (unsigned long a)
     return 1;
   return 0;
 }
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "fre"} } */
+/* { dg-final { scan-tree-dump-times "return 0;" 0 "fre"} } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

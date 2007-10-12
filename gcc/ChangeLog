@@ -1,3 +1,10 @@
+2007-10-12  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/26198
+	* tree-ssa-forwprop.c (can_propagate_from): Do not propagate from
+	a rhs with side-effects or which is a load.
+	(forward_propagate_into_cond): Also try combining both operands.
+
 2007-10-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR tree-optimization/33742
