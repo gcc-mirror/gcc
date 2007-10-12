@@ -1,3 +1,8 @@
+2007-10-12  Zdenek Dvorak <ook@ucw.cz>
+
+	PR tree-optimization/33714
+	* gcc.dg/tree-ssa/pr33714.c: New test.
+
 2007-10-10  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/25309

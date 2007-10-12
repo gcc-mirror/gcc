@@ -2608,8 +2608,8 @@ constant_multiple_of (tree top, tree bot, double_int *mul)
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = double_int_sext (tree_to_double_int (bot), precision);
-      p1 = double_int_sext (tree_to_double_int (top), precision);
+      p0 = double_int_sext (tree_to_double_int (top), precision);
+      p1 = double_int_sext (tree_to_double_int (bot), precision);
       if (double_int_zero_p (p1))
 	return false;
       *mul = double_int_sext (double_int_sdivmod (p0, p1, FLOOR_DIV_EXPR, &res),

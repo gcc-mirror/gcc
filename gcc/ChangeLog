@@ -1,3 +1,9 @@
+2007-10-12  Zdenek Dvorak <ook@ucw.cz>
+
+	PR tree-optimization/33714
+	* tree-ssa-loop-ivopts.c (constant_multiple_of): Pass the arguments to
+	division in the correct order.
+
 2007-10-10  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/25309
