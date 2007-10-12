@@ -15056,21 +15056,32 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 	    int *dynamic_check)
 {
   const struct stringop_algs * algs;
+  /* Algorithms using the rep prefix want at least edi and ecx;
+     additionally, memset wants eax and memcpy wants esi.  Don't
+     consider such algorithms if the user has appropriated those
+     registers for their own purposes.	*/
+  bool rep_prefix_usable = !(global_regs[2] || global_regs[5]
+                             || (memset ? global_regs[0] : global_regs[4]));
+
+#define ALG_USABLE_P(alg) (rep_prefix_usable			\
+			   || (alg != rep_prefix_1_byte		\
+			       && alg != rep_prefix_4_byte      \
+			       && alg != rep_prefix_8_byte))
 
   *dynamic_check = -1;
   if (memset)
     algs = &ix86_cost->memset[TARGET_64BIT != 0];
   else
     algs = &ix86_cost->memcpy[TARGET_64BIT != 0];
-  if (stringop_alg != no_stringop)
+  if (stringop_alg != no_stringop && ALG_USABLE_P (stringop_alg))
     return stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
   else if (optimize_size)
     {
       if (!count || (count & 3))
-	return rep_prefix_1_byte;
+	return rep_prefix_usable ? rep_prefix_1_byte : loop_1_byte;
       else
-	return rep_prefix_4_byte;
+	return rep_prefix_usable ? rep_prefix_4_byte : loop;
     }
   /* Very tiny blocks are best handled via the loop, REP is expensive to setup.
    */
@@ -15082,27 +15093,34 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
       enum stringop_alg alg = libcall;
       for (i = 0; i < NAX_STRINGOP_ALGS; i++)
 	{
-	  gcc_assert (algs->size[i].max);
+	  /* We get here if the algorithms that were not libcall-based
+	     were rep-prefix based and we are unable to use rep prefixes
+	     based on global register usage.  Break out of the loop and
+	     use the heuristic below.  */
+	  if (algs->size[i].max == 0)
+	    break;
 	  if (algs->size[i].max >= expected_size || algs->size[i].max == -1)
 	    {
-	      if (algs->size[i].alg != libcall)
-		alg = algs->size[i].alg;
+	      enum stringop_alg candidate = algs->size[i].alg;
+
+	      if (candidate != libcall && ALG_USABLE_P (candidate))
+		alg = candidate;
 	      /* Honor TARGET_INLINE_ALL_STRINGOPS by picking
-	         last non-libcall inline algorithm.  */
+		 last non-libcall inline algorithm.  */
 	      if (TARGET_INLINE_ALL_STRINGOPS)
 		{
 		  /* When the current size is best to be copied by a libcall,
-		     but we are still forced to inline, run the heuristic bellow
+		     but we are still forced to inline, run the heuristic below
 		     that will pick code for medium sized blocks.  */
 		  if (alg != libcall)
 		    return alg;
 		  break;
 		}
-	      else
-		return algs->size[i].alg;
+	      else if (ALG_USABLE_P (candidate))
+		return candidate;
 	    }
 	}
-      gcc_assert (TARGET_INLINE_ALL_STRINGOPS);
+      gcc_assert (TARGET_INLINE_ALL_STRINGOPS || !rep_prefix_usable);
     }
   /* When asked to inline the call anyway, try to pick meaningful choice.
      We look for maximal size of block that is faster to copy by hand and
@@ -15112,15 +15130,32 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
      If this turns out to be bad, we might simply specify the preferred
      choice in ix86_costs.  */
   if ((TARGET_INLINE_ALL_STRINGOPS || TARGET_INLINE_STRINGOPS_DYNAMICALLY)
-      && algs->unknown_size == libcall)
+      && (algs->unknown_size == libcall || !ALG_USABLE_P (algs->unknown_size)))
     {
       int max = -1;
       enum stringop_alg alg;
       int i;
+      bool any_alg_usable_p = true;
 
       for (i = 0; i < NAX_STRINGOP_ALGS; i++)
-	if (algs->size[i].alg != libcall && algs->size[i].alg)
-	  max = algs->size[i].max;
+        {
+          enum stringop_alg candidate = algs->size[i].alg;
+          any_alg_usable_p = any_alg_usable_p && ALG_USABLE_P (candidate);
+
+          if (candidate != libcall && candidate
+              && ALG_USABLE_P (candidate))
+              max = algs->size[i].max;
+        }
+      /* If there aren't any usable algorithms, then recursing on
+         smaller sizes isn't going to find anything.  Just return the
+         simple byte-at-a-time copy loop.  */
+      if (!any_alg_usable_p)
+        {
+          /* Pick something reasonable.  */
+          if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
+            *dynamic_check = 128;
+          return loop_1_byte;
+        }
       if (max == -1)
 	max = 4096;
       alg = decide_alg (count, max / 2, memset, dynamic_check);
@@ -15130,7 +15165,8 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 	*dynamic_check = max;
       return alg;
     }
-  return algs->unknown_size;
+  return ALG_USABLE_P (algs->unknown_size) ? algs->unknown_size : libcall;
+#undef ALG_USABLE_P
 }
 
 /* Decide on alignment.  We know that the operand is already aligned to ALIGN
@@ -15984,6 +16020,11 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
   else
     {
       rtx unspec;
+
+      /* Can't use this if the user has appropriated eax, ecx, or edi.  */
+      if (global_regs[0] || global_regs[2] || global_regs[5])
+        return false;
+
       scratch2 = gen_reg_rtx (Pmode);
       scratch3 = gen_reg_rtx (Pmode);
       scratch4 = force_reg (Pmode, constm1_rtx);

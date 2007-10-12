@@ -1,3 +1,16 @@
+2007-10-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR 11001
+	* gcc.target/i386/pr11001-strlen-1.c: New testcase.
+	* gcc.target/i386/pr11001-strlen-2.c: New testcase.
+	* gcc.target/i386/pr11001-strlen-3.c: New testcase.
+	* gcc.target/i386/pr11001-memset-1.c: New testcase.
+	* gcc.target/i386/pr11001-memset-2.c: New testcase.
+	* gcc.target/i386/pr11001-memset-3.c: New testcase.
+	* gcc.target/i386/pr11001-memcpy-1.c: New testcase.
+	* gcc.target/i386/pr11001-memcpy-2.c: New testcase.
+	* gcc.target/i386/pr11001-memcpy-3.c: New testcase.
+
 2007-10-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/26198

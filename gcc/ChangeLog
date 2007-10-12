@@ -1,3 +1,11 @@
+2007-10-12  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR 11001
+	* config/i386/i386.md (strmov): Check for esi and edi usage.
+	* config/i386/i386.c (decide_alg): Check whether we can use a
+	rep prefix and adjust algorithm choice accordingly.
+	(ix86_expand_strlen): Check for eax, ecx, and edi usage.
+
 2007-10-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/c4x/c4x.md (mulqi3, mulhi3): Use optab_libfunc.
