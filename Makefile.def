@@ -326,6 +326,7 @@ dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-build-bison; };
 dependencies = { module=all-gdb; on=all-build-byacc; };
 dependencies = { module=all-gdb; on=all-sim; };
+dependencies = { module=all-gdb; on=all-libdecnumber; };
 
 dependencies = { module=configure-libgui; on=configure-tcl; };
 dependencies = { module=configure-libgui; on=configure-tk; };

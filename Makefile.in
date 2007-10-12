@@ -51509,6 +51509,7 @@ all-gdb: maybe-all-readline
 all-gdb: maybe-all-build-bison
 all-gdb: maybe-all-build-byacc
 all-gdb: maybe-all-sim
+all-gdb: maybe-all-libdecnumber
 configure-libgui: maybe-configure-tcl
 configure-libgui: maybe-configure-tk
 all-libgui: maybe-all-tcl
