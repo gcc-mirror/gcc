@@ -15060,8 +15060,8 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
      additionally, memset wants eax and memcpy wants esi.  Don't
      consider such algorithms if the user has appropriated those
      registers for their own purposes.	*/
-  bool rep_prefix_usable = !(global_regs[2] || global_regs[5]
-                             || (memset ? global_regs[0] : global_regs[4]));
+  bool rep_prefix_usable = !(global_regs[CX_REG] || global_regs[DI_REG]
+                             || (memset ? global_regs[AX_REG] : global_regs[SI_REG]));
 
 #define ALG_USABLE_P(alg) (rep_prefix_usable			\
 			   || (alg != rep_prefix_1_byte		\
@@ -16022,7 +16022,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       rtx unspec;
 
       /* Can't use this if the user has appropriated eax, ecx, or edi.  */
-      if (global_regs[0] || global_regs[2] || global_regs[5])
+      if (global_regs[AX_REG] || global_regs[CX_REG] || global_regs[DI_REG])
         return false;
 
       scratch2 = gen_reg_rtx (Pmode);
