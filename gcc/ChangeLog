@@ -1,3 +1,18 @@
+2007-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33645
+	* tree-ssa-live.c (mark_all_vars_used): Add data argument,
+	pass it to walk_tree.
+	(mark_all_vars_used_1): Pass data through to mark_all_vars_used.
+	When calling set_is_used on a VAR_DECL, if data is not NULL and
+	its DECL_UID is in the bitmap, call mark_all_vars_used on its
+	DECL_INITIAL after clearing the bit in bitmap.
+	(remove_unused_locals): Adjust mark_all_vars_used callers.
+	Instead of removing unused global vars from unexpanded_var_list
+	immediately record them in bitmap, call mark_all_vars_used on
+	all used global vars from unexpanded_var_list and only purge
+	global vars that weren't found used even during that step.
+ 
 2007-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gthr-posix.h (__gthread_active_init): Create detached instead of
