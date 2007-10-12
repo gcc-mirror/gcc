@@ -1,3 +1,18 @@
+2007-10-12  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* dse.c (find_shift_sequence): Reinstate "<= UNITS_PER_WORD" condition.
+	* var-tracking.c (micro_operation_def): Update comment on u.loc.
+	(mode_for_reg_attrs, var_lowpart): New functions.
+	(add_uses): Consider recording a lowpart of LOC for MO_USE.
+	(add_stores): Likewise MO_SET and MO_COPY.  If the source of a set
+	or copy is known, set LOC to the SET that performs the set, instead
+	of the destination.
+	(find_src_status, find_src_set_src): Remove LOC parameter.
+	Replace INSN with the source value.
+	(compute_bb_dataflow, emit_notes_in_bb): Check for a SET u.loc when
+	handling MO_SET and MO_COPY.  Update the calls to find_src_status
+	and find_src_set_src.
+
 2007-10-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR 11001
