@@ -237,6 +237,14 @@ can_propagate_from (tree def_stmt)
 {
   tree rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
 
+  /* If the rhs has side-effects we cannot propagate from it.  */
+  if (TREE_SIDE_EFFECTS (rhs))
+    return false;
+
+  /* If the rhs is a load we cannot propagate from it.  */
+  if (REFERENCE_CLASS_P (rhs))
+    return false;
+
   /* We cannot propagate ssa names that occur in abnormal phi nodes.  */
   switch (TREE_CODE_LENGTH (TREE_CODE (rhs)))
     {
@@ -351,7 +359,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
   do {
     tree tmp = NULL_TREE;
     tree cond = COND_EXPR_COND (cond_expr);
-    tree name, def_stmt, rhs;
+    tree name, def_stmt, rhs0 = NULL_TREE, rhs1 = NULL_TREE;
     bool single_use_p;
 
     /* We can do tree combining on SSA_NAME and comparison expressions.  */
@@ -366,9 +374,9 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	    && can_propagate_from (def_stmt))
 	  {
 	    tree op1 = TREE_OPERAND (cond, 1);
-	    rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
+	    rhs0 = GIMPLE_STMT_OPERAND (def_stmt, 1);
 	    tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
-				          fold_convert (TREE_TYPE (op1), rhs),
+				          fold_convert (TREE_TYPE (op1), rhs0),
 				          op1, !single_use_p);
 	  }
 	/* If that wasn't successful, try the second operand.  */
@@ -382,12 +390,20 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	        || !can_propagate_from (def_stmt))
 	      return did_something;
 
-	    rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
+	    rhs1 = GIMPLE_STMT_OPERAND (def_stmt, 1);
 	    tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
 					  op0,
-				          fold_convert (TREE_TYPE (op0), rhs),
+				          fold_convert (TREE_TYPE (op0), rhs1),
 					  !single_use_p);
 	  }
+	/* If that wasn't successful either, try both operands.  */
+	if (tmp == NULL_TREE
+	    && rhs0 != NULL_TREE
+	    && rhs1 != NULL_TREE)
+	  tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
+					rhs0,
+				        fold_convert (TREE_TYPE (rhs0), rhs1),
+					!single_use_p);
       }
     else if (TREE_CODE (cond) == SSA_NAME)
       {
@@ -397,9 +413,9 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	    || !can_propagate_from (def_stmt))
 	  return did_something;
 
-	rhs = GIMPLE_STMT_OPERAND (def_stmt, 1);
-	tmp = combine_cond_expr_cond (NE_EXPR, boolean_type_node, rhs,
-				      build_int_cst (TREE_TYPE (rhs), 0),
+	rhs0 = GIMPLE_STMT_OPERAND (def_stmt, 1);
+	tmp = combine_cond_expr_cond (NE_EXPR, boolean_type_node, rhs0,
+				      build_int_cst (TREE_TYPE (rhs0), 0),
 				      false);
       }
 
