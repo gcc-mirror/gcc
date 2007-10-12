@@ -1,3 +1,7 @@
+2007-10-12  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* g++.dg/torture/pr33572.C (main): Allow argc to be zero.
+
 2007-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33542
