@@ -1,3 +1,8 @@
+2007-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/33742
+	* gcc.dg/pr33742.c: New testcase.
+
 2007-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33645

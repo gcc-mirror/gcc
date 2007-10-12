@@ -1,3 +1,10 @@
+2007-10-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR tree-optimization/33742
+	* tree-vect-transform.c (vectorizable_operation): Return false
+	if get_vectype_for_scalar_type for scalar_dest can't be determined.
+	(vectorizable_call): Same for rhs_type and lhs_type.
+
 2007-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33645
