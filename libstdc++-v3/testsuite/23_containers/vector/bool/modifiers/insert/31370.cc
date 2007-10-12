@@ -24,6 +24,12 @@
 #include <stdexcept>
 #include <testsuite_hooks.h>
 
+#ifndef _GLIBCXX_DEBUG
+  using std::_S_word_bit;
+#else
+  using std::_GLIBCXX_STD_D::_S_word_bit;
+#endif
+
 inline void
 check_cap_ge_size(const std::vector<bool>& x)
 {
@@ -62,7 +68,7 @@ void test01()
     {
       std::vector<bool> x;
       x.resize(x.max_size() / 2 + 1, false); 
-      for(int i = 0; i < std::_S_word_bit; ++i)
+      for(int i = 0; i < _S_word_bit; ++i)
 	x.push_back(false);
       check_cap_ge_size(x);
     }
@@ -75,7 +81,7 @@ void test01()
     {
       std::vector<bool> x;
       x.resize(x.max_size() / 2 + 1, false); 
-      x.insert(x.end(), std::_S_word_bit, false);
+      x.insert(x.end(), _S_word_bit, false);
       check_cap_ge_size(x);
     }
   catch(std::bad_alloc&)
@@ -87,7 +93,7 @@ void test01()
     {
       std::vector<bool> x;
       x.resize(x.max_size() / 2 + 1, false); 
-      std::vector<bool> y(std::_S_word_bit, false);
+      std::vector<bool> y(_S_word_bit, false);
       x.insert(x.end(), y.begin(), y.end());
       check_cap_ge_size(x);
     }
@@ -101,8 +107,8 @@ void test01()
   try
     {
       std::vector<bool> x;
-      x.resize(x.max_size() - std::_S_word_bit, false); 
-      for(int i = 0; i < std::_S_word_bit; ++i)
+      x.resize(x.max_size() - _S_word_bit, false); 
+      for(int i = 0; i < _S_word_bit; ++i)
 	x.push_back(false);
       check_cap_ge_size(x);
     }
@@ -114,8 +120,8 @@ void test01()
   try
     {
       std::vector<bool> x;
-      x.resize(x.max_size() - std::_S_word_bit, false); 
-      x.insert(x.end(), std::_S_word_bit, false);
+      x.resize(x.max_size() - _S_word_bit, false); 
+      x.insert(x.end(), _S_word_bit, false);
       check_cap_ge_size(x);
     }
   catch(std::bad_alloc&)
@@ -126,8 +132,8 @@ void test01()
   try
     {
       std::vector<bool> x;
-      x.resize(x.max_size() - std::_S_word_bit, false); 
-      std::vector<bool> y(std::_S_word_bit, false);
+      x.resize(x.max_size() - _S_word_bit, false); 
+      std::vector<bool> y(_S_word_bit, false);
       x.insert(x.end(), y.begin(), y.end());
       check_cap_ge_size(x);
     }
@@ -141,8 +147,8 @@ void test01()
   try
     {
       std::vector<bool> x;
-      x.resize(x.max_size() - std::_S_word_bit, false); 
-      for(int i = 0; i < std::_S_word_bit + 1; ++i)
+      x.resize(x.max_size() - _S_word_bit, false); 
+      for(int i = 0; i < _S_word_bit + 1; ++i)
 	x.push_back(false);
       ++myexit;
     }
@@ -156,8 +162,8 @@ void test01()
   try
     {
       std::vector<bool> x;
-      x.resize(x.max_size() - std::_S_word_bit, false); 
-      x.insert(x.end(), std::_S_word_bit + 1, false);
+      x.resize(x.max_size() - _S_word_bit, false); 
+      x.insert(x.end(), _S_word_bit + 1, false);
       ++myexit;
     }
   catch(std::bad_alloc)
@@ -170,8 +176,8 @@ void test01()
   try
     {
       std::vector<bool> x;
-      x.resize(x.max_size() - std::_S_word_bit, false); 
-      std::vector<bool> y(std::_S_word_bit + 1, false);
+      x.resize(x.max_size() - _S_word_bit, false); 
+      std::vector<bool> y(_S_word_bit + 1, false);
       x.insert(x.end(), y.begin(), y.end());
       ++myexit;
     }

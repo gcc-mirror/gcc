@@ -37,7 +37,7 @@
 // std::tr1::unordered_multiset, and std::tr1::unordered_multimap.
 // hashtable has many template parameters, partly to accommodate
 // the differences between those four classes and partly to 
-// accommodate policy choices that go beyond what TR1 calls for.
+// accommodate policy choices that go beyond TR1 specifications.
 
 // Class template hashtable attempts to encapsulate all reasonable
 // variation among hash tables that use chaining.  It does not handle
