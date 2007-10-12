@@ -1,3 +1,8 @@
+2007-10-12  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/26698
+	* g++.dg/conversion/op4.C: New test.
+
 2007-10-12  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* g++.dg/torture/pr33572.C (main): Allow argc to be zero.
