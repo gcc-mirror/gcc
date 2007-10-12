@@ -1,3 +1,7 @@
+2007-10-12  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* global.c (build_insn_chain): Formatting fixes.
+
 2007-10-12  Richard Guenther <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_into_cond): For
