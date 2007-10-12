@@ -8669,18 +8669,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	r = NULL_TREE;
 
 	gcc_assert (TREE_VEC_LENGTH (args) > 0);
-	if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-	    || TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
-	    || TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
-	  {
-	    idx = TEMPLATE_TYPE_IDX (t);
-	    level = TEMPLATE_TYPE_LEVEL (t);
-	  }
-	else
-	  {
-	    idx = TEMPLATE_PARM_IDX (t);
-	    level = TEMPLATE_PARM_LEVEL (t);
-	  }
+	template_parm_level_and_index (t, &level, &idx); 
 
 	levels = TMPL_ARGS_DEPTH (args);
 	if (level <= levels)
