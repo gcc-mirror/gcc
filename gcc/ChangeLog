@@ -1,3 +1,7 @@
+2007-10-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/c4x/c4x.md (mulqi3, mulhi3): Use optab_libfunc.
+
 2007-10-12  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* global.c (build_insn_chain): Formatting fixes.
