@@ -1,3 +1,9 @@
+2007-10-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gthr-posix.h (__gthread_active_init): Create detached instead of
+	joinable thread when testing whether threads are active on hppa-hpux.
+	* gthr-posix95.h (__gthread_active_init): Likewise.
+
 2007-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33676

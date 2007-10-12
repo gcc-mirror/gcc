@@ -246,20 +246,20 @@ __gthread_active_init (void)
 {
   static pthread_mutex_t __gthread_active_mutex = PTHREAD_MUTEX_INITIALIZER;
   pthread_t t;
+  pthread_attr_t a;
   int result;
 
   __gthrw_(pthread_mutex_lock) (&__gthread_active_mutex);
   if (__gthread_active < 0)
     {
-      result = __gthrw_(pthread_create) (&t, NULL, __gthread_start, NULL);
+      __gthrw_(pthread_attr_init) (&a);
+      __gthrw_(pthread_attr_setdetachstate) (&a, PTHREAD_CREATE_DETACHED);
+      result = __gthrw_(pthread_create) (&t, &a, __gthread_start, NULL);
       if (result != ENOSYS)
-	{
-	  __gthread_active = 1;
-	  if (!result)
-	    __gthrw_(pthread_join) (t, NULL);
-	}
+	__gthread_active = 1;
       else
 	__gthread_active = 0;
+      __gthrw_(pthread_attr_destroy) (&a);
     }
   __gthrw_(pthread_mutex_unlock) (&__gthread_active_mutex);
 }
