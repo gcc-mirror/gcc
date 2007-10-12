@@ -360,7 +360,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
     tree tmp = NULL_TREE;
     tree cond = COND_EXPR_COND (cond_expr);
     tree name, def_stmt, rhs0 = NULL_TREE, rhs1 = NULL_TREE;
-    bool single_use_p;
+    bool single_use0_p = false, single_use1_p = false;
 
     /* We can do tree combining on SSA_NAME and comparison expressions.  */
     if (COMPARISON_CLASS_P (cond)
@@ -369,7 +369,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	/* For comparisons use the first operand, that is likely to
 	   simplify comparisons against constants.  */
 	name = TREE_OPERAND (cond, 0);
-	def_stmt = get_prop_source_stmt (name, false, &single_use_p);
+	def_stmt = get_prop_source_stmt (name, false, &single_use0_p);
 	if (def_stmt != NULL_TREE
 	    && can_propagate_from (def_stmt))
 	  {
@@ -377,7 +377,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	    rhs0 = GIMPLE_STMT_OPERAND (def_stmt, 1);
 	    tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
 				          fold_convert (TREE_TYPE (op1), rhs0),
-				          op1, !single_use_p);
+				          op1, !single_use0_p);
 	  }
 	/* If that wasn't successful, try the second operand.  */
 	if (tmp == NULL_TREE
@@ -385,7 +385,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	  {
 	    tree op0 = TREE_OPERAND (cond, 0);
 	    name = TREE_OPERAND (cond, 1);
-	    def_stmt = get_prop_source_stmt (name, false, &single_use_p);
+	    def_stmt = get_prop_source_stmt (name, false, &single_use1_p);
 	    if (def_stmt == NULL_TREE
 	        || !can_propagate_from (def_stmt))
 	      return did_something;
@@ -394,7 +394,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	    tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
 					  op0,
 				          fold_convert (TREE_TYPE (op0), rhs1),
-					  !single_use_p);
+					  !single_use1_p);
 	  }
 	/* If that wasn't successful either, try both operands.  */
 	if (tmp == NULL_TREE
@@ -403,7 +403,7 @@ forward_propagate_into_cond (tree cond_expr, tree stmt)
 	  tmp = combine_cond_expr_cond (TREE_CODE (cond), boolean_type_node,
 					rhs0,
 				        fold_convert (TREE_TYPE (rhs0), rhs1),
-					!single_use_p);
+					!(single_use0_p && single_use1_p));
       }
     else if (TREE_CODE (cond) == SSA_NAME)
       {
