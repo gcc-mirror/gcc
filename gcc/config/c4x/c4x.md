@@ -2085,7 +2085,7 @@
                                           operands[2]));
             DONE;
          }
-       c4x_emit_libcall3 (smul_optab->handlers[(int) QImode].libfunc,
+       c4x_emit_libcall3 (optab_libfunc (smul_optab, QImode),
 			  MULT, QImode, operands);
        DONE;
      }
@@ -7157,7 +7157,7 @@
                             (match_operand:HI 2 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "c4x_emit_libcall3 (smul_optab->handlers[(int) HImode].libfunc,
+  "c4x_emit_libcall3 (optab_libfunc (smul_optab, HImode),
 		      MULT, HImode, operands);
    DONE;")
 
