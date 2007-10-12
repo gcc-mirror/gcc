@@ -1,7 +1,7 @@
 2007-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33676
-	* gcc.dg/torture/pr33676.c: New.
+	* gcc.dg/pr33676.c: New.
 
 2007-10-11  Paolo Carlini  <pcarlini@suse.de>
 
