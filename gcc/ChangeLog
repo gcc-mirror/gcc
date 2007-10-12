@@ -45,7 +45,7 @@
 
 2007-10-11  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (AX_REG, BX_REG, CX_REG): New constants.
+	* config/i386/i386.md (AX_REG, DX_REG, CX_REG): New constants.
 	* config/i386/i386.c (ix86_function_arg_regno_p, function_arg_32,
 	function_value_32, function_value_64, function_value_ms_64,
 	setup_incoming_varargs_64, ix86_expand_prologue, ix86_expand_call,
