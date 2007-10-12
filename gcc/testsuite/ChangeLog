@@ -1,5 +1,10 @@
 2007-10-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/33645
+	* gcc.dg/pr33645-1.c: New test.
+	* gcc.dg/pr33645-2.c: New test.
+	* gcc.dg/pr33645-3.c: New test.
+ 
 	PR c++/32121
 	* g++.dg/ext/label4.C: Adjust error regexp.
 	* g++.dg/ext/label6.C: Adjust error regexp.

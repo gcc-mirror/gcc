@@ -397,13 +397,13 @@ change_partition_var (var_map map, tree var, int part)
 }
 
 
-static inline void mark_all_vars_used (tree *);
+static inline void mark_all_vars_used (tree *, void *data);
 
 /* Helper function for mark_all_vars_used, called via walk_tree.  */
 
 static tree
 mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
-		      void *data ATTRIBUTE_UNUSED)
+		      void *data)
 {
   tree t = *tp;
   enum tree_code_class c = TREE_CODE_CLASS (TREE_CODE (t));
@@ -420,9 +420,9 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
      fields that do not contain vars.  */
   if (TREE_CODE (t) == TARGET_MEM_REF)
     {
-      mark_all_vars_used (&TMR_SYMBOL (t));
-      mark_all_vars_used (&TMR_BASE (t));
-      mark_all_vars_used (&TMR_INDEX (t));
+      mark_all_vars_used (&TMR_SYMBOL (t), data);
+      mark_all_vars_used (&TMR_BASE (t), data);
+      mark_all_vars_used (&TMR_INDEX (t), data);
       *walk_subtrees = 0;
       return NULL;
     }
@@ -430,7 +430,14 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
   /* Only need to mark VAR_DECLS; parameters and return results are not
      eliminated as unused.  */
   if (TREE_CODE (t) == VAR_DECL)
-    set_is_used (t);
+    {
+      if (data != NULL && bitmap_bit_p ((bitmap) data, DECL_UID (t)))
+	{
+	  bitmap_clear_bit ((bitmap) data, DECL_UID (t));
+	  mark_all_vars_used (&DECL_INITIAL (t), data);
+	}
+      set_is_used (t);
+    }
 
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
@@ -547,9 +554,9 @@ remove_unused_scope_block_p (tree scope)
    eliminated during the tree->rtl conversion process.  */
 
 static inline void
-mark_all_vars_used (tree *expr_p)
+mark_all_vars_used (tree *expr_p, void *data)
 {
-  walk_tree (expr_p, mark_all_vars_used_1, NULL, NULL);
+  walk_tree (expr_p, mark_all_vars_used_1, data, NULL);
 }
 
 
@@ -562,6 +569,7 @@ remove_unused_locals (void)
   tree t, *cell;
   referenced_var_iterator rvi;
   var_ann_t ann;
+  bitmap global_unused_vars = NULL;
 
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
   /* Assume all locals are unused.  */
@@ -576,7 +584,7 @@ remove_unused_locals (void)
 
       /* Walk the statements.  */
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	mark_all_vars_used (bsi_stmt_ptr (bsi));
+	mark_all_vars_used (bsi_stmt_ptr (bsi), NULL);
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
@@ -588,17 +596,17 @@ remove_unused_locals (void)
 	    continue;
 
           def = PHI_RESULT (phi);
-          mark_all_vars_used (&def);
+	  mark_all_vars_used (&def, NULL);
 
           FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_ALL_USES)
             {
 	      tree arg = USE_FROM_PTR (arg_p);
-	      mark_all_vars_used (&arg);
+	      mark_all_vars_used (&arg, NULL);
             }
         }
     }
 
-  /* Remove unmarked vars and clear used flag.  */
+  /* Remove unmarked local vars from unexpanded_var_list.  */
   for (cell = &cfun->unexpanded_var_list; *cell; )
     {
       tree var = TREE_VALUE (*cell);
@@ -607,10 +615,47 @@ remove_unused_locals (void)
 	  && (!(ann = var_ann (var))
 	      || !ann->used))
 	{
-	  *cell = TREE_CHAIN (*cell);
-	  continue;
+	  if (is_global_var (var))
+	    {
+	      if (global_unused_vars == NULL)
+		global_unused_vars = BITMAP_ALLOC (NULL);
+	      bitmap_set_bit (global_unused_vars, DECL_UID (var));
+	    }
+	  else
+	    {
+	      *cell = TREE_CHAIN (*cell);
+	      continue;
+	    }
 	}
       cell = &TREE_CHAIN (*cell);
+    }
+
+  /* Remove unmarked global vars from unexpanded_var_list.  */
+  if (global_unused_vars != NULL)
+    {
+      for (t = cfun->unexpanded_var_list; t; t = TREE_CHAIN (t))
+	{
+	  tree var = TREE_VALUE (t);
+
+	  if (TREE_CODE (var) == VAR_DECL
+	      && is_global_var (var)
+	      && (ann = var_ann (var)) != NULL
+	      && ann->used)
+	    mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
+	}
+
+      for (cell = &cfun->unexpanded_var_list; *cell; )
+	{
+	  tree var = TREE_VALUE (*cell);
+
+	  if (TREE_CODE (var) == VAR_DECL
+	      && is_global_var (var)
+	      && bitmap_bit_p (global_unused_vars, DECL_UID (var)))
+	    *cell = TREE_CHAIN (*cell);
+	  else
+	    cell = &TREE_CHAIN (*cell);
+	}
+      BITMAP_FREE (global_unused_vars);
     }
 
   /* Remove unused variables from REFERENCED_VARs.  As a special
