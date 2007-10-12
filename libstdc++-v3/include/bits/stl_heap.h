@@ -66,53 +66,64 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // is_heap, a predicate testing whether or not a range is
-  // a heap.  This function is an extension, not part of the C++
-  // standard.
   template<typename _RandomAccessIterator, typename _Distance>
-    bool
-    __is_heap(_RandomAccessIterator __first, _Distance __n)
+    _Distance
+    __is_heap_until(_RandomAccessIterator __first, _Distance __n)
     {
       _Distance __parent = 0;
       for (_Distance __child = 1; __child < __n; ++__child)
 	{
 	  if (__first[__parent] < __first[__child])
-	    return false;
+	    return __child;
 	  if ((__child & 1) == 0)
 	    ++__parent;
 	}
-      return true;
+      return __n;
     }
 
   template<typename _RandomAccessIterator, typename _Distance,
-           typename _StrictWeakOrdering>
-    bool
-    __is_heap(_RandomAccessIterator __first, _StrictWeakOrdering __comp,
-	      _Distance __n)
+	   typename _Compare>
+    _Distance
+    __is_heap_until(_RandomAccessIterator __first, _Distance __n,
+		    _Compare __comp)
     {
       _Distance __parent = 0;
       for (_Distance __child = 1; __child < __n; ++__child)
 	{
 	  if (__comp(__first[__parent], __first[__child]))
-	    return false;
+	    return __child;
 	  if ((__child & 1) == 0)
 	    ++__parent;
 	}
-      return true;
+      return __n;
     }
+
+  // __is_heap, a predicate testing whether or not a range is a heap.
+  // This function is an extension, not part of the C++ standard.
+  template<typename _RandomAccessIterator, typename _Distance>
+    inline bool
+    __is_heap(_RandomAccessIterator __first, _Distance __n)
+    { return std::__is_heap_until(__first, __n) == __n; }
+
+  template<typename _RandomAccessIterator, typename _Compare,
+	   typename _Distance>
+    inline bool
+    __is_heap(_RandomAccessIterator __first, _Compare __comp, _Distance __n)
+    { return std::__is_heap_until(__first, __n, __comp) == __n; }
 
   template<typename _RandomAccessIterator>
     inline bool
     __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
     { return std::__is_heap(__first, std::distance(__first, __last)); }
 
-  template<typename _RandomAccessIterator, typename _StrictWeakOrdering>
+  template<typename _RandomAccessIterator, typename _Compare>
     inline bool
     __is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	      _StrictWeakOrdering __comp)
+	      _Compare __comp)
     { return std::__is_heap(__first, __comp, std::distance(__first, __last)); }
 
-  // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap.
+  // Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap,
+  // + is_heap and is_heap_until in C++0x.
 
   template<typename _RandomAccessIterator, typename _Distance, typename _Tp>
     void
@@ -474,6 +485,69 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       while (__last - __first > 1)
 	std::pop_heap(__first, _RandomAccessIterator(__last--), __comp);
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /**
+   *  @brief  Check whether a range is a heap.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @ingroup heap
+  */
+  template<typename _RandomAccessIterator>
+    inline bool
+    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    { return std::is_heap_until(__first, __last) == __last; }
+
+  /**
+   *  @brief  Check whether a range is a heap using comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   Comparison functor to use.
+   *  @ingroup heap
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline bool
+    is_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+	    _Compare __comp)
+    { return std::is_heap_until(__first, __last, __comp) == __last; }
+
+  /**
+   *  @brief  Search the end of a heap.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @ingroup heap
+   *
+   *  This operation returns the last iterator i in [first, last) for which
+   *  the range [first, i) is a heap.
+  */
+  template<typename _RandomAccessIterator>
+    inline _RandomAccessIterator
+    is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last)
+    {
+      return __first + std::__is_heap_until(__first, std::distance(__first,
+								   __last));
+    }
+
+  /**
+   *  @brief  Search the end of a heap using comparison functor.
+   *  @param  first  Start of range.
+   *  @param  last   End of range.
+   *  @param  comp   Comparison functor to use.
+   *  @ingroup heap
+   *
+   *  This operation returns the last iterator i in [first, last) for which
+   *  the range [first, i) is a heap.  Comparisons are made using comp.
+  */
+  template<typename _RandomAccessIterator, typename _Compare>
+    inline _RandomAccessIterator
+    is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last,
+		  _Compare __comp)
+    {
+      return __first + std::__is_heap_until(__first, std::distance(__first,
+								   __last),
+					    __comp);
+    }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 

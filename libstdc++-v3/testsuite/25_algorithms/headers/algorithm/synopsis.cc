@@ -401,6 +401,24 @@ namespace std
     void 
     sort_heap(_RAIter, _RAIter, _Compare);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _RAIter>
+    bool 
+    is_heap(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    bool 
+    is_heap(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    _RAIter 
+    is_heap_until(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    _RAIter 
+    is_heap_until(_RAIter, _RAIter, _Compare);
+#endif
+
   // 25.3.7, minimum and maximum:
   template<typename _Tp> 
     const _Tp& 

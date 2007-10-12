@@ -1,3 +1,24 @@
+2007-10-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_heap.h (__is_heap_until): Add.
+	(__is_heap(_RandomAccessIterator, _Distance),
+	__is_heap(_RandomAccessIterator, _Compare, _Distance)):
+	Adjust, call the latter.
+	(is_heap, is_heap_until): Add, call the above.
+	* include/bits/algorithmfwd.h: Add.
+	* testsuite/25_algorithms/is_heap/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/25_algorithms/is_heap/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_heap/1.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_heap_until/1.cc: Likewise.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc:
+	Add is_heap and is_heap_until.
+
 2007-10-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/user.cfg.in: Scan tr1_impl/hashtable.

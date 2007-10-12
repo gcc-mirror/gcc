@@ -43,6 +43,8 @@
   generate_n
   includes
   inplace_merge
+  is_heap (C++0x)
+  is_heap_until (C++0x)
   iter_swap
   lexicographical_compare
   lower_bound
@@ -178,6 +180,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _BIter, typename _Compare>
     void 
     inplace_merge(_BIter, _BIter, _BIter, _Compare);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _RAIter>
+    bool 
+    is_heap(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    bool 
+    is_heap(_RAIter, _RAIter, _Compare);
+
+  template<typename _RAIter>
+    _RAIter 
+    is_heap_until(_RAIter, _RAIter);
+
+  template<typename _RAIter, typename _Compare>
+    _RAIter 
+    is_heap_until(_RAIter, _RAIter, _Compare);
+#endif
 
   template<typename _FIter1, typename _FIter2>
     void 
