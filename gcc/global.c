@@ -1358,6 +1358,8 @@ mark_elimination (int from, int to)
     }
 }
 
+/* Print chain C to FILE.  */
+
 static void
 print_insn_chain (FILE *file, struct insn_chain *c)
 {
@@ -1366,6 +1368,9 @@ print_insn_chain (FILE *file, struct insn_chain *c)
   bitmap_print (file, &c->dead_or_set, "dead_or_set: ", "\n");
 }
 
+
+/* Print all reload_insn_chains to FILE.  */
+
 static void
 print_insn_chains (FILE *file)
 {
@@ -1373,8 +1378,11 @@ print_insn_chains (FILE *file)
   for (c = reload_insn_chain; c ; c = c->next)
     print_insn_chain (file, c);
 }
+
+
 /* Walk the insns of the current function and build reload_insn_chain,
    and record register life information.  */
+
 static void
 build_insn_chain (void)
 {
@@ -1450,7 +1458,7 @@ build_insn_chain (void)
 		      {
 			if (regno < FIRST_PSEUDO_REGISTER)
 			  {
-			    if (! fixed_regs[regno])
+			    if (!fixed_regs[regno])
 			      bitmap_set_bit (&c->dead_or_set, regno);
 			  }
 			else if (reg_renumber[regno] >= 0)
@@ -1461,16 +1469,20 @@ build_insn_chain (void)
 			&& (!DF_REF_FLAGS_IS_SET (def, DF_REF_CONDITIONAL)))
 		      {
 			rtx reg = DF_REF_REG (def);
+
 			/* We can model subregs, but not if they are
 			   wrapped in ZERO_EXTRACTS.  */
 			if (GET_CODE (reg) == SUBREG
 			    && !DF_REF_FLAGS_IS_SET (def, DF_REF_EXTRACT))
 			  {
 			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start + GET_MODE_SIZE (GET_MODE (reg));
+			    unsigned int last = start 
+			      + GET_MODE_SIZE (GET_MODE (reg));
 
-			    ra_init_live_subregs (bitmap_bit_p (live_relevant_regs, regno), 
-						  live_subregs, live_subregs_used,
+			    ra_init_live_subregs (bitmap_bit_p (live_relevant_regs, 
+								regno), 
+						  live_subregs, 
+						  live_subregs_used,
 						  regno, reg);
 			    /* Ignore the paradoxical bits.  */
 			    if ((int)last > live_subregs_used[regno])
@@ -1535,7 +1547,7 @@ build_insn_chain (void)
 		      {
 			if (regno < FIRST_PSEUDO_REGISTER)
 			  {
-			    if (! fixed_regs[regno])
+			    if (!fixed_regs[regno])
 			      bitmap_set_bit (&c->dead_or_set, regno);
 			  }
 			else if (reg_renumber[regno] >= 0)
@@ -1548,10 +1560,13 @@ build_insn_chain (void)
 			    && !DF_REF_FLAGS_IS_SET (use, DF_REF_EXTRACT)) 
 			  {
 			    unsigned int start = SUBREG_BYTE (reg);
-			    unsigned int last = start + GET_MODE_SIZE (GET_MODE (reg));
+			    unsigned int last = start 
+			      + GET_MODE_SIZE (GET_MODE (reg));
 			    
-			    ra_init_live_subregs (bitmap_bit_p (live_relevant_regs, regno), 
-						  live_subregs, live_subregs_used,
+			    ra_init_live_subregs (bitmap_bit_p (live_relevant_regs, 
+								regno), 
+						  live_subregs, 
+						  live_subregs_used,
 						  regno, reg);
 			    
 			    /* Ignore the paradoxical bits.  */
@@ -1579,13 +1594,13 @@ build_insn_chain (void)
       /* FIXME!! The following code is a disaster.  Reload needs to see the
 	 labels and jump tables that are just hanging out in between
 	 the basic blocks.  See pr33676.  */
-
       insn = BB_HEAD (bb);
-
+      
       /* Skip over the barriers and cruft.  */
-      while (insn && (BARRIER_P (insn) || NOTE_P (insn) || BLOCK_FOR_INSN (insn) == bb))
+      while (insn && (BARRIER_P (insn) || NOTE_P (insn) 
+		      || BLOCK_FOR_INSN (insn) == bb))
 	insn = PREV_INSN (insn);
-	
+      
       /* While we add anything except barriers and notes, the focus is
 	 to get the labels and jump tables into the
 	 reload_insn_chain.  */
@@ -1595,24 +1610,24 @@ build_insn_chain (void)
 	    {
 	      if (BLOCK_FOR_INSN (insn))
 		break;
-
+	      
 	      c = new_insn_chain ();
 	      c->next = next;
 	      next = c;
 	      *p = c;
 	      p = &c->prev;
 	      
-	      c->insn = insn;
 	      /* The block makes no sense here, but it is what the old
 		 code did.  */
 	      c->block = bb->index;
+	      c->insn = insn;
 	      bitmap_copy (&c->live_throughout, live_relevant_regs);
 	    }	  
 	  insn = PREV_INSN (insn);
 	}
     }
 
-  for (i = 0; i < (unsigned int)max_regno; i++)
+  for (i = 0; i < (unsigned int) max_regno; i++)
     if (live_subregs[i])
       free (live_subregs[i]);
 
