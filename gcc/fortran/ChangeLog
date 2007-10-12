@@ -1,5 +1,11 @@
 2007-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33542
+	* resolve.c (resolve_actual_arglist): If the actual argument is
+	ambiguous, then there is an error.
+
+2007-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/33664
 	* expr.c (gfc_specification_expr): If a function is not
 	external, intrinsic or pure is an error.  Set the symbol pure
