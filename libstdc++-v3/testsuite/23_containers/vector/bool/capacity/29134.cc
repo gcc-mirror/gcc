@@ -27,13 +27,20 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::vector<bool> vb;
+  using std::vector;
+  using std::numeric_limits;
+
+#ifndef _GLIBCXX_DEBUG
+  using std::_S_word_bit;
+#else
+  using std::_GLIBCXX_STD_D::_S_word_bit;
+#endif
 
   // Actually, vector<bool> is special, see libstdc++/31370.
-  typedef std::vector<bool>::difference_type difference_type;
+  vector<bool> vb;
+  typedef vector<bool>::difference_type difference_type;
   VERIFY( vb.max_size()
-	  == (std::numeric_limits<difference_type>::max()
-	      - int(std::_S_word_bit) + 1) );
+	  == (numeric_limits<difference_type>::max() - int(_S_word_bit) + 1) );
 }
 
 int main()

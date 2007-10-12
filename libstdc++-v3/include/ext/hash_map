@@ -120,7 +120,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
       get_allocator() const
       { return _M_ht.get_allocator(); }
 
-    public:
       hash_map()
       : _M_ht(100, hasher(), key_equal(), allocator_type()) {}
   
@@ -158,7 +157,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
 	: _M_ht(__n, __hf, __eql, __a)
         { _M_ht.insert_unique(__f, __l); }
 
-    public:
       size_type
       size() const
       { return _M_ht.size(); }
@@ -196,7 +194,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
       end() const
       { return _M_ht.end(); }
 
-    public:
       pair<iterator, bool>
       insert(const value_type& __obj)
       { return _M_ht.insert_unique(__obj); }
@@ -342,7 +339,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
       get_allocator() const
       { return _M_ht.get_allocator(); }
 
-    public:
       hash_multimap()
       : _M_ht(100, hasher(), key_equal(), allocator_type()) {}
 
@@ -380,7 +376,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
 	: _M_ht(__n, __hf, __eql, __a)
         { _M_ht.insert_equal(__f, __l); }
 
-    public:
       size_type
       size() const
       { return _M_ht.size(); }
@@ -418,7 +413,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
       end() const
       { return _M_ht.end(); }
 
-    public:
       iterator
       insert(const value_type& __obj)
       { return _M_ht.insert_equal(__obj); }
@@ -468,7 +462,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(__gnu_cxx, _GLIBCXX_EXT_D)
       clear()
       { _M_ht.clear(); }
 
-    public:
       void
       resize(size_type __hint)
       { _M_ht.resize(__hint); }

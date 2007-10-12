@@ -1,3 +1,32 @@
+2007-10-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/doxygen/user.cfg.in: Scan tr1_impl/hashtable.
+	* include/tr1_impl/hashtable: Correct comment.
+
+	* include/ext/hash_map: Remove extraneous public markers.
+	* include/ext/hash_set: Same.
+
+	* testsuite/25_algorithms/headers/parallel_algorithm.cc: Move
+	inside algorithm directory.	
+	* testsuite/25_algorithms/headers/algorithm_parallel_mode.cc: Same.
+	* testsuite/25_algorithms/headers/parallel_algorithm_mixed1.cc: Same.
+	* testsuite/25_algorithms/headers/parallel_algorithm_mixed2.cc: Same.
+	* testsuite/25_algorithms/headers/algorithm/parallel_algorithm.cc:
+	To this.	
+	* testsuite/25_algorithms/headers/algorithm/
+	algorithm_parallel_mode.cc: Same.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_mixed1.cc: Same.
+	* testsuite/25_algorithms/headers/algorithm/
+	parallel_algorithm_mixed2.cc: Same.
+
+	* testsuite/21_strings/basic_string/requirements/
+	explicit_instantiation/debug.cc: Remove exception text.
+	
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Fix for debug mode testing.	
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Same.
+	
 2007-10-12  Jesper Nilsson  <jesper.nilsson@axis.com>
 
        * testsuite/tr1/5_numerical_facilities/special_functions/
