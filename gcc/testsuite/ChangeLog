@@ -1,3 +1,12 @@
+2007-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/32121
+	* g++.dg/ext/label4.C: Adjust error regexp.
+	* g++.dg/ext/label6.C: Adjust error regexp.
+	* g++.dg/ext/label7.C: New test.
+	* g++.dg/ext/label8.C: New test.
+	* g++.dg/ext/label9.C: New test.
+
 2007-10-11  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	PR middle-end/33676

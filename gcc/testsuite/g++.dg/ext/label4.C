@@ -3,4 +3,4 @@
 
 // { dg-do compile }
 
-__label__ *l;  // { dg-error "before" }
+__label__ *l;  // { dg-error "not at the beginning of" }
