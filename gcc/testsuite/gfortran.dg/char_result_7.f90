@@ -16,7 +16,6 @@ program main
   end interface
 
   call test (f1 (double, 100), 200)
-  call test (f2 (double, 70), 140)
 
   call indirect (double)
 contains
@@ -31,12 +30,6 @@ contains
     f1 = ''
   end function f1
 
-  function f2 (fn, i)
-    integer :: i, fn
-    character (len = fn (i)) :: f2
-    f2 = ''
-  end function f2
-
   subroutine indirect (fn)
     interface
       integer pure function fn (x)
@@ -44,7 +37,6 @@ contains
       end function fn
     end interface
     call test (f1 (fn, 100), 200)
-    call test (f2 (fn, 70), 140)
   end subroutine indirect
 
   subroutine test (string, length)
