@@ -7,7 +7,7 @@ struct Foo { virtual void f() {} };
 int main(int argc, char**)
 {
 	std::auto_ptr<Foo> foo;
-	if (argc) {
+	if (argc >= 0) {
 		foo.reset(new Foo());
 	} else {
 		std::vector<int> v;
