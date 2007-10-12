@@ -1,3 +1,9 @@
+2007-10-12  Richard Guenther <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_into_cond): For
+	combining both operands require either both have single uses
+	or combining to a constant.
+
 2007-10-12  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/26198
