@@ -2550,7 +2550,21 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
     ctors = lookup_fnfields (totype, complete_ctor_identifier, 0);
 
   if (IS_AGGR_TYPE (fromtype))
-    conv_fns = lookup_conversions (fromtype);
+    {
+      tree to_nonref = non_reference (totype);
+      if (same_type_ignoring_top_level_qualifiers_p (to_nonref, fromtype) ||
+	  (CLASS_TYPE_P (to_nonref) && CLASS_TYPE_P (fromtype)
+	   && DERIVED_FROM_P (to_nonref, fromtype)))
+	{
+	  /* [class.conv.fct] A conversion function is never used to
+	     convert a (possibly cv-qualified) object to the (possibly
+	     cv-qualified) same object type (or a reference to it), to a
+	     (possibly cv-qualified) base class of that type (or a
+	     reference to it)...  */
+	}
+      else
+	conv_fns = lookup_conversions (fromtype);
+    }
 
   candidates = 0;
   flags |= LOOKUP_NO_CONVERSION;

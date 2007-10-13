@@ -1,3 +1,8 @@
+2007-10-13  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/26698
+	* g++.dg/conversion/op4.C: New test.
+
 2007-10-12  Zdenek Dvorak <ook@ucw.cz>
 
 	PR tree-optimization/33714

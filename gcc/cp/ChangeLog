@@ -1,3 +1,11 @@
+2007-10-13  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/26698
+	* call.c (build_user_type_conversion_1): Do not consider conversion
+	functions to convert a (possibly cv-qualified) object to the (possibly
+	cv-qualified) same object type (or a reference to it), to a (possibly
+	cv-qualified) base class of that type (or a reference to it).
+
 2007-10-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/32470
