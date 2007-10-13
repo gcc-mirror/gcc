@@ -1,3 +1,8 @@
+2007-10-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.target/powerpc/parity-1.c: POWER5 feature, not POWER6.
+	* gcc.target/powerpc/popcount-1.c: Same.
+
 2007-10-12  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/26698
