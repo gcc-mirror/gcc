@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler,
-   for IBM RS/6000 POWER running AIX V5.
-   Copyright (C) 2001, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   for IBM RS/6000 POWER running AIX V5.2.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007
+   Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -41,6 +42,12 @@ do {									\
       target_flags |= MASK_POWERPC64;					\
       warning (0, "-maix64 requires PowerPC64 architecture remain enabled"); \
     }									\
+  if (TARGET_SOFT_FLOAT && TARGET_LONG_DOUBLE_128)			\
+    {									\
+      rs6000_long_double_type_size = 64;				\
+      if (rs6000_explicit_options.long_double)				\
+	warning (0, "soft-float and long-double-128 are incompatible");	\
+    }									\
   if (TARGET_POWERPC64 && ! TARGET_64BIT)				\
     {									\
       error ("-maix64 required: 64-bit computation with 32-bit addressing not yet supported"); \
@@ -55,36 +62,28 @@ do {									\
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC \
 "%{!mcpu*: %{!maix64: \
-  %{mpower: %{!mpower2: -mpwr}} \
-  %{mpower2: -mpwr2} \
-  %{mpowerpc*: %{!mpowerpc64: -mppc}} \
   %{mpowerpc64: -mppc64} \
-  %{!mpower*: %{!mpowerpc*: %(asm_default)}}}} \
-%{mcpu=common: -mcom} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwr2} \
+  %{maltivec: -m970} \
+  %{!maltivec: %{!mpower64: %(asm_default)}}}} \
 %{mcpu=power3: -m620} \
-%{mcpu=power4: -m620} \
+%{mcpu=power4: -mpwr4} \
+%{mcpu=power5: -mpwr5} \
+%{mcpu=power5+: -mpwr5x} \
+%{mcpu=power6: -mpwr6} \
+%{mcpu=power6x: -mpwr6} \
 %{mcpu=powerpc: -mppc} \
-%{mcpu=rios: -mpwr} \
-%{mcpu=rios1: -mpwr} \
-%{mcpu=rios2: -mpwr2} \
-%{mcpu=rsc: -mpwr} \
-%{mcpu=rsc1: -mpwr} \
 %{mcpu=rs64a: -mppc} \
-%{mcpu=601: -m601} \
-%{mcpu=602: -mppc} \
 %{mcpu=603: -m603} \
 %{mcpu=603e: -m603} \
 %{mcpu=604: -m604} \
 %{mcpu=604e: -m604} \
 %{mcpu=620: -m620} \
 %{mcpu=630: -m620} \
-%{mcpu=970: -m620} \
-%{mcpu=G5: -m620}"
+%{mcpu=970: -m970} \
+%{mcpu=G5: -m970}"
 
 #undef	ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mcom"
+#define ASM_DEFAULT_SPEC "-mppc"
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()     \
@@ -92,6 +91,8 @@ do {									\
     {                                \
       builtin_define ("_AIX43");     \
       builtin_define ("_AIX51");     \
+      builtin_define ("_AIX52");     \
+      builtin_define ("_AIX53");     \
       TARGET_OS_AIX_CPP_BUILTINS (); \
     }                                \
   while (0)
@@ -104,7 +105,7 @@ do {									\
   %{pthread: -D_THREAD_SAFE}"
 
 /* The GNU C++ standard library requires that these macros be 
-   defined.  */
+   defined.  Synchronize with libstdc++ os_defines.h.  */
 #undef CPLUSPLUS_CPP_SPEC                       
 #define CPLUSPLUS_CPP_SPEC			\
   "-D_ALL_SOURCE				\
@@ -112,17 +113,16 @@ do {									\
    %{mpe: -I/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
 
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT MASK_NEW_MNEMONICS
+#undef  TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_POWERPC | MASK_NEW_MNEMONICS)
 
-#undef PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_PPC604e
+#undef  PROCESSOR_DEFAULT
+#define PROCESSOR_DEFAULT PROCESSOR_POWER5
+#undef  PROCESSOR_DEFAULT64
+#define PROCESSOR_DEFAULT64 PROCESSOR_POWER5
 
-/* AIX does not support Altivec.  */
-#undef  TARGET_ALTIVEC
-#define TARGET_ALTIVEC 0
-#undef  TARGET_ALTIVEC_ABI
-#define TARGET_ALTIVEC_ABI 0
+#undef  TARGET_POWER
+#define TARGET_POWER 0
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
@@ -134,7 +134,6 @@ do {									\
    `MULTILIB_OPTIONS' are set by default.  *Note Target Fragment::.  */
 
 #undef	MULTILIB_DEFAULTS
-#define	MULTILIB_DEFAULTS { "mcpu=common" }
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
@@ -182,6 +181,14 @@ do {									\
 
 #undef LD_INIT_SWITCH
 #define LD_INIT_SWITCH "-binitfini"
+
+/* AIX 5.2 has the float and long double forms of math functions.  */
+#undef TARGET_C99_FUNCTIONS
+#define TARGET_C99_FUNCTIONS  1
+
+#ifndef _AIX52
+extern long long int    atoll(const char *);  
+#endif
 
 /* This target uses the aix64.opt file.  */
 #define TARGET_USES_AIX64_OPT 1
