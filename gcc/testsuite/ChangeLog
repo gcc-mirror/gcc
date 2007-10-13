@@ -1,3 +1,10 @@
+2007-10-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33254
+	PR fortran/33727
+	* bounds_check_10.f90: New.
+
 2007-10-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.target/powerpc/parity-1.c: POWER5 feature, not POWER6.
