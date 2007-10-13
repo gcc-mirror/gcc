@@ -1153,7 +1153,7 @@ GC_PTR GC_get_thread_stack_base()
 #   ifdef STACK_GROWS_DOWN
       return stack_addr + stack_size;
 #   else
-      return stack_addr - stack_size;
+      return stack_addr;
 #   endif
 
 # else
