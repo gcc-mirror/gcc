@@ -1,3 +1,13 @@
+2007-10-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix53.h: New file.
+	* config/rs6000/aix{41,43,51,52}.h (TARGET_ALTIVEC): Define to 0.
+	(TARGET_ALTIVEC_ABI): Same.
+	* config/rs6000/aix.h (TARGET_ALTIVEC): Delete.
+	(TARGET_ALTIVEC_ABI): Delete.
+	* config.gcc (powerpc-ibm-aix5*): Rename to aix5.2.  Add new
+	stanza defaulting to aix5.3.
+
 2007-10-12  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/i386/i386.md (SI_REG, DI_REG): New constants.
