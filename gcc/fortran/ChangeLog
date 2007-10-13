@@ -1,3 +1,12 @@
+2007-10-13  Tobias Schlüter  <tobi@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33254
+	PR fortran/33727
+	* trans-array.c (get_array_ctor_var_strlen): Check upper bound for
+	constness instead of lower bound.
+	(get_array_ctor_strlen): Add bounds-checking code.
+
 2007-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33542

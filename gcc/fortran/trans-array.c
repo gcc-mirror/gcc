@@ -1340,7 +1340,7 @@ get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
 
 	case REF_SUBSTRING:
 	  if (ref->u.ss.start->expr_type != EXPR_CONSTANT
-		|| ref->u.ss.start->expr_type != EXPR_CONSTANT)
+	      || ref->u.ss.end->expr_type != EXPR_CONSTANT)
 	    break;
 	  mpz_init_set_ui (char_len, 1);
 	  mpz_add (char_len, char_len, ref->u.ss.end->value.integer);
@@ -1413,6 +1413,7 @@ bool
 get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
 {
   bool is_const;
+  tree first_len = NULL_TREE;
   
   is_const = TRUE;
 
@@ -1446,6 +1447,23 @@ get_array_ctor_strlen (stmtblock_t *block, gfc_constructor * c, tree * len)
 	  is_const = false;
 	  get_array_ctor_all_strlen (block, c->expr, len);
 	  break;
+	}
+      if (flag_bounds_check)
+	{
+	  if (!first_len)
+	    first_len = *len;
+	  else
+	    {
+	      /* Verify that all constructor elements are of the same
+		 length.  */
+	      tree cond = fold_build2 (NE_EXPR, boolean_type_node,
+				       first_len, *len);
+	      gfc_trans_runtime_check
+		(cond, block, &c->expr->where,
+		 "Different CHARACTER lengths (%ld/%ld) in array constructor",
+		 fold_convert (long_integer_type_node, first_len),
+		 fold_convert (long_integer_type_node, *len));
+	    }
 	}
     }
 
