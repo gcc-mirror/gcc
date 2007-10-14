@@ -1,3 +1,12 @@
+2007-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/tr1_impl/boost_shared_ptr.h: (__weak_ptr::lock()): Add
+	missing template argument.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
+	explicit_instantiation/2.cc: New.
+	* testsuite/tr1/2_general_utilities/memory/weak_ptr/
+	explicit_instantiation/2.cc: New.
+
 2007-10-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/33734

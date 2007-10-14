@@ -857,7 +857,7 @@ _GLIBCXX_BEGIN_NAMESPACE(tr1)
 	    // Q: How can we get here?
 	    // A: Another thread may have invalidated r after the
 	    //    use_count test above.
-	    return __shared_ptr<element_type>();
+	    return __shared_ptr<element_type, _Lp>();
 	  }
 	
 #else
