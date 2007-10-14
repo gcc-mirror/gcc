@@ -520,7 +520,6 @@ extern struct c_declspecs *declspecs_add_attrs (struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 
 /* in c-objc-common.c */
-extern int c_disregard_inline_limits (const_tree);
 extern int c_cannot_inline_tree_fn (tree *);
 extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);

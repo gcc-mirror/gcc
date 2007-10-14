@@ -4837,7 +4837,6 @@ extern tree fold_builtin_snprintf_chk (tree, tree, enum built_in_function);
 extern bool fold_builtin_next_arg (tree, bool);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree build_function_call_expr (tree, tree);
-extern tree fold_build_call_expr (tree, tree, tree, tree);
 extern tree fold_builtin_call_array (tree, tree, int, tree *);
 extern void debug_fold_checksum (const_tree);
 extern tree build_call_expr (tree, int, ...);

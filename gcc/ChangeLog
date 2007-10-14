@@ -7,6 +7,10 @@
 	tree-vect-transform.c: Fix comment typos.
 	* doc/extend.texi: Fix a typo.
 
+	* c-common.h: Remove the prototype for c_expand_body.
+	* c-tree.h: Remove the prototype for c_disregard_inline_limits.
+	* tree.h: Remove the prototype for fold_build_call_expr.
+
 2007-10-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix53.h: New file.
