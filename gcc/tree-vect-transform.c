@@ -1381,7 +1381,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
 }
 
 
-/* Get vectorized defintions from SLP_NODE that contains corresponding
+/* Get vectorized definitions from SLP_NODE that contains corresponding
    vectorized def-stmts.  */
  
 static void

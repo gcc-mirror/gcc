@@ -2173,7 +2173,7 @@ optimize_double_finally (tree one, tree two)
 }
 
 /* Perform EH refactoring optimizations that are simpler to do when code
-   flow has been lowered but EH structurs haven't.  */
+   flow has been lowered but EH structures haven't.  */
 
 static void
 refactor_eh_r (tree t)

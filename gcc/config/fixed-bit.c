@@ -465,7 +465,7 @@ FIXED_DIVHELPER (FIXED_C_TYPE a, FIXED_C_TYPE b, word_type satp)
   r = pos_a >> (FIXED_WIDTH - FBITS);
 #endif
 
-  /* Unsigned divide r by pos_b to quo_r.  The remanider is in mod.  */
+  /* Unsigned divide r by pos_b to quo_r.  The remainder is in mod.  */
   quo_r = (UINT_C_TYPE)r / (UINT_C_TYPE)pos_b;
   mod = (UINT_C_TYPE)r % (UINT_C_TYPE)pos_b;
   quo_s = 0;

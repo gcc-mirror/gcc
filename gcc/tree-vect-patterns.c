@@ -545,7 +545,7 @@ vect_recog_pow_pattern (tree last_stmt, tree *type_in, tree *type_out)
    stmts that constitute the pattern. In this case it will be:
         WIDEN_SUM <x_t, sum_0>
 
-   Note: The widneing-sum idiom is a widening reduction pattern that is 
+   Note: The widening-sum idiom is a widening reduction pattern that is 
 	 vectorized without preserving all the intermediate results. It
          produces only N/2 (widened) results (by summing up pairs of 
 	 intermediate results) rather than all N results.  Therefore, we 

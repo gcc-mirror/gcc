@@ -2876,7 +2876,7 @@ struct bitfield_overlap_info
 };
 
 /* Return true if a BIT_FIELD_REF<(FLD->parent), BLEN, BPOS>
-   expression (refereced as BF below) accesses any of the bits in FLD,
+   expression (referenced as BF below) accesses any of the bits in FLD,
    false if it doesn't.  If DATA is non-null, its field_len and
    field_pos are filled in such that BIT_FIELD_REF<(FLD->parent),
    field_len, field_pos> (referenced as BFLD below) represents the

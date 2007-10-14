@@ -117,7 +117,7 @@ __get_cpuid_max (unsigned int __ext, unsigned int *__sig)
 /* Return cpuid data for requested cpuid level, as found in returned
    eax, ebx, ecx and edx registers.  The function checks if cpuid is
    supported and returns 1 for valid cpuid information or 0 for
-   unsupported cpuid level.  All pointers are requred to be non-null.  */
+   unsupported cpuid level.  All pointers are required to be non-null.  */
 
 static __inline int
 __get_cpuid (unsigned int __level,

@@ -7749,7 +7749,7 @@
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "TI")])
 
-;; SSE5 parallel integer mutliply/add instructions for the intrinisics
+;; SSE5 parallel integer multiply/add instructions for the intrinisics
 (define_insn "sse5_pmacsswd"
   [(set (match_operand:V4SI 0 "register_operand" "=x,x,x")
 	(ss_plus:V4SI

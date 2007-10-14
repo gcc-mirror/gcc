@@ -1429,7 +1429,7 @@ unsigned int ix86_tune_features[X86_TUNE_LAST] = {
      replacement is long decoded, so this split helps here as well.  */
   m_K6,
 
-  /* X86_TUNE_USE_VECTOR_CONVERTS: Preffer vector packed SSE conversion
+  /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
      from integer to FP. */
   m_AMDFAM10,
 };
@@ -13442,8 +13442,8 @@ ix86_expand_sse4_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 #define PPERM_REV_INV	0x60		/* bit reverse & invert src */
 #define PPERM_ZERO	0x80		/* all 0's */
 #define PPERM_ONES	0xa0		/* all 1's */
-#define PPERM_SIGN	0xc0		/* propigate sign bit */
-#define PPERM_INV_SIGN	0xe0		/* invert & propigate sign */
+#define PPERM_SIGN	0xc0		/* propagate sign bit */
+#define PPERM_INV_SIGN	0xe0		/* invert & propagate sign */
 
 #define PPERM_SRC1	0x00		/* use first source byte */
 #define PPERM_SRC2	0x10		/* use second source byte */
@@ -24879,7 +24879,7 @@ ix86_expand_round (rtx operand0, rtx operand1)
 /* Validate whether a SSE5 instruction is valid or not.
    OPERANDS is the array of operands.
    NUM is the number of operands.
-   USES_OC0 is true if the instruction uses OC0 and provides 4 varients.
+   USES_OC0 is true if the instruction uses OC0 and provides 4 variants.
    NUM_MEMORY is the maximum number of memory operands to accept.  */
 bool ix86_sse5_valid_op_p (rtx operands[], rtx insn, int num, bool uses_oc0, int num_memory)
 {
@@ -24960,7 +24960,7 @@ bool ix86_sse5_valid_op_p (rtx operands[], rtx insn, int num, bool uses_oc0, int
   else if (num == 4 && num_memory == 2)
     {
       /* If there are two memory operations, we can load one of the memory ops
-	 into the destination register.  This is for optimizating the
+	 into the destination register.  This is for optimizing the
 	 multiply/add ops, which the combiner has optimized both the multiply
 	 and the add insns to have a memory operation.  We have to be careful
 	 that the destination doesn't overlap with the inputs.  */
