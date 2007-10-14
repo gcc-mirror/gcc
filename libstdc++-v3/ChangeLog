@@ -1,3 +1,24 @@
+2007-10-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algo.h (is_sorted, is_sorted_until): Add.
+	* include/bits/algorithmfwd.h: Add.
+	* include/ext/algorithm: Adjust.
+	* testsuite/25_algorithms/is_sorted/requirements/
+	explicit_instantiation/2.cc: New.
+	* testsuite/25_algorithms/is_sorted/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted/1.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/1.cc: Likewise.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc:
+	Add is_sorted and is_sorted_until.
+
+	* include/bits/stl_heap.h (is_heap_until): Add concept and
+	debug-mode checks.
+
 2007-10-12  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_heap.h (__is_heap_until): Add.

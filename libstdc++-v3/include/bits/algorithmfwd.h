@@ -197,6 +197,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _RAIter, typename _Compare>
     _RAIter 
     is_heap_until(_RAIter, _RAIter, _Compare);
+
+  template<typename _FIter>
+    bool 
+    is_sorted(_FIter, _FIter);
+
+  template<typename _FIter, typename _Compare>
+    bool 
+    is_sorted(_FIter, _FIter, _Compare);
+
+  template<typename _FIter>
+    _FIter 
+    is_sorted_until(_FIter, _FIter);
+
+  template<typename _FIter, typename _Compare>
+    _FIter 
+    is_sorted_until(_FIter, _FIter, _Compare);
 #endif
 
   template<typename _FIter1, typename _FIter2>
