@@ -488,9 +488,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
   /**
-   *  @brief  Check whether a range is a heap.
+   *  @brief  Determines whether a range is a heap.
    *  @param  first  Start of range.
    *  @param  last   End of range.
+   *  @return  True if range is a heap, false otherwise.
    *  @ingroup heap
   */
   template<typename _RandomAccessIterator>
@@ -499,10 +500,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     { return std::is_heap_until(__first, __last) == __last; }
 
   /**
-   *  @brief  Check whether a range is a heap using comparison functor.
+   *  @brief  Determines whether a range is a heap using comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
    *  @param  comp   Comparison functor to use.
+   *  @return  True if range is a heap, false otherwise.
    *  @ingroup heap
   */
   template<typename _RandomAccessIterator, typename _Compare>
@@ -515,6 +517,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @brief  Search the end of a heap.
    *  @param  first  Start of range.
    *  @param  last   End of range.
+   *  @return  An iterator pointing to the first element not in the heap.
    *  @ingroup heap
    *
    *  This operation returns the last iterator i in [first, last) for which
@@ -524,6 +527,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline _RandomAccessIterator
     is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last)
     {
+      // concept requirements
+      __glibcxx_function_requires(_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_RandomAccessIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
       return __first + std::__is_heap_until(__first, std::distance(__first,
 								   __last));
     }
@@ -533,6 +543,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  @param  first  Start of range.
    *  @param  last   End of range.
    *  @param  comp   Comparison functor to use.
+   *  @return  An iterator pointing to the first element not in the heap.
    *  @ingroup heap
    *
    *  This operation returns the last iterator i in [first, last) for which
@@ -543,6 +554,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     is_heap_until(_RandomAccessIterator __first, _RandomAccessIterator __last,
 		  _Compare __comp)
     {
+      // concept requirements
+      __glibcxx_function_requires(_RandomAccessIteratorConcept<
+	    _RandomAccessIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+
       return __first + std::__is_heap_until(__first, std::distance(__first,
 								   __last),
 					    __comp);

@@ -3409,10 +3409,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Permute range into the next "dictionary" ordering using
-   *  comparison functor.
+   *          comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
-   *  @param  comp
+   *  @param  comp   A comparison functor.
    *  @return  False if wrapped to first permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
@@ -3520,10 +3520,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief  Permute range into the previous "dictionary" ordering using
-   *  comparison functor.
+   *          comparison functor.
    *  @param  first  Start of range.
    *  @param  last   End of range.
-   *  @param  comp
+   *  @param  comp   A comparison functor.
    *  @return  False if wrapped to last permutation, true otherwise.
    *
    *  Treats all permutations of the range [first,last) as a set of
@@ -3650,6 +3650,90 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  *__result = *__first;
       return __result;
     }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /**
+   *  @brief  Determines whether the elements of a sequence are sorted.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @return  True if the elements are sorted, false otherwise.
+  */
+  template<typename _ForwardIterator>
+    inline bool
+    is_sorted(_ForwardIterator __first, _ForwardIterator __last)
+    { return std::is_sorted_until(__first, __last) == __last; }
+
+  /**
+   *  @brief  Determines whether the elements of a sequence are sorted
+   *          according to a comparison functor.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  True if the elements are sorted, false otherwise.
+  */
+  template<typename _ForwardIterator, typename _Compare>
+    inline bool
+    is_sorted(_ForwardIterator __first, _ForwardIterator __last,
+	      _Compare __comp)
+    { return std::is_sorted_until(__first, __last, __comp) == __last; }
+
+  /**
+   *  @brief  Determines the end of a sorted sequence.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @return  An iterator pointing to the last iterator i in [first, last)
+   *           for which the range [first, i) is sorted.
+  */
+  template<typename _ForwardIterator>
+    _ForwardIterator
+    is_sorted_until(_ForwardIterator __first, _ForwardIterator __last)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return __last;
+
+      _ForwardIterator __next = __first;
+      for (++__next; __next != __last; __first = __next, ++__next)
+	if (*__next < *__first)
+	  return __next;
+      return __next;
+    }
+
+  /**
+   *  @brief  Determines the end of a sorted sequence using comparison functor.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  comp    A comparison functor.
+   *  @return  An iterator pointing to the last iterator i in [first, last)
+   *           for which the range [first, i) is sorted.
+  */
+  template<typename _ForwardIterator, typename _Compare>
+    _ForwardIterator
+    is_sorted_until(_ForwardIterator __first, _ForwardIterator __last,
+		    _Compare __comp)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_ForwardIteratorConcept<_ForwardIterator>)
+      __glibcxx_function_requires(_BinaryPredicateConcept<_Compare,
+	    typename iterator_traits<_ForwardIterator>::value_type,
+	    typename iterator_traits<_ForwardIterator>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      if (__first == __last)
+	return __last;
+
+      _ForwardIterator __next = __first;
+      for (++__next; __next != __last; __first = __next, ++__next)
+	if (__comp(*__next, *__first))
+	  return __next;
+      return __next;
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 _GLIBCXX_END_NAMESPACE
 

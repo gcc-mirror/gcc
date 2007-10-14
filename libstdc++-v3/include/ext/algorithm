@@ -428,6 +428,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			     __out_last - __out_first);
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  using std::is_heap;
+  using std::is_sorted;
+#else
   /**
    *  This is an SGI extension.
    *  @ingroup SGIextensions
@@ -523,6 +527,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  return false;
       return true;
     }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 
