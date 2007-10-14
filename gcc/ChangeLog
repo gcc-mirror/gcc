@@ -11,6 +11,10 @@
 	* c-tree.h: Remove the prototype for c_disregard_inline_limits.
 	* tree.h: Remove the prototype for fold_build_call_expr.
 
+	* c-objc-common.h (LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN):
+	Remove.
+	* c-tree.h: Remove the prototype for c_cannot_inline_tree_fn.
+
 2007-10-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix53.h: New file.
