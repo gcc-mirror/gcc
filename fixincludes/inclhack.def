@@ -1952,6 +1952,20 @@ fix = {
 };
 
 /*
+ *  Fix C99 constant in __POINTER_SET define.
+ */
+fix = {
+    hackname  = hpux11_pthread_const;
+    mach      = "*-hp-hpux11.[0-3]*";
+    files     = sys/pthread.h;
+    select    = "^#define[ \t]*__POINTER_SET[ \t]*\\(\\(void \\*\\) 1LL\\)";
+
+    c_fix     = format;
+    c_fix_arg = "#define __POINTER_SET\t\t((void *) 1L)";
+    test_text = "#define __POINTER_SET\t\t((void *) 1LL)";
+};
+
+/*
  *  Add missing braces to pthread initializer defines.
  */
 fix = {

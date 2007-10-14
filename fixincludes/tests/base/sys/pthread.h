@@ -9,6 +9,11 @@
 
 
 
+#if defined( HPUX11_PTHREAD_CONST_CHECK )
+#define __POINTER_SET		((void *) 1L)
+#endif  /* HPUX11_PTHREAD_CONST_CHECK */
+
+
 #if defined( HPUX_PTHREAD_INITIALIZERS_CHECK )
 #define PTHREAD_MUTEX_INITIALIZER  {					\
 	{ __PTHREAD_MUTEX_VALID, 0 },					\
