@@ -1,5 +1,9 @@
 2007-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* docs/html/Makefile: Follow up to libstdc++/14991, remove target.
+
+2007-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* src/valarray-inst.cc, include/ext/atomicity.h,
 	include/ext/concurrence.h, include/bits/basic_string.h,
 	include/bits/fstream.tcc, include/ext/vstring.h: Fix comment typos.
