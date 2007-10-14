@@ -6577,7 +6577,10 @@ grokfndecl (tree ctype,
 	       XXX Isn't this done in start_function, too?  */
 	    revert_static_member_fn (decl);
 	  if (DECL_ARTIFICIAL (old_decl))
-	    error ("definition of implicitly-declared %qD", old_decl);
+	    {
+	      error ("definition of implicitly-declared %qD", old_decl);
+	      return NULL_TREE;
+	    }
 
 	  /* Since we've smashed OLD_DECL to its
 	     DECL_TEMPLATE_RESULT, we must do the same to DECL.  */
