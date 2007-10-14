@@ -1,3 +1,9 @@
+2007-10-14  Andrew Pinski  <pinskia@gmail.com>
+
+	PR c++/30303
+	* decl.c (grokfndecl): Return NULL after the "definition of
+	implicitly-declared" error happened.
+
 2007-10-12  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/26698
