@@ -1,3 +1,9 @@
+2007-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure.ac: Don't run config-ml.in directly.
+	(multilib_arg): New.
+	* configure: Regenerated.
+
 2007-08-06  Andrew Pinski  <pinskia@gmail.com>
 
 	PR libobjc/30731
