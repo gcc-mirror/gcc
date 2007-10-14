@@ -82,9 +82,6 @@ extern void c_initialize_diagnostics (diagnostic_context *);
 #undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
 #define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
 
-#undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
-#define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
-  c_cannot_inline_tree_fn
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN c_dump_tree
 
