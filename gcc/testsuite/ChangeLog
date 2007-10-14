@@ -1,6 +1,11 @@
+2007-10-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33745
+	* gfortran.dg/bounds_check_11.f90: New.
+
 2007-10-14  Andrew Pinski  <pinskia@gmail.com>
 
-        PR c++/30303
+	PR c++/30303
 	* g++.dg/other/ctor1.C: New test.
 	* g++.dg/other/ctor2.C: New test.
 	* g++.dg/other/dtor1.C: New test.

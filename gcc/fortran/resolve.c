@@ -3215,20 +3215,32 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 /* Given start, end and stride values, calculate the minimum and
    maximum referenced indexes.  */
 
-  switch (ar->type)
+  switch (ar->dimen_type[i])
     {
-    case AR_FULL:
+    case DIMEN_VECTOR:
       break;
 
-    case AR_ELEMENT:
+    case DIMEN_ELEMENT:
       if (compare_bound (ar->start[i], as->lower[i]) == CMP_LT)
-	goto bound;
+	{
+	  gfc_warning ("Array reference at %L is out of bounds "
+		       "(%ld < %ld) in dimension %d", &ar->c_where[i],
+		       mpz_get_si (ar->start[i]->value.integer),
+		       mpz_get_si (as->lower[i]->value.integer), i+1);
+	  return SUCCESS;
+	}
       if (compare_bound (ar->start[i], as->upper[i]) == CMP_GT)
-	goto bound;
+	{
+	  gfc_warning ("Array reference at %L is out of bounds "
+		       "(%ld > %ld) in dimension %d", &ar->c_where[i],
+		       mpz_get_si (ar->start[i]->value.integer),
+		       mpz_get_si (as->upper[i]->value.integer), i+1);
+	  return SUCCESS;
+	}
 
       break;
 
-    case AR_SECTION:
+    case DIMEN_RANGE:
       {
 #define AR_START (ar->start[i] ? ar->start[i] : as->lower[i])
 #define AR_END (ar->end[i] ? ar->end[i] : as->upper[i])
@@ -3253,9 +3265,22 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 	    || (compare_bound_int (ar->stride[i], 0) == CMP_LT
 	        && comp_start_end == CMP_GT))
 	  {
-	    if (compare_bound (AR_START, as->lower[i]) == CMP_LT
-		|| compare_bound (AR_START, as->upper[i]) == CMP_GT)
-	      goto bound;
+	    if (compare_bound (AR_START, as->lower[i]) == CMP_LT)
+	      {
+		gfc_warning ("Lower array reference at %L is out of bounds "
+		       "(%ld < %ld) in dimension %d", &ar->c_where[i],
+		       mpz_get_si (AR_START->value.integer),
+		       mpz_get_si (as->lower[i]->value.integer), i+1);
+		return SUCCESS;
+	      }
+	    if (compare_bound (AR_START, as->upper[i]) == CMP_GT)
+	      {
+		gfc_warning ("Lower array reference at %L is out of bounds "
+		       "(%ld > %ld) in dimension %d", &ar->c_where[i],
+		       mpz_get_si (AR_START->value.integer),
+		       mpz_get_si (as->upper[i]->value.integer), i+1);
+		return SUCCESS;
+	      }
 	  }
 
 	/* If we can compute the highest index of the array section,
@@ -3264,11 +3289,23 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 	if (compute_last_value_for_triplet (AR_START, AR_END, ar->stride[i],
 					    last_value))
 	  {
-	    if (compare_bound_mpz_t (as->lower[i], last_value) == CMP_GT
-	        || compare_bound_mpz_t (as->upper[i], last_value) == CMP_LT)
+	    if (compare_bound_mpz_t (as->lower[i], last_value) == CMP_GT)
 	      {
+		gfc_warning ("Upper array reference at %L is out of bounds "
+		       "(%ld < %ld) in dimension %d", &ar->c_where[i],
+		       mpz_get_si (last_value),
+		       mpz_get_si (as->lower[i]->value.integer), i+1);
 	        mpz_clear (last_value);
-	        goto bound;
+		return SUCCESS;
+	      }
+	    if (compare_bound_mpz_t (as->upper[i], last_value) == CMP_LT)
+	      {
+		gfc_warning ("Upper array reference at %L is out of bounds "
+		       "(%ld > %ld) in dimension %d", &ar->c_where[i],
+		       mpz_get_si (last_value),
+		       mpz_get_si (as->upper[i]->value.integer), i+1);
+	        mpz_clear (last_value);
+		return SUCCESS;
 	      }
 	  }
 	mpz_clear (last_value);
@@ -3282,10 +3319,6 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
       gfc_internal_error ("check_dimension(): Bad array reference");
     }
 
-  return SUCCESS;
-
-bound:
-  gfc_warning ("Array reference at %L is out of bounds", &ar->c_where[i]);
   return SUCCESS;
 }
 

@@ -1,3 +1,12 @@
+2007-10-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33745
+	* trans-array.c (gfc_conv_ss_startstride): Fix dimension check.
+	(gfc_trans_array_bound_check, gfc_conv_array_ref,
+	gfc_conv_ss_startstride): Simplify error message.
+	* resolve.c (check_dimension): Fix dimension-type switch;
+	improve error message.
+
 2007-10-13  Tobias Schlüter  <tobi@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
