@@ -194,7 +194,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const bool __testin = _M_mode & ios_base::in;
       if (__testin && !_M_writing)
 	{
-	  // Check for pback madness, and if so swich back to the
+	  // Check for pback madness, and if so switch back to the
 	  // normal buffers and jet outta here before expensive
 	  // fileops happen...
 	  _M_destroy_pback();

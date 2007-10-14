@@ -46,7 +46,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // Available locking policies:
   // _S_single    single-threaded code that doesn't need to be locked.
   // _S_mutex     multi-threaded code that requires additional support
-  //              from gthr.h or abstraction layers in concurrance.h.
+  //              from gthr.h or abstraction layers in concurrence.h.
   // _S_atomic    multi-threaded code using atomic operations.
   enum _Lock_policy { _S_single, _S_mutex, _S_atomic }; 
 

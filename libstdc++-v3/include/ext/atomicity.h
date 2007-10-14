@@ -42,7 +42,7 @@
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   // Functions for portable atomic access.
-  // To abstract locking primatives across all thread policies, use:
+  // To abstract locking primitives across all thread policies, use:
   // __exchange_and_add_dispatch
   // __atomic_add_dispatch
 #ifdef _GLIBCXX_ATOMIC_BUILTINS

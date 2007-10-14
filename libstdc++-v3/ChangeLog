@@ -1,5 +1,11 @@
 2007-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* src/valarray-inst.cc, include/ext/atomicity.h,
+	include/ext/concurrence.h, include/bits/basic_string.h,
+	include/bits/fstream.tcc, include/ext/vstring.h: Fix comment typos.
+
+2007-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/tr1_impl/boost_shared_ptr.h: (__weak_ptr::lock()): Add
 	missing template argument.
 	* testsuite/tr1/2_general_utilities/memory/shared_ptr/
