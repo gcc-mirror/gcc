@@ -1,3 +1,10 @@
+2007-10-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/33700
+	* inclhack.def (hpux11_pthread_const): New.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/pthread.h: Update.
+
 2007-10-12  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure.ac: x86_64 mingw target uses twoprocess.
