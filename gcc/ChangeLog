@@ -1,3 +1,12 @@
+2007-10-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/fixed-bit.c, config/i386/cpuid.h, config/i386/i386.c,
+	config/i386/i386.md, config/i386/sse.md, function.c, jump.c,
+	modulo-sched.c, ra-conflict.c, toplev.c, tree-eh.c, tree-sra.c,
+	tree-ssa-dse.c, tree-vect-analyze.c, tree-vect-patterns.c,
+	tree-vect-transform.c: Fix comment typos.
+	* doc/extend.texi: Fix a typo.
+
 2007-10-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix53.h: New file.

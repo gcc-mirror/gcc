@@ -8143,7 +8143,7 @@ v2di __builtin_ia32_pshlq (v2di, v2di)
 v8hi __builtin_ia32_pshlw (v8hi, v8hi)
 @end smallexample
 
-The following builtin-in functions are avaialble when @option{-msse5}
+The following builtin-in functions are available when @option{-msse5}
 is used.  The second argument must be an integer constant and generate
 the machine instruction that is part of the name with the @samp{_imm}
 suffix removed.

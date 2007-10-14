@@ -5702,7 +5702,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
 
 	   asm ("" : "=r" (output), "=m" (input) : "0" (input))
 
-	 Here 'input' is used in two occurences as input (once for the
+	 Here 'input' is used in two occurrences as input (once for the
 	 input operand, once for the address in the second output operand).
 	 If we would replace only the occurence of the input operand (to
 	 make the matching) we would be left with this:
@@ -5714,7 +5714,7 @@ match_asm_constraints_1 (rtx insn, rtx *p_sets, int noutputs)
 	 value, but different pseudos) where we formerly had only one.
 	 With more complicated asms this might lead to reload failures
 	 which wouldn't have happen without this pass.  So, iterate over
-	 all operands and replace all occurences of the register used.  */
+	 all operands and replace all occurrences of the register used.  */
       for (j = 0; j < noutputs; j++)
 	if (!rtx_equal_p (SET_DEST (p_sets[j]), input)
 	    && reg_overlap_mentioned_p (input, SET_DEST (p_sets[j])))

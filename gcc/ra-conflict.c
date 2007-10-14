@@ -1086,7 +1086,7 @@ global_conflicts (void)
 		}
 
 	      /* Early clobbers, by definition, need to not only
-		 clobber the registers that are live accross the insn
+		 clobber the registers that are live across the insn
 		 but need to clobber the registers that die within the
 		 insn.  The clobbering for registers live across the
 		 insn is handled above.  */ 

@@ -653,7 +653,7 @@ execute_simple_dse (void)
 	bitmap_ior_into (variables_loaded,
 			 LOADED_SYMS (bsi_stmt (bsi)));
 
-  /* Look for statements writting into the write only variables.
+  /* Look for statements writing into the write only variables.
      And try to remove them.  */
 
   FOR_EACH_BB (bb)

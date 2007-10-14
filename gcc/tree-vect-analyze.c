@@ -2279,7 +2279,7 @@ vect_analyze_group_access (struct data_reference *dr)
 
 
 /* Analyze the access pattern of the data-reference DR.
-   In case of non-consecutive accesse call vect_analyze_group_access() to
+   In case of non-consecutive accesses call vect_analyze_group_access() to
    analyze groups of strided accesses.  */
 
 static bool

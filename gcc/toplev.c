@@ -2152,7 +2152,7 @@ lang_dependent_init (const char *name)
 void
 target_reinit (void)
 {
-  /* Reinitialise RTL backend.  */
+  /* Reinitialize RTL backend.  */
   backend_init_target ();
 
   /* Reinitialize lang-dependent parts.  */

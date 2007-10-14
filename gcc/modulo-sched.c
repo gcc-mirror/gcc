@@ -1760,7 +1760,7 @@ ps_insert_empty_row (partial_schedule_ptr ps, int split_row,
 
 /* Given U_NODE which is the node that failed to be scheduled; LOW and
    UP which are the boundaries of it's scheduling window; compute using
-   SCHED_NODES and II a row in the partial schedule that can be splitted
+   SCHED_NODES and II a row in the partial schedule that can be split
    which will separate a critical predecessor from a critical successor
    thereby expanding the window, and return it.  */
 static int
