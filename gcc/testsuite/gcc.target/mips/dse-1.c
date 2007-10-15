@@ -1,19 +1,19 @@
 /* { dg-mips-options "-mgp64 -O" } */
 
 #define TEST(ID, TYPE1, TYPE2)					\
-  union {							\
+  union u##ID {							\
     TYPE1 m1[sizeof (TYPE2) / sizeof (TYPE1)];			\
     TYPE2 m2;							\
-  } u##ID;							\
+  };								\
 								\
   /* The MIPS16 versions of the shifts we need are too		\
      expensive.  */						\
   TYPE1 __attribute__((nomips16))				\
-  f##ID (TYPE2 x)						\
+  f##ID (TYPE2 x, union u##ID *u)				\
   {								\
-    u##ID.m2 = x;						\
-    return (u##ID.m1[0]						\
-	    + u##ID.m1[sizeof (TYPE2) / sizeof (TYPE1) - 1]);	\
+    u->m2 = x;							\
+    return (u->m1[0]						\
+	    + u->m1[sizeof (TYPE2) / sizeof (TYPE1) - 1]);	\
   }
 
 TEST (1, unsigned int, unsigned long long);
@@ -32,5 +32,8 @@ TEST (10, signed char, int);
    (char, short) tests won't pass.  */
 
 /* { dg-final { scan-assembler-not "\tlh\t" } } */
+/* { dg-final { scan-assembler-not "\tlhu\t" } } */
 /* { dg-final { scan-assembler-not "\tlw\t" } } */
+/* { dg-final { scan-assembler-not "\tlwu\t" } } */
 /* { dg-final { scan-assembler-not "\tlb\t" } } */
+/* { dg-final { scan-assembler-not "\tlbu\t" } } */
