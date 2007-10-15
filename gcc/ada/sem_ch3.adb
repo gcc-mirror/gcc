@@ -3855,6 +3855,12 @@ package body Sem_Ch3 is
       Dont_Care      : Boolean;
       Others_Present : Boolean := False;
 
+      pragma Warnings (Off, Case_Table);
+      pragma Warnings (Off, Last_Choice);
+      pragma Warnings (Off, Dont_Care);
+      pragma Warnings (Off, Others_Present);
+      --  We don't care about the assigned values of any of these
+
    --  Start of processing for Analyze_Variant_Part
 
    begin
@@ -4572,6 +4578,14 @@ package body Sem_Ch3 is
         (Derived_Type, Has_Discriminants         (Parent_Type));
       Set_Corresponding_Record_Type
         (Derived_Type, Corresponding_Record_Type (Parent_Type));
+
+      --  Is_Constrained is set according the parent subtype, but is set to
+      --  False if the derived type is declared with new discriminants.
+
+      Set_Is_Constrained
+        (Derived_Type,
+         (Is_Constrained (Parent_Type) or else Constraint_Present)
+           and then not Present (Discriminant_Specifications (N)));
 
       if Constraint_Present then
          if not Has_Discriminants (Parent_Type) then
