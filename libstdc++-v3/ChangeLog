@@ -1,5 +1,11 @@
 2007-10-15  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/33773 (cont)
+	* testsuite/21_strings/headers/cwchar/macros.cc: Guard with
+	_GLIBCXX_USE_WCHAR_T, instead.
+
+2007-10-15  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/33771
 	PR libstdc++/33773
 	* testsuite/21_strings/headers/cwchar/macros.cc: Guard test with

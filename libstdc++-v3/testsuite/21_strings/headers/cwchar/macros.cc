@@ -20,7 +20,7 @@
 
 #include <cwchar>
 
-#ifdef _GLIBCXX_HAVE_WCHAR_H
+#ifdef _GLIBCXX_USE_WCHAR_T
 
 namespace gnu
 {
