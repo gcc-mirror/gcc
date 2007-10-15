@@ -173,8 +173,10 @@ package body System.Task_Primitives.Operations is
       pragma Unreferenced (Sig);
 
       T       : constant Task_Id := Self;
-      Result  : Interfaces.C.int;
       Old_Set : aliased sigset_t;
+
+      Result : Interfaces.C.int;
+      pragma Warnings (Off, Result);
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC
@@ -720,7 +722,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_Id) is
    begin
-      Hide_Yellow_Zone;
+      Hide_Unhide_Yellow_Zone (Hide => True);
       Self_ID.Common.LL.Thread := pthread_self;
       Specific.Set (Self_ID);
 
@@ -843,8 +845,8 @@ package body System.Task_Primitives.Operations is
       use System.Task_Info;
 
    begin
-      --  Account for the Yellow Zone (2 pages) and the guard page
-      --  right above. See Hide_Yellow_Zone for the rationale.
+      --  Account for the Yellow Zone (2 pages) and the guard page right above.
+      --  See Hide_Unhide_Yellow_Zone for the rationale.
 
       Adjusted_Stack_Size :=
         Interfaces.C.size_t (Stack_Size) + 3 * Get_Page_Size;
@@ -1006,6 +1008,7 @@ package body System.Task_Primitives.Operations is
    procedure Exit_Task is
    begin
       Specific.Set (null);
+      Hide_Unhide_Yellow_Zone (Hide => False);
    end Exit_Task;
 
    ----------------
