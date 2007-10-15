@@ -3402,10 +3402,8 @@ package body Exp_Util is
            or else Nkind (N) = N_Subprogram_Body
            or else Nkind (N) = N_Package_Body
          then
-            Kill_Dead_Code
-              (Declarations (N), False);
-            Kill_Dead_Code
-              (Statements (Handled_Statement_Sequence (N)));
+            Kill_Dead_Code (Declarations (N), False);
+            Kill_Dead_Code (Statements (Handled_Statement_Sequence (N)));
 
             if Nkind (N) = N_Subprogram_Body then
                Set_Is_Eliminated (Defining_Entity (N));
@@ -3414,6 +3412,10 @@ package body Exp_Util is
          elsif Nkind (N) = N_Package_Declaration then
             Kill_Dead_Code (Visible_Declarations (Specification (N)));
             Kill_Dead_Code (Private_Declarations (Specification (N)));
+
+            --  ??? After this point, Delete_Tree has been called on all
+            --  declarations in Specification (N), so references to
+            --  entities therein look suspicious.
 
             declare
                E : Entity_Id := First_Entity (Defining_Entity (N));
