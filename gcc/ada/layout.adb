@@ -819,6 +819,7 @@ package body Layout is
                OK  : Boolean;
                LLo : Uint;
                LHi : Uint;
+               pragma Warnings (Off, LHi);
 
             begin
                Set_Parent (Len, E);
@@ -1908,7 +1909,9 @@ package body Layout is
          First_Discr : Entity_Id;
          Last_Discr  : Entity_Id;
          Esiz        : SO_Ref;
-         RM_Siz      : SO_Ref;
+
+         RM_Siz : SO_Ref;
+         pragma Warnings (Off, SO_Ref);
 
          RM_Siz_Expr : Node_Id := Empty;
          --  Expression for the evolving RM_Siz value. This is typically a
@@ -2789,10 +2792,13 @@ package body Layout is
 
          --  On VMS, also reset for odd "in between" sizes, e.g. a 17-bit
          --  record is given an alignment of 4. This is more consistent with
-         --  what DEC Ada does.
+         --  what DEC Ada does (-gnatd.a turns this off which can be used to
+         --  examine the value of this special transformation).
 
-         elsif OpenVMS_On_Target and then Siz > System_Storage_Unit then
-
+         elsif OpenVMS_On_Target
+           and then not Debug_Flag_Dot_A
+           and then Siz > System_Storage_Unit
+         then
             if Siz <= 2 * System_Storage_Unit then
                Align := 2;
             elsif Siz <= 4 * System_Storage_Unit then
