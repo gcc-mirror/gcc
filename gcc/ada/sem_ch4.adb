@@ -424,8 +424,8 @@ package body Sem_Ch4 is
                   then
                      Error_Msg_N ("constraint not allowed here", E);
 
-                     if Nkind (Constraint (E))
-                       = N_Index_Or_Discriminant_Constraint
+                     if Nkind (Constraint (E)) =
+                       N_Index_Or_Discriminant_Constraint
                      then
                         Error_Msg_N
                           ("\if qualified expression was meant, " &
@@ -499,7 +499,7 @@ package body Sem_Ch4 is
 
             --  Check for missing initialization. Skip this check if we already
             --  had errors on analyzing the allocator, since in that case these
-            --  are probably cascaded errors
+            --  are probably cascaded errors.
 
             if Is_Indefinite_Subtype (Type_Id)
               and then Serious_Errors_Detected = Sav_Errs
@@ -508,8 +508,44 @@ package body Sem_Ch4 is
                   Error_Msg_N
                     ("initialization required in class-wide allocation", N);
                else
-                  Error_Msg_N
-                    ("initialization required in unconstrained allocation", N);
+                  if Ada_Version < Ada_05
+                    and then Is_Limited_Type (Type_Id)
+                  then
+                     Error_Msg_N ("unconstrained allocation not allowed", N);
+
+                     if Is_Array_Type (Type_Id) then
+                        Error_Msg_N
+                          ("\constraint with array bounds required", N);
+
+                     elsif Has_Unknown_Discriminants (Type_Id) then
+                        null;
+
+                     else pragma Assert (Has_Discriminants (Type_Id));
+                        Error_Msg_N
+                          ("\constraint with discriminant values required", N);
+                     end if;
+
+                  --  Limited Ada 2005 and general non-limited case
+
+                  else
+                     Error_Msg_N
+                       ("uninitialized unconstrained allocation not allowed",
+                        N);
+
+                     if Is_Array_Type (Type_Id) then
+                        Error_Msg_N
+                          ("\qualified expression or constraint with " &
+                           "array bounds required", N);
+
+                     elsif Has_Unknown_Discriminants (Type_Id) then
+                        Error_Msg_N ("\qualified expression required", N);
+
+                     else pragma Assert (Has_Discriminants (Type_Id));
+                        Error_Msg_N
+                          ("\qualified expression or constraint with " &
+                           "discriminant values required", N);
+                     end if;
+                  end if;
                end if;
             end if;
          end;
@@ -3908,10 +3944,12 @@ package body Sem_Ch4 is
       Actual           : Node_Id;
       X                : Interp_Index;
       It               : Interp;
-      Success          : Boolean;
       Err_Mode         : Boolean;
       New_Nam          : Node_Id;
       Void_Interp_Seen : Boolean := False;
+
+      Success : Boolean;
+      pragma Warnings (Off, Boolean);
 
    begin
       if Ada_Version >= Ada_05 then
@@ -5148,9 +5186,11 @@ package body Sem_Ch4 is
       Nam : Entity_Id;
       Typ : Entity_Id) return Boolean
    is
-      Actual  : Node_Id;
-      Formal  : Entity_Id;
+      Actual : Node_Id;
+      Formal : Entity_Id;
+
       Call_OK : Boolean;
+      pragma Warnings (Off, Call_OK);
 
    begin
       Normalize_Actuals (N, Designated_Type (Typ), False, Call_OK);
