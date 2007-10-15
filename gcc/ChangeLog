@@ -1,6 +1,12 @@
+2007-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33619
+	* tree-ssa-ter.c (is_replaceable_p): Return false for all
+	calls.
+
 2007-10-15  David Edelsohn  <edelsohn@gnu.org>
 
-	* config.gcc (powerpc-ibm-aix5*): Install altivec.h
+	* config.gcc (powerpc-ibm-aix5*): Install altivec.h.
 
 2007-10-15  Richard Guenther  <rguenther@suse.de>
 
@@ -12,7 +18,6 @@
 2007-10-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR target/33133
-	
 	* haifa-sched.c (process_insn_forw_deps_be_in_spec): Check if
 	speculation type of insn can be changed before trying to do that.
 

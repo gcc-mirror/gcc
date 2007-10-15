@@ -1,3 +1,8 @@
+2007-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/33619
+	* gcc.dg/pr33619.c: New test.
+
 2007-10-15  David Edelsohn  <edelsohn@gnu.org>
 
 	lib/target-supports.exp (check_vmx_hw_available): Add -maltivec
@@ -13,7 +18,6 @@
 2007-10-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR target/33133
-
 	* gcc.c-torture/compile/pr33133.c: New test.
 
 2007-10-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
