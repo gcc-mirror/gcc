@@ -602,6 +602,24 @@ template<typename _Alloc>
     rend() const
     { return const_reverse_iterator(begin()); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    const_iterator
+    cbegin() const
+    { return this->_M_impl._M_start; }
+
+    const_iterator
+    cend() const
+    { return this->_M_impl._M_finish; }
+
+    const_reverse_iterator
+    crbegin() const
+    { return const_reverse_iterator(end()); }
+
+    const_reverse_iterator
+    crend() const
+    { return const_reverse_iterator(begin()); }
+#endif
+
     size_type
     size() const
     { return size_type(end() - begin()); }

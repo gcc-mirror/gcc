@@ -248,40 +248,78 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       { return _M_t.get_allocator(); }
 
       /**
-       *  Returns a read/write iterator that points to the first element in the
-       *  %multiset.  Iteration is done in ascending order according to the
-       *  keys.
+       *  Returns a read-only (constant) iterator that points to the first
+       *  element in the %multiset.  Iteration is done in ascending order
+       *  according to the keys.
        */
       iterator
       begin() const
       { return _M_t.begin(); }
 
       /**
-       *  Returns a read/write iterator that points one past the last element in
-       *  the %multiset.  Iteration is done in ascending order according to the
-       *  keys.
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  element in the %multiset.  Iteration is done in ascending order
+       *  according to the keys.
        */
       iterator
       end() const
       { return _M_t.end(); }
 
       /**
-       *  Returns a read/write reverse iterator that points to the last element
-       *  in the %multiset.  Iteration is done in descending order according to
-       *  the keys.
+       *  Returns a read-only (constant) reverse iterator that points to the
+       *  last element in the %multiset.  Iteration is done in descending order
+       *  according to the keys.
        */
       reverse_iterator
       rbegin() const
       { return _M_t.rbegin(); }
 
       /**
-       *  Returns a read/write reverse iterator that points to the last element
-       *  in the %multiset.  Iteration is done in descending order according to
-       *  the keys.
+       *  Returns a read-only (constant) reverse iterator that points to the
+       *  last element in the %multiset.  Iteration is done in descending order
+       *  according to the keys.
        */
       reverse_iterator
       rend() const
       { return _M_t.rend(); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  element in the %multiset.  Iteration is done in ascending order
+       *  according to the keys.
+       */
+      iterator
+      cbegin() const
+      { return _M_t.begin(); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  element in the %multiset.  Iteration is done in ascending order
+       *  according to the keys.
+       */
+      iterator
+      cend() const
+      { return _M_t.end(); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points to the
+       *  last element in the %multiset.  Iteration is done in descending order
+       *  according to the keys.
+       */
+      reverse_iterator
+      crbegin() const
+      { return _M_t.rbegin(); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points to the
+       *  last element in the %multiset.  Iteration is done in descending order
+       *  according to the keys.
+       */
+      reverse_iterator
+      crend() const
+      { return _M_t.rend(); }
+#endif
 
       ///  Returns true if the %set is empty.
       bool

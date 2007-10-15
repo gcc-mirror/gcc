@@ -1,5 +1,89 @@
 2007-10-15  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/debug/set.h (set<>::cbegin, cend, crbegin, crend): Add.
+	* include/debug/multiset.h (set<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/debug/vector (vector<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/debug/map.h (map<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/debug/deque (deque<>::cbegin, cend, crbegin, crend): 
+	Likewise.
+	* include/debug/list (list<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/debug/multimap.h (multimap<>::cbegin, cend, crbegin,
+	crend): Likewise.
+	* include/tr1_impl/array (array<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/ext/vstring.h (__versa_string<>::cbegin, cend, crbegin,
+	crend): Likewise.
+	* include/bits/stl_list.h (list<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/bits/stl_map.h (map<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/bits/stl_set.h (set<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/bits/stl_multimap.h (multimap<>::cbegin, cend, crbegin,
+	crend): Likewise.
+	* include/bits/stl_vector.h (vector<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/bits/stl_deque.h (deque<>::cbegin, cend, crbegin, crend):
+	Likewise.
+	* include/bits/stl_multiset.h (multiset<>::cbegin, cend, crbegin,
+	crend): Likewise.
+	* include/bits/stl_bvector.h (vector<bool>::cbegin, cend, crbegin,
+	crend): Likewise.
+	* include/tr1_impl/hashtable (_Hashtable<>::cbegin, cend): Add.	
+
+	* testsuite/ext/vstring/requirements/citerators.cc: Add.
+	* testsuite/23_containers/unordered_map/requirements/citerators.cc:
+	Likewise.
+	* testsuite/23_containers/multimap/requirements/citerators.cc:
+	Likewise.
+	* testsuite/23_containers/set/requirements/citerators.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	citerators.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/citerators.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/citerators.cc: Likewise.
+	* testsuite/23_containers/vector/bool/requirements/citerators.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/citerators.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/citerators.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/citerators.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	citerators.cc: Likewise.
+	* testsuite/23_containers/map/requirements/citerators.cc: Likewise.
+	* testsuite/23_containers/array/requirements/citerators.cc: Likewise.
+
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error lines.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2007-10-15  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/33773 (cont)
 	* testsuite/21_strings/headers/cwchar/macros.cc: Guard with
 	_GLIBCXX_USE_WCHAR_T, instead.

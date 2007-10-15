@@ -97,6 +97,24 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       rend() const
       { return const_reverse_iterator(begin()); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const_iterator
+      cbegin() const 
+      { return const_iterator(&_M_instance[0]); }
+
+      const_iterator
+      cend() const
+      { return const_iterator(&_M_instance[_Nm]); }
+
+      const_reverse_iterator 
+      crbegin() const
+      { return const_reverse_iterator(end()); }
+
+      const_reverse_iterator 
+      crend() const
+      { return const_reverse_iterator(begin()); }
+#endif
+
       // Capacity.
       size_type 
       size() const { return _Nm; }

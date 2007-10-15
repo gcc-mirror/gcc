@@ -340,6 +340,44 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       rend() const
       { return _M_t.rend(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  Returns a read-only (constant) iterator that points to the first pair
+       *  in the %map.  Iteration is done in ascending order according to the
+       *  keys.
+       */
+      const_iterator
+      cbegin() const
+      { return _M_t.begin(); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past the last
+       *  pair in the %map.  Iteration is done in ascending order according to
+       *  the keys.
+       */
+      const_iterator
+      cend() const
+      { return _M_t.end(); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points to the
+       *  last pair in the %map.  Iteration is done in descending order
+       *  according to the keys.
+       */
+      const_reverse_iterator
+      crbegin() const
+      { return _M_t.rbegin(); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points to one
+       *  before the first pair in the %map.  Iteration is done in descending
+       *  order according to the keys.
+       */
+      const_reverse_iterator
+      crend() const
+      { return _M_t.rend(); }
+#endif
+
       // capacity
       /** Returns true if the %map is empty.  (Thus begin() would equal
        *  end().)

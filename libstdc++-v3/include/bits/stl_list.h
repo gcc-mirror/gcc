@@ -691,6 +691,44 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       rend() const
       { return const_reverse_iterator(begin()); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  Returns a read-only (constant) iterator that points to the
+       *  first element in the %list.  Iteration is done in ordinary
+       *  element order.
+       */
+      const_iterator
+      cbegin() const
+      { return const_iterator(this->_M_impl._M_node._M_next); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past
+       *  the last element in the %list.  Iteration is done in ordinary
+       *  element order.
+       */
+      const_iterator
+      cend() const
+      { return const_iterator(&this->_M_impl._M_node); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points to
+       *  the last element in the %list.  Iteration is done in reverse
+       *  element order.
+       */
+      const_reverse_iterator
+      crbegin() const
+      { return const_reverse_iterator(end()); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points to one
+       *  before the first element in the %list.  Iteration is done in reverse
+       *  element order.
+       */
+      const_reverse_iterator
+      crend() const
+      { return const_reverse_iterator(begin()); }
+#endif
+
       // [23.2.2.2] capacity
       /**
        *  Returns true if the %list is empty.  (Thus begin() would equal
