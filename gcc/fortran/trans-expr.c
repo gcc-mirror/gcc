@@ -2110,6 +2110,52 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       
 	  return 0;
 	}
+      else if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
+        {
+	  gfc_se arg1se;
+	  gfc_se arg2se;
+
+	  /* Build the addr_expr for the first argument.  The argument is
+	     already an *address* so we don't need to set want_pointer in
+	     the gfc_se.  */
+	  gfc_init_se (&arg1se, NULL);
+	  gfc_conv_expr (&arg1se, arg->expr);
+	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
+	  gfc_add_block_to_block (&se->post, &arg1se.post);
+
+	  /* See if we were given two arguments.  */
+	  if (arg->next == NULL)
+	    /* Only given one arg so generate a null and do a
+	       not-equal comparison against the first arg.  */
+	    se->expr = build2 (NE_EXPR, boolean_type_node, arg1se.expr,
+			       fold_convert (TREE_TYPE (arg1se.expr),
+					     null_pointer_node));
+	  else
+	    {
+	      tree eq_expr;
+	      tree not_null_expr;
+	      
+	      /* Given two arguments so build the arg2se from second arg.  */
+	      gfc_init_se (&arg2se, NULL);
+	      gfc_conv_expr (&arg2se, arg->next->expr);
+	      gfc_add_block_to_block (&se->pre, &arg2se.pre);
+	      gfc_add_block_to_block (&se->post, &arg2se.post);
+
+	      /* Generate test to compare that the two args are equal.  */
+	      eq_expr = build2 (EQ_EXPR, boolean_type_node, arg1se.expr,
+				arg2se.expr);
+	      /* Generate test to ensure that the first arg is not null.  */
+	      not_null_expr = build2 (NE_EXPR, boolean_type_node, arg1se.expr,
+				      null_pointer_node);
+
+	      /* Finally, the generated test must check that both arg1 is not
+		 NULL and that it is equal to the second arg.  */
+	      se->expr = build2 (TRUTH_AND_EXPR, boolean_type_node,
+				 not_null_expr, eq_expr);
+	    }
+
+	  return 0;
+	}
     }
   
   if (se->ss != NULL)
