@@ -7905,6 +7905,10 @@ package body Sem_Attr is
             Process_Partition_Id (N);
             return;
 
+         ------------------
+         -- Pool_Address --
+         ------------------
+
          when Attribute_Pool_Address =>
             Resolve (P);
 

@@ -79,7 +79,6 @@ package Osint.B is
    --  buffers etc from writes by Write_Binder_Info.
 
    procedure Set_Current_File_Name_Index (To : Int);
-   --  Set the value of Current_File_Name_Index (in the private part of Osint)
-   --  to To.
+   --  Set value of Current_File_Name_Index (in private part of Osint) to To
 
 end Osint.B;

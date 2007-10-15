@@ -3189,26 +3189,20 @@ package body Exp_Ch4 is
             Nod  := N;
             Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
 
-            --  Construct argument list for the initialization routine call.
-            --  The CPP constructor needs the address directly
+            --  Construct argument list for the initialization routine call
 
-            if Is_CPP_Class (T) then
-               Arg1 := New_Reference_To (Temp, Loc);
-               Temp_Type := T;
+            Arg1 :=
+              Make_Explicit_Dereference (Loc,
+                Prefix => New_Reference_To (Temp, Loc));
+            Set_Assignment_OK (Arg1);
+            Temp_Type := PtrT;
 
-            else
-               Arg1 := Make_Explicit_Dereference (Loc,
-                         Prefix => New_Reference_To (Temp, Loc));
-               Set_Assignment_OK (Arg1);
-               Temp_Type := PtrT;
+            --  The initialization procedure expects a specific type. if the
+            --  context is access to class wide, indicate that the object being
+            --  allocated has the right specific type.
 
-               --  The initialization procedure expects a specific type. if
-               --  the context is access to class wide, indicate that the
-               --  object being allocated has the right specific type.
-
-               if Is_Class_Wide_Type (Dtyp) then
-                  Arg1 := Unchecked_Convert_To (T, Arg1);
-               end if;
+            if Is_Class_Wide_Type (Dtyp) then
+               Arg1 := Unchecked_Convert_To (T, Arg1);
             end if;
 
             --  If designated type is a concurrent type or if it is private
@@ -3405,11 +3399,6 @@ package body Exp_Ch4 is
                 Expression          => Nod);
 
             Set_Assignment_OK (Temp_Decl);
-
-            if Is_CPP_Class (T) then
-               Set_Aliased_Present (Temp_Decl);
-            end if;
-
             Insert_Action (N, Temp_Decl, Suppress => All_Checks);
 
             --  If the designated type is a task type or contains tasks,
@@ -3480,15 +3469,7 @@ package body Exp_Ch4 is
                end if;
             end if;
 
-            if Is_CPP_Class (T) then
-               Rewrite (N,
-                 Make_Attribute_Reference (Loc,
-                   Prefix => New_Reference_To (Temp, Loc),
-                   Attribute_Name => Name_Unchecked_Access));
-            else
-               Rewrite (N, New_Reference_To (Temp, Loc));
-            end if;
-
+            Rewrite (N, New_Reference_To (Temp, Loc));
             Analyze_And_Resolve (N, PtrT);
          end if;
       end;
@@ -5125,10 +5106,13 @@ package body Exp_Ch4 is
 
       elsif Is_Array_Type (Typl) then
 
-         --  If we are doing full validity checking, then expand out array
-         --  comparisons to make sure that we check the array elements.
+         --  If we are doing full validity checking, and it is possible for the
+         --  array elements to be invalid then expand out array comparisons to
+         --  make sure that we check the array elements.
 
-         if Validity_Check_Operands then
+         if Validity_Check_Operands
+           and then not Is_Known_Valid (Component_Type (Typl))
+         then
             declare
                Save_Force_Validity_Checks : constant Boolean :=
                                               Force_Validity_Checks;
@@ -5828,6 +5812,8 @@ package body Exp_Ch4 is
       Rhi : Uint;
       ROK : Boolean;
 
+      pragma Warnings (Off, Lhi);
+
    begin
       Binary_Op_Validity_Checks (N);
 
@@ -6415,6 +6401,8 @@ package body Exp_Ch4 is
       Rlo : Uint;
       Rhi : Uint;
       ROK : Boolean;
+
+      pragma Warnings (Off, Lhi);
 
    begin
       Binary_Op_Validity_Checks (N);

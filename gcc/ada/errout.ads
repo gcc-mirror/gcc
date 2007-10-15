@@ -670,6 +670,8 @@ package Errout is
    --  is posted (with the same effect as Error_Msg_N (Msg, N) if and only
    --  if Eflag is True and if the node N is within the main extended source
    --  unit and comes from source. Typically this is a warning mode flag.
+   --  This routine can only be called during semantic analysis. It may not
+   --  be called during parsing.
 
    procedure Change_Error_Text (Error_Id : Error_Msg_Id; New_Msg : String);
    --  The error message text of the message identified by Id is replaced by
