@@ -94,6 +94,7 @@
 #include <utime.h>
 #endif
 
+/* wait.h processing */
 #ifdef __MINGW32__
 #if OLD_MINGW
 #include <sys/wait.h>
@@ -108,7 +109,10 @@
    preventing the inclusion of the GCC header from doing anything.  */
 #define GCC_RESOURCE_H
 #include <sys/wait.h>
+#elif defined (__nucleus__)
+/* No wait() or waitpid() calls available */
 #else
+/* Default case */
 #include <sys/wait.h>
 #endif
 
@@ -275,7 +279,7 @@ const int __gnat_vmsp = 0;
 #elif defined (VMS)
 #define GNAT_MAX_PATH_LEN 256 /* PATH_MAX */
 
-#elif defined (__vxworks) || defined (__OPENNT)
+#elif defined (__vxworks) || defined (__OPENNT) || defined(__nucleus__)
 #define GNAT_MAX_PATH_LEN PATH_MAX
 
 #else
@@ -391,38 +395,34 @@ __gnat_to_gm_time
 
 /* Place the contents of the symbolic link named PATH in the buffer BUF,
    which has size BUFSIZ.  If PATH is a symbolic link, then return the number
-   of characters of its content in BUF.  Otherwise, return -1.  For Windows,
-   OS/2 and vxworks, always return -1.  */
+   of characters of its content in BUF.  Otherwise, return -1.
+   For systems not supporting symbolic links, always return -1.  */
 
 int
 __gnat_readlink (char *path ATTRIBUTE_UNUSED,
 		 char *buf ATTRIBUTE_UNUSED,
 		 size_t bufsiz ATTRIBUTE_UNUSED)
 {
-#if defined (MSDOS) || defined (_WIN32) || defined (__EMX__)
-  return -1;
-#elif defined (__INTERIX) || defined (VMS)
-  return -1;
-#elif defined (__vxworks)
+#if defined (MSDOS) || defined (_WIN32) || defined (__EMX__) \
+  || defined (__INTERIX) || defined (VMS) \
+  || defined(__vxworks) || defined (__nucleus__)
   return -1;
 #else
   return readlink (path, buf, bufsiz);
 #endif
 }
 
-/* Creates a symbolic link named NEWPATH which contains the string OLDPATH.  If
-   NEWPATH exists it will NOT be overwritten.  For Windows, OS/2, VxWorks,
-   Interix and VMS, always return -1. */
+/* Creates a symbolic link named NEWPATH which contains the string OLDPATH.
+   If NEWPATH exists it will NOT be overwritten.
+   For systems not supporting symbolic links, always return -1.  */
 
 int
 __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 		char *newpath ATTRIBUTE_UNUSED)
 {
-#if defined (MSDOS) || defined (_WIN32) || defined (__EMX__)
-  return -1;
-#elif defined (__INTERIX) || defined (VMS)
-  return -1;
-#elif defined (__vxworks)
+#if defined (MSDOS) || defined (_WIN32) || defined (__EMX__) \
+  || defined (__INTERIX) || defined (VMS) \
+  || defined(__vxworks) || defined (__nucleus__)
   return -1;
 #else
   return symlink (oldpath, newpath);
@@ -431,7 +431,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 
 /* Try to lock a file, return 1 if success.  */
 
-#if defined (__vxworks) || defined (MSDOS) || defined (_WIN32)
+#if defined (__vxworks) || defined (__nucleus__) || defined (MSDOS) || defined (_WIN32)
 
 /* Version that does not use link. */
 
@@ -888,6 +888,8 @@ __gnat_open_new_temp (char *path, int fmode)
   return mkstemp (path);
 #elif defined (__Lynx__)
   mktemp (path);
+#elif defined (__nucleus__)
+  return -1;
 #else
   if (mktemp (path) == NULL)
     return -1;
@@ -1649,7 +1651,7 @@ __gnat_is_writable_file (char *name)
 void
 __gnat_set_writable (char *name)
 {
-#ifndef __vxworks
+#if ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
@@ -1663,7 +1665,7 @@ __gnat_set_writable (char *name)
 void
 __gnat_set_executable (char *name)
 {
-#ifndef __vxworks
+#if ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
@@ -1677,7 +1679,7 @@ __gnat_set_executable (char *name)
 void
 __gnat_set_readonly (char *name)
 {
-#ifndef __vxworks
+#if ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
   if (stat (name, &statbuf) == 0)
@@ -1691,7 +1693,7 @@ __gnat_set_readonly (char *name)
 int
 __gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 {
-#if defined (__vxworks)
+#if defined (__vxworks) || defined (__nucleus__)
   return 0;
 
 #elif defined (_AIX) || defined (__APPLE__) || defined (__unix__)
@@ -1739,7 +1741,7 @@ __gnat_portable_spawn (char *args[])
   else
     return status;
 
-#elif defined (__vxworks)
+#elif defined (__vxworks) || defined(__nucleus__)
   return -1;
 #else
 
@@ -2039,7 +2041,7 @@ __gnat_portable_no_block_spawn (char *args[])
   pid = win32_no_block_spawn (args[0], args);
   return pid;
 
-#elif defined (__vxworks)
+#elif defined (__vxworks) || defined (__nucleus__)
   return -1;
 
 #else
@@ -2074,7 +2076,7 @@ __gnat_portable_wait (int *process_status)
 #elif defined (__EMX__) || defined (MSDOS)
   /* ??? See corresponding comment in portable_no_block_spawn.  */
 
-#elif defined (__vxworks)
+#elif defined (__vxworks) || defined (__nucleus__)
   /* Not sure what to do here, so do same as __EMX__ case, i.e., nothing but
      return zero.  */
 #else
@@ -2897,7 +2899,7 @@ char __gnat_environment_char = '$';
 int
 __gnat_copy_attribs (char *from, char *to, int mode)
 {
-#if defined (VMS) || defined (__vxworks)
+#if defined (VMS) || defined (__vxworks) || defined (__nucleus__)
   return -1;
 #else
   struct stat fbuf;
