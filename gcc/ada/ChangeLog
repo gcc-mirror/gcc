@@ -1,3 +1,303 @@
+2007-10-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-osinte-tru64.adb: (Hide_Yellow_Zone): Add On parameter.
+	Set the protection status of the guard page based on the value of On.
+
+	* s-osinte-tru64.ads: (Hide_Yellow_Zone): Add On parameter.
+
+	* s-taprop-tru64.adb: (Enter_Task): Pass True to Hide_Yellow_Zone.
+	(Exit_Task): Pass False to Hide_Yellow_Zone.
+
+2007-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* s-taprop-solaris.adb, s-taprop-vms.adb, s-taprop-mingw.adb, 
+	s-taprop-vxworks.adb, s-taprop-posix.adb, a-calend-vms.adb,
+	a-calend.adb, a-nuflra.adb, a-tigeau.adb, a-wtgeau.adb, 
+	checks.adb, bindgen.adb, eval_fat.adb, exp_fixd.adb, fmap.adb, 
+	freeze.adb, g-awk.adb, g-calend.adb, g-diopit.adb, g-expect.adb, 
+	gnatchop.adb, gnatlink.adb, g-spipat.adb, g-thread.adb, make.adb, 
+	mdll.adb, mlib.adb, mlib-prj.adb, osint.adb, par-ch3.adb, prj.adb, 
+	prj-makr.adb, sem_prag.adb, sem_type.adb, s-fatgen.adb, s-fileio.adb, 
+	sinfo.ads, sinput-d.adb, s-taasde.adb, s-tasdeb.ads, s-tasren.adb, 
+	s-tassta.adb, s-tpobop.adb, s-tposen.adb, stylesw.adb, types.ads,
+	uintp.adb, validsw.adb, makegpr.adb, a-rbtgso.adb, a-crbtgo.adb, 
+	a-coorse.adb, a-convec.adb, a-coinve.adb, a-cohama.adb, a-ciorse.adb, 
+	a-cihama.adb, a-cidlli.adb, a-chtgop.adb, a-cdlili.adb, a-cdlili.adb, 
+	a-coormu.adb, a-ciormu.adb, a-cihase.adb, a-cohase.adb, a-ciorma.adb, 
+	a-coorma.adb, a-ztgeau.adb, symbols-vms.adb, a-crdlli.adb, 
+	a-calari.adb, a-calfor.adb, s-os_lib.adb, s-regpat.adb, a-ngrear.adb:
+	Minor reformatting.
+	Add Unreferenced and Warnings (Off) pragmas for cases of
+	variables modified calls where they are IN OUT or OUT parameters and
+	the resulting values are not subsequently referenced. In a few cases,
+	we also remove redundant code found by the new warnings.
+
+	* ug_words, vms_data.ads, usage.adb, sem_util.adb, sem_util.ads, 
+	sem_warn.adb, sem_warn.ads, sem_res.adb, sem_ch7.adb, sem_ch8.adb,
+	sem_ch5.adb, opt.ads, lib-xref.adb, lib-xref.ads, exp_smem.adb,
+	sem_ch11.adb, exp_ch6.adb, einfo.ads, einfo.adb: implement a new
+	warning controlled by -gnatw.o that warns on cases of out parameter
+	values being ignored.
+
+2007-10-15  Geert Bosch  <bosch@adacore.com>
+
+	* adaint.c, socket.c, cal.c: Initial port to arm-mentor-nucleus.
+
+	* expect.c: Initial port to arm-mentor-nucleus.
+	Use kill for __gnat_kill() on VMS.
+
+2007-10-15  Emmanuel Briot  <briot@adacore.com>
+
+	* ali.ads, ali.adb (Scan_ALI): Initialize XE.Tref to a known default
+	value.
+	(Xref_Record): Change type for Line, since in the case of a reference to
+	a predefined entity (as happens for array index types), the line is set
+	to 0.
+	Add support for parsing multiple array index types info, or
+	multiple inherited interfaces info. This information cannot be stored
+	in Xref_Entity_Record, which only supports a single instance of Tref_*,
+	and is therefore stored in the list of references instead. It has a
+	special treatement later on in tools that use this information.
+
+2007-10-15  Tristan Gingold  <gingold@adacore.com>
+
+	* debug.adb: Document use of -gnatd.a and -gnatd.I
+
+	* layout.adb: On OpenVMS -gnatd.a disables alignment optimization.
+
+2007-10-15  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Case Access,
+	Unchecked_Access, and Unrestricted_Access. Cleanup code that takes
+	care of access to class-wide interface types plus removal of bizarre
+	conversion of tagged object to access type (reported by Gary
+	Dismukes). After this patch there is no need to perform any
+	additional management on these nodes in Expand_Interface_Actuals.
+
+	* exp_disp.adb (Expand_Interface_Actuals): Code cleanup. Remove code
+	that handles use of 'Access and 'Unchecked_Access applied to
+	actuals covering interface types. Such code is now
+	centralized in Expand_N_Attribute_Reference.
+
+2007-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Init_Procedure): Keep separate the initialization
+	of tagged types whose ultimate ancestor is a CPP type.
+	(Freeze_Array_Type): For a packed array type, generate an initialization
+	procedure if the type is public, to handle properly a client that
+	specifies Normalize_Scalars.
+
+2007-10-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb (Actual_Index_Expression): When the expansion occurs
+	inside a generic body, retrieve the full view of the entry family
+	discrete subtype if available.
+
+2007-10-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Add_RACW_Primitive_Declarations_And_Bodies): Do not
+	attempt to generate stubs for hidden primitive operations.
+
+2007-10-15  Vincent Celier  <celier@adacore.com>
+
+	* mlib-tgt-specific.adb (Support_For_Libraries): New function,
+	returning None, used when there is no platform specific body for
+	MLib.Tgt.Specific.
+
+2007-10-15  Bob Duff  <duff@adacore.com>
+
+	* sem_case.adb, sem_ch13.adb, lib-sort.adb: Replace use of Heap_Sort_A
+	(passing'Unrestricted_Access of nested subprograms to Sort) with use of
+	the generic Heap_Sort_G, in order to avoid trampolines.
+
+2007-10-15  Vasiliy Fofanov  <fofanov@adacore.com>
+	    Jose Ruiz  <ruiz@adacore.com>
+
+	* vx_stack_info.c: New file.
+
+	* i-forbla-unimplemented.ads: New file.
+
+	* Makefile.in: i-forbla-unimplemented.ads: a variant of i-forbla.ads
+	for unsupported configurations; use it on VMS targets instead of the
+	real one.
+	(EXTRA_LIBGNAT_SRCS,EXTRA_LIBGNAT_OBJS for VxWorks): Include
+	vx_stack_info.{c,o} that contains the routine __gnat_get_stack_info
+	used by VxWorks targets to have access to task-specific data and be
+	able to extract the stack boundaries for stack checking.
+	Use system-vms-ia64.ads on ivms.
+
+	* Make-lang.in: Update dependencies.
+
+	* sysdep.c (__gnat_get_stack_info): Move to a standalone file
+	(vx_stack_info.c).
+
+2007-10-15  Vincent Celier  <celier@adacore.com>
+
+	* snames.adb, snames.ads: Add new standard name runtime_library_dir
+
+	* prj.ads (Language_Config): Add new component Runtime_Library_Dir
+
+	* prj-attr.adb: Add project level attribute Runtime_Library_Dir
+
+	* prj-env.adb (Create_Mapping_File): Do not put an entry if the path of
+	the source is unknown.
+
+	* prj-ext.adb: Spelling error fix
+
+	* prj-nmsc.adb (Check_Ada_Name): Reject any unit that includes an Ada
+	95 reserved word in its name.
+	(Process_Project_Level_Array_Attributes): Process new attribute
+	Runtime_Library_Dir.
+
+	* prj-part.adb (Parse_Single_Project): Do not check the name of the
+	config project against the user project names.
+
+	* prj-proc.adb (Expression): In multi-language mode, indexes that do
+	not include a dot are always case insensitive.
+	(Process_Declarative_Items): Ditto
+	(Process_Project_Tree_Phase_1): Set Success to False in case an error is
+	detected.
+
+	* prj-util.adb (Value_Of (In_Array)): When Force_Lower_Case_Index is
+	True, compare both indexes in lower case.
+
+2007-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.adb: (Load_RTU): Turn off style checks for Load call
+
+2007-10-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): In the case of a box
+	association for an access component, add an association with null as
+	the expression. Remove testing for array subtypes and the setting in
+	that case of Ctyp to the array component type, which prevented proper
+	inclusion of an association for null-initialized arrays. Collapse
+	condition that tests for array subtypes into just a test of
+	Is_Partially_Initialized_Type (which already covers arrays anyway).
+
+2007-10-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb: Minor code reformatting.
+	(Check_Generic_Child_Unit): Iterate over the homonym chain in order to
+	find the parent package which may have been hidden by local
+	declarations.
+
+2007-10-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): Set the Is_Constrained
+	flag of derived concurrent types, taking into account the flag setting
+	on the parent subtype and any new set of discriminants.
+
+2007-10-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb: Minor code and comment reformatting.
+	(Analyze_Allocator): When the designated type of an unconstrained
+	allocator is a record with unknown discriminants or an array with
+	unknown range bounds, emit a detailed error message depending on the
+	compilation mode and whether the designated type is limited.
+
+2007-10-15  Tristan Gingold  <gingold@adacore.com>
+
+	* system-vms-ia64.ads: New file.
+
+	* system-vms_64.ads: Minor comment fix.
+
+2007-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Find_Corresponding_Spec): If the previous entity is a
+	body generated for a function with a controlling result that is a null
+	extension, discard the generated body in favor of the current explicit
+	one.
+
+2007-10-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Find_Controlling_Arg): Examine the call node before
+	examining its original form, to handle properly operator calls that
+	have been rewritten.
+
+2007-10-15  Olivier Hainque  <hainque@adacore.com>
+
+	* tb-alvms.c (tb_entry_t, __gnat_backtrace): Store a frame pointer
+	instead of a procedure value in each traceback entry.
+
+	* g-trasym-vms-alpha.adb (Symbolic_Traceback): Pass frame pointer
+	instead of procedure value to TBK$SYMBOLIZE.
+
+	* s-traent-vms.adb (PV_For): Rename as FP_For and access the proper
+	field.
+	(TB_Entry_For): Account for the PV/FP renaming.
+
+	* s-traent-vms.ads (Traceback_Entry): Rename PV component into FP and
+	add comment.
+	(Null_TB_Entry): Account for change of component name.
+	(PV_For): Rename as FP_For.
+
+2007-10-15  Tristan Gingold  <gingold@adacore.com>
+
+	* trans.c (gnat_to_gnu): Remove the padding structure more often.
+	This optimize assignment to over-aligned record.
+
+2007-10-15  Emmanuel Briot  <briot@adacore.com>
+
+	* xref_lib.adb (Get_Full_Type): Add support for the 'h' entity type, ie
+	interfaces.
+
+	* xr_tabls.adb (Add_Reference): Add support for the new 'R' reference
+	type, for dispatching calls.
+
+2007-10-15  Vincent Celier  <celier@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for switches --version and --help
+	for the GNAT tools gnatbind, gnatlink, gnatmake, gnatchop, gnatname,
+	gnatxref, gnatfind, gnatls, and gnatclean.
+	Document -gnatw.o.
+	Mention attribute Excluded_Source_Dirs
+	Replace obsolescent attribute Locally_Removed_Files with attribute
+	Excluded_Source_Files.
+	Improve documentation of -u (gnatbind)
+	Document how to do reliable stack checking for the environmental task
+	on iVMS.
+
+	* gnat_rm.texi: Rewrite section about No_Implicit_Dynamic_Code.
+	Document attribute Excluded_Source_Files and indicate that attribute
+	Locally_Removed_Files is obsolescent.
+
+2007-10-15  Thomas Quinot  <quinot@adacore.com>
+
+	* g-soccon-vms.ads: Fix value of MSG_WAITALL.
+
+	* gen-soccon.c: 
+	Update documentation to note that OpenVMS 8.3 or later must be used
+	to generate g-soccon-vms.ads.
+
+	* atree.adb: Add ??? comment
+
+	* exp_util.adb: Minor reformatting.
+	Add ??? comment in Kill_Dead_Code.
+
+2007-10-15  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Comment clarification
+
+	* exp_ch4.adb (Expand_N_Allocator): Code cleanup.
+	(Expand_N_Op_Eq): Improve handling of array equality with -gnatVa
+
+	* lib.ads: Comment update
+
+	* init.c: Minor reformatting.
+
+	* sem_attr.adb: Minor formatting
+
+	* osint-b.ads: Minor reformatting
+
+	* sem_ch9.adb: Implement -gnatd.I switch
+
+	* g-comlin.adb: (Start): Fix handling of empty command line.
+
+	* gnatcmd.adb (GNATCmd): Do not put the -rules in the -cargs section,
+	even when -rules follows the -cargs section.
+
 2007-10-08  Ollie Wild  <aaw@google.com>
 
 	* misc.c (LANG_HOOKS_PUSHDECL): Replaced lhd_return_tree with
