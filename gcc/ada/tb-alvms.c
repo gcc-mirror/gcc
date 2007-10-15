@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2003-2005, AdaCore                     *
+ *                     Copyright (C) 2003-2007, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -337,8 +337,8 @@ unwind_kernel_handler (frame_state_t * fs)
    system functions need more than just a mere PC to compute info on a frame
    (e.g. for non-symbolic->symbolic translation purposes).  */
 typedef struct {
-  ADDR pc;
-  ADDR pv;
+  ADDR pc; /* instruction pointer */
+  ADDR fp; /* frame pointer */
 } tb_entry_t;
 
 /********************
@@ -375,8 +375,6 @@ __gnat_backtrace (void **array, int size,
   cnt = 0;
   while (cnt < size)
     {
-      PDSCDEF * pv = PV_FOR (frame_state.fp);
-
       /* Stop if either the frame contents or the unwinder say so.  */
       if (STOP_FRAME)
         break;
@@ -385,7 +383,7 @@ __gnat_backtrace (void **array, int size,
 	  && (frame_state.pc < exclude_min || frame_state.pc > exclude_max))
 	{
 	  tbe->pc = (ADDR) frame_state.pc;
-	  tbe->pv = (ADDR) PV_FOR (frame_state.fp);
+	  tbe->fp = (ADDR) frame_state.fp;
 
 	  cnt ++;
 	  tbe ++;
