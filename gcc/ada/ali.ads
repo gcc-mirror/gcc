@@ -865,6 +865,13 @@ package ALI is
      Table_Increment      => 300,
      Table_Name           => "Xref_Entity");
 
+   Array_Index_Reference : constant Character := '*';
+   Interface_Reference   : constant Character := 'I';
+   --  Some special types of references. In the ALI file itself, these
+   --  are output as attributes of the entity, not as references, but
+   --  there is no provision in Xref_Entity_Record for storing multiple
+   --  such references.
+
    --  The following table records actual cross-references
 
    type Xref_Record is record
@@ -873,8 +880,9 @@ package ALI is
       --  that if no file entry is present explicitly, this is just a copy
       --  of the reference for the current cross-reference section.
 
-      Line : Pos;
-      --  Line number for the reference
+      Line : Nat;
+      --  Line number for the reference. This is zero when referencing a
+      --  predefined entity, but in this case Name is set.
 
       Rtype : Character;
       --  Indicates type of reference, using code used in ALI file:
@@ -884,10 +892,17 @@ package ALI is
       --    c = completion of private or incomplete type
       --    x = type extension
       --    i = implicit reference
+      --    Array_Index_Reference = reference to the index of an array
+      --    Interface_Reference   = reference to an interface implemented
+      --                            by the type
       --  See description in lib-xref.ads for further details
 
       Col : Nat;
       --  Column number for the reference
+
+      Name : Name_Id := No_Name;
+      --  This is only used when referencing a predefined entity. Currently,
+      --  this only occurs for array indexes.
 
       --  Note: for instantiation references, Rtype is set to ' ', and Col is
       --  set to zero. One or more such entries can follow any other reference.
