@@ -82,8 +82,12 @@
 #include <tgmath.h>
 #endif
 #include <time.h>
+#ifdef _GLIBCXX_HAVE_WCHAR_H
 #include <wchar.h>
+#endif
+#ifdef _GLIBCXX_HAVE_WCTYPE_H
 #include <wctype.h>
+#endif
 
 // "C++" headers
 #include <algorithm>
@@ -188,8 +192,12 @@
 #include <tgmath.h>
 #endif
 #include <time.h>
+#ifdef _GLIBCXX_HAVE_WCHAR_H
 #include <wchar.h>
+#endif
+#ifdef _GLIBCXX_HAVE_WCTYPE_H
 #include <wctype.h>
+#endif
 
 // "C++" headers
 #include <algorithm>
