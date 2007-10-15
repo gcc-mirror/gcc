@@ -286,8 +286,26 @@ struct insn_info
 
   /* This field is only used for the processing of const functions.
      These functions cannot read memory, but they can read the stack
-     because that is where they may get their parms.  It is set to
-     true if the insn may contain a stack pointer based store.  */
+     because that is where they may get their parms.  We need to be
+     this conservative because, like the store motion pass, we don't
+     consider CALL_INSN_FUNCTION_USAGE when processing call insns.
+     Moreover, we need to distinguish two cases:
+     1. Before reload (register elimination), the stores related to
+	outgoing arguments are stack pointer based and thus deemed
+	of non-constant base in this pass.  This requires special
+	handling but also means that the frame pointer based stores
+	need not be killed upon encountering a const function call.
+     2. After reload, the stores related to outgoing arguments can be
+	either stack pointer or hard frame pointer based.  This means
+	that we have no other choice than also killing all the frame
+	pointer based stores upon encountering a const function call.
+     This field is set after reload for const function calls.  Having
+     this set is less severe than a wild read, it just means that all
+     the frame related stores are killed rather than all the stores.  */
+  bool frame_read;
+
+  /* This field is only used for the processing of const functions.
+     It is set if the insn may contain a stack pointer based store.  */
   bool stack_pointer_based;
 
   /* This is true if any of the sets within the store contains a
@@ -1967,10 +1985,36 @@ scan_insn (bb_info_t bb_info, rtx insn)
 	  if (dump_file)
 	    fprintf (dump_file, "const call %d\n", INSN_UID (insn));
 
+	  /* See the head comment of the frame_read field.  */
+	  if (reload_completed)
+	    insn_info->frame_read = true;
+
+	  /* Loop over the active stores and remove those which are
+	     killed by the const function call.  */
 	  while (i_ptr)
 	    {
-	      /* Remove the stack pointer based stores.  */
+	      bool remove_store = false;
+
+	      /* The stack pointer based stores are always killed.  */
 	      if (i_ptr->stack_pointer_based)
+	        remove_store = true;
+
+	      /* If the frame is read, the frame related stores are killed.  */
+	      else if (insn_info->frame_read)
+		{
+		  store_info_t store_info = i_ptr->store_rec;
+
+		  /* Skip the clobbers.  */
+		  while (!store_info->is_set)
+		    store_info = store_info->next;
+
+		  if (store_info->group_id >= 0
+		      && VEC_index (group_info_t, rtx_group_vec,
+				    store_info->group_id)->frame_related)
+		    remove_store = true;
+		}
+
+	      if (remove_store)
 		{
 		  if (dump_file)
 		    dump_insn_info ("removing from active", i_ptr);
@@ -1982,6 +2026,7 @@ scan_insn (bb_info_t bb_info, rtx insn)
 		}
 	      else
 		last = i_ptr;
+
 	      i_ptr = i_ptr->next_local_store;
 	    }
 	}
@@ -2490,6 +2535,18 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
   read_info_t read_info = insn_info->read_rec;
   int i;
   group_info_t group;
+
+  /* If this insn reads the frame, kill all the frame related stores.  */
+  if (insn_info->frame_read)
+    {
+      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+	if (group->process_globally && group->frame_related)
+	  {
+	    if (kill)
+	      bitmap_ior_into (kill, group->group_kill);
+	    bitmap_and_compl_into (gen, group->group_kill); 
+	  }
+    }
 
   while (read_info)
     {
