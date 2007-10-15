@@ -55,6 +55,8 @@
 /* ??? See comment in adaint.c.  */
 #define GCC_RESOURCE_H
 #include <sys/wait.h>
+#elif defined (__nucleus__)
+/* No wait.h available on Nucleus */
 #else
 #include <sys/wait.h>
 #endif
@@ -243,6 +245,13 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 #include <stdio.h>
 #include <vms/stsdef.h>
 #include <vms/iodef.h>
+#include <signal.h>
+
+void
+__gnat_kill (int pid, int sig, int close)
+{
+  kill (pid, sig);
+}
 
 int
 __gnat_waitpid (int pid)
@@ -367,8 +376,7 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 
   return ready;
 }
-
-#elif defined (__unix__)
+#elif defined (__unix__) && !defined (__nucleus__)
 
 #ifdef __hpux__
 #include <sys/ptyio.h>
