@@ -584,7 +584,6 @@ package body Rtsfind is
 
       begin
          E_Par := First_Elmt (Priv_Par);
-
          while Present (E_Par) loop
             if not In_Private_Part (Node (E_Par)) then
                Install_Private_Declarations (Node (E_Par));
@@ -603,7 +602,6 @@ package body Rtsfind is
 
       begin
          Par := Scope (Current_Scope);
-
          while Present (Par)
            and then Par /= Standard_Standard
          loop
@@ -651,12 +649,23 @@ package body Rtsfind is
       --  file as a fatal error, and that it should not output any kind
       --  of diagnostics, since we will take care of it here.
 
-      U.Unum :=
-        Load_Unit
-          (Load_Name  => U.Uname,
-           Required   => False,
-           Subunit    => False,
-           Error_Node => Empty);
+      --  We save style checking switches and turn off style checking for
+      --  loading the unit, since we don't want any style checking!
+
+      declare
+         Save_Style_Check : constant Boolean := Style_Check;
+      begin
+         Style_Check := False;
+         U.Unum :=
+           Load_Unit
+             (Load_Name  => U.Uname,
+              Required   => False,
+              Subunit    => False,
+              Error_Node => Empty);
+         Style_Check := Save_Style_Check;
+      end;
+
+      --  Check for bad unit load
 
       if U.Unum = No_Unit then
          Load_Fail ("not found", U_Id, Id);
