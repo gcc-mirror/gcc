@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2007, Free Software Foundation, Inc.      --
+--          Copyright (C) 1995-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -273,18 +273,17 @@ package System.OS_Interface is
    -----------
 
    Stack_Base_Available : constant Boolean := False;
-   --  Indicates wether the stack base is available on this target.
+   --  Indicates if the stack base is available on this target
 
    function Get_Stack_Base (thread : pthread_t) return Address;
    pragma Inline (Get_Stack_Base);
-   --  returns the stack base of the specified thread.
-   --  Only call this function when Stack_Base_Available is True.
+   --  Returns the stack base of the specified thread. Only call this function
+   --  when Stack_Base_Available is True.
 
    function Get_Page_Size return size_t;
    function Get_Page_Size return Address;
    pragma Import (C, Get_Page_Size, "getpagesize");
-   --  returns the size of a page, or 0 if this is not relevant on this
-   --  target
+   --  Returns the size of a page, or 0 if this is not relevant on this target
 
    PROT_NONE  : constant := 0;
    PROT_READ  : constant := 1;
@@ -298,11 +297,14 @@ package System.OS_Interface is
    function mprotect (addr : Address; len : size_t; prot : int) return int;
    pragma Import (C, mprotect);
 
-   procedure Hide_Yellow_Zone;
+   procedure Hide_Unhide_Yellow_Zone (Hide : Boolean);
    --  Every thread except the initial one features an overflow warning area
-   --  just above the overflow guard area on the stack. They are called
-   --  the Yellow Zone and the Red Zone respectively. This procedure hides
-   --  the former so that the latter could be exposed to stack probing.
+   --  (called the Yellow Zone) which is just above the overflow guard area
+   --  on the stack (called the Red Zone). During task execution, we want
+   --  signals from the Red Zone, so we need to hide the Yellow Zone. This
+   --  procedure is called at the start of task execution (with Hide set True)
+   --  to hide the Yellow Zone, and at the end of task execution (with Hide
+   --  set False) to unhide the Yellow Zone.
 
    ---------------------------------------
    -- Nonstandard Thread Initialization --
