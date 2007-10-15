@@ -45,7 +45,18 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
   GFC_INTEGER_4 cf = iqp->common.flags;
 
   if ((cf & IOPARM_INQUIRE_HAS_EXIST) != 0)
-    *iqp->exist = iqp->common.unit >= 0;
+    {
+      *iqp->exist = (iqp->common.unit >= 0
+		     && iqp->common.unit <= GFC_INTEGER_4_HUGE);
+
+      if ((cf & IOPARM_INQUIRE_HAS_FILE) == 0)
+	{
+	  if (!(*iqp->exist))
+	    *iqp->common.iostat = LIBERROR_BAD_UNIT;
+	  *iqp->exist = *iqp->exist
+			&& (*iqp->common.iostat != LIBERROR_BAD_UNIT);
+	}
+    }
 
   if ((cf & IOPARM_INQUIRE_HAS_OPENED) != 0)
     *iqp->opened = (u != NULL);
