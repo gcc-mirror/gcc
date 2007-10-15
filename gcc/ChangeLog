@@ -1,5 +1,14 @@
 2007-10-15  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR tree-optimization/33735
+	PR tree-optimization/33572
+	* tree-inline.c (update_ssa_across_abnormal_edges): Revert
+	2007-10-09's change.
+	* except.c (duplicate_eh_regions): Don't look for prev_try
+	beyond ERT_ALLOWED_EXCEPTIONS with an empty list.
+
+2007-10-15  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR middle-end/33706
 	* tree-inline.c (copy_bb): Use bsi_replace to replace a
 	__builtin_va_arg_pack-containing call stmt.
