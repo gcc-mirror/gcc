@@ -1,3 +1,9 @@
+2007-10-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/33706
+	* tree-inline.c (copy_bb): Use bsi_replace to replace a
+	__builtin_va_arg_pack-containing call stmt.
+
 2007-10-15  Razya Ladelsky  <razya@il.ibm.com>
 
         * matrix-reorg.c (gate_matrix_reorg): Don't comment out whole

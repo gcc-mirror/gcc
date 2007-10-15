@@ -863,9 +863,18 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale, int count_scal
 		  if (TREE_CODE (*call_ptr) == WITH_SIZE_EXPR)
 		    call_ptr = &TREE_OPERAND (*call_ptr, 0);
 		  gcc_assert (*call_ptr == call);
-		  *call_ptr = new_call;
-		  stmt = *stmtp;
-		  update_stmt (stmt);
+		  if (call_ptr == stmtp)
+		    {
+		      bsi_replace (&copy_bsi, new_call, true);
+		      stmtp = bsi_stmt_ptr (copy_bsi);
+		      stmt = *stmtp;
+		    }
+		  else
+		    {
+		      *call_ptr = new_call;
+		      stmt = *stmtp;
+		      update_stmt (stmt);
+		    }
 		}
 	      else if (call
 		       && id->call_expr
