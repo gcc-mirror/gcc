@@ -127,6 +127,7 @@ package body Prj.Attr is
    "SVlibrary_auto_init_supported#" &
    "LVshared_library_minimum_switches#" &
    "LVlibrary_version_switches#" &
+   "Saruntime_library_dir#" &
 
    --  package Naming
 

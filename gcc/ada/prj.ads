@@ -370,6 +370,8 @@ package Prj is
       --  shared libraries. Specified in the configuration. When not specified,
       --  there is no need for such switch.
 
+      Runtime_Library_Dir : Name_Id := No_Name;
+
       Mapping_File_Switches  : Name_List_Index := No_Name_List;
       --  The option(s) to provide a mapping file to the compiler. Specified in
       --  the configuration. When not ???
@@ -417,6 +419,7 @@ package Prj is
                            Compiler_Driver_Path       => null,
                            Compiler_Required_Switches => No_Name_List,
                            Compilation_PIC_Option     => No_Name_List,
+                           Runtime_Library_Dir        => No_Name,
                            Mapping_File_Switches      => No_Name_List,
                            Mapping_Spec_Suffix        => No_File,
                            Mapping_Body_Suffix        => No_File,

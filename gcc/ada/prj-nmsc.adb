@@ -668,6 +668,48 @@ package body Prj.Nmsc is
       Need_Letter     : Boolean := True;
       Last_Underscore : Boolean := False;
       OK              : Boolean := The_Name'Length > 0;
+      First           : Positive;
+
+      function Is_Reserved (S : String) return Boolean;
+      --  Check that the given name is not an Ada 95 reserved word. The
+      --  reason for the Ada 95 here is that we do not want to exclude the case
+      --  of an Ada 95 unit called Interface (for example). In Ada 2005, such
+      --  a unit name would be rejected anyway by the compiler, so there is no
+      --  requirement that the project file parser reject this.
+
+      -----------------
+      -- Is_Reserved --
+      -----------------
+
+      function Is_Reserved (S : String) return Boolean is
+         Name : Name_Id;
+
+      begin
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (S);
+         Name := Name_Find;
+
+         if Get_Name_Table_Byte (Name) /= 0
+           and then Name /= Name_Project
+           and then Name /= Name_Extends
+           and then Name /= Name_External
+           and then Name not in Ada_2005_Reserved_Words
+         then
+            Unit := No_Name;
+
+            if Current_Verbosity = High then
+               Write_Str (The_Name);
+               Write_Line (" is an Ada reserved word.");
+            end if;
+
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Reserved;
+
+   --  Start of processing for Check_Ada_Name
 
    begin
       To_Lower (The_Name);
@@ -677,11 +719,14 @@ package body Prj.Nmsc is
 
       --  Special cases of children of packages A, G, I and S on VMS
 
-      if OpenVMS_On_Target and then
-        Name_Len > 3 and then
-        Name_Buffer (2 .. 3) = "__" and then
-        ((Name_Buffer (1) = 'a') or else (Name_Buffer (1) = 'g') or else
-         (Name_Buffer (1) = 'i') or else (Name_Buffer (1) = 's'))
+      if OpenVMS_On_Target
+        and then Name_Len > 3
+        and then Name_Buffer (2 .. 3) = "__"
+        and then
+          ((Name_Buffer (1) = 'a') or else
+           (Name_Buffer (1) = 'g') or else
+           (Name_Buffer (1) = 'i') or else
+           (Name_Buffer (1) = 's'))
       then
          Name_Buffer (2) := '.';
          Name_Buffer (3 .. Name_Len - 1) := Name_Buffer (4 .. Name_Len);
@@ -690,27 +735,11 @@ package body Prj.Nmsc is
 
       Real_Name := Name_Find;
 
-      --  Check first that the given name is not an Ada 95 reserved word. The
-      --  reason for the Ada 95 here is that we do not want to exclude the case
-      --  of an Ada 95 unit called Interface (for example). In Ada 2005, such
-      --  a unit name would be rejected anyway by the compiler, so there is no
-      --  requirement that the project file parser reject this.
-
-      if Get_Name_Table_Byte (Real_Name) /= 0
-        and then Real_Name /= Name_Project
-        and then Real_Name /= Name_Extends
-        and then Real_Name /= Name_External
-        and then Real_Name not in Ada_2005_Reserved_Words
-      then
-         Unit := No_Name;
-
-         if Current_Verbosity = High then
-            Write_Str (The_Name);
-            Write_Line (" is an Ada reserved word.");
-         end if;
-
+      if Is_Reserved (Name_Buffer (1 .. Name_Len)) then
          return;
       end if;
+
+      First := The_Name'First;
 
       for Index in The_Name'Range loop
          if Need_Letter then
@@ -753,6 +782,13 @@ package body Prj.Nmsc is
 
          elsif The_Name (Index) = '.' then
 
+            --  First, check if the name before the dot is not a reserved word
+            if Is_Reserved (The_Name (First .. Index - 1)) then
+               return;
+            end if;
+
+            First := Index + 1;
+
             --  We need a letter after a dot
 
             Need_Letter := True;
@@ -785,6 +821,12 @@ package body Prj.Nmsc is
       OK := OK and then not Need_Letter and then not Last_Underscore;
 
       if OK then
+         if First /= Name'First and then
+           Is_Reserved (The_Name (First .. The_Name'Last))
+         then
+            return;
+         end if;
+
          Unit := Real_Name;
 
       else
@@ -824,6 +866,7 @@ package body Prj.Nmsc is
 
          begin
             --  Dot_Replacement cannot
+
             --   - be empty
             --   - start or end with an alphanumeric
             --   - be a single '_'
@@ -1927,6 +1970,14 @@ package body Prj.Nmsc is
                           (Lang_Index).Config.Toolchain_Version :=
                           Element.Value.Value;
 
+                     when Name_Runtime_Library_Dir =>
+
+                        --  Attribute Runtime_Library_Dir (<language>)
+
+                        In_Tree.Languages_Data.Table
+                          (Lang_Index).Config.Runtime_Library_Dir :=
+                          Element.Value.Value;
+
                      when others =>
                         null;
                   end case;
@@ -1941,9 +1992,7 @@ package body Prj.Nmsc is
 
    begin
       Process_Project_Level_Simple_Attributes;
-
       Process_Project_Level_Array_Attributes;
-
       Process_Packages;
 
       --  For unit based languages, set Casing, Dot_Replacement and
@@ -3169,12 +3218,11 @@ package body Prj.Nmsc is
                --  For all unit based languages, if any, set the specified
                --  value of Dot_Replacement, Casing and/or Separate_Suffix.
 
-               if Dot_Replacement /= No_File or else
-                 Casing_Defined or else
-                 Separate_Suffix /= No_File
+               if Dot_Replacement /= No_File
+                 or else Casing_Defined
+                 or else Separate_Suffix /= No_File
                then
                   Lang_Id := Data.First_Language_Processing;
-
                   while Lang_Id /= No_Language_Index loop
                      if In_Tree.Languages_Data.Table
                        (Lang_Id).Config.Kind = Unit_Based
@@ -3206,11 +3254,12 @@ package body Prj.Nmsc is
             --  Next, get the spec and body suffixes
 
             declare
-               Suffix : Variable_Value;
-
-               Lang_Id : Language_Index := Data.First_Language_Processing;
+               Suffix  : Variable_Value;
+               Lang_Id : Language_Index;
                Lang    : Name_Id;
+
             begin
+               Lang_Id := Data.First_Language_Processing;
                while Lang_Id /= No_Language_Index loop
                   Lang := In_Tree.Languages_Data.Table (Lang_Id).Name;
 
@@ -3384,18 +3433,20 @@ package body Prj.Nmsc is
          end if;
       end Check_Library;
 
+   --  Start of processing for Check_Library_Attributes
+
    begin
       --  Special case of extending project
 
       if Data.Extends /= No_Project then
          declare
             Extended_Data : constant Project_Data :=
-                           In_Tree.Projects.Table (Data.Extends);
+                              In_Tree.Projects.Table (Data.Extends);
 
          begin
-            --  If the project extended is a library project, we inherit
-            --  the library name, if it is not redefined; we check that
-            --  the library directory is specified.
+            --  If the project extended is a library project, we inherit the
+            --  library name, if it is not redefined; we check that the library
+            --  directory is specified.
 
             if Extended_Data.Library then
                if Lib_Name.Default then
@@ -3606,7 +3657,7 @@ package body Prj.Nmsc is
          else
             if Lib_ALI_Dir.Value = Empty_String then
                if Current_Verbosity = High then
-                  Write_Line ("No library 'A'L'I directory specified");
+                  Write_Line ("No library ALI directory specified");
                end if;
                Data.Library_ALI_Dir := Data.Library_Dir;
                Data.Display_Library_ALI_Dir := Data.Display_Library_Dir;
@@ -3946,10 +3997,11 @@ package body Prj.Nmsc is
          end;
 
          declare
-            Current : Array_Element_Id := Data.Naming.Spec_Suffix;
+            Current : Array_Element_Id;
             Element : Array_Element;
 
          begin
+            Current := Data.Naming.Spec_Suffix;
             while Current /= No_Array_Element loop
                Element := In_Tree.Array_Elements.Table (Current);
                Get_Name_String (Element.Value.Value);
@@ -3970,14 +4022,14 @@ package body Prj.Nmsc is
 
          declare
             Impl_Suffixs : Array_Element_Id :=
-              Util.Value_Of
-                (Name_Body_Suffix,
-                 Naming.Decl.Arrays,
-                 In_Tree);
+                             Util.Value_Of
+                               (Name_Body_Suffix,
+                                Naming.Decl.Arrays,
+                                In_Tree);
 
-            Suffix       : Array_Element_Id;
-            Element      : Array_Element;
-            Suffix2      : Array_Element_Id;
+            Suffix  : Array_Element_Id;
+            Element : Array_Element;
+            Suffix2 : Array_Element_Id;
 
          begin
             --  If some suffixes have been specified, we make sure that
@@ -3987,12 +4039,11 @@ package body Prj.Nmsc is
 
             if Impl_Suffixs /= No_Array_Element then
                Suffix := Data.Naming.Body_Suffix;
-
                while Suffix /= No_Array_Element loop
                   Element :=
                     In_Tree.Array_Elements.Table (Suffix);
-                  Suffix2 := Impl_Suffixs;
 
+                  Suffix2 := Impl_Suffixs;
                   while Suffix2 /= No_Array_Element loop
                      exit when In_Tree.Array_Elements.Table
                                 (Suffix2).Index = Element.Index;
@@ -4001,8 +4052,7 @@ package body Prj.Nmsc is
                   end loop;
 
                   --  There is a registered default suffix, but no suffix was
-                  --  specified in the project file. Add the default to the
-                  --  array.
+                  --  specified in the project file. Add default to the array.
 
                   if Suffix2 = No_Array_Element then
                      Array_Element_Table.Increment_Last
@@ -4029,10 +4079,11 @@ package body Prj.Nmsc is
          end;
 
          declare
-            Current : Array_Element_Id := Data.Naming.Body_Suffix;
+            Current : Array_Element_Id;
             Element : Array_Element;
 
          begin
+            Current := Data.Naming.Body_Suffix;
             while Current /= No_Array_Element loop
                Element := In_Tree.Array_Elements.Table (Current);
                Get_Name_String (Element.Value.Value);
@@ -4070,12 +4121,12 @@ package body Prj.Nmsc is
    ---------------------------------
 
    procedure Check_Programming_Languages
-     (In_Tree       : Project_Tree_Ref;
-      Project       : Project_Id;
-      Data          : in out Project_Data)
+     (In_Tree : Project_Tree_Ref;
+      Project : Project_Id;
+      Data    : in out Project_Data)
    is
-      Languages : Variable_Value := Nil_Variable_Value;
-      Def_Lang  : Variable_Value := Nil_Variable_Value;
+      Languages   : Variable_Value := Nil_Variable_Value;
+      Def_Lang    : Variable_Value := Nil_Variable_Value;
       Def_Lang_Id : Name_Id;
 
    begin
@@ -4170,6 +4221,7 @@ package body Prj.Nmsc is
 
             begin
                if Get_Mode = Ada_Only then
+
                   --  Assume that there is no language specified yet
 
                   Data.Other_Sources_Present := False;
@@ -4356,16 +4408,13 @@ package body Prj.Nmsc is
                                  In_Tree);
 
       Auto_Init_Supported : Boolean;
-
       OK                  : Boolean := True;
-
       Source              : Source_Id;
       Next_Proj           : Project_Id;
 
    begin
       if Get_Mode = Multi_Language then
          Auto_Init_Supported := Data.Config.Auto_Init_Supported;
-
       else
          Auto_Init_Supported :=
            MLib.Tgt.Standalone_Library_Auto_Init_Is_Supported;
@@ -4397,8 +4446,9 @@ package body Prj.Nmsc is
 
                declare
                   ALI         : constant String :=
-                    ALI_File_Name (Name_Buffer (1 .. Name_Len));
+                                  ALI_File_Name (Name_Buffer (1 .. Name_Len));
                   ALI_Name_Id : Name_Id;
+
                begin
                   Name_Len := ALI'Length;
                   Name_Buffer (1 .. Name_Len) := ALI;
@@ -4650,8 +4700,8 @@ package body Prj.Nmsc is
 
             if Lib_Auto_Init.Default then
 
-               --  If no attribute Library_Auto_Init is declared, then
-               --  set auto init only if it is supported.
+               --  If no attribute Library_Auto_Init is declared, then set auto
+               --  init only if it is supported.
 
                Data.Lib_Auto_Init := Auto_Init_Supported;
 
@@ -4667,8 +4717,8 @@ package body Prj.Nmsc is
                      Data.Lib_Auto_Init := True;
 
                   else
-                     --  Library_Auto_Init cannot be "true" if auto init
-                     --  is not supported
+                     --  Library_Auto_Init cannot be "true" if auto init is not
+                     --  supported
 
                      Error_Msg
                        (Project, In_Tree,
@@ -4686,12 +4736,11 @@ package body Prj.Nmsc is
             end if;
          end SAL_Library;
 
-         --  If attribute Library_Src_Dir is defined and not the
-         --  empty string, check if the directory exist and is not
-         --  the object directory or one of the source directories.
-         --  This is the directory where copies of the interface
-         --  sources will be copied. Note that this directory may be
-         --  the library directory.
+         --  If attribute Library_Src_Dir is defined and not the empty string,
+         --  check if the directory exist and is not the object directory or
+         --  one of the source directories. This is the directory where copies
+         --  of the interface sources will be copied. Note that this directory
+         --  may be the library directory.
 
          if Lib_Src_Dir.Value /= Empty_String then
             declare
@@ -4713,12 +4762,12 @@ package body Prj.Nmsc is
 
                if Data.Library_Src_Dir = No_Path then
 
-                  --  Get the absolute name of the library directory
-                  --  that does not exist, to report an error.
+                  --  Get the absolute name of the library directory that does
+                  --  not exist, to report an error.
 
                   declare
                      Dir_Name : constant String :=
-                       Get_Name_String (Dir_Id);
+                                  Get_Name_String (Dir_Id);
 
                   begin
                      if Is_Absolute_Path (Dir_Name) then
@@ -4751,8 +4800,7 @@ package body Prj.Nmsc is
                         Lib_Src_Dir.Location);
                   end;
 
-                  --  Report an error if it is the same as the object
-                  --  directory.
+                  --  Report error if it is the same as the object directory
 
                elsif Data.Library_Src_Dir = Data.Object_Directory then
                   Error_Msg
@@ -4773,8 +4821,7 @@ package body Prj.Nmsc is
 
                      Src_Dirs := Data.Source_Dirs;
                      while Src_Dirs /= Nil_String loop
-                        Src_Dir := In_Tree.String_Elements.Table
-                                                          (Src_Dirs);
+                        Src_Dir := In_Tree.String_Elements.Table (Src_Dirs);
 
                         --  Report error if it is one of the source directories
 
@@ -5105,6 +5152,7 @@ package body Prj.Nmsc is
 
       procedure Add_File is
          File : File_Name_Type;
+
       begin
          Add ('"');
          File_Number := File_Number + 1;
@@ -5131,6 +5179,7 @@ package body Prj.Nmsc is
 
       procedure Add_Name is
          Name : Name_Id;
+
       begin
          Add ('"');
          Name_Number := Name_Number + 1;
@@ -5171,7 +5220,7 @@ package body Prj.Nmsc is
          First := First + 1;
 
          --  Warning character is always the first one in this package
-         --  this is an undocumented kludge!!!
+         --  this is an undocumented kludge???
 
       elsif Msg (First) = '?' then
          First := First + 1;
@@ -5248,7 +5297,7 @@ package body Prj.Nmsc is
                      Write_Line (Source_Directory);
                   end if;
 
-                  --  We look to every entry in the source directory
+                  --  We look at every entry in the source directory
 
                   Open (Dir, Source_Directory
                                (Source_Directory'First .. Dir_Last));
@@ -5318,10 +5367,9 @@ package body Prj.Nmsc is
          Write_Line ("end Looking for sources.");
       end if;
 
-      --  If we have looked for sources and found none, then
-      --  it is an error, except if it is an extending project.
-      --  If a non extending project is not supposed to contain
-      --  any source, then we never call Find_Ada_Sources.
+      --  If we have looked for sources and found none, then it is an error,
+      --  except if it is an extending project. If a non extending project is
+      --  not supposed to contain any source, then never call Find_Ada_Sources.
 
       if Current_Source = Nil_String and then
         Data.Extends = No_Project
@@ -5341,7 +5389,7 @@ package body Prj.Nmsc is
       For_Language : Language_Index;
       Follow_Links : Boolean := False)
    is
-      Source_Dir      : String_List_Id := Data.Source_Dirs;
+      Source_Dir      : String_List_Id;
       Element         : String_Element;
       Dir             : Dir_Type;
       Current_Source  : String_List_Id := Nil_String;
@@ -5352,8 +5400,9 @@ package body Prj.Nmsc is
          Write_Line ("Looking for sources:");
       end if;
 
-      --  For each subdirectory
+      --  Loop through subdirectories
 
+      Source_Dir := Data.Source_Dirs;
       while Source_Dir /= Nil_String loop
          begin
             Source_Recorded := False;
@@ -5367,8 +5416,8 @@ package body Prj.Nmsc is
                                        Name_Buffer (1 .. Name_Len) &
                                          Directory_Separator;
 
-                  Dir_Last  : constant Natural :=
-                                Compute_Directory_Last (Source_Directory);
+                  Dir_Last : constant Natural :=
+                               Compute_Directory_Last (Source_Directory);
 
                begin
                   if Current_Verbosity = High then
@@ -5464,10 +5513,10 @@ package body Prj.Nmsc is
 
       if For_Language = Ada_Language_Index then
 
-         --  If we have looked for sources and found none, then
-         --  it is an error, except if it is an extending project.
-         --  If a non extending project is not supposed to contain
-         --  any source, then we never call Find_Sources.
+         --  If we have looked for sources and found none, then it is an error,
+         --  except if it is an extending project. If a non extending project
+         --  is not supposed to contain any source files, then never call
+         --  Find_Sources.
 
          if Current_Source /= Nil_String then
             Data.Ada_Sources_Present := True;
@@ -5502,9 +5551,9 @@ package body Prj.Nmsc is
                       Util.Value_Of
                         (Name_Object_Dir, Data.Decl.Attributes, In_Tree);
 
-      Exec_Dir    : constant Variable_Value :=
-                      Util.Value_Of
-                        (Name_Exec_Dir, Data.Decl.Attributes, In_Tree);
+      Exec_Dir : constant Variable_Value :=
+                   Util.Value_Of
+                     (Name_Exec_Dir, Data.Decl.Attributes, In_Tree);
 
       Source_Dirs : constant Variable_Value :=
                       Util.Value_Of
@@ -5527,8 +5576,7 @@ package body Prj.Nmsc is
          Location : Source_Ptr;
          Removed  : Boolean := False);
       --  Find one or several source directories, and add (or remove, if
-      --  Removed is True) them to the list of source directories of the
-      --  project.
+      --  Removed is True) them to list of source directories of the project.
 
       ----------------------
       -- Find_Source_Dirs --
@@ -5551,13 +5599,13 @@ package body Prj.Nmsc is
          -------------------------
 
          procedure Recursive_Find_Dirs (Path : Name_Id) is
-            Dir      : Dir_Type;
-            Name     : String (1 .. 250);
-            Last     : Natural;
-            List     : String_List_Id := Data.Source_Dirs;
-            Prev     : String_List_Id := Nil_String;
-            Element  : String_Element;
-            Found    : Boolean := False;
+            Dir     : Dir_Type;
+            Name    : String (1 .. 250);
+            Last    : Natural;
+            List    : String_List_Id;
+            Prev    : String_List_Id;
+            Element : String_Element;
+            Found   : Boolean := False;
 
             Non_Canonical_Path : Name_Id := No_Name;
             Canonical_Path     : Name_Id := No_Name;
@@ -5579,9 +5627,9 @@ package body Prj.Nmsc is
             Canonical_Path := Name_Find;
 
             --  To avoid processing the same directory several times, check
-            --  if the directory is already in Recursive_Dirs. If it is,
-            --  then there is nothing to do, just return. If it is not, put
-            --  it there and continue recursive processing.
+            --  if the directory is already in Recursive_Dirs. If it is, then
+            --  there is nothing to do, just return. If it is not, put it there
+            --  and continue recursive processing.
 
             if not Removed then
                if Recursive_Dirs.Get (Canonical_Path) then
@@ -5593,6 +5641,8 @@ package body Prj.Nmsc is
 
             --  Check if directory is already in list
 
+            List := Data.Source_Dirs;
+            Prev := Nil_String;
             while List /= Nil_String loop
                Element := In_Tree.String_Elements.Table (List);
 
@@ -7564,9 +7614,26 @@ package body Prj.Nmsc is
          end if;
       end Search_Directories;
 
+      Excluded_Sources : Variable_Value :=
+                           Util.Value_Of
+                             (Name_Excluded_Source_Files,
+                              Data.Decl.Attributes,
+                              In_Tree);
+
    --  Start of processing for Look_For_Sources
 
    begin
+      --  If Excluded_Source_Files is not declared, check
+      --  Locally_Removed_Files.
+
+      if Excluded_Sources.Default then
+         Excluded_Sources :=
+           Util.Value_Of
+             (Name_Locally_Removed_Files,
+              Data.Decl.Attributes,
+              In_Tree);
+      end if;
+
       if Get_Mode = Ada_Only and then
         Is_A_Language (In_Tree, Data, "ada")
       then
@@ -7580,12 +7647,6 @@ package body Prj.Nmsc is
             Source_List_File : constant Variable_Value :=
                                  Util.Value_Of
                                    (Name_Source_List_File,
-                                    Data.Decl.Attributes,
-                                    In_Tree);
-
-            Excluded_Sources : Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Excluded_Source_Files,
                                     Data.Decl.Attributes,
                                     In_Tree);
 
@@ -7706,17 +7767,6 @@ package body Prj.Nmsc is
 
                Find_Ada_Sources
                  (Project, In_Tree, Data, Follow_Links);
-            end if;
-
-            --  If Excluded_ource_Files is not declared, check
-            --  Locally_Removed_Files.
-
-            if Excluded_Sources.Default then
-               Excluded_Sources :=
-                 Util.Value_Of
-                   (Name_Locally_Removed_Files,
-                    Data.Decl.Attributes,
-                    In_Tree);
             end if;
 
             --  If there are sources that are locally removed, mark them as
@@ -8120,25 +8170,9 @@ package body Prj.Nmsc is
                                     Data.Decl.Attributes,
                                     In_Tree);
 
-            Excluded_Sources : Variable_Value :=
-                                 Util.Value_Of
-                                   (Name_Excluded_Source_Files,
-                                    Data.Decl.Attributes,
-                                    In_Tree);
             Name_Loc         : Name_Location;
 
          begin
-            --  If Excluded_ource_Files is not declared, check
-            --  Locally_Removed_Files.
-
-            if Excluded_Sources.Default then
-               Excluded_Sources :=
-                 Util.Value_Of
-                   (Name_Locally_Removed_Files,
-                    Data.Decl.Attributes,
-                    In_Tree);
-            end if;
-
             if not Sources.Default then
                if not Source_List_File.Default then
                   Error_Msg
@@ -8314,8 +8348,7 @@ package body Prj.Nmsc is
 
    function Path_Name_Of
      (File_Name : File_Name_Type;
-      Directory : Path_Name_Type)
-      return String
+      Directory : Path_Name_Type) return String
    is
       Result : String_Access;
 

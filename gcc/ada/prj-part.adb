@@ -439,7 +439,9 @@ package body Prj.Part is
       Store_Comments         : Boolean := False)
    is
       Current_Directory : constant String := Get_Current_Dir;
+
       Dummy : Boolean;
+      pragma Warnings (Off, Dummy);
 
       Real_Project_File_Name : String_Access :=
                                  Osint.To_Canonical_File_Spec
@@ -1055,16 +1057,8 @@ package body Prj.Part is
          --  or not following Ada identifier's syntax).
 
          Error_Msg_File_1 := File_Name_Type (Canonical_Path_Name);
-
-         if In_Configuration then
-            Error_Msg ("{ is not a valid path name for a configuration " &
-                       "project file",
-                       Token_Ptr);
-
-         else
-            Error_Msg ("?{ is not a valid path name for a project file",
-                       Token_Ptr);
-         end if;
+         Error_Msg ("?{ is not a valid path name for a project file",
+                    Token_Ptr);
       end if;
 
       if Current_Verbosity >= Medium then
@@ -1234,49 +1228,52 @@ package body Prj.Part is
             Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
          end;
 
-         declare
-            Name_And_Node : Tree_Private_Part.Project_Name_And_Node :=
-              Tree_Private_Part.Projects_Htable.Get_First
-                (In_Tree.Projects_HT);
-            Project_Name : Name_Id := Name_And_Node.Name;
-
-         begin
-            --  Check if we already have a project with this name
-
-            while Project_Name /= No_Name
-              and then Project_Name /= Name_Of_Project
-            loop
-               Name_And_Node :=
-                 Tree_Private_Part.Projects_Htable.Get_Next
+         if not In_Configuration then
+            declare
+               Name_And_Node : Tree_Private_Part.Project_Name_And_Node :=
+                 Tree_Private_Part.Projects_Htable.Get_First
                    (In_Tree.Projects_HT);
-               Project_Name := Name_And_Node.Name;
-            end loop;
+               Project_Name : Name_Id := Name_And_Node.Name;
 
-            --  Report an error if we already have a project with this name
+            begin
+               --  Check if we already have a project with this name
 
-            if Project_Name /= No_Name then
-               Error_Msg_Name_1 := Project_Name;
-               Error_Msg
-                 ("duplicate project name %%", Location_Of (Project, In_Tree));
-               Error_Msg_Name_1 :=
-                 Name_Id (Path_Name_Of (Name_And_Node.Node, In_Tree));
-               Error_Msg
-                 ("\already in %%", Location_Of (Project, In_Tree));
+               while Project_Name /= No_Name
+                 and then Project_Name /= Name_Of_Project
+               loop
+                  Name_And_Node :=
+                    Tree_Private_Part.Projects_Htable.Get_Next
+                      (In_Tree.Projects_HT);
+                  Project_Name := Name_And_Node.Name;
+               end loop;
 
-            else
-               --  Otherwise, add the name of the project to the hash table, so
-               --  that we can check that no other subsequent project will have
-               --  the same name.
+               --  Report an error if we already have a project with this name
 
-               Tree_Private_Part.Projects_Htable.Set
-                 (T => In_Tree.Projects_HT,
-                  K => Name_Of_Project,
-                  E => (Name           => Name_Of_Project,
-                        Node           => Project,
-                        Canonical_Path => Canonical_Path_Name,
-                        Extended       => Extended));
-            end if;
-         end;
+               if Project_Name /= No_Name then
+                  Error_Msg_Name_1 := Project_Name;
+                  Error_Msg
+                    ("duplicate project name %%",
+                     Location_Of (Project, In_Tree));
+                  Error_Msg_Name_1 :=
+                    Name_Id (Path_Name_Of (Name_And_Node.Node, In_Tree));
+                  Error_Msg
+                    ("\already in %%", Location_Of (Project, In_Tree));
+
+               else
+                  --  Otherwise, add the name of the project to the hash table,
+                  --  so that we can check that no other subsequent project
+                  --  will have the same name.
+
+                  Tree_Private_Part.Projects_Htable.Set
+                    (T => In_Tree.Projects_HT,
+                     K => Name_Of_Project,
+                     E => (Name           => Name_Of_Project,
+                           Node           => Project,
+                           Canonical_Path => Canonical_Path_Name,
+                           Extended       => Extended));
+               end if;
+            end;
+         end if;
 
       end if;
 
