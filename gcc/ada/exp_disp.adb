@@ -1011,7 +1011,6 @@ package body Exp_Disp is
    ------------------------------
 
    procedure Expand_Interface_Actuals (Call_Node : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (Call_Node);
       Actual     : Node_Id;
       Actual_Dup : Node_Id;
       Actual_Typ : Entity_Id;
@@ -1020,7 +1019,6 @@ package body Exp_Disp is
       Formal     : Entity_Id;
       Formal_Typ : Entity_Id;
       Subp       : Entity_Id;
-      Nam        : Name_Id;
       Formal_DDT : Entity_Id;
       Actual_DDT : Entity_Id;
 
@@ -1106,18 +1104,13 @@ package body Exp_Disp is
                (Attribute_Name (Actual) = Name_Access
                  or else Attribute_Name (Actual) = Name_Unchecked_Access)
             then
-               Nam := Attribute_Name (Actual);
+               --  This case must have been handled by the analysis and
+               --  expansion of 'Access. The only exception is when types
+               --  match and no further expansion is required.
 
-               Conversion := Convert_To (Formal_DDT, Prefix (Actual));
-               Rewrite (Actual, Conversion);
-               Analyze_And_Resolve (Actual, Formal_DDT);
-
-               Rewrite (Actual,
-                 Unchecked_Convert_To (Formal_Typ,
-                   Make_Attribute_Reference (Loc,
-                     Prefix => Relocate_Node (Actual),
-                     Attribute_Name => Nam)));
-               Analyze_And_Resolve (Actual, Formal_Typ);
+               pragma Assert (Base_Type (Etype (Prefix (Actual)))
+                               = Base_Type (Formal_DDT));
+               null;
 
             --  No need to displace the pointer if the type of the actual
             --  coincides with the type of the formal.
