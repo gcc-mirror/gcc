@@ -41,7 +41,7 @@ with Sinfo;    use Sinfo;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
-with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
+with GNAT.Heap_Sort_G;
 
 package body Sem_Case is
 
@@ -103,6 +103,8 @@ package body Sem_Case is
 
       procedure Move_Choice (From : Natural; To : Natural);
       --  Move routine for sorting the Choice_Table
+
+      package Sorting is new GNAT.Heap_Sort_G (Move_Choice, Lt_Choice);
 
       procedure Issue_Msg (Value1 : Node_Id; Value2 : Node_Id);
       procedure Issue_Msg (Value1 : Node_Id; Value2 : Uint);
@@ -215,10 +217,7 @@ package body Sem_Case is
          return;
       end if;
 
-      Sort
-        (Positive (Choice_Table'Last),
-         Move_Choice'Unrestricted_Access,
-         Lt_Choice'Unrestricted_Access);
+      Sorting.Sort (Positive (Choice_Table'Last));
 
       Lo      := Expr_Value (Choice_Table (1).Lo);
       Hi      := Expr_Value (Choice_Table (1).Hi);
