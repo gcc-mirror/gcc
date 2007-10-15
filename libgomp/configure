@@ -16990,7 +16990,7 @@ fi;
 
   echo "$as_me:$LINENO: checking whether the target supports thread-local storage" >&5
 echo $ECHO_N "checking whether the target supports thread-local storage... $ECHO_C" >&6
-if test "${have_tls+set}" = set; then
+if test "${gcc_cv_have_tls+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
@@ -17020,12 +17020,12 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_tls=yes
+  gcc_cv_have_tls=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_tls=no
+gcc_cv_have_tls=no
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
@@ -17094,14 +17094,14 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_tls=yes
+  gcc_cv_have_tls=yes
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_tls=no
+gcc_cv_have_tls=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
@@ -17109,12 +17109,12 @@ else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-have_tls=yes
+gcc_cv_have_tls=yes
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
       LDFLAGS="$chktls_save_LDFLAGS"
-      if test $have_tls = yes; then
+      if test $gcc_cv_have_tls = yes; then
 						chktls_save_CFLAGS="$CFLAGS"
 	thread_CFLAGS=failed
 	for flag in '' '-pthread' '-lpthread'; do
@@ -17222,14 +17222,14 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  have_tls=yes
+  gcc_cv_have_tls=yes
 else
   echo "$as_me: program exited with status $ac_status" >&5
 echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_tls=no
+gcc_cv_have_tls=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
@@ -17242,14 +17242,14 @@ echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 ( exit $ac_status )
-have_tls=no
+gcc_cv_have_tls=no
 fi
 rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
 fi
 fi
-echo "$as_me:$LINENO: result: $have_tls" >&5
-echo "${ECHO_T}$have_tls" >&6
-  if test "$enable_tls $have_tls" = "yes yes"; then
+echo "$as_me:$LINENO: result: $gcc_cv_have_tls" >&5
+echo "${ECHO_T}$gcc_cv_have_tls" >&6
+  if test "$enable_tls $gcc_cv_have_tls" = "yes yes"; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_TLS 1

@@ -1,3 +1,7 @@
+2007-10-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* configure: Regenerate following changes to ../config/tls.m4.
+
 2007-07-26  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

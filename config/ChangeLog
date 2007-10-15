@@ -1,3 +1,8 @@
+2007-10-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* tls.m4 (GCC_CHECK_TLS): Rename have_tls to gcc_cv_have_tls.
+	(GCC_CHECK_CC_TLS): Rename have_cc_tls to gcc_cv_have_cc_tls.
+
 2007-10-03  Richard Sandiford  <richard@codesourcery.com>
 
 	* no-executables.m4 (GCC_TRY_COMPILE_OR_LINK): New function.
