@@ -54,7 +54,7 @@ with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
 with Urealp;   use Urealp;
 
-with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
+with GNAT.Heap_Sort_G;
 
 package body Sem_Ch13 is
 
@@ -296,13 +296,15 @@ package body Sem_Ch13 is
       declare
          Comps : array (0 .. Num_CC) of Entity_Id;
          --  Array to collect component and discrimninant entities. The data
-         --  starts at index 1, the 0'th entry is for GNAT.Heap_Sort_A.
+         --  starts at index 1, the 0'th entry is for the sort routine.
 
          function CP_Lt (Op1, Op2 : Natural) return Boolean;
-         --  Compare routine for Sort (See GNAT.Heap_Sort_A)
+         --  Compare routine for Sort
 
          procedure CP_Move (From : Natural; To : Natural);
-         --  Move routine for Sort (see GNAT.Heap_Sort_A)
+         --  Move routine for Sort
+
+         package Sorting is new GNAT.Heap_Sort_G (CP_Move, CP_Lt);
 
          Start : Natural;
          Stop  : Natural;
@@ -353,7 +355,7 @@ package body Sem_Ch13 is
 
          --  Sort by ascending position number
 
-         Sort (Num_CC, CP_Move'Unrestricted_Access, CP_Lt'Unrestricted_Access);
+         Sorting.Sort (Num_CC);
 
          --  We now have all the components whose size does not exceed the max
          --  machine scalar value, sorted by starting position. In this loop
@@ -1107,7 +1109,7 @@ package body Sem_Ch13 is
 
             if VM_Target = No_VM then
                Set_Has_External_Tag_Rep_Clause (U_Ent);
-            else
+            elsif not Inspector_Mode then
                Error_Msg_Name_1 := Attr;
                Error_Msg_N
                  ("% attribute unsupported in this configuration", Nam);
@@ -1169,8 +1171,10 @@ package body Sem_Ch13 is
          --  Object_Size attribute definition clause
 
          when Attribute_Object_Size => Object_Size : declare
-            Size   : constant Uint := Static_Integer (Expr);
+            Size : constant Uint := Static_Integer (Expr);
+
             Biased : Boolean;
+            pragma Warnings (Off, Biased);
 
          begin
             if not Is_Type (U_Ent) then
@@ -2438,10 +2442,12 @@ package body Sem_Ch13 is
             --  Count of entries in OC_Fbit and OC_Lbit
 
             function OC_Lt (Op1, Op2 : Natural) return Boolean;
-            --  Compare routine for Sort (See GNAT.Heap_Sort_A)
+            --  Compare routine for Sort
 
             procedure OC_Move (From : Natural; To : Natural);
-            --  Move routine for Sort (see GNAT.Heap_Sort_A)
+            --  Move routine for Sort
+
+            package Sorting is new GNAT.Heap_Sort_G (OC_Move, OC_Lt);
 
             function OC_Lt (Op1, Op2 : Natural) return Boolean is
             begin
@@ -2476,10 +2482,7 @@ package body Sem_Ch13 is
                Next (CC);
             end loop;
 
-            Sort
-              (OC_Count,
-               OC_Move'Unrestricted_Access,
-               OC_Lt'Unrestricted_Access);
+            Sorting.Sort (OC_Count);
 
             Overlap_Check_Required := False;
             for J in 1 .. OC_Count - 1 loop

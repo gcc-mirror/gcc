@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
+with GNAT.Heap_Sort_G;
 
 separate (Lib)
 procedure Sort (Tbl : in out Unit_Ref_Table) is
@@ -47,6 +47,8 @@ procedure Sort (Tbl : in out Unit_Ref_Table) is
 
    procedure Move_Uname (From : Natural; To : Natural);
    --  Move routine needed by the sorting routine below
+
+   package Sorting is new GNAT.Heap_Sort_G (Move_Uname, Lt_Uname);
 
    --------------
    -- Lt_Uname --
@@ -88,8 +90,7 @@ begin
          T (I) := Tbl (Int (I) - 1 + Tbl'First);
       end loop;
 
-      Sort (T'Last,
-        Move_Uname'Unrestricted_Access, Lt_Uname'Unrestricted_Access);
+      Sorting.Sort (T'Last);
 
    --  Sort is complete, copy result back into place
 
