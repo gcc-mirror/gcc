@@ -362,7 +362,7 @@ begin
 
    Write_Switch_Char ("wxx");
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
-   Write_Line ("        a    turn on all optional warnings (except d,h,l,t)");
+   Write_Line ("        a    turn on all optional warnings (except d h l .o)");
    Write_Line ("        A    turn off all optional warnings");
    Write_Line ("        b    turn on warnings for bad fixed value " &
                                                   "(not multiple of small)");
@@ -400,6 +400,10 @@ begin
    Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
    Write_Line ("        o*   turn on warnings for address clause overlay");
    Write_Line ("        O    turn off warnings for address clause overlay");
+   Write_Line ("        .o   turn on warnings for out parameter assigned " &
+                                                  "but not read");
+   Write_Line ("        .O*  turn off warnings for out parameter assigned " &
+                                                  "but not read");
    Write_Line ("        p    turn on warnings for ineffective pragma " &
                                              "Inline in frontend");
    Write_Line ("        P*   turn off warnings for ineffective pragma " &

@@ -547,7 +547,9 @@ package body System.Task_Primitives.Operations is
       Check_Time : Duration := Monotonic_Clock;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
-      Result     : Integer;
+
+      Result : Integer;
+      pragma Unreferenced (Result);
 
       Local_Timedout : Boolean;
 
@@ -607,10 +609,10 @@ package body System.Task_Primitives.Operations is
       Check_Time : Duration := Monotonic_Clock;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
-      Timedout   : Boolean;
 
-      Result : Integer;
-      pragma Warnings (Off, Integer);
+      Timedout : Boolean;
+      Result   : Integer;
+      pragma Unreferenced (Timedout, Result);
 
    begin
       if Single_Lock then

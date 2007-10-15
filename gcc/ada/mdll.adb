@@ -111,6 +111,7 @@ package body MDLL is
          --  Objects plus the export table (.exp) file
 
          Success : Boolean;
+         pragma Warnings (Off, Success);
 
       begin
          if not Quiet then
@@ -192,6 +193,7 @@ package body MDLL is
 
       procedure Ada_Build_Reloc_DLL is
          Success : Boolean;
+         pragma Warnings (Off, Success);
 
       begin
          if not Quiet then
@@ -296,6 +298,7 @@ package body MDLL is
 
       procedure Build_Non_Reloc_DLL is
          Success : Boolean;
+         pragma Warnings (Off, Success);
 
       begin
          if not Quiet then
@@ -348,6 +351,7 @@ package body MDLL is
 
       procedure Ada_Build_Non_Reloc_DLL is
          Success : Boolean;
+         pragma Warnings (Off, Success);
 
       begin
          if not Quiet then

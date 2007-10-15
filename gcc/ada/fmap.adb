@@ -490,7 +490,7 @@ package body Fmap is
          if Last_In_Table = 0 then
             declare
                Discard : Boolean;
-
+               pragma Warnings (Off, Discard);
             begin
                Delete_File (File_Name, Discard);
             end;

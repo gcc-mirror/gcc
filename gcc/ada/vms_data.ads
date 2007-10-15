@@ -2586,6 +2586,10 @@ package VMS_Data is
                                                "!-gnatws,!-gnatwe "        &
                                             "ALL "                         &
                                                "-gnatwa "                  &
+                                            "OPTIONAL "                    &
+                                               "-gnatwa "                  &
+                                            "NOOPTIONAL "                  &
+                                               "-gnatwA "                  &
                                             "NOALL "                       &
                                                "-gnatwA "                  &
                                             "ALL_GCC "                     &
@@ -2602,66 +2606,12 @@ package VMS_Data is
                                                "-gnatw.c "                 &
                                             "NOMISSING_COMPONENT_CLAUSES " &
                                                "-gnatw.C "                 &
-                                            "CONSTANT_VARIABLES "          &
-                                               "-gnatwk "                  &
-                                            "NOCONSTANT_VARIABLES "        &
-                                               "-gnatwK "                  &
                                             "IMPLICIT_DEREFERENCE "        &
                                                "-gnatwd "                  &
                                             "NO_IMPLICIT_DEREFERENCE "     &
                                                "-gnatwD "                  &
-                                            "ELABORATION "                 &
-                                               "-gnatwl "                  &
-                                            "NOELABORATION "               &
-                                               "-gnatwL "                  &
                                             "ERRORS "                      &
                                                "-gnatwe "                  &
-                                            "HIDING "                      &
-                                               "-gnatwh "                  &
-                                            "NOHIDING "                    &
-                                               "-gnatwH "                  &
-                                            "IMPLEMENTATION "              &
-                                               "-gnatwi "                  &
-                                            "NOIMPLEMENTATION "            &
-                                               "-gnatwI "                  &
-                                            "INEFFECTIVE_INLINE "          &
-                                               "-gnatwp "                  &
-                                            "NOINEFFECTIVE_INLINE "        &
-                                               "-gnatwP "                  &
-                                            "MISSING_PARENS "              &
-                                               "-gnatwq "                  &
-                                            "NOMISSING_PARENS "            &
-                                               "-gnatwQ "                  &
-                                            "MODIFIED_UNREF "              &
-                                               "-gnatwm "                  &
-                                            "NOMODIFIED_UNREF "            &
-                                               "-gnatwM "                  &
-                                            "NORMAL "                      &
-                                               "-gnatwn "                  &
-                                            "OBSOLESCENT "                 &
-                                               "-gnatwj "                  &
-                                            "NOOBSOLESCENT "               &
-                                               "-gnatwJ "                  &
-                                            "OPTIONAL "                    &
-                                               "-gnatwa "                  &
-                                            "NOOPTIONAL "                  &
-                                               "-gnatwA "                  &
-                                            "OVERLAYS "                    &
-                                               "-gnatwo "                  &
-                                            "NOOVERLAYS "                  &
-                                               "-gnatwO "                  &
-                                            "REDUNDANT "                   &
-                                               "-gnatwr "                  &
-                                            "NOREDUNDANT "                 &
-                                               "-gnatwR "                  &
-                                            "SUPPRESS "                    &
-                                               "-gnatws "                  &
-                                            "DELETED_CODE "                &
-                                               "-gnatwt "                  &
-                                            "NODELETED_CODE "              &
-                                               "-gnatwT "                  &
-                                            "UNINITIALIZED "               &
-                                               "-Wuninitialized "          &
                                             "UNREFERENCED_FORMALS "        &
                                                "-gnatwf "                  &
                                             "NOUNREFERENCED_FORMALS "      &
@@ -2670,6 +2620,64 @@ package VMS_Data is
                                                "-gnatwg "                  &
                                             "NOUNRECOGNIZED_PRAGMAS "      &
                                                "-gnatwG "                  &
+                                            "HIDING "                      &
+                                               "-gnatwh "                  &
+                                            "NOHIDING "                    &
+                                               "-gnatwH "                  &
+                                            "IMPLEMENTATION "              &
+                                               "-gnatwi "                  &
+                                            "NOIMPLEMENTATION "            &
+                                               "-gnatwI "                  &
+                                            "OBSOLESCENT "                 &
+                                               "-gnatwj "                  &
+                                            "NOOBSOLESCENT "               &
+                                               "-gnatwJ "                  &
+                                            "CONSTANT_VARIABLES "          &
+                                               "-gnatwk "                  &
+                                            "NOCONSTANT_VARIABLES "        &
+                                               "-gnatwK "                  &
+                                            "ELABORATION "                 &
+                                               "-gnatwl "                  &
+                                            "NOELABORATION "               &
+                                               "-gnatwL "                  &
+                                            "MODIFIED_UNREF "              &
+                                               "-gnatwm "                  &
+                                            "NOMODIFIED_UNREF "            &
+                                               "-gnatwM "                  &
+                                            "NORMAL "                      &
+                                               "-gnatwn "                  &
+                                            "OVERLAYS "                    &
+                                               "-gnatwo "                  &
+                                            "NOOVERLAYS "                  &
+                                               "-gnatwO "                  &
+                                            "OUT_PARAM_UNREF "             &
+                                               "-gnatw.o "                 &
+                                            "NOOUT_PARAM_UNREF "           &
+                                               "-gnatw.O "                 &
+                                            "INEFFECTIVE_INLINE "          &
+                                               "-gnatwp "                  &
+                                            "NOINEFFECTIVE_INLINE "        &
+                                               "-gnatwP "                  &
+                                            "MISSING_PARENS "              &
+                                               "-gnatwq "                  &
+                                            "NOMISSING_PARENS "            &
+                                               "-gnatwQ "                  &
+                                            "REDUNDANT "                   &
+                                               "-gnatwr "                  &
+                                            "NOREDUNDANT "                 &
+                                               "-gnatwR "                  &
+                                            "OBJECT_RENAMES "              &
+                                               "-gnatw.r "                 &
+                                            "NOOBJECT_RENAMES "            &
+                                               "-gnatw.R "                 &
+                                            "SUPPRESS "                    &
+                                               "-gnatws "                  &
+                                            "DELETED_CODE "                &
+                                               "-gnatwt "                  &
+                                            "NODELETED_CODE "              &
+                                               "-gnatwT "                  &
+                                            "UNINITIALIZED "               &
+                                               "-Wuninitialized "          &
                                             "UNUSED "                      &
                                                "-gnatwu "                  &
                                             "NOUNUSED "                    &
@@ -2870,20 +2878,15 @@ package VMS_Data is
    --   NOOBSOLESCENT           Disables warnings on use of obsolescent
    --                           features.
    --
-   --   OPTIONAL                Activate all optional warning messages.
-   --                           See other options under this qualifier
-   --                           for details on optional warning messages
-   --                           that can be individually controlled. The
-   --                           one exception is that /WARNINGS=OPTIONAL
-   --                           doesn't activate warnings for hiding
-   --                           variables (/WARNINGS=HIDING), so if this
-   --                           warning is required it must be explicitly
-   --                           set.
+   --   OBJECT_RENAME           Activate warnings for non limited objects
+   --                           renaming parameterless functions.
    --
-   --   NOOPTIONAL              Suppress all optional warning messages.
-   --                           See other options under this qualifier
-   --                           for details on optional warning messages
-   --                           that can be individually controlled.
+   --   NOOBJECT_RENAME         Suppress warnings for non limited objects
+   --                           renaming parameterless functions.
+   --
+   --   OPTIONAL                Equivalent to ALL.
+   --
+   --   NOOPTIONAL              Equivalent to NOALL.
    --
    --   OVERLAYS                Activate warnings for possibly unintended
    --                           initialization effects of defining address

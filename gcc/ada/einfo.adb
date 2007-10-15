@@ -174,7 +174,6 @@ package body Einfo is
    --    Directly_Designated_Type        Node20
    --    Discriminant_Checking_Func      Node20
    --    Discriminant_Default_Value      Node20
-   --    Last_Assignment                 Node20
    --    Last_Entity                     Node20
    --    Register_Exception_Call         Node20
    --    Scalar_Range                    Node20
@@ -217,7 +216,8 @@ package body Einfo is
    --    DT_Offset_To_Top_Func           Node25
    --    Task_Body_Procedure             Node25
 
-   --    Dispatch_Table_Wrapper          Node16
+   --    Dispatch_Table_Wrapper          Node26
+   --    Last_Assignment                 Node26
    --    Overridden_Operation            Node26
    --    Package_Instantiation           Node26
    --    Related_Interface               Node26
@@ -554,7 +554,7 @@ package body Einfo is
          (Ekind (Id) = E_Constant
            or else Ekind (Id) = E_Variable
            or else Ekind (Id) = E_Generic_In_Out_Parameter
-           or else Ekind (Id) in  E_In_Parameter .. E_In_Out_Parameter);
+           or else Is_Formal (Id));
       return Node17 (Id);
    end Actual_Subtype;
 
@@ -2051,8 +2051,8 @@ package body Einfo is
 
    function Last_Assignment (Id : E) return N is
    begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      return Node20 (Id);
+      pragma Assert (Is_Assignable (Id));
+      return Node26 (Id);
    end Last_Assignment;
 
    function Last_Entity (Id : E) return E is
@@ -2608,6 +2608,11 @@ package body Einfo is
       return Ekind (Id) in Array_Kind;
    end Is_Array_Type;
 
+   function Is_Assignable                       (Id : E) return B is
+   begin
+      return Ekind (Id) in Assignable_Kind;
+   end Is_Assignable;
+
    function Is_Class_Wide_Type                  (Id : E) return B is
    begin
       return Ekind (Id) in Class_Wide_Kind;
@@ -2855,7 +2860,7 @@ package body Einfo is
          (Ekind (Id) = E_Constant
            or else Ekind (Id) = E_Variable
            or else Ekind (Id) = E_Generic_In_Out_Parameter
-           or else Ekind (Id) in  E_In_Parameter .. E_In_Out_Parameter);
+           or else Is_Formal (Id));
       Set_Node17 (Id, V);
    end Set_Actual_Subtype;
 
@@ -4378,8 +4383,8 @@ package body Einfo is
 
    procedure Set_Last_Assignment (Id : E; V : N) is
    begin
-      pragma Assert (Ekind (Id) = E_Variable);
-      Set_Node20 (Id, V);
+      pragma Assert (Is_Assignable (Id));
+      Set_Node26 (Id, V);
    end Set_Last_Assignment;
 
    procedure Set_Last_Entity (Id : E; V : E) is
@@ -5489,11 +5494,29 @@ package body Einfo is
 
       --  Normal case, search enclosing scopes
 
+      --  Note: the test for Present (S) should not be required, it is a
+      --  defence against an ill-formed tree.
+
       S := Scope (Id);
-      while S /= Standard_Standard
-        and then not Is_Dynamic_Scope (S)
       loop
-         S := Scope (S);
+         --  If we somehow got an empty value for Scope, the tree must be
+         --  malformed. Rather than blow up we return Standard in this case.
+
+         if No (S) then
+            return Standard_Standard;
+
+         --  Quit if we get to standard or a dynamic scope
+
+         elsif S = Standard_Standard
+           or else Is_Dynamic_Scope (S)
+         then
+            return S;
+
+         --  Otherwise keep climbing
+
+         else
+            S := Scope (S);
+         end if;
       end loop;
 
       return S;
@@ -8038,9 +8061,6 @@ package body Einfo is
          when E_Exception                                  =>
             Write_Str ("Register_Exception_Call");
 
-         when E_Variable                                   =>
-            Write_Str ("Last_Assignment");
-
          when others                                       =>
             Write_Str ("Field20??");
       end case;
@@ -8282,6 +8302,11 @@ package body Einfo is
          when E_Record_Type                                |
               E_Record_Type_With_Private                   =>
             Write_Str ("Dispatch_Table_Wrapper");
+
+         when E_In_Out_Parameter                               |
+              E_Out_Parameter                           |
+              E_Variable                                   =>
+            Write_Str ("Last_Assignment");
 
          when others                                       =>
             Write_Str ("Field26??");

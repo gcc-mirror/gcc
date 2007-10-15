@@ -1449,9 +1449,11 @@ package body Freeze is
       procedure Freeze_Record_Type (Rec : Entity_Id) is
          Comp : Entity_Id;
          IR   : Node_Id;
-         Junk : Boolean;
          ADC  : Node_Id;
          Prev : Entity_Id;
+
+         Junk : Boolean;
+         pragma Warnings (Off, Junk);
 
          Unplaced_Component : Boolean := False;
          --  Set True if we find at least one component with no component
@@ -2899,8 +2901,10 @@ package body Freeze is
                  and then Known_RM_Size (E)
                then
                   declare
+                     SizC : constant Node_Id := Size_Clause (E);
+
                      Discard : Boolean;
-                     SizC    : constant Node_Id := Size_Clause (E);
+                     pragma Warnings (Off, Discard);
 
                   begin
                      --  It is not clear if it is possible to have no size

@@ -364,6 +364,7 @@ package body Prj is
 
    procedure Delete_All_Temp_Files is
       Dont_Care : Boolean;
+      pragma Warnings (Off, Dont_Care);
    begin
       if not Debug.Debug_Flag_N then
          for Index in 1 .. Temp_Files.Last loop

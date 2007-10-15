@@ -5519,6 +5519,8 @@ package body Sem_Prag is
          when Pragma_Convention => Convention : declare
             C : Convention_Id;
             E : Entity_Id;
+            pragma Warnings (Off, C);
+            pragma Warnings (Off, E);
          begin
             Check_Arg_Order ((Name_Convention, Name_Entity));
             Check_Ada_83_Warning;
@@ -6151,6 +6153,8 @@ package body Sem_Prag is
             C      : Convention_Id;
             Def_Id : Entity_Id;
 
+            pragma Warnings (Off, C);
+
          begin
             Check_Ada_83_Warning;
             Check_Arg_Order
@@ -6540,8 +6544,11 @@ package body Sem_Prag is
          --    [, [Link_Name     =>] static_string_EXPRESSION ]);
 
          when Pragma_External => External : declare
-            C      : Convention_Id;
-            Def_Id : Entity_Id;
+               Def_Id : Entity_Id;
+
+               C : Convention_Id;
+               pragma Warnings (Off, C);
+
          begin
             GNAT_Pragma;
             Check_Arg_Order

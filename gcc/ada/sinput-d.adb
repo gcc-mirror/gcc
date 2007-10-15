@@ -39,6 +39,8 @@ package body Sinput.D is
       S    : Source_File_Record renames Source_File.Table (Dfile);
       Src  : Source_Buffer_Ptr;
 
+      pragma Warnings (Off, S);
+
    begin
       Trim_Lines_Table (Dfile);
       Close_Debug_File;

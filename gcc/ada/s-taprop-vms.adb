@@ -150,7 +150,8 @@ package body System.Task_Primitives.Operations is
    --  Signal the condition variable when AST fires
 
    procedure Timer_Sleep_AST (ID : Address) is
-      Result  : Interfaces.C.int;
+      Result : Interfaces.C.int;
+      pragma Warnings (Off, Result);
       Self_ID : constant Task_Id := To_Task_Id (ID);
    begin
       Self_ID.Common.LL.AST_Pending := False;

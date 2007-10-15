@@ -69,7 +69,7 @@ package body Exp_Smem is
    function Is_Out_Actual (N : Node_Id) return Boolean;
    --  In a similar manner, this function determines if N appears as an
    --  OUT or IN OUT parameter to a procedure call. If the result is
-   --  True, then Insert_Node is set to point to the assignment.
+   --  True, then Insert_Node is set to point to the call.
 
    ---------------------
    -- Add_Read_Before --
@@ -245,50 +245,18 @@ package body Exp_Smem is
    -------------------
 
    function Is_Out_Actual (N : Node_Id) return Boolean is
-      Parnt  : constant Node_Id := Parent (N);
-      Formal : Entity_Id;
-      Call   : Node_Id;
-      Actual : Node_Id;
+      Kind : Entity_Kind;
+      Call : Node_Id;
 
    begin
-      if (Nkind (Parnt) = N_Indexed_Component
-            or else
-          Nkind (Parnt) = N_Selected_Component)
-        and then N = Prefix (Parnt)
-      then
-         return Is_Out_Actual (Parnt);
+      Find_Actual_Mode (N, Kind, Call);
 
-      elsif Nkind (Parnt) = N_Parameter_Association
-        and then N = Explicit_Actual_Parameter (Parnt)
-      then
-         Call := Parent (Parnt);
-
-      elsif Nkind (Parnt) = N_Procedure_Call_Statement then
-         Call := Parnt;
-
+      if Kind = E_Out_Parameter or else Kind = E_In_Out_Parameter then
+         Insert_Node := Call;
+         return True;
       else
          return False;
       end if;
-
-      --  Fall here if we are definitely a parameter
-
-      Actual := First_Actual (Call);
-      Formal := First_Formal (Entity (Name (Call)));
-
-      loop
-         if Actual = N then
-            if Ekind (Formal) /= E_In_Parameter then
-               Insert_Node := Call;
-               return True;
-            else
-               return False;
-            end if;
-
-         else
-            Actual := Next_Actual (Actual);
-            Formal := Next_Formal (Formal);
-         end if;
-      end loop;
    end Is_Out_Actual;
 
    ---------------------------

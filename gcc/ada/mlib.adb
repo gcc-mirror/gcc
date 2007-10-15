@@ -303,11 +303,11 @@ package body MLib is
          Newpath : System.Address) return Integer;
       pragma Import (C, Symlink, "__gnat_symlink");
 
-      Success      : Boolean;
       Version_Path : String_Access;
 
-      Result : Integer;
-      pragma Unreferenced (Result);
+      Success : Boolean;
+      Result  : Integer;
+      pragma Unreferenced (Success, Result);
 
    begin
       if Is_Absolute_Path (Lib_Version) then

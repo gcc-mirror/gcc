@@ -2412,8 +2412,30 @@ package body Exp_Ch6 is
 
          if Ekind (Formal) /= E_In_Parameter
            and then Is_Entity_Name (Actual)
+           and then Present (Entity (Actual))
          then
-            Kill_Current_Values (Entity (Actual));
+            declare
+               Ent : constant Entity_Id := Entity (Actual);
+               Sav : Node_Id;
+
+            begin
+               --  For an OUT parameter that is an assignable entity, we do not
+               --  want to clobber the Last_Assignment field, since if it is
+               --  set, it was precisely because it is indeed an OUT parameter!
+
+               if Ekind (Formal) = E_Out_Parameter
+                 and then Is_Assignable (Ent)
+               then
+                  Sav := Last_Assignment (Ent);
+                  Kill_Current_Values (Ent);
+                  Set_Last_Assignment (Ent, Sav);
+
+                  --  For all other cases, just kill the current values
+
+               else
+                  Kill_Current_Values (Ent);
+               end if;
+            end;
          end if;
 
          --  If the formal is class wide and the actual is an aggregate, force
@@ -5685,10 +5707,26 @@ package body Exp_Ch6 is
          --  ensure the correct replacement of the object declaration by the
          --  object renaming declaration to avoid homograph conflicts (since
          --  the object declaration's defining identifier was already entered
-         --  in current scope).
+         --  in current scope). The Next_Entity links of the two entities also
+         --  have to be swapped since the entities are part of the return
+         --  scope's entity list and the list structure would otherwise be
+         --  corrupted.
 
-         Set_Chars (Defining_Identifier (Object_Decl), Chars (Obj_Def_Id));
-         Exchange_Entities (Defining_Identifier (Object_Decl), Obj_Def_Id);
+         declare
+            Renaming_Def_Id  : constant Entity_Id :=
+                                 Defining_Identifier (Object_Decl);
+            Next_Entity_Temp : constant Entity_Id :=
+                                 Next_Entity (Renaming_Def_Id);
+         begin
+            Set_Chars (Renaming_Def_Id, Chars (Obj_Def_Id));
+
+            --  Swap next entity links in preparation for exchanging entities
+
+            Set_Next_Entity (Renaming_Def_Id, Next_Entity (Obj_Def_Id));
+            Set_Next_Entity (Obj_Def_Id, Next_Entity_Temp);
+
+            Exchange_Entities (Renaming_Def_Id, Obj_Def_Id);
+         end;
       end if;
 
       --  If the object entity has a class-wide Etype, then we need to change

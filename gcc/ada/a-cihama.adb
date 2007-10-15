@@ -568,6 +568,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
       New_Item  : Element_Type)
    is
       Position : Cursor;
+      pragma Unreferenced (Position);
+
       Inserted : Boolean;
 
    begin
@@ -965,9 +967,13 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
          declare
             K : Key_Type renames Position.Node.Key.all;
+
             E : Element_Type renames Position.Node.Element.all;
+            pragma Unreferenced (E);
+
          begin
             Process (K, E);
+
          exception
             when others =>
                L := L - 1;

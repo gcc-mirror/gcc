@@ -707,8 +707,11 @@ package body Sem_Ch5 is
                --  generate bogus warnings when an assignment is rewritten as
                --  another assignment, and gets tied up with itself.
 
+               --  Note: we don't use Record_Last_Assignment here, because we
+               --  have lots of other stuff to do under control of this test.
+
                if Warn_On_Modified_Unread
-                 and then Ekind (Ent) = E_Variable
+                 and then Is_Assignable (Ent)
                  and then Comes_From_Source (N)
                  and then In_Extended_Main_Source_Unit (Ent)
                then
@@ -884,6 +887,10 @@ package body Sem_Ch5 is
       Dont_Care      : Boolean;
       Others_Present : Boolean;
 
+      pragma Warnings (Off, Last_Choice);
+      pragma Warnings (Off, Dont_Care);
+      --  Don't care about assigned values
+
       Statements_Analyzed : Boolean := False;
       --  Set True if at least some statement sequences get analyzed.
       --  If False on exit, means we had a serious error that prevented
@@ -981,6 +988,7 @@ package body Sem_Ch5 is
       --  a call to Number_Of_Choices to get the right number of entries.
 
       Case_Table : Choice_Table_Type (1 .. Number_Of_Choices (N));
+      pragma Warnings (Off, Case_Table);
 
    --  Start of processing for Analyze_Case_Statement
 
@@ -1171,6 +1179,7 @@ package body Sem_Ch5 is
 
    begin
       Check_Unreachable_Code (N);
+      Kill_Current_Values (Last_Assignment_Only => True);
 
       Analyze (Label);
       Label_Ent := Entity (Label);
@@ -1770,6 +1779,8 @@ package body Sem_Ch5 is
                         Hlo : Uint;
                         Hhi : Uint;
                         HOK : Boolean;
+
+                        pragma Warnings (Off, Hlo);
 
                      begin
                         Determine_Range (L, LOK, Llo, Lhi);

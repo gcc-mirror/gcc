@@ -2400,9 +2400,9 @@ package body Bindgen is
    -----------------------
 
    procedure Gen_Output_File_C (Filename : String) is
-
       Bfile : Name_Id;
-      --  Name of generated bind file
+      pragma Warnings (Off, Bfile);
+      --  Name of generated bind file (not referenced)
 
    begin
       Create_Binder_Output (Filename, 'c', Bfile);
@@ -2421,7 +2421,6 @@ package body Bindgen is
       if Use_Pragma_Linker_Constructor then
          WBI ("extern void " & Ada_Init_Name.all &
               " (void) __attribute__((constructor));");
-
       else
          WBI ("extern void " & Ada_Init_Name.all & " (void);");
       end if;

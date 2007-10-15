@@ -104,7 +104,8 @@ package body Validsw is
    procedure Set_Validity_Check_Options (Options : String) is
       OK : Boolean;
       EC : Natural;
-
+      pragma Warnings (Off, OK);
+      pragma Warnings (Off, EC);
    begin
       Set_Validity_Check_Options (Options, OK, EC);
    end Set_Validity_Check_Options;

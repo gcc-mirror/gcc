@@ -1119,8 +1119,9 @@ package body Sem_Warn is
                            or else
                         (Check_Unreferenced_Formals and then Is_Formal (E1))
                            or else
-                        (Warn_On_Modified_Unread
-                          and then Referenced_As_LHS_Check_Spec (E1)))
+                        ((Warn_On_Modified_Unread
+                             or Warn_On_Out_Parameter_Unread)
+                           and then Referenced_As_LHS_Check_Spec (E1)))
 
                --  Labels, and enumeration literals, and exceptions. The
                --  warnings are also placed on local packages that cannot be
@@ -2529,6 +2530,12 @@ package body Sem_Warn is
          when 'C' =>
             Warn_On_Unrepped_Components         := False;
 
+         when 'o' =>
+            Warn_On_Out_Parameter_Unread        := True;
+
+         when 'O' =>
+            Warn_On_Out_Parameter_Unread        := False;
+
          when 'r' =>
             Warn_On_Object_Renames_Function     := True;
 
@@ -2597,6 +2604,7 @@ package body Sem_Warn is
             Warn_On_No_Value_Assigned           := False;
             Warn_On_Non_Local_Exception         := False;
             Warn_On_Obsolescent_Feature         := False;
+            Warn_On_Out_Parameter_Unread        := False;
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Object_Renames_Function     := False;
@@ -3256,6 +3264,7 @@ package body Sem_Warn is
       Body_E : Entity_Id := Empty)
    is
       E : Entity_Id := Spec_E;
+
    begin
       if not Referenced_Check_Spec (E) and then not Warnings_Off (E) then
          case Ekind (E) is
@@ -3269,7 +3278,7 @@ package body Sem_Warn is
                  and then No (Address_Clause (E))
                  and then not Is_Volatile (E)
                then
-                  if Warn_On_Modified_Unread
+                  if (Warn_On_Modified_Unread or Warn_On_Out_Parameter_Unread)
                     and then not Is_Imported (E)
                     and then not Is_Return_Object (E)
 
@@ -3425,7 +3434,7 @@ package body Sem_Warn is
       --  last assignment field set, with warnings enabled, and which is
       --  not imported or exported.
 
-      if Ekind (Ent) = E_Variable
+      if Is_Assignable (Ent)
         and then not Is_Return_Object (Ent)
         and then Present (Last_Assignment (Ent))
         and then not Warnings_Off (Ent)
@@ -3451,16 +3460,29 @@ package body Sem_Warn is
             elsif Nkind (P) = N_Subprogram_Body
               or else Nkind (P) = N_Package_Body
             then
+               --  Case of assigned value never referenced
+
                if Loc = No_Location then
-                  Error_Msg_NE
-                    ("?useless assignment to&, value never referenced!",
-                     Last_Assignment (Ent), Ent);
+
+                  --  Don't give this for OUT and IN OUT formals, since
+                  --  clearly caller may reference the assigned value.
+
+                  if Ekind (Ent) = E_Variable then
+                     Error_Msg_NE
+                       ("?useless assignment to&, value never referenced!",
+                        Last_Assignment (Ent), Ent);
+                  end if;
+
+               --  Case of assigned value overwritten
+
                else
                   Error_Msg_Sloc := Loc;
                   Error_Msg_NE
                     ("?useless assignment to&, value overwritten #!",
                      Last_Assignment (Ent), Ent);
                end if;
+
+               --  Clear last assignment indication and we are done
 
                Set_Last_Assignment (Ent, Empty);
                return;

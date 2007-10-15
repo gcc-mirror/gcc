@@ -37,6 +37,8 @@ with System.Aux_DEC; use System.Aux_DEC;
 
 with Ada.Unchecked_Conversion;
 
+pragma Warnings (Off); -- temp till we fix out param warnings ???
+
 package body Ada.Calendar is
 
    --------------------------

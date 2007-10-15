@@ -645,6 +645,8 @@ package body Ada.Containers.Hashed_Sets is
       New_Item  : Element_Type)
    is
       Position : Cursor;
+      pragma Unreferenced (Position);
+
       Inserted : Boolean;
 
    begin
@@ -1329,9 +1331,11 @@ package body Ada.Containers.Hashed_Sets is
    ------------
 
    function To_Set (New_Item : Element_Type) return Set is
-      HT       : Hash_Table_Type;
+      HT : Hash_Table_Type;
+
       Node     : Node_Access;
       Inserted : Boolean;
+      pragma Unreferenced (Node, Inserted);
 
    begin
       Insert (HT, New_Item, Node, Inserted);
@@ -1375,6 +1379,7 @@ package body Ada.Containers.Hashed_Sets is
 
          Tgt_Node : Node_Access;
          Success  : Boolean;
+         pragma Unreferenced (Tgt_Node, Success);
 
       --  Start of processing for Process
 

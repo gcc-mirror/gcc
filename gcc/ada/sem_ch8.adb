@@ -3014,6 +3014,15 @@ package body Sem_Ch8 is
       --  entity requires special handling because it may be use-visible
       --  but hides directly visible entities defined outside the instance.
 
+      function Is_Actual_Parameter return Boolean;
+      --  This function checks if the node N is an identifier that is an actual
+      --  parameter of a procedure call. If so it returns True, otherwise it
+      --  return False. The reason for this check is that at this stage we do
+      --  not know what procedure is being called if the procedure might be
+      --  overloaded, so it is premature to go setting referenced flags or
+      --  making calls to Generate_Reference. We will wait till Resolve_Actuals
+      --  for that processing
+
       function Known_But_Invisible (E : Entity_Id) return Boolean;
       --  This function determines whether the entity E (which is not
       --  visible) can reasonably be considered to be known to the writer
@@ -3092,6 +3101,23 @@ package body Sem_Ch8 is
             return False;
          end if;
       end From_Actual_Package;
+
+      -------------------------
+      -- Is_Actual_Parameter --
+      -------------------------
+
+      function Is_Actual_Parameter return Boolean is
+      begin
+         return
+           Nkind (N) = N_Identifier
+             and then
+               (Nkind (Parent (N)) = N_Procedure_Call_Statement
+                  or else
+                    (Nkind (Parent (N)) = N_Parameter_Association
+                       and then N = Explicit_Actual_Parameter (Parent (N))
+                       and then Nkind (Parent (Parent (N))) =
+                                          N_Procedure_Call_Statement));
+      end Is_Actual_Parameter;
 
       -------------------------
       -- Known_But_Invisible --
@@ -3837,7 +3863,9 @@ package body Sem_Ch8 is
             --  If no homonyms were visible, the entity is unambiguous
 
             if not Is_Overloaded (N) then
-               Generate_Reference (E, N);
+               if not Is_Actual_Parameter then
+                  Generate_Reference (E, N);
+               end if;
             end if;
 
          --  Case of non-overloadable entity, set the entity providing that
@@ -3856,10 +3884,11 @@ package body Sem_Ch8 is
             if Nkind (Parent (N)) = N_Label then
                declare
                   R : constant Boolean := Referenced (E);
-
                begin
-                  Generate_Reference (E, N);
-                  Set_Referenced (E, R);
+                  if not Is_Actual_Parameter then
+                     Generate_Reference (E, N);
+                     Set_Referenced (E, R);
+                  end if;
                end;
 
             --  Normal case, not a label: generate reference
@@ -3870,9 +3899,15 @@ package body Sem_Ch8 is
             --    determine whether this reference modifies the denoted object
             --    (because implicit derefences cannot be identified prior to
             --    full type resolution).
+            --
+            --  ??? The Is_Actual_Parameter routine takes care of one of these
+            --    cases but there are others probably
 
             else
-               Generate_Reference (E, N);
+               if not Is_Actual_Parameter then
+                  Generate_Reference (E, N);
+               end if;
+
                Check_Nested_Access (E);
             end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006 AdaCore                      --
+--                     Copyright (C) 2000-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1475,6 +1475,7 @@ package body GNAT.AWK is
 
    procedure Split_Line (Session : Session_Type) is
       Fields : Field_Table.Instance renames Session.Data.Fields;
+      pragma Unreferenced (Fields);
    begin
       Field_Table.Init (Fields);
       Split.Current_Line (Session.Data.Separators.all, Session);

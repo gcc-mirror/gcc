@@ -416,6 +416,8 @@ package body Exp_Fixd is
             Rnn  : Entity_Id;
             Code : List_Id;
 
+            pragma Warnings (Off, Rnn);
+
          begin
             Build_Double_Divide_Code (N, X, Y, Z, Qnn, Rnn, Code);
             Insert_Actions (N, Code);
@@ -802,6 +804,8 @@ package body Exp_Fixd is
             Qnn  : Entity_Id;
             Rnn  : Entity_Id;
             Code : List_Id;
+
+            pragma Warnings (Off, Rnn);
 
          begin
             Build_Scaled_Divide_Code (N, X, Y, Z, Qnn, Rnn, Code);

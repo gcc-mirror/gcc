@@ -620,6 +620,8 @@ package body Ada.Containers.Indefinite_Vectors is
       Position  : in out Cursor;
       Count     : Count_Type := 1)
    is
+      pragma Warnings (Off, Position);
+
    begin
       if Position.Container = null then
          raise Constraint_Error with "Position cursor has no element";

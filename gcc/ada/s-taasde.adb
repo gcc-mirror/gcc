@@ -304,7 +304,7 @@ package body System.Tasking.Async_Delays is
    task body Timer_Server is
       function Get_Next_Wakeup_Time return Duration;
       --  Used to initialize Next_Wakeup_Time, but also to ensure that
-      --  Make_Independent is called during the elaboration of this task
+      --  Make_Independent is called during the elaboration of this task.
 
       --------------------------
       -- Get_Next_Wakeup_Time --
@@ -316,12 +316,16 @@ package body System.Tasking.Async_Delays is
          return Duration'Last;
       end Get_Next_Wakeup_Time;
 
+      --  Local Declarations
+
       Next_Wakeup_Time : Duration := Get_Next_Wakeup_Time;
       Timedout         : Boolean;
       Yielded          : Boolean;
       Now              : Duration;
       Dequeued         : Delay_Block_Access;
       Dequeued_Task    : Task_Id;
+
+      pragma Unreferenced (Timedout, Yielded);
 
    begin
       Timer_Server_ID := STPO.Self;
@@ -376,7 +380,6 @@ package body System.Tasking.Async_Delays is
          Timer_Attention := False;
 
          Now := STPO.Monotonic_Clock;
-
          while Timer_Queue.Succ.Resume_Time <= Now loop
 
             --  Dequeue the waiting task from the front of the queue

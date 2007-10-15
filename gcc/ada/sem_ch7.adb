@@ -808,7 +808,7 @@ package body Sem_Ch7 is
 
          E := FE;
          while Present (E) and then E /= Id loop
-            if Ekind (E) = E_Variable then
+            if Is_Assignable (E) then
                Set_Never_Set_In_Source (E, False);
                Set_Is_True_Constant    (E, False);
                Set_Current_Value       (E, Empty);

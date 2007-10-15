@@ -534,6 +534,8 @@ package body Sem_Ch11 is
             Analyze_And_Resolve (Expression (N), Standard_String);
          end if;
       end if;
+
+      Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Raise_Statement;
 
    -----------------------------

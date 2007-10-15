@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1052,6 +1052,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
 
    procedure Insert (Container : in out Set; New_Item : Element_Type) is
       Position : Cursor;
+      pragma Unreferenced (Position);
    begin
       Insert (Container, New_Item, Position);
    end Insert;
@@ -1794,9 +1795,9 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
    ------------
 
    function To_Set (New_Item : Element_Type) return Set is
-      Tree     : Tree_Type;
-      Node     : Node_Access;
-
+      Tree : Tree_Type;
+      Node : Node_Access;
+      pragma Unreferenced (Node);
    begin
       Insert_Sans_Hint (Tree, New_Item, Node);
       return Set'(Controlled with Tree);

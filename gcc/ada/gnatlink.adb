@@ -692,6 +692,7 @@ procedure Gnatlink is
       --  Used for various Interfaces.C_Streams calls
 
       Closing_Status : Boolean;
+      pragma Warnings (Off, Closing_Status);
       --  For call to Close
 
       GNAT_Static : Boolean := False;
@@ -1589,7 +1590,7 @@ begin
                      --  convenient to eliminate the redundancy by keying the
                      --  compilation mode on a single switch, namely --RTS.
 
-                     --  Pass -mrtp to the linker if --RTS=rtp was passed.
+                     --  Pass -mrtp to the linker if --RTS=rtp was passed
 
                      if Linker_Path = Gcc_Path
                        and then Arg'Length > 8
@@ -1599,7 +1600,7 @@ begin
                         Linker_Options.Table (Linker_Options.Last) :=
                           new String'("-mrtp");
 
-                     --  Pass -fsjlj to the linker if --RTS=sjlj was passed.
+                     --  Pass -fsjlj to the linker if --RTS=sjlj was passed
 
                      elsif Linker_Path = Gcc_Path
                        and then Arg'Length > 9

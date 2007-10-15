@@ -98,7 +98,7 @@ package System.Tasking.Debug is
    procedure Stop_All_Tasks_Handler;
    --  Stop all the tasks by traversing All_Tasks_Lists and calling
    --  System.Task_Primitives.Operations.Stop_All_Task. This function
-   --  can be used in a interrupt handler.
+   --  can be used in an interrupt handler.
 
    procedure Stop_All_Tasks;
    --  Stop all the tasks by traversing All_Tasks_Lists and calling

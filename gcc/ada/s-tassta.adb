@@ -749,7 +749,9 @@ package body System.Tasking.Stages is
 
    procedure Finalize_Global_Tasks is
       Self_ID : constant Task_Id := STPO.Self;
+
       Ignore  : Boolean;
+      pragma Unreferenced (Ignore);
 
    begin
       if Self_ID.Deferral_Level = 0 then
