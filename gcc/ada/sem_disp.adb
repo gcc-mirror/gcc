@@ -1132,9 +1132,21 @@ package body Sem_Disp is
          return Find_Controlling_Arg (Expression (Orig_Node));
       end if;
 
-      --  Dispatching on result case
+      --  Dispatching on result case. If expansion is disabled, the node still
+      --  has the structure of a function call. However, if the function name
+      --  is an operator and the call was given in infix form, the original
+      --  node has no controlling result and we must examine the current node.
 
-      if Nkind (Orig_Node) = N_Function_Call
+      if Nkind (N) = N_Function_Call
+        and then Present (Controlling_Argument (N))
+        and then Has_Controlling_Result (Entity (Name (N)))
+      then
+         return Controlling_Argument (N);
+
+      --  If expansion is enabled, the call may have been transformed into
+      --  an indirect call, and we need to recover the original node.
+
+      elsif Nkind (Orig_Node) = N_Function_Call
         and then Present (Controlling_Argument (Orig_Node))
         and then Has_Controlling_Result (Entity (Name (Orig_Node)))
       then
