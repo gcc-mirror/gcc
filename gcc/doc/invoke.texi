@@ -2623,13 +2623,74 @@ Options} and @ref{Objective-C and Objective-C++ Dialect Options}.
 -Wstrict-overflow  @gol
 -Wswitch  @gol
 -Wtrigraphs  @gol
--Wuninitialized @r{(only with} @option{-O1}@r{,} @option{-O2} @r{or} @option{-O3}@r{)}  @gol
+-Wuninitialized @r{(only with} @option{-O1} @r{and above)}  @gol
 -Wunknown-pragmas  @gol
 -Wunused-function  @gol
 -Wunused-label     @gol
 -Wunused-value     @gol
 -Wunused-variable  @gol
 }
+
+Note that some warning flags are not implied by @option{-Wall}.  Some of
+them warn about constructions that users generally do not consider
+questionable, but which occasionally you might wish to check for;
+others warn about constructions that are necessary or hard to avoid in
+some cases, and there is no simple way to modify the code to suppress
+the warning. Some of them are enabled by @option{-Wextra} but many of
+them must be enabled individually.
+
+@item -Wextra
+@opindex W
+@opindex Wextra
+This enables some extra warning flags that are not enabled by
+@option{-Wall}. (This option used to be called @option{-W}.  The older
+name is still supported, but the newer name is more descriptive.)
+
+@gccoptlist{-Wclobbered  @gol
+-Wempty-body  @gol
+-Wmissing-field-initializers  @gol
+-Wmissing-parameter-type @r{(C only)}  @gol
+-Wold-style-declaration @r{(C only)}  @gol
+-Woverride-init  @gol
+-Wsign-compare  @gol
+-Wtype-limits  @gol
+-Wuninitialized @r{(only with} @option{-O1} @r{and above)}  @gol
+-Wunused-parameter @r{(only with} @option{-Wunused} @r{or}
+@option{-Wall}@r{)}  @gol
+}
+
+The option @option{-Wextra} also prints warning messages for the
+following cases:
+
+@itemize @bullet
+
+@item
+A pointer is compared against integer zero with @samp{<}, @samp{<=},
+@samp{>}, or @samp{>=}.
+
+@item 
+(C++ only) An enumerator and a non-enumerator both appear in a
+conditional expression.
+
+@item 
+(C++ only) A non-static reference or non-static @samp{const} member
+appears in a class without constructors.
+
+@item 
+(C++ only) Ambiguous virtual bases.
+
+@item 
+(C++ only) Subscripting an array which has been declared @samp{register}.
+
+@item 
+(C++ only) Taking the address of a variable which has been declared
+@samp{register}.
+
+@item 
+(C++ only) A base class is not initialized in a derived class' copy
+constructor.
+
+@end itemize
 
 @item -Wno-import
 @opindex Wno-import
@@ -3086,7 +3147,8 @@ Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by @option{-Wall} or @option{-Wextra} in
+optimizing compilations (@option{-O1} and above).
 
 @item -Wunknown-pragmas
 @opindex Wunknown-pragmas
@@ -3206,100 +3268,6 @@ false positives.
 This option is only active when @option{-ftree-vrp} is active
 (default for -O2 and above). It warns about subscripts to arrays
 that are always out of bounds. This warning is enabled by @option{-Wall}.
-
-@end table
-
-The following @option{-W@dots{}} options are not implied by @option{-Wall}.
-Some of them warn about constructions that users generally do not
-consider questionable, but which occasionally you might wish to check
-for; others warn about constructions that are necessary or hard to avoid
-in some cases, and there is no simple way to modify the code to suppress
-the warning.
-
-@table @gcctabopt
-@item -Wextra
-@opindex W
-@opindex Wextra
-(This option used to be called @option{-W}.  The older name is still
-supported, but the newer name is more descriptive.)  Print extra warning
-messages for these events:
-
-@itemize @bullet
-@item
-Warn if a comparison is always true or always false due to the limited
-range of the data type, but do not warn for constant expressions.  For
-example, warn if an unsigned variable is compared against zero with
-@samp{<} or @samp{>=}.  This warning can be independently controlled
-by @option{-Wtype-limits}.
-
-@item @r{(C only)}
-Storage-class specifiers like @code{static} are not the first things
-in a declaration.  According to the C Standard, this usage is
-obsolescent.  This warning can be independently controlled by
-@option{-Wold-style-declaration}.
-
-@item
-If @option{-Wall} or @option{-Wunused} is also specified, warn about unused
-arguments.
-
-@item
-A comparison between signed and unsigned values could produce an
-incorrect result when the signed value is converted to unsigned.
-(But don't warn if @option{-Wno-sign-compare} is also specified.)
-
-@item
-An aggregate has an initializer which does not initialize all members.
-This warning can be independently controlled by
-@option{-Wmissing-field-initializers}.
-
-@item
-An initialized field without side effects is overridden when using
-designated initializers (@pxref{Designated Inits, , Designated
-Initializers}).  This warning can be independently controlled by
-@option{-Woverride-init}.
-
-@item @r{(C only)}
-A function parameter is declared without a type specifier in K&R-style
-functions.  This warning can be independently controlled by
-@option{-Wmissing-parameter-type}.
-
-@item
-An empty body occurs in an @samp{if}, @samp{else} or
-@samp{do while} statement. This warning can be independently
-controlled by @option{-Wempty-body}.
-
-@item @r{(C++ only)}
-An empty body occurs in a @samp{while} or @samp{for} statement with no
-whitespacing before the semicolon. This warning can be independently
-controlled by @option{-Wempty-body}.
-
-@item
-A pointer is compared against integer zero with @samp{<}, @samp{<=},
-@samp{>}, or @samp{>=}.
-
-@item
-A variable might be changed by @samp{longjmp} or @samp{vfork}.
-This warning can be independently controlled by @option{-Wclobbered}.
-
-@item @r{(C++ only)}
-An enumerator and a non-enumerator both appear in a conditional expression.
-
-@item @r{(C++ only)}
-A non-static reference or non-static @samp{const} member appears in a
-class without constructors.
-
-@item @r{(C++ only)}
-Ambiguous virtual bases.
-
-@item @r{(C++ only)}
-Subscripting an array which has been declared @samp{register}.
-
-@item @r{(C++ only)}
-Taking the address of a variable which has been declared @samp{register}.
-
-@item @r{(C++ only)}
-A base class is not initialized in a derived class' copy constructor.
-@end itemize
 
 @item -Wno-div-by-zero
 @opindex Wno-div-by-zero
