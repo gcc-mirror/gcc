@@ -1064,8 +1064,7 @@ update_ssa_across_abnormal_edges (basic_block bb, basic_block ret_bb,
 	      }
 
 	    re = find_edge (ret_bb, e->dest);
-	    if (!re)
-	      continue;
+	    gcc_assert (re);
 	    gcc_assert ((re->flags & (EDGE_EH | EDGE_ABNORMAL))
 			== (e->flags & (EDGE_EH | EDGE_ABNORMAL)));
 
