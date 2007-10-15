@@ -1399,7 +1399,7 @@ package body Sem_Ch9 is
          Generate_Reference (Entry_Id, Entry_Name);
 
          if Present (First_Formal (Entry_Id)) then
-            if VM_Target = JVM_Target then
+            if VM_Target = JVM_Target and then not Inspector_Mode then
                Error_Msg_N
                  ("arguments unsupported in requeue statement",
                   First_Formal (Entry_Id));

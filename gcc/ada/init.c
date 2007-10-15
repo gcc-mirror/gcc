@@ -1510,7 +1510,7 @@ __gnat_handle_vms_condition (int *sigargs, void *mechargs)
 	break;
       }
 
- Raise_From_Signal_Handler (exception, msg);
+  Raise_From_Signal_Handler (exception, msg);
 }
 
 long

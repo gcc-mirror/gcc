@@ -1606,6 +1606,11 @@ package body GNAT.Command_Line is
       Expanded : Boolean)
    is
    begin
+      if Cmd.Expanded = null then
+         Iter.List := null;
+         return;
+      end if;
+
       --  Coalesce the switches as much as possible
 
       if not Expanded

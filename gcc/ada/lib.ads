@@ -509,10 +509,11 @@ package Lib is
    --  Same function as above but argument is a source pointer
 
    function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
-   --  Given two Sloc values  for which In_Same_Extended_Unit is true,
-   --  determine if S1 appears before S2. Returns True if S1 appears before
-   --  S2, and False otherwise. The result is undefined if S1 and S2 are
-   --  not in the same extended unit.
+   --  Given two Sloc values for which In_Same_Extended_Unit is true, determine
+   --  if S1 appears before S2. Returns True if S1 appears before S2, and False
+   --  otherwise. The result is undefined if S1 and S2 are not in the same
+   --  extended unit. Note: this routine will not give reliable results if
+   --  called after Sprint has been called with -gnatD set.
 
    function Compilation_Switches_Last return Nat;
    --  Return the count of stored compilation switches
