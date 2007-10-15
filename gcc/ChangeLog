@@ -1,3 +1,10 @@
+2007-10-15  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (extract_array_ref): Remove.
+	(fold_comparison): Handle POINTER_PLUS_EXPR with the
+	generic address expression comparison folding.  Remove
+	the folding that used extract_array_ref.
+
 2007-10-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR target/33133
