@@ -217,7 +217,7 @@ package body Prj.Ext is
             Name_Len := Name_Len - No_Project_Default_Dir'Length - 1;
 
             --  After removing the '-', go back one character to get the next
-            --  directory corectly.
+            --  directory correctly.
 
             Last := Last - 1;
 

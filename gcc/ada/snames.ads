@@ -1092,25 +1092,26 @@ package Snames is
    Name_Symbolic_Link_Supported        : constant Name_Id := N + 715;
    Name_Toolchain_Description          : constant Name_Id := N + 716;
    Name_Toolchain_Version              : constant Name_Id := N + 717;
+   Name_Runtime_Library_Dir            : constant Name_Id := N + 718;
 
    --  Other miscellaneous names used in front end
 
-   Name_Unaligned_Valid                : constant Name_Id := N + 718;
+   Name_Unaligned_Valid                : constant Name_Id := N + 719;
 
    --  Ada 2005 reserved words
 
-   First_2005_Reserved_Word            : constant Name_Id := N + 719;
-   Name_Interface                      : constant Name_Id := N + 719;
-   Name_Overriding                     : constant Name_Id := N + 720;
-   Name_Synchronized                   : constant Name_Id := N + 721;
-   Last_2005_Reserved_Word             : constant Name_Id := N + 721;
+   First_2005_Reserved_Word            : constant Name_Id := N + 720;
+   Name_Interface                      : constant Name_Id := N + 720;
+   Name_Overriding                     : constant Name_Id := N + 721;
+   Name_Synchronized                   : constant Name_Id := N + 722;
+   Last_2005_Reserved_Word             : constant Name_Id := N + 722;
 
    subtype Ada_2005_Reserved_Words is
      Name_Id range First_2005_Reserved_Word .. Last_2005_Reserved_Word;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 721;
+   Last_Predefined_Name                : constant Name_Id := N + 722;
 
    ---------------------------------------
    -- Subtypes Defining Name Categories --

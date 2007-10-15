@@ -1333,7 +1333,8 @@ package body Prj.Env is
 
                if Src_Data.Language_Name = Language and then
                  (not Src_Data.Locally_Removed) and then
-                 Src_Data.Replaced_By = No_Source
+                 Src_Data.Replaced_By = No_Source and then
+                 Src_Data.Path /= No_Path
                then
                   if Src_Data.Unit /= No_Name then
                      Get_Name_String (Src_Data.Unit);
@@ -1404,6 +1405,7 @@ package body Prj.Env is
 
    procedure Delete_All_Path_Files (In_Tree : Project_Tree_Ref) is
       Disregard : Boolean := True;
+      pragma Warnings (Off, Disregard);
 
    begin
       for Index in Path_File_Table.First ..

@@ -776,6 +776,7 @@ package body Snames is
      "symbolic_link_supported#" &
      "toolchain_description#" &
      "toolchain_version#" &
+     "runtime_library_dir#" &
      "unaligned_valid#" &
      "interface#" &
      "overriding#" &

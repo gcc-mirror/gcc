@@ -766,6 +766,7 @@ package body Prj.Proc is
                         The_Array   : Array_Id := No_Array;
                         The_Element : Array_Element_Id := No_Array_Element;
                         Array_Index : Name_Id := No_Name;
+                        Lower       : Boolean;
 
                      begin
                         if The_Package /= No_Package then
@@ -792,9 +793,26 @@ package body Prj.Proc is
 
                            Get_Name_String (Index);
 
-                           if Case_Insensitive
-                                (The_Current_Term, From_Project_Node_Tree)
-                           then
+                           Lower :=
+                             Case_Insensitive
+                               (The_Current_Term, From_Project_Node_Tree);
+
+                           --  In multi-language mode (gprbuild), the index is
+                           --  always case insensitive if it does not include
+                           --  any dot.
+
+                           if Get_Mode = Multi_Language and then not Lower then
+                              Lower := True;
+
+                              for J in 1 .. Name_Len loop
+                                 if Name_Buffer (J) = '.' then
+                                    Lower := False;
+                                    exit;
+                                 end if;
+                              end loop;
+                           end if;
+
+                           if Lower then
                               To_Lower (Name_Buffer (1 .. Name_Len));
                            end if;
 
@@ -1875,12 +1893,32 @@ package body Prj.Proc is
 
                         --  Put in lower case, if necessary
 
-                        if Case_Insensitive
-                             (Current_Item, From_Project_Node_Tree)
-                        then
-                           GNAT.Case_Util.To_Lower
-                                            (Name_Buffer (1 .. Name_Len));
-                        end if;
+                        declare
+                           Lower : Boolean;
+
+                        begin
+                           Lower :=
+                             Case_Insensitive
+                               (Current_Item, From_Project_Node_Tree);
+
+                           --  In multi-language mode (gprbuild), the index is
+                           --  always case insensitive if it does not include
+                           --  any dot.
+
+                           if Get_Mode = Multi_Language and then not Lower then
+                              for J in 1 .. Name_Len loop
+                                 if Name_Buffer (J) = '.' then
+                                    Lower := False;
+                                    exit;
+                                 end if;
+                              end loop;
+                           end if;
+
+                           if Lower then
+                              GNAT.Case_Util.To_Lower
+                                (Name_Buffer (1 .. Name_Len));
+                           end if;
+                        end;
 
                         declare
                            The_Array : Array_Id;
@@ -1895,18 +1933,19 @@ package body Prj.Proc is
                            --  Look for the array in the appropriate list
 
                            if Pkg /= No_Package then
-                              The_Array := In_Tree.Packages.Table
-                                             (Pkg).Decl.Arrays;
+                              The_Array :=
+                                In_Tree.Packages.Table (Pkg).Decl.Arrays;
 
                            else
-                              The_Array := In_Tree.Projects.Table
-                                             (Project).Decl.Arrays;
+                              The_Array :=
+                                In_Tree.Projects.Table (Project).Decl.Arrays;
                            end if;
 
                            while
                              The_Array /= No_Array
-                             and then In_Tree.Arrays.Table
-                                        (The_Array).Name /= Current_Item_Name
+                               and then
+                                 In_Tree.Arrays.Table (The_Array).Name /=
+                                                            Current_Item_Name
                            loop
                               The_Array := In_Tree.Arrays.Table
                                              (The_Array).Next;
@@ -1918,27 +1957,22 @@ package body Prj.Proc is
                            --  created automatically later
 
                            if The_Array = No_Array then
-                              Array_Table.Increment_Last
-                                (In_Tree.Arrays);
-                              The_Array := Array_Table.Last
-                                (In_Tree.Arrays);
+                              Array_Table.Increment_Last (In_Tree.Arrays);
+                              The_Array := Array_Table.Last (In_Tree.Arrays);
 
                               if Pkg /= No_Package then
-                                 In_Tree.Arrays.Table
-                                   (The_Array) :=
+                                 In_Tree.Arrays.Table (The_Array) :=
                                    (Name  => Current_Item_Name,
                                     Value => No_Array_Element,
                                     Next  =>
                                       In_Tree.Packages.Table
                                         (Pkg).Decl.Arrays);
 
-                                 In_Tree.Packages.Table
-                                   (Pkg).Decl.Arrays :=
+                                 In_Tree.Packages.Table (Pkg).Decl.Arrays :=
                                      The_Array;
 
                               else
-                                 In_Tree.Arrays.Table
-                                   (The_Array) :=
+                                 In_Tree.Arrays.Table (The_Array) :=
                                    (Name  => Current_Item_Name,
                                     Value => No_Array_Element,
                                     Next  =>
@@ -1946,8 +1980,7 @@ package body Prj.Proc is
                                         (Project).Decl.Arrays);
 
                                  In_Tree.Projects.Table
-                                   (Project).Decl.Arrays :=
-                                     The_Array;
+                                   (Project).Decl.Arrays := The_Array;
                               end if;
 
                            --  Otherwise initialize The_Array_Element as the
@@ -1955,8 +1988,7 @@ package body Prj.Proc is
 
                            else
                               The_Array_Element :=
-                                In_Tree.Arrays.Table
-                                  (The_Array).Value;
+                                In_Tree.Arrays.Table (The_Array).Value;
                            end if;
 
                            --  Look in the list, if any, to find an element
@@ -1984,16 +2016,16 @@ package body Prj.Proc is
 
                               In_Tree.Array_Elements.Table
                                 (The_Array_Element) :=
-                                (Index  => Index_Name,
-                                 Src_Index =>
-                                   Source_Index_Of
-                                     (Current_Item, From_Project_Node_Tree),
-                                 Index_Case_Sensitive =>
-                                 not Case_Insensitive
-                                   (Current_Item, From_Project_Node_Tree),
-                                 Value  => New_Value,
-                                 Next => In_Tree.Arrays.Table
-                                           (The_Array).Value);
+                                  (Index  => Index_Name,
+                                   Src_Index =>
+                                     Source_Index_Of
+                                       (Current_Item, From_Project_Node_Tree),
+                                   Index_Case_Sensitive =>
+                                     not Case_Insensitive
+                                       (Current_Item, From_Project_Node_Tree),
+                                   Value  => New_Value,
+                                   Next => In_Tree.Arrays.Table
+                                             (The_Array).Value);
                               In_Tree.Arrays.Table
                                 (The_Array).Value := The_Array_Element;
 
@@ -2038,7 +2070,7 @@ package body Prj.Proc is
                      Name   : Name_Id     := No_Name;
 
                   begin
-                     --  If a project were specified for the case variable,
+                     --  If a project was specified for the case variable,
                      --  get its id.
 
                      if Project_Node_Of
@@ -2223,7 +2255,6 @@ package body Prj.Proc is
    is
    begin
       Error_Report := Report_Error;
-      Success := True;
 
       if Reset_Tree then
 
@@ -2244,6 +2275,10 @@ package body Prj.Proc is
          From_Project_Node_Tree => From_Project_Node_Tree,
          Extended_By            => No_Project);
 
+      Success :=
+        Total_Errors_Detected = 0
+          and then
+            (Warning_Mode /= Treat_As_Error or else Warnings_Detected = 0);
    end Process_Project_Tree_Phase_1;
 
    ----------------------------------

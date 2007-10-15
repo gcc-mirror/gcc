@@ -524,9 +524,10 @@ package body Prj.Util is
       In_Tree                : Project_Tree_Ref;
       Force_Lower_Case_Index : Boolean := False) return Variable_Value
    is
-      Current    : Array_Element_Id;
-      Element    : Array_Element;
-      Real_Index : Name_Id;
+      Current      : Array_Element_Id;
+      Element      : Array_Element;
+      Real_Index_1 : Name_Id;
+      Real_Index_2 : Name_Id;
 
    begin
       Current := In_Array;
@@ -537,18 +538,25 @@ package body Prj.Util is
 
       Element := In_Tree.Array_Elements.Table (Current);
 
-      Real_Index := Index;
+      Real_Index_1 := Index;
 
       if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
          Get_Name_String (Index);
          To_Lower (Name_Buffer (1 .. Name_Len));
-         Real_Index := Name_Find;
+         Real_Index_1 := Name_Find;
       end if;
 
       while Current /= No_Array_Element loop
          Element := In_Tree.Array_Elements.Table (Current);
+         Real_Index_2 := Element.Index;
 
-         if Real_Index = Element.Index and then
+         if not Element.Index_Case_Sensitive or Force_Lower_Case_Index then
+            Get_Name_String (Element.Index);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            Real_Index_2 := Name_Find;
+         end if;
+
+         if Real_Index_1 = Real_Index_2 and then
            Src_Index = Element.Src_Index
          then
             return Element.Value;
