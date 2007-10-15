@@ -1713,17 +1713,26 @@ calls:
 
 static try
 nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
-		     array_loop_spec *ls, int rank, char *parse_err_msg)
+		     array_loop_spec *ls, int rank, char *parse_err_msg,
+		     int *parsed_rank)
 {
   int dim;
   int indx;
   int neg;
   int null_flag;
-  int is_array_section;
+  int is_array_section, is_char;
   char c;
 
+  is_char = 0;
   is_array_section = 0;
   dtp->u.p.expanded_read = 0;
+
+  /* See if this is a character substring qualifier we are looking for.  */
+  if (rank == -1)
+    {
+      rank = 1;
+      is_char = 1;
+    }
 
   /* The next character in the stream should be the '('.  */
 
@@ -1770,8 +1779,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  if ((c==',' && dim == rank -1)
 		      || (c==')' && dim < rank -1))
 		    {
-		      sprintf (parse_err_msg,
-			       "Bad number of index fields");
+		      if (is_char)
+		        sprintf (parse_err_msg, "Bad substring qualifier");
+		      else
+			sprintf (parse_err_msg, "Bad number of index fields");
 		      goto err_ret;
 		    }
 		  break;
@@ -1786,21 +1797,38 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  break;
 
 		default:
-		  sprintf (parse_err_msg, "Bad character in index");
+		  if (is_char)
+		    sprintf (parse_err_msg,
+			     "Bad character in substring qualifier");
+		  else
+		    sprintf (parse_err_msg, "Bad character in index");
 		  goto err_ret;
 		}
 
 	      if ((c == ',' || c == ')') && indx == 0
 		  && dtp->u.p.saved_string == 0)
 		{
-		  sprintf (parse_err_msg, "Null index field");
+		  if (is_char)
+		    sprintf (parse_err_msg, "Null substring qualifier");
+		  else
+		    sprintf (parse_err_msg, "Null index field");
 		  goto err_ret;
 		}
 
 	      if ((c == ':' && indx == 1 && dtp->u.p.saved_string == 0)
 		  || (indx == 2 && dtp->u.p.saved_string == 0))
 		{
-		  sprintf(parse_err_msg, "Bad index triplet");
+		  if (is_char)
+		    sprintf (parse_err_msg, "Bad substring qualifier");
+		  else
+		    sprintf (parse_err_msg, "Bad index triplet");
+		  goto err_ret;
+		}
+
+	      if (is_char && !is_array_section)
+		{
+		  sprintf (parse_err_msg,
+			   "Missing colon in substring qualifier");
 		  goto err_ret;
 		}
 
@@ -1816,7 +1844,10 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	      /* Now read the index.  */
 	      if (convert_integer (dtp, sizeof(ssize_t), neg))
 		{
-		  sprintf (parse_err_msg, "Bad integer in index");
+		  if (is_char)
+		    sprintf (parse_err_msg, "Bad integer substring qualifier");
+		  else
+		    sprintf (parse_err_msg, "Bad integer in index");
 		  goto err_ret;
 		}
 	      break;
@@ -1848,6 +1879,11 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  else
 		    dtp->u.p.expanded_read = 1;
 		}
+
+	      /* Check for non-zero rank.  */
+	      if (is_array_section == 1 && ls[dim].start != ls[dim].end)
+		*parsed_rank = 1;
+
 	      break;
 	    }
 	}
@@ -1858,9 +1894,13 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	  || (ls[dim].end > (ssize_t)ad[dim].ubound)
 	  || (ls[dim].end < (ssize_t)ad[dim].lbound))
 	{
-	  sprintf (parse_err_msg, "Index %d out of range", dim + 1);
+	  if (is_char)
+	    sprintf (parse_err_msg, "Substring out of range");
+	  else
+	    sprintf (parse_err_msg, "Index %d out of range", dim + 1);
 	  goto err_ret;
 	}
+
       if (((ls[dim].end - ls[dim].start ) * ls[dim].step < 0)
 	  || (ls[dim].step == 0))
 	{
@@ -1995,7 +2035,6 @@ nml_query (st_parameter_dt *dtp, char c)
 
       else
 	{
-
 	  /* "&namelist_name\n"  */
 
 	  len = dtp->namelist_name_len;
@@ -2015,7 +2054,6 @@ nml_query (st_parameter_dt *dtp, char c)
 #endif
 	  for (nl = dtp->u.p.ionml; nl; nl = nl->next)
 	    {
-
 	      /* " var_name\n"  */
 
 	      len = strlen (nl->var_name);
@@ -2081,7 +2119,6 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 	      namelist_info **pprev_nl, char *nml_err_msg,
 	      index_type clow, index_type chigh)
 {
-
   namelist_info * cmp;
   char * obj_name;
   int nml_carry;
@@ -2103,7 +2140,6 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   len = nl->len;
   switch (nl->type)
   {
-
     case GFC_DTYPE_INTEGER:
     case GFC_DTYPE_LOGICAL:
       dlen = len;
@@ -2127,7 +2163,6 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 
   do
     {
-
       /* Update the pointer to the data, using the current index vector  */
 
       pdata = (void*)(nl->mem_pos + offset);
@@ -2333,10 +2368,11 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
   namelist_info * nl;
   namelist_info * first_nl = NULL;
   namelist_info * root_nl = NULL;
-  int dim;
+  int dim, parsed_rank;
   int component_flag;
   char parse_err_msg[30];
   index_type clow, chigh;
+  int non_zero_rank_count;
 
   /* Look for end of input or object name.  If '?' or '=?' are encountered
      in stdin, print the node names or the namelist to stdout.  */
@@ -2388,6 +2424,7 @@ nml_get_obj_data (st_parameter_dt *dtp, namelist_info **pprev_nl,
 
   nml_untouch_nodes (dtp);
   component_flag = 0;
+  non_zero_rank_count = 0;
 
   /* Get the object name - should '!' and '\n' be permitted separators?  */
 
@@ -2456,16 +2493,23 @@ get_name:
 
   if (c == '(' && nl->var_rank)
     {
+      parsed_rank = 0;
       if (nml_parse_qualifier (dtp, nl->dim, nl->ls, nl->var_rank,
-			       parse_err_msg) == FAILURE)
+			       parse_err_msg, &parsed_rank) == FAILURE)
 	{
 	  sprintf (nml_err_msg, "%s for namelist variable %s",
 		      parse_err_msg, nl->var_name);
 	  goto nml_err_ret;
 	}
+
+      if (parsed_rank > 0)
+	non_zero_rank_count++;
+
       c = next_char (dtp);
       unget_char (dtp, c);
     }
+  else if (nl->var_rank > 0)
+    non_zero_rank_count++;
 
   /* Now parse a derived type component. The root namelist_info address
      is backed up, as is the previous component level.  The  component flag
@@ -2473,7 +2517,6 @@ get_name:
 
   if (c == '%')
     {
-
       if (nl->type != GFC_DTYPE_DERIVED)
 	{
 	  sprintf (nml_err_msg, "Attempt to get derived component for %s",
@@ -2488,7 +2531,6 @@ get_name:
       component_flag = 1;
       c = next_char (dtp);
       goto get_name;
-
     }
 
   /* Parse a character qualifier, if present.  chigh = 0 is a default
@@ -2502,7 +2544,8 @@ get_name:
       descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
       array_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
-      if (nml_parse_qualifier (dtp, chd, ind, 1, parse_err_msg) == FAILURE)
+      if (nml_parse_qualifier (dtp, chd, ind, -1, parse_err_msg, &parsed_rank)
+	  == FAILURE)
 	{
 	  sprintf (nml_err_msg, "%s for namelist variable %s",
 		      parse_err_msg, nl->var_name);
@@ -2515,8 +2558,8 @@ get_name:
       if (ind[0].step != 1)
 	{
 	  sprintf (nml_err_msg,
-		      "Bad step in substring for namelist object %s",
-		      nl->var_name);
+		   "Step not allowed in substring qualifier"
+		   " for namelist object %s", nl->var_name);
 	  goto nml_err_ret;
 	}
 
@@ -2533,12 +2576,21 @@ get_name:
   if (component_flag)
     nl = first_nl;
 
-  /*make sure no extraneous qualifiers are there.*/
+  /* Make sure no extraneous qualifiers are there.  */
 
   if (c == '(')
     {
       sprintf (nml_err_msg, "Qualifier for a scalar or non-character"
 		  " namelist object %s", nl->var_name);
+      goto nml_err_ret;
+    }
+
+  /* Make sure there is no more than one non-zero rank object.  */
+  if (non_zero_rank_count > 1)
+    {
+      sprintf (nml_err_msg, "Multiple sub-objects with non-zero rank in"
+	       " namelist object %s", nl->var_name);
+      non_zero_rank_count = 0;
       goto nml_err_ret;
     }
 

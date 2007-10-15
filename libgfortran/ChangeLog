@@ -1,3 +1,12 @@
+2007-10-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33672
+	* io/list_read.c (nml_parse_qualifier): Add character specific error
+	messages.  Check for proper form of sub-string qualifiers.  Return the
+	parsed_rank flag indicating a non-zero rank qualifier.
+	(nml_get_obj_data):  Count the instances of non-zero rank qualifiers.
+	Issue an error if more that one non-zero rank qualifier is found.
+
 2007-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33253
