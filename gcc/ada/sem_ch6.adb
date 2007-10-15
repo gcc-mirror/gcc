@@ -96,8 +96,8 @@ package body Sem_Ch6 is
    --  Common processing for simple_ and extended_return_statements
 
    procedure Analyze_Function_Return (N : Node_Id);
-   --  Subsidiary to Analyze_Return_Statement.
-   --  Called when the return statement applies to a [generic] function.
+   --  Subsidiary to Analyze_Return_Statement. Called when the return statement
+   --  applies to a [generic] function.
 
    procedure Analyze_Return_Type (N : Node_Id);
    --  Subsidiary to Process_Formals: analyze subtype mark in function
@@ -335,6 +335,7 @@ package body Sem_Ch6 is
          End_Scope;
       end if;
 
+      Kill_Current_Values (Last_Assignment_Only => True);
       Check_Unreachable_Code (N);
    end Analyze_Return_Statement;
 
@@ -1979,7 +1980,6 @@ package body Sem_Ch6 is
                                 Protected_Body_Subprogram (Spec_Id);
             Prot_Ext_Formal : Entity_Id := Extra_Formals (Spec_Id);
             Impl_Ext_Formal : Entity_Id := Extra_Formals (Impl_Subp);
-
          begin
             while Present (Prot_Ext_Formal) loop
                pragma Assert (Present (Impl_Ext_Formal));
@@ -3780,6 +3780,7 @@ package body Sem_Ch6 is
       Err_Loc : Node_Id := Empty)
    is
       Result : Boolean;
+      pragma Warnings (Off, Result);
    begin
       Check_Conformance
         (New_Id, Old_Id, Fully_Conformant, True, Result, Err_Loc);
@@ -3796,7 +3797,7 @@ package body Sem_Ch6 is
       Get_Inst : Boolean := False)
    is
       Result : Boolean;
-
+      pragma Warnings (Off, Result);
    begin
       Check_Conformance
         (New_Id, Old_Id, Mode_Conformant, True, Result, Err_Loc, Get_Inst);
@@ -4385,6 +4386,7 @@ package body Sem_Ch6 is
       Err_Loc : Node_Id := Empty)
    is
       Result : Boolean;
+      pragma Warnings (Off, Result);
    begin
       Check_Conformance
         (New_Id, Old_Id, Subtype_Conformant, True, Result, Err_Loc);
@@ -4400,6 +4402,7 @@ package body Sem_Ch6 is
       Err_Loc : Node_Id := Empty)
    is
       Result : Boolean;
+      pragma Warnings (Off, Result);
    begin
       Check_Conformance
         (New_Id, Old_Id, Type_Conformant, True, Result, Err_Loc);
@@ -5122,6 +5125,36 @@ package body Sem_Ch6 is
                   --  flag is set when analyzing the stub.
 
                   return E;
+
+               --  If E is an internal function with a controlling result
+               --  that was created for an operation inherited by a null
+               --  extension, it may be overridden by a body without a previous
+               --  spec (one more reason why these should be shunned). In that
+               --  case remove the generated body, because the current one is
+               --  the explicit overriding.
+
+               elsif Ekind (E) = E_Function
+                 and then Ada_Version >= Ada_05
+                 and then not Comes_From_Source (E)
+                 and then Has_Controlling_Result (E)
+                 and then Is_Null_Extension (Etype (E))
+                 and then Comes_From_Source (Spec)
+               then
+                  Set_Has_Completion (E, False);
+
+                  if Expander_Active then
+                     Remove
+                       (Unit_Declaration_Node
+                         (Corresponding_Body (Unit_Declaration_Node (E))));
+                     return E;
+
+                  --  If expansion is disabled, the wrapper function has not
+                  --  been generated, and this is the standard case of a late
+                  --  body overriding an inherited operation.
+
+                  else
+                     return Empty;
+                  end if;
 
                --  If body already exists, this is an error unless the
                --  previous declaration is the implicit declaration of
@@ -7032,7 +7065,6 @@ package body Sem_Ch6 is
 
          Next (Param_Spec);
       end loop;
-
    end Process_Formals;
 
    ----------------------------
