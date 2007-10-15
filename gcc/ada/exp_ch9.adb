@@ -511,6 +511,53 @@ package body Exp_Ch9 is
          elsif Ekind (Prev) = E_Entry_Family then
             S :=
               Etype (Discrete_Subtype_Definition (Declaration_Node (Prev)));
+
+            --  The need for the following full view retrieval stems from
+            --  this complex case of nested generics and tasking:
+
+            --     generic
+            --        type Formal_Index is range <>;
+            --        ...
+            --     package Outer is
+            --        type Index is private;
+            --        generic
+            --           ...
+            --        package Inner is
+            --           procedure P;
+            --        end Inner;
+            --     private
+            --        type Index is new Formal_Index range 1 .. 10;
+            --     end Outer;
+
+            --     package body Outer is
+            --        task type T is
+            --           entry Fam (Index);  --  (2)
+            --           entry E;
+            --        end T;
+            --        package body Inner is  --  (3)
+            --           procedure P is
+            --           begin
+            --              T.E;             --  (1)
+            --           end P;
+            --       end Inner;
+            --       ...
+
+            --  We are currently building the index expression for the entry
+            --  call "T.E" (1). Part of the expansion must mention the range
+            --  of the discrete type "Index" (2) of entry family "Fam".
+            --  However only the private view of type "Index" is available to
+            --  the inner generic (3) because there was no prior mention of
+            --  the type inside "Inner". This visibility requirement is
+            --  implicit and cannot be detected during the construction of
+            --  the generic trees and needs special handling.
+
+            if In_Instance_Body
+              and then Is_Private_Type (S)
+              and then Present (Full_View (S))
+            then
+               S := Full_View (S);
+            end if;
+
             Lo := Type_Low_Bound  (S);
             Hi := Type_High_Bound (S);
 
