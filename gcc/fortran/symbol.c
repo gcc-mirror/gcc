@@ -4029,6 +4029,8 @@ get_iso_c_sym (gfc_symbol *old_sym, char *new_name,
   new_symtree->n.sym->attr = old_sym->attr;
   new_symtree->n.sym->ts = old_sym->ts;
   new_symtree->n.sym->module = gfc_get_string (old_sym->module);
+  new_symtree->n.sym->from_intmod = old_sym->from_intmod;
+  new_symtree->n.sym->intmod_sym_id = old_sym->intmod_sym_id;
   /* Build the formal arg list.  */
   build_formal_args (new_symtree->n.sym, old_sym, add_optional_arg);
 

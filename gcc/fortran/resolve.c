@@ -2479,31 +2479,6 @@ gfc_iso_c_sub_interface (gfc_code *c, gfc_symbol *sym)
 	  new_sym->declared_at = sym->declared_at;
 	}
     }
-  else if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
-    {
-      /* TODO: Figure out if this is even reachable; this part of the
-         conditional may not be necessary.  */
-      int num_args = 0;
-      if (c->ext.actual->next == NULL)
-	{
-	  /* The user did not give two args, so resolve to the version
-	     of c_associated expecting one arg.	 */
-	  num_args = 1;
-	  /* get rid of the second arg */
-	  /* TODO!! Should free up the memory here!  */
-	  sym->formal->next = NULL;
-	}
-      else
-	{
-	  num_args = 2;
-	}
-
-      new_sym = sym;
-      sprintf (name, "%s_%d", sym->name, num_args);
-      sprintf (binding_label, "%s_%d", sym->binding_label, num_args);
-      sym->name = gfc_get_string (name);
-      strcpy (sym->binding_label, binding_label);
-    }
   else
     {
       /* no differences for c_loc or c_funloc */

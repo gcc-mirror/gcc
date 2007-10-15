@@ -1003,8 +1003,6 @@ GFORTRAN_1.0 {
     _gfortran_unpack0_char;
     _gfortran_unpack1;
     _gfortran_unpack1_char;
-    __iso_c_binding_c_associated_1;
-    __iso_c_binding_c_associated_2;
     __iso_c_binding_c_f_pointer;
     __iso_c_binding_c_f_pointer_d0;
     __iso_c_binding_c_f_pointer_i1;
