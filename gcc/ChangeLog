@@ -1,3 +1,7 @@
+2007-10-15  Nigel Stephens  <nigel@mips.com>
+
+	* config/mips/mips.h (LOCAL_ALIGNMENT): Define.
+
 2007-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33136
