@@ -1,3 +1,10 @@
+2007-10-15  Patrick Mansfield <patmans@us.ibm.com>
+
+	* Makefile.def: To avoid problems running with parallel makes,
+	build newlib before libgloss so that target specific header
+	files are availble.
+	* Makefile.in: Regenerate
+
 2007-10-11  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* Makefile.def (dependencies): Add all-gdb -> all-libdecnumber.
