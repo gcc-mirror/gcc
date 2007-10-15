@@ -1,3 +1,11 @@
+2007-10-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* dse.c (struct insn_info): Add 'frame_read' field.
+	(scan_insn): For the call to a const function, set frame_read if
+	reload has been run.
+	If the insn reads the frame, kill the frame related stores.
+	(scan_reads_nospill): Likewise.
+
 2007-10-14  Jason Merrill  <jason@redhat.com>
 
 	* tree-eh.c (optimize_double_finally): Don't assume that the
