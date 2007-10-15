@@ -4810,15 +4810,16 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && !(TREE_CODE (gnu_result_type) == RECORD_TYPE
 		&& TYPE_JUSTIFIED_MODULAR_P (gnu_result_type))))
     {
-      /* In this case remove padding only if the inner object is of
-	 self-referential size: in that case it must be an object of
-	 unconstrained type with a default discriminant.  In other cases,
-	 we want to avoid copying too much data.  */
+      /* In this case remove padding only if the inner object type is the
+	 same as gnu_result_type or is of self-referential size (in that later
+	 case it must be an object of unconstrained type with a default
+	 discriminant).  We want to avoid copying too much data.  */
       if (TREE_CODE (TREE_TYPE (gnu_result)) == RECORD_TYPE
 	  && TYPE_IS_PADDING_P (TREE_TYPE (gnu_result))
-	  && CONTAINS_PLACEHOLDER_P (TYPE_SIZE
-				     (TREE_TYPE (TYPE_FIELDS
-						 (TREE_TYPE (gnu_result))))))
+	  && (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result)))
+                         == gnu_result_type
+	      || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS
+					     (TREE_TYPE (gnu_result)))))))
 	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
 			      gnu_result);
     }
