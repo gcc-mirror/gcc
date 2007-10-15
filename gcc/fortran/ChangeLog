@@ -1,3 +1,11 @@
+2007-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/33055
+	* trans-io.c (create_dummy_iostat): New function to create a unique
+	dummy variable expression to use with IOSTAT.
+	(gfc_trans_inquire): Use the new function to pass unit number error info
+	to run-time library if a regular IOSTAT variable was not given.
+
 2007-10-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33745
