@@ -2099,7 +2099,7 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	extra_options="${extra_options} rs6000/aix64.opt"
 	use_collect2=yes
 	thread_file='aix'
-	extra_headers=
+	extra_headers=altivec.h
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h svr4.h linux.h s390/linux.h"

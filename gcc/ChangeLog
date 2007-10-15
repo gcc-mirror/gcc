@@ -1,3 +1,7 @@
+2007-10-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.gcc (powerpc-ibm-aix5*): Install altivec.h
+
 2007-10-15  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (extract_array_ref): Remove.
