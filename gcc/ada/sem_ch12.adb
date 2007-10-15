@@ -2147,10 +2147,30 @@ package body Sem_Ch12 is
       Formal := New_Copy (Pack_Id);
       Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
 
-      --  Make local generic without formals. The formals will be replaced with
-      --  internal declarations.
+      begin
+         --  Make local generic without formals. The formals will be replaced
+         --  with internal declarations.
 
-      New_N := Build_Local_Package;
+         New_N := Build_Local_Package;
+
+         --  If there are errors in the parameter list, Analyze_Associations
+         --  raises Instantiation_Error. Patch the declaration to prevent
+         --  further exception propagation.
+
+      exception
+         when Instantiation_Error =>
+
+            Enter_Name (Formal);
+            Set_Ekind  (Formal, E_Variable);
+            Set_Etype  (Formal, Any_Type);
+
+            if Parent_Installed then
+               Remove_Parent;
+            end if;
+
+            return;
+      end;
+
       Rewrite (N, New_N);
       Set_Defining_Unit_Name (Specification (New_N), Formal);
       Set_Generic_Parent (Specification (N), Gen_Unit);
@@ -2231,21 +2251,6 @@ package body Sem_Ch12 is
       Set_Etype (Pack_Id, Standard_Void_Type);
       Set_Scope (Pack_Id, Scope (Formal));
       Set_Has_Completion (Pack_Id, True);
-
-      --  If there are errors in the parameter list, Analyze_Associations
-      --  raises Instantiation_Error. Patch the declaration to prevent
-      --  further exception propagation.
-
-      exception
-         when Instantiation_Error =>
-
-            Enter_Name (Formal);
-            Set_Ekind  (Formal, E_Variable);
-            Set_Etype  (Formal, Any_Type);
-
-            if Parent_Installed then
-               Remove_Parent;
-            end if;
    end Analyze_Formal_Package;
 
    ---------------------------------
@@ -4882,8 +4887,8 @@ package body Sem_Ch12 is
    is
       Loc      : constant Source_Ptr := Sloc (Gen_Id);
       Gen_Par  : Entity_Id := Empty;
-      Inst_Par : Entity_Id;
       E        : Entity_Id;
+      Inst_Par : Entity_Id;
       S        : Node_Id;
 
       function Find_Generic_Child
@@ -5150,7 +5155,22 @@ package body Sem_Ch12 is
          --  to be installed, if they are not of the same generation.
 
          Analyze (Prefix (Gen_Id));
+
+         --  In the unlikely case that a local declaration hides the name
+         --  of the parent package, locate it on the homonym chain. If the
+         --  context is an instance of the parent, the renaming entity is
+         --  flagged as such.
+
          Inst_Par := Entity (Prefix (Gen_Id));
+         while Present (Inst_Par)
+           and then Ekind (Inst_Par) /= E_Package
+           and then Ekind (Inst_Par) /= E_Generic_Package
+         loop
+            Inst_Par := Homonym (Inst_Par);
+         end loop;
+
+         pragma Assert (Present (Inst_Par));
+         Set_Entity (Prefix (Gen_Id), Inst_Par);
 
          if In_Enclosing_Instance then
             null;
@@ -5888,9 +5908,8 @@ package body Sem_Ch12 is
          end if;
 
       elsif Nkind (N) = N_Aggregate
-              or else Nkind (N) = N_Extension_Aggregate
+        or else Nkind (N) = N_Extension_Aggregate
       then
-
          if not Instantiating then
             Set_Associated_Node (N, New_N);
 
@@ -8435,7 +8454,7 @@ package body Sem_Ch12 is
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);
 
          Create_Instantiation_Source
-          (Inst_Node, Gen_Body_Id, False, S_Adjustment);
+           (Inst_Node, Gen_Body_Id, False, S_Adjustment);
 
          Act_Body :=
            Copy_Generic_Node
