@@ -1,3 +1,19 @@
+2007-10-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/33771
+	PR libstdc++/33773
+	* testsuite/21_strings/headers/cwchar/macros.cc: Guard test with
+	_GLIBCXX_HAVE_WCHAR_H.
+	* testsuite/21_strings/headers/cwctype/macros.cc: Likewise with
+	_GLIBCXX_HAVE_WCTYPE_H.
+	* testsuite/17_intro/headers/c++200x/all.cc: Guard inclusions
+	of <wchar.h> and <wctype.h>.
+	* testsuite/17_intro/headers/c++200x/all_multiple_inclusion.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++1998/all.cc: Likewise.
+	* testsuite/17_intro/headers/c++1998/all_multiple_inclusion.cc:
+	Likewise.
+
 2007-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h (is_sorted, is_sorted_until): Add.
