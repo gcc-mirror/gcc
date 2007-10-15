@@ -1,3 +1,7 @@
+2007-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/gamma_5.f90: xfail on FreeBSD
+
 2007-10-15  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.target/mips/dse-1.c: Pass the union as a second parameter
