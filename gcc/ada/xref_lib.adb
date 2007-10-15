@@ -522,6 +522,7 @@ package body Xref_Lib is
          when 'd' => return Param_String & "decimal object";
          when 'e' => return Param_String & "enumeration object";
          when 'f' => return Param_String & "float object";
+         when 'h' => return "interface";
          when 'i' => return Param_String & "integer object";
          when 'm' => return Param_String & "modular object";
          when 'o' => return Param_String & "fixed object";
@@ -669,6 +670,7 @@ package body Xref_Lib is
       Dependencies : Boolean := False)
    is
       Ali : String_Access renames File.Buffer;
+      pragma Warnings (Off, Ali);
 
    begin
       if File.Buffer /= null then
@@ -1038,6 +1040,8 @@ package body Xref_Lib is
       elsif Ali (Ptr) = '=' then
          declare
             P_Line, P_Column : Natural;
+            pragma Warnings (Off, P_Line);
+            pragma Warnings (Off, P_Column);
 
          begin
             Ptr := Ptr + 1;
