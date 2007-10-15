@@ -20,9 +20,13 @@
 
 #include <cwctype>
 
+#ifdef _GLIBCXX_HAVE_WCTYPE_H
+
 namespace gnu
 {
 #ifndef WEOF
     #error "WEOF_must_be_a_macro"
 #endif
 }
+
+#endif

@@ -20,6 +20,8 @@
 
 #include <cwchar>
 
+#ifdef _GLIBCXX_HAVE_WCHAR_H
+
 namespace gnu
 {
 #ifndef NULL
@@ -38,3 +40,5 @@ namespace gnu
     #error "WEOF_must_be_a_macro"
 #endif
 }
+
+#endif
