@@ -1,3 +1,9 @@
+2007-10-15  David Edelsohn  <edelsohn@gnu.org>
+
+	lib/target-supports.exp (check_vmx_hw_available): Add -maltivec
+	flag for AIX.
+	(check_effective_target_powerpc_altivec_ok): Only skip before AIX 5.3.
+
 2007-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33055
