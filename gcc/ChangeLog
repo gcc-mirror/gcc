@@ -1,3 +1,8 @@
+2007-10-15  Razya Ladelsky  <razya@il.ibm.com>
+
+        * matrix-reorg.c (gate_matrix_reorg): Don't comment out whole
+        program flag.
+
 2007-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/33619

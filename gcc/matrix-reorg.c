@@ -2314,7 +2314,7 @@ matrix_reorg (void)
 static bool
 gate_matrix_reorg (void)
 {
-  return flag_ipa_matrix_reorg /*&& flag_whole_program */ ;
+  return flag_ipa_matrix_reorg && flag_whole_program;
 }
 
 struct tree_opt_pass pass_ipa_matrix_reorg = {
