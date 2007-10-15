@@ -1258,10 +1258,13 @@ package body Sem_Aggr is
          Val_AL : Uint;
          Val_AH : Uint;
 
-         OK_L  : Boolean;
-         OK_H  : Boolean;
+         OK_L : Boolean;
+         OK_H : Boolean;
+
          OK_AL : Boolean;
-         OK_AH : Boolean;
+         OK_AH  : Boolean;
+         pragma Warnings (Off, OK_AL);
+         pragma Warnings (Off, OK_AH);
 
       begin
          if Raises_Constraint_Error (N)
@@ -1464,7 +1467,8 @@ package body Sem_Aggr is
       Choice  : Node_Id;
       Expr    : Node_Id;
 
-      Who_Cares : Node_Id;
+      Discard : Node_Id;
+      pragma Warnings (Off, Discard);
 
       Aggr_Low  : Node_Id := Empty;
       Aggr_High : Node_Id := Empty;
@@ -1881,7 +1885,7 @@ package body Sem_Aggr is
 
          else
             if Others_Allowed then
-               Get_Index_Bounds (Index_Constr, Aggr_Low, Who_Cares);
+               Get_Index_Bounds (Index_Constr, Aggr_Low, Discard);
             else
                Aggr_Low := Index_Typ_Low;
             end if;
@@ -2984,27 +2988,17 @@ package body Sem_Aggr is
          Expr := Get_Value (Component, Component_Associations (N), True);
 
          --  Note: The previous call to Get_Value sets the value of the
-         --  variable Is_Box_Present
+         --  variable Is_Box_Present.
 
          --  Ada 2005 (AI-287): Handle components with default initialization.
          --  Note: This feature was originally added to Ada 2005 for limited
          --  but it was finally allowed with any type.
 
          if Is_Box_Present then
-            declare
-               Is_Array_Subtype : constant Boolean :=
-                                    Ekind (Etype (Component)) =
-                                                           E_Array_Subtype;
-
-               Ctyp : Entity_Id;
+            Check_Box_Component : declare
+               Ctyp : constant Entity_Id := Etype (Component);
 
             begin
-               if Is_Array_Subtype then
-                  Ctyp := Component_Type (Base_Type (Etype (Component)));
-               else
-                  Ctyp := Etype (Component);
-               end if;
-
                --  If there is a default expression for the aggregate, copy
                --  it into a new association.
 
@@ -3032,6 +3026,42 @@ package body Sem_Aggr is
                     (Component => Component,
                      Expr      => Expr);
                   Set_Has_Self_Reference (N);
+
+               --  A box-defaulted access component gets the value null. Also
+               --  included are components of private types whose underlying
+               --  type is an access type.
+
+               elsif Present (Underlying_Type (Ctyp))
+                 and then Is_Access_Type (Underlying_Type (Ctyp))
+               then
+                  if not Is_Private_Type (Ctyp) then
+                     Add_Association
+                       (Component => Component,
+                        Expr      => Make_Null (Sloc (N)));
+
+                  --  If the component's type is private with an access type as
+                  --  its underlying type then we have to create an unchecked
+                  --  conversion to satisfy type checking.
+
+                  else
+                     declare
+                        Qual_Null : constant Node_Id :=
+                                      Make_Qualified_Expression (Sloc (N),
+                                        Subtype_Mark =>
+                                          New_Occurrence_Of
+                                            (Underlying_Type (Ctyp), Sloc (N)),
+                                        Expression => Make_Null (Sloc (N)));
+
+                        Convert_Null : constant Node_Id :=
+                                         Unchecked_Convert_To
+                                           (Ctyp, Qual_Null);
+
+                     begin
+                        Analyze_And_Resolve (Convert_Null, Ctyp);
+                        Add_Association
+                          (Component => Component, Expr => Convert_Null);
+                     end;
+                  end if;
 
                elsif Has_Non_Null_Base_Init_Proc (Ctyp)
                  or else not Expander_Active
@@ -3143,16 +3173,11 @@ package body Sem_Aggr is
                --  expand the corresponding assignments and run-time checks).
 
                elsif Present (Expr)
-                 and then
-                   ((not Is_Array_Subtype
-                       and then Is_Partially_Initialized_Type (Component))
-                      or else
-                        (Is_Array_Subtype
-                           and then Is_Partially_Initialized_Type (Ctyp)))
+                 and then Is_Partially_Initialized_Type (Ctyp)
                then
                   Resolve_Aggr_Expr (Expr, Component);
                end if;
-            end;
+            end Check_Box_Component;
 
          elsif No (Expr) then
 
