@@ -51894,7 +51894,7 @@ all-target-libobjc: maybe-all-target-libiberty
 all-target-libobjc: maybe-all-target-boehm-gc
 all-target-libstdc++-v3: maybe-all-target-libiberty
 configure-target-libstdc++-v3: maybe-configure-target-libgomp
-all-target-libgloss: maybe-configure-target-newlib
+all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libiberty
 all-target-winsup: maybe-all-target-libtermcap
 

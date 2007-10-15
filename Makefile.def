@@ -496,7 +496,7 @@ lang_env_dependencies = { module=rda; };
 lang_env_dependencies = { module=winsup; };
 lang_env_dependencies = { module=qthreads; };
 
-dependencies = { module=all-target-libgloss; on=configure-target-newlib; };
+dependencies = { module=all-target-libgloss; on=all-target-newlib; };
 dependencies = { module=all-target-winsup; on=all-target-libiberty; };
 dependencies = { module=all-target-winsup; on=all-target-libtermcap; };
 
