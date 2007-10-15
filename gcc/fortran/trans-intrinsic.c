@@ -1878,6 +1878,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   tree tmp;
   tree elsetmp;
   tree ifbody;
+  tree offset;
   gfc_loopinfo loop;
   gfc_actual_arglist *actual;
   gfc_ss *arrayss;
@@ -1897,6 +1898,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   /* Initialize the result.  */
   pos = gfc_create_var (gfc_array_index_type, "pos");
+  offset = gfc_create_var (gfc_array_index_type, "offset");
   type = gfc_typenode_for_spec (&expr->ts);
 
   /* Walk the arguments.  */
@@ -1995,15 +1997,28 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   /* Assign the value to the limit...  */
   gfc_add_modify_expr (&ifblock, limit, arrayse.expr);
 
-  /* Remember where we are.  */
-  gfc_add_modify_expr (&ifblock, pos, loop.loopvar[0]);
+  /* Remember where we are.  An offset must be added to the loop
+     counter to obtain the required position.  */
+  if (loop.temp_dim)
+    tmp = build_int_cst (gfc_array_index_type, 1);
+  else
+    tmp =fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			 gfc_index_one_node, loop.from[0]);
+  gfc_add_modify_expr (&block, offset, tmp);
+
+  tmp = build2 (PLUS_EXPR, TREE_TYPE (pos),
+		loop.loopvar[0], offset);
+  gfc_add_modify_expr (&ifblock, pos, tmp);
 
   ifbody = gfc_finish_block (&ifblock);
 
-  /* If it is a more extreme value or pos is still zero.  */
+  /* If it is a more extreme value or pos is still zero and the value
+     equal to the limit.  */
+  tmp = build2 (TRUTH_AND_EXPR, boolean_type_node,
+		build2 (EQ_EXPR, boolean_type_node, pos, gfc_index_zero_node),
+		build2 (EQ_EXPR, boolean_type_node, arrayse.expr, limit));
   tmp = build2 (TRUTH_OR_EXPR, boolean_type_node,
-		  build2 (op, boolean_type_node, arrayse.expr, limit),
-		  build2 (EQ_EXPR, boolean_type_node, pos, gfc_index_zero_node));
+		build2 (op, boolean_type_node, arrayse.expr, limit), tmp);
   tmp = build3_v (COND_EXPR, tmp, ifbody, build_empty_stmt ());
   gfc_add_expr_to_block (&block, tmp);
 
@@ -2048,12 +2063,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
     }
   gfc_cleanup_loop (&loop);
 
-  /* Return a value in the range 1..SIZE(array).  */
-  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, loop.from[0],
-		     gfc_index_one_node);
-  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, pos, tmp);
-  /* And convert to the required type.  */
-  se->expr = convert (type, tmp);
+  se->expr = convert (type, pos);
 }
 
 static void

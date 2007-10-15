@@ -1,3 +1,8 @@
+2007-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/33354
+	* gfortran.dg/minmaxloc_4.f90:  New test.
+
 2007-10-13  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/26698
