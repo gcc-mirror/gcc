@@ -1,3 +1,9 @@
+2007-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33055
+	* gfortran.dg/inquire_11.f90: New test.
+	* gfortan.dg/negative_unit_int8.f: New test.
+
 2007-10-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR target/33133
