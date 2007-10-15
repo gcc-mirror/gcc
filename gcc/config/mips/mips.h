@@ -1331,7 +1331,13 @@ extern enum mips_code_readable_setting mips_code_readable;
 	|| TREE_CODE (TYPE) == UNION_TYPE				\
 	|| TREE_CODE (TYPE) == RECORD_TYPE)) ? BITS_PER_WORD : (ALIGN))
 
-
+/* We need this for the same reason as DATA_ALIGNMENT, namely to cause
+   character arrays to be word-aligned so that `strcpy' calls that copy
+   constants to character arrays can be done inline, and 'strcmp' can be
+   optimised to use word loads. */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN) \
+  DATA_ALIGNMENT (TYPE, ALIGN)
+  
 #define PAD_VARARGS_DOWN \
   (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
 
