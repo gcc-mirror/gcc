@@ -1,3 +1,8 @@
+2007-10-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Wextra): Move it just after Wall, list the
+	options enabled by Wextra and mention Wuninitialized.
+	
 2007-10-15  Nigel Stephens  <nigel@mips.com>
 
 	* config/mips/mips.h (LOCAL_ALIGNMENT): Define.
