@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                (OpenVMS 64bit GCC_ZCX DEC Threads Version)               --
+--            (OpenVMS 64bit Itanium GCC_ZCX DEC Threads Version)           --
 --                                                                          --
 --          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -138,7 +138,7 @@ private
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := True;
    Configurable_Run_Time     : constant Boolean := False;
-   Denorm                    : constant Boolean := False;
+   Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
