@@ -631,7 +631,16 @@ package body Exp_Ch3 is
    --  Start of processing for Build_Array_Init_Proc
 
    begin
-      if Suppress_Init_Proc (A_Type) or else Is_Value_Type (Comp_Type) then
+      --  Nothing to generate in the following cases:
+
+      --    1. Initialization is suppressed for the type
+      --    2. The type is a value type, in the CIL sense.
+      --    3. An initialization already exists for the base type
+
+      if Suppress_Init_Proc (A_Type)
+        or else Is_Value_Type (Comp_Type)
+        or else Present (Base_Init_Proc (A_Type))
+      then
          return;
       end if;
 
@@ -2104,6 +2113,8 @@ package body Exp_Ch3 is
          Iface_Elmt       : Elmt_Id;
          Comp_Elmt        : Elmt_Id;
 
+         pragma Warnings (Off, Ifaces_Tag_List);
+
       --  Start of processing for Build_Offset_To_Top_Functions
 
       begin
@@ -2117,8 +2128,8 @@ package body Exp_Ch3 is
             return;
          end if;
 
-         Collect_Interfaces_Info (Rec_Type,
-           Ifaces_List, Ifaces_Comp_List, Ifaces_Tag_List);
+         Collect_Interfaces_Info
+           (Rec_Type, Ifaces_List, Ifaces_Comp_List, Ifaces_Tag_List);
 
          --  For each interface type with secondary dispatch table we generate
          --  the Offset_To_Top_Functions (required to displace the pointer in
@@ -2295,15 +2306,15 @@ package body Exp_Ch3 is
             --  the parent. In that case we insert the tag initialization
             --  after the calls to initialize the parent.
 
-            if not Is_CPP_Class (Etype (Rec_Type)) then
+            if not Is_CPP_Class (Root_Type (Rec_Type)) then
                Prepend_To (Body_Stmts,
                  Make_If_Statement (Loc,
                    Condition => New_Occurrence_Of (Set_Tag, Loc),
                    Then_Statements => Init_Tags_List));
 
-            --  CPP_Class: In this case the dispatch table of the parent was
-            --  built in the C++ side and we copy the table of the parent to
-            --  initialize the new dispatch table.
+            --  CPP_Class derivation: In this case the dispatch table of the
+            --  parent was built in the C++ side and we copy the table of the
+            --  parent to initialize the new dispatch table.
 
             else
                declare
@@ -4921,11 +4932,14 @@ package body Exp_Ch3 is
 
       --  For packed case, default initialization, except if the component type
       --  is itself a packed structure with an initialization procedure, or
-      --  initialize/normalize scalars active, and we have a base type.
+      --  initialize/normalize scalars active, and we have a base type, or the
+      --  type is public, because in that case a client might specify
+      --  Normalize_Scalars and there better be a public Init_Proc for it.
 
       elsif (Present (Init_Proc (Component_Type (Base)))
                and then No (Base_Init_Proc (Base)))
         or else (Init_Or_Norm_Scalars and then Base = Typ)
+        or else Is_Public (Typ)
       then
          Build_Array_Init_Proc (Base, N);
       end if;
@@ -7317,12 +7331,13 @@ package body Exp_Ch3 is
               TSS_Stream_Write,
               TSS_Stream_Input,
               TSS_Stream_Output);
+
       begin
          for Op in Stream_Op_TSS_Names'Range loop
             if Stream_Operation_OK (Tag_Typ, Stream_Op_TSS_Names (Op)) then
                Append_To (Res,
-                  Predef_Stream_Attr_Spec (Loc, Tag_Typ,
-                    Stream_Op_TSS_Names (Op)));
+                 Predef_Stream_Attr_Spec (Loc, Tag_Typ,
+                  Stream_Op_TSS_Names (Op)));
             end if;
          end loop;
       end;
@@ -7748,6 +7763,8 @@ package body Exp_Ch3 is
       Eq_Needed : Boolean;
       Eq_Name   : Name_Id;
       Ent       : Entity_Id;
+
+      pragma Warnings (Off, Ent);
 
    begin
       --  See if we have a predefined "=" operator
