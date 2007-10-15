@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,13 +43,13 @@ package body System.Traceback_Entries is
    end PC_For;
 
    ------------
-   -- PV_For --
+   -- FP_For --
    ------------
 
-   function PV_For (TB_Entry : Traceback_Entry) return System.Address is
+   function FP_For (TB_Entry : Traceback_Entry) return System.Address is
    begin
-      return TB_Entry.PV;
-   end PV_For;
+      return TB_Entry.FP;
+   end FP_For;
 
    ------------------
    -- TB_Entry_For --
@@ -57,7 +57,7 @@ package body System.Traceback_Entries is
 
    function TB_Entry_For (PC : System.Address) return Traceback_Entry is
    begin
-      return (PC => PC, PV => System.Null_Address);
+      return (PC => PC, FP => System.Null_Address);
    end TB_Entry_For;
 
 end System.Traceback_Entries;
