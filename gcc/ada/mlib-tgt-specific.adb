@@ -24,7 +24,24 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Default empty version
+--  Default version
 
 package body MLib.Tgt.Specific is
+
+   --  By default, libraries are not supported at all
+
+   function Support_For_Libraries return Library_Support;
+   --  Function indicating if libraries are supported
+
+   ---------------------------
+   -- Support_For_Libraries --
+   ---------------------------
+
+   function Support_For_Libraries return Library_Support is
+   begin
+      return None;
+   end Support_For_Libraries;
+
+begin
+   Support_For_Libraries_Ptr := Support_For_Libraries'Access;
 end MLib.Tgt.Specific;
