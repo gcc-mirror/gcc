@@ -402,14 +402,9 @@ is_replaceable_p (tree stmt)
       && DECL_HARD_REGISTER (GENERIC_TREE_OPERAND (stmt, 1)))
     return false;
 
-  /* Calls to functions with side-effects cannot be replaced.  */
+  /* No function calls can be replaced.  */
   if ((call_expr = get_call_expr_in (stmt)) != NULL_TREE)
-    {
-      int call_flags = call_expr_flags (call_expr);
-      if (TREE_SIDE_EFFECTS (call_expr)
-	  && !(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
-	return false;
-    }
+    return false;
 
   /* Leave any stmt with volatile operands alone as well.  */
   if (stmt_ann (stmt)->has_volatile_ops)
