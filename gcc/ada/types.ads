@@ -93,7 +93,7 @@ package Types is
 
    EOF : constant Character := ASCII.SUB;
    --  The character SUB (16#1A#) is used in DOS and other systems derived
-   --  from DOS (OS/2, NT etc) to signal the end of a text file. Internally
+   --  from DOS (XP, NT etc) to signal the end of a text file. Internally
    --  all source files are ended by an EOF character, even on Unix systems.
    --  An EOF character acts as the end of file only as the last character
    --  of a source buffer, in any other position, it is treated as a blank

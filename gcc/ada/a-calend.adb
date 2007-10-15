@@ -467,10 +467,11 @@ package body Ada.Calendar is
    ---------
 
    function Day (Date : Time) return Day_Number is
+      D : Day_Number;
       Y : Year_Number;
       M : Month_Number;
-      D : Day_Number;
       S : Day_Duration;
+      pragma Unreferenced (Y, M, S);
    begin
       Split (Date, Y, M, D, S);
       return D;
@@ -508,6 +509,7 @@ package body Ada.Calendar is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
+      pragma Unreferenced (Y, D, S);
    begin
       Split (Date, Y, M, D, S);
       return M;
@@ -522,6 +524,7 @@ package body Ada.Calendar is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
+      pragma Unreferenced (Y, M, D);
    begin
       Split (Date, Y, M, D, S);
       return S;
@@ -543,6 +546,8 @@ package body Ada.Calendar is
       Se : Integer;
       Ss : Duration;
       Le : Boolean;
+
+      pragma Unreferenced (H, M, Se, Ss, Le);
 
    begin
       --  Even though the input time zone is UTC (0), the flag Is_Ada_05 will
@@ -631,6 +636,7 @@ package body Ada.Calendar is
       M : Month_Number;
       D : Day_Number;
       S : Day_Duration;
+      pragma Unreferenced (M, D, S);
    begin
       Split (Date, Y, M, D, S);
       return Y;
@@ -821,6 +827,8 @@ package body Ada.Calendar is
          Se : Integer;
          Su : Duration;
          Le : Boolean;
+
+         pragma Unreferenced (Ds, H, Mi, Se, Su, Le);
 
          Day_Count : Long_Integer;
          Res_Dur   : Time_Dur;

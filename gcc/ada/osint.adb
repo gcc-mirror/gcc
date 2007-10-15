@@ -295,6 +295,7 @@ package body Osint is
          Ch         : Character;
 
          Status : Boolean;
+         pragma Warnings (Off, Status);
          --  For the call to Close
 
       begin
@@ -2042,6 +2043,7 @@ package body Osint is
       --  Allocated text buffer
 
       Status : Boolean;
+      pragma Warnings (Off, Status);
       --  For the calls to Close
 
    begin
@@ -2174,6 +2176,7 @@ package body Osint is
       Actual_Len : Integer;
 
       Status : Boolean;
+      pragma Warnings (Off, Status);
       --  For the call to Close
 
    begin
@@ -2811,6 +2814,7 @@ package body Osint is
 
    procedure Write_With_Check (A  : Address; N  : Integer) is
       Ignore : Boolean;
+      pragma Warnings (Off, Ignore);
 
    begin
       if N = Write (Output_FD, A, N) then

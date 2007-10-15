@@ -36,6 +36,7 @@
 --  other GNAT tools. The comments indicate which options are used by which
 --  programs (GNAT, GNATBIND, GNATLINK, GNATMAKE, GPRMAKE, etc).
 
+with Debug;
 with Hostparm; use Hostparm;
 with Types;    use Types;
 
@@ -252,8 +253,8 @@ package Opt is
    --  GNATMAKE, GNATCLEAN, GPRMAKE
    --  GNATMAKE, GPRMAKE: set to True to skip bind and link steps (except when
    --                     Bind_Only is True).
-   --  GNATCLEAN: set to True to only the files produced by the compiler are to
-   --             be deleted, but not the library files or executable files.
+   --  GNATCLEAN: set to True to delete only the files produced by the compiler
+   --             but not the library files or the executable files.
 
    Config_File : Boolean := True;
    --  GNAT
@@ -600,6 +601,13 @@ package Opt is
    --  Set to True to indicate that at least one ALI file is an interface ALI:
    --  then elaboration flag checks are to be generated in the binder
    --  generated file.
+
+   Inspector_Mode : Boolean renames Debug.Debug_Flag_Dot_II;
+   --  GNAT
+   --  True if compiling in inspector mode (-gnatd.I switch).
+   --  Only relevant when VM_Target /= None. The compiler will attempt to
+   --  generate code even in case of unsupported construct, so that the byte
+   --  code can be used by static analysis tools.
 
    Follow_Links : Boolean := False;
    --  GNATMAKE
@@ -1186,8 +1194,13 @@ package Opt is
    Warn_On_Modified_Unread : Boolean := False;
    --  GNAT
    --  Set to True to generate warnings if a variable is assigned but is never
-   --  read. The default is that this warning is suppressed. Also controls
-   --  warnings about assignments whose value is never read.
+   --  read. The default is that this warning is suppressed.
+
+   Warn_On_Out_Parameter_Unread : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings if a variable is modified by being
+   --  passed as to an IN OUT or OUT formal, but the resulting value is never
+   --  read. The default is that this warning is suppressed.
 
    Warn_On_No_Value_Assigned : Boolean := True;
    --  GNAT

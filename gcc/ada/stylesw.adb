@@ -180,6 +180,7 @@ package body Stylesw is
    procedure Set_Style_Check_Options (Options : String) is
       OK : Boolean;
       EC : Natural;
+      pragma Warnings (Off, EC);
    begin
       Set_Style_Check_Options (Options, OK, EC);
       pragma Assert (OK);

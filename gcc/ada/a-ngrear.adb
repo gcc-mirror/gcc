@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--          Copyright (C) 2006-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -455,10 +455,12 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Vectors : out Real_Matrix)
    is
       N      : constant Natural := Length (A);
-      E      : Real_Vector (1 .. N);
       Tau    : Real_Vector (1 .. N);
       L_Work : Real_Vector (1 .. 1);
       Info   : aliased Integer;
+
+      E : Real_Vector (1 .. N);
+      pragma Warnings (Off, E);
 
    begin
       if Values'Length /= N then
@@ -491,7 +493,9 @@ package body Ada.Numerics.Generic_Real_Arrays is
              Info   => Info'Access);
 
       declare
-         Work   : Real_Vector (1 .. Integer'Max (Integer (L_Work (1)), 2 * N));
+         Work : Real_Vector (1 .. Integer'Max (Integer (L_Work (1)), 2 * N));
+         pragma Warnings (Off, Work);
+
          Comp_Z : aliased constant Character := 'V';
 
       begin
@@ -554,11 +558,15 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Values : out Real_Vector)
    is
       N      : constant Natural := Length (A);
-      B      : Real_Matrix (1 .. N, 1 .. N);
-      E      : Real_Vector (1 .. N);
-      Tau    : Real_Vector (1 .. N);
       L_Work : Real_Vector (1 .. 1);
       Info   : aliased Integer;
+
+      B   : Real_Matrix (1 .. N, 1 .. N);
+      Tau : Real_Vector (1 .. N);
+      E   : Real_Vector (1 .. N);
+      pragma Warnings (Off, B);
+      pragma Warnings (Off, Tau);
+      pragma Warnings (Off, E);
 
    begin
       if Values'Length /= N then
@@ -592,6 +600,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
       declare
          Work : Real_Vector (1 .. Integer'Min (Integer (L_Work (1)), 4 * N));
+         pragma Warnings (Off, Work);
 
       begin
          --  Reduce matrix to tridiagonal form
@@ -677,6 +686,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
       declare
          Work : Real_Vector (1 .. Integer (L_Work (1)));
+         pragma Warnings (Off, Work);
+
       begin
          --  Compute inverse from LU decomposition
 

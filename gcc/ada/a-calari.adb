@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006, Free Software Foundation, Inc.            --
+--          Copyright (C) 2006-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,6 +70,9 @@ package body Ada.Calendar.Arithmetic is
       Days         : Long_Integer;
       Seconds      : Duration;
       Leap_Seconds : Integer;
+      pragma Warnings (Off, Seconds);        -- temporary ???
+      pragma Warnings (Off, Leap_Seconds);   -- temporary ???
+      pragma Unreferenced (Seconds, Leap_Seconds);
    begin
       Arithmetic_Operations.Difference
         (Left, Right, Days, Seconds, Leap_Seconds);

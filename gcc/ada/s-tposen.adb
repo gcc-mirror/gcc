@@ -211,7 +211,9 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    is
       Self_Id  : constant Task_Id := Entry_Call.Self;
       Timedout : Boolean;
+
       Yielded  : Boolean;
+      pragma Unreferenced (Yielded);
 
       use type Ada.Exceptions.Exception_Id;
 
@@ -663,7 +665,7 @@ package body System.Tasking.Protected_Objects.Single_Entry is
    -- Timed_Protected_Single_Entry_Call --
    ---------------------------------------
 
-   --  Compiler interface only. Do not call from within the RTS.
+   --  Compiler interface only (do not call from within the RTS)
 
    procedure Timed_Protected_Single_Entry_Call
      (Object                : Protection_Entry_Access;

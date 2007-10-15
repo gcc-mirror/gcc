@@ -116,6 +116,10 @@ package body Sem_Res is
    --  initialization of individual components within the init proc itself.
    --  Could be optimized away perhaps?
 
+   function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
+   --  Determine whether E is an access type declared by an access
+   --  declaration, and not an (anonymous) allocator type.
+
    function Is_Predefined_Op (Nam : Entity_Id) return Boolean;
    --  Utility to check whether the name in the call is a predefined
    --  operator, in which case the call is made into an operator node.
@@ -989,6 +993,18 @@ package body Sem_Res is
       end if;
    end Check_Parameterless_Call;
 
+   -----------------------------
+   -- Is_Definite_Access_Type --
+   -----------------------------
+
+   function Is_Definite_Access_Type (E : Entity_Id) return Boolean is
+      Btyp : constant Entity_Id := Base_Type (E);
+   begin
+      return Ekind (Btyp) = E_Access_Type
+        or else (Ekind (Btyp) = E_Access_Subprogram_Type
+                  and then Comes_From_Source (Btyp));
+   end Is_Definite_Access_Type;
+
    ----------------------
    -- Is_Predefined_Op --
    ----------------------
@@ -1024,10 +1040,6 @@ package body Sem_Res is
 
       type Kind_Test is access function (E : Entity_Id) return Boolean;
 
-      function Is_Definite_Access_Type (E : Entity_Id) return Boolean;
-      --  Determine whether E is an access type declared by an access decla-
-      --  ration, and  not an (anonymous) allocator type.
-
       function Operand_Type_In_Scope (S : Entity_Id) return Boolean;
       --  If the operand is not universal, and the operator is given by a
       --  expanded name,  verify that the operand has an interpretation with
@@ -1036,18 +1048,6 @@ package body Sem_Res is
       function Type_In_P (Test : Kind_Test) return Entity_Id;
       --  Find a type of the given class in the package Pack that contains
       --  the operator.
-
-      -----------------------------
-      -- Is_Definite_Access_Type --
-      -----------------------------
-
-      function Is_Definite_Access_Type (E : Entity_Id) return Boolean is
-         Btyp : constant Entity_Id := Base_Type (E);
-      begin
-         return Ekind (Btyp) = E_Access_Type
-           or else (Ekind (Btyp) = E_Access_Subprogram_Type
-                     and then Comes_From_Source (Btyp));
-      end Is_Definite_Access_Type;
 
       ---------------------------
       -- Operand_Type_In_Scope --
@@ -2568,6 +2568,7 @@ package body Sem_Res is
       A_Typ  : Entity_Id;
       F_Typ  : Entity_Id;
       Prev   : Node_Id := Empty;
+      Orig_A : Node_Id;
 
       procedure Check_Prefixed_Call;
       --  If the original node is an overloaded call in prefix notation,
@@ -3042,10 +3043,44 @@ package body Sem_Res is
                end if;
             end if;
 
-            if Ekind (F) /= E_In_Parameter
-              and then not Is_OK_Variable_For_Out_Formal (A)
-            then
-               Error_Msg_NE ("actual for& must be a variable", A, F);
+            --  For IN parameter, this is where we generate a reference after
+            --  resolution is complete.
+
+            if Ekind (F) = E_In_Parameter then
+               Orig_A := Original_Node (A);
+
+               if Is_Entity_Name (Orig_A)
+                 and then Present (Entity (Orig_A))
+               then
+                  Generate_Reference (Entity (Orig_A), Orig_A);
+               end if;
+
+            --  Case of OUT or IN OUT parameter
+
+            else
+               --  Validate the form of the actual. Note that the call to
+               --  Is_OK_Variable_For_Out_Formal generates the required
+               --  reference in this case.
+
+               if not Is_OK_Variable_For_Out_Formal (A) then
+                  Error_Msg_NE ("actual for& must be a variable", A, F);
+               end if;
+
+               --  For an Out parameter, check for useless assignment. Note
+               --  that we can't set Last_Assignment this early, because we
+               --  may kill current values in Resolve_Call, and that call
+               --  would clobber the Last_Assignment field.
+
+               if Ekind (F) = E_Out_Parameter then
+                  if Warn_On_Out_Parameter_Unread
+                    and then Is_Entity_Name (A)
+                    and then Present (Entity (A))
+                  then
+                     Warn_On_Useless_Assignment (Entity (A), Sloc (A));
+                  end if;
+               end if;
+
+               --  What's the following about???
 
                if Is_Entity_Name (A) then
                   Kill_Checks (Entity (A));
@@ -4774,6 +4809,37 @@ package body Sem_Res is
          Kill_Current_Values;
       end if;
 
+      --  If we are warning about unread out parameters, this is the place to
+      --  set Last_Assignment for out parameters. We have to do this after the
+      --  above call to Kill_Current_Values (since that call clears the
+      --  Last_Assignment field of all local variables).
+
+      if Warn_On_Out_Parameter_Unread
+        and then Comes_From_Source (N)
+        and then In_Extended_Main_Source_Unit (N)
+      then
+         declare
+            F : Entity_Id;
+            A : Node_Id;
+
+         begin
+            F := First_Formal (Nam);
+            A := First_Actual (N);
+            while Present (F) and then Present (A) loop
+               if Ekind (F) = E_Out_Parameter
+                 and then Is_Entity_Name (A)
+                 and then Present (Entity (A))
+                 and then Safe_To_Capture_Value (N, Entity (A))
+               then
+                  Set_Last_Assignment (Entity (A), A);
+               end if;
+
+               Next_Formal (F);
+               Next_Actual (A);
+            end loop;
+         end;
+      end if;
+
       --  If the subprogram is a primitive operation, check whether or not
       --  it is a correct dispatching call.
 
@@ -4803,6 +4869,8 @@ package body Sem_Res is
       if Is_Intrinsic_Subprogram (Nam) then
          Check_Intrinsic_Call (N);
       end if;
+
+      --  All done, evaluate call and deal with elaboration issues
 
       Eval_Call (N);
       Check_Elab_Call (N);

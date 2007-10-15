@@ -283,6 +283,17 @@ package Sem_Util is
    --  adds additional continuation lines to the message explaining
    --  why type T is limited. Messages are placed at node N.
 
+   procedure Find_Actual_Mode
+     (N    : Node_Id;
+      Kind : out Entity_Kind;
+      Call : out Node_Id);
+   --  Determines if the node N is an actual parameter of a procedure call. If
+   --  so, then Kind is E_In_Parameter, E_Out_Parameter, E_In_Out_Parameter on
+   --  return as appropriate, and Call is set to the node for the corresponding
+   --  call. If the node N is not an actual parameter, then Kind = E_Void, Call
+   --  = Empty. Note that this only applies to procedure calls, for function
+   --  calls, the result is always E_Void.
+
    function Find_Corresponding_Discriminant
      (Id   : Node_Id;
       Typ  : Entity_Id) return Entity_Id;
@@ -743,7 +754,7 @@ package Sem_Util is
    --  here is for something actually declared as volatile, not for an object
    --  that gets treated as volatile (see Einfo.Treat_As_Volatile).
 
-   procedure Kill_Current_Values;
+   procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False);
    --  This procedure is called to clear all constant indications from all
    --  entities in the current scope and in any parent scopes if the current
    --  scope is a block or a package (and that recursion continues to the top
@@ -756,11 +767,24 @@ package Sem_Util is
    --  Kill_All_Checks, since this is a special case of needing to forget saved
    --  values. This procedure also clears Is_Known_Non_Null flags in variables,
    --  constants or parameters since these are also not known to be valid.
+   --
+   --  The Last_Assignment_Only flag is set True to clear only Last_Assignment
+   --  fields and leave other fields unchanged. This is used when we encounter
+   --  an unconditional flow of control change (return, goto, raise). In such
+   --  cases we don't need to clear the current values, since it may be that
+   --  the flow of control change occurs in a conditional context, and if it
+   --  is not taken, then it is just fine to keep the current values. But the
+   --  Last_Assignment field is different, if we have a sequence assign-to-v,
+   --  conditional-return, assign-to-v, we do not want to complain that the
+   --  second assignment clobbers the first.
 
-   procedure Kill_Current_Values (Ent : Entity_Id);
+   procedure Kill_Current_Values
+     (Ent                  : Entity_Id;
+      Last_Assignment_Only : Boolean := False);
    --  This performs the same processing as described above for the form with
    --  no argument, but for the specific entity given. The call has no effect
-   --  if the entity Ent is not for an object.
+   --  if the entity Ent is not for an object. Again, Last_Assignment_Only is
+   --  set if you want to clear only the Last_Assignment field (see above).
 
    procedure Kill_Size_Check_Code (E : Entity_Id);
    --  Called when an address clause or pragma Import is applied to an

@@ -204,8 +204,10 @@ package body System.Task_Primitives.Operations is
       pragma Unreferenced (Sig);
 
       T       : constant Task_Id := Self;
-      Result  : Interfaces.C.int;
       Old_Set : aliased sigset_t;
+
+      Result : Interfaces.C.int;
+      pragma Warnings (Off, Result);
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC

@@ -523,6 +523,7 @@ package body System.File_IO is
       return    Boolean
    is
       V1, V2 : Natural;
+      pragma Unreferenced (V2);
 
    begin
       Form_Parameter (Form, Keyword, V1, V2);

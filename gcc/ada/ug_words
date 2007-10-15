@@ -140,6 +140,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwn         ^ /WARNINGS=NORMAL
 -gnatwo         ^ /WARNINGS=OVERLAYS
 -gnatwO         ^ /WARNINGS=NOOVERLAYS
+-gnatw.o        ^ /WARNINGS=OUT_PARAM_UNREF
+-gnatw.O        ^ /WARNINGS=NOOUT_PARAM_UNREF
 -gnatwp         ^ /WARNINGS=INEFFECTIVE_INLINE
 -gnatwP         ^ /WARNINGS=NOINEFFECTIVE_INLINE
 -gnatwq         ^ /WARNINGS=MISSING_PARENS

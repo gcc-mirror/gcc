@@ -103,7 +103,6 @@ package body Symbols is
    begin
       if Result (Result'First) = ' ' then
          return Result (Result'First + 1 .. Result'Last);
-
       else
          return Result;
       end if;

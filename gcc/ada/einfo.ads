@@ -2711,11 +2711,12 @@ package Einfo is
 --       initialization, it may or may not be set if the type does have
 --       preelaborable initialization.
 
---    Last_Assignment (Node20)
---       Present in entities for variables. Set for a local variable to point
---       to the left side of an assignment statement assigning a value to the
---       variable. Cleared if the value of the variable is referenced. Used to
---       warn about dubious assignment statements whose value is not used.
+--    Last_Assignment (Node26)
+--       Present in entities for variables, and OUT or IN OUT formals. Set for
+--       a local variable or formal to point to the left side of an assignment
+--       statement assigning a value to the variable. Cleared if the value of
+--       the entity is referenced. Used to warn about dubious assignment
+--       statements whose value is not used.
 
 --    Last_Entity (Node20)
 --       Present in all entities which act as scopes to which a list of
@@ -3630,9 +3631,6 @@ package Einfo is
       -- Objects --
       -------------
 
-      E_Variable,
-      --  Variables created by an object declaration with no constant keyword
-
       E_Component,
       --  Components of a record declaration, private declarations of
       --  protected objects.
@@ -3647,20 +3645,23 @@ package Einfo is
       E_Loop_Parameter,
       --  A loop parameter created by a for loop
 
+      E_Variable,
+      --  Variables created by an object declaration with no constant keyword
+
       ------------------------
       -- Parameter Entities --
       ------------------------
 
       --  Parameters are also objects
 
-      E_In_Parameter,
-      --  An in parameter of a subprogram or entry
-
       E_Out_Parameter,
       --  An out parameter of a subprogram or entry
 
       E_In_Out_Parameter,
       --  An in-out parameter of a subprogram or entry
+
+      E_In_Parameter,
+      --  An in parameter of a subprogram or entry
 
       --------------------------------
       -- Generic Parameter Entities --
@@ -4046,6 +4047,11 @@ package Einfo is
    --  E_String_Subtype
        E_String_Literal_Subtype;
 
+   subtype Assignable_Kind             is Entity_Kind range
+       E_Variable ..
+   --  E_Out_Parameter
+       E_In_Out_Parameter;
+
    subtype Class_Wide_Kind             is Entity_Kind range
        E_Class_Wide_Type ..
        E_Class_Wide_Subtype;
@@ -4156,9 +4162,9 @@ package Einfo is
        E_Floating_Point_Subtype;
 
    subtype Formal_Kind                 is Entity_Kind range
-       E_In_Parameter ..
-   --  E_Out_Parameter
-       E_In_Out_Parameter;
+       E_Out_Parameter ..
+   --  E_In_Out_Parameter
+       E_In_Parameter;
 
    subtype Formal_Object_Kind          is Entity_Kind range
        E_Generic_In_Out_Parameter ..
@@ -4214,14 +4220,14 @@ package Einfo is
        E_Floating_Point_Subtype;
 
    subtype Object_Kind                is Entity_Kind range
-       E_Variable ..
-   --  E_Component
+       E_Component ..
    --  E_Constant
    --  E_Discriminant
    --  E_Loop_Parameter
-   --  E_In_Parameter
+   --  E_Variable
    --  E_Out_Parameter
    --  E_In_Out_Parameter
+   --  E_In_Parameter
    --  E_Generic_In_Out_Parameter
        E_Generic_In_Parameter;
 
@@ -4902,12 +4908,14 @@ package Einfo is
    --    Extra_Formal                        (Node15)
    --    Unset_Reference                     (Node16)
    --    Actual_Subtype                      (Node17)
+
    --    Renamed_Object                      (Node18)
    --    Spec_Entity                         (Node19)
    --    Default_Value                       (Node20)
    --    Default_Expr_Function               (Node21)
    --    Protected_Formal                    (Node22)
    --    Extra_Constrained                   (Node23)
+   --    Last_Assignment                     (Node26)   (OUT, IN-OUT only)
    --    Has_Initial_Value                   (Flag219)
    --    Is_Controlling_Formal               (Flag97)
    --    Is_Optional_Parameter               (Flag134)
@@ -5282,11 +5290,11 @@ package Einfo is
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
    --    Size_Check_Code                     (Node19)
-   --    Last_Assignment                     (Node20)
    --    Interface_Name                      (Node21)
    --    Shared_Var_Assign_Proc              (Node22)
    --    Extra_Constrained                   (Node23)
    --    Debug_Renaming_Link                 (Node25)
+   --    Last_Assignment                     (Node26)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
@@ -5901,6 +5909,7 @@ package Einfo is
    function Is_Access_Type                      (Id : E) return B;
    function Is_Access_Protected_Subprogram_Type (Id : E) return B;
    function Is_Array_Type                       (Id : E) return B;
+   function Is_Assignable                       (Id : E) return B;
    function Is_Class_Wide_Type                  (Id : E) return B;
    function Is_Composite_Type                   (Id : E) return B;
    function Is_Concurrent_Body                  (Id : E) return B;
@@ -6846,6 +6855,7 @@ package Einfo is
    pragma Inline (Is_Access_Protected_Subprogram_Type);
    pragma Inline (Is_Aliased);
    pragma Inline (Is_Array_Type);
+   pragma Inline (Is_Assignable);
    pragma Inline (Is_Asynchronous);
    pragma Inline (Is_Atomic);
    pragma Inline (Is_Bit_Packed_Array);

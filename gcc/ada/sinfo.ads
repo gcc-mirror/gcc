@@ -3672,10 +3672,10 @@ package Sinfo is
       --  N_Allocator
       --  Sloc points to NEW
       --  Expression (Node3) subtype indication or qualified expression
-      --  Null_Exclusion_Present (Flag11)
       --  Storage_Pool (Node1-Sem)
       --  Procedure_To_Call (Node2-Sem)
       --  Coextensions (Elist4-Sem)
+      --  Null_Exclusion_Present (Flag11)
       --  No_Initialization (Flag13-Sem)
       --  Is_Static_Coextension (Flag14-Sem)
       --  Do_Storage_Check (Flag17-Sem)

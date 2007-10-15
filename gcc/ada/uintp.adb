@@ -1259,6 +1259,7 @@ package body Uintp is
    function UI_Div (Left, Right : Uint) return Uint is
       Quotient  : Uint;
       Remainder : Uint;
+      pragma Warnings (Off, Remainder);
    begin
       UI_Div_Rem
         (Left, Right,
@@ -1536,6 +1537,7 @@ package body Uintp is
                declare
                   Remainder_V : UI_Vector (1 .. R_Length);
                   Discard_Int : Int;
+                  pragma Warnings (Off, Discard_Int);
                begin
                   UI_Div_Vector
                     (Dividend (Dividend'Last - R_Length + 1 .. Dividend'Last),
@@ -2571,7 +2573,9 @@ package body Uintp is
       end if;
 
       declare
-         Quotient, Remainder : Uint;
+         Remainder : Uint;
+         Quotient  : Uint;
+         pragma Warnings (Off, Quotient);
       begin
          UI_Div_Rem
            (Left, Right, Quotient, Remainder,

@@ -270,6 +270,7 @@ package body System.Task_Primitives.Operations is
       Old_Set : aliased sigset_t;
 
       Result : Interfaces.C.int;
+      pragma Warnings (Off, Result);
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC

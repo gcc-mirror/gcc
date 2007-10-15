@@ -1315,7 +1315,10 @@ package body Checks is
       LOK : Boolean;
       Rlo : Uint;
       Rhi : Uint;
-      ROK : Boolean;
+      ROK   : Boolean;
+
+      pragma Warnings (Off, Lhi);
+      --  Don't actually use this value
 
    begin
       if Expander_Active
@@ -5201,7 +5204,10 @@ package body Checks is
 
       Num_Saved_Checks := 0;
 
-      for J in 1 .. Saved_Checks_TOS loop
+      --  Note: the Int'Min here avoids any possibility of J being out of
+      --  range when called from e.g. Conditional_Statements_Begin.
+
+      for J in 1 .. Int'Min (Saved_Checks_TOS, Saved_Checks_Stack'Last) loop
          Saved_Checks_Stack (J) := 0;
       end loop;
    end Kill_All_Checks;
@@ -6658,10 +6664,6 @@ package body Checks is
 
                   L_Index : Node_Id;
                   R_Index : Node_Id;
-                  L_Low   : Node_Id;
-                  L_High  : Node_Id;
-                  R_Low   : Node_Id;
-                  R_High  : Node_Id;
 
                begin
                   L_Index := First_Index (T_Typ);
@@ -6672,9 +6674,6 @@ package body Checks is
                                or else
                              Nkind (R_Index) = N_Raise_Constraint_Error)
                      then
-                        Get_Index_Bounds (L_Index, L_Low, L_High);
-                        Get_Index_Bounds (R_Index, R_Low, R_High);
-
                         --  Deal with compile time length check. Note that we
                         --  skip this in the access case, because the access
                         --  value may be null, so we cannot know statically.
@@ -6691,7 +6690,6 @@ package body Checks is
                               Evolve_Or_Else
                                 (Cond,
                                  Range_Equal_E_Cond (Exptyp, T_Typ, Indx));
-
                            else
                               Evolve_Or_Else
                                 (Cond, Range_E_Cond (Exptyp, T_Typ, Indx));

@@ -1699,7 +1699,8 @@ package body MLib.Prj is
             --  Designates the full library path name. Either DLL_Name or
             --  Archive_Name, depending on the library kind.
 
-            Success : Boolean := False;
+            Success : Boolean;
+            pragma Warnings (Off, Success);
             --  Used to call Delete_File
 
          begin
@@ -1774,6 +1775,7 @@ package body MLib.Prj is
             Last : Natural;
 
             Disregard : Boolean;
+            pragma Warnings (Off, Disregard);
 
             DLL_Name : aliased constant String :=
                          Lib_Filename.all & "." & DLL_Ext;
@@ -1963,6 +1965,7 @@ package body MLib.Prj is
                Last : Natural;
 
                Disregard : Boolean;
+               pragma Warnings (Off, Disregard);
 
             begin
                Open (Dir, ".");
@@ -2181,7 +2184,8 @@ package body MLib.Prj is
       ----------
 
       procedure Copy (File_Name : File_Name_Type) is
-         Success : Boolean := False;
+         Success : Boolean;
+         pragma Warnings (Off, Success);
 
       begin
          Unit_Loop :

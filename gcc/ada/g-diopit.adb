@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2005, AdaCore                     --
+--                     Copyright (C) 2001-2007, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,9 +78,11 @@ package body GNAT.Directory_Operations.Iteration is
       --------------------
 
       procedure Read_Directory (Directory : Dir_Name_Str) is
-         Dir    : Dir_Type;
          Buffer : String (1 .. 2_048);
          Last   : Natural;
+
+         Dir : Dir_Type;
+         pragma Warnings (Off, Dir);
 
       begin
          Open (Dir, Directory);
@@ -319,7 +321,10 @@ package body GNAT.Directory_Operations.Iteration is
       is
          File_Regexp : constant Regexp.Regexp :=
                          Regexp.Compile (File_Pattern, Glob => True);
-         Dir    : Dir_Type;
+
+         Dir : Dir_Type;
+         pragma Warnings (Off, Dir);
+
          Buffer : String (1 .. 2_048);
          Last   : Natural;
 

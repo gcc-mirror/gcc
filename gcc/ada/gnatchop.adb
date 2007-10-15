@@ -428,8 +428,10 @@ procedure Gnatchop is
                   File.Table (Input).Name.all & ASCII.Nul;
       Length  : File_Offset;
       Buffer  : String_Access;
-      Success : Boolean;
       Result  : String_Access;
+
+      Success : Boolean;
+      pragma Warnings (Off, Success);
 
    begin
       FD := Open_Read (Name'Address, Binary);

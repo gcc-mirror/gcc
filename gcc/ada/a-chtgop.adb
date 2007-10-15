@@ -583,6 +583,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
 
          declare
             X : Buckets_Access := HT.Buckets;
+            pragma Warnings (Off, X);
          begin
             HT.Buckets := New_Buckets (Length => NN);
             Free_Buckets (X);
@@ -628,6 +629,7 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       Rehash : declare
          Dst_Buckets : Buckets_Access := New_Buckets (Length => NN);
          Src_Buckets : Buckets_Access := HT.Buckets;
+         pragma Warnings (Off, Src_Buckets);
 
          L : Count_Type renames HT.Length;
          LL : constant Count_Type := L;

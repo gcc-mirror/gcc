@@ -114,6 +114,7 @@ package body Eval_Fat is
    function Compose (RT : R; Fraction : T; Exponent : UI) return T is
       Arg_Frac : T;
       Arg_Exp  : UI;
+      pragma Warnings (Off, Arg_Exp);
    begin
       if UR_Is_Zero (Fraction) then
          return Fraction;
@@ -435,6 +436,7 @@ package body Eval_Fat is
    function Exponent (RT : R; X : T) return UI is
       X_Frac : UI;
       X_Exp  : UI;
+      pragma Warnings (Off, X_Frac);
    begin
       if UR_Is_Zero (X) then
          return Uint_0;
@@ -470,6 +472,7 @@ package body Eval_Fat is
    function Fraction (RT : R; X : T) return T is
       X_Frac : T;
       X_Exp  : UI;
+      pragma Warnings (Off, X_Exp);
    begin
       if UR_Is_Zero (X) then
          return X;
@@ -725,6 +728,8 @@ package body Eval_Fat is
       P_Exp    : UI;
       K        : UI;
       P_Even   : Boolean;
+
+      pragma Warnings (Off, Arg_Frac);
 
    begin
       if UR_Is_Positive (X) then

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -664,7 +664,7 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
       Count     : Count_Type := 1)
    is
       Position : Cursor;
-
+      pragma Unreferenced (Position);
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;
@@ -1300,7 +1300,9 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
 
       declare
          I_Next : constant Cursor := Next (I);
+
          J_Copy : Cursor := J;
+         pragma Warnings (Off, J_Copy);
 
       begin
          if I_Next = J then
@@ -1309,7 +1311,9 @@ package body Ada.Containers.Restricted_Doubly_Linked_Lists is
          else
             declare
                J_Next : constant Cursor := Next (J);
+
                I_Copy : Cursor := I;
+               pragma Warnings (Off, I_Copy);
 
             begin
                if J_Next = I then

@@ -1058,7 +1058,9 @@ package body Makegpr is
       Time_Stamp          : Time_Stamp_Type;
       Saved_Last_Argument : Natural;
       First_Object        : Natural;
-      Discard             : Boolean;
+
+      Discard : Boolean;
+      pragma Warnings (Off, Discard);
 
    begin
       Check_Archive_Builder;
@@ -2239,7 +2241,9 @@ package body Makegpr is
             declare
                Dep_File : Ada.Text_IO.File_Type;
                Result   : Expect_Match;
-               Status   : Integer;
+
+               Status : Integer;
+               pragma Warnings (Off, Status);
 
             begin
                --  Create the dependency file

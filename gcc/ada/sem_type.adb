@@ -494,10 +494,13 @@ package body Sem_Type is
            and then Is_Overloaded (Name (N))
          then
             declare
-               I  : Interp_Index;
                It : Interp;
+
+               Itn : Interp_Index;
+               pragma Warnings (Off, Itn);
+
             begin
-               Get_First_Interp (Name (N), I, It);
+               Get_First_Interp (Name (N), Itn, It);
                Add_Entry (It.Nam, Etype (N));
             end;
 

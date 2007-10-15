@@ -1091,12 +1091,15 @@ package body System.OS_Lib is
    ------------
 
    function GM_Day (Date : OS_Time) return Day_Type is
+      D  : Day_Type;
+
+      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
-      D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
+      pragma Warnings (On);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1108,12 +1111,15 @@ package body System.OS_Lib is
    -------------
 
    function GM_Hour (Date : OS_Time) return Hour_Type is
+      H  : Hour_Type;
+
+      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
-      H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
+      pragma Warnings (On);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1125,12 +1131,15 @@ package body System.OS_Lib is
    ---------------
 
    function GM_Minute (Date : OS_Time) return Minute_Type is
+      Mn : Minute_Type;
+
+      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
       H  : Hour_Type;
-      Mn : Minute_Type;
       S  : Second_Type;
+      pragma Warnings (On);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1142,12 +1151,15 @@ package body System.OS_Lib is
    --------------
 
    function GM_Month (Date : OS_Time) return Month_Type is
-      Y  : Year_Type;
       Mo : Month_Type;
+
+      pragma Warnings (Off);
+      Y  : Year_Type;
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
+      pragma Warnings (On);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1159,12 +1171,15 @@ package body System.OS_Lib is
    ---------------
 
    function GM_Second (Date : OS_Time) return Second_Type is
+      S  : Second_Type;
+
+      pragma Warnings (Off);
       Y  : Year_Type;
       Mo : Month_Type;
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
-      S  : Second_Type;
+      pragma Warnings (On);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1226,11 +1241,14 @@ package body System.OS_Lib is
 
    function GM_Year (Date : OS_Time) return Year_Type is
       Y  : Year_Type;
+
+      pragma Warnings (Off);
       Mo : Month_Type;
       D  : Day_Type;
       H  : Hour_Type;
       Mn : Minute_Type;
       S  : Second_Type;
+      pragma Warnings (On);
 
    begin
       GM_Split (Date, Y, Mo, D, H, Mn, S);
@@ -1464,9 +1482,9 @@ package body System.OS_Lib is
      (Program_Name : String;
       Args         : Argument_List) return Process_Id
    is
-      Junk : Integer;
       Pid  : Process_Id;
-
+      Junk : Integer;
+      pragma Warnings (Off, Junk);
    begin
       Spawn_Internal (Program_Name, Args, Junk, Pid, Blocking => False);
       return Pid;
@@ -2287,8 +2305,9 @@ package body System.OS_Lib is
      (Program_Name : String;
       Args         : Argument_List) return Integer
    is
-      Junk   : Process_Id;
       Result : Integer;
+      Junk   : Process_Id;
+      pragma Warnings (Off, Junk);
    begin
       Spawn_Internal (Program_Name, Args, Result, Junk, Blocking => True);
       return Result;

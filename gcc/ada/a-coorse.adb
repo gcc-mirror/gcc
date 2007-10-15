@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -891,6 +891,8 @@ package body Ada.Containers.Ordered_Sets is
       New_Item  : Element_Type)
    is
       Position : Cursor;
+      pragma Unreferenced (Position);
+
       Inserted : Boolean;
 
    begin
@@ -955,6 +957,7 @@ package body Ada.Containers.Ordered_Sets is
       Dst_Node : out Node_Access)
    is
       Success : Boolean;
+      pragma Unreferenced (Success);
 
       function New_Node return Node_Access;
       pragma Inline (New_Node);
@@ -1591,7 +1594,7 @@ package body Ada.Containers.Ordered_Sets is
       Tree     : Tree_Type;
       Node     : Node_Access;
       Inserted : Boolean;
-
+      pragma Unreferenced (Node, Inserted);
    begin
       Insert_Sans_Hint (Tree, New_Item, Node, Inserted);
       return Set'(Controlled with Tree);

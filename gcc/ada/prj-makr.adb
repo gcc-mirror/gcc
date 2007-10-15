@@ -937,6 +937,7 @@ package body Prj.Makr is
 
          declare
             Discard : Boolean;
+            pragma Warnings (Off, Discard);
          begin
             Delete_File
               (Source_List_Path (1 .. Source_List_Last),
@@ -1350,6 +1351,7 @@ package body Prj.Makr is
 
       declare
          Discard : Boolean;
+         pragma Warnings (Off, Discard);
 
       begin
          --  Delete the file if it already exists

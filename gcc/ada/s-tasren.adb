@@ -392,6 +392,7 @@ package body System.Tasking.Rendezvous is
       Uninterpreted_Data : System.Address)
    is
       Rendezvous_Successful : Boolean;
+      pragma Unreferenced (Rendezvous_Successful);
 
    begin
       --  If pragma Detect_Blocking is active then Program_Error must be
@@ -1706,7 +1707,9 @@ package body System.Tasking.Rendezvous is
       Self_Id    : constant Task_Id := STPO.Self;
       Level      : ATC_Level;
       Entry_Call : Entry_Call_Link;
-      Yielded    : Boolean;
+
+      Yielded : Boolean;
+      pragma Unreferenced (Yielded);
 
    begin
       --  If pragma Detect_Blocking is active then Program_Error must be

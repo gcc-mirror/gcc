@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2006, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,6 +162,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
 
    procedure Clear (Container : in out List) is
       X : Node_Access;
+      pragma Warnings (Off, X);
 
    begin
       if Container.Length = 0 then
@@ -539,6 +540,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
             if RI.Node.Element.all < LI.Node.Element.all then
                declare
                   RJ : Cursor := RI;
+                  pragma Warnings (Off, RJ);
                begin
                   RI.Node := RI.Node.Next;
                   Splice (Target, LI, Source, RJ);
@@ -735,6 +737,7 @@ package body Ada.Containers.Indefinite_Doubly_Linked_Lists is
       Count     : Count_Type := 1)
    is
       Position : Cursor;
+      pragma Unreferenced (Position);
    begin
       Insert (Container, Before, New_Item, Position, Count);
    end Insert;

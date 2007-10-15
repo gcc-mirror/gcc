@@ -179,10 +179,11 @@ package Sem_Warn is
       Loc : Source_Ptr := No_Location);
    --  Called to check if we have a case of a useless assignment to the given
    --  entity Ent, as indicated by a non-empty Last_Assignment field. This call
-   --  should only be made if Warn_On_Modified_Unread is True, and if Ent is in
-   --  the extended main source unit. Loc is No_Location for the end of block
-   --  call (warning msg says value unreferenced), or the it is the location of
-   --  an overwriting assignment (warning msg points to this assignment).
+   --  should only be made if at least one of the flags Warn_On_Modified_Unread
+   --  or Warn_On_Out_Parameter_Unread is True, and if Ent is in the extended
+   --  main source unit. Loc is No_Location for the end of block call (warning
+   --  message says value unreferenced), or the it is the location of an
+   --  overwriting assignment (warning message points to this assignment).
 
    procedure Warn_On_Useless_Assignments (E : Entity_Id);
    pragma Inline (Warn_On_Useless_Assignments);

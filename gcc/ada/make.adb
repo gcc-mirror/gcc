@@ -3947,6 +3947,7 @@ package body Make is
 
    procedure Delete_Mapping_Files is
       Success : Boolean;
+      pragma Warnings (Off, Success);
    begin
       if not Debug.Debug_Flag_N then
          if The_Mapping_File_Names /= null then
@@ -3968,6 +3969,8 @@ package body Make is
 
    procedure Delete_Temp_Config_Files is
       Success : Boolean;
+      pragma Warnings (Off, Success);
+
    begin
       if (not Debug.Debug_Flag_N) and Main_Project /= No_Project then
          for Project in Project_Table.First ..
@@ -4203,6 +4206,7 @@ package body Make is
       --  The path name of the mapping file
 
       Discard : Boolean;
+      pragma Warnings (Off, Discard);
 
       procedure Check_Mains;
       --  Check that the main subprograms do exist and that they all
@@ -7077,8 +7081,10 @@ package body Make is
                                  Get_Name_String (Source_File);
             Saved_Verbosity  : constant Verbosity := Current_Verbosity;
             Project          : Project_Id         := No_Project;
-            Path_Name        : Path_Name_Type     := No_Path;
             Data             : Project_Data;
+
+            Path_Name : Path_Name_Type := No_Path;
+            pragma Warnings (Off, Path_Name);
 
          begin
             --  Call Get_Reference to know the ultimate extending project of

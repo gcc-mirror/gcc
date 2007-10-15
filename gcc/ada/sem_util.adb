@@ -2192,6 +2192,9 @@ package body Sem_Util is
       if Dynamic_Scope = Standard_Standard then
          return Empty;
 
+      elsif Dynamic_Scope = Empty then
+         return Empty;
+
       elsif Ekind (Dynamic_Scope) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dynamic_Scope)));
 
@@ -2628,6 +2631,69 @@ package body Sem_Util is
          return;
       end if;
    end Explain_Limited_Type;
+
+   ----------------------
+   -- Find_Actual_Mode --
+   ----------------------
+
+   procedure Find_Actual_Mode
+     (N    : Node_Id;
+      Kind : out Entity_Kind;
+      Call : out Node_Id)
+   is
+      Parnt  : constant Node_Id := Parent (N);
+      Formal : Entity_Id;
+      Actual : Node_Id;
+
+   begin
+      if (Nkind (Parnt) = N_Indexed_Component
+            or else
+          Nkind (Parnt) = N_Selected_Component)
+        and then N = Prefix (Parnt)
+      then
+         Find_Actual_Mode (Parnt, Kind, Call);
+         return;
+
+      elsif Nkind (Parnt) = N_Parameter_Association
+        and then N = Explicit_Actual_Parameter (Parnt)
+      then
+         Call := Parent (Parnt);
+
+      elsif Nkind (Parnt) = N_Procedure_Call_Statement then
+         Call := Parnt;
+
+      else
+         Kind := E_Void;
+         Call := Empty;
+         return;
+      end if;
+
+      --  If we have a call to a subprogram look for the parametere
+
+      if Is_Entity_Name (Name (Call))
+        and then Present (Entity (Name (Call)))
+        and then Is_Overloadable (Entity (Name (Call)))
+      then
+         --  Fall here if we are definitely a parameter
+
+         Actual := First_Actual (Call);
+         Formal := First_Formal (Entity (Name (Call)));
+         while Present (Formal) and then Present (Actual) loop
+            if Actual = N then
+               Kind := Ekind (Formal);
+               return;
+            else
+               Actual := Next_Actual (Actual);
+               Formal := Next_Formal (Formal);
+            end if;
+         end loop;
+      end if;
+
+      --  Fall through here if we did not find matching actual
+
+      Kind := E_Void;
+      Call := Empty;
+   end Find_Actual_Mode;
 
    -------------------------------------
    -- Find_Corresponding_Discriminant --
@@ -5827,7 +5893,9 @@ package body Sem_Util is
       Comp_List     : Node_Id;
       Discr         : Entity_Id;
       Discr_Val     : Node_Id;
+
       Report_Errors : Boolean;
+      pragma Warnings (Off, Report_Errors);
 
    begin
       if Serious_Errors_Detected > 0 then
@@ -6923,15 +6991,18 @@ package body Sem_Util is
    -- Kill_Current_Values --
    -------------------------
 
-   procedure Kill_Current_Values (Ent : Entity_Id) is
+   procedure Kill_Current_Values
+     (Ent                  : Entity_Id;
+      Last_Assignment_Only : Boolean := False)
+   is
    begin
-      if Is_Object (Ent) then
+      if Is_Assignable (Ent) then
+         Set_Last_Assignment (Ent, Empty);
+      end if;
+
+      if not Last_Assignment_Only and then Is_Object (Ent) then
          Kill_Checks (Ent);
          Set_Current_Value (Ent, Empty);
-
-         if Ekind (Ent) = E_Variable then
-            Set_Last_Assignment (Ent, Empty);
-         end if;
 
          if not Can_Never_Be_Null (Ent) then
             Set_Is_Known_Non_Null (Ent, False);
@@ -6941,7 +7012,7 @@ package body Sem_Util is
       end if;
    end Kill_Current_Values;
 
-   procedure Kill_Current_Values is
+   procedure Kill_Current_Values (Last_Assignment_Only : Boolean := False) is
       S : Entity_Id;
 
       procedure Kill_Current_Values_For_Entity_Chain (E : Entity_Id);
@@ -6956,7 +7027,7 @@ package body Sem_Util is
       begin
          Ent := E;
          while Present (Ent) loop
-            Kill_Current_Values (Ent);
+            Kill_Current_Values (Ent, Last_Assignment_Only);
             Next_Entity (Ent);
          end loop;
       end Kill_Current_Values_For_Entity_Chain;
@@ -6966,7 +7037,9 @@ package body Sem_Util is
    begin
       --  Kill all saved checks, a special case of killing saved values
 
-      Kill_All_Checks;
+      if not Last_Assignment_Only then
+         Kill_All_Checks;
+      end if;
 
       --  Loop through relevant scopes, which includes the current scope and
       --  any parent scopes if the current scope is a block or a package.
@@ -7766,8 +7839,8 @@ package body Sem_Util is
                  and then Nkind (Expression (Parent (Entity (P))))
                    = N_Reference
                then
-                  --  Case of a reference to a value on which
-                  --  side effects have been removed.
+                  --  Case of a reference to a value on which side effects have
+                  --  been removed.
 
                   Exp := Prefix (Expression (Parent (Entity (P))));
                   goto Continue;

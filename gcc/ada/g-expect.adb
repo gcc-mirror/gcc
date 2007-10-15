@@ -248,6 +248,7 @@ package body GNAT.Expect is
 
    procedure Close (Descriptor : in out Process_Descriptor) is
       Status : Integer;
+      pragma Unreferenced (Status);
    begin
       Close (Descriptor, Status);
    end Close;
@@ -299,7 +300,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       Matched : GNAT.Regpat.Match_Array (0 .. 0);
-
+      pragma Warnings (Off, Matched);
    begin
       Expect (Descriptor, Result, Regexp, Matched, Timeout, Full_Buffer);
    end Expect;
@@ -385,7 +386,9 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       Patterns : Compiled_Regexp_Array (Regexps'Range);
-      Matched  : GNAT.Regpat.Match_Array (0 .. 0);
+
+      Matched : GNAT.Regpat.Match_Array (0 .. 0);
+      pragma Warnings (Off, Matched);
 
    begin
       for J in Regexps'Range loop
@@ -407,7 +410,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       Matched : GNAT.Regpat.Match_Array (0 .. 0);
-
+      pragma Warnings (Off, Matched);
    begin
       Expect (Descriptor, Result, Regexps, Matched, Timeout, Full_Buffer);
    end Expect;
@@ -419,7 +422,7 @@ package body GNAT.Expect is
       Full_Buffer : Boolean := False)
    is
       Matched : GNAT.Regpat.Match_Array (0 .. 0);
-
+      pragma Warnings (Off, Matched);
    begin
       Expect (Result, Regexps, Matched, Timeout, Full_Buffer);
    end Expect;
@@ -815,6 +818,7 @@ package body GNAT.Expect is
 
       declare
          Result : Expect_Match;
+         pragma Unreferenced (Result);
 
       begin
          --  This loop runs until the call to Expect raises Process_Died
@@ -1117,10 +1121,11 @@ package body GNAT.Expect is
       Empty_Buffer : Boolean := False)
    is
       Line_Feed   : aliased constant String := (1 .. 1 => ASCII.LF);
-      Result      : Expect_Match;
       Descriptors : Array_Of_Pd := (1 => Descriptor'Unrestricted_Access);
 
+      Result  : Expect_Match;
       Discard : Natural;
+      pragma Warnings (Off, Result);
       pragma Warnings (Off, Discard);
 
    begin
@@ -1238,6 +1243,7 @@ package body GNAT.Expect is
       Pipe3      : not null access Pipe_Type)
    is
       Status : Boolean;
+      pragma Unreferenced (Status);
 
    begin
       --  Create the pipes
