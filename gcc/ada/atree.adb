@@ -949,6 +949,8 @@ package body Atree is
       Delete_Field (Field3 (Node));
       Delete_Field (Field4 (Node));
       Delete_Field (Field5 (Node));
+
+      --  ??? According to spec, Node itself should be deleted as well
    end Delete_Tree;
 
    -----------
