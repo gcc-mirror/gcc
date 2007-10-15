@@ -1,3 +1,10 @@
+2007-10-15  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR target/33133
+	
+	* haifa-sched.c (process_insn_forw_deps_be_in_spec): Check if
+	speculation type of insn can be changed before trying to do that.
+
 2007-10-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* dse.c (struct insn_info): Add 'frame_read' field.

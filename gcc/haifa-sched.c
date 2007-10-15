@@ -3292,8 +3292,17 @@ process_insn_forw_deps_be_in_spec (rtx insn, rtx twin, ds_t fs)
 		     due to backend decision.  Hence we can't let the
 		     probability of the speculative dep to decrease.  */
 		  dep_weak (ds) <= dep_weak (fs))
-		/* Transform it to be in speculative.  */
-		ds = (ds & ~BEGIN_SPEC) | fs;
+		{
+		  ds_t new_ds;
+
+		  new_ds = (ds & ~BEGIN_SPEC) | fs;
+		  
+		  if (/* consumer can 'be in speculative'.  */
+		      sched_insn_is_legitimate_for_speculation_p (consumer,
+								  new_ds))
+		    /* Transform it to be in speculative.  */
+		    ds = new_ds;
+		}
 	    }
 	  else
 	    /* Mark the dep as 'be in speculative'.  */
