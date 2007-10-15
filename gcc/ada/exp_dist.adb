@@ -877,6 +877,8 @@ package body Exp_Dist is
       Subp_Stubs          : Node_Id;
       Subp_Str            : String_Id;
 
+      pragma Warnings (Off, Subp_Str);
+
    begin
       --  The first thing added is an instantiation of the generic package
       --  System.Partition_Interface.RCI_Locator with the name of this remote
@@ -900,15 +902,14 @@ package body Exp_Dist is
       PolyORB_Support.Reserve_NamingContext_Methods;
 
       Current_Declaration := First (Visible_Declarations (Pkg_Spec));
-
       while Present (Current_Declaration) loop
          if Nkind (Current_Declaration) = N_Subprogram_Declaration
            and then Comes_From_Source (Current_Declaration)
          then
-            Assign_Subprogram_Identifier (
-              Defining_Unit_Name (Specification (Current_Declaration)),
-              Current_Subprogram_Number,
-              Subp_Str);
+            Assign_Subprogram_Identifier
+              (Defining_Unit_Name (Specification (Current_Declaration)),
+               Current_Subprogram_Number,
+               Subp_Str);
 
             Subp_Stubs :=
               Build_Subprogram_Calling_Stubs (
@@ -952,9 +953,9 @@ package body Exp_Dist is
         (Loc         : Source_Ptr;
          Parameter   : Entity_Id;
          Constrained : Boolean) return Node_Id;
-      --  Return an expression that denotes the parameter passing
-      --  mode to be used for Parameter in distribution stubs,
-      --  where Constrained is Parameter's constrained status.
+      --  Return an expression that denotes the parameter passing mode to be
+      --  used for Parameter in distribution stubs, where Constrained is
+      --  Parameter's constrained status.
 
       ----------------------------
       -- Parameter_Passing_Mode --
@@ -1263,7 +1264,9 @@ package body Exp_Dist is
             Current_Primitive := Node (Current_Primitive_Elmt);
 
             --  Copy the primitive of all the parents, except predefined ones
-            --  that are not remotely dispatching.
+            --  that are not remotely dispatching. Also omit hidden primitives
+            --  (occurs in the case of primitives of interface progenitors
+            --  other than immediate ancestors of the Designated_Type).
 
             if Chars (Current_Primitive) /= Name_uSize
               and then Chars (Current_Primitive) /= Name_uAlignment
@@ -1273,6 +1276,7 @@ package body Exp_Dist is
                  Is_TSS (Current_Primitive, TSS_Stream_Output) or else
                  Is_TSS (Current_Primitive, TSS_Stream_Read)   or else
                  Is_TSS (Current_Primitive, TSS_Stream_Write))
+              and then not Is_Hidden (Current_Primitive)
             then
                --  The first thing to do is build an up-to-date copy of the
                --  spec with all the formals referencing Designated_Type
@@ -2446,6 +2450,8 @@ package body Exp_Dist is
             Current_Subp        : Entity_Id;
             Current_Subp_Str    : String_Id;
             Current_Subp_Number : Int := First_RCI_Subprogram_Id;
+
+            pragma Warnings (Off, Current_Subp_Str);
 
          begin
             --  Build_Subprogram_Id is called outside of the context of
@@ -3748,8 +3754,9 @@ package body Exp_Dist is
          --  case statement will be made on the Subprogram_Id to dispatch
          --  to the right subprogram.
 
-         All_Calls_Remote_E := Boolean_Literals (
-           Has_All_Calls_Remote (Defining_Entity (Pkg_Spec)));
+         All_Calls_Remote_E :=
+           Boolean_Literals
+             (Has_All_Calls_Remote (Defining_Entity (Pkg_Spec)));
 
          Overload_Counter_Table.Reset;
 
@@ -3759,8 +3766,7 @@ package body Exp_Dist is
               and then Comes_From_Source (Current_Declaration)
             then
                declare
-                  Loc : constant Source_Ptr :=
-                          Sloc (Current_Declaration);
+                  Loc : constant Source_Ptr := Sloc (Current_Declaration);
                   --  While specifically processing Current_Declaration, use
                   --  its Sloc as the location of all generated nodes.
 
@@ -3769,6 +3775,7 @@ package body Exp_Dist is
                                  (Specification (Current_Declaration));
 
                   Subp_Val : String_Id;
+                  pragma Warnings (Off, Subp_Val);
 
                begin
                   --  Build receiving stub
@@ -3787,22 +3794,19 @@ package body Exp_Dist is
                   --  Build RAS proxy
 
                   Add_RAS_Proxy_And_Analyze (Decls,
-                    Vis_Decl           =>
-                      Current_Declaration,
-                    All_Calls_Remote_E =>
-                      All_Calls_Remote_E,
-                    Proxy_Object_Addr  =>
-                      Proxy_Object_Addr);
+                    Vis_Decl           => Current_Declaration,
+                    All_Calls_Remote_E => All_Calls_Remote_E,
+                    Proxy_Object_Addr  => Proxy_Object_Addr);
 
                   --  Compute distribution identifier
 
-                  Assign_Subprogram_Identifier (
-                    Subp_Def,
-                    Current_Subprogram_Number,
-                    Subp_Val);
+                  Assign_Subprogram_Identifier
+                    (Subp_Def,
+                     Current_Subprogram_Number,
+                     Subp_Val);
 
-                  pragma Assert (Current_Subprogram_Number =
-                    Get_Subprogram_Id (Subp_Def));
+                  pragma Assert
+                    (Current_Subprogram_Number = Get_Subprogram_Id (Subp_Def));
 
                   --  Add subprogram descriptor (RCI_Subp_Info) to the
                   --  subprograms table for this receiver. The aggregate
@@ -7029,8 +7033,7 @@ package body Exp_Dist is
               and then Comes_From_Source (Current_Declaration)
             then
                declare
-                  Loc : constant Source_Ptr :=
-                          Sloc (Current_Declaration);
+                  Loc : constant Source_Ptr := Sloc (Current_Declaration);
                   --  While specifically processing Current_Declaration, use
                   --  its Sloc as the location of all generated nodes.
 
@@ -7455,7 +7458,6 @@ package body Exp_Dist is
 
          Current_Parameter := First (Ordered_Parameters_List);
          while Present (Current_Parameter) loop
-
             if Is_RACW_Controlling_Formal (Current_Parameter, Stub_Type) then
                Is_Controlling_Formal := True;
                Is_First_Controlling_Formal :=
@@ -8522,10 +8524,12 @@ package body Exp_Dist is
             Item := First (CI);
             while Present (Item) loop
                Def := Defining_Identifier (Item);
+
                if not Is_Internal_Name (Chars (Def)) then
                   Add_Process_Element
                     (Stmts, Container, Counter, Rec, Def);
                end if;
+
                Next (Item);
             end loop;
 
@@ -8861,7 +8865,6 @@ package body Exp_Dist is
                                       Alt_List));
 
                               Variant := First_Non_Pragma (Variants (Field));
-
                               while Present (Variant) loop
                                  Choice_List := New_Copy_List_Tree
                                    (Discrete_Choices (Variant));
@@ -8898,15 +8901,17 @@ package body Exp_Dist is
                      --  First all discriminants
 
                      if Has_Discriminants (Typ) then
-                        Disc := First_Discriminant (Typ);
                         Discriminant_Associations := New_List;
 
+                        Disc := First_Discriminant (Typ);
                         while Present (Disc) loop
                            declare
                               Disc_Var_Name : constant Entity_Id :=
-                                Make_Defining_Identifier (Loc, Chars (Disc));
-                              Disc_Type : constant Entity_Id :=
-                                Etype (Disc);
+                                                Make_Defining_Identifier (Loc,
+                                                  Chars => Chars (Disc));
+                              Disc_Type     : constant Entity_Id :=
+                                                Etype (Disc);
+
                            begin
                               Append_To (Decls,
                                 Make_Object_Declaration (Loc,
@@ -8936,11 +8941,12 @@ package body Exp_Dist is
                            Next_Discriminant (Disc);
                         end loop;
 
-                        Res_Definition := Make_Subtype_Indication (Loc,
-                          Subtype_Mark => Res_Definition,
-                          Constraint   =>
-                            Make_Index_Or_Discriminant_Constraint (Loc,
-                              Discriminant_Associations));
+                        Res_Definition :=
+                          Make_Subtype_Indication (Loc,
+                            Subtype_Mark => Res_Definition,
+                            Constraint   =>
+                              Make_Index_Or_Discriminant_Constraint (Loc,
+                                Discriminant_Associations));
                      end if;
 
                      --  Now we have all the discriminants in variables, we can
@@ -9000,12 +9006,12 @@ package body Exp_Dist is
                          Expression => Empty);
 
                      Element_Any : Node_Id;
-                  begin
 
+                  begin
                      declare
                         Element_TC : Node_Id;
-                     begin
 
+                     begin
                         if Etype (Datum) = RTE (RE_Any) then
 
                            --  When Datum is an Any the Etype field is not
@@ -9066,9 +9072,14 @@ package body Exp_Dist is
                         else
                            Set_Expression (Assignment, Element_Any);
                         end if;
+
                         Prepend_To (Stmts, Assignment);
                      end if;
                   end FA_Ary_Add_Process_Element;
+
+                  ------------------------
+                  -- Local Declarations --
+                  ------------------------
 
                   Counter : constant Entity_Id :=
                               Make_Defining_Identifier (Loc, Name_J);
@@ -9350,14 +9361,14 @@ package body Exp_Dist is
             Start_String;
             Store_String_Chars ("DSA:");
             Get_Library_Unit_Name_String (Scope (E));
-            Store_String_Chars (
-              Name_Buffer (Name_Buffer'First
-                .. Name_Buffer'First + Name_Len - 1));
+            Store_String_Chars
+              (Name_Buffer (Name_Buffer'First ..
+               Name_Buffer'First + Name_Len - 1));
             Store_String_Char ('.');
             Get_Name_String (Chars (E));
-            Store_String_Chars (
-              Name_Buffer (Name_Buffer'First
-                .. Name_Buffer'First + Name_Len - 1));
+            Store_String_Chars
+              (Name_Buffer (Name_Buffer'First ..
+               Name_Buffer'First + Name_Len - 1));
             Store_String_Chars (":1.0");
             Repo_Id_Str := End_String;
             Name_Str    := String_From_Name_Buffer;
@@ -9375,22 +9386,19 @@ package body Exp_Dist is
 
             Typ     : Entity_Id := Etype (N);
             U_Type  : Entity_Id;
-
             Fnam    : Entity_Id := Empty;
             Lib_RE  : RE_Id := RE_Null;
 
          begin
             --  If N is a selected component, then maybe its Etype has not been
-            --  set yet: try to use the Etype of the selector_name in that
-            --  case.
+            --  set yet: try to use Etype of the selector_name in that case.
 
             if No (Typ) and then Nkind (N) = N_Selected_Component then
                Typ := Etype (Selector_Name (N));
             end if;
             pragma Assert (Present (Typ));
 
-            --  The full view, if Typ is private; the completion, if Typ is
-            --  incomplete.
+            --  Get full view for private type, completion for incomplete type
 
             U_Type := Underlying_Type (Typ);
 
@@ -9824,19 +9832,20 @@ package body Exp_Dist is
 
                   begin
                      --  Records are encoded in a TC_STRUCT aggregate:
+
                      --  -- Outer aggregate (TC_STRUCT)
                      --  | [discriminant1]
                      --  | [discriminant2]
                      --  | ...
-                     --
+                     --  |
                      --  | [component1]
                      --  | [component2]
                      --  | ...
-                     --
-                     --  A component can be a common component or a variant
-                     --  part.
-                     --
+
+                     --  A component can be a common component or variant part
+
                      --  A variant part is encoded as a TC_UNION aggregate:
+
                      --  -- Variant Part Aggregate (TC_UNION)
                      --  | [discriminant choice for this Variant Part]
                      --  |
@@ -9845,20 +9854,20 @@ package body Exp_Dist is
                      --  | |  [component2]
                      --  | |  ...
 
-                     --  Let's start by building the outer aggregate
-                     --  First we construct an Elements array containing all
-                     --  the discriminants.
+                     --  Let's start by building the outer aggregate. First we
+                     --  construct Elements array containing all discriminants.
 
                      if Has_Discriminants (Typ) then
                         Disc := First_Discriminant (Typ);
-
                         while Present (Disc) loop
-
                            declare
                               Discriminant : constant Entity_Id :=
-                                 Make_Selected_Component (Loc,
-                                     Prefix        => Expr_Parameter,
-                                     Selector_Name => Chars (Disc));
+                                               Make_Selected_Component (Loc,
+                                                 Prefix        =>
+                                                   Expr_Parameter,
+                                                 Selector_Name =>
+                                                   Chars (Disc));
+
                            begin
                               Set_Etype (Discriminant, Etype (Disc));
 
@@ -9869,6 +9878,7 @@ package body Exp_Dist is
                                   Expression =>
                                     Build_To_Any_Call (Discriminant, Decls)));
                            end;
+
                            Counter := Counter + 1;
                            Next_Discriminant (Disc);
                         end loop;
