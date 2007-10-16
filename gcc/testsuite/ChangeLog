@@ -1,5 +1,12 @@
 2007-10-16  Paolo Carlini  <pcarlini@suse.de>
 
+	PR c++/28639
+	PR c++/30299
+	* g++.dg/template/void12.C: New.
+	* g++.dg/template/void13.C: New.
+
+2007-10-16  Paolo Carlini  <pcarlini@suse.de>
+
 	PR c++/31446
 	* g++.dg/template/void11.C: New.
 	* g++.dg/template/void2.C: Adjust error markers.
