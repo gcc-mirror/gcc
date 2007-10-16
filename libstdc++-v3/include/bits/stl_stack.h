@@ -127,9 +127,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Default constructor creates no elements.
        */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       explicit
       stack(const _Sequence& __c = _Sequence())
       : c(__c) { }
+#else
+      explicit
+      stack(const _Sequence& __c)
+      : c(__c) { }
+
+      explicit
+      stack(_Sequence&& __c = _Sequence())
+      : c(std::move(__c)) { }
+#endif
 
       /**
        *  Returns true if the %stack is empty.
@@ -178,6 +188,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       push(const value_type& __x)
       { c.push_back(__x); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      push(value_type&& __x)
+      { c.push_back(std::move(__x)); }
+#endif
+
       /**
        *  @brief  Removes first element.
        *
@@ -195,6 +211,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__glibcxx_requires_nonempty();
 	c.pop_back();
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      swap(stack&& __s)
+      { c.swap(__s.c); }
+#endif
     };
 
   /**
@@ -255,6 +277,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline bool
     operator>=(const stack<_Tp, _Seq>& __x, const stack<_Tp, _Seq>& __y)
     { return !(__x < __y); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Seq>
+    inline void
+    swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Tp, typename _Seq>
+    inline void
+    swap(stack<_Tp, _Seq>&& __x, stack<_Tp, _Seq>& __y)
+    { __x.swap(__y); }
+
+  template<typename _Tp, typename _Seq>
+    inline void
+    swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>&& __y)
+    { __x.swap(__y); }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 
