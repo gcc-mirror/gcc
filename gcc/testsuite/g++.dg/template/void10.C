@@ -7,4 +7,4 @@ template<void> struct A                 // { dg-error "not a valid type" }
 
 template<typename> struct B {};
 
-B<int> b;                              // { dg-error "template argument|invalid type" }
+B<int> b;

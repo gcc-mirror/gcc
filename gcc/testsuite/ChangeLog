@@ -1,3 +1,11 @@
+2007-10-16  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/31446
+	* g++.dg/template/void11.C: New.
+	* g++.dg/template/void2.C: Adjust error markers.
+	* g++.dg/template/void10.C: Likewise.
+	* g++.dg/template/crash55.C: Likewise.
+
 2007-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/opt/const5.C: New test.
