@@ -3136,8 +3136,8 @@ current_template_args (void)
                           TREE_TYPE (t) = type;
                         }
                     }
+		  TREE_VEC_ELT (a, i) = t;
                 }
-	      TREE_VEC_ELT (a, i) = t;
 	    }
 	}
 
