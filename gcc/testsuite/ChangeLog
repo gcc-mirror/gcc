@@ -1,3 +1,7 @@
+2007-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/opt/const5.C: New test.
+
 2007-10-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/33354

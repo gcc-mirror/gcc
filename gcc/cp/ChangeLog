@@ -1,3 +1,8 @@
+2007-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (start_decl_1): Call cp_apply_type_quals_to_decl after
+	completing the type.
+
 2007-10-13  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/26698

@@ -4025,10 +4025,19 @@ start_decl (const cp_declarator *declarator,
   return tem;
 }
 
+/* Process the declaration of a variable DECL.  INITIALIZED is true
+   iff DECL is explicitly initialized.  (INITIALIZED is false if the
+   variable is initialized via an implicitly-called constructor.)
+   This function must be called for ordinary variables (including, for
+   example, implicit instantiations of templates), but must not be
+   called for template declarations.  */
+
 void
 start_decl_1 (tree decl, bool initialized)
 {
   tree type;
+  bool complete_p;
+  bool aggregate_definition_p;
 
   gcc_assert (!processing_template_decl);
 
@@ -4036,21 +4045,37 @@ start_decl_1 (tree decl, bool initialized)
     return;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
+
   type = TREE_TYPE (decl);
+  complete_p = COMPLETE_TYPE_P (type);
+  aggregate_definition_p = IS_AGGR_TYPE (type) && !DECL_EXTERNAL (decl);
+
+  /* If an explicit initializer is present, or if this is a definition
+     of an aggregate, then we need a complete type at this point.
+     (Scalars are always complete types, so there is nothing to
+     check.)  This code just sets COMPLETE_P; errors (if necessary)
+     are issued below.  */
+  if ((initialized || aggregate_definition_p) 
+      && !complete_p
+      && COMPLETE_TYPE_P (complete_type (type)))
+    {
+      complete_p = true;
+      /* We will not yet have set TREE_READONLY on DECL if the type
+	 was "const", but incomplete, before this point.  But, now, we
+	 have a complete type, so we can try again.  */
+      cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
+    }
 
   if (initialized)
-    /* Is it valid for this decl to have an initializer at all?
-       If not, set INITIALIZED to zero, which will indirectly
-       tell `cp_finish_decl' to ignore the initializer once it is parsed.  */
+    /* Is it valid for this decl to have an initializer at all?  */
     {
       /* Don't allow initializations for incomplete types except for
 	 arrays which might be completed by the initialization.  */
-      if (COMPLETE_TYPE_P (complete_type (type)))
+      if (complete_p)
 	;			/* A complete type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
 	  error ("variable %q#D has initializer but incomplete type", decl);
-	  initialized = 0;
 	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
@@ -4058,30 +4083,15 @@ start_decl_1 (tree decl, bool initialized)
 	  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
 	    error ("elements of array %q#D have incomplete type", decl);
 	  /* else we already gave an error in start_decl.  */
-	  initialized = 0;
 	}
     }
-  else if (IS_AGGR_TYPE (type)
-	   && ! DECL_EXTERNAL (decl))
+  else if (aggregate_definition_p && !complete_p)
     {
-      if (!COMPLETE_TYPE_P (complete_type (type)))
-	{
-	  error ("aggregate %q#D has incomplete type and cannot be defined",
-		 decl);
-	  /* Change the type so that assemble_variable will give
-	     DECL an rtl we can live with: (mem (const_int 0)).  */
-	  type = TREE_TYPE (decl) = error_mark_node;
-	}
-      else
-	{
-	  /* If any base type in the hierarchy of TYPE needs a constructor,
-	     then we set initialized to 1.  This way any nodes which are
-	     created for the purposes of initializing this aggregate
-	     will live as long as it does.  This is necessary for global
-	     aggregates which do not have their initializers processed until
-	     the end of the file.  */
-	  initialized = TYPE_NEEDS_CONSTRUCTING (type);
-	}
+      error ("aggregate %q#D has incomplete type and cannot be defined",
+	     decl);
+      /* Change the type so that assemble_variable will give
+	 DECL an rtl we can live with: (mem (const_int 0)).  */
+      type = TREE_TYPE (decl) = error_mark_node;
     }
 
   /* Create a new scope to hold this declaration if necessary.
