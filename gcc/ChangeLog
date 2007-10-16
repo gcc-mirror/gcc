@@ -1,3 +1,11 @@
+2007-10-16  Eric B. Weddington  <eweddington@cso.atmel.com>
+
+	* config/avr/avr.c (avr_mcu_types): Add at90pwm216, at90pwm316.
+	* config/avr/avr.h (LINK_SPEC): Likewise and remove regex for
+	similar devices.
+	(CRT_BINUTILS_SPECS): Likewsie.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+
 2007-10-16  Amruth Laxman  <amruth.laxman@nsn.com>
 
 	PR target/33594
