@@ -2182,7 +2182,7 @@ enum may_trap_p_flags
    cannot trap at its current location, but it might become trapping if moved
    elsewhere.  */
 
-static int
+int
 may_trap_p_1 (const_rtx x, unsigned flags)
 {
   int i;
@@ -2209,8 +2209,11 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case SCRATCH:
       return 0;
 
-    case ASM_INPUT:
+    case UNSPEC:
     case UNSPEC_VOLATILE:
+      return targetm.unspec_may_trap_p (x, flags);
+
+    case ASM_INPUT:
     case TRAP_IF:
       return 1;
 

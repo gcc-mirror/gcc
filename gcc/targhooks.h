@@ -19,6 +19,8 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void default_external_libcall (rtx);
 
+extern int default_unspec_may_trap_p (const_rtx, unsigned);
+
 extern enum machine_mode default_cc_modes_compatible (enum machine_mode,
 						      enum machine_mode);
 

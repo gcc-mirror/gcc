@@ -75,6 +75,26 @@ default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
 #endif
 }
 
+int
+default_unspec_may_trap_p (const_rtx x, unsigned flags)
+{
+  int i;
+
+  if (GET_CODE (x) == UNSPEC_VOLATILE
+      /* Any floating arithmetic may trap.  */
+      || (SCALAR_FLOAT_MODE_P (GET_MODE (x))
+	  && flag_trapping_math))
+    return 1;
+
+  for (i = 0; i < XVECLEN (x, 0); ++i)
+    {
+      if (may_trap_p_1 (XVECEXP (x, 0, i), flags))
+	return 1;
+    }
+
+  return 0;
+}
+
 enum machine_mode
 default_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
 {

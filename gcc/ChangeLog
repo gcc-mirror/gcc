@@ -1,3 +1,20 @@
+2007-10-16  Paolo Bonzini  <bonzini@gnu.org>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* target.h (unspec_may_trap_p): New target hook.
+	* target-def.h (TARGET_UNSPEC_MAY_TRAP_P): New macro.
+	* targhooks.c (default_unspec_may_trap_p): Default implementation of
+	the hook.
+	* targhooks.h (default_unspec_may_trap_p): Declare it.
+	* doc/tm.texi (TARGET_UNSPEC_MAY_TRAP_P): Document new hook.
+	* rtlanal.c (may_trap_p_1): Use new hook.  Make global.
+	* rtl.h (may_trap_p_1): Declare.
+	
+	* config/ia64/ia64.c (ia64_unspec_may_trap_p): New function to
+	override default hook implementation.
+	(TARGET_UNSPEC_MAY_TRAP_P): Override default implementation of the
+	hook.
+
 2007-10-16  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Wextra): Move it just after Wall, list the

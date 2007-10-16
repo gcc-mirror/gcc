@@ -652,6 +652,10 @@ struct gcc_target
      value.  */
   rtx (* allocate_initial_value) (rtx x);
 
+  /* Return nonzero if evaluating UNSPEC[_VOLATILE] X might cause a trap.
+     FLAGS has the same meaning as in rtlanal.c: may_trap_p_1.  */
+  int (* unspec_may_trap_p) (const_rtx x, unsigned flags);
+
   /* Given a register, this hook should return a parallel of registers
      to represent where to find the register pieces.  Define this hook
      if the register and its mode are represented in Dwarf in
