@@ -1,5 +1,29 @@
 2007-10-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_queue.h (queue<>::queue(_Sequence&&),
+	queue<>::queue(queue&&), queue<>::operator=(queue&&),
+	queue<>::push(value_type&&), queue<>::swap(queue&&),
+	swap(queue<>&, queue<>&), swap(queue<>&&, queue<>&),
+	swap(queue<>&, queue<>&&), priority_queue<>::
+	priority_queue(const _Compare&, _Sequence&&),
+	priority_queue<>::priority_queue(_InputIterator, _InputIterator,
+	const _Compare&, _Sequence&&),
+	priority_queue<>::priority_queue(priority_queue&&),
+	priority_queue<>::operator=(priority_queue&&),
+	priority_queue<>::push(value_type&&),
+	priority_queue<>::swap(priority_queue&&),
+	swap(priority_queue<>&, priority_queue<>&),
+	swap(priority_queue<>&&, priority_queue<>&),
+	swap(priority_queue<>&, priority_queue<>&&)): Add.
+	* include/bits/stl_stack.h (stack<>::stack(_Sequence&&),
+	stack<>::push(value_type&&), stack<>::swap(stack&&),
+	swap(stack<>&, stack<>&), swap(stack<>&&, stack<>&),
+	swap(stack<>&, stack<>&&)): Add.
+	* testsuite/23_containers/queue/moveable.cc: New.
+	* testsuite/23_containers/priority_queue/moveable.cc: Likewise.
+
+2007-10-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/vstring.h (__versa_string<>::
 	__versa_string(__versa_string&&),
 	__versa_string<>::operator=(__versa_string&&,
