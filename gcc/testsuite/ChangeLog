@@ -1,3 +1,8 @@
+2007-10-15  Paolo Bonzini  <bonzini@gnu.org>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.target/ia64/20040709-2.c: New test.
+
 2007-10-15  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/gamma_5.f90: xfail on FreeBSD

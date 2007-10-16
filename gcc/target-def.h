@@ -480,6 +480,8 @@
 #define TARGET_MANGLE_TYPE hook_constcharptr_const_tree_null
 #define TARGET_ALLOCATE_INITIAL_VALUE NULL
 
+#define TARGET_UNSPEC_MAY_TRAP_P default_unspec_may_trap_p
+
 #ifndef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION hook_void_tree
 #endif
@@ -741,6 +743,7 @@
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
   TARGET_ALLOCATE_INITIAL_VALUE,		\
+  TARGET_UNSPEC_MAY_TRAP_P,                     \
   TARGET_DWARF_REGISTER_SPAN,                   \
   TARGET_INIT_DWARF_REG_SIZES_EXTRA,		\
   TARGET_FIXED_CONDITION_CODE_REGS,		\

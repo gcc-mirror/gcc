@@ -1739,6 +1739,7 @@ extern void remove_reg_equal_equiv_notes (rtx);
 extern int side_effects_p (const_rtx);
 extern int volatile_refs_p (const_rtx);
 extern int volatile_insn_p (const_rtx);
+extern int may_trap_p_1 (const_rtx, unsigned);
 extern int may_trap_p (const_rtx);
 extern int may_trap_after_code_motion_p (const_rtx);
 extern int may_trap_or_fault_p (const_rtx);

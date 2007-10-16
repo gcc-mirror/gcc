@@ -10151,6 +10151,15 @@ The default value of this hook is @code{NULL}, which disables any special
 allocation.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_UNSPEC_MAY_TRAP_P (const_rtx @var{x}, unsigned @var{flags})
+This target hook returns nonzero if @var{x}, an @code{unspec} or
+@code{unspec_volatile} operation, might cause a trap.  Targets can use
+this hook to enhance precision of analysis for @code{unspec} and
+@code{unspec_volatile} operations.  You may call @code{may_trap_p_1}
+to analyze inner elements of @var{x} in which case @var{flags} should be
+passed along.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_SET_CURRENT_FUNCTION (tree @var{decl})
 The compiler invokes this hook whenever it changes its current function 
 context (@code{cfun}).  You can define this function if

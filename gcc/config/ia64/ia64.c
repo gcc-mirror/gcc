@@ -203,6 +203,7 @@ static int ia64_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 static bool ia64_function_ok_for_sibcall (tree, tree);
 static bool ia64_return_in_memory (const_tree, const_tree);
 static bool ia64_rtx_costs (rtx, int, int, int *);
+static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
 static bool ia64_handle_option (size_t, const char *, int);
 static struct machine_function * ia64_init_machine_status (void);
@@ -408,6 +409,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_RTX_COSTS ia64_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_UNSPEC_MAY_TRAP_P
+#define TARGET_UNSPEC_MAY_TRAP_P ia64_unspec_may_trap_p
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG ia64_reorg
@@ -5070,6 +5074,29 @@ ia64_secondary_reload_class (enum reg_class class,
     }
 
   return NO_REGS;
+}
+
+
+/* Implement targetm.unspec_may_trap_p hook.  */
+static int
+ia64_unspec_may_trap_p (const_rtx x, unsigned flags)
+{
+  if (GET_CODE (x) == UNSPEC)
+    {
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_LDA:
+	case UNSPEC_LDS:
+	case UNSPEC_LDSA:
+	case UNSPEC_LDCCLR:
+	case UNSPEC_CHKACLR:
+	case UNSPEC_CHKS:
+	  /* These unspecs are just wrappers.  */
+	  return may_trap_p_1 (XVECEXP (x, 0, 0), flags);
+	}
+    }
+
+  return default_unspec_may_trap_p (x, flags);
 }
 
 
