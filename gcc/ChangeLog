@@ -1,3 +1,13 @@
+2007-10-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* dce.c (init_dce): Only initialize the obstacks for the fast pass.
+	(fini_dce): Only release them for the fast pass.
+	(end_ud_dce): Delete.
+	(rest_of_handle_ud_dce): Do not modify df_in_progress.
+	Call fini_dce instead of end_ud_dce.
+	(rest_of_handle_fast_dce): Do not modify df_in_progress.
+	(run_fast_df_dce): Reset df_in_progress to false on exit.
+
 2007-10-16  Paolo Bonzini  <bonzini@gnu.org>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
