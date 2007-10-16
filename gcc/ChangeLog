@@ -1,3 +1,8 @@
+2007-10-16  Amruth Laxman  <amruth.laxman@nsn.com>
+
+	PR target/33594
+	* config/sparc/sparc.h (LOCAL_ALIGNMENT): Define.
+
 2007-10-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* dce.c (init_dce): Only initialize the obstacks for the fast pass.
