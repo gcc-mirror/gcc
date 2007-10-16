@@ -3914,20 +3914,20 @@ groktypename (cp_decl_specifier_seq *type_specifiers,
   return type;
 }
 
-/* Decode a declarator in an ordinary declaration or data definition.
-   This is called as soon as the type information and variable name
-   have been parsed, before parsing the initializer if any.
-   Here we create the ..._DECL node, fill in its type,
-   and put it on the list of decls for the current context.
-   The ..._DECL node is returned as the value.
-
-   Exception: for arrays where the length is not specified,
-   the type is left null, to be filled in by `cp_finish_decl'.
-
-   Function definitions do not come here; they go to start_function
-   instead.  However, external and forward declarations of functions
-   do go through here.  Structure field declarations are done by
-   grokfield and not through here.  */
+/* Process a DECLARATOR for a function-scope variable declaration,
+   namespace-scope variable declaration, or function declaration.
+   (Function definitions go through start_function; class member
+   declarations appearing in the body of the class go through
+   grokfield.)  The DECL corresponding to the DECLARATOR is returned.
+   If an error occurs, the error_mark_node is returned instead.
+   
+   DECLSPECS are the decl-specifiers for the declaration.  INITIALIZED
+   is true if an explicit initializer is present, but false if this is
+   a variable implicitly initialized via a default constructor.
+   ATTRIBUTES and PREFIX_ATTRIBUTES are GNU attributes associated with
+   this declaration.  *PUSHED_SCOPE_P is set to the scope entered in
+   this function, if any; if set, the caller is responsible for
+   calling pop_scope.  */
 
 tree
 start_decl (const cp_declarator *declarator,
@@ -3938,7 +3938,7 @@ start_decl (const cp_declarator *declarator,
 	    tree *pushed_scope_p)
 {
   tree decl;
-  tree type, tem;
+  tree type;
   tree context;
   bool was_public;
 
@@ -4099,11 +4099,11 @@ start_decl (const cp_declarator *declarator,
   was_public = TREE_PUBLIC (decl);
 
   /* Enter this declaration into the symbol table.  */
-  tem = maybe_push_decl (decl);
+  decl = maybe_push_decl (decl);
 
   if (processing_template_decl)
-    tem = push_template_decl (tem);
-  if (tem == error_mark_node)
+    decl = push_template_decl (decl);
+  if (decl == error_mark_node)
     return error_mark_node;
 
   /* Tell the back end to use or not use .common as appropriate.  If we say
@@ -4112,33 +4112,42 @@ start_decl (const cp_declarator *declarator,
      produce errors about redefs; to do this we force variables into the
      data segment.  */
   if (flag_conserve_space
-      && TREE_CODE (tem) == VAR_DECL
-      && TREE_PUBLIC (tem)
-      && !DECL_THREAD_LOCAL_P (tem)
+      && TREE_CODE (decl) == VAR_DECL
+      && TREE_PUBLIC (decl)
+      && !DECL_THREAD_LOCAL_P (decl)
       && !have_global_bss_p ())
-    DECL_COMMON (tem) = 1;
+    DECL_COMMON (decl) = 1;
 
-  if (TREE_CODE (tem) == VAR_DECL
-      && DECL_NAMESPACE_SCOPE_P (tem) && !TREE_PUBLIC (tem) && !was_public
-      && !DECL_THIS_STATIC (tem) && !DECL_ARTIFICIAL (tem))
+  if (TREE_CODE (decl) == VAR_DECL
+      && DECL_NAMESPACE_SCOPE_P (decl) && !TREE_PUBLIC (decl) && !was_public
+      && !DECL_THIS_STATIC (decl) && !DECL_ARTIFICIAL (decl))
     {
       /* This is a const variable with implicit 'static'.  Set
 	 DECL_THIS_STATIC so we can tell it from variables that are
 	 !TREE_PUBLIC because of the anonymous namespace.  */
-      gcc_assert (cp_type_readonly (TREE_TYPE (tem)));
-      DECL_THIS_STATIC (tem) = 1;
+      gcc_assert (cp_type_readonly (TREE_TYPE (decl)));
+      DECL_THIS_STATIC (decl) = 1;
     }
 
-  if (!processing_template_decl && TREE_CODE (tem) == VAR_DECL)
-    start_decl_1 (tem, initialized);
+  if (!processing_template_decl && TREE_CODE (decl) == VAR_DECL)
+    start_decl_1 (decl, initialized);
 
-  return tem;
+  return decl;
 }
+
+/* Process the declaration of a variable DECL.  INITIALIZED is true
+   iff DECL is explicitly initialized.  (INITIALIZED is false if the
+   variable is initialized via an implicitly-called constructor.)
+   This function must be called for ordinary variables (including, for
+   example, implicit instantiations of templates), but must not be
+   called for template declarations.  */
 
 void
 start_decl_1 (tree decl, bool initialized)
 {
   tree type;
+  bool complete_p;
+  bool aggregate_definition_p;
 
   gcc_assert (!processing_template_decl);
 
@@ -4146,21 +4155,37 @@ start_decl_1 (tree decl, bool initialized)
     return;
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
+
   type = TREE_TYPE (decl);
+  complete_p = COMPLETE_TYPE_P (type);
+  aggregate_definition_p = IS_AGGR_TYPE (type) && !DECL_EXTERNAL (decl);
+
+  /* If an explicit initializer is present, or if this is a definition
+     of an aggregate, then we need a complete type at this point.
+     (Scalars are always complete types, so there is nothing to
+     check.)  This code just sets COMPLETE_P; errors (if necessary)
+     are issued below.  */
+  if ((initialized || aggregate_definition_p) 
+      && !complete_p
+      && COMPLETE_TYPE_P (complete_type (type)))
+    {
+      complete_p = true;
+      /* We will not yet have set TREE_READONLY on DECL if the type
+	 was "const", but incomplete, before this point.  But, now, we
+	 have a complete type, so we can try again.  */
+      cp_apply_type_quals_to_decl (cp_type_quals (type), decl);
+    }
 
   if (initialized)
-    /* Is it valid for this decl to have an initializer at all?
-       If not, set INITIALIZED to zero, which will indirectly
-       tell `cp_finish_decl' to ignore the initializer once it is parsed.  */
+    /* Is it valid for this decl to have an initializer at all?  */
     {
       /* Don't allow initializations for incomplete types except for
 	 arrays which might be completed by the initialization.  */
-      if (COMPLETE_TYPE_P (complete_type (type)))
+      if (complete_p)
 	;			/* A complete type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
 	  error ("variable %q#D has initializer but incomplete type", decl);
-	  initialized = 0;
 	  type = TREE_TYPE (decl) = error_mark_node;
 	}
       else if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
@@ -4168,30 +4193,15 @@ start_decl_1 (tree decl, bool initialized)
 	  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
 	    error ("elements of array %q#D have incomplete type", decl);
 	  /* else we already gave an error in start_decl.  */
-	  initialized = 0;
 	}
     }
-  else if (IS_AGGR_TYPE (type)
-	   && ! DECL_EXTERNAL (decl))
+  else if (aggregate_definition_p && !complete_p)
     {
-      if (!COMPLETE_TYPE_P (complete_type (type)))
-	{
-	  error ("aggregate %q#D has incomplete type and cannot be defined",
-		 decl);
-	  /* Change the type so that assemble_variable will give
-	     DECL an rtl we can live with: (mem (const_int 0)).  */
-	  type = TREE_TYPE (decl) = error_mark_node;
-	}
-      else
-	{
-	  /* If any base type in the hierarchy of TYPE needs a constructor,
-	     then we set initialized to 1.  This way any nodes which are
-	     created for the purposes of initializing this aggregate
-	     will live as long as it does.  This is necessary for global
-	     aggregates which do not have their initializers processed until
-	     the end of the file.  */
-	  initialized = TYPE_NEEDS_CONSTRUCTING (type);
-	}
+      error ("aggregate %q#D has incomplete type and cannot be defined",
+	     decl);
+      /* Change the type so that assemble_variable will give
+	 DECL an rtl we can live with: (mem (const_int 0)).  */
+      type = TREE_TYPE (decl) = error_mark_node;
     }
 
   /* Create a new scope to hold this declaration if necessary.
@@ -9113,9 +9123,9 @@ grokdeclarator (const cp_declarator *declarator,
     else if (storage_class == sc_static)
       DECL_THIS_STATIC (decl) = 1;
 
-    /* Record constancy and volatility.  There's no need to do this
-       when processing a template; we'll do this for the instantiated
-       declaration based on the type of DECL.  */
+    /* Record constancy and volatility on the DECL itself .  There's
+       no need to do this when processing a template; we'll do this
+       for the instantiated declaration based on the type of DECL.  */
     if (!processing_template_decl)
       cp_apply_type_quals_to_decl (type_quals, decl);
 

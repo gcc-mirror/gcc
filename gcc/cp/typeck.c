@@ -6976,7 +6976,18 @@ cp_has_mutable_p (const_tree type)
   return CLASS_TYPE_P (type) && CLASSTYPE_HAS_MUTABLE (type);
 }
 
-/* Apply the TYPE_QUALS to the new DECL.  */
+/* Set TREE_READONLY and TREE_VOLATILE on DECL as indicated by the
+   TYPE_QUALS.  For a VAR_DECL, this may be an optimistic
+   approximation.  In particular, consider:
+
+     int f();
+     struct S { int i; };
+     const S s = { f(); }
+
+   Here, we will make "s" as TREE_READONLY (because it is declared
+   "const") -- only to reverse ourselves upon seeing that the
+   initializer is non-constant.  */
+
 void
 cp_apply_type_quals_to_decl (int type_quals, tree decl)
 {
