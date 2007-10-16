@@ -1,3 +1,11 @@
+2007-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (cp_apply_type_quals_to_decl): Expand documentation.
+	* decl.c (start_decl): Tidy.
+	(start_decl_1): Call cp_apply_type_quals_to_decl after completing
+	the type.
+	(grokdeclarator): Clarify comment.
+
 2007-10-14  Andrew Pinski  <pinskia@gmail.com>
 
 	PR c++/30303

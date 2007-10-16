@@ -1,3 +1,7 @@
+2007-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/opt/const-5.C: New test.
+
 2007-10-15  Paolo Bonzini  <bonzini@gnu.org>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 
