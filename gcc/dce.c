@@ -42,7 +42,8 @@ DEF_VEC_ALLOC_I(int,heap);
    Core mark/delete routines
    ------------------------------------------------------------------------- */
 
-/* The data-flow information needed by this pass.  */
+/* True if we are invoked while the df engine is running; in this case,
+   we don't want to reenter it.  */
 static bool df_in_progress = false;
 
 /* True if we deleted at least one instruction.  */
@@ -52,10 +53,13 @@ static bool something_changed;
    yet been processed.  */
 static VEC(rtx,heap) *worklist;
 
+/* Bitmap of instructions marked as needed indexed by INSN_UID.  */
+static sbitmap marked;
+
+/* Bitmap obstacks used for block processing by the fast algorithm.  */
 static bitmap_obstack dce_blocks_bitmap_obstack;
 static bitmap_obstack dce_tmp_bitmap_obstack;
 
-static sbitmap marked = NULL;
 
 /* A subroutine for which BODY is part of the instruction being tested;
    either the top-level pattern, or an element of a PARALLEL.  The
@@ -87,6 +91,7 @@ deletable_insn_p_1 (rtx body)
       return true;
     }
 }
+
 
 /* Return true if INSN is a normal instruction that can be deleted by
    the DCE pass.  */
@@ -133,7 +138,7 @@ deletable_insn_p (rtx insn, bool fast)
 }
 
 
-/* Return true if INSN has not been marked as needed.  */
+/* Return true if INSN has been marked as needed.  */
 
 static inline int
 marked_insn_p (rtx insn)
@@ -198,28 +203,6 @@ mark_nonreg_stores (rtx body, rtx insn, bool fast)
 }
 
 
-/* Initialize global variables for a new DCE pass.  */
-
-static void
-init_dce (bool fast)
-{
-  if (!df_in_progress)
-    {
-      if (!fast)
-	df_chain_add_problem (DF_UD_CHAIN);
-      df_analyze ();
-    }
-
-  if (dump_file)
-    df_dump (dump_file);
-
-  bitmap_obstack_initialize (&dce_blocks_bitmap_obstack);
-  bitmap_obstack_initialize (&dce_tmp_bitmap_obstack);
-  marked = sbitmap_alloc (get_max_uid () + 1);
-  sbitmap_zero (marked);
-}
-
-
 /* Delete all REG_EQUAL notes of the registers INSN writes, to prevent
    bad dangling REG_EQUAL notes. */
 
@@ -263,6 +246,7 @@ delete_unmarked_insns (void)
   rtx insn, next;
 
   something_changed = false;
+
   FOR_EACH_BB (bb)
     FOR_BB_INSNS_SAFE (bb, insn, next)
       if (INSN_P (insn))
@@ -309,6 +293,7 @@ delete_unmarked_insns (void)
 
 /* Mark all insns using DELETE_PARM in the libcall that contains
    START_INSN.  */
+
 static void 
 mark_libcall (rtx start_insn, bool delete_parm)
 {
@@ -416,6 +401,7 @@ mark_artificial_uses (void)
     }
 }
 
+
 /* Mark every instruction that defines a register value that INSN uses.  */
 
 static void
@@ -443,11 +429,44 @@ mark_reg_dependencies (rtx insn)
 }
 
 
+/* Initialize global variables for a new DCE pass.  */
+
 static void
-end_ud_dce (void)
+init_dce (bool fast)
+{
+  if (!df_in_progress)
+    {
+      if (!fast)
+	df_chain_add_problem (DF_UD_CHAIN);
+      df_analyze ();
+    }
+
+  if (dump_file)
+    df_dump (dump_file);
+
+  if (fast)
+    {
+      bitmap_obstack_initialize (&dce_blocks_bitmap_obstack);
+      bitmap_obstack_initialize (&dce_tmp_bitmap_obstack);
+    }
+
+  marked = sbitmap_alloc (get_max_uid () + 1);
+  sbitmap_zero (marked);
+}
+
+
+/* Free the data allocated by init_dce.  */
+
+static void
+fini_dce (bool fast)
 {
   sbitmap_free (marked);
-  gcc_assert (VEC_empty (rtx, worklist));
+
+  if (fast)
+    {
+      bitmap_obstack_release (&dce_blocks_bitmap_obstack);
+      bitmap_obstack_release (&dce_tmp_bitmap_obstack);
+    }
 }
 
 
@@ -458,7 +477,6 @@ rest_of_handle_ud_dce (void)
 {
   rtx insn;
 
-  df_in_progress = false;
   init_dce (false);
 
   prescan_insns_for_dce (false);
@@ -468,12 +486,13 @@ rest_of_handle_ud_dce (void)
       insn = VEC_pop (rtx, worklist);
       mark_reg_dependencies (insn);
     }
+
   /* Before any insns are deleted, we must remove the chains since
      they are not bidirectional.  */
   df_remove_problem (df_chain);
   delete_unmarked_insns ();
 
-  end_ud_dce ();
+  fini_dce (false);
   return 0;
 }
 
@@ -503,25 +522,12 @@ struct tree_opt_pass pass_ud_rtl_dce =
   'w'                                   /* letter */
 };
 
+
 /* -------------------------------------------------------------------------
    Fast DCE functions
    ------------------------------------------------------------------------- */
 
-
-/* Free the data allocated by init_dce.  */
-
-static void
-fini_dce (void)
-{
-  sbitmap_free (marked);
-  bitmap_obstack_release (&dce_blocks_bitmap_obstack);
-  bitmap_obstack_release (&dce_tmp_bitmap_obstack);
-  df_in_progress = false;
-}
-
-
-/* Process basic block BB.  Return true if the live_in set has
-   changed.  */
+/* Process basic block BB.  Return true if the live_in set has changed.  */
 
 static bool
 dce_process_block (basic_block bb, bool redo_out)
@@ -655,12 +661,14 @@ dce_process_block (basic_block bb, bool redo_out)
   return block_changed;
 }
 
+
+/* Perform fast DCE once initialization is done.  */
+
 static void
 fast_dce (void)
 {
   int *postorder = df_get_postorder (DF_BACKWARD);
   int n_blocks = df_get_n_blocks (DF_BACKWARD);
-  int i;
   /* The set of blocks that have been seen on this iteration.  */
   bitmap processed = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   /* The set of blocks that need to have the out vectors reset because
@@ -668,8 +676,7 @@ fast_dce (void)
   bitmap redo_out = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   bitmap all_blocks = BITMAP_ALLOC (&dce_blocks_bitmap_obstack);
   bool global_changed = true;
-
-  int loop_count = 0;
+  int i, loop_count = 0;
 
   prescan_insns_for_dce (true);
 
@@ -745,15 +752,14 @@ fast_dce (void)
 }
 
 
-/* Callback for running pass_rtl_dce.  */
+/* Fast DCE.  */
 
 static unsigned int
 rest_of_handle_fast_dce (void)
 {
   init_dce (true);
   fast_dce ();
-  fini_dce ();
-  df_in_progress = false;
+  fini_dce (true);
   return 0;
 }
 
@@ -765,8 +771,7 @@ rest_of_handle_fast_dce (void)
    info, and then returns to allow the rest of the problems to be run.
 
    This can be called by elsewhere but it will not update the bit
-   vectors for any other problems than LR.
-*/
+   vectors for any other problems than LR.  */
 
 void
 run_fast_df_dce (void)
@@ -781,9 +786,12 @@ run_fast_df_dce (void)
       
       df_in_progress = true;
       rest_of_handle_fast_dce ();
+      df_in_progress = false;
+
       df_set_flags (old_flags);
     }
 }
+
 
 static bool
 gate_fast_dce (void)
@@ -792,8 +800,7 @@ gate_fast_dce (void)
 }
 
 
-/* Run a fast DCE pass and return true if any instructions were
-   deleted.  */
+/* Run a fast DCE pass and return true if any instructions were deleted.  */
 
 bool
 run_fast_dce (void)
@@ -820,4 +827,3 @@ struct tree_opt_pass pass_fast_rtl_dce =
   TODO_ggc_collect,                     /* todo_flags_finish */
   'w'                                   /* letter */
 };
-
