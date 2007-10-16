@@ -1,3 +1,66 @@
+2007-10-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/vstring.h (__versa_string<>::
+	__versa_string(__versa_string&&),
+	__versa_string<>::operator=(__versa_string&&,
+	swap(__versa_string<>&&, __versa_string<>&),
+	swap(__versa_string<>(&, __versa_string<>&&)): Add.
+	(__versa_string<>::swap(__versa_string&&)): Adjust for C++0x.
+	* include/ext/sso_string_base.h
+	(__sso_string_base(__sso_string_base&&)): Add.
+	(__sso_string_base()): Use _Alloc_hider(_CharT*).
+	* include/ext/rc_string_base.h (__rc_string_base(__rc_string_base&&)):
+	Add.
+	(__rc_string_base()): Use _Alloc_hider(_CharT*).
+	* include/ext/vstring_util.h (_Alloc_hider::_Alloc_hider(_CharT*)):
+	Add.
+	* testsuite/ext/vstring/moveable.cc: Add.
+
+	* include/bits/stl_tree.h (_Rb_tree(_Rb_tree&&)): Add.
+	* include/bits/stl_map.h (map<>::map(map&&)): Forward to the latter.
+	* include/bits/stl_set.h (set<>::set(set&&)): Likewise.
+	* include/bits/stl_multimap.h (multimap<>::multimap(multimap&&)):
+	Likewise.
+	* include/bits/stl_multiset.h (multiset<>::multiset(multiset&&)):
+	Likewise.
+	* include/bits/stl_deque.h (_Deque_base<>::_Deque_base(_Deque_base&&)):
+	Add.
+	(deque<>::deque(deque&&)): Forward to the latter.
+	* include/bits/stl_list.h (_List_base<>::_List_base(_List_base&&)):
+	Add.
+	(list<>::list(list&&)): Forward to the latter.
+	* include/bits/stl_vector.h
+	(_Vector_base<>::_Vector_base(_Vector_base&&)): Add.
+	(vector<>::vector(vector&&)): Forward to the latter.
+	* include/bits/stl_bvector.h
+	(_Bvector_base<>::_Bvector_base(_Bvector_base&&)): Add.
+	(vector<bool>::vector(vector&&)): Forward to the latter.
+
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust dg-error lines.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
 2007-10-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/debug/set.h (set<>::cbegin, cend, crbegin, crend): Add.

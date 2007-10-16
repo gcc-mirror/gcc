@@ -607,6 +607,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Rb_tree(_Rb_tree&& __x);
+#endif
+
       ~_Rb_tree()
       { _M_erase(_M_begin()); }
 
@@ -818,6 +822,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     swap(_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
 	 _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Key, typename _Val, typename _KeyOfValue,
+           typename _Compare, typename _Alloc>
+    _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
+    _Rb_tree(_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&& __x)
+    : _M_impl(__x._M_impl._M_key_compare, __x._M_get_Node_allocator())
+    {
+      if (__x._M_root() != 0)
+	{
+	  _M_root() = __x._M_root();
+	  _M_leftmost() = __x._M_leftmost();
+	  _M_rightmost() = __x._M_rightmost();
+	  _M_root()->_M_parent = _M_end();
+
+	  __x._M_root() = 0;
+	  __x._M_leftmost() = __x._M_end();
+	  __x._M_rightmost() = __x._M_end();
+
+	  this->_M_impl._M_node_count = __x._M_impl._M_node_count;
+	  __x._M_impl._M_node_count = 0;
+	}
+    }
+#endif
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>

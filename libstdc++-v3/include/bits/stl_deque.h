@@ -393,6 +393,21 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _M_impl(__a)
       { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Deque_base(_Deque_base&& __x)
+      : _M_impl(__x._M_get_Tp_allocator())
+      {
+	_M_initialize_map(0);
+	if (__x._M_impl._M_map)
+	  {
+	    std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
+	    std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
+	    std::swap(this->_M_impl._M_map, __x._M_impl._M_map);
+	    std::swap(this->_M_impl._M_map_size, __x._M_impl._M_map_size);
+	  }
+      }
+#endif
+
       ~_Deque_base();
 
     protected:
@@ -736,8 +751,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The contents of @a x are a valid, but unspecified %deque.
        */
       deque(deque&&  __x)
-      : _Base(__x._M_get_Tp_allocator(), 0)
-      { this->swap(__x); }
+      : _Base(std::forward<_Base>(__x)) { }
 #endif
 
       /**

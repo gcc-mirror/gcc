@@ -351,6 +351,15 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       : _M_impl(__a)
       { _M_init(); }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _List_base(_List_base&& __x)
+      : _M_impl(__x._M_get_Node_allocator())
+      {
+	_M_init();
+	_List_node_base::swap(this->_M_impl._M_node, __x._M_impl._M_node);	
+      }
+#endif
+
       // This is what actually destroys the list.
       ~_List_base()
       { _M_clear(); }
@@ -521,8 +530,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The contents of @a x are a valid, but unspecified %list.
        */
       list(list&& __x)
-      : _Base(__x._M_get_Node_allocator())
-      { this->swap(__x); }
+      : _Base(std::forward<_Base>(__x)) { }
 #endif
 
       /**

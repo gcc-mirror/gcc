@@ -175,12 +175,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
 
       __sso_string_base()
-      : _M_dataplus(_Alloc(), _M_local_data)
+      : _M_dataplus(_M_local_data)
       { _M_set_length(0); }
 
       __sso_string_base(const _Alloc& __a);
 
       __sso_string_base(const __sso_string_base& __rcs);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      __sso_string_base(__sso_string_base&& __rcs);
+#endif
 
       __sso_string_base(size_type __n, _CharT __c, const _Alloc& __a);
 
@@ -335,6 +339,30 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     __sso_string_base(const __sso_string_base& __rcs)
     : _M_dataplus(__rcs._M_get_allocator(), _M_local_data)
     { _M_construct(__rcs._M_data(), __rcs._M_data() + __rcs._M_length()); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    __sso_string_base<_CharT, _Traits, _Alloc>::
+    __sso_string_base(__sso_string_base&& __rcs)
+    : _M_dataplus(__rcs._M_get_allocator(), _M_local_data)
+    {
+      if (__rcs._M_is_local())
+	{
+	  if (__rcs._M_length())
+	    traits_type::copy(_M_local_data, __rcs._M_local_data,
+			      _S_local_capacity + 1);
+	}
+      else
+	{
+	  _M_data(__rcs._M_data());
+	  _M_capacity(__rcs._M_allocated_capacity);
+	}
+
+      _M_length(__rcs._M_length());
+      __rcs._M_length(0);
+      __rcs._M_data(__rcs._M_local_data);
+    }
+#endif
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     __sso_string_base<_CharT, _Traits, _Alloc>::

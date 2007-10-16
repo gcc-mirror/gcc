@@ -416,6 +416,19 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _Bvector_base(const allocator_type& __a)
       : _M_impl(__a) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      _Bvector_base(_Bvector_base&& __x)
+      : _M_impl(__x._M_get_Bit_allocator())
+      {
+	this->_M_impl._M_start = __x._M_impl._M_start;
+	this->_M_impl._M_finish = __x._M_impl._M_finish;
+	this->_M_impl._M_end_of_storage = __x._M_impl._M_end_of_storage;
+	__x._M_impl._M_start = _Bit_iterator();
+	__x._M_impl._M_finish = _Bit_iterator();
+	__x._M_impl._M_end_of_storage = 0;
+      }
+#endif
+
       ~_Bvector_base()
       { this->_M_deallocate(); }
 
@@ -515,8 +528,7 @@ template<typename _Alloc>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     vector(vector&& __x)
-    : _Base(__x._M_get_Bit_allocator())
-    { this->swap(__x); }
+    : _Base(std::forward<_Base>(__x)) { }
 #endif
 
     template<typename _InputIterator>

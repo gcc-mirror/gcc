@@ -46,6 +46,7 @@
 #include <bits/ostream_insert.h>
 #include <bits/stl_iterator.h>
 #include <ext/numeric_traits.h>
+#include <bits/stl_move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
@@ -91,6 +92,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
         struct _Alloc_hider
 	: public _Alloc1
 	{
+	  _Alloc_hider(_CharT* __ptr)
+	  : _Alloc1(), _M_p(__ptr) { }
+
 	  _Alloc_hider(const _Alloc1& __a, _CharT* __ptr)
 	  : _Alloc1(__a), _M_p(__ptr) { }
 
