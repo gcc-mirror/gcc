@@ -301,11 +301,17 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { _M_rep()->_M_set_length(__n); }
 
       __rc_string_base()
-      : _M_dataplus(_Alloc(), _S_empty_rep._M_refcopy()) { }
+      : _M_dataplus(_S_empty_rep._M_refcopy()) { }
 
       __rc_string_base(const _Alloc& __a);
 
       __rc_string_base(const __rc_string_base& __rcs);
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      __rc_string_base(__rc_string_base&& __rcs)
+      : _M_dataplus(__rcs._M_get_allocator(), __rcs._M_data())
+      { __rcs._M_data(_S_empty_rep._M_refcopy()); }      
+#endif
 
       __rc_string_base(size_type __n, _CharT __c, const _Alloc& __a);
 

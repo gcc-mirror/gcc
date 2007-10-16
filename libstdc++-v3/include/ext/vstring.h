@@ -146,6 +146,18 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __versa_string(const __versa_string& __str)
       : __vstring_base(__str) { }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  String move constructor.
+       *  @param  str  Source string.
+       *
+       *  The newly-constructed %string contains the exact contents of @a str.
+       *  The contents of @a str are a valid, but unspecified string.
+       */
+      __versa_string(__versa_string&& __str)
+      : __vstring_base(std::forward<__vstring_base>(__str)) { }
+#endif
+
       /**
        *  @brief  Construct string as copy of a substring.
        *  @param  str  Source string.
@@ -229,6 +241,23 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __versa_string&
       operator=(const __versa_string& __str) 
       { return this->assign(__str); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  String move assignment operator.
+       *  @param  str  Source string.
+       *
+       *  The contents of @a str are moved into this string (without copying).
+       *  @a str is a valid, but unspecified string.
+       */
+      __versa_string&
+      operator=(__versa_string&& __str)
+      {
+	if (this != &__str)
+	  this->swap(__str);
+	return *this;
+      }
+#endif
 
       /**
        *  @brief  Copy contents of @a s into this string.
@@ -1279,7 +1308,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  time.
       */
       void
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      swap(__versa_string&& __s)
+#else
       swap(__versa_string& __s)
+#endif
       { this->_M_swap(__s); }
 
       // String operations:
@@ -2153,6 +2186,22 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     swap(__versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
 	 __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
     { __lhs.swap(__rhs); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    inline void
+    swap(__versa_string<_CharT, _Traits, _Alloc, _Base>&& __lhs,
+	 __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
+    { __lhs.swap(__rhs); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   template <typename, typename, typename> class _Base>
+    inline void
+    swap(__versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
+	 __versa_string<_CharT, _Traits, _Alloc, _Base>&& __rhs)
+    { __lhs.swap(__rhs); }
+#endif
 
 _GLIBCXX_END_NAMESPACE
 
