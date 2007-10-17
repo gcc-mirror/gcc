@@ -16054,8 +16054,8 @@ rs6000_emit_epilogue (int sibcall)
       return;
     }
 
-  /* Set sp_offset based on the stack push from the prologue.  */
-  if (info->total_size < 32767)
+  /* frame_reg_rtx + sp_offset points to the top of this stack frame.  */
+  if (info->push_p)
     sp_offset = info->total_size;
 
   /* Restore AltiVec registers if needed.  */
@@ -16097,8 +16097,6 @@ rs6000_emit_epilogue (int sibcall)
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
 
-  sp_offset = 0;
-
   /* If we have a frame pointer, a call to alloca,  or a large stack
      frame, restore the old stack pointer using the backchain.  Otherwise,
      we know what size to update it with.  */
@@ -16111,20 +16109,18 @@ rs6000_emit_epilogue (int sibcall)
 
       emit_move_insn (frame_reg_rtx,
 		      gen_rtx_MEM (Pmode, sp_reg_rtx));
+      sp_offset = 0;
     }
-  else if (info->push_p)
+  else if (info->push_p
+	   && DEFAULT_ABI != ABI_V4
+	   && !current_function_calls_eh_return)
     {
-      if (DEFAULT_ABI == ABI_V4
-	  || current_function_calls_eh_return)
-	sp_offset = info->total_size;
-      else
-	{
-	  emit_insn (TARGET_32BIT
-		     ? gen_addsi3 (sp_reg_rtx, sp_reg_rtx,
-				   GEN_INT (info->total_size))
-		     : gen_adddi3 (sp_reg_rtx, sp_reg_rtx,
-				   GEN_INT (info->total_size)));
-	}
+      emit_insn (TARGET_32BIT
+		 ? gen_addsi3 (sp_reg_rtx, sp_reg_rtx,
+			       GEN_INT (info->total_size))
+		 : gen_adddi3 (sp_reg_rtx, sp_reg_rtx,
+			       GEN_INT (info->total_size)));
+      sp_offset = 0;
     }
 
   /* Get the old lr if we saved it.  */
@@ -16206,7 +16202,6 @@ rs6000_emit_epilogue (int sibcall)
            && info->spe_64bit_regs_used != 0
            && info->first_gp_reg_save != 32)
     {
-      rtx spe_save_area_ptr;
       /* Determine whether we can address all of the registers that need
          to be saved with an offset from the stack pointer that fits in
          the small const field for SPE memory instructions.  */
@@ -16216,20 +16211,21 @@ rs6000_emit_epilogue (int sibcall)
       int spe_offset;
 
       if (spe_regs_addressable_via_sp)
-        {
-          spe_save_area_ptr = frame_reg_rtx;
-          spe_offset = info->spe_gp_save_offset + sp_offset;
-        }
+	spe_offset = info->spe_gp_save_offset + sp_offset;
       else
         {
+	  rtx old_frame_reg_rtx = frame_reg_rtx;
           /* Make r11 point to the start of the SPE save area.  We worried about
              not clobbering it when we were saving registers in the prologue.
              There's no need to worry here because the static chain is passed
              anew to every function.  */
-          spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
-
-          emit_insn (gen_addsi3 (spe_save_area_ptr, frame_reg_rtx,
+	  if (frame_reg_rtx == sp_reg_rtx)
+	    frame_reg_rtx = gen_rtx_REG (Pmode, 11);
+          emit_insn (gen_addsi3 (frame_reg_rtx, old_frame_reg_rtx,
                                  GEN_INT (info->spe_gp_save_offset + sp_offset)));
+	  /* Keep the invariant that frame_reg_rtx + sp_offset points
+	     at the top of the stack frame.  */
+	  sp_offset = -info->spe_gp_save_offset;
 
           spe_offset = 0;
         }
@@ -16244,7 +16240,7 @@ rs6000_emit_epilogue (int sibcall)
             gcc_assert (SPE_CONST_OFFSET_OK (spe_offset + reg_size * i));
 
             offset = GEN_INT (spe_offset + reg_size * i);
-            addr = gen_rtx_PLUS (Pmode, spe_save_area_ptr, offset);
+            addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, offset);
             mem = gen_rtx_MEM (V2SImode, addr);
 
             emit_move_insn (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
@@ -16336,11 +16332,9 @@ rs6000_emit_epilogue (int sibcall)
       /* This blockage is needed so that sched doesn't decide to move
 	 the sp change before the register restores.  */
       rs6000_emit_stack_tie ();
-      if (TARGET_SPE_ABI
-          && info->spe_64bit_regs_used != 0
-          && info->first_gp_reg_save != 32)
-        emit_insn (gen_addsi3 (sp_reg_rtx, gen_rtx_REG (Pmode, 11),
-                               GEN_INT (-(info->spe_gp_save_offset + sp_offset))));
+      if (sp_offset != 0)
+        emit_insn (gen_addsi3 (sp_reg_rtx, frame_reg_rtx,
+			       GEN_INT (sp_offset)));
       else
         emit_move_insn (sp_reg_rtx, frame_reg_rtx);
     }
