@@ -3746,7 +3746,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
 		 != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))
 	    {
-	      warning (0, "comparison between types %q#T and %q#T",
+	      warning (OPT_Wsign_compare, "comparison between types %q#T and %q#T",
 		       TREE_TYPE (orig_op0), TREE_TYPE (orig_op1));
 	    }
 
@@ -3782,7 +3782,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 						(result_type)))))
 	    /* OK */;
 	  else
-	    warning (0, "comparison between signed and unsigned integer expressions");
+	    warning (OPT_Wsign_compare, 
+		     "comparison between signed and unsigned integer expressions");
 
 	  /* Warn if two unsigned values are being compared in a size
 	     larger than their original size, and one (and only one) is the
@@ -3826,7 +3827,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		    {
 		      mask = (~ (HOST_WIDE_INT) 0) << bits;
 		      if ((mask & constant) != mask)
-			warning (0, "comparison of promoted ~unsigned with constant");
+			warning (OPT_Wsign_compare, "comparison of promoted ~unsigned with constant");
 		    }
 		}
 	      else if (unsignedp0 && unsignedp1
@@ -3834,7 +3835,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 			   < TYPE_PRECISION (result_type))
 		       && (TYPE_PRECISION (TREE_TYPE (primop1))
 			   < TYPE_PRECISION (result_type)))
-		warning (0, "comparison of promoted ~unsigned with unsigned");
+		warning (OPT_Wsign_compare, "comparison of promoted ~unsigned with unsigned");
 	    }
 	}
     }

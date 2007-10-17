@@ -846,7 +846,7 @@ check_global_declaration_1 (tree decl)
       if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	pedwarn ("%q+F used but never defined", decl);
       else
-	warning (0, "%q+F declared %<static%> but never defined", decl);
+	warning (OPT_Wunused_function, "%q+F declared %<static%> but never defined", decl);
       /* This symbol is effectively an "extern" declaration now.  */
       TREE_PUBLIC (decl) = 1;
       assemble_external (decl);
@@ -871,7 +871,10 @@ check_global_declaration_1 (tree decl)
       && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
       /* Otherwise, ask the language.  */
       && lang_hooks.decls.warn_unused_global (decl))
-    warning (0, "%q+D defined but not used", decl);
+    warning ((TREE_CODE (decl) == FUNCTION_DECL) 
+	     ? OPT_Wunused_function 
+             : OPT_Wunused_variable, 
+	     "%q+D defined but not used", decl);
 }
 
 /* Issue appropriate warnings for the global declarations in VEC (of

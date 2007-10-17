@@ -1,3 +1,8 @@
+2007-10-17  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c (build_binary_op) : Use appropriate warning option
+	instead of unnamed warning.
+
 2007-10-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/31446

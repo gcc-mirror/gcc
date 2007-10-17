@@ -3439,7 +3439,7 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 			   && tree_expr_nonnegative_warnv_p (op2, &ovf)))
 		/* OK */;
 	      else
-		warning (0, "signed and unsigned type in conditional expression");
+		warning (OPT_Wsign_compare, "signed and unsigned type in conditional expression");
 	    }
 	}
     }
@@ -3534,7 +3534,7 @@ build_compound_expr (tree expr1, tree expr2)
   if (!TREE_SIDE_EFFECTS (expr1))
     {
       /* The left-hand operand of a comma expression is like an expression
-	 statement: with -Wextra or -Wunused, we should warn if it doesn't have
+	 statement: with -Wunused, we should warn if it doesn't have
 	 any side-effects, unless it was explicitly cast to (void).  */
       if (warn_unused_value)
 	{
@@ -8497,7 +8497,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 			    c_common_signed_type (result_type)))
 		    /* OK */;
 		  else
-		    warning (0, "comparison between signed and unsigned");
+		    warning (OPT_Wsign_compare, "comparison between signed and unsigned");
 		}
 
 	      /* Warn if two unsigned values are being compared in a size
@@ -8543,7 +8543,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 			{
 			  mask = (~(HOST_WIDE_INT) 0) << bits;
 			  if ((mask & constant) != mask)
-			    warning (0, "comparison of promoted ~unsigned with constant");
+			    warning (OPT_Wsign_compare, "comparison of promoted ~unsigned with constant");
 			}
 		    }
 		  else if (unsignedp0 && unsignedp1
@@ -8551,7 +8551,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 			       < TYPE_PRECISION (result_type))
 			   && (TYPE_PRECISION (TREE_TYPE (primop1))
 			       < TYPE_PRECISION (result_type)))
-		    warning (0, "comparison of promoted ~unsigned with unsigned");
+		    warning (OPT_Wsign_compare, "comparison of promoted ~unsigned with unsigned");
 		}
 	    }
 	}
