@@ -1,3 +1,14 @@
+2007-10-17 Christopher D. Rickett <crickett@lanl.gov>
+
+	PR fortran/33760
+	* symbol.c (gen_special_c_interop_ptr): Remove code to create
+	constructor for c_null_ptr and c_null_funptr with value of 0.
+	* expr.c (check_init_expr): Prevent check on constructors for
+	iso_c_binding derived types.
+	* resolve.c (resolve_structure_cons): Verify that the user isn't
+	trying to invoke a structure constructor for one of the
+	iso_c_binding derived types.
+
 2007-10-15 Christopher D. Rickett <crickett@lanl.gov>
 
 	PR fortran/32600

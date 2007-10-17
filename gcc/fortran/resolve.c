@@ -728,6 +728,16 @@ resolve_structure_cons (gfc_expr *expr)
   else
     comp = expr->ts.derived->components;
 
+  /* See if the user is trying to invoke a structure constructor for one of
+     the iso_c_binding derived types.  */
+  if (expr->ts.derived && expr->ts.derived->ts.is_iso_c && cons
+      && cons->expr != NULL)
+    {
+      gfc_error ("Components of structure constructor '%s' at %L are PRIVATE",
+		 expr->ts.derived->name, &(expr->where));
+      return FAILURE;
+    }
+
   for (; comp; comp = comp->next, cons = cons->next)
     {
       if (!cons->expr)
