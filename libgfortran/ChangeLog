@@ -1,3 +1,12 @@
+2007-10-18  Ben Elliston  <bje@au.ibm.com>
+
+	* runtime/environ.c (init_choice): Remove unused function.
+	(show_choice): Likewise.
+	(choice): Remove.
+	(FP_ROUND_NEAREST, FP_ROUND_UP, FP_ROUND_DOWN, FP_ROUND_ZERO):
+	Remove.
+	(precision, signal_choices): Remove.
+
 2007-10-15 Christopher D. Rickett <crickett@lanl.gov>
 
 	PR fortran/32600
