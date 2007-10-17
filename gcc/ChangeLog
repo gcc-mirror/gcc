@@ -1,3 +1,11 @@
+2007-10-17  Anatoly Sokolov <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_types): Add support for atmega48p, 
+	atmega88p, atmega168p and atmega328p devices.
+	* config/avr/avr.h (LINK_SPEC): (Ditto.).
+	(CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.).
+
 2007-10-17  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* sched-ebb.c: Surround code with '#ifdef INSN_SCHEDULING'.
