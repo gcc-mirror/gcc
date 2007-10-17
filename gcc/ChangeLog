@@ -1,3 +1,10 @@
+2007-10-17  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Correct
+	altivec sp_offset.  Rearrange sp_offset assignments to
+	correspond to stack adjustments.  Use frame_reg_rtx for
+	SPE register restores.  Correct SPE stack adjustment.
+
 2007-10-17  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* builtins.c (gimplify_va_arg_expr): Use inform for help message.
