@@ -1,5 +1,11 @@
 2007-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR middle-end/33794
+	* reg-stack.c (move_for_stack_reg): Swap input argument of
+	UNSPEC_TAN insn to the top of the stack.
+
+2007-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/32961
 	* config/i386/i386.c (ix86_expand_builtin) [IX86_BUILTIN_PSLLWI128,
 	IX86_BUILTIN_PSLLDI128, BUILTIN_PSLLQI128, IX86_BUILTIN_PSRAWI128,
