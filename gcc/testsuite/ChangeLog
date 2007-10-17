@@ -1,4 +1,10 @@
 2007-10-17  Uros Bizjak  <ubizjak@gmail.com>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR middle-end/33794
+	* gfortran.dg/pr33794.f90: New testcase.
+
+2007-10-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/32961
 	* gcc.target/i386/pr32961.c: New testcase.
