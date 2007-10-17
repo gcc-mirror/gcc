@@ -844,6 +844,7 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=attiny261:crttn261.o%s} \
 %{mmcu=attiny461:crttn461.o%s} \
 %{mmcu=attiny861:crttn861.o%s} \
+%{mmcu=attiny43u:crttn43u.o%s} \
 %{mmcu=atmega103|mmcu=avr3:crtm103.o%s} \
 %{mmcu=atmega603:crtm603.o%s} \
 %{mmcu=at43usb320:crt43320.o%s} \
