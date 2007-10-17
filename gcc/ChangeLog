@@ -1,5 +1,12 @@
 2007-10-17  Eric B. Weddington  <eweddington@cso.atmel.com>
 
+	* config/avr/avr.c (avr_mcu_types): Add attiny48.
+	* config/avr/avr.h (LINK_SPEC): Likewise.
+	(CRT_BINUTILS_SPECS): Likewsie.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+
+2007-10-17  Eric B. Weddington  <eweddington@cso.atmel.com>
+
 	* config/avr/avr.c (avr_mcu_types): Add attiny43u.
 	* config/avr/avr.h (CRT_BINUTILS_SPECS): Likewsie.
 	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
