@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SCHED_INT_H
 #define GCC_SCHED_INT_H
 
+#ifdef INSN_SCHEDULING
+
 /* For state_t.  */
 #include "insn-attr.h"
 /* For regset_head.  */
@@ -807,9 +809,6 @@ enum INSN_TRAP_CLASS
 #define HAIFA_INLINE __inline
 #endif
 
-/* Functions in sched-vis.c.  */
-extern void print_insn (char *, rtx, int);
-
 /* Functions in sched-deps.c.  */
 extern bool sched_insns_conditions_mutex_p (const_rtx, const_rtx);
 extern void add_dependence (rtx, rtx, enum reg_note);
@@ -991,5 +990,7 @@ extern void sd_resolve_dep (sd_iterator_def);
 extern void sd_copy_back_deps (rtx, rtx, bool);
 extern void sd_delete_dep (sd_iterator_def);
 extern void sd_debug_lists (rtx, sd_list_types_def);
+
+#endif /* INSN_SCHEDULING */
 
 #endif /* GCC_SCHED_INT_H */

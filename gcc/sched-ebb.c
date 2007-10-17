@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 
 
+#ifdef INSN_SCHEDULING
+
 /* The number of insns scheduled so far.  */
 static int sched_n_insns;
 
@@ -696,3 +698,5 @@ fix_recovery_cfg (int bbi ATTRIBUTE_UNUSED, int jump_bbi, int jump_bb_nexti)
   if (jump_bb_nexti == last_bb->index)
     last_bb = BASIC_BLOCK (jump_bbi);
 }
+
+#endif /* INSN_SCHEDULING */

@@ -2110,6 +2110,7 @@ extern void dump_combine_total_stats (FILE *);
 extern void delete_dead_jumptables (void);
 
 /* In sched-vis.c.  */
+extern void print_insn (char *, rtx, int);
 extern void print_rtl_slim_with_bb (FILE *, rtx, int);
 extern void dump_insn_slim (FILE *f, rtx x);
 extern void debug_insn_slim (rtx x);

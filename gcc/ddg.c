@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "ddg.h"
 
+#ifdef INSN_SCHEDULING
+
 /* A flag indicating that a ddg edge belongs to an SCC or not.  */
 enum edge_flag {NOT_IN_SCC = 0, IN_SCC};
 
@@ -1104,3 +1106,5 @@ longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
   sbitmap_free (tmp);
   return result;
 }
+
+#endif /* INSN_SCHEDULING */
