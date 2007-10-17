@@ -1,3 +1,11 @@
+2007-10-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (rewrite_constraints): Don't test for
+	directness anymore.
+	(perform_var_substitution): Only DFS from real nodes. Don't test
+	for directness.
+	(unite_pointer_equivalences): Fix broken test.
+
 2007-10-17  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Correct

@@ -461,8 +461,10 @@ struct constraint_graph
      variable substitution.  */
   int *eq_rep;
 
-  /* Pointer equivalence node for a node.  if pe[a] != a, then node a
-     can be united with node pe[a] after initial constraint building.  */
+  /* Pointer equivalence label for a node.  All nodes with the same
+     pointer equivalence label can be unified together at some point
+     (either during constraint optimization or after the constraint
+     graph is built).  */
   unsigned int *pe;
 
   /* Pointer equivalence representative for a label.  This is used to
@@ -969,13 +971,12 @@ init_graph (unsigned int size)
   graph->indirect_cycles = XNEWVEC (int, graph->size);
   graph->rep = XNEWVEC (unsigned int, graph->size);
   graph->complex = XCNEWVEC (VEC(constraint_t, heap) *, size);
-  graph->pe = XNEWVEC (unsigned int, graph->size);
+  graph->pe = XCNEWVEC (unsigned int, graph->size);
   graph->pe_rep = XNEWVEC (int, graph->size);
 
   for (j = 0; j < graph->size; j++)
     {
       graph->rep[j] = j;
-      graph->pe[j] = j;
       graph->pe_rep[j] = -1;
       graph->indirect_cycles[j] = -1;
     }
@@ -1276,28 +1277,29 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 	  changed_count--;
 	}
     }
-
-  /* If the solution changes because of the merging, we need to mark
-     the variable as changed.  */
-  if (bitmap_ior_into (get_varinfo (to)->solution,
-		       get_varinfo (from)->solution))
+  if (get_varinfo (from)->solution)
     {
-      if (update_changed && !TEST_BIT (changed, to))
+      /* If the solution changes because of the merging, we need to mark
+	 the variable as changed.  */
+      if (bitmap_ior_into (get_varinfo (to)->solution,
+			   get_varinfo (from)->solution))
 	{
-	  SET_BIT (changed, to);
-	  changed_count++;
+	  if (update_changed && !TEST_BIT (changed, to))
+	    {
+	      SET_BIT (changed, to);
+	      changed_count++;
+	    }
+	}
+      
+      BITMAP_FREE (get_varinfo (from)->solution);
+      BITMAP_FREE (get_varinfo (from)->oldsolution);
+      
+      if (stats.iterations > 0)
+	{
+	  BITMAP_FREE (get_varinfo (to)->oldsolution);
+	  get_varinfo (to)->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
 	}
     }
-
-  BITMAP_FREE (get_varinfo (from)->solution);
-  BITMAP_FREE (get_varinfo (from)->oldsolution);
-
-  if (stats.iterations > 0)
-    {
-      BITMAP_FREE (get_varinfo (to)->oldsolution);
-      get_varinfo (to)->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
-    }
-
   if (valid_graph_edge (graph, to, to))
     {
       if (graph->succs[to])
@@ -1942,13 +1944,13 @@ perform_var_substitution (constraint_graph_t graph)
 
   /* Condense the nodes, which means to find SCC's, count incoming
      predecessors, and unite nodes in SCC's.  */
-  for (i = 0; i < LAST_REF_NODE; i++)
+  for (i = 0; i < FIRST_REF_NODE; i++)
     if (!TEST_BIT (si->visited, si->node_mapping[i]))
       condense_visit (graph, si, si->node_mapping[i]);
 
   sbitmap_zero (si->visited);
   /* Actually the label the nodes for pointer equivalences  */
-  for (i = 0; i < LAST_REF_NODE; i++)
+  for (i = 0; i < FIRST_REF_NODE; i++)
     if (!TEST_BIT (si->visited, si->node_mapping[i]))
       label_visit (graph, si, si->node_mapping[i]);
 
@@ -2014,8 +2016,7 @@ perform_var_substitution (constraint_graph_t graph)
     {
       unsigned int node = si->node_mapping[i];
 
-      if (graph->pointer_label[node] == 0
-	  && TEST_BIT (graph->direct_nodes, node))
+      if (graph->pointer_label[node] == 0)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
@@ -2100,13 +2101,20 @@ unite_pointer_equivalences (constraint_graph_t graph)
 
   /* Go through the pointer equivalences and unite them to their
      representative, if they aren't already.  */
-  for (i = 0; i < graph->size; i++)
+  for (i = 0; i < FIRST_REF_NODE; i++)
     {
       unsigned int label = graph->pe[i];
-      int label_rep = graph->pe_rep[label];
-
-      if (label != i && unite (label_rep, i))
-	unify_nodes (graph, label_rep, i, false);
+      if (label)
+	{
+	  int label_rep = graph->pe_rep[label];
+	  
+	  if (label_rep == -1)
+	    continue;
+	  
+	  label_rep = find (label_rep);
+	  if (label_rep >= 0 && unite (label_rep, find (i)))
+	    unify_nodes (graph, label_rep, i, false);
+	}
     }
 }
 
@@ -2177,40 +2185,30 @@ rewrite_constraints (constraint_graph_t graph,
 	 the constraint.  */
       if (lhslabel == 0)
 	{
-	  if (!TEST_BIT (graph->direct_nodes, lhsnode))
-	    lhslabel = graph->pointer_label[lhsnode] = pointer_equiv_class++;
-	  else
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-
-		  fprintf (dump_file, "%s is a non-pointer variable,"
-			   "ignoring constraint:",
-			   get_varinfo (lhs.var)->name);
-		  dump_constraint (dump_file, c);
-		}
-	      VEC_replace (constraint_t, constraints, i, NULL);
-	      continue;
+	      
+	      fprintf (dump_file, "%s is a non-pointer variable,"
+		       "ignoring constraint:",
+		       get_varinfo (lhs.var)->name);
+	      dump_constraint (dump_file, c);
 	    }
+	  VEC_replace (constraint_t, constraints, i, NULL);
+	  continue;
 	}
 
       if (rhslabel == 0)
 	{
-	  if (!TEST_BIT (graph->direct_nodes, rhsnode))
-	    rhslabel = graph->pointer_label[rhsnode] = pointer_equiv_class++;
-	  else
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-
-		  fprintf (dump_file, "%s is a non-pointer variable,"
-			   "ignoring constraint:",
-			   get_varinfo (rhs.var)->name);
-		  dump_constraint (dump_file, c);
-		}
-	      VEC_replace (constraint_t, constraints, i, NULL);
-	      continue;
+	      
+	      fprintf (dump_file, "%s is a non-pointer variable,"
+		       "ignoring constraint:",
+		       get_varinfo (rhs.var)->name);
+	      dump_constraint (dump_file, c);
 	    }
+	  VEC_replace (constraint_t, constraints, i, NULL);
+	  continue;
 	}
 
       lhsvar = find_equivalent_node (graph, lhsvar, lhslabel);
