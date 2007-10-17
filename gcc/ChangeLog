@@ -1,3 +1,19 @@
+2007-10-17  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* builtins.c (gimplify_va_arg_expr): Use inform for help message.
+	* toplev.c (check_global_declaration_1): Use appropriate warning
+	option instead of unnamed warning.
+	* stor-layout.c (layout_decl): Likewise.
+	* c-typeck.c (build_conditional_expr): Likewise.
+	(build_compound_expr): Fix wrong comment.
+	(build_binary_op): Use appropriate warning option instead of
+	unnamed warning.
+	* cfgexpand.c (tree_expand_cfg): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	* tree-cfg.c (remove_useless_stmts_warn_notreached): Likewise.
+	(execute_warn_function_return): Likewise.
+	* stmt.c (warn_if_unused_value): Likewise.
+
 2007-10-16  Eric B. Weddington  <eweddington@cso.atmel.com>
 
 	* config/avr/avr.c (avr_mcu_types): Add at90pwm216, at90pwm316.

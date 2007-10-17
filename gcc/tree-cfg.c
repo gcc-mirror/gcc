@@ -1422,7 +1422,7 @@ remove_useless_stmts_warn_notreached (tree stmt)
       location_t loc = EXPR_LOCATION (stmt);
       if (LOCATION_LINE (loc) > 0)
 	{
-	  warning (0, "%Hwill never be executed", &loc);
+	  warning (OPT_Wunreachable_code, "%Hwill never be executed", &loc);
 	  return true;
 	}
     }
@@ -6957,12 +6957,12 @@ execute_warn_function_return (void)
 	      location = EXPR_LOCATION (last);
 	      if (location == UNKNOWN_LOCATION)
 		  location = cfun->function_end_locus;
-	      warning (0, "%Hcontrol reaches end of non-void function", &location);
+	      warning (OPT_Wreturn_type, "%Hcontrol reaches end of non-void function", &location);
 #else
 	      locus = EXPR_LOCUS (last);
 	      if (!locus)
 		locus = &cfun->function_end_locus;
-	      warning (0, "%Hcontrol reaches end of non-void function", locus);
+	      warning (OPT_Wreturn_type, "%Hcontrol reaches end of non-void function", locus);
 #endif
 	      TREE_NO_WARNING (cfun->decl) = 1;
 	      break;
