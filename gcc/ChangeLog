@@ -1,5 +1,21 @@
 2007-10-17  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* sched-ebb.c: Surround code with '#ifdef INSN_SCHEDULING'.
+	* ddg.c: Ditto.
+	* sched-deps.c: Ditto.  Remove nested #ifdef's INSN_SCHEDULING.
+	* sched-int.h: Surround declarations with '#ifdef INSN_SCHEDULING'.
+	(print_insn): Move declaration to ...
+	* rtl.h (print_insn): ... here.
+
+2007-10-17  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/m68k.h (m68k_sched_cpu, m68k_sched_attr_opx_type,
+	m68k_sched_attr_opy_type, m68k_sched_attr_size, m68k_sched_attr_op_mem,
+	m68k_sched_branch_type): Move declarations to ...
+	* config/m68/m68k-protos.h: ... here.
+
+2007-10-17  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* genattrtab.c (main): Rearrange output of insn-attrtab.c headers.
 
 2007-10-17  Eric B. Weddington  <eweddington@cso.atmel.com>
