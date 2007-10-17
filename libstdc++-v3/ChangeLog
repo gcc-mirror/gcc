@@ -1,3 +1,9 @@
+2007-10-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/array: Correct macro guarding cbegin, cend,
+	crbegin, crend.
+	* include/tr1_impl/hashtable: Likewise.
+
 2007-10-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/vstring.h (__versa_string<>::front, 
