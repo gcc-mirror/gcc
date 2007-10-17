@@ -68,6 +68,7 @@
 
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
+#include <bits/stl_move.h>
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -414,6 +415,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	return *this;
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      back_insert_iterator&
+      operator=(typename _Container::value_type&& __value)
+      {
+	container->push_back(std::move(__value));
+	return *this;
+      }
+#endif
+
       /// Simply returns *this.
       back_insert_iterator&
       operator*()
@@ -487,6 +497,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	container->push_front(__value);
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      front_insert_iterator&
+      operator=(typename _Container::value_type&& __value)
+      {
+	container->push_front(std::move(__value));
+	return *this;
+      }
+#endif
 
       /// Simply returns *this.
       front_insert_iterator&
@@ -577,12 +596,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @endcode
       */
       insert_iterator&
-      operator=(const typename _Container::const_reference __value)
+      operator=(typename _Container::const_reference __value)
       {
 	iter = container->insert(iter, __value);
 	++iter;
 	return *this;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      insert_iterator&
+      operator=(typename _Container::value_type&& __value)
+      {
+	iter = container->insert(iter, std::move(__value));
+	++iter;
+	return *this;
+      }
+#endif
 
       /// Simply returns *this.
       insert_iterator&
