@@ -1,5 +1,12 @@
 2007-10-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/vstring.h (__versa_string<>::front, 
+	__versa_string<>::back): Add.
+	* testsuite/ext/vstring/element_access/char/front_back.cc: New.
+	* testsuite/ext/vstring/element_access/wchar_t/front_back.cc: Likewise.
+
+2007-10-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_queue.h (queue<>::queue(_Sequence&&),
 	queue<>::queue(queue&&), queue<>::operator=(queue&&),
 	queue<>::push(value_type&&), queue<>::swap(queue&&),
