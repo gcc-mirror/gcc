@@ -65,6 +65,16 @@ extern int emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern bool m68k_movem_pattern_p (rtx, rtx, HOST_WIDE_INT, bool);
 extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 
+#ifdef HAVE_ATTR_cpu
+extern enum attr_cpu m68k_sched_cpu;
+
+extern enum attr_opx_type m68k_sched_attr_opx_type (rtx, int);
+extern enum attr_opy_type m68k_sched_attr_opy_type (rtx, int);
+extern int m68k_sched_attr_size (rtx);
+extern enum attr_op_mem m68k_sched_attr_op_mem (rtx);
+extern enum attr_type m68k_sched_branch_type (rtx);
+#endif /* HAVE_ATTR_cpu */
+
 #endif /* RTX_CODE */
 
 extern bool m68k_regno_mode_ok (int, enum machine_mode);

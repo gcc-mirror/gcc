@@ -1148,10 +1148,3 @@ extern M68K_CONST_METHOD m68k_const_method (HOST_WIDE_INT);
 
 extern void m68k_emit_move_double (rtx [2]);
 
-extern enum attr_cpu m68k_sched_cpu;
-
-extern enum attr_opx_type m68k_sched_attr_opx_type (rtx, int);
-extern enum attr_opy_type m68k_sched_attr_opy_type (rtx, int);
-extern int m68k_sched_attr_size (rtx);
-extern enum attr_op_mem m68k_sched_attr_op_mem (rtx);
-extern enum attr_type m68k_sched_branch_type (rtx);
