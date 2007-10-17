@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-* x86_64-*-* } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -msse4.1 -msse5 " } */
 
 /* Test that the intrinsics compile with optimization.  All of them are
@@ -40,16 +40,8 @@
 #define __builtin_ia32_palignr(X, Y, N) __builtin_ia32_palignr(X, Y, 8)
 
 /* emmintrin.h */
-#define __builtin_ia32_psllwi128(A, B) __builtin_ia32_psllwi128(A, 1)
-#define __builtin_ia32_psrlqi128(A, B) __builtin_ia32_psrlqi128(A, 1)
-#define __builtin_ia32_psrlwi128(A, B) __builtin_ia32_psrlwi128(A, 1)
-#define __builtin_ia32_psrldi128(A, B) __builtin_ia32_psrldi128(A, 1)
 #define __builtin_ia32_psrldqi128(A, B) __builtin_ia32_psrldqi128(A, 8)
 #define __builtin_ia32_pslldqi128(A, B) __builtin_ia32_pslldqi128(A, 8)
-#define __builtin_ia32_psrawi128(A, B) __builtin_ia32_psrawi128(A, 1)
-#define __builtin_ia32_psradi128(A, B) __builtin_ia32_psradi128(A, 1)
-#define __builtin_ia32_psllqi128(A, B) __builtin_ia32_psllqi128(A, 1)
-#define __builtin_ia32_pslldi128(A, B) __builtin_ia32_pslldi128(A, 1)
 #define __builtin_ia32_pshufhw(A, N) __builtin_ia32_pshufhw(A, 0)
 #define __builtin_ia32_pshuflw(A, N) __builtin_ia32_pshuflw(A, 0)
 #define __builtin_ia32_pshufd(A, N) __builtin_ia32_pshufd(A, 0)

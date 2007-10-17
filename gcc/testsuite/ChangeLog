@@ -1,3 +1,13 @@
+2007-10-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32961
+	* gcc.target/i386/pr32961.c: New testcase.
+	* gcc.target/i386/sse-13.c: Remove __builtin_ia32_psllwi128,
+	__builtin_ia32_psrlqi128, __builtin_ia32_psrlwi128,
+	__builtin_ia32_psrldi128, __builtin_ia32_psrawi128,
+	__builtin_ia32_psradi128, __builtin_ia32_psllqi128 and
+	__builtin_ia32_pslldi128 defines.
+
 2007-10-17  Christopher D. Rickett <crickett@lanl.gov>
 
 	PR fortran/33760
