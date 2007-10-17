@@ -579,8 +579,11 @@ expand_stack_vars (bool (*pred) (tree))
       /* Create rtl for each variable based on their location within the
 	 partition.  */
       for (j = i; j != EOC; j = stack_vars[j].next)
-	expand_one_stack_var_at (stack_vars[j].decl,
-				 stack_vars[j].offset + offset);
+	{
+	  gcc_assert (stack_vars[j].offset <= stack_vars[i].size);
+	  expand_one_stack_var_at (stack_vars[j].decl,
+				   stack_vars[j].offset + offset);
+	}
     }
 }
 
