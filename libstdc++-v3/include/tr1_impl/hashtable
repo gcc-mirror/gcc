@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       end() const
       { return const_iterator(_M_buckets + _M_bucket_count); }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
       const_iterator
       cbegin() const
       {
