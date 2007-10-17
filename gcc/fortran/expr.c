@@ -2249,7 +2249,10 @@ check_init_expr (gfc_expr *e)
       break;
 
     case EXPR_STRUCTURE:
-      t = gfc_check_constructor (e, check_init_expr);
+      if (e->ts.is_iso_c)
+	t = SUCCESS;
+      else
+	t = gfc_check_constructor (e, check_init_expr);
       break;
 
     case EXPR_ARRAY:

@@ -3354,10 +3354,10 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
   tmp_sym->value->expr_type = EXPR_STRUCTURE;
   tmp_sym->value->ts.type = BT_DERIVED;
   tmp_sym->value->ts.derived = tmp_sym->ts.derived;
+  /* Create a constructor with no expr, that way we can recognize if the user
+     tries to call the structure constructor for one of the iso_c_binding
+     derived types during resolution (resolve_structure_cons).  */
   tmp_sym->value->value.constructor = gfc_get_constructor ();
-  /* This line will initialize the c_null_ptr/c_null_funptr
-     c_address field to NULL.  */
-  tmp_sym->value->value.constructor->expr = gfc_int_expr (0);
   /* Must declare c_null_ptr and c_null_funptr as having the
      PARAMETER attribute so they can be used in init expressions.  */
   tmp_sym->attr.flavor = FL_PARAMETER;
