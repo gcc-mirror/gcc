@@ -500,56 +500,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     }
 
 
-  template<bool>
-    struct __fill
-    {
-      template<typename _ForwardIterator, typename _Tp>
-        static void
-        fill(_ForwardIterator __first, _ForwardIterator __last,
-	     const _Tp& __value)
-        {
-	  for (; __first != __last; ++__first)
-	    *__first = __value;
-	}
-    };
-
-  template<>
-    struct __fill<true>
-    {
-      template<typename _ForwardIterator, typename _Tp>
-        static void
-        fill(_ForwardIterator __first, _ForwardIterator __last,
-	     const _Tp& __value)
-        {
-	  const _Tp __tmp = __value;
-	  for (; __first != __last; ++__first)
-	    *__first = __tmp;
-	}
-    };
-
   template<typename _ForwardIterator, typename _Tp>
-    inline void
-    __fill_aux(_ForwardIterator __first, _ForwardIterator __last,
-	       const _Tp& __value)
+    inline typename
+    __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, void>::__type
+    __fill_a(_ForwardIterator __first, _ForwardIterator __last,
+ 	     const _Tp& __value)
     {
-      const bool __scalar = __is_scalar<_Tp>::__value;
-      std::__fill<__scalar>::fill(__first, __last, __value);
+      for (; __first != __last; ++__first)
+	*__first = __value;
+    }
+    
+  template<typename _ForwardIterator, typename _Tp>
+    inline typename
+    __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, void>::__type
+    __fill_a(_ForwardIterator __first, _ForwardIterator __last, _Tp __value)
+    {
+      for (; __first != __last; ++__first)
+	*__first = __value;
     }
 
   // Specialization: for char types we can use memset.
-  inline void
-  __fill_aux(unsigned char* __first, unsigned char* __last, unsigned char __c)
-  { __builtin_memset(__first, __c, __last - __first); }
-
-  inline void
-  __fill_aux(signed char* __first, signed char* __last, signed char __c)
-  { __builtin_memset(__first, static_cast<unsigned char>(__c),
-		     __last - __first); }
-
-  inline void
-  __fill_aux(char* __first, char* __last, char __c)
-  { __builtin_memset(__first, static_cast<unsigned char>(__c),
-		     __last - __first); }
+  template<typename _Tp>
+    inline typename
+    __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, void>::__type
+    __fill_a(_Tp* __first, _Tp* __last, _Tp __c)
+    { __builtin_memset(__first, static_cast<unsigned char>(__c),
+		       __last - __first); }
 
   /**
    *  @brief Fills the range [first,last) with copies of value.
@@ -571,66 +547,36 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      std::__fill_aux(__niter_base<_ForwardIterator>::__b(__first),
-		      __niter_base<_ForwardIterator>::__b(__last), __value);
+      std::__fill_a(std::__niter_base<_ForwardIterator>::__b(__first),
+		    std::__niter_base<_ForwardIterator>::__b(__last), __value);
     }
-
-  template<bool>
-    struct __fill_n
-    {
-      template<typename _OutputIterator, typename _Size, typename _Tp>
-        static _OutputIterator
-        fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
-        {
-	  for (; __n > 0; --__n, ++__first)
-	    *__first = __value;
-	  return __first;
-	}
-    };
-
-  template<>
-    struct __fill_n<true>
-    {
-      template<typename _OutputIterator, typename _Size, typename _Tp>
-        static _OutputIterator
-        fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
-        {
-	  const _Tp __tmp = __value;
-	  for (; __n > 0; --__n, ++__first)
-	    *__first = __tmp;
-	  return __first;	  
-	}
-    };
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
-    inline _OutputIterator
-    __fill_n_aux(_OutputIterator __first, _Size __n, const _Tp& __value)
+    inline typename
+    __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, _OutputIterator>::__type
+    __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
-      const bool __scalar = __is_scalar<_Tp>::__value;
-      return std::__fill_n<__scalar>::fill_n(__first, __n, __value);
+      for (; __n > 0; --__n, ++__first)
+	*__first = __value;
+      return __first;
     }
 
-  template<typename _Size>
-    inline unsigned char*
-    __fill_n_aux(unsigned char* __first, _Size __n, unsigned char __c)
+  template<typename _OutputIterator, typename _Size, typename _Tp>
+    inline typename
+    __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, _OutputIterator>::__type
+    __fill_n_a(_OutputIterator __first, _Size __n, _Tp __value)
     {
-      std::__fill_aux(__first, __first + __n, __c);
-      return __first + __n;
+      for (; __n > 0; --__n, ++__first)
+	*__first = __value;
+      return __first;
     }
 
-  template<typename _Size>
-    inline signed char*
-    __fill_n_aux(signed char* __first, _Size __n, signed char __c)
+  template<typename _Size, typename _Tp>
+    inline typename
+    __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, _Tp*>::__type
+    __fill_n_a(_Tp* __first, _Size __n, _Tp __c)
     {
-      std::__fill_aux(__first, __first + __n, __c);
-      return __first + __n;
-    }
-
-  template<typename _Size>
-    inline char*
-    __fill_n_aux(char* __first, _Size __n, char __c)
-    {
-      std::__fill_aux(__first, __first + __n, __c);
+      std::__fill_a(__first, __first + __n, __c);
       return __first + __n;
     }
 
@@ -652,8 +598,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
 
-      return _OI(std::__fill_n_aux(__niter_base<_OI>::__b(__first), __n,
-				   __value));
+      return _OI(std::__fill_n_a(std::__niter_base<_OI>::__b(__first),
+				 __n, __value));
     }
 
   template<bool _BoolType>
@@ -803,9 +749,9 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_P)
 	    typename iterator_traits<_II2>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
 
-      return std::__equal_aux(__niter_base<_II1>::__b(__first1),
-			      __niter_base<_II1>::__b(__last1),
-			      __niter_base<_II2>::__b(__first2));
+      return std::__equal_aux(std::__niter_base<_II1>::__b(__first1),
+			      std::__niter_base<_II1>::__b(__last1),
+			      std::__niter_base<_II2>::__b(__first2));
     }
 
   /**

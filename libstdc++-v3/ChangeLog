@@ -1,5 +1,13 @@
 2007-10-17  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/cpp_type_traits.h (__is_byte): Add.
+	* include/bits/stl_algobase.h (struct __fill, struct __fill_n,
+	__fill_aux, __fill_n_aux): Remove.
+	(__fill_a, __fill_n_a): Add.
+	(fill, fill_n): Adjust.
+
+2007-10-17  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_iterator.h (back_insert_iterator<>::operator=
 	(typename _Container::value_type&&), front_insert_iterator<>::
 	operator=(typename _Container::value_type&&), insert_iterator<>::
