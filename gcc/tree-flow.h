@@ -159,7 +159,7 @@ struct gimple_df GTY(())
      means that the first reference to this variable in the function is a
      USE or a VUSE.  In those cases, the SSA renamer creates an SSA name
      for this variable with an empty defining statement.  */
-  htab_t GTY((param_is (struct int_tree_map))) default_defs;
+  htab_t GTY((param_is (union tree_node))) default_defs;
 
   /* 'true' after aliases have been computed (see compute_may_aliases).  */
   unsigned int aliases_computed_p : 1;

@@ -1,5 +1,15 @@
 2007-10-18  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa.c (uid_ssaname_map_eq): New function.
+	(uid_ssaname_map_has): Likewise.
+	(init_tree_ssa): Allocate default_defs as uid_ssaname map.
+	* tree-flow.h (struct gimple_df): Make default_defs a
+	uid_ssaname map.
+	* tree-dfa.c (gimple_default_def): Deal with it.
+	(set_default_def): Likewise.
+
+2007-10-18  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (struct gimple_df): Make referenced_vars
 	a uid_decl_map.
 	(uid_decl_map_eq): Declare.
