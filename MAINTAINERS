@@ -235,7 +235,6 @@ outside of the parts of the compiler they maintain.
 
 			Reviewers
 
-dataflow		Daniel Berlin		dberlin@dberlin.org
 dataflow		Paolo Bonzini		bonzini@gnu.org
 dataflow		Seongbae Park		seongbae.park@gmail.com
 dataflow 		Kenneth Zadeck		zadeck@naturalbridge.com
