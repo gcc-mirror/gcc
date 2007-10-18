@@ -1,5 +1,9 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c: Delete trailing whitespace.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_expand_call): Use FAKE_CALL_REGNO.
 	(mips_avoid_hazard): Allow multiple sets for HAZARD_DELAY,
 	and pick the first.
