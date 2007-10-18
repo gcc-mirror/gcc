@@ -1,3 +1,7 @@
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* gcc.target/mips/save-restore-3.c: Don't clobber $17.
+
 2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/33233

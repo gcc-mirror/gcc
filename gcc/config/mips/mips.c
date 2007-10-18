@@ -8030,6 +8030,30 @@ mips_current_loadgp_style (void)
   return TARGET_NEWABI ? LOADGP_NEWABI : LOADGP_OLDABI;
 }
 
+/* Implement FRAME_POINTER_REQUIRED.  */
+
+bool
+mips_frame_pointer_required (void)
+{
+  /* If the function contains dynamic stack allocations, we need to
+     use the frame pointer to access the static parts of the frame.  */
+  if (current_function_calls_alloca)
+    return true;
+
+  /* In MIPS16 mode, we need a frame pointer for a large frame; otherwise,
+     reload may be unable to compute the address of a local variable,
+     since there is no way to add a large constant to the stack pointer
+     without using a second temporary register.  */
+  if (TARGET_MIPS16)
+    {
+      compute_frame_size (get_frame_size ());
+      if (!SMALL_OPERAND (cfun->machine->frame.total_size))
+	return true;
+    }
+
+  return false;
+}
+
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame
    pointer or argument pointer.  TO is either the stack pointer or
    hard frame pointer.  */
