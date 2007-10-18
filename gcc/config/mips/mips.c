@@ -239,21 +239,44 @@ static const char *const mips_fp_conditions[] = {
 
 struct mips_frame_info GTY(())
 {
-  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
-  HOST_WIDE_INT var_size;	/* # bytes that variables take up */
-  HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
-  HOST_WIDE_INT cprestore_size;	/* # bytes that the .cprestore slot takes up */
-  HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
-  HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
-  unsigned int mask;		/* mask of saved gp registers */
-  unsigned int fmask;		/* mask of saved fp registers */
-  HOST_WIDE_INT gp_save_offset;	/* offset from vfp to store gp registers */
-  HOST_WIDE_INT fp_save_offset;	/* offset from vfp to store fp registers */
-  HOST_WIDE_INT gp_sp_offset;	/* offset from new sp to store gp registers */
-  HOST_WIDE_INT fp_sp_offset;	/* offset from new sp to store fp registers */
-  bool initialized;		/* true if frame size already calculated */
-  int num_gp;			/* number of gp registers saved */
-  int num_fp;			/* number of fp registers saved */
+  /* The size of the frame in bytes.  */
+  HOST_WIDE_INT total_size;
+
+  /* The number of bytes allocated to variables.  */
+  HOST_WIDE_INT var_size;
+
+  /* The number of bytes allocated to outgoing function arguments.  */
+  HOST_WIDE_INT args_size;
+
+  /* The number of bytes allocated to the .cprestore slot, or 0 if there
+     is no such slot.  */
+  HOST_WIDE_INT cprestore_size;
+
+  /* The size in bytes of the GPR and FPR save areas.  */
+  HOST_WIDE_INT gp_reg_size;
+  HOST_WIDE_INT fp_reg_size;
+
+  /* Bit X is set if the function saves or restores GPR X.  */
+  unsigned int mask;
+
+  /* Likewise FPR X.  */
+  unsigned int fmask;
+
+  /* The number of GPRs and FPRs saved.  */
+  unsigned int num_gp;
+  unsigned int num_fp;
+
+  /* The offset of the topmost GPR and FPR save slots from the top of
+     the frame, or zero if no such slots are needed.  */
+  HOST_WIDE_INT gp_save_offset;
+  HOST_WIDE_INT fp_save_offset;
+
+  /* Likewise, but giving offsets from the bottom of the frame.  */
+  HOST_WIDE_INT gp_sp_offset;
+  HOST_WIDE_INT fp_sp_offset;
+
+  /* True if this structure has been initialized after reload.  */
+  bool initialized;
 };
 
 struct machine_function GTY(()) {
@@ -7249,14 +7272,14 @@ mips16e_find_first_register (unsigned int mask, const unsigned char *regs,
   return i;
 }
 
-/* *MASK_PTR is a mask of general purpose registers and *GP_REG_SIZE_PTR
-   is the number of bytes that they occupy.  If *MASK_PTR contains REGS[X]
-   for some X in [0, SIZE), adjust *MASK_PTR and *GP_REG_SIZE_PTR so that
-   the same is true for all indexes (X, SIZE).  */
+/* *MASK_PTR is a mask of general-purpose registers and *NUM_REGS_PTR
+   is the number of set bits.  If *MASK_PTR contains REGS[X] for some X
+   in [0, SIZE), adjust *MASK_PTR and *NUM_REGS_PTR so that the same
+   is true for all indexes (X, SIZE).  */
 
 static void
 mips16e_mask_registers (unsigned int *mask_ptr, const unsigned char *regs,
-			unsigned int size, HOST_WIDE_INT *gp_reg_size_ptr)
+			unsigned int size, unsigned int *num_regs_ptr)
 {
   unsigned int i;
 
@@ -7264,7 +7287,7 @@ mips16e_mask_registers (unsigned int *mask_ptr, const unsigned char *regs,
   for (i++; i < size; i++)
     if (!BITSET_P (*mask_ptr, regs[i]))
       {
-	*gp_reg_size_ptr += GET_MODE_SIZE (gpr_mode);
+	*num_regs_ptr += 1;
 	*mask_ptr |= 1 << regs[i];
       }
 }
@@ -7507,8 +7530,8 @@ bool
 mips16e_save_restore_pattern_p (rtx pattern, HOST_WIDE_INT adjust,
 				struct mips16e_save_restore_info *info)
 {
-  unsigned int i, nargs, mask;
-  HOST_WIDE_INT top_offset, save_offset, offset, extra;
+  unsigned int i, nargs, mask, extra;
+  HOST_WIDE_INT top_offset, save_offset, offset;
   rtx set, reg, mem, base;
   int n;
 
@@ -7816,203 +7839,171 @@ mips_save_reg_p (unsigned int regno)
 
    MIPS stack frames look like:
 
-             Before call		        After call
-   high +-----------------------+	+-----------------------+
-   mem. |			|       |      			|
-	|  caller's temps.    	|       |  caller's temps.    	|
-	|       		|       |       	        |
-        +-----------------------+	+-----------------------+
- 	|       		|	|		        |
-        |  arguments on stack.  |	|  arguments on stack.  |
-	|       		|	|			|
-        +-----------------------+	+-----------------------+
- 	|  4 words to save     	|	|  4 words to save	|
-	|  arguments passed	|	|  arguments passed	|
-	|  in registers, even	|	|  in registers, even	|
-        |  if not passed.       |       |  if not passed.	|
-    SP->+-----------------------+  VFP->+-----------------------+
-	        (VFP = SP+fp_sp_offset) |		        |\
-					|  fp register save     | | fp_reg_size
-					|			|/
-		       SP+gp_sp_offset->+-----------------------+
-				       /|		        |\
-				      | |  gp register save     | | gp_reg_size
-		       gp_reg_rounded | |       		|/
-				      |	+-----------------------+
-				       \|  alignment padding    |
-					+-----------------------+
-					|		        |\
-					|  local variables	| | var_size
-					|			|/
-					+-----------------------+
-					|			|
-					|  alloca allocations   |
-					|			|
-					+-----------------------+
-				       /|			|
-		       cprestore_size | |  GP save for V.4 abi	|
-				       \|			|
-					+-----------------------+
-					|			|\
-					|  arguments on stack   | |
-					|		        | |
-					+-----------------------+ |
-					|  4 words to save      | | args_size
-					|  arguments passed     | |
-					|  in registers, even   | |
-					|  if not passed.       | |
-   low					|  (TARGET_OLDABI only) |/
-   memory			    SP->+-----------------------+
+	+-------------------------------+
+	|                               |
+	|  incoming stack arguments     |
+	|                               |
+	+-------------------------------+
+	|                               |
+	|  caller-allocated save area   |
+      A |  for register arguments       |
+	|                               |
+	+-------------------------------+ <-- incoming stack pointer
+	|                               |
+	|  callee-allocated save area   |
+      B |  for arguments that are       |
+	|  split between registers and  |
+	|  the stack                    |
+	|                               |
+	+-------------------------------+ <-- arg_pointer_rtx
+	|                               |
+      C |  callee-allocated save area   |
+	|  for register varargs         |
+	|                               |
+	+-------------------------------+ <-- frame_pointer_rtx + fp_sp_offset
+	|                               |       + UNITS_PER_HWFPVALUE
+	|  FPR save area                |
+	|                               |
+	+-------------------------------+ <-- frame_pointer_rtx + gp_sp_offset
+	|                               |       + UNITS_PER_WORD
+	|  GPR save area                |
+	|                               |
+	+-------------------------------+
+	|                               | \
+	|  local variables              |  | var_size
+	|                               | /
+	+-------------------------------+
+	|                               | \
+	|  $gp save area                |  | cprestore_size
+	|                               | /
+      P +-------------------------------+ <-- hard_frame_pointer_rtx for
+	|                               |       MIPS16 code
+	|  outgoing stack arguments     |
+	|                               |
+	+-------------------------------+
+	|                               |
+	|  caller-allocated save area   |
+	|  for register arguments       |
+	|                               |
+	+-------------------------------+ <-- stack_pointer_rtx
+					      frame_pointer_rtx
+					      hard_frame_pointer_rtx for
+						non-MIPS16 code.
 
-*/
+   At least two of A, B and C will be empty.
+
+   Dynamic stack allocations such as alloca insert data at point P.
+   They decrease stack_pointer_rtx but leave frame_pointer_rtx and
+   hard_frame_pointer_rtx unchanged.  */
 
 HOST_WIDE_INT
 compute_frame_size (HOST_WIDE_INT size)
 {
-  unsigned int regno;
-  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
-  HOST_WIDE_INT var_size;	/* # bytes that variables take up */
-  HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
-  HOST_WIDE_INT cprestore_size; /* # bytes that the cprestore slot takes up */
-  HOST_WIDE_INT gp_reg_rounded;	/* # bytes needed to store gp after rounding */
-  HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
-  HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
-  unsigned int mask;		/* mask of saved gp registers */
-  unsigned int fmask;		/* mask of saved fp registers */
+  struct mips_frame_info *frame;
+  HOST_WIDE_INT offset;
+  unsigned int regno, i;
+
+  frame = &cfun->machine->frame;
+  memset (frame, 0, sizeof (*frame));
 
   cfun->machine->global_pointer = mips_global_pointer ();
 
-  gp_reg_size = 0;
-  fp_reg_size = 0;
-  mask = 0;
-  fmask	= 0;
-  var_size = MIPS_STACK_ALIGN (size);
-  args_size = current_function_outgoing_args_size;
-  cprestore_size = MIPS_STACK_ALIGN (STARTING_FRAME_OFFSET) - args_size;
+  /* The first STARTING_FRAME_OFFSET bytes contain the outgoing argument
+     area and the $gp save slot.  This area isn't needed in leaf functions,
+     but if the target-independent frame size is nonzero, we're committed
+     to allocating it anyway.  */
+  if (size == 0 && current_function_is_leaf)
+    {
+      /* The MIPS 3.0 linker does not like functions that dynamically
+	 allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
+	 looks like we are trying to create a second frame pointer to the
+	 function, so allocate some stack space to make it happy.  */
+      if (current_function_calls_alloca)
+	frame->args_size = REG_PARM_STACK_SPACE (cfun->decl);
+      else
+	frame->args_size = 0;
+      frame->cprestore_size = 0;
+    }
+  else
+    {
+      frame->args_size = current_function_outgoing_args_size;
+      frame->cprestore_size = STARTING_FRAME_OFFSET - frame->args_size;
+    }
+  offset = frame->args_size + frame->cprestore_size;
 
-  /* The space set aside by STARTING_FRAME_OFFSET isn't needed in leaf
-     functions.  If the function has local variables, we're committed
-     to allocating it anyway.  Otherwise reclaim it here.  */
-  if (var_size == 0 && current_function_is_leaf)
-    cprestore_size = args_size = 0;
+  /* Move above the local variables.  */
+  frame->var_size = MIPS_STACK_ALIGN (size);
+  offset += frame->var_size;
 
-  /* The MIPS 3.0 linker does not like functions that dynamically
-     allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
-     looks like we are trying to create a second frame pointer to the
-     function, so allocate some stack space to make it happy.  */
-
-  if (args_size == 0 && current_function_calls_alloca)
-    args_size = 4 * UNITS_PER_WORD;
-
-  total_size = var_size + args_size + cprestore_size;
-
-  /* Calculate space needed for gp registers.  */
+  /* Find out which GPRs we need to save.  */
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
     if (mips_save_reg_p (regno))
       {
-	gp_reg_size += GET_MODE_SIZE (gpr_mode);
-	mask |= 1 << (regno - GP_REG_FIRST);
+	frame->num_gp++;
+	frame->mask |= 1 << (regno - GP_REG_FIRST);
       }
 
-  /* We need to restore these for the handler.  */
+  /* If this function calls eh_return, we must also save and restore the
+     EH data registers.  */
   if (current_function_calls_eh_return)
-    {
-      unsigned int i;
-      for (i = 0; ; ++i)
-	{
-	  regno = EH_RETURN_DATA_REGNO (i);
-	  if (regno == INVALID_REGNUM)
-	    break;
-	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
-	  mask |= 1 << (regno - GP_REG_FIRST);
-	}
-    }
+    for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM; i++)
+      {
+	frame->num_gp++;
+	frame->mask |= 1 << (EH_RETURN_DATA_REGNO (i) - GP_REG_FIRST);
+      }
 
   /* The MIPS16e SAVE and RESTORE instructions have two ranges of registers:
      $a3-$a0 and $s2-$s8.  If we save one register in the range, we must
      save all later registers too.  */
   if (GENERATE_MIPS16E_SAVE_RESTORE)
     {
-      mips16e_mask_registers (&mask, mips16e_s2_s8_regs,
- 			      ARRAY_SIZE (mips16e_s2_s8_regs), &gp_reg_size);
-      mips16e_mask_registers (&mask, mips16e_a0_a3_regs,
- 			      ARRAY_SIZE (mips16e_a0_a3_regs), &gp_reg_size);
+      mips16e_mask_registers (&frame->mask, mips16e_s2_s8_regs,
+ 			      ARRAY_SIZE (mips16e_s2_s8_regs), &frame->num_gp);
+      mips16e_mask_registers (&frame->mask, mips16e_a0_a3_regs,
+ 			      ARRAY_SIZE (mips16e_a0_a3_regs), &frame->num_gp);
     }
 
-  /* This loop must iterate over the same space as its companion in
-     mips_for_each_saved_reg.  */
+  /* Move above the GPR save area.  */
+  if (frame->num_gp > 0)
+    {
+      frame->gp_reg_size = frame->num_gp * UNITS_PER_WORD;
+      offset += MIPS_STACK_ALIGN (frame->gp_reg_size);
+      frame->gp_sp_offset = offset - UNITS_PER_WORD;
+    }
+
+  /* Find out which FPRs we need to save.  This loop must iterate over
+     the same space as its companion in mips_for_each_saved_reg.  */
   if (TARGET_HARD_FLOAT)
-    for (regno = (FP_REG_LAST - MAX_FPRS_PER_FMT + 1);
-	 regno >= FP_REG_FIRST;
-	 regno -= MAX_FPRS_PER_FMT)
+    for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno += MAX_FPRS_PER_FMT)
       if (mips_save_reg_p (regno))
 	{
-	  fp_reg_size += MAX_FPRS_PER_FMT * UNITS_PER_FPREG;
-	  fmask |= ((1 << MAX_FPRS_PER_FMT) - 1) << (regno - FP_REG_FIRST);
+	  frame->num_fp += MAX_FPRS_PER_FMT;
+	  frame->fmask |= ~(~0 << MAX_FPRS_PER_FMT) << (regno - FP_REG_FIRST);
 	}
 
-  gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
-  total_size += gp_reg_rounded + MIPS_STACK_ALIGN (fp_reg_size);
-
-  /* Add in the space required for saving incoming register arguments.  */
-  total_size += current_function_pretend_args_size;
-  total_size += MIPS_STACK_ALIGN (cfun->machine->varargs_size);
-
-  /* Save other computed information.  */
-  cfun->machine->frame.total_size = total_size;
-  cfun->machine->frame.var_size = var_size;
-  cfun->machine->frame.args_size = args_size;
-  cfun->machine->frame.cprestore_size = cprestore_size;
-  cfun->machine->frame.gp_reg_size = gp_reg_size;
-  cfun->machine->frame.fp_reg_size = fp_reg_size;
-  cfun->machine->frame.mask = mask;
-  cfun->machine->frame.fmask = fmask;
-  cfun->machine->frame.initialized = reload_completed;
-  cfun->machine->frame.num_gp = gp_reg_size / UNITS_PER_WORD;
-  cfun->machine->frame.num_fp = (fp_reg_size
-				 / (MAX_FPRS_PER_FMT * UNITS_PER_FPREG));
-
-  if (mask)
+  /* Move above the FPR save area.  */
+  if (frame->num_fp > 0)
     {
-      HOST_WIDE_INT offset;
-
-      if (GENERATE_MIPS16E_SAVE_RESTORE)
-	/* MIPS16e SAVE and RESTORE instructions require the GP save area
-	   to be aligned at the high end with any padding at the low end.
-	   It is only safe to use this calculation for o32, where we never
-	   have pretend arguments, and where any varargs will be saved in
-	   the caller-allocated area rather than at the top of the frame.  */
-	offset = (total_size - GET_MODE_SIZE (gpr_mode));
-      else
-	offset = (args_size + cprestore_size + var_size
-		  + gp_reg_size - GET_MODE_SIZE (gpr_mode));
-      cfun->machine->frame.gp_sp_offset = offset;
-      cfun->machine->frame.gp_save_offset = offset - total_size;
-    }
-  else
-    {
-      cfun->machine->frame.gp_sp_offset = 0;
-      cfun->machine->frame.gp_save_offset = 0;
+      frame->fp_reg_size = frame->num_fp * UNITS_PER_FPREG;
+      offset += MIPS_STACK_ALIGN (frame->fp_reg_size);
+      frame->fp_sp_offset = offset - UNITS_PER_HWFPVALUE;
     }
 
-  if (fmask)
-    {
-      HOST_WIDE_INT offset;
+  /* Move above the callee-allocated varargs save area.  */
+  offset += MIPS_STACK_ALIGN (cfun->machine->varargs_size);
 
-      offset = (args_size + cprestore_size + var_size
-		+ gp_reg_rounded + fp_reg_size
-		- MAX_FPRS_PER_FMT * UNITS_PER_FPREG);
-      cfun->machine->frame.fp_sp_offset = offset;
-      cfun->machine->frame.fp_save_offset = offset - total_size;
-    }
-  else
-    {
-      cfun->machine->frame.fp_sp_offset = 0;
-      cfun->machine->frame.fp_save_offset = 0;
-    }
+  /* Move above the callee-allocated area for pretend stack arguments.  */
+  offset += current_function_pretend_args_size;
+  frame->total_size = offset;
 
-  /* Ok, we're done.  */
-  return total_size;
+  /* Work out the offsets of the save areas from the top of the frame.  */
+  if (frame->gp_sp_offset > 0)
+    frame->gp_save_offset = frame->gp_sp_offset - offset;
+  if (frame->fp_sp_offset > 0)
+    frame->fp_save_offset = frame->fp_sp_offset - offset;
+
+  frame->initialized = reload_completed;
+  return frame->total_size;
 }
 
 /* Return the style of GP load sequence that is being used for the
