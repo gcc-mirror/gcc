@@ -32,16 +32,16 @@
 #define TYPE_OPERAND_FMT        "@%s"
 
 #undef TYPE_ASM_OP
-#define TYPE_ASM_OP        "\t.type\t"
+#define TYPE_ASM_OP             "\t.type\t"
 
 #undef SIZE_ASM_OP
-#define SIZE_ASM_OP        "\t.size\t"
+#define SIZE_ASM_OP             "\t.size\t"
 
 /* A c expression whose value is a string containing the
    assembler operation to identify the following data as
    uninitialized global data.  */
 #ifndef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP        "\t.section\t.bss"
+#define BSS_SECTION_ASM_OP      "\t.section\t.bss"
 #endif
 
 #ifndef ASM_OUTPUT_ALIGNED_BSS

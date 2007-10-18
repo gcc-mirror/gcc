@@ -14,8 +14,8 @@
    License for more details.
 
    You should have received a copy of the GNU General Public License
-	along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
 
 #define ra r3
 #define a0 r4
@@ -34,6 +34,10 @@
 #if !defined(L_mulsi3) && !defined(L_divsi3)
        .text
        .global _flush_cache
+#ifdef __score3__
+_flush_cache:
+        br      r3
+#else
 _flush_cache:
         srli    r9, r5, 4
         mv      r8, r4
@@ -69,6 +73,7 @@ _flush_cache:
         addi    r8, 16
         bcnz    2b
         br      r3
+#endif
 #endif
 
 /* FUNCTION
@@ -205,6 +210,10 @@ __modsi3:
         .set pic
         .text
         .global _flush_cache
+#ifdef __score3__
+_flush_cache:
+        br      r3
+#else
 _flush_cache:
         addi    r0, -8                  # pic used
         .cpload r29                     # pic used
@@ -244,6 +253,7 @@ _flush_cache:
         .cprestore r0, 12               # pic used
         addi    r0, 8                   # pic used
         br      r3
+#endif
 #endif
 
 /* FUNCTION
@@ -345,7 +355,6 @@ __umodsi3:
         .cpload r29                     # pic used
         li      t1, 0
         mv      t3, ra
-#       jl      __udivsi3
         la      r29, __udivsi3
         brl     r29
         mv      r4, a1
@@ -374,7 +383,6 @@ __divsi3:
         .cpload r29                     # pic used
         mv      t3, ra
         xor     t2, a0, a1
-#       jl      __orgsi3
         la      r29, __orgsi3
         brl     r29
 __divsi3_adjust:
@@ -394,7 +402,6 @@ __modsi3:
         .cpload r29                     # pic used
         mv      t3, ra
         mv      t2, a0
-#       jl      __orgsi3
         la      r29, __orgsi3
         brl     r29
         mv      r4, a1
