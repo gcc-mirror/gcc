@@ -3070,7 +3070,6 @@ extern int sym_lineno;			/* sgi next label # for each stmt */
 extern int set_noreorder;		/* # of nested .set noreorder's  */
 extern int set_nomacro;			/* # of nested .set nomacro's  */
 extern int set_noat;			/* # of nested .set noat's  */
-extern int set_volatile;		/* # of nested .set volatile's  */
 extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
 extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];

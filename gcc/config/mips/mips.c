@@ -446,7 +446,6 @@ int mips_dwarf_regno[FIRST_PSEUDO_REGISTER];
 int set_noreorder;
 int set_noat;
 int set_nomacro;
-int set_volatile;
 
 /* The next branch instruction is a branch likely, not branch normal.  */
 int mips_branch_likely;
@@ -6287,358 +6286,344 @@ print_operand_reloc (FILE *file, rtx op, enum mips_symbol_context context,
       fputc (')', file);
 }
 
-/* Implement the PRINT_OPERAND macro.  The MIPS-specific operand codes are:
-
-   'X'  OP is CONST_INT, prints 32 bits in hexadecimal format = "0x%08x",
-   'x'  OP is CONST_INT, prints 16 bits in hexadecimal format = "0x%04x",
-   'h'  OP is HIGH, prints %hi(X),
-   'd'  output integer constant in decimal,
-   'z'	if the operand is 0, use $0 instead of normal operand.
-   'D'  print second part of double-word register or memory operand.
-   'L'  print low-order register of double-word register operand.
-   'M'  print high-order register of double-word register operand.
-   'C'  print part of opcode for a branch condition.
-   'F'  print part of opcode for a floating-point branch condition.
-   'N'  print part of opcode for a branch condition, inverted.
-   'W'  print part of opcode for a floating-point branch condition, inverted.
-   'T'  print 'f' for (eq:CC ...), 't' for (ne:CC ...),
-	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
-   't'  like 'T', but with the EQ/NE cases reversed
-   'Y'  for a CONST_INT X, print mips_fp_conditions[X]
-   'Z'  print the operand and a comma for ISA_HAS_8CC, otherwise print nothing
-   'R'  print the reloc associated with LO_SUM
-   'q'  print DSP accumulator registers
-
+/* Print the text for PRINT_OPERAND punctation character CH to FILE.
    The punctuation characters are:
 
-   '('	Turn on .set noreorder
-   ')'	Turn on .set reorder
-   '['	Turn on .set noat
-   ']'	Turn on .set at
-   '<'	Turn on .set nomacro
-   '>'	Turn on .set macro
-   '{'	Turn on .set volatile (not GAS)
-   '}'	Turn on .set novolatile (not GAS)
-   '&'	Turn on .set noreorder if filling delay slots
-   '*'	Turn on both .set noreorder and .set nomacro if filling delay slots
-   '!'	Turn on .set nomacro if filling delay slots
-   '#'	Print nop if in a .set noreorder section.
-   '/'	Like '#', but does nothing within a delayed branch sequence
-   '?'	Print 'l' if we are to use a branch likely instead of normal branch.
-   '@'	Print the name of the assembler temporary register (at or $1).
+   '('	Start a nested ".set noreorder" block.
+   ')'	End a nested ".set noreorder" block.
+   '['	Start a nested ".set noat" block.
+   ']'	End a nested ".set noat" block.
+   '<'	Start a nested ".set nomacro" block.
+   '>'	End a nested ".set nomacro" block.
+   '*'	Behave like %(%< if generating a delayed-branch sequence.
+   '#'	Print a nop if in a ".set noreorder" block.
+   '/'	Like '#', but do nothing within a delayed-branch sequence.
+   '?'	Print "l" if mips_branch_likely is true
    '.'	Print the name of the register with a hard-wired zero (zero or $0).
+   '@'	Print the name of the assembler temporary register (at or $1).
    '^'	Print the name of the pic call-through register (t9 or $25).
-   '$'	Print the name of the stack pointer register (sp or $29).
    '+'	Print the name of the gp register (usually gp or $28).
-   '~'	Output a branch alignment to LABEL_ALIGN(NULL).
-   '|'  Print .set push; .set mips2 if !ISA_HAS_LL_SC.
-   '-'  Print .set pop under the same conditions for '|'.  */
+   '$'	Print the name of the stack pointer register (sp or $29).
+   '|'	Print ".set push; .set mips2" if !ISA_HAS_LL_SC.
+   '-'	Print ".set pop" under the same conditions for '|'.
+
+   See also mips_init_print_operand_pucnt.  */
+
+static void
+mips_print_operand_punctuation (FILE *file, int ch)
+{
+  switch (ch)
+    {
+    case '(':
+      if (set_noreorder++ == 0)
+	fputs (".set\tnoreorder\n\t", file);
+      break;
+
+    case ')':
+      gcc_assert (set_noreorder > 0);
+      if (--set_noreorder == 0)
+	fputs ("\n\t.set\treorder", file);
+      break;
+
+    case '[':
+      if (set_noat++ == 0)
+	fputs (".set\tnoat\n\t", file);
+      break;
+
+    case ']':
+      gcc_assert (set_noat > 0);
+      if (--set_noat == 0)
+	fputs ("\n\t.set\tat", file);
+      break;
+
+    case '<':
+      if (set_nomacro++ == 0)
+	fputs (".set\tnomacro\n\t", file);
+      break;
+
+    case '>':
+      gcc_assert (set_nomacro > 0);
+      if (--set_nomacro == 0)
+	fputs ("\n\t.set\tmacro", file);
+      break;
+
+    case '*':
+      if (final_sequence != 0)
+	{
+	  mips_print_operand_punctuation (file, '(');
+	  mips_print_operand_punctuation (file, '<');
+	}
+      break;
+
+    case '#':
+      if (set_noreorder != 0)
+	fputs ("\n\tnop", file);
+      break;
+
+    case '/':
+      /* Print an extra newline so that the delayed insn is separated
+	 from the following ones.  This looks neater and is consistent
+	 with non-nop delayed sequences.  */
+      if (set_noreorder != 0 && final_sequence == 0)
+	fputs ("\n\tnop\n", file);
+      break;
+
+    case '?':
+      if (mips_branch_likely)
+	putc ('l', file);
+      break;
+
+    case '.':
+      fputs (reg_names[GP_REG_FIRST + 0], file);
+      break;
+
+    case '@':
+      fputs (reg_names[GP_REG_FIRST + 1], file);
+      break;
+
+    case '^':
+      fputs (reg_names[PIC_FUNCTION_ADDR_REGNUM], file);
+      break;
+
+    case '+':
+      fputs (reg_names[PIC_OFFSET_TABLE_REGNUM], file);
+      break;
+
+    case '$':
+      fputs (reg_names[STACK_POINTER_REGNUM], file);
+      break;
+
+    case '|':
+      if (!ISA_HAS_LL_SC)
+	fputs (".set\tpush\n\t.set\tmips2\n\t", file);
+      break;
+
+    case '-':
+      if (!ISA_HAS_LL_SC)
+	fputs ("\n\t.set\tpop", file);
+      break;
+
+    default:
+      gcc_unreachable ();
+      break;
+    }
+}
+
+/* Initialize mips_print_operand_punct.  */
+
+static void
+mips_init_print_operand_punct (void)
+{
+  const char *p;
+
+  for (p = "()[]<>*#/?.@^+$|-"; *p; p++)
+    mips_print_operand_punct[(unsigned char) *p] = true;
+}
+
+/* PRINT_OPERAND prefix LETTER refers to the integer branch instruction
+   associated with condition CODE.  Print the condition part of the
+   opcode to FILE.  */
+
+static void
+mips_print_int_branch_condition (FILE *file, enum rtx_code code, int letter)
+{
+  switch (code)
+    {
+    case EQ:
+    case NE:
+    case GT:
+    case GE:
+    case LT:
+    case LE:
+    case GTU:
+    case GEU:
+    case LTU:
+    case LEU:
+      /* Conveniently, the MIPS names for these conditions are the same
+	 as their RTL equivalents.  */
+      fputs (GET_RTX_NAME (code), file);
+      break;
+
+    default:
+      output_operand_lossage ("'%%%c' is not a valid operand prefix", letter);
+      break;
+    }
+}
+
+/* Likewise floating-point branches.  */
+
+static void
+mips_print_float_branch_condition (FILE *file, enum rtx_code code, int letter)
+{
+  switch (code)
+    {
+    case EQ:
+      fputs ("c1f", file);
+      break;
+
+    case NE:
+      fputs ("c1t", file);
+      break;
+
+    default:
+      output_operand_lossage ("'%%%c' is not a valid operand prefix", letter);
+      break;
+    }
+}
+
+/* Implement the PRINT_OPERAND macro.  The MIPS-specific operand codes are:
+
+   'X'	Print CONST_INT OP in hexadecimal format.
+   'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
+   'd'	Print CONST_INT OP in decimal.
+   'h'	Print the high-part relocation associated with OP, after stripping
+	  any outermost HIGH.
+   'R'	Print the low-part relocation associated with OP.
+   'C'	Print the integer branch condition for comparison OP.
+   'N'	Print the inverse of the integer branch condition for comparison OP.
+   'F'	Print the FPU branch condition for comparison OP.
+   'W'	Print the inverse of the FPU branch condition for comparison OP.
+   'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
+	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
+   't'	Like 'T', but with the EQ/NE cases reversed
+   'Y'	Print mips_fp_conditions[INTVAL (OP)]
+   'Z'	Print OP and a comma for ISA_HAS_8CC, otherwise print nothing.
+   'q'	Print a DSP accumulator register.
+   'D'	Print the second part of a double-word register or memory operand.
+   'L'	Print the low-order register in a double-word register operand.
+   'M'	Print high-order register in a double-word register operand.
+   'z'	Print $0 if OP is zero, otherwise print OP normally.  */
 
 void
 print_operand (FILE *file, rtx op, int letter)
 {
-  register enum rtx_code code;
+  enum rtx_code code;
 
   if (PRINT_OPERAND_PUNCT_VALID_P (letter))
     {
-      switch (letter)
-	{
-	case '?':
-	  if (mips_branch_likely)
-	    putc ('l', file);
-	  break;
-
-	case '@':
-	  fputs (reg_names [GP_REG_FIRST + 1], file);
-	  break;
-
-	case '^':
-	  fputs (reg_names [PIC_FUNCTION_ADDR_REGNUM], file);
-	  break;
-
-	case '.':
-	  fputs (reg_names [GP_REG_FIRST + 0], file);
-	  break;
-
-	case '$':
-	  fputs (reg_names[STACK_POINTER_REGNUM], file);
-	  break;
-
-	case '+':
-	  fputs (reg_names[PIC_OFFSET_TABLE_REGNUM], file);
-	  break;
-
-	case '&':
-	  if (final_sequence != 0 && set_noreorder++ == 0)
-	    fputs (".set\tnoreorder\n\t", file);
-	  break;
-
-	case '*':
-	  if (final_sequence != 0)
-	    {
-	      if (set_noreorder++ == 0)
-		fputs (".set\tnoreorder\n\t", file);
-
-	      if (set_nomacro++ == 0)
-		fputs (".set\tnomacro\n\t", file);
-	    }
-	  break;
-
-	case '!':
-	  if (final_sequence != 0 && set_nomacro++ == 0)
-	    fputs ("\n\t.set\tnomacro", file);
-	  break;
-
-	case '#':
-	  if (set_noreorder != 0)
-	    fputs ("\n\tnop", file);
-	  break;
-
-	case '/':
-	  /* Print an extra newline so that the delayed insn is separated
-	     from the following ones.  This looks neater and is consistent
-	     with non-nop delayed sequences.  */
-	  if (set_noreorder != 0 && final_sequence == 0)
-	    fputs ("\n\tnop\n", file);
-	  break;
-
-	case '(':
-	  if (set_noreorder++ == 0)
-	    fputs (".set\tnoreorder\n\t", file);
-	  break;
-
-	case ')':
-	  if (set_noreorder == 0)
-	    error ("internal error: %%) found without a %%( in assembler pattern");
-
-	  else if (--set_noreorder == 0)
-	    fputs ("\n\t.set\treorder", file);
-
-	  break;
-
-	case '[':
-	  if (set_noat++ == 0)
-	    fputs (".set\tnoat\n\t", file);
-	  break;
-
-	case ']':
-	  if (set_noat == 0)
-	    error ("internal error: %%] found without a %%[ in assembler pattern");
-	  else if (--set_noat == 0)
-	    fputs ("\n\t.set\tat", file);
-
-	  break;
-
-	case '<':
-	  if (set_nomacro++ == 0)
-	    fputs (".set\tnomacro\n\t", file);
-	  break;
-
-	case '>':
-	  if (set_nomacro == 0)
-	    error ("internal error: %%> found without a %%< in assembler pattern");
-	  else if (--set_nomacro == 0)
-	    fputs ("\n\t.set\tmacro", file);
-
-	  break;
-
-	case '{':
-	  if (set_volatile++ == 0)
-	    fputs ("#.set\tvolatile\n\t", file);
-	  break;
-
-	case '}':
-	  if (set_volatile == 0)
-	    error ("internal error: %%} found without a %%{ in assembler pattern");
-	  else if (--set_volatile == 0)
-	    fputs ("\n\t#.set\tnovolatile", file);
-
-	  break;
-
-	case '~':
-	  {
-	    if (align_labels_log > 0)
-	      ASM_OUTPUT_ALIGN (file, align_labels_log);
-	  }
-	  break;
-
-	case '|':
-	  if (!ISA_HAS_LL_SC)
-	    fputs (".set\tpush\n\t.set\tmips2\n\t", file);
-	  break;
-
-	case '-':
-	  if (!ISA_HAS_LL_SC)
-	    fputs ("\n\t.set\tpop", file);
-	  break;
-
-	default:
-	  error ("PRINT_OPERAND: unknown punctuation '%c'", letter);
-	  break;
-	}
-
+      mips_print_operand_punctuation (file, letter);
       return;
     }
 
-  if (! op)
-    {
-      error ("PRINT_OPERAND null pointer");
-      return;
-    }
-
+  gcc_assert (op);
   code = GET_CODE (op);
 
-  if (letter == 'C')
-    switch (code)
-      {
-      case EQ:	fputs ("eq",  file); break;
-      case NE:	fputs ("ne",  file); break;
-      case GT:	fputs ("gt",  file); break;
-      case GE:	fputs ("ge",  file); break;
-      case LT:	fputs ("lt",  file); break;
-      case LE:	fputs ("le",  file); break;
-      case GTU: fputs ("gtu", file); break;
-      case GEU: fputs ("geu", file); break;
-      case LTU: fputs ("ltu", file); break;
-      case LEU: fputs ("leu", file); break;
-      default:
-	fatal_insn ("PRINT_OPERAND, invalid insn for %%C", op);
-      }
-
-  else if (letter == 'N')
-    switch (code)
-      {
-      case EQ:	fputs ("ne",  file); break;
-      case NE:	fputs ("eq",  file); break;
-      case GT:	fputs ("le",  file); break;
-      case GE:	fputs ("lt",  file); break;
-      case LT:	fputs ("ge",  file); break;
-      case LE:	fputs ("gt",  file); break;
-      case GTU: fputs ("leu", file); break;
-      case GEU: fputs ("ltu", file); break;
-      case LTU: fputs ("geu", file); break;
-      case LEU: fputs ("gtu", file); break;
-      default:
-	fatal_insn ("PRINT_OPERAND, invalid insn for %%N", op);
-      }
-
-  else if (letter == 'F')
-    switch (code)
-      {
-      case EQ: fputs ("c1f", file); break;
-      case NE: fputs ("c1t", file); break;
-      default:
-	fatal_insn ("PRINT_OPERAND, invalid insn for %%F", op);
-      }
-
-  else if (letter == 'W')
-    switch (code)
-      {
-      case EQ: fputs ("c1t", file); break;
-      case NE: fputs ("c1f", file); break;
-      default:
-	fatal_insn ("PRINT_OPERAND, invalid insn for %%W", op);
-      }
-
-  else if (letter == 'h')
+  switch (letter)
     {
-      if (GET_CODE (op) == HIGH)
-	op = XEXP (op, 0);
-
-      print_operand_reloc (file, op, SYMBOL_CONTEXT_LEA, mips_hi_relocs);
-    }
-
-  else if (letter == 'R')
-    print_operand_reloc (file, op, SYMBOL_CONTEXT_LEA, mips_lo_relocs);
-
-  else if (letter == 'Y')
-    {
-      if (GET_CODE (op) == CONST_INT
-	  && ((unsigned HOST_WIDE_INT) INTVAL (op)
-	      < ARRAY_SIZE (mips_fp_conditions)))
-	fputs (mips_fp_conditions[INTVAL (op)], file);
+    case 'X':
+      if (GET_CODE (op) == CONST_INT)
+	fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op));
       else
-	output_operand_lossage ("invalid %%Y value");
-    }
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
 
-  else if (letter == 'Z')
-    {
+    case 'x':
+      if (GET_CODE (op) == CONST_INT)
+	fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op) & 0xffff);
+      else
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'd':
+      if (GET_CODE (op) == CONST_INT)
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
+      else
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'h':
+      if (code == HIGH)
+	op = XEXP (op, 0);
+      print_operand_reloc (file, op, SYMBOL_CONTEXT_LEA, mips_hi_relocs);
+      break;
+
+    case 'R':
+      print_operand_reloc (file, op, SYMBOL_CONTEXT_LEA, mips_lo_relocs);
+      break;
+
+    case 'C':
+      mips_print_int_branch_condition (file, code, letter);
+      break;
+
+    case 'N':
+      mips_print_int_branch_condition (file, reverse_condition (code), letter);
+      break;
+
+    case 'F':
+      mips_print_float_branch_condition (file, code, letter);
+      break;
+
+    case 'W':
+      mips_print_float_branch_condition (file, reverse_condition (code),
+					 letter);
+      break;
+
+    case 'T':
+    case 't':
+      {
+	int truth = (code == NE) == (letter == 'T');
+	fputc ("zfnt"[truth * 2 + (GET_MODE (op) == CCmode)], file);
+      }
+      break;
+
+    case 'Y':
+      if (code == CONST_INT && UINTVAL (op) < ARRAY_SIZE (mips_fp_conditions))
+	fputs (mips_fp_conditions[UINTVAL (op)], file);
+      else
+	output_operand_lossage ("'%%%c' is not a valid operand prefix",
+				letter);
+      break;
+
+    case 'Z':
       if (ISA_HAS_8CC)
 	{
 	  print_operand (file, op, 0);
 	  fputc (',', file);
 	}
-    }
+      break;
 
-  else if (letter == 'q')
-    {
-      int regnum;
-
-      if (code != REG)
-	fatal_insn ("PRINT_OPERAND, invalid insn for %%q", op);
-
-      regnum = REGNO (op);
-      if (MD_REG_P (regnum))
+    case 'q':
+      if (code == REG && MD_REG_P (REGNO (op)))
 	fprintf (file, "$ac0");
-      else if (DSP_ACC_REG_P (regnum))
-	fprintf (file, "$ac%c", reg_names[regnum][3]);
+      else if (code == REG && DSP_ACC_REG_P (REGNO (op)))
+	fprintf (file, "$ac%c", reg_names[REGNO (op)][3]);
       else
-	fatal_insn ("PRINT_OPERAND, invalid insn for %%q", op);
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    default:
+      switch (code)
+	{
+	case REG:
+	  {
+	    unsigned int regno = REGNO (op);
+	    if ((letter == 'M' && TARGET_LITTLE_ENDIAN)
+		|| (letter == 'L' && TARGET_BIG_ENDIAN)
+		|| letter == 'D')
+	      regno++;
+	    fprintf (file, "%s", reg_names[regno]);
+	  }
+	  break;
+
+	case MEM:
+	  if (letter == 'D')
+	    output_address (plus_constant (XEXP (op, 0), 4));
+	  else
+	    output_address (XEXP (op, 0));
+	  break;
+
+	default:
+	  if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
+	    fputs (reg_names[GP_REG_FIRST], file);
+	  else if (CONST_GP_P (op))
+	    fputs (reg_names[GLOBAL_POINTER_REGNUM], file);
+	  else
+	    output_addr_const (file, mips_strip_unspec_address (op));
+	  break;
+	}
     }
-
-  else if (code == REG || code == SUBREG)
-    {
-      register int regnum;
-
-      if (code == REG)
-	regnum = REGNO (op);
-      else
-	regnum = true_regnum (op);
-
-      if ((letter == 'M' && ! WORDS_BIG_ENDIAN)
-	  || (letter == 'L' && WORDS_BIG_ENDIAN)
-	  || letter == 'D')
-	regnum++;
-
-      fprintf (file, "%s", reg_names[regnum]);
-    }
-
-  else if (code == MEM)
-    {
-      if (letter == 'D')
-	output_address (plus_constant (XEXP (op, 0), 4));
-      else
-	output_address (XEXP (op, 0));
-    }
-
-  else if (letter == 'x' && GET_CODE (op) == CONST_INT)
-    fprintf (file, HOST_WIDE_INT_PRINT_HEX, 0xffff & INTVAL(op));
-
-  else if (letter == 'X' && GET_CODE(op) == CONST_INT)
-    fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op));
-
-  else if (letter == 'd' && GET_CODE(op) == CONST_INT)
-    fprintf (file, HOST_WIDE_INT_PRINT_DEC, (INTVAL(op)));
-
-  else if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
-    fputs (reg_names[GP_REG_FIRST], file);
-
-  else if (letter == 'd' || letter == 'x' || letter == 'X')
-    output_operand_lossage ("invalid use of %%d, %%x, or %%X");
-
-  else if (letter == 'T' || letter == 't')
-    {
-      int truth = (code == NE) == (letter == 'T');
-      fputc ("zfnt"[truth * 2 + (GET_MODE (op) == CCmode)], file);
-    }
-
-  else if (CONST_GP_P (op))
-    fputs (reg_names[GLOBAL_POINTER_REGNUM], file);
-
-  else
-    output_addr_const (file, mips_strip_unspec_address (op));
 }
-
+
 /* Output address operand X to FILE.  */
 
 void
@@ -12318,28 +12303,7 @@ override_options (void)
   if (TARGET_DSPR2)
     target_flags |= MASK_DSP;
 
-  mips_print_operand_punct['?'] = 1;
-  mips_print_operand_punct['#'] = 1;
-  mips_print_operand_punct['/'] = 1;
-  mips_print_operand_punct['&'] = 1;
-  mips_print_operand_punct['!'] = 1;
-  mips_print_operand_punct['*'] = 1;
-  mips_print_operand_punct['@'] = 1;
-  mips_print_operand_punct['.'] = 1;
-  mips_print_operand_punct['('] = 1;
-  mips_print_operand_punct[')'] = 1;
-  mips_print_operand_punct['['] = 1;
-  mips_print_operand_punct[']'] = 1;
-  mips_print_operand_punct['<'] = 1;
-  mips_print_operand_punct['>'] = 1;
-  mips_print_operand_punct['{'] = 1;
-  mips_print_operand_punct['}'] = 1;
-  mips_print_operand_punct['^'] = 1;
-  mips_print_operand_punct['$'] = 1;
-  mips_print_operand_punct['+'] = 1;
-  mips_print_operand_punct['~'] = 1;
-  mips_print_operand_punct['|'] = 1;
-  mips_print_operand_punct['-'] = 1;
+  mips_init_print_operand_punct ();
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
