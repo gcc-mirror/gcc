@@ -1,3 +1,16 @@
+2007-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/32961
+	* config/i386/i386.c (ix86_expand_builtin) [IX86_BUILTIN_PSLLWI128,
+	IX86_BUILTIN_PSLLDI128, BUILTIN_PSLLQI128, IX86_BUILTIN_PSRAWI128,
+	IX86_BUILTIN_PSRADI128, IX86_BUILTIN_PSRLWI128,
+	IX86_BUILTIN_PSRLDI128, IX86_BUILTIN_PSRLQI128]: Do not require
+	immediate shift value.
+	* config/i386/emmintrin.h (_mm_slli_epi16, _mm_slli_epi32,
+	_mm_slli_epi64, _mm_srai_epi16, _mm_srai_epi32, _mm_srli_epi16,
+	_mm_srli_epi32, _mm_srli_epi64):  Enable disabled functions and
+	remove equivalent macro definitions.
+
 2007-10-18  Chen liqin  <liqin@sunnorth.com.cn>
 
         * config.gcc : update score-*-elf(extra_objs).

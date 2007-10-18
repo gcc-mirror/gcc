@@ -1,5 +1,10 @@
 2007-10-18  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/32961
+	* gcc.target/i386/pr32961.c: New testcase.
+
+2007-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/pr31167.c: Add i?86-*-* to target selector.
 	Require lp64 effective target.
 

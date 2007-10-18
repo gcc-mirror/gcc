@@ -16209,80 +16209,38 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       emit_insn (pat);
       return target;
 
-    case IX86_BUILTIN_PSLLWI128:
-      icode = CODE_FOR_ashlv8hi3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSLLDI128:
-      icode = CODE_FOR_ashlv4si3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSLLQI128:
-      icode = CODE_FOR_ashlv2di3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSRAWI128:
-      icode = CODE_FOR_ashrv8hi3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSRADI128:
-      icode = CODE_FOR_ashrv4si3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSRLWI128:
-      icode = CODE_FOR_lshrv8hi3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSRLDI128:
-      icode = CODE_FOR_lshrv4si3;
-      goto do_pshifti;
-    case IX86_BUILTIN_PSRLQI128:
-      icode = CODE_FOR_lshrv2di3;
-      goto do_pshifti;
-    do_pshifti:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-
-      if (GET_CODE (op1) != CONST_INT)
-	{
-	  error ("shift must be an immediate");
-	  return const0_rtx;
-	}
-      if (INTVAL (op1) < 0 || INTVAL (op1) > 255)
-	op1 = GEN_INT (255);
-
-      tmode = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
-	op0 = copy_to_reg (op0);
-
-      target = gen_reg_rtx (tmode);
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (!pat)
-	return 0;
-      emit_insn (pat);
-      return target;
-
     case IX86_BUILTIN_PSLLW128:
+    case IX86_BUILTIN_PSLLWI128:
       icode = CODE_FOR_ashlv8hi3;
       goto do_pshift;
     case IX86_BUILTIN_PSLLD128:
+    case IX86_BUILTIN_PSLLDI128:
       icode = CODE_FOR_ashlv4si3;
       goto do_pshift;
     case IX86_BUILTIN_PSLLQ128:
+    case IX86_BUILTIN_PSLLQI128:
       icode = CODE_FOR_ashlv2di3;
       goto do_pshift;
     case IX86_BUILTIN_PSRAW128:
+    case IX86_BUILTIN_PSRAWI128:
       icode = CODE_FOR_ashrv8hi3;
       goto do_pshift;
     case IX86_BUILTIN_PSRAD128:
+    case IX86_BUILTIN_PSRADI128:
       icode = CODE_FOR_ashrv4si3;
       goto do_pshift;
     case IX86_BUILTIN_PSRLW128:
+    case IX86_BUILTIN_PSRLWI128:
       icode = CODE_FOR_lshrv8hi3;
       goto do_pshift;
     case IX86_BUILTIN_PSRLD128:
+    case IX86_BUILTIN_PSRLDI128:
       icode = CODE_FOR_lshrv4si3;
       goto do_pshift;
     case IX86_BUILTIN_PSRLQ128:
+    case IX86_BUILTIN_PSRLQI128:
       icode = CODE_FOR_lshrv2di3;
-      goto do_pshift;
+
     do_pshift:
       arg0 = TREE_VALUE (arglist);
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
@@ -16295,7 +16253,9 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if (! (*insn_data[icode].operand[1].predicate) (op0, mode1))
 	op0 = copy_to_reg (op0);
 
-      op1 = simplify_gen_subreg (SImode, op1, GET_MODE (op1), 0);
+      if (!CONST_INT_P (op1))
+	op1 = simplify_gen_subreg (SImode, op1, GET_MODE (op1), 0);
+
       if (! (*insn_data[icode].operand[2].predicate) (op1, SImode))
 	op1 = copy_to_reg (op1);
 
