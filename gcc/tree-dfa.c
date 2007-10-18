@@ -635,14 +635,12 @@ find_vars_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 tree 
 referenced_var_lookup (unsigned int uid)
 {
-  struct int_tree_map *h, in;
+  tree h;
+  struct tree_decl_minimal in;
   in.uid = uid;
-  h = (struct int_tree_map *)
-	htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
+  h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
   gcc_assert (h || uid == 0);
-  if (h)
-    return h->to;
-  return NULL_TREE;
+  return h;
 }
 
 /* Check if TO is in the referenced_vars hash table and insert it if not.  
@@ -651,29 +649,23 @@ referenced_var_lookup (unsigned int uid)
 bool
 referenced_var_check_and_insert (tree to)
 { 
-  struct int_tree_map *h, in;
-  void **loc;
+  tree h, *loc;
+  struct tree_decl_minimal in;
   unsigned int uid = DECL_UID (to);
 
   in.uid = uid;
-  in.to = to;
-  h = (struct int_tree_map *) htab_find_with_hash (gimple_referenced_vars (cfun),
-						   &in, uid);
-
+  h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
   if (h)
     {
       /* DECL_UID has already been entered in the table.  Verify that it is
 	 the same entry as TO.  See PR 27793.  */
-      gcc_assert (h->to == to);
+      gcc_assert (h == to);
       return false;
     }
 
-  h = GGC_NEW (struct int_tree_map);
-  h->uid = uid;
-  h->to = to;
-  loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun),
-				  h, uid, INSERT);
-  *(struct int_tree_map **)  loc = h;
+  loc = (tree *) htab_find_slot_with_hash (gimple_referenced_vars (cfun),
+					   &in, uid, INSERT);
+  *loc = to;
   return true;
 }
 
@@ -774,7 +766,7 @@ void
 remove_referenced_var (tree var)
 {
   var_ann_t v_ann;
-  struct int_tree_map in;
+  struct tree_decl_minimal in;
   void **loc;
   unsigned int uid = DECL_UID (var);
 
@@ -784,10 +776,8 @@ remove_referenced_var (tree var)
   var->base.ann = NULL;
   gcc_assert (DECL_P (var));
   in.uid = uid;
-  in.to = var;
   loc = htab_find_slot_with_hash (gimple_referenced_vars (cfun), &in, uid,
 				  NO_INSERT);
-  ggc_free (*loc);
   htab_clear_slot (gimple_referenced_vars (cfun), loc);
 }
 

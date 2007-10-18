@@ -120,7 +120,7 @@ struct mem_ref_stats_d GTY(())
 struct gimple_df GTY(())
 {
   /* Array of all variables referenced in the function.  */
-  htab_t GTY((param_is (struct int_tree_map))) referenced_vars;
+  htab_t GTY((param_is (union tree_node))) referenced_vars;
 
   /* A list of all the noreturn calls passed to modify_stmt.
      cleanup_control_flow uses it to detect cases where a mid-block
@@ -560,6 +560,9 @@ struct int_tree_map GTY(())
 
 extern unsigned int int_tree_map_hash (const void *);
 extern int int_tree_map_eq (const void *, const void *);
+
+extern unsigned int uid_decl_map_hash (const void *);
+extern int uid_decl_map_eq (const void *, const void *);
 
 typedef struct 
 {

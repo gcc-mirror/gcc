@@ -1,3 +1,19 @@
+2007-10-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct gimple_df): Make referenced_vars
+	a uid_decl_map.
+	(uid_decl_map_eq): Declare.
+	(uid_decl_map_hash): Likewise.
+	* tree-ssa.c (uid_decl_map_eq): New function.
+	(uid_decl_map_hash): Likewise.
+	(init_tree_ssa): Make referenced_vars a uid_decl_map.
+	* tree-flow-inline.h (first_referenced_var): Deal with
+	the referenced_vars representation change.
+	(next_referenced_var): Likewise.
+	* tree-dfa.c (referenced_var_lookup): Likewise.
+	(referenced_var_check_and_insert): Likewise.
+	(remove_referenced_var): Likewise.
+
 2007-10-18  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/mips/mips.c (mips_dwarf_register_span): New.
