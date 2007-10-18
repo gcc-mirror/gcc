@@ -1,5 +1,16 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.h: Move variable declarations to end of file and
+	enclose them all in #ifndef USED_FOR_TARGET.
+	* config/mips/mips.c: Reorder functions into more logical groups,
+	and so that callees appear before callers.  Put the targetm
+	initializer at the end of the file.  Remove forward static
+	declarations where possible.
+	(mips_init_builtins): Add "static" to definition.
+	(mips_expand_builtin, mips_mode_rep_extended): Likewise.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (TARGET_MIN_ANCHOR_OFFSET): Delete.
 	(TARGET_MAX_ANCHOR_OFFSET): Delete.
 	(mips_cannot_force_const_mem): Don't check TARGET_HAVE_TLS.

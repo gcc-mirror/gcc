@@ -132,32 +132,6 @@ enum mips_code_readable_setting {
   CODE_READABLE_YES
 };
 
-#ifndef USED_FOR_TARGET
-extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
-extern const char *current_function_file; /* filename current function is in */
-extern int num_source_filenames;	/* current .file # */
-extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
-extern int sym_lineno;			/* sgi next label # for each stmt */
-extern int set_noreorder;		/* # of nested .set noreorder's  */
-extern int set_nomacro;			/* # of nested .set nomacro's  */
-extern int set_noat;			/* # of nested .set noat's  */
-extern int set_volatile;		/* # of nested .set volatile's  */
-extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
-extern int mips_dbx_regno[];
-extern int mips_dwarf_regno[];
-extern bool mips_split_p[];
-extern GTY(()) rtx cmp_operands[2];
-extern enum processor_type mips_arch;   /* which cpu to codegen for */
-extern enum processor_type mips_tune;   /* which cpu to schedule for */
-extern int mips_isa;			/* architectural level */
-extern int mips_abi;			/* which ABI to use */
-extern const struct mips_cpu_info mips_cpu_info_table[];
-extern const struct mips_cpu_info *mips_arch_info;
-extern const struct mips_cpu_info *mips_tune_info;
-extern const struct mips_rtx_cost_data *mips_cost;
-extern enum mips_code_readable_setting mips_code_readable;
-#endif
-
 /* Macros to silence warnings about numbers being signed in traditional
    C and unsigned in ISO C when compiled on 32-bit hosts.  */
 
@@ -1585,13 +1559,6 @@ extern enum mips_code_readable_setting mips_code_readable;
 
 #define HARD_REGNO_NREGS(REGNO, MODE) mips_hard_regno_nregs (REGNO, MODE)
 
-/* To make the code simpler, HARD_REGNO_MODE_OK just references an
-   array built in override_options.  Because machmodes.h is not yet
-   included before this file is processed, the MODE bound can't be
-   expressed here.  */
-
-extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   mips_hard_regno_mode_ok[ (int)(MODE) ][ (REGNO) ]
 
@@ -1803,8 +1770,6 @@ enum reg_class
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-
-extern const enum reg_class mips_regno_to_class[];
 
 #define REGNO_REG_CLASS(REGNO) mips_regno_to_class[ (REGNO) ]
 
@@ -3094,3 +3059,30 @@ while (0)
   "\tnop\n"					\
   "\tsync%-%]%>%)"
 
+#ifndef USED_FOR_TARGET
+extern const enum reg_class mips_regno_to_class[];
+extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
+extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
+extern const char *current_function_file; /* filename current function is in */
+extern int num_source_filenames;	/* current .file # */
+extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
+extern int sym_lineno;			/* sgi next label # for each stmt */
+extern int set_noreorder;		/* # of nested .set noreorder's  */
+extern int set_nomacro;			/* # of nested .set nomacro's  */
+extern int set_noat;			/* # of nested .set noat's  */
+extern int set_volatile;		/* # of nested .set volatile's  */
+extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
+extern int mips_dbx_regno[];
+extern int mips_dwarf_regno[];
+extern bool mips_split_p[];
+extern GTY(()) rtx cmp_operands[2];
+extern enum processor_type mips_arch;   /* which cpu to codegen for */
+extern enum processor_type mips_tune;   /* which cpu to schedule for */
+extern int mips_isa;			/* architectural level */
+extern int mips_abi;			/* which ABI to use */
+extern const struct mips_cpu_info mips_cpu_info_table[];
+extern const struct mips_cpu_info *mips_arch_info;
+extern const struct mips_cpu_info *mips_tune_info;
+extern const struct mips_rtx_cost_data *mips_cost;
+extern enum mips_code_readable_setting mips_code_readable;
+#endif
