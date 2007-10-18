@@ -1,5 +1,26 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.h (set_volatile): Delete.
+	* config/mips/mips.c (set_volatile): Delete.
+	(mips_print_operand_punctuation): New function, split out from
+	print_operand.  Remove '%{', '%}', '%~', '%&' and '%!'.
+	Use the same character ordering in the code and the comments.
+	Use a recursive call to handle '*'.  Abort on unknown characters.
+	(mips_init_print_operand_punct): New function, split out from
+	override_options.
+	(mips_print_int_branch_condition): New function, split out from
+	print_operand.  Use GET_RTX_NAME.  Use output_operand_lossage
+	to report unexpected codes.
+	(mips_print_float_branch_condition): New function, split out from
+	print_operand.  Use output_operand_lossage to report unexpected codes.
+	(print_operand): Rework to use a case statement.  Use the
+	same letter ordering in the code and the comments.  Use
+	output_operand_lossage to report unexpected codes and
+	reverse_condition to handle inverted branch conditions.
+	(override_options): Use mips_init_print_operand_punct.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.h: Move variable declarations to end of file and
 	enclose them all in #ifndef USED_FOR_TARGET.
 	* config/mips/mips.c: Reorder functions into more logical groups,
