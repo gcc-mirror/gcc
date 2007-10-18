@@ -1,6 +1,6 @@
 /* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
@@ -5508,7 +5508,7 @@ mips_set_tune (const struct mips_cpu_info *info)
    relocations and the traditional assembler macros.  It can
    split absolute 32-bit symbolic constants into a high/lo_sum
    pair but uses macros for other sorts of access.
-   
+
    Like explicit relocation support for REL targets, it relies
    on GNU extensions in the assembler and the linker.
 
@@ -5656,8 +5656,8 @@ mips_set_mips16_mode (int mips16_p)
   flag_reorder_blocks_and_partition = mips_base_reorder_blocks_and_partition;
   flag_move_loop_invariants = mips_base_move_loop_invariants;
   flag_delayed_branch = mips_flag_delayed_branch;
-  
-  if (mips16_p) 
+
+  if (mips16_p)
     {
       /* Select mips16 instruction set.  */
       target_flags |= MASK_MIPS16;
@@ -5694,7 +5694,7 @@ mips_set_mips16_mode (int mips16_p)
       if (flag_pic || TARGET_ABICALLS)
 	sorry ("MIPS16 PIC");
     }
-  else 
+  else
     {
       /* Reset to select base non-mips16 ISA.  */
       target_flags &= ~MASK_MIPS16;
@@ -5847,7 +5847,7 @@ mips_merge_decl_attributes (tree olddecl, tree newdecl)
 			   DECL_ATTRIBUTES (newdecl));
 }
 
-/* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current 
+/* Implement TARGET_SET_CURRENT_FUNCTION.  Decide whether the current
    function should use the MIPS16 ISA and switch modes accordingly.  */
 
 static void
@@ -7905,7 +7905,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   /* Select the mips16 mode for this function.  */
   if (TARGET_MIPS16)
     fprintf (file, "\t.set\tmips16\n");
-  else 
+  else
     fprintf (file, "\t.set\tnomips16\n");
 
   if (!FUNCTION_NAME_ALREADY_DECLARED)
@@ -8661,7 +8661,7 @@ mips_expand_epilogue (int sibcall_p)
       emit_jump_insn (gen_return ());
       return;
     }
-  
+
   /* In mips16 mode, if the return value should go into a floating-point
      register, we need to call a helper routine to copy it over.  */
   if (mips16_cfun_returns_in_fpr_p ())
@@ -9636,7 +9636,7 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
 		 reg_names[gparg], reg_names[fparg]);
       else if (ISA_HAS_MXHC1)
 	/* -mips32r2 -mfp64 */
-	fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", 
+	fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n",
 		 s,
 		 reg_names[gparg + (WORDS_BIG_ENDIAN ? 1 : 0)],
 		 reg_names[fparg],
@@ -11680,8 +11680,8 @@ mips_promote_ready (rtx *ready, int lower, int higher)
   ready[i] = new_head;
 }
 
-/* If the priority of the instruction at POS2 in the ready queue READY 
-   is within LIMIT units of that of the instruction at POS1, swap the 
+/* If the priority of the instruction at POS2 in the ready queue READY
+   is within LIMIT units of that of the instruction at POS1, swap the
    instructions if POS2 is not already less than POS1.  */
 
 static void
@@ -11740,20 +11740,20 @@ mips_74k_agen_reorder (rtx *ready, int nready)
 	    if (store_pos == -1)
 	      store_pos = i;
 	    break;
-	    
+
 	  case TYPE_LOAD:
 	    if (load_pos == -1)
 	      load_pos = i;
 	    break;
-	    
+
 	  default:
 	    break;
 	  }
     }
-  
+
   if (load_pos == -1 || store_pos == -1)
     return;
-  
+
   switch (mips_last_74k_agen_insn)
     {
     case TYPE_UNKNOWN:
