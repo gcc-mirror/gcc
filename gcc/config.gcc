@@ -1959,7 +1959,7 @@ s390x-ibm-tpf*)
 score-*-elf)
         tm_file="dbxelf.h elfos.h score/elf.h score/score.h"
         tmake_file=score/t-score-elf
-        extra_objs="score-mdaux.o"
+        extra_objs="score7.o score3.o"
         ;;
 sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \

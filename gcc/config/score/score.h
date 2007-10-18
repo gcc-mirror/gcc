@@ -19,30 +19,53 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "score-conv.h"
-#include "score-version.h"
-
-/* Define the information needed to generate branch insns.  This is
-   stored from the compare operation.  */
-extern GTY(()) rtx cmp_op0;
-extern GTY(()) rtx cmp_op1;
 
 /* Controlling the Compilation Driver.  */
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) \
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
-/* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
+#undef CPP_SPEC
+#define CPP_SPEC                 "%{mscore3:-D__score3__} %{G*}"
+
 #undef CC1_SPEC
-#define CC1_SPEC                 "%{G*} %{!mel:-meb}"
+#define CC1_SPEC                 "%{!mel:-meb} %{mel:-mel } \
+%{!mscore*:-mscore7}    \
+%{mscore3:-mscore3}     \
+%{mscore3d:-mscore3d}   \
+%{mscore7:-mscore7}     \
+%{mscore7d:-mscore7d}   \
+%{G*}"
 
 #undef ASM_SPEC
-#define ASM_SPEC \
-  "%{!mel:-EB} %{mel:-EL} %{mscore5:-SCORE5} %{mscore5u:-SCORE5U} \
-   %{mscore7:%{!mmac:-SCORE7}} %{mscore7:%{mmac:-SCORE7D}} \
-   %{mscore7d:-SCORE7D} %{G*}"
+#define ASM_SPEC                 "%{!mel:-EB} %{mel:-EL} \
+%{!mscore*:-march=score7}         \
+%{mscore7:-march=score7}          \
+%{mscore7d:-march=score7}         \
+%{mscore3:-march=score3}          \
+%{mscore3d:-march=score3}         \
+%{march=score5:-march=score7}     \
+%{march=score5u:-march=score7}    \
+%{march=score7:-march=score7}     \
+%{march=score7d:-march=score7}    \
+%{march=score3:-march=score3}     \
+%{march=score3d:-march=score3}    \
+%{G*}"
 
 #undef LINK_SPEC
-#define LINK_SPEC                "%{!mel:-EB} %{mel:-EL} %{G*}"
+#define LINK_SPEC                "%{!mel:-EB} %{mel:-EL} \
+%{!mscore*:-mscore7_elf}          \
+%{mscore7:-mscore7_elf}           \
+%{mscore7d:-mscore7_elf}          \
+%{mscore3:-mscore3_elf}           \
+%{mscore3d:-mscore3_elf}          \
+%{march=score5:-mscore7_elf}      \
+%{march=score5u:-mscore7_elf}     \
+%{march=score7:-mscore7_elf}      \
+%{march=score7d:-mscore7_elf}     \
+%{march=score3:-mscore3_elf}      \
+%{march=score3d:-mscore3_elf}     \
+%{G*}"
 
 /* Run-time Target Specification.  */
 #define TARGET_CPU_CPP_BUILTINS()               \
@@ -54,16 +77,26 @@ extern GTY(()) rtx cmp_op1;
       builtin_define ("__scorele__");           \
     else                                        \
       builtin_define ("__scorebe__");           \
+    if (TARGET_SCORE5)                          \
+      builtin_define ("__score5__");            \
     if (TARGET_SCORE5U)                         \
       builtin_define ("__score5u__");           \
-    else                                        \
+    if (TARGET_SCORE7)                          \
       builtin_define ("__score7__");            \
+    if (TARGET_SCORE7D)                         \
+      builtin_define ("__score7d__");           \
+    if (TARGET_SCORE3)                          \
+      builtin_define ("__score3__");            \
+    if (TARGET_SCORE3D)                         \
+      builtin_define ("__score3d__");           \
   } while (0)
 
-#define TARGET_DEFAULT         MASK_SCORE7
+#define TARGET_DEFAULT         0
+
+#define SCORE_GCC_VERSION      "1.6"
 
 #define TARGET_VERSION \
-  fprintf (stderr, "Sunplus S+CORE %s", SCORE_GCC_VERSION);
+      fprintf (stderr, "Sunplus S+core rev=%s", SCORE_GCC_VERSION);
 
 #define OVERRIDE_OPTIONS       score_override_options ()
 
@@ -415,6 +448,7 @@ enum reg_class
 /* The class value for index registers.  */
 #define INDEX_REG_CLASS                NO_REGS
 
+extern enum reg_class score_char_to_class[256];
 #define REG_CLASS_FROM_LETTER(C)       score_char_to_class[(unsigned char) (C)]
 
 /* Addressing modes, and classification of registers for them.  */
@@ -545,7 +579,7 @@ enum reg_class
    If `ACCUMULATE_OUTGOING_ARGS' is also defined, the only effect
    of this macro is to determine whether the space is included in
    `current_function_outgoing_args_size'.  */
-#define OUTGOING_REG_PARM_STACK_SPACE   1
+#define OUTGOING_REG_PARM_STACK_SPACE
 
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
 
@@ -619,28 +653,58 @@ typedef struct score_args
 /* Generating Code for Profiling  */
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
-#define FUNCTION_PROFILER(FILE, LABELNO)                           \
-{                                                                  \
-  fprintf (FILE, " .set r1  \n");                                  \
-  fprintf (FILE, " mv   r%d,r%d \n", AT_REGNUM, RA_REGNUM);        \
-  fprintf (FILE, " subi r%d, %d \n", STACK_POINTER_REGNUM, 8);     \
-  fprintf (FILE, " jl   _mcount \n");                              \
-  fprintf (FILE, " .set nor1 \n");                                 \
-}
+#define FUNCTION_PROFILER(FILE, LABELNO)                              \
+  do {                                                                \
+    if (TARGET_SCORE7)                                                \
+      {                                                               \
+        fprintf (FILE, " .set r1  \n");                               \
+        fprintf (FILE, " mv   r%d,r%d \n", AT_REGNUM, RA_REGNUM);     \
+        fprintf (FILE, " subi r%d, %d \n", STACK_POINTER_REGNUM, 8);  \
+        fprintf (FILE, " jl   _mcount \n");                           \
+        fprintf (FILE, " .set nor1 \n");                              \
+      }                                                               \
+    else if (TARGET_SCORE3)                                           \
+      {                                                               \
+        fprintf (FILE, " .set r1  \n");                               \
+        fprintf (FILE, " mv!   r%d,r%d \n", AT_REGNUM, RA_REGNUM);    \
+        fprintf (FILE, " addi! r%d, %d \n", STACK_POINTER_REGNUM, -8);\
+        fprintf (FILE, " jl   _mcount \n");                           \
+        fprintf (FILE, " .set nor1 \n");                              \
+      }                                                               \
+  } while (0)
 
-#define TRAMPOLINE_TEMPLATE(STREAM)                                \
-{                                                                  \
-  fprintf (STREAM, "\t.set r1\n");                                 \
-  fprintf (STREAM, "\tmv r31, r3\n");                              \
-  fprintf (STREAM, "\tbl nextinsn\n");                             \
-  fprintf (STREAM, "nextinsn:\n");                                 \
-  fprintf (STREAM, "\tlw r1, [r3, 6*4-8]\n");                      \
-  fprintf (STREAM, "\tlw r23, [r3, 6*4-4]\n");                     \
-  fprintf (STREAM, "\tmv r3, r31\n");                              \
-  fprintf (STREAM, "\tbr! r1\n");                                  \
-  fprintf (STREAM, "\tnop!\n");                                    \
-  fprintf (STREAM, "\t.set nor1\n");                               \
-}
+#define TRAMPOLINE_TEMPLATE(STREAM)                                   \
+  do {                                                                \
+    if (TARGET_SCORE7)                                                \
+      {                                                               \
+        fprintf (STREAM, "\t.set r1\n");                              \
+        fprintf (STREAM, "\tmv r31, r3\n");                           \
+        fprintf (STREAM, "\tbl nextinsn\n");                          \
+        fprintf (STREAM, "nextinsn:\n");                              \
+        fprintf (STREAM, "\tlw r1, [r3, 6*4-8]\n");                   \
+        fprintf (STREAM, "\tlw r23, [r3, 6*4-4]\n");                  \
+        fprintf (STREAM, "\tmv r3, r31\n");                           \
+        fprintf (STREAM, "\tbr! r1\n");                               \
+        fprintf (STREAM, "\tnop!\n");                                 \
+        fprintf (STREAM, "\t.set nor1\n");                            \
+      }                                                               \
+    else if (TARGET_SCORE3)                                           \
+      {                                                               \
+        fprintf (STREAM, "\t.set r1\n");                              \
+        fprintf (STREAM, "\tmv! r31, r3\n");                          \
+        fprintf (STREAM, "\tnop!\n");                                 \
+        fprintf (STREAM, "\tbl nextinsn\n");                          \
+        fprintf (STREAM, "nextinsn:\n");                              \
+        fprintf (STREAM, "\tlw! r1, [r3, 6*4-8]\n");                  \
+        fprintf (STREAM, "\tnop!\n");                                 \
+        fprintf (STREAM, "\tlw r23, [r3, 6*4-4]\n");                  \
+        fprintf (STREAM, "\tmv! r3, r31\n");                          \
+        fprintf (STREAM, "\tnop!\n");                                 \
+        fprintf (STREAM, "\tbr! r1\n");                               \
+        fprintf (STREAM, "\tnop!\n");                                 \
+        fprintf (STREAM, "\t.set nor1\n");                            \
+      }                                                               \
+  } while (0)
 
 /* Trampolines for Nested Functions.  */
 #define TRAMPOLINE_INSNS                6
@@ -765,17 +829,23 @@ typedef struct score_args
 /* Output of Uninitialized Variables.  */
 /* This says how to define a global common symbol.  */
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGN)     \
-  score_declare_object (STREAM, NAME, "\n\t.comm\t",                        \
-                        ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",             \
-                        SIZE, ALIGN / BITS_PER_UNIT);
+  do {                                                                      \
+    fputs ("\n\t.comm\t", STREAM);                                          \
+    assemble_name (STREAM, NAME);                                           \
+    fprintf (STREAM, " , " HOST_WIDE_INT_PRINT_UNSIGNED ", %u\n",           \
+             SIZE, ALIGN / BITS_PER_UNIT);                                  \
+  } while (0)
 
 /* This says how to define a local common symbol (i.e., not visible to
    linker).  */
 #undef ASM_OUTPUT_ALIGNED_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)            \
-  score_declare_object (STREAM, NAME, "\n\t.lcomm\t",                  \
-                        ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",        \
-                        SIZE, ALIGN / BITS_PER_UNIT);
+#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM, NAME, SIZE, ALIGN)                 \
+  do {                                                                      \
+    fputs ("\n\t.lcomm\t", STREAM);                                         \
+    assemble_name (STREAM, NAME);                                           \
+    fprintf (STREAM, " , " HOST_WIDE_INT_PRINT_UNSIGNED ", %u\n",           \
+             SIZE, ALIGN / BITS_PER_UNIT);                                  \
+  } while (0)
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP                   "\t.globl\t"
@@ -790,8 +860,11 @@ typedef struct score_args
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)
 
 #undef ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) \
-  score_declare_object (STREAM, NAME, "", ":\n", 0)
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)   \
+  do {                                                \
+    assemble_name (STREAM, NAME);                     \
+    fprintf (STREAM, ":\n");                          \
+  } while (0)
 
 /* This says how to output an external.  It would be possible not to
    output anything and let undefined symbol become external. However
@@ -808,7 +881,7 @@ typedef struct score_args
 
 /* Local compiler-generated symbols must have a prefix that the assembler
    understands.  */
-#define LOCAL_LABEL_PREFIX              "."
+#define LOCAL_LABEL_PREFIX              (TARGET_SCORE7 ? "." : "$")
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM) \
@@ -859,31 +932,87 @@ typedef struct score_args
 #define USER_LABEL_PREFIX        ""
 
 /* This is how to output an insn to push a register on the stack.  */
-#define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)       \
-  do {                                           \
-    fprintf (STREAM, "\tpush! %s,[%s]\n",        \
-             reg_names[REGNO],                   \
-             reg_names[STACK_POINTER_REGNUM]);   \
+#define ASM_OUTPUT_REG_PUSH(STREAM, REGNO)           \
+  do {                                               \
+    if (TARGET_SCORE7)                               \
+        fprintf (STREAM, "\tpush! %s,[%s]\n",        \
+                 reg_names[REGNO],                   \
+                 reg_names[STACK_POINTER_REGNUM]);   \
+    else if (TARGET_SCORE3)                          \
+        fprintf (STREAM, "\tpush!\t%s\n",            \
+                 reg_names[REGNO]);                  \
   } while (0)
 
 /* This is how to output an insn to pop a register from the stack.  */
-#define ASM_OUTPUT_REG_POP(STREAM, REGNO)        \
-  do {                                           \
-    fprintf (STREAM, "\tpop! %s,[%s]\n",         \
-             reg_names[REGNO],                   \
-             reg_names[STACK_POINTER_REGNUM]);   \
+#define ASM_OUTPUT_REG_POP(STREAM, REGNO)            \
+  do {                                               \
+    if (TARGET_SCORE7)                               \
+      fprintf (STREAM, "\tpop! %s,[%s]\n",           \
+               reg_names[REGNO],                     \
+               reg_names[STACK_POINTER_REGNUM]);     \
+    else if (TARGET_SCORE3)                          \
+      fprintf (STREAM, "\tpop!\t%s\n",               \
+               reg_names[REGNO]);                    \
   } while (0)
 
 /* Output of Dispatch Tables.  */
 /* This is how to output an element of a case-vector.  We can make the
    entries PC-relative in GP-relative when .gp(d)word is supported.  */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)              \
-  do {                                                                  \
-    if (flag_pic)                                                       \
-      fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE); \
-    else                                                                \
-      fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);   \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)                \
+  do {                                                                    \
+    if (TARGET_SCORE7)                                                    \
+      if (flag_pic)                                                       \
+        fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE); \
+      else                                                                \
+        fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);   \
+    else if (TARGET_SCORE3)                                               \
+      {                                                                   \
+        switch (GET_MODE(BODY))                                           \
+          {                                                               \
+          case QImode: /* TBB */                                          \
+            asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LL%d_tbb)/2\n",        \
+                         VALUE, REL);                                     \
+            break;                                                        \
+          case HImode: /* TBH */                                          \
+            asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LL%d_tbb)/2\n",       \
+                         VALUE, REL);                                     \
+            break;                                                        \
+          case SImode:                                                    \
+            if (flag_pic)                                                 \
+              fprintf (STREAM, "\t.gpword %sL%d\n", LOCAL_LABEL_PREFIX, VALUE); \
+            else                                                          \
+              fprintf (STREAM, "\t.word %sL%d\n", LOCAL_LABEL_PREFIX, VALUE);   \
+            break;                                                        \
+          default:                                                        \
+            gcc_unreachable();                                            \
+          }                                                               \
+      }                                                                   \
   } while (0)
+
+/* Jump table alignment is explicit in ASM_OUTPUT_CASE_LABEL.  */
+#define ADDR_VEC_ALIGN(JUMPTABLE) (GET_MODE (PATTERN (JUMPTABLE)) == SImode ? 2 \
+                                   : GET_MODE (PATTERN (JUMPTABLE)) == HImode ? 1 : 0)
+
+/* This is how to output a label which precedes a jumptable.  Since
+   Score3 instructions are 2 bytes, we may need explicit alignment here.  */
+#undef  ASM_OUTPUT_CASE_LABEL
+#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)             \
+  do {                                                                  \
+      if ((TARGET_SCORE7) && GET_MODE (PATTERN (JUMPTABLE)) == SImode)  \
+        ASM_OUTPUT_ALIGN (FILE, 2);                                     \
+      (*targetm.asm_out.internal_label) (FILE, PREFIX, NUM);            \
+  } while (0)
+
+/* Specify the machine mode that this machine uses
+   for the index in the tablejump instruction.  */
+#define CASE_VECTOR_MODE                SImode
+
+#define CASE_VECTOR_PC_RELATIVE         (TARGET_SCORE3)
+
+#define CASE_VECTOR_SHORTEN_MODE(min, max, body)                \
+   ((min < 0 || max >= 0x2000 || TARGET_SCORE7) ? SImode        \
+   : (max >= 0x200) ? HImode                                    \
+   : QImode)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) \
@@ -926,10 +1055,6 @@ typedef struct score_args
 
 /* The DWARF 2 CFA column which tracks the return address.  */
 #define DWARF_FRAME_RETURN_COLUMN       3
-
-/* Specify the machine mode that this machine uses
-   for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE                SImode
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */

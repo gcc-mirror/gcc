@@ -22,7 +22,6 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include <signal.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -48,57 +47,43 @@
 #include "target-def.h"
 #include "integrate.h"
 #include "langhooks.h"
-#include "cfglayout.h"
-#include "score-mdaux.h"
-
-#define GR_REG_CLASS_P(C)        ((C) == G16_REGS || (C) == G32_REGS)
-#define SP_REG_CLASS_P(C) \
-  ((C) == CN_REG || (C) == LC_REG || (C) == SC_REG || (C) == SP_REGS)
-#define CP_REG_CLASS_P(C) \
-  ((C) == CP1_REGS || (C) == CP2_REGS || (C) == CP3_REGS || (C) == CPA_REGS)
-#define CE_REG_CLASS_P(C) \
-  ((C) == HI_REG || (C) == LO_REG || (C) == CE_REGS)
-
-static int score_arg_partial_bytes (const CUMULATIVE_ARGS *,
-                                    enum machine_mode, tree, int);
-
-static int score_symbol_insns (enum score_symbol_type);
-
-static int score_address_insns (rtx, enum machine_mode);
-
-static bool score_rtx_costs (rtx, enum rtx_code, enum rtx_code, int *);
-
-static int score_address_cost (rtx);
+#include "score7.h"
+#include "score3.h"
 
 #undef  TARGET_ASM_FILE_START
-#define TARGET_ASM_FILE_START           th_asm_file_start
+#define TARGET_ASM_FILE_START           score_asm_file_start
 
 #undef  TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END             th_asm_file_end
+#define TARGET_ASM_FILE_END             score_asm_file_end
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
-#define TARGET_ASM_FUNCTION_PROLOGUE    th_function_prologue
+#define TARGET_ASM_FUNCTION_PROLOGUE    score_function_prologue
 
 #undef  TARGET_ASM_FUNCTION_EPILOGUE
-#define TARGET_ASM_FUNCTION_EPILOGUE    th_function_epilogue
+#define TARGET_ASM_FUNCTION_EPILOGUE    score_function_epilogue
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION            score_handle_option
 
 #undef  TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE         th_issue_rate
+#define TARGET_SCHED_ISSUE_RATE         score_issue_rate
 
 #undef TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION   th_select_rtx_section
+#define TARGET_ASM_SELECT_RTX_SECTION   score_select_rtx_section
 
 #undef  TARGET_IN_SMALL_DATA_P
-#define TARGET_IN_SMALL_DATA_P          th_in_small_data_p
+#define TARGET_IN_SMALL_DATA_P          score_in_small_data_p
 
 #undef  TARGET_FUNCTION_OK_FOR_SIBCALL
-#define TARGET_FUNCTION_OK_FOR_SIBCALL  th_function_ok_for_sibcall
+#define TARGET_FUNCTION_OK_FOR_SIBCALL  score_function_ok_for_sibcall
 
 #undef TARGET_STRICT_ARGUMENT_NAMING
-#define TARGET_STRICT_ARGUMENT_NAMING   th_strict_argument_naming
+#define TARGET_STRICT_ARGUMENT_NAMING   hook_bool_CUMULATIVE_ARGS_true
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
-#define TARGET_ASM_OUTPUT_MI_THUNK      th_output_mi_thunk
+#define TARGET_ASM_OUTPUT_MI_THUNK      score_output_mi_thunk
 
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK  hook_bool_tree_hwi_hwi_tree_true
@@ -130,8 +115,11 @@ static int score_address_cost (rtx);
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST             score_address_cost
 
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
+struct extern_list *extern_head = 0;
+rtx cmp_op0, cmp_op1;
+
+/* default 0 = NO_REGS  */
+enum reg_class score_char_to_class[256];
 
 /* Implement TARGET_RETURN_IN_MEMORY.  In S+core,
    small structures are returned in a register.
@@ -139,9 +127,12 @@ static int score_address_cost (rtx);
 static bool
 score_return_in_memory (tree type, tree fndecl ATTRIBUTE_UNUSED)
 {
-  return ((TYPE_MODE (type) == BLKmode)
-          || (int_size_in_bytes (type) > 2 * UNITS_PER_WORD)
-          || (int_size_in_bytes (type) == -1));
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_return_in_memory (type, fndecl);
+  else if (TARGET_SCORE3)
+    return score3_return_in_memory (type, fndecl);
+
+  gcc_unreachable ();
 }
 
 /* Return nonzero when an argument must be passed by reference.  */
@@ -154,308 +145,116 @@ score_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   return targetm.calls.must_pass_in_stack (mode, type);
 }
 
-/* Return a legitimate address for REG + OFFSET.  */
-static rtx
-score_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
-{
-  if (!IMM_IN_RANGE (offset, 15, 1))
-    {
-      reg = expand_simple_binop (GET_MODE (reg), PLUS,
-                                 gen_int_mode (offset & 0xffffc000,
-                                               GET_MODE (reg)),
-                                 reg, NULL, 0, OPTAB_WIDEN);
-      offset &= 0x3fff;
-    }
-
-  return plus_constant (reg, offset);
-}
-
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
 static void
-th_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
-                    HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
-                    tree function)
+score_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
+                       HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
+                       tree function)
 {
-  rtx this, temp1, temp2, insn, fnaddr;
-
-  /* Pretend to be a post-reload pass while generating rtl.  */
-  no_new_pseudos = 1;
-  reload_completed = 1;
-  reset_block_changes ();
-
-  /* We need two temporary registers in some cases.  */
-  temp1 = gen_rtx_REG (Pmode, 8);
-  temp2 = gen_rtx_REG (Pmode, 9);
-
-  /* Find out which register contains the "this" pointer.  */
-  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
-    this = gen_rtx_REG (Pmode, ARG_REG_FIRST + 1);
-  else
-    this = gen_rtx_REG (Pmode, ARG_REG_FIRST);
-
-  /* Add DELTA to THIS.  */
-  if (delta != 0)
-    {
-      rtx offset = GEN_INT (delta);
-      if (!CONST_OK_FOR_LETTER_P (delta, 'L'))
-        {
-          emit_move_insn (temp1, offset);
-          offset = temp1;
-        }
-      emit_insn (gen_add3_insn (this, this, offset));
-    }
-
-  /* If needed, add *(*THIS + VCALL_OFFSET) to THIS.  */
-  if (vcall_offset != 0)
-    {
-      rtx addr;
-
-      /* Set TEMP1 to *THIS.  */
-      emit_move_insn (temp1, gen_rtx_MEM (Pmode, this));
-
-      /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
-      addr = score_add_offset (temp2, temp1, vcall_offset);
-
-      /* Load the offset and add it to THIS.  */
-      emit_move_insn (temp1, gen_rtx_MEM (Pmode, addr));
-      emit_insn (gen_add3_insn (this, this, temp1));
-    }
-
-  /* Jump to the target function.  */
-  fnaddr = XEXP (DECL_RTL (function), 0);
-  insn = emit_call_insn (gen_sibcall_internal (fnaddr, const0_rtx));
-  SIBLING_CALL_P (insn) = 1;
-
-  /* Run just enough of rest_of_compilation.  This sequence was
-     "borrowed" from alpha.c.  */
-  insn = get_insns ();
-  insn_locators_initialize ();
-  split_all_insns_noflow ();
-  shorten_branches (insn);
-  final_start_function (insn, file, 1);
-  final (insn, file, 1);
-  final_end_function ();
-
-  /* Clean up the vars set above.  Note that final_end_function resets
-     the global pointer for us.  */
-  reload_completed = 0;
-  no_new_pseudos = 0;
-}
-
-/* Implement TARGET_STRICT_ARGUMENT_NAMING.  */
-static bool
-th_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
-{
-  return true;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_output_mi_thunk (file, thunk_fndecl, delta,
+                                   vcall_offset, function);
+  else if (TARGET_SCORE3)
+    return score3_output_mi_thunk (file, thunk_fndecl, delta,
+                                   vcall_offset, function);
+  gcc_unreachable ();
 }
 
 /* Implement TARGET_FUNCTION_OK_FOR_SIBCALL.  */
 static bool
-th_function_ok_for_sibcall (ATTRIBUTE_UNUSED tree decl,
-                            ATTRIBUTE_UNUSED tree exp)
+score_function_ok_for_sibcall (ATTRIBUTE_UNUSED tree decl,
+                               ATTRIBUTE_UNUSED tree exp)
 {
   return true;
 }
 
-struct score_arg_info
-{
-  /* The argument's size, in bytes.  */
-  unsigned int num_bytes;
-
-  /* The number of words passed in registers, rounded up.  */
-  unsigned int reg_words;
-
-  /* The offset of the first register from GP_ARG_FIRST or FP_ARG_FIRST,
-     or ARG_REG_NUM if the argument is passed entirely on the stack.  */
-  unsigned int reg_offset;
-
-  /* The number of words that must be passed on the stack, rounded up.  */
-  unsigned int stack_words;
-
-  /* The offset from the start of the stack overflow area of the argument's
-     first stack word.  Only meaningful when STACK_WORDS is nonzero.  */
-  unsigned int stack_offset;
-};
-
-/* Fill INFO with information about a single argument.  CUM is the
-   cumulative state for earlier arguments.  MODE is the mode of this
-   argument and TYPE is its type (if known).  NAMED is true if this
-   is a named (fixed) argument rather than a variable one.  */
-static void
-classify_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-              tree type, int named, struct score_arg_info *info)
-{
-  int even_reg_p;
-  unsigned int num_words, max_regs;
-
-  even_reg_p = 0;
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      || GET_MODE_CLASS (mode) == MODE_FLOAT)
-    even_reg_p = (GET_MODE_SIZE (mode) > UNITS_PER_WORD);
-  else
-    if (type != NULL_TREE && TYPE_ALIGN (type) > BITS_PER_WORD && named)
-      even_reg_p = 1;
-
-  if (TARGET_MUST_PASS_IN_STACK (mode, type))
-    info->reg_offset = ARG_REG_NUM;
-  else
-    {
-      info->reg_offset = cum->num_gprs;
-      if (even_reg_p)
-        info->reg_offset += info->reg_offset & 1;
-    }
-
-  if (mode == BLKmode)
-    info->num_bytes = int_size_in_bytes (type);
-  else
-    info->num_bytes = GET_MODE_SIZE (mode);
-
-  num_words = (info->num_bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-  max_regs = ARG_REG_NUM - info->reg_offset;
-
-  /* Partition the argument between registers and stack.  */
-  info->reg_words = MIN (num_words, max_regs);
-  info->stack_words = num_words - info->reg_words;
-
-  /* The alignment applied to registers is also applied to stack arguments.  */
-  if (info->stack_words)
-    {
-      info->stack_offset = cum->stack_words;
-      if (even_reg_p)
-        info->stack_offset += info->stack_offset & 1;
-    }
-}
-
 /* Set up the stack and frame (if desired) for the function.  */
 static void
-th_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+score_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  const char *fnname;
-  struct score_frame_info *f = mda_cached_frame ();
-  HOST_WIDE_INT tsize = f->total_size;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_function_prologue (file, size);
+  else if (TARGET_SCORE3)
+    return score3_function_prologue (file, size);
 
-  fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-  if (!flag_inhibit_size_directive)
-    {
-      fputs ("\t.ent\t", file);
-      assemble_name (file, fnname);
-      fputs ("\n", file);
-    }
-  assemble_name (file, fnname);
-  fputs (":\n", file);
-
-  if (!flag_inhibit_size_directive)
-    {
-      fprintf (file,
-               "\t.frame\t%s," HOST_WIDE_INT_PRINT_DEC ",%s, %d\t\t"
-               "# vars= " HOST_WIDE_INT_PRINT_DEC ", regs= %d"
-               ", args= " HOST_WIDE_INT_PRINT_DEC
-               ", gp= " HOST_WIDE_INT_PRINT_DEC "\n",
-               (reg_names[(frame_pointer_needed)
-                ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
-               tsize,
-               reg_names[RA_REGNUM],
-               current_function_is_leaf ? 1 : 0,
-               f->var_size,
-               f->num_gp,
-               f->args_size,
-               f->cprestore_size);
-
-      fprintf(file, "\t.mask\t0x%08x," HOST_WIDE_INT_PRINT_DEC "\n",
-              f->mask,
-              (f->gp_sp_offset - f->total_size));
-    }
+  gcc_unreachable ();
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs.  */
 static void
-th_function_epilogue (FILE *file,
-                      HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+score_function_epilogue (FILE *file,
+                         HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  if (!flag_inhibit_size_directive)
-    {
-      const char *fnname;
-      fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
-      fputs ("\t.end\t", file);
-      assemble_name (file, fnname);
-      fputs ("\n", file);
-    }
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_function_epilogue (file, size);
+  else if (TARGET_SCORE3)
+    return score3_function_epilogue (file, size);
+
+  gcc_unreachable ();
 }
 
 /* Implement TARGET_SCHED_ISSUE_RATE.  */
 static int
-th_issue_rate (void)
+score_issue_rate (void)
 {
   return 1;
-}
-
-/* Returns true if X contains a SYMBOL_REF.  */
-static bool
-symbolic_expression_p (rtx x)
-{
-  if (GET_CODE (x) == SYMBOL_REF)
-    return true;
-
-  if (GET_CODE (x) == CONST)
-    return symbolic_expression_p (XEXP (x, 0));
-
-  if (UNARY_P (x))
-    return symbolic_expression_p (XEXP (x, 0));
-
-  if (ARITHMETIC_P (x))
-    return (symbolic_expression_p (XEXP (x, 0))
-            || symbolic_expression_p (XEXP (x, 1)));
-
-  return false;
 }
 
 /* Choose the section to use for the constant rtx expression X that has
    mode MODE.  */
 static section *
-th_select_rtx_section (enum machine_mode mode, rtx x,
-                       unsigned HOST_WIDE_INT align)
+score_select_rtx_section (enum machine_mode mode, rtx x,
+                          unsigned HOST_WIDE_INT align)
 {
-  if (GET_MODE_SIZE (mode) <= SCORE_SDATA_MAX)
-    return get_named_section (0, ".sdata", 0);
-  else if (flag_pic && symbolic_expression_p (x))
-    return get_named_section (0, ".data.rel.ro", 3);
-  else
-    return mergeable_constant_section (mode, align, 0);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_select_rtx_section (mode, x, align);
+  else if (TARGET_SCORE3)
+    return score3_select_rtx_section (mode, x, align);
+
+  gcc_unreachable ();
 }
 
 /* Implement TARGET_IN_SMALL_DATA_P.  */
 static bool
-th_in_small_data_p (tree decl)
+score_in_small_data_p (tree decl)
 {
-  HOST_WIDE_INT size;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_in_small_data_p (decl);
+  else if (TARGET_SCORE3)
+    return score3_in_small_data_p (decl);
 
-  if (TREE_CODE (decl) == STRING_CST
-      || TREE_CODE (decl) == FUNCTION_DECL)
-    return false;
-
-  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)
-    {
-      const char *name;
-      name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
-      if (strcmp (name, ".sdata") != 0
-          && strcmp (name, ".sbss") != 0)
-        return true;
-      if (!DECL_EXTERNAL (decl))
-        return false;
-    }
-  size = int_size_in_bytes (TREE_TYPE (decl));
-  return (size > 0 && size <= SCORE_SDATA_MAX);
+  gcc_unreachable ();
 }
 
 /* Implement TARGET_ASM_FILE_START.  */
 static void
-th_asm_file_start (void)
+score_asm_file_start (void)
 {
+  if (TARGET_SCORE5)
+    fprintf (asm_out_file, "# Sunplus S+core5 %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+  else if (TARGET_SCORE5U)
+    fprintf (asm_out_file, "# Sunplus S+core5u %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+  else if (TARGET_SCORE7D)
+    fprintf (asm_out_file, "# Sunplus S+core7d %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+  else if (TARGET_SCORE7)
+    fprintf (asm_out_file, "# Sunplus S+core7 %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+  else if (TARGET_SCORE3D)
+    fprintf (asm_out_file, "# Sunplus S+core3d %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+  else if (TARGET_SCORE3)
+    fprintf (asm_out_file, "# Sunplus S+core3 %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+  else
+    fprintf (asm_out_file, "# Sunplus S+core unknown %s rev=%s\n",
+             TARGET_LITTLE_ENDIAN ? "el" : "eb", SCORE_GCC_VERSION);
+
   default_file_start ();
-  fprintf (asm_out_file, ASM_COMMENT_START
-           "GCC for S+core %s \n", SCORE_GCC_VERSION);
 
   if (flag_pic)
     fprintf (asm_out_file, "\t.set pic\n");
@@ -463,104 +262,116 @@ th_asm_file_start (void)
 
 /* Implement TARGET_ASM_FILE_END.  When using assembler macros, emit
    .externs for any small-data variables that turned out to be external.  */
-struct extern_list *extern_head = 0;
-
 static void
-th_asm_file_end (void)
+score_asm_file_end (void)
 {
-  tree name_tree;
-  struct extern_list *p;
-  if (extern_head)
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_asm_file_end ();
+  else if (TARGET_SCORE3)
+    return score3_asm_file_end ();
+
+  gcc_unreachable ();
+}
+
+#define MASK_ALL_CPU_BITS \
+  (MASK_SCORE5 | MASK_SCORE5U | MASK_SCORE7 | MASK_SCORE7D \
+   | MASK_SCORE3 | MASK_SCORE3D)
+
+/* Implement TARGET_HANDLE_OPTION.  */
+static bool
+score_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
     {
-      fputs ("\n", asm_out_file);
-      for (p = extern_head; p != 0; p = p->next)
+    case OPT_mscore7d:
+      target_flags &= ~(MASK_ALL_CPU_BITS);
+      target_flags |= MASK_SCORE7 | MASK_SCORE7D;
+      return true;
+
+    case OPT_mscore3d:
+      target_flags &= ~(MASK_ALL_CPU_BITS);
+      target_flags |= MASK_SCORE3 | MASK_SCORE3D;
+      return true;
+
+    case OPT_march_:
+      if (strcmp (arg, "score5") == 0)
         {
-          name_tree = get_identifier (p->name);
-          if (!TREE_ASM_WRITTEN (name_tree)
-              && TREE_SYMBOL_REFERENCED (name_tree))
-            {
-              TREE_ASM_WRITTEN (name_tree) = 1;
-              fputs ("\t.extern\t", asm_out_file);
-              assemble_name (asm_out_file, p->name);
-              fprintf (asm_out_file, ", %d\n", p->size);
-            }
+          target_flags &= ~(MASK_ALL_CPU_BITS);
+          target_flags |= MASK_SCORE5;
+          return true;
         }
+      else if (strcmp (arg, "score5u") == 0)
+        {
+          target_flags &= ~(MASK_ALL_CPU_BITS);
+          target_flags |= MASK_SCORE5U;
+          return true;
+        }
+      else if (strcmp (arg, "score7") == 0)
+        {
+          target_flags &= ~(MASK_ALL_CPU_BITS);
+          target_flags |= MASK_SCORE7;
+          return true;
+        }
+      else if (strcmp (arg, "score7d") == 0)
+        {
+          target_flags &= ~(MASK_ALL_CPU_BITS);
+          target_flags |= MASK_SCORE7 | MASK_SCORE7D;
+          return true;
+        }
+      else if (strcmp (arg, "score3") == 0)
+        {
+          target_flags &= ~(MASK_ALL_CPU_BITS);
+          target_flags |= MASK_SCORE3;
+          return true;
+        }
+      else if (strcmp (arg, "score3d") == 0)
+        {
+          target_flags &= ~(MASK_ALL_CPU_BITS);
+          target_flags |= MASK_SCORE3 | MASK_SCORE3D;
+          return true;
+        }
+      else
+        return false;
+
+    default:
+      return true;
     }
 }
-
-static unsigned int sdata_max;
-
-int
-score_sdata_max (void)
-{
-  return sdata_max;
-}
-
-/* default 0 = NO_REGS  */
-enum reg_class score_char_to_class[256];
 
 /* Implement OVERRIDE_OPTIONS macro.  */
 void
 score_override_options (void)
 {
-  flag_pic = false;
-  if (!flag_pic)
-    sdata_max = g_switch_set ? g_switch_value : DEFAULT_SDATA_MAX;
-  else
-    {
-      sdata_max = 0;
-      if (g_switch_set && (g_switch_value != 0))
-        warning (0, "-fPIC and -G are incompatible");
-    }
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_override_options ();
+  else if (TARGET_SCORE3)
+    return score3_override_options ();
 
-  score_char_to_class['d'] = G32_REGS;
-  score_char_to_class['e'] = G16_REGS;
-  score_char_to_class['t'] = T32_REGS;
-
-  score_char_to_class['h'] = HI_REG;
-  score_char_to_class['l'] = LO_REG;
-  score_char_to_class['x'] = CE_REGS;
-
-  score_char_to_class['q'] = CN_REG;
-  score_char_to_class['y'] = LC_REG;
-  score_char_to_class['z'] = SC_REG;
-  score_char_to_class['a'] = SP_REGS;
-
-  score_char_to_class['c'] = CR_REGS;
-
-  score_char_to_class['b'] = CP1_REGS;
-  score_char_to_class['f'] = CP2_REGS;
-  score_char_to_class['i'] = CP3_REGS;
-  score_char_to_class['j'] = CPA_REGS;
+  return score7_override_options ();
 }
 
 /* Implement REGNO_REG_CLASS macro.  */
 int
 score_reg_class (int regno)
 {
-  int c;
-  gcc_assert (regno >= 0 && regno < FIRST_PSEUDO_REGISTER);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_reg_class (regno);
+  else if (TARGET_SCORE3)
+    return score3_reg_class (regno);
 
-  if (regno == FRAME_POINTER_REGNUM
-      || regno == ARG_POINTER_REGNUM)
-    return ALL_REGS;
-
-  for (c = 0; c < N_REG_CLASSES; c++)
-    if (TEST_HARD_REG_BIT (reg_class_contents[c], regno))
-      return c;
-
-  return NO_REGS;
+  gcc_unreachable ();
 }
 
 /* Implement PREFERRED_RELOAD_CLASS macro.  */
 enum reg_class
 score_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, enum reg_class class)
 {
-  if (reg_class_subset_p (G16_REGS, class))
-    return G16_REGS;
-  if (reg_class_subset_p (G32_REGS, class))
-    return G32_REGS;
-  return class;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_preferred_reload_class (x, class);
+  else if (TARGET_SCORE3)
+    return score3_preferred_reload_class (x, class);
+
+  gcc_unreachable ();
 }
 
 /* Implement SECONDARY_INPUT_RELOAD_CLASS
@@ -570,50 +381,36 @@ score_secondary_reload_class (enum reg_class class,
                               enum machine_mode mode ATTRIBUTE_UNUSED,
                               rtx x)
 {
-  int regno = -1;
-  if (GET_CODE (x) == REG || GET_CODE(x) == SUBREG)
-    regno = true_regnum (x);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_secondary_reload_class (class, mode, x);
+  else if (TARGET_SCORE3)
+    return score3_secondary_reload_class (class, mode, x);
 
-  if (!GR_REG_CLASS_P (class))
-    return GP_REG_P (regno) ? NO_REGS : G32_REGS;
-  return NO_REGS;
+  gcc_unreachable ();
 }
 
 /* Implement CONST_OK_FOR_LETTER_P macro.  */
-/* imm constraints
-   I        imm16 << 16
-   J        uimm5
-   K        uimm16
-   L        simm16
-   M        uimm14
-   N        simm14  */
 int
 score_const_ok_for_letter_p (HOST_WIDE_INT value, char c)
 {
-  switch (c)
-    {
-    case 'I': return ((value & 0xffff) == 0);
-    case 'J': return IMM_IN_RANGE (value, 5, 0);
-    case 'K': return IMM_IN_RANGE (value, 16, 0);
-    case 'L': return IMM_IN_RANGE (value, 16, 1);
-    case 'M': return IMM_IN_RANGE (value, 14, 0);
-    case 'N': return IMM_IN_RANGE (value, 14, 1);
-    default : return 0;
-    }
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_const_ok_for_letter_p (value, c);
+  else if (TARGET_SCORE3)
+    return score3_const_ok_for_letter_p (value, c);
+
+  gcc_unreachable ();
 }
 
 /* Implement EXTRA_CONSTRAINT macro.  */
-/* Z        symbol_ref  */
 int
 score_extra_constraint (rtx op, char c)
 {
-  switch (c)
-    {
-    case 'Z':
-      return GET_CODE (op) == SYMBOL_REF;
-    default:
-      gcc_unreachable ();
-    }
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_extra_constraint (op, c);
+  else if (TARGET_SCORE3)
+    return score3_extra_constraint (op, c);
+
+  gcc_unreachable ();
 }
 
 /* Return truth value on whether or not a given hard register
@@ -621,23 +418,12 @@ score_extra_constraint (rtx op, char c)
 int
 score_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 {
-  int size = GET_MODE_SIZE (mode);
-  enum mode_class class = GET_MODE_CLASS (mode);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_hard_regno_mode_ok (regno, mode);
+  else if (TARGET_SCORE3)
+    return score3_hard_regno_mode_ok (regno, mode);
 
-  if (class == MODE_CC)
-    return regno == CC_REGNUM;
-  else if (regno == FRAME_POINTER_REGNUM
-           || regno == ARG_POINTER_REGNUM)
-    return class == MODE_INT;
-  else if (GP_REG_P (regno))
-    /* ((regno <= (GP_REG_LAST- HARD_REGNO_NREGS (dummy, mode)) + 1)  */
-    return !(regno & 1) || (size <= UNITS_PER_WORD);
-  else if (CE_REG_P (regno))
-    return (class == MODE_INT
-            && ((size <= UNITS_PER_WORD)
-                || (regno == CE_REG_FIRST && size == 2 * UNITS_PER_WORD)));
-  else
-    return (class == MODE_INT) && (size <= UNITS_PER_WORD);
+  gcc_unreachable ();
 }
 
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame
@@ -647,16 +433,12 @@ HOST_WIDE_INT
 score_initial_elimination_offset (int from,
                                   int to ATTRIBUTE_UNUSED)
 {
-  struct score_frame_info *f = mda_compute_frame_size (get_frame_size ());
-  switch (from)
-    {
-    case ARG_POINTER_REGNUM:
-      return f->total_size;
-    case FRAME_POINTER_REGNUM:
-      return 0;
-    default:
-      gcc_unreachable ();
-    }
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_initial_elimination_offset (from, to);
+  else if (TARGET_SCORE3)
+    return score3_initial_elimination_offset (from, to);
+
+  gcc_unreachable ();
 }
 
 /* Argument support functions.  */
@@ -675,22 +457,25 @@ void
 score_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
                             tree type, int named)
 {
-  struct score_arg_info info;
-  classify_arg (cum, mode, type, named, &info);
-  cum->num_gprs = info.reg_offset + info.reg_words;
-  if (info.stack_words > 0)
-    cum->stack_words = info.stack_offset + info.stack_words;
-  cum->arg_number++;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_function_arg_advance (cum, mode, type, named);
+  else if (TARGET_SCORE3)
+    return score3_function_arg_advance (cum, mode, type, named);
+
+  gcc_unreachable ();
 }
 
 /* Implement TARGET_ARG_PARTIAL_BYTES macro.  */
-static int
-score_arg_partial_bytes (const CUMULATIVE_ARGS *cum,
-                         enum machine_mode mode, tree type, int named)
+int
+score_arg_partial_bytes (CUMULATIVE_ARGS *cum,
+                         enum machine_mode mode, tree type, bool named)
 {
-  struct score_arg_info info;
-  classify_arg (cum, mode, type, named, &info);
-  return info.stack_words > 0 ? info.reg_words * UNITS_PER_WORD : 0;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_arg_partial_bytes (cum, mode, type, named);
+  else if (TARGET_SCORE3)
+    return score3_arg_partial_bytes (cum, mode, type, named);
+
+  gcc_unreachable ();
 }
 
 /* Implement FUNCTION_ARG macro.  */
@@ -698,32 +483,12 @@ rtx
 score_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
                     tree type, int named)
 {
-  struct score_arg_info info;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_function_arg (cum, mode, type, named);
+  else if (TARGET_SCORE3)
+    return score3_function_arg (cum, mode, type, named);
 
-  if (mode == VOIDmode || !named)
-    return 0;
-
-  classify_arg (cum, mode, type, named, &info);
-
-  if (info.reg_offset == ARG_REG_NUM)
-    return 0;
-
-  if (!info.stack_words)
-    return gen_rtx_REG (mode, ARG_REG_FIRST + info.reg_offset);
-  else
-    {
-      rtx ret = gen_rtx_PARALLEL (mode, rtvec_alloc (info.reg_words));
-      unsigned int i, part_offset = 0;
-      for (i = 0; i < info.reg_words; i++)
-        {
-          rtx reg;
-          reg = gen_rtx_REG (SImode, ARG_REG_FIRST + info.reg_offset + i);
-          XVECEXP (ret, 0, i) = gen_rtx_EXPR_LIST (SImode, reg,
-                                                   GEN_INT (part_offset));
-          part_offset += UNITS_PER_WORD;
-        }
-      return ret;
-    }
+  gcc_unreachable ();
 }
 
 /* Implement FUNCTION_VALUE and LIBCALL_VALUE.  For normal calls,
@@ -733,85 +498,48 @@ rtx
 score_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
                       enum machine_mode mode)
 {
-  if (valtype)
-    {
-      int unsignedp;
-      mode = TYPE_MODE (valtype);
-      unsignedp = TYPE_UNSIGNED (valtype);
-      mode = promote_mode (valtype, mode, &unsignedp, 1);
-    }
-  return gen_rtx_REG (mode, RT_REGNUM);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_function_value (valtype, func, mode);
+  else if (TARGET_SCORE3)
+    return score3_function_value (valtype, func, mode);
+
+  gcc_unreachable ();
 }
 
 /* Implement INITIALIZE_TRAMPOLINE macro.  */
 void
 score_initialize_trampoline (rtx ADDR, rtx FUNC, rtx CHAIN)
 {
-#define FFCACHE          "_flush_cache"
-#define CODE_SIZE        (TRAMPOLINE_INSNS * UNITS_PER_WORD)
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_initialize_trampoline (ADDR, FUNC, CHAIN);
+  else if (TARGET_SCORE3)
+    return score3_initialize_trampoline (ADDR, FUNC, CHAIN);
 
-  rtx pfunc, pchain;
-
-  pfunc = plus_constant (ADDR, CODE_SIZE);
-  pchain = plus_constant (ADDR, CODE_SIZE + GET_MODE_SIZE (SImode));
-
-  emit_move_insn (gen_rtx_MEM (SImode, pfunc), FUNC);
-  emit_move_insn (gen_rtx_MEM (SImode, pchain), CHAIN);
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, FFCACHE),
-                     0, VOIDmode, 2,
-                     ADDR, Pmode,
-                     GEN_INT (TRAMPOLINE_SIZE), SImode);
-#undef FFCACHE
-#undef CODE_SIZE
+  gcc_unreachable ();
 }
 
 /* This function is used to implement REG_MODE_OK_FOR_BASE_P macro.  */
 int
 score_regno_mode_ok_for_base_p (int regno, int strict)
 {
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    {
-      if (!strict)
-        return 1;
-      regno = reg_renumber[regno];
-    }
-  if (regno == ARG_POINTER_REGNUM
-      || regno == FRAME_POINTER_REGNUM)
-    return 1;
-  return GP_REG_P (regno);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_regno_mode_ok_for_base_p (regno, strict);
+  else if (TARGET_SCORE3)
+    return score3_regno_mode_ok_for_base_p (regno, strict);
+
+  gcc_unreachable ();
 }
 
 /* Implement GO_IF_LEGITIMATE_ADDRESS macro.  */
 int
 score_address_p (enum machine_mode mode, rtx x, int strict)
 {
-  struct score_address_info addr;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_address_p (mode, x, strict);
+  else if (TARGET_SCORE3)
+    return score3_address_p (mode, x, strict);
 
-  return mda_classify_address (&addr, mode, x, strict);
-}
-
-/* Copy VALUE to a register and return that register.  If new psuedos
-   are allowed, copy it into a new register, otherwise use DEST.  */
-static rtx
-score_force_temporary (rtx dest, rtx value)
-{
-  if (!no_new_pseudos)
-    return force_reg (Pmode, value);
-  else
-    {
-      emit_move_insn (copy_rtx (dest), value);
-      return dest;
-    }
-}
-
-/* Return a LO_SUM expression for ADDR.  TEMP is as for score_force_temporary
-   and is used to load the high part into a register.  */
-static rtx
-score_split_symbol (rtx temp, rtx addr)
-{
-  rtx high = score_force_temporary (temp,
-                                    gen_rtx_HIGH (Pmode, copy_rtx (addr)));
-  return gen_rtx_LO_SUM (Pmode, high, addr);
+  gcc_unreachable ();
 }
 
 /* This function is used to implement LEGITIMIZE_ADDRESS.  If *XLOC can
@@ -820,25 +548,12 @@ score_split_symbol (rtx temp, rtx addr)
 int
 score_legitimize_address (rtx *xloc)
 {
-  enum score_symbol_type symbol_type;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_legitimize_address (xloc);
+  else if (TARGET_SCORE3)
+    return score3_legitimize_address (xloc);
 
-  if (mda_symbolic_constant_p (*xloc, &symbol_type)
-      && symbol_type == SYMBOL_GENERAL)
-    {
-      *xloc = score_split_symbol (0, *xloc);
-      return 1;
-    }
-
-  if (GET_CODE (*xloc) == PLUS
-      && GET_CODE (XEXP (*xloc, 1)) == CONST_INT)
-    {
-      rtx reg = XEXP (*xloc, 0);
-      if (!mda_valid_base_register_p (reg, 0))
-        reg = copy_to_mode_reg (Pmode, reg);
-      *xloc = score_add_offset (NULL, reg, INTVAL (XEXP (*xloc, 1)));
-      return 1;
-    }
-  return 0;
+  gcc_unreachable ();
 }
 
 /* Return a number assessing the cost of moving a register in class
@@ -847,234 +562,36 @@ int
 score_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
                           enum reg_class from, enum reg_class to)
 {
-  if (GR_REG_CLASS_P (from))
-    {
-      if (GR_REG_CLASS_P (to))
-        return 2;
-      else if (SP_REG_CLASS_P (to))
-        return 4;
-      else if (CP_REG_CLASS_P (to))
-        return 5;
-      else if (CE_REG_CLASS_P (to))
-        return 6;
-    }
-  if (GR_REG_CLASS_P (to))
-    {
-      if (GR_REG_CLASS_P (from))
-        return 2;
-      else if (SP_REG_CLASS_P (from))
-        return 4;
-      else if (CP_REG_CLASS_P (from))
-        return 5;
-      else if (CE_REG_CLASS_P (from))
-        return 6;
-    }
-  return 12;
-}
-
-/* Return the number of instructions needed to load a symbol of the
-   given type into a register.  */
-static int
-score_symbol_insns (enum score_symbol_type type)
-{
-  switch (type)
-    {
-    case SYMBOL_GENERAL:
-      return 2;
-
-    case SYMBOL_SMALL_DATA:
-      return 1;
-    }
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_register_move_cost (mode, from, to);
+  else if (TARGET_SCORE3)
+    return score3_register_move_cost (mode, from, to);
 
   gcc_unreachable ();
 }
 
-/* Return the number of instructions needed to load or store a value
-   of mode MODE at X.  Return 0 if X isn't valid for MODE.  */
-static int
-score_address_insns (rtx x, enum machine_mode mode)
-{
-  struct score_address_info addr;
-  int factor;
-
-  if (mode == BLKmode)
-    factor = 1;
-  else
-    factor = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-
-  if (mda_classify_address (&addr, mode, x, false))
-    switch (addr.type)
-      {
-      case ADD_REG:
-      case ADD_CONST_INT:
-        return factor;
-
-      case ADD_SYMBOLIC:
-        return factor * score_symbol_insns (addr.symbol_type);
-      }
-  return 0;
-}
-
 /* Implement TARGET_RTX_COSTS macro.  */
-static bool
-score_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
-                 int *total)
+bool
+score_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
-  enum machine_mode mode = GET_MODE (x);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_rtx_costs (x, code, outer_code, total);
+  else if (TARGET_SCORE3)
+    return score3_rtx_costs (x, code, outer_code, total);
 
-  switch (code)
-    {
-    case CONST_INT:
-      if (outer_code == SET)
-        {
-          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-              || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L'))
-            *total = COSTS_N_INSNS (1);
-          else
-            *total = COSTS_N_INSNS (2);
-        }
-      else if (outer_code == PLUS || outer_code == MINUS)
-        {
-          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'N'))
-            *total = 0;
-          else if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-                   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L'))
-            *total = 1;
-          else
-            *total = COSTS_N_INSNS (2);
-        }
-      else if (outer_code == AND || outer_code == IOR)
-        {
-          if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'M'))
-            *total = 0;
-          else if (CONST_OK_FOR_LETTER_P (INTVAL (x), 'I')
-                   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'K'))
-            *total = 1;
-          else
-            *total = COSTS_N_INSNS (2);
-        }
-      else
-        {
-          *total = 0;
-        }
-      return true;
-
-    case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case CONST_DOUBLE:
-      *total = COSTS_N_INSNS (2);
-      return true;
-
-    case MEM:
-      {
-        /* If the address is legitimate, return the number of
-           instructions it needs, otherwise use the default handling.  */
-        int n = score_address_insns (XEXP (x, 0), GET_MODE (x));
-        if (n > 0)
-          {
-            *total = COSTS_N_INSNS (n + 1);
-            return true;
-          }
-        return false;
-      }
-
-    case FFS:
-      *total = COSTS_N_INSNS (6);
-      return true;
-
-    case NOT:
-      *total = COSTS_N_INSNS (1);
-      return true;
-
-    case AND:
-    case IOR:
-    case XOR:
-      if (mode == DImode)
-        {
-          *total = COSTS_N_INSNS (2);
-          return true;
-        }
-      return false;
-
-    case ASHIFT:
-    case ASHIFTRT:
-    case LSHIFTRT:
-      if (mode == DImode)
-        {
-          *total = COSTS_N_INSNS ((GET_CODE (XEXP (x, 1)) == CONST_INT)
-                                  ? 4 : 12);
-          return true;
-        }
-      return false;
-
-    case ABS:
-      *total = COSTS_N_INSNS (4);
-      return true;
-
-    case PLUS:
-    case MINUS:
-      if (mode == DImode)
-        {
-          *total = COSTS_N_INSNS (4);
-          return true;
-        }
-      *total = COSTS_N_INSNS (1);
-      return true;
-
-    case NEG:
-      if (mode == DImode)
-        {
-          *total = COSTS_N_INSNS (4);
-          return true;
-        }
-      return false;
-
-    case MULT:
-      *total = optimize_size ? COSTS_N_INSNS (2) : COSTS_N_INSNS (12);
-      return true;
-
-    case DIV:
-    case MOD:
-    case UDIV:
-    case UMOD:
-      *total = optimize_size ? COSTS_N_INSNS (2) : COSTS_N_INSNS (33);
-      return true;
-
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-      switch (GET_MODE (XEXP (x, 0)))
-        {
-        case QImode:
-        case HImode:
-          if (GET_CODE (XEXP (x, 0)) == MEM)
-            {
-              *total = COSTS_N_INSNS (2);
-
-              if (!TARGET_LITTLE_ENDIAN &&
-                  side_effects_p (XEXP (XEXP (x, 0), 0)))
-                *total = 100;
-            }
-          else
-            *total = COSTS_N_INSNS (1);
-          break;
-
-        default:
-          *total = COSTS_N_INSNS (1);
-          break;
-        }
-      return true;
-
-    default:
-      return false;
-    }
+  gcc_unreachable ();
 }
 
 /* Implement TARGET_ADDRESS_COST macro.  */
 int
 score_address_cost (rtx addr)
 {
-  return score_address_insns (addr, SImode);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_address_cost (addr);
+  else if (TARGET_SCORE3)
+    return score3_address_cost (addr);
+
+  gcc_unreachable ();
 }
 
 /* Implement ASM_OUTPUT_EXTERNAL macro.  */
@@ -1082,30 +599,12 @@ int
 score_output_external (FILE *file ATTRIBUTE_UNUSED,
                        tree decl, const char *name)
 {
-  register struct extern_list *p;
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_output_external (file, decl, name);
+  else if (TARGET_SCORE3)
+    return score3_output_external (file, decl, name);
 
-  if (th_in_small_data_p (decl))
-    {
-      p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
-      p->next = extern_head;
-      p->name = name;
-      p->size = int_size_in_bytes (TREE_TYPE (decl));
-      extern_head = p;
-    }
-  return 0;
-}
-
-/* Output format asm string.  */
-void
-score_declare_object (FILE *stream, const char *name,
-                      const char *directive, const char *fmt, ...)
-{
-  va_list ap;
-  fputs (directive, stream);
-  assemble_name (stream, name);
-  va_start (ap, fmt);
-  vfprintf (stream, fmt, ap);
-  va_end (ap);
+  gcc_unreachable ();
 }
 
 /* Implement RETURN_ADDR_RTX.  Note, we do not support moving
@@ -1113,192 +612,35 @@ score_declare_object (FILE *stream, const char *name,
 rtx
 score_return_addr (int count, rtx frame ATTRIBUTE_UNUSED)
 {
-  if (count != 0)
-    return const0_rtx;
-  return get_hard_reg_initial_val (Pmode, RA_REGNUM);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_return_addr (count, frame);
+  else if (TARGET_SCORE3)
+    return score3_return_addr (count, frame);
+
+  gcc_unreachable ();
 }
 
 /* Implement PRINT_OPERAND macro.  */
-/* Score-specific operand codes:
-   '['        print .set nor1 directive
-   ']'        print .set r1 directive
-   'U'        print hi part of a CONST_INT rtx
-   'E'        print log2(v)
-   'F'        print log2(~v)
-   'D'        print SFmode const double
-   'S'        selectively print "!" if operand is 15bit instruction accessible
-   'V'        print "v!" if operand is 15bit instruction accessible, or "lfh!"
-   'L'        low  part of DImode reg operand
-   'H'        high part of DImode reg operand
-   'C'        print part of opcode for a branch condition.  */
 void
 score_print_operand (FILE *file, rtx op, int c)
 {
-  enum rtx_code code = -1;
-  if (!PRINT_OPERAND_PUNCT_VALID_P (c))
-    code = GET_CODE (op);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_print_operand (file, op, c);
+  else if (TARGET_SCORE3)
+    return score3_print_operand (file, op, c);
 
-  if (c == '[')
-    {
-      fprintf (file, ".set r1\n");
-    }
-  else if (c == ']')
-    {
-      fprintf (file, "\n\t.set nor1");
-    }
-  else if (c == 'U')
-    {
-      gcc_assert (code == CONST_INT);
-      fprintf (file, HOST_WIDE_INT_PRINT_HEX,
-               (INTVAL (op) >> 16) & 0xffff);
-    }
-  else if (c == 'D')
-    {
-      if (GET_CODE (op) == CONST_DOUBLE)
-        {
-          rtx temp = gen_lowpart (SImode, op);
-          gcc_assert (GET_MODE (op) == SFmode);
-          fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (temp) & 0xffffffff);
-        }
-      else
-        output_addr_const (file, op);
-    }
-  else if (c == 'S')
-    {
-      gcc_assert (code == REG);
-      if (G16_REG_P (REGNO (op)))
-        fprintf (file, "!");
-    }
-  else if (c == 'V')
-    {
-      gcc_assert (code == REG);
-      fprintf (file, G16_REG_P (REGNO (op)) ? "v!" : "lfh!");
-    }
-  else if (c == 'C')
-    {
-      enum machine_mode mode = GET_MODE (XEXP (op, 0));
-
-      switch (code)
-        {
-        case EQ: fputs ("eq", file); break;
-        case NE: fputs ("ne", file); break;
-        case GT: fputs ("gt", file); break;
-        case GE: fputs (mode != CCmode ? "pl" : "ge", file); break;
-        case LT: fputs (mode != CCmode ? "mi" : "lt", file); break;
-        case LE: fputs ("le", file); break;
-        case GTU: fputs ("gtu", file); break;
-        case GEU: fputs ("cs", file); break;
-        case LTU: fputs ("cc", file); break;
-        case LEU: fputs ("leu", file); break;
-        default:
-          output_operand_lossage ("invalid operand for code: '%c'", code);
-        }
-    }
-  else if (c == 'E')
-    {
-      unsigned HOST_WIDE_INT i;
-      unsigned HOST_WIDE_INT pow2mask = 1;
-      unsigned HOST_WIDE_INT val;
-
-      val = INTVAL (op);
-      for (i = 0; i < 32; i++)
-        {
-          if (val == pow2mask)
-            break;
-          pow2mask <<= 1;
-        }
-      gcc_assert (i < 32);
-      fprintf (file, HOST_WIDE_INT_PRINT_HEX, i);
-    }
-  else if (c == 'F')
-    {
-      unsigned HOST_WIDE_INT i;
-      unsigned HOST_WIDE_INT pow2mask = 1;
-      unsigned HOST_WIDE_INT val;
-
-      val = ~INTVAL (op);
-      for (i = 0; i < 32; i++)
-        {
-          if (val == pow2mask)
-            break;
-          pow2mask <<= 1;
-        }
-      gcc_assert (i < 32);
-      fprintf (file, HOST_WIDE_INT_PRINT_HEX, i);
-    }
-  else if (code == REG)
-    {
-      int regnum = REGNO (op);
-      if ((c == 'H' && !WORDS_BIG_ENDIAN)
-          || (c == 'L' && WORDS_BIG_ENDIAN))
-        regnum ++;
-      fprintf (file, "%s", reg_names[regnum]);
-    }
-  else
-    {
-      switch (code)
-        {
-        case MEM:
-          score_print_operand_address (file, op);
-          break;
-        default:
-          output_addr_const (file, op);
-        }
-    }
+  gcc_unreachable ();
 }
 
 /* Implement PRINT_OPERAND_ADDRESS macro.  */
 void
 score_print_operand_address (FILE *file, rtx x)
 {
-  struct score_address_info addr;
-  enum rtx_code code = GET_CODE (x);
-  enum machine_mode mode = GET_MODE (x);
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_print_operand_address (file, x);
+  else if (TARGET_SCORE3)
+    return score3_print_operand_address (file, x);
 
-  if (code == MEM)
-    x = XEXP (x, 0);
-
-  if (mda_classify_address (&addr, mode, x, true))
-    {
-      switch (addr.type)
-        {
-        case ADD_REG:
-          {
-            switch (addr.code)
-              {
-              case PRE_DEC:
-                fprintf (file, "[%s,-%ld]+", reg_names[REGNO (addr.reg)],
-                         INTVAL (addr.offset));
-                break;
-              case POST_DEC:
-                fprintf (file, "[%s]+,-%ld", reg_names[REGNO (addr.reg)],
-                         INTVAL (addr.offset));
-                break;
-              case PRE_INC:
-                fprintf (file, "[%s, %ld]+", reg_names[REGNO (addr.reg)],
-                         INTVAL (addr.offset));
-                break;
-              case POST_INC:
-                fprintf (file, "[%s]+, %ld", reg_names[REGNO (addr.reg)],
-                         INTVAL (addr.offset));
-                break;
-              default:
-                if (INTVAL(addr.offset) == 0)
-                  fprintf(file, "[%s]", reg_names[REGNO (addr.reg)]);
-                else 
-                  fprintf(file, "[%s, %ld]", reg_names[REGNO (addr.reg)], 
-                          INTVAL(addr.offset));
-                break;
-              }
-          }
-          return;
-        case ADD_CONST_INT:
-        case ADD_SYMBOLIC:
-          output_addr_const (file, x);
-          return;
-        }
-    }
-  print_rtl (stderr, x);
   gcc_unreachable ();
 }
 
@@ -1306,44 +648,547 @@ score_print_operand_address (FILE *file, rtx x)
 enum machine_mode
 score_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 {
-  if ((op == EQ || op == NE || op == LT || op == GE)
-      && y == const0_rtx
-      && GET_MODE (x) == SImode)
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_select_cc_mode (op, x, y);
+  else if (TARGET_SCORE3)
+    return score3_select_cc_mode (op, x, y);
+
+  gcc_unreachable ();
+}
+
+/* Return true if X is a symbolic constant that can be calculated in
+   the same way as a bare symbol.  If it is, store the type of the
+   symbol in *SYMBOL_TYPE.  */
+int
+score_symbolic_constant_p (rtx x, enum score_symbol_type *symbol_type)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_symbolic_constant_p (x, symbol_type);
+  else if (TARGET_SCORE3)
+    return score3_symbolic_constant_p (x, symbol_type);
+
+  gcc_unreachable ();
+}
+
+/* Generate the prologue instructions for entry into a S+core function.  */
+void
+score_prologue (void)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_prologue ();
+  else if (TARGET_SCORE3)
+    return score3_prologue ();
+
+  gcc_unreachable ();
+}
+
+/* Generate the epilogue instructions in a S+core function.  */
+void
+score_epilogue (int sibcall_p)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_epilogue (sibcall_p);
+  else if (TARGET_SCORE3)
+    return score3_epilogue (sibcall_p);
+
+  gcc_unreachable ();
+}
+
+void
+score_gen_cmp (enum machine_mode mode)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_gen_cmp (mode);
+  else if (TARGET_SCORE3)
+    return score3_gen_cmp (mode);
+
+  gcc_unreachable ();
+}
+
+/* Call and sibcall pattern all need call this function.  */
+void
+score_call (rtx *ops, bool sib)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_call (ops, sib);
+  else if (TARGET_SCORE3)
+    return score3_call (ops, sib);
+
+  gcc_unreachable ();
+}
+
+/* Call value and sibcall value pattern all need call this function.  */
+void
+score_call_value (rtx *ops, bool sib)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_call_value (ops, sib);
+  else if (TARGET_SCORE3)
+    return score3_call_value (ops, sib);
+
+  gcc_unreachable ();
+}
+
+void
+score_movsicc (rtx *ops)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_movsicc (ops);
+  else if (TARGET_SCORE3)
+    return score3_movsicc (ops);
+
+  gcc_unreachable ();
+}
+
+/* Machine Split  */
+void
+score_movdi (rtx *ops)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_movdi (ops);
+  else if (TARGET_SCORE3)
+    return score3_movdi (ops);
+
+  gcc_unreachable ();
+}
+
+void
+score_zero_extract_andi (rtx *ops)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_zero_extract_andi (ops);
+  else if (TARGET_SCORE3)
+    return score3_zero_extract_andi (ops);
+
+  gcc_unreachable ();
+}
+
+/* Output asm insn for move.  */
+const char *
+score_move (rtx *ops)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_move (ops);
+  else if (TARGET_SCORE3)
+    return score3_move (ops);
+
+  gcc_unreachable ();
+}
+
+/* Output asm insn for load.  */
+const char *
+score_linsn (rtx *ops, enum score_mem_unit unit, bool sign)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_linsn (ops, unit, sign);
+  else if (TARGET_SCORE3)
+    return score3_linsn (ops, unit, sign);
+
+  gcc_unreachable ();
+}
+
+/* Output asm insn for store.  */
+const char *
+score_sinsn (rtx *ops, enum score_mem_unit unit)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_sinsn (ops, unit);
+  else if (TARGET_SCORE3)
+    return score3_sinsn (ops, unit);
+
+  gcc_unreachable ();
+}
+
+/* Output asm insn for load immediate.  */
+const char *
+score_limm (rtx *ops)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_limm (ops);
+  else if (TARGET_SCORE3)
+    return score3_limm (ops);
+
+  gcc_unreachable ();
+}
+
+
+/* Generate add insn.  */
+const char *
+score_select_add_imm (rtx *ops, bool set_cc)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_select_add_imm (ops, set_cc);
+  else if (TARGET_SCORE3)
+    return score3_select_add_imm (ops, set_cc);
+
+  gcc_unreachable ();
+}
+
+/* Output arith insn.  */
+const char *
+score_select (rtx *ops, const char *inst_pre,
+            bool commu, const char *letter, bool set_cc)
+{
+  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
+    return score7_select (ops, inst_pre, commu, letter, set_cc);
+  else if (TARGET_SCORE3)
+    return score3_select (ops, inst_pre, commu, letter, set_cc);
+
+  gcc_unreachable ();
+}
+
+/* Output switch case insn, only supported in score3.  */
+const char *
+score_output_casesi (rtx *operands)
+{
+  if (TARGET_SCORE3)
+    return score3_output_casesi (operands);
+
+  gcc_unreachable ();
+}
+
+/* Output rpush insn, only supported in score3.  */
+const char *
+score_rpush (rtx *operands)
+{
+  if (TARGET_SCORE3)
+    return score3_rpush (operands);
+
+  gcc_unreachable ();
+}
+
+/* Output rpop insn, only supported in score3.  */
+const char *
+score_rpop (rtx *operands)
+{
+  if (TARGET_SCORE3)
+    return score3_rpop (operands);
+
+  gcc_unreachable ();
+}
+
+/* Emit lcb/lce insns.  */
+bool
+score_unaligned_load (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx src = ops[1];
+  rtx len = ops[2];
+  rtx off = ops[3];
+  rtx addr_reg;
+
+  if (INTVAL (len) != BITS_PER_WORD
+      || (INTVAL (off) % BITS_PER_UNIT) != 0)
+    return false;
+
+  gcc_assert (GET_MODE_SIZE (GET_MODE (dst)) == GET_MODE_SIZE (SImode));
+
+  addr_reg = copy_addr_to_reg (XEXP (src, 0));
+  emit_insn (gen_move_lcb (addr_reg, addr_reg));
+  emit_insn (gen_move_lce (addr_reg, addr_reg, dst));
+
+  return true;
+}
+
+/* Emit scb/sce insns.  */
+bool
+score_unaligned_store (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx len = ops[1];
+  rtx off = ops[2];
+  rtx src = ops[3];
+  rtx addr_reg;
+
+  if (INTVAL(len) != BITS_PER_WORD
+      || (INTVAL(off) % BITS_PER_UNIT) != 0)
+    return false;
+
+  gcc_assert (GET_MODE_SIZE (GET_MODE (src)) == GET_MODE_SIZE (SImode));
+
+  addr_reg = copy_addr_to_reg (XEXP (dst, 0));
+  emit_insn (gen_move_scb (addr_reg, addr_reg, src));
+  emit_insn (gen_move_sce (addr_reg, addr_reg));
+
+  return true;
+}
+
+/* If length is short, generate move insns straight.  */
+static void
+score_block_move_straight (rtx dst, rtx src, HOST_WIDE_INT length)
+{
+  HOST_WIDE_INT leftover;
+  int i, reg_count;
+  rtx *regs;
+
+  leftover = length % UNITS_PER_WORD;
+  length -= leftover;
+  reg_count = length / UNITS_PER_WORD;
+
+  regs = alloca (sizeof (rtx) * reg_count);
+  for (i = 0; i < reg_count; i++)
+    regs[i] = gen_reg_rtx (SImode);
+
+  /* Load from src to regs.  */
+  if (MEM_ALIGN (src) >= BITS_PER_WORD)
     {
-      switch (GET_CODE (x))
+      HOST_WIDE_INT offset = 0;
+      for (i = 0; i < reg_count; offset += UNITS_PER_WORD, i++)
+        emit_move_insn (regs[i], adjust_address (src, SImode, offset));
+    }
+  else if (reg_count >= 1)
+    {
+      rtx src_reg = copy_addr_to_reg (XEXP (src, 0));
+
+      emit_insn (gen_move_lcb (src_reg, src_reg));
+      for (i = 0; i < (reg_count - 1); i++)
+        emit_insn (gen_move_lcw (src_reg, src_reg, regs[i]));
+      emit_insn (gen_move_lce (src_reg, src_reg, regs[i]));
+    }
+
+  /* Store regs to dest.  */
+  if (MEM_ALIGN (dst) >= BITS_PER_WORD)
+    {
+      HOST_WIDE_INT offset = 0;
+      for (i = 0; i < reg_count; offset += UNITS_PER_WORD, i++)
+        emit_move_insn (adjust_address (dst, SImode, offset), regs[i]);
+    }
+  else if (reg_count >= 1)
+    {
+      rtx dst_reg = copy_addr_to_reg (XEXP (dst, 0));
+
+      emit_insn (gen_move_scb (dst_reg, dst_reg, regs[0]));
+      for (i = 1; i < reg_count; i++)
+        emit_insn (gen_move_scw (dst_reg, dst_reg, regs[i]));
+      emit_insn (gen_move_sce (dst_reg, dst_reg));
+    }
+
+  /* Mop up any left-over bytes.  */
+  if (leftover > 0)
+    {
+      src = adjust_address (src, BLKmode, length);
+      dst = adjust_address (dst, BLKmode, length);
+      move_by_pieces (dst, src, leftover,
+                      MIN (MEM_ALIGN (src), MEM_ALIGN (dst)), 0);
+    }
+}
+
+/* Generate loop head when dst or src is unaligned.  */
+static void
+score_block_move_loop_head (rtx dst_reg, HOST_WIDE_INT dst_align,
+                            rtx src_reg, HOST_WIDE_INT src_align,
+                            HOST_WIDE_INT length)
+{
+  bool src_unaligned = (src_align < BITS_PER_WORD);
+  bool dst_unaligned = (dst_align < BITS_PER_WORD);
+
+  rtx temp = gen_reg_rtx (SImode);
+
+  gcc_assert (length == UNITS_PER_WORD);
+
+  if (src_unaligned)
+    {
+      emit_insn (gen_move_lcb (src_reg, src_reg));
+      emit_insn (gen_move_lcw (src_reg, src_reg, temp));
+    }
+  else
+    emit_insn (gen_move_lw_a (src_reg,
+                              src_reg, gen_int_mode (4, SImode), temp));
+
+  if (dst_unaligned)
+    emit_insn (gen_move_scb (dst_reg, dst_reg, temp));
+  else
+    emit_insn (gen_move_sw_a (dst_reg,
+                              dst_reg, gen_int_mode (4, SImode), temp));
+}
+
+/* Generate loop body, copy length bytes per iteration.  */
+static void
+score_block_move_loop_body (rtx dst_reg, HOST_WIDE_INT dst_align,
+                            rtx src_reg, HOST_WIDE_INT src_align,
+                            HOST_WIDE_INT length)
+{
+  int reg_count = length / UNITS_PER_WORD;
+  rtx *regs = alloca (sizeof (rtx) * reg_count);
+  int i;
+  bool src_unaligned = (src_align < BITS_PER_WORD);
+  bool dst_unaligned = (dst_align < BITS_PER_WORD);
+
+  for (i = 0; i < reg_count; i++)
+    regs[i] = gen_reg_rtx (SImode);
+
+  if (src_unaligned)
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_lcw (src_reg, src_reg, regs[i]));
+    }
+  else
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_lw_a (src_reg,
+                                  src_reg, gen_int_mode (4, SImode), regs[i]));
+    }
+
+  if (dst_unaligned)
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_scw (dst_reg, dst_reg, regs[i]));
+    }
+  else
+    {
+      for (i = 0; i < reg_count; i++)
+        emit_insn (gen_move_sw_a (dst_reg,
+                                  dst_reg, gen_int_mode (4, SImode), regs[i]));
+    }
+}
+
+/* Generate loop foot, copy the leftover bytes.  */
+static void
+score_block_move_loop_foot (rtx dst_reg, HOST_WIDE_INT dst_align,
+                            rtx src_reg, HOST_WIDE_INT src_align,
+                            HOST_WIDE_INT length)
+{
+  bool src_unaligned = (src_align < BITS_PER_WORD);
+  bool dst_unaligned = (dst_align < BITS_PER_WORD);
+
+  HOST_WIDE_INT leftover;
+
+  leftover = length % UNITS_PER_WORD;
+  length -= leftover;
+
+  if (length > 0)
+    score_block_move_loop_body (dst_reg, dst_align,
+                              src_reg, src_align, length);
+
+  if (dst_unaligned)
+    emit_insn (gen_move_sce (dst_reg, dst_reg));
+
+  if (leftover > 0)
+    {
+      HOST_WIDE_INT src_adj = src_unaligned ? -4 : 0;
+      HOST_WIDE_INT dst_adj = dst_unaligned ? -4 : 0;
+      rtx temp;
+
+      gcc_assert (leftover < UNITS_PER_WORD);
+
+      if (leftover >= UNITS_PER_WORD / 2
+          && src_align >= BITS_PER_WORD / 2
+          && dst_align >= BITS_PER_WORD / 2)
         {
-        case PLUS:
-        case MINUS:
-        case NEG:
-        case AND:
-        case IOR:
-        case XOR:
-        case NOT:
-        case ASHIFT:
-        case LSHIFTRT:
-        case ASHIFTRT:
-          return CC_NZmode;
+          temp = gen_reg_rtx (HImode);
+          emit_insn (gen_move_lhu_b (src_reg, src_reg,
+                                     gen_int_mode (src_adj, SImode), temp));
+          emit_insn (gen_move_sh_b (dst_reg, dst_reg,
+                                    gen_int_mode (dst_adj, SImode), temp));
+          leftover -= UNITS_PER_WORD / 2;
+          src_adj = UNITS_PER_WORD / 2;
+          dst_adj = UNITS_PER_WORD / 2;
+        }
 
-        case SIGN_EXTEND:
-        case ZERO_EXTEND:
-        case ROTATE:
-        case ROTATERT:
-          return (op == LT || op == GE) ? CC_Nmode : CCmode;
-
-        default:
-          return CCmode;
+      while (leftover > 0)
+        {
+          temp = gen_reg_rtx (QImode);
+          emit_insn (gen_move_lbu_b (src_reg, src_reg,
+                                     gen_int_mode (src_adj, SImode), temp));
+          emit_insn (gen_move_sb_b (dst_reg, dst_reg,
+                                    gen_int_mode (dst_adj, SImode), temp));
+          leftover--;
+          src_adj = 1;
+          dst_adj = 1;
         }
     }
+}
 
-  if ((op == EQ || op == NE)
-      && (GET_CODE (y) == NEG)
-      && register_operand (XEXP (y, 0), SImode)
-      && register_operand (x, SImode))
+#define MIN_MOVE_REGS 3
+#define MIN_MOVE_BYTES (MIN_MOVE_REGS * UNITS_PER_WORD)
+#define MAX_MOVE_REGS 4
+#define MAX_MOVE_BYTES (MAX_MOVE_REGS * UNITS_PER_WORD)
+
+/* The length is large, generate a loop if necessary.
+   The loop is consisted by loop head/body/foot.  */
+static void
+score_block_move_loop (rtx dst, rtx src, HOST_WIDE_INT length)
+{
+  HOST_WIDE_INT src_align = MEM_ALIGN (src);
+  HOST_WIDE_INT dst_align = MEM_ALIGN (dst);
+  HOST_WIDE_INT loop_mov_bytes;
+  HOST_WIDE_INT iteration = 0;
+  HOST_WIDE_INT head_length = 0, leftover;
+  rtx label, src_reg, dst_reg, final_dst;
+
+  bool gen_loop_head = (src_align < BITS_PER_WORD
+                        || dst_align < BITS_PER_WORD);
+
+  if (gen_loop_head)
+    head_length += UNITS_PER_WORD;
+
+  for (loop_mov_bytes = MAX_MOVE_BYTES;
+       loop_mov_bytes >= MIN_MOVE_BYTES;
+       loop_mov_bytes -= UNITS_PER_WORD)
     {
-      return CC_NZmode;
+      iteration = (length - head_length) / loop_mov_bytes;
+      if (iteration > 1)
+        break;
+    }
+  if (iteration <= 1)
+    {
+      score_block_move_straight (dst, src, length);
+      return;
     }
 
-  return CCmode;
+  leftover = (length - head_length) % loop_mov_bytes;
+  length -= leftover;
+
+  src_reg = copy_addr_to_reg (XEXP (src, 0));
+  dst_reg = copy_addr_to_reg (XEXP (dst, 0));
+  final_dst = expand_simple_binop (Pmode, PLUS, dst_reg, GEN_INT (length),
+                                   0, 0, OPTAB_WIDEN);
+
+  if (gen_loop_head)
+    score_block_move_loop_head (dst_reg, dst_align,
+                              src_reg, src_align, head_length);
+
+  label = gen_label_rtx ();
+  emit_label (label);
+
+  score_block_move_loop_body (dst_reg, dst_align,
+                            src_reg, src_align, loop_mov_bytes);
+
+  emit_insn (gen_cmpsi (dst_reg, final_dst));
+  emit_jump_insn (gen_bne (label));
+
+  score_block_move_loop_foot (dst_reg, dst_align,
+                            src_reg, src_align, leftover);
+}
+
+/* Generate block move, for misc.md: "movmemsi".  */
+bool
+score_block_move (rtx *ops)
+{
+  rtx dst = ops[0];
+  rtx src = ops[1];
+  rtx length = ops[2];
+
+  if (TARGET_LITTLE_ENDIAN
+      && (MEM_ALIGN (src) < BITS_PER_WORD || MEM_ALIGN (dst) < BITS_PER_WORD)
+      && INTVAL (length) >= UNITS_PER_WORD)
+    return false;
+
+  if (GET_CODE (length) == CONST_INT)
+    {
+      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
+        {
+          score_block_move_straight (dst, src, INTVAL (length));
+          return true;
+        }
+      else if (optimize &&
+               !(flag_unroll_loops || flag_unroll_all_loops))
+        {
+          score_block_move_loop (dst, src, INTVAL (length));
+          return true;
+        }
+    }
+  return false;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

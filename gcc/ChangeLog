@@ -1,3 +1,25 @@
+2007-10-18  Chen liqin  <liqin@sunnorth.com.cn>
+
+        * config.gcc : update score-*-elf(extra_objs).
+        * config/score/mac.md : Remove.
+        * config/score/misc.md : Remove.
+        * config/score/score7.md : Remove.
+        * config/score/score-mdaux.h : Remove.
+        * config/score/score-mdaux.c : Remove.
+        * config/score/score-version.h : Remove.
+        * config/score/score-generic.md : New.
+        * config/score/score3.h : New.
+        * config/score/score3.c : New.
+        * config/score/score7.h : New.
+        * config/score/score7.c : New.
+        * config/score/mul-div.S : add flush_cache score3 support.
+        * config/score/elf.h : Fix some typos.
+        * config/score/score.md : merge score3 and score7 pattern.
+        * config/score/score.c : use to seperate which target it used.
+        * config/score/score.h : use to seperate the target macro.
+        * config/score/score.opt : remove -mmac option , add -mscore3,
+        -mscore3d and -march OPTION support.
+
 2007-10-12  Zdenek Dvorak <ook@ucw.cz>
 
 	PR tree-optimization/33714
