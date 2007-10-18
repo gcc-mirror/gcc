@@ -1,5 +1,11 @@
 2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/33233
+	* gfortran.dg/host_assoc_function_1.f90: Correct references.
+	* gfortran.dg/host_assoc_function_3.f90: New test.
+
+2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/33733
 	* gfortran.dg/transfer_simplify_6.f90: New test.
 

@@ -1,4 +1,10 @@
 2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/33233
+	* resolve.c (check_host_association): Check singly contained
+	namespaces and start search for symbol in current namespace.
+
+2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/33733

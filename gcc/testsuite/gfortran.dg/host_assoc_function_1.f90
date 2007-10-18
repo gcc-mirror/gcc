@@ -19,8 +19,8 @@ MODULE m
   end interface
 CONTAINS
   SUBROUTINE s
-    if (x(2) .ne. 2.5) call abort ()
-    if (z(3) .ne. real (3)**3) call abort ()
+    if (x(2, 3) .ne. real (2)**3) call abort ()
+    if (z(3, 3) .ne. real (3)**3) call abort ()
     CALL inner
   CONTAINS
     SUBROUTINE inner
