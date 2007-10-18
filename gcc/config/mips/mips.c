@@ -432,6 +432,7 @@ static void mips_set_current_function (tree);
 static int mips_mode_rep_extended (enum machine_mode, enum machine_mode);
 static bool mips_offset_within_alignment_p (rtx, HOST_WIDE_INT);
 static void mips_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
+static rtx mips_dwarf_register_span (rtx);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -1385,6 +1386,9 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL mips_output_dwarf_dtprel
 #endif
+
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN mips_dwarf_register_span
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -12865,6 +12869,32 @@ mips_output_dwarf_dtprel (FILE *file, int size, rtx x)
     }
   output_addr_const (file, x);
   fputs ("+0x8000", file);
+}
+
+/* Implement TARGET_DWARF_REGISTER_SPAN.  */
+
+static rtx
+mips_dwarf_register_span (rtx reg)
+{
+  rtx high, low;
+  enum machine_mode mode;
+
+  /* By default, GCC maps increasing register numbers to increasing
+     memory locations, but paired FPRs are always little-endian,
+     regardless of the prevailing endianness.  */
+  mode = GET_MODE (reg);
+  if (FP_REG_P (REGNO (reg))
+      && TARGET_BIG_ENDIAN
+      && MAX_FPRS_PER_FMT > 1
+      && GET_MODE_SIZE (mode) > UNITS_PER_FPREG)
+    {
+      gcc_assert (GET_MODE_SIZE (mode) == UNITS_PER_HWFPVALUE);
+      high = mips_subword (reg, true);
+      low = mips_subword (reg, false);
+      return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, high, low));
+    }
+
+  return NULL_RTX;
 }
 
 #include "gt-mips.h"

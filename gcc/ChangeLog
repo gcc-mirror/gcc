@@ -1,3 +1,8 @@
+2007-10-18  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/mips/mips.c (mips_dwarf_register_span): New.
+	(TARGET_DWARF_REGISTER_SPAN): Define.
+
 2007-10-18  Chen Liqin  <liqin@sunnorth.com.cn>
 
         * config.gcc : update score-*-elf(extra_objs).
