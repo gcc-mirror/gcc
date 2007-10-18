@@ -4011,6 +4011,9 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	|| !gfc_is_constant_expr (size))
     return NULL;
 
+  if (source->expr_type == EXPR_FUNCTION)
+    return NULL;
+
   /* Calculate the size of the source.  */
   if (source->expr_type == EXPR_ARRAY
       && gfc_array_size (source, &tmp) == FAILURE)
