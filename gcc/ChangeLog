@@ -1,5 +1,18 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips-protos.h (compute_frame_size): Delete.
+	* config/mips/mips.h: Update comments.
+	* config/mips/mips.c (mips_frame_info): Remove initialized.
+	(compute_frame_size): Rename to...
+	(mips_compute_frame_info): ...this and make static.  Remove the
+	SIZE argument and return no value.  Remove the setting of initialized.
+	Update rest of file accordingly.
+	(mips_set_return_address): Don't call compute_frame_size.
+	(mips_can_use_return_insn): Don't check df_regs_ever_live_p (31).
+	Don't call compute_frame_size.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips-protos.h (mips_frame_pointer_required): Declare.
 	* config/mips/mips.h (FRAME_POINTER_REQUIRED): Use
 	mips_hard_frame_pointer_required.

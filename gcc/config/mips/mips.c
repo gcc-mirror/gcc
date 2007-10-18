@@ -234,9 +234,7 @@ static const char *const mips_fp_conditions[] = {
   MIPS_FP_CONDITIONS (STRINGIFY)
 };
 
-/* Structure to be filled in by compute_frame_size with register
-   save masks, and offsets for the current function.  */
-
+/* Information about a function's frame layout.  */
 struct mips_frame_info GTY(())
 {
   /* The size of the frame in bytes.  */
@@ -280,9 +278,6 @@ struct mips_frame_info GTY(())
 
   /* The offset of hard_frame_pointer_rtx from frame_pointer_rtx.  */
   HOST_WIDE_INT hard_frame_pointer_offset;
-
-  /* True if this structure has been initialized after reload.  */
-  bool initialized;
 };
 
 struct machine_function GTY(()) {
@@ -294,7 +289,7 @@ struct machine_function GTY(()) {
      This area is allocated by the callee at the very top of the frame.  */
   int varargs_size;
 
-  /* Current frame information, calculated by compute_frame_size.  */
+  /* Current frame information, calculated by mips_compute_frame_info.  */
   struct mips_frame_info frame;
 
   /* The register to use as the global pointer within this function.  */
@@ -7833,8 +7828,7 @@ mips_save_reg_p (unsigned int regno)
   return false;
 }
 
-/* Return the bytes needed to compute the frame pointer from the current
-   stack pointer.  SIZE is the size (in bytes) of the local variables.
+/* Populate the current function's mips_frame_info structure.
 
    MIPS stack frames look like:
 
@@ -7895,15 +7889,16 @@ mips_save_reg_p (unsigned int regno)
    They decrease stack_pointer_rtx but leave frame_pointer_rtx and
    hard_frame_pointer_rtx unchanged.  */
 
-HOST_WIDE_INT
-compute_frame_size (HOST_WIDE_INT size)
+static void
+mips_compute_frame_info (void)
 {
   struct mips_frame_info *frame;
-  HOST_WIDE_INT offset;
+  HOST_WIDE_INT offset, size;
   unsigned int regno, i;
 
   frame = &cfun->machine->frame;
   memset (frame, 0, sizeof (*frame));
+  size = get_frame_size ();
 
   cfun->machine->global_pointer = mips_global_pointer ();
 
@@ -8007,9 +8002,6 @@ compute_frame_size (HOST_WIDE_INT size)
      instructions for local variables and incoming arguments.  */
   if (TARGET_MIPS16)
     frame->hard_frame_pointer_offset = frame->args_size;
-
-  frame->initialized = reload_completed;
-  return frame->total_size;
 }
 
 /* Return the style of GP load sequence that is being used for the
@@ -8046,7 +8038,7 @@ mips_frame_pointer_required (void)
      without using a second temporary register.  */
   if (TARGET_MIPS16)
     {
-      compute_frame_size (get_frame_size ());
+      mips_compute_frame_info ();
       if (!SMALL_OPERAND (cfun->machine->frame.total_size))
 	return true;
     }
@@ -8063,7 +8055,7 @@ mips_initial_elimination_offset (int from, int to)
 {
   HOST_WIDE_INT offset;
 
-  compute_frame_size (get_frame_size ());
+  mips_compute_frame_info ();
 
   /* Set OFFSET to the offset from the soft frame pointer, which is also
      the offset from the end-of-prologue stack pointer.  */
@@ -8118,7 +8110,6 @@ mips_set_return_address (rtx address, rtx scratch)
 {
   rtx slot_address;
 
-  compute_frame_size (get_frame_size ());
   gcc_assert ((cfun->machine->frame.mask >> 31) & 1);
   slot_address = mips_add_offset (scratch, stack_pointer_rtx,
 				  cfun->machine->frame.gp_sp_offset);
@@ -8192,7 +8183,7 @@ mips_for_each_saved_reg (HOST_WIDE_INT sp_offset, mips_save_restore_fn fn)
       }
 
   /* This loop must iterate over the same space as its companion in
-     compute_frame_size.  */
+     mips_compute_frame_info.  */
   offset = cfun->machine->frame.fp_sp_offset - sp_offset;
   fpr_mode = (TARGET_SINGLE_FLOAT ? SFmode : DFmode);
   for (regno = (FP_REG_LAST - MAX_FPRS_PER_FMT + 1);
@@ -8447,7 +8438,7 @@ mips_expand_prologue (void)
   if (cfun->machine->global_pointer > 0)
     SET_REGNO (pic_offset_table_rtx, cfun->machine->global_pointer);
 
-  size = compute_frame_size (get_frame_size ());
+  size = cfun->machine->frame.total_size;
 
   /* Save the registers.  Allocate up to MIPS_MAX_FIRST_STACK_STEP
      bytes beforehand; this is enough to cover the register save area
@@ -8768,7 +8759,7 @@ mips_can_use_return_insn (void)
   if (! reload_completed)
     return 0;
 
-  if (df_regs_ever_live_p (31) || current_function_profile)
+  if (current_function_profile)
     return 0;
 
   /* In mips16 mode, a function that returns a floating point value
@@ -8777,10 +8768,7 @@ mips_can_use_return_insn (void)
   if (mips16_cfun_returns_in_fpr_p ())
     return 0;
 
-  if (cfun->machine->frame.initialized)
-    return cfun->machine->frame.total_size == 0;
-
-  return compute_frame_size (get_frame_size ()) == 0;
+  return cfun->machine->frame.total_size == 0;
 }
 
 /* Implement HARD_REGNO_NREGS.  The size of FP registers is controlled
