@@ -308,7 +308,7 @@ static int m16_check_op (rtx, int, int, int);
 static bool mips_rtx_costs (rtx, int, int, int *);
 static int mips_address_cost (rtx);
 static void mips_emit_compare (enum rtx_code *, rtx *, rtx *, bool);
-static void mips_load_call_address (rtx, rtx, int);
+static bool mips_load_call_address (rtx, rtx, int);
 static bool mips_function_ok_for_sibcall (tree, tree);
 static void mips_block_move_straight (rtx, rtx, HOST_WIDE_INT);
 static void mips_adjust_block_mem (rtx, HOST_WIDE_INT, rtx *, rtx *);
@@ -4135,9 +4135,10 @@ mips_ok_for_lazy_binding_p (rtx x)
 }
 
 /* Load function address ADDR into register DEST.  SIBCALL_P is true
-   if the address is needed for a sibling call.  */
+   if the address is needed for a sibling call.  Return true if we
+   used an explicit lazy-binding sequence.  */
 
-static void
+static bool
 mips_load_call_address (rtx dest, rtx addr, int sibcall_p)
 {
   /* If we're generating PIC, and this call is to a global function,
@@ -4157,9 +4158,13 @@ mips_load_call_address (rtx dest, rtx addr, int sibcall_p)
 	emit_insn (gen_load_callsi (dest, high, lo_sum_symbol));
       else
 	emit_insn (gen_load_calldi (dest, high, lo_sum_symbol));
+      return true;
     }
   else
-    mips_emit_move (dest, addr);
+    {
+      mips_emit_move (dest, addr);
+      return false;
+    }
 }
 
 
@@ -4174,12 +4179,14 @@ void
 mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 {
   rtx orig_addr, pattern, insn;
+  bool lazy_p;
 
   orig_addr = addr;
+  lazy_p = false;
   if (!call_insn_operand (addr, VOIDmode))
     {
       addr = gen_reg_rtx (Pmode);
-      mips_load_call_address (addr, orig_addr, sibcall_p);
+      lazy_p = mips_load_call_address (addr, orig_addr, sibcall_p);
     }
 
   if (TARGET_MIPS16
@@ -4210,9 +4217,15 @@ mips_expand_call (rtx result, rtx addr, rtx args_size, rtx aux, int sibcall_p)
 
   insn = emit_call_insn (pattern);
 
-  /* Lazy-binding stubs require $gp to be valid on entry.  */
-  if (mips_ok_for_lazy_binding_p (orig_addr))
-    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+  /* Lazy-binding stubs require $gp to be valid on entry.  We also pretend
+     that they use FAKE_CALL_REGNO; see the load_call<mode> patterns for
+     details.  */
+  if (lazy_p)
+    {
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), pic_offset_table_rtx);
+      use_reg (&CALL_INSN_FUNCTION_USAGE (insn),
+	       gen_rtx_REG (Pmode, FAKE_CALL_REGNO));
+    }
 }
 
 
@@ -10748,7 +10761,7 @@ mips_avoid_hazard (rtx after, rtx insn, int *hilo_delay,
 		   rtx *delayed_reg, rtx lo_reg)
 {
   rtx pattern, set;
-  int nops, ninsns;
+  int nops, ninsns, hazard_set;
 
   if (!INSN_P (insn))
     return;
@@ -10797,8 +10810,15 @@ mips_avoid_hazard (rtx after, rtx insn, int *hilo_delay,
 	break;
 
       case HAZARD_DELAY:
-	set = single_set (insn);
-	gcc_assert (set != 0);
+	hazard_set = (int) get_attr_hazard_set (insn);
+	if (hazard_set == 0)
+	  set = single_set (insn);
+	else
+	  {
+	    gcc_assert (GET_CODE (PATTERN (insn)) == PARALLEL);
+	    set = XVECEXP (PATTERN (insn), 0, hazard_set - 1);
+	  }
+	gcc_assert (set && GET_CODE (set) == SET);
 	*delayed_reg = SET_DEST (set);
 	break;
       }

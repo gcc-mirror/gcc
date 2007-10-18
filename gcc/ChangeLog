@@ -1,3 +1,11 @@
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (mips_expand_call): Use FAKE_CALL_REGNO.
+	(mips_avoid_hazard): Allow multiple sets for HAZARD_DELAY,
+	and pick the first.
+	* config/mips/mips.md (load_call<mode>): Don't make the unspec
+	depend on FAKE_CALL_REGNO.  Set FAKE_CALL_REGNO.
+
 2007-10-18  David Daney  <ddaney@avtrex.com>
 
 	* config/mips/linux-unwind.h (mips_fallback_frame_state): Use new
