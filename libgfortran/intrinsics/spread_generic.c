@@ -131,9 +131,9 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 
 		  if (ret_extent != ncopies)
 		    runtime_error("Incorrect extent in return value of SPREAD"
-				  " intrinsic in dimension %d: is %ld,"
-				  " should be %ld", n+1, (long int) ret_extent,
-				  (long int) ncopies);
+				  " intrinsic in dimension %ld: is %ld,"
+				  " should be %ld", (long int) n+1,
+				  (long int) ret_extent, (long int) ncopies);
 		}
 	      else
 		{
@@ -142,8 +142,9 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
 		    - source->dim[dim].lbound;
 		  if (ret_extent != extent[dim])
 		    runtime_error("Incorrect extent in return value of SPREAD"
-				  " intrinsic in dimension %d: is %ld,"
-				  " should be %ld", n+1, (long int) ret_extent,
+				  " intrinsic in dimension %ld: is %ld,"
+				  " should be %ld", (long int) n+1,
+				  (long int) ret_extent,
 				  (long int) extent[dim]);
 		    
 		  if (extent[dim] <= 0)
