@@ -1,3 +1,10 @@
+2007-10-18  David Daney  <ddaney@avtrex.com>
+
+	* classpath/lib/gnu/java/locale/LocaleData.class: Regenerate
+	* classpath/lib/gnu/javax/sound/sampled/gstreamer: Add generated
+	files.
+	* gnu/javax/sound/sampled/gstreamer: Add generated files.
+	
 2007-10-15  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* configure: Regenerate following changes to ../config/tls.m4.
