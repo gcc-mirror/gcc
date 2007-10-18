@@ -1,3 +1,11 @@
+2007-10-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/33807
+	* include/bits/allocator.h (operator==(const allocator<_Tp>&,
+	const allocator<_Tp>&), operator!=(const allocator<_Tp>&,
+	const allocator<_Tp>&)): Add.
+	* testsuite/20_util/memory/allocator/33807.cc: New.
+	
 2007-10-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* docs/html/Makefile: Follow up to libstdc++/14991, remove target.

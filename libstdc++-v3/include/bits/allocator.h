@@ -115,9 +115,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator==(const allocator<_T1>&, const allocator<_T2>&)
     { return true; }
 
+  template<typename _Tp>
+    inline bool
+    operator==(const allocator<_Tp>&, const allocator<_Tp>&)
+    { return true; }
+
   template<typename _T1, typename _T2>
     inline bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
+    { return false; }
+
+  template<typename _Tp>
+    inline bool
+    operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
     { return false; }
 
   // Inhibit implicit instantiations for required instantiations,
