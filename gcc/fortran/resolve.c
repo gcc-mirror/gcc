@@ -4014,11 +4014,12 @@ check_host_association (gfc_expr *e)
     return retval;
 
   if (gfc_current_ns->parent
-	&& gfc_current_ns->parent->parent
 	&& old_sym->ns != gfc_current_ns)
     {
-      gfc_find_symbol (old_sym->name, gfc_current_ns->parent, 1, &sym);
-      if (sym && old_sym != sym && sym->attr.flavor == FL_PROCEDURE)
+      gfc_find_symbol (old_sym->name, gfc_current_ns, 1, &sym);
+      if (sym && old_sym != sym
+	      && sym->attr.flavor == FL_PROCEDURE
+	      && sym->attr.contained)
 	{
 	  temp_locus = gfc_current_locus;
 	  gfc_current_locus = e->where;
