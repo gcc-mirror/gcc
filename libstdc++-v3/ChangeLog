@@ -1,3 +1,8 @@
+2007-10-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	05_comp_ellint_2/check_nan.cc: Add -mieee for sh.
+
 2007-10-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/allocator.h (struct __alloc_neq): Add.
