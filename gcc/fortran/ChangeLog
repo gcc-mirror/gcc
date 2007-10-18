@@ -1,3 +1,10 @@
+2007-10-18  Paul Thomas  <pault@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/33733
+	* simplify.c (gfc_simplify_transfer): Return null if the source
+	expression is EXPR_FUNCTION.
+
 2007-10-17 Christopher D. Rickett <crickett@lanl.gov>
 
 	PR fortran/33760
