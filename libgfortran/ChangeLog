@@ -1,3 +1,14 @@
+2007-10-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/32021
+	* runtime/backtrace.c (local_strcasestr): Protect by appropriate
+	macros.
+	* runtime/main.c (cleanup): Cast argument to free.
+	* intrinsics/spread_generic.c (spread_internal): Match runtime_error
+	arguments and format.
+	* intrinsics/signal.c (alarm_sub_int_i4, alarm_sub_int_i8): Cast
+	pointers to avoid warnings.
+
 2007-10-18  Ben Elliston  <bje@au.ibm.com>
 
 	* runtime/environ.c (init_choice): Remove unused function.

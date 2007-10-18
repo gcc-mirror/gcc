@@ -176,5 +176,5 @@ cleanup (void)
   close_units ();
   
   if (please_free_exe_path_when_done)
-    free (exe_path);
+    free ((char *) exe_path);
 }

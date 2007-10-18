@@ -198,14 +198,14 @@ alarm_sub_int_i4 (int *seconds, int *handler, GFC_INTEGER_4 *status)
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
     {
-      if (signal (SIGALRM, (void (*)(int)) *handler) == SIG_ERR)
+      if (signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler) == SIG_ERR)
 	*status = -1;
       else
 	*status = alarm (*seconds);
     }
   else
     {
-      signal (SIGALRM, (void (*)(int)) *handler);
+      signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler);
       alarm (*seconds);
     }
 #else
@@ -226,14 +226,14 @@ alarm_sub_int_i8 (int *seconds, int *handler, GFC_INTEGER_8 *status)
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
     {
-      if (signal (SIGALRM, (void (*)(int)) *handler) == SIG_ERR)
+      if (signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler) == SIG_ERR)
 	*status = -1;
       else
 	*status = alarm (*seconds);
     }
   else
     {
-      signal (SIGALRM, (void (*)(int)) *handler);
+      signal (SIGALRM, (void (*)(int)) (INTPTR_T) *handler);
       alarm (*seconds);
     }
 #else

@@ -60,7 +60,18 @@ Boston, MA 02110-1301, USA.  */
 #include <ctype.h>
 
 
+/* Macros for common sets of capabilities: can we fork and exec, can
+   we use glibc-style backtrace functions, and can we use pipes.  */
+#define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVP) \
+		  && defined(HAVE_WAIT))
+#define GLIBC_BACKTRACE (defined(HAVE_BACKTRACE) \
+			 && defined(HAVE_BACKTRACE_SYMBOLS))
+#define CAN_PIPE (CAN_FORK && defined(HAVE_PIPE) \
+		  && defined(HAVE_DUP2) && defined(HAVE_FDOPEN) \
+		  && defined(HAVE_CLOSE))
 
+
+#if GLIBC_BACKTRACE && CAN_PIPE
 static char *
 local_strcasestr (const char *s1, const char *s2)
 {
@@ -85,14 +96,7 @@ local_strcasestr (const char *s1, const char *s2)
     }
 #endif
 }
-
-#define CAN_FORK (defined(HAVE_FORK) && defined(HAVE_EXECVP) \
-		  && defined(HAVE_WAIT))
-#define GLIBC_BACKTRACE (defined(HAVE_BACKTRACE) \
-			 && defined(HAVE_BACKTRACE_SYMBOLS))
-#define CAN_PIPE (CAN_FORK && defined(HAVE_PIPE) \
-		  && defined(HAVE_DUP2) && defined(HAVE_FDOPEN) \
-		  && defined(HAVE_CLOSE))
+#endif
 
 
 #if GLIBC_BACKTRACE
