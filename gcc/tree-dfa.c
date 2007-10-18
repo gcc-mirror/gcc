@@ -675,15 +675,12 @@ referenced_var_check_and_insert (tree to)
 tree 
 gimple_default_def (struct function *fn, tree var)
 {
-  struct int_tree_map *h, in;
+  struct tree_decl_minimal ind;
+  struct tree_ssa_name in;
   gcc_assert (SSA_VAR_P (var));
-  in.uid = DECL_UID (var);
-  h = (struct int_tree_map *) htab_find_with_hash (DEFAULT_DEFS (fn),
-						   &in,
-                                                   DECL_UID (var));
-  if (h)
-    return h->to;
-  return NULL_TREE;
+  in.var = (tree)&ind;
+  ind.uid = DECL_UID (var);
+  return (tree) htab_find_with_hash (DEFAULT_DEFS (fn), &in, DECL_UID (var));
 }
 
 /* Insert the pair VAR's UID, DEF into the default_defs hashtable.  */
@@ -691,37 +688,29 @@ gimple_default_def (struct function *fn, tree var)
 void
 set_default_def (tree var, tree def)
 { 
-  struct int_tree_map in;
-  struct int_tree_map *h;
+  struct tree_decl_minimal ind;
+  struct tree_ssa_name in;
   void **loc;
 
   gcc_assert (SSA_VAR_P (var));
-  in.uid = DECL_UID (var);
-  if (!def && gimple_default_def (cfun, var))
+  in.var = (tree)&ind;
+  ind.uid = DECL_UID (var);
+  if (!def)
     {
       loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
             DECL_UID (var), INSERT);
+      gcc_assert (*loc);
       htab_remove_elt (DEFAULT_DEFS (cfun), *loc);
       return;
     }
-  gcc_assert (!def || TREE_CODE (def) == SSA_NAME);
+  gcc_assert (TREE_CODE (def) == SSA_NAME && SSA_NAME_VAR (def) == var);
   loc = htab_find_slot_with_hash (DEFAULT_DEFS (cfun), &in,
                                   DECL_UID (var), INSERT);
 
   /* Default definition might be changed by tail call optimization.  */
-  if (!*loc)
-    {
-      h = GGC_NEW (struct int_tree_map);
-      h->uid = DECL_UID (var);
-      h->to = def;
-      *(struct int_tree_map **)  loc = h;
-    }
-   else
-    {
-      h = (struct int_tree_map *) *loc;
-      SSA_NAME_IS_DEFAULT_DEF (h->to) = false;
-      h->to = def;
-    }
+  if (*loc)
+    SSA_NAME_IS_DEFAULT_DEF (*(tree *) loc) = false;
+  *(tree *) loc = def;
 
    /* Mark DEF as the default definition for VAR.  */
    SSA_NAME_IS_DEFAULT_DEF (def) = true;
