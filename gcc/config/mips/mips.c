@@ -275,6 +275,12 @@ struct mips_frame_info GTY(())
   HOST_WIDE_INT gp_sp_offset;
   HOST_WIDE_INT fp_sp_offset;
 
+  /* The offset of arg_pointer_rtx from frame_pointer_rtx.  */
+  HOST_WIDE_INT arg_pointer_offset;
+
+  /* The offset of hard_frame_pointer_rtx from frame_pointer_rtx.  */
+  HOST_WIDE_INT hard_frame_pointer_offset;
+
   /* True if this structure has been initialized after reload.  */
   bool initialized;
 };
@@ -6804,15 +6810,9 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
   if (reg == stack_pointer_rtx || reg == frame_pointer_rtx
       || reg == hard_frame_pointer_rtx)
     {
-      HOST_WIDE_INT frame_size = (!cfun->machine->frame.initialized)
-				  ? compute_frame_size (get_frame_size ())
-				  : cfun->machine->frame.total_size;
-
-      /* MIPS16 frame is smaller */
-      if (frame_pointer_needed && TARGET_MIPS16)
-	frame_size -= cfun->machine->frame.args_size;
-
-      offset = offset - frame_size;
+      offset -= cfun->machine->frame.total_size;
+      if (reg == hard_frame_pointer_rtx)
+	offset += cfun->machine->frame.hard_frame_pointer_offset;
     }
 
   /* sdbout_parms does not want this to crash for unrecognized cases.  */
@@ -7352,13 +7352,12 @@ mips16e_collect_argument_save_p (rtx dest, rtx src, rtx *reg_values,
   argno = regno - GP_ARG_FIRST;
 
   /* Check whether the address is an appropriate stack pointer or
-     frame pointer access.  The frame pointer is offset from the
-     stack pointer by the size of the outgoing arguments.  */
+     frame pointer access.  */
   addr = mips16e_collect_propagate_value (XEXP (dest, 0), reg_values);
   mips_split_plus (addr, &base, &offset);
   required_offset = cfun->machine->frame.total_size + argno * UNITS_PER_WORD;
   if (base == hard_frame_pointer_rtx)
-    required_offset -= cfun->machine->frame.args_size;
+    required_offset -= cfun->machine->frame.hard_frame_pointer_offset;
   else if (base != stack_pointer_rtx)
     return false;
   if (offset != required_offset)
@@ -7991,6 +7990,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   /* Move above the callee-allocated varargs save area.  */
   offset += MIPS_STACK_ALIGN (cfun->machine->varargs_size);
+  frame->arg_pointer_offset = offset;
 
   /* Move above the callee-allocated area for pretend stack arguments.  */
   offset += current_function_pretend_args_size;
@@ -8001,6 +8001,12 @@ compute_frame_size (HOST_WIDE_INT size)
     frame->gp_save_offset = frame->gp_sp_offset - offset;
   if (frame->fp_sp_offset > 0)
     frame->fp_save_offset = frame->fp_sp_offset - offset;
+
+  /* MIPS16 code offsets the frame pointer by the size of the outgoing
+     arguments.  This tends to increase the chances of using unextended
+     instructions for local variables and incoming arguments.  */
+  if (TARGET_MIPS16)
+    frame->hard_frame_pointer_offset = frame->args_size;
 
   frame->initialized = reload_completed;
   return frame->total_size;
@@ -8035,7 +8041,8 @@ mips_initial_elimination_offset (int from, int to)
 
   compute_frame_size (get_frame_size ());
 
-  /* Set OFFSET to the offset from the stack pointer.  */
+  /* Set OFFSET to the offset from the soft frame pointer, which is also
+     the offset from the end-of-prologue stack pointer.  */
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
@@ -8043,16 +8050,15 @@ mips_initial_elimination_offset (int from, int to)
       break;
 
     case ARG_POINTER_REGNUM:
-      offset = (cfun->machine->frame.total_size
-		- current_function_pretend_args_size);
+      offset = cfun->machine->frame.arg_pointer_offset;
       break;
 
     default:
       gcc_unreachable ();
     }
 
-  if (TARGET_MIPS16 && to == HARD_FRAME_POINTER_REGNUM)
-    offset -= cfun->machine->frame.args_size;
+  if (to == HARD_FRAME_POINTER_REGNUM)
+    offset -= cfun->machine->frame.hard_frame_pointer_offset;
 
   return offset;
 }
@@ -8248,8 +8254,8 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	       ", gp= " HOST_WIDE_INT_PRINT_DEC "\n",
 	       (reg_names[(frame_pointer_needed)
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
-	       ((frame_pointer_needed && TARGET_MIPS16)
-		? tsize - cfun->machine->frame.args_size
+	       (frame_pointer_needed
+		? tsize - cfun->machine->frame.hard_frame_pointer_offset
 		: tsize),
 	       reg_names[GP_REG_FIRST + 31],
 	       cfun->machine->frame.var_size,
@@ -8497,36 +8503,34 @@ mips_expand_prologue (void)
 	}
     }
 
-  /* Set up the frame pointer, if we're using one.  In mips16 code,
-     we point the frame pointer ahead of the outgoing argument area.
-     This should allow more variables & incoming arguments to be
-     accessed with unextended instructions.  */
+  /* Set up the frame pointer, if we're using one.  */
   if (frame_pointer_needed)
     {
-      if (TARGET_MIPS16 && cfun->machine->frame.args_size != 0)
+      HOST_WIDE_INT offset;
+
+      offset = cfun->machine->frame.hard_frame_pointer_offset;
+      if (offset == 0)
 	{
-	  rtx offset = GEN_INT (cfun->machine->frame.args_size);
-	  if (SMALL_OPERAND (cfun->machine->frame.args_size))
-	    RTX_FRAME_RELATED_P
-	      (emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
-					 stack_pointer_rtx,
-					 offset))) = 1;
-	  else
-	    {
-	      mips_emit_move (MIPS_PROLOGUE_TEMP (Pmode), offset);
-	      mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
-	      emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
-					hard_frame_pointer_rtx,
-					MIPS_PROLOGUE_TEMP (Pmode)));
-	      mips_set_frame_expr
-		(gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
-			      plus_constant (stack_pointer_rtx,
-					     cfun->machine->frame.args_size)));
-	    }
+	  insn = mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+      else if (SMALL_OPERAND (offset))
+	{
+	  insn = gen_add3_insn (hard_frame_pointer_rtx,
+				stack_pointer_rtx, GEN_INT (offset));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
       else
-	RTX_FRAME_RELATED_P (mips_emit_move (hard_frame_pointer_rtx,
-					     stack_pointer_rtx)) = 1;
+	{
+	  mips_emit_move (MIPS_PROLOGUE_TEMP (Pmode), GEN_INT (offset));
+	  mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
+	  emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
+				    hard_frame_pointer_rtx,
+				    MIPS_PROLOGUE_TEMP (Pmode)));
+	  mips_set_frame_expr
+	    (gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
+			  plus_constant (stack_pointer_rtx, offset)));
+	}
     }
 
   mips_emit_loadgp ();
@@ -8614,15 +8618,13 @@ mips_expand_epilogue (int sibcall_p)
   step1 = cfun->machine->frame.total_size;
   step2 = 0;
 
-  /* Work out which register holds the frame address.  Account for the
-     frame pointer offset used by mips16 code.  */
+  /* Work out which register holds the frame address.  */
   if (!frame_pointer_needed)
     base = stack_pointer_rtx;
   else
     {
       base = hard_frame_pointer_rtx;
-      if (TARGET_MIPS16)
-	step1 -= cfun->machine->frame.args_size;
+      step1 -= cfun->machine->frame.hard_frame_pointer_offset;
     }
 
   /* If we need to restore registers, deallocate as much stack as

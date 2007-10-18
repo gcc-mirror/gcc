@@ -1,5 +1,17 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_frame_info): Add arg_pointer_offset
+	and hard_frame_pointer_offset.
+	(mips_debugger_offset): Use hard_frame_pointer_offset.
+	(mips16e_collect_argument_save_p): Likewise.
+	(compute_frame_size): Initialize arg_pointer_offset and
+	hard_frame_pointer_offset.
+	(mips_initial_elimination_offset): Use them.
+	(mips_output_function_prologue): Use hard_frame_pointer_offset.
+	(mips_expand_prologue, mips_expand_epilogue): Likewise.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.h (STARTING_FRAME_OFFSET): Remove rtl
 	profiling code.
 	* config/mips/mips.c (mips_frame_info): Give num_gp and num_fp type
