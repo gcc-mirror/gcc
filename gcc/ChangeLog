@@ -1,5 +1,14 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips-protos.h (mips_frame_pointer_required): Declare.
+	* config/mips/mips.h (FRAME_POINTER_REQUIRED): Use
+	mips_hard_frame_pointer_required.
+	(CAN_ELIMINATE): Rely on FRAME_POINTER_REQUIRED to check for
+	large MIPS16 frames.
+	* config/mips/mips.c (mips_frame_pointer_required): New function.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_frame_info): Add arg_pointer_offset
 	and hard_frame_pointer_offset.
 	(mips_debugger_offset): Use hard_frame_pointer_offset.
