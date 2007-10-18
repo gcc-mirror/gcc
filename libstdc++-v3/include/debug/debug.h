@@ -49,15 +49,9 @@ namespace std
   namespace __debug { } 
 }
 
-namespace __gnu_cxx
-{ 
-  namespace __debug { };
-}
-
 namespace __gnu_debug
 {
   using namespace std::__debug;
-  using namespace __gnu_cxx::__debug;
 }
 
 #ifndef _GLIBCXX_DEBUG

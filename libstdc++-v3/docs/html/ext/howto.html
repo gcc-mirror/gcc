@@ -63,27 +63,28 @@
 <h2><a name="1">Ropes and trees and hashes, oh my!</a></h2>
    <p>The SGI headers</p>
    <pre>
-     &lt;bvector&gt;
      &lt;hash_map&gt;
      &lt;hash_set&gt;
      &lt;rope&gt;
      &lt;slist&gt;
-     &lt;tree&gt;
+     &lt;rb_tree&gt;
    </pre>
-   <p>are all here; <code>&lt;bvector&gt;</code> exposes the old bit_vector
-      class that was used before specialization of vector&lt;bool&gt; was
-      available (it's actually a typedef for the specialization now).
+   <p>are all here;
       <code>&lt;hash_map&gt;</code> and <code>&lt;hash_set&gt;</code>
-      are discussed further below.  <code>&lt;rope&gt;</code> is the SGI
-      specialization for large strings (&quot;rope,&quot; &quot;large
-      strings,&quot; get it?  love those SGI folks).
+      are deprecated but available as backwards-compatible extensions,
+      as discussed further below.  <code>&lt;rope&gt;</code> is the
+      SGI specialization for large strings (&quot;rope,&quot;
+      &quot;large strings,&quot; get it?  love those SGI folks).
       <code>&lt;slist&gt;</code> is a singly-linked list, for when the
-      doubly-linked <code>list&lt;&gt;</code> is too much space overhead, and
-      <code>&lt;tree&gt;</code> exposes the red-black tree classes used in the
-      implementation of the standard maps and sets.
+      doubly-linked <code>list&lt;&gt;</code> is too much space
+      overhead, and <code>&lt;rb_tree&gt;</code> exposes the red-black
+      tree classes used in the implementation of the standard maps and
+      sets.
    </p>
-   <p>Okay, about those hashing classes...  I'm going to foist most of the
-      work off onto SGI's own site.
+   <p>Okay, about those hashing classes... these classes have been
+   deprecated by the unordered_set, unordered_multiset, unordered_map,
+   unordered_multimap containers in TR1 and the upcoming C++0x, and
+   may be removed in future releases.
    </p>
    <p>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a

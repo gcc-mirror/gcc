@@ -49,7 +49,6 @@
 
 #include <string>
 #include <tr1/unordered_map>
-#include <ext/hash_map>
 #include <ext/pb_ds/detail/type_utils.hpp>
 #include <ext/pb_ds/detail/standard_policies.hpp>
 #include <native_type/assoc/native_hash_tag.hpp>

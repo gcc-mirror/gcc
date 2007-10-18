@@ -1,4 +1,7 @@
-// Copyright (C) 2001, 2007 Free Software Foundation, Inc.
+// { dg-options "-Wno-deprecated" }
+// { dg-do compile }
+
+// Copyright (C) 2004, 2007 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,21 +28,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef _BACKWARD_BACKWARD_WARNING_H
-#define _BACKWARD_BACKWARD_WARNING_H 1
+// This file tests explicit instantiation of library containers
 
-#ifdef __DEPRECATED
-#warning This file includes at least one deprecated or antiquated header. \
-  Please consider the use of alternate interfaces as follows: \
-  <sstream> 		basic_stringbuf	   	<strstream>	strstreambuf \
-  <sstream> 		basic_istringstream	<strstream>	istrstream \
-  <sstream> 		basic_ostringstream	<strstream> 	ostrstream \
-  <sstream> 		basic_stringstream	<strstream> 	strstream \
-  <unordered_set> 	unordered_set		<ext/hash_set> 	hash_set \
-  <unordered_set> 	unordered_multiset	<ext/hash_set> 	hash_multiset \
-  <unordered_map> 	unordered_map		<ext/hash_set> 	hash_map \
-  <unordered_map> 	unordered_multimap	<ext/hash_set> 	hash_multimap \
-  To disable this warning use -Wno-deprecated.
-#endif
+#include <hash_map>
 
-#endif
+template class __gnu_cxx::hash_map<int, char>;

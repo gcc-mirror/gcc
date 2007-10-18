@@ -65,12 +65,6 @@
 
     namespace tr1 { }
   }
-
-  namespace __gnu_cxx
-  {
-    namespace __debug { }
-    namespace __norm { }
-  }
 */
 
 // Macros for activating various namespace association modes.
@@ -100,9 +94,6 @@
 // _GLIBCXX_STD
 // _GLIBCXX_STD_D
 // _GLIBCXX_STD_P
-// _GLIBCXX_EXT
-// _GLIBCXX_EXT_D
-// _GLIBCXX_EXT_P
 
 //
 // Macros for enclosing namepaces and possibly nested namespaces.
@@ -116,9 +107,6 @@
 # define _GLIBCXX_STD_D _GLIBCXX_STD
 # define _GLIBCXX_STD_P _GLIBCXX_STD
 # define _GLIBCXX_STD std
-# define _GLIBCXX_EXT_D _GLIBCXX_EXT
-# define _GLIBCXX_EXT_P _GLIBCXX_EXT
-# define _GLIBCXX_EXT __gnu_cxx
 # define _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, Y) _GLIBCXX_BEGIN_NAMESPACE(X)
 # define _GLIBCXX_END_NESTED_NAMESPACE _GLIBCXX_END_NAMESPACE
 # define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) {
@@ -129,7 +117,6 @@
 #  define _GLIBCXX_STD_D _GLIBCXX_STD
 #  define _GLIBCXX_STD_P _GLIBCXX_STD
 #  define _GLIBCXX_STD _6
-#  define _GLIBCXX_EXT _6
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) _GLIBCXX_BEGIN_NESTED_NAMESPACE(X, _6)
 #  define _GLIBCXX_END_NAMESPACE _GLIBCXX_END_NESTED_NAMESPACE
 # endif
@@ -139,9 +126,6 @@
 #  define _GLIBCXX_STD_D __norm
 #  define _GLIBCXX_STD_P _GLIBCXX_STD
 #  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_EXT_D __norm
-#  define _GLIBCXX_EXT_P _GLIBCXX_EXT
-#  define _GLIBCXX_EXT __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
 #  define _GLIBCXX_EXTERN_TEMPLATE 0
@@ -152,9 +136,6 @@
 #  define _GLIBCXX_STD_D _GLIBCXX_STD
 #  define _GLIBCXX_STD_P __norm
 #  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_EXT_D _GLIBCXX_EXT
-#  define _GLIBCXX_EXT_P __norm
-#  define _GLIBCXX_EXT __cxx1998
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
 #  define _GLIBCXX_EXTERN_TEMPLATE 0
@@ -165,9 +146,6 @@
 #  define _GLIBCXX_STD_D __norm
 #  define _GLIBCXX_STD_P __norm
 #  define _GLIBCXX_STD __cxx1998
-#  define _GLIBCXX_EXT_D __norm
-#  define _GLIBCXX_EXT_P __norm
-#  define _GLIBCXX_EXT __gnu_cxx
 #  define _GLIBCXX_BEGIN_NAMESPACE(X) namespace X _GLIBCXX_VISIBILITY(default) { 
 #  define _GLIBCXX_END_NAMESPACE }
 #  define _GLIBCXX_EXTERN_TEMPLATE 0
@@ -193,16 +171,6 @@ namespace std
   using namespace __debug __attribute__ ((strong)); 
   using namespace __cxx1998 __attribute__ ((strong)); 
 }
-
-namespace __gnu_cxx
-{
-  namespace __norm { }
-  namespace __debug { }
-  namespace __cxx1998 { }
-
-  using namespace __debug __attribute__ ((strong)); 
-  using namespace __cxx1998 __attribute__ ((strong)); 
-}
 #endif
 
 // Namespace associations for parallel mode.
@@ -214,16 +182,6 @@ namespace std
   namespace __cxx1998 { }
 
   using namespace __parallel __attribute__ ((strong));
-  using namespace __cxx1998 __attribute__ ((strong)); 
-}
-
-namespace __gnu_cxx
-{
-  namespace __norm { }
-  namespace __parallel { }
-  namespace __cxx1998 { }
-
-  using namespace __parallel __attribute__ ((strong)); 
   using namespace __cxx1998 __attribute__ ((strong)); 
 }
 #endif

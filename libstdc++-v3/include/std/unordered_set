@@ -58,14 +58,24 @@
 #  include <tr1_impl/unordered_set>
 #else
 #  define _GLIBCXX_INCLUDE_AS_CXX0X
+#if _GLIBCXX_DEBUG
+#  define _GLIBCXX_BEGIN_NAMESPACE_TR1 namespace _GLIBCXX_STD_D {
+#  define _GLIBCXX_END_NAMESPACE_TR1 }
+#  define _GLIBCXX_TR1 _GLIBCXX_STD_D
+#else
 #  define _GLIBCXX_BEGIN_NAMESPACE_TR1
 #  define _GLIBCXX_END_NAMESPACE_TR1
-#  define _GLIBCXX_TR1
+#  define _GLIBCXX_TR1 
+#endif
 #  include <tr1_impl/unordered_set>
 #  undef _GLIBCXX_TR1
 #  undef _GLIBCXX_END_NAMESPACE_TR1
 #  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
 #  undef _GLIBCXX_INCLUDE_AS_CXX0X
+#endif
+
+#ifdef _GLIBCXX_DEBUG
+# include <debug/unordered_set>
 #endif
 
 #endif // _GLIBCXX_UNORDERED_SET
