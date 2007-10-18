@@ -1,5 +1,21 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips-ftypes.def: New file.
+	* config/mips/mips.c (MIPS_FTYPE_NAME1, MIPS_FTYPE_NAME2)
+	(MIPS_FTYPE_NAME3, MIPS_FTYPE_NAME4): New macros.
+	(mips_function_type): Redefine using mips-ftypes.def.
+	(dsp_bdesc): Use POINTER rather than PTR in the MIPS_*_FTYPE_* names.
+	(mips_builtin_vector_type): New function.
+	(MIPS_ATYPE_VOID, MIPS_ATYPE_INT, MIPS_ATYPE_POINTER, MIPS_ATYPE_SI)
+	(MIPS_ATYPE_USI, MIPS_ATYPE_DI, MIPS_ATYPE_SF, MIPS_ATYPE_DF)
+	(MIPS_ATYPE_V2SF, MIPS_ATYPE_V2HI, MIPS_ATYPE_V4QI, MIPS_FTYPE_ATYPES1)
+	(MIPS_FTYPE_ATYPES2, MIPS_FTYPE_ATYPES3, MIPS_FTYPE_ATYPES4): New
+	macros.
+	(mips_build_function_type): New function.
+	(mips_init_builtins): Use it to create types lazily.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.h (set_volatile): Delete.
 	* config/mips/mips.c (set_volatile): Delete.
 	(mips_print_operand_punctuation): New function, split out from

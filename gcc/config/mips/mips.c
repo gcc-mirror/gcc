@@ -147,62 +147,18 @@ enum mips_address_type {
   ADDRESS_SYMBOLIC
 };
 
+/* Macros to create an enumeration identifier for a function prototype.  */
+#define MIPS_FTYPE_NAME1(A, B) MIPS_##A##_FTYPE_##B
+#define MIPS_FTYPE_NAME2(A, B, C) MIPS_##A##_FTYPE_##B##_##C
+#define MIPS_FTYPE_NAME3(A, B, C, D) MIPS_##A##_FTYPE_##B##_##C##_##D
+#define MIPS_FTYPE_NAME4(A, B, C, D, E) MIPS_##A##_FTYPE_##B##_##C##_##D##_##E
+
 /* Classifies the prototype of a builtin function.  */
 enum mips_function_type
 {
-  MIPS_V2SF_FTYPE_V2SF,
-  MIPS_V2SF_FTYPE_V2SF_V2SF,
-  MIPS_V2SF_FTYPE_V2SF_V2SF_INT,
-  MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF,
-  MIPS_V2SF_FTYPE_SF_SF,
-  MIPS_INT_FTYPE_V2SF_V2SF,
-  MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF,
-  MIPS_INT_FTYPE_SF_SF,
-  MIPS_INT_FTYPE_DF_DF,
-  MIPS_SF_FTYPE_V2SF,
-  MIPS_SF_FTYPE_SF,
-  MIPS_SF_FTYPE_SF_SF,
-  MIPS_DF_FTYPE_DF,
-  MIPS_DF_FTYPE_DF_DF,
-
-  /* For MIPS DSP ASE  */
-  MIPS_DI_FTYPE_DI_SI,
-  MIPS_DI_FTYPE_DI_SI_SI,
-  MIPS_DI_FTYPE_DI_V2HI_V2HI,
-  MIPS_DI_FTYPE_DI_V4QI_V4QI,
-  MIPS_SI_FTYPE_DI_SI,
-  MIPS_SI_FTYPE_PTR_SI,
-  MIPS_SI_FTYPE_SI,
-  MIPS_SI_FTYPE_SI_SI,
-  MIPS_SI_FTYPE_V2HI,
-  MIPS_SI_FTYPE_V2HI_V2HI,
-  MIPS_SI_FTYPE_V4QI,
-  MIPS_SI_FTYPE_V4QI_V4QI,
-  MIPS_SI_FTYPE_VOID,
-  MIPS_V2HI_FTYPE_SI,
-  MIPS_V2HI_FTYPE_SI_SI,
-  MIPS_V2HI_FTYPE_V2HI,
-  MIPS_V2HI_FTYPE_V2HI_SI,
-  MIPS_V2HI_FTYPE_V2HI_V2HI,
-  MIPS_V2HI_FTYPE_V4QI,
-  MIPS_V2HI_FTYPE_V4QI_V2HI,
-  MIPS_V4QI_FTYPE_SI,
-  MIPS_V4QI_FTYPE_V2HI_V2HI,
-  MIPS_V4QI_FTYPE_V4QI_SI,
-  MIPS_V4QI_FTYPE_V4QI_V4QI,
-  MIPS_VOID_FTYPE_SI_SI,
-  MIPS_VOID_FTYPE_V2HI_V2HI,
-  MIPS_VOID_FTYPE_V4QI_V4QI,
-
-  /* For MIPS DSP REV 2 ASE.  */
-  MIPS_V4QI_FTYPE_V4QI,
-  MIPS_SI_FTYPE_SI_SI_SI,
-  MIPS_DI_FTYPE_DI_USI_USI,
-  MIPS_DI_FTYPE_SI_SI,
-  MIPS_DI_FTYPE_USI_USI,
-  MIPS_V2HI_FTYPE_SI_SI_SI,
-
-  /* The last type.  */
+#define DEF_MIPS_FTYPE(NARGS, LIST) MIPS_FTYPE_NAME##NARGS LIST,
+#include "config/mips/mips-ftypes.def"
+#undef DEF_MIPS_FTYPE
   MIPS_MAX_FTYPE_MAX
 };
 
@@ -10174,9 +10130,9 @@ static const struct builtin_description dsp_bdesc[] =
   DIRECT_BUILTIN (packrl_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
   DIRECT_NO_TARGET_BUILTIN (wrdsp, MIPS_VOID_FTYPE_SI_SI, MASK_DSP),
   DIRECT_BUILTIN (rddsp, MIPS_SI_FTYPE_SI, MASK_DSP),
-  DIRECT_BUILTIN (lbux, MIPS_SI_FTYPE_PTR_SI, MASK_DSP),
-  DIRECT_BUILTIN (lhx, MIPS_SI_FTYPE_PTR_SI, MASK_DSP),
-  DIRECT_BUILTIN (lwx, MIPS_SI_FTYPE_PTR_SI, MASK_DSP),
+  DIRECT_BUILTIN (lbux, MIPS_SI_FTYPE_POINTER_SI, MASK_DSP),
+  DIRECT_BUILTIN (lhx, MIPS_SI_FTYPE_POINTER_SI, MASK_DSP),
+  DIRECT_BUILTIN (lwx, MIPS_SI_FTYPE_POINTER_SI, MASK_DSP),
   BPOSGE_BUILTIN (32, MASK_DSP),
 
   /* The following are for the MIPS DSP ASE REV 2.  */
@@ -10287,6 +10243,76 @@ static const struct bdesc_map bdesc_arrays[] =
     MASK_64BIT }
 };
 
+/* MODE is a vector mode whose elements have type TYPE.  Return the type
+   of the vector itself.  */
+
+static tree
+mips_builtin_vector_type (tree type, enum machine_mode mode)
+{
+  static tree types[(int) MAX_MACHINE_MODE];
+
+  if (types[(int) mode] == NULL_TREE)
+    types[(int) mode] = build_vector_type_for_mode (type, mode);
+  return types[(int) mode];
+}
+
+/* Source-level argument types.  */
+#define MIPS_ATYPE_VOID void_type_node
+#define MIPS_ATYPE_INT integer_type_node
+#define MIPS_ATYPE_POINTER ptr_type_node
+
+/* Standard mode-based argument types.  */
+#define MIPS_ATYPE_SI intSI_type_node
+#define MIPS_ATYPE_USI unsigned_intSI_type_node
+#define MIPS_ATYPE_DI intDI_type_node
+#define MIPS_ATYPE_SF float_type_node
+#define MIPS_ATYPE_DF double_type_node
+
+/* Vector argument types.  */
+#define MIPS_ATYPE_V2SF mips_builtin_vector_type (float_type_node, V2SFmode)
+#define MIPS_ATYPE_V2HI mips_builtin_vector_type (intHI_type_node, V2HImode)
+#define MIPS_ATYPE_V4QI mips_builtin_vector_type (intQI_type_node, V4QImode)
+
+/* MIPS_FTYPE_ATYPESN takes N MIPS_FTYPES-like type codes and lists
+   their associated MIPS_ATYPEs.  */
+#define MIPS_FTYPE_ATYPES1(A, B) \
+  MIPS_ATYPE_##A, MIPS_ATYPE_##B
+
+#define MIPS_FTYPE_ATYPES2(A, B, C) \
+  MIPS_ATYPE_##A, MIPS_ATYPE_##B, MIPS_ATYPE_##C
+
+#define MIPS_FTYPE_ATYPES3(A, B, C, D) \
+  MIPS_ATYPE_##A, MIPS_ATYPE_##B, MIPS_ATYPE_##C, MIPS_ATYPE_##D
+
+#define MIPS_FTYPE_ATYPES4(A, B, C, D, E) \
+  MIPS_ATYPE_##A, MIPS_ATYPE_##B, MIPS_ATYPE_##C, MIPS_ATYPE_##D, \
+  MIPS_ATYPE_##E
+
+/* Return the function type associated with function prototype TYPE.  */
+
+static tree
+mips_build_function_type (enum mips_function_type type)
+{
+  static tree types[(int) MIPS_MAX_FTYPE_MAX];
+
+  if (types[(int) type] == NULL_TREE)
+    switch (type)
+      {
+#define DEF_MIPS_FTYPE(NUM, ARGS)					\
+  case MIPS_FTYPE_NAME##NUM ARGS:					\
+    types[(int) type]							\
+      = build_function_type_list (MIPS_FTYPE_ATYPES##NUM ARGS,		\
+				  NULL_TREE);				\
+    break;
+#include "config/mips/mips-ftypes.def"
+#undef DEF_MIPS_FTYPE
+      default:
+	gcc_unreachable ();
+      }
+
+  return types[(int) type];
+}
+
 /* Init builtin functions.  This is called from TARGET_INIT_BUILTIN.  */
 
 static void
@@ -10294,251 +10320,7 @@ mips_init_builtins (void)
 {
   const struct builtin_description *d;
   const struct bdesc_map *m;
-  tree types[(int) MIPS_MAX_FTYPE_MAX];
-  tree V2SF_type_node;
-  tree V2HI_type_node;
-  tree V4QI_type_node;
   unsigned int offset;
-
-  /* We have only builtins for -mpaired-single, -mips3d and -mdsp.  */
-  if (!TARGET_PAIRED_SINGLE_FLOAT && !TARGET_DSP)
-    return;
-
-  if (TARGET_PAIRED_SINGLE_FLOAT)
-    {
-      V2SF_type_node = build_vector_type_for_mode (float_type_node, V2SFmode);
-
-      types[MIPS_V2SF_FTYPE_V2SF]
-	= build_function_type_list (V2SF_type_node, V2SF_type_node, NULL_TREE);
-
-      types[MIPS_V2SF_FTYPE_V2SF_V2SF]
-	= build_function_type_list (V2SF_type_node,
-				    V2SF_type_node, V2SF_type_node, NULL_TREE);
-
-      types[MIPS_V2SF_FTYPE_V2SF_V2SF_INT]
-	= build_function_type_list (V2SF_type_node,
-				    V2SF_type_node, V2SF_type_node,
-				    integer_type_node, NULL_TREE);
-
-      types[MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF]
-	= build_function_type_list (V2SF_type_node,
-				    V2SF_type_node, V2SF_type_node,
-				    V2SF_type_node, V2SF_type_node, NULL_TREE);
-
-      types[MIPS_V2SF_FTYPE_SF_SF]
-	= build_function_type_list (V2SF_type_node,
-				    float_type_node, float_type_node, NULL_TREE);
-
-      types[MIPS_INT_FTYPE_V2SF_V2SF]
-	= build_function_type_list (integer_type_node,
-				    V2SF_type_node, V2SF_type_node, NULL_TREE);
-
-      types[MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF]
-	= build_function_type_list (integer_type_node,
-				    V2SF_type_node, V2SF_type_node,
-				    V2SF_type_node, V2SF_type_node, NULL_TREE);
-
-      types[MIPS_INT_FTYPE_SF_SF]
-	= build_function_type_list (integer_type_node,
-				    float_type_node, float_type_node, NULL_TREE);
-
-      types[MIPS_INT_FTYPE_DF_DF]
-	= build_function_type_list (integer_type_node,
-				    double_type_node, double_type_node, NULL_TREE);
-
-      types[MIPS_SF_FTYPE_V2SF]
-	= build_function_type_list (float_type_node, V2SF_type_node, NULL_TREE);
-
-      types[MIPS_SF_FTYPE_SF]
-	= build_function_type_list (float_type_node,
-				    float_type_node, NULL_TREE);
-
-      types[MIPS_SF_FTYPE_SF_SF]
-	= build_function_type_list (float_type_node,
-				    float_type_node, float_type_node, NULL_TREE);
-
-      types[MIPS_DF_FTYPE_DF]
-	= build_function_type_list (double_type_node,
-				    double_type_node, NULL_TREE);
-
-      types[MIPS_DF_FTYPE_DF_DF]
-	= build_function_type_list (double_type_node,
-				    double_type_node, double_type_node, NULL_TREE);
-    }
-
-  if (TARGET_DSP)
-    {
-      V2HI_type_node = build_vector_type_for_mode (intHI_type_node, V2HImode);
-      V4QI_type_node = build_vector_type_for_mode (intQI_type_node, V4QImode);
-
-      types[MIPS_V2HI_FTYPE_V2HI_V2HI]
-	= build_function_type_list (V2HI_type_node,
-				    V2HI_type_node, V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_SI_SI]
-	= build_function_type_list (intSI_type_node,
-				    intSI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V4QI_FTYPE_V4QI_V4QI]
-	= build_function_type_list (V4QI_type_node,
-				    V4QI_type_node, V4QI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_V4QI]
-	= build_function_type_list (intSI_type_node,
-				    V4QI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V2HI_FTYPE_V2HI]
-	= build_function_type_list (V2HI_type_node,
-				    V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_SI]
-	= build_function_type_list (intSI_type_node,
-				    intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V4QI_FTYPE_V2HI_V2HI]
-	= build_function_type_list (V4QI_type_node,
-				    V2HI_type_node, V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V2HI_FTYPE_SI_SI]
-	= build_function_type_list (V2HI_type_node,
-				    intSI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_V2HI]
-	= build_function_type_list (intSI_type_node,
-				    V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V2HI_FTYPE_V4QI]
-	= build_function_type_list (V2HI_type_node,
-				    V4QI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V4QI_FTYPE_V4QI_SI]
-	= build_function_type_list (V4QI_type_node,
-				    V4QI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V2HI_FTYPE_V2HI_SI]
-	= build_function_type_list (V2HI_type_node,
-				    V2HI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V2HI_FTYPE_V4QI_V2HI]
-	= build_function_type_list (V2HI_type_node,
-				    V4QI_type_node, V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_V2HI_V2HI]
-	= build_function_type_list (intSI_type_node,
-				    V2HI_type_node, V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_DI_FTYPE_DI_V4QI_V4QI]
-	= build_function_type_list (intDI_type_node,
-				    intDI_type_node, V4QI_type_node, V4QI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_DI_FTYPE_DI_V2HI_V2HI]
-	= build_function_type_list (intDI_type_node,
-				    intDI_type_node, V2HI_type_node, V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_DI_FTYPE_DI_SI_SI]
-	= build_function_type_list (intDI_type_node,
-				    intDI_type_node, intSI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V4QI_FTYPE_SI]
-	= build_function_type_list (V4QI_type_node,
-				    intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_V2HI_FTYPE_SI]
-	= build_function_type_list (V2HI_type_node,
-				    intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_VOID_FTYPE_V4QI_V4QI]
-	= build_function_type_list (void_type_node,
-				    V4QI_type_node, V4QI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_V4QI_V4QI]
-	= build_function_type_list (intSI_type_node,
-				    V4QI_type_node, V4QI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_VOID_FTYPE_V2HI_V2HI]
-	= build_function_type_list (void_type_node,
-				    V2HI_type_node, V2HI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_DI_SI]
-	= build_function_type_list (intSI_type_node,
-				    intDI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_DI_FTYPE_DI_SI]
-	= build_function_type_list (intDI_type_node,
-				    intDI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_VOID_FTYPE_SI_SI]
-	= build_function_type_list (void_type_node,
-				    intSI_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_PTR_SI]
-	= build_function_type_list (intSI_type_node,
-				    ptr_type_node, intSI_type_node,
-				    NULL_TREE);
-
-      types[MIPS_SI_FTYPE_VOID]
-	= build_function_type (intSI_type_node, void_list_node);
-
-      if (TARGET_DSPR2)
-	{
-	  types[MIPS_V4QI_FTYPE_V4QI]
-	    = build_function_type_list (V4QI_type_node,
-					V4QI_type_node,
-					NULL_TREE);
-
-	  types[MIPS_SI_FTYPE_SI_SI_SI]
-	    = build_function_type_list (intSI_type_node,
-					intSI_type_node, intSI_type_node,
-					intSI_type_node, NULL_TREE);
-
-	  types[MIPS_DI_FTYPE_DI_USI_USI]
-	    = build_function_type_list (intDI_type_node,
-					intDI_type_node,
-					unsigned_intSI_type_node,
-					unsigned_intSI_type_node, NULL_TREE);
-
-	  types[MIPS_DI_FTYPE_SI_SI]
-	    = build_function_type_list (intDI_type_node,
-					intSI_type_node, intSI_type_node,
-					NULL_TREE);
-
-	  types[MIPS_DI_FTYPE_USI_USI]
-	    = build_function_type_list (intDI_type_node,
-					unsigned_intSI_type_node,
-					unsigned_intSI_type_node, NULL_TREE);
-
-	  types[MIPS_V2HI_FTYPE_SI_SI_SI]
-	    = build_function_type_list (V2HI_type_node,
-					intSI_type_node, intSI_type_node,
-					intSI_type_node, NULL_TREE);
-
-	}
-    }
 
   /* Iterate through all of the bdesc arrays, initializing all of the
      builtin functions.  */
@@ -10550,7 +10332,8 @@ mips_init_builtins (void)
 	  && (m->unsupported_target_flags & target_flags) == 0)
 	for (d = m->bdesc; d < &m->bdesc[m->size]; d++)
 	  if ((d->target_flags & target_flags) == d->target_flags)
-	    add_builtin_function (d->name, types[d->function_type],
+	    add_builtin_function (d->name,
+				  mips_build_function_type (d->function_type),
 				  d - m->bdesc + offset,
 				  BUILT_IN_MD, NULL, NULL);
       offset += m->size;

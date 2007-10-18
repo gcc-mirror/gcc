@@ -1,0 +1,92 @@
+/* Definitions of prototypes for MIPS built-in functions.  -*- C -*-
+   Copyright (C) 2007
+   Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Invoke DEF_MIPS_FTYPE (NARGS, LIST) for each prototype used by
+   MIPS built-in functions, where:
+
+      NARGS is the number of arguments.
+      LIST contains the return-type code followed by the codes for each
+        argument type.
+
+   Argument- and return-type codes are either modes or one of the following:
+
+      VOID for void_type_node
+      INT for integer_type_node
+      POINTER for ptr_type_node
+
+   (we don't use PTR because that's a ANSI-compatibillity macro).
+
+   Please keep this list lexicographically sorted by the LIST argument.  */
+DEF_MIPS_FTYPE (1, (DF, DF))
+DEF_MIPS_FTYPE (2, (DF, DF, DF))
+
+DEF_MIPS_FTYPE (2, (DI, DI, DI))
+DEF_MIPS_FTYPE (2, (DI, DI, SI))
+DEF_MIPS_FTYPE (3, (DI, DI, SI, SI))
+DEF_MIPS_FTYPE (3, (DI, DI, USI, USI))
+DEF_MIPS_FTYPE (3, (DI, DI, V2HI, V2HI))
+DEF_MIPS_FTYPE (3, (DI, DI, V4QI, V4QI))
+DEF_MIPS_FTYPE (2, (DI, SI, SI))
+DEF_MIPS_FTYPE (2, (DI, USI, USI))
+
+DEF_MIPS_FTYPE (2, (INT, DF, DF))
+DEF_MIPS_FTYPE (2, (INT, SF, SF))
+DEF_MIPS_FTYPE (2, (INT, V2SF, V2SF))
+DEF_MIPS_FTYPE (4, (INT, V2SF, V2SF, V2SF, V2SF))
+
+DEF_MIPS_FTYPE (2, (SI, DI, SI))
+DEF_MIPS_FTYPE (2, (SI, POINTER, SI))
+DEF_MIPS_FTYPE (1, (SI, SI))
+DEF_MIPS_FTYPE (2, (SI, SI, SI))
+DEF_MIPS_FTYPE (3, (SI, SI, SI, SI))
+DEF_MIPS_FTYPE (1, (SI, V2HI))
+DEF_MIPS_FTYPE (2, (SI, V2HI, V2HI))
+DEF_MIPS_FTYPE (1, (SI, V4QI))
+DEF_MIPS_FTYPE (2, (SI, V4QI, V4QI))
+DEF_MIPS_FTYPE (1, (SI, VOID))
+
+DEF_MIPS_FTYPE (1, (SF, SF))
+DEF_MIPS_FTYPE (2, (SF, SF, SF))
+DEF_MIPS_FTYPE (1, (SF, V2SF))
+
+DEF_MIPS_FTYPE (1, (V2HI, SI))
+DEF_MIPS_FTYPE (2, (V2HI, SI, SI))
+DEF_MIPS_FTYPE (3, (V2HI, SI, SI, SI))
+DEF_MIPS_FTYPE (1, (V2HI, V2HI))
+DEF_MIPS_FTYPE (2, (V2HI, V2HI, SI))
+DEF_MIPS_FTYPE (2, (V2HI, V2HI, V2HI))
+DEF_MIPS_FTYPE (1, (V2HI, V4QI))
+DEF_MIPS_FTYPE (2, (V2HI, V4QI, V2HI))
+
+DEF_MIPS_FTYPE (2, (V2SF, SF, SF))
+DEF_MIPS_FTYPE (1, (V2SF, V2SF))
+DEF_MIPS_FTYPE (2, (V2SF, V2SF, V2SF))
+DEF_MIPS_FTYPE (3, (V2SF, V2SF, V2SF, INT))
+DEF_MIPS_FTYPE (4, (V2SF, V2SF, V2SF, V2SF, V2SF))
+
+DEF_MIPS_FTYPE (1, (V4QI, SI))
+DEF_MIPS_FTYPE (2, (V4QI, V2HI, V2HI))
+DEF_MIPS_FTYPE (1, (V4QI, V4QI))
+DEF_MIPS_FTYPE (2, (V4QI, V4QI, SI))
+DEF_MIPS_FTYPE (2, (V4QI, V4QI, V4QI))
+
+DEF_MIPS_FTYPE (2, (VOID, SI, SI))
+DEF_MIPS_FTYPE (2, (VOID, V2HI, V2HI))
+DEF_MIPS_FTYPE (2, (VOID, V4QI, V4QI))
