@@ -256,7 +256,6 @@ extern void mips_finish_declare_object (FILE *, tree, int, int);
 extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);
 extern bool mips_frame_pointer_required (void);
-extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT);
 extern HOST_WIDE_INT mips_initial_elimination_offset (int, int);
 extern rtx mips_return_addr (int, rtx);
 extern enum mips_loadgp_style mips_current_loadgp_style (void);

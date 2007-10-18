@@ -1881,7 +1881,7 @@ enum reg_class
 #define STACK_GROWS_DOWNWARD
 
 /* The offset of the first local variable from the beginning of the frame.
-   See compute_frame_size for details about the frame layout.  */
+   See mips_compute_frame_info for details about the frame layout.  */
 
 #define STARTING_FRAME_OFFSET						\
   (current_function_outgoing_args_size					\
