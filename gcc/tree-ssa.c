@@ -774,6 +774,24 @@ int_tree_map_hash (const void *item)
   return ((const struct int_tree_map *)item)->uid;
 }
 
+/* Return true if the DECL_UID in both trees are equal.  */
+
+int
+uid_decl_map_eq (const void *va, const void *vb)
+{
+  const_tree a = (const_tree) va;
+  const_tree b = (const_tree) vb;
+  return (a->decl_minimal.uid == b->decl_minimal.uid);
+}
+
+/* Hash a tree in a uid_decl_map.  */
+
+unsigned int
+uid_decl_map_hash (const void *item)
+{
+  return ((const_tree)item)->decl_minimal.uid;
+}
+
 /* Return true if the uid in both int tree maps are equal.  */
 
 static int
@@ -799,8 +817,8 @@ void
 init_tree_ssa (void)
 {
   cfun->gimple_df = GGC_CNEW (struct gimple_df);
-  cfun->gimple_df->referenced_vars = htab_create_ggc (20, int_tree_map_hash, 
-				     		      int_tree_map_eq, NULL);
+  cfun->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash, 
+				     		      uid_decl_map_eq, NULL);
   cfun->gimple_df->default_defs = htab_create_ggc (20, int_tree_map_hash, 
 				                   int_tree_map_eq, NULL);
   cfun->gimple_df->var_anns = htab_create_ggc (20, var_ann_hash, 

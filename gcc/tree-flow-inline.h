@@ -151,13 +151,8 @@ next_htab_element (htab_iterator *hti)
 static inline tree
 first_referenced_var (referenced_var_iterator *iter)
 {
-  struct int_tree_map *itm;
-  itm = (struct int_tree_map *) first_htab_element (&iter->hti,
-                                                    gimple_referenced_vars
-						    (cfun));
-  if (!itm) 
-    return NULL;
-  return itm->to;
+  return (tree) first_htab_element (&iter->hti,
+				    gimple_referenced_vars (cfun));
 }
 
 /* Return true if we have hit the end of the referenced variables ITER is
@@ -175,11 +170,7 @@ end_referenced_vars_p (const referenced_var_iterator *iter)
 static inline tree
 next_referenced_var (referenced_var_iterator *iter)
 {
-  struct int_tree_map *itm;
-  itm = (struct int_tree_map *) next_htab_element (&iter->hti);
-  if (!itm) 
-    return NULL;
-  return itm->to;
+  return (tree) next_htab_element (&iter->hti);
 } 
 
 /* Fill up VEC with the variables in the referenced vars hashtable.  */
