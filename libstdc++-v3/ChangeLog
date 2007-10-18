@@ -1,3 +1,11 @@
+2007-10-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/33807
+	* include/bits/allocator.h (operator==(const allocator<_Tp>&,
+	const allocator<_Tp>&), operator!=(const allocator<_Tp>&,
+	const allocator<_Tp>&)): Add.
+	* testsuite/20_util/allocator/33807.cc: New.
+
 2007-10-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/cpp_type_traits.h (__is_byte): Add.
