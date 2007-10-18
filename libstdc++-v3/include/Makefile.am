@@ -145,41 +145,11 @@ bits_headers = \
 backward_srcdir = ${glibcxx_srcdir}/include/backward
 backward_builddir = ./backward
 backward_headers = \
-	${backward_srcdir}/complex.h \
-	${backward_srcdir}/iomanip.h \
-	${backward_srcdir}/istream.h \
-	${backward_srcdir}/ostream.h \
-	${backward_srcdir}/stream.h \
-	${backward_srcdir}/streambuf.h \
-	${backward_srcdir}/algo.h \
-	${backward_srcdir}/algobase.h \
-	${backward_srcdir}/alloc.h \
-	${backward_srcdir}/bvector.h \
-	${backward_srcdir}/defalloc.h \
-	${backward_srcdir}/deque.h \
-	${backward_srcdir}/function.h \
-	${backward_srcdir}/hash_map.h \
-	${backward_srcdir}/hash_set.h \
-	${backward_srcdir}/hashtable.h \
-	${backward_srcdir}/heap.h \
-	${backward_srcdir}/iostream.h \
-	${backward_srcdir}/iterator.h \
-	${backward_srcdir}/list.h \
-	${backward_srcdir}/map.h \
-	${backward_srcdir}/multimap.h \
-	${backward_srcdir}/new.h \
-	${backward_srcdir}/multiset.h \
-	${backward_srcdir}/pair.h \
-	${backward_srcdir}/queue.h \
-	${backward_srcdir}/rope.h \
-	${backward_srcdir}/set.h \
-	${backward_srcdir}/slist.h \
-	${backward_srcdir}/stack.h \
-	${backward_srcdir}/tempbuf.h \
-	${backward_srcdir}/tree.h \
-	${backward_srcdir}/vector.h \
-	${backward_srcdir}/fstream.h \
 	${backward_srcdir}/strstream \
+	${backward_srcdir}/hash_map \
+	${backward_srcdir}/hash_set \
+	${backward_srcdir}/hash_fun.h \
+	${backward_srcdir}/hashtable.h \
 	${backward_srcdir}/backward_warning.h
 
 pb_srcdir = ${glibcxx_srcdir}/include/ext/pb_ds
@@ -496,7 +466,6 @@ pb_headers7 = \
 	${pb_srcdir}/detail/unordered_iterator/point_iterator.hpp 
 
 
-
 ext_srcdir = ${glibcxx_srcdir}/include/ext
 ext_builddir = ./ext 
 ext_headers = \
@@ -511,10 +480,6 @@ ext_headers = \
 	${ext_srcdir}/stdio_filebuf.h \
 	${ext_srcdir}/stdio_sync_filebuf.h \
 	${ext_srcdir}/functional \
-	${ext_srcdir}/hash_map \
-	${ext_srcdir}/hash_set \
-	${ext_srcdir}/hash_fun.h \
-	${ext_srcdir}/hashtable.h \
 	${ext_srcdir}/iterator \
 	${ext_srcdir}/malloc_allocator.h \
 	${ext_srcdir}/memory \
@@ -711,18 +676,13 @@ debug_headers = \
 	${debug_srcdir}/deque \
 	${debug_srcdir}/formatter.h \
 	${debug_srcdir}/functions.h \
-	${debug_srcdir}/hash_map \
-	${debug_srcdir}/hash_map.h \
-	${debug_srcdir}/hash_multimap.h \
-	${debug_srcdir}/hash_multiset.h \
-	${debug_srcdir}/hash_set \
-	${debug_srcdir}/hash_set.h \
 	${debug_srcdir}/list \
 	${debug_srcdir}/map \
 	${debug_srcdir}/macros.h \
 	${debug_srcdir}/map.h \
 	${debug_srcdir}/multimap.h \
 	${debug_srcdir}/multiset.h \
+	${debug_srcdir}/safe_association.h \
 	${debug_srcdir}/safe_base.h \
 	${debug_srcdir}/safe_iterator.h \
 	${debug_srcdir}/safe_iterator.tcc \
@@ -730,6 +690,8 @@ debug_headers = \
 	${debug_srcdir}/set \
 	${debug_srcdir}/set.h \
 	${debug_srcdir}/string \
+	${debug_srcdir}/unordered_map \
+	${debug_srcdir}/unordered_set \
 	${debug_srcdir}/vector
 
 # Parallel mode headers

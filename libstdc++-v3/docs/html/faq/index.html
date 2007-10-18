@@ -927,7 +927,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          <!-- Careful, the leading spaces in PRE show up directly. -->
       </p>
       <pre>
-      #include &lt;ext/hash_map&gt; </pre>
+      #include &lt;backward/hash_map&gt; </pre>
       <p>rather than using <code>-I</code> or other options.  This is more
          portable and forward-compatible.  (The situation is the same as
          that of other headers whose directories are not searched directly,
@@ -950,20 +950,20 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
       #ifdef __GNUC__
       #if __GNUC__ &lt; 3
         #include &lt;hash_map.h&gt;
-        namespace Sgi { using ::hash_map; }; // inherit globals
+        namespace extension { using ::hash_map; }; // inherit globals
       #else
-        #include &lt;ext/hash_map&gt;
+        #include &lt;backward/hash_map&gt;
         #if __GNUC_MINOR__ == 0
-          namespace Sgi = std;               // GCC 3.0
+          namespace extension = std;               // GCC 3.0
         #else
-          namespace Sgi = ::__gnu_cxx;       // GCC 3.1 and later
+          namespace extension = ::__gnu_cxx;       // GCC 3.1 and later
         #endif
       #endif
       #else      // ...  there are other compilers, right?
-        namespace Sgi = std;
+        namespace extension = std;
       #endif
 
-      Sgi::hash_map&lt;int,int&gt; my_map; </pre>
+      extension::hash_map&lt;int,int&gt; my_map; </pre>
       <p>This is a bit cleaner than defining typedefs for all the
          instantiations you might need.
       </p>

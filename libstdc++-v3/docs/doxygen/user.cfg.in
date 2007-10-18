@@ -542,10 +542,10 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/utility \
                          include/valarray \
                          include/vector \
+                         include/backward/hash_map \
+                         include/backward/hash_set \
                          include/debug/bitset \
                          include/debug/deque \
-                         include/debug/hash_map \
-                         include/debug/hash_set \
                          include/debug/list \
                          include/debug/map \
                          include/debug/set \
@@ -553,8 +553,6 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/debug/vector \
                          include/ext/algorithm \
                          include/ext/functional \
-                         include/ext/hash_map \
-                         include/ext/hash_set \
                          include/ext/iterator \
                          include/ext/memory \
                          include/ext/numeric \

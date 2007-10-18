@@ -1,3 +1,112 @@
+2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/hash_map: To...
+	* include/backward/hash_map: ...here. Remove debug mode.
+	* include/ext/hash_set: To...
+	* include/backward/hash_set: ...here. Remove debug mode.
+	* include/ext/hash_fun.h: To...
+	* include/backward/hash_fun.h: ...here.
+	* include/ext/hashtable.h: To...
+	* include/backward/hashtable.h: ...here.
+	
+	* include/bits/c++config: Remove __gnu_cxx namespace from debug mode.
+	* include/debug/debug.h: Same.
+		
+	* include/debug/hash_map: Remove.
+	* include/debug/hash_multimap.h: Remove.
+	* include/debug/hash_set.h: Remove.
+	* include/debug/hash_set: Remove.
+	* include/debug/hash_multiset.h: Remove.
+	* include/debug/hash_map.h: Remove.
+	
+	* include/Makefile.am (ext_headers): Move hash_set, hash_map to
+	backward.
+	(debug_headers): Remove hash_map, hash_set, hash_map.h,
+	hash_map.h, hash_multiset.h, hash_multimap.h.	
+	* include/Makefile.in: Regenerate.
+
+	* docs/html/debug.html: Update.
+	* docs/html/ext/howto.html: Same.
+	* docs/html/faq/index.html: Same.
+	* docs/doxygen/Intro.3: Same.
+	* docs/doxygen/user.cfg.in: Adjust includes.
+	* testsuite/ext/hash_map: Move to...
+	* testsuite/backward/hash_map: ...here.
+	* testsuite/ext/hash_set: Move to...
+	* testsuite/backward/hash_set: ...here.
+	
+2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
+        
+	Removal of pre-ISO C++ items from include/backwards.
+	* include/Makefile.am (backward_headers): Remove all but strstream,
+	backward_warning.h.
+	* include/Makefile.in: Regenerate.
+	* include/backward/new.h: Remove.
+	* include/backward/iterator.h: Same.
+	* include/backward/alloc.h: Same.
+	* include/backward/set.h: Same.
+	* include/backward/hashtable.h: Same.
+	* include/backward/hash_set.h: Same.
+	* include/backward/fstream.h: Same.
+	* include/backward/tempbuf.h: Same.
+	* include/backward/istream.h: Same.
+	* include/backward/bvector.h: Same.
+	* include/backward/stack.h: Same.
+	* include/backward/rope.h: Same.
+	* include/backward/complex.h: Same.
+	* include/backward/ostream.h: Same.
+	* include/backward/heap.h: Same.
+	* include/backward/iostream.h: Same.
+	* include/backward/function.h: Same.
+	* include/backward/multimap.h: Same.
+	* include/backward/pair.h: Same.
+	* include/backward/stream.h: Same.
+	* include/backward/iomanip.h: Same.
+	* include/backward/slist.h: Same.
+	* include/backward/tree.h: Same.
+	* include/backward/vector.h: Same.
+	* include/backward/deque.h: Same.
+	* include/backward/multiset.h: Same.
+	* include/backward/defalloc.h: Same.
+	* include/backward/list.h: Same.
+	* include/backward/map.h: Same.
+	* include/backward/algobase.h: Same.
+	* include/backward/hash_map.h: Same.
+	* include/backward/algo.h: Same.
+	* include/backward/queue.h: Same.
+	* include/backward/streambuf.h: Same.
+	* testsuite/backward/header_hash_set_h.cc: Same.
+	* testsuite/backward/header_slist_h.cc: Same.
+	* testsuite/backward/header_hash_map_h.cc: Same.
+	* testsuite/backward/header_tempbuf_h.cc: Same.
+	* testsuite/backward/header_deque_h.cc: Same.
+	* testsuite/backward/header_rope_h.cc: Same.
+	* testsuite/backward/header_iterator_h.cc: Same.
+	* testsuite/backward/header_hashtable_h.cc: Same.
+
+2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/30085
+	* include/debug/unordered_map: New.
+	* include/debug/unordered_set: New.
+	* include/debug/safe_association.h: New.	
+	* include/std/unordered_map: Include debug header if _GLIBCXX_DEBUG.
+	* include/std/unordered_set: Same.
+	* include/Makefile.am (debug_headers): Add unordered_map,
+	unordered_set, safe_association.h.
+	* include/Makefile.in: Regenerate.
+	* testsuite/23_containers/unordered_map/requirements/debug.cc: New.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	debug.cc: New.
+	* testsuite/23_containers/unordered_set/requirements/debug.cc: New.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	debug.cc: New.
+
+2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/util/native_type/assoc/native_hash_multimap.hpp: Remove
+	hash_map include.
+
 2007-10-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/33807

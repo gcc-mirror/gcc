@@ -84,6 +84,9 @@
 /* Define if ENOTRECOVERABLE exists. */
 #undef HAVE_ENOTRECOVERABLE
 
+/* Define if EOVERFLOW exists. */
+#undef HAVE_EOVERFLOW
+
 /* Define if EOWNERDEAD exists. */
 #undef HAVE_EOWNERDEAD
 
