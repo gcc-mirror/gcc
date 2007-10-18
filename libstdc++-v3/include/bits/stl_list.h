@@ -1272,7 +1272,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       void
       _M_check_equal_allocators(list& __x)
       {
-	if (_M_get_Node_allocator() != __x._M_get_Node_allocator())
+	if (std::__alloc_neq<typename _Base::_Node_alloc_type>::
+	    _S_do_it(_M_get_Node_allocator(), __x._M_get_Node_allocator()))
 	  __throw_runtime_error(__N("list::_M_check_equal_allocators"));
       }
     };
