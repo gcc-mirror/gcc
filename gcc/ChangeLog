@@ -1,5 +1,18 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.h (STARTING_FRAME_OFFSET): Remove rtl
+	profiling code.
+	* config/mips/mips.c (mips_frame_info): Give num_gp and num_fp type
+	"unsigned int" rather than "int" and put them with the other
+	register-related fields.  Put expanded comments above fields
+	rather than to their right.
+	(mips16e_mask_registers): Replace the GP_REG_SIZE_PTR argument
+	with a NUM_REGS_PTR argument.
+	(mips16e_save_restore_pattern_p): Update accordingly.
+	(compute_frame_size): Clarify frame diagram.  Rewrite.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips-ftypes.def: New file.
 	* config/mips/mips.c (MIPS_FTYPE_NAME1, MIPS_FTYPE_NAME2)
 	(MIPS_FTYPE_NAME3, MIPS_FTYPE_NAME4): New macros.
