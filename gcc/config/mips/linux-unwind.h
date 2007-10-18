@@ -52,7 +52,7 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
 {
   u_int32_t *pc = (u_int32_t *) context->ra;
   struct sigcontext *sc;
-  _Unwind_Ptr new_cfa;
+  _Unwind_Ptr new_cfa, reg_offset;
   int i;
 
   /* 24021061 li v0, 0x1061 (rt_sigreturn)*/
@@ -85,22 +85,24 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
   else
     return _URC_END_OF_STACK;
 
-  new_cfa = (_Unwind_Ptr)sc;
+  new_cfa = (_Unwind_Ptr) sc;
   fs->regs.cfa_how = CFA_REG_OFFSET;
   fs->regs.cfa_reg = STACK_POINTER_REGNUM;
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
-#if _MIPS_SIM == _ABIO32 && defined __MIPSEB__
   /* On o32 Linux, the register save slots in the sigcontext are
      eight bytes.  We need the lower half of each register slot,
      so slide our view of the structure back four bytes.  */
-  new_cfa -= 4;
+#if _MIPS_SIM == _ABIO32 && defined __MIPSEB__
+  reg_offset = 4;
+#else
+  reg_offset = 0;
 #endif
 
   for (i = 0; i < 32; i++) {
     fs->regs.reg[i].how = REG_SAVED_OFFSET;
     fs->regs.reg[i].loc.offset
-      = (_Unwind_Ptr)&(sc->sc_regs[i]) - new_cfa;
+      = (_Unwind_Ptr)&(sc->sc_regs[i]) + reg_offset - new_cfa;
   }
   /* The PC points to the faulting instruction, but the unwind tables
      expect it point to the following instruction.  We compensate by

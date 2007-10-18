@@ -1,3 +1,8 @@
+2007-10-18  David Daney  <ddaney@avtrex.com>
+
+	* config/mips/linux-unwind.h (mips_fallback_frame_state): Use new
+	reg_offset variable to calculate register locations.
+
 2007-10-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa.c (uid_ssaname_map_eq): New function.
