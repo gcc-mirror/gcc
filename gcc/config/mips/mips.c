@@ -1370,10 +1370,6 @@ static const unsigned char mips16e_save_restore_regs[] = {
 #undef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY mips_extra_live_on_entry
 
-#undef TARGET_MIN_ANCHOR_OFFSET
-#define TARGET_MIN_ANCHOR_OFFSET -32768
-#undef TARGET_MAX_ANCHOR_OFFSET
-#define TARGET_MAX_ANCHOR_OFFSET 32767
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P mips_use_blocks_for_constant_p
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
@@ -1865,7 +1861,7 @@ mips_cannot_force_const_mem (rtx x)
 	return true;
     }
 
-  if (TARGET_HAVE_TLS && for_each_rtx (&x, &mips_tls_symbol_ref_1, 0))
+  if (for_each_rtx (&x, &mips_tls_symbol_ref_1, 0))
     return true;
 
   return false;
@@ -5715,8 +5711,8 @@ mips_set_mips16_mode (int mips16_p)
 	    align_functions = 8;
 	}
 
-      targetm.min_anchor_offset = TARGET_MIN_ANCHOR_OFFSET;
-      targetm.max_anchor_offset = TARGET_MAX_ANCHOR_OFFSET;
+      targetm.min_anchor_offset = -32768;
+      targetm.max_anchor_offset = 32767;
     }
 
   /* (Re)initialize mips target internals for new ISA.  */

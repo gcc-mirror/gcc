@@ -1,5 +1,13 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (TARGET_MIN_ANCHOR_OFFSET): Delete.
+	(TARGET_MAX_ANCHOR_OFFSET): Delete.
+	(mips_cannot_force_const_mem): Don't check TARGET_HAVE_TLS.
+	(mips_set_mips16_mode): Initialize min_anchor_offset and
+	max_anchor_offset directly to constants.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c: Delete trailing whitespace.
 
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
