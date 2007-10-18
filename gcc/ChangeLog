@@ -1,5 +1,12 @@
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_frame_info): Remove gp_reg_size and
+	and fp_reg_size.
+	(mips_compute_frame_info): Remove associated code.
+	(mips16e_build_save_restore): Check num_fp instead of fp_reg_size.
+
+2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips-protos.h (compute_frame_size): Delete.
 	* config/mips/mips.h: Update comments.
 	* config/mips/mips.c (mips_frame_info): Remove initialized.
