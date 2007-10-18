@@ -1,3 +1,8 @@
+2007-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr31167.c: Add i?86-*-* to target selector.
+	Require lp64 effective target.
+
 2007-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/opt/const5.C: New test.
