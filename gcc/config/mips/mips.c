@@ -250,10 +250,6 @@ struct mips_frame_info GTY(())
      is no such slot.  */
   HOST_WIDE_INT cprestore_size;
 
-  /* The size in bytes of the GPR and FPR save areas.  */
-  HOST_WIDE_INT gp_reg_size;
-  HOST_WIDE_INT fp_reg_size;
-
   /* Bit X is set if the function saves or restores GPR X.  */
   unsigned int mask;
 
@@ -7461,7 +7457,7 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
   unsigned int i, regno;
   int n;
 
-  gcc_assert (cfun->machine->frame.fp_reg_size == 0);
+  gcc_assert (cfun->machine->frame.num_fp == 0);
 
   /* Calculate the number of elements in the PARALLEL.  We need one element
      for the stack adjustment, one for each argument register save, and one
@@ -7960,8 +7956,7 @@ mips_compute_frame_info (void)
   /* Move above the GPR save area.  */
   if (frame->num_gp > 0)
     {
-      frame->gp_reg_size = frame->num_gp * UNITS_PER_WORD;
-      offset += MIPS_STACK_ALIGN (frame->gp_reg_size);
+      offset += MIPS_STACK_ALIGN (frame->num_gp * UNITS_PER_WORD);
       frame->gp_sp_offset = offset - UNITS_PER_WORD;
     }
 
@@ -7978,8 +7973,7 @@ mips_compute_frame_info (void)
   /* Move above the FPR save area.  */
   if (frame->num_fp > 0)
     {
-      frame->fp_reg_size = frame->num_fp * UNITS_PER_FPREG;
-      offset += MIPS_STACK_ALIGN (frame->fp_reg_size);
+      offset += MIPS_STACK_ALIGN (frame->num_fp * UNITS_PER_FPREG);
       frame->fp_sp_offset = offset - UNITS_PER_HWFPVALUE;
     }
 
