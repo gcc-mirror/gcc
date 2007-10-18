@@ -1,3 +1,8 @@
+2007-10-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/allocator.h (struct __alloc_neq): Add.
+	* include/bits/stl_list.h (list<>::_M_check_equal_allocators): Use it.
+
 2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/ext/hash_map: To...

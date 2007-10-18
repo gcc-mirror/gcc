@@ -156,6 +156,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
     };
 
+  // Optimize for stateless allocators.
+  template<typename _Alloc, bool = __is_empty(_Alloc)>
+    struct __alloc_neq
+    {
+      static bool
+      _S_do_it(const _Alloc&, const _Alloc&)
+      { return false; }
+    };
+
+  template<typename _Alloc>
+    struct __alloc_neq<_Alloc, false>
+    {
+      static bool
+      _S_do_it(const _Alloc& __one, const _Alloc& __two)
+      { return __one != __two; }
+    };
+
 _GLIBCXX_END_NAMESPACE
 
 #endif
