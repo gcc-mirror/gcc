@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options -Wsurprising }
 ! PR fortran/33037
 !
 print *, transfer('x', 0, 20) ! { dg-warning "has partly undefined result" }
