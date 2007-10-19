@@ -547,8 +547,8 @@ Malformed environment variables are silently ignored.
 * GFORTRAN_STDERR_UNIT:: Unit number for standard error
 * GFORTRAN_USE_STDERR:: Send library output to standard error
 * GFORTRAN_TMPDIR:: Directory for scratch files
-* GFORTRAN_UNBUFFERED_n:: Don't buffer I/O for specific unit.
 * GFORTRAN_UNBUFFERED_ALL:: Don't buffer I/O for all units.
+* GFORTRAN_UNBUFFERED_PRECONNECTED:: Don't buffer I/O for preconnected units.
 * GFORTRAN_SHOW_LOCUS::  Show location for runtime errors
 * GFORTRAN_OPTIONAL_PLUS:: Print leading + where permitted
 * GFORTRAN_DEFAULT_RECL:: Default record length for new files
@@ -595,16 +595,6 @@ created.  If this environment variable is missing,
 GNU Fortran searches for the environment variable @env{TMP}.  If
 this is also missing, the default is @file{/tmp}.
 
-@node GFORTRAN_UNBUFFERED_n
-@section @env{GFORTRAN_UNBUFFERED_n}---Don't buffer I/O on unit n
-
-Environment variables named @env{GFORTRAN_UNBUFFERED_n}, where
-@samp{n} is an integer, control whether I/O on unit @samp{n} is
-unbuffered.  If the first letter is @samp{y}, @samp{Y} or @samp{1},
-I/O is unbuffered. This will slow down small sequential reads and
-writes.  If the first letter is @samp{n}, @samp{N} or @samp{0}, I/O is
-buffered.  This is the default.
-
 @node GFORTRAN_UNBUFFERED_ALL
 @section @env{GFORTRAN_UNBUFFERED_ALL}---Don't buffer I/O on all units
 
@@ -613,6 +603,16 @@ the first letter is @samp{y}, @samp{Y} or @samp{1}, all I/O is
 unbuffered. This will slow down small sequential reads and writes.  If
 the first letter is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.
 This is the default.
+
+@node GFORTRAN_UNBUFFERED_PRECONNECTED
+@section @env{GFORTRAN_UNBUFFERED_PRECONNECTED}---Don't buffer I/O on
+preconnected units
+
+The environment variable named @env{GFORTRAN_UNBUFFERED_PRECONNECTED} controls
+whether I/O on a preconnected unit (i.e STDOUT or STDERR) is unbuffered.  If 
+the first letter is @samp{y}, @samp{Y} or @samp{1}, I/O is unbuffered. This
+will slow down small sequential reads and writes.  If the first letter
+is @samp{n}, @samp{N} or @samp{0}, I/O is buffered.  This is the default.
 
 @node GFORTRAN_SHOW_LOCUS
 @section @env{GFORTRAN_SHOW_LOCUS}---Show location for runtime errors
