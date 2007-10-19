@@ -94,7 +94,8 @@
    v9,
    ultrasparc,
    ultrasparc3,
-   niagara"
+   niagara,
+   niagara2"
   (const (symbol_ref "sparc_cpu_attr")))
 
 ;; Attribute for the instruction set.
@@ -316,6 +317,7 @@
 (include "ultra1_2.md")
 (include "ultra3.md")
 (include "niagara.md")
+(include "niagara2.md")
 
 
 ;; Operand and operator predicates.

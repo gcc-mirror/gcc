@@ -1,3 +1,31 @@
+2007-10-18  David S. Miller  <davem@davemloft.net>
+
+	Add Niagara-2 support.
+	* doc/invoke.texi: Document -m{cpu,tune}=niagara2.
+	* config.gcc: Add niagara2 to cpu and tune lists for sparc.
+	* config/sparc/sparc.md (sparc_cpu_attr): Add niagara2.
+	(include): Add inclusion of niagara2.md
+	* config/sparc/sparc.c (niagara2_costs): New.
+	(sparc_override_options): Add niagara2 entry to cpu_default[]
+	and cpu_table[].  Set align_functions to 32 on Niagara2.  Use
+	niagara2_costs when PROCESSOR_NIAGARA2.  Handle Niagara2 for
+	PARAM_SIMULTANEOUS_PREFETCHES and PARAM_L1_CACHE_LINE_SIZE.
+	(sparc_initialize_trampoline): Handle niagara2 like niagara.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_use_sched_lookahead): Likewise.
+	(sparc_issue_rate): Likewise.
+	* config/sparc/sol2-bi.h: Handle TARGET_CPU_niagara2 and
+	mcpu=niagara2
+	* config/sparc/sparc.h (TARGET_CPU_niagara2): Define.
+	({CPP,ASM}_CPU64_DEFAULT_SPEC): Set appropriately for
+	TARGET_CPU_niagara2.
+	(PROCESSOR_NIAGARA2): New.
+	(REGISTER_MOVE_COST): Handle PROCESSOR_NIAGARA2.
+	(BRANCH_COST): Likewise.
+	* config/sparc/linux64.h: Handle TARGET_CPU_niagara2.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/niagara2.md: New file.
+
 2007-10-18  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (mips_frame_info): Remove gp_reg_size and
