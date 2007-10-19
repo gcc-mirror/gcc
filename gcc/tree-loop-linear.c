@@ -244,6 +244,46 @@ try_interchange_loops (lambda_trans_matrix trans,
   return trans;
 }
 
+/* Return the number of nested loops in LOOP_NEST, or 0 if the loops
+   are not perfectly nested.  */
+
+static unsigned int
+perfect_loop_nest_depth (struct loop *loop_nest)
+{
+  struct loop *temp;
+  unsigned int depth = 1;
+
+  /* If it's not a loop nest, we don't want it.  We also don't handle
+     sibling loops properly, which are loops of the following form:
+
+     | for (i = 0; i < 50; i++)
+     |   {
+     |     for (j = 0; j < 50; j++)
+     |       {
+     |        ...
+     |       }
+     |     for (j = 0; j < 50; j++)
+     |       {
+     |        ...
+     |       }
+     |   }
+  */
+
+  if (!loop_nest->inner || !single_exit (loop_nest))
+    return 0;
+
+  for (temp = loop_nest->inner; temp; temp = temp->inner)
+    {
+      /* If we have a sibling loop or multiple exit edges, jump ship.  */
+      if (temp->next || !single_exit (temp))
+	return 0;
+
+      depth++;
+    }
+
+  return depth;
+}
+
 /* Perform a set of linear transforms on loops.  */
 
 void
@@ -263,47 +303,18 @@ linear_transform_loops (void)
       unsigned int depth = 0;
       VEC (ddr_p, heap) *dependence_relations;
       VEC (data_reference_p, heap) *datarefs;
-      struct loop *temp;
       lambda_loopnest before, after;
       lambda_trans_matrix trans;
-      bool problem = false;
       struct obstack lambda_obstack;
       gcc_obstack_init (&lambda_obstack);
 
-      /* If it's not a loop nest, we don't want it.
-         We also don't handle sibling loops properly, 
-         which are loops of the following form:
-         for (i = 0; i < 50; i++)
-           {
-             for (j = 0; j < 50; j++)
-               {
-	        ...
-               }
-             for (j = 0; j < 50; j++)
-               {
-                ...
-               }
-           } */
-      if (!loop_nest->inner || !single_exit (loop_nest))
-	continue;
-      VEC_truncate (tree, oldivs, 0);
-      VEC_truncate (tree, invariants, 0);
-      depth = 1;
-      for (temp = loop_nest->inner; temp; temp = temp->inner)
-	{
-	  /* If we have a sibling loop or multiple exit edges, jump ship.  */
-	  if (temp->next || !single_exit (temp))
-	    {
-	      problem = true;
-	      break;
-	    }
-	  depth ++;
-	}
-      if (problem)
+      depth = perfect_loop_nest_depth (loop_nest);
+      if (depth == 0)
 	continue;
 
-      /* Analyze data references and dependence relations using scev.  */      
- 
+      VEC_truncate (tree, oldivs, 0);
+      VEC_truncate (tree, invariants, 0);
+
       datarefs = VEC_alloc (data_reference_p, heap, 10);
       dependence_relations = VEC_alloc (ddr_p, heap, 10 * 10);
       compute_data_dependences_for_loop (loop_nest, true, &datarefs,
