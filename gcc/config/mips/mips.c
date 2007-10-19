@@ -2354,7 +2354,7 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
 
   emit_insn (gen_rtx_SET (Pmode, a0,
 			  gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, loc)));
-  tga = gen_rtx_MEM (Pmode, mips_tls_symbol);
+  tga = gen_const_mem (Pmode, mips_tls_symbol);
   insn = emit_call_insn (gen_call_value (v0, tga, const0_rtx, const0_rtx));
   CONST_OR_PURE_CALL_P (insn) = 1;
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), v0);
@@ -4656,7 +4656,7 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  ptr = plus_constant (virtual_incoming_args_rtx,
 			       REG_PARM_STACK_SPACE (cfun->decl)
 			       - gp_saved * UNITS_PER_WORD);
-	  mem = gen_rtx_MEM (BLKmode, ptr);
+	  mem = gen_frame_mem (BLKmode, ptr);
 	  set_mem_alias_set (mem, get_varargs_alias_set ());
 
 	  move_block_from_reg (local_cum.num_gprs + GP_ARG_FIRST,
@@ -4684,7 +4684,7 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	      rtx ptr, mem;
 
 	      ptr = plus_constant (virtual_incoming_args_rtx, off);
-	      mem = gen_rtx_MEM (mode, ptr);
+	      mem = gen_frame_mem (mode, ptr);
 	      set_mem_alias_set (mem, get_varargs_alias_set ());
 	      mips_emit_move (mem, gen_rtx_REG (mode, FP_ARG_FIRST + i));
 	      off += UNITS_PER_HWFPVALUE;
@@ -8093,7 +8093,7 @@ mips_set_return_address (rtx address, rtx scratch)
   slot_address = mips_add_offset (scratch, stack_pointer_rtx,
 				  cfun->machine->frame.gp_sp_offset);
 
-  mips_emit_move (gen_rtx_MEM (GET_MODE (address), slot_address), address);
+  mips_emit_move (gen_frame_mem (GET_MODE (address), slot_address), address);
 }
 
 /* Restore $gp from its save slot.  Valid only when using o32 or
@@ -8102,7 +8102,7 @@ mips_set_return_address (rtx address, rtx scratch)
 void
 mips_restore_gp (void)
 {
-  rtx address, slot;
+  rtx address;
 
   gcc_assert (TARGET_ABICALLS && TARGET_OLDABI);
 
@@ -8111,9 +8111,8 @@ mips_restore_gp (void)
 			     ? hard_frame_pointer_rtx
 			     : stack_pointer_rtx,
 			     current_function_outgoing_args_size);
-  slot = gen_rtx_MEM (Pmode, address);
 
-  mips_emit_move (pic_offset_table_rtx, slot);
+  mips_emit_move (pic_offset_table_rtx, gen_frame_mem (Pmode, address));
   if (!TARGET_EXPLICIT_RELOCS)
     emit_insn (gen_blockage ());
 }

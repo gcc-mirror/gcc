@@ -1,5 +1,14 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_call_tls_get_addr): Use gen_const_mem
+	rather then gen_rtx_MEM.
+	(mips_setup_incoming_varargs): Use gen_frame_mem rather than
+	gen_rtx_MEM.
+	(mips_set_return_address): Likewise.
+	(mips_restore_gp): Likewise.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (gpr_mode): Delete.
 	(mips16e_build_save_restore): Use word_mode and UNITS_PER_WORD
 	instead of gpr_mode.
