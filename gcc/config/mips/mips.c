@@ -7488,7 +7488,7 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
     }
 
   /* Tell the caller what offset it should use for the remaining registers.  */
-  *offset_ptr = size + (offset - top_offset) + size;
+  *offset_ptr = size + (offset - top_offset);
 
   gcc_assert (n == XVECLEN (pattern, 0));
 

@@ -1,5 +1,10 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips16e_build_save_restore): Fix *OFFSET_PTR
+	calculation.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_call_tls_get_addr): Don't claim that
 	the call uses the incoming value of $2.
 
