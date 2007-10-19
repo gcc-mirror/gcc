@@ -481,6 +481,9 @@ lower value is greater than its upper value.
 
 @item
 A LOGICAL SELECT construct has three CASE statements.
+
+@item
+A TRANSFER specifies a source that is shorter than the destination.
 @end itemize
 
 @item -Wtabs
