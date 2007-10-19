@@ -1,3 +1,7 @@
+2007-10-19  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/niagara2.md: Fix copyright notice.
+
 2007-10-19  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR tree-optimization/23820
