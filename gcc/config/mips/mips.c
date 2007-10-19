@@ -468,9 +468,6 @@ enum mips_code_readable_setting mips_code_readable = CODE_READABLE_YES;
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
 
-/* Mode used for saving/restoring general purpose registers.  */
-static enum machine_mode gpr_mode;
-
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
 char mips_hard_regno_mode_ok[(int)MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -7472,7 +7469,7 @@ mips16e_build_save_restore (bool restore_p, unsigned int *mask_ptr,
   /* Save the arguments.  */
   for (i = 0; i < nargs; i++)
     {
-      offset = top_offset + i * GET_MODE_SIZE (gpr_mode);
+      offset = top_offset + i * UNITS_PER_WORD;
       set = mips16e_save_restore_reg (restore_p, offset, GP_ARG_FIRST + i);
       XVECEXP (pattern, 0, n++) = set;
     }
@@ -7520,7 +7517,7 @@ mips16e_save_restore_pattern_p (rtx pattern, HOST_WIDE_INT adjust,
   top_offset = adjust > 0 ? adjust : 0;
 
   /* Interpret all other members of the PARALLEL.  */
-  save_offset = top_offset - GET_MODE_SIZE (gpr_mode);
+  save_offset = top_offset - UNITS_PER_WORD;
   mask = 0;
   nargs = 0;
   i = 0;
@@ -7549,7 +7546,7 @@ mips16e_save_restore_pattern_p (rtx pattern, HOST_WIDE_INT adjust,
 	return false;
 
       /* Check for argument saves.  */
-      if (offset == top_offset + nargs * GET_MODE_SIZE (gpr_mode)
+      if (offset == top_offset + nargs * UNITS_PER_WORD
 	  && REGNO (reg) == GP_ARG_FIRST + nargs)
 	nargs++;
       else if (offset == save_offset)
@@ -7559,7 +7556,7 @@ mips16e_save_restore_pattern_p (rtx pattern, HOST_WIDE_INT adjust,
 	      return false;
 
 	  mask |= 1 << REGNO (reg);
-	  save_offset -= GET_MODE_SIZE (gpr_mode);
+	  save_offset -= UNITS_PER_WORD;
 	}
       else
 	return false;
@@ -8160,8 +8157,8 @@ mips_for_each_saved_reg (HOST_WIDE_INT sp_offset, mips_save_restore_fn fn)
   for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
     if (BITSET_P (cfun->machine->frame.mask, regno - GP_REG_FIRST))
       {
-	mips_save_restore_reg (gpr_mode, regno, offset, fn);
-	offset -= GET_MODE_SIZE (gpr_mode);
+	mips_save_restore_reg (word_mode, regno, offset, fn);
+	offset -= UNITS_PER_WORD;
       }
 
   /* This loop must iterate over the same space as its companion in
@@ -8450,8 +8447,9 @@ mips_expand_prologue (void)
  	  for (regno = GP_REG_FIRST; regno < GP_REG_LAST; regno++)
  	    if (BITSET_P (mask, regno - GP_REG_FIRST))
  	      {
-		offset -= GET_MODE_SIZE (gpr_mode);
-		mips_save_restore_reg (gpr_mode, regno, offset, mips_save_reg);
+		offset -= UNITS_PER_WORD;
+		mips_save_restore_reg (word_mode, regno,
+				       offset, mips_save_reg);
  	      }
  	}
       else
@@ -8655,8 +8653,8 @@ mips_expand_epilogue (int sibcall_p)
       for (regno = GP_REG_FIRST; regno < GP_REG_LAST; regno++)
  	if (BITSET_P (mask, regno - GP_REG_FIRST))
  	  {
- 	    offset -= GET_MODE_SIZE (gpr_mode);
- 	    mips_save_restore_reg (gpr_mode, regno, offset, mips_restore_reg);
+ 	    offset -= UNITS_PER_WORD;
+ 	    mips_save_restore_reg (word_mode, regno, offset, mips_restore_reg);
  	  }
 
       /* Restore the remaining registers and deallocate the final bit
@@ -12161,10 +12159,6 @@ override_options (void)
     for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
       mips_hard_regno_mode_ok[(int)mode][regno]
 	= mips_hard_regno_mode_ok_p (regno, mode);
-
-  /* Save GPR registers in word_mode sized hunks.  word_mode hasn't been
-     initialized yet, so we can't use that here.  */
-  gpr_mode = TARGET_64BIT ? DImode : SImode;
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;

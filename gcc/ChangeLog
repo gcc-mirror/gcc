@@ -1,5 +1,15 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (gpr_mode): Delete.
+	(mips16e_build_save_restore): Use word_mode and UNITS_PER_WORD
+	instead of gpr_mode.
+	(mips_for_each_saved_reg): Likewise.
+	(mips_expand_prologue, mips_expand_epilogue): Likewise.
+	(override_options): Don't initialize gpr_mode.
+	* config/mips/mips.md (eh_return): Use word_mode instead of gpr_mode.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_hard_regno_nregs): Put the UNITS_PER_WORD
 	case last.
 	(mips_class_max_nregs): Calculate the smallest consituent register
