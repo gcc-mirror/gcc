@@ -38,6 +38,7 @@
 
 #include <testsuite_hooks.h>
 #include <bits/stl_iterator_base_types.h>
+#include <bits/stl_move.h>
 
 #ifndef _TESTSUITE_ITERATORS
 #define _TESTSUITE_ITERATORS
@@ -103,6 +104,17 @@ namespace __gnu_test
 	SharedInfo->writtento[ptr - SharedInfo->first] = 1;
 	*ptr = new_val;
       }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<class U>
+      void
+      operator=(U&& new_val)
+      {
+	ITERATOR_VERIFY(SharedInfo->writtento[ptr - SharedInfo->first] == 0);
+	SharedInfo->writtento[ptr - SharedInfo->first] = 1;
+	*ptr = std::move(new_val);
+      }
+#endif
     };
 
   /**

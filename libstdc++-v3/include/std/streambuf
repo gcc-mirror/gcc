@@ -155,11 +155,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       friend streamsize
       __copy_streambufs_eof<>(__streambuf_type*, __streambuf_type*, bool&);
 
-      template<typename _CharT2>
+      template<bool _IsCopy, typename _CharT2>
         friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, 
 					       _CharT2*>::__type
-        __copy_aux(istreambuf_iterator<_CharT2>,
-		   istreambuf_iterator<_CharT2>, _CharT2*);
+        __copy_move_a(istreambuf_iterator<_CharT2>,
+		      istreambuf_iterator<_CharT2>, _CharT2*);
 
       template<typename _CharT2>
         friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
