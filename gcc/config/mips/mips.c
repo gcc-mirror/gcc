@@ -5067,27 +5067,56 @@ mips16_call_stub_mode_suffix (enum machine_mode mode)
     gcc_unreachable ();
 }
 
-/* Write out code to move floating point arguments in or out of
-   general registers.  FP_CODE is the code describing which arguments
-   are present (see the comment at the definition of CUMULATIVE_ARGS in
-   mips.h).  FROM_FP_P is nonzero if we are copying from the floating
-   point registers.  */
+/* Write instructions to move a 32-bit value between general register
+   GPREG and floating-point register FPREG.  DIRECTION is 't' to move
+   from GPREG to FPREG and 'f' to move in the opposite direction.  */
 
 static void
-mips16_fp_args (int fp_code, int from_fp_p)
+mips_output_32bit_xfer (char direction, unsigned int gpreg, unsigned int fpreg)
 {
-  const char *s;
-  int gparg, fparg;
-  unsigned int f;
+  fprintf (asm_out_file, "\tm%cc1\t%s,%s\n", direction,
+	   reg_names[gpreg], reg_names[fpreg]);
+}
+
+/* Likewise for 64-bit values.  */
+
+static void
+mips_output_64bit_xfer (char direction, unsigned int gpreg, unsigned int fpreg)
+{
+  if (TARGET_64BIT)
+    fprintf (asm_out_file, "\tdm%cc1\t%s,%s\n", direction,
+ 	     reg_names[gpreg], reg_names[fpreg]);
+  else if (TARGET_FLOAT64)
+    {
+      fprintf (asm_out_file, "\tm%cc1\t%s,%s\n", direction,
+ 	       reg_names[gpreg + TARGET_BIG_ENDIAN], reg_names[fpreg]);
+      fprintf (asm_out_file, "\tm%chc1\t%s,%s\n", direction,
+ 	       reg_names[gpreg + TARGET_LITTLE_ENDIAN], reg_names[fpreg]);
+    }
+  else
+    {
+      /* Move the least-significant word.  */
+      fprintf (asm_out_file, "\tm%cc1\t%s,%s\n", direction,
+	       reg_names[gpreg + TARGET_BIG_ENDIAN], reg_names[fpreg]);
+      /* ...then the most significant word.  */
+      fprintf (asm_out_file, "\tm%cc1\t%s,%s\n", direction,
+	       reg_names[gpreg + TARGET_LITTLE_ENDIAN], reg_names[fpreg + 1]);
+    }
+}
+
+/* Write out code to move floating-point arguments into or out of
+   general registers.  FP_CODE is the code describing which arguments
+   are present (see the comment above the definition of CUMULATIVE_ARGS
+   in mips.h).  DIRECTION is as for mips_output_32bit_xfer.  */
+
+static void
+mips_output_args_xfer (int fp_code, char direction)
+{
+  unsigned int gparg, fparg, f;
   CUMULATIVE_ARGS cum;
 
   /* This code only works for the original 32-bit ABI and the O64 ABI.  */
   gcc_assert (TARGET_OLDABI);
-
-  if (from_fp_p)
-    s = "mfc1";
-  else
-    s = "mtc1";
 
   init_cumulative_args (&cum, NULL, NULL);
 
@@ -5108,28 +5137,9 @@ mips16_fp_args (int fp_code, int from_fp_p)
       fparg = mips_arg_regno (&info, true);
 
       if (mode == SFmode)
-	fprintf (asm_out_file, "\t%s\t%s,%s\n", s,
-		 reg_names[gparg], reg_names[fparg]);
-      else if (TARGET_64BIT)
-	fprintf (asm_out_file, "\td%s\t%s,%s\n", s,
-		 reg_names[gparg], reg_names[fparg]);
-      else if (ISA_HAS_MXHC1)
-	/* -mips32r2 -mfp64 */
-	fprintf (asm_out_file, "\t%s\t%s,%s\n\t%s\t%s,%s\n",
-		 s,
-		 reg_names[gparg + (WORDS_BIG_ENDIAN ? 1 : 0)],
-		 reg_names[fparg],
-		 from_fp_p ? "mfhc1" : "mthc1",
-		 reg_names[gparg + (WORDS_BIG_ENDIAN ? 0 : 1)],
-		 reg_names[fparg]);
-      else if (TARGET_BIG_ENDIAN)
-	fprintf (asm_out_file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
-		 reg_names[gparg], reg_names[fparg + 1], s,
-		 reg_names[gparg + 1], reg_names[fparg]);
+	mips_output_32bit_xfer (direction, gparg, fparg);
       else
-	fprintf (asm_out_file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
-		 reg_names[gparg], reg_names[fparg], s,
-		 reg_names[gparg + 1], reg_names[fparg + 1]);
+	mips_output_64bit_xfer (direction, gparg, fparg);
 
       function_arg_advance (&cum, mode, NULL, true);
     }
@@ -5193,7 +5203,7 @@ build_mips16_function_stub (void)
   /* We don't want the assembler to insert any nops here.  */
   fprintf (asm_out_file, "\t.set\tnoreorder\n");
 
-  mips16_fp_args (current_function_args_info.fp_code, 1);
+  mips_output_args_xfer (current_function_args_info.fp_code, 'f');
 
   fprintf (asm_out_file, "\t.set\tnoat\n");
   fprintf (asm_out_file, "\tla\t%s,", reg_names[GP_REG_FIRST + 1]);
@@ -5219,47 +5229,6 @@ build_mips16_function_stub (void)
     }
 
   switch_to_section (function_section (current_function_decl));
-}
-
-/* Emit code to return a double value from a mips16 stub.  GPREG is the
-   first GP reg to use, FPREG is the first FP reg to use.  */
-
-static void
-mips16_fpret_double (int gpreg, int fpreg)
-{
-  if (TARGET_64BIT)
-    fprintf (asm_out_file, "\tdmfc1\t%s,%s\n",
- 	     reg_names[gpreg], reg_names[fpreg]);
-  else if (TARGET_FLOAT64)
-    {
-      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
- 	       reg_names[gpreg + WORDS_BIG_ENDIAN],
- 	       reg_names[fpreg]);
-      fprintf (asm_out_file, "\tmfhc1\t%s,%s\n",
- 	       reg_names[gpreg + !WORDS_BIG_ENDIAN],
- 	       reg_names[fpreg]);
-    }
-  else
-    {
-      if (TARGET_BIG_ENDIAN)
- 	{
- 	  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
- 		   reg_names[gpreg + 0],
- 		   reg_names[fpreg + 1]);
- 	  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
- 		   reg_names[gpreg + 1],
- 		   reg_names[fpreg + 0]);
- 	}
-      else
- 	{
-	  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-		   reg_names[gpreg + 0],
- 		   reg_names[fpreg + 0]);
- 	  fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
- 		   reg_names[gpreg + 1],
- 		   reg_names[fpreg + 1]);
- 	}
-    }
 }
 
 /* Build a call stub for a mips16 call.  A stub is needed if we are
@@ -5452,7 +5421,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
       /* We don't want the assembler to insert any nops here.  */
       fprintf (asm_out_file, "\t.set\tnoreorder\n");
 
-      mips16_fp_args (fp_code, 0);
+      mips_output_args_xfer (fp_code, 't');
 
       if (! fpret)
 	{
@@ -5478,36 +5447,33 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	  switch (GET_MODE (retval))
 	    {
 	    case SCmode:
- 	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
- 		       reg_names[GP_REG_FIRST + 3],
-		       reg_names[FP_REG_FIRST + MAX_FPRS_PER_FMT]);
+	      mips_output_32bit_xfer ('f', GP_RETURN + 1,
+				      FP_REG_FIRST + MAX_FPRS_PER_FMT);
 	      /* Fall though.  */
 	    case SFmode:
-	      fprintf (asm_out_file, "\tmfc1\t%s,%s\n",
-		       reg_names[GP_REG_FIRST + 2],
-		       reg_names[FP_REG_FIRST + 0]);
+	      mips_output_32bit_xfer ('f', GP_RETURN, FP_REG_FIRST);
 	      if (GET_MODE (retval) == SCmode && TARGET_64BIT)
 		{
 		  /* On 64-bit targets, complex floats are returned in
 		     a single GPR, such that "sd" on a suitably-aligned
 		     target would store the value correctly.  */
 		  fprintf (asm_out_file, "\tdsll\t%s,%s,32\n",
-			   reg_names[GP_REG_FIRST + 2 + TARGET_LITTLE_ENDIAN],
-			   reg_names[GP_REG_FIRST + 2 + TARGET_LITTLE_ENDIAN]);
+			   reg_names[GP_RETURN + TARGET_LITTLE_ENDIAN],
+			   reg_names[GP_RETURN + TARGET_LITTLE_ENDIAN]);
 		  fprintf (asm_out_file, "\tor\t%s,%s,%s\n",
-			   reg_names[GP_REG_FIRST + 2],
-			   reg_names[GP_REG_FIRST + 2],
-			   reg_names[GP_REG_FIRST + 3]);
+			   reg_names[GP_RETURN],
+			   reg_names[GP_RETURN],
+			   reg_names[GP_RETURN + 1]);
 		}
 	      break;
 
 	    case DCmode:
- 	      mips16_fpret_double (GP_REG_FIRST + 2 + (8 / UNITS_PER_WORD),
-				   FP_REG_FIRST + MAX_FPRS_PER_FMT);
+	      mips_output_64bit_xfer ('f', GP_RETURN + (8 / UNITS_PER_WORD),
+				      FP_REG_FIRST + MAX_FPRS_PER_FMT);
 	      /* Fall though.  */
  	    case DFmode:
 	    case V2SFmode:
- 	      mips16_fpret_double (GP_REG_FIRST + 2, FP_REG_FIRST + 0);
+	      mips_output_64bit_xfer ('f', GP_RETURN, FP_REG_FIRST);
 	      break;
 
 	    default:
