@@ -1,3 +1,11 @@
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* config/mips/mips.c (mips16_fp_args): Remove the FILE argument and
+	use asm_out_file instead.
+	(build_mips16_function_stub): Likewise.
+	(build_mips16_call_stub, mips_output_function_prologue): Update
+	accordingly.
+
 2007-10-18  David S. Miller  <davem@davemloft.net>
 
 	Add Niagara-2 support.

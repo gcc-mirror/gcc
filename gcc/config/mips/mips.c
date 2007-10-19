@@ -5068,13 +5068,13 @@ mips16_call_stub_mode_suffix (enum machine_mode mode)
 }
 
 /* Write out code to move floating point arguments in or out of
-   general registers.  Output the instructions to FILE.  FP_CODE is
-   the code describing which arguments are present (see the comment at
-   the definition of CUMULATIVE_ARGS in mips.h).  FROM_FP_P is nonzero if
-   we are copying from the floating point registers.  */
+   general registers.  FP_CODE is the code describing which arguments
+   are present (see the comment at the definition of CUMULATIVE_ARGS in
+   mips.h).  FROM_FP_P is nonzero if we are copying from the floating
+   point registers.  */
 
 static void
-mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
+mips16_fp_args (int fp_code, int from_fp_p)
 {
   const char *s;
   int gparg, fparg;
@@ -5108,14 +5108,14 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
       fparg = mips_arg_regno (&info, true);
 
       if (mode == SFmode)
-	fprintf (file, "\t%s\t%s,%s\n", s,
+	fprintf (asm_out_file, "\t%s\t%s,%s\n", s,
 		 reg_names[gparg], reg_names[fparg]);
       else if (TARGET_64BIT)
-	fprintf (file, "\td%s\t%s,%s\n", s,
+	fprintf (asm_out_file, "\td%s\t%s,%s\n", s,
 		 reg_names[gparg], reg_names[fparg]);
       else if (ISA_HAS_MXHC1)
 	/* -mips32r2 -mfp64 */
-	fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n",
+	fprintf (asm_out_file, "\t%s\t%s,%s\n\t%s\t%s,%s\n",
 		 s,
 		 reg_names[gparg + (WORDS_BIG_ENDIAN ? 1 : 0)],
 		 reg_names[fparg],
@@ -5123,11 +5123,11 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
 		 reg_names[gparg + (WORDS_BIG_ENDIAN ? 0 : 1)],
 		 reg_names[fparg]);
       else if (TARGET_BIG_ENDIAN)
-	fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
+	fprintf (asm_out_file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
 		 reg_names[gparg], reg_names[fparg + 1], s,
 		 reg_names[gparg + 1], reg_names[fparg]);
       else
-	fprintf (file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
+	fprintf (asm_out_file, "\t%s\t%s,%s\n\t%s\t%s,%s\n", s,
 		 reg_names[gparg], reg_names[fparg], s,
 		 reg_names[gparg + 1], reg_names[fparg + 1]);
 
@@ -5141,7 +5141,7 @@ mips16_fp_args (FILE *file, int fp_code, int from_fp_p)
    then jumps to the 16-bit code.  */
 
 static void
-build_mips16_function_stub (FILE *file)
+build_mips16_function_stub (void)
 {
   const char *fnname;
   char *secname, *stubname;
@@ -5161,42 +5161,44 @@ build_mips16_function_stub (FILE *file)
   DECL_SECTION_NAME (stubdecl) = build_string (strlen (secname), secname);
   DECL_RESULT (stubdecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
 
-  fprintf (file, "\t# Stub function for %s (", current_function_name ());
+  fprintf (asm_out_file, "\t# Stub function for %s (",
+	   current_function_name ());
   need_comma = 0;
   for (f = (unsigned int) current_function_args_info.fp_code; f != 0; f >>= 2)
     {
-      fprintf (file, "%s%s",
+      fprintf (asm_out_file, "%s%s",
 	       need_comma ? ", " : "",
 	       (f & 3) == 1 ? "float" : "double");
       need_comma = 1;
     }
-  fprintf (file, ")\n");
+  fprintf (asm_out_file, ")\n");
 
-  fprintf (file, "\t.set\tnomips16\n");
+  fprintf (asm_out_file, "\t.set\tnomips16\n");
   switch_to_section (function_section (stubdecl));
-  ASM_OUTPUT_ALIGN (file, floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT));
+  ASM_OUTPUT_ALIGN (asm_out_file,
+		    floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT));
 
   /* ??? If FUNCTION_NAME_ALREADY_DECLARED is defined, then we are
      within a .ent, and we cannot emit another .ent.  */
   if (!FUNCTION_NAME_ALREADY_DECLARED)
     {
-      fputs ("\t.ent\t", file);
-      assemble_name (file, stubname);
-      fputs ("\n", file);
+      fputs ("\t.ent\t", asm_out_file);
+      assemble_name (asm_out_file, stubname);
+      fputs ("\n", asm_out_file);
     }
 
-  assemble_name (file, stubname);
-  fputs (":\n", file);
+  assemble_name (asm_out_file, stubname);
+  fputs (":\n", asm_out_file);
 
   /* We don't want the assembler to insert any nops here.  */
-  fprintf (file, "\t.set\tnoreorder\n");
+  fprintf (asm_out_file, "\t.set\tnoreorder\n");
 
-  mips16_fp_args (file, current_function_args_info.fp_code, 1);
+  mips16_fp_args (current_function_args_info.fp_code, 1);
 
   fprintf (asm_out_file, "\t.set\tnoat\n");
   fprintf (asm_out_file, "\tla\t%s,", reg_names[GP_REG_FIRST + 1]);
-  assemble_name (file, fnname);
-  fprintf (file, "\n");
+  assemble_name (asm_out_file, fnname);
+  fprintf (asm_out_file, "\n");
   fprintf (asm_out_file, "\tjr\t%s\n", reg_names[GP_REG_FIRST + 1]);
   fprintf (asm_out_file, "\t.set\tat\n");
 
@@ -5205,15 +5207,15 @@ build_mips16_function_stub (FILE *file)
      available for one instruction, so if the very first instruction
      in the function refers to the register, it will see the wrong
      value.  */
-  fprintf (file, "\tnop\n");
+  fprintf (asm_out_file, "\tnop\n");
 
-  fprintf (file, "\t.set\treorder\n");
+  fprintf (asm_out_file, "\t.set\treorder\n");
 
   if (!FUNCTION_NAME_ALREADY_DECLARED)
     {
-      fputs ("\t.end\t", file);
-      assemble_name (file, stubname);
-      fputs ("\n", file);
+      fputs ("\t.end\t", asm_out_file);
+      assemble_name (asm_out_file, stubname);
+      fputs ("\n", asm_out_file);
     }
 
   switch_to_section (function_section (current_function_decl));
@@ -5450,7 +5452,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
       /* We don't want the assembler to insert any nops here.  */
       fprintf (asm_out_file, "\t.set\tnoreorder\n");
 
-      mips16_fp_args (asm_out_file, fp_code, 0);
+      mips16_fp_args (fp_code, 0);
 
       if (! fpret)
 	{
@@ -8223,7 +8225,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   if (TARGET_MIPS16
       && TARGET_HARD_FLOAT_ABI
       && current_function_args_info.fp_code != 0)
-    build_mips16_function_stub (file);
+    build_mips16_function_stub ();
 
   /* Select the mips16 mode for this function.  */
   if (TARGET_MIPS16)
