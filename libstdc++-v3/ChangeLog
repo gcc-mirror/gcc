@@ -1,5 +1,13 @@
 2007-10-19  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/33815
+	* include/tr1_impl/random
+	(uniform_int<>::_M_call(_UniformRandomNumberGenerator&, result_type,
+	result_type, true_type)): Avoid the modulo (which uses the low-order
+	bits).
+
+2007-10-19  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_algobase.h (struct __cm_assign,
 	struct __copy_move, struct __copy_move_backward, move,
 	move_backward): Add.
