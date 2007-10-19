@@ -1411,10 +1411,16 @@ input_stream (void)
 stream *
 output_stream (void)
 {
+  stream * s;
+
 #if defined(HAVE_CRLF) && defined(HAVE_SETMODE)
   setmode (STDOUT_FILENO, O_BINARY);
 #endif
-  return fd_to_stream (STDOUT_FILENO, PROT_WRITE);
+
+  s = fd_to_stream (STDOUT_FILENO, PROT_WRITE);
+  if (options.unbuffered_preconnected)
+    ((unix_stream *) s)->unbuffered = 1;
+  return s;
 }
 
 
@@ -1424,10 +1430,16 @@ output_stream (void)
 stream *
 error_stream (void)
 {
+  stream * s;
+
 #if defined(HAVE_CRLF) && defined(HAVE_SETMODE)
   setmode (STDERR_FILENO, O_BINARY);
 #endif
-  return fd_to_stream (STDERR_FILENO, PROT_WRITE);
+
+  s = fd_to_stream (STDERR_FILENO, PROT_WRITE);
+  if (options.unbuffered_preconnected)
+    ((unix_stream *) s)->unbuffered = 1;
+  return s;
 }
 
 

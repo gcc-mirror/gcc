@@ -1,4 +1,15 @@
 2007-10-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33795
+	* libgfortran.h: Add unbuffered_preconnected.
+	* io/unix.c (output_stream): Set stream unbuffered flag if
+	options.unbuffered_preconnected has been set.
+	(error_stream): Ditto.
+	* runtime/environ.c (variable_table): Add to environment variable table
+	the entry: GFORTRAN_UNBUFFERED_PRECONNECTED. 
+	
+2007-10-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR libfortran/32021
 	* runtime/backtrace.c (local_strcasestr): Protect by appropriate

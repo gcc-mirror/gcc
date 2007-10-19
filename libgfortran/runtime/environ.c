@@ -299,6 +299,10 @@ static variable variable_table[] = {
    "If TRUE, all output is unbuffered.  This will slow down large writes "
    "but can be\nuseful for forcing data to be displayed immediately.", 0},
 
+  {"GFORTRAN_UNBUFFERED_PRECONNECTED", 0, &options.unbuffered_preconnected,
+   init_boolean, show_boolean,
+   "If TRUE, output to preconnected units is unbuffered.", 0},
+
   {"GFORTRAN_SHOW_LOCUS", 1, &options.locus, init_boolean, show_boolean,
    "If TRUE, print filename and line number where runtime errors happen.", 0},
 
@@ -343,32 +347,6 @@ init_variables (void)
 
   for (v = variable_table; v->name; v++)
     v->init (v);
-}
-
-
-/* check_buffered()-- Given an unit number n, determine if an override
- * for the stream exists.  Returns zero for unbuffered, one for
- * buffered or two for not set. */
-
-int
-check_buffered (int n)
-{
-  char name[22 + sizeof (n) * 3];
-  variable v;
-  int rv;
-
-  if (options.all_unbuffered)
-    return 0;
-
-  sprintf (name, "GFORTRAN_UNBUFFERED_%d", n);
-
-  v.name = name;
-  v.value = 2;
-  v.var = &rv;
-
-  init_boolean (&v);
-
-  return rv;
 }
 
 
