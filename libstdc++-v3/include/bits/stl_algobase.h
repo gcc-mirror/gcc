@@ -282,36 +282,57 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       { return __it.base(); }
     };
 
+  // Used in __copy_move and __copy_move_backward below.
+  template<bool _IsCopy>
+    struct __cm_assign
+    {
+      template<typename _IteratorL, typename _IteratorR>
+        static void
+        __a(_IteratorL __lhs, _IteratorR __rhs) 
+	{ *__lhs = *__rhs; }
+    };
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<>
+    struct __cm_assign<false>
+    {
+      template<typename _IteratorL, typename _IteratorR>
+        static void
+        __a(_IteratorL __lhs, _IteratorR __rhs) 
+	{ *__lhs = std::move(*__rhs); }
+    };
+#endif
+
   // All of these auxiliary structs serve two purposes.  (1) Replace
   // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
   // because the input and output ranges are permitted to overlap.)
   // (2) If we're using random access iterators, then write the loop as
   // a for loop with an explicit count.
 
-  template<bool, typename>
-    struct __copy
+  template<bool _IsCopy, bool, typename>
+    struct __copy_move
     {
       template<typename _II, typename _OI>
         static _OI
-        copy(_II __first, _II __last, _OI __result)
+        __copy_m(_II __first, _II __last, _OI __result)
         {
 	  for (; __first != __last; ++__result, ++__first)
-	    *__result = *__first;
+	    std::__cm_assign<_IsCopy>::__a(__result, __first);
 	  return __result;
 	}
     };
 
-  template<bool _BoolType>
-    struct __copy<_BoolType, random_access_iterator_tag>
+  template<bool _IsCopy, bool _IsSimple>
+    struct __copy_move<_IsCopy, _IsSimple, random_access_iterator_tag>
     {
       template<typename _II, typename _OI>
         static _OI
-        copy(_II __first, _II __last, _OI __result)
+        __copy_m(_II __first, _II __last, _OI __result)
         { 
 	  typedef typename iterator_traits<_II>::difference_type _Distance;
 	  for(_Distance __n = __last - __first; __n > 0; --__n)
 	    {
-	      *__result = *__first;
+	      std::__cm_assign<_IsCopy>::__a(__result, __first);
 	      ++__first;
 	      ++__result;
 	    }
@@ -319,22 +340,22 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
     };
 
-  template<>
-    struct __copy<true, random_access_iterator_tag>
+  template<bool _IsCopy>
+    struct __copy_move<_IsCopy, true, random_access_iterator_tag>
     {
       template<typename _Tp>
         static _Tp*
-        copy(const _Tp* __first, const _Tp* __last, _Tp* __result)
-        { 
+        __copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
+        {
 	  __builtin_memmove(__result, __first,
 			    sizeof(_Tp) * (__last - __first));
 	  return __result + (__last - __first);
 	}
     };
 
-  template<typename _II, typename _OI>
+  template<bool _IsCopy, typename _II, typename _OI>
     inline _OI
-    __copy_aux(_II __first, _II __last, _OI __result)
+    __copy_move_a(_II __first, _II __last, _OI __result)
     {
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
@@ -344,7 +365,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	                     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
 
-      return std::__copy<__simple, _Category>::copy(__first, __last, __result);
+      return std::__copy_move<_IsCopy, __simple,
+	                      _Category>::__copy_m(__first, __last, __result);
     }
 
   // Helpers for streambuf iterators (either istream or ostream).
@@ -358,23 +380,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator;
 
-  template<typename _CharT>
+  template<bool _IsCopy, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
 	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
-    __copy_aux(_CharT*, _CharT*,
-	       ostreambuf_iterator<_CharT, char_traits<_CharT> >);
+    __copy_move_a(_CharT*, _CharT*,
+		  ostreambuf_iterator<_CharT, char_traits<_CharT> >);
 
-  template<typename _CharT>
+  template<bool _IsCopy, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value, 
 	     ostreambuf_iterator<_CharT, char_traits<_CharT> > >::__type
-    __copy_aux(const _CharT*, const _CharT*,
-	       ostreambuf_iterator<_CharT, char_traits<_CharT> >);
+    __copy_move_a(const _CharT*, const _CharT*,
+		  ostreambuf_iterator<_CharT, char_traits<_CharT> >);
 
-  template<typename _CharT>
+  template<bool _IsCopy, typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
 				    _CharT*>::__type
-    __copy_aux(istreambuf_iterator<_CharT, char_traits<_CharT> >,
-	       istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
+    __copy_move_a(istreambuf_iterator<_CharT, char_traits<_CharT> >,
+		  istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
 
   /**
    *  @brief Copies the range [first,last) into result.
@@ -402,55 +424,89 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_II>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return _OI(std::__copy_aux(__niter_base<_II>::__b(__first),
-				 __niter_base<_II>::__b(__last),
-				 __niter_base<_OI>::__b(__result)));
+      return _OI(std::__copy_move_a<true>
+		 (std::__niter_base<_II>::__b(__first),
+		  std::__niter_base<_II>::__b(__last),
+		  std::__niter_base<_OI>::__b(__result)));
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /**
+   *  @brief Moves the range [first,last) into result.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  result An output iterator.
+   *  @return   result + (first - last)
+   *
+   *  This inline function will boil down to a call to @c memmove whenever
+   *  possible.  Failing that, if random access iterators are passed, then the
+   *  loop count will be known (and therefore a candidate for compiler
+   *  optimizations such as unrolling).  Result may not be contained within
+   *  [first,last); the move_backward function should be used instead.
+   *
+   *  Note that the end of the output range is permitted to be contained
+   *  within [first,last).
+  */
+  template<typename _II, typename _OI>
+    inline _OI
+    move(_II __first, _II __last, _OI __result)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_InputIteratorConcept<_II>)
+      __glibcxx_function_requires(_OutputIteratorConcept<_OI,
+	    typename iterator_traits<_II>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
 
-  template<bool, typename>
-    struct __copy_backward
+      return _OI(std::__copy_move_a<false>
+		 (std::__niter_base<_II>::__b(__first),
+		  std::__niter_base<_II>::__b(__last),
+		  std::__niter_base<_OI>::__b(__result)));
+    }
+#endif
+
+  template<bool _IsCopy, bool, typename>
+    struct __copy_move_backward
     {
       template<typename _BI1, typename _BI2>
         static _BI2
-        __copy_b(_BI1 __first, _BI1 __last, _BI2 __result)
-        { 
+        __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
+        {
 	  while (__first != __last)
-	    *--__result = *--__last;
+	    std::__cm_assign<_IsCopy>::__a(--__result, --__last);
 	  return __result;
 	}
     };
 
-  template<bool _BoolType>
-    struct __copy_backward<_BoolType, random_access_iterator_tag>
+  template<bool _IsCopy, bool _IsSimple>
+    struct __copy_move_backward<_IsCopy, _IsSimple, random_access_iterator_tag>
     {
       template<typename _BI1, typename _BI2>
         static _BI2
-        __copy_b(_BI1 __first, _BI1 __last, _BI2 __result)
-        { 
+        __copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
+        {
 	  typename iterator_traits<_BI1>::difference_type __n;
 	  for (__n = __last - __first; __n > 0; --__n)
-	    *--__result = *--__last;
+	    std::__cm_assign<_IsCopy>::__a(--__result, --__last);
 	  return __result;
 	}
     };
 
-  template<>
-    struct __copy_backward<true, random_access_iterator_tag>
+  template<bool _IsCopy>
+    struct __copy_move_backward<_IsCopy, true, random_access_iterator_tag>
     {
       template<typename _Tp>
         static _Tp*
-        __copy_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
-        { 
+        __copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
+        {
 	  const ptrdiff_t _Num = __last - __first;
 	  __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
 	  return __result - _Num;
 	}
     };
 
-  template<typename _BI1, typename _BI2>
+  template<bool _IsCopy, typename _BI1, typename _BI2>
     inline _BI2
-    __copy_backward_aux(_BI1 __first, _BI1 __last, _BI2 __result)
+    __copy_move_backward_a(_BI1 __first, _BI1 __last, _BI2 __result)
     {
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
@@ -460,7 +516,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	                     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
 
-      return std::__copy_backward<__simple, _Category>::__copy_b(__first,
+      return std::__copy_move_backward<_IsCopy, __simple,
+	                               _Category>::__copy_move_b(__first,
 								 __last,
 								 __result);
     }
@@ -494,11 +551,48 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	    typename iterator_traits<_BI2>::value_type>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      return _BI2(std::__copy_backward_aux(__niter_base<_BI1>::__b(__first),
-					   __niter_base<_BI1>::__b(__last),
-					   __niter_base<_BI2>::__b(__result)));
+      return _BI2(std::__copy_move_backward_a<true>
+		  (std::__niter_base<_BI1>::__b(__first),
+		   std::__niter_base<_BI1>::__b(__last),
+		   std::__niter_base<_BI2>::__b(__result)));
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  /**
+   *  @brief Moves the range [first,last) into result.
+   *  @param  first  A bidirectional iterator.
+   *  @param  last   A bidirectional iterator.
+   *  @param  result A bidirectional iterator.
+   *  @return   result - (first - last)
+   *
+   *  The function has the same effect as move, but starts at the end of the
+   *  range and works its way to the start, returning the start of the result.
+   *  This inline function will boil down to a call to @c memmove whenever
+   *  possible.  Failing that, if random access iterators are passed, then the
+   *  loop count will be known (and therefore a candidate for compiler
+   *  optimizations such as unrolling).
+   *
+   *  Result may not be in the range [first,last).  Use move instead.  Note
+   *  that the start of the output range may overlap [first,last).
+  */
+  template<typename _BI1, typename _BI2>
+    inline _BI2
+    move_backward(_BI1 __first, _BI1 __last, _BI2 __result)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_BidirectionalIteratorConcept<_BI1>)
+      __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<_BI2>)
+      __glibcxx_function_requires(_ConvertibleConcept<
+	    typename iterator_traits<_BI1>::value_type,
+	    typename iterator_traits<_BI2>::value_type>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      return _BI2(std::__copy_move_backward_a<false>
+		  (std::__niter_base<_BI1>::__b(__first),
+		   std::__niter_base<_BI1>::__b(__last),
+		   std::__niter_base<_BI2>::__b(__result)));
+    }
+#endif
 
   template<typename _ForwardIterator, typename _Tp>
     inline typename

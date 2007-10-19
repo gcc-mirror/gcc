@@ -1,3 +1,30 @@
+2007-10-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (struct __cm_assign,
+	struct __copy_move, struct __copy_move_backward, move,
+	move_backward): Add.
+	(struct __copy, struct __copy_backward): Remove.
+	(__copy_aux, __copy_backward_aux): Rename to...
+	(__copy_move_a, __copy_move_backward_a): ... this, and
+	adjust calls.
+	(copy, copy_backward): Adjust calls.
+	* include/bits/streambuf_iterator.h (__copy_aux): Rename
+	to ...
+	(__copy_move_a): ... this; add bool template parameter.
+	* include/std/streambuf: Adjust friend declarations.
+	* testsuite/util/testsuite_iterators.h
+	(WritableObject<>::operator=(U&&)): Add.
+	* testsuite/25_algorithms/move/1.cc: New.
+	* testsuite/25_algorithms/move/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/move/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/1.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
 2007-10-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* testsuite/tr1/5_numerical_facilities/special_functions/
