@@ -5665,7 +5665,7 @@ build_array_type (tree elt_type, tree index_type)
   hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
   t = type_hash_canon (hashcode, t);
 
-  if (!COMPLETE_TYPE_P (t))
+  if (!COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (t))
     layout_type (t);
 
   if (TYPE_CANONICAL (t) == t)

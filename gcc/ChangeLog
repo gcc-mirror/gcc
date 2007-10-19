@@ -1,3 +1,9 @@
+2007-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32921
+	* tree.c (build_array_type): Do not re-layout unbound array
+	types.
+
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* config/mips/mips.c (mips_canonicalize_comparison):  Check
