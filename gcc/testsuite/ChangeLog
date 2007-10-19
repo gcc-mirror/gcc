@@ -1,3 +1,8 @@
+2007-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/33544
+	* gfortran.dg/transfer_check_1.f90: Adjust options.
+
 2007-10-19  Richard Guenther  <rguenther@suse.de>
 
 	Revert
