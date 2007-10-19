@@ -2357,7 +2357,6 @@ mips_call_tls_get_addr (rtx sym, enum mips_symbol_type type, rtx v0)
   tga = gen_const_mem (Pmode, mips_tls_symbol);
   insn = emit_call_insn (gen_call_value (v0, tga, const0_rtx, const0_rtx));
   CONST_OR_PURE_CALL_P (insn) = 1;
-  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), v0);
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), a0);
   insn = get_insns ();
 

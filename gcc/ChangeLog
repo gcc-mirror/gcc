@@ -1,5 +1,10 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_call_tls_get_addr): Don't claim that
+	the call uses the incoming value of $2.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_call_tls_get_addr): Use gen_const_mem
 	rather then gen_rtx_MEM.
 	(mips_setup_incoming_varargs): Use gen_frame_mem rather than
