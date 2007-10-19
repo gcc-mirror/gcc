@@ -5223,6 +5223,30 @@ build_mips16_function_stub (void)
   switch_to_section (function_section (current_function_decl));
 }
 
+/* The current function is a MIPS16 function that returns a value in an FPR.
+   Copy the return value from its soft-float to its hard-float location.
+   libgcc2 has special non-MIPS16 helper functions for each case.  */
+
+static void
+mips16_copy_fpr_return_value (void)
+{
+  rtx fn, insn, arg, call;
+  tree id, return_type;
+  enum machine_mode return_mode;
+
+  return_type = DECL_RESULT (current_function_decl);
+  return_mode = DECL_MODE (return_type);
+
+  id = get_identifier (ACONCAT (("__mips16_ret_",
+				 mips16_call_stub_mode_suffix (return_mode),
+				 NULL)));
+  fn = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
+  arg = gen_rtx_REG (return_mode, GP_RETURN);
+  call = gen_call_value_internal (arg, fn, const0_rtx);
+  insn = emit_call_insn (call);
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), arg);
+}
+
 /* Build a call stub for a mips16 call.  A stub is needed if we are
    passing any floating point values which should go into the floating
    point registers.  If we are, and the call turns out to be to a
@@ -7087,6 +7111,29 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
 }
 #endif
 
+/* Return the FOO in the name of the ".mdebug.FOO" section associated
+   with the current ABI.  */
+
+static const char *
+mips_mdebug_abi_name (void)
+{
+  switch (mips_abi)
+    {
+    case ABI_32:
+      return "abi32";
+    case ABI_O64:
+      return "abiO64";
+    case ABI_N32:
+      return "abiN32";
+    case ABI_64:
+      return "abiN64";
+    case ABI_EABI:
+      return TARGET_64BIT ? "eabi64" : "eabi32";
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Implement TARGET_ASM_FILE_START.  */
 
 static void
@@ -7103,24 +7150,12 @@ mips_file_start (void)
 	 debug these binaries.  See the function mips_gdbarch_init() in
 	 gdb/mips-tdep.c.  This is unnecessary for the IRIX 5/6 ABIs and
 	 causes unnecessary IRIX 6 ld warnings.  */
-      const char * abi_string = NULL;
-
-      switch (mips_abi)
-	{
-	case ABI_32:   abi_string = "abi32"; break;
-	case ABI_N32:  abi_string = "abiN32"; break;
-	case ABI_64:   abi_string = "abi64"; break;
-	case ABI_O64:  abi_string = "abiO64"; break;
-	case ABI_EABI: abi_string = TARGET_64BIT ? "eabi64" : "eabi32"; break;
-	default:
-	  gcc_unreachable ();
-	}
       /* Note - we use fprintf directly rather than calling switch_to_section
 	 because in this way we can avoid creating an allocated section.  We
 	 do not want this section to take up any space in the running
 	 executable.  */
       fprintf (asm_out_file, "\t.section .mdebug.%s\n\t.previous\n",
-	       abi_string);
+	       mips_mdebug_abi_name ());
 
       /* There is no ELF header flag to distinguish long32 forms of the
 	 EABI from long64 forms.  Emit a special section to help tools
@@ -8548,29 +8583,7 @@ mips_expand_epilogue (int sibcall_p)
   /* In mips16 mode, if the return value should go into a floating-point
      register, we need to call a helper routine to copy it over.  */
   if (mips16_cfun_returns_in_fpr_p ())
-    {
-      char *name;
-      rtx func;
-      rtx insn;
-      rtx retval;
-      rtx call;
-      tree id;
-      tree return_type;
-      enum machine_mode return_mode;
-
-      return_type = DECL_RESULT (current_function_decl);
-      return_mode = DECL_MODE (return_type);
-
-      name = ACONCAT (("__mips16_ret_",
-		       mips16_call_stub_mode_suffix (return_mode),
-		       NULL));
-      id = get_identifier (name);
-      func = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
-      retval = gen_rtx_REG (return_mode, GP_RETURN);
-      call = gen_call_value_internal (retval, func, const0_rtx);
-      insn = emit_call_insn (call);
-      use_reg (&CALL_INSN_FUNCTION_USAGE (insn), retval);
-    }
+    mips16_copy_fpr_return_value ();
 
   /* Split the frame into two.  STEP1 is the amount of stack we should
      deallocate before restoring the registers.  STEP2 is the amount we
@@ -8718,6 +8731,80 @@ mips_can_use_return_insn (void)
   return cfun->machine->frame.total_size == 0;
 }
 
+/* Return true if register REGNO can store a value of mode MODE.
+   The result of this function is cached in mips_hard_regno_mode_ok.  */
+
+static bool
+mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
+{
+  unsigned int size;
+  enum mode_class class;
+
+  if (mode == CCV2mode)
+    return (ISA_HAS_8CC
+	    && ST_REG_P (regno)
+	    && (regno - ST_REG_FIRST) % 2 == 0);
+
+  if (mode == CCV4mode)
+    return (ISA_HAS_8CC
+	    && ST_REG_P (regno)
+	    && (regno - ST_REG_FIRST) % 4 == 0);
+
+  if (mode == CCmode)
+    {
+      if (!ISA_HAS_8CC)
+	return regno == FPSW_REGNUM;
+
+      return (ST_REG_P (regno)
+	      || GP_REG_P (regno)
+	      || FP_REG_P (regno));
+    }
+
+  size = GET_MODE_SIZE (mode);
+  class = GET_MODE_CLASS (mode);
+
+  if (GP_REG_P (regno))
+    return ((regno - GP_REG_FIRST) & 1) == 0 || size <= UNITS_PER_WORD;
+
+  if (FP_REG_P (regno)
+      && (((regno - FP_REG_FIRST) % MAX_FPRS_PER_FMT) == 0
+	  || (MIN_FPRS_PER_FMT == 1 && size <= UNITS_PER_FPREG)))
+    {
+      /* Allow TFmode for CCmode reloads.  */
+      if (mode == TFmode && ISA_HAS_8CC)
+	return true;
+
+      if (class == MODE_FLOAT
+	  || class == MODE_COMPLEX_FLOAT
+	  || class == MODE_VECTOR_FLOAT)
+	return size <= UNITS_PER_FPVALUE;
+
+      /* Allow integer modes that fit into a single register.  We need
+	 to put integers into FPRs when using instructions like CVT
+	 and TRUNC.  There's no point allowing sizes smaller than a word,
+	 because the FPU has no appropriate load/store instructions.  */
+      if (class == MODE_INT)
+	return size >= MIN_UNITS_PER_WORD && size <= UNITS_PER_FPREG;
+    }
+
+  if (ACC_REG_P (regno)
+      && (INTEGRAL_MODE_P (mode) || ALL_FIXED_POINT_MODE_P (mode)))
+    {
+      if (size <= UNITS_PER_WORD)
+	return true;
+
+      if (size <= UNITS_PER_WORD * 2)
+	return (DSP_ACC_REG_P (regno)
+		? ((regno - DSP_ACC_REG_FIRST) & 1) == 0
+		: regno == MD_REG_FIRST);
+    }
+
+  if (ALL_COP_REG_P (regno))
+    return class == MODE_INT && size <= UNITS_PER_WORD;
+
+  return false;
+}
+
 /* Implement HARD_REGNO_NREGS.  The size of FP registers is controlled
    by UNITS_PER_FPREG.  The size of FP status registers is always 4, because
    they only hold condition code modes, and CCmode is always considered to
@@ -10525,6 +10612,41 @@ mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
 				       const1_rtx, const0_rtx);
 }
 
+/* EXP is a CALL_EXPR that calls the function described by BDESC.
+   Expand the call and return an rtx for its return value.
+   TARGET, if nonnull, suggests a good place to put this value.  */
+
+static rtx
+mips_expand_builtin_1 (const struct builtin_description *bdesc,
+		       tree exp, rtx target)
+{
+  switch (bdesc->builtin_type)
+    {
+    case MIPS_BUILTIN_DIRECT:
+      return mips_expand_builtin_direct (bdesc->icode, target, exp, true);
+
+    case MIPS_BUILTIN_DIRECT_NO_TARGET:
+      return mips_expand_builtin_direct (bdesc->icode, target, exp, false);
+
+    case MIPS_BUILTIN_MOVT:
+    case MIPS_BUILTIN_MOVF:
+      return mips_expand_builtin_movtf (bdesc->builtin_type, bdesc->icode,
+					bdesc->cond, target, exp);
+
+    case MIPS_BUILTIN_CMP_ANY:
+    case MIPS_BUILTIN_CMP_ALL:
+    case MIPS_BUILTIN_CMP_UPPER:
+    case MIPS_BUILTIN_CMP_LOWER:
+    case MIPS_BUILTIN_CMP_SINGLE:
+      return mips_expand_builtin_compare (bdesc->builtin_type, bdesc->icode,
+					  bdesc->cond, target, exp);
+
+    case MIPS_BUILTIN_BPOSGE32:
+      return mips_expand_builtin_bposge (bdesc->builtin_type, target);
+    }
+  gcc_unreachable ();
+}
+
 /* Expand builtin functions.  This is called from TARGET_EXPAND_BUILTIN.  */
 
 static rtx
@@ -10532,11 +10654,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		     enum machine_mode mode ATTRIBUTE_UNUSED,
 		     int ignore ATTRIBUTE_UNUSED)
 {
-  enum insn_code icode;
-  enum mips_builtin_type type;
   tree fndecl;
   unsigned int fcode;
-  const struct builtin_description *bdesc;
   const struct bdesc_map *m;
 
   fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -10549,48 +10668,13 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return const0_rtx;
     }
 
-  bdesc = NULL;
   for (m = bdesc_arrays; m < &bdesc_arrays[ARRAY_SIZE (bdesc_arrays)]; m++)
     {
       if (fcode < m->size)
-	{
-	  bdesc = m->bdesc;
-	  icode = bdesc[fcode].icode;
-	  type = bdesc[fcode].builtin_type;
-	  break;
-	}
+	return mips_expand_builtin_1 (m->bdesc + fcode, exp, target);
       fcode -= m->size;
     }
-  if (bdesc == NULL)
-    return 0;
-
-  switch (type)
-    {
-    case MIPS_BUILTIN_DIRECT:
-      return mips_expand_builtin_direct (icode, target, exp, true);
-
-    case MIPS_BUILTIN_DIRECT_NO_TARGET:
-      return mips_expand_builtin_direct (icode, target, exp, false);
-
-    case MIPS_BUILTIN_MOVT:
-    case MIPS_BUILTIN_MOVF:
-      return mips_expand_builtin_movtf (type, icode, bdesc[fcode].cond,
-					target, exp);
-
-    case MIPS_BUILTIN_CMP_ANY:
-    case MIPS_BUILTIN_CMP_ALL:
-    case MIPS_BUILTIN_CMP_UPPER:
-    case MIPS_BUILTIN_CMP_LOWER:
-    case MIPS_BUILTIN_CMP_SINGLE:
-      return mips_expand_builtin_compare (type, icode, bdesc[fcode].cond,
-					  target, exp);
-
-    case MIPS_BUILTIN_BPOSGE32:
-      return mips_expand_builtin_bposge (type, target);
-
-    default:
-      return 0;
-    }
+  gcc_unreachable ();
 }
 
 /* An entry in the mips16 constant pool.  VALUE is the pool constant,
@@ -12071,76 +12155,11 @@ override_options (void)
       mips_dwarf_regno[i + TARGET_BIG_ENDIAN] = i + 1;
     }
 
-  /* Set up array giving whether a given register can hold a given mode.  */
-
-  for (mode = VOIDmode;
-       mode != MAX_MACHINE_MODE;
-       mode = (enum machine_mode) ((int)mode + 1))
-    {
-      register int size		     = GET_MODE_SIZE (mode);
-      register enum mode_class class = GET_MODE_CLASS (mode);
-
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	{
-	  register int temp;
-
-	  if (mode == CCV2mode)
-	    temp = (ISA_HAS_8CC
-		    && ST_REG_P (regno)
-		    && (regno - ST_REG_FIRST) % 2 == 0);
-
-	  else if (mode == CCV4mode)
-	    temp = (ISA_HAS_8CC
-		    && ST_REG_P (regno)
-		    && (regno - ST_REG_FIRST) % 4 == 0);
-
-	  else if (mode == CCmode)
-	    {
-	      if (! ISA_HAS_8CC)
-		temp = (regno == FPSW_REGNUM);
-	      else
-		temp = (ST_REG_P (regno) || GP_REG_P (regno)
-			|| FP_REG_P (regno));
-	    }
-
-	  else if (GP_REG_P (regno))
-	    temp = ((regno & 1) == 0 || size <= UNITS_PER_WORD);
-
-	  else if (FP_REG_P (regno))
-	    temp = ((((regno % MAX_FPRS_PER_FMT) == 0)
-		     || (MIN_FPRS_PER_FMT == 1
-			 && size <= UNITS_PER_FPREG))
-		    && (((class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT
-			  || class == MODE_VECTOR_FLOAT)
-			 && size <= UNITS_PER_FPVALUE)
-			/* Allow integer modes that fit into a single
-			   register.  We need to put integers into FPRs
-			   when using instructions like cvt and trunc.
-			   We can't allow sizes smaller than a word,
-			   the FPU has no appropriate load/store
-			   instructions for those.  */
-			|| (class == MODE_INT
-			    && size >= MIN_UNITS_PER_WORD
-			    && size <= UNITS_PER_FPREG)
-			/* Allow TFmode for CCmode reloads.  */
-			|| (ISA_HAS_8CC && mode == TFmode)));
-
-          else if (ACC_REG_P (regno))
-	    temp = ((INTEGRAL_MODE_P (mode) || ALL_FIXED_POINT_MODE_P (mode))
-		    && size <= UNITS_PER_WORD * 2
-		    && (size <= UNITS_PER_WORD
-			|| regno == MD_REG_FIRST
-			|| (DSP_ACC_REG_P (regno)
-			    && ((regno - DSP_ACC_REG_FIRST) & 1) == 0)));
-
-	  else if (ALL_COP_REG_P (regno))
-	    temp = (class == MODE_INT && size <= UNITS_PER_WORD);
-	  else
-	    temp = 0;
-
-	  mips_hard_regno_mode_ok[(int)mode][regno] = temp;
-	}
-    }
+  /* Set up mips_hard_regno_mode_ok.  */
+  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
+    for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+      mips_hard_regno_mode_ok[(int)mode][regno]
+	= mips_hard_regno_mode_ok_p (regno, mode);
 
   /* Save GPR registers in word_mode sized hunks.  word_mode hasn't been
      initialized yet, so we can't use that here.  */

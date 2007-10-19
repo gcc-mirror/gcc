@@ -1,5 +1,18 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips16_copy_fpr_return_value): New function,
+	split out from...
+	(mips_expand_epilogue): ...here.
+	(mips_mdebug_abi_name): New function, split out from...
+	(mips_file_start): ...here.
+	(mips_hard_regno_mode_ok_p): New function, split out from...
+	(override_options): ...here.
+	(mips_expand_builtin_1): New function, split out from...
+	(mips_expand_buitin): ...here.  Abort if we don't recognize
+	the function.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (build_mips16_function_stub): Load the
 	target address into $1 before transfering the arguments.
 	Don't use ".set noreorder".
