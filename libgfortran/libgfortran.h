@@ -349,7 +349,7 @@ typedef struct
   int separator_len;
   const char *separator;
 
-  int use_stderr, all_unbuffered, default_recl;
+  int use_stderr, all_unbuffered, unbuffered_preconnected, default_recl;
   int fpe, dump_core, backtrace;
 }
 options_t;
