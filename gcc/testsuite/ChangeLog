@@ -1,5 +1,9 @@
 2007-10-19  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.c-torture/execute/20071018-1.c: New testcase.
+
+2007-10-19  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/32921
 	* gfortran.dg/pr32921.f: New testcase.
 
