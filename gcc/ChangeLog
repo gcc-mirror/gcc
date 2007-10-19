@@ -1,5 +1,12 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (build_mips16_function_stub): Load the
+	target address into $1 before transfering the arguments.
+	Don't use ".set noreorder".
+	(build_mips16_call_stub): Likewise.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_output_32bit_xfer): New function.
 	(mips_output_64bit_xfer): Likewise.
 	(mips16_fp_args): Rename to...

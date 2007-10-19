@@ -5200,26 +5200,18 @@ build_mips16_function_stub (void)
   assemble_name (asm_out_file, stubname);
   fputs (":\n", asm_out_file);
 
-  /* We don't want the assembler to insert any nops here.  */
-  fprintf (asm_out_file, "\t.set\tnoreorder\n");
-
-  mips_output_args_xfer (current_function_args_info.fp_code, 'f');
-
+  /* Load the address of the MIPS16 function into $at.  Do this first so
+     that targets with coprocessor interlocks can use an MFC1 to fill the
+     delay slot.  */
   fprintf (asm_out_file, "\t.set\tnoat\n");
   fprintf (asm_out_file, "\tla\t%s,", reg_names[GP_REG_FIRST + 1]);
   assemble_name (asm_out_file, fnname);
   fprintf (asm_out_file, "\n");
+
+  mips_output_args_xfer (current_function_args_info.fp_code, 'f');
+
   fprintf (asm_out_file, "\tjr\t%s\n", reg_names[GP_REG_FIRST + 1]);
   fprintf (asm_out_file, "\t.set\tat\n");
-
-  /* Unfortunately, we can't fill the jump delay slot.  We can't fill
-     with one of the mfc1 instructions, because the result is not
-     available for one instruction, so if the very first instruction
-     in the function refers to the register, it will see the wrong
-     value.  */
-  fprintf (asm_out_file, "\tnop\n");
-
-  fprintf (asm_out_file, "\t.set\treorder\n");
 
   if (!FUNCTION_NAME_ALREADY_DECLARED)
     {
@@ -5418,32 +5410,29 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	 do it, since we can't generate 32-bit code during a 16-bit
 	 compilation.  */
 
-      /* We don't want the assembler to insert any nops here.  */
-      fprintf (asm_out_file, "\t.set\tnoreorder\n");
+      if (! fpret)
+	{
+	  /* Load the address of the MIPS16 function into $at.  Do this
+	     first so that targets with coprocessor interlocks can use
+	     an MFC1 to fill the delay slot.  */
+	  fprintf (asm_out_file, "\t.set\tnoat\n");
+	  fprintf (asm_out_file, "\tla\t%s,%s\n", reg_names[GP_REG_FIRST + 1],
+		   fnname);
+	}
 
       mips_output_args_xfer (fp_code, 't');
 
       if (! fpret)
 	{
-	  fprintf (asm_out_file, "\t.set\tnoat\n");
-	  fprintf (asm_out_file, "\tla\t%s,%s\n", reg_names[GP_REG_FIRST + 1],
-		   fnname);
+	  /* Jump to the previously-loaded address.  */
 	  fprintf (asm_out_file, "\tjr\t%s\n", reg_names[GP_REG_FIRST + 1]);
 	  fprintf (asm_out_file, "\t.set\tat\n");
-	  /* Unfortunately, we can't fill the jump delay slot.  We
-	     can't fill with one of the mtc1 instructions, because the
-	     result is not available for one instruction, so if the
-	     very first instruction in the function refers to the
-	     register, it will see the wrong value.  */
-	  fprintf (asm_out_file, "\tnop\n");
 	}
       else
 	{
 	  fprintf (asm_out_file, "\tmove\t%s,%s\n",
 		   reg_names[GP_REG_FIRST + 18], reg_names[GP_REG_FIRST + 31]);
 	  fprintf (asm_out_file, "\tjal\t%s\n", fnname);
-	  /* As above, we can't fill the delay slot.  */
-	  fprintf (asm_out_file, "\tnop\n");
 	  switch (GET_MODE (retval))
 	    {
 	    case SCmode:
@@ -5480,11 +5469,7 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	      gcc_unreachable ();
 	    }
 	  fprintf (asm_out_file, "\tj\t%s\n", reg_names[GP_REG_FIRST + 18]);
-	  /* As above, we can't fill the delay slot.  */
-	  fprintf (asm_out_file, "\tnop\n");
 	}
-
-      fprintf (asm_out_file, "\t.set\treorder\n");
 
 #ifdef ASM_DECLARE_FUNCTION_SIZE
       ASM_DECLARE_FUNCTION_SIZE (asm_out_file, stubname, stubdecl);
