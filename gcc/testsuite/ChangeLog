@@ -1,3 +1,10 @@
+2007-10-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/default_format_denormal_2.f90: xfail on FreeBSD.
+	* gfortran.dg/large_real_kind_2.F90: ditto.
+	* gfortran.dg/default_format_2.f90: ditto.
+	* gfortran.dg/default_format_denormal_1.f90: ditto.
+
 2007-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33816

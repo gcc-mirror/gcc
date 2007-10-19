@@ -1,5 +1,5 @@
 ! { dg-require-effective-target fortran_large_real }
-! { dg-do run { xfail powerpc*-apple-darwin* } }
+! { dg-do run { xfail powerpc*-apple-darwin* *-*-freebsd* } }
 ! Test XFAILed on powerpc-darwin because the system's printf() lacks
 ! proper support for long doubles.
 !
