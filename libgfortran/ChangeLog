@@ -1,3 +1,11 @@
+2007-10-19  Ben Elliston  <bje@au.ibm.com>
+
+	* intrinsics/signal.c (alarm_sub_i4): Mark conditionally unused
+	parameters with __attribute__ ((unused)).
+	(alarm_sub_i8): Likewise.
+	(alarm_sub_int_i4): Likewise.
+	(alarm_sub_int_i8): Likewise.
+
 2007-10-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
