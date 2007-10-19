@@ -136,7 +136,9 @@ extern void alarm_sub_i4 (int *, void (*)(int), GFC_INTEGER_4 *);
 iexport_proto(alarm_sub_i4);
 
 void
-alarm_sub_i4 (int *seconds, void (*handler)(int), GFC_INTEGER_4 *status)
+alarm_sub_i4 (int * seconds __attribute__ ((unused)),
+	      void (*handler)(int) __attribute__ ((unused)),
+	      GFC_INTEGER_4 *status)
 {
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
@@ -164,7 +166,9 @@ extern void alarm_sub_i8 (int *, void (*)(int), GFC_INTEGER_8 *);
 iexport_proto(alarm_sub_i8);
 
 void
-alarm_sub_i8 (int *seconds, void (*handler)(int), GFC_INTEGER_8 *status)
+alarm_sub_i8 (int *seconds __attribute__ ((unused)),
+	      void (*handler)(int) __attribute__ ((unused)),
+	      GFC_INTEGER_8 *status)
 {
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
@@ -193,7 +197,9 @@ extern void alarm_sub_int_i4 (int *, int *, GFC_INTEGER_4 *);
 iexport_proto(alarm_sub_int_i4);
 
 void
-alarm_sub_int_i4 (int *seconds, int *handler, GFC_INTEGER_4 *status)
+alarm_sub_int_i4 (int *seconds __attribute__ ((unused)),
+		  int *handler __attribute__ ((unused)),
+		  GFC_INTEGER_4 *status)
 {
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
@@ -221,7 +227,9 @@ extern void alarm_sub_int_i8 (int *, int *, GFC_INTEGER_8 *);
 iexport_proto(alarm_sub_int_i8);
 
 void
-alarm_sub_int_i8 (int *seconds, int *handler, GFC_INTEGER_8 *status)
+alarm_sub_int_i8 (int *seconds __attribute__ ((unused)),
+		  int *handler __attribute__ ((unused)),
+		  GFC_INTEGER_8 *status)
 {
 #if defined (SIGALRM) && defined (HAVE_ALARM) && defined (HAVE_SIGNAL)
   if (status != NULL)
