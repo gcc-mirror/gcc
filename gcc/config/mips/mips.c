@@ -8805,46 +8805,47 @@ mips_hard_regno_mode_ok_p (unsigned int regno, enum machine_mode mode)
   return false;
 }
 
-/* Implement HARD_REGNO_NREGS.  The size of FP registers is controlled
-   by UNITS_PER_FPREG.  The size of FP status registers is always 4, because
-   they only hold condition code modes, and CCmode is always considered to
-   be 4 bytes wide.  All other registers are word sized.  */
+/* Implement HARD_REGNO_NREGS.  */
 
 unsigned int
 mips_hard_regno_nregs (int regno, enum machine_mode mode)
 {
   if (ST_REG_P (regno))
-    return ((GET_MODE_SIZE (mode) + 3) / 4);
-  else if (! FP_REG_P (regno))
-    return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
-  else
-    return ((GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG);
+    /* The size of FP status registers is always 4, because they only hold
+       CCmode values, and CCmode is always considered to be 4 bytes wide.  */
+    return (GET_MODE_SIZE (mode) + 3) / 4;
+
+  if (FP_REG_P (regno))
+    return (GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG;
+
+  /* All other registers are word-sized.  */
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
-/* Implement CLASS_MAX_NREGS.
-
-   - UNITS_PER_FPREG controls the number of registers needed by FP_REGS.
-
-   - ST_REGS are always hold CCmode values, and CCmode values are
-     considered to be 4 bytes wide.
-
-   All other register classes are covered by UNITS_PER_WORD.  Note that
-   this is true even for unions of integer and float registers when the
-   latter are smaller than the former.  The only supported combination
-   in which case this occurs is -mgp64 -msingle-float, which has 64-bit
-   words but 32-bit float registers.  A word-based calculation is correct
-   in that case since -msingle-float disallows multi-FPR values.  */
+/* Implement CLASS_MAX_NREGS, taking the maximum of the cases
+   in mips_hard_regno_nregs.  */
 
 int
-mips_class_max_nregs (enum reg_class class ATTRIBUTE_UNUSED,
-		      enum machine_mode mode)
+mips_class_max_nregs (enum reg_class class, enum machine_mode mode)
 {
-  if (class == ST_REGS)
-    return (GET_MODE_SIZE (mode) + 3) / 4;
-  else if (class == FP_REGS)
-    return (GET_MODE_SIZE (mode) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG;
-  else
-    return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int size;
+  HARD_REG_SET left;
+
+  size = 0x8000;
+  COPY_HARD_REG_SET (left, reg_class_contents[(int) class]);
+  if (hard_reg_set_intersect_p (left, reg_class_contents[(int) ST_REGS]))
+    {
+      size = MIN (size, 4);
+      AND_COMPL_HARD_REG_SET (left, reg_class_contents[(int) ST_REGS]);
+    }
+  if (hard_reg_set_intersect_p (left, reg_class_contents[(int) FP_REGS]))
+    {
+      size = MIN (size, UNITS_PER_FPREG);
+      AND_COMPL_HARD_REG_SET (left, reg_class_contents[(int) FP_REGS]);
+    }
+  if (!hard_reg_set_empty_p (left))
+    size = MIN (size, UNITS_PER_WORD);
+  return (GET_MODE_SIZE (mode) + size - 1) / size;
 }
 
 /* Return true if registers of class CLASS cannot change from mode FROM

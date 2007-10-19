@@ -1,5 +1,13 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_hard_regno_nregs): Put the UNITS_PER_WORD
+	case last.
+	(mips_class_max_nregs): Calculate the smallest consituent register
+	size and use that to determine an upper bound on the number of
+	registers.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips16_copy_fpr_return_value): New function,
 	split out from...
 	(mips_expand_epilogue): ...here.
