@@ -1,5 +1,13 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_canonicalize_comparison):  Check
+	mips_relational_operand_ok_p before trying to rewrite the test.
+	Only calculate PLUS_ONE if needed.
+	(mips_emit_int_relational): Don't call mips_relational_operand_ok_p
+	here.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips16e_build_save_restore): Fix *OFFSET_PTR
 	calculation.
 
