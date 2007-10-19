@@ -1,3 +1,8 @@
+2007-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/32921
+	* gfortran.dg/pr32921.f: New testcase.
+
 2007-10-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* g++.old-deja/g++.robertl/eb130.C: Adjust include paths.
