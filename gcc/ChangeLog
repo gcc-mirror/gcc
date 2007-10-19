@@ -1,5 +1,19 @@
 2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_output_32bit_xfer): New function.
+	(mips_output_64bit_xfer): Likewise.
+	(mips16_fp_args): Rename to...
+	(mips_output_args_xfer): ...this and replace the FROM_FP_P argument
+	with a DIRECTION argument.  Use mips_output_32bit_xfer and
+	mips_output_64bit_xfer.
+	(build_mips16_function_stub): Update accordingly.
+	(mips16_fpret_double): Delete.
+	(build_mips16_call_stub): Update after above changes.
+	Use mips_output_32bit_xfer.  Use mips_output_64bit_xfer instead
+	of mips16_fpret_double.  Use GP_REG_RETURN.
+
+2007-10-19  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips16_fp_args): Remove the FILE argument and
 	use asm_out_file instead.
 	(build_mips16_function_stub): Likewise.
