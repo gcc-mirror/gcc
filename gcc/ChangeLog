@@ -1,3 +1,17 @@
+2007-10-19  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/23820
+	PR tree-optimization/24309
+	PR tree-optimization/33766
+	* testsuite/gcc.dg/tree-ssa/pr23820.c: New.
+	* testsuite/gcc.dg/tree-ssa/pr24309.c: New.
+	* testsuite/gcc.dg/tree-ssa/pr33766.c: New.
+	* testsuite/gcc.dg/tree-ssa/ltrans-3.c: XFAILed.
+	* tree-loop-linear.c (perfect_loop_nest_depth): New.
+	(linear_transform_loops): Use perfect_loop_nest_depth.
+	* lambda-code.c (perfect_nest_p): Outer loops in perfect nests 
+	should have a single condition: their exit.
+
 2007-10-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/33816
