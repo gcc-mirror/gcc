@@ -3678,40 +3678,38 @@ static bool
 mips_canonicalize_comparison (enum rtx_code *code, rtx *cmp1,
 			      enum machine_mode mode)
 {
-  HOST_WIDE_INT original, plus_one;
+  HOST_WIDE_INT plus_one;
 
-  if (GET_CODE (*cmp1) != CONST_INT)
-    return false;
+  if (mips_relational_operand_ok_p (*code, *cmp1))
+    return true;
 
-  original = INTVAL (*cmp1);
-  plus_one = trunc_int_for_mode ((unsigned HOST_WIDE_INT) original + 1, mode);
+  if (GET_CODE (*cmp1) == CONST_INT)
+    switch (*code)
+      {
+      case LE:
+	plus_one = trunc_int_for_mode (UINTVAL (*cmp1) + 1, mode);
+	if (INTVAL (*cmp1) < plus_one)
+	  {
+	    *code = LT;
+	    *cmp1 = force_reg (mode, GEN_INT (plus_one));
+	    return true;
+	  }
+	break;
 
-  switch (*code)
-    {
-    case LE:
-      if (original < plus_one)
-	{
-	  *code = LT;
-	  *cmp1 = force_reg (mode, GEN_INT (plus_one));
-	  return true;
-	}
-      break;
+      case LEU:
+	plus_one = trunc_int_for_mode (UINTVAL (*cmp1) + 1, mode);
+	if (plus_one != 0)
+	  {
+	    *code = LTU;
+	    *cmp1 = force_reg (mode, GEN_INT (plus_one));
+	    return true;
+	  }
+	break;
 
-    case LEU:
-      if (plus_one != 0)
-	{
-	  *code = LTU;
-	  *cmp1 = force_reg (mode, GEN_INT (plus_one));
-	  return true;
-	}
-      break;
-
-    default:
-      return false;
-   }
-
+      default:
+	break;
+      }
   return false;
-
 }
 
 /* Compare CMP0 and CMP1 using relational operator CODE and store the
@@ -3723,19 +3721,15 @@ static void
 mips_emit_int_relational (enum rtx_code code, bool *invert_ptr,
 			  rtx target, rtx cmp0, rtx cmp1)
 {
-  /* First see if there is a MIPS instruction that can do this operation
-     with CMP1 in its current form. If not, try to canonicalize the
-     comparison to LT. If that fails, try doing the same for the
-     inverse operation.  If that also fails, force CMP1 into a register
-     and try again.  */
-  if (mips_relational_operand_ok_p (code, cmp1))
-    mips_emit_binary (code, target, cmp0, cmp1);
-  else if (mips_canonicalize_comparison (&code, &cmp1, GET_MODE (target)))
+  /* First see if there is a MIPS instruction that can do this operation.
+     If not, try doing the same for the inverse operation.  If that also
+     fails, force CMP1 into a register and try again.  */
+  if (mips_canonicalize_comparison (&code, &cmp1, GET_MODE (target)))
     mips_emit_binary (code, target, cmp0, cmp1);
   else
     {
       enum rtx_code inv_code = reverse_condition (code);
-      if (!mips_relational_operand_ok_p (inv_code, cmp1))
+      if (!mips_canonicalize_comparison (&inv_code, &cmp1, GET_MODE (target)))
 	{
 	  cmp1 = force_reg (GET_MODE (cmp0), cmp1);
 	  mips_emit_int_relational (code, invert_ptr, target, cmp0, cmp1);
