@@ -1,3 +1,9 @@
+2007-10-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/33816
+	PR middle-end/32921
+	* gfortran.dg/pr32921.f: New testcase.
+
 2007-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/33544

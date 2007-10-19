@@ -1,5 +1,15 @@
 2007-10-19  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/33816
+	PR middle-end/32921
+	* stor-layout.c (layout_type): Assert that aggregates do not
+	have their alias sets set.
+	* alias.c (get_alias_set): Return alias set zero for incomplete
+	types, return the alias set of the element for incomplete array
+	types, but do not remember these.
+
+2007-10-19  Richard Guenther  <rguenther@suse.de>
+
 	Revert
 	2007-10-19  Richard Guenther  <rguenther@suse.de>
 

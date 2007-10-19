@@ -1886,13 +1886,10 @@ layout_type (tree type)
       && TREE_CODE (type) != QUAL_UNION_TYPE)
     finalize_type_size (type);
 
-  /* If an alias set has been set for this aggregate when it was incomplete,
-     force it into alias set 0.
-     This is too conservative, but we cannot call record_component_aliases
-     here because some frontends still change the aggregates after
-     layout_type.  */
-  if (AGGREGATE_TYPE_P (type) && TYPE_ALIAS_SET_KNOWN_P (type))
-    TYPE_ALIAS_SET (type) = 0;
+  /* We should never see alias sets on incomplete aggregates.  And we
+     should not call layout_type on not incomplete aggregates.  */
+  if (AGGREGATE_TYPE_P (type))
+    gcc_assert (!TYPE_ALIAS_SET_KNOWN_P (type));
 }
 
 /* Create and return a type for signed integers of PRECISION bits.  */

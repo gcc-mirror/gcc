@@ -611,6 +611,18 @@ get_alias_set (tree t)
   if (TYPE_ALIAS_SET_KNOWN_P (t))
     return TYPE_ALIAS_SET (t);
 
+  /* We don't want to set TYPE_ALIAS_SET for incomplete types.  */
+  if (!COMPLETE_TYPE_P (t))
+    {
+      /* For arrays with unknown size the conservative answer is the
+	 alias set of the element type.  */
+      if (TREE_CODE (t) == ARRAY_TYPE)
+	return get_alias_set (TREE_TYPE (t));
+
+      /* But return zero as a conservative answer for incomplete types.  */
+      return 0;
+    }
+
   /* See if the language has special handling for this type.  */
   set = lang_hooks.get_alias_set (t);
   if (set != -1)
