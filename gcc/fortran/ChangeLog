@@ -1,3 +1,17 @@
+2007-10-20  Paul Thomas  <pault@gcc.gnu.org>
+	    FX Coudert <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31608
+	* trans-array.c (gfc_conv_expr_descriptor): For all except
+	indirect references, use gfc_trans_scalar_assign instead of
+	gfc_add_modify_expr.
+	* iresolve.c (check_charlen_present): Separate creation of cl
+	if necessary and add code to treat an EXPR_ARRAY.
+	(gfc_resolve_char_achar): New function.
+	(gfc_resolve_achar, gfc_resolve_char): Call it.
+	(gfc_resolve_transfer): If the MOLD expression does not have a
+	character length expression, get it from a constant length.
+
 2007-10-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/33544
