@@ -1,5 +1,11 @@
 2007-10-20  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_move.h (_GLIBCXX_MOVE): Wrap in parentheses.
+	* include/bits/stl_algobase.h (__niter_base<>): Pass iterators
+	by value, as everywhere else.
+
+2007-10-20  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/tr1_impl/random
 	(uniform_int<>::_M_call(_UniformRandomNumberGenerator&, result_type,
 	result_type, true_type)): Fix small thinko.
