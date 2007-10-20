@@ -210,7 +210,9 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { "atmega8hva",   ARCH_AVR4, "__AVR_ATmega8HVA__" },
   { "at90pwm1",     ARCH_AVR4, "__AVR_AT90PWM1__" },
   { "at90pwm2",     ARCH_AVR4, "__AVR_AT90PWM2__" },
+  { "at90pwm2b",    ARCH_AVR4, "__AVR_AT90PWM2B__" },
   { "at90pwm3",     ARCH_AVR4, "__AVR_AT90PWM3__" },
+  { "at90pwm3b",    ARCH_AVR4, "__AVR_AT90PWM3B__" },
     /* Enhanced, > 8K.  */
   { "avr5",         ARCH_AVR5, NULL },
   { "atmega16",     ARCH_AVR5, "__AVR_ATmega16__" },
