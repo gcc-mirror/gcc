@@ -62,13 +62,23 @@ gfc_get_string (const char *format, ...)
 static void
 check_charlen_present (gfc_expr *source)
 {
-  if (source->expr_type == EXPR_CONSTANT && source->ts.cl == NULL)
+  if (source->ts.cl == NULL)
     {
       source->ts.cl = gfc_get_charlen ();
       source->ts.cl->next = gfc_current_ns->cl_list;
       gfc_current_ns->cl_list = source->ts.cl;
+    }
+
+  if (source->expr_type == EXPR_CONSTANT)
+    {
       source->ts.cl->length = gfc_int_expr (source->value.character.length);
       source->rank = 0;
+    }
+  else if (source->expr_type == EXPR_ARRAY)
+    {
+      source->ts.cl->length =
+	gfc_int_expr (source->value.constructor->expr->value.character.length);
+      source->rank = 1;
     }
 }
 
@@ -132,8 +142,9 @@ gfc_resolve_access (gfc_expr *f, gfc_expr *name ATTRIBUTE_UNUSED,
 }
 
 
-void
-gfc_resolve_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind)
+static void
+gfc_resolve_char_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind,
+			const char *name)
 {
   f->ts.type = BT_CHARACTER;
   f->ts.kind = (kind == NULL)
@@ -143,9 +154,16 @@ gfc_resolve_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind)
   gfc_current_ns->cl_list = f->ts.cl;
   f->ts.cl->length = gfc_int_expr (1);
 
-  f->value.function.name = gfc_get_string ("__achar_%d_%c%d", f->ts.kind,
+  f->value.function.name = gfc_get_string (name, f->ts.kind,
 					   gfc_type_letter (x->ts.type),
 					   x->ts.kind);
+}
+
+
+void
+gfc_resolve_achar (gfc_expr *f, gfc_expr *x, gfc_expr *kind)
+{
+  gfc_resolve_char_achar (f, x, kind, "__achar_%d_%c%d");
 }
 
 
@@ -379,12 +397,7 @@ gfc_resolve_ceiling (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 void
 gfc_resolve_char (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 {
-  f->ts.type = BT_CHARACTER;
-  f->ts.kind = (kind == NULL)
-	     ? gfc_default_character_kind : mpz_get_si (kind->value.integer);
-  f->value.function.name
-    = gfc_get_string ("__char_%d_%c%d", f->ts.kind,
-		      gfc_type_letter (a->ts.type), a->ts.kind);
+  gfc_resolve_char_achar (f, a, kind, "__char_%d_%c%d");
 }
 
 
@@ -2269,6 +2282,9 @@ gfc_resolve_transfer (gfc_expr *f, gfc_expr *source ATTRIBUTE_UNUSED,
 {
   /* TODO: Make this do something meaningful.  */
   static char transfer0[] = "__transfer0", transfer1[] = "__transfer1";
+
+  if (mold->ts.type == BT_CHARACTER && !mold->ts.cl->length)
+    mold->ts.cl->length = gfc_int_expr (mold->value.character.length);
 
   f->ts = mold->ts;
 
