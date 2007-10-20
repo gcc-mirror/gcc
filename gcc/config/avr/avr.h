@@ -765,7 +765,9 @@ mmcu=*:-mmcu=%*}"
   mmcu=atmega48*|\
   mmcu=at90pwm1|\
   mmcu=at90pwm2|\
-  mmcu=at90pwm3:-m avr4}\
+  mmcu=at90pwm2b|\
+  mmcu=at90pwm3|\
+  mmcu=at90pwm3b:-m avr4}\
 %{mmcu=atmega16*|\
   mmcu=atmega32*|\
   mmcu=atmega406|\
@@ -862,7 +864,9 @@ mmcu=*:-mmcu=%*}"
 %{mmcu=atmega8535:crtm8535.o%s} \
 %{mmcu=at90pwm1:crt90pwm1.o%s} \
 %{mmcu=at90pwm2:crt90pwm2.o%s} \
+%{mmcu=at90pwm2b:crt90pwm2b.o%s} \
 %{mmcu=at90pwm3:crt90pwm3.o%s} \
+%{mmcu=at90pwm3b:crt90pwm3b.o%s} \
 %{mmcu=atmega16:crtm16.o%s} \
 %{mmcu=atmega161|mmcu=avr5:crtm161.o%s} \
 %{mmcu=atmega162:crtm162.o%s} \

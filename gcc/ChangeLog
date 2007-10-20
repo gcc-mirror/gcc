@@ -1,3 +1,10 @@
+2007-10-20  Eric B. Weddington  <eweddington@cso.atmel.com>
+
+	* config/avr/avr.c (avr_mcu_types): Add at90pwm2b, at90pwm3b.
+	* config/avr/avr.h (LINK_SPEC): Likewise.
+	(CRT_BINUTILS_SPECS): Likewsie.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+
 2007-10-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* doc/invoke.texi (Warning Options): Move -w, -Werror, -Werror=
