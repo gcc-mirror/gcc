@@ -1,3 +1,9 @@
+2007-10-20  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/33812
+	* config/rs6000/rs6000.c (rs6000_emit_epilogue): Revert 2007-05-16
+	change for vrsave, ie restore after frame pop.
+
 2007-10-19  David S. Miller  <davem@davemloft.net>
 
 	* config/sparc/niagara2.md: Fix copyright notice.
