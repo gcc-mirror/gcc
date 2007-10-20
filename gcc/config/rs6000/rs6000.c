@@ -16082,21 +16082,6 @@ rs6000_emit_epilogue (int sibcall)
 	  }
     }
 
-  /* Restore VRSAVE if needed.  */
-  if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
-      && info->vrsave_mask != 0)
-    {
-      rtx addr, mem, reg;
-
-      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
-			   GEN_INT (info->vrsave_save_offset + sp_offset));
-      mem = gen_frame_mem (SImode, addr);
-      reg = gen_rtx_REG (SImode, 12);
-      emit_move_insn (reg, mem);
-
-      emit_insn (generate_set_vrsave (reg, info, 1));
-    }
-
   /* If we have a frame pointer, a call to alloca,  or a large stack
      frame, restore the old stack pointer using the backchain.  Otherwise,
      we know what size to update it with.  */
@@ -16121,6 +16106,21 @@ rs6000_emit_epilogue (int sibcall)
 		 : gen_adddi3 (sp_reg_rtx, sp_reg_rtx,
 			       GEN_INT (info->total_size)));
       sp_offset = 0;
+    }
+
+  /* Restore VRSAVE if needed.  */
+  if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
+      && info->vrsave_mask != 0)
+    {
+      rtx addr, mem, reg;
+
+      addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
+			   GEN_INT (info->vrsave_save_offset + sp_offset));
+      mem = gen_frame_mem (SImode, addr);
+      reg = gen_rtx_REG (SImode, 12);
+      emit_move_insn (reg, mem);
+
+      emit_insn (generate_set_vrsave (reg, info, 1));
     }
 
   /* Get the old lr if we saved it.  */
