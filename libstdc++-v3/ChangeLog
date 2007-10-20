@@ -1,3 +1,9 @@
+2007-10-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1_impl/random
+	(uniform_int<>::_M_call(_UniformRandomNumberGenerator&, result_type,
+	result_type, true_type)): Fix small thinko.
+
 2007-10-19  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/33815
