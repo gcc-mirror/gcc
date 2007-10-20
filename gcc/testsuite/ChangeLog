@@ -1,3 +1,8 @@
+2007-10-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/vect/vect.exp: Use -mcpu=970 instead of 7400.
+	* gcc.dg/vect/costmodel/ppc/ppc-costmodel-vect.exp: Same.
+
 2007-10-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33818

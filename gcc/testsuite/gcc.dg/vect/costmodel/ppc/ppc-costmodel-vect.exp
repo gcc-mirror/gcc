@@ -49,7 +49,7 @@ if [check_vmx_hw_available] {
 } else {
     if [is-effective-target ilp32] {
         # Specify a cpu that supports VMX for compile-only tests.
-        lappend DEFAULT_VECTCFLAGS "-mcpu=7400"
+        lappend DEFAULT_VECTCFLAGS "-mcpu=970"
     }
     set dg-do-what-default compile
 }
