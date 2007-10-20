@@ -1,3 +1,9 @@
+2007-10-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33818
+	* resolve.c (resolve_variable): Check that symbol is in the same
+	namespace as the entry function.
+
 2007-10-20  Paul Thomas  <pault@gcc.gnu.org>
 	    FX Coudert <fxcoudert@gcc.gnu.org>
 
