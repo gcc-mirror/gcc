@@ -269,16 +269,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	   bool _BoolType = __is_normal_iterator<_Iterator>::__value>
     struct __niter_base
     {
-      static const _Iterator&
-      __b(const _Iterator& __it)
+      static _Iterator
+      __b(_Iterator __it)
       { return __it; }
     };
 
   template<typename _Iterator>
     struct __niter_base<_Iterator, true>
     {
-      static const typename _Iterator::_Iterator_type&
-      __b(const _Iterator& __it)
+      static typename _Iterator::_Iterator_type
+      __b(_Iterator __it)
       { return __it.base(); }
     };
 
