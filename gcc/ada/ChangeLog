@@ -1,3 +1,10 @@
+2007-10-20  Danny Smith <dannysmith@users.sourceforge.net>
+
+	* Makefile.in (LIBGNAT_TARGET_PAIRS) Add s-tasinf-mingw.adb,
+	s-tasinf-mingw.ads, a-exetim-mingw.adb, a-exetim-mingw.ads
+	for win32 targets.
+	(EXTRA_GNATRTL_TASKING_OBJS): Add a-exetim.o for win32 targets.
+
 2007-10-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* s-osinte-tru64.adb: (Hide_Yellow_Zone): Add On parameter.
