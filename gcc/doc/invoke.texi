@@ -2524,17 +2524,8 @@ Warnings are diagnostic messages that report constructions which
 are not inherently erroneous but which are risky or suggest there
 may have been an error.
 
-You can request many specific warnings with options beginning @samp{-W},
-for example @option{-Wimplicit} to request warnings on implicit
-declarations.  Each of these specific warning options also has a
-negative form beginning @samp{-Wno-} to turn off warnings;
-for example, @option{-Wno-implicit}.  This manual lists only one of the
-two forms, whichever is not the default.
-
-The following options control the amount and kinds of warnings produced
-by GCC; for further, language-specific options also refer to
-@ref{C++ Dialect Options} and @ref{Objective-C and Objective-C++ Dialect
-Options}.
+The following language-independent options do not enable specific
+warnings but control the kinds of diagnostics produced by GCC.
 
 @table @gcctabopt
 @cindex syntax checking
@@ -2542,6 +2533,48 @@ Options}.
 @opindex fsyntax-only
 Check the code for syntax errors, but don't do anything beyond that.
 
+@item -w
+@opindex w
+Inhibit all warning messages.
+
+@item -Werror
+@opindex Werror
+Make all warnings into errors.
+
+@item -Werror=
+@opindex Werror=
+Make the specified warning into an error.  The specifier for a warning
+is appended, for example @option{-Werror=switch} turns the warnings
+controlled by @option{-Wswitch} into errors.  This switch takes a
+negative form, to be used to negate @option{-Werror} for specific
+warnings, for example @option{-Wno-error=switch} makes
+@option{-Wswitch} warnings not be errors, even when @option{-Werror}
+is in effect.  You can use the @option{-fdiagnostics-show-option}
+option to have each controllable warning amended with the option which
+controls it, to determine what to use with this option.
+
+Note that specifying @option{-Werror=}@var{foo} automatically implies
+@option{-W}@var{foo}.  However, @option{-Wno-error=}@var{foo} does not
+imply anything.
+
+@item -Wfatal-errors
+@opindex Wfatal-errors
+This option causes the compiler to abort compilation on the first error
+occurred rather than trying to keep going and printing further error
+messages.
+
+@end table
+
+You can request many specific warnings with options beginning
+@samp{-W}, for example @option{-Wimplicit} to request warnings on
+implicit declarations.  Each of these specific warning options also
+has a negative form beginning @samp{-Wno-} to turn off warnings; for
+example, @option{-Wno-implicit}.  This manual lists only one of the
+two forms, whichever is not the default.  For further,
+language-specific options also refer to @ref{C++ Dialect Options} and
+@ref{Objective-C and Objective-C++ Dialect Options}.
+
+@table @gcctabopt
 @item -pedantic
 @opindex pedantic
 Issue all the warnings demanded by strict ISO C and ISO C++;
@@ -2587,10 +2620,6 @@ nothing to warn about.)
 @opindex pedantic-errors
 Like @option{-pedantic}, except that errors are produced rather than
 warnings.
-
-@item -w
-@opindex w
-Inhibit all warning messages.
 
 @item -Wall
 @opindex Wall
@@ -2655,8 +2684,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wsign-compare  @gol
 -Wtype-limits  @gol
 -Wuninitialized @r{(only with} @option{-O1} @r{and above)}  @gol
--Wunused-parameter @r{(only with} @option{-Wunused} @r{or}
-@option{-Wall}@r{)}  @gol
+-Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}  @gol
 }
 
 The option @option{-Wextra} also prints warning messages for the
@@ -2708,12 +2736,6 @@ This warning is enabled by @option{-Wall}.
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 This warning is enabled by @option{-Wall}.
-
-@item -Wfatal-errors
-@opindex Wfatal-errors
-This option causes the compiler to abort compilation on the first error
-occurred rather than trying to keep going and printing further error
-messages.
 
 @item -Wformat
 @opindex Wformat
@@ -3900,26 +3922,6 @@ Warn for pointer argument passing or assignment with different signedness.
 This option is only supported for C and Objective-C@.  It is implied by
 @option{-Wall} and by @option{-pedantic}, which can be disabled with
 @option{-Wno-pointer-sign}.
-
-@item -Werror
-@opindex Werror
-Make all warnings into errors.
-
-@item -Werror=
-@opindex Werror=
-Make the specified warning into an errors.  The specifier for a
-warning is appended, for example @option{-Werror=switch} turns the
-warnings controlled by @option{-Wswitch} into errors.  This switch
-takes a negative form, to be used to negate @option{-Werror} for
-specific warnings, for example @option{-Wno-error=switch} makes
-@option{-Wswitch} warnings not be errors, even when @option{-Werror}
-is in effect.  You can use the @option{-fdiagnostics-show-option}
-option to have each controllable warning amended with the option which
-controls it, to determine what to use with this option.
-
-Note that specifying @option{-Werror=}@var{foo} automatically implies
-@option{-W}@var{foo}.  However, @option{-Wno-error=}@var{foo} does not
-imply anything.
 
 @item -Wstack-protector
 @opindex Wstack-protector

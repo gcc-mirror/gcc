@@ -1,3 +1,8 @@
+2007-10-20  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/invoke.texi (Warning Options): Move -w, -Werror, -Werror=
+	and -Wfatal-errors together.
+	
 2007-10-20  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/33812
