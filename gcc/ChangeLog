@@ -1,5 +1,11 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.h (ISA_HAS_LDC1_SDC1): New macro.
+	* config/mips/mips.c (mips_split_64bit_move_p): Use ISA_HAS_LDC1_SDC1
+	instead of checking mips_isa.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* doc/invoke.texi (-mpaired-single): Don't say that the option
 	requires 64-bit code.
 	* config/mips/mips-protos.h (mips_modes_tieable_p): Declare.
