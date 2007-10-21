@@ -253,7 +253,8 @@ extern int errno;
    UPPER.  However the bounds themselves can be either positive or
    negative.  */
 #define IN_RANGE(VALUE, LOWER, UPPER) \
-  ((unsigned HOST_WIDE_INT)((VALUE) - (LOWER)) <= ((UPPER) - (LOWER)))
+  ((unsigned HOST_WIDE_INT) (VALUE) - (unsigned HOST_WIDE_INT) (LOWER) \
+   <= (unsigned HOST_WIDE_INT) (UPPER) - (unsigned HOST_WIDE_INT) (LOWER))
 
 /* Infrastructure for defining missing _MAX and _MIN macros.  Note that
    macros defined with these cannot be used in #if.  */

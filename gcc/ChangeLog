@@ -1,5 +1,9 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* system.h (IN_RANGE): Cast each argument individually.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_set_mips16_mode) Say sorry for hard-float
 	MIPS16 code unless using o32 or o64.  
 
