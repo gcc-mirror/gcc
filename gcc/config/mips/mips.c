@@ -5648,14 +5648,15 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 
   /* We can't do a sibcall if the called function is a MIPS16 function
      because there is no direct "jx" instruction equivalent to "jalx" to
-     switch the ISA mode.  */
-  if (mips_use_mips16_mode_p (decl))
+     switch the ISA mode.  We only care about cases where the sibling
+     and normal calls would both be direct.  */
+  if (mips_use_mips16_mode_p (decl)
+      && const_call_insn_operand (XEXP (DECL_RTL (decl), 0), VOIDmode))
     return false;
 
-  /* ...and when -minterlink-mips16 is in effect, assume that external
+  /* When -minterlink-mips16 is in effect, assume that external
      functions could be MIPS16 ones unless an attribute explicitly
-     tells us otherwise.  We only care about cases where the sibling
-     and normal calls would both be direct.  */
+     tells us otherwise.  */
   if (TARGET_INTERLINK_MIPS16
       && decl
       && DECL_EXTERNAL (decl)

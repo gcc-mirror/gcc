@@ -1,5 +1,11 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_function_ok_for_sibcall): Only forbid
+	sibling calls to "mips16" functions if the function satisfies
+	const_call_insn_operand.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_va_start): Fix types in calls
 	to build_int_cst.
 
