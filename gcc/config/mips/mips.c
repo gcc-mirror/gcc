@@ -4826,13 +4826,13 @@ mips_va_start (tree valist, rtx nextarg)
       /* Emit code to initialize GOFF, the offset from GTOP of the
 	 next GPR argument.  */
       t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (goff), goff,
-		  build_int_cst (NULL_TREE, gpr_save_area_size));
+		  build_int_cst (TREE_TYPE (goff), gpr_save_area_size));
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
       /* Likewise emit code to initialize FOFF, the offset from FTOP
 	 of the next FPR argument.  */
       t = build2 (GIMPLE_MODIFY_STMT, TREE_TYPE (foff), foff,
-		  build_int_cst (NULL_TREE, fpr_save_area_size));
+		  build_int_cst (TREE_TYPE (foff), fpr_save_area_size));
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
     }
   else
