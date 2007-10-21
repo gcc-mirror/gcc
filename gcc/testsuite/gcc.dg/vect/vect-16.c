@@ -14,7 +14,6 @@ int main1 ()
   float c[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
   float diff;
 
-  /* Not vectorizable yet (reduction).  */
   diff = 0;
   for (i = 0; i < N; i++) {
     diff += (b[i] - c[i]);
@@ -34,5 +33,6 @@ int main (void)
   return main1 ();
 }
 
+/* Requires fast-math.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

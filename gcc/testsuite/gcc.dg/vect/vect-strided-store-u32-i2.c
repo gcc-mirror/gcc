@@ -1,4 +1,4 @@
-/* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
 #include <stdio.h>
