@@ -31,6 +31,7 @@ load_lib gcc-dg.exp
 #    $mips_isa:		 the ISA level specified by __mips
 #    $mips_isa_rev:	 the ISA revision specified by __mips_isa_rev
 #    $mips_arch:	 the architecture specified by _MIPS_ARCH
+#    $mips_mips16:	 true if MIPS16 output is selected
 #    $mips_gp:		 the number of bytes in a general register
 #    $mips_fp:		 the number of bytes in a floating-point register
 #    $mips_float:	 "hard" or "soft"
@@ -48,6 +49,7 @@ proc setup_mips_tests {} {
     global mips_isa
     global mips_isa_rev
     global mips_arch
+    global mips_mips16
     global mips_gp
     global mips_fp
     global mips_float
@@ -75,6 +77,9 @@ proc setup_mips_tests {} {
 	int isa_rev = 1;
 	#endif
 	const char *arch = _MIPS_ARCH;
+	#ifdef __mips16
+	int mips16 = 1;
+	#endif
 	#ifdef __mips64
 	int gp = 64;
 	#else
@@ -105,6 +110,7 @@ proc setup_mips_tests {} {
     regexp {isa = ([^;]*)} $output dummy mips_isa
     regexp {isa_rev = ([^;]*)} $output dummy mips_isa_rev
     regexp {arch = "([^"]*)} $output dummy mips_arch
+    set mips_mips16 [regexp {mips16 = 1} $output]
     regexp {gp = ([^;]*)} $output dummy mips_gp
     regexp {fp = ([^;]*)} $output dummy mips_fp
     regexp {float = "([^"]*)} $output dummy mips_float
@@ -145,7 +151,9 @@ proc setup_mips_tests {} {
 #
 #    -mabi=*
 #	Force a particular ABI.  Skip the test if the multilib flags
-#	force a specific ABI or a different register size.
+#	force a specific ABI or a different register size.  If testing
+#	MIPS16 multilibs, try to force -msoft-float for ABIs other than
+#	o32 and o64, and skip the test if this is not possible.
 #
 #    -march=*
 #    -mips*
@@ -183,6 +191,7 @@ proc dg-mips-options {args} {
     global mips_isa
     global mips_isa_rev
     global mips_arch
+    global mips_mips16
     global mips_gp
     global mips_fp
     global mips_float
@@ -205,6 +214,15 @@ proc dg-mips-options {args} {
 	if {[string match -mpaired-single $flag]
 	    && [lsearch $flags -mfp*] < 0} {
 	    append flags " -mfp64"
+	} elseif {[regexp -- {^-mabi=(.*)} $flag dummy abi]
+		  && $mips_mips16
+		  && $abi != "32"
+		  && $abi != "o64"} {
+	    if {[lsearch $flags -mhard-float] >= 0} {
+		set matches 0
+	    } else {
+		append flags " -msoft-float"
+	    }
 	}
     }
     foreach flag $flags {
