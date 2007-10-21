@@ -61,7 +61,7 @@
   if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_conditional_move (operands);
+  mips_expand_conditional_move (operands);
   DONE;
 })
 
