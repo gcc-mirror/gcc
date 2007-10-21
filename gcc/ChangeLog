@@ -1,3 +1,32 @@
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
+	* doc/invoke.texi (-mpaired-single): Don't say that the option
+	requires 64-bit code.
+	* config/mips/mips-protos.h (mips_modes_tieable_p): Declare.
+	* config/mips/mips.h (ISA_HAS_PAIRED_SINGLE): New macro.
+	(ISA_HAS_NMADD_NMSUB): Add a mode argument.  Return true for
+	V2SF if ISA_MIPS32R2.
+	(MODES_TIEABLE_P): Use mips_modes_tieable_p.
+	* config/mips/mips.c (mips_rtx_costs): Pass a mode argument
+	to ISA_HAS_NMADD_NMSUB.
+	(mips_split_doubleword_move): Handle V2SF.
+	(mips_modes_tieable_p): New function.
+	(override_options): Report a warning rather than an error when
+	-mpaired-single is used on ISAs that don't support it; use
+	ISA_HAS_PAIRED_SINGLE to check that case.
+	* config/mips/mips.md (MOVE64): New mode iterator.  Replace DI
+	and DF move splitters with a single MOVE64 splitter, thereby adding
+	a V2SF splitter too.
+	(SPLITF): Add TARGET_DOUBLE_FLOAT conditions to DI and DF.
+	Add a TARGET_FLOAT64 condition to TF.  Add V2SF to the iterator.
+	(HALFMODE): Add V2SF.
+	(*nmadd<mode>, *nmadd<mode>_fastmath, *nmsub<mode>)
+	(*nmsub<mode>_fastmath): Add a mode argument to ISA_HAS_NMADD_NMSUB.
+	(movv2sf_hardfloat_64bit): Tweak ordering of conditions.
+	(movv2sf_hardfloat_32bit): New pattern.
+	(load_low<mode>, load_high<mode>, store_word<mode>): Remove
+	TARGET_DOUBLE_FLOAT conditions.
+
 2007-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Point

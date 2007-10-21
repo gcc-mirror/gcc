@@ -1,5 +1,6 @@
+/* mips-ps-5.c with -mips32r2 instead of -mips64.  */
 /* { dg-do compile } */
-/* { dg-mips-options "-mips64 -O2 -mpaired-single -mgp64 -ftree-vectorize" } */
+/* { dg-mips-options "-mips32r2 -O2 -mpaired-single -ftree-vectorize" } */
 
 extern float a[], b[], c[];
 

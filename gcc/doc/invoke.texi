@@ -11879,9 +11879,8 @@ Use (do not use) the MIPS SmartMIPS ASE.
 @opindex mpaired-single
 @opindex mno-paired-single
 Use (do not use) paired-single floating-point instructions.
-@xref{MIPS Paired-Single Support}.  This option can only be used
-when generating 64-bit code and requires hardware floating-point
-support to be enabled.
+@xref{MIPS Paired-Single Support}.  This option requires
+hardware floating-point support to be enabled.
 
 @item -mdmx
 @itemx -mno-mdmx

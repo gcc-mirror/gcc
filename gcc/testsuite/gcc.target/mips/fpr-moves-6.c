@@ -29,6 +29,5 @@ bar (long double d, long double *x)
 /* { dg-final { scan-assembler "\tdmtc1\t\\\$0,\\\$f21\n" } } */
 /* { dg-final { scan-assembler "\tsd\t\\\$8,16\\\(\\\$6\\\)\n" } } */
 /* { dg-final { scan-assembler "\tsd\t\\\$9,24\\\(\\\$6\\\)\n" } } */
-/* We currently move this through a temporary.  */
-/* { dg-final { scan-assembler "\tdmtc1\t\\\$10,\\\$f0\n" { xfail mips*-*-* } } } */
+/* { dg-final { scan-assembler "\tdmtc1\t\\\$10,\\\$f0\n" } } */
 /* { dg-final { scan-assembler "\tdmtc1\t\\\$11,\\\$f2\n" } } */

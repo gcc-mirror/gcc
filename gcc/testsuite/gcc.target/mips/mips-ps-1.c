@@ -1,5 +1,5 @@
-/* { dg-do run { target mipsisa64*-*-* } } */
-/* { dg-mips-options "-mips64 -O2 -mpaired-single -mhard-float -mgp64" } */
+/* { dg-do run { target mpaired_single } } */
+/* { dg-mips-options "-O2 -mpaired-single" } */
 
 /* Test v2sf calculations */
 #include <stdlib.h>
