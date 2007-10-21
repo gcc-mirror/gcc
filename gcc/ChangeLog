@@ -1,5 +1,12 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_cannot_change_mode_class): Don't check
+	for modes smaller than 4 bytes.
+	* config/mips/mips.md (*movhi_internal, *movqi_internal): Remove
+	FPR alternatives.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips-protos.h (mips_output_aligned_bss): Delete.
 	* config/mips/linux.h (BSS_SECTION_ASM_OP): Delete.
 	(ASM_OUTPUT_ALIGNED_BSS): Delete.

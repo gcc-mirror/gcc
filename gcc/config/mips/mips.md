@@ -3757,8 +3757,8 @@
 })
 
 (define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*x")
-	(match_operand:HI 1 "move_operand"         "d,I,m,dJ,*f,*d,*d"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*x")
+	(match_operand:HI 1 "move_operand"         "d,I,m,dJ,*d"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], HImode)
        || reg_or_0_operand (operands[1], HImode))"
@@ -3767,12 +3767,10 @@
     li\t%0,%1
     lhu\t%0,%1
     sh\t%z1,%0
-    mfc1\t%0,%1
-    mtc1\t%1,%0
     mt%0\t%1"
-  [(set_attr "type"	"move,arith,load,store,mfc,mtc,mthilo")
+  [(set_attr "type"	"move,arith,load,store,mthilo")
    (set_attr "mode"	"HI")
-   (set_attr "length"	"4,4,*,*,4,4,4")])
+   (set_attr "length"	"4,4,*,*,4")])
 
 (define_insn "*movhi_mips16"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m")
@@ -3863,8 +3861,8 @@
 })
 
 (define_insn "*movqi_internal"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*x")
-	(match_operand:QI 1 "move_operand"         "d,I,m,dJ,*f,*d,*d"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*x")
+	(match_operand:QI 1 "move_operand"         "d,I,m,dJ,*d"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], QImode)
        || reg_or_0_operand (operands[1], QImode))"
@@ -3873,12 +3871,10 @@
     li\t%0,%1
     lbu\t%0,%1
     sb\t%z1,%0
-    mfc1\t%0,%1
-    mtc1\t%1,%0
     mt%0\t%1"
-  [(set_attr "type"	"move,arith,load,store,mfc,mtc,mthilo")
+  [(set_attr "type"	"move,arith,load,store,mthilo")
    (set_attr "mode"	"QI")
-   (set_attr "length"	"4,4,*,*,4,4,4")])
+   (set_attr "length"	"4,4,*,*,4")])
 
 (define_insn "*movqi_mips16"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m")
