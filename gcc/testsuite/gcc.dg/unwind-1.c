@@ -1,4 +1,4 @@
-/* { dg-do assemble } */
+/* { dg-do assemble { target { ! { powerpc-ibm-aix* } } } } */
 /* { dg-options "-fleading-underscore -funwind-tables" } */
 
 void func(void) __asm("_func");
