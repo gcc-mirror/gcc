@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.2.1\n"
+"Project-Id-Version: gcc 4.2.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-10-07 14:11-0700\n"
-"PO-Revision-Date: 2007-08-25 13:57+0800\n"
+"PO-Revision-Date: 2007-10-12 13:58+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: Chinese\n"
 "X-Poedit-Country: CHINA\n"
-"X-Poedit-Basepath: C:\\MSYS\\source\\gcc-4.1.2\\gcc\n"
+"X-Poedit-Basepath: C:\\MSYS\\source\\gcc-4.2.1\\gcc\n"
 
 #: c-decl.c:3782
 msgid "<anonymous>"
@@ -6723,7 +6723,7 @@ msgstr "符号‘%s’在 %C 处已经是一个非 COMMON 的外部符号"
 #: fortran/match.c:2356
 #, no-c-format
 msgid "Symbol '%s' at %C is already in a COMMON block"
-msgstr ""
+msgstr "符号‘%s’在 %C 处已经在一个 COMMON 块中"
 
 #: fortran/match.c:2368
 #, no-c-format
@@ -13400,7 +13400,7 @@ msgstr "当在算术表达式中使用函数指针时给出警告"
 
 #: c.opt:343
 msgid "Warn when a pointer is cast to an integer of a different size"
-msgstr "当将一个指针转换为大小不同的整数时给出警告"
+msgstr "将一个指针转换为大小不同的整数时给出警告"
 
 #: c.opt:347
 msgid "Warn about misuses of pragmas"
@@ -18898,12 +18898,12 @@ msgstr "ISO C 不支持对复数类型进行%<++%>或%<--%>操作"
 #: c-typeck.c:2949 c-typeck.c:2981
 #, gcc-internal-format
 msgid "wrong type argument to increment"
-msgstr "该类型的实参不能自增"
+msgstr "该类型不支持自增"
 
 #: c-typeck.c:2951 c-typeck.c:2983
 #, gcc-internal-format
 msgid "wrong type argument to decrement"
-msgstr "该类型的实参不能自减"
+msgstr "该类型不支持自减"
 
 #: c-typeck.c:2972
 #, gcc-internal-format
@@ -19085,7 +19085,7 @@ msgstr "类型转换增大了目标类型的对齐需求"
 #: c-typeck.c:3602
 #, gcc-internal-format
 msgid "cast from pointer to integer of different size"
-msgstr "当将一个指针转换为大小不同的整数时给出警告"
+msgstr "将一个指针转换为大小不同的整数"
 
 #: c-typeck.c:3606
 #, gcc-internal-format
@@ -19095,7 +19095,7 @@ msgstr "从类型为%qT的函数调用转换到不匹配的类型%qT"
 #: c-typeck.c:3614
 #, gcc-internal-format
 msgid "cast to pointer from integer of different size"
-msgstr "当将一个指针转换为大小不同的整数时给出警告"
+msgstr "将一个整数转换为大小不同的指针"
 
 #: c-typeck.c:3627
 #, gcc-internal-format
@@ -24544,7 +24544,7 @@ msgstr "不能将%qE转换为%qT"
 #: cp/call.c:6618
 #, gcc-internal-format
 msgid "invalid initialization of non-const reference of type %qT from a temporary of type %qT"
-msgstr "将类型为%qT的非 const 引用初始化为类型为%qT的临时变量无效"
+msgstr "不能将类型为%qT的非 const 引用初始化为类型为%qT的临时变量"
 
 #: cp/call.c:6622
 #, gcc-internal-format
@@ -28901,9 +28901,9 @@ msgid "type of asm operand %qE could not be determined"
 msgstr "无法确定 asm 操作数%qE的类型"
 
 #: cp/semantics.c:1324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__label__ declarations are only allowed in function scopes"
-msgstr "Objective-C 声明只能出现在全局作用域中"
+msgstr "__label__ 声明只能出现在函数作用域中"
 
 #: cp/semantics.c:1396
 #, gcc-internal-format
@@ -29646,7 +29646,7 @@ msgstr "%s 可能是 format 属性的一个备选"
 #: cp/typeck.c:6352 cp/typeck.c:6354
 #, gcc-internal-format
 msgid "in passing argument %P of %q+D"
-msgstr "在传递实参 %P (属于%q+D)"
+msgstr "在传递实参 %P (属于%q+D) 时"
 
 #: cp/typeck.c:6404
 #, gcc-internal-format
