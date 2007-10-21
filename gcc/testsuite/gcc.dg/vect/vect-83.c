@@ -1,4 +1,5 @@
 /* { dg-do run { target powerpc*-*-* } } */
+/* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_condition } */
+/* { dg-require-effective-target vect_int } */
 
 #include <stdarg.h>
 #include <signal.h>

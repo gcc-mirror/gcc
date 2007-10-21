@@ -1,3 +1,38 @@
+2007-10-21  Ira Rosen  <irar@il.ibm.com>
+            Revital Eres  <eres@il.ibm.com>
+
+	* gcc.dg/vect/vect-ifcvt-5.c: Require vect_int.
+	* gcc.dg/vect/vect-16.c: Fix comment.
+	* gcc.dg/vect/pr33369.c: Require vect_int.
+	* gcc.dg/vect/slp-33.c: Add spaces.
+	* gcc.dg/vect/no-scevccp-outer-18.c: Enable only for vect_interleave
+	targets.
+	* gcc.dg/vect/vect-ifcvt-6.c: Require vect_int.
+	* gcc.dg/vect/no-scevccp-outer-19.c: Enable only for vect_unpack
+	targets.
+	* gcc.dg/vect/vect-ifcvt-7.c: Require vect_int.
+	* gcc.dg/vect/vect-strided-store-u16-i4.c: Add vect_unpack to
+	targets.
+	* gcc.dg/vect/slp-10.c: Add spaces.
+	* gcc.dg/vect/no-scevccp-outer-21.c: Enable only for vect_pack_trunc
+	targets.
+	* gcc.dg/vect/slp-36.c: Require vect_int.
+	* gcc.dg/vect/vect-ifcvt-9.c, gcc.dg/vect/vect-strided-store-u32-i2.c,
+	gcc.dg/vect/vect-ifcvt-2.c, gcc.dg/vect/vect-ifcvt-3.c,
+	gcc.dg/vect/vect-82.c, gcc.dg/vect/vect-83.c: Likewise.
+	* gcc.dg/vect/no-scevccp-outer-16.c: Enable only for vect_unpack
+	targets.
+	* gcc.dg/vect/no-scevccp-outer-17.c: Likewise.
+	* gcc.dg/vect/pr25413.c: Use vector alignment_reachable_for_64bit
+	instead of vector_alignment_reachable_for_double.
+	* lib/target-supports.exp (vect_aligned_arrays): Add spu-*-*.
+	(natural_alignment): Split into...
+	(natural_alignment_32, natural_alignment_64): New.
+	(vector_alignment_reachable): Depend on natural_alignment_32.
+	(vector_alignment_reachable_for_double): Rename to ...
+	(vector_alignment_reachable_for_64bit): And depend on
+	natural_alignment_64.
+
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
 	* gcc.dg/vect/vect.exp: Extend -mpaired-single handling to all

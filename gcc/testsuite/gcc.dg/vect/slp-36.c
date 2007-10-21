@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_shift } */
 
 #define N 32
