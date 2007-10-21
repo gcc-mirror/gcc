@@ -1,4 +1,4 @@
-# Mensajes en español para gcc-4.2.1
+# Mensajes en español para gcc-4.2.2
 # Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005, 2006, 2007
 #
@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.2.1\n"
+"Project-Id-Version: gcc 4.2.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2007-10-07 14:11-0700\n"
-"PO-Revision-Date: 2007-09-08 08:49-0500\n"
+"PO-Revision-Date: 2007-10-15 14:20-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -28936,9 +28936,9 @@ msgid "type of asm operand %qE could not be determined"
 msgstr "no se puede determinar el tipo del operando asm %qE"
 
 #: cp/semantics.c:1324
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__label__ declarations are only allowed in function scopes"
-msgstr "las declaraciones Objective-C sólo pueden aparecer en el ámbito global"
+msgstr "las declaraciones __label__ sólo se permiten en ámbitos de función"
 
 #: cp/semantics.c:1396
 #, gcc-internal-format
