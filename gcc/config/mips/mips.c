@@ -11632,6 +11632,9 @@ mips_set_mips16_mode (int mips16_p)
 
       if (flag_pic || TARGET_ABICALLS)
 	sorry ("MIPS16 PIC");
+
+      if (TARGET_HARD_FLOAT_ABI && !TARGET_OLDABI)
+	sorry ("hard-float MIPS16 code for ABIs other than o32 and o64");
     }
   else
     {

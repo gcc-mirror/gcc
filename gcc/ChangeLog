@@ -1,5 +1,10 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips.c (mips_set_mips16_mode) Say sorry for hard-float
+	MIPS16 code unless using o32 or o64.  
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_cannot_change_mode_class): Don't check
 	for modes smaller than 4 bytes.
 	* config/mips/mips.md (*movhi_internal, *movqi_internal): Remove
