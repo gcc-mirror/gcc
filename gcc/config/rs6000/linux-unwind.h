@@ -250,7 +250,10 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
       }
 
   fs->regs.reg[R_CR2].how = REG_SAVED_OFFSET;
-  fs->regs.reg[R_CR2].loc.offset = (long) &regs->ccr - new_cfa;
+  /* CR? regs are always 32-bit and PPC is big-endian, so in 64-bit
+     libgcc loc.offset needs to point to the low 32 bits of regs->ccr.  */
+  fs->regs.reg[R_CR2].loc.offset = (long) &regs->ccr - new_cfa
+				   + sizeof (long) - 4;
 
   fs->regs.reg[R_LR].how = REG_SAVED_OFFSET;
   fs->regs.reg[R_LR].loc.offset = (long) &regs->link - new_cfa;
