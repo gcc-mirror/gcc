@@ -735,6 +735,9 @@ enum mips_code_readable_setting {
 				 && !TARGET_MIPS5500			\
 				 && !TARGET_MIPS16)
 
+/* ISA has LDC1 and SDC1.  */
+#define ISA_HAS_LDC1_SDC1	(!ISA_MIPS1 && !TARGET_MIPS16)
+
 /* ISA has the mips4 FP condition code instructions: FP-compare to CC,
    branch on CC, and move (both FP and non-FP) on CC.  */
 #define ISA_HAS_8CC		(ISA_MIPS4				\

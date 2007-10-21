@@ -3433,9 +3433,8 @@ mips_split_64bit_move_p (rtx dest, rtx src)
   if (FP_REG_RTX_P (src) && FP_REG_RTX_P (dest))
     return false;
 
-  /* Check for floating-point loads and stores.  They can be done using
-     ldc1 and sdc1 on MIPS II and above.  */
-  if (mips_isa > 1)
+  /* Check for floating-point loads and stores.  */
+  if (ISA_HAS_LDC1_SDC1)
     {
       if (FP_REG_RTX_P (dest) && MEM_P (src))
 	return false;
