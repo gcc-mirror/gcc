@@ -1,5 +1,12 @@
 2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
 
+	* config/mips/mips-protos.h (mips_output_aligned_bss): Delete.
+	* config/mips/linux.h (BSS_SECTION_ASM_OP): Delete.
+	(ASM_OUTPUT_ALIGNED_BSS): Delete.
+	* config/mips/mips.c (mips_output_aligned_bss): Delete.
+
+2007-10-21  Richard Sandiford  <rsandifo@nildram.co.uk>
+
 	* config/mips/mips.c (mips_function_ok_for_sibcall): Only forbid
 	sibling calls to "mips16" functions if the function satisfies
 	const_call_insn_operand.
